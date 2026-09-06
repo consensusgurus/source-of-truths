@@ -18,12 +18,12 @@
 // scripts/gen-niche.mjs and scripts/verify-niche.mjs import this file under
 // plain node, where ESM does no extension guessing. Do not drop them.
 import { PAIRS } from '../span/borders.js';
-import { COUNTRIES } from './facts-countries.js';
+import { COUNTRIES, G20, ARAB_LEAGUE, EURO, SPANISH, FRENCH, MONARCHY, OECD, OPEC, EQUATOR, BIGGEST, PORTUGUESE } from './facts-countries.js';
 import { STATES } from './facts-states.js';
 import { ANIMALS } from './facts-animals.js';
 import { MOVIES } from './facts-movies.js';
 import { TVSHOWS } from './facts-tv.js';
-import { MUSICIANS } from './facts-musicians.js';
+import { MUSICIANS, HALFTIME, ROTY, BEST_NEW } from './facts-musicians.js';
 import { TEAMS } from './facts-teams.js';
 
 // ── name normalization (matching is by SELECTION from the type-ahead, so this
@@ -57,6 +57,24 @@ const capList = (m) => (Array.isArray(m.cap) ? m.cap : [m.cap]).filter(Boolean);
 // Word count for a place name: spaces and hyphens break a word, an apostrophe
 // does not, so Porto-Novo and Saint John's are two words and N'Djamena is one.
 const placeWords = (t) => String(t).trim().split(/[\s-]+/).filter(Boolean).length;
+// First letter is a vowel, ignoring a leading "The" the same way the letter
+// attributes do.
+const startsVowel = (t) => /^[aeiou]/i.test(strip(t));
+
+// The Census Bureau's four US regions, keyed by postal code. Every state
+// carries its own `reg`; this map is for the TEAMS universe, which stores a
+// state code rather than a state, and adds DC (which the Bureau puts in the
+// South) for the three Washington franchises. Canadian provinces are in no
+// region, so a Canadian team answers none of the four.
+const US_REGION = (() => {
+  const m = {};
+  const put = (r, codes) => { for (const c of codes.split(',')) m[c] = r; };
+  put('ne', 'CT,ME,MA,NH,RI,VT,NJ,NY,PA');
+  put('mw', 'IL,IN,MI,OH,WI,IA,KS,MN,MO,NE,ND,SD');
+  put('s', 'DE,DC,FL,GA,MD,NC,SC,VA,WV,AL,KY,MS,TN,AR,LA,OK,TX');
+  put('w', 'AZ,CO,ID,MT,NV,NM,UT,WY,AK,CA,HI,OR,WA');
+  return m;
+})();
 
 // Letter attributes are generated from a template against real coverage, so
 // only letters with enough members ever reach a board (gen + verify both
@@ -115,10 +133,35 @@ const U_COUNTRIES = {
     { id: 'multi', label: 'Name has more than one word', w: 1, test: (m) => words(m.t).length > 1 },
     { id: 'endsa', label: 'Name ends in A', w: 2, test: (m) => /a$/i.test(m.t) },
     { id: 'cap2', label: 'Capital city name has more than one word', w: 2, test: (m) => capList(m).some((c) => placeWords(c) > 1) },
+    { id: 'coastal', label: 'Has a sea coast', w: 2, test: (m) => !m.ll },
+    { id: 'north', label: 'Capital in the Northern Hemisphere', w: 2, test: (m) => !m.sh },
+    { id: 'b0', label: 'Has no land border', w: 2, test: (m) => borders(m.t).size === 0 },
+    { id: 'b1', label: 'Borders exactly one country', w: 2, test: (m) => borders(m.t).size === 1 },
+    { id: 'g20', label: 'In the G20', w: 2, test: (m) => G20.has(m.t) },
+    { id: 'arab', label: 'In the Arab League', w: 2, test: (m) => ARAB_LEAGUE.has(m.t) },
+    { id: 'euro', label: 'Uses the euro', w: 2, test: (m) => EURO.has(m.t) },
+    { id: 'lang-es', label: 'Spanish is an official language', w: 2, test: (m) => SPANISH.has(m.t) },
+    { id: 'lang-fr', label: 'French is an official language', w: 2, test: (m) => FRENCH.has(m.t) },
+    { id: 'lang-pt', label: 'Portuguese is an official language', w: 2, test: (m) => PORTUGUESE.has(m.t) },
+    { id: 'mon', label: 'A monarchy', w: 3, test: (m) => MONARCHY.has(m.t) },
+    { id: 'oecd', label: 'In the OECD', w: 3, test: (m) => OECD.has(m.t) },
+    { id: 'opec', label: 'In OPEC', w: 2, test: (m) => OPEC.has(m.t) },
+    { id: 'eq', label: 'The Equator runs through it', w: 2, test: (m) => EQUATOR.has(m.t) },
+    { id: 'big10', label: 'One of the ten largest countries', w: 2, test: (m) => BIGGEST.has(m.t) },
+    { id: 'vowel', label: 'Name starts with a vowel', w: 1, test: (m) => startsVowel(m.t) },
+    { id: 'dbl', label: 'Name has a double letter', w: 1, test: (m) => hasDouble(m.t) },
     ...letterAttrs(COUNTRIES, 'n', (L) => `Name starts with ${L}`, (m) => [m.t]),
     ...letterAttrs(COUNTRIES, 'cap', (L) => `Capital city starts with ${L}`, capList),
   ],
 };
+
+// Which states host a franchise, derived from the TEAMS table rather than
+// authored twice, so the Monday and Friday universes cannot disagree. The
+// generous state readings in facts-teams.js carry over: the Giants and Jets
+// make New York, the Commanders make Maryland.
+const teamStates = (lg) => new Set(TEAMS.filter((t) => t.lg === lg).map((t) => t.st));
+const NFL_STATES = teamStates('nfl');
+const MLB_STATES = teamStates('mlb');
 
 const U_STATES = {
   id: 'states',
@@ -142,6 +185,22 @@ const U_STATES = {
     { id: 'endsa', label: 'Name ends in A', w: 2, test: (m) => /a$/i.test(m.t) },
     { id: 'multi', label: 'Name has two words', w: 1, test: (m) => words(m.t).length > 1 },
     { id: 'dbl', label: 'Name has a double letter', w: 1, test: (m) => hasDouble(m.t) },
+    { id: 'y1800s', label: 'Joined the Union in the 1800s', w: 3, test: (m) => m.y >= 1800 && m.y < 1900 },
+    { id: 'east', label: 'East of the Mississippi', w: 3, test: (m) => !m.west },
+    { id: 'atl', label: 'On the Atlantic Ocean', w: 3, test: (m) => !!m.atl },
+    { id: 'pres', label: 'Birthplace of a US president', w: 3, test: (m) => !!m.pres },
+    { id: 'caplg', label: 'Its capital is its largest city', w: 3, test: (m) => !!m.caplg },
+    { id: 'park', label: 'Has a national park', w: 3, test: (m) => !!m.park },
+    { id: 'reg-ne', label: 'In the Northeast (Census region)', w: 2, test: (m) => m.reg === 'ne' },
+    { id: 'reg-mw', label: 'In the Midwest (Census region)', w: 2, test: (m) => m.reg === 'mw' },
+    { id: 'reg-s', label: 'In the South (Census region)', w: 2, test: (m) => m.reg === 's' },
+    { id: 'reg-w', label: 'In the West (Census region)', w: 2, test: (m) => m.reg === 'w' },
+    { id: 'a10', label: 'One of the ten largest by area', w: 2, test: (m) => !!m.a10 },
+    { id: 's10', label: 'One of the ten smallest by area', w: 2, test: (m) => !!m.s10 },
+    { id: 'nfl', label: 'Home to an NFL team', w: 3, test: (m) => NFL_STATES.has(m.ab) },
+    { id: 'mlb', label: 'Home to a Major League Baseball team', w: 3, test: (m) => MLB_STATES.has(m.ab) },
+    { id: 'cap2', label: 'Capital city name has more than one word', w: 2, test: (m) => capList(m).some((c) => placeWords(c) > 1) },
+    { id: 'vowel', label: 'Name starts with a vowel', w: 1, test: (m) => startsVowel(m.t) },
     ...letterAttrs(STATES, 'n', (L) => `Name starts with ${L}`, (m) => [m.t]),
     ...letterAttrs(STATES, 'cap', (L) => `Capital city starts with ${L}`, capList),
   ],
@@ -166,6 +225,18 @@ const U_ANIMALS = {
     { id: 'big', label: 'Heavier than a grown man', w: 3, test: (m) => !!m.big },
     { id: 'dom', label: 'A pet or farm animal', w: 3, test: (m) => !!m.dom },
     { id: 'hunt', label: 'Hunts other animals', w: 3, test: (m) => !!m.hunt },
+    { id: 'fish', label: 'A fish', w: 2, test: (m) => m.cls === 'fish' },
+    { id: 'rept', label: 'A reptile', w: 2, test: (m) => m.cls === 'reptile' },
+    { id: 'invert', label: 'An invertebrate', w: 2, test: (m) => m.cls === 'bug' || m.cls === 'invert' },
+    { id: 'mb', label: 'A mammal or a bird', w: 2, test: (m) => m.cls === 'mammal' || m.cls === 'bird' },
+    { id: 'land', label: 'Lives mostly on land', w: 3, test: (m) => !m.aqua },
+    { id: 'nofly', label: 'Cannot fly', w: 2, test: (m) => !m.fly },
+    { id: 'nohunt', label: 'Does not hunt other animals', w: 2, test: (m) => !m.hunt },
+    { id: 'noeggs', label: 'Does not lay eggs', w: 2, test: (m) => !m.eggs },
+    { id: 'wild', label: 'Not a pet or farm animal', w: 2, test: (m) => !m.dom },
+    { id: 'multi', label: 'Name has more than one word', w: 1, test: (m) => words(m.t).length > 1 },
+    { id: 'vowel', label: 'Name starts with a vowel', w: 1, test: (m) => startsVowel(m.t) },
+    { id: 'dbl', label: 'Name has a double letter', w: 1, test: (m) => hasDouble(m.t) },
     ...letterAttrs(ANIMALS, 'n', (L) => `Name starts with ${L}`, (m) => [m.t]),
   ],
 };
@@ -194,6 +265,17 @@ const U_MOVIES = {
     { id: 'fr', label: 'Part of a film franchise', w: 3, test: (m) => !!m.fr },
     { id: 'one', label: 'One-word title', w: 2, test: (m) => words(m.t).length === 1 },
     { id: 'num', label: 'A number in the title', w: 2, test: (m) => hasNumber(m.t) },
+    { id: 'c20', label: 'Released before 2000', w: 3, test: (m) => m.y < 2000 },
+    { id: 'c21', label: 'Released in 2000 or later', w: 3, test: (m) => m.y >= 2000 },
+    { id: 'nofr', label: 'Not part of a film franchise', w: 2, test: (m) => !m.fr },
+    { id: 'notr', label: 'Not rated R', w: 2, test: (m) => !m.r },
+    { id: 'the', label: 'Title starts with "The"', w: 2, test: (m) => /^The /.test(m.t) },
+    { id: 'w2', label: 'Two-word title', w: 2, test: (m) => words(m.t).length === 2 },
+    { id: 'w3', label: 'Three-word title', w: 2, test: (m) => words(m.t).length === 3 },
+    { id: 'w4', label: 'Title of four or more words', w: 2, test: (m) => words(m.t).length >= 4 },
+    { id: 'colon', label: 'Title contains a colon', w: 1, test: (m) => /:/.test(m.t) },
+    { id: 'vowel', label: 'Title starts with a vowel ("The" doesn\'t count)', w: 1, test: (m) => startsVowel(m.t) },
+    { id: 'dbl', label: 'Title has a double letter', w: 1, test: (m) => hasDouble(strip(m.t)) },
     ...letterAttrs(MOVIES, 'n', (L) => `Title starts with ${L} ("The" doesn't count)`, (m) => [m.t]),
   ],
 };
@@ -222,6 +304,17 @@ const U_TV = {
     { id: 'the', label: 'Title starts with "The"', w: 2, test: (m) => /^The /.test(m.t) },
     { id: 'one', label: 'One-word title', w: 2, test: (m) => words(strip(m.t)).length === 1 },
     { id: 'num', label: 'A number in the title', w: 2, test: (m) => hasNumber(m.t) },
+    { id: 'c20', label: 'Debuted before 2000', w: 3, test: (m) => m.y < 2000 },
+    { id: 'c21', label: 'Debuted in 2000 or later', w: 3, test: (m) => m.y >= 2000 },
+    { id: 'y2010', label: 'Debuted in 2010 or later', w: 2, test: (m) => m.y >= 2010 },
+    { id: 'cablestr', label: 'First aired on cable or streaming', w: 3, test: (m) => !!m.cable || !!m.str },
+    { id: 'noemmy', label: 'Never won the best-series Emmy', w: 2, test: (m) => !m.emmy },
+    { id: 'short', label: 'Ran fewer than ten seasons', w: 2, test: (m) => !m.ten },
+    { id: 'nobook', label: 'Not adapted from a book, comic or game', w: 1, test: (m) => !m.book },
+    { id: 'multi', label: 'Title has more than one word', w: 2, test: (m) => words(strip(m.t)).length > 1 },
+    { id: 'w3', label: 'Title of three or more words', w: 2, test: (m) => words(strip(m.t)).length >= 3 },
+    { id: 'vowel', label: 'Title starts with a vowel ("The" doesn\'t count)', w: 1, test: (m) => startsVowel(m.t) },
+    { id: 'dbl', label: 'Title has a double letter', w: 1, test: (m) => hasDouble(strip(m.t)) },
     ...letterAttrs(TVSHOWS, 'n', (L) => `Title starts with ${L} ("The" doesn't count)`, (m) => [m.t]),
   ],
 };
@@ -244,6 +337,20 @@ const U_MUSICIANS = {
     { id: 'ctry', label: 'A country act', w: 2, test: (m) => !!m.ctry },
     { id: 'one', label: 'A one-word name ("The" doesn\'t count)', w: 2, test: (m) => words(strip(m.t)).length === 1 },
     { id: 'num', label: 'A number in the name', w: 2, test: (m) => hasNumber(m.t) },
+    { id: 'male', label: 'A solo male artist', w: 3, test: (m) => !m.band && !m.fem && !m.nb },
+    { id: 'halftime', label: 'Has played a Super Bowl halftime show', w: 3, test: (m) => HALFTIME.has(m.t) },
+    { id: 'roty', label: 'Won the Grammy Record of the Year', w: 3, test: (m) => ROTY.has(m.t) },
+    { id: 'bna', label: 'Won the Grammy Best New Artist', w: 2, test: (m) => BEST_NEW.has(m.t) },
+    { id: 'norap', label: 'Not a hip-hop or rap act', w: 1, test: (m) => !m.rap },
+    { id: 'nohall', label: 'Not in the Rock & Roll Hall of Fame', w: 2, test: (m) => !m.hall },
+    { id: 'nonus', label: 'Not an American act', w: 2, test: (m) => !m.us },
+    { id: 'nonuk', label: 'Not a British act', w: 1, test: (m) => !m.uk },
+    { id: 'noaoty', label: 'Never won the Grammy Album of the Year', w: 1, test: (m) => !m.aoty },
+    { id: 'the', label: 'Name starts with "The"', w: 2, test: (m) => /^The /.test(m.t) },
+    { id: 'multi', label: 'A name of more than one word', w: 2, test: (m) => words(strip(m.t)).length > 1 },
+    { id: 'w3', label: 'A name of three or more words', w: 1, test: (m) => words(strip(m.t)).length >= 3 },
+    { id: 'vowel', label: 'Name starts with a vowel ("The" doesn\'t count)', w: 1, test: (m) => startsVowel(m.t) },
+    { id: 'dbl', label: 'Name has a double letter', w: 1, test: (m) => hasDouble(strip(m.t)) },
     ...letterAttrs(MUSICIANS, 'n', (L) => `Name starts with ${L} ("The" doesn't count)`, (m) => [m.t]),
   ],
 };
@@ -252,10 +359,11 @@ const U_MUSICIANS = {
 // four team sits wholly in one zone for the city that carries the team
 // (Nashville and Memphis are both Central, so Tennessee is Central), so the
 // map is by state rather than by team. Arizona, Colorado, Utah and Alberta
-// are Mountain, which no attribute claims.
+// are Mountain, which TZ_MT claims (Arizona keeps MST year round).
 const TZ_ET = new Set(['CT', 'DC', 'DE', 'FL', 'GA', 'IN', 'MA', 'MD', 'ME', 'MI', 'NC', 'NH', 'NJ', 'NY', 'OH', 'ON', 'PA', 'QC', 'RI', 'SC', 'VA', 'VT', 'WV']);
 const TZ_CT = new Set(['AL', 'AR', 'IA', 'IL', 'KS', 'LA', 'MB', 'MN', 'MO', 'MS', 'ND', 'NE', 'OK', 'SD', 'TN', 'TX', 'WI']);
 const TZ_PT = new Set(['BC', 'CA', 'NV', 'OR', 'WA']);
+const TZ_MT = new Set(['AZ', 'CO', 'UT', 'AB']);
 
 const U_TEAMS = {
   id: 'teams',
@@ -282,6 +390,18 @@ const U_TEAMS = {
     { id: 'nos', label: 'Nickname doesn\'t end in S', w: 2, test: (m) => !/s$/i.test(words(m.t).slice(-1)[0] || '') },
     { id: 'city2', label: 'Two-word place name', w: 2, test: (m) => words(m.t).length >= 3 },
     { id: 'allit', label: 'Alliterative name', w: 2, test: (m) => { const w2 = words(m.t); return w2.length >= 2 && w2[0][0] === w2[w2.length - 1][0]; } },
+    { id: 'mt', label: 'Plays in the Mountain time zone', w: 2, test: (m) => TZ_MT.has(m.st) },
+    { id: 'nochamp', label: 'No championship since 2000', w: 2, test: (m) => !m.champ },
+    { id: 'newfr', label: 'Franchise founded in 1950 or later', w: 2, test: (m) => !m.old },
+    { id: 'noanimal', label: 'Not named after a creature', w: 2, test: (m) => !m.animal },
+    { id: 'city1', label: 'One-word place name', w: 2, test: (m) => words(m.t).length === 2 },
+    { id: 'reg-ne', label: 'Based in the Northeast (Census region)', w: 2, test: (m) => US_REGION[m.st] === 'ne' },
+    { id: 'reg-mw', label: 'Based in the Midwest (Census region)', w: 2, test: (m) => US_REGION[m.st] === 'mw' },
+    { id: 'reg-s', label: 'Based in the South (Census region)', w: 2, test: (m) => US_REGION[m.st] === 's' },
+    { id: 'reg-w', label: 'Based in the West (Census region)', w: 2, test: (m) => US_REGION[m.st] === 'w' },
+    { id: 'color', label: 'Name contains a color word', w: 1, test: (m) => /\b(Red|White|Blue|Black|Green|Brown|Gold|Golden|Silver|Orange)/.test(m.t) },
+    { id: 'vowel', label: 'Full name starts with a vowel', w: 1, test: (m) => startsVowel(m.t) },
+    { id: 'dbl', label: 'Full name has a double letter', w: 1, test: (m) => hasDouble(m.t) },
     ...letterAttrs(TEAMS, 'n', (L) => `Full name starts with ${L}`, (m) => [m.t]),
   ],
 };

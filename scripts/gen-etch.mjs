@@ -1,12 +1,27 @@
-// Re-slot the Etch bank and generate the boards the new schedule needs.
+// Re-slot the Etch bank and generate the boards the schedule needs, out to
+// ETCH_UNTIL.
 //
 // Schedule (from 2026-08-18): Mon-Fri 10x10, Saturday 15x15, Sunday a 20x20
 // Edition. The 15x15 boards that used to run on Sunday move to Saturday; the
 // 10x10 boards they displace keep their picture and take the next free weekday
 // at the end of the bank, so nothing authored is thrown away.
 //
-// Boards already live are FROZEN: this script slices the source file at the
-// first future board and leaves every byte before it untouched.
+// Boards live on or before ETCH_FREEZE are FROZEN: this script slices the
+// source file at the first board after it and leaves every byte before that
+// untouched. The default freeze date is the last board of the bank as it stood
+// when this extension was authored, so a plain re-run reproduces the same file
+// byte for byte instead of re-slotting history.
+//
+// Where the boards come from, in this order:
+//   1. boards already in the bank that are after the freeze date (their picture
+//      is kept and re-dated -- nothing authored is thrown away);
+//   2. new art from scripts/etch-art.mjs, in file order, SKIPPING any subject
+//      the bank has already shipped. That skip is what makes the run
+//      idempotent: art baked into the bank on an earlier run is never dealt a
+//      second date, which verify-etch would reject as a duplicate subject.
+// Pool order is the only ordering input and there is no RNG, so the output is
+// deterministic; because used art is skipped, the new segment cannot replay the
+// frozen one.
 //
 // Every generated board is checked twice, by two different algorithms:
 //   lineSolve      constraint propagation over per-line arrangements, proving
@@ -17,13 +32,21 @@
 //
 // Run: node scripts/gen-etch.mjs            (report only)
 //      node scripts/gen-etch.mjs --write    (rewrite app/etch/puzzles.js)
+//      ETCH_FREEZE=... ETCH_UNTIL=... node scripts/gen-etch.mjs --write
 import fs from 'fs';
 import { PUZZLES } from '../app/etch/puzzles.js';
-import { raster, BIG, MID } from './etch-art.mjs';
+import { raster, BIG, MID, SMALL } from './etch-art.mjs';
 
-const FREEZE = process.env.ETCH_TODAY || '2026-08-17';
-const START = '2026-08-18';
+// Last board that is frozen history. Defaults to the last board of the bank at
+// the time of the 2026-11-30 extension.
+const FREEZE = process.env.ETCH_FREEZE || process.env.ETCH_TODAY || '2026-10-07';
+const UNTIL = process.env.ETCH_UNTIL || '2026-11-30';
+const SCHEDULE_FROM = '2026-08-18';
 const SRC = 'app/etch/puzzles.js';
+const nextDay = (iso) => new Date(new Date(`${iso}T12:00:00Z`).getTime() + 86400000).toISOString().slice(0, 10);
+// Re-slotting resumes the day after the freeze, or at the day the modern
+// schedule began if the freeze predates it.
+const START = FREEZE < SCHEDULE_FROM ? SCHEDULE_FROM : nextDay(FREEZE);
 
 const runsOf = (line) => {
   const out = []; let c = 0;
@@ -113,7 +136,11 @@ function countSolutions(w, h, rows, cols, cap = 2) {
 }
 
 function build(name, n, spec) {
-  const sol = raster(n, spec.add, spec.cut);
+  const sol = spec.grid ? spec.grid : raster(n, spec.add, spec.cut);
+  if (sol.length !== n || sol.some((r) => r.length !== n || !/^[.#]+$/.test(r))) {
+    console.error(`${name}: art is not ${n}x${n} of '.'/'#'`);
+    process.exit(1);
+  }
   const rows = sol.map(runsOf);
   const cols = [];
   for (let c = 0; c < n; c++) cols.push(runsOf(sol.map((r) => r[c]).join('')));
@@ -127,6 +154,7 @@ function build(name, n, spec) {
 const made = [
   ...BIG.map((s) => build(s.name, 20, s)),
   ...MID.map((s) => build(s.name, 15, s)),
+  ...SMALL.map((s) => build(s.name, 10, s)),
 ];
 let bad = 0;
 for (const b of made) {
@@ -141,20 +169,30 @@ const frozen = PUZZLES.filter((p) => p.live <= FREEZE);
 const future = PUZZLES.filter((p) => p.live > FREEZE);
 const dow = (iso) => new Date(`${iso}T12:00:00Z`).getUTCDay();
 
-const pool10 = future.filter((p) => p.w === 10);
-const pool15 = future.filter((p) => p.w === 15).concat(made.filter((b) => b.n === 15));
-const pool20 = made.filter((b) => b.n === 20);
+// Art whose subject the bank has already shipped is out of the pool: the
+// picture is spent, and verify-etch caps subject repeats at zero. This covers
+// re-slotted future boards too -- they carry their own picture forward, so the
+// art entry they came from must not be dealt a second date.
+const spent = new Set(PUZZLES.map((p) => p.subject));
+const fresh = made.filter((b) => !spent.has(b.name));
+const reused = made.length - fresh.length;
 
-console.log(`\nfrozen ${frozen.length} · pools: 10x10 ${pool10.length}, 15x15 ${pool15.length}, 20x20 ${pool20.length}`);
+const pool10 = future.filter((p) => p.w === 10).concat(fresh.filter((b) => b.n === 10));
+const pool15 = future.filter((p) => p.w === 15).concat(fresh.filter((b) => b.n === 15));
+const pool20 = future.filter((p) => p.w === 20).concat(fresh.filter((b) => b.n === 20));
+
+console.log(`\nfrozen ${frozen.length} (through ${FREEZE}) · ${reused} art subject(s) already spent`);
+console.log(`pools: 10x10 ${pool10.length}, 15x15 ${pool15.length}, 20x20 ${pool20.length} · slotting ${START} → ${UNTIL}`);
 
 const out = [];
 let cur = new Date(`${START}T12:00:00Z`), num = frozen.length + 1;
 const take = (a) => a.shift();
-while (pool10.length || pool15.length || pool20.length) {
+while (cur.toISOString().slice(0, 10) <= UNTIL) {
   const iso = cur.toISOString().slice(0, 10);
   const d = dow(iso);
+  const need = d === 0 ? '20x20 Sunday Edition' : d === 6 ? '15x15 Saturday' : '10x10 weekday';
   const src = d === 0 ? take(pool20) : d === 6 ? take(pool15) : take(pool10);
-  if (!src) { console.error(`ran out of boards for ${iso} (day ${d})`); process.exit(1); }
+  if (!src) { console.error(`ran out of ${need} pictures at ${iso} — add art to scripts/etch-art.mjs, do not relax a check`); process.exit(1); }
   const n = src.n || src.w;
   const [y, m, dd] = iso.split('-').map(Number);
   out.push({
@@ -170,7 +208,9 @@ while (pool10.length || pool15.length || pool20.length) {
   num++;
   cur = new Date(cur.getTime() + 86400000);
 }
+if (!out.length) { console.log(`nothing to do: bank already runs through ${UNTIL}`); process.exit(0); }
 console.log(`re-slotted ${out.length} future boards, ${out[0].live} to ${out[out.length - 1].live}, bank now ${frozen.length + out.length} boards`);
+console.log(`runway left over: 10x10 ${pool10.length}, 15x15 ${pool15.length}, 20x20 ${pool20.length}`);
 
 const fmtClue = (a) => `[${a.map((r) => `[${r.join(',')}]`).join(',')}]`;
 const fmtSol = (sol) => sol.length > 12
@@ -191,9 +231,12 @@ const body = out.map((p) => `  {
 
 if (process.argv.includes('--write')) {
   const src = fs.readFileSync(SRC, 'utf8');
+  // Cut point: the first board after the freeze if there is one, otherwise the
+  // array terminator. Everything before it is copied through byte for byte.
   const marker = `\n  {\n    num: ${frozen.length + 1},\n`;
-  const at = src.indexOf(marker);
-  if (at < 0) { console.error(`could not find the first future board (num ${frozen.length + 1}) in ${SRC}`); process.exit(1); }
+  let at = src.indexOf(marker);
+  if (at < 0) at = src.lastIndexOf('\n];');
+  if (at < 0) { console.error(`could not find the splice point in ${SRC}`); process.exit(1); }
   const head = src.slice(0, at);
   fs.writeFileSync(SRC, `${head}\n${body}\n];\n`);
   console.log(`wrote ${SRC} (kept ${head.length} bytes of frozen boards verbatim)`);

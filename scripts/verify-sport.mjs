@@ -13,8 +13,108 @@
 // Question ids are 'd<day>q<slot>', the day zero padded to two digits and
 // widening to three past day 99, the slot always two. Each day's qids must
 // carry that day's own number as their prefix.
+//
+// TWO WHOLE-BANK CHECKS RUN OVER A DATED COPY WINDOW, not per day (added with
+// the 57-day extension of 2026-09-06). CLAUDE.md, "Daily puzzle authoring
+// standard" rules 7 and 8, and "Extending a puzzle bank in bulk" rules 3 and 4:
+//
+//   US SPELLINGS. Every reader-facing string (the stem and all four choices)
+//   goes through the shared screen in scripts/us-spellings.mjs. SPORT_BRITISH
+//   below is a small local supplement for the families the shared list misses
+//   on word boundaries; see the comment on it.
+//
+//   ANSWER REUSE, COUNTED ACROSS THE WHOLE WINDOW rather than per day. Per-day
+//   legality passes happily on a bank that answers "Brazil" forty times, which
+//   is how Rung, Listed, Mate, Four and Crux all degraded, and sport is the
+//   worst case of it: five lanes share a vocabulary, so a year, a city, a
+//   country, a number and a term like "overtime" can each be the answer in
+//   three lanes at once. The ceiling is ANSWER_CAP: no answer may be correct
+//   more than four times in the window. Answers are counted with a leading
+//   "the" stripped, so "The Grey Cup" and "Grey Cup" are one answer.
+//
+// A PROPER-NAME ALLOW LIST IS PART OF THE SPELLING CHECK, NOT AN ESCAPE HATCH
+// FROM IT (authoring brief rule 4: "Real titles and proper names keep their own
+// spelling"). Sport is full of them: the Grey Cup is the CFL championship, the
+// Crucible Theatre is where snooker crowns its champion, the Football
+// Association is a body's actual name, and Rogers Centre, the Bell Centre, Air
+// Canada Centre and Wimbledon's Centre Court are venues that are spelled that
+// way on their own signage. An earlier pass dropped a Grey Cup question rather
+// than name it here, which is the wrong fix: the screen exists to catch a
+// writer's British habit, not to rename a trophy. Every entry below is a real
+// name, listed in full, so an allow entry can never mask ordinary copy - never
+// add a bare word like "Centre" or "Harbour".
+//
+// BOTH ARE SCOPED FROM A DATED COPY FLOOR (rule 10, "the past is frozen").
+// SPORT_COPY_FROM is the first live date the new rules apply to; days before it
+// shipped under the old rules and are history, not a backlog. Days 1-41 spell
+// "cancelled", "organisation" and "metres", and answer "Brazil" and "The New
+// York Yankees" repeatedly; retrofitting them would rewrite boards people have
+// played.
 import { QUESTIONS, QUESTION_MAP } from '../app/sport/questions.js';
 import { PUZZLES } from '../app/sport/puzzles.js';
+import { scanUS } from './us-spellings.mjs';
+
+// The first live date the US-spelling screen and the answer-reuse ceiling apply
+// to. It is day 42, the first day of the 2026-10-05..2026-11-30 segment;
+// everything before it is frozen.
+const SPORT_COPY_FROM = '2026-10-05';
+// No answer may be correct more than this many times at or after the floor.
+const ANSWER_CAP = 4;
+// Proper names that keep their own spelling; skipped verbatim by both the
+// shared screen and the local supplement below, before either word list runs
+// over the string. Longer names come first so the longer match wins.
+const SPELL_ALLOW = [
+  // Competitions and trophies whose official names carry a British spelling.
+  'Grey Cup', 'Greyhound', 'Vanier Cup',
+  // Venues, which is where sport keeps most of its British spellings.
+  'Melbourne Cricket Ground', 'Crucible Theatre', 'International Amphitheatre',
+  'Air Canada Centre', 'Rogers Centre', 'Bell Centre', 'Scotiabank Centre',
+  'Canadian Tire Centre', 'Centre Court', 'Sydney Harbour Bridge',
+  'Sydney Harbour', 'Darling Harbour', 'Theatre of Dreams',
+  // Bodies and organizations, spelled as they spell themselves.
+  'International Football Association Board', 'The Football Association',
+  'Football Association', 'International Labour Organization',
+  'Australian Labor Party', 'Labour Party', 'Ministry of Defence',
+  // People and clubs.
+  'Buffalo Sabres', 'Philip Armour', 'Pearl Harbor',
+];
+// Families of British form the authoring brief names by hand (rule 4:
+// "...programme, grey, metre, centre, harbour, favourite, kilometre,
+// tricolour") that the shared list in us-spellings.mjs does not carry, plus the
+// ones a SPORTS writer reaches for that no general list has. The shared file
+// matches on word boundaries, so its 'metre' misses 'kilometre', its 'colour'
+// misses 'colourful', its 'favourite' misses 'favourites', its 'defence'
+// misses 'defences' and 'defenceman', and its doubled-l entries are a sample
+// rather than the family. On top of that a sports bank writes 'medallist',
+// 'equaliser', 'penalised' and 'sabre' constantly and the shared list has none
+// of the four. Kept local rather than pushed into the shared file, because that
+// file screens several other games against their own dated floors and a new
+// entry there can fail copy nobody is looking at.
+const SPORT_BRITISH = [
+  ['medallists', 'medalists'], ['medallist', 'medalist'],
+  ['equalisers', 'equalizers'], ['equaliser', 'equalizer'],
+  ['equalised', 'equalized'], ['equalise', 'equalize'],
+  ['penalised', 'penalized'], ['penalise', 'penalize'],
+  ['finalised', 'finalized'], ['utilised', 'utilized'],
+  ['minimise', 'minimize'], ['maximise', 'maximize'],
+  ['sabres', 'sabers'], ['sabre', 'saber'],
+  ['defences', 'defenses'], ['defenceman', 'defenseman'], ['defencemen', 'defensemen'],
+  ['offences', 'offenses'],
+  ['kilometres', 'kilometers'], ['kilometre', 'kilometer'],
+  ['tricolours', 'tricolors'], ['tricolour', 'tricolor'],
+  ['colourful', 'colorful'], ['colouring', 'coloring'],
+  ['favourites', 'favorites'], ['favoured', 'favored'],
+  ['honoured', 'honored'], ['honouring', 'honoring'],
+  ['armoured', 'armored'], ['harbours', 'harbors'],
+  ['programmes', 'programs'], ['metreage', 'meterage'],
+  ['centred', 'centered'], ['centring', 'centering'],
+  ['skilful', 'skillful'], ['moulds', 'molds'],
+  ['levelled', 'leveled'], ['totalled', 'totaled'], ['equalled', 'equaled'],
+  ['spiralled', 'spiraled'], ['spiralling', 'spiraling'],
+  ['signalling', 'signaling'], ['cancelling', 'canceling'],
+  ['labelling', 'labeling'], ['fuelling', 'fueling'],
+  ['draughts', 'drafts'], ['greys', 'grays'],
+].map(([brit, us]) => [new RegExp(`\\b${brit}\\b`, 'i'), us]);
 
 const errs = [];
 const warns = [];
@@ -93,6 +193,7 @@ for (const [, group] of byAnswer) {
 
 // ---- day-level ------------------------------------------------------------
 const usedQids = new Map();
+const liveOf = new Map();   // qid -> the live date of the day that plays it
 const dates = [];
 
 for (const p of PUZZLES) {
@@ -109,6 +210,7 @@ for (const p of PUZZLES) {
     if (!id.startsWith(wantPrefix)) fail(`${tag}: qid ${id} does not carry this day's prefix ${wantPrefix}`);
     if (usedQids.has(id)) fail(`${tag}: qid ${id} already used on day ${usedQids.get(id)}`);
     usedQids.set(id, p.num);
+    liveOf.set(id, p.live);
     const q = QUESTION_MAP[id];
     if (!q) { fail(`${tag}: qid ${id} is not in the bank`); continue; }
     qs.push(q);
@@ -146,6 +248,40 @@ for (let i = 1; i < dates.length; i++) {
   if (cur - prev !== 86400000) fail(`day ${PUZZLES[i].num}: ${dates[i]} does not follow ${dates[i - 1]} by one day`);
 }
 
+// ---- copy window: US spellings and the answer-reuse ceiling ---------------
+// Both are scoped to days live on or after SPORT_COPY_FROM, so the frozen past
+// is not retroactively failed. A question no day plays has no live date and so
+// is outside the window; the orphan warning below is what catches those.
+const inWindow = QUESTIONS.filter((q) => (liveOf.get(q.id) || '') >= SPORT_COPY_FROM);
+
+for (const q of inWindow) {
+  for (const s of [q.q, ...(q.choices || [])]) {
+    for (const hit of scanUS(s, SPELL_ALLOW)) fail(`${q.id}: British spelling "${hit.found}" in copy (US: ${hit.us})`);
+    // The local supplement gets the same proper-name exemption as the shared
+    // screen, so a real name is skipped once rather than twice.
+    let bare = String(s);
+    for (const a of SPELL_ALLOW) if (a && bare.includes(a)) bare = bare.split(a).join(' ');
+    for (const [re, us] of SPORT_BRITISH) {
+      const m = bare.match(re);
+      if (m) fail(`${q.id}: British spelling "${m[0]}" in copy (US: ${us})`);
+    }
+  }
+}
+
+const answerUse = new Map();
+for (const q of inWindow) {
+  const a = norm(q.choices[q.correct]).replace(/^the /, '');
+  if (!a) continue;
+  if (!answerUse.has(a)) answerUse.set(a, []);
+  answerUse.get(a).push(q.id);
+}
+for (const [, ids] of answerUse) {
+  if (ids.length > ANSWER_CAP) {
+    const q = QUESTION_MAP[ids[0]];
+    fail(`"${q.choices[q.correct]}" is the correct answer ${ids.length} times since ${SPORT_COPY_FROM}, over the ceiling of ${ANSWER_CAP} (${ids.join(', ')})`);
+  }
+}
+
 const orphans = QUESTIONS.filter((q) => !usedQids.has(q.id));
 if (orphans.length) warn(`${orphans.length} questions in the bank are not used by any day (${orphans.slice(0, 5).map((q) => q.id).join(', ')}...)`);
 
@@ -157,3 +293,4 @@ if (errs.length) {
   process.exit(1);
 }
 console.log(`ok: ${QUESTIONS.length} questions, ${PUZZLES.length} days, ${dates[0]} to ${dates[dates.length - 1]}, ${warns.length} warning${warns.length === 1 ? '' : 's'}.`);
+console.log(`    copy window from ${SPORT_COPY_FROM}: ${inWindow.length} questions screened for British spellings, ${answerUse.size} distinct answers, none over ${ANSWER_CAP}.`);

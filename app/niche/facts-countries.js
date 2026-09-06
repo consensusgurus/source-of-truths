@@ -232,3 +232,49 @@ export const COUNTRIES = [
   { t: 'Tuvalu', c: ['oc'], isl: 1, pop: -1, cw: 1, cap: 'Funafuti', sh: 1 },
   { t: 'Vanuatu', c: ['oc'], isl: 1, pop: -1, cw: 1, cap: 'Port Vila', sh: 1 },
 ];
+
+// ── named memberships ────────────────────────────────────────────────────────
+// Lists rather than per-row flags, because each is a short published roster and
+// a list is auditable at a glance. scripts/verify-niche.mjs asserts BOTH the
+// size of every list below and that every name in it resolves to a member, so
+// a typo cannot silently shrink an attribute.
+
+// The G20's nineteen sovereign members (the EU and the African Union, its two
+// bloc members, are not countries).
+export const G20 = new Set(['Argentina', 'Australia', 'Brazil', 'Canada', 'China', 'France', 'Germany', 'India', 'Indonesia', 'Italy', 'Japan', 'Mexico', 'Russia', 'Saudi Arabia', 'South Africa', 'South Korea', 'Turkey', 'United Kingdom', 'United States']);
+
+// The Arab League's 22 members less Palestine, which sits out of this table.
+// Syria, suspended in 2011, was readmitted in 2023 and is in.
+export const ARAB_LEAGUE = new Set(['Algeria', 'Bahrain', 'Comoros', 'Djibouti', 'Egypt', 'Iraq', 'Jordan', 'Kuwait', 'Lebanon', 'Libya', 'Mauritania', 'Morocco', 'Oman', 'Qatar', 'Saudi Arabia', 'Somalia', 'Sudan', 'Syria', 'Tunisia', 'United Arab Emirates', 'Yemen']);
+
+// Countries whose money is the euro: the 20 eurozone members, plus the four
+// microstates that mint it under a monetary agreement (Andorra, Monaco, San
+// Marino, Vatican City) and the two that adopted it unilaterally (Kosovo,
+// Montenegro) — the generous reading, since all six genuinely use the euro.
+export const EURO = new Set(['Austria', 'Belgium', 'Croatia', 'Cyprus', 'Estonia', 'Finland', 'France', 'Germany', 'Greece', 'Ireland', 'Italy', 'Latvia', 'Lithuania', 'Luxembourg', 'Malta', 'Netherlands', 'Portugal', 'Slovakia', 'Slovenia', 'Spain', 'Andorra', 'Monaco', 'San Marino', 'Vatican City', 'Kosovo', 'Montenegro']);
+
+// Spanish as an official or co-official national language.
+export const SPANISH = new Set(['Argentina', 'Bolivia', 'Chile', 'Colombia', 'Costa Rica', 'Cuba', 'Dominican Republic', 'Ecuador', 'El Salvador', 'Equatorial Guinea', 'Guatemala', 'Honduras', 'Mexico', 'Nicaragua', 'Panama', 'Paraguay', 'Peru', 'Spain', 'Uruguay', 'Venezuela']);
+
+// French as an official or co-official national language.
+export const FRENCH = new Set(['Belgium', 'Benin', 'Burkina Faso', 'Burundi', 'Cameroon', 'Canada', 'Central African Republic', 'Chad', 'Comoros', 'Democratic Republic of the Congo', 'Djibouti', 'Equatorial Guinea', 'France', 'Gabon', 'Guinea', 'Haiti', 'Ivory Coast', 'Luxembourg', 'Madagascar', 'Mali', 'Monaco', 'Niger', 'Republic of the Congo', 'Rwanda', 'Senegal', 'Seychelles', 'Switzerland', 'Togo', 'Vanuatu']);
+
+// A monarchy: the head of state is a monarch. Elective monarchies count
+// (Malaysia, Vatican City) and so do the Commonwealth realms, whose head of
+// state is the British monarch. Barbados, a republic since 2021, is out.
+export const MONARCHY = new Set(['Andorra', 'Belgium', 'Denmark', 'Liechtenstein', 'Luxembourg', 'Monaco', 'Netherlands', 'Norway', 'Spain', 'Sweden', 'United Kingdom', 'Vatican City', 'Bahrain', 'Bhutan', 'Brunei', 'Cambodia', 'Japan', 'Jordan', 'Kuwait', 'Malaysia', 'Oman', 'Qatar', 'Saudi Arabia', 'Thailand', 'United Arab Emirates', 'Eswatini', 'Lesotho', 'Morocco', 'Tonga', 'Antigua and Barbuda', 'Australia', 'Bahamas', 'Belize', 'Canada', 'Grenada', 'Jamaica', 'New Zealand', 'Papua New Guinea', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Solomon Islands', 'Tuvalu']);
+
+// The OECD's 38 members.
+export const OECD = new Set(['Australia', 'Austria', 'Belgium', 'Canada', 'Chile', 'Colombia', 'Costa Rica', 'Czechia', 'Denmark', 'Estonia', 'Finland', 'France', 'Germany', 'Greece', 'Hungary', 'Iceland', 'Ireland', 'Israel', 'Italy', 'Japan', 'South Korea', 'Latvia', 'Lithuania', 'Luxembourg', 'Mexico', 'Netherlands', 'New Zealand', 'Norway', 'Poland', 'Portugal', 'Slovakia', 'Slovenia', 'Spain', 'Sweden', 'Switzerland', 'Turkey', 'United Kingdom', 'United States']);
+
+// OPEC's twelve members (Angola left in 2024, Qatar in 2019, Ecuador in 2020).
+export const OPEC = new Set(['Algeria', 'Republic of the Congo', 'Equatorial Guinea', 'Gabon', 'Iran', 'Iraq', 'Kuwait', 'Libya', 'Nigeria', 'Saudi Arabia', 'United Arab Emirates', 'Venezuela']);
+
+// The thirteen countries the Equator runs through.
+export const EQUATOR = new Set(['Ecuador', 'Colombia', 'Brazil', 'Sao Tome and Principe', 'Gabon', 'Republic of the Congo', 'Democratic Republic of the Congo', 'Uganda', 'Kenya', 'Somalia', 'Maldives', 'Indonesia', 'Kiribati']);
+
+// The ten largest countries by total area.
+export const BIGGEST = new Set(['Russia', 'Canada', 'China', 'United States', 'Brazil', 'Australia', 'India', 'Argentina', 'Kazakhstan', 'Algeria']);
+
+// Portuguese as an official or co-official national language.
+export const PORTUGUESE = new Set(['Angola', 'Brazil', 'Cape Verde', 'Equatorial Guinea', 'Guinea-Bissau', 'Mozambique', 'Portugal', 'Sao Tome and Principe', 'Timor-Leste']);

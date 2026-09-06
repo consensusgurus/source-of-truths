@@ -35,7 +35,16 @@
 // and only then written out. scripts/verify-defend.mjs re-derives all of it a
 // third time. So the fast core can only cost throughput, never correctness.
 //
-// Run:  node scripts/gen-defend.mjs <holdFor> <seconds> <outfile>
+// DETERMINISM. The candidate stream is driven by a seeded xorshift32, not
+// Math.random, so a run with the same seed proposes the same positions in the
+// same order and an unchanged run reproduces byte-identically. The seed is
+// argv[5] and the OFFSET is the caller's job: the 2026-10-06 extension seeds
+// from the first new board number (57) so the new segment cannot replay the
+// stream that produced the frozen one. The seconds budget only decides how far
+// down that stream a run gets, so pin `trials` (argv[6]) as well when an exact
+// byte-for-byte replay matters rather than just a reproducible stream.
+//
+// Run:  node scripts/gen-defend.mjs <holdFor> <seconds> <outfile> [seed] [trials]
 import { legalMoves as slowLegal, applyMove as slowApply, inCheck as slowInCheck, toSan, squareName, WHITE, BLACK } from '../app/mate/chess.js';
 import { makeMateSearch, stubbornestReply } from '../app/defend/defense.js';
 import { makeFastSearch, legal as fastLegal, inCheck as fastInCheck, uciOf, from64 } from './defend-fast.mjs';
@@ -56,7 +65,11 @@ const MAX_PIECES = 9;
 // has to survive its full budget, which is the claim the game actually makes.
 const REFUTE_DEPTH = HOLD <= 3 ? HOLD + 1 : HOLD;
 
-const R = (n) => Math.floor(Math.random() * n);
+const SEED = Number(process.argv[5] || 1);
+const MAX_TRIALS = Number(process.argv[6] || 0) || Infinity;
+let _rs = (SEED >>> 0) || 0x9e3779b9;
+const rnd = () => { _rs ^= _rs << 13; _rs >>>= 0; _rs ^= _rs >>> 17; _rs ^= _rs << 5; _rs >>>= 0; return _rs / 4294967296; };
+const R = (n) => Math.floor(rnd() * n);
 const WSETS = [['Q', 'R'], ['Q', 'N'], ['R', 'R'], ['Q', 'B'], ['R', 'B'], ['R', 'N'], ['Q', 'R', 'N'],
   ['R', 'R', 'B'], ['Q', 'N', 'N'], ['Q', 'R', 'B'], ['R', 'B', 'N'], ['Q', 'P'], ['R', 'R', 'N'], ['Q', 'B', 'N']];
 const BSETS = [['r'], ['b'], ['n'], ['q'], ['r', 'n'], ['r', 'b'], ['b', 'n'], ['r', 'p'], ['n', 'p'],
@@ -244,7 +257,7 @@ const seen = new Set(prior.map((x) => x.fen.split(' ')[0]));
 const t0 = Date.now();
 let tried = 0, threat = 0, sifted = 0;
 
-while ((Date.now() - t0) / 1000 < SECS) {
+while ((Date.now() - t0) / 1000 < SECS && tried < MAX_TRIALS) {
   tried++;
   const a = randPos();
   const pieces = a.filter(Boolean).length;
@@ -322,4 +335,4 @@ while ((Date.now() - t0) / 1000 < SECS) {
 }
 
 writeFileSync(OUT, JSON.stringify(out));
-console.log(JSON.stringify({ holdFor: HOLD, tried, threat, sifted, kept: out.length, secs: ((Date.now() - t0) / 1000).toFixed(0) }));
+console.log(JSON.stringify({ holdFor: HOLD, seed: SEED, tried, threat, sifted, kept: out.length, secs: ((Date.now() - t0) / 1000).toFixed(0) }));

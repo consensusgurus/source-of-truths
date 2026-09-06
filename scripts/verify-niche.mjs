@@ -18,6 +18,8 @@
 // Usage: node scripts/verify-niche.mjs
 import { PUZZLES } from '../app/niche/puzzles.js';
 import { UNIVERSES, UNIVERSE_MAP, universeForDate, attrById, cellMembers, normAnswer } from '../app/niche/facts.js';
+import { COUNTRIES, G20, ARAB_LEAGUE, EURO, SPANISH, FRENCH, MONARCHY, OECD, OPEC, EQUATOR, BIGGEST, PORTUGUESE } from '../app/niche/facts-countries.js';
+import { MUSICIANS, HALFTIME, ROTY, BEST_NEW } from '../app/niche/facts-musicians.js';
 
 const fails = [];
 const warns = [];
@@ -109,7 +111,23 @@ for (const p of PUZZLES) {
 const ATTR_CAP = 4;
 const MAX_ECHO = 2;
 const MAX_OVERLAP = 4;
-const isLetter = (id) => /^(n|cap)-[a-z]$/.test(id);
+// A letter attribute is any attribute about the first letter of the name: the
+// generated n-/cap- fills plus "Name starts with a vowel", added 2026-09-06,
+// which is the same gimmick and so counts against the same cap.
+const isLetter = (id) => /^(n|cap)-[a-z]$/.test(id) || id === 'vowel';
+// No board may pair two attributes that are exact complements over the
+// universe: together they only split the universe in half. Scoped from the
+// first board authored under the rule, because #17 (2026-09-05) shipped a
+// band / solo pair and the past is frozen.
+const COMPLEMENT_FROM = '2026-10-05';
+const memberSet = (u, id) => new Set(u.members.filter((m) => attrById(u, id).test(m)).map((m) => m.t));
+const complementary = (u, a, b) => {
+  const A = memberSet(u, a);
+  const B = memberSet(u, b);
+  if (A.size + B.size !== u.members.length) return false;
+  for (const n of A) if (B.has(n)) return false;
+  return true;
+};
 const usage = {};
 const history = {};
 PUZZLES.forEach((p, i) => {
@@ -127,6 +145,14 @@ PUZZLES.forEach((p, i) => {
   for (const h of hist) {
     const overlap = all.filter((id) => h.has(id)).length;
     if (overlap > MAX_OVERLAP) F(`${tag}: shares ${overlap} attributes with an earlier ${p.universe} board (cap ${MAX_OVERLAP})`);
+  }
+  if (p.live >= COMPLEMENT_FROM) {
+    const u = UNIVERSE_MAP[p.universe];
+    for (let x = 0; x < all.length; x++) {
+      for (let y = x + 1; y < all.length; y++) {
+        if (complementary(u, all[x], all[y])) F(`${tag}: "${all[x]}" and "${all[y]}" are exact complements on one board`);
+      }
+    }
   }
   hist.push(new Set(all));
   for (const id of all) {
@@ -178,12 +204,86 @@ const FIXED = [
   ['countries', 'cw', 56, 'Commonwealth members'],
   ['countries', 'wc', 8, 'World Cup winning nations'],
   ['teams', 'bird', 12, 'teams named after a bird'],
+  // Attributes added 2026-09-06 when the pool was grown for the run to
+  // 2026-11-30. Each is a closed roster or a closed count, so it is asserted
+  // by size here rather than eyeballed: a slipped flag or a mistyped name in
+  // one of the facts-countries.js lists fails loudly instead of quietly
+  // shrinking a cell.
+  ['countries', 'g20', 19, 'G20 sovereign members'],
+  ['countries', 'arab', 21, 'Arab League members in this table'],
+  ['countries', 'euro', 26, 'euro-using countries'],
+  ['countries', 'lang-es', 20, 'Spanish-official countries'],
+  ['countries', 'lang-fr', 29, 'French-official countries'],
+  ['states', 'atl', 14, 'states on the Atlantic'],
+  ['states', 'pres', 21, 'presidential birth states'],
+  ['states', 'caplg', 17, 'states whose capital is their largest city'],
+  ['states', 'park', 30, 'states with a national park'],
+  ['states', 'a10', 10, 'ten largest states'],
+  ['states', 's10', 10, 'ten smallest states'],
+  ['states', 'reg-ne', 9, 'Census Northeast states'],
+  ['states', 'reg-mw', 12, 'Census Midwest states'],
+  ['states', 'reg-s', 16, 'Census South states'],
+  ['states', 'reg-w', 13, 'Census West states'],
+  ['states', 'east', 26, 'states east of the Mississippi'],
+  ['teams', 'mt', 11, 'Mountain time zone teams'],
+  ['musicians', 'halftime', 44, 'Super Bowl halftime performers'],
+  ['musicians', 'roty', 28, 'Grammy Record of the Year winners'],
+  ['musicians', 'bna', 17, 'Grammy Best New Artist winners'],
+  ['countries', 'lang-pt', 9, 'Portuguese-official countries'],
+  ['countries', 'mon', 43, 'monarchies'],
+  ['countries', 'oecd', 38, 'OECD members'],
+  ['countries', 'opec', 12, 'OPEC members'],
+  ['countries', 'eq', 13, 'countries on the Equator'],
+  ['countries', 'big10', 10, 'ten largest countries'],
 ];
 for (const [uid, attrId, want, what] of FIXED) {
   const got = count(uid, attrId);
   if (got !== want) F(`${uid}: ${got} ${what}, expected ${want}`);
 }
 if (UNIVERSE_MAP.states.members.length !== 50) F(`states: ${UNIVERSE_MAP.states.members.length} members, expected 50`);
+// The named country rosters in facts-countries.js are matched by NAME, so one
+// typo silently drops a member and no count above would notice if the typo
+// merely moved the total. Assert every name resolves.
+{
+  const known = new Set(COUNTRIES.map((m) => m.t));
+  for (const [name, list] of [['G20', G20], ['ARAB_LEAGUE', ARAB_LEAGUE], ['EURO', EURO], ['SPANISH', SPANISH], ['FRENCH', FRENCH], ['PORTUGUESE', PORTUGUESE], ['MONARCHY', MONARCHY], ['OECD', OECD], ['OPEC', OPEC], ['EQUATOR', EQUATOR], ['BIGGEST', BIGGEST]]) {
+    for (const c of list) if (!known.has(c)) F(`countries: ${name} names "${c}", which is not a member`);
+  }
+  const acts = new Set(MUSICIANS.map((m) => m.t));
+  for (const [name, list] of [['HALFTIME', HALFTIME], ['ROTY', ROTY], ['BEST_NEW', BEST_NEW]]) {
+    for (const c of list) if (!acts.has(c)) F(`musicians: ${name} names "${c}", which is not a member`);
+  }
+}
+// The Census regions are the Bureau's own four-way split, so they must
+// partition all fifty states: exhaustive and disjoint.
+{
+  const regs = ['reg-ne', 'reg-mw', 'reg-s', 'reg-w'];
+  for (const m of UNIVERSE_MAP.states.members) {
+    const hit = regs.filter((id) => attrById(UNIVERSE_MAP.states, id).test(m)).length;
+    if (hit !== 1) F(`states: "${m.t}" is in ${hit} Census regions, expected exactly 1`);
+  }
+  // Every US team sits in exactly one region and every Canadian team in none.
+  for (const m of UNIVERSE_MAP.teams.members) {
+    const hit = regs.filter((id) => attrById(UNIVERSE_MAP.teams, id).test(m)).length;
+    if (hit !== (m.can ? 0 : 1)) F(`teams: "${m.t}" is in ${hit} Census regions, expected ${m.can ? 0 : 1}`);
+  }
+  // A team plays in ONE time zone: the Mountain set must not overlap the other
+  // three, which the zone walk above already proves disjoint.
+  for (const m of UNIVERSE_MAP.teams.members) {
+    const zones = ['et', 'ct', 'pac', 'mt'].filter((id) => attrById(UNIVERSE_MAP.teams, id).test(m)).length;
+    if (zones > 1) F(`teams: "${m.t}" answers ${zones} time-zone attributes`);
+  }
+}
+// A solo act is judged male, female or neither, never two of them, and never
+// none: "male" is defined by omission, so an unflagged non-binary act would be
+// judged male, and this is the check that stops that.
+for (const m of UNIVERSE_MAP.musicians.members) {
+  if (m.fem && m.nb) F(`musicians: "${m.t}" is flagged both fem and nb`);
+  if (m.band && (m.fem || m.nb)) F(`musicians: "${m.t}" is a band carrying a solo-artist flag`);
+  const solo = ['male', 'fem'].filter((id) => attrById(UNIVERSE_MAP.musicians, id).test(m)).length;
+  if (!m.band && solo !== (m.nb ? 0 : 1)) F(`musicians: solo act "${m.t}" answers ${solo} of male/fem`);
+  if (m.band && solo !== 0) F(`musicians: band "${m.t}" answers ${solo} of male/fem`);
+}
 // A bird is a creature: bird must be a strict subset of animal, or a board
 // pairing the two would judge the same team two ways.
 for (const m of UNIVERSE_MAP.teams.members) {

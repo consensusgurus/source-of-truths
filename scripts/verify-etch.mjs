@@ -31,6 +31,14 @@
 //   6. No duplicate boards (identical `sol` grid) and no duplicate `subject`
 //      anywhere in the bank -- ceiling is 1 (a picture-logic bank this size
 //      should never need to repeat its picture).
+//   6b. SUBJECT-FAMILY CEILING. Zero repeats is not variety on its own: a bank
+//      of 127 boards could be nine kinds of animal and pass rule 6. Every
+//      subject is therefore assigned to one of twelve families below, an
+//      unclassified subject is a failure (so new art cannot slip in
+//      uncounted), and no family may hold more than FAMILY_CAP boards or
+//      FAMILY_SHARE of the bank, whichever is smaller. The same ceiling is
+//      stated in the header of scripts/etch-art.mjs, where the pictures are
+//      authored. At 127 boards the largest family is animals & sea life at 19.
 //   7. US spelling: reader-facing `subject` strings are scanned for obvious
 //      British word forms.
 //
@@ -104,6 +112,27 @@ function solveLineLogic(w, h, rows, cols) {
   }
   return { ok: true, solved: grid.every((row) => row.every((v) => v !== -1)), grid };
 }
+
+// ─── subject families (rule 6b) ─────────────────────────────────────────────
+// Ceiling: no family may exceed 24 boards, nor 20% of the bank.
+const FAMILY_CAP = 24;
+const FAMILY_SHARE = 0.20;
+const FAMILY = {
+  'animals & sea life': ['Fish', 'Owl', 'Butterfly', 'Duck', 'Penguin', 'Elephant', 'Turtle', 'Octopus', 'Whale', 'Cat', 'Giraffe', 'Lion', 'Snail', 'Ladybug', 'Toucan', 'Dinosaur', 'Mouse', 'Crab', 'Camel', 'Pig', 'Frog', 'Seahorse'],
+  'plants & produce': ['Mushroom', 'Cactus', 'Palm Tree', 'Apple', 'Cherries', 'Tulip', 'Pine Tree', 'Acorn', 'Strawberry', 'Pineapple', 'Sunflower', 'Carrot', 'Banana'],
+  'food & drink': ['Martini Glass', 'Teapot', 'Cupcake', 'Ice Cream Cone', 'Coffee Cup', 'Pizza Slice', 'Donut', 'Hamburger', 'Beer Mug'],
+  'nature, sky & weather': ['Snowflake', 'Crescent Moon', 'Star', 'Lightning Bolt', 'Raindrop', 'Saturn', 'Sun', 'Cloud'],
+  'transport & travel': ['Anchor', 'Sailboat', 'Rocket', 'Sailing Ship', 'Bicycle', 'Submarine', 'Hot Air Balloon', 'Airplane', 'Car', 'Steam Locomotive', 'Truck', 'Helicopter', 'Bus', 'Motorcycle', 'Fire Truck', 'Tractor'],
+  'buildings & structures': ['Lighthouse', 'Castle', 'Windmill', 'Suspension Bridge', 'Cathedral', 'Tent', 'Barn', 'Igloo', 'Carousel', 'Ferris Wheel', 'Traffic Light', 'Water Tower'],
+  'tools & hardware': ['Key', 'Camera', 'Padlock', 'Hammer', 'Pencil', 'Battery', 'Ladder', 'Telescope', 'Horseshoe Magnet', 'Anvil', 'Watering Can'],
+  'household & furnishings': ['Umbrella', 'Lightbulb', 'Envelope', 'Bell', 'Candle', 'Typewriter', 'Alarm Clock', 'Hourglass', 'Gift Box', 'Table Lamp', 'Birdhouse', 'Broom', 'Mailbox', 'Chair', 'Chandelier', 'Book', 'Microphone', 'Grandfather Clock', 'Dog Bone'],
+  'clothing & accessories': ['Crown', 'Bowtie', 'Diamond', 'Top Hat', 'Boot', 'Ring', 'Wristwatch', 'T-Shirt'],
+  music: ['Guitar', 'Grand Piano', 'Violin', 'Gramophone', 'Music Note', 'Saxophone'],
+  'games, toys & sport': ['Chess Knight', 'Robot', 'Trophy', 'Dumbbell', 'Chess Pawn', 'Chess Rook', 'Bowling Pin', 'Kite', 'Dice', 'Balloon'],
+  'symbols & heraldry': ['Heart', 'Ghost', 'Sword', 'Shield', 'Arrow', 'Pennant Flag'],
+};
+const familyOf = new Map();
+for (const [fam, subjects] of Object.entries(FAMILY)) for (const s of subjects) familyOf.set(s, fam);
 
 // ─── US-spelling scan ───────────────────────────────────────────────────────
 const BRITISH_RE = /\b(colour|flavour|favourite|centre|theatre|organis(e|ing|ation)|recognis(e|ed|ing)|realis(e|ed|ing)|travell(ed|ing|er)|programme|metre|litre|kerb|tyre|analys(e|ed|ing)|catalogue|dialogue|jewellery|labour|neighbour|honour|armour|cheque|defence|licence|practise|whilst|amongst|learnt|aluminium|aeroplane)\b/i;
@@ -189,6 +218,22 @@ for (const [subject, ids] of seenSubjects) {
 }
 for (const [, ids] of seenSols) {
   if (ids.length > 1) fail('etch pool', `identical solution grid shipped on ${ids.length} boards: ${ids.join(', ')}`);
+}
+
+// ─── subject-family ceiling (rule 6b) ──────────────────────────────────────
+const famCount = new Map();
+for (const p of PUZZLES) {
+  const fam = familyOf.get(p.subject);
+  if (!fam) { fail(p.quizId, `subject "${p.subject}" is in no family — classify it in FAMILY (verify-etch.mjs) and in the ceiling note in scripts/etch-art.mjs`); continue; }
+  famCount.set(fam, (famCount.get(fam) || 0) + 1);
+}
+const famLimit = Math.min(FAMILY_CAP, Math.floor(PUZZLES.length * FAMILY_SHARE));
+for (const [fam, n] of [...famCount].sort((a, b) => b[1] - a[1])) {
+  if (n > famLimit) fail('etch pool', `family "${fam}" holds ${n} of ${PUZZLES.length} boards, over the ceiling of ${famLimit}`);
+}
+if (BAD === 0) {
+  const top = [...famCount].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([f, n]) => `${f} ${n}`).join(', ');
+  note('etch pool', `${famCount.size} subject families, ceiling ${famLimit}; largest: ${top}`);
 }
 if (BAD === 0) ok('etch pool', `${PUZZLES.length} boards, ${seenSubjects.size} distinct subjects, no duplicate grids`);
 

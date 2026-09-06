@@ -40,7 +40,10 @@ const run = (name, cmd, argv, opts = {}) => {
   const secs = ((Date.now() - t0) / 1000).toFixed(0);
   const ok = opts.pass ? opts.pass(out, r.status) : r.status === 0;
   steps.push({ name, ok, secs, tail: out.trim().split('\n').slice(-3).join(' | ') });
-  console.log(out.trim().split('\n').slice(-12).join('\n'));
+  // The blast-radius step IS its list: truncating it to the last 12 lines hid
+  // most of the checkers on a 43-file change, which is the exact question the
+  // step exists to answer. Everything else is summarised by its tail.
+  console.log(opts.full ? out.trim() : out.trim().split('\n').slice(-12).join('\n'));
   return { out, ok };
 };
 
@@ -54,7 +57,7 @@ if (!skipInstall && !existsSync(join(root, 'node_modules'))) {
 
 // 2. blast radius. Not a pass/fail, a REPORT: which checkers this change can
 //    reach, including the ones for games it never touched.
-run('blast radius', process.execPath, [join(here, 'blast-radius.mjs')]);
+run('blast radius', process.execPath, [join(here, 'blast-radius.mjs')], { full: true });
 
 // 3. Parse every changed source file. `next lint` needs an eslint config this
 //    repo does not commit and prompts to create one, so it cannot be the gate

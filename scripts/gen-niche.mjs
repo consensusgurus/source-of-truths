@@ -25,7 +25,18 @@
 //   - at least one tight cell (<= TIGHT answers) per board, two on Sunday, so
 //     every day has a corner worth bragging about,
 //   - at most two LETTER attributes per board, one in launch week (a board
-//     of letter fills is a word game, not trivia),
+//     of letter fills is a word game, not trivia). A letter attribute is any
+//     attribute about the FIRST letter of the name: the generated n-/cap-
+//     fills and the "starts with a vowel" attribute added 2026-09-06, which
+//     is the same gimmick spelled differently and so counts against the same
+//     cap,
+//   - no two attributes on a board are exact COMPLEMENTS of each other over
+//     that universe's members (Released before 2000 against Released in 2000
+//     or later, A band against A solo act). A complementary pair splits the
+//     universe down the middle and tells the player nothing, and growing the
+//     pool on 2026-09-06 added enough deliberate complements to make the pair
+//     likely rather than rare. Scoped from COMPLEMENT_FROM, since board #17
+//     shipped band-against-solo on 2026-09-05 and the past is frozen,
 //   - no board shares more than 4 of its attributes with ANY earlier board of
 //     its universe (the echo rule alone let two boards two weeks apart ship
 //     as the same six attributes with rows and columns swapped),
@@ -34,6 +45,17 @@
 //     universes run weekly), and none appears more than ATTR_CAP times per
 //     universe across the bank (a floor is not a target: variety is checked
 //     bank-wide).
+//
+// ATTR_CAP IS AN ABSOLUTE, NOT A RATE, so it sets a hard floor under the
+// attribute pool: a universe running B boards of S attributes each needs at
+// least ceil(B * S / ATTR_CAP) attributes, and in practice roughly twice that,
+// because attributes only pair into a legal cell with the partners they
+// actually overlap. Extending the bank therefore means GROWING THE POOL in
+// app/niche/facts.js, never raising the cap: a bigger pool ships better boards
+// every day, a looser cap ships worse ones. The 2026-11-30 extension is what
+// forced this: at 103 boards US States needed 90 attribute slots against a
+// pool of 20 (a ceiling of 80), which is arithmetically impossible, and the
+// generator said so by failing on 2026-11-23. The pool grew instead.
 //
 // Deterministic: a seeded RNG, so a re-run with the same arguments reproduces
 // the same bank. Do NOT hand-edit boards in puzzles.js; regenerate and re-run
@@ -84,6 +106,9 @@ const TIGHT = 8;         // a "tight" cell has at most this many valid answers
 const ATTR_CAP = 4;
 const MAX_ECHO = 2;      // attrs allowed to carry over from the universe's previous board
 const TRIES = 50000;
+// The complement rule starts here: board #17 (2026-09-05) shipped a band /
+// solo pair before the rule existed, and the past is frozen.
+const COMPLEMENT_FROM = '2026-10-05';
 
 function mulberry32(a) {
   return function () {
@@ -93,7 +118,10 @@ function mulberry32(a) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-const rnd = mulberry32(SEED);
+// The seed is OFFSET by the starting board number, so a continuation cannot
+// replay the RNG stream that produced the frozen segment. A from-scratch
+// generate starts at board 1 and so takes offset 0, reproducing byte for byte.
+const rnd = mulberry32(SEED + START_NUM - 1);
 
 function weightedPick(pool, n, rand) {
   const out = [];
@@ -126,7 +154,28 @@ function isSunday(iso) {
   return new Date(`${iso}T12:00:00Z`).getUTCDay() === 0;
 }
 
-function buildBoard(universe, size, prevAttrIds, history, usage, maxLetters, rand) {
+// Two attributes are complements when no member answers both and every member
+// answers one: together they say only "this universe, split in two".
+const setOf = (() => {
+  const cache = new Map();
+  return (universe, id) => {
+    const k = `${universe.id}:${id}`;
+    if (!cache.has(k)) {
+      const a = universe.attrs.find((x) => x.id === id);
+      cache.set(k, new Set(universe.members.filter((m) => a.test(m)).map((m) => m.t)));
+    }
+    return cache.get(k);
+  };
+})();
+function complementary(universe, idA, idB) {
+  const A = setOf(universe, idA);
+  const B = setOf(universe, idB);
+  if (A.size + B.size !== universe.members.length) return false;
+  for (const n of A) if (B.has(n)) return false;
+  return true;
+}
+
+function buildBoard(universe, size, prevAttrIds, history, usage, maxLetters, rand, banned) {
   const used = (id) => (usage[id] || 0);
   const pool = universe.attrs.filter((a) => used(a.id) < ATTR_CAP);
   // Rows are drawn at random; columns are then chosen GREEDILY so every cell
@@ -143,11 +192,12 @@ function buildBoard(universe, size, prevAttrIds, history, usage, maxLetters, ran
       if (rows.every((r) => cellMembers(universe, r, a.id).length >= MIN_CELL)) cols.push(a.id);
     }
     if (cols.length < size) continue;
-    const isLetter = (id) => /^(n|cap)-[a-z]$/.test(id);
+    const isLetter = (id) => /^(n|cap)-[a-z]$/.test(id) || id === 'vowel';
     const all = [...rows, ...cols];
     if (all.filter(isLetter).length > maxLetters) continue;
     if (all.filter((id) => prevAttrIds.has(id)).length > MAX_ECHO) continue;
     if (history.some((h) => all.filter((id) => h.has(id)).length > 4)) continue;
+    if (banned && all.some((a, i) => all.slice(i + 1).some((b) => complementary(universe, a, b)))) continue;
     let tight = 0;
     for (const r of rows) for (const c of cols) {
       if (cellMembers(universe, r, c).length <= TIGHT) tight++;
@@ -181,7 +231,8 @@ for (let i = 0; i < DAYS; i++) {
     .filter(([k]) => k.startsWith(`${universe.id}:`))
     .map(([k, v]) => [k.split(':')[1], v]));
   const board = buildBoard(universe, size, prevByUniverse[universe.id] || new Set(),
-    histByUniverse[universe.id] || [], uUsage, banked.length + i < 7 ? 1 : 2, rnd);
+    histByUniverse[universe.id] || [], uUsage, banked.length + i < 7 ? 1 : 2, rnd,
+    iso >= COMPLEMENT_FROM);
   if (!board) throw new Error(`no board found for ${iso} (${universe.id}); loosen constraints or grow the attribute pool`);
   for (const id of [...board.rows, ...board.cols]) {
     usage[`${universe.id}:${id}`] = (usage[`${universe.id}:${id}`] || 0) + 1;
@@ -212,10 +263,17 @@ const header = `// Puzzle data for Niche, the daily trivia grid. Imported ONLY b
 // Movies, Thursday TV Shows, Friday Pro Sports Teams, Saturday Musicians.
 //
 // EVERY board is proven before banking: each cell holds at least 3 valid
-// answers, the whole board admits a full set of DISTINCT answers, at least
-// one cell is tight (2+ on Sunday), at most 2 attributes carry over from that
-// universe's previous board, and none appears more than 3 times per universe
-// across the bank.
+// answers (a floor, not a target: most cells hold far more), the whole board
+// admits a full set of DISTINCT answers, at least one cell is tight, meaning
+// 8 or fewer answers (two such cells on Sunday), no more than 2 letter-fill
+// attributes appear on a board, at most 2 attributes carry over from that
+// universe's previous board, no board shares more than 4 attributes with ANY
+// earlier board of its universe, no two attributes on a board are exact
+// complements of each other (boards from 2026-10-05 on; #17 predates the
+// rule), and no attribute appears more than 4 times per universe across the
+// whole bank. That last cap is an ABSOLUTE, not a rate, so it is what sets
+// the floor under the attribute pool in app/niche/facts.js: when the
+// generator runs out of boards, grow that pool, never raise the cap.
 //
 // Do NOT hand-edit a board here. Regenerate with scripts/gen-niche.mjs and
 // re-run scripts/verify-niche.mjs.

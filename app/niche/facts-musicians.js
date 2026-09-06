@@ -13,6 +13,10 @@
 //   hall  inducted into the Rock & Roll Hall of Fame (through the 2025
 //         class; a Musical Excellence induction counts, the generous reading).
 //   fem   a solo female artist.
+//   nb    a solo act who is neither a solo female nor a solo male artist,
+//         by the artist's own public statement. Only this flag keeps the
+//         'male' attribute (a solo act that is neither fem nor nb) honest;
+//         without it a non-binary act would be judged male by omission.
 //   rap   a hip-hop or rap act. Generous at the pop edge (Post Malone, Doja
 //         Cat, Lizzo and Bad Bunny are in), because a false accept costs a
 //         shrug and a false reject costs a guess.
@@ -157,7 +161,7 @@ export const MUSICIANS = [
   { t: 'Amy Winehouse', uk: 1, fem: 1 },
   { t: 'Adele', uk: 1, aoty: 1, fem: 1 },
   { t: 'Ed Sheeran', uk: 1 },
-  { t: 'Sam Smith', uk: 1 },
+  { t: 'Sam Smith', uk: 1, nb: 1 },
   { t: 'One Direction', band: 1, uk: 1 },
   { t: 'Harry Styles', uk: 1, aoty: 1 },
   { t: 'Dua Lipa', uk: 1, fem: 1 },
@@ -205,3 +209,23 @@ export const MUSICIANS = [
   { t: 'Lorde', fem: 1 },
   { t: 'Sia', fem: 1 },
 ];
+
+// ── named memberships ────────────────────────────────────────────────────────
+// Published, closed rosters, kept as lists rather than per-row flags so each
+// is auditable at a glance. scripts/verify-niche.mjs asserts both the size of
+// every list and that every name in it resolves to a member, so a typo cannot
+// quietly shrink an attribute.
+
+// Acts that have performed in a Super Bowl halftime show, through Super Bowl
+// LX (February 2026). Generous: a billed guest counts, not only the
+// headliner, so Missy Elliott (2015), Nicki Minaj (2012) and 50 Cent (2022)
+// are in. National-anthem performances are NOT halftime and do not count.
+export const HALFTIME = new Set(['Michael Jackson', 'Diana Ross', 'ZZ Top', 'The Temptations', 'Stevie Wonder', 'Phil Collins', 'Christina Aguilera', 'Aerosmith', 'NSYNC', 'Britney Spears', 'U2', 'Shania Twain', 'No Doubt', 'Sting', 'Janet Jackson', 'Justin Timberlake', 'Paul McCartney', 'The Rolling Stones', 'Prince', 'Bruce Springsteen', 'The Who', 'Usher', 'Madonna', 'Nicki Minaj', 'Beyoncé', "Destiny's Child", 'Bruno Mars', 'Red Hot Chili Peppers', 'Katy Perry', 'Missy Elliott', 'Coldplay', 'Lady Gaga', 'Maroon 5', 'Travis Scott', 'Shakira', 'Bad Bunny', 'The Weeknd', 'Dr. Dre', 'Snoop Dogg', 'Eminem', 'Kendrick Lamar', '50 Cent', 'Rihanna', 'SZA']);
+
+// Grammy Record of the Year winners, through the 2025 ceremony. Generous: a
+// credited featured artist counts, which is how Bruno Mars is in for Uptown
+// Funk and Ray Charles for a duet.
+export const ROTY = new Set(['Frank Sinatra', 'Simon & Garfunkel', 'Carole King', 'The Eagles', 'Billy Joel', 'Toto', 'Michael Jackson', 'Tina Turner', 'Paul Simon', 'Phil Collins', 'Eric Clapton', 'Whitney Houston', 'Celine Dion', 'Santana', 'U2', 'Norah Jones', 'Coldplay', 'Ray Charles', 'Green Day', 'Amy Winehouse', 'Adele', 'Daft Punk', 'Sam Smith', 'Bruno Mars', 'Billie Eilish', 'Lizzo', 'Miley Cyrus', 'Kendrick Lamar']);
+
+// Grammy Best New Artist winners, through the 2025 ceremony.
+export const BEST_NEW = new Set(['The Beatles', 'Cyndi Lauper', 'Mariah Carey', 'Lauryn Hill', 'Christina Aguilera', 'Alicia Keys', 'Norah Jones', 'Maroon 5', 'John Legend', 'Carrie Underwood', 'Amy Winehouse', 'Adele', 'Sam Smith', 'Dua Lipa', 'Billie Eilish', 'Olivia Rodrigo', 'Chappell Roan']);

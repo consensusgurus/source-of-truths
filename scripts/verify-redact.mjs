@@ -148,6 +148,11 @@ for (const p of PUZZLES) {
   prev = p;
 }
 
-if (PUZZLES.length !== 60) { bad++; console.error(`bank size ${PUZZLES.length} != 30`); }
+// Hardcoded bank size, per the CLAUDE-QUIZZES section 7e gotcha: it is the only
+// thing here that catches a board silently dropped from the array, so it must be
+// bumped in the SAME commit that extends the bank. 60 -> 117 on 2026-09-06, when
+// scripts/gen-redact.mjs added 2026-10-05..2026-11-30.
+const BANK_SIZE = 117;
+if (PUZZLES.length !== BANK_SIZE) { bad++; console.error(`bank size ${PUZZLES.length} != ${BANK_SIZE}`); }
 if (bad) { console.error(`\nFAIL: ${bad} problems`); process.exit(1); }
 console.log('\nverify-redact: PASS');

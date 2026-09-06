@@ -13,8 +13,65 @@
 // Question ids are 'd<day>q<slot>', the day zero padded to two digits and
 // widening to three past day 99, the slot always two. Each day's qids must
 // carry that day's own number as their prefix.
+//
+// TWO WHOLE-BANK CHECKS RUN OVER A DATED COPY WINDOW, not per day:
+//
+//   US SPELLINGS (authoring standard rule 8, bulk rule 4). Every reader-facing
+//   string (the stem and all four choices) goes through the shared screen in
+//   scripts/us-spellings.mjs. Real titles and names keep their own spelling, so
+//   SPELL_ALLOW below lists the proper nouns that are skipped verbatim: the
+//   International Labour Organization is the body's actual name and Philip
+//   Armour is a man, exactly as the brief's Australian Labor Party, Lloyd's and
+//   Labour Party are. BIZ_BRITISH is a small local supplement for the families
+//   the shared list misses; see the comment on it.
+//
+//   ANSWER REUSE, COUNTED ACROSS THE WHOLE WINDOW rather than per day (rule 7,
+//   bulk rule 3). Per-day legality passes happily on a bank that answers
+//   "Amazon" forty times, which is how Rung, Listed, Mate, Four and Crux all
+//   degraded. The ceiling is ANSWER_CAP: no answer may be correct more than
+//   four times in the window. Answers are counted with a leading "the"
+//   stripped, so "The Bubble Act" and "Bubble Act" are one answer.
+//
+// BOTH ARE SCOPED FROM A DATED COPY FLOOR (rule 10, "the past is frozen").
+// BIZ_COPY_FROM is the first live date the new rules apply to; days before it
+// shipped under the old rules and are history, not a backlog. Days 1-39 spell
+// "nationalised", "unauthorised" and "cancelled", and answer Starbucks four
+// times before this window even opens; retrofitting them would rewrite boards
+// people have played.
 import { QUESTIONS, QUESTION_MAP } from '../app/biz/questions.js';
 import { PUZZLES } from '../app/biz/puzzles.js';
+import { scanUS } from './us-spellings.mjs';
+
+// The first live date the US-spelling screen and the answer-reuse ceiling
+// apply to. It is day 40, the first day of the 2026-10-05..2026-11-30 segment;
+// everything before it is frozen.
+const BIZ_COPY_FROM = '2026-10-05';
+// No answer may be correct more than this many times at or after the floor.
+const ANSWER_CAP = 4;
+// Proper names that keep their own spelling; skipped verbatim by the screen
+// before either word list runs over the string.
+const SPELL_ALLOW = [
+  'The International Labour Organization', 'International Labour Organization',
+  'Philip Armour', 'Armour and Company',
+  'Australian Labor Party', "Lloyd's", 'Labour Party',
+];
+// Families of British form the authoring brief names by hand (rule 4:
+// "...programme, grey, metre, centre, harbour, favourite, kilometre,
+// tricolour") that the shared list in us-spellings.mjs does not carry: it has
+// 'metre' and 'litre' but matches on word boundaries, so 'kilometre' slips
+// through, and it has no 'tricolour' at all. The doubled-l family is sampled
+// there rather than exhausted, so the forms a business writer actually reaches
+// for -- 'unravelled' a company, 'modelled' a forecast, 'signalled' a cut --
+// are listed here too. Kept local rather than pushed into the shared file,
+// because that file screens several other games against their own dated floors
+// and a new entry there can fail copy nobody is looking at.
+const BIZ_BRITISH = [
+  ['tricolours', 'tricolors'], ['tricolour', 'tricolor'],
+  ['kilometres', 'kilometers'], ['kilometre', 'kilometer'],
+  ['modelled', 'modeled'], ['unravelled', 'unraveled'], ['marshalled', 'marshaled'],
+  ['counselling', 'counseling'], ['signalling', 'signaling'], ['spiralling', 'spiraling'],
+  ['cancelling', 'canceling'], ['labelling', 'labeling'], ['fuelling', 'fueling'],
+].map(([brit, us]) => [new RegExp(`\\b${brit}\\b`, 'i'), us]);
 
 const errs = [];
 const warns = [];
@@ -94,6 +151,7 @@ for (const [, group] of byAnswer) {
 
 // ---- day-level ------------------------------------------------------------
 const usedQids = new Map();
+const liveOf = new Map();   // qid -> the live date of the day that plays it
 const dates = [];
 
 for (const p of PUZZLES) {
@@ -110,6 +168,7 @@ for (const p of PUZZLES) {
     if (!id.startsWith(wantPrefix)) fail(`${tag}: qid ${id} does not carry this day's prefix ${wantPrefix}`);
     if (usedQids.has(id)) fail(`${tag}: qid ${id} already used on day ${usedQids.get(id)}`);
     usedQids.set(id, p.num);
+    liveOf.set(id, p.live);
     const q = QUESTION_MAP[id];
     if (!q) { fail(`${tag}: qid ${id} is not in the bank`); continue; }
     qs.push(q);
@@ -147,6 +206,40 @@ for (let i = 1; i < dates.length; i++) {
   if (cur - prev !== 86400000) fail(`day ${PUZZLES[i].num}: ${dates[i]} does not follow ${dates[i - 1]} by one day`);
 }
 
+// ---- copy window: US spellings and the answer-reuse ceiling ---------------
+// Both are scoped to days live on or after BIZ_COPY_FROM, so the frozen past is
+// not retroactively failed. A question no day plays has no live date and so is
+// outside the window; the orphan warning below is what catches those.
+const inWindow = QUESTIONS.filter((q) => (liveOf.get(q.id) || '') >= BIZ_COPY_FROM);
+
+for (const q of inWindow) {
+  for (const s of [q.q, ...(q.choices || [])]) {
+    for (const hit of scanUS(s, SPELL_ALLOW)) fail(`${q.id}: British spelling "${hit.found}" in copy (US: ${hit.us})`);
+    // The local supplement gets the same proper-name exemption as the shared
+    // screen, so a real name is skipped once rather than twice.
+    let bare = String(s);
+    for (const a of SPELL_ALLOW) if (a && bare.includes(a)) bare = bare.split(a).join(' ');
+    for (const [re, us] of BIZ_BRITISH) {
+      const m = bare.match(re);
+      if (m) fail(`${q.id}: British spelling "${m[0]}" in copy (US: ${us})`);
+    }
+  }
+}
+
+const answerUse = new Map();
+for (const q of inWindow) {
+  const a = norm(q.choices[q.correct]).replace(/^the /, '');
+  if (!a) continue;
+  if (!answerUse.has(a)) answerUse.set(a, []);
+  answerUse.get(a).push(q.id);
+}
+for (const [, ids] of answerUse) {
+  if (ids.length > ANSWER_CAP) {
+    const q = QUESTION_MAP[ids[0]];
+    fail(`"${q.choices[q.correct]}" is the correct answer ${ids.length} times since ${BIZ_COPY_FROM}, over the ceiling of ${ANSWER_CAP} (${ids.join(', ')})`);
+  }
+}
+
 const orphans = QUESTIONS.filter((q) => !usedQids.has(q.id));
 if (orphans.length) warn(`${orphans.length} questions in the bank are not used by any day (${orphans.slice(0, 5).map((q) => q.id).join(', ')}...)`);
 
@@ -158,3 +251,4 @@ if (errs.length) {
   process.exit(1);
 }
 console.log(`ok: ${QUESTIONS.length} questions, ${PUZZLES.length} days, ${dates[0]} to ${dates[dates.length - 1]}, ${warns.length} warning${warns.length === 1 ? '' : 's'}.`);
+console.log(`    copy window from ${BIZ_COPY_FROM}: ${inWindow.length} questions screened for British spellings, ${answerUse.size} distinct answers, none over ${ANSWER_CAP}.`);

@@ -22,6 +22,12 @@
 //   8. bank hygiene: nums sequential from 1, quizIds match the live date, dates
 //      are consecutive days, the sunday flag matches the real weekday, and each
 //      board carries exactly the elements its weekday tier is allowed.
+//   9. pool variety across the WHOLE run, not per board: no two boards share a
+//      river, a ridge or a town set, and no single par, greedy-over-par gap,
+//      river start column or jog count owns more than its share of a tier. The
+//      per-board checks above all pass on a bank that is the same puzzle every
+//      day, which is what this one is for. Scoped to PATHS_VARIETY_FROM, since
+//      the launch bank predates the rule and the past is frozen.
 //
 // Tiers ramp across the week. 1 is Monday to Wednesday (open, ridge, river), 2
 // is Thursday (cliffs), 3 is Friday and Saturday (old track, nine towns), 4 is
@@ -32,7 +38,8 @@
 //        node scripts/verify-paths.mjs 1-20       verify boards 1 to 20 only
 //
 // The 13x13 Sunday boards take a few seconds each to re-solve, so the whole
-// bank is a minute or two. The range argument exists for running it in pieces.
+// bank is a minute or two. The range argument exists for running it in pieces;
+// the variety pass always measures the whole bank regardless of the range.
 import { PUZZLES as ALL } from '../app/paths/puzzles.js';
 
 const range = (process.argv[2] || '').match(/^(\d+)-(\d+)$/);
@@ -253,6 +260,76 @@ for (const p of PUZZLES) {
     }
     if (bite < spec.bite) note(p, `only ${bite} cliffs change the answer, tier ${p.tier} wants ${spec.bite}, so they are scenery`);
   }
+}
+
+// ---------------------------------------------------------------------------
+// 9. POOL VARIETY, counted across the WHOLE RUN rather than per board.
+//
+// Everything above is a per-board check, and a bank of 117 nine-town lattices
+// passes all of it while being the same puzzle wearing different coordinates
+// every day. These are the ceilings on repetition. They are scoped to boards
+// living on or after PATHS_VARIETY_FROM, because the launch bank predates the
+// rule and the past is frozen (authoring standard rule 10); the three
+// fingerprint axes still compare a new board against the WHOLE bank, frozen
+// boards included, so a new board can never reuse an old board's river, ridge
+// or town set.
+//
+//   never repeated, anywhere in the bank:
+//     the river profile `rx`, the ridge footprint `hills`, the town set `terms`
+//   at most ceil(0.40 x that tier's in-scope boards) may share:
+//     the same par · the same greedy-over-par gap · the same river start
+//     column · a gap sitting exactly on the tier's floor
+//   at most ceil(0.50 x that tier's in-scope boards) may share:
+//     the same number of river jogs
+//   at most ceil(0.40 x all in-scope boards) may put the depot in the same
+//     quadrant of the lattice
+//
+// These run over ALL boards, never the `range` subset, so asking for a slice
+// still measures the whole run. scripts/gen-paths.mjs enforces the identical
+// ceilings while it searches, and its header says so.
+const PATHS_VARIETY_FROM = '2026-10-05';
+const bankNote = (msg) => fail.push(`bank variety: ${msg}`);
+const sortJoin = (a) => a.slice().sort((x, y) => x - y).join(',');
+const FINGERPRINT = {
+  river: (p) => `${p.n}|${p.rx.join(',')}`,
+  ridge: (p) => `${p.n}|${sortJoin(p.hills)}`,
+  towns: (p) => `${p.n}|${sortJoin(p.terms)}`,
+};
+for (const [what, sig] of Object.entries(FINGERPRINT)) {
+  const first = new Map();
+  for (const p of ALL) {
+    const s = sig(p);
+    if (!first.has(s)) { first.set(s, p); continue; }
+    const other = first.get(s);
+    if (p.live >= PATHS_VARIETY_FROM) note(p, `has the same ${what} as #${other.num} (${other.live})`);
+  }
+}
+const fresh = ALL.filter((p) => p.live >= PATHS_VARIETY_FROM);
+if (fresh.length) {
+  const tally = (a, f) => a.reduce((o, p) => { const k = f(p); o[k] = (o[k] || 0) + 1; return o; }, {});
+  const jogsOf = (p) => p.rx.filter((v, i) => i && v !== p.rx[i - 1]).length;
+  const worst = (t) => Object.entries(t).sort((a, b) => b[1] - a[1])[0] || ['-', 0];
+  for (const t of [1, 2, 3, 4]) {
+    const a = fresh.filter((p) => p.tier === t);
+    if (!a.length) continue;
+    const cap = Math.ceil(0.40 * a.length), jogCap = Math.ceil(0.50 * a.length);
+    const axes = [
+      ['par', tally(a, (p) => p.par), cap],
+      ['greedy-over-par gap', tally(a, (p) => p.greedy - p.par), cap],
+      ['river start column', tally(a, (p) => p.rx[0]), cap],
+      ['river jog count', tally(a, jogsOf), jogCap],
+    ];
+    for (const [what, t2, lim] of axes) {
+      const [val, n2] = worst(t2);
+      if (n2 > lim) bankNote(`tier ${t}: ${n2} of ${a.length} boards share ${what} ${val}, ceiling is ${lim}`);
+    }
+    const onFloor = a.filter((p) => p.greedy - p.par === TIER[t].gap).length;
+    if (onFloor > cap) bankNote(`tier ${t}: ${onFloor} of ${a.length} boards sit exactly on the gap floor of ${TIER[t].gap}, ceiling is ${cap} — a floor is not a target`);
+  }
+  const quad = tally(fresh, (p) => (p.terms[0] % p.n < p.n / 2 ? 'L' : 'R') + (((p.terms[0] / p.n) | 0) < p.n / 2 ? 'T' : 'B'));
+  const qCap = Math.ceil(0.40 * fresh.length);
+  const [qv, qn] = Object.entries(quad).sort((a, b) => b[1] - a[1])[0];
+  if (qn > qCap) bankNote(`${qn} of ${fresh.length} boards put the depot in quadrant ${qv}, ceiling is ${qCap}`);
 }
 
 const days = PUZZLES.length;

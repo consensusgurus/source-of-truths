@@ -10,8 +10,11 @@
 //   - the weekday ramp (Mon 5, Tue 6, Wed 7, Thu 8, Fri 8, Sat 9, Sunday
 //     Edition 12) with `sunday` matching the real day of week;
 //   - num/quizId/live/dateLabel mutually consistent and daily-consecutive;
-//   - pool variety: no duplicate positions, a pawn file at most 8 times and
-//     never two days running, pawn-move keys roughly a third of the bank.
+//   - pool variety: no duplicate positions and no duplicate SHAPES (a position
+//     and its left-right mirror are one puzzle, not two), a pawn file never two
+//     days running and never over its share of the bank (see FILE_CAP), no key
+//     move over-used (see KEY_CAP, which is grandfathered -- see below), and
+//     pawn-move keys roughly a third of the bank.
 //
 // INDEPENDENT SOLVER, per the two-solvers rule: this file re-proves the win
 // with its own depth-bounded search (promoteWithin), never importing
@@ -29,6 +32,45 @@ const ok = (msg) => console.log(`✓ ${msg}`);
 
 const MAXN = 19; // deepest K+P win that exists (measured census); the "throws
                  // it away outright" test asks for no promotion within this.
+
+// How often one pawn file may carry the bank. This was a bare `8`, written when
+// the bank was 45 boards long, and read as an absolute tally: "a pawn file at
+// most 8 times per bank". As an absolute it is not a variety rule at all past
+// 64 boards -- 8 files x 8 boards is 64 slots, so any bank longer than that
+// fails the check by pigeonhole no matter how well it is dealt, and the 102nd
+// board of a bank running to 2026-11-30 could never be legal. It is therefore
+// read here as the RATE it always meant: no file more than 40% above an even
+// eighth of the bank, rounded up. That is exactly 8 for the 45-board bank the
+// constant was sized for (45/8 x 1.4 = 7.875), so nothing already shipped is
+// judged more leniently than before, and 18 at 102 boards, where an even deal
+// is 12.75 -- still a genuine cap on one file running away with the bank. The
+// current deal peaks at 13, so it is nowhere near this line.
+// scripts/gen-queen.mjs carries the identical formula.
+const FILE_CAP = Math.ceil((PUZZLES.length / 8) * 1.4);
+
+// Two variety ceilings the bank's header promises and nothing used to check.
+//
+// SHAPES. Queen is three pieces on an empty board, so a position and its
+// left-right reflection are the same puzzle: same key, same opposition, same
+// lesson, drawn on the other wing. Comparing FENs alone let a mirror pair read
+// as two boards to the checker and as one board to a solver. Checked over the
+// whole bank -- the 45 boards live before this check existed already hold 45
+// distinct shapes, so nothing is grandfathered here.
+//
+// KEY MOVES. The key vocabulary is tiny (57 distinct keys over 102 boards), so
+// a deal that does not spread them answers "c4" nine times. At most KEY_CAP
+// boards may share a key. Like FILE_CAP this is deliberately a RATE, 5% of the
+// scoped boards with a floor of 3, and for the same reason: an absolute is a
+// variety rule at one bank length and an impossibility at another, and the key
+// vocabulary is finite, so any fixed number is a wall some future extension
+// walks into. 5% still bites hard -- the first-fit deal this replaced put one
+// key on 14% of a segment -- while needing only 20 distinct keys to be
+// satisfiable at any length. This cap IS grandfathered: boards live before
+// KEY_CAP_FROM were dealt without the rule and one of them, c4, is already the
+// key 7 times, so it is scoped to boards from that date on, per the frozen-past
+// rule. Boards from KEY_CAP_FROM currently peak at 2 against a cap of 3.
+const KEY_CAP_FROM = '2026-10-05';
+const KEY_CAP = Math.max(3, Math.ceil(PUZZLES.filter((x) => x.live >= KEY_CAP_FROM).length * 0.05));
 
 // ─── an independent, board-array chess-let for K+P vs k ────────────────────
 const R = (sq) => sq >> 3, F = (sq) => sq & 7;
@@ -152,6 +194,14 @@ function makeSearch() {
 // ─── the bank checks ───────────────────────────────────────────────────────
 const RAMP = { 1: 5, 2: 6, 3: 7, 4: 8, 5: 8, 6: 9, 0: 12 };
 const seenFen = new Set();
+const seenShape = new Map();
+const keyUse = new Map();
+const shapeOf = (st) => {
+  const m = (sq) => R(sq) * 8 + (7 - F(sq));
+  const a = (st.wk * 64 + st.bk) * 64 + st.p;
+  const b = (m(st.wk) * 64 + m(st.bk)) * 64 + m(st.p);
+  return Math.min(a, b);
+};
 const fileCount = new Array(8).fill(0);
 let lastFile = -1, prevLive = null, pawnKeys = 0;
 
@@ -219,15 +269,23 @@ for (const p of PUZZLES) {
   // 5. variety bookkeeping
   if (seenFen.has(p.fen)) fail(id, 'duplicate position');
   seenFen.add(p.fen);
+  const shape = shapeOf(st);
+  if (seenShape.has(shape)) fail(id, `same shape as ${seenShape.get(shape)} (mirror image)`);
+  else seenShape.set(shape, id);
+  if (p.live >= KEY_CAP_FROM) keyUse.set(p.keySan, (keyUse.get(p.keySan) || 0) + 1);
   const pf = F(st.p);
   fileCount[pf]++;
   if (pf === lastFile) fail(id, `pawn file ${pf} two days running`);
   lastFile = pf;
 }
 if (PUZZLES[0] && PUZZLES[0].live !== '2026-08-21') fail('bank', `first live ${PUZZLES[0].live}`);
-for (let f = 0; f < 8; f++) if (fileCount[f] > 8) fail('bank', `pawn file ${f} used ${fileCount[f]} times (max 8)`);
+for (let f = 0; f < 8; f++) if (fileCount[f] > FILE_CAP) fail('bank', `pawn file ${f} used ${fileCount[f]} times (max ${FILE_CAP} for a ${PUZZLES.length}-board bank)`);
 if (PUZZLES.length >= 40 && (pawnKeys < PUZZLES.length * 0.2 || pawnKeys > PUZZLES.length * 0.45)) {
   fail('bank', `${pawnKeys} pawn-move keys of ${PUZZLES.length}, want roughly a third`);
+}
+const keyScoped = PUZZLES.filter((x) => x.live >= KEY_CAP_FROM).length;
+for (const [san, n] of keyUse) {
+  if (n > KEY_CAP) fail('bank', `key ${san} used ${n} times from ${KEY_CAP_FROM} (max ${KEY_CAP} over ${keyScoped} scoped boards)`);
 }
 const sundays = PUZZLES.filter((x) => x.sunday).length;
 console.log(`checked ${PUZZLES.length} boards (${sundays} Sunday Editions, ${pawnKeys} pawn keys)`);

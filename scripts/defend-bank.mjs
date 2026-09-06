@@ -17,10 +17,13 @@
 // dealt by a SEEDED shuffle, which is what stops any accidental correlation
 // between weekday and difficulty creeping back in.
 //
-// A MOTIF STRING IS NOT ALLOWED TO REPEAT MORE THAN TWICE. The motif is
-// reader-facing flavour and the pool is machine-written, so without a ceiling a
-// bank happily ships the same sentence a dozen times. The bank verifier enforces
-// the same ceiling; this is what stops it from ever firing.
+// A MOTIF STRING IS NOT ALLOWED TO REPEAT MORE THAN TWICE, counted across the
+// WHOLE bank including the frozen boards. The motif is reader-facing flavour and
+// the pool is machine-written, so without a ceiling a bank happily ships the same
+// sentence a dozen times. The bank verifier enforces the same ceiling; this is
+// what stops it from ever firing. The ceiling is only the limit: the deal is also
+// partitioned so every fresh sentence in the pool is spent before any sentence is
+// spoken twice (see spread() below).
 //
 // Sundays are drawn from the deeper pool and weekdays from the shallower one,
 // matched to the real weekday of each date, so the `sunday` flag can never
@@ -50,8 +53,15 @@ for (const f of files) {
 // dealt again to a future date.
 const frozenPositions = new Set(EXISTING.filter((p) => p.live <= freeze).map((p) => p.fen.split(' ')[0]));
 
-function capMotifs(list) {
+// THE CEILING IS WHOLE-BANK, so the frozen boards' motifs are counted BEFORE the
+// pool is filtered. The first version of this started from an empty tally, which
+// is only harmless while the freeze date is launch day: extending a 56-board
+// bank, a candidate carrying a sentence two live boards already use passes the
+// pool-local cap and then fails verify-defend.mjs's bank-wide one. Seeding the
+// tally from history is what makes the two agree.
+function capMotifs(list, priorMotifs) {
   const used = new Map();
+  for (const m of priorMotifs) used.set(m, (used.get(m) || 0) + 1);
   return list.filter((c) => {
     const n = used.get(c.motif) || 0;
     if (n >= MOTIF_CEILING) return false;
@@ -87,9 +97,30 @@ const open = dates.filter((d) => d > freeze);
 const sundays = open.filter((d) => dowOf(d) === 0);
 const weekdays = open.filter((d) => dowOf(d) !== 0);
 
-const usable = capMotifs(pool.filter((c) => !frozenPositions.has(c.fen.split(' ')[0])));
-const wkPool = shuffled(usable.filter((c) => c.holdFor === WEEKDAY_HOLD), 0x5eed01);
-const suPool = shuffled(usable.filter((c) => c.holdFor === SUNDAY_HOLD), 0x5eed02);
+// THE CEILING IS THE LIMIT, NOT THE PLAN. Two boards a motif is what the bank
+// is allowed to ship; what it should ship is a different sentence every day for
+// as long as the pool can pay for it. So the shuffled pool is stably partitioned
+// into motifs not yet spoken for and motifs already used, and the deal takes
+// from the front: a repeat is reached only once the run of fresh sentences is
+// exhausted. Stable, so the seeded shuffle still decides WHICH board lands on
+// which date. Sundays are spread first because the deep pool is the small one
+// and has the least room to be picky.
+function spread(list, used) {
+  const fresh = [], again = [];
+  for (const c of list) (used.has(c.motif) ? again : fresh).push(c);
+  for (const c of fresh) used.add(c.motif);
+  return fresh.concat(again);
+}
+
+const frozenMotifs = EXISTING.filter((p) => p.live <= freeze).map((p) => p.motif);
+const usable = capMotifs(pool.filter((c) => !frozenPositions.has(c.fen.split(' ')[0])), frozenMotifs);
+// The deal seed is OFFSET by the first new board number, so the segment starting
+// at board 57 cannot draw its pool in the same order the segment starting at
+// board 2 did. Same pool in, same bank out; a diff means something really moved.
+const startNum = dates.findIndex((d) => d > freeze) + 1;
+const spoken = new Set(frozenMotifs);
+const suPool = spread(shuffled(usable.filter((c) => c.holdFor === SUNDAY_HOLD), 0x5eed02 + startNum), spoken);
+const wkPool = spread(shuffled(usable.filter((c) => c.holdFor === WEEKDAY_HOLD), 0x5eed01 + startNum), spoken);
 if (wkPool.length < weekdays.length) throw new Error(`need ${weekdays.length} weekday boards, pool has ${wkPool.length}`);
 if (suPool.length < sundays.length) throw new Error(`need ${sundays.length} Sunday boards, pool has ${suPool.length}`);
 
@@ -176,11 +207,18 @@ const HEADER = `// Puzzle data for Defend, the daily chess save. Imported ONLY b
 //             look like a defence. Always at least five, so the key always has
 //             at least four convincing decoys beside it. The launch bank ran a
 //             floor of three and players simply tried each parry in turn.
-//   motif     the defensive idea, revealed only to a player who survived.
+//   motif     the defensive idea, revealed only to a player who survived. NO
+//             MOTIF SENTENCE APPEARS ON MORE THAN TWO BOARDS in the whole bank.
+//             The pool is machine-written, so without a ceiling one sentence
+//             happily ships a dozen times; scripts/defend-bank.mjs deals under
+//             the cap and scripts/verify-defend.mjs (MOTIF_CEILING) fails the
+//             bank if it is ever exceeded.
 //
-// Boards 1 through ${EXISTING.filter((p) => p.live <= freeze).length} are FROZEN: they were live under the launch rules
-// (hold for two, three parries) and their scores are on the leaderboard, so they
-// are kept exactly as they shipped rather than regenerated.
+// Boards 1 through ${EXISTING.filter((p) => p.live <= freeze).length} are FROZEN: they have been live, their scores are on the
+// leaderboard, and they are copied out of the previous bank verbatim rather than
+// regenerated. Board ${EXISTING.filter((p) => p.live < '2026-08-12').length === 1 ? '1 alone predates' : `1 through ${EXISTING.filter((p) => p.live < '2026-08-12').length} predate`} the 2026-08-12 rules change and still
+// runs the launch floors (hold for two, three parries); every board after it is
+// held to the modern ones.
 //
 // Every board was checked three times: by the generator's fast sift, by the
 // shipped engine re-deriving the whole claim before it was written, and by
