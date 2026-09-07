@@ -507,13 +507,16 @@ function runOf(key, num) {
 function compareRuns(key, rows) {
   const nums = rows.map((r) => Number(r.num)).filter(Number.isFinite);
   if (!nums.length) return null;
-  // The current puzzle is the one number the archive leaves out: the newest
-  // on a live day, a gap in the middle on a replay.
+  // The current puzzle is the one number the archive leaves out: a gap
+  // inside the range on a replay (the highest gap, should the bank ever skip
+  // a number), and max + 1 on a live day, when there is no gap. Counting down
+  // from max + 1 first was wrong on a replay: the day after the replayed one
+  // is a live row, so max + 1 is always missing and 29 read as 32.
   const set = new Set(nums);
   const max = Math.max(...nums), lo = Math.min(...nums);
   let cur = null;
-  for (let n = max + 1; n >= lo; n -= 1) { if (!set.has(n)) { cur = n; break; } }
-  if (cur == null) return null;
+  for (let n = max; n >= lo; n -= 1) { if (!set.has(n)) { cur = n; break; } }
+  if (cur == null) cur = max + 1;
   const today = runOf(key, cur);
   if (!today) return null;
   const prior = rows.filter((r) => r.done && Number(r.num) < cur)
