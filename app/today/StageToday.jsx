@@ -314,7 +314,7 @@ const leadRankOf = (id) => {
 // one they shut by hand stays shut where the default would open it.
 const SHELF_OPEN_KEY = 'sot_shelf_open';
 const MINE_ID = 'sty-mine';
-const UNF_MAX = 4;   // unfinished sets shown on the band before 'and N more'
+const UNF_MAX = 6;   // unfinished sets shown on the band before 'and N more': two rows of three
 const CIRC_ID = 'sty-circs';
 // The Word category's section id, the same shape the render derives for every
 // category (`cat-${cat}` with spaces dashed), named here so the open-by-default
@@ -2406,13 +2406,15 @@ ${PATCH_CSS}
 .sty-cathead{display:flex;align-items:baseline;gap:11px;margin-bottom:10px;}
 /* Unfinished business: one row per open set, the set's own hue on its rule,
    its pips and its control; the section rule is gold (see the JSX note). */
-.sty-unfl{display:flex;flex-direction:column;gap:8px;}
-.sty-unfr{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--stg-ink);
+/* Two or three across where the width allows (owner, 2026-09-07), one on a
+   phone: a set row is short, and a column of them was a page. */
+.sty-unfl{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));}
+.sty-unfr{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--stg-ink);min-width:0;
   background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:10px;padding:10px 12px;}
 .sty-unfr:hover{border-color:var(--stg-line2);}
 .sty-unfc{flex:none;width:3px;height:30px;border-radius:2px;background:var(--sc);}
 .sty-unfb{min-width:0;display:flex;flex-direction:column;gap:2px;}
-.sty-unfn{font-size:15px;font-weight:800;}
+.sty-unfn{font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sty-unfs{font-size:12px;color:var(--stg-mute);}
 .sty-unfp{display:flex;gap:2px;margin-top:2px;}
 .sty-unfp s{text-decoration:none;display:block;width:6px;height:10px;border-radius:1.5px;background:var(--sc);opacity:.3;}
