@@ -22,6 +22,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { DAILY_GAMES, liveDailyKeys } from '@/lib/daily-games';
 import { RAMP_ORDER, RAMP_INK, categoryColor, categoryColorLight, categoryOnrampLight } from '@/lib/category-ramp';
+import { groupOf, groupsIn } from '@/lib/daily-groups';
 // THE REGISTER PICKS THE HUE, and this file is why that rule needs saying a
 // second time. Every other stage surface publishes BOTH twins of its category
 // step (--stg-acc-dk / --stg-acc-lt) and lets globals.css choose one; this one
@@ -126,6 +127,13 @@ const FLOOD_STAMP = 520;    // every other figure lands this far after the last
 // from it along the rest of the category, so its dwell is the ripple's reach.
 const FLOOD_RACK = 1100;
 const RACK_HIT = 260;       // the new pip stamps this far after the rack appears
+// THE SET COMPLETING (owner, 2026-09-07): the last pip of a group lands, the
+// rack swells once with a Set complete tag, then the group's pips shrink to
+// category size while the rest of the category expands in around them and the
+// count restamps as the category figure. The dwell is that whole transform.
+const RACK_SWELL = 1000;    // after the rack appears: the swell and the tag
+const RACK_WIDEN = 2200;    // after the rack appears: the widen begins
+const FLOOD_RACK_WIDE = 3100;
 const FLOOD_SETTLE = 4500;  // a beat on the finished set, to read it whole
 // HOW LONG THE QUEUE WILL BLOCK ON A FIGURE THAT HAS NOT ARRIVED (owner,
 // 2026-08-31, and this is the third pass on this screen). It was anchored to
@@ -252,9 +260,14 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
     // is the last figure so the standings have settled before the screen says
     // what the day adds up to in this category. Every finish shows it, a first
     // one included (owner's call: 1 of 17 is still where the rack starts).
+    // THE RACK IS THE SET'S (owner, 2026-09-07): the three to five games this
+    // one belongs to (lib/daily-groups), with the category behind it. A category
+    // too small to have sets shows itself. `wide` marks a set just completed,
+    // whose rack transforms into the category's and needs the longer dwell.
     {
       k: 'cat', rack: true,
       has: !!(catRun && catRun.games.length),
+      wide: !!(catRun && catRun.complete),
       value: catRun ? catRun.n : null,
       label: catRun ? `of ${catRun.games.length} ${catRun.cat} today` : '',
     },
@@ -291,7 +304,7 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
       // ITS DWELL IS ITS COUNT. This is the whole point of the second pass: the
       // queue cannot move on, and the screen cannot leave, until the number has
       // finished climbing.
-      at(next.count ? FLOOD_COUNT + 180 : next.rack ? FLOOD_RACK : FLOOD_STAMP, () => setShown((s) => s + 1));
+      at(next.count ? FLOOD_COUNT + 180 : next.rack ? (next.wide ? FLOOD_RACK_WIDE : FLOOD_RACK) : FLOOD_STAMP, () => setShown((s) => s + 1));
       return;
     }
     // No value. Settled means skip; still reading means hold the queue here,
@@ -358,9 +371,12 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
         <div className="stf-fl-figs">
           {figs.map((f, i) => ((i < shown && f.has) ? (
             <div className={'stf-fl-fig' + (f.lead ? ' lead' : '') + (f.rack ? ' stf-fl-rack' : '')} key={f.k}>
-              {f.rack ? <CategoryRack run={catRun} /> : null}
-              <b>{f.count ? <>+<FloodCount to={f.value} ms={FLOOD_COUNT} /></> : f.value}</b>
-              <i>{f.label}</i>
+              {f.rack ? <CategoryRack run={catRun} /> : (
+                <>
+                  <b>{f.count ? <>+<FloodCount to={f.value} ms={FLOOD_COUNT} /></> : f.value}</b>
+                  <i>{f.label}</i>
+                </>
+              )}
             </div>
           ) : null))}
         </div>
@@ -396,28 +412,85 @@ function doneToday() {
   return out;
 }
 
-// THE RACK. One pip per live game in the category, in registry order. On the
-// flood the finished pips are lit when it appears, the new one stamps in after
-// RACK_HIT, and a ripple runs out from it through the lit ones, timed by their
-// distance from it. On the band it is the same rack at rest: no motion, so the
-// figure the flood just announced is still there once the colour has landed.
+// THE RACK. One pip per live game, in registry order. When the game belongs
+// to a SET (lib/daily-groups) the set's pips render at full size and the rest
+// of the category collapses to nothing: the figure a finisher reads is
+// "2 of 3 Crosswords", not "2 of 17 Word". On the flood the finished pips are
+// lit when it appears, the new one stamps in after RACK_HIT, and a ripple runs
+// out from it through the lit ones, timed by their distance among the VISIBLE
+// pips. If that pip completed the set, the rack swells once with a Set
+// complete tag at RACK_SWELL and at RACK_WIDEN turns wide: the set's pips
+// shrink to category size while the others expand in around them, and the
+// count restamps as the category figure. On the band it is the same rack at
+// rest: the set while it is open, the whole category once it is done.
 function CategoryRack({ run, band = false }) {
+  const g = run ? run.group : null;
+  const grouped = !!g;
+  const [wide, setWide] = useState(band ? (!grouped || !!(run && run.complete)) : !grouped);
+  const [swell, setSwell] = useState(false);
+  const complete = !!(grouped && run.complete);
+  useEffect(() => {
+    if (band || !complete) return undefined;
+    const a = setTimeout(() => setSwell(true), RACK_SWELL);
+    const b = setTimeout(() => { setSwell(false); setWide(true); }, RACK_WIDEN);
+    return () => { clearTimeout(a); clearTimeout(b); };
+  }, [band, complete]);
   if (!run || !run.games.length) return null;
-  const k = run.games.findIndex((g) => g.key === run.me);
+  const inSet = new Set(grouped ? g.games.map((x) => x.key) : []);
+  const visible = grouped ? run.games.filter((x) => inSet.has(x.key)) : run.games;
+  const k = visible.findIndex((x) => x.key === run.me);
+  const vi = new Map(visible.map((x, i) => [x.key, i]));
+  const shown = (wide || !grouped)
+    ? { n: run.n, total: run.games.length, label: `${run.cat} today` }
+    : { n: g.n, total: g.games.length, label: `${g.name} today` };
   return (
-    <span className={'stf-rack' + (band ? ' band' : '')} aria-hidden="true">
-      {run.games.map((g, i) => (
-        <s key={g.key}
-          className={g.key === run.me ? 'new' : g.done ? 'on' : ''}
-          style={(!band && g.done && g.key !== run.me) ? { animationDelay: `${RACK_HIT + Math.abs(i - k) * 45}ms` } : undefined} />
-      ))}
+    <span
+      className={'stf-rack' + (band ? ' band' : '') + (grouped ? ' grouped' : '') + (wide ? ' wide' : '') + (swell ? ' complete' : '')}
+      aria-hidden="true"
+    >
+      <span className="stf-rk-pips">
+        {run.games.map((x) => (
+          <s key={x.key}
+            className={(x.key === run.me ? 'new' : x.done ? 'on' : '') + ((!grouped || inSet.has(x.key)) ? ' g' : ' x')}
+            style={(!band && x.done && x.key !== run.me && vi.has(x.key)) ? { animationDelay: `${RACK_HIT + Math.abs(vi.get(x.key) - k) * 55}ms` } : undefined} />
+        ))}
+      </span>
+      {!band ? (
+        <>
+          {/* Keyed on the state so the widen REMOUNTS them and the stamp runs again. */}
+          <b key={wide ? 'w' : 'n'}>{shown.n}<small>of {shown.total}</small></b>
+          <i key={wide ? 'w' : 'n'}>{shown.label}</i>
+          {swell ? <em className="stf-rk-done">Set complete</em> : null}
+        </>
+      ) : null}
     </span>
   );
 }
 
-function Tile({ g, played, light }) {
+// The line under the verdict on the band, and the rack at rest beside it.
+// One component for both curtains so they cannot disagree.
+function BandCat({ run }) {
+  if (!run || !run.games.length) return null;
+  const g = run.group;
+  const total = run.games.length;
   return (
-    <a className={'stf-tile' + (played ? ' done' : '')} href={g.href || `/${g.key}`}
+    <div className="stf-bcat">
+      {g ? (run.complete
+        ? <span>{g.name} done &middot; {run.cat} &middot; {run.n} of {total} today</span>
+        : <span>{g.name} &middot; {g.n} of {g.games.length} today</span>)
+        : <span>{run.cat} &middot; {run.n} of {total} today</span>}
+      <CategoryRack run={run} band />
+      {g && !run.complete ? <span className="stf-bcat-x">&middot; {run.cat} {run.n} of {total}</span> : null}
+    </div>
+  );
+}
+
+// `set` is the highlight: a game still open in the finisher's own set (or in
+// the next set, once theirs is done) is FILLED in the accent so it is the
+// obvious next tap; the rest of the category stays the quiet outline.
+function Tile({ g, played, light, set = false }) {
+  return (
+    <a className={'stf-tile' + (played ? ' done' : '') + (set ? ' set' : '')} href={g.href || `/${g.key}`}
       style={{ '--tc': light ? categoryColorLight(g.cat) : categoryColor(g.cat) }}>
       <GameGlyph gameKey={g.key} size={14} />
       <span>{g.name}</span>
@@ -569,25 +642,73 @@ export default function StageFinish({
   useEffect(() => { setPlayed(doneToday()); }, []);
 
   const me = useMemo(() => LIVE().find((g) => g.name === name) || null, [name]);
-  // MORE OF WHAT THEY JUST PLAYED. Unplayed first, so the row leads with
-  // somewhere to actually go rather than with what they have already done.
-  const sameCat = useMemo(() => {
-    if (!me) return [];
-    return LIVE()
-      .filter((g) => g.cat === me.cat && g.key !== me.key)
-      .sort((a, b) => (played.has(a.key) - played.has(b.key)) || a.name.localeCompare(b.name))
-      .slice(0, 8);
-  }, [me, played]);
-  // WHAT THE DAY ADDS UP TO IN THIS CATEGORY. Every live game in it, in
-  // registry order, with the ones finished today (this one included, whether
-  // or not its breadcrumb has landed yet) marked done. Read by the flood's rack
-  // and by the band's line under the verdict, so the two cannot disagree.
+  // ?rackdone=1 pretends the set just completed, so the swell-and-widen can
+  // be seen on an archive replay (with ?flood=1) without finishing a real set.
+  // Review path only, like ?flood=1 itself.
+  const [forceDone, setForceDone] = useState(false);
+  useEffect(() => { setForceDone(/[?&]rackdone=1(&|$)/.test(window.location.search)); }, []);
+
+  // WHAT THE DAY ADDS UP TO, in this game's SET and in its category. Every
+  // live game in the category, registry order, with the ones finished today
+  // (this one included, whether or not its breadcrumb has landed yet) marked
+  // done; the set (lib/daily-groups) as the subset the rack leads with; and,
+  // once the set is done, the next set in the category with something open,
+  // which is what Up next and the tiles hand over to. Read by the flood's
+  // rack, the band's line, Up next and the tiles, so none can disagree.
   const catRun = useMemo(() => {
     if (!me) return null;
-    const games = LIVE().filter((g) => g.cat === me.cat)
-      .map((g) => ({ key: g.key, done: played.has(g.key) || g.key === me.key }));
-    return { cat: me.cat, me: me.key, games, n: games.filter((g) => g.done).length };
-  }, [me, played]);
+    const grp = groupOf(me.key);
+    const inCat = LIVE().filter((g) => g.cat === me.cat);
+    const done = (g) => played.has(g.key) || g.key === me.key || (forceDone && !!grp && grp.keys.includes(g.key));
+    const games = inCat.map((g) => ({ key: g.key, done: done(g) }));
+    const group = grp ? (() => {
+      const gg = grp.keys.map((k) => inCat.find((g) => g.key === k)).filter(Boolean)
+        .map((g) => ({ key: g.key, done: done(g) }));
+      return { name: grp.name, games: gg, n: gg.filter((x) => x.done).length };
+    })() : null;
+    const complete = !!(group && group.games.length && group.n === group.games.length);
+    const nextGroup = complete ? (groupsIn(me.cat)
+      .filter((x) => x.name !== group.name)
+      .map((x) => ({ name: x.name, open: x.keys.filter((k) => inCat.some((g) => g.key === k) && !played.has(k) && k !== me.key), total: x.keys.filter((k) => inCat.some((g) => g.key === k)).length }))
+      .find((x) => x.open.length) || null) : null;
+    return { cat: me.cat, me: me.key, games, n: games.filter((g) => g.done).length, group, complete, nextGroup };
+  }, [me, played, forceDone]);
+
+  // THE SET TO PUSH: this game's own set while it is open, the next set once
+  // it is done, nothing in an ungrouped category.
+  const pushSet = useMemo(() => {
+    if (!catRun || !catRun.group) return null;
+    if (!catRun.complete) {
+      const open = catRun.group.games.filter((x) => !x.done).map((x) => x.key);
+      return { name: catRun.group.name, keys: catRun.group.games.map((x) => x.key), open, total: catRun.group.games.length, handoff: false };
+    }
+    if (!catRun.nextGroup) return null;
+    const grp = groupsIn(catRun.cat).find((x) => x.name === catRun.nextGroup.name);
+    return { name: catRun.nextGroup.name, keys: grp ? grp.keys : [], open: catRun.nextGroup.open, total: catRun.nextGroup.total, handoff: true };
+  }, [catRun]);
+
+  // MORE OF WHAT THEY JUST PLAYED. The set to push first, its open games
+  // ahead of its finished ones, then the rest of the category, unplayed first,
+  // so the row leads with somewhere to actually go.
+  const sameCat = useMemo(() => {
+    if (!me) return [];
+    const hi = new Set(pushSet ? pushSet.keys : []);
+    const order = (a, b) => (played.has(a.key) - played.has(b.key)) || a.name.localeCompare(b.name);
+    const inCat = LIVE().filter((g) => g.cat === me.cat && g.key !== me.key);
+    const set = inCat.filter((g) => hi.has(g.key)).sort(order).map((g) => ({ g, set: true }));
+    const rest = inCat.filter((g) => !hi.has(g.key)).sort(order).map((g) => ({ g, set: false }));
+    return [...set, ...rest].slice(0, 8);
+  }, [me, played, pushSet]);
+
+  // UP NEXT IS THE SET'S NEXT OPEN GAME (owner, 2026-09-07), ahead of the
+  // similar-game pick the options carry: a finisher one game from a full set
+  // is handed that game, and one who just completed a set is handed the next
+  // set's first. Null falls through to the ordinary hand-forward.
+  const setNext = useMemo(() => {
+    if (!pushSet || !pushSet.open.length) return null;
+    const g = LIVE().find((x) => x.key === pushSet.open[0]);
+    return g ? { g, set: pushSet } : null;
+  }, [pushSet]);
   // The arrows are only worth showing when the row actually overflows, which
   // only the rendered row can say.
   const catsRef = useRef(null);
@@ -728,12 +849,7 @@ export default function StageFinish({
           <div className="stf-cin">
             <div className="stf-verdict">{title}</div>
             {detail ? <div className="stf-detail">{detail}</div> : null}
-            {catRun ? (
-              <div className="stf-bcat">
-                <span>{catRun.cat} &middot; {catRun.n} of {catRun.games.length} today</span>
-                <CategoryRack run={catRun} band />
-              </div>
-            ) : null}
+            <BandCat run={catRun} />
           </div>
         </div>
 
@@ -809,12 +925,7 @@ export default function StageFinish({
                   ) : null}
                 </div>
               ) : null}
-              {catRun ? (
-                <div className="stf-bcat">
-                  <span>{catRun.cat} &middot; {catRun.n} of {catRun.games.length} today</span>
-                  <CategoryRack run={catRun} band />
-                </div>
-              ) : null}
+              <BandCat run={catRun} />
             </div>
             {iq && iq.gained != null ? (
               <div className="stf-ciq">
@@ -904,7 +1015,16 @@ export default function StageFinish({
         {/* THE HAND-FORWARD, for LoftFinish's own reason: it used to sit
             below the verdict, the IQ bar, four tiles and the whole board, so a
             finisher passed two exits before reaching the one that carries on. */}
-        {forward ? (
+        {setNext ? (
+          <a className="stf-fwd stf-fwdset" href={setNext.g.href || `/${setNext.g.key}`}>
+            <div>
+              <div className="stf-eb">{setNext.set.handoff ? <>Up next &middot; {catRun.group.name} done, next set</> : <>Up next &middot; finish the set</>}</div>
+              <div className="stf-fwdn">{setNext.g.name}</div>
+              <div className="stf-fwdt">{setNext.set.name} &middot; {setNext.set.handoff ? `${setNext.set.open.length} of ${setNext.set.total} open` : `${setNext.set.open.length} left`}</div>
+            </div>
+            <span className="stf-go">Play</span>
+          </a>
+        ) : forward ? (
           <a className="stf-fwd" href={forward.href} onClick={forward.onClick}>
             <div>
               <div className="stf-eb">Up next</div>
@@ -920,9 +1040,16 @@ export default function StageFinish({
             back to the home to find its neighbours. */}
         {sameCat.length ? (
           <section>
-            <div className="stf-eb">{me ? `More ${me.cat} puzzles` : 'More puzzles'}</div>
+            <div className="stf-eb stf-ebset">
+              <span>{me ? `More ${me.cat} puzzles` : 'More puzzles'}</span>
+              {pushSet ? (
+                <em className={'stf-setchip' + (pushSet.open.length ? '' : ' ok')}>
+                  {pushSet.name} &middot; {pushSet.open.length ? `${pushSet.open.length} left` : 'done'}
+                </em>
+              ) : null}
+            </div>
             <div className="stf-tiles">
-              {sameCat.map((g) => <Tile key={g.key} g={g} played={played.has(g.key)} light={light} />)}
+              {sameCat.map(({ g, set }) => <Tile key={g.key} g={g} played={played.has(g.key)} light={light} set={set} />)}
             </div>
           </section>
         ) : null}
@@ -1090,6 +1217,19 @@ const CSS = `
 /* Played today reads as done without leaving the list: the tile keeps its
    colour on the rule and gives up only its fill. */
 .stf-tile.done{background:none;color:var(--stg-mute);}
+/* THE HIGHLIGHT (owner, 2026-09-07): the games still open in the set are the
+   one filled thing in the list, in the accent with its own ink, so the next
+   tap is obvious. A finished game in the set gives up the fill like any other
+   finished tile and keeps only its rule. */
+.stf-tile.set{background:var(--stg-acc);color:var(--stg-onramp,#08222e);border-color:var(--stg-acc);}
+.stf-tile.set svg{color:currentColor;}
+.stf-tile.set:hover{border-color:var(--stg-acc);}
+.stf-tile.set.done{background:none;color:var(--stg-mute);border-color:var(--stg-line);border-left-color:var(--tc);}
+.stf-tile.set.done svg{color:var(--tc);}
+.stf-ebset{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.stf-setchip{font-style:normal;font-family:${MONO};font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--stg-onramp,#08222e);background:var(--stg-acc);padding:2px 6px;border-radius:4px;}
+.stf-setchip.ok{background:none;color:var(--stg-mute);border:1px solid var(--stg-line);}
 .stf-o.on{border-color:var(--stg-acc);color:var(--stg-acc-ink);}
 
 .stf-curtain{background:var(--stg-acc);color:var(--stg-onramp,#08222e);
@@ -1106,18 +1246,38 @@ const CSS = `
 .stf-bcat{margin-top:9px;display:flex;align-items:center;gap:9px;flex-wrap:wrap;
   font-family:${MONO};font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
   font-weight:700;opacity:.86;}
-.stf-rack{display:flex;justify-content:center;flex-wrap:wrap;gap:4px;max-width:340px;margin:0 auto 14px;}
+.stf-bcat-x{opacity:.7;}
+.stf-rack{display:block;}
+.stf-rk-pips{display:flex;justify-content:center;flex-wrap:wrap;gap:5px;max-width:340px;margin:0 auto 14px;}
 .stf-rack s{text-decoration:none;display:block;width:12px;height:18px;border-radius:3px;
-  border:1.5px solid currentColor;opacity:.32;}
+  border:1.5px solid currentColor;opacity:.32;
+  transition:width 380ms cubic-bezier(.2,.8,.25,1),height 380ms cubic-bezier(.2,.8,.25,1),
+    margin 380ms cubic-bezier(.2,.8,.25,1),border-radius 380ms ease,opacity 300ms ease;}
 .stf-rack s.on{background:currentColor;opacity:1;animation:stf-rip 420ms ease both;}
 .stf-rack s.new{background:currentColor;opacity:0;transform:scale(.4);
   animation:stf-rackhit 320ms cubic-bezier(.2,.9,.3,1.35) ${RACK_HIT}ms both;}
-.stf-rack.band{margin:0;gap:2px;max-width:none;justify-content:flex-start;}
+/* NARROW: the set's own pips at full size, the rest of the category collapsed
+   to nothing. WIDE: the set shrinks to category size and the rest expands in. */
+.stf-rack.grouped s.g{width:18px;height:28px;border-radius:4px;}
+.stf-rack.grouped:not(.wide) s.x{width:0;opacity:0!important;margin-left:-5px;border-width:0;animation:none;}
+.stf-rack.grouped.wide s.g{width:12px;height:18px;border-radius:3px;}
+/* THE COMPLETION: the whole rack swells once, then the widen starts. */
+.stf-rack.complete .stf-rk-pips{animation:stf-swell 520ms cubic-bezier(.2,.9,.3,1.4) both;}
+.stf-rack b small{font-size:.42em;letter-spacing:-.01em;opacity:.7;margin-left:4px;}
+.stf-rack b,.stf-rack i{animation:stf-stamp 300ms cubic-bezier(.2,.9,.3,1.3) both;}
+.stf-rk-done{display:inline-block;margin-top:12px;font-style:normal;font-family:${MONO};font-size:9px;
+  letter-spacing:.16em;text-transform:uppercase;font-weight:700;padding:4px 9px;
+  border:1.5px solid currentColor;border-radius:4px;animation:stf-stamp 300ms cubic-bezier(.2,.9,.3,1.3) both;}
+/* At rest on the band: the set while it is open, the category once it is done. */
+.stf-rack.band .stf-rk-pips{margin:0;gap:2px;max-width:none;justify-content:flex-start;}
 .stf-rack.band s{width:5px;height:9px;border-radius:1.5px;border:none;background:currentColor;
-  opacity:.28;animation:none;transform:none;}
+  opacity:.28;animation:none;transform:none;transition:none;}
+.stf-rack.band.grouped:not(.wide) s.g{width:8px;height:12px;border-radius:2px;}
+.stf-rack.band.grouped:not(.wide) s.x{display:none;}
 .stf-rack.band s.on,.stf-rack.band s.new{opacity:1;}
-@keyframes stf-rip{ 0%{transform:none} 35%{transform:translateY(-4px)} 100%{transform:none} }
+@keyframes stf-rip{ 0%{transform:none} 35%{transform:translateY(-5px)} 100%{transform:none} }
 @keyframes stf-rackhit{ from{opacity:0;transform:scale(.4)} to{opacity:1;transform:none} }
+@keyframes stf-swell{ 0%{transform:scale(1)} 45%{transform:scale(1.14)} 100%{transform:scale(1)} }
 /* Bigger than the 22px the stats row used, smaller than the verdict: it is the
    second thing on the band, not the first. It takes the band's own ink rather
    than the green the figures row gave it, because green on the accent is the
