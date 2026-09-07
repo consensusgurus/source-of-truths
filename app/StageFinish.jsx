@@ -122,6 +122,10 @@ const FLOOD_COUNT = 820;    // the IQ's climb, which is also its dwell
 // is seeing for the first time. These are the two knobs for the pace of the
 // whole sequence; nothing else needs touching to make it faster or slower.
 const FLOOD_STAMP = 520;    // every other figure lands this far after the last
+// THE RACK'S DWELL (owner, 2026-09-07): the pip lands, then a ripple runs out
+// from it along the rest of the category, so its dwell is the ripple's reach.
+const FLOOD_RACK = 1100;
+const RACK_HIT = 260;       // the new pip stamps this far after the rack appears
 const FLOOD_SETTLE = 4500;  // a beat on the finished set, to read it whole
 // HOW LONG THE QUEUE WILL BLOCK ON A FIGURE THAT HAS NOT ARRIVED (owner,
 // 2026-08-31, and this is the third pass on this screen). It was anchored to
@@ -189,7 +193,7 @@ const FLOOD_QUICK_SETTLE = 700;
 // because the FLOOD prints that figure first, full screen, before the card
 // under it is ever seen: a quiz that only corrected the card would still open
 // its ending by announcing "#3 of 41 today".
-function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null, bandRef, onDone, quick = false, boardWhen = null }) {
+function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null, bandRef, onDone, quick = false, boardWhen = null, catRun = null }) {
   const [phase, setPhase] = useState('');     // '' -> up -> shrink -> out
   const [clip, setClip] = useState(null);
   const [held, setHeld] = useState(false);    // the floor has passed
@@ -243,7 +247,18 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
       value: streak,
       label: 'day streak',
     },
-  ]), [iq, board, gameRank, streak, quick, boardWhen]);
+    // THE CATEGORY RACK (owner, 2026-09-07): one pip per live game in the
+    // category they just played, the finished ones lit, this one landing. It
+    // is the last figure so the standings have settled before the screen says
+    // what the day adds up to in this category. Every finish shows it, a first
+    // one included (owner's call: 1 of 17 is still where the rack starts).
+    {
+      k: 'cat', rack: true,
+      has: !!(catRun && catRun.games.length),
+      value: catRun ? catRun.n : null,
+      label: catRun ? `of ${catRun.games.length} ${catRun.cat} today` : '',
+    },
+  ]), [iq, board, gameRank, streak, quick, boardWhen, catRun]);
 
   // Fade in, and the two edges of the hold. Both timers are anchored to the
   // MOUNT rather than to `ready`, for the reason LoftFinish's own ceiling is:
@@ -276,7 +291,7 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
       // ITS DWELL IS ITS COUNT. This is the whole point of the second pass: the
       // queue cannot move on, and the screen cannot leave, until the number has
       // finished climbing.
-      at(next.count ? FLOOD_COUNT + 180 : FLOOD_STAMP, () => setShown((s) => s + 1));
+      at(next.count ? FLOOD_COUNT + 180 : next.rack ? FLOOD_RACK : FLOOD_STAMP, () => setShown((s) => s + 1));
       return;
     }
     // No value. Settled means skip; still reading means hold the queue here,
@@ -342,7 +357,8 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
             animation on mount rather than a class anyone has to toggle. */}
         <div className="stf-fl-figs">
           {figs.map((f, i) => ((i < shown && f.has) ? (
-            <div className={'stf-fl-fig' + (f.lead ? ' lead' : '')} key={f.k}>
+            <div className={'stf-fl-fig' + (f.lead ? ' lead' : '') + (f.rack ? ' stf-fl-rack' : '')} key={f.k}>
+              {f.rack ? <CategoryRack run={catRun} /> : null}
               <b>{f.count ? <>+<FloodCount to={f.value} ms={FLOOD_COUNT} /></> : f.value}</b>
               <i>{f.label}</i>
             </div>
@@ -378,6 +394,25 @@ function doneToday() {
     } catch (e) {}
   }
   return out;
+}
+
+// THE RACK. One pip per live game in the category, in registry order. On the
+// flood the finished pips are lit when it appears, the new one stamps in after
+// RACK_HIT, and a ripple runs out from it through the lit ones, timed by their
+// distance from it. On the band it is the same rack at rest: no motion, so the
+// figure the flood just announced is still there once the colour has landed.
+function CategoryRack({ run, band = false }) {
+  if (!run || !run.games.length) return null;
+  const k = run.games.findIndex((g) => g.key === run.me);
+  return (
+    <span className={'stf-rack' + (band ? ' band' : '')} aria-hidden="true">
+      {run.games.map((g, i) => (
+        <s key={g.key}
+          className={g.key === run.me ? 'new' : g.done ? 'on' : ''}
+          style={(!band && g.done && g.key !== run.me) ? { animationDelay: `${RACK_HIT + Math.abs(i - k) * 45}ms` } : undefined} />
+      ))}
+    </span>
+  );
 }
 
 function Tile({ g, played, light }) {
@@ -543,6 +578,16 @@ export default function StageFinish({
       .sort((a, b) => (played.has(a.key) - played.has(b.key)) || a.name.localeCompare(b.name))
       .slice(0, 8);
   }, [me, played]);
+  // WHAT THE DAY ADDS UP TO IN THIS CATEGORY. Every live game in it, in
+  // registry order, with the ones finished today (this one included, whether
+  // or not its breadcrumb has landed yet) marked done. Read by the flood's rack
+  // and by the band's line under the verdict, so the two cannot disagree.
+  const catRun = useMemo(() => {
+    if (!me) return null;
+    const games = LIVE().filter((g) => g.cat === me.cat)
+      .map((g) => ({ key: g.key, done: played.has(g.key) || g.key === me.key }));
+    return { cat: me.cat, me: me.key, games, n: games.filter((g) => g.done).length };
+  }, [me, played]);
   // The arrows are only worth showing when the row actually overflows, which
   // only the rendered row can say.
   const catsRef = useRef(null);
@@ -683,6 +728,12 @@ export default function StageFinish({
           <div className="stf-cin">
             <div className="stf-verdict">{title}</div>
             {detail ? <div className="stf-detail">{detail}</div> : null}
+            {catRun ? (
+              <div className="stf-bcat">
+                <span>{catRun.cat} &middot; {catRun.n} of {catRun.games.length} today</span>
+                <CategoryRack run={catRun} band />
+              </div>
+            ) : null}
           </div>
         </div>
 
@@ -720,7 +771,7 @@ export default function StageFinish({
       {flood ? (
         <CurtainFlood title={title} detail={detail} iq={iq} board={board}
           gameRank={gameRank} streak={streak} ready={ready} bandRef={bandRef}
-          boardWhen={boardWhen}
+          boardWhen={boardWhen} catRun={catRun}
           onDone={() => setFlood(false)} />
       ) : null}
 
@@ -756,6 +807,12 @@ export default function StageFinish({
                   {loose.length ? (
                     <span className="stf-dx">{detail ? ' \u00b7 ' : ''}{loose.join(' \u00b7 ')}</span>
                   ) : null}
+                </div>
+              ) : null}
+              {catRun ? (
+                <div className="stf-bcat">
+                  <span>{catRun.cat} &middot; {catRun.n} of {catRun.games.length} today</span>
+                  <CategoryRack run={catRun} band />
                 </div>
               ) : null}
             </div>
@@ -1043,6 +1100,24 @@ const CSS = `
 .stf-verdict{font-size:36px;font-weight:800;letter-spacing:-0.03em;line-height:1.05;
   text-wrap:balance;}
 .stf-detail{margin-top:7px;font-size:14px;font-weight:700;opacity:.78;}
+/* THE CATEGORY LINE ON THE BAND: what the flood's rack said, kept. Mono
+   eyebrow plus the rack at rest, in the band's own ink at full strength on
+   the pips (the contrast was measured at full strength, never dim an ink). */
+.stf-bcat{margin-top:9px;display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+  font-family:${MONO};font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  font-weight:700;opacity:.86;}
+.stf-rack{display:flex;justify-content:center;flex-wrap:wrap;gap:4px;max-width:340px;margin:0 auto 14px;}
+.stf-rack s{text-decoration:none;display:block;width:12px;height:18px;border-radius:3px;
+  border:1.5px solid currentColor;opacity:.32;}
+.stf-rack s.on{background:currentColor;opacity:1;animation:stf-rip 420ms ease both;}
+.stf-rack s.new{background:currentColor;opacity:0;transform:scale(.4);
+  animation:stf-rackhit 320ms cubic-bezier(.2,.9,.3,1.35) ${RACK_HIT}ms both;}
+.stf-rack.band{margin:0;gap:2px;max-width:none;justify-content:flex-start;}
+.stf-rack.band s{width:5px;height:9px;border-radius:1.5px;border:none;background:currentColor;
+  opacity:.28;animation:none;transform:none;}
+.stf-rack.band s.on,.stf-rack.band s.new{opacity:1;}
+@keyframes stf-rip{ 0%{transform:none} 35%{transform:translateY(-4px)} 100%{transform:none} }
+@keyframes stf-rackhit{ from{opacity:0;transform:scale(.4)} to{opacity:1;transform:none} }
 /* Bigger than the 22px the stats row used, smaller than the verdict: it is the
    second thing on the band, not the first. It takes the band's own ink rather
    than the green the figures row gave it, because green on the accent is the
@@ -1203,6 +1278,8 @@ const CSS = `
 /* The IQ is the number they came for, so it takes a line of its own at display
    size and the standings land in a row underneath it. */
 .stf-fl-fig.lead{flex-basis:100%;}
+/* The rack takes a line of its own under the standings, pips over the count. */
+.stf-fl-rack{flex-basis:100%;margin-top:6px;}
 .stf-fl-fig.lead b{font-size:clamp(46px,10vw,118px);line-height:.9;letter-spacing:-.05em;}
 .stf-fl-fig.lead i{font-size:clamp(10px,1.4vw,13px);letter-spacing:.18em;
   opacity:.78;margin-top:12px;}
