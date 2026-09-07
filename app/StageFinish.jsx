@@ -504,7 +504,7 @@ function runOf(key, num) {
   const time = sv && sv.t0 && sv.tEnd && sv.tEnd > sv.t0 ? Math.round((sv.tEnd - sv.t0) / 1000) : null;
   return { num, score: Number(rec.s), total: Number(rec.t) || 0, won: !!rec.won, time };
 }
-function compareRuns(key, rows) {
+function compareRuns(key, rows, scoreOnly = false) {
   const nums = rows.map((r) => Number(r.num)).filter(Number.isFinite);
   if (!nums.length) return null;
   // The current puzzle is the one number the archive leaves out: a gap
@@ -525,7 +525,9 @@ function compareRuns(key, rows) {
     .filter((r) => r && r.num != null);
   if (!prior.length) return null;
   const last = prior[0];
-  const timed = today.won && today.time != null && last.won && last.time != null;
+  // ARCADE COMPARES ON SCORE ONLY: on Blocks and Sweep the longer run is the
+  // better one, so a faster clock is not a better result there.
+  const timed = !scoreOnly && today.won && today.time != null && last.won && last.time != null;
   if (timed) {
     const clocked = prior.filter((r) => r.won && r.time != null);
     const bestT = Math.min(...clocked.map((r) => r.time));
@@ -776,7 +778,7 @@ export default function StageFinish({
   const [vs, setVs] = useState(null);
   useEffect(() => {
     if (!me) return;
-    try { setVs(compareRuns(me.key, Array.isArray(archive) ? archive : [])); } catch (e) { setVs(null); }
+    try { setVs(compareRuns(me.key, Array.isArray(archive) ? archive : [], me.cat === 'Arcade')); } catch (e) { setVs(null); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me]);
 
