@@ -41,6 +41,7 @@ import { DAILY_GAMES as ALL_DAILY_GAMES, DAILY_GAME_MAP, liveDailyKeys } from '@
 const LIVE_KEYS = new Set(liveDailyKeys());
 const DAILY_GAMES = ALL_DAILY_GAMES.filter((g) => LIVE_KEYS.has(g.key));
 import { DISPLAY_CIRCUITS, RUN_GAMES, circuitKeysFor, circuitEntryHref } from '@/lib/circuits';
+import { GROUPS } from '@/lib/daily-groups';
 import GameGlyph from '../GameGlyph';
 import { RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
 // ONE READING OF A RESULT ROW, the same one the ending curtain and the tile
@@ -55,6 +56,7 @@ import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro } from '@/lib/st
 import ThemePop from '../ThemePop';
 import StageLadder from '../StageLadder';
 import StageWelcome from '../StageWelcome';
+import SundayLedger from '../SundayLedger';
 import PremierePop from '../PremierePop';
 import MindLoftMark from '../MindLoftMark';
 import StagePatch, { PATCH_CSS } from '../StagePatch';
@@ -695,6 +697,26 @@ export default function StageToday() {
   // does on a board: the pale step on the dark ground, its dark twin on the pale.
   const light = stageTheme === 'light';
   const hueFor = (cat) => (light ? categoryColorLight(cat) : categoryColor(cat));
+
+  // UNFINISHED SETS FIRST (owner, 2026-09-07). Every set (lib/daily-groups)
+  // with at least one game finished today and at least one still open, the
+  // one closest to done first, each with its first open game on the control.
+  // It reads the same `done` the page already builds, gated on the status
+  // answer having landed so a guest is not told they began nothing while the
+  // request is in flight. Empty means the band does not render at all.
+  const unfinishedSets = useMemo(() => {
+    if (!statusIn || !done.size) return [];
+    const out = [];
+    for (const g of GROUPS) {
+      const live = g.keys.filter((k) => LIVE_KEYS.has(k));
+      if (live.length < 2) continue;
+      const n = live.filter((k) => done.has(k)).length;
+      if (!n || n === live.length) continue;
+      const open = live.filter((k) => !done.has(k));
+      out.push({ name: g.name, cat: g.cat, live, n, open });
+    }
+    return out.sort((a, b) => (a.open.length - b.open.length) || (b.n - a.n) || a.name.localeCompare(b.name));
+  }, [done, statusIn]);
 
   useEffect(() => {
     let alive = true;
@@ -1463,6 +1485,43 @@ export default function StageToday() {
             everything above it simply sits higher until then. `done` and
             `inprog` are both empty on the server and on the first client
             paint, so SSR and hydration agree on "absent". */}
+        {/* THE SUNDAY LEDGER (owner, 2026-09-07): the week, on a Sunday, above
+            everything. Renders nothing on the other six days and nothing on the
+            server; see app/SundayLedger.jsx. */}
+        <SundayLedger light={light} withTq={withTq} />
+
+        {/* UNFINISHED BUSINESS, before anything else on the page (owner,
+            2026-09-07): the sets begun today and not finished. It wears the
+            gold rule the Daily Five band used for the same meaning, and it is
+            absent on a fresh morning, so the page is exactly what it was until
+            there is something to come back to. */}
+        {unfinishedSets.length ? (
+          <section className="sty-cat sty-unf sty-rev" style={{ '--cc': light ? '#7c5104' : '#e8b43a' }}>
+            <div className="sty-cathead">
+              <h2>Unfinished business</h2>
+              <b>{unfinishedSets.length}<i>&nbsp;{unfinishedSets.length === 1 ? 'set' : 'sets'}</i></b>
+            </div>
+            <div className="sty-unfl">
+              {unfinishedSets.map((st) => {
+                const g = DAILY_GAME_MAP[st.open[0]];
+                if (!g) return null;
+                return (
+                  <a key={st.name} className="sty-unfr" href={withTq(g.href || `/${g.key}`)}
+                    style={{ '--sc': hueFor(st.cat), '--son': light ? categoryOnrampLight(st.cat) : RAMP_INK }}>
+                    <span className="sty-unfc" aria-hidden="true" />
+                    <span className="sty-unfb">
+                      <span className="sty-unfn">{st.name}</span>
+                      <span className="sty-unfs">{st.n} of {st.live.length} &middot; {st.open.length === 1 ? 'one left' : `${st.open.length} left`}</span>
+                      <span className="sty-unfp" aria-hidden="true">{st.live.map((k) => <s key={k} className={done.has(k) ? 'on' : ''} />)}</span>
+                    </span>
+                    <span className="sty-unfgo">Play {g.name}</span>
+                  </a>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+
         {(done.size > 0 || inprog.size > 0) ? (
         <section className="sty-day sty-rev">
           <div className="sty-eb">The day&rsquo;s progress <span className="sty-ebn">{playedCount} of {total}</span></div>
@@ -2339,6 +2398,21 @@ ${PATCH_CSS}
    already sits above its own grid. */
 .sty-slate{margin:4px 0 -12px;font-size:19px;font-weight:800;letter-spacing:-.015em;line-height:1.15;color:var(--stg-ink);}
 .sty-cathead{display:flex;align-items:baseline;gap:11px;margin-bottom:10px;}
+/* Unfinished business: one row per open set, the set's own hue on its rule,
+   its pips and its control; the section rule is gold (see the JSX note). */
+.sty-unfl{display:flex;flex-direction:column;gap:8px;}
+.sty-unfr{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--stg-ink);
+  background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:10px;padding:10px 12px;}
+.sty-unfr:hover{border-color:var(--stg-line2);}
+.sty-unfc{flex:none;width:3px;height:30px;border-radius:2px;background:var(--sc);}
+.sty-unfb{min-width:0;display:flex;flex-direction:column;gap:2px;}
+.sty-unfn{font-size:15px;font-weight:800;}
+.sty-unfs{font-size:12px;color:var(--stg-mute);}
+.sty-unfp{display:flex;gap:2px;margin-top:2px;}
+.sty-unfp s{text-decoration:none;display:block;width:6px;height:10px;border-radius:1.5px;background:var(--sc);opacity:.3;}
+.sty-unfp s.on{opacity:1;}
+.sty-unfgo{margin-left:auto;flex:none;font-size:12.5px;font-weight:800;padding:7px 12px;border-radius:8px;
+  background:var(--sc);color:var(--son);white-space:nowrap;}
 .sty-cathead h2{margin:0;font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;}
 .sty-cathead b{font-family:${MONO};font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--stg-ink2);}
 .sty-cathead b i{font-style:normal;color:var(--stg-mute);}

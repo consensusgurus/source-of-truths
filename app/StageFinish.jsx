@@ -46,7 +46,7 @@ import { useStageTheme } from '@/lib/stage-theme';
 // strip. See the file's own header: a row carries both the 0-15 placement points
 // and what the player actually did, and only the second means anything next to
 // the game they just played.
-import { gameStats } from '@/lib/daily-row-stats';
+import { gameStats, mmss } from '@/lib/daily-row-stats';
 import GameGlyph from './GameGlyph';
 import JoinLeaderboardForm from './quiz/[id]/JoinLeaderboardForm';
 
@@ -134,6 +134,7 @@ const RACK_HIT = 260;       // the new pip stamps this far after the rack appear
 const RACK_SWELL = 1000;    // after the rack appears: the swell and the tag
 const RACK_WIDEN = 2200;    // after the rack appears: the widen begins
 const FLOOD_RACK_WIDE = 3100;
+const FLOOD_VS = 900;       // the struck-through last run and today's, read as a pair
 const FLOOD_SETTLE = 4500;  // a beat on the finished set, to read it whole
 // HOW LONG THE QUEUE WILL BLOCK ON A FIGURE THAT HAS NOT ARRIVED (owner,
 // 2026-08-31, and this is the third pass on this screen). It was anchored to
@@ -206,7 +207,7 @@ const FLOOD_QUICK_SETTLE = 700;
 // because the FLOOD prints that figure first, full screen, before the card
 // under it is ever seen: a quiz that only corrected the card would still open
 // its ending by announcing "#3 of 41 today".
-function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null, bandRef, onDone, quick = false, boardWhen = null, catRun = null }) {
+function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null, bandRef, onDone, quick = false, boardWhen = null, catRun = null, vs = null }) {
   const [phase, setPhase] = useState('');     // '' -> up -> shrink -> out
   const [clip, setClip] = useState(null);
   const [held, setHeld] = useState(false);    // the floor has passed
@@ -269,6 +270,15 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
     // one belongs to (lib/daily-groups), with the category behind it. A category
     // too small to have sets shows itself. `wide` marks a set just completed,
     // whose rack transforms into the category's and needs the longer dwell.
+    // BEAT YESTERDAY'S YOU (owner, 2026-09-07): the last run of this game
+    // struck through, and today's. Printed only when today is the better run;
+    // a slower one is stated quietly under the band instead, never here.
+    {
+      k: 'vs', vs: true,
+      has: !!(vs && (vs.better || vs.pb)),
+      value: null,
+      label: '',
+    },
     {
       k: 'cat', rack: true,
       has: !!(catRun && catRun.games.length),
@@ -276,7 +286,7 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
       value: catRun ? catRun.n : null,
       label: catRun ? `of ${catRun.games.length} ${catRun.cat} today` : '',
     },
-  ]), [iq, board, gameRank, streak, quick, boardWhen, catRun]);
+  ]), [iq, board, gameRank, streak, quick, boardWhen, catRun, vs]);
 
   // Fade in, and the two edges of the hold. Both timers are anchored to the
   // MOUNT rather than to `ready`, for the reason LoftFinish's own ceiling is:
@@ -309,7 +319,7 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
       // ITS DWELL IS ITS COUNT. This is the whole point of the second pass: the
       // queue cannot move on, and the screen cannot leave, until the number has
       // finished climbing.
-      at(next.count ? FLOOD_COUNT + 180 : next.rack ? (next.wide ? FLOOD_RACK_WIDE : FLOOD_RACK) : FLOOD_STAMP, () => setShown((s) => s + 1));
+      at(next.count ? FLOOD_COUNT + 180 : next.rack ? (next.wide ? FLOOD_RACK_WIDE : FLOOD_RACK) : next.vs ? FLOOD_VS : FLOOD_STAMP, () => setShown((s) => s + 1));
       return;
     }
     // No value. Settled means skip; still reading means hold the queue here,
@@ -375,8 +385,8 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
             animation on mount rather than a class anyone has to toggle. */}
         <div className="stf-fl-figs">
           {figs.map((f, i) => ((i < shown && f.has) ? (
-            <div className={'stf-fl-fig' + (f.lead ? ' lead' : '') + (f.rack ? ' stf-fl-rack' : '')} key={f.k}>
-              {f.rack ? <CategoryRack run={catRun} /> : (
+            <div className={'stf-fl-fig' + (f.lead ? ' lead' : '') + (f.rack ? ' stf-fl-rack' : '') + (f.vs ? ' stf-fl-vs' : '')} key={f.k}>
+              {f.vs ? <VsBox vs={vs} /> : f.rack ? <CategoryRack run={catRun} ring={!!(vs && vs.pb)} /> : (
                 <>
                   <b>{f.count ? <>+<FloodCount to={f.value} ms={FLOOD_COUNT} /></> : f.value}</b>
                   <i>{f.label}</i>
@@ -428,7 +438,7 @@ function doneToday() {
 // shrink to category size while the others expand in around them, and the
 // count restamps as the category figure. On the band it is the same rack at
 // rest: the set while it is open, the whole category once it is done.
-function CategoryRack({ run, band = false }) {
+function CategoryRack({ run, band = false, ring = false }) {
   const g = run ? run.group : null;
   const grouped = !!g;
   // On the flood, `wide` is a STATE the widen flips. On the band it is derived
@@ -461,7 +471,7 @@ function CategoryRack({ run, band = false }) {
       <span className="stf-rk-pips">
         {run.games.map((x) => (
           <s key={x.key}
-            className={(x.key === run.me ? 'new' : x.done ? 'on' : '') + ((!grouped || inSet.has(x.key)) ? ' g' : ' x')}
+            className={(x.key === run.me ? 'new' + (ring ? ' ring' : '') : x.done ? 'on' : '') + ((!grouped || inSet.has(x.key)) ? ' g' : ' x')}
             style={(!band && x.done && x.key !== run.me && vi.has(x.key)) ? { animationDelay: `${RACK_HIT + Math.abs(vi.get(x.key) - k) * 55}ms` } : undefined} />
         ))}
       </span>
@@ -477,9 +487,82 @@ function CategoryRack({ run, band = false }) {
   );
 }
 
+// BEAT YESTERDAY'S YOU. The most recent earlier finish of this game against
+// today's, from the per-puzzle saves (t0/tEnd give the clock on the clients
+// that keep one) and the stats record (score, total, won), which every daily
+// writes on finishing. Time when both runs were solved and both carry a clock,
+// score otherwise. `pb` is against every earlier finish, `better` against the
+// last one only.
+function readLS(k) {
+  try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; }
+}
+function runOf(key, num) {
+  const stats = readLS(`sot_${key}_stats`);
+  const rec = stats && stats.rec && stats.rec[num];
+  if (!rec) return null;
+  const sv = readLS(`sot_${key}_${num}`);
+  const time = sv && sv.t0 && sv.tEnd && sv.tEnd > sv.t0 ? Math.round((sv.tEnd - sv.t0) / 1000) : null;
+  return { num, score: Number(rec.s), total: Number(rec.t) || 0, won: !!rec.won, time };
+}
+function compareRuns(key, rows) {
+  const nums = rows.map((r) => Number(r.num)).filter(Number.isFinite);
+  if (!nums.length) return null;
+  // The current puzzle is the one number the archive leaves out: the newest
+  // on a live day, a gap in the middle on a replay.
+  const set = new Set(nums);
+  const max = Math.max(...nums), lo = Math.min(...nums);
+  let cur = null;
+  for (let n = max + 1; n >= lo; n -= 1) { if (!set.has(n)) { cur = n; break; } }
+  if (cur == null) return null;
+  const today = runOf(key, cur);
+  if (!today) return null;
+  const prior = rows.filter((r) => r.done && Number(r.num) < cur)
+    .sort((a, b) => Number(b.num) - Number(a.num))
+    .map((r) => ({ ...runOf(key, Number(r.num)), dateLabel: r.dateLabel || null }))
+    .filter((r) => r && r.num != null);
+  if (!prior.length) return null;
+  const last = prior[0];
+  const timed = today.won && today.time != null && last.won && last.time != null;
+  if (timed) {
+    const clocked = prior.filter((r) => r.won && r.time != null);
+    const bestT = Math.min(...clocked.map((r) => r.time));
+    const bestRow = clocked.find((r) => r.time === bestT);
+    return { mode: 'time', today: today.time, last: last.time, best: bestT, bestDate: bestRow.dateLabel,
+      better: today.time < last.time, pb: today.time < bestT, tie: today.time === last.time };
+  }
+  const frac = (r) => (r.total ? r.score / r.total : 0);
+  const bestF = Math.max(...prior.map(frac));
+  const bestRow = prior.find((r) => frac(r) === bestF);
+  return { mode: 'score', today, last, best: bestRow, bestDate: bestRow.dateLabel,
+    better: frac(today) > frac(last), pb: frac(today) > bestF, tie: frac(today) === frac(last) };
+}
+const fmtRun = (vs, r) => (vs.mode === 'time' ? mmss(r) : `${r.score}/${r.total}`);
+function vsLine(vs) {
+  const lead = vs.pb ? 'Personal best \u00b7 ' : '';
+  if (vs.mode === 'time') {
+    const d = vs.last - vs.today;
+    return `${lead}${d}s faster than your last`;
+  }
+  const d = vs.today.score - vs.last.score;
+  return `${lead}${d} more than your last`;
+}
+function VsBox({ vs }) {
+  if (!vs) return null;
+  return (
+    <>
+      <span className="stf-vsx" aria-hidden="true">
+        <span className="was">{fmtRun(vs, vs.last)}</span>
+        <span className="arr">&rarr;</span>
+        <span className="now">{fmtRun(vs, vs.today)}</span>
+      </span>
+      <i>{vsLine(vs)}</i>
+    </>
+  );
+}
+
 // The line under the verdict on the band, and the rack at rest beside it.
 // One component for both curtains so they cannot disagree.
-function BandCat({ run }) {
+function BandCat({ run, vs = null }) {
   if (!run || !run.games.length) return null;
   const g = run.group;
   const total = run.games.length;
@@ -489,8 +572,9 @@ function BandCat({ run }) {
         ? <span>{g.name} done &middot; {run.cat} &middot; {run.n} of {total} today</span>
         : <span>{g.name} &middot; {g.n} of {g.games.length} today</span>)
         : <span>{run.cat} &middot; {run.n} of {total} today</span>}
-      <CategoryRack run={run} band />
+      <CategoryRack run={run} band ring={!!(vs && vs.pb)} />
       {g && !run.complete ? <span className="stf-bcat-x">&middot; {run.cat} {run.n} of {total}</span> : null}
+      {vs && (vs.better || vs.pb) ? <span className="stf-bcat-x">&middot; {vsLine(vs)}</span> : null}
     </div>
   );
 }
@@ -683,6 +767,15 @@ export default function StageFinish({
       .find((x) => x.open.length) || null) : null;
     return { cat: me.cat, me: me.key, games, n: games.filter((g) => g.done).length, group, complete, nextGroup };
   }, [me, played, forceDone]);
+
+  // YOUR LAST RUN OF THIS GAME, read once on mount: localStorage, so an
+  // effect rather than a memo, and the server renders nothing for it.
+  const [vs, setVs] = useState(null);
+  useEffect(() => {
+    if (!me) return;
+    try { setVs(compareRuns(me.key, Array.isArray(archive) ? archive : [])); } catch (e) { setVs(null); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me]);
 
   // THE SET TO PUSH: this game's own set while it is open, the next set once
   // it is done, nothing in an ungrouped category.
@@ -897,7 +990,7 @@ export default function StageFinish({
       {flood ? (
         <CurtainFlood title={title} detail={detail} iq={iq} board={board}
           gameRank={gameRank} streak={streak} ready={ready} bandRef={bandRef}
-          boardWhen={boardWhen} catRun={catRun}
+          boardWhen={boardWhen} catRun={catRun} vs={vs}
           onDone={() => setFlood(false)} />
       ) : null}
 
@@ -935,7 +1028,7 @@ export default function StageFinish({
                   ) : null}
                 </div>
               ) : null}
-              <BandCat run={catRun} />
+              <BandCat run={catRun} vs={vs} />
             </div>
             {iq && iq.gained != null ? (
               <div className="stf-ciq">
@@ -948,6 +1041,14 @@ export default function StageFinish({
       </div>
 
       <div className="stf-wrap">
+        {/* THE SLOWER CASE (owner, 2026-09-07): stated plainly, in the card's
+            own ink, with the figure to beat. Never a colour: red on a finished
+            game reads as failure. */}
+        {vs && !vs.better && !vs.pb && !vs.tie ? (
+          <div className="stf-vslow">
+            <b>{fmtRun(vs, vs.today)}</b> today &middot; your best on {name || 'this one'} is <b>{vs.mode === 'time' ? mmss(vs.best) : `${vs.best.score}/${vs.best.total}`}</b>{vs.bestDate ? `, set ${vs.bestDate}` : ''}. Beat it tomorrow.
+          </div>
+        ) : null}
         {/* THE BOARD LEADS NOW. It used to sit under a row of four figures whose
             first line said #22 of 137; the table is what that number means, and
             the figure that announced it has moved onto the band. */}
@@ -1285,6 +1386,17 @@ const CSS = `
 .stf-rack.band.grouped:not(.wide) s.g{width:8px;height:12px;border-radius:2px;}
 .stf-rack.band.grouped:not(.wide) s.x{display:none;}
 .stf-rack.band s.on,.stf-rack.band s.new{opacity:1;}
+/* The personal-best ring on the pip that earned it. */
+.stf-rack s.new.ring{box-shadow:0 0 0 3px var(--stg-acc),0 0 0 4.5px currentColor;}
+.stf-rack.band s.new.ring{box-shadow:0 0 0 1.5px var(--stg-acc),0 0 0 2.5px currentColor;}
+.stf-fl-vs{flex-basis:100%;}
+.stf-vsx{display:inline-flex;align-items:baseline;gap:10px;padding:10px 14px;
+  border:1.5px solid currentColor;border-radius:8px;}
+.stf-vsx .was{font-family:${MONO};font-size:12px;opacity:.7;text-decoration:line-through;}
+.stf-vsx .now{font-size:28px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
+.stf-vsx .arr{font-size:16px;opacity:.8;}
+.stf-vslow{font-size:13.5px;color:var(--stg-ink2);}
+.stf-vslow b{font-weight:800;color:var(--stg-ink);}
 @keyframes stf-rip{ 0%{transform:none} 35%{transform:translateY(-5px)} 100%{transform:none} }
 @keyframes stf-rackhit{ from{opacity:0;transform:scale(.4)} to{opacity:1;transform:none} }
 @keyframes stf-swell{ 0%{transform:scale(1)} 45%{transform:scale(1.14)} 100%{transform:scale(1)} }

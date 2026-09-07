@@ -80,8 +80,9 @@
 // nothing else. So a reader sees this door once a day, and never a full screen
 // on the way back from a game.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { DAILY_GAME_MAP } from '@/lib/daily-games';
-import { RAMP_ORDER, CATEGORY_RAMP, RAMP_INK } from '@/lib/category-ramp';
+import { DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
+import { RAMP_ORDER, CATEGORY_RAMP, RAMP_INK, categoryColor } from '@/lib/category-ramp';
+import { groupOf } from '@/lib/daily-groups';
 import MindLoftMark from './MindLoftMark';
 import { fetchDayStatus, etToday } from './useDayStats';
 import { fetchDailyBoard, dailyBoardQuery, dailyBoardIdentity } from './dailyBoardClient';
@@ -295,6 +296,31 @@ function daysBetween(mdy, todayYmd) {
 // in, so this has to match that and not etToday()'s YYYY-MM-DD. Built off
 // etToday() rather than a local clock so it is the ET day before the ET day,
 // not the day before wherever the reader happens to be standing.
+// THE LAST SET (owner, 2026-09-07). The newest `sot_<key>_day` breadcrumb on
+// this device names the last game finished here; its set (lib/daily-groups)
+// is what a lapsed reader is handed back. Ties on the date go to the first
+// game whose set exists. Null for a device with no breadcrumb, or a last game
+// in an ungrouped category (those have no set to pick up).
+const LAPSED_GAP = 3;
+function lastSetPlayed(todayYmd) {
+  let best = null;
+  const live = new Set(liveDailyKeys());
+  for (const key of live) {
+    let c = null;
+    try { c = JSON.parse(localStorage.getItem(`sot_${key}_day`) || 'null'); } catch (e) { c = null; }
+    if (!c || !c.d || !c.done) continue;
+    if (!best || c.d > best.d || (c.d === best.d && !best.grp && groupOf(key))) best = { d: c.d, key, grp: groupOf(key) };
+  }
+  if (!best || !best.grp) return null;
+  const keys = best.grp.keys.filter((k) => live.has(k) && DAILY_GAME_MAP[k]);
+  if (keys.length < 2) return null;
+  const doneToday = new Set(keys.filter((k) => {
+    try { const c = JSON.parse(localStorage.getItem(`sot_${k}_day`) || 'null'); return !!(c && c.d === todayYmd && c.done); } catch (e) { return false; }
+  }));
+  const open = keys.filter((k) => !doneToday.has(k));
+  return { name: best.grp.name, cat: best.grp.cat, keys, doneToday, open, first: open.length ? DAILY_GAME_MAP[open[0]] : null };
+}
+
 function etPrevMdy() {
   try {
     const [Y, M, D] = etToday().split('-').map(Number);
@@ -337,6 +363,12 @@ export default function StageWelcome({ capRef }) {
   // until tomorrow morning and you get one attempt. It forces the screen open
   // as well, so ?boards=1 is enough on its own and does not need ?welcome=1.
   const [preview, setPreview] = useState(false);
+  // The set to pick up, for a lapsed arrival. localStorage, so an effect.
+  const [lastSet, setLastSet] = useState(null);
+  // ?lapsed=1 previews the lapsed case (implies the screen): the gap is
+  // forced to LAPSED_GAP and the played-today branch stands aside. Review only.
+  const [lapsedPv, setLapsedPv] = useState(false);
+  useEffect(() => { try { setLastSet(lastSetPlayed(etToday())); } catch (e) { setLastSet(null); } }, []);
   // THE DAY THE LEFT COLUMN READS. Live, the reader's own last day out. Under
   // the preview, yesterday: the only reader who ever asks for this screen on
   // purpose is one who has played today, and their last day out IS today, so
@@ -383,6 +415,7 @@ export default function StageWelcome({ capRef }) {
       off = q.get('welcome') === '0';     // the kill switch
       pv = q.get('boards') === '1';       // the boards, for showing the owner
       if (pv) force = true;               // it implies the screen, and the replay
+      if (q.get('lapsed') === '1') { force = true; setLapsedPv(true); }
     } catch (e) {}
     if (off) return;
     if (!force) {
@@ -538,7 +571,7 @@ export default function StageWelcome({ capRef }) {
     const today = etToday();
     if (cold) return { figs: LINES };
     if (!data) return { figs: [] };
-    const gap = preview ? 1 : daysBetween(data.lastPlayed, today);
+    const gap = lapsedPv ? Math.max(LAPSED_GAP, daysBetween(data.lastPlayed, today) || 0) : preview ? 1 : daysBetween(data.lastPlayed, today);
     const num = (v) => (typeof v === 'number' && isFinite(v) ? v : null);
 
     // THE TWO BOARDS AS ONE QUEUE ITEM, or the recap rows they replaced. A column
@@ -563,7 +596,7 @@ export default function StageWelcome({ capRef }) {
     // RESUME. They have played today and come back, so the news is what moved
     // while they were away: other people played the day and their place on the
     // combined board went with it.
-    if (data.playedToday && !preview) {
+    if (data.playedToday && !preview && !lapsedPv) {
       const rank = num(data.dayRank);
       // PLACES MOVED TODAY, not the best-improved game (owner, live, 2026-08-31:
       // "i can't tell what the third stat is... four ten?"). The old figure put a
@@ -622,6 +655,12 @@ export default function StageWelcome({ capRef }) {
         caption: RECAP_ROWS && rows.length ? capOf(data.lastPlayed) : null,
         figs: [
           { k: 'away', lead: true, count: gap, lab: gap === 1 ? 'day away' : 'days away' },
+          // THE SET TO PICK UP (owner, 2026-09-07), for a gap of LAPSED_GAP days
+          // or more: the last set they played, as it stands today, and its
+          // first open game on the control at the foot. The boards still land
+          // under it. Skipped when the last game had no set, or the set has
+          // nothing open (a reader who finished it all today is not lapsed).
+          (gap >= LAPSED_GAP && lastSet && lastSet.first) ? { k: 'set', set: true, ...lastSet } : null,
           // A long absence often has no recap worth showing (the last day was
           // months ago, or they placed in nothing), so the standing figures stay
           // as the fallback rather than leaving the arrival a lead and nothing.
@@ -637,7 +676,7 @@ export default function StageWelcome({ capRef }) {
     }
 
     return { figs: [] };
-  }, [data, recap, cold, lastBoard, todayBoard, name, preview, lastDay]);
+  }, [data, recap, cold, lastBoard, todayBoard, name, preview, lastDay, lastSet, lapsedPv]);
 
   // ── the two edges of the hold, anchored to mount ─────────────────────────
   useEffect(() => {
@@ -721,6 +760,11 @@ export default function StageWelcome({ capRef }) {
 
   if (!on) return null;
 
+  const setFig = view.figs.find((f) => f.set) || null;
+  const pick = setFig && setFig.first
+    ? { href: setFig.first.href || `/${setFig.first.key}`, name: setFig.name, game: setFig.first.name, cat: setFig.cat }
+    : null;
+
   return (
     // THE ROOT IS NOT aria-hidden, THE WORDS ARE. It used to be, because every
     // word on the curtain is read again in place on the cap underneath and
@@ -785,7 +829,16 @@ export default function StageWelcome({ capRef }) {
           {view.caption && shown > 0 && view.figs.some((f, i) => f.row && i < shown)
             ? <div className="stw-cap">{view.caption}</div> : null}
           {view.figs.map((f, i) => (i < shown ? (
-            f.boards ? (
+            f.set ? (
+              <div key={f.k} className="stw-set" style={{ '--sc': categoryColor(f.cat) }}>
+                <i className="cl">Pick up where you left off</i>
+                <b>{f.name}</b>
+                <span className="stw-setp" aria-hidden="true">
+                  {f.keys.map((k) => <s key={k} className={f.doneToday.has(k) ? 'on' : ''} />)}
+                </span>
+                <i className="cl">{f.open.length} of {f.keys.length} open today &middot; {f.open.map((k) => DAILY_GAME_MAP[k].name).join(', ')}</i>
+              </div>
+            ) : f.boards ? (
               <div key={f.k} className={'stw-bds' + (f.one ? ' one' : '')}>
                 {f.cols.map((c) => (
                   <div key={c.k} className="stw-bd">
@@ -827,6 +880,15 @@ export default function StageWelcome({ capRef }) {
           It calls finish() directly AND lets the click reach the root's own
           handler; finish() is idempotent behind doneRef, so the double call is
           a no-op rather than something to stop propagating for. */}
+      {/* THE PICK-UP CONTROL, for the lapsed case only: one link into the
+          set's first open game. It stops the click at itself so the root's
+          finish() does not dismiss the screen under a navigation. */}
+      {held && pick ? (
+        <a className="stw-pick" href={pick.href} style={{ '--sc': categoryColor(pick.cat) }}
+          onClick={(e) => { e.stopPropagation(); }}>
+          Pick up {pick.name} <b>&middot; {pick.game}</b>
+        </a>
+      ) : null}
       {held ? (
         <button type="button" className="stw-skip" onClick={finish}>
           Continue<b> to the site</b><span aria-hidden="true">{'\u203A'}</span>
@@ -941,6 +1003,22 @@ const CSS = `
 /* The lead takes a line of its own at display size and the rest land in a row
    underneath it, exactly as the ending sets the IQ over its standings. */
 .stw-fig.lead{flex-basis:100%;}
+/* THE SET TO PICK UP: the set's own ramp colour on the words and the pips,
+   on the door's dark ground like every other figure. */
+.stw-set{flex-basis:100%;text-align:center;animation:stw-stamp 300ms cubic-bezier(.2,.9,.3,1.3) both;
+  margin-top:6px;padding-top:16px;border-top:1.5px solid rgba(233,237,244,.18);}
+.stw-set b{display:block;font-size:clamp(22px,3.4vw,34px);font-weight:800;letter-spacing:-.03em;color:var(--sc);margin-top:8px;}
+.stw-set i.cl{display:block;font-style:normal;font-family:${MONO};font-size:clamp(9px,1.15vw,11px);
+  letter-spacing:.16em;text-transform:uppercase;opacity:.72;margin-top:9px;}
+.stw-setp{display:flex;justify-content:center;gap:5px;margin-top:12px;}
+.stw-setp s{text-decoration:none;display:block;width:14px;height:22px;border-radius:3px;
+  border:1.5px solid var(--sc);opacity:.45;}
+.stw-setp s.on{background:var(--sc);opacity:1;}
+.stw-pick{position:absolute;left:clamp(14px,3vw,28px);bottom:clamp(16px,3.4vh,30px);z-index:3;
+  text-decoration:none;font-weight:800;font-size:13px;padding:10px 16px;border-radius:9px;
+  background:var(--sc);color:${RAMP_INK};display:inline-flex;gap:5px;align-items:baseline;
+  animation:stw-fade .3s both;}
+.stw-pick b{font-weight:700;opacity:.8;}
 .stw-fig.lead b{font-size:clamp(46px,10vw,110px);line-height:.9;letter-spacing:-.05em;}
 .stw-fig.lead i.cl{font-size:clamp(10px,1.4vw,13px);letter-spacing:.18em;opacity:.78;margin-top:12px;}
 @keyframes stw-stamp{
@@ -1005,6 +1083,8 @@ const CSS = `
      screen. On a phone the arrow carries the meaning and the word is enough. */
   .stw-skip{padding:8px 13px;letter-spacing:.12em;}
   .stw-skip b{display:none;}
+  .stw-pick{font-size:12px;padding:9px 12px;}
+  .stw-pick b{display:none;}
   .stw-fig i.cl{margin-top:7px;}
 }
 @media (prefers-reduced-motion: reduce){
