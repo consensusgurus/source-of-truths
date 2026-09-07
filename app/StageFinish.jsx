@@ -801,8 +801,12 @@ export default function StageFinish({
   const sameCat = useMemo(() => {
     if (!me) return [];
     const hi = new Set(pushSet ? pushSet.keys : []);
+    // The set's first open game is the Up next card directly above, full
+    // width; a tile for it underneath was the same control twice (owner,
+    // 2026-09-07).
+    const lead = pushSet && pushSet.open.length ? pushSet.open[0] : null;
     const order = (a, b) => (played.has(a.key) - played.has(b.key)) || a.name.localeCompare(b.name);
-    const inCat = LIVE().filter((g) => g.cat === me.cat && g.key !== me.key);
+    const inCat = LIVE().filter((g) => g.cat === me.cat && g.key !== me.key && g.key !== lead);
     const set = inCat.filter((g) => hi.has(g.key)).sort(order).map((g) => ({ g, set: true }));
     const rest = inCat.filter((g) => !hi.has(g.key)).sort(order).map((g) => ({ g, set: false }));
     return [...set, ...rest].slice(0, 8);
