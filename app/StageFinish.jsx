@@ -1140,7 +1140,10 @@ export default function StageFinish({
             <div>
               <div className="stf-eb">{setNext.set.handoff ? <>Up next &middot; {catRun.group.name} done, next set</> : <>Up next &middot; finish the set</>}</div>
               <div className="stf-fwdn">{setNext.g.name}</div>
-              <div className="stf-fwdt">{setNext.set.name} &middot; {setNext.set.handoff ? `${setNext.set.open.length} of ${setNext.set.total} open` : `${setNext.set.open.length} left`}</div>
+              {/* The set and what is left of it, as the filled chip (owner,
+                  2026-09-07): it sat over the tiles below, which do not
+                  always hold the game it counts. */}
+              <div className="stf-fwdt"><em className="stf-setchip">{setNext.set.name} &middot; {setNext.set.handoff ? `${setNext.set.open.length} of ${setNext.set.total} open` : `${setNext.set.open.length} left`}</em></div>
             </div>
             <span className="stf-go">Play</span>
           </a>
@@ -1160,14 +1163,7 @@ export default function StageFinish({
             back to the home to find its neighbours. */}
         {sameCat.length ? (
           <section>
-            <div className="stf-eb stf-ebset">
-              <span>{me ? `More ${me.cat} puzzles` : 'More puzzles'}</span>
-              {pushSet ? (
-                <em className={'stf-setchip' + (pushSet.open.length ? '' : ' ok')}>
-                  {pushSet.name} &middot; {pushSet.open.length ? `${pushSet.open.length} left` : 'done'}
-                </em>
-              ) : null}
-            </div>
+            <div className="stf-eb">{me ? `More ${me.cat} puzzles` : 'More puzzles'}</div>
             <div className="stf-tiles">
               {sameCat.map(({ g, set }) => <Tile key={g.key} g={g} played={played.has(g.key)} light={light} set={set} />)}
             </div>
@@ -1346,10 +1342,9 @@ const CSS = `
 .stf-tile.set:hover{border-color:var(--stg-acc);}
 .stf-tile.set.done{background:none;color:var(--stg-mute);border-color:var(--stg-line);border-left-color:var(--tc);}
 .stf-tile.set.done svg{color:var(--tc);}
-.stf-ebset{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.stf-ebset .stf-setchip{font-style:normal;font-family:${MONO};font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+.stf-fwdt .stf-setchip{font-style:normal;display:inline-block;margin-top:3px;font-family:${MONO};font-size:9px;letter-spacing:.12em;text-transform:uppercase;
   color:var(--stg-onramp,#08222e);background:var(--stg-acc);padding:2px 6px;border-radius:4px;}
-.stf-ebset .stf-setchip.ok{background:none;color:var(--stg-mute);border:1px solid var(--stg-line);}
+.stf-fwdt .stf-setchip.ok{background:none;color:var(--stg-mute);border:1px solid var(--stg-line);}
 .stf-o.on{border-color:var(--stg-acc);color:var(--stg-acc-ink);}
 
 .stf-curtain{background:var(--stg-acc);color:var(--stg-onramp,#08222e);
