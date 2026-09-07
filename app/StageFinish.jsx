@@ -157,7 +157,12 @@ const FLOOD_WAIT = 2200;
 const FLOOD_HINT = 1500;
 // The absolute stop, pathological only: nothing in the queue should be able to
 // outlast this, and if something does the player leaves anyway.
-const FLOOD_HARD = 9000;
+// SIZED TO THE LONGEST HONEST RUN (2026-09-07): a slow board read holds the
+// queue for FLOOD_WAIT, then the IQ climb, two stamps, the set's swell-and-
+// widen (FLOOD_RACK_WIDE) and the settle add up to about 12s, and at 9000 the
+// backstop was cutting the widen off on a slow read (seen on an archive
+// replay, where the rack mounted 7s in). Any tap still skips it.
+const FLOOD_HARD = 14000;
 const FLOOD_SHRINK = 640;   // it collapses onto the band's rectangle
 const FLOOD_FADE = 200;     // colour onto colour, so the band's words appear
 // A finish card mounts seconds after the last move: every client holds the
