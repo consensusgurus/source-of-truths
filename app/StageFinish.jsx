@@ -426,9 +426,14 @@ function doneToday() {
 function CategoryRack({ run, band = false }) {
   const g = run ? run.group : null;
   const grouped = !!g;
-  const [wide, setWide] = useState(band ? (!grouped || !!(run && run.complete)) : !grouped);
+  // On the flood, `wide` is a STATE the widen flips. On the band it is derived
+  // every render, because the finished set arrives after mount (`played` is
+  // read in an effect, and ?rackdone=1 lands the same way), and a band rack
+  // that read it once at mount stayed narrow after the set was done.
+  const [wideState, setWide] = useState(!grouped);
   const [swell, setSwell] = useState(false);
-  const complete = !!(grouped && run.complete);
+  const complete = !!(grouped && run && run.complete);
+  const wide = band ? (!grouped || complete) : wideState;
   useEffect(() => {
     if (band || !complete) return undefined;
     const a = setTimeout(() => setSwell(true), RACK_SWELL);
@@ -1227,9 +1232,9 @@ const CSS = `
 .stf-tile.set.done{background:none;color:var(--stg-mute);border-color:var(--stg-line);border-left-color:var(--tc);}
 .stf-tile.set.done svg{color:var(--tc);}
 .stf-ebset{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.stf-setchip{font-style:normal;font-family:${MONO};font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+.stf-ebset .stf-setchip{font-style:normal;font-family:${MONO};font-size:9px;letter-spacing:.12em;text-transform:uppercase;
   color:var(--stg-onramp,#08222e);background:var(--stg-acc);padding:2px 6px;border-radius:4px;}
-.stf-setchip.ok{background:none;color:var(--stg-mute);border:1px solid var(--stg-line);}
+.stf-ebset .stf-setchip.ok{background:none;color:var(--stg-mute);border:1px solid var(--stg-line);}
 .stf-o.on{border-color:var(--stg-acc);color:var(--stg-acc-ink);}
 
 .stf-curtain{background:var(--stg-acc);color:var(--stg-onramp,#08222e);
