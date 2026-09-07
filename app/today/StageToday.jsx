@@ -314,7 +314,7 @@ const leadRankOf = (id) => {
 // one they shut by hand stays shut where the default would open it.
 const SHELF_OPEN_KEY = 'sot_shelf_open';
 const MINE_ID = 'sty-mine';
-const UNF_MAX = 6;   // unfinished sets shown on the band before 'and N more': two rows of three
+const UNF_MAX = 3;   // unfinished sets shown on the band before 'Show N more' (owner, 2026-09-07)
 const CIRC_ID = 'sty-circs';
 // The Word category's section id, the same shape the render derives for every
 // category (`cat-${cat}` with spaces dashed), named here so the open-by-default
@@ -456,6 +456,7 @@ export default function StageToday() {
   // 2026-08-31). The three are DISPLAY_CIRCUITS' own lead order, which is
   // deliberate and lives in lib/circuits.js.
   const [allCircs, setAllCircs] = useState(false);
+  const [allUnf, setAllUnf] = useState(false);   // the unfinished band, opened past its three
 
   // PINS LIVE ON THE ACCOUNT, via the hook the other home already uses, so a
   // star set on either surface is the same star. Nothing here keeps its own
@@ -1503,7 +1504,7 @@ export default function StageToday() {
               <b>{unfinishedSets.length}<i>&nbsp;{unfinishedSets.length === 1 ? 'set' : 'sets'}</i></b>
             </div>
             <div className="sty-unfl">
-              {unfinishedSets.slice(0, UNF_MAX).map((st) => {
+              {(allUnf ? unfinishedSets : unfinishedSets.slice(0, UNF_MAX)).map((st) => {
                 const g = DAILY_GAME_MAP[st.open[0]];
                 if (!g) return null;
                 return (
@@ -1523,7 +1524,9 @@ export default function StageToday() {
             {/* A heavy player can have nine open sets by noon; four is a band,
                 nine is a page. The rest are on their shelves below. */}
             {unfinishedSets.length > UNF_MAX ? (
-              <div className="sty-unfmore">and {unfinishedSets.length - UNF_MAX} more on the shelves below</div>
+              <button type="button" className="sty-unfmore" onClick={() => setAllUnf((v) => !v)}>
+                {allUnf ? 'Show fewer' : `Show ${unfinishedSets.length - UNF_MAX} more`}
+              </button>
             ) : null}
           </section>
         ) : null}
@@ -2421,7 +2424,9 @@ ${PATCH_CSS}
 .sty-unfp s.on{opacity:1;}
 .sty-unfgo{margin-left:auto;flex:none;font-size:12.5px;font-weight:800;padding:7px 12px;border-radius:8px;
   background:var(--sc);color:var(--son);white-space:nowrap;}
-.sty-unfmore{margin-top:8px;font-family:${MONO};font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute);}
+.sty-unfmore{margin-top:8px;font:inherit;font-family:${MONO};font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--stg-ink2);background:none;border:1px solid var(--stg-line);border-radius:6px;padding:6px 10px;cursor:pointer;}
+.sty-unfmore:hover{border-color:var(--stg-line2);color:var(--stg-ink);}
 .sty-cathead h2{margin:0;font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;}
 .sty-cathead b{font-family:${MONO};font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--stg-ink2);}
 .sty-cathead b i{font-style:normal;color:var(--stg-mute);}
