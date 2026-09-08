@@ -831,6 +831,13 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
           .je-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accentDeep}) 86%, var(--stg-ink, var(--white)));}
           .je-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
           .je-tool.on{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-color:var(--stg-acc, ${COLORS.accent});}
+          /* THE COURT READS BRIGHTER ON THE DARK STAGE (owner, 2026-09-08: "can we make
+             this a bit brighter on dark mode?"). The shared region ramp mixes a hue into
+             the cell at --stg-tint-mix, 26% dark / 12% light, and on Jesters the courts
+             are the whole puzzle, so 26 read as a muddy heat map. The board re-declares
+             the mix through --stg-dk (100% dark, 0% light): 40% on the dark register,
+             the light register's 12% untouched. Other region boards keep the token. */
+          .je-court{--stg-tint-mix:calc(12% + var(--stg-dk, 100%) * 0.28);}
           .je-cell{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;}
           .je-cell:hover::after{content:'';position:absolute;inset:0;background:rgba(28,30,36,0.07);}
           .je-x{color:rgba(28,30,36,0.45);font-size:15px;font-weight:800;}
@@ -909,7 +916,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
         <div className="je-board-scroll" ref={boardBoxRef} style={{ textAlign: 'center' }}>
          <div style={{ display: 'inline-block' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-          <div style={{ display: 'inline-block', border: `3px solid ${T.ink}`, borderRadius: 10, overflow: 'hidden', background: T.ink, boxShadow: '0 2px 10px rgba(20,22,28,0.12)' }}>
+          <div className="je-court" style={{ display: 'inline-block', border: `3px solid ${T.ink}`, borderRadius: 10, overflow: 'hidden', background: T.ink, boxShadow: '0 2px 10px rgba(20,22,28,0.12)' }}>
             {PUZZLE.regions.map((row, r) => (
               <div key={r} style={{ display: 'flex' }}>
                 {row.map((id, c) => {
