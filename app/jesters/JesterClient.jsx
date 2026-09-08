@@ -835,12 +835,17 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
              this a bit brighter on dark mode?"). The shared region ramp mixes a hue into
              the cell at --stg-tint-mix, 26% dark / 12% light, and on Jesters the courts
              are the whole puzzle, so 26 read as a muddy heat map. The board re-declares
-             the mix through --stg-dk (100% dark, 0% light): 40% on the dark register,
+             the mix through --stg-dk (100% dark, 0% light): 52% on the dark register (owner
+             asked for more after 40),
              the light register's 12% untouched. Other region boards keep the token. */
-          .je-court{--stg-tint-mix:calc(12% + var(--stg-dk, 100%) * 0.28);}
+          .je-court{--stg-tint-mix:calc(12% + var(--stg-dk, 100%) * 0.40);}
           .je-cell{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;}
           .je-cell:hover::after{content:'';position:absolute;inset:0;background:rgba(28,30,36,0.07);}
-          .je-x{color:rgba(28,30,36,0.45);font-size:15px;font-weight:800;}
+          /* The mark is the register's INK, not a hardcoded near-black: on the dark stage
+             rgba(28,30,36,.45) was invisible on every court (owner, 2026-09-08: "I can't
+             even see the xs"). Ink at 85% on the dark register, 50% on the light one (via --stg-dk,
+             so light stays where it was); the JSX's own .6 for auto marks multiplies in. */
+          .je-x{color:color-mix(in srgb, var(--stg-ink, #1c1e24) calc(50% + var(--stg-dk, 100%) * 0.35), transparent);font-size:15px;font-weight:800;}
           @media(max-width:560px){.je-board-scroll{overflow-x:auto;padding-bottom:6px;}}
         `}</style>
 
