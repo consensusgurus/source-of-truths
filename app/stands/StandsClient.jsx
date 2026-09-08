@@ -395,6 +395,36 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
     setVerdict({ msg: `${PUZZLE.teams[PAIRS[k][0]]} against ${PUZZLE.teams[PAIRS[k][1]]} filled in. (−2)` });
   }
 
+  // Which clues does a full sheet break? A rejected sheet names the first one,
+  // so a player who misread a clue learns which line to re-read instead of
+  // being told a count of cells that "cannot have gone that way". This reads
+  // only the player's own cells, never the solution.
+  function brokenClues(cells) {
+    const pts = Array(N).fill(0), wins = Array(N).fill(0), draws = Array(N).fill(0), losses = Array(N).fill(0);
+    let totalDraws = 0;
+    PAIRS.forEach(([i,j],k) => {
+      const r = cells[k];
+      if (r === 0) { pts[i] += 3; wins[i]++; losses[j]++; }
+      else if (r === 2) { pts[j] += 3; wins[j]++; losses[i]++; }
+      else if (r === 1) { pts[i]++; pts[j]++; draws[i]++; draws[j]++; totalDraws++; }
+    });
+    const idx = (x, y) => PAIRS.findIndex(([a,b]) => (a === x && b === y) || (a === y && b === x));
+    return PUZZLE.clues.filter((c) => {
+      switch (c.type) {
+        case 'beat': { const k = idx(c.x, c.y); return cells[k] !== (PAIRS[k][0] === c.x ? 0 : 2); }
+        case 'drew': return cells[idx(c.x, c.y)] !== 1;
+        case 'points': return pts[c.x] !== c.p;
+        case 'wins': return wins[c.x] !== c.n;
+        case 'draws': return draws[c.x] !== c.n;
+        case 'unbeaten': return losses[c.x] > 0;
+        case 'winless': return wins[c.x] > 0;
+        case 'above': return !(pts[c.x] > pts[c.y]);
+        case 'totalDraws': return totalDraws !== c.n;
+      }
+      return false;
+    });
+  }
+
   function submit() {
     if (!playing || filled !== PAIRS.length || !SOLUTION) return;
     const wrong = PAIRS.map((_, k) => k).filter((k) => g.cells[k] !== SOLUTION[k]);
@@ -404,7 +434,12 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
       postResult(g2, Math.max(1, TOTAL - 3 * g2.rejected - 2 * g2.hints));
     } else {
       setG((cur) => ({ ...cur, rejected: cur.rejected + 1 }));
-      setVerdict({ msg: `That table breaks the record: ${wrong.length} match${wrong.length === 1 ? '' : 'es'} cannot have gone that way. (−3)` });
+      const broken = brokenClues(g.cells);
+      const first = broken[0];
+      const n = first ? PUZZLE.clues.indexOf(first) + 1 : 0;
+      setVerdict({ msg: first
+        ? <>That table breaks the record: fact {n}{broken.length > 1 ? ` and ${broken.length - 1} more` : ''} cannot hold. Fact {n}: {clueText(first)} (−3)</>
+        : `That table breaks the record: ${wrong.length} match${wrong.length === 1 ? '' : 'es'} cannot have gone that way. (−3)` });
     }
   }
   function reveal() {
@@ -424,7 +459,11 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
       case 'draws': return <><b>{T[c.x]}</b> drew exactly <b>{c.n}</b> match{c.n === 1 ? '' : 'es'}.</>;
       case 'unbeaten': return <><b>{T[c.x]}</b> went unbeaten.</>;
       case 'winless': return <><b>{T[c.x]}</b> never won.</>;
-      case 'above': return <><b>{T[c.x]}</b> finished above <b>{T[c.y]}</b>.</>;
+      // "Finished above" read as a table position, and a table position can be
+      // a tiebreak. Two players in a row handed in sheets with the pair level on
+      // points (2026-09-07 and 09-08, both rejected). The solver has always
+      // meant strictly more points, so the clue now says so.
+      case 'above': return <><b>{T[c.x]}</b> finished on <b>more points</b> than <b>{T[c.y]}</b>.</>;
       case 'totalDraws': return <>Exactly <b>{c.n}</b> of the {PAIRS.length} matches were drawn.</>;
     }
     return null;
