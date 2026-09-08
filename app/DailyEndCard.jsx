@@ -88,7 +88,7 @@ import {
   Club, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, UserPlus, Gavel, Shield,
   Flame, Frame, Contrast, Layers, FileText, Waypoints, Anchor, PenLine, Gamepad2, Zap, Sigma, Sandwich,
   ArrowLeftRight, Gem, Map as MapIcon, Divide, TableProperties, TrendingUp, Milestone, CornerUpRight,
-  Clapperboard, Quote, ZoomIn, Axe, Truck, Rows3, Boxes, MoveDiagonal,
+  Clapperboard, Quote, ZoomIn, Axe, Truck, Rows3, Boxes, MoveDiagonal, Crop, Scan,
 } from 'lucide-react';
 import ReportIssue from './ReportIssue';
 import MindLoftMark from './MindLoftMark';
@@ -115,7 +115,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-15' };
+const LAUNCH_PIN = { keys: ['frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-15' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -197,6 +197,8 @@ export const GAME_META = {
   mercury: { accent: '#991b1b', badgeBg: '#991b1b', badgeInk: T.white, Fin: Thermometer },
   polka: { accent: '#16a34a', badgeBg: '#16a34a', badgeInk: T.white, Fin: CircleDot },
   diag: { accent: '#0e7490', badgeBg: '#0e7490', badgeInk: T.white, Fin: MoveDiagonal },
+  frame: { accent: '#b45309', badgeBg: '#b45309', badgeInk: T.white, Fin: Crop },
+  rim: { accent: '#4d7c0f', badgeBg: '#4d7c0f', badgeInk: T.white, Fin: Scan },
   whittle: { accent: '#854d0e', badgeBg: '#854d0e', badgeInk: T.white, Fin: Axe },
   knight: { accent: '#3730a3', badgeBg: '#3730a3', badgeInk: T.white, Fin: CornerUpRight },
   atlas: { accent: '#047857', badgeBg: '#047857', badgeInk: T.white, Fin: MapIcon },
@@ -287,6 +289,8 @@ const ALL_DAILY_GAMES = [
   { key: 'knight', cat: 'sudoku' ,   name: 'Knight', tag: 'The daily anti-knight sudoku',     blurb: 'One rule on top of sudoku: no digit repeats a knight move away. Select a square and its knights light up, and the board prints as few as thirteen digits.', href: '/knight' },
   { key: 'whittle', cat: 'sudoku' ,  name: 'Whittle', tag: 'The sudoku, backwards',            blurb: 'The one played backwards: a solved grid, eighteen clues, and you take clues out for as long as it still has one answer.', href: '/whittle' },
   { key: 'diag',  cat: 'sudoku' ,   name: 'Diag',  tag: 'The daily diagonal sudoku',    blurb: 'Sudoku X: both long diagonals hold 1 to 9 as well, so two extra houses cross the grid and the board prints fewer clues.', href: '/diag' },
+  { key: 'frame',  cat: 'sudoku' ,   name: 'Frame',  tag: 'The daily frame sudoku',    blurb: 'Sudoku with the sum of the outer three squares printed at every row and column end. Thirty-six sums, and the board prints as few as two digits.', href: '/frame' },
+  { key: 'rim',  cat: 'sudoku' ,   name: 'Rim',  tag: 'The daily outside sudoku',    blurb: 'Sudoku with nothing printed inside the grid: the clues sit in the margin, three digits at a time, and the blank gutters are the puzzle.', href: '/rim' },
   { key: 'polka',  cat: 'sudoku' ,   name: 'Polka',  tag: 'No numbers, only dots',     blurb: 'Kropki: not one digit printed. White dots mean consecutive, black mean double, and the silent edges are clues too.', href: '/polka' },
   { key: 'sando',  cat: 'sudoku' ,   name: 'Sando',  tag: 'The daily sandwich sudoku',  blurb: 'Each margin number totals the digits between that line\u2019s 1 and its 9. Find them and the grid falls out.', href: '/sando' },
   { key: 'carve',  cat: 'numbers',   name: 'Carve',  tag: 'Carve equal-sum regions',   blurb: 'Slice the number grid into regions that every one of them adds up to the same total.', href: '/carve' },

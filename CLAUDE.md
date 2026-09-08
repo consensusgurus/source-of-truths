@@ -3803,6 +3803,8 @@ archive and hub chips use the short form `Sun`.
 | Sando | six printed digits instead of the weekday 10 to 20 (from 2026-08-13) |
 | Knight | thirteen printed digits instead of the weekday 16 to 28 (from 2026-08-28) |
 | Diag | fourteen printed digits instead of the weekday 16 to 26 (from 2026-09-08) |
+| Frame | two printed digits instead of the weekday 4 to 14, under all thirty-six sums (from 2026-09-08) |
+| Rim | thirteen of the thirty-six gutters printed instead of the weekday 16 to 30 (from 2026-09-08) |
 | Circa | a trickier moment to place |
 | Extra | a trickier story to name |
 | Carve | 7×7 board in nine blocks |
@@ -4240,6 +4242,42 @@ the client (the trick `verify-endgame-playout.mjs` uses), stub `document.element
 grid of known coordinates, and drive synthetic pointer sequences. That is how commit-on-lift, the
 hold-to-aim discriminator, the line lock, the free marks, the win path and the unchanged mouse path
 were all confirmed before the push, along with a unit test of the commit's error arithmetic.
+
+## Frame and Rim are the GUTTER SUDOKUS, and they share one engine (launched 2026-09-08)
+
+Two sudokus built on Sando's border-clue layout with the gutter on all FOUR sides (an 11x11
+grid, the 9x9 in the middle). Both read the same thing, a line's first three cells counting in
+from an edge (thirty-six such triples), and print different facts about it:
+
+- **Frame** prints the SUM of the three (6 to 24), all thirty-six of them on every board, the
+  way Sando prints all eighteen. The ramp is the digits printed INSIDE the grid: Mon 14 / Tue
+  12 / Wed 10 / Thu 8 / Fri 6 / Sat 4 / **Sun 2**. Measured before choosing: under all 36 sums
+  a random 8-digit board falls to logic 4 times in 5, a 2-digit board 1 in 7, a 0-digit board
+  1 in 50. The verifier also proves the gutter is load-bearing (the digits alone admit >1 grid).
+- **Rim** prints the three DIGITS as an unordered set and prints NOTHING inside the grid, ever
+  (`given` is all zeros, kept for shape). A full set of 36 triples pins the grid every time with
+  singles alone, so the ramp is how many are printed and the blank gutters are the puzzle: Mon
+  30 / Tue 27 / Wed 24 / Thu 21 / Fri 18 / Sat 16 / **Sun 13** of 36. Measured: a greedy dig
+  bottoms out at 13 to 17 (mode 15), so Sunday is the floor of the rulebook.
+- **Neither has a `level` field**, and that is a measured finding as with Sando: every trial and
+  banked board falls to the gutter deduction plus naked and hidden singles or does not fall at
+  all. Both verifiers assert level 1 exactly. A printed Rim triple is a naked triple handed to
+  the player, which is why it is the gentler of the two.
+- **One generator, `scripts/gen-gutter.mjs frame|rim`**, on `scripts/gutter-core.mjs`; one
+  independent solver library, `scripts/gutter-check-lib.mjs` (Set candidates, house/digit
+  branching, policed against the truth), behind `verify-frame.mjs` and `verify-rim.mjs` (a
+  file named `verify-*.mjs` is a checker to verify-all, which is why the shared library is not).
+  `scripts/gutter-mutation-test.mjs frame|rim` breaks each bank nine ways; all caught.
+- **Clients are one transform of DiagClient** (`mkgutter.py`, not committed): the diagonal rule
+  out, a `gutterCell` renderer in, the heavy rules moved onto the outer cells since the
+  container now wraps the gutter. Selecting a square lights the gutters that speak about it; a
+  gutter whose three squares are filled marks itself right or wrong (Frame shows the
+  difference, Rim a tick or a cross). Frame's gutter track is 0.66 of a square, Rim's 0.8
+  because it carries three digits.
+- **Both joined the rotating Sudoku circuit**, pool ten -> TWELVE, `rotate` still 5, so each
+  member plays five days in every twelve. Medians are ESTIMATES (rim 600, frame 850). Both sit
+  in the 'Edge clue sudokus' set, which is now at its five-key ceiling.
+- **Legacy slate hues:** Frame amber #b45309, Rim moss #4d7c0f. The pages wear the Sudoku ramp.
 
 ## Diag is the DIAGONAL SUDOKU (Sudoku X), and a diagonal IS a house (launched 2026-09-08)
 

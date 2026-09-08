@@ -13,7 +13,7 @@
 //   mounts (`ready`), which is the moment the player is looking at a result.
 //
 //   THE GAME IS ONE OF TODAY'S FIVE. The Sudoku circuit is a rotating window
-//   over a pool of ten (lib/circuits.js), so a sudoku that is in the pool but
+//   over a pool of twelve (lib/circuits.js), so a sudoku that is in the pool but
 //   not on today's card gets no nudge: the circuit could not be completed
 //   through it. circuitKeysFor is the one accessor that knows the day's five.
 //

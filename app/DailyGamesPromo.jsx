@@ -86,6 +86,8 @@ export const DAILY_GAMES = [
   { key: 'mercury', href: '/mercury', name: 'Mercury', tag: 'the daily thermo sudoku', store: 'sot_mercury_day', accent: '#991b1b', bg: '#fdf1f1', border: 'rgba(153,27,27,0.4)' },
   { key: 'polka', href: '/polka', name: 'Polka', tag: 'the daily kropki sudoku', store: 'sot_polka_day', accent: '#16a34a', bg: '#ecf9f1', border: 'rgba(22,163,74,0.4)' },
   { key: 'diag', href: '/diag', name: 'Diag', tag: 'the daily diagonal sudoku', store: 'sot_diag_day', accent: '#0e7490', bg: '#e8f6fa', border: 'rgba(14,116,144,0.4)' },
+  { key: 'frame', href: '/frame', name: 'Frame', tag: 'the daily frame sudoku', store: 'sot_frame_day', accent: '#b45309', bg: '#fdf3e3', border: 'rgba(180,83,9,0.4)' },
+  { key: 'rim', href: '/rim', name: 'Rim', tag: 'the daily outside sudoku', store: 'sot_rim_day', accent: '#4d7c0f', bg: '#f1f8e6', border: 'rgba(77,124,15,0.4)' },
   { key: 'whittle', href: '/whittle', name: 'Whittle', tag: 'the sudoku, backwards', store: 'sot_whittle_day', accent: '#854d0e', bg: '#fdf6e9', border: 'rgba(133,77,14,0.4)' },
   { key: 'knight', href: '/knight', name: 'Knight', tag: 'the daily anti-knight sudoku', store: 'sot_knight_day', accent: '#3730a3', bg: '#f1f0fd', border: 'rgba(55,48,163,0.4)' },
   { key: 'shoe', href: '/shoe', name: 'Shoe', tag: 'the daily blackjack shoe', store: 'sot_shoe_day', accent: '#0c4a6e', bg: '#e8f3fa', border: 'rgba(12,74,110,0.4)' },
