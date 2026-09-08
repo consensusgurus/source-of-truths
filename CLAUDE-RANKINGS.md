@@ -140,8 +140,11 @@ endpoint, `boxscore.teams[].statistics` totalYards and turnovers).
    12.58 to 12.85 with it) and it is here as a resume term, what a team did against what was
    expected of it, at a quarter of the pillar. The page shows the ATS record (on the scoreboard's
    cover, since that is what "covered" means) with the luck-adjusted average on hover.
-6. `R = 0.40 * margin + 0.20 * wins + 0.40 * cover` for CFB (owner rule, 2026-09-08; NFL and the
-   pre-09-08 CFB weeks are 0.45 / 0.30 / 0.25). A team that has not played yet sits at the
+6. **CFB scores the cover term and NOTHING else: `R = cover`** (owner rule, 2026-09-08; `mix`
+   0 / 0 / 1, `n0` 0, capped per game at 28, then put on the market's spread). Margin and wins are
+   still computed, because the ridge supplies the fitted home field, and are worth zero. See the
+   ruling below for why they had to go rather than be reweighted. NFL keeps 0.45 / 0.30 / 0.25 and
+   has played no games. A team that has not played yet sits at the
    played teams' mean, which is zero after centring: no evidence reads as average, never as a
    penalty.
 
@@ -212,45 +215,60 @@ the 2025 backtest**, so the weight is an editorial choice about what a ranking i
 cannot make it; what moves is how closely the board tracks the standings (each ten points toward
 results buys about 0.01 of rank correlation with W-L).
 
-Tie-break on composite, then results, then odds, then name. `SCORING_VERSION = 3`.
+Tie-break on composite, then results, then odds, then name. `SCORING_VERSION = 4`.
 
-### ⚠️ MARGIN AND WINS MEASURE VOLUME UNTIL TEAMS SHARE AN OPPONENT (owner rule, 2026-09-08)
+### ⚠️ THE CFB RÉSUMÉ IS THE COVER TERM ALONE (owner rule, 2026-09-08)
 
-Two of the three results terms scale with games played and neither can see WHO you played until
-the game graph connects, which it does not in week 1. Measured on the 2026-09-08 board:
+Margin and wins were REMOVED from the CFB results pillar, not reweighted. **Each scales with games
+played and neither can see the opponent until teams share one, which in week 1 they do not**, so no
+split of the two ranks quality. Measured on the 2026-09-08 board:
 
 - **In a one-game graph the ridge splits the capped margin symmetrically and carries no schedule
-  information at all.** LSU's 51-10 over Clemson and Ohio State's 56-3 over Ball State both rated
-  a margin of **exactly 8.50**, as did Texas, South Carolina, Pittsburgh and Mississippi State.
-  Every one of those margins blew past the 28-point cap, and beating Clemson by 41 is the same
-  solve that drives Clemson to -8.50, so the credit for the opponent cancels itself. "Schedule
-  strength is built in" is true only from the week teams start sharing opponents.
-- **Bradley-Terry counts a second win as a second win**, whoever it came against.
-- **The ridge's phantom game (`lam = 1`) dilutes two games by a third and one game by a half**, so
-  a 2-0 team out-rates a 1-0 one on margin before any quality is considered.
+  information at all.** LSU's 51-10 over Clemson and Ohio State's 56-3 over Ball State both rated a
+  margin of **exactly 8.50**, as did Texas, South Carolina, Pittsburgh and Mississippi State. Clemson's
+  entire rating came from losing that game, so beating Clemson by 41 is the same solve that drives
+  Clemson to -8.50 and the credit cancels itself.
+- **The phantom game (`lam = 1`) divides one game by two and two games by three.** LSU rated 8.50 on a
+  25.5-point per-game margin while a 2-0 USC rated 12.55 on a 20.6 average: better per game, worse
+  rating.
+- **Bradley-Terry gave USC 10.09 to LSU's 5.12, almost exactly 2x**, which is the win COUNT and nothing
+  else.
 
-Together those put **2-0 USC at résumé rank 1** (1-1 ATS, +1.4 per game against the number, over
-San José State and Fresno State) ahead of **1-0 LSU at +37.9** against the number over Clemson.
-The cover term was the only one that disagreed, and it carried the smallest share AND the heaviest
-shrinkage for the team with fewer games (`n / (n + 4)` is 0.20 at one game against 0.33 at two).
+Together those held a 2-0 USC at résumé 1 (1-1 ATS, +1.4 a game against the number, over San José
+State and Fresno State) over a 1-0 LSU at +37.9 over Clemson. A first pass moved ten points from wins
+to cover (0.40 / 0.20 / 0.40) and was not enough: USC stayed résumé 2 on the same volume effect.
 
-**The ruling: ten points come off `wins` and go to `cover`, CFB only.** Cover is the one term that
-prices the opponent, because the closing line does. Week 1 then reads LSU, USC, Miami, Pittsburgh.
-Two alternatives were measured and rejected: shrinking cover less early (`n0 = 1`) fixes the top
-but is a narrower lever, and a cover-LED early mix (0.25 / 0.15 / 0.60) chases upsets, putting
-Massachusetts second on one 29.5-point outright dog. Section 2c's own finding is that mix moves
-prediction by under a point across this whole range, so this is an editorial choice about what a
-résumé MEANS, not an accuracy claim.
+**Cover is the one measurement that prices the OPPONENT and the SITE**, because the closing line
+does, and it never imports the market's opinion of the team itself. Three details:
 
-**Still open: the NFL keeps 0.45 / 0.30 / 0.25.** It has played no games, so nothing on its board
-moves either way, and aligning it is a free decision RIGHT UP UNTIL its week-1 results land.
+- **Straight per-game mean, `n0 = 0`, no shrinkage.** The old `n / (n + 4)` is itself a games-played
+  effect (0.20 at one game against 0.33 at two), which is the thing being removed.
+- **Capped per game at 28, like a margin.** Beating a number by 45 says "far better than the market
+  thought" and nothing finer. The W-L-P record beside it is the SCOREBOARD's cover and is never capped.
+- **Rescaled onto the market's spread**, the way the analytics pillar already is. A per-game cover has
+  a far wider spread than a ridge rating, and without the rescale a stated 6.7% share would carry a
+  good deal more than 6.7% of the board.
 
-### The 30-day rule (owner rule, 2026-08-28), unchanged
+**⚠️ ACCEPTED COST, ruled on with the two boards side by side. This is a WHAT-YOU-DID-AGAINST-
+EXPECTATION column, not an absolute-quality one.** Ohio State sits 60th for beating Ball State by 53,
+because that is what was expected of it, and a 1-0 Massachusetts shares résumé T1 for winning outright
+at Rutgers as a 29.5-point dog. **Do not "fix" either: they are the column working.** The alternative
+measured and rejected was crediting each game against the opponent's MARKET rating (0.6 x (per-game
+margin + opponent rating) + 0.4 x cover), which reads more like a poll and put USC 34th rather than
+73rd, Oregon 53rd rather than 100th, but makes the results pillar borrow the market's opinion, and the
+entire argument for the pillar is that it is the one thing on the board that is not a forecast.
 
-A source whose data is more than 30 days old is EXCLUDED: scores nothing, takes no share, keeps its
-column struck through with the reason. An undated source must name the current season. A team
-ranked only by an excluded source never reaches the board. The preseason trap still bites (FPI is
-38 and 87 days old on 2026-09-01) and still resolves itself once the seasons start.
+**The ramp was deliberately left alone at 6.7% in week 1** (owner ruling, same day). Oregon beating
+Boise State by 7 at home as a 24.5-point favourite is résumé **100th** and Indiana, at -20.4 a game,
+is **128th**, but both still sit top six on the composite because results carry 6.7% this week.
+Raising the early share was costed: 20% puts Oregon 5th and LSU 3rd, 30% puts LSU 1st overall and
+Indiana 13th. The owner's call is that one game is one game.
+
+**Pillar rank columns are COMPETITION-ranked from this change** (`rankDescTied` in `lib/gridiron-math.js`).
+A cover-only résumé ties by construction, since every team that beat its number by more than the cap
+lands on the cap, and `rankDesc` breaks a tie on ARRAY INDEX, which would have printed 1, 2, 3 over
+three identical numbers. That is the fabricated order section 2d bans in the MODELS column. Shared
+ranks now print `T1` exactly as the composite and `rankSource` already do.
 
 ## 2a. What the page shows
 
