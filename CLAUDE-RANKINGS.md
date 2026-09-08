@@ -140,7 +140,8 @@ endpoint, `boxscore.teams[].statistics` totalYards and turnovers).
    12.58 to 12.85 with it) and it is here as a resume term, what a team did against what was
    expected of it, at a quarter of the pillar. The page shows the ATS record (on the scoreboard's
    cover, since that is what "covered" means) with the luck-adjusted average on hover.
-6. `R = 0.45 * margin + 0.30 * wins + 0.25 * cover`. A team that has not played yet sits at the
+6. `R = 0.40 * margin + 0.20 * wins + 0.40 * cover` for CFB (owner rule, 2026-09-08; NFL and the
+   pre-09-08 CFB weeks are 0.45 / 0.30 / 0.25). A team that has not played yet sits at the
    played teams' mean, which is zero after centring: no evidence reads as average, never as a
    penalty.
 
@@ -211,7 +212,38 @@ the 2025 backtest**, so the weight is an editorial choice about what a ranking i
 cannot make it; what moves is how closely the board tracks the standings (each ten points toward
 results buys about 0.01 of rank correlation with W-L).
 
-Tie-break on composite, then results, then odds, then name. `SCORING_VERSION = 2`.
+Tie-break on composite, then results, then odds, then name. `SCORING_VERSION = 3`.
+
+### ⚠️ MARGIN AND WINS MEASURE VOLUME UNTIL TEAMS SHARE AN OPPONENT (owner rule, 2026-09-08)
+
+Two of the three results terms scale with games played and neither can see WHO you played until
+the game graph connects, which it does not in week 1. Measured on the 2026-09-08 board:
+
+- **In a one-game graph the ridge splits the capped margin symmetrically and carries no schedule
+  information at all.** LSU's 51-10 over Clemson and Ohio State's 56-3 over Ball State both rated
+  a margin of **exactly 8.50**, as did Texas, South Carolina, Pittsburgh and Mississippi State.
+  Every one of those margins blew past the 28-point cap, and beating Clemson by 41 is the same
+  solve that drives Clemson to -8.50, so the credit for the opponent cancels itself. "Schedule
+  strength is built in" is true only from the week teams start sharing opponents.
+- **Bradley-Terry counts a second win as a second win**, whoever it came against.
+- **The ridge's phantom game (`lam = 1`) dilutes two games by a third and one game by a half**, so
+  a 2-0 team out-rates a 1-0 one on margin before any quality is considered.
+
+Together those put **2-0 USC at résumé rank 1** (1-1 ATS, +1.4 per game against the number, over
+San José State and Fresno State) ahead of **1-0 LSU at +37.9** against the number over Clemson.
+The cover term was the only one that disagreed, and it carried the smallest share AND the heaviest
+shrinkage for the team with fewer games (`n / (n + 4)` is 0.20 at one game against 0.33 at two).
+
+**The ruling: ten points come off `wins` and go to `cover`, CFB only.** Cover is the one term that
+prices the opponent, because the closing line does. Week 1 then reads LSU, USC, Miami, Pittsburgh.
+Two alternatives were measured and rejected: shrinking cover less early (`n0 = 1`) fixes the top
+but is a narrower lever, and a cover-LED early mix (0.25 / 0.15 / 0.60) chases upsets, putting
+Massachusetts second on one 29.5-point outright dog. Section 2c's own finding is that mix moves
+prediction by under a point across this whole range, so this is an editorial choice about what a
+résumé MEANS, not an accuracy claim.
+
+**Still open: the NFL keeps 0.45 / 0.30 / 0.25.** It has played no games, so nothing on its board
+moves either way, and aligning it is a free decision RIGHT UP UNTIL its week-1 results land.
 
 ### The 30-day rule (owner rule, 2026-08-28), unchanged
 
