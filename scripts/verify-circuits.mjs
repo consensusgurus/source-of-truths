@@ -79,6 +79,11 @@ const MED = {
   // shape (a 13-to-28 clue anti-knight 9x9, so between Polka and Mercury).
   // Replace with the measured median at the next snapshot re-measure.
   knight: 800,
+  // Diag launched 2026-09-08 with no live clock data yet: estimated from its
+  // shape (a 14-to-26 clue diagonal 9x9; two extra houses make it easier than
+  // a plain Suds board of the same count, so between Suds and Quilt). Replace
+  // with the measured median at the next snapshot re-measure.
+  diag: 550,
   // Atlas launched 2026-08-25 with no live clock data yet: estimated from its
   // shape (25 multiple-choice questions, so between Deep's 15 and Streak's 40).
   // Replace with the measured median at the next snapshot re-measure.

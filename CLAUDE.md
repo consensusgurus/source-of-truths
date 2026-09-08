@@ -3802,6 +3802,7 @@ archive and hub chips use the short form `Sun`.
 | Cages | 27 cages instead of the weekday 29 to 34, and the only day that prints a five-cell cage (from 2026-08-12) |
 | Sando | six printed digits instead of the weekday 10 to 20 (from 2026-08-13) |
 | Knight | thirteen printed digits instead of the weekday 16 to 28 (from 2026-08-28) |
+| Diag | fourteen printed digits instead of the weekday 16 to 26 (from 2026-09-08) |
 | Circa | a trickier moment to place |
 | Extra | a trickier story to name |
 | Carve | 7×7 board in nine blocks |
@@ -4239,6 +4240,40 @@ the client (the trick `verify-endgame-playout.mjs` uses), stub `document.element
 grid of known coordinates, and drive synthetic pointer sequences. That is how commit-on-lift, the
 hold-to-aim discriminator, the line lock, the free marks, the win path and the unchanged mouse path
 were all confirmed before the push, along with a unit test of the commit's error arithmetic.
+
+## Diag is the DIAGONAL SUDOKU (Sudoku X), and a diagonal IS a house (launched 2026-09-08)
+
+The tenth fill-in sudoku, after Suds, Quilt, Cages, Sando, Sixes, Mercury, Polka, Knight and
+Towers (Whittle, the eleventh Sudoku row, is played backwards). Ordinary 9x9, ordinary boxes,
+ordinary printed digits, plus one rule: each of the two long diagonals, corner to corner, also
+holds every digit exactly once. The diagonals are tinted and ruled across the grid.
+
+- **A DIAGONAL IS A HOUSE, which is the whole difference from Knight.** The nine cells of a
+  diagonal all see each other and between them hold 1 to 9, so hidden singles, locked candidates
+  and subsets read off a diagonal exactly as off a row. Generator, verifier and client all carry
+  the two diagonals in UNITS (29 houses, not 27) as well as in the peer set. The centre cell sits
+  on both and sees 24 cells, more than any other.
+- **DIAGONAL NECESSITY is a checked property.** On every board the same clues read as an
+  ORDINARY sudoku admit more than one grid, so the rule is never decoration. `scripts/verify-diag.mjs`
+  counts solutions a second time with the diagonals off and fails at one.
+- **The ramp is TWO measured axes, both pinned per weekday.** `printed` runs Mon 26, Tue 24,
+  Wed 22, Thu 20, Fri 18, Sat 16 and **Sunday 14**. `level` is 1 Mon-Thu and 2 Fri-Sun, pinned
+  (an easy day must NOT need the harder toolkit, a hard day must). The Sunday count is what the
+  rulebook can prove, not a round number: measured on 180 random digs at level 2 the greedy floor
+  is 17 to 23 clues (the diagonals touch only 17 of 81 cells, so the rule bites far less than the
+  knight rule), and the generator reaches 16 and 14 by ITERATED LOCAL SEARCH, putting two to five
+  clues back and re-digging in a fresh order. Thirteen was not reached at level 2 in 2,500
+  iterations on six grids. Do not lower the Sunday count without a harder-technique solver.
+- **Generator and verifier share NO code**, as with Knight and Cages. `gen-diag.mjs` uses bitmask
+  candidates and branches on the emptiest cell; `verify-diag.mjs` uses Set candidates and
+  branches on the house-and-digit with the fewest placements, POLICING its logical solver against
+  the known solution. `scripts/diag-mutation-test.mjs` breaks the bank nine ways (a diagonal
+  repeat at r1c1/r2c2 among them, two cells that share no row, column or box) and every one
+  must be caught.
+- **Diag joined the rotating Sudoku circuit**, pool nine -> TEN, `rotate` still 5, so each pool
+  member plays five days in every ten. Its median (550s, between Suds and Quilt) is an ESTIMATE in
+  verify-circuits; replace it at the next re-measure. It sits in the 'Classic sudokus' set.
+- **Legacy slate hue is cyan #0e7490.** The page itself wears the Sudoku category ramp.
 
 ## Knight is the ANTI-KNIGHT SUDOKU, and the rule has to be LOAD-BEARING (launched 2026-08-28)
 
