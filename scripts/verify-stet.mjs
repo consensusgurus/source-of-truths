@@ -8,6 +8,19 @@ import { sameWord } from '../lib/dialect-variants.js';
 const strip = (w) => w.toLowerCase().replace(/^[^a-z0-9'’-]+|[^a-z0-9'’-]+$/g, '');
 let fail = 0;
 const GRAMMAR_FROM = '2026-08-11'; // every day on/after this must carry a kind:'grammar' error
+// POSITIONAL VARIETY (owner rule 2026-09-09, after a reader wrote in about
+// /stet: "I'm pretty sure #2 and #4 are clean every single time. Is there a
+// randomizer that could get turned on"). He was right, and no per-item check
+// could see it: from 2026-08-11 to 2026-09-29 EVERY weekday was authored to
+// the identical shape — sentences 1, 3 and 5 carry one error each, 2 and 4 are
+// clean, and the grammar error is always #1 — so 43 of 43 weekdays and 7 of 7
+// Sundays ran the same template. A player who noticed could stamp 2 and 4 stet
+// and tap 1, 3 and 5 without reading a word. There is no randomizer to turn on:
+// items render in bank order (`const ITEMS = PUZZLE.items` in StetClient), so
+// variety is an AUTHORING property and has to be checked across the bank rather
+// than per day. Sentences within a day are independent, so the fix is to vary
+// which position carries the clean copy and which carries the grammar slip.
+const VARIETY_FROM = '2026-09-10'; // days before this are played history, and frozen
 // Self-contained-error rule (owner ruling 2026-08-14). Boards live before this
 // date are frozen history and are skipped; see the header of app/stet/puzzles.js.
 const SELF_CONTAINED_FROM = '2026-08-14';
@@ -370,6 +383,42 @@ for (const p of PUZZLES) {
   if (p.live >= GRAMMAR_FROM && dayGrammar === 0) err(`#${p.num} (${p.live}): no kind:'grammar' error — every day on/after ${GRAMMAR_FROM} needs one`);
   if (!p.sunday && p.items.length - dayClean !== 5 - dayClean) { /* structural, covered above */ }
 }
+// ── positional variety, weekdays and Sundays scored separately ──────────────
+// The sequence is built from the WHOLE bank so a fresh day is measured against
+// the frozen day before it, but only a day on/after VARIETY_FROM can fail.
+for (const [kind, isSun, n] of [['weekday', false, 5], ['Sunday', true, 7]]) {
+  const days = PUZZLES.filter((p) => !!p.sunday === isSun);
+  const scored = days.filter((p) => p.live >= VARIETY_FROM);
+  const cleanAt = Array(n).fill(0), gramAt = Array(n).fill(0);
+  const runC = Array(n).fill(0), runG = Array(n).fill(0);
+  let lastSig = null;
+  for (const p of days) {
+    const live = p.live >= VARIETY_FROM;
+    const cl = p.items.map((it) => !(it.errors || []).length);
+    const gr = p.items.map((it) => (it.errors || []).some((e) => e.kind === 'grammar'));
+    const sig = cl.map((c) => (c ? '.' : 'x')).join('');
+    if (live && sig === lastSig) err(`#${p.num} (${p.live}): same clean/error shape "${sig}" as the ${kind} before it — vary which sentences are clean`);
+    lastSig = sig;
+    for (let i = 0; i < n; i++) {
+      runC[i] = cl[i] ? runC[i] + 1 : 0;
+      runG[i] = gr[i] ? runG[i] + 1 : 0;
+      if (live && runC[i] > 3) err(`#${p.num} (${p.live}): sentence #${i + 1} has been clean on ${runC[i]} straight ${kind}s — a reader can stamp it stet unread`);
+      if (live && runG[i] > 3) err(`#${p.num} (${p.live}): sentence #${i + 1} has carried the grammar error on ${runG[i]} straight ${kind}s`);
+      if (live) { if (cl[i]) cleanAt[i]++; if (gr[i]) gramAt[i]++; }
+    }
+  }
+  const N = scored.length;
+  if (!N) continue;
+  for (let i = 0; i < n; i++) {
+    const c = cleanAt[i] / N, g = gramAt[i] / N;
+    if (c > 0.6) err(`variety: sentence #${i + 1} is clean on ${(100 * c).toFixed(0)}% of ${kind}s from ${VARIETY_FROM} (max 60%) — the position gives the answer away`);
+    if (g > 0.6) err(`variety: sentence #${i + 1} carries the grammar error on ${(100 * g).toFixed(0)}% of ${kind}s from ${VARIETY_FROM} (max 60%)`);
+    if (N >= 10 && !cleanAt[i]) err(`variety: sentence #${i + 1} is NEVER clean across ${N} ${kind}s from ${VARIETY_FROM} — every position must run clean copy sometimes`);
+    if (N >= 10 && !gramAt[i]) err(`variety: sentence #${i + 1} NEVER carries the grammar error across ${N} ${kind}s from ${VARIETY_FROM}`);
+  }
+  console.log(`variety ${kind} (${N} days from ${VARIETY_FROM}): clean ${cleanAt.map((v) => `${(100 * v / N).toFixed(0)}%`).join('/')} · grammar ${gramAt.map((v) => `${(100 * v / N).toFixed(0)}%`).join('/')}`);
+}
+
 console.log('relations:', Object.entries(relations).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(', '));
 console.log(`stats: ${PUZZLES.length} puzzles, ${totalErrors} errors (${grammarErrors} grammar), ${cleanItems} clean sentences across ${cleanDays} days, ${doubles} two-error sentences`);
 console.log(fail ? `${fail} failure(s)` : 'OK — all checks passed');

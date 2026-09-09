@@ -4639,6 +4639,22 @@ nobody had written the check. These twelve rules are how that stops.
    happily on a bank that says the same thing every day, which is exactly how Rung, Listed,
    Mate, Four and Crux all degraded.
 
+7b. **POSITION is a variety axis, and it is the one everybody forgets.** A game whose board
+   is a fixed set of numbered slots leaks through WHERE a thing sits, not only through what
+   the thing is. Stet ran 50 straight days (2026-08-11 to 2026-09-29) where sentences 2 and
+   4 were the clean ones and the grammar slip was always sentence 1, so a player could stamp
+   2 and 4 "stet" and tap 1, 3 and 5 without reading a word; a reader wrote in on 2026-09-09
+   asking whether "a randomizer could get turned on" (there is none, items render in bank
+   order, so variety is an authoring property). Every per-item rule in that bank passed on
+   all 50 days. Note the near miss too: a later generator had already spotted that the COUNT
+   of clean sentences was fixed and varied it, and STILL put every Sunday's clean copy last
+   and its grammar slip first, because varying how many is a different property from varying
+   where. So for any slotted game, check the per-slot distribution across the bank exactly
+   the way you check the answer pool: no slot past a ceiling on any role, no slot shut out
+   of a role entirely, no slot holding the same role four days running, and no day repeating
+   the previous day's shape. Enforced for Stet in both `scripts/verify-stet.mjs` (bank-wide,
+   from `VARIETY_FROM`) and `scripts/gen-stet.mjs` (per segment, at authoring time).
+
 8. **US spellings.** A generator drawing on an off-the-shelf word list imports British
    forms; scan reader-facing strings and board words for them.
 

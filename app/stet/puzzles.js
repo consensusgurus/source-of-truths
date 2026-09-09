@@ -110,6 +110,21 @@
 //    (with every other sensible fix in alts), vestures→vestments into
 //    isle→aisle, wistaria→wisteria into trellice→trellis, and school→pod into
 //    tied→tide.
+//  - VARY WHICH SENTENCE IS CLEAN, AND WHICH CARRIES THE GRAMMAR SLIP (owner
+//    rule 2026-09-09, after a reader wrote in: "I'm pretty sure #2 and #4 are
+//    clean every single time on this. Is there a randomizer that could get
+//    turned on"). He was right. From 2026-08-11 to 2026-09-29 every weekday was
+//    banked to one shape — errors on sentences 1, 3 and 5, clean copy on 2 and
+//    4, the grammar slip always on #1 — and every Sunday to another, so the
+//    board could be solved without reading it. There is NO randomizer: items
+//    render in bank order, so this is an authoring property, and it is the one
+//    property no per-item rule above can see. Every rule in this header passed
+//    on all 50 of those days. So: the clean positions must move day to day, no
+//    position may be clean (or carry the grammar error) on four straight days
+//    of its kind, no day may repeat the previous day's clean/error shape, and
+//    over the bank no position may sit past 60% on either axis or be shut out
+//    of one entirely. verify-stet.mjs enforces all of it from VARIETY_FROM
+//    (2026-09-10); earlier days are played history and are left alone.
 //  - never reuse a wrong→fix pair already banked here.
 export const PUZZLES = [
   {
@@ -1877,26 +1892,26 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The scaffolding had fell before the inspector arrived.",
-        errors: [{ wrong: "fell", fix: "fallen", kind: 'grammar', note: "After had the verb takes fallen, not fell." }],
-      },
-      {
         text: "The bishop consecrated the new chapel in June.",
         errors: [],
         cleanNote: "Clean copy: consecrated is exact and correctly spelled.",
+      },
+      {
+        text: "The bursar found the accounts did not tally, being out by a considerable some.",
+        errors: [{ wrong: "some", fix: "sum", kind: 'wordchoice', note: "A sum is an amount of money; some means a few." }],
       },
       {
         text: "The mason cut a drip mould to through water clear of the wall face.",
         errors: [{ wrong: "through", fix: "throw", kind: 'wordchoice', note: "To throw water clear is the sense here; through means passing inside." }],
       },
       {
+        text: "The scaffolding had fell before the inspector arrived.",
+        errors: [{ wrong: "fell", fix: "fallen", kind: 'grammar', note: "After had the verb takes fallen, not fell." }],
+      },
+      {
         text: "The tenant claimed the landlord had reneged on the deal.",
         errors: [],
         cleanNote: "Clean copy: reneged is the right verb and correctly spelled.",
-      },
-      {
-        text: "The bursar found the accounts did not tally, being out by a considerable some.",
-        errors: [{ wrong: "some", fix: "sum", kind: 'wordchoice', note: "A sum is an amount of money; some means a few." }],
       },
     ],
   },
@@ -1939,8 +1954,13 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The keeper had awoke to find the lamp still burning.",
-        errors: [{ wrong: "awoke", fix: "awoken", kind: 'grammar', note: "After had the verb takes awoken, not awoke." }],
+        text: "The library keeps the parish registers on microfilm.",
+        errors: [],
+        cleanNote: "Clean copy: registers and microfilm are correct as written.",
+      },
+      {
+        text: "The clerk filed the deeds under a docket numbered in serial order, and noted the seel was intact.",
+        errors: [{ wrong: "seel", fix: "seal", kind: 'wordchoice', note: "A seal is a wax impression; seel is a falconry term." }],
       },
       {
         text: "The choir master rehearsed the descant until dusk.",
@@ -1952,13 +1972,8 @@ export const PUZZLES = [
         errors: [{ wrong: "blaise", fix: "blaze", kind: 'wordchoice', note: "A blaze is a mark cut or painted on a tree." }],
       },
       {
-        text: "The library keeps the parish registers on microfilm.",
-        errors: [],
-        cleanNote: "Clean copy: registers and microfilm are correct as written.",
-      },
-      {
-        text: "The clerk filed the deeds under a docket numbered in serial order, and noted the seel was intact.",
-        errors: [{ wrong: "seel", fix: "seal", kind: 'wordchoice', note: "A seal is a wax impression; seel is a falconry term." }],
+        text: "The keeper had awoke to find the lamp still burning.",
+        errors: [{ wrong: "awoke", fix: "awoken", kind: 'grammar', note: "After had the verb takes awoken, not awoke." }],
       },
     ],
   },
@@ -1970,6 +1985,11 @@ export const PUZZLES = [
     sunday: true,
     items: [
       {
+        text: "Her testimony was consistent throughout the hearing.",
+        errors: [],
+        cleanNote: "Clean copy: testimony and consistent are used correctly.",
+      },
+      {
         text: "A dispute had arose over the boundary hedge.",
         errors: [{ wrong: "arose", fix: "arisen", kind: 'grammar', note: "After had the verb takes arisen, not arose." }],
       },
@@ -1978,26 +1998,21 @@ export const PUZZLES = [
         errors: [{ wrong: "seized", fix: "ceased", kind: 'wordchoice', note: "To cease is to stop; to seize is to grab or to jam." }],
       },
       {
+        text: "The trust rebuilt the sea wall with rock armour brought by barge, and graded the aprin behind it.",
+        errors: [{ wrong: "aprin", fix: "apron", kind: 'wordchoice', note: "An apron is the sloping surface at the base of a wall." }],
+      },
+      {
         text: "The society published a facsimile of the 1745 map.",
         errors: [],
         cleanNote: "Clean copy: facsimile is the right word and correctly spelled.",
       },
       {
-        text: "The keeper counted forty grey seal pups on the skerry at low water, though he had to pier through the haze to be sure.",
-        errors: [{ wrong: "pier", fix: "peer", kind: 'wordchoice', note: "To peer is to look closely; a pier is a jetty." }],
-      },
-      {
-        text: "The trust rebuilt the sea wall with rock armour brought by barge, and graded the aprin behind it.",
-        errors: [{ wrong: "aprin", fix: "apron", kind: 'wordchoice', note: "An apron is the sloping surface at the base of a wall." }],
-      },
-      {
-        text: "Her testimony was consistent throughout the hearing.",
-        errors: [],
-        cleanNote: "Clean copy: testimony and consistent are used correctly.",
-      },
-      {
         text: "The archivist unfolded a plan drawn on linen and backed with pased paper.",
         errors: [{ wrong: "pased", fix: "pasted", kind: 'wordchoice', note: "Pasted is the correct past participle of paste." }],
+      },
+      {
+        text: "The keeper counted forty grey seal pups on the skerry at low water, though he had to pier through the haze to be sure.",
+        errors: [{ wrong: "pier", fix: "peer", kind: 'wordchoice', note: "To peer is to look closely; a pier is a jetty." }],
       },
     ],
   },
@@ -2009,6 +2024,10 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
+        text: "The society recorded the ring of six bells, and the board of ringers fixed to the wall of the knave.",
+        errors: [{ wrong: "knave", fix: "nave", kind: 'wordchoice', note: "The nave is the body of the church; a knave is a scoundrel." }],
+      },
+      {
         text: "The surveyor had mistook the datum for the old benchmark.",
         errors: [{ wrong: "mistook", fix: "mistaken", kind: 'grammar', note: "After had the verb takes mistaken, not mistook." }],
       },
@@ -2018,17 +2037,13 @@ export const PUZZLES = [
         cleanNote: "Clean copy: leans is the right verb and correctly spelled.",
       },
       {
-        text: "The gardener staked the espalier against the south wall, where a vain of chalk ran close under the border.",
-        errors: [{ wrong: "vain", fix: "vein", kind: 'wordchoice', note: "A vein is a seam running through the ground; vain means conceited." }],
-      },
-      {
         text: "The tunnel was bored through solid chalk.",
         errors: [],
         cleanNote: "Clean copy: bored is correct here, meaning drilled.",
       },
       {
-        text: "The society recorded the ring of six bells, and the board of ringers fixed to the wall of the knave.",
-        errors: [{ wrong: "knave", fix: "nave", kind: 'wordchoice', note: "The nave is the body of the church; a knave is a scoundrel." }],
+        text: "The gardener staked the espalier against the south wall, where a vain of chalk ran close under the border.",
+        errors: [{ wrong: "vain", fix: "vein", kind: 'wordchoice', note: "A vein is a seam running through the ground; vain means conceited." }],
       },
     ],
   },
@@ -2040,15 +2055,6 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "Him and the foreman signed the completion notice together.",
-        errors: [{ wrong: "Him", fix: "He", kind: 'grammar', note: "A subject takes the nominative, so it reads he and the foreman." }],
-      },
-      {
-        text: "The harbour wall was rebuilt after the winter storms.",
-        errors: [],
-        cleanNote: "Clean copy: rebuilt and harbour are used correctly.",
-      },
-      {
         text: "The engineer said the culvert had silted and would need jetting to clear the invart.",
         errors: [{ wrong: "invart", fix: "invert", kind: 'wordchoice', note: "The invert is the lowest inside surface of a pipe." }],
       },
@@ -2058,8 +2064,17 @@ export const PUZZLES = [
         cleanNote: "Clean copy: lock keeper is the correct canal term.",
       },
       {
+        text: "Him and the foreman signed the completion notice together.",
+        errors: [{ wrong: "Him", fix: "He", kind: 'grammar', note: "A subject takes the nominative, so it reads he and the foreman." }],
+      },
+      {
         text: "The trustees agreed to insure the collection for its full replacment value.",
         errors: [{ wrong: "replacment", fix: "replacement", kind: 'wordchoice', note: "Replacement keeps the e before ment." }],
+      },
+      {
+        text: "The harbour wall was rebuilt after the winter storms.",
+        errors: [],
+        cleanNote: "Clean copy: rebuilt and harbour are used correctly.",
       },
     ],
   },
@@ -2102,10 +2117,6 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "Between you and I, the tender was never going to succeed.",
-        errors: [{ wrong: "I", fix: "me", kind: 'grammar', note: "After between the pronoun takes the object form, me." }],
-      },
-      {
         text: "The kiln was fired for the last time in 1978.",
         errors: [],
         cleanNote: "Clean copy: kiln and fired are used correctly.",
@@ -2118,6 +2129,10 @@ export const PUZZLES = [
         text: "The report recommended a phased withdrawal of funding.",
         errors: [],
         cleanNote: "Clean copy: phased and withdrawal are correct as written.",
+      },
+      {
+        text: "Between you and I, the tender was never going to succeed.",
+        errors: [{ wrong: "I", fix: "me", kind: 'grammar', note: "After between the pronoun takes the object form, me." }],
       },
       {
         text: "The society dated the roof by dendochronology of the tie beams.",
@@ -2133,19 +2148,6 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The archivist thanked they who had catalogued the plates.",
-        errors: [{ wrong: "they", fix: "those", kind: 'grammar', note: "The object form is needed, so it reads thanked those who." }],
-      },
-      {
-        text: "The chapel retains its original box pews.",
-        errors: [],
-        cleanNote: "Clean copy: box pews is the correct architectural term.",
-      },
-      {
-        text: "The vicar said the parish had been served by the same family of clerks for four generations, a remarkable continuum.",
-        errors: [{ wrong: "continuum", fix: "continuity", kind: 'wordchoice', note: "Continuity is unbroken succession; a continuum is a range." }],
-      },
-      {
         text: "The signal box was decommissioned last autumn.",
         errors: [],
         cleanNote: "Clean copy: decommissioned is exact and correctly spelled.",
@@ -2153,6 +2155,19 @@ export const PUZZLES = [
       {
         text: "The trust cleared the pond of blanket weed and restored the sluce.",
         errors: [{ wrong: "sluce", fix: "sluice", kind: 'spelling', note: "Sluice is the correct spelling for the water gate." }],
+      },
+      {
+        text: "The archivist thanked they who had catalogued the plates.",
+        errors: [{ wrong: "they", fix: "those", kind: 'grammar', note: "The object form is needed, so it reads thanked those who." }],
+      },
+      {
+        text: "The vicar said the parish had been served by the same family of clerks for four generations, a remarkable continuum.",
+        errors: [{ wrong: "continuum", fix: "continuity", kind: 'wordchoice', note: "Continuity is unbroken succession; a continuum is a range." }],
+      },
+      {
+        text: "The chapel retains its original box pews.",
+        errors: [],
+        cleanNote: "Clean copy: box pews is the correct architectural term.",
       },
     ],
   },
@@ -2164,13 +2179,8 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The society honoured the man whom donated the collection.",
-        errors: [{ wrong: "whom", fix: "who", kind: 'grammar', note: "Who is the subject of donated, so whom is wrong." }],
-      },
-      {
-        text: "The society holds an annual lecture in the guildhall.",
-        errors: [],
-        cleanNote: "Clean copy: guildhall is the right word and correctly spelled.",
+        text: "The trust rehung the gate on new pintels driven into the pier.",
+        errors: [{ wrong: "pintels", fix: "pintles", kind: 'spelling', note: "A pintle is the pin a gate hangs on; pintels is a misspelling." }],
       },
       {
         text: "The archivist found a letter signed by the steward, dated Michelmas 1788.",
@@ -2182,8 +2192,13 @@ export const PUZZLES = [
         cleanNote: "Clean copy: water table is the correct hydrological term.",
       },
       {
-        text: "The trust rehung the gate on new pintels driven into the pier.",
-        errors: [{ wrong: "pintels", fix: "pintles", kind: 'spelling', note: "A pintle is the pin a gate hangs on; pintels is a misspelling." }],
+        text: "The society holds an annual lecture in the guildhall.",
+        errors: [],
+        cleanNote: "Clean copy: guildhall is the right word and correctly spelled.",
+      },
+      {
+        text: "The society honoured the man whom donated the collection.",
+        errors: [{ wrong: "whom", fix: "who", kind: 'grammar', note: "Who is the subject of donated, so whom is wrong." }],
       },
     ],
   },
@@ -2234,26 +2249,26 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
+        text: "The observatory recorded the transit in fine weather.",
+        errors: [],
+        cleanNote: "Clean copy: transit is the right astronomical term.",
+      },
+      {
         text: "The dome was turned by hand, which cut the effort considerable.",
         errors: [{ wrong: "considerable", fix: "considerably", kind: 'grammar', note: "An adverb is needed to modify cut, so considerably." }],
       },
       {
-        text: "The bridge carries a single track over the gorge.",
-        errors: [],
-        cleanNote: "Clean copy: carries and gorge are used correctly.",
+        text: "The engineer found the retaining wall was bulging and would need buttrressing.",
+        errors: [{ wrong: "buttrressing", fix: "buttressing", kind: 'wordchoice', note: "Buttressing has a single r after the double t." }],
       },
       {
         text: "The archivist described the binding as limp velum over boards.",
         errors: [{ wrong: "velum", fix: "vellum", kind: 'wordchoice', note: "Vellum is fine calfskin; velum is an anatomical membrane." }],
       },
       {
-        text: "The observatory recorded the transit in fine weather.",
+        text: "The bridge carries a single track over the gorge.",
         errors: [],
-        cleanNote: "Clean copy: transit is the right astronomical term.",
-      },
-      {
-        text: "The engineer found the retaining wall was bulging and would need buttrressing.",
-        errors: [{ wrong: "buttrressing", fix: "buttressing", kind: 'wordchoice', note: "Buttressing has a single r after the double t." }],
+        cleanNote: "Clean copy: carries and gorge are used correctly.",
       },
     ],
   },
@@ -2296,17 +2311,8 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The mason worked slow and steady through the frost.",
-        errors: [{ wrong: "slow", fix: "slowly", kind: 'grammar', note: "The verb needs an adverb, so it reads worked slowly." }],
-      },
-      {
-        text: "The mill race still runs beneath the old floor.",
-        errors: [],
-        cleanNote: "Clean copy: mill race is the correct term for the channel.",
-      },
-      {
-        text: "The keeper found the barn owl roosting on a purloin above the byre.",
-        errors: [{ wrong: "purloin", fix: "purlin", kind: 'wordchoice', note: "A purlin is a roof timber; to purloin is to steal." }],
+        text: "The engineer said the beam would need to be jacked and the padstone renewed before the wall began to sheer.",
+        errors: [{ wrong: "sheer", fix: "shear", kind: 'wordchoice', note: "Shear is the engineering term for a sliding failure; sheer means utter or steep." }],
       },
       {
         text: "The board deferred the decision until October.",
@@ -2314,8 +2320,17 @@ export const PUZZLES = [
         cleanNote: "Clean copy: deferred is exact and correctly spelled.",
       },
       {
-        text: "The engineer said the beam would need to be jacked and the padstone renewed before the wall began to sheer.",
-        errors: [{ wrong: "sheer", fix: "shear", kind: 'wordchoice', note: "Shear is the engineering term for a sliding failure; sheer means utter or steep." }],
+        text: "The mason worked slow and steady through the frost.",
+        errors: [{ wrong: "slow", fix: "slowly", kind: 'grammar', note: "The verb needs an adverb, so it reads worked slowly." }],
+      },
+      {
+        text: "The keeper found the barn owl roosting on a purloin above the byre.",
+        errors: [{ wrong: "purloin", fix: "purlin", kind: 'wordchoice', note: "A purlin is a roof timber; to purloin is to steal." }],
+      },
+      {
+        text: "The mill race still runs beneath the old floor.",
+        errors: [],
+        cleanNote: "Clean copy: mill race is the correct term for the channel.",
       },
     ],
   },
@@ -2327,17 +2342,13 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The choir sang particular well at the Christmas service.",
-        errors: [{ wrong: "particular", fix: "particularly", kind: 'grammar', note: "An adverb is needed before well, so particularly." }],
-      },
-      {
         text: "The path is impassable after heavy rain.",
         errors: [],
         cleanNote: "Clean copy: impassable is the right adjective, correctly spelled.",
       },
       {
-        text: "The trust rebuilt the dry stone wall using the original throughstones, and re-set the style at the field corner.",
-        errors: [{ wrong: "style", fix: "stile", kind: 'wordchoice', note: "A stile is the step set into a wall for walkers; style is a manner of doing something." }],
+        text: "The society noted the font cover was suspended from a counterweight and raised by a single chord.",
+        errors: [{ wrong: "chord", fix: "cord", kind: 'wordchoice', note: "A cord is a length of rope; a chord is a group of musical notes." }],
       },
       {
         text: "The dairy bottles its milk on the farm.",
@@ -2345,8 +2356,12 @@ export const PUZZLES = [
         cleanNote: "Clean copy: dairy and bottles are used correctly.",
       },
       {
-        text: "The society noted the font cover was suspended from a counterweight and raised by a single chord.",
-        errors: [{ wrong: "chord", fix: "cord", kind: 'wordchoice', note: "A cord is a length of rope; a chord is a group of musical notes." }],
+        text: "The trust rebuilt the dry stone wall using the original throughstones, and re-set the style at the field corner.",
+        errors: [{ wrong: "style", fix: "stile", kind: 'wordchoice', note: "A stile is the step set into a wall for walkers; style is a manner of doing something." }],
+      },
+      {
+        text: "The choir sang particular well at the Christmas service.",
+        errors: [{ wrong: "particular", fix: "particularly", kind: 'grammar', note: "An adverb is needed before well, so particularly." }],
       },
     ],
   },
@@ -2358,8 +2373,16 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
+        text: "The mason set the sill on a bed of mortar and checked it with a spirit levl.",
+        errors: [{ wrong: "levl", fix: "level", kind: 'spelling', note: "Level is the correct spelling of the tool." }],
+      },
+      {
         text: "The scheme was received bad by the parish meeting.",
         errors: [{ wrong: "bad", fix: "badly", kind: 'grammar', note: "The verb needs an adverb, so it reads received badly." }],
+      },
+      {
+        text: "The vicar thanked the flower guild for the harvest displays around the chancel arch and the pulput.",
+        errors: [{ wrong: "pulput", fix: "pulpit", kind: 'spelling', note: "Pulpit is the correct spelling for the preacher's stand." }],
       },
       {
         text: "The cottage is thatched in Norfolk reed.",
@@ -2367,17 +2390,9 @@ export const PUZZLES = [
         cleanNote: "Clean copy: thatched and reed are correct as written.",
       },
       {
-        text: "The vicar thanked the flower guild for the harvest displays around the chancel arch and the pulput.",
-        errors: [{ wrong: "pulput", fix: "pulpit", kind: 'spelling', note: "Pulpit is the correct spelling for the preacher's stand." }],
-      },
-      {
         text: "The council refused to comment on the settlement.",
         errors: [],
         cleanNote: "Clean copy: settlement is the right word in this legal sense.",
-      },
-      {
-        text: "The mason set the sill on a bed of mortar and checked it with a spirit levl.",
-        errors: [{ wrong: "levl", fix: "level", kind: 'spelling', note: "Level is the correct spelling of the tool." }],
       },
     ],
   },
@@ -2389,8 +2404,8 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The engine ran different after the rebuild.",
-        errors: [{ wrong: "different", fix: "differently", kind: 'grammar', note: "The verb needs an adverb, so it reads ran differently." }],
+        text: "The farmer said the crop had been flattened by a summer squal.",
+        errors: [{ wrong: "squal", fix: "squall", kind: 'spelling', note: "A squall is a sudden storm; squal is a misspelling." }],
       },
       {
         text: "The forge bell still hangs above the door.",
@@ -2398,13 +2413,13 @@ export const PUZZLES = [
         cleanNote: "Clean copy: forge and hangs are used correctly here.",
       },
       {
-        text: "The farmer said the crop had been flattened by a summer squal.",
-        errors: [{ wrong: "squal", fix: "squall", kind: 'spelling', note: "A squall is a sudden storm; squal is a misspelling." }],
-      },
-      {
         text: "The riverbank was reinforced with willow spiling.",
         errors: [],
         cleanNote: "Clean copy: spiling is the correct riverbank engineering term.",
+      },
+      {
+        text: "The engine ran different after the rebuild.",
+        errors: [{ wrong: "different", fix: "differently", kind: 'grammar', note: "The verb needs an adverb, so it reads ran differently." }],
       },
       {
         text: "The trust surveyed the leadwork and found the bay was badly corrogated.",
@@ -2420,6 +2435,15 @@ export const PUZZLES = [
     sunday: true,
     items: [
       {
+        text: "The gardener said the box hedge was suffering from blite and would be replaced with yew.",
+        errors: [{ wrong: "blite", fix: "blight", kind: 'wordchoice', note: "Blight is the plant disease; blite is an obscure plant name." }],
+      },
+      {
+        text: "The lease runs for a further eleven years.",
+        errors: [],
+        cleanNote: "Clean copy: lease and further are used correctly.",
+      },
+      {
         text: "The tide came in sudden and cut off the causeway.",
         errors: [{ wrong: "sudden", fix: "suddenly", kind: 'grammar', note: "The verb needs an adverb, so it reads came in suddenly." }],
       },
@@ -2428,26 +2452,17 @@ export const PUZZLES = [
         errors: [{ wrong: "site", fix: "sight", kind: 'wordchoice', note: "A sight is something seen; a site is a place or location." }],
       },
       {
-        text: "The lease runs for a further eleven years.",
-        errors: [],
-        cleanNote: "Clean copy: lease and further are used correctly.",
+        text: "The society published a transcript of the court rolls, with a glossery of the Latin terms.",
+        errors: [{ wrong: "glossery", fix: "glossary", kind: 'spelling', note: "Glossary is the correct spelling for a word list." }],
       },
       {
         text: "The archivist noted the seal matrix was chipped but the legand was legible.",
         errors: [{ wrong: "legand", fix: "legend", kind: 'wordchoice', note: "The legend is the inscription round a seal." }],
       },
       {
-        text: "The society published a transcript of the court rolls, with a glossery of the Latin terms.",
-        errors: [{ wrong: "glossery", fix: "glossary", kind: 'spelling', note: "Glossary is the correct spelling for a word list." }],
-      },
-      {
         text: "The colliery band still rehearses on Thursdays.",
         errors: [],
         cleanNote: "Clean copy: colliery and rehearses are correct as written.",
-      },
-      {
-        text: "The gardener said the box hedge was suffering from blite and would be replaced with yew.",
-        errors: [{ wrong: "blite", fix: "blight", kind: 'wordchoice', note: "Blight is the plant disease; blite is an obscure plant name." }],
       },
     ],
   },
@@ -2490,8 +2505,12 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The trust said the mill had lost it's cap in the storm.",
-        errors: [{ wrong: "it's", fix: "its", kind: 'grammar', note: "Its is the possessive; it's is short for it is." }],
+        text: "The society noted the pews were installed in 1843, a change the vicar recorded at grate length.",
+        errors: [{ wrong: "grate", fix: "great", kind: 'wordchoice', note: "Great means large; a grate is a fireplace fitting." }],
+      },
+      {
+        text: "The engineer said the sluice paddle was seized and the gearing would need to be striped and greased.",
+        errors: [{ wrong: "striped", fix: "stripped", kind: 'wordchoice', note: "Stripped means taken apart; striped means marked with lines." }],
       },
       {
         text: "The harbour master logged every arrival by hand.",
@@ -2499,17 +2518,13 @@ export const PUZZLES = [
         cleanNote: "Clean copy: logged and arrival are used correctly.",
       },
       {
-        text: "The engineer said the sluice paddle was seized and the gearing would need to be striped and greased.",
-        errors: [{ wrong: "striped", fix: "stripped", kind: 'wordchoice', note: "Stripped means taken apart; striped means marked with lines." }],
+        text: "The trust said the mill had lost it's cap in the storm.",
+        errors: [{ wrong: "it's", fix: "its", kind: 'grammar', note: "Its is the possessive; it's is short for it is." }],
       },
       {
         text: "The bakery still uses a peel to load the oven.",
         errors: [],
         cleanNote: "Clean copy: peel is the correct name for a baker's shovel.",
-      },
-      {
-        text: "The society noted the pews were installed in 1843, a change the vicar recorded at grate length.",
-        errors: [{ wrong: "grate", fix: "great", kind: 'wordchoice', note: "Great means large; a grate is a fireplace fitting." }],
       },
     ],
   },
@@ -2521,8 +2536,9 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The council leader said the borough would not waiver from the timetable it published in June.",
-        errors: [{ wrong: "waiver", fix: "waver", kind: 'wordchoice', note: "To waver is to hesitate; a waiver is the giving up of a right." }],
+        text: "The survey found fewer than a dozen nests left on the whole cliff face.",
+        errors: [],
+        cleanNote: "Clean copy: fewer is right for things you can count, and nests can be counted.",
       },
       {
         text: "Neither of the two proposed routes were costed before the committee voted.",
@@ -2533,9 +2549,8 @@ export const PUZZLES = [
         errors: [{ wrong: "flower", fix: "flour", kind: 'wordchoice', note: "Flour is milled from grain; a flower grows on a plant." }],
       },
       {
-        text: "The survey found fewer than a dozen nests left on the whole cliff face.",
-        errors: [],
-        cleanNote: "Clean copy: fewer is right for things you can count, and nests can be counted.",
+        text: "The council leader said the borough would not waiver from the timetable it published in June.",
+        errors: [{ wrong: "waiver", fix: "waver", kind: 'wordchoice', note: "To waver is to hesitate; a waiver is the giving up of a right." }],
       },
       {
         text: "The drawings hang in one row, so that the sitters appear to be starring at each other.",
@@ -2582,6 +2597,10 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
+        text: "The authority said the overspend would be cleared over for years of instalments.",
+        errors: [{ wrong: "for", fix: "four", kind: 'wordchoice', note: "Four is the number; for is the preposition." }],
+      },
+      {
         text: "The harbour master said the trawler had been tied up along the key since Tuesday.",
         errors: [{ wrong: "key", fix: "quay", kind: 'wordchoice', note: "A quay is a landing place for boats; a key opens a lock." }],
       },
@@ -2590,16 +2609,12 @@ export const PUZZLES = [
         errors: [{ wrong: "run", fix: "ran", kind: 'grammar', note: "The simple past is ran; run is the participle, as in has run." }],
       },
       {
-        text: "The authority said the overspend would be cleared over for years of instalments.",
-        errors: [{ wrong: "for", fix: "four", kind: 'wordchoice', note: "Four is the number; for is the preposition." }],
+        text: "The conservator found a whole in the panel where a knot had dropped out.",
+        errors: [{ wrong: "whole", fix: "hole", kind: 'wordchoice', note: "A hole is a gap; whole means entire." }],
       },
       {
         text: "The water table sunk by two metres in the decade after the pumps went in.",
         errors: [{ wrong: "sunk", fix: "sank", kind: 'grammar', note: "The simple past is sank; sunk is the participle, as in has sunk." }],
-      },
-      {
-        text: "The conservator found a whole in the panel where a knot had dropped out.",
-        errors: [{ wrong: "whole", fix: "hole", kind: 'wordchoice', note: "A hole is a gap; whole means entire." }],
       },
     ],
   },
@@ -2641,6 +2656,24 @@ export const PUZZLES = [
     sunday: true,
     items: [
       {
+        text: "The club said the aloud limit was four tickets a person, and the queue took an hour.",
+        errors: [{ wrong: "aloud", fix: "allowed", kind: 'wordchoice', note: "Allowed means permitted; aloud means out loud." }],
+      },
+      {
+        text: "The gallery hung the drawing besides a portrait by an artist who's name is lost.",
+        errors: [{ wrong: "besides", fix: "beside", kind: 'wordchoice', note: "Beside means next to; besides means in addition." }, { wrong: "who's", fix: "whose", kind: 'wordchoice', note: "Whose is the possessive; who's is short for who is." }],
+      },
+      {
+        text: "Governors said the school had complied with every recommendation in the inspectors' report.",
+        errors: [],
+        cleanNote: "Clean copy: complied with is right, and the plural possessive inspectors' sits correctly.",
+      },
+      {
+        text: "The chef leaves the sauce to reduce until it just coats the back of a spoon.",
+        errors: [],
+        cleanNote: "Clean copy: reduce is the kitchen sense, boiling down to concentrate.",
+      },
+      {
         text: "The chair said the motion had been tabled in hast, and that there is still two amendments to hear.",
         errors: [{ wrong: "hast", fix: "haste", kind: 'wordchoice', note: "Haste is hurry; hast is an archaic form of have." }, { wrong: "is", fix: "are", kind: 'grammar', note: "Two amendments is plural, so the verb is are." }],
       },
@@ -2649,26 +2682,8 @@ export const PUZZLES = [
         errors: [{ wrong: "lay", fix: "lain", kind: 'grammar', note: "Had takes the participle lain; lay is the simple past." }, { wrong: "chaffed", fix: "chafed", kind: 'wordchoice', note: "To chafe is to rub; to chaff is to tease." }],
       },
       {
-        text: "The gallery hung the drawing besides a portrait by an artist who's name is lost.",
-        errors: [{ wrong: "besides", fix: "beside", kind: 'wordchoice', note: "Beside means next to; besides means in addition." }, { wrong: "who's", fix: "whose", kind: 'wordchoice', note: "Whose is the possessive; who's is short for who is." }],
-      },
-      {
         text: "Ecologists said the tern colony had grew to more than two hundred pairs.",
         errors: [{ wrong: "grew", fix: "grown", kind: 'grammar', note: "Had takes the participle grown; grew is the simple past." }],
-      },
-      {
-        text: "The club said the aloud limit was four tickets a person, and the queue took an hour.",
-        errors: [{ wrong: "aloud", fix: "allowed", kind: 'wordchoice', note: "Allowed means permitted; aloud means out loud." }],
-      },
-      {
-        text: "The chef leaves the sauce to reduce until it just coats the back of a spoon.",
-        errors: [],
-        cleanNote: "Clean copy: reduce is the kitchen sense, boiling down to concentrate.",
-      },
-      {
-        text: "Governors said the school had complied with every recommendation in the inspectors' report.",
-        errors: [],
-        cleanNote: "Clean copy: complied with is right, and the plural possessive inspectors' sits correctly.",
       },
     ],
   },
@@ -2711,25 +2726,25 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The chain blamed a flat summer on the whether rather than on its prices.",
-        errors: [{ wrong: "whether", fix: "weather", kind: 'wordchoice', note: "Weather is what the sky does; whether introduces an alternative." }],
-      },
-      {
-        text: "The tenant said the herd had been housed early because the grass had stopped growing.",
-        errors: [],
-        cleanNote: "Clean copy: herd is the collective for cattle, and housed is the farming sense.",
+        text: "Forecasters said the front would bring rein and hill snow by the evening.",
+        errors: [{ wrong: "rein", fix: "rain", kind: 'wordchoice', note: "Rain falls from the sky; a rein controls a horse." }],
       },
       {
         text: "The lifeboat crew said the yacht had drifted for hours before anyone rung the alarm.",
         errors: [{ wrong: "rung", fix: "rang", kind: 'grammar', note: "The simple past is rang; rung is the participle, as in has rung." }],
       },
       {
+        text: "The chain blamed a flat summer on the whether rather than on its prices.",
+        errors: [{ wrong: "whether", fix: "weather", kind: 'wordchoice', note: "Weather is what the sky does; whether introduces an alternative." }],
+      },
+      {
         text: "Pupils sat the paper in the sports hall, where the invigilator was hard to here.",
         errors: [{ wrong: "here", fix: "hear", kind: 'wordchoice', note: "Hear is what ears do; here is this place." }],
       },
       {
-        text: "Forecasters said the front would bring rein and hill snow by the evening.",
-        errors: [{ wrong: "rein", fix: "rain", kind: 'wordchoice', note: "Rain falls from the sky; a rein controls a horse." }],
+        text: "The tenant said the herd had been housed early because the grass had stopped growing.",
+        errors: [],
+        cleanNote: "Clean copy: herd is the collective for cattle, and housed is the farming sense.",
       },
     ],
   },
@@ -2771,6 +2786,10 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
+        text: "The peat was dug for fuel until the 1930s, and the scars are still plane to see.",
+        errors: [{ wrong: "plane", fix: "plain", kind: 'wordchoice', note: "Plain means clear or obvious; a plane is a flat surface or a tool." }],
+      },
+      {
         text: "The injunction had forbade the company from selling the land before the appeal.",
         errors: [{ wrong: "forbade", fix: "forbidden", kind: 'grammar', note: "Had takes the participle forbidden; forbade is the simple past." }],
       },
@@ -2786,10 +2805,6 @@ export const PUZZLES = [
         text: "The firm said its order book had shrunk for a third quarter running.",
         errors: [{ wrong: "shrunk", fix: "shrank", kind: 'grammar', note: "The simple past is shrank; shrunk is the participle, as in has shrunk." }],
       },
-      {
-        text: "The peat was dug for fuel until the 1930s, and the scars are still plane to see.",
-        errors: [{ wrong: "plane", fix: "plain", kind: 'wordchoice', note: "Plain means clear or obvious; a plane is a flat surface or a tool." }],
-      },
     ],
   },
   {
@@ -2799,10 +2814,6 @@ export const PUZZLES = [
     dateLabel: 'October 9, 2026',
     sunday: false,
     items: [
-      {
-        text: "One critic called the early quartets torturous rather than merely difficult.",
-        errors: [{ wrong: "torturous", fix: "tortuous", kind: 'wordchoice', note: "Tortuous means winding and involved; torturous means causing torture." }],
-      },
       {
         text: "The council said the two schemes complement each other and would be funded together.",
         errors: [],
@@ -2821,6 +2832,10 @@ export const PUZZLES = [
         text: "The bursar said the currant year's fees would stand until the summer term.",
         errors: [{ wrong: "currant", fix: "current", kind: 'wordchoice', note: "Current means present; a currant is a dried fruit." }],
       },
+      {
+        text: "One critic called the early quartets torturous rather than merely difficult.",
+        errors: [{ wrong: "torturous", fix: "tortuous", kind: 'wordchoice', note: "Tortuous means winding and involved; torturous means causing torture." }],
+      },
     ],
   },
   {
@@ -2831,25 +2846,25 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "Hale the size of marbles fell on the valley for a quarter of an hour.",
-        errors: [{ wrong: "hale", fix: "hail", kind: 'wordchoice', note: "Hail is frozen rain; hale means sound in health." }],
+        text: "The farmer said the cattle has been housed since the end of September.",
+        errors: [{ wrong: "has", fix: "have", kind: 'grammar', note: "Cattle is plural, so the verb is have." }],
       },
       {
         text: "The retailer said the refit had overrun and the store would open a month latter.",
         errors: [{ wrong: "latter", fix: "later", kind: 'wordchoice', note: "Later means afterwards; the latter is the second of two things." }],
       },
       {
+        text: "The gallery said the canvas had been relined and a tare in the corner filled.",
+        errors: [{ wrong: "tare", fix: "tear", kind: 'wordchoice', note: "A tear is a rip; tare is a weed, or an allowance for weight." }],
+      },
+      {
+        text: "Hale the size of marbles fell on the valley for a quarter of an hour.",
+        errors: [{ wrong: "hale", fix: "hail", kind: 'wordchoice', note: "Hail is frozen rain; hale means sound in health." }],
+      },
+      {
         text: "The tribunal found the dismissal had been unfair and ordered the firm to reinstate her.",
         errors: [],
         cleanNote: "Clean copy: reinstate is right, and unfair dismissal is the phrase the tribunal uses.",
-      },
-      {
-        text: "The farmer said the cattle has been housed since the end of September.",
-        errors: [{ wrong: "has", fix: "have", kind: 'grammar', note: "Cattle is plural, so the verb is have." }],
-      },
-      {
-        text: "The gallery said the canvas had been relined and a tare in the corner filled.",
-        errors: [{ wrong: "tare", fix: "tear", kind: 'wordchoice', note: "A tear is a rip; tare is a weed, or an allowance for weight." }],
       },
     ],
   },
@@ -2865,18 +2880,6 @@ export const PUZZLES = [
         errors: [{ wrong: "drew", fix: "drawn", kind: 'grammar', note: "Had takes the participle drawn; drew is the simple past." }, { wrong: "laps", fix: "lapse", kind: 'wordchoice', note: "A lapse is a slip; laps are circuits of a track." }],
       },
       {
-        text: "The court heard the bank held a lean over the property, and that the deeds were in the names of the tenant and she.",
-        errors: [{ wrong: "lean", fix: "lien", kind: 'wordchoice', note: "A lien is a claim on property; lean is to slope or to be thin." }, { wrong: "she", fix: "her", kind: 'grammar', note: "After of the pronoun takes the object case: the tenant and her." }],
-      },
-      {
-        text: "The skipper said the trawler had been holed below the water line, and that the pumps were coping poor with the leek.",
-        errors: [{ wrong: "poor", fix: "poorly", kind: 'grammar', note: "Coping is a verb, so it takes the adverb poorly." }, { wrong: "leek", fix: "leak", kind: 'wordchoice', note: "A leak lets water in; a leek is a vegetable." }],
-      },
-      {
-        text: "The survey recorded a pare of ravens on the crag, and said the precipitate face above the ledge keeps walkers off.",
-        errors: [{ wrong: "pare", fix: "pair", kind: 'wordchoice', note: "A pair is two; to pare is to trim." }, { wrong: "precipitate", fix: "precipitous", kind: 'wordchoice', note: "Precipitous means steep; precipitate means hasty." }],
-      },
-      {
         text: "The choir sung the mass unaccompanied for the first time in thirty years.",
         errors: [{ wrong: "sung", fix: "sang", kind: 'grammar', note: "The simple past is sang; sung is the participle, as in has sung." }],
       },
@@ -2885,9 +2888,21 @@ export const PUZZLES = [
         errors: [{ wrong: "assure", fix: "ensure", kind: 'wordchoice', note: "To ensure is to make certain of something; to assure is to tell someone confidently." }],
       },
       {
+        text: "The skipper said the trawler had been holed below the water line, and that the pumps were coping poor with the leek.",
+        errors: [{ wrong: "poor", fix: "poorly", kind: 'grammar', note: "Coping is a verb, so it takes the adverb poorly." }, { wrong: "leek", fix: "leak", kind: 'wordchoice', note: "A leak lets water in; a leek is a vegetable." }],
+      },
+      {
         text: "The trust said the vaccine would go first to patients whose immunity is waning.",
         errors: [],
         cleanNote: "Clean copy: waning is right for something in decline, and immunity is the word wanted.",
+      },
+      {
+        text: "The survey recorded a pare of ravens on the crag, and said the precipitate face above the ledge keeps walkers off.",
+        errors: [{ wrong: "pare", fix: "pair", kind: 'wordchoice', note: "A pair is two; to pare is to trim." }, { wrong: "precipitate", fix: "precipitous", kind: 'wordchoice', note: "Precipitous means steep; precipitate means hasty." }],
+      },
+      {
+        text: "The court heard the bank held a lean over the property, and that the deeds were in the names of the tenant and she.",
+        errors: [{ wrong: "lean", fix: "lien", kind: 'wordchoice', note: "A lien is a claim on property; lean is to slope or to be thin." }, { wrong: "she", fix: "her", kind: 'grammar', note: "After of the pronoun takes the object case: the tenant and her." }],
       },
     ],
   },
@@ -2903,6 +2918,11 @@ export const PUZZLES = [
         errors: [{ wrong: "levee", fix: "levy", kind: 'wordchoice', note: "A levy is a charge; a levee is an embankment against floods." }],
       },
       {
+        text: "The reserve said the bittern had boomed from the reed bed for a third spring.",
+        errors: [],
+        cleanNote: "Clean copy: bitterns boom, and boomed is the word for the call they make.",
+      },
+      {
         text: "The firm said the order had been cancelled and that it would right off the cost.",
         errors: [{ wrong: "right", fix: "write", kind: 'wordchoice', note: "To write off a cost is the accounting sense; right means correct." }],
       },
@@ -2913,11 +2933,6 @@ export const PUZZLES = [
       {
         text: "The harbour master said them on the pontoon had seen nothing unusual that night.",
         errors: [{ wrong: "them", fix: "they", kind: 'grammar', note: "The subject of the clause takes they, not them." }],
-      },
-      {
-        text: "The reserve said the bittern had boomed from the reed bed for a third spring.",
-        errors: [],
-        cleanNote: "Clean copy: bitterns boom, and boomed is the word for the call they make.",
       },
     ],
   },
@@ -3050,6 +3065,14 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
+        text: "Governors said the two policies seems to conflict on the question of exclusions.",
+        errors: [{ wrong: "seems", fix: "seem", kind: 'grammar', note: "Two policies is plural, so the verb is seem." }],
+      },
+      {
+        text: "Forecasters said their would be a hard frost inland by the early hours.",
+        errors: [{ wrong: "their", fix: "there", kind: 'wordchoice', note: "There is the place word; their is the possessive." }],
+      },
+      {
         text: "The trust said the drug had been withdrawn after a review of its side effects.",
         errors: [],
         cleanNote: "Clean copy: withdrawn is the right participle and side effects is the phrase wanted.",
@@ -3063,14 +3086,6 @@ export const PUZZLES = [
         text: "The report said the driver had applied the break far too late on the descent.",
         errors: [{ wrong: "break", fix: "brake", kind: 'wordchoice', note: "A brake stops a vehicle; a break is a pause or a fracture." }],
       },
-      {
-        text: "Governors said the two policies seems to conflict on the question of exclusions.",
-        errors: [{ wrong: "seems", fix: "seem", kind: 'grammar', note: "Two policies is plural, so the verb is seem." }],
-      },
-      {
-        text: "Forecasters said their would be a hard frost inland by the early hours.",
-        errors: [{ wrong: "their", fix: "there", kind: 'wordchoice', note: "There is the place word; their is the possessive." }],
-      },
     ],
   },
   {
@@ -3081,24 +3096,17 @@ export const PUZZLES = [
     sunday: true,
     items: [
       {
-        text: "The council said the depot would move to a sight on the bypass, and admitted the vote had shook the ruling group.",
-        errors: [{ wrong: "sight", fix: "site", kind: 'wordchoice', note: "A site is a place; sight is what the eye does." }, { wrong: "shook", fix: "shaken", kind: 'grammar', note: "Had takes the participle shaken; shook is the simple past." }],
-      },
-      {
-        text: "The court heard the seller had knowingly mislead the buyer, and that the boundary was described wrong in the deeds.",
-        errors: [{ wrong: "mislead", fix: "misled", kind: 'wordchoice', note: "The past of mislead is misled, with one e." }, { wrong: "wrong", fix: "wrongly", kind: 'grammar', note: "Described is a verb, so it takes the adverb wrongly." }],
-      },
-      {
-        text: "The team said the phenomena is well documented in colder seas.",
-        errors: [{ wrong: "phenomena", fix: "phenomenon", kind: 'grammar', note: "Phenomena is the plural; a single one is a phenomenon." }],
-      },
-      {
-        text: "The tapestry was cut and rehung, and the seem now falls behind the door frame.",
-        errors: [{ wrong: "seem", fix: "seam", kind: 'wordchoice', note: "A seam is a join; seem is the verb." }],
-      },
-      {
         text: "The crew lost an ore in the swell and rowed the last mile short-handed.",
         errors: [{ wrong: "ore", fix: "oar", kind: 'wordchoice', note: "An oar drives a boat; ore is rock bearing metal." }],
+      },
+      {
+        text: "The club said the fixture had been rearranged for the following Tuesday evening.",
+        errors: [],
+        cleanNote: "Clean copy: rearranged is right, and fixture is the word for a scheduled match.",
+      },
+      {
+        text: "The council said the depot would move to a sight on the bypass, and admitted the vote had shook the ruling group.",
+        errors: [{ wrong: "sight", fix: "site", kind: 'wordchoice', note: "A site is a place; sight is what the eye does." }, { wrong: "shook", fix: "shaken", kind: 'grammar', note: "Had takes the participle shaken; shook is the simple past." }],
       },
       {
         text: "The brewery said the barrel had been tapped at noon and drunk dry by six.",
@@ -3106,9 +3114,16 @@ export const PUZZLES = [
         cleanNote: "Clean copy: drunk dry is the right participle, and tapped is what you do to a barrel.",
       },
       {
-        text: "The club said the fixture had been rearranged for the following Tuesday evening.",
-        errors: [],
-        cleanNote: "Clean copy: rearranged is right, and fixture is the word for a scheduled match.",
+        text: "The team said the phenomena is well documented in colder seas.",
+        errors: [{ wrong: "phenomena", fix: "phenomenon", kind: 'grammar', note: "Phenomena is the plural; a single one is a phenomenon." }],
+      },
+      {
+        text: "The court heard the seller had knowingly mislead the buyer, and that the boundary was described wrong in the deeds.",
+        errors: [{ wrong: "mislead", fix: "misled", kind: 'wordchoice', note: "The past of mislead is misled, with one e." }, { wrong: "wrong", fix: "wrongly", kind: 'grammar', note: "Described is a verb, so it takes the adverb wrongly." }],
+      },
+      {
+        text: "The tapestry was cut and rehung, and the seem now falls behind the door frame.",
+        errors: [{ wrong: "seem", fix: "seam", kind: 'wordchoice', note: "A seam is a join; seem is the verb." }],
       },
     ],
   },
@@ -3149,10 +3164,6 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "Officers called at his residents in the early hours and found the house empty.",
-        errors: [{ wrong: "residents", fix: "residence", kind: 'wordchoice', note: "A residence is where someone lives; residents are the people in it." }],
-      },
-      {
         text: "The gallery said the sculpture had been lent by a private collector for the summer.",
         errors: [],
         cleanNote: "Clean copy: lent is the past of lend, which is what a collector does with a work.",
@@ -3164,6 +3175,10 @@ export const PUZZLES = [
       {
         text: "The wreck lie in twelve metres of water half a mile off the point.",
         errors: [{ wrong: "lie", fix: "lies", kind: 'grammar', note: "The wreck is singular, so the verb is lies." }],
+      },
+      {
+        text: "Officers called at his residents in the early hours and found the house empty.",
+        errors: [{ wrong: "residents", fix: "residence", kind: 'wordchoice', note: "A residence is where someone lives; residents are the people in it." }],
       },
       {
         text: "The gauge showed the river's floe had trebled in the space of a night.",
@@ -3210,6 +3225,18 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
+        text: "The geologist said a single strata of clay runs under the whole field.",
+        errors: [{ wrong: "strata", fix: "stratum", kind: 'grammar', note: "Strata is the plural; a single layer is a stratum." }],
+      },
+      {
+        text: "The tutor said the argument was week in the middle and strong at either end.",
+        errors: [{ wrong: "week", fix: "weak", kind: 'wordchoice', note: "Weak means feeble; a week is seven days." }],
+      },
+      {
+        text: "The trustees were warned not to medal in the curator's choice of hang.",
+        errors: [{ wrong: "medal", fix: "meddle", kind: 'wordchoice', note: "To meddle is to interfere; a medal is an award." }],
+      },
+      {
         text: "The lorry had been stationery at the crossing for a minute before the barriers lifted.",
         errors: [{ wrong: "stationery", fix: "stationary", kind: 'wordchoice', note: "Stationary means not moving; stationery is paper and envelopes." }],
       },
@@ -3217,18 +3244,6 @@ export const PUZZLES = [
         text: "The court heard the fence had been moved two metres onto the neighbour's land.",
         errors: [],
         cleanNote: "Clean copy: the possessive neighbour's is correctly placed and nothing else is amiss.",
-      },
-      {
-        text: "The trustees were warned not to medal in the curator's choice of hang.",
-        errors: [{ wrong: "medal", fix: "meddle", kind: 'wordchoice', note: "To meddle is to interfere; a medal is an award." }],
-      },
-      {
-        text: "The geologist said a single strata of clay runs under the whole field.",
-        errors: [{ wrong: "strata", fix: "stratum", kind: 'grammar', note: "Strata is the plural; a single layer is a stratum." }],
-      },
-      {
-        text: "The tutor said the argument was week in the middle and strong at either end.",
-        errors: [{ wrong: "week", fix: "weak", kind: 'wordchoice', note: "Weak means feeble; a week is seven days." }],
       },
     ],
   },
@@ -3240,8 +3255,12 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The ward is the most populace in the borough and the least well served.",
-        errors: [{ wrong: "populace", fix: "populous", kind: 'wordchoice', note: "Populous means having many people; the populace is the people themselves." }],
+        text: "The manager called the comeback a remarkable feet in the circumstances.",
+        errors: [{ wrong: "feet", fix: "feat", kind: 'wordchoice', note: "A feat is an achievement; feet are what you stand on." }],
+      },
+      {
+        text: "The nurse said each vile held ten doses and had to be used within a day.",
+        errors: [{ wrong: "vile", fix: "vial", kind: 'wordchoice', note: "A vial is a small bottle; vile means loathsome." }],
       },
       {
         text: "The harbour said the pontoon had been renewed and the fenders replaced.",
@@ -3249,16 +3268,12 @@ export const PUZZLES = [
         cleanNote: "Clean copy: fenders are what hang over a boat's side, and renewed is the right word.",
       },
       {
+        text: "The ward is the most populace in the borough and the least well served.",
+        errors: [{ wrong: "populace", fix: "populous", kind: 'wordchoice', note: "Populous means having many people; the populace is the people themselves." }],
+      },
+      {
         text: "The agent said the offer include a share of the freehold and the yard behind.",
         errors: [{ wrong: "include", fix: "includes", kind: 'grammar', note: "The offer is singular, so the verb is includes." }],
-      },
-      {
-        text: "The nurse said each vile held ten doses and had to be used within a day.",
-        errors: [{ wrong: "vile", fix: "vial", kind: 'wordchoice', note: "A vial is a small bottle; vile means loathsome." }],
-      },
-      {
-        text: "The manager called the comeback a remarkable feet in the circumstances.",
-        errors: [{ wrong: "feet", fix: "feat", kind: 'wordchoice', note: "A feat is an achievement; feet are what you stand on." }],
       },
     ],
   },
@@ -3301,16 +3316,25 @@ export const PUZZLES = [
     sunday: true,
     items: [
       {
-        text: "The chair said the ruling set no precedence, and that the committee had undertook no survey of the site.",
-        errors: [{ wrong: "precedence", fix: "precedent", kind: 'wordchoice', note: "A precedent is a case to follow; precedence is priority." }, { wrong: "undertook", fix: "undertaken", kind: 'grammar', note: "Had takes the participle undertaken; undertook is the simple past." }],
+        text: "The club said the record had stood for twenty-eight years before it was broken.",
+        errors: [],
+        cleanNote: "Clean copy: stood is right for a record that lasts, and broken is the participle.",
+      },
+      {
+        text: "The geologist said the seam had been mind since 1820, and that the survey had showed no subsidence.",
+        errors: [{ wrong: "mind", fix: "mined", kind: 'wordchoice', note: "To mine is to dig out; mind is the faculty of thought." }, { wrong: "showed", fix: "shown", kind: 'grammar', note: "Had takes the participle shown; showed is the simple past." }],
       },
       {
         text: "The court heard the notice had been sent by male, and that the landlord had swore an affidavit about it.",
         errors: [{ wrong: "male", fix: "mail", kind: 'wordchoice', note: "Mail is post; male is the sex." }, { wrong: "swore", fix: "sworn", kind: 'grammar', note: "Had takes the participle sworn; swore is the simple past." }],
       },
       {
-        text: "The geologist said the seam had been mind since 1820, and that the survey had showed no subsidence.",
-        errors: [{ wrong: "mind", fix: "mined", kind: 'wordchoice', note: "To mine is to dig out; mind is the faculty of thought." }, { wrong: "showed", fix: "shown", kind: 'grammar', note: "Had takes the participle shown; showed is the simple past." }],
+        text: "Managers said much of the delays were caused by a shortage of theatre staff.",
+        errors: [{ wrong: "much", fix: "many", kind: 'grammar', note: "Delays can be counted, so the word is many." }],
+      },
+      {
+        text: "The chair said the ruling set no precedence, and that the committee had undertook no survey of the site.",
+        errors: [{ wrong: "precedence", fix: "precedent", kind: 'wordchoice', note: "A precedent is a case to follow; precedence is priority." }, { wrong: "undertook", fix: "undertaken", kind: 'grammar', note: "Had takes the participle undertaken; undertook is the simple past." }],
       },
       {
         text: "The warden picked out a single turn among the gulls on the shingle bank.",
@@ -3319,15 +3343,6 @@ export const PUZZLES = [
       {
         text: "The conservator stretched a fresh canvass over the frame before relining the picture.",
         errors: [{ wrong: "canvass", fix: "canvas", kind: 'wordchoice', note: "Canvas is the cloth; to canvass is to solicit votes or opinions." }],
-      },
-      {
-        text: "Managers said much of the delays were caused by a shortage of theatre staff.",
-        errors: [{ wrong: "much", fix: "many", kind: 'grammar', note: "Delays can be counted, so the word is many." }],
-      },
-      {
-        text: "The club said the record had stood for twenty-eight years before it was broken.",
-        errors: [],
-        cleanNote: "Clean copy: stood is right for a record that lasts, and broken is the participle.",
       },
     ],
   },
@@ -3398,19 +3413,6 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The landlord said the tenet had left without notice and owed two quarters.",
-        errors: [{ wrong: "tenet", fix: "tenant", kind: 'wordchoice', note: "A tenant rents a property; a tenet is a principle held to be true." }],
-      },
-      {
-        text: "The examiners said the paper had been marked to the published criteria.",
-        errors: [],
-        cleanNote: "Clean copy: criteria is the right plural here, since there is more than one.",
-      },
-      {
-        text: "The forecaster said the risk to the coast depend on where the front stalls.",
-        errors: [{ wrong: "depend", fix: "depends", kind: 'grammar', note: "The subject is the risk, which is singular, so the verb is depends." }],
-      },
-      {
         text: "The trust said the hedgerow had been laid by hand and would thicken from the base.",
         errors: [],
         cleanNote: "Clean copy: laid is right for a hedge worked by hand, and thicken is the word wanted.",
@@ -3418,6 +3420,19 @@ export const PUZZLES = [
       {
         text: "Residents were told the new tacks on second homes would pay for the depot.",
         errors: [{ wrong: "tacks", fix: "tax", kind: 'wordchoice', note: "Tax is the charge; tacks are small nails, or changes of course." }],
+      },
+      {
+        text: "The landlord said the tenet had left without notice and owed two quarters.",
+        errors: [{ wrong: "tenet", fix: "tenant", kind: 'wordchoice', note: "A tenant rents a property; a tenet is a principle held to be true." }],
+      },
+      {
+        text: "The forecaster said the risk to the coast depend on where the front stalls.",
+        errors: [{ wrong: "depend", fix: "depends", kind: 'grammar', note: "The subject is the risk, which is singular, so the verb is depends." }],
+      },
+      {
+        text: "The examiners said the paper had been marked to the published criteria.",
+        errors: [],
+        cleanNote: "Clean copy: criteria is the right plural here, since there is more than one.",
       },
     ],
   },
@@ -3428,14 +3443,6 @@ export const PUZZLES = [
     dateLabel: 'October 29, 2026',
     sunday: false,
     items: [
-      {
-        text: "The mill was fined for pumping affluent into the beck below the weir.",
-        errors: [{ wrong: "affluent", fix: "effluent", kind: 'wordchoice', note: "Effluent is waste liquid; affluent means wealthy." }],
-      },
-      {
-        text: "The bough of the trawler had been stove in by the swell off the point.",
-        errors: [{ wrong: "bough", fix: "bow", kind: 'wordchoice', note: "The bow is the front of a boat; a bough is a branch of a tree." }],
-      },
       {
         text: "The manager said the equaliser come far too late to change the table.",
         errors: [{ wrong: "come", fix: "came", kind: 'grammar', note: "The simple past is came; come is the participle, as in has come." }],
@@ -3448,6 +3455,14 @@ export const PUZZLES = [
         text: "The gallery said the frame was not original but had been made to match.",
         errors: [],
         cleanNote: "Clean copy: made to match is plainly put, and original is used correctly.",
+      },
+      {
+        text: "The mill was fined for pumping affluent into the beck below the weir.",
+        errors: [{ wrong: "affluent", fix: "effluent", kind: 'wordchoice', note: "Effluent is waste liquid; affluent means wealthy." }],
+      },
+      {
+        text: "The bough of the trawler had been stove in by the swell off the point.",
+        errors: [{ wrong: "bough", fix: "bow", kind: 'wordchoice', note: "The bow is the front of a boat; a bough is a branch of a tree." }],
       },
     ],
   },
@@ -3490,8 +3505,13 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The percussionist struck the symbol on the last bar and the hall went quiet.",
-        errors: [{ wrong: "symbol", fix: "cymbal", kind: 'wordchoice', note: "A cymbal is the percussion instrument; a symbol stands for something." }],
+        text: "The head said the trip had been postponed rather than cancelled outright.",
+        errors: [],
+        cleanNote: "Clean copy: postponed and cancelled are both used correctly, and the difference is real.",
+      },
+      {
+        text: "The board called the takeover a gambol that had not come off.",
+        errors: [{ wrong: "gambol", fix: "gamble", kind: 'wordchoice', note: "A gamble is a risk taken; to gambol is to frolic." }],
       },
       {
         text: "The section had been stained with a blue die before it went under the lens.",
@@ -3502,13 +3522,8 @@ export const PUZZLES = [
         errors: [{ wrong: "rise", fix: "rises", kind: 'grammar', note: "The risk is singular, so the verb is rises." }],
       },
       {
-        text: "The board called the takeover a gambol that had not come off.",
-        errors: [{ wrong: "gambol", fix: "gamble", kind: 'wordchoice', note: "A gamble is a risk taken; to gambol is to frolic." }],
-      },
-      {
-        text: "The head said the trip had been postponed rather than cancelled outright.",
-        errors: [],
-        cleanNote: "Clean copy: postponed and cancelled are both used correctly, and the difference is real.",
+        text: "The percussionist struck the symbol on the last bar and the hall went quiet.",
+        errors: [{ wrong: "symbol", fix: "cymbal", kind: 'wordchoice', note: "A cymbal is the percussion instrument; a symbol stands for something." }],
       },
     ],
   },
@@ -3520,34 +3535,34 @@ export const PUZZLES = [
     sunday: true,
     items: [
       {
-        text: "The chief executive said staff moral had never been lower, and that the changes had not been explained clear to anyone.",
-        errors: [{ wrong: "moral", fix: "morale", kind: 'wordchoice', note: "Morale is spirit within a group; a moral is the lesson of a story." }, { wrong: "clear", fix: "clearly", kind: 'grammar', note: "Explained is a verb, so it takes the adverb clearly." }],
-      },
-      {
-        text: "The court heard the defendant drunk four pints at lunchtime before taking the weal.",
-        errors: [{ wrong: "drunk", fix: "drank", kind: 'grammar', note: "The simple past is drank; drunk is the participle, as in has drunk." }, { wrong: "weal", fix: "wheel", kind: 'wordchoice', note: "A wheel steers the car; a weal is a raised mark on the skin." }],
-      },
-      {
         text: "The skipper said the chart showed a shear drop beyond the reef, and that none of the crew worn a lifejacket.",
         errors: [{ wrong: "shear", fix: "sheer", kind: 'wordchoice', note: "Sheer means steep or utter; to shear is to cut." }, { wrong: "worn", fix: "wore", kind: 'grammar', note: "The simple past is wore; worn is the participle, as in had worn." }],
       },
       {
-        text: "The rare gull was cited on the estuary in March, and the warden said the losses at the tern colony looked systematic rather than local.",
-        errors: [{ wrong: "cited", fix: "sighted", kind: 'wordchoice', note: "Sighted means seen; cited means quoted or summoned." }, { wrong: "systematic", fix: "systemic", kind: 'wordchoice', note: "Systemic means affecting the whole system; systematic means methodical." }],
+        text: "The chief executive said staff moral had never been lower, and that the changes had not been explained clear to anyone.",
+        errors: [{ wrong: "moral", fix: "morale", kind: 'wordchoice', note: "Morale is spirit within a group; a moral is the lesson of a story." }, { wrong: "clear", fix: "clearly", kind: 'grammar', note: "Explained is a verb, so it takes the adverb clearly." }],
       },
       {
         text: "The conservation laboratory said the rig stimulates a century of handling in a week.",
         errors: [{ wrong: "stimulates", fix: "simulates", kind: 'wordchoice', note: "To simulate is to imitate; to stimulate is to encourage." }],
       },
       {
-        text: "The estate said the ewes had been tupped in November and would lamb in April.",
-        errors: [],
-        cleanNote: "Clean copy: tupped is the farming word for putting rams to ewes, and lamb is a verb.",
+        text: "The court heard the defendant drunk four pints at lunchtime before taking the weal.",
+        errors: [{ wrong: "drunk", fix: "drank", kind: 'grammar', note: "The simple past is drank; drunk is the participle, as in has drunk." }, { wrong: "weal", fix: "wheel", kind: 'wordchoice', note: "A wheel steers the car; a weal is a raised mark on the skin." }],
+      },
+      {
+        text: "The rare gull was cited on the estuary in March, and the warden said the losses at the tern colony looked systematic rather than local.",
+        errors: [{ wrong: "cited", fix: "sighted", kind: 'wordchoice', note: "Sighted means seen; cited means quoted or summoned." }, { wrong: "systematic", fix: "systemic", kind: 'wordchoice', note: "Systemic means affecting the whole system; systematic means methodical." }],
       },
       {
         text: "The trust said the new clinic would be nurse-led and open on Saturdays.",
         errors: [],
         cleanNote: "Clean copy: nurse-led is correctly hyphenated and open on Saturdays is plainly put.",
+      },
+      {
+        text: "The estate said the ewes had been tupped in November and would lamb in April.",
+        errors: [],
+        cleanNote: "Clean copy: tupped is the farming word for putting rams to ewes, and lamb is a verb.",
       },
     ],
   },
@@ -3559,6 +3574,11 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
+        text: "The pub said the pies were made on the premises and sold out by eight.",
+        errors: [],
+        cleanNote: "Clean copy: premises is the word for the building, and it carries its plural s.",
+      },
+      {
         text: "The inspector said the gait at the crossing had been left open all night.",
         errors: [{ wrong: "gait", fix: "gate", kind: 'wordchoice', note: "A gate swings on hinges; gait is a way of walking." }],
       },
@@ -3568,17 +3588,12 @@ export const PUZZLES = [
         cleanNote: "Clean copy: drawn is the right participle after had, and run is used correctly.",
       },
       {
-        text: "The jockey ridden a patient race and came through in the last two furlongs.",
-        errors: [{ wrong: "ridden", fix: "rode", kind: 'grammar', note: "The simple past is rode; ridden is the participle, as in has ridden." }],
-      },
-      {
-        text: "The pub said the pies were made on the premises and sold out by eight.",
-        errors: [],
-        cleanNote: "Clean copy: premises is the word for the building, and it carries its plural s.",
-      },
-      {
         text: "The moor turns a deep hew of purple for a fortnight in August.",
         errors: [{ wrong: "hew", fix: "hue", kind: 'wordchoice', note: "A hue is a colour; to hew is to cut or chop." }],
+      },
+      {
+        text: "The jockey ridden a patient race and came through in the last two furlongs.",
+        errors: [{ wrong: "ridden", fix: "rode", kind: 'grammar', note: "The simple past is rode; ridden is the participle, as in has ridden." }],
       },
     ],
   },
@@ -3649,25 +3664,25 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The baker said the dough should be need for ten minutes and no longer.",
-        errors: [{ wrong: "need", fix: "knead", kind: 'wordchoice', note: "To knead dough is to work it with the hands; need is to require." }],
+        text: "The court heard he stolen the tools from a van parked outside the depot.",
+        errors: [{ wrong: "stolen", fix: "stole", kind: 'grammar', note: "The simple past is stole; stolen is the participle, as in had stolen." }],
       },
       {
         text: "The firm said it had joined the gild of master builders in 1974.",
         errors: [{ wrong: "gild", fix: "guild", kind: 'wordchoice', note: "A guild is an association of tradespeople; to gild is to cover in gold." }],
       },
       {
-        text: "The court heard he stolen the tools from a van parked outside the depot.",
-        errors: [{ wrong: "stolen", fix: "stole", kind: 'grammar', note: "The simple past is stole; stolen is the participle, as in had stolen." }],
+        text: "The trust said the pond had been dug out and would refill with the winter rain.",
+        errors: [],
+        cleanNote: "Clean copy: dug out is right for clearing a pond, and refill is the word wanted.",
       },
       {
         text: "Engineers said the ballast had washed out and left the sleepers to flout in the water.",
         errors: [{ wrong: "flout", fix: "float", kind: 'wordchoice', note: "To float is to rest on water; to flout is to defy a rule." }],
       },
       {
-        text: "The trust said the pond had been dug out and would refill with the winter rain.",
-        errors: [],
-        cleanNote: "Clean copy: dug out is right for clearing a pond, and refill is the word wanted.",
+        text: "The baker said the dough should be need for ten minutes and no longer.",
+        errors: [{ wrong: "need", fix: "knead", kind: 'wordchoice', note: "To knead dough is to work it with the hands; need is to require." }],
       },
     ],
   },
@@ -3710,16 +3725,16 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
+        text: "The head said each pupil attend one residential trip in the course of a year.",
+        errors: [{ wrong: "attend", fix: "attends", kind: 'grammar', note: "Each pupil is singular, so the verb is attends." }],
+      },
+      {
         text: "The contractor will sew the top field with a grass ley in the spring.",
         errors: [{ wrong: "sew", fix: "sow", kind: 'wordchoice', note: "To sow is to plant seed; to sew is to stitch cloth." }],
       },
       {
         text: "The forecaster said the fog would lift once the due had burned off the fields.",
         errors: [{ wrong: "due", fix: "dew", kind: 'wordchoice', note: "Dew is moisture that settles overnight; due means owing or expected." }],
-      },
-      {
-        text: "The head said each pupil attend one residential trip in the course of a year.",
-        errors: [{ wrong: "attend", fix: "attends", kind: 'grammar', note: "Each pupil is singular, so the verb is attends." }],
       },
       {
         text: "The firm said the fraud had been perpetuated by a single employee in accounts.",
@@ -3740,33 +3755,33 @@ export const PUZZLES = [
     sunday: true,
     items: [
       {
-        text: "The council said two of its lorries had stood idol since May, and that the yard had not been secured proper since then.",
-        errors: [{ wrong: "idol", fix: "idle", kind: 'wordchoice', note: "Idle means unused; an idol is an image or a person who is worshipped." }, { wrong: "proper", fix: "properly", kind: 'grammar', note: "Secured is a verb, so it takes the adverb properly." }],
-      },
-      {
-        text: "The judge said the punishment meat out by the magistrates was too light, and that the new fine reflect the scale of the profit.",
-        errors: [{ wrong: "meat", fix: "mete", kind: 'wordchoice', note: "To mete out a punishment is to deal it out; meat is flesh for eating." }, { wrong: "reflect", fix: "reflects", kind: 'grammar', note: "The fine is singular, so the verb is reflects." }],
-      },
-      {
-        text: "The station said the boat leaves by the shoot, and that a launch on a spring tide take under two minutes.",
-        errors: [{ wrong: "shoot", fix: "chute", kind: 'wordchoice', note: "A chute is a sloping channel; to shoot is to fire." }, { wrong: "take", fix: "takes", kind: 'grammar', note: "A launch is singular, so the verb is takes." }],
-      },
-      {
         text: "The catalogue essay was criticised for its turbid prose and its thin research.",
         errors: [{ wrong: "turbid", fix: "turgid", kind: 'wordchoice', note: "Turgid prose is swollen and pompous; turbid means cloudy with sediment." }],
+      },
+      {
+        text: "The sourdough is proved for eighteen hours before it goes into the oven.",
+        errors: [],
+        cleanNote: "Clean copy: proved is the baker's word for letting dough rise, and it is right here.",
       },
       {
         text: "The caterpillar is a veracious feeder and can strip a young tree in days.",
         errors: [{ wrong: "veracious", fix: "voracious", kind: 'wordchoice', note: "Voracious means greedy; veracious means truthful." }],
       },
       {
+        text: "The council said two of its lorries had stood idol since May, and that the yard had not been secured proper since then.",
+        errors: [{ wrong: "idol", fix: "idle", kind: 'wordchoice', note: "Idle means unused; an idol is an image or a person who is worshipped." }, { wrong: "proper", fix: "properly", kind: 'grammar', note: "Secured is a verb, so it takes the adverb properly." }],
+      },
+      {
         text: "The trust said there had been fewer disruption this winter than last.",
         errors: [{ wrong: "fewer", fix: "less", kind: 'wordchoice', note: "Disruption is a mass noun, so it takes less." }],
       },
       {
-        text: "The sourdough is proved for eighteen hours before it goes into the oven.",
-        errors: [],
-        cleanNote: "Clean copy: proved is the baker's word for letting dough rise, and it is right here.",
+        text: "The station said the boat leaves by the shoot, and that a launch on a spring tide take under two minutes.",
+        errors: [{ wrong: "shoot", fix: "chute", kind: 'wordchoice', note: "A chute is a sloping channel; to shoot is to fire." }, { wrong: "take", fix: "takes", kind: 'grammar', note: "A launch is singular, so the verb is takes." }],
+      },
+      {
+        text: "The judge said the punishment meat out by the magistrates was too light, and that the new fine reflect the scale of the profit.",
+        errors: [{ wrong: "meat", fix: "mete", kind: 'wordchoice', note: "To mete out a punishment is to deal it out; meat is flesh for eating." }, { wrong: "reflect", fix: "reflects", kind: 'grammar', note: "The fine is singular, so the verb is reflects." }],
       },
     ],
   },
@@ -3778,8 +3793,13 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The beach was closed for a week after unexploded ordinance was found in the dunes.",
-        errors: [{ wrong: "ordinance", fix: "ordnance", kind: 'wordchoice', note: "Ordnance is munitions; an ordinance is a decree." }],
+        text: "The club said the appeal against the red card had been dismissed and the ban stands.",
+        errors: [],
+        cleanNote: "Clean copy: dismissed is right for an appeal that fails, and the ban stands is plain.",
+      },
+      {
+        text: "The paper's revue of the exhibition ran to a full page on Saturday.",
+        errors: [{ wrong: "revue", fix: "review", kind: 'wordchoice', note: "A review is a critical notice; a revue is a stage show of sketches." }],
       },
       {
         text: "The board voted to censure the letters before they went into the file.",
@@ -3790,13 +3810,8 @@ export const PUZZLES = [
         errors: [{ wrong: "stank", fix: "stunk", kind: 'grammar', note: "Had takes the participle stunk; stank is the simple past." }],
       },
       {
-        text: "The paper's revue of the exhibition ran to a full page on Saturday.",
-        errors: [{ wrong: "revue", fix: "review", kind: 'wordchoice', note: "A review is a critical notice; a revue is a stage show of sketches." }],
-      },
-      {
-        text: "The club said the appeal against the red card had been dismissed and the ban stands.",
-        errors: [],
-        cleanNote: "Clean copy: dismissed is right for an appeal that fails, and the ban stands is plain.",
+        text: "The beach was closed for a week after unexploded ordinance was found in the dunes.",
+        errors: [{ wrong: "ordinance", fix: "ordnance", kind: 'wordchoice', note: "Ordnance is munitions; an ordinance is a decree." }],
       },
     ],
   },
@@ -3839,16 +3854,16 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The council appointed an imminent planner to chair the review of the local plan.",
-        errors: [{ wrong: "imminent", fix: "eminent", kind: 'wordchoice', note: "Eminent means distinguished; imminent means about to happen." }],
+        text: "The work begun in March and the platform is still behind hoardings.",
+        errors: [{ wrong: "begun", fix: "began", kind: 'grammar', note: "The simple past is began; begun is the participle, as in has begun." }],
       },
       {
         text: "The statute in the market square was cleaned and rewaxed over the summer.",
         errors: [{ wrong: "statute", fix: "statue", kind: 'wordchoice', note: "A statue is the carved figure; a statute is an act of parliament." }],
       },
       {
-        text: "The work begun in March and the platform is still behind hoardings.",
-        errors: [{ wrong: "begun", fix: "began", kind: 'grammar', note: "The simple past is began; begun is the participle, as in has begun." }],
+        text: "The council appointed an imminent planner to chair the review of the local plan.",
+        errors: [{ wrong: "imminent", fix: "eminent", kind: 'wordchoice', note: "Eminent means distinguished; imminent means about to happen." }],
       },
       {
         text: "The barn held a horde of old machinery that had not moved in thirty years.",
@@ -3959,34 +3974,34 @@ export const PUZZLES = [
     sunday: true,
     items: [
       {
-        text: "The report counted a rising incidents of fly-tipping, and the council said its crews had responded prompt in every case.",
-        errors: [{ wrong: "incidents", fix: "incidence", kind: 'wordchoice', note: "Incidence is the rate at which something occurs; incidents are single events." }, { wrong: "prompt", fix: "promptly", kind: 'grammar', note: "Responded is a verb, so it takes the adverb promptly." }],
-      },
-      {
-        text: "The court heard a long legal wangle over the estate, and that the solicitor written to the family only in June.",
-        errors: [{ wrong: "wangle", fix: "wrangle", kind: 'wordchoice', note: "A wrangle is a dispute; to wangle is to get by contrivance." }, { wrong: "written", fix: "wrote", kind: 'grammar', note: "The simple past is wrote; written is the participle, as in had written." }],
-      },
-      {
-        text: "The valley floor is luxurious with fern from the beck to the tree line.",
-        errors: [{ wrong: "luxurious", fix: "luxuriant", kind: 'wordchoice', note: "Luxuriant means growing thickly; luxurious means costly and comfortable." }],
+        text: "The tenner sang the part from memory after the score went missing.",
+        errors: [{ wrong: "tenner", fix: "tenor", kind: 'wordchoice', note: "A tenor is the singer; a tenner is a ten-pound note." }],
       },
       {
         text: "The tug took the barge under toe as far as the lock and cast off there.",
         errors: [{ wrong: "toe", fix: "tow", kind: 'wordchoice', note: "To tow is to pull; a toe is on the foot." }],
       },
       {
-        text: "The tenner sang the part from memory after the score went missing.",
-        errors: [{ wrong: "tenner", fix: "tenor", kind: 'wordchoice', note: "A tenor is the singer; a tenner is a ten-pound note." }],
+        text: "The report counted a rising incidents of fly-tipping, and the council said its crews had responded prompt in every case.",
+        errors: [{ wrong: "incidents", fix: "incidence", kind: 'wordchoice', note: "Incidence is the rate at which something occurs; incidents are single events." }, { wrong: "prompt", fix: "promptly", kind: 'grammar', note: "Responded is a verb, so it takes the adverb promptly." }],
       },
       {
-        text: "The auctioneer said the store cattle had made more than last year in spite of the drought.",
-        errors: [],
-        cleanNote: "Clean copy: store cattle are beasts sold on to be fattened, and made is the sale sense.",
+        text: "The valley floor is luxurious with fern from the beck to the tree line.",
+        errors: [{ wrong: "luxurious", fix: "luxuriant", kind: 'wordchoice', note: "Luxuriant means growing thickly; luxurious means costly and comfortable." }],
+      },
+      {
+        text: "The court heard a long legal wangle over the estate, and that the solicitor written to the family only in June.",
+        errors: [{ wrong: "wangle", fix: "wrangle", kind: 'wordchoice', note: "A wrangle is a dispute; to wangle is to get by contrivance." }, { wrong: "written", fix: "wrote", kind: 'grammar', note: "The simple past is wrote; written is the participle, as in had written." }],
       },
       {
         text: "The operator said the diversion would add twenty minutes to the evening journey.",
         errors: [],
         cleanNote: "Clean copy: diversion is the right word and add twenty minutes is plainly put.",
+      },
+      {
+        text: "The auctioneer said the store cattle had made more than last year in spite of the drought.",
+        errors: [],
+        cleanNote: "Clean copy: store cattle are beasts sold on to be fattened, and made is the sale sense.",
       },
     ],
   },
@@ -3998,19 +4013,6 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The firm said the cargo had not been ensured and the loss fell on the yard.",
-        errors: [{ wrong: "ensured", fix: "insured", kind: 'wordchoice', note: "To insure is to cover against loss; to ensure is to make certain." }],
-      },
-      {
-        text: "The council said the grant had been ring-fenced for flood works and could not be moved.",
-        errors: [],
-        cleanNote: "Clean copy: ring-fenced is the right term for money set aside, and it is hyphenated.",
-      },
-      {
-        text: "The gauge had not been reading accurate since the flood in February.",
-        errors: [{ wrong: "accurate", fix: "accurately", kind: 'grammar', note: "Reading is a verb here, so it takes the adverb accurately." }],
-      },
-      {
         text: "The trust said the outbreak had been contained and the ward would reopen.",
         errors: [],
         cleanNote: "Clean copy: contained is the right word for an outbreak held in check.",
@@ -4018,6 +4020,19 @@ export const PUZZLES = [
       {
         text: "The upper tear of the stand was closed for the whole of the second half.",
         errors: [{ wrong: "tear", fix: "tier", kind: 'wordchoice', note: "A tier is a level or row; a tear is a rip, or a drop from the eye." }],
+      },
+      {
+        text: "The council said the grant had been ring-fenced for flood works and could not be moved.",
+        errors: [],
+        cleanNote: "Clean copy: ring-fenced is the right term for money set aside, and it is hyphenated.",
+      },
+      {
+        text: "The firm said the cargo had not been ensured and the loss fell on the yard.",
+        errors: [{ wrong: "ensured", fix: "insured", kind: 'wordchoice', note: "To insure is to cover against loss; to ensure is to make certain." }],
+      },
+      {
+        text: "The gauge had not been reading accurate since the flood in February.",
+        errors: [{ wrong: "accurate", fix: "accurately", kind: 'grammar', note: "Reading is a verb here, so it takes the adverb accurately." }],
       },
     ],
   },
@@ -4058,6 +4073,10 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
+        text: "The figures shows a fall in fly-tipping for the third quarter running.",
+        errors: [{ wrong: "shows", fix: "show", kind: 'grammar', note: "Figures is plural, so the verb is show." }],
+      },
+      {
         text: "The serf broke clean over the bar and the crew turned back to the harbour.",
         errors: [{ wrong: "serf", fix: "surf", kind: 'wordchoice', note: "Surf is breaking waves; a serf was a feudal labourer." }],
       },
@@ -4066,17 +4085,13 @@ export const PUZZLES = [
         errors: [{ wrong: "simulate", fix: "stimulate", kind: 'wordchoice', note: "To stimulate is to encourage; to simulate is to imitate." }],
       },
       {
-        text: "The figures shows a fall in fly-tipping for the third quarter running.",
-        errors: [{ wrong: "shows", fix: "show", kind: 'grammar', note: "Figures is plural, so the verb is show." }],
+        text: "The forecaster said the wind would back south-westerly and the rain would ease.",
+        errors: [],
+        cleanNote: "Clean copy: back is the right term for a wind shifting anticlockwise.",
       },
       {
         text: "The kitchen said the truffle's cent filled the room the moment the tin opened.",
         errors: [{ wrong: "cent", fix: "scent", kind: 'wordchoice', note: "A scent is a smell; a cent is a coin." }],
-      },
-      {
-        text: "The forecaster said the wind would back south-westerly and the rain would ease.",
-        errors: [],
-        cleanNote: "Clean copy: back is the right term for a wind shifting anticlockwise.",
       },
     ],
   },
@@ -4118,22 +4133,22 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The company staged a mask in the great hall for the first time since 1911.",
-        errors: [{ wrong: "mask", fix: "masque", kind: 'wordchoice', note: "A masque is a courtly entertainment; a mask covers the face." }],
-      },
-      {
         text: "The council said the depot lease had been renewed for a further five years.",
         errors: [],
         cleanNote: "Clean copy: lease and renewed are both used correctly and nothing hides here.",
       },
       {
-        text: "The head said her and the deputy had visited every class before half term.",
-        errors: [{ wrong: "her", fix: "she", kind: 'grammar', note: "The pronoun is a subject here: she and the deputy visited." }],
-      },
-      {
         text: "The lifeboat was launched twice in the night and both crews were back by dawn.",
         errors: [],
         cleanNote: "Clean copy: launched and back by dawn are plainly put, with nothing to tap.",
+      },
+      {
+        text: "The company staged a mask in the great hall for the first time since 1911.",
+        errors: [{ wrong: "mask", fix: "masque", kind: 'wordchoice', note: "A masque is a courtly entertainment; a mask covers the face." }],
+      },
+      {
+        text: "The head said her and the deputy had visited every class before half term.",
+        errors: [{ wrong: "her", fix: "she", kind: 'grammar', note: "The pronoun is a subject here: she and the deputy visited." }],
       },
       {
         text: "The fence steak had rotted at the base and the wire had gone slack.",
@@ -4149,16 +4164,8 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The line's clime out of the valley is the steepest on the network.",
-        errors: [{ wrong: "clime", fix: "climb", kind: 'wordchoice', note: "A climb is an ascent; a clime is a region or its climate." }],
-      },
-      {
         text: "The study found no casual link between the two conditions in adults.",
         errors: [{ wrong: "casual", fix: "causal", kind: 'wordchoice', note: "A causal link is one of cause and effect; casual means informal." }],
-      },
-      {
-        text: "The two instruments requires calibration at the start of every season.",
-        errors: [{ wrong: "requires", fix: "require", kind: 'grammar', note: "Two instruments is plural, so the verb is require." }],
       },
       {
         text: "The firm said its personal costs had risen by a fifth since the new depot opened.",
@@ -4168,6 +4175,14 @@ export const PUZZLES = [
         text: "The restaurant said the tasting menu had been pared back from nine courses to five.",
         errors: [],
         cleanNote: "Clean copy: pared back is right for trimming something down.",
+      },
+      {
+        text: "The two instruments requires calibration at the start of every season.",
+        errors: [{ wrong: "requires", fix: "require", kind: 'grammar', note: "Two instruments is plural, so the verb is require." }],
+      },
+      {
+        text: "The line's clime out of the valley is the steepest on the network.",
+        errors: [{ wrong: "clime", fix: "climb", kind: 'wordchoice', note: "A climb is an ascent; a clime is a region or its climate." }],
       },
     ],
   },
@@ -4179,33 +4194,33 @@ export const PUZZLES = [
     sunday: true,
     items: [
       {
-        text: "The council said no alternate site had been considered, and that officers had acted immediate once the objection arrived.",
-        errors: [{ wrong: "alternate", fix: "alternative", kind: 'wordchoice', note: "An alternative is another option; alternate means every other one." }, { wrong: "immediate", fix: "immediately", kind: 'grammar', note: "Acted is a verb, so it takes the adverb immediately." }],
-      },
-      {
         text: "The court heard the entrance had not been adopted for wheelchair users, and that the dispute now lies between the landlord and we.",
         errors: [{ wrong: "adopted", fix: "adapted", kind: 'wordchoice', note: "To adapt is to alter for a purpose; to adopt is to take up or take on." }, { wrong: "we", fix: "us", kind: 'grammar', note: "After between the pronoun takes the object case: the landlord and us." }],
-      },
-      {
-        text: "The boat tied up at the peer, and the crew said the pumps had been rigged quick enough to save her.",
-        errors: [{ wrong: "peer", fix: "pier", kind: 'wordchoice', note: "A pier runs out into the water; a peer is an equal, or a lord." }, { wrong: "quick", fix: "quickly", kind: 'grammar', note: "Rigged is a verb, so it takes the adverb quickly." }],
-      },
-      {
-        text: "The gauge gives a continual record of the level, and the team said the ceiling of the borehole had failed in August.",
-        errors: [{ wrong: "continual", fix: "continuous", kind: 'wordchoice', note: "Continuous means without a break; continual means repeated with gaps." }, { wrong: "ceiling", fix: "sealing", kind: 'wordchoice', note: "Sealing is closing something tight; a ceiling is overhead." }],
-      },
-      {
-        text: "The organ builder said the read pipes had been revoiced and the case rewired.",
-        errors: [{ wrong: "read", fix: "reed", kind: 'wordchoice', note: "A reed vibrates to make the sound; read is what you do to a book." }],
       },
       {
         text: "The trust gave an officious reply to a complaint about the discharge letter.",
         errors: [{ wrong: "officious", fix: "official", kind: 'wordchoice', note: "Official means from the authority; officious means meddlesome." }],
       },
       {
+        text: "The organ builder said the read pipes had been revoiced and the case rewired.",
+        errors: [{ wrong: "read", fix: "reed", kind: 'wordchoice', note: "A reed vibrates to make the sound; read is what you do to a book." }],
+      },
+      {
         text: "The club said the manager had signed a contract to the end of the season.",
         errors: [],
         cleanNote: "Clean copy: signed a contract to the end of the season is plainly put and hides nothing.",
+      },
+      {
+        text: "The gauge gives a continual record of the level, and the team said the ceiling of the borehole had failed in August.",
+        errors: [{ wrong: "continual", fix: "continuous", kind: 'wordchoice', note: "Continuous means without a break; continual means repeated with gaps." }, { wrong: "ceiling", fix: "sealing", kind: 'wordchoice', note: "Sealing is closing something tight; a ceiling is overhead." }],
+      },
+      {
+        text: "The council said no alternate site had been considered, and that officers had acted immediate once the objection arrived.",
+        errors: [{ wrong: "alternate", fix: "alternative", kind: 'wordchoice', note: "An alternative is another option; alternate means every other one." }, { wrong: "immediate", fix: "immediately", kind: 'grammar', note: "Acted is a verb, so it takes the adverb immediately." }],
+      },
+      {
+        text: "The boat tied up at the peer, and the crew said the pumps had been rigged quick enough to save her.",
+        errors: [{ wrong: "peer", fix: "pier", kind: 'wordchoice', note: "A pier runs out into the water; a peer is an equal, or a lord." }, { wrong: "quick", fix: "quickly", kind: 'grammar', note: "Rigged is a verb, so it takes the adverb quickly." }],
       },
     ],
   },
@@ -4337,8 +4352,13 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The rope was warn through where it had run over the gunwale for a season.",
-        errors: [{ wrong: "warn", fix: "worn", kind: 'wordchoice', note: "Worn is the participle of wear; to warn is to give notice." }],
+        text: "The runner said she had trained through the winter and felt the benefit in the last mile.",
+        errors: [],
+        cleanNote: "Clean copy: felt the benefit is plainly put and trained through the winter is right.",
+      },
+      {
+        text: "The recipe calls for a single egg yoke and no cream at all.",
+        errors: [{ wrong: "yoke", fix: "yolk", kind: 'wordchoice', note: "The yolk is the yellow of an egg; a yoke joins two animals." }],
       },
       {
         text: "The council said the order would take effect in January and signs would go up.",
@@ -4350,13 +4370,8 @@ export const PUZZLES = [
         errors: [{ wrong: "exact", fix: "exactly", kind: 'grammar', note: "Set is a verb, so it takes the adverb exactly." }],
       },
       {
-        text: "The runner said she had trained through the winter and felt the benefit in the last mile.",
-        errors: [],
-        cleanNote: "Clean copy: felt the benefit is plainly put and trained through the winter is right.",
-      },
-      {
-        text: "The recipe calls for a single egg yoke and no cream at all.",
-        errors: [{ wrong: "yoke", fix: "yolk", kind: 'wordchoice', note: "The yolk is the yellow of an egg; a yoke joins two animals." }],
+        text: "The rope was warn through where it had run over the gunwale for a season.",
+        errors: [{ wrong: "warn", fix: "worn", kind: 'wordchoice', note: "Worn is the participle of wear; to warn is to give notice." }],
       },
     ],
   },
@@ -4368,25 +4383,25 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The firm said the smaller van was more economic to run on short rounds.",
-        errors: [{ wrong: "economic", fix: "economical", kind: 'wordchoice', note: "Economical means thrifty in use; economic relates to the economy." }],
-      },
-      {
-        text: "The opera tells the tail of a fisherman who never comes home.",
-        errors: [{ wrong: "tail", fix: "tale", kind: 'wordchoice', note: "A tale is a story; a tail is on an animal." }],
+        text: "The otter is seen frequent on the lower river now that the weir has gone.",
+        errors: [{ wrong: "frequent", fix: "frequently", kind: 'grammar', note: "Seen is a verb, so it takes the adverb frequently." }],
       },
       {
         text: "The pamphlet says a poacher was hung outside the county prison in 1856.",
         errors: [{ wrong: "hung", fix: "hanged", kind: 'wordchoice', note: "People are hanged; pictures and curtains are hung." }],
       },
       {
-        text: "The otter is seen frequent on the lower river now that the weir has gone.",
-        errors: [{ wrong: "frequent", fix: "frequently", kind: 'grammar', note: "Seen is a verb, so it takes the adverb frequently." }],
+        text: "The opera tells the tail of a fisherman who never comes home.",
+        errors: [{ wrong: "tail", fix: "tale", kind: 'wordchoice', note: "A tale is a story; a tail is on an animal." }],
       },
       {
         text: "The operator said the timetable had been rewritten to build in more recovery time.",
         errors: [],
         cleanNote: "Clean copy: recovery time is the industry's own phrase for slack built into a timetable.",
+      },
+      {
+        text: "The firm said the smaller van was more economic to run on short rounds.",
+        errors: [{ wrong: "economic", fix: "economical", kind: 'wordchoice', note: "Economical means thrifty in use; economic relates to the economy." }],
       },
     ],
   },
@@ -4398,24 +4413,21 @@ export const PUZZLES = [
     sunday: true,
     items: [
       {
-        text: "The chair called the vote a momentary one for the town, and said those decision would not be revisited.",
-        errors: [{ wrong: "momentary", fix: "momentous", kind: 'wordchoice', note: "Momentous means of great importance; momentary means lasting a moment." }, { wrong: "those", fix: "that", kind: 'grammar', note: "Decision is singular, so the demonstrative is that." }],
-      },
-      {
-        text: "The witness said she had come to loath the whole process, and that two earlier claims had been settled private.",
-        errors: [{ wrong: "loath", fix: "loathe", kind: 'wordchoice', note: "To loathe is to detest; loath means reluctant." }, { wrong: "private", fix: "privately", kind: 'grammar', note: "Settled is a verb, so it takes the adverb privately." }],
+        text: "The bell was told for the lost crew at noon on the anniversary.",
+        errors: [{ wrong: "told", fix: "tolled", kind: 'wordchoice', note: "A bell is tolled; told is the past of tell." }],
       },
       {
         text: "The team said the water below the weir was turgid with silt, and that the level had been rising constant since October.",
         errors: [{ wrong: "turgid", fix: "turbid", kind: 'wordchoice', note: "Turbid water is cloudy with sediment; turgid means swollen or pompous." }, { wrong: "constant", fix: "constantly", kind: 'grammar', note: "Rising is a verb, so it takes the adverb constantly." }],
       },
       {
-        text: "The bell was told for the lost crew at noon on the anniversary.",
-        errors: [{ wrong: "told", fix: "tolled", kind: 'wordchoice', note: "A bell is tolled; told is the past of tell." }],
+        text: "The brewery said the hops had been picked late and dried in the oast.",
+        errors: [],
+        cleanNote: "Clean copy: an oast is the kiln where hops are dried, and picked late is plainly put.",
       },
       {
-        text: "The archive said the film had been wound onto a new real and copied.",
-        errors: [{ wrong: "real", fix: "reel", kind: 'wordchoice', note: "A reel holds the film; real means genuine." }],
+        text: "The witness said she had come to loath the whole process, and that two earlier claims had been settled private.",
+        errors: [{ wrong: "loath", fix: "loathe", kind: 'wordchoice', note: "To loathe is to detest; loath means reluctant." }, { wrong: "private", fix: "privately", kind: 'grammar', note: "Settled is a verb, so it takes the adverb privately." }],
       },
       {
         text: "The trust said the audit had found no evidence of harm to any patient.",
@@ -4423,9 +4435,12 @@ export const PUZZLES = [
         cleanNote: "Clean copy: no evidence of harm is plainly put, and audit is the right word.",
       },
       {
-        text: "The brewery said the hops had been picked late and dried in the oast.",
-        errors: [],
-        cleanNote: "Clean copy: an oast is the kiln where hops are dried, and picked late is plainly put.",
+        text: "The chair called the vote a momentary one for the town, and said those decision would not be revisited.",
+        errors: [{ wrong: "momentary", fix: "momentous", kind: 'wordchoice', note: "Momentous means of great importance; momentary means lasting a moment." }, { wrong: "those", fix: "that", kind: 'grammar', note: "Decision is singular, so the demonstrative is that." }],
+      },
+      {
+        text: "The archive said the film had been wound onto a new real and copied.",
+        errors: [{ wrong: "real", fix: "reel", kind: 'wordchoice', note: "A reel holds the film; real means genuine." }],
       },
     ],
   },
