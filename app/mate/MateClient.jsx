@@ -16,10 +16,14 @@
 // or run out of moves (owner rule, 2026-08-11). Score is the outcome, 10 for the
 // mate and nothing otherwise, and ties break on fastest time.
 //
-// All chess rules live in ./chess.js, a small engine that skips castling, en
-// passant and promotion because the bank guarantees none is ever legal (that
-// file's header explains the guarantee). The engine was cross-checked against
-// python-chess over 460,652 positions with zero disagreements.
+// All chess rules live in ./chess.js, a small engine that skips castling and en
+// passant because the bank guarantees neither is ever legal (that file's header
+// explains the guarantee). A pawn that reaches the far rank becomes a QUEEN:
+// promotion used to be skipped too, on a guarantee whose arithmetic was wrong,
+// and a player who promoted into mate on the 2026-09-09 board was scored a loss
+// (player report, 2026-09-09). The engine was cross-checked against python-chess
+// over 460,652 positions with zero disagreements, and again over 31,280
+// promotion-heavy positions after the promotion fix.
 //
 // Same daily plumbing as Suds/Etch/Hedge: banked boards gated by Eastern date on
 // the server (app/mate/page.js), per-puzzle localStorage saves, /mate?p=N
@@ -345,6 +349,17 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
   const STORE_KEY = `sot_mate_${PUZZLE.num}`;
   const START = useMemo(() => parseFen(PUZZLE.fen), [PUZZLE]);
+  // Does the board have a pawn of yours that could reach the eighth rank inside
+  // the budget? A pawn advances one rank per move whether it pushes or captures,
+  // so the row index IS the number of moves it needs. Blockers are ignored,
+  // which only ever says yes where the answer is no: this decides one sentence
+  // of rules copy, and the cost of that sentence on a board where the pawn turns
+  // out to be stuck is nil, while leaving it off a board where it promotes is
+  // exactly the surprise this is here to prevent.
+  const canPromote = useMemo(
+    () => START.board.some((p, sq) => p === 'P' && rowOf(sq) <= PUZZLE.mateIn),
+    [START, PUZZLE],
+  );
 
   const [g, setG] = useState(() => freshState());
   const gRef = useRef(g);
@@ -932,7 +947,7 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
         <>One free <b>hint</b>, on your first ever play, tells you which piece moves, never where it goes.</>,
       ]}
       knack={<>Count Black&rsquo;s escapes before you commit. The key is the move that leaves the defence no answer, not the loudest check.</>}
-      note={<>Exactly <b>one</b> first move forces mate; every other move, however forcing it looks, lets Black wriggle out. You may play <b>any legal move</b> and there is <b>no take-back</b>. Nothing is refused and nothing stops early: Black keeps defending, and the round ends when you deliver mate or run out of moves.</>}
+      note={<>Exactly <b>one</b> first move forces mate; every other move, however forcing it looks, lets Black wriggle out. You may play <b>any legal move</b> and there is <b>no take-back</b>. Nothing is refused and nothing stops early: Black keeps defending, and the round ends when you deliver mate or run out of moves.{canPromote ? <> A pawn of yours that reaches the eighth rank <b>becomes a queen</b>.</> : null}</>}
       footer="The mate scores 10, and missing it scores nothing, the same as giving up. Ties break on fastest time. Weekdays are mate in two, Sundays step up to mate in three."
     />
   );

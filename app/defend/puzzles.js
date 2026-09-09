@@ -11,7 +11,10 @@
 //   fen       full FEN, black to move. Castling is always '-', en passant
 //             always '-', and no pawn ever stands on rank 1, 2, 7 or 8, which
 //             is what lets the engine (app/mate/chess.js, shared with Mate)
-//             skip castling, en passant and promotion entirely.
+//             skip castling and en passant entirely. Promotion is NOT skipped:
+//             a pawn three ranks out reaches the far rank inside a hold-for-
+//             three, thirteen boards here can, and the engine promotes to a
+//             queen.
 //   key       the ONE black move that survives, in UCI. Every other legal move
 //             on the board is mate in `holdFor` or fewer.
 //   keySan    the same move in algebraic, for the reveal.

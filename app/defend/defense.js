@@ -17,9 +17,11 @@
 //   stubbornestReply(board, remaining) White's hardest try, chosen so every
 //                                      player faces the SAME defence.
 //
-// The engine's structural guarantees (no castling, no en passant, no promotion)
-// hold here for the same reason they hold in Mate: the bank asserts them, and
-// scripts/verify-defend.mjs refuses to pass a board that breaks one.
+// The engine's structural guarantees (no castling, no en passant) hold here for
+// the same reason they hold in Mate: the bank asserts them, and
+// scripts/verify-defend.mjs refuses to pass a board that breaks one. Promotion
+// is not among them -- a pawn that reaches the far rank becomes a queen, in both
+// searches here, because it does so in applyMove.
 
 import { legalMoves, applyMove, isCheckmate, inCheck, WHITE, BLACK } from '../mate/chess.js';
 

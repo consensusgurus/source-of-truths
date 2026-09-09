@@ -12,8 +12,10 @@
 //     always has convincing decoys beside it;
 //   - the FOLLOW-UP is a second only-move: after White's stubbornest answer, the
 //     number of black moves that still survive is capped;
-//   - the same structural guarantees Mate's engine relies on to skip castling,
-//     en passant and promotion.
+//   - the same structural guarantees Mate's engine relies on to skip castling
+//     and en passant. Promotion is NOT one of them: a pawn three ranks out
+//     reaches the far rank inside a hold-for-three, thirteen boards here can,
+//     and both engines promote it to a queen.
 //
 // INDEPENDENCE. Everything above is recomputed here from the FEN by a chess
 // implementation written for this file: a 0x88 board of signed integers, its
@@ -38,7 +40,7 @@
 // and a run that was sliced says so rather than reporting a clean full pass.
 import { PUZZLES } from '../app/defend/puzzles.js';
 import { stubbornestReply, makeMateSearch } from '../app/defend/defense.js';
-import { parseFen as refParseFen, legalMoves as refLegalMoves } from '../app/mate/chess.js';
+import { parseFen as refParseFen, legalMoves as refLegalMoves, applyMove as refApplyMove } from '../app/mate/chess.js';
 
 const sliceArg = (process.argv.find((a) => a.startsWith('--slice')) || '').split('=')[1]
   || (process.argv.includes('--slice') ? process.argv[process.argv.indexOf('--slice') + 1] : null);
@@ -176,9 +178,18 @@ function inCheck(bd, white) {
   const k = kingOf(bd, white);
   return k < 0 ? false : attacked(bd, k, !white);
 }
+// A pawn reaching the far rank becomes a QUEEN, exactly as app/mate/chess.js
+// does it, because thirteen boards in this bank can get one there and an engine
+// that leaves a pawn sitting on rank 1 is not the game being verified. Rank
+// index is `sq >> 4` on this 0x88 board, 0 being the eighth rank.
+function promoted(piece, to) {
+  if (piece === P && (to >> 4) === 0) return Q;
+  if (piece === -P && (to >> 4) === 7) return -Q;
+  return piece;
+}
 function play(bd, from, to) {
   const next = Int8Array.from(bd);
-  next[to] = next[from];
+  next[to] = promoted(next[from], to);
   next[from] = 0;
   return next;
 }
@@ -233,24 +244,27 @@ function makeSearch() {
     if (hit !== undefined) return hit;
     let res = false;
     for (const mv of moves(bd, white)) {
-      const cap = bd[mv.to];
-      bd[mv.to] = bd[mv.from]; bd[mv.from] = 0;
+      // The mover is kept because the destination may end up holding a promoted
+      // queen, and unmaking by reading the destination back would put THAT on
+      // the square the pawn came from.
+      const mover = bd[mv.from], cap = bd[mv.to];
+      bd[mv.to] = promoted(mover, mv.to); bd[mv.from] = 0;
       if (mated(bd, !white)) res = true;
       else if (n > 1) {
         const reps = moves(bd, !white);
         if (reps.length) {
           let all = true;
           for (const r of reps) {
-            const rcap = bd[r.to];
-            bd[r.to] = bd[r.from]; bd[r.from] = 0;
+            const rmover = bd[r.from], rcap = bd[r.to];
+            bd[r.to] = promoted(rmover, r.to); bd[r.from] = 0;
             const forced = forces(bd, white, n - 1);
-            bd[r.from] = bd[r.to]; bd[r.to] = rcap;
+            bd[r.from] = rmover; bd[r.to] = rcap;
             if (!forced) { all = false; break; }
           }
           if (all) res = true;
         }
       }
-      bd[mv.from] = bd[mv.to]; bd[mv.to] = cap;
+      bd[mv.from] = mover; bd[mv.to] = cap;
       if (res) break;
     }
     memo.set(key, res);
@@ -376,13 +390,7 @@ PUZZLES.forEach((p, i) => {
 
         // 9. The stored reply is what the browser will play. Checked against the
         //    SHIPPED chooser on purpose (see the header).
-        const refAfter = (() => {
-          const rp = refParseFen(p.fen);
-          let b2 = rp.board.slice();
-          const f64 = idx64(survivors[0].from), t64 = idx64(survivors[0].to);
-          b2[t64] = b2[f64]; b2[f64] = null;
-          return b2;
-        })();
+        const refAfter = refApplyMove(refParseFen(p.fen).board, idx64(survivors[0].from), idx64(survivors[0].to));
         const chosen = stubbornestReply(refAfter, p.holdFor, makeMateSearch());
         if (!chosen) errs.push('White has no legal reply to the key');
         else {
@@ -408,11 +416,9 @@ PUZZLES.forEach((p, i) => {
             } else {
               const afterFollow = play(afterReply2, outs2[0].from, outs2[0].to);
               const refFollow = (() => {
-                const rp = refParseFen(p.fen);
-                let b2 = rp.board.slice();
+                let b2 = refParseFen(p.fen).board;
                 for (const mv of [survivors[0], { from: fromName(p.reply.slice(0, 2)), to: fromName(p.reply.slice(2, 4)) }, outs2[0]]) {
-                  const f64 = idx64(mv.from), t64 = idx64(mv.to);
-                  b2[t64] = b2[f64]; b2[f64] = null;
+                  b2 = refApplyMove(b2, idx64(mv.from), idx64(mv.to));
                 }
                 return b2;
               })();

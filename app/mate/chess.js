@@ -1,7 +1,7 @@
 // A deliberately small chess core for Mate, the daily mate-in-N puzzle.
 //
 // SCOPE, AND WHY IT IS SAFE TO BE THIS SMALL. Every position in the bank is
-// generated under three structural guarantees, asserted by the bank's verifier
+// generated under two structural guarantees, asserted by the bank's verifier
 // (scripts/verify-mate) before a board can ship:
 //
 //   1. Castling rights are always '-'. No position in the bank has them, so
@@ -9,9 +9,29 @@
 //   2. No pawn of either colour ever stands on its home rank (rank 2 for White,
 //      rank 7 for Black), so a two square pawn push is never legal, so an en
 //      passant capture can never arise. Neither is implemented.
-//   3. No pawn of either colour ever stands on rank 7 (White) or rank 2 (Black),
-//      and the solution is at most three White moves deep, so no pawn can reach
-//      the far rank. Promotion is never legal and is not implemented.
+//
+// PROMOTION IS NOT ON THAT LIST, AND USED TO BE. The third guarantee this file
+// once claimed read: no pawn stands on rank 7 (White) or rank 2 (Black), and the
+// solution is at most three White moves deep, so no pawn can reach the far rank.
+// The arithmetic in that sentence is wrong. A White pawn on rank SIX reaches
+// rank 8 in two moves, which is the whole of a weekday budget, and the
+// 2026-09-09 board (k7/2b5/K2PB3/2p1B3/8/8/8/8, pawn on d6) is exactly that:
+// after the key 1.dxc7 c4, both 2.Bd5# (the banked mate) and 2.c8=Q# end the
+// game. A player found the queen, this engine walked a PAWN onto c8, nothing was
+// check, the budget ran out and the round was scored a loss (player report,
+// 2026-09-09). Ten of the 124 banked boards can reach a promotion inside their
+// budget, and thirteen of Defend's 112 can, all but one of those with the
+// player's own pawn.
+//
+// So a pawn that reaches the far rank becomes a QUEEN, for both colours, in
+// applyMove, which is the one place every move on this board passes through: it
+// is what keeps move generation, attack detection, checkmate and SAN from having
+// to be told separately and disagreeing. Underpromotion is not offered. The
+// queen is the strongest choice except in the rare position where a rook dodges
+// stalemate or a knight forks, and verify-mate's check 9 walks every position
+// reachable inside each board's budget to prove no such position is on offer to
+// the player. A board that needed a knight fails the verifier rather than lying
+// to whoever plays it.
 //
 // Everything else is full, ordinary chess: sliding pieces, knights, kings,
 // single pawn pushes, diagonal pawn captures, pins, check, and checkmate. Legal
@@ -68,9 +88,27 @@ export function parseFen(fen) {
   return { board, turn: parts[1] === 'b' ? BLACK : WHITE };
 }
 
+// The far rank for a colour: row 0 (rank 8) for White, row 7 (rank 1) for Black.
+const lastRow = (color) => (color === WHITE ? 0 : 7);
+
+// The piece a move puts on `to`, which is the moving piece itself unless it is a
+// pawn arriving on the far rank, in which case it is that colour's queen. Used
+// by applyMove; exported so the board can flag the square that just promoted.
+export function promotionPiece(board, from, to) {
+  const piece = board[from];
+  if (!piece || piece.toUpperCase() !== 'P') return null;
+  const me = colorOf(piece);
+  if (rowOf(to) !== lastRow(me)) return null;
+  return me === WHITE ? 'Q' : 'q';
+}
+
+// EVERY move on this board goes through here, including the ones the search
+// makes and unmakes thousands of times, so promoting here is what keeps move
+// generation, attack detection, checkmate and SAN from ever disagreeing about
+// what stands on the far rank.
 export function applyMove(board, from, to) {
   const next = board.slice();
-  next[to] = next[from];
+  next[to] = promotionPiece(board, from, to) || next[from];
   next[from] = null;
   return next;
 }
@@ -182,8 +220,9 @@ export const isCheckmate = (board, color) => inCheck(board, color) && legalMoves
 export const isStalemate = (board, color) => !inCheck(board, color) && legalMoves(board, color).length === 0;
 
 // Standard algebraic notation, for the move list and the solution reveal. Only
-// the cases this bank can produce are handled (no castling, promotion or en
-// passant), and disambiguation follows the usual file-then-rank-then-both rule.
+// the cases this bank can produce are handled (no castling or en passant;
+// promotion is always to a queen and is written "=Q"), and disambiguation
+// follows the usual file-then-rank-then-both rule.
 export function toSan(board, from, to) {
   const piece = board[from];
   if (!piece) return uci(from, to);
@@ -196,7 +235,8 @@ export function toSan(board, from, to) {
 
   if (kind === 'P') {
     const body = capture ? `${squareName(from)[0]}x${squareName(to)}` : squareName(to);
-    return body + suffix;
+    const promo = promotionPiece(board, from, to) ? '=Q' : '';
+    return body + promo + suffix;
   }
   // Which same-kind pieces could also legally reach `to`?
   const rivals = legalMoves(board, me).filter(

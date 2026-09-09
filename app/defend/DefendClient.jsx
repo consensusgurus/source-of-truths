@@ -27,8 +27,12 @@
 // authority, not the stored line.
 //
 // All chess rules come from ../mate/chess.js, the engine Mate ships, which skips
-// castling, en passant and promotion because the bank guarantees none is ever
-// legal. scripts/verify-defend.mjs refuses a board that breaks the guarantee.
+// castling and en passant because the bank guarantees neither is ever legal.
+// scripts/verify-defend.mjs refuses a board that breaks the guarantee. Promotion
+// is NOT skipped and is always to a queen: thirteen boards here can reach the
+// far rank inside the hold, twelve of them with YOUR pawn, and the engine used
+// to walk a pawn onto rank 1 and leave it there (fixed 2026-09-09, off a player
+// report on Mate, which shares this engine).
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -68,7 +72,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import {
   parseFen, applyMove, legalMoves, legalTargetsFrom, parseUci, uci,
-  squareName, colorOf, inCheck, isCheckmate, toSan,
+  squareName, colorOf, inCheck, isCheckmate, toSan, rowOf,
 } from '../mate/chess';
 import { makeMateSearch, stubbornestReply } from './defense';
 import { T } from '@/lib/theme';
@@ -270,6 +274,15 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
   const STORE_KEY = `sot_defend_${PUZZLE.num}`;
   const START = useMemo(() => parseFen(PUZZLE.fen), [PUZZLE]);
   const HOLD = PUZZLE.holdFor;
+  // Is one of YOUR pawns within reach of the first rank inside the hold? A pawn
+  // advances one rank per move of its own, so the count is just how far it has
+  // to go; blockers are ignored, which can only add the sentence to a board that
+  // never uses it. Mate does the same thing for the same reason (MateClient's
+  // canPromote).
+  const canPromote = useMemo(
+    () => START.board.some((p, sq) => p === 'p' && 7 - rowOf(sq) <= HOLD),
+    [START, HOLD],
+  );
 
   const [g, setG] = useState(() => freshState());
   const gRef = useRef(g);
@@ -804,7 +817,7 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
         <>One free <b>hint</b>, on your first ever play, tells you which piece moves, never where it goes.</>,
       ]}
       knack={<>Count what each move gives away, not what it attacks. At least five moves will look like they stop the mate, and the one that holds is rarely the loudest.</>}
-      note={<>You may play <b>any legal move</b> and there is <b>no take-back</b>. Nothing is refused and nothing stops early: allow the mate and White will come and play it out on the board. Mating White yourself, or being stalemated, both count as holding.</>}
+      note={<>You may play <b>any legal move</b> and there is <b>no take-back</b>. Nothing is refused and nothing stops early: allow the mate and White will come and play it out on the board. Mating White yourself, or being stalemated, both count as holding.{canPromote ? <> A pawn of yours that reaches the first rank <b>becomes a queen</b>.</> : null}</>}
       footer="Holding scores 10, and getting mated scores nothing, the same as giving up. Ties break on fastest time. Weekdays hold for three, Sundays hold for four."
     />
   );

@@ -7,8 +7,10 @@
 //
 //   fen       full FEN. Castling is always '-', en passant always '-', and no
 //             pawn ever stands on rank 1, 2, 7 or 8, which is what lets the
-//             game's small engine (app/mate/chess.js) skip castling, en
-//             passant and promotion entirely. See that file's header.
+//             game's small engine (app/mate/chess.js) skip castling and en
+//             passant entirely. Promotion is NOT skipped: a pawn on rank 6
+//             reaches rank 8 inside a weekday budget, ten boards here can, and
+//             the engine promotes to a queen. See that file's header.
 //   solution  the FULL game tree, in UCI. `key` is White's only winning first
 //             move; `lines` maps EVERY legal black reply to White's answer.
 //             A node is either { move, lines } (play on) or { mate } (this move

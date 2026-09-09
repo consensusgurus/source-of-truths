@@ -27,8 +27,15 @@
 // THE STRUCTURAL GUARANTEES ARE GENERATED IN, NOT REPAIRED AFTERWARDS. The
 // sampler never places a pawn outside ranks 3-6, never emits castling or en
 // passant fields other than '-', and the FEN is printed from the sampled board,
-// so the three promises app/mate/chess.js is built on (no castling, no en
-// passant, no promotion) hold by construction.
+// so the two promises app/mate/chess.js is built on (no castling, no en
+// passant) hold by construction.
+//
+// PROMOTION IS NOT ONE OF THEM, whatever an older copy of this paragraph said.
+// Ranks 3-6 sounds like it keeps pawns off the far rank, and it does not: a
+// White pawn on rank 6 promotes in TWO moves, the whole of a weekday budget, and
+// ten shipped boards can reach a promotion. The engine promotes to a queen and
+// verify-mate's check 9 proves that is never the wrong piece for the player, so
+// a sampled pawn on rank 6 is fine; nothing here needs to avoid one.
 //
 // TWO ENGINES, ON PURPOSE, and they are not the verifier's two. The sift runs
 // on the compact 0x88-free core at the top of this file (piece-indexed attack
