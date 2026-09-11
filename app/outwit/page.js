@@ -5,6 +5,7 @@ import { isStageServer } from '@/lib/stage';
 import { PUZZLES } from './puzzles';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
+import { categoryCrumb } from '@/lib/game-seo';
 
 // Outwit launched 2026-07-17 as the thirteenth daily: linked from the daily
 // strip, the footer, the /daily archive, and the sitemap (/outwit is the
@@ -80,7 +81,7 @@ const breadcrumbJsonLd = {
   '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
-    { '@type': 'ListItem', position: 2, name: 'Quizzes', item: `${SITE_URL}/quizzes` },
+    categoryCrumb('outwit'),
     { '@type': 'ListItem', position: 3, name: 'Outwit' },
   ],
 };

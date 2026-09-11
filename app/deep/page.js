@@ -6,6 +6,7 @@ import { PUZZLES } from './puzzles';
 import { QUESTION_MAP } from './questions';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
+import { categoryCrumb } from '@/lib/game-seo';
 
 // Deep launched 2026-08-07. One topic a day, fifteen questions on it in five
 // rounds of three, easy to expert, twenty seconds each and one life. The
@@ -42,7 +43,7 @@ const breadcrumbJsonLd = {
   '@context': 'https://schema.org', '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
-    { '@type': 'ListItem', position: 2, name: 'Quizzes', item: `${SITE_URL}/quizzes` },
+    categoryCrumb('deep'),
     { '@type': 'ListItem', position: 3, name: 'Deep' },
   ],
 };

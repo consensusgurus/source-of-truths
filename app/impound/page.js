@@ -5,6 +5,7 @@ import { isStageServer } from '@/lib/stage';
 import { PUZZLES } from './puzzles';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
+import { categoryCrumb } from '@/lib/game-seo';
 
 // Impound launched 2026-09-04 as the larger Parker: the same sliding-block jam
 // on a seven by seven lot. It is a separate game rather than a bigger Parker
@@ -54,7 +55,7 @@ const breadcrumbJsonLd = {
   '@context': 'https://schema.org', '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
-    { '@type': 'ListItem', position: 2, name: 'Quizzes', item: `${SITE_URL}/quizzes` },
+    categoryCrumb('impound'),
     { '@type': 'ListItem', position: 3, name: 'Impound' },
   ],
 };

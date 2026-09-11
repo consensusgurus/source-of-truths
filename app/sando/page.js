@@ -5,6 +5,7 @@ import { isStageServer } from '@/lib/stage';
 import { PUZZLES } from './puzzles';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
+import { categoryCrumb } from '@/lib/game-seo';
 
 // Sando launched 2026-08-13 as the fourth sudoku on the slate, after Suds,
 // Quilt and Cages. It is a SANDWICH SUDOKU: an ordinary grid with a number
@@ -65,7 +66,7 @@ const breadcrumbJsonLd = {
   '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
-    { '@type': 'ListItem', position: 2, name: 'Quizzes', item: `${SITE_URL}/quizzes` },
+    categoryCrumb('sando'),
     { '@type': 'ListItem', position: 3, name: 'Sando' },
   ],
 };

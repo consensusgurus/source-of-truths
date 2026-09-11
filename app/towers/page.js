@@ -5,6 +5,7 @@ import { isStageServer } from '@/lib/stage';
 import { PUZZLES } from './puzzles';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
+import { categoryCrumb } from '@/lib/game-seo';
 
 // Towers launched 2026-08-24 as the daily skyscrapers puzzle, running with the
 // sudoku family: a Latin square of tower heights with visibility clues on the
@@ -66,7 +67,7 @@ const breadcrumbJsonLd = {
   '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
-    { '@type': 'ListItem', position: 2, name: 'Quizzes', item: `${SITE_URL}/quizzes` },
+    categoryCrumb('towers'),
     { '@type': 'ListItem', position: 3, name: 'Towers' },
   ],
 };

@@ -5,6 +5,7 @@ import { isStageServer } from '@/lib/stage';
 import { PUZZLES } from './puzzles';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
+import { categoryCrumb } from '@/lib/game-seo';
 
 // Bracket launched 2026-07-24: the puzzle specced in puzzle-spec-seeded.md. Sixteen
 // real things, one comparison metric a day, fifteen picks that propagate, and no
@@ -61,7 +62,7 @@ const breadcrumbJsonLd = {
   '@context': 'https://schema.org', '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
-    { '@type': 'ListItem', position: 2, name: 'Quizzes', item: `${SITE_URL}/quizzes` },
+    categoryCrumb('bracket'),
     { '@type': 'ListItem', position: 3, name: 'Bracket' },
   ],
 };

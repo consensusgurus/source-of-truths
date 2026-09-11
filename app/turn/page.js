@@ -5,6 +5,7 @@ import { isStageServer } from '@/lib/stage';
 import { PUZZLES } from './puzzles';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
+import { categoryCrumb } from '@/lib/game-seo';
 
 // Turn launched 2026-08-05 as the 45th daily: linked from the hub puzzles row,
 // the footer, the /daily archive, and the sitemap (/turn is the canonical,
@@ -61,7 +62,7 @@ const breadcrumbJsonLd = {
   '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
-    { '@type': 'ListItem', position: 2, name: 'Quizzes', item: `${SITE_URL}/quizzes` },
+    categoryCrumb('turn'),
     { '@type': 'ListItem', position: 3, name: 'Turn' },
   ],
 };

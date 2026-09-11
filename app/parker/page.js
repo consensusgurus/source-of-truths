@@ -5,6 +5,7 @@ import { isStageServer } from '@/lib/stage';
 import { PUZZLES } from './puzzles';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
+import { categoryCrumb } from '@/lib/game-seo';
 
 // Parker launched 2026-07-30 as the 34th daily (as "Park", briefly "Parker",
 // settled as "Parker" on 2026-07-31, with /park and /parker both 308ing here). It is linked from the hub puzzles row, the footer,
@@ -49,7 +50,7 @@ const breadcrumbJsonLd = {
   '@context': 'https://schema.org', '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
-    { '@type': 'ListItem', position: 2, name: 'Quizzes', item: `${SITE_URL}/quizzes` },
+    categoryCrumb('park'),
     { '@type': 'ListItem', position: 3, name: 'Parker' },
   ],
 };

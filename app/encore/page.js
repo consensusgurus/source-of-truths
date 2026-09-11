@@ -5,6 +5,7 @@ import { isStageServer } from '@/lib/stage';
 import { PUZZLES } from './puzzles';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
+import { categoryCrumb } from '@/lib/game-seo';
 
 // Encore launched 2026-08-27 as the big-grid companion to Emcee: where Emcee is
 // a 5x5 mini you finish in a minute, Encore is a 9x9 on weekdays (about 26
@@ -65,7 +66,7 @@ const breadcrumbJsonLd = {
   '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
-    { '@type': 'ListItem', position: 2, name: 'Quizzes', item: `${SITE_URL}/quizzes` },
+    categoryCrumb('encore'),
     { '@type': 'ListItem', position: 3, name: 'Encore' },
   ],
 };

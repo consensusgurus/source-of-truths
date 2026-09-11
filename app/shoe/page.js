@@ -5,6 +5,7 @@ import { isStageServer } from '@/lib/stage';
 import { PUZZLES } from './puzzles';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
+import { categoryCrumb } from '@/lib/game-seo';
 
 // Shoe launched 2026-08-21 as the daily blackjack shoe: five hands of
 // blackjack off ONE fixed 36-card shoe, the same cards in the same order for
@@ -63,7 +64,7 @@ const breadcrumbJsonLd = {
   '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
-    { '@type': 'ListItem', position: 2, name: 'Quizzes', item: `${SITE_URL}/quizzes` },
+    categoryCrumb('shoe'),
     { '@type': 'ListItem', position: 3, name: 'Shoe' },
   ],
 };

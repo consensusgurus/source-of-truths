@@ -5,6 +5,7 @@ import { isStageServer } from '@/lib/stage';
 import { PUZZLES } from './puzzles';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
+import { categoryCrumb } from '@/lib/game-seo';
 
 // Sixes launched 2026-08-14 as the daily 6x6 mini sudoku, the fifth sudoku on
 // the site after Suds (classic 9x9), Quilt (jigsaw), Cages (killer) and Sando
@@ -67,7 +68,7 @@ const breadcrumbJsonLd = {
   '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
-    { '@type': 'ListItem', position: 2, name: 'Quizzes', item: `${SITE_URL}/quizzes` },
+    categoryCrumb('sixes'),
     { '@type': 'ListItem', position: 3, name: 'Sixes' },
   ],
 };

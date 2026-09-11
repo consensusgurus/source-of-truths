@@ -6,6 +6,7 @@ import { PUZZLES } from './puzzles';
 import { QUESTION_MAP } from './questions';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
+import { categoryCrumb } from '@/lib/game-seo';
 
 // Quotes launched 2026-08-30. Twenty-five famous quotations questions a day in five tiers
 // of five, one life, twenty seconds a question. The question bank is resolved
@@ -42,7 +43,7 @@ const breadcrumbJsonLd = {
   '@context': 'https://schema.org', '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
-    { '@type': 'ListItem', position: 2, name: 'Quizzes', item: `${SITE_URL}/quizzes` },
+    categoryCrumb('quotes'),
     { '@type': 'ListItem', position: 3, name: 'Quotes' },
   ],
 };

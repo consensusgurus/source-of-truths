@@ -6,6 +6,7 @@ import { PUZZLES } from './puzzles';
 import { PROBLEM_MAP } from './problems';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
+import { categoryCrumb } from '@/lib/game-seo';
 
 // Blitz launched 2026-08-10. Twenty mental-arithmetic problems a day in five
 // rounds of four, warm-up to flat out, fifteen seconds each and one life. The
@@ -44,7 +45,7 @@ const breadcrumbJsonLd = {
   '@context': 'https://schema.org', '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
-    { '@type': 'ListItem', position: 2, name: 'Quizzes', item: `${SITE_URL}/quizzes` },
+    categoryCrumb('blitz'),
     { '@type': 'ListItem', position: 3, name: 'Blitz' },
   ],
 };

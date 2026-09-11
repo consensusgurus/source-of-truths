@@ -5,6 +5,7 @@ import { isStageServer } from '@/lib/stage';
 import { PUZZLES } from './puzzles';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
+import { categoryCrumb } from '@/lib/game-seo';
 
 // Rung launched 2026-07-30 as the 36th daily. Weekday ladders are 10 to 12
 // rungs and Sundays 15 or more. Puzzles are gated by Eastern date here, so
@@ -40,7 +41,7 @@ const breadcrumbJsonLd = {
   '@context': 'https://schema.org', '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
-    { '@type': 'ListItem', position: 2, name: 'Quizzes', item: `${SITE_URL}/quizzes` },
+    categoryCrumb('rung'),
     { '@type': 'ListItem', position: 3, name: 'Rung' },
   ],
 };

@@ -4,6 +4,7 @@ import StageTail from '../StageTail';
 import { isStageServer } from '@/lib/stage';
 import { PUZZLES } from './puzzles';
 import { SITE_URL } from '@/lib/site';
+import { categoryCrumb } from '@/lib/game-seo';
 
 // Sweep launched 2026-08-08 as the second daily in the Arcade category, beside
 // Blocks: linked from the hub puzzles row, the footer, the /daily archive, and
@@ -56,7 +57,7 @@ const breadcrumbJsonLd = {
   '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
-    { '@type': 'ListItem', position: 2, name: 'Quizzes', item: `${SITE_URL}/quizzes` },
+    categoryCrumb('sweep'),
     { '@type': 'ListItem', position: 3, name: 'Sweep' },
   ],
 };

@@ -6,6 +6,7 @@ import { PUZZLES } from './puzzles';
 import { BORDERS } from './borders';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
+import { categoryCrumb } from '@/lib/game-seo';
 
 // Flank launched 2026-08-28. One country a day; name every country that
 // shares a land border with it before three wrong countries end the run
@@ -43,7 +44,7 @@ const breadcrumbJsonLd = {
   '@context': 'https://schema.org', '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
-    { '@type': 'ListItem', position: 2, name: 'Quizzes', item: `${SITE_URL}/quizzes` },
+    categoryCrumb('flank'),
     { '@type': 'ListItem', position: 3, name: 'Flank' },
   ],
 };

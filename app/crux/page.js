@@ -4,6 +4,7 @@ import StageTail from '../StageTail';
 import { isStageServer } from '@/lib/stage';
 import { PUZZLES } from './puzzles';
 import { SITE_URL } from '@/lib/site';
+import { categoryCrumb } from '@/lib/game-seo';
 
 // Crux is fully launched: linked from the hub (dated catalog entries), the
 // footer, and the sitemap (/crux is the canonical, evergreen URL — the dated
@@ -73,7 +74,7 @@ const breadcrumbJsonLd = {
   '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
-    { '@type': 'ListItem', position: 2, name: 'Quizzes', item: `${SITE_URL}/quizzes` },
+    categoryCrumb('crux'),
     { '@type': 'ListItem', position: 3, name: 'Crux' },
   ],
 };

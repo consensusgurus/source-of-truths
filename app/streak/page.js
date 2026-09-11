@@ -6,6 +6,7 @@ import { PUZZLES } from './puzzles';
 import { QUESTION_MAP } from './questions';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
+import { categoryCrumb } from '@/lib/game-seo';
 
 // Streak launched 2026-07-31. Forty questions a day in five tiers of eight,
 // one life, twenty seconds a question. The question bank is resolved HERE, on
@@ -42,7 +43,7 @@ const breadcrumbJsonLd = {
   '@context': 'https://schema.org', '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
-    { '@type': 'ListItem', position: 2, name: 'Quizzes', item: `${SITE_URL}/quizzes` },
+    categoryCrumb('streak'),
     { '@type': 'ListItem', position: 3, name: 'Streak' },
   ],
 };
