@@ -147,6 +147,60 @@ if (shared.length) {
   for (const s of shared) console.log(`   ${s}`);
 }
 
+/* DIRECTION E — A MARK ON A SQUARE, MEASURED RATHER THAN READ (2026-09-11).
+   Turn's legal-move pip and Valet's exit targets were one literal,
+   rgba(255,255,255,0.42), on a square filled with --stg-surf. Correct on the
+   dark register and 1.00:1 on the light one, where --stg-surf is #ffffff: the
+   pip was not dim, it was ABSENT, and a Turn player in light mode was shown
+   none of the squares they were allowed to play. Nothing above can see it —
+   the fill and the ground are set by different rules in different files, which
+   is the blind spot this file's header admits to and hands to the live sweep.
+
+   A mark is not a hairline: it IS the affordance, so it owes the same 3:1 a
+   boundary owes and then some. What makes it checkable at all is that both
+   halves are now tokens, so the pair can be composited here: each register's
+   value over its OWN square, which is --stg-surf over --stg-ground, never the
+   page ground on its own. Move a dot or move --stg-surf and this says so. */
+const css = readFileSync('app/globals.css', 'utf8');
+const blockOf = (head) => {
+  const at = css.indexOf(head);
+  return at < 0 ? '' : css.slice(at, css.indexOf('\n}', at));
+};
+const REG = [
+  ['dark', blockOf('.stage-page {')],
+  ['light', blockOf(".stage-page[data-stage-theme='light'] {")],
+];
+const tok = (block, name) => {
+  const m = block.match(new RegExp(`--${name}:\\s*([^;]+);`));
+  return m ? m[1].trim() : null;
+};
+const px = (s) => {
+  let m = s.match(/^rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)(?:[,\s/]+([\d.]+))?\s*\)$/);
+  if (m) return { r: +m[1], g: +m[2], b: +m[3], a: m[4] === undefined ? 1 : +m[4] };
+  m = s.match(/^#([0-9a-f]{6})$/i);
+  if (m) return { r: parseInt(m[1].slice(0, 2), 16), g: parseInt(m[1].slice(2, 4), 16), b: parseInt(m[1].slice(4, 6), 16), a: 1 };
+  return null;
+};
+const over = (f, b) => ({ r: f.a * f.r + (1 - f.a) * b.r, g: f.a * f.g + (1 - f.a) * b.g, b: f.a * f.b + (1 - f.a) * b.b, a: 1 });
+const lum = (c) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b); };
+const ratio = (x, y) => { const a = lum(x), b = lum(y); return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); };
+
+let marks = 0;
+for (const [reg, block] of REG) {
+  const ground = px(tok(block, 'stg-ground') || '');
+  const surf = px(tok(block, 'stg-surf') || '');
+  if (!ground || !surf) { console.log(`✗ globals.css: ${reg} register is missing --stg-ground or --stg-surf`); marks++; continue; }
+  const square = over(surf, ground);
+  for (const name of ['stg-cell-dot', 'stg-cell-dot2']) {
+    const v = px(tok(block, name) || '');
+    if (!v) { console.log(`✗ globals.css: --${name} missing on the ${reg} register`); marks++; continue; }
+    const r = ratio(over(v, square), square);
+    if (r < 3) { console.log(`✗ --${name} is ${r.toFixed(2)}:1 on the ${reg} register's own square — a mark on a square owes 3:1`); marks++; }
+  }
+}
+if (!marks) console.log('marks: both dot tokens clear 3:1 on their own square, both registers');
+bad += marks;
+
 if (swatches.length) {
   console.log(`\n\u2026 ${swatches.length} legend swatch(es) skipped — a swatch must MATCH its board, so check by eye:`);
   console.log('   ' + swatches.join(' '));

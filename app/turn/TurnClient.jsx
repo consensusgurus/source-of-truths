@@ -78,6 +78,14 @@ const DISC_YOU = 'var(--stg-acc, #16181c)';     // yours: the category, filled
 const DISC_YOU_HI = 'var(--stg-acc, #454b55)';
 const DISC_FOE = 'var(--stg-b3, #f5f2e9)';      // the engine's: the ground, lifted
 const DISC_FOE_HI = 'var(--stg-b4, #ffffff)';
+// THE PIP ON A LEGAL SQUARE. It cannot be a white literal: the felt is
+// --stg-surf, which is #ffffff on the light register, so a white pip was a
+// white circle on a white square and the six squares you were allowed to play
+// showed nothing at all. The token carries a value per register, each measured
+// on the square it sits on; the fallback is for the Loft's green felt, which is
+// dark on both. See --stg-cell-dot in globals.css.
+const DOT = 'var(--stg-cell-dot, rgba(255,255,255,0.42))';
+const DOT_HOT = 'var(--stg-cell-dot2, rgba(255,255,255,0.85))';
 // THE MARKER CANNOT BE THE ACCENT HERE, and it cannot be amber either. Turn is an
 // End Game title, so its accent IS gold, and gold marks on gold discs is the
 // collision this rule exists to avoid; --stg-warn is a neighbouring amber and no
@@ -742,7 +750,7 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
           />
         )}
         {v === 0 && open && (
-          <span style={{ width: '26%', height: '26%', borderRadius: '50%', background: hot ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.42)' }} />
+          <span style={{ width: '26%', height: '26%', borderRadius: '50%', background: hot ? DOT_HOT : DOT }} />
         )}
         {v === 0 && hinted && !open && (
           <span style={{ width: '26%', height: '26%', borderRadius: '50%', background: MARK }} />

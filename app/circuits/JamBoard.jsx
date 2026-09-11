@@ -181,7 +181,11 @@ const CSS = `
 .jb-lot{position:relative;width:100%;aspect-ratio:1 / 1;background:${LOT};border:10px solid ${WALL};border-radius:12px;touch-action:manipulation;overflow:visible;}
 .jb-cell{position:absolute;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .jb-blk{position:absolute;border-radius:9px;pointer-events:none;box-shadow:inset 0 -3px 6px rgba(0,0,0,0.22), inset 0 2px 3px rgba(255,255,255,0.28);transition:left .18s cubic-bezier(.3,.7,.4,1), top .18s cubic-bezier(.3,.7,.4,1);}
-.jb-dot{position:absolute;width:26%;height:26%;border-radius:50%;background:rgba(255,255,255,0.42);pointer-events:none;left:37%;top:37%;}
+/* The lot is --stg-surf, which is #ffffff on the light register, so a white
+   literal here put a white pip on a white square and the cells the selected
+   car could move to showed nothing. Same token, same reason, as Turn's legal
+   squares -- see --stg-cell-dot in globals.css. */
+.jb-dot{position:absolute;width:26%;height:26%;border-radius:50%;background:var(--stg-cell-dot, rgba(255,255,255,0.42));pointer-events:none;left:37%;top:37%;}
 .jb-lot.shake{animation:jbshake .34s ease;}
 @keyframes jbshake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
 @media(prefers-reduced-motion:reduce){.jb-blk{transition:none;}.jb-lot.shake{animation:none;}}

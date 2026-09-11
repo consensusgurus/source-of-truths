@@ -237,6 +237,24 @@ button, input, textarea, select { border-radius: 8px; }
   --stg-cell: #1a1d28;
   --stg-cell-line: rgba(255, 255, 255, 0.36);
 
+  /* THE DOT ON A SQUARE YOU MAY PLAY. Turn's legal squares and Valet's exit
+     targets were the same literal, rgba(255,255,255,0.42), drawn on a square
+     whose fill is --stg-surf. That literal was measured against the DARK
+     register's surface (#161a24), where it is 4.06:1 and reads as a clear
+     pip. On the light register --stg-surf is #ffffff, so the pip was white on
+     white -- 1.00:1, not dim but ABSENT -- and a Turn player in light mode
+     was shown no legal square at all on a puzzle whose whole job is picking
+     one of six (owner report, 2026-09-11).
+
+     This is the affordance itself, not a hairline, so it is not enough to
+     clear the 3:1 a boundary owes: each register is matched to the other's
+     figure on ITS OWN SQUARE, which is the surface the dot actually sits on
+     and never the page ground. Near-black at .55 on white is 4.23:1 against
+     the dark register's 4.06, and the hover step keeps .85 in both because it
+     lands at 12.6 against 12.8. Move one and re-measure on --stg-surf. */
+  --stg-cell-dot: rgba(255, 255, 255, 0.42);
+  --stg-cell-dot2: rgba(255, 255, 255, 0.85);
+
   /* HOW MUCH OF A HUE LANDS WHEN A BOARD TINTS A CELL BY GROUP. A grid that
      colours its cells to show which group they belong to (Quilt's nine jigsaw
      regions) cannot use one fixed percentage: the wash that reads as a soft
@@ -548,6 +566,9 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] {
   /* 3.18:1 on this register's own ground. See the dark block for the rule. */
   --stg-cell: #ffffff;
   --stg-cell-line: rgba(11, 15, 26, 0.44);
+  /* 4.23:1 and 12.6:1 on this register's white square. See the dark block. */
+  --stg-cell-dot: rgba(11, 15, 26, 0.55);
+  --stg-cell-dot2: rgba(11, 15, 26, 0.85);
   /* 7% of a hue in white lands within a hair of the pale tints this board
      carried before the token existed, so the light register is unchanged. */
   --stg-tint-mix: 12%;   /* was 7% (Quilt's own near-white pastels); the region
