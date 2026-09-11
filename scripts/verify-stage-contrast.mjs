@@ -197,8 +197,23 @@ for (const [reg, block] of REG) {
     const r = ratio(over(v, square), square);
     if (r < 3) { console.log(`✗ --${name} is ${r.toFixed(2)}:1 on the ${reg} register's own square — a mark on a square owes 3:1`); marks++; }
   }
+  /* DIRECTION F — A LETTER ON A SQUARE, which is TYPE and owes 4.5 (2026-09-11).
+     Same shape as E and the same blind spot, one rung up: Glyph's given letters
+     were the literal #0f766e, a teal picked for the paper register, printed on
+     a stage square. 3.15:1 on a bare --stg-surf square and 2.83 on Glyph's real
+     one, where a board of --stg-surf cells sits on a --stg-surf card and the
+     two lifts stack (owner report). A dot is an affordance and clears at 3; a
+     letter is the content and clears at 4.5, so it gets its own threshold
+     rather than riding E's. Measured on the single-lift square for consistency
+     with E — the stacked board reads a little lower, so leave headroom. */
+  for (const name of ['stg-cell-given']) {
+    const v = px(tok(block, name) || '');
+    if (!v) { console.log(`✗ globals.css: --${name} missing on the ${reg} register`); marks++; continue; }
+    const r = ratio(over(v, square), square);
+    if (r < 4.5) { console.log(`✗ --${name} is ${r.toFixed(2)}:1 on the ${reg} register's own square — a letter on a square owes 4.5:1`); marks++; }
+  }
 }
-if (!marks) console.log('marks: both dot tokens clear 3:1 on their own square, both registers');
+if (!marks) console.log('marks: the dot tokens clear 3:1 and the given letter clears 4.5:1 on their own square, both registers');
 bad += marks;
 
 if (swatches.length) {

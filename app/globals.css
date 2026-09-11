@@ -255,6 +255,27 @@ button, input, textarea, select { border-radius: 8px; }
   --stg-cell-dot: rgba(255, 255, 255, 0.42);
   --stg-cell-dot2: rgba(255, 255, 255, 0.85);
 
+  /* THE LETTER YOU WERE HANDED. Glyph prints its two or three given letters in
+     a teal that separates them from everything the player has worked out, and
+     that teal was the literal #0f766e -- Cipher's and Axiom's brand teal, a
+     colour picked for the PAPER register and never given a dark value (owner
+     report, 2026-09-11: "very hard to read the locked letters on Glyph on dark
+     mode"). On the dark register it is 3.15:1 on a bare --stg-surf square and
+     **2.83:1** on Glyph's real one, which is a board of --stg-surf cells drawn
+     on a --stg-surf card, so the two lifts stack. Those givens are the seed of
+     the entire deduction: a codeword with no clues is nothing but its givens
+     and the crossings, so this is the one mark on that board that cannot be
+     allowed to go quiet.
+
+     This is TYPE, not a mark, so 3:1 is not the bar -- it owes 4.5:1, and it is
+     measured on the square rather than the page ground for the same reason
+     --stg-cell-dot is. Dark is --stg-cC, the register's own teal, at 11.65:1 on
+     the square (10.46 on the stacked one); light keeps the brand literal, which
+     is already 5.47:1 on a white square and was never the complaint. Keeping
+     the light value equal to the off-stage fallback is deliberate: the paper
+     register and the light stage should print the same teal. */
+  --stg-cell-given: #5eead4;
+
   /* HOW MUCH OF A HUE LANDS WHEN A BOARD TINTS A CELL BY GROUP. A grid that
      colours its cells to show which group they belong to (Quilt's nine jigsaw
      regions) cannot use one fixed percentage: the wash that reads as a soft
@@ -569,6 +590,9 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] {
   /* 4.23:1 and 12.6:1 on this register's white square. See the dark block. */
   --stg-cell-dot: rgba(11, 15, 26, 0.55);
   --stg-cell-dot2: rgba(11, 15, 26, 0.85);
+  /* 5.47:1 on this register's white square, and the same teal the paper
+     register prints. See the dark block. */
+  --stg-cell-given: #0f766e;
   /* 7% of a hue in white lands within a hair of the pale tints this board
      carried before the token existed, so the light register is unchanged. */
   --stg-tint-mix: 12%;   /* was 7% (Quilt's own near-white pastels); the region

@@ -599,7 +599,11 @@ export default function GlyphClient({ puzzles, forceNum }) {
           .gl-cell.bad{background:${STAGE ? 'var(--stg-surf2)' : '#fdecea'};box-shadow:inset 0 0 0 2px ${COLORS.rust};}
           .gl-num{position:absolute;top:1.5px;left:2.5px;font-family:${MONO};font-size:9px;line-height:1;color:${STAGE ? 'var(--stg-mute)' : '#2f3644'};font-weight:700;}
           .gl-ltr{position:absolute;left:0;right:0;bottom:0;top:38%;display:flex;align-items:center;justify-content:center;font-family:${SANS};font-weight:800;color:${INK};line-height:1;}
-          .gl-ltr.given{color:var(--stg-acc-ink, ${COLORS.accent});}
+          /* The givens, and ONLY the givens. This rule used to be dead: the
+             class was put on every letter and the colour was then overridden
+             inline on every letter, so the given teal was a literal in the
+             markup with no dark-register value. See --stg-cell-given. */
+          .gl-ltr.given{color:var(--stg-cell-given, #0f766e);}
           .gl-key{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:3px;}
           .gl-keycap{border: 1.5px solid var(--stg-line2, rgba(28,30,36,0.28));border-radius:6px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};padding:3px 0 2px;text-align:center;cursor:pointer;font-family:${SANS};font-weight:800;font-size:14px;color:${INK};}
           .gl-keycap.used{background:var(--stg-surf, ${COLORS.paper});color:var(--stg-mute2, #a4abb8);text-decoration:line-through;}
@@ -687,7 +691,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
                     return (
                       <div key={i} className={cls} onClick={() => { if (!playing) return; if (!g.t0) startGame(); setSel(n); }}>
                         <span className="gl-num">{n}</span>
-                        {L ? <span className="gl-ltr given" style={{ fontSize: `min(${(52 / W).toFixed(1)}vw, ${W > 15 ? 21 : 23}px)`, color: GIVEN[n] ? '#0f766e' : `var(--stg-ink, ${COLORS.ink})` }}>{L}</span> : null}
+                        {L ? <span className={`gl-ltr${GIVEN[n] ? ' given' : ''}`} style={{ fontSize: `min(${(52 / W).toFixed(1)}vw, ${W > 15 ? 21 : 23}px)` }}>{L}</span> : null}
                       </div>
                     );
                   })}
