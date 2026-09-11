@@ -3,6 +3,7 @@ import CircuitLanding from './CircuitLanding';
 import { ALL_CIRCUITS, circuitById, circuitGamesFor, circuitPageHref, isMarquee } from '@/lib/circuits';
 import { categoryColor, categoryColorLight } from '@/lib/category-ramp';
 import { SITE_URL } from '@/lib/site';
+import { genericFor } from '@/lib/puzzle-categories';
 
 // /circuits/<id> — a circuit's own page, and the thing a shared circuit link
 // lands on.
@@ -98,7 +99,7 @@ export default function CircuitPage({ params }) {
   // under the reader on first paint.
   const games = circuitGamesFor(c.id, day).map((g) => ({
     key: g.key, name: g.name, cat: g.cat, tag: g.tag, how: g.how, subject: g.subject || '',
-    href: g.href,
+    href: g.href, generic: genericFor(g.key),
     hue: categoryColor(g.cat), hueLight: categoryColorLight(g.cat),
   }));
 

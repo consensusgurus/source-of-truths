@@ -25,7 +25,7 @@
 // tag, and now a ?theme) into the thing they share. Naming the canonical page
 // keeps every shared link identical.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Share2, Trophy, Check } from 'lucide-react';
 import { circuitShareInvite, circuitShareUrl, circuitHref, MARQUEE_ID, CIRCUIT_PARAM, isRunnableCircuit, runHref, runSummaryHref, circuitScoreMode, fmtClock, runEngine } from '@/lib/circuits';
 import { notifyShareCredit } from '../../ShareCreditPop';
@@ -33,8 +33,8 @@ import { dailyMeIdentity } from '../../dailyMeClient';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { withRef } from '@/lib/referrals';
 import { useThemeQs } from '@/lib/stage-theme';
-import GameGlyph from '../../GameGlyph';
 import CircuitFrame from '../CircuitFrame';
+import { TileGrid, deriveTileData, TILE_CSS } from '../../GameTiles';
 
 const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
 
@@ -75,6 +75,10 @@ export default function CircuitLanding({ circuit, games }) {
   }, [id, marquee]);
 
   const perGame = (data && data.me && data.me.perGame) || {};
+  // THE RUN IS DRAWN AS THE LARGE GAME TILES (owner, 2026-09-11), off the
+  // same payload the progress reads: each member's top three today and the
+  // viewer's own rank are already in it, so the tiles cost no request.
+  const tiles = useMemo(() => deriveTileData(data, null), [data]);
   const donePlayed = games.filter((g) => perGame[g.key] && !perGame[g.key].abandoned);
   const done = donePlayed.length;
   const complete = n > 0 && done === n;
@@ -138,7 +142,7 @@ export default function CircuitLanding({ circuit, games }) {
           apostrophe on the server and <style> is a raw-text element, so
           content:'' and the [data-stage-theme='light'] rules would ship as
           entities and be dropped. See the note in app/circuits/CircuitFrame.jsx. */}
-      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      <style dangerouslySetInnerHTML={{ __html: CSS + TILE_CSS }} />
 
       {/* THE HERO sits on the page's own ground with a rule down its edge,
           rather than in a card. On the stage the ground already is the surface,
@@ -212,30 +216,8 @@ export default function CircuitLanding({ circuit, games }) {
           <h2>The run, in order</h2>
           <b>{done}<i>/{n}</i></b>
         </div>
-        <div className="clp-cards">
-          {games.map((g, i) => {
-            const played = !!(perGame[g.key] && !perGame[g.key].abandoned);
-            return (
-              <a
-                key={g.key}
-                className={`clp-c${played ? ' played' : ''}`}
-                style={{ '--cc-dk': g.hue, '--cc-lt': g.hueLight }}
-                href={withTq(circuitHref(g.key, marquee ? MARQUEE_ID : id))}
-              >
-                {/* A PLAYED GAME IS MARKED, NOT DIMMED. Half-strength prose on
-                    this ground measures under 2.5:1, so completion moves into
-                    the numeral and the border and the words stay legible. */}
-                <span className="clp-num">{played ? <Check size={13} strokeWidth={3} /> : i + 1}</span>
-                <span className="clp-ic"><GameGlyph gameKey={g.key} size={22} /></span>
-                <span className="clp-ct">
-                  <span className="clp-cn">{g.name}</span>
-                  <span className="clp-cm">{g.subject || g.cat}</span>
-                </span>
-                <ArrowRight className="clp-arr" size={16} strokeWidth={2.4} />
-              </a>
-            );
-          })}
-        </div>
+        <TileGrid games={games} numbered
+          hrefFor={(g) => withTq(circuitHref(g.key, marquee ? MARQUEE_ID : id))} data={tiles} />
         <p className="clp-note">
           {ordered
             ? 'The last two are always the last two. The rest are shuffled fresh every day, so the run has a different shape each morning. '
@@ -331,39 +313,7 @@ const CSS = `
   color:var(--stg-ink2);}
 .clp-head b i{font-style:normal;color:var(--stg-mute);}
 
-/* -- the run, in order -------------------------------------------------- */
-/* Each card publishes BOTH registers and the stylesheet picks one, because this
-   list is server-rendered: a hue chosen in JS would have to wait for the theme
-   to resolve and the cards would repaint under the reader. */
-.clp-cards{display:flex;flex-direction:column;gap:8px;}
-.clp-c{--cc:var(--cc-dk,var(--stg-ink2));position:relative;display:flex;align-items:center;
-  gap:13px;min-width:0;text-decoration:none;color:var(--stg-ink);background:var(--stg-surf);
-  border:1px solid var(--stg-line);border-radius:10px;padding:12px 15px 12px 18px;
-  overflow:hidden;}
-[data-stage-theme='light'] .clp-c{--cc:var(--cc-lt,var(--stg-ink2));}
-.clp-c::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cc);}
-.clp-c:hover{border-color:var(--cc);}
-.clp-c:focus-visible{outline:2px solid var(--cc);outline-offset:2px;}
-/* INK2, NOT MUTE. --stg-mute is tuned against the PAGE ground; on --stg-chip it
-   measures 4.34:1, which is the same number and the same cause as the me-row's
-   figures on the stage home. A supporting figure standing on a chip steps up
-   one token. */
-.clp-num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--stg-chip);
-  color:var(--stg-ink2);font-family:${MONO};font-size:11px;font-weight:700;
-  display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums;}
-.clp-c.played{border-color:color-mix(in srgb, var(--cc) 40%, transparent);}
-.clp-c.played .clp-num{color:var(--cc);}
-.clp-ic{flex:none;display:flex;align-items:center;justify-content:center;color:var(--cc);}
-.clp-ct{min-width:0;flex:1;}
-/* BLOCK, both of them. They are spans inside .clp-ct, and .clp-ct being a flex
-   ITEM blockifies the box itself but NOT its children, so the two stayed inline
-   and rendered as "DeepTrivia · One topic, fifteen questions" on one run-on
-   line (owner report, 2026-08-18). */
-.clp-cn{display:block;font-size:16px;font-weight:800;letter-spacing:-0.015em;color:var(--stg-ink);}
-.clp-cm{display:block;font-size:11.5px;font-weight:600;color:var(--stg-mute);margin-top:2px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.clp-arr{flex:none;color:var(--stg-mute);}
-
+/* -- the run, in order: app/GameTiles.jsx draws the cards ------------- */
 .clp-note{font-size:12.5px;font-weight:600;color:var(--stg-mute);line-height:1.6;margin:12px 0 0;
   max-width:74ch;}
 .clp-foot{margin:0;}
@@ -405,7 +355,5 @@ const CSS = `
   .clp-figs>div{min-width:0;}
   .clp-figs b{font-size:18px;}
   .clp-figs b i{font-size:13px;}
-  .clp-c{gap:10px;padding:11px 12px 11px 15px;}
-  .clp-ic{display:none;}
 }
 `;

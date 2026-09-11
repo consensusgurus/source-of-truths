@@ -29,6 +29,7 @@
 // is resolved. Same pattern as scripts/verify-endgame-board.mjs.
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { register } from 'node:module';
+import { fileURLToPath } from 'node:url';
 register('./alias-loader.mjs', import.meta.url);
 
 const {
@@ -222,7 +223,10 @@ else ok(`all ${DAILY_GAMES.length} games resolve to a light step`);
 // a prop that disagrees is still a lie sitting in the file, and the next person
 // to read it will believe it.
 {
-  const APP = new URL('../app/', import.meta.url).pathname;
+  // fileURLToPath, not .pathname: on Windows the pathname of a file URL is
+  // '/C:/...', and readdirSync of that resolved to 'C:\C:\...' and threw, which
+  // failed every autodeploy job that named this verifier (2026-09-11).
+  const APP = fileURLToPath(new URL('../app/', import.meta.url));
   const byKey = new Map(DAILY_GAMES.map((g) => [g.key, g.cat]));
   let checked = 0, drifted = 0;
   for (const dir of readdirSync(APP)) {
