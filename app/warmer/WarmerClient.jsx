@@ -568,7 +568,7 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
           )}
           {/* the puzzle card */}
           {!preStart && (
-          <div style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '15px 16px 16px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 14 }}>
+          <div className={STAGE ? 'stg-board' : undefined} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '15px 16px 16px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 14 }}>
             <div className="wm-spectrum">
               <div className="wm-grad" aria-hidden="true" />
               <div className="wm-scale"><span>Cold &middot; far</span><span>Cool</span><span>Warm</span><span>Hot &middot; close</span></div>
