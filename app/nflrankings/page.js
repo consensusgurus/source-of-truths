@@ -10,7 +10,7 @@ import StageFooter from '@/app/StageFooter';
 import GridironTable from '@/app/GridironTable';
 import PageViewBeacon from '@/app/PageViewBeacon';
 import { GRIDIRON } from '@/lib/gridiron-data';
-import { computeComposite } from '@/lib/gridiron';
+import { computeComposite, builtAtFor } from '@/lib/gridiron';
 import { SOT_URL } from '@/lib/site';
 
 const TITLE = 'NFL Consensus Rankings: All 32 Teams | Source of Truths';
@@ -94,7 +94,7 @@ export default function NflRankingsPage() {
 
         <GridironTable
           data={GRIDIRON.nfl}
-          fetchedAt={GRIDIRON.fetchedAt}
+          fetchedAt={builtAtFor('nfl')}
           sport="nfl"
           eyebrow="NFL &middot; 2026 season"
           boardTitle="Consensus 1 through 32"

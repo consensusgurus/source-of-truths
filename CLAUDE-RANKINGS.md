@@ -967,6 +967,12 @@ the rows.
 
 - [ ] Register a collegefootballdata.com key and add SP+, SRS and Elo (§3). Drop F+ if SP+ is added.
 - [ ] Wire CFP poll 21 with a tolerated 404 before the committee's first release in early November.
+- [ ] **Scope §5 gate rule 6 (max 15-spot move) to WEEK-OVER-WEEK comparisons.** On 2026-09-11 an
+      intra-week NFL source refresh had Kalshi move the Rams 1 -> 17 on a 27-7 upset, a genuine
+      16-spot move from a live prediction market against a PRESEASON column. It was published
+      over the rule (see the note at the top of `lib/gridiron-data.js`). The rule is there to catch
+      a broken parser, and comparing a mid-week board to a preseason one is not what it was
+      written for. Owner call on the wording.
 - [ ] Re-test CBS NFL power rankings in the first week of September; it has not refreshed past its
       April post-draft edition.
 - [ ] Wire PFR SRS for the NFL — it is empty until Week 1 and then becomes the most durable model

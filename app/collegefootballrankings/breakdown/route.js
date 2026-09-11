@@ -1,7 +1,7 @@
 // The breakdown PDF: the whole FBS board, paginated. Builder in
 // lib/gridiron-pdf.js. It was one page at depth 50 and is three at depth 138.
 import { buildGridironPdf } from '@/lib/gridiron-pdf';
-import { computeComposite } from '@/lib/gridiron';
+import { computeComposite, builtAtFor } from '@/lib/gridiron';
 import { GRIDIRON } from '@/lib/gridiron-data';
 import { SOT_URL } from '@/lib/site';
 
@@ -17,7 +17,7 @@ export async function GET() {
 
   const bytes = buildGridironPdf({
     ranked, sources, tierShare, depth,
-    fetchedAt: GRIDIRON.fetchedAt,
+    fetchedAt: builtAtFor('cfb'),
     title: `College Football Consensus: All ${ranked.length} FBS Teams`,
     eyebrow: 'FBS 2026 season',
     url: `${SOT_URL.replace(/^https?:\/\//, '')}/collegefootballrankings`,

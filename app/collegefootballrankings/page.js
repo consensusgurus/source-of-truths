@@ -16,7 +16,7 @@ import StageFooter from '@/app/StageFooter';
 import GridironTable from '@/app/GridironTable';
 import PageViewBeacon from '@/app/PageViewBeacon';
 import { GRIDIRON } from '@/lib/gridiron-data';
-import { computeComposite } from '@/lib/gridiron';
+import { computeComposite, builtAtFor } from '@/lib/gridiron';
 import { SOT_URL } from '@/lib/site';
 
 const TITLE = 'College Football Consensus Rankings: Every FBS Team | Source of Truths';
@@ -104,7 +104,7 @@ export default function CollegeFootballRankingsPage() {
 
         <GridironTable
           data={GRIDIRON.cfb}
-          fetchedAt={GRIDIRON.fetchedAt}
+          fetchedAt={builtAtFor('cfb')}
           sport="cfb"
           eyebrow="College football &middot; FBS &middot; 2026 season"
           boardTitle={`Consensus, all ${N} FBS teams`}

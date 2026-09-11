@@ -1,6 +1,6 @@
 // The condensed one-page breakdown PDF. Builder in lib/gridiron-pdf.js.
 import { buildGridironPdf } from '@/lib/gridiron-pdf';
-import { computeComposite } from '@/lib/gridiron';
+import { computeComposite, builtAtFor } from '@/lib/gridiron';
 import { GRIDIRON } from '@/lib/gridiron-data';
 import { SOT_URL } from '@/lib/site';
 
@@ -16,7 +16,7 @@ export async function GET() {
 
   const bytes = buildGridironPdf({
     ranked, sources, tierShare, depth,
-    fetchedAt: GRIDIRON.fetchedAt,
+    fetchedAt: builtAtFor('nfl'),
     title: 'NFL Consensus Rankings',
     eyebrow: '2026 season',
     url: `${SOT_URL.replace(/^https?:\/\//, '')}/nflrankings`,

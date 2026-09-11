@@ -12,7 +12,7 @@ import StageFooter from '@/app/StageFooter';
 import GridironTable from '@/app/GridironTable';
 import PageViewBeacon from '@/app/PageViewBeacon';
 import { GRIDIRON } from '@/lib/gridiron-data';
-import { computeComposite } from '@/lib/gridiron';
+import { computeComposite, builtAtFor } from '@/lib/gridiron';
 import { SOT_URL } from '@/lib/site';
 
 const TITLE = 'MLB Consensus Rankings: All 30 Teams | Source of Truths';
@@ -93,7 +93,7 @@ export default function MlbRankingsPage() {
 
         <GridironTable
           data={GRIDIRON.mlb}
-          fetchedAt={GRIDIRON.fetchedAt}
+          fetchedAt={builtAtFor('mlb')}
           sport="mlb"
           eyebrow="MLB &middot; 2026 season"
           boardTitle="Consensus 1 through 30"

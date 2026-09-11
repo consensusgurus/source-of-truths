@@ -20,6 +20,9 @@
 //      that WINS by 20 must rate above its opponent, and the line sign is the
 //      home spread, so -7 means the home team is favoured by 7)
 //   8. no media or poll source is present in the snapshot at all
+//   9. no source, gamesAt or linesAt in a sport's block is dated AFTER that
+//      block's build date (`builtAt`, else the file-level `fetchedAt`), which is
+//      what stops a negative age sailing through the 30-day gate
 import { register } from 'node:module';
 register('./alias-loader.mjs', import.meta.url);
 
@@ -76,6 +79,28 @@ for (const sport of ['cfb', 'nfl', 'mlb']) {
     if (s.tier !== 'market' && s.tier !== 'model') fail(`${sport}: source ${id} has tier "${s.tier}"; only market and model are allowed`);
   }
   ok('no media or poll source in the snapshot');
+
+  // 9. NOTHING IN A SPORT'S BLOCK MAY BE DATED AFTER THE DATE IT WAS BUILT.
+  // A source dated into the future gives `ageOf` a NEGATIVE number: the 30-day
+  // gate waves it through and the page renders "-3 days old". That is exactly
+  // what refreshing the NFL sources on 2026-09-11 against a file-level
+  // `fetchedAt` of 2026-09-08 produced, and it is why a sport may now carry its
+  // own `builtAt` (lib/gridiron.js). Set `builtAt` in the same edit that dates a
+  // source forward, or this fails.
+  {
+    const built = block.builtAt || GRIDIRON.fetchedAt;
+    const iso = (v) => (/^\d{4}-\d{2}-\d{2}$/.test(v || '') ? v : null);
+    if (!iso(built)) fail(`${sport}: builtAt/fetchedAt "${built}" is not an ISO date`);
+    for (const [id, s] of Object.entries(block.sources)) {
+      if (iso(s.asOf) && s.asOf > built) {
+        fail(`${sport}: source ${id} is dated ${s.asOf}, after the block's build date ${built}; set ${sport}.builtAt`);
+      }
+    }
+    for (const k of ['gamesAt', 'linesAt']) {
+      if (iso(block[k]) && block[k] > built) fail(`${sport}: ${k} ${block[k]} is after the build date ${built}`);
+    }
+    ok(`built ${built}; no source, game or line dated after it`);
+  }
 
   // 1, 2. resolution
   const seen = new Set();
