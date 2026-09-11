@@ -44,6 +44,7 @@ import DailyChrome from '../DailyChrome';
 import DailyBoardPanel from '../quiz/[id]/DailyBoardPanel';
 import useAbandonFlush from '../quiz/[id]/useAbandonFlush';
 import DailyMasthead from '../DailyMasthead';
+import { nextCell, passageTokens, wordIndex } from './typing';
 import { isLoft } from '@/lib/loft';
 import ReportIssue from '../ReportIssue';
 import LoftCap from '../LoftCap';
@@ -175,19 +176,16 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
   // The passage's letter cells, and the map from a cell to the answer that owns
   // it. Both halves render from this one map, which is what keeps them in step.
   const { sol, owner, oidx, N, tokens } = useMemo(() => {
-    const chars = [...PUZZLE.q];
     const sol = [], owner = [], oidx = [];
     A.forEach((a, ai) => a.c.forEach((n, k) => { sol[n] = a.w[k]; owner[n] = ai; oidx[n] = k; }));
     // tokens: the passage split into words, each a list of {cell} or {punc}
-    const tokens = []; let word = null, ci = 0;
-    for (const ch of chars) {
-      if (ch === ' ') { word = null; continue; }
-      if (!word) { word = []; tokens.push(word); }
-      if (/[a-z]/i.test(ch)) word.push({ n: ci++ });
-      else word.push({ p: ch });
-    }
-    return { sol, owner, oidx, N: sol.length, tokens };
+    return { sol, owner, oidx, N: sol.length, tokens: passageTokens(PUZZLE.q) };
   }, [PUZZLE, A]);
+
+  // Which word each cell sits in, off the SAME tokens the passage renders from.
+  // Only the dock's stepper reads it, and only while the passage is the half
+  // being worked. See the head of ./typing.js.
+  const words = useMemo(() => wordIndex(tokens), [tokens]);
 
   const [g, setG] = useState(freshState);
   const [cur, setCur] = useState(() => openingCell(A, null));
@@ -390,15 +388,23 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
   }
 
   // ---- input ----
+  // THE HALF THE PLAYER IS WORKING IN, and it answers two questions now: which
+  // copy of a cell to scroll to, and which way the cursor advances. On a narrow
+  // screen only one half is rendered, so the Passage/Bank tab decides; on a
+  // wide one both are on screen and the half last clicked does. Read through a
+  // function and never captured, because halfRef is a ref: a callback closing
+  // over its value would answer with the half of some earlier render.
+  const workingHalf = useCallback(() => (narrow ? view : halfRef.current), [narrow, view]);
+
   // The cell for index n in the half the player is working in. A half that is
   // not rendered leaves a DETACHED node behind in the map (the ref callback only
   // writes, it never clears), so every candidate is checked for being connected
   // before it is used, or the fallback silently scrolls nothing.
   const cellEl = useCallback((n) => {
-    const h = narrow ? view : halfRef.current;
+    const h = workingHalf();
     const pick = (k) => { const e = cellRefs.current[k]; return e && e.isConnected !== false ? e : null; };
     return pick(`${h}${n}`) || pick(`b${n}`) || pick(`q${n}`);
-  }, [narrow, view]);
+  }, [workingHalf]);
 
   const focusCell = useCallback((n, from) => {
     setCur(n);
@@ -407,14 +413,35 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
     if (el && el.scrollIntoView) el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   }, [cellEl]);
 
-  const move = useCallback((n, d) => {
-    const a = A[owner[n]];
-    const i = oidx[n] + d;
-    // Walking off the end of an answer steps along the PASSAGE, not into the
-    // next bank row: you are reading a sentence, so that is the direction the
-    // eye is already going.
-    return (i >= 0 && i < a.c.length) ? a.c[i] : Math.max(0, Math.min(N - 1, n + d));
-  }, [A, owner, oidx, N]);
+  // In the BANK the cursor walks the answer; in the PASSAGE it walks the
+  // passage, so a word you can read can be typed straight through instead of
+  // costing a click per letter. The rule itself lives in ./typing.js, where a
+  // checker can run it against a real board.
+  const move = useCallback(
+    (n, d) => nextCell(workingHalf(), n, d, { A, owner, oidx, N }),
+    [A, owner, oidx, N, workingHalf],
+  );
+
+  // The two steppers. `stepAnswer` is a BANK action wherever it is pressed —
+  // Tab, and the dock arrows while the bank is showing — so it says so with the
+  // `from` argument: on a wide screen that points the scroll at the bank row it
+  // just moved to, rather than at whichever half was clicked last.
+  const stepAnswer = useCallback((d) => {
+    focusCell(A[(owner[cur] + TOTAL + d) % TOTAL].c[0], 'b');
+  }, [A, owner, cur, TOTAL, focusCell]);
+
+  const stepWord = useCallback((d) => {
+    const W = words.first.length;
+    if (!W) return;
+    const wi = words.of[cur];
+    focusCell(words.first[((wi === undefined ? 0 : wi) + W + d) % W], 'q');
+  }, [words, cur, focusCell]);
+
+  // "Next" means the next thing ON SCREEN: the next answer while the bank is
+  // the half being worked, the next word of the passage while the passage is.
+  const stepNext = useCallback((d) => {
+    if (workingHalf() === 'q') stepWord(d); else stepAnswer(d);
+  }, [workingHalf, stepWord, stepAnswer]);
 
   const type = useCallback((ch) => {
     if (!playing || !g.t0) return;
@@ -466,14 +493,11 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
       else if (e.key === 'Backspace') { backspace(); e.preventDefault(); }
       else if (e.key === 'ArrowRight') { focusCell(move(cur, 1)); e.preventDefault(); }
       else if (e.key === 'ArrowLeft') { focusCell(move(cur, -1)); e.preventDefault(); }
-      else if (e.key === 'Tab') {
-        const d = e.shiftKey ? -1 : 1;
-        focusCell(A[(owner[cur] + TOTAL + d) % TOTAL].c[0]); e.preventDefault();
-      }
+      else if (e.key === 'Tab') { stepAnswer(e.shiftKey ? -1 : 1); e.preventDefault(); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [playing, g.t0, cur, type, backspace, focusCell, move, A, owner, TOTAL]);
+  }, [playing, g.t0, cur, type, backspace, focusCell, move, stepAnswer]);
 
   function giveUp() {
     setG((c) => {
@@ -1029,8 +1053,8 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
                   <button className={view === 'b' ? 'on' : ''} onClick={() => setView('b')}>Bank</button>
                 </span>
                 <span className="an-nav">
-                  <button onClick={() => focusCell(A[(curAnswer + TOTAL - 1) % TOTAL].c[0])} aria-label="Previous answer">&lsaquo;</button>
-                  <button onClick={() => focusCell(A[(curAnswer + 1) % TOTAL].c[0])} aria-label="Next answer">&rsaquo;</button>
+                  <button onClick={() => stepNext(-1)} aria-label={view === 'q' ? 'Previous word' : 'Previous answer'}>&lsaquo;</button>
+                  <button onClick={() => stepNext(1)} aria-label={view === 'q' ? 'Next word' : 'Next answer'}>&rsaquo;</button>
                 </span>
               </div>
               {view === 'q' && <CurClue inDock />}
@@ -1046,7 +1070,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
           <div className="an-kb">
             {ROWS.map((row, ri) => (
               <div className="an-kr" key={ri}>
-                {ri === 2 && <button className="wide" onClick={() => focusCell(A[(curAnswer + 1) % TOTAL].c[0])}>NEXT</button>}
+                {ri === 2 && <button className="wide" onClick={() => stepNext(1)}>NEXT</button>}
                 {[...row].map((c) => <button key={c} onClick={() => type(c.toUpperCase())}>{c.toUpperCase()}</button>)}
                 {ri === 2 && (
                   <button
