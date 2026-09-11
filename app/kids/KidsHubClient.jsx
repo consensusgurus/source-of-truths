@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import SiteHeader from '../SiteHeader';
-import Grain from '../Grain';
 import Footer from '../Footer';
 import { formatCount } from '../Count';
 import { T } from '@/lib/theme';
+import { KIDS_DAILIES, kidsDayNumber, kidsDateLabel } from '@/lib/kids-daily';
+import { KidsHeader, KIDS_CSS, useKidsDone, SHAPES } from './KidsShell';
 
 const Eye = () => (
   <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /></svg>
@@ -110,9 +110,47 @@ function Tile({ a }) {
   return <div className="kc-link kc-soft" aria-disabled="true">{inner}</div>;
 }
 
+// Little pictures for the seven daily tiles, drawn inline so the hub needs no image.
+const DAILY_ART = {
+  sixes: `<svg viewBox="0 0 76 76"><g fill="#fff" stroke="#b9d2ff" stroke-width="2"><rect x="4" y="4" width="22" height="22" rx="5"/><rect x="27" y="4" width="22" height="22" rx="5"/><rect x="50" y="4" width="22" height="22" rx="5"/><rect x="4" y="27" width="22" height="22" rx="5"/><rect x="27" y="27" width="22" height="22" rx="5"/><rect x="50" y="27" width="22" height="22" rx="5"/><rect x="4" y="50" width="22" height="22" rx="5"/><rect x="27" y="50" width="22" height="22" rx="5"/><rect x="50" y="50" width="22" height="22" rx="5"/></g><g transform="translate(8,8) scale(.35)">${SHAPES[1].replace(/<\/?svg[^>]*>/g, '')}</g><g transform="translate(54,8) scale(.35)">${SHAPES[2].replace(/<\/?svg[^>]*>/g, '')}</g><g transform="translate(31,31) scale(.35)">${SHAPES[4].replace(/<\/?svg[^>]*>/g, '')}</g><g transform="translate(8,54) scale(.35)">${SHAPES[5].replace(/<\/?svg[^>]*>/g, '')}</g><g transform="translate(54,54) scale(.35)">${SHAPES[3].replace(/<\/?svg[^>]*>/g, '')}</g></svg>`,
+  pals: '<svg viewBox="0 0 76 76"><g fill="#fff" stroke="#f3c2c4" stroke-width="2"><rect x="4" y="4" width="13" height="13" rx="3"/><rect x="18" y="4" width="13" height="13" rx="3"/><rect x="32" y="4" width="13" height="13" rx="3"/><rect x="46" y="4" width="13" height="13" rx="3"/><rect x="60" y="4" width="13" height="13" rx="3"/><rect x="4" y="18" width="13" height="13" rx="3"/><rect x="60" y="18" width="13" height="13" rx="3"/><rect x="4" y="32" width="13" height="13" rx="3"/><rect x="60" y="32" width="13" height="13" rx="3"/><rect x="4" y="46" width="13" height="13" rx="3"/><rect x="18" y="46" width="13" height="13" rx="3"/><rect x="46" y="46" width="13" height="13" rx="3"/><rect x="60" y="46" width="13" height="13" rx="3"/><rect x="4" y="60" width="13" height="13" rx="3"/><rect x="18" y="60" width="13" height="13" rx="3"/><rect x="32" y="60" width="13" height="13" rx="3"/><rect x="46" y="60" width="13" height="13" rx="3"/><rect x="60" y="60" width="13" height="13" rx="3"/></g><g fill="#ff5a5f"><rect x="18" y="18" width="13" height="13" rx="3"/><rect x="32" y="18" width="13" height="13" rx="3"/><rect x="46" y="18" width="13" height="13" rx="3"/><rect x="18" y="32" width="13" height="13" rx="3"/><rect x="32" y="32" width="13" height="13" rx="3"/><rect x="46" y="32" width="13" height="13" rx="3"/><rect x="32" y="46" width="13" height="13" rx="3"/></g></svg>',
+  mixup: '<svg viewBox="0 0 110 50"><g font-family="Fredoka,sans-serif" font-weight="700" font-size="22" fill="#1b1f3b" text-anchor="middle"><rect x="2" y="6" width="30" height="36" rx="8" fill="#fff" stroke="#f1d58a" stroke-width="2" transform="rotate(-8 17 24)"/><text x="17" y="32" transform="rotate(-8 17 24)">T</text><rect x="40" y="6" width="30" height="36" rx="8" fill="#fff" stroke="#f1d58a" stroke-width="2" transform="rotate(5 55 24)"/><text x="55" y="32" transform="rotate(5 55 24)">A</text><rect x="78" y="6" width="30" height="36" rx="8" fill="#fff" stroke="#f1d58a" stroke-width="2" transform="rotate(-4 93 24)"/><text x="93" y="32" transform="rotate(-4 93 24)">C</text></g></svg>',
+  sortit: '<svg viewBox="0 0 96 64"><g font-family="Fredoka,sans-serif" font-weight="600" font-size="11" fill="#1b1f3b" text-anchor="middle"><rect x="2" y="2" width="44" height="18" rx="6" fill="#e9f1ff" stroke="#b9d2ff" stroke-width="2"/><text x="24" y="15">cow</text><rect x="50" y="2" width="44" height="18" rx="6" fill="#fff" stroke="#bfe7d1" stroke-width="2"/><text x="72" y="15">apple</text><rect x="2" y="23" width="44" height="18" rx="6" fill="#fff" stroke="#bfe7d1" stroke-width="2"/><text x="24" y="36">kite</text><rect x="50" y="23" width="44" height="18" rx="6" fill="#e9f1ff" stroke="#b9d2ff" stroke-width="2"/><text x="72" y="36">pig</text><rect x="2" y="44" width="44" height="18" rx="6" fill="#e9f1ff" stroke="#b9d2ff" stroke-width="2"/><text x="24" y="57">hen</text><rect x="50" y="44" width="44" height="18" rx="6" fill="#fff" stroke="#bfe7d1" stroke-width="2"/><text x="72" y="57">bee</text></g></svg>',
+  ladder: '<svg viewBox="0 0 100 70"><g font-family="Fredoka,sans-serif" font-weight="700" font-size="16" text-anchor="middle"><rect x="4" y="4" width="92" height="26" rx="8" fill="#3bb273"/><text x="50" y="23" fill="#fff">D O G</text><rect x="4" y="40" width="92" height="26" rx="8" fill="#1b1f3b"/><text x="50" y="59" fill="#fff">C A T</text></g></svg>',
+  unpark: '<svg viewBox="0 0 76 76"><rect x="4" y="4" width="68" height="68" rx="10" fill="#f3ecd8" stroke="#1b1f3b" stroke-width="4"/><rect x="8" y="30" width="30" height="14" rx="6" fill="#ff5a5f"/><rect x="44" y="10" width="14" height="34" rx="6" fill="#3a86ff"/><rect x="10" y="50" width="30" height="14" rx="6" fill="#3bb273"/><rect x="58" y="48" width="12" height="20" rx="6" fill="#ffd23f"/><path d="M72 30v14" stroke="#f3ecd8" stroke-width="6"/></svg>',
+  mathdash: '<svg viewBox="0 0 110 50"><g font-family="Fredoka,sans-serif" font-weight="700" font-size="26" fill="#1b1f3b" text-anchor="middle"><text x="55" y="34">7 + 5 = <tspan fill="#3a86ff">?</tspan></text></g></svg>',
+};
+
+function DailyTile({ g, done }) {
+  return (
+    <Link href={g.href} className="kc-link">
+      <div className={`kc-tile kc-daily${done ? ' done' : ''}`}>
+        <div className="kc-band" style={{ background: g.band }}>
+          <span className="kc-icon kc-dart" dangerouslySetInnerHTML={{ __html: DAILY_ART[g.key] }} />
+          <span className={`kc-pill on${done ? ' ok' : ''}`}>{done ? 'Done today' : 'Play'}</span>
+        </div>
+        <div className="kc-body">
+          <span className="kc-tag">Today&apos;s puzzle</span>
+          <h3 className="kc-title">{g.title}</h3>
+          <p className="kc-desc">{g.tag}</p>
+          <span className="kc-from">grown-up version: <i>{g.from}</i></span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 export default function KidsHubClient() {
   const [views, setViews] = useState(null);
+  const [day, setDay] = useState(null);
+  const [done] = useKidsDone(day ? day.key : '');
   useEffect(() => {
+    // The day is read in an effect, never during render: the server does not
+    // know Eastern today and a mismatch would throw on hydration.
+    try {
+      const key = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+      setDay({ key, num: kidsDayNumber(key), label: kidsDateLabel(key) });
+    } catch (e) { setDay(null); }
     let on = true;
     fetch('/api/quiz/view', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ quizId: 'kids' }) })
       .then((r) => r.json())
@@ -121,40 +159,69 @@ export default function KidsHubClient() {
     return () => { on = false; };
   }, []);
   return (
-    <div style={{ minHeight: '100vh', background: T.surface, color: C.ink, position: 'relative', overflow: 'clip', fontFamily: FONT }}>
-      <Grain />
-      <div style={{ position: 'relative', zIndex: 2 }}>
-        <SiteHeader active="" />
-      </div>
-      <div style={{ position: 'relative', zIndex: 2, maxWidth: 1100, margin: '0 auto', padding: '20px 22px 70px' }}>
+    <div className="kd">
+      <style dangerouslySetInnerHTML={{ __html: KIDS_CSS }} />
+      <div className="kd-wrap">
         <style>{`
-          .kc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:22px;}
+          .kc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;margin-top:16px;}
           .kc-link{text-decoration:none;color:inherit;display:block;}
-          .kc-tile{height:100%;background:var(--white);border:1px solid ${C.line};border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .15s,transform .15s,border-color .15s;}
-          .kc-link:not(.kc-soft):hover .kc-tile{box-shadow:0 8px 24px rgba(20,22,28,0.10);transform:translateY(-2px);border-color:${C.accent};}
-          .kc-soft{cursor:default;}
-          .kc-soft .kc-tile{opacity:.72;}
-          .kc-band{position:relative;height:128px;display:flex;align-items:center;justify-content:center;}
+          .kc-tile{height:100%;background:var(--kpaper);border:2px solid var(--kline);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--kshadow);transition:transform .15s,border-color .15s;}
+          .kc-link:hover .kc-tile{transform:translateY(-3px);border-color:var(--kink);}
+          .kc-band{position:relative;height:120px;display:flex;align-items:center;justify-content:center;}
           .kc-prev{display:flex;gap:10px;}
-          .kc-prevcard{width:54px;height:54px;background:var(--white);border:1px solid ${C.line};border-radius:11px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(20,22,28,0.08);}
+          .kc-prevcard{width:54px;height:54px;background:var(--kpaper);border:1px solid ${C.line};border-radius:11px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(20,22,28,0.08);}
           .kc-prevcard svg{width:70%;height:70%;}
           .kc-icon{width:64px;height:64px;display:flex;}
           .kc-icon svg{width:100%;height:100%;}
-          .kc-pill{position:absolute;top:10px;right:10px;font-size:11px;font-weight:800;letter-spacing:.02em;padding:4px 10px;border-radius:999px;background:rgba(28,30,36,0.55);color:var(--white);}
-          .kc-pill.on{background:${C.accent};}
+          .kc-icon.kc-dart{width:110px;height:76px;align-items:center;justify-content:center}
+          .kc-icon.kc-dart svg{max-width:100%;max-height:100%;width:auto;height:auto}
+          .kc-pill{position:absolute;top:10px;right:10px;font-family:var(--kdisp);font-size:12px;font-weight:700;letter-spacing:.02em;padding:4px 11px;border-radius:999px;background:rgba(28,30,36,0.55);color:var(--white);}
+          .kc-pill.on{background:var(--kink);}
+          .kc-pill.ok{background:var(--kgreen);}
+          .kc-daily.done .kc-band{opacity:.75}
           .kc-body{padding:13px 15px 15px;display:flex;flex-direction:column;flex:1;}
-          .kc-tag{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:${C.soft};}
-          .kc-title{font-size:17px;font-weight:800;letter-spacing:-0.01em;margin:5px 0 6px;}
-          .kc-desc{font-size:13px;color:${C.muted};line-height:1.45;margin:0;}
-          .kc-views{display:flex;align-items:center;gap:6px;font-size:13px;color:${C.soft};font-weight:600;margin:22px 2px 0;}
+          .kc-tag{font-family:var(--kdisp);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--kink2);}
+          .kc-title{font-size:20px;font-weight:700;margin:5px 0 6px;}
+          .kc-desc{font-size:13.5px;color:var(--kink2);line-height:1.45;margin:0;}
+          .kc-from{font-size:12px;color:var(--kink2);margin-top:8px}
+          .kc-from i{font-style:normal;font-family:var(--kdisp);font-weight:600;background:var(--kbg);border:1px solid var(--kline);border-radius:6px;padding:1px 6px}
+          .kc-views{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--kink2);font-weight:600;margin:22px 2px 0;}
+          .kc-hero{display:grid;grid-template-columns:1.2fr .8fr;gap:24px;align-items:center;padding:18px 0 8px}
+          .kc-hero h1{font-size:clamp(34px,6vw,54px);font-weight:700}
+          .kc-hero h1 em{font-style:normal;color:var(--kred)}
+          .kc-hero p{font-size:17px;color:var(--kink2);max-width:36ch;margin:12px 0 0}
+          .kc-conf{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+          .kc-conf span{width:60px;height:60px;display:inline-block;filter:drop-shadow(0 5px 0 rgba(27,31,59,.12))}
+          .kc-conf svg{width:100%;height:100%}
+          .kc-sec{margin-top:36px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+          .kc-sec h2{font-size:28px;font-weight:700}
+          .kc-sec .kc-sub{color:var(--kink2)}
+          @media (max-width:820px){.kc-hero{grid-template-columns:1fr}.kc-conf{display:none}}
         `}</style>
+        <KidsHeader active="today" />
 
-        <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', color: C.accent }}>Kids Corner</span>
-        <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-0.025em', margin: '6px 0 8px' }}>Games and Learning for Kids</h1>
-        <p style={{ fontSize: 16, color: C.muted, lineHeight: 1.55, margin: 0, maxWidth: 600 }}>
-          A growing collection of simple, free games and activities. No sign-up, no ads in the way, just tap and play. Pick a game below to start.
-        </p>
+        <div className="kc-hero">
+          <div>
+            <h1>Puzzles and games, <em>every day.</em></h1>
+            <p>Seven little puzzles that change every day, plus a shelf of matching games. No sign-up, no ads, nothing counts against you. Tap one to play.</p>
+          </div>
+          <div className="kc-conf" aria-hidden="true">
+            {[1, 2, 3, 4, 5, 6].map((n) => <span key={n} dangerouslySetInnerHTML={{ __html: SHAPES[n] }} />)}
+          </div>
+        </div>
 
+        <div className="kc-sec" id="today">
+          <h2>Today&apos;s puzzles</h2>
+          <span className="kc-sub">{day ? `${day.label} · Puzzle #${day.num}` : 'A new set every day'}</span>
+        </div>
+        <div className="kc-grid">
+          {KIDS_DAILIES.map((g) => <DailyTile key={g.key} g={g} done={!!done[g.key]} />)}
+        </div>
+
+        <div className="kc-sec" id="match">
+          <h2>Match games</h2>
+          <span className="kc-sub">flip the cards, find the pairs, play with up to four</span>
+        </div>
         <div className="kc-grid">
           {ACTIVITIES.map((a) => <Tile key={a.id} a={a} />)}
         </div>

@@ -7632,3 +7632,42 @@ as the Trivia Gauntlet is; `/valet` forwards to the run like `/trivia` does.
   landing, `/daily-five?circuit=valet` (`CircuitScorecard` takes `board.clock`), the legacy home's
   circuit board, and `circuitShareResult` (`secs` stat, `fmtClock`). Medians for impound (150) and
   junkyard (240) in `verify-circuits` are ESTIMATES; re-measure at the next snapshot.
+
+## Kids dailies (`/kids/<game>`): a SEPARATE track with NO stats (owner, 2026-09-11)
+
+Seven daily puzzles for kids, each a gentle translation of a grown-up daily, live at `/kids/sixes`
+(Shape Sixes, from Sixes), `/kids/pals` (Pixel Pals, from Etch), `/kids/mixup` (Mix-Up, from
+Garble), `/kids/sortit` (Sort It, from Links), `/kids/ladder` (Ladder, from Rung), `/kids/unpark`
+(Unpark, from Parker) and `/kids/mathdash` (Math Dash, from Blitz). The hub at `/kids` lists them
+under "Today's puzzles" above the existing match games. Owner choices at launch, all three
+deliberate and none of them a gap to fill later:
+
+- **NOT in `lib/daily-games.js`.** No registry row, no leaderboard, no IQ Points, no circuits, no
+  archive, no end card, no `/api/quiz/result`. Progress is local only (`sot_kids_<key>`, one day's
+  state, overwritten at the next ET day). Nothing a child does reaches the server. Do not add a
+  kids game to the roster "for consistency"; the whole point is that it is not scored.
+- **Its own registry, `lib/kids-daily.js`** (`KIDS_DAILIES`, `KIDS_EPOCH`, `kidsDayNumber`,
+  `pickCycle`, `seeded`). Banks CYCLE, `bank[(dayNumber - 1) % bank.length]`, so a bank never runs
+  out and never needs extending on a schedule. Sixes and Unpark reuse the grown-up banks filtered
+  gentle (Sixes: live, `level === 1`, weekday; Unpark: live, weekday, `par <= 14`), so they grow
+  as those banks grow. Pals, Mix-Up, Sort It and Ladder have their own generated banks
+  (`scripts/gen-kids-*.mjs`, guarded by `isMain` so importing one for its vocabulary does not
+  regenerate); Math Dash is generated from the day number at request time (`lib/kids-mathdash.js`).
+- **Its own look, `app/kids/KidsShell.jsx`**: Fredoka and Nunito, a butter ground, candy hues,
+  `.kd-*` classes, the shared `KidsShell` layout, `useKidsSave`, `Confetti` and the six inline SVG
+  `SHAPES`. Deliberately not the stage tokens or the Loft. Nothing on a kids page counts against
+  the player: a conflict shakes, a wrong bin hops back, hints are unlimited and unscored.
+- **Every kids `<style>` is `dangerouslySetInnerHTML`.** React escapes quotes and ampersands in a
+  `<style>` text child, which breaks `@import url('...')`, `content:''` and `&` selectors. The
+  first build shipped fallback fonts for exactly this reason.
+- **The board's grid column is `minmax(0,5fr) minmax(0,4fr)` with `min-width:0` on the children.**
+  A percentage-width board with absolutely-positioned children (Unpark's lot) collapsed to 12px
+  inside an `auto` track. Boards are `width:100%;max-width:420px`.
+- **`scripts/verify-kids.mjs` is the gate**, discovered by `verify-all`. It re-proves every kids
+  bank with its own solvers (nonogram line solver plus a row-product uniqueness counter, BFS for
+  ladders, category disjointness and AVOID pairs for Sort It, the Mix-Up spacing rules, 400 days of
+  Math Dash determinism and range), checks the reused pools are non-empty today, and that every
+  registry entry has a `force-dynamic` page and a hub tile. Mutation-tested at launch.
+- **The kids track is also counted in `lib/kids.js` `KIDS_GAMES`** (the hub header's game count).
+  A new kids daily is: a `KIDS_DAILIES` row, `app/kids/<key>/page.js` + client, a bank or a
+  generator, a `verify-kids` section, and a `DAILY_ART` glyph in `KidsHubClient.jsx`.
