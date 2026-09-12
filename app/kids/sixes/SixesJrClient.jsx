@@ -14,6 +14,11 @@ const CSS = `
 .sx-cell svg{width:64%;height:64%;transition:transform .12s}
 .sx-cell.given{background:#f3ecd8}
 .sx-cell.given svg{transform:scale(.92)}
+.sx-cell.peer{background:#f4efe2}
+.sx-cell.same{background:#dbe8ff}
+.sx-cell.same svg{transform:scale(1.06)}
+.sx-cell.off{background:#ece6d8;background-image:radial-gradient(#d9d0bb 1.2px,transparent 1.4px);background-size:8px 8px;cursor:not-allowed}
+.sx-cell.off::after{content:'';position:absolute;inset:38%;border-radius:50%;background:#d3c9b2}
 .sx-cell.sel{outline:4px solid var(--kblue);outline-offset:-4px;z-index:2;background:#e9f1ff}
 .sx-cell.num span{font-family:var(--kdisp);font-weight:700;font-size:clamp(22px,4.8vw,34px)}
 .sx-cell.given.num span{color:var(--kink2)}
@@ -105,6 +110,23 @@ export default function SixesJrClient({ game, board, dayKey, dayNum, dayLabel })
     commit(next);
   }
 
+  // Selection-aware shading, the way the grown-up board does it: the picked
+  // shape (from the tray, or the shape sitting in the selected square) lights
+  // every square that already holds it, the selected square's row, column and
+  // box shade lightly, and with a shape picked every EMPTY square that shape
+  // cannot go in is greyed and dotted, so a kid can see the off-limits squares
+  // before tapping rather than after a shake.
+  const hlVal = pick || (sel ? grid[sel[0]][sel[1]] : 0);
+  function cellCls(r, c) {
+    const v = grid[r][c];
+    const isSel = sel && sel[0] === r && sel[1] === c;
+    if (isSel) return ' sel';
+    if (hlVal && v === hlVal) return ' same';
+    if (pick && !v && !g.done && conflicts(r, c, pick)) return ' off';
+    if (sel && (r === sel[0] || c === sel[1] || (r - (r % 2) === sel[0] - (sel[0] % 2) && c - (c % 3) === sel[1] - (sel[1] % 3)))) return ' peer';
+    return '';
+  }
+
   function onCell(r, c) {
     if (g.done || given[r][c]) return;
     if (pick) { place(r, c, pick); setSel([r, c]); return; }
@@ -161,7 +183,7 @@ export default function SixesJrClient({ game, board, dayKey, dayNum, dayLabel })
                 key={`${r}-${c}`}
                 type="button"
                 role="gridcell"
-                className={`sx-cell${given[r][c] ? ' given' : ''}${mode === 'num' ? ' num' : ''}${sel && sel[0] === r && sel[1] === c ? ' sel' : ''}${shake === r * 6 + c ? ' kd-shake' : ''}`}
+                className={`sx-cell${given[r][c] ? ' given' : ''}${mode === 'num' ? ' num' : ''}${cellCls(r, c)}${shake === r * 6 + c ? ' kd-shake' : ''}`}
                 onClick={() => onCell(r, c)}
                 aria-label={`Row ${r + 1} column ${c + 1}${v ? `, shape ${v}` : ', empty'}`}
               >
@@ -173,7 +195,7 @@ export default function SixesJrClient({ game, board, dayKey, dayNum, dayLabel })
         </div>
         <div className="kd-side">
           <h2>Tap a square, then tap a shape.</h2>
-          <p className="kd-how">Each row, each column and each box needs all six shapes, one of each. If a shape is already in that row, it won&apos;t stick. Nothing counts against you.</p>
+          <p className="kd-how">Each row, each column and each box needs all six shapes, one of each. Pick a shape and the squares it cannot go in turn grey, and the squares that already have it light up blue. If you tap a grey square anyway it just shakes. Nothing counts against you.</p>
           <div className="sx-tray">
             {[1, 2, 3, 4, 5, 6].map((v) => (
               <button key={v} type="button" className={`${pick === v ? 'on' : ''}${counts[v] === 6 ? ' done' : ''}`} onClick={() => onTray(v)} aria-label={`Shape ${v}`}>
