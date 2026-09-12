@@ -9,8 +9,11 @@ import KidsShell, { useKidsSave, SHAPES, Confetti } from '../KidsShell';
 //   - ONE column: board, then the shape pad directly under it, then controls.
 //   - ARM a shape from the pad and drop it into square after square; the pad
 //     button stays lit until you tap it again. With a shape armed the board
-//     greys every square it cannot go in and lights every square already
-//     holding it, so a kid sees the off-limits squares BEFORE tapping.
+//     lights every square already holding it, EXACTLY the grown-up shading
+//     and nothing more: an earlier cut also greyed every square the shape
+//     could not go in, which handed the answer over (owner, 2026-09-12:
+//     "gives away answers too easily"). A kid has to look along the row,
+//     down the column and around the box, the same as a grown-up.
 //   - Or tap a square first, then a shape, the classic way. That fills the
 //     square and does NOT arm the shape.
 //   - Each pad button shows how many of that shape are still to place.
@@ -27,8 +30,6 @@ const CSS = `
 .sx-cell.peer{background:#f4efe2}
 .sx-cell.same{background:#dbe8ff}
 .sx-cell.same svg{transform:scale(1.06)}
-.sx-cell.off{background:#ebe5d6;cursor:not-allowed}
-.sx-cell.off::after{content:'';position:absolute;inset:40%;border-radius:50%;background:#cfc5ad}
 .sx-cell.sel{outline:4px solid var(--kblue);outline-offset:-4px;z-index:2;background:#e9f1ff}
 .sx-cell.num span{font-family:var(--kdisp);font-weight:700;font-size:clamp(22px,4.8vw,34px)}
 .sx-cell.given.num span{color:var(--kink2)}
@@ -54,7 +55,7 @@ const CSS = `
 
 function fmt(s) { return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; }
 
-export default function SixesJrClient({ game, board, dayKey, dayNum, dayLabel }) {
+export default function SixesJrClient({ game, board, dayKey, dayNum, dayLabel, todayNum }) {
   const given = board ? board.given : null;
   const sol = board ? board.sol : null;
   const [g, setG, ready] = useKidsSave('sixes', dayKey, {
@@ -97,7 +98,7 @@ export default function SixesJrClient({ game, board, dayKey, dayNum, dayLabel })
 
   if (!board || !grid) {
     return (
-      <KidsShell game={game} dayKey={dayKey} dayNum={dayNum} dayLabel={dayLabel}>
+      <KidsShell game={game} dayKey={dayKey} dayNum={dayNum} dayLabel={dayLabel} todayNum={todayNum}>
         <div className="kd-card">No board today. Come back tomorrow!</div>
       </KidsShell>
     );
@@ -205,15 +206,14 @@ export default function SixesJrClient({ game, board, dayKey, dayNum, dayLabel })
 
   // Selection-aware shading, the way the grown-up board does it: the armed
   // shape (or the shape in the selected square) lights every square holding
-  // it, the selected square's row, column and box shade lightly, and with a
-  // shape armed every EMPTY square it cannot go in is greyed and dotted.
+  // it, and the selected square's row, column and box shade lightly. No
+  // off-limits shading: that is the solving, and it stays with the kid.
   const hlVal = armed || (sel ? grid[sel[0]][sel[1]] : 0);
   function cellCls(r, c) {
     const v = grid[r][c];
     const isSel = sel && sel[0] === r && sel[1] === c;
     if (isSel) return ' sel';
     if (hlVal && v === hlVal) return ' same';
-    if (armed && !v && !g.done && conflicts(r, c, armed)) return ' off';
     if (sel && (r === sel[0] || c === sel[1] || (r - (r % 2) === sel[0] - (sel[0] % 2) && c - (c % 3) === sel[1] - (sel[1] % 3)))) return ' peer';
     return '';
   }
@@ -221,13 +221,13 @@ export default function SixesJrClient({ game, board, dayKey, dayNum, dayLabel })
   const status = g.done
     ? null
     : armed
-      ? <><span>Placing</span>{glyph(armed)}<span>Tap every square it goes in. Grey squares are off limits.</span></>
+      ? <><span>Placing</span>{glyph(armed)}<span>Tap every square it goes in. Blue squares already have one.</span></>
       : sel
         ? <span>Now tap a shape below.</span>
         : <span>Tap a shape below, then the squares it goes in.</span>;
 
   return (
-    <KidsShell game={game} dayKey={dayKey} dayNum={dayNum} dayLabel={dayLabel}>
+    <KidsShell game={game} dayKey={dayKey} dayNum={dayNum} dayLabel={dayLabel} todayNum={todayNum}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <Confetti go={cheer} />
       <div className="kd-card">
@@ -276,11 +276,11 @@ export default function SixesJrClient({ game, board, dayKey, dayNum, dayLabel })
           </div>
           <div className={`kd-cheer${g.done ? ' show' : ''}`}>
             <span>You did it! 🎉</span>
-            <small>Every row, column and box has all six shapes. Come back tomorrow for #{dayNum + 1}.</small>
+            <small>Every row, column and box has all six shapes. Try another one below, or come back tomorrow.</small>
           </div>
           <div className="kd-side">
             <h2>Tap a shape, then tap where it goes.</h2>
-            <p className="kd-how">Each row, each column and each box needs all six shapes, one of each. Pick a shape from the row under the board and the squares it cannot go in turn grey, the squares that already have it turn blue, and the little number says how many are still to place. Tap a grey square and it just shakes. Tap a shape you placed to take it back, or press Undo. Nothing counts against you.</p>
+            <p className="kd-how">Each row, each column and each box needs all six shapes, one of each. Pick a shape from the row under the board: the squares that already have it turn blue, and the little number says how many are still to place. Look along the row, down the column and around the box before you tap. If a shape cannot go there, the square just shakes. Tap a shape you placed to take it back, or press Undo. Nothing counts against you.</p>
           </div>
         </div>
       </div>

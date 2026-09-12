@@ -1,7 +1,7 @@
 import LadderClient from './LadderClient';
 import { PUZZLES } from './puzzles';
 import { etTodayISO } from '@/lib/daily-games';
-import { KIDS_DAILY_MAP, kidsDayNumber, kidsDateLabel, pickCycle } from '@/lib/kids-daily';
+import { KIDS_DAILY_MAP, kidsDateLabel, pickCycleAt, resolveKidsDay } from '@/lib/kids-daily';
 
 // Ladder: Rung for kids. Three-letter words, one letter changes a step.
 // The example ladder stays on the server until the climb is done.
@@ -23,16 +23,18 @@ export const metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default function KidsLadderPage() {
+export default function KidsLadderPage({ searchParams }) {
   const today = etTodayISO();
-  const p = pickCycle(PUZZLES, today);
+  const day = resolveKidsDay(searchParams, today);
+  const p = pickCycleAt(PUZZLES, day.n);
   return (
     <LadderClient
       game={KIDS_DAILY_MAP.ladder}
       puzzle={{ num: p.num, start: p.start, end: p.end, best: p.best }}
-      dayKey={today}
-      dayNum={kidsDayNumber(today)}
-      dayLabel={kidsDateLabel(today)}
+      dayKey={day.dateIso}
+      dayNum={day.n}
+      dayLabel={kidsDateLabel(day.dateIso)}
+      todayNum={day.todayNum}
     />
   );
 }

@@ -29,7 +29,7 @@ const CSS = `
 
 const LETTERS = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
-export default function LadderClient({ game, puzzle, dayKey, dayNum, dayLabel }) {
+export default function LadderClient({ game, puzzle, dayKey, dayNum, dayLabel, todayNum }) {
   const [g, setG] = useKidsSave('ladder', dayKey, { rungs: [puzzle.start], done: false, tries: 0 });
   const [sel, setSel] = useState(null);
   const [msg, setMsg] = useState({ t: '', bad: false });
@@ -62,7 +62,7 @@ export default function LadderClient({ game, puzzle, dayKey, dayNum, dayLabel })
   function reset() { setG({ rungs: [puzzle.start], done: false, tries: 0 }); setSel(null); setMsg({ t: '', bad: false }); setCheer(false); }
 
   return (
-    <KidsShell game={game} dayKey={dayKey} dayNum={dayNum} dayLabel={dayLabel}>
+    <KidsShell game={game} dayKey={dayKey} dayNum={dayNum} dayLabel={dayLabel} todayNum={todayNum}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <Confetti go={cheer} />
       <div className="kd-card kd-game">

@@ -1,7 +1,7 @@
 import PalsClient from './PalsClient';
 import { PUZZLES } from './puzzles';
 import { etTodayISO } from '@/lib/daily-games';
-import { KIDS_DAILY_MAP, kidsDayNumber, kidsDateLabel, pickCycle } from '@/lib/kids-daily';
+import { KIDS_DAILY_MAP, kidsDateLabel, pickCycleAt, resolveKidsDay } from '@/lib/kids-daily';
 
 // Pixel Pals: Etch for kids. A 5x5 picture nonogram, clues of one or two
 // numbers, and a picture at the end. The answer stays on the server; the
@@ -24,16 +24,18 @@ export const metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default function KidsPalsPage() {
+export default function KidsPalsPage({ searchParams }) {
   const today = etTodayISO();
-  const p = pickCycle(PUZZLES, today);
+  const day = resolveKidsDay(searchParams, today);
+  const p = pickCycleAt(PUZZLES, day.n);
   return (
     <PalsClient
       game={KIDS_DAILY_MAP.pals}
       puzzle={{ num: p.num, name: p.name, rows: p.rows, cols: p.cols }}
-      dayKey={today}
-      dayNum={kidsDayNumber(today)}
-      dayLabel={kidsDateLabel(today)}
+      dayKey={day.dateIso}
+      dayNum={day.n}
+      dayLabel={kidsDateLabel(day.dateIso)}
+      todayNum={day.todayNum}
     />
   );
 }

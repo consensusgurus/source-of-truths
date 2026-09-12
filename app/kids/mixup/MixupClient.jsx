@@ -20,7 +20,7 @@ const CSS = `
 @media (max-width:420px){.mx-t{width:40px;height:46px;font-size:20px}.mx-pic{font-size:30px;width:42px}}
 `;
 
-export default function MixupClient({ game, puzzle, dayKey, dayNum, dayLabel }) {
+export default function MixupClient({ game, puzzle, dayKey, dayNum, dayLabel, todayNum }) {
   const start = () => puzzle.words.map((w) => [...w.s]);
   const [g, setG] = useKidsSave('mixup', dayKey, { rows: start(), done: false, swaps: 0 });
   const [sel, setSel] = useState(null);
@@ -44,7 +44,7 @@ export default function MixupClient({ game, puzzle, dayKey, dayNum, dayLabel }) 
   const solved = rows.filter((r, i) => r.join('') === puzzle.words[i].w).length;
 
   return (
-    <KidsShell game={game} dayKey={dayKey} dayNum={dayNum} dayLabel={dayLabel}>
+    <KidsShell game={game} dayKey={dayKey} dayNum={dayNum} dayLabel={dayLabel} todayNum={todayNum}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <Confetti go={cheer} />
       <div className="kd-card kd-game" style={{ gridTemplateColumns: '1fr' }}>

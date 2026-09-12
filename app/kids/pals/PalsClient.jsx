@@ -32,7 +32,7 @@ function runsOf(line) {
 }
 function sameRuns(a, b) { return a.length === b.length && a.every((v, i) => v === b[i]); }
 
-export default function PalsClient({ game, puzzle, dayKey, dayNum, dayLabel }) {
+export default function PalsClient({ game, puzzle, dayKey, dayNum, dayLabel, todayNum }) {
   const empty = () => Array.from({ length: 5 }, () => Array(5).fill(0));
   const [g, setG] = useKidsSave('pals', dayKey, { grid: empty(), mode: 'paint', done: false, secs: 0 });
   const [cheer, setCheer] = useState(false);
@@ -62,7 +62,7 @@ export default function PalsClient({ game, puzzle, dayKey, dayNum, dayLabel }) {
   const clue = (arr) => (arr.length ? arr.map((n, i) => <span key={i}>{n}</span>) : <span>0</span>);
 
   return (
-    <KidsShell game={game} dayKey={dayKey} dayNum={dayNum} dayLabel={dayLabel}>
+    <KidsShell game={game} dayKey={dayKey} dayNum={dayNum} dayLabel={dayLabel} todayNum={todayNum}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <Confetti go={cheer} />
       <div className="kd-card kd-game">

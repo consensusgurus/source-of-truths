@@ -1,6 +1,6 @@
 import MathDashClient from './MathDashClient';
 import { etTodayISO } from '@/lib/daily-games';
-import { KIDS_DAILY_MAP, kidsDayNumber, kidsDateLabel } from '@/lib/kids-daily';
+import { KIDS_DAILY_MAP, kidsDateLabel, resolveKidsDay } from '@/lib/kids-daily';
 import { mathDashFor } from '@/lib/kids-mathdash';
 
 // Math Dash: Blitz for kids. Ten sums, three hearts, no clock that scolds.
@@ -22,18 +22,20 @@ export const metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default function KidsMathDashPage() {
+export default function KidsMathDashPage({ searchParams }) {
   const today = etTodayISO();
-  const dayNum = kidsDayNumber(today);
-  const dow = new Date(`${today}T12:00:00Z`).getUTCDay();
+  const day = resolveKidsDay(searchParams, today);
+  const dayNum = day.n;
+  const dow = new Date(`${day.dateIso}T12:00:00Z`).getUTCDay();
   const qs = mathDashFor(dayNum, dow === 0 || dow === 6);
   return (
     <MathDashClient
       game={KIDS_DAILY_MAP.mathdash}
       questions={qs}
-      dayKey={today}
+      dayKey={day.dateIso}
       dayNum={dayNum}
-      dayLabel={kidsDateLabel(today)}
+      dayLabel={kidsDateLabel(day.dateIso)}
+      todayNum={day.todayNum}
     />
   );
 }

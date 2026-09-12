@@ -25,7 +25,7 @@ const CSS = `
 @media (max-width:560px){.si-board{grid-template-columns:repeat(3,1fr)}.si-bins{grid-template-columns:1fr}.si-bin{min-height:auto}.si-bin .si-in{flex-direction:row;flex-wrap:wrap}}
 `;
 
-export default function SortitClient({ game, puzzle, dayKey, dayNum, dayLabel }) {
+export default function SortitClient({ game, puzzle, dayKey, dayNum, dayLabel, todayNum }) {
   const [g, setG] = useKidsSave('sortit', dayKey, { placed: {}, done: false, bounces: 0 });
   const [sel, setSel] = useState(null);
   const [shake, setShake] = useState(null);
@@ -53,7 +53,7 @@ export default function SortitClient({ game, puzzle, dayKey, dayNum, dayLabel })
   const left = puzzle.board.filter((w) => placed[w] == null).length;
 
   return (
-    <KidsShell game={game} dayKey={dayKey} dayNum={dayNum} dayLabel={dayLabel}>
+    <KidsShell game={game} dayKey={dayKey} dayNum={dayNum} dayLabel={dayLabel} todayNum={todayNum}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <Confetti go={cheer} />
       <div className="kd-card">

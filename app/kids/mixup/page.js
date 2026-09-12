@@ -1,7 +1,7 @@
 import MixupClient from './MixupClient';
 import { PUZZLES } from './puzzles';
 import { etTodayISO } from '@/lib/daily-games';
-import { KIDS_DAILY_MAP, kidsDayNumber, kidsDateLabel, pickCycle } from '@/lib/kids-daily';
+import { KIDS_DAILY_MAP, kidsDateLabel, pickCycleAt, resolveKidsDay } from '@/lib/kids-daily';
 
 // Mix-Up: Garble for kids. Five jumbled words with a picture clue each.
 
@@ -22,16 +22,18 @@ export const metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default function KidsMixupPage() {
+export default function KidsMixupPage({ searchParams }) {
   const today = etTodayISO();
-  const p = pickCycle(PUZZLES, today);
+  const day = resolveKidsDay(searchParams, today);
+  const p = pickCycleAt(PUZZLES, day.n);
   return (
     <MixupClient
       game={KIDS_DAILY_MAP.mixup}
       puzzle={{ num: p.num, words: p.words }}
-      dayKey={today}
-      dayNum={kidsDayNumber(today)}
-      dayLabel={kidsDateLabel(today)}
+      dayKey={day.dateIso}
+      dayNum={day.n}
+      dayLabel={kidsDateLabel(day.dateIso)}
+      todayNum={day.todayNum}
     />
   );
 }

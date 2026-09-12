@@ -1,7 +1,7 @@
 import SortitClient from './SortitClient';
 import { PUZZLES } from './puzzles';
 import { etTodayISO } from '@/lib/daily-games';
-import { KIDS_DAILY_MAP, kidsDayNumber, kidsDateLabel, pickCycle } from '@/lib/kids-daily';
+import { KIDS_DAILY_MAP, kidsDateLabel, pickCycleAt, resolveKidsDay } from '@/lib/kids-daily';
 
 // Sort It: Links for kids. Twelve words, three named groups, tap a word and
 // tap where it goes.
@@ -23,16 +23,18 @@ export const metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default function KidsSortitPage() {
+export default function KidsSortitPage({ searchParams }) {
   const today = etTodayISO();
-  const p = pickCycle(PUZZLES, today);
+  const day = resolveKidsDay(searchParams, today);
+  const p = pickCycleAt(PUZZLES, day.n);
   return (
     <SortitClient
       game={KIDS_DAILY_MAP.sortit}
       puzzle={{ num: p.num, groups: p.groups, board: p.board }}
-      dayKey={today}
-      dayNum={kidsDayNumber(today)}
-      dayLabel={kidsDateLabel(today)}
+      dayKey={day.dateIso}
+      dayNum={day.n}
+      dayLabel={kidsDateLabel(day.dateIso)}
+      todayNum={day.todayNum}
     />
   );
 }

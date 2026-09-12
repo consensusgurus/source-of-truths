@@ -1,7 +1,7 @@
 import UnparkClient from './UnparkClient';
 import { PUZZLES } from '../../parker/puzzles';
 import { etTodayISO } from '@/lib/daily-games';
-import { KIDS_DAILY_MAP, kidsDayNumber, kidsDateLabel, pickCycle } from '@/lib/kids-daily';
+import { KIDS_DAILY_MAP, kidsDateLabel, pickCycleAt, resolveKidsDay } from '@/lib/kids-daily';
 
 // Unpark: Parker for kids. The grown-up Parker bank, cycled over the gentle
 // boards only (par 14 and under, the Monday-to-Wednesday rung), cars instead
@@ -24,19 +24,21 @@ export const metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default function KidsUnparkPage() {
+export default function KidsUnparkPage({ searchParams }) {
   const today = etTodayISO();
+  const day = resolveKidsDay(searchParams, today);
   const gentle = PUZZLES.filter((p) => p.live <= today && !p.sunday && p.par <= 14);
   const pool = gentle.length ? gentle : PUZZLES.filter((p) => p.live <= today);
-  const p = pickCycle(pool, today);
+  const p = pickCycleAt(pool, day.n);
   const board = p ? { num: p.num, pieces: p.pieces, par: p.par } : null;
   return (
     <UnparkClient
       game={KIDS_DAILY_MAP.unpark}
       board={board}
-      dayKey={today}
-      dayNum={kidsDayNumber(today)}
-      dayLabel={kidsDateLabel(today)}
+      dayKey={day.dateIso}
+      dayNum={day.n}
+      dayLabel={kidsDateLabel(day.dateIso)}
+      todayNum={day.todayNum}
     />
   );
 }

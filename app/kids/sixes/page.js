@@ -1,7 +1,7 @@
 import SixesJrClient from './SixesJrClient';
 import { PUZZLES } from '../../sixes/puzzles';
 import { etTodayISO } from '@/lib/daily-games';
-import { KIDS_DAILY_MAP, kidsDayNumber, kidsDateLabel, pickCycle } from '@/lib/kids-daily';
+import { KIDS_DAILY_MAP, kidsDateLabel, pickCycleAt, resolveKidsDay } from '@/lib/kids-daily';
 
 // Shape Sixes: the grown-up Sixes bank with shapes standing in for digits.
 // Kids get the gentle boards only (level 1, naked singles all the way), cycled
@@ -24,19 +24,21 @@ export const metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default function KidsSixesPage() {
+export default function KidsSixesPage({ searchParams }) {
   const today = etTodayISO();
+  const day = resolveKidsDay(searchParams, today);
   const gentle = PUZZLES.filter((p) => p.live <= today && p.level === 1 && !p.sunday);
   const pool = gentle.length ? gentle : PUZZLES.filter((p) => p.live <= today);
-  const p = pickCycle(pool, today);
+  const p = pickCycleAt(pool, day.n);
   const board = p ? { given: p.given, sol: p.sol, num: p.num } : null;
   return (
     <SixesJrClient
       game={KIDS_DAILY_MAP.sixes}
       board={board}
-      dayKey={today}
-      dayNum={kidsDayNumber(today)}
-      dayLabel={kidsDateLabel(today)}
+      dayKey={day.dateIso}
+      dayNum={day.n}
+      dayLabel={kidsDateLabel(day.dateIso)}
+      todayNum={day.todayNum}
     />
   );
 }

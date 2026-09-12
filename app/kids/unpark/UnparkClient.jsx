@@ -35,7 +35,7 @@ const CSS = `
 .up-lot.won .up-cell{display:none}
 `;
 
-export default function UnparkClient({ game, board, dayKey, dayNum, dayLabel }) {
+export default function UnparkClient({ game, board, dayKey, dayNum, dayLabel, todayNum }) {
   const start = () => (board ? board.pieces.map((p) => p.slice()) : []);
   const [g, setG] = useKidsSave('unpark', dayKey, { pieces: start(), moves: 0, done: false });
   const [sel, setSel] = useState(null);
@@ -52,7 +52,7 @@ export default function UnparkClient({ game, board, dayKey, dayNum, dayLabel }) 
 
   if (!board) {
     return (
-      <KidsShell game={game} dayKey={dayKey} dayNum={dayNum} dayLabel={dayLabel}>
+      <KidsShell game={game} dayKey={dayKey} dayNum={dayNum} dayLabel={dayLabel} todayNum={todayNum}>
         <div className="kd-card">No lot today. Come back tomorrow!</div>
       </KidsShell>
     );
@@ -97,7 +97,7 @@ export default function UnparkClient({ game, board, dayKey, dayNum, dayLabel }) 
   const cell = 100 / N;
 
   return (
-    <KidsShell game={game} dayKey={dayKey} dayNum={dayNum} dayLabel={dayLabel}>
+    <KidsShell game={game} dayKey={dayKey} dayNum={dayNum} dayLabel={dayLabel} todayNum={todayNum}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <Confetti go={cheer} />
       <div className="kd-card kd-game">

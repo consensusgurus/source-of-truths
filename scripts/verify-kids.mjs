@@ -229,6 +229,8 @@ const load = async (rel) => import(pathToFileURL(join(root, rel)).href);
     let page;
     try { page = readFileSync(join(root, 'app', 'kids', g.key, 'page.js'), 'utf8'); } catch (e) { bad(`hub: no page for ${g.key}`); continue; }
     if (!page.includes("force-dynamic")) bad(`hub: ${g.key} page is not force-dynamic (today's board would be baked at build)`);
+    if (!page.includes('resolveKidsDay(searchParams')) bad(`hub: ${g.key} page does not resolve ?p through resolveKidsDay (the archive strip would open today's board)`);
+    if (!page.includes('todayNum={day.todayNum}')) bad(`hub: ${g.key} page does not pass todayNum (the archive strip would not render)`);
     if (!page.includes(`alternates: { canonical: '${g.href}' }`)) bad(`hub: ${g.key} canonical is not ${g.href}`);
   }
   ok(`hub: ${KIDS_DAILIES.length} dailies registered, paged, and counted`);

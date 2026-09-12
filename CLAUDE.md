@@ -7668,6 +7668,18 @@ deliberate and none of them a gap to fill later:
   ladders, category disjointness and AVOID pairs for Sort It, the Mix-Up spacing rules, 400 days of
   Math Dash determinism and range), checks the reused pools are non-empty today, and that every
   registry entry has a `force-dynamic` page and a hub tile. Mutation-tested at launch.
+- **Every kids daily has a LOCAL archive strip directly under the board** (owner, 2026-09-12).
+  `KidsArchive` in `KidsShell.jsx` lists every past puzzle number as a chip linking to
+  `/kids/<game>?p=<n>`; the page resolves it through `resolveKidsDay(searchParams)` in
+  `lib/kids-daily.js` (missing, malformed, ahead of today or below 1 all fall back to today) and
+  picks `pickCycleAt(bank, n)`. A past board saves to its own slot (`sot_kids_<key>_<date>`) so
+  replaying #3 never wipes today's board, and finished dates are kept in `sot_kids_<key>_done` so
+  a chip wears its check. Still nothing leaves the browser. Every page MUST pass `todayNum` and
+  resolve `?p`; `verify-kids` checks both.
+- **Shape Sixes shades EXACTLY like grown-up Sixes**: the armed shape lights the squares that already
+  hold it and the selected square's row, column and box shade lightly. It does NOT grey the squares
+  the shape cannot go in; that shipped once and the owner pulled it the same day ("gives away
+  answers too easily"). A conflicting tap just shakes.
 - **The kids track is also counted in `lib/kids.js` `KIDS_GAMES`** (the hub header's game count).
   A new kids daily is: a `KIDS_DAILIES` row, `app/kids/<key>/page.js` + client, a bank or a
   generator, a `verify-kids` section, and a `DAILY_ART` glyph in `KidsHubClient.jsx`.

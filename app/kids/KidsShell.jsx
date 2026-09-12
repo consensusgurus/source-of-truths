@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Footer from '../Footer';
-import { KIDS_DAILIES } from '@/lib/kids-daily';
+import { KIDS_DAILIES, kidsDayNumber, kidsDateForDay } from '@/lib/kids-daily';
 
 // The frame every kids daily renders inside: the Kids masthead, the title
 // row, the board, a "how to play" panel, the cheer, and the strip of the other
@@ -31,14 +31,37 @@ export const SHAPES = [
 
 const SAVE_PREFIX = 'sot_kids_';
 
-// Per-device memory of today's board: { day, ...state }. A new day throws the
-// old save away. Nothing here ever leaves the browser.
+// Where a board's save lives. Today's board keeps the original slot
+// (sot_kids_<key>) so saves from before the archive existed still load; a
+// past board from the archive strip gets its own slot per date, so replaying
+// #3 never wipes today's half-finished board.
+function saveSlot(key, dayKey) {
+  return SAVE_PREFIX + key + (kidsDayNumber() === kidsDayNumber(dayKey) ? '' : '_' + dayKey);
+}
+
+// The dates this device has finished a game on: sot_kids_<key>_done, an
+// array of ISO dates. Written whenever a save carries done:true, read by the
+// archive strip so a finished past puzzle wears its check. Nothing else.
+function readDoneDays(key) {
+  try { const a = JSON.parse(localStorage.getItem(SAVE_PREFIX + key + '_done') || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+}
+function markDoneDay(key, dayKey) {
+  try {
+    const a = readDoneDays(key);
+    if (a.includes(dayKey)) return;
+    a.push(dayKey);
+    localStorage.setItem(SAVE_PREFIX + key + '_done', JSON.stringify(a.slice(-400)));
+  } catch (e) { /* ignore */ }
+}
+
+// Per-device memory of one board: { day, ...state }. Nothing here ever
+// leaves the browser.
 export function useKidsSave(key, dayKey, initial) {
   const [state, setState] = useState(initial);
   const [ready, setReady] = useState(false);
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(SAVE_PREFIX + key);
+      const raw = localStorage.getItem(saveSlot(key, dayKey));
       if (raw) {
         const sv = JSON.parse(raw);
         if (sv && sv.day === dayKey && sv.state) setState(sv.state);
@@ -48,14 +71,15 @@ export function useKidsSave(key, dayKey, initial) {
   }, [key, dayKey]);
   useEffect(() => {
     if (!ready) return;
-    try { localStorage.setItem(SAVE_PREFIX + key, JSON.stringify({ day: dayKey, state })); } catch (e) { /* ignore */ }
+    try { localStorage.setItem(saveSlot(key, dayKey), JSON.stringify({ day: dayKey, state })); } catch (e) { /* ignore */ }
+    if (state && state.done) markDoneDay(key, dayKey);
   }, [key, dayKey, state, ready]);
   return [state, setState, ready];
 }
 
 function readDone(key, dayKey) {
   try {
-    const raw = localStorage.getItem(SAVE_PREFIX + key);
+    const raw = localStorage.getItem(saveSlot(key, dayKey));
     if (!raw) return false;
     const sv = JSON.parse(raw);
     return !!(sv && sv.day === dayKey && sv.state && sv.state.done);
@@ -165,9 +189,54 @@ export const KIDS_CSS = `
 .kd-mini.done{background:#f0faf3;border-color:#bfe7d1}
 .kd-mini.done .kd-dot{background:var(--kgreen)!important;box-shadow:0 0 0 3px #d8f2e2}
 .kd-mini.on{border-color:var(--kink)}
+.kd-arch{margin-top:28px}
+.kd-arch h2{font-family:var(--kdisp);font-size:20px;margin:0 0 10px}
+.kd-archrow{display:flex;flex-wrap:wrap;gap:8px}
+.kd-chip{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:58px;padding:7px 10px;border:2.5px solid var(--kline);border-radius:14px;background:#fff;color:var(--kink);text-decoration:none;line-height:1.1}
+.kd-chip b{font-family:var(--kdisp);font-size:17px}
+.kd-chip span{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--kink2);min-height:12px}
+.kd-chip.done{background:#f0faf3;border-color:#bfe7d1}
+.kd-chip.done span{color:var(--kgreen)}
+.kd-chip.done b::after{content:' ✓';color:var(--kgreen)}
+.kd-chip.cur{background:#fff;box-shadow:0 0 0 3px #fff, 0 0 0 5px currentColor}
+.kd-chip:hover{transform:translateY(-1px)}
 .kd-foot{margin-top:40px;color:var(--kink2);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:2px solid var(--kline);padding-top:16px}
 @media (prefers-reduced-motion:reduce){.kd *{animation:none!important;transition:none!important}}
 `;
+
+// The archive strip: every past puzzle of this game as a numbered chip,
+// newest first, directly under the board. A chip links to ?p=<n>; the one on
+// screen is marked, and a puzzle this device has finished wears its check.
+// Local only, like everything else on the kids track: the checks are read
+// from sot_kids_<key>_done and never leave the browser.
+export function KidsArchive({ game, dayNum, todayNum }) {
+  const [doneDays, setDoneDays] = useState([]);
+  useEffect(() => { setDoneDays(readDoneDays(game.key)); }, [game.key, dayNum]);
+  const total = todayNum || dayNum;
+  if (total < 2) return null;
+  const chips = [];
+  for (let n = total; n >= 1; n--) chips.push(n);
+  const doneSet = new Set(doneDays);
+  return (
+    <section className="kd-arch" aria-label="Past puzzles">
+      <h2>{dayNum === total ? 'Play a past puzzle' : `You are on #${dayNum}. Pick another`}</h2>
+      <div className="kd-archrow">
+        {chips.map((n) => {
+          const isCur = n === dayNum;
+          const isToday = n === total;
+          const done = doneSet.has(kidsDateForDay(n));
+          const href = isToday ? game.href : `${game.href}?p=${n}`;
+          return (
+            <Link key={n} href={href} className={`kd-chip${isCur ? ' cur' : ''}${done ? ' done' : ''}`} aria-current={isCur ? 'page' : undefined} style={isCur ? { borderColor: game.hue, color: game.hue } : undefined}>
+              <b>#{n}</b>
+              <span>{isToday ? 'Today' : done ? 'Done' : ' '}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 
 export function KidsStrip({ selfKey, dayKey }) {
   const [done] = useKidsDone(dayKey);
@@ -215,7 +284,7 @@ export function Confetti({ go }) {
   );
 }
 
-export default function KidsShell({ game, dayLabel, dayNum, dayKey, sub, children }) {
+export default function KidsShell({ game, dayLabel, dayNum, dayKey, todayNum, sub, children }) {
   return (
     <div className="kd">
       <style dangerouslySetInnerHTML={{ __html: KIDS_CSS }} />
@@ -226,6 +295,7 @@ export default function KidsShell({ game, dayLabel, dayNum, dayKey, sub, childre
           <span className="kd-sub">{dayLabel} · Puzzle #{dayNum}{sub ? ` · ${sub}` : ''}</span>
         </div>
         {children}
+        <KidsArchive game={game} dayNum={dayNum} todayNum={todayNum} />
         <KidsStrip selfKey={game.key} dayKey={dayKey} />
         <div className="kd-foot">
           <span>Mind Loft Kids · free, no sign-up, no ads. Grown-ups can find the full slate at <Link href="/">mindloftdaily.com</Link>.</span>

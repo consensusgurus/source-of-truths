@@ -28,7 +28,7 @@ const CSS = `
 .md-end b{font-family:var(--kdisp);font-size:54px;display:block;line-height:1}
 `;
 
-export default function MathDashClient({ game, questions, dayKey, dayNum, dayLabel }) {
+export default function MathDashClient({ game, questions, dayKey, dayNum, dayLabel, todayNum }) {
   const [g, setG] = useKidsSave('mathdash', dayKey, { i: 0, right: 0, hearts: 3, results: [], done: false });
   const [typed, setTyped] = useState('');
   const [fb, setFb] = useState(null);
@@ -63,7 +63,7 @@ export default function MathDashClient({ game, questions, dayKey, dayNum, dayLab
   const hearts = '❤️'.repeat(Math.max(0, g.hearts)) + '🤍'.repeat(Math.max(0, 3 - Math.max(0, g.hearts)));
 
   return (
-    <KidsShell game={game} dayKey={dayKey} dayNum={dayNum} dayLabel={dayLabel}>
+    <KidsShell game={game} dayKey={dayKey} dayNum={dayNum} dayLabel={dayLabel} todayNum={todayNum}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <Confetti go={cheer} />
       <div className="kd-card kd-game">
