@@ -6,16 +6,18 @@ import { mathDashFor } from '@/lib/kids-mathdash';
 // Math Dash: Blitz for kids. Ten sums, three hearts, no clock that scolds.
 
 export const metadata = {
-  title: 'Math Dash | Kids Corner | Mind Loft',
-  description: 'A free daily math game for kids. Ten sums, three hearts. Adding and taking away up to 20, a little harder each question. How many can you get?',
+  title: 'Math Dash | Mind Loft Kids',
+  description: 'A daily arithmetic run for kids. Ten sums, three hearts, starting easy and getting a little bigger. Quick adding and subtracting inside 20, with a star for every right answer and the answer shown on every miss.',
   alternates: { canonical: '/kids/mathdash' },
   openGraph: {
-    title: 'Math Dash | Kids Corner',
-    description: 'Ten sums, three hearts. How many can you get?',
+    title: 'Math Dash | Mind Loft Kids',
+    description: 'A daily arithmetic run for kids: ten sums, three hearts, adding and subtracting inside 20. A star for every right answer.',
     url: '/kids/mathdash',
     type: 'website',
     siteName: 'Mind Loft',
+    images: ['/kids/opengraph-image'],
   },
+  twitter: { card: 'summary_large_image', title: 'Math Dash | Mind Loft Kids', description: 'A daily arithmetic run for kids: ten sums, three hearts, adding and subtracting inside 20. A star for every right answer.', images: ['/kids/opengraph-image'] },
 };
 
 export const dynamic = 'force-dynamic';

@@ -37,6 +37,9 @@ export const FOOTER_COLS = [
       { label: 'Stat Hub', href: '/quizzes/hub' },
       { label: 'Community Leaderboard', href: '/quizzes/community' },
       { label: 'Request a Quiz', href: '/request' },
+      // The kids track. Nothing inside /kids links back out except its own
+      // footer line, so this is the one path a grown-up uses to find it.
+      { label: 'Mind Loft Kids', href: '/kids' },
     ],
   },
   {

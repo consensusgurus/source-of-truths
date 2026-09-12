@@ -7,16 +7,18 @@ import { KIDS_DAILY_MAP, kidsDayNumber, kidsDateLabel, pickCycle } from '@/lib/k
 // The example ladder stays on the server until the climb is done.
 
 export const metadata = {
-  title: 'Ladder | Kids Corner | Mind Loft',
-  description: 'A free daily word ladder for kids. Change one letter at a time to climb from one three-letter word to another. Any real word is a step.',
+  title: 'Ladder | Mind Loft Kids',
+  description: 'A daily word ladder for kids. Change one letter at a time to climb from one three-letter word to another, and every step has to be a real word. Phonics, spelling and thinking a step ahead.',
   alternates: { canonical: '/kids/ladder' },
   openGraph: {
-    title: 'Ladder | Kids Corner',
-    description: 'Change one letter at a time to climb from CAT to DOG. A new ladder every day.',
+    title: 'Ladder | Mind Loft Kids',
+    description: 'A daily word ladder for kids: change one letter at a time, every step a real word, and climb from one word to another. Phonics plus planning.',
     url: '/kids/ladder',
     type: 'website',
     siteName: 'Mind Loft',
+    images: ['/kids/opengraph-image'],
   },
+  twitter: { card: 'summary_large_image', title: 'Ladder | Mind Loft Kids', description: 'A daily word ladder for kids: change one letter at a time, every step a real word, and climb from one word to another. Phonics plus planning.', images: ['/kids/opengraph-image'] },
 };
 
 export const dynamic = 'force-dynamic';

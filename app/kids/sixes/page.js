@@ -8,16 +8,18 @@ import { KIDS_DAILY_MAP, kidsDayNumber, kidsDateLabel, pickCycle } from '@/lib/k
 // over the boards that are already live, so nothing ahead of today ever ships.
 
 export const metadata = {
-  title: 'Shape Sixes | Kids Corner | Mind Loft',
-  description: 'A free daily 6x6 shape sudoku for kids. Every row, column and box gets all six shapes, one of each. Tap a square, tap a shape. Nothing counts against you.',
+  title: 'Shape Sixes | Mind Loft Kids',
+  description: 'A daily shape sudoku for kids. Every row, column and box needs all six shapes, one of each, so kids learn to look along a row, down a column and around a box before they place anything. That is real logical reasoning, with shapes instead of numbers.',
   alternates: { canonical: '/kids/sixes' },
   openGraph: {
-    title: 'Shape Sixes | Kids Corner',
-    description: 'A daily 6x6 shape sudoku for kids. Every row, column and box gets all six shapes.',
+    title: 'Shape Sixes | Mind Loft Kids',
+    description: 'A daily shape sudoku for kids: look along the row, down the column and around the box, then place the shape. Logical reasoning with shapes instead of numbers.',
     url: '/kids/sixes',
     type: 'website',
     siteName: 'Mind Loft',
+    images: ['/kids/opengraph-image'],
   },
+  twitter: { card: 'summary_large_image', title: 'Shape Sixes | Mind Loft Kids', description: 'A daily shape sudoku for kids: look along the row, down the column and around the box, then place the shape. Logical reasoning with shapes instead of numbers.', images: ['/kids/opengraph-image'] },
 };
 
 export const dynamic = 'force-dynamic';

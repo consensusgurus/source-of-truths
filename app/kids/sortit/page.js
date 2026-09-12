@@ -7,16 +7,18 @@ import { KIDS_DAILY_MAP, kidsDayNumber, kidsDateLabel, pickCycle } from '@/lib/k
 // tap where it goes.
 
 export const metadata = {
-  title: 'Sort It | Kids Corner | Mind Loft',
-  description: 'A free daily sorting game for kids. Twelve words, three groups. Tap a word, then tap the group it belongs to. No wrong-answer limit, just sort them all.',
+  title: 'Sort It | Mind Loft Kids',
+  description: 'A daily sorting puzzle for kids. Twelve words, three named groups, and every word belongs to exactly one. Sorting things by what they have in common is one of the first thinking skills there is.',
   alternates: { canonical: '/kids/sortit' },
   openGraph: {
-    title: 'Sort It | Kids Corner',
-    description: 'Twelve words, three groups. Find who belongs together.',
+    title: 'Sort It | Mind Loft Kids',
+    description: 'A daily sorting puzzle for kids: twelve words, three groups, find who belongs together. Categorizing by what things have in common.',
     url: '/kids/sortit',
     type: 'website',
     siteName: 'Mind Loft',
+    images: ['/kids/opengraph-image'],
   },
+  twitter: { card: 'summary_large_image', title: 'Sort It | Mind Loft Kids', description: 'A daily sorting puzzle for kids: twelve words, three groups, find who belongs together. Categorizing by what things have in common.', images: ['/kids/opengraph-image'] },
 };
 
 export const dynamic = 'force-dynamic';

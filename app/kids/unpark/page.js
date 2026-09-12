@@ -8,16 +8,18 @@ import { KIDS_DAILY_MAP, kidsDayNumber, kidsDateLabel, pickCycle } from '@/lib/k
 // of blocks, and nothing scored against the kid.
 
 export const metadata = {
-  title: 'Unpark | Kids Corner | Mind Loft',
-  description: 'A free daily sliding-car puzzle for kids. Slide the other cars out of the way and drive the red car out through the gap. A new lot every day.',
+  title: 'Unpark | Mind Loft Kids',
+  description: 'A daily sliding puzzle for kids. Cars only move along their own lanes, and the red one has to get out. Working out which car to move first, and what that frees up, is planning and spatial thinking in a form kids already love.',
   alternates: { canonical: '/kids/unpark' },
   openGraph: {
-    title: 'Unpark | Kids Corner',
-    description: 'Slide the cars out of the way and drive the red one out. A new lot every day.',
+    title: 'Unpark | Mind Loft Kids',
+    description: 'A daily sliding puzzle for kids: move the other cars so the red one can drive out. Planning ahead and spatial thinking.',
     url: '/kids/unpark',
     type: 'website',
     siteName: 'Mind Loft',
+    images: ['/kids/opengraph-image'],
   },
+  twitter: { card: 'summary_large_image', title: 'Unpark | Mind Loft Kids', description: 'A daily sliding puzzle for kids: move the other cars so the red one can drive out. Planning ahead and spatial thinking.', images: ['/kids/opengraph-image'] },
 };
 
 export const dynamic = 'force-dynamic';

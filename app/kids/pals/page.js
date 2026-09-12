@@ -8,16 +8,18 @@ import { KIDS_DAILY_MAP, kidsDayNumber, kidsDateLabel, pickCycle } from '@/lib/k
 // client checks its own fill against the clues.
 
 export const metadata = {
-  title: 'Pixel Pals | Kids Corner | Mind Loft',
-  description: 'A free daily picture puzzle for kids. Color the squares the numbers tell you and a picture appears. Five by five, a new picture every day.',
+  title: 'Pixel Pals | Mind Loft Kids',
+  description: 'A daily picture puzzle for kids. The numbers say how many squares in each row and column are colored in, and when every line matches, a picture pops out. Counting, planning ahead and checking your work, all in one 5x5 grid.',
   alternates: { canonical: '/kids/pals' },
   openGraph: {
-    title: 'Pixel Pals | Kids Corner',
-    description: 'Color the squares the numbers say. A picture pops out. A new one every day.',
+    title: 'Pixel Pals | Mind Loft Kids',
+    description: 'A daily picture puzzle for kids: count the numbers, color the squares, and a picture pops out. Counting and planning ahead in one small grid.',
     url: '/kids/pals',
     type: 'website',
     siteName: 'Mind Loft',
+    images: ['/kids/opengraph-image'],
   },
+  twitter: { card: 'summary_large_image', title: 'Pixel Pals | Mind Loft Kids', description: 'A daily picture puzzle for kids: count the numbers, color the squares, and a picture pops out. Counting and planning ahead in one small grid.', images: ['/kids/opengraph-image'] },
 };
 
 export const dynamic = 'force-dynamic';
