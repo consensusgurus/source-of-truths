@@ -97,7 +97,6 @@ export function KidsHeader({ active }) {
       <nav className="kd-nav">
         <Link className={active === 'today' ? 'on' : ''} href="/kids#today">Today</Link>
         <Link className={active === 'match' ? 'on' : ''} href="/kids#match">Match games</Link>
-        <Link href="/">For grown-ups</Link>
       </nav>
     </header>
   );
@@ -127,14 +126,15 @@ export const KIDS_CSS = `
 .kd-title{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:16px 0 12px}
 .kd-title h1{font-size:clamp(30px,5vw,42px);font-weight:700}
 .kd-title .kd-sub{color:var(--kink2);font-size:15px}
-.kd-title .kd-from{font-size:13px;color:var(--kink2)}
-.kd-title .kd-from i{font-style:normal;font-family:var(--kdisp);font-weight:600;background:var(--kpaper);border:1px solid var(--kline);border-radius:6px;padding:1px 6px}
 .kd-card{background:var(--kpaper);border:2px solid var(--kline);border-radius:28px;padding:22px;box-shadow:var(--kshadow)}
 .kd-game{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,4fr);gap:28px;align-items:start}
 .kd-game > *{min-width:0}
 @media (max-width:820px){.kd-game{grid-template-columns:1fr}}
-.kd-side h2{font-size:26px;font-weight:700}
-.kd-side .kd-how{color:var(--kink2);margin:6px 0 16px;max-width:40ch}
+.kd-side{display:flex;flex-direction:column;align-items:stretch}
+.kd-side > *{max-width:100%;min-width:0}
+.kd-side > h2{order:20;font-size:17px;font-weight:700;margin:22px 0 0;padding-top:16px;border-top:2px solid var(--kline);width:100%;color:var(--kink2)}
+.kd-side > h2::before{content:'How to play';display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--kink2);opacity:.8;margin-bottom:2px}
+.kd-side > .kd-how{order:21;color:var(--kink2);margin:6px 0 0;max-width:40ch;font-size:15px}
 .kd-btn{font-family:var(--kdisp);font-weight:600;font-size:15px;border:2px solid var(--kink);background:var(--kpaper);color:var(--kink);border-radius:999px;padding:8px 16px;cursor:pointer;box-shadow:0 3px 0 var(--kink);transition:transform .08s}
 .kd-btn.pri{background:var(--kink);color:#fff}
 .kd-btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--kink)}
@@ -224,7 +224,6 @@ export default function KidsShell({ game, dayLabel, dayNum, dayKey, sub, childre
         <div className="kd-title">
           <h1>{game.title}</h1>
           <span className="kd-sub">{dayLabel} · Puzzle #{dayNum}{sub ? ` · ${sub}` : ''}</span>
-          <span className="kd-from">grown-up version: <i>{game.from}</i></span>
         </div>
         {children}
         <KidsStrip selfKey={game.key} dayKey={dayKey} />

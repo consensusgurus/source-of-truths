@@ -133,7 +133,6 @@ function DailyTile({ g, done }) {
           <span className="kc-tag">Today&apos;s puzzle</span>
           <h3 className="kc-title">{g.title}</h3>
           <p className="kc-desc">{g.tag}</p>
-          <span className="kc-from">grown-up version: <i>{g.from}</i></span>
         </div>
       </div>
     </Link>
@@ -183,8 +182,6 @@ export default function KidsHubClient() {
           .kc-tag{font-family:var(--kdisp);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--kink2);}
           .kc-title{font-size:20px;font-weight:700;margin:5px 0 6px;}
           .kc-desc{font-size:13.5px;color:var(--kink2);line-height:1.45;margin:0;}
-          .kc-from{font-size:12px;color:var(--kink2);margin-top:8px}
-          .kc-from i{font-style:normal;font-family:var(--kdisp);font-weight:600;background:var(--kbg);border:1px solid var(--kline);border-radius:6px;padding:1px 6px}
           .kc-views{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--kink2);font-weight:600;margin:22px 2px 0;}
           .kc-hero{display:grid;grid-template-columns:1.2fr .8fr;gap:24px;align-items:center;padding:18px 0 8px}
           .kc-hero h1{font-size:clamp(34px,6vw,54px);font-weight:700}
