@@ -41,6 +41,28 @@ export function isLockedOut(err) {
   return typeof err === 'string' && /already registered|belongs to a different account/i.test(err);
 }
 
+// EmailLockNote — "no email means this name only works on this browser."
+//
+// WHY THIS EXISTS. A name-only account is keyed by the browser's anon_id and
+// nothing else, so it cannot be reconnected anywhere else, by anyone, including
+// its owner: resolveQuizIdentity has no key to find it by. The six join forms
+// called the email "optional" and said nothing about that, so players took the
+// option and only learned what it cost on their second device, at which point
+// the one fix is a human (see the header of /api/admin/quiz-relink).
+//
+// Lives beside SigninHelp for the reason SigninHelp's own header gives: these
+// forms are five near-identical copies, and one component is what stops a change
+// landing on only some of them. Renders nothing once an email is typed, so it is
+// advice about a choice the player is still making rather than a standing scold.
+export function EmailLockNote({ email = '', style = null }) {
+  if ((email || '').trim()) return null;
+  return (
+    <p style={{ fontFamily: FONT, fontSize: 11.5, lineHeight: 1.45, color: INK.soft, margin: '6px 0 0', ...(style || {}) }}>
+      Without an email, this name only works on this browser. Add one and you can sign back in on any device.
+    </p>
+  );
+}
+
 export default function SigninHelp({ name = '', email = '', prominent = false }) {
   const [open, setOpen] = useState(false);
   const [msg, setMsg] = useState('');

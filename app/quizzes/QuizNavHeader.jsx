@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import QuizCommandHeader from './QuizCommandHeader';
 import { T } from '@/lib/theme';
-import SigninHelp, { isLockedOut } from '../SigninHelp';
+import SigninHelp, { isLockedOut, EmailLockNote } from '../SigninHelp';
 import { meRequest } from '@/app/quizMeClient';
 
 // Self-contained command-bar header for the inner quiz surfaces (individual
@@ -70,6 +70,7 @@ function SignupModal({ onClose }) {
         {err && <div style={{ marginBottom: 12, padding: 10, borderRadius: 8, background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.4)', color: T.danger, fontSize: 13 }}>{err}</div>}
         <input value={u} onChange={(e) => setU(e.target.value)} placeholder="Display name" maxLength={15} autoCapitalize="none" autoCorrect="off" spellCheck={false} style={inp} />
         <input value={em} onChange={(e) => setEm(e.target.value)} placeholder="Email (optional)" maxLength={120} type="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} style={{ ...inp, marginTop: 10 }} />
+        <EmailLockNote email={em} />
         <button onClick={submit} disabled={busy} style={{ marginTop: 16, width: '100%', background: ACCENT, color: T.white, border: 'none', borderRadius: 10, padding: '12px', fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.6 : 1 }}>{busy ? 'Joining…' : 'Join the leaderboard'}</button>
         <SigninHelp name={u} email={em} prominent={isLockedOut(err)} />
       </div>

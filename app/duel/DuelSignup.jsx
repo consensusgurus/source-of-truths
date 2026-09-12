@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { T } from '@/lib/theme';
-import SigninHelp, { isLockedOut } from '../SigninHelp';
+import SigninHelp, { isLockedOut, EmailLockNote } from '../SigninHelp';
 
 // Shared "claim your name" modal for the duel flow. A duel name is NOT free
 // text: signed-in players use their registered display name, and guests must
@@ -40,6 +40,7 @@ export default function DuelSignup({ anonId, onDone, onClose }) {
         {err && <div style={{ marginBottom: 12, padding: 10, borderRadius: 8, background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.4)', color: T.danger, fontSize: 13 }}>{err}</div>}
         <input value={u} onChange={(e) => setU(e.target.value)} placeholder="Display name" maxLength={15} style={inp} />
         <input value={em} onChange={(e) => setEm(e.target.value)} placeholder="Email (optional)" maxLength={120} style={{ ...inp, marginTop: 10 }} />
+        <EmailLockNote email={em} />
         <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
           <button onClick={onClose} style={{ flex: '0 0 auto', background: T.white, color: C.muted, border: `1px solid ${C.line}`, borderRadius: 10, padding: '12px 16px', fontFamily: FONT, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>Cancel</button>
           <button onClick={submit} disabled={busy} style={{ flex: '1 1 auto', background: C.accent, color: T.white, border: 'none', borderRadius: 10, padding: '12px', fontFamily: FONT, fontWeight: 700, fontSize: 14, cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.6 : 1 }}>{busy ? 'Claiming...' : 'Claim name & continue'}</button>

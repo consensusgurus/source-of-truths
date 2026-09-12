@@ -9,7 +9,7 @@ import DailyCombinedLeaderboard from '../../quiz/[id]/DailyCombinedLeaderboard';
 import { withRef } from '@/lib/referrals';
 import { Metric, ActivityFeed, XpPanel, TrophyCase } from '../../player/ProfileShared';
 import { T } from '@/lib/theme';
-import SigninHelp, { isLockedOut } from '../../SigninHelp';
+import SigninHelp, { isLockedOut, EmailLockNote } from '../../SigninHelp';
 import { useStageTheme } from '@/lib/stage-theme';
 import ThemePop from '../../ThemePop';
 import MindLoftMark from '../../MindLoftMark';
@@ -195,6 +195,7 @@ function SignupModal({ onClose }) {
         {err && <div style={{ marginBottom: 12, padding: 10, borderRadius: 8, background: 'rgba(251,113,133,0.10)', border: '1px solid rgba(192,57,43,0.4)', color: C.danger, fontSize: 13 }}>{err}</div>}
         <input value={u} onChange={(e) => setU(e.target.value)} placeholder="Display name" maxLength={15} style={inp} />
         <input value={em} onChange={(e) => setEm(e.target.value)} placeholder="Email (optional)" maxLength={120} style={{ ...inp, marginTop: 10 }} />
+        <EmailLockNote email={em} />
         <button onClick={submit} disabled={busy} style={{ marginTop: 16, width: '100%', background: C.accent, color: ON_ACC, border: 'none', borderRadius: 10, padding: '12px', fontFamily: FONT, fontWeight: 700, fontSize: 14, cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.6 : 1 }}>{busy ? 'Joining…' : 'Join the leaderboard'}</button>
         <SigninHelp name={u} email={em} prominent={isLockedOut(err)} />
       </div>

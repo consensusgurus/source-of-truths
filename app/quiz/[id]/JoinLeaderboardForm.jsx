@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Trophy } from 'lucide-react';
 import { ensureMyRefCode } from '@/lib/referrals';
 import { T } from '@/lib/theme';
-import SigninHelp, { isLockedOut } from '../../SigninHelp';
+import SigninHelp, { isLockedOut, EmailLockNote } from '../../SigninHelp';
 
 // Shared "Join the Leaderboard" sign-up form for every quiz board. Self-manages
 // its name/email fields (email optional, display name capped at 15). onJoined(id)
@@ -131,7 +131,12 @@ export default function JoinLeaderboardForm({ identity, onJoined, onViewLeaderbo
       // carries it, rather than waiting for the next page load.
       ensureMyRefCode();
       setErr(false);
-      setMsg(`You're in. "${d.username}" is on the leaderboard, including any games you already finished.`);
+      // A name-only account is browser-locked and has no self-service way back
+      // on a second device, so the moment it is created is the last cheap chance
+      // to say so. d.email is what the SERVER stored, not what was typed.
+      setMsg(d.email
+        ? `You're in. "${d.username}" is on the leaderboard, including any games you already finished.`
+        : `You're in. "${d.username}" is on the leaderboard, including any games you already finished. Add an email above and press the button again so you can sign back in on another device.`);
       if (onJoined) onJoined(id);
       // On a daily-game page, loop the newly-registered player back to that
       // game's leaderboard so they see their score land. No-op elsewhere (the
@@ -176,6 +181,7 @@ export default function JoinLeaderboardForm({ identity, onJoined, onViewLeaderbo
         autoFocus={recover}
         style={recover ? { ...fieldStyle, borderColor: C.ember } : fieldStyle}
       />
+      {!recover && <EmailLockNote email={jEmail} />}
       <button onClick={submit} disabled={busy} style={{ marginTop: 22, width: '100%', fontFamily: FONT, fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, lineHeight: '48px', border: 'none', borderRadius: 10, background: `var(--join-cta, ${T.cta})`, color: `var(--join-cta-ink, ${T.ctaInk})`, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1 }}>
         {busy ? 'Joining…' : identity ? 'Update my name' : 'Join the leaderboard'}
       </button>
