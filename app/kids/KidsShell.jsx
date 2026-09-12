@@ -256,30 +256,76 @@ export function KidsStrip({ selfKey, dayKey }) {
   );
 }
 
-// Confetti pop: six shapes flung from the cheer. Pure CSS, no library.
+// The win. A full-screen celebration that every kids daily fires through
+// <Confetti go={cheer} /> the moment a board is solved (owner, 2026-09-12:
+// "much cooler, more colorful, longer, say SOLVED!"). Four and a half seconds:
+// a spinning candy sunburst, SOLVED! bouncing in letter by letter in six
+// hues, a ring of the six shapes popping out from the word, and sixty
+// pieces of confetti (shapes and streamers) raining the whole time. Then it
+// fades itself out; a tap anywhere ends it early. Pure CSS, no library, and
+// nothing about it is scored.
+const CHEER_MS = 4500;
+const CHEER_LETTERS = ['S', 'O', 'L', 'V', 'E', 'D', '!'];
+
 export function Confetti({ go }) {
-  if (!go) return null;
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    if (!go) { setOn(false); return undefined; }
+    setOn(true);
+    const t = setTimeout(() => setOn(false), CHEER_MS);
+    return () => clearTimeout(t);
+  }, [go]);
+  if (!on) return null;
   const bits = [];
-  for (let i = 0; i < 18; i++) {
-    const s = (i % 6) + 1;
-    bits.push(
-      <span
-        key={i}
-        className="kd-cf"
-        style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i % 6) * 0.08}s`, animationDuration: `${1.4 + (i % 4) * 0.25}s` }}
-        dangerouslySetInnerHTML={{ __html: SHAPES[s] }}
-      />
-    );
+  for (let i = 0; i < 60; i++) {
+    const streamer = i % 3 === 2;
+    const hue = SHAPE_HUES[i % 6];
+    const style = {
+      left: `${(i * 53) % 100}%`,
+      animationDelay: `${(i % 12) * 0.22}s`,
+      animationDuration: `${2.2 + (i % 5) * 0.4}s`,
+      '--sway': `${((i % 7) - 3) * 30}px`,
+    };
+    if (streamer) bits.push(<span key={i} className="kd-cf kd-cfs" style={{ ...style, background: hue }} />);
+    else bits.push(<span key={i} className="kd-cf" style={style} dangerouslySetInnerHTML={{ __html: SHAPES[(i % 6) + 1] }} />);
   }
   return (
-    <div className="kd-cfwrap" aria-hidden="true">
-      <style>{`
-        .kd-cfwrap{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden}
-        .kd-cf{position:absolute;top:-40px;width:28px;height:28px;animation:kdfall linear forwards}
+    <div className="kd-cfwrap" aria-live="polite" onClick={() => setOn(false)}>
+      <style dangerouslySetInnerHTML={{ __html: `
+        .kd-cfwrap{position:fixed;inset:0;z-index:50;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(255,246,224,.74);animation:kdcfin .3s ease-out,kdcfout .6s ease-in ${(CHEER_MS - 600) / 1000}s forwards;cursor:pointer}
+        @keyframes kdcfin{from{opacity:0}to{opacity:1}}
+        @keyframes kdcfout{to{opacity:0}}
+        .kd-burst{position:absolute;width:160vmax;height:160vmax;left:50%;top:50%;margin:-80vmax 0 0 -80vmax;border-radius:50%;background:conic-gradient(#ff5a5f,#ffd23f,#3bb273,#3a86ff,#8e5ae0,#ff7bb0,#ff9f1c,#ff5a5f);opacity:.28;animation:kdspin 9s linear infinite;-webkit-mask:repeating-conic-gradient(#000 0 10deg,transparent 10deg 20deg);mask:repeating-conic-gradient(#000 0 10deg,transparent 10deg 20deg)}
+        @keyframes kdspin{to{transform:rotate(360deg)}}
+        .kd-word{position:relative;display:flex;gap:.02em;font-family:var(--kdisp);font-weight:700;font-size:clamp(56px,16vw,150px);line-height:1;text-shadow:0 0 0 #fff,-3px -3px 0 #fff,3px -3px 0 #fff,-3px 3px 0 #fff,3px 3px 0 #fff,0 8px 0 rgba(27,31,59,.18)}
+        .kd-word b{display:inline-block;animation:kdpop .7s cubic-bezier(.2,1.6,.4,1) both,kdwig 1.6s ease-in-out 1s infinite}
+        @keyframes kdpop{0%{transform:translateY(60px) scale(.2) rotate(-20deg);opacity:0}60%{transform:translateY(-14px) scale(1.15) rotate(4deg);opacity:1}100%{transform:none;opacity:1}}
+        @keyframes kdwig{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-8px) rotate(3deg)}}
+        .kd-ring{position:absolute;left:50%;top:50%;width:0;height:0}
+        .kd-ring span{position:absolute;width:46px;height:46px;margin:-23px 0 0 -23px;animation:kdring 1.1s cubic-bezier(.2,1.4,.4,1) .35s both,kdorbit 6s linear 1.4s infinite}
+        .kd-ring span svg{width:100%;height:100%;filter:drop-shadow(0 3px 0 rgba(27,31,59,.15))}
+        @keyframes kdring{from{transform:rotate(var(--a)) translateX(0) scale(0)}to{transform:rotate(var(--a)) translateX(var(--r)) scale(1)}}
+        @keyframes kdorbit{from{transform:rotate(var(--a)) translateX(var(--r)) scale(1)}to{transform:rotate(calc(var(--a) + 360deg)) translateX(var(--r)) scale(1)}}
+        .kd-cf{position:absolute;top:-40px;width:26px;height:26px;animation:kdfall linear forwards}
         .kd-cf svg{width:100%;height:100%}
-        @keyframes kdfall{to{transform:translateY(110vh) rotate(540deg);opacity:.2}}
-      `}</style>
+        .kd-cfs{width:10px;height:22px;border-radius:3px}
+        @keyframes kdfall{0%{transform:translate(0,0) rotate(0)}50%{transform:translate(var(--sway),55vh) rotate(300deg)}100%{transform:translate(calc(var(--sway) * -1),115vh) rotate(720deg);opacity:.6}}
+        .kd-sub2{position:absolute;bottom:14vh;font-family:var(--kdisp);font-weight:600;font-size:clamp(16px,3vw,24px);color:var(--kink);animation:kdpop .6s cubic-bezier(.2,1.6,.4,1) 1.3s both}
+        @media (prefers-reduced-motion:reduce){.kd-burst,.kd-cf{display:none}.kd-word b,.kd-ring span,.kd-sub2{animation:none}}
+      ` }} />
+      <div className="kd-burst" aria-hidden="true" />
       {bits}
+      <div className="kd-ring" aria-hidden="true">
+        {[1, 2, 3, 4, 5, 6].map((sh, i) => (
+          <span key={sh} style={{ '--a': `${i * 60 - 90}deg`, '--r': 'clamp(120px, 30vw, 260px)' }} dangerouslySetInnerHTML={{ __html: SHAPES[sh] }} />
+        ))}
+      </div>
+      <div className="kd-word" role="status">
+        {CHEER_LETTERS.map((ch, i) => (
+          <b key={i} style={{ color: SHAPE_HUES[i % 6], animationDelay: `${i * 0.09}s, ${1 + i * 0.09}s` }}>{ch}</b>
+        ))}
+      </div>
+      <div className="kd-sub2">You did it! Tap anywhere to keep going.</div>
     </div>
   );
 }
