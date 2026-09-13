@@ -30,6 +30,7 @@ export default function KidsMathDashPage({ searchParams }) {
   const qs = mathDashFor(dayNum, dow === 0 || dow === 6);
   return (
     <MathDashClient
+      key={day.dateIso}
       game={KIDS_DAILY_MAP.mathdash}
       questions={qs}
       dayKey={day.dateIso}

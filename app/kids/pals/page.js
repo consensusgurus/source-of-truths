@@ -30,6 +30,7 @@ export default function KidsPalsPage({ searchParams }) {
   const p = pickCycleAt(PUZZLES, day.n);
   return (
     <PalsClient
+      key={day.dateIso}
       game={KIDS_DAILY_MAP.pals}
       puzzle={{ num: p.num, name: p.name, rows: p.rows, cols: p.cols }}
       dayKey={day.dateIso}

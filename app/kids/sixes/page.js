@@ -33,6 +33,7 @@ export default function KidsSixesPage({ searchParams }) {
   const board = p ? { given: p.given, sol: p.sol, num: p.num } : null;
   return (
     <SixesJrClient
+      key={day.dateIso}
       game={KIDS_DAILY_MAP.sixes}
       board={board}
       dayKey={day.dateIso}

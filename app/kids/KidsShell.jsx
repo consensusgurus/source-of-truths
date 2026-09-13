@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Footer from '../Footer';
 import { KIDS_DAILIES, kidsDayNumber, kidsDateForDay } from '@/lib/kids-daily';
@@ -56,25 +56,41 @@ function markDoneDay(key, dayKey) {
 
 // Per-device memory of one board: { day, ...state }. Nothing here ever
 // leaves the browser.
+//
+// THE STATE BELONGS TO ONE DAY, and the hook says which. Every kids page
+// mounts its client with key={day.dateIso}, so stepping between archive
+// days remounts the game and nothing carries over. This hook guards the same
+// thing a second time: it keeps the day its state was loaded for, hands back
+// `initial` until the new day has loaded, and never writes a save under a
+// day it did not load. Without both, picking another day from the archive
+// strip kept the previous board's state (a finished Unpark read as solved on
+// the next lot) and wrote it straight into the new day's slot (owner report,
+// 2026-09-13).
 export function useKidsSave(key, dayKey, initial) {
-  const [state, setState] = useState(initial);
-  const [ready, setReady] = useState(false);
+  const [box, setBox] = useState({ day: null, state: initial });
+  const initRef = useRef(initial);
+  initRef.current = initial;
   useEffect(() => {
+    let next = initRef.current;
     try {
       const raw = localStorage.getItem(saveSlot(key, dayKey));
       if (raw) {
         const sv = JSON.parse(raw);
-        if (sv && sv.day === dayKey && sv.state) setState(sv.state);
+        if (sv && sv.day === dayKey && sv.state) next = sv.state;
       }
     } catch (e) { /* storage may be unavailable */ }
-    setReady(true);
+    setBox({ day: dayKey, state: next });
   }, [key, dayKey]);
   useEffect(() => {
-    if (!ready) return;
-    try { localStorage.setItem(saveSlot(key, dayKey), JSON.stringify({ day: dayKey, state })); } catch (e) { /* ignore */ }
-    if (state && state.done) markDoneDay(key, dayKey);
-  }, [key, dayKey, state, ready]);
-  return [state, setState, ready];
+    if (box.day !== dayKey) return;
+    try { localStorage.setItem(saveSlot(key, dayKey), JSON.stringify({ day: dayKey, state: box.state })); } catch (e) { /* ignore */ }
+    if (box.state && box.state.done) markDoneDay(key, dayKey);
+  }, [key, dayKey, box]);
+  const ready = box.day === dayKey;
+  const setState = useCallback((upd) => {
+    setBox((b) => ({ day: b.day, state: typeof upd === 'function' ? upd(b.state) : upd }));
+  }, []);
+  return [ready ? box.state : initRef.current, setState, ready];
 }
 
 function readDone(key, dayKey) {

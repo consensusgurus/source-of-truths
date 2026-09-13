@@ -33,6 +33,7 @@ export default function KidsUnparkPage({ searchParams }) {
   const board = p ? { num: p.num, pieces: p.pieces, par: p.par } : null;
   return (
     <UnparkClient
+      key={day.dateIso}
       game={KIDS_DAILY_MAP.unpark}
       board={board}
       dayKey={day.dateIso}

@@ -29,6 +29,7 @@ export default function KidsSortitPage({ searchParams }) {
   const p = pickCycleAt(PUZZLES, day.n);
   return (
     <SortitClient
+      key={day.dateIso}
       game={KIDS_DAILY_MAP.sortit}
       puzzle={{ num: p.num, groups: p.groups, board: p.board }}
       dayKey={day.dateIso}

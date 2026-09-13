@@ -29,6 +29,7 @@ export default function KidsLadderPage({ searchParams }) {
   const p = pickCycleAt(PUZZLES, day.n);
   return (
     <LadderClient
+      key={day.dateIso}
       game={KIDS_DAILY_MAP.ladder}
       puzzle={{ num: p.num, start: p.start, end: p.end, best: p.best }}
       dayKey={day.dateIso}

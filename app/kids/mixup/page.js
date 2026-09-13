@@ -28,6 +28,7 @@ export default function KidsMixupPage({ searchParams }) {
   const p = pickCycleAt(PUZZLES, day.n);
   return (
     <MixupClient
+      key={day.dateIso}
       game={KIDS_DAILY_MAP.mixup}
       puzzle={{ num: p.num, words: p.words }}
       dayKey={day.dateIso}
