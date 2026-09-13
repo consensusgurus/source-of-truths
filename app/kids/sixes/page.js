@@ -22,6 +22,10 @@ export const metadata = {
   twitter: { card: 'summary_large_image', title: 'Shape Sixes | Mind Loft Kids', description: 'A daily shape sudoku for kids: look along the row, down the column and around the box, then place the shape. Logical reasoning with shapes instead of numbers.', images: ['/kids/opengraph-image'] },
 };
 
+// The browser chrome (address bar, installed-app cap) takes the kids butter
+// ground, not the site navy; see html:has(.kd) in app/globals.css.
+export const viewport = { width: 'device-width', initialScale: 1, maximumScale: 5, userScalable: true, viewportFit: 'cover', themeColor: '#fff6e0' };
+
 export const dynamic = 'force-dynamic';
 
 export default function KidsSixesPage({ searchParams }) {

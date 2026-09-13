@@ -7,7 +7,7 @@ import { KIDS_DAILIES, kidsDayNumber, kidsDateForDay } from '@/lib/kids-daily';
 
 // The frame every kids daily renders inside: the Kids masthead, the title
 // row, the board, a "how to play" panel, the cheer, and the strip of the other
-// six puzzles. One component so the seven games read as one place.
+// five puzzles. One component so the six games read as one place.
 //
 // The look is deliberately louder than the grown-up site (Fredoka display
 // over Nunito body, butter ground, candy hues) and deliberately NOT the
@@ -102,7 +102,7 @@ function readDone(key, dayKey) {
   } catch (e) { return false; }
 }
 
-// Which of the seven are done today, read on the client only.
+// Which of the six are done today, read on the client only.
 export function useKidsDone(dayKey) {
   const [done, setDone] = useState({});
   const refresh = useCallback(() => {

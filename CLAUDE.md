@@ -7635,8 +7635,8 @@ as the Trivia Gauntlet is; `/valet` forwards to the run like `/trivia` does.
 
 ## Kids dailies (`/kids/<game>`): a SEPARATE track with NO stats (owner, 2026-09-11)
 
-Seven daily puzzles for kids, each a gentle translation of a grown-up daily, live at `/kids/sixes`
-(Shape Sixes, from Sixes), `/kids/pals` (Pixel Pals, from Etch), `/kids/mixup` (Mix-Up, from
+Six daily puzzles for kids, each a gentle translation of a grown-up daily, live at `/kids/sixes`
+(Shape Sixes, from Sixes), `/kids/mixup` (Mix-Up, from
 Garble), `/kids/sortit` (Sort It, from Links), `/kids/ladder` (Ladder, from Rung), `/kids/unpark`
 (Unpark, from Parker) and `/kids/mathdash` (Math Dash, from Blitz). The hub at `/kids` lists them
 under "Today's puzzles" above the existing match games. Owner choices at launch, all three
@@ -7650,7 +7650,7 @@ deliberate and none of them a gap to fill later:
   `pickCycle`, `seeded`). Banks CYCLE, `bank[(dayNumber - 1) % bank.length]`, so a bank never runs
   out and never needs extending on a schedule. Sixes and Unpark reuse the grown-up banks filtered
   gentle (Sixes: live, `level === 1`, weekday; Unpark: live, weekday, `par <= 14`), so they grow
-  as those banks grow. Pals, Mix-Up, Sort It and Ladder have their own generated banks
+  as those banks grow. Mix-Up, Sort It and Ladder have their own generated banks
   (`scripts/gen-kids-*.mjs`, guarded by `isMain` so importing one for its vocabulary does not
   regenerate); Math Dash is generated from the day number at request time (`lib/kids-mathdash.js`).
 - **Its own look, `app/kids/KidsShell.jsx`**: Fredoka and Nunito, a butter ground, candy hues,
@@ -7664,7 +7664,7 @@ deliberate and none of them a gap to fill later:
   A percentage-width board with absolutely-positioned children (Unpark's lot) collapsed to 12px
   inside an `auto` track. Boards are `width:100%;max-width:420px`.
 - **`scripts/verify-kids.mjs` is the gate**, discovered by `verify-all`. It re-proves every kids
-  bank with its own solvers (nonogram line solver plus a row-product uniqueness counter, BFS for
+  bank with its own solvers (BFS for
   ladders, category disjointness and AVOID pairs for Sort It, the Mix-Up spacing rules, 400 days of
   Math Dash determinism and range), checks the reused pools are non-empty today, and that every
   registry entry has a `force-dynamic` page and a hub tile. Mutation-tested at launch.
@@ -7680,6 +7680,13 @@ deliberate and none of them a gap to fill later:
   hold it and the selected square's row, column and box shade lightly. It does NOT grey the squares
   the shape cannot go in; that shipped once and the owner pulled it the same day ("gives away
   answers too easily"). A conflicting tap just shakes.
+- **Pixel Pals (the Etch translation) was REMOVED 2026-09-13** (owner call). `app/kids/pals`,
+  `scripts/gen-kids-pals.mjs`, its registry row, hub glyph and verifier block are gone; the
+  Etch-to-kids translation is not coming back as a backfill.
+- **The page behind a kids page is BUTTER, not navy.** `html:has(.kd)` / `body:has(.kd)` in
+  `app/globals.css` paint `#fff6e0` (the value of `.kd`'s `--kbg`; keep the two in step), the
+  `body::before` safe-area strip too, and the hub and the six daily pages export a `viewport`
+  with `themeColor: '#fff6e0'`. Owner, 2026-09-13: no navy top or bottom around Mind Loft Kids.
 - **The kids track is also counted in `lib/kids.js` `KIDS_GAMES`** (the hub header's game count).
   A new kids daily is: a `KIDS_DAILIES` row, `app/kids/<key>/page.js` + client, a bank or a
   generator, a `verify-kids` section, and a `DAILY_ART` glyph in `KidsHubClient.jsx`.

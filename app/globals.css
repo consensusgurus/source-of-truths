@@ -419,6 +419,16 @@ body:has(.stage-page) { background: #0b0f1a !important; }
    pale cap would need statusBarStyle 'default' in app/layout.js, which is read
    once at install time and would change every installed game too.) */
 body:has(.stage-page)::before { background: #0b0f1a; }
+/* THE PAGE BEHIND MIND LOFT KIDS IS BUTTER, TOP TO BOTTOM (owner, 2026-09-13:
+   "get rid of the wrapper that creates a navy top and bottom"). .kd paints its
+   own butter ground, but html and body kept the site's navy, so the overscroll
+   above, the strip below a short page and the installed-app cap all showed
+   navy around a butter page. Same mechanism as the stage rule above, keyed on
+   the kids root. The value is .kd's --kbg, which html cannot read, so it is
+   named here; keep the two in step. */
+html:has(.kd),
+body:has(.kd) { background: #fff6e0 !important; }
+body:has(.kd)::before { background: #fff6e0; }
 /* --stg-ground is defined ON .stage-page, so html cannot read it: the register
    has to be named here instead. */
 /* A FINISHED BOARD IS A RESULT, NOT A BOARD (owner, 2026-08-31). Once a daily

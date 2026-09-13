@@ -1,11 +1,8 @@
 #!/usr/bin/env node
-// verify-kids: the checker for the seven kids dailies (lib/kids-daily.js).
+// verify-kids: the checker for the six kids dailies (lib/kids-daily.js).
 // Discovered by scripts/verify-all.mjs as `kids`. Shares NO solver code with
 // the generators (scripts/gen-kids-*.mjs); every proof below is re-derived.
 //
-//   pals    every board is line-solvable (unique AND no guessing) by an
-//           independent solver; every clue has at most two runs; the clues
-//           stored match the art; no two boards share art; 8+ squares filled
 //   mixup   five words a day in the documented length shape; each scramble is
 //           a permutation of its word, not the word, no 3+ prefix intact; no
 //           word inside 14 days, no word past 3 uses, no two words a day with
@@ -33,74 +30,6 @@ let fails = 0;
 const bad = (m) => { fails++; console.log(`✗ ${m}`); };
 const ok = (m) => console.log(`✓ ${m}`);
 const load = async (rel) => import(pathToFileURL(join(root, rel)).href);
-
-// ---------------------------------------------------------------- pals
-{
-  const { PUZZLES } = await load('app/kids/pals/puzzles.js');
-  const runs = (line) => { const o = []; let n = 0; for (const v of line) { if (v) n++; else if (n) { o.push(n); n = 0; } } if (n) o.push(n); return o; };
-  const eq = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
-  // Independent solver: enumerate all 2^25 grids? Too slow. Instead a
-  // row-candidate product with column pruning, which is complete.
-  const solveCount = (rows, cols) => {
-    const cand = rows.map((clue) => { const out = []; for (let m = 0; m < 32; m++) { const line = [0, 1, 2, 3, 4].map((i) => (m >> i) & 1); if (eq(runs(line), clue)) out.push(line); } return out; });
-    let count = 0;
-    const g = [];
-    const rec = (r) => {
-      if (count > 1) return;
-      if (r === 5) { for (let c = 0; c < 5; c++) if (!eq(runs(g.map((row) => row[c])), cols[c])) return; count++; return; }
-      for (const line of cand[r]) {
-        g[r] = line;
-        // prune: a column's partial runs must be a prefix-compatible with its clue
-        let fine = true;
-        for (let c = 0; c < 5 && fine; c++) {
-          const col = g.slice(0, r + 1).map((row) => row[c]);
-          const pr = runs(col);
-          const clue = cols[c];
-          if (pr.length > clue.length) fine = false;
-          else {
-            for (let k = 0; k < pr.length - 1; k++) if (pr[k] !== clue[k]) fine = false;
-            if (pr.length && col[col.length - 1] === 1 && pr[pr.length - 1] > clue[pr.length - 1]) fine = false;
-            if (pr.length && col[col.length - 1] === 0 && pr[pr.length - 1] !== clue[pr.length - 1]) fine = false;
-          }
-        }
-        if (fine) rec(r + 1);
-      }
-      g.length = r;
-    };
-    rec(0);
-    return count;
-  };
-  // No-guessing: line propagation to a fixpoint must finish.
-  const lineSolve = (rows, cols) => {
-    const g = Array.from({ length: 5 }, () => Array(5).fill(null));
-    const cands = (clue, known) => { const out = []; for (let m = 0; m < 32; m++) { const line = [0, 1, 2, 3, 4].map((i) => (m >> i) & 1); if (known.every((k, i) => k == null || k === line[i]) && eq(runs(line), clue)) out.push(line); } return out; };
-    for (let pass = 0; pass < 40; pass++) {
-      let changed = false;
-      for (let r = 0; r < 5; r++) { const c = cands(rows[r], g[r]); if (!c.length) return false; for (let i = 0; i < 5; i++) if (g[r][i] == null && c.every((l) => l[i] === c[0][i])) { g[r][i] = c[0][i]; changed = true; } }
-      for (let k = 0; k < 5; k++) { const c = cands(cols[k], g.map((row) => row[k])); if (!c.length) return false; for (let i = 0; i < 5; i++) if (g[i][k] == null && c.every((l) => l[i] === c[0][i])) { g[i][k] = c[0][i]; changed = true; } }
-      if (!changed) break;
-    }
-    return g.every((row) => row.every((v) => v != null));
-  };
-  const seen = new Set();
-  let n = 0;
-  for (const p of PUZZLES) {
-    const grid = p.art.map((s) => [...s].map((ch) => (ch === '#' ? 1 : 0)));
-    if (grid.length !== 5 || grid.some((r) => r.length !== 5)) { bad(`pals #${p.num}: not 5x5`); continue; }
-    const rows = grid.map(runs); const cols = [0, 1, 2, 3, 4].map((c) => runs(grid.map((r) => r[c])));
-    if (!eq(rows.flat(), p.rows.flat()) || rows.some((r, i) => !eq(r, p.rows[i]))) bad(`pals #${p.num}: row clues do not match art`);
-    if (cols.some((c, i) => !eq(c, p.cols[i]))) bad(`pals #${p.num}: column clues do not match art`);
-    if ([...rows, ...cols].some((c) => c.length > 2)) bad(`pals #${p.num}: a clue has three runs`);
-    if (grid.flat().filter(Boolean).length < 8) bad(`pals #${p.num}: too sparse`);
-    if (solveCount(p.rows, p.cols) !== 1) bad(`pals #${p.num}: not unique`);
-    if (!lineSolve(p.rows, p.cols)) bad(`pals #${p.num}: needs guessing`);
-    const key = p.art.join('/');
-    if (seen.has(key)) bad(`pals #${p.num}: duplicate art`); seen.add(key);
-    if (!p.name) bad(`pals #${p.num}: no name`);
-    n++;
-  }
-  ok(`pals: ${n} boards, unique and line-solvable`);
-}
 
 // ---------------------------------------------------------------- mixup
 {

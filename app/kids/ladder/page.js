@@ -21,6 +21,10 @@ export const metadata = {
   twitter: { card: 'summary_large_image', title: 'Ladder | Mind Loft Kids', description: 'A daily word ladder for kids: change one letter at a time, every step a real word, and climb from one word to another. Phonics plus planning.', images: ['/kids/opengraph-image'] },
 };
 
+// The browser chrome (address bar, installed-app cap) takes the kids butter
+// ground, not the site navy; see html:has(.kd) in app/globals.css.
+export const viewport = { width: 'device-width', initialScale: 1, maximumScale: 5, userScalable: true, viewportFit: 'cover', themeColor: '#fff6e0' };
+
 export const dynamic = 'force-dynamic';
 
 export default function KidsLadderPage({ searchParams }) {

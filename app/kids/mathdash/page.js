@@ -20,6 +20,10 @@ export const metadata = {
   twitter: { card: 'summary_large_image', title: 'Math Dash | Mind Loft Kids', description: 'A daily arithmetic run for kids: ten sums, three hearts, adding and subtracting inside 20. A star for every right answer.', images: ['/kids/opengraph-image'] },
 };
 
+// The browser chrome (address bar, installed-app cap) takes the kids butter
+// ground, not the site navy; see html:has(.kd) in app/globals.css.
+export const viewport = { width: 'device-width', initialScale: 1, maximumScale: 5, userScalable: true, viewportFit: 'cover', themeColor: '#fff6e0' };
+
 export const dynamic = 'force-dynamic';
 
 export default function KidsMathDashPage({ searchParams }) {
