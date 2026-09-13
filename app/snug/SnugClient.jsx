@@ -708,13 +708,33 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
     />
   );
 
-  const pieceTile = (i, big) => {
+  // A pad piece is ONE solid shape, not a grid of dots: the squares are drawn
+  // edge to edge, the silhouette gets a single outline, faint seams inside it
+  // show how many squares it holds, and a small ring marks the handle (the
+  // piece's first square, which is the one a board tap prefers to land).
+  const pieceTile = (i) => {
     const o = g.ori[i];
     const w = Math.max(...o.map((x) => x[1])) + 1, h = Math.max(...o.map((x) => x[0])) + 1;
     const set = new Set(o.map(([r, c]) => K(r, c)));
-    const cells = [];
-    for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) cells.push(<i key={`${r}-${c}`} className={set.has(K(r, c)) ? (r === o[0][0] && c === o[0][1] ? 'sg-sq sg-hand' : 'sg-sq') : 'sg-sq sg-e'} />);
-    return <span className="sg-mini" style={{ gridTemplateColumns: `repeat(${w}, ${big ? 16 : 13}px)` }}>{cells}</span>;
+    const U = 20;
+    const edge = [], seam = [];
+    for (const [r, c] of o) {
+      const x = c * U, y = r * U;
+      if (!set.has(K(r - 1, c))) edge.push(`M${x} ${y}h${U}`);
+      if (!set.has(K(r + 1, c))) edge.push(`M${x} ${y + U}h${U}`);
+      if (!set.has(K(r, c - 1))) edge.push(`M${x} ${y}v${U}`);
+      if (!set.has(K(r, c + 1))) edge.push(`M${x + U} ${y}v${U}`);
+      if (set.has(K(r + 1, c))) seam.push(`M${x} ${y + U}h${U}`);
+      if (set.has(K(r, c + 1))) seam.push(`M${x + U} ${y}v${U}`);
+    }
+    return (
+      <svg className="sg-mini" viewBox={`-2 -2 ${w * U + 4} ${h * U + 4}`} style={{ width: `calc(${w} * var(--sg-u))`, height: `calc(${h} * var(--sg-u))` }} aria-hidden="true" focusable="false">
+        {o.map(([r, c]) => <rect key={`${r}-${c}`} className="sg-fill" x={c * U} y={r * U} width={U} height={U} />)}
+        <path className="sg-seam" d={seam.join('')} />
+        <path className="sg-edge" d={edge.join('')} />
+        <circle className="sg-hand" cx={(o[0][1] + 0.5) * U} cy={(o[0][0] + 0.5) * U} r={U * 0.17} />
+      </svg>
+    );
   };
 
   return (
@@ -749,17 +769,20 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
           .sg-board{display:grid;gap:0;margin:0 auto;width:max-content;max-width:100%;touch-action:manipulation;user-select:none;-webkit-tap-highlight-color:transparent;}
           .sg-cell{width:${CELL};height:${CELL};border-radius:2px;transition:background .12s;}
           .sg-cell.void{visibility:hidden;pointer-events:none;}
-          .sg-pad{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:flex-end;justify-content:center;margin:16px auto 0;}
-          .sg-piece{display:inline-flex;padding:6px;border-radius:8px;border:2px solid transparent;background:transparent;cursor:pointer;transition:transform .12s,opacity .2s;}
+          .sg-pad{--sg-u:22px;display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:center;margin:18px auto 0;padding:12px 10px;border-radius:12px;background:${STAGE ? 'var(--stg-surf2)' : '#f3f5f8'};}
+          @media(max-width:560px){.sg-pad{--sg-u:18px;gap:8px 10px;}}
+          .sg-piece{display:inline-flex;align-items:center;justify-content:center;min-width:calc(2 * var(--sg-u) + 16px);min-height:calc(2 * var(--sg-u) + 16px);padding:8px;border-radius:10px;border:2px solid transparent;background:transparent;cursor:pointer;transition:transform .12s,opacity .2s;}
           .sg-piece:hover{transform:translateY(-2px);}
-          .sg-piece.armed{border-color:var(--stg-acc, ${COLORS.accent});background:${STAGE ? 'var(--stg-surf2)' : COLORS.accentSoft};}
+          .sg-piece.armed{border-color:var(--stg-acc-ink, ${COLORS.accentDeep});background:${STAGE ? 'var(--stg-surf)' : T.white};}
           .sg-piece.used{opacity:.22;pointer-events:none;}
           .sg-piece:focus-visible{outline:2px solid var(--stg-acc, ${COLORS.accent});outline-offset:2px;}
-          .sg-mini{display:grid;gap:1.5px;}
-          .sg-sq{display:block;width:13px;height:13px;border-radius:2px;background:var(--stg-acc, ${COLORS.accent});}
-          .sg-piece.armed .sg-sq{background:var(--stg-acc-ink, ${COLORS.accentDeep});}
-          .sg-sq.sg-hand{box-shadow:inset 0 0 0 2px ${STAGE ? 'var(--stg-ground)' : T.white};}
-          .sg-sq.sg-e{background:transparent;}
+          .sg-mini{display:block;overflow:visible;}
+          .sg-fill{fill:var(--stg-acc, ${COLORS.accent});}
+          .sg-piece.armed .sg-fill{fill:var(--stg-acc-ink, ${COLORS.accentDeep});}
+          .sg-seam{fill:none;stroke:${STAGE ? 'var(--stg-ground)' : T.white};stroke-width:1;opacity:.45;}
+          .sg-edge{fill:none;stroke:${STAGE ? 'var(--stg-ground)' : T.white};stroke-width:2.5;stroke-linecap:square;}
+          .sg-piece.armed .sg-edge{stroke:var(--stg-acc, ${COLORS.accent});}
+          .sg-hand{fill:${STAGE ? 'var(--stg-ground)' : T.white};opacity:.9;}
           .sg-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
           .sg-tool.on{background:${STAGE ? STAGE_C : COLORS.ink};color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};border-color:${STAGE ? STAGE_C : COLORS.ink};}
           .sg-tool[disabled]{opacity:.4;cursor:default;}
