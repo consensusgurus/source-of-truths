@@ -43,7 +43,7 @@ const SLATE_KEYS = [
   'crux', 'emcee', 'shards', 'garble', 'links', 'span', 'dating', 'tally', 'suds', 'quilt', 'cages', 'sando', 'carve',
   'extra', 'stet', 'outwit', 'outrank', 'tuck', 'alibi', 'cipher', 'ping', 'warmer', 'jester',
   'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'bracket', 'lode', 'etch', 'glyph', 'hedge',
-  'listed', 'mate', 'four', 'park', 'impound', 'junkyard', 'check', 'rung', 'crunch', 'taire', 'fib', 'streak',
+  'listed', 'mate', 'four', 'park', 'impound', 'junkyard', 'snug', 'check', 'rung', 'crunch', 'taire', 'fib', 'streak',
   'feud', 'babel', 'hands', 'finesse', 'chain', 'turn', 'suffice', 'strata', 'redact', 'paths',
   'deep', 'anon', 'blocks', 'chomp', 'sweep', 'docket', 'blitz', 'blitzed', 'sums', 'hinge', 'defend', 'barter', 'plot', 'sixes', 'niche', 'shoe', 'queen', 'towers', 'mercury', 'polka', 'atlas', 'sport', 'calc', 'encore', 'biz', 'flank', 'knight', 'script', 'quotes', 'focus', 'thread', 'slot', 'whittle', 'diag', 'frame', 'rim',
 // A retired game leaves the rail on its own the morning after its bank's last

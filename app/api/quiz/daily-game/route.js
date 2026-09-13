@@ -52,6 +52,7 @@ import { PUZZLES as P_four } from '@/app/four/puzzles';
 import { PUZZLES as P_park } from '@/app/parker/puzzles';
 import { PUZZLES as P_impound } from '@/app/impound/puzzles';
 import { PUZZLES as P_junkyard } from '@/app/junkyard/puzzles';
+import { PUZZLES as P_snug } from '@/app/snug/puzzles';
 import { PUZZLES as P_check } from '@/app/check/puzzles';
 import { PUZZLES as P_rung } from '@/app/rung/puzzles';
 import { PUZZLES as P_crunch } from '@/app/crunch/puzzles';
@@ -115,7 +116,7 @@ const GAME_PUZZLES = {
   crux: P_crux, emcee: P_emcee, garble: P_garble, links: P_links, span: P_span, dating: P_dating,
   tally: P_tally, suds: P_suds, quilt: P_quilt, cages: P_cages, sando: P_sando, circa: P_circa, extra: P_extra, carve: P_carve, stet: P_stet, outwit: P_outwit,
   tuck: P_tuck, alibi: P_alibi, cipher: P_cipher, ping: P_ping, warmer: P_warmer,
-  jester: P_jester, sworn: P_sworn, outrank: P_outrank, shards: P_shards, axiom: P_axiom, hearsay: P_hearsay, venn: P_venn, stands: P_stands, bracket: P_bracket, lode: P_lode, etch: P_etch, hedge: P_hedge, listed: P_listed, mate: P_mate, four: P_four, park: P_park, impound: P_impound, junkyard: P_junkyard, check: P_check, rung: P_rung, crunch: P_crunch, taire: P_taire, fib: P_fib, streak: P_streak, feud: P_feud, babel: P_babel, hands: P_hands, finesse: P_finesse, glyph: P_glyph, chain: P_chain, turn: P_turn, suffice: P_suffice, strata: P_strata, redact: P_redact, paths: P_paths, deep: P_deep, anon: P_anon, blocks: P_blocks, chomp: P_chomp, sweep: P_sweep, docket: P_docket, blitz: P_blitz, blitzed: P_blitzed, sums: P_sums, hinge: P_hinge, defend: P_defend, barter: P_barter, plot: P_plot, sixes: P_sixes, niche: P_niche, shoe: P_shoe, queen: P_queen, towers: P_towers, mercury: P_mercury, polka: P_polka, knight: P_knight, atlas: P_atlas, sport: P_sport, calc: P_calc, encore: P_encore, biz: P_biz, flank: P_flank, script: P_script, quotes: P_quotes, focus: P_focus, thread: P_thread, slot: P_slot, whittle: P_whittle, diag: P_diag, frame: P_frame, rim: P_rim,
+  jester: P_jester, sworn: P_sworn, outrank: P_outrank, shards: P_shards, axiom: P_axiom, hearsay: P_hearsay, venn: P_venn, stands: P_stands, bracket: P_bracket, lode: P_lode, etch: P_etch, hedge: P_hedge, listed: P_listed, mate: P_mate, four: P_four, park: P_park, impound: P_impound, junkyard: P_junkyard, snug: P_snug, check: P_check, rung: P_rung, crunch: P_crunch, taire: P_taire, fib: P_fib, streak: P_streak, feud: P_feud, babel: P_babel, hands: P_hands, finesse: P_finesse, glyph: P_glyph, chain: P_chain, turn: P_turn, suffice: P_suffice, strata: P_strata, redact: P_redact, paths: P_paths, deep: P_deep, anon: P_anon, blocks: P_blocks, chomp: P_chomp, sweep: P_sweep, docket: P_docket, blitz: P_blitz, blitzed: P_blitzed, sums: P_sums, hinge: P_hinge, defend: P_defend, barter: P_barter, plot: P_plot, sixes: P_sixes, niche: P_niche, shoe: P_shoe, queen: P_queen, towers: P_towers, mercury: P_mercury, polka: P_polka, knight: P_knight, atlas: P_atlas, sport: P_sport, calc: P_calc, encore: P_encore, biz: P_biz, flank: P_flank, script: P_script, quotes: P_quotes, focus: P_focus, thread: P_thread, slot: P_slot, whittle: P_whittle, diag: P_diag, frame: P_frame, rim: P_rim,
 };
 
 const BOARD = 10; // all-time rows returned (the viewer's own rank is always in `myRank`)

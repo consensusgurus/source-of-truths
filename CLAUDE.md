@@ -3825,6 +3825,7 @@ archive and hub chips use the short form `Sun`.
 | Docket | seven entities over seven slots plus the second dimension, so fourteen open cells against a weekday's twelve, and one extra condition (from 2026-08-10) |
 | Defend | a hold for four instead of a hold for three, so a fourth white move to survive before the attack is spent (from 2026-08-12) |
 | Barter | eight seven-letter words on a 7x7 lattice instead of six five-letter words on 5x5, and a deeper par (from launch, 2026-08-16) |
+| Snug | a 7x7 board with four holes and eight pieces against the weekday 6x6 with six or seven, still one way to fit (from launch, 2026-09-13) |
 | Sixes | a grid in the top fraction of a percent of the difficulty distribution: ten to fourteen squares reachable only by a hidden single, against none on a Monday (from launch, 2026-08-14) |
 | Etch | a 20x20 picture instead of Saturday's 15x15 and the weekday 10x10 (from 2026-08-23) |
 | Hedge | a 10x10 loop lattice instead of the weekday 7x7 |
@@ -7690,3 +7691,59 @@ deliberate and none of them a gap to fill later:
 - **The kids track is also counted in `lib/kids.js` `KIDS_GAMES`** (the hub header's game count).
   A new kids daily is: a `KIDS_DAILIES` row, `app/kids/<key>/page.js` + client, a bank or a
   generator, a `verify-kids` section, and a `DAILY_ART` glyph in `KidsHubClient.jsx`.
+
+## Snug (`/snug`) and Fit It (`/kids/fitit`): fit the pieces, one way only (launched 2026-09-13)
+
+Key/route/folder `snug`, category **Logic**, registry `miss: null` (Sixes' manners: a solve is a
+flat 10, nothing counts against you, the clock decides the day, one free first-play hint through
+`lib/hint-gate`), legacy accent `#3b5bdb` / navy `#91a7ff`. Day 1 is **2026-09-13**, a Sunday, so
+No. 1 is a Sunday Edition. Bank runs 78 days to **2026-11-29**. Wired by `scripts/wire-snug.mjs`
+(anchored on the Junkyard rows, idempotent). No PNG tile; `lib/game-glyphs.js` has `snug`. Share
+card is the static `public/og/snug.png` from `scripts/bake-og.mjs snug`. Design study with the
+grown-up and kids boards: https://claude.ai/code/artifact/a9c7b827-5af7-4c1a-8fef-7db991b253dc.
+
+**The game.** A board with a few squares missing and a handful of polyomino pieces whose areas add
+up to the board exactly. Tap a piece on the pad to arm it, R or the Rotate chip turns it, F or Flip
+mirrors it, tap a board square where one of its squares goes and it drops in if it fits (the piece's
+row-major first square is preferred when several placements fit; a tap that fits nowhere flashes and
+costs nothing). Tap a placed piece to lift it. The pad shows every piece SCRAMBLED (a fixed rotation
+and flip per slot), never in its solution orientation. THE BANK ONLY SHIPS BOARDS WITH ONE TILING
+under all eight orientations, so a full board is always the right board.
+
+**Uniqueness by FILTERING, and difficulty is MEASURED.** `scripts/gen-snug.mjs` makes a region (a
+square minus a few holes, connected), floods it into k pieces, and keeps the board only when the
+tiling count under rotations and reflections is exactly one; it does not design toward uniqueness.
+`nodes` is the size of the search tree the canonical counting solver walks (defined in the bank
+header: row-major first empty square, every unused piece, every deduplicated orientation anchored by
+its row-major first cell, every entry counted). Each weekday draws a POOL of unique boards and takes
+the quantile its day asks for (Monday easiest, Saturday hardest), then a second pass re-picks any
+weekday whose nodes fall below the day before, so `nodes` never falls inside a Mon-Sat run.
+
+**The shape ramp is pinned per weekday and was measured before it was chosen:** Mon 6x6, 3 holes,
+6 pieces of 4-7; Tue 3 holes, 6 of 4-6; Wed 3 holes, 7 of 4-6; Thu 2 holes, 7 of 4-6; Fri 1 hole,
+7 of 4-6; Sat 1 hole, 7 of 4-6 from the HARD end of its pool; **Sunday 7x7, 4 holes, 8 pieces of
+4-7.** A hole is a constraint, so the week takes them away. A Saturday of seven pieces of 3-6 was
+tried first and measured EASIER than Friday (median nodes about 2,800 against 5,000: a tromino
+constrains less than a tetromino), so Saturday shares Friday's shape and the quantile does the work. Eight pieces of 3-5 on a 6x6, or a full 6x6 with no hole, almost never
+come out unique (0 to 1 in 1,500 tries), which is why the weekday count stops at seven. No two pieces
+on a board are congruent under the free symmetry, and no two boards share a region and piece set.
+
+**⚠️ A ONE-HOLE 6x6 HAS ONLY 36 REGIONS, and fewer than twenty of them admit a unique tiling at
+all.** The first run keyed board identity on the region alone and reserved every pool candidate's, so
+it ran out on the third Friday (2026-10-02); reserving only the chosen board's region moved the
+failure to the sixth. A board's identity is therefore its region PLUS its piece set (`rkey` in the
+generator, the same key in the verifier), which is what a player actually sees.
+
+**`scripts/verify-snug.mjs` shares no code with the generator.** It re-derives the spec per
+weekday, connectivity, piece normalisation and pairwise non-congruence, that `sol` tiles the region
+exactly, uniqueness with a DIFFERENT solver (most-constrained empty square first, cap 2), `nodes`
+by a fresh walk of the canonical definition, the weekday climb, the Sunday flag on real Sundays, and
+that no mask repeats. 78 boards in a few seconds.
+
+**Fit It is Snug for kids, on the kids track and NOT in the registry** (per the kids rules above):
+5x5, two or three holes, four or five pieces of 3-6, and EVERY PIECE PRINTED THE WAY IT GOES IN.
+There is no rotation on the kids board, so uniqueness is proved with the pieces FIXED, and
+`scripts/gen-kids-fitit.mjs` keeps only boards with exactly one fixed-orientation tiling (sixty
+boards, cycling). Tap a piece, tap the board; a piece that will not fit wobbles; "Show me one" drops
+the next piece home for free, unlimited; Undo and Start over. `scripts/verify-kids.mjs` re-proves
+every board with its own piece-driven solver.

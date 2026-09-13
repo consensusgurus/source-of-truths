@@ -17,6 +17,11 @@
 //           equals the generator's list; only 3-letter lowercase words
 //   mathdash the day generator is deterministic, every answer is a non-negative
 //           integer within the documented ranges, ten questions, no repeats
+//   fitit   5x5 mask with 2 or 3 holes, a connected region, 4 or 5 pieces of
+//           3 to 6 squares each normalised and pairwise distinct as printed,
+//           areas summing to the region, sol tiling it exactly, and EXACTLY
+//           ONE fixed-orientation tiling (no rotation on the kids board) by a
+//           piece-driven solver; no two boards share a region
 //   sixes / unpark  the grown-up banks carry their own verifiers; here only
 //           that the kid filters leave a non-empty pool as of today
 //   hub     lib/kids.js lists every daily exactly once, with the registry href
@@ -131,6 +136,64 @@ const load = async (rel) => import(pathToFileURL(join(root, rel)).href);
     }
   }
   ok('mathdash: 400 days x 2, deterministic and in range');
+}
+
+// ---------------------------------------------------------------- fitit
+{
+  const { PUZZLES } = await load('app/kids/fitit/puzzles.js');
+  const N = 5;
+  const masks = new Set();
+  const tile = (mask, pieces) => {
+    // Piece-driven: place piece 0 everywhere it fits, then piece 1, ... Cap 2.
+    const grid = mask.map((row) => [...row].map((ch) => (ch === '1' ? 0 : 1)));
+    let count = 0;
+    (function rec(i) {
+      if (count >= 2) return;
+      if (i === pieces.length) { if (grid.every((row) => row.every((v) => v !== 0))) count++; return; }
+      for (let dr = 0; dr < N; dr++) for (let dc = 0; dc < N; dc++) {
+        let good = true;
+        for (const [r, c] of pieces[i]) { const rr = r + dr, cc = c + dc; if (rr >= N || cc >= N || grid[rr][cc] !== 0) { good = false; break; } }
+        if (!good) continue;
+        for (const [r, c] of pieces[i]) grid[r + dr][c + dc] = 2;
+        rec(i + 1);
+        for (const [r, c] of pieces[i]) grid[r + dr][c + dc] = 0;
+        if (count >= 2) return;
+      }
+    })(0);
+    return count;
+  };
+  for (const p of PUZZLES) {
+    const id = `fitit #${p.num}`;
+    if (!Array.isArray(p.mask) || p.mask.length !== N || p.mask.some((r) => r.length !== N || /[^01]/.test(r))) { bad(`${id}: malformed mask`); continue; }
+    const cells = []; for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (p.mask[r][c] === '1') cells.push([r, c]);
+    const holes = N * N - cells.length;
+    if (holes < 2 || holes > 3) bad(`${id}: ${holes} holes, want 2 or 3`);
+    const seen = new Set([cells[0].join(',')]); const st = [cells[0]];
+    while (st.length) { const [r, c] = st.pop(); for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const rr = r + dr, cc = c + dc; if (rr >= 0 && cc >= 0 && rr < N && cc < N && p.mask[rr][cc] === '1' && !seen.has(`${rr},${cc}`)) { seen.add(`${rr},${cc}`); st.push([rr, cc]); } } }
+    if (seen.size !== cells.length) bad(`${id}: region not connected`);
+    const mk = p.mask.join('/');
+    if (masks.has(mk)) bad(`${id}: repeats a region`); masks.add(mk);
+    if (!Array.isArray(p.pieces) || p.pieces.length < 4 || p.pieces.length > 5) { bad(`${id}: ${p.pieces && p.pieces.length} pieces, want 4 or 5`); continue; }
+    let area = 0; const sigs = new Set();
+    p.pieces.forEach((pc, j) => {
+      area += pc.length;
+      if (pc.length < 3 || pc.length > 6) bad(`${id}: piece ${j} has ${pc.length} squares`);
+      const mr = Math.min(...pc.map((q) => q[0])), mc = Math.min(...pc.map((q) => q[1]));
+      if (mr !== 0 || mc !== 0) bad(`${id}: piece ${j} not normalised`);
+      const sg = pc.map((q) => q.join(':')).join(',');
+      if (sigs.has(sg)) bad(`${id}: piece ${j} duplicates another as printed`); sigs.add(sg);
+    });
+    if (area !== cells.length) bad(`${id}: pieces cover ${area}, region is ${cells.length}`);
+    if (!Array.isArray(p.sol) || p.sol.length !== p.pieces.length) bad(`${id}: sol length`);
+    else {
+      const g = p.mask.map((row) => [...row].map((ch) => (ch === '1' ? 0 : 1))); let clash = false;
+      p.pieces.forEach((pc, j) => { for (const [r, c] of pc) { const rr = r + p.sol[j][0], cc = c + p.sol[j][1]; if (rr < 0 || cc < 0 || rr >= N || cc >= N || g[rr][cc] !== 0) { clash = true; break; } g[rr][cc] = 2; } });
+      if (clash || g.some((row) => row.some((v) => v === 0))) bad(`${id}: sol does not tile the board exactly`);
+    }
+    const n = tile(p.mask, p.pieces);
+    if (n !== 1) bad(`${id}: ${n >= 2 ? 'two or more' : 'no'} fixed-orientation tilings`);
+  }
+  ok(`fitit: ${PUZZLES.length} boards, every one unique as printed`);
 }
 
 // ---------------------------------------------------------------- sixes / unpark pools

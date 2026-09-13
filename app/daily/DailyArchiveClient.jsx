@@ -47,7 +47,7 @@ const FAMILIES = [
   { key: 'sudoku', label: 'Sudoku', keys: ['suds', 'sixes', 'towers', 'quilt', 'cages', 'sando', 'mercury', 'polka', 'knight', 'diag', 'frame', 'rim', 'whittle'] },
   { key: 'crowd', label: 'Crowd Psychology', keys: ['outwit', 'outrank', 'feud'] },
   { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'focus', 'thread', 'slot', 'bracket', 'listed', 'niche', 'redact', 'dating', 'extra'] },
-  { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'park', 'impound', 'junkyard', 'fib', 'suffice', 'paths', 'chomp', 'docket', 'plot'] },
+  { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'park', 'impound', 'junkyard', 'snug', 'fib', 'suffice', 'paths', 'chomp', 'docket', 'plot'] },
   { key: 'endgame', label: 'End Game', keys: ['mate', 'defend', 'queen', 'four', 'check', 'chain', 'turn'] },
   { key: 'cards', label: 'Cards', keys: ['taire', 'hands', 'shoe', 'finesse'] },
   { key: 'arcade', label: 'Arcade', keys: ['blocks', 'sweep'] },
@@ -79,7 +79,7 @@ const NAVY_ACCENT = {
   outwit: '#c3cfe3', tuck: '#e0a568', alibi: '#ef8896', cipher: '#3fc9b8', ping: '#4cb3f0', warmer: '#f3705c',
   jester: '#a78bfa', sworn: '#f472b6', outrank: '#8b8af5', shards: '#2dd4bf',
   axiom: '#5eead4', hearsay: '#d8b4fe', venn: '#fbbf24', stands: '#93c5fd', bracket: '#fb923c', pricer: '#4ade80',
-  lode: '#e0b13f', etch: '#a3e635', hedge: '#67e8f9', listed: '#e9b8f5', mate: '#d9b38c', four: '#9db8ff', park: '#f0cf9a', impound: '#e3bd85', junkyard: '#d9b070', check: '#5fd6b8', rung: '#7fd4e8', crunch: '#f0c07a', taire: '#86efac', fib: '#c4b5fd', streak: '#fb7185', feud: '#fda4af',
+  lode: '#e0b13f', etch: '#a3e635', hedge: '#67e8f9', listed: '#e9b8f5', mate: '#d9b38c', four: '#9db8ff', park: '#f0cf9a', impound: '#e3bd85', junkyard: '#d9b070', snug: '#91a7ff', check: '#5fd6b8', rung: '#7fd4e8', crunch: '#f0c07a', taire: '#86efac', fib: '#c4b5fd', streak: '#fb7185', feud: '#fda4af',
 };
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
