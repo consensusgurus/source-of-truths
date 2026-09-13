@@ -231,10 +231,11 @@ const CSS = `
 .sld-fig i{display:block;font-style:normal;font-family:${MONO};font-size:8.5px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--stg-mute);margin-top:5px;}
 .sld-card{border:1px solid var(--stg-line);border-radius:10px;padding:11px 12px;background:var(--stg-surf);}
-.sld-wk{display:grid;grid-template-columns:minmax(72px,110px) repeat(7,minmax(0,1fr));gap:3px;align-items:center;}
+.sld-wk{display:grid;grid-template-columns:minmax(96px,150px) repeat(7,minmax(0,1fr));gap:3px;align-items:center;}
 .sld-dh{font-family:${MONO};font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);text-align:center;}
-.sld-rl{font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;min-width:0;}
-.sld-rl span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sld-rl{font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;min-width:0;
+  padding:3px 0;line-height:1.2;}
+.sld-rl span{min-width:0;overflow-wrap:break-word;hyphens:auto;}
 .sld-rl s{text-decoration:none;width:3px;height:14px;border-radius:2px;background:var(--rc);flex:none;}
 .sld-c{height:24px;border-radius:4px;background:var(--stg-chip);display:grid;place-items:center;
   font-family:${MONO};font-size:10px;font-weight:700;color:var(--stg-mute);}
@@ -254,7 +255,7 @@ const CSS = `
 .sld-chip b{font-size:12.5px;font-weight:800;}
 .sld-chip span:last-child{color:var(--stg-mute);}
 @media (max-width:480px){
-  .sld-wk{grid-template-columns:minmax(58px,80px) repeat(7,minmax(0,1fr));}
+  .sld-wk{grid-template-columns:minmax(84px,104px) repeat(7,minmax(0,1fr));}
   .sld-rl{font-size:11px;}
   .sld-figs{gap:6px;}
   .sld-fig b{font-size:20px;}
