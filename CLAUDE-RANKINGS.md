@@ -738,6 +738,17 @@ rankings), plus a Wednesday retry.
    This is the only guard that catches ESPN's `site.api` serving preseason data in November, CBS
    serving an April edition at a live URL, and the two poisoned sources above. See §2's 30-day rule
    for the exclusion behaviour and the preseason trap.
+
+   **⚠️ THE WEEK CHECK IS NOT THE AGE CHECK, and until 2026-09-14 only the age half existed in
+   code.** A source can be days old, well inside every limit, and still be describing last week.
+   BCF Toys F+ updates midweek and prints its own content date in its heading: on the 2026-09-14
+   build it read "2026 F+ Ratings (through Week 1)" over 1-0 records, six days old, on a board
+   built from week-2 results. Set **`excluded`** on the source in `lib/gridiron-data.js` to the
+   reader-facing reason and `freshness` in `lib/gridiron.js` reads it before anything else; the
+   column still renders, struck through, with `EXCLUDED` where its weight goes. Owner rule,
+   2026-09-14: **a source that does not reflect the results the board is built on is not scored,
+   whatever its age.** Clear the field on the next build once the source catches up — it is a
+   per-week judgement, not a property of the source.
 3. **Expected header.** The payload's own poll name must be the poll requested. The only thing that
    catches collegepolltracker serving AP under a Coaches URL.
 4. **Expected depth.** The source must parse to the depth it is known to publish — 25 ranked plus a

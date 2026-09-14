@@ -221,7 +221,9 @@ for (const sport of ['cfb', 'nfl', 'mlb']) {
   // columns: every column id the rows carry exists, and vice versa
   const colIds = new Set(r.columns.map((c) => c.id));
   for (const x of r.ranked) for (const id of Object.keys(x.shown)) if (!colIds.has(id)) fail(`${sport}: row carries unknown column ${id}`);
-  ok(`${r.columns.length} columns, ${r.excluded.length} excluded by age`);
+  // "by age" was true until 2026-09-14, when `excluded` on a source made an
+  // age-independent exclusion possible (CLAUDE-RANKINGS.md §5 rule 2).
+  ok(`${r.columns.length} columns, ${r.excluded.length} excluded`);
 
   console.log('   top 5:', r.ranked.slice(0, 5).map((x) => `${x.team} ${x.score > 0 ? '+' : ''}${x.score.toFixed(1)}`).join(' | '));
 }
