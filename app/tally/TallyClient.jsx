@@ -189,7 +189,7 @@ const M_COL = 2;   // ...somewhere in this column
 const M_BOTH = 3;  // both halves proven — the exact square, and the last note
 const MARK_CLASS = { 1: 'mk-row', 2: 'mk-col', 3: 'mk-both' };
 const MARK_TITLE = {
-  0: 'Tap to note the right row. Hold or right-click to lift it back to the rack.',
+  0: 'Drag it to any open square. Tap to note the right row. Hold or right-click to lift it back to the rack.',
   1: 'Right row — drag it along the row to move it, note and all. Tap to note the column instead.',
   2: 'Right column — drag it up or down the column to move it, note and all. Tap to mark it certain.',
   3: 'Certain — right row and column. One more tap lifts it back to the rack.',
@@ -689,12 +689,61 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
   // same job as lift-and-replace, so it costs the same single move. A certain
   // tile (both halves) never slides — its square is settled.
 
-  // which line, if any, this tile is free to travel
+  // which line, if any, this tile is free to travel. An UNMARKED tile has
+  // proven nothing, so it is not pinned to anything: it drags freely to any
+  // open square (owner, 2026-09-14: lift-then-tap was too much ceremony for
+  // a tile that is simply in the wrong place). A half-marked tile keeps to
+  // its proven line, and a certain one does not move at all.
   function slideAxis(i) {
     if (!playing || !cells[i]) return null;
+    if (mark[i] === 0) return 'free';
     if (mark[i] === M_ROW) return 'row';
     if (mark[i] === M_COL) return 'col';
     return null;
+  }
+
+  // ── free drag of an unmarked tile ─────────────────────────────────────────
+  // The tile follows the finger anywhere on the board. It lands on the square
+  // under the pointer if that square is open, or trades places with another
+  // UNMARKED tile sitting there (neither carries a note, so nothing is lost).
+  // A noted, certain, given or blocked square refuses it and the tile snaps
+  // home. A landed move costs one move, the same as lift-and-replace.
+  function freeSession(i, rect) {
+    return { i, r: Math.floor(i / N), c: i % N, axis: 'free', pw: rect.width + GAP, ph: rect.height + GAP,
+      live: false, x0: 0, y0: 0, dx: 0, dy: 0, to: -1, ok: false };
+  }
+  // the square under the finger, and whether the tile may land there
+  function freeTarget(d, dx, dy) {
+    const c = d.c + Math.round(dx / d.pw), r = d.r + Math.round(dy / d.ph);
+    if (r < 0 || r >= N || c < 0 || c >= N) return { to: -1, ok: false };
+    const t = r * N + c;
+    if (t === d.i) return { to: t, ok: false };
+    if (BLOCK[r][c] || GIVEN[r][c]) return { to: t, ok: false };
+    if (cells[t] && mark[t]) return { to: t, ok: false };   // noted: holds its square
+    return { to: t, ok: true };
+  }
+  function freeOffsets(d, to, ok) {
+    const out = {};
+    if (!ok || to < 0 || !cells[to]) return out;
+    // the swap partner slides toward the square being vacated
+    out[to] = { x: (d.c - (to % N)) * d.pw, y: (d.r - Math.floor(to / N)) * d.ph };
+    return out;
+  }
+  function applyFree(d) {
+    if (!d.ok || d.to < 0 || d.to === d.i) {
+      if (d.to >= 0 && d.to !== d.i && cells[d.to] && mark[d.to]) say('That tile carries a note, so it holds its square');
+      return;
+    }
+    const nc = cells.slice(), nm = mark.slice();
+    const swapped = cells[d.to];
+    nc[d.to] = cells[d.i]; nc[d.i] = swapped;
+    nm[d.to] = 0; nm[d.i] = 0;
+    commit(nc, true, nm);
+    try { if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(8); } catch (e) {}
+    if (!slideToldRef.current) {
+      slideToldRef.current = true;
+      say(swapped ? 'Swapped. Costs one move, same as replacing it.' : 'Moved. Costs one move, same as replacing it.');
+    }
   }
 
   // The squares of the line a slide may rearrange. A tile pinned to the
@@ -782,7 +831,9 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
     dragRef.current = null;
     const axis = slideAxis(i);
     if (!axis || !e || !e.currentTarget) return;
-    const d = slideSession(i, axis, e.currentTarget.getBoundingClientRect());
+    const d = axis === 'free'
+      ? freeSession(i, e.currentTarget.getBoundingClientRect())
+      : slideSession(i, axis, e.currentTarget.getBoundingClientRect());
     if (!d) return;
     d.x0 = e.clientX; d.y0 = e.clientY;
     dragRef.current = d;
@@ -804,6 +855,18 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
     const d = dragRef.current;
     if (!d) return;
     const dx = e.clientX - d.x0, dy = e.clientY - d.y0;
+    if (d.axis === 'free') {
+      if (!d.live) {
+        if (Math.abs(dx) < SLIDE_MIN && Math.abs(dy) < SLIDE_MIN) return;
+        d.live = true;
+        if (longRef.current.t) { clearTimeout(longRef.current.t); longRef.current.t = null; }
+        longRef.current.fired = true;   // swallow the click that ends the drag
+      }
+      const { to, ok } = freeTarget(d, dx, dy);
+      d.dx = dx; d.dy = dy; d.to = to; d.ok = ok;
+      setDragView({ i: d.i, axis: 'free', dx, dy, to, ok, offsets: freeOffsets(d, to, ok) });
+      return;
+    }
     const along = d.axis === 'row' ? dx : dy;
     const across = d.axis === 'row' ? dy : dx;
     if (!d.live) {
@@ -833,7 +896,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
     const d = dragRef.current;
     dragRef.current = null;
     if (dragView) setDragView(null);
-    if (d && d.live) applySlide(d, d.to);
+    if (d && d.live) { if (d.axis === 'free') applyFree(d); else applySlide(d, d.to); }
   }
   // pointer capture keeps a live slide alive when the finger leaves the tile,
   // so only an idle press is cancelled here
@@ -1014,11 +1077,11 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
         { label: 'Both = certain' },
       ]}
       steps={[
-        <>Tap a tile on your rack, then a square. You must use <b>every rack tile</b> and nothing else: digits repeat, and the rack tells you how many of each you have. Dotted squares are yours, a corner dot is a printed given, dark squares are out of play.</>,
+        <>Tap a tile on your rack, then a square. <b>Drag a placed tile</b> to any open square to move it, or onto another unnoted tile to swap the two. You must use <b>every rack tile</b> and nothing else: digits repeat, and the rack tells you how many of each you have. Dotted squares are yours, a corner dot is a printed given, dark squares are out of play.</>,
         <>Tapping a placed tile again <b>cycles it</b>: right row, right column, certain, then back to the rack. Lifting is free. <b>Undo</b> steps back one change, <b>Clear board</b> lifts every tile at once. Both are free, and neither refunds a move: they restore the grid, not the score.</>,
         <>Certainty arrives in halves, so the notes do too: often the rack proves a digit belongs somewhere in a <b>row</b> before you can say which square, and a half-marked tile is still free to slide. Two proven lines meet at one square, so a tile carrying <b>both</b> halves is certain.</>,
         <><b>Hold</b> a tile (or right-click) to lift it straight back to the rack instead of walking the rest of the cycle. Tapping a <b>row or column target</b> notes that half on every tile in the line. Notes are free: they never cost a move and never count against your score. The full key sits under the board.</>,
-        <><b>Drag a half-marked tile</b> along its proven line to move it without lifting, so the note survives. Tiles in the way shuffle one square toward the one it left, however many there are, and any tile that has proven the crossing line holds its square while you slide over it. It costs one move, the same as lifting and re-placing.</>,
+        <>A tile with no note drags anywhere. <b>Drag a half-marked tile</b> along its proven line to move it without lifting, so the note survives. Tiles in the way shuffle one square toward the one it left, however many there are, and any tile that has proven the crossing line holds its square while you slide over it. It costs one move, the same as lifting and re-placing.</>,
       ]}
       knack="The rack supply is the lever. When the sums leave two ways to fill a line, the tiles you have left leave one."
       note="A tile that has proven the crossing line will not be pushed out of it, so it sits the slide out and you pass straight over it."
@@ -1097,6 +1160,13 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
              way, so a row tile never eats a vertical swipe. */
           .tl-placed.tl-slide-row{cursor:ew-resize;touch-action:pan-y;}
           .tl-placed.tl-slide-col{cursor:ns-resize;touch-action:pan-x;}
+          /* an unmarked tile goes anywhere, so the board owns the whole
+             gesture on it: touch-action none, or the page scrolls instead */
+          .tl-placed.tl-slide-free{cursor:grab;touch-action:none;}
+          .tl-placed.tl-slide-free.tl-drag{cursor:grabbing;}
+          /* the square a free drag would land on */
+          .tl-cell.tl-drop{border:2px solid ${AGREE};box-shadow:0 0 0 3px ${RING};}
+          .tl-cell.tl-drop-no{box-shadow:0 0 0 3px var(--stg-bad, ${COLORS.rust});}
           /* A DARK DROP SHADOW ON A NEAR-BLACK PAGE IS NOT A SHADOW. The stage
              says "lifted" with a ring of the accent instead, which is the same
              language the hot square and the selected rack tile use. */
@@ -1201,10 +1271,18 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
                       const ax = slideAxis(i);
                       const dv = dragView;
                       const isDrag = !!dv && dv.i === i;
-                      const off = dv ? (isDrag ? dv.px : (dv.offsets[i] || 0)) : 0;
+                      let tf = null;
+                      if (dv && dv.axis === 'free') {
+                        const o = isDrag ? { x: dv.dx, y: dv.dy } : dv.offsets[i];
+                        if (o) tf = `translate(${o.x}px, ${o.y}px)`;
+                      } else if (dv) {
+                        const off = isDrag ? dv.px : (dv.offsets[i] || 0);
+                        if (off) tf = dv.axis === 'row' ? `translateX(${off}px)` : `translateY(${off}px)`;
+                      }
+                      const dropCls = dv && dv.axis === 'free' && dv.to === i && !isDrag ? (dv.ok ? ' tl-drop' : ' tl-drop-no') : '';
                       return (
-                        <div key={i} className={`tl-cell tl-placed${playing && mark[i] ? ` ${MARK_CLASS[mark[i]]}` : ''}${ax ? ` tl-slide-${ax}` : ''}${isDrag ? ' tl-drag' : ''}`}
-                          style={off ? { transform: dv.axis === 'row' ? `translateX(${off}px)` : `translateY(${off}px)`, transition: isDrag ? 'none' : 'transform .12s ease', zIndex: isDrag ? 3 : 2 } : (dv ? { transition: 'transform .12s ease' } : undefined)}
+                        <div key={i} className={`tl-cell tl-placed${playing && mark[i] ? ` ${MARK_CLASS[mark[i]]}` : ''}${ax ? ` tl-slide-${ax}` : ''}${isDrag ? ' tl-drag' : ''}${dropCls}`}
+                          style={tf ? { transform: tf, transition: isDrag ? 'none' : 'transform .12s ease', zIndex: isDrag ? 3 : 2 } : (dv ? { transition: 'transform .12s ease' } : undefined)}
                           onClick={() => cellClick(r, c)}
                           onPointerDown={(e) => pressStart(e, r, c)}
                           onPointerMove={pressMove}
@@ -1216,7 +1294,8 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
                         >{cells[i]}</div>
                       );
                     }
-                    return <div key={i} className={`tl-cell tl-empty${sel >= 0 && !used[sel] ? ' hot' : ''}`} onClick={() => cellClick(r, c)} />;
+                    const dropHere = dragView && dragView.axis === 'free' && dragView.to === i && dragView.ok;
+                    return <div key={i} className={`tl-cell tl-empty${sel >= 0 && !used[sel] ? ' hot' : ''}${dropHere ? ' tl-drop' : ''}`} onClick={() => cellClick(r, c)} />;
                   })}
                   {targetChip(r, true, `rt${r}`)}
                 </React.Fragment>
@@ -1294,7 +1373,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
                 <li><span className="tl-key mk-row" aria-hidden="true" /><span><b>Right row.</b> This digit belongs somewhere in this row, though not yet a known square. <b>Drag it along the row</b> to move it without lifting it: the note travels with the tile and anything in the way shuffles over. One move, same as re-placing it.</span></li>
                 <li><span className="tl-key mk-col" aria-hidden="true" /><span><b>Right column.</b> The same for a column, dragged up and down.</span></li>
                 <li><span className="tl-key mk-both" aria-hidden="true" /><span><b>Certain.</b> Right row and right column, so this is the square. One more tap lifts it back to the rack.</span></li>
-                <li style={{ marginBottom: 0, alignItems: 'flex-start' }}><span className="tl-key" aria-hidden="true" style={{ border: 'none', background: 'none', boxShadow: 'none' }} /><span style={{ color: FADED, fontWeight: 600 }}><b style={{ color: INK }}>How:</b> tap a placed tile to walk it through the notes, right row then right column then certain, and the tap after those lifts it back to the rack. Hold a tile (or right-click) to lift it at once. Tapping a <b style={{ color: INK }}>row target</b> marks every tile in that row as in the right row, and a column target does the same down its column, so a tile you prove from both sides ends up certain on its own.</span></li>
+                <li style={{ marginBottom: 0, alignItems: 'flex-start' }}><span className="tl-key" aria-hidden="true" style={{ border: 'none', background: 'none', boxShadow: 'none' }} /><span style={{ color: FADED, fontWeight: 600 }}><b style={{ color: INK }}>How:</b> drag a tile with no note to any open square, or onto another unnoted tile to swap them. Tap a placed tile to walk it through the notes, right row then right column then certain, and the tap after those lifts it back to the rack. Hold a tile (or right-click) to lift it at once. Tapping a <b style={{ color: INK }}>row target</b> marks every tile in that row as in the right row, and a column target does the same down its column, so a tile you prove from both sides ends up certain on its own.</span></li>
               </ul>
             </div>
           )}
