@@ -7,8 +7,10 @@
 //
 // Layout rules live in CLAUDE-RANKINGS.md section 6. The load-bearing ones:
 // the composite rating sits immediately beside the team name and ahead of every
-// column; every column shows its own date; and a source excluded by the age
-// gate keeps its column, struck through, rather than silently disappearing.
+// column; every column shows its own date; and an excluded source keeps its
+// column, struck through, rather than silently disappearing. A source is
+// excluded by the age gate OR, from 2026-09-14, by `excluded` on the source
+// itself when its own content describes an earlier week than the board does.
 //
 // v2 (2026-09-01): columns are the three PILLARS (results, betting markets,
 // analytics models) with each pillar's sources beside it. There are no media
@@ -393,7 +395,13 @@ html:not([data-stage-boot='dark']) [data-stage-theme='light'] .gr-lg{filter:none
 
         {gone.length > 0 && (
           <div className="gr-warn">
-            <b>{gone.length} source{gone.length > 1 ? 's' : ''} excluded by the {MAX_AGE_DAYS}-day rule.</b>{' '}
+            {/*
+              This banner used to name the 30-day rule, because age was the only way a source
+              could be excluded. From 2026-09-14 a source can also be excluded for describing a
+              week the board has already left, per CLAUDE-RANKINGS.md section 5 rule 2. So the
+              headline states the fact and each source's own `why` gives the reason.
+            */}
+            <b>{gone.length} source{gone.length > 1 ? 's' : ''} excluded from this week&rsquo;s score.</b>{' '}
             {gone.map((s) => `${s.label} (${s.why})`).join('; ')}. Their columns are shown struck
             through for transparency, but they score nothing and their pillar reweighted around them.
           </div>
@@ -626,8 +634,9 @@ html:not([data-stage-boot='dark']) [data-stage-theme='light'] .gr-lg{filter:none
           )}
           <b>Résumé vs market</b> is the results rank minus the market rank: a large positive number
           is a team whose record the market does not yet believe, a large negative one is a favourite
-          that keeps losing. A source whose data is more than {MAX_AGE_DAYS} days old is excluded
-          from scoring and shown struck through.{' '}
+          that keeps losing. A source is excluded from scoring, and shown struck through, when its
+          data is more than {MAX_AGE_DAYS} days old or when it describes an earlier week than the
+          one this board is built on.{' '}
           {offBoard > 0 && (
             <>
               <b>How deep the models go.</b> No live analytics model publishes past{' '}
