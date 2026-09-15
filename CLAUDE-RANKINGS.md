@@ -501,14 +501,14 @@ every week requested. It never errors; it just hands you the wrong week forever.
 | BCF Toys F+ | CFB | model | `bcftoys.com/{year}-fplus` | weekly | clean table, all 138 FBS. **NOT in the snapshot since 2026-09-15** — it is FEI + SP+, see the collinearity rule below |
 | DRatings | CFB | model | `dratings.com/sports/ncaa-fbs-football-ratings/` | ~daily | |
 | Sagarin NFL | NFL | model | `sagarin.com/sports/nflsend.htm` | Tue | four sub-columns incl. STRONG RECENT |
-| DRatings NFL | NFL | model | `dratings.com/sports/nfl-football-ratings/` | ~daily | parse its "Updated N ago" string |
+| DRatings NFL | NFL | model | `dratings.com/sports/nfl-football-ratings/` | ~daily | take **Inference**, not Overall. **Its W-L column is broken and its date is relative — date it by the movement test below, not by the page** |
 | PFR SRS | NFL | model | `pro-football-reference.com/years/{year}/` | ~daily in season | **empty until Week 1**, then the most durable URL in the sport. Header casing is `SoS` / `MoV`, not `SOS` / `MOV` |
 | Sharp Football | NFL | media | `sharpfootballanalysis.com/analysis/nfl-power-rankings/` | weekly | plain `<table>`, in-body "Last Updated". **The only NFL media ranking with a stable URL and an honest date** |
 | CBS Sports | NFL | media | `cbssports.com/nfl/powerrankings/` | Tue | **serves stale editions; date check is mandatory** |
 | Title futures | CFB | market | ESPN core `.../seasons/{yr}/futures/2758` | ~daily | DraftKings prices, 138 teams. See the CFB market note below — do NOT substitute win totals |
 | Sportsbook futures | NFL | market | `vegasinsider.com/nfl/odds/futures/` | ~daily | median across five books → implied probability → rank. **The only source anywhere in the audit that prints its own edition date in the body** |
 | Kalshi | NFL | market | `kalshi.com/nfl/power-rankings` | ~daily | prediction-market implied; explicit ET timestamp |
-| Market win totals | NFL | market | `nfeloapp.com/nfl-power-ratings/nfl-win-totals/` | weekly | implied strength in points vs an average opponent. **EXCLUDED from 2026-09-15** — see below |
+| ~~Market win totals~~ | NFL | market | `nfeloapp.com/nfl-power-ratings/nfl-win-totals/` | weekly | **RETIRED 2026-09-15, do not re-add** — a preseason market in season, see below |
 
 ### Collinearity — do not double-count one analyst
 
@@ -649,7 +649,29 @@ that the page itself renders.
   suppress the column until it populates (~Week 3), then it becomes a genuinely independent
   résumé-based signal.
 
-### ⚠️ THE NFL WIN-TOTALS BOARD IS A FROZEN PRESEASON MARKET IN SEASON (2026-09-15)
+### ⚠️ A BROKEN RECORD COLUMN IS NOT A STALE MODEL (DRatings NFL, 2026-09-15)
+
+The freshness gate exists to catch a source whose CONTENT is behind. DRatings NFL is the case where
+every cheap signal says it is and **the model is fine**, and it nearly cost the board a column:
+
+- Its **W-L column reads 0-0 for all 32 teams** in week 2. That is the content-derived signal §5
+  leans on, and on the CFB board from the same site it works (2-0, 1-2). On the NFL board it is
+  simply broken.
+- Its only date is the relative **"Updated N ago"** string, which §3 says never to trust alone
+  after the Pro Football Network client-clock case.
+
+**What settles it is a movement test against results the snapshot already holds.** Take the stored
+order, take the new one, and correlate each team's rank move against its margin over the closing
+spread. On 2026-09-15: **30 of 32 teams moved, correlation 0.45**, and every one of the ten largest
+movers went the way its own game says it should (Chargers 7th → 15th after losing by 12 as an
+8.5-point favourite; Bears 17th → 10th after winning by 22 as a 3-point dog). A frozen board cannot
+produce that. The source is stamped with the build date on the strength of that test.
+
+**Generalise it:** when a source's own freshness furniture is broken or missing, the snapshot's own
+completed games are a freshness oracle the source cannot fake. Run the test before excluding —
+and equally, a source that republishes but does NOT move with results is the win-totals case below.
+
+### ⚠️ THE NFL WIN-TOTALS BOARD IS A FROZEN PRESEASON MARKET IN SEASON (2026-09-15, RETIRED)
 
 §3 already says this about **CFB** win totals: books pull them once games begin, so a weekly job
 pointed at them "returns the same frozen July numbers every week and the market tier silently
@@ -664,15 +686,27 @@ thing**, and a full week of results is the first moment the test can be run:
 - nfelo's own played-games column read **0 for Kansas City** the morning after they won on Monday
   night, so even the page's live half was a day behind.
 
-So it is `excluded`, with that as the reader-facing reason, and the column still renders struck
-through. This is the second use of `excluded` and the first on a market source. **Reversing it is
-deleting one line** on the `wintotals` source in `lib/gridiron-data.js`.
+It was excluded on that finding and then **removed from the snapshot outright the same day (owner
+call), which is where it stays.** Do not re-add it: the same measurement will fail again every week
+of the season, and its implied strengths also TIE in several places, which `kind: 'ordered'` would
+break on array index — the fabricated order §2d bans, in the market tier instead.
 
-**Open item, unchanged:** the implied strengths TIE in several places and the source is
-`kind: 'ordered'`, which breaks a tie on array index — the fabricated order §2d bans in the models
-column, in the market tier instead. It wants `kind: 'priced'` with the strength as the value
-(`lowerIsBetter: false`) whenever it is next touched. That is a data-shape change, not an engine
-change; `rankSource` already tie-averages a priced board.
+**Nothing replaces it, and nothing needs to.** The market pillar still carries the LINES, which are
+75% of it and are the only market signal that reprices every single week, plus the sportsbook
+futures board and Kalshi. **The obvious candidate — ESPN's own NFL Super Bowl futures — is the same
+market VegasInsider already medians across five books**, so adding it would count one market twice,
+which is the §3 collinearity rule in the market tier. Division and conference-winner boards price the
+PLAYOFF PATH rather than the team, which is the §2e ruling that took MLB futures out of the score.
+
+**Also checked and rejected, 2026-09-15:** `nfeloapp.com/nfl-power-ratings/` (the model page, not the
+win-totals one) serves a well-formed table carrying **17-3 and 14-6 records and full-season
+points-per-game** — the 2025 season's final board under a 2026 URL, with no date and no season
+selector. It is the Sumer Sports failure exactly. **Massey** (`masseyratings.com/nfl/ratings`) is
+NOT js-gated in a real browser and does print its own content date ("Using games thru Mon, Sep 14,
+2026"), all 32 teams, so it is a live candidate — but its main `Rat` column in week 1 is essentially
+a results model, which §2 keeps out of the analytics pillar, so it needs a `Rat`-vs-`Pwr` column
+ruling before it can be wired. Its cells fuse rank and value ("32-5.90"), and rows arrive already
+sorted, so take the ROW ORDER rather than parsing the numbers.
 
 ### The CFB betting-market tier
 
