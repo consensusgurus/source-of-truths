@@ -183,8 +183,7 @@ Every live `tier: 'model'` source (30-day rule still applies), each team's rank 
 distribution by position, averaged across models, then rescaled to the odds pillar's spread. A
 team below a model's published depth takes the mean of the odds values below that depth. Pure
 results models (PFR SRS, Sagarin RATING in season) do not belong here, pillar R already is that
-calculation; keep the predictive ones (FPI, SP+ when the CFBD key exists, F+, DRatings, Sagarin
-PREDICTOR). The collinearity rule in section 3 stands.
+calculation; keep the predictive ones (FPI, SP+, FEI, DRatings, Sagarin PREDICTOR). The collinearity rule in section 3 stands.
 
 **One model is not a tier (`soloScale`):** a lone live model carries HALF the pillar share and the
 rest goes to the market. The old solo cap, kept for the same reason.
@@ -497,7 +496,9 @@ every week requested. It never errors; it just hands you the wrong week forever.
 | CFP committee | CFB | official | ESPN core, poll 21 | Tue, Nov–Dec | 404s until the first release; tolerate it |
 | ESPN FPI | both | model | `.../seasons/{yr}/powerindex` | Tue/Wed | **paginate at `limit=4&page=N`**; bigger limits truncate |
 | Sagarin | CFB | model | `sagarin.com/sports/cfsend.htm` | Sun/Mon | fixed-width `<pre>`; header block reprints every 10 rows |
-| BCF Toys F+ | CFB | model | `bcftoys.com/{year}-fplus` | weekly | clean table, all 138 FBS |
+| BCF Toys FEI | CFB | model | `bcftoys.com/{year}-fei` | weekly | clean table, all 138 FBS; heading carries its own week |
+| Connelly SP+ | CFB | model | ESPN story, re-discovered each season by search | weekly (Sat night) | all 138; in-body "as of" date; **49 ambiguous labels, map at ingest** |
+| BCF Toys F+ | CFB | model | `bcftoys.com/{year}-fplus` | weekly | clean table, all 138 FBS. **NOT in the snapshot since 2026-09-15** — it is FEI + SP+, see the collinearity rule below |
 | DRatings | CFB | model | `dratings.com/sports/ncaa-fbs-football-ratings/` | ~daily | |
 | Sagarin NFL | NFL | model | `sagarin.com/sports/nflsend.htm` | Tue | four sub-columns incl. STRONG RECENT |
 | DRatings NFL | NFL | model | `dratings.com/sports/nfl-football-ratings/` | ~daily | parse its "Updated N ago" string |
@@ -507,13 +508,43 @@ every week requested. It never errors; it just hands you the wrong week forever.
 | Title futures | CFB | market | ESPN core `.../seasons/{yr}/futures/2758` | ~daily | DraftKings prices, 138 teams. See the CFB market note below — do NOT substitute win totals |
 | Sportsbook futures | NFL | market | `vegasinsider.com/nfl/odds/futures/` | ~daily | median across five books → implied probability → rank. **The only source anywhere in the audit that prints its own edition date in the body** |
 | Kalshi | NFL | market | `kalshi.com/nfl/power-rankings` | ~daily | prediction-market implied; explicit ET timestamp |
-| Market win totals | NFL | market | `nfeloapp.com/nfl-power-ratings/nfl-win-totals/` | weekly | implied strength in points vs an average opponent |
+| Market win totals | NFL | market | `nfeloapp.com/nfl-power-ratings/nfl-win-totals/` | weekly | implied strength in points vs an average opponent. **EXCLUDED from 2026-09-15** — see below |
 
 ### Collinearity — do not double-count one analyst
 
-**BCF Toys F+ already contains both FEI and SP+.** Shipping F+ *and* FEI *and* CFBD SP+ gives
-Fremeau and Connelly roughly double weight while looking like three independent models. Pick **F+
-alone**, or **the FEI/SP+ pair**, never both.
+**BCF Toys F+ already contains both FEI and SP+.** Shipping F+ *and* FEI *and* SP+ gives Fremeau
+and Connelly roughly double weight while looking like three independent models. Pick **F+ alone**,
+or **the FEI/SP+ pair**, never both.
+
+**⚠️ THE LIVE SHAPE IS THE PAIR, from 2026-09-15** (owner request). `fplus` is out of
+`lib/gridiron-data.js` and `fei` + `spplus` are in, so the CFB models pillar is five columns: FPI,
+Sagarin PREDICTOR, FEI, SP+, DRatings. **Adding F+ back without removing both components is the
+double-count this rule exists to stop.** Two gather notes, because neither is the endpoint §3
+originally assumed:
+
+- **FEI is its own page**, `bcftoys.com/{year}-fei`, same clean table as the F+ one, all 138 FBS,
+  and it dates itself in its heading the same way (`2026 FEI Ratings (through Week 2)`). It is
+  stored undated, as `"2026, through week 2"`, so §5's undated path reads the season and the week
+  label carries the content-derived freshness.
+- **SP+ does NOT need the CFBD key.** `api.collegefootballdata.com/ratings/sp` still 401s without
+  one, but Connelly publishes the full 138-team table on ESPN in a story he updates in place, whose
+  body states its own date (`Below are the updated 2026 SP+ rankings as of Sept. 13, 2026`) over
+  records that advance week to week. Take THAT date, never the byline. The story id changes between
+  seasons and can change within one, so the URL is re-discovered by searching ESPN for the current
+  SP+ story rather than assumed; the table is server-rendered, so it reads without a JS wait.
+- **⚠️ ESPN's SP+ table prints abbreviations that `resolveTeam` resolves to the WRONG TEAM.** The
+  prefix walk that strips a mascot turns `Arizona St.` into Arizona, `Ohio St.` into Ohio and
+  `Kansas St.` into Kansas — the §3 Arkansas-Pine Bluff failure again, three real teams silently
+  swapped for three others, and it does not fail loudly because every name still resolves to
+  something. 49 of the 138 labels need mapping. **Map them at INGEST and store canonical names;
+  never add them to the registry as aliases**, which is the same ruling §2e made for Baseball
+  Prospectus's bare city names. The check that has to pass before the column ships is that the 138
+  rows are a **bijection onto the registry** — 138 distinct teams, none missing, none doubled. That
+  board also lists North Dakota State, so FBS membership comes from the registry, not the board.
+- Third-party SP+ mirrors (cfbupdate.com, cleatz.com and similar) were checked on 2026-09-15 and
+  **are behind**: both still served the week-1 board (Ohio State 1, Georgia 2) against ESPN's
+  week-2 one (Georgia 1, Ohio State 2), and one of them dated it only with a relative
+  "last updated 17 hours ago", the client-side clock §3 already bans. Go to Connelly's own page.
 
 The same trap applies inside ESPN's `predictives` array: `epaoffense` / `epadefense` are components
 *of* FPI, not independent signals. Do not add them as columns.
@@ -521,9 +552,10 @@ The same trap applies inside ESPN's `predictives` array: `epaoffense` / `epadefe
 **Sagarin's PREDICTOR, GOLDEN MEAN, RECENT and STRONG RECENT columns are byte-identical to the main
 RATING until games are played.** Weighting PREDICTOR as its own source in the preseason is
 double-counting one number. Gate it on the word `STARTING` disappearing from the page header.
-**That gate opened on 2026-09-08**: the CFB page now reads "through results of SEPTEMBER 7 MONDAY -
-WEEK 1", PREDICTOR has separated from RATING, and the CFB Sagarin column IS PREDICTOR from this week
-on — RATING in season is a pure results model that pillar R already computes. The FBS rows are the
+**That gate opened on 2026-09-08 for CFB and on 2026-09-15 for the NFL.** The CFB page reads
+"through results of SEPTEMBER 7 MONDAY - WEEK 1" and the NFL page "NFL 2026 Ratings through results
+of 2026 SEPTEMBER 14 MONDAY"; PREDICTOR has separated from RATING on both (NFL: Baltimore is RATING
+1 and PREDICTOR 3), so BOTH Sagarin columns ARE PREDICTOR from those weeks on — RATING in season is a pure results model that pillar R already computes. The FBS rows are the
 ones whose division tag is `(A)`; there are exactly 138 of them against 128 `(AA)`. Sagarin writes
 two names nothing else does, `Fla. International` and `LouisianaMonroe(ULM)`; both are aliases in the
 registry now.
@@ -616,6 +648,31 @@ that the page itself renders.
 - **ESPN SOR (`accomplishmentrank`)** is `0` for every team until games are played. Wire the field,
   suppress the column until it populates (~Week 3), then it becomes a genuinely independent
   résumé-based signal.
+
+### ⚠️ THE NFL WIN-TOTALS BOARD IS A FROZEN PRESEASON MARKET IN SEASON (2026-09-15)
+
+§3 already says this about **CFB** win totals: books pull them once games begin, so a weekly job
+pointed at them "returns the same frozen July numbers every week and the market tier silently
+becomes a preseason prior wearing a live-data costume." The NFL board was kept because nfelo keeps
+publishing it in season and it discriminates all 32 teams. **Measured after week 1, it does the same
+thing**, and a full week of results is the first moment the test can be run:
+
+- Its implied-strength order moved **zero places out of 32** against the 09-11 board, after sixteen
+  games. Every other market and model source moved 24 to 31 of 32.
+- Its `Vegas Total` column is still the preseason number (Rams 11.5, Chiefs 10.5), and the implied
+  strength is derived from it.
+- nfelo's own played-games column read **0 for Kansas City** the morning after they won on Monday
+  night, so even the page's live half was a day behind.
+
+So it is `excluded`, with that as the reader-facing reason, and the column still renders struck
+through. This is the second use of `excluded` and the first on a market source. **Reversing it is
+deleting one line** on the `wintotals` source in `lib/gridiron-data.js`.
+
+**Open item, unchanged:** the implied strengths TIE in several places and the source is
+`kind: 'ordered'`, which breaks a tie on array index — the fabricated order §2d bans in the models
+column, in the market tier instead. It wants `kind: 'priced'` with the strength as the value
+(`lowerIsBetter: false`) whenever it is next touched. That is a data-shape change, not an engine
+change; `rankSource` already tie-averages a priced board.
 
 ### The CFB betting-market tier
 
