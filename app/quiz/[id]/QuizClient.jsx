@@ -1127,6 +1127,22 @@ export default function QuizClient({ quizId }) {
   // answer, with no Enter and no wrong-answer feedback while still typing. Enter
   // (the check* handlers) still works and is what surfaces a miss. Returns true
   // when a guess was accepted so the caller can clear the field.
+  // quiz.holdPrefix: hold a live match while the typed text is still the
+  // start of a LONGER unfound answer it does not match ("jackson" on the way
+  // to "jacksonville"). Enter still accepts it, and finishing the longer name
+  // lands on the longer answer. Opt-in per quiz so every other quiz keeps its
+  // instant accept.
+  function heldForLonger(g, i) {
+    if (!quiz.holdPrefix) return false;
+    for (let j = 0; j < answers.length; j++) {
+      if (j === i || found[j]) continue;
+      const b = answers[j];
+      if (anyKey(g, b.keys) || anyKey(g, nameKeys[j])) continue;
+      const forms = [baseName(b.t), ...(b.keys || []).map(norm)];
+      if (forms.some((f) => f.length > g.length && f.startsWith(g))) return true;
+    }
+    return false;
+  }
   function autoName(raw) {
     const g = norm(raw);
     if (!g) return false;
@@ -1134,6 +1150,7 @@ export default function QuizClient({ quizId }) {
       if (found[i]) continue;
       const a = answers[i];
       if ((anyKey(g, a.keys) || anyKey(g, nameKeys[i])) && !anyKey(g, a.anti)) {
+        if (heldForLonger(g, i)) return false;
         const next = found.slice();
         next[i] = true;
         setFound(next);
