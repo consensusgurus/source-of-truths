@@ -755,3 +755,67 @@ html.stg-flip .stage-page * {
   .stg-tpop { animation: none; }
 }
 
+
+/* ── THE MOTION PASS (owner, 2026-09-16) ─────────────────────────────────────
+   Three pieces of motion that more than one surface uses live here, once.
+   Durations and the one easing come from the 9/4 motion layer proposal:
+   120ms for a hover, 220ms for a commit, 380ms for a slow move, and
+   cubic-bezier(.2,.7,.3,1), which is the home's own sty-in easing. Nothing
+   below adds a colour; everything paints with the tokens the surface already
+   carries. */
+
+/* 1. A ROLLING NUMBER (app/RollNum.jsx). Each digit is a column of 0 to 9 in
+   a one-line-high clip, slid to the digit it should show. The transform is set
+   inline, so a hidden tab holds the final value rather than a blank; the
+   transition is only the way it gets there. */
+.rln { display: inline-flex; align-items: baseline; white-space: pre; }
+.rln-d { display: inline-block; position: relative; height: 1em; width: 1ch; overflow: hidden;
+  line-height: 1; vertical-align: -.07em; }
+.rln-c { display: block; transition: transform .42s cubic-bezier(.2,.7,.3,1); will-change: transform; }
+.rln-i { display: block; height: 1em; line-height: 1; font: inherit; color: inherit; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .rln-c { transition: none; } }
+
+/* 2. THE GATE DRAWS ITS GAME. StageChrome publishes the game's glyph (the
+   stroke path from lib/game-glyphs.js) on <html> as --stg-glyph, a mask, and
+   the start gate paints it large and faint in the category accent at its top
+   right, wiping in from the left over 640ms as the page lands. A mask rather
+   than an image so the colour is the token and follows the register. On a
+   phone it goes: the gate is a narrow column of prose there and the glyph
+   would sit under the sentence. Gated on the same visibility attribute the
+   home uses, so a background tab never holds the gate at its FROM state. */
+.stage-page .stg-gate { position: relative; }
+@media (min-width: 641px) {
+  html[style*="--stg-glyph"] .stage-page .stg-gate { padding-right: 132px !important; }
+  html[style*="--stg-glyph"] .stage-page .stg-gate::after {
+    content: ""; position: absolute; top: 18px; right: 22px; width: 92px; height: 92px;
+    pointer-events: none; background: var(--stg-acc, #7dd3fc); opacity: .34;
+    -webkit-mask: var(--stg-glyph) center / contain no-repeat;
+    mask: var(--stg-glyph) center / contain no-repeat;
+  }
+  html[data-sty-anim][style*="--stg-glyph"] .stage-page .stg-gate::after {
+    animation: stg-glyph-in .64s cubic-bezier(.4,0,.2,1) .12s backwards;
+  }
+}
+@keyframes stg-glyph-in {
+  from { clip-path: inset(0 100% 0 0); opacity: 0; }
+  to { clip-path: inset(0 0 0 0); opacity: .34; }
+}
+@media (prefers-reduced-motion: reduce) { .stage-page .stg-gate::after { animation: none !important; } }
+
+/* 3. THE REGISTER WIPES FROM THE SWITCH. lib/stage-theme.js wraps a toggle in
+   document.startViewTransition where the browser has it, stamps the pointer's
+   position on <html> as --stg-wipe-x/y, and the new register grows out of that
+   point as a circle over 480ms while the old one holds still underneath. Only
+   while html.stg-wipe is present, so no other view transition on the site
+   inherits a circle. A browser without the API simply switches, as before. */
+html.stg-wipe::view-transition-old(root) { animation: none; mix-blend-mode: normal; }
+html.stg-wipe::view-transition-new(root) {
+  animation: stg-wipe .48s cubic-bezier(.4,0,.2,1) both; mix-blend-mode: normal;
+}
+@keyframes stg-wipe {
+  from { clip-path: circle(0 at var(--stg-wipe-x, 100%) var(--stg-wipe-y, 0)); }
+  to { clip-path: circle(150% at var(--stg-wipe-x, 100%) var(--stg-wipe-y, 0)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.stg-wipe::view-transition-new(root) { animation: none; }
+}

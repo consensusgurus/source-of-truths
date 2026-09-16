@@ -10,6 +10,7 @@
 //
 // Soft launch: standalone page, not linked from the hub or homepage.
 
+import RollNum from '../RollNum';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { HelpCircle, Share2, RotateCcw, X, Trophy, Eye, Smartphone } from 'lucide-react';
 import Grain from '../Grain';
@@ -182,7 +183,7 @@ function nextOpen(solved, from, n) {
 export default function GarbleClient({ puzzles = [], forceNum = null }) {
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
   const STORE_KEY = `sot_garble_${PUZZLE.num}`;
-  const bank = useMemo(() => PUZZLE.words.flatMap((w, wi) => w.marks.map((mi) => ({ ch: w.answer[mi], wi }))), [PUZZLE]);
+  const bank = useMemo(() => PUZZLE.words.flatMap((w, wi) => w.marks.map((mi) => ({ ch: w.answer[mi], wi, mi }))), [PUZZLE]);
   const [g, setG] = useState(() => freshState(PUZZLE));
   const [sel, setSel] = useState(0); // 0..4 word rows, 'final'
   const [typed, setTyped] = useState('');
@@ -215,6 +216,14 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
   const a2hsClick = () => { const e = installEvt; if (e) { setInstallEvt(null); e.prompt(); } else { setShowA2hsHelp(true); } };
 
   const [justWon, setJustWon] = useState(false);
+  // THE SOLVE MOMENT AND THE MISS (motion pass, 2026-09-16). `solved` is the
+  // row that just untangled, stamped so the flip only plays for a beat;
+  // `miss` counts misses so the rejected row can re-key its shake; `flying`
+  // holds the finale slots whose letter is mid-flight from the row to the
+  // finale, and those slots hide their letter until it lands.
+  const [fx, setFx] = useState({ solved: null, at: 0, miss: 0, missRow: null, missAt: 0 });
+  const [flying, setFlying] = useState(() => new Set());
+  const [landed, setLanded] = useState(0);
   const [endClosed, setEndClosed] = useState(false);
   // The finished board starts turned OVER, showing what to do next.
   const [revealed, setRevealed] = useState(false);
@@ -399,6 +408,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
       } else {
         g2.misses = g.misses + 1;
         say('Not the finale — that’s a miss');
+        setFx((f) => ({ ...f, miss: f.miss + 1, missRow: 'final', missAt: Date.now() }));
         setG(g2);
       }
       return;
@@ -418,9 +428,13 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
       setTyped('');
       setSel(nextOpen(g2.solved, sel, PUZZLE.words.length));
       say(`${w.answer} — untangled`);
+      setFx((f) => ({ ...f, solved: sel, at: Date.now() }));
+      // The finale slots this row feeds wait for their letter to arrive.
+      setFlying((cur) => { const n = new Set(cur); for (const mi of w.marks) n.add(sel + '-' + mi); return n; });
     } else {
       g2.misses = g.misses + 1;
       say('A real tangle — that’s a miss');
+      setFx((f) => ({ ...f, miss: f.miss + 1, missRow: sel, missAt: Date.now() }));
     }
     setG(g2);
   }
@@ -457,7 +471,68 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
   function resetGame() {
     try { localStorage.removeItem(STORE_KEY); } catch (e) {}
     setG(freshState(PUZZLE)); setSel(0); setTyped(''); setJustWon(false); setEndClosed(false);
+    setFx({ solved: null, at: 0, miss: 0, missRow: null, missAt: 0 }); setFlying(new Set());
   }
+
+  // THE LETTER FLIES TO THE FINALE (motion pass, 2026-09-16). Once a row has
+  // flipped to its answer, each marked letter lifts out of its cell and
+  // travels to the finale slot it feeds, a fixed-position clone animated with
+  // the Web Animations API from one measured box to the other; the slot keeps
+  // its letter hidden until the clone lands, then pops it in. The clone is
+  // outside React and removed when it is done. A hidden or throttled tab, a
+  // browser without animate(), or reduced motion all skip straight to the
+  // landed state, so the finale never waits on a flight that cannot play.
+  useEffect(() => {
+    if (fx.solved === null || !fx.at) return undefined;
+    const wi = fx.solved;
+    const w = PUZZLE.words[wi];
+    if (!w) return undefined;
+    const keys = w.marks.map((mi) => wi + '-' + mi);
+    const land = () => {
+      setFlying((cur) => { const n = new Set(cur); for (const k of keys) n.delete(k); return n; });
+      setLanded(Date.now());
+    };
+    let still = false;
+    try { still = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+    const canFly = !still && typeof Element !== 'undefined' && Element.prototype.animate
+      && document.visibilityState === 'visible';
+    if (!canFly) { land(); return undefined; }
+    const clones = [];
+    // The flip runs first (80ms a cell); the flight leaves once the row has
+    // turned, and the last clone to arrive lands the whole set.
+    const t = setTimeout(() => {
+      let pending = 0;
+      for (const mi of w.marks) {
+        const from = document.querySelector('[data-gcell="' + wi + '-' + mi + '"]');
+        const to = document.querySelector('[data-gbank="' + wi + '-' + mi + '"]');
+        if (!from || !to) continue;
+        const a = from.getBoundingClientRect(), b = to.getBoundingClientRect();
+        const c = document.createElement('span');
+        c.className = 'gb-fly';
+        c.textContent = w.answer[mi];
+        c.style.left = a.left + 'px'; c.style.top = a.top + 'px';
+        c.style.width = a.width + 'px'; c.style.height = a.height + 'px';
+        document.body.appendChild(c);
+        clones.push(c);
+        pending += 1;
+        const sc = b.width / a.width;
+        try {
+          const anim = c.animate(
+            [{ transform: 'translate(0,0) scale(1)', opacity: 1 },
+              { transform: 'translate(' + (b.left - a.left) + 'px,' + (b.top - a.top) + 'px) scale(' + sc + ')', opacity: 1 }],
+            { duration: 520, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' },
+          );
+          const done = () => { c.remove(); pending -= 1; if (pending === 0) land(); };
+          anim.finished.then(done, done);
+        } catch (e) { c.remove(); pending -= 1; }
+      }
+      if (pending === 0) land();
+    }, 420);
+    // Whatever the animation clock does, the letters are in place in a second.
+    const backstop = setTimeout(land, 1400);
+    return () => { clearTimeout(t); clearTimeout(backstop); for (const c of clones) c.remove(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fx.solved, fx.at]);
 
   function shareText() {
     const row = PUZZLE.words.map((_, i) => (g.solved[i] ? '\u{1F7E6}' : '⬛')).join('');
@@ -501,15 +576,20 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
   function wordRow(w, i) {
     const isSel = playing && sel === i && !g.solved[i];
     const solvedRow = !!g.solved[i];
+    // The row that just untangled flips its cells left to right; the row that
+    // just missed shakes, re-keyed on the miss count so a second miss on the
+    // same row shakes again.
+    const flipping = fx.solved === i && Date.now() - fx.at < 1500;
+    const rejected = fx.missRow === i && Date.now() - fx.missAt < 900;
     return (
-      <div key={i} onClick={() => { if (playing && !g.solved[i]) { setSel(i); setTyped(''); } }} style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12, cursor: playing && !g.solved[i] ? 'pointer' : 'default', flexWrap: 'wrap' }}>
+      <div key={i} className="gb-row" onClick={() => { if (playing && !g.solved[i]) { setSel(i); setTyped(''); } }} style={{ '--i': i, display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12, cursor: playing && !g.solved[i] ? 'pointer' : 'default', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', gap: 4 }}>
           {w.scramble.split('').map((ch, j) => (
             <span key={j} style={{ ...cellBase, width: 32, height: 32, fontSize: 16, background: STAGE ? 'var(--stg-surf2)' : COLORS.paper, color: FADED }}>{ch}</span>
           ))}
         </div>
         <span style={{ color: 'var(--stg-mute2, #c3c8cf)', fontWeight: 800 }}>&rarr;</span>
-        <div style={{ display: 'flex', gap: 4 }}>
+        <div key={rejected ? 'm' + fx.miss : 'a'} className={rejected ? 'gb-rej' : undefined} style={{ display: 'flex', gap: 4 }}>
           {w.answer.split('').map((ch, j) => {
             const marked = w.marks.includes(j);
             let bg = T.white, fg = COLORS.ink, border = '1.5px solid rgba(20,22,28,0.18)';
@@ -529,7 +609,10 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
             } else if (marked) {
               border = `2px solid ${COLORS.gold}`;
             }
-            return <span key={j} style={{ ...cellBase, width: 44, height: 44, fontSize: 21, background: bg, color: fg, border }}>{letter}</span>;
+            return (
+              <span key={j} data-gcell={i + '-' + j} className={flipping ? 'gb-flipc' : undefined}
+                style={{ ...cellBase, '--j': j, width: 44, height: 44, fontSize: 21, background: bg, color: fg, border }}>{letter}</span>
+            );
           })}
         </div>
       </div>
@@ -611,6 +694,18 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
             .gb-key{border:none;font-family:${SANS};font-weight:800;cursor:pointer;border-radius:6px;padding:0;touch-action:manipulation;}
             .gb-key:active{transform:scale(0.94);}
             @keyframes gbfall{0%{transform:translateY(-4vh) rotate(0deg);}100%{transform:translateY(108vh) rotate(680deg);}}
+            @keyframes gbdeal{from{opacity:0;transform:translateY(8px);}}
+            [data-sty-anim] .gb-row{animation:gbdeal .38s cubic-bezier(.2,.7,.3,1) backwards;animation-delay:calc(var(--i,0) * 60ms);}
+            @keyframes gbflip{0%{transform:rotateX(0);}50%{transform:rotateX(90deg);}100%{transform:rotateX(0);}}
+            .gb-flipc{animation:gbflip .32s cubic-bezier(.2,.7,.3,1) both;animation-delay:calc(var(--j,0) * 80ms);backface-visibility:hidden;}
+            @keyframes gbrej{0%,100%{transform:none;}20%{transform:translateX(-6px);}50%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
+            .gb-rej{animation:gbrej .38s cubic-bezier(.2,.7,.3,1);}
+            .gb-fly{position:fixed;z-index:90;pointer-events:none;display:flex;align-items:center;justify-content:center;
+              font-family:${SANS};font-weight:800;font-size:21px;border-radius:6px;transform-origin:0 0;
+              background:var(--stg-acc, ${COLORS.gold});color:var(--stg-onramp, ${COLORS.goldInk});}
+            @keyframes gbland{0%{transform:scale(.6);}60%{transform:scale(1.18);}100%{transform:scale(1);}}
+            .gb-land{animation:gbland .3s cubic-bezier(.2,.7,.3,1);}
+            @media (prefers-reduced-motion:reduce){.gb-row,.gb-flipc,.gb-rej,.gb-land{animation:none !important;}}
             .gb-conf{position:fixed;top:-3vh;z-index:86;pointer-events:none;border-radius:2px;animation:gbfall linear forwards;}
             @media(max-width:560px){.gb-wrap{padding-left:14px !important;padding-right:14px !important;}}
             .gb-htp-s{display:none;}
@@ -671,9 +766,9 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
           {!preStart && (<>
           <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap', marginBottom: 16 }}>
             <div style={{ fontSize: 12.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.05em', color: FADED }}>
-              Misses <span style={{ fontSize: 17, color: g.misses > 5 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, marginLeft: 4 }}>{g.misses}</span>
+              Misses <span style={{ fontSize: 17, color: g.misses > 5 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, marginLeft: 4 }}><RollNum value={g.misses} /></span>
             </div>
-            <div style={{ fontSize: 12.5, fontWeight: 700, color: FADED }}>{solvedCount}/5 untangled {g.finalSolved ? '· finale solved' : ''}</div>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: FADED }}><RollNum value={solvedCount} />/5 untangled {g.finalSolved ? '· finale solved' : ''}</div>
           </div>
 
           <div style={{ marginBottom: 6 }}>{PUZZLE.words.map((w, i) => wordRow(w, i))}</div>
@@ -683,9 +778,16 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
             <div style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.06em', color: `var(--stg-ink, ${COLORS.goldInk})`, marginBottom: 4 }}>The finale</div>
             <div style={{ fontSize: 15.5, fontWeight: 700, fontStyle: 'italic', color: INK, marginBottom: 10 }}>&ldquo;{PUZZLE.clue}&rdquo;</div>
             <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 10 }}>
-              {bank.map((b, i) => (
-                <span key={i} style={{ ...cellBase, width: 26, height: 26, fontSize: 13, background: g.solved[b.wi] || ended ? COLORS.gold : `var(--stg-surf, ${COLORS.paper})`, color: g.solved[b.wi] || ended ? COLORS.goldInk : COLORS.faded }}>{g.solved[b.wi] || ended ? b.ch : '?'}</span>
-              ))}
+              {bank.map((b, i) => {
+                const fk = b.wi + '-' + b.mi;
+                const inFlight = flying.has(fk);
+                const lit = (g.solved[b.wi] || ended) && !inFlight;
+                const fresh = lit && fx.solved === b.wi && landed && Date.now() - landed < 900;
+                return (
+                  <span key={i} data-gbank={fk} className={fresh ? 'gb-land' : undefined}
+                    style={{ ...cellBase, width: 26, height: 26, fontSize: 13, background: lit ? COLORS.gold : `var(--stg-surf, ${COLORS.paper})`, color: lit ? COLORS.goldInk : COLORS.faded }}>{lit ? b.ch : '?'}</span>
+                );
+              })}
               <span style={{ fontSize: 11, fontWeight: 700, color: FADED, alignSelf: 'center', marginLeft: 6 }}>your collected letters</span>
             </div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>

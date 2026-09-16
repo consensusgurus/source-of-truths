@@ -45,6 +45,18 @@ import { dailyMeIdentity } from './dailyMeClient';
 import { gameColor, gameCategory, RAMP_INK, STAGE_GROUND } from '@/lib/category-ramp';
 import { gameStatsShort } from '@/lib/daily-row-stats';
 import { categoryHrefForGame } from '@/lib/puzzle-categories';
+import { glyphFor, GLYPH_BOX } from '@/lib/game-glyphs';
+import RollNum from './RollNum';
+
+// A FIGURE THAT IS A PLAIN COUNT ROLLS; anything else swaps (motion pass,
+// 2026-09-16). "3", "+62", "#37" and "3/5" roll digit by digit through
+// RollNum; a clock ("1:24") changes every second and rolling it would read as
+// a slot machine, and a verdict ("Solved") is a word. The test is the string.
+const ROLLS = /^[+#-]?\d{1,5}(\/\d{1,5})?$/;
+function figure(v) {
+  const s = v === null || v === undefined ? '' : String(v);
+  return ROLLS.test(s) ? <RollNum value={s} /> : v;
+}
 
 // THE DATE COMES DOWN TO SIZE ON A PHONE (owner, 2026-08-31). "August 31, 2026"
 // is 130px of a 390px line, and the year is the least of what it says: the
@@ -204,6 +216,34 @@ export default function StageChrome({
   const category = gameCategory(gameKey) || cat || '';
   const board = useStripBoard(quizId, boardOn);
   const dateShort = shortDate(dateLabel);
+
+  // TWO THINGS PUBLISHED ON <html> FOR THE PAGE BELOW (motion pass, 2026-09-16):
+  //   - data-sty-anim, the same visibility gate the home arms, so a stage
+  //     page's entrance animations (the gate glyph, a client's deal-in) run
+  //     only when the document was visible at mount and a background tab never
+  //     holds one at its FROM state. Not re-armed on visibilitychange, for the
+  //     reason the home gives.
+  //   - --stg-glyph, this game's stroke glyph as an SVG mask, which
+  //     app/globals.css paints large and faint on the start gate in the
+  //     category accent. Published from here rather than by each of the eighty
+  //     clients because this component already knows the game key. Removed on
+  //     unmount so the next page starts clean.
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const root = document.documentElement;
+    const armed = document.visibilityState === 'visible';
+    if (armed) root.setAttribute('data-sty-anim', '1');
+    const d = gameKey ? glyphFor(gameKey) : null;
+    if (d) {
+      const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + GLYPH_BOX + '">'
+        + '<path d="' + d + '" fill="none" stroke="#000" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      try { root.style.setProperty('--stg-glyph', 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '")'); } catch (e) {}
+    }
+    return () => {
+      if (armed) root.removeAttribute('data-sty-anim');
+      try { root.style.removeProperty('--stg-glyph'); } catch (e) {}
+    };
+  }, [gameKey]);
   const homeTo = tq ? homeHref + (homeHref.includes('?') ? tq : '?' + tq.slice(1)) : homeHref;
 
   // A leader is the one thing the strip cannot be drawn without. No leader, no
@@ -346,7 +386,7 @@ export default function StageChrome({
       {figures.length ? (
         <div className="stg-fg">
           {figures.map((f, i) => (
-            <div key={f.k || i}><b>{f.v}</b><i>{f.k}</i></div>
+            <div key={f.k || i}><b>{figure(f.v)}</b><i>{f.k}</i></div>
           ))}
         </div>
       ) : null}

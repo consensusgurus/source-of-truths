@@ -91,7 +91,14 @@ export default function StageLadder({
               // style beats a rule — the CSS version of this looked right and
               // changed nothing on the page.
               if (off && vertical) style.width = '30%';
-              return <span className={off ? 'stl-r off' : 'stl-r'} key={i} style={style} />;
+              // A RUNG THAT JUST LIT STAMPS IN (motion pass, 2026-09-16): the
+              // caller marks the rungs that are new since the reader last
+              // looked (`b.pop`), and those rise into place a beat after the
+              // ladder itself has faded in. Gated on the same visibility
+              // attribute the home's reveals use, so a hidden tab never holds
+              // a rung at its FROM state.
+              const pop = lit && b.pop && b.pop[i];
+              return <span className={(off ? 'stl-r off' : 'stl-r') + (pop ? ' pop' : '')} key={i} style={style} />;
             })}
           </div>
         ))}
@@ -115,6 +122,10 @@ const CSS = `
    empties already read as a baseline rather than a panel. */
 .stl.v .stl-r.off{width:30%;}
 .stl-wrap.v .stl{flex:1 1 auto;}
+@keyframes stl-pop{from{transform:scaleY(.25);opacity:.3;}to{transform:none;opacity:1;}}
+[data-sty-anim] .stl-r.pop{animation:stl-pop .42s cubic-bezier(.2,.7,.3,1) .32s both;transform-origin:50% 100%;}
+[data-sty-anim] .stl.v .stl-r.pop{transform-origin:0 50%;}
+@media (prefers-reduced-motion:reduce){[data-sty-anim] .stl-r.pop{animation:none;}}
 @media(max-width:640px){
   .stl-b{gap:0;}
   .stl-wrap.v{height:auto;}

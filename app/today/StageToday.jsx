@@ -59,6 +59,8 @@ import SundayLedger from '../SundayLedger';
 import PremierePop from '../PremierePop';
 import MindLoftMark from '../MindLoftMark';
 import StagePatch, { PATCH_CSS } from '../StagePatch';
+import RollNum from '../RollNum';
+import useFlip from '../useFlip';
 // THE FOOTER IS SHARED (2026-08-31). It used to be drawn here, because this
 // was the only stage surface that needed one; the circuit pages needed the
 // same object, and two drawings of one footer is exactly the drift this file
@@ -347,7 +349,20 @@ const circPinId = (k) => (isCircPin(k) ? k.slice(2) : null);
 // line carries the answer instead. No extra row, no extra height, and the one
 // question a home board could not answer — "how did I do at that one" — is now
 // on the card itself rather than only in the table below.
-function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue, res }) {
+// THE STAR POPS WHEN IT IS PRESSED, not when it mounts: a class set straight
+// on the button for the length of the animation, so a card that mounts already
+// starred stays still and only a press plays it. Keyed off the press rather
+// than the .on state for exactly that reason.
+function starPop(el) {
+  try {
+    el.classList.remove('pop');
+    void el.offsetWidth;
+    el.classList.add('pop');
+    setTimeout(() => el.classList.remove('pop'), 500);
+  } catch (e) {}
+}
+
+function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue, res, i = 0, fk = null }) {
   const state = done.has(g.key) ? 'done' : inprog.has(g.key) ? 'open' : '';
   const on = !!(favorites && favorites.includes(g.key));
   // MY GAMES MIXES CATEGORIES, so each card carries its OWN hue rather than
@@ -355,7 +370,8 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
   // is that category anyway, so passing nothing keeps the row's colour.
   return (
     <a className={`sty-g ${state}${res ? ' res' : ''}`} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`}
-      style={hue ? { '--cc': hue } : undefined}>
+      data-fk={fk || g.key}
+      style={{ '--i': i, ...(hue ? { '--cc': hue } : null) }}>
       <span className="sty-gn"><Glyph k={g.key} size={17} />{g.name}</span>
       {res ? (
         <span className="sty-gres sty-rev">
@@ -372,7 +388,7 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
           className={'sty-star' + (on ? ' on' : '')}
           aria-label={on ? `Unstar ${g.name}` : `Star ${g.name}`}
           title={on ? 'Remove from My games' : 'Add to My games'}
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(g.key); }}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); starPop(e.currentTarget); toggleFavorite(g.key); }}
         >
           <svg viewBox="0 0 24 24" width="13" height="13" fill={on ? 'currentColor' : 'none'}
             stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
@@ -397,7 +413,7 @@ function CircStar({ c, canPin, favorites, toggleFavorite }) {
       className={'sty-star' + (on ? ' on' : '')}
       aria-label={on ? `Unstar ${c.name}` : `Star ${c.name}`}
       title={on ? 'Remove from My games' : 'Add to My games'}
-      onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(key); }}
+      onClick={(e) => { e.preventDefault(); e.stopPropagation(); starPop(e.currentTarget); toggleFavorite(key); }}
     >
       <svg viewBox="0 0 24 24" width="13" height="13" fill={on ? 'currentColor' : 'none'}
         stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
@@ -448,6 +464,11 @@ export default function StageToday() {
   // filter below has to tell those apart, or a guest would be told they
   // finished nothing for as long as that request is in flight.
   const [statusIn, setStatusIn] = useState(false);
+  // The finished games that are NEW since the reader last looked, and how many
+  // they had seen finished then: the ladder stamps the former, the count rolls
+  // up from the latter. Both empty until the status lands.
+  const [newDone, setNewDone] = useState(() => new Set());
+  const [seenCount, setSeenCount] = useState(null);
   const [day, setDay] = useState('');
   // Seventeen circuit cards is a wall on a page whose job is today's puzzles,
   // so the shelf opens on its lead three and the rest are one tap away (owner,
@@ -718,6 +739,24 @@ export default function StageToday() {
       setDone(d);
       setInprog(p);
       setStatusIn(true);
+      // WHAT IS NEW SINCE THE READER LAST LOOKED (motion pass, 2026-09-16). The
+      // ladder stamps the rungs that lit since the last visit and the count
+      // rolls up from what it read then, so coming back from a game shows the
+      // one thing that changed rather than the whole ladder fading in as a
+      // block. The stamp is a day-keyed list of finished keys in localStorage;
+      // a new day starts from nothing, so the first visit of a day stamps every
+      // rung the reader has already earned, which is the honest reading of
+      // "since you last looked".
+      try {
+        const k = 'sot_home_seen_done';
+        const today = etToday();
+        const raw = JSON.parse(localStorage.getItem(k) || 'null');
+        const seen = raw && raw.day === today && Array.isArray(raw.keys) ? new Set(raw.keys) : new Set();
+        const fresh = new Set([...d].filter((key) => !seen.has(key)));
+        setNewDone(fresh);
+        setSeenCount(raw && raw.day === today ? seen.size : 0);
+        localStorage.setItem(k, JSON.stringify({ day: today, keys: [...d] }));
+      } catch (e) {}
       if (data.archive) setArchive(data.archive);
     }).catch(() => {});
     return () => { alive = false; };
@@ -1256,6 +1295,12 @@ export default function StageToday() {
   );
 
   const playedCount = done.size;
+  // THE SLATE SLIDES WHEN IT REORDERS (motion pass, 2026-09-16): a category
+  // moved by the reorder arrows, and a card that drops to the end of its row
+  // once it is played, travel to their new place instead of teleporting. The
+  // hook measures every [data-fk] under the wrap after each commit.
+  const wrapRef = useRef(null);
+  useFlip(wrapRef);
   // light=1 returns the flat `rank`; full mode nests it under ranks.xp. Both are
   // the IQ board's position, so read either.
   const rank = mine ? ((mine.ranks && mine.ranks.xp) || mine.rank || null) : null;
@@ -1271,7 +1316,8 @@ export default function StageToday() {
     c: hueFor(cat),
     on: games.map((g) => done.has(g.key)),
     half: games.map((g) => inprog.has(g.key)),
-  })), [cats, done, inprog, light]);   // eslint-disable-line react-hooks/exhaustive-deps
+    pop: games.map((g) => newDone.has(g.key)),
+  })), [cats, done, inprog, newDone, light]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   // UP NEXT is the first game of the day nobody has started, in registry order,
   // preferring one already in progress: finishing beats starting.
@@ -1352,14 +1398,14 @@ export default function StageToday() {
               with its cover, which is honest: there was nothing to reveal. */}
           {capWait || stats.todayXp ? (
             <div className={'sty-fc' + (capWait ? ' wait' : '')}>
-              {capWait ? null : <b key="v" className="sty-up">+{stats.todayXp.toLocaleString()}</b>}
+              {capWait ? null : <b key="v" className="sty-up sty-pulse">+<RollNum value={stats.todayXp} from={0} delay={220} /></b>}
               {capWait ? null : <i key="l">IQ today</i>}
               {who ? <StagePatch key="p" on={capWait} light={light} /> : null}
             </div>
           ) : null}
           {capWait || stats.dayRank ? (
             <div className={'sty-fc' + (capWait ? ' wait' : '')}>
-              {capWait ? null : <b key="v">#{stats.dayRank}{stats.dayField ? <i>/{stats.dayField}</i> : null}</b>}
+              {capWait ? null : <b key="v">#<RollNum value={stats.dayRank} />{stats.dayField ? <i>/{stats.dayField}</i> : null}</b>}
               {capWait ? null : <i key="l">rank today</i>}
               {who ? <StagePatch key="p" on={capWait} light={light} /> : null}
             </div>
@@ -1368,7 +1414,7 @@ export default function StageToday() {
             <div className={'sty-fc' + (capWait ? ' wait' : '')}>
               {capWait ? null : (
                 <b key="v">
-                  #{rank.toLocaleString()}
+                  #<RollNum value={rank} />
                   {stats.rankChange ? (
                     <i className={stats.rankChange > 0 ? 'sty-up' : 'sty-dn'}>
                       {' '}{stats.rankChange > 0 ? '\u25b2' : '\u25bc'}{Math.abs(stats.rankChange)}
@@ -1455,7 +1501,7 @@ export default function StageToday() {
       </div>
       <div className="sty-prog"><span style={{ width: `${total ? (playedCount / total) * 100 : 0}%` }} /></div>
 
-      <div className="sty-wrap">
+      <div className="sty-wrap" ref={wrapRef}>
         {/* 2. THE DAY'S PROGRESS. The page's one graphic, and it appears only
             once there is progress to report (owner, 2026-09-01): a first-time
             reader has nothing started, so an all-dark ladder would be a bar
@@ -1471,7 +1517,7 @@ export default function StageToday() {
 
         {(done.size > 0 || inprog.size > 0) ? (
         <section className="sty-day sty-rev">
-          <div className="sty-eb">The day&rsquo;s progress <span className="sty-ebn">{playedCount} of {total}</span></div>
+          <div className="sty-eb">The day&rsquo;s progress <span className="sty-ebn"><RollNum value={playedCount} from={seenCount === null ? null : Math.min(seenCount, playedCount)} delay={360} /> of {total}</span></div>
           <StageLadder height={ladH} blocks={blocks} light={light} />
         </section>
         ) : null}
@@ -1569,18 +1615,18 @@ export default function StageToday() {
             ) : null}
             {pinned.length ? (
               <div className={'sty-games' + (isOpen(MINE_ID) ? '' : ' shut')}>
-                {playedLast(pinned, done).map((g) => (
+                {playedLast(pinned, done).map((g, i) => (
                   <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
                     canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-                    hue={hueFor(g.cat)} res={standBy[g.key]} />
+                    hue={hueFor(g.cat)} res={standBy[g.key]} i={i} fk={'mine:' + g.key} />
                 ))}
               </div>
             ) : null}
             {pinnedCircs.length ? (
               <div className={'sty-circs sty-minec' + (isOpen(MINE_ID) ? '' : ' shut')}>
-                {pinnedCircs.map((c) => (
+                {pinnedCircs.map((c, i) => (
                   <a key={c.id} className={'sty-circ' + (c.n === c.games.length ? ' full' : '')}
-                    href={withTq(circuitEntryHref(c.id))} style={{ '--cc': c.hue }}>
+                    href={withTq(circuitEntryHref(c.id))} style={{ '--cc': c.hue, '--i': i }}>
                     <div className="sty-chead">
                       <div className="sty-cn">{c.name}</div>
                       <div className="sty-cnum">{c.n}<i>/{c.games.length}</i></div>
@@ -1622,9 +1668,9 @@ export default function StageToday() {
               {cav(CIRC_ID)}
             </div>
             <div className={'sty-circs' + (isOpen(CIRC_ID) ? '' : ' shut')} ref={circRef}>
-              {(allCircs ? circuits : circLead).map((c) => (
+              {(allCircs ? circuits : circLead).map((c, i) => (
                 <a key={c.id} className={'sty-circ' + (c.n === c.games.length ? ' full' : '')}
-                  href={withTq(circuitEntryHref(c.id))} style={{ '--cc': c.hue }}>
+                  href={withTq(circuitEntryHref(c.id))} style={{ '--cc': c.hue, '--i': i }}>
                   {/* The count sits IN the header row, not absolutely over the
                       card: floating it top-right meant a long name ran
                       underneath it, which "Trivia Gauntlet" did on every
@@ -1663,14 +1709,14 @@ export default function StageToday() {
               <b>{alpha.filter((g) => done.has(g.key)).length}<i>/{alpha.length}</i></b>
             </div>
             <div className="sty-games">
-              {playedLast(alpha, done).map((g) => (
+              {playedLast(alpha, done).map((g, i) => (
                 // A TO Z MIXES CATEGORIES exactly as My games does, so each card
                 // carries its own hue: the list loses the rows that grouped the
                 // games, and the colour is the only thing left saying what a
                 // game IS (owner, 2026-08-31).
                 <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
                   canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-                  hue={hueFor(g.cat)} res={standBy[g.key]} />
+                  hue={hueFor(g.cat)} res={standBy[g.key]} i={i} fk={'az:' + g.key} />
               ))}
             </div>
           </section>
@@ -1678,7 +1724,7 @@ export default function StageToday() {
           const n = games.filter((g) => done.has(g.key)).length;
           const secId = `cat-${cat.replace(/\s+/g, '-')}`;
           return (
-            <section key={cat} id={secId} className="sty-cat" style={{ '--cc': hueFor(cat) }}>
+            <section key={cat} id={secId} className="sty-cat" data-fk={'sec:' + cat} style={{ '--cc': hueFor(cat) }}>
               <div className="sty-cathead" onClick={headClick(secId)}>
                 <h2>{cat}</h2>
                 <b>{n}<i>/{games.length}</i></b>
@@ -1691,10 +1737,10 @@ export default function StageToday() {
                 ) : null}
               </div>
               <div className={'sty-games' + (isOpen(secId) ? '' : ' shut')}>
-                {playedLast(games, done).map((g) => (
+                {playedLast(games, done).map((g, i) => (
                   <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
                     canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-                    res={standBy[g.key]} />
+                    res={standBy[g.key]} i={i} />
                 ))}
               </div>
             </section>
@@ -2102,6 +2148,17 @@ ${PATCH_CSS}
 .sty-star{position:absolute;top:6px;right:6px;display:flex;align-items:center;justify-content:center;
   width:24px;height:24px;border:0;border-radius:6px;background:none;cursor:pointer;
   color:var(--stg-mute2);opacity:0;transition:opacity .12s;}
+/* PINNING POPS (motion pass, 2026-09-16): the star scales up and back and a
+   ring in the row hue leaves it. The .pop class is set by the press itself
+   (starPop above) for half a second, so a card that mounts already starred
+   stays still; the hold in a hidden tab is harmless because the resting state
+   is the star. */
+@keyframes sty-starpop{0%{transform:scale(1);}45%{transform:scale(1.4);}100%{transform:scale(1);}}
+@keyframes sty-starring{from{box-shadow:0 0 0 0 var(--cc);opacity:.8;}to{box-shadow:0 0 0 11px transparent;opacity:0;}}
+.sty-star.pop svg{animation:sty-starpop .26s cubic-bezier(.2,.7,.3,1);}
+.sty-star.pop::after{content:"";position:absolute;inset:2px;border-radius:8px;pointer-events:none;
+  animation:sty-starring .42s ease-out both;}
+@media (prefers-reduced-motion:reduce){.sty-star.pop svg,.sty-star.pop::after{animation:none;}}
 .sty-g:hover .sty-star,.sty-star:focus-visible,.sty-star.on{opacity:1;}
 .sty-star.on{color:var(--cc);}
 .sty-star:hover{background:var(--stg-chip);color:var(--cc);}
@@ -2356,8 +2413,17 @@ ${PATCH_CSS}
 .sty-g,.sty-circ{min-width:0;}
 .sty-g>*{min-width:0;max-width:100%;}
 .sty-g{display:block;text-decoration:none;background:var(--stg-surf);
-  border:1px solid var(--stg-line);border-radius:9px;padding:10px 12px;color:var(--stg-ink);}
-.sty-g:hover{border-color:var(--cc);}
+  border:1px solid var(--stg-line);border-radius:9px;padding:10px 12px;color:var(--stg-ink);
+  transition:border-color .12s,transform .12s cubic-bezier(.2,.7,.3,1),box-shadow .12s;}
+/* A CARD DEEPENS INTO ITS CATEGORY on hover (motion pass, 2026-09-16): the
+   border and the name take the row hue and the card lifts a pixel. The glyph
+   already wears the hue at rest, so this is the same colour arriving on two
+   more things rather than a new one. */
+.sty-g:hover{border-color:var(--cc);transform:translateY(-1px);
+  box-shadow:0 3px 10px rgba(var(--stg-lift,11,15,26),.08);}
+.sty-g:hover .sty-gn{color:var(--cc);}
+.sty-gn{transition:color .12s;}
+.sty-g.done:hover{transform:none;box-shadow:none;}
 .sty-gn{display:flex;align-items:center;gap:7px;font-size:14.5px;font-weight:800;
   letter-spacing:-0.01em;}
 /* The glyph wears the row's hue while the name stays ink, so the colour marks
@@ -2634,11 +2700,29 @@ ${PATCH_CSS}
    element, so React escapes them. */
 @keyframes sty-in{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
 [data-sty-anim] .sty-rev{animation:sty-in .34s cubic-bezier(.2,.7,.3,1) both;}
+/* A ROW DEALS ITS CARDS (motion pass, 2026-09-16). A grid going from
+   display:none to grid restarts the animations of its children, so one rule
+   plays every time a section opens AND on first paint for the sections that
+   open by default, with no state: each card rises in 22ms after the one before
+   it, capped at fourteen steps so a nineteen-card row is dealt in about a
+   third of a second. --i is set inline by the card. Same visibility gate. */
+@keyframes sty-deal{from{opacity:0;transform:translateY(6px);}}
+[data-sty-anim] .sty-games .sty-g,[data-sty-anim] .sty-circs .sty-circ{
+  animation:sty-deal .38s cubic-bezier(.2,.7,.3,1) backwards;
+  animation-delay:calc(min(var(--i,0),14) * 22ms);}
+/* sty-deal names only a FROM frame on purpose: the TO frame is whatever the
+   card would otherwise be, so a played card lands at its own dimmed opacity
+   instead of a fill-mode holding it at 1 forever. */
+/* THE DAY'S IQ ARRIVES WITH A PULSE behind the figure as it rolls up. */
+@keyframes sty-pulse{0%{background:transparent;}30%{background:color-mix(in srgb,var(--stg-up) 18%,transparent);}100%{background:transparent;}}
+[data-sty-anim] .sty-pulse{animation:sty-pulse .9s ease-out .2s both;border-radius:5px;padding:0 3px;margin:0 -3px;}
 /* The rows of a table or a feed come in as a run rather than a block, capped
    so a long standing never keeps the reader waiting on its last row. */
 [data-sty-anim] .sty-revr{animation:sty-in .3s cubic-bezier(.2,.7,.3,1) both;
   animation-delay:calc(min(var(--i,0),9) * 26ms);}
 @media (prefers-reduced-motion:reduce){
-  [data-sty-anim] .sty-rev,[data-sty-anim] .sty-revr{animation:none;}
+  [data-sty-anim] .sty-rev,[data-sty-anim] .sty-revr,[data-sty-anim] .sty-games .sty-g,
+  [data-sty-anim] .sty-circs .sty-circ,[data-sty-anim] .sty-pulse{animation:none;}
+  .sty-g,.sty-gn{transition:none;}
 }
 `;
