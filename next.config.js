@@ -10,6 +10,19 @@ const nextConfig = {
     // Run the server, client and edge webpack compilations in separate
     // workers instead of serially. Output is identical; only wall time moves.
     webpackBuildWorker: true,
+    // Share cards (lib/og-stage-card.js) read their fonts off disk with a
+    // computed path, which the file tracer cannot follow. Prerendered cards
+    // never noticed; every card drawn on request (quizzes, circuits, players)
+    // 500'd because the woff files were not in the function bundle.
+    outputFileTracingIncludes: {
+      '/**': [
+        './node_modules/@fontsource/manrope/files/manrope-latin-600-normal.woff',
+        './node_modules/@fontsource/manrope/files/manrope-latin-700-normal.woff',
+        './node_modules/@fontsource/manrope/files/manrope-latin-800-normal.woff',
+        './node_modules/@fontsource/dm-mono/files/dm-mono-latin-400-normal.woff',
+        './node_modules/@fontsource/dm-mono/files/dm-mono-latin-500-normal.woff',
+      ],
+    },
   },
   images: {
     // Hero photos are referenced by remote URL (lib/hero-images.js) and
