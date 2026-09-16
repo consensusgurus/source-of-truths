@@ -2130,6 +2130,35 @@ export default function QuizClient({ quizId }) {
                   </div>
                 );
               }
+              // quiz.groupByLabel: one box per label (a state), its answers
+              // stacked inside in authored order. The box carries the label, so
+              // the rows drop it.
+              if (quiz.groupByLabel) {
+                const groups = [];
+                answers.forEach((a, gi) => {
+                  const last = groups[groups.length - 1];
+                  if (last && last.label === a.label) last.idxs.push(gi);
+                  else groups.push({ label: a.label, idxs: [gi] });
+                });
+                return (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 190px), 1fr))', gap: 10 }}>
+                    {groups.map((grp) => {
+                      const got = grp.idxs.filter((gi) => found[gi]).length;
+                      return (
+                        <section key={grp.label} style={{ border: `1px solid var(--stg-line,${COLORS.line})`, borderRadius: 12, padding: '8px 8px 4px', minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, margin: '0 2px 6px', fontFamily: MONO, fontSize: 12, fontWeight: 800, letterSpacing: '0.04em', color: `var(--stg-acc-ink,${COLORS.ember})` }}>
+                            <span>{grp.label}</span>
+                            <span style={{ fontWeight: 600, fontSize: 11, color: `var(--stg-mute,${COLORS.soft})` }}>{got}/{grp.idxs.length}</span>
+                          </div>
+                          <ol style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                            {grp.idxs.map((gi) => renderRow({ ...answers[gi], label: undefined }, gi))}
+                          </ol>
+                        </section>
+                      );
+                    })}
+                  </div>
+                );
+              }
               if (colSplit) {
                 return (
                   <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', flexWrap: 'wrap' }}>
