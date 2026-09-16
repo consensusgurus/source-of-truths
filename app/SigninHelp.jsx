@@ -41,7 +41,12 @@ export function isLockedOut(err) {
   return typeof err === 'string' && /already registered|belongs to a different account/i.test(err);
 }
 
-// EmailLockNote — "no email means this name only works on this browser."
+// EmailLockNote — "no email means anyone can use this name."
+//
+// Since 2026-09-16 a name-only account signs in from ANY device on the name
+// alone (see the header of lib/quiz-identity.js), so the cost of skipping the
+// email is no longer being stranded on one browser but being impersonated. The
+// history below is why the note exists at all.
 //
 // WHY THIS EXISTS. A name-only account is keyed by the browser's anon_id and
 // nothing else, so it cannot be reconnected anywhere else, by anyone, including
@@ -58,7 +63,7 @@ export function EmailLockNote({ email = '', style = null }) {
   if ((email || '').trim()) return null;
   return (
     <p style={{ fontFamily: FONT, fontSize: 11.5, lineHeight: 1.45, color: INK.soft, margin: '6px 0 0', ...(style || {}) }}>
-      Without an email, this name only works on this browser. Add one and you can sign back in on any device.
+      Heads up: without an email, anyone who types this name can sign in as you. Add an email to keep it yours.
     </p>
   );
 }

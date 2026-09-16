@@ -136,7 +136,7 @@ export default function JoinLeaderboardForm({ identity, onJoined, onViewLeaderbo
       // to say so. d.email is what the SERVER stored, not what was typed.
       setMsg(d.email
         ? `You're in. "${d.username}" is on the leaderboard, including any games you already finished.`
-        : `You're in. "${d.username}" is on the leaderboard, including any games you already finished. Add an email above and press the button again so you can sign back in on another device.`);
+        : `You're in. "${d.username}" is on the leaderboard, including any games you already finished. Heads up: anyone who types this name can sign in as you. Add an email above and press the button again to keep it yours.`);
       if (onJoined) onJoined(id);
       // On a daily-game page, loop the newly-registered player back to that
       // game's leaderboard so they see their score land. No-op elsewhere (the

@@ -10,10 +10,11 @@
 // exact funnel that produces steinn1 beside steinni1 (see the header of
 // /api/admin/quiz-user-merge, which exists to clean that up).
 //
-// The checks below cover BOTH directions: the reported case now exits to the
-// reconnect form, and every path that already worked is byte-for-byte
-// unchanged. Confirmed to FAIL (5 failures) against the pre-2026-09-12
-// resolveQuizIdentity, which is what makes it a test rather than a comment.
+// Since 2026-09-16 (owner ruling) that case no longer needs a human: a name
+// held by a name-only account signs the caller in as it, from any browser. The
+// checks below cover that, the device-switch and email-account edges, and every
+// path that already worked. The route's unclaimable copy is still checked
+// because the route keeps it as a fallback.
 //
 // Runs against a fake PostgREST over an in-memory quiz_users table, so it needs
 // no database, no network and no env. Auto-discovered by verify-all.mjs.
@@ -83,33 +84,54 @@ t('unclaimable copy matches isLockedOut()', /already registered|belongs to a dif
 const STEINNI = () => [{ id: 1, username: 'steinni1', email: null, anon_id: 'browser-A' }];
 const WITHMAIL = () => [{ id: 1, username: 'gator85', email: 'g@x.com', anon_id: 'browser-A' }];
 
-// THE REPORTED CASE. New browser, right email typed, name held by a name-only
-// account: the email reaches nothing, so this must route to a human.
-let r = await resolveQuizIdentity(makeAdmin(STEINNI()), {
+// NAME-ONLY SIGN-IN (owner ruling, 2026-09-16). A name held by an account with
+// no email signs the caller in as that account from any browser. This replaced
+// the 2026-09-12 "route them to a human" exit for the steinni1 case.
+let rows = STEINNI();
+let r = await resolveQuizIdentity(makeAdmin(rows), {
   username: 'steinni1', email: 'nsteiner_2000@yahoo.com', anonId: 'ee60cfc8',
 });
-t('reported case: taken', r.error === 'username_taken');
-t('reported case: holder has no email', r.holderHasEmail === false);
-let b = branch(r, 'nsteiner_2000@yahoo.com');
-t('reported case: exits to the reconnect form', b.error === 'unclaimable' && b.relink === true);
-t('reported case: does NOT ask for the email again', b.recoverable === false);
-t('reported case: no longer says pick another name', b.error !== 'pick');
+t('name-only, new browser, email typed: signs in as the holder', !r.error && r.id === 1 && r.username === 'steinni1');
+t('name-only, new browser: this browser is linked', rows[0].anon_id === 'ee60cfc8');
+t('name-only, new browser: typed email is back-filled', rows[0].email === 'nsteiner_2000@yahoo.com');
+t('name-only: no duplicate account created', rows.length === 1);
 
-// A holder WITH an email is reachable by its owner unaided: old copy, unchanged.
+rows = STEINNI();
+r = await resolveQuizIdentity(makeAdmin(rows), { username: 'steinni1', email: '', anonId: 'fiery-ipad' });
+t('name-only, no email typed: signs in', !r.error && r.id === 1);
+t('name-only, no email typed: stays name-only', rows[0].email === null && rows[0].anon_id === 'fiery-ipad');
+
+// Case-insensitive, and the account keeps its own spelling.
+rows = STEINNI();
+r = await resolveQuizIdentity(makeAdmin(rows), { username: 'STEINNI1', email: '', anonId: 'x' });
+t('case-insensitive sign-in keeps the stored name', !r.error && r.id === 1 && rows[0].username === 'steinni1');
+
+// A browser already keyed to ANOTHER account switches over, and hands the link on.
+rows = [...STEINNI(), { id: 2, username: 'other', email: null, anon_id: 'dev-B' }];
+r = await resolveQuizIdentity(makeAdmin(rows), { username: 'steinni1', email: '', anonId: 'dev-B' });
+t('switching browser: signs in as the name-only holder', !r.error && r.id === 1);
+t('switching browser: link moved off the old account', rows[1].anon_id === null && rows[0].anon_id === 'dev-B');
+t('switching browser: old account keeps its name', rows[1].username === 'other');
+
+// An EMAIL-matched caller stays on their own account: the name reads as taken.
+rows = [...STEINNI(), { id: 2, username: 'mailer', email: 'm@x.com', anon_id: 'dev-C' }];
+r = await resolveQuizIdentity(makeAdmin(rows), { username: 'steinni1', email: 'm@x.com', anonId: 'dev-C' });
+t('email account asking for a name-only name: taken', r.error === 'username_taken' && r.holderHasEmail === true);
+t('email account: pick another name', branch(r, 'm@x.com').error === 'pick');
+t('email account: nothing moved', rows[0].anon_id === 'browser-A' && rows[1].username === 'mailer');
+
+// A holder WITH an email still needs that email: old copy, unchanged.
 r = await resolveQuizIdentity(makeAdmin(WITHMAIL()), {
   username: 'gator85', email: 'someone@else.com', anonId: 'new-browser',
 });
-t('reachable holder: taken', r.error === 'username_taken');
-t('reachable holder: holderHasEmail true', r.holderHasEmail === true);
-t('reachable holder: still pick another name', branch(r, 'someone@else.com').error === 'pick');
-t('reachable holder, no email typed: still recoverable', branch(r, '').recoverable === true);
-
-// Case-insensitive, so STEINNI1 cannot slip past the holder lookup.
-r = await resolveQuizIdentity(makeAdmin(STEINNI()), { username: 'STEINNI1', email: 'a@b.com', anonId: 'x' });
-t('case-insensitive holder match', r.error === 'username_taken' && r.holderHasEmail === false);
+t('holder with email: taken', r.error === 'username_taken');
+t('holder with email: holderHasEmail true', r.holderHasEmail === true);
+t('holder with email: still pick another name', branch(r, 'someone@else.com').error === 'pick');
+r = await resolveQuizIdentity(makeAdmin(WITHMAIL()), { username: 'GATOR85', email: '', anonId: 'new-browser' });
+t('holder with email, no email typed: taken and recoverable', r.error === 'username_taken' && branch(r, '').recoverable === true);
 
 // Unchanged path 1: the owner on their ORIGINAL browser adds an email.
-let rows = STEINNI();
+rows = STEINNI();
 r = await resolveQuizIdentity(makeAdmin(rows), {
   username: 'steinni1', email: 'nsteiner_2000@yahoo.com', anonId: 'browser-A',
 });
