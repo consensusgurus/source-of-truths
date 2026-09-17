@@ -62,6 +62,10 @@ import GroupsPop from '../GroupsPop';
 // member dots on the tiles all read one standing payload.
 import useGroupStanding, { bestPlace, ordinal as grpOrdinal } from '../groups/groupStanding';
 import HomeGroupsBand from '../groups/HomeGroupsBand';
+// CHOOSE A NAME (owner report, 2026-09-17): the guest controls below pointed at
+// ?signup=1 and nothing on this page ever read it, so they only reloaded the
+// home. This is the form they open. See app/ChooseNamePop.jsx.
+import ChooseNamePop, { openChooseName } from '../ChooseNamePop';
 import MindLoftMark from '../MindLoftMark';
 import StagePatch, { PATCH_CSS } from '../StagePatch';
 import RollNum from '../RollNum';
@@ -856,12 +860,25 @@ export default function StageToday() {
     saveOrder(next);
   };
 
-  // MY GAMES: the starred set, in the order they were starred. Games only, so a
-  // pin on something that has since retired simply drops out.
+  // MY GAMES: the starred set, in the order they were starred, PLUS anything
+  // the reader's group has played today (owner, 2026-09-17: "when group members
+  // play other games, those should surface in the 'my games' section"). A game
+  // the group is on is the same kind of thing as a starred one — something this
+  // reader has a reason to open today — and it arrives filled, so the row says
+  // which of the two it is. Games only, so a pin on something that has since
+  // retired simply drops out.
   const pinned = useMemo(() => {
-    if (!favorites || !favorites.length) return [];
-    return favorites.map((k) => DAILY_GAME_MAP[k]).filter(Boolean);
-  }, [favorites]);
+    const stars = (favorites || []).map((k) => DAILY_GAME_MAP[k]).filter(Boolean);
+    const seen = new Set(stars.map((g) => g.key));
+    const g0 = grp && grp.groups ? grp.groups.find((x) => !x.failed && x.games) : null;
+    const fromGroup = g0
+      ? Object.keys(g0.games || {})
+        .filter((k) => !seen.has(k) && DAILY_GAME_MAP[k] && LIVE_KEYS.has(k))
+        .map((k) => DAILY_GAME_MAP[k])
+      : [];
+    return stars.concat(fromGroup);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [favorites, grp]);
 
   // THE THREE CARDS. Each answers a different question, and each falls back to
   // the best thing it can say with what has loaded (owner, 2026-08-31), because
@@ -1386,6 +1403,8 @@ export default function StageToday() {
       <PremierePop />
       {/* GROUPS LAUNCH: once per browser, after everything above. See app/GroupsPop.jsx. */}
       <GroupsPop />
+      {/* The name form, opened by ?signup=1 or by either guest control below. */}
+      <ChooseNamePop />
 
       {/* 1. THE CAP. One line: the identity, then the day's figures, then the
              controls at the right edge, as on every board. */}
@@ -1409,7 +1428,8 @@ export default function StageToday() {
               put in this bar, so it offers them the one thing that would fill
               it rather than sitting empty (owner, 2026-08-31). */}
           {!who ? (
-            <a className="sty-signup" href="/?signup=1">
+            <a className="sty-signup" href="/?signup=1"
+              onClick={(e) => { e.preventDefault(); openChooseName(); }}>
               {/* Copy is the owner's, title case (2026-09-02). */}
               <b>Choose a Name</b><i>Keep Your Stats</i>
             </a>
@@ -1687,7 +1707,8 @@ export default function StageToday() {
               {mineTot ? cav(MINE_ID) : null}
             </div>
             {!mineTot ? (
-              <a className="sty-join" href="/?signup=1">
+              <a className="sty-join" href="/?signup=1"
+                onClick={(e) => { e.preventDefault(); openChooseName(); }}>
                 <div className="sty-newl">
                   <div className="sty-eb">Nothing pinned yet</div>
                   <div className="sty-jn">Choose a Name</div>

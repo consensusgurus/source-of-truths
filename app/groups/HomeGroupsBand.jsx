@@ -23,7 +23,10 @@ export default function HomeGroupsBand({ data, withTq = (h) => h }) {
   let sub = `${g.members} ${g.members === 1 ? 'member' : 'members'}`;
   let pill = null;
   if (!g.failed) {
-    sub = `${g.played} of ${g.members} played`;
+    // MEMBERS, said out loud (owner report, 2026-09-17: "this says 2 of 2
+    // played, but i have only played 1 of 2"). The figure was always how many
+    // MEMBERS have a score today, and with no noun it read as games.
+    sub = `${g.played} of ${g.members} ${g.members === 1 ? 'member' : 'members'} played`;
     if (g.rank === 1) {
       const second = (g.top || [])[1];
       if (second) sub += ` · ${fmtPts(g.total - second.total)} ahead`;

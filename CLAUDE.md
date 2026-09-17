@@ -7912,3 +7912,17 @@ within 0.75 of it, so the score is out of 10 (14 on Sunday).
   traps, both hit live: `.sty-g.done.res .sty-gn` mutes a finished tile's own
   name, so the filled tile re-states the ink at higher specificity, and the star
   is pinned to the tile's corner, so `.sty-g.pin .sty-gdots` leaves it room.
+- **Choose a name actually opens a form (owner report, 2026-09-17).** Three
+  controls pointed at `/?signup=1` (the stage home's guest cap chip, its My games
+  tile, and the Quizzes landing link) and nothing on the home ever read that
+  parameter, so the link reloaded the page, replayed the arrival ("flicking") and
+  offered nothing. `app/ChooseNamePop.jsx` is the form: it opens on `?signup=1`
+  or on the `sot:choose-name` window event (the two home controls fire the event
+  instead of navigating), wraps the site's one JoinLeaderboardForm, and on
+  success reloads without the parameter and with `welcome=0`. Its own heading and
+  lede replace the form's, which it hides — the form's heading row sets
+  `display:flex` INLINE, so that one rule needs `!important`.
+- **My games also carries the games the reader's group has played that day**
+  (owner, 2026-09-17), appended after the starred ones and drawn filled, and the
+  band says "N of M members played" rather than a bare "N of M", which read as
+  games.
