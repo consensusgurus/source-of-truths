@@ -919,7 +919,7 @@ export default function StatHubClient() {
        6.5) and the 3px rule clears 3:1 on the light ground (3.4 / 3.3 / 4.5),
        because a rank rule is a boundary and owes 1.4.11 rather than 1.4.3.
        NOTE the unquoted attribute value: a single quote inside a JSX
-       <style>{...}</style> is escaped to an entity and takes the whole
+       <style dangerouslySetInnerHTML={{ __html: ... }} /> is escaped to an entity and takes the whole
        selector with it, so [data-stage-theme=light] is written bare. */
     .qzhub-stage{--hm1:#e8b43a;--hm2:#b8bcc4;--hm3:#c8814b;
       --hmi1:#e8b43a;--hmi2:#c9ced6;--hmi3:#d79a6a;
@@ -972,7 +972,7 @@ export default function StatHubClient() {
 
   return (
     <div className="stage-page qzhub-stage" data-stage-theme={stageTheme} style={{ '--stg-acc-dk': '#7dd3fc', '--stg-acc-lt': '#0369a1', '--stg-acc-ink-lt': '#0369a1', background: C.bg, minHeight: '100vh', position: 'relative' }}>
-      <style>{css}</style>
+      <style dangerouslySetInnerHTML={{ __html: css }} />
       <header className="hubcap">
         <Link href="/" className="hubcap-mark" aria-label="Mind Loft home"><Logo size={17} /> <b>Mind <i>Loft</i></b></Link>
         <span className="hubcap-eyebrow">Stat Hub{capDate ? ` · ${capDate}` : ''}</span>

@@ -436,7 +436,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="vn-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.vn-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .vn-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .vn-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -461,7 +461,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
              ellipsising a name the player then cannot read back. */
           .vn-zone.tight .w{font-size:7.8px;letter-spacing:-0.005em;}
           .vn-zone.tight .w .x{width:12px;height:12px;font-size:10px;}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
 

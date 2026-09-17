@@ -767,7 +767,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="ls-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.ls-wrap{padding-left:14px !important;padding-right:14px !important;}}
           .ls-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .ls-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -779,7 +779,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
           .ls-arrow:disabled{opacity:.25;cursor:default;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border-color:rgba(28,30,36,0.3);color:${INK};}
           @media(max-width:560px){.ls-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.ls-ttl h1{font-size:21px;letter-spacing:0.02em;}.ls-ttl .ls-ttl-dt{font-size:15px;}.ls-ttl-dot{display:none;}}
           @media(max-width:430px){.ls-mh-tile{width:34px !important;height:34px !important;font-size:20px !important;}}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
 

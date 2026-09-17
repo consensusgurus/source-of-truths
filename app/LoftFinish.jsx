@@ -720,7 +720,7 @@ export default function LoftFinish({
       <div className="loft-back">
         <SudokuCircuitPop ready self={selfKey} />
         <div className="loft-backin">
-          <style>{`
+          <style dangerouslySetInnerHTML={{ __html: `
             .d5f-run{display:flex;align-items:center;gap:10px;margin:12px 0 2px;}
             .d5f-eye{font-size:9.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#a98a2e;white-space:nowrap;}
             /* Gold for the marquee, blue for a skill circuit, green once the
@@ -747,7 +747,7 @@ export default function LoftFinish({
               font-weight:800;font-size:12px;cursor:pointer;}
             .d5f-again:hover{background:#eef1f6;}
             .d5f-again i{font-style:normal;font-weight:700;color:#8a92a6;}
-          `}</style>
+          ` }} />
           <div className={outcome ? `loft-res loft-res-${outcome}` : 'loft-res'}><b>{name ? `${name} ${title.charAt(0).toLowerCase()}${title.slice(1)}` : title}</b><s>{detail}</s></div>
 
           <div className={`d5f-run${runMarq ? '' : ' circ'}${runComplete ? ' done' : ''}`}>
@@ -881,7 +881,7 @@ export default function LoftFinish({
     return (
       <div className="loft-back">
         <div className="loft-backin">
-          <style>{`
+          <style dangerouslySetInnerHTML={{ __html: `
             /* SELF-CONTAINED, on purpose (owner report, 2026-08-19). This used
                to carry .loft-next as well, borrowing the Up next band's shape,
                and inherited three bugs from it: a square left edge, near-black
@@ -928,7 +928,7 @@ export default function LoftFinish({
               .lfr-nm{font-size:17px;}
               .lfr-chip{padding:10px 12px;font-size:12.5px;}
             }
-          `}</style>
+          ` }} />
           <div className={outcome ? `loft-res loft-res-${outcome}` : 'loft-res'}><b>{name ? `${name} ${title.charAt(0).toLowerCase()}${title.slice(1)}` : title}</b><s>{detail}</s></div>
 
           <button type="button" className="lfr-go" onClick={fire(replayOpt)}>
@@ -1024,7 +1024,7 @@ export default function LoftFinish({
           the card one line whatever the viewport. */}
       {catNext.length ? (
         <div className="lfc-more">
-          <style>{`
+          <style dangerouslySetInnerHTML={{ __html: `
             .lfc-more{margin-top:8px;}
             .lfc-more>b{display:block;font-weight:800;font-size:9.5px;line-height:1;
               letter-spacing:.11em;text-transform:uppercase;color:var(--slate);margin:0 0 6px 2px;}
@@ -1037,7 +1037,7 @@ export default function LoftFinish({
               font-weight:800;font-size:13px;line-height:1;white-space:nowrap;}
             .lfc-row>a:hover{border-color:rgba(37,99,235,.4);background:rgba(37,99,235,.07);}
             .lfc-row>a img{flex:none;border-radius:6px;}
-          `}</style>
+          ` }} />
           <b>More {myCat}</b>
           <div className="lfc-row">
             {catNext.map((g) => (
@@ -1192,7 +1192,7 @@ export default function LoftFinish({
           white on white. */}
       {claimBandShown ? (
         <div className="loft-claim">
-          <style>{`
+          <style dangerouslySetInnerHTML={{ __html: `
             .loft-claim{margin:2px 0 10px;border:2px solid rgba(37,99,235,.32);border-radius:11px;
               background:rgba(37,99,235,.07);padding:11px 13px;}
             .loft-claim .eb{display:block;font-weight:800;font-size:9.5px;line-height:1;
@@ -1206,7 +1206,7 @@ export default function LoftFinish({
             .loft-claim .tg{font-weight:700;font-size:11.5px;line-height:1.4;color:var(--muted);
               margin-top:5px;}
             .loft-claim .formwrap{margin-top:12px;}
-          `}</style>
+          ` }} />
           <span className="eb">Playing as a guest</span>
           <div className="hd">
             <span className="nm">Claim a free name to hold your rank</span>

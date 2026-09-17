@@ -755,7 +755,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="fr-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.fr-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .fr-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .fr-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -782,7 +782,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
           @keyframes frshake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
           .fr-caps{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:6px;padding:0 8px;}
           .fr-cap{height:7px;border-radius:4px;background:transparent;}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
 

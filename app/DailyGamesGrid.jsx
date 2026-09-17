@@ -260,7 +260,7 @@ export default function DailyGamesGrid({ self, maxWidth = 640, challengeHref = n
 
   return (
     <div className={light ? 'dgg-light' : undefined} style={{ maxWidth, margin: '18px auto 0' }}>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .dgg-grp{margin-bottom:14px;}
         .dgg-glabel{display:flex;align-items:center;gap:10px;margin:0 2px 8px;}
         .dgg-glabel .k{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);white-space:nowrap;}
@@ -339,7 +339,7 @@ export default function DailyGamesGrid({ self, maxWidth = 640, challengeHref = n
         .dgg-light .dgg-act.dgg-again .dgg-act-l{color:var(--white);}
         .dgg-light .dgg-act.dgg-again svg{color:var(--white);}
         .dgg-light .dgg-act.dgg-again .dgg-act-s{color:rgba(255,255,255,.74);}
-      `}</style>
+      ` }} />
       {/* Report an issue leads the block (owner, 2026-08-01): it belongs
           directly under the board a player has just finished, not buried
           between the replay and share buttons. */}

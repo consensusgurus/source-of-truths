@@ -687,7 +687,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="fd-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.fd-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .fd-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .fd-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -700,7 +700,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
           .fd-livedot{display:inline-block;width:7px;height:7px;border-radius:99px;background:${COLORS.rust};animation:fdpulse 1.4s infinite;}
           @keyframes fdpulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.35;transform:scale(.8);}}
           @media(max-width:560px){.fd-mh-tile{width:30px !important;height:30px !important;font-size:17px !important;}}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
 

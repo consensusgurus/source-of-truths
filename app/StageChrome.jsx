@@ -255,7 +255,7 @@ export default function StageChrome({
 
   return (
     <div className="stg-top">
-      <style>{CSS}</style>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
       <div className="stg-cap">
         {/* THE BRAND IS THE WAY OUT, and it is the only one (owner, 2026-08-31).

@@ -57,9 +57,9 @@ export default function QuizLeaderboard({ board, identity, total, wordsCol = nul
   const chip = (on) => ({ padding: '6px 14px', background: on ? `var(--stg-surf2,${T.white})` : 'transparent', color: on ? `var(--stg-ink,${C.ink})` : `var(--stg-mute,${C.soft})`, border: 'none', borderRadius: 7, fontFamily: FONT, fontSize: 11, letterSpacing: '0.04em', fontWeight: 700, cursor: 'pointer', boxShadow: on ? '0 1px 2px rgba(20,22,28,0.06)' : 'none' });
   return (
     <div>
-      <style>{`.qlb-grid{grid-template-columns:40px 1fr 76px 70px 64px;}
+      <style dangerouslySetInnerHTML={{ __html: `.qlb-grid{grid-template-columns:40px 1fr 76px 70px 64px;}
 .qlb-grid6{grid-template-columns:40px 1fr 68px 58px 58px 58px;}
-@media(max-width:560px){.qlb-grid{grid-template-columns:34px 1fr 64px 56px;}.qlb-grid6{grid-template-columns:34px 1fr 56px 48px 50px;}.qlb-time{display:none;}}`}</style>
+@media(max-width:560px){.qlb-grid{grid-template-columns:34px 1fr 64px 56px;}.qlb-grid6{grid-template-columns:34px 1fr 56px 48px 50px;}.qlb-time{display:none;}}` }} />
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <div style={{ fontFamily: FONT, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: `var(--stg-mute,${C.faded})` }}>Leaderboard</div>
         <div style={{ fontFamily: FONT, fontSize: 11, letterSpacing: '0.08em', color: `var(--stg-mute,${C.faded})` }}>{board.plays} {board.plays === 1 ? 'play' : 'plays'}</div>

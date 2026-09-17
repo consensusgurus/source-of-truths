@@ -144,7 +144,7 @@ export default function SundayLedger({ light = false, withTq = (h) => h }) {
   if (!open) {
     return (
       <>
-        <style>{CSS}</style>
+        <style dangerouslySetInnerHTML={{ __html: CSS }} />
         <button type="button" className="sld-chip" onClick={() => setOpen(true)}>
           <span className="sld-eb">Your week</span><b>{range}</b><span aria-hidden="true">&#9662;</span>
         </button>
@@ -154,7 +154,7 @@ export default function SundayLedger({ light = false, withTq = (h) => h }) {
 
   return (
     <section className="sld sty-rev">
-      <style>{CSS}</style>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="sld-hd">
         <div><div className="sld-eb">Your week</div><b>{range}</b></div>
         <div className="sld-hr">

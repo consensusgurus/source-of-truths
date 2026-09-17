@@ -1328,7 +1328,7 @@ export default function StageToday() {
 
   return (
     <div className="sty stage-page" data-stage-theme={stageTheme}>
-      <style>{CSS}</style>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <StageWelcome capRef={capRef} />
       {/* NEW-GAME PREMIERES: once per launch, returning players who have not
           played it, after the arrival has finished. See app/PremierePop.jsx. */}

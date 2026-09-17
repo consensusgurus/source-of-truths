@@ -286,7 +286,7 @@ export function GameLog({ recent, titleById, light, limit = 40 }) {
 
 // -- THE STYLESHEET ---------------------------------------------------------
 // No backticks may appear anywhere in this string, comments included: it is
-// injected as <style>{CSS}</style> and React escapes what it does not expect.
+// injected as <style dangerouslySetInnerHTML={{ __html: CSS }} /> and React escapes what it does not expect.
 // Every [data-stage-theme='light'] rule carries html:not([data-stage-boot=dark])
 // in front of it, per the standing rule — without it the rule fires for one
 // frame on a dark reader and the page comes apart in halves.

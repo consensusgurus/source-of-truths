@@ -552,7 +552,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
         />
       )}
       <div className="fl-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.fl-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .fl-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .fl-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -565,7 +565,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
           @keyframes flshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
           .fl-pip{width:15px;height:15px;border-radius:4px;border:2px solid ${COLORS.rust};display:inline-block;}
           .fl-pip.on{background:${COLORS.rust};}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
 

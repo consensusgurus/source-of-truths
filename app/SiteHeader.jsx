@@ -79,7 +79,7 @@ function CommandHeader({ active, search, onSearch, sortBy, onSort, sortButtons, 
   const curSort = showSort ? (sortOpts.find((o) => o.id === sortBy) || sortOpts[0]) : null;
   return (
     <div className="shc" style={{ fontFamily: FONT }}>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
         .shc{width:100vw;margin-left:calc(50% - 50vw);}
         .shc-bar{display:flex;align-items:center;gap:12px;min-height:56px;position:sticky;top:0;z-index:90;padding:9px clamp(14px,2vw,24px);background:var(--white);border-bottom:1.5px solid var(--border);}
@@ -129,7 +129,7 @@ function CommandHeader({ active, search, onSearch, sortBy, onSort, sortButtons, 
           .shc-search{min-width:0;}
           .shc-seg a{padding:6px 11px;font-size:11.5px;}
         }
-      `}</style>
+      ` }} />
       <div className="shc-bar">
         <Link href="/" className="shc-brandlogo" style={{ flex: 'none', display: 'flex' }} aria-label="Mind Loft home"><CommandLogo size={30} /></Link>
         <Link href="/" className="shc-word"><span className="shc-wl">Mind <em>Loft</em></span><span className="shc-ws"><MindLoftMark size={32} /></span></Link>
@@ -198,7 +198,7 @@ export default function SiteHeader({ active = 'lists', maxWidth = 1180, visitors
   if (command) return <CommandHeader active={active} search={search} onSearch={onSearch} sortBy={sortBy} onSort={onSort} sortButtons={sortButtons} listCount={listCount} />;
   return (
     <div className="sh-root" style={{ fontFamily: FONT }}>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
         .sh-bar{display:flex;flex-direction:column;padding:12px 16px;background:var(--white);border:1.5px solid var(--border);;border-radius:16px;}
         .sh-bar.flush{border-radius:16px 16px 0 0;}
@@ -230,7 +230,7 @@ export default function SiteHeader({ active = 'lists', maxWidth = 1180, visitors
           .sh-navbtn.on{background:var(--white);color:var(--accent);}
           .sh-inlay{margin-top:10px;}
         }
-      `}</style>
+      ` }} />
       <div className={bare ? undefined : 'sh-outer'} style={bare ? { padding: '2px 0 0' } : { maxWidth, margin: '0 auto' }}>
         <div className={`sh-bar${flush ? ' flush' : ''}`}>
           <div className="sh-top">

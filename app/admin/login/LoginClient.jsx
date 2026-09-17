@@ -54,10 +54,10 @@ export default function LoginClient() {
         fontFamily: 'Manrope, system-ui, -apple-system, sans-serif',
       }}
     >
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .adt [style*="border:"]{border-radius:10px;}
         .adt ::placeholder{color:${COLORS.faded};}
-      `}</style>
+      ` }} />
       <Grain />
       <div
         style={{

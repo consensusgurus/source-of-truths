@@ -16,7 +16,7 @@ export default function SourcesGrid({ sources = [], minColWidth = 190, linked = 
     : { chipBg: T.surfaceAlt, chipBorder: 'rgba(26,22,17,0.16)', hoverBg: '#e4dbc8', hoverShadow: T.accent, logoBg: T.surface, logoBorder: 'rgba(26,22,17,0.10)', logoFont: "'Fraunces',serif", logoColor: T.slate, nameFont: "'Manrope',sans-serif", nameColor: T.ink, countColor: T.slate };
   return (
     <div>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .sot-src-grid{
           display:grid;
           grid-template-columns:repeat(auto-fill, minmax(${minColWidth}px, 1fr));
@@ -50,7 +50,7 @@ export default function SourcesGrid({ sources = [], minColWidth = 190, linked = 
           flex:0 0 auto;
           font-family:'DM Mono',monospace;font-size:11px;color:${PAL.countColor};
         }
-      `}</style>
+      ` }} />
       <div className="sot-src-grid">
         {sources.map((s) => {
           const inner = (

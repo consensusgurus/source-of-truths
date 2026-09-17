@@ -143,7 +143,7 @@ export default function ValetScene({ mode = 'still', sizes = [6, 7, 8], step = 0
 
   return (
     <div className={`vs vs-${mode}${compact ? ' vs-compact' : ''}`} aria-hidden="true">
-      <style>{CSS}</style>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <svg viewBox="0 0 400 150" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="The three lots of the Valet Gauntlet">
         {finish ? lots : (
           <>

@@ -141,10 +141,10 @@ export default function MatchQuizBoard({ pairs, started, ended, revealed, onMatc
 
   return (
     <div>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .mqb-cols { column-count: 2; column-gap: 6px; }
         @media (max-width: 600px) { .mqb-cols { column-count: 1; } }
-      `}</style>
+      ` }} />
       {tray.length > 0 && (
         <div style={{ marginBottom: 16, background: `var(--stg-surf,#fffdf8)`, borderRadius: 10, border: `1px solid ${COLORS.forest}66`, padding: '12px 14px' }}>
           <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: COLORS.forest, marginBottom: 8 }}>

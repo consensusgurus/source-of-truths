@@ -917,7 +917,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="sh-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.sh-wrap{padding-left:10px !important;padding-right:10px !important;}}
           @media(max-width:560px){.sh-cols{gap:0 !important;}.sh-trayhead{display:none;}.sh-tray{margin-top:10px !important;}}
           .sh-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 15px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
@@ -955,7 +955,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
           .sh-hintbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px;}
           .sh-hint{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid var(--stg-acc, ${COLORS.accent});color:${COLORS.accentDk};background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);border-radius:999px;padding:7px 13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
           .sh-hint:disabled{opacity:0.4;cursor:default;border-color:#cbd5d3;color:${FADED};background:${STAGE ? 'var(--stg-surf2)' : '#eef2f1'};}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
 

@@ -924,7 +924,7 @@ function Home({ lists, viewCounts, voteData, extras, trending = {}, openList, on
 
   return (
     <div style={{ position: 'relative', zIndex: 2, fontFamily: NFONT, color: NT.ink }}>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
         .nt-wrap{max-width:1300px;margin:0 auto;padding:8px 24px 70px;}
         .nt-stickytop{position:sticky;top:0;z-index:50;background:var(--surface);}
@@ -987,7 +987,7 @@ function Home({ lists, viewCounts, voteData, extras, trending = {}, openList, on
         .nt-rel-t{flex:1 1 auto;min-width:0;font-size:12.5px;font-weight:700;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
         .nt-rel-a{flex:none;color:${NT.accent};font-weight:800;}
         @media(max-width:560px){.nt-wrap{padding:16px 14px 60px;}.nt-tagline{display:none;}.nt-pillsbar{display:none !important;}.nt-mfilter{display:inline-flex !important;flex:1 1 auto;justify-content:space-between;}.nt-msheet{display:block;flex:1 1 100%;width:100%;}.nt-toolbar{margin-bottom:10px;}.nt-toolwrap{display:block !important;padding:10px 14px 0 !important;}.nt-bodywrap{padding-top:0 !important;}}
-      `}</style>
+      ` }} />
 
       <SiteHeader
         active="lists"

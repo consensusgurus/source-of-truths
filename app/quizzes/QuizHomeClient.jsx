@@ -2076,14 +2076,14 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
     <QuizDoneContext.Provider value={doneCtx}>
     <div className="qzloft" style={{ background: HOME_GROUND, minHeight: '100vh', position: 'relative' }}>
       <Grain />
-      <style>{css}</style>
+      <style dangerouslySetInnerHTML={{ __html: css }} />
       {/* Live ticker marquee removed from the quiz home per owner (2026-07-28). */}
       <QuizCommandHeader me={me} onSignup={() => setSignupOpen(true)} ticker={[]} variant="home" onCredit={() => { setCreditQr(false); setCreditOpen(true); }} />
-      <div className="qzh qzf-w" style={{ maxWidth: 1560, margin: '0 auto', padding: '14px clamp(16px, 1.7vw, 24px) 70px', position: 'relative' }}><style>{`@media(max-width:560px){.qzf-w{padding-left:14px !important;padding-right:14px !important;}}
+      <div className="qzh qzf-w" style={{ maxWidth: 1560, margin: '0 auto', padding: '14px clamp(16px, 1.7vw, 24px) 70px', position: 'relative' }}><style dangerouslySetInnerHTML={{ __html: `@media(max-width:560px){.qzf-w{padding-left:14px !important;padding-right:14px !important;}}
         /* Phone: the daily console butts straight up against the command bar,
            so the page's own top padding goes and the section carries no gap
            above it (owner, 2026-08-03). */
-        @media(max-width:900px){.qzf-w{padding-top:0 !important;}.qzh .dhx{padding-top:0 !important;}.qzh .dhx-center{margin-top:0 !important;}}`}</style>
+        @media(max-width:900px){.qzf-w{padding-top:0 !important;}.qzh .dhx{padding-top:0 !important;}.qzh .dhx-center{margin-top:0 !important;}}` }} />
 
         {(() => {
           if (duelMuteAll) return null;
@@ -2212,7 +2212,7 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
           </div>
         ) : (
         <div className={v3 ? 'dhx dhx-v3' : 'dhx'}>
-          <style>{`
+          <style dangerouslySetInnerHTML={{ __html: `
             .qzh .dhx{display:grid;grid-template-columns:284px minmax(0,1fr) 300px;gap:10px;align-items:start;margin-bottom:12px;}
             /* HOME v3: the left rail is gone, so two columns, and BOTH are pinned
                to the viewport so the page is exactly one screen (owner,
@@ -2548,7 +2548,7 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
               .qzh .dhx-lb-gi:nth-child(n+5){display:none !important;}
               .qzh .dhx-lb-gi{padding:5px 0 !important;}
             }
-          `}</style>
+          ` }} />
           {v3 ? null : (
           <div className="dhx-rail dhx-left" style={{ height: railH || undefined }}>
             <HomeRails
@@ -3198,7 +3198,7 @@ function CategoryMasteryTile({ rows, onPick, colorFor }) {
   if (!rows || !rows.length) return null;
   return (
     <section className="mc-open catcard cmt" style={{ minWidth: 0, '--cc': T.blue, '--cct': '#eef3ff' }}>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .qzh .cmt-body{padding:9px 11px 11px;display:flex;flex-direction:column;gap:5px;}
         .qzh .cmt-bar{position:relative;display:flex;align-items:center;gap:8px;width:100%;background:#eef1f6;border:none;border-radius:8px;padding:8px 10px;cursor:pointer;font-family:inherit;overflow:hidden;text-align:left;text-decoration:none;box-sizing:border-box;}
         .qzh .cmt-bar:hover{background:#e6ebf3;}
@@ -3207,7 +3207,7 @@ function CategoryMasteryTile({ rows, onPick, colorFor }) {
         .qzh .cmt-bar .nm{position:relative;flex:1;min-width:0;font-size:12px;font-weight:700;color:${C.ink};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
         .qzh .cmt-bar .p{position:relative;flex:none;font-size:11.5px;font-weight:800;color:#4a4f5c;font-variant-numeric:tabular-nums;}
         .qzh .cmt-note{padding:0 11px 10px;font-size:10.5px;color:${C.soft};font-weight:600;}
-      `}</style>
+      ` }} />
       <div className="colhead cc-head cc-filled" style={{ borderColor: T.ink }}>
         <div className="cc-hgroup">
           <span className="cc-eyebrow">Your progress</span>

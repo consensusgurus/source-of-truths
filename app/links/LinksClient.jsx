@@ -600,7 +600,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="lk-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.lk-wrap{padding-left:14px !important;padding-right:14px !important;}}
           .lk-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .lk-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -616,7 +616,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
           @media(max-width:520px){.lk-htp-f{display:none;}.lk-htp-s{display:inline;}}
           @media(max-width:560px){.lk-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.lk-ttl h1{font-size:21px;letter-spacing:0.02em;}.lk-ttl .lk-ttl-dt{font-size:15px;}.lk-ttl-dot{display:none;}}
           .lk-htp-s{display:none;}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 560, margin: '0 auto' }}>
 

@@ -76,7 +76,7 @@ const organizationJsonLd = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Card attribution. Deliberately NOT in the metadata export: a route that defines
             its own `twitter` block replaces the parent's entirely, and 52 routes do, so

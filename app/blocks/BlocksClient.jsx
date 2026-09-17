@@ -1270,7 +1270,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
         </div>
       )}
 
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         /* the T piece, as a pad: rotate on top, move-left / down / move-right
            across the middle, Drop as the bar beneath. Centered at every width. */
         .bl-dock { display: flex; justify-content: center; margin-top: 12px; }
@@ -1295,7 +1295,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
           .bl-pad { grid-template-columns: repeat(3, 64px); gap: 8px; }
           .bl-pad button { height: 58px !important; }
         }
-      `}</style>
+      ` }} />
 
       {!STAGE && <div style={{ display: focusMode ? 'none' : 'block' }}><Footer /></div>}
     </div>

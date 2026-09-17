@@ -668,7 +668,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="hg-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.hg-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .hg-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .hg-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
@@ -698,7 +698,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
           .hg-pw{font-weight:800;padding:1px 6px;border-radius:5px;background:${STAGE ? 'var(--stg-surf2)' : '#e9edf3'};color:${INK};}
           .hg-pw.diff{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 22%, var(--stg-cell))' : COLORS.accentSoft};color:var(--stg-acc-ink, ${COLORS.accentDeep});}
           .hg-arr{color:${FADED};}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
 

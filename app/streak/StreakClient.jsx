@@ -569,7 +569,7 @@ export default function StreakClient({ puzzles = [], questionsByNum = {}, forceN
         />
       )}
       <div className="sk-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.sk-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .sk-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .sk-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -579,7 +579,7 @@ export default function StreakClient({ puzzles = [], questionsByNum = {}, forceN
           .sk-grid:not(.nohov) .sk-choice:not(:disabled):hover{background:var(--stg-surf2, ${COLORS.paper});}
           .sk-timebar{height:7px;border-radius:4px;background:var(--stg-surf, ${COLORS.paper});overflow:hidden;}
           .sk-timefill{height:100%;border-radius:4px;transition:width .1s linear;}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
 

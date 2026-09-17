@@ -585,7 +585,7 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="st-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.st-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .st-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : COLORS.accentDeep};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .st-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
@@ -603,7 +603,7 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
           .st-tile.flash{border-color:var(--stg-acc, ${COLORS.accent});box-shadow:0 0 0 3px var(--stg-surf2, ${COLORS.accentSoft});}
           .st-word{font-family:${MONO};font-size:13px;letter-spacing:0.08em;padding:5px 10px;border-radius:7px;background:#dcfce7;color:${COLORS.green};font-weight:700;}
           .st-slot{font-family:${MONO};font-size:13px;letter-spacing:0.28em;padding:5px 10px;border-radius:7px;background:rgba(28,30,36,0.05);color:${FADED};}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
           {!LOFT && (

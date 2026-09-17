@@ -132,7 +132,7 @@ export default function SudokuCircuitPop({ ready = false, self = '' }) {
 
   return (
     <div className="skp-bd" role="dialog" aria-modal="true" aria-labelledby="skp-h" onClick={close}>
-      <style>{CSS}</style>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="skp" onClick={(e) => e.stopPropagation()}>
         <button type="button" className="skp-x" onClick={close} aria-label="Close">
           <X size={14} strokeWidth={2.4} />

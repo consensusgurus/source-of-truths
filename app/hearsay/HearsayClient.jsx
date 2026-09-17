@@ -556,7 +556,7 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="hs-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.hs-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .hs-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .hs-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -570,7 +570,7 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
           .hs-card:disabled{cursor:default;}
           .hs-say{display:flex;align-items:flex-start;gap:11px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:9px;padding:11px 13px;margin-bottom:7px;}
           .hs-num{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));font-family:${MONO};font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
 

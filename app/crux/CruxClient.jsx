@@ -1342,9 +1342,9 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
           ]}
         />
       )}
-      {STAGE && <style>{STAGE_BOARD_CSS}</style>}
+      {STAGE && <style dangerouslySetInnerHTML={{ __html: STAGE_BOARD_CSS }} />}
       <div className="cx-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: STAGE ? '10px 38px 40px' : '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           .cx-a{margin:0 auto;}
           /* FOUR ACROSS, not two by two. The card is 640 wide and the board
              only ever needs about 510 of it, so the categories had spare width
@@ -1392,7 +1392,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
           @keyframes cxpulseA{0%{box-shadow:0 0 0 0 rgba(37,99,235,0);}45%{transform:scale(1.18);box-shadow:0 0 0 5px rgba(37,99,235,0.4);}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(37,99,235,0);}}
           @keyframes cxpulseB{0%{box-shadow:0 0 0 0 rgba(37,99,235,0);}45%{transform:scale(1.18);box-shadow:0 0 0 5px rgba(37,99,235,0.4);}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(37,99,235,0);}}
           @keyframes cxcat{from{background:${STAGE ? 'transparent' : 'var(--white)'};color:transparent;transform:scale(.82);}}
-        `}</style>
+        ` }} />
 
         {/* puzzle content centered: the page column is 1180, the puzzle column
             sizes to the board (Option A single-column layout) */}

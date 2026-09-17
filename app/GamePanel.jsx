@@ -214,7 +214,7 @@ export default function GamePanel({ self, name = null, onShow = null }) {
         </div>
       ) : null}
 
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .gpn{max-width:1080px;margin:30px auto 0;padding:0 16px;text-align:center;}
         /* Hidden, never unmounted. See the end-card effect above. */
         .gpn-off{display:none;}
@@ -233,7 +233,7 @@ export default function GamePanel({ self, name = null, onShow = null }) {
         @media(max-width:900px){
           .gpn{padding:0 12px;}
         }
-      `}</style>
+      ` }} />
     </div>
   );
 }

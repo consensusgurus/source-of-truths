@@ -105,7 +105,7 @@ export default function QuizStatsClient() {
         </header>
 
         <section style={{ maxWidth: 1100, margin: '0 auto', padding: '20px 24px 72px' }}>
-          <style>{`
+          <style dangerouslySetInnerHTML={{ __html: `
             .qs-scroll{overflow-x:auto;}
             .qs-table{width:100%;border-collapse:collapse;min-width:560px;}
             .qs-table th{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:${T.slate};text-align:right;padding:0 0 10px;border-bottom:2px solid ${T.accent};white-space:nowrap;}
@@ -124,7 +124,7 @@ export default function QuizStatsClient() {
             .qs-num small{font-family:'DM Mono',monospace;font-weight:500;font-size:9.5px;letter-spacing:0.08em;text-transform:uppercase;color:${T.slate};margin-left:5px;}
             .qs-col-num{padding-left:22px !important;}
             @media(max-width:620px){.qs-title{font-size:15px;}.qs-num{font-size:14px;}.qs-num small{display:none;}}
-          `}</style>
+          ` }} />
           {!loaded ? (
             <div style={{ textAlign: 'center', padding: '60px 24px', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 18, color: T.slate }}>Loading the numbers...</div>
           ) : rows.length === 0 ? (

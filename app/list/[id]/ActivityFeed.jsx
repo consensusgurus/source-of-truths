@@ -539,7 +539,7 @@ export default function ActivityFeed({ list, voteData, extras }) {
 
   return (
     <div style={{ fontFamily: SANS, color: T.ink, maxWidth: 640 }}>
-      <style>{`@keyframes sotpulse{0%,100%{opacity:1}50%{opacity:.25}}`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `@keyframes sotpulse{0%,100%{opacity:1}50%{opacity:.25}}` }} />
 
       <div>
         {stream.map((te, i) => {

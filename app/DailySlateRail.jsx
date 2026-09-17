@@ -105,7 +105,7 @@ export default function DailySlateRail({ current = null }) {
 
   return (
     <div className="dsr">
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .dsr{background:#0e183b;border-bottom:1px solid #0b132f;position:relative;z-index:2;}
         .dsr-in{max-width:1560px;margin:0 auto;padding:7px clamp(14px,2.5vw,34px);display:flex;align-items:center;gap:11px;}
         .dsr-k{font-family:${SANS};font-size:9px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:#93aae2;white-space:nowrap;flex:none;}
@@ -121,7 +121,7 @@ export default function DailySlateRail({ current = null }) {
         .dsr-n{font-size:11px;font-weight:800;color:#a9bee8;white-space:nowrap;flex:none;}
         @media(max-width:860px){.dsr-btn{display:none;}.dsr-in{gap:9px;padding-left:12px;padding-right:12px;}}
         @media(max-width:520px){.dsr-k{display:none;}}
-      `}</style>
+      ` }} />
       <div className="dsr-in">
         <span className="dsr-k">Today&rsquo;s slate</span>
         <button type="button" className="dsr-btn" aria-label="Scroll slate left" onClick={() => nudge(-240)}>&lsaquo;</button>

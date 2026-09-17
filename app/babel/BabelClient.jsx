@@ -727,7 +727,7 @@ export default function BabelClient({ puzzles, forceNum }) {
         />
       )}
       <div style={{ position: 'relative', zIndex: 2, padding: '18px 16px 0' }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           .sc-btn{font-family:${SANS};font-weight:800;font-size:13px;letter-spacing:0.02em;color:${INK};background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1.5px solid var(--stg-line2, rgba(28,30,36,0.28));border-radius:9px;padding:9px 15px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
           .sc-btn:hover{background:var(--stg-surf2, ${COLORS.paper});}
           .sc-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
@@ -755,7 +755,7 @@ export default function BabelClient({ puzzles, forceNum }) {
           .sc-bag span{font-family:${MONO};font-size:11px;font-weight:500;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.16));border-radius:5px;padding:2px 5px;color:${FADED};}
           .sc-bag span b{color:${INK};font-weight:800;margin-right:2px;}
           .sc-log{font-family:${MONO};font-size:11.5px;font-weight:500;line-height:1.75;}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
 

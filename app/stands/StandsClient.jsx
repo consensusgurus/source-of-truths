@@ -531,7 +531,7 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="bk-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.bk-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .bk-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .bk-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -550,7 +550,7 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
           .bk-tbl td{padding:5px 6px;text-align:right;font-weight:700;color:${INK};border-top:1px solid var(--stg-line, rgba(28,30,36,0.09));}
           .bk-tbl td:first-child{text-align:left;font-weight:800;}
           .bk-clue{display:flex;gap:9px;align-items:flex-start;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.14));border-left:3px solid var(--stg-acc, ${COLORS.accent});border-radius:8px;padding:8px 11px;margin-bottom:6px;font-size:13.5px;font-weight:600;color:${INK};}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
 

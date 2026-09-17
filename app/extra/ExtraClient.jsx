@@ -597,7 +597,7 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="ex-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.ex-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .ex-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .ex-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -611,7 +611,7 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
           .ex-go:active{transform:translateY(1px);}
           .ex-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
           .ex-tool:disabled{opacity:.45;cursor:default;}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
 

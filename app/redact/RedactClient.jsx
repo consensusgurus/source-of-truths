@@ -477,7 +477,7 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="rd-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.rd-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .rd-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : COLORS.accentDeep};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .rd-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
@@ -499,7 +499,7 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
           .rd-stat{display:flex;flex-direction:column;align-items:center;min-width:56px;}
           .rd-stat b{font-family:${MONO};font-size:15px;color:${INK};}
           .rd-stat span{font-family:${MONO};font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:${FADED};}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
           {!LOFT && (

@@ -29,7 +29,7 @@ export default function QuizIdleActions({ onStart, startLabel = 'Start', startDi
   delete startStyle.letterSpacing;
   return (
     <div style={{ maxWidth: 640, margin: '16px auto 0', ...style }}>
-      <style>{`.qz-start{height:104px;font-size:21px;letter-spacing:0.08em;}@media (max-width:760px){.qz-start{height:52px;font-size:12.5px;letter-spacing:0.05em;}}`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `.qz-start{height:104px;font-size:21px;letter-spacing:0.08em;}@media (max-width:760px){.qz-start{height:52px;font-size:12.5px;letter-spacing:0.05em;}}` }} />
       <button className="qz-start" onClick={onStart} disabled={startDisabled} style={{ ...startStyle, width: '100%', background: startDisabled ? `var(--stg-surf2,${C.ember})` : `var(--stg-acc,${C.ember})`, color: startDisabled ? `var(--stg-mute,${T.white})` : `var(--stg-onramp,${T.white})`, opacity: startDisabled ? 'var(--stg-inert-op,0.5)' : 1, cursor: startDisabled ? 'default' : 'pointer' }}>
         {startLabel}
       </button>

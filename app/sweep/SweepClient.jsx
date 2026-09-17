@@ -962,7 +962,7 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
         </div>
       )}
 
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .sw-view::-webkit-scrollbar { width: 6px; }
         .sw-view::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
         @media (max-width: 640px) {
@@ -970,7 +970,7 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
           .sw-strip { display: flex !important; }
           .sw-keys { display: none !important; }
         }
-      `}</style>
+      ` }} />
 
       {!STAGE && <div style={{ display: focusMode ? 'none' : 'block' }}><Footer /></div>}
     </div>

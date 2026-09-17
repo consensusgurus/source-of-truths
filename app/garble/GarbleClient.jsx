@@ -688,7 +688,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
       )}
       <div className="gb-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
-          <style>{`
+          <style dangerouslySetInnerHTML={{ __html: `
             .gb-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
             .gb-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
             .gb-key{border:none;font-family:${SANS};font-weight:800;cursor:pointer;border-radius:6px;padding:0;touch-action:manipulation;}
@@ -711,7 +711,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
             .gb-htp-s{display:none;}
             @media(max-width:520px){.gb-htp-f{display:none;}.gb-htp-s{display:inline;}}
             @media(max-width:560px){.gb-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.gb-ttl h1{font-size:21px;letter-spacing:0.02em;}.gb-ttl .gb-ttl-dt{font-size:15px;}.gb-ttl-dot{display:none;}}
-          `}</style>
+          ` }} />
 
 
           {/* masthead: pressed GARBLE tiles with No./date inline, one rule beneath */}

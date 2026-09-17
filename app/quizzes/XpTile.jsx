@@ -185,7 +185,7 @@ export default function XpTile() {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setOpen(false); }}
     >
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         /* Electric-blue ground, so it reads as the IQ Points slot and stays distinct
            from the bronze Community tile it sits in a row with. The gradient is
            on the frame, shared by both flip faces. */
@@ -218,7 +218,7 @@ export default function XpTile() {
         .xptile .xp-why{font-size:12px;line-height:1.34;font-weight:700;color:${C.gold};}
         .xptile .xp-p{font-size:12px;line-height:1.38;color:rgba(255,255,255,.86);}
         .xptile .xp-cta{display:inline-flex;align-items:center;gap:6px;margin-top:auto;align-self:flex-start;font-size:12.5px;font-weight:800;color:var(--accent);background:${C.cta};border-radius:8px;padding:8px 11px;text-decoration:none;}
-      `}</style>
+      ` }} />
 
       <span className="xp-tag"><Zap size={11} style={{ verticalAlign: -1, color: '#5b8bff' }} fill="#5b8bff" /> TOP SOT PLAYER</span>
       {animate ? (

@@ -97,7 +97,7 @@ export default function ReportIssue({ self, name, accent = T.accent, align = 'ce
 
   return (
     <div className="ri-wrap" style={{ textAlign: align }}>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .ri-wrap{margin-top:10px;font-family:${SANS};}
         .ri-link{background:none;border:none;cursor:pointer;font-family:${MONO};font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;color:${FADED};display:inline-flex;align-items:center;gap:5px;padding:4px 6px;}
         .ri-link:hover{color:${INK};}
@@ -120,7 +120,7 @@ export default function ReportIssue({ self, name, accent = T.accent, align = 'ce
         .ri-btn.primary{color:var(--stg-onramp, var(--white));}
         .ri-btn:disabled{opacity:.5;cursor:default;}
         .ri-sent{margin-top:6px;font-size:12.5px;font-weight:700;color:var(--stg-good, #0e7c5a);display:inline-flex;align-items:center;gap:6px;}
-      `}</style>
+      ` }} />
       {sent ? (
         <div className="ri-sent"><Check size={13} strokeWidth={3} /> Thanks. The team will take a look.</div>
       ) : open ? (

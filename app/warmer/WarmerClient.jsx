@@ -489,7 +489,7 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
         />
       )}
       <div className="wm-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.wm-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .wm-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .wm-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -517,7 +517,7 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
           @media(max-width:520px){.wm-row{grid-template-columns:92px 1fr 44px;}.wm-band{display:none;}.wm-word{font-size:14px;}}
           .wm-pinwrap{margin-bottom:12px;}
           .wm-pinlabel{font-family:${MONO};font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:${FADED};margin-bottom:5px;}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
 

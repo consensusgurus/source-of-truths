@@ -405,7 +405,7 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="dk-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.dk-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .dk-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : COLORS.accentDeep};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .dk-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
@@ -442,7 +442,7 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
           .dk-panel{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:11px;padding:12px 14px;margin-bottom:10px;}
           .dk-setup{font-size:14px;line-height:1.6;color:${FADED};font-weight:600;}
           .dk-fold{background:none;border:none;padding:0;cursor:pointer;font-family:${MONO};font-size:10.5px;letter-spacing:0.09em;text-transform:uppercase;font-weight:700;color:var(--stg-acc-ink, ${COLORS.accent});display:inline-flex;align-items:center;gap:4px;}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
           {!LOFT && (

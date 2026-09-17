@@ -127,7 +127,7 @@ export default function JamBoard({
 
   return (
     <div className="jb-wrap" style={{ maxWidth, margin: '0 auto', position: 'relative' }}>
-      <style>{CSS}</style>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div key={shake} className={`jb-lot${shake ? ' shake' : ''}`}>
         {/* THE EXIT, marked rather than merely left empty, inside the wall's
             own band so nothing hangs past the lot on a narrow phone. */}

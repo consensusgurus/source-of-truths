@@ -800,7 +800,7 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="ow-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.ow-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .ow-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .ow-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -814,7 +814,7 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
           .ow-face:disabled{opacity:.55;cursor:default;}
           .ow-face .ow-gold{color:${COLORS.gold};}
           @media(max-width:560px){.ow-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.ow-ttl h1{font-size:21px;letter-spacing:0.02em;}.ow-ttl .ow-ttl-dt{font-size:15px;}.ow-ttl-dot{display:none;}}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
 

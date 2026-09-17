@@ -53,7 +53,7 @@ export default function CircuitFrame({ cat = null, label = 'Circuits', progress 
 
   return (
     <div className="cfr stage-page" data-stage-theme={theme} style={acc || undefined}>
-      {/* ⚠️ dangerouslySetInnerHTML, NOT <style>{CSS}</style>. React ESCAPES a
+      {/* ⚠️ dangerouslySetInnerHTML, NOT <style dangerouslySetInnerHTML={{ __html: CSS }} />. React ESCAPES a
           text child on the server, so every apostrophe in the stylesheet ships
           as &#x27; — and <style> is an HTML raw-text element, so nothing decodes
           it and the CSS parser sees the entity. Any declaration carrying a quote

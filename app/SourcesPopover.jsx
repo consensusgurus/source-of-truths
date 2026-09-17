@@ -73,7 +73,7 @@ export default function SourcesPopover({ label, emphasis, align, href, onDark, p
 
       {open && (
         <>
-          <style>{`
+          <style dangerouslySetInnerHTML={{ __html: `
             .sot-pop{
               position:absolute;top:calc(100% + 10px);${align === 'left' ? 'left:0;right:auto;' : 'right:0;left:auto;'}
               /* Must beat the homepage sticky nav (.nt-stickytop, z-index:50), which is a
@@ -89,7 +89,7 @@ export default function SourcesPopover({ label, emphasis, align, href, onDark, p
                 width:92vw;max-height:78vh;box-shadow:0 10px 40px rgba(26,22,17,0.35);
               }
             }
-          `}</style>
+          ` }} />
         <div
           role="dialog"
           aria-label="The experts and aggregators behind the consensus"

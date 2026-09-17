@@ -752,7 +752,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="an-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.an-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .an-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${ACC_DEEP};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? INK : ACC_DEEP};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .an-btn:hover{background:${ACC_SOFT};}
@@ -829,7 +829,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
           .an-spine i{width:22px;height:28px;border-radius:4px;background:${ACC_SOFT};border:1px solid ${STAGE ? 'color-mix(in srgb, var(--stg-acc) 45%, transparent)' : '#e3b9be'};
             display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:900;font-size:15px;color:${ACC_INK};}
           .an-spine i.blank{color:${STAGE ? 'var(--stg-dim,#5a657d)' : '#dcc6c9'};background:${STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : 'var(--white)'};border-color:${STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : 'rgba(28,30,36,0.1)'};}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: split ? 1180 : 900, margin: '0 auto' }}>
           {!LOFT && (

@@ -950,7 +950,7 @@ export default function StageFinish({
   if (isRetry) {
     return (
       <div className={'stf stf-rtwrap' + (outcome ? ' stf-' + outcome : '')}>
-        <style>{CSS}</style>
+        <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
         {flood ? (
           <CurtainFlood title={title} detail={detail} bandRef={bandRef} quick
@@ -994,7 +994,7 @@ export default function StageFinish({
 
   return (
     <div className={'stf' + (outcome ? ' stf-' + outcome : '')}>
-      <style>{CSS}</style>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
       {flood ? (
         <CurtainFlood title={title} detail={detail} iq={iq} board={board}

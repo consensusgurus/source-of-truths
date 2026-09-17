@@ -128,7 +128,7 @@ export default function CommunityTile() {
       onClick={() => { if (!joinOpen) setOpen((v) => !v); }}
       onMouseLeave={() => setOpen(false)}
     >
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         /* Trophy tile: warm bronze ground with a gold spotlight behind the name, so it
            reads as the celebration slot and stands apart from the navy tiles beside it. */
         .cmtile{background:radial-gradient(135% 105% at 24% 36%, rgba(255,196,74,.30) 0%, rgba(255,196,74,.07) 44%, rgba(0,0,0,0) 72%), linear-gradient(155deg,#33280f 0%,#1f1809 58%,#130f08 100%);cursor:pointer;}
@@ -162,7 +162,7 @@ export default function CommunityTile() {
         .cm-modal{position:fixed;inset:0;z-index:9999;background:rgba(24,18,8,.66);display:flex;align-items:center;justify-content:center;padding:20px;cursor:default;}
         .cm-modal-card{position:relative;width:100%;max-width:390px;background:var(--white);border-radius:16px;padding:22px 20px 20px;max-height:88vh;overflow:auto;}
         .cm-modal-x{position:absolute;top:11px;right:11px;background:none;border:0;padding:5px;cursor:pointer;color:var(--muted);line-height:0;}
-      `}</style>
+      ` }} />
 
       <span className="cm-tag"><Crown size={11} style={{ verticalAlign: -1, color: T.gold }} /> TOP COMMUNITY MEMBER</span>
 

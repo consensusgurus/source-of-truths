@@ -159,7 +159,7 @@ export default function BusinessNewsClient() {
   return (
     <div style={{ background: C.bg, minHeight: '100vh', position: 'relative' }}>
       <Grain />
-      <style>{css}</style>
+      <style dangerouslySetInnerHTML={{ __html: css }} />
       <QuizNavHeader />
       <div className="bnh qzf-w" style={{ maxWidth: 1180, margin: '0 auto', padding: '20px 38px 80px', position: 'relative', fontFamily: FONT }}><div className="qzf-line" aria-hidden="true" />
         <div className="eyebrow">Business · Quiz Hub</div>

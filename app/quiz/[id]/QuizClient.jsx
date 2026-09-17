@@ -373,7 +373,7 @@ function QuizCelebration({ kind, onDone }) {
           </div>
         </div>
       )}
-      <style>{`@keyframes sotCrownPop{0%{opacity:0;transform:translateX(-50%) translateY(-34px) scale(.5)}10%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}82%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}100%{opacity:0;transform:translateX(-50%) translateY(-8px) scale(.96)}}`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `@keyframes sotCrownPop{0%{opacity:0;transform:translateX(-50%) translateY(-34px) scale(.5)}10%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}82%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}100%{opacity:0;transform:translateX(-50%) translateY(-8px) scale(.96)}}` }} />
     </div>
   );
 }
@@ -1639,7 +1639,7 @@ export default function QuizClient({ quizId }) {
       style={{ ...(QSTAGE ? QUIZ_ACC_VARS : null), minHeight: '100vh', position: 'relative', overflowX: 'clip', background: QSTAGE ? 'var(--stg-ground)' : COLORS.cream, color: QSTAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink }}>
       <QuizCelebration kind={celebration} onDone={() => setCelebration(null)} />
       {duelBanner}
-      <style>{`input:focus::placeholder{color:transparent}`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `input:focus::placeholder{color:transparent}` }} />
       {!QSTAGE && (LOFT ? <DailyChrome loft /> : <QuizNavHeader />)}
       {/* THE CAP SWAP, and this is the whole trick. StageChrome takes
           LoftCap's own prop names, so the call site does not move; only the
@@ -1682,9 +1682,9 @@ export default function QuizClient({ quizId }) {
           panelBody={QSTAGE ? fullLeaderboard : null}
         />
       )}
-      <div className="qz-pagewrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '8px 38px 80px' }}><style>{`@media(max-width:560px){.qz-pagewrap{padding-left:14px !important;padding-right:14px !important;}}`}</style><div className="qzf-line" aria-hidden="true" />
+      <div className="qz-pagewrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '8px 38px 80px' }}><style dangerouslySetInnerHTML={{ __html: `@media(max-width:560px){.qz-pagewrap{padding-left:14px !important;padding-right:14px !important;}}` }} /><div className="qzf-line" aria-hidden="true" />
 
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+        <style dangerouslySetInnerHTML={{ __html: `@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 .qzlg-grid{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));}
 .qz-acols{display:grid;gap:3px 8px;grid-template-columns:repeat(var(--accolsm,3),minmax(0,1fr));}
 .qz-acols>li{margin-bottom:0 !important;}
@@ -1696,7 +1696,7 @@ export default function QuizClient({ quizId }) {
   .qzlg-grid.qzlg-big{grid-template-columns:repeat(auto-fill,minmax(208px,1fr));}
   .qzlg-cell-tall{height:312px;}
   .qzlg-img-tall{max-height:308px;}
-}`}</style>
+}` }} />
 
         {/* Header */}
         <div style={{ paddingBottom: 0, marginTop: mAppPlay ? 4 : 12, ...(ended ? { maxWidth: 640, marginLeft: 'auto', marginRight: 'auto' } : null) }}>
@@ -1724,7 +1724,7 @@ export default function QuizClient({ quizId }) {
         {/* Ribbon */}
         <div style={{ marginTop: 8 }}>
           <div style={{ position: 'relative' }}>
-            <style>{`@keyframes qzCueR{0%,100%{transform:translate(0,-50%);}50%{transform:translate(3px,-50%);}}@keyframes qzCueL{0%,100%{transform:translate(0,-50%);}50%{transform:translate(-3px,-50%);}}.qz-cue{position:absolute;top:50%;z-index:3;display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:${COLORS.ember};color:var(--white);box-shadow:0 1px 4px rgba(26,22,17,0.45);pointer-events:none;font-size:15px;line-height:1;}.qz-cue-r{right:10px;animation:qzCueR 1.4s ease-in-out infinite;}.qz-cue-l{left:10px;animation:qzCueL 1.4s ease-in-out infinite;}@media(min-width:760px){.qz-cue{display:none;}}.qz-ribbon{scrollbar-width:none;-ms-overflow-style:none;}.qz-ribbon::-webkit-scrollbar{display:none;}@keyframes qzCueOk{0%{transform:scale(.96);opacity:0;}55%{transform:scale(1.03);}100%{transform:scale(1);opacity:1;}}@keyframes qzCueNo{0%,100%{transform:translateX(0);}15%{transform:translateX(-7px);}30%{transform:translateX(6px);}45%{transform:translateX(-5px);}60%{transform:translateX(4px);}75%{transform:translateX(-2px);}}`}</style>
+            <style dangerouslySetInnerHTML={{ __html: `@keyframes qzCueR{0%,100%{transform:translate(0,-50%);}50%{transform:translate(3px,-50%);}}@keyframes qzCueL{0%,100%{transform:translate(0,-50%);}50%{transform:translate(-3px,-50%);}}.qz-cue{position:absolute;top:50%;z-index:3;display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:${COLORS.ember};color:var(--white);box-shadow:0 1px 4px rgba(26,22,17,0.45);pointer-events:none;font-size:15px;line-height:1;}.qz-cue-r{right:10px;animation:qzCueR 1.4s ease-in-out infinite;}.qz-cue-l{left:10px;animation:qzCueL 1.4s ease-in-out infinite;}@media(min-width:760px){.qz-cue{display:none;}}.qz-ribbon{scrollbar-width:none;-ms-overflow-style:none;}.qz-ribbon::-webkit-scrollbar{display:none;}@keyframes qzCueOk{0%{transform:scale(.96);opacity:0;}55%{transform:scale(1.03);}100%{transform:scale(1);opacity:1;}}@keyframes qzCueNo{0%,100%{transform:translateX(0);}15%{transform:translateX(-7px);}30%{transform:translateX(6px);}45%{transform:translateX(-5px);}60%{transform:translateX(4px);}75%{transform:translateX(-2px);}}` }} />
           </div>
         </div>
 

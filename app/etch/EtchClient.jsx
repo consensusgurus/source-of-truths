@@ -937,7 +937,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="et-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.et-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .et-grid{grid-template-columns:var(--et-cols);grid-template-rows:var(--et-rows);aspect-ratio:var(--et-ar);}
           /* Phone: the board takes back the card and stage padding, and the
@@ -962,7 +962,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
           .et-clue.done{opacity:0.45;text-decoration:line-through;text-decoration-thickness:max(1px, 0.14em);text-decoration-skip-ink:none;}
           .et-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
           .et-tool.on{background:${STAGE ? STAGE_C : COLORS.ink};color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};border-color:${STAGE ? STAGE_C : COLORS.ink};}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: shellMax, margin: '0 auto' }}>
 

@@ -1231,7 +1231,7 @@ export default function DailyEndCard({
           <X size={14} strokeWidth={2.6} />
         </button>
       )}
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .dec-card{background:var(--white);border:1px solid ${BORD};border-radius:16px;padding:20px 22px 16px;max-width:760px;width:100%;margin:0 auto;font-family:${SANS};color:${INK};}
         .dec-backdrop{position:fixed;inset:0;z-index:85;background:rgba(20,22,28,0.55);display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto;}
         .dec-x{position:absolute;top:7px;right:13px;width:24px;height:24px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:7px;background:var(--white);border:1px solid ${BORD};color:${SLATE};cursor:pointer;z-index:3;}
@@ -2170,7 +2170,7 @@ export default function DailyEndCard({
           .dec-arcring .num{font-size:10.5px;}
           .dec-tile-of{margin-top:auto;padding-top:2px;}
         }
-      `}</style>
+      ` }} />
 
       {/* ---- 0. cap band ---- */}
       {/* The card never named itself, so a screenshot of it was unbranded.
@@ -2699,7 +2699,7 @@ export default function DailyEndCard({
           <X size={14} strokeWidth={2.6} />
         </button>
       )}
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .dec-backdrop{position:fixed;inset:0;z-index:85;background:rgba(20,22,28,0.55);display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto;}
         .dec-x{position:absolute;top:9px;right:11px;width:24px;height:24px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:7px;background:rgba(255,255,255,.14);border:1px solid #2c437c;color:#cfe0ff;cursor:pointer;z-index:3;}
         .d5e-card{position:relative;background:var(--ground);color:#fff;border-radius:16px;padding:0;max-width:520px;width:100%;margin:0 auto;overflow:hidden;font-family:${SANS};}
@@ -2749,7 +2749,7 @@ export default function DailyEndCard({
         .d5e-gate{margin-top:8px;font-size:11px;font-weight:700;color:#93aae2;text-align:center;}
         .d5e-again{display:block;width:100%;margin-top:9px;padding:9px;border-radius:9px;border:1px solid #35529e;background:rgba(255,255,255,.08);color:#dbe6ff;font-family:inherit;font-weight:800;font-size:11.5px;cursor:pointer;}
         .d5e-again:hover{background:rgba(255,255,255,.16);}
-      `}</style>
+      ` }} />
       <div className="d5e-cap">
         <span className="d5e-mk" aria-hidden="true"><MindLoftMark size={15} ink="#233a63" accent="#2563eb" title="Mind Loft" /></span>
         <span className="d5e-wm">Mind <i>Loft</i></span>
@@ -2839,11 +2839,11 @@ export default function DailyEndCard({
   // plays over the completed board during the reveal delay AND behind the popup.
   const confettiEl = confetti.length ? (
     <div aria-hidden="true">
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .dec-conf{position:fixed;top:-6vh;z-index:120;pointer-events:none;border-radius:2px;will-change:transform,opacity;animation:dec-fall linear forwards;}
         @keyframes dec-fall{0%{transform:translateY(-6vh) rotate(0deg);opacity:1;}85%{opacity:1;}100%{transform:translateY(112vh) rotate(710deg);opacity:0;}}
         @media(prefers-reduced-motion:reduce){.dec-conf{display:none;}}
-      `}</style>
+      ` }} />
       {confetti.map((c, i) => (
         <span
           key={i}

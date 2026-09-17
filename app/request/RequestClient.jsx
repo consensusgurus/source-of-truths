@@ -91,7 +91,7 @@ function RequestView({ onSubmit }) {
 
   return (
     <div className="req" style={{ maxWidth: 1180, margin: '0 auto', padding: '12px 24px 80px' }}>
-      <style>{css}</style>
+      <style dangerouslySetInnerHTML={{ __html: css }} />
 
       <div style={{ borderBottom: `1px solid ${C.line}`, paddingBottom: 22, marginBottom: 28 }}>
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: C.accent, marginBottom: 12 }}>Letter to the Editor</div>

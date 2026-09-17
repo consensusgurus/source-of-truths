@@ -799,7 +799,7 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="qn-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.qn-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .qn-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .qn-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -808,7 +808,7 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
           .qn-pc{display:block;width:86%;height:86%;pointer-events:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,0.25));}
           .qn-dot{position:absolute;width:28%;height:28%;border-radius:50%;background:rgba(28,30,36,0.32);pointer-events:none;}
           .qn-coord{position:absolute;font-family:${MONO};font-size:min(2vw,10px);font-weight:500;opacity:.62;pointer-events:none;}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
 

@@ -955,7 +955,7 @@ export default function ListOverview({ list, voteData, extras, viewCount, onBack
 
   return (
     <div style={{ position: 'relative', zIndex: 2, background: T.surface }}>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .lov-row{display:grid;grid-template-columns:52px minmax(0,1fr) 196px;gap:22px;align-items:center;padding:18px 14px;}
         .lov-row-top{grid-template-columns:52px 280px minmax(0,1fr) 196px;}
         @media(max-width:760px){
@@ -964,7 +964,7 @@ export default function ListOverview({ list, voteData, extras, viewCount, onBack
           .lov-photo{min-height:220px !important;}
           .lov-actions{flex-direction:row !important;flex-wrap:wrap;align-items:center;row-gap:6px;}
         }
-      `}</style>
+      ` }} />
       <div style={embedded ? undefined : { maxWidth: 1040, margin: '0 auto', padding: '28px 20px 0' }}>
         {/* Condensed header — hidden when embedded as the Consensus tab of
             the list page, which renders its own header and chip row. */}

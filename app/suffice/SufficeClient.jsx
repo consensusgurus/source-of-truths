@@ -403,7 +403,7 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="sf-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.sf-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .sf-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : COLORS.accentDeep};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .sf-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
@@ -422,7 +422,7 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
           .sf-pip{width:100%;height:5px;border-radius:3px;background:rgba(28,30,36,0.13);}
           .sf-pip.on{background:var(--stg-acc, ${COLORS.accent});}
           .sf-pip.miss{background:#b91c1c;}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
           {!LOFT && (

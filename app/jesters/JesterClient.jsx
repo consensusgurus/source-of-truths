@@ -823,7 +823,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="je-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.je-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .je-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .je-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -847,7 +847,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
              so light stays where it was); the JSX's own .6 for auto marks multiplies in. */
           .je-x{color:color-mix(in srgb, var(--stg-ink, #1c1e24) calc(50% + var(--stg-dk, 100%) * 0.35), transparent);font-size:15px;font-weight:800;}
           @media(max-width:560px){.je-board-scroll{overflow-x:auto;padding-bottom:6px;}}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
 

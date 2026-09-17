@@ -588,7 +588,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="hd-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.hd-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .hd-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .hd-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -604,7 +604,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
           .hd-cell:active{transform:translateY(1px);}
           .hd-offer{animation:hdpop .18s ease;}
           @keyframes hdpop{from{transform:scale(0.9);opacity:0.4;}to{transform:scale(1);opacity:1;}}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
 

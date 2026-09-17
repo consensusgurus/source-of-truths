@@ -787,7 +787,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="fb-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.fb-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .fb-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .fb-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -796,7 +796,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
           .fb-key{font-family:${MONO};font-weight:500;font-size:20px;border: 1.5px solid var(--stg-line, rgba(28,30,36,0.3));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};border-radius:8px;height:46px;min-width:46px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
           .fb-key:hover{background:var(--stg-surf2, ${COLORS.paper});}
           .fb-key.note{color:var(--stg-acc-ink, ${COLORS.accent});}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
 

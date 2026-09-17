@@ -133,7 +133,7 @@ export default function QuizPlayerBar({ me: meProp, controlled = false, rightAct
   }, [lbRows, hubMode]);
   return (
     <div className="qpb" style={{display:'flex',flexDirection:'row',alignItems:'center',flexWrap:'nowrap',gap:16,padding:'10px 14px',background:BARBG,borderRadius:11,minHeight:56,boxSizing:'border-box',overflow:'hidden'}}>
-      <style>{`.qpb-chev{display:none;}@media(max-width:1023px){.qpb-bestcat{display:none !important;}}@media(max-width:920px){.qpb-s-correct{display:none !important;}}@media(max-width:820px){.qpb-s-accuracy{display:none !important;}}@media(max-width:700px){.qpb-s-played{display:none !important;}}@media(max-width:620px){.qpb-lb,.qpb-lbdiv{display:none !important;}.qpb-hub{margin-left:auto !important;}}@media(max-width:560px){.qpb-guest{display:none !important;}.qpb .qpb-stats{display:none !important;}.qpb-s-completed{display:none !important;}.qpb-hub{margin-left:auto !important;}}`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `.qpb-chev{display:none;}@media(max-width:1023px){.qpb-bestcat{display:none !important;}}@media(max-width:920px){.qpb-s-correct{display:none !important;}}@media(max-width:820px){.qpb-s-accuracy{display:none !important;}}@media(max-width:700px){.qpb-s-played{display:none !important;}}@media(max-width:620px){.qpb-lb,.qpb-lbdiv{display:none !important;}.qpb-hub{margin-left:auto !important;}}@media(max-width:560px){.qpb-guest{display:none !important;}.qpb .qpb-stats{display:none !important;}.qpb-s-completed{display:none !important;}.qpb-hub{margin-left:auto !important;}}` }} />
       <div className={found&&!signed?'qpb-guest':''} style={{display:'flex',flexDirection:'column',minWidth:0,height:33}}>
         <div style={lbl}>Player</div>
         {found?(

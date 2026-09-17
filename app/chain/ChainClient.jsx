@@ -798,7 +798,7 @@ export default function ChainClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="ch-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.ch-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .ch-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : COLORS.accent};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : COLORS.accent};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .ch-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
@@ -811,7 +811,7 @@ export default function ChainClient({ puzzles = [], forceNum = null }) {
           @keyframes chkey{0%,100%{box-shadow:0 0 0 0 rgba(74,4,78,0.55);}50%{box-shadow:0 0 0 6px rgba(74,4,78,0);}}
           .ch-board.shake{animation:chshake .34s ease;}
           @keyframes chshake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
 

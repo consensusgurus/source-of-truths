@@ -994,7 +994,7 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="mt-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.mt-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .mt-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid var(--blue-deep);background:${STAGE ? 'transparent' : 'var(--white)'};color:var(--blue-deep);border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .mt-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -1006,7 +1006,7 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
           .mt-board.shake{animation:mtshake .34s ease;}
           @keyframes mtshake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
           .mt-coord{position:absolute;font-family:${MONO};font-size:min(2vw,10px);font-weight:500;opacity:.62;pointer-events:none;}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
 

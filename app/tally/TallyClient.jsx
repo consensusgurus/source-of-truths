@@ -1126,7 +1126,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="tl-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.tl-wrap{padding-left:14px !important;padding-right:14px !important;}}
           .tl-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .tl-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -1191,7 +1191,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
           .tl-rtile:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(28,30,36,0.5);}
           .tl-rtile.sel{border:2px solid ${AGREE};box-shadow:0 0 0 3px ${RING}, 0 2.5px 0 rgba(28,30,36,0.5);}
           .tl-rtile.used{visibility:hidden;}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
 

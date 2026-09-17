@@ -333,7 +333,7 @@ export default function DailyBoardPanel({
 
   return (
     <div id="daily-leaderboard" className="dbp" style={{ maxWidth, margin: '18px auto 26px' }}>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .dbp{font-family:${SANS};background:${(stage || dark) ? 'transparent' : 'var(--white)'};border:1.5px solid ${stage ? 'var(--stg-line)' : (dark ? 'rgba(255,255,255,0.10)' : 'rgba(20,22,28,0.12)')};border-radius:14px;padding:15px 16px 14px;}
         .dbp-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px;}
         .dbp-hd .t{font-size:16px;font-weight:800;letter-spacing:-.01em;color:${INK};display:flex;align-items:center;gap:8px;min-width:0;}
@@ -458,7 +458,7 @@ export default function DailyBoardPanel({
           .dbp-tile-cx{top:7px;right:5px;}
           .dbp-hd .t{font-size:15px;}
         }
-      `}</style>
+      ` }} />
 
       <div className="dbp-hd">
         <span className="t">

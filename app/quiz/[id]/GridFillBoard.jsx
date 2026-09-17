@@ -483,7 +483,7 @@ export default function GridFillBoard({ quizId, mobile = false }) {
       style={{ ...(QSTAGE ? QUIZ_ACC_VARS : null), minHeight: '100vh', position: 'relative', overflow: 'clip', background: QSTAGE ? 'var(--stg-ground)' : COLORS.cream, color: QSTAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink }}>
       {!QSTAGE && <Grain />}
       <ChallengeRunOverlay run={chRun} />
-      {!QSTAGE && <div style={{ position: 'relative', zIndex: 3 }}><style>{`input:focus::placeholder{color:transparent}`}</style><QuizNavHeader /></div>}
+      {!QSTAGE && <div style={{ position: 'relative', zIndex: 3 }}><style dangerouslySetInnerHTML={{ __html: `input:focus::placeholder{color:transparent}` }} /><QuizNavHeader /></div>}
       {/* THE CAP. Comments live above the element because a JSX comment
           between attributes parses in esbuild and not in SWC, which is the
           compiler that matters. See scripts/patch-quiz-stage-cap.mjs for
@@ -503,9 +503,9 @@ export default function GridFillBoard({ quizId, mobile = false }) {
           panelBody={<QuizLeaderboard board={board} identity={identity} total={totalCells} />}
         />
       )}
-      <div className="qzf-w" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '4px 38px 80px' }}><style>{`@media(max-width:560px){.qzf-w{padding-left:14px !important;padding-right:14px !important;}}`}</style><div className="qzf-line" aria-hidden="true" />
+      <div className="qzf-w" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '4px 38px 80px' }}><style dangerouslySetInnerHTML={{ __html: `@media(max-width:560px){.qzf-w{padding-left:14px !important;padding-right:14px !important;}}` }} /><div className="qzf-line" aria-hidden="true" />
 
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');`}</style>
+        <style dangerouslySetInnerHTML={{ __html: `@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');` }} />
 
         {/* Header */}
         <div style={{ paddingBottom: 0, marginTop: 8, ...(phase === 'done' ? { maxWidth: 640, marginLeft: 'auto', marginRight: 'auto' } : null) }}>

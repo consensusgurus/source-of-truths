@@ -958,7 +958,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="cf-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.cf-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .cf-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .cf-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -1054,7 +1054,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           .cf-db.go.ready{box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 28%, transparent);}
           .cf-db.warn{border-color:${COLORS.rust};color:${COLORS.rust};}
           @media(max-width:560px){.cf-cell{width:40px;height:52px;}.cf-cell .cf-ch{font-size:18px;}.cf-pad{grid-template-columns:repeat(5,1fr);width:100%;}.cf-carry,.cf-mk{width:40px;}.cf-carry{height:26px;}}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
 

@@ -1164,7 +1164,7 @@ export default function TodayClient({ onSignup = null } = {}) {
 
   return (
     <div className="tdy">
-      <style>{CSS}</style>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <GauntletPop ready={!!board && !!today} unplayed={gauntletUnplayed} day={today || ''} />
 
       <div className="tdy-wrap">

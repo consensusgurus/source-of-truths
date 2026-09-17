@@ -345,7 +345,7 @@ export default function DailyArchiveClient({ games = [], today = '' }) {
 
   return (
     <div style={{ minHeight: '100vh', background: BG }}>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .dl-wrap{max-width:1080px;margin:0 auto;padding:22px 22px 100px;font-family:${SANS};}
         .dl-nav a{font-family:${MONO};font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:${FADED};text-decoration:none;border-bottom:1px solid rgba(28,30,36,0.22);padding-bottom:1px;}
         .dl-nav a:hover{color:${INK};border-color:${INK};}
@@ -611,7 +611,7 @@ export default function DailyArchiveClient({ games = [], today = '' }) {
         .dl-chase-t b{color:${INK};}
         .dl-bar{height:7px;border-radius:4px;background:#eef1f7;margin-top:5px;overflow:hidden;}
         .dl-bar div{height:100%;border-radius:4px;transition:width .3s;}
-      `}</style>
+      ` }} />
 
       <div className="dl-wrap">
         <div className="dl-top">

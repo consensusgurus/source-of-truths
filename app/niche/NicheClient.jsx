@@ -632,7 +632,7 @@ export default function NicheClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="nc-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.nc-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .nc-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : COLORS.accentDeep};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .nc-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
@@ -656,7 +656,7 @@ export default function NicheClient({ puzzles = [], forceNum = null }) {
           .nc-pips{display:flex;gap:4px;align-items:center;}
           .nc-pip{width:9px;height:9px;border-radius:50%;background:var(--stg-acc, ${COLORS.accent});}
           .nc-pip.spent{background:#d6dae1;}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
 

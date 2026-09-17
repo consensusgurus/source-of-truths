@@ -37,7 +37,7 @@ export default function LeaderboardStrip({ board, identity, onOpen }) {
       className="qz-lbstrip"
       style={{ display: 'flex', alignItems: 'center', width: '100%', boxSizing: 'border-box', margin: '11px 0 0', padding: '8px 12px', background: `var(--stg-surf,${T.white})`, border: `1px solid ${C.line}`, borderRadius: 12, cursor: 'pointer', overflow: 'hidden', whiteSpace: 'nowrap', fontFamily: FONT }}
     >
-      <style>{CSS}</style>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <Trophy size={13} strokeWidth={2.5} color={C.acc} style={{ flex: 'none', marginRight: 8 }} />
       <span style={{ flex: 'none', fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: `var(--stg-mute,${C.soft})`, marginRight: 12 }}>Leaderboard</span>
       {kids}

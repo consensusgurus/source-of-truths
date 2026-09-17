@@ -144,7 +144,7 @@ export default function PremierePop() {
 
   return (
     <div className="prm-scrim" onClick={() => setGames(null)}>
-      <style>{CSS}</style>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="prm" role="dialog" aria-labelledby="prm-t" style={vars} onClick={(e) => e.stopPropagation()}>
         <button className="prm-x" aria-label="Close" onClick={() => setGames(null)}><X size={16} /></button>
         <div className="prm-eye"><i /><span>New this week · {cat}</span></div>

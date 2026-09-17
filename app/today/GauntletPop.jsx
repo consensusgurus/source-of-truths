@@ -158,7 +158,7 @@ export default function GauntletPop({ ready = false, unplayed = false, day = '' 
 
   return (
     <div className="gnp-bd" role="dialog" aria-modal="true" aria-labelledby="gnp-h" onClick={close}>
-      <style>{CSS}</style>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="gnp" onClick={(e) => e.stopPropagation()}>
         <button type="button" className="gnp-x" onClick={close} aria-label="Close">
           <X size={14} strokeWidth={2.4} />

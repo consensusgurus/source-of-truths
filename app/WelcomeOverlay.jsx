@@ -100,7 +100,7 @@ export default function WelcomeOverlay() {
   return (
     <div className="mlw-scrim" role="dialog" aria-modal="true" aria-label="Welcome to Mind Loft"
       onClick={() => setRun(null)}>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .mlw-scrim{position:fixed;inset:0;z-index:220;background:rgba(13,24,48,.78);
           display:flex;align-items:center;justify-content:center;padding:18px;}
         .mlw-card{background:#fff;border-radius:16px;max-width:440px;width:100%;
@@ -129,7 +129,7 @@ export default function WelcomeOverlay() {
         .mlw-note{margin-top:10px;text-align:center;font-weight:700;font-size:11px;
           color:var(--slate,#646c7a);}
         @media(max-width:480px){.mlw-card{padding:22px 18px 18px;}.mlw-hd{font-size:20px;}}
-      `}</style>
+      ` }} />
       <div className="mlw-card" onClick={(e) => e.stopPropagation()}>
         <div className="mlw-brand">
           <MindLoftMark size={26} ink="#0b0d12" accent="#2563eb" />

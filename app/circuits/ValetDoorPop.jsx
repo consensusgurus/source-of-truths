@@ -108,7 +108,7 @@ export default function ValetDoorPop({ ready = false, self = '' }) {
 
   return (
     <div className="vdp-bd" role="dialog" aria-modal="true" aria-labelledby="vdp-h" onClick={close}>
-      <style>{CSS}</style>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="vdp" onClick={(e) => e.stopPropagation()}>
         <button type="button" className="vdp-x" onClick={close} aria-label="Close">
           <X size={14} strokeWidth={2.4} />

@@ -633,7 +633,7 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="ld-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.ld-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .ld-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .ld-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -662,7 +662,7 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
              earned and can never be mistaken for a scoring word. */
           .ld-wtag.spare{background:transparent;border-style:dashed;border-color:rgba(28,30,36,0.28);color:${FADED};font-weight:500;}
           .ld-found{max-height:280px;overflow-y:auto;overflow-x:hidden;padding:4px;}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
 

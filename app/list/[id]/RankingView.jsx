@@ -116,7 +116,7 @@ export default function RankingView({ list, voteData, extras }) {
 
   return (
     <div style={{ fontFamily: FONT }}>
-      <style>{`.rv-pgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}@media(max-width:680px){.rv-pgrid{grid-template-columns:1fr !important;}.rv-pcard{flex-direction:column;}.rv-pphoto{flex-basis:auto !important;width:100%;min-height:200px !important;}}`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `.rv-pgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}@media(max-width:680px){.rv-pgrid{grid-template-columns:1fr !important;}.rv-pcard{flex-direction:column;}.rv-pphoto{flex-basis:auto !important;width:100%;min-height:200px !important;}}` }} />
       {podium.length > 0 && (() => {
         const renderCard = (item, i, lead) => {
           const { name, locality } = parseItem(item);

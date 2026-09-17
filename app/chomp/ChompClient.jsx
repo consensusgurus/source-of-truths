@@ -1182,7 +1182,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
         </div>
       )}
 
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .ch-dock { display: flex; justify-content: center; margin-top: 12px; }
         .ch-pad {
           display: grid;
@@ -1203,7 +1203,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
           .ch-pad { grid-template-columns: repeat(3, 64px); gap: 6px; }
           .ch-pad button { height: 58px !important; }
         }
-      `}</style>
+      ` }} />
 
       {!STAGE && <Footer />}
     </div>

@@ -32,7 +32,7 @@ export default function DailyTopNav({ player, compact = false }) {
   return (
     <div className="dtn-row"
       style={{ display: 'flex', alignItems: 'center', gap: compact ? 11 : 15, marginBottom: compact ? 11 : 20, flexWrap: 'nowrap', minWidth: 0 }}>
-      <style>{'\
+      <style dangerouslySetInnerHTML={{ __html: '\
         @media(max-width:560px){\
           .dtn-row{gap:9px !important;}\
           .dtn-row .dtn-lnk{font-size:9px !important;letter-spacing:0.09em !important;}\
@@ -45,7 +45,7 @@ export default function DailyTopNav({ player, compact = false }) {
           .dtn-row .dtn-chip{font-size:8.5px !important;gap:4px !important;padding:3px 6px !important;}\
           .dtn-row .dtn-nm{max-width:66px !important;}\
         }\
-      '}</style>
+      ' }} />
       <a href="/" className="dtn-lnk" style={navStyle}>Puzzles &amp; Quizzes</a>
       <a href="/lists" className="dtn-lnk" style={navStyle}>Top 10 Lists</a>
       {player && (

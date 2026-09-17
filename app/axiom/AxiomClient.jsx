@@ -735,7 +735,7 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="ax-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.ax-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .ax-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .ax-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -758,7 +758,7 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
           .ax-rule.dead .ax-rule-t{text-decoration:line-through;}
           .ax-rule.win{border-color:${COLORS.green};border-left-color:${COLORS.green};background:${COLORS.greenSoft};}
           .ax-chip{flex:0 0 auto;width:26px;height:26px;border-radius:7px;border: 1.5px solid var(--stg-line2, rgba(28,30,36,0.25));background:var(--stg-surf, ${COLORS.cream});font-family:${MONO};font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;color:${FADED};}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
 

@@ -744,7 +744,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
     // one-line cap below, and no footer. That means this page owns its ground
     // and its ink outright, which the stylesheet does explicitly.
     <div className="rn" style={{ minHeight: '100vh', background: T.ground, position: 'relative', overflowX: 'hidden' }}>
-      <style>{CSS}</style>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
       {/* THE ONLY CHROME. Not LoftCap and not the site footer: the run is a
           sitting you sit down to, and every band above or below it was another

@@ -161,7 +161,7 @@ export default function KidsHubClient() {
     <div className="kd">
       <style dangerouslySetInnerHTML={{ __html: KIDS_CSS }} />
       <div className="kd-wrap">
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           .kc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;margin-top:16px;}
           .kc-link{text-decoration:none;color:inherit;display:block;}
           .kc-tile{height:100%;background:var(--kpaper);border:2px solid var(--kline);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--kshadow);transition:transform .15s,border-color .15s;}
@@ -194,7 +194,7 @@ export default function KidsHubClient() {
           .kc-sec h2{font-size:28px;font-weight:700}
           .kc-sec .kc-sub{color:var(--kink2)}
           @media (max-width:820px){.kc-hero{grid-template-columns:1fr}.kc-conf{display:none}}
-        `}</style>
+        ` }} />
         <KidsHeader active="today" />
 
         <div className="kc-hero">

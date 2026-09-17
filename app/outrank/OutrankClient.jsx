@@ -719,7 +719,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="ork-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.ork-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .ork-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .ork-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -732,7 +732,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
           .ork-face:disabled{opacity:.55;cursor:default;}
           .ork-face .ork-gold{color:${COLORS.gold};}
           @media(max-width:560px){.ork-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.ork-ttl h1{font-size:21px;letter-spacing:0.02em;}.ork-ttl .ork-ttl-dt{font-size:15px;}.ork-ttl-dot{display:none;}.ork-mh-tile{width:30px !important;height:30px !important;font-size:17px !important;}}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
 

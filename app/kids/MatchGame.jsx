@@ -177,7 +177,7 @@ export default function MatchGame({ items, pairs, title, intro, quizId, cols = 5
         <SiteHeader active="" />
       </div>
       <div style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 22px 70px' }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           .mm-reset{display:inline-flex;align-items:center;gap:6px;border:1px solid ${C.line};background:var(--white);color:${C.ink};font-family:${FONT};font-weight:700;font-size:13.5px;padding:8px 14px;border-radius:10px;cursor:pointer;}
           .mm-reset:hover{border-color:${C.accent};color:${C.accent};}
           .mm-textbtn{border:none;background:transparent;color:${C.muted};font-family:${FONT};font-weight:700;font-size:13.5px;padding:8px 6px;border-radius:8px;cursor:pointer;}
@@ -214,7 +214,7 @@ export default function MatchGame({ items, pairs, title, intro, quizId, cols = 5
           .mm-win p{font-size:14px;color:#0f6e56;margin:0 0 16px;font-weight:600;}
           .mm-win-row{display:flex;gap:10px;}
           .mm-views{display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;color:${C.soft};font-weight:600;margin:20px 0 0;}
-        `}</style>
+        ` }} />
 
         <Link href="/kids" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: C.muted, textDecoration: 'none', marginBottom: 12 }}>
           <span style={{ fontSize: 16, lineHeight: 1 }}>&#8592;</span> {backLabel}

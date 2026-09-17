@@ -174,7 +174,7 @@ export default function ContestBoard() {
             phone, so the username was invisible. Under 640px the three
             breakdown columns are dropped from the row and reappear as a line
             under the name, which is also how the community page shows them. */}
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           .cb-tbl{width:100%;border-collapse:collapse;table-layout:fixed;}
           .cb-tbl td,.cb-tbl th{padding:9px 0;}
           .cb-rk{width:38px;font-size:13px;font-weight:800;}
@@ -191,7 +191,7 @@ export default function ContestBoard() {
             .cb-sub{display:block;}
             .cb-sc{width:64px;}
           }
-        `}</style>
+        ` }} />
         <table className="cb-tbl">
           <thead>
             <tr>

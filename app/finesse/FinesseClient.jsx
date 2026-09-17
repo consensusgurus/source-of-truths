@@ -655,7 +655,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
       <DailyChrome />
 
       <div style={{ position: 'relative', zIndex: 2, padding: LOFT ? '0 16px 40px' : '18px 16px 40px' }}>
-        <style>{CSS}</style>
+        <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
 

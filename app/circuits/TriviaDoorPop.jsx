@@ -136,7 +136,7 @@ export default function TriviaDoorPop({ ready = false }) {
 
   return (
     <div className="tdp-bd" role="dialog" aria-modal="true" aria-labelledby="tdp-h" onClick={close}>
-      <style>{CSS}</style>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="tdp" onClick={(e) => e.stopPropagation()}>
         <button type="button" className="tdp-x" onClick={close} aria-label="Close">
           <X size={14} strokeWidth={2.4} />

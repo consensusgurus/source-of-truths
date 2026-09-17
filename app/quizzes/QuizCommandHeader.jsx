@@ -290,7 +290,7 @@ export default function QuizCommandHeader({ me, onSignup, ticker = [], variant =
     };
     return (
       <div className={inner ? 'qchm qchm-inner' : 'qchm'}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
           /* Locked to the top (owner, 2026-08-03). sticky rather than fixed so it
              keeps its own space in flow and needs no spacer element the way the
@@ -454,7 +454,7 @@ export default function QuizCommandHeader({ me, onSignup, ticker = [], variant =
             .qchm-bt.qchm-gold,.qchm-signup{padding:6px 13px;}
             .qchm-r2{border-bottom-width:2px;}
           }
-        `}</style>
+        ` }} />
         <div className="qchm-r1"><div className="qchm-in">
           <Link href="/" className="qchm-brand" aria-label="Mind Loft home">
             <MindLoftMark size={30} ink="#ffffff" accent="#7dd3fc" />
@@ -567,7 +567,7 @@ export default function QuizCommandHeader({ me, onSignup, ticker = [], variant =
 
   return (
     <div className="qch" style={{ fontFamily: FONT }}>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
         /* The bar is position:fixed, so this wrapper reserves the height it no longer
            occupies in flow. Kept on .qch, which wraps nothing but the bar, so there is
@@ -768,7 +768,7 @@ export default function QuizCommandHeader({ me, onSignup, ticker = [], variant =
         @media(max-width:380px){
           .qch-bar.is-guest .qch-nudge{display:none;}
         }
-      `}</style>
+      ` }} />
       <div className={`qch-bar ${found ? 'is-user' : 'is-guest'}`} ref={barRef}>
         <Link href="/" className="qch-brandlogo" ref={logoRef} style={{ flex: 'none', display: 'flex' }} aria-label="Mind Loft home"><Logo size={30} /></Link>
         <Link href="/" className="qch-word"><span className="qch-wl">Mind <em>Loft</em></span><span className="qch-ws"><MindLoftMark size={32} /></span></Link>

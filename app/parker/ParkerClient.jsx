@@ -682,7 +682,7 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="pk-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.pk-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .pk-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .pk-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -693,7 +693,7 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
           .pk-dot{position:absolute;width:26%;height:26%;border-radius:50%;background:rgba(28,30,36,0.34);pointer-events:none;left:37%;top:37%;}
           .pk-lot.shake{animation:pkshake .34s ease;}
           @keyframes pkshake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
 

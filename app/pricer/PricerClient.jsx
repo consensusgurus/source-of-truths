@@ -754,7 +754,7 @@ export default function PricerClient({ puzzles = [], forceNum = null, preview = 
         </div>
       )}
       <div className="pr-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 24px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.pr-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .pr-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .pr-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -882,7 +882,7 @@ export default function PricerClient({ puzzles = [], forceNum = null, preview = 
                            border-radius:6px;padding:9px 18px;color:${T.white};cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .pr-guess-submit:hover{background:${COLORS.accentDeep};border-color:${COLORS.accentDeep};}
           .pr-guess-result{font-family:${MONO};font-size:12.5px;font-weight:500;line-height:1.45;color:${FADED};margin:8px 0 0;text-align:center;}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
 

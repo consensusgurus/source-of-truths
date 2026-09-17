@@ -248,7 +248,7 @@ export default function LoftCap({
 // mount on a page whose own classes are .stage-page and .stg-*.
 export function LoftSheet() {
   return (
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
   .lcap{background:var(--cc,#2b4676);border-top:1px solid rgba(255,255,255,0.16);position:relative;font-family:${SANS};z-index:4}
   /* THE BAND WEARS THE GAME'S CATEGORY (owner, 2026-08-26). --cc is the shelf hue
      from lib/home-blues, set inline below, so tapping Crux under the blue Word
@@ -1117,6 +1117,6 @@ export function LoftSheet() {
      ends just under the board, so the light region below became a stripe with
      navy under it. The stage carries its own navy and the page stays light, so
      whatever is left at the bottom is simply page. */
-        `}</style>
+        ` }} />
   );
 }

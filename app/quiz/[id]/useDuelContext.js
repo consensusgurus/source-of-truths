@@ -142,7 +142,7 @@ export function DuelBanner({ token, info, submitted }) {
         </>
       )}
       <button onClick={() => setHidden(true)} aria-label="Dismiss" style={{ flex: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 999, border: 'none', background: 'transparent', color: T.muted, cursor: 'pointer', padding: 0 }}><X size={16} strokeWidth={2.5} /></button>
-      <style>{`@media(max-width:560px){.sot-duel-banner{bottom:78px !important;}}`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `@media(max-width:560px){.sot-duel-banner{bottom:78px !important;}}` }} />
     </div>
   );
 }

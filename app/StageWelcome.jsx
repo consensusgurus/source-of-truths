@@ -778,7 +778,7 @@ export default function StageWelcome({ capRef }) {
       onClick={finish}
       style={clip ? { clipPath: clip, WebkitClipPath: clip } : undefined}
     >
-      <style>{CSS}</style>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {/* THE RAMP. Ten bands in ramp order, each naming its category in the
           ramp's ink. THE CURTAIN IS DARK IN BOTH REGISTERS, and the bands are
           the DARK register's pastels in both (owner, 2026-09-01, settled after a

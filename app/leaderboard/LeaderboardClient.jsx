@@ -200,7 +200,7 @@ export default function LeaderboardClient() {
           ) : (
             <div style={{ textAlign: 'center', padding: '60px 24px', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 18, color: T.slate }}>Loading the standings...</div>
           )}
-          <style>{`
+          <style dangerouslySetInnerHTML={{ __html: `
             .lb-metrics{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;}
             .lb-metric{display:inline-flex;align-items:center;gap:7px;padding:9px 14px;background:${T.surfaceAlt};border:1.5px solid ${T.ink};font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;color:${T.ink};cursor:pointer;}
             .lb-metric:hover{background:#e4dbc8;}
@@ -214,7 +214,7 @@ export default function LeaderboardClient() {
             .lb-title{min-height:46px;}
             @media(max-width:900px){.lb-grid{grid-template-columns:1fr 1fr;gap:30px;}}
             @media(max-width:520px){.lb-grid{grid-template-columns:1fr;gap:34px;}.lb-title{min-height:0;}}
-          `}</style>
+          ` }} />
         </section>
       </div>
       <Footer />

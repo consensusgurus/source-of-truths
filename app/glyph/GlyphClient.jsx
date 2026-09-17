@@ -589,7 +589,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
         />
       )}
       <div style={{ position: 'relative', zIndex: 2, padding: '14px 16px 8px' }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           .gl-btn{font-family:${SANS};font-weight:800;font-size:13.5px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:9px;padding:9px 15px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .gl-btn:disabled{opacity:0.4;cursor:default;}
           .gl-cell{box-sizing:border-box;display:flex;align-items:center;justify-content:center;position:relative;min-width:0;min-height:0;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;border: 1px solid var(--stg-line, rgba(28,30,36,0.16));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};}
@@ -623,7 +623,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
             .gl-chip b{font-size:14px;}
           }
           @media(max-width:400px){.gl-num{font-size:6.5px;top:0.5px;left:1px;}}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
 

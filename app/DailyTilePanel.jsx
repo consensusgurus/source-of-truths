@@ -603,7 +603,7 @@ export default function DailyTilePanel({
         <X size={13} strokeWidth={2.8} />Close
       </button>
 
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .dtp{position:absolute;inset:0;z-index:6;background:var(--white);border-radius:13px;color:var(--ink);
              padding:13px 16px;display:flex;flex-direction:column;gap:10px;overflow:hidden;
              font-family:'Manrope',system-ui,-apple-system,sans-serif;animation:dtpIn .16s ease-out;}
@@ -1160,7 +1160,7 @@ export default function DailyTilePanel({
           .dtp-grid.cw .dtp-col:nth-child(2),.dtp-grid.cw .dtp-col:nth-child(3){grid-row:1;}
           .dtp-grid.cw .dtp-trend{grid-column:1/-1;grid-row:2;border-right:0;border-top:1px solid var(--border);}
         }
-      `}</style>
+      ` }} />
     </div>
   );
 }

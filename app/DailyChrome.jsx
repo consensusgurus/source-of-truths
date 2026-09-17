@@ -63,7 +63,7 @@ export default function DailyChrome({ slug, loft: loftProp = false }) {
           overlay on the page lands above the header, while 5 still clears the
           fixed Grain wash at z-index 1 and the page column at 2. Do not raise
           this without checking dec-backdrop in DailyEndCard. */}
-      <style>{'.dch-wrap{position:relative;z-index:5;}' + (loft ? '.dch-loft .qchm-r2{display:none}' : '')}</style>
+      <style dangerouslySetInnerHTML={{ __html: '.dch-wrap{position:relative;z-index:5;}' + (loft ? '.dch-loft .qchm-r2{display:none}' : '') }} />
       <QuizNavHeader />
       {!loft && <DailySlateRail current={slug} />}
       {/* The Daily Five run strip. Mounted HERE rather than in each game

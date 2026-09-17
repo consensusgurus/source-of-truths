@@ -212,12 +212,12 @@ export default function DailyCombinedLeaderboard({ todayKey = null, identity = n
   // clients' light `#daily-leaderboard` wrapper (navy owns the card). Harmless
   // where that id is absent (archive/hub).
   const chrome = (
-    <style>{`
+    <style dangerouslySetInnerHTML={{ __html: `
       .dclb-tabs::-webkit-scrollbar{height:6px;}
       .dclb-tabs::-webkit-scrollbar-track{background:transparent;}
       .dclb-tabs::-webkit-scrollbar-thumb{background:${th.scrollThumb};border-radius:999px;}
       ${th.light || th.stage ? '' : '#daily-leaderboard{background:transparent !important;border:none !important;padding:0 !important;box-shadow:none !important;}'}
-    `}</style>
+    ` }} />
   );
 
   const wrap = embedded
@@ -450,7 +450,7 @@ function GameBoard({ game, myKey, gameMax, th }) {
   }
   return (
     <div>
-      <style>{`.dclb-g{grid-template-columns:40px 1fr 60px 58px 66px;}@media(max-width:520px){.dclb-g{grid-template-columns:${gridSm};}.dclb-time{display:none;}}`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `.dclb-g{grid-template-columns:40px 1fr 60px 58px 66px;}@media(max-width:520px){.dclb-g{grid-template-columns:${gridSm};}.dclb-time{display:none;}}` }} />
       {gameHeader}
       <div className="dclb-g" style={{ display: 'grid', gap: 8, padding: '0 14px 8px', fontFamily: FONT, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: th.dim }}>
         <span>#</span><span>Player</span><span style={{ textAlign: 'right' }}>Score</span><span className="dclb-time" style={{ textAlign: 'right' }}>Time</span><span style={{ textAlign: 'right' }}>Pts</span>

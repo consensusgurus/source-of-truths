@@ -536,7 +536,7 @@ export default function HomeRails({
     : '';
 
   const CSS = (
-    <style>{`
+    <style dangerouslySetInnerHTML={{ __html: `
       /* The panel's white ground STOPS below its header (owner, 2026-08-12).
          A square-cornered child clipped by a rounded parent double-blends at
          the curve: the corner pixel comes out part header navy, part whatever
@@ -877,7 +877,7 @@ export default function HomeRails({
       @media(min-width:641px) and (max-width:900px){
         .hr-panel,.hr-share{margin-left:0;margin-right:0;width:100%;}
       }
-    `}</style>
+    ` }} />
   );
 
   if (side === 'board') {
@@ -930,7 +930,7 @@ export default function HomeRails({
     return (
       <>
         {CSS}
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           /* Scoped to .hr-board and placed AFTER the shared sheet on purpose:
              the max-width:1200px block in CSS flattens .hr-flex to flex:none,
              so anything that has to stretch must be declared later. Pinning is
@@ -1011,7 +1011,7 @@ export default function HomeRails({
             .hrb-pane{flex:1 1 auto;}
             .hrb-pane .hrb-body{flex:1 1 auto;}
           }
-        `}</style>
+        ` }} />
         <section className="hr-panel hr-board">
           <div className="hr-ph">
             <span className="hr-pi"><CrownIcon /></span>

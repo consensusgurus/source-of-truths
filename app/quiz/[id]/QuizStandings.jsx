@@ -280,7 +280,7 @@ export default function QuizStandings({
 
   return (
     <div className="qiq" style={outer}>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .qiq{font-family:${FONT};color:var(--stg-ink,${C.ink});text-align:left;}
         .qiq-hero{position:relative;overflow:hidden;display:block;width:100%;text-align:center;font-family:inherit;cursor:pointer;border:1px solid #cfe0f7;background:linear-gradient(180deg,#f4f8ff 0%,#eaf2fe 100%);border-radius:16px;padding:15px 16px 13px;margin-bottom:10px;transition:border-color .12s ease,box-shadow .12s ease,background .3s ease;}
         .qiq-hero.full{border-color:#cdeeda;background:linear-gradient(180deg,#f2fcf6 0%,#e6f7ee 100%);}
@@ -355,7 +355,7 @@ export default function QuizStandings({
           .qiq-rk{font-size:27px;}
           .qiq-of{font-size:10.5px;}
         }
-      `}</style>
+      ` }} />
 
       {/* IQ hero: what this quiz paid, on the brain meter of the day's IQ. */}
       <button

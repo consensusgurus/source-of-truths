@@ -747,7 +747,7 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="st-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.st-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .st-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .st-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -763,7 +763,7 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
           .st-stet{font-family:${SANS};font-weight:800;font-size:11.5px;letter-spacing:0.05em;text-transform:uppercase;border:1.5px dashed rgba(28,30,36,0.35);background:none;color:${FADED};border-radius:7px;padding:5px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
           .st-stet:hover{border-color:${COLORS.green};color:${COLORS.green};}
           @media(max-width:560px){.st-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.st-ttl h1{font-size:21px;letter-spacing:0.02em;}.st-ttl .st-ttl-dt{font-size:15px;}.st-ttl-dot{display:none;}}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
 

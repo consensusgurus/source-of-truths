@@ -88,7 +88,7 @@ export default function PlayerProfileClient({ name }) {
 
   return (
     <div className="pf stage-page" data-stage-theme={stageTheme} style={accent.vars}>
-      <style>{profileStageCss}</style>
+      <style dangerouslySetInnerHTML={{ __html: profileStageCss }} />
 
       <div className="pf-cap">
         <Link className="pf-brand" href="/" aria-label="Mind Loft home">

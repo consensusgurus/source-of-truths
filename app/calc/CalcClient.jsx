@@ -741,7 +741,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="cl-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.cl-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .cl-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : COLORS.accent};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : COLORS.accent};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .cl-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
@@ -765,7 +765,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
           .cl-goal.got .v{color:${COLORS.green};}
           .cl-goal.solo{border:none;padding:0;min-width:0;background:none;}
           .cl-goal.solo .v{font-size:50px;}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 680, margin: '0 auto' }}>
 

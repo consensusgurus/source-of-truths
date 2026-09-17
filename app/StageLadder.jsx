@@ -57,7 +57,7 @@ export default function StageLadder({
   const cls = 'stl' + (vertical ? ' v' : '') + (className ? ' ' + className : '');
   return (
     <div className={vertical ? 'stl-wrap v' : 'stl-wrap'}>
-      <style>{CSS}</style>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {label ? <div className="stl-l">{label}</div> : null}
       <div className={cls} style={height ? { height } : undefined} aria-hidden="true">
         {blocks.map((b, bi) => (

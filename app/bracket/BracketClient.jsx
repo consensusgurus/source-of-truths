@@ -422,7 +422,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
         />
       )}
       <div className="bk-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 24px 80px', fontFamily: SANS }}>
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.bk-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .bk-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .bk-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
@@ -438,7 +438,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
           .bk-s.right{background:${COLORS.greenSoft};color:#14532d;box-shadow:inset 3px 0 0 ${COLORS.green};}
           .bk-s.wrong{background:${COLORS.redSoft};color:#7f1d1d;text-decoration:line-through;box-shadow:inset 3px 0 0 ${COLORS.redInk};}
           .bk-v{font-family:${MONO};font-size:10px;font-weight:500;color:${FADED};margin-left:6px;}
-        `}</style>
+        ` }} />
 
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
 
