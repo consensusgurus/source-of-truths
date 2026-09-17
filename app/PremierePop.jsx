@@ -43,6 +43,18 @@ import { fetchDayStatus, etToday } from './useDayStats';
 
 const KEY = (k) => `sot_premiere_${k}`;
 
+// FRESH ONLY (owner report, 2026-09-17: "it served a popup for old games").
+// A browser that had never been stamped was handed every open window at once:
+// Snug from 9/13 on the same card as that day's Yose and Crib, under Snug's
+// date and category. Now the card names only the NEWEST launch batch, and only
+// while that batch is at most MAX_AGE_DAYS old, whatever `until` says.
+const MAX_AGE_DAYS = 2;
+function daysAgo(iso, today) {
+  const a = Date.parse(`${iso}T12:00:00Z`), b = Date.parse(`${today}T12:00:00Z`);
+  return Number.isFinite(a) && Number.isFinite(b) ? Math.round((b - a) / 86400000) : 99;
+}
+const NUM = ['', 'One', 'Two', 'Three', 'Four', 'Five'];
+
 function returning() {
   try {
     if (localStorage.getItem('sot_quiz_identity')) return true;
@@ -98,6 +110,7 @@ export default function PremierePop() {
 
     let cands = open.map((p) => p.key).filter((k) => force || (!playedLocally(k) && !safeGet(KEY(k))));
     if (!cands.length) return;
+    const fromOf = (k) => (PREMIERES.find((p) => p.key === k) || {}).from || '';
 
     const timers = [];
     fetchDayStatus().then((d) => {
@@ -106,6 +119,11 @@ export default function PremierePop() {
         cands = cands.filter((k) => !(d.archive[k] && d.archive[k].played > 0));
       }
       if (!cands.length) return;
+      // The newest batch only, and only while it is fresh.
+      const newest = cands.map(fromOf).sort().pop();
+      if (!force && daysAgo(newest, today) > MAX_AGE_DAYS) return;
+      cands = cands.filter((k) => fromOf(k) === newest);
+      if (!cands.length) return;
       // Wait out the arrival, then open. Give up after ~15s rather than open
       // onto a page the reader has already started using.
       const started = Date.now();
@@ -113,7 +131,9 @@ export default function PremierePop() {
         if (!alive) return;
         if (arrivalBusy() && Date.now() - started < 15000) { timers.push(setTimeout(tick, 300)); return; }
         if (Date.now() - started >= 15000 && arrivalBusy()) return;
-        if (!force) for (const k of cands) { try { localStorage.setItem(KEY(k), today); } catch (e) {} }
+        // Stamp every open premiere, not just the ones on the card, so an
+        // older launch left off it never turns up on a later visit.
+        if (!force) for (const k of open.map((p) => p.key)) { try { localStorage.setItem(KEY(k), today); } catch (e) {} }
         setGames(cands);
       };
       timers.push(setTimeout(tick, 600));
@@ -132,7 +152,13 @@ export default function PremierePop() {
   const rows = games.map((k) => DAILY_GAME_MAP[k]).filter(Boolean);
   const many = rows.length > 1;
   const cat = rows[0].cat || 'Trivia';
+  const cats = [...new Set(rows.map((g) => g.cat || 'Trivia'))];
+  const oneCat = cats.length === 1;
   const since = PREMIERES.find((p) => p.key === rows[0].key);
+  const when = since && since.from === etToday() ? 'today' : dateLabel(since && since.from);
+  const allOf = rows.length === 2 ? 'Both' : 'All';
+  const neither = rows.length === 2 ? 'either' : 'any';
+  const shelves = oneCat ? `the ${cat} shelf` : `the ${cats.slice(0, -1).join(', ')} and ${cats[cats.length - 1]} shelves`;
   // THE CATEGORY'S RAMP STEP, in whichever register the page is in. The home
   // has no accent of its own (its cap is the default sky), so this is read off
   // the category rather than off --stg-acc. Safe at render time: this only
@@ -149,11 +175,11 @@ export default function PremierePop() {
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="prm" role="dialog" aria-labelledby="prm-t" style={vars} onClick={(e) => e.stopPropagation()}>
         <button className="prm-x" aria-label="Close" onClick={() => setGames(null)}><X size={16} /></button>
-        <div className="prm-eye"><i /><span>New this week · {cat}</span></div>
-        <h2 id="prm-t">{many ? `${rows.length === 2 ? 'Two' : rows.length} new dailies` : 'A new daily'}</h2>
+        <div className="prm-eye"><i /><span>{when === 'today' ? 'New today' : 'New this week'}{oneCat ? ` · ${cat}` : ''}</span></div>
+        <h2 id="prm-t">{many ? `${NUM[rows.length] || rows.length} new dailies` : 'A new daily'}</h2>
         <p className="prm-lede">
-          {many ? `Both premiered ${dateLabel(since && since.from)}. You have not played either yet.`
-            : `${rows[0].name} premiered ${dateLabel(since && since.from)}. You have not played it yet.`}
+          {many ? `${allOf} premiered ${when}. You have not played ${neither} yet.`
+            : `${rows[0].name} premiered ${when}. You have not played it yet.`}
         </p>
         <div className="prm-rows">
           {rows.map((g) => (
@@ -164,7 +190,7 @@ export default function PremierePop() {
             </div>
           ))}
         </div>
-        <div className="prm-foot">{many ? `Both are in the ${cat} shelf every day.` : `It is in the ${cat} shelf every day.`}</div>
+        <div className="prm-foot">{many ? `${allOf} are in ${shelves} every day.` : `It is in ${shelves} every day.`}</div>
       </div>
     </div>
   );
