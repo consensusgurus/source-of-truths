@@ -6,6 +6,8 @@ import { QUIZZES, getQuiz } from '@/lib/quizzes';
 import { DAILY_GAMES, DAILY_DATED_RE, dailyLabel, dailyDept } from '@/lib/daily-games';
 import { quizDept as deptOf, DEPT_COLOR, DEPT_LABEL, DEPT_NAV } from '@/lib/quiz-departments';
 import DailyCombinedLeaderboard from '../../quiz/[id]/DailyCombinedLeaderboard';
+// Everyone / <group> above today's board (2026-09-17).
+import StatHubGroupBoard from '../../groups/StatHubGroupBoard';
 import { withRef } from '@/lib/referrals';
 import { Metric, ActivityFeed, XpPanel, TrophyCase } from '../../player/ProfileShared';
 import { T } from '@/lib/theme';
@@ -1158,7 +1160,9 @@ function DailyGamesView({ onSelectPlayer, initialGame = null }) {
           the pre-stage white card, which painted a white rectangle on a near-black
           page (and painted it first, which read as the page pre-firing an old
           leaderboard). /daily is still light and still passes `light`. */}
-      <DailyCombinedLeaderboard stage allTimeToggle initialTab={initialGame} key={initialGame || 'overall'} />
+      <StatHubGroupBoard>
+        <DailyCombinedLeaderboard stage allTimeToggle initialTab={initialGame} key={initialGame || 'overall'} />
+      </StatHubGroupBoard>
 
       {/* 2. Day-by-day champion history. */}
       <div id="daily-champions" className="card" style={{ padding: '16px 18px', marginTop: 16, scrollMarginTop: 16 }}>

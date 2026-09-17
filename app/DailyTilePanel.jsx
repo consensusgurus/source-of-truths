@@ -78,6 +78,8 @@ function fmtPts(x) { const v = Math.round(Number(x) * 10) / 10; return Number.is
 export default function DailyTilePanel({
   game, accent, isDone = false, inProgress = false, streak = 0,
   todayRow = null, todayField = null, standings = [], meKey = null,
+  // A node drawn under the Today label: the Everyone / group switch (2026-09-17).
+  todaySwitch = null, todayScopeName = null,
   data = null, canPin = false, pinned = false, onTogglePin = null, onClose,
   expandAll = false,
 }) {
@@ -392,8 +394,9 @@ export default function DailyTilePanel({
 
         <section className={`dtp-col${secOpen('lb') ? ' open' : ''}`}>
           <div className="dtp-lab"><Trophy size={12} strokeWidth={2.4} />Today
-            {todayField != null ? <span className="dtp-labct">{todayField.toLocaleString()} playing</span> : null}
+            {todayField != null ? <span className="dtp-labct">{todayField.toLocaleString()} {todayScopeName ? `played in ${todayScopeName}` : 'playing'}</span> : null}
           </div>
+          {todaySwitch}
           <div className="dtp-lb">
             {todayTop.length ? (
               <>
@@ -418,7 +421,7 @@ export default function DailyTilePanel({
                 ) : null}
               </>
             ) : (
-              <div className="dtp-empty">No scores yet today. Be the first.</div>
+              <div className="dtp-empty">{todayScopeName ? `Nobody in ${todayScopeName} has played this yet.` : 'No scores yet today. Be the first.'}</div>
             )}
           </div>
 

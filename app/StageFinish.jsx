@@ -49,6 +49,8 @@ import { useStageTheme } from '@/lib/stage-theme';
 import { gameStats, mmss } from '@/lib/daily-row-stats';
 import GameGlyph from './GameGlyph';
 import JoinLeaderboardForm from './quiz/[id]/JoinLeaderboardForm';
+// Where this finish puts the player in each of their groups (2026-09-17).
+import FinishGroupLine from './groups/FinishGroupLine';
 
 // ── THE FLOOD ──────────────────────────────────────────────────────────────
 // THE CURTAIN ARRIVES AT FULL SIZE (owner, 2026-08-31). The band was already
@@ -1099,6 +1101,10 @@ export default function StageFinish({
             </table>
           </section>
         ) : null}
+
+        {/* YOUR GROUPS TODAY (owner, 2026-09-17): dailies only, and only for a
+            player in a group; see app/groups/FinishGroupLine.jsx. */}
+        {me && !boardLabel ? <FinishGroupLine gameKey={me.key} /> : null}
 
         {/* CLAIM YOUR RANK: full width, above the hand-forward, guests only.
             The figure is the guest's would-be placement on the registered

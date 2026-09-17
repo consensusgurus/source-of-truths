@@ -86,6 +86,8 @@ import { groupOf } from '@/lib/daily-groups';
 import MindLoftMark from './MindLoftMark';
 import { fetchDayStatus, etToday } from './useDayStats';
 import { fetchDailyBoard, dailyBoardQuery, dailyBoardIdentity } from './dailyBoardClient';
+// YESTERDAY IN YOUR GROUP (owner, 2026-09-17, idea 5 of the group standings).
+import { fetchGroupStanding, ordinal as grpOrdinal, fmtPts as grpPts } from './groups/groupStanding';
 
 // ── the ending's constants, not a new set ──────────────────────────────────
 // THE OPENING: bands up by ~1.05s, the wipe from 1.15s, the words at 1.6s.
@@ -355,6 +357,9 @@ export default function StageWelcome({ capRef }) {
   const [lastBoard, setLastBoard] = useState(null);
   const [todayBoard, setTodayBoard] = useState(null);
   const [todayDone, setTodayDone] = useState(false);
+  // Yesterday's group result, same audience as the boards, its own done flag.
+  const [grpY, setGrpY] = useState(null);
+  const [grpDone, setGrpDone] = useState(false);
   const [name, setName] = useState('');
   const [cold, setCold] = useState(false);  // no name: the mark and the three lines
   // THE BOARDS ON DEMAND (?boards=1). The two boards are gated on a cross-day
@@ -566,6 +571,27 @@ export default function StageWelcome({ capRef }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [on, data, settled, preview, lastDay]);
 
+  // ── yesterday in the reader's group ──────────────────────────────────────
+  // A cross-day arrival only, like the boards: a reader who has played today
+  // has already seen their group today. The first group anyone played in
+  // yesterday is the one named; a reader in no group costs no request at all
+  // (fetchGroupStanding returns at once for a browser with no saved name).
+  useEffect(() => {
+    if (!on) return;
+    if (!data) { if (settled) setGrpDone(true); return; }
+    const gap = daysBetween(lastDay, etToday());
+    if (!preview && (data.playedToday || gap == null || gap < 1)) { setGrpDone(true); return; }
+    let alive = true;
+    fetchGroupStanding({ day: 'yesterday' }).then((d) => {
+      if (!alive || goneRef.current) return;
+      const g = d && d.groups ? d.groups.find((x) => !x.failed && x.played > 0 && x.leader) : null;
+      if (g) setGrpY({ ...g, me: d.userKey });
+      setGrpDone(true);
+    });
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [on, data, settled, preview, lastDay]);
+
   // ── the case, and its figures ────────────────────────────────────────────
   const view = useMemo(() => {
     const today = etToday();
@@ -579,6 +605,21 @@ export default function StageWelcome({ capRef }) {
     // day nobody else played, or who arrives before anyone has finished today,
     // gets one column instead of a half-empty pair. Both empty is no item at all
     // and the case falls back to its own standing figures.
+    const grpFig = () => {
+      if (!grpY) return [];
+      const top = (grpY.top || []).slice(0, 3);
+      const leaderIsMe = grpY.leader.userKey === grpY.me;
+      const second = top[1];
+      let line;
+      if (leaderIsMe) {
+        line = second ? `You won, ${grpPts(grpY.leader.total - second.total)} ahead of ${second.username}.` : 'You won.';
+      } else {
+        line = `${grpY.leader.username} won.`;
+        if (grpY.rank) line += ` You were ${grpOrdinal(grpY.rank)}${grpY.gap != null && grpY.rank > 1 ? `, ${grpPts(grpY.leader.total - grpY.total)} back` : ''}.`;
+        else line += ' You sat it out.';
+      }
+      return [{ k: 'grp', grp: true, name: grpY.name, line, top, me: grpY.me }];
+    };
     const listOf = () => {
       if (RECAP_ROWS) return rowsOf(recap);
       const cols = [];
@@ -641,6 +682,7 @@ export default function StageWelcome({ capRef }) {
         caption: RECAP_ROWS ? capOf(data.lastPlayed) : null,
         figs: [
           st ? { k: 'streak', lead: true, count: st, lab: 'day streak' } : null,
+          ...grpFig(),
           ...listOf(),
         ].filter(Boolean),
       };
@@ -661,6 +703,7 @@ export default function StageWelcome({ capRef }) {
           // under it. Skipped when the last game had no set, or the set has
           // nothing open (a reader who finished it all today is not lapsed).
           (gap >= LAPSED_GAP && lastSet && lastSet.first) ? { k: 'set', set: true, ...lastSet } : null,
+          ...grpFig(),
           // A long absence often has no recap worth showing (the last day was
           // months ago, or they placed in nothing), so the standing figures stay
           // as the fallback rather than leaving the arrival a lead and nothing.
@@ -676,7 +719,7 @@ export default function StageWelcome({ capRef }) {
     }
 
     return { figs: [] };
-  }, [data, recap, cold, lastBoard, todayBoard, name, preview, lastDay, lastSet, lapsedPv]);
+  }, [data, recap, cold, lastBoard, todayBoard, name, preview, lastDay, lastSet, lapsedPv, grpY]);
 
   // ── the two edges of the hold, anchored to mount ─────────────────────────
   useEffect(() => {
@@ -685,7 +728,7 @@ export default function StageWelcome({ capRef }) {
     at(FLOOD_MIN, () => setHeld(true));
     at(FLOOD_MAX, () => setExpired(true));
     at(FLOOD_HARD, () => setHard(true));
-    at(RECAP_WAIT, () => { setRecapDone(true); setTodayDone(true); });
+    at(RECAP_WAIT, () => { setRecapDone(true); setTodayDone(true); setGrpDone(true); });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [on]);
 
@@ -696,7 +739,7 @@ export default function StageWelcome({ capRef }) {
     // Still reading and nothing to show yet: hold here. That is the wait. The
     // recap is a second read, so a cross-day arrival is not "settled" until it
     // has answered, or the whole list would be skipped as an empty one.
-    const ready = settled && recapDone && todayDone;
+    const ready = settled && recapDone && todayDone && grpDone;
     if (!ready && !expired && shown >= figs.length) return;
     if (shown >= figs.length) return;
     // ONE DWELL PER STEP, guarded by a ref: this effect re-runs whenever the
@@ -707,10 +750,10 @@ export default function StageWelcome({ capRef }) {
     const next = figs[shown];
     // ITS DWELL IS ITS COUNT, so the screen cannot leave mid-climb.
     at(next.lead ? FLOOD_COUNT + 180
-      : (next.boards ? FLOOD_BOARDS : (next.row ? FLOOD_ROW : FLOOD_STAMP)),
+      : ((next.boards || next.grp) ? FLOOD_BOARDS : (next.row ? FLOOD_ROW : FLOOD_STAMP)),
       () => setShown((s) => s + 1));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [on, held, shown, view, settled, recapDone, todayDone, expired]);
+  }, [on, held, shown, view, settled, recapDone, todayDone, grpDone, expired]);
 
   // ── the collapse, once the queue has run out ─────────────────────────────
   useEffect(() => {
@@ -719,10 +762,10 @@ export default function StageWelcome({ capRef }) {
     // The figures are on screen and walking: let them finish (FLOOD_HARD is
     // the only thing that cuts a started queue). Only a screen still WAITING
     // for its reads leaves at FLOOD_MAX.
-    const walking = settled && recapDone && todayDone && view.figs.length > 0;
+    const walking = settled && recapDone && todayDone && grpDone && view.figs.length > 0;
     // A settled read with no figures at all is not an arrival worth holding.
     if (!ran && !hard && (!expired || walking)) return;
-    if ((!settled || !recapDone || !todayDone) && !expired && !hard) return;
+    if ((!settled || !recapDone || !todayDone || !grpDone) && !expired && !hard) return;
     goneRef.current = true;
     // ONLY IF THE BOARDS ACTUALLY LANDED. The queue can be cut short by
     // FLOOD_MAX or FLOOD_HARD with the block still unshown, and a screen that
@@ -747,7 +790,7 @@ export default function StageWelcome({ capRef }) {
       at(FLOOD_SHRINK + 40 + FLOOD_FADE, finish);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [on, held, shown, view, settled, recapDone, todayDone, expired, hard]);
+  }, [on, held, shown, view, settled, recapDone, todayDone, grpDone, expired, hard]);
 
   // Any key skips, exactly as any tap does.
   useEffect(() => {
@@ -837,6 +880,20 @@ export default function StageWelcome({ capRef }) {
                   {f.keys.map((k) => <s key={k} className={f.doneToday.has(k) ? 'on' : ''} />)}
                 </span>
                 <i className="cl">{f.open.length} of {f.keys.length} open today &middot; {f.open.map((k) => DAILY_GAME_MAP[k].name).join(', ')}</i>
+              </div>
+            ) : f.grp ? (
+              <div key={f.k} className="stw-grp">
+                <i className="cl">Yesterday in {f.name}</i>
+                <b>{f.line}</b>
+                {f.top.length > 1 ? (
+                  <span className="stw-pod">
+                    {f.top.map((r) => (
+                      <span key={r.userKey} className={r.userKey === f.me ? 'me' : ''}>
+                        <em>{r.rank}</em>{r.userKey === f.me ? 'You' : r.username}<small>{grpPts(r.total)}</small>
+                      </span>
+                    ))}
+                  </span>
+                ) : null}
               </div>
             ) : f.boards ? (
               <div key={f.k} className={'stw-bds' + (f.one ? ' one' : '')}>
@@ -996,6 +1053,16 @@ const CSS = `
 .stw-fig.row b i{font-size:.5em;opacity:.55;margin-left:2px;}
 .stw-fig.row i.cl{font-size:clamp(8.5px,1vw,10px);letter-spacing:.13em;margin-top:6px;opacity:.66;}
 /* The heading for the list, on its own line above it. */
+.stw-grp{flex-basis:100%;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;
+  animation:stw-stamp 300ms cubic-bezier(.2,.9,.3,1.3) both;}
+.stw-grp i.cl{font-style:normal;font-family:${MONO};font-size:clamp(9px,1.15vw,11px);letter-spacing:.16em;text-transform:uppercase;opacity:.72;}
+.stw-grp b{font-size:clamp(20px,3vw,32px);font-weight:800;letter-spacing:-.02em;line-height:1.15;text-wrap:balance;max-width:24ch;}
+.stw-pod{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;}
+.stw-pod span{display:inline-flex;align-items:baseline;gap:6px;padding:5px 11px;border-radius:999px;
+  background:rgba(255,255,255,.07);font-size:13px;font-weight:700;}
+.stw-pod span.me{box-shadow:inset 0 0 0 1.5px #7dd3fc;}
+.stw-pod em{font-style:normal;font-family:${MONO};font-size:11px;color:#7dd3fc;}
+.stw-pod small{font-family:${MONO};font-size:11px;opacity:.7;font-weight:500;}
 .stw-cap{flex-basis:100%;text-align:center;margin-bottom:2px;
   font-family:${MONO};font-size:clamp(9px,1.1vw,10.5px);letter-spacing:.17em;
   text-transform:uppercase;font-weight:700;opacity:.5;

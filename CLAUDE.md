@@ -7859,3 +7859,24 @@ within 0.75 of it, so the score is out of 10 (14 on Sunday).
   (`.gpp-scrim` in its `arrivalBusy`), so two cards never open at once. Its
   feedback face posts to `/api/complaints` as `groups-feedback`.
   `?groupspop=1` previews without stamping.
+- **Group standings everywhere (owner, 2026-09-17).** One read,
+  `/api/groups/standing?anonId=&email=&day=today|yesterday`, built from each
+  group's own `daily-combined?group=` board (nothing stored). One client,
+  `app/groups/groupStanding.js` (shared promise + 45s sessionStorage copy;
+  a browser with no `sot_quiz_identity` never asks). Seven surfaces read it:
+  - finish screen: `app/groups/FinishGroupLine.jsx` inside StageFinish
+    (dailies only; retries until this game's points land; the arrow is
+    "before this game" = best-N total without it; no arrow on `?p=` replays);
+  - home band: `app/groups/HomeGroupsBand.jsx` above the slate heading;
+  - Groups link badge in the home cap (`.sty-gpos`: word on desktop, number on phone);
+  - Everyone / group switch (`app/groups/GroupSwitch.jsx`, remembered in
+    `sot_grp_scope`) on the stage Rankings panel (`DailyBoardPanel`, today's
+    puzzle only, checked through `quizIds`), the legacy GamePanel, and the Stat
+    Hub Today board (`app/groups/StatHubGroupBoard.jsx`, shows site place too);
+  - arrival: StageWelcome's `grp` figure, "Yesterday in <group>", cross-day
+    arrivals only, its own `grpDone` flag in the queue gates;
+  - copy board: `CopyBoard` on the group page's Today tab (share sheet on touch,
+    clipboard otherwise);
+  - home tiles: member dots (`GroupDots` in StageToday) for the first group,
+    drawn only once a member has played that game.
+  `daily-combined?group=` rows now carry `siteRank` (named-player rank).

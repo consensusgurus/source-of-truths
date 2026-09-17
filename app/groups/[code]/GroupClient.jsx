@@ -270,6 +270,49 @@ function Loading({ err }) {
   return <p className="grp-note grp-mute" style={{ padding: '18px 0' }}>{err ? 'Could not load this board. Try again in a moment.' : 'Loading the board…'}</p>;
 }
 
+// COPY TODAY'S BOARD (owner, 2026-09-17, idea 6). A short text board for the
+// group's own chat: the top five, the viewer's line if they are further down,
+// and the invite link. The share sheet where the device has one, else the
+// clipboard.
+const COPY_TOP = 5;
+function boardText(board, viewer, day, today) {
+  const g = (board && board.group) || {};
+  const rows = ((board && board.overall) || []).filter((r) => (r.total || 0) > 0);
+  const shown = rows.slice(0, COPY_TOP);
+  const mine = rows.find((r) => r.userKey === viewer.userKey);
+  const line = (r) => `${r.rank}. ${r.userKey === viewer.userKey ? `${r.username} (me)` : r.username} ${pts(r.total)}`;
+  const out = [`${g.name || 'My group'} on Mind Loft \u00b7 ${labelOfIso(day, '')}${day === today ? ' so far' : ''}`];
+  shown.forEach((r) => out.push(line(r)));
+  if (mine && !shown.includes(mine)) out.push('\u2026', line(mine));
+  if (!rows.length) out.push('Nobody has played yet.');
+  out.push(inviteUrl(g.code || ''));
+  return out.join('\n');
+}
+
+function CopyBoard({ board, viewer, day, today }) {
+  const [msg, setMsg] = useState('');
+  const go = async () => {
+    const text = boardText(board, viewer, day, today);
+    try {
+      if (navigator.share && window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
+        await navigator.share({ text });
+        setMsg('Shared.');
+        return;
+      }
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+    }
+    try { await navigator.clipboard.writeText(text); setMsg('Copied. Paste it in your group chat.'); }
+    catch (e) { setMsg('Could not copy. Select the board and copy it instead.'); }
+  };
+  return (
+    <div className="gp-copy">
+      <button type="button" className="grp-btn" onClick={go}>{day === today ? 'Copy today\u2019s board' : 'Copy this board'}</button>
+      <span className="gp-copymsg" aria-live="polite">{msg}</span>
+    </div>
+  );
+}
+
 function TodayPane({ board, boardErr, members, viewer, day, today, setDay }) {
   const rows = (board && board.overall) || [];
   const nameOnly = new Map(members.map((m) => [m.userKey, m.nameOnly]));
@@ -306,6 +349,7 @@ function TodayPane({ board, boardErr, members, viewer, day, today, setDay }) {
               ))}
             </tbody>
           </table>
+          {scored.length ? <CopyBoard board={board} viewer={viewer} day={day} today={today} /> : null}
           <p className="gp-foot">Points are the same Mind Loft Daily points the site board uses, out of {max}.</p>
           {waiting.length && board && !board.frozen && scored.length ? (
             <p className="gp-foot"><b>{waiting.length}</b> {waiting.length === 1 ? 'member has' : 'members have'} not played today.</p>
@@ -531,6 +575,8 @@ const CSS = `
 .gp-bar i{display:block;height:100%;background:var(--stg-acc);border-radius:3px;}
 .gp-res{font-size:13px;color:var(--stg-ink2);}
 .gp-foot{margin:12px 0 0;font-size:12.5px;color:var(--stg-mute);}
+.gp-copy{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px;}
+.gp-copymsg{font-size:12.5px;color:var(--stg-up);}
 .gp-cta{margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px;border-radius:10px;background:var(--stg-surf2);font-size:14px;}
 .gp-gamepick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
 .grp-gbtn{border:1px solid var(--stg-line2);background:none;color:var(--stg-ink);border-radius:999px;padding:6px 10px 6px 9px;font:inherit;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:7px;cursor:pointer;}

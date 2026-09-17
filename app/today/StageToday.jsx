@@ -58,6 +58,10 @@ import StageWelcome from '../StageWelcome';
 import SundayLedger from '../SundayLedger';
 import PremierePop from '../PremierePop';
 import GroupsPop from '../GroupsPop';
+// GROUP STANDINGS on the home (2026-09-17): the band, the Groups badge and the
+// member dots on the tiles all read one standing payload.
+import useGroupStanding, { bestPlace, ordinal as grpOrdinal, MiniAvatar, AVATAR_CSS } from '../groups/groupStanding';
+import HomeGroupsBand from '../groups/HomeGroupsBand';
 import MindLoftMark from '../MindLoftMark';
 import StagePatch, { PATCH_CSS } from '../StagePatch';
 import RollNum from '../RollNum';
@@ -363,7 +367,31 @@ function starPop(el) {
   } catch (e) {}
 }
 
-function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue, res, i = 0, fk = null }) {
+// WHO IN YOUR GROUP HAS PLAYED THIS (owner, 2026-09-17, idea 7). One dot per
+// member of the viewer's first group, filled for members who have played this
+// game today, drawn only once somebody has. It says who played, never a place.
+const DOTS_MAX = 8;
+function GroupDots({ dots }) {
+  if (!dots || !dots.roster || !dots.roster.length) return null;
+  const n = dots.roster.filter((m) => dots.played.has(m.userKey)).length;
+  // Only where someone in the group has played it: a row of empty dots on
+  // ninety tiles says nothing and buries the tags.
+  if (!n) return null;
+  const shown = dots.roster.slice(0, DOTS_MAX);
+  const more = dots.roster.length - shown.length;
+  const label = n === dots.roster.length ? `All ${n}` : `${n} of ${dots.roster.length}`;
+  return (
+    <span className="sty-gdots" title={`${dots.name}: ${label.toLowerCase()} played`}>
+      <span className="sty-gdst">
+        {shown.map((m) => <MiniAvatar key={m.userKey} name={m.username} userKey={m.userKey} off={!dots.played.has(m.userKey)} />)}
+      </span>
+      <small>{more > 0 ? `+${more} · ` : ''}{label}</small>
+    </span>
+  );
+}
+
+function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue, res, i = 0, fk = null, dotsFor = null }) {
+  const dots = dotsFor ? dotsFor(g.key) : null;
   const state = done.has(g.key) ? 'done' : inprog.has(g.key) ? 'open' : '';
   const on = !!(favorites && favorites.includes(g.key));
   // MY GAMES MIXES CATEGORIES, so each card carries its OWN hue rather than
@@ -383,6 +411,7 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
       ) : (
         <span className="sty-gt">{g.tag}</span>
       )}
+      <GroupDots dots={dots} />
       {canPin ? (
         <button
           type="button"
@@ -443,6 +472,18 @@ export default function StageToday() {
   const stats = useDayStats();
   const [who, setWho] = useState('');
   useEffect(() => { setWho(savedIdentity().username || ''); }, []);
+  // The viewer's groups today. undefined while reading, null for no groups.
+  const grp = useGroupStanding('today');
+  const grpBest = bestPlace(grp);
+  const dotsFor = useMemo(() => {
+    const g0 = grp && grp.groups ? grp.groups.find((x) => !x.failed && x.roster && x.roster.length > 1) : null;
+    if (!g0) return null;
+    const cache = {};
+    return (key) => {
+      if (!cache[key]) cache[key] = { name: g0.name, roster: g0.roster, played: new Set((g0.games && g0.games[key]) || []) };
+      return cache[key];
+    };
+  }, [grp]);
   // ARM THE ARRIVAL REVEAL, and only for a page someone is actually looking at.
   // A hidden tab does not advance an animation clock, so a section that mounts
   // there holds the FROM state (opacity 0) for as long as the tab stays in the
@@ -1329,7 +1370,7 @@ export default function StageToday() {
 
   return (
     <div className="sty stage-page" data-stage-theme={stageTheme}>
-      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      <style dangerouslySetInnerHTML={{ __html: CSS + AVATAR_CSS }} />
       <StageWelcome capRef={capRef} />
       {/* NEW-GAME PREMIERES: once per launch, returning players who have not
           played it, after the arrival has finished. See app/PremierePop.jsx. */}
@@ -1451,8 +1492,16 @@ export default function StageToday() {
           {/* GROUPS (owner, 2026-09-17): a private daily board for the people
               you play with. Drawn for guests too, since joining a group is how
               a guest picks a name. */}
-          <a className="sty-all sty-grp" href={withTq('/groups')}>
+          <a className="sty-all sty-grp" href={withTq('/groups')}
+            aria-label={grpBest ? `Groups, ${grpOrdinal(grpBest.rank)} in ${grpBest.name} today` : undefined}>
             <span>Groups</span>
+            {/* YOUR BEST PLACE TODAY (idea 4): "2nd" on a desktop, a number
+                badge on a phone where the bar has no room for a word. */}
+            {grpBest ? (
+              <span className="sty-gpos" title={`${grpOrdinal(grpBest.rank)} in ${grpBest.name} today`}>
+                <span className="w">{grpOrdinal(grpBest.rank)}</span><span className="n">{grpBest.rank}</span>
+              </span>
+            ) : null}
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
               strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M5 12h13M13 6l6 6-6 6" />
@@ -1543,6 +1592,9 @@ export default function StageToday() {
         {/* THE SLATE'S HEADING (owner, 2026-09-02). One line under the ladder,
             above the first row of games, saying what the rest of the page is.
             Static, so it needs no fade and shows on the server render. */}
+        {/* YOUR GROUPS TODAY (idea 2): nothing for a reader in no group. */}
+        <HomeGroupsBand data={grp} withTq={withTq} />
+
         <h2 className="sty-slate">Today&rsquo;s fresh slate of puzzles</h2>
 
         {/* THE NEWCOMER'S ROW, and ONLY for a reader with no footprint.
@@ -1636,7 +1688,7 @@ export default function StageToday() {
                 {playedLast(pinned, done).map((g, i) => (
                   <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
                     canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-                    hue={hueFor(g.cat)} res={standBy[g.key]} i={i} fk={'mine:' + g.key} />
+                    hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsFor} i={i} fk={'mine:' + g.key} />
                 ))}
               </div>
             ) : null}
@@ -1734,7 +1786,7 @@ export default function StageToday() {
                 // game IS (owner, 2026-08-31).
                 <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
                   canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-                  hue={hueFor(g.cat)} res={standBy[g.key]} i={i} fk={'az:' + g.key} />
+                  hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsFor} i={i} fk={'az:' + g.key} />
               ))}
             </div>
           </section>
@@ -1758,7 +1810,7 @@ export default function StageToday() {
                 {playedLast(games, done).map((g, i) => (
                   <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
                     canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-                    res={standBy[g.key]} i={i} />
+                    res={standBy[g.key]} dotsFor={dotsFor} i={i} />
                 ))}
               </div>
             </section>
@@ -2089,6 +2141,16 @@ ${PATCH_CSS}
   letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;}
 .sty-all:hover{opacity:.78;}
 .sty-figlink{display:none;}
+/* THE GROUPS BADGE (2026-09-17). A word on a desktop, a number on a phone. */
+.sty-gpos{display:inline-flex;align-items:center;border-radius:999px;padding:2px 7px;letter-spacing:.04em;
+  background:var(--stg-brand,#7dd3fc);color:var(--stg-raise,#0e131f);font-variant-numeric:tabular-nums;}
+.sty-gpos .n{display:none;}
+/* THE MEMBER DOTS on a tile (2026-09-17). */
+.sty-gdots{display:flex;align-items:center;gap:7px;margin-top:7px;min-width:0;}
+.sty-gdst{display:flex;align-items:center;flex:none;}
+.sty-gdst .gsa{width:18px;height:18px;font-size:8.5px;margin-left:-4px;box-shadow:0 0 0 2px var(--stg-raise,#0e131f);}
+.sty-gdst .gsa:first-child{margin-left:0;}
+.sty-gdots small{font-size:11px;font-weight:600;color:var(--stg-ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sty-all:focus-visible{outline:2px solid var(--stg-acc);outline-offset:3px;border-radius:4px;}
 /* The only semantic colour on this page: a climb and a slip have to read
    apart at a glance, and they are not the category family. */
@@ -2494,6 +2556,9 @@ ${PATCH_CSS}
   .sty-figlink{display:block;position:absolute;inset:0;z-index:1;}
   .sty-figlink:focus-visible{outline:2px solid var(--stg-acc);outline-offset:-2px;border-radius:6px;}
   .sty-grp{position:relative;z-index:2;}
+  .sty-gpos{padding:0 5px;min-width:16px;height:16px;justify-content:center;font-size:9px;}
+  .sty-gpos .w{display:none;}
+  .sty-gpos .n{display:inline;}
   .sty-tg{grid-area:tg;}
   .sty-st{grid-area:st;}
   .sty-lb{grid-area:lb;}

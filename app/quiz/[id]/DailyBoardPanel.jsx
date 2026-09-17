@@ -3,6 +3,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react';
 import { DAILY_GAME_MAP, dailyAttemptRule } from '@/lib/daily-games';
 import { fetchDailyMe, dailyMeQuery, invalidateDailyMe } from '../../dailyMeClient';
+// EVERYONE / <group> over This Puzzle's board (owner, 2026-09-17).
+import useGroupStanding from '../../groups/groupStanding';
+import GroupSwitch, { useGroupScope } from '../../groups/GroupSwitch';
 import { T } from '@/lib/theme';
 
 // DailyBoardPanel — the on-page "<player> Stats" section, in the light page
@@ -108,6 +111,12 @@ export default function DailyBoardPanel({
   const [combined, setCombined] = useState(null);  // /api/quiz/daily-me payload
   const [gameData, setGameData] = useState(null);  // /api/quiz/daily-game payload (allTime + drops)
   const [sel, setSel] = useState('today');          // 'today' | 'alltime' | 'archive'
+  const grpData = useGroupStanding('today');
+  // Today's puzzle only: an archive puzzle's board has no group version here.
+  const grpGroups = grpData && grpData.groups
+    ? grpData.groups.filter((g) => !g.failed && (!quizId || !g.quizIds || !g.quizIds[self] || g.quizIds[self] === quizId))
+    : null;
+  const [grpScope, setGrpScope, grpActive] = useGroupScope(grpGroups);
   const [open, setOpen] = useState(true);           // is the board area expanded (open by default, owner 2026-07-31)
   const [calMonth, setCalMonth] = useState(() => etTodayEC().slice(0, 7)); // 'YYYY-MM'
 
@@ -241,7 +250,7 @@ export default function DailyBoardPanel({
   const allTime = gameData && gameData.allTime ? gameData.allTime : null;
   const drops = (gameData && gameData.drops) || [];
 
-  const myKey = me ? me.userKey : null;
+  const siteKey = me ? me.userKey : null;
   const provisional = !me && !!guest;
 
   const gameTodayRank = (me && me.perGame && me.perGame[self] && me.perGame[self].rank)
@@ -257,7 +266,10 @@ export default function DailyBoardPanel({
   const pct = totalDrops ? Math.round((playedCount / totalDrops) * 100) : null;
 
   // --- board rows for the condensed views -----------------------------------
-  const todayRows = (todayGame && Array.isArray(todayGame.board)) ? todayGame.board : [];
+  const siteRows = (todayGame && Array.isArray(todayGame.board)) ? todayGame.board : [];
+  // The group's rows for this game when the switch is on a group.
+  const todayRows = grpActive ? ((grpActive.boards && grpActive.boards[self]) || []) : siteRows;
+  const myKey = grpActive && sel === 'today' ? grpData.userKey : siteKey;
   const allTimeRows = (allTime && Array.isArray(allTime.board)) ? allTime.board : [];
 
   // --- calendar month cells --------------------------------------------------
@@ -490,7 +502,10 @@ export default function DailyBoardPanel({
         <div className="dbp-board">
           {sel === 'today' ? (
             <>
-              <div className="dbp-board-ti">{selfName} &middot; this puzzle &middot; top 10</div>
+              <div className="dbp-board-ti">{selfName} &middot; this puzzle &middot; {grpActive ? grpActive.name : 'top 10'}</div>
+              {grpGroups && grpGroups.length ? (
+                <GroupSwitch groups={grpGroups} value={grpScope} onChange={setGrpScope} />
+              ) : null}
               {todayRows.length ? (
                 <>
                   <div className="dbp-scroll">
@@ -529,7 +544,7 @@ export default function DailyBoardPanel({
                   </div>
                   <div className="dbp-swipe">{missLabel ? <>Swipe for time, {missLabel.toLowerCase()} and points →</> : <>Swipe for time and points →</>}</div>
                 </>
-              ) : <div className="dbp-lbempty">No board yet. Be the first to post a score.</div>}
+              ) : <div className="dbp-lbempty">{grpActive ? `Nobody in ${grpActive.name} has played this yet.` : 'No board yet. Be the first to post a score.'}</div>}
             </>
           ) : null}
 

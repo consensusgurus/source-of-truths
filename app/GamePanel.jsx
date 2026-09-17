@@ -46,6 +46,9 @@ import DailyTilePanel from './DailyTilePanel';
 import { DAILY_GAMES, DAILY_GAME_MAP } from '@/lib/daily-games';
 import { fetchDailyMe, dailyMeQuery, dailyMeIdentity } from './dailyMeClient';
 import { fetchDayStatus, etToday } from './useDayStats';
+// EVERYONE / <group> on the Today board (owner, 2026-09-17).
+import { fetchGroupStanding } from './groups/groupStanding';
+import GroupSwitch, { useGroupScope } from './groups/GroupSwitch';
 
 const OPEN_LABEL = 'See stats, archive, leaderboard, and more';
 const SHUT_LABEL = 'Hide stats, archive, leaderboard, and more';
@@ -81,6 +84,9 @@ export default function GamePanel({ self, name = null, onShow = null }) {
   const [finished, setFinished] = useState(false);
   const wrapRef = useRef(null);
   const asked = useRef(false);
+  const [grp, setGrp] = useState(null);     // /api/groups/standing
+  const grpGroups = grp && grp.groups ? grp.groups.filter((g) => !g.failed) : null;
+  const [scope, setScope, scoped] = useGroupScope(grpGroups);
 
   // The panel is the only thing that wants any of this, so nothing is asked for
   // until it is opened, and nothing is asked for twice.
@@ -103,6 +109,10 @@ export default function GamePanel({ self, name = null, onShow = null }) {
     fetchDailyMe(dailyMeQuery({ anonId, email, game: key }))
       .then((d) => { if (alive && d && !d.error) setMe(d); })
       .catch(() => {});
+
+    fetchGroupStanding().then((d) => {
+      if (alive && d && d.groups && d.groups.length) setGrp(d);
+    });
 
     fetchDayStatus().then((d) => {
       if (!alive || !d || !d.streaks) return;
@@ -168,10 +178,18 @@ export default function GamePanel({ self, name = null, onShow = null }) {
   if (!game) return null;
 
   const board = me && me.game ? me.game : null;
-  const myRow = me && me.me && me.me.rank != null
+  const siteRow = me && me.me && me.me.rank != null
     ? { userKey: me.me.userKey, username: 'You', ...me.me }
     : null;
-  const isDone = done || !!myRow;
+  const isDone = done || !!siteRow;
+  // THE GROUP BOARD, when the switch is on one: that group's rows for this
+  // game, in the same shape the site board uses, so the panel draws it as is.
+  const grpRows = scoped && scoped.boards ? (scoped.boards[key] || []) : null;
+  const grpMine = grpRows && grp ? grpRows.find((r) => r.userKey === grp.userKey) || null : null;
+  const myRow = grpRows ? (grpMine ? { ...grpMine, username: 'You' } : null) : siteRow;
+  const standingsNow = grpRows || (board && Array.isArray(board.board) ? board.board : []);
+  const fieldNow = grpRows ? grpRows.length : (board && typeof board.field === 'number' ? board.field : null);
+  const meKeyNow = grpRows ? (grp && grp.userKey) : (me && me.me ? me.me.userKey : null);
 
   return (
     <div className={'gpn' + (finished ? ' gpn-off' : '')} ref={wrapRef}>
@@ -200,9 +218,13 @@ export default function GamePanel({ self, name = null, onShow = null }) {
             inProgress={false}
             streak={streak}
             todayRow={myRow}
-            todayField={board && typeof board.field === 'number' ? board.field : null}
-            standings={board && Array.isArray(board.board) ? board.board : []}
-            meKey={me && me.me ? me.me.userKey : null}
+            todayField={fieldNow}
+            standings={standingsNow}
+            meKey={meKeyNow}
+            todaySwitch={grpGroups && grpGroups.length ? (
+              <GroupSwitch groups={grpGroups} value={scope} onChange={setScope} />
+            ) : null}
+            todayScopeName={scoped ? scoped.name : null}
             data={data}
             /* Phone only in effect: it decides which of the drawer's three
                bands start open, and above 900px there are no bands. Here the

@@ -245,6 +245,19 @@ function groupRank(rows, keyOf) {
 function groupPayload({ suffix, frozen, maxTotal, gameCount, gameResults, overallFull, group, members }) {
   const keys = new Set(members.map((m) => m.userKey));
   const nameOf = new Map(members.map((m) => [m.userKey, m.username]));
+  // THE SITE PLACE, as the site board prints it: named players only, shared
+  // rank on the one-decimal total. overallFull's own rank counts guests too.
+  const siteRankOf = new Map();
+  {
+    let rk = 0, prev = null, seen = 0;
+    for (const r of overallFull) {
+      if (!r.username) continue;
+      seen += 1;
+      const k = Math.round((r.total || 0) * 10);
+      if (prev === null || k !== prev) { rk = seen; prev = k; }
+      siteRankOf.set(r.userKey, rk);
+    }
+  }
   const overall = groupRank(
     overallFull
       .filter((r) => keys.has(r.userKey))
@@ -252,6 +265,9 @@ function groupPayload({ suffix, frozen, maxTotal, gameCount, gameResults, overal
         userKey: r.userKey,
         username: nameOf.get(r.userKey) || r.username,
         total: r.total,
+        // Where this member sits on the SITE board today, so a group board can
+        // show both places at once (the Everyone / group switch, 2026-09-17).
+        siteRank: siteRankOf.get(r.userKey) ?? null,
         gamesPlayed: r.gamesPlayed,
         gamesFinished: r.gamesFinished,
       })),
