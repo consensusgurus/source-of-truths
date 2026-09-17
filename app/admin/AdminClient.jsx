@@ -3254,8 +3254,8 @@ function GroupsPanel() {
     || String(g.owner || '').toLowerCase().includes(needle));
   const th = { textAlign: 'left', padding: '6px 8px', ...mono, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: `1px solid ${COLORS.line}` };
   const td = { padding: '7px 8px', fontSize: 13, borderBottom: '1px solid rgba(20,22,28,0.08)', color: COLORS.ink };
-  const exportCsv = () => downloadCsvFile('mindloft-groups', ['Code', 'Name', 'Owner', 'Members', 'Created', 'Last join'],
-    (data.groups || []).map((g) => [g.code, g.name, g.owner || '', g.members, g.createdAt, g.lastJoin || '']));
+  const exportCsv = () => downloadCsvFile('mindloft-groups', ['Code', 'Name', 'Owner', 'Members', 'Listing', 'Created', 'Last join'],
+    (data.groups || []).map((g) => [g.code, g.name, g.owner || '', g.members, g.visibility === 'public' ? 'Public' : 'Invite', g.createdAt, g.lastJoin || '']));
   return (
     <div>
       <SectionHeading>Groups</SectionHeading>
@@ -3282,18 +3282,19 @@ function GroupsPanel() {
           </div>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead><tr><th style={th}>Group</th><th style={th}>Owner</th><th style={{ ...th, textAlign: 'right' }}>Members</th><th style={th}>Created</th><th style={th}>Last join</th></tr></thead>
+              <thead><tr><th style={th}>Group</th><th style={th}>Owner</th><th style={{ ...th, textAlign: 'right' }}>Members</th><th style={th}>Listing</th><th style={th}>Created</th><th style={th}>Last join</th></tr></thead>
               <tbody>
                 {groups.map((g) => (
                   <tr key={g.code}>
                     <td style={td}><a href={`/groups/${g.code}`} target="_blank" rel="noreferrer" style={{ color: COLORS.ember, fontWeight: 700 }}>{g.name}</a> <span style={mono}>{g.code}</span></td>
                     <td style={td}>{g.owner || '—'}</td>
                     <td style={{ ...td, textAlign: 'right' }}>{g.members}</td>
+                    <td style={{ ...td, ...mono }}>{g.visibility === 'public' ? 'Public' : 'Invite'}</td>
                     <td style={{ ...td, ...mono }}>{when(g.createdAt)}</td>
                     <td style={{ ...td, ...mono }}>{when(g.lastJoin)}</td>
                   </tr>
                 ))}
-                {!groups.length ? <tr><td style={td} colSpan={5}>No groups yet.</td></tr> : null}
+                {!groups.length ? <tr><td style={td} colSpan={6}>No groups yet.</td></tr> : null}
               </tbody>
             </table>
           </div>

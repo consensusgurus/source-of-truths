@@ -7,19 +7,22 @@
 import {
   normCode, makeCode, cleanGroupName, guard, createGroup, joinGroup, leaveGroup,
   removeMember, renameGroup, resetCode, groupByCode, membersOf, groupsOfUser,
+  setVisibility, publicGroups, cleanVisibility, isMissingColumn,
   GROUP_MEMBER_MAX, GROUPS_PER_PLAYER,
 } from '../lib/groups.js';
 
 let fails = 0;
 const ok = (c, m) => { if (!c) { fails++; console.log('FAIL', m); } };
 
-function fakeDb({ missing = false } = {}) {
+// `pre57` is a database that has not had migration 57 applied: every read or
+// write mentioning `visibility` comes back 42703, exactly as PostgREST does.
+function fakeDb({ missing = false, pre57 = false } = {}) {
   const t = { quiz_groups: [], quiz_group_members: [], quiz_users: [] };
   let seq = 0;
   function q(table) {
     const st = { op: 'select', filters: [], order: null, lim: null, head: false, count: false, payload: null, single: false };
     const api = {
-      select(_c, opts) { if (st.op === 'select') st.op = 'select'; st.sel = true; if (opts && opts.count) { st.count = true; st.head = !!opts.head; } return api; },
+      select(_c, opts) { if (st.op === 'select') st.op = 'select'; st.sel = true; st.cols = _c || ''; if (opts && opts.count) { st.count = true; st.head = !!opts.head; } return api; },
       insert(p) { st.op = 'insert'; st.payload = p; return api; },
       update(p) { st.op = 'update'; st.payload = p; return api; },
       delete() { st.op = 'delete'; return api; },
@@ -33,6 +36,12 @@ function fakeDb({ missing = false } = {}) {
     };
     function run() {
       if (missing) return { data: null, error: { code: '42P01', message: 'relation does not exist' } };
+      if (pre57 && table === 'quiz_groups') {
+        const touches = String(st.cols || '').includes('visibility')
+          || (st.payload && 'visibility' in st.payload)
+          || st.filters.some((f) => { try { return f({ visibility: 'public' }) && !f({}); } catch (e) { return false; } });
+        if (touches) return { data: null, error: { code: '42703', message: 'column quiz_groups.visibility does not exist' } };
+      }
       const rows = t[table];
       const match = (r) => st.filters.every((f) => f(r));
       if (st.op === 'insert') {
@@ -129,6 +138,36 @@ const tiny = await groupByCode(db, (await createGroup(db, users[3], 'Tiny')).gro
 // users[3] is already in the big group; that is fine, the cap is 5
 const gone = await leaveGroup(db, tiny, 'u3');
 ok(gone.deleted && !(await groupByCode(db, tiny.code)), 'last member leaving deletes the group');
+
+// public or private
+ok(cleanVisibility('public') === 'public' && cleanVisibility('nope') === 'private', 'cleanVisibility defaults to private');
+const vdb = fakeDb();
+vdb.t.quiz_users.push({ id: 'v1', username: 'V1', email: 'v1@x.co' }, { id: 'v2', username: 'V2', email: null });
+const priv = await groupByCode(vdb, (await createGroup(vdb, { id: 'v1', username: 'V1' }, 'Quiet')).group.code);
+ok(priv.visibility === 'private', 'a new group is private');
+const open1 = await createGroup(vdb, { id: 'v2', username: 'V2' }, 'Open house', 'public');
+ok(open1.group.visibility === 'public', 'a group can be made public at creation');
+let list = await publicGroups(vdb);
+ok(list.length === 1 && list[0].name === 'Open house' && list[0].members === 1 && list[0].owner === 'V2',
+  'publicGroups lists only public groups, with size and owner');
+ok(!list.some((x) => x.code === priv.code), 'a private group is never listed');
+ok((await setVisibility(vdb, priv, 'public')).visibility === 'public', 'the owner can open a group up');
+ok((await publicGroups(vdb)).length === 2, 'the newly public group is listed');
+ok((await setVisibility(vdb, priv, 'private')).visibility === 'private', 'and can close it again');
+ok((await publicGroups(vdb)).length === 1, 'closing takes it off the list');
+ok((await setVisibility(vdb, priv, 'sideways')).visibility === 'private', 'an unknown value is private');
+
+// a database without migration 57: everything still works, everything is private
+const old = fakeDb({ pre57: true });
+old.t.quiz_users.push({ id: 'o1', username: 'O1', email: null });
+ok(isMissingColumn({ code: '42703' }), 'isMissingColumn spots a missing column');
+ok(!isMissingColumn({ code: '42P01' }), 'a missing TABLE is not a missing column');
+const madeOld = await createGroup(old, { id: 'o1', username: 'O1' }, 'Legacy', 'public');
+ok(madeOld.group && madeOld.group.code, 'create still works before migration 57');
+const gOld = await groupByCode(old, madeOld.group.code);
+ok(gOld && gOld.visibility === 'private', 'a pre-57 group reads as private');
+ok((await publicGroups(old)).length === 0, 'the public list is empty before migration 57');
+ok((await setVisibility(old, gOld, 'public')).status === 503, 'opening a group up before the migration says so');
 
 // missing tables
 const miss = fakeDb({ missing: true });

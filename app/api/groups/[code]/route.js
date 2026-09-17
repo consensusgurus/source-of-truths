@@ -3,17 +3,20 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 import { findQuizIdentity } from '@/lib/quiz-identity';
 import {
   guard, groupByCode, membersOf, joinGroup, leaveGroup, removeMember, renameGroup, resetCode,
-  GROUP_MEMBER_MAX, GROUPS_PER_PLAYER,
+  setVisibility, GROUP_MEMBER_MAX, GROUPS_PER_PLAYER,
 } from '@/lib/groups';
 
 // /api/groups/<code>
 //   GET  ?anonId=&email=  -> the group, its members, and what the viewer is in it
 //   POST { action, anonId, email, ... }
 //        action: 'join' | 'leave' | 'remove' (userId) | 'rename' (name) | 'reset'
+//                | 'visibility' (visibility: 'public' | 'private')
 //
 // Anyone holding the code can SEE the group: the board is visible before
 // joining, which is what makes a one-tap join possible. Only the owner can
-// rename, reset the code, or remove a member.
+// rename, reset the code, remove a member, or open the group to the public
+// list (owner, 2026-09-17). Public changes where the group can be FOUND, never
+// who may read the board: an invite has to be readable before it is accepted.
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -29,7 +32,7 @@ async function viewerOf({ anonId, email }) {
 function shape(group, members, viewer) {
   const mine = viewer ? members.find((m) => m.userId === viewer.id) : null;
   return {
-    group: { code: group.code, name: group.name, createdAt: group.created_at },
+    group: { code: group.code, name: group.name, createdAt: group.created_at, visibility: group.visibility || 'private' },
     members: members.map((m) => ({
       userKey: m.userKey,
       userId: m.userId,
@@ -82,6 +85,9 @@ export async function POST(request, { params }) {
     } else if (action === 'rename') {
       if (!isOwner) return { error: 'Only the group owner can rename the group.', status: 403 };
       res = await renameGroup(supabaseAdmin, group, body.name);
+    } else if (action === 'visibility') {
+      if (!isOwner) return { error: 'Only the group owner can change this.', status: 403 };
+      res = await setVisibility(supabaseAdmin, group, str(body.visibility, 12));
     } else if (action === 'reset') {
       if (!isOwner) return { error: 'Only the group owner can reset the code.', status: 403 };
       res = await resetCode(supabaseAdmin, group);

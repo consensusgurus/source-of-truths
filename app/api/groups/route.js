@@ -5,7 +5,7 @@ import { guard, groupsOfUser, createGroup, GROUP_MEMBER_MAX, GROUPS_PER_PLAYER }
 
 // /api/groups
 //   GET  ?anonId=&email=           -> the viewer's groups
-//   POST { name, anonId, email }   -> start a group (the viewer becomes its owner)
+//   POST { name, anonId, email, visibility } -> start a group (the viewer owns it)
 //
 // The viewer is resolved exactly the way every quiz route resolves one:
 // email first, then this browser's anon id. A browser with no account gets
@@ -39,7 +39,7 @@ export async function POST(request) {
   const out = await guard(async () => {
     const user = (anonId || email) ? await findQuizIdentity(supabaseAdmin, { email, anonId }) : null;
     if (!user) return { error: 'Pick a name first.', code: 'no_account', status: 401 };
-    return createGroup(supabaseAdmin, user, body.name);
+    return createGroup(supabaseAdmin, user, body.name, body.visibility);
   });
   if (!out.available) return NextResponse.json({ ...out, error: 'Groups are being set up. Try again soon.' }, { status: 503, headers: NO_STORE });
   return NextResponse.json(out, { status: out.status || 200, headers: NO_STORE });

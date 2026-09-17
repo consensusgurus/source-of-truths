@@ -17,6 +17,9 @@ export default function GroupsHomeClient() {
   const [code, setCode] = useState('');
   const [codeErr, setCodeErr] = useState('');
   const [gname, setGname] = useState('');
+  // Public groups: anyone can see this list, signed in or not.
+  const [pub, setPub] = useState(null);
+  const [makePublic, setMakePublic] = useState(false);
   const [uname, setUname] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -28,6 +31,10 @@ export default function GroupsHomeClient() {
       .then((r) => r.json())
       .then((d) => { if (!dead) setState(d); })
       .catch(() => { if (!dead) setState({ failed: true, groups: [] }); });
+    fetch('/api/groups/public', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => { if (!dead) setPub((d && d.groups) || []); })
+      .catch(() => { if (!dead) setPub([]); });
     return () => { dead = true; };
   }, []);
 
@@ -79,7 +86,7 @@ export default function GroupsHomeClient() {
       const r = await fetch('/api/groups', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, anonId: me.anonId, email: me.email || undefined }),
+        body: JSON.stringify({ name, anonId: me.anonId, email: me.email || undefined, visibility: makePublic ? 'public' : 'private' }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.group) return { error: d.error || 'Could not start the group. Try again.' };
@@ -109,6 +116,7 @@ export default function GroupsHomeClient() {
   }
 
   const groups = (state && state.groups) || [];
+  const mineCodes = new Set(groups.map((g) => g.code));
   const unavailable = state && state.available === false;
   const full = state && state.registered && groups.length >= (state.groupsMax || 5);
 
@@ -190,6 +198,7 @@ export default function GroupsHomeClient() {
                   <label className="grp-lbl" htmlFor="gh-gname">Group name</label>
                   <input id="gh-gname" className="grp-in" maxLength={40} placeholder="e.g. Family Table"
                     value={gname} onChange={(e) => setGname(e.target.value)} />
+                  <PublicToggle on={makePublic} set={setMakePublic} />
                   <div style={{ marginTop: 8 }}>
                     <SignupJoin compact initialName={uname} cta="Sign up and create" busyCta="Starting…" onDone={createNow}
                       precheck={() => (gname.trim() ? '' : 'Give the group a name first.')} />
@@ -203,6 +212,7 @@ export default function GroupsHomeClient() {
                   <label className="grp-lbl" htmlFor="gh-gname">Group name</label>
                   <input id="gh-gname" className="grp-in" maxLength={40} placeholder="e.g. Family Table"
                     value={gname} onChange={(e) => setGname(e.target.value)} />
+                  <PublicToggle on={makePublic} set={setMakePublic} />
                   <button className="grp-btn solid" type="submit" disabled={busy || !state}>{busy ? 'Starting…' : 'Create and share'}</button>
                   {err ? <p className="grp-err">{err}</p> : null}
                   <p className="grp-note grp-mute gh-small">
@@ -215,7 +225,45 @@ export default function GroupsHomeClient() {
           </section>
         </div>
       )}
+
+      {/* OPEN GROUPS (owner, 2026-09-17). Every group whose owner has made it
+          public, newest first: a name and a size, never a board or a member
+          list. A group the reader is already in is not offered again. */}
+      {pub && pub.filter((g) => !mineCodes.has(g.code)).length ? (
+        <section className="grp-card gh-card gh-pub">
+          <span className="grp-lbl">Open groups</span>
+          <p className="grp-note grp-mute gh-small" style={{ margin: '6px 0 4px' }}>
+            Anyone can join these. Full groups stay listed so you can tell they exist.
+          </p>
+          <ul className="gh-publist">
+            {pub.filter((g) => !mineCodes.has(g.code)).map((g) => (
+              <li key={g.code}>
+                <Link href={`/groups/${g.code}`} className="gh-row">
+                  <span className="gh-name">
+                    <b>{g.name}</b>
+                    <span className="grp-mute">
+                      {g.members} {g.members === 1 ? 'member' : 'members'}{g.owner ? ` · made by ${g.owner}` : ''}
+                    </span>
+                  </span>
+                  <span className={`grp-pill ${g.full ? 'wait' : 'line'}`}>{g.full ? 'Full' : 'Join'}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </GroupsShell>
+  );
+}
+
+// One line on the create form. Off by default: a group is invite only unless
+// its owner says otherwise, and the owner can change it later in Members.
+function PublicToggle({ on, set }) {
+  return (
+    <label className="gh-pubtog">
+      <input type="checkbox" checked={on} onChange={(e) => set(e.target.checked)} />
+      <span>List it publicly, so anyone can find and join it</span>
+    </label>
   );
 }
 
@@ -234,5 +282,10 @@ const CSS = `
 .gh-form{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
 .gh-form .grp-btn{align-self:flex-start;margin-top:6px;}
 .gh-small{font-size:12px;}
+.gh-pub{margin-top:16px;}
+.gh-publist{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));column-gap:24px;}
+.gh-publist li{border-top:1px solid var(--stg-line);}
+.gh-pubtog{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--stg-ink2);margin-top:2px;cursor:pointer;}
+.gh-pubtog input{margin-top:2px;accent-color:var(--stg-acc);}
 @media(max-width:800px){.gh-grid{grid-template-columns:1fr;}}
 `;

@@ -203,7 +203,12 @@ export default function GroupClient({ code }) {
               {group ? ` · since ${new Date(group.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''}
             </span>
             <h1 className="grp-h1">{group ? group.name : ' '}</h1>
-            {info ? <p className="grp-note grp-mute" style={{ marginTop: 6 }}>Made by {info.owner || 'a former member'}{viewer.member ? ' · You are a member' : ''}</p> : null}
+            {info ? (
+              <p className="grp-note grp-mute" style={{ marginTop: 6 }}>
+                Made by {info.owner || 'a former member'}{viewer.member ? ' · You are a member' : ''}
+                {group && group.visibility === 'public' ? <span className="grp-pill line gp-pub">Public</span> : null}
+              </p>
+            ) : null}
           </div>
           {group ? (
             <div className="grp-row gp-invite">
@@ -229,6 +234,11 @@ export default function GroupClient({ code }) {
         ) : null}
         {tab === 'members' ? (
           <MembersPane history={history} members={members} viewer={viewer}
+            visibility={group ? group.visibility : 'private'}
+            onVisibility={(v) => ownerAction('visibility', { visibility: v },
+              v === 'public'
+                ? 'Listed on the Groups page. Anyone can find it and join.'
+                : 'Back to invite only. It is off the Groups page.')}
             onRemove={(m) => { if (window.confirm(`Remove ${m.username} from the group?`)) ownerAction('remove', { userId: m.userId }, `${m.username} was removed.`); }}
             onRename={(n) => ownerAction('rename', { name: n }, 'Group renamed.')}
             onReset={() => { if (window.confirm('Make a new code? The old link and code stop working.')) ownerAction('reset', {}, 'New code made. Share the new link.'); }}
@@ -441,7 +451,7 @@ function Spark({ series, peak }) {
   );
 }
 
-function MembersPane({ history, members, viewer, onRemove, onRename, onReset, onLeave, groupName }) {
+function MembersPane({ history, members, viewer, onRemove, onRename, onReset, onLeave, groupName, visibility = 'private', onVisibility }) {
   const [rename, setRename] = useState('');
   const byKey = new Map(((history && history.members) || []).map((m) => [m.userKey, m]));
   const days = (history && history.window) || 0;
@@ -483,6 +493,25 @@ function MembersPane({ history, members, viewer, onRemove, onRename, onReset, on
                 <button className="grp-btn" type="submit" disabled={!rename.trim()}>Rename</button>
                 <button className="grp-btn" type="button" onClick={onReset}>New invite code</button>
               </form>
+              {/* PUBLIC OR PRIVATE (owner, 2026-09-17). Private is invite only:
+                  the code and the link are the only ways in. Public also lists
+                  the group on the Groups page, where anyone can join it. Either
+                  way, a person holding the link can read the board, which is
+                  what makes an invite work before it is accepted. */}
+              <div className="gp-vis">
+                <span className="grp-lbl">Who can find this group</span>
+                <div className="gp-visrow" role="group" aria-label="Who can find this group">
+                  <button type="button" className="grp-btn" aria-pressed={visibility !== 'public'}
+                    onClick={() => onVisibility('private')}>Invite only</button>
+                  <button type="button" className="grp-btn" aria-pressed={visibility === 'public'}
+                    onClick={() => onVisibility('public')}>Public</button>
+                </div>
+                <p className="grp-note grp-mute">
+                  {visibility === 'public'
+                    ? 'Listed on the Groups page. Anyone can see the name and join in one tap.'
+                    : 'Only people you send the link or code to can join.'}
+                </p>
+              </div>
               <p className="grp-note grp-mute">If you leave, the group passes to its longest-standing member.</p>
             </>
           ) : null}
@@ -597,6 +626,10 @@ const CSS = `
 .gp-spark i.miss{background:var(--stg-surf2);}
 .gp-rm{align-self:flex-start;padding:5px 12px;font-size:12px;}
 .gp-settings{margin-top:22px;padding-top:16px;border-top:1px solid var(--stg-line);display:flex;flex-direction:column;gap:10px;}
+.gp-vis{display:flex;flex-direction:column;gap:7px;}
+.gp-visrow{display:flex;gap:6px;flex-wrap:wrap;}
+.gp-visrow .grp-btn[aria-pressed=true]{background:var(--stg-ink);border-color:var(--stg-ink);color:var(--stg-ground);}
+.gp-pub{margin-left:8px;vertical-align:middle;}
 .gp-hgrid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
 .gp-hlist{list-style:none;margin:6px 0 0;padding:0;}
 .gp-hlist li{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--stg-line);font-size:14px;}

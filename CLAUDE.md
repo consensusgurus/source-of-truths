@@ -7880,3 +7880,16 @@ within 0.75 of it, so the score is out of 10 (14 on Sunday).
   - home tiles: member dots (`GroupDots` in StageToday) for the first group,
     drawn only once a member has played that game.
   `daily-combined?group=` rows now carry `siteRank` (named-player rank).
+- **Public or private groups (owner, 2026-09-17), migration 57.**
+  `quiz_groups.visibility` is `'private'` (default, invite only) or `'public'`
+  (also listed on /groups, joinable by anyone). The owner's call: the flag
+  decides where a group can be FOUND, never who may read the board, because an
+  invite link has to be readable before it is accepted. Owner switches it in
+  Members -> Owner settings (`action: 'visibility'`); the create form has a
+  "List it publicly" checkbox. `/api/groups/public` is the list (names, sizes,
+  owner names, `full` flag; 60s shared cache) and `/groups` shows it as "Open
+  groups", minus the groups the reader is already in. `lib/groups.js` tolerates
+  a database without the column (`isMissingColumn`, 42703): every read falls
+  back and everything is private, so code and migration can ship in either
+  order. Admin's Groups table and CSV carry a Listing column.
+  Removing a member was already there: owner-only Remove on each member card.
