@@ -1361,6 +1361,11 @@ export default function StageToday() {
               <b>Choose a Name</b><i>Keep Your Stats</i>
             </a>
           ) : null}
+          {/* ON A PHONE THE WHOLE FIGURES ROW IS THE WAY TO THE STAT HUB
+              (owner, 2026-09-17): there is no room for an "All stats" link
+              beside Groups, so that link hides and this overlay makes the name
+              and every figure a tap through to the hub. Desktop never draws it. */}
+          {who ? <a className="sty-figlink" href={withTq('/quizzes/hub')} aria-label="All stats" /> : null}
           {who ? <div className="sty-who"><b>{who}</b><i>player</i></div> : null}
           {/* THREE FIGURES, TODAY FIRST, THEN ALL TIME (owner, 2026-08-31):
               IQ today, rank today, rank. The day is what a player came back to
@@ -1432,7 +1437,7 @@ export default function StageToday() {
               nothing on this page said so. Only drawn for a reader who has a
               name, because a guest has no hub to open. */}
           {who ? (
-            <a className="sty-all" href={withTq('/quizzes/hub')}>
+            <a className="sty-all sty-hub" href={withTq('/quizzes/hub')}>
               <span>All stats</span>
               <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
                 strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -1443,7 +1448,7 @@ export default function StageToday() {
           {/* GROUPS (owner, 2026-09-17): a private daily board for the people
               you play with. Drawn for guests too, since joining a group is how
               a guest picks a name. */}
-          <a className="sty-all" href={withTq('/groups')}>
+          <a className="sty-all sty-grp" href={withTq('/groups')}>
             <span>Groups</span>
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
               strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -2080,6 +2085,7 @@ ${PATCH_CSS}
   text-decoration:none;color:var(--stg-acc-ink);font-family:${MONO};font-size:9.5px;
   letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;}
 .sty-all:hover{opacity:.78;}
+.sty-figlink{display:none;}
 .sty-all:focus-visible{outline:2px solid var(--stg-acc);outline-offset:3px;border-radius:4px;}
 /* The only semantic colour on this page: a climb and a slip have to read
    apart at a glance, and they are not the category family. */
@@ -2480,6 +2486,11 @@ ${PATCH_CSS}
   .sty-brand{gap:7px;}
   .sty-brand svg{width:17px;height:17px;}
   .sty-all{font-size:9px;gap:5px;}
+  .sty-figs{position:relative;}
+  .sty-hub{display:none;}
+  .sty-figlink{display:block;position:absolute;inset:0;z-index:1;}
+  .sty-figlink:focus-visible{outline:2px solid var(--stg-acc);outline-offset:-2px;border-radius:6px;}
+  .sty-grp{position:relative;z-index:2;}
   .sty-tg{grid-area:tg;}
   .sty-st{grid-area:st;}
   .sty-lb{grid-area:lb;}
