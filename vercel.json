@@ -3,6 +3,26 @@
     {
       "path": "/api/cron/consensus-check",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/housing?part=macro",
+      "schedule": "30 13 * * *"
+    },
+    {
+      "path": "/api/cron/housing?part=sec-builders",
+      "schedule": "35 13 * * *"
+    },
+    {
+      "path": "/api/cron/housing?part=sec-distributors",
+      "schedule": "40 13 * * *"
+    },
+    {
+      "path": "/api/cron/housing?part=sec-products",
+      "schedule": "45 13 * * *"
+    },
+    {
+      "path": "/api/cron/housing?part=metros",
+      "schedule": "50 13 * * *"
     }
   ],
   "ignoreCommand": "bash scripts/vercel-ignore-build.sh"
