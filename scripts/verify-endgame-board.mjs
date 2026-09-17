@@ -35,7 +35,7 @@ const fail = (m) => { console.log('  FAIL ' + m); BAD++; };
 const ok = (m) => console.log('  ok   ' + m);
 
 // ---- 1. the roster is what we think it is -----------------------------------
-const EG = ['mate', 'four', 'check', 'chain', 'turn', 'defend', 'queen'];
+const EG = ['mate', 'four', 'check', 'chain', 'turn', 'yose', 'defend', 'queen'];
 console.log('roster');
 for (const k of EG) if (!isEndGame(k)) fail(`${k} is not End Game`);
 if (isEndGame('babel')) fail('babel is still End Game'); else ok('babel is out of End Game');

@@ -73,6 +73,8 @@ import { PUZZLES as CHAIN_FULL } from '../chain/puzzles';
 import { PUZZLES as HANDS_FULL } from '../hands/puzzles';
 import { PUZZLES as FINESSE_FULL } from '../finesse/puzzles';
 import { PUZZLES as TURN_FULL } from '../turn/puzzles';
+import { PUZZLES as YOSE_FULL } from '../yose/puzzles';
+import { PUZZLES as CRIB_FULL } from '../crib/puzzles';
 import { PUZZLES as SUFFICE_FULL } from '../suffice/puzzles';
 import { PUZZLES as DOCKET_FULL } from '../docket/puzzles';
 import { PUZZLES as PLOT_FULL } from '../plot/puzzles';
@@ -150,6 +152,8 @@ const FEUD = FEUD_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num,
 const BABEL = BABEL_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const CHAIN = CHAIN_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const TURN = TURN_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const YOSE = YOSE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const CRIB = CRIB_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SUFFICE = SUFFICE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const DOCKET = DOCKET_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const PLOT = PLOT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -291,8 +295,10 @@ const GAMES = [
   { key: 'babel', name: 'Babel', path: '/babel', tag: 'The bag is empty', accent: '#14532d', bg: '#e9f2ec', border: 'rgba(20,83,45,0.4)', src: BABEL },
   { key: 'hands', name: 'Hands', path: '/hands', tag: 'The daily poker solitaire', accent: '#7f1d1d', bg: '#f6eaea', border: 'rgba(127,29,29,0.4)', src: HANDS },
   { key: 'finesse', name: 'Finesse', path: '/finesse', tag: 'The daily double dummy', accent: '#4c1d95', bg: '#ede9fe', border: 'rgba(76,29,149,0.4)', src: FINESSE },
+  { key: 'crib', name: 'Crib', path: '/crib', tag: 'Six cards, throw two', accent: '#a16207', bg: '#fbf3dd', border: 'rgba(161,98,7,0.4)', src: CRIB },
   { key: 'chain', name: 'Chain', path: '/chain', tag: 'Take them, or leave them', accent: '#4a044e', bg: '#f6ecf8', border: 'rgba(74,4,78,0.4)', src: CHAIN },
   { key: 'turn', name: 'Turn', path: '/turn', tag: 'Ten squares left', accent: '#226218', bg: '#e9f3e6', border: 'rgba(34,98,24,0.4)', src: TURN },
+  { key: 'yose', name: 'Yose', path: '/yose', tag: 'The last points on the board', accent: '#44403c', bg: '#efedeb', border: 'rgba(68,64,60,0.4)', src: YOSE },
   { key: 'suffice', name: 'Suffice', path: '/suffice', tag: 'Decide what is enough', accent: '#4338ca', bg: '#eef0ff', border: 'rgba(67,56,202,0.4)', src: SUFFICE },
   { key: 'docket', name: 'Docket', path: '/docket', tag: 'One setup, five deductions', accent: '#5b2333', bg: '#f7e8ec', border: 'rgba(91,35,51,0.4)', src: DOCKET },
   { key: 'plot', name: 'Plot', path: '/plot', tag: 'Divide the whole board', accent: '#78350f', bg: '#fbf1e5', border: 'rgba(120,53,15,0.4)', src: PLOT },

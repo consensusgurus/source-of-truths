@@ -3821,6 +3821,8 @@ archive and hub chips use the short form `Sun`.
 | Warmer | a rarer secret word, deeper in the frequency-ordered vocab (from 2026-07-26) |
 | Links | four cross-category collisions instead of two (from 2026-07-26) |
 | Turn | twelve empty squares instead of ten (from 2026-08-05) |
+| Yose | a 9x9 board with eleven open points against the weekday 7x7 and 8x8 (from launch, 2026-09-20) |
+| Crib | seven hands instead of five, three of them decided by the crib (from launch, 2026-09-20) |
 | Pricer | a field of 32 instead of 16, so 31 picks and five rounds (from 2026-08-16) |
 | Docket | seven entities over seven slots plus the second dimension, so fourteen open cells against a weekday's twelve, and one extra condition (from 2026-08-10) |
 | Defend | a hold for four instead of a hold for three, so a fourth white move to survive before the attack is spent (from 2026-08-12) |
@@ -7794,3 +7796,59 @@ its members, so it is cached `private` only, never at the shared edge.
   a missing group name is checked before any account is made (`precheck`).
 - **Admin: Groups tab** in `/admin`, fed by `/api/admin/groups` (admin cookie
   only): totals, every group with owner and size, and the latest joins.
+
+## Yose (`/yose`) and Crib (`/crib`): a Go endgame and a cribbage throw (launched 2026-09-17)
+
+Wired by `scripts/wire-yose-crib.mjs` (anchored on the Turn and Finesse rows, idempotent). No PNG
+tiles; `lib/game-glyphs.js` has both. Share cards are static `public/og/<key>.png` from
+`scripts/bake-og.mjs yose crib`. Premiere window 2026-09-17 to 09-21. Banks run 78 days,
+2026-09-17 to 2026-12-03.
+
+**Yose** — key/route `yose`, category **End Game** (the eighth), `keepsAnswer: true`,
+`miss: 'Tries'`, legacy accent `#44403c` / navy `#d6d3d1`, in DEFEAT_GAMES and the
+'Board endgames' set. A Go board whose walls are built and whose territories are settled; a few
+OPEN POINTS (the only playable points) and a few LOOSE enemy stones decide it. Go rules with the
+simple ko rule, suicide banned, a pass is a move, two passes end the game, AREA scoring. Every fixed
+stone belongs to a group touching its own territory, so only loose stones can ever be captured.
+
+- `lib/yose-core.js` is the engine, shared by the generator and the browser. It solves every
+  position with NO pruning (the ko ban is part of the memo key) and the generator THROWS A BOARD
+  AWAY if any line repeats a whole position, so no superko rule is ever needed and the value table
+  is exact. `komi` is (root value - 0.5), so perfect play wins by exactly half a point.
+- The engine's reply tie-break (lowest value, then most captures, then a real move before a pass,
+  then the lowest point) is deterministic, so everybody who plays a line meets the same replies.
+- **The ramp** (measured, a few hundred boards per shape): Mon 7x7 6 open, 1 or 2 winning first
+  moves, >=1 forced decision; Tue 7x7 7 open, same; Wed 7x7 8 open, exactly one winner, >=2 forced;
+  Thu 7x7 9 open, >=2; Fri 8x8 10 open, >=2; Sat 8x8 10 open, >=3; **Sunday 9x9 11 open, >=3**.
+  A forced decision is a Black turn on the main line with two or more choices and exactly one that
+  keeps the win. Passing is never the winning first move, at least two first moves lose, and the
+  komi stays within 9 (11 on Sunday). Each day is generated from a seed off its date
+  (`gen-yose.mjs day`), so days run in parallel and any one can be regenerated alone.
+- `scripts/verify-yose.mjs` carries its OWN engine (2D grid, recursive groups, string keys,
+  negamax) and re-derives everything, including that its memo size equals the stored `nodes`.
+  A full run is about three and a half minutes; `--quick` skips solving the Sundays.
+- The client counts an error for every Black move that lowers the position's value and SHOWS it
+  only once the stones are counted. `progress` = Black moves that kept the value. The key point
+  is ringed only for a player who won. The value table is warmed on mount, because a Sunday is up
+  to a hundred thousand positions and the first search is the only expensive one.
+
+**Crib** — key/route `crib`, category **Cards** (the fifth, still ungrouped), `miss: null`
+(first attempt stands, the clock breaks ties), legacy accent `#a16207` / navy `#fcd34d`. Five
+six-card hands a day (seven on Sunday), each one a choice of the two cards to throw, the crib
+alternating yours / theirs starting with yours. A throw's value is the kept four's average over all
+46 cut cards, plus the crib's average (over every cut and every pair of the 45 cards the opponent
+might throw) when the crib is yours, minus it when it is theirs. 2 points for the best throw, 1
+within 0.75 of it, so the score is out of 10 (14 on Sunday).
+
+- `lib/crib-core.js` is the scorer and valuation (client and generator). `scripts/gen-crib.mjs`
+  values random hands into pools (`pool`, both cribs per hand) and deals the calendar (`bank`).
+- **The ramp is the GAP** between the best and second-best throw, measured (median 1.24 on random
+  hands): Mon >=2.0; Tue 1.3-2.6; Wed 0.9-1.7 with >=1 crib-decided hand; Thu 0.6-1.15 >=1; Fri
+  0.4-0.85 >=2; Sat 0.2-0.6 >=2; **Sunday 0.2-1.0, seven hands, >=3 crib-decided**. A hand is
+  crib-decided (`flip`) when the four best cards to keep are NOT the best throw. No six-card set
+  repeats; no rank pattern (plus crib side) inside 21 days.
+- `scripts/verify-crib.mjs` has its own rank-pattern cached scorer, checks known hands (29, 28,
+  24, flushes, nobs), and recomputes every value (tolerance 0.0015). Full run about five minutes;
+  `--quick` recomputes the first hand per day.
+- The reveal after each hand shows the top throws with hand, crib and value, and a deterministic
+  cut (`cutFor`) with its breakdown, which is flavour and scores nothing.
