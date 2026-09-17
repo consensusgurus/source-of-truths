@@ -10,7 +10,7 @@ import { parseFredCsv } from '../../lib/housing/sources/fred.mjs';
 import { parseZillowWide, parseRedfinNational } from '../../lib/housing/sources/listings.mjs';
 import { quartersFrom, computeMetrics } from '../../lib/housing/sources/sec.mjs';
 import { readTeamKpis, latestKpis, marketShare, calendarQuarter, KPI_COLUMNS } from '../../lib/housing/sources/team.mjs';
-import { parseBpsCbsa } from '../../lib/housing/sources/metros.mjs';
+import { parseBpsCbsa, cleanName } from '../../lib/housing/sources/metros.mjs';
 import { parseDelimited } from '../../lib/housing/util.mjs';
 
 test('csv parser handles quotes, commas and CRLF', () => {
@@ -178,6 +178,15 @@ test('Census BPS metro file parses and validates layout', () => {
   assert.equal(rows.length, 60);
   assert.deepEqual(rows[5], { cbsa: '10005', name: 'Metro 5, ST', sf: 50, total: 50 + 4 + 3 + 5 * 1 });
   assert.throws(() => parseBpsCbsa('nothing,here\n'), /layout not recognized/);
+  // micropolitan rows (HHEADER 5) are dropped
+  const micro = lines.join('\n') + '\n202607,101,45020,5,Sweetwater  TX ,7,7,1,0,0,0,0,0,0,0,0,0';
+  assert.equal(parseBpsCbsa(micro).length, 60);
+});
+
+test('Census BPS names are cleaned', () => {
+  assert.equal(cleanName('Dallas-Fort Worth-Arlington  TX '), 'Dallas-Fort Worth-Arlington, TX');
+  assert.equal(cleanName('New York-Newark-Jersey City  NY-NJ '), 'New York-Newark-Jersey City, NY-NJ');
+  assert.equal(cleanName('Metro 5, ST'), 'Metro 5, ST');
 });
 
 test('gzip fixture is transparently decompressed', async () => {

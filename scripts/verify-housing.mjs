@@ -18,8 +18,8 @@ const tests = readdirSync(join(here, 'housing')).filter((f) => f.endsWith('.test
 
 const r = spawnSync(process.execPath, ['--test', ...tests], { cwd: root, encoding: 'utf8' });
 const out = `${r.stdout || ''}${r.stderr || ''}`;
-const pass = out.match(/^# pass (\d+)/m)?.[1] ?? '0';
-const fail = out.match(/^# fail (\d+)/m)?.[1] ?? '?';
+const pass = out.match(/^(?:#|\u2139) pass (\d+)/m)?.[1] ?? '?';
+const fail = out.match(/^(?:#|\u2139) fail (\d+)/m)?.[1] ?? '?';
 if (r.status !== 0) {
   console.log(out);
   console.log(`✗ verify-housing: FAIL (${fail} failing, ${pass} passing)`);
