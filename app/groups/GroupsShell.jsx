@@ -45,20 +45,26 @@ export function suggestName() {
 
 // Makes the name-only account /api/quiz/join makes everywhere else, and
 // remembers it the same way. Returns { ok } or { error }.
-export async function ensureAccount(name) {
+// `email` is optional; a typed one wins over a stored one. The same call signs
+// an existing player back in (name alone for a name-only account, name plus the
+// email they registered with otherwise), so a sign-up form and a sign-in form
+// are the same request.
+export async function ensureAccount(name, email) {
   const me = readIdentity();
   const username = String(name || '').trim();
+  const mail = String(email || '').trim() || me.email || '';
   if (!username) return { error: 'Pick a name for the board.' };
   if (username.length > 15) return { error: 'Names are 15 characters or fewer.' };
+  if (mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) return { error: 'Enter a valid email or leave it blank.' };
   try {
     const r = await fetch('/api/quiz/join', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email: me.email || undefined, anonId: me.anonId }),
+      body: JSON.stringify({ username, email: mail || undefined, anonId: me.anonId }),
     });
     const d = await r.json().catch(() => ({}));
-    if (!r.ok) return { error: d.error || 'Could not save that name. Try another.' };
-    saveIdentity(d.username || username, d.email || me.email || '');
+    if (!r.ok) return { error: d.error || 'Could not save that name. Try another.', code: d.code };
+    saveIdentity(d.username || username, d.email || mail || '');
     return { ok: true, username: d.username || username };
   } catch (e) {
     return { error: 'Could not reach the server. Check your connection and try again.' };

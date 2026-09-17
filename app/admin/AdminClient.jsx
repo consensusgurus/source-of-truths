@@ -955,12 +955,17 @@ export default function AdminClient({ initialLists, initialExtras = [], initialC
           <TabButton active={tab === 'daily'} onClick={() => setTab('daily')}>
             Daily Games <span style={{ opacity: 0.6 }}>{dailyPlaysTotal}</span>
           </TabButton>
+          <TabButton active={tab === 'groups'} onClick={() => setTab('groups')}>
+            Groups
+          </TabButton>
         </div>
 
         {tab === 'analytics' ? (
           <AnalyticsPanel views={views24h} viewsTotal={views24hTotal} quizStats={quizStats} quizPlaysTotal={quizPlaysTotal} signups={quizSignups} anonPlayers={anonPlayers} activeUsers={initialActiveUsers} geoMap={initialGeoMap} dailyRetention={initialDailyRetention} timeByDay={initialTimeByDay} newUsers={initialNewUsers} dailyByGame={initialDailyByGame} topPlayersToday={initialTopPlayersToday} />
         ) : tab === 'daily' ? (
           <DailyGamesPanel data={initialDailyByGame} />
+        ) : tab === 'groups' ? (
+          <GroupsPanel />
         ) : tab === 'research' ? (
           <ResearchNotesPanel alerts={alerts} busy={busy} onResolve={resolveAlert} notes={editorNotes} lists={LISTS} onAddNote={addNote} onDeleteNote={deleteNote} />
         ) : tab === 'feedback' ? (
@@ -3219,6 +3224,99 @@ function GamesRankedPanel({ data }) {
       <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded, margin: '10px 0 0', lineHeight: 1.6 }}>
         Columns: days live, then {rate ? 'plays per day live, players per day live' : 'total plays, unique players'}, then plays per player (lifetime, so it does not move with the basis). A player who plays several games counts once in each game, so the per-game player counts sum to more than the site total.
       </p>
+    </div>
+  );
+}
+
+// GROUPS (owner, 2026-09-17): every group, its owner and size, and the newest
+// joins. Fetched when the tab opens, from /api/admin/groups (admin cookie).
+function GroupsPanel() {
+  const [data, setData] = useState(null);
+  const [q, setQ] = useState('');
+  useEffect(() => {
+    let dead = false;
+    fetch('/api/admin/groups', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => { if (!dead) setData(d); })
+      .catch(() => { if (!dead) setData({ error: 'Could not load groups.' }); });
+    return () => { dead = true; };
+  }, []);
+  const mono = { fontFamily: 'DM Mono, monospace', fontSize: 11, color: COLORS.faded };
+  const when = (iso) => (iso ? new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—');
+  if (!data) return <div><SectionHeading>Groups</SectionHeading><p style={mono}>Loading…</p></div>;
+  if (data.available === false) return <div><SectionHeading>Groups</SectionHeading><p style={mono}>The groups tables are not in the database yet (migration 56).</p></div>;
+  if (data.error) return <div><SectionHeading>Groups</SectionHeading><p style={{ ...mono, color: COLORS.rust }}>{data.error}</p></div>;
+  const t = data.totals || {};
+  const needle = q.trim().toLowerCase();
+  const groups = (data.groups || []).filter((g) => !needle
+    || String(g.name).toLowerCase().includes(needle)
+    || String(g.code).toLowerCase().includes(needle)
+    || String(g.owner || '').toLowerCase().includes(needle));
+  const th = { textAlign: 'left', padding: '6px 8px', ...mono, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: `1px solid ${COLORS.line}` };
+  const td = { padding: '7px 8px', fontSize: 13, borderBottom: '1px solid rgba(20,22,28,0.08)', color: COLORS.ink };
+  const exportCsv = () => downloadCsvFile('mindloft-groups', ['Code', 'Name', 'Owner', 'Members', 'Created', 'Last join'],
+    (data.groups || []).map((g) => [g.code, g.name, g.owner || '', g.members, g.createdAt, g.lastJoin || '']));
+  return (
+    <div>
+      <SectionHeading>Groups</SectionHeading>
+      <p style={{ ...mono, margin: '0 0 18px', lineHeight: 1.6 }}>
+        Every group players have made, newest first, and the latest joins. Joins below exclude the owner joining their own group.
+      </p>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 18 }}>
+        <TimeByDayStat value={(t.groups || 0).toLocaleString()} unit="groups" label="Groups (all time)" accent={COLORS.ink} />
+        <TimeByDayStat value={(t.players || 0).toLocaleString()} unit="players" label="Players in a group" accent={COLORS.ink} />
+        <TimeByDayStat value={t.avgSize || 0} unit="members" label="Average group size" accent={COLORS.ink} />
+        <TimeByDayStat value={(t.groups24h || 0).toLocaleString()} unit="new" label="Groups made, 24h" accent={COLORS.ember} />
+        <TimeByDayStat value={(t.joins24h || 0).toLocaleString()} unit="joins" label="Joins, 24h" accent={COLORS.ember} />
+        <TimeByDayStat value={(t.groups7d || 0).toLocaleString()} unit="new" label="Groups made, 7d" accent={COLORS.rust} />
+        <TimeByDayStat value={(t.joins7d || 0).toLocaleString()} unit="joins" label="Joins, 7d" accent={COLORS.rust} />
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: 24, alignItems: 'start' }}>
+        <div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8, flexWrap: 'wrap' }}>
+            <strong style={{ fontSize: 14 }}>All groups</strong>
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, code, owner"
+              style={{ marginLeft: 'auto', padding: '6px 10px', border: `1px solid ${COLORS.line}`, fontSize: 12, minWidth: 180 }} />
+            <button onClick={exportCsv} style={{ padding: '6px 10px', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, fontFamily: 'DM Mono, monospace', fontSize: 10, textTransform: 'uppercase', cursor: 'pointer' }}>↓ CSV</button>
+          </div>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead><tr><th style={th}>Group</th><th style={th}>Owner</th><th style={{ ...th, textAlign: 'right' }}>Members</th><th style={th}>Created</th><th style={th}>Last join</th></tr></thead>
+              <tbody>
+                {groups.map((g) => (
+                  <tr key={g.code}>
+                    <td style={td}><a href={`/groups/${g.code}`} target="_blank" rel="noreferrer" style={{ color: COLORS.ember, fontWeight: 700 }}>{g.name}</a> <span style={mono}>{g.code}</span></td>
+                    <td style={td}>{g.owner || '—'}</td>
+                    <td style={{ ...td, textAlign: 'right' }}>{g.members}</td>
+                    <td style={{ ...td, ...mono }}>{when(g.createdAt)}</td>
+                    <td style={{ ...td, ...mono }}>{when(g.lastJoin)}</td>
+                  </tr>
+                ))}
+                {!groups.length ? <tr><td style={td} colSpan={5}>No groups yet.</td></tr> : null}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <strong style={{ fontSize: 14, display: 'block', marginBottom: 8 }}>Recent activity</strong>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <tbody>
+              {(data.recentJoins || []).map((j, i) => (
+                <tr key={i}>
+                  <td style={{ ...td, ...mono, whiteSpace: 'nowrap' }}>{when(j.at)}</td>
+                  <td style={td}>
+                    <b>{j.username}</b>{j.nameOnly ? <span style={mono}> (name only)</span> : null}
+                    {j.role === 'owner' ? ' started ' : ' joined '}
+                    {j.code ? <a href={`/groups/${j.code}`} target="_blank" rel="noreferrer" style={{ color: COLORS.ember }}>{j.group}</a> : j.group}
+                  </td>
+                </tr>
+              ))}
+              {!(data.recentJoins || []).length ? <tr><td style={td}>Nothing yet.</td></tr> : null}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

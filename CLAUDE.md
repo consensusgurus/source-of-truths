@@ -7786,3 +7786,11 @@ its members, so it is cached `private` only, never at the shared edge.
 - **Gate:** `node scripts/verify-groups.mjs` runs the data layer against an
   in-memory PostgREST stand-in (no database, no env). Confirmed to fail when the
   member cap or the last-member delete is broken.
+- **Sign up and join in one step (2026-09-17).** A guest on a group page gets
+  `app/groups/SignupJoin.jsx`: name (pre-filled), optional email, and a "New
+  here / Already signed up" switch. Both sides are the same `/api/quiz/join`
+  request, which signs a returning player in, and the page action (join, or
+  create on `/groups`) runs straight after. Account errors show `SigninHelp`;
+  a missing group name is checked before any account is made (`precheck`).
+- **Admin: Groups tab** in `/admin`, fed by `/api/admin/groups` (admin cookie
+  only): totals, every group with owner and size, and the latest joins.

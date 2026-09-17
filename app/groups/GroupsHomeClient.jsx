@@ -6,8 +6,9 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import GroupsShell, {
-  readIdentity, identityQs, suggestName, ensureAccount, etTodayIso, suffixOfIso, ordinal,
+  readIdentity, identityQs, suggestName, etTodayIso, suffixOfIso, ordinal,
 } from './GroupsShell';
+import SignupJoin from './SignupJoin';
 
 export default function GroupsHomeClient() {
   const router = useRouter();
@@ -68,17 +69,11 @@ export default function GroupsHomeClient() {
     router.push(`/groups/${c}`);
   }
 
-  async function create(e) {
-    e.preventDefault();
-    if (busy) return;
+  // Makes the group for a reader who already has an account. A guest reaches
+  // this through SignupJoin, which makes the account first.
+  async function createNow() {
     const name = gname.trim();
-    if (!name) { setErr('Give the group a name.'); return; }
-    setBusy(true);
-    setErr('');
-    if (!state || !state.registered) {
-      const acct = await ensureAccount(uname);
-      if (acct.error) { setErr(acct.error); setBusy(false); return; }
-    }
+    if (!name) return { error: 'Give the group a name first.' };
     const me = readIdentity();
     try {
       const r = await fetch('/api/groups', {
@@ -87,12 +82,30 @@ export default function GroupsHomeClient() {
         body: JSON.stringify({ name, anonId: me.anonId, email: me.email || undefined }),
       });
       const d = await r.json().catch(() => ({}));
-      if (!r.ok || !d.group) { setErr(d.error || 'Could not start the group. Try again.'); setBusy(false); return; }
+      if (!r.ok || !d.group) return { error: d.error || 'Could not start the group. Try again.' };
       router.push(`/groups/${d.group.code}?new=1`);
+      return {};
     } catch (e2) {
-      setErr('Could not reach the server. Check your connection and try again.');
-      setBusy(false);
+      return { error: 'Could not reach the server. Check your connection and try again.' };
     }
+  }
+
+  async function create(e) {
+    e.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    setErr('');
+    const res = await createNow();
+    if (res.error) { setErr(res.error); setBusy(false); }
+  }
+
+  // A guest who signs up without starting a group: reload their (empty) list.
+  async function reloadAfterSignup() {
+    try {
+      const d = await fetch(`/api/groups?${identityQs()}`, { cache: 'no-store' }).then((r) => r.json());
+      setState(d);
+    } catch (e) { /* the page still works; the list refreshes on the next visit */ }
+    return {};
   }
 
   const groups = (state && state.groups) || [];
@@ -117,7 +130,14 @@ export default function GroupsHomeClient() {
         <div className="gh-grid">
           <section className="grp-card gh-card">
             <span className="grp-lbl">Your groups</span>
-            {!state ? <p className="grp-note grp-mute">Loading…</p> : !groups.length ? (
+            {!state ? <p className="grp-note grp-mute">Loading…</p> : !state.registered ? (
+              <div className="gh-signup">
+                <p className="grp-note" style={{ margin: '8px 0 12px' }}>
+                  Sign up to join groups and keep your place on their boards. Already play under a name? Sign in to see your groups here.
+                </p>
+                <SignupJoin compact initialName={uname} cta="Sign up" busyCta="Signing up…" onDone={reloadAfterSignup} />
+              </div>
+            ) : !groups.length ? (
               <p className="grp-note grp-mute" style={{ marginTop: 8 }}>You are not in a group yet. Start one, or open a code someone sent you.</p>
             ) : (
               <ul className="gh-list">
@@ -164,24 +184,33 @@ export default function GroupsHomeClient() {
             {full ? (
               <p className="grp-note" style={{ marginTop: 8 }}>You are in {groups.length} groups, which is the most one player can be in. Leave one to start another.</p>
             ) : (
-              <form className="gh-form" onSubmit={create}>
-                <label className="grp-lbl" htmlFor="gh-gname">Group name</label>
-                <input id="gh-gname" className="grp-in" maxLength={40} placeholder="e.g. Family Table"
-                  value={gname} onChange={(e) => setGname(e.target.value)} />
-                {state && !state.registered ? (
-                  <>
-                    <label className="grp-lbl" htmlFor="gh-uname">Your name on the board</label>
-                    <input id="gh-uname" className="grp-in" maxLength={15} value={uname}
-                      onChange={(e) => setUname(e.target.value)} autoComplete="nickname" />
-                  </>
-                ) : null}
-                <button className="grp-btn solid" type="submit" disabled={busy || !state}>{busy ? 'Starting…' : 'Create and share'}</button>
-                {err ? <p className="grp-err">{err}</p> : null}
-                <p className="grp-note grp-mute gh-small">
-                  Up to {(state && state.memberMax) || 50} members. You get a link and a five-letter code to send.
-                  {state && state.registered ? ` You'll appear as ${state.username}.` : ''}
-                </p>
-              </form>
+              state && !state.registered ? (
+                // A guest names the group, then signs up and creates it in one press.
+                <div className="gh-form">
+                  <label className="grp-lbl" htmlFor="gh-gname">Group name</label>
+                  <input id="gh-gname" className="grp-in" maxLength={40} placeholder="e.g. Family Table"
+                    value={gname} onChange={(e) => setGname(e.target.value)} />
+                  <div style={{ marginTop: 8 }}>
+                    <SignupJoin compact initialName={uname} cta="Sign up and create" busyCta="Starting…" onDone={createNow}
+                      precheck={() => (gname.trim() ? '' : 'Give the group a name first.')} />
+                  </div>
+                  <p className="grp-note grp-mute gh-small">
+                    Up to {state.memberMax || 50} members. You get a link and a five-letter code to send.
+                  </p>
+                </div>
+              ) : (
+                <form className="gh-form" onSubmit={create}>
+                  <label className="grp-lbl" htmlFor="gh-gname">Group name</label>
+                  <input id="gh-gname" className="grp-in" maxLength={40} placeholder="e.g. Family Table"
+                    value={gname} onChange={(e) => setGname(e.target.value)} />
+                  <button className="grp-btn solid" type="submit" disabled={busy || !state}>{busy ? 'Starting…' : 'Create and share'}</button>
+                  {err ? <p className="grp-err">{err}</p> : null}
+                  <p className="grp-note grp-mute gh-small">
+                    Up to {(state && state.memberMax) || 50} members. You get a link and a five-letter code to send.
+                    {state && state.registered ? ` You'll appear as ${state.username}.` : ''}
+                  </p>
+                </form>
+              )
             )}
           </section>
         </div>

@@ -7,7 +7,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import GroupsShell, {
-  readIdentity, identityQs, suggestName, ensureAccount, groupAction, shareInvite, inviteUrl,
+  readIdentity, identityQs, suggestName, groupAction, shareInvite, inviteUrl,
   etTodayIso, shiftIso, suffixOfIso, labelOfIso, ordinal, Avatar,
 } from '../GroupsShell';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
@@ -15,6 +15,7 @@ import { categoryColor, categoryColorLight } from '@/lib/category-ramp';
 import { gameStats } from '@/lib/daily-row-stats';
 import { useStageTheme } from '@/lib/stage-theme';
 import GameGlyph from '../../GameGlyph';
+import SignupJoin from '../SignupJoin';
 
 const TABS = [
   { id: 'today', label: 'Today' },
@@ -98,23 +99,27 @@ export default function GroupClient({ code }) {
   const members = (info && info.members) || [];
   const group = info && info.group;
 
-  async function join() {
-    setBusy(true);
-    setJoinErr('');
-    if (!viewer.registered) {
-      const acct = await ensureAccount(name);
-      if (acct.error) { setJoinErr(acct.error); setBusy(false); return; }
-    }
+  // The group half of a join. The account half is done first, either by the
+  // one-tap button (already registered) or by SignupJoin (new or returning).
+  async function joinGroupNow() {
     const d = await groupAction(code, 'join');
-    setBusy(false);
     if (d.error) {
-      if (d.code === 'no_account') { setJoinErr('Pick a name for the board, then join.'); return; }
-      setJoinErr(d.error);
-      return;
+      if (d.code === 'no_account') return { error: 'Pick a name for the board, then join.' };
+      return { error: d.error };
     }
     setInfo(d);
     setHistory(null);
-    setFlash(`You joined. Play any daily and your points show up here.`);
+    const who = d.viewer && d.viewer.username;
+    setFlash(`You joined${who ? ` as ${who}` : ''}. Play any daily and your points show up here.`);
+    return {};
+  }
+
+  async function join() {
+    setBusy(true);
+    setJoinErr('');
+    const res = await joinGroupNow();
+    setBusy(false);
+    if (res.error) setJoinErr(res.error);
   }
 
   async function leave() {
@@ -163,21 +168,24 @@ export default function GroupClient({ code }) {
           <div className="gp-join">
             <div className="gp-joinmsg">
               <b>{info.owner ? `You're invited by ${info.owner}.` : `You're invited.`}</b>{' '}
-              <span className="grp-mute">{viewer.registered ? 'Join with one tap.' : 'Keep the name or change it, then join.'}</span>
+              <span className="grp-mute">
+                {viewer.registered
+                  ? 'Join with one tap.'
+                  : 'Sign up and join in one step. Keep the suggested name or pick your own.'}
+              </span>
             </div>
-            <form className="gp-jform" onSubmit={(e) => { e.preventDefault(); if (!busy) join(); }}>
-              {viewer.registered ? null : (
-                <input className="grp-in" id="gp-name" aria-label="Your name on the board" maxLength={15}
-                  value={name} onChange={(e) => setName(e.target.value)} autoComplete="nickname" />
-              )}
-              <button className="grp-btn solid" type="submit" disabled={busy}>
-                {busy ? 'Joining…' : viewer.registered ? `Join as ${viewer.username}` : 'Join group'}
-              </button>
-            </form>
+            {viewer.registered ? (
+              <form className="gp-jform" onSubmit={(e) => { e.preventDefault(); if (!busy) join(); }}>
+                <button className="grp-btn solid" type="submit" disabled={busy}>
+                  {busy ? 'Joining…' : `Join as ${viewer.username}`}
+                </button>
+              </form>
+            ) : (
+              <div className="gp-full">
+                <SignupJoin initialName={name} cta="Sign up and join" onDone={joinGroupNow} />
+              </div>
+            )}
             {joinErr ? <p className="grp-err gp-full">{joinErr}</p> : null}
-            {!viewer.registered ? (
-              <p className="grp-note gp-full gp-small">A name with no email can be used by anyone who types it. <Link href="/quizzes/hub">Add an email</Link> to keep your spot on other devices.</p>
-            ) : null}
           </div>
         ) : null}
         {flash ? <div className="gp-flash"><span>{flash}</span><button type="button" className="grp-btn" onClick={() => setFlash('')}>OK</button></div> : null}
