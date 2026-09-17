@@ -7923,6 +7923,7 @@ within 0.75 of it, so the score is out of 10 (14 on Sunday).
   lede replace the form's, which it hides — the form's heading row sets
   `display:flex` INLINE, so that one rule needs `!important`.
 - **My games also carries the games the reader's group has played that day**
-  (owner, 2026-09-17), appended after the starred ones and drawn filled, and the
-  band says "N of M members played" rather than a bare "N of M", which read as
-  games.
+  (owner, 2026-09-17), appended after the starred ones and drawn filled. The
+  band's "N of M played" counts MEMBERS with a score today; it was spelled out
+  as "members played" for a day and the owner asked for the short form back, so
+  the noun lives in the chip's title attribute instead.

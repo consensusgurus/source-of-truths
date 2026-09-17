@@ -23,10 +23,10 @@ export default function HomeGroupsBand({ data, withTq = (h) => h }) {
   let sub = `${g.members} ${g.members === 1 ? 'member' : 'members'}`;
   let pill = null;
   if (!g.failed) {
-    // MEMBERS, said out loud (owner report, 2026-09-17: "this says 2 of 2
-    // played, but i have only played 1 of 2"). The figure was always how many
-    // MEMBERS have a score today, and with no noun it read as games.
-    sub = `${g.played} of ${g.members} ${g.members === 1 ? 'member' : 'members'} played`;
+    // "N of M played" counts MEMBERS with a score today. The noun was spelled
+    // out for a day and the owner asked for the short form back, so the chip
+    // stays short and the word lives in the title attribute instead.
+    sub = `${g.played} of ${g.members} played`;
     if (g.rank === 1) {
       const second = (g.top || [])[1];
       if (second) sub += ` · ${fmtPts(g.total - second.total)} ahead`;
@@ -50,7 +50,8 @@ export default function HomeGroupsBand({ data, withTq = (h) => h }) {
         {n > 1 ? (
           <button type="button" className="hgb-arw" aria-label="Previous group" onClick={() => setAt(i - 1)}>&lsaquo;</button>
         ) : null}
-        <a className="hgb-chip" href={withTq(`/groups/${g.code}`)}>
+        <a className="hgb-chip" href={withTq(`/groups/${g.code}`)}
+          title={g.failed ? g.name : `${g.name}: ${g.played} of ${g.members} ${g.members === 1 ? 'member has' : 'members have'} played today`}>
           <span className="hgb-nm"><b>{g.name}</b><i>{sub}</i></span>
           {pill}
         </a>
