@@ -7893,3 +7893,17 @@ within 0.75 of it, so the score is out of 10 (14 on Sunday).
   back and everything is private, so code and migration can ship in either
   order. Admin's Groups table and CSV carry a Listing column.
   Removing a member was already there: owner-only Remove on each member card.
+- **A group board is scored as its OWN field (owner, 2026-09-17: "if im first i
+  assume i should get 15").** `rescoreField(quizId, rows)` in
+  lib/daily-combined.js pays one game's rows by THIS field's positions with the
+  site's own formula (same ladder, same tie rule = the mean of the rungs a tie
+  spans, same pre-cutover split on an old day); `groupPayload` in
+  /api/quiz/daily-combined runs it per game over the members, keeps the site's
+  figure as `sitePoints`, and recombines best-N for the group total. So topping a
+  group is worth 15 even if that run came 2nd sitewide, and each row still
+  carries `siteRank`. Gate: scripts/verify-group-scoring.mjs.
+- **Home top row (owner, 2026-09-17):** above 1100px the Your groups band and
+  the day's progress ladder share one row (`.sty-toprow.two`, band left, ladder
+  right); they stack below that. A game a group member has played FILLS its tile
+  with the category step (`.sty-g.grp`, ink via `--stg-onramp`), with the member
+  initials as small discs on the title row so every tile keeps its height.

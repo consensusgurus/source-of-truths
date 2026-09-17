@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { loadDailyResultsCached } from '@/lib/daily-results-cache';
 import { findQuizIdentity } from '@/lib/quiz-identity';
-import { scoreGame, combineDaily, guestProvisional, rankByCorrect, rankByTime, DAILY_KEYS, DAILY_MAX, GAME_MAX, bestNForSuffix, usesLadder, dayIsFrozen, etDayEndMs, isoOfSuffix, rowsWithinDay } from '@/lib/daily-combined';
+import { scoreGame, combineDaily, guestProvisional, rankByCorrect, rankByTime, DAILY_KEYS, DAILY_MAX, GAME_MAX, bestNForSuffix, usesLadder, dayIsFrozen, etDayEndMs, isoOfSuffix, rowsWithinDay, rescoreField } from '@/lib/daily-combined';
 import { scoreOutwitGame } from '@/lib/outwit-score';
 import { scoreOutrankGame } from '@/lib/outrank-score';
 import { scoreFeudGame } from '@/lib/feud-score';
@@ -242,7 +242,16 @@ function groupRank(rows, keyOf) {
   return rows;
 }
 
-function groupPayload({ suffix, frozen, maxTotal, gameCount, gameResults, overallFull, group, members }) {
+// A GROUP IS SCORED AS ITS OWN FIELD (owner, 2026-09-17: "if im first i assume
+// i should get 15"). The board used to be the site board FILTERED: the member
+// who led their group still carried whatever the site paid them, so topping a
+// group of five with a run that came 2nd sitewide read 13.5 out of 15 with
+// nobody above it. The points are the site's own points formula, run again over
+// the members alone: the same ladder, the same tie rule (a tie is paid the mean
+// of the rungs it spans), the same best-N combine. Nothing is stored and the
+// site board is untouched; each member's site place travels with the row as
+// `siteRank`, so both places can be read at once.
+function groupPayload({ suffix, frozen, maxTotal, gameCount, gameResults, overallFull, group, members, bestN }) {
   const keys = new Set(members.map((m) => m.userKey));
   const nameOf = new Map(members.map((m) => [m.userKey, m.username]));
   // THE SITE PLACE, as the site board prints it: named players only, shared
@@ -258,21 +267,6 @@ function groupPayload({ suffix, frozen, maxTotal, gameCount, gameResults, overal
       siteRankOf.set(r.userKey, rk);
     }
   }
-  const overall = groupRank(
-    overallFull
-      .filter((r) => keys.has(r.userKey))
-      .map((r) => ({
-        userKey: r.userKey,
-        username: nameOf.get(r.userKey) || r.username,
-        total: r.total,
-        // Where this member sits on the SITE board today, so a group board can
-        // show both places at once (the Everyone / group switch, 2026-09-17).
-        siteRank: siteRankOf.get(r.userKey) ?? null,
-        gamesPlayed: r.gamesPlayed,
-        gamesFinished: r.gamesFinished,
-      })),
-    (r) => Math.round((r.total || 0) * 10),
-  );
   const games = gameResults.map((g) => {
     const rows = [...g.players.values()]
       .filter((p) => keys.has(p.userKey))
@@ -291,9 +285,45 @@ function groupPayload({ suffix, frozen, maxTotal, gameCount, gameResults, overal
         abandoned: !!p.abandoned,
         points: Math.round(p.points * 10) / 10,
       }));
-    groupRank(rows, (r) => r.siteRank);
+    // Re-scored over the members alone; this also sets each row's group rank.
+    rescoreField(g.quizId, rows);
     return { key: g.key, quizId: g.quizId, href: g.href, field: g.field, board: rows };
   });
+
+  // THE DAY, recombined on those points: best-N per member, exactly the rule
+  // the site board uses, so the two boards differ only in who is in the field.
+  const byUser = new Map();
+  for (const g of games) {
+    for (const r of g.board) {
+      let u = byUser.get(r.userKey);
+      if (!u) { u = { userKey: r.userKey, username: r.username, pts: [], finished: 0 }; byUser.set(r.userKey, u); }
+      u.pts.push(r.points);
+      if (!r.abandoned) u.finished += 1;
+    }
+  }
+  const N = Math.max(1, bestN || 25);
+  const overall = groupRank(
+    [...byUser.values()]
+      .map((u) => {
+        const best = u.pts.slice().sort((a, b) => b - a).slice(0, N);
+        return {
+          userKey: u.userKey,
+          username: nameOf.get(u.userKey) || u.username,
+          total: Math.round(best.reduce((s, v) => s + v, 0) * 10) / 10,
+          // Where this member sits on the SITE board today, so a group board
+          // can show both places at once (2026-09-17).
+          siteRank: siteRankOf.get(u.userKey) ?? null,
+          gamesPlayed: u.pts.length,
+          gamesFinished: u.finished,
+          bestSingle: best.length ? best[0] : 0,
+        };
+      })
+      .sort((a, b) => b.total - a.total
+        || b.gamesPlayed - a.gamesPlayed
+        || b.bestSingle - a.bestSingle
+        || String(a.username || '').localeCompare(String(b.username || ''))),
+    (r) => Math.round((r.total || 0) * 10),
+  );
   return {
     date: suffix,
     frozen,
@@ -520,7 +550,7 @@ export async function GET(request) {
 
     if (groupRef) {
       return NextResponse.json(
-        groupPayload({ suffix, frozen, maxTotal, gameCount, gameResults, overallFull, group: groupRef.group, members: groupRef.members }),
+        groupPayload({ suffix, frozen, maxTotal, gameCount, gameResults, overallFull, group: groupRef.group, members: groupRef.members, bestN: effBestN }),
         { headers: frozen ? GROUP_FROZEN_HEADERS : GROUP_HEADERS },
       );
     }

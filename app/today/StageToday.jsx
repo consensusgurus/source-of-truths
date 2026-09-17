@@ -60,7 +60,7 @@ import PremierePop from '../PremierePop';
 import GroupsPop from '../GroupsPop';
 // GROUP STANDINGS on the home (2026-09-17): the band, the Groups badge and the
 // member dots on the tiles all read one standing payload.
-import useGroupStanding, { bestPlace, ordinal as grpOrdinal, MiniAvatar, AVATAR_CSS } from '../groups/groupStanding';
+import useGroupStanding, { bestPlace, ordinal as grpOrdinal } from '../groups/groupStanding';
 import HomeGroupsBand from '../groups/HomeGroupsBand';
 import MindLoftMark from '../MindLoftMark';
 import StagePatch, { PATCH_CSS } from '../StagePatch';
@@ -367,41 +367,51 @@ function starPop(el) {
   } catch (e) {}
 }
 
-// WHO IN YOUR GROUP HAS PLAYED THIS (owner, 2026-09-17, idea 7). One dot per
-// member of the viewer's first group, filled for members who have played this
-// game today, drawn only once somebody has. It says who played, never a place.
-const DOTS_MAX = 8;
+// WHO IN YOUR GROUP HAS PLAYED THIS (owner, 2026-09-17, idea 7, reworked the
+// same day). One small disc per member of the viewer's first group who has
+// played this game today, sitting ON THE TITLE ROW so every tile keeps the same
+// height, and the tile itself FILLS with the category hue (owner: "flip the
+// color scheme of games played by group ... filled in with whyte letters"). No
+// member has played it, no discs and no fill: a row of empty dots said nothing
+// on ninety tiles and buried the tags.
+const DOTS_MAX = 4;
 function GroupDots({ dots }) {
-  if (!dots || !dots.roster || !dots.roster.length) return null;
-  const n = dots.roster.filter((m) => dots.played.has(m.userKey)).length;
-  // Only where someone in the group has played it: a row of empty dots on
-  // ninety tiles says nothing and buries the tags.
-  if (!n) return null;
-  const shown = dots.roster.slice(0, DOTS_MAX);
-  const more = dots.roster.length - shown.length;
-  const label = n === dots.roster.length ? `All ${n}` : `${n} of ${dots.roster.length}`;
+  if (!dots || !dots.played || !dots.played.size) return null;
+  const on = dots.roster.filter((m) => dots.played.has(m.userKey));
+  if (!on.length) return null;
+  const shown = on.slice(0, DOTS_MAX);
+  const more = on.length - shown.length;
+  const label = on.length === dots.roster.length ? `all ${on.length}` : `${on.length} of ${dots.roster.length}`;
   return (
-    <span className="sty-gdots" title={`${dots.name}: ${label.toLowerCase()} played`}>
-      <span className="sty-gdst">
-        {shown.map((m) => <MiniAvatar key={m.userKey} name={m.username} userKey={m.userKey} off={!dots.played.has(m.userKey)} />)}
-      </span>
-      <small>{more > 0 ? `+${more} · ` : ''}{label}</small>
+    <span className="sty-gdots" title={`${dots.name}: ${label} played`}>
+      {shown.map((m) => (
+        <i key={m.userKey} aria-hidden="true">{String(m.username || '?').slice(0, 1).toUpperCase()}</i>
+      ))}
+      {more > 0 ? <i aria-hidden="true">{`+${more}`}</i> : null}
+      <span className="sty-sr">{dots.name}: {label} played</span>
     </span>
   );
 }
 
-function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue, res, i = 0, fk = null, dotsFor = null }) {
+function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue, res, i = 0, fk = null, dotsFor = null, light = true }) {
   const dots = dotsFor ? dotsFor(g.key) : null;
+  const grpOn = !!(dots && dots.played && dots.played.size);
   const state = done.has(g.key) ? 'done' : inprog.has(g.key) ? 'open' : '';
   const on = !!(favorites && favorites.includes(g.key));
   // MY GAMES MIXES CATEGORIES, so each card carries its OWN hue rather than
   // inheriting the section's (owner, 2026-08-31). In a category row every card
   // is that category anyway, so passing nothing keeps the row's colour.
   return (
-    <a className={`sty-g ${state}${res ? ' res' : ''}`} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`}
+    <a className={`sty-g ${state}${res ? ' res' : ''}${grpOn ? ' grp' : ''}`} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`}
       data-fk={fk || g.key}
-      style={{ '--i': i, ...(hue ? { '--cc': hue } : null) }}>
-      <span className="sty-gn"><Glyph k={g.key} size={17} />{g.name}</span>
+      style={{
+        '--i': i,
+        ...(hue ? { '--cc': hue } : null),
+        // The ink that carries ON that step, so a filled tile reads in both
+        // registers. Same rule as the newcomer row below.
+        ...(grpOn ? { '--stg-onramp': light ? categoryOnrampLight(g.cat) : RAMP_INK } : null),
+      }}>
+      <span className="sty-gn"><Glyph k={g.key} size={17} />{g.name}<GroupDots dots={dots} /></span>
       {res ? (
         <span className="sty-gres sty-rev">
           <span className="sty-grl">You:</span>
@@ -411,7 +421,6 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
       ) : (
         <span className="sty-gt">{g.tag}</span>
       )}
-      <GroupDots dots={dots} />
       {canPin ? (
         <button
           type="button"
@@ -1370,7 +1379,7 @@ export default function StageToday() {
 
   return (
     <div className="sty stage-page" data-stage-theme={stageTheme}>
-      <style dangerouslySetInnerHTML={{ __html: CSS + AVATAR_CSS }} />
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <StageWelcome capRef={capRef} />
       {/* NEW-GAME PREMIERES: once per launch, returning players who have not
           played it, after the arrival has finished. See app/PremierePop.jsx. */}
@@ -1582,6 +1591,10 @@ export default function StageToday() {
             server; see app/SundayLedger.jsx. */}
         <SundayLedger light={light} withTq={withTq} />
 
+        {/* THE TOP ROW (owner, 2026-09-17). On a wide screen the groups band and
+            the day's progress share a line, with the ladder squeezed to the
+            right; under 1100px they stack in the order they always had. */}
+        <div className={'sty-toprow' + (grp && grp.groups && grp.groups.length ? ' two' : '')}>
         {(done.size > 0 || inprog.size > 0) ? (
         <section className="sty-day sty-rev">
           <div className="sty-eb">The day&rsquo;s progress <span className="sty-ebn"><RollNum value={playedCount} from={seenCount === null ? null : Math.min(seenCount, playedCount)} delay={360} /> of {total}</span></div>
@@ -1594,6 +1607,7 @@ export default function StageToday() {
             Static, so it needs no fade and shows on the server render. */}
         {/* YOUR GROUPS TODAY (idea 2): nothing for a reader in no group. */}
         <HomeGroupsBand data={grp} withTq={withTq} />
+        </div>
 
         <h2 className="sty-slate">Today&rsquo;s fresh slate of puzzles</h2>
 
@@ -1688,7 +1702,7 @@ export default function StageToday() {
                 {playedLast(pinned, done).map((g, i) => (
                   <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
                     canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-                    hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsFor} i={i} fk={'mine:' + g.key} />
+                    hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsFor} light={light} i={i} fk={'mine:' + g.key} />
                 ))}
               </div>
             ) : null}
@@ -1786,7 +1800,7 @@ export default function StageToday() {
                 // game IS (owner, 2026-08-31).
                 <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
                   canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-                  hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsFor} i={i} fk={'az:' + g.key} />
+                  hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsFor} light={light} i={i} fk={'az:' + g.key} />
               ))}
             </div>
           </section>
@@ -1810,7 +1824,7 @@ export default function StageToday() {
                 {playedLast(games, done).map((g, i) => (
                   <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
                     canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-                    res={standBy[g.key]} dotsFor={dotsFor} i={i} />
+                    res={standBy[g.key]} dotsFor={dotsFor} light={light} i={i} />
                 ))}
               </div>
             </section>
@@ -2141,16 +2155,40 @@ ${PATCH_CSS}
   letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;}
 .sty-all:hover{opacity:.78;}
 .sty-figlink{display:none;}
+/* THE TOP ROW: stacked by default, two columns once there is room for both. */
+.sty-toprow{display:flex;flex-direction:column;gap:16px;}
+.sty-toprow:empty{display:none;}
+@media (min-width:1100px){
+  .sty-toprow.two{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);
+    gap:20px;align-items:center;}
+  .sty-toprow.two .sty-day{order:2;min-width:0;}
+  .sty-toprow.two .hgb{order:1;min-width:0;}
+}
 /* THE GROUPS BADGE (2026-09-17). A word on a desktop, a number on a phone. */
 .sty-gpos{display:inline-flex;align-items:center;border-radius:999px;padding:2px 7px;letter-spacing:.04em;
   background:var(--stg-brand,#7dd3fc);color:var(--stg-raise,#0e131f);font-variant-numeric:tabular-nums;}
 .sty-gpos .n{display:none;}
-/* THE MEMBER DOTS on a tile (2026-09-17). */
-.sty-gdots{display:flex;align-items:center;gap:7px;margin-top:7px;min-width:0;}
-.sty-gdst{display:flex;align-items:center;flex:none;}
-.sty-gdst .gsa{width:18px;height:18px;font-size:8.5px;margin-left:-4px;box-shadow:0 0 0 2px var(--stg-raise,#0e131f);}
-.sty-gdst .gsa:first-child{margin-left:0;}
-.sty-gdots small{font-size:11px;font-weight:600;color:var(--stg-ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* THE MEMBER DISCS, on the title row so no tile grows (2026-09-17). Tonal
+   rather than per-member colour: the tile they sit on is already the category's
+   own step, and seven avatar hues on top of it is a third palette. */
+.sty-gdots{display:inline-flex;align-items:center;gap:2px;margin-left:auto;flex:none;}
+.sty-gdots i{width:16px;height:16px;border-radius:50%;display:grid;place-items:center;
+  font-style:normal;font-size:8.5px;font-weight:800;line-height:1;
+  background:color-mix(in srgb, var(--stg-onramp,#08222e) 22%, transparent);
+  color:var(--stg-onramp,#08222e);}
+.sty-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+/* A GAME SOMEBODY IN YOUR GROUP HAS PLAYED IS FILLED (owner, 2026-09-17): the
+   category's own step with the ink that carries on it, so the slate says at a
+   glance which of today's puzzles the group is already on. */
+.sty-g.grp{background:var(--cc);border-color:var(--cc);color:var(--stg-onramp);}
+.sty-g.grp .sty-gn,.sty-g.grp .sty-gi,.sty-g.grp:hover .sty-gn{color:var(--stg-onramp);}
+.sty-g.grp .sty-gt,.sty-g.grp .sty-grl,.sty-g.grp .sty-grf{color:color-mix(in srgb, var(--stg-onramp) 74%, transparent);}
+.sty-g.grp .sty-grk,.sty-g.grp .sty-star{color:var(--stg-onramp);}
+.sty-g.grp:hover{border-color:var(--cc);}
+/* A filled tile is never dimmed: the fill IS the mark, and half-strength ink on
+   a saturated ground is the contrast trap this file warns about elsewhere. */
+.sty-g.done.grp{opacity:1;}
+.sty-g.done.grp.res{background:var(--cc);}
 .sty-all:focus-visible{outline:2px solid var(--stg-acc);outline-offset:3px;border-radius:4px;}
 /* The only semantic colour on this page: a climb and a slip have to read
    apart at a glance, and they are not the category family. */

@@ -53,13 +53,14 @@ export default function FinishGroupLine({ gameKey }) {
   const moveOf = (g) => {
     if (archived) return null;
     const before = totalWithout(g.myPoints, gameKey, data.bestN);
+    // No earlier total means this is their first game of the day in that
+    // group: there is no move to report, so the headline stands alone.
     const prev = placeFor(before, g.rows, data.userKey);
-    if (prev == null) return { fresh: true };
+    if (prev == null) return null;
     return { delta: prev - g.rank };
   };
   const Move = ({ m }) => {
     if (!m) return null;
-    if (m.fresh) return <em className="fgl-mv new">on the board</em>;
     if (!m.delta) return null;
     return <em className={'fgl-mv ' + (m.delta > 0 ? 'up' : 'dn')}>{m.delta > 0 ? '▲' : '▼'} {Math.abs(m.delta)}</em>;
   };
@@ -126,7 +127,6 @@ const CSS = `
 .fgl-mv{font-style:normal;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:12.5px;font-weight:600;margin-left:6px;white-space:nowrap;}
 .fgl-mv.up{color:var(--stg-up,#6ee7b7);}
 .fgl-mv.dn{color:var(--stg-dn,#fb7185);}
-.fgl-mv.new{color:var(--stg-mute,#8b95a8);font-weight:500;}
 .fgl-rows{display:flex;flex-direction:column;}
 .fgl-r{display:grid;grid-template-columns:18px 22px 1fr auto;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--stg-line,rgba(255,255,255,.11));font-size:13.5px;}
 .fgl-r:first-child{border-top:0;}
