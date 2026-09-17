@@ -7852,3 +7852,10 @@ within 0.75 of it, so the score is out of 10 (14 on Sunday).
   `--quick` recomputes the first hand per day.
 - The reveal after each hand shows the top throws with hand, crib and value, and a deterministic
   cut (`cutFor`) with its breakdown, which is flavour and scores nothing.
+- **Launch pop-up: `app/GroupsPop.jsx`** on the home (StageToday), once per
+  browser for everyone (`sot_groups_pop`, stamped on render), skipped for anyone
+  already in a group. It waits for the theme demo, the arrival screen, the
+  welcome overlay and PremierePop, and PremierePop now waits for it too
+  (`.gpp-scrim` in its `arrivalBusy`), so two cards never open at once. Its
+  feedback face posts to `/api/complaints` as `groups-feedback`.
+  `?groupspop=1` previews without stamping.

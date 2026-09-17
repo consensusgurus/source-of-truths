@@ -57,6 +57,7 @@ import StageLadder from '../StageLadder';
 import StageWelcome from '../StageWelcome';
 import SundayLedger from '../SundayLedger';
 import PremierePop from '../PremierePop';
+import GroupsPop from '../GroupsPop';
 import MindLoftMark from '../MindLoftMark';
 import StagePatch, { PATCH_CSS } from '../StagePatch';
 import RollNum from '../RollNum';
@@ -1333,6 +1334,8 @@ export default function StageToday() {
       {/* NEW-GAME PREMIERES: once per launch, returning players who have not
           played it, after the arrival has finished. See app/PremierePop.jsx. */}
       <PremierePop />
+      {/* GROUPS LAUNCH: once per browser, after everything above. See app/GroupsPop.jsx. */}
+      <GroupsPop />
 
       {/* 1. THE CAP. One line: the identity, then the day's figures, then the
              controls at the right edge, as on every board. */}

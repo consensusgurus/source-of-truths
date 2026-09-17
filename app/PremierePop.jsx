@@ -74,7 +74,8 @@ function arrivalBusy() {
   try {
     if (!localStorage.getItem('sot_theme_intro2')) return true;   // the intro is running or about to
   } catch (e) {}
-  return !!document.querySelector('.stw.up, .stw.shrink');
+  // .gpp-scrim: the Groups launch card (app/GroupsPop.jsx). Never two cards at once.
+  return !!document.querySelector('.stw.up, .stw.shrink, .gpp-scrim');
 }
 
 export default function PremierePop() {
