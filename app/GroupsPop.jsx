@@ -28,10 +28,11 @@ import { X } from 'lucide-react';
 const KEY = 'sot_groups_pop';
 
 function busy() {
-  try {
-    if (!localStorage.getItem('sot_theme_intro2')) return true;   // the intro is running or about to
-  } catch (e) {}
-  return !!document.querySelector('.stw.up, .stw.shrink, .prm-scrim, .mlw-scrim');
+  // The first-load theme flip is RETIRED and no longer stamps sot_theme_intro2
+  // (lib/stage-theme.js), so waiting on that key held this card back forever
+  // for every browser that arrived after 2026-09-01. The theme bubble that
+  // replaced it is read off the DOM instead, like everything else here.
+  return !!document.querySelector('.stw.up, .stw.shrink, .prm-scrim, .mlw-scrim, .stg-tpop');
 }
 
 function savedEmail() {

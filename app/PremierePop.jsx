@@ -71,11 +71,12 @@ function playedLocally(key) {
 }
 
 function arrivalBusy() {
-  try {
-    if (!localStorage.getItem('sot_theme_intro2')) return true;   // the intro is running or about to
-  } catch (e) {}
+  // The first-load theme flip is RETIRED and no longer stamps sot_theme_intro2
+  // (lib/stage-theme.js), so waiting on that key held this card back forever
+  // for every browser that arrived after 2026-09-01. The theme bubble that
+  // replaced it is read off the DOM instead, like everything else here.
   // .gpp-scrim: the Groups launch card (app/GroupsPop.jsx). Never two cards at once.
-  return !!document.querySelector('.stw.up, .stw.shrink, .gpp-scrim');
+  return !!document.querySelector('.stw.up, .stw.shrink, .gpp-scrim, .stg-tpop');
 }
 
 export default function PremierePop() {
