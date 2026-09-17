@@ -8,6 +8,7 @@ import { scoreOutrankGame } from '@/lib/outrank-score';
 import { scoreFeudGame } from '@/lib/feud-score';
 import { attemptsModeForQuizId, attemptsPlan, arcadeRanksForQuizId } from '@/lib/daily-games';
 import { GAME_PUZZLES, etTodayServer, suffixOfDate, gamesForSuffix } from '@/lib/daily-slate';
+import { groupByCode, membersOf, isMissingTable } from '@/lib/groups';
 import { fiveForSuffix, FIVE_SIZE } from '@/lib/daily-five';
 import { circuitKeysFor, circuitById, isMarquee, circuitScoreMode } from '@/lib/circuits';
 
@@ -25,6 +26,10 @@ const CACHE_HEADERS = { 'Cache-Control': 'public, s-maxage=30, stale-while-reval
 // The finish flow passes ?fresh=1 to force an authoritative read; that response
 // must never be edge-cached or it could hand back a pre-insert snapshot.
 const NO_STORE_HEADERS = { 'Cache-Control': 'no-store' };
+// A group board names its members, so it is never cached at the shared edge.
+// A finished day cannot change, so the browser may keep it a while.
+const GROUP_HEADERS = { 'Cache-Control': 'private, max-age=20' };
+const GROUP_FROZEN_HEADERS = { 'Cache-Control': 'private, max-age=600' };
 
 const DISPLAY = 10; // overall rows returned (viewer's own row is always appended via `me`)
 const BOARD = 10;   // per-game rows returned per tab
@@ -220,6 +225,71 @@ function chooseGuestRow(rows, anonId, quizId) {
   return chosen ? { row: chosen, eg: null } : null;
 }
 
+// GROUPS (owner, 2026-09-17). ?group=<code> returns the SAME day's board kept
+// to that group's members, and nothing else changes: the same scoreGame, the
+// same ladder, the same crowd recomputes, the same day freeze. A group ranks
+// its members on the site's own daily points and on each game's own order, so
+// it can never disagree with the site board about a result. Only the full slate
+// is grouped; a run flag alongside it is ignored.
+function groupRank(rows, keyOf) {
+  let rank = 0, prev = null, seen = 0;
+  for (const r of rows) {
+    seen += 1;
+    const k = keyOf(r);
+    if (prev === null || k !== prev) { rank = seen; prev = k; }
+    r.rank = rank;
+  }
+  return rows;
+}
+
+function groupPayload({ suffix, frozen, maxTotal, gameCount, gameResults, overallFull, group, members }) {
+  const keys = new Set(members.map((m) => m.userKey));
+  const nameOf = new Map(members.map((m) => [m.userKey, m.username]));
+  const overall = groupRank(
+    overallFull
+      .filter((r) => keys.has(r.userKey))
+      .map((r) => ({
+        userKey: r.userKey,
+        username: nameOf.get(r.userKey) || r.username,
+        total: r.total,
+        gamesPlayed: r.gamesPlayed,
+        gamesFinished: r.gamesFinished,
+      })),
+    (r) => Math.round((r.total || 0) * 10),
+  );
+  const games = gameResults.map((g) => {
+    const rows = [...g.players.values()]
+      .filter((p) => keys.has(p.userKey))
+      .sort((a, b) => (a.rank - b.rank) || (b.points - a.points)
+        || String(nameOf.get(a.userKey) || '').localeCompare(String(nameOf.get(b.userKey) || '')))
+      .map((p) => ({
+        userKey: p.userKey,
+        username: nameOf.get(p.userKey) || p.username,
+        siteRank: p.rank,
+        score: p.score,
+        total: p.total,
+        guessesUsed: p.guessesUsed,
+        tries: p.tries ?? null,
+        egTier: p.egTier ?? null,
+        timeElapsed: p.timeElapsed,
+        abandoned: !!p.abandoned,
+        points: Math.round(p.points * 10) / 10,
+      }));
+    groupRank(rows, (r) => r.siteRank);
+    return { key: g.key, quizId: g.quizId, href: g.href, field: g.field, board: rows };
+  });
+  return {
+    date: suffix,
+    frozen,
+    maxTotal,
+    gameCount,
+    group: { code: group.code, name: group.name },
+    memberCount: members.length,
+    overall,
+    games,
+  };
+}
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const anonId = (searchParams.get('anonId') || '').trim() || null;
@@ -310,6 +380,21 @@ export async function GET(request) {
   // `let`, because a questions-right circuit replaces this with the day's own
   // question count once the banks' totals are in hand (below).
   let maxTotal = byTime ? fiveKeys.length : effBestN * GAME_MAX;
+
+  // The group is resolved BEFORE the rows are read, so a bad code or a
+  // missing table costs one small query and never a board computation.
+  const groupCode = (searchParams.get('group') || '').trim();
+  let groupRef = null;
+  if (groupCode && !fiveOnly) {
+    try {
+      const group = await groupByCode(supabaseAdmin, groupCode);
+      if (!group) return NextResponse.json({ date: suffix, group: null, error: 'not_found' }, { status: 404, headers: NO_STORE_HEADERS });
+      groupRef = { group, members: await membersOf(supabaseAdmin, group.id) };
+    } catch (e) {
+      const missing = isMissingTable(e) || /groups tables missing/.test(String(e && e.message));
+      return NextResponse.json({ date: suffix, group: null, available: !missing }, { status: missing ? 503 : 500, headers: NO_STORE_HEADERS });
+    }
+  }
 
   const empty = { date: suffix, five: fiveOnly && !circuitOn, circuit: circuitOn ? circuitId : null, rankRequiresAll: fiveOnly, partial: 0, frozen, maxTotal, scoreMode, gameMax: GAME_MAX, ladder, bestN: effBestN, gameCount, uniquePlayers: 0, games: [], overall: [], me: null, meProvisional: null };
   try {
@@ -415,6 +500,13 @@ export async function GET(request) {
         for (const p of g.players.values()) t = Math.max(t, Number(p.total) || 0);
         return sum + t;
       }, 0);
+    }
+
+    if (groupRef) {
+      return NextResponse.json(
+        groupPayload({ suffix, frozen, maxTotal, gameCount, gameResults, overallFull, group: groupRef.group, members: groupRef.members }),
+        { headers: frozen ? GROUP_FROZEN_HEADERS : GROUP_HEADERS },
+      );
     }
 
     // Resolve the viewer so we can always surface THEIR standing, even outside

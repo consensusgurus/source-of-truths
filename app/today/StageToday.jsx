@@ -1440,6 +1440,16 @@ export default function StageToday() {
               </svg>
             </a>
           ) : null}
+          {/* GROUPS (owner, 2026-09-17): a private daily board for the people
+              you play with. Drawn for guests too, since joining a group is how
+              a guest picks a name. */}
+          <a className="sty-all" href={withTq('/groups')}>
+            <span>Groups</span>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
+              strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 12h13M13 6l6 6-6 6" />
+            </svg>
+          </a>
           {/* NO PLAYED COUNT HERE (owner, 2026-08-31): the ladder directly
               below is that number drawn, and every category row carries its own
               n/N. The cap says what the day has EARNED you. */}

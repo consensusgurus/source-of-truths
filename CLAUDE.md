@@ -7747,3 +7747,42 @@ There is no rotation on the kids board, so uniqueness is proved with the pieces 
 boards, cycling). Tap a piece, tap the board; a piece that will not fit wobbles; "Show me one" drops
 the next piece home for free, unlimited; Undo and Start over. `scripts/verify-kids.mjs` re-proves
 every board with its own piece-driven solver.
+
+## Groups: a private daily board for the people you play with (owner, 2026-09-17)
+
+A player starts a group, shares one link (`/g/<code>`) or a five-letter code, and
+everyone in it gets a private daily board, per-game boards, member stats and a
+two-week history at `/groups/<code>`. `/groups` lists the reader's groups with
+today's place in each, a code box and "start a group". The home cap links to it.
+
+**A GROUP IS A LENS, NEVER A SECOND SCORING PATH.** Nothing about a result is
+stored. `/api/quiz/daily-combined?group=<code>` runs the same `scoreGame`, the
+same ladder, the same crowd recomputes and the same day freeze as the site
+board, then keeps only the members (`groupPayload` in that route). The daily
+order is the site's own daily points; a game's order is that game's own rank.
+So a group can never disagree with the site about a result. A group board names
+its members, so it is cached `private` only, never at the shared edge.
+
+- **Tables (migration 56):** `quiz_groups` (id, code, name, owner_id) and
+  `quiz_group_members` (group_id, user_id, role). RLS on, no policies, service
+  role only, exactly like `quiz_users`. **Every read tolerates the tables being
+  absent** and the pages say "Groups are being set up" rather than offering
+  controls that cannot write.
+- **Members are accounts.** A guest joining from a link gets the same name-only
+  account `/api/quiz/join` makes, so every member has a `user_id` and every
+  board row keys as `u:<id>`. The join bar is pre-filled with a suggested name
+  (`suggestName`, always 15 characters or fewer), so joining is one tap.
+- **The rules live in `lib/groups.js`:** 50 members a group, 5 groups a player
+  (made or joined), codes from an alphabet with no 0/O/1/I/L. An owner leaving
+  hands the group to the longest-standing member; the last member leaving
+  deletes it; the owner cannot be removed; a new code retires the old link.
+  Only the owner renames, removes or resets.
+- **History** (`/api/groups/<code>/history`) is fourteen day boards read through
+  the same route and summed, never earlier than the day the group was made.
+  Nothing is stored for it either.
+- **Not built in v1 (owner's open questions):** a "nudge" to members who have not
+  played (needs email sending), approval before joining, and group lines on the
+  game finish card.
+- **Gate:** `node scripts/verify-groups.mjs` runs the data layer against an
+  in-memory PostgREST stand-in (no database, no env). Confirmed to fail when the
+  member cap or the last-member delete is broken.
