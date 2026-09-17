@@ -1,6 +1,9 @@
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import QuizClient from './QuizClient';
+import QuizStageShell from './QuizStageShell';
+import { quizIntro, OWN_BOARD_FORMATS } from '@/lib/quiz-intro';
+import { quizDept, DEPT_LABEL } from '@/lib/quiz-departments';
 import CruxRedirect from './CruxRedirect';
 import { QuizSeoSection } from '@/app/SeoSection';
 import { getQuiz } from '@/lib/quizzes';
@@ -129,6 +132,21 @@ export default function QuizPage({ params }) {
       }
     : null;
 
+  const intro = quiz ? quizIntro(quiz) : null;
+  const shell = quiz ? (
+    <QuizStageShell
+      quizId={quiz.id}
+      title={quiz.title}
+      cat={DEPT_LABEL[quizDept(quiz)] || quiz.category || 'Quiz'}
+      total={intro.total}
+      clockMax={intro.clockMax}
+      headline={intro.headline}
+      body={intro.body}
+      blurb={quiz.blurb}
+      ownBoard={OWN_BOARD_FORMATS.has(quiz.format)}
+    />
+  ) : null;
+
   return (
     <>
       {jsonLd && (
@@ -137,7 +155,10 @@ export default function QuizPage({ params }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       )}
-      <Suspense fallback={null}>
+      {/* THE FALLBACK IS THE FIRST PAINT. QuizClient bails out of this ISR
+          render (useSearchParams), so whatever sits here is all the server
+          sends of the quiz. See QuizStageShell. */}
+      <Suspense fallback={shell}>
         <QuizClient quizId={id} />
       </Suspense>
       {/* Sits OUTSIDE the Suspense boundary on purpose. QuizClient calls

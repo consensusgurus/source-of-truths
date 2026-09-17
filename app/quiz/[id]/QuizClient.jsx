@@ -22,6 +22,7 @@ import { isMobileDevice } from '@/lib/is-mobile';
 import useAbandonFlush from './useAbandonFlush';
 import useDuelContext, { DuelBanner } from './useDuelContext';
 import QuizIdleActions from './QuizIdleActions';
+import { quizIntro } from '@/lib/quiz-intro';
 import { LB_POPS, LB_FILTERS, pickLb, lbEmptyNote, registerRank } from '@/lib/quiz-lb';
 import useIsMobile from './useIsMobile';
 import dynamic from 'next/dynamic';
@@ -1343,23 +1344,8 @@ export default function QuizClient({ quizId }) {
   // Covered-board intro (pre-start): every format shows the same idle card with
   // Start / Challenge Someone / Leaderboard before the board is revealed
   // (owner rule, 2026-07-02). The board itself renders only once started.
-  const introHeadline = mapMode || streetMapMode ? 'Find them all.'
-    : (bankMode || pairsMode || photoMatchMode || orderBankMode) ? 'Match them all.'
-    : scrambleMode ? 'Unscramble them all.'
-    : 'Name them all.';
-  const introMech = mapMode ? (mapImgPrompt ? 'A flag appears; click its country on the map.' : mapCapitalPrompt ? 'A capital appears; click its country on the map.' : 'A name appears; click it on the map.')
-    : streetMapMode ? 'A name appears; find and click it on the map.'
-    : bankMode ? 'One clue at a time; tap the matching tile in the bank below.'
-    : pairsMode ? 'Match the two columns, one pick at a time.'
-    : photoMatchMode ? 'Tap the photo that matches each prompt.'
-    : orderBankMode ? 'Tap the tiles into the right order.'
-    : scrambleMode ? 'Unscramble each one; it locks in the moment the letters match.'
-    : photoMode ? `Type the ${quiz.noun || 'answer'} for each photo; correct answers lock in the moment they match, no Enter needed.`
-    : (matched && !ordered) ? `Type each ${quiz.noun || 'answer'} into its slot; correct answers lock in the moment they match, no Enter needed.`
-    : ordered ? 'The answers must come in order; the highlighted slot shows what is next, and a correct answer locks in the moment it matches.'
-    : typeMode ? `One clue at a time; type the ${quiz.noun || 'answer'}. Correct answers lock in the moment they match, no Enter needed.`
-    : `Type ${/^[aeiou]/.test(quiz.noun || '') ? 'an' : 'a'} ${quiz.noun || 'answer'} and it locks in the moment it matches, no Enter needed.`;
-  const introBody = `${total} ${total === 1 ? 'answer' : 'answers'}, ${clockMax} on the clock. ${introMech} Solve as many as you can; time is the tiebreak.`;
+  // Shared with QuizStageShell, the server paint of this card (lib/quiz-intro.js).
+  const { headline: introHeadline, body: introBody } = quizIntro(quiz);
   const shareUrl = withRef(typeof window !== 'undefined' ? window.location.href : `https://mindloftdaily.com/quiz/${quiz.id}`);
   const sharePct = total ? Math.round((dispScore / total) * 100) : 0;
   const resultMsg = ended ? `I scored ${dispScore}/${total} on "${quiz.title}". Can you beat me?` : `Can you beat my score on "${quiz.title}"?`;
