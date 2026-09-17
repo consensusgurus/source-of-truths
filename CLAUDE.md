@@ -7903,7 +7903,12 @@ within 0.75 of it, so the score is out of 10 (14 on Sunday).
   group is worth 15 even if that run came 2nd sitewide, and each row still
   carries `siteRank`. Gate: scripts/verify-group-scoring.mjs.
 - **Home top row (owner, 2026-09-17):** above 1100px the Your groups band and
-  the day's progress ladder share one row (`.sty-toprow.two`, band left, ladder
-  right); they stack below that. A game a group member has played FILLS its tile
+  the day's progress ladder share one row (`.sty-toprow.two`: `auto minmax(0,1fr)`,
+  band left, ladder right); they stack below that. The band is ONE CHIP wide with
+  arrows to step through the rest (owner: "only take up the size necessary, the
+  size of one chip at a time"). A game a group member has played FILLS its tile
   with the category step (`.sty-g.grp`, ink via `--stg-onramp`), with the member
-  initials as small discs on the title row so every tile keeps its height.
+  initials as small discs on the title row so every tile keeps its height. Two
+  traps, both hit live: `.sty-g.done.res .sty-gn` mutes a finished tile's own
+  name, so the filled tile re-states the ink at higher specificity, and the star
+  is pinned to the tile's corner, so `.sty-g.pin .sty-gdots` leaves it room.

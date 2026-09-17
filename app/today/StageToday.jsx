@@ -402,7 +402,7 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
   // inheriting the section's (owner, 2026-08-31). In a category row every card
   // is that category anyway, so passing nothing keeps the row's colour.
   return (
-    <a className={`sty-g ${state}${res ? ' res' : ''}${grpOn ? ' grp' : ''}`} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`}
+    <a className={`sty-g ${state}${res ? ' res' : ''}${grpOn ? ' grp' : ''}${canPin ? ' pin' : ''}`} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`}
       data-fk={fk || g.key}
       style={{
         '--i': i,
@@ -2159,8 +2159,10 @@ ${PATCH_CSS}
 .sty-toprow{display:flex;flex-direction:column;gap:16px;}
 .sty-toprow:empty{display:none;}
 @media (min-width:1100px){
-  .sty-toprow.two{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);
-    gap:20px;align-items:center;}
+  /* The band is auto: it takes the width of one chip and the ladder takes the
+     rest of the row (owner, 2026-09-17). */
+  .sty-toprow.two{display:grid;grid-template-columns:auto minmax(0,1fr);
+    gap:24px;align-items:center;}
   .sty-toprow.two .sty-day{order:2;min-width:0;}
   .sty-toprow.two .hgb{order:1;min-width:0;}
 }
@@ -2172,6 +2174,9 @@ ${PATCH_CSS}
    rather than per-member colour: the tile they sit on is already the category's
    own step, and seven avatar hues on top of it is a third palette. */
 .sty-gdots{display:inline-flex;align-items:center;gap:2px;margin-left:auto;flex:none;}
+/* THE STAR IS PINNED TO THE TILE'S CORNER, so the discs leave it room rather
+   than running under it (owner report, 2026-09-17). */
+.sty-g.pin .sty-gdots{margin-right:17px;}
 .sty-gdots i{width:16px;height:16px;border-radius:50%;display:grid;place-items:center;
   font-style:normal;font-size:8.5px;font-weight:800;line-height:1;
   background:color-mix(in srgb, var(--stg-onramp,#08222e) 22%, transparent);
@@ -2182,6 +2187,12 @@ ${PATCH_CSS}
    glance which of today's puzzles the group is already on. */
 .sty-g.grp{background:var(--cc);border-color:var(--cc);color:var(--stg-onramp);}
 .sty-g.grp .sty-gn,.sty-g.grp .sty-gi,.sty-g.grp:hover .sty-gn{color:var(--stg-onramp);}
+/* A FINISHED TILE MUTES ITS OWN NAME (.sty-g.done.res .sty-gn), which on a
+   filled tile left the game's name grey on the category's own step (owner
+   report, 2026-09-17: "Emcee in the image needs to be white"). Same
+   specificity race for the glyph, so both are said again here, harder. */
+.sty-g.grp.done .sty-gn,.sty-g.grp.done.res .sty-gn,.sty-g.grp.done.res:hover .sty-gn{color:var(--stg-onramp);}
+.sty-g.grp.done .sty-gi,.sty-g.grp.done.res .sty-gi{color:var(--stg-onramp);opacity:1;}
 .sty-g.grp .sty-gt,.sty-g.grp .sty-grl,.sty-g.grp .sty-grf{color:color-mix(in srgb, var(--stg-onramp) 74%, transparent);}
 .sty-g.grp .sty-grk,.sty-g.grp .sty-star{color:var(--stg-onramp);}
 .sty-g.grp:hover{border-color:var(--cc);}
