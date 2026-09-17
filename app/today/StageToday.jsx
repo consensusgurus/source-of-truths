@@ -2174,9 +2174,10 @@ ${PATCH_CSS}
    rather than per-member colour: the tile they sit on is already the category's
    own step, and seven avatar hues on top of it is a third palette. */
 .sty-gdots{display:inline-flex;align-items:center;gap:2px;margin-left:auto;flex:none;}
-/* THE STAR IS PINNED TO THE TILE'S CORNER, so the discs leave it room rather
-   than running under it (owner report, 2026-09-17). */
-.sty-g.pin .sty-gdots{margin-right:17px;}
+/* THE STAR IS PINNED TO THE TILE'S CORNER (top 6, right 6, 24 square), so the
+   discs leave it room rather than running under it (owner report, 2026-09-17).
+   23px = the star's reach past the tile's own 12px padding, plus a hair. */
+.sty-g.pin .sty-gdots{margin-right:23px;}
 .sty-gdots i{width:16px;height:16px;border-radius:50%;display:grid;place-items:center;
   font-style:normal;font-size:8.5px;font-weight:800;line-height:1;
   background:color-mix(in srgb, var(--stg-onramp,#08222e) 22%, transparent);
