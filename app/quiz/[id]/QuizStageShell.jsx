@@ -45,7 +45,9 @@ export default function QuizStageShell({ quizId, title, cat, total, clockMax, he
           />
           <div className="qz-pagewrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '8px 38px 80px' }}>
             <style dangerouslySetInnerHTML={{ __html: '@media(max-width:560px){.qz-pagewrap{padding-left:14px !important;padding-right:14px !important;}}' }} />
-            <div className="qzs-gap" aria-hidden="true" />
+            {/* 39px: measured 2026-09-17, desktop and 390px alike, as the space QuizClient's
+                header, ribbon, score row and hint line take above the idle card. */}
+            <div aria-hidden="true" style={{ height: 39 }} />
             <div style={{ textAlign: 'center', padding: '26px 24px 30px', borderRadius: 10, border: '1.5px solid var(--stg-line)', background: 'var(--stg-surf)', marginTop: 4 }}>
               <h2 style={{ fontFamily: SANS, fontWeight: 800, fontSize: 26, margin: '2px 0 6px' }}>{headline}</h2>
               <p style={{ fontFamily: SANS, fontSize: 15, lineHeight: 1.5, color: 'var(--stg-ink2,#4a4339)', maxWidth: 470, margin: '0 auto 6px' }}>{body}</p>
