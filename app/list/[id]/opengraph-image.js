@@ -138,7 +138,7 @@ function computeConsensus(list) {
   return consensusItems
 }
 
-export default async function Image({ params }) {
+async function renderCard({ params }) {
   const list = LISTS.find(l => l.id === params.id)
   if (!list) {
     return renderListCard({ id: params.id, title: 'Mind Loft', category: 'Mind Loft', previewItems: [], startPosition: 10, isUnranked: false })
@@ -149,4 +149,17 @@ export default async function Image({ params }) {
   const previewItems = (isUnranked ? sliced : sliced.slice().reverse()).map(getItemName)
   const startPosition = isUnranked ? 5 : 5 + sliced.length
   return renderListCard({ id: list.id, title: list.title, category: list.category || 'Top 10', previewItems, startPosition, isUnranked })
+}
+
+
+// A Satori render that throws used to surface as a 500, which is how these
+// routes became every one of Search Console's server errors. Fall back to the
+// baked card in public/og/ instead: a generic share image beats an error.
+export default async function Image(ctx) {
+  try {
+    return await renderCard(ctx);
+  } catch (err) {
+    console.error('share card failed, serving /og/lists.png', err);
+    return new Response(null, { status: 302, headers: { Location: '/og/lists.png' } });
+  }
 }

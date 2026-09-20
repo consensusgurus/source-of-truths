@@ -29,6 +29,7 @@ export const metadata = {
   },
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Span' },
   openGraph: {
+    images: [{ url: '/og/span.png', width: 1200, height: 630, alt: 'Span: a daily route puzzle from Mind Loft' }],
     title: 'Span — A Daily Border-Hopping Geography Puzzle',
     description:
       'Two countries a day. Chain land borders between them in the fewest moves — perfect is the shortest road on the map. A new geography puzzle from Mind Loft.',
@@ -37,6 +38,7 @@ export const metadata = {
     siteName: 'Mind Loft',
   },
   twitter: {
+    images: ['/og/span.png'],
     card: 'summary_large_image',
     title: 'Span — A Daily Border-Hopping Geography Puzzle',
     description:

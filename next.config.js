@@ -46,6 +46,30 @@ const nextConfig = {
   //
   // AT CUTOVER: flip metadataBase to the new domain (which flips every canonical with it) in
   // the same change that sets MOVE_ACTIVE, so the canonical and the redirect agree.
+  // Share-card image routes are assets, not pages. noindex keeps them out of
+  // the index (they were 5 of the 5 "Server error (5xx)" rows in Search
+  // Console) while leaving them fetchable, which a robots.txt Disallow would
+  // not: the social crawlers honour robots.txt for og:image.
+  async headers() {
+    return [
+      {
+        source: '/:path*/opengraph-image',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex' }],
+      },
+      {
+        source: '/:path*/twitter-image',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex' }],
+      },
+      {
+        source: '/:path*/share-image',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex' }],
+      },
+      {
+        source: '/:path*/poster-image',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex' }],
+      },
+    ];
+  },
   async redirects() {
     return [
       // 2026-07-18: the Quizzes hub is now the site root (sourceoftruths.com).

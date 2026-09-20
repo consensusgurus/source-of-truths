@@ -26,7 +26,7 @@ async function fetchProfile(name) {
 // function the profile PAGE calls, so the card and the page it links to can
 // never disagree about a player's colour. A player with no daily play has no
 // crown and takes the brand step.
-export default async function Image({ params }) {
+async function renderCard({ params }) {
   const name = decodeURIComponent((params && params.name) || '');
   const p = await fetchProfile(name);
   const crown = p ? crownCategory(p.recent) : null;
@@ -45,4 +45,17 @@ export default async function Image({ params }) {
     daysPlayed: p && p.activity ? p.activity.daysPlayed : null,
     correct: p && p.activity ? p.activity.correct : null,
   });
+}
+
+
+// A Satori render that throws used to surface as a 500, which is how these
+// routes became every one of Search Console's server errors. Fall back to the
+// baked card in public/og/ instead: a generic share image beats an error.
+export default async function Image(ctx) {
+  try {
+    return await renderCard(ctx);
+  } catch (err) {
+    console.error('share card failed, serving /og/brand.png', err);
+    return new Response(null, { status: 302, headers: { Location: '/og/brand.png' } });
+  }
 }

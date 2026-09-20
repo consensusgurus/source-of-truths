@@ -202,6 +202,7 @@ export const metadata = {
     "Every Mind Loft daily puzzle in one place: today's puzzle and the full archive for Crux, Emcee, Garble, Links, Span, Dating, Tally, Suds, Circa, Extra, Carve, Stet, Outwit, Tuck, Lode, Alibi, Cipher, Ping, Warmer, Jesters, Sworn, Shards, Axiom, Hearsay, Venn, Stands, and Bracket. A new puzzle in each, every day.",
   alternates: { canonical: '/daily' },
   openGraph: {
+    images: [{ url: '/og/daily.png', width: 1200, height: 630, alt: 'Mind Loft: the daily puzzle archive' }],
     title: 'Daily Puzzles — Mind Loft',
     description:
       "Today's puzzle and the full archive for every daily puzzle: Crux, Emcee, Garble, Links, Span, Dating, Tally, Suds, Circa, Extra, Carve, Stet, Outwit, Tuck, Lode, Alibi, Cipher, Ping, Warmer, Jesters, Sworn, Shards, Axiom, Hearsay, Venn, Stands, and Bracket.",

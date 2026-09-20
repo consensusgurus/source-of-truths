@@ -35,6 +35,7 @@ export const metadata = {
   },
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Alibi' },
   openGraph: {
+    images: [{ url: '/og/alibi.png', width: 1200, height: 630, alt: 'Alibi: a daily logic puzzle from Mind Loft' }],
     title: 'Alibi — A Fresh Mystery Every Day',
     description:
       'Four suspects, one stolen treasure. Work the deduction boards, corner the truth, and close the case — every statement is true, and there is exactly one solution. From Mind Loft.',
@@ -43,6 +44,7 @@ export const metadata = {
     siteName: 'Mind Loft',
   },
   twitter: {
+    images: ['/og/alibi.png'],
     card: 'summary_large_image',
     title: 'Alibi — A Fresh Mystery Every Day',
     description:

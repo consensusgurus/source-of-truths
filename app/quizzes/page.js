@@ -28,13 +28,15 @@ export function generateMetadata() {
     description,
     alternates: { canonical: '/quizzes' },
     openGraph: {
+    images: [{ url: '/og/quizzes.png', width: 1200, height: 630, alt: 'Mind Loft quizzes' }],
       title: 'Mind Loft Quizzes',
       description,
       url: '/quizzes',
       type: 'website',
       siteName: 'Mind Loft',
     },
-    twitter: { card: 'summary_large_image', title: 'Mind Loft Quizzes', description },
+    twitter: {
+    images: ['/og/quizzes.png'], card: 'summary_large_image', title: 'Mind Loft Quizzes', description },
   };
 }
 

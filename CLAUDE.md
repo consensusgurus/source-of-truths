@@ -7969,3 +7969,91 @@ within 0.75 of it, so the score is out of 10 (14 on Sunday).
   band's "N of M played" counts MEMBERS with a score today; it was spelled out
   as "members played" for a day and the owner asked for the short form back, so
   the noun lives in the chip's title attribute instead.
+
+
+## The quiz tail is NOINDEX, and indexability lives in lib/quiz-seo.js (Search Console pass, 2026-09-20)
+
+The quiz sitemap segment submitted **1,853 URLs**. Over the 90 days to 2026-09-20 those
+pages earned **12 clicks** between them, 206 of them earned a single impression, and **136
+of the site's 175 "Duplicate without user-selected canonical" pages were /quiz/ URLs**.
+Meanwhile the 95 game URLs, which are 5% of the sitemap, took 605 of the site's 725 clicks
+at a 27% CTR. The tail was spending the crawl budget of the pages that convert.
+
+The cause of the clustering was the empty server render fixed on 2026-09-17 (see
+QuizStageShell): until then every quiz page shipped the same near-empty body, so Google
+had ~1,850 identical documents. The shell fixed the render. It did not make a page whose
+unique text is a title plus a blurb worth indexing.
+
+**`lib/quiz-seo.js` is the one place that decides.** A quiz stays indexable when it has
+either DEMAND or INVESTMENT: an impression in the observed window, a curated hero in
+`QUIZ_HEROES`, a place in the QOTD pool or overrides, a `COMPANY_META` entry, or a
+Business News hub pattern (news recap, `-NqNN-earnings-quiz`, `-sector-update`). That is
+**451 of 1,853**; the other 1,402 render `robots: { index: false, follow: true }` and are
+dropped from the sitemap. Total sitemap URLs went 2,598 to 1,196.
+
+- **noindex, not 404 and not a redirect.** The pages are real and worth playing. They stay
+  linked from `/quizzes/all` and stay in `catalogQuizzes()`, so `follow` keeps their links
+  flowing. Only the index entry goes.
+- **Never re-inline the filter.** `lib/sitemap-entries.js` and `app/quiz/[id]/page.js` both
+  read `quizIndexable()`, the same invariant `lib/quiz-catalog.js` keeps for the
+  sitemap-and-index pair. A sitemapped quiz URL cannot exist without an indexable page.
+- **It is not permanent and not a blocklist.** Hero a quiz, add it to the QOTD pool, or give
+  it real content, and it is indexable again on the next deploy.
+- **Refreshing the observed set:** read the /quiz/ rows out of the Search Console page
+  report over 90 days, drop the dated daily-game stubs (they canonicalize to their game
+  page), and replace `OBSERVED`.
+
+## Share-card routes are ASSETS: noindex them, never Disallow them (2026-09-20)
+
+All five of Search Console's "Server error (5xx)" rows were share-card routes
+(`/opengraph-image`, `/twitter-image`) crawled 10 to 15 Sep. The cause was the Satori fonts
+missing from the function bundle, fixed by `outputFileTracingIncludes` in c3b2ee18c on
+2026-09-17, i.e. after those crawls. Three things on top of that fix:
+
+1. **`X-Robots-Tag: noindex` via `headers()` in `next.config.js`** on `opengraph-image`,
+   `twitter-image`, `share-image` and `poster-image`. **Do NOT use a robots.txt Disallow
+   for this.** Facebook and LinkedIn honour robots.txt when they fetch `og:image`, so a
+   Disallow would cost link previews. A header keeps them fetchable and out of the index.
+2. **A singleton card that is already baked has no dynamic route.** `public/og/` carries
+   brand, daily, lists, quizzes and every game card (`scripts/bake-og.mjs --site`), so the
+   routes beside them were paying for a Satori render of a picture already on disk. The
+   root, `/daily`, `/lists`, `/quizzes`, alibi, shoe, span and sweep routes are deleted and
+   their metadata names the file. **Delete both kinds together**: `twitter-image.js`
+   re-exports the OG route's default, so removing one alone breaks the build.
+3. **A per-item card falls back, it does not throw.** The quiz, list, circuit, run, kids,
+   player and contest routes cannot be baked (2,400+ of them), so each wraps its render in
+   try/catch and 302s to the matching `public/og/` card on failure. A generic share image
+   beats a 5xx.
+
+## A dated game stub canonicalizes from the REGISTRY, not a hand-kept map (2026-09-20)
+
+`GAME_URLS` in `app/quiz/[id]/page.js` listed 21 formats while `WORD_GAME_FORMATS` knows
+95, so a stub for any game launched after that map was written (encore, knight, towers,
+atlas, biz and the rest) canonicalized to itself and competed with its own game page. It
+now falls back to `DAILY_GAME_MAP[format].href`, which carries the route overrides
+(`/jesters`, `/parker`), so a new game needs no edit here.
+
+## THE LIST PAGES DID NOT SERVER-RENDER, and the gate was one word (2026-09-20)
+
+`app/list/[id]/DetailClient.jsx` gated its whole render on `!loaded`, and `loaded` only
+flips after a client-side `fetchBootstrap()`. So the server HTML for all 586 list pages was
+a spinner reading "Loading the ranking...", with **no H1, no title, no blurb and no
+ranking**, and Google saw only that plus the `ListSeoSection` at the foot. Measured on the
+live site: 97 list pages took 8,539 impressions and converted at **0.36%**.
+
+The gate is `!list` now. `list` comes from the statically imported `LISTS`, so it resolves
+during the server render, and bootstrap only enriches (votes, views, extras). Three reasons
+it is safe, and they are the things to re-check if this is ever touched:
+
+- **Every browser access in that file is already inside an effect** behind a
+  `typeof window === 'undefined'` guard (`loadUserVotes`, `hasUserVoted`,
+  `getUserVoteForList`, the hash deep-link effect). `RankingView.jsx` has none at all, and
+  `lib/useSampledBg.js` reads its canvas in an effect.
+- **Hydration matches** because the first client render starts from the same empty
+  `voteData` / `extras` / `viewCount` the server used, and nothing in the render path is
+  nondeterministic. `initialSourceId` derives from `sources`, which derives from `list`.
+- **`!list` is strictly better than `!loaded`**, not just earlier: a user list that only
+  exists in the bootstrap payload still shows the spinner until it arrives.
+
+The homepage had no `<h1>` either (13 `<h2>`s, no `<h1>`); the About heading in
+`QuizHomeClient` is now the `<h1>`, same class and same text, so nothing moved on the page.

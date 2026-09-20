@@ -28,7 +28,7 @@ export { size, contentType } from '@/lib/og-stage-cards';
 // page's card needs exactly the same counts and a second private copy is how
 // the stale figure above happened in the first place. Adding a bank to the run
 // still means adding it there.
-export default async function Image({ params }) {
+async function renderCard({ params }) {
   const id = decodeURIComponent((params && params.id) || '');
   const c = circuitById(id);
   const banks = gauntletBanks(id, etTodayServer());
@@ -48,4 +48,17 @@ export default async function Image({ params }) {
   }
 
   return renderGauntletCard({ ...gauntletCardProps(c, banks), id });
+}
+
+
+// A Satori render that throws used to surface as a 500, which is how these
+// routes became every one of Search Console's server errors. Fall back to the
+// baked card in public/og/ instead: a generic share image beats an error.
+export default async function Image(ctx) {
+  try {
+    return await renderCard(ctx);
+  } catch (err) {
+    console.error('share card failed, serving /og/daily.png', err);
+    return new Response(null, { status: 302, headers: { Location: '/og/daily.png' } });
+  }
 }

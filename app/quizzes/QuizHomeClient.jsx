@@ -2993,7 +2993,7 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
           this site is ABOUT and never showed the homepage at all. Keep real
           sentences here, and keep the brand name in them. */}
       <section style={{ maxWidth: 940, margin: '10px auto 0', padding: '0 4px', fontFamily: FONT }}>
-        <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: '#e8eefc' }}>About Mind Loft</h2>
+        <h1 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: '#e8eefc' }}>About Mind Loft</h1>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: '#9fb4d8', fontWeight: 500 }}>
           Mind Loft is a free daily brain games site. Every day at midnight Eastern, Mind Loft publishes a fresh slate of more than sixty puzzles across word, number, logic, trivia, geography and card categories, from a clueless crossword to a killer sudoku to a chess endgame, with a bigger Sunday Edition each week. There is no app to install and no signup required to play.
         </p>

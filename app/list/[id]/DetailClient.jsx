@@ -1616,7 +1616,7 @@ export default function DetailClient({ listId, seo = null }) {
         overflow: LIST_RIBBON_V2 ? 'clip' : 'hidden',
       }}
     >
-      {!loaded ? (
+      {!list ? (
         <div
           style={{
             position: 'relative',

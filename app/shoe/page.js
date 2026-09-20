@@ -24,6 +24,7 @@ export const metadata = {
     'A free daily blackjack puzzle. Five hands off one fixed shoe, the same cards in the same order for every player. Hit, stand, or double, count what you have seen, and beat the book line. New shoe daily, seven hands off the whole deck on Sundays.',
   alternates: { canonical: '/shoe' },
   openGraph: {
+    images: [{ url: '/og/shoe.png', width: 1200, height: 630, alt: 'Shoe: a daily card-counting puzzle from Mind Loft' }],
     title: 'Shoe — The Daily Blackjack Shoe',
     description:
       'Everyone plays the same shoe: five hands of blackjack, fixed deal, and a par set by basic strategy. Beat the book by counting. From Mind Loft.',
@@ -32,6 +33,7 @@ export const metadata = {
     siteName: 'Mind Loft',
   },
   twitter: {
+    images: ['/og/shoe.png'],
     card: 'summary_large_image',
     title: 'Shoe — The Daily Blackjack Shoe',
     description:

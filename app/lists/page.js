@@ -13,6 +13,7 @@ export function generateMetadata() {
     description,
     alternates: { canonical: '/lists' },
     openGraph: {
+    images: [{ url: '/og/lists.png', width: 1200, height: 630, alt: 'Mind Loft: consensus Top 10 Lists' }],
       title,
       description,
       url: '/lists',
@@ -20,6 +21,7 @@ export function generateMetadata() {
       siteName: 'Mind Loft',
     },
     twitter: {
+    images: ['/og/lists.png'],
       card: 'summary_large_image',
       title,
       description,

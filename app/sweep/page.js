@@ -23,6 +23,7 @@ export const metadata = {
     'Sweep is a free daily minesweeper that runs downward forever. Everyone digs the same field, and every field is checked before it ships so it can always be solved without guessing. One life a run, unlimited runs, and your best one takes the leaderboard.',
   alternates: { canonical: '/sweep' },
   openGraph: {
+    images: [{ url: '/og/sweep.png', width: 1200, height: 630, alt: 'Sweep: a daily arcade puzzle from Mind Loft' }],
     title: 'Sweep — A Daily Minesweeper With No Bottom',
     description: 'The same field for everybody, no guessing ever required, and no bottom edge.',
     url: '/sweep',
@@ -30,6 +31,7 @@ export const metadata = {
     siteName: 'Mind Loft',
   },
   twitter: {
+    images: ['/og/sweep.png'],
     card: 'summary_large_image',
     title: 'Sweep — A Daily Minesweeper With No Bottom',
     description: 'The same field for everybody, no guessing ever required, and no bottom edge.',

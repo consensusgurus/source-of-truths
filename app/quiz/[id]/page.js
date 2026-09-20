@@ -7,6 +7,9 @@ import { quizDept, DEPT_LABEL } from '@/lib/quiz-departments';
 import CruxRedirect from './CruxRedirect';
 import { QuizSeoSection } from '@/app/SeoSection';
 import { getQuiz } from '@/lib/quizzes';
+import { quizIndexable } from '@/lib/quiz-seo';
+import { WORD_GAME_FORMATS } from '@/lib/quiz-catalog';
+import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { SITE_URL } from '@/lib/site';
 
 // 24h, not 1h (2026-08-08, Vercel cost fix). ~1,200 quiz pages expiring hourly
@@ -43,12 +46,22 @@ export async function generateMetadata({ params }) {
   // compete with /crux, /garble, /links, /span in search (they're also out
   // of the sitemap).
   const GAME_URLS = { crux: '/crux', emcee: '/emcee', garble: '/garble', links: '/links', span: '/span', dating: '/dating', tally: '/tally', suds: '/suds', circa: '/circa', extra: '/extra', carve: '/carve', stet: '/stet', outwit: '/outwit', tuck: '/tuck', alibi: '/alibi', cipher: '/cipher', ping: '/ping', warmer: '/warmer', jester: '/jesters', sworn: '/sworn', outrank: '/outrank' };
-  const gameCanonical = GAME_URLS[quiz.format] || null;
+  // Fall back to the registry so a stub for a game launched after GAME_URLS
+  // was written still points at its evergreen page instead of competing with
+  // it. WORD_GAME_FORMATS is the same set lib/quiz-catalog.js keeps out of the
+  // sitemap, and DAILY_GAME_MAP carries the href overrides (/jesters, /parker).
+  const registryHref = WORD_GAME_FORMATS.has(quiz.format)
+    ? (DAILY_GAME_MAP[quiz.format]?.href || `/${quiz.format}`)
+    : null;
+  const gameCanonical = GAME_URLS[quiz.format] || registryHref;
 
   return {
     title: `${quiz.title} | Mind Loft`,
     description,
     alternates: { canonical: gameCanonical || url },
+    // The thin tail is noindex,follow (lib/quiz-seo.js). A dated game stub is
+    // already canonicalized above, so it needs no second signal.
+    ...(gameCanonical || quizIndexable(id) ? {} : { robots: { index: false, follow: true } }),
     openGraph: {
       title: ogTitle,
       description,
