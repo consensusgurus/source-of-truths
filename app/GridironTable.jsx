@@ -64,6 +64,12 @@ export default function GridironTable({ data, fetchedAt, sport, eyebrow, boardTi
   const out = computeComposite(data, sport);
   const { ranked, columns, tierShare, depth, excluded, week, weeksPlayed } = out;
   const cols = [...columns].sort((a, b) => PILLAR_ORDER.indexOf(a.tier) - PILLAR_ORDER.indexOf(b.tier));
+  // The results pillar names itself: 'Résumé' where margin and wins score,
+  // 'vs Expected' where the pillar is the cover term alone (lib/gridiron.js).
+  // Never hardcode either word here, or the prose and the column header drift.
+  const resCol = columns.find((c) => c.id === 'results');
+  const resShort = (resCol && resCol.short) || 'Results';
+  const coverOnly = !!(resCol && resCol.coverOnly);
   // "Scoring" means CARRYING WEIGHT, not merely being fresh (§6). A source can
   // pass the age gate and still score nothing, which is exactly what the MLB
   // futures board does: it is shown because a source considered and rejected
@@ -418,7 +424,7 @@ html:not([data-stage-boot='dark']) [data-stage-theme='light'] .gr-lg{filter:none
             rebuild once a week, when the polls, the models and the betting market all republish
             together; between rebuilds the board is the last full set of data, not a live one.
             {(tierShare.results || 0) === 0
-              ? ' Results carry no weight until a week of games is complete, so a win or a loss this week shows in the Résumé column without moving the rating.'
+              ? ` Results carry no weight until a week of games is complete, so a win or a loss this week shows in the ${resShort} column without moving the rating.`
               : ` Results carry ${pct(tierShare.results)}% right now and reach ${pct(PILLARS.results)}% after week ${fullIn}.`}
             {splits.length > 0 && splits[0].gap >= Math.max(10, Math.round(depth / 6)) && (
               <>
@@ -462,7 +468,7 @@ html:not([data-stage-boot='dark']) [data-stage-theme='light'] .gr-lg{filter:none
                     <span className={`gr-asof${c.ok || c.kind !== 'source' ? '' : ' bad'}`}>{fmtDate(c.asOf)}</span>
                   </th>
                 ))}
-                <th style={{ paddingRight: 16 }} title="Results rank minus market rank. Positive: the results say better than the market does.">Résumé vs market</th>
+                <th style={{ paddingRight: 16 }} title="Results rank minus market rank. Positive: the results say better than the market does.">Results vs market</th>
               </tr>
             </thead>
             <tbody>
@@ -565,7 +571,7 @@ html:not([data-stage-boot='dark']) [data-stage-theme='light'] .gr-lg{filter:none
               <div className="gr-crange">
                 Results <em>{r.rR ? `#${r.rR}` : 'no games'}</em> &middot; market <em>#{r.rO}</em>
                 {r.rA && <> &middot; models <em>#{r.rA}</em></>}
-                {r.gap != null && <> &middot; résumé vs market <em>{r.gap > 0 ? `+${r.gap}` : r.gap}</em></>}
+                {r.gap != null && <> &middot; results vs market <em>{r.gap > 0 ? `+${r.gap}` : r.gap}</em></>}
               </div>
             </li>
           ))}
@@ -574,7 +580,7 @@ html:not([data-stage-boot='dark']) [data-stage-theme='light'] .gr-lg{filter:none
         <div className="gr-legend">
           <span className="gr-k"><i className="gr-sw" style={{ background: 'var(--sw-up)' }} /> column ranks them higher than the composite</span>
           <span className="gr-k"><i className="gr-sw" style={{ background: 'var(--sw-dn)' }} /> lower than the composite</span>
-          <span className="gr-k"><i className="gr-sw" style={{ background: 'var(--sw-hot)' }} /> widest résumé-versus-market gap</span>
+          <span className="gr-k"><i className="gr-sw" style={{ background: 'var(--sw-hot)' }} /> widest results-versus-market gap</span>
           <span className="gr-k">{'—'} not ranked by that column</span>
         </div>
 
@@ -596,6 +602,24 @@ html:not([data-stage-boot='dark']) [data-stage-theme='light'] .gr-lg{filter:none
               distinct prices, and what it is really pricing is the playoff path rather than the
               team. Every club has a moneyline in all six of its games a week, so the lines already
               carry what the futures would, and carry it better.{' '}
+            </>
+          ) : coverOnly ? (
+            <>
+              <b>Results</b> is what actually happened, measured one way: how far above or below the
+              closing line&rsquo;s expectation each game landed, averaged per game. The line already
+              prices the opponent and the site, so a narrow win over a good team counts for more than
+              a rout of a weak one, and playing an extra game earns nothing by itself. Each game is
+              luck-adjusted first, half the scoreboard and half what the yardage says the margin
+              should have been, then capped at {sport === 'nfl' ? 21 : 28} points. Margin and wins
+              were removed from this pillar in September because in the first weeks of a season
+              neither can tell a good opponent from a bad one, so between them they mostly counted
+              games played.{' '}
+              <b>Read this column as what-you-did-against-expectation, not as who-you-beat.</b> A
+              team that won every game as a heavy favourite can rank low in it, and a team that lost
+              outright as a four-touchdown underdog can rank high. The composite is the place the
+              three pillars argue that out.{' '}
+              <b>Betting markets</b> is what money says: a rating fit to the last three weeks of point
+              spreads, blended with the futures boards.{' '}
             </>
           ) : (
             <>
@@ -632,7 +656,7 @@ html:not([data-stage-boot='dark']) [data-stage-theme='light'] .gr-lg{filter:none
               than scored.{' '}
             </>
           )}
-          <b>Résumé vs market</b> is the results rank minus the market rank: a large positive number
+          <b>Results vs market</b> is the results rank minus the market rank: a large positive number
           is a team whose record the market does not yet believe, a large negative one is a favourite
           that keeps losing. A source is excluded from scoring, and shown struck through, when its
           data is more than {MAX_AGE_DAYS} days old or when it describes an earlier week than the

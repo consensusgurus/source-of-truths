@@ -216,7 +216,8 @@ results buys about 0.01 of rank correlation with W-L).
 
 Tie-break on composite, then results, then odds, then name. `SCORING_VERSION = 4`.
 
-### ⚠️ THE CFB RÉSUMÉ IS THE COVER TERM ALONE (owner rule, 2026-09-08)
+### ⚠️ THE CFB RESULTS PILLAR IS THE COVER TERM ALONE, AND IS LABELLED "vs Expected"
+(owner rules, 2026-09-08 and 2026-09-20)
 
 Margin and wins were REMOVED from the CFB results pillar, not reweighted. **Each scales with games
 played and neither can see the opponent until teams share one, which in week 1 they do not**, so no
@@ -268,6 +269,37 @@ A cover-only résumé ties by construction, since every team that beat its numbe
 lands on the cap, and `rankDesc` breaks a tie on ARRAY INDEX, which would have printed 1, 2, 3 over
 three identical numbers. That is the fabricated order section 2d bans in the MODELS column. Shared
 ranks now print `T1` exactly as the composite and `rankSource` already do.
+
+**⚠️ THE COLUMN IS NAMED "vs Expected", NOT "Résumé" (owner, 2026-09-20).** The accepted cost
+above was accepted on the math and NOT on the word. "Résumé" means "who did you beat, and where",
+to every reader; this column measures close to the opposite, and nothing in the label warns them.
+The owner read the board and asked why a 3-0 Ole Miss, with a win over the number 5 team on the same
+board, was "not top 100" — it was 20th on the composite and 103rd in this column, because one
+44.5-point non-conference spread against Charlotte is a third of a three-game sample and graded
+-22.1. That is the column working and the label lying.
+
+`short` on the results pillar now branches on `coverOnly`, which was already computed one line above
+it in `lib/gridiron.js`: **cover-only renders "vs Expected", anything that scores margin and wins
+keeps "Résumé"**. The branch is on the MATH and not on the sport, so NFL and MLB are untouched and a
+pillar reweighted to cover-only in future renames itself. The derived gap column went from "Résumé vs
+market" to **"Results vs market"** on all three boards for the same reason. `app/GridironTable.jsx`
+reads the label off the column (`resShort`) rather than hardcoding either word, so the prose and the
+header cannot drift.
+
+**⚠️ AND THE PAGE'S OWN EXPLAINER HAD BEEN WRONG SINCE 2026-09-08.** Found in the same pass. The
+"How the rating is built" note is a SECOND place that states the pillar's mix, in prose, and it still
+told CFB readers the results pillar was "a luck-adjusted margin ... solved across the whole schedule
+so that beating good teams counts for more than beating bad ones. A win rating ... And performance
+against the spread ... **Blended 45 / 30 / 25**". That is the NFL mix. CFB has been 0 / 0 / 100 for
+twelve days, so the page was promising strength of schedule it does not compute, which is most of why
+the column was read as a résumé in the first place. It now has its own `coverOnly` branch that
+describes the cover term and says in bold to read it as what-you-did-against-expectation rather than
+who-you-beat.
+
+**The rule: a pillar's mix is stated in TWO places, and only one of them throws.** `PARAMS` is
+executable and the explainer is prose. Change a `mix` and the prose is silently stale, on a public
+page, with no test that can see it. Grep the table's notes for the old numbers in the same commit
+that moves a weight.
 
 ## 2a. What the page shows
 

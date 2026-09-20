@@ -32,7 +32,7 @@ const DESCRIPTION =
 const SHARE_TITLE = 'The College Football Consensus: Every Bowl Team, Ranked';
 // Kept under ~200 characters: Twitter truncates a card description around there.
 const SHARE_DESCRIPTION =
-  'All 138 FBS teams rated on results, betting markets and analytics models, no polls. Every team in points better than average, with the résumé and the market side by side so you can see where they disagree.';
+  'All 138 FBS teams rated on results, betting markets and analytics models, no polls. Every team in points better than average, with what each team did against the closing line and what the market thinks side by side so you can see where they disagree.';
 
 export const metadata = {
   title: TITLE,
