@@ -7403,6 +7403,48 @@ game whose day has no topic is unaffected, and a future one-topic bank gets this
 on a screen they passed three minutes ago.** A start gate is read once, and in a run it is
 read once for the whole sitting.
 
+## A BOARD READ WAITS FOR THIS TAB'S OWN RESULT ROWS (owner report, 2026-09-20)
+
+Reported as "data almost never shows correctly on the end screen for the trivia gauntlet",
+with a screenshot: the run said **46 of 180** and the board under it said **43**, with the
+rank a **dash**. The gap was exactly Deep's 3, and Deep was the run's LAST quiz.
+
+`finishSection` posts the section's result **fire-and-forget** and sets `phase: 'done'` in
+the same synchronous tick; `useCircuitBoard(circuitId, done)` fires on exactly that flag. So
+the POST and the board GET left together and the GET won essentially every time, which is
+why the complaint was "almost never" rather than "sometimes": a read beats a write. The
+board then described a seven-game day with six games on it, and since a circuit ranks nobody
+who has not finished every game in it (`rankEligible`), the rank collapsed to a dash on a run
+that was in fact complete.
+
+**`fresh=1` cannot fix this and never could.** It forces an authoritative read of the
+database; it cannot force the database to hold a row that is still in flight. The same goes
+for any cache-busting: every layer below was behaving correctly.
+
+- **The registry lives in `app/ResultQueue.jsx`**, whose fetch wrapper already identifies
+  exactly these POSTs, so every reader inherits it with no wiring and a future run client
+  cannot forget. `resultPostsSettled(capMs)` resolves when every result POST issued so far
+  has come back, or at an 8s ceiling. **`useCircuitBoard` awaits it before asking**, which
+  covers the run scorecard, the Broadcast and the Valet run at once.
+- **A tracked post EVICTS ITSELF at the ceiling.** Without that, one hung request sits in the
+  set for the rest of the session and every later read in the tab pays the full ceiling
+  waiting on it. The ceiling is the longest one reader will wait, not a debt the next reader
+  inherits. This was caught by unit-testing the registry, not by reading it.
+- **With nothing in flight it resolves at once**, so the gate read and the summary page are
+  not delayed by a millisecond.
+- **The solo end card already solved this, differently**: `fetchDailyMe({ fresh: true })`
+  RETRIES until the player's own row lands (see `app/dailyMeClient.js`). Either shape is
+  fine; a board read with NEITHER is the bug. When adding any read that runs at the end of a
+  game, say which of the two it uses.
+
+**The same screen had a second, milder staleness**: `useGauntletField(sections, hydrated)`
+read once at hydration, which on a run page is before the player has answered anything, so
+every "of N on this bank" in the ending described the field as it stood several minutes and
+everyone-else's-run ago, over a shared-cacheable response on top. It re-reads when the run
+ends, CDN skipped. It deliberately does NOT wait on this tab's own post: a player's own row
+cannot change their own place (nobody outranks themselves), so the only thing it adds there
+is one to the play count.
+
 ## THE RUN SHOWS WHERE YOU STAND WHILE YOU PLAY, and says it is a projection (owner, 2026-09-02)
 
 The run's footer counted the questions you had right and stopped there, so the only question
