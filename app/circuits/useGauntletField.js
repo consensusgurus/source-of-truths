@@ -56,7 +56,16 @@ export function readDist(dist, total) {
   return { plays, curve, avg: sum / plays, atLeast };
 }
 
-export default function useGauntletField(sections, active = true) {
+// `refresh` is the SECOND READ, at the end of a run (2026-09-20). This used to
+// fetch once, at hydration, which on a run page is BEFORE the player has
+// answered a question: every "of N on this bank" in the ending described the
+// field as it stood several minutes and everyone-else's-run ago, and the
+// response is shared-cacheable on top of that. Flipping `refresh` re-asks with
+// the CDN skipped. It deliberately does NOT wait on this tab's own result post
+// the way the board read does, because it does not need to: a player's own row
+// cannot change their own place (nobody outranks themselves), so the only thing
+// their row adds here is one to the play count.
+export default function useGauntletField(sections, active = true, refresh = 0) {
   const [field, setField] = useState(null);
 
   // Keyed on the quiz ids rather than the array identity: `sections` is rebuilt
@@ -67,11 +76,12 @@ export default function useGauntletField(sections, active = true) {
     if (!active || !sig) return undefined;
     let alive = true;
     const list = sections || [];
+    const bust = refresh ? `&_=${Date.now()}` : '';
     Promise.all(list.map((s) => (
       // No identity on the query, deliberately: a response carrying the
       // caller's own placement is per-player and skips the shared cache, and
       // none of this needs to know who is asking.
-      fetch(`/api/quiz/board?quizId=${encodeURIComponent(s.quizId)}`)
+      fetch(`/api/quiz/board?quizId=${encodeURIComponent(s.quizId)}${bust}`)
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => [s, d])
         .catch(() => [s, null])
@@ -120,7 +130,7 @@ export default function useGauntletField(sections, active = true) {
     });
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sig, active]);
+  }, [sig, active, refresh]);
 
   return field;
 }

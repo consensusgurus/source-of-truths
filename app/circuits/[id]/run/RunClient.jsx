@@ -586,10 +586,11 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
 
   // ── the field ──────────────────────────────────────────────────────────
   // Today's survival curve per bank, from the score distribution the board
-  // route already returns. Fetched once, on the gate, because the gate's own
-  // headline is made of it. A bank with too small a field simply has no curve
-  // and every surface below falls back to its plain form.
-  const field = useGauntletField(sections, hydrated);
+  // route already returns. Read on the gate, because the gate's own headline is
+  // made of it, and AGAIN when the run ends, because the gate's copy is from
+  // before the player answered anything. A bank with too small a field simply
+  // has no curve and every surface below falls back to its plain form.
+  const field = useGauntletField(sections, hydrated, done ? 1 : 0);
   const fieldOn = !!(field && field.any);
 
   // TODAY'S BOARD, read once and used by three things: the gate headline, the

@@ -35,6 +35,51 @@ let patched = false;
 let flushing = false;
 let rawFetch = null; // the unwrapped fetch, so retries never re-enter the wrapper
 
+// ── EVERY RESULT POST THIS TAB HAS IN FLIGHT (2026-09-20) ────────────────────
+//
+// A finished game's row is written by a fire-and-forget POST, and the screen
+// that comes next READS THE BOARD. Both requests leave in the same tick, so the
+// read reaches the server first almost every time and comes back describing a
+// day that does not contain the game just played. On a circuit run that is not
+// a subtle staleness, it is a wrong scorecard: the total is short by the last
+// quiz's score, and because a circuit ranks only a player who finished every
+// game in it, the rank collapses to a dash on a run that was in fact complete.
+//
+// The registry lives HERE because this wrapper already identifies exactly these
+// requests, so every reader gets it with no wiring and a future run client
+// inherits it rather than having to remember. `resultPostsSettled` is what a
+// board read awaits before it asks.
+const inflight = new Set();
+const SETTLE_CAP_MS = 8000;
+
+function track(p) {
+  // Never allowed to reject: this promise exists to be awaited, not handled,
+  // and a rejection here would surface as an unhandled one.
+  const q = p.then(() => {}, () => {});
+  inflight.add(q);
+  q.then(() => inflight.delete(q));
+  // AND IT EVICTS ITSELF. A request that never comes back never settles, so
+  // without this one hung post sits in the set for the rest of the session and
+  // every later read in the tab pays the full ceiling waiting on it. The
+  // ceiling is the longest anyone is willing to wait for it once, not a debt
+  // the next reader inherits.
+  setTimeout(() => inflight.delete(q), SETTLE_CAP_MS);
+  return q;
+}
+
+// Resolves once every result POST issued so far has come back, or at the
+// ceiling, whichever is first. A request still hanging after that has failed in
+// every way that matters to a reader, and the queue above is what repairs it,
+// so waiting longer would only hold a spinner over a board that is as right as
+// it is going to get.
+export function resultPostsSettled(capMs = SETTLE_CAP_MS) {
+  if (!inflight.size) return Promise.resolve(true);
+  return Promise.race([
+    Promise.all([...inflight]).then(() => true),
+    new Promise((res) => { setTimeout(() => res(false), capMs); }),
+  ]);
+}
+
 function isResultUrl(input) {
   try {
     const url = typeof input === 'string' ? input : (input && input.url) || '';
@@ -132,13 +177,18 @@ function patchFetch() {
     const p = rawFetch(input, init);
     try {
       const method = String((init && init.method) || (typeof input === 'object' && input && input.method) || 'GET').toUpperCase();
-      if (method === 'POST' && isResultUrl(input) && init && typeof init.body === 'string') {
-        const bodyText = init.body;
-        // Observe only: the caller still gets the original promise untouched.
-        p.then(
-          (res) => { if (!res || (!res.ok && res.status >= 500)) enqueue(bodyText); },
-          () => enqueue(bodyText),
-        );
+      if (method === 'POST' && isResultUrl(input)) {
+        // Registered before anything else, so a board read starting in this
+        // same tick already has something to wait on.
+        track(p);
+        if (init && typeof init.body === 'string') {
+          const bodyText = init.body;
+          // Observe only: the caller still gets the original promise untouched.
+          p.then(
+            (res) => { if (!res || (!res.ok && res.status >= 500)) enqueue(bodyText); },
+            () => enqueue(bodyText),
+          );
+        }
       }
     } catch (e) {}
     return p;
