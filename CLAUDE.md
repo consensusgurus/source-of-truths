@@ -8057,3 +8057,20 @@ it is safe, and they are the things to re-check if this is ever touched:
 
 The homepage had no `<h1>` either (13 `<h2>`s, no `<h1>`); the About heading in
 `QuizHomeClient` is now the `<h1>`, same class and same text, so nothing moved on the page.
+
+### The homepage h1 is StageToday's slate heading, and the About prose is ORPHANED (2026-09-20)
+
+`QuizHomeClient` early-returns `<StageToday />` when `stageHome` is true, which is the
+default on `/`. Everything below that return, including the "About Mind Loft" section whose
+own comment says it exists so Google stops picking /terms as the page this site is about,
+**has not rendered on the live homepage since the stage home became the default**. Verified
+on production: the string does not appear in the homepage HTML except as a footer link.
+
+So the homepage's `<h1>` is `<h1 className="sty-slate">` in `app/today/StageToday.jsx`, the
+first server-rendered heading on the page. Same class and text as the `<h2>` it replaced, so
+nothing moved. **If the About prose is wanted back, it has to move into StageToday**; editing
+it where it currently sits changes nothing a reader or a crawler will ever see.
+
+Also: `app/page.js` carries its own `generateMetadata`, and a page-level `openGraph` REPLACES
+the layout's rather than merging, so `/` shipped with no `og:image` until the card was named
+in both places. Check the rendered `og:image`, not the layout, after any metadata change.

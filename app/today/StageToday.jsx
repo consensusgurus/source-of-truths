@@ -1629,7 +1629,7 @@ export default function StageToday() {
         <HomeGroupsBand data={grp} withTq={withTq} />
         </div>
 
-        <h2 className="sty-slate">Today&rsquo;s fresh slate of puzzles</h2>
+        <h1 className="sty-slate">Today&rsquo;s fresh slate of puzzles</h1>
 
         {/* THE NEWCOMER'S ROW, and ONLY for a reader with no footprint.
             `returning` is the footprint test the A-to-Z bar's ordBelow already
