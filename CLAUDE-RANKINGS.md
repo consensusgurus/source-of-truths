@@ -497,7 +497,7 @@ every week requested. It never errors; it just hands you the wrong week forever.
 | ESPN FPI | both | model | `.../seasons/{yr}/powerindex` | Tue/Wed | **paginate at `limit=4&page=N`**; bigger limits truncate |
 | Sagarin | CFB | model | `sagarin.com/sports/cfsend.htm` | Sun/Mon | fixed-width `<pre>`; header block reprints every 10 rows |
 | BCF Toys FEI | CFB | model | `bcftoys.com/{year}-fei` | weekly | clean table, all 138 FBS; heading carries its own week |
-| Connelly SP+ | CFB | model | ESPN story, re-discovered each season by search | weekly (Sat night) | all 138; in-body "as of" date; **49 ambiguous labels, map at ingest** |
+| Connelly SP+ | CFB | model | ESPN story, re-discovered each season by search | weekly (Sat night) | all 138; in-body "as of" date; its abbreviations are registry aliases as of 2026-09-20, see the prefix-walk note below |
 | BCF Toys F+ | CFB | model | `bcftoys.com/{year}-fplus` | weekly | clean table, all 138 FBS. **NOT in the snapshot since 2026-09-15** — it is FEI + SP+, see the collinearity rule below |
 | DRatings | CFB | model | `dratings.com/sports/ncaa-fbs-football-ratings/` | ~daily | |
 | Sagarin NFL | NFL | model | `sagarin.com/sports/nflsend.htm` | Tue | four sub-columns incl. STRONG RECENT |
@@ -559,6 +559,48 @@ of 2026 SEPTEMBER 14 MONDAY"; PREDICTOR has separated from RATING on both (NFL: 
 ones whose division tag is `(A)`; there are exactly 138 of them against 128 `(AA)`. Sagarin writes
 two names nothing else does, `Fla. International` and `LouisianaMonroe(ULM)`; both are aliases in the
 registry now.
+
+### ⚠️ `resolveTeam`'s PREFIX WALK SILENTLY COLLAPSES "Ohio St." ONTO "Ohio" (2026-09-20)
+
+Same bug as the Arkansas-Pine Bluff case below, found in the SP+ column and worth stating on its
+own because it fails in the one way that leaves no trace. SP+ abbreviates a team as
+`Ohio St.`; `resolveTeam` misses it exactly, strips the last word to remove a mascot, and hands
+back **Ohio**, the Bobcats. Nothing errors. The column still parses 138 rows, every name still
+"resolves", and Ohio State's rating lands on Ohio while Ohio State drops off the column entirely.
+On the 2026-09-20 build **fourteen** teams did this at once: Ohio, Kansas, Oklahoma, Iowa, Florida,
+Arizona, Michigan, Oregon, Texas, Colorado, Utah, Arkansas, Missouri and Georgia are all FBS
+programs whose "State" sibling is also FBS, so every one of those pairs collided. It read as a
+parser explosion rather than a mapping bug: SP+ showed Georgia moving +127 places and Ohio -113.
+
+**The check that catches it is SET EQUALITY, not an unresolved count.** Rule 3 of §0 says an
+unresolvable name is a hard failure; that is necessary and it is not sufficient, because a
+mis-resolved name is not an unresolved one. After resolving any column, assert that the canonical
+names are **138 distinct teams equal to the registry**. A collision shows up instantly as a
+duplicate plus a missing team. Run it on every source, every week; it costs nothing and it is the
+only thing between this failure mode and a shipped column.
+
+**The fix is an alias, never a smarter walk.** Widening the prefix walk to understand "St." would
+break the opposite case. As of 2026-09-20 all 47 SP+ labels that needed mapping (the 14 collisions
+above plus 33 that did not resolve at all: `JMU`, `WMU`, `ODU`, `CMU`, `WKU`, `EMU`, `Sac State`,
+`Kennesaw`, `J'ville St.`, `So. Miss`, `N. Dakota St`, `Coastal Caro.`, `Boston Coll.` and the
+rest) are **aliases in `lib/gridiron-teams.js`**, so the column resolves with no ingest-time map.
+That closes the "49 ambiguous labels, map at ingest" note on the SP+ row above: there is nothing to
+map by hand any more, and a new abbreviation should be added as an alias rather than handled in a
+session.
+
+### ⚠️ §5 RULE 6's 15-SPOT CAP IS A TOP-25 RULE APPLIED TO A 138-TEAM BOARD
+
+Rule 6 caps a week-over-week move at 15 places. It was written for a 25-deep poll, where 15 places
+is most of the board and can only be a broken parser. At the 138-team depth the model columns have
+shipped at since 2026-09-08, 15 places is 11% of the column and an ordinary week of football clears
+it routinely in the tail: on the 2026-09-20 build FPI moved 8 teams further than that, DRatings 12,
+SP+ 6 and Sagarin 2, with every column carrying the same 138 teams as the week before.
+
+Until the rule is rescoped (§8), treat it as a PROMPT rather than a gate, and settle it with the
+checks that actually distinguish a bad parser from a real week: **100% carryover of last week's
+teams, set equality against the registry, and a named result that explains the biggest mover.**
+Sam Houston rose 19 places on Sagarin having won 59-0 as a 21-point favourite, which is the source
+working. A parser fault does not produce a column whose team set is unchanged.
 
 ### ⚠️ THE ESPN MIRROR CAN SERVE PRE-GAME STATE FOR GAMES THAT ARE OVER (2026-09-04)
 
@@ -1047,6 +1089,11 @@ the rows.
 ---
 
 ## 8. Open items
+
+- [ ] **Rescope §5 rule 6 to the column's depth.** A flat 15-place cap is a top-25 rule and the
+      model columns are 138 deep. Make it a percentage of depth, or compare against the source's own
+      previous edition rather than the previous BUILD, and keep the carryover and set-equality checks
+      as the real gate.
 
 - [ ] **MLB: re-fit `runsPerLogit`, `brK`, `hf` and `hbt` every January** from the completed season.
       All four are run-environment constants and all four move with the ball.
