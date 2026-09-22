@@ -8074,3 +8074,9 @@ it where it currently sits changes nothing a reader or a crawler will ever see.
 Also: `app/page.js` carries its own `generateMetadata`, and a page-level `openGraph` REPLACES
 the layout's rather than merging, so `/` shipped with no `og:image` until the card was named
 in both places. Check the rendered `og:image`, not the layout, after any metadata change.
+- **The group page's join bar says what the group IS, not how you got there**
+  (owner report, 2026-09-21: "why does the top of the group page say i was
+  invited? i dont think i was"). "You're invited by X" was written when a link or
+  a code was the only way to reach a group page; public groups are browsable from
+  /groups now. Public reads "Open group. Anyone can join.", private reads "Invite
+  only. Anyone with this link can join."

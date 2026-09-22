@@ -167,7 +167,17 @@ export default function GroupClient({ code }) {
         {info && !viewer.member ? (
           <div className="gp-join">
             <div className="gp-joinmsg">
-              <b>{info.owner ? `You're invited by ${info.owner}.` : `You're invited.`}</b>{' '}
+              {/* WHAT THIS GROUP IS, not a claim about how you got here (owner
+                  report, 2026-09-21: "why does the top of the group page say i
+                  was invited? i dont think i was"). The line was written when a
+                  link or a code was the only way to reach a group page; public
+                  groups are browsable from /groups now, so nobody who opens one
+                  was invited to anything. Each case says the true thing. */}
+              <b>
+                {group && group.visibility === 'public'
+                  ? 'Open group. Anyone can join.'
+                  : 'Invite only. Anyone with this link can join.'}
+              </b>{' '}
               <span className="grp-mute">
                 {viewer.registered
                   ? 'Join with one tap.'
