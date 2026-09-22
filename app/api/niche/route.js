@@ -18,7 +18,7 @@ import { UNIVERSE_MAP, attrById } from '@/app/niche/facts';
 // player can never read the field's popular answers out of this route before
 // finding their own.
 //
-// Ballots live in `niche_picks` (migration 54). If the table doesn't exist
+// Ballots live in `niche_picks` (migration 58). If the table doesn't exist
 // yet the game plays exactly the same and simply shows no percentages.
 //
 // Every stored pick is re-validated against app/niche/facts.js (the same

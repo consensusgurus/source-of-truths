@@ -1,4 +1,4 @@
--- 54_newsletter.sql
+-- 58_newsletter.sql (applied 2026-09-22 in the Supabase SQL editor)
 --
 -- THE PLAYER NEWSLETTER: an opt-out, and a ledger of who has been sent what.
 --

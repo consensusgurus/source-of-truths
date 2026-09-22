@@ -16,7 +16,7 @@
 //
 // Facts and validity live in app/niche/facts.js, the single source of truth
 // the bank generator and verifier also read. Rarity tallies come from
-// /api/niche (niche_picks, migration 54) and degrade to nothing if the table
+// /api/niche (niche_picks, migration 58) and degrade to nothing if the table
 // is missing. Same daily plumbing as every other board: banked puzzles gated
 // by Eastern date on the server (app/niche/page.js), per-puzzle localStorage
 // saves, /niche?p=N archive pinning, streaks, and the shared /api/quiz/* flow.

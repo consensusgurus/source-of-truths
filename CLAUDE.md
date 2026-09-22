@@ -8091,7 +8091,7 @@ in both places. Check the rendered `og:image`, not the layout, after any metadat
 ## The player newsletter: daily batches under the free tier, and the opt-out (2026-09-22)
 
 Registered players with an email on file can be sent a campaign, 99 a day, through Resend's free
-tier. Everything lives in four files plus migration `54_newsletter.sql` (adds
+tier. Everything lives in four files plus migration `58_newsletter.sql` (adds
 `quiz_users.newsletter_opt_out` and the `newsletter_sends` ledger; apply it in the Supabase SQL
 editor before the first send).
 

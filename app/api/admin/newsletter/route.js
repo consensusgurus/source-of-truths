@@ -55,6 +55,6 @@ export async function POST(request) {
   } catch (e) {
     const msg = String(e?.message || e);
     console.error('newsletter send error', e);
-    return NextResponse.json({ error: msg }, { status: /unknown campaign/.test(msg) ? 400 : /migration 54/.test(msg) ? 409 : 500 });
+    return NextResponse.json({ error: msg }, { status: /unknown campaign/.test(msg) ? 400 : /migration 58/.test(msg) ? 409 : 500 });
   }
 }
