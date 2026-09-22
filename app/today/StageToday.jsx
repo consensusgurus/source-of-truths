@@ -2300,7 +2300,9 @@ ${PATCH_CSS}
 }
 /* THE MEMBER LADDERS. The reader's own keeps its full height above them; these
    sit at a quarter of it, so the graphic still belongs to the reader. */
-.sty-dayg{margin-left:auto;color:var(--stg-mute);}
+.sty-day .sty-eb{display:flex;align-items:baseline;}
+.sty-dayg{margin-left:auto;padding-left:10px;color:var(--stg-mute);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sty-mls{display:grid;gap:6px;margin-top:9px;padding-top:9px;border-top:1px solid var(--stg-line);}
 .sty-ml{display:grid;grid-template-columns:minmax(0,132px) minmax(0,1fr) 28px 46px;gap:10px;align-items:center;}
 .sty-ml .who{display:flex;align-items:center;gap:7px;min-width:0;font-size:12.5px;}
