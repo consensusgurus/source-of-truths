@@ -2882,13 +2882,18 @@ ${PATCH_CSS}
   .sty-figs{grid-area:fg;margin-left:0;gap:0;justify-content:space-between;
     border-top:1px solid var(--stg-line);padding:9px 0;min-height:44px;align-items:center;}
   .sty-figs>div{min-width:0;}
-  /* THE GUEST CONTROL FILLS THE ROW on a phone (owner, 2026-09-02): the two
-     lines become one, "Choose a Name - Keep Your Stats", edge to edge, since
-     it is the only thing in the figures row for a guest. */
-  .sty-signup{flex:1 1 100%;flex-direction:row;justify-content:center;align-items:baseline;gap:6px;
-    padding:10px 12px;min-height:40px;}
-  .sty-signup b{font-size:14px;}
-  .sty-signup i{font-size:13px;}
+  /* THE GUEST CONTROL IS ONE LINE on a phone (owner, 2026-09-02): the two
+     lines become one, "Choose a Name - Keep Your Stats".
+     IT IS NOT THE ONLY THING IN THE ROW, which the 2026-09-02 version assumed
+     when it took flex:1 1 100%: the Groups link sits in .sty-figs beside it.
+     Measured at 375px, that made a 282px, 40px-tall slab of saturated accent
+     ending 12px from a 12px text link, which read as running straight into it
+     (owner, 2026-09-22). It sizes to its own content now, so the gap is real
+     and the two things in the row look like two things. */
+  .sty-signup{flex:0 1 auto;flex-direction:row;align-items:baseline;gap:5px;min-width:0;
+    padding:7px 12px;min-height:34px;justify-content:center;overflow:hidden;}
+  .sty-signup b{font-size:13px;}
+  .sty-signup i{font-size:11.5px;white-space:nowrap;}
   .sty-signup i::before{content:'- ';}
   .sty-three{grid-template-columns:1fr;}
   .sty-ord{flex-wrap:wrap;}
