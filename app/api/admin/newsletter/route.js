@@ -46,7 +46,10 @@ async function ledger(campaign) {
     .from('newsletter_sends')
     .select('email, status')
     .eq('campaign', campaign);
-  if (error) throw error;
+  if (error) {
+    if (/newsletter_sends/.test(error.message || '')) return new Map();   // migration 54 not applied
+    throw error;
+  }
   const byEmail = new Map();
   for (const r of data || []) byEmail.set(r.email.toLowerCase(), r.status);
   return byEmail;
@@ -58,7 +61,7 @@ async function status(campaign) {
   for (const s of sent.values()) { if (s === 'sent') done++; else if (s === 'failed') failed++; else queued++; }
   const remaining = recips.filter((r) => !sent.has(r.email)).length;
   return {
-    campaign, eligible: recips.length, sent: done, failed, queued, remaining,
+    campaign, migrationApplied: recips.migrationApplied !== false, eligible: recips.length, sent: done, failed, queued, remaining,
     cap: DAILY_CAP, daysLeft: Math.ceil(remaining / DAILY_CAP),
   };
 }
@@ -121,6 +124,9 @@ export async function POST(request) {
     }
 
     const [recips, sent] = await Promise.all([loadRecipients(supabaseAdmin), ledger(campaign)]);
+    if (recips.migrationApplied === false) {
+      return NextResponse.json({ error: 'migration 54 not applied: no opt-out column, refusing to send' }, { status: 409 });
+    }
     const batch = recips
       .filter((r) => !sent.has(r.email) || (body.retryFailed && sent.get(r.email) !== 'sent'))
       .slice(0, limit);
