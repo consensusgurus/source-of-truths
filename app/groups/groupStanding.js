@@ -203,16 +203,41 @@ export function memberRows(g, myKey, max = 6) {
   if (!g || !g.roster || !g.roster.length) return empty;
   const rowOf = new Map((g.rows || []).map((r) => [r.userKey, r]));
   const playedOf = {};
-  // DISTINCT GAMES the group has touched, not plays: the home prints this as
-  // "N of today's 94", and a count of member-game pairs runs past 94 the moment
-  // two members play the same puzzle.
-  const played = Object.keys(g.games || {}).length;
-  for (const key of Object.keys(g.games || {})) {
-    for (const uk of g.games[key] || []) {
-      if (!playedOf[uk]) playedOf[uk] = new Set();
-      playedOf[uk].add(key);
+  // DISTINCT GAMES, and FINISHED ones. Two traps, both seen live:
+  //
+  //   1. Not a count of member-game pairs. The home prints this as "N of
+  //      today's 94", and pairs run past 94 the moment two members play the
+  //      same puzzle.
+  //   2. Not `g.games`, which keeps an ABANDONED row whenever it carries
+  //      points. Points are positional, so a run abandoned scoring 0 is still
+  //      paid 15 when nobody else has played that game, and the summary then
+  //      read "11 of today's 94" beside a day's progress of 10. These ladders
+  //      sit directly under the reader's own, which counts finished games, so
+  //      they have to mean the same thing.
+  //
+  // The dots on the tiles still read `g.games`: "somebody is on this" is a fair
+  // reading there, and that behaviour predates this.
+  const touched = new Set();
+  const src = g.boards && Object.keys(g.boards).length ? g.boards : null;
+  if (src) {
+    for (const key of Object.keys(src)) {
+      for (const r of src[key] || []) {
+        if (r.abandoned) continue;
+        if (!playedOf[r.userKey]) playedOf[r.userKey] = new Set();
+        playedOf[r.userKey].add(key);
+        touched.add(key);
+      }
+    }
+  } else {
+    for (const key of Object.keys(g.games || {})) {
+      for (const uk of g.games[key] || []) {
+        if (!playedOf[uk]) playedOf[uk] = new Set();
+        playedOf[uk].add(key);
+        touched.add(key);
+      }
     }
   }
+  const played = touched.size;
   const all = g.roster.map((m) => {
     const r = rowOf.get(m.userKey) || null;
     const keys = playedOf[m.userKey] || new Set();
