@@ -155,4 +155,90 @@ export function MiniAvatar({ name, userKey, off = false, className = '' }) {
   );
 }
 
+// HOW LONG AGO, in one or two characters. Reads the clock, so it may only be
+// called from a render that never happens on the server: the band waits for the
+// standing fetch, which is client-only, so it is safe there (2026-09-22).
+export function relTime(iso) {
+  const t = Date.parse(iso || '');
+  if (!t) return '';
+  const s = Math.max(0, Math.round((Date.now() - t) / 1000));
+  if (s < 90) return 'now';
+  const m = Math.round(s / 60);
+  if (m < 60) return m + 'm';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + 'h';
+  return Math.floor(h / 24) + 'd';
+}
+
+// WHERE THE GAP WENT. The per-game difference between the viewer and one other
+// member, biggest first. It is NOT an arithmetic decomposition of the day's
+// total, because best-N means the totals need not be the sum of these: it is
+// the honest "these are the games you are apart on", which is what a reader
+// can actually act on. Games neither of them played contribute nothing.
+export function swingVs(g, myKey, otherKey) {
+  if (!g || !g.boards || !myKey || !otherKey) return [];
+  const out = [];
+  for (const key of Object.keys(g.boards)) {
+    let mine = null;
+    let theirs = null;
+    for (const r of g.boards[key] || []) {
+      if (r.userKey === myKey) mine = Number(r.points) || 0;
+      else if (r.userKey === otherKey) theirs = Number(r.points) || 0;
+    }
+    if (mine === null && theirs === null) continue;
+    const diff = Math.round(((mine || 0) - (theirs || 0)) * 10) / 10;
+    if (!diff) continue;
+    out.push({ key, diff });
+  }
+  out.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
+  return out.slice(0, 3);
+}
+
+// EVERY MEMBER'S DAY, for the ladders under the reader's own. Ordered by points,
+// the reader lifted out, and the tail past `max` folded into one row: six is
+// what the home draws, so a fifty-member group shows the five above the reader
+// and a remainder rather than fifty ladders (2026-09-22).
+export function memberRows(g, myKey, max = 6) {
+  const empty = { me: null, rows: [], rest: 0, restGames: 0, played: 0 };
+  if (!g || !g.roster || !g.roster.length) return empty;
+  const rowOf = new Map((g.rows || []).map((r) => [r.userKey, r]));
+  const playedOf = {};
+  // DISTINCT GAMES the group has touched, not plays: the home prints this as
+  // "N of today's 94", and a count of member-game pairs runs past 94 the moment
+  // two members play the same puzzle.
+  const played = Object.keys(g.games || {}).length;
+  for (const key of Object.keys(g.games || {})) {
+    for (const uk of g.games[key] || []) {
+      if (!playedOf[uk]) playedOf[uk] = new Set();
+      playedOf[uk].add(key);
+    }
+  }
+  const all = g.roster.map((m) => {
+    const r = rowOf.get(m.userKey) || null;
+    const keys = playedOf[m.userKey] || new Set();
+    return {
+      userKey: m.userKey,
+      username: m.username,
+      total: r ? r.total : 0,
+      rank: r ? r.rank : null,
+      games: keys.size,
+      keys,
+      me: m.userKey === myKey,
+    };
+  }).sort((a, b) => b.total - a.total
+    || b.games - a.games
+    || String(a.username || '').localeCompare(String(b.username || '')));
+  const me = all.find((x) => x.me) || null;
+  const others = all.filter((x) => !x.me);
+  const shown = others.slice(0, Math.max(0, max - 1));
+  const hidden = others.slice(shown.length);
+  return {
+    me,
+    rows: shown,
+    rest: hidden.length,
+    restGames: hidden.reduce((n, x) => n + x.games, 0),
+    played,
+  };
+}
+
 export { etToday as standingToday };

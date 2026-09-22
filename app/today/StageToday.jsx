@@ -60,8 +60,9 @@ import PremierePop from '../PremierePop';
 import GroupsPop from '../GroupsPop';
 // GROUP STANDINGS on the home (2026-09-17): the band, the Groups badge and the
 // member dots on the tiles all read one standing payload.
-import useGroupStanding, { bestPlace, ordinal as grpOrdinal } from '../groups/groupStanding';
+import useGroupStanding, { bestPlace, ordinal as grpOrdinal, memberRows, fmtPts as grpPts, MiniAvatar } from '../groups/groupStanding';
 import HomeGroupsBand from '../groups/HomeGroupsBand';
+import HomeInvite from '../groups/HomeInvite';
 // CHOOSE A NAME (owner report, 2026-09-17): the guest controls below pointed at
 // ?signup=1 and nothing on this page ever read it, so they only reloaded the
 // home. This is the form they open. See app/ChooseNamePop.jsx.
@@ -379,6 +380,9 @@ function starPop(el) {
 // member has played it, no discs and no fill: a row of empty dots said nothing
 // on ninety tiles and buried the tags.
 const DOTS_MAX = 4;
+// The folded remainder row draws an empty ladder, and one shared empty Set
+// keeps that from allocating a new one on every render.
+const EMPTY_KEYS = new Set();
 function GroupDots({ dots }) {
   if (!dots || !dots.played || !dots.played.size) return null;
   const on = dots.roster.filter((m) => dots.played.has(m.userKey));
@@ -393,6 +397,25 @@ function GroupDots({ dots }) {
       ))}
       {more > 0 ? <i aria-hidden="true">{`+${more}`}</i> : null}
       <span className="sty-sr">{dots.name}: {label} played</span>
+    </span>
+  );
+}
+
+// ONE LADDER PER MEMBER (owner, 2026-09-22). The home's only picture, repeated
+// thin under the reader's own, so the whole group's day reads in one glance:
+// who is playing, how far in, and which blocks they have that you do not.
+//
+// It is NOT app/StageLadder: that one draws the field layer and the pop, ships
+// its own stylesheet, and would inject six more copies of it. This is the same
+// shape with none of that, which is all a member row needs.
+function MemberLadder({ cats, keys, hueFor }) {
+  return (
+    <span className="sty-mlad" aria-hidden="true">
+      {cats.map(({ cat, games }) => (
+        <span className="sty-mlb" key={cat} style={{ flex: games.length + ' 1 0', '--cc': hueFor(cat) }}>
+          {games.map((g) => <i key={g.key} className={keys.has(g.key) ? 'on' : ''} />)}
+        </span>
+      ))}
     </span>
   );
 }
@@ -421,6 +444,17 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
           <span className="sty-grl">You:</span>
           <span className="sty-grk">#{res.rank}</span>
           <span className="sty-grf">of {res.field}</span>
+        </span>
+      ) : dots && dots.lead ? (
+        /* A GAME THE GROUP IS ON SAYS WHAT THEY DID (owner, 2026-09-22). It
+           takes the tag's line rather than a third one, so every tile keeps the
+           same height, and it is only ever drawn on a game the reader has NOT
+           played: once they have, their own result is the better line and it
+           wins above. Never the reader's own score, in either branch. */
+        <span className="sty-ggrp sty-rev">
+          <span className="sty-grl">{dots.name}:</span>
+          <span className="sty-grk">{dots.lead.username} {grpPts(dots.lead.points)}</span>
+          <span className="sty-grf">{dots.played.size} of {dots.of}</span>
         </span>
       ) : (
         <span className="sty-gt">{g.tag}</span>
@@ -491,12 +525,42 @@ export default function StageToday() {
   const dotsFor = useMemo(() => {
     const g0 = grp && grp.groups ? grp.groups.find((x) => !x.failed && x.roster && x.roster.length > 1) : null;
     if (!g0) return null;
+    const myKey = grp.userKey || null;
     const cache = {};
     return (key) => {
-      if (!cache[key]) cache[key] = { name: g0.name, roster: g0.roster, played: new Set((g0.games && g0.games[key]) || []) };
+      if (!cache[key]) {
+        // THE GROUP'S LEADER ON THIS GAME, for the tile's own line (2026-09-22).
+        // The reader's own row is skipped when picking it, so a tile can never
+        // report the reader's score: that is what the `res` line is for, and
+        // the home tile rule has said so since 2026-08-31.
+        const rows = (g0.boards && g0.boards[key]) || [];
+        let lead = null;
+        for (const r of rows) {
+          if (r.abandoned || r.userKey === myKey) continue;
+          if (!lead || r.points > lead.points) lead = r;
+        }
+        cache[key] = {
+          name: g0.name,
+          roster: g0.roster,
+          played: new Set((g0.games && g0.games[key]) || []),
+          lead,
+          of: g0.roster.length,
+        };
+      }
       return cache[key];
     };
   }, [grp]);
+  // EVERY MEMBER'S DAY, for the ladders under the reader's own. Capped at six
+  // rows including the reader, ordered by points, with the tail folded. Null
+  // when the reader is in no group, or alone in one: a stack of one ladder is
+  // the ladder that is already there.
+  const mem = useMemo(() => {
+    const g0 = grp && grp.groups ? grp.groups.find((x) => !x.failed && x.roster && x.roster.length > 1) : null;
+    if (!g0) return null;
+    const m = memberRows(g0, grp.userKey || null, 6);
+    return m.rows.length ? { ...m, name: g0.name } : null;
+  }, [grp]);
+
   // ARM THE ARRIVAL REVEAL, and only for a page someone is actually looking at.
   // A hidden tab does not advance an animation clock, so a section that mounts
   // there holds the FROM state (opacity 0) for as long as the tab stays in the
@@ -1614,19 +1678,64 @@ export default function StageToday() {
         {/* THE TOP ROW (owner, 2026-09-17). On a wide screen the groups band and
             the day's progress share a line, with the ladder squeezed to the
             right; under 1100px they stack in the order they always had. */}
-        <div className={'sty-toprow' + (grp && grp.groups && grp.groups.length ? ' two' : '')}>
+        <div className="sty-toprow">
         {(done.size > 0 || inprog.size > 0) ? (
         <section className="sty-day sty-rev">
-          <div className="sty-eb">The day&rsquo;s progress <span className="sty-ebn"><RollNum value={playedCount} from={seenCount === null ? null : Math.min(seenCount, playedCount)} delay={360} /> of {total}</span></div>
+          <div className="sty-eb">The day&rsquo;s progress <span className="sty-ebn"><RollNum value={playedCount} from={seenCount === null ? null : Math.min(seenCount, playedCount)} delay={360} /> of {total}</span>
+            {mem && mem.rows.length ? <span className="sty-dayg">{mem.name}</span> : null}
+          </div>
           <StageLadder height={ladH} blocks={blocks} light={light} />
+          {/* THE MEMBERS, under the reader's own ladder. On a phone the stack
+              becomes one presence row instead: ninety-four blocks across six
+              rows works out under two pixels a block at 390px, which is noise
+              rather than a graphic (owner, 2026-09-22). */}
+          {mem && mem.rows.length && !narrow ? (
+            <div className="sty-mls">
+              {mem.rows.map((m) => (
+                <div className="sty-ml" key={m.userKey}>
+                  <span className="who"><MiniAvatar name={m.username} userKey={m.userKey} /><b>{m.username}</b></span>
+                  <MemberLadder cats={cats} keys={m.keys} hueFor={hueFor} />
+                  <span className="gms">{m.games}</span>
+                  <span className="tot">{grpPts(m.total)}</span>
+                </div>
+              ))}
+              {mem.rest ? (
+                <div className="sty-ml rest">
+                  <span className="who"><MiniAvatar name={'+' + mem.rest} userKey="rest" off /><b>{mem.rest} more</b></span>
+                  <MemberLadder cats={cats} keys={EMPTY_KEYS} hueFor={hueFor} />
+                  <span className="gms">{mem.restGames}</span>
+                  <span className="tot">&mdash;</span>
+                </div>
+              ) : null}
+              <div className="sty-msum">
+                <span>{mem.name} {mem.played === 1 ? 'has' : 'have'} played <b>{mem.played} of today&rsquo;s {total}</b> between them</span>
+                <span className="k">Games &middot; Points</span>
+              </div>
+            </div>
+          ) : null}
+          {mem && mem.rows.length && narrow ? (
+            <div className="sty-pres">
+              {[mem.me].concat(mem.rows).filter(Boolean).map((m) => (
+                <span className={'sty-pm' + (m.me ? ' me' : '')} key={m.userKey}
+                  title={`${m.username}: ${m.games} ${m.games === 1 ? 'game' : 'games'}`}>
+                  <MiniAvatar name={m.username} userKey={m.userKey} />{m.games}
+                </span>
+              ))}
+              {mem.rest ? <span className="sty-pm off"><MiniAvatar name={'+' + mem.rest} userKey="rest" off />{mem.restGames}</span> : null}
+              <span className="sty-psum">{mem.played} of {total}</span>
+            </div>
+          ) : null}
         </section>
         ) : null}
 
         {/* THE SLATE'S HEADING (owner, 2026-09-02). One line under the ladder,
             above the first row of games, saying what the rest of the page is.
             Static, so it needs no fade and shows on the server render. */}
-        {/* YOUR GROUPS TODAY (idea 2): nothing for a reader in no group. */}
-        <HomeGroupsBand data={grp} withTq={withTq} />
+        {/* YOUR GROUP TODAY: the chase and the feed, or on a phone one card
+            with two faces. Nothing at all for a reader in no group, who gets
+            the invite below instead. */}
+        <HomeGroupsBand data={grp} withTq={withTq} narrow={narrow} />
+        {grp === null ? <HomeInvite playedToday={done.size} returning={returning} withTq={withTq} /> : null}
         </div>
 
         <h1 className="sty-slate">Today&rsquo;s fresh slate of puzzles</h1>
@@ -2176,17 +2285,49 @@ ${PATCH_CSS}
   letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;}
 .sty-all:hover{opacity:.78;}
 .sty-figlink{display:none;}
-/* THE TOP ROW: stacked by default, two columns once there is room for both. */
+/* THE TOP ROW: stacked by default, two columns once there is room for both.
+   THE GRID IS GATED ON :has() RATHER THAN A CLASS (2026-09-22), because the
+   invite in that slot retires itself from inside the component: a class set by
+   the parent would keep reserving a column for something no longer drawn. */
 .sty-toprow{display:flex;flex-direction:column;gap:16px;}
 .sty-toprow:empty{display:none;}
 @media (min-width:1100px){
-  /* The band is auto: it takes the width of one chip and the ladder takes the
-     rest of the row (owner, 2026-09-17). */
-  .sty-toprow.two{display:grid;grid-template-columns:auto minmax(0,1fr);
-    gap:24px;align-items:center;}
-  .sty-toprow.two .sty-day{order:2;min-width:0;}
-  .sty-toprow.two .hgb{order:1;min-width:0;}
+  .sty-toprow:has(> .hgb),.sty-toprow:has(> .hgi){
+    display:grid;grid-template-columns:minmax(0,352px) minmax(0,1fr);
+    gap:24px;align-items:start;}
+  .sty-toprow:has(> .hgb) .sty-day,.sty-toprow:has(> .hgi) .sty-day{order:2;min-width:0;}
+  .sty-toprow:has(> .hgb) .hgb,.sty-toprow:has(> .hgi) .hgi{order:1;min-width:0;}
 }
+/* THE MEMBER LADDERS. The reader's own keeps its full height above them; these
+   sit at a quarter of it, so the graphic still belongs to the reader. */
+.sty-dayg{margin-left:auto;color:var(--stg-mute);}
+.sty-mls{display:grid;gap:6px;margin-top:9px;padding-top:9px;border-top:1px solid var(--stg-line);}
+.sty-ml{display:grid;grid-template-columns:minmax(0,132px) minmax(0,1fr) 28px 46px;gap:10px;align-items:center;}
+.sty-ml .who{display:flex;align-items:center;gap:7px;min-width:0;font-size:12.5px;}
+.sty-ml .who b{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-ml .gms{font-family:${MONO};font-size:11px;color:var(--stg-mute);text-align:right;
+  font-variant-numeric:tabular-nums;}
+.sty-ml .tot{font-family:${MONO};font-size:12px;color:var(--stg-ink2);text-align:right;
+  font-variant-numeric:tabular-nums;}
+.sty-ml.rest .who b{font-weight:500;color:var(--stg-mute);}
+.sty-mlad{display:flex;gap:2px;height:14px;min-width:0;}
+.sty-mlb{display:flex;gap:1px;min-width:0;}
+.sty-mlb i{flex:1 1 0;min-width:0;background:var(--stg-line);border-radius:1px;}
+.sty-mlb i.on{background:var(--cc);}
+.sty-msum{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:4px;padding-top:7px;
+  border-top:1px solid var(--stg-line);font-family:${MONO};font-size:10.5px;color:var(--stg-mute);}
+.sty-msum b{font-weight:500;color:var(--stg-ink2);}
+.sty-msum .k{margin-left:auto;}
+/* THE PRESENCE ROW, which is what the stack becomes on a phone. */
+.sty-pres{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:9px;padding-top:9px;
+  border-top:1px solid var(--stg-line);}
+.sty-pm{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--stg-line);
+  border-radius:999px;padding:2px 8px 2px 3px;font-family:${MONO};font-size:11px;color:var(--stg-ink2);
+  font-variant-numeric:tabular-nums;}
+.sty-pm.me{border-color:var(--stg-acc);color:var(--stg-acc-ink);}
+.sty-pm.off{color:var(--stg-mute);}
+.sty-psum{margin-left:auto;font-family:${MONO};font-size:10.5px;color:var(--stg-mute);
+  font-variant-numeric:tabular-nums;}
 /* THE GROUPS BADGE (2026-09-17). A word on a desktop, a number on a phone. */
 .sty-gpos{display:inline-flex;align-items:center;border-radius:999px;padding:2px 7px;letter-spacing:.04em;
   background:var(--stg-brand,#7dd3fc);color:var(--stg-raise,#0e131f);font-variant-numeric:tabular-nums;}
@@ -2483,6 +2624,12 @@ ${PATCH_CSS}
 .sty-grl{font-family:${MONO};font-size:9px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--stg-mute);}
 .sty-grf{font-weight:600;color:var(--stg-mute);}
+/* WHAT THE GROUP DID ON THIS GAME, in the tag's slot on a tile the reader has
+   not played (2026-09-22). Same shape as the played line above it, so a slate
+   mixing the two reads as one column rather than two treatments. */
+.sty-ggrp{display:flex;align-items:baseline;gap:7px;margin-top:2px;font-size:11.5px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-ggrp .sty-grk{overflow:hidden;text-overflow:ellipsis;}
 /* The same line on a circuit card, which is a block rather than a flex child. */
 .sty-cres{display:flex;align-items:baseline;gap:7px;margin-top:5px;font-size:11.5px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}

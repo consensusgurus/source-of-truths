@@ -22,6 +22,7 @@ export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 const NO_STORE = { 'Cache-Control': 'private, no-store' };
 const TOP = 5;
+const FEED = 12;
 
 function str(v, n = 120) { return typeof v === 'string' ? v.trim().slice(0, n) : ''; }
 function etIso(ms) {
@@ -100,11 +101,32 @@ export async function GET(request) {
           userKey: x.userKey, username: x.username, rank: x.rank, siteRank: x.siteRank ?? null,
           points: x.points, score: x.score, total: x.total, guessesUsed: x.guessesUsed ?? null,
           tries: x.tries ?? null, egTier: x.egTier ?? null, timeElapsed: x.timeElapsed ?? null,
-          abandoned: !!x.abandoned,
+          abandoned: !!x.abandoned, playedAt: x.playedAt ?? null,
         }));
         const mineRow = list.find((x) => x.userKey === myKey);
         if (mineRow) myPoints[gm.key] = mineRow.points;
       }
+
+      // THE FEED (2026-09-22). Every finish today, newest first, the viewer's
+      // own included: a feed that shows only other people reads as surveillance
+      // rather than as a room. It is a re-sort of `boards`, so it costs no read
+      // and cannot disagree with the boards beside it. `lead` means the run
+      // tops that game's group board, which is the only thing worth marking.
+      const feed = [];
+      for (const [key, list] of Object.entries(boards)) {
+        for (const r of list) {
+          if (!r.playedAt || r.abandoned) continue;
+          feed.push({
+            key,
+            userKey: r.userKey,
+            username: r.username,
+            points: r.points,
+            at: r.playedAt,
+            lead: r.rank === 1,
+          });
+        }
+      }
+      feed.sort((a, b) => (Date.parse(b.at) || 0) - (Date.parse(a.at) || 0));
 
       const top = rows.slice(0, TOP).map(slimRow);
       return {
@@ -122,6 +144,7 @@ export async function GET(request) {
         // finish line places a hypothetical total ("before this game") on them.
         rows: rows.map(slimRow),
         games: played,
+        feed: feed.slice(0, FEED),
         boards,
         quizIds,
         myPoints,

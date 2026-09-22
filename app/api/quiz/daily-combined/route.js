@@ -283,6 +283,8 @@ function groupPayload({ suffix, frozen, maxTotal, gameCount, gameResults, overal
         egTier: p.egTier ?? null,
         timeElapsed: p.timeElapsed,
         abandoned: !!p.abandoned,
+        // The home's group feed orders on this; see scoreGame (2026-09-22).
+        playedAt: p.playedAt ?? null,
         points: Math.round(p.points * 10) / 10,
       }));
     // Re-scored over the members alone; this also sets each row's group rank.
