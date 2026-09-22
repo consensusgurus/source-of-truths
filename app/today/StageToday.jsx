@@ -2348,14 +2348,32 @@ ${PATCH_CSS}
 @media (min-width:1100px){
   .sty-toprow:has(> .hgb),.sty-toprow:has(> .hgi){
     display:grid;grid-template-columns:minmax(0,352px) minmax(0,1fr);
-    gap:24px;align-items:start;}
+    gap:24px;align-items:stretch;}
+  /* THE LADDER GROWS INTO THE ROW rather than leaving a hole beside a taller
+     card (owner, 2026-09-22). Only the ladder takes the slack: the member rows
+     and the summary under it keep their own size. It needs no JS and no measure
+     and it UNDOES ITSELF, because dismissing the invite unmounts .hgi, the
+     :has() stops matching, the grid goes, and the ladder is back to its own
+     height. Capped so a very tall panel cannot draw a 300px bar chart. */
+  .sty-toprow:has(> .hgb) .sty-day,.sty-toprow:has(> .hgi) .sty-day{
+    display:flex;flex-direction:column;}
+  .sty-toprow:has(> .hgb) .sty-day > .stl-wrap,
+  .sty-toprow:has(> .hgi) .sty-day > .stl-wrap{
+    flex:1 1 auto;display:flex;flex-direction:column;min-height:0;max-height:118px;}
+  .sty-toprow:has(> .hgb) .sty-day > .stl-wrap .stl,
+  .sty-toprow:has(> .hgi) .sty-day > .stl-wrap .stl{flex:1 1 auto;}
   .sty-toprow:has(> .hgb) .sty-day,.sty-toprow:has(> .hgi) .sty-day{order:2;min-width:0;}
   .sty-toprow:has(> .hgb) .hgb,.sty-toprow:has(> .hgi) .hgi{order:1;min-width:0;}
 }
 /* THE MEMBER LADDERS. The reader's own keeps its full height above them; these
    sit at a quarter of it, so the graphic still belongs to the reader. */
-.sty-day .sty-eb{display:flex;align-items:baseline;}
-.sty-dayg{margin-left:auto;padding-left:10px;color:var(--stg-mute);
+/* THE EYEBROW STAYS A BLOCK and the group's name FLOATS to the end of its
+   line. It was a flex row for one deploy, and RollNum (the rolling count in
+   .sty-ebn) stacks its digits in a clipped box with no text baseline of its
+   own, so align-items:baseline had nothing to align and the figure sat off
+   the line beside the words (owner report: "the 1 looks off centre"). A float
+   leaves the inline flow, and the count in it, exactly as it was. */
+.sty-dayg{float:right;padding-left:10px;color:var(--stg-mute);max-width:40%;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sty-mls{display:grid;gap:6px;margin-top:9px;padding-top:9px;border-top:1px solid var(--stg-line);}
 .sty-ml{display:grid;grid-template-columns:minmax(0,132px) minmax(0,1fr) 28px 46px;gap:10px;align-items:center;}

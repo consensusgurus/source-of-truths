@@ -79,7 +79,12 @@ const CSS = `
 .hgi-t b{display:block;font-size:14.5px;font-weight:800;}
 .hgi-t i{font-style:normal;display:block;margin-top:3px;font-size:12.5px;color:var(--stg-mute);}
 .hgi-r{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
-.hgi-go{flex:none;background:var(--stg-acc);color:var(--stg-on-acc,#08222e);border-radius:9px;
+/* THE INK THAT CARRIES ON THE ACCENT IS --stg-onramp, never a literal and
+   never an invented token: it is #08222e on the dark stage and WHITE in the
+   light register, where --stg-acc is a deep blue. This shipped as
+   var(--stg-on-acc), which does not exist, so both registers took the dark
+   fallback and the light one read near-black on deep blue (owner report). */
+.hgi-go{flex:none;background:var(--stg-acc);color:var(--stg-onramp,#08222e);border-radius:9px;
   padding:7px 13px;text-decoration:none;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;
   font-size:10px;letter-spacing:.08em;text-transform:uppercase;}
 .hgi-go:hover{opacity:.9;}

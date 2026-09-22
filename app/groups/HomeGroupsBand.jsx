@@ -196,9 +196,9 @@ ${AVATAR_CSS}
 .hgb-pick button{border:1px solid var(--stg-line);border-radius:999px;background:none;cursor:pointer;
   padding:2px 8px;font:inherit;color:var(--stg-ink2);max-width:11ch;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap;}
-.hgb-pick button.on{border-color:transparent;background:var(--stg-acc);color:var(--stg-on-acc,#08222e);}
+.hgb-pick button.on{border-color:transparent;background:var(--stg-acc);color:var(--stg-onramp,#08222e);}
 .hgb-pick button:hover{border-color:var(--stg-line2);color:var(--stg-ink);}
-.hgb-pick button.on:hover{color:var(--stg-on-acc,#08222e);}
+.hgb-pick button.on:hover{color:var(--stg-onramp,#08222e);}
 .hgb-pick button:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
 .hgb-ft{display:flex;align-items:center;gap:9px;}
 .hgb-step{display:inline-flex;align-items:center;gap:4px;flex:none;margin-left:auto;}
