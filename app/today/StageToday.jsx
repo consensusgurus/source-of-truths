@@ -2354,12 +2354,20 @@ ${PATCH_CSS}
      and the summary under it keep their own size. It needs no JS and no measure
      and it UNDOES ITSELF, because dismissing the invite unmounts .hgi, the
      :has() stops matching, the grid goes, and the ladder is back to its own
-     height. Capped so a very tall panel cannot draw a 300px bar chart. */
+     height.
+
+     NO CAP. There was a 118px one, on the theory that a tall panel would draw
+     an absurd bar chart. It was binding in BOTH states and so defeated the
+     whole point: beside the invite the ladder stopped short of the card, and
+     beside the group panel it left 41px of dead space under the member rows.
+     The row's height is set by the card, which is bounded content, so letting
+     the ladder take all of the slack is what makes the two columns end on the
+     same line. */
   .sty-toprow:has(> .hgb) .sty-day,.sty-toprow:has(> .hgi) .sty-day{
     display:flex;flex-direction:column;}
   .sty-toprow:has(> .hgb) .sty-day > .stl-wrap,
   .sty-toprow:has(> .hgi) .sty-day > .stl-wrap{
-    flex:1 1 auto;display:flex;flex-direction:column;min-height:0;max-height:118px;}
+    flex:1 1 auto;display:flex;flex-direction:column;min-height:0;}
   .sty-toprow:has(> .hgb) .sty-day > .stl-wrap .stl,
   .sty-toprow:has(> .hgi) .sty-day > .stl-wrap .stl{flex:1 1 auto;}
   .sty-toprow:has(> .hgb) .sty-day,.sty-toprow:has(> .hgi) .sty-day{order:2;min-width:0;}
