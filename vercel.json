@@ -23,6 +23,10 @@
     {
       "path": "/api/cron/housing?part=metros",
       "schedule": "50 13 * * *"
+    },
+    {
+      "path": "/api/cron/newsletter",
+      "schedule": "0 14 * * *"
     }
   ],
   "ignoreCommand": "bash scripts/vercel-ignore-build.sh"

@@ -8102,8 +8102,10 @@ editor before the first send).
 - **`GET /api/admin/newsletter`** reports eligible / sent / failed / remaining / daysLeft for the
   current campaign. **`POST`** sends the next batch: `{ dryRun: true }` to preview, `{ to }` to proof
   one address, `{ limit }` under the 99 cap, `{ retryFailed: true }` to retry failed or stranded rows.
-  Auth is the admin cookie or `x-admin-token`, like the alerts route. Run it once a day (a scheduled
-  task hitting it with the token) until `remaining` is 0.
+  Auth is the admin cookie or `x-admin-token`, like the alerts route. The machinery is
+  `lib/newsletter-send.js`; **`GET /api/cron/newsletter`** (Vercel cron, 14:00 UTC daily) sends the
+  day's batch on its own once `NEWSLETTER_CRON=1` is set on Vercel, and skips once `remaining` is 0,
+  so it stays wired between campaigns.
 - **The ledger row is claimed BEFORE the send**, on a unique `(campaign, email)` index, so a double
   run, a cron that fires twice, or a retry after a timeout can never send one person the same
   campaign twice. Emails are stored lowercased for exactly that reason.
@@ -8112,7 +8114,8 @@ editor before the first send).
   the same URL goes in the footer AND the `List-Unsubscribe` / `List-Unsubscribe-Post` headers, so
   Gmail's and Yahoo's one-click unsubscribe works. Idempotent; a second visit says so.
 - **Env on Vercel:** `RESEND_API_KEY`, `NEWSLETTER_FROM` (e.g. `Mind Loft <news@mindloftdaily.com>`,
-  domain verified in Resend with the DKIM and SPF records it hands out), optional `NEWSLETTER_SECRET`.
+  domain verified in Resend with the DKIM and SPF records it hands out), `NEWSLETTER_CRON=1` to arm
+  the daily cron, optional `NEWSLETTER_SECRET`.
 - **The first campaign says why the reader is getting it** ("you joined the Mind Loft leaderboard
   with this address"). Keep that line on every campaign: these people registered for a leaderboard,
   not a newsletter, and the opt-out is one click for that reason.
