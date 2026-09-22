@@ -121,51 +121,53 @@ function Feed({ g, myKey, rows = 5 }) {
   );
 }
 
-export default function HomeGroupsBand({ data, withTq = (h) => h, narrow = false }) {
-  // Both steppers are declared before the early return, so the hook order is
-  // stable for any payload this component is handed.
-  const [at, setAt] = useState(0);
+export default function HomeGroupsBand({ data, withTq = (h) => h, narrow = false, group = null, onPick = null }) {
+  // The face stepper is declared before the early return, so the hook order is
+  // stable for any payload this component is handed. WHICH GROUP is not state
+  // here: the page owns it, because it drives the ladders and the tiles too
+  // (owner, 2026-09-22), and two copies of that choice would disagree.
   const [face, setFace] = useState(0);
   const groups = (data && data.groups) || [];
   if (!groups.length) return null;
   const myKey = (data && data.userKey) || null;
+  const g = group || groups[0];
+  if (!g) return null;
 
-  // A PHONE WALKS FACES, a desktop walks groups: one stepper either way, and it
-  // always steps the thing the reader can see.
-  const faces = [];
-  for (const g of groups) {
-    if (g.failed) continue;
-    faces.push({ g, kind: 'stand' });
-    faces.push({ g, kind: 'act' });
-  }
-  if (!faces.length) return null;
-
-  const n = narrow ? faces.length : groups.length;
-  const idx = ((((narrow ? face : at) % n) + n) % n);
-  const g = narrow ? faces[idx].g : groups[idx];
-  const kind = narrow ? faces[idx].kind : null;
-  const step = (d) => (narrow ? setFace(idx + d) : setAt(idx + d));
+  const kind = face % 2 === 0 ? 'stand' : 'act';
 
   return (
-    <section className="hgb sty-rev" aria-label="Your groups today">
+    <section className="hgb sty-rev" aria-label="Your group today">
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="hgb-h">
-        <a className="hgb-nm" href={withTq(`/groups/${g.code}`)}>{g.name}</a>
-        <span className="hgb-you">{standLabel(g)}</span>
-        {n > 1 ? (
-          <span className="hgb-step">
-            <button type="button" aria-label="Previous" onClick={() => step(-1)}>&lsaquo;</button>
-            <i>{idx + 1}/{n}</i>
-            <button type="button" aria-label="Next" onClick={() => step(1)}>&rsaquo;</button>
+        {groups.length > 1 && onPick ? (
+          // ONE GROUP AT A TIME, chosen here, and the whole page follows: the
+          // panel, the member ladders, the tiles and the cap's badge.
+          <span className="hgb-pick" role="group" aria-label="Which group">
+            {groups.map((x) => (
+              <button type="button" key={x.code} className={x.code === g.code ? 'on' : ''}
+                aria-pressed={x.code === g.code} title={x.name} onClick={() => onPick(x.code)}>
+                {x.name}
+              </button>
+            ))}
           </span>
-        ) : null}
+        ) : (
+          <a className="hgb-nm" href={withTq(`/groups/${g.code}`)}>{g.name}</a>
+        )}
+        <span className="hgb-you">{standLabel(g)}</span>
         <a className="hgb-all" href={withTq('/groups')}>All &rarr;</a>
       </div>
       {g.failed ? (
         <div className="hgb-card"><div className="hgb-none">Today&rsquo;s board could not be read.</div></div>
       ) : narrow ? (
         <div className="hgb-card">
-          <div className="hgb-ft">{kind === 'stand' ? 'Where you stand' : 'What just happened'}</div>
+          <div className="hgb-ft">
+            {kind === 'stand' ? 'Where you stand' : 'What just happened'}
+            <span className="hgb-step">
+              <button type="button" aria-label="Previous" onClick={() => setFace(face + 1)}>&lsaquo;</button>
+              <i>{(face % 2) + 1}/2</i>
+              <button type="button" aria-label="Next" onClick={() => setFace(face + 1)}>&rsaquo;</button>
+            </span>
+          </div>
           {kind === 'stand' ? <Chase g={g} myKey={myKey} /> : <Feed g={g} myKey={myKey} rows={3} />}
         </div>
       ) : (
@@ -190,7 +192,16 @@ ${AVATAR_CSS}
 .hgb-you{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .hgb-all{margin-left:auto;flex:none;color:var(--stg-acc-ink);text-decoration:none;}
 .hgb-all:hover{opacity:.78;}
-.hgb-step{display:inline-flex;align-items:center;gap:4px;flex:none;}
+.hgb-pick{display:inline-flex;align-items:center;gap:4px;min-width:0;}
+.hgb-pick button{border:1px solid var(--stg-line);border-radius:999px;background:none;cursor:pointer;
+  padding:2px 8px;font:inherit;color:var(--stg-ink2);max-width:11ch;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;}
+.hgb-pick button.on{border-color:transparent;background:var(--stg-acc);color:var(--stg-on-acc,#08222e);}
+.hgb-pick button:hover{border-color:var(--stg-line2);color:var(--stg-ink);}
+.hgb-pick button.on:hover{color:var(--stg-on-acc,#08222e);}
+.hgb-pick button:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.hgb-ft{display:flex;align-items:center;gap:9px;}
+.hgb-step{display:inline-flex;align-items:center;gap:4px;flex:none;margin-left:auto;}
 .hgb-step i{font-style:normal;font-variant-numeric:tabular-nums;color:var(--stg-ink2);}
 .hgb-step button{width:20px;height:18px;border:1px solid var(--stg-line);border-radius:6px;
   background:none;color:var(--stg-ink2);cursor:pointer;font-size:12px;line-height:1;padding:0;}

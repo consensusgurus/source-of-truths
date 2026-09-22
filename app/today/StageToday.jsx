@@ -30,7 +30,7 @@
 // Data comes from fetchDayStatus, the same call the existing home makes, so
 // this surface adds no new endpoint and cannot disagree with the other one
 // about what has been played.
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DAILY_GAMES as ALL_DAILY_GAMES, DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
 
 // THE LIVE ROSTER, not the whole registry. A retired game stays in DAILY_GAMES
@@ -439,7 +439,23 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
         ...(grpOn ? { '--stg-onramp': light ? categoryOnrampLight(g.cat) : RAMP_INK } : null),
       }}>
       <span className="sty-gn"><Glyph k={g.key} size={17} />{g.name}<GroupDots dots={dots} /></span>
-      {res ? (
+      {res && dots && dots.mine ? (
+        /* BOTH PLACES, SIDE BY SIDE (owner, 2026-09-22): where you came in the
+           group, then where you came on the site. A tile is about 136px of
+           usable width, and the line may not wrap, so only the FIRST figure is
+           labelled: the bare one is the site place this line has always shown,
+           and the group's own name in front of the other says which is which.
+           The full sentence is on the title for a hover and a screen reader. */
+        <span className="sty-gres sty-gres2 sty-rev"
+          title={`${dots.name}: #${dots.mine.rank} of ${dots.mine.field} \u00b7 site: #${res.rank} of ${res.field}`}>
+          <span className="sty-grl">{dots.name}</span>
+          <span className="sty-grk">#{dots.mine.rank}</span>
+          <span className="sty-grf">of {dots.mine.field}</span>
+          <span className="sty-gsep" aria-hidden="true">&middot;</span>
+          <span className="sty-grk">#{res.rank}</span>
+          <span className="sty-grf">of {res.field}</span>
+        </span>
+      ) : res ? (
         <span className="sty-gres sty-rev">
           <span className="sty-grl">You:</span>
           <span className="sty-grk">#{res.rank}</span>
@@ -521,11 +537,33 @@ export default function StageToday() {
   useEffect(() => { setWho(savedIdentity().username || ''); }, []);
   // The viewer's groups today. undefined while reading, null for no groups.
   const grp = useGroupStanding('today');
-  const grpBest = bestPlace(grp);
+  // WHICH GROUP, owned here rather than in the band, because it drives four
+  // surfaces at once: the panel, the member ladders, the tile lines and the
+  // cap's badge (owner, 2026-09-22). Two copies of this choice disagreed, so
+  // the band could show one group while the tiles showed another. Remembered
+  // per browser, and read in an effect like everything else kept on device.
+  const [grpPick, setGrpPick] = useState('');
+  useEffect(() => {
+    try { setGrpPick(localStorage.getItem('sot_grp_home') || ''); } catch (e) {}
+  }, []);
+  const pickGroup = useCallback((code) => {
+    setGrpPick(code);
+    try { localStorage.setItem('sot_grp_home', code); } catch (e) {}
+  }, []);
+  const grpOne = useMemo(() => {
+    const list = (grp && grp.groups) || [];
+    if (!list.length) return null;
+    return list.find((x) => x.code === grpPick) || list.find((x) => !x.failed) || list[0];
+  }, [grp, grpPick]);
+  // The badge follows the chosen group rather than the best of all of them, so
+  // the header cannot name a place the page below it is not showing.
+  const grpBest = grpOne && grpOne.rank
+    ? { rank: grpOne.rank, name: grpOne.name, code: grpOne.code }
+    : null;
   const dotsFor = useMemo(() => {
-    const g0 = grp && grp.groups ? grp.groups.find((x) => !x.failed && x.roster && x.roster.length > 1) : null;
+    const g0 = grpOne && !grpOne.failed && grpOne.roster && grpOne.roster.length > 1 ? grpOne : null;
     if (!g0) return null;
-    const myKey = grp.userKey || null;
+    const myKey = (grp && grp.userKey) || null;
     const cache = {};
     return (key) => {
       if (!cache[key]) {
@@ -535,8 +573,10 @@ export default function StageToday() {
         // the home tile rule has said so since 2026-08-31.
         const rows = (g0.boards && g0.boards[key]) || [];
         let lead = null;
+        let mine = null;
         for (const r of rows) {
-          if (r.abandoned || r.userKey === myKey) continue;
+          if (r.userKey === myKey) { mine = r; continue; }
+          if (r.abandoned) continue;
           if (!lead || r.points > lead.points) lead = r;
         }
         cache[key] = {
@@ -544,22 +584,25 @@ export default function StageToday() {
           roster: g0.roster,
           played: new Set((g0.games && g0.games[key]) || []),
           lead,
+          // The reader's own place IN THE GROUP on this game, beside the site
+          // place the tile already prints. Field is who in the group played it.
+          mine: mine ? { rank: mine.rank, field: rows.length } : null,
           of: g0.roster.length,
         };
       }
       return cache[key];
     };
-  }, [grp]);
+  }, [grp, grpOne]);
   // EVERY MEMBER'S DAY, for the ladders under the reader's own. Capped at six
   // rows including the reader, ordered by points, with the tail folded. Null
   // when the reader is in no group, or alone in one: a stack of one ladder is
   // the ladder that is already there.
   const mem = useMemo(() => {
-    const g0 = grp && grp.groups ? grp.groups.find((x) => !x.failed && x.roster && x.roster.length > 1) : null;
+    const g0 = grpOne && !grpOne.failed && grpOne.roster && grpOne.roster.length > 1 ? grpOne : null;
     if (!g0) return null;
-    const m = memberRows(g0, grp.userKey || null, 6);
+    const m = memberRows(g0, (grp && grp.userKey) || null, 6);
     return m.rows.length ? { ...m, name: g0.name } : null;
-  }, [grp]);
+  }, [grp, grpOne]);
 
   // ARM THE ARRIVAL REVEAL, and only for a page someone is actually looking at.
   // A hidden tab does not advance an animation clock, so a section that mounts
@@ -1734,7 +1777,7 @@ export default function StageToday() {
         {/* YOUR GROUP TODAY: the chase and the feed, or on a phone one card
             with two faces. Nothing at all for a reader in no group, who gets
             the invite below instead. */}
-        <HomeGroupsBand data={grp} withTq={withTq} narrow={narrow} />
+        <HomeGroupsBand data={grp} withTq={withTq} narrow={narrow} group={grpOne} onPick={pickGroup} />
         {grp === null ? <HomeInvite playedToday={done.size} returning={returning} withTq={withTq} /> : null}
         </div>
 
@@ -2626,6 +2669,17 @@ ${PATCH_CSS}
 .sty-grl{font-family:${MONO};font-size:9px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--stg-mute);}
 .sty-grf{font-weight:600;color:var(--stg-mute);}
+/* TWO PLACES ON ONE LINE, and it may not wrap: the type steps down, the gaps
+   close, the group's name truncates, and nothing here may grow. flex-wrap is
+   said out loud because this line is the one place a second figure could push
+   itself onto a second row and change every tile's height. */
+.sty-gres2{gap:4px;flex-wrap:nowrap;}
+.sty-gres2 .sty-grl{font-size:8.5px;letter-spacing:.06em;flex:0 1 auto;min-width:0;
+  max-width:8ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-gres2 .sty-grk{font-size:11px;flex:none;}
+.sty-gres2 .sty-grf{font-size:10.5px;font-weight:500;flex:none;}
+.sty-gsep{flex:none;color:var(--stg-line2);}
+.sty-g.grp .sty-gsep{color:color-mix(in srgb, var(--stg-onramp) 55%, transparent);}
 /* WHAT THE GROUP DID ON THIS GAME, in the tag's slot on a tile the reader has
    not played (2026-09-22). Same shape as the played line above it, so a slate
    mixing the two reads as one column rather than two treatments. */
