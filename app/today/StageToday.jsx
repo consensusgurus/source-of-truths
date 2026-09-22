@@ -585,8 +585,11 @@ export default function StageToday() {
           played: new Set((g0.games && g0.games[key]) || []),
           lead,
           // The reader's own place IN THE GROUP on this game, beside the site
-          // place the tile already prints. Field is who in the group played it.
-          mine: mine ? { rank: mine.rank, field: rows.length } : null,
+          // place the tile already prints. THE FIELD IS THE GROUP'S SIZE, not
+          // how many of them played it: "#1 of 1" is no figure at all on a game
+          // only the reader has reached, and every other group count on this
+          // page ("2 of 3" on an unplayed tile) already counts members.
+          mine: mine ? { rank: mine.rank, field: g0.roster.length } : null,
           of: g0.roster.length,
         };
       }
@@ -2673,11 +2676,15 @@ ${PATCH_CSS}
    close, the group's name truncates, and nothing here may grow. flex-wrap is
    said out loud because this line is the one place a second figure could push
    itself onto a second row and change every tile's height. */
-.sty-gres2{gap:4px;flex-wrap:nowrap;}
+/* Measured on the live page: the narrowest tile the slate ever draws is 166px
+   of inner width (the phone's two-up at 390px), and the longest line this can
+   produce at these sizes is about 150px. Under more pressure than that the
+   group's NAME is what gives way, because it is the only shrinkable item. */
+.sty-gres2{gap:3px;flex-wrap:nowrap;}
 .sty-gres2 .sty-grl{font-size:8.5px;letter-spacing:.06em;flex:0 1 auto;min-width:0;
   max-width:8ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sty-gres2 .sty-grk{font-size:11px;flex:none;}
-.sty-gres2 .sty-grf{font-size:10.5px;font-weight:500;flex:none;}
+.sty-gres2 .sty-grf{font-size:10px;font-weight:500;flex:none;}
 .sty-gsep{flex:none;color:var(--stg-line2);}
 .sty-g.grp .sty-gsep{color:color-mix(in srgb, var(--stg-onramp) 55%, transparent);}
 /* WHAT THE GROUP DID ON THIS GAME, in the tag's slot on a tile the reader has
