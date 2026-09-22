@@ -543,8 +543,14 @@ export default function StageToday() {
   // the band could show one group while the tiles showed another. Remembered
   // per browser, and read in an effect like everything else kept on device.
   const [grpPick, setGrpPick] = useState('');
+  // ?groupinvite=1 forces the no-group invite into view for a look, which is
+  // otherwise impossible for anyone who works here: being in a group is exactly
+  // what stops it mounting. Read in an effect, like every other query override
+  // on this page, so the server and the first client paint agree.
+  const [invitePrev, setInvitePrev] = useState(false);
   useEffect(() => {
     try { setGrpPick(localStorage.getItem('sot_grp_home') || ''); } catch (e) {}
+    try { setInvitePrev(new URLSearchParams(window.location.search).get('groupinvite') === '1'); } catch (e) {}
   }, []);
   const pickGroup = useCallback((code) => {
     setGrpPick(code);
@@ -1781,7 +1787,9 @@ export default function StageToday() {
             with two faces. Nothing at all for a reader in no group, who gets
             the invite below instead. */}
         <HomeGroupsBand data={grp} withTq={withTq} narrow={narrow} group={grpOne} onPick={pickGroup} />
-        {grp === null ? <HomeInvite playedToday={done.size} returning={returning} withTq={withTq} /> : null}
+        {grp === null || invitePrev ? (
+          <HomeInvite playedToday={done.size} returning={returning} withTq={withTq} preview={invitePrev} />
+        ) : null}
         </div>
 
         <h1 className="sty-slate">Today&rsquo;s fresh slate of puzzles</h1>

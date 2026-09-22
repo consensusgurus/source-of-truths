@@ -13,12 +13,21 @@
 //
 // It retires itself after two dismissals, and joining a group retires it by
 // making the band render instead.
+//
+// BECAUSE OF THAT, NOBODY WHO WORKS ON THIS SITE EVER SEES IT: an owner is in a
+// group, so the band takes the slot and this never mounts. `?groupinvite=1`
+// forces it for a look, the way `?welcome=1` does for the arrival overlay and
+// `?install=1` for the install card. A forced draw writes no dismissal, and
+// substitutes a sample count when the reader has finished nothing today, so a
+// preview never reads "you have finished 0 puzzles".
 import { useEffect, useState } from 'react';
 
 const KEY = 'sot_grp_invite';
 const MAX_DISMISS = 2;
 
-export default function HomeInvite({ playedToday = 0, returning = null, withTq = (h) => h }) {
+const SAMPLE = 5;
+
+export default function HomeInvite({ playedToday = 0, returning = null, withTq = (h) => h, preview = false }) {
   // localStorage decides this, so it is read in an effect and the server and the
   // first client paint both render nothing. Same rule the rest of this page
   // follows for anything it keeps on the device.
@@ -29,10 +38,13 @@ export default function HomeInvite({ playedToday = 0, returning = null, withTq =
     setHidden(n >= MAX_DISMISS);
   }, []);
 
-  if (hidden || returning !== true || playedToday < 1) return null;
+  if (!preview && (hidden || returning !== true || playedToday < 1)) return null;
 
+  const n = playedToday > 0 ? playedToday : SAMPLE;
   const dismiss = () => {
-    try { localStorage.setItem(KEY, String((Number(localStorage.getItem(KEY) || 0) || 0) + 1)); } catch (e) {}
+    if (!preview) {
+      try { localStorage.setItem(KEY, String((Number(localStorage.getItem(KEY) || 0) || 0) + 1)); } catch (e) {}
+    }
     setHidden(true);
   };
 
@@ -42,9 +54,9 @@ export default function HomeInvite({ playedToday = 0, returning = null, withTq =
       <div className="hgi-h">Play with people you know</div>
       <div className="hgi-c">
         <div className="hgi-t">
-          <b>Rank your {playedToday} against theirs</b>
+          <b>Rank your {n} against theirs</b>
           <i>
-            You have finished {playedToday} {playedToday === 1 ? 'puzzle' : 'puzzles'} today. A group
+            You have finished {n} {n === 1 ? 'puzzle' : 'puzzles'} today. A group
             puts everyone who joins on one private board, on the same points, every day.
           </i>
         </div>
