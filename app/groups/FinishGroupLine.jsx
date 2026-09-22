@@ -14,10 +14,22 @@ import {
   fetchGroupStanding, invalidateGroupStanding, ordinal, fmtPts, placeFor, totalWithout,
   MiniAvatar, AVATAR_CSS,
 } from './groupStanding';
+// The run in the GAME'S own units, the same reading the board above the card
+// and the tile panel use.
+import { gameStats } from '@/lib/daily-row-stats';
 
 const TRIES = [0, 2500, 6000, 12000];
 
-export default function FinishGroupLine({ gameKey }) {
+// THE GAME COMES FIRST WHEN THE GROUP PLAYED IT (owner, 2026-09-21: "this
+// should show you vs group members for the game, if others played the game.
+// otherwise this is fine"). A player who just finished Sando wants to know how
+// that run compares with the people they play with, not only where the day's
+// totals leave them. So when another member has a row on THIS game, the card
+// leads with that board and keeps the day's standing as one line under it. When
+// nobody else has played it, the card is exactly what it was.
+const GAME_ROWS = 5;
+
+export default function FinishGroupLine({ gameKey, gameName = null, missLabel = null }) {
   const [data, setData] = useState(null);
 
   useEffect(() => {
@@ -71,6 +83,14 @@ export default function FinishGroupLine({ gameKey }) {
   const mineInTop = rows.some((r) => r.userKey === data.userKey);
   const mine = mineInTop ? null : { userKey: data.userKey, username: data.username, rank: lead.rank, total: lead.total };
 
+  // This game's own group board, when somebody else in the group has played it.
+  const gAll = (lead.boards && lead.boards[gameKey]) || [];
+  const gMine = gAll.find((r) => r.userKey === data.userKey) || null;
+  const onGame = gAll.length > 1 && !!gMine;
+  let gRows = gAll.slice(0, GAME_ROWS);
+  if (gMine && !gRows.some((r) => r.userKey === data.userKey)) gRows = gRows.slice(0, GAME_ROWS - 1).concat([gMine]);
+  const gField = gAll.length;
+
   return (
     <section className="fgl">
       <style dangerouslySetInnerHTML={{ __html: AVATAR_CSS + CSS }} />
@@ -80,30 +100,58 @@ export default function FinishGroupLine({ gameKey }) {
           <b>{lead.name}</b>
           <span className="fgl-pill">{lead.members} {lead.members === 1 ? 'member' : 'members'}</span>
         </div>
-        <p className="fgl-big">
-          {lead.rank === 1 ? 'You lead today' : `You're ${ordinal(lead.rank)} today`} <Move m={lm} />
-        </p>
-        <div className="fgl-rows">
-          {rows.map((r) => (
-            <div key={r.userKey} className={'fgl-r' + (r.userKey === data.userKey ? ' me' : '')}>
-              <span className="k">{r.rank}</span>
-              <MiniAvatar name={r.username} userKey={r.userKey} />
-              <span className="n">{r.userKey === data.userKey ? 'You' : r.username}</span>
-              <span className="s">{fmtPts(r.total)}</span>
+        {onGame ? (
+          <>
+            <p className="fgl-big">
+              {gMine.rank === 1
+                ? `You lead${gameName ? ` on ${gameName}` : ''}`
+                : `You're ${ordinal(gMine.rank)} of ${gField}${gameName ? ` on ${gameName}` : ''}`}
+            </p>
+            <div className="fgl-rows">
+              {gRows.map((r) => (
+                <div key={r.userKey} className={'fgl-r g' + (r.userKey === data.userKey ? ' me' : '')}>
+                  <span className="k">{r.rank}</span>
+                  <MiniAvatar name={r.username} userKey={r.userKey} />
+                  <span className="n">{r.userKey === data.userKey ? 'You' : r.username}</span>
+                  <span className="run">{gameStats(r, missLabel) || '\u2014'}</span>
+                  <span className="s">{fmtPts(r.points)}</span>
+                </div>
+              ))}
             </div>
-          ))}
-          {mine ? (
-            <div className="fgl-r me">
-              <span className="k">{mine.rank}</span>
-              <MiniAvatar name={mine.username} userKey={mine.userKey} />
-              <span className="n">You</span>
-              <span className="s">{fmtPts(mine.total)}</span>
+            {/* The day is still worth a line: this game is one of its games. */}
+            <p className="fgl-gap">
+              <b>{ordinal(lead.rank)} of {lead.played} on today&rsquo;s board</b> <Move m={lm} />
+              {lead.gap != null && lead.ahead ? ` \u00b7 ${fmtPts(lead.gap)} behind ${lead.ahead.username}` : ''}
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="fgl-big">
+              {lead.rank === 1 ? 'You lead today' : `You're ${ordinal(lead.rank)} today`} <Move m={lm} />
+            </p>
+            <div className="fgl-rows">
+              {rows.map((r) => (
+                <div key={r.userKey} className={'fgl-r' + (r.userKey === data.userKey ? ' me' : '')}>
+                  <span className="k">{r.rank}</span>
+                  <MiniAvatar name={r.username} userKey={r.userKey} />
+                  <span className="n">{r.userKey === data.userKey ? 'You' : r.username}</span>
+                  <span className="s">{fmtPts(r.total)}</span>
+                </div>
+              ))}
+              {mine ? (
+                <div className="fgl-r me">
+                  <span className="k">{mine.rank}</span>
+                  <MiniAvatar name={mine.username} userKey={mine.userKey} />
+                  <span className="n">You</span>
+                  <span className="s">{fmtPts(mine.total)}</span>
+                </div>
+              ) : null}
             </div>
-          ) : null}
-        </div>
-        {lead.gap != null && lead.ahead ? (
-          <p className="fgl-gap">{fmtPts(lead.gap)} behind {lead.ahead.username}</p>
-        ) : null}
+            {lead.gap != null && lead.ahead ? (
+              <p className="fgl-gap">{fmtPts(lead.gap)} behind {lead.ahead.username}</p>
+            ) : null}
+          </>
+        )}
         <a className="fgl-link" href={`/groups/${lead.code}`}>Open the group board &rarr;</a>
       </div>
       {rest.map((g) => (
@@ -133,6 +181,11 @@ const CSS = `
 .fgl-r .k{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:12px;color:var(--stg-mute,#8b95a8);text-align:right;}
 .fgl-r .n{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .fgl-r .s{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:12.5px;font-variant-numeric:tabular-nums;}
+/* A GAME ROW carries the run as well as what it was worth: 10/10 · 4:49 · 15. */
+.fgl-r.g{grid-template-columns:18px 22px minmax(0,1fr) auto auto;}
+.fgl-r.g .run{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:11.5px;
+  color:var(--stg-mute,#8b95a8);white-space:nowrap;}
+.fgl-gap b{font-weight:800;color:var(--stg-ink,#e9edf4);}
 .fgl-r.me{background:color-mix(in srgb, var(--stg-brand,#7dd3fc) 14%, transparent);margin:0 -8px;padding:6px 8px;border-radius:8px;border-top-color:transparent;}
 .fgl-r.me + .fgl-r{border-top-color:transparent;}
 .fgl-r.me .n{font-weight:800;}

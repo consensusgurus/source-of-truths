@@ -8080,3 +8080,10 @@ in both places. Check the rendered `og:image`, not the layout, after any metadat
   a code was the only way to reach a group page; public groups are browsable from
   /groups now. Public reads "Open group. Anyone can join.", private reads "Invite
   only. Anyone with this link can join."
+- **The finish card leads with the GAME when the group played it** (owner,
+  2026-09-21). `FinishGroupLine` now takes `gameName` and `missLabel`: when
+  another member has a row on that game (`boards[gameKey]` from the standing
+  read), the card shows "You're 2nd of 3 on Sando" with each member's run in the
+  game's own units, and today's overall group standing drops to one line under
+  it with the movement arrow. Nobody else has played it, and the card is exactly
+  the day board it was.

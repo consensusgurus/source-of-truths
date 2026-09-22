@@ -1104,7 +1104,7 @@ export default function StageFinish({
 
         {/* YOUR GROUPS TODAY (owner, 2026-09-17): dailies only, and only for a
             player in a group; see app/groups/FinishGroupLine.jsx. */}
-        {me && !boardLabel ? <FinishGroupLine gameKey={me.key} /> : null}
+        {me && !boardLabel ? <FinishGroupLine gameKey={me.key} gameName={me.name} missLabel={missLabel} /> : null}
 
         {/* CLAIM YOUR RANK: full width, above the hand-forward, guests only.
             The figure is the guest's would-be placement on the registered
