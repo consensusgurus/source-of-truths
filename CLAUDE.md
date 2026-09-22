@@ -8087,3 +8087,32 @@ in both places. Check the rendered `og:image`, not the layout, after any metadat
   game's own units, and today's overall group standing drops to one line under
   it with the movement arrow. Nobody else has played it, and the card is exactly
   the day board it was.
+
+## The player newsletter: daily batches under the free tier, and the opt-out (2026-09-22)
+
+Registered players with an email on file can be sent a campaign, 99 a day, through Resend's free
+tier. Everything lives in four files plus migration `54_newsletter.sql` (adds
+`quiz_users.newsletter_opt_out` and the `newsletter_sends` ledger; apply it in the Supabase SQL
+editor before the first send).
+
+- **A campaign is a module in `lib/newsletters/`** exporting `CAMPAIGN {id, subject, preheader}`,
+  `render({unsubUrl})` and `text({unsubUrl})`, registered in the `CAMPAIGNS` map of
+  `app/api/admin/newsletter/route.js`. The HTML is the same table-based, inline-styled email that
+  was proofed as a Gmail draft; `{{UNSUB}}` is the only placeholder.
+- **`GET /api/admin/newsletter`** reports eligible / sent / failed / remaining / daysLeft for the
+  current campaign. **`POST`** sends the next batch: `{ dryRun: true }` to preview, `{ to }` to proof
+  one address, `{ limit }` under the 99 cap, `{ retryFailed: true }` to retry failed or stranded rows.
+  Auth is the admin cookie or `x-admin-token`, like the alerts route. Run it once a day (a scheduled
+  task hitting it with the token) until `remaining` is 0.
+- **The ledger row is claimed BEFORE the send**, on a unique `(campaign, email)` index, so a double
+  run, a cron that fires twice, or a retry after a timeout can never send one person the same
+  campaign twice. Emails are stored lowercased for exactly that reason.
+- **Opt-out is `GET|POST /api/newsletter/unsubscribe?u=<id>&t=<hmac>`**, signed with
+  `NEWSLETTER_SECRET` (falls back to `ADMIN_TASK_TOKEN`). No login, nothing stored per link, and
+  the same URL goes in the footer AND the `List-Unsubscribe` / `List-Unsubscribe-Post` headers, so
+  Gmail's and Yahoo's one-click unsubscribe works. Idempotent; a second visit says so.
+- **Env on Vercel:** `RESEND_API_KEY`, `NEWSLETTER_FROM` (e.g. `Mind Loft <news@mindloftdaily.com>`,
+  domain verified in Resend with the DKIM and SPF records it hands out), optional `NEWSLETTER_SECRET`.
+- **The first campaign says why the reader is getting it** ("you joined the Mind Loft leaderboard
+  with this address"). Keep that line on every campaign: these people registered for a leaderboard,
+  not a newsletter, and the opt-out is one click for that reason.
