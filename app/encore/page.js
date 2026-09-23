@@ -18,7 +18,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Crossword: Encore | Mind Loft',
   description:
-    'A free daily crossword: a 9x9 grid of everyday words with fair Across and Down clues, fully checked so every letter is confirmed by a crossing. The grid checks itself when the last square lands, and Sundays step up to 11x11.',
+    'A free daily crossword: a 9x9 grid of everyday words with fair Across and Down clues, fully checked so every letter is confirmed by a crossing. Fill every square and turn the grid in with one check, and Sundays step up to 11x11.',
   alternates: { canonical: '/encore' },
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Encore' },
   openGraph: {
@@ -48,7 +48,7 @@ const gameJsonLd = {
   alternateName: 'Encore — Daily Crossword',
   url: `${SITE_URL}/encore`,
   description:
-    'A free daily crossword: a 9x9 grid of everyday words with numbered Across and Down clues, fully checked so every square belongs to both an across and a down answer. The grid checks itself the moment the last square is filled, a clean fast solve tops the daily leaderboard, and the Sunday Edition steps up to 11x11.',
+    'A free daily crossword: a 9x9 grid of everyday words with numbered Across and Down clues, fully checked so every square belongs to both an across and a down answer. You turn in a full grid with one press of Check grid; a clean fast solve tops the daily leaderboard, and the Sunday Edition steps up to 11x11.',
   genre: ['Word puzzle', 'Crossword', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

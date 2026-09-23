@@ -16,7 +16,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Mini Crossword: Emcee | Mind Loft',
   description:
-    'A free daily mini crossword — a 5×5 grid of everyday words with fair Across and Down clues, done in a minute or two. The grid checks itself when the last square lands, and Sundays go bigger.',
+    'A free daily mini crossword — a 5×5 grid of everyday words with fair Across and Down clues, done in a minute or two. Fill every square and turn the grid in with one check, and Sundays go bigger.',
   alternates: { canonical: '/emcee' },
   manifest: '/api/pwa-manifest?game=emcee',
   icons: {
@@ -58,7 +58,7 @@ const gameJsonLd = {
   alternateName: 'Emcee — Daily Mini Crossword',
   url: `${SITE_URL}/emcee`,
   description:
-    'A free daily mini crossword: a 5×5 grid of everyday words with numbered Across and Down clues, solvable in a minute or two. The grid checks itself the moment the last square is filled — a clean, fast solve tops the daily leaderboard, and Sundays step up to a 7×7 pinwheel.',
+    'A free daily mini crossword: a 5×5 grid of everyday words with numbered Across and Down clues, solvable in a minute or two. You turn in a full grid with one press of Check grid; a clean, fast solve tops the daily leaderboard, and Sundays step up to a 7×7 pinwheel.',
   genre: ['Word puzzle', 'Crossword', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

@@ -5,8 +5,8 @@
 //
 // A 9x9 on weekdays (around 26 answers) and an 11x11 Sunday Edition (around
 // 44), numbered Across and Down clues, and a timer. Tap a square to select its
-// word, tap again to flip direction, and type. The grid checks itself the
-// moment every square is filled: a perfect fill wins, a wrong one marks the
+// word, tap again to flip direction, and type. Fill every square and press Check
+// grid: a perfect fill wins, a wrong one marks the
 // misses in red and counts a CHECK against you. Score is words correct out of
 // the word count, so finishing the grid is a full score, with ties on the daily
 // board broken by fewest checks and then time. One free hint reveals a letter.
@@ -21,7 +21,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { HelpCircle, X, Lightbulb, Eye, Smartphone, ChevronLeft, ChevronRight, Delete } from 'lucide-react';
+import { HelpCircle, X, Lightbulb, Eye, Smartphone, ChevronLeft, ChevronRight, Delete, Check } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import DailyGamesPromo from '../DailyGamesPromo';
@@ -466,7 +466,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
     } catch (e) {}
   }
 
-  // the moment the last square fills, the grid checks itself
+  // Judge a FULL grid. Called only by checkGrid, never on a keystroke.
   function maybeCheck(g2) {
     const full = solFlat.every((ch, i) => ch === '#' || g2.letters[i] !== '');
     if (!full) return g2;
@@ -481,6 +481,20 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
     g2.checks += 1;
     g2.wrong = bad;
     return g2;
+  }
+
+  // The player's explicit turn-in. Only a full grid can be checked; each check
+  // that finds a wrong square counts one against the player on the board.
+  function checkGrid() {
+    if (!playing) return;
+    const full = solFlat.every((ch, i) => ch === '#' || g.letters[i] !== '');
+    if (!full) { say('Fill every square, then check the grid.'); return; }
+    const g2 = { ...g, letters: g.letters.slice() };
+    if (!g2.t0) g2.t0 = Date.now();
+    const checked = maybeCheck(g2);
+    setG(checked);
+    if (checked.status === 'won') { postResult(checked, TOTAL); setJustWon(true); return; }
+    say('Not quite. The red squares are wrong: fix them and check again.');
   }
 
   const nextWord = useCallback((fromIdx, d0, needEmpty, ls) => {
@@ -523,16 +537,10 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
     const g2 = { ...g, letters: g.letters.slice(), wrong: g.wrong.filter((i) => i !== cur) };
     g2.letters[cur] = ch;
     if (!g2.t0) g2.t0 = Date.now();
-    const checked = maybeCheck(g2);
+    // Filling the last square no longer judges the grid: the player turns it
+    // in with Check grid (or Enter on a full grid), owner call 2026-09-22.
+    const checked = g2;
     setG(checked);
-    if (checked.status === 'won') {
-      postResult(checked, TOTAL);
-      setJustWon(true);
-      return;
-    }
-    if (checked.wrong.length && checked.checks !== g.checks) {
-      say('Not quite — the red squares are wrong. Keep going!');
-    }
     // advance: next empty square in this word, else next unfinished word
     const w = WORDS[wordOf[dir][cur]] || curWord;
     const pos = w.cells.indexOf(cur);
@@ -540,7 +548,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
       if (checked.letters[w.cells[k]] === '') { setCur(w.cells[k]); return; }
     }
     const anyEmpty = solFlat.some((c, i) => c !== '#' && checked.letters[i] === '');
-    if (!anyEmpty) return; // full grid: stay put (check already ran)
+    if (!anyEmpty) return; // full grid: stay put, Check grid is the next move
     const ni = nextWord(wordOf[dir][cur], dir, true, checked.letters);
     selectWord(ni, checked.letters);
   }
@@ -585,9 +593,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
     const g2 = { ...g, letters: g.letters.slice(), wrong: g.wrong.filter((i) => i !== idx), hintUsed: true };
     g2.letters[idx] = solFlat[idx];
     if (!g2.t0) g2.t0 = Date.now();
-    const checked = maybeCheck(g2);
-    setG(checked);
-    if (checked.status === 'won') { postResult(checked, TOTAL); setJustWon(true); return; }
+    setG(g2);
     say('Hint used — one letter filled in for you.');
   }
 
@@ -623,6 +629,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
     if (k === 'ArrowLeft') { e.preventDefault(); moveCur(0, -1); return; }
     if (k === 'ArrowRight') { e.preventDefault(); moveCur(0, 1); return; }
     if (k === ' ') { e.preventDefault(); setDir((d) => (d === 'A' ? 'D' : 'A')); return; }
+    if (k === 'Enter' && solFlat.every((ch, i) => ch === '#' || letters[i] !== '')) { e.preventDefault(); checkGrid(); return; }
     if (k === 'Tab' || k === 'Enter') { e.preventDefault(); selectWord(nextWord(curWordIdx, dir, true, letters)); return; }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playing, showHelp, showA2hsHelp, g, cur, dir, curWordIdx, letters]);
@@ -700,11 +707,11 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
       lead="Fill every square of the crossword from the numbered Across and Down clues."
       steps={[
         <><b>Tap a square</b> to select its word, tap it again to flip direction, then type. On a keyboard, <b>space</b> flips direction and <b>tab</b> jumps to the next clue.</>,
-        <>The grid <b>checks itself</b> the moment the last square is filled. A perfect fill wins on the spot.</>,
+        <>When every square is filled, press <b>Check grid</b>. A perfect fill wins on the spot; a wrong one marks the misses in red.</>,
         <>A wrong fill marks the misses <b style={{ color: `var(--stg-ink, ${COLORS.rust})` }}>red</b> and counts a <b>check</b> against you.</>,
         <>One free <b>hint</b>, on your first ever play, reveals a letter.</>,
       ]}
-      knack="Nothing is judged until the last square goes in, so read your shakiest word against its crossing clue before you fill it."
+      knack="Nothing is judged until you check, so read your shakiest word against its crossing clue before you turn the grid in."
       footer="Finish the grid for a full score. Ties break on fewest checks, then fastest time, so a clean solve is the crown. Weekdays are nine by nine; the Sunday Edition runs eleven by eleven."
     />
   );
@@ -895,9 +902,21 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
                   <Lightbulb size={14} /> Hint
                 </button>
               )}
+              {(() => {
+                const full = solFlat.every((ch, i) => ch === '#' || letters[i] !== '');
+                return (
+                  <button className="ec-tool" onClick={checkGrid} disabled={!full}
+                    title={full ? 'Turn in the grid' : 'Fill every square to check the grid'}
+                    style={full
+                      ? { background: `var(--stg-acc, #1d4ed8)`, borderColor: `var(--stg-acc, #1d4ed8)`, color: `var(--stg-onramp, #fff)` }
+                      : { opacity: 0.55, cursor: 'not-allowed' }}>
+                    <Check size={14} /> Check grid
+                  </button>
+                );
+              })()}
               {!mobileUi && (
                 <span className="ec-tool" style={{ cursor: 'default', borderStyle: 'dashed', color: FADED }}>
-                  Type to fill &middot; space flips Across/Down &middot; tab jumps
+                  Type to fill &middot; space flips Across/Down &middot; tab jumps &middot; enter checks a full grid
                 </span>
               )}
             </div>
@@ -926,7 +945,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
           {started && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(20,22,28,0.10)', flexWrap: 'wrap' }}>
             <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>
-              Fill the grid from the clues. It checks itself when the last square lands — wrong squares flash red, and every failed check counts on the board.
+              Fill the grid from the clues, then press Check grid. Wrong squares turn red, and every failed check counts on the board.
             </span>
             {identity && (g.t0 || checks > 0) && (
               <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
@@ -1130,7 +1149,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
           Encore is a free daily crossword from Mind Loft, and it is the long one. Nine squares by nine on weekdays, with around twenty-six numbered Across and Down answers, so it asks for a few minutes rather than a few seconds. If you want the sprint version, that is <a href="/emcee" style={{ color: INK, fontWeight: 800 }}>Emcee</a>, our five by five mini.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Every grid is fully checked, which means every letter you write belongs to both an Across answer and a Down one, so a crossing always confirms you. The words are everyday words and the clues play fair. The grid checks itself when the last square lands: wrong squares flash red and each failed check counts against you on the leaderboard, where ties break on fewest checks and then fastest time.
+          Every grid is fully checked, which means every letter you write belongs to both an Across answer and a Down one, so a crossing always confirms you. The words are everyday words and the clues play fair. Fill every square and press Check grid: wrong squares turn red and each failed check counts against you on the leaderboard, where ties break on fewest checks and then fastest time.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new grid drops every day at midnight Eastern, and the Sunday Edition steps up to eleven by eleven with around forty-four answers. No app, no signup, play free in your browser, keep a streak and race the daily leaderboard. More word puzzles: <a href="/crux" style={{ color: INK, fontWeight: 800 }}>Crux</a>, our clueless crossword, <a href="/links" style={{ color: INK, fontWeight: 800 }}>Links</a>, our word-grouping puzzle, and <a href="/garble" style={{ color: INK, fontWeight: 800 }}>Garble</a>, our daily unscramble.
