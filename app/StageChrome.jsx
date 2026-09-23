@@ -439,7 +439,7 @@ const CSS = `
 .stg-fg>div{display:flex;flex-direction:column;}
 .stg-fg b{font-family:${MONO};font-size:14px;font-weight:500;line-height:1.15;
   font-variant-numeric:tabular-nums;}
-.stg-fg i{font-family:${MONO};font-style:normal;font-size:9px;letter-spacing:.12em;
+.stg-fg i{font-family:${MONO};font-style:normal;font-size:9.5px;font-weight:500;letter-spacing:.12em;
   text-transform:uppercase;color:var(--stg-mute2,#66748f);}
 
 .stg-cx{display:inline-flex;align-items:center;gap:6px;font-family:${MONO};font-size:10px;
@@ -482,12 +482,12 @@ const CSS = `
 .stg-strip:hover{background:var(--stg-surf,rgba(255,255,255,0.045));}
 .stg-strip.on{background:var(--stg-surf2,rgba(255,255,255,0.08));}
 .stg-strip:focus-visible{outline:2px solid var(--stg-acc);outline-offset:-2px;}
-.stg-se{font-family:${MONO};font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-mute2,#66748f);}
+.stg-se{font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute2,#66748f);}
 .stg-sn{font-weight:800;}
 .stg-sf{font-family:${MONO};font-size:11.5px;color:var(--stg-ink2,#aab5c7);}
 .stg-sd{color:var(--stg-mute2,#66748f);font-size:11.5px;}
-.stg-sy{margin-left:auto;flex:none;color:var(--stg-acc-ink);font-family:${MONO};font-size:10px;
-  letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:7px;}
+.stg-sy{margin-left:auto;flex:none;color:var(--stg-acc-ink);font-family:${MONO};font-size:9.5px;font-weight:500;
+  letter-spacing:.12em;text-transform:uppercase;display:flex;align-items:center;gap:7px;}
 
 .stg-panel{border-bottom:1px solid var(--stg-line);background:var(--stg-panel,#0d1220);}
 .stg-pin{max-width:1180px;margin:0 auto;padding:16px 20px 20px;}

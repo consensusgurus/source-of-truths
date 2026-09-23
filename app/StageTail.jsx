@@ -113,6 +113,6 @@ const CSS = `
 .stq-more a{color:var(--stg-ink);font-weight:700;text-decoration:none;}
 .stq-more a:hover{color:var(--stg-acc-ink);}
 .stq-more a:focus-visible{outline:2px solid var(--stg-acc);outline-offset:3px;border-radius:4px;}
-.stq-more .stq-all{margin-left:auto;font-family:${MONO};font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute);}
+.stq-more .stq-all{margin-left:auto;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute);}
 .stq-more .stq-all:hover{color:var(--stg-ink);}
 `;

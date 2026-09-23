@@ -127,9 +127,9 @@ const CSS = `
    is, rather than a sentence of small grey prose. */
 .stgf-vis{margin-top:14px;font-family:${MONO};font-size:13px;font-weight:700;
   font-variant-numeric:tabular-nums;color:var(--stg-ink2);}
-.stgf-vis i{font-style:normal;font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+.stgf-vis i{font-style:normal;font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
   color:var(--stg-mute2);margin-left:7px;}
-.stgf-eb{font-family:${MONO};font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+.stgf-eb{font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
   color:var(--stg-mute);margin-bottom:3px;}
 .stgf-col{display:flex;flex-direction:column;gap:6px;min-width:0;}
 .stgf-col a{font-size:12.5px;font-weight:600;color:var(--stg-mute);text-decoration:none;}

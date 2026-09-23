@@ -246,8 +246,8 @@ ${AVATAR_CSS}
 .hgb-fr .p{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:12px;
   font-variant-numeric:tabular-nums;color:var(--stg-ink);white-space:nowrap;}
 .hgb-fr .p i{font-style:normal;font-size:10.5px;color:var(--stg-mute);margin-left:4px;}
-.hgb-fr .lead{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:8.5px;
-  letter-spacing:.07em;text-transform:uppercase;color:var(--stg-warn,#fbbf24);
+.hgb-fr .lead{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:9.5px;font-weight:500;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--stg-warn,#fbbf24);
   background:color-mix(in srgb, var(--stg-warn,#fbbf24) 16%, transparent);
   border-radius:999px;padding:2px 6px;margin-left:5px;}
 

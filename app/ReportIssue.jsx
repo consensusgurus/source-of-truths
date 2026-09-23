@@ -99,7 +99,7 @@ export default function ReportIssue({ self, name, accent = T.accent, align = 'ce
     <div className="ri-wrap" style={{ textAlign: align }}>
       <style dangerouslySetInnerHTML={{ __html: `
         .ri-wrap{margin-top:10px;font-family:${SANS};}
-        .ri-link{background:none;border:none;cursor:pointer;font-family:${MONO};font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;color:${FADED};display:inline-flex;align-items:center;gap:5px;padding:4px 6px;}
+        .ri-link{background:none;border:none;cursor:pointer;font-family:${MONO};font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;color:${FADED};display:inline-flex;align-items:center;gap:5px;padding:4px 6px;}
         .ri-link:hover{color:${INK};}
         .ri-chips{display:inline-flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center;}
         .ri-how{color:${INK};font-weight:700;}

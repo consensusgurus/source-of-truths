@@ -2316,7 +2316,7 @@ const CSS = `
 .sty-brand>svg{align-self:center;}
 .sty-id b{font-size:16px;font-weight:800;letter-spacing:-0.01em;white-space:nowrap;}
 .sty-id b em{font-style:normal;color:var(--stg-brand,#7dd3fc);}
-.sty-date{font-family:${MONO};font-size:10.5px;letter-spacing:.11em;
+.sty-date{font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
   text-transform:uppercase;color:var(--stg-mute);white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis;}
 .sty-figs{display:flex;gap:20px;margin-left:auto;}
@@ -2328,7 +2328,7 @@ const CSS = `
 ${PATCH_CSS}
 .sty-figs b{display:block;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1;}
 .sty-figs b i{font-style:normal;font-weight:600;color:var(--stg-mute);font-size:12px;}
-.sty-figs>div>i{font-style:normal;font-family:${MONO};font-size:9px;letter-spacing:.12em;
+.sty-figs>div>i{font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
   text-transform:uppercase;color:var(--stg-mute);}
 .sty-who b{font-weight:800;}
 /* Not a figure and not a chip: a link at the end of the figures, in the
@@ -2417,7 +2417,7 @@ ${PATCH_CSS}
 /* THE MEMBER DISCS, on the title row so no tile grows (2026-09-17). Tonal
    rather than per-member colour: the tile they sit on is already the category's
    own step, and seven avatar hues on top of it is a third palette. */
-.sty-gdots{display:inline-flex;align-items:center;gap:2px;margin-left:auto;flex:none;}
+.sty-gdots{display:none;align-items:center;gap:2px;margin-left:auto;flex:none;}
 /* THE STAR IS PINNED TO THE TILE'S CORNER (top 6, right 6, 24 square), so the
    discs leave it room rather than running under it (owner report, 2026-09-17).
    23px = the star's reach past the tile's own 12px padding, plus a hair. */
@@ -2468,9 +2468,9 @@ ${PATCH_CSS}
   100%{box-shadow:0 0 0 0 transparent;}
 }
 @media (prefers-reduced-motion: reduce){ .hint{animation:none !important;} }
-.sty-cx{flex:none;font-family:${MONO};font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+.sty-cx{flex:none;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
   color:var(--stg-ink2);text-decoration:none;border:1px solid var(--stg-line);
-  border-radius:7px;padding:6px 10px;}
+  border-radius:8px;padding:6px 10px;}
 .sty-cx:hover{border-color:var(--stg-line2);color:var(--stg-ink);}
 .sty-prog{height:2px;background:var(--stg-surf2);}
 .sty-prog span{display:block;height:100%;background:var(--stg-ink2);transition:width .4s ease;}
@@ -2482,7 +2482,7 @@ ${PATCH_CSS}
    four columns of figures and reads worse the further apart they sit. */
 .sty-wrap{max-width:none;margin:0 auto;padding:26px 22px 72px;
   display:flex;flex-direction:column;gap:26px;}
-.sty-eb{font-family:${MONO};font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+.sty-eb{font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
   color:var(--stg-mute);margin-bottom:9px;}
 .sty-ebn{color:var(--stg-ink);margin-left:6px;}
 
@@ -2521,7 +2521,7 @@ ${PATCH_CSS}
 /* ── a star on every card ──────────────────────────────────────────────── */
 .sty-g{position:relative;}
 .sty-star{position:absolute;top:6px;right:6px;display:flex;align-items:center;justify-content:center;
-  width:24px;height:24px;border:0;border-radius:6px;background:none;cursor:pointer;
+  width:24px;height:24px;border:0;border-radius:8px;background:none;cursor:pointer;
   color:var(--stg-mute2);opacity:0;transition:opacity .12s;}
 /* PINNING POPS (motion pass, 2026-09-16): the star scales up and back and a
    ring in the row hue leaves it. The .pop class is set by the press itself
@@ -2557,7 +2557,7 @@ ${PATCH_CSS}
 .sty-lsc{margin-left:auto;flex:none;font-family:${MONO};font-size:12px;font-weight:700;
   font-variant-numeric:tabular-nums;}
 .sty-lsc i{font-style:normal;color:var(--stg-mute);}
-.sty-lwhen{flex:none;font-family:${MONO};font-size:9.5px;letter-spacing:.08em;
+.sty-lwhen{flex:none;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
   text-transform:uppercase;color:var(--stg-mute2);width:62px;text-align:right;}
 .sty-lnone{color:var(--stg-mute);font-size:13px;font-weight:600;}
 
@@ -2678,7 +2678,7 @@ ${PATCH_CSS}
    drawn apologetically. With the reader's own figures out of this panel there is
    room to draw it properly: the label reads in full and the bar is a block. */
 .sty-lbar{display:grid;grid-template-columns:118px minmax(0,1fr) auto;align-items:center;gap:11px;}
-.sty-lbn{font-family:${MONO};font-size:9px;letter-spacing:.09em;text-transform:uppercase;
+.sty-lbn{font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
   color:var(--stg-mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 /* The track is a component boundary rather than text, so it owes 3:1 and takes
    the raised surface; the fill is the category's own step. */
@@ -2692,7 +2692,7 @@ ${PATCH_CSS}
   border-top:1px solid var(--stg-line);padding-top:14px;}
 .sty-lfigs b{display:block;font-size:19px;font-weight:800;line-height:1.1;
   font-variant-numeric:tabular-nums;}
-.sty-lfigs i{font-style:normal;font-family:${MONO};font-size:8.5px;letter-spacing:.12em;
+.sty-lfigs i{font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
   text-transform:uppercase;color:var(--stg-mute);}
 
 /* ── a played card reports its result ──────────────────────────────────── */
@@ -2703,7 +2703,7 @@ ${PATCH_CSS}
    grid of cards reads as something about the game; the two characters in front
    of it say whose result it is, and the score came off in the same pass because
    the rank already answers the question the card is being asked. */
-.sty-grl{font-family:${MONO};font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+.sty-grl{font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
   color:var(--stg-mute);}
 .sty-grf{font-weight:600;color:var(--stg-mute);}
 /* TWO PLACES ON ONE LINE, and it may not wrap: the type steps down, the gaps
@@ -2715,7 +2715,7 @@ ${PATCH_CSS}
    produce at these sizes is about 150px. Under more pressure than that the
    group's NAME is what gives way, because it is the only shrinkable item. */
 .sty-gres2{gap:3px;flex-wrap:nowrap;}
-.sty-gres2 .sty-grl{font-size:8.5px;letter-spacing:.06em;flex:0 1 auto;min-width:0;
+.sty-gres2 .sty-grl{font-size:9.5px;font-weight:500;letter-spacing:.12em;flex:0 1 auto;min-width:0;
   max-width:8ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sty-gres2 .sty-grk{font-size:11px;flex:none;}
 .sty-gres2 .sty-grf{font-size:10px;font-weight:500;flex:none;}
@@ -2745,13 +2745,13 @@ ${PATCH_CSS}
    under it exactly as a category's games do. */
 .sty-circsec .sty-circs{margin-top:0;}
 .sty-more{display:block;width:100%;margin-top:7px;background:var(--stg-surf);
-  border:1px solid var(--stg-line);border-radius:9px;padding:9px;cursor:pointer;
-  font-family:${MONO};font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  border:1px solid var(--stg-line);border-radius:8px;padding:9px;cursor:pointer;
+  font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
   color:var(--stg-ink2);}
 .sty-more:hover{border-color:var(--stg-line2);color:var(--stg-ink);}
 .sty-more:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
 .sty-circ{position:relative;display:block;text-decoration:none;color:var(--stg-ink);
-  background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:10px;
+  background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:8px;
   padding:12px 14px 13px 16px;overflow:hidden;}
 .sty-circ::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cc);}
 .sty-circ:hover{border-color:var(--cc);}
@@ -2809,7 +2809,7 @@ ${PATCH_CSS}
 .sty-g,.sty-circ{min-width:0;}
 .sty-g>*{min-width:0;max-width:100%;}
 .sty-g{display:block;text-decoration:none;background:var(--stg-surf);
-  border:1px solid var(--stg-line);border-radius:9px;padding:10px 12px;color:var(--stg-ink);
+  border:1px solid var(--stg-line);border-radius:8px;padding:10px 12px;color:var(--stg-ink);
   transition:border-color .12s,transform .12s cubic-bezier(.2,.7,.3,1),box-shadow .12s;}
 /* A CARD DEEPENS INTO ITS CATEGORY on hover (motion pass, 2026-09-16): the
    border and the name take the row hue and the card lifts a pixel. The glyph
@@ -3030,7 +3030,7 @@ ${PATCH_CSS}
 .sty-qsec h2 a:hover{text-decoration:underline;text-underline-offset:3px;}
 .sty-qsec h2 a:focus-visible{outline:2px solid var(--stg-acc);outline-offset:3px;border-radius:4px;}
 .sty-topics{display:flex;flex-direction:column;gap:5px;}
-.sty-topic{background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:9px;
+.sty-topic{background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:8px;
   overflow:hidden;}
 .sty-topic.on{border-color:var(--stg-line2);}
 .sty-trow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;
@@ -3078,7 +3078,7 @@ ${PATCH_CSS}
 .sty-games.shut,.sty-circs.shut{display:none;}
 .sty-cathead:has(.sty-cav){cursor:pointer;}
 .sty-cav{margin-left:auto;flex:none;display:inline-flex;align-items:center;justify-content:center;
-  width:26px;height:26px;border:0;border-radius:7px;background:none;cursor:pointer;
+  width:26px;height:26px;border:0;border-radius:8px;background:none;cursor:pointer;
   color:var(--stg-mute2);transition:transform .18s,color .12s,background .12s;}
 .sty-cathead:hover .sty-cav{color:var(--stg-ink);background:var(--stg-chip);}
 .sty-cav.on{transform:rotate(180deg);}
