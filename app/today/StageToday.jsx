@@ -1732,7 +1732,7 @@ export default function StageToday() {
             right; under 1100px they stack in the order they always had. */}
         <div className="sty-toprow">
         {(done.size > 0 || inprog.size > 0) ? (
-        <section className="sty-day sty-rev">
+        <section className="sty-day sty-rev" style={mem && mem.rows.length && !narrow && mem.me ? { '--rows': 1 + mem.rows.length + (mem.rest ? 1 : 0) } : undefined}>
           <div className="sty-eb">The day&rsquo;s progress <span className="sty-ebn"><RollNum value={playedCount} from={seenCount === null ? null : Math.min(seenCount, playedCount)} delay={360} /> of {total}</span>
             {mem && mem.rows.length ? <span className="sty-dayg">{mem.name}</span> : null}
           </div>
@@ -2387,6 +2387,25 @@ ${PATCH_CSS}
   .sty-toprow:has(> .hgb) .sty-day > .sty-mlme > .stl-wrap{display:flex;flex-direction:column;}
   .sty-toprow:has(> .hgb) .sty-day > .sty-mlme > .stl-wrap .stl{flex:1 1 auto;}
   .sty-toprow:has(> .hgb) .sty-day > .sty-mlme > span{align-self:end;}
+  /* EVERY MEMBER GETS AN EQUAL SHARE OF THE HEIGHT (owner, 2026-09-23). Beside
+     the group band the slack used to go to the reader alone, so one tall
+     ladder sat over a stack of thin ones. Now the reader and each member row
+     (the folded remainder counts as one) take the same fraction, so a block
+     means the same thing in every row. --rows is set inline from the roster.
+     .sty-mls goes display:contents so its rows join this grid; its divider is
+     redrawn in the row gap so it takes no height from the first member. */
+  .sty-toprow:has(> .hgb) .sty-day:has(> .sty-mlme){display:grid;
+    grid-template-rows:auto repeat(var(--rows,2),minmax(0,1fr)) auto;row-gap:12px;}
+  .sty-toprow:has(> .hgb) .sty-day:has(> .sty-mlme) > .sty-eb{margin-bottom:-4px;}
+  .sty-toprow:has(> .hgb) .sty-day:has(> .sty-mlme) .sty-mls{display:contents;}
+  .sty-toprow:has(> .hgb) .sty-day:has(> .sty-mlme) .sty-ml{align-items:stretch;min-height:0;}
+  .sty-toprow:has(> .hgb) .sty-day:has(> .sty-mlme) .sty-ml > span:not(.sty-mlad){align-self:center;}
+  .sty-toprow:has(> .hgb) .sty-day:has(> .sty-mlme) .sty-mlme > .stl-wrap .stl{flex:1 1 0;min-height:0;}
+  .sty-toprow:has(> .hgb) .sty-day:has(> .sty-mlme) .sty-mlad{height:auto;}
+  .sty-toprow:has(> .hgb) .sty-day:has(> .sty-mlme) .sty-mls > .sty-ml:first-child{position:relative;}
+  .sty-toprow:has(> .hgb) .sty-day:has(> .sty-mlme) .sty-mls > .sty-ml:first-child::before{content:'';
+    position:absolute;left:0;right:0;top:-6px;border-top:1px solid var(--stg-line);}
+  .sty-toprow:has(> .hgb) .sty-day:has(> .sty-mlme) .sty-msum{margin-top:0;}
   .sty-toprow:has(> .hgb) .sty-day,.sty-toprow:has(> .hgi) .sty-day{order:2;min-width:0;}
   .sty-toprow:has(> .hgb) .hgb,.sty-toprow:has(> .hgi) .hgi{order:1;min-width:0;}
 }
