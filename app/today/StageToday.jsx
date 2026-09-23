@@ -1736,7 +1736,20 @@ export default function StageToday() {
           <div className="sty-eb">The day&rsquo;s progress <span className="sty-ebn"><RollNum value={playedCount} from={seenCount === null ? null : Math.min(seenCount, playedCount)} delay={360} /> of {total}</span>
             {mem && mem.rows.length ? <span className="sty-dayg">{mem.name}</span> : null}
           </div>
-          <StageLadder height={ladH} blocks={blocks} light={light} />
+          {/* THE READER'S LADDER SITS IN THE SAME GRID AS THE MEMBER ROWS (owner,
+              2026-09-22): name, ladder, games, points. Full width it ran past
+              the member ladders under it and its blocks landed nowhere near
+              theirs; in one grid every game is one column all the way down. */}
+          {mem && mem.rows.length && !narrow && mem.me ? (
+            <div className="sty-ml sty-mlme">
+              <span className="who"><MiniAvatar name={mem.me.username} userKey={mem.me.userKey} /><b>You</b></span>
+              <StageLadder height={ladH} blocks={blocks} light={light} />
+              <span className="gms">{mem.me.games}</span>
+              <span className="tot">{grpPts(mem.me.total)}</span>
+            </div>
+          ) : (
+            <StageLadder height={ladH} blocks={blocks} light={light} />
+          )}
           {/* THE MEMBERS, under the reader's own ladder. On a phone the stack
               becomes one presence row instead: ninety-four blocks across six
               rows works out under two pixels a block at 390px, which is noise
@@ -2370,6 +2383,10 @@ ${PATCH_CSS}
     flex:1 1 auto;display:flex;flex-direction:column;min-height:0;}
   .sty-toprow:has(> .hgb) .sty-day > .stl-wrap .stl,
   .sty-toprow:has(> .hgi) .sty-day > .stl-wrap .stl{flex:1 1 auto;}
+  .sty-toprow:has(> .hgb) .sty-day > .sty-mlme{flex:1 1 auto;align-items:stretch;}
+  .sty-toprow:has(> .hgb) .sty-day > .sty-mlme > .stl-wrap{display:flex;flex-direction:column;}
+  .sty-toprow:has(> .hgb) .sty-day > .sty-mlme > .stl-wrap .stl{flex:1 1 auto;}
+  .sty-toprow:has(> .hgb) .sty-day > .sty-mlme > span{align-self:end;}
   .sty-toprow:has(> .hgb) .sty-day,.sty-toprow:has(> .hgi) .sty-day{order:2;min-width:0;}
   .sty-toprow:has(> .hgb) .hgb,.sty-toprow:has(> .hgi) .hgi{order:1;min-width:0;}
 }
@@ -2392,7 +2409,12 @@ ${PATCH_CSS}
 .sty-ml .tot{font-family:${MONO};font-size:12px;color:var(--stg-ink2);text-align:right;
   font-variant-numeric:tabular-nums;}
 .sty-ml.rest .who b{font-weight:500;color:var(--stg-mute);}
-.sty-mlad{display:flex;gap:2px;height:14px;min-width:0;}
+.sty-mlad{display:flex;gap:5px;height:14px;min-width:0;}
+/* The reader row: the ladder cell stretches, the labels sit on its baseline.
+   The 5px category gap above matches .stl's, so the columns line up. */
+.sty-mlme{align-items:end;}
+.sty-mlme > .stl-wrap{min-width:0;}
+.sty-mlme .who,.sty-mlme .gms,.sty-mlme .tot{padding-bottom:1px;}
 .sty-mlb{display:flex;gap:1px;min-width:0;}
 .sty-mlb i{flex:1 1 0;min-width:0;background:var(--stg-line);border-radius:1px;}
 .sty-mlb i.on{background:var(--cc);}

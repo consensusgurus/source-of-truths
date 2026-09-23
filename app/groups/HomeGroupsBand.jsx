@@ -26,6 +26,15 @@ import { ordinal, fmtPts, relTime, swingVs, MiniAvatar, AVATAR_CSS } from './gro
 
 const gameName = (k) => (DAILY_GAME_MAP[k] && DAILY_GAME_MAP[k].name) || k;
 
+// EVERY GAME NAMED IN THE BAND IS A WAY INTO THAT GAME (owner, 2026-09-22).
+// The route comes off the registry, never the key: /parker is `park` and
+// /jesters is `jester`, and a key-built href 404s on exactly those two.
+function GameLink({ k, withTq = (h) => h, className = '' }) {
+  const g = DAILY_GAME_MAP[k];
+  if (!g) return <span className={className}>{k}</span>;
+  return <a className={'hgb-gl' + (className ? ' ' + className : '')} href={withTq(g.href || '/' + k)}>{g.name}</a>;
+}
+
 // The line that says where the reader is, used as the band's own subtitle.
 function standLabel(g) {
   if (g.failed) return '';
@@ -36,14 +45,14 @@ function standLabel(g) {
 
 // A swing bar: the reader's side of centre is green, the other member's is red,
 // each scaled against the biggest swing on show so the three read as one set.
-function Swing({ rows }) {
+function Swing({ rows, withTq }) {
   if (!rows.length) return null;
   const max = Math.max(...rows.map((r) => Math.abs(r.diff)), 1);
   return (
     <div className="hgb-sw">
       {rows.map((r) => (
         <div key={r.key}>
-          <span className="g">{gameName(r.key)}</span>
+          <GameLink k={r.key} withTq={withTq} className="g" />
           <span className="bar">
             <i className={r.diff > 0 ? 'up' : 'dn'} style={{ width: (Math.abs(r.diff) / max) * 46 + '%' }} />
             <u />
@@ -57,7 +66,7 @@ function Swing({ rows }) {
   );
 }
 
-function Chase({ g, myKey }) {
+function Chase({ g, myKey, withTq }) {
   // NOT PLAYED YET is its own state, and it is not a failure: it says how many
   // members are already on today's board, which is the reason to go and play.
   if (!g.rank) {
@@ -81,7 +90,7 @@ function Chase({ g, myKey }) {
           {second ? <span className="hgb-em">{second.username} is closest</span> : null}
           {second ? <span className="hgb-gap up">{fmtPts(g.total - second.total)}</span> : null}
         </div>
-        {second ? <Swing rows={swingVs(g, myKey, second.userKey)} /> : null}
+        {second ? <Swing rows={swingVs(g, myKey, second.userKey)} withTq={withTq} /> : null}
       </div>
     );
   }
@@ -95,12 +104,12 @@ function Chase({ g, myKey }) {
         <span className="hgb-em">is ahead of you</span>
         <span className="hgb-gap dn">{fmtPts(g.gap == null ? 0 : g.gap)}</span>
       </div>
-      <Swing rows={swingVs(g, myKey, a.userKey)} />
+      <Swing rows={swingVs(g, myKey, a.userKey)} withTq={withTq} />
     </div>
   );
 }
 
-function Feed({ g, myKey, rows = 5 }) {
+function Feed({ g, myKey, rows = 5, withTq }) {
   const list = (g.feed || []).slice(0, rows);
   if (!list.length) {
     return <div className="hgb-feed"><div className="hgb-none">Nobody has finished anything yet today.</div></div>;
@@ -111,7 +120,7 @@ function Feed({ g, myKey, rows = 5 }) {
         <div className="hgb-fr" key={f.userKey + ':' + f.key + ':' + i}>
           <MiniAvatar name={f.username} userKey={f.userKey} />
           <span className="t">
-            <b>{f.userKey === myKey ? 'You' : f.username}</b> <em>finished</em> {gameName(f.key)}
+            <b>{f.userKey === myKey ? 'You' : f.username}</b> <em>finished</em> <GameLink k={f.key} withTq={withTq} />
             {f.lead ? <span className="lead">Group lead</span> : null}
           </span>
           <span className="p">{fmtPts(f.points)} <i>{relTime(f.at)}</i></span>
@@ -168,12 +177,12 @@ export default function HomeGroupsBand({ data, withTq = (h) => h, narrow = false
               <button type="button" aria-label="Next" onClick={() => setFace(face + 1)}>&rsaquo;</button>
             </span>
           </div>
-          {kind === 'stand' ? <Chase g={g} myKey={myKey} /> : <Feed g={g} myKey={myKey} rows={3} />}
+          {kind === 'stand' ? <Chase g={g} myKey={myKey} withTq={withTq} /> : <Feed g={g} myKey={myKey} rows={3} withTq={withTq} />}
         </div>
       ) : (
         <>
-          <div className="hgb-card"><Chase g={g} myKey={myKey} /></div>
-          <div className="hgb-card"><Feed g={g} myKey={myKey} rows={5} /></div>
+          <div className="hgb-card"><Chase g={g} myKey={myKey} withTq={withTq} /></div>
+          <div className="hgb-card"><Feed g={g} myKey={myKey} rows={5} withTq={withTq} /></div>
         </>
       )}
     </section>
@@ -226,6 +235,10 @@ ${AVATAR_CSS}
 
 .hgb-sw{display:grid;gap:5px;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:11px;}
 .hgb-sw > div{display:grid;grid-template-columns:minmax(0,58px) minmax(0,1fr) 38px;gap:8px;align-items:center;}
+.hgb-gl{color:inherit;text-decoration:underline;text-decoration-color:var(--stg-line2);
+  text-underline-offset:3px;}
+.hgb-gl:hover{text-decoration-color:currentColor;color:var(--stg-ink);}
+.hgb-gl:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;border-radius:2px;}
 .hgb-sw .g{color:var(--stg-ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .hgb-sw .bar{position:relative;height:6px;border-radius:3px;background:var(--stg-surf2,rgba(255,255,255,.07));}
 .hgb-sw .bar i{position:absolute;top:0;bottom:0;display:block;border-radius:3px;}
