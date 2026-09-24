@@ -1731,7 +1731,11 @@ export default function StageToday() {
             the day's progress share a line, with the ladder squeezed to the
             right; under 1100px they stack in the order they always had. */}
         <div className="sty-toprow">
-        {(done.size > 0 || inprog.size > 0) ? (
+        {/* ALSO DRAWN WHEN THE GROUP HAS PLAYED (owner, 2026-09-24): the member
+            ladders live inside this section, so gating it on the reader's own
+            progress hid a groupmate's finished day from a reader who had not
+            started. A first-time reader in no group still sees nothing. */}
+        {(done.size > 0 || inprog.size > 0 || (mem && mem.played > 0)) ? (
         <section className="sty-day sty-rev" style={mem && mem.rows.length && !narrow && mem.me ? { '--rows': 1 + mem.rows.length + (mem.rest ? 1 : 0) } : undefined}>
           <div className="sty-eb">The day&rsquo;s progress <span className="sty-ebn"><RollNum value={playedCount} from={seenCount === null ? null : Math.min(seenCount, playedCount)} delay={360} /> of {total}</span>
             {mem && mem.rows.length ? <span className="sty-dayg">{mem.name}</span> : null}
