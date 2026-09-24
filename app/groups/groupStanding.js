@@ -95,9 +95,12 @@ export function hueIndex(key) {
   for (let i = 0; i < k.length; i++) h = (h * 31 + k.charCodeAt(i)) >>> 0;
   return h % 7;
 }
+// WHOLE NUMBERS ONLY on the group surfaces (owner, 2026-09-24): the ladder
+// rows, the tiles, the band and the feed read 90 and 15, never 90.0. A tie
+// that averages to a half rounds up.
 export function fmtPts(n) {
-  const v = Math.round(Number(n) * 10) / 10;
-  return Number.isInteger(v) ? v.toFixed(1) : String(v);
+  const v = Number(n);
+  return Number.isFinite(v) ? String(Math.round(v)) : '0';
 }
 
 // The best place across the viewer's groups today, for the badge.
