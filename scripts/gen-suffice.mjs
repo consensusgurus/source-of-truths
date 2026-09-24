@@ -18,7 +18,16 @@
 // where they live.
 //
 // Run: node scripts/gen-suffice.mjs
-import { writeFileSync } from 'node:fs';
+//
+// APPEND MODE (2026-09-24 restock): `node scripts/gen-suffice.mjs --append 117`
+// keeps every banked day byte for byte and builds only days num+1..117 (the
+// TOTAL run from START). A full rerun can no longer reproduce the frozen boards
+// once DAYS changes, because the template CAP is derived from DAYS and moves
+// every pick, so the bank is extended by appending instead. The template
+// counts are seeded from the banked items, the CAP is computed for the full
+// run, and the rng is reseeded off each new day's board number so the new
+// segment never replays a frozen day.
+import { writeFileSync, readFileSync } from 'node:fs';
 import { getScenario, SCENARIO_COUNTS, linClassify, renderLin, rank } from '../app/suffice/engine.js';
 
 // ───────────────────────────────── rng ───────────────────────────────────────
@@ -141,7 +150,9 @@ const WEEK = ['A', 'A', 'B', 'B', 'C', 'D', 'E', 'E'];
 const SUN = ['A', 'A', 'B', 'B', 'C', 'C', 'C', 'D', 'D', 'E', 'E', 'E'];
 const FAMS = ['MOD', 'LIN', 'SETS', 'STAT'];
 const START = new Date(Date.UTC(2026, 7, 6));   // launch day, Thu 6 Aug 2026
-const DAYS = 70;
+const ARGS = process.argv.slice(2);
+const APPEND = ARGS.includes('--append');
+const DAYS = Number(ARGS.find((a) => /^\d+$/.test(a)) || 70);
 const CEIL = 0.04;
 
 const tpl = {};
@@ -167,7 +178,30 @@ function dayPlan(sunday) {
 }
 
 const bank = [];
-for (let d = 0; d < DAYS; d++) {
+let firstDay = 0;
+let BANKED = [];
+if (APPEND) {
+  ({ PUZZLES: BANKED } = await import('../app/suffice/puzzles.js'));
+  BANKED.forEach((p, i) => {
+    if (p.num !== i + 1) { console.error(`FATAL: banked day ${i + 1} carries num ${p.num}`); process.exit(1); }
+    // the same template keys the verifier counts
+    for (const it of p.items) {
+      let keys;
+      if (it.fam === 'LIN') {
+        const r = renderLin(it.chk.e1, it.chk.e2, it.chk.c);
+        keys = [`LIN:q${it.chk.c.length}:${r.dir}`, `LIN:${it.chk.e1.a.join(',')}`, `LIN:${it.chk.e2.a.join(',')}`];
+      } else {
+        const k = `${it.fam}:${it.chk.scen}:`;
+        keys = [k + it.chk.q, k + it.chk.s1, k + it.chk.s2];
+      }
+      for (const t of keys) tpl[t] = (tpl[t] || 0) + 1;
+    }
+  });
+  firstDay = BANKED.length;
+  if (firstDay >= DAYS) { console.log(`suffice: bank already holds ${firstDay} days`); process.exit(0); }
+}
+for (let d = firstDay; d < DAYS; d++) {
+  if (APPEND) rng = (20260924 + 7919 * (d + 1)) & 0x7fffffff;
   const dt = new Date(START.getTime() + d * 864e5);
   const sunday = dt.getUTCDay() === 0;
   const plan = dayPlan(sunday);
@@ -261,5 +295,15 @@ const body = bank.map((d) => {
   const items = d.items.map((i) => `      { fam: ${JSON.stringify(i.fam)}, letter: ${JSON.stringify(i.letter)}, stem: ${JSON.stringify(i.stem)}, ask: ${JSON.stringify(i.ask)}, s1: ${JSON.stringify(i.t1)}, s2: ${JSON.stringify(i.t2)}, chk: ${JSON.stringify(i.chk)} },`).join('\n');
   return `  {\n    num: ${d.num}, quizId: ${JSON.stringify(d.quizId)}, live: ${JSON.stringify(d.live)}, dateLabel: ${JSON.stringify(d.dateLabel)}, sunday: ${d.sunday},\n    items: [\n${items}\n    ],\n  },`;
 }).join('\n');
-writeFileSync(new URL('../app/suffice/puzzles.js', import.meta.url), HDR + body + '\n];\n');
+const BANK_URL = new URL('../app/suffice/puzzles.js', import.meta.url);
+if (APPEND) {
+  // frozen prefix: the old file minus its closing `];` stays byte for byte,
+  // and only the new days are rendered after it
+  const old = readFileSync(BANK_URL, 'utf8');
+  const close = old.lastIndexOf('];');
+  if (close < 0 || old.slice(close).trim() !== '];') { console.error('FATAL: banked file does not end in ];'); process.exit(1); }
+  writeFileSync(BANK_URL, old.slice(0, close) + body + '\n];\n');
+} else {
+  writeFileSync(BANK_URL, HDR + body + '\n];\n');
+}
 console.log('\nwrote app/suffice/puzzles.js');

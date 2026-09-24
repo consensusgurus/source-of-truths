@@ -50,6 +50,32 @@
 // "cancelled", "organisation" and "metres", and answer "Brazil" and "The New
 // York Yankees" repeatedly; retrofitting them would rewrite boards people have
 // played.
+//
+// AT MOST ONE RULES QUESTION A DAY (owner ruling 2026-09-23), scoped from
+// RULES_CAP_FROM = 2026-09-24. A "rules question" asks how a sport WORKS: a
+// point value, a count of players / periods / minutes / innings / outs / sets /
+// holes / seconds, what a play, term, violation or position is called, what a
+// stat abbreviation stands for, an official name, or basic equipment and field
+// dimensions. A question ABOUT a rule's history ("which year did the NFL adopt
+// the two-point conversion") is NOT one. The classifier, rulesHit() below, is:
+//   1. skip if the stem is past tense or dated (did / was / were / had /
+//      became, or any 18xx-20xx year): history, not how the game works;
+//   2. skip if it names an institution or artifact rather than a mechanic
+//      (which body, annual, fans, nickname, division, league, trophy, cup,
+//      award, tournament, championship, uniform / jersey / kit / helmet,
+//      stadium / ballpark / arena, song, chant, Tour de France, Grand Slam);
+//   3. otherwise it is a rules question if it matches any RULES_PATTERNS entry:
+//      "term / word / phrase for", "what ... is called", "known as?", "what
+//      is the name of the", "title of", stand-for / abbreviation, how many /
+//      long / far / much, "how is / does", "In <sport>, what / how / which",
+//      "what do / does / must / happens", "what color is", violation / foul /
+//      penalty wording, legal / illegal / laws of the game, "worth", scorecard
+//      / box score, "which position / base / pitch ... plays / stands", "which
+//      sport / event / apparatus uses / features / involves", and equipment
+//      wording (piece of equipment, protective gear, which material / device).
+// It is deliberately conservative (it measured 385 of 477 hand-labeled rules
+// questions and no false positives on days 31-98), so it is a ceiling check,
+// not the classification itself: authors still keep one per day by hand.
 import { QUESTIONS, QUESTION_MAP } from '../app/sport/questions.js';
 import { PUZZLES } from '../app/sport/puzzles.js';
 import { scanUS } from './us-spellings.mjs';
@@ -60,6 +86,39 @@ import { scanUS } from './us-spellings.mjs';
 const SPORT_COPY_FROM = '2026-10-05';
 // No answer may be correct more than this many times at or after the floor.
 const ANSWER_CAP = 4;
+// The first live date the one-rules-question-a-day cap applies to.
+const RULES_CAP_FROM = '2026-09-24';
+const RULES_CAP = 1;
+const RULES_PAST = /\b(did|was|were|had|became)\b|\b1[89]\d\d\b|\b20\d\d\b/i;
+const RULES_NOT = /\b(which body|annual|fans?|supporters?|crowd|nickname|nicknamed|division|league|trophy|cup|award|tournament|championship|shirts?|uniform|jersey|kit|helmet|stadium|ballpark|arena|song|chant|tour de france|grand slam)\b/i;
+const RULES_PATTERNS = [
+  [/\b(term|word|phrase) (for|given to)\b/i, 'term for'],
+  [/^(what|which)\b[^?]*\b(is|are)\b[^?]*\bcalled\b/i, 'is called'],
+  [/\bknown as\?$/i, 'is called'],
+  [/\bwhat is the name (of|for|given to) the\b/i, 'name of the'],
+  [/\bwhat is the title of\b/i, 'title of'],
+  [/\b(stand for|stands for|abbreviat)\b|\bwhat do the (letters|initials)\b/i, 'abbreviation'],
+  [/^how (many|long|far|deep|wide|tall|high|much)\b/i, 'how many'],
+  [/\bhow many (points|players|minutes|periods|innings|outs|strikes|balls|sets|holes|downs|yards|seconds|quarters|timeouts|events|pins|bases|rounds|pieces|squares|feet|inches|meters|red balls|clubs|deliveries|stitches|barriers|pullers|umpires|officials|corner arcs)\b[^?]*\b(is|are|does|do|must|may|make|makes|take|gets?)\b/i, 'how many'],
+  [/^how (is|are|does|do)\b/i, 'how does'],
+  [/^in (a |an |the )?[a-z -]+,\s*(what|how|which|who)\b/i, 'in sport,'],
+  [/^what (do|does|must|happens|has|should)\b/i, 'what does'],
+  [/^what colou?r (is|are)\b/i, 'what color'],
+  [/\b(violation|foul|fouls|penalty|penalties)\b[^?]*\b(is|are|called|whistled|assessed|gives?)\b/i, 'violation'],
+  [/\b(under the rules|laws of the game|legal|illegal|against the rules)\b/i, 'legality'],
+  [/\bworth\b/i, 'worth'],
+  [/^(on|in) (a|the) (scorecard|scoreboard|box score|line score)\b/i, 'scorecard'],
+  [/^which (offensive |defensive |special teams )?(position|base|pitch|breaking pitch|infielder|outfielder|lineman|linemen|reliever|device|statistic|piece|apparatus|member of a team|side|two offensive|defensive back|specialist|player)\b[^?]*\b(is|are|lines up|stands|plays|takes|sends|receives|stationed|normally|traditionally|usually|must|may)\b/i, 'which position'],
+  [/^(in )?which (olympic |winter |indoor |endurance |team |south asian |equestrian |athletics |women's gymnastics )?(sport|event|discipline|apparatus|martial art|throwing event|road race|winter sport|sliding sport)\b[^?]*\b(uses?|features?|combines?|contest|contests|contested|performs?|shoot|ride|rides|consists|involves|raced|run|has|do|does|must|would)\b/i, 'which sport'],
+  [/\b(piece of (protective )?(equipment|gear)|protective (gear|equipment|item)|wear on|wear over|wear under|worn under|strap to)\b/i, 'equipment'],
+  [/\bwhich (material|implement|stick|device)\b/i, 'equipment'],
+];
+function rulesHit(stem) {
+  const s = String(stem);
+  if (RULES_PAST.test(s) || RULES_NOT.test(s)) return null;
+  for (const [re, tag] of RULES_PATTERNS) if (re.test(s)) return tag;
+  return null;
+}
 // Proper names that keep their own spelling; skipped verbatim by both the
 // shared screen and the local supplement below, before either word list runs
 // over the string. Longer names come first so the longer match wins.
@@ -282,6 +341,16 @@ for (const [, ids] of answerUse) {
   }
 }
 
+// ---- one rules question a day, from RULES_CAP_FROM ------------------------
+let rulesDays = 0, rulesHits = 0;
+for (const p of PUZZLES) {
+  if (!(p.live >= RULES_CAP_FROM) || !Array.isArray(p.qids)) continue;
+  rulesDays++;
+  const hits = p.qids.filter((id) => QUESTION_MAP[id] && rulesHit(QUESTION_MAP[id].q)).map((id) => `${id} (${rulesHit(QUESTION_MAP[id].q)})`);
+  rulesHits += hits.length;
+  if (hits.length > RULES_CAP) fail(`day ${p.num} (${p.live}): ${hits.length} rules-type questions, the cap is ${RULES_CAP}: ${hits.join(', ')}`);
+}
+
 const orphans = QUESTIONS.filter((q) => !usedQids.has(q.id));
 if (orphans.length) warn(`${orphans.length} questions in the bank are not used by any day (${orphans.slice(0, 5).map((q) => q.id).join(', ')}...)`);
 
@@ -294,3 +363,4 @@ if (errs.length) {
 }
 console.log(`ok: ${QUESTIONS.length} questions, ${PUZZLES.length} days, ${dates[0]} to ${dates[dates.length - 1]}, ${warns.length} warning${warns.length === 1 ? '' : 's'}.`);
 console.log(`    copy window from ${SPORT_COPY_FROM}: ${inWindow.length} questions screened for British spellings, ${answerUse.size} distinct answers, none over ${ANSWER_CAP}.`);
+console.log(`    rules cap from ${RULES_CAP_FROM}: ${rulesDays} days screened, ${rulesHits} rules-type question${rulesHits === 1 ? '' : 's'} found, no day over ${RULES_CAP}.`);

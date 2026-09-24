@@ -7,8 +7,15 @@
 // is imported from build-encore-bank.mjs on purpose, so a bug in the generator
 // cannot certify itself, which is the same discipline Cages and Quilt use.
 //
+// From COPY_FROM (2026-10-26, the first board of the gen-encore-extend
+// restock) every answer and clue must also pass the shared US-spelling screen
+// and carry no em dash. The clue banks are shared and hold a few British clues
+// ("Storeys", "Grey matter"), so the check keeps them out of new grids rather
+// than editing the banks. Boards before COPY_FROM are frozen and grandfathered.
+//
 //   node scripts/verify-encore.mjs
 import { readFileSync, existsSync } from 'node:fs';
+import { scanUS } from './us-spellings.mjs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { PUZZLES } from '../app/encore/puzzles.js';
@@ -35,6 +42,7 @@ for (const f of ['emcee-wordbank.txt', 'encore-wordbank.txt']) {
 }
 
 const MIN_LEN = 3, MAX_LEN = 7;
+const COPY_FROM = '2026-10-26';
 const CAP = 3;                 // an answer may appear in at most 3 boards
 const SUNDAY_SIZE = 11, WEEKDAY_SIZE = 9;
 
@@ -136,6 +144,10 @@ for (const p of PUZZLES) {
       if (!c) fail(`${id}: ${dir}${w.n} answer ${a} is not in any clue bank - a clue was invented`);
       else if (c !== w.clue) fail(`${id}: ${dir}${w.n} answer ${a} carries "${w.clue}" but the bank's clue is "${c}"`);
       if (/\bIGNORE\b/.test(w.clue)) fail(`${id}: ${dir}${w.n} clue is a placeholder`);
+      if (p.live >= COPY_FROM) {
+        for (const hit of [...scanUS(a.toLowerCase()), ...scanUS(w.clue)]) fail(`${id}: ${dir}${w.n} British form "${hit.found}" (US: ${hit.us})`);
+        if (/\u2014/.test(w.clue)) fail(`${id}: ${dir}${w.n} clue carries an em dash`);
+      }
     }
   }
   const dup = answers.filter((a, i) => answers.indexOf(a) !== i);

@@ -39,8 +39,11 @@
 //
 // Run: node scripts/verify-docket.mjs
 import { PUZZLES } from '../app/docket/puzzles.js';
+import { scanUS } from './us-spellings.mjs';
 import { renderSetup, renderRules, renderChoices, solutions as engineSolutions, solveQuestion as engineSolve, brokenRules, CHOICE_KEYS } from '../app/docket/engine.js';
 
+// US_COPY_FROM: boards from the 2026-09-24 restock on are screened by scripts/us-spellings.mjs
+const US_COPY_FROM = '2026-10-15';
 let fails = 0;
 const fail = (m) => { console.error('✗', m); fails++; };
 const note = (m) => console.log('…', m);
@@ -324,6 +327,8 @@ PUZZLES.forEach((p, i) => {
   const copy = [p.setup, ...p.rules, ...p.questions.flatMap((q) => [q.q, ...q.choices, q.note])].join(' ');
   if (copy.includes('—')) fail(`${tag}: em dash in copy`);
   if (/\b(colour|favourite|organis|realis|centre|theatre|analyse|catalogue|labour|neighbour)/i.test(copy)) fail(`${tag}: British spelling in copy`);
+  // the shared US-spelling screen, scoped from the 2026-09-24 restock so the past stays frozen
+  if (p.live >= US_COPY_FROM) for (const hit of scanUS(copy)) fail(`${tag}: British form "${hit.found}" in copy (US: ${hit.us})`);
   if (/\bundefined\b|\bNaN\b|\[object/.test(copy)) fail(`${tag}: unrendered value in copy`);
   if (/\s{2,}/.test(copy.replace(/\n/g, ' '))) fail(`${tag}: doubled whitespace in copy`);
   if (/\.\./.test(copy)) fail(`${tag}: doubled full stop in copy`);

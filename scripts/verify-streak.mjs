@@ -39,6 +39,12 @@
 //                       guessable; 10 frozen days do it.
 //   full giveaway       Fails a stem carrying every distinctive word of its
 //                       answer in any order, not just the answer whole.
+//   sports rules cap    At most ONE sports rules-type question a day on the
+//                       Sports lane (owner ruling, 2026-09-23): how many
+//                       players, what a play is called, which club you putt
+//                       with. Classified by scripts/sports-rules-classifier.mjs,
+//                       whose header documents what counts. The frozen days
+//                       carry up to three.
 //   no expiring facts   No "currently", "as of", "so far", "to date", "the
 //                       reigning", "holds the record". Every fact is pinned to
 //                       a year or an event, so no answer moves when somebody is

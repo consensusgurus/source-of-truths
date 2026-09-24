@@ -39,7 +39,33 @@ const run = (questions, live = COPY_FROM, num = 62) => {
 
 const ids = (n) => Array.from({ length: n }, (_, i) => `d62q${String(i + 1).padStart(2, '0')}`);
 
+// A Sports-lane question, for the sports rules-type cap (owner ruling 2026-09-23).
+const sport = (id, q, a, over = {}) => base({ id, cat: 'Sports', q, choices: [a, 'W1', 'W2', 'W3'], ...over });
+const RULES_A = 'How many players does a basketball team have on the court at once?';
+const RULES_B = 'In tennis, what is a score of zero called?';
+const HISTORY = 'Which boxer lit the Olympic cauldron at the 1996 Atlanta Games?';
+
 const CASES = [
+  {
+    name: 'two sports rules-type questions on one day, at the copy floor',
+    errs: () => run([sport('d62q04', RULES_A, 'Five'), sport('d62q12', RULES_B, 'Love')]),
+    want: /2 sports rules-type questions \(d62q04, d62q12\), the cap is 1 a day/,
+  },
+  {
+    name: 'one rules-type question beside a history one, which must NOT fail',
+    errs: () => run([sport('d62q04', RULES_A, 'Five'), sport('d62q12', HISTORY, 'Muhammad Ali')]),
+    wantNot: /sports rules-type/,
+  },
+  {
+    name: 'a rules-type stem outside the Sports lane, which must NOT count',
+    errs: () => run([sport('d62q04', RULES_A, 'Five'), base({ id: 'd62q02', cat: 'Science', q: RULES_B, choices: ['Love', 'W1', 'W2', 'W3'] })]),
+    wantNot: /sports rules-type/,
+  },
+  {
+    name: 'two rules-type questions on a FROZEN day, which must NOT fail',
+    errs: () => run([sport('d01q04', RULES_A, 'Five'), sport('d01q12', RULES_B, 'Love')], '2026-07-31', 1),
+    wantNot: /sports rules-type/,
+  },
   {
     name: 'a British spelling in a choice, at the copy floor',
     errs: () => run([base({ choices: ['The harbour at Sydney', 'A', 'B', 'C'] })]),

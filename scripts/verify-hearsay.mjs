@@ -10,6 +10,14 @@
 //   - the answer is not pinnable from any single attribute at the start
 // Run: node scripts/verify-hearsay.mjs
 import { PUZZLES } from '../app/hearsay/puzzles.js';
+import { scanUS } from './us-spellings.mjs';
+
+// From the 2026-11-01 extension on: US spellings and no dashes in every
+// reader-facing string, and no noun (the day's domain) repeated from any
+// earlier board. Earlier boards are frozen (they ship "the harbour board"
+// and repeat a few nouns).
+const COPY_FROM = '2026-11-01';
+const seenNouns = new Set();
 
 let fails = 0;
 const fail = (msg) => { console.error('FAIL:', msg); fails++; };
@@ -49,6 +57,14 @@ PUZZLES.forEach((p, idx) => {
   if (p.num !== idx + 1) fail(`${tag}: num out of sequence`);
   if (seenIds.has(p.quizId)) fail(`${tag}: duplicate quizId`);
   seenIds.add(p.quizId);
+  if (p.live >= COPY_FROM) {
+    if (seenNouns.has(p.noun)) fail(`${tag}: noun "${p.noun}" already used`);
+    for (const t of [p.noun, p.listLabel, ...p.attrs, ...p.who, ...p.cards.flatMap((c) => Object.values(c))]) {
+      for (const h of scanUS(t)) fail(`${tag}: British form "${h.found}" (US: ${h.us})`);
+      if (/[\u2013\u2014]/.test(t)) fail(`${tag}: dash in "${t}"`);
+    }
+  }
+  seenNouns.add(p.noun);
 
   const [y, m, d] = p.live.split('-').map(Number);
   const dt = new Date(Date.UTC(y, m - 1, d));

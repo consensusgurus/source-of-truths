@@ -134,5 +134,63 @@ PUZZLES.forEach((p, i) => {
   if (errs.length) { bad++; console.error(`✗ ${p.quizId}: ${errs.join('; ')}`); }
   else console.log(`✓ ${p.quizId}  [${op}] ${p.lhs.join(sym)}=${p.rhs}  unique`);
 });
+// ── Bank-wide word variety and the weekly difficulty climb ──────────────────
+// Added 2026-09-23 with the Nov 2026 restock (scripts/gen-cipher.mjs). These
+// are the header's word rules and difficulty ladder, which nothing checked
+// before. Scoped to boards live on or after WORD_VARIETY_FROM: everything
+// earlier is played history (APPLE and GRAPE already sit at 4 uses there).
+//   * no word more than 3 times across the whole bank;
+//   * no two boards anywhere in the bank sharing 2+ words;
+//   * no board holding two words that share a four-letter stem, or one word
+//     inside another (DAY in TODAY);
+//   * difficulty, measured by a right-to-left column solver counting search
+//     nodes, climbs strictly Tue..Sat and into Sunday within each week.
+const WORD_VARIETY_FROM = '2026-11-01';
+{
+  const uses = new Map();
+  PUZZLES.forEach((p, i) => { for (const w of [...p.lhs, p.rhs]) { if (!uses.has(w)) uses.set(w, []); uses.get(w).push(i); } });
+  for (const [w, at] of uses) if (at.length > 3 && at.some((i) => PUZZLES[i].live >= WORD_VARIETY_FROM)) { bad++; console.error(`✗ word ${w} used ${at.length} times (ceiling 3)`); }
+  const sets = PUZZLES.map((p) => new Set([...p.lhs, p.rhs]));
+  PUZZLES.forEach((p, i) => {
+    if (p.live < WORD_VARIETY_FROM) return;
+    for (let j = 0; j < i; j++) {
+      let n = 0; for (const w of sets[i]) if (sets[j].has(w)) n++;
+      if (n >= 2) { bad++; console.error(`✗ ${p.quizId} shares ${n} words with ${PUZZLES[j].quizId}`); }
+    }
+    const ws = [...p.lhs, p.rhs];
+    for (let a = 0; a < ws.length; a++) for (let b = a + 1; b < ws.length; b++) {
+      if ((ws[a].length >= 4 && ws[b].length >= 4 && ws[a].slice(0, 4) === ws[b].slice(0, 4)) || ws[a].includes(ws[b]) || ws[b].includes(ws[a])) { bad++; console.error(`✗ ${p.quizId}: ${ws[a]} and ${ws[b]} read as the same word`); }
+    }
+  });
+  const colNodes = (lhs, rhs) => {
+    const W = rhs.length, firsts = new Set([...lhs, rhs].map((w) => w[0]));
+    const at = (w, c) => (c < w.length ? w[w.length - 1 - c] : null);
+    const val = {}, taken = Array(10).fill(false); let nodes = 0;
+    const put = (ls, k, go) => {
+      if (k === ls.length) return go();
+      if (ls[k] in val) return put(ls, k + 1, go);
+      for (let d = 0; d < 10; d++) { if (taken[d] || (!d && firsts.has(ls[k]))) continue; nodes++; val[ls[k]] = d; taken[d] = true; put(ls, k + 1, go); delete val[ls[k]]; taken[d] = false; }
+    };
+    const col = (c, carry) => {
+      if (c === W) return;
+      const add = lhs.map((w) => at(w, c)).filter(Boolean);
+      put([...new Set(add)], 0, () => {
+        const sum = add.reduce((a, L) => a + val[L], carry), dg = sum % 10, R = at(rhs, c);
+        if (R in val) { if (val[R] === dg) col(c + 1, Math.floor(sum / 10)); return; }
+        if (taken[dg] || (!dg && firsts.has(R))) return;
+        nodes++; val[R] = dg; taken[dg] = true; col(c + 1, Math.floor(sum / 10)); delete val[R]; taken[dg] = false;
+      });
+    };
+    col(0, 0); return nodes;
+  };
+  let prev = null;
+  for (const p of PUZZLES) {
+    if (p.live < WORD_VARIETY_FROM) continue;
+    const dow = new Date(`${p.live}T12:00:00Z`).getUTCDay(), n = colNodes(p.lhs, p.rhs);
+    if (prev && dow !== 1 && n <= prev.n) { bad++; console.error(`✗ ${p.quizId}: ${n} nodes, not harder than ${prev.id} (${prev.n})`); }
+    prev = { id: p.quizId, n };
+  }
+  console.log(`word variety + weekly climb checked from ${WORD_VARIETY_FROM}`);
+}
 if (bad) { console.error(`\n${bad} bad puzzle(s)`); process.exit(1); }
 console.log(`\nAll ${PUZZLES.length} Cipher puzzles verified unique.`);

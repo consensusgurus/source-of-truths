@@ -8119,3 +8119,69 @@ editor before the first send).
 - **The first campaign says why the reader is getting it** ("you joined the Mind Loft leaderboard
   with this address"). Keep that line on every campaign: these people registered for a leaderboard,
   not a newsletter, and the opt-out is one click for that reason.
+
+## The 2026-09-24 restock: 27 banks to Nov 30, and the sports rules cap (owner, 2026-09-23)
+
+Every bank that ended between Oct 11 and Oct 31 now runs to **2026-11-30**, lining it up with the
+big block of banks that already ended there: links, blocks, bracket, docket, suffice, chomp, focus,
+venn, encore, and the Oct 31 wall (alibi, carve, cipher, crunch, crux, flank, garble, hearsay, hedge,
+ping, rung, shards, span, stands, suds, sworn, tally). Pricer (off the roster) and Extra (retires
+2026-09-29) were skipped on purpose. Built by the process in the daily-bank-restock skill, the same
+one as the 2026-09-04 restock (dd11712 / 71b27f9).
+
+**Most of those banks had NO committed generator** (their 2026-08-28 extensions were built by
+scripts nobody checked in). They have one now, each deterministic, seeded off the board number,
+append-only, and refusing to rewrite a frozen board: `gen-alibi`, `gen-sworn`, `gen-hearsay`,
+`gen-stands`, `gen-suds`, `gen-tally`, `gen-carve`, `gen-hedge`, `gen-garble`, `gen-rung`,
+`gen-cipher`, `gen-crunch`, `gen-span`, `gen-ping`, `gen-blocks`, `gen-bracket` (+ `gen-bracket-pools`),
+`gen-chomp-extend`, `gen-venn-bank`, `gen-encore-extend`. `gen-docket` and `gen-suffice` gained an
+`--append` mode for the same reason (a whole-bank rerun with a wider pool would rewrite the past).
+Links and Focus stay hand-authored.
+
+**Next-restock warnings the agents measured:** Crux's collision pool is thin again (4 of 8 seeds
+built November); Encore's 3- and 4-letter answers are nearing the 3-use cap (widen by re-screening
+shapes, never by editing the shared clue banks); Suffice's MOD templates are at 40 of 41 uses;
+Docket used its new themes to 64 of 64 at max reuse 2.
+
+**Flank Sunday giants may now repeat (owner ruling, 2026-09-23).** Only nine countries have 8+
+borders and are not `noSubject`, and all nine were used by 2026-10-25, so the never-repeat rule made
+Nov 1 unbankable. From 2026-11-01 a Sunday giant may return once 63+ days have passed since its last
+Sunday; weekday countries still never repeat. Enforced in `gen-flank.mjs` and `verify-flank.mjs`.
+
+**Bracket's rules for new pools:** a board may not contain any pair whose order published sources
+dispute (river lengths by system definition, city vs consolidated-county populations, total vs land
+area, summits within a few metres), and the generator refuses pairs inside a per-topic minimum gap.
+Retired players' totals only. Figures in the new pools are from memory and were fact-checked once;
+rivers remain the least certain pool.
+
+**New checks, each proved by injection:** Links runs the US-spelling screen on group names and words
+from 2026-10-12; Shards fails a board that reprints an earlier board's letter grid from 2026-11-01
+(five October boards already do, frozen); plus dated US-spelling screens in the alibi, sworn,
+hearsay, docket, suffice, venn, encore and bracket verifiers, and new variety checks in
+verify-cipher (word ceiling, shared words, stems, weekly climb) and verify-venn.
+
+### Sports trivia carries at most ONE basic-rules question a day (owner, 2026-09-23)
+
+A "rules-type" question asks how a sport works rather than about its history, people, teams,
+records or events: points for a score, how many players/periods/innings/sets, what a play, term,
+violation, position or official is called, what a stat abbreviation stands for, equipment or field
+dimensions. A question about a rule's HISTORY ("which league adopted the DH in 1973") is not one.
+The Sport daily had 477 of them on its 68 unplayed days (2 to 11 a day); Streak's Sports lane and
+Deep's sports-topic days had the same problem at smaller scale.
+
+- **Cap 1 a day, enforced:** `verify-sport.mjs` from `RULES_CAP_FROM = '2026-09-24'`,
+  `verify-streak.mjs` (via `scripts/streak-rules.mjs`, `SPORTS_RULES_CAP`) from 2026-09-30 on the
+  Sports lane, and `verify-deep.mjs` from 2026-09-24 on topics matching `SPORT_TOPIC`. The shared
+  classifier is `scripts/sports-rules-classifier.mjs`; Sport carries its own pattern list in its
+  verifier header. **The classifiers are deliberately cautious**: they caught about 80% of the
+  hand-labelled rules questions and flagged nothing that was not one, so they guard the count but
+  do not replace reading.
+- **409 Sport, 50 Streak and 27 Deep questions were rewritten in place** (same id, lane, tier and
+  `correct` index) as history, player, team and record questions, then fact-checked by a separate
+  pass. Sport days 42+ and Streak days 62+ are generated from lane/source files, which were updated
+  to match (`gen-sport.mjs --check` and `gen-streak.mjs --check` report byte-identical).
+- **Played days are frozen**, and so are Streak's six hand-authored days 9/24 to 9/29, which its own
+  header declares frozen; four of those still carry 2 or 3 rules questions.
+- **When authoring new sports questions, write the history question in the first place.** A tier-1
+  gimme can be a famous team, city, or legend; it does not have to be "how many points is a
+  touchdown".

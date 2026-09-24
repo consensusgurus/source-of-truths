@@ -137,11 +137,13 @@ const catCount = new Map(), wordCount = new Map(), pairCount = new Map();
 // pairs (CORNET|Cookware, SNARE|Trapping gear, MONITOR|Computer parts and the
 // rest) past the limit, and only the verifier noticed.
 const VARIETY_FROM = '2026-08-20';
+const trapSets = [];   // collision-pair sets of every board in the window, for the overlap rule
 for (const h of history) {
   for (const c of h.cats) lastCat.set(c, Math.max(lastCat.get(c) ?? -1e9, h.day));
   for (const w of h.words) lastWord.set(w, Math.max(lastWord.get(w) ?? -1e9, h.day));
   for (const s of h.sigs) usedSig.add(s);
   if (h.live >= VARIETY_FROM) for (const k of h.colls) pairCount.set(k, (pairCount.get(k) ?? 0) + 1);
+  if (h.live >= VARIETY_FROM) trapSets.push(new Set(h.colls));
 }
 
 // ── semantic uniqueness: count the filings of words into categories ────────
@@ -364,6 +366,15 @@ function build(date) {
     // the same trap three times is a flat bank even when the words differ, so
     // hold it to the limit verify-daily-banks.mjs already enforces
     if (collisions.some((c) => (pairCount.get(`${c.word}|${c.reads}`) || 0) >= 2)) continue;
+    // Two boards built on the same two traps read as one board served twice,
+    // even three weeks apart and with different filler words: the Nov 2026
+    // run first came out with Chess pieces / Beekeeping / Hairstyles / Fish on
+    // Nov 8 AND Nov 28, both on QUEEN, MULLET and BEEHIVE. So a board may share
+    // at most ONE collision pair with any earlier board in the variety window.
+    {
+      const mine = collisions.map((c) => `${c.word}|${c.reads}`);
+      if (trapSets.some((t) => mine.filter((k) => t.has(k)).length >= 2)) continue;
+    }
     if (filingCount(names, words, Array(4).fill(per)) !== 1) continue;
 
     for (let t = 0; t < 300; t++) {
@@ -406,6 +417,7 @@ for (const date of dates) {
     const k = `${c.word}|${c.reads}`;
     pairCount.set(k, (pairCount.get(k) || 0) + 1);
   }
+  trapSets.push(new Set(p.collisions.map((c) => `${c.word}|${c.reads}`)));
 }
 
 const j = (v) => JSON.stringify(v);

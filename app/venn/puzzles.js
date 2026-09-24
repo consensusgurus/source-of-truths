@@ -897,4 +897,382 @@ export const PUZZLES = [
       'ICELAND', 'SLOVAKIA', 'TANZANIA', 'CROATIA',
     ],
   },
+  {
+    num: 93, quizId: 'venn-10-24-26', live: '2026-10-24', dateLabel: 'October 24, 2026', sunday: false,
+    domain: 'president',
+    rules: [{ k: 'fact', p: 'general' }, { k: 'fact', p: 'currency' }, { k: 'nolet', c: 'R' }],
+    items: [
+      'PIERCE', 'KENNEDY', 'TAYLOR', 'LINCOLN',
+      'GARFIELD', 'HAYES', 'GRANT', 'BUCHANAN',
+      'BIDEN', 'TAFT', 'JEFFERSON', 'JACKSON',
+    ],
+  },
+  {
+    num: 94, quizId: 'venn-10-25-26', live: '2026-10-25', dateLabel: 'October 25, 2026', sunday: true,
+    domain: 'country',
+    rules: [{ k: 'fact', p: 'landlocked' }, { k: 'fact', p: 'southern' }, { k: 'twinvowel' }],
+    items: [
+      'LAOS', 'ESWATINI', 'BOLIVIA', 'PERU',
+      'ANGOLA', 'ROMANIA', 'RWANDA', 'BHUTAN',
+      'AUSTRALIA', 'ZAMBIA', 'MONGOLIA', 'MAURITIUS',
+      'CZECHIA', 'SLOVENIA', 'NEPAL',
+    ],
+    hiddenCounts: [6, 2],
+  },
+  {
+    num: 95, quizId: 'venn-10-26-26', live: '2026-10-26', dateLabel: 'October 26, 2026', sunday: false,
+    rules: [{ k: 'hides', set: 'animal' }, { k: 'norepeat' }, { k: 'altvc' }],
+    items: [
+      'ELUSIVE', 'APEX', 'CHORE', 'REFUGE',
+      'CUBIC', 'ANTI', 'PUPILS', 'DEDICATE',
+      'MARVEL', 'LOVE', 'CAPE', 'EDUCATE',
+    ],
+  },
+  {
+    num: 96, quizId: 'venn-10-27-26', live: '2026-10-27', dateLabel: 'October 27, 2026', sunday: false,
+    rules: [{ k: 'sameends' }, { k: 'endvowel' }, { k: 'onevowel' }],
+    items: [
+      'SPEEDS', 'ECLIPSE', 'EMERGE', 'SERIOUS',
+      'ESTIMATE', 'ESSENCE', 'SINGLE', 'CAFE',
+      'DELVE', 'SWORDS', 'TALL', 'TRACE',
+    ],
+  },
+  {
+    num: 97, quizId: 'venn-10-28-26', live: '2026-10-28', dateLabel: 'October 28, 2026', sunday: false,
+    domain: 'country',
+    rules: [{ k: 'fact', p: 'asia' }, { k: 'fact', p: 'noborder' }, { k: 'lenGte', n: 6 }],
+    items: [
+      'SAMOA', 'INDIA', 'JAMAICA', 'JAPAN',
+      'MALAYSIA', 'SENEGAL', 'CAMBODIA', 'IRAQ',
+      'ESTONIA', 'NORWAY', 'TONGA', 'SINGAPORE',
+    ],
+  },
+  {
+    num: 98, quizId: 'venn-10-29-26', live: '2026-10-29', dateLabel: 'October 29, 2026', sunday: false,
+    domain: 'state',
+    rules: [{ k: 'fact', p: 'canada' }, { k: 'fact', p: 'greatlake' }, { k: 'nolet', c: 'S' }],
+    items: [
+      'NEVADA', 'MAINE', 'NEW YORK', 'OHIO',
+      'MICHIGAN', 'ALASKA', 'MINNESOTA', 'INDIANA',
+      'MONTANA', 'WISCONSIN', 'OKLAHOMA', 'VERMONT',
+    ],
+  },
+  {
+    num: 99, quizId: 'venn-10-30-26', live: '2026-10-30', dateLabel: 'October 30, 2026', sunday: false,
+    rules: [{ k: 'hides', set: 'body' }, { k: 'startvowel' }, { k: 'twinvowel' }],
+    items: [
+      'OATH', 'SPECIFIC', 'DECEIT', 'AWFUL',
+      'LEARN', 'EXPLOIT', 'UNLOAD', 'DOUGH',
+      'EARTH', 'GEAR', 'EXPECTS', 'SHINE',
+    ],
+  },
+  {
+    num: 100, quizId: 'venn-10-31-26', live: '2026-10-31', dateLabel: 'October 31, 2026', sunday: false,
+    domain: 'element',
+    rules: [{ k: 'fact', p: 'gas' }, { k: 'norepeat' }, { k: 'altvc' }],
+    items: [
+      'NITROGEN', 'NEON', 'ALUMINUM', 'FLUORINE',
+      'ARGON', 'CHLORINE', 'GOLD', 'RADON',
+      'ZINC', 'IRON', 'XENON', 'TIN',
+    ],
+  },
+  {
+    num: 101, quizId: 'venn-11-1-26', live: '2026-11-01', dateLabel: 'November 1, 2026', sunday: true,
+    domain: 'president',
+    rules: [{ k: 'fact', p: 'vpfirst' }, { k: 'fact', p: 'pre1900' }, { k: 'endvowel' }],
+    items: [
+      'NIXON', 'BUCHANAN', 'COOLIDGE', 'OBAMA',
+      'FILLMORE', 'MONROE', 'FORD', 'BIDEN',
+      'JEFFERSON', 'PIERCE', 'LINCOLN', 'TRUMAN',
+      'GARFIELD', 'POLK', 'VAN BUREN',
+    ],
+    hiddenCounts: [1, 2],
+  },
+  {
+    num: 102, quizId: 'venn-11-2-26', live: '2026-11-02', dateLabel: 'November 2, 2026', sunday: false,
+    domain: 'country',
+    rules: [{ k: 'fact', p: 'samerica' }, { k: 'fact', p: 'spanish' }, { k: 'norepeat' }],
+    items: [
+      'POLAND', 'PERU', 'PANAMA', 'NICARAGUA',
+      'GUYANA', 'URUGUAY', 'GUATEMALA', 'UKRAINE',
+      'CHILE', 'SURINAME', 'CUBA', 'PARAGUAY',
+    ],
+  },
+  {
+    num: 103, quizId: 'venn-11-3-26', live: '2026-11-03', dateLabel: 'November 3, 2026', sunday: false,
+    rules: [{ k: 'dbl' }, { k: 'lenGte', n: 8 }, { k: 'vowels', n: 3 }],
+    items: [
+      'RELAXED', 'IMPLIES', 'OVERTAKE', 'SAVANNAH',
+      'MANHOOD', 'STAMPEDE', 'OVERLOOK', 'ACCOUNT',
+      'DISPOSAL', 'REVENUES', 'WOODS', 'TREASURE',
+    ],
+  },
+  {
+    num: 104, quizId: 'venn-11-4-26', live: '2026-11-04', dateLabel: 'November 4, 2026', sunday: false,
+    rules: [{ k: 'hides', set: 'number' }, { k: 'onevowel' }, { k: 'nolet', c: 'D' }],
+    items: [
+      'TENDON', 'TENT', 'BUILT', 'SONIC',
+      'EXTENDS', 'ALONE', 'LONE', 'BOSS',
+      'TENOR', 'PORT', 'DUTCH', 'HOOD',
+    ],
+  },
+  {
+    num: 105, quizId: 'venn-11-5-26', live: '2026-11-05', dateLabel: 'November 5, 2026', sunday: false,
+    domain: 'country',
+    rules: [{ k: 'fact', p: 'europe' }, { k: 'fact', p: 'landlocked' }, { k: 'twinvowel' }],
+    items: [
+      'NIGERIA', 'FINLAND', 'ISRAEL', 'MALAWI',
+      'BELARUS', 'BOTSWANA', 'LITHUANIA', 'LAOS',
+      'ZAMBIA', 'CZECHIA', 'SERBIA', 'NAMIBIA',
+    ],
+  },
+  {
+    num: 106, quizId: 'venn-11-6-26', live: '2026-11-06', dateLabel: 'November 6, 2026', sunday: false,
+    domain: 'state',
+    rules: [{ k: 'fact', p: 'mississippi' }, { k: 'fact', p: 'capbig' }, { k: 'startvowel' }],
+    items: [
+      'ILLINOIS', 'HAWAII', 'OREGON', 'ALABAMA',
+      'GEORGIA', 'TENNESSEE', 'WISCONSIN', 'OKLAHOMA',
+      'IOWA', 'ARKANSAS', 'MISSOURI', 'MINNESOTA',
+    ],
+  },
+  {
+    num: 107, quizId: 'venn-11-7-26', live: '2026-11-07', dateLabel: 'November 7, 2026', sunday: false,
+    rules: [{ k: 'sameends' }, { k: 'endvowel' }, { k: 'altvc' }],
+    items: [
+      'COLORED', 'ASTHMA', 'EVASIVE', 'RECITE',
+      'AUDIBLE', 'EXAMINE', 'RANCHER', 'EXCUSE',
+      'REFER', 'SENATOR', 'PLUNGE', 'MADAM',
+    ],
+  },
+  {
+    num: 108, quizId: 'venn-11-8-26', live: '2026-11-08', dateLabel: 'November 8, 2026', sunday: true,
+    domain: 'element',
+    rules: [{ k: 'fact', p: 'lo' }, { k: 'fact', p: 'oddsym' }, { k: 'lenGte', n: 8 }],
+    items: [
+      'NEODYMIUM', 'OXYGEN', 'ARGON', 'CHROMIUM',
+      'PLATINUM', 'ZIRCONIUM', 'SULFUR', 'TUNGSTEN',
+      'SILVER', 'MERCURY', 'CHLORINE', 'MAGNESIUM',
+      'SODIUM', 'COPPER', 'POTASSIUM',
+    ],
+    hiddenCounts: [3, 4],
+  },
+  {
+    num: 109, quizId: 'venn-11-9-26', live: '2026-11-09', dateLabel: 'November 9, 2026', sunday: false,
+    domain: 'president',
+    rules: [{ k: 'fact', p: 'vpfirst' }, { k: 'fact', p: 'virginia' }, { k: 'norepeat' }],
+    items: [
+      'TAYLOR', 'MONROE', 'TRUMAN', 'FORD',
+      'JEFFERSON', 'MCKINLEY', 'TYLER', 'HARDING',
+      'MADISON', 'BIDEN', 'VAN BUREN', 'WILSON',
+    ],
+  },
+  {
+    num: 110, quizId: 'venn-11-10-26', live: '2026-11-10', dateLabel: 'November 10, 2026', sunday: false,
+    domain: 'country',
+    rules: [{ k: 'fact', p: 'noborder' }, { k: 'fact', p: 'southern' }, { k: 'vowels', n: 3 }],
+    items: [
+      'ICELAND', 'JAPAN', 'MALTA', 'ESWATINI',
+      'ZIMBABWE', 'ARGENTINA', 'CANADA', 'NAMIBIA',
+      'SAMOA', 'LESOTHO', 'MAURITIUS', 'FIJI',
+    ],
+  },
+  {
+    num: 111, quizId: 'venn-11-11-26', live: '2026-11-11', dateLabel: 'November 11, 2026', sunday: false,
+    rules: [{ k: 'hides', set: 'animal' }, { k: 'dbl' }, { k: 'twinvowel' }],
+    items: [
+      'THEORIES', 'VARIANT', 'WILL', 'PLANT',
+      'FEED', 'ASSERT', 'FEAT', 'HEEL',
+      'FEEL', 'FULL', 'DOUBT', 'RELIANT',
+    ],
+  },
+  {
+    num: 112, quizId: 'venn-11-12-26', live: '2026-11-12', dateLabel: 'November 12, 2026', sunday: false,
+    rules: [{ k: 'startvowel' }, { k: 'onevowel' }, { k: 'len', n: 6 }],
+    items: [
+      'ORBITAL', 'EXPENSES', 'TRUNK', 'UNABLE',
+      'WEDGE', 'OPAL', 'COMMIT', 'ONWARD',
+      'EVENTS', 'CHEESE', 'ELECTED', 'CLASH',
+    ],
+  },
+  {
+    num: 113, quizId: 'venn-11-13-26', live: '2026-11-13', dateLabel: 'November 13, 2026', sunday: false,
+    domain: 'country',
+    rules: [{ k: 'fact', p: 'asia' }, { k: 'fact', p: 'landlocked' }, { k: 'altvc' }],
+    items: [
+      'LEBANON', 'OMAN', 'BHUTAN', 'MEXICO',
+      'IRAN', 'PAKISTAN', 'NIGER', 'BURUNDI',
+      'MONGOLIA', 'SENEGAL', 'LESOTHO', 'NEPAL',
+    ],
+  },
+  {
+    num: 114, quizId: 'venn-11-14-26', live: '2026-11-14', dateLabel: 'November 14, 2026', sunday: false,
+    domain: 'state',
+    rules: [{ k: 'fact', p: 'canada' }, { k: 'norepeat' }, { k: 'lenGte', n: 7 }],
+    items: [
+      'NEBRASKA', 'UTAH', 'VERMONT', 'ALASKA',
+      'MARYLAND', 'TEXAS', 'MICHIGAN', 'MONTANA',
+      'IDAHO', 'FLORIDA', 'MINNESOTA', 'IOWA',
+    ],
+  },
+  {
+    num: 115, quizId: 'venn-11-15-26', live: '2026-11-15', dateLabel: 'November 15, 2026', sunday: true,
+    rules: [{ k: 'hides', set: 'body' }, { k: 'endvowel' }, { k: 'nolet', c: 'A' }],
+    items: [
+      'PECK', 'PEAR', 'HANDFUL', 'WHIP',
+      'BIKE', 'MUCH', 'NEAR', 'TRAUMA',
+      'HANDLE', 'POST', 'CHINA', 'WAKE',
+      'WHEEL', 'HIPPO', 'BRIBE',
+    ],
+    hiddenCounts: [5, 6],
+  },
+  {
+    num: 116, quizId: 'venn-11-16-26', live: '2026-11-16', dateLabel: 'November 16, 2026', sunday: false,
+    domain: 'element',
+    rules: [{ k: 'fact', p: 'metal' }, { k: 'fact', p: 'lo' }, { k: 'twinvowel' }],
+    items: [
+      'POTASSIUM', 'NICKEL', 'TANTALUM', 'RUBIDIUM',
+      'NEON', 'BISMUTH', 'SELENIUM', 'GALLIUM',
+      'VANADIUM', 'FLUORINE', 'NITROGEN', 'ALUMINUM',
+    ],
+  },
+  {
+    num: 117, quizId: 'venn-11-17-26', live: '2026-11-17', dateLabel: 'November 17, 2026', sunday: false,
+    domain: 'president',
+    rules: [{ k: 'fact', p: 'general' }, { k: 'fact', p: 'twoterms' }, { k: 'lenGte', n: 6 }],
+    items: [
+      'CLINTON', 'OBAMA', 'REAGAN', 'HAYES',
+      'PIERCE', 'GARFIELD', 'TAYLOR', 'HOOVER',
+      'GRANT', 'JACKSON', 'WILSON', 'CARTER',
+    ],
+  },
+  {
+    num: 118, quizId: 'venn-11-18-26', live: '2026-11-18', dateLabel: 'November 18, 2026', sunday: false,
+    domain: 'country',
+    rules: [{ k: 'fact', p: 'landlocked' }, { k: 'fact', p: 'eu' }, { k: 'startvowel' }],
+    items: [
+      'IRELAND', 'SLOVAKIA', 'ANGOLA', 'MALI',
+      'OMAN', 'ETHIOPIA', 'DENMARK', 'CZECHIA',
+      'ZIMBABWE', 'AUSTRALIA', 'ESTONIA', 'AUSTRIA',
+    ],
+  },
+  {
+    num: 119, quizId: 'venn-11-19-26', live: '2026-11-19', dateLabel: 'November 19, 2026', sunday: false,
+    rules: [{ k: 'sameends' }, { k: 'altvc' }, { k: 'vowels', n: 3 }],
+    items: [
+      'NATIONS', 'BATHTUB', 'GELATIN', 'DEFINED',
+      'SURFERS', 'RECOVER', 'MOVIES', 'RACER',
+      'PANEL', 'MAXIM', 'HUMID', 'DOUBLED',
+    ],
+  },
+  {
+    num: 120, quizId: 'venn-11-20-26', live: '2026-11-20', dateLabel: 'November 20, 2026', sunday: false,
+    rules: [{ k: 'hides', set: 'number' }, { k: 'norepeat' }, { k: 'len', n: 6 }],
+    items: [
+      'EIGHTH', 'NINETY', 'SHONE', 'EATEN',
+      'GUILD', 'THREAT', 'EIGHTY', 'WAVING',
+      'INTEND', 'HALVES', 'CLUTCH', 'ZONE',
+    ],
+  },
+  {
+    num: 121, quizId: 'venn-11-21-26', live: '2026-11-21', dateLabel: 'November 21, 2026', sunday: false,
+    domain: 'country',
+    rules: [{ k: 'fact', p: 'southern' }, { k: 'fact', p: 'spanish' }, { k: 'twinvowel' }],
+    items: [
+      'BOTSWANA', 'ARGENTINA', 'VIETNAM', 'BOLIVIA',
+      'KUWAIT', 'BURUNDI', 'NAMIBIA', 'VENEZUELA',
+      'MAURITIUS', 'HONDURAS', 'CUBA', 'PANAMA',
+    ],
+  },
+  {
+    num: 122, quizId: 'venn-11-22-26', live: '2026-11-22', dateLabel: 'November 22, 2026', sunday: true,
+    domain: 'state',
+    rules: [{ k: 'fact', p: 'greatlake' }, { k: 'endvowel' }, { k: 'nolet', c: 'O' }],
+    items: [
+      'VIRGINIA', 'WISCONSIN', 'ARKANSAS', 'TEXAS',
+      'INDIANA', 'NEVADA', 'UTAH', 'MINNESOTA',
+      'KANSAS', 'NEBRASKA', 'TENNESSEE', 'OHIO',
+      'MISSOURI', 'ILLINOIS', 'MICHIGAN',
+    ],
+    hiddenCounts: [2, 5],
+  },
+  {
+    num: 123, quizId: 'venn-11-23-26', live: '2026-11-23', dateLabel: 'November 23, 2026', sunday: false,
+    rules: [{ k: 'dbl' }, { k: 'onevowel' }, { k: 'lenGte', n: 7 }],
+    items: [
+      'MOTIVATE', 'SIGHT', 'DISMISS', 'BOTTOM',
+      'APPARENT', 'PARROT', 'RECEIPT', 'LOOSEN',
+      'WATCHES', 'DOCTORS', 'GARLAND', 'DIFFERED',
+    ],
+  },
+  {
+    num: 124, quizId: 'venn-11-24-26', live: '2026-11-24', dateLabel: 'November 24, 2026', sunday: false,
+    domain: 'element',
+    rules: [{ k: 'fact', p: 'lo' }, { k: 'fact', p: 'noble' }, { k: 'norepeat' }],
+    items: [
+      'CARBON', 'CESIUM', 'BARIUM', 'RADON',
+      'XENON', 'POTASSIUM', 'NEON', 'HYDROGEN',
+      'HELIUM', 'KRYPTON', 'ARGON', 'CHLORINE',
+    ],
+  },
+  {
+    num: 125, quizId: 'venn-11-25-26', live: '2026-11-25', dateLabel: 'November 25, 2026', sunday: false,
+    domain: 'president',
+    rules: [{ k: 'fact', p: 'died' }, { k: 'fact', p: 'pre1900' }, { k: 'nolet', c: 'A' }],
+    items: [
+      'HOOVER', 'HARDING', 'POLK', 'GARFIELD',
+      'CLINTON', 'MCKINLEY', 'VAN BUREN', 'BUCHANAN',
+      'TAYLOR', 'LINCOLN', 'KENNEDY', 'FILLMORE',
+    ],
+  },
+  {
+    num: 126, quizId: 'venn-11-26-26', live: '2026-11-26', dateLabel: 'November 26, 2026', sunday: false,
+    domain: 'country',
+    rules: [{ k: 'fact', p: 'europe' }, { k: 'fact', p: 'noborder' }, { k: 'vowels', n: 3 }],
+    items: [
+      'LATVIA', 'ICELAND', 'SINGAPORE', 'FIJI',
+      'ISRAEL', 'SWEDEN', 'POLAND', 'PAKISTAN',
+      'SAMOA', 'JAMAICA', 'MALTA', 'ROMANIA',
+    ],
+  },
+  {
+    num: 127, quizId: 'venn-11-27-26', live: '2026-11-27', dateLabel: 'November 27, 2026', sunday: false,
+    rules: [{ k: 'hides', set: 'animal' }, { k: 'endvowel' }, { k: 'altvc' }],
+    items: [
+      'RATTLE', 'RISE', 'INTRO', 'CUBE',
+      'CASE', 'RATIO', 'EVIL', 'PUPIL',
+      'SHORE', 'LIME', 'BATCH', 'LOCATE',
+    ],
+  },
+  {
+    num: 128, quizId: 'venn-11-28-26', live: '2026-11-28', dateLabel: 'November 28, 2026', sunday: false,
+    rules: [{ k: 'sameends' }, { k: 'twinvowel' }, { k: 'len', n: 6 }],
+    items: [
+      'DISHES', 'SCOOTERS', 'SUMMITS', 'MALARIA',
+      'VISUAL', 'APPEALS', 'SOURCES', 'ROUTER',
+      'STACKS', 'ENCORE', 'HEIRESS', 'EQUATE',
+    ],
+  },
+  {
+    num: 129, quizId: 'venn-11-29-26', live: '2026-11-29', dateLabel: 'November 29, 2026', sunday: true,
+    domain: 'country',
+    rules: [{ k: 'fact', p: 'landlocked' }, { k: 'fact', p: 'euro' }, { k: 'startvowel' }],
+    items: [
+      'CROATIA', 'SLOVENIA', 'RWANDA', 'MALAWI',
+      'FINLAND', 'IRAN', 'ETHIOPIA', 'IRAQ',
+      'IRELAND', 'ALBANIA', 'LITHUANIA', 'ESWATINI',
+      'SLOVAKIA', 'ESTONIA', 'AUSTRIA',
+    ],
+    hiddenCounts: [6, 3],
+  },
+  {
+    num: 130, quizId: 'venn-11-30-26', live: '2026-11-30', dateLabel: 'November 30, 2026', sunday: false,
+    domain: 'state',
+    rules: [{ k: 'fact', p: 'mississippi' }, { k: 'fact', p: 'capbig' }, { k: 'twinvowel' }],
+    items: [
+      'VIRGINIA', 'WISCONSIN', 'ARKANSAS', 'LOUISIANA',
+      'MINNESOTA', 'ARIZONA', 'GEORGIA', 'ILLINOIS',
+      'TENNESSEE', 'MISSOURI', 'OKLAHOMA', 'COLORADO',
+    ],
+  },
 ];

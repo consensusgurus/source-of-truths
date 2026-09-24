@@ -10,6 +10,11 @@
 //     thiefs die, the true thief resolves to exactly one full assignment
 // Run: node scripts/verify-sworn.mjs
 import { PUZZLES } from '../app/sworn/puzzles.js';
+import { scanUS } from './us-spellings.mjs';
+
+// US spellings in venue / stolen copy from the 2026-11-01 extension on.
+// Earlier cases are frozen (two ship "harbour" and "colourman").
+const COPY_FROM = '2026-11-01';
 
 let fails = 0;
 const fail = (msg) => { console.error('FAIL:', msg); fails++; };
@@ -105,7 +110,7 @@ function branchCompletions(n, k, statements, thief, maxFanout = 4) {
   return completions;
 }
 
-if (PUZZLES.length !== 106) fail(`expected 106 puzzles, got ${PUZZLES.length}`);
+if (PUZZLES.length !== 136) fail(`expected 136 puzzles, got ${PUZZLES.length}`);
 const seenVenues = new Set(), seenStolen = new Set();
 PUZZLES.forEach((p, i) => {
   const tag = `#${p.num} (${p.quizId})`;
@@ -124,6 +129,12 @@ PUZZLES.forEach((p, i) => {
   if (seenVenues.has(p.venue)) fail(`${tag}: venue reused`);
   if (seenStolen.has(p.stolen)) fail(`${tag}: stolen item reused`);
   seenVenues.add(p.venue); seenStolen.add(p.stolen);
+  if (p.live >= COPY_FROM) {
+    for (const t of [p.venue, p.stolen, ...p.suspects]) {
+      for (const h of scanUS(t)) fail(`${tag}: British form "${h.found}" (US: ${h.us})`);
+      if (/[\u2013\u2014]/.test(t)) fail(`${tag}: dash in "${t}"`);
+    }
+  }
   if (p.statements.length !== n) fail(`${tag}: ${p.statements.length} statements for ${n} suspects`);
   p.statements.forEach((st, s) => {
     if (!TYPES.has(st.type)) fail(`${tag}: bad statement type ${st.type}`);

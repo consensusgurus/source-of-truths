@@ -4,6 +4,12 @@
 // ids/dates/sunday flags consistent. Run after ANY edit:
 //   node scripts/verify-alibi.mjs
 import { PUZZLES } from '../app/alibi/puzzles.js';
+import { scanUS } from './us-spellings.mjs';
+
+// US spellings in reader-facing copy (venue, stolen item, rooms, objects),
+// checked from the 2026-11-01 extension on. Earlier cases are frozen (one
+// ships a "Parlour" and an "armoury").
+const COPY_FROM = '2026-11-01';
 
 // Permutations for an N-suspect case, memoized. Weekdays seat 4, the Sunday
 // Edition seats 5.
@@ -172,6 +178,12 @@ PUZZLES.forEach((p, i) => {
   for (const c of p.clues) {
     for (const k of ['s', 's1', 's2', 'r', 'o', 't']) {
       if (c[k] !== undefined && (c[k] < 0 || c[k] > N - 1)) errs.push('index out of range');
+    }
+  }
+  if (p.live >= COPY_FROM) {
+    for (const t of [p.venue, p.stolen, ...p.rooms, ...p.objects, ...p.suspects]) {
+      for (const h of scanUS(t)) errs.push(`British form "${h.found}" (US: ${h.us})`);
+      if (/[\u2013\u2014]/.test(t)) errs.push(`dash in "${t}"`);
     }
   }
   const sols = solutions(p.clues, N);

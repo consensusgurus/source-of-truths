@@ -13,7 +13,8 @@
 // Rules enforced (see the schedule in scripts/gen-flank.mjs):
 //   - weekday bands by neighbor count: Mon 1-2, Tue 2-3, Wed 3-4, Thu 4-5,
 //     Fri 5-6, Sat 6-7, Sun >= 8 (the Sunday Edition giant, sunday: true)
-//   - no country repeats anywhere in the bank; noSubject entities never a
+//   - no weekday country repeats; a Sunday giant may return from 2026-11-01
+//     once 63 days have passed since its last Sunday; noSubject entities never a
 //     day's country; Peru (PE) never a day's country (it is the share card)
 //   - dates consecutive, quizId 'flank-M-D-YY' derived from the live date,
 //     dateLabel matches, num is 1..N in order
@@ -67,7 +68,8 @@ for (const long of keys) {
 // ---- the bank --------------------------------------------------------------
 const BAND = { 1: [1, 2], 2: [2, 3], 3: [3, 4], 4: [4, 5], 5: [5, 6], 6: [6, 7], 0: [8, 99] };
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const seen = new Set();
+const seen = new Map();
+const GIANT_REPEAT_FROM = '2026-11-01', GIANT_GAP = 63;
 let prev = null;
 PUZZLES.forEach((p, i) => {
   const id = `day ${p.num} (${p.live})`;
@@ -86,8 +88,14 @@ PUZZLES.forEach((p, i) => {
   if (!e) { fail(`${id}: unknown country code ${p.c}`); return; }
   if (e.noSubject) fail(`${id}: ${e.name} is noSubject and may not be a day's country`);
   if (p.c === 'PE') fail(`${id}: Peru is reserved for the share-card demo board`);
-  if (seen.has(p.c)) fail(`${id}: ${e.name} repeats within the bank`);
-  seen.add(p.c);
+  // Sunday giants may return from GIANT_REPEAT_FROM after GIANT_GAP days
+  // (the nine-country pool ran out 2026-10-25); weekday countries never repeat.
+  const prevSeen = seen.get(p.c);
+  if (prevSeen) {
+    const ok = dow === 0 && p.live >= GIANT_REPEAT_FROM && prevSeen.sunday && (d - prevSeen.d) / 86400000 >= GIANT_GAP;
+    if (!ok) fail(`${id}: ${e.name} repeats within the bank`);
+  }
+  seen.set(p.c, { d, sunday: dow === 0 });
   const expect = [...e.n].sort((a, b) => BORDERS[a].name.localeCompare(BORDERS[b].name));
   if (JSON.stringify(p.a) !== JSON.stringify(expect)) fail(`${id}: answer set does not recompute from the dataset for ${e.name}`);
   const n = e.n.length;

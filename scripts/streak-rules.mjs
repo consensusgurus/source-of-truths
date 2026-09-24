@@ -17,6 +17,7 @@
 // screen, because that list has no shape assumptions in it and a second copy of
 // it is exactly the drift the shared module exists to stop.
 import { scanUS } from './us-spellings.mjs';
+import { isSportsRules } from './sports-rules-classifier.mjs';
 
 // The lane cycle, in authored order. Slot i of a day is LANES[i % 8], in every
 // tier block, on every day since day 1.
@@ -31,6 +32,17 @@ export const COPY_FROM = '2026-09-30';
 // POOL VARIETY ACROSS THE WHOLE WINDOW, not per day. Days 1..61 answer "four"
 // 16 times and "China" 10 times, and every per-day check they had passed.
 export const ANSWER_CAP = 4;
+
+// AT MOST ONE SPORTS RULES-TYPE QUESTION A DAY (owner ruling, 2026-09-23). The
+// Sports lane had drifted into asking how a sport works (what you hit a tennis
+// ball with, what a two-point tackle in the end zone is called) on two and three
+// of a day's five Sports slots. "Rules-type" is decided by isSportsRules in
+// scripts/sports-rules-classifier.mjs, whose header documents the classifier:
+// scoring, counts and dimensions, terminology, officials, equipment, and naming a
+// sport from its mechanics count; a rule's HISTORY and anything about a named
+// person, team, venue, trophy or edition do not. Scoped to COPY_FROM like every
+// gate below: the hand-authored days 1..61 carry up to three and are frozen.
+export const SPORTS_RULES_CAP = 1;
 
 const PER_TIER = LANES.length;   // 8
 const TOTAL_Q = PER_TIER * 5;    // 40
@@ -223,6 +235,13 @@ export function checkStreak({ QUESTIONS, QUESTION_MAP, PUZZLES }) {
   // Nothing that expires.
   for (const q of future) {
     for (const [re, why] of EXPIRING) if (re.test(q.q)) fail(`${q.id}: ${why}, so the answer moves with the calendar; pin it to a year or an event`);
+  }
+
+  // At most one sports rules-type question a day, on the Sports lane.
+  for (const p of PUZZLES) {
+    if (String(p.live) < COPY_FROM) continue;
+    const hits = (p.qids || []).map((id) => QUESTION_MAP[id]).filter((q) => q && q.cat === 'Sports' && isSportsRules(q.q));
+    if (hits.length > SPORTS_RULES_CAP) fail(`${p.quizId}: ${hits.length} sports rules-type questions (${hits.map((q) => q.id).join(', ')}), the cap is ${SPORTS_RULES_CAP} a day; rewrite the rest about a sport's history, people, teams, records or events`);
   }
 
   // Tighter per-day shape for the new window.

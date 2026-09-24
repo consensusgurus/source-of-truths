@@ -10,8 +10,17 @@
 //     same slot across the bank
 // The board carries no answer: the winner of every matchup is recomputed here
 // from the values, exactly as the client recomputes it.
+//   - from COPY_FROM (the 2026-10-14 extension, made by scripts/gen-bracket.mjs):
+//     US spellings and no em dash in any reader-facing string (proper nouns such
+//     as "Ping An Finance Centre" and "Sydney Harbour Bridge" are allowed), and
+//     no live sports board: every sport unit on these boards must be a RETIRED
+//     player's final total, which the metric says in so many words
 // Run: node scripts/verify-bracket.mjs
 import { PUZZLES } from '../app/bracket/puzzles.js';
+import { scanUS } from './us-spellings.mjs';
+
+const COPY_FROM = '2026-10-14';
+const PROPER = ['Ping An Finance Centre', 'Lakhta Centre', 'CTF Finance Centre', 'Sydney Harbour Bridge'];
 
 let fails = 0;
 const fail = (m) => { console.error('FAIL:', m); fails++; };
@@ -68,6 +77,14 @@ PUZZLES.forEach((p, i) => {
       if (rel(k, k + 1) < 0.35) fail(`${tag}: first-round matchup ${k / 2 + 1} is too close for a warm-up`);
     }
     if (rel(finalists[0], finalists[1]) > 0.22) fail(`${tag}: the final is not close enough to be a coin flip`);
+  }
+
+  if (p.live >= COPY_FROM) {
+    for (const t of [p.metric, p.metricShort, ...p.items.map((x) => x.name)]) {
+      for (const hit of scanUS(t, PROPER)) fail(`${tag}: British form "${hit.found}" (US: ${hit.us}) in "${t}"`);
+      if (/\u2014/.test(t)) fail(`${tag}: em dash in "${t}"`);
+    }
+    if (['hr', 'k', 'yards', 'golds', 'seats'].includes(p.unit) && !/RETIRED/.test(p.metric)) fail(`${tag}: a ${p.unit} board after ${COPY_FROM} must be a RETIRED-players board (frozen totals)`);
   }
 
   // scoring shape: every round is worth the same in total

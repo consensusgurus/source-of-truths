@@ -19,7 +19,7 @@
 // It is a proxy for diagramming load, not a claim about how hard anyone finds
 // it, and it exists so the week ramps instead of wandering.
 
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, readFileSync } from 'node:fs';
 import { solutions, solveQuestion, renderSetup, renderRules, renderChoices, enPred, testPred, showSolution, brokenRules, combos, WORD, ORD, series } from '../app/docket/engine.js';
 import { THEMES, letterRun } from './docket-themes.mjs';
 
@@ -527,7 +527,33 @@ const themeUse = {};
 const ruleUse = {};
 let attempts = 0;
 
-for (let d = 0; d < DAYS; d++) {
+// APPEND MODE (2026-09-24 restock). `--append` keeps every banked board exactly
+// as it is and builds only days num+1..DAYS, where DAYS is the TOTAL run length
+// from START. A full regeneration can no longer reproduce the frozen boards once
+// docket-themes.mjs grows (a longer theme list changes every pick), so the bank
+// is extended by appending instead. The theme and rule-template ceilings are
+// seeded from the banked boards, and each new day reseeds the rng off its own
+// board number, so the new segment never replays a frozen day and one day's
+// retries cannot shift the next day's draw.
+//   node scripts/gen-docket.mjs 113 --append
+const APPEND = args.includes('--append');
+let firstDay = 0;
+if (APPEND) {
+  const { PUZZLES: BANKED } = await import('../app/docket/puzzles.js');
+  BANKED.forEach((p, i) => {
+    if (p.num !== i + 1) { console.error(`banked board ${i + 1} carries num ${p.num}`); process.exit(1); }
+    out.push(p);
+    themeUse[p.spec.theme.id] = (themeUse[p.spec.theme.id] || 0) + 1;
+    const sig = p.spec.cons.map((c) => c[0]).sort().join('+');
+    ruleUse[sig] = (ruleUse[sig] || 0) + 1;
+  });
+  firstDay = BANKED.length;
+  if (firstDay >= DAYS) { console.log(`docket: bank already holds ${firstDay} days`); process.exit(0); }
+}
+const APPEND_SEED_BASE = 20260924;
+
+for (let d = firstDay; d < DAYS; d++) {
+  if (APPEND) SEED = APPEND_SEED_BASE + 1000003 * (d + 1);
   const dt = new Date(Date.UTC(...START.split('-').map((v, i) => (i === 1 ? Number(v) - 1 : Number(v))), 12));
   dt.setUTCDate(dt.getUTCDate() + d);
   const y = dt.getUTCFullYear(), mo = dt.getUTCMonth() + 1, da = dt.getUTCDate();
@@ -541,6 +567,7 @@ for (let d = 0; d < DAYS; d++) {
   while (!day && tries++ < 60000) {
     attempts++;
     const avail = THEMES[shape.k].filter((t) => (themeUse[t.id] || 0) < 2);
+    if (APPEND && !avail.length) { console.error(`day ${d + 1}: every ${shape.k} theme is at its ceiling of 2, grow scripts/docket-themes.mjs`); process.exit(1); }
     const theme = pick(avail.length ? avail : THEMES[shape.k]);
     const letters = letterRun(ri(20), shape.n);
     const pool = (shape.k === 'seq' || shape.k === 'hyb') ? MENUS_POS : MENUS_FLAT;
@@ -615,7 +642,16 @@ export const PUZZLES = `;
 
 const body = JSON.stringify(out, null, 1)
   .replace(/\n\s+/g, (m) => (m.length > 40 ? '\n  ' : m));
-writeFileSync(new URL('../app/docket/puzzles.js', import.meta.url), `${HEADER}${JSON.stringify(out)};\n`);
+const BANK_URL = new URL('../app/docket/puzzles.js', import.meta.url);
+const text = `${HEADER}${JSON.stringify(out)};\n`;
+if (APPEND) {
+  // the frozen prefix must come back byte for byte: the old file minus its
+  // closing `];` has to be a prefix of the new one, or nothing is written
+  const old = readFileSync(BANK_URL, 'utf8');
+  const frozen = old.replace(/\];\s*$/, '');
+  if (!text.startsWith(frozen) || text[frozen.length] !== ',') { console.error('append would rewrite a banked board; nothing written'); process.exit(1); }
+}
+writeFileSync(BANK_URL, text);
 
 // ─────────────────────────── report ─────────────────────────────────────────
 const byK = {};

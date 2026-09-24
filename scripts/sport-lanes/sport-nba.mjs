@@ -18,14 +18,14 @@ export const LANE_DAYS = [
   // day 3
   [
     { c: 'NBA', t: 1, q: 'What is the jump ball that begins an NBA game called?', a: 'The tip-off', d: ['The face-off', 'The kickoff', 'The first down'] },
-    { c: 'NBA', t: 2, q: 'What kind of foul does a referee assess for arguing or unsportsmanlike conduct rather than contact?', a: 'A technical foul', d: ['A flagrant foul', 'A personal foul', 'A team foul'] },
+    { c: 'NBA', t: 2, q: 'Which Celtics wing was named Finals Most Valuable Player in 2024?', a: 'Jaylen Brown', d: ['Jayson Tatum', 'Jrue Holiday', 'Derrick White'] },
     { c: 'NBA', t: 3, q: 'Which club did the Cleveland Cavaliers beat in the 2016 Finals after falling behind three games to one?', a: 'The Golden State Warriors', d: ['The Oklahoma City Thunder', 'The San Antonio Spurs', 'The Toronto Raptors'] },
     { c: 'NBA', t: 4, q: 'In 1964 the NBA widened the free throw lane to what width?', a: '16 feet', d: ['12 feet', '14 feet', '18 feet'] },
     { c: 'NBA', t: 5, q: 'Which style of close defensive contact did the NBA outlaw before the 2004 to 2005 season to open up perimeter play?', a: 'Hand-checking', d: ['Face guarding', 'Double teaming', 'The full court press'] },
   ],
   // day 4
   [
-    { c: 'NBA', t: 1, q: 'An NBA court is traditionally built from which material?', a: 'Hardwood', d: ['Rubber', 'Artificial turf', 'Concrete'] },
+    { c: 'NBA', t: 1, q: 'Which NBA team did Magic Johnson spend his entire playing career with?', a: 'Los Angeles Lakers', d: ['Boston Celtics', 'Detroit Pistons', 'Philadelphia 76ers'] },
     { c: 'NBA', t: 2, q: 'Madison Square Garden sits in which New York City borough?', a: 'Manhattan', d: ['Brooklyn', 'Queens', 'The Bronx'] },
     { c: 'NBA', t: 3, q: 'Which arena, famous for its parquet floor, housed the Celtics until 1995?', a: 'Boston Garden', d: ['The Spectrum', 'Chicago Stadium', 'Cobo Arena'] },
     { c: 'NBA', t: 4, q: 'From 1967 to 1999 the Lakers played home games in an Inglewood building known by what name?', a: 'The Forum', d: ['The Coliseum', 'The Sports Arena', 'The Pyramid'] },
@@ -49,7 +49,7 @@ export const LANE_DAYS = [
   ],
   // day 7
   [
-    { c: 'NBA', t: 1, q: 'What is the name for the act of throwing the ball toward the hoop in an attempt to score?', a: 'A shot', d: ['A screen', 'A pass', 'A rebound'] },
+    { c: 'NBA', t: 1, q: 'Which NBA team did Dirk Nowitzki play all 21 of his seasons for?', a: 'Dallas Mavericks', d: ['Houston Rockets', 'San Antonio Spurs', 'Sacramento Kings'] },
     { c: 'NBA', t: 2, q: 'Which jersey number did Larry Bird wear for the Celtics?', a: '33', d: ['32', '44', '21'] },
     { c: 'NBA', t: 3, q: 'Which Lakers forward of the 1980s was nicknamed Big Game James?', a: 'James Worthy', d: ['Byron Scott', 'Michael Cooper', 'Norm Nixon'] },
     { c: 'NBA', t: 4, q: 'How many titles did the Lakers win during the 1980s?', a: 'Five', d: ['Three', 'Four', 'Six'] },
@@ -73,7 +73,7 @@ export const LANE_DAYS = [
   ],
   // day 10
   [
-    { c: 'NBA', t: 1, q: 'What is it called when two clubs swap players with each other?', a: 'A trade', d: ['A waiver', 'A buyout', 'A draft pick'] },
+    { c: 'NBA', t: 1, q: 'Which city\'s NBA team is nicknamed the Celtics?', a: 'Boston', d: ['New York', 'Philadelphia', 'Chicago'] },
     { c: 'NBA', t: 2, q: 'Kareem Abdul-Jabbar was dealt to the Lakers in 1975 by which team?', a: 'The Milwaukee Bucks', d: ['The Chicago Bulls', 'The Baltimore Bullets', 'The Seattle SuperSonics'] },
     { c: 'NBA', t: 3, q: 'In what year did the Lakers acquire Wilt Chamberlain from Philadelphia?', a: '1968', d: ['1965', '1970', '1972'] },
     { c: 'NBA', t: 4, q: 'The Lakers obtained the draft rights to Kobe Bryant in 1996 by sending which center to Charlotte?', a: 'Vlade Divac', d: ['Elden Campbell', 'Rony Seikaly', 'Sam Perkins'] },
@@ -81,7 +81,7 @@ export const LANE_DAYS = [
   ],
   // day 11
   [
-    { c: 'NBA', t: 1, q: 'What is the term for a game decided by a very large margin?', a: 'A blowout', d: ['A washout', 'A walkover', 'A shutout'] },
+    { c: 'NBA', t: 1, q: 'Which player won NBA titles with the Miami Heat in 2012 and 2013?', a: 'LeBron James', d: ['Kevin Durant', 'Carmelo Anthony', 'Paul George'] },
     { c: 'NBA', t: 2, q: 'Which Celtics great became the first Black head coach in NBA history, in 1966?', a: 'Bill Russell', d: ['Wilt Chamberlain', 'K.C. Jones', 'Lenny Wilkens'] },
     { c: 'NBA', t: 3, q: 'How many championships did Phil Jackson win as an NBA head coach?', a: 'Eleven', d: ['Nine', 'Ten', 'Twelve'] },
     { c: 'NBA', t: 4, q: 'Which offense, taught by assistant Tex Winter, did Phil Jackson run in Chicago and Los Angeles?', a: 'The triangle', d: ['The Princeton offense', 'The flex', 'The motion offense'] },
@@ -89,7 +89,7 @@ export const LANE_DAYS = [
   ],
   // day 12
   [
-    { c: 'NBA', t: 1, q: 'What do the letters MVP stand for?', a: 'Most Valuable Player', d: ['Most Versatile Player', 'Major Value Prize', 'Most Voted Performer'] },
+    { c: 'NBA', t: 1, q: 'Which NBA team did Kobe Bryant play his entire 20-season career for?', a: 'The Los Angeles Lakers', d: ['The Charlotte Hornets', 'The Philadelphia 76ers', 'The Los Angeles Clippers'] },
     { c: 'NBA', t: 2, q: 'Which annual award goes to the best first year player in the league?', a: 'Rookie of the Year', d: ['Most Improved Player', 'Newcomer of the Year', 'Sixth Man of the Year'] },
     { c: 'NBA', t: 3, q: 'Whose name is carried by the NBA Coach of the Year trophy?', a: 'Red Auerbach', d: ['John Kundla', 'Alex Hannum', 'Bill Sharman'] },
     { c: 'NBA', t: 4, q: 'In what year did the NBA hand out its first Defensive Player of the Year award?', a: '1983', d: ['1976', '1969', '1991'] },
@@ -105,7 +105,7 @@ export const LANE_DAYS = [
   ],
   // day 14
   [
-    { c: 'NBA', t: 1, q: 'What is a player in his first professional season commonly called?', a: 'A rookie', d: ['A veteran', 'A free agent', 'A walk-on'] },
+    { c: 'NBA', t: 1, q: 'Which player wore number 23 for the Chicago Bulls championship teams of the 1990s?', a: 'Michael Jordan', d: ['Scottie Pippen', 'Dennis Rodman', 'Horace Grant'] },
     { c: 'NBA', t: 2, q: 'Kareem Abdul-Jabbar won three national titles at which university under John Wooden?', a: 'UCLA', d: ['USC', 'Kansas', 'North Carolina'] },
     { c: 'NBA', t: 3, q: 'Which coach led the Detroit Pistons to back to back titles in 1989 and 1990?', a: 'Chuck Daly', d: ['Larry Brown', 'Doug Collins', 'Rick Adelman'] },
     { c: 'NBA', t: 4, q: 'In what year did the NBA and its players agree on a minimum draft age of 19?', a: '2005', d: ['1998', '2001', '2011'] },
@@ -113,7 +113,7 @@ export const LANE_DAYS = [
   ],
   // day 15
   [
-    { c: 'NBA', t: 1, q: 'What is a brand new club added to an established league called?', a: 'An expansion team', d: ['A farm team', 'A reserve team', 'A charter team'] },
+    { c: 'NBA', t: 1, q: 'Which Lakers guard was nicknamed the Black Mamba?', a: 'Kobe Bryant', d: ['Derek Fisher', 'Nick Van Exel', 'Eddie Jones'] },
     { c: 'NBA', t: 2, q: 'In what year did the Charlotte Hornets and Miami Heat begin play as new franchises?', a: '1988', d: ['1985', '1990', '1992'] },
     { c: 'NBA', t: 3, q: 'The Kansas City Kings moved in 1985 to which city?', a: 'Sacramento', d: ['Omaha', 'Salt Lake City', 'San Diego'] },
     { c: 'NBA', t: 4, q: 'The Buffalo Braves relocated in 1978 and were renamed what?', a: 'The Clippers', d: ['The Kings', 'The Nuggets', 'The Cavaliers'] },
@@ -138,14 +138,14 @@ export const LANE_DAYS = [
   // day 18
   [
     { c: 'NBA', t: 1, q: 'Earvin Johnson is universally known by which nickname?', a: 'Magic', d: ['Doc', 'Zeke', 'Pearl'] },
-    { c: 'NBA', t: 2, q: 'What is the term for the first substitute a coach brings off the bench?', a: 'The sixth man', d: ['The swing man', 'The utility man', 'The closer'] },
+    { c: 'NBA', t: 2, q: 'Which guard was named Finals Most Valuable Player in 2022?', a: 'Stephen Curry', d: ['Klay Thompson', 'Andrew Wiggins', 'Jordan Poole'] },
     { c: 'NBA', t: 3, q: 'The post move called the Dream Shake was the signature of which center?', a: 'Hakeem Olajuwon', d: ['Patrick Ewing', 'David Robinson', 'Alonzo Mourning'] },
     { c: 'NBA', t: 4, q: 'Which nickname described the Golden State backcourt of Tim Hardaway, Mitch Richmond and Chris Mullin?', a: 'Run TMC', d: ['The Splash Brothers', 'The Bay Bombers', 'Thunder and Lightning'] },
     { c: 'NBA', t: 5, q: 'Which Knicks guard of the 1970s went by the nickname Clyde?', a: 'Walt Frazier', d: ['Earl Monroe', 'Dick Barnett', 'Bill Bradley'] },
   ],
   // day 19
   [
-    { c: 'NBA', t: 1, q: 'What is the term for a coach sending a fresh player onto the floor in place of another?', a: 'A substitution', d: ['A rotation', 'A timeout', 'A turnover'] },
+    { c: 'NBA', t: 1, q: 'Which Utah Jazz forward was nicknamed the Mailman?', a: 'Karl Malone', d: ['Adrian Dantley', 'Thurl Bailey', 'Bryon Russell'] },
     { c: 'NBA', t: 2, q: 'Which annual award goes to the player who advances the most from one season to the next?', a: 'Most Improved Player', d: ['Comeback Player of the Year', 'Sixth Man of the Year', 'Hustle Award'] },
     { c: 'NBA', t: 3, q: 'Which team did the New York Knicks beat in the 1970 Finals?', a: 'The Los Angeles Lakers', d: ['The Baltimore Bullets', 'The Milwaukee Bucks', 'The Boston Celtics'] },
     { c: 'NBA', t: 4, q: 'The silhouette in the NBA logo was traced from a photograph of which player?', a: 'Jerry West', d: ['Oscar Robertson', 'Elgin Baylor', 'Bob Cousy'] },
@@ -153,8 +153,8 @@ export const LANE_DAYS = [
   ],
   // day 20
   [
-    { c: 'NBA', t: 1, q: 'What is a shot made just as the game clock expires called?', a: 'A buzzer beater', d: ['A tip in', 'A fadeaway', 'A bank shot'] },
-    { c: 'NBA', t: 2, q: 'What is a performance of at least ten points and ten rebounds in one game called?', a: 'A double-double', d: ['A twin bill', 'A two-way', 'A doubleheader'] },
+    { c: 'NBA', t: 1, q: 'Which European country is Luka Doncic from?', a: 'Slovenia', d: ['Serbia', 'Croatia', 'Slovakia'] },
+    { c: 'NBA', t: 2, q: 'Which Celtics center of the 1980s was nicknamed the Chief?', a: 'Robert Parish', d: ['Kevin McHale', 'Bill Walton', 'Dave Cowens'] },
     { c: 'NBA', t: 3, q: 'How many points did Michael Jordan score against Boston in a playoff game at the Boston Garden?', a: '63', d: ['58', '69', '55'] },
     { c: 'NBA', t: 4, q: 'Which Golden State guard poured in 37 points in one quarter in January 2015?', a: 'Klay Thompson', d: ['Stephen Curry', 'Andre Iguodala', 'Jason Richardson'] },
     { c: 'NBA', t: 5, q: 'In a December 1983 triple overtime game, the Pistons won 186 to 184 against which team?', a: 'The Nuggets', d: ['The Spurs', 'The Trail Blazers', 'The Jazz'] },
@@ -169,7 +169,7 @@ export const LANE_DAYS = [
   ],
   // day 22
   [
-    { c: 'NBA', t: 1, q: 'What is the title of the official who runs a professional sports league?', a: 'The commissioner', d: ['The chairman', 'The chancellor', 'The registrar'] },
+    { c: 'NBA', t: 1, q: 'Which Boston center won eleven championships as a player between 1957 and 1969?', a: 'Bill Russell', d: ['Dave Cowens', 'Robert Parish', 'Tom Heinsohn'] },
     { c: 'NBA', t: 2, q: 'Which Serbian center was voted Most Valuable Player in both 2021 and 2022?', a: 'Nikola Jokic', d: ['Luka Doncic', 'Joel Embiid', 'Giannis Antetokounmpo'] },
     { c: 'NBA', t: 3, q: 'How many games did each team play in the lockout shortened 1998 to 1999 season?', a: '50', d: ['66', '58', '72'] },
     { c: 'NBA', t: 4, q: 'Who was the first president of the Basketball Association of America, taking the job in 1946?', a: 'Maurice Podoloff', d: ['Walter Brown', 'Ned Irish', 'Al Cervi'] },
@@ -177,15 +177,15 @@ export const LANE_DAYS = [
   ],
   // day 23
   [
-    { c: 'NBA', t: 1, q: 'What happens when the score is tied at the end of the fourth quarter?', a: 'An extra period is played', d: ['The game ends level', 'A free throw contest decides it', 'The home team is awarded the win'] },
-    { c: 'NBA', t: 2, q: 'What violation is called when a player who has already stopped dribbling begins again?', a: 'A double dribble', d: ['Traveling', 'Palming', 'A backcourt violation'] },
+    { c: 'NBA', t: 1, q: 'Which NBA team shares Los Angeles with the Lakers?', a: 'The Clippers', d: ['The Kings', 'The Stars', 'The Galaxy'] },
+    { c: 'NBA', t: 2, q: 'Which French center did San Antonio select first overall in 2023?', a: 'Victor Wembanyama', d: ['Rudy Gobert', 'Joakim Noah', 'Boris Diaw'] },
     { c: 'NBA', t: 3, q: 'Which university did Michael Jordan play for before entering the NBA?', a: 'North Carolina', d: ['Duke', 'Georgetown', 'Kansas'] },
     { c: 'NBA', t: 4, q: 'A November 1950 game between Fort Wayne and Minneapolis ended with what famously low score?', a: '19 to 18', d: ['24 to 21', '15 to 12', '30 to 28'] },
     { c: 'NBA', t: 5, q: 'In what year did the NBA permanently adopt a crew of three officials for regular season games?', a: '1988', d: ['1978', '1994', '1971'] },
   ],
   // day 24
   [
-    { c: 'NBA', t: 1, q: 'What is it called when a team wins a best of seven series in four straight games?', a: 'A sweep', d: ['A shutout', 'A whitewash', 'A clean sheet'] },
+    { c: 'NBA', t: 1, q: 'Which player was nicknamed the Round Mound of Rebound?', a: 'Charles Barkley', d: ['Moses Malone', 'Oliver Miller', 'Wes Unseld'] },
     { c: 'NBA', t: 2, q: 'Which French point guard won three championships with San Antonio in the 2000s?', a: 'Tony Parker', d: ['Boris Diaw', 'Nicolas Batum', 'Tariq Abdul-Wahad'] },
     { c: 'NBA', t: 3, q: 'David Robinson attended which service academy before his NBA career?', a: 'The Naval Academy', d: ['West Point', 'The Air Force Academy', 'The Coast Guard Academy'] },
     { c: 'NBA', t: 4, q: 'Which team did the Spurs beat in the 2007 NBA Finals?', a: 'The Cleveland Cavaliers', d: ['The Detroit Pistons', 'The Dallas Mavericks', 'The Phoenix Suns'] },
@@ -209,8 +209,8 @@ export const LANE_DAYS = [
   ],
   // day 27
   [
-    { c: 'NBA', t: 1, q: 'What is the postseason tournament that decides the NBA champion called?', a: 'The playoffs', d: ['The preseason', 'The showcase', 'The round robin'] },
-    { c: 'NBA', t: 2, q: 'What is the benefit called that goes to the side with the better regular season record in a series?', a: 'Home court advantage', d: ['A one game head start', 'An extra timeout', 'The right to pick officials'] },
+    { c: 'NBA', t: 1, q: 'Which San Antonio center was nicknamed the Admiral?', a: 'David Robinson', d: ['Tim Duncan', 'Artis Gilmore', 'Will Perdue'] },
+    { c: 'NBA', t: 2, q: 'Which team drafted Kevin Durant second overall in 2007?', a: 'The Seattle SuperSonics', d: ['The Portland Trail Blazers', 'The Atlanta Hawks', 'The Memphis Grizzlies'] },
     { c: 'NBA', t: 3, q: 'Which club did the Lakers beat in the 2020 NBA Finals?', a: 'The Miami Heat', d: ['The Denver Nuggets', 'The Boston Celtics', 'The Toronto Raptors'] },
     { c: 'NBA', t: 4, q: 'What seed were the New York Knicks when they reached the 1999 NBA Finals?', a: 'Eighth', d: ['Sixth', 'Seventh', 'Fifth'] },
     { c: 'NBA', t: 5, q: 'In the 1981 Eastern Conference finals Boston came back from three games to one down against which club?', a: 'The Philadelphia 76ers', d: ['The New York Knicks', 'The Milwaukee Bucks', 'The Chicago Bulls'] },
@@ -225,7 +225,7 @@ export const LANE_DAYS = [
   ],
   // day 29
   [
-    { c: 'NBA', t: 1, q: 'What is it called when a club permanently withdraws a jersey number to honor a player?', a: 'Retiring the number', d: ['Framing the number', 'Vacating the number', 'Sealing the number'] },
+    { c: 'NBA', t: 1, q: 'Which San Antonio scorer of the 1970s and 1980s was nicknamed the Iceman?', a: 'George Gervin', d: ['James Silas', 'Larry Kenon', 'Mike Mitchell'] },
     { c: 'NBA', t: 2, q: 'Which jersey number did Kobe Bryant wear before he switched to 24?', a: '8', d: ['33', '10', '21'] },
     { c: 'NBA', t: 3, q: 'Which jersey number did Wilt Chamberlain wear for most of his career?', a: '13', d: ['32', '21', '44'] },
     { c: 'NBA', t: 4, q: 'Which longtime Utah head coach entered the Hall of Fame in 2009 alongside Michael Jordan?', a: 'Jerry Sloan', d: ['Frank Layden', 'Rick Adelman', 'Del Harris'] },
@@ -233,15 +233,15 @@ export const LANE_DAYS = [
   ],
   // day 30
   [
-    { c: 'NBA', t: 1, q: 'What is the close range shot banked off the glass while moving toward the rim called?', a: 'A layup', d: ['A hook shot', 'A fadeaway', 'A floater'] },
-    { c: 'NBA', t: 2, q: 'What is the play called when one player lobs the ball high for a teammate to catch and finish?', a: 'An alley-oop', d: ['A give and go', 'A backdoor cut', 'An outlet pass'] },
+    { c: 'NBA', t: 1, q: 'Which Portland and Houston guard was nicknamed the Glide?', a: 'Clyde Drexler', d: ['Terry Porter', 'Kenny Smith', 'Vernon Maxwell'] },
+    { c: 'NBA', t: 2, q: 'Which team drafted Dwyane Wade fifth overall in 2003?', a: 'The Miami Heat', d: ['The Detroit Pistons', 'The Denver Nuggets', 'The Toronto Raptors'] },
     { c: 'NBA', t: 3, q: 'Which coach ran the Seven Seconds or Less offense in Phoenix in the mid 2000s?', a: "Mike D'Antoni", d: ['Mike Brown', 'Alvin Gentry', 'Terry Porter'] },
     { c: 'NBA', t: 4, q: 'Which word for a third straight championship did Pat Riley have trademarked?', a: 'Three-peat', d: ['Dynasty', 'Hat trick', 'Treble'] },
-    { c: 'NBA', t: 5, q: 'Which salary cap exception, named for a Celtics great, lets a club exceed the cap to re-sign its own free agent?', a: 'The Larry Bird exception', d: ['The Gilbert Arenas provision', 'The mid-level exception', 'The Danny Ainge rule'] },
+    { c: 'NBA', t: 5, q: 'Which Washington Bullets center was named Finals Most Valuable Player in 1978?', a: 'Wes Unseld', d: ['Elvin Hayes', 'Bob Dandridge', 'Mitch Kupchak'] },
   ],
   // day 31
   [
-    { c: 'NBA', t: 1, q: 'A club that finishes with a poor record is rewarded with what at the draft?', a: 'A higher pick', d: ['A lower pick', 'An extra roster spot', 'A cash payment'] },
+    { c: 'NBA', t: 1, q: 'Which team did Charles Barkley play for when he won the 1993 Most Valuable Player award?', a: 'The Phoenix Suns', d: ['The Philadelphia 76ers', 'The Houston Rockets', 'The Portland Trail Blazers'] },
     { c: 'NBA', t: 2, q: 'The NBA cut its draft down to how many rounds in 1989?', a: 'Two', d: ['One', 'Three', 'Seven'] },
     { c: 'NBA', t: 3, q: 'Which player did the Trail Blazers take first overall in 2007?', a: 'Greg Oden', d: ['Kevin Durant', 'Al Horford', 'Mike Conley'] },
     { c: 'NBA', t: 4, q: 'Which club used a second round pick in 2014 on Nikola Jokic?', a: 'The Denver Nuggets', d: ['The Minnesota Timberwolves', 'The Utah Jazz', 'The Sacramento Kings'] },
@@ -249,7 +249,7 @@ export const LANE_DAYS = [
   ],
   // day 32
   [
-    { c: 'NBA', t: 1, q: 'Which device above the backboard counts down the time a side has to attempt a field goal?', a: 'The shot clock', d: ['The game timer', 'The possession meter', 'The play gauge'] },
+    { c: 'NBA', t: 1, q: 'Which team drafted Stephen Curry seventh overall in 2009?', a: 'Golden State Warriors', d: ['Charlotte Bobcats', 'New York Knicks', 'Minnesota Timberwolves'] },
     { c: 'NBA', t: 2, q: 'Which player led the NBA in rebounding in every season from 1992 through 1998?', a: 'Dennis Rodman', d: ['Charles Barkley', 'David Robinson', 'Shawn Kemp'] },
     { c: 'NBA', t: 3, q: 'Which Seattle guard earned the nickname The Glove for his perimeter defense?', a: 'Gary Payton', d: ['Nate McMillan', 'Hersey Hawkins', 'Dana Barros'] },
     { c: 'NBA', t: 4, q: 'In what year did the Utah Jazz reach the NBA Finals for the first time?', a: '1997', d: ['1994', '1996', '1999'] },
@@ -257,7 +257,7 @@ export const LANE_DAYS = [
   ],
   // day 33
   [
-    { c: 'NBA', t: 1, q: 'How many minutes long is a regulation NBA game, not counting overtime?', a: '48', d: ['40', '60', '44'] },
+    { c: 'NBA', t: 1, q: 'Which country did Pau Gasol represent in international basketball?', a: 'Spain', d: ['Italy', 'Argentina', 'France'] },
     { c: 'NBA', t: 2, q: 'Which club won its first championship in 1971, in only its third season in the league?', a: 'The Milwaukee Bucks', d: ['The Baltimore Bullets', 'The Atlanta Hawks', 'The Chicago Bulls'] },
     { c: 'NBA', t: 3, q: 'Who was named Most Valuable Player of the 1972 NBA Finals?', a: 'Wilt Chamberlain', d: ['Jerry West', 'Gail Goodrich', 'Happy Hairston'] },
     { c: 'NBA', t: 4, q: 'Which club swept the Washington Bullets to take the 1975 championship?', a: 'The Golden State Warriors', d: ['The Boston Celtics', 'The Phoenix Suns', 'The Chicago Bulls'] },
@@ -265,31 +265,31 @@ export const LANE_DAYS = [
   ],
   // day 34
   [
-    { c: 'NBA', t: 1, q: 'What is awarded to the winning team of the Olympic basketball tournament?', a: 'A gold medal', d: ['A silver medal', 'A bronze medal', 'A crystal trophy'] },
+    { c: 'NBA', t: 1, q: 'Which Chicago forward of the 1990s, known for his dyed hair, was nicknamed the Worm?', a: 'Dennis Rodman', d: ['Horace Grant', 'Toni Kukoc', 'Luc Longley'] },
     { c: 'NBA', t: 2, q: 'Which country hosted the 1992 Summer Olympics, where NBA players first competed?', a: 'Spain', d: ['France', 'Italy', 'Greece'] },
-    { c: 'NBA', t: 3, q: 'How many minutes long is a quarter in FIBA international play?', a: 'Ten', d: ['Twelve', 'Eight', 'Fifteen'] },
+    { c: 'NBA', t: 3, q: 'Which Celtic stole Isiah Thomas\'s inbounds pass in Game 5 of the 1987 Eastern Conference finals?', a: 'Larry Bird', d: ['Dennis Johnson', 'Danny Ainge', 'Kevin McHale'] },
     { c: 'NBA', t: 4, q: 'Which Cameroonian was selected third overall in the 2014 NBA draft?', a: 'Joel Embiid', d: ['Pascal Siakam', 'Luc Mbah a Moute', 'Serge Ibaka'] },
     { c: 'NBA', t: 5, q: 'Which Australian center was chosen first overall in the 2005 NBA draft?', a: 'Andrew Bogut', d: ['Luc Longley', 'Andrew Gaze', 'Patty Mills'] },
   ],
   // day 35
   [
-    { c: 'NBA', t: 1, q: 'What does a coach call to stop play and gather the team on the sideline?', a: 'A timeout', d: ['A substitution', 'A review', 'A jump ball'] },
+    { c: 'NBA', t: 1, q: 'Which Hall of Fame center played for the New York Knicks from 1985 to 2000?', a: 'Patrick Ewing', d: ['Charles Oakley', 'Bill Cartwright', 'Marcus Camby'] },
     { c: 'NBA', t: 2, q: 'Which coach led the Miami Heat to their first championship, in 2006?', a: 'Pat Riley', d: ['Erik Spoelstra', 'Stan Van Gundy', 'Ron Rothstein'] },
-    { c: 'NBA', t: 3, q: 'What name is given to a lineup built around speed and shooting instead of a traditional center?', a: 'Small ball', d: ['Grit and grind', 'Ball control', 'The two platoon'] },
+    { c: 'NBA', t: 3, q: 'Which Miami guard hit the tying corner three-pointer late in Game 6 of the 2013 Finals?', a: 'Ray Allen', d: ['Mario Chalmers', 'Mike Miller', 'Shane Battier'] },
     { c: 'NBA', t: 4, q: 'Which coach guided the Dallas Mavericks to the 2011 championship?', a: 'Rick Carlisle', d: ['Avery Johnson', 'Don Nelson', 'Jason Kidd'] },
     { c: 'NBA', t: 5, q: 'Which coach led the Milwaukee Bucks to their first championship?', a: 'Larry Costello', d: ['Bill Sharman', 'Al Attles', 'Alex Hannum'] },
   ],
   // day 36
   [
-    { c: 'NBA', t: 1, q: 'What is called when a player with the ball steps on or beyond the boundary line?', a: 'Out of bounds', d: ['Traveling', 'A backcourt violation', 'Goaltending'] },
-    { c: 'NBA', t: 2, q: 'What is the penalty when a defender fouls a shooter who misses from beyond the arc?', a: 'Three free throws', d: ['Two free throws', 'One free throw and the ball', 'A technical foul'] },
-    { c: 'NBA', t: 3, q: 'How far from the basket is the NBA arc at the top of the key?', a: '23 feet 9 inches', d: ['22 feet', '24 feet 6 inches', '25 feet'] },
-    { c: 'NBA', t: 4, q: 'How long may a closely guarded player hold the ball without dribbling, passing or shooting?', a: 'Five seconds', d: ['Three seconds', 'Eight seconds', 'Ten seconds'] },
+    { c: 'NBA', t: 1, q: 'Which team won the 2024 NBA championship?', a: 'The Boston Celtics', d: ['The Dallas Mavericks', 'The Denver Nuggets', 'The Minnesota Timberwolves'] },
+    { c: 'NBA', t: 2, q: 'Which Lakers guard won his only Most Valuable Player award in 2008?', a: 'Kobe Bryant', d: ['Derek Fisher', 'Lamar Odom', 'Pau Gasol'] },
+    { c: 'NBA', t: 3, q: 'Which team drafted Chris Paul fourth overall in 2005?', a: 'The New Orleans Hornets', d: ['The Charlotte Bobcats', 'The Utah Jazz', 'The Atlanta Hawks'] },
+    { c: 'NBA', t: 4, q: 'Which team did the Detroit Pistons beat in the 1990 NBA Finals?', a: 'The Portland Trail Blazers', d: ['The Los Angeles Lakers', 'The Phoenix Suns', 'The Utah Jazz'] },
     { c: 'NBA', t: 5, q: 'In what year did the NBA first give its officials instant replay review?', a: '2002', d: ['1996', '2008', '2013'] },
   ],
   // day 37
   [
-    { c: 'NBA', t: 1, q: 'What is a player free to sign with any club he chooses called?', a: 'A free agent', d: ['A rookie', 'A draftee', 'A two-way player'] },
+    { c: 'NBA', t: 1, q: 'Which Houston guard of the late 2010s was nicknamed the Beard?', a: 'James Harden', d: ['Chris Paul', 'Eric Gordon', 'Trevor Ariza'] },
     { c: 'NBA', t: 2, q: "Which club did Shaquille O'Neal join in a 2004 trade out of Los Angeles?", a: 'The Miami Heat', d: ['The Phoenix Suns', 'The Boston Celtics', 'The Cleveland Cavaliers'] },
     { c: 'NBA', t: 3, q: 'The 1993 draft night deal that brought Anfernee Hardaway to Orlando sent which player to Golden State?', a: 'Chris Webber', d: ['Shawn Bradley', 'Jamal Mashburn', 'Vin Baker'] },
     { c: 'NBA', t: 4, q: 'Which club acquired Clyde Drexler from Portland in February 1995?', a: 'The Houston Rockets', d: ['The Phoenix Suns', 'The Chicago Bulls', 'The New York Knicks'] },
@@ -297,7 +297,7 @@ export const LANE_DAYS = [
   ],
   // day 38
   [
-    { c: 'NBA', t: 1, q: 'What is the seating area where substitutes and coaches wait during a game called?', a: 'The bench', d: ['The dugout', 'The box', 'The pit'] },
+    { c: 'NBA', t: 1, q: 'Which guard formed the Splash Brothers backcourt with Stephen Curry?', a: 'Klay Thompson', d: ['Draymond Green', 'Monta Ellis', 'Jordan Poole'] },
     { c: 'NBA', t: 2, q: 'Which arena has hosted the New York Knicks since 1968?', a: 'Madison Square Garden', d: ['Barclays Center', 'The Nassau Coliseum', 'The Meadowlands Arena'] },
     { c: 'NBA', t: 3, q: 'Which two NBA clubs shared the downtown Los Angeles arena that opened in 1999?', a: 'The Lakers and the Clippers', d: ['The Lakers and the Warriors', 'The Clippers and the Suns', 'The Lakers and the Nuggets'] },
     { c: 'NBA', t: 4, q: 'In which city did the NBA stage its first regular season game outside North America, in 1990?', a: 'Tokyo', d: ['London', 'Paris', 'Mexico City'] },
@@ -305,7 +305,7 @@ export const LANE_DAYS = [
   ],
   // day 39
   [
-    { c: 'NBA', t: 1, q: 'What is the broadcaster who describes the action as it happens called?', a: 'A play-by-play announcer', d: ['A statistician', 'A public address host', 'A sideline scorer'] },
+    { c: 'NBA', t: 1, q: 'Which Greek forward, nicknamed the Greek Freak, was named 2021 NBA Finals MVP?', a: 'Giannis Antetokounmpo', d: ['Khris Middleton', 'Brook Lopez', 'Thanasis Antetokounmpo'] },
     { c: 'NBA', t: 2, q: 'Which 1996 film paired Michael Jordan with Looney Tunes characters?', a: 'Space Jam', d: ['Like Mike', 'He Got Game', 'Blue Chips'] },
     { c: 'NBA', t: 3, q: 'Which network used the theme Roundball Rock to open its NBA coverage in the 1990s?', a: 'NBC', d: ['CBS', 'ABC', 'ESPN'] },
     { c: 'NBA', t: 4, q: 'Which company supplied the official NBA game ball for decades before Wilson took over in 2021?', a: 'Spalding', d: ['Rawlings', 'Molten', 'Baden'] },
@@ -337,15 +337,15 @@ export const LANE_DAYS = [
   ],
   // day 43
   [
-    { c: 'NBA', t: 1, q: 'What does an official blow to stop play?', a: 'A whistle', d: ['A horn', 'A bell', 'A siren'] },
-    { c: 'NBA', t: 2, q: 'What is called when a ball handler runs over a defender who has already set his feet?', a: 'A charging foul', d: ['A blocking foul', 'A reach in foul', 'A loose ball foul'] },
-    { c: 'NBA', t: 3, q: 'What is the technique of using your body to keep an opponent away from a missed shot called?', a: 'Boxing out', d: ['Sealing', 'Trapping', 'Icing'] },
-    { c: 'NBA', t: 4, q: 'What do coaches call the two corners where the free throw line meets the lane?', a: 'The elbows', d: ['The wings', 'The blocks', 'The short corners'] },
+    { c: 'NBA', t: 1, q: 'Which Minnesota and Boston forward was nicknamed the Big Ticket?', a: 'Kevin Garnett', d: ['Paul Pierce', 'Kevin McHale', 'Kevin Love'] },
+    { c: 'NBA', t: 2, q: 'Which Cleveland forward won the Most Valuable Player award in both 2009 and 2010?', a: 'LeBron James', d: ['Antawn Jamison', 'Mo Williams', 'Zydrunas Ilgauskas'] },
+    { c: 'NBA', t: 3, q: 'Which Bulls guard hit the championship-winning jumper in Game 6 of the 1997 Finals?', a: 'Steve Kerr', d: ['Ron Harper', 'Randy Brown', 'Jud Buechler'] },
+    { c: 'NBA', t: 4, q: 'Which team did the San Antonio Spurs beat in the 1999 NBA Finals?', a: 'The New York Knicks', d: ['The Indiana Pacers', 'The Miami Heat', 'The Utah Jazz'] },
     { c: 'NBA', t: 5, q: 'In what year did the NBA begin resetting its clock to 14 seconds after an offensive rebound?', a: '2018', d: ['2014', '2021', '2010'] },
   ],
   // day 44
   [
-    { c: 'NBA', t: 1, q: 'What is a game played at the opponent home arena called?', a: 'A road game', d: ['A neutral game', 'A bye', 'A friendly'] },
+    { c: 'NBA', t: 1, q: 'Which Philadelphia guard was nicknamed the Answer?', a: 'Allen Iverson', d: ['Eric Snow', 'Jerry Stackhouse', 'Aaron McKie'] },
     { c: 'NBA', t: 2, q: 'The Philadelphia 76ers name honors an event of which year?', a: '1776', d: ['1876', '1976', '1746'] },
     { c: 'NBA', t: 3, q: 'The Clippers name refers to what kind of vessel?', a: 'A sailing ship', d: ['A fishing boat', 'A cargo barge', 'A steam ferry'] },
     { c: 'NBA', t: 4, q: 'The Charlotte Hornets name comes from a British general describing the area during which conflict?', a: 'The American Revolution', d: ['The Civil War', 'The War of 1812', 'The French and Indian War'] },
@@ -353,7 +353,7 @@ export const LANE_DAYS = [
   ],
   // day 45
   [
-    { c: 'NBA', t: 1, q: 'What is the name of the overhead display that shows the score, the time and the team fouls?', a: 'The scoreboard', d: ['The shot clock', 'The play card', 'The stat sheet'] },
+    { c: 'NBA', t: 1, q: 'Which Celtics forward of the 2000s was nicknamed the Truth?', a: 'Paul Pierce', d: ['Antoine Walker', 'Ray Allen', 'Kevin Garnett'] },
     { c: 'NBA', t: 2, q: 'Who became, in 2002, the first player taken first overall without ever having played basketball in the United States?', a: 'Yao Ming', d: ['Andrea Bargnani', 'Dirk Nowitzki', 'Pau Gasol'] },
     { c: 'NBA', t: 3, q: 'Which Italian trained forward did Toronto take first overall in 2006?', a: 'Andrea Bargnani', d: ['LaMarcus Aldridge', 'Adam Morrison', 'Tyrus Thomas'] },
     { c: 'NBA', t: 4, q: 'In what year did the NBA first weight its draft lottery by record rather than giving every club equal odds?', a: '1990', d: ['1985', '1987', '1994'] },
@@ -361,15 +361,15 @@ export const LANE_DAYS = [
   ],
   // day 46
   [
-    { c: 'NBA', t: 1, q: 'What do fans call the seats along the edge of the floor at an NBA game?', a: 'Courtside seats', d: ['Bleacher seats', 'Sky boxes', 'Dugout seats'] },
-    { c: 'NBA', t: 2, q: 'What is the light practice a club holds at the arena on the morning of a game called?', a: 'A shootaround', d: ['A scrimmage', 'A walkthrough', 'A warmup lap'] },
-    { c: 'NBA', t: 3, q: 'What is the stretch at the end of a lopsided game when reserves finish up called?', a: 'Garbage time', d: ['Junk minutes', 'Mop up duty', 'The cool down'] },
+    { c: 'NBA', t: 1, q: 'Which team did Allen Iverson lead to the 2001 NBA Finals?', a: 'The Philadelphia 76ers', d: ['The Denver Nuggets', 'The Detroit Pistons', 'The Memphis Grizzlies'] },
+    { c: 'NBA', t: 2, q: 'Which player hit the 1989 series-winning buzzer beater over Craig Ehlo known as The Shot?', a: 'Michael Jordan', d: ['Scottie Pippen', 'Craig Hodges', 'John Paxson'] },
+    { c: 'NBA', t: 3, q: 'Which Bulls guard hit the title-clinching three-pointer in Game 6 of the 1993 Finals?', a: 'John Paxson', d: ['B.J. Armstrong', 'Craig Hodges', 'Trent Tucker'] },
     { c: 'NBA', t: 4, q: 'Which phrase described the physical, defense first Memphis teams of the early 2010s?', a: 'Grit and Grind', d: ['Lob City', 'Showtime', 'Seven Seconds or Less'] },
     { c: 'NBA', t: 5, q: 'What did the rule book call the restrictions, dropped in 2001, that forced defenders to guard a man rather than an area?', a: 'The illegal defense rules', d: ['The zone press rules', 'The clear out rules', 'The lane occupancy rules'] },
   ],
   // day 47
   [
-    { c: 'NBA', t: 1, q: 'What is the first game of a club season called?', a: 'The opener', d: ['The kickoff', 'The curtain', 'The debut match'] },
+    { c: 'NBA', t: 1, q: 'Which point guard is widely known by the initials CP3?', a: 'Chris Paul', d: ['Chauncey Billups', 'Chris Webber', 'Mike Conley'] },
     { c: 'NBA', t: 2, q: 'Which center anchored the New York teams that reached the 1994 NBA Finals?', a: 'Patrick Ewing', d: ['Charles Oakley', 'Anthony Mason', 'Bill Cartwright'] },
     { c: 'NBA', t: 3, q: 'Which club beat the Knicks in the 1994 NBA Finals?', a: 'The Houston Rockets', d: ['The Chicago Bulls', 'The Indiana Pacers', 'The Utah Jazz'] },
     { c: 'NBA', t: 4, q: 'Reggie Miller scored eight points in nine seconds during the 1995 playoffs against which club?', a: 'The New York Knicks', d: ['The Orlando Magic', 'The Atlanta Hawks', 'The Chicago Bulls'] },
@@ -385,7 +385,7 @@ export const LANE_DAYS = [
   ],
   // day 49
   [
-    { c: 'NBA', t: 1, q: 'What is the full group of players a club keeps under contract called?', a: 'The roster', d: ['The lineup', 'The bracket', 'The docket'] },
+    { c: 'NBA', t: 1, q: 'Which Golden State forward won the Defensive Player of the Year award in 2017?', a: 'Draymond Green', d: ['Andre Iguodala', 'Kevin Durant', 'Harrison Barnes'] },
     { c: 'NBA', t: 2, q: 'Which club did Kevin Durant join as a free agent in 2016?', a: 'The Golden State Warriors', d: ['The Boston Celtics', 'The Los Angeles Clippers', 'The Miami Heat'] },
     { c: 'NBA', t: 3, q: 'How many regular season games did Golden State win in the 2015 to 2016 season?', a: '73', d: ['72', '70', '74'] },
     { c: 'NBA', t: 4, q: 'Who was named Most Valuable Player of the 2015 NBA Finals?', a: 'Andre Iguodala', d: ['Stephen Curry', 'Draymond Green', 'Klay Thompson'] },
@@ -393,7 +393,7 @@ export const LANE_DAYS = [
   ],
   // day 50
   [
-    { c: 'NBA', t: 1, q: 'What is the word for a club moving its operations to a new city?', a: 'Relocation', d: ['Expansion', 'Contraction', 'Realignment'] },
+    { c: 'NBA', t: 1, q: 'Which team did Jason Kidd lead to back to back NBA Finals in 2002 and 2003?', a: 'The New Jersey Nets', d: ['The Phoenix Suns', 'The Dallas Mavericks', 'The Indiana Pacers'] },
     { c: 'NBA', t: 2, q: 'Which nickname did the Oklahoma City franchise adopt when it began play there in 2008?', a: 'The Thunder', d: ['The Barons', 'The Outlaws', 'The Drillers'] },
     { c: 'NBA', t: 3, q: 'In what year did the Nets move from New Jersey to Brooklyn?', a: '2012', d: ['2008', '2010', '2015'] },
     { c: 'NBA', t: 4, q: 'During their years at the Nassau Coliseum, the Nets played on which piece of New York geography?', a: 'Long Island', d: ['Staten Island', 'Manhattan', 'Coney Island'] },
@@ -418,7 +418,7 @@ export const LANE_DAYS = [
   // day 53
   [
     { c: 'NBA', t: 1, q: 'What word describes a club that dominates its sport across many seasons?', a: 'A dynasty', d: ['A syndicate', 'A conglomerate', 'A cartel'] },
-    { c: 'NBA', t: 2, q: 'What is the annual drawing that sets the pick order among clubs that missed the playoffs called?', a: 'The lottery', d: ['The combine', 'The waiver draft', 'The expansion draft'] },
+    { c: 'NBA', t: 2, q: 'Which Utah guard hit the buzzer-beating three that sent the Jazz to their first Finals, in 1997?', a: 'John Stockton', d: ['Jeff Hornacek', 'Howard Eisley', 'Shandon Anderson'] },
     { c: 'NBA', t: 3, q: 'Who was the first Black player selected by an NBA club, taken by Boston in 1950?', a: 'Chuck Cooper', d: ['Earl Lloyd', 'Nat Clifton', 'Don Barksdale'] },
     { c: 'NBA', t: 4, q: 'Which club won the first championship played under the new shot clock, in 1955?', a: 'The Syracuse Nationals', d: ['The Fort Wayne Pistons', 'The Minneapolis Lakers', 'The Boston Celtics'] },
     { c: 'NBA', t: 5, q: 'In what year did the NBA stage its first regular season game in Europe?', a: '2011', d: ['1997', '2005', '2016'] },
@@ -433,23 +433,23 @@ export const LANE_DAYS = [
   ],
   // day 55
   [
-    { c: 'NBA', t: 1, q: 'What is a ball that no player controls after a deflection called?', a: 'A loose ball', d: ['A dead ball', 'A live ball', 'A held ball'] },
-    { c: 'NBA', t: 2, q: 'What happens to a player who picks up two technical fouls in the same game?', a: 'He is ejected', d: ['He must sit out one quarter', 'His club loses a timeout', 'He is fined but plays on'] },
-    { c: 'NBA', t: 3, q: 'How does an NBA overtime period begin?', a: 'With a jump ball', d: ['With an alternating possession arrow', 'With a coin toss', 'With the ball to the trailing side'] },
-    { c: 'NBA', t: 4, q: 'What does the offense receive when a defensive three seconds violation is whistled?', a: 'One free throw and the ball', d: ['Two free throws', 'Two points', 'A fresh shot clock only'] },
-    { c: 'NBA', t: 5, q: 'Under NBA rules, what happens when a club has no eligible players left on its bench?', a: 'A player who fouled out returns and the club is charged a technical foul', d: ['The club forfeits the game', 'The club finishes with four players', 'The game is suspended and replayed'] },
+    { c: 'NBA', t: 1, q: 'Which forward is widely known by the initials KD?', a: 'Kevin Durant', d: ['Kawhi Leonard', 'Kyle Korver', 'Karl-Anthony Towns'] },
+    { c: 'NBA', t: 2, q: 'Which Detroit guard was named Finals Most Valuable Player in 1989?', a: 'Joe Dumars', d: ['Isiah Thomas', 'Vinnie Johnson', 'Bill Laimbeer'] },
+    { c: 'NBA', t: 3, q: 'Which team did the Chicago Bulls beat in the 1991 NBA Finals?', a: 'The Los Angeles Lakers', d: ['The Portland Trail Blazers', 'The Phoenix Suns', 'The Detroit Pistons'] },
+    { c: 'NBA', t: 4, q: 'Which team did the Miami Heat beat in the 2006 Eastern Conference finals?', a: 'The Detroit Pistons', d: ['The New Jersey Nets', 'The Chicago Bulls', 'The Cleveland Cavaliers'] },
+    { c: 'NBA', t: 5, q: 'Which team won the 1979 NBA championship with Dennis Johnson as Finals Most Valuable Player?', a: 'The Seattle SuperSonics', d: ['The Washington Bullets', 'The Portland Trail Blazers', 'The Phoenix Suns'] },
   ],
   // day 56
   [
-    { c: 'NBA', t: 1, q: 'Where on the floor is the center circle painted?', a: 'At midcourt', d: ['Under each basket', 'In each corner', 'At each free throw line'] },
-    { c: 'NBA', t: 2, q: 'How long is a regulation NBA floor?', a: '94 feet', d: ['84 feet', '100 feet', '90 feet'] },
+    { c: 'NBA', t: 1, q: 'Which Serbian center, nicknamed the Joker, was named 2023 NBA Finals MVP?', a: 'Nikola Jokic', d: ['Jamal Murray', 'Aaron Gordon', 'Michael Porter Jr.'] },
+    { c: 'NBA', t: 2, q: 'Which Celtics forward was named Finals Most Valuable Player in 1984 and 1986?', a: 'Larry Bird', d: ['Kevin McHale', 'Dennis Johnson', 'Robert Parish'] },
     { c: 'NBA', t: 3, q: 'Which guard entered the Hall of Fame in 2016 alongside Shaquille O\'Neal and Yao Ming?', a: 'Allen Iverson', d: ['Steve Nash', 'Ray Allen', 'Chris Webber'] },
     { c: 'NBA', t: 4, q: 'Which club joined the NBA in 1970 alongside Cleveland and Portland?', a: 'The Buffalo Braves', d: ['The Phoenix Suns', 'The Milwaukee Bucks', 'The San Diego Conquistadors'] },
     { c: 'NBA', t: 5, q: 'A January 1951 game between Indianapolis and Rochester ran to how many overtime periods?', a: 'Six', d: ['Four', 'Five', 'Seven'] },
   ],
   // day 57
   [
-    { c: 'NBA', t: 1, q: 'What are the players who are not in the starting five called?', a: 'Reserves', d: ['Captains', 'Walk-ons', 'Redshirts'] },
+    { c: 'NBA', t: 1, q: 'Which forward with a famous unibrow is nicknamed the Brow?', a: 'Anthony Davis', d: ['Karl-Anthony Towns', 'Bam Adebayo', 'Julius Randle'] },
     { c: 'NBA', t: 2, q: 'Which club did Michael Jordan play for in his last two seasons, beginning in 2001?', a: 'The Washington Wizards', d: ['The Charlotte Hornets', 'The Chicago Bulls', 'The Miami Heat'] },
     { c: 'NBA', t: 3, q: 'Which club won the NBA championship in 2023?', a: 'The Denver Nuggets', d: ['The Miami Heat', 'The Boston Celtics', 'The Phoenix Suns'] },
     { c: 'NBA', t: 4, q: 'In what year did the NBA and its players first agree to a cap on any one player earnings?', a: '1999', d: ['1995', '2005', '2011'] },

@@ -3,7 +3,7 @@ export const LANE_DAYS = [
   [
     { c: 'NFL', t: 1, q: 'Which NFL team wears a single white star on its helmet?', a: 'The Dallas Cowboys', d: ['The Denver Broncos', 'The New Orleans Saints', 'The Chicago Bears'] },
     { c: 'NFL', t: 2, q: 'Which Chicago Bears running back was nicknamed Sweetness?', a: 'Walter Payton', d: ['Gale Sayers', 'Earl Campbell', 'Marcus Allen'] },
-    { c: 'NFL', t: 3, q: 'What is the name for a passing call in which the quarterback first fakes a handoff to a back?', a: 'A play action pass', d: ['A draw', 'A screen', 'A flea flicker'] },
+    { c: 'NFL', t: 3, q: 'Which Bears defensive end was named Most Valuable Player of Super Bowl XX?', a: 'Richard Dent', d: ['Dan Hampton', 'Steve McMichael', 'Otis Wilson'] },
     { c: 'NFL', t: 4, q: 'Which college did the Pittsburgh Steelers take Terry Bradshaw from with the first overall pick in 1970?', a: 'Louisiana Tech', d: ['Grambling State', 'Louisiana State', 'Ole Miss'] },
     { c: 'NFL', t: 5, q: 'In what year did the NFL stage its first postseason playoff game, moved indoors to Chicago Stadium?', a: '1932', d: ['1928', '1936', '1941'] },
   ],
@@ -43,7 +43,7 @@ export const LANE_DAYS = [
   [
     { c: 'NFL', t: 1, q: 'Fans of which NFL team are known for wearing foam wedges of cheese on their heads?', a: 'The Green Bay Packers', d: ['The Minnesota Vikings', 'The Buffalo Bills', 'The Cleveland Browns'] },
     { c: 'NFL', t: 2, q: 'Which stadium, opened in 1975, has been the home of the New Orleans Saints?', a: 'The Superdome', d: ['Tulane Stadium', 'The Astrodome', 'The Alamodome'] },
-    { c: 'NFL', t: 3, q: 'What is the fifth defensive back called when he comes on the field in an obvious passing situation?', a: 'The nickel back', d: ['The dime back', 'The rover', 'The gunner'] },
+    { c: 'NFL', t: 3, q: 'Which team moved from Oakland to Los Angeles for the 1982 season?', a: 'The Raiders', d: ['The Rams', 'The Chargers', 'The 49ers'] },
     { c: 'NFL', t: 4, q: 'What one word name is given to the 98 yard march John Elway led against Cleveland in the January 1987 AFC Championship Game?', a: 'The Drive', d: ['The March', 'The Miracle', 'The Comeback'] },
     { c: 'NFL', t: 5, q: 'Which Dallas Cowboys linebacker was named Most Valuable Player of Super Bowl V while playing for the losing side?', a: 'Chuck Howley', d: ['Lee Roy Jordan', 'Dave Edwards', 'Bob Lilly'] },
   ],
@@ -99,7 +99,7 @@ export const LANE_DAYS = [
   // day 13
   [
     { c: 'NFL', t: 1, q: 'The Buffalo Bills play their home games in which state?', a: 'New York', d: ['Pennsylvania', 'Ohio', 'Michigan'] },
-    { c: 'NFL', t: 2, q: 'How many timeouts does each side get in one half of an NFL game?', a: 'Three', d: ['Two', 'Four', 'Five'] },
+    { c: 'NFL', t: 2, q: 'Which team drafted Joe Burrow first overall in 2020?', a: 'The Cincinnati Bengals', d: ['The Miami Dolphins', 'The Detroit Lions', 'The Washington Redskins'] },
     { c: 'NFL', t: 3, q: 'Which cornerback nicknamed Prime Time won Super Bowls with both San Francisco and Dallas?', a: 'Deion Sanders', d: ['Rod Woodson', 'Darrell Green', 'Aeneas Williams'] },
     { c: 'NFL', t: 4, q: 'Which team used two first round picks in 1965 on Gale Sayers and Dick Butkus?', a: 'The Chicago Bears', d: ['The Detroit Lions', 'The Green Bay Packers', 'The Baltimore Colts'] },
     { c: 'NFL', t: 5, q: 'What name is given to the 1934 title game in which the Giants changed into basketball shoes and beat the Bears on a frozen field?', a: 'The Sneakers Game', d: ['The Ice Bowl', 'The Frozen Tundra Game', 'The Rubber Bowl'] },
@@ -179,7 +179,7 @@ export const LANE_DAYS = [
   // day 23
   [
     { c: 'NFL', t: 1, q: 'What do the officials carry onto the field to measure whether a first down has been gained?', a: 'The chains', d: ['A tape reel', 'A yardstick', 'A rope loop'] },
-    { c: 'NFL', t: 2, q: 'How deep is each end zone on an NFL field?', a: '10 yards', d: ['5 yards', '15 yards', '20 yards'] },
+    { c: 'NFL', t: 2, q: 'Which team traded up to draft Patrick Mahomes tenth overall in 2017?', a: 'The Kansas City Chiefs', d: ['The Houston Texans', 'The Chicago Bears', 'The Buffalo Bills'] },
     { c: 'NFL', t: 3, q: 'Which team did the Rams beat in the Super Bowl played in January 2000, stopping the last play a yard short?', a: 'The Tennessee Titans', d: ['The Jacksonville Jaguars', 'The Buffalo Bills', 'The Miami Dolphins'] },
     { c: 'NFL', t: 4, q: 'Which head coach led Dallas to its fifth Super Bowl title after the 1995 season?', a: 'Barry Switzer', d: ['Chan Gailey', 'Dave Campo', 'Butch Davis'] },
     { c: 'NFL', t: 5, q: 'Which Green Bay end, a charter inductee of the Pro Football Hall of Fame, is credited with inventing modern pass routes in the 1930s?', a: 'Don Hutson', d: ['Tony Canadeo', 'Clarke Hinkle', 'Arnie Herber'] },
@@ -204,7 +204,7 @@ export const LANE_DAYS = [
   // day 26
   [
     { c: 'NFL', t: 1, q: 'What is the gathering called in which an offense is given the next call before lining up?', a: 'The huddle', d: ['The scrum', 'The set', 'The formation call'] },
-    { c: 'NFL', t: 2, q: 'What is the pass catcher called who lines up wide of the formation but inside another receiver?', a: 'The slot receiver', d: ['The flanker back', 'The wingback', 'The split end'] },
+    { c: 'NFL', t: 2, q: 'Which Raiders running back was named Most Valuable Player of Super Bowl XVIII?', a: 'Marcus Allen', d: ['Bo Jackson', 'Kenny King', 'Frank Hawkins'] },
     { c: 'NFL', t: 3, q: 'Which Houston Oilers running back was known as the Tyler Rose?', a: 'Earl Campbell', d: ['Billy Cannon', 'Mike Rozier', 'Hoyle Granger'] },
     { c: 'NFL', t: 4, q: 'In what year did the Boston professional football club change to a regional name covering all of New England?', a: '1971', d: ['1963', '1968', '1976'] },
     { c: 'NFL', t: 5, q: 'Which Los Angeles Rams defensive end is credited with inventing the word now used for tackling a passer behind the line?', a: 'Deacon Jones', d: ['Merlin Olsen', 'Rosey Grier', 'Lamar Lundy'] },
@@ -261,7 +261,7 @@ export const LANE_DAYS = [
   [
     { c: 'NFL', t: 1, q: 'What is the protected area formed by blockers around a passer called?', a: 'The pocket', d: ['The alley', 'The box', 'The gap'] },
     { c: 'NFL', t: 2, q: 'Which NFL team takes its nickname from the prospectors of the 1849 California gold rush?', a: 'The San Francisco 49ers', d: ['The Denver Broncos', 'The Los Angeles Chargers', 'The Seattle Seahawks'] },
-    { c: 'NFL', t: 3, q: 'What is the name of the one year tender, worth the average of the top five salaries at a position, that a club may place on a single player?', a: 'The franchise tag', d: ['The transition tag', 'The rookie tender', 'The signing bonus'] },
+    { c: 'NFL', t: 3, q: 'Which 49ers safety of the 1980s had part of a finger amputated rather than miss playing time?', a: 'Ronnie Lott', d: ['Dwight Hicks', 'Carlton Williamson', 'Eric Wright'] },
     { c: 'NFL', t: 4, q: 'Which Oakland Raiders quarterback of the 1970s was nicknamed The Snake?', a: 'Ken Stabler', d: ['Daryle Lamonica', 'Jim Plunkett', 'George Blanda'] },
     { c: 'NFL', t: 5, q: 'Which head coach lost the 1960 NFL Championship Game, the only postseason defeat of his career?', a: 'Vince Lombardi', d: ['Buck Shaw', 'Weeb Ewbank', 'George Halas'] },
   ],
@@ -276,7 +276,7 @@ export const LANE_DAYS = [
   // day 35
   [
     { c: 'NFL', t: 1, q: 'Which offensive position lines up split out from the formation with catching passes as its main job?', a: 'A wide receiver', d: ['A fullback', 'A guard', 'A nose tackle'] },
-    { c: 'NFL', t: 2, q: 'What is a sideways or backward toss to a teammate called, which the defense may recover if it hits the ground?', a: 'A lateral', d: ['A forward pass', 'A handoff', 'A shovel pass'] },
+    { c: 'NFL', t: 2, q: 'Which team moved from Baltimore to Indianapolis in March 1984?', a: 'The Colts', d: ['The Ravens', 'The Browns', 'The Cardinals'] },
     { c: 'NFL', t: 3, q: 'Which city did the AFL club known as the Dallas Texans move to in 1963?', a: 'Kansas City', d: ['Houston', 'Denver', 'Oakland'] },
     { c: 'NFL', t: 4, q: 'Which college did the Dallas Cowboys take Troy Aikman from with the first overall pick in 1989?', a: 'UCLA', d: ['Southern California', 'Miami', 'Oklahoma'] },
     { c: 'NFL', t: 5, q: 'What name is given to the disputed 1978 Raiders finish in which a loose ball was batted ahead into the end zone for the winning score?', a: 'The Holy Roller', d: ['The Snow Fumble', 'The Silver Scramble', 'The Coliseum Caper'] },
@@ -294,7 +294,7 @@ export const LANE_DAYS = [
   [
     { c: 'NFL', t: 1, q: 'Which defensive back lines up across from a wide receiver on the outside?', a: 'The cornerback', d: ['The free safety', 'The middle linebacker', 'The defensive end'] },
     { c: 'NFL', t: 2, q: 'Which quarterback went by the nickname Broadway during his New York playing days?', a: 'Joe Namath', d: ['Y.A. Tittle', 'Phil Simms', 'Richard Todd'] },
-    { c: 'NFL', t: 3, q: 'What is the foul called when a passer under pressure throws the ball away with no eligible receiver near it?', a: 'Intentional grounding', d: ['Illegal forward pass', 'Delay of game', 'Unsportsmanlike conduct'] },
+    { c: 'NFL', t: 3, q: 'Which Steelers receiver was named Most Valuable Player of Super Bowl X?', a: 'Lynn Swann', d: ['John Stallworth', 'Frank Lewis', 'Ron Shanklin'] },
     { c: 'NFL', t: 4, q: 'Which lakefront stadium was the home of the Cleveland Browns from 1946 through 1995?', a: 'Cleveland Municipal Stadium', d: ['League Park', 'Riverfront Stadium', 'Cleveland Coliseum'] },
     { c: 'NFL', t: 5, q: 'Which owner and coach, nicknamed Papa Bear, ran his Chicago club across five different decades?', a: 'George Halas', d: ['Art Rooney', 'Tim Mara', 'Curly Lambeau'] },
   ],
@@ -310,7 +310,7 @@ export const LANE_DAYS = [
   [
     { c: 'NFL', t: 1, q: 'What must an offense do before the play clock runs out?', a: 'Snap the ball', d: ['Call a timeout', 'Substitute a lineman', 'Signal to the referee'] },
     { c: 'NFL', t: 2, q: 'Which Raiders running back also played major league baseball in the late 1980s?', a: 'Bo Jackson', d: ['Marcus Allen', 'Napoleon Kaufman', 'Roger Craig'] },
-    { c: 'NFL', t: 3, q: 'What is the defensive alignment called that uses three down linemen and four linebackers?', a: 'The 3-4 defense', d: ['The 4-3 defense', 'The nickel package', 'The bear front'] },
+    { c: 'NFL', t: 3, q: 'Which Cowboys defensive tackle was named co-Most Valuable Player of Super Bowl XII?', a: 'Randy White', d: ['Bob Lilly', 'Jethro Pugh', 'Ed Jones'] },
     { c: 'NFL', t: 4, q: 'In what year did the Seattle Seahawks switch from the AFC to the NFC?', a: '2002', d: ['1995', '1999', '2006'] },
     { c: 'NFL', t: 5, q: 'What nickname was carried by the New Orleans Saints linebacking corps of the late 1980s?', a: 'The Dome Patrol', d: ['The Bayou Bunch', 'The Crescent Crew', 'The Delta Force'] },
   ],
@@ -328,12 +328,12 @@ export const LANE_DAYS = [
     { c: 'NFL', t: 2, q: 'Which stadium was the home of the Seattle Seahawks from 1976 through 1999?', a: 'The Kingdome', d: ['Husky Stadium', 'The Metrodome', 'Sicks Stadium'] },
     { c: 'NFL', t: 3, q: 'Which quarterback started and won Super Bowl XXII for Washington, the first Black passer to do so?', a: 'Doug Williams', d: ['James Harris', 'Warren Moon', 'Randall Cunningham'] },
     { c: 'NFL', t: 4, q: 'Which college did the San Diego Chargers take Drew Brees from in the 2001 draft?', a: 'Purdue', d: ['Michigan State', 'Northwestern', 'Indiana'] },
-    { c: 'NFL', t: 5, q: 'What is the formation called in which the ball is snapped straight to a running back while the passer splits out wide?', a: 'The Wildcat', d: ['The Pistol', 'The Wing T', 'The Single Wing Sweep'] },
+    { c: 'NFL', t: 5, q: 'Which rookie kicker won Super Bowl V for the Baltimore Colts with a field goal in the final seconds?', a: 'Jim O\'Brien', d: ['Lou Michaels', 'Jan Stenerud', 'Garo Yepremian'] },
   ],
   // day 42
   [
     { c: 'NFL', t: 1, q: 'What color is the shell of the Cleveland Browns helmet?', a: 'Orange', d: ['Brown', 'White', 'Silver'] },
-    { c: 'NFL', t: 2, q: 'What is it called when a defender intercepts a pass and runs it back for a touchdown?', a: 'A pick six', d: ['A turnover chain', 'A scoop and score', 'A house call return'] },
+    { c: 'NFL', t: 2, q: 'Which Packers defensive end was nicknamed the Minister of Defense?', a: 'Reggie White', d: ['Gilbert Brown', 'Sean Jones', 'Santana Dotson'] },
     { c: 'NFL', t: 3, q: 'Which head coach led the Pittsburgh Steelers to the title after the 2005 season?', a: 'Bill Cowher', d: ['Mike Tomlin', 'Chuck Noll', 'Dick LeBeau'] },
     { c: 'NFL', t: 4, q: 'Which team drafted Jim Kelly with the 14th pick of the 1983 draft?', a: 'The Buffalo Bills', d: ['The Houston Oilers', 'The New England Patriots', 'The Baltimore Colts'] },
     { c: 'NFL', t: 5, q: 'Who served as commissioner of the NFL from 1989 until 2006?', a: 'Paul Tagliabue', d: ['Pete Rozelle', 'Roger Goodell', 'Bert Bell'] },
@@ -349,7 +349,7 @@ export const LANE_DAYS = [
   // day 44
   [
     { c: 'NFL', t: 1, q: 'What do many NFL players wear on their hands to help them hold onto the ball?', a: 'Gloves', d: ['Wrist weights', 'Chalk bags', 'Finger splints'] },
-    { c: 'NFL', t: 2, q: 'What is the foul called when a defender hits the passer well after the ball has gone?', a: 'Roughing the passer', d: ['Unnecessary contact', 'Illegal use of hands', 'Personal delay'] },
+    { c: 'NFL', t: 2, q: 'Which Green Bay quarterback won the Most Valuable Player award three years in a row from 1995 to 1997?', a: 'Brett Favre', d: ['Aaron Rodgers', 'Bart Starr', 'Lynn Dickey'] },
     { c: 'NFL', t: 3, q: 'Which annual NFL honor goes to the player judged to have returned best to form after a difficult season?', a: 'Comeback Player of the Year', d: ['Man of the Season', 'Most Improved Player', 'Perseverance Award'] },
     { c: 'NFL', t: 4, q: 'Which team won the 1955 NFL Championship Game, the last professional outing of Otto Graham?', a: 'The Cleveland Browns', d: ['The Detroit Lions', 'The Chicago Bears', 'The New York Giants'] },
     { c: 'NFL', t: 5, q: 'Which head coach was miked by NFL Films during Super Bowl IV, calling for the 65 Toss Power Trap?', a: 'Hank Stram', d: ['Weeb Ewbank', 'Sid Gillman', 'Lou Rymkus'] },
@@ -358,14 +358,14 @@ export const LANE_DAYS = [
   [
     { c: 'NFL', t: 1, q: 'What is the act called that puts the ball in play when the center hands it back?', a: 'The snap', d: ['The set', 'The release', 'The exchange call'] },
     { c: 'NFL', t: 2, q: 'The Giants and the Jets both play their home games in which state?', a: 'New Jersey', d: ['New York', 'Connecticut', 'Pennsylvania'] },
-    { c: 'NFL', t: 3, q: 'What foul is called when a defender grabs a receiver more than five yards downfield before the ball is thrown?', a: 'Illegal contact', d: ['Defensive holding', 'Pass interference', 'Illegal formation'] },
+    { c: 'NFL', t: 3, q: 'Which Buccaneers safety was named Most Valuable Player of Super Bowl XXXVII?', a: 'Dexter Jackson', d: ['John Lynch', 'Ronde Barber', 'Derrick Brooks'] },
     { c: 'NFL', t: 4, q: 'Which head coach led the San Francisco 49ers to the Super Bowl XXIX title?', a: 'George Seifert', d: ['Steve Mariucci', 'Mike Holmgren', 'Ray Rhodes'] },
     { c: 'NFL', t: 5, q: 'Which running back, nicknamed The Diesel, broke a 43 yard fourth down touchdown run in Super Bowl XVII?', a: 'John Riggins', d: ['George Rogers', 'Earnest Byner', 'Larry Brown'] },
   ],
   // day 46
   [
     { c: 'NFL', t: 1, q: 'What is the outcome called when both sides finish a regular season game on the same score?', a: 'A tie', d: ['A void', 'A no contest', 'A split decision'] },
-    { c: 'NFL', t: 2, q: 'How long is an NFL field from the back of one end zone to the back of the other?', a: '120 yards', d: ['100 yards', '110 yards', '130 yards'] },
+    { c: 'NFL', t: 2, q: 'Which team won Super Bowl I after the 1966 season?', a: 'The Green Bay Packers', d: ['The Kansas City Chiefs', 'The Dallas Cowboys', 'The Baltimore Colts'] },
     { c: 'NFL', t: 3, q: 'What is the traditional nickname for the Green Bay playing surface in the depths of winter?', a: 'The Frozen Tundra', d: ['The Ice Box', 'The Cold Cellar', 'The Glacier'] },
     { c: 'NFL', t: 4, q: 'Which quarterback completed 22 of 25 passes and was named Most Valuable Player of Super Bowl XXI?', a: 'Phil Simms', d: ['Jeff Hostetler', 'Scott Brunner', 'Kerry Collins'] },
     { c: 'NFL', t: 5, q: 'Which college did the Cleveland Browns draft Jim Brown out of in 1957?', a: 'Syracuse', d: ['Ohio State', 'Michigan State', 'Penn State'] },
@@ -373,7 +373,7 @@ export const LANE_DAYS = [
   // day 47
   [
     { c: 'NFL', t: 1, q: 'What are the markings painted across the field every five yards called?', a: 'Yard lines', d: ['Hash rows', 'Chain marks', 'Gain stripes'] },
-    { c: 'NFL', t: 2, q: 'What is a running play called that heads wide around the outside of the formation?', a: 'A sweep', d: ['A dive', 'A trap', 'A wedge'] },
+    { c: 'NFL', t: 2, q: 'Which Dallas quarterback was named Most Valuable Player of Super Bowl XXVII?', a: 'Troy Aikman', d: ['Roger Staubach', 'Danny White', 'Steve Beuerlein'] },
     { c: 'NFL', t: 3, q: 'Which head coach led the New Orleans Saints to their Super Bowl XLIV title?', a: 'Sean Payton', d: ['Jim Haslett', 'Jim Mora', 'Mike Ditka'] },
     { c: 'NFL', t: 4, q: 'Which team lost Super Bowl XXVI to Washington?', a: 'The Buffalo Bills', d: ['The Denver Broncos', 'The Cincinnati Bengals', 'The Los Angeles Raiders'] },
     { c: 'NFL', t: 5, q: 'Which cornerback intercepted 14 passes as a rookie in 1952?', a: 'Dick Lane', d: ['Emlen Tunnell', 'Jack Christiansen', 'Yale Lary'] },
@@ -381,7 +381,7 @@ export const LANE_DAYS = [
   // day 48
   [
     { c: 'NFL', t: 1, q: 'What are the two main colors of the Miami Dolphins uniform?', a: 'Aqua and orange', d: ['Navy and gold', 'Red and white', 'Teal and silver'] },
-    { c: 'NFL', t: 2, q: 'What is the foul called when an offense lets the play clock expire before snapping?', a: 'Delay of game', d: ['Illegal procedure', 'Encroachment', 'Illegal shift'] },
+    { c: 'NFL', t: 2, q: 'Which team did the San Francisco 49ers beat in Super Bowl XXIII?', a: 'The Cincinnati Bengals', d: ['The Denver Broncos', 'The Miami Dolphins', 'The Buffalo Bills'] },
     { c: 'NFL', t: 3, q: 'In what year did Detroit host its first Thanksgiving Day NFL game?', a: '1934', d: ['1926', '1945', '1952'] },
     { c: 'NFL', t: 4, q: 'Which quarterback rushed for 1,039 yards in the 2006 season?', a: 'Michael Vick', d: ['Donovan McNabb', 'Steve McNair', 'Vince Young'] },
     { c: 'NFL', t: 5, q: 'Who founded the film unit that has shot and narrated the league games since the 1960s, working alongside his son?', a: 'Ed Sabol', d: ['Bill MacPhail', 'Roone Arledge', 'Chris Schenkel'] },
@@ -390,9 +390,9 @@ export const LANE_DAYS = [
   // day 49
   [
     { c: 'NFL', t: 1, q: 'What is the general term for losing the ball to the other side by fumble or interception?', a: 'A turnover', d: ['A giveback', 'A dead ball', 'A stop'] },
-    { c: 'NFL', t: 2, q: 'Which lineman sets up outside the guard and usually handles the opponent top edge rusher?', a: 'The offensive tackle', d: ['The center', 'The fullback', 'The tight end'] },
+    { c: 'NFL', t: 2, q: 'Which Chiefs pass rusher of the 1990s recorded seven sacks in a single 1990 game?', a: 'Derrick Thomas', d: ['Neil Smith', 'Bill Maas', 'Albert Lewis'] },
     { c: 'NFL', t: 3, q: 'Which kicker made the winning field goal in both Super Bowl XXXVI and Super Bowl XXXVIII?', a: 'Adam Vinatieri', d: ['Stephen Gostkowski', 'Matt Bahr', 'Jason Elam'] },
-    { c: 'NFL', t: 4, q: 'How many offensive players must be set on the line of scrimmage when the ball is snapped?', a: 'Seven', d: ['Five', 'Six', 'Eight'] },
+    { c: 'NFL', t: 4, q: 'Which Chicago halfback, the Kansas Comet, scored six touchdowns in a single 1965 game?', a: 'Gale Sayers', d: ['Brian Piccolo', 'Ronnie Bull', 'Jon Arnett'] },
     { c: 'NFL', t: 5, q: 'Which Milwaukee ballpark hosted a share of Green Bay home games until 1994?', a: 'County Stadium', d: ['Borchert Field', 'Marquette Stadium', 'State Fair Park'] },
   ],
   // day 50
@@ -406,7 +406,7 @@ export const LANE_DAYS = [
   // day 51
   [
     { c: 'NFL', t: 1, q: 'Which piece of the uniform carries a player name across the shoulders?', a: 'The jersey', d: ['The helmet', 'The cleat', 'The wristband'] },
-    { c: 'NFL', t: 2, q: 'What is the hurry up sequence of plays run at the close of a half commonly called?', a: 'The two minute drill', d: ['The final push', 'The rush package', 'The clock offense'] },
+    { c: 'NFL', t: 2, q: 'Which team did the Indianapolis Colts beat in Super Bowl XLI?', a: 'The Chicago Bears', d: ['The New Orleans Saints', 'The Seattle Seahawks', 'The Philadelphia Eagles'] },
     { c: 'NFL', t: 3, q: 'Which head coach led the Baltimore Ravens to the Super Bowl XLVII title?', a: 'John Harbaugh', d: ['Jim Harbaugh', 'Brian Billick', 'Jim Caldwell'] },
     { c: 'NFL', t: 4, q: 'What name did the Miami Dolphins defense of the early 1980s take from the surnames of several starters?', a: 'The Killer Bees', d: ['The No Name Crew', 'The Reef Wall', 'The Aqua Blitz'] },
     { c: 'NFL', t: 5, q: 'Which team won the 1948 NFL Championship Game, played in a blizzard at Shibe Park?', a: 'The Philadelphia Eagles', d: ['The Chicago Cardinals', 'The New York Giants', 'The Chicago Bears'] },
@@ -414,7 +414,7 @@ export const LANE_DAYS = [
   // day 52
   [
     { c: 'NFL', t: 1, q: 'What are the two main colors of the Kansas City Chiefs uniform?', a: 'Red and gold', d: ['Blue and white', 'Green and silver', 'Black and orange'] },
-    { c: 'NFL', t: 2, q: 'How many feet must an NFL receiver plant in bounds to complete a catch?', a: 'Two', d: ['One', 'Three', 'Four'] },
+    { c: 'NFL', t: 2, q: 'Which Giants quarterback was named Most Valuable Player of Super Bowl XLVI?', a: 'Eli Manning', d: ['Phil Simms', 'Kerry Collins', 'Jeff Hostetler'] },
     { c: 'NFL', t: 3, q: 'Which team did the Dallas Cowboys beat 24 to 3 in Super Bowl VI?', a: 'The Miami Dolphins', d: ['The Baltimore Colts', 'The Kansas City Chiefs', 'The Minnesota Vikings'] },
     { c: 'NFL', t: 4, q: 'Which stadium was the home of the Cincinnati Bengals from 1970 through 1999?', a: 'Riverfront Stadium', d: ['Crosley Field', 'Nippert Stadium', 'Municipal Stadium'] },
     { c: 'NFL', t: 5, q: 'Who scored the winning touchdown in the sudden death period of the 1958 NFL Championship Game?', a: 'Alan Ameche', d: ['Lenny Moore', 'Raymond Berry', 'Frank Gifford'] },
@@ -422,7 +422,7 @@ export const LANE_DAYS = [
   // day 53
   [
     { c: 'NFL', t: 1, q: 'Besides Thanksgiving, on which holiday has the NFL regularly scheduled games?', a: 'Christmas Day', d: ['Independence Day', 'Memorial Day', 'Labor Day'] },
-    { c: 'NFL', t: 2, q: 'What is the quick pass route called on which a receiver cuts sharply inside at a shallow angle?', a: 'A slant', d: ['A post', 'A comeback', 'A wheel'] },
+    { c: 'NFL', t: 2, q: 'Which Bears linebacker of the 1980s, known for his wide-eyed stare, was nicknamed Samurai Mike?', a: 'Mike Singletary', d: ['Mike Ditka', 'Wilber Marshall', 'Otis Wilson'] },
     { c: 'NFL', t: 3, q: 'Which team lost Super Bowl XXXI to Green Bay?', a: 'The New England Patriots', d: ['The Denver Broncos', 'The Buffalo Bills', 'The Pittsburgh Steelers'] },
     { c: 'NFL', t: 4, q: 'In what year did the New York Titans of the AFL take the name they still carry?', a: '1963', d: ['1960', '1966', '1970'] },
     { c: 'NFL', t: 5, q: 'Which player led the NFL in passing, punting and interceptions all in the 1943 season?', a: 'Sammy Baugh', d: ['Sid Luckman', 'Cecil Isbell', 'Bob Waterfield'] },
@@ -438,7 +438,7 @@ export const LANE_DAYS = [
   // day 55
   [
     { c: 'NFL', t: 1, q: 'What is the old nickname for the ball itself, dating from an era of different materials?', a: 'The pigskin', d: ['The oval', 'The bladder', 'The leatherhead'] },
-    { c: 'NFL', t: 2, q: 'Which defensive lineman lines up directly over the center in a three man front?', a: 'The nose tackle', d: ['The strong side end', 'The outside linebacker', 'The three technique'] },
+    { c: 'NFL', t: 2, q: 'Which Dallas quarterback of the 1970s was nicknamed Captain America?', a: 'Roger Staubach', d: ['Craig Morton', 'Danny White', 'Don Meredith'] },
     { c: 'NFL', t: 3, q: 'Which conference did the Browns, Steelers and Colts join for the 1970 season?', a: 'The AFC', d: ['The NFC', 'The AFL East', 'The Western Division'] },
     { c: 'NFL', t: 4, q: 'What do Raiders supporters call the end zone bleacher section at their old Oakland home?', a: 'The Black Hole', d: ['The Silver Pit', 'The Pirate Deck', 'The Raider Nation Roost'] },
     { c: 'NFL', t: 5, q: 'Which team did the Cleveland Browns shut out 27 to 0 to win the 1964 NFL Championship Game?', a: 'The Baltimore Colts', d: ['The Green Bay Packers', 'The New York Giants', 'The Chicago Bears'] },

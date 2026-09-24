@@ -23,8 +23,8 @@ file and exits, so it can be driven in short chunks. Run it repeatedly until it
 reports DONE.
 
 Usage:  python3 build_ladder.py [budget_seconds_per_puzzle] [wall_seconds_this_run]
-State:  /tmp/shards-build/state.json     (resume point + finished entries)
-Writes: /tmp/shards-build/puzzles.json   (once every day is generated)
+State:  $SHARDS_BUILD_DIR/state.json (default /tmp/shards-build; resume point + finished entries)
+Writes: $SHARDS_BUILD_DIR/puzzles.json (once every day is generated)
 """
 import sys, os, re, json, random, time, datetime
 
@@ -40,8 +40,8 @@ PUZZLES_JS = os.path.join(REPO, 'app', 'shards', 'puzzles.js')
 
 # 2026-08-20: rebuilt again to drop the two-letter slots (see gen.py's template
 # note). Boards through 2026-08-19 are played and frozen.
-FIRST_NEW = datetime.date(2026, 10, 1)
-LAST_NEW = datetime.date(2026, 10, 31)
+FIRST_NEW = datetime.date(2026, 11, 1)
+LAST_NEW = datetime.date(2026, 11, 30)
 
 # n, shard size range, piece count range, ambiguity floor, scoring budget
 # ambig = minimum geometric tilings; mindup = minimum repeated shard shapes, the
@@ -193,7 +193,9 @@ def to_entry(num, d, t, shards, grid, pat, ambig):
     }
 
 
-STATE = '/tmp/shards-build/state.json'
+# Scratch location, overridable so parallel builds never share a resume file.
+BUILD_DIR = os.environ.get('SHARDS_BUILD_DIR', '/tmp/shards-build')
+STATE = os.path.join(BUILD_DIR, 'state.json')
 
 
 def main():
@@ -232,13 +234,18 @@ def main():
         dates.append(d)
         d += datetime.timedelta(days=1)
 
-    os.makedirs('/tmp/shards-build', exist_ok=True)
+    os.makedirs(BUILD_DIR, exist_ok=True)
     if os.path.exists(STATE):
         st = json.load(open(STATE))
     else:
         st = {'done': [], 'used_fills': [], 'seed_bump': 0}
     done_dates = {e['live'] for e in st['done']}
     used_fills = set(st['used_fills'])
+    # Every grid already in the bank is spent, frozen or not: an extension that
+    # only knew about its own run could hand back a fill a player saw last month.
+    for p in frozen:
+        _pat, g = fill_of(p)
+        used_fills.add(''.join(''.join(ch or '#' for ch in row) for row in g))
 
     t0 = time.time()
     made = 0
@@ -251,7 +258,10 @@ def main():
         name = tier_for(d)
         t = TIERS[name]
         # a fresh stream per day keeps resumed runs from repeating earlier searches
-        rng = random.Random(20260801 + i * 7919 + st['seed_bump'])
+        # Seeded off the BOARD NUMBER, not the index in this run: the Oct 2026 run
+        # seeded off i, so a later run starting again at i=0 would replay its
+        # searches. Board numbers never repeat, so neither do the streams.
+        rng = random.Random(20260801 + num * 7919 + st['seed_bump'])
         res = find_puzzle(t, rng, reuse[t['n']], used_fills, budget)
         if res is None:
             print(f"  !! {d} ({name}) no puzzle within budget, will retry next run",
@@ -282,9 +292,9 @@ def main():
         out = list(frozen) + sorted(st['done'], key=lambda e: e['live'])
         for i, e in enumerate(out):
             e['num'] = i + 1
-        json.dump(out, open('/tmp/shards-build/puzzles.json', 'w'))
+        json.dump(out, open(os.path.join(BUILD_DIR, 'puzzles.json'), 'w'))
         print(f"DONE: {len(out)} entries ({len(frozen)} frozen + {len(dates)} new) "
-              f"-> /tmp/shards-build/puzzles.json", file=sys.stderr)
+              f"-> {os.path.join(BUILD_DIR, 'puzzles.json')}", file=sys.stderr)
 
 
 if __name__ == '__main__':

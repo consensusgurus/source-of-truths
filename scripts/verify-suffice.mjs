@@ -26,8 +26,12 @@
 //
 // Run: node scripts/verify-suffice.mjs
 import { PUZZLES } from '../app/suffice/puzzles.js';
+import { scanUS } from './us-spellings.mjs';
 import { getScenario, MOD_PERIOD, MOD_MODULI, linClassify, renderLin, decide } from '../app/suffice/engine.js';
 
+// US_COPY_FROM: days from the 2026-09-24 restock on also pass the shared
+// scripts/us-spellings.mjs screen; earlier days are frozen history.
+const US_COPY_FROM = '2026-10-15';
 let fails = 0;
 const fail = (m) => { console.error('FAIL:', m); fails++; };
 const note = (m) => console.log('…', m);
@@ -112,6 +116,7 @@ PUZZLES.forEach((p, i) => {
     const copy = `${it.stem} ${it.ask} ${it.s1} ${it.s2}`;
     if (copy.includes('—')) fail(`${itag}: em dash in reader-facing copy`);
     if (/\b(colour|neighbour|favour|centre|metre|litre|analyse|catalogue)/i.test(copy)) fail(`${itag}: British spelling in copy`);
+    if (p.live >= US_COPY_FROM) for (const hit of scanUS(copy)) fail(`${itag}: British form "${hit.found}" in copy (US: ${hit.us})`);
     if (/Exactly 1 of the numbers are\b/.test(copy)) fail(`${itag}: plural disagreement`);
     if (/\b0 of them\b/.test(copy)) fail(`${itag}: "0 of them" phrasing, use the worded form`);
   });

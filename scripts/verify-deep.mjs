@@ -15,6 +15,20 @@
 // qids must also carry that day's own number as their prefix.
 import { QUESTIONS, QUESTION_MAP } from '../app/deep/questions.js';
 import { PUZZLES } from '../app/deep/puzzles.js';
+import { isSportsRules, SPORT_TOPIC } from './sports-rules-classifier.mjs';
+
+// AT MOST ONE SPORTS RULES-TYPE QUESTION ON A SPORTS DAY (owner ruling,
+// 2026-09-23). A day whose topic is a sport (SPORT_TOPIC: Basketball, Golf,
+// Tennis, Formula One, The Olympics, The World Cup...) had spent up to seven of
+// its fifteen questions on how the sport works: points for a score, how many
+// players or periods, what a score or violation is called, which club lifts a
+// ball out of a bunker. The classifier, and what it does and does not count as
+// rules-type, is documented in scripts/sports-rules-classifier.mjs; a rule's
+// HISTORY (who wrote the first rules, when a device was introduced) is not
+// rules-type. Scoped to days live on or after SPORTS_RULES_FROM, because days
+// already played are frozen.
+const SPORTS_RULES_FROM = '2026-09-24';
+const SPORTS_RULES_CAP = 1;
 
 const errs = [];
 const warns = [];
@@ -93,6 +107,12 @@ for (const p of PUZZLES) {
     if (n < 3) fail(`${tag}: column ${String.fromCharCode(65 + k)} is correct only ${n} times`);
   }
   for (let i = 2; i < pos.length; i++) if (pos[i] === pos[i - 1] && pos[i] === pos[i - 2]) fail(`${tag}: three correct answers in a row in column ${String.fromCharCode(65 + pos[i])}`);
+
+  // Sports rules-type cap on a sports-topic day.
+  if (String(p.live) >= SPORTS_RULES_FROM && SPORT_TOPIC.test(p.topic || '')) {
+    const hits = qs.filter((q) => isSportsRules(q.q));
+    if (hits.length > SPORTS_RULES_CAP) fail(`${tag}: ${hits.length} sports rules-type questions (${hits.map((q) => q.id).join(', ')}), the cap on a sports day is ${SPORTS_RULES_CAP}; rewrite the rest about the sport's history, people, teams, records or events`);
+  }
 
   // The same answer twice in one day makes the second one guessable.
   const answers = new Map();

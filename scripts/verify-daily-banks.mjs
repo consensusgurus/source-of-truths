@@ -443,6 +443,8 @@ if (RUN('links')) {
   // already been used twice anywhere in the bank cannot be used again.
   const REUSE_FROM = '2026-09-30';
   const REUSE_CAP = 2;
+  const LINKS_COPY_FROM = '2026-10-12';
+  const { scanUS: linksScanUS } = await import('./us-spellings.mjs');
   const normName = (n) => n.toLowerCase().replace(/\s+/g, ' ').trim();
   const nameCount = new Map();
   for (const p of PUZZLES) for (const g of p.groups) {
@@ -459,6 +461,16 @@ if (RUN('links')) {
     if (all.length !== 16) errs.push(`${all.length} words`);
     if (new Set(all).size !== all.length) errs.push('duplicate word across groups');
     for (const g of p.groups) if (g.words.length !== 4) errs.push(`group "${g.name}" has ${g.words.length}`);
+    // US spellings and no em dash in everything a reader sees (group names and
+    // words), from the 2026-10-12 restock on; earlier boards are frozen.
+    if (p.live >= LINKS_COPY_FROM) {
+      for (const g of p.groups) {
+        for (const s of [g.name, ...g.words]) {
+          for (const hit of linksScanUS(s)) errs.push(`British form "${hit.found}" in "${s}" (US: ${hit.us})`);
+          if (/—/.test(s)) errs.push(`em dash in "${s}"`);
+        }
+      }
+    }
     if (p.live >= REUSE_FROM) {
       for (const g of p.groups) {
         const k = normName(g.name);
@@ -1389,6 +1401,25 @@ if (RUN('shards')) {
   const MIN_RUN = 3;                          // must match MIN_RUN in scripts/gen-shards/gen.py
   const AMBIG_FLOOR = { 6: 8, 7: 12, 8: 12 }; // by grid size; must match TIERS in scripts/gen-shards/build_ladder.py
   const NODECAP = 5_000_000;
+
+  // ─── NO REPEATED LETTER GRID ─────────────────────────────────────────────
+  // The October run recycled whole fills, so five boards (10-05, 10-06, 10-12,
+  // 10-27, 10-31) reprint an earlier board's exact grid. Those are frozen;
+  // from the November restock on, a board's solved grid may never match any
+  // earlier board's.
+  const GRID_FRESH_FROM = '2026-11-01';
+  {
+    const gridKey = (p) => {
+      const cells = p.shards.flatMap((sh) => sh.cells).map(([r, c, ch]) => `${r},${c},${ch}`).sort();
+      return `${p.rows || ''}x${p.cols || ''}|${cells.join(';')}`;
+    };
+    const seenGrid = new Map();
+    for (const p of PUZZLES) {
+      const k = gridKey(p);
+      if (seenGrid.has(k) && p.live >= GRID_FRESH_FROM) fail(p.quizId, `reprints the letter grid of ${seenGrid.get(k)}`);
+      if (!seenGrid.has(k)) seenGrid.set(k, p.quizId);
+    }
+  }
 
   // Cell indices and the across/down runs each cell belongs to.
   const geometry = (fillCells, n) => {

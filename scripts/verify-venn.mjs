@@ -17,6 +17,17 @@
 // The board carries no answer: an item's region is recomputed here from the
 // rules, exactly as the client recomputes it. Both sides now import the one
 // engine in lib/venn-rules.js rather than keeping hand-synced copies.
+// FRESH BOARDS (live >= FRESH_FROM, the 2026-10-24 restock and after; every
+// board before it is played history and grandfathered):
+//   - US spellings: no item fails scripts/us-spellings.mjs
+//   - a letter-board item has never appeared on ANY earlier board (the last
+//     month of letter boards recycled the bank's own items until ESTATE sat
+//     on eight boards)
+//   - a knowledge row appears at most ITEM_CEILING times across the bank
+//   - an exact rule triple (domain + rules) never repeats an earlier board
+//   - no knowledge domain runs on two consecutive days
+//   - a board with a vowel rule carries no item containing Y (the engine
+//     counts AEIOU only; a solver can reasonably count Y)
 // Run: node scripts/verify-venn.mjs
 //      node scripts/verify-venn.mjs --census   list unclassified hidden words
 import fs from 'node:fs';
@@ -24,6 +35,10 @@ import { PUZZLES } from '../app/venn/puzzles.js';
 import { ruleFn, HIDDEN, hides, LETTERS } from '../lib/venn-rules.js';
 import { DOMAINS } from '../lib/venn-facts.js';
 import { REVIEWED } from './venn-hidden-review.mjs';
+import { scanUS } from './us-spellings.mjs';
+
+const FRESH_FROM = '2026-10-24';
+const ITEM_CEILING = 6;
 
 let fails = 0;
 const fail = (m) => { console.error('FAIL:', m); fails++; };
@@ -187,6 +202,33 @@ PUZZLES.forEach((p, i) => {
   if (hid.includes(7)) fail(`${tag}: the triple overlap count must never be hidden`);
   if (hid.some((r) => !REGIONS.includes(r))) fail(`${tag}: hidden count names a region that does not exist`);
 });
+
+// ─── fresh-board variety and copy rules ─────────────────────────────────────
+{
+  const VOWEL_RULES = new Set(['vowels', 'onevowel', 'startvowel', 'endvowel', 'twinvowel', 'altvc']);
+  const uses = new Map();
+  for (const p of PUZZLES) for (const w of p.items) uses.set(w, (uses.get(w) || 0) + 1);
+  const seenItems = new Set(), seenTriples = new Set();
+  PUZZLES.forEach((p, i) => {
+    const tag = `#${p.num} (${p.live})`;
+    const triple = `${p.domain || '-'}|${p.rules.map((r) => JSON.stringify(r)).sort().join(',')}`;
+    if (p.live >= FRESH_FROM) {
+      for (const w of p.items) {
+        for (const hit of scanUS(w.toLowerCase())) fail(`${tag}: ${w} is a British form (US: ${hit.us})`);
+        if (!p.domain && seenItems.has(w)) fail(`${tag}: letter item ${w} already appeared on an earlier board`);
+        if (p.domain && uses.get(w) > ITEM_CEILING) fail(`${tag}: ${w} appears ${uses.get(w)} times in the bank (ceiling ${ITEM_CEILING})`);
+      }
+      if (seenTriples.has(triple)) fail(`${tag}: rule triple repeats an earlier board`);
+      const prev = PUZZLES[i - 1];
+      if (p.domain && prev && prev.domain === p.domain) fail(`${tag}: ${p.domain} two days running`);
+      if (p.rules.some((r) => VOWEL_RULES.has(r.k))) {
+        for (const w of p.items) if (w.includes('Y')) fail(`${tag}: ${w} contains Y on a board with a vowel rule`);
+      }
+    }
+    for (const w of p.items) seenItems.add(w);
+    seenTriples.add(triple);
+  });
+}
 
 if (CENSUS) {
   let n = 0;

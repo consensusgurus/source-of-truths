@@ -90,6 +90,36 @@ const SCHEDULE = [
   ['2026-10-29', 'Bulgaria'],
   ['2026-10-30', 'South Africa'],
   ['2026-10-31', 'Saudi Arabia'],
+  ['2026-11-01', 'China'],
+  ['2026-11-02', 'Haiti'],
+  ['2026-11-03', 'Costa Rica'],
+  ['2026-11-04', 'Ghana'],
+  ['2026-11-05', 'Czechia'],
+  ['2026-11-06', 'Kenya'],
+  ['2026-11-07', 'Italy'],
+  ['2026-11-08', 'Germany'],
+  ['2026-11-09', 'Qatar'],
+  ['2026-11-10', 'Netherlands'],
+  ['2026-11-11', 'Venezuela'],
+  ['2026-11-12', 'Latvia'],
+  ['2026-11-13', 'Jordan'],
+  ['2026-11-14', 'Libya'],
+  ['2026-11-15', 'Russia'],
+  ['2026-11-16', 'Dominican Republic'],
+  ['2026-11-17', 'Bangladesh'],
+  ['2026-11-18', 'Malaysia'],
+  ['2026-11-19', 'Armenia'],
+  ['2026-11-20', 'Slovakia'],
+  ['2026-11-21', 'Cameroon'],
+  ['2026-11-22', 'Turkey'],
+  ['2026-11-23', 'Brunei'],
+  ['2026-11-24', 'Estonia'],
+  ['2026-11-25', 'Paraguay'],
+  ['2026-11-26', 'Guatemala'],
+  ['2026-11-27', 'Uganda'],
+  ['2026-11-28', 'Chad'],
+  ['2026-11-29', 'Austria'],
+  ['2026-11-30', 'Eswatini'],
 ];
 
 const BAND = { 1: [1, 2], 2: [2, 3], 3: [3, 4], 4: [4, 5], 5: [5, 6], 6: [6, 7], 0: [8, 99] };
@@ -97,7 +127,8 @@ const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 
 
 const byName = new Map(Object.entries(BORDERS).map(([code, e]) => [e.name, code]));
 const errs = [];
-const seen = new Set();
+const lastSeen = new Map();
+const GIANT_REPEAT_FROM = '2026-11-01', GIANT_GAP = 63;
 const puzzles = [];
 
 // Consecutive-date check plus everything else, one pass.
@@ -112,8 +143,17 @@ SCHEDULE.forEach(([iso, country], i) => {
   if (!code) { errs.push(`${iso}: unknown country "${country}"`); return; }
   const e = BORDERS[code];
   if (e.noSubject) errs.push(`${iso}: ${country} is noSubject (contested set) and may not be a day's country`);
-  if (seen.has(code)) errs.push(`${iso}: ${country} repeats within the bank`);
-  seen.add(code);
+  // PROPOSED (2026-09-23, needs owner sign-off): the pool of Sunday giants
+  // (8+ neighbors, not noSubject) is nine countries and all nine ran by
+  // 2026-10-25, so from GIANT_REPEAT_FROM a Sunday giant may return once at
+  // least GIANT_GAP days have passed since its last Sunday. Weekday countries
+  // still never repeat.
+  const prev = lastSeen.get(code);
+  if (prev) {
+    const ok = dow === 0 && iso >= GIANT_REPEAT_FROM && prev.sunday && (d - prev.d) / 86400000 >= GIANT_GAP;
+    if (!ok) errs.push(`${iso}: ${country} repeats within the bank`);
+  }
+  lastSeen.set(code, { d, sunday: dow === 0 });
   const n = e.n.length;
   const [lo, hi] = BAND[dow];
   if (n < lo || n > hi) errs.push(`${iso}: ${country} has ${n} neighbors, outside the ${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dow]} band ${lo}-${hi}`);
