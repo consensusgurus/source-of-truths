@@ -7,6 +7,7 @@ import ResultQueue from './ResultQueue';
 import DailyStartPing from './DailyStartPing';
 import DailySaveSync from './DailySaveSync';
 import TrophyPop from './TrophyPop';
+import ChunkReload from './ChunkReload';
 import { getAllSources } from '@/lib/sources';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
@@ -155,6 +156,9 @@ export default function RootLayout({ children }) {
             on an actual unlock. Anything added back here needs the owner's word
             first. */}
         <TrophyPop />
+        {/* Reloads once when a hashed chunk from a superseded deployment fails to
+            load. See app/ChunkReload.jsx and app/error.js (2026-09-23). */}
+        <ChunkReload />
         <Analytics />
       </body>
     </html>
