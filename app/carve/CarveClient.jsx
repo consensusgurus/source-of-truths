@@ -589,7 +589,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
   }
 
   function revealEnd() {
-    const g2 = { ...g, assign: solFlat.slice(), locked: [...Array(R).keys()], status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...g, revealLocked: g.locked.length, assign: solFlat.slice(), locked: [...Array(R).keys()], status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     setG(g2);
@@ -684,7 +684,8 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
     };
   }
 
-  const lockedCount = locked.length;
+  // reveal locks every block; show how many the player had locked
+  const lockedCount = g.status === 'revealed' && g.revealLocked != null ? g.revealLocked : locked.length;
   const cellPx = N === 7 ? 'clamp(15px, 4.6vw, 21px)' : 'clamp(16px, 5vw, 23px)';
 
   // Shared rules body — rendered in both the how-to-play modal and the start gate.

@@ -489,7 +489,10 @@ export default function CagesClient({ puzzles = [], forceNum = null }) {
     return out;
   }, [cells, givenFlat]);
 
-  const filledCount = useMemo(() => FREE.reduce((n, i) => n + (cells[i] ? 1 : 0), 0), [cells, FREE]);
+  // A give-up writes the solution into cells, so the reveal stamps the real count
+  // first (revealFilled) and every readout shows that, never the answer key.
+  const liveFilled = useMemo(() => FREE.reduce((n, i) => n + (cells[i] ? 1 : 0), 0), [cells, FREE]);
+  const filledCount = g.status === 'revealed' && g.revealFilled != null ? g.revealFilled : liveFilled;
   // anything the player has put down (digits or pencil marks) — gates Clear
   const hasEntries = useMemo(() => cells.some((v) => v) || notes.some((v) => v), [cells, notes]);
 
@@ -716,7 +719,7 @@ export default function CagesClient({ puzzles = [], forceNum = null }) {
 
   function revealEnd() {
     const next = solFlat.slice();
-    const g2 = { ...g, cells: next.map((v, i) => (givenFlat[i] ? 0 : v)), notes: Array(81).fill(0), status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...g, cells: next.map((v, i) => (givenFlat[i] ? 0 : v)), notes: Array(81).fill(0), revealFilled: liveFilled, status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     setSel(-1);

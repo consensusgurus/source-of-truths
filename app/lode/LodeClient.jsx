@@ -240,7 +240,6 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
   const [showHelp, setShowHelp] = useState(false);
   const [gateRules, setGateRules] = useState(false); // start tile: full rules vs compact card
   const [toast, setToast] = useState(null);
-  const [shake, setShake] = useState(0);
   const [copied, setCopied] = useState(false);
   const [endClosed, setEndClosed] = useState(false);
   // The finished board starts turned OVER, showing what to do next.
@@ -272,6 +271,10 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
   const flashTimer = useRef(null);
   const viewedRef = useRef(false);
   const inputRef = useRef(null);
+  // The shake is replayed on this node's classList rather than by re-keying it:
+  // a key change remounts the input inside it, and a remounted input has lost
+  // focus, so every wrong or repeated word dropped the cursor out of the box.
+  const shakeRef = useRef(null);
 
   const [showChrome, setShowChrome] = useState(false);
   const playing = g.status === 'playing';
@@ -410,7 +413,10 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
 
   function say(msg, bad) {
     setToast({ msg, bad: !!bad });
-    if (bad) setShake((n) => n + 1);
+    if (bad) {
+      const el = shakeRef.current;
+      if (el) { el.classList.remove('ld-shake'); void el.offsetWidth; el.classList.add('ld-shake'); }
+    }
     if (toastTimer.current) clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 2200);
   }
@@ -741,7 +747,7 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
             <div style={{ display: 'flex', gap: 26, flexWrap: 'wrap', alignItems: 'flex-start' }}>
               <div style={{ flex: '1 1 320px', minWidth: 290, maxWidth: 440 }}>
                 {/* entry */}
-                <div className={shake ? 'ld-shake' : undefined} key={shake} style={{ marginBottom: 16 }}>
+                <div ref={shakeRef} style={{ marginBottom: 16 }}>
                   <input
                     ref={inputRef}
                     className="ld-entry"
@@ -895,7 +901,7 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
               name="Lode"
               catRank={catRank}
               outcome={score > 0 ? 'won' : 'lost'}
-              title={score > 0 ? 'complete' : 'not complete'}
+              title={score > 0 ? 'Complete' : 'Not complete'}
               detail={`${score} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

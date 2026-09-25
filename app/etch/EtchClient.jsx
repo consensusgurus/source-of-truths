@@ -511,11 +511,13 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
   const prevPuzzle = puzzles.find((x) => x.num === PUZZLE.num - 1) || null;
   const myStats = deriveStats(stats, pickPuzzle(puzzles, null).num);
 
-  const filledRight = useMemo(() => {
+  const liveRight = useMemo(() => {
     let k = 0;
     for (let i = 0; i < N; i++) if (SOL[i] === 1 && cells[i] === 1) k++;
     return k;
   }, [cells, SOL, N]);
+  // reveal overwrites cells with SOL; show the pre-reveal count it stamped
+  const filledRight = g.status === 'revealed' && g.revealFilled != null ? g.revealFilled : liveRight;
 
   // per-line completion, for dimming a satisfied clue
   const rowDone = useMemo(() => PUZZLE.rows.map((clue, r) =>
@@ -813,7 +815,8 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
 
   function revealEnd() {
     const cur = gRef.current;
-    const g2 = { ...cur, cells: SOL.slice(), status: 'revealed', tEnd: Date.now() };
+    let rf = 0; for (let i = 0; i < N; i++) if (SOL[i] === 1 && cur.cells[i] === 1) rf++;
+    const g2 = { ...cur, cells: SOL.slice(), revealFilled: rf, status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     commit(g2);

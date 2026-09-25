@@ -937,7 +937,7 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
               name="Outwit"
               catRank={catRank}
               outcome={score > 0 ? 'won' : 'lost'}
-              title={score > 0 ? 'complete' : 'not complete'}
+              title={score > 0 ? 'Complete' : 'Not complete'}
               detail={`${`${score}/${TOTAL}`} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

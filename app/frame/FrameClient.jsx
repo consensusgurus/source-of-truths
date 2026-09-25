@@ -466,7 +466,10 @@ export default function FrameClient({ puzzles = [], forceNum = null }) {
     return out;
   }, [padCounts]);
 
-  const filledCount = useMemo(() => FREE.reduce((n, i) => n + (cells[i] ? 1 : 0), 0), [cells, FREE]);
+  // A give-up writes the solution into cells, so the reveal stamps the real count
+  // first (revealFilled) and every readout shows that, never the answer key.
+  const liveFilled = useMemo(() => FREE.reduce((n, i) => n + (cells[i] ? 1 : 0), 0), [cells, FREE]);
+  const filledCount = g.status === 'revealed' && g.revealFilled != null ? g.revealFilled : liveFilled;
   const hasEntries = useMemo(() => cells.some((v) => v) || notes.some((v) => v), [cells, notes]);
 
   function isSolved(cs) {
@@ -685,7 +688,7 @@ export default function FrameClient({ puzzles = [], forceNum = null }) {
 
   function revealEnd() {
     const next = solFlat.slice();
-    const g2 = { ...g, cells: next.map((v, i) => (givenFlat[i] ? 0 : v)), notes: Array(CELLS).fill(0), status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...g, cells: next.map((v, i) => (givenFlat[i] ? 0 : v)), notes: Array(CELLS).fill(0), revealFilled: liveFilled, status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     setSel(-1);

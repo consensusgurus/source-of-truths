@@ -318,7 +318,9 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
   const endScore = won ? Math.max(1, Math.min(10, 10 - Math.ceil(errors / 2))) : 0;
   const finalScore = won ? Math.max(1, Math.min(10, 10 - Math.ceil(errors / 2))) : 0;
 
-  const filled = useMemo(() => vals.reduce((a, v) => a + (v ? 1 : 0), 0), [vals]);
+  const liveFilled = useMemo(() => vals.reduce((a, v) => a + (v ? 1 : 0), 0), [vals]);
+  // reveal writes SOL into vals; readouts show the stamped pre-reveal count
+  const filled = g.status === 'revealed' && g.revealFilled != null ? g.revealFilled : liveFilled;
   const dups = useMemo(() => dupSet(vals, n), [vals, n]);
   const clueStates = useMemo(() => PUZZLE.clues.map((cl) => clueState(cl, vals, n)), [PUZZLE, vals, n]);
   const brokenCount = useMemo(() => clueStates.filter((s) => s === 'broken').length, [clueStates]);
@@ -530,7 +532,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
     commit({ ...cur, acc: cur.acc === i ? null : i, t0: cur.t0 || Date.now() });
   }
 
-  const gridFull = filled === N;
+  const gridFull = liveFilled === N;
   const canSubmit = playing && gridFull && g.acc !== null;
 
   function submit() {
@@ -573,7 +575,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
 
   function revealEnd() {
     const cur = gRef.current;
-    const g2 = { ...cur, vals: SOL.slice(), notes: Array(N).fill(0), acc: PUZZLE.liar, status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...cur, revealFilled: cur.vals.reduce((a, v) => a + (v ? 1 : 0), 0), vals: SOL.slice(), notes: Array(N).fill(0), acc: PUZZLE.liar, status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     commit(g2);
