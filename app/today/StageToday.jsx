@@ -424,20 +424,20 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
   const dots = dotsFor ? dotsFor(g.key) : null;
   const isDone = done.has(g.key);
   // THREE STATES, NEVER TWO (owner, 2026-09-25): nobody has played it (the
-  // plain surface), the GROUP has played it and you have not (the category's
-  // full fill, the one that says go and catch up), and YOU have finished it
-  // (.done, a tint and a rule in the hue, below). The fill used to mean "anyone
-  // in the group", reader included, so a game you finished and a game only your
-  // friends had touched wore the same tile. The fill now belongs to the second
-  // state alone.
-  const grpOn = !isDone && !!(dots && dots.played && dots.played.size);
+  // plain surface), the GROUP has played it and you have not (.gw, a wash and
+  // a rule in the hue, below), and YOU have finished it (the category's full
+  // fill, .grp). The fill used to mean "anyone in the group", reader included,
+  // so a game you finished and a game only your friends had touched wore the
+  // same tile. The class name .grp is historical: it now means "yours, done".
+  const grpOn = isDone;
+  const grpWash = !isDone && !!(dots && dots.played && dots.played.size);
   const state = isDone ? 'done' : inprog.has(g.key) ? 'open' : '';
   const on = !!(favorites && favorites.includes(g.key));
   // MY GAMES MIXES CATEGORIES, so each card carries its OWN hue rather than
   // inheriting the section's (owner, 2026-08-31). In a category row every card
   // is that category anyway, so passing nothing keeps the row's colour.
   return (
-    <a className={`sty-g ${state}${res ? ' res' : ''}${grpOn ? ' grp' : ''}${canPin ? ' pin' : ''}`} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`}
+    <a className={`sty-g ${state}${res ? ' res' : ''}${grpOn ? ' grp' : grpWash ? ' gw' : ''}${canPin ? ' pin' : ''}`} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`}
       data-fk={fk || g.key}
       style={{
         '--i': i,
@@ -2791,19 +2791,17 @@ ${PATCH_CSS}
 .sty-g.done.res{opacity:1;background:none;}
 .sty-g.done.res .sty-gn{color:var(--stg-mute);}
 .sty-g.done.res .sty-gi{opacity:.75;}
-/* STATE THREE, YOU FINISHED IT (owner, 2026-09-25). Not the full fill (that is
-   the group's state) and not the old .42 dim (a finished game still carries a
-   result worth reading): a light wash of the category over the card, a rule
-   in the hue down the left edge, and the name back at full ink. The wash is
-   14% so the result line's mute and ink tokens keep their contrast in both
-   registers; every selector here outranks the .done.res and .done rules. */
-.sty-g.done,.sty-g.done.res{opacity:1;
-  background:color-mix(in srgb, var(--cc) 14%, var(--stg-surf));
+/* STATE TWO, THE GROUP PLAYED IT AND YOU HAVE NOT (owner, 2026-09-25). A light
+   wash of the category over the card and a rule in the hue down the left
+   edge; the full fill belongs to a game YOU finished. The wash is 14% so the
+   group line's mute and ink tokens keep their contrast in both registers. */
+.sty-g.gw{background:color-mix(in srgb, var(--cc) 14%, var(--stg-surf));
   border-color:color-mix(in srgb, var(--cc) 55%, var(--stg-line));
   box-shadow:inset 3px 0 0 var(--cc);}
-.sty-g.done .sty-gn,.sty-g.done.res .sty-gn,.sty-g.done.res:hover .sty-gn{color:var(--stg-ink);}
-.sty-g.done .sty-gi,.sty-g.done.res .sty-gi{color:var(--cc);opacity:1;}
-.sty-g.done:hover{border-color:var(--cc);box-shadow:inset 3px 0 0 var(--cc);}
+.sty-g.gw:hover{border-color:var(--cc);box-shadow:inset 3px 0 0 var(--cc);}
+/* A finished tile is the full fill, never dimmed, whether or not it has a
+   result line yet. */
+.sty-g.done.grp{opacity:1;background:var(--cc);border-color:var(--cc);}
 
 /* ── circuits ──────────────────────────────────────────────────────────── */
 .sty-circs{display:grid;gap:7px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));}
