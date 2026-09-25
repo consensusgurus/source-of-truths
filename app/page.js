@@ -1,4 +1,4 @@
-import QuizHomeClient from './quizzes/QuizHomeClient';
+import HomeSwitch from './HomeSwitch';
 import { QUIZZES } from '@/lib/quizzes';
 import { getAllSources } from '@/lib/sources';
 
@@ -69,7 +69,10 @@ export default function HomePage({ searchParams }) {
   return (
     <>
       <script dangerouslySetInnerHTML={{ __html: ME_PRELOAD }} />
-      <QuizHomeClient variant="v3" sourceCount={SOURCE_COUNT} stageDefault={stageDefault} />
+      {/* THE STAGE IS RENDERED DIRECTLY, NOT THROUGH QuizHomeClient (2026-09-25).
+          See app/HomeSwitch.jsx for why, and why the switch has to be a client
+          component rather than a ternary here. */}
+      <HomeSwitch stage={stageDefault} sourceCount={SOURCE_COUNT} />
       {/* NOTHING UNINVITED ON THE HOMEPAGE. The Daily Five overlay went on
           2026-08-30 for meeting a first visit with a full-screen pitch before
           the visitor had seen anything the site offers, and the install card

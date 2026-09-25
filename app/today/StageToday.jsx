@@ -915,8 +915,17 @@ export default function StageToday() {
     let alive = true;
     const qs = identityQs();
     if (!qs) { setMineIn(true); return undefined; }
-    fetch('/api/quiz/me?light=1&' + qs)
-      .then((r) => r.json())
+    // ADOPT THE PRELOAD (2026-09-25). app/page.js starts this exact request
+    // during HTML parse, keyed anonId, email, then light=1. The stage used to
+    // ignore it and ask again, so every signed-in home load made /me twice.
+    // A key mismatch (identity changed since parse) or a failed preload just
+    // falls through to a normal fetch.
+    const preKey = qs + '&light=1';
+    const pre = (typeof window !== 'undefined' && window.__sotMe && window.__sotMe.key === preKey)
+      ? window.__sotMe.promise
+      : null;
+    const fresh = () => fetch('/api/quiz/me?light=1&' + qs).then((r) => r.json());
+    (pre ? pre.then((d) => d || fresh()) : fresh())
       .then((d) => { if (alive && d && d.found !== false) setMine(d); })
       .catch(() => {})
       .finally(() => { if (alive) setMineIn(true); });
