@@ -1,22 +1,38 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
-import { guard, publicGroups } from '@/lib/groups';
+import { findQuizIdentity } from '@/lib/quiz-identity';
+import { guard, publicGroups, privateGroups } from '@/lib/groups';
 
-// /api/groups/public -> the groups whose owners have opened them to everyone.
+// /api/groups/public -> every group, for the list on /groups.
 //
-// Names and member counts only: no board, no member names. Anyone can read it,
-// signed in or not, because the whole point of a public group is being found by
-// somebody who has not joined anything yet. An empty list is the normal state
-// until owners start opening groups up, and it is also what a database without
-// migration 57 returns.
+//   groups   the PUBLIC ones: name, size, owner and code, so they can be
+//            opened and joined in one tap.
+//   private  the PRIVATE ones (owner, 2026-09-25): name and size ONLY. The code
+//            is a private group's key, so it never leaves the server here.
+//
+// ?anonId=&email= is optional. With it, private groups the viewer already
+// belongs to are left out (they show under Your groups), and the response is
+// per-viewer, so it is not shared-cached.
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
-// Public data that changes only when an owner flips a switch or somebody joins,
-// so a short shared cache is safe and keeps the Groups page quick.
-const HEADERS = { 'Cache-Control': 'public, max-age=60' };
+const SHARED = { 'Cache-Control': 'public, max-age=60' };
+const PRIVATE = { 'Cache-Control': 'private, no-store' };
 
-export async function GET() {
-  const out = await guard(async () => ({ groups: await publicGroups(supabaseAdmin) }));
-  return NextResponse.json(out, { status: out.status || 200, headers: HEADERS });
+function str(v, n = 120) { return typeof v === 'string' ? v.trim().slice(0, n) : ''; }
+
+export async function GET(request) {
+  const { searchParams } = new URL(request.url);
+  const anonId = str(searchParams.get('anonId'), 64) || null;
+  const email = str(searchParams.get('email')) || null;
+  const out = await guard(async () => {
+    const user = (anonId || email) ? await findQuizIdentity(supabaseAdmin, { email, anonId }) : null;
+    const [pub, priv] = await Promise.all([
+      publicGroups(supabaseAdmin),
+      privateGroups(supabaseAdmin, { excludeUserId: user ? user.id : null }),
+    ]);
+    return { groups: pub, private: priv };
+  });
+  const headers = (anonId || email) ? PRIVATE : SHARED;
+  return NextResponse.json(out, { status: out.status || 200, headers });
 }

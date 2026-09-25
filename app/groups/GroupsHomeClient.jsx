@@ -19,6 +19,7 @@ export default function GroupsHomeClient() {
   const [gname, setGname] = useState('');
   // Public groups: anyone can see this list, signed in or not.
   const [pub, setPub] = useState(null);
+  const [priv, setPriv] = useState([]);
   const [makePublic, setMakePublic] = useState(false);
   const [uname, setUname] = useState('');
   const [busy, setBusy] = useState(false);
@@ -31,9 +32,9 @@ export default function GroupsHomeClient() {
       .then((r) => r.json())
       .then((d) => { if (!dead) setState(d); })
       .catch(() => { if (!dead) setState({ failed: true, groups: [] }); });
-    fetch('/api/groups/public', { cache: 'no-store' })
+    fetch(`/api/groups/public?${identityQs()}`, { cache: 'no-store' })
       .then((r) => r.json())
-      .then((d) => { if (!dead) setPub((d && d.groups) || []); })
+      .then((d) => { if (!dead) { setPub((d && d.groups) || []); setPriv((d && d.private) || []); } })
       .catch(() => { if (!dead) setPub([]); });
     return () => { dead = true; };
   }, []);
@@ -226,32 +227,50 @@ export default function GroupsHomeClient() {
         </div>
       )}
 
-      {/* OPEN GROUPS (owner, 2026-09-17). Every group whose owner has made it
-          public, newest first: a name and a size, never a board or a member
-          list. A group the reader is already in is not offered again. */}
-      {pub && pub.filter((g) => !mineCodes.has(g.code)).length ? (
-        <section className="grp-card gh-card gh-pub">
-          <span className="grp-lbl">Open groups</span>
-          <p className="grp-note grp-mute gh-small" style={{ margin: '6px 0 4px' }}>
-            Anyone can join these. Full groups stay listed so you can tell they exist.
-          </p>
-          <ul className="gh-publist">
-            {pub.filter((g) => !mineCodes.has(g.code)).map((g) => (
-              <li key={g.code}>
-                <Link href={`/groups/${g.code}`} className="gh-row">
-                  <span className="gh-name">
-                    <b>{g.name} <Vis v="public" /></b>
-                    <span className="grp-mute">
-                      {g.members} {g.members === 1 ? 'member' : 'members'}{g.owner ? ` · made by ${g.owner}` : ''}
+      {/* ALL GROUPS (owner, 2026-09-25). Public ones first, newest first, each
+          opened and joined in one tap. Then every private group, marked
+          private: a name and a size, never a link, because a private group's
+          code is its key and joining takes an invite from a member. Groups
+          the reader is already in are not offered again. */}
+      {(() => {
+        const open = (pub || []).filter((g) => !mineCodes.has(g.code));
+        const closed = priv || [];
+        if (!open.length && !closed.length) return null;
+        return (
+          <section className="grp-card gh-card gh-pub">
+            <span className="grp-lbl">All groups</span>
+            <p className="grp-note grp-mute gh-small" style={{ margin: '6px 0 4px' }}>
+              Anyone can join a public group. A private group needs an invite link or code from one of its members.
+            </p>
+            <ul className="gh-publist">
+              {open.map((g) => (
+                <li key={g.code}>
+                  <Link href={`/groups/${g.code}`} className="gh-row">
+                    <span className="gh-name">
+                      <b>{g.name} <Vis v="public" /></b>
+                      <span className="grp-mute">
+                        {g.members} {g.members === 1 ? 'member' : 'members'}{g.owner ? ` · made by ${g.owner}` : ''}
+                      </span>
                     </span>
-                  </span>
-                  <span className={`grp-pill ${g.full ? 'wait' : 'line'}`}>{g.full ? 'Full' : 'Join'}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+                    <span className={`grp-pill ${g.full ? 'wait' : 'line'}`}>{g.full ? 'Full' : 'Join'}</span>
+                  </Link>
+                </li>
+              ))}
+              {closed.map((g, i) => (
+                <li key={'p' + i}>
+                  <div className="gh-row gh-locked">
+                    <span className="gh-name">
+                      <b>{g.name} <Vis v="private" /></b>
+                      <span className="grp-mute">{g.members} {g.members === 1 ? 'member' : 'members'}</span>
+                    </span>
+                    <span className="grp-pill wait">{g.full ? 'Full' : 'Invite only'}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        );
+      })()}
     </GroupsShell>
   );
 }
@@ -286,6 +305,8 @@ const CSS = `
 .gh-list li{border-top:1px solid var(--stg-line);}
 .gh-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;text-decoration:none;color:var(--stg-ink);}
 .gh-row:hover b{color:var(--stg-acc-ink);}
+.gh-locked{cursor:default;}
+.gh-locked:hover b{color:var(--stg-ink);}
 .gh-name{display:flex;flex-direction:column;min-width:0;font-size:13px;}
 .gh-name b{font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .gh-code{margin-top:16px;padding-top:14px;border-top:1px solid var(--stg-line);display:flex;flex-direction:column;gap:8px;}

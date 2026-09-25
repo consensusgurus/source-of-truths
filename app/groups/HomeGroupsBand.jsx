@@ -211,7 +211,8 @@ export default function HomeGroupsBand({ data, withTq = (h) => h, narrow = false
 
 const CSS = `
 ${AVATAR_CSS}
-.hgb{display:flex;flex-direction:column;gap:7px;min-width:0;align-self:stretch;}
+.hgb{display:flex;flex-direction:column;gap:7px;min-width:0;align-self:stretch;
+  -webkit-text-size-adjust:100%;text-size-adjust:100%;}
 /* TWO PANELS OF ONE HEIGHT (owner, 2026-09-25). The standings set the row's
    height; the right panel is size-contained, so it adds none of its own and
    simply stretches to match. NO SCROLLBAR: its list is a wrapping column
@@ -307,8 +308,15 @@ ${AVATAR_CSS}
 .hgb-lad > span{display:flex;gap:1px;min-width:0;}
 .hgb-lad i{flex:1 1 0;min-width:0;border-radius:1px;background:var(--stg-line);}
 .hgb-lad i.on{background:var(--cc);}
+/* A PHONE IN LANDSCAPE BLEW THIS LINE UP (owner, 2026-09-25). It is the only
+   free-running block of prose in the band, which is exactly what mobile text
+   autosizing ("font boosting") inflates on a wide viewport; every other cell
+   is a nowrap grid item it leaves alone. One line, a bounded height and an
+   explicit text-size-adjust take it out of the autosizer's reach. */
 .hgb-st > .foot{display:block;margin-top:4px;border-top:1px solid var(--stg-line);padding-top:7px;
-  font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--stg-mute);}
+  font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:10.5px;line-height:1.4;color:var(--stg-mute);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-height:3em;
+  -webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .hgb-st > .foot b{font-weight:500;color:var(--stg-ink2);}
 @media (max-width:640px){ .hgb-st.s .hgb-lad,.hgb-st.s .h > span:nth-child(4){display:none;}
   .hgb-st.s > div{grid-template-columns:16px 22px minmax(0,1fr) 42px 36px 44px;gap:8px;} }
