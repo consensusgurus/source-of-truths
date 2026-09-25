@@ -22,7 +22,7 @@
 // four things (this band, the Groups badge, the member ladders and the tiles).
 import { useState } from 'react';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
-import { ordinal, fmtPts, relTime, swingVs, MiniAvatar, AVATAR_CSS } from './groupStanding';
+import { ordinal, fmtPts, relTime, memberRows, MiniAvatar, AVATAR_CSS } from './groupStanding';
 
 const gameName = (k) => (DAILY_GAME_MAP[k] && DAILY_GAME_MAP[k].name) || k;
 
@@ -43,68 +43,42 @@ function standLabel(g) {
   return `you’re ${ordinal(g.rank)}`;
 }
 
-// A swing bar: the reader's side of centre is green, the other member's is red,
-// each scaled against the biggest swing on show so the three read as one set.
-function Swing({ rows, withTq }) {
-  if (!rows.length) return null;
-  const max = Math.max(...rows.map((r) => Math.abs(r.diff)), 1);
+// THE STANDINGS (owner, 2026-09-25). Replaces the chase card, whose swing bars
+// listed the games where you and one rival differ most without ever saying so.
+// This is every member, their place, games finished, points and how far each
+// is off the lead: nothing to decode. Games are FINISHED games (memberRows skips
+// abandoned runs), the same count the ladders beside it use. Five rows at most;
+// a reader outside the top four is kept as the fifth.
+const SHOW = 5;
+function Standings({ g, myKey }) {
+  const m = memberRows(g, myKey, 999);
+  const all = [m.me, ...m.rows].filter(Boolean).sort((a, b) => b.total - a.total
+    || b.games - a.games
+    || String(a.username || '').localeCompare(String(b.username || '')));
+  if (!all.length) return <div className="hgb-none">Nobody is in this group yet.</div>;
+  let list = all.slice(0, SHOW);
+  const meRow = all.find((x) => x.me);
+  if (meRow && !list.includes(meRow)) list = all.slice(0, SHOW - 1).concat(meRow);
+  const lead = all[0] && all[0].total > 0 ? all[0].total : 0;
+  const more = all.length - list.length;
   return (
-    <div className="hgb-sw">
-      {rows.map((r) => (
-        <div key={r.key}>
-          <GameLink k={r.key} withTq={withTq} className="g" />
-          <span className="bar">
-            <i className={r.diff > 0 ? 'up' : 'dn'} style={{ width: (Math.abs(r.diff) / max) * 46 + '%' }} />
-            <u />
-          </span>
-          <span className={'v ' + (r.diff > 0 ? 'up' : 'dn')}>
-            {r.diff > 0 ? '+' : '−'}{fmtPts(Math.abs(r.diff))}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function Chase({ g, myKey, withTq }) {
-  // NOT PLAYED YET is its own state, and it is not a failure: it says how many
-  // members are already on today's board, which is the reason to go and play.
-  if (!g.rank) {
-    return (
-      <div className="hgb-chase">
-        <div className="hgb-top">
-          <b>Not played yet</b>
-          <span className="hgb-em">{g.played} of {g.members} {g.played === 1 ? 'member has' : 'members have'}</span>
-        </div>
-      </div>
-    );
-  }
-  // LEADING: name the nearest chaser and what they can still take off you.
-  if (g.rank === 1) {
-    const second = (g.top || [])[1] || null;
-    return (
-      <div className="hgb-chase">
-        <div className="hgb-top">
-          <MiniAvatar name={g.leader ? g.leader.username : 'You'} userKey={myKey} />
-          <b>You lead</b>
-          {second ? <span className="hgb-em">{second.username} is closest</span> : null}
-          {second ? <span className="hgb-gap up">{fmtPts(g.total - second.total)}</span> : null}
-        </div>
-        {second ? <Swing rows={swingVs(g, myKey, second.userKey)} withTq={withTq} /> : null}
-      </div>
-    );
-  }
-  const a = g.ahead;
-  if (!a) return null;
-  return (
-    <div className="hgb-chase">
-      <div className="hgb-top">
-        <MiniAvatar name={a.username} userKey={a.userKey} />
-        <b>{a.username}</b>
-        <span className="hgb-em">is ahead of you</span>
-        <span className="hgb-gap dn">{fmtPts(g.gap == null ? 0 : g.gap)}</span>
-      </div>
-      <Swing rows={swingVs(g, myKey, a.userKey)} withTq={withTq} />
+    <div className="hgb-st">
+      <div className="h"><span /><span /><span>Player</span><span className="rt">Games</span><span className="rt">Pts</span><span className="rt">Gap</span></div>
+      {list.map((r) => {
+        const on = r.total > 0 || r.games > 0;
+        const gap = !on ? '' : r.total >= lead ? 'lead' : '\u2212' + fmtPts(lead - r.total);
+        return (
+          <div key={r.userKey} className={r.me ? 'me' : ''}>
+            <span className="rk">{on && r.rank ? r.rank : '\u2013'}</span>
+            <MiniAvatar name={r.username} userKey={r.userKey} />
+            <span className="nm">{r.me ? 'You' : r.username}</span>
+            <span className="rt mu">{r.games}</span>
+            <span className="rt">{on ? fmtPts(r.total) : '\u2013'}</span>
+            <span className={'rt ' + (gap === 'lead' ? 'mu' : 'dn')}>{gap || '\u2013'}</span>
+          </div>
+        );
+      })}
+      {more > 0 ? <div className="more">+{more} more</div> : null}
     </div>
   );
 }
@@ -177,11 +151,11 @@ export default function HomeGroupsBand({ data, withTq = (h) => h, narrow = false
               <button type="button" aria-label="Next" onClick={() => setFace(face + 1)}>&rsaquo;</button>
             </span>
           </div>
-          {kind === 'stand' ? <Chase g={g} myKey={myKey} withTq={withTq} /> : <Feed g={g} myKey={myKey} rows={3} withTq={withTq} />}
+          {kind === 'stand' ? <Standings g={g} myKey={myKey} /> : <Feed g={g} myKey={myKey} rows={3} withTq={withTq} />}
         </div>
       ) : (
         <>
-          <div className="hgb-card"><Chase g={g} myKey={myKey} withTq={withTq} /></div>
+          <div className="hgb-card"><Standings g={g} myKey={myKey} /></div>
           <div className="hgb-card"><Feed g={g} myKey={myKey} rows={5} withTq={withTq} /></div>
         </>
       )}
@@ -249,6 +223,23 @@ ${AVATAR_CSS}
 .hgb-sw .v{text-align:right;font-variant-numeric:tabular-nums;}
 .hgb-sw .v.dn{color:var(--stg-dn);}
 .hgb-sw .v.up{color:var(--stg-up);}
+
+.hgb-st{display:grid;font-size:13px;min-width:0;}
+.hgb-st > div{display:grid;grid-template-columns:16px 22px minmax(0,1fr) 42px 36px 44px;gap:8px;
+  align-items:center;padding:5px 0;border-top:1px solid var(--stg-line);}
+.hgb-st > div:nth-child(2){border-top:0;}
+.hgb-st > .h{border-top:0;padding:0 0 3px;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--stg-mute);}
+.hgb-st .rk,.hgb-st .rt{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:12px;
+  font-variant-numeric:tabular-nums;}
+.hgb-st .rk{color:var(--stg-mute);}
+.hgb-st .rt{text-align:right;color:var(--stg-ink);}
+.hgb-st .h .rt{font-size:9px;color:var(--stg-mute);}
+.hgb-st .rt.mu{color:var(--stg-mute);}
+.hgb-st .rt.dn{color:var(--stg-dn);}
+.hgb-st .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.hgb-st .me .nm{color:var(--stg-acc-ink);}
+.hgb-st > .more{display:block;border-top:1px solid var(--stg-line);font-size:11.5px;color:var(--stg-mute);padding-top:5px;}
 
 .hgb-fr{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:9px;align-items:center;
   padding:6px 0;border-top:1px solid var(--stg-line);font-size:13px;}
