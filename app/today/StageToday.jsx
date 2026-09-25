@@ -422,8 +422,16 @@ function MemberLadder({ cats, keys, hueFor }) {
 
 function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue, res, i = 0, fk = null, dotsFor = null, light = true }) {
   const dots = dotsFor ? dotsFor(g.key) : null;
-  const grpOn = !!(dots && dots.played && dots.played.size);
-  const state = done.has(g.key) ? 'done' : inprog.has(g.key) ? 'open' : '';
+  const isDone = done.has(g.key);
+  // THREE STATES, NEVER TWO (owner, 2026-09-25): nobody has played it (the
+  // plain surface), the GROUP has played it and you have not (the category's
+  // full fill, the one that says go and catch up), and YOU have finished it
+  // (.done, a tint and a rule in the hue, below). The fill used to mean "anyone
+  // in the group", reader included, so a game you finished and a game only your
+  // friends had touched wore the same tile. The fill now belongs to the second
+  // state alone.
+  const grpOn = !isDone && !!(dots && dots.played && dots.played.size);
+  const state = isDone ? 'done' : inprog.has(g.key) ? 'open' : '';
   const on = !!(favorites && favorites.includes(g.key));
   // MY GAMES MIXES CATEGORIES, so each card carries its OWN hue rather than
   // inheriting the section's (owner, 2026-08-31). In a category row every card
@@ -2783,6 +2791,19 @@ ${PATCH_CSS}
 .sty-g.done.res{opacity:1;background:none;}
 .sty-g.done.res .sty-gn{color:var(--stg-mute);}
 .sty-g.done.res .sty-gi{opacity:.75;}
+/* STATE THREE, YOU FINISHED IT (owner, 2026-09-25). Not the full fill (that is
+   the group's state) and not the old .42 dim (a finished game still carries a
+   result worth reading): a light wash of the category over the card, a rule
+   in the hue down the left edge, and the name back at full ink. The wash is
+   14% so the result line's mute and ink tokens keep their contrast in both
+   registers; every selector here outranks the .done.res and .done rules. */
+.sty-g.done,.sty-g.done.res{opacity:1;
+  background:color-mix(in srgb, var(--cc) 14%, var(--stg-surf));
+  border-color:color-mix(in srgb, var(--cc) 55%, var(--stg-line));
+  box-shadow:inset 3px 0 0 var(--cc);}
+.sty-g.done .sty-gn,.sty-g.done.res .sty-gn,.sty-g.done.res:hover .sty-gn{color:var(--stg-ink);}
+.sty-g.done .sty-gi,.sty-g.done.res .sty-gi{color:var(--cc);opacity:1;}
+.sty-g.done:hover{border-color:var(--cc);box-shadow:inset 3px 0 0 var(--cc);}
 
 /* ── circuits ──────────────────────────────────────────────────────────── */
 .sty-circs{display:grid;gap:7px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));}
@@ -2864,7 +2885,7 @@ ${PATCH_CSS}
   box-shadow:0 3px 10px rgba(var(--stg-lift,11,15,26),.08);}
 .sty-g:hover .sty-gn{color:var(--cc);}
 .sty-gn{transition:color .12s;}
-.sty-g.done:hover{transform:none;box-shadow:none;}
+.sty-g.done:hover{transform:none;}
 .sty-gn{display:flex;align-items:center;gap:7px;font-size:14.5px;font-weight:800;
   letter-spacing:-0.01em;}
 /* The glyph wears the row's hue while the name stays ink, so the colour marks
@@ -2877,7 +2898,6 @@ ${PATCH_CSS}
 .sty-gt{display:block;font-size:11.5px;font-weight:600;color:var(--stg-mute);margin-top:2px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 /* Played is DIM, not struck through: the day is a record, not a chore list. */
-.sty-g.done{opacity:.42;}
 .sty-g.open{border-color:var(--cc);}
 .sty-g:focus-visible,.sty-next:focus-visible,.sty-cx:focus-visible{
   outline:2px solid var(--cc, var(--stg-ink2));outline-offset:2px;}
