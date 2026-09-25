@@ -63,6 +63,7 @@ import GroupsPop from '../GroupsPop';
 import useGroupStanding, { bestPlace, ordinal as grpOrdinal, memberRows, fmtPts as grpPts, MiniAvatar } from '../groups/groupStanding';
 import HomeGroupsBand from '../groups/HomeGroupsBand';
 import HomeInvite from '../groups/HomeInvite';
+import HomeFieldBand from '../groups/HomeFieldBand';
 // CHOOSE A NAME (owner report, 2026-09-17): the guest controls below pointed at
 // ?signup=1 and nothing on this page ever read it, so they only reloaded the
 // home. This is the form they open. See app/ChooseNamePop.jsx.
@@ -560,6 +561,18 @@ export default function StageToday() {
     try { setGrpPick(localStorage.getItem('sot_grp_home') || ''); } catch (e) {}
     try { setInvitePrev(new URLSearchParams(window.location.search).get('groupinvite') === '1'); } catch (e) {}
   }, []);
+  // THE VIEW (owner, 2026-09-25): Me, the chosen group, or Everyone. Only a
+  // reader in a group sees the switch, and the group is their default; a
+  // reader in no group gets the page exactly as it was. Remembered per
+  // browser, read in an effect so the server and first paint agree.
+  const [lensPick, setLensPick] = useState('');
+  useEffect(() => {
+    try { const v = localStorage.getItem('sot_home_lens'); if (v === 'me' || v === 'group' || v === 'all') setLensPick(v); } catch (e) {}
+  }, []);
+  const pickLens = useCallback((v) => {
+    setLensPick(v);
+    try { localStorage.setItem('sot_home_lens', v); } catch (e) {}
+  }, []);
   const pickGroup = useCallback((code) => {
     setGrpPick(code);
     try { localStorage.setItem('sot_grp_home', code); } catch (e) {}
@@ -569,6 +582,8 @@ export default function StageToday() {
     if (!list.length) return null;
     return list.find((x) => x.code === grpPick) || list.find((x) => !x.failed) || list[0];
   }, [grp, grpPick]);
+  const inGrp = !!grpOne;
+  const lens = inGrp ? (lensPick || 'group') : 'group';
   // The badge follows the chosen group rather than the best of all of them, so
   // the header cannot name a place the page below it is not showing.
   const grpBest = grpOne && grpOne.rank
@@ -620,6 +635,11 @@ export default function StageToday() {
     const m = memberRows(g0, (grp && grp.userKey) || null, 6);
     return m.rows.length ? { ...m, name: g0.name } : null;
   }, [grp, grpOne]);
+  // WHAT THE CHOSEN VIEW DRAWS. The group view is the page as it was; Me and
+  // Everyone drop the member ladders and the group lines on the tiles, so a
+  // tile falls back to the reader's own place or the game's tag.
+  const memL = lens === 'group' ? mem : null;
+  const dotsL = lens === 'group' ? dotsFor : null;
 
   // ARM THE ARRIVAL REVEAL, and only for a page someone is actually looking at.
   // A hidden tab does not advance an animation clock, so a section that mounts
@@ -1738,26 +1758,36 @@ export default function StageToday() {
         {/* THE TOP ROW (owner, 2026-09-17). On a wide screen the groups band and
             the day's progress share a line, with the ladder squeezed to the
             right; under 1100px they stack in the order they always had. */}
+        {inGrp ? (
+          <div className="sty-lens" role="group" aria-label="Whose day to show">
+            {[['me', 'Me'], ['group', grpOne.name], ['all', 'Everyone']].map(([v, label]) => (
+              <button type="button" key={v} className={lens === v ? 'on' : ''} aria-pressed={lens === v}
+                title={v === 'group' ? grpOne.name : label} onClick={() => pickLens(v)}>{label}</button>
+            ))}
+          </div>
+        ) : null}
         <div className="sty-toprow">
         {/* ALSO DRAWN WHEN THE GROUP HAS PLAYED (owner, 2026-09-24): the member
             ladders live inside this section, so gating it on the reader's own
             progress hid a groupmate's finished day from a reader who had not
             started. A first-time reader in no group still sees nothing. */}
-        {(done.size > 0 || inprog.size > 0 || (mem && mem.played > 0)) ? (
-        <section className="sty-day sty-rev" style={mem && mem.rows.length && !narrow && mem.me ? { '--rows': 1 + mem.rows.length + (mem.rest ? 1 : 0) } : undefined}>
+        {/* THE VIEW SWITCH sits above the top row, and only for a reader in a
+            group (owner, 2026-09-25). */}
+        {lens !== 'me' && (done.size > 0 || inprog.size > 0 || (memL && memL.played > 0)) ? (
+        <section className="sty-day sty-rev" style={memL && memL.rows.length && !narrow && memL.me ? { '--rows': 1 + memL.rows.length + (memL.rest ? 1 : 0) } : undefined}>
           <div className="sty-eb">The day&rsquo;s progress <span className="sty-ebn"><RollNum value={playedCount} from={seenCount === null ? null : Math.min(seenCount, playedCount)} delay={360} /> of {total}</span>
-            {mem && mem.rows.length ? <span className="sty-dayg">{mem.name}</span> : null}
+            {memL && memL.rows.length ? <span className="sty-dayg">{memL.name}</span> : null}
           </div>
           {/* THE READER'S LADDER SITS IN THE SAME GRID AS THE MEMBER ROWS (owner,
               2026-09-22): name, ladder, games, points. Full width it ran past
               the member ladders under it and its blocks landed nowhere near
               theirs; in one grid every game is one column all the way down. */}
-          {mem && mem.rows.length && !narrow && mem.me ? (
+          {memL && memL.rows.length && !narrow && memL.me ? (
             <div className="sty-ml sty-mlme">
-              <span className="who"><MiniAvatar name={mem.me.username} userKey={mem.me.userKey} /><b>You</b></span>
+              <span className="who"><MiniAvatar name={memL.me.username} userKey={memL.me.userKey} /><b>You</b></span>
               <StageLadder height={ladH} blocks={blocks} light={light} />
-              <span className="gms">{mem.me.games}</span>
-              <span className="tot">{grpPts(mem.me.total)}</span>
+              <span className="gms">{memL.me.games}</span>
+              <span className="tot">{grpPts(memL.me.total)}</span>
             </div>
           ) : (
             <StageLadder height={ladH} blocks={blocks} light={light} />
@@ -1766,9 +1796,9 @@ export default function StageToday() {
               becomes one presence row instead: ninety-four blocks across six
               rows works out under two pixels a block at 390px, which is noise
               rather than a graphic (owner, 2026-09-22). */}
-          {mem && mem.rows.length && !narrow ? (
+          {memL && memL.rows.length && !narrow ? (
             <div className="sty-mls">
-              {mem.rows.map((m) => (
+              {memL.rows.map((m) => (
                 <div className="sty-ml" key={m.userKey}>
                   <span className="who"><MiniAvatar name={m.username} userKey={m.userKey} /><b>{m.username}</b></span>
                   <MemberLadder cats={cats} keys={m.keys} hueFor={hueFor} />
@@ -1776,30 +1806,30 @@ export default function StageToday() {
                   <span className="tot">{grpPts(m.total)}</span>
                 </div>
               ))}
-              {mem.rest ? (
+              {memL.rest ? (
                 <div className="sty-ml rest">
-                  <span className="who"><MiniAvatar name={'+' + mem.rest} userKey="rest" off /><b>{mem.rest} more</b></span>
+                  <span className="who"><MiniAvatar name={'+' + memL.rest} userKey="rest" off /><b>{memL.rest} more</b></span>
                   <MemberLadder cats={cats} keys={EMPTY_KEYS} hueFor={hueFor} />
-                  <span className="gms">{mem.restGames}</span>
+                  <span className="gms">{memL.restGames}</span>
                   <span className="tot">&mdash;</span>
                 </div>
               ) : null}
               <div className="sty-msum">
-                <span>{mem.name} {mem.played === 1 ? 'has' : 'have'} played <b>{mem.played} of today&rsquo;s {total}</b> between them</span>
+                <span>{memL.name} {memL.played === 1 ? 'has' : 'have'} played <b>{memL.played} of today&rsquo;s {total}</b> between them</span>
                 <span className="k">Games &middot; Points</span>
               </div>
             </div>
           ) : null}
-          {mem && mem.rows.length && narrow ? (
+          {memL && memL.rows.length && narrow ? (
             <div className="sty-pres">
-              {[mem.me].concat(mem.rows).filter(Boolean).map((m) => (
+              {[memL.me].concat(memL.rows).filter(Boolean).map((m) => (
                 <span className={'sty-pm' + (m.me ? ' me' : '')} key={m.userKey}
                   title={`${m.username}: ${m.games} ${m.games === 1 ? 'game' : 'games'}`}>
                   <MiniAvatar name={m.username} userKey={m.userKey} />{m.games}
                 </span>
               ))}
-              {mem.rest ? <span className="sty-pm off"><MiniAvatar name={'+' + mem.rest} userKey="rest" off />{mem.restGames}</span> : null}
-              <span className="sty-psum">{mem.played} of {total}</span>
+              {memL.rest ? <span className="sty-pm off"><MiniAvatar name={'+' + memL.rest} userKey="rest" off />{memL.restGames}</span> : null}
+              <span className="sty-psum">{memL.played} of {total}</span>
             </div>
           ) : null}
         </section>
@@ -1811,13 +1841,30 @@ export default function StageToday() {
         {/* YOUR GROUP TODAY: the chase and the feed, or on a phone one card
             with two faces. Nothing at all for a reader in no group, who gets
             the invite below instead. */}
-        <HomeGroupsBand data={grp} withTq={withTq} narrow={narrow} group={grpOne} onPick={pickGroup} />
+        {lens === 'group' ? (
+          <HomeGroupsBand data={grp} withTq={withTq} narrow={narrow} group={grpOne} onPick={pickGroup} />
+        ) : lens === 'all' ? (
+          <HomeFieldBand overall={overall} meKey={meKey} field={fieldToday} narrow={narrow}
+            live={live.map((fp) => ({ name: fp.game.name, href: withTq(routeOf(fp.game)), hue: hueFor(fp.game.cat), score: fp.score, total: fp.total, when: ago(fp.playedAt) }))} />
+        ) : null}
         {grp === null || invitePrev ? (
           <HomeInvite playedToday={done.size} returning={returning} withTq={withTq} preview={invitePrev} />
         ) : null}
         </div>
 
-        <h1 className="sty-slate">Today&rsquo;s fresh slate of puzzles</h1>
+        {/* ME: the reader's own ladder rides beside the heading, since the
+            top row is gone in that view (owner, 2026-09-25). */}
+        {lens === 'me' && (done.size > 0 || inprog.size > 0) ? (
+          <div className="sty-slhd">
+            <h1 className="sty-slate">Today&rsquo;s fresh slate of puzzles</h1>
+            <div className="sty-slbar">
+              <StageLadder height={narrow ? 20 : 26} blocks={blocks} light={light} />
+              <span className="sty-eb sty-slbn">{playedCount} of {total}</span>
+            </div>
+          </div>
+        ) : (
+          <h1 className="sty-slate">Today&rsquo;s fresh slate of puzzles</h1>
+        )}
 
         {/* THE NEWCOMER'S ROW, and ONLY for a reader with no footprint.
             `returning` is the footprint test the A-to-Z bar's ordBelow already
@@ -1911,7 +1958,7 @@ export default function StageToday() {
                 {playedLast(pinned, done).map((g, i) => (
                   <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
                     canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-                    hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsFor} light={light} i={i} fk={'mine:' + g.key} />
+                    hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'mine:' + g.key} />
                 ))}
               </div>
             ) : null}
@@ -2009,7 +2056,7 @@ export default function StageToday() {
                 // game IS (owner, 2026-08-31).
                 <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
                   canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-                  hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsFor} light={light} i={i} fk={'az:' + g.key} />
+                  hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'az:' + g.key} />
               ))}
             </div>
           </section>
@@ -2033,7 +2080,7 @@ export default function StageToday() {
                 {playedLast(games, done).map((g, i) => (
                   <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
                     canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-                    res={standBy[g.key]} dotsFor={dotsFor} light={light} i={i} />
+                    res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} />
                 ))}
               </div>
             </section>
@@ -2860,6 +2907,24 @@ ${PATCH_CSS}
    40px of air under one line of type. The negative bottom margin hands most of
    that back: 14px here and 10px on a phone, the same distance a category head
    already sits above its own grid. */
+.sty-lens{display:inline-flex;align-self:flex-start;gap:2px;padding:3px;max-width:100%;overflow-x:auto;
+  border:1px solid var(--stg-line);border-radius:999px;background:var(--stg-surf);scrollbar-width:none;margin-bottom:-8px;}
+.sty-lens button{border:0;background:none;border-radius:999px;padding:6px 14px;font:inherit;font-size:12.5px;
+  font-weight:700;color:var(--stg-ink2);cursor:pointer;white-space:nowrap;max-width:18ch;overflow:hidden;
+  text-overflow:ellipsis;flex:none;}
+.sty-lens button:hover{color:var(--stg-ink);}
+.sty-lens button.on{background:var(--stg-acc);color:var(--stg-onramp,#08222e);}
+.sty-lens button:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-slhd{display:flex;align-items:center;flex-wrap:wrap;gap:10px 24px;margin:4px 0 -12px;}
+.sty-slhd .sty-slate{margin:0;flex:none;}
+.sty-slbar{flex:1 1 360px;display:flex;align-items:center;gap:12px;min-width:0;}
+.sty-slbar > :first-child{flex:1 1 auto;min-width:0;}
+.sty-slbn{flex:none;margin:0;}
+@media (max-width:640px){
+  .sty-lens{align-self:stretch;}
+  .sty-lens button{flex:1 1 auto;}
+  .sty-slbar{flex-basis:100%;}
+}
 .sty-slate{margin:4px 0 -12px;font-size:19px;font-weight:800;letter-spacing:-.015em;line-height:1.15;color:var(--stg-ink);}
 .sty-cathead{display:flex;align-items:baseline;gap:11px;margin-bottom:10px;}
 .sty-cathead h2{margin:0;font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;}

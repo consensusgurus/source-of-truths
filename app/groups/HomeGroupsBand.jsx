@@ -269,3 +269,6 @@ ${AVATAR_CSS}
   .hgb-nm{max-width:12ch;}
 }
 `;
+
+// Shared with HomeFieldBand, so the Everyone band wears exactly these cards.
+export const HGB_CSS = CSS;
