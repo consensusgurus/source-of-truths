@@ -1909,7 +1909,7 @@ export default function StageToday() {
           <HomeGroupsBand data={grp} withTq={withTq} narrow={narrow} group={grpOne} onPick={pickGroup}
             cats={cats} hueFor={hueFor} total={total} />
         ) : lens === 'all' ? (
-          <HomeFieldBand overall={overall} meKey={meKey} field={fieldToday} narrow={narrow}
+          <HomeFieldBand overall={overall} meKey={meKey} me={board && board.me ? board.me : null} field={fieldToday} narrow={narrow}
             live={live.map((fp) => ({ name: fp.game.name, href: withTq(routeOf(fp.game)), hue: hueFor(fp.game.cat), score: fp.score, total: fp.total, when: ago(fp.playedAt) }))} />
         ) : null}
         {grp === null || invitePrev ? (

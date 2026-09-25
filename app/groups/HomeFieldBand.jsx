@@ -14,14 +14,51 @@ import { useState } from 'react';
 import { MiniAvatar, fmtPts } from './groupStanding';
 import { HGB_CSS } from './HomeGroupsBand';
 
-function Stand({ overall, meKey }) {
+function Stand({ overall, meKey, me: meRow = null, field = 0 }) {
   const idx = meKey ? overall.findIndex((r) => r && r.userKey === meKey) : -1;
+  // OUTSIDE THE TOP TEN (2026-09-25). The board payload carries the top ten in
+  // `overall` and the reader's own row in `me`, so a reader in 12th was told
+  // they were "not on today's board yet". Show the top three, then the reader,
+  // and how far they are from the tenth place.
+  if (idx < 0 && meRow && meRow.rank) {
+    const tenth = overall[overall.length - 1] || null;
+    const near = overall.slice(0, 3);
+    return (
+      <div className="hgb-chase">
+        <div className="hgb-top">
+          <MiniAvatar name={meRow.username} userKey={meRow.userKey} />
+          <b>You&rsquo;re #{meRow.rank}</b>
+          {tenth ? <span className="hgb-em">to reach #{tenth.rank}</span> : null}
+          {tenth ? <span className="hgb-gap dn">{fmtPts((tenth.total || 0) - (meRow.total || 0))}</span> : null}
+        </div>
+        <div className="hfb-near">
+          {near.map((r) => (
+            <div key={r.userKey}>
+              <span className="rk">#{r.rank}</span>
+              <MiniAvatar name={r.username} userKey={r.userKey} />
+              <span className="nm">{r.username}</span>
+              <span className="gp">{typeof r.gamesPlayed === 'number' ? r.gamesPlayed : ''}</span>
+              <span className="pt">{fmtPts(r.total)}</span>
+            </div>
+          ))}
+          <div className="me sep">
+            <span className="rk">#{meRow.rank}</span>
+            <MiniAvatar name={meRow.username} userKey={meRow.userKey} />
+            <span className="nm">You</span>
+            <span className="gp">{typeof meRow.gamesPlayed === 'number' ? meRow.gamesPlayed : ''}</span>
+            <span className="pt">{fmtPts(meRow.total)}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (idx < 0) {
+    const n = field || overall.length;
     return (
       <div className="hgb-chase">
         <div className="hgb-top">
           <b>Not on today&rsquo;s board yet</b>
-          <span className="hgb-em">{overall.length} {overall.length === 1 ? 'player is' : 'players are'}</span>
+          <span className="hgb-em">{n.toLocaleString()} {n === 1 ? 'player is' : 'players are'}</span>
         </div>
       </div>
     );
@@ -80,7 +117,7 @@ function Live({ live, rows }) {
   );
 }
 
-export default function HomeFieldBand({ overall = [], meKey = null, live = [], field = 0, narrow = false, boardHref = '#sty-board' }) {
+export default function HomeFieldBand({ overall = [], meKey = null, me = null, live = [], field = 0, narrow = false, boardHref = '#sty-board' }) {
   const [face, setFace] = useState(0);
   const idx = meKey ? overall.findIndex((r) => r && r.userKey === meKey) : -1;
   const count = field || overall.length;
@@ -90,7 +127,7 @@ export default function HomeFieldBand({ overall = [], meKey = null, live = [], f
       <style dangerouslySetInnerHTML={{ __html: HGB_CSS + CSS }} />
       <div className="hgb-h">
         <span className="hgb-nm">Everyone</span>
-        <span className="hgb-you">{idx >= 0 ? `you’re #${overall[idx].rank} of ${count.toLocaleString()}` : `${count.toLocaleString()} playing today`}</span>
+        <span className="hgb-you">{idx >= 0 ? `you’re #${overall[idx].rank} of ${count.toLocaleString()}` : me && me.rank ? `you’re #${me.rank} of ${count.toLocaleString()}` : `${count.toLocaleString()} playing today`}</span>
         <a className="hgb-all" href={boardHref}>Board &rarr;</a>
       </div>
       {narrow ? (
@@ -103,11 +140,11 @@ export default function HomeFieldBand({ overall = [], meKey = null, live = [], f
               <button type="button" aria-label="Next" onClick={() => setFace(face + 1)}>&rsaquo;</button>
             </span>
           </div>
-          {kind === 'stand' ? <Stand overall={overall} meKey={meKey} /> : <Live live={live} rows={3} />}
+          {kind === 'stand' ? <Stand overall={overall} meKey={meKey} me={me} field={count} /> : <Live live={live} rows={3} />}
         </div>
       ) : (
         <div className="hgb-cols">
-          <div className="hgb-card"><Stand overall={overall} meKey={meKey} /></div>
+          <div className="hgb-card"><Stand overall={overall} meKey={meKey} me={me} field={count} /></div>
           <div className="hgb-card fd"><Live live={live} rows={24} /></div>
         </div>
       )}
@@ -126,5 +163,6 @@ const CSS = `
 .hfb-near .pt{text-align:right;color:var(--stg-ink);}
 .hfb-near .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;}
 .hfb-near .me .nm{color:var(--stg-acc-ink);}
+.hfb-near > div.sep{border-top:1px dashed var(--stg-line2);}
 .hfb-fr .dot{width:8px;height:8px;border-radius:2px;background:var(--cc,var(--stg-mute));justify-self:center;}
 `;
