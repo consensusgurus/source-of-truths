@@ -106,10 +106,10 @@ export default function HomeFieldBand({ overall = [], meKey = null, live = [], f
           {kind === 'stand' ? <Stand overall={overall} meKey={meKey} /> : <Live live={live} rows={3} />}
         </div>
       ) : (
-        <>
+        <div className="hgb-cols">
           <div className="hgb-card"><Stand overall={overall} meKey={meKey} /></div>
-          <div className="hgb-card"><Live live={live} rows={5} /></div>
-        </>
+          <div className="hgb-card fd"><Live live={live} rows={24} /></div>
+        </div>
       )}
     </section>
   );

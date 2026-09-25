@@ -162,7 +162,7 @@ export default function GroupsHomeClient() {
                     <li key={g.code}>
                       <Link href={`/groups/${g.code}`} className="gh-row">
                         <span className="gh-name">
-                          <b>{g.name}</b>
+                          <b>{g.name} <Vis v={g.visibility} /></b>
                           <span className="grp-mute">
                             {g.members} {g.members === 1 ? 'member' : 'members'}
                             {g.role === 'owner' ? ' · you made it' : ''}
@@ -240,7 +240,7 @@ export default function GroupsHomeClient() {
               <li key={g.code}>
                 <Link href={`/groups/${g.code}`} className="gh-row">
                   <span className="gh-name">
-                    <b>{g.name}</b>
+                    <b>{g.name} <Vis v="public" /></b>
                     <span className="grp-mute">
                       {g.members} {g.members === 1 ? 'member' : 'members'}{g.owner ? ` · made by ${g.owner}` : ''}
                     </span>
@@ -253,6 +253,17 @@ export default function GroupsHomeClient() {
         </section>
       ) : null}
     </GroupsShell>
+  );
+}
+
+// PUBLIC OR PRIVATE, on every group row (owner, 2026-09-25). Public: listed
+// here and joinable in one tap. Private: invite only, by link or code.
+function Vis({ v }) {
+  const pub = v === 'public';
+  return (
+    <span className={'gh-vis' + (pub ? ' pub' : '')} title={pub ? 'Listed here; anyone can join' : 'Invite only: joined by link or code'}>
+      {pub ? 'Public' : 'Private'}
+    </span>
   );
 }
 
@@ -285,6 +296,10 @@ const CSS = `
 .gh-pub{margin-top:16px;}
 .gh-publist{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));column-gap:24px;}
 .gh-publist li{border-top:1px solid var(--stg-line);}
+.gh-vis{display:inline-block;vertical-align:2px;margin-left:6px;padding:1px 6px;border-radius:999px;
+  border:1px solid var(--stg-line2);font-family:ui-monospace,Menlo,monospace;font-size:9px;font-weight:500;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);}
+.gh-vis.pub{border-color:var(--stg-acc);color:var(--stg-acc-ink);}
 .gh-pubtog{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--stg-ink2);margin-top:2px;cursor:pointer;}
 .gh-pubtog input{margin-top:2px;accent-color:var(--stg-acc);}
 @media(max-width:800px){.gh-grid{grid-template-columns:1fr;}}

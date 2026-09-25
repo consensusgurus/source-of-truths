@@ -639,6 +639,29 @@ export default function StageToday() {
   // Everyone drop the member ladders and the group lines on the tiles, so a
   // tile falls back to the reader's own place or the game's tag.
   const memL = lens === 'group' ? mem : null;
+  // THE CAP FOLLOWS THE VIEW (owner, 2026-09-25). The switch lives in the cap
+  // now, and the figures beside it answer for whichever view is chosen: Me is
+  // the three it always showed, the group view is your place, points and gap
+  // in the chosen group, Everyone is today's field. A reader in no group has
+  // no switch and sees the Me figures, exactly as before.
+  const capLens = inGrp ? lens : 'me';
+  const grpFig = useMemo(() => {
+    const g0 = grpOne && !grpOne.failed ? grpOne : null;
+    if (!g0) return null;
+    const m = memberRows(g0, (grp && grp.userKey) || null, 999);
+    const all = [m.me, ...m.rows].filter(Boolean).sort((a, b) => b.total - a.total);
+    const me = m.me;
+    if (!me) return { name: g0.name, code: g0.code, members: g0.roster ? g0.roster.length : 0, played: m.played };
+    const top = all[0];
+    const next = all.find((x) => !x.me) || null;
+    const leading = top && me.total >= top.total;
+    const gap = leading ? (next ? me.total - next.total : 0) : (top ? top.total - me.total : 0);
+    return {
+      name: g0.name, code: g0.code,
+      members: g0.roster ? g0.roster.length : all.length,
+      rank: g0.rank || null, total: me.total || 0, leading, gap, played: m.played,
+    };
+  }, [grp, grpOne]);
   const dotsL = lens === 'group' ? dotsFor : null;
 
   // ARM THE ARRIVAL REVEAL, and only for a page someone is actually looking at.
@@ -1552,7 +1575,7 @@ export default function StageToday() {
 
       {/* 1. THE CAP. One line: the identity, then the day's figures, then the
              controls at the right edge, as on every board. */}
-      <div className="sty-cap" ref={capRef}>
+      <div className={'sty-cap' + (inGrp ? ' lz' : '')} ref={capRef}>
         {/* THE SAME BRAND AS EVERY BOARD (owner, 2026-08-31). The stage cap on
             a game page carries the mark beside the words, and the home was
             still setting the words alone, so the two surfaces disagreed about
@@ -1567,6 +1590,18 @@ export default function StageToday() {
           </span>
           <span className="sty-date">{fmtDate(day)}</span>
         </div>
+        {/* THE VIEW SWITCH, centred in the cap (owner, 2026-09-25). Only a
+            reader in a group has one. It never leaves the cap: as the cap
+            narrows the things around it are shed instead (see .sty-cap.lz). */}
+        {inGrp ? (
+          <div className="sty-lens" role="group" aria-label="Whose day to show">
+            {[['me', 'Me'], ['group', grpOne.name], ['all', 'Everyone']].map(([v, label]) => (
+              <button type="button" key={v} className={lens === v ? 'on' : ''} aria-pressed={lens === v}
+                title={v === 'group' ? grpOne.name : label} onClick={() => pickLens(v)}>{label}</button>
+            ))}
+          </div>
+        ) : null}
+        <div className="sty-rt">
         <div className="sty-figs">
           {/* NO NAME, NO FIGURES: a reader without an account has nothing to
               put in this bar, so it offers them the one thing that would fill
@@ -1618,6 +1653,8 @@ export default function StageToday() {
               play over the number rather than the cover simply vanishing. A
               cell whose value turns out to be absent (no play yet today) leaves
               with its cover, which is honest: there was nothing to reveal. */}
+          {capLens === 'me' ? (
+            <>
           {capWait || stats.todayXp ? (
             <div className={'sty-fc' + (capWait ? ' wait' : '')}>
               {capWait ? null : <b key="v" className="sty-up sty-pulse">+<RollNum value={stats.todayXp} from={0} delay={220} /></b>}
@@ -1648,12 +1685,65 @@ export default function StageToday() {
               {who ? <StagePatch key="p" on={capWait} light={light} /> : null}
             </div>
           ) : null}
+            </>
+          ) : null}
+          {capLens === 'group' && grpFig ? (
+            <>
+              <div className="sty-fc">
+                <b>{grpFig.rank ? grpOrdinal(grpFig.rank) : '\u2013'}<i> of {grpFig.members}</i></b>
+                <i>in {grpFig.name}</i>
+              </div>
+              {grpFig.rank ? (
+                <div className="sty-fc">
+                  <b>{grpPts(grpFig.total)}</b>
+                  <i>points</i>
+                </div>
+              ) : null}
+              {grpFig.rank ? (
+                <div className="sty-fc">
+                  <b className={grpFig.leading ? 'sty-up' : 'sty-dn'}>{grpFig.leading ? '+' : '\u2212'}{grpPts(grpFig.gap)}</b>
+                  <i>{grpFig.leading ? 'lead' : 'behind'}</i>
+                </div>
+              ) : null}
+              <div className="sty-fc sty-f4">
+                <b>{grpFig.played}<i>/{total}</i></b>
+                <i>group played</i>
+              </div>
+            </>
+          ) : null}
+          {capLens === 'all' ? (
+            <>
+              {stats.dayRank ? (
+                <div className="sty-fc">
+                  <b>#{stats.dayRank}{stats.dayField ? <i>/{stats.dayField}</i> : null}</b>
+                  <i>rank today</i>
+                </div>
+              ) : null}
+              <div className="sty-fc">
+                <b>{fieldToday.toLocaleString()}</b>
+                <i>players today</i>
+              </div>
+              <div className="sty-fc">
+                <b>{((totals && totals.today) || 0).toLocaleString()}</b>
+                <i>plays today</i>
+              </div>
+            </>
+          ) : null}
           {/* AND THE WAY THROUGH TO THE REST. Three figures is what fits on a
               cap; everything behind them — the trophy case, the category
               breakdown, the activity log — is the Stat Hub, and until now
               nothing on this page said so. Only drawn for a reader who has a
               name, because a guest has no hub to open. */}
-          {who ? (
+          {inGrp ? (
+            <a className="sty-all sty-vlk" href={withTq(capLens === 'group' && grpFig ? `/groups/${grpFig.code}` : capLens === 'all' ? '#sty-board' : '/quizzes/hub')}>
+              <span>{capLens === 'group' ? 'Group page' : capLens === 'all' ? 'Leaderboard' : 'All stats'}</span>
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
+                strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5 12h13M13 6l6 6-6 6" />
+              </svg>
+            </a>
+          ) : null}
+          {who && !inGrp ? (
             <a className="sty-all sty-hub" href={withTq('/quizzes/hub')}>
               <span>All stats</span>
               <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
@@ -1665,9 +1755,12 @@ export default function StageToday() {
           {/* GROUPS (owner, 2026-09-17): a private daily board for the people
               you play with. Drawn for guests too, since joining a group is how
               a guest picks a name. */}
+          {inGrp ? null : (
           <a className="sty-all sty-grp" href={withTq('/groups')}
             aria-label={grpBest ? `Groups, ${grpOrdinal(grpBest.rank)} in ${grpBest.name} today` : undefined}>
-            <span>Groups</span>
+            {/* JOIN A GROUP (owner, 2026-09-25). This link only draws for a
+                reader in no group now, so it says what it is for. */}
+            <span>Join a group</span>
             {/* YOUR BEST PLACE TODAY (idea 4): "2nd" on a desktop, a number
                 badge on a phone where the bar has no room for a word. */}
             {grpBest ? (
@@ -1680,37 +1773,14 @@ export default function StageToday() {
               <path d="M5 12h13M13 6l6 6-6 6" />
             </svg>
           </a>
+          )}
           {/* NO PLAYED COUNT HERE (owner, 2026-08-31): the ladder directly
               below is that number drawn, and every category row carries its own
               n/N. The cap says what the day has EARNED you. */}
         </div>
-        {/* TWO MORE WAYS OUT, beside the light switch: down to today's standings
-            and across to the activity feed (owner, 2026-08-31). On a phone
-            these are the row-one controls and the figures take row two. */}
-        {/* YOUR OWN DAY COMES FIRST of the three ways down, because it is the
-            only one of them about the reader. Drawn only when there is a day to
-            show, so it never points at a section that is not there. */}
-        {standing.length ? (
-          <a className="sty-cx sty-st" href="#sty-standing" aria-label="Your standing" title="Your standing">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
-              strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="12" cy="8" r="3.6" />
-              <path d="M4.8 20.5c0-3.6 3.2-5.6 7.2-5.6s7.2 2 7.2 5.6" />
-            </svg>
-          </a>
-        ) : null}
-        <a className="sty-cx sty-lb" href="#sty-board" aria-label="Today's board" title="Today's board">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
-            strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-            <path d="M4 21v-6M12 21V4M20 21v-10" />
-          </svg>
-        </a>
-        <a className="sty-cx sty-lf" href="#sty-live" aria-label="Live feed" title="Live feed">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
-            strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-            <path d="M4 12h3l2.5-6 4 13 2.5-7H21" />
-          </svg>
-        </a>
+        {/* THE JUMP BUTTONS ARE GONE (owner, 2026-09-25): standing, board and
+            feed were three ways down a page that is one scroll long, and the
+            room went to the view switch. Only the light switch stays. */}
         <button
           type="button"
           className={'sty-cx sty-tg' + (hint ? ' hint' : '')}
@@ -1734,6 +1804,7 @@ export default function StageToday() {
             <span className="stg-tlab">{intro === 'light' ? 'Light mode' : 'Dark mode'}</span>
           ) : null}
         </button>
+        </div>
         {/* THE EXPLICIT POINTER at the switch above, first visit only. It is
             the cap's LAST CHILD on purpose: it reads its own parent to find
             the glyph and measure itself against it. */}
@@ -1758,14 +1829,7 @@ export default function StageToday() {
         {/* THE TOP ROW (owner, 2026-09-17). On a wide screen the groups band and
             the day's progress share a line, with the ladder squeezed to the
             right; under 1100px they stack in the order they always had. */}
-        {inGrp ? (
-          <div className="sty-lens" role="group" aria-label="Whose day to show">
-            {[['me', 'Me'], ['group', grpOne.name], ['all', 'Everyone']].map(([v, label]) => (
-              <button type="button" key={v} className={lens === v ? 'on' : ''} aria-pressed={lens === v}
-                title={v === 'group' ? grpOne.name : label} onClick={() => pickLens(v)}>{label}</button>
-            ))}
-          </div>
-        ) : null}
+
         <div className="sty-toprow">
         {/* ALSO DRAWN WHEN THE GROUP HAS PLAYED (owner, 2026-09-24): the member
             ladders live inside this section, so gating it on the reader's own
@@ -1773,7 +1837,7 @@ export default function StageToday() {
             started. A first-time reader in no group still sees nothing. */}
         {/* THE VIEW SWITCH sits above the top row, and only for a reader in a
             group (owner, 2026-09-25). */}
-        {lens !== 'me' && (done.size > 0 || inprog.size > 0 || (memL && memL.played > 0)) ? (
+        {!inGrp && (done.size > 0 || inprog.size > 0 || (memL && memL.played > 0)) ? (
         <section className="sty-day sty-rev" style={memL && memL.rows.length && !narrow && memL.me ? { '--rows': 1 + memL.rows.length + (memL.rest ? 1 : 0) } : undefined}>
           <div className="sty-eb">The day&rsquo;s progress <span className="sty-ebn"><RollNum value={playedCount} from={seenCount === null ? null : Math.min(seenCount, playedCount)} delay={360} /> of {total}</span>
             {memL && memL.rows.length ? <span className="sty-dayg">{memL.name}</span> : null}
@@ -1842,7 +1906,8 @@ export default function StageToday() {
             with two faces. Nothing at all for a reader in no group, who gets
             the invite below instead. */}
         {lens === 'group' ? (
-          <HomeGroupsBand data={grp} withTq={withTq} narrow={narrow} group={grpOne} onPick={pickGroup} />
+          <HomeGroupsBand data={grp} withTq={withTq} narrow={narrow} group={grpOne} onPick={pickGroup}
+            cats={cats} hueFor={hueFor} total={total} />
         ) : lens === 'all' ? (
           <HomeFieldBand overall={overall} meKey={meKey} field={fieldToday} narrow={narrow}
             live={live.map((fp) => ({ name: fp.game.name, href: withTq(routeOf(fp.game)), hue: hueFor(fp.game.cat), score: fp.score, total: fp.total, when: ago(fp.playedAt) }))} />
@@ -2392,6 +2457,29 @@ const CSS = `
   text-transform:uppercase;color:var(--stg-mute);white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis;}
 .sty-figs{display:flex;gap:20px;margin-left:auto;}
+/* THE RIGHT-HAND GROUP: the figures, the view's link and the light switch.
+   One box, so that with the switch in the cap there are exactly three tracks
+   to centre it between. */
+.sty-rt{display:flex;align-items:center;gap:22px;margin-left:auto;min-width:0;}
+.sty-rt .sty-figs{margin-left:0;}
+/* WITH THE SWITCH: brand | switch | figures. The two outer tracks are EQUAL,
+   so the switch sits on the cap's real centre line rather than centred in
+   whatever space the figures leave. */
+.sty-cap.lz{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);}
+.sty-cap.lz .sty-rt{justify-content:flex-end;}
+.sty-cap .sty-lens{margin:0;align-self:center;justify-self:center;}
+.sty-figs b.sty-dn{color:var(--stg-dn);}
+/* The one control a reader in no group gets in the cap: a pill, not a link. */
+.sty-cap .sty-grp{border:1px solid var(--stg-acc);border-radius:999px;padding:6px 11px;}
+.sty-cap .sty-grp:hover{background:var(--stg-acc-tint);opacity:1;}
+/* THE STRIP-DOWN LADDER (owner, 2026-09-25). The switch never moves; as the
+   cap narrows the things around it go, least useful first: the date, your
+   name, the link's words (the arrow stays), the fourth figure. */
+@media (max-width:1400px){ .sty-cap.lz .sty-date{display:none;} }
+@media (max-width:1260px){ .sty-cap.lz .sty-who{display:none;} }
+@media (max-width:1120px){ .sty-cap.lz .sty-vlk span{display:none;} }
+@media (max-width:1000px){ .sty-cap.lz .sty-f4{display:none;} }
+@media (max-width:860px){ .sty-cap.lz .sty-rt,.sty-cap.lz .sty-figs{gap:14px;} }
 .sty-figs>div{text-align:right;}
 /* A FIGURE CELL is positioned so its patch can cover it; while waiting it holds
    a figure's footprint so the cap does not reflow when the number lands. */
@@ -2418,7 +2506,7 @@ ${PATCH_CSS}
 .sty-toprow{display:flex;flex-direction:column;gap:16px;}
 .sty-toprow:empty{display:none;}
 @media (min-width:1100px){
-  .sty-toprow:has(> .hgb),.sty-toprow:has(> .hgi){
+  .sty-toprow:has(> .sty-day):has(> .hgb),.sty-toprow:has(> .hgi){
     display:grid;grid-template-columns:minmax(0,352px) minmax(0,1fr);
     gap:24px;align-items:stretch;}
   /* THE LADDER GROWS INTO THE ROW rather than leaving a hole beside a taller
@@ -2921,8 +3009,6 @@ ${PATCH_CSS}
 .sty-slbar > :first-child{flex:1 1 auto;min-width:0;}
 .sty-slbn{flex:none;margin:0;}
 @media (max-width:640px){
-  .sty-lens{align-self:stretch;}
-  .sty-lens button{flex:1 1 auto;}
   .sty-slbar{flex-basis:100%;}
 }
 .sty-slate{margin:4px 0 -12px;font-size:19px;font-weight:800;letter-spacing:-.015em;line-height:1.15;color:var(--stg-ink);}
@@ -2987,9 +3073,17 @@ ${PATCH_CSS}
      it in the figures row with the IQ and the ranks, where a bordered icon
      among four text figures reads as a fifth figure that lost its label. It
      belongs with the other three ways out of the page. */
-  .sty-cap{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto auto;
-    grid-template-areas:'id st lb lf tg' 'fg fg fg fg fg';
+  .sty-cap,.sty-cap.lz{display:grid;grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:'id tg' 'fg fg';
     align-items:center;gap:0 8px;padding:0 14px;}
+  /* WITH THE SWITCH, row one is brand, switch, light switch; the figures keep
+     row two. The right-hand box dissolves so its children take their areas. */
+  .sty-cap.lz{grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:'id ln tg' 'fg fg fg';}
+  .sty-cap.lz .sty-lens{grid-area:ln;justify-self:center;}
+  .sty-cap.lz .sty-lens button{padding:5px 10px;font-size:12px;max-width:10ch;}
+  .sty-cap.lz .sty-f4{display:block;}
+  .sty-cap.lz .sty-vlk{display:none;}
+  .sty-rt{display:contents;}
   .sty-id{grid-area:id;flex:none;min-width:0;padding:9px 0;}
   .sty-brand{gap:7px;}
   .sty-brand svg{width:17px;height:17px;}
@@ -3003,9 +3097,6 @@ ${PATCH_CSS}
   .sty-gpos .w{display:none;}
   .sty-gpos .n{display:inline;}
   .sty-tg{grid-area:tg;}
-  .sty-st{grid-area:st;}
-  .sty-lb{grid-area:lb;}
-  .sty-lf{grid-area:lf;}
   .sty-date{display:none;}
   .sty-figs{grid-area:fg;margin-left:0;gap:0;justify-content:space-between;
     border-top:1px solid var(--stg-line);padding:9px 0;min-height:44px;align-items:center;}

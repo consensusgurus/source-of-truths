@@ -50,7 +50,22 @@ function standLabel(g) {
 // abandoned runs), the same count the ladders beside it use. Five rows at most;
 // a reader outside the top four is kept as the fifth.
 const SHOW = 5;
-function Standings({ g, myKey }) {
+// ONE MEMBER'S DAY as a thin strip, the same height for everyone (owner,
+// 2026-09-25). This replaced the separate day's-progress chart, whose rows
+// repeated the names, games and points this table already carries.
+function Strip({ cats, keys, hueFor }) {
+  return (
+    <span className="hgb-lad" aria-hidden="true">
+      {cats.map(({ cat, games }) => (
+        <span key={cat} style={{ flex: games.length + ' 1 0', '--cc': hueFor(cat) }}>
+          {games.map((x) => <i key={x.key} className={keys && keys.has(x.key) ? 'on' : ''} />)}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+function Standings({ g, myKey, cats = null, hueFor = null, total = 0 }) {
   const m = memberRows(g, myKey, 999);
   const all = [m.me, ...m.rows].filter(Boolean).sort((a, b) => b.total - a.total
     || b.games - a.games
@@ -61,9 +76,10 @@ function Standings({ g, myKey }) {
   if (meRow && !list.includes(meRow)) list = all.slice(0, SHOW - 1).concat(meRow);
   const lead = all[0] && all[0].total > 0 ? all[0].total : 0;
   const more = all.length - list.length;
+  const strips = !!(cats && hueFor);
   return (
-    <div className="hgb-st">
-      <div className="h"><span /><span /><span>Player</span><span className="rt">Games</span><span className="rt">Pts</span><span className="rt">Gap</span></div>
+    <div className={'hgb-st' + (strips ? ' s' : '')}>
+      <div className="h"><span /><span /><span>Player</span>{strips ? <span>Today</span> : null}<span className="rt">Games</span><span className="rt">Pts</span><span className="rt">Gap</span></div>
       {list.map((r) => {
         const on = r.total > 0 || r.games > 0;
         const gap = !on ? '' : r.total >= lead ? 'lead' : '\u2212' + fmtPts(lead - r.total);
@@ -72,6 +88,7 @@ function Standings({ g, myKey }) {
             <span className="rk">{on && r.rank ? r.rank : '\u2013'}</span>
             <MiniAvatar name={r.username} userKey={r.userKey} />
             <span className="nm">{r.me ? 'You' : r.username}</span>
+            {strips ? <Strip cats={cats} keys={r.keys} hueFor={hueFor} /> : null}
             <span className="rt mu">{r.games}</span>
             <span className="rt">{on ? fmtPts(r.total) : '\u2013'}</span>
             <span className={'rt ' + (gap === 'lead' ? 'mu' : 'dn')}>{gap || '\u2013'}</span>
@@ -79,32 +96,61 @@ function Standings({ g, myKey }) {
         );
       })}
       {more > 0 ? <div className="more">+{more} more</div> : null}
+      {strips && total ? (
+        <div className="foot">Between you, <b>{memberRows(g, myKey, 999).played} of today&rsquo;s {total}</b> played</div>
+      ) : null}
     </div>
   );
 }
 
-function Feed({ g, myKey, rows = 5, withTq }) {
-  const list = (g.feed || []).slice(0, rows);
+// ONE LINE PER RUN OF FINISHES (owner, 2026-09-25). Back-to-back finishes by
+// the same player fold into one row: the name, a small chip per game with its
+// points, the time of the newest. Five near-identical rows reading "LookAtLeo
+// finished X" become one. A chip in gold is a run that leads that game in the
+// group. The feed arrives newest first, so the first run is the latest.
+function foldFeed(feed) {
+  const out = [];
+  for (const f of feed || []) {
+    const last = out[out.length - 1];
+    if (last && last.userKey === f.userKey) last.items.push(f);
+    else out.push({ userKey: f.userKey, username: f.username, at: f.at, items: [f] });
+  }
+  return out;
+}
+
+function Feed({ g, myKey, rows = 5, withTq, hueFor = null }) {
+  const list = foldFeed(g.feed).slice(0, rows);
   if (!list.length) {
     return <div className="hgb-feed"><div className="hgb-none">Nobody has finished anything yet today.</div></div>;
   }
   return (
     <div className="hgb-feed">
-      {list.map((f, i) => (
-        <div className="hgb-fr" key={f.userKey + ':' + f.key + ':' + i}>
-          <MiniAvatar name={f.username} userKey={f.userKey} />
-          <span className="t">
-            <b>{f.userKey === myKey ? 'You' : f.username}</b> <em>finished</em> <GameLink k={f.key} withTq={withTq} />
-            {f.lead ? <span className="lead">Group lead</span> : null}
+      {list.map((r, i) => (
+        <div className="hgb-fx" key={r.userKey + ':' + i}>
+          <MiniAvatar name={r.username} userKey={r.userKey} />
+          <span className="ln">
+            <b>{r.userKey === myKey ? 'You' : r.username}</b>
+            {r.items.map((f, j) => {
+              const gm = DAILY_GAME_MAP[f.key];
+              const hue = gm && hueFor ? hueFor(gm.cat) : null;
+              return (
+                <a key={f.key + ':' + j} className={'hgb-chip' + (f.lead ? ' top' : '')}
+                  href={withTq(gm ? (gm.href || '/' + f.key) : '/' + f.key)}
+                  style={hue ? { '--cc': hue } : undefined}
+                  title={f.lead ? 'Leads the group on this game' : undefined}>
+                  {gameName(f.key)} <em>{fmtPts(f.points)}</em>
+                </a>
+              );
+            })}
           </span>
-          <span className="p">{fmtPts(f.points)} <i>{relTime(f.at)}</i></span>
+          <time>{relTime(r.at)}</time>
         </div>
       ))}
     </div>
   );
 }
 
-export default function HomeGroupsBand({ data, withTq = (h) => h, narrow = false, group = null, onPick = null }) {
+export default function HomeGroupsBand({ data, withTq = (h) => h, narrow = false, group = null, onPick = null, cats = null, hueFor = null, total = 0 }) {
   // The face stepper is declared before the early return, so the hook order is
   // stable for any payload this component is handed. WHICH GROUP is not state
   // here: the page owns it, because it drives the ladders and the tiles too
@@ -151,13 +197,13 @@ export default function HomeGroupsBand({ data, withTq = (h) => h, narrow = false
               <button type="button" aria-label="Next" onClick={() => setFace(face + 1)}>&rsaquo;</button>
             </span>
           </div>
-          {kind === 'stand' ? <Standings g={g} myKey={myKey} /> : <Feed g={g} myKey={myKey} rows={3} withTq={withTq} />}
+          {kind === 'stand' ? <Standings g={g} myKey={myKey} /> : <Feed g={g} myKey={myKey} rows={3} withTq={withTq} hueFor={hueFor} />}
         </div>
       ) : (
-        <>
-          <div className="hgb-card"><Standings g={g} myKey={myKey} /></div>
-          <div className="hgb-card"><Feed g={g} myKey={myKey} rows={5} withTq={withTq} /></div>
-        </>
+        <div className="hgb-cols">
+          <div className="hgb-card"><Standings g={g} myKey={myKey} cats={cats} hueFor={hueFor} total={total} /></div>
+          <div className="hgb-card fd"><Feed g={g} myKey={myKey} rows={24} withTq={withTq} hueFor={hueFor} /></div>
+        </div>
       )}
     </section>
   );
@@ -165,7 +211,24 @@ export default function HomeGroupsBand({ data, withTq = (h) => h, narrow = false
 
 const CSS = `
 ${AVATAR_CSS}
-.hgb{display:flex;flex-direction:column;gap:7px;min-width:0;align-self:start;}
+.hgb{display:flex;flex-direction:column;gap:7px;min-width:0;align-self:stretch;}
+/* TWO PANELS OF ONE HEIGHT (owner, 2026-09-25). The standings set the row's
+   height; the right panel is size-contained, so it adds none of its own and
+   simply stretches to match. NO SCROLLBAR: its list is a wrapping column
+   inside a clipped box, so whichever rows do not fit wrap into a second
+   column that sits outside the box. It shows the newest entries that fit,
+   whole rows only, and needs no JS to measure. */
+.hgb-cols{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:14px;align-items:stretch;}
+.hgb-cols > .fd{contain:size;display:flex;flex-direction:column;overflow:hidden;}
+.hgb-cols > .fd > .hgb-feed{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;flex-wrap:wrap;
+  align-content:flex-start;overflow:hidden;column-gap:40px;}
+.hgb-cols > .fd > .hgb-feed > *{width:100%;flex:none;}
+@media (max-width:900px){
+  .hgb-cols{grid-template-columns:minmax(0,1fr);}
+  .hgb-cols > .fd{contain:none;}
+  .hgb-cols > .fd > .hgb-feed{display:block;}
+  .hgb-cols > .fd > .hgb-feed > :nth-child(n+6){display:none;}
+}
 .hgb-h{display:flex;align-items:baseline;gap:9px;min-width:0;
   font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:9.5px;letter-spacing:.12em;
   text-transform:uppercase;color:var(--stg-mute);}
@@ -238,9 +301,38 @@ ${AVATAR_CSS}
 .hgb-st .rt.mu{color:var(--stg-mute);}
 .hgb-st .rt.dn{color:var(--stg-dn);}
 .hgb-st .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.hgb-st.s > div{grid-template-columns:16px 22px minmax(0,130px) minmax(0,1fr) 42px 40px 48px;gap:10px;padding:8px 0;}
+.hgb-st.s > .h{padding:0 0 4px;}
+.hgb-lad{display:flex;gap:4px;height:12px;min-width:0;}
+.hgb-lad > span{display:flex;gap:1px;min-width:0;}
+.hgb-lad i{flex:1 1 0;min-width:0;border-radius:1px;background:var(--stg-line);}
+.hgb-lad i.on{background:var(--cc);}
+.hgb-st > .foot{display:block;margin-top:4px;border-top:1px solid var(--stg-line);padding-top:7px;
+  font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--stg-mute);}
+.hgb-st > .foot b{font-weight:500;color:var(--stg-ink2);}
+@media (max-width:640px){ .hgb-st.s .hgb-lad,.hgb-st.s .h > span:nth-child(4){display:none;}
+  .hgb-st.s > div{grid-template-columns:16px 22px minmax(0,1fr) 42px 36px 44px;gap:8px;} }
 .hgb-st .me .nm{color:var(--stg-acc-ink);}
 .hgb-st > .more{display:block;border-top:1px solid var(--stg-line);font-size:11.5px;color:var(--stg-mute);padding-top:5px;}
 
+.hgb-fx{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:9px;align-items:start;
+  padding:6px 0;border-top:1px solid var(--stg-line);}
+.hgb-fx:first-child{border-top:0;padding-top:0;}
+.hgb-fx .ln{display:flex;flex-wrap:wrap;align-items:center;gap:4px 5px;min-width:0;line-height:22px;}
+.hgb-fx .ln b{font-size:13px;font-weight:700;margin-right:3px;white-space:nowrap;}
+.hgb-fx time{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--stg-mute);
+  line-height:22px;white-space:nowrap;}
+.hgb-chip{display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 7px;border-radius:5px;
+  background:var(--stg-surf2,rgba(255,255,255,.08));color:var(--stg-ink2);text-decoration:none;
+  font-size:11.5px;white-space:nowrap;}
+.hgb-chip::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--cc,var(--stg-mute));}
+.hgb-chip em{font-style:normal;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:10.5px;
+  color:var(--stg-mute);}
+.hgb-chip:hover{color:var(--stg-ink);}
+.hgb-chip:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.hgb-chip.top{background:color-mix(in srgb, var(--stg-warn,#fbbf24) 16%, transparent);
+  box-shadow:inset 0 0 0 1px var(--stg-warn,#fbbf24);}
+.hgb-chip.top em{color:var(--stg-warn,#fbbf24);}
 .hgb-fr{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:9px;align-items:center;
   padding:6px 0;border-top:1px solid var(--stg-line);font-size:13px;}
 .hgb-fr:first-child{border-top:0;}
