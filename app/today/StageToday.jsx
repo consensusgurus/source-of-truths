@@ -1575,7 +1575,7 @@ export default function StageToday() {
 
       {/* 1. THE CAP. One line: the identity, then the day's figures, then the
              controls at the right edge, as on every board. */}
-      <div className={'sty-cap' + (inGrp ? ' lz' : '')} ref={capRef}>
+      <div className={'sty-cap' + (inGrp ? ' lz' + (capLens === 'me' ? ' lzme' : '') : '')} ref={capRef}>
         {/* THE SAME BRAND AS EVERY BOARD (owner, 2026-08-31). The stage cap on
             a game page carries the mark beside the words, and the home was
             still setting the words alone, so the two surfaces disagreed about
@@ -2465,7 +2465,11 @@ const CSS = `
 /* WITH THE SWITCH: brand | switch | figures. The two outer tracks are EQUAL,
    so the switch sits on the cap's real centre line rather than centred in
    whatever space the figures leave. */
-.sty-cap.lz{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);}
+.sty-cap.lz{display:grid;grid-template-columns:minmax(max-content,1fr) auto minmax(max-content,1fr);}
+/* Each outer track is at least as wide as what it holds. When both fit, the
+   two are equal and the switch is dead centre; when the right side needs more
+   (the Me view keeps your name), the switch gives way a little rather than
+   anything overlapping it. */
 .sty-cap.lz .sty-rt{justify-content:flex-end;}
 .sty-cap .sty-lens{margin:0;align-self:center;justify-self:center;}
 .sty-figs b.sty-dn{color:var(--stg-dn);}
@@ -2476,7 +2480,23 @@ const CSS = `
    cap narrows the things around it go, least useful first: the date, your
    name, the link's words (the arrow stays), the fourth figure. */
 @media (max-width:1400px){ .sty-cap.lz .sty-date{display:none;} }
-@media (max-width:1260px){ .sty-cap.lz .sty-who{display:none;} }
+/* YOUR NAME STAYS ON THE ME VIEW (owner, 2026-09-25): it sits at the left of
+   the three figures there at every width. The group and Everyone views shed it. */
+@media (max-width:1260px){ .sty-cap.lz:not(.lzme) .sty-who{display:none;} }
+@media (max-width:1120px){ .sty-cap.lzme .sty-vlk{display:none;} }
+/* TABLET: two rows, the same shape the phone uses, so nothing is squeezed. */
+@media (min-width:641px) and (max-width:900px){
+  .sty-cap.lz.lz{grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:'id ln tg' 'fg fg fg';
+    row-gap:8px;}
+  .sty-cap.lz.lz .sty-rt{display:contents;}
+  .sty-cap.lz.lz .sty-id{grid-area:id;}
+  .sty-cap.lz.lz .sty-lens{grid-area:ln;}
+  .sty-cap.lz.lz .sty-tg{grid-area:tg;}
+  .sty-cap.lz.lz .sty-figs{grid-area:fg;justify-content:space-between;border-top:1px solid var(--stg-line);padding-top:8px;}
+  .sty-cap.lz.lz .sty-f4{display:block;}
+  .sty-cap.lz.lz .sty-vlk{display:inline-flex;}
+  .sty-cap.lz.lz .sty-vlk span{display:inline;}
+}
 @media (max-width:1120px){ .sty-cap.lz .sty-vlk span{display:none;} }
 @media (max-width:1000px){ .sty-cap.lz .sty-f4{display:none;} }
 @media (max-width:860px){ .sty-cap.lz .sty-rt,.sty-cap.lz .sty-figs{gap:14px;} }
