@@ -44,7 +44,25 @@ export function summarize(rows) {
   // report the real share of attempts a finished run beat (no modeled curve).
   const scoreDist = {};
   for (const r of rows) { const sv = Number(r.score) || 0; scoreDist[sv] = (scoreDist[sv] || 0) + 1; }
-  return { plays, best, topTime: Number.isFinite(topTime) ? topTime : null, leaderboard, leaderboardMobile, leaderboardFirst, leaderboardAll, leaderboards, scoreDist };
+  // THE FIELD'S CLOCK (2026-09-26): twelve bins over the times recorded AT the
+  // best score, all attempts, so the finish can draw the day's distribution
+  // with the finisher's own bar lit. Linear from the fastest run to the 95th
+  // percentile; anything slower lands in the last bin. Null under five runs.
+  const timeDist = timeDistOf(rows, best);
+  return { plays, best, topTime: Number.isFinite(topTime) ? topTime : null, leaderboard, leaderboardMobile, leaderboardFirst, leaderboardAll, leaderboards, scoreDist, timeDist };
+}
+
+const DIST_BINS = 12;
+function timeDistOf(rows, best) {
+  if (best == null) return null;
+  const ts = rows.filter((r) => r.score === best && r.time_elapsed != null && !r.abandoned)
+    .map((r) => Number(r.time_elapsed)).filter((t) => Number.isFinite(t) && t >= 0).sort((a, b) => a - b);
+  if (ts.length < 5) return null;
+  const lo = ts[0];
+  const hi = Math.max(lo + 1, ts[Math.min(ts.length - 1, Math.floor(ts.length * 0.95))]);
+  const bins = new Array(DIST_BINS).fill(0);
+  for (const t of ts) bins[Math.min(DIST_BINS - 1, Math.floor(((t - lo) / (hi - lo)) * DIST_BINS))] += 1;
+  return { n: ts.length, lo, hi, bins };
 }
 
 // GET /api/quiz/board?quizId=...                       -> { plays, avg, leaderboard }

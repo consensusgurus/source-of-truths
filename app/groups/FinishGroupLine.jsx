@@ -29,8 +29,12 @@ const TRIES = [0, 2500, 6000, 12000];
 // nobody else has played it, the card is exactly what it was.
 const GAME_ROWS = 5;
 
-export default function FinishGroupLine({ gameKey, gameName = null, missLabel = null }) {
+export default function FinishGroupLine({ gameKey, gameName = null, missLabel = null, onData = null }) {
   const [data, setData] = useState(null);
+  // THE FINISH READS THIS TOO (2026-09-26): StageFinish picks the rival off the
+  // group's board on this game and leads with the group when a member has
+  // played it, so the one read is handed up rather than made twice.
+  useEffect(() => { if (typeof onData === 'function') onData(data); }, [data]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!gameKey) return undefined;

@@ -104,6 +104,10 @@ export default function useDailyBoard({ quizId = null, active = false }) {
           const last = i >= GAPS.length - 1;
           setBoard({
             plays: d.plays || 0,
+            // The day's shape, for the ending's field figure (2026-09-26).
+            best: d.best != null ? d.best : null,
+            scoreDist: d.scoreDist || null,
+            timeDist: d.timeDist || null,
             rows,
             mine,
             myRank: me ? me.placement : null,
