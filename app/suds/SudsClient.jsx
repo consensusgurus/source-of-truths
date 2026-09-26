@@ -516,7 +516,7 @@ export default function SudsClient({ puzzles = [], forceNum = null }) {
     setG({ ...g, notes: nextNotes });
   }
 
-  // core placement. `advance` moves the selection to the next empty cell — used
+  // core placement. `advance` is retained for call-site compatibility and no longer moves the selection to the next empty cell — used
   // for pad/keyboard fills of the selected cell, NOT for tap-to-place in
   // digit-first mode (there the player is already choosing each cell).
   function placeDigit(idx, d, advance) {
@@ -547,7 +547,9 @@ export default function SudsClient({ puzzles = [], forceNum = null }) {
     // No per-tile feedback. If every square is now filled but the grid is not the
     // solution, nudge at the board level without pointing to the wrong square.
     if (FREE.every((i) => nextCells[i])) say('Every square is filled, but the grid is not solved yet. Look for a repeated digit.');
-    if (advance) { const nx = nextEmpty(nextCells, idx); if (nx >= 0) setSel(nx); }
+    // The selection STAYS on the square just filled (solver feedback, 2026-09-26):
+    // sudoku is solved out of order, so the board never moves it for the player.
+    // Tab still jumps to the next empty square when they ask for it.
   }
 
   // keyboard dispatcher: honors the Notes toggle, advances on a pad-style fill
