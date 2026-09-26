@@ -46,7 +46,7 @@ import { useStageTheme } from '@/lib/stage-theme';
 // strip. See the file's own header: a row carries both the 0-15 placement points
 // and what the player actually did, and only the second means anything next to
 // the game they just played.
-import { gameStats, mmss } from '@/lib/daily-row-stats';
+import { gameStats, mmss, missWord } from '@/lib/daily-row-stats';
 import { typicalLabel } from '@/lib/game-medians';
 import GameGlyph from './GameGlyph';
 import JoinLeaderboardForm from './quiz/[id]/JoinLeaderboardForm';
@@ -913,8 +913,16 @@ export default function StageFinish({
   // has no place on the board to be one above.
   const keyFig = (r) => (r && r.score != null && r.total != null && Number(r.score) >= Number(r.total) && r.timeElapsed != null
     ? mmss(r.timeElapsed) : (r && r.score != null ? `${r.score}${r.total != null ? `/${r.total}` : ''}` : '\u2014'));
-  const gapLine = (a, b, aName) => {
-    // a is the better row, b the worse. Both solved and clocked: seconds. Else points.
+  const gapLine = (a, b) => {
+    // a is the better row, b the worse. Same score and the board separated
+    // them on misses: say the misses (the clock would read backwards, since a
+    // slower clean run outranks a faster one with a miss). Else the clock,
+    // else points.
+    if (a.score != null && b.score != null && Number(a.score) === Number(b.score)
+      && a.guessesUsed != null && b.guessesUsed != null && Number(a.guessesUsed) !== Number(b.guessesUsed) && missLabel) {
+      const d = Math.abs(Number(b.guessesUsed) - Number(a.guessesUsed));
+      return `${d} ${missWord(missLabel, d)}`;
+    }
     if (a.score != null && b.score != null && Number(a.score) === Number(b.score) && a.timeElapsed != null && b.timeElapsed != null) {
       const d = Math.abs(Math.round(Number(b.timeElapsed) - Number(a.timeElapsed)));
       return d ? `${d}s` : 'level on the clock';
@@ -935,7 +943,7 @@ export default function StageFinish({
       const below = mine.rank === 1 ? all.find((r) => r.rank === 2) : null;
       const other = above || below;
       if (!other) return null;
-      const gap = above ? gapLine(above, mine, above.username) : gapLine(mine, below, null);
+      const gap = above ? gapLine(above, mine) : gapLine(mine, below);
       const unplayed = Math.max(0, (lead.members || 0) - all.length);
       const line = above
         ? `${gap ? `${gap} behind ${above.username} today` : `Behind ${above.username} today`}${unplayed ? `. ${unplayed} ${unplayed === 1 ? 'member has' : 'members have'} not played it yet.` : '.'}`
@@ -1113,10 +1121,13 @@ export default function StageFinish({
   const handoffOn = !!(freshFinish && !archived && !isRetry && !handoffOff && handoffTarget && (handoffTarget.href || handoffTarget.onClick));
   useEffect(() => {
     if (!handoffOn || !floodDone) { setLeft(null); return undefined; }
+    // WALL CLOCK, not ticks: a throttled tab fires this every second, and a
+    // countdown that subtracts a tenth per tick would run ten times slow.
+    const t0 = Date.now();
     let l = HANDOFF_S;
     setLeft(l);
     const t = setInterval(() => {
-      l -= 0.1;
+      l = HANDOFF_S - (Date.now() - t0) / 1000;
       if (l <= 0) {
         clearInterval(t);
         setLeft(0);
