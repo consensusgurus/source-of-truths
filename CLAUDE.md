@@ -8209,7 +8209,7 @@ page is already the resolved form of all of them. Flow on a full load:
    group standing resolved) and 700ms later calls `releaseHomeSnap`: leaf texts are compared by
    a path of tag + first class + data-fk, RollNum figures roll FROM the snapshot's digits, other
    changed leaves flash once (`.sot-chg`), capped at 24 or it just swaps. 2.4s after settling,
-   `saveHomeSnap` stores the page for next time (pops, styles and scripts stripped; ~150KB).
+   `saveHomeSnap` stores the page for next time (pops and scripts stripped; ~230KB). **Component <style> tags must stay in the snapshot**: the live page has not mounted the Gators band when the snapshot shows, so its CSS is not in the document yet, and v1 (styles stripped) painted the band as bare text.
 
 **It stands down** (ordinary page) with no snapshot, a different ET day, `sot_welcome_day` not
 today (StageWelcome owns the day's first visit), a different identity or register, any query
