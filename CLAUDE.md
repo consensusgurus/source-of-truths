@@ -8185,3 +8185,37 @@ Deep's sports-topic days had the same problem at smaller scale.
 - **When authoring new sports questions, write the history question in the first place.** A tier-1
   gimme can be a famous team, city, or legend; it does not have to be "how many points is a
   touchdown".
+
+## The home paints from the LAST KNOWN PAGE (owner, 2026-09-27)
+
+A return to `/` no longer builds itself on screen. Measured warm before this: statuses at
+~280ms, pins at ~640ms (My games inserted, +250px), /me at ~1.0s (the cap flipped from Join a
+group to the lens switch, the Gators band dropped in above the slate, My games recoloured);
+3 to 4s+ cold after a deploy.
+
+**`lib/home-snapshot.js` stores the RENDERED home and paints it on the next load.** A DOM
+snapshot, not a state cache: the page is fed by seven reads through five hooks, and the rendered
+page is already the resolved form of all of them. Flow on a full load:
+
+1. `page.js` inline PRE script (before the live page) validates `sot_home_snap` and sets
+   `html[data-sot-snap]`, which hides `.sot-live` (opacity 0, not visibility: a child with
+   `visibility:visible` would bleed through).
+2. Inline FILL script (after `#sot-snap`) pours the stored HTML in, over the live page, and
+   marks any tile whose `sot_<key>_day` breadcrumb says it was finished since (moved to the end
+   of its row, `done grp`, `--stg-onramp` from `onrampMap()`).
+3. React hydrates underneath. `#sot-snap` is rendered with an EMPTY dangerouslySetInnerHTML,
+   which is what stops hydration touching the poured-in children.
+4. StageToday computes `settled` (stats.ready, mineIn, statusIn, boardIn, useMyGames loaded,
+   group standing resolved) and 700ms later calls `releaseHomeSnap`: leaf texts are compared by
+   a path of tag + first class + data-fk, RollNum figures roll FROM the snapshot's digits, other
+   changed leaves flash once (`.sot-chg`), capped at 24 or it just swaps. 2.4s after settling,
+   `saveHomeSnap` stores the page for next time (pops, styles and scripts stripped; ~150KB).
+
+**It stands down** (ordinary page) with no snapshot, a different ET day, `sot_welcome_day` not
+today (StageWelcome owns the day's first visit), a different identity or register, any query
+string beyond tracking params, a hash, or a snapshot over 20h. A 9s ceiling and any tap on a
+non-link in the snapshot release it early. A client-side navigation to `/` runs PRE and FILL
+from `app/HomeSnapBox.jsx`'s layout effect, since inline scripts do not run there.
+
+The snapshot sits AFTER the live page in the DOM on purpose: `getElementById` and
+`querySelector('.stage-page')` return the first match, which must stay the live one.

@@ -1,4 +1,7 @@
 import HomeSwitch from './HomeSwitch';
+import HomeSnapBox from './HomeSnapBox';
+import { SNAP_JS, SNAP_CSS } from '@/lib/home-snapshot';
+import { onrampMap } from '@/lib/home-snapshot-onramp';
 import { QUIZZES } from '@/lib/quizzes';
 import { getAllSources } from '@/lib/sources';
 
@@ -72,7 +75,25 @@ export default function HomePage({ searchParams }) {
       {/* THE STAGE IS RENDERED DIRECTLY, NOT THROUGH QuizHomeClient (2026-09-25).
           See app/HomeSwitch.jsx for why, and why the switch has to be a client
           component rather than a ternary here. */}
-      <HomeSwitch stage={stageDefault} sourceCount={SOURCE_COUNT} />
+      {/* LAST KNOWN PAGE (owner, 2026-09-27). The stage home paints as the
+          reader last saw it and the reads update it in place; see
+          lib/home-snapshot.js. PRE must come before the live page in the HTML
+          (it hides it before it can paint) and FILL after the box it fills. */}
+      {stageDefault ? (
+        <>
+          <style dangerouslySetInnerHTML={{ __html: SNAP_CSS }} />
+          <script dangerouslySetInnerHTML={{ __html: SNAP_JS + "window.__sotSnap('pre');" }} />
+          <div className="sot-home">
+            <div className="sot-live">
+              <HomeSwitch stage sourceCount={SOURCE_COUNT} />
+            </div>
+            <HomeSnapBox />
+            <script dangerouslySetInnerHTML={{ __html: `window.__sotSnap&&window.__sotSnap('fill',${JSON.stringify(onrampMap())});` }} />
+          </div>
+        </>
+      ) : (
+        <HomeSwitch stage={false} sourceCount={SOURCE_COUNT} />
+      )}
       {/* NOTHING UNINVITED ON THE HOMEPAGE. The Daily Five overlay went on
           2026-08-30 for meeting a first visit with a full-screen pitch before
           the visitor had seen anything the site offers, and the install card

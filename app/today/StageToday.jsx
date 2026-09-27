@@ -79,6 +79,7 @@ import useFlip from '../useFlip';
 // FOOTER_COLS from app/Footer.jsx, so the site's link map is still the only
 // copy of the links.
 import StageFooter from '../StageFooter';
+import { saveHomeSnap, releaseHomeSnap } from '@/lib/home-snapshot';
 
 const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
 const SANS = "Manrope, ui-sans-serif, system-ui, -apple-system, sans-serif";
@@ -701,7 +702,7 @@ export default function StageToday() {
   // PINS LIVE ON THE ACCOUNT, via the hook the other home already uses, so a
   // star set on either surface is the same star. Nothing here keeps its own
   // copy of the list.
-  const { favorites, canPin, toggleFavorite } = useMyGames();
+  const { favorites, canPin, toggleFavorite, loaded: myLoaded } = useMyGames();
 
   // How many of each game's archive this player has done, which is what "your
   // most played" means and what the default category order sorts by. It rides
@@ -910,6 +911,8 @@ export default function StageToday() {
   // guest with no account or a failed one, and a cover that waits on a value
   // that is never coming is a cover that never leaves.
   const [mineIn, setMineIn] = useState(false);
+  const [boardIn, setBoardIn] = useState(false);
+  const snapRef = useRef(null);
 
   useEffect(() => {
     let alive = true;
@@ -940,7 +943,8 @@ export default function StageToday() {
     // two the same key rather than two questions that happen to have one answer.
     fetchDailyBoard(identityQs())
       .then((d) => { if (alive && d && Array.isArray(d.overall)) setBoard(d); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => { if (alive) setBoardIn(true); });
     return () => { alive = false; };
   }, []);
 
@@ -1570,8 +1574,22 @@ export default function StageToday() {
     return open || DAILY_GAMES.find((g) => !done.has(g.key)) || null;
   }, [done, inprog]);
 
+  // LAST KNOWN PAGE (owner, 2026-09-27; lib/home-snapshot.js). Once every
+  // read that shapes the page has landed, the stored snapshot (if one is up)
+  // gives way to this live page, changed figures roll or flash, and a moment
+  // later the settled page is stored for the next visit. The pause before the
+  // swap costs nothing, since the snapshot is on screen meanwhile, and lets
+  // the live page's own entrance motion finish out of sight.
+  const settled = !!(stats.ready && mineIn && statusIn && boardIn && myLoaded && grp !== undefined);
+  useEffect(() => {
+    if (!settled) return undefined;
+    const r = setTimeout(() => releaseHomeSnap(snapRef.current), 700);
+    const s = setTimeout(() => saveHomeSnap(snapRef.current), 2400);
+    return () => { clearTimeout(r); clearTimeout(s); };
+  }, [settled]);
+
   return (
-    <div className="sty stage-page" data-stage-theme={stageTheme}>
+    <div className="sty stage-page" data-stage-theme={stageTheme} ref={snapRef}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <StageWelcome capRef={capRef} />
       {/* NEW-GAME PREMIERES: once per launch, returning players who have not
