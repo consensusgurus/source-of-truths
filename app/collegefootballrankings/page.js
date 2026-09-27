@@ -15,6 +15,7 @@ import SotHeader from '@/app/SotHeader';
 import StageFooter from '@/app/StageFooter';
 import GridironTable from '@/app/GridironTable';
 import PageViewBeacon from '@/app/PageViewBeacon';
+import CfbWeekNav from './CfbWeekNav';
 import { GRIDIRON } from '@/lib/gridiron-data';
 import { computeComposite, builtAtFor } from '@/lib/gridiron';
 import { SOT_URL } from '@/lib/site';
@@ -101,6 +102,8 @@ export default function CollegeFootballRankingsPage() {
             </span>
           </p>
         </div>
+
+        <CfbWeekNav current={GRIDIRON.cfb.week} />
 
         <GridironTable
           data={GRIDIRON.cfb}

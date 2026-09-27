@@ -69,6 +69,17 @@ const CSS = `
 .rk-btn:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
 .rk-fine{font-family:${MONO};font-size:10px;letter-spacing:.06em;color:var(--stg-mute2);}
 
+.rk-weeks{margin:0 0 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.rk-weeks-l{font-family:${MONO};font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--stg-mute2);}
+.rk-weeks-row{display:flex;gap:6px;flex-wrap:wrap;}
+.rk-wk{display:inline-flex;align-items:baseline;gap:7px;padding:6px 11px;border-radius:8px;text-decoration:none;
+  border:1px solid var(--stg-line2);color:var(--stg-ink);background:none;}
+.rk-wk b{font-size:14px;font-weight:800;}
+.rk-wk small{font-family:${MONO};font-size:10px;letter-spacing:.04em;color:var(--stg-mute);}
+.rk-wk:hover{border-color:var(--stg-line3);}
+.rk-wk.on{background:var(--stg-acc);border-color:var(--stg-acc);color:var(--stg-onramp);}
+.rk-wk.on small{color:var(--stg-onramp);}
+.rk-wk:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
 .rk-cross{margin-top:20px;font-size:12.5px;line-height:1.7;color:var(--stg-ink2);max-width:76ch;}
 .rk-cross a{color:var(--stg-acc-ink);font-weight:700;}
 

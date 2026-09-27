@@ -1101,6 +1101,17 @@ the rows.
 
 ## 7. Weekly build checklist
 
+**-1. CFB: freeze the outgoing week FIRST** with `node scripts/archive-cfb-week.mjs`, before
+   `lib/gridiron-data.js` is touched. It copies the live block, as published, into
+   `lib/gridiron-archive.js`, which feeds the week switcher on /collegefootballrankings (each past week
+   is a static, noindex page at `/collegefootballrankings/week/<N>`, owner request 2026-09-27). Skip it
+   and that week simply never gets a chip; there is no way to rebuild it later except out of git
+   history. `node scripts/verify-gridiron-archive.mjs` then proves today's engine still reproduces
+   every archived board exactly; a scoring change that fails it is rewriting history and must be
+   date-gated, not "fixed" by regenerating the archive. The archive starts at week 2: the week 1
+   board was scored by an earlier engine that today's does not reproduce. GridironTable passes each
+   board's OWN `fetchedAt` to the engine, because the engine's default is the LIVE build date and an
+   old week judged against today would age its sources out of the 30-day gate.
 0. **v2:** pull this season's completed games and the current week's lines (section 3, the two
    added feeds), splice them into `block.games` / `block.lines`, set `block.week` to the ESPN week
    whose games are NEXT, stamp `gamesAt` / `linesAt`, and run `node scripts/verify-gridiron.mjs`.

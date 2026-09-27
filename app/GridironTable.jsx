@@ -61,7 +61,13 @@ const ord = (n) => {
 const pct = (v) => (Math.abs(v * 100 - Math.round(v * 100)) < 0.05 ? (v * 100).toFixed(0) : (v * 100).toFixed(1));
 
 export default function GridironTable({ data, fetchedAt, sport, eyebrow, boardTitle }) {
-  const out = computeComposite(data, sport);
+  // The build date is passed THROUGH to the engine, not left to its default. The
+  // default is the LIVE board's build date, which is right for the live board and
+  // wrong for an archived one: judged against today, an old week's sources would
+  // age past the 30-day gate and drop out of a board that scored them (2026-09-27,
+  // the week switcher). Every live page passes builtAtFor(sport), so for them this
+  // is the same value the default already was.
+  const out = computeComposite(data, sport, fetchedAt ? { fetchedAt } : {});
   const { ranked, columns, tierShare, depth, excluded, week, weeksPlayed } = out;
   const cols = [...columns].sort((a, b) => PILLAR_ORDER.indexOf(a.tier) - PILLAR_ORDER.indexOf(b.tier));
   // The results pillar names itself: 'Résumé' where margin and wins score,
