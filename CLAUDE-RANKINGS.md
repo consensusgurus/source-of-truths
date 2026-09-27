@@ -548,6 +548,12 @@ every week requested. It never errors; it just hands you the wrong week forever.
 and Connelly roughly double weight while looking like three independent models. Pick **F+ alone**,
 or **the FEI/SP+ pair**, never both.
 
+**⚠️ FEI LEFT THE SNAPSHOT 2026-09-27 (owner): the CFB models pillar is FOUR columns now,**
+FPI, Sagarin PREDICTOR, SP+, DRatings. FEI lagged a week on 09-20 and again on 09-27 ("through Week
+3" over a week-4 board), and the owner asked for it removed from scoring AND from display rather
+than shown struck through. SP+ alone is legal under the rule below. Putting FEI back is a new source
+decision for the owner, not a per-week `excluded` call, and F+ stays out regardless.
+
 **⚠️ THE LIVE SHAPE IS THE PAIR, from 2026-09-15** (owner request). `fplus` is out of
 `lib/gridiron-data.js` and `fei` + `spplus` are in, so the CFB models pillar is five columns: FPI,
 Sagarin PREDICTOR, FEI, SP+, DRatings. **Adding F+ back without removing both components is the
