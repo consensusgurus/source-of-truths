@@ -697,7 +697,7 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
                 {placed.map((it, s) => <i key={s} className={`${it == null ? '' : marks[s] === 0 ? 'g' : marks[s] === 1 ? 'a' : ''}${broke === s ? ' b' : ''}`} />)}
               </div>
               <div style={{ fontSize: 13, fontWeight: 700, color: won ? `var(--stg-good, ${COLORS.green})` : `var(--stg-ink, ${COLORS.rust})` }}>
-                {score === N ? `Perfect. Every one of the ${N} in its slot, in ${elapsed}.` : `${won ? 'Made par.' : 'Under par.'} ${score} of ${N} in the right slot${broke != null ? `, ${brokeBit()}` : ''}. ${elapsed}.`}
+                {score === N ? `Perfect. Every one of the ${N} in its slot, in ${elapsed}.` : `${won ? 'Made par.' : 'Short of par.'} ${score} of ${N} in the right slot${broke != null ? `, ${brokeBit()}` : ''}. ${elapsed}.`}
               </div>
             </div>
           )}
@@ -826,7 +826,7 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
 
       {!playing && !endClosed && !LOFT && (
         <DailyEndCard modal self="slot" won={won}
-          headline={score === N ? <>Perfect.</> : won ? <>Made par.</> : <>Under par.</>}
+          headline={score === N ? <>Perfect.</> : won ? <>Made par.</> : <>Short of par.</>}
           subline={<>{score}/{N} in the right slot &middot; par {PAR} &middot; {brokeBit()} &middot; {elapsed}</>}
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

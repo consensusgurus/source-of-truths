@@ -685,7 +685,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
           {!playing && (
             <div style={{ margin: '0 auto' }}>
               <div style={{ fontSize: 13.5, fontWeight: 700, color: INK, margin: '12px 0 0' }}>
-                Bank {fmtChips(chips)} against par {fmtChips(PUZZLE.par)}{won ? ': par beaten.' : ': under par.'} {R.busts > 0 ? `${R.busts} bust${R.busts === 1 ? '' : 's'}.` : 'No busts.'}
+                Bank {fmtChips(chips)} against par {fmtChips(PUZZLE.par)}{won ? ': par beaten.' : ': short of par.'} {R.busts > 0 ? `${R.busts} bust${R.busts === 1 ? '' : 's'}.` : 'No busts.'}
               </div>
               <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>
                 A clairvoyant line on this shoe banks {fmtChips(PUZZLE.ceiling)}. That is the most these cards allowed, seeing every one coming, which nobody does.

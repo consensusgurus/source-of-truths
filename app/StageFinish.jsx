@@ -605,7 +605,7 @@ function RivalFlood({ r }) {
       <span className="stf-rvf" aria-hidden="true">
         <span className="them"><small>{r.them.name} &middot; {r.them.sub}</small><b>{r.them.run}</b></span>
         <span className="x">vs</span>
-        <span className="you"><small>You &middot; {r.you.sub}</small><b>{r.you.run}</b></span>
+        <span className={`you${r.won ? ' won' : ''}`}><small>{r.won ? '\u2713 ' : ''}You &middot; {r.you.sub}</small><b>{r.you.run}</b></span>
       </span>
       <i>{r.line}</i>
     </>
@@ -913,6 +913,18 @@ export default function StageFinish({
   // has no place on the board to be one above.
   const keyFig = (r) => (r && r.score != null && r.total != null && Number(r.score) >= Number(r.total) && r.timeElapsed != null
     ? mmss(r.timeElapsed) : (r && r.score != null ? `${r.score}${r.total != null ? `/${r.total}` : ''}` : '\u2014'));
+  // BOTH SIDES READ IN ONE UNIT (owner, 2026-09-27). Picking the unit per row
+  // printed a clock on one square and a score on the other whenever one run
+  // solved and the other did not. The pair shares a unit: the clock when both
+  // solved (or tied on score) and both have one, else the score for both.
+  const scoreFig = (r) => (r && r.score != null ? `${r.score}${r.total != null ? `/${r.total}` : ''}` : '\u2014');
+  const pairFigs = (x, y) => {
+    const solved = (r) => r && r.score != null && r.total != null && Number(r.score) >= Number(r.total);
+    const hasT = (r) => r && r.timeElapsed != null;
+    const level = x && y && x.score != null && y.score != null && Number(x.score) === Number(y.score);
+    if (hasT(x) && hasT(y) && ((solved(x) && solved(y)) || level)) return [mmss(x.timeElapsed), mmss(y.timeElapsed)];
+    return [scoreFig(x), scoreFig(y)];
+  };
   const gapLine = (a, b) => {
     // a is the better row, b the worse. Same score and the board separated
     // them on misses: say the misses (the clock would read backwards, since a
@@ -948,12 +960,14 @@ export default function StageFinish({
       const line = above
         ? `${gap ? `${gap} behind ${above.username} today` : `Behind ${above.username} today`}${unplayed ? `. ${unplayed} ${unplayed === 1 ? 'member has' : 'members have'} not played it yet.` : '.'}`
         : `${gap ? `Holding off ${below.username} by ${gap}` : `Ahead of ${below.username}`}${unplayed ? `. ${unplayed} ${unplayed === 1 ? 'member has' : 'members have'} not played it yet.` : '.'}`;
+      const [themRun, youRun] = pairFigs(other, mine);
       return {
         group: true,
+        won: !above,
         eyebrow: `Your group \u00b7 ${lead.name}`,
         sub: mine.rank === 1 ? `You lead on ${me.name}` : `You\u2019re ${ord(mine.rank)} of ${all.length} on ${me.name}`,
-        them: { name: other.username, run: keyFig(other), sub: `${ord(other.rank)} in group` },
-        you: { run: keyFig(mine), sub: `${ord(mine.rank)} in group` },
+        them: { name: other.username, run: themRun, sub: `${ord(other.rank)} in group` },
+        you: { run: youRun, sub: `${ord(mine.rank)} in group` },
         line,
       };
     }
@@ -974,12 +988,14 @@ export default function StageFinish({
       if (n < myRank && n <= rows.length) line += ` Your fastest ${me.name} is ${mmss(vs.best)}, which would have taken #${n}.`;
     }
     const times = rivalCount >= 2 ? `, ${ord(rivalCount)} time in two weeks` : '';
+    const [themRun, youRun] = pairFigs(other, mine);
     return {
       group: false,
+      won: !above,
       eyebrow: above ? 'Your rival today' : 'Holding them off',
       sub: `${other.username}${above ? times : ''}`,
-      them: { name: other.username, run: keyFig(other), sub: `#${rankOfRow(other, rows.indexOf(other))} of ${board.field || rows.length}` },
-      you: { run: keyFig(mine), sub: `#${myRank} of ${board.field || rows.length}` },
+      them: { name: other.username, run: themRun, sub: `#${rankOfRow(other, rows.indexOf(other))} of ${board.field || rows.length}` },
+      you: { run: youRun, sub: `#${myRank} of ${board.field || rows.length}` },
       line,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1364,7 +1380,7 @@ export default function StageFinish({
             <div className="stf-vs">
               <div className="stf-vside"><span className="nm">{rival.them.name}</span><b>{rival.them.run}</b><small>{rival.them.sub}</small></div>
               <div className="stf-vsx2">vs</div>
-              <div className="stf-vside you"><span className="nm">You</span><b>{rival.you.run}</b><small>{rival.you.sub}</small></div>
+              <div className={`stf-vside you${rival.won ? ' won' : ''}`}><span className="nm">You{rival.won ? <em className="stf-vwin">&#10003; Ahead</em> : null}</span><b>{rival.you.run}</b><small>{rival.you.sub}</small></div>
             </div>
             <div className="stf-rline">{rival.line}</div>
           </section>
@@ -1759,7 +1775,10 @@ const CSS = `
 .stf-vside .nm{display:block;font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .stf-vside b{display:block;font-family:${MONO};font-size:22px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--stg-ink);}
 .stf-vside small{display:block;font-family:${MONO};font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);margin-top:3px;}
-.stf-vside.you{border-color:var(--stg-acc);}
+.stf-vside.you{border:2px solid var(--stg-acc);padding:9px 11px;background:color-mix(in srgb,var(--stg-acc) 14%,var(--stg-surf));}
+.stf-vside.you.won{border-color:var(--stg-good);background:color-mix(in srgb,var(--stg-good) 18%,var(--stg-surf));}
+.stf-vside.you.won .nm{color:var(--stg-ink);}
+.stf-vwin{font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-left:8px;padding:2px 6px;border-radius:5px;border:1.5px solid var(--stg-good);color:var(--stg-ink);vertical-align:1px;}
 .stf-vside.you .nm{color:var(--stg-acc-ink,var(--stg-acc));}
 .stf-vsx2{font-family:${MONO};font-size:11px;color:var(--stg-mute);}
 .stf-rline{margin-top:8px;font-size:13px;color:var(--stg-ink2);line-height:1.45;}
@@ -1951,7 +1970,8 @@ const CSS = `
 .stf-rvf{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:end;}
 .stf-fl-figs .stf-rvf small{display:block;font-family:${MONO};font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.8;margin-bottom:5px;}
 .stf-fl-figs .stf-rvf b{display:block;font-size:clamp(26px,4.4vw,40px);font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;}
-.stf-rvf .you{text-align:right;}
+.stf-rvf .you{text-align:right;border:2px solid currentColor;border-radius:9px;padding:7px 10px;}
+.stf-rvf .you.won{border-width:3px;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 22%,transparent);}
 .stf-rvf .x{font-family:${MONO};font-size:12px;opacity:.7;padding-bottom:6px;}
 .stf-bars{display:flex;align-items:flex-end;gap:3px;height:clamp(40px,7vh,64px);}
 .stf-bars s{text-decoration:none;flex:1;display:block;background:rgba(0,0,0,.2);border-radius:2px 2px 0 0;

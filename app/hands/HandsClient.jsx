@@ -498,9 +498,9 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
     // strip would hand somebody else the shape of a good board.
     const chips = scores.map((v) => (v >= 10 ? '\u{1F7E8}' : v > 0 ? '\u{1F7E6}' : '⬜')).join('');
     const vs = total >= ace ? 'ace'
-      : total > par ? `${total - par} over par`
+      : total > par ? `${total - par} above par`
       : total === par ? 'level par'
-      : `${par - total} under par`;
+      : `${par - total} short of par`;
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
     const head = `Hands #${PUZZLE.num} · ${total} pts, ${vs} · ${elapsed}${streakBit}`;
     return `${head}\n${chips}\n${shareUrl()}`;
@@ -755,9 +755,9 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
               </div>
               <div style={{ fontSize: 13, fontWeight: 600, color: FADED, margin: '6px 0 0', lineHeight: 1.5 }}>
                 {total >= ace ? 'You matched or beat the best round our solver found playing blind on this deal. That is as good as it gets without seeing the cards coming.'
-                  : total > par ? `That is ${total - par} over par, with ${busts === 0 ? 'not a single hand wasted' : `${busts} of the ten hands worth nothing`}.`
+                  : total > par ? `That is ${total - par} above par, with ${busts === 0 ? 'not a single hand wasted' : `${busts} of the ten hands worth nothing`}.`
                   : total === par ? 'Level par, exactly what an ordinary round comes home with.'
-                  : `That is ${par - total} under par. ${busts >= 4 ? 'Too many dead lines: a card that helps nothing is still costing you a square.' : 'Close enough that one or two placements were the difference.'}`}
+                  : `That is ${par - total} short of par. ${busts >= 4 ? 'Too many dead lines: a card that helps nothing is still costing you a square.' : 'Close enough that one or two placements were the difference.'}`}
               </div>
               {isTodays && myStats.cur >= 2 && (
                 <div style={{ fontSize: 13, fontWeight: 800, margin: '12px 0 0', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
