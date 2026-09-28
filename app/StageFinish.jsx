@@ -22,7 +22,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { DAILY_GAMES, liveDailyKeys } from '@/lib/daily-games';
 import { RAMP_ORDER, RAMP_INK, categoryColor, categoryColorLight, categoryOnrampLight } from '@/lib/category-ramp';
-import { groupOf, groupsIn } from '@/lib/daily-groups';
+import { finishPick } from '@/lib/finish-sets';
 // THE REGISTER PICKS THE HUE, and this file is why that rule needs saying a
 // second time. Every other stage surface publishes BOTH twins of its category
 // step (--stg-acc-dk / --stg-acc-lt) and lets globals.css choose one; this one
@@ -146,6 +146,15 @@ const FLOOD_SETTLE = 2200;
 const FLOOD_RIVAL = 800;    // the pair, read as two clocks
 const FLOOD_FIELD = 900;    // the bars draw in
 const FLOOD_STREAK = 900;   // the strip stamps across, tomorrow last
+// ONE CADENCE (owner, 2026-09-28: "too jittery"). The dwells had drifted to
+// seven different values (520 to 1100) and a figure still waiting on its read
+// stalled the queue mid-screen, so the arrivals came in lurches. Now the three
+// numbers in the top row land as one gesture (FLOOD_ROW apart), every block
+// after them lands one FLOOD_BEAT after the last, strictly in order, so the
+// screen fills top to bottom and nothing on it moves once it has landed.
+const FLOOD_ROW = 420;
+const FLOOD_BEAT = 760;
+const FLOOD_ROWKEYS = ['iq', 'pos', 'all'];
 // THE HAND-OFF COUNTS DOWN (owner, 2026-09-26): fifteen seconds after the
 // curtain lands, Up next opens itself. Any tap elsewhere on the card stops it.
 const HANDOFF_S = 15;
@@ -226,10 +235,11 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
   const [held, setHeld] = useState(false);    // the floor has passed
   const [expired, setExpired] = useState(false);   // done waiting for stragglers
   const [hint, setHint] = useState(false);         // 'tap to skip' is showing
-  const [shown, setShown] = useState(0);      // how far the queue has been walked
+  const [revealed, setRevealed] = useState(() => new Set());   // figures landed so far
+  const [tick, setTick] = useState(0);        // re-walks the queue when a dwell ends
   const doneRef = useRef(false);
   const goneRef = useRef(false);              // the collapse has been started
-  const stepRef = useRef(-1);                 // the queue step already being timed
+  const busyRef = useRef(false);              // a landed figure is still dwelling
   // ONE list for every timer this component ever schedules, cleared once on
   // unmount. NOT a cleanup per effect: the effects below re-run as the queue
   // advances, and a cleanup in one of them would clear the collapse it had
@@ -326,36 +336,43 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // WALKING THE QUEUE. One step per effect run, so a figure's dwell is a real
-  // wait rather than a schedule laid out in advance against data that had not
-  // arrived yet.
-  useEffect(() => {
-    if (!held || goneRef.current || shown >= figs.length) return;
-    const next = figs[shown];
-    if (next.has) {
-      // ONE DWELL PER STEP, guarded by a ref. This effect re-runs every time any
-      // of the four props arrives, and `figs` is a fresh array each time; a
-      // dwell scheduled with a cleanup would be cancelled and RESTARTED by the
-      // next arrival, so a figure that landed while another read was in flight
-      // could sit there for two or three dwells.
-      if (stepRef.current === shown) return;
-      stepRef.current = shown;
-      // ITS DWELL IS ITS COUNT. This is the whole point of the second pass: the
-      // queue cannot move on, and the screen cannot leave, until the number has
-      // finished climbing.
-      at(next.count ? FLOOD_COUNT + 180 : next.rack ? (next.wide ? FLOOD_RACK_WIDE : FLOOD_RACK) : next.rival ? FLOOD_RIVAL : next.field ? FLOOD_FIELD : next.strip ? FLOOD_STREAK : FLOOD_STAMP, () => setShown((s) => s + 1));
-      return;
+  // WALKING THE QUEUE, strictly in order, so the screen fills top to bottom
+  // and left to right and nothing already on it ever moves. The next figure
+  // lands once the last one's dwell is over; a figure still reading holds the
+  // queue (the verdict is on screen meanwhile), and one that is settled with
+  // no value is stepped over.
+  const settled = ready !== false || expired;
+  const pending = useMemo(() => {
+    for (const f of figs) {
+      if (revealed.has(f.k)) continue;
+      if (f.has) return { f };
+      if (settled) continue;
+      return { hold: true };
     }
-    // No value. Settled means skip; still reading means hold the queue here,
-    // which is the wait the whole sequence exists to fill.
-    if (ready !== false || expired) setShown((s) => s + 1);
+    return null;
+  }, [figs, revealed, settled]);
+  useEffect(() => {
+    if (!held || goneRef.current || busyRef.current || !pending || !pending.f) return;
+    const f = pending.f;
+    const rowNext = FLOOD_ROWKEYS.includes(f.k)
+      && figs.some((x) => x.k !== f.k && FLOOD_ROWKEYS.includes(x.k) && !revealed.has(x.k) && x.has);
+    // ITS DWELL IS ITS ANIMATION: the IQ's climb, the rack's ripple (or the
+    // set's swell and widen). Everything else is one beat, or a row step.
+    const dwell = f.count ? FLOOD_COUNT + 180
+      : f.rack ? (f.wide ? FLOOD_RACK_WIDE : FLOOD_RACK)
+      : rowNext ? FLOOD_ROW
+      : FLOOD_BEAT;
+    busyRef.current = true;
+    setRevealed((prev) => { const n = new Set(prev); n.add(f.k); return n; });
+    at(dwell, () => { busyRef.current = false; setTick((t) => t + 1); });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [held, shown, figs, ready, expired]);
+  }, [held, pending, tick]);
+  const walked = !pending && !busyRef.current;
 
   // THE COLLAPSE, once the queue has run out (or the backstop has fired).
   useEffect(() => {
     if (!held || goneRef.current) return;
-    if (shown < figs.length) return;
+    if (!walked) return;
     goneRef.current = true;
     const settle = quick ? FLOOD_QUICK_SETTLE : FLOOD_SETTLE;
     at(settle, () => {
@@ -383,7 +400,7 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
     at(settle + FLOOD_SHRINK + 60, () => setPhase('out'));
     at(settle + FLOOD_SHRINK + 60 + FLOOD_FADE, finish);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [held, shown, figs]);
+  }, [held, walked, tick]);
 
   // Any key. (Any tap is the element's own onClick.)
   useEffect(() => {
@@ -414,7 +431,7 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
         <div className="stf-fl-figs">
           {(() => {
             const idx = new Map(figs.map((f, i) => [f.k, i]));
-            const vis = (k) => idx.has(k) && idx.get(k) < shown && figs[idx.get(k)].has;
+            const vis = (k) => idx.has(k) && revealed.has(k) && figs[idx.get(k)].has;
             const num = (k) => {
               if (!vis(k)) return null;
               const f = figs[idx.get(k)];
@@ -860,20 +877,23 @@ export default function StageFinish({
   // rack, the band's line, Up next and the tiles, so none can disagree.
   const catRun = useMemo(() => {
     if (!me) return null;
-    const grp = groupOf(me.key);
+    // THE SET IS A FINISH SET (owner, 2026-09-28): lib/finish-sets, small and
+    // overlapping, picked as the one closest to done that this game is in. The
+    // home's partition (lib/daily-groups) is not read here any more.
     const inCat = LIVE().filter((g) => g.cat === me.cat);
-    const done = (g) => played.has(g.key) || g.key === me.key || (forceDone && !!grp && grp.keys.includes(g.key));
+    const base = (k) => played.has(k) || k === me.key;
+    const pick = finishPick(me.key, base, LIVE().map((g) => g.key));
+    const forced = !!(forceDone && pick);
+    const done = (g) => base(g.key) || (forced && pick.set.keys.includes(g.key));
     const games = inCat.map((g) => ({ key: g.key, done: done(g) }));
-    const group = grp ? (() => {
-      const gg = grp.keys.map((k) => inCat.find((g) => g.key === k)).filter(Boolean)
+    const group = pick ? (() => {
+      const gg = pick.set.keys.map((k) => inCat.find((g) => g.key === k)).filter(Boolean)
         .map((g) => ({ key: g.key, done: done(g) }));
-      return { name: grp.name, games: gg, n: gg.filter((x) => x.done).length };
+      return { name: pick.set.name, games: gg, n: gg.filter((x) => x.done).length, open: forced ? [] : pick.open };
     })() : null;
     const complete = !!(group && group.games.length && group.n === group.games.length);
-    const nextGroup = complete ? (groupsIn(me.cat)
-      .filter((x) => x.name !== group.name)
-      .map((x) => ({ name: x.name, open: x.keys.filter((k) => inCat.some((g) => g.key === k) && !played.has(k) && k !== me.key), total: x.keys.filter((k) => inCat.some((g) => g.key === k)).length }))
-      .find((x) => x.open.length) || null) : null;
+    const nx = pick && pick.complete ? pick.next : null;
+    const nextGroup = complete && nx ? { name: nx.set.name, keys: nx.set.keys, open: nx.open, total: nx.set.keys.length, cat: nx.set.cat } : null;
     return { cat: me.cat, me: me.key, games, n: games.filter((g) => g.done).length, group, complete, nextGroup };
   }, [me, played, forceDone]);
 
@@ -1054,12 +1074,10 @@ export default function StageFinish({
   const pushSet = useMemo(() => {
     if (!catRun || !catRun.group) return null;
     if (!catRun.complete) {
-      const open = catRun.group.games.filter((x) => !x.done).map((x) => x.key);
-      return { name: catRun.group.name, keys: catRun.group.games.map((x) => x.key), open, total: catRun.group.games.length, handoff: false };
+      return { name: catRun.group.name, keys: catRun.group.games.map((x) => x.key), open: catRun.group.open, total: catRun.group.games.length, handoff: false };
     }
     if (!catRun.nextGroup) return null;
-    const grp = groupsIn(catRun.cat).find((x) => x.name === catRun.nextGroup.name);
-    return { name: catRun.nextGroup.name, keys: grp ? grp.keys : [], open: catRun.nextGroup.open, total: catRun.nextGroup.total, handoff: true };
+    return { name: catRun.nextGroup.name, keys: catRun.nextGroup.keys, open: catRun.nextGroup.open, total: catRun.nextGroup.total, handoff: true };
   }, [catRun]);
 
   // MORE OF WHAT THEY JUST PLAYED. The set to push first, its open games
@@ -1743,16 +1761,16 @@ const CSS = `
     margin 380ms cubic-bezier(.2,.8,.25,1),border-radius 380ms ease,opacity 300ms ease;}
 .stf-rack s.on{background:currentColor;opacity:1;animation:stf-rip 420ms ease both;}
 .stf-rack s.new{background:currentColor;opacity:0;transform:scale(.4);
-  animation:stf-rackhit 320ms cubic-bezier(.2,.9,.3,1.35) ${RACK_HIT}ms both;}
+  animation:stf-rackhit 360ms cubic-bezier(.22,.8,.26,1) ${RACK_HIT}ms both;}
 /* NARROW: the set's own pips at full size, the rest of the category collapsed
    to nothing. WIDE: the set shrinks to category size and the rest expands in. */
 .stf-rack.grouped s.g{width:18px;height:28px;border-radius:4px;}
 .stf-rack.grouped:not(.wide) s.x{width:0;opacity:0!important;margin-left:-5px;border-width:0;animation:none;}
 .stf-rack.grouped.wide s.g{width:12px;height:18px;border-radius:3px;}
 /* THE COMPLETION: the whole rack swells once, then the widen starts. */
-.stf-rack.complete .stf-rk-pips{animation:stf-swell 520ms cubic-bezier(.2,.9,.3,1.4) both;}
+.stf-rack.complete .stf-rk-pips{animation:stf-swell 600ms ease-in-out both;}
 .stf-rack b small{font-size:.42em;letter-spacing:-.01em;opacity:.7;margin-left:4px;}
-.stf-rack b,.stf-rack i{animation:stf-stamp 300ms cubic-bezier(.2,.9,.3,1.3) both;}
+.stf-rack b,.stf-rack i{animation:stf-stamp 380ms cubic-bezier(.22,.8,.26,1) both;}
 .stf-rk-done{display:inline-block;margin-top:12px;font-style:normal;font-family:${MONO};font-size:9px;
   letter-spacing:.16em;text-transform:uppercase;font-weight:700;padding:4px 9px;
   border:1.5px solid currentColor;border-radius:4px;animation:stf-stamp 300ms cubic-bezier(.2,.9,.3,1.3) both;}
@@ -1808,9 +1826,9 @@ const CSS = `
   background:none;border:0;padding:0;color:var(--stg-acc-ink,var(--stg-acc));cursor:pointer;font-weight:700;}
 .stf-vslow{font-size:13.5px;color:var(--stg-ink2);}
 .stf-vslow b{font-weight:800;color:var(--stg-ink);}
-@keyframes stf-rip{ 0%{transform:none} 35%{transform:translateY(-5px)} 100%{transform:none} }
-@keyframes stf-rackhit{ from{opacity:0;transform:scale(.4)} to{opacity:1;transform:none} }
-@keyframes stf-swell{ 0%{transform:scale(1)} 45%{transform:scale(1.14)} 100%{transform:scale(1)} }
+@keyframes stf-rip{ 0%{transform:none} 40%{transform:translateY(-3px)} 100%{transform:none} }
+@keyframes stf-rackhit{ from{opacity:0;transform:scale(.7)} to{opacity:1;transform:none} }
+@keyframes stf-swell{ 0%{transform:scale(1)} 45%{transform:scale(1.06)} 100%{transform:scale(1)} }
 /* Bigger than the 22px the stats row used, smaller than the verdict: it is the
    second thing on the band, not the first. It takes the band's own ink rather
    than the green the figures row gave it, because green on the accent is the
@@ -1984,13 +2002,13 @@ const CSS = `
 @keyframes stf-bar{ from{transform:scaleY(0)} to{transform:none} }
 .stf-dstrip{display:flex;gap:4px;}
 .stf-dstrip s{text-decoration:none;flex:1;display:block;height:12px;border-radius:6px;background:currentColor;opacity:.9;
-  animation:stf-rackhit 300ms cubic-bezier(.2,.9,.3,1.3) both;}
+  animation:stf-rackhit 340ms cubic-bezier(.22,.8,.26,1) both;}
 .stf-dstrip s.off{background:none;border:1.5px solid currentColor;opacity:.35;}
 .stf-dstrip s.next{background:none;border:1.5px dashed currentColor;opacity:1;}
 /* THE STAMP. An overshoot on the way down, so a figure lands rather than
    fades: it is the one motion on this screen that says a number just arrived.
    The fill holds the end state, since each figure mounts once and never leaves. */
-.stf-fl-fig{flex:none;animation:stf-stamp 300ms cubic-bezier(.2,.9,.3,1.3) both;}
+.stf-fl-fig{flex:none;animation:stf-stamp 480ms cubic-bezier(.22,.8,.26,1) both;}
 .stf-fl-fig b{display:block;font-size:clamp(24px,4.2vw,44px);font-weight:800;
   line-height:.92;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
 .stf-fl-fig i{display:block;font-style:normal;font-family:${MONO};
@@ -2028,9 +2046,10 @@ const CSS = `
   font-weight:700;opacity:0;animation:stf-hint 400ms ease 0s both;}
 @keyframes stf-hint{ from{opacity:0} to{opacity:.42} }
 @keyframes stf-stamp{
-  from{opacity:0;transform:translateY(10px) scale(1.26);}
+  from{opacity:0;transform:translateY(8px);}
   to{opacity:1;transform:none;}
 }
+
 
 @media (max-width:640px){
   .stf-flood{padding:clamp(34px,7vh,80px) 18px 22px;}
