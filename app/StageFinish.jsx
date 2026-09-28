@@ -948,7 +948,10 @@ export default function StageFinish({
   const ord = (n) => { const j = n % 10, k = n % 100; return n + (j === 1 && k !== 11 ? 'st' : j === 2 && k !== 12 ? 'nd' : j === 3 && k !== 13 ? 'rd' : 'th'); };
   const [rivalCount, setRivalCount] = useState(0);
   const rival = useMemo(() => {
-    if (!me) return null;
+    // GROUP ONLY (owner, 2026-09-27): the head-to-head shows only when the
+    // reader is in a group and another member has played this game. The
+    // public one-place-up rival below is kept but no longer reached.
+    if (!me || !grpGame) return null;
     if (grpGame) {
       const { lead, all, mine } = grpGame;
       const above = mine.rank > 1 ? all.find((r) => r.rank === mine.rank - 1) : null;
