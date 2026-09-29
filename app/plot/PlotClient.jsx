@@ -81,10 +81,19 @@ const STATS_KEY = 'sot_plot_stats';
 // pair is a light ground and the darker edge/number that reads on it.
 const TINT = [
   ['#e8eef7', '#2f4f7a'], ['#efe9f6', '#4b3f6e'], ['#e6f2ec', '#2f6350'],
-  ['#f7ece8', '#7a4030'], ['#f2eee2', '#5f5636'], ['#e9f0f2', '#31585f'],
+  ['#eef0f3', '#3f4652'], ['#f2eee2', '#5f5636'], ['#e9f0f2', '#31585f'],
 ];
 const WRONG_BG = '#f6d5d5';
 const WRONG_EDGE = '#a33a3a';
+// A misplaced plot is red AND striped, so it never depends on hue alone (owner,
+// 2026-09-29: a correct plot on the rose ramp step was the same colour as a wrong one).
+const WRONG_HATCH = (c) => `repeating-linear-gradient(135deg, ${c} 0 3px, transparent 3px 9px)`;
+// Plot's plots index the REGION RAMP minus every red-family step (rose, magenta,
+// orange), because red on this board MEANS a misplaced plot. Rose was the exact
+// value of --stg-bad in both registers. Indices into REGION_RAMP:
+// sky, gold, mint, violet, lime, periwinkle, amber.
+const PLOT_HUES = [0, 1, 2, 4, 5, 7, 9];
+const plotHue = (k) => PLOT_HUES[((k % PLOT_HUES.length) + PLOT_HUES.length) % PLOT_HUES.length];
 
 const isIosDevice = () =>
   typeof navigator !== 'undefined' &&
@@ -720,7 +729,7 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
         <><b>Undo</b> (or Ctrl+Z) takes back your last move, and one free <b>hint</b>, on your first ever play, surveys one plot for you.</>,
       ]}
       knack="Start where a number has nowhere else to go: a 1 is its own cell, and a number in a corner or against an edge usually has only one shape that fits."
-      note={<>A plot that fits its number but is in the wrong place turns <b>red</b> and counts as an error. Hand it back to carry on.</>}
+      note={<>A plot that fits its number but is in the wrong place turns <b>red and striped</b> and counts as an error. Hand it back to carry on.</>}
       footer="A clean solve with no errors is a perfect 10, every two errors cost a point. Ties break on fewest errors, then fastest time. Sundays are a bigger 12×12 Edition."
     />
   );
@@ -839,10 +848,10 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
                 const tint = TINT[p[4] % TINT.length];
                 return (
                   <div key={`p${i}`} style={{
-                    ...(STAGE ? regionStyle(p[4]) : null),
+                    ...(STAGE ? regionStyle(plotHue(p[4])) : null),
                     position: 'absolute', left: pct(p[1]), top: pct(p[0]), width: pct(p[2]), height: pct(p[3]),
                     // Stage: the plot's ramp hue mixed into the cell, edged in the hue's ink.
-                    background: STAGE ? (bad ? 'color-mix(in srgb, var(--stg-bad) 38%, var(--stg-cell))' : regionMix(1)) : (bad ? WRONG_BG : tint[0]),
+                    background: STAGE ? (bad ? `${WRONG_HATCH('color-mix(in srgb, var(--stg-bad) 55%, transparent)')}, color-mix(in srgb, var(--stg-bad) 30%, var(--stg-cell))` : regionMix(1)) : (bad ? `${WRONG_HATCH('rgba(163,58,58,0.28)')}, ${WRONG_BG}` : tint[0]),
                     border: `2px solid ${STAGE ? (bad ? 'var(--stg-bad)' : REGION_INK) : (bad ? WRONG_EDGE : tint[1])}`,
                     borderRadius: 4, boxSizing: 'border-box', pointerEvents: 'none',
                   }} />
@@ -854,7 +863,7 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
                 const bad = i >= 0 && wrongSet.has(i);
                 const col = i >= 0 ? (bad ? (STAGE ? 'var(--stg-bad)' : WRONG_EDGE) : (STAGE ? REGION_INK : TINT[plots[i][4] % TINT.length][1])) : `var(--stg-ink, ${COLORS.ink})`;
                 return (
-                  <div key={`c${k}`} className="pl-num" style={{ ...(STAGE && i >= 0 ? regionStyle(plots[i][4]) : null), left: pct(cl[1]), top: pct(cl[0]), width: pct(1), height: pct(1), fontSize: numFs, color: col }}>{cl[2]}</div>
+                  <div key={`c${k}`} className="pl-num" style={{ ...(STAGE && i >= 0 ? regionStyle(plotHue(plots[i][4])) : null), left: pct(cl[1]), top: pct(cl[0]), width: pct(1), height: pct(1), fontSize: numFs, color: col }}>{cl[2]}</div>
                 );
               })}
               {/* the plot being dragged out */}
@@ -1089,7 +1098,7 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
           Plot is a free daily rectangle puzzle from Mind Loft, the logic puzzle also known as shikaku or divide by squares. Numbers are scattered across the board, and each one is the size of the plot it belongs to. Divide the whole board into rectangles so that every rectangle holds exactly one number and covers exactly that many cells.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Every board has exactly one solution and is reachable by pure deduction, so there is never a moment where you have to guess. Drag corner to corner to claim a plot, tap one to hand it back, slide off the board mid-drag to cancel, and start where a number has nowhere else to go. A plot that fits its number but sits in the wrong place turns red, so you always know where you stand.
+          Every board has exactly one solution and is reachable by pure deduction, so there is never a moment where you have to guess. Drag corner to corner to claim a plot, tap one to hand it back, slide off the board mid-drag to cancel, and start where a number has nowhere else to go. A plot that fits its number but sits in the wrong place turns red and striped, so you always know where you stand.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new board drops every day at midnight Eastern, and Sundays step up to a 12&times;12 Edition. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More dailies: <a href="/etch" style={{ color: INK, fontWeight: 800 }}>Etch</a>, our nonogram, <a href="/hedge" style={{ color: INK, fontWeight: 800 }}>Hedge</a>, our loop puzzle, and <a href="/suds" style={{ color: INK, fontWeight: 800 }}>Suds</a>, our daily sudoku.
