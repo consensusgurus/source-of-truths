@@ -117,7 +117,7 @@ export default function FinishGroupLine({ gameKey, gameName = null, missLabel = 
                   <span className="k">{r.rank}</span>
                   <MiniAvatar name={r.username} userKey={r.userKey} />
                   <span className="n">{r.userKey === data.userKey ? 'You' : r.username}</span>
-                  <span className="run">{gameStats(r, missLabel) || '\u2014'}</span>
+                  <span className="run">{gameStats(r, missLabel, gameKey) || '\u2014'}</span>
                   <span className="s">{fmtPts(r.points)}</span>
                 </div>
               ))}

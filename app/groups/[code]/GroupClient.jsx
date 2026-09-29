@@ -426,7 +426,7 @@ function GamesPane({ board, boardErr, members, viewer, day, today, setDay, gameK
                     <tr key={r.userKey} className={r.userKey === viewer.userKey ? 'me' : ''}>
                       <td className={`gp-rk${r.rank === 1 && !r.abandoned ? ' first' : ''}`}>{r.abandoned ? '–' : r.rank}</td>
                       <td><Who name={r.username} userKey={r.userKey} nameOnly={nameOnly.get(r.userKey)} /></td>
-                      <td className="r num gp-res">{r.abandoned ? 'Left unfinished' : (gameStats(r, meta.miss) || '—')}</td>
+                      <td className="r num gp-res">{r.abandoned ? 'Left unfinished' : (gameStats(r, meta.miss, pick.key) || '—')}</td>
                       <td className="r num"><b>{pts(r.points)}</b></td>
                     </tr>
                   ))}

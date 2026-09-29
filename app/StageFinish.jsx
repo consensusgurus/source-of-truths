@@ -46,7 +46,8 @@ import { useStageTheme } from '@/lib/stage-theme';
 // strip. See the file's own header: a row carries both the 0-15 placement points
 // and what the player actually did, and only the second means anything next to
 // the game they just played.
-import { gameStats, mmss, missWord } from '@/lib/daily-row-stats';
+import { gameStats, mmss, missWord, scoreFig as runFig } from '@/lib/daily-row-stats';
+import { isSolveOnly } from '@/lib/daily-games';
 import { typicalLabel } from '@/lib/game-medians';
 import GameGlyph from './GameGlyph';
 import JoinLeaderboardForm from './quiz/[id]/JoinLeaderboardForm';
@@ -598,6 +599,9 @@ function compareRuns(key, rows, scoreOnly = false) {
     return { mode: 'time', today: today.time, last: last.time, best: bestT, bestDate: bestRow.dateLabel,
       better: today.time < last.time, pb: today.time < bestT, tie: today.time === last.time };
   }
+  // SOLVE OR NOT: a score comparison would read "10 more than your last" or
+  // print 0/10. Only two clocks are worth comparing on these.
+  if (isSolveOnly(key)) return null;
   const frac = (r) => (r.total ? r.score / r.total : 0);
   const bestF = Math.max(...prior.map(frac));
   const bestRow = prior.find((r) => frac(r) === bestF);
@@ -932,12 +936,12 @@ export default function StageFinish({
   // member above on this game's group board. Registered players only: a guest
   // has no place on the board to be one above.
   const keyFig = (r) => (r && r.score != null && r.total != null && Number(r.score) >= Number(r.total) && r.timeElapsed != null
-    ? mmss(r.timeElapsed) : (r && r.score != null ? `${r.score}${r.total != null ? `/${r.total}` : ''}` : '\u2014'));
+    ? mmss(r.timeElapsed) : (runFig(r, me && me.key) || '\u2014'));
   // BOTH SIDES READ IN ONE UNIT (owner, 2026-09-27). Picking the unit per row
   // printed a clock on one square and a score on the other whenever one run
   // solved and the other did not. The pair shares a unit: the clock when both
   // solved (or tied on score) and both have one, else the score for both.
-  const scoreFig = (r) => (r && r.score != null ? `${r.score}${r.total != null ? `/${r.total}` : ''}` : '\u2014');
+  const scoreFig = (r) => runFig(r, me && me.key) || '\u2014';
   const pairFigs = (x, y) => {
     const solved = (r) => r && r.score != null && r.total != null && Number(r.score) >= Number(r.total);
     const hasT = (r) => r && r.timeElapsed != null;
@@ -1061,13 +1065,14 @@ export default function StageFinish({
     }
     const sd = board.scoreDist;
     if (!sd || mine.score == null) return null;
+    if (me && isSolveOnly(me.key)) return null;
     const keys = Object.keys(sd).map(Number).filter(Number.isFinite).sort((a, b) => a - b);
     if (keys.length < 2) return null;
     const bins = keys.map((k) => sd[k]);
     const mi = keys.indexOf(Number(mine.score));
     if (mi < 0) return null;
     return { kind: 'score', bins, mine: mi, eyebrow: `Today\u2019s field \u00b7 ${board.plays || board.field} runs`, line: `Better than ${pct}% of the board` };
-  }, [board]);
+  }, [board, me]);
 
   // THE SET TO PUSH: this game's own set while it is open, the next set once
   // it is done, nothing in an ungrouped category.
@@ -1496,7 +1501,7 @@ export default function StageFinish({
                     <tr key={r.username || i} className={isMine(r) ? 'me' : undefined}>
                       <td className="stf-pos">{r.rank != null ? `#${r.rank}` : `#${i + 1}`}</td>
                       <td className="stf-who">{r.username || 'Guest'}</td>
-                      <td className="stf-st">{gameStats(r, missLabel) || '\u2014'}</td>
+                      <td className="stf-st">{gameStats(r, missLabel, me && me.key) || '\u2014'}</td>
                     </tr>
                   ))}
                   {!rows.some(isMine) && board && board.myRow ? (
@@ -1507,7 +1512,7 @@ export default function StageFinish({
                       <tr className="me">
                         <td className="stf-pos">{myRank != null ? `#${myRank}` : ''}</td>
                         <td className="stf-who">{board.myRow.username || 'You'}</td>
-                        <td className="stf-st">{gameStats(board.myRow, missLabel) || '\u2014'}</td>
+                        <td className="stf-st">{gameStats(board.myRow, missLabel, me && me.key) || '\u2014'}</td>
                       </tr>
                     </>
                   ) : null}

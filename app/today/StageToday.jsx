@@ -2229,7 +2229,7 @@ export default function StageToday() {
                           <Glyph k={r.key} size={15} />{r.g.name}
                         </a>
                       </td>
-                      <td className="sty-srun">{gameStats(r, r.g.miss) || '—'}</td>
+                      <td className="sty-srun">{gameStats(r, r.g.miss, r.key) || '—'}</td>
                       <td className="sty-srk">#{r.rank}<i>{' of '}{r.field}</i></td>
                     </tr>
                   ))}

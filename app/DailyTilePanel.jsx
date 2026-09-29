@@ -407,7 +407,7 @@ export default function DailyTilePanel({
                       <span className="pl">{r.rank === 1 ? <Crown size={12} /> : (r.rank || i + 1)}</span>
                       <b>{r.username || 'Player'}{mineRow ? ' (you)' : ''}</b>
                       <span className="sc">{fmtPts(r.points)}</span>
-                      {gameStats(r, missLabel) ? <span className="dtp-lst">{gameStats(r, missLabel)}</span> : null}
+                      {gameStats(r, missLabel, game.key) ? <span className="dtp-lst">{gameStats(r, missLabel, game.key)}</span> : null}
                     </div>
                   );
                 })}
@@ -416,7 +416,7 @@ export default function DailyTilePanel({
                     <span className="pl">{todayRow.rank || '—'}</span>
                     <b>You</b>
                     <span className="sc">{todayRow.points != null ? fmtPts(todayRow.points) : '—'}</span>
-                    {gameStats(todayRow, missLabel) ? <span className="dtp-lst">{gameStats(todayRow, missLabel)}</span> : null}
+                    {gameStats(todayRow, missLabel, game.key) ? <span className="dtp-lst">{gameStats(todayRow, missLabel, game.key)}</span> : null}
                   </div>
                 ) : null}
               </>

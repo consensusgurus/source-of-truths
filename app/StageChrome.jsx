@@ -364,7 +364,7 @@ export default function StageChrome({
               out of the board's total, then the clock. `scoreWord` stays as the
               fallback for a row too thin to say anything better. */}
           <span className="stg-sf">
-            {gameStatsShort(leader) || `${Math.round(Number(leader.score) || 0)} ${scoreWord}`}
+            {gameStatsShort(leader, gameKey) || `${Math.round(Number(leader.score) || 0)} ${scoreWord}`}
           </span>
           <span className="stg-sd">
             {'· '}{board.field} {board.field === 1 ? 'player' : 'players'}
