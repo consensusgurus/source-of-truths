@@ -747,7 +747,6 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
             { v: elapsed, k: 'time' },
             { v: PUZZLE.winIn, k: 'moves to win' },
           ] : [
-            { v: endScore, k: 'score' },
             { v: errors, k: errors === 1 ? 'wrong drop' : 'wrong drops' },
             { v: PUZZLE.winIn, k: 'moves to win' },
             { v: elapsed, k: 'time' },
@@ -1025,7 +1024,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : (drawn ? 'part' : 'lost')}
               title={won ? 'Solved' : 'Not solved'}
-              detail={`${endScore} of 10 \u00b7 ${errors} wrong drop${errors === 1 ? '' : 's'} \u00b7 win in ${PUZZLE.winIn} \u00b7 ${elapsed}`}
+              detail={`${errors} wrong drop${errors === 1 ? '' : 's'} \u00b7 win in ${PUZZLE.winIn} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1126,12 +1125,12 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
           won={won}
           headline={won ? <>You found it.</> : drawn ? <>Drawn.</> : g.status === 'lost' ? <>You lost the win.</> : <>You scored 0%</>}
           subline={won
-            ? <>10/10 &middot; {errors === 0 ? 'no wrong drops' : `${errors} wrong drop${errors === 1 ? '' : 's'}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            ? <>Solved &middot; {errors === 0 ? 'no wrong drops' : `${errors} wrong drop${errors === 1 ? '' : 's'}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
             : drawn
-              ? <>4/10 &middot; the win went, you held the draw</>
+              ? <>Drawn &middot; the win went, you held the draw</>
               : g.status === 'lost'
-                ? <>0/10 &middot; that was not the column</>
-                : <>0/10 &middot; the win is still in the position</>}
+                ? <>Not solved &middot; that was not the column</>
+                : <>Not solved &middot; the win is still in the position</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

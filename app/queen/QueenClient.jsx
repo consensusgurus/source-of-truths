@@ -791,7 +791,6 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
             { v: elapsed, k: 'time' },
             { v: Math.max(1, movesLeft), k: 'promote in' },
           ] : [
-            { v: endScore, k: 'score' },
             { v: errors, k: 'misses' },
             { v: PUZZLE.winIn, k: 'promote in' },
             { v: elapsed, k: 'time' },
@@ -1020,7 +1019,7 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               title={won ? 'Solved' : 'Not solved'}
-              detail={`${endScore} · ${errors} misses · ${PUZZLE.winIn} promote in · ${elapsed}`}
+              detail={`${errors} misses · ${PUZZLE.winIn} promote in · ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1120,9 +1119,9 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
           won={won}
           headline={won ? <>Promoted!</> : g.status === 'lost' ? <>The pawn never queened.</> : <>You scored 0%</>}
           subline={won
-            ? <>10/10 &middot; walked in, in {PUZZLE.winIn} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : g.status === 'lost' ? <>0/10 &middot; the win slipped away</>
-            : <>0/10 &middot; the win is still in the position</>}
+            ? <>Solved &middot; walked in, in {PUZZLE.winIn} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            : g.status === 'lost' ? <>Not solved &middot; the win slipped away</>
+            : <>Not solved &middot; the win is still in the position</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

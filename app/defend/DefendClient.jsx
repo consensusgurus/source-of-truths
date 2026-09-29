@@ -852,7 +852,6 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
             { v: elapsed, k: 'time' },
             { v: Math.max(1, holdLeft), k: 'hold for' },
           ] : [
-            { v: endScore, k: 'score' },
             { v: errors, k: 'misses' },
             { v: HOLD, k: 'hold for' },
             { v: elapsed, k: 'time' },
@@ -1109,7 +1108,7 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               title={won ? 'Solved' : 'Not solved'}
-              detail={`${endScore} \u00b7 ${errors} misses \u00b7 ${HOLD} hold for \u00b7 ${elapsed}`}
+              detail={`${errors} misses \u00b7 ${HOLD} hold for \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1210,9 +1209,9 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
           won={won}
           headline={won ? <>You held.</> : g.status === 'lost' ? <>Mated.</> : <>You scored 0%</>}
           subline={won
-            ? <>10/10 &middot; found the save &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : g.status === 'lost' ? <>0/10 &middot; that move allowed the mate</>
-            : <>0/10 &middot; the save is still in the position</>}
+            ? <>Solved &middot; found the save &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            : g.status === 'lost' ? <>Not solved &middot; that move allowed the mate</>
+            : <>Not solved &middot; the save is still in the position</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

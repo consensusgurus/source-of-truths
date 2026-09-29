@@ -703,7 +703,6 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
             { v: elapsed, k: 'time' },
             { v: left, k: 'moves left' },
           ] : [
-            { v: finalScore, k: 'score' },
             { v: `${taken}/${blkStart}`, k: 'taken' },
             { v: elapsed, k: 'time' },
           ]}
@@ -893,7 +892,7 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               title={won ? 'Solved' : 'Not solved'}
-              detail={`${finalScore} \u00b7 ${`${taken}/${blkStart}`} taken \u00b7 ${elapsed}`}
+              detail={`${`${taken}/${blkStart}`} taken \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -985,9 +984,9 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
         <DailyEndCard modal self="check" won={won}
           headline={won ? <>Swept.</> : g.status === 'gaveup' ? <>You scored 0%</> : <>You missed it.</>}
           subline={won
-            ? <>10/10 &middot; every piece in {BUDGET} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : g.status === 'gaveup' ? <>0/10 &middot; the sweep was there</>
-            : <>{finalScore}/10 &middot; you took {taken} of {blkStart}, the sweep needed them all</>}
+            ? <>Solved &middot; every piece in {BUDGET} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            : g.status === 'gaveup' ? <>Not solved &middot; the sweep was there</>
+            : <>Not solved &middot; you took {taken} of {blkStart}, the sweep needed them all</>}
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame} onClose={() => setEndClosed(true)} />
       )}

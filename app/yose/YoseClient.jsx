@@ -763,7 +763,6 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
             { v: `${view.area.black}–${view.area.white}`, k: 'area' },
             { v: PUZZLE.komi, k: 'komi' },
           ] : [
-            { v: endScore, k: 'score' },
             { v: errors, k: 'errors' },
             { v: `${view.area.black}–${view.area.white}`, k: 'area' },
             { v: elapsed, k: 'time' },
@@ -908,7 +907,7 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               title={won ? 'Solved' : 'Not solved'}
-              detail={`${endScore} · ${errors} errors · ${view.area.black}–${view.area.white} area · ${elapsed}`}
+              detail={`${errors} errors · ${view.area.black}–${view.area.white} area · ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready

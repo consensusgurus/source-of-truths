@@ -793,7 +793,6 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
             { v: elapsed, k: 'time' },
             { v: `${view.score.mine}\u2013${view.score.theirs}`, k: 'discs' },
           ] : [
-            { v: endScore, k: 'score' },
             { v: errors, k: 'errors' },
             { v: `${view.score.mine}\u2013${view.score.theirs}`, k: 'discs' },
             { v: elapsed, k: 'time' },
@@ -973,7 +972,7 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               title={won ? 'Solved' : 'Not solved'}
-              detail={`${endScore} \u00b7 ${errors} errors \u00b7 ${`${view.score.mine}\u2013${view.score.theirs}`} discs \u00b7 ${elapsed}`}
+              detail={`${errors} errors \u00b7 ${`${view.score.mine}\u2013${view.score.theirs}`} discs \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready

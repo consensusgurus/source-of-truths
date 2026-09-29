@@ -986,7 +986,6 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
             { v: elapsed, k: 'time' },
             { v: Math.max(1, movesLeft), k: 'mate in' },
           ] : [
-            { v: endScore, k: 'score' },
             { v: errors, k: 'misses' },
             { v: PUZZLE.mateIn, k: 'mate in' },
             { v: elapsed, k: 'time' },
@@ -1250,7 +1249,7 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               title={won ? 'Solved' : 'Not solved'}
-              detail={`${endScore} \u00b7 ${errors} misses \u00b7 ${PUZZLE.mateIn} mate in \u00b7 ${elapsed}`}
+              detail={`${errors} misses \u00b7 ${PUZZLE.mateIn} mate in \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1351,9 +1350,9 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
           won={won}
           headline={won ? <>Checkmate!</> : g.status === 'lost' ? <>You missed it.</> : <>You scored 0%</>}
           subline={won
-            ? <>10/10 &middot; found the key &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : g.status === 'lost' ? <>0/10 &middot; the mate never came</>
-            : <>0/10 &middot; the mate is still in the position</>}
+            ? <>Solved &middot; found the key &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            : g.status === 'lost' ? <>Not solved &middot; the mate never came</>
+            : <>Not solved &middot; the mate is still in the position</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}
