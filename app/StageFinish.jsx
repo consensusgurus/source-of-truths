@@ -1401,7 +1401,7 @@ export default function StageFinish({
             <div className="stf-vs">
               <div className="stf-vside"><span className="nm">{rival.them.name}</span><b>{rival.them.run}</b><small>{rival.them.sub}</small></div>
               <div className="stf-vsx2">vs</div>
-              <div className={`stf-vside you${rival.won ? ' won' : ''}`}><span className="nm">You{rival.won ? <em className="stf-vwin">&#10003; Ahead</em> : null}</span><b>{rival.you.run}</b><small>{rival.you.sub}</small></div>
+              <div className={`stf-vside you${rival.won ? ' won' : ''}`}><span className="nm"><span className="nmt">You</span>{rival.won ? <em className="stf-vwin">&#10003; Ahead</em> : null}</span><b>{rival.you.run}</b><small>{rival.you.sub}</small></div>
             </div>
             <div className="stf-rline">{rival.line}</div>
           </section>
@@ -1799,7 +1799,12 @@ const CSS = `
 .stf-vside.you{border:2px solid var(--stg-acc);padding:9px 11px;background:color-mix(in srgb,var(--stg-acc) 14%,var(--stg-surf));}
 .stf-vside.you.won{border-color:var(--stg-good);background:color-mix(in srgb,var(--stg-good) 18%,var(--stg-surf));}
 .stf-vside.you.won .nm{color:var(--stg-ink);}
-.stf-vwin{font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-left:8px;padding:2px 6px;border-radius:5px;border:1.5px solid var(--stg-good);color:var(--stg-ink);vertical-align:1px;}
+.stf-vwin{font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:5px;border:1.5px solid var(--stg-good);color:var(--stg-ink);flex:none;line-height:1.2;white-space:nowrap;}
+/* The Ahead chip sits BESIDE the name, not inside its clipping box: .nm hides
+   overflow for the ellipsis, and a bordered chip taller than the 13px line had
+   its bottom edge shaved off (owner, 2026-09-28, mobile). */
+.stf-vside.you .nm{display:flex;align-items:center;gap:6px;overflow:visible;flex-wrap:wrap;row-gap:3px;}
+.stf-vside.you .nmt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .stf-vside.you .nm{color:var(--stg-acc-ink,var(--stg-acc));}
 .stf-vsx2{font-family:${MONO};font-size:11px;color:var(--stg-mute);}
 .stf-rline{margin-top:8px;font-size:13px;color:var(--stg-ink2);line-height:1.45;}
@@ -1952,10 +1957,11 @@ const CSS = `
 /* ── the flood ─────────────────────────────────────────────────────────── */
 /* Below the safe-area strip (z-index 10000, status-bar chrome) and above
    everything else on a stage page, whose own chrome caps at 5. */
-.stf-flood{position:fixed;inset:0;z-index:9000;cursor:pointer;
+.stf-flood{position:fixed;inset:0;z-index:9000;cursor:pointer;box-sizing:border-box;
   background:var(--stg-acc);color:var(--stg-onramp,#08222e);
-  display:flex;align-items:flex-start;justify-content:center;overflow:hidden;
-  padding:clamp(40px,9vh,110px) 24px 28px;
+  display:flex;align-items:flex-start;justify-content:center;overflow-x:hidden;overflow-y:auto;
+  overscroll-behavior:contain;
+  padding:clamp(40px,9vh,110px) max(24px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left));
   opacity:0;-webkit-clip-path:inset(0 0 0 0);clip-path:inset(0 0 0 0);
   transition:opacity 180ms ease,clip-path 640ms cubic-bezier(.2,.8,.25,1),
     -webkit-clip-path 640ms cubic-bezier(.2,.8,.25,1);}
@@ -1964,7 +1970,7 @@ const CSS = `
    is colour onto colour, and what appears through it is the band's own words. */
 .stf-flood.out{opacity:0;transition:opacity 200ms ease;}
 
-.stf-fl-in{width:100%;max-width:720px;text-align:left;opacity:0;
+.stf-fl-in{width:100%;max-width:720px;min-width:0;box-sizing:border-box;text-align:left;opacity:0;
   transform:translateY(12px) scale(.985);
   transition:opacity 320ms ease,transform 420ms cubic-bezier(.2,.8,.25,1);}
 .stf-flood.up .stf-fl-in,.stf-flood.shrink .stf-fl-in{opacity:1;transform:none;}
@@ -1983,12 +1989,18 @@ const CSS = `
 .stf-fl-block{margin-top:16px;padding-top:14px;border-top:1px solid rgba(0,0,0,.16);}
 [data-stage-theme="light"] .stf-fl-block,[data-stage-theme="light"] .stf-fl-pair{border-top-color:rgba(255,255,255,.32);}
 .stf-fl-pair{margin-top:16px;padding-top:14px;border-top:1px solid rgba(0,0,0,.16);
-  display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;}
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start;}
+/* Both halves may shrink below their content: a plain 1fr floors at
+   min-content, and the streak strip is the right-hand column, so any overflow
+   pushed its tomorrow pip off the screen (owner, 2026-09-28, mobile). */
+.stf-fl-pair > *,.stf-fl-block,.stf-rvf > *{min-width:0;}
+.stf-fl-lab{overflow-wrap:anywhere;}
+.stf-dstrip{width:100%;box-sizing:border-box;padding-right:2px;}
 .stf-fl-lab{display:block;font-family:${MONO};font-size:clamp(9px,1.1vw,10.5px);letter-spacing:.14em;
   text-transform:uppercase;opacity:.8;margin-bottom:8px;font-weight:700;}
 .stf-fl-figs .stf-fl-block i,.stf-fl-figs .stf-fl-pair i{display:block;font-style:normal;font-size:clamp(12px,1.5vw,14px);font-weight:700;
   opacity:.85;margin-top:8px;letter-spacing:0;text-transform:none;font-family:${SANS};}
-.stf-rvf{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:end;}
+.stf-rvf{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;align-items:end;}
 .stf-fl-figs .stf-rvf small{display:block;font-family:${MONO};font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.8;margin-bottom:5px;}
 .stf-fl-figs .stf-rvf b{display:block;font-size:clamp(26px,4.4vw,40px);font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;}
 .stf-rvf .you{text-align:right;border:2px solid currentColor;border-radius:9px;padding:7px 10px;}
@@ -2052,7 +2064,7 @@ const CSS = `
 
 
 @media (max-width:640px){
-  .stf-flood{padding:clamp(34px,7vh,80px) 18px 22px;}
+  .stf-flood{padding:clamp(34px,7vh,80px) max(18px,env(safe-area-inset-right)) max(34px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));}
   .stf-fl-d{margin-top:8px;}
   .stf-fl-figs{margin-top:14px;}
   .stf-fl-row{gap:8px;}
