@@ -63,9 +63,10 @@ const MED = {
   // Parker's 11-20; 8x8 par 22-46). Replace at the next snapshot re-measure.
   impound: 150, junkyard: 240,
   // Shoe launched 2026-08-21 with no live clock data yet: estimated from its
-  // shape (five click-through blackjack hands, between Taire and Hands).
-  // Replace with the measured median at the next snapshot re-measure.
-  shoe: 100,
+  // shape (five click-through blackjack hands, between Taire and Hands, ~100s).
+  // It went to TEN hands on 2026-09-30, so the estimate doubled. Replace with
+  // the measured median at the next snapshot re-measure.
+  shoe: 200,
   // Queen launched 2026-08-21 with no live clock data yet: estimated from its
   // shape (it walks a 5-12 move line with replies between, so past Mate).
   // Replace with the measured median at the next snapshot re-measure.

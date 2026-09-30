@@ -6,10 +6,13 @@
 // the ace, suit 0..3 in the order spades, hearts, diamonds, clubs.
 //
 // THE GAME. One fixed shoe per day, the same cards in the same order for every
-// player. A weekday shoe is the top 36 cards of a shuffled standard deck (16
-// cards never come into play); the Sunday Edition deals the ENTIRE 52-card
-// deck, which is what makes a perfect count possible there. Five hands of
-// blackjack on a weekday, seven on Sunday, each staked at 10 chips.
+// player. From 2026-09-30 a weekday shoe is the top 72 cards of two shuffled
+// standard decks (32 cards never come into play) and plays TEN hands; the
+// Sunday Edition deals the ENTIRE 104-card double deck over FOURTEEN hands,
+// which is what makes a perfect count possible there. Every hand is staked at
+// 10 chips. (Boards before that date were single-deck: five hands off a
+// 36-card cut, seven on Sunday off the whole 52. They are frozen and replay
+// exactly as they shipped; the engine reads the size off each board.)
 //
 // THE RULES, in full (they are deliberately small):
 //   - Deal order per hand: player, dealer up-card, player, dealer hole card.
@@ -74,9 +77,14 @@ export function mulberry32(a) {
   };
 }
 
-export function shoeFor(seed, count) {
+// `decks` is how many standard decks are shuffled together. Boards up to
+// 2026-09-29 were single-deck and carry no `decks` field; with decks = 1 this
+// builds exactly the deck it always did, so every one of them still reproduces
+// from its seed. From 2026-09-30 the shoe is TWO decks, because ten hands do
+// not fit in one: the worst legal line of a ten-hand day needs 52 to 67 cards.
+export function shoeFor(seed, count, decks = 1) {
   const deck = [];
-  for (let r = 2; r <= 14; r++) for (let s = 0; s < 4; s++) deck.push(r * 4 + s);
+  for (let k = 0; k < decks; k++) for (let r = 2; r <= 14; r++) for (let s = 0; s < 4; s++) deck.push(r * 4 + s);
   const rand = mulberry32(seed);
   for (let i = deck.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));

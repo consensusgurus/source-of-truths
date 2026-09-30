@@ -13,6 +13,9 @@ import { categoryCrumb } from '@/lib/game-seo';
 // leaderboard can rank. Par is what basic strategy banks on the day's shoe
 // (scores 8); the skill above it is the count. Sundays deal seven hands off
 // the entire 52-card deck, where a perfect counter knows exactly what is left.
+// From 2026-09-30 (owner, at least ten hands a day) the shoe is TWO decks:
+// ten hands off a 72-card cut on weekdays, fourteen off the whole 104-card
+// double deck on Sundays. Single-deck boards before that date are frozen.
 //
 // /shoe is the canonical, evergreen URL; this server page filters live<=today
 // before handing puzzles to the client, so tomorrow's shoe never reaches a
@@ -21,13 +24,13 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Blackjack Puzzle: Shoe | Mind Loft',
   description:
-    'A free daily blackjack puzzle. Five hands off one fixed shoe, the same cards in the same order for every player. Hit, stand, or double, count what you have seen, and beat the book line. New shoe daily, seven hands off the whole deck on Sundays.',
+    'A free daily blackjack puzzle. Ten hands off one fixed shoe, the same cards in the same order for every player. Hit, stand, or double, count what you have seen, and beat the book line. New shoe daily, fourteen hands off the whole two-deck shoe on Sundays.',
   alternates: { canonical: '/shoe' },
   openGraph: {
     images: [{ url: '/og/shoe.png', width: 1200, height: 630, alt: 'Shoe: a daily card-counting puzzle from Mind Loft' }],
     title: 'Shoe — The Daily Blackjack Shoe',
     description:
-      'Everyone plays the same shoe: five hands of blackjack, fixed deal, and a par set by basic strategy. Beat the book by counting. From Mind Loft.',
+      'Everyone plays the same shoe: ten hands of blackjack, fixed deal, and a par set by basic strategy. Beat the book by counting. From Mind Loft.',
     url: '/shoe',
     type: 'website',
     siteName: 'Mind Loft',
@@ -37,7 +40,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'Shoe — The Daily Blackjack Shoe',
     description:
-      'Five hands of blackjack, one fixed shoe, the same cards for everyone. Par is the book line. The count is how you beat it.',
+      'Ten hands of blackjack, one fixed shoe, the same cards for everyone. Par is the book line. The count is how you beat it.',
   },
 };
 
@@ -48,7 +51,7 @@ const gameJsonLd = {
   alternateName: 'Shoe — Daily Blackjack Puzzle',
   url: `${SITE_URL}/shoe`,
   description:
-    'A free daily blackjack puzzle: five hands dealt from one fixed 36-card shoe, identical for every player, scored against the chips basic strategy banks on the same cards. Hit, stand, or double; dealer stands on all 17s; blackjack pays 3:2; no splits. Sundays deal seven hands off the entire 52-card deck.',
+    'A free daily blackjack puzzle: ten hands dealt from one fixed 72-card, two-deck shoe, identical for every player, scored against the chips basic strategy banks on the same cards. Hit, stand, or double; dealer stands on all 17s; blackjack pays 3:2; no splits. Sundays deal fourteen hands off the entire 104-card double deck.',
   genre: ['Card game', 'Puzzle', 'Strategy'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

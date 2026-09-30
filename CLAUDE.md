@@ -3834,7 +3834,7 @@ archive and hub chips use the short form `Sun`.
 | Flank | a giant country with 8 to 14 borders instead of the weekday ramp's 1 to 7, and a fourth strike to spend (from launch, 2026-08-28) |
 | Chomp | the full cast of eleven mascots and 0-2 spare squares (and from 2026-08-22 every Chomp board carries 5-7 bolted-down bleacher walls; see app/chomp/puzzles.js) |
 | Niche | a 4x4 grid instead of the weekday 3x3, sixteen cells and twenty guesses, always on Countries, the deepest universe (from launch, 2026-08-23) |
-| Shoe | seven hands of blackjack instead of five, dealt off the entire 52-card deck instead of a 36-card cut, so a perfect counter knows exactly what is left (from launch, 2026-08-23) |
+| Shoe | fourteen hands of blackjack instead of ten, dealt off the entire 104-card double deck instead of a 72-card cut, so a perfect counter knows exactly what is left (from 2026-10-04; before 2026-09-30 it was single-deck, seven hands off 52 against five off 36) |
 | Queen | a win in twelve, the longest walk against the weekday five to nine (from launch, 2026-08-21) |
 | Race | a win in five, the longest race against the weekday three and four (from launch, 2026-08-21) |
 | Towers | a 7x7 skyline instead of the weekday 5x5 (from launch, 2026-08-24) |
@@ -6884,6 +6884,27 @@ second clock are derived rather than restated; the name, tag and colour come out
 daily registry. The one thing copied is each client's `TIER_NAMES`, which is display only.
 
 ---
+
+## Shoe deals at least TEN hands a day, off TWO decks (owner rule, 2026-09-29)
+
+From 2026-09-30 a weekday Shoe is **10 hands off a 72-card cut of a two-deck shoe** (32 cards
+never in play) and the Sunday Edition is **14 hands off the entire 104-card double deck**.
+Boards through 2026-09-29 are single-deck (5 off 36, 7 off 52) and frozen; they carry no
+`decks` field, and `shoeFor(seed, count, decks = 1)` still deals them byte for byte.
+
+- **One deck cannot hold ten hands.** Measured over 300 shuffles, the worst legal line of a
+  ten-hand day needs 51 to 67 cards (p90 62), fourteen hands need up to 89. Every banked
+  shoe is still PROVEN to fit every legal line by the exact ceiling search.
+- A two-deck shoe holds every card code twice, so nothing may assume a code is unique.
+- **Every size the client prints is read off the board** (`PUZZLE.hands`, `.shoe.length`,
+  `.decks`), because the archive replays both eras.
+- `scripts/verify-shoe.mjs` checks each board against its era (`TEN_HANDS_FROM`) and fails
+  any day from that date with fewer than ten hands. Extend the bank with
+  `node scripts/gen-shoe.mjs --from <next day> --days N --startnum <next num> --seed <above the last> --keep`,
+  which carries every earlier board and proof over untouched.
+- Doubling the length pushed Table Games to ~450s, so Shoe moved to the back of that
+  circuit and **Full Table went bronze -> silver** (owner ruling, same day). Its clock in
+  `verify-circuits` is an ESTIMATE (200s); replace it at the next snapshot re-measure.
 
 ## The BROWSER FAVICON is the Mind Loft mark on every page (owner rule, 2026-08-31)
 

@@ -1,8 +1,11 @@
 // Verify the Shoe (daily blackjack) bank.
 //
 // app/shoe/puzzles.js promises, per board:
-//   - the shoe is exactly what its banked `seed` deals (36 cards weekday, the
-//     whole 52 on the Sunday Edition), all distinct, all from a standard deck;
+//   - the shoe is exactly what its banked `seed` deals, at the size its era
+//     demands (from 2026-09-30: 10 hands off a 72-card cut of TWO decks on a
+//     weekday, 14 hands off the whole 104-card double deck on Sunday; before
+//     that, single-deck: 5 hands off 36 cards, 7 off the whole 52), every card
+//     from a standard deck and no code more often than the decks allow;
 //   - `par` is basic strategy played blind on that shoe — and the banked par
 //     LINE (app/shoe/proofs.js) is the book line decision for decision, not
 //     merely some line that happens to reach the same chips;
@@ -28,8 +31,8 @@
 // invalidated the bank fails here rather than ships.
 //
 // Also checked: num/quizId/live/dateLabel consistency, consecutive dates with
-// no gaps, `sunday` true exactly on real Sundays with the 7-hand / 52-card
-// Edition config, the ten-point scale landing on 8 at par / 10 at ace / 1 at
+// no gaps, `sunday` true exactly on real Sundays with that era's Edition
+// config, the ten-point scale landing on 8 at par / 10 at ace / 1 at
 // the worst possible day, par < ace <= ceiling with the generator's gap
 // floors, no duplicate shoes, no repeated opening four cards, and bank runway.
 //
@@ -46,8 +49,16 @@ const fail = (id, msg) => { BAD++; console.error(`✗ ${id}: ${msg}`); };
 const ok = (id, msg) => console.log(`✓ ${id}  ${msg}`);
 const note = (id, msg) => console.log(`… ${id}  ${msg}`);
 
-const WEEKDAY = { hands: 5, shoe: 36 };
-const SUNDAY = { hands: 7, shoe: 52 };
+// Two eras. Boards before TEN_HANDS_FROM are played and frozen, so they are
+// checked against the single-deck rule they shipped under; everything from
+// that date must carry the ten-hand, two-deck config (owner rule 2026-09-29:
+// at least ten hands a day).
+const TEN_HANDS_FROM = '2026-09-30';
+const ERA = {
+  single: { WEEKDAY: { hands: 5, shoe: 36, decks: 1 }, SUNDAY: { hands: 7, shoe: 52, decks: 1 } },
+  ten: { WEEKDAY: { hands: 10, shoe: 72, decks: 2 }, SUNDAY: { hands: 14, shoe: 104, decks: 2 } },
+};
+const MIN_HANDS_FROM_TEN = 10;
 const ACE_GAP_WEEK = 25, ACE_GAP_SUN = 30, CEIL_GAP = 40;
 
 // ─── independent basic strategy ─────────────────────────────────────────────
@@ -202,19 +213,25 @@ PUZZLES.forEach((p, i) => {
   if (!!p.sunday !== isSun) errs.push(`sunday flag ${p.sunday} but ${p.live} ${isSun ? 'IS' : 'is not'} a Sunday`);
 
   // -- the Sunday Edition scaling, proven per board --
-  const cfg = p.sunday ? SUNDAY : WEEKDAY;
+  const era = p.live >= TEN_HANDS_FROM ? ERA.ten : ERA.single;
+  const cfg = p.sunday ? era.SUNDAY : era.WEEKDAY;
   if (p.hands !== cfg.hands) errs.push(`hands ${p.hands}, want ${cfg.hands}`);
+  if (p.live >= TEN_HANDS_FROM && !(p.hands >= MIN_HANDS_FROM_TEN)) errs.push(`only ${p.hands} hands; every day from ${TEN_HANDS_FROM} deals at least ${MIN_HANDS_FROM_TEN}`);
+  if ((p.decks || 1) !== cfg.decks) errs.push(`decks ${p.decks || 1}, want ${cfg.decks}`);
   if (!Array.isArray(p.shoe) || p.shoe.length !== cfg.shoe) errs.push(`shoe holds ${p.shoe ? p.shoe.length : 0} cards, want ${cfg.shoe}`);
 
   // -- the shoe itself --
   if (Array.isArray(p.shoe)) {
-    if (new Set(p.shoe).size !== p.shoe.length) errs.push('shoe repeats a card');
+    const counts = new Map();
+    for (const c of p.shoe) counts.set(c, (counts.get(c) || 0) + 1);
+    for (const [c, k] of counts) if (k > cfg.decks) errs.push(`card ${c} appears ${k} times in a ${cfg.decks}-deck shoe`);
+    if (cfg.shoe === 52 * cfg.decks && counts.size !== 52) errs.push(`a whole-shoe Sunday must hold all 52 codes, holds ${counts.size}`);
     for (const c of p.shoe) {
       const r = rankOf(c), s = suitOf(c);
       if (r < 2 || r > 14 || s < 0 || s > 3) errs.push(`card ${c} is outside a standard deck`);
     }
     if (typeof p.seed === 'number') {
-      if (shoeFor(p.seed, cfg.shoe).join(',') !== p.shoe.join(',')) errs.push('shoe does not match what its own seed deals');
+      if (shoeFor(p.seed, cfg.shoe, cfg.decks).join(',') !== p.shoe.join(',')) errs.push('shoe does not match what its own seed deals');
     } else errs.push('missing seed');
   }
 

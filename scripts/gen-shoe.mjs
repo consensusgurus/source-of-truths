@@ -1,9 +1,14 @@
 #!/usr/bin/env node
 // Generate the Shoe bank: seeded daily shoes with proven par / ace / ceiling.
 //
-//   node scripts/gen-shoe.mjs [--from 2026-08-22] [--days 90] [--startnum 1]
+//   node scripts/gen-shoe.mjs [--from 2026-09-30] [--days 51] [--startnum 41]
+//                             [--seed 600000] [--keep]
 //
-// Writes app/shoe/puzzles.js and app/shoe/proofs.js. Every number banked is a
+// Writes app/shoe/puzzles.js and app/shoe/proofs.js. With --keep, every board
+// already banked BEFORE --from (and its proof) is carried over byte for byte and
+// the new deal is appended after it: played boards are frozen, so a bank
+// extension or a format change must never regenerate them. --startnum must then
+// be the next number after the last kept board. Every number banked is a
 // PLAYOUT or an EXACT search, never an estimate:
 //
 //   par      the chips basic strategy (the book line for these exact rules,
@@ -32,10 +37,15 @@
 //   - its opening four cards (the first thing every player sees) repeat
 //     nowhere else in the bank.
 //
-// Weekdays: 5 hands off a 36-card shoe (16 cards never in play). Sunday
-// Edition: 7 hands off the ENTIRE 52-card deck — the whole deck is the twist,
-// because a perfect counter then knows exactly what is left.
-import { writeFileSync, mkdirSync } from 'node:fs';
+// Weekdays: 10 hands off a 72-card cut of a two-deck shoe (32 cards never in
+// play). Sunday Edition: 14 hands off the ENTIRE 104-card double deck — the
+// whole shoe is the twist, because a perfect counter then knows exactly what is
+// left. (Owner ruling 2026-09-29: at least ten hands a day. One deck cannot hold
+// that, since the worst legal line of a ten-hand day needs 52 to 67 cards, so
+// the shoe went to two decks and Sunday kept its 1.4x step, 14 against 10.)
+// Boards before 2026-09-30 were single-deck, 5 hands off 36 cards and 7 off 52;
+// they are frozen and never regenerated.
+import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
@@ -48,9 +58,11 @@ const argOf = (k, dflt) => { const i = args.indexOf(k); return i >= 0 ? args[i +
 const FROM = argOf('--from', '2026-08-22');
 const DAYS = Number(argOf('--days', '90'));
 const STARTNUM = Number(argOf('--startnum', '1'));
+const SEED0 = Number(argOf('--seed', '600000'));
+const KEEP = args.includes('--keep');
 
-const WEEKDAY = { hands: 5, shoe: 36 };
-const SUNDAY = { hands: 7, shoe: 52 };
+const WEEKDAY = { hands: 10, shoe: 72, decks: 2 };
+const SUNDAY = { hands: 14, shoe: 104, decks: 2 };
 const ACE_RUNS = 120;  // few enough that the best run is a lucky day, not the exact maximum
 const EPS = 0.25;
 const PAR_MIN = -10;   // the book may lose one stake, never suffer a rout
@@ -70,7 +82,7 @@ function ceilingOf(shoe, nHands) {
   function fromHand(h, pos) {
     if (overrun) return 0;
     if (h === nHands) return 0;
-    const key = h * 64 + pos;
+    const key = h * 256 + pos; // pos < 256 for any shoe up to four decks
     if (memo.has(key)) return memo.get(key);
     if (pos + 4 > shoe.length) { overrun = true; return 0; }
     const p = [shoe[pos], shoe[pos + 2]];
@@ -151,15 +163,32 @@ const quizIdOf = (iso) => {
 const boards = [];
 const proofs = {};
 const openings = new Set();
-let seedScan = 500000;
+let seedScan = SEED0;
 let rejected = { overrun: 0, par: 0, ace: 0, ceil: 0, open: 0 };
+
+// ---- carry the frozen past over untouched ---------------------------------
+const here0 = dirname(fileURLToPath(import.meta.url));
+if (KEEP) {
+  const { PUZZLES: OLD } = await import('../app/shoe/puzzles.js');
+  const { PROOFS: OLDP } = await import('../app/shoe/proofs.js');
+  for (const b of OLD) {
+    if (b.live >= FROM) continue;
+    boards.push(b);
+    proofs[b.quizId] = OLDP[b.quizId];
+    openings.add(b.shoe.slice(0, 4).join(','));
+    if (b.seed >= seedScan) throw new Error(`kept board ${b.quizId} used seed ${b.seed}; pass --seed above it`);
+  }
+  const lastNum = boards.length ? boards[boards.length - 1].num : 0;
+  if (lastNum + 1 !== STARTNUM) throw new Error(`--startnum ${STARTNUM}, but the last kept board is #${lastNum}`);
+  void here0; void existsSync;
+}
 
 let num = STARTNUM;
 for (const { iso, sunday } of dates(FROM, DAYS)) {
   const cfg = sunday ? SUNDAY : WEEKDAY;
   for (;;) {
     const seed = seedScan++;
-    const shoe = shoeFor(seed, cfg.shoe);
+    const shoe = shoeFor(seed, cfg.shoe, cfg.decks);
     const { best: ceiling, overrun } = ceilingOf(shoe, cfg.hands);
     if (overrun) { rejected.overrun++; continue; }
     const parRun = playPolicy(shoe, cfg.hands, basicAction);
@@ -182,7 +211,7 @@ for (const { iso, sunday } of dates(FROM, DAYS)) {
     const quizId = quizIdOf(iso);
     boards.push({
       num, quizId, live: iso, dateLabel: labelOf(iso), sunday,
-      seed, hands: cfg.hands, shoe, par, ace, ceiling,
+      seed, decks: cfg.decks, hands: cfg.hands, shoe, par, ace, ceiling,
     });
     proofs[quizId] = { par: parRun.acts, ace: aceActs };
     break;
@@ -199,10 +228,13 @@ const puzzlesHeader = `// Puzzle data for Shoe, the daily blackjack shoe. Import
 // page (app/shoe/page.js), which filters live<=today before handing the bank
 // to the client, so tomorrow's shoe never reaches a browser.
 //
-// A weekday is FIVE hands of blackjack off a 36-card shoe (the top 36 of a
-// seeded standard-deck shuffle, so 16 cards never come into play). The Sunday
-// Edition is SEVEN hands off the ENTIRE 52-card deck, which is what makes a
-// perfect count possible there. Card code = rank * 4 + suit, rank 2..14
+// From 2026-09-30 a weekday is TEN hands of blackjack off a 72-card shoe (the
+// top 72 of a seeded two-deck shuffle, so 32 cards never come into play) and
+// the Sunday Edition is FOURTEEN hands off the ENTIRE 104-card double deck,
+// which is what makes a perfect count possible there. \`decks: 2\` marks those
+// boards. Boards before that date carry no \`decks\` field and are single-deck:
+// five hands off a 36-card cut, seven off the whole 52 on Sunday. They are
+// frozen. A two-deck shoe holds every card code twice. Card code = rank * 4 + suit, rank 2..14
 // (14 = ace), suit 0..3 (spades, hearts, diamonds, clubs) — the Hands
 // convention. Rules live in app/shoe/rules.js and are deliberately small:
 // dealer peeks and stands on all 17s, blackjack pays 3:2 (+15 on the 10-chip
@@ -211,7 +243,7 @@ const puzzlesHeader = `// Puzzle data for Shoe, the daily blackjack shoe. Import
 //
 //   par      the chips BASIC STRATEGY banks on this exact shoe, played blind.
 //            Deterministic, replayed move-for-move by the verifier. Scores 8.
-//   ace      the best bank of 600 blind runs (the book line with random
+//   ace      the best bank of 120 blind runs (the book line with random
 //            deviations — a blind player on a great day). A REAL playout,
 //            banked as a decision line in app/shoe/proofs.js. Scores 10.
 //   ceiling  the EXACT clairvoyant maximum over every legal line, by
@@ -230,7 +262,7 @@ writeFileSync(join(root, 'app/shoe/puzzles.js'), `${puzzlesHeader}${rows}\n];\n`
 const proofsHeader = `// Shoe — the playout proofs behind every banked par and ace.
 //
 // Par and ace are not formulas. Par is basic strategy played blind on the
-// day's shoe, and ace is the best of 600 blind runs — and these are the actual
+// day's shoe, and ace is the best of 120 blind runs — and these are the actual
 // decision lines, one string of H / S / D per hand in the order the decisions
 // were made (a hand settled by a natural has the empty string).
 //
