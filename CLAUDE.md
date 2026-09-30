@@ -8246,7 +8246,8 @@ The snapshot sits AFTER the live page in the DOM on purpose: `getElementById` an
 Nine adaptive trivia tests, one per category (general, geography, history, science, screen,
 music, literature, sports, business), linked from the footer ("Trivia IQ Tests") and listed in
 the sitemap. Owner calls at launch: **IQ-shaped but player-normed** (100 = the typical Mind Loft
-player, 15 = one SD of that field, and every surface says it is not a clinical IQ); **standalone,
+player, 15 = one SD of that field, labelled as a percentile among Mind Loft players; the
+"not a clinical IQ" line was removed at the owner's request, 2026-09-29); **standalone,
 no board** (nothing is posted, no IQ Points, the result is kept on the device in
 `sot_iq_results`); **stage register**, framed by `CircuitFrame`, accent from the ramp step in
 `IQ_TESTS[].ramp`.
@@ -8271,7 +8272,9 @@ no board** (nothing is posted, no IQ Points, the result is kept on the device in
   (`app/iq/IqEngine.js`, pure) is EAP on a grid, max-information picks drawn among the best five,
   25 questions and up to 30 while the SD is over .42, 20 seconds a question (the clock the
   difficulties were measured under), opening at theta .3.
+- **Views are tracked** with `PageViewBeacon` (`iq`, `iq-<slug>`) and a finish ping
+  (`iq-<slug>-finished`), all titled in `TRACKED_PAGES` (lib/admin-quiz-titles.js).
 - **The result card fills the viewport** so a screenshot is the card: ring (percentile), IQ with
-  its plus or minus, right of asked, the not-clinical line and the site name. Share, retake, the
+  its plus or minus, right of asked, and the site name. Share, retake, the
   next daily puzzle (a fitting unplayed daily first, via `daily-me`) and the other tests sit BELOW
   the fold, out of any screenshot (owner, 2026-09-29).

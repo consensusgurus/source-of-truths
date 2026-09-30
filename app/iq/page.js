@@ -4,6 +4,7 @@ import { iqItemsFor } from '@/lib/iq-pool';
 import { IQ_SNAPSHOT } from '@/lib/iq-items';
 import { SITE_URL } from '@/lib/site';
 import IqBest from './IqBest';
+import PageViewBeacon from '../PageViewBeacon';
 import { IQ_RAMP_CSS } from '@/lib/iq-style';
 
 // /iq, the home of the trivia IQ tests. Server rendered, so the whole list is
@@ -51,6 +52,7 @@ export default function IqHome() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <PageViewBeacon id="iq" />
       <CircuitFrame label="IQ Tests">
         <div className="iqh">
           <style dangerouslySetInnerHTML={{ __html: IQ_RAMP_CSS + CSS }} />
@@ -92,8 +94,7 @@ export default function IqHome() {
             <p>
               Your score is IQ shaped but player normed: 100 is the typical Mind Loft player and 15 points is one
               standard deviation of that field, with a plus or minus that shrinks as you answer. It measures what you
-              know about a subject against the people who play here, not general intelligence, and it is not a clinical
-              IQ. Nothing is posted to any leaderboard; your results stay on this device.
+              know about a subject against the people who play here. Nothing is posted to any leaderboard; your results stay on this device.
             </p>
           </section>
         </div>

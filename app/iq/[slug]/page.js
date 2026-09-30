@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import IqTestClient from './IqTestClient';
+import PageViewBeacon from '../../PageViewBeacon';
 import { IQ_TEST_MAP } from '@/lib/iq-tests';
 import { iqItemsFor, iqPoolFor } from '@/lib/iq-pool';
 import { IQ_MODEL } from '@/lib/iq-items';
@@ -43,6 +44,7 @@ export default function IqTestPage({ params }) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <PageViewBeacon id={`iq-${test.slug}`} />
       <IqTestClient
         test={{ slug: test.slug, name: test.name, short: test.short, ramp: test.ramp }}
         pool={pool}

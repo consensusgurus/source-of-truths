@@ -133,6 +133,12 @@ export default function IqTestClient({ test, pool, model, bankSize, measured }) 
         saveResult(test.slug, { iq: r.iq, pm: r.pm, pct: Math.round(r.pct * 10) / 10, right: nextAnswers.filter((a) => a.right).length, n, at: Date.now() });
         setItem(null);
         setPhase('done');
+        // Count a finished test, once per sitting, on the same view rail the
+        // pages use (admin: TRACKED_PAGES 'iq-<slug>-finished').
+        try {
+          fetch('/api/quiz/view', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quizId: `iq-${test.slug}-finished` }) }).catch(() => {});
+        } catch (err) {}
         return;
       }
       const nx = nextItem(model, pool, e.mean, usedRef.current, item.lane);
@@ -204,7 +210,7 @@ export default function IqTestClient({ test, pool, model, bankSize, measured }) 
             <p className="iqt-p iqt-mute">
               The score is IQ shaped but player normed: 100 is the typical Mind Loft player and 15 points is one standard
               deviation of that field. It measures what you know about {test.short.toLowerCase()} against the people who
-              play here, not general intelligence, and it is not a clinical IQ. Nothing is posted anywhere; your result
+              play here. Nothing is posted anywhere; your result
               stays on this device.
             </p>
             {prior && prior.best ? (
@@ -258,7 +264,7 @@ export default function IqTestClient({ test, pool, model, bankSize, measured }) 
               <div className="iqt-rsub">
                 {right} of {answers.length} correct · the test aims for about three in five
               </div>
-              <div className="iqt-rnote">Percentile among Mind Loft players · not a clinical IQ</div>
+              <div className="iqt-rnote">Percentile among Mind Loft players</div>
               <div className="iqt-brand">Mind <em>Loft</em> · mindloftdaily.com/iq</div>
             </section>
 
