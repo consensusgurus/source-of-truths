@@ -8278,3 +8278,21 @@ no board** (nothing is posted, no IQ Points, the result is kept on the device in
   its plus or minus, right of asked, and the site name. Share, retake, the
   next daily puzzle (a fitting unplayed daily first, via `daily-me`) and the other tests sit BELOW
   the fold, out of any screenshot (owner, 2026-09-29).
+- **The reveal** (owner-approved mockup, 2026-09-29): one pip per answer spins into the ring, the
+  arc sweeps to the percentile as the IQ counts up, a pulse lands it (two at 130+), then a bell of
+  the player field draws in with a "You" pin. About three seconds, once, nothing moves after, and
+  reduced motion jumps to the last frame (`useReveal` in IqTestClient).
+- **Every sitting is dealt fresh.** The page is force-dynamic and `iqPoolFor` samples a new random
+  200 per load, and each pick is drawn at random among the five most informative, so two players
+  see different questions. A retake also skips questions this browser was already dealt
+  (`sot_iq_seen_<slug>`, last 240 ids) while at least 120 of the pool are left.
+- **THE DAILY RUN.** Below the fold the finish offers up to three of today's unplayed dailies
+  (`NEXT_FOR` first, then the same category), started on an 8s countdown that ticks only while the
+  run card is at least 60% on screen and pauses on any touch or Not now; a sticky Continue bar rises
+  once the card scrolls off. The run is carried in the URL, `?run=a,b,c` (`lib/daily-run.js`), and
+  `app/DailyRunRail.jsx`, mounted once in StageChrome, draws a thin band under every daily's cap
+  and, once that game's day breadcrumb says finished, a fixed Next bar. Nothing about a run is
+  stored or scored; played is read from the `sot_<key>_day` breadcrumbs, so it costs no request.
+- **Admin counts them as quizzes.** The Page Views Quizzes list carries one row per test, titled
+  "<Name> IQ Test", with its finish pings (`iq-<slug>-finished`) as its plays; the finish rows are
+  folded in rather than listed (`app/admin/page.js`).

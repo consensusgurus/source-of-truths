@@ -47,6 +47,7 @@ import { gameStatsShort } from '@/lib/daily-row-stats';
 import { categoryHrefForGame } from '@/lib/puzzle-categories';
 import { glyphFor, GLYPH_BOX } from '@/lib/game-glyphs';
 import RollNum from './RollNum';
+import DailyRunRail from './DailyRunRail';
 
 // A FIGURE THAT IS A PLAIN COUNT ROLLS; anything else swaps (motion pass,
 // 2026-09-16). "3", "+62", "#37" and "3/5" roll digit by digit through
@@ -339,6 +340,9 @@ export default function StageChrome({
 
       <LoftSheet />
       <div className="stg-prog"><span style={{ width: pct + '%' }} /></div>
+      {/* A DAILY RUN (?run=a,b,c, lib/daily-run.js). Renders nothing unless the
+          page was opened inside one. */}
+      {gameKey ? <DailyRunRail gameKey={gameKey} /> : null}
 
       {showStrip ? (
         <button

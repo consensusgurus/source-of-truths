@@ -4,6 +4,7 @@ import { fetchAllRows } from '@/lib/fetch-all';
 import { loadAdminResultsCached } from '@/lib/admin-results-cache';
 import { playerKey, playMeta, playRow } from '@/lib/admin-plays';
 import { buildQuizTitles, TRACKED_PAGES } from '@/lib/admin-quiz-titles';
+import { IQ_TESTS } from '@/lib/iq-tests';
 import { redirect } from 'next/navigation';
 import AdminClient from './AdminClient';
 import { LISTS } from '@/lib/data';
@@ -949,8 +950,31 @@ export default async function AdminPage() {
     ...quizTotalViewsMap.keys(),
     ...quizPlaysMap.keys(),
   ]);
+  // THE IQ TESTS COUNT AS QUIZZES (owner, 2026-09-29). They post no result
+  // rows (standalone, no board), so a test's PLAYS are its finish pings,
+  // iq-<slug>-finished on the view rail, folded into the test's own row, and
+  // the finish rows themselves are not listed. Every test is listed even
+  // before its first view, the way every quiz in QUIZZES is.
+  const IQ_ROWS = new Map(IQ_TESTS.map((t) => [`iq-${t.slug}`, t]));
+  for (const id of IQ_ROWS.keys()) quizIds.add(id);
+  for (const id of [...quizIds]) if (/^iq-.+-finished$/.test(id)) quizIds.delete(id);
   const quizStats = Array.from(quizIds)
     .map((quizId) => {
+      const iqTest = IQ_ROWS.get(quizId);
+      if (iqTest) {
+        const fin = `${quizId}-finished`;
+        return {
+          quizId,
+          title: `${iqTest.name} IQ Test`,
+          href: `/iq/${iqTest.slug}`,
+          views24h: quizViews24Map.get(quizId) || 0,
+          viewsTotal: quizTotalViewsMap.get(quizId) || 0,
+          plays: quizTotalViewsMap.get(fin) || 0,
+          plays24h: quizViews24Map.get(fin) || 0,
+          mobilePlays: 0,
+          avgScore: null,
+        };
+      }
       const plays = quizPlaysMap.get(quizId) || 0;
       const scoreSum = quizScoreSumMap.get(quizId) || 0;
       return {

@@ -16,10 +16,10 @@ import CircuitFrame from '../../circuits/CircuitFrame';
 import { RAMP_ORDER } from '@/lib/category-ramp';
 import { MIN_ITEMS, MAX_ITEMS, TARGET_SE, SECONDS_PER_ITEM, IQ_TESTS } from '@/lib/iq-tests';
 import { estimate, nextItem, reading, ordinalPct } from '../IqEngine';
-import { DAILY_GAMES, isRetiredDaily } from '@/lib/daily-games';
 import { glyphFor, GLYPH_BOX } from '@/lib/game-glyphs';
 import { IQ_RAMP_CSS } from '@/lib/iq-style';
-import { fetchDailyMe, dailyMeQuery, dailyMeIdentity } from '../../dailyMeClient';
+import { liveDailyKeys, DAILY_GAME_MAP } from '@/lib/daily-games';
+import { dailyRunHref, playedToday } from '@/lib/daily-run';
 
 const STORE = 'sot_iq_results';
 
@@ -52,27 +52,62 @@ const NEXT_FOR = {
   business: ['biz', 'streak'],
 };
 
-function useNextDaily(slug, active) {
-  const [next, setNext] = useState(null);
+// THE RUN handed over after a test (owner, 2026-09-29): up to three of today's
+// unplayed dailies, the fitting ones first, carried game to game as ?run=.
+// Played is read from each game's own day breadcrumb, so this costs no request
+// and works for a guest. Also the day's progress and two alternates.
+function useRunPlan(slug, active) {
+  const [plan, setPlan] = useState(null);
   useEffect(() => {
-    if (!active) return undefined;
-    let alive = true;
-    const live = DAILY_GAMES.filter((g) => !isRetiredDaily(g.key));
-    const pref = (NEXT_FOR[slug] || []).map((k) => live.find((g) => g.key === k)).filter(Boolean);
-    const order = [...pref, ...live.filter((g) => !pref.includes(g))];
-    setNext(order[0] || null);
-    fetchDailyMe(dailyMeQuery(dailyMeIdentity()))
-      .then((d) => {
-        if (!alive) return;
-        const per = (d && d.perGame) || {};
-        const open = order.find((g) => !(per[g.key] && !per[g.key].abandoned));
-        if (open) setNext(open);
-      })
-      .catch(() => {});
-    return () => { alive = false; };
+    if (!active) return;
+    const live = liveDailyKeys();
+    const done = new Set(live.filter((k) => playedToday(k)));
+    const pref = (NEXT_FOR[slug] || []).filter((k) => live.includes(k));
+    const firstCat = pref[0] ? (DAILY_GAME_MAP[pref[0]] || {}).cat : null;
+    const sameCat = live.filter((k) => !pref.includes(k) && (DAILY_GAME_MAP[k] || {}).cat === firstCat);
+    const rest = live.filter((k) => !pref.includes(k) && !sameCat.includes(k));
+    const open = [...pref, ...sameCat, ...rest].filter((k) => !done.has(k));
+    setPlan({ run: open.slice(0, 3), swaps: open.slice(3, 5), played: done.size, total: live.length });
   }, [slug, active]);
-  return next;
+  return plan;
 }
+
+// Which questions this browser has already been dealt on a test, so a retake
+// draws fresh ones while the bank allows it.
+const SEEN = (slug) => `sot_iq_seen_${slug}`;
+function readSeen(slug) { try { return JSON.parse(localStorage.getItem(SEEN(slug)) || '[]'); } catch (e) { return []; } }
+function writeSeen(slug, ids) { try { localStorage.setItem(SEEN(slug), JSON.stringify(ids.slice(-240))); } catch (e) {} }
+
+const ease = (t) => 1 - Math.pow(1 - t, 3);
+const clamp01 = (t) => Math.max(0, Math.min(1, t));
+
+// THE REVEAL (owner-approved mockup, 2026-09-29). About three seconds, once:
+// one pip per answer spins round the ring and drains into it as the arc sweeps
+// to the percentile and the IQ counts up, a pulse lands it (two at 130+), then
+// the player-field bell draws in and a "You" pin drops. Nothing moves after
+// three seconds, so a screenshot from then on is clean. Reduced motion jumps
+// to the last frame.
+function useReveal(on) {
+  const [t, setT] = useState(on ? 0 : 99);
+  useEffect(() => {
+    if (!on) return undefined;
+    let reduce = false;
+    try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+    if (reduce) { setT(99); return undefined; }
+    setT(0);
+    let raf; const t0 = performance.now();
+    const f = (now) => { const s = (now - t0) / 1000; setT(s); if (s < 3.4) raf = requestAnimationFrame(f); else setT(99); };
+    raf = requestAnimationFrame(f);
+    return () => cancelAnimationFrame(raf);
+  }, [on]);
+  return t;
+}
+
+const BW = 300, BBASE = 78, BTOP = 12;
+const bx = (iq) => ((iq - 55) / 90) * BW;
+const by = (iq) => { const z = (iq - 100) / 15; return BBASE - (BBASE - BTOP) * Math.exp(-z * z / 2); };
+const BELL = (() => { let d = ''; for (let v = 55; v <= 145; v += 1) d += (v === 55 ? 'M' : 'L') + bx(v).toFixed(1) + ' ' + by(v).toFixed(1); return d; })();
+const AREA = 'M0 ' + BBASE + BELL.replace(/^M/, ' L') + ' L' + BW + ' ' + BBASE + ' Z';
 
 export default function IqTestClient({ test, pool, model, bankSize, measured }) {
   const cat = RAMP_ORDER[test.ramp] || 'Trivia';
@@ -99,16 +134,51 @@ export default function IqTestClient({ test, pool, model, bankSize, measured }) 
   const est = useMemo(() => estimate(model, answers), [model, answers]);
   const result = phase === 'done' ? reading(est) : null;
   const right = answers.filter((a) => a.right).length;
-  const next = useNextDaily(test.slug, phase === 'done');
+  const plan = useRunPlan(test.slug, phase === 'done');
+  const tr = useReveal(phase === 'done');
+  const [livePool, setLivePool] = useState(pool);
+  const runRef = useRef(null);
+  const [cd, setCd] = useState(8); // the run's countdown, seconds
+  const [cdPaused, setCdPaused] = useState(false);
+  const [runSeen, setRunSeen] = useState(false); // run card at least 60% on screen
+  const [runPast, setRunPast] = useState(false); // run card scrolled above the viewport
+  const runHref = plan && plan.run.length ? dailyRunHref(plan.run[0], plan.run) : null;
+
+  useEffect(() => {
+    const el = runRef.current;
+    if (phase !== 'done' || !el || typeof IntersectionObserver === 'undefined') return undefined;
+    const io = new IntersectionObserver(([e]) => {
+      setRunSeen(e.intersectionRatio >= 0.6);
+      setRunPast(!e.isIntersecting && e.boundingClientRect.top < 0);
+    }, { threshold: [0, 0.6, 1] });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [phase, plan]);
+
+  // Ticks only while the run card is mostly on screen, so it never runs inside
+  // a screenshot of the result; any touch on the card or Not now pauses it.
+  useEffect(() => {
+    if (phase !== 'done' || !runHref || cdPaused || !runSeen) return undefined;
+    if (cd <= 0) { window.location.href = runHref; return undefined; }
+    const id = setTimeout(() => setCd((c) => c - 1), 1000);
+    return () => clearTimeout(id);
+  }, [phase, runHref, cdPaused, runSeen, cd]);
 
   function start() {
     usedRef.current = new Set();
     lockRef.current = false;
     setAnswers([]);
     setPicked(null);
+    setCd(8); setCdPaused(false);
+    // A retake draws questions this browser has not been dealt yet, as long
+    // as enough of the pool is left to keep the test adaptive.
+    const seen = new Set(readSeen(test.slug));
+    const fresh = pool.filter((it) => !seen.has(it.id));
+    const deal = fresh.length >= 120 ? fresh : pool;
+    setLivePool(deal);
     // Open a little above the typical player: a first question that is too
     // easy teaches the estimate nothing.
-    const first = nextItem(model, pool, 0.3, usedRef.current, null);
+    const first = nextItem(model, deal, 0.3, usedRef.current, null);
     if (!first) return;
     usedRef.current.add(first.id);
     setItem(first);
@@ -130,6 +200,7 @@ export default function IqTestClient({ test, pool, model, bankSize, measured }) 
       setPicked(null);
       if (stop) {
         const r = reading(e);
+        writeSeen(test.slug, [...readSeen(test.slug), ...nextAnswers.map((a) => a.id)]);
         saveResult(test.slug, { iq: r.iq, pm: r.pm, pct: Math.round(r.pct * 10) / 10, right: nextAnswers.filter((a) => a.right).length, n, at: Date.now() });
         setItem(null);
         setPhase('done');
@@ -141,7 +212,7 @@ export default function IqTestClient({ test, pool, model, bankSize, measured }) 
         } catch (err) {}
         return;
       }
-      const nx = nextItem(model, pool, e.mean, usedRef.current, item.lane);
+      const nx = nextItem(model, livePool, e.mean, usedRef.current, item.lane);
       if (!nx) {
         setItem(null);
         setPhase('done');
@@ -246,26 +317,71 @@ export default function IqTestClient({ test, pool, model, bankSize, measured }) 
           </section>
         )}
 
-        {phase === 'done' && result && (
+        {phase === 'done' && result && (() => {
+          // The reveal's frame at time tr (seconds; 99 = settled).
+          const sweep = ease(clamp01((tr - 0.7) / 1.2));
+          const pctNow = result.pct * sweep;
+          const iqNow = tr >= 99 ? result.iq : Math.round(70 + (result.iq - 70) * sweep);
+          const pulses = result.iq >= 130 ? [1.9, 2.3] : [1.9];
+          const pulse = pulses.map((p0) => (tr - p0) / 0.7).find((q) => q >= 0 && q <= 1);
+          const bellT = ease(clamp01((tr - 2.05) / 0.6));
+          const areaT = ease(clamp01((tr - 2.3) / 0.6));
+          const pinT = ease(clamp01((tr - 2.7) / 0.35));
+          const iqClamp = Math.max(56, Math.min(144, result.iq));
+          const mx = bx(iqClamp), my = by(iqClamp);
+          const shown = (at) => (tr >= at ? ' in' : '');
+          return (
           <>
             <section className="iqt-card" ref={cardRef}>
+              <div className={'iqt-scoring' + (tr < 0.7 ? ' on' : '')}>Scoring {answers.length} answers</div>
               <div className="iqt-ring">
-                <svg viewBox="0 0 200 200" aria-hidden="true">
+                <svg viewBox="0 0 200 200" aria-hidden="true" style={{ overflow: 'visible' }}>
                   <circle cx="100" cy="100" r="88" className="iqt-rtrack" />
+                  <circle cx="100" cy="100" r="88" className="iqt-rglow"
+                    strokeDasharray={`${(RING * Math.min(99.5, pctNow)) / 100} ${RING}`} transform="rotate(-90 100 100)" />
                   <circle cx="100" cy="100" r="88" className="iqt-rbar"
-                    strokeDasharray={`${(RING * Math.min(99.5, result.pct)) / 100} ${RING}`} transform="rotate(-90 100 100)" />
+                    strokeDasharray={`${(RING * Math.min(99.5, pctNow)) / 100} ${RING}`} transform="rotate(-90 100 100)" />
+                  {pulse !== undefined ? (
+                    <circle cx="100" cy="100" r={88 + pulse * 22} className="iqt-rpulse" style={{ opacity: (1 - pulse) * 0.8 }} />
+                  ) : null}
+                  {tr < 1.7 ? answers.map((a, i) => {
+                    const ang0 = (i / answers.length) * Math.PI * 2 - Math.PI / 2;
+                    const spin = clamp01(tr / 0.7);
+                    const r = 44 + 44 * ease(spin);
+                    const ang = ang0 + (1 - ease(spin)) * 2.4;
+                    const drain = (tr - 0.7 - i * 0.025) / 0.35;
+                    const op = (drain > 0 ? Math.max(0, 1 - drain) : 1) * Math.min(1, tr * 4);
+                    return (
+                      <circle key={i} cx={100 + r * Math.cos(ang)} cy={100 + r * Math.sin(ang)} r={a.right ? 3.4 : 2.5}
+                        className={a.right ? 'iqt-pip ok' : 'iqt-pip'} style={{ opacity: a.right ? op : op * 0.5 }} />
+                    );
+                  }) : null}
                 </svg>
                 <div className="iqt-rin">
-                  <b>{ordinalPct(result.pct)}</b>
-                  <span>IQ {result.iq} ± {result.pm}</span>
+                  <b>{sweep > 0 ? ordinalPct(Math.max(1, pctNow)) : ' '}</b>
+                  <span className={'iqt-fade' + shown(0.9)}>IQ {iqNow} ± {result.pm}</span>
                 </div>
               </div>
-              <div className="iqt-rname">{test.name} IQ {result.iq}</div>
-              <div className="iqt-rsub">
+              <div className={'iqt-rname iqt-fade' + shown(1.4)}>{test.name} IQ {result.iq}</div>
+              <div className={'iqt-rsub iqt-fade' + shown(1.4)}>
                 {right} of {answers.length} correct · the test aims for about three in five
               </div>
-              <div className="iqt-rnote">Percentile among Mind Loft players</div>
-              <div className="iqt-brand">Mind <em>Loft</em> · mindloftdaily.com/iq</div>
+              <svg className={'iqt-bell iqt-fade' + shown(2.0)} viewBox={`0 0 ${BW} 92`} aria-hidden="true">
+                <defs><clipPath id="iqt-clip"><rect x="0" y="0" width={mx * areaT} height="92" /></clipPath></defs>
+                <path d={AREA} className="iqt-barea" clipPath="url(#iqt-clip)" />
+                <path d={BELL} className="iqt-bline" pathLength="1" strokeDasharray="1" strokeDashoffset={1 - bellT} />
+                <line x1="0" x2={BW} y1={BBASE} y2={BBASE} className="iqt-baxis" />
+                {[70, 85, 100, 115, 130].map((v) => (
+                  <text key={v} x={bx(v)} y={BBASE + 12} className="iqt-btick" textAnchor="middle">{v}</text>
+                ))}
+                <g style={{ opacity: pinT }} transform={`translate(0 ${-14 * (1 - pinT)})`}>
+                  <line x1={mx} x2={mx} y1={my - 6} y2={BBASE} className="iqt-bpin" />
+                  <circle cx={mx} cy={my - 6} r="5" className="iqt-bdot" />
+                  <text x={Math.min(BW - 12, Math.max(12, mx))} y={Math.max(9, my - 14)} className="iqt-byou" textAnchor="middle">You</text>
+                </g>
+              </svg>
+              <div className={'iqt-rnote iqt-fade' + shown(2.9)}>Percentile among Mind Loft players</div>
+              <div className={'iqt-brand iqt-fade' + shown(2.9)}>Mind <em>Loft</em> · mindloftdaily.com/iq</div>
             </section>
 
             <section className="iqt-below">
@@ -274,25 +390,72 @@ export default function IqTestClient({ test, pool, model, bankSize, measured }) 
                 <button type="button" className="iqt-ghost" onClick={start}>Take it again</button>
               </div>
 
-              {next ? (
-                <a className="iqt-next" href={next.href}>
-                  <span className="iqt-neb">Up next · today&rsquo;s daily puzzle</span>
-                  <span className="iqt-nrow">
-                    {glyphFor(next.key) ? (
-                      <svg viewBox={GLYPH_BOX} width="30" height="30" fill="none" stroke="currentColor" strokeWidth="2"
-                        strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={glyphFor(next.key)} /></svg>
-                    ) : null}
-                    <span className="iqt-nt">
-                      <b>{next.name}</b>
-                      <i>{next.how || next.tag}</i>
-                    </span>
-                    <span className="iqt-play-btn">Play</span>
-                  </span>
-                </a>
+              {plan && plan.run.length ? (
+                <div className="iqt-run" ref={runRef} onPointerDown={(e) => { if (!e.target.closest('a,button')) setCdPaused(true); }}>
+                  <div className="iqt-oeb">Your run · built from today&rsquo;s dailies</div>
+                  <div className="iqt-runc">
+                    <div className="iqt-runtop">
+                      <div className="iqt-cd" aria-hidden="true">
+                        <svg viewBox="0 0 54 54"><circle cx="27" cy="27" r="23" className="iqt-cdt" />
+                          <circle cx="27" cy="27" r="23" className="iqt-cda" strokeDasharray="144.5" strokeDashoffset={144.5 * (1 - cd / 8)} /></svg>
+                        <b>{cdPaused ? 'II' : cd}</b>
+                      </div>
+                      <div className="iqt-runnm">
+                        <b>{(DAILY_GAME_MAP[plan.run[0]] || {}).name}</b>
+                        <i>{(DAILY_GAME_MAP[plan.run[0]] || {}).tag}</i>
+                      </div>
+                    </div>
+                    <div className="iqt-queue">
+                      {plan.run.map((k, i) => (
+                        <React.Fragment key={k}>
+                          {i ? <span className="iqt-qar">›</span> : null}
+                          <span className={'iqt-q1' + (i === 0 ? ' now' : '')}>{(DAILY_GAME_MAP[k] || {}).name}</span>
+                        </React.Fragment>
+                      ))}
+                      <span className="iqt-qn">{plan.run.length} {plan.run.length === 1 ? 'game' : 'games'}</span>
+                    </div>
+                    <div className="iqt-rgo">
+                      <button type="button" className="iqt-ghost" onClick={() => setCdPaused(true)}>Not now</button>
+                      <a className="iqt-go" href={runHref}>{plan.run.length > 1 ? 'Start the run' : 'Play'}</a>
+                    </div>
+                  </div>
+
+                  <div className="iqt-day">
+                    <div className="iqt-dayl"><span><b>{plan.played} of {plan.total}</b> of today&rsquo;s dailies played</span></div>
+                    <div className="iqt-prog">
+                      {Array.from({ length: Math.min(plan.total, 40) }).map((_, i) => {
+                        const scale = plan.total > 40 ? plan.total / 40 : 1;
+                        const idx = i * scale;
+                        const cls = idx < plan.played ? ' d' : idx < plan.played + plan.run.length ? ' n' : '';
+                        return <i key={i} className={cls} />;
+                      })}
+                    </div>
+                  </div>
+
+                  {plan.swaps.length ? (
+                    <div className="iqt-swaps">
+                      <div className="iqt-oeb">Or play instead</div>
+                      <div className="iqt-ogrid">
+                        {plan.swaps.map((k) => {
+                          const g = DAILY_GAME_MAP[k];
+                          return (
+                            <a key={k} href={g.href} className="iqt-o iqt-sw">
+                              {glyphFor(k) ? (
+                                <svg viewBox={GLYPH_BOX} width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2"
+                                  strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={glyphFor(k)} /></svg>
+                              ) : null}
+                              <span><b>{g.name}</b><i>{g.tag}</i></span>
+                            </a>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
               ) : null}
 
               <div className="iqt-oth">
-                <div className="iqt-oeb">The other tests</div>
+                <div className="iqt-oeb">Next IQ test</div>
                 <div className="iqt-ogrid">
                   {others.map((t) => (
                     <a key={t.slug} href={`/iq/${t.slug}`} className="iqt-o"
@@ -302,8 +465,16 @@ export default function IqTestClient({ test, pool, model, bankSize, measured }) 
                 <a className="iqt-all" href="/iq">All IQ tests</a>
               </div>
             </section>
+
+            {runHref ? (
+              <div className={'iqt-sticky' + (runPast ? ' on' : '')} aria-hidden={!runPast}>
+                <span><b>Continue your run</b><small>{plan.run.map((k) => (DAILY_GAME_MAP[k] || {}).name).join(', then ')}</small></span>
+                <a href={runHref} tabIndex={runPast ? 0 : -1}>Play</a>
+              </div>
+            ) : null}
           </>
-        )}
+          );
+        })()}
       </div>
     </CircuitFrame>
   );
@@ -351,18 +522,18 @@ const CSS = IQ_RAMP_CSS + `
    screen is the card and nothing past it. */
 .iqt-card{min-height:calc(100svh - 110px);display:flex;flex-direction:column;align-items:center;justify-content:center;
   text-align:center;padding:10px 0 24px;}
-.iqt-ring{position:relative;width:min(280px,72vw);aspect-ratio:1;}
+.iqt-ring{position:relative;width:min(250px,62vw);aspect-ratio:1;}
 .iqt-ring svg{width:100%;height:100%;display:block;}
 .iqt-rtrack{fill:none;stroke:var(--stg-surf2);stroke-width:7;}
 .iqt-rbar{fill:none;stroke:var(--stg-acc);stroke-width:7;stroke-linecap:round;}
 .iqt-rin{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .iqt-rin b{font-size:clamp(46px,14vw,68px);font-weight:800;letter-spacing:-0.03em;line-height:1;color:var(--stg-ink);}
 .iqt-rin span{margin-top:8px;font-family:${MONO};font-size:13px;letter-spacing:.06em;color:var(--stg-ink2);}
-.iqt-rname{margin-top:26px;font-size:clamp(28px,7vw,40px);font-weight:800;letter-spacing:-0.02em;color:var(--stg-ink);}
+.iqt-rname{margin-top:18px;font-size:clamp(28px,7vw,40px);font-weight:800;letter-spacing:-0.02em;color:var(--stg-ink);}
 .iqt-rsub{margin-top:12px;font-family:${MONO};font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-ink2);
   max-width:46ch;line-height:1.7;}
 .iqt-rnote{margin-top:10px;font-size:12.5px;font-weight:600;color:var(--stg-mute);}
-.iqt-brand{margin-top:26px;font-size:13px;font-weight:800;color:var(--stg-ink2);letter-spacing:-0.005em;}
+.iqt-brand{margin-top:16px;font-size:13px;font-weight:800;color:var(--stg-ink2);letter-spacing:-0.005em;}
 .iqt-brand em{font-style:normal;color:var(--stg-brand,#7dd3fc);}
 
 .iqt-below{padding:30px 0 10px;border-top:1px solid var(--stg-line);}
@@ -386,6 +557,64 @@ const CSS = IQ_RAMP_CSS + `
 .iqt-o::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--oc);}
 .iqt-o:hover{border-color:var(--oc);}
 .iqt-all{display:inline-block;margin-top:14px;font-size:13px;font-weight:700;color:var(--stg-acc-ink,var(--stg-acc));}
+
+.iqt-scoring{height:16px;margin-bottom:10px;font-family:${MONO};font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--stg-mute);opacity:0;transition:opacity .4s;}
+.iqt-scoring.on{opacity:1;}
+.iqt-rglow{fill:none;stroke:var(--stg-acc);stroke-width:12;stroke-linecap:round;opacity:.25;filter:blur(3px);}
+.iqt-rpulse{fill:none;stroke:var(--stg-acc);stroke-width:2;}
+.iqt-pip{fill:var(--stg-mute);}
+.iqt-pip.ok{fill:var(--stg-good);}
+.iqt-fade{opacity:0;transform:translateY(8px);transition:opacity .5s ease,transform .5s ease;}
+.iqt-fade.in{opacity:1;transform:none;}
+.iqt-bell{display:block;width:min(360px,86vw);height:auto;aspect-ratio:300/92;margin-top:18px;overflow:visible;}
+.iqt-bline{fill:none;stroke:var(--stg-mute);stroke-width:1.5;}
+.iqt-barea{fill:color-mix(in srgb,var(--stg-acc) 22%,transparent);}
+.iqt-baxis{stroke:var(--stg-line);stroke-width:1;}
+.iqt-btick{font-family:${MONO};font-size:8px;fill:var(--stg-mute);}
+.iqt-bpin{stroke:var(--stg-acc);stroke-width:2;}
+.iqt-bdot{fill:var(--stg-acc);}
+.iqt-byou{font-size:9px;font-weight:800;fill:var(--stg-acc-ink,var(--stg-acc));}
+
+.iqt-run{margin-top:28px;}
+.iqt-runc{background:var(--stg-surf);border:1px solid var(--stg-line);border-left:4px solid var(--stg-acc);border-radius:12px;padding:14px;}
+.iqt-runtop{display:flex;gap:12px;align-items:center;}
+.iqt-cd{position:relative;width:54px;height:54px;flex:none;}
+.iqt-cd svg{position:absolute;inset:0;transform:rotate(-90deg);}
+.iqt-cdt{fill:none;stroke:var(--stg-surf2);stroke-width:4;}
+.iqt-cda{fill:none;stroke:var(--stg-acc);stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset 1s linear;}
+.iqt-cd b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:var(--stg-ink);}
+.iqt-runnm{display:flex;flex-direction:column;min-width:0;}
+.iqt-runnm b{font-size:18px;font-weight:800;color:var(--stg-ink);}
+.iqt-runnm i{font-style:normal;font-size:13px;font-weight:600;color:var(--stg-ink2);}
+.iqt-queue{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:12px;font-size:12px;font-weight:700;}
+.iqt-q1{padding:4px 10px;border-radius:999px;border:1px solid var(--stg-line);color:var(--stg-ink2);}
+.iqt-q1.now{border-color:var(--stg-acc);color:var(--stg-acc-ink,var(--stg-acc));}
+.iqt-qar{color:var(--stg-mute);}
+.iqt-qn{margin-left:auto;font-family:${MONO};font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);}
+.iqt-rgo{display:flex;gap:8px;margin-top:14px;}
+.iqt-rgo .iqt-go,.iqt-rgo .iqt-ghost{margin-top:0;flex:1;text-align:center;text-decoration:none;}
+.iqt-day{margin-top:14px;background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:12px;padding:12px 14px;}
+.iqt-dayl{font-size:13px;font-weight:600;color:var(--stg-ink2);}
+.iqt-dayl b{color:var(--stg-ink);}
+.iqt-prog{display:flex;gap:3px;margin-top:9px;}
+.iqt-prog i{flex:1;height:6px;border-radius:3px;background:var(--stg-surf2);}
+.iqt-prog i.d{background:var(--stg-good);}
+.iqt-prog i.n{background:var(--stg-acc);}
+.iqt-swaps{margin-top:14px;}
+.iqt-sw{display:flex;align-items:center;gap:10px;}
+.iqt-sw svg{flex:none;color:var(--stg-acc-ink,var(--stg-acc));}
+.iqt-sw span{display:flex;flex-direction:column;min-width:0;}
+.iqt-sw i{font-style:normal;font-size:12px;font-weight:600;color:var(--stg-ink2);}
+.iqt-sticky{position:fixed;left:50%;bottom:14px;z-index:60;width:min(520px,calc(100vw - 24px));transform:translate(-50%,140%);
+  display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--stg-ink);color:var(--stg-ground);
+  box-shadow:0 14px 34px -10px rgba(0,0,0,.45);transition:transform .45s cubic-bezier(.2,.9,.3,1.2);}
+.iqt-sticky.on{transform:translate(-50%,0);}
+.iqt-sticky span{display:flex;flex-direction:column;min-width:0;line-height:1.25;}
+.iqt-sticky b{font-size:14px;font-weight:800;}
+.iqt-sticky small{font-size:11.5px;font-weight:600;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.iqt-sticky a{margin-left:auto;flex:none;background:var(--stg-acc);color:var(--stg-onramp);border-radius:10px;padding:9px 16px;font-weight:800;font-size:14px;text-decoration:none;}
+@media (prefers-reduced-motion:reduce){.iqt-fade,.iqt-sticky,.iqt-cda{transition:none;}}
 
 @media (max-width:640px){
   .iqt-h1{font-size:30px;}
