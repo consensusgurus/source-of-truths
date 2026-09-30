@@ -969,10 +969,13 @@ export default async function AdminPage() {
           href: `/iq/${iqTest.slug}`,
           views24h: quizViews24Map.get(quizId) || 0,
           viewsTotal: quizTotalViewsMap.get(quizId) || 0,
-          plays: quizTotalViewsMap.get(fin) || 0,
-          plays24h: quizViews24Map.get(fin) || 0,
-          mobilePlays: 0,
-          avgScore: null,
+          // Result rows from 2026-09-30; before that only the finish ping
+          // existed, so the larger of the two is the honest count.
+          plays: Math.max(quizPlaysMap.get(quizId) || 0, quizTotalViewsMap.get(fin) || 0),
+          plays24h: Math.max(quizPlays24Map.get(quizId) || 0, quizViews24Map.get(fin) || 0),
+          mobilePlays: quizMobileMap.get(quizId) || 0,
+          avgScore: (quizPlaysMap.get(quizId) || 0) > 0
+            ? Math.round(((quizScoreSumMap.get(quizId) || 0) / quizPlaysMap.get(quizId)) * 10) / 10 : null,
         };
       }
       const plays = quizPlaysMap.get(quizId) || 0;

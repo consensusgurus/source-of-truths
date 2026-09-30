@@ -8293,6 +8293,9 @@ no board** (nothing is posted, no IQ Points, the result is kept on the device in
   `app/DailyRunRail.jsx`, mounted once in StageChrome, draws a thin band under every daily's cap
   and, once that game's day breadcrumb says finished, a fixed Next bar. Nothing about a run is
   stored or scored; played is read from the `sot_<key>_day` breadcrumbs, so it costs no request.
-- **Admin counts them as quizzes.** The Page Views Quizzes list carries one row per test, titled
-  "<Name> IQ Test", with its finish pings (`iq-<slug>-finished`) as its plays; the finish rows are
-  folded in rather than listed (`app/admin/page.js`).
+- **Admin counts them as quizzes, in Quiz Plays too (owner, 2026-09-30).** A finished test posts an
+  ordinary `/api/quiz/result` row: quizId `iq-<slug>`, score = right, total = asked, `progress` =
+  the IQ reading. So it shows in Quiz Plays like any quiz, titled "<Name> IQ Test". It still pays NO
+  IQ Points: `computeXp` skips `iq-` ids, keeping the original standalone ruling. The Page Views
+  row takes the larger of result rows and finish pings (`iq-<slug>-finished`, the only record
+  before 2026-09-30), and the finish rows are folded in rather than listed (`app/admin/page.js`).

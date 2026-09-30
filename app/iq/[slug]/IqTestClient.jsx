@@ -20,6 +20,7 @@ import { glyphFor, GLYPH_BOX } from '@/lib/game-glyphs';
 import { IQ_RAMP_CSS } from '@/lib/iq-style';
 import { liveDailyKeys, DAILY_GAME_MAP } from '@/lib/daily-games';
 import { dailyRunHref, playedToday } from '@/lib/daily-run';
+import { dailyMeIdentity } from '../../dailyMeClient';
 
 const STORE = 'sot_iq_results';
 
@@ -119,6 +120,7 @@ export default function IqTestClient({ test, pool, model, bankSize, measured }) 
   const [prior, setPrior] = useState(null);
   const [copied, setCopied] = useState(false);
   const usedRef = useRef(new Set());
+  const t0Ref = useRef(0);
   const lockRef = useRef(false);
   const cardRef = useRef(null);
 
@@ -167,6 +169,7 @@ export default function IqTestClient({ test, pool, model, bankSize, measured }) 
   function start() {
     usedRef.current = new Set();
     lockRef.current = false;
+    t0Ref.current = Date.now();
     setAnswers([]);
     setPicked(null);
     setCd(8); setCdPaused(false);
@@ -204,6 +207,18 @@ export default function IqTestClient({ test, pool, model, bankSize, measured }) 
         saveResult(test.slug, { iq: r.iq, pm: r.pm, pct: Math.round(r.pct * 10) / 10, right: nextAnswers.filter((a) => a.right).length, n, at: Date.now() });
         setItem(null);
         setPhase('done');
+        // A RESULT ROW, so the test counts as a quiz in the admin panel's
+        // Quiz Plays (owner, 2026-09-30). score = questions right out of the
+        // questions asked; progress carries the IQ reading. quiz-xp skips iq-
+        // ids, so it pays no IQ Points, and nothing ranks on it.
+        try {
+          const who = dailyMeIdentity();
+          fetch('/api/quiz/result', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quizId: `iq-${test.slug}`, score: nextAnswers.filter((a) => a.right).length, total: n,
+              timeElapsed: Math.max(0, Math.round((Date.now() - t0Ref.current) / 1000)), progress: Math.max(0, r.iq),
+              anonId: who.anonId || null, email: who.email || null,
+              referrer: typeof document !== 'undefined' ? document.referrer : null }) }).catch(() => {});
+        } catch (err) {}
         // Count a finished test, once per sitting, on the same view rail the
         // pages use (admin: TRACKED_PAGES 'iq-<slug>-finished').
         try {
