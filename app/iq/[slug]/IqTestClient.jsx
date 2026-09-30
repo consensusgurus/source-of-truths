@@ -359,6 +359,7 @@ export default function IqTestClient({ test, pool, model, bankSize, measured }) 
                 </svg>
                 <div className="iqt-rin">
                   <b>{sweep > 0 ? ordinalPct(Math.max(1, pctNow)) : ' '}</b>
+                  <small className="iqt-rpl">Percentile</small>
                   <span className={'iqt-fade' + shown(0.9)}>IQ {iqNow} ± {result.pm}</span>
                 </div>
               </div>
@@ -528,6 +529,7 @@ const CSS = IQ_RAMP_CSS + `
 .iqt-rbar{fill:none;stroke:var(--stg-acc);stroke-width:7;stroke-linecap:round;}
 .iqt-rin{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .iqt-rin b{font-size:clamp(46px,14vw,68px);font-weight:800;letter-spacing:-0.03em;line-height:1;color:var(--stg-ink);}
+.iqt-rpl{margin-top:6px;font-family:${MONO};font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--stg-mute);}
 .iqt-rin span{margin-top:8px;font-family:${MONO};font-size:13px;letter-spacing:.06em;color:var(--stg-ink2);}
 .iqt-rname{margin-top:18px;font-size:clamp(28px,7vw,40px);font-weight:800;letter-spacing:-0.02em;color:var(--stg-ink);}
 .iqt-rsub{margin-top:12px;font-family:${MONO};font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-ink2);
