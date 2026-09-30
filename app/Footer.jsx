@@ -34,6 +34,8 @@ export const FOOTER_COLS = [
       // daily game. It is also where a reader who arrived on one shared circuit
       // finds the other fourteen.
       { label: 'Circuits', href: '/circuits' },
+      // The trivia IQ tests. /iq is linked from nowhere else, so this is its crawl path.
+      { label: 'Trivia IQ Tests', href: '/iq' },
       { label: 'Stat Hub', href: '/quizzes/hub' },
       { label: 'Community Leaderboard', href: '/quizzes/community' },
       { label: 'Request a Quiz', href: '/request' },

@@ -8240,3 +8240,38 @@ from `app/HomeSnapBox.jsx`'s layout effect, since inline scripts do not run ther
 
 The snapshot sits AFTER the live page in the DOM on purpose: `getElementById` and
 `querySelector('.stage-page')` return the first match, which must stay the live one.
+
+## Trivia IQ tests (`/iq`, `/iq/<slug>`): adaptive tests on played gauntlet questions (owner, 2026-09-29)
+
+Nine adaptive trivia tests, one per category (general, geography, history, science, screen,
+music, literature, sports, business), linked from the footer ("Trivia IQ Tests") and listed in
+the sitemap. Owner calls at launch: **IQ-shaped but player-normed** (100 = the typical Mind Loft
+player, 15 = one SD of that field, and every surface says it is not a clinical IQ); **standalone,
+no board** (nothing is posted, no IQ Points, the result is kept on the device in
+`sot_iq_results`); **stage register**, framed by `CircuitFrame`, accent from the ramp step in
+`IQ_TESTS[].ramp`.
+
+- **Only questions already PLAYED on the gauntlets** (Streak, Deep, Atlas, Sport, Biz). Those are
+  one life in a fixed order, so a day's `scoreDist` from `/api/quiz/board` is its item response
+  matrix. `scripts/iq/calibrate.mjs` fits a difficulty per question from a snapshot of those
+  distributions (`scripts/iq/play-snapshot-<date>.txt`) and writes `lib/iq-items.js`. Model:
+  4PL with slope 1.1, guess .25, lapse .95, only `b` free; players N(0,1) per game (runs carry no
+  id to link games), difficulties shrunk to learned game-and-tier means, runs scoring 0 dropped
+  (they are page-opens), tier 1-2 items fitting 2.2+ above their tier mean dropped as flawed.
+- **Refresh:** pull every played day's `scoreDist` (in the browser; the board route is ~30s cold),
+  save a new snapshot file (`S`/`D`/`A`/`P`/`B` + `M-D=score:count,...`), re-run calibrate, and
+  `node scripts/verify-iq.mjs`, which checks every row resolves, none is from an unplayed day, every
+  test has a bank, and a seeded simulation places readers in order (mean error under 0.6 SD).
+- **Categories are declared in `lib/iq-tests.js`** as sources: a game plus its lanes, or Deep day
+  TOPICS (Deep carries its subject on the day, so an item's lane is its day's topic, and the test
+  shows it on the question per the names-its-subject rule). A new Deep topic joins a test only when
+  it is added to that list.
+- **The pool** (`lib/iq-pool.js`, server only): a stratified random 200 per sitting, bands from
+  b = -3 up (gimmes near -8 inform nobody), topped up for the small banks. The engine
+  (`app/iq/IqEngine.js`, pure) is EAP on a grid, max-information picks drawn among the best five,
+  25 questions and up to 30 while the SD is over .42, 20 seconds a question (the clock the
+  difficulties were measured under), opening at theta .3.
+- **The result card fills the viewport** so a screenshot is the card: ring (percentile), IQ with
+  its plus or minus, right of asked, the not-clinical line and the site name. Share, retake, the
+  next daily puzzle (a fitting unplayed daily first, via `daily-me`) and the other tests sit BELOW
+  the fold, out of any screenshot (owner, 2026-09-29).
