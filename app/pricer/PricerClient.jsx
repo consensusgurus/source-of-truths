@@ -236,7 +236,13 @@ export default function PricerClient({ puzzles = [], dayByNum = {}, forceNum = n
   // The photo mat is white in BOTH registers on purpose: product shots are
   // cut out on white, and a dark mat would ring every one of them. The buy
   // button is the same gold either way and carries its own dark ink.
-  const MAT = { '--pr-mat': '#ffffff', '--pr-buy': '#f0b23a' };
+  // THE PANELS POP (owner, 2026-10-01): the product, the input and every guess
+  // row sit on their own lifted panel with a rule and a shadow, one value per
+  // register, because the stage ground and its 4% surface read as one colour.
+  const MAT = { '--pr-mat': '#ffffff', '--pr-buy': '#f0b23a',
+    ...(darkReg
+      ? { '--pr-panel': '#181e2d', '--pr-panel-line': 'rgba(255,255,255,0.22)', '--pr-shadow': '0 10px 26px rgba(0,0,0,0.5)' }
+      : { '--pr-panel': '#ffffff', '--pr-panel-line': 'rgba(11,15,26,0.18)', '--pr-shadow': '0 8px 22px rgba(15,23,42,0.12)' }) };
   const HEAT = darkReg
     ? { '--pr-freezing': '#7dd3fc', '--pr-cold': '#93c5fd', '--pr-cool': '#c4b5fd', '--pr-warm': '#fbbf24', '--pr-hot': '#fb923c', '--pr-burning': '#f87171' }
     : { '--pr-freezing': '#0369a1', '--pr-cold': '#1d4ed8', '--pr-cool': '#6d28d9', '--pr-warm': '#a16207', '--pr-hot': '#c2410c', '--pr-burning': '#b91c1c' };
@@ -467,7 +473,7 @@ export default function PricerClient({ puzzles = [], dayByNum = {}, forceNum = n
     const b = bandOf(x.e);
     const fill = Math.max(6, Math.min(100, 100 - Math.log10(1 + x.e * 10) * 48));
     return (
-      <div key={i} className="pr-row">
+      <div key={i} className="pr-row" style={{ '--row-c': b.col }}>
         <span className="n">{i + 1}</span>
         <span className="g">{fmtCents(x.c)}</span>
         <span className="dir" style={{ color: b.col }}>
@@ -509,28 +515,28 @@ export default function PricerClient({ puzzles = [], dayByNum = {}, forceNum = n
         <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.pr-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .pr-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
-          .pr-prod{display:flex;gap:16px;align-items:center;}
+          .pr-prod{display:flex;gap:16px;align-items:center;background:var(--pr-panel);border:1.5px solid var(--pr-panel-line);border-left:5px solid var(--stg-acc, ${COLORS.accent});border-radius:14px;padding:12px 16px 12px 12px;box-shadow:var(--pr-shadow);}
           .pr-ph{flex:0 0 150px;height:150px;border-radius:10px;background:var(--pr-mat);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}
           .pr-ph.wide{flex-basis:220px;}
           .pr-ph img{max-width:94%;max-height:94%;object-fit:contain;display:block;}
           .pr-ph.cover img{max-width:none;max-height:none;width:100%;height:100%;object-fit:cover;}
           .pr-eb{font-family:${MONO};font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;}
           .pr-name{margin:4px 0 6px;font-size:19px;line-height:1.25;font-weight:800;color:${INK};}
-          .pr-ask{margin-top:16px;display:flex;gap:8px;}
-          .pr-money{flex:1;display:flex;align-items:center;border:2px solid var(--stg-cell-line, rgba(28,30,36,0.4));border-radius:9px;background:var(--stg-cell, #ffffff);padding:0 12px;}
+          .pr-ask{margin-top:16px;display:flex;gap:10px;}
+          .pr-money{flex:1;display:flex;align-items:center;border:2.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));border-radius:12px;background:var(--pr-panel);padding:0 14px;box-shadow:var(--pr-shadow);}
           .pr-money:focus-within{border-color:var(--stg-acc, ${COLORS.accent});}
-          .pr-money span{font-weight:800;font-size:18px;color:${FADED};}
-          .pr-money input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:${INK};font:800 20px ${SANS};padding:11px 6px;font-variant-numeric:tabular-nums;}
-          .pr-go{font:800 15px ${SANS};border:0;border-radius:9px;padding:0 20px;cursor:pointer;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #ffffff);}
-          .pr-rows{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
-          .pr-row{display:grid;grid-template-columns:22px 1fr auto 104px;align-items:center;gap:10px;border:1px solid var(--stg-line, rgba(28,30,36,0.18));border-radius:8px;padding:9px 12px;background:var(--stg-surf, transparent);}
-          .pr-row.empty{border-style:dashed;opacity:.55;}
-          .pr-row .n{font-family:${MONO};font-size:11px;color:${FADED};}
-          .pr-row .g{font-weight:800;font-size:16px;font-variant-numeric:tabular-nums;color:${INK};}
-          .pr-row .dir{font-weight:800;font-size:13px;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;}
+          .pr-money span{font-weight:900;font-size:22px;color:${FADED};}
+          .pr-money input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:${INK};font:900 23px ${SANS};padding:14px 8px;font-variant-numeric:tabular-nums;}
+          .pr-go{font:900 16px ${SANS};border:0;border-radius:12px;padding:0 26px;box-shadow:var(--pr-shadow);cursor:pointer;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #ffffff);}
+          .pr-rows{margin-top:12px;display:flex;flex-direction:column;gap:8px;}
+          .pr-row{display:grid;grid-template-columns:22px 1fr auto 104px;align-items:center;gap:10px;border:1.5px solid var(--pr-panel-line);border-left:5px solid var(--row-c, var(--pr-panel-line));border-radius:11px;padding:12px 14px;background:var(--pr-panel);box-shadow:var(--pr-shadow);}
+          .pr-row.empty{background:transparent;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.4));box-shadow:none;}
+          .pr-row .n{font-family:${MONO};font-size:12px;font-weight:500;color:${FADED};}
+          .pr-row .g{font-weight:900;font-size:19px;font-variant-numeric:tabular-nums;color:${INK};}
+          .pr-row .dir{font-weight:900;font-size:14px;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;}
           .pr-row .heat{display:flex;flex-direction:column;gap:4px;}
-          .pr-row .heat b{font-family:${MONO};font-weight:500;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;text-align:right;}
-          .pr-row .bar{height:5px;border-radius:3px;background:var(--stg-line, rgba(28,30,36,0.12));overflow:hidden;}
+          .pr-row .heat b{align-self:flex-end;font-family:${MONO};font-weight:500;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:color-mix(in srgb, currentColor 16%, transparent);border:1px solid color-mix(in srgb, currentColor 45%, transparent);}
+          .pr-row .bar{height:7px;border-radius:3px;background:var(--stg-line, rgba(28,30,36,0.12));overflow:hidden;}
           .pr-row .bar i{display:block;height:100%;border-radius:3px;}
           .pr-buy{display:inline-flex;align-items:center;gap:7px;font:800 14px ${SANS};background:var(--pr-buy);color:#1f1300;text-decoration:none;border-radius:9px;padding:10px 16px;}
           .pr-ladder{margin-top:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:5px;font-family:${MONO};font-size:10.5px;}
