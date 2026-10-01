@@ -1,188 +1,95 @@
-// Verify the Pricer bank (app/pricer/puzzles.js) from scratch.
+// scripts/verify-pricer.mjs — the Pricer bank (one product a day, relaunched 2026-10-02).
 //
-// Structural: nums sequential, quizId/live/dateLabel agree, sunday flag matches
-// the real weekday, 16 items on weekdays and 32 on Sundays, names distinct,
-// VALUES distinct (a tie makes a matchup unanswerable), every value a positive
-// whole number of CENTS, the field a power of two, and the true champion the
-// global extreme under the day's direction.
+//   node scripts/verify-pricer.mjs
+//   VERIFY_PRICER_BANK=/path/to/puzzles.js node scripts/verify-pricer.mjs   (mutation runs)
 //
-// The eight content checks below were added 2026-08-09 after an audit found the
-// launch bank shipping fabricated salaries, discontinued products, a price that
-// contradicted itself across two boards, and 30 consecutive boards asking the
-// same question. Every one of those was mechanically checkable and nobody had
-// written the check. Per CLAUDE.md: a rule that is not checked is not a rule.
-//
-//   1. CROSS-BOARD PRICE CONSISTENCY. The same item name may not carry two
-//      different values anywhere in the bank. (A Volvo XC90 was $60,000 on one
-//      board and $72,000 on another four days later.)
-//   2. basis present and valid, gathered present and a real date, and asOf GONE.
-//      Two date fields where one is real and one is decorative is how a board
-//      came to be labelled "August 2026" while carrying year-old figures.
-//   3. STALENESS. gathered may not be in the future or after live; live may not
-//      be more than STALE_FAIL days after gathered, and warns past STALE_WARN.
-//      This is what forces a re-gather instead of letting a banked board rot.
-//   4. DIRECTION VARIETY. min must be at least MIN_SHARE of the bank and no run
-//      of one direction may exceed DIR_RUN. The first bank ran 33 of 35 boards
-//      on "which costs MORE", including a run of 30.
-//   5. FAMILY CEILING. At most FAM_MAX boards per family, never two within
-//      FAM_GAP days. The first bank ran four car boards and three footwear.
-//   6. ITEM OVERLAP. Two boards may not share more than OVERLAP_MAX items; a
-//      board that is largely a subset of another is not a separate board.
-//   7. SHOP LINKS. shop is 'amazon' or 'brand'; an asin is a well-formed
-//      10-character ASIN and only appears on an amazon board; a url is https
-//      and only appears on a brand board.
-//   8. ELIGIBILITY is NOT machine-checkable and is enforced at review: every
-//      item must be a thing a person can buy at an observable price.
-//
-// DIFFICULTY IS ADVISORY. Pricer compares sixteen things WITHIN one category,
-// where the middle of the ladder is genuinely compressed, so the 35% line only
-// warns. Note that a tight pair is usually harmless anyway: seeding puts ranks
-// 7 and 8 in opposite halves of the draw, so they never actually meet.
-//
-// The board carries no answer: every matchup winner is recomputed here.
-// Run: node scripts/verify-pricer.mjs
-import { PUZZLES } from '../app/pricer/puzzles.js';
+// Recomputes everything it can from the bank itself rather than trusting a
+// field: dates walk day by day from the first board, the quizId and dateLabel
+// are derived from the date, the Sunday flag from the calendar, the affiliate
+// link from the ASIN. Exits 1 on any failure.
+import path from 'path';
+import { pathToFileURL } from 'url';
 
-const STALE_WARN = 45, STALE_FAIL = 90;
-const MIN_SHARE = 0.15, DIR_RUN = 4;
-const FAM_MAX = 2, FAM_GAP = 10;
-const OVERLAP_MAX = 3;
+const bankPath = process.env.VERIFY_PRICER_BANK || path.resolve(path.dirname(new URL(import.meta.url).pathname), '../app/pricer/puzzles.js');
+const { PUZZLES } = await import(pathToFileURL(bankPath).href);
 
-let fails = 0, warns = 0;
-const fail = (m) => { console.error('FAIL:', m); fails++; };
-const warn = (m) => { console.warn('warn:', m); warns++; };
+const fails = [], warns = [];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-const ASIN_RE = /^[A-Z0-9]{10}$/;
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-const BASES = new Set(['msrp', 'street', 'rate', 'delivery']);
-const seen = new Set(), championSlots = [], priceIndex = new Map();
-const famSeen = new Map(), boardSets = [];
-let minCount = 0, dirRun = 1, prevDir = null;
+const BANNED_HOSTS = /googleusercontent\.com|ggpht\.com|fbcdn\.net|cdninstagram\.com|fbsbx\.com/i;
+const MAX_AGE_DAYS = 60, WARN_AGE_DAYS = 45;
+const WEEKDAY_MAX = 300000;   // $3,000: above this it belongs on a Sunday
+const SUNDAY_MIN = 500000;    // $5,000: below this it is not a big-ticket day
+const dayMs = 86400000;
+const decade = (c) => Math.floor(Math.log10(c / 100));
 
+if (!Array.isArray(PUZZLES) || !PUZZLES.length) { console.error('verify-pricer: empty bank'); process.exit(1); }
+
+const seenAsin = new Map(), seenName = new Map(), seenQuiz = new Set();
+let prev = null;
 PUZZLES.forEach((p, i) => {
-  const tag = `#${p.num} (${p.live}, ${p.category})`;
-  if (p.num !== i + 1) fail(`${tag}: num out of sequence`);
-  if (seen.has(p.quizId)) fail(`${tag}: duplicate quizId`);
-  seen.add(p.quizId);
-  const [y, m, d] = p.live.split('-').map(Number);
-  if (p.quizId !== `pricer-${m}-${d}-${String(y).slice(2)}`) fail(`${tag}: quizId does not match live date`);
-  if (p.dateLabel !== `${MONTHS[m-1]} ${d}, ${y}`) fail(`${tag}: dateLabel does not match live date`);
-  if (!!p.sunday !== (new Date(Date.UTC(y, m-1, d)).getUTCDay() === 0)) fail(`${tag}: sunday flag wrong`);
-
-  const n = p.items.length, want = p.sunday ? 32 : 16;
-  if (n !== want) fail(`${tag}: ${n} items (want ${want})`);
-  if ((n & (n - 1)) !== 0) fail(`${tag}: field is not a power of two`);
-  if (new Set(p.items.map((x) => x.name)).size !== n) fail(`${tag}: duplicate item name`);
-  if (new Set(p.items.map((x) => x.value)).size !== n) fail(`${tag}: two items share a value, so a matchup has no answer`);
-  if (p.items.some((x) => typeof x.value !== 'number' || !isFinite(x.value) || x.value < 0 || Math.round(x.value) !== x.value)) {
-    fail(`${tag}: a price is not a whole number of cents`);
+  const id = `#${p.num} ${p.live}`;
+  const bad = (m) => fails.push(`${id}: ${m}`);
+  if (p.num !== i + 1) bad(`num should be ${i + 1}`);
+  const d = new Date(`${p.live}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) { bad('live is not a date'); return; }
+  if (prev) {
+    const pd = new Date(`${prev.live}T00:00:00Z`);
+    if (d - pd !== dayMs) bad(`not the day after ${prev.live}`);
   }
-  if (!p.metric || !p.metricShort) fail(`${tag}: missing metric labelling`);
-  if (p.unit !== 'usdc') fail(`${tag}: unit is '${p.unit}', every Pricer board is 'usdc' (cents)`);
-  if (!p.category) fail(`${tag}: missing category`);
-  if (p.dir !== 'max' && p.dir !== 'min') fail(`${tag}: bad direction`);
+  const [y, m, dd] = p.live.split('-').map(Number);
+  const qid = `pricer-${m}-${dd}-${String(y).slice(2)}`;
+  if (p.quizId !== qid) bad(`quizId ${p.quizId} should be ${qid}`);
+  if (seenQuiz.has(p.quizId)) bad('duplicate quizId'); seenQuiz.add(p.quizId);
+  if (p.dateLabel !== `${MONTHS[m - 1]} ${dd}, ${y}`) bad(`dateLabel ${p.dateLabel}`);
+  const isSun = d.getUTCDay() === 0;
+  if (!!p.sunday !== isSun) bad(isSun ? 'a Sunday must carry sunday: true' : 'sunday: true on a weekday');
 
-  // 2. basis / gathered / no asOf
-  if (!BASES.has(p.basis)) fail(`${tag}: basis '${p.basis}' is not one of ${[...BASES].join(', ')}`);
-  if ('asOf' in p) fail(`${tag}: carries asOf. That field was retired; gathered is the real date`);
-  if (!DATE_RE.test(p.gathered || '')) fail(`${tag}: gathered is missing or not YYYY-MM-DD`);
-  if (!p.family) fail(`${tag}: missing family`);
-
-  // 3. staleness
-  if (DATE_RE.test(p.gathered || '')) {
-    const g = Date.parse(p.gathered + 'T00:00:00Z'), l = Date.parse(p.live + 'T00:00:00Z');
-    const today = Date.parse(new Date().toISOString().slice(0, 10) + 'T00:00:00Z');
-    if (g > today) fail(`${tag}: gathered is in the future`);
-    if (g > l) fail(`${tag}: gathered is after the live date`);
-    const age = Math.round((l - g) / 86400000);
-    if (age > STALE_FAIL) fail(`${tag}: goes live ${age} days after it was gathered (max ${STALE_FAIL}). Re-gather.`);
-    else if (age > STALE_WARN) warn(`${tag}: goes live ${age} days after it was gathered`);
+  if (!Number.isInteger(p.price) || p.price <= 0) bad('price must be positive integer cents');
+  if (typeof p.name !== 'string' || p.name.length < 3) bad('missing name');
+  if (typeof p.cat !== 'string' || !p.cat) bad('missing cat');
+  if (!/^https:\/\//.test(p.img || '')) bad('img must be https');
+  if (BANNED_HOSTS.test(p.img || '')) bad(`img on a banned host: ${p.img}`);
+  if (/\.(webp|avif)(\?|$)/i.test(p.img || '')) bad('img must be JPEG or PNG');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(p.gathered || '')) bad('gathered must be YYYY-MM-DD');
+  else {
+    const age = (d - new Date(`${p.gathered}T00:00:00Z`)) / dayMs;
+    if (age < 0) bad('gathered after the day it goes live');
+    else if (age > MAX_AGE_DAYS) bad(`price is ${age} days old by its live date; re-read it`);
+    else if (age > WARN_AGE_DAYS) warns.push(`${id}: price will be ${age} days old`);
   }
 
-  // 4. direction variety
-  if (p.dir === 'min') minCount++;
-  dirRun = p.dir === prevDir ? dirRun + 1 : 1; prevDir = p.dir;
-  if (dirRun > DIR_RUN) fail(`${tag}: ${dirRun} boards in a row ask the same direction (max ${DIR_RUN})`);
-
-  // 5. family ceiling
-  const prev = famSeen.get(p.family) || [];
-  const gapDays = prev.length ? Math.round((Date.parse(p.live) - Date.parse(prev[prev.length-1])) / 86400000) : null;
-  if (prev.length + 1 > FAM_MAX) fail(`${tag}: family '${p.family}' appears ${prev.length + 1} times (max ${FAM_MAX})`);
-  if (gapDays !== null && gapDays <= FAM_GAP) fail(`${tag}: family '${p.family}' repeats after only ${gapDays} days (min ${FAM_GAP + 1})`);
-  famSeen.set(p.family, [...prev, p.live]);
-
-  // 1. cross-board price consistency + 6. overlap bookkeeping
-  for (const it of p.items) {
-    const prevSeen = priceIndex.get(it.name);
-    if (prevSeen && prevSeen.value !== it.value) {
-      fail(`${tag}: '${it.name}' is ${it.value} here but ${prevSeen.value} on #${prevSeen.num}. The same thing cannot have two prices.`);
-    }
-    if (!prevSeen) priceIndex.set(it.name, { value: it.value, num: p.num });
+  if (isSun) {
+    if (p.shop !== 'brand') bad('a Sunday Edition is a maker-priced item (shop: brand)');
+    if (p.price < SUNDAY_MIN) bad(`Sunday price ${p.price / 100} is not big-ticket`);
+    if (!/^https:\/\//.test(p.href || '')) bad('Sunday needs the maker page in href');
+    if (/commons\.wikimedia|upload\.wikimedia/.test(p.img || '') && !(p.credit && p.creditUrl)) bad('a Commons photo needs credit + creditUrl');
+  } else {
+    if (p.shop !== 'amazon') bad('a weekday is an Amazon product (shop: amazon)');
+    if (!/^[A-Z0-9]{10}$/.test(p.asin || '')) bad(`bad asin ${p.asin}`);
+    if (p.href !== `https://www.amazon.com/dp/${p.asin}?tag=cgurus-20`) bad('href must be /dp/<asin>?tag=cgurus-20');
+    if (p.price > WEEKDAY_MAX) bad(`weekday price ${p.price / 100} belongs on a Sunday`);
+    if (!/^https:\/\/m\.media-amazon\.com\/images\/I\//.test(p.img || '')) bad('weekday img should be the Amazon product image');
+    if (seenAsin.has(p.asin)) bad(`asin repeats #${seenAsin.get(p.asin)}`); else seenAsin.set(p.asin, p.num);
   }
-  boardSets.push({ num: p.num, cat: p.category, set: new Set(p.items.map((x) => x.name)) });
-
-  // 7. shop links
-  if (p.shop != null && p.shop !== 'amazon' && p.shop !== 'brand') fail(`${tag}: shop is '${p.shop}', expected 'amazon' or 'brand'`);
-  for (const it of p.items) {
-    if (it.asin != null) {
-      if (p.shop !== 'amazon') fail(`${tag}: ${it.name} carries an asin on a board whose shop is '${p.shop}'`);
-      if (typeof it.asin !== 'string' || !ASIN_RE.test(it.asin)) fail(`${tag}: ${it.name} has a malformed asin (${it.asin})`);
-    }
-    if (it.url != null) {
-      if (p.shop !== 'brand') fail(`${tag}: ${it.name} carries a url on a board whose shop is '${p.shop}'`);
-      if (typeof it.url !== 'string' || !it.url.startsWith('https://')) fail(`${tag}: ${it.name} has a non-https url`);
-    }
-  }
-
-  // bracket
-  const better = (a, b) => (p.dir === 'max' ? p.items[a].value > p.items[b].value : p.items[a].value < p.items[b].value) ? a : b;
-  let live = p.items.map((_, k) => k);
-  const rounds = [];
-  while (live.length > 1) {
-    const next = [];
-    for (let k = 0; k < live.length; k += 2) next.push(better(live[k], live[k + 1]));
-    rounds.push(next); live = next;
-  }
-  const champ = live[0];
-  championSlots.push(champ);
-  const extreme = p.items.reduce((best, it, k) => (p.dir === 'max' ? it.value > p.items[best].value : it.value < p.items[best].value) ? k : best, 0);
-  if (champ !== extreme) fail(`${tag}: the bracket champion is not the true extreme, so the seeding is broken`);
-
-  const rel = (a, b) => { const hi = Math.max(p.items[a].value, p.items[b].value); return hi === 0 ? 1 : Math.abs(p.items[a].value - p.items[b].value) / hi; };
-  for (let k = 0; k < n; k += 2) {
-    const g = rel(k, k + 1);
-    if (g < 0.10) warn(`${tag}: first-round matchup ${k / 2 + 1} is only ${(g * 100).toFixed(1)}% apart, which is a coin flip rather than a warm-up`);
-  }
-  const finalists = rounds[rounds.length - 2];
-  if (rel(finalists[0], finalists[1]) > 0.50) warn(`${tag}: the final is ${(rel(finalists[0], finalists[1]) * 100).toFixed(1)}% apart, which is not much of a final`);
-
-  const perRound = []; let m2 = n;
-  for (let r = 0; m2 > 1; r++) { m2 /= 2; perRound.push(m2 * Math.pow(2, r)); }
-  if (new Set(perRound).size !== 1) fail(`${tag}: rounds are not worth the same in total`);
+  const key = p.name.toLowerCase();
+  if (seenName.has(key)) bad(`product repeats #${seenName.get(key)}`); else seenName.set(key, p.num);
+  if (prev && decade(prev.price) === decade(p.price)) bad(`same price decade as the day before (${prev.name})`);
+  prev = p;
 });
 
-// 6. item overlap between boards
-for (let a = 0; a < boardSets.length; a++) for (let b = a + 1; b < boardSets.length; b++) {
-  const shared = [...boardSets[a].set].filter((x) => boardSets[b].set.has(x));
-  if (shared.length > OVERLAP_MAX) {
-    fail(`#${boardSets[a].num} (${boardSets[a].cat}) and #${boardSets[b].num} (${boardSets[b].cat}) share ${shared.length} items (max ${OVERLAP_MAX}): ${shared.slice(0, 5).join(', ')}`);
-  }
+// The week has to range: at least one board under $20 and one over $300 in
+// every seven, or the bank has drifted into one aisle.
+for (let i = 0; i + 7 <= PUZZLES.length; i += 7) {
+  const wk = PUZZLES.slice(i, i + 7).filter((p) => !p.sunday);
+  if (!wk.some((p) => p.price < 2000)) warns.push(`week of ${PUZZLES[i].live}: nothing under $20`);
+  if (!wk.some((p) => p.price > 30000)) warns.push(`week of ${PUZZLES[i].live}: nothing over $300`);
 }
 
-// 4. direction share
-if (minCount / PUZZLES.length < MIN_SHARE) {
-  fail(`only ${minCount} of ${PUZZLES.length} boards ask "which costs LESS" (${(minCount / PUZZLES.length * 100).toFixed(0)}%, min ${MIN_SHARE * 100}%)`);
+const last = PUZZLES[PUZZLES.length - 1];
+for (const w of warns) console.warn(`  warn ${w}`);
+if (fails.length) {
+  for (const f of fails) console.error(`  FAIL ${f}`);
+  console.error(`verify-pricer: ${fails.length} failure(s) across ${PUZZLES.length} boards`);
+  process.exit(1);
 }
-
-// the champion must not sit in the same slot every day, or seed position leaks it
-if (new Set(championSlots).size < Math.min(6, PUZZLES.length)) {
-  fail(`the champion lands in only ${new Set(championSlots).size} distinct slots across the bank, so position leaks the answer`);
-}
-
-if (fails) { console.error(`\nverify-pricer: ${fails} FAILURE(S), ${warns} warning(s)`); process.exit(1); }
-console.log(`verify-pricer: all ${PUZZLES.length} boards pass`);
-console.log(`  cents, unique prices, true champion, slots scrambled`);
-console.log(`  basis + gathered on every board, no asOf, nothing staler than ${STALE_FAIL} days`);
-console.log(`  ${minCount}/${PUZZLES.length} boards ask LESS (${(minCount / PUZZLES.length * 100).toFixed(0)}%), longest same-direction run within ${DIR_RUN}`);
-console.log(`  no family over ${FAM_MAX}, none repeating inside ${FAM_GAP} days, no cross-board price contradiction`);
-if (warns) console.log(`  ${warns} advisory warning(s)`);
+console.log(`verify-pricer: ${PUZZLES.length} boards OK (${PUZZLES[0].live} to ${last.live}, ${PUZZLES.filter((p) => p.sunday).length} Sunday Editions)`);

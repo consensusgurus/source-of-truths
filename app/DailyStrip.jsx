@@ -95,8 +95,7 @@ const GAMES = [
   { key: 'venn', href: '/venn', name: 'Venn', img: '/games/btn-venn.png', store: 'sot_venn_day', tag: "Sort the overlaps" , cat: 'Logic' },
   { key: 'stands', href: '/stands', name: 'Stands', img: '/games/btn-stands.png', store: 'sot_stands_day', tag: "Rebuild the results" , cat: 'Logic' },
   { key: 'bracket', href: '/bracket', name: 'Bracket', img: '/games/btn-bracket.png', store: 'sot_bracket_day', tag: "Name every winner" , cat: 'Trivia' },
-  // PRICER PULLED 2026-08-09 (see CLAUDE.md). Restore: grep -rn 'PRICER PULLED' slate tile
-  // { key: 'pricer', href: '/pricer', name: 'Pricer', img: '/games/btn-pricer.png', store: 'sot_pricer_day', tag: "Some days more, some days less" , cat: 'Numbers' },
+  { key: 'pricer', href: '/pricer', name: 'Pricer', img: '/games/btn-pricer.png', store: 'sot_pricer_day', tag: "Guess the price" , cat: 'Numbers' },
   { key: 'lode', href: '/lode', name: 'Lode', img: '/games/btn-lode.png', store: 'sot_lode_day', tag: "Seven letters, rare words pay" , cat: 'Word' },
   { key: 'etch', href: '/etch', name: 'Etch', img: '/games/btn-etch.png', store: 'sot_etch_day', tag: "A picture in the numbers" , cat: 'Logic' },
   { key: 'glyph', href: '/glyph', name: 'Glyph', img: '/games/btn-glyph.png', store: 'sot_glyph_day', tag: "A crossword with no clues" , cat: 'Word' },

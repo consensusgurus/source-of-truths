@@ -48,8 +48,7 @@ import { PUZZLES as HEARSAY_FULL } from '../hearsay/puzzles';
 import { PUZZLES as VENN_FULL } from '../venn/puzzles';
 import { PUZZLES as STANDS_FULL } from '../stands/puzzles';
 import { PUZZLES as BRACKET_FULL } from '../bracket/puzzles';
-// PRICER PULLED 2026-08-09 (see CLAUDE.md). Restore: grep -rn 'PRICER PULLED' daily index import
-// import { PUZZLES as PRICER_FULL } from '../pricer/puzzles';
+import { PUZZLES as PRICER_FULL } from '../pricer/puzzles';
 import { PUZZLES as LODE_FULL } from '../lode/puzzles';
 import { PUZZLES as ETCH_FULL } from '../etch/puzzles';
 import { PUZZLES as GLYPH_FULL } from '../glyph/puzzles';
@@ -129,7 +128,7 @@ const HEARSAY = HEARSAY_FULL.map(({ num, quizId, live, dateLabel, sunday }) => (
 const VENN = VENN_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const STANDS = STANDS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const BRACKET = BRACKET_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
-// const PRICER = PRICER_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const PRICER = PRICER_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const LODE = LODE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const ETCH = ETCH_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const GLYPH = GLYPH_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -272,8 +271,7 @@ const GAMES = [
   { key: 'venn', name: 'Venn', path: '/venn', tag: 'Sort the overlaps', accent: '#b45309', bg: '#fef3c7', border: 'rgba(180,83,9,0.35)', src: VENN },
   { key: 'stands', name: 'Stands', path: '/stands', tag: 'Rebuild the results', accent: T.blueDeep, bg: '#dbeafe', border: 'rgba(29,78,216,0.35)', src: STANDS },
   { key: 'bracket', name: 'Bracket', path: '/bracket', tag: 'Name every winner', accent: '#c2410c', bg: '#ffedd5', border: 'rgba(194,65,12,0.35)', src: BRACKET },
-  // PRICER PULLED 2026-08-09 (see CLAUDE.md). Restore: grep -rn 'PRICER PULLED' daily index tile
-  // { key: 'pricer', name: 'Pricer', path: '/pricer', tag: 'Some days more, some days less', accent: '#15803d', bg: '#dcfce7', border: 'rgba(21,128,61,0.35)', src: PRICER },
+  { key: 'pricer', name: 'Pricer', path: '/pricer', tag: 'Guess the price', accent: '#15803d', bg: '#dcfce7', border: 'rgba(21,128,61,0.35)', src: PRICER },
   { key: 'lode', name: 'Lode', path: '/lode', tag: 'Seven letters, rare words pay', accent: T.goldInk, bg: '#fef7e0', border: 'rgba(161,98,7,0.35)', src: LODE },
   { key: 'etch', name: 'Etch', path: '/etch', tag: 'A picture in the numbers', accent: '#4d7c0f', bg: '#f3f8e8', border: 'rgba(77,124,15,0.35)', src: ETCH },
   { key: 'glyph', name: 'Glyph', path: '/glyph', tag: 'A crossword with no clues', accent: '#334155', bg: T.surfaceAlt, border: 'rgba(51,65,85,0.35)', src: GLYPH },

@@ -42,8 +42,7 @@ export const DAILY_GAMES = [
   { key: 'venn', href: '/venn', name: 'Venn', tag: 'sort the overlaps', store: 'sot_venn_day', accent: '#b45309', bg: '#fdf0e3', border: 'rgba(180,83,9,0.35)' },
   { key: 'stands', href: '/stands', name: 'Stands', tag: 'rebuild the results', store: 'sot_stands_day', accent: T.blueDeep, bg: '#e8effd', border: 'rgba(29,78,216,0.35)' },
   { key: 'bracket', href: '/bracket', name: 'Bracket', tag: 'name every winner', store: 'sot_bracket_day', accent: '#c2410c', bg: '#fdece3', border: 'rgba(196,65,12,0.35)' },
-  // PRICER PULLED 2026-08-09 (see CLAUDE.md). Restore: grep -rn 'PRICER PULLED' promo tile
-  // { key: 'pricer', href: '/pricer', name: 'Pricer', tag: 'some days more, some days less', store: 'sot_pricer_day', accent: '#15803d', bg: '#dcfce7', border: 'rgba(21,128,61,0.35)' },
+  { key: 'pricer', href: '/pricer', name: 'Pricer', tag: 'guess the price', store: 'sot_pricer_day', accent: '#15803d', bg: '#dcfce7', border: 'rgba(21,128,61,0.35)' },
   { key: 'lode', href: '/lode', name: 'Lode', tag: 'seven letters, rare words pay', store: 'sot_lode_day', accent: T.goldInk, bg: '#fef7e0', border: 'rgba(161,98,7,0.35)' },
   { key: 'etch', href: '/etch', name: 'Etch', tag: 'a picture hidden in the numbers', store: 'sot_etch_day', accent: '#4d7c0f', bg: '#f3f8e8', border: 'rgba(77,124,15,0.35)' },
   { key: 'glyph', href: '/glyph', name: 'Glyph', tag: 'a crossword with no clues at all', store: 'sot_glyph_day', accent: '#334155', bg: T.surfaceAlt, border: 'rgba(51,65,85,0.35)' },

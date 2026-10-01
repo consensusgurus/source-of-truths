@@ -104,8 +104,7 @@ const GAMES = [
   { key: 'venn', href: '/venn', name: 'Venn', tag: 'Sort the overlaps', img: '/games/btn-venn.png' },
   { key: 'stands', href: '/stands', name: 'Stands', tag: 'Rebuild the results', img: '/games/btn-stands.png' },
   { key: 'bracket', href: '/bracket', name: 'Bracket', tag: 'Name every winner', img: '/games/btn-bracket.png' },
-  // PRICER PULLED 2026-08-09 (see CLAUDE.md). Restore: grep -rn 'PRICER PULLED' games grid tile
-  // { key: 'pricer', href: '/pricer', name: 'Pricer', tag: 'Some days more, some days less', img: '/games/btn-pricer.png' },
+  { key: 'pricer', href: '/pricer', name: 'Pricer', tag: 'Guess the price', img: '/games/btn-pricer.png' },
   { key: 'lode', href: '/lode', name: 'Lode', tag: 'Seven letters, rare words pay', img: '/games/btn-lode.png' },
   { key: 'etch', href: '/etch', name: 'Etch', tag: 'A picture in the numbers', img: '/games/btn-etch.png' },
   { key: 'glyph', href: '/glyph', name: 'Glyph', tag: 'A crossword with no clues', img: '/games/btn-glyph.png' },
@@ -162,7 +161,7 @@ const GAMES_BY_KEY = Object.fromEntries(GAMES.map((g) => [g.key, g]));
 const CATEGORIES = [
   { key: 'word', label: 'Word', keys: ['crux', 'strata', 'lode', 'encore', 'emcee', 'shards', 'garble', 'links', 'stet', 'tuck', 'warmer', 'glyph', 'anon', 'rung', 'hinge', 'babel', 'barter'] },
   { key: 'geography', label: 'Geography', keys: ['atlas', 'flank', 'span', 'ping'] },
-  { key: 'numbers', label: 'Numbers', keys: ['tally', 'calc', 'carve', 'cipher', 'crunch', 'blitz', 'blitzed', 'sums'] },
+  { key: 'numbers', label: 'Numbers', keys: ['tally', 'calc', 'carve', 'cipher', 'crunch', 'blitz', 'blitzed', 'sums', 'pricer'] },
   // Sudoku split out of Numbers on 2026-09-01. The nine keys are exactly the
   // Sudoku circuit's pool, so the shelf, the circuit and the category are one
   // list and cannot drift apart.

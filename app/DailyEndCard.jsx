@@ -115,7 +115,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-15' };
+const LAUNCH_PIN = { keys: ['pricer', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-15' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -357,8 +357,7 @@ const ALL_DAILY_GAMES = [
   { key: 'venn',   cat: 'logic',     name: 'Venn',   tag: 'Sort the overlaps',          blurb: 'Drop every item into the right slice of the overlapping circles, overlaps included.', href: '/venn' },
   { key: 'stands', cat: 'logic',     name: 'Stands', tag: 'Rebuild the results',       blurb: 'Reconstruct a full league table from a handful of scattered results and clues.', href: '/stands' },
   { key: 'bracket', cat: 'trivia',   name: 'Bracket', tag: 'Name every winner',        blurb: 'A real tournament bracket, empty. Fill in every winner round by round from memory.', href: '/bracket' },
-  // PRICER PULLED 2026-08-09 (see CLAUDE.md). Restore: grep -rn 'PRICER PULLED' end-card suggestion
-  // { key: 'pricer',  cat: 'numbers',  name: 'Pricer',  tag: 'Some days more, some days less', blurb: 'Sixteen real things from one category, seeded by price. Call every matchup before a single price tag is revealed.', href: '/pricer' },
+  { key: 'pricer',  cat: 'numbers',  name: 'Pricer',  tag: 'Guess the price', blurb: 'One real product a day and five guesses at its price, hot or cold after each. Your closest guess is your score.', href: '/pricer' },
   { key: 'lode',    cat: 'word',     name: 'Lode',    tag: 'Seven letters, rare words pay',     blurb: 'Seven letters and unlimited words. The rarer the word you find, the bigger it scores.', href: '/lode' },
   { key: 'etch',    cat: 'logic',    name: 'Etch',    tag: 'A picture in the numbers',   blurb: 'A nonogram: follow the row and column counts to uncover the picture hidden in the grid.', href: '/etch' },
   { key: 'hedge',   cat: 'logic',    name: 'Hedge',   tag: 'Draw one closed loop',       blurb: 'Draw a single unbroken loop that satisfies every number printed on the board.', href: '/hedge' },

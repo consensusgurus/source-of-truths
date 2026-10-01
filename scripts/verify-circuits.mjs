@@ -111,7 +111,7 @@ const ASCENT_SLACK = 0.25;
 
 // Games that cannot be in a circuit, and why.
 const EXCLUDED = {
-  pricer: 'pulled from the server slate (GAME_PUZZLES), so it has no board, no field and no points',
+  pricer: 'not in a circuit yet: a price guess has no natural partner among the number games (owner call)',
 };
 
 // ── 1. shape ────────────────────────────────────────────────────────────────

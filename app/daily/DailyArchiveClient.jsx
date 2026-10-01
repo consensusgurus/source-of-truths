@@ -41,7 +41,7 @@ const CAL_WD = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const FAMILIES = [
   { key: 'word', label: 'Word', keys: ['crux', 'strata', 'lode', 'encore', 'emcee', 'shards', 'garble', 'links', 'stet', 'tuck', 'warmer', 'glyph', 'anon', 'rung', 'hinge', 'babel', 'barter'] },
   { key: 'geography', label: 'Geography', keys: ['atlas', 'flank', 'span', 'ping'] },
-  { key: 'numbers', label: 'Numbers', keys: ['tally', 'calc', 'carve', 'cipher', 'crunch', 'blitz', 'blitzed', 'sums'] },
+  { key: 'numbers', label: 'Numbers', keys: ['tally', 'calc', 'carve', 'cipher', 'crunch', 'blitz', 'blitzed', 'sums', 'pricer'] },
   // Sudoku split out of Numbers on 2026-09-01, the same nine keys the Sudoku
   // circuit pools, so this shelf and that circuit stay one list.
   { key: 'sudoku', label: 'Sudoku', keys: ['suds', 'sixes', 'towers', 'quilt', 'cages', 'sando', 'mercury', 'polka', 'knight', 'diag', 'frame', 'rim', 'whittle'] },
