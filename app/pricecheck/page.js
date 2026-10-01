@@ -43,11 +43,11 @@ const maskOf = (cents) => fmtCents(Math.floor(cents / 100) * 100).replace(/^\$/,
 
 export default function PriceCheckPage({ searchParams }) {
   const today = etTodayServer();
-  // PRE-LAUNCH PREVIEW ONLY: before the family's first full day (2026-10-02),
+  // PRE-LAUNCH PREVIEW ONLY: before the family's first day (2026-10-01),
   // ?preview=1 deals each bank's first board so the run can be checked on
   // production. From launch day on it does nothing, so it can never show a
   // future price.
-  const preview = today < '2026-10-02' && searchParams && searchParams.preview === '1';
+  const preview = today < '2026-10-01' && searchParams && searchParams.preview === '1';
   const sections = [];
   for (const key of PRICE_KEYS) {
     const bank = BANKS[key] || [];
