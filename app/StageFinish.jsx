@@ -759,6 +759,11 @@ export default function StageFinish({
   // rest of the page learns about the new name the same way it always did.
   guest = false,
   onClaimed = null,
+  // THE HAND-OFF IS OPT-OUT PER GAME (owner, 2026-10-01). Pricer finishes on a
+  // product pop-up, and a countdown that walks the reader to another game while
+  // they are looking at it fights the one thing that page is for. Default true,
+  // so every other game is unchanged.
+  handoff = true,
 }) {
   // THE RETRY ENDING. On the nine games where a replay genuinely counts, an
   // unsolved finish is not a page of furniture, it is one control (see the
@@ -1160,7 +1165,7 @@ export default function StageFinish({
   const [left, setLeft] = useState(null);
   const [handoffOff, setHandoffOff] = useState(false);
   const handoffTarget = setNext ? { href: setNext.g.href || `/${setNext.g.key}`, onClick: null } : (forward || null);
-  const handoffOn = !!(freshFinish && !archived && !isRetry && !handoffOff && handoffTarget && (handoffTarget.href || handoffTarget.onClick));
+  const handoffOn = !!(handoff && freshFinish && !archived && !isRetry && !handoffOff && handoffTarget && (handoffTarget.href || handoffTarget.onClick));
   useEffect(() => {
     if (!handoffOn || !floodDone) { setLeft(null); return undefined; }
     // WALL CLOCK, not ticks: a throttled tab fires this every second, and a

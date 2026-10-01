@@ -192,6 +192,11 @@ export default function PricerClient({ puzzles = [], dayByNum = {}, forceNum = n
   const [gateRules, setGateRules] = useState(false);
   const [copied, setCopied] = useState(false);
   const [revealed, setRevealed] = useState(false);
+  // THE PRODUCT POP-UP (owner, 2026-10-01). Pricer's own ending: once the
+  // finish curtain has landed, the product itself comes up over it with its
+  // price, the date that price was read, and the link. Once per page load.
+  const [showProduct, setShowProduct] = useState(false);
+  const productShownRef = useRef(false);
   const [imgOk, setImgOk] = useState(null);
   const [shareCta, setShareCta] = useState('Share');
   useEffect(() => { if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`); }, []);
@@ -286,6 +291,18 @@ export default function PricerClient({ puzzles = [], dayByNum = {}, forceNum = n
       }
     } catch (e) {}
   }, [g, hydrated, STORE_KEY, PUZZLE, puzzles]);
+
+  useEffect(() => {
+    if (!hydrated || g.status === 'playing' || productShownRef.current) return undefined;
+    const t = setTimeout(() => { productShownRef.current = true; setShowProduct(true); }, 2600);
+    return () => clearTimeout(t);
+  }, [hydrated, g.status]);
+  useEffect(() => {
+    if (!showProduct) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') setShowProduct(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [showProduct]);
 
   useEffect(() => {
     if (g.status === 'playing') return undefined;
@@ -562,7 +579,7 @@ export default function PricerClient({ puzzles = [], dayByNum = {}, forceNum = n
               <div className="pr-eb" style={{ color: ACC_INK }}>{PUZZLE.sunday ? `Sunday Edition · ${DAY.cat}` : DAY.cat}</div>
               <h2 className="pr-name">{DAY.name}</h2>
               <div style={{ fontSize: 12.5, color: FADED, fontWeight: 600 }}>
-                {DAY.shop === 'amazon' ? `Sold on Amazon · price checked ${gathered}` : `${DAY.note} · checked ${gathered}`}
+                {DAY.shop === 'amazon' ? <>Sold on Amazon · <b style={{ color: INK }}>pricing as of {gathered}</b></> : <>{DAY.note} · <b style={{ color: INK }}>pricing as of {gathered}</b></>}
               </div>
             </div>
           </div>
@@ -608,8 +625,8 @@ export default function PricerClient({ puzzles = [], dayByNum = {}, forceNum = n
               </div>
               <div style={{ marginTop: 10, fontSize: 11.5, color: FADED, fontWeight: 600, lineHeight: 1.5 }}>
                 {DAY.shop === 'amazon'
-                  ? `The price Amazon showed on ${gathered}. It may have moved since.`
-                  : <>{DAY.note}, read on {gathered}. Taxes, destination and options extra. {DAY.creditUrl ? <a href={DAY.creditUrl} target="_blank" rel="noopener" style={{ color: FADED }}>{DAY.credit}</a> : DAY.credit}</>}
+                  ? `Pricing as of ${gathered}: the price Amazon showed that day. It may have moved since.`
+                  : <>Pricing as of {gathered}: {DAY.note.charAt(0).toLowerCase() + DAY.note.slice(1)}. Taxes, destination and options extra. {DAY.creditUrl ? <a href={DAY.creditUrl} target="_blank" rel="noopener" style={{ color: FADED }}>{DAY.credit}</a> : DAY.credit}</>}
               </div>
             </div>
           )}
@@ -655,6 +672,7 @@ export default function PricerClient({ puzzles = [], dayByNum = {}, forceNum = n
               day={dayStats}
               streak={isTodays ? myStats.cur : null}
               missLabel="Guesses"
+              handoff={false}
               archive={puzzles
                 .filter((p) => p.live <= etToday() && p.num !== PUZZLE.num)
                 .sort((x, y) => y.num - x.num)
@@ -665,7 +683,8 @@ export default function PricerClient({ puzzles = [], dayByNum = {}, forceNum = n
                 }))}
               options={[
                 { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your hot and cold, not the price', kind: 'gold', onClick: copyShare },
-                { tone: 'board', label: 'See the price', sub: 'Your guesses and the product link', onClick: () => setRevealed(true) },
+                { tone: 'board', label: 'Return to board', sub: 'Your five guesses, hot and cold', onClick: () => setRevealed(true) },
+                { tone: 'reveal', label: 'See the product', sub: `The price and the link · as of ${gathered}`, onClick: () => setShowProduct(true) },
                 prevPuzzle && { tone: 'another', label: 'Play another Pricer', sub: `No. ${prevPuzzle.num}, yesterday’s product`, href: `/pricer?p=${prevPuzzle.num}` },
                 nextUp && { tone: 'similar', label: 'Play similar', sub: `${nextUp.name} · ${nextUp.tag}`, href: nextUp.href },
                 { tone: 'replay', label: 'Replay', sub: 'This product again, unscored', onClick: resetGame },
@@ -704,6 +723,44 @@ export default function PricerClient({ puzzles = [], dayByNum = {}, forceNum = n
         )}
         </div>
       </div>
+
+      {showProduct && !playing && (
+        <div className="pr-pop" onClick={() => setShowProduct(false)} role="dialog" aria-modal="true" aria-label={`${DAY.name}: the price`}>
+          <style dangerouslySetInnerHTML={{ __html: `
+            .pr-pop{position:fixed;inset:0;z-index:95;background:rgba(6,10,20,.62);display:flex;align-items:center;justify-content:center;padding:16px;animation:prfade .25s ease both;}
+            .pr-popc{width:100%;max-width:420px;background:var(--stg-raise,#ffffff);border:1px solid var(--stg-line,rgba(20,22,28,.14));border-radius:16px;overflow:hidden;font-family:${SANS};box-shadow:0 24px 60px rgba(0,0,0,.35);animation:prrise .35s cubic-bezier(.2,.8,.2,1) both;max-height:92vh;overflow-y:auto;}
+            .pr-popi{background:var(--pr-mat);height:230px;display:flex;align-items:center;justify-content:center;position:relative;}
+            .pr-popi img{max-width:86%;max-height:88%;object-fit:contain;}
+            .pr-popi.cover img{max-width:none;max-height:none;width:100%;height:100%;object-fit:cover;}
+            .pr-popx{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;border:0;background:rgba(6,10,20,.6);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+            @keyframes prfade{from{opacity:0}to{opacity:1}}
+            @keyframes prrise{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
+            @media(prefers-reduced-motion:reduce){.pr-pop,.pr-popc{animation:none;}}
+          ` }} />
+          <div className="pr-popc" onClick={(e) => e.stopPropagation()}>
+            <div className={`pr-popi${DAY.shop === 'brand' ? ' cover' : ''}`}>
+              <img src={DAY.img} alt={DAY.name} referrerPolicy="no-referrer" />
+              <button type="button" className="pr-popx" aria-label="Close" onClick={() => setShowProduct(false)}><X size={18} /></button>
+            </div>
+            <div style={{ padding: '16px 18px 18px' }}>
+              <div className="pr-eb" style={{ color: ACC_INK }}>{PUZZLE.sunday ? `Sunday Edition · ${DAY.cat}` : DAY.cat}</div>
+              <div style={{ fontSize: 17, fontWeight: 800, color: INK, lineHeight: 1.25, margin: '4px 0 10px' }}>{DAY.name}</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 36, fontWeight: 900, letterSpacing: '-0.02em', color: INK }}>{fmtCents(PRICE)}</span>
+                <span style={{ fontSize: 14, fontWeight: 800, color: ACC_INK }}>{score}/10{best ? ` · you said ${fmtCents(best.c)}` : ''}</span>
+              </div>
+              <div style={{ marginTop: 6, fontSize: 12.5, fontWeight: 700, color: FADED, lineHeight: 1.45 }}>
+                Pricing as of {gathered}: {DAY.shop === 'amazon' ? 'the price Amazon showed that day. It may have moved since.' : `${DAY.note.charAt(0).toLowerCase() + DAY.note.slice(1)}, before taxes, destination and options.`}
+              </div>
+              <a className="pr-buy" href={DAY.href} target="_blank" rel={DAY.shop === 'amazon' ? 'noopener sponsored' : 'noopener'} style={{ marginTop: 14, width: '100%', justifyContent: 'center', boxSizing: 'border-box' }}>
+                {DAY.shop === 'amazon' ? 'See it on Amazon' : 'See it on the maker’s site'} <ExternalLink size={14} />
+              </a>
+              <button type="button" onClick={() => setShowProduct(false)} style={{ marginTop: 10, width: '100%', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>Back to your results</button>
+              {DAY.credit && <div style={{ marginTop: 8, fontSize: 10.5, color: FADED, fontWeight: 600 }}>{DAY.credit}</div>}
+            </div>
+          </div>
+        </div>
+      )}
 
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 

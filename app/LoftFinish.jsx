@@ -95,6 +95,8 @@ export default function LoftFinish({
   title, detail, iq = null, board = null, day = null, streak = null,
   missLabel: missLabelProp = null, archive = null, gameRank = null, outcome = null, options = [],
   name = null, catRank = null,
+  // Passed straight to StageFinish: false switches off the timed hand-off to Up next.
+  handoff = true,
   // ── the three quiz overrides (2026-08-20) ────────────────────────────────
   // A QUIZ finishes on this same card, and three things on it are written for a
   // DAILY and are wrong on a quiz: the board is that quiz's all-time board and
@@ -960,6 +962,7 @@ export default function LoftFinish({
         title={retryVerdict || title} detail={detail} iq={iq} board={board} day={day} streak={streak}
         missLabel={missLabel} gameRank={gameRank} outcome={outcome} options={options} name={name}
         archive={archive}
+        handoff={handoff}
         /* WHAT THE BOARD IS. These two were the quiz overrides that stopped
            here: the Loft card honoured `boardLabel` and the stage ending, which
            became the ending for every quiz on 2026-09-04, had never been told
