@@ -36,7 +36,9 @@
 
 import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
-import { DAILY_GAME_MAP, PREMIERES } from '@/lib/daily-games';
+import { DAILY_GAME_MAP, PREMIERES, PREMIERE_RUNS } from '@/lib/daily-games';
+import { PRICE_GAMES } from '@/lib/price-games';
+import { runDoneToday } from './circuits/RunDoorPop';
 import { RAMP_INK, RAMP_INK_LIGHT, categoryColor, categoryColorLight, rampIndexFor } from '@/lib/category-ramp';
 import GameGlyph from './GameGlyph';
 import { fetchDayStatus, etToday } from './useDayStats';
@@ -93,6 +95,7 @@ function arrivalBusy() {
 
 export default function PremierePop() {
   const [games, setGames] = useState(null);
+  const [run, setRun] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -104,9 +107,28 @@ export default function PremierePop() {
     } catch (e) {}
 
     const today = etToday();
-    const open = PREMIERES.filter((p) => today >= p.from && today <= p.until && DAILY_GAME_MAP[p.key]);
-    if (!open.length) return;
+    // A run premiere wins outright: one card for the run, nothing for its
+    // members, and every member stamped so no single-game card follows.
+    const runOpen = PREMIERE_RUNS.filter((r) => today >= r.from && today <= r.until);
+    const runMembers = new Set(runOpen.flatMap((r) => r.keys));
+    const open = PREMIERES.filter((p) => today >= p.from && today <= p.until && DAILY_GAME_MAP[p.key] && !runMembers.has(p.key));
+    if (!open.length && !runOpen.length) return;
     if (!force && !returning()) return;
+    const runCand = runOpen.find((r) => force || (!safeGet(KEY(r.id)) && !runDoneToday(r.id)));
+    if (runCand) {
+      const timers = [];
+      const started = Date.now();
+      const tick = () => {
+        if (!alive) return;
+        if (arrivalBusy() && Date.now() - started < 15000) { timers.push(setTimeout(tick, 300)); return; }
+        if (Date.now() - started >= 15000 && arrivalBusy()) return;
+        if (!force) for (const k of [runCand.id, ...runCand.keys, ...open.map((p) => p.key)]) { try { localStorage.setItem(KEY(k), today); } catch (e) {} }
+        setRun(runCand);
+      };
+      timers.push(setTimeout(tick, 600));
+      return () => { alive = false; timers.forEach(clearTimeout); };
+    }
+    if (!open.length) return;
 
     let cands = open.map((p) => p.key).filter((k) => force || (!playedLocally(k) && !safeGet(KEY(k))));
     if (!cands.length) return;
@@ -142,11 +164,37 @@ export default function PremierePop() {
   }, []);
 
   useEffect(() => {
-    if (!games) return;
-    const k = (e) => { if (e.key === 'Escape') setGames(null); };
+    if (!games && !run) return;
+    const k = (e) => { if (e.key === 'Escape') { setGames(null); setRun(null); } };
     window.addEventListener('keydown', k);
     return () => window.removeEventListener('keydown', k);
-  }, [games]);
+  }, [games, run]);
+
+  if (run) {
+    let lightR = true;
+    try { const el = document.querySelector('.stage-page'); lightR = !el || el.getAttribute('data-stage-theme') !== 'dark'; } catch (e) {}
+    const accR = lightR ? categoryColorLight('Numbers') : categoryColor('Numbers');
+    const riR = rampIndexFor('Numbers');
+    const onR = lightR ? (riR >= 0 ? RAMP_INK_LIGHT[riR] : RAMP_INK) : RAMP_INK;
+    const varsR = { '--prm-acc': accR, '--prm-on': onR, '--prm-tint': `color-mix(in srgb, ${accR} 16%, transparent)` };
+    const whenR = run.from === etToday() ? 'today' : dateLabel(run.from);
+    return (
+      <div className="prm-scrim" onClick={() => setRun(null)}>
+        <style dangerouslySetInnerHTML={{ __html: CSS }} />
+        <div className="prm" role="dialog" aria-labelledby="prm-t" style={varsR} onClick={(e) => e.stopPropagation()}>
+          <button className="prm-x" aria-label="Close" onClick={() => setRun(null)}><X size={16} /></button>
+          <div className="prm-eye"><i /><span>{whenR === 'today' ? 'New today' : 'New this week'} · Daily run</span></div>
+          <h2 id="prm-t">{run.name}</h2>
+          <p className="prm-lede">Five new price games premiered {whenR}, played back to back for one score out of 50: an Amazon find, a new vehicle, a home for sale, a trip and a luxury piece. Five guesses at each.</p>
+          <div className="prm-tags">
+            {run.keys.map((k) => { const g = PRICE_GAMES[k]; return g ? <span key={k} style={{ background: lightR ? g.tagLight : g.tagDark, color: lightR ? '#ffffff' : '#0b0f1a' }}>{g.name}</span> : null; })}
+          </div>
+          <a className="prm-go" href={run.href} onClick={() => setRun(null)}>Play {run.name}</a>
+          <div className="prm-foot">Each one is also its own daily on the Numbers shelf.</div>
+        </div>
+      </div>
+    );
+  }
 
   if (!games) return null;
   const rows = games.map((k) => DAILY_GAME_MAP[k]).filter(Boolean);
@@ -206,6 +254,10 @@ function dateLabel(iso) {
 }
 
 const CSS = `
+.prm-tags{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 4px;}
+.prm-tags span{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:5px 9px;border-radius:5px;}
+.prm-go{display:block;margin-top:14px;text-align:center;text-decoration:none;font-weight:800;font-size:15px;padding:13px;border-radius:11px;background:var(--prm-acc);color:var(--prm-on);}
+
 .prm-scrim{position:fixed;inset:0;z-index:8000;display:flex;align-items:center;justify-content:center;padding:18px;
   background:rgba(11,15,26,.55);}
 .prm{width:min(440px,100%);background:var(--stg-raise,#fff);color:var(--stg-ink,#0b0d12);

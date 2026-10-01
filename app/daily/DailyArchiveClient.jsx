@@ -41,7 +41,7 @@ const CAL_WD = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const FAMILIES = [
   { key: 'word', label: 'Word', keys: ['crux', 'strata', 'lode', 'encore', 'emcee', 'shards', 'garble', 'links', 'stet', 'tuck', 'warmer', 'glyph', 'anon', 'rung', 'hinge', 'babel', 'barter'] },
   { key: 'geography', label: 'Geography', keys: ['atlas', 'flank', 'span', 'ping'] },
-  { key: 'numbers', label: 'Numbers', keys: ['tally', 'calc', 'carve', 'cipher', 'crunch', 'blitz', 'blitzed', 'sums', 'pricer'] },
+  { key: 'numbers', label: 'Numbers', keys: ['tally', 'calc', 'carve', 'cipher', 'crunch', 'blitz', 'blitzed', 'sums', 'pricer', 'dealer', 'realtor', 'agent', 'curator'] },
   // Sudoku split out of Numbers on 2026-09-01, the same nine keys the Sudoku
   // circuit pools, so this shelf and that circuit stay one list.
   { key: 'sudoku', label: 'Sudoku', keys: ['suds', 'sixes', 'towers', 'quilt', 'cages', 'sando', 'mercury', 'polka', 'knight', 'diag', 'frame', 'rim', 'whittle'] },
@@ -78,7 +78,7 @@ const NAVY_ACCENT = {
   sando: '#5ec8d0', cages: '#cba6f7', quilt: '#eda5e6', tally: '#4cb377', suds: '#f0894c', circa: '#38b6cf', extra: '#e06a6a', carve: '#a483f0', stet: '#41b1e8',
   outwit: '#c3cfe3', tuck: '#e0a568', alibi: '#ef8896', cipher: '#3fc9b8', ping: '#4cb3f0', warmer: '#f3705c',
   jester: '#a78bfa', sworn: '#f472b6', outrank: '#8b8af5', shards: '#2dd4bf',
-  axiom: '#5eead4', hearsay: '#d8b4fe', venn: '#fbbf24', stands: '#93c5fd', bracket: '#fb923c', pricer: '#4ade80',
+  axiom: '#5eead4', hearsay: '#d8b4fe', venn: '#fbbf24', stands: '#93c5fd', bracket: '#fb923c', pricer: '#4ade80', dealer: '#fbbf24', realtor: '#7dd3fc', agent: '#f472b6', curator: '#c4b5fd',
   lode: '#e0b13f', etch: '#a3e635', hedge: '#67e8f9', listed: '#e9b8f5', mate: '#d9b38c', four: '#9db8ff', park: '#f0cf9a', impound: '#e3bd85', junkyard: '#d9b070', snug: '#91a7ff', check: '#5fd6b8', rung: '#7fd4e8', crunch: '#f0c07a', taire: '#86efac', fib: '#c4b5fd', streak: '#fb7185', feud: '#fda4af',
 };
 

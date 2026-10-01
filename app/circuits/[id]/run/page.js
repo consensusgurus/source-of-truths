@@ -184,6 +184,8 @@ export default function CircuitRunPage({ params }) {
   // question banks: there is nothing to serve as one quiz, so the landing page
   // with its ordinary hand-off is the honest destination.
   if (!circuit || isMarquee(id) || !isRunnableCircuit(id)) redirect(`/circuits/${encodeURIComponent(id || '')}`);
+  // Price Check is served at its own address (lib/circuits `path`).
+  if (runEngine(id) === 'price') redirect('/pricecheck');
 
   const today = etTodayServer();
   const label = (() => {

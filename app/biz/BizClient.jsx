@@ -29,6 +29,7 @@ import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
+import RunDoorPop from '../circuits/RunDoorPop';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
@@ -835,6 +836,10 @@ export default function BizClient({ puzzles = [], questionsByNum = {}, forceNum 
       )}
 
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
+      {/* THE GAUNTLET DOOR (owner, 2026-10-01): a player who opens one of the
+          seven quizzes on its own page is offered the whole Trivia Gauntlet
+          first, on the gate. See app/circuits/RunDoorPop.jsx. */}
+      <RunDoorPop id="gauntlet" ready={hydrated && preStart && isTodays} self="Biz" />
 
       {showHelp && (
         <div onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}

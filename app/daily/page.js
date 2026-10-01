@@ -49,6 +49,10 @@ import { PUZZLES as VENN_FULL } from '../venn/puzzles';
 import { PUZZLES as STANDS_FULL } from '../stands/puzzles';
 import { PUZZLES as BRACKET_FULL } from '../bracket/puzzles';
 import { PUZZLES as PRICER_FULL } from '../pricer/puzzles';
+import { PUZZLES as DEALER_FULL } from '../dealer/puzzles';
+import { PUZZLES as REALTOR_FULL } from '../realtor/puzzles';
+import { PUZZLES as AGENT_FULL } from '../agent/puzzles';
+import { PUZZLES as CURATOR_FULL } from '../curator/puzzles';
 import { PUZZLES as LODE_FULL } from '../lode/puzzles';
 import { PUZZLES as ETCH_FULL } from '../etch/puzzles';
 import { PUZZLES as GLYPH_FULL } from '../glyph/puzzles';
@@ -129,6 +133,10 @@ const VENN = VENN_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num,
 const STANDS = STANDS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const BRACKET = BRACKET_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const PRICER = PRICER_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const DEALER = DEALER_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel, sunday: false }));
+const REALTOR = REALTOR_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel, sunday: false }));
+const AGENT = AGENT_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel, sunday: false }));
+const CURATOR = CURATOR_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel, sunday: false }));
 const LODE = LODE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const ETCH = ETCH_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const GLYPH = GLYPH_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -272,6 +280,10 @@ const GAMES = [
   { key: 'stands', name: 'Stands', path: '/stands', tag: 'Rebuild the results', accent: T.blueDeep, bg: '#dbeafe', border: 'rgba(29,78,216,0.35)', src: STANDS },
   { key: 'bracket', name: 'Bracket', path: '/bracket', tag: 'Name every winner', accent: '#c2410c', bg: '#ffedd5', border: 'rgba(194,65,12,0.35)', src: BRACKET },
   { key: 'pricer', name: 'Pricer', path: '/pricer', tag: 'Guess the price', accent: '#15803d', bg: '#dcfce7', border: 'rgba(21,128,61,0.35)', src: PRICER },
+  { key: 'dealer', name: 'Dealer', path: '/dealer', tag: 'Guess the sticker price', accent: '#15803d', bg: '#dcfce7', border: 'rgba(21,128,61,0.35)', src: DEALER },
+  { key: 'realtor', name: 'Realtor', path: '/realtor', tag: 'Guess the asking price', accent: '#15803d', bg: '#dcfce7', border: 'rgba(21,128,61,0.35)', src: REALTOR },
+  { key: 'agent', name: 'Agent', path: '/agent', tag: 'Guess the fare', accent: '#15803d', bg: '#dcfce7', border: 'rgba(21,128,61,0.35)', src: AGENT },
+  { key: 'curator', name: 'Curator', path: '/curator', tag: 'Guess what it sold for', accent: '#15803d', bg: '#dcfce7', border: 'rgba(21,128,61,0.35)', src: CURATOR },
   { key: 'lode', name: 'Lode', path: '/lode', tag: 'Seven letters, rare words pay', accent: T.goldInk, bg: '#fef7e0', border: 'rgba(161,98,7,0.35)', src: LODE },
   { key: 'etch', name: 'Etch', path: '/etch', tag: 'A picture in the numbers', accent: '#4d7c0f', bg: '#f3f8e8', border: 'rgba(77,124,15,0.35)', src: ETCH },
   { key: 'glyph', name: 'Glyph', path: '/glyph', tag: 'A crossword with no clues', accent: '#334155', bg: T.surfaceAlt, border: 'rgba(51,65,85,0.35)', src: GLYPH },

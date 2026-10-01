@@ -115,7 +115,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['pricer', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-15' };
+const LAUNCH_PIN = { keys: ['pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-15' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -165,6 +165,10 @@ export const GAME_META = {
   stands:  { accent: T.blueDeep, badgeBg: T.blueDeep, badgeInk: T.white, Fin: Table2 },
   bracket: { accent: '#c2410c', badgeBg: '#c2410c', badgeInk: T.white, Fin: TrophyFin },
   pricer: { accent: '#15803d', badgeBg: '#15803d', badgeInk: T.white, Fin: TrophyFin },
+  dealer: { accent: '#15803d', badgeBg: '#15803d', badgeInk: T.white, Fin: TrophyFin },
+  realtor: { accent: '#15803d', badgeBg: '#15803d', badgeInk: T.white, Fin: TrophyFin },
+  agent: { accent: '#15803d', badgeBg: '#15803d', badgeInk: T.white, Fin: TrophyFin },
+  curator: { accent: '#15803d', badgeBg: '#15803d', badgeInk: T.white, Fin: TrophyFin },
   lode: { accent: T.goldInk, badgeBg: T.goldInk, badgeInk: T.white, Fin: TrophyFin },
   etch: { accent: '#4d7c0f', badgeBg: '#4d7c0f', badgeInk: T.white, Fin: ImageIcon },
   glyph: { accent: '#334155', badgeBg: '#334155', badgeInk: T.white, Fin: KeyRound },
@@ -358,6 +362,10 @@ const ALL_DAILY_GAMES = [
   { key: 'stands', cat: 'logic',     name: 'Stands', tag: 'Rebuild the results',       blurb: 'Reconstruct a full league table from a handful of scattered results and clues.', href: '/stands' },
   { key: 'bracket', cat: 'trivia',   name: 'Bracket', tag: 'Name every winner',        blurb: 'A real tournament bracket, empty. Fill in every winner round by round from memory.', href: '/bracket' },
   { key: 'pricer',  cat: 'numbers',  name: 'Pricer',  tag: 'Guess the price', blurb: 'One real product a day and five guesses at its price, hot or cold after each. Your closest guess is your score.', href: '/pricer' },
+  { key: 'dealer',  cat: 'numbers',  name: 'Dealer',  tag: 'Guess the sticker price', blurb: 'One vehicle a day, from a hatchback to a work van to a supercar, and five guesses at its starting price.', href: '/dealer' },
+  { key: 'realtor',  cat: 'numbers',  name: 'Realtor',  tag: 'Guess the asking price', blurb: 'One house for sale a day, three photos and the basics, and five guesses at the asking price.', href: '/realtor' },
+  { key: 'agent',  cat: 'numbers',  name: 'Agent',  tag: 'Guess the fare', blurb: 'One trip a day, a named flight or a hotel night, and five guesses at the fare.', href: '/agent' },
+  { key: 'curator',  cat: 'numbers',  name: 'Curator',  tag: 'Guess what it sold for', blurb: 'One luxury piece a day, off the auction block or off the shelf, and five guesses at the price.', href: '/curator' },
   { key: 'lode',    cat: 'word',     name: 'Lode',    tag: 'Seven letters, rare words pay',     blurb: 'Seven letters and unlimited words. The rarer the word you find, the bigger it scores.', href: '/lode' },
   { key: 'etch',    cat: 'logic',    name: 'Etch',    tag: 'A picture in the numbers',   blurb: 'A nonogram: follow the row and column counts to uncover the picture hidden in the grid.', href: '/etch' },
   { key: 'hedge',   cat: 'logic',    name: 'Hedge',   tag: 'Draw one closed loop',       blurb: 'Draw a single unbroken loop that satisfies every number printed on the board.', href: '/hedge' },

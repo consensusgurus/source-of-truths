@@ -22,7 +22,7 @@ import {
   circuitById, circuitKeysFor, isMarquee,
   circuitPageHref, circuitShareUrl, circuitShareInvite, circuitShareResult,
   SHARE_HOST_FOR_CIRCUITS, CIRCUIT_BASE,
-  RUN_GAMES, JAM_RUN_GAMES, RUN_ENGINES, runGamesFor, runEngine, isRunnableCircuit, runHref, circuitScoreMode,
+  RUN_GAMES, JAM_RUN_GAMES, PRICE_RUN_GAMES, RUN_ENGINES, runGamesFor, runEngine, isRunnableCircuit, runHref, circuitScoreMode,
 } from '../lib/circuits.js';
 import { SHARE_HOST } from '../lib/site.js';
 
@@ -104,6 +104,8 @@ const MED = {
   // 25 multiple-choice questions. Replace with the measured median once the
   // board has a fortnight of rows.
   biz: 45,
+  // The Price Check family, estimated (2026-10-01): five guesses, about a minute each.
+  pricer: 60, dealer: 60, realtor: 60, agent: 60, curator: 60,
 };
 // The ascent tolerance, same reasoning as the Five's: the medians drift, and a
 // re-measure must not fail a roster that was correctly ordered when it shipped.
@@ -111,7 +113,6 @@ const ASCENT_SLACK = 0.25;
 
 // Games that cannot be in a circuit, and why.
 const EXCLUDED = {
-  pricer: 'not in a circuit yet: a price guess has no natural partner among the number games (owner call)',
 };
 
 // ── 1. shape ────────────────────────────────────────────────────────────────
@@ -162,7 +163,7 @@ for (const c of CIRCUITS) {
     const off = (c.keys || []).filter((k) => !runGamesFor(c.id).includes(k));
     if (off.length) fails.push(`${c.id}: flagged run (${eng}) but holds ${off.join(', ')}, which that engine cannot deal`);
     if (!isRunnableCircuit(c.id)) fails.push(`${c.id}: flagged run but isRunnableCircuit says otherwise`);
-    if (runHref(c.id) !== `${CIRCUIT_BASE}/${c.id}/run`) fails.push(`${c.id}: runHref is ${runHref(c.id)}`);
+    if (runHref(c.id) !== (c.path || `${CIRCUIT_BASE}/${c.id}/run`)) fails.push(`${c.id}: runHref is ${runHref(c.id)}`);
   } else if (isRunnableCircuit(c.id)) {
     fails.push(`${c.id}: isRunnableCircuit is true without the run flag`);
   }
@@ -644,8 +645,11 @@ for (const c of ALL_CIRCUITS) {
     if (circuitScoreMode(c.id) !== c.score) fails.push(`${c.id}: declares score '${c.score}' but circuitScoreMode says otherwise`);
     const keys = circuitKeysFor(c.id, todayIso);
     if (c.score === 'correct') {
-      const off = keys.filter((k) => !RUN_GAMES.includes(k));
-      if (off.length) fails.push(`${c.id}: ranks on questions right but holds ${off.join(', ')}, which are not scored in questions`);
+      // The price family (2026-10-01) is the other same-unit set: five
+      // guesses, scored 0 to 10 on one ratio ladder, so a sum is honest.
+      const unit = runEngine(c.id) === 'price' ? PRICE_RUN_GAMES : RUN_GAMES;
+      const off = keys.filter((k) => !unit.includes(k));
+      if (off.length) fails.push(`${c.id}: ranks on a summed score but holds ${off.join(', ')}, which are not scored in the same unit`);
     } else {
       // 'time' (2026-09-05): a clock board is honest only over games that are
       // solve-or-nothing races, where the per-game score is a grade against
