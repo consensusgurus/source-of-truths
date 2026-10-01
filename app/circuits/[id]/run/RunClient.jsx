@@ -54,6 +54,7 @@ import GauntletFinale from '../../GauntletFinale';
 import MissList, { missOf, MISS_CSS } from '../../RunMisses';
 import useCircuitHistory from '../../useCircuitHistory';
 import { T } from '@/lib/theme';
+import RunNudgePop from '../../RunNudgePop';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
@@ -746,6 +747,10 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
     // and its ink outright, which the stylesheet does explicitly.
     <div className="rn" style={{ minHeight: '100vh', background: T.ground, position: 'relative', overflowX: 'hidden' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      {/* FROM ONE RUN TO THE OTHER (owner, 2026-10-01): a Trivia Gauntlet
+          finished in this sitting offers Price Check once the finale has
+          played, unless Price Check is already done today. */}
+      {circuitId === 'gauntlet' && <RunNudgePop target="pricecheck" ready={done && doneAtLoad.current === false && !curtain} delay={3500} />}
 
       {/* THE ONLY CHROME. Not LoftCap and not the site footer: the run is a
           sitting you sit down to, and every band above or below it was another

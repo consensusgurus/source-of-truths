@@ -1,4 +1,4 @@
-// scripts/verify-pricer.mjs — the Pricer bank (one product a day, relaunched 2026-10-02).
+// scripts/verify-pricer.mjs — the Pricer bank (one Amazon product a day; no Sunday Edition since 2026-10-01).
 //
 //   node scripts/verify-pricer.mjs
 //   VERIFY_PRICER_BANK=/path/to/puzzles.js node scripts/verify-pricer.mjs   (mutation runs)
@@ -17,8 +17,7 @@ const fails = [], warns = [];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const BANNED_HOSTS = /googleusercontent\.com|ggpht\.com|fbcdn\.net|cdninstagram\.com|fbsbx\.com/i;
 const MAX_AGE_DAYS = 60, WARN_AGE_DAYS = 45;
-const WEEKDAY_MAX = 300000;   // $3,000: above this it belongs on a Sunday
-const SUNDAY_MIN = 500000;    // $5,000: below this it is not a big-ticket day
+const AMAZON_MAX = 300000;    // $3,000: above this it belongs in Dealer, Realtor or Curator
 const dayMs = 86400000;
 const decade = (c) => Math.floor(Math.log10(c / 100));
 
@@ -41,8 +40,7 @@ PUZZLES.forEach((p, i) => {
   if (p.quizId !== qid) bad(`quizId ${p.quizId} should be ${qid}`);
   if (seenQuiz.has(p.quizId)) bad('duplicate quizId'); seenQuiz.add(p.quizId);
   if (p.dateLabel !== `${MONTHS[m - 1]} ${dd}, ${y}`) bad(`dateLabel ${p.dateLabel}`);
-  const isSun = d.getUTCDay() === 0;
-  if (!!p.sunday !== isSun) bad(isSun ? 'a Sunday must carry sunday: true' : 'sunday: true on a weekday');
+  if (p.sunday) bad('Pricer has no Sunday Edition (owner, 2026-10-01): sunday must be false');
 
   if (!Number.isInteger(p.price) || p.price <= 0) bad('price must be positive integer cents');
   if (typeof p.name !== 'string' || p.name.length < 3) bad('missing name');
@@ -58,19 +56,12 @@ PUZZLES.forEach((p, i) => {
     else if (age > WARN_AGE_DAYS) warns.push(`${id}: price will be ${age} days old`);
   }
 
-  if (isSun) {
-    if (p.shop !== 'brand') bad('a Sunday Edition is a maker-priced item (shop: brand)');
-    if (p.price < SUNDAY_MIN) bad(`Sunday price ${p.price / 100} is not big-ticket`);
-    if (!/^https:\/\//.test(p.href || '')) bad('Sunday needs the maker page in href');
-    if (/commons\.wikimedia|upload\.wikimedia/.test(p.img || '') && !(p.credit && p.creditUrl)) bad('a Commons photo needs credit + creditUrl');
-  } else {
-    if (p.shop !== 'amazon') bad('a weekday is an Amazon product (shop: amazon)');
-    if (!/^[A-Z0-9]{10}$/.test(p.asin || '')) bad(`bad asin ${p.asin}`);
-    if (p.href !== `https://www.amazon.com/dp/${p.asin}?tag=cgurus-20`) bad('href must be /dp/<asin>?tag=cgurus-20');
-    if (p.price > WEEKDAY_MAX) bad(`weekday price ${p.price / 100} belongs on a Sunday`);
-    if (!/^https:\/\/m\.media-amazon\.com\/images\/I\//.test(p.img || '')) bad('weekday img should be the Amazon product image');
-    if (seenAsin.has(p.asin)) bad(`asin repeats #${seenAsin.get(p.asin)}`); else seenAsin.set(p.asin, p.num);
-  }
+  if (p.shop !== 'amazon') bad('every day is an Amazon product (shop: amazon)');
+  if (!/^[A-Z0-9]{10}$/.test(p.asin || '')) bad(`bad asin ${p.asin}`);
+  if (p.href !== `https://www.amazon.com/dp/${p.asin}?tag=cgurus-20`) bad('href must be /dp/<asin>?tag=cgurus-20');
+  if (p.price > AMAZON_MAX) bad(`price ${p.price / 100} is over the Amazon ceiling`);
+  if (!/^https:\/\/m\.media-amazon\.com\/images\/I\//.test(p.img || '')) bad('img should be the Amazon product image');
+  if (seenAsin.has(p.asin)) bad(`asin repeats #${seenAsin.get(p.asin)}`); else seenAsin.set(p.asin, p.num);
   const key = p.name.toLowerCase();
   if (seenName.has(key)) bad(`product repeats #${seenName.get(key)}`); else seenName.set(key, p.num);
   if (prev && decade(prev.price) === decade(p.price)) bad(`same price decade as the day before (${prev.name})`);
@@ -80,7 +71,7 @@ PUZZLES.forEach((p, i) => {
 // The week has to range: at least one board under $20 and one over $300 in
 // every seven, or the bank has drifted into one aisle.
 for (let i = 0; i + 7 <= PUZZLES.length; i += 7) {
-  const wk = PUZZLES.slice(i, i + 7).filter((p) => !p.sunday);
+  const wk = PUZZLES.slice(i, i + 7);
   if (!wk.some((p) => p.price < 2000)) warns.push(`week of ${PUZZLES[i].live}: nothing under $20`);
   if (!wk.some((p) => p.price > 30000)) warns.push(`week of ${PUZZLES[i].live}: nothing over $300`);
 }
@@ -92,4 +83,4 @@ if (fails.length) {
   console.error(`verify-pricer: ${fails.length} failure(s) across ${PUZZLES.length} boards`);
   process.exit(1);
 }
-console.log(`verify-pricer: ${PUZZLES.length} boards OK (${PUZZLES[0].live} to ${last.live}, ${PUZZLES.filter((p) => p.sunday).length} Sunday Editions)`);
+console.log(`verify-pricer: ${PUZZLES.length} boards OK (${PUZZLES[0].live} to ${last.live}, all Amazon)`);

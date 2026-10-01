@@ -5,18 +5,17 @@
 // bracket-era preview save can never be read as a new day.
 //
 // AUTHORING RULES (checked by scripts/verify-pricer.mjs):
-//  * price is INTEGER CENTS. A weekday is an Amazon product (shop 'amazon',
+//  * price is INTEGER CENTS. Every day is an Amazon product (shop 'amazon',
 //    asin, href to /dp/<asin>?tag=cgurus-20) read live off its product page,
-//    current price, ideally sold by Amazon. A Sunday Edition is a big-ticket
-//    item (shop 'brand') priced at the maker's own published starting price,
-//    with href to that page.
+//    current price, ideally sold by Amazon. No Sunday Edition (owner,
+//    2026-10-01): big tickets live in Dealer, Realtor, Agent and Curator.
 //  * gathered is the date the price was READ, and it prints on the reveal.
 //    A board must go live within 60 days of gathering; re-read anything older.
 //  * No product twice in a bank; no two adjacent days in the same price decade.
 //  * img must be a stable https JPEG/PNG (Amazon's m.media-amazon.com, or
 //    Wikimedia Commons with credit + creditUrl). Never a googleusercontent or
 //    Meta CDN url.
-//  * Sundays are sunday: true and nothing else is.
+//  * sunday is always false.
 
 export const PUZZLES = [
   {
@@ -72,17 +71,16 @@ export const PUZZLES = [
     "quizId": "pricer-10-4-26",
     "live": "2026-10-04",
     "dateLabel": "October 4, 2026",
-    "sunday": true,
+    "sunday": false,
     "gathered": "2026-10-01",
-    "name": "2026 Ford Bronco",
-    "cat": "Cars",
-    "price": 4079500,
-    "href": "https://www.ford.com/suvs/bronco/",
-    "note": "Starting MSRP on ford.com",
-    "img": "https://commons.wikimedia.org/wiki/Special:FilePath/Ford_Bronco_(6th_generation)_Outer_Banks_1X7A0384.jpg?width=900",
-    "credit": "Photo: Alexander Migl, CC BY-SA 4.0, via Wikimedia Commons. An Outer Banks trim is shown.",
-    "creditUrl": "https://commons.wikimedia.org/wiki/File:Ford_Bronco_(6th_generation)_Outer_Banks_1X7A0384.jpg",
-    "shop": "brand"
+    "name": "Ninja CREAMi XL Deluxe 11-in-1 Ice Cream Maker",
+    "cat": "Kitchen",
+    "price": 19999,
+    "shop": "amazon",
+    "asin": "B0B9CZ6XBQ",
+    "href": "https://www.amazon.com/dp/B0B9CZ6XBQ?tag=cgurus-20",
+    "img": "https://m.media-amazon.com/images/I/719FkKmM3BL._AC_SL800_.jpg",
+    "note": "Price on Amazon"
   },
   {
     "num": 5,
@@ -185,17 +183,16 @@ export const PUZZLES = [
     "quizId": "pricer-10-11-26",
     "live": "2026-10-11",
     "dateLabel": "October 11, 2026",
-    "sunday": true,
+    "sunday": false,
     "gathered": "2026-10-01",
-    "name": "Rolex Submariner, Ref. 124060 (41mm, Oystersteel)",
-    "cat": "Watches",
-    "price": 1005000,
-    "href": "https://www.rolex.com/en-us/watches/submariner/m124060-0001",
-    "note": "List price on rolex.com",
-    "img": "https://commons.wikimedia.org/wiki/Special:FilePath/Rolex-Submariner.jpg?width=900",
-    "credit": "Photo: FrankWilliams, public domain, via Wikimedia Commons. It may show an earlier reference.",
-    "creditUrl": "https://commons.wikimedia.org/wiki/File:Rolex-Submariner.jpg",
-    "shop": "brand"
+    "name": "Apple AirPods Max 2 Headphones, Midnight",
+    "cat": "Electronics",
+    "price": 50999,
+    "shop": "amazon",
+    "asin": "B0GSS4SGZR",
+    "href": "https://www.amazon.com/dp/B0GSS4SGZR?tag=cgurus-20",
+    "img": "https://m.media-amazon.com/images/I/71umw2cCkOL._AC_SL800_.jpg",
+    "note": "Price on Amazon"
   },
   {
     "num": 12,
@@ -298,17 +295,16 @@ export const PUZZLES = [
     "quizId": "pricer-10-18-26",
     "live": "2026-10-18",
     "dateLabel": "October 18, 2026",
-    "sunday": true,
+    "sunday": false,
     "gathered": "2026-10-01",
-    "name": "Porsche 911 Carrera",
-    "cat": "Cars",
-    "price": 13550000,
-    "href": "https://www.porsche.com/usa/models/911/",
-    "note": "Starting MSRP on porsche.com",
-    "img": "https://commons.wikimedia.org/wiki/Special:FilePath/2025_Porsche_992_Carrera_convertible_DSC_7026.jpg?width=900",
-    "credit": "Photo: Alexander Migl, CC BY-SA 4.0, via Wikimedia Commons. A Carrera Cabriolet is shown.",
-    "creditUrl": "https://commons.wikimedia.org/wiki/File:2025_Porsche_992_Carrera_convertible_DSC_7026.jpg",
-    "shop": "brand"
+    "name": "Sony Alpha 7 IV Full-Frame Mirrorless Camera (Body)",
+    "cat": "Electronics",
+    "price": 199800,
+    "shop": "amazon",
+    "asin": "B09JZT6YK5",
+    "href": "https://www.amazon.com/dp/B09JZT6YK5?tag=cgurus-20",
+    "img": "https://m.media-amazon.com/images/I/71BaBwNek-L._AC_SL800_.jpg",
+    "note": "Price on Amazon"
   },
   {
     "num": 19,
@@ -411,17 +407,16 @@ export const PUZZLES = [
     "quizId": "pricer-10-25-26",
     "live": "2026-10-25",
     "dateLabel": "October 25, 2026",
-    "sunday": true,
+    "sunday": false,
     "gathered": "2026-10-01",
-    "name": "2026 Harley-Davidson Street Glide",
-    "cat": "Motorcycles",
-    "price": 2499900,
-    "href": "https://www.harley-davidson.com/us/en/motorcycles/street-glide.html",
-    "note": "Starting price on harley-davidson.com",
-    "img": "https://commons.wikimedia.org/wiki/Special:FilePath/Harley-Davidson%20Street%20Glide%2C%20Petrolia%2C%20Ontario%2C%202026-05-17%2002.jpg?width=900",
-    "credit": "Photo: Chris Woodrich, CC BY-SA 4.0, via Wikimedia Commons.",
-    "creditUrl": "https://commons.wikimedia.org/wiki/File:Harley-Davidson_Street_Glide,_Petrolia,_Ontario,_2026-05-17_02.jpg",
-    "shop": "brand"
+    "name": "Apple iPad Pro 13-Inch (M5, 256GB, Wi-Fi)",
+    "cat": "Electronics",
+    "price": 143700,
+    "shop": "amazon",
+    "asin": "B0FWD1MS82",
+    "href": "https://www.amazon.com/dp/B0FWD1MS82?tag=cgurus-20",
+    "img": "https://m.media-amazon.com/images/I/71W1m-Bj9sL._AC_SL800_.jpg",
+    "note": "Price on Amazon"
   },
   {
     "num": 26,

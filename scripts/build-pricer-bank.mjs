@@ -29,31 +29,30 @@ const A = {
   Y: ['Dyson V15 Detect Origin Cordless Vacuum', 'Home', 58999, 'B0GTC14BFW', '61k9OPHOj-L'],
   POST: ['Post-it Notes, 3 x 3 in, Canary Yellow, 12 Pads', 'Office', 1399, 'B00006JNNE', '51vekcOpdrL'],
   Z: ['Apple MacBook Air 13-Inch (M5, 16GB, 512GB)', 'Electronics', 123400, 'B0GR1JTFP8', '71pkfQGcMKL'],
+  NINJA: ['Ninja CREAMi XL Deluxe 11-in-1 Ice Cream Maker', 'Kitchen', 19999, 'B0B9CZ6XBQ', '719FkKmM3BL'],
+  PODS: ['Apple AirPods Max 2 Headphones, Midnight', 'Electronics', 50999, 'B0GSS4SGZR', '71umw2cCkOL'],
+  SONY: ['Sony Alpha 7 IV Full-Frame Mirrorless Camera (Body)', 'Electronics', 199800, 'B09JZT6YK5', '71BaBwNek-L'],
+  IPAD: ['Apple iPad Pro 13-Inch (M5, 256GB, Wi-Fi)', 'Electronics', 143700, 'B0FWD1MS82', '71W1m-Bj9sL'],
 };
-const S = {
-  bronco: { name: '2026 Ford Bronco', cat: 'Cars', price: 4079500, href: 'https://www.ford.com/suvs/bronco/', note: 'Starting MSRP on ford.com', img: COM('Ford_Bronco_(6th_generation)_Outer_Banks_1X7A0384.jpg'), credit: 'Photo: Alexander Migl, CC BY-SA 4.0, via Wikimedia Commons. An Outer Banks trim is shown.', creditUrl: 'https://commons.wikimedia.org/wiki/File:Ford_Bronco_(6th_generation)_Outer_Banks_1X7A0384.jpg' },
-  rolex: { name: 'Rolex Submariner, Ref. 124060 (41mm, Oystersteel)', cat: 'Watches', price: 1005000, href: 'https://www.rolex.com/en-us/watches/submariner/m124060-0001', note: 'List price on rolex.com', img: COM('Rolex-Submariner.jpg'), credit: 'Photo: FrankWilliams, public domain, via Wikimedia Commons. It may show an earlier reference.', creditUrl: 'https://commons.wikimedia.org/wiki/File:Rolex-Submariner.jpg' },
-  porsche: { name: 'Porsche 911 Carrera', cat: 'Cars', price: 13550000, href: 'https://www.porsche.com/usa/models/911/', note: 'Starting MSRP on porsche.com', img: COM('2025_Porsche_992_Carrera_convertible_DSC_7026.jpg'), credit: 'Photo: Alexander Migl, CC BY-SA 4.0, via Wikimedia Commons. A Carrera Cabriolet is shown.', creditUrl: 'https://commons.wikimedia.org/wiki/File:2025_Porsche_992_Carrera_convertible_DSC_7026.jpg' },
-  harley: { name: '2026 Harley-Davidson Street Glide', cat: 'Motorcycles', price: 2499900, href: 'https://www.harley-davidson.com/us/en/motorcycles/street-glide.html', note: 'Starting price on harley-davidson.com', img: COM('Harley-Davidson Street Glide, Petrolia, Ontario, 2026-05-17 02.jpg'), credit: 'Photo: Chris Woodrich, CC BY-SA 4.0, via Wikimedia Commons.', creditUrl: 'https://commons.wikimedia.org/wiki/File:Harley-Davidson_Street_Glide,_Petrolia,_Ontario,_2026-05-17_02.jpg' },
-};
+// No Sunday Edition (owner, 2026-10-01): the big tickets moved to Dealer, and
+// Pricer is Amazon every day, with a wider range up to the larger-ticket items.
+const S = {};
 // One slot per day from Thursday 2026-10-01 (opened early, owner) to Saturday 2026-10-31. Weekdays
 // alternate cheap and dear so no stretch of the week reads as a pattern.
-const ORDER = ['M','O','N','bronco','E','A','T','H','W','C','rolex','L','S','F','Y','I','R','porsche','D','X','K','Z','B','P','harley','J','V','G','U','POST','Q'];
+const ORDER = ['M','O','N','NINJA','E','A','T','H','W','C','PODS','L','S','F','Y','I','R','SONY','D','X','K','Z','B','P','IPAD','J','V','G','U','POST','Q'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const out = [];
 let d = new Date(Date.UTC(2026, 9, 1));
 ORDER.forEach((k, i) => {
   const iso = d.toISOString().slice(0, 10);
   const [y, m, dd] = iso.split('-').map(Number);
-  const sunday = d.getUTCDay() === 0;
+  const sunday = false;
   const base = { num: 1 + i, quizId: `pricer-${m}-${dd}-${String(y).slice(2)}`, live: iso, dateLabel: `${MONTHS[m - 1]} ${dd}, ${y}`, sunday, gathered: '2026-10-01' };
   if (A[k]) {
     const [name, cat, price, asin, img] = A[k];
-    if (sunday) throw new Error('amazon item on a sunday: ' + iso);
     out.push({ ...base, name, cat, price, shop: 'amazon', asin, href: `https://www.amazon.com/dp/${asin}?tag=cgurus-20`, img: AMZ(img), note: 'Price on Amazon' });
   } else {
-    if (!sunday) throw new Error('big-ticket item on a weekday: ' + iso);
-    out.push({ ...base, ...S[k], shop: 'brand' });
+    throw new Error('not an Amazon item: ' + k);
   }
   d = new Date(d.getTime() + 86400000);
 });
@@ -64,18 +63,17 @@ const head = `// Pricer (relaunched 2026-10-02): one real product a day, five gu
 // bracket-era preview save can never be read as a new day.
 //
 // AUTHORING RULES (checked by scripts/verify-pricer.mjs):
-//  * price is INTEGER CENTS. A weekday is an Amazon product (shop 'amazon',
+//  * price is INTEGER CENTS. Every day is an Amazon product (shop 'amazon',
 //    asin, href to /dp/<asin>?tag=cgurus-20) read live off its product page,
-//    current price, ideally sold by Amazon. A Sunday Edition is a big-ticket
-//    item (shop 'brand') priced at the maker's own published starting price,
-//    with href to that page.
+//    current price, ideally sold by Amazon. No Sunday Edition (owner,
+//    2026-10-01): big tickets live in Dealer, Realtor, Agent and Curator.
 //  * gathered is the date the price was READ, and it prints on the reveal.
 //    A board must go live within 60 days of gathering; re-read anything older.
 //  * No product twice in a bank; no two adjacent days in the same price decade.
 //  * img must be a stable https JPEG/PNG (Amazon's m.media-amazon.com, or
 //    Wikimedia Commons with credit + creditUrl). Never a googleusercontent or
 //    Meta CDN url.
-//  * Sundays are sunday: true and nothing else is.
+//  * sunday is always false.
 `;
 fs.writeFileSync('app/pricer/puzzles.js', head + '\nexport const PUZZLES = ' + JSON.stringify(out, null, 2) + ';\n');
 console.log(out.length, out[0].quizId, out.at(-1).quizId, out.filter(p=>p.sunday).map(p=>p.live+' '+p.name).join(' | '));
