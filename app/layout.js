@@ -60,7 +60,7 @@ const websiteJsonLd = {
   name: 'Mind Loft',
   alternateName: 'Mind Loft Daily',
   url: `${SITE_URL}`,
-  description: `Daily word, number and logic puzzles plus 1,000+ timed quizzes, and consensus Top 10 Lists drawn from ${SOURCE_COUNT} experts and aggregators.`,
+  description: `A free daily puzzle site: word, number and logic puzzles, crosswords, sudoku and chess, plus 1,000+ timed quizzes, and consensus Top 10 Lists drawn from ${SOURCE_COUNT} experts and aggregators.`,
 };
 
 const organizationJsonLd = {

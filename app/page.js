@@ -4,13 +4,14 @@ import { SNAP_JS, SNAP_CSS } from '@/lib/home-snapshot';
 import { onrampMap } from '@/lib/home-snapshot-onramp';
 import { QUIZZES } from '@/lib/quizzes';
 import { getAllSources } from '@/lib/sources';
+import { homeFaqLd } from '@/lib/home-about';
 
 const SOURCE_COUNT = getAllSources().length;
 
 export function generateMetadata() {
   const count = Array.isArray(QUIZZES) ? QUIZZES.filter((q) => !q.unlisted).length : 0;
-  const title = 'Mind Loft | Sharpen Your Mind';
-  const description = `Daily puzzles and quizzes to sharpen your brain. Word, number and logic games, plus ${count}+ timed quizzes across films, music, geography, sports, and brands, from name-them-all and matching to map and multiple-choice. Then browse consensus Top 10 Lists where ${SOURCE_COUNT} experts and aggregators agree.`;
+  const title = 'Mind Loft: Free Daily Puzzle Site | Sharpen Your Mind';
+  const description = `A free daily puzzle site: more than 80 word, number and logic puzzles, crosswords, sudoku and chess, new every day. Plus ${count}+ timed quizzes across films, music, geography, sports, and brands, from name-them-all and matching to map and multiple-choice. Then browse consensus Top 10 Lists where ${SOURCE_COUNT} experts and aggregators agree.`;
   const ogTitle = 'Mind Loft: Sharpen Your Mind';
 
   return {
@@ -72,6 +73,7 @@ export default function HomePage({ searchParams }) {
   return (
     <>
       <script dangerouslySetInnerHTML={{ __html: ME_PRELOAD }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeFaqLd()) }} />
       {/* THE STAGE IS RENDERED DIRECTLY, NOT THROUGH QuizHomeClient (2026-09-25).
           See app/HomeSwitch.jsx for why, and why the switch has to be a client
           component rather than a ternary here. */}

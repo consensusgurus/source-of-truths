@@ -79,6 +79,7 @@ import useFlip from '../useFlip';
 // FOOTER_COLS from app/Footer.jsx, so the site's link map is still the only
 // copy of the links.
 import StageFooter from '../StageFooter';
+import HomeAbout from './HomeAbout';
 import { saveHomeSnap, releaseHomeSnap } from '@/lib/home-snapshot';
 
 const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
@@ -2446,6 +2447,7 @@ export default function StageToday() {
             })}
           </div>
         </section>
+        <HomeAbout />
       </div>
 
       {/* The visitor count rides the observer this page already runs for its
