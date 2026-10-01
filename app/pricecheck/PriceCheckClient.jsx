@@ -23,11 +23,10 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { X, ExternalLink, Sun, Moon } from 'lucide-react';
+import { X, ExternalLink } from 'lucide-react';
 import PriceGame, { readDoneSave } from '../price/PriceGame';
 import RunNudgePop from '../circuits/RunNudgePop';
 import useCircuitBoard from '../circuits/useCircuitBoard';
-import { useStageTheme } from '@/lib/stage-theme';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { PRICE_GAMES, errOf, scoreOf, fmtCents, runRankOf, runTierOf, RUN_RANKS } from '@/lib/price-games';
@@ -57,8 +56,10 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
   const N = sections.length;
   const MAX = N * 10;
   const STORE = `sot_run_${RUN_ID}_${etToday()}`;
-  const [theme, setTheme] = useStageTheme();
-  const dark = theme !== 'light';
+  // One register, the Trivia Gauntlet's (owner, 2026-10-01: match the
+  // Gauntlet): Midnight ground, translucent white surfaces, sky call to action.
+  const theme = 'dark';
+  const dark = true;
   const [r, setR] = useState(() => freshRun());
   const rRef = useRef(r);
   const [hydrated, setHydrated] = useState(false);
@@ -159,9 +160,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
   }
 
   const tagCol = (key) => (dark ? PRICE_GAMES[key].tagDark : PRICE_GAMES[key].tagLight);
-  const VARS = dark
-    ? { '--pc-ground': '#0b0f1a', '--pc-panel': '#181e2d', '--pc-line': 'rgba(255,255,255,.22)', '--pc-ink': '#e9edf4', '--pc-mute': '#8b95a8', '--pc-rail': '#3a4256', '--pc-shadow': '0 14px 34px rgba(0,0,0,.55)', '--pc-cta': '#fbbf24', '--pc-cta-ink': '#1f1300', '--pc-gold': '#fbbf24', '--pc-mat': '#ffffff' }
-    : { '--pc-ground': '#f4f1ea', '--pc-panel': '#fffdf8', '--pc-line': 'rgba(11,15,26,.16)', '--pc-ink': '#0b0d12', '--pc-mute': '#5b6476', '--pc-rail': '#b9c0cd', '--pc-shadow': '0 12px 28px rgba(15,23,42,.14)', '--pc-cta': '#0b0d12', '--pc-cta-ink': '#ffffff', '--pc-gold': '#b45309', '--pc-mat': '#ffffff' };
+  const VARS = { '--pc-ground': '#0b0f1a', '--pc-panel': '#0d1220', '--pc-surf': 'rgba(255,255,255,.045)', '--pc-line': 'rgba(255,255,255,.12)', '--pc-ink': '#e9edf4', '--pc-mute': '#9aa8c4', '--pc-rail': '#2a3247', '--pc-shadow': '0 14px 34px rgba(0,0,0,.55)', '--pc-cta': '#7dd3fc', '--pc-cta-ink': '#08222e', '--pc-hi': '#7dd3fc', '--pc-good': '#6ee7b7', '--pc-bad': '#fb7185', '--pc-mat': '#ffffff' };
   sections.forEach((s) => { VARS[`--pc-${s.key}`] = tagCol(s.key); });
 
   const sec = playing ? sections[r.si] : null;
@@ -175,7 +174,6 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
         <b>Price Check</b>
         <span className="pc-capd">{dateShort}</span>
         {playing && <span className="pc-capt">{sections.map((s, i) => <i key={s.key} className={i < r.si ? 'd' : i === r.si ? 'on' : ''} style={{ background: i <= r.si ? `var(--pc-${s.key})` : undefined }} title={s.name} />)}</span>}
-        <button type="button" className="pc-theme" aria-label={dark ? 'Switch to light' : 'Switch to dark'} onClick={() => setTheme(dark ? 'light' : 'dark')}>{dark ? <Sun size={16} /> : <Moon size={16} />}</button>
       </div>
 
       {hydrated && r.phase === 'idle' && (
@@ -593,15 +591,15 @@ const CSS = `
 .cf-cw{container-type:inline-size;width:min(400px,100%);transition:transform .75s cubic-bezier(.5,0,.2,1);position:relative;z-index:3}
 .cf-right{position:relative;display:grid;min-height:380px}
 .cf-right > *{grid-area:1/1}
-.cf-upg{position:absolute;left:50%;top:-10px;font:800 11px ${SANS};letter-spacing:.18em;text-transform:uppercase;color:#2a1f04;background:#fbbf24;padding:6px 11px;border-radius:999px;white-space:nowrap;z-index:4;pointer-events:none;animation:cfup 1s ease-out both}
+.cf-upg{position:absolute;left:50%;top:-10px;font:800 11px ${SANS};letter-spacing:.18em;text-transform:uppercase;color:var(--pc-cta-ink);background:var(--pc-cta);padding:6px 11px;border-radius:999px;white-space:nowrap;z-index:4;pointer-events:none;animation:cfup 1s ease-out both}
 @keyframes cfup{0%{opacity:0;transform:translate(-50%,12px)}20%{opacity:1;transform:translate(-50%,0)}75%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-8px)}}
-.cf-spark{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;border-radius:50%;background:#fbbf24;z-index:5;pointer-events:none;animation:cfspark var(--d) cubic-bezier(.2,.7,.3,1) both}
+.cf-spark{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;border-radius:50%;background:var(--pc-hi);z-index:5;pointer-events:none;animation:cfspark var(--d) cubic-bezier(.2,.7,.3,1) both}
 @keyframes cfspark{from{transform:translate(0,0) scale(1);opacity:1}to{transform:translate(var(--x),var(--y)) scale(.2);opacity:0}}
 .cf-term{justify-self:center;align-self:center;width:min(270px,100%);background:linear-gradient(180deg,#2a2f3a,#1b1f27);border-radius:26px;padding:16px 16px 20px;box-shadow:0 30px 60px -25px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.08);transition:opacity .45s,transform .45s}
 .cf-term.gone{opacity:0;transform:translateY(14px) scale(.96);pointer-events:none}
 .cf-tap{position:relative;display:flex;justify-content:center;align-items:center;height:30px;margin-bottom:8px;color:#8a93a6}
 .cf-tap svg{width:26px;height:26px}
-.cf-tap i{position:absolute;left:50%;top:50%;width:30px;height:30px;margin:-15px;border:2px solid #34d399;border-radius:50%;opacity:0;animation:cfring 1s ease-out infinite}
+.cf-tap i{position:absolute;left:50%;top:50%;width:30px;height:30px;margin:-15px;border:2px solid var(--pc-good);border-radius:50%;opacity:0;animation:cfring 1s ease-out infinite}
 .cf-tap i.r2{animation-delay:.33s}.cf-tap i.r3{animation-delay:.66s}
 @keyframes cfring{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.6);opacity:0}}
 .cf-scr{background:#0a1220;border-radius:12px;padding:12px 12px 10px;height:208px;display:flex;flex-direction:column;font-family:${MONO};color:#cfd8ea;box-shadow:inset 0 0 0 1px #1f2a40;transition:background .3s}
@@ -609,13 +607,13 @@ const CSS = `
 .cf-hd{display:flex;justify-content:space-between;font:800 10px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:#6f7d99;margin-bottom:8px}
 .cf-lines{display:flex;flex-direction:column;gap:5px;flex:1}
 .cf-lr{display:flex;justify-content:space-between;font-size:13px;animation:cfin .25s ease both}
-.cf-lr b{font-weight:500}.cf-lr b.ten{color:#fbbf24}
+.cf-lr b{font-weight:500}.cf-lr b.ten{color:var(--pc-hi)}
 .cf-tot{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed #2a3858;margin-top:8px;padding-top:8px;font-size:12px;color:#8a93a6}
 .cf-tot b{font:500 26px ${MONO};color:#fff;font-variant-numeric:tabular-nums}
 .cf-tot small{font-size:13px;color:#8a93a6}
 .cf-msg{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;animation:cfin .3s ease both}
 .cf-msg .big{font:900 26px ${SANS};letter-spacing:.04em;color:#fff}
-.cf-scr.ok .big{color:#34d399}.cf-scr.no .big{color:#f87171}
+.cf-scr.ok .big{color:var(--pc-good)}.cf-scr.no .big{color:var(--pc-bad)}
 .cf-msg .sm{font:700 11px ${SANS};letter-spacing:.14em;text-transform:uppercase;color:#a9b3c7}
 .cf-msg .who{font:900 15px ${SANS};color:#fff}
 .cf-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:14px}
@@ -624,22 +622,22 @@ const CSS = `
 @keyframes cfin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .cf-copy{display:none;align-self:center;min-width:0;text-align:left}
 .cf-copy.on{display:block;animation:cfin .6s .1s ease both}
-.cf-you{font:800 12px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:var(--pc-gold)}
+.cf-you{font:800 12px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:var(--pc-hi)}
 .cf-nm{font-size:clamp(34px,5vw,50px);font-weight:900;letter-spacing:-.02em;line-height:1;margin:8px 0 10px;text-wrap:balance}
 .cf-ln{font-size:17px;line-height:1.45;margin:0 0 16px;max-width:34ch;color:var(--pc-ink)}
 .cf-stats{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;margin-bottom:10px;max-width:390px}
-.cf-stats div{background:var(--pc-panel);border:1px solid var(--pc-line);border-radius:12px;padding:9px 11px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.cf-stats div{background:var(--pc-surf);border:1px solid var(--pc-line);border-radius:12px;padding:9px 11px;display:flex;flex-direction:column;gap:3px;min-width:0}
 .cf-stats b{font:500 20px ${MONO};white-space:nowrap}
 .cf-stats span{font:800 9.5px ${SANS};letter-spacing:.12em;text-transform:uppercase;color:var(--pc-mute)}
 .cf-games{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;max-width:390px}
-.cf-games div{background:var(--pc-panel);border:1px solid var(--pc-line);border-radius:9px;padding:7px 2px;text-align:center;min-width:0}
+.cf-games div{background:var(--pc-surf);border:1px solid var(--pc-line);border-radius:9px;padding:7px 2px;text-align:center;min-width:0}
 .cf-games i{display:block;font:normal 800 8.5px ${SANS};letter-spacing:.05em;text-transform:uppercase;color:var(--pc-mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cf-games b{font:500 17px ${MONO}}
-.cf-games .hi{border-color:var(--pc-gold)}.cf-games .hi b{color:var(--pc-gold)}
-.cf-games .lo b{color:#f87171}
+.cf-games .hi{border-color:var(--pc-hi)}.cf-games .hi b{color:var(--pc-hi)}
+.cf-games .lo b{color:var(--pc-bad)}
 [data-stage-theme="light"] .cf-games .lo b{color:#b91c1c}
-.cf-next{display:inline-block;margin-top:12px;font-size:13px;font-weight:700;padding:9px 12px;border-radius:10px;background:var(--pc-panel);border:1px solid var(--pc-line)}
-.cf-next b{color:var(--pc-gold)}
+.cf-next{display:inline-block;margin-top:12px;font-size:13px;font-weight:700;padding:9px 12px;border-radius:10px;background:var(--pc-surf);border:1px solid var(--pc-line)}
+.cf-next b{color:var(--pc-hi)}
 .pf-btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
 .pf-btns a,.pf-btns button{font:800 14px ${SANS};padding:12px 18px;border-radius:12px;text-decoration:none;color:var(--pc-ink);border:1px solid var(--pc-line);background:transparent;cursor:pointer}
 .pf-btns .pri{background:var(--pc-cta);color:var(--pc-cta-ink);border-color:transparent}
@@ -730,7 +728,7 @@ const CSS = `
 .ip-credit a{color:var(--pc-mute)}
 .ip-act{display:flex;gap:8px;margin-top:14px}
 .ip-act a,.ip-act button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-align:center;font:800 14px ${SANS};padding:11px 10px;border-radius:11px;text-decoration:none;cursor:pointer}
-.ip-act a{background:#f0b23a;color:#1f1300;border:0}
+.ip-act a{background:var(--pc-cta);color:var(--pc-cta-ink);border:0}
 .ip-act button{background:transparent;border:1px solid var(--pc-line);color:var(--pc-ink)}
 .ip-nav{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font:700 12px ${SANS};color:var(--pc-mute)}
 .ip-nav button{background:none;border:0;color:var(--pc-ink);font:800 13px ${SANS};cursor:pointer;padding:6px}

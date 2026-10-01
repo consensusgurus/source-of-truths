@@ -71,7 +71,7 @@ function card(scores) {
           h('div', { style: { display: 'flex', fontSize: 30, fontWeight: 700, color: '#cbd5e1', lineHeight: 1.3 } }, 'Five real price tags, from pocket change to the auction block.'),
           h('div', { style: { display: 'flex', marginTop: 14, fontSize: 24, fontWeight: 700, color: '#8b95a8' } }, 'Five guesses each, one score out of 50.')),
       h('div', { style: { display: 'flex', marginTop: 'auto', alignItems: 'center', gap: 16 } },
-        h('div', { style: { display: 'flex', padding: '14px 26px', borderRadius: 14, background: '#fbbf24', color: '#1f1300', fontSize: 24, fontWeight: 800, whiteSpace: 'nowrap', flexShrink: 0 } }, 'Play free'),
+        h('div', { style: { display: 'flex', padding: '14px 26px', borderRadius: 14, background: '#7dd3fc', color: '#08222e', fontSize: 24, fontWeight: 800, whiteSpace: 'nowrap', flexShrink: 0 } }, 'Play free'),
         h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 17, color: '#cbd5e1', whiteSpace: 'nowrap' } }, 'mindloftdaily.com/pricecheck'))),
     h('div', { style: { display: 'flex', flexDirection: 'column', flex: 1, background: '#05070d', borderRadius: 22, padding: '22px 26px', border: '1px solid rgba(255,255,255,0.08)' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', fontFamily: MONO, fontSize: 16, letterSpacing: 4, color: '#64748b', paddingBottom: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: 6 } }, h('span', null, 'ITEM'), h('span', null, 'POINTS')),
