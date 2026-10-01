@@ -131,6 +131,16 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
     commit(next);
     setBetween({ si: cur.si, last });
   }
+  // THE LAST TAG ROLLS STRAIGHT INTO THE FINALE (owner, 2026-10-01): no
+  // "Final prices" press. The last score and price hold for a beat so the
+  // player sees them, then the ending starts on its own.
+  const FINALE_BEAT = 1800;
+  useEffect(() => {
+    if (!between || !between.last) return undefined;
+    const t = setTimeout(() => advance(), FINALE_BEAT);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [between]);
   function advance() {
     const cur = rRef.current;
     setBetween(null);
@@ -237,7 +247,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
               {!between.last ? (
                 <button type="button" className="start" onClick={advance}>Next: {sections[r.si + 1].name}, {sections[r.si + 1].word.toLowerCase()} <span aria-hidden="true">&rarr;</span></button>
               ) : (
-                <button type="button" className="start" onClick={advance}>Final prices <span aria-hidden="true">&rarr;</span></button>
+                <div className="pc-rolling" role="status">Ringing up your final prices<span className="pc-dots" aria-hidden="true"><i /><i /><i /></span></div>
               )}
             </div>
           )}
@@ -582,6 +592,11 @@ const CSS = `
 .pc-bscore small{font-size:24px;color:var(--pc-mute)}
 .pc-bprice{color:var(--pc-mute);font-weight:700}
 .pc-bprice b{color:var(--pc-ink)}
+.pc-rolling{margin:26px auto 0;display:inline-flex;align-items:center;gap:10px;font:800 15px ${SANS};color:var(--pc-cta)}
+.pc-dots{display:inline-flex;gap:5px}
+.pc-dots i{width:6px;height:6px;border-radius:50%;background:var(--pc-cta);animation:pcdot 1s ease-in-out infinite}
+.pc-dots i:nth-child(2){animation-delay:.15s}.pc-dots i:nth-child(3){animation-delay:.3s}
+@keyframes pcdot{0%,100%{opacity:.25;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
 @keyframes pcrise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 /* FINALE: the card climbs, then taps */
 .pf{position:relative;z-index:2;max-width:980px;margin:0 auto;padding:14px 16px 70px}
