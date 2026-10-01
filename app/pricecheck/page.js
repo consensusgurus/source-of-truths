@@ -41,16 +41,21 @@ function etTodayServer() {
 // without saying it.
 const maskOf = (cents) => fmtCents(Math.floor(cents / 100) * 100).replace(/^\$/, '').replace(/\d/g, '?');
 
-export default function PriceCheckPage() {
+export default function PriceCheckPage({ searchParams }) {
   const today = etTodayServer();
+  // PRE-LAUNCH PREVIEW ONLY: before the family's first full day (2026-10-02),
+  // ?preview=1 deals each bank's first board so the run can be checked on
+  // production. From launch day on it does nothing, so it can never show a
+  // future price.
+  const preview = today < '2026-10-02' && searchParams && searchParams.preview === '1';
   const sections = [];
   for (const key of PRICE_KEYS) {
     const bank = BANKS[key] || [];
-    const p = bank.filter((x) => x.live === today)[0];
+    const p = bank.filter((x) => x.live === today)[0] || (preview ? bank.find((x) => x.live === '2026-10-02') : null);
     if (!p) continue;
     const day = shipFor(key, p);
     const g = PRICE_GAMES[key];
-    const visible = bank.filter((x) => x.live <= today).map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+    const visible = bank.filter((x) => x.live <= today || x.num === p.num).map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
     const chip = key === 'realtor' ? `${p.city}, ${p.state}` : key === 'agent' ? (p.kind === 'hotel' ? 'Hotel' : `${p.from} to ${p.to}`) : day.cat;
     sections.push({ key, name: g.name, word: g.word, path: g.path, num: p.num, quizId: p.quizId, puzzles: visible, day, chip, mask: maskOf(p.price) });
   }
