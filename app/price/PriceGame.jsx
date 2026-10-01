@@ -617,7 +617,11 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
         </>
       )}
 
-      <div className="pr-rows">{Array.from({ length: GUESSES }, (_, i) => guessRow(i))}</div>
+      {/* NEWEST GUESS ON TOP (owner, 2026-10-01): the latest guess takes the first
+          row and older ones shift down, so the one you just made is always on
+          screen. Unused slots stay below the guesses. Each row keeps its own
+          guess number. */}
+      <div className="pr-rows">{[...tries.map((_, i) => tries.length - 1 - i), ...Array.from({ length: Math.max(0, GUESSES - tries.length) }, (_, j) => tries.length + j)].map((i) => guessRow(i))}</div>
 
       {!playing && (
         <div style={{ marginTop: 14, borderTop: `1px solid ${SURF_B}`, paddingTop: 14 }}>
