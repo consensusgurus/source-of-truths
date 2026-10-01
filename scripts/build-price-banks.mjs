@@ -133,7 +133,7 @@ const CURATOR = [
   AU('Salvator Mundi', 'Leonardo da Vinci', 'about 1500', "Christie's", 'New York', '2017-11-15', 45031250000, 'https://en.wikipedia.org/wiki/Salvator_Mundi_(Leonardo)', 'Leonardo da Vinci, Salvator Mundi, c.1500, oil on walnut, 45.4 × 65.6 cm.jpg', pd),
 ];
 
-const START = '2026-10-02';
+const START = '2026-10-01'; // opened a day early, same day as Pricer (owner, 2026-10-01)
 const banks = { dealer: DEALER, realtor: REALTOR, agent: AGENT, curator: CURATOR };
 const HEAD = {
   dealer: 'Dealer: one vehicle a day at its maker\'s starting MSRP, read on the maker\'s own site on `gathered`.',
