@@ -249,7 +249,10 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
   const SURF_B = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : 'rgba(28,30,36,0.42)';
   const ACC_INK = STAGE ? 'var(--stg-acc-ink)' : COLORS.accent;
-  const darkReg = STAGE && stageTheme !== 'light';
+  // Inside the Price Check run the page is always the Gauntlet's dark register
+  // (owner, 2026-10-01), whatever the reader's stored stage theme says, so the
+  // panels must be dark too or they paint white under light ink.
+  const darkReg = STAGE && (RUN || stageTheme !== 'light');
   // The photo mat is white in BOTH registers on purpose: product shots are
   // cut out on white, and a dark mat would ring every one of them. Artwork
   // and photos that do not fill the frame sit on a warm gallery wall instead.
