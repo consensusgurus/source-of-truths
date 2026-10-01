@@ -21,9 +21,9 @@
 export const PUZZLES = [
   {
     "num": 1,
-    "quizId": "pricer-10-2-26",
-    "live": "2026-10-02",
-    "dateLabel": "October 2, 2026",
+    "quizId": "pricer-10-1-26",
+    "live": "2026-10-01",
+    "dateLabel": "October 1, 2026",
     "sunday": false,
     "gathered": "2026-10-01",
     "name": "Stanley Quencher H2.0 Tumbler, 40 oz",
@@ -37,9 +37,9 @@ export const PUZZLES = [
   },
   {
     "num": 2,
-    "quizId": "pricer-10-3-26",
-    "live": "2026-10-03",
-    "dateLabel": "October 3, 2026",
+    "quizId": "pricer-10-2-26",
+    "live": "2026-10-02",
+    "dateLabel": "October 2, 2026",
     "sunday": false,
     "gathered": "2026-10-01",
     "name": "Amazon Kindle Paperwhite, 16GB (2024)",
@@ -53,6 +53,22 @@ export const PUZZLES = [
   },
   {
     "num": 3,
+    "quizId": "pricer-10-3-26",
+    "live": "2026-10-03",
+    "dateLabel": "October 3, 2026",
+    "sunday": false,
+    "gathered": "2026-10-01",
+    "name": "Instant Pot Duo 7-in-1 Pressure Cooker, 6 Quart",
+    "cat": "Kitchen",
+    "price": 7900,
+    "shop": "amazon",
+    "asin": "B00FLYWNYQ",
+    "href": "https://www.amazon.com/dp/B00FLYWNYQ?tag=cgurus-20",
+    "img": "https://m.media-amazon.com/images/I/71MLaYtMFOL._AC_SL800_.jpg",
+    "note": "Price on Amazon"
+  },
+  {
+    "num": 4,
     "quizId": "pricer-10-4-26",
     "live": "2026-10-04",
     "dateLabel": "October 4, 2026",
@@ -69,7 +85,7 @@ export const PUZZLES = [
     "shop": "brand"
   },
   {
-    "num": 4,
+    "num": 5,
     "quizId": "pricer-10-5-26",
     "live": "2026-10-05",
     "dateLabel": "October 5, 2026",
@@ -85,7 +101,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 5,
+    "num": 6,
     "quizId": "pricer-10-6-26",
     "live": "2026-10-06",
     "dateLabel": "October 6, 2026",
@@ -101,7 +117,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 6,
+    "num": 7,
     "quizId": "pricer-10-7-26",
     "live": "2026-10-07",
     "dateLabel": "October 7, 2026",
@@ -117,7 +133,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 7,
+    "num": 8,
     "quizId": "pricer-10-8-26",
     "live": "2026-10-08",
     "dateLabel": "October 8, 2026",
@@ -133,7 +149,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 8,
+    "num": 9,
     "quizId": "pricer-10-9-26",
     "live": "2026-10-09",
     "dateLabel": "October 9, 2026",
@@ -149,7 +165,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 9,
+    "num": 10,
     "quizId": "pricer-10-10-26",
     "live": "2026-10-10",
     "dateLabel": "October 10, 2026",
@@ -165,7 +181,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 10,
+    "num": 11,
     "quizId": "pricer-10-11-26",
     "live": "2026-10-11",
     "dateLabel": "October 11, 2026",
@@ -182,7 +198,7 @@ export const PUZZLES = [
     "shop": "brand"
   },
   {
-    "num": 11,
+    "num": 12,
     "quizId": "pricer-10-12-26",
     "live": "2026-10-12",
     "dateLabel": "October 12, 2026",
@@ -198,7 +214,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 12,
+    "num": 13,
     "quizId": "pricer-10-13-26",
     "live": "2026-10-13",
     "dateLabel": "October 13, 2026",
@@ -214,7 +230,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 13,
+    "num": 14,
     "quizId": "pricer-10-14-26",
     "live": "2026-10-14",
     "dateLabel": "October 14, 2026",
@@ -230,7 +246,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 14,
+    "num": 15,
     "quizId": "pricer-10-15-26",
     "live": "2026-10-15",
     "dateLabel": "October 15, 2026",
@@ -246,7 +262,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 15,
+    "num": 16,
     "quizId": "pricer-10-16-26",
     "live": "2026-10-16",
     "dateLabel": "October 16, 2026",
@@ -262,7 +278,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 16,
+    "num": 17,
     "quizId": "pricer-10-17-26",
     "live": "2026-10-17",
     "dateLabel": "October 17, 2026",
@@ -278,7 +294,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 17,
+    "num": 18,
     "quizId": "pricer-10-18-26",
     "live": "2026-10-18",
     "dateLabel": "October 18, 2026",
@@ -295,7 +311,7 @@ export const PUZZLES = [
     "shop": "brand"
   },
   {
-    "num": 18,
+    "num": 19,
     "quizId": "pricer-10-19-26",
     "live": "2026-10-19",
     "dateLabel": "October 19, 2026",
@@ -311,7 +327,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 19,
+    "num": 20,
     "quizId": "pricer-10-20-26",
     "live": "2026-10-20",
     "dateLabel": "October 20, 2026",
@@ -327,7 +343,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 20,
+    "num": 21,
     "quizId": "pricer-10-21-26",
     "live": "2026-10-21",
     "dateLabel": "October 21, 2026",
@@ -343,7 +359,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 21,
+    "num": 22,
     "quizId": "pricer-10-22-26",
     "live": "2026-10-22",
     "dateLabel": "October 22, 2026",
@@ -359,7 +375,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 22,
+    "num": 23,
     "quizId": "pricer-10-23-26",
     "live": "2026-10-23",
     "dateLabel": "October 23, 2026",
@@ -375,7 +391,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 23,
+    "num": 24,
     "quizId": "pricer-10-24-26",
     "live": "2026-10-24",
     "dateLabel": "October 24, 2026",
@@ -391,7 +407,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 24,
+    "num": 25,
     "quizId": "pricer-10-25-26",
     "live": "2026-10-25",
     "dateLabel": "October 25, 2026",
@@ -408,7 +424,7 @@ export const PUZZLES = [
     "shop": "brand"
   },
   {
-    "num": 25,
+    "num": 26,
     "quizId": "pricer-10-26-26",
     "live": "2026-10-26",
     "dateLabel": "October 26, 2026",
@@ -424,7 +440,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 26,
+    "num": 27,
     "quizId": "pricer-10-27-26",
     "live": "2026-10-27",
     "dateLabel": "October 27, 2026",
@@ -440,7 +456,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 27,
+    "num": 28,
     "quizId": "pricer-10-28-26",
     "live": "2026-10-28",
     "dateLabel": "October 28, 2026",
@@ -456,7 +472,7 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 28,
+    "num": 29,
     "quizId": "pricer-10-29-26",
     "live": "2026-10-29",
     "dateLabel": "October 29, 2026",
@@ -472,23 +488,23 @@ export const PUZZLES = [
     "note": "Price on Amazon"
   },
   {
-    "num": 29,
+    "num": 30,
     "quizId": "pricer-10-30-26",
     "live": "2026-10-30",
     "dateLabel": "October 30, 2026",
     "sunday": false,
     "gathered": "2026-10-01",
-    "name": "Instant Pot Duo 7-in-1 Pressure Cooker, 6 Quart",
-    "cat": "Kitchen",
-    "price": 7900,
+    "name": "Post-it Notes, 3 x 3 in, Canary Yellow, 12 Pads",
+    "cat": "Office",
+    "price": 1399,
     "shop": "amazon",
-    "asin": "B00FLYWNYQ",
-    "href": "https://www.amazon.com/dp/B00FLYWNYQ?tag=cgurus-20",
-    "img": "https://m.media-amazon.com/images/I/71MLaYtMFOL._AC_SL800_.jpg",
+    "asin": "B00006JNNE",
+    "href": "https://www.amazon.com/dp/B00006JNNE?tag=cgurus-20",
+    "img": "https://m.media-amazon.com/images/I/51vekcOpdrL._AC_SL800_.jpg",
     "note": "Price on Amazon"
   },
   {
-    "num": 30,
+    "num": 31,
     "quizId": "pricer-10-31-26",
     "live": "2026-10-31",
     "dateLabel": "October 31, 2026",

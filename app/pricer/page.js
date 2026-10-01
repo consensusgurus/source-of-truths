@@ -7,7 +7,7 @@ import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
 import { categoryCrumb } from '@/lib/game-seo';
 
-// Pricer launched 2026-10-02 as a one-product price guess. (A bracket game
+// Pricer launched 2026-10-01 as a one-product price guess. (A bracket game
 // once carried this name; it was pulled on 2026-08-09 before it ever ran.) One real product a
 // day, five guesses at its price, hot and cold after each. The bank is resolved
 // HERE and only the picked day's product ships to the browser, so tomorrow's

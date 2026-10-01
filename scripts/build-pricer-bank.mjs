@@ -27,6 +27,7 @@ const A = {
   W: ['Nintendo Switch 2', 'Games', 49900, 'B0F3GWXLTS', '714-Fh3ngmL'],
   X: ['Breville Barista Express Espresso Machine', 'Kitchen', 49995, 'B00CH9QWOU', '71BvCt6eAFL'],
   Y: ['Dyson V15 Detect Origin Cordless Vacuum', 'Home', 58999, 'B0GTC14BFW', '61k9OPHOj-L'],
+  POST: ['Post-it Notes, 3 x 3 in, Canary Yellow, 12 Pads', 'Office', 1399, 'B00006JNNE', '51vekcOpdrL'],
   Z: ['Apple MacBook Air 13-Inch (M5, 16GB, 512GB)', 'Electronics', 123400, 'B0GR1JTFP8', '71pkfQGcMKL'],
 };
 const S = {
@@ -35,12 +36,12 @@ const S = {
   porsche: { name: 'Porsche 911 Carrera', cat: 'Cars', price: 13550000, href: 'https://www.porsche.com/usa/models/911/', note: 'Starting MSRP on porsche.com', img: COM('2025_Porsche_992_Carrera_convertible_DSC_7026.jpg'), credit: 'Photo: Alexander Migl, CC BY-SA 4.0, via Wikimedia Commons. A Carrera Cabriolet is shown.', creditUrl: 'https://commons.wikimedia.org/wiki/File:2025_Porsche_992_Carrera_convertible_DSC_7026.jpg' },
   harley: { name: '2026 Harley-Davidson Street Glide', cat: 'Motorcycles', price: 2499900, href: 'https://www.harley-davidson.com/us/en/motorcycles/street-glide.html', note: 'Starting price on harley-davidson.com', img: COM('Harley-Davidson Street Glide, Petrolia, Ontario, 2026-05-17 02.jpg'), credit: 'Photo: Chris Woodrich, CC BY-SA 4.0, via Wikimedia Commons.', creditUrl: 'https://commons.wikimedia.org/wiki/File:Harley-Davidson_Street_Glide,_Petrolia,_Ontario,_2026-05-17_02.jpg' },
 };
-// One slot per day from Friday 2026-10-02 to Saturday 2026-10-31. Weekdays
+// One slot per day from Thursday 2026-10-01 (opened early, owner) to Saturday 2026-10-31. Weekdays
 // alternate cheap and dear so no stretch of the week reads as a pattern.
-const ORDER = ['M','O','bronco','E','A','T','H','W','C','rolex','L','S','F','Y','I','R','porsche','D','X','K','Z','B','P','harley','J','V','G','U','N','Q'];
+const ORDER = ['M','O','N','bronco','E','A','T','H','W','C','rolex','L','S','F','Y','I','R','porsche','D','X','K','Z','B','P','harley','J','V','G','U','POST','Q'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const out = [];
-let d = new Date(Date.UTC(2026, 9, 2));
+let d = new Date(Date.UTC(2026, 9, 1));
 ORDER.forEach((k, i) => {
   const iso = d.toISOString().slice(0, 10);
   const [y, m, dd] = iso.split('-').map(Number);
