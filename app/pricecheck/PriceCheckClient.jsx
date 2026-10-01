@@ -13,10 +13,11 @@
 // counts the FIRST score, the one on the leaderboard (owner, 2026-10-01).
 //
 // THE PREGAME is the approved mockup: tags hanging on a rail, a price-gun
-// odometer that never lands, Start with a sheen. THE ENDING is a departures
-// board (owner, 2026-10-01, "not a receipt"): each tag's points flip in, the
-// total rolls, a gavel lands and SOLD stamps the rank; on 30 or more the room
-// raises its paddles. Five seconds later the five items come up in one pop-up
+// odometer that never lands, Start with a sheen. THE ENDING is the card
+// ladder (owner, 2026-10-01, "not a receipt"): the scores ring up on a card
+// terminal, the card in hand upgrades from prepaid to black as the total
+// climbs, then taps to pay and the result takes the terminal's place. The
+// persona is one of THE SHOPPERS (RUN_RANKS in lib/price-games). Five seconds later the five items come up in one pop-up
 // (Pricer's reveal, kept), and closing it offers the Trivia Gauntlet if that
 // run has not been finished today.
 
@@ -29,7 +30,7 @@ import useCircuitBoard from '../circuits/useCircuitBoard';
 import { useStageTheme } from '@/lib/stage-theme';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
-import { PRICE_GAMES, errOf, scoreOf, fmtCents, runRankOf } from '@/lib/price-games';
+import { PRICE_GAMES, errOf, scoreOf, fmtCents, runRankOf, runTierOf, RUN_RANKS } from '@/lib/price-games';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
@@ -149,7 +150,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
   function shareText() {
     const per = sections.map((s, i) => `${s.name} ${counted[i] ? counted[i].score : '-'}`).join(' · ');
     const code = sections.map((s, i) => (counted[i] ? counted[i].score : 0)).join('-');
-    return `Price Check · ${dateShort} · ${total}/${MAX} · ${rank[1]}\n${per}\n${withRef(`mindloftdaily.com/pricecheck?s=${code}`)}`;
+    return `Price Check · ${dateShort} · ${total}/${MAX}\nI paid with the ${rank[3]} card: ${rank[1]}.\n${per}\n${withRef(`mindloftdaily.com/pricecheck?s=${code}`)}`;
   }
   function copyShare() {
     const text = done ? shareText() : `Price Check: five real prices, from Amazon to the auction block. Five guesses at each.\n${withRef('mindloftdaily.com/pricecheck')}`;
@@ -246,7 +247,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
       )}
 
       {hydrated && done && (
-        <Finale key="finale" sections={sections} counted={counted} total={total} max={MAX} rank={rank} dateLabel={dateLabel}
+        <Finale key="finale" sections={sections} counted={counted} total={total} max={MAX} dateLabel={dateLabel} dateShort={dateShort}
           animate={doneAtLoad.current === false} onOver={finaleOver} board={board}
           onShare={copyShare} copied={copied} onItems={() => { setItemAt(0); setShowItems(true); }} />
       )}
@@ -259,79 +260,117 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
   );
 }
 
-// ─── THE FINALE: departures board, gavel, SOLD ─────────────────────────────
-const CH = ' 0123456789';
-function mkFace(cell, ch) { cell.querySelector('.h.t span').textContent = ch; cell.querySelector('.h.b span').textContent = ch; }
-function flipTo(cell, ch) {
-  const old = cell.dataset.v || ' ';
-  if (old === ch) return;
-  cell.dataset.v = ch;
-  cell.querySelector('.h.t span').textContent = ch;
-  const ft = document.createElement('div'); ft.className = 'f top'; ft.innerHTML = '<span></span>'; ft.firstChild.textContent = old;
-  const fb = document.createElement('div'); fb.className = 'f bot'; fb.innerHTML = '<span></span>'; fb.firstChild.textContent = ch;
-  cell.append(ft, fb);
-  setTimeout(() => { cell.querySelector('.h.b span').textContent = ch; ft.remove(); fb.remove(); }, 150);
-}
-function Cell({ v = ' ', big }) {
+// ─── THE FINALE: the card climbs, then taps (owner, 2026-10-01) ─────────────
+// The five scores ring up on a card terminal and the total counts. The card in
+// hand starts as the prepaid rack card and is swapped for the next card up each
+// time the total crosses a RUN_RANKS cutoff (prepaid, debit, credit, gold,
+// black). Then it taps the reader: APPROVED with the persona, or DECLINED on
+// the prepaid card. The terminal gives way to the result. No receipt.
+const WAVE = (
+  <svg viewBox="0 0 22 22" aria-hidden="true"><path d="M7 6c2 3 2 7 0 10M11 4c3 4 3 10 0 14M15 2c4 5 4 13 0 18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" /></svg>
+);
+
+function PayCard({ ti, n, max, dateShort, squash, shine }) {
+  const t = RUN_RANKS[ti];
+  const brand = <div className="pk-brand">Mind Loft<small>Price Check</small></div>;
+  const kind = <div className="pk-kind">{t[3]}{t[4] ? <small>{t[4]}</small> : null}</div>;
+  const num = <div className="pk-num"><span>{n}</span><small> / {max}</small></div>;
+  const prepaid = ti === RUN_RANKS.length - 1;
   return (
-    <div className={`cell${big ? ' big' : ''}`} data-v={v}>
-      <div className="h t"><span>{v}</span></div><div className="h b"><span>{v}</span></div><div className="seam" />
+    <div className={`pk pk${ti}${squash ? ' squash' : ''}${shine ? ' shine' : ''}`}>
+      {prepaid && <div className="pk-peg" />}
+      <div className="pk-top">{brand}{kind}</div>
+      {prepaid
+        ? <div className="pk-mid"><div className="pk-chip silver" /><div className="pk-bal">Balance<b>$0.00</b></div></div>
+        : <div className="pk-mid"><div className={`pk-chip${ti === 3 ? ' silver' : ''}`} /><span className="pk-wave">{WAVE}</span></div>}
+      <div className="pk-tier">{t[1]}</div>
+      <div className="pk-bot">
+        {num}
+        <div className="pk-br">
+          <div className="pk-since">{prepaid ? 'Valid thru' : 'Member since'}<b>{dateShort}</b></div>
+          {!prepaid && (ti === 3 ? <div className="pk-debit">DEBIT</div> : <div className="pk-mark" aria-hidden="true"><i /><i /></div>)}
+        </div>
+      </div>
     </div>
   );
 }
 
-function Finale({ sections, counted, total, max, rank, dateLabel, animate, onOver, board, onShare, copied, onItems }) {
-  const root = useRef(null);
-  const [lit, setLit] = useState(animate ? -1 : sections.length);
-  const [sold, setSold] = useState(!animate);
-  const [after, setAfter] = useState(!animate);
-  const [swing, setSwing] = useState(false);
-  const [paddles, setPaddles] = useState([]);
+function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, onOver, board, onShare, copied, onItems }) {
   const pts = sections.map((s, i) => (counted[i] ? counted[i].score : 0));
-  const pad = (n) => String(n).padStart(2, '0');
+  const tierAt = (v) => runTierOf(Math.round(v * 50 / Math.max(1, max)));
+  const LOW = RUN_RANKS.length - 1;
+  const fti = tierAt(total);
+  const t = RUN_RANKS[fti];
+  const reduce = useMemo(() => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }, []);
+  const play = animate && !reduce;
+  const [lines, setLines] = useState(play ? 0 : sections.length);
+  const [cur, setCur] = useState(play ? 0 : total);
+  const [face, setFace] = useState(play ? LOW : fti);
+  const [squash, setSquash] = useState(false);
+  const [upg, setUpg] = useState(null);
+  const [phase, setPhase] = useState(play ? 'ring' : 'settled');
+  const [tap, setTap] = useState(null);
+  const [shine, setShine] = useState(0);
+  const [sparks, setSparks] = useState([]);
+  const cwRef = useRef(null);
+  const readerRef = useRef(null);
+
+  function burst(n) {
+    const id = Date.now();
+    const list = Array.from({ length: n }, (_, i) => {
+      const a = Math.random() * Math.PI * 2, d = 80 + Math.random() * 110;
+      return { id: `${id}-${i}`, x: Math.cos(a) * d, y: Math.sin(a) * d, ms: 900 + Math.random() * 500 };
+    });
+    setSparks((s) => [...s, ...list]);
+    setTimeout(() => setSparks((s) => s.filter((p) => !list.includes(p))), 1600);
+  }
 
   useEffect(() => {
+    if (!play) { if (animate) onOver(); return undefined; }
     let alive = true;
-    const el = root.current;
-    if (!el) return undefined;
-    const rows = [...el.querySelectorAll('.pf-row .flaps')].map((f) => [...f.querySelectorAll('.cell')]);
-    const tot = [...el.querySelectorAll('.pf-total .cellw .cell')];
-    async function spin(cells, target, steps) {
-      for (let s = 0; s < steps + cells.length * 3; s++) {
-        if (!alive) return;
-        cells.forEach((c, i) => { const stop = steps + i * 3; flipTo(c, s < stop ? CH[1 + ((s + i * 4) % 10)] : target[i]); });
-        await sleep(75);
-      }
-    }
-    if (!animate) {
-      rows.forEach((cs, i) => cs.forEach((c, j) => { c.dataset.v = pad(pts[i])[j]; mkFace(c, pad(pts[i])[j]); }));
-      tot.forEach((c, j) => { c.dataset.v = pad(total)[j]; mkFace(c, pad(total)[j]); });
-      return () => { alive = false; };
-    }
     (async () => {
       await sleep(500);
-      for (let i = 0; i < rows.length; i++) {
+      let c = 0, ti = LOW;
+      for (let i = 0; i < pts.length; i++) {
         if (!alive) return;
-        setLit(i);
-        await spin(rows[i], pad(pts[i]), 6 + i);
-        await sleep(160);
+        setLines(i + 1);
+        const from = c, to = c + pts[i], steps = Math.max(1, pts[i]);
+        for (let k = 1; k <= steps; k++) {
+          if (!alive) return;
+          c = Math.round(from + (to - from) * k / steps);
+          setCur(c);
+          const nt = tierAt(c);
+          if (nt < ti) {
+            ti = nt;
+            setSquash(true);
+            await sleep(140);
+            if (!alive) return;
+            setFace(nt); setSquash(false);
+            setUpg({ k: `${nt}-${Date.now()}`, text: `Upgraded to ${RUN_RANKS[nt][3]}` });
+            burst(nt <= 1 ? 14 : 8);
+          }
+          await sleep(40);
+        }
+        await sleep(320);
       }
-      await sleep(250);
-      await spin(tot, pad(total), 14);
       if (!alive) return;
-      await sleep(350);
-      setSwing(true);
-      await sleep(500);
+      setPhase('tap');
+      await sleep(450);
+      try {
+        const a = cwRef.current.getBoundingClientRect(), b = readerRef.current.getBoundingClientRect();
+        setTap({ x: (b.left + b.width / 2) - (a.left + a.width / 2), y: (b.top + b.height / 2) - (a.top + a.height / 2) });
+      } catch (e) {}
+      await sleep(850);
       if (!alive) return;
-      try { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); } catch (e) {}
-      setSold(true);
-      if (total * 50 / Math.max(1, max) >= 30) {
-        const n = total * 50 / Math.max(1, max) >= 40 ? 14 : 8;
-        setPaddles(Array.from({ length: n }, (_, i) => ({ i, x: (i + 0.5) / n * 100, rot: Math.random() * 24 - 12, num: 10 + Math.floor(Math.random() * 89), d: i * 70 + Math.random() * 120, k: sections[i % sections.length].key })));
-      }
-      await sleep(900);
+      setPhase('paid');
+      await sleep(1100);
       if (!alive) return;
-      setAfter(true);
+      setTap(null);
+      await sleep(450);
+      if (!alive) return;
+      setPhase('settled');
+      setShine((s) => s + 1);
+      if (fti <= 1) burst(20);
       onOver();
     })();
     return () => { alive = false; };
@@ -340,58 +379,72 @@ function Finale({ sections, counted, total, max, rank, dateLabel, animate, onOve
 
   const me = board && board.data && board.data.me;
   const field = board && board.data && Array.isArray(board.data.overall) ? (board.data.uniquePlayers || board.data.overall.length) : null;
+  let hi = 0, lo = 0;
+  pts.forEach((v, i) => { if (v > pts[hi]) hi = i; if (v < pts[lo]) lo = i; });
+  const flat = pts[hi] === pts[lo];
+  const declined = fti === LOW;
+  const settled = phase === 'settled';
 
   return (
-    <section className="pf" ref={root}>
+    <section className="pf">
       <div className="eb">{dateLabel} · Price Check</div>
-      <h1 className="pf-h">Final prices</h1>
-      <div className="pf-bwrap">
-        <div className="pf-board">
-          <div className="pf-bhead"><span>ITEM</span><span>POINTS</span></div>
-          {sections.map((s, i) => {
-            const c = counted[i];
-            return (
-              <div key={s.key} className={`pf-row${lit >= i ? ' lit' : ''}${c && c.score === 10 && lit >= i ? ' bull' : ''}`}>
-                <span className="pf-tag" style={{ background: `var(--pc-${s.key})` }}>{s.name}</span>
-                <div className="pf-what">{s.day.revealName || s.day.name}
-                  <small>{c && c.best ? `GUESS ${fmtCents(c.best)} · ` : ''}PRICE {fmtCents(s.day.price)}{c && c.banked ? ' · FIRST PLAY' : ''}</small>
-                </div>
-                <div className={`flaps${c && c.score === 10 && lit >= i ? ' gold' : ''}`}>
-                  <Cell /><Cell />
-                </div>
-              </div>
-            );
-          })}
-          <div className="pf-total">
-            <div className="pf-totl">TOTAL<b>{sold ? rank[1] : ' '}</b></div>
-            <div className="flaps">
-              <span className="cellw t1"><Cell big /></span>
-              <span className="cellw t2"><Cell big /></span>
-              <span className="slash">/</span>
-              {pad(max).split('').map((d, j) => <Cell key={j} big v={d} />)}
+      <div className={`cf-stage${settled ? ' settled' : ''}`}>
+        <div className="cf-cardcol">
+          {upg && <div key={upg.k} className="cf-upg">{upg.text}</div>}
+          <div className="cf-cw" ref={cwRef} style={tap ? { transform: `translate(${tap.x}px,${tap.y}px) scale(.42) rotate(-10deg)` } : undefined}>
+            <PayCard key={`pk${shine}`} ti={face} n={cur} max={max} dateShort={dateShort} squash={squash} shine={shine} />
+          </div>
+          {sparks.map((p) => <i key={p.id} className="cf-spark" style={{ '--x': `${p.x}px`, '--y': `${p.y}px`, '--d': `${p.ms}ms` }} />)}
+        </div>
+        <div className="cf-right">
+          <div className={`cf-term${settled ? ' gone' : ''}`} aria-hidden="true">
+            <div className="cf-tap" ref={readerRef}>{WAVE}{phase === 'tap' && <><i /><i className="r2" /><i className="r3" /></>}</div>
+            <div className={`cf-scr${phase === 'paid' || settled ? (declined ? ' no' : ' ok') : ''}`}>
+              {phase === 'ring' && (
+                <>
+                  <div className="cf-hd"><span>Price Check</span><span>{dateShort}</span></div>
+                  <div className="cf-lines">
+                    {sections.slice(0, lines).map((s, i) => <div key={s.key} className="cf-lr"><span>{s.name}</span><b className={pts[i] === 10 ? 'ten' : ''}>{pts[i]}</b></div>)}
+                  </div>
+                  <div className="cf-tot"><span>TOTAL</span><b>{cur}<small> / {max}</small></b></div>
+                </>
+              )}
+              {phase === 'tap' && <div className="cf-msg"><div className="sm">Tap to pay</div><div className="big">{total} / {max}</div></div>}
+              {(phase === 'paid' || settled) && (
+                declined
+                  ? <div className="cf-msg"><div className="big">DECLINED</div><div className="sm">Balance $0.00</div><div className="who">{t[1]}</div></div>
+                  : <div className="cf-msg"><div className="big">APPROVED</div><div className="sm">{t[3]} card</div><div className="who">{t[1]}</div></div>
+              )}
             </div>
+            <div className="cf-keys">{Array.from({ length: 12 }, (_, i) => <i key={i} />)}</div>
+          </div>
+          <div className={`cf-copy${settled ? ' on' : ''}`} role="status">
+            {settled && (
+              <>
+                <div className="cf-you">Your card today</div>
+                <h1 className="cf-nm">{t[1]}</h1>
+                <p className="cf-ln">{t[2]}</p>
+                <div className="cf-stats">
+                  <div><b>{total}/{max}</b><span>Run total</span></div>
+                  {me && me.rank ? <div><b>#{me.rank}</b><span>{field ? `of ${Number(field).toLocaleString()} today` : 'today'}</span></div> : null}
+                  <div><b>{t[3]}</b><span>Card</span></div>
+                </div>
+                <div className="cf-games">
+                  {sections.map((s, i) => <div key={s.key} className={flat ? '' : i === hi ? 'hi' : i === lo ? 'lo' : ''}><i>{s.name}</i><b>{pts[i]}</b></div>)}
+                </div>
+                {fti > 0
+                  ? <div className="cf-next"><b>{Math.max(1, Math.ceil(RUN_RANKS[fti - 1][0] * max / 50) - total)} more</b> and you upgrade to {RUN_RANKS[fti - 1][3]}.</div>
+                  : <div className="cf-next">Top of the ladder. <b>Black card.</b></div>}
+                <div className="pf-btns">
+                  <button type="button" className="pri" onClick={onShare}>{copied ? 'Copied' : 'Share your card'}</button>
+                  <button type="button" onClick={onItems}>See the items</button>
+                  <a href="/circuits/pricecheck">Leaderboard</a>
+                  <a href="/">Back to main</a>
+                </div>
+              </>
+            )}
           </div>
         </div>
-        <div className={`gavel${swing ? ' swing' : ''}`} aria-hidden="true"><svg viewBox="0 0 220 120"><rect x="20" y="78" width="150" height="9" rx="4" fill="#8b5a2b" /><rect x="150" y="56" width="52" height="54" rx="9" fill="#6b3f1d" /><rect x="146" y="62" width="60" height="7" rx="3" fill="#c9a227" /><rect x="146" y="97" width="60" height="7" rx="3" fill="#c9a227" /></svg></div>
-        <div className={`ring${swing ? ' go' : ''}`} aria-hidden="true" />
-      </div>
-      <div className={`sold${sold ? ' on' : ''}${animate ? '' : ' still'}`}><span className="w">SOLD</span><span className="r">{rank[1]} · {total} of {max}</span></div>
-      <div className={`pf-after${after ? ' on' : ''}`}>
-        <p className="verdict">{rank[2]}</p>
-        {me && me.rank ? <p className="pf-rank">You are <b>#{me.rank}</b>{field ? <> of {Number(field).toLocaleString()}</> : null} on today&rsquo;s Price Check board.</p> : null}
-        <div className="pf-btns">
-          <button type="button" className="pri" onClick={onShare}>{copied ? 'Copied' : 'Share your board'}</button>
-          <button type="button" onClick={onItems}>See the items</button>
-          <a href="/circuits/pricecheck">Leaderboard</a>
-          <a href="/">Back to main</a>
-        </div>
-      </div>
-      <div className="paddles" aria-hidden="true">
-        {paddles.map((p) => (
-          <div key={p.i} className="pad up" style={{ left: `calc(${p.x}% - 23px)`, '--rot': `${p.rot}deg`, animationDelay: `${p.d}ms` }}>
-            <div className="p" style={{ background: `var(--pc-${p.k})` }}>{p.num}</div><div className="s" />
-          </div>
-        ))}
       </div>
     </section>
   );
@@ -532,72 +585,119 @@ const CSS = `
 .pc-bprice{color:var(--pc-mute);font-weight:700}
 .pc-bprice b{color:var(--pc-ink)}
 @keyframes pcrise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-/* FINALE */
-.pf{position:relative;z-index:2;max-width:560px;margin:0 auto;padding:18px 16px 70px;text-align:center}
-.pf-h{margin:6px 0 18px;font-size:30px;font-weight:900;letter-spacing:-.02em}
-.pf-bwrap{position:relative}
-.pf-board{background:#05070d;border-radius:18px;padding:16px 14px 18px;box-shadow:var(--pc-shadow),inset 0 0 0 1px rgba(255,255,255,.06);position:relative;overflow:hidden;text-align:left}
-.pf-board:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.015) 0 2px,transparent 2px 4px);pointer-events:none}
-.pf-bhead{display:flex;justify-content:space-between;font:500 10px ${MONO};letter-spacing:.2em;color:#64748b;padding:0 4px 8px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:10px}
-.pf-row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:7px 4px;border-radius:10px;transition:background .5s}
-.pf-row.lit{background:rgba(255,255,255,.04)}
-.pf-row.bull{background:linear-gradient(90deg,rgba(251,191,36,.18),transparent)}
-.pf-tag{font:800 11px ${SANS};letter-spacing:.06em;text-transform:uppercase;padding:5px 9px 5px 14px;border-radius:5px 7px 7px 5px;color:#0b0f1a;position:relative;min-width:84px;opacity:.25;transition:opacity .4s}
-.pf-tag:before{content:"";position:absolute;left:5px;top:50%;width:4px;height:4px;margin-top:-2px;border-radius:50%;background:#05070d}
-[data-stage-theme="light"] .pf-tag{color:#fff}
-.pf-row.lit .pf-tag{opacity:1}
-.pf-what{font:700 13px ${SANS};color:#cbd5e1;min-width:0;opacity:.25;transition:opacity .4s;overflow:hidden;text-overflow:ellipsis}
-.pf-what small{display:block;font:500 10px ${MONO};color:#7c8aa0;letter-spacing:.04em;margin-top:2px}
-.pf-row.lit .pf-what{opacity:1}
-.pc .flaps{display:flex;gap:3px;align-items:center}
-.pc .cell{position:relative;width:26px;height:38px;perspective:240px;font:500 26px/38px ${MONO};color:#f8fafc;text-align:center}
-.pc .flaps.gold .cell{color:#fbbf24}
-.pc .cell .h{position:absolute;left:0;right:0;height:50%;overflow:hidden;background:#1a2133;border-radius:4px 4px 0 0}
-.pc .cell .h.b{top:50%;background:#141a29;border-radius:0 0 4px 4px}
-.pc .cell .h span,.pc .cell .f span{position:absolute;left:0;right:0;height:200%;top:0}
-.pc .cell .h.b span,.pc .cell .f.bot span{top:-100%}
-.pc .cell .seam{position:absolute;left:0;right:0;top:50%;height:1px;background:#000;z-index:5}
-.pc .cell .f{position:absolute;left:0;right:0;height:50%;overflow:hidden;backface-visibility:hidden;z-index:4}
-.pc .cell .f.top{top:0;background:#1a2133;border-radius:4px 4px 0 0;transform-origin:bottom;animation:pcftop .07s ease-in forwards}
-.pc .cell .f.bot{top:50%;background:#141a29;border-radius:0 0 4px 4px;transform-origin:top;transform:rotateX(90deg);animation:pcfbot .07s .07s ease-out forwards}
-@keyframes pcftop{to{transform:rotateX(-90deg);filter:brightness(.6)}}
-@keyframes pcfbot{to{transform:rotateX(0)}}
-.pc .cell.big{width:44px;height:64px;font-size:46px;line-height:64px}
-.cellw{display:inline-flex}
-.pf-total{display:flex;align-items:flex-end;justify-content:space-between;margin-top:14px;padding:14px 4px 2px;border-top:1px dashed rgba(255,255,255,.12)}
-.pf-totl{font:500 11px ${MONO};letter-spacing:.2em;color:#64748b}
-.pf-totl b{display:block;font:800 13px ${SANS};letter-spacing:0;color:#cbd5e1;margin-top:4px}
-.pf-total .slash{font:500 28px ${MONO};color:#475569;margin:0 4px}
-.gavel{position:absolute;left:62%;bottom:0;width:0;height:0;z-index:20;pointer-events:none}
-.gavel svg{position:absolute;left:-30px;bottom:-4px;width:220px;height:120px;transform-origin:200px 100px;transform:rotate(-70deg) translate(40px,-60px);opacity:0}
-.gavel.swing svg{animation:pcswingg .62s cubic-bezier(.6,0,.9,.4) forwards,pcgone .5s 1.4s forwards}
-@keyframes pcswingg{0%{opacity:0;transform:rotate(-70deg) translate(40px,-60px)}20%{opacity:1}78%{transform:rotate(0) translate(0,0)}86%{transform:rotate(-6deg) translate(0,-4px)}100%{opacity:1;transform:rotate(-2deg)}}
-@keyframes pcgone{to{opacity:0;transform:rotate(-30deg) translate(30px,-40px)}}
-.ring{position:absolute;left:calc(62% + 120px);bottom:-6px;width:40px;height:14px;margin-left:-20px;border:3px solid var(--pc-gold);border-radius:50%;opacity:0;pointer-events:none}
-.ring.go{animation:pcring .7s .5s ease-out forwards}
-@keyframes pcring{0%{opacity:.9;transform:scale(.4)}100%{opacity:0;transform:scale(7)}}
-.pf.shake{animation:pcshake .38s}
-@keyframes pcshake{20%{transform:translate(-5px,3px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-3px,2px)}80%{transform:translate(2px,-1px)}}
-.sold{position:relative;margin:30px auto 0;text-align:center;opacity:0}
-.sold.on{animation:pcpop .5s cubic-bezier(.2,1.6,.4,1) forwards}
-.sold.on.still{animation:none;opacity:1;transform:rotate(-3deg)}
-@keyframes pcpop{0%{opacity:0;transform:scale(2.2) rotate(-8deg)}100%{opacity:1;transform:scale(1) rotate(-3deg)}}
-.sold .w{display:inline-block;font:900 54px/1 ${SANS};letter-spacing:.08em;color:var(--pc-gold);padding:10px 26px 8px;border:4px solid var(--pc-gold);border-radius:12px}
-.sold .r{display:block;margin-top:12px;font:800 18px ${SANS};color:var(--pc-ink)}
-.pf-after{opacity:0;transform:translateY(10px);transition:all .5s ease}
-.pf-after.on{opacity:1;transform:none}
-.verdict{color:var(--pc-mute);font-weight:600;font-size:15px;margin:12px auto 0;max-width:400px}
-.pf-rank{font-weight:700;color:var(--pc-mute);margin:8px 0 0}
-.pf-rank b{color:var(--pc-ink)}
-.pf-btns{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:18px}
+/* FINALE: the card climbs, then taps */
+.pf{position:relative;z-index:2;max-width:980px;margin:0 auto;padding:14px 16px 70px}
+.pf > .eb{text-align:center}
+.cf-stage{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:36px;align-items:center;margin-top:22px;min-height:430px}
+.cf-cardcol{position:relative;display:flex;justify-content:center;align-items:center;min-height:250px}
+.cf-cw{container-type:inline-size;width:min(400px,100%);transition:transform .75s cubic-bezier(.5,0,.2,1);position:relative;z-index:3}
+.cf-right{position:relative;display:grid;min-height:380px}
+.cf-right > *{grid-area:1/1}
+.cf-upg{position:absolute;left:50%;top:-10px;font:800 11px ${SANS};letter-spacing:.18em;text-transform:uppercase;color:#2a1f04;background:#fbbf24;padding:6px 11px;border-radius:999px;white-space:nowrap;z-index:4;pointer-events:none;animation:cfup 1s ease-out both}
+@keyframes cfup{0%{opacity:0;transform:translate(-50%,12px)}20%{opacity:1;transform:translate(-50%,0)}75%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-8px)}}
+.cf-spark{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;border-radius:50%;background:#fbbf24;z-index:5;pointer-events:none;animation:cfspark var(--d) cubic-bezier(.2,.7,.3,1) both}
+@keyframes cfspark{from{transform:translate(0,0) scale(1);opacity:1}to{transform:translate(var(--x),var(--y)) scale(.2);opacity:0}}
+.cf-term{justify-self:center;align-self:center;width:min(270px,100%);background:linear-gradient(180deg,#2a2f3a,#1b1f27);border-radius:26px;padding:16px 16px 20px;box-shadow:0 30px 60px -25px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.08);transition:opacity .45s,transform .45s}
+.cf-term.gone{opacity:0;transform:translateY(14px) scale(.96);pointer-events:none}
+.cf-tap{position:relative;display:flex;justify-content:center;align-items:center;height:30px;margin-bottom:8px;color:#8a93a6}
+.cf-tap svg{width:26px;height:26px}
+.cf-tap i{position:absolute;left:50%;top:50%;width:30px;height:30px;margin:-15px;border:2px solid #34d399;border-radius:50%;opacity:0;animation:cfring 1s ease-out infinite}
+.cf-tap i.r2{animation-delay:.33s}.cf-tap i.r3{animation-delay:.66s}
+@keyframes cfring{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.6);opacity:0}}
+.cf-scr{background:#0a1220;border-radius:12px;padding:12px 12px 10px;height:208px;display:flex;flex-direction:column;font-family:${MONO};color:#cfd8ea;box-shadow:inset 0 0 0 1px #1f2a40;transition:background .3s}
+.cf-scr.ok{background:#06291d}.cf-scr.no{background:#2e0c10}
+.cf-hd{display:flex;justify-content:space-between;font:800 10px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:#6f7d99;margin-bottom:8px}
+.cf-lines{display:flex;flex-direction:column;gap:5px;flex:1}
+.cf-lr{display:flex;justify-content:space-between;font-size:13px;animation:cfin .25s ease both}
+.cf-lr b{font-weight:500}.cf-lr b.ten{color:#fbbf24}
+.cf-tot{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed #2a3858;margin-top:8px;padding-top:8px;font-size:12px;color:#8a93a6}
+.cf-tot b{font:500 26px ${MONO};color:#fff;font-variant-numeric:tabular-nums}
+.cf-tot small{font-size:13px;color:#8a93a6}
+.cf-msg{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;animation:cfin .3s ease both}
+.cf-msg .big{font:900 26px ${SANS};letter-spacing:.04em;color:#fff}
+.cf-scr.ok .big{color:#34d399}.cf-scr.no .big{color:#f87171}
+.cf-msg .sm{font:700 11px ${SANS};letter-spacing:.14em;text-transform:uppercase;color:#a9b3c7}
+.cf-msg .who{font:900 15px ${SANS};color:#fff}
+.cf-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:14px}
+.cf-keys i{height:16px;border-radius:5px;background:#323845;box-shadow:inset 0 -2px 0 rgba(0,0,0,.35)}
+.cf-keys i:nth-child(10){background:#7f1d1d}.cf-keys i:nth-child(11){background:#854d0e}.cf-keys i:nth-child(12){background:#14532d}
+@keyframes cfin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.cf-copy{display:none;align-self:center;min-width:0;text-align:left}
+.cf-copy.on{display:block;animation:cfin .6s .1s ease both}
+.cf-you{font:800 12px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:var(--pc-gold)}
+.cf-nm{font-size:clamp(34px,5vw,50px);font-weight:900;letter-spacing:-.02em;line-height:1;margin:8px 0 10px;text-wrap:balance}
+.cf-ln{font-size:17px;line-height:1.45;margin:0 0 16px;max-width:34ch;color:var(--pc-ink)}
+.cf-stats{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;margin-bottom:10px;max-width:390px}
+.cf-stats div{background:var(--pc-panel);border:1px solid var(--pc-line);border-radius:12px;padding:9px 11px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.cf-stats b{font:500 20px ${MONO};white-space:nowrap}
+.cf-stats span{font:800 9.5px ${SANS};letter-spacing:.12em;text-transform:uppercase;color:var(--pc-mute)}
+.cf-games{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;max-width:390px}
+.cf-games div{background:var(--pc-panel);border:1px solid var(--pc-line);border-radius:9px;padding:7px 2px;text-align:center;min-width:0}
+.cf-games i{display:block;font:normal 800 8.5px ${SANS};letter-spacing:.05em;text-transform:uppercase;color:var(--pc-mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cf-games b{font:500 17px ${MONO}}
+.cf-games .hi{border-color:var(--pc-gold)}.cf-games .hi b{color:var(--pc-gold)}
+.cf-games .lo b{color:#f87171}
+[data-stage-theme="light"] .cf-games .lo b{color:#b91c1c}
+.cf-next{display:inline-block;margin-top:12px;font-size:13px;font-weight:700;padding:9px 12px;border-radius:10px;background:var(--pc-panel);border:1px solid var(--pc-line)}
+.cf-next b{color:var(--pc-gold)}
+.pf-btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
 .pf-btns a,.pf-btns button{font:800 14px ${SANS};padding:12px 18px;border-radius:12px;text-decoration:none;color:var(--pc-ink);border:1px solid var(--pc-line);background:transparent;cursor:pointer}
-.pf-btns .pri{background:var(--pc-cta);color:var(--pc-cta-ink);border-color:transparent;position:relative;overflow:hidden}
-.paddles{position:fixed;left:0;right:0;bottom:0;height:0;pointer-events:none;z-index:-1}
-.pad{position:absolute;bottom:-140px;width:46px}
-.pad .p{width:46px;height:52px;border-radius:50% 50% 46% 46%;display:flex;align-items:center;justify-content:center;font:500 15px ${MONO};color:#0b0f1a;box-shadow:0 6px 14px rgba(0,0,0,.35)}
-.pad .s{width:6px;height:70px;margin:0 auto;background:#8b5a2b;border-radius:3px}
-.pad.up{animation:pcraise 2.6s cubic-bezier(.2,1.4,.4,1) both}
-@keyframes pcraise{0%{transform:none}25%,70%{transform:translateY(-150px) rotate(var(--rot))}100%{transform:translateY(0)}}
+.pf-btns .pri{background:var(--pc-cta);color:var(--pc-cta-ink);border-color:transparent}
+/* the payment card, sized in container units */
+.pk{width:100%;aspect-ratio:1.586;border-radius:5cqw;position:relative;padding:5.5cqw 6cqw;overflow:hidden;box-shadow:0 30px 60px -20px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.07) inset;display:flex;flex-direction:column;justify-content:space-between;transition:transform .14s ease-in;text-align:left}
+.pk.squash{transform:rotateY(90deg)}
+.pk::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.45) 48%,transparent 60%);background-size:260% 100%;background-position:120% 0;pointer-events:none;mix-blend-mode:overlay}
+.pk.shine::after{animation:pkshine 1.3s ease-out both}
+@keyframes pkshine{from{background-position:120% 0}to{background-position:-40% 0}}
+.pk-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1}
+.pk-brand{font:800 2.9cqw/1.25 ${SANS};letter-spacing:.2em;text-transform:uppercase}
+.pk-brand small{display:block;font-weight:700;letter-spacing:.14em;opacity:.7;font-size:2.4cqw}
+.pk-kind{font:800 2.8cqw ${SANS};letter-spacing:.2em;text-transform:uppercase;text-align:right}
+.pk-kind small{display:block;font:700 2.2cqw ${SANS};letter-spacing:.12em;opacity:.7;margin-top:.6cqw}
+.pk-mid{display:flex;align-items:center;gap:3.5cqw;position:relative;z-index:1}
+.pk-chip{width:12cqw;height:9.4cqw;border-radius:1.8cqw;background:linear-gradient(135deg,#f6dc8a,#c9a227 55%,#f2d272);position:relative;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.pk-chip::before{content:"";position:absolute;inset:2.1cqw 0;border-top:1px solid rgba(0,0,0,.3);border-bottom:1px solid rgba(0,0,0,.3)}
+.pk-chip::after{content:"";position:absolute;inset:0 4cqw;border-left:1px solid rgba(0,0,0,.3);border-right:1px solid rgba(0,0,0,.3)}
+.pk-chip.silver{background:linear-gradient(135deg,#eef0f4,#a7adb8 55%,#dfe2e8)}
+.pk-wave{display:flex;width:5.5cqw;height:5.5cqw;opacity:.6}
+.pk-wave svg{width:100%;height:100%}
+.pk-tier{font:900 7.4cqw/1 ${SANS};letter-spacing:-.02em;position:relative;z-index:1}
+.pk-bot{display:flex;justify-content:space-between;align-items:flex-end;gap:3cqw;position:relative;z-index:1}
+.pk-num{font:500 6.2cqw ${MONO};letter-spacing:.04em;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pk-num small{font-size:3.4cqw;opacity:.7}
+.pk-br{display:flex;gap:3cqw;align-items:flex-end}
+.pk-since{font:700 2.3cqw/1.35 ${SANS};letter-spacing:.14em;text-transform:uppercase;text-align:right;opacity:.8}
+.pk-since b{display:block;font:500 3.1cqw ${MONO};letter-spacing:.04em}
+.pk-mark{display:flex;align-items:center}
+.pk-mark i{width:7cqw;height:7cqw;border-radius:50%;border:.7cqw solid currentColor;opacity:.75}
+.pk-mark i+i{margin-left:-2.6cqw;opacity:.45}
+.pk-debit{font:800 italic 4.2cqw ${SANS};letter-spacing:.06em}
+.pk0{background:repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 2px,transparent 2px 5px),linear-gradient(140deg,#2b2b30,#0c0c0f 60%,#1e1e23);color:#e9cf7f}
+.pk0 .pk-tier,.pk0 .pk-num{background:linear-gradient(180deg,#fbe7a6,#c9a227 60%,#f1d27a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pk1{background:radial-gradient(120% 90% at 0% 0%,#ffe9a8,#e6b532 40%,#a97a10 100%);color:#2a1f04}
+.pk2{background:radial-gradient(130% 120% at 100% 0%,#5b8ff0,#2f6fe4 35%,#163a8c 100%);color:#fff}
+.pk3{background:linear-gradient(160deg,#4b5a6e,#36424f);color:#e7edf4}
+.pk3::before{content:"";position:absolute;right:-12cqw;top:-18cqw;width:60cqw;height:60cqw;border-radius:50%;background:rgba(255,255,255,.05)}
+.pk4{background:#fbfaf6;color:#22252b;padding-top:9cqw;box-shadow:0 30px 60px -20px rgba(0,0,0,.6),0 0 0 1px rgba(11,15,26,.12) inset}
+.pk4::before{content:"";position:absolute;left:0;right:0;top:0;height:6.5cqw;background:repeating-linear-gradient(90deg,#ff6b3d 0 18%,#ffb02e 18% 36%,#28c08a 36% 54%,#3d8bff 54% 72%,#c560ff 72% 90%,#ff6b3d 90% 100%)}
+.pk4::after{mix-blend-mode:multiply;opacity:.3}
+.pk4 .pk-kind{color:#e2522a}
+.pk-peg{position:absolute;top:1.6cqw;left:50%;transform:translateX(-50%);width:14cqw;height:3.4cqw;border-radius:2cqw;background:var(--pc-ground);z-index:2}
+.pk-bal{font:800 2.3cqw ${SANS};letter-spacing:.14em;text-transform:uppercase;color:#6b7280}
+.pk-bal b{display:block;font:500 5cqw ${MONO};letter-spacing:.02em;color:#dc2626}
+@media(max-width:720px){
+.cf-stage{display:flex;flex-direction:column;align-items:stretch;gap:18px;min-height:0;margin-top:14px}
+.cf-right{display:contents}
+.cf-term{order:1;max-height:420px;overflow:hidden;transition:opacity .4s,transform .4s,max-height .6s .1s,padding .6s .1s}
+.cf-term.gone{max-height:0;padding-top:0;padding-bottom:0;transform:none}
+.cf-stage.settled{gap:12px}
+.cf-cardcol{order:2;min-height:0;padding-top:14px}
+.cf-cw{width:min(340px,92%)}
+.cf-copy{order:3}
+.cf-ln{font-size:15.5px}
+.cf-stats,.cf-games{max-width:none}
+.pf-btns a,.pf-btns button{flex:1 1 40%;text-align:center;padding:12px 10px}
+}
 /* ITEMS POP-UP */
 .ip{position:fixed;inset:0;z-index:4050;display:flex;align-items:center;justify-content:center;padding:16px;animation:pcfade .35s ease both}
 .ip-scrim{position:absolute;inset:0;background:rgba(5,7,13,.72);backdrop-filter:blur(3px)}
@@ -636,6 +736,5 @@ const CSS = `
 .ip-nav button{background:none;border:0;color:var(--pc-ink);font:800 13px ${SANS};cursor:pointer;padding:6px}
 @keyframes pcfade{from{opacity:0}to{opacity:1}}
 @media(max-width:600px){.tags{gap:4px}.tag{padding:20px 4px 10px}.tag .n{font-size:13px}.tag .k{font-size:8.5px;letter-spacing:.06em}.tag .chip{display:none}.tag .pq{font-size:12px}.string{height:22px}.fact{min-width:92px}.title{font-size:46px}}
-@media(max-width:420px){.pc .cell{width:22px;height:34px;font-size:22px;line-height:34px}.pc .cell.big{width:36px;height:54px;font-size:38px;line-height:54px}.pf-tag{min-width:72px;font-size:10px}.pf-what{white-space:normal;font-size:12px}.sold .w{font-size:42px}.gavel{left:40%}.ring{left:calc(40% + 120px)}}
 @media(prefers-reduced-motion:reduce){.pc *{animation-duration:.01ms !important;animation-iteration-count:1 !important}}
 `;

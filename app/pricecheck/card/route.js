@@ -1,9 +1,11 @@
 import { createElement as h } from 'react';
 import { ImageResponse } from 'next/og';
 import { stageFonts } from '@/lib/og-stage-card';
-import { PRICE_KEYS, PRICE_GAMES, runRankOf } from '@/lib/price-games';
+import { PRICE_KEYS, PRICE_GAMES, runRankOf, runTierOf } from '@/lib/price-games';
 
 // PRICE CHECK'S SHARE CARD (owner, 2026-10-01: "it needs a great share card").
+// A result card carries the player's payment card from the run's ending: the
+// Shoppers ladder, prepaid up to black (RUN_RANKS in lib/price-games).
 // One route draws both: with no ?s it is the invite (the five tags, every
 // price a row of question marks), and with ?s=8-10-6-5-5 it is a result,
 // the run's own departures board with each tag's points and the total. It
@@ -19,6 +21,30 @@ function flap(ch, big) {
   return h('div', { style: { width: w, height: hgt, borderRadius: 7, background: '#1a2133', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', fontFamily: MONO, fontSize: fs, color: ch === '?' ? '#64748b' : '#f8fafc' } },
     ch,
     h('div', { style: { position: 'absolute', left: 0, right: 0, top: hgt / 2, height: 2, background: '#05070d' } }));
+}
+
+
+// The run's payment card, one face per Shoppers tier (sharpest first).
+const PAY = [
+  { bg: 'linear-gradient(140deg, #2b2b30 0%, #0c0c0f 60%, #1e1e23 100%)', ink: '#e9cf7f' },
+  { bg: 'linear-gradient(135deg, #ffe9a8 0%, #e6b532 45%, #a97a10 100%)', ink: '#2a1f04' },
+  { bg: 'linear-gradient(135deg, #5b8ff0 0%, #2f6fe4 40%, #163a8c 100%)', ink: '#ffffff' },
+  { bg: 'linear-gradient(160deg, #4b5a6e 0%, #36424f 100%)', ink: '#e7edf4' },
+  { bg: '#fbfaf6', ink: '#22252b' },
+];
+function payCard(ti, rank, total, max) {
+  const f = PAY[ti];
+  const prepaid = ti === PAY.length - 1;
+  const chip = h('div', { style: { display: 'flex', width: 46, height: 36, borderRadius: 7, background: ti >= 3 ? 'linear-gradient(135deg, #eef0f4 0%, #a7adb8 55%, #dfe2e8 100%)' : 'linear-gradient(135deg, #f6dc8a 0%, #c9a227 55%, #f2d272 100%)' } });
+  return h('div', { style: { display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: 380, height: 240, borderRadius: 20, background: f.bg, color: f.ink, padding: prepaid ? '34px 24px 20px' : '20px 24px', position: 'relative', overflow: 'hidden', transform: 'rotate(-4deg)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' } },
+    prepaid ? h('div', { style: { display: 'flex', position: 'absolute', left: 0, right: 0, top: 0, height: 22, background: 'linear-gradient(90deg, #ff6b3d 0%, #ffb02e 25%, #28c08a 50%, #3d8bff 75%, #c560ff 100%)' } }) : null,
+    h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase' } },
+      h('div', { style: { display: 'flex' } }, 'Mind Loft'),
+      h('div', { style: { display: 'flex', color: prepaid ? '#e2522a' : f.ink } }, rank[3])),
+    h('div', { style: { display: 'flex', alignItems: 'center', gap: 14 } }, chip,
+      prepaid ? h('div', { style: { display: 'flex', flexDirection: 'column', fontSize: 11, fontWeight: 800, letterSpacing: 2, color: '#6b7280' } }, 'BALANCE', h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 22, letterSpacing: 0, color: '#dc2626' } }, '$0.00')) : null),
+    h('div', { style: { display: 'flex', fontSize: 32, fontWeight: 800, letterSpacing: -1 } }, rank[1]),
+    h('div', { style: { display: 'flex', alignItems: 'baseline', fontFamily: MONO, fontSize: 26 } }, String(total), h('span', { style: { fontSize: 15, opacity: 0.7, marginLeft: 6 } }, `/ ${max}`)));
 }
 
 function card(scores) {
@@ -38,12 +64,9 @@ function card(scores) {
   return h('div', { style: { width: 1200, height: 630, display: 'flex', background: GROUND, padding: '46px 56px', fontFamily: SANS, color: '#f1f5f9' } },
     h('div', { style: { display: 'flex', flexDirection: 'column', width: 490, paddingRight: 30 } },
       h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 20, letterSpacing: 4, color: '#8b95a8', textTransform: 'uppercase' } }, 'Mind Loft · Daily run'),
-      h('div', { style: { display: 'flex', flexDirection: 'column', fontSize: 92, fontWeight: 800, lineHeight: 0.95, letterSpacing: -3, marginTop: 18 } }, h('span', null, 'Price'), h('span', null, 'Check')),
+      h('div', { style: { display: 'flex', flexDirection: 'column', fontSize: res ? 72 : 92, fontWeight: 800, lineHeight: 0.95, letterSpacing: -3, marginTop: 18 } }, h('span', null, 'Price'), h('span', null, 'Check')),
       res
-        ? h('div', { style: { display: 'flex', flexDirection: 'column', marginTop: 26 } },
-          h('div', { style: { display: 'flex', alignSelf: 'flex-start', padding: '8px 22px', border: '5px solid #fbbf24', borderRadius: 12, color: '#fbbf24', fontSize: 52, fontWeight: 800, letterSpacing: 6, transform: 'rotate(-4deg)' } }, 'SOLD'),
-          h('div', { style: { display: 'flex', marginTop: 18, fontSize: 30, fontWeight: 800 } }, `${rank[1]} · ${total} of ${max}`),
-          h('div', { style: { display: 'flex', marginTop: 8, fontSize: 24, fontWeight: 700, color: '#8b95a8' } }, 'Can you price it closer?'))
+        ? h('div', { style: { display: 'flex', marginTop: 26, paddingLeft: 6 } }, payCard(runTierOf(Math.round(total * 50 / max)), rank, total, max))
         : h('div', { style: { display: 'flex', flexDirection: 'column', marginTop: 26 } },
           h('div', { style: { display: 'flex', fontSize: 30, fontWeight: 700, color: '#cbd5e1', lineHeight: 1.3 } }, 'Five real price tags, from pocket change to the auction block.'),
           h('div', { style: { display: 'flex', marginTop: 14, fontSize: 24, fontWeight: 700, color: '#8b95a8' } }, 'Five guesses each, one score out of 50.')),
