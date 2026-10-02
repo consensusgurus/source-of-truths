@@ -17,9 +17,10 @@
 // ladder (owner, 2026-10-01, "not a receipt"): the scores ring up on a card
 // terminal, the card in hand upgrades from prepaid to black as the total
 // climbs, then taps to pay and the result takes the terminal's place. The
-// persona is one of THE SHOPPERS (RUN_RANKS in lib/price-games). Five seconds later the five items come up in one pop-up
-// (Pricer's reveal, kept), and closing it offers the Trivia Gauntlet if that
-// run has not been finished today.
+// persona is one of THE SHOPPERS (RUN_RANKS in lib/price-games). Seven seconds later the five items come up in one pop-up
+// (Pricer's reveal, kept). Once it is closed, the Trivia Gauntlet offer follows
+// ten seconds later, or as soon as the player leaves the page, if that run has
+// not been finished today (owner, 2026-10-01: slow the pop-ups down).
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -34,7 +35,7 @@ import { PRICE_GAMES, errOf, scoreOf, fmtCents, runRankOf, runTierOf, RUN_RANKS 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
 const RUN_ID = 'pricecheck';
-const ITEMS_DELAY = 5000;
+const ITEMS_DELAY = 7000;
 
 function etToday() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
@@ -150,7 +151,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
     try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {}
   }
 
-  // The items pop-up: five seconds after the ending settles, once per load,
+  // The items pop-up: seven seconds after the ending settles, once per load,
   // and only for a run finished in this sitting.
   const finaleOver = useCallback(() => {
     if (itemsShown.current) return;
@@ -278,7 +279,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
       {showItems && (
         <ItemsPop sections={sections} counted={counted} at={itemAt} setAt={setItemAt} onClose={closeItems} />
       )}
-      <RunNudgePop target="gauntlet" ready={nudge} />
+      <RunNudgePop target="gauntlet" ready={nudge} delay={10000} fireOnLeave />
     </div>
   );
 }

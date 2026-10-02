@@ -5,6 +5,9 @@
 // finish the Trivia Gauntlet and you are offered Price Check, each only if
 // that other run has not been finished today on this device. Once per page
 // load; the caller decides when (`ready`), after its own ending has settled.
+// `fireOnLeave` (Price Check, owner 2026-10-01): once ready, the offer also
+// opens the moment the player leaves the page (tab hidden, app switched), so
+// it is waiting when they come back, instead of only after `delay`.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
@@ -14,7 +17,7 @@ import { RUN_DOORS, runDoneToday } from './RunDoorPop';
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
 
-export default function RunNudgePop({ target = 'gauntlet', ready = false, delay = 450, onClose }) {
+export default function RunNudgePop({ target = 'gauntlet', ready = false, delay = 450, fireOnLeave = false, onClose }) {
   const D = RUN_DOORS[target];
   const [open, setOpen] = useState(false);
   const fired = useRef(false);
@@ -22,14 +25,17 @@ export default function RunNudgePop({ target = 'gauntlet', ready = false, delay 
 
   useEffect(() => {
     if (!D || !ready || fired.current) return undefined;
-    const t = setTimeout(() => {
+    const fire = () => {
       if (fired.current) return;
       fired.current = true;
       if (runDoneToday(target)) return;
       setOpen(true);
-    }, delay);
-    return () => clearTimeout(t);
-  }, [ready, target, D, delay]);
+    };
+    const t = setTimeout(fire, delay);
+    const onHide = () => { if (document.visibilityState === 'hidden') fire(); };
+    if (fireOnLeave) document.addEventListener('visibilitychange', onHide);
+    return () => { clearTimeout(t); if (fireOnLeave) document.removeEventListener('visibilitychange', onHide); };
+  }, [ready, target, D, delay, fireOnLeave]);
 
   useEffect(() => {
     if (!open) return undefined;
