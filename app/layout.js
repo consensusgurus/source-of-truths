@@ -7,6 +7,7 @@ import ResultQueue from './ResultQueue';
 import DailyStartPing from './DailyStartPing';
 import DailySaveSync from './DailySaveSync';
 import TrophyPop from './TrophyPop';
+import { PriceCheckItemsGlobal } from './pricecheck/ItemsPop';
 import ChunkReload from './ChunkReload';
 import { getAllSources } from '@/lib/sources';
 import { T } from '@/lib/theme';
@@ -151,6 +152,10 @@ export default function RootLayout({ children }) {
             on an actual unlock. Anything added back here needs the owner's word
             first. */}
         <TrophyPop />
+        {/* Owner-approved (2026-10-02): the Price Check items pop-up opens ten
+            seconds after a run ends on whatever page the player is on. It fires
+            only for a run just finished on this device. app/pricecheck/ItemsPop.jsx. */}
+        <PriceCheckItemsGlobal />
         {/* Reloads once when a hashed chunk from a superseded deployment fails to
             load. See app/ChunkReload.jsx and app/error.js (2026-09-23). */}
         <ChunkReload />

@@ -17,16 +17,17 @@
 // ladder (owner, 2026-10-01, "not a receipt"): the scores ring up on a card
 // terminal, the card in hand upgrades from prepaid to black as the total
 // climbs, then taps to pay and the result takes the terminal's place. The
-// persona is one of THE SHOPPERS (RUN_RANKS in lib/price-games). Seven seconds later the five items come up in one pop-up
-// (Pricer's reveal, kept). Once it is closed, the Trivia Gauntlet offer follows
+// persona is one of THE SHOPPERS (RUN_RANKS in lib/price-games). Ten seconds later the five items come up in one pop-up
+// (Pricer's reveal, kept), ON WHATEVER PAGE THE PLAYER IS ON BY THEN (owner,
+// 2026-10-02): see app/pricecheck/ItemsPop.jsx. Once it is closed, the Trivia Gauntlet offer follows
 // ten seconds later, or as soon as the player leaves the page, if that run has
 // not been finished today (owner, 2026-10-01: slow the pop-ups down).
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { X, ExternalLink } from 'lucide-react';
 import PriceGame, { readDoneSave } from '../price/PriceGame';
 import RunNudgePop from '../circuits/RunNudgePop';
+import ItemsPop, { itemsFor, scheduleItems, spendItems } from './ItemsPop';
 import useCircuitBoard from '../circuits/useCircuitBoard';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
@@ -35,7 +36,6 @@ import { PRICE_GAMES, errOf, scoreOf, fmtCents, runRankOf, runTierOf, RUN_RANKS 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
 const RUN_ID = 'pricecheck';
-const ITEMS_DELAY = 7000;
 
 function etToday() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
@@ -73,6 +73,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
   const [itemAt, setItemAt] = useState(0);
   const [nudge, setNudge] = useState(false);
   const itemsShown = useRef(false);
+  const countedRef = useRef([]);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => { rRef.current = r; }, [r]);
@@ -110,6 +111,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
     if (res) return res;
     return null;
   }), [sections, banked, r.results]);
+  countedRef.current = counted;
   const total = counted.reduce((a, c) => a + (c ? c.score : 0), 0);
   const rank = runRankOf(Math.round(total * 50 / Math.max(1, MAX)));
 
@@ -151,13 +153,14 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
     try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {}
   }
 
-  // The items pop-up: seven seconds after the ending settles, once per load,
-  // and only for a run finished in this sitting.
+  // The items pop-up: ten seconds after the ending settles, once, and only for
+  // a run finished in this sitting. Stamped rather than timed here, so it opens
+  // wherever the player has gone (PriceCheckItemsGlobal in app/layout.js).
   const finaleOver = useCallback(() => {
     if (itemsShown.current) return;
     itemsShown.current = true;
-    setTimeout(() => { setItemAt(0); setShowItems(true); }, ITEMS_DELAY);
-  }, []);
+    scheduleItems(itemsFor(sections, countedRef.current));
+  }, [sections]);
   function closeItems() { setShowItems(false); setNudge(true); }
 
   function shareText() {
@@ -274,11 +277,11 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
       {hydrated && done && (
         <Finale key="finale" sections={sections} counted={counted} total={total} max={MAX} dateLabel={dateLabel} dateShort={dateShort}
           animate={doneAtLoad.current === false} onOver={finaleOver} board={board}
-          onShare={copyShare} copied={copied} onItems={() => { setItemAt(0); setShowItems(true); }} />
+          onShare={copyShare} copied={copied} onItems={() => { spendItems(); setItemAt(0); setShowItems(true); }} />
       )}
 
       {showItems && (
-        <ItemsPop sections={sections} counted={counted} at={itemAt} setAt={setItemAt} onClose={closeItems} />
+        <ItemsPop items={itemsFor(sections, counted)} at={itemAt} setAt={setItemAt} onClose={closeItems} closeLabel="Back to your results" />
       )}
       <RunNudgePop target="gauntlet" ready={nudge} delay={10000} fireOnLeave />
     </div>
@@ -476,66 +479,6 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
 }
 
 // ─── THE ITEMS POP-UP: today's five, one at a time ──────────────────────────
-function ItemsPop({ sections, counted, at, setAt, onClose }) {
-  const tabsRef = useRef(null);
-  const [arrows, setArrows] = useState({ l: false, r: false });
-  const s = sections[at];
-  const c = counted[at];
-  const D = s.day;
-  const measure = useCallback(() => {
-    const t = tabsRef.current;
-    if (!t) return;
-    const over = t.scrollWidth > t.clientWidth + 2;
-    setArrows({ l: over && t.scrollLeft > 4, r: over && t.scrollLeft + t.clientWidth < t.scrollWidth - 4 });
-  }, []);
-  useEffect(() => {
-    measure();
-    const on = () => measure();
-    window.addEventListener('resize', on);
-    const onKey = (e) => {
-      if (e.key === 'Escape') onClose();
-      if (e.key === 'ArrowRight') setAt((at + 1) % sections.length);
-      if (e.key === 'ArrowLeft') setAt((at + sections.length - 1) % sections.length);
-    };
-    window.addEventListener('keydown', onKey);
-    try { const b = tabsRef.current && tabsRef.current.children[at]; if (b) b.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {}
-    const t = setTimeout(measure, 350);
-    return () => { window.removeEventListener('resize', on); window.removeEventListener('keydown', onKey); clearTimeout(t); };
-  }, [at, measure, onClose, sections.length, setAt]);
-  return (
-    <div className="ip" role="dialog" aria-modal="true" aria-label="Today's items">
-      <div className="ip-scrim" onClick={onClose} />
-      <div className="ip-card">
-        <button type="button" className="ip-x" aria-label="Close" onClick={onClose}><X size={18} /></button>
-        <div className={`ip-tabwrap${arrows.l ? ' fl' : ''}${arrows.r ? ' fr' : ''}`}>
-          {arrows.l && <button type="button" className="ip-arr l" aria-label="Earlier tags" onClick={() => tabsRef.current.scrollBy({ left: -140, behavior: 'smooth' })}>&lsaquo;</button>}
-          <div className="ip-tabs" ref={tabsRef} onScroll={measure}>
-            {sections.map((x, i) => <button key={x.key} type="button" className={i === at ? 'on' : ''} style={{ background: `var(--pc-${x.key})` }} onClick={() => setAt(i)}>{x.name}</button>)}
-          </div>
-          {arrows.r && <button type="button" className="ip-arr r" aria-label="More tags" onClick={() => tabsRef.current.scrollBy({ left: 140, behavior: 'smooth' })}>&rsaquo;</button>}
-        </div>
-        <div className={`ip-img${D.fit === 'cover' ? ' cover' : ''}`}>{D.imgs && D.imgs[0] && <img src={D.imgs[0].src} alt={D.revealName || D.name} referrerPolicy="no-referrer" />}</div>
-        <div className="ip-body">
-          <div className="eb" style={{ color: `var(--pc-${s.key})` }}>{s.name} · {D.cat}</div>
-          <h3>{D.revealName || D.name}</h3>
-          {D.facts && D.facts.length > 0 && <div className="ip-meta">{D.facts.join(' · ')}</div>}
-          <div className="ip-price"><b>{fmtCents(D.price)}</b><span>You scored {c ? c.score : 0} / 10</span></div>
-          <div className="ip-asof">{D.asOf}</div>
-          {D.credit && <div className="ip-credit">{D.creditUrl ? <a href={D.creditUrl} target="_blank" rel="noopener">{D.credit}</a> : D.credit}</div>}
-          <div className="ip-act">
-            <a href={D.href} target="_blank" rel={D.sponsored ? 'noopener sponsored' : 'noopener'}>{D.buy} <ExternalLink size={13} /></a>
-            <button type="button" onClick={onClose}>Back to your results</button>
-          </div>
-          <div className="ip-nav">
-            <button type="button" onClick={() => setAt((at + sections.length - 1) % sections.length)}>&larr; Prev</button>
-            <span>{at + 1} of {sections.length}</span>
-            <button type="button" onClick={() => setAt((at + 1) % sections.length)}>Next &rarr;</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 const CSS = `
 .pc *{box-sizing:border-box}
@@ -743,42 +686,6 @@ const CSS = `
 .cf-stats,.cf-games{max-width:none}
 .pf-btns a,.pf-btns button{flex:1 1 40%;text-align:center;padding:12px 10px}
 }
-/* ITEMS POP-UP */
-.ip{position:fixed;inset:0;z-index:4050;display:flex;align-items:center;justify-content:center;padding:16px;animation:pcfade .35s ease both}
-.ip-scrim{position:absolute;inset:0;background:rgba(5,7,13,.72);backdrop-filter:blur(3px)}
-.ip-card{position:relative;width:100%;max-width:430px;max-height:92vh;overflow-y:auto;scrollbar-width:none;background:var(--pc-panel);border:1px solid var(--pc-line);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.6);animation:pcrise .45s cubic-bezier(.2,1.3,.4,1) both}
-.ip-card::-webkit-scrollbar{display:none}
-.ip-x{position:absolute;top:10px;right:10px;z-index:3;width:34px;height:34px;border-radius:50%;border:0;background:rgba(0,0,0,.45);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.ip-tabwrap{position:relative;margin-right:46px}
-.ip-tabs{display:flex;gap:6px;padding:12px 12px 0;overflow-x:auto;scrollbar-width:none;scroll-behavior:smooth}
-.ip-tabs::-webkit-scrollbar{display:none}
-.ip-tabs button{flex:0 0 auto;font:800 11px ${SANS};letter-spacing:.05em;text-transform:uppercase;border:0;border-radius:5px 7px 7px 5px;padding:6px 10px;cursor:pointer;color:#0b0f1a;opacity:.42;transition:opacity .2s,transform .2s}
-[data-stage-theme="light"] .ip-tabs button{color:#fff}
-.ip-tabs button.on{opacity:1;transform:translateY(-1px)}
-.ip-arr{position:absolute;top:10px;width:30px;height:30px;border-radius:50%;border:0;background:var(--pc-panel);color:var(--pc-ink);font:800 16px ${SANS};box-shadow:0 2px 10px rgba(0,0,0,.35);cursor:pointer;z-index:2}
-.ip-arr.l{left:4px}.ip-arr.r{right:-4px}
-.ip-tabwrap:before,.ip-tabwrap:after{content:"";position:absolute;top:0;bottom:0;width:34px;pointer-events:none;opacity:0;transition:opacity .2s;z-index:1}
-.ip-tabwrap:before{left:0;background:linear-gradient(90deg,var(--pc-panel),transparent)}
-.ip-tabwrap:after{right:0;background:linear-gradient(270deg,var(--pc-panel),transparent)}
-.ip-tabwrap.fl:before,.ip-tabwrap.fr:after{opacity:1}
-.ip-img{margin:12px 12px 0;height:220px;border-radius:12px;background:var(--pc-mat);display:flex;align-items:center;justify-content:center;overflow:hidden}
-.ip-img img{max-width:92%;max-height:92%;object-fit:contain}
-.ip-img.cover img{max-width:none;max-height:none;width:100%;height:100%;object-fit:cover}
-.ip-body{padding:14px 16px 14px;text-align:left}
-.ip-body h3{margin:4px 0 2px;font-size:18px;font-weight:900;color:var(--pc-ink)}
-.ip-meta{color:var(--pc-mute);font-weight:700;font-size:13px}
-.ip-price{display:flex;align-items:baseline;gap:10px;margin:10px 0 2px;flex-wrap:wrap}
-.ip-price b{font:500 28px ${MONO};color:var(--pc-ink)}
-.ip-price span{font-weight:800;font-size:13px;color:var(--pc-mute)}
-.ip-asof{font-size:12px;color:var(--pc-mute);font-weight:600;line-height:1.45}
-.ip-credit{font-size:10.5px;color:var(--pc-mute);margin-top:4px}
-.ip-credit a{color:var(--pc-mute)}
-.ip-act{display:flex;gap:8px;margin-top:14px}
-.ip-act a,.ip-act button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-align:center;font:800 14px ${SANS};padding:11px 10px;border-radius:11px;text-decoration:none;cursor:pointer}
-.ip-act a{background:var(--pc-cta);color:var(--pc-cta-ink);border:0}
-.ip-act button{background:transparent;border:1px solid var(--pc-line);color:var(--pc-ink)}
-.ip-nav{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font:700 12px ${SANS};color:var(--pc-mute)}
-.ip-nav button{background:none;border:0;color:var(--pc-ink);font:800 13px ${SANS};cursor:pointer;padding:6px}
 @keyframes pcfade{from{opacity:0}to{opacity:1}}
 @media(max-width:600px){.tags{gap:4px}.tag{padding:27px 3px 8px}.tag .kn{display:none}.tag .k{white-space:nowrap;overflow:hidden;text-overflow:clip}.tag .n{font-size:13px}.tag .k{font-size:8.5px;letter-spacing:.06em}.tag .chip{display:none}.tag .pq{font-size:12px;margin-top:6px}.string{height:14px}.title{font-size:42px}.pre{padding-top:8px}.gun .odo{font-size:30px}.pre-row .sub2{font-size:11.5px;max-width:200px}.lede{font-size:14px;margin-top:10px;line-height:1.4}.lede-x{display:none}.rail{margin-top:22px;height:8px}.gun{margin-top:14px}.pre .facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:22px}.pre .fact{min-width:0;padding:8px;text-align:center;border-radius:10px}.pre .fact b{font-size:18px}.pre .fact span{font-size:10px;line-height:1.25;display:block}.heat .lbl{font-size:9px;letter-spacing:.08em}}
 @media(prefers-reduced-motion:reduce){.pc *{animation-duration:.01ms !important;animation-iteration-count:1 !important}}
