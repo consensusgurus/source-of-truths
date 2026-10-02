@@ -65,6 +65,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
   const [hydrated, setHydrated] = useState(false);
   const [banked, setBanked] = useState({});
   const [leaving, setLeaving] = useState(false);
+  const [howOpen, setHowOpen] = useState(false);
   const [between, setBetween] = useState(null);
   const doneAtLoad = useRef(null);
   const [showItems, setShowItems] = useState(false);
@@ -190,13 +191,21 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
         <section className={`pre${leaving ? ' leave' : ''}`}>
           <div className="eb fade">{dateLabel} · Price Check</div>
           <h1 className="title"><span>Price</span> <span>Check</span></h1>
-          <div className="odo fade" aria-hidden="true"><span className="q">$</span>
-            {['1234567890', '7391582640', '4086291537', ',', '9502738164', '2618407395', '5173094826'].map((d, i) => (
-              d === ',' ? <span key={i} className="q">,</span>
-                : <span key={i} className="d"><i style={{ animationDuration: `${[1.6, 1.1, 0.8, 0, 0.6, 0.45, 0.35][i]}s` }}>{d.split('').map((c, j) => <b key={j}>{c}</b>)}</i></span>
-            ))}
-          </div>
           <p className="lede fade">Five real price tags, from <b>pocket change</b> to <b>the auction block</b>. Five guesses at each.<span className="lede-x"> Get warm, get close, then go big.</span></p>
+          {/* THE PRICE GUN IS THE START BUTTON (owner, 2026-10-01, option C): the
+              odometer that never lands is the gun's screen and Start is its trigger,
+              straight under the title, so it is on screen on every phone. */}
+          <button type="button" className="gun fade" onClick={start} aria-label="Start the run">
+            <span className="gscr"><small>Today&rsquo;s register</small>
+              <span className="odo" aria-hidden="true"><span className="q">$</span>
+                {['1234567890', '7391582640', '4086291537', ',', '9502738164', '2618407395', '5173094826'].map((d, i) => (
+                  d === ',' ? <span key={i} className="q">,</span>
+                    : <span key={i} className="d"><i style={{ animationDuration: `${[1.6, 1.1, 0.8, 0, 0.6, 0.45, 0.35][i]}s` }}>{d.split('').map((c, j) => <b key={j}>{c}</b>)}</i></span>
+                ))}
+              </span>
+            </span>
+            <span className="gtrig">Start the run <span aria-hidden="true">&rarr;</span></span>
+          </button>
           <div className="rail" />
           <div className="tags">
             {sections.map((s, i) => (
@@ -212,17 +221,21 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
               </div>
             ))}
           </div>
-          {/* START SITS UNDER THE TAGS (owner, 2026-10-01): below the facts and heat bar it
-              landed past the fold on every phone. Facts and heat come after it. */}
-          <button type="button" className="start pre-start fade" onClick={start}>Start the run <span aria-hidden="true">&rarr;</span></button>
-          <div className="sub2 pre-first fade">Played one already today? You can replay it here; your first score is the one that counts.</div>
-          <div className="facts fade">
-            <div className="fact"><b>{N}</b><span>price tags</span></div>
-            <div className="fact"><b>5</b><span>guesses each</span></div>
-            <div className="fact"><b>{MAX}</b><span>points to win</span></div>
-            <div className="fact"><b>1%</b><span>is a bullseye</span></div>
+          <div className="pre-row fade">
+            <div className="sub2">Played one today? Replay it here; your first score counts.</div>
+            <button type="button" className="pre-how" aria-expanded={howOpen} onClick={() => setHowOpen((v) => !v)}>{howOpen ? 'Hide scoring' : 'How scoring works'}</button>
           </div>
-          <div className="heat fade"><div className="bar" /><div className="lbl"><span>Freezing</span><span>Cold</span><span>Warm</span><span>Hot</span><span>Burning</span><span>Bullseye</span></div></div>
+          {howOpen && (
+            <div className="pre-hw">
+              <div className="facts">
+                <div className="fact"><b>{N}</b><span>price tags</span></div>
+                <div className="fact"><b>5</b><span>guesses each</span></div>
+                <div className="fact"><b>{MAX}</b><span>points to win</span></div>
+                <div className="fact"><b>1%</b><span>is a bullseye</span></div>
+              </div>
+              <div className="heat"><div className="bar" /><div className="lbl"><span>Freezing</span><span>Cold</span><span>Warm</span><span>Hot</span><span>Burning</span><span>Bullseye</span></div></div>
+            </div>
+          )}
           <div className="sub2 fade">Each one is also its own daily: {sections.map((s, i) => <React.Fragment key={s.key}>{i ? ' · ' : ''}<a href={s.path}>{s.name}</a></React.Fragment>)}</div>
         </section>
       )}
@@ -576,8 +589,19 @@ const CSS = `
 .pc .start:active{transform:scale(.97)}
 .sub2{margin-top:12px;font-size:12.5px;font-weight:700;color:var(--pc-mute)}
 .sub2 a{color:var(--pc-ink)}
-.pre-first{margin-top:10px}
-.pre .facts{margin-top:26px}
+.gun{display:block;width:100%;max-width:440px;margin:18px auto 0;padding:0;border:1.5px solid var(--pc-line);border-radius:16px;background:var(--pc-panel);color:var(--pc-ink);box-shadow:var(--pc-shadow);overflow:hidden;cursor:pointer;text-align:center;font:inherit}
+.gun .gscr{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 10px 10px}
+.gun .gscr small{font:500 9.5px ${MONO};letter-spacing:.16em;text-transform:uppercase;color:var(--pc-mute)}
+.gun .odo{margin:0;border:0;background:none;box-shadow:none;padding:0;font-size:34px}
+.gun .gtrig{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:10px;padding:15px 18px;background:var(--pc-cta);color:var(--pc-cta-ink);font:900 19px ${SANS}}
+.gun .gtrig::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.45) 50%,transparent 70%);transform:translateX(-100%);animation:pcsheen 2.6s 1.4s ease-in-out infinite}
+.gun:active{transform:scale(.98)}
+.gun:focus-visible,.pre-how:focus-visible{outline:2px solid var(--pc-ink);outline-offset:3px}
+.pre-row{display:flex;flex-direction:row-reverse;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;max-width:780px;margin:16px auto 0}
+.pre-row .sub2{margin:0;text-align:right;max-width:260px}
+.pre-how{background:none;border:0;padding:6px 0;color:var(--pc-mute);font:700 13px ${SANS};text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.pre-hw{animation:pcrise .3s ease both}
+.pre-hw .facts{margin-top:18px}
 .pre.leave .hang{animation:pcout .55s cubic-bezier(.6,0,.8,.4) both !important}
 @keyframes pcout{to{transform:translateY(-140px) rotate(10deg);opacity:0}}
 .pre.leave .fade{transition:opacity .4s;opacity:0}
@@ -752,6 +776,6 @@ const CSS = `
 .ip-nav{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font:700 12px ${SANS};color:var(--pc-mute)}
 .ip-nav button{background:none;border:0;color:var(--pc-ink);font:800 13px ${SANS};cursor:pointer;padding:6px}
 @keyframes pcfade{from{opacity:0}to{opacity:1}}
-@media(max-width:600px){.tags{gap:4px}.tag{padding:17px 3px 8px}.tag .n{font-size:13px}.tag .k{font-size:8.5px;letter-spacing:.06em}.tag .chip{display:none}.tag .pq{font-size:12px;margin-top:6px}.string{height:14px}.title{font-size:42px}.pre{padding-top:8px}.odo{font-size:20px;padding:5px 12px;margin-top:10px;border-radius:10px}.lede{font-size:14px;margin-top:10px;line-height:1.4}.lede-x{display:none}.rail{margin-top:18px;height:8px}.pc .pre-start{display:flex;justify-content:center;width:100%;margin-top:22px;padding:15px 20px;font-size:18px}.pre .facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:22px}.pre .fact{min-width:0;padding:8px;text-align:center;border-radius:10px}.pre .fact b{font-size:18px}.pre .fact span{font-size:10px;line-height:1.25;display:block}.heat .lbl{font-size:9px;letter-spacing:.08em}}
+@media(max-width:600px){.tags{gap:4px}.tag{padding:17px 3px 8px}.tag .n{font-size:13px}.tag .k{font-size:8.5px;letter-spacing:.06em}.tag .chip{display:none}.tag .pq{font-size:12px;margin-top:6px}.string{height:14px}.title{font-size:42px}.pre{padding-top:8px}.gun .odo{font-size:30px}.pre-row .sub2{font-size:11.5px;max-width:200px}.lede{font-size:14px;margin-top:10px;line-height:1.4}.lede-x{display:none}.rail{margin-top:22px;height:8px}.gun{margin-top:14px}.pre .facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:22px}.pre .fact{min-width:0;padding:8px;text-align:center;border-radius:10px}.pre .fact b{font-size:18px}.pre .fact span{font-size:10px;line-height:1.25;display:block}.heat .lbl{font-size:9px;letter-spacing:.08em}}
 @media(prefers-reduced-motion:reduce){.pc *{animation-duration:.01ms !important;animation-iteration-count:1 !important}}
 `;
