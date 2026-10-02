@@ -196,7 +196,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
                 : <span key={i} className="d"><i style={{ animationDuration: `${[1.6, 1.1, 0.8, 0, 0.6, 0.45, 0.35][i]}s` }}>{d.split('').map((c, j) => <b key={j}>{c}</b>)}</i></span>
             ))}
           </div>
-          <p className="lede fade">Five real price tags, from <b>pocket change</b> to <b>the auction block</b>. Five guesses at each. Get warm, get close, then go big.</p>
+          <p className="lede fade">Five real price tags, from <b>pocket change</b> to <b>the auction block</b>. Five guesses at each.<span className="lede-x"> Get warm, get close, then go big.</span></p>
           <div className="rail" />
           <div className="tags">
             {sections.map((s, i) => (
@@ -212,6 +212,10 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
               </div>
             ))}
           </div>
+          {/* START SITS UNDER THE TAGS (owner, 2026-10-01): below the facts and heat bar it
+              landed past the fold on every phone. Facts and heat come after it. */}
+          <button type="button" className="start pre-start fade" onClick={start}>Start the run <span aria-hidden="true">&rarr;</span></button>
+          <div className="sub2 pre-first fade">Played one already today? You can replay it here; your first score is the one that counts.</div>
           <div className="facts fade">
             <div className="fact"><b>{N}</b><span>price tags</span></div>
             <div className="fact"><b>5</b><span>guesses each</span></div>
@@ -219,9 +223,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
             <div className="fact"><b>1%</b><span>is a bullseye</span></div>
           </div>
           <div className="heat fade"><div className="bar" /><div className="lbl"><span>Freezing</span><span>Cold</span><span>Warm</span><span>Hot</span><span>Burning</span><span>Bullseye</span></div></div>
-          <button type="button" className="start fade" onClick={start}>Start the run <span aria-hidden="true">&rarr;</span></button>
           <div className="sub2 fade">Each one is also its own daily: {sections.map((s, i) => <React.Fragment key={s.key}>{i ? ' · ' : ''}<a href={s.path}>{s.name}</a></React.Fragment>)}</div>
-          <div className="sub2 fade">A game you already played today can be replayed here; your first score is the one that counts.</div>
         </section>
       )}
 
@@ -574,6 +576,8 @@ const CSS = `
 .pc .start:active{transform:scale(.97)}
 .sub2{margin-top:12px;font-size:12.5px;font-weight:700;color:var(--pc-mute)}
 .sub2 a{color:var(--pc-ink)}
+.pre-first{margin-top:10px}
+.pre .facts{margin-top:26px}
 .pre.leave .hang{animation:pcout .55s cubic-bezier(.6,0,.8,.4) both !important}
 @keyframes pcout{to{transform:translateY(-140px) rotate(10deg);opacity:0}}
 .pre.leave .fade{transition:opacity .4s;opacity:0}
@@ -748,6 +752,6 @@ const CSS = `
 .ip-nav{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font:700 12px ${SANS};color:var(--pc-mute)}
 .ip-nav button{background:none;border:0;color:var(--pc-ink);font:800 13px ${SANS};cursor:pointer;padding:6px}
 @keyframes pcfade{from{opacity:0}to{opacity:1}}
-@media(max-width:600px){.tags{gap:4px}.tag{padding:20px 4px 10px}.tag .n{font-size:13px}.tag .k{font-size:8.5px;letter-spacing:.06em}.tag .chip{display:none}.tag .pq{font-size:12px}.string{height:22px}.fact{min-width:92px}.title{font-size:46px}}
+@media(max-width:600px){.tags{gap:4px}.tag{padding:17px 3px 8px}.tag .n{font-size:13px}.tag .k{font-size:8.5px;letter-spacing:.06em}.tag .chip{display:none}.tag .pq{font-size:12px;margin-top:6px}.string{height:14px}.title{font-size:42px}.pre{padding-top:8px}.odo{font-size:20px;padding:5px 12px;margin-top:10px;border-radius:10px}.lede{font-size:14px;margin-top:10px;line-height:1.4}.lede-x{display:none}.rail{margin-top:18px;height:8px}.pc .pre-start{display:flex;justify-content:center;width:100%;margin-top:22px;padding:15px 20px;font-size:18px}.pre .facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:22px}.pre .fact{min-width:0;padding:8px;text-align:center;border-radius:10px}.pre .fact b{font-size:18px}.pre .fact span{font-size:10px;line-height:1.25;display:block}.heat .lbl{font-size:9px;letter-spacing:.08em}}
 @media(prefers-reduced-motion:reduce){.pc *{animation-duration:.01ms !important;animation-iteration-count:1 !important}}
 `;
