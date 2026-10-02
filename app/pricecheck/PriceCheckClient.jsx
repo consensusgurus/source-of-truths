@@ -186,6 +186,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
         <b>Price Check</b>
         <span className="pc-capd">{dateShort}</span>
         {playing && <span className="pc-capt">{sections.map((s, i) => <i key={s.key} className={i < r.si ? 'd' : i === r.si ? 'on' : ''} style={{ background: i <= r.si ? `var(--pc-${s.key})` : undefined }} title={s.name} />)}</span>}
+        {!playing && <a className="pc-lb" href="/pricecheck/leaderboard">Leaderboard</a>}
       </div>
 
       {hydrated && r.phase === 'idle' && (
@@ -462,7 +463,7 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
                 <div className="pf-btns">
                   <button type="button" className="pri" onClick={onShare}>{copied ? 'Copied' : 'Share your card'}</button>
                   <button type="button" onClick={onItems}>See the items</button>
-                  <a href="/circuits/pricecheck">Leaderboard</a>
+                  <a href="/pricecheck/leaderboard">Leaderboard</a>
                   <a href="/">Back to main</a>
                 </div>
               </>
@@ -548,6 +549,8 @@ const CSS = `
 .pc-capt i.on{box-shadow:0 0 0 2px var(--pc-ground),0 0 0 3px var(--pc-ink)}
 .pc-theme{margin-left:auto;background:none;border:1px solid var(--pc-line);color:var(--pc-ink);border-radius:999px;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
 .pc-capt + .pc-theme{margin-left:8px}
+.pc-lb{margin-left:auto;font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--pc-cta);text-decoration:none}
+.pc-lb:hover{color:var(--pc-ink)}
 /* PREGAME */
 .pre{max-width:820px;margin:0 auto;padding:18px 16px 50px;text-align:center}
 .title{margin:10px 0 0;font-size:clamp(44px,9vw,76px);font-weight:900;letter-spacing:-.035em;line-height:.95}
