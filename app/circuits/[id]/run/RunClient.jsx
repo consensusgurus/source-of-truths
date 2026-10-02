@@ -207,6 +207,9 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   // wants to know what beat them presses it, and the one who does not never
   // sees it.
   const [misses, setMisses] = useState(false);
+  // The scorecard's doors (owner, 2026-10-01): two drawers besides the misses.
+  const [nextOpen, setNextOpen] = useState(false);
+  const [boardOpen, setBoardOpen] = useState(false);
   const curtainOnce = useRef(false);
   const doneAtLoad = useRef(null);
   const lockRef = useRef(false);
@@ -1308,35 +1311,6 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   </div>
                 </div>
 
-                <div className="rn-board">
-                  <span className="rn-lcap">
-                    Today&rsquo;s circuit board{boardQ.data && boardQ.data.overallField ? ` · ${boardQ.data.overallField} on it` : ''}
-                  </span>
-                  {boardQ.state === 'loading' ? (
-                    <div className="rn-bmsg">Reading the board.</div>
-                  ) : boardQ.state === 'error' ? (
-                    <div className="rn-bmsg">The board could not be loaded just now.</div>
-                  ) : (
-                    <div className="rn-lb">
-                      {((boardQ.data && boardQ.data.overall) || []).slice(0, 5).map((row, i) => (
-                        <div key={row.userKey || i} className={`rn-brow${boardQ.data.me && row.userKey === boardQ.data.me.userKey ? ' me' : ''}`}>
-                          <span className="rn-bp">{i + 1}</span>
-                          <span className="rn-bn">{row.username || 'Guest'}</span>
-                          <span className="rn-bs">{Math.round(row.total * 10) / 10}</span>
-                        </div>
-                      ))}
-                      {boardQ.data && boardQ.data.me
-                        && !((boardQ.data.overall || []).slice(0, 5).some((x) => x.userKey === boardQ.data.me.userKey)) ? (
-                          <div className="rn-brow me">
-                            <span className="rn-bp">{boardQ.data.me.rank || '—'}</span>
-                            <span className="rn-bn">You</span>
-                            <span className="rn-bs">{Math.round(boardQ.data.me.total * 10) / 10}</span>
-                          </div>
-                        ) : null}
-                    </div>
-                  )}
-                </div>
-
                 {guest && !claimed ? (
                   <div className="rn-claim">
                     <span className="rn-clabel">Playing as a guest</span>
@@ -1372,36 +1346,92 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   </div>
                 ) : null}
 
-                {/* WHERE NEXT (owner, 2026-08-30). The scorecard used to end on three
-                    controls, and the only one that led anywhere on this site was Home:
-                    the player likeliest to play something else was asked nothing. Four
-                    open puzzles and two more circuits, none of them played today, with
-                    the whole roster and every other circuit one press away IN PLACE.
-                    It sits above the actions because it is the offer and they are the
-                    exits. See app/circuits/RunNextUp.jsx for the two orderings. */}
-                <RunNextUp circuitId={circuitId} />
+                {/* THE DOORS (owner, 2026-10-01). Players said the answers they
+                    missed were too hard to find: they sat behind a "Miss summary"
+                    chip at the end of a row of five, under the next-up offer. The
+                    scorecard now ends on the same doors as every daily: the misses
+                    first and full width, then Play similar, practice, the board and
+                    the slate. The misses open directly under their own door. */}
+                {(() => {
+                  const missN = sections.reduce((n, s, i) => {
+                    const m = missOf(s, r.results[i] || null);
+                    return n + (m && !m.cleared ? 1 : 0);
+                  }, 0);
+                  const me = boardQ.data && boardQ.data.me;
+                  const rankSub = me && Number.isFinite(me.rank)
+                    ? `You are #${me.rank}${boardQ.data.overallField ? ` of ${boardQ.data.overallField}` : ''}`
+                    : 'Today\u2019s circuit board';
+                  const door = (k, nm, sb, props, extra = '') => (
+                    <button key={k} type="button" className={`rn-door${extra}`} {...props}>
+                      <span className="rn-dtx"><span className="rn-dnm">{nm}</span><span className="rn-dsb">{sb}</span></span>
+                      <span className="rn-dar" aria-hidden="true">&rsaquo;</span>
+                    </button>
+                  );
+                  return (
+                    <div className="rn-doors">
+                      {door('miss',
+                        missN ? `See the ${missN === 1 ? 'question' : `${missN} questions`} you missed` : 'See where each run ended',
+                        missN ? 'Each question that ended a quiz, with the right answer' : 'You cleared every quiz',
+                        { onClick: () => setMisses((v) => !v), 'aria-expanded': misses, 'aria-controls': 'rn-misses' }, ' pri')}
+                      {misses ? (
+                        <div className="rn-dwide" id="rn-misses">
+                          <MissList sections={sections} results={r.results} colourOf={(s) => rampFor(s.slot)} />
+                        </div>
+                      ) : null}
+                      {door('next', 'Play similar', 'Open puzzles and two more circuits',
+                        { onClick: () => setNextOpen((v) => !v), 'aria-expanded': nextOpen, 'aria-controls': 'rn-next' })}
+                      {door('again', 'Try again for practice', 'The same questions, nothing posted', { onClick: startPractice })}
+                      {nextOpen ? <div className="rn-dwide" id="rn-next"><RunNextUp circuitId={circuitId} /></div> : null}
+                      {door('board', 'Stats + leaderboard', rankSub,
+                        { onClick: () => setBoardOpen((v) => !v), 'aria-expanded': boardOpen, 'aria-controls': 'rn-bd' })}
+                      <a className="rn-door" href="/">
+                        <span className="rn-dtx"><span className="rn-dnm">All daily puzzles</span><span className="rn-dsb">Back to today&rsquo;s slate</span></span>
+                        <span className="rn-dar" aria-hidden="true">&rsaquo;</span>
+                      </a>
+                      {boardOpen ? (
+                        <div className="rn-dwide" id="rn-bd">
+                <div className="rn-board">
+                  <span className="rn-lcap">
+                    Today&rsquo;s circuit board{boardQ.data && boardQ.data.overallField ? ` · ${boardQ.data.overallField} on it` : ''}
+                  </span>
+                  {boardQ.state === 'loading' ? (
+                    <div className="rn-bmsg">Reading the board.</div>
+                  ) : boardQ.state === 'error' ? (
+                    <div className="rn-bmsg">The board could not be loaded just now.</div>
+                  ) : (
+                    <div className="rn-lb">
+                      {((boardQ.data && boardQ.data.overall) || []).slice(0, 5).map((row, i) => (
+                        <div key={row.userKey || i} className={`rn-brow${boardQ.data.me && row.userKey === boardQ.data.me.userKey ? ' me' : ''}`}>
+                          <span className="rn-bp">{i + 1}</span>
+                          <span className="rn-bn">{row.username || 'Guest'}</span>
+                          <span className="rn-bs">{Math.round(row.total * 10) / 10}</span>
+                        </div>
+                      ))}
+                      {boardQ.data && boardQ.data.me
+                        && !((boardQ.data.overall || []).slice(0, 5).some((x) => x.userKey === boardQ.data.me.userKey)) ? (
+                          <div className="rn-brow me">
+                            <span className="rn-bp">{boardQ.data.me.rank || '—'}</span>
+                            <span className="rn-bn">You</span>
+                            <span className="rn-bs">{Math.round(boardQ.data.me.total * 10) / 10}</span>
+                          </div>
+                        ) : null}
+                    </div>
+                  )}
+                </div>
+
+                          <a className="rn-vb rn-bfull" href={runSummaryHref(circuitId)}>The full board</a>
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })()}
 
                 <div className="rn-vacts rn-sacts">
-                  <button type="button" className="rn-vb pri" onClick={shareRun}>
+                  <button type="button" className="rn-vb" onClick={shareRun}>
                     {copied ? <Check size={15} strokeWidth={2.8} /> : <Share2 size={15} strokeWidth={2.8} />}
                     {copied ? 'Copied' : 'Share the run'}
                   </button>
-                  <button type="button" className={`rn-vb${misses ? ' on' : ''}`} onClick={() => setMisses((v) => !v)}>
-                    Miss summary
-                  </button>
-                  <a className="rn-vb" href={runSummaryHref(circuitId)}>The full board</a>
-                  {/* PLAY IT AGAIN (owner, 2026-08-30). Today's result is filed
-                      and the board keeps it, so the only thing left to offer is
-                      the questions again. It posts nothing, which is what the
-                      chip says. */}
-                  <button type="button" className="rn-vb" onClick={startPractice}>
-                    <RotateCcw size={15} strokeWidth={2.8} />Try again for practice
-                  </button>
-                  <a className="rn-vb" href="/"><Home size={15} strokeWidth={2.8} />Home</a>
                 </div>
-                {misses ? (
-                  <MissList sections={sections} results={r.results} colourOf={(s) => rampFor(s.slot)} />
-                ) : null}
                 <p className="rn-fine">
                   {r.practice
                     ? `A practice run posts nothing. Today's results are already on the board above, and they are the ones that count.`
@@ -1773,6 +1803,37 @@ body:has(.rn)::before{background:${T.ground};}
 .rn-vb:hover{filter:brightness(1.1);}
 .rn-hacts{margin-top:10px;}
 .rn-sacts{margin-top:22px;}
+
+/* THE DOORS (owner, 2026-10-01): the scorecard's exits, the same shape as
+   the daily end card's. The misses lead, full width, in the run's sky. */
+.rn-doors{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:22px;}
+.rn-door{display:flex;align-items:center;gap:12px;text-align:left;text-decoration:none;cursor:pointer;
+  font-family:inherit;color:#eef2fa;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);
+  border-radius:10px;padding:14px 15px;min-width:0;}
+.rn-door:hover{border-color:rgba(255,255,255,.3);}
+.rn-door:focus-visible{outline:2px solid #7dd3fc;outline-offset:2px;}
+.rn-dtx{flex:1;min-width:0;}
+.rn-dnm{display:block;font-size:15px;font-weight:800;letter-spacing:-.01em;line-height:1.2;}
+.rn-dsb{display:block;margin-top:3px;font-size:12px;font-weight:600;color:#9aa8c4;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rn-dar{flex:none;font-size:20px;line-height:1;color:#9aa8c4;transition:transform .2s ease;}
+.rn-door[aria-expanded="true"]{border-color:#7dd3fc;}
+.rn-door[aria-expanded="true"] .rn-dar{transform:rotate(90deg);color:#7dd3fc;}
+.rn-door.pri{grid-column:1/-1;background:#7dd3fc;border-color:#7dd3fc;color:#08222e;padding:17px;}
+.rn-door.pri .rn-dnm{font-size:18px;}
+.rn-door.pri .rn-dsb,.rn-door.pri .rn-dar{color:#08222e;opacity:.8;}
+.rn-door.pri[aria-expanded="true"] .rn-dar{color:#08222e;}
+.rn-dwide{grid-column:1/-1;min-width:0;}
+.rn-dwide .rnm-card{margin:0;}
+.rn-dwide .rn-board{margin-top:0;border-top:0;padding-top:4px;}
+.rn-bfull{margin-top:10px;}
+@media (max-width:640px){
+  .rn-doors{gap:6px;}
+  .rn-door{padding:12px;}
+  .rn-dnm{font-size:14px;}
+  .rn-door.pri .rn-dnm{font-size:16px;}
+}
+@media (max-width:420px){ .rn-doors{grid-template-columns:1fr;} }
 
 /* The scorecard. */
 .rn-sc-hero{display:flex;align-items:flex-end;gap:28px;flex-wrap:wrap;margin-top:24px;

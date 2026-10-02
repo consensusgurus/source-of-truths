@@ -709,6 +709,20 @@ function Tile({ g, played, light, set = false }) {
   );
 }
 
+// THE FIVE DOORS' ICONS (owner, 2026-10-01). One stroke glyph each, drawn in
+// currentColor so a door takes whatever ink its own ground calls for.
+const DI = (d) => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>
+);
+const DOOR_ICON = {
+  similar: DI(<path d="M5 12h12M13 6l6 6-6 6" />),
+  another: DI(<><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M3 9h18M8 2v4M16 2v4" /></>),
+  replay: DI(<><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></>),
+  stats: DI(<path d="M5 20V11M12 20V4M19 20v-6" />),
+  all: DI(<><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>),
+};
+
 const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
 const SANS = "Manrope, ui-sans-serif, system-ui, -apple-system, sans-serif";
 
@@ -1122,7 +1136,9 @@ export default function StageFinish({
   const [over, setOver] = useState(false);
   const [claimOpen, setClaimOpen] = useState(false);
   const [claimed, setClaimed] = useState(false);
-  const [pubOpen, setPubOpen] = useState(false);   // the folded public board, when the group leads
+  const [pubOpen, setPubOpen] = useState(false);
+  // The Stats + leaderboard door's drawer (owner, 2026-10-01).
+  const [statsOpen, setStatsOpen] = useState(false);   // the folded public board, when the group leads
   useEffect(() => {
     const el = catsRef.current;
     if (!el) return undefined;
@@ -1165,7 +1181,11 @@ export default function StageFinish({
   const [left, setLeft] = useState(null);
   const [handoffOff, setHandoffOff] = useState(false);
   const handoffTarget = setNext ? { href: setNext.g.href || `/${setNext.g.key}`, onClick: null } : (forward || null);
-  const handoffOn = !!(handoff && freshFinish && !archived && !isRetry && !handoffOff && handoffTarget && (handoffTarget.href || handoffTarget.onClick));
+  // THE COUNTDOWN IS RETIRED (owner, 2026-10-01). The card under the band is
+  // five doors now, and a timer that walks the reader through one of them
+  // fights the point of offering five. The effect stays so restoring it is
+  // this one line.
+  const handoffOn = false && !!(handoff && freshFinish && !archived && !isRetry && !handoffOff && handoffTarget && (handoffTarget.href || handoffTarget.onClick));
   useEffect(() => {
     if (!handoffOn || !floodDone) { setLeft(null); return undefined; }
     // WALL CLOCK, not ticks: a throttled tab fires this every second, and a
@@ -1335,6 +1355,59 @@ export default function StageFinish({
     );
   }
 
+  // THE FIVE DOORS' DATA. Every door is read off what this card already
+  // computed, so no client changes: Up next's own pick, the client's
+  // 'another', 'replay' and 'main' options, and the board for the drawer.
+  const anotherOpt = opts.find((o) => o.tone === 'another') || null;
+  const replayOpt = opts.find((o) => o.tone === 'replay') || null;
+  const mainOpt = opts.find((o) => o.tone === 'main') || null;
+  const secOpts = [
+    ...opts.filter((o) => o !== forward && o !== anotherOpt && o !== replayOpt && o !== mainOpt && o !== goldOpt),
+    ...(goldOpt ? [goldOpt] : []),
+  ];
+  const primaryDoor = setNext
+    ? {
+      name: setNext.g.name,
+      sub: [`${setNext.set.name} \u00b7 ${setNext.set.handoff ? `${setNext.set.open.length} of ${setNext.set.total} open` : `${setNext.set.open.length} left`}`, typicalLabel(setNext.g.key)].filter(Boolean).join(' \u00b7 '),
+      href: setNext.g.href || `/${setNext.g.key}`, onClick: null,
+    }
+    : (forward ? { name: fwdName, sub: fwdTag, href: forward.href, onClick: forward.onClick } : null);
+  const isQuiz = !!boardLabel;
+  const playedN = new Set([...played, ...(me ? [me.key] : [])]).size;
+  const openStats = () => setStatsOpen((v) => !v);
+  const smallDoors = [];
+  if (anotherOpt) {
+    smallDoors.push({ k: 'another', nm: anotherOpt.label, sb: anotherOpt.sub, href: anotherOpt.href, onClick: anotherOpt.onClick });
+  } else if (archiveRows.length) {
+    smallDoors.push({ k: 'another', nm: name ? `Play another ${name}` : 'Play another', sb: `Every one of the ${archiveRows.length}`, btn: true,
+      onClick: () => { setStatsOpen(true); setArch(true); } });
+  }
+  if (replayOpt) {
+    smallDoors.push({ k: 'replay', nm: isQuiz ? (replayOpt.label || 'Replay') : 'Replay today\u2019s', sb: replayOpt.sub, href: replayOpt.href, onClick: replayOpt.onClick });
+  }
+  smallDoors.push({
+    k: 'stats', nm: 'Stats + leaderboard', btn: true, onClick: openStats, expanded: statsOpen,
+    sb: myRank != null ? `You are #${myRank}${field ? ` of ${field}` : ''}` : (boardLabel || 'Today\u2019s board and the archive'),
+  });
+  smallDoors.push(isQuiz && mainOpt
+    ? { k: 'all', nm: mainOpt.label, sb: mainOpt.sub, href: mainOpt.href, onClick: mainOpt.onClick }
+    : { k: 'all', nm: 'All daily puzzles', sb: `${playedN} of ${LIVE().length} played today`, href: (mainOpt && mainOpt.href) || '/', onClick: mainOpt ? mainOpt.onClick : undefined });
+  // A plain function, not a component, so React never sees a new type per render.
+  const door = ({ k, nm, sb, href, onClick, cls = '', go = null, btn = false, expanded }) => {
+    const inner = (
+      <>
+        <span className="stf-dic">{DOOR_ICON[k]}</span>
+        <span className="stf-dtx"><span className="stf-dnm">{nm}</span>{sb ? <span className="stf-dsb">{sb}</span> : null}</span>
+        {go ? <span className="stf-dgo">{go}</span> : <span className="stf-dar" aria-hidden="true">&rsaquo;</span>}
+      </>
+    );
+    const c = 'stf-door' + (cls ? ' ' + cls : '');
+    return (href && !btn)
+      ? <a key={k} className={c} href={href} onClick={onClick}>{inner}</a>
+      : <button key={k} type="button" className={c} onClick={onClick}
+          aria-expanded={k === 'stats' ? !!expanded : undefined} aria-controls={k === 'stats' ? 'stf-drawer' : undefined}>{inner}</button>;
+  };
+
   return (
     <div className={'stf' + (outcome ? ' stf-' + outcome : '')}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
@@ -1393,7 +1466,23 @@ export default function StageFinish({
         </div>
       </div>
 
-      <div className="stf-wrap" onClickCapture={stopHandoff}>
+      <div className="stf-wrap">
+        {/* THE FIVE DOORS (owner, 2026-10-01). Everything that used to follow
+            the band (the rival, the set block, Up next, the board, the tiles,
+            the category scroller and the option grid) folds into five doors:
+            Play similar, Play another <game>, Replay, Stats + leaderboard, and
+            All daily puzzles. The flood and the band above are untouched. The
+            board, the rival and the archive live in the Stats drawer, which is
+            mounted from the start and only hidden, so FinishGroupLine still
+            makes its one read and the flood still gets its group rival. */}
+        <div className="stf-doors">
+          {primaryDoor ? door({
+            k: 'similar', cls: 'pri', go: 'Play',
+            nm: `Play similar: ${primaryDoor.name}`, sb: primaryDoor.sub,
+            href: primaryDoor.href, onClick: primaryDoor.onClick,
+          }) : null}
+          {smallDoors.map((d, i) => door({ ...d, cls: (smallDoors.length % 2 === 1 && i === smallDoors.length - 1) ? 'wide' : '' }))}
+          <div className="stf-drawer" id="stf-drawer" hidden={!statsOpen}>
         {/* THE SLOWER CASE (owner, 2026-09-07): stated plainly, in the card's
             own ink, with the figure to beat. Never a colour: red on a finished
             game reads as failure. */}
@@ -1415,73 +1504,6 @@ export default function StageFinish({
             </div>
             <div className="stf-rline">{rival.line}</div>
           </section>
-        ) : null}
-        {/* THE SET, PRICED (owner, 2026-09-26). The pips the band already
-            carries, and under them every game in the set with a clock on it:
-            your own for the ones you played, the typical top-10 clock for the
-            ones you have not. A reader deciding whether to keep going is
-            weighing minutes, not pips. */}
-        {pushSet && me ? (
-          <section className="stf-setblk">
-            <div className="stf-eb">
-              {pushSet.name} <em>&middot; {pushSet.total - pushSet.open.length} of {pushSet.total} today</em>
-              {catRun ? <> &middot; {catRun.cat} {catRun.n} of {catRun.games.length}</> : null}
-            </div>
-            <div className="stf-pips">
-              {pushSet.keys.map((k) => <i key={k} className={k === me.key ? 'now' : pushSet.open.includes(k) ? '' : 'on'} />)}
-            </div>
-            <div className="stf-est">
-              {pushSet.keys.map((k) => {
-                const g = LIVE().find((x) => x.key === k);
-                if (!g) return null;
-                const isMe = k === me.key;
-                const done = isMe || !pushSet.open.includes(k);
-                const next = !done && pushSet.open[0] === k;
-                const t = isMe && vs && vs.mode === 'time' ? mmss(vs.today) : (isMe ? 'today' : done ? 'played' : (typicalLabel(k) || 'open'));
-                return (
-                  <a key={k} className={'stf-estc' + (done ? ' done' : '') + (next ? ' next' : '')} href={done ? undefined : (g.href || `/${g.key}`)}>
-                    <b>{g.name}</b><small>{t}</small>
-                  </a>
-                );
-              })}
-            </div>
-          </section>
-        ) : null}
-        {/* THE HAND-FORWARD, ABOVE THE BOARD NOW (owner, 2026-09-26), with the
-            countdown ring when the game just ended. For LoftFinish's own
-            reason it is early: a finisher should not pass two exits before
-            reaching the one that carries on. */}
-        {setNext ? (
-          <a className={'stf-fwd stf-fwdset' + (left != null ? ' auto' : '')} href={setNext.g.href || `/${setNext.g.key}`}>
-            {left != null ? <span className="stf-ring" style={{ '--p': `${((HANDOFF_S - left) / HANDOFF_S) * 100}%` }}><b>{Math.ceil(left)}</b></span> : null}
-            <div>
-              <div className="stf-eb">{setNext.set.handoff ? <>Up next &middot; {catRun.group.name} done, next set</> : <>Up next &middot; finish the set</>}</div>
-              <div className="stf-fwdn">{setNext.g.name}</div>
-              <div className="stf-fwdt">
-                {left != null ? <span className="stf-auto">{left > 0 ? `Starts in ${Math.ceil(left)}s \u00b7 tap or scroll to stay` : 'Opening'}</span> : null}
-                <em className="stf-setchip">{setNext.set.name} &middot; {setNext.set.handoff ? `${setNext.set.open.length} of ${setNext.set.total} open` : `${setNext.set.open.length} left`}</em>
-                {rival && rival.group && grpGame && grpGame.lead.boards && grpGame.lead.boards[setNext.g.key] ? (() => {
-                  const b = grpGame.lead.boards[setNext.g.key];
-                  const top = b && b[0];
-                  return top && top.username ? <em className="stf-setchip ok">{top.username} did it in {keyFig(top)}</em> : null;
-                })() : null}
-              </div>
-            </div>
-            <span className="stf-go">Play</span>
-          </a>
-        ) : forward ? (
-          <a className={'stf-fwd' + (left != null ? ' auto' : '')} href={forward.href} onClick={forward.onClick}>
-            {left != null ? <span className="stf-ring" style={{ '--p': `${((HANDOFF_S - left) / HANDOFF_S) * 100}%` }}><b>{Math.ceil(left)}</b></span> : null}
-            <div>
-              <div className="stf-eb">Up next</div>
-              <div className="stf-fwdn">{fwdName}</div>
-              <div className="stf-fwdt">
-                {left != null ? <span className="stf-auto">{left > 0 ? `Starts in ${Math.ceil(left)}s \u00b7 tap or scroll to stay` : 'Opening'}</span> : null}
-                {fwdTag ? fwdTag : null}
-              </div>
-            </div>
-            <span className="stf-go">Play</span>
-          </a>
         ) : null}
         {/* THE BOARD(S). When a group member has played this game the group's
             board leads (FinishGroupLine draws it) and the public board folds to
@@ -1528,6 +1550,53 @@ export default function StageFinish({
           ) : null;
           return grpGame ? [grpLine, pubBoard] : [pubBoard, grpLine];
         })()}
+            {!rowsPresent && standings.length ? <div className="stf-eb">{standings.join(' \u00b7 ')}</div> : null}
+            {archiveRows.length ? (
+              <button type="button" className={'stf-o' + (arch ? ' on' : '')} onClick={() => setArch((v) => !v)}>
+                <b>{name ? `Full ${name} archive` : 'Full archive'}</b>
+                <i>{arch ? 'Hide the list' : `Every one of the ${archiveRows.length}`}</i>
+              </button>
+            ) : null}
+        {/* The list opens under the button that asked for it, newest first. */}
+        {arch && archiveRows.length ? (
+          <section>
+            <div className="stf-eb">
+              {name ? `${name} archive` : 'Archive'} <em>&middot; {archiveRows.length}</em>
+            </div>
+            <div className="stf-arch">
+              {archiveRows.map((a) => (
+                <a key={a.num} className={'stf-archr' + (a.done ? ' done' : '')} href={a.href}>
+                  <span className="d">{a.dateLabel}{a.sunday ? <i>Sunday</i> : null}</span>
+                  <span className="n">No. {a.num}</span>
+                  {/* WHOSE score, said out loud (owner, 2026-08-31). A bare
+                      figure ahead of the word Played read as a crowd count. */}
+                  <span className="v">{a.done
+                    ? (a.score != null
+                        ? <><em>You scored</em><b>{a.score}</b></>
+                        : <em>Played</em>)
+                    : 'Play'}</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        ) : null}
+          </div>
+        </div>
+
+        {/* What the doors leave over: a real Reveal or Return to board, any
+            option this card does not know, and the gold Share, last. */}
+        {secOpts.length ? (
+          <div className="stf-opts">
+            {secOpts.map((o, i) => {
+              const w = (secOpts.length % 2 === 1 && i === secOpts.length - 1) ? ' wide' : '';
+              const cls = 'stf-o' + (o.kind === 'gold' ? ' gold' : '') + w;
+              return o.href
+                ? <a key={i} className={cls} href={o.href} onClick={o.onClick}><b>{o.label}</b>{o.sub ? <i>{o.sub}</i> : null}</a>
+                : <button key={i} type="button" className={cls} onClick={o.onClick}><b>{o.label}</b>{o.sub ? <i>{o.sub}</i> : null}</button>;
+            })}
+          </div>
+        ) : null}
+
         {/* CLAIM YOUR RANK: full width, guests only. The figure is the guest's
             would-be placement on the registered board; without one (the row
             has not landed yet) the tile still makes the offer, just without
@@ -1558,128 +1627,6 @@ export default function StageFinish({
         ) : null}
         {claimed ? (
           <div className="stf-claimed">You&rsquo;re on the board. Every finish counts under your name now.</div>
-        ) : null}
-        {/* MORE OF THE SAME, directly under the one recommendation. Up next is
-            a single pick; a reader who does not want it should not have to go
-            back to the home to find its neighbours. */}
-        {sameCat.length ? (
-          <section>
-            <div className="stf-eb">{me ? `More ${me.cat} puzzles` : 'More puzzles'}</div>
-            <div className="stf-tiles">
-              {sameCat.map(({ g, set }) => <Tile key={g.key} g={g} played={played.has(g.key)} light={light} set={set} />)}
-            </div>
-          </section>
-        ) : null}
-
-        {/* EVERY CATEGORY, under the one they just played (owner, 2026-08-31).
-            It sat above the verdict, which put a browse control ahead of the
-            result. Here it reads as the next widening step: this game, then its
-            category, then all of them. Same eyebrow as the section above it, so
-            the two are plainly the same kind of thing. Pressing a category
-            lists it A to Z; pressing it again puts it away. */}
-        <section>
-          <div className="stf-eb">All categories</div>
-          <div className="stf-catrow">
-            {/* ONE LINE, ALWAYS. Nine chips wrapped to a second row and left
-                Arcade stranded (owner, 2026-08-31), so the row scrolls: a flick
-                on a phone, arrows on a desktop where there is no obvious way to
-                swipe. The arrows appear only when something is out of view. */}
-            <button type="button" className="stf-catnav" aria-label="Scroll categories left"
-              onClick={() => nudge(-1)} hidden={!over}>&#8249;</button>
-            <div className="stf-cats" ref={catsRef}>
-              {RAMP_ORDER.map((c) => (
-                <button key={c} type="button"
-                  className={'stf-cat' + (cat === c ? ' on' : '')}
-                  style={{
-                    '--tc': light ? categoryColorLight(c) : categoryColor(c),
-                    // The ink that carries ON that step when the chip is the
-                    // selected one and fills. One per step on the light
-                    // register, because the three warm ones stay pastel and
-                    // take the near-black instead of white; one for all ten on
-                    // the dark register, where every step is a pastel.
-                    '--tci': light ? categoryOnrampLight(c) : RAMP_INK,
-                  }}
-                  onClick={() => setCat((v) => (v === c ? null : c))}>{c}</button>
-              ))}
-            </div>
-            <button type="button" className="stf-catnav" aria-label="Scroll categories right"
-              onClick={() => nudge(1)} hidden={!over}>&#8250;</button>
-          </div>
-          {cat ? (
-            <div className="stf-catlist">
-              <div className="stf-eb">
-                {cat === 'all' ? 'All daily puzzles' : cat} <em>&middot; {catList.length}</em>
-              </div>
-              <div className="stf-tiles">
-                {catList.map((g) => <Tile key={g.key} g={g} played={played.has(g.key)} light={light} />)}
-              </div>
-            </div>
-          ) : null}
-        </section>
-
-        <div className="stf-opts">
-          {flow.map((f, i) => {
-            const w = wideOpt.has(i) ? ' wide' : '';
-            if (f.t === 'arch') return archiveBtn(w);
-            // THE OLD BROWSE BUTTON, back in the slot the grid left empty. It
-            // opens the same A-to-Z panel the category row above does, rather
-            // than navigating away.
-            if (f.t === 'browse') {
-              return (
-                <button key="browse" type="button" className={'stf-o' + (cat === 'all' ? ' on' : '') + w}
-                  onClick={() => setCat((v) => (v === 'all' ? null : 'all'))}>
-                  <b>All daily puzzles</b><i>{cat === 'all' ? 'Hide the list' : `Every one of the ${LIVE().length}`}</i>
-                </button>
-              );
-            }
-            const o = f.o;
-            const node = o.href
-              ? <a key={i} className={'stf-o' + w} href={o.href} onClick={o.onClick}>
-                  <b>{o.label}</b>{o.sub ? <i>{o.sub}</i> : null}
-                </a>
-              : <button key={i} type="button" className={'stf-o' + w} onClick={o.onClick}>
-                  <b>{o.label}</b>{o.sub ? <i>{o.sub}</i> : null}
-                </button>;
-            // THE ARCHIVE SITS BESIDE 'Play another' (owner, 2026-08-31),
-            // because they are the same question at two sizes: one more day of
-            // this game, or every day of it. All 80 clients already pass
-            // `archive` to LoftFinish; the stage ending simply never took it.
-            return f.t === 'pair'
-              ? <div key={`pair${i}`} className="stf-pair">{node}{archiveBtn()}</div>
-              : node;
-          })}
-          {/* Last, and a whole row of its own at every width. */}
-          {goldOpt ? (goldOpt.href
-            ? <a className="stf-o gold" href={goldOpt.href} onClick={goldOpt.onClick}>
-                <b>{goldOpt.label}</b>{goldOpt.sub ? <i>{goldOpt.sub}</i> : null}
-              </a>
-            : <button type="button" className="stf-o gold" onClick={goldOpt.onClick}>
-                <b>{goldOpt.label}</b>{goldOpt.sub ? <i>{goldOpt.sub}</i> : null}
-              </button>) : null}
-        </div>
-
-        {/* The list opens under the button that asked for it, newest first. */}
-        {arch && archiveRows.length ? (
-          <section>
-            <div className="stf-eb">
-              {name ? `${name} archive` : 'Archive'} <em>&middot; {archiveRows.length}</em>
-            </div>
-            <div className="stf-arch">
-              {archiveRows.map((a) => (
-                <a key={a.num} className={'stf-archr' + (a.done ? ' done' : '')} href={a.href}>
-                  <span className="d">{a.dateLabel}{a.sunday ? <i>Sunday</i> : null}</span>
-                  <span className="n">No. {a.num}</span>
-                  {/* WHOSE score, said out loud (owner, 2026-08-31). A bare
-                      figure ahead of the word Played read as a crowd count. */}
-                  <span className="v">{a.done
-                    ? (a.score != null
-                        ? <><em>You scored</em><b>{a.score}</b></>
-                        : <em>Played</em>)
-                    : 'Play'}</span>
-                </a>
-              ))}
-            </div>
-          </section>
         ) : null}
       </div>
     </div>
@@ -2093,5 +2040,58 @@ const CSS = `
   .stf-ciq i{font-size:11.5px;margin-top:6px;}
   .stf-st{font-size:11px;}
   .stf-wrap{padding:18px 2px 8px;gap:17px;}
+}
+
+/* ── THE FIVE DOORS (owner, 2026-10-01) ────────────────────────────────── */
+.stf-doors{display:grid;gap:8px;grid-template-columns:1fr 1fr;}
+.stf-door{display:flex;align-items:center;gap:12px;text-align:left;text-decoration:none;cursor:pointer;
+  font:inherit;color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);
+  border-radius:10px;padding:14px 15px;min-width:0;}
+.stf-door:hover{border-color:var(--stg-line2);}
+.stf-door:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.stf-dic{flex:none;width:34px;height:34px;border-radius:8px;display:grid;place-items:center;
+  color:var(--stg-acc-ink,var(--stg-acc));background:color-mix(in srgb,var(--stg-acc) 16%,transparent);}
+.stf-dtx{flex:1;min-width:0;}
+.stf-dnm{display:block;font-size:15px;font-weight:800;letter-spacing:-.01em;line-height:1.2;}
+.stf-dsb{display:block;margin-top:3px;font-size:12px;font-weight:600;color:var(--stg-mute);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stf-dar{flex:none;font-size:20px;line-height:1;color:var(--stg-mute);transition:transform .2s ease;}
+.stf-door[aria-expanded="true"]{border-color:var(--stg-acc);}
+.stf-door[aria-expanded="true"] .stf-dar{transform:rotate(90deg);color:var(--stg-acc-ink,var(--stg-acc));}
+.stf-door.pri{grid-column:1/-1;background:var(--stg-acc);border-color:var(--stg-acc);
+  color:var(--stg-onramp,#08222e);padding:17px;}
+.stf-door.pri:hover{border-color:var(--stg-acc);filter:brightness(1.05);}
+.stf-door.pri .stf-dic{background:color-mix(in srgb,currentColor 14%,transparent);color:inherit;}
+.stf-door.pri .stf-dnm{font-size:18px;}
+.stf-door.pri .stf-dsb{color:inherit;opacity:.85;}
+.stf-dgo{flex:none;font-family:${MONO};font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  font-weight:700;border:1.5px solid currentColor;border-radius:6px;padding:6px 10px;}
+.stf-doors > .stf-door.wide{grid-column:1/-1;}
+.stf-drawer{grid-column:1/-1;display:flex;flex-direction:column;gap:18px;min-width:0;
+  background:var(--stg-raise);border:1px solid var(--stg-line);border-radius:10px;padding:14px 15px;}
+.stf-drawer[hidden]{display:none;}
+@media (max-width:640px){
+  .stf-doors{gap:6px;}
+  .stf-door{padding:12px;gap:10px;}
+  .stf-dic{width:30px;height:30px;}
+  .stf-dnm{font-size:14px;}
+  .stf-dar{display:none;}
+  .stf-door.pri .stf-dnm{font-size:16px;}
+  .stf-drawer{padding:12px;}
+}
+@media (max-width:420px){ .stf-doors{grid-template-columns:1fr;} }
+
+/* THE STREAK STRIP FITS ITS COLUMN AT ANY WIDTH (owner, 2026-10-01: the
+   dashed tomorrow pip was clipped on the right on a phone). Eight equal grid
+   tracks that may shrink to nothing, rather than flex items that floor at
+   their border width, and a few pixels of room at the end for the dashed
+   outline. The flood's own right gutter widens a touch on a phone too. */
+.stf-fl-strip{min-width:0;max-width:100%;}
+.stf-dstrip{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:3px;width:100%;
+  max-width:100%;padding-right:4px;}
+.stf-dstrip s{min-width:0;flex:none;}
+@media (max-width:640px){
+  .stf-flood{padding-right:max(24px,env(safe-area-inset-right));padding-left:max(20px,env(safe-area-inset-left));}
+  .stf-fl-pair{gap:14px;}
 }
 `;
