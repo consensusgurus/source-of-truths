@@ -1175,7 +1175,7 @@ function DailyGamesView({ onSelectPlayer, initialGame = null }) {
             <span style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(232,180,58,0.16)', color: GOLD_INK, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}><Crown size={17} /></span>
             <span style={{ minWidth: 0 }}>
               <span style={{ display: 'block', fontSize: 13, fontWeight: 800 }}><span style={{ color: GOLD_INK }}>Most crowns:</span> {nameBtn(topChamp.userKey, topChamp.username, 13)}</span>
-              <span style={{ display: 'block', fontSize: 12, color: C.muted, fontWeight: 600, marginTop: 1 }}>{topChamp.wins} daily wins across the last {history.length} days</span>
+              <span style={{ display: 'block', fontSize: 12, color: C.muted, fontWeight: 600, marginTop: 1 }}>{topChamp.wins} daily wins across all {(hist && hist.crownedDays) || history.length} crowned days</span>
             </span>
           </div>
         ) : null}

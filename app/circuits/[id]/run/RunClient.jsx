@@ -674,6 +674,10 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   const champions = hist.data && Array.isArray(hist.data.champions) ? hist.data.champions : [];
   const bestDay = histDays.reduce(
     (best, d) => (!best || (d.winner && d.winner.total > best.winner.total) ? d : best), null);
+  // ALL TIME reads the route's all-time figures; the trimmed history above is
+  // only the last 30 days. Falls back to it for a cached pre-change payload.
+  const allBest = (hist.data && hist.data.bestRun) || bestDay;
+  const allDays = (hist.data && hist.data.crownedDays) || (hist.data && hist.data.days) || 0;
   // "You took this day" is decided here rather than by the route, which folds
   // no per-player data on purpose so it can stay CDN-cached.
   const myName = (identity && identity.username) || savedIdentity().username || '';
@@ -1026,12 +1030,12 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     ))}
                   </div>
                 ) : null}
-                {bestDay ? (
+                {allBest ? (
                   <p className="rn-rfine">
-                    Best run on record: <b>{bestDay.winner.username}</b>,{' '}
-                    {Math.round(Number(bestDay.winner.total) || 0)}{' '}
-                    {hist.data.scoreMode === 'correct' ? 'right' : 'pts'} on {bestDay.label}.
-                    {hist.data.days ? ` ${hist.data.days} days crowned.` : ''}
+                    Best run on record: <b>{allBest.winner.username}</b>,{' '}
+                    {Math.round(Number(allBest.winner.total) || 0)}{' '}
+                    {hist.data.scoreMode === 'correct' ? 'right' : 'pts'} on {allBest.label}.
+                    {allDays ? ` ${allDays} days crowned.` : ''}
                   </p>
                 ) : null}
                 {!champions.length && hist.state === 'ready' ? (

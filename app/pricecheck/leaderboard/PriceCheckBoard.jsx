@@ -51,6 +51,9 @@ export default function PriceCheckBoard({ dateLabel = '' }) {
   const champions = hist.data && Array.isArray(hist.data.champions) ? hist.data.champions : [];
   const bestDay = histDays.reduce(
     (best, d) => (!best || (d.winner && d.winner.total > best.winner.total) ? d : best), null);
+  // All time reads the route's all-time figures (the history is 30 days).
+  const allBest = (hist.data && hist.data.bestRun) || bestDay;
+  const allDays = (hist.data && hist.data.crownedDays) || (hist.data && hist.data.days) || 0;
   const histMax = histDays.reduce((m, d) => Math.max(m, Number(d.winner && d.winner.total) || 0), 0);
 
   return (
@@ -211,11 +214,11 @@ export default function PriceCheckBoard({ dateLabel = '' }) {
                   ))}
                 </div>
               ) : null}
-              {bestDay ? (
+              {allBest ? (
                 <p className="rn-rfine">
-                  Best run on record: <b>{bestDay.winner.username}</b>,{' '}
-                  {Math.round(Number(bestDay.winner.total) || 0)} pts on {bestDay.label}.
-                  {hist.data.days ? ` ${hist.data.days} ${hist.data.days === 1 ? 'day' : 'days'} crowned.` : ''}
+                  Best run on record: <b>{allBest.winner.username}</b>,{' '}
+                  {Math.round(Number(allBest.winner.total) || 0)} pts on {allBest.label}.
+                  {allDays ? ` ${allDays} ${allDays === 1 ? 'day' : 'days'} crowned.` : ''}
                 </p>
               ) : null}
               {!champions.length && hist.state === 'ready' ? (

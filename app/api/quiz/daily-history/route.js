@@ -234,9 +234,14 @@ export async function GET(req) {
     history.sort((a, b) => (a.dateISO < b.dateISO ? 1 : a.dateISO > b.dateISO ? -1 : 0));
     const trimmed = history.slice(0, HISTORY_DAYS);
 
-    // Crown tally over the shown window: who has won the most days.
+    // Crown tally over EVERY crowned day, not the 30-day window (fixed
+    // 2026-10-02). The tab that renders this is labelled All time, and once the
+    // Gauntlet passed its first month each night's rollover was quietly taking
+    // a win off whoever took the oldest day (player report: 7 wins became 6).
+    // Crowns are frozen at Eastern midnight, so an all-time tally only grows.
+    // The day-by-day `history` stays trimmed; it is the archive strip.
     const crowns = new Map();
-    for (const h of trimmed) {
+    for (const h of history) {
       const k = h.winner.userKey;
       const c = crowns.get(k) || { username: h.winner.username, userKey: k, wins: 0 };
       c.wins += 1;
@@ -275,6 +280,11 @@ export async function GET(req) {
       days: trimmed.length,
       history: trimmed,
       champions,
+      // All-time companions to `champions`, for the All time tab: every day
+      // ever crowned, and the highest winning total across all of them (the
+      // same max-total test the clients ran over the trimmed history).
+      crownedDays: history.length,
+      bestRun: history.reduce((best, d) => (!best || (d.winner && d.winner.total > best.winner.total) ? d : best), null),
       games,
     }, { headers: CACHE_HEADERS });
   } catch (e) {
