@@ -24,7 +24,8 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { HelpCircle, Share2, RotateCcw, X, Lightbulb, Eye, Smartphone, Pencil, Eraser, Trash2 } from 'lucide-react';
+import { HelpCircle, Share2, RotateCcw, X, Lightbulb, Eye, Smartphone, Pencil, Eraser, Trash2, ArrowRight } from 'lucide-react';
+import { useAutoAdvance } from '@/lib/sudoku-auto-advance';
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
@@ -284,6 +285,7 @@ export default function CagesClient({ puzzles = [], forceNum = null }) {
   const [armed, setArmed] = useState(0);       // digit-first: the "picked up" number (0 = none)
   const [canUndo, setCanUndo] = useState(false);
   const [noteMode, setNoteMode] = useState(false);
+  const [autoAdv, toggleAutoAdv] = useAutoAdvance(); // default on, player can turn it off
   const [showHelp, setShowHelp] = useState(false);
   const [gateRules, setGateRules] = useState(false); // start tile: full rules (first-timer) vs compact card
   const [toast, setToast] = useState(null);
@@ -579,7 +581,7 @@ export default function CagesClient({ puzzles = [], forceNum = null }) {
     setG({ ...g, notes: nextNotes });
   }
 
-  // core placement. `advance` is retained for call-site compatibility and no longer moves the selection to the next empty cell — used
+  // core placement. `advance` moves the selection to the next empty cell (when the player's Auto-move preference is on) — used
   // for pad/keyboard fills of the selected cell, NOT for tap-to-place in
   // digit-first mode (there the player is already choosing each cell).
   function placeDigit(idx, d, advance) {
@@ -610,9 +612,10 @@ export default function CagesClient({ puzzles = [], forceNum = null }) {
     // No per-tile feedback. If every square is now filled but the grid is not the
     // solution, nudge at the board level without pointing to the wrong square.
     if (FREE.every((i) => nextCells[i])) say('Every square is filled, but the grid is not solved yet. Look for a repeated digit.');
-    // The selection STAYS on the square just filled (solver feedback, 2026-09-26):
-    // sudoku is solved out of order, so the board never moves it for the player.
-    // Tab still jumps to the next empty square when they ask for it.
+    // Auto-move (owner, 2026-10-02): on by default, the selection moves to the
+    // next empty square; a player who solves out of order turns it off with the
+    // Auto-move tool and the selection then stays put. See lib/sudoku-auto-advance.
+    if (advance && autoAdv) { const nx = nextEmpty(nextCells, idx); if (nx >= 0) setSel(nx); }
   }
 
   // keyboard dispatcher: honors the Notes toggle, advances on a pad-style fill
@@ -1079,6 +1082,9 @@ export default function CagesClient({ puzzles = [], forceNum = null }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 10, flexWrap: 'wrap' }}>
                 <button className={`cg-tool${noteMode ? ' on' : ''}`} onClick={() => setNoteMode((m) => !m)} title="Toggle pencil notes (N)">
                   <Pencil size={14} /> Notes {noteMode ? 'on' : 'off'}
+                </button>
+                <button className="cg-tool" onClick={toggleAutoAdv} aria-pressed={autoAdv} title="Move to the next empty square after each number you enter">
+                  <ArrowRight size={14} /> Auto-move {autoAdv ? 'on' : 'off'}
                 </button>
                 <button className="cg-tool" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" style={{ opacity: canUndo ? 1 : 0.4, cursor: canUndo ? 'pointer' : 'default' }}>
                   <RotateCcw size={14} /> Undo
