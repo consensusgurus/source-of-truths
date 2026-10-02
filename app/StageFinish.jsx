@@ -720,6 +720,8 @@ const DOOR_ICON = {
   another: DI(<><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M3 9h18M8 2v4M16 2v4" /></>),
   replay: DI(<><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></>),
   stats: DI(<path d="M5 20V11M12 20V4M19 20v-6" />),
+  share: DI(<><circle cx="18" cy="5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="19" r="2.5" /><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4" /></>),
+  more: DI(<path d="M5 12h.01M12 12h.01M19 12h.01" />),
   all: DI(<><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>),
 };
 
@@ -1138,7 +1140,8 @@ export default function StageFinish({
   const [claimed, setClaimed] = useState(false);
   const [pubOpen, setPubOpen] = useState(false);
   // The Stats + leaderboard door's drawer (owner, 2026-10-01).
-  const [statsOpen, setStatsOpen] = useState(false);   // the folded public board, when the group leads
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [dailyOpen, setDailyOpen] = useState(false);   // the All daily puzzles section   // the folded public board, when the group leads
   useEffect(() => {
     const el = catsRef.current;
     if (!el) return undefined;
@@ -1148,6 +1151,10 @@ export default function StageFinish({
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+  useEffect(() => {
+    const el = catsRef.current;
+    if (el && dailyOpen) setOver(el.scrollWidth > el.clientWidth + 4);
+  }, [dailyOpen]);
   const nudge = (dir) => {
     const el = catsRef.current;
     if (el) el.scrollBy({ left: dir * Math.max(160, el.clientWidth * 0.7), behavior: 'smooth' });
@@ -1181,11 +1188,9 @@ export default function StageFinish({
   const [left, setLeft] = useState(null);
   const [handoffOff, setHandoffOff] = useState(false);
   const handoffTarget = setNext ? { href: setNext.g.href || `/${setNext.g.key}`, onClick: null } : (forward || null);
-  // THE COUNTDOWN IS RETIRED (owner, 2026-10-01). The card under the band is
-  // five doors now, and a timer that walks the reader through one of them
-  // fights the point of offering five. The effect stays so restoring it is
-  // this one line.
-  const handoffOn = false && !!(handoff && freshFinish && !archived && !isRetry && !handoffOff && handoffTarget && (handoffTarget.href || handoffTarget.onClick));
+  // THE COUNTDOWN RIDES THE PLAY SIMILAR DOOR (owner, 2026-10-01): fifteen
+  // seconds, a ring in place of the door's icon, and a No thanks beside it.
+  const handoffOn = !!(handoff && freshFinish && !archived && !isRetry && !handoffOff && handoffTarget && (handoffTarget.href || handoffTarget.onClick));
   useEffect(() => {
     if (!handoffOn || !floodDone) { setLeft(null); return undefined; }
     // WALL CLOCK, not ticks: a throttled tab fires this every second, and a
@@ -1219,7 +1224,7 @@ export default function StageFinish({
   }, [handoffOn, floodDone]);
   const stopHandoff = (e) => {
     if (left == null) return;
-    if (e && e.target && e.target.closest && e.target.closest('.stf-fwd.auto')) return;
+    if (e && e.target && e.target.closest && e.target.closest('.stf-door.pri')) return;
     setHandoffOff(true);
   };
   // SHARE IS THE FOOT OF THE GRID (owner, 2026-08-31). It ranked 0, which put
@@ -1361,8 +1366,9 @@ export default function StageFinish({
   const anotherOpt = opts.find((o) => o.tone === 'another') || null;
   const replayOpt = opts.find((o) => o.tone === 'replay') || null;
   const mainOpt = opts.find((o) => o.tone === 'main') || null;
+  const backOpt = opts.find((o) => o.tone === 'board' || o.tone === 'reveal') || null;
   const secOpts = [
-    ...opts.filter((o) => o !== forward && o !== anotherOpt && o !== replayOpt && o !== mainOpt && o !== goldOpt),
+    ...opts.filter((o) => o !== forward && o !== anotherOpt && o !== replayOpt && o !== mainOpt && o !== goldOpt && o !== backOpt),
     ...(goldOpt ? [goldOpt] : []),
   ];
   const primaryDoor = setNext
@@ -1386,17 +1392,25 @@ export default function StageFinish({
     smallDoors.push({ k: 'replay', nm: isQuiz ? (replayOpt.label || 'Replay') : 'Replay today\u2019s', sb: replayOpt.sub, href: replayOpt.href, onClick: replayOpt.onClick });
   }
   smallDoors.push({
-    k: 'stats', nm: 'Stats + leaderboard', btn: true, onClick: openStats, expanded: statsOpen,
+    k: 'stats', nm: 'Stats + leaderboard', btn: true, onClick: openStats, expanded: statsOpen, controls: 'stf-drawer',
     sb: myRank != null ? `You are #${myRank}${field ? ` of ${field}` : ''}` : (boardLabel || 'Today\u2019s board and the archive'),
   });
   smallDoors.push(isQuiz && mainOpt
     ? { k: 'all', nm: mainOpt.label, sb: mainOpt.sub, href: mainOpt.href, onClick: mainOpt.onClick }
-    : { k: 'all', nm: 'All daily puzzles', sb: `${playedN} of ${LIVE().length} played today`, href: (mainOpt && mainOpt.href) || '/', onClick: mainOpt ? mainOpt.onClick : undefined });
+    : { k: 'all', nm: 'All daily puzzles', sb: `${playedN} of ${LIVE().length} played today`, btn: true,
+      onClick: () => setDailyOpen((v) => !v), expanded: dailyOpen, controls: 'stf-daily' });
+  // Share, and anything this card does not know, as doors too: every tile the same shape.
+  secOpts.forEach((o, i) => smallDoors.push({
+    k: o.kind === 'gold' ? 'share' : `more${i}`, ic: o.kind === 'gold' ? 'share' : 'more',
+    nm: o.label, sb: o.sub, href: o.href, onClick: o.onClick, btn: !o.href,
+  }));
   // A plain function, not a component, so React never sees a new type per render.
-  const door = ({ k, nm, sb, href, onClick, cls = '', go = null, btn = false, expanded }) => {
+  const door = ({ k, ic = null, nm, sb, href, onClick, cls = '', go = null, btn = false, expanded, controls, ring = null }) => {
     const inner = (
       <>
-        <span className="stf-dic">{DOOR_ICON[k]}</span>
+        {ring != null
+          ? <span className="stf-ring" style={{ '--p': `${((HANDOFF_S - ring) / HANDOFF_S) * 100}%` }}><b>{Math.ceil(ring)}</b></span>
+          : <span className="stf-dic">{DOOR_ICON[ic || k]}</span>}
         <span className="stf-dtx"><span className="stf-dnm">{nm}</span>{sb ? <span className="stf-dsb">{sb}</span> : null}</span>
         {go ? <span className="stf-dgo">{go}</span> : <span className="stf-dar" aria-hidden="true">&rsaquo;</span>}
       </>
@@ -1405,7 +1419,7 @@ export default function StageFinish({
     return (href && !btn)
       ? <a key={k} className={c} href={href} onClick={onClick}>{inner}</a>
       : <button key={k} type="button" className={c} onClick={onClick}
-          aria-expanded={k === 'stats' ? !!expanded : undefined} aria-controls={k === 'stats' ? 'stf-drawer' : undefined}>{inner}</button>;
+          aria-expanded={controls ? !!expanded : undefined} aria-controls={controls || undefined}>{inner}</button>;
   };
 
   return (
@@ -1442,7 +1456,14 @@ export default function StageFinish({
           that describes the run itself. On a phone they do not render at all
           -- see .stf-dx in the media query. */}
       <div className="stf-curtain" ref={bandRef}>
-        <div className="stf-cin">
+        <div className={'stf-cin' + (backOpt ? ' stf-hasback' : '')}>
+          {/* BACK TO BOARD LIVES ON THE BAND (owner, 2026-10-01), right of the
+              verdict, so every tile under the band can be the same size. */}
+          {backOpt ? (
+            <button type="button" className="stf-back" onClick={backOpt.onClick}>
+              <span aria-hidden="true">&#8617;</span>{backOpt.tone === 'board' ? 'Back to board' : (backOpt.label || 'Reveal answer')}
+            </button>
+          ) : null}
           <div className="stf-ctop">
             <div className="stf-cl">
               <div className="stf-verdict">{title}</div>
@@ -1466,7 +1487,7 @@ export default function StageFinish({
         </div>
       </div>
 
-      <div className="stf-wrap">
+      <div className="stf-wrap" onClickCapture={stopHandoff}>
         {/* THE FIVE DOORS (owner, 2026-10-01). Everything that used to follow
             the band (the rival, the set block, Up next, the board, the tiles,
             the category scroller and the option grid) folds into five doors:
@@ -1476,11 +1497,21 @@ export default function StageFinish({
             mounted from the start and only hidden, so FinishGroupLine still
             makes its one read and the flood still gets its group rival. */}
         <div className="stf-doors">
-          {primaryDoor ? door({
-            k: 'similar', cls: 'pri', go: 'Play',
-            nm: `Play similar: ${primaryDoor.name}`, sb: primaryDoor.sub,
-            href: primaryDoor.href, onClick: primaryDoor.onClick,
-          }) : null}
+          {primaryDoor ? (
+            <div className={'stf-pwrap' + (left != null ? ' counting' : '')}>
+              {door({
+                k: 'similar', cls: 'pri', go: left != null ? null : 'Play', ring: left,
+                nm: `Play similar: ${primaryDoor.name}`,
+                sb: left != null
+                  ? (left > 0 ? `Opens in ${Math.ceil(left)}s` : 'Opening') + (primaryDoor.sub ? ` \u00b7 ${primaryDoor.sub}` : '')
+                  : primaryDoor.sub,
+                href: primaryDoor.href, onClick: primaryDoor.onClick,
+              })}
+              {left != null ? (
+                <button type="button" className="stf-decl" onClick={() => setHandoffOff(true)}>No thanks</button>
+              ) : null}
+            </div>
+          ) : null}
           {smallDoors.map((d, i) => door({ ...d, cls: (smallDoors.length % 2 === 1 && i === smallDoors.length - 1) ? 'wide' : '' }))}
           <div className="stf-drawer" id="stf-drawer" hidden={!statsOpen}>
         {/* THE SLOWER CASE (owner, 2026-09-07): stated plainly, in the card's
@@ -1581,21 +1612,55 @@ export default function StageFinish({
           </section>
         ) : null}
           </div>
+          <div className="stf-drawer" id="stf-daily" hidden={!dailyOpen}>
+            {/* THE GAMES, ORGANIZED AS THE OLD CARD HAD THEM (owner,
+                2026-10-01): more of this category first, then every category,
+                A to Z under the chip you press. */}
+            {sameCat.length ? (
+              <section>
+                <div className="stf-eb">{me ? `More ${me.cat} puzzles` : 'More puzzles'}</div>
+                <div className="stf-tiles">
+                  {sameCat.map(({ g, set }) => <Tile key={g.key} g={g} played={played.has(g.key)} light={light} set={set} />)}
+                </div>
+              </section>
+            ) : null}
+            <section>
+              <div className="stf-eb">All categories</div>
+              <div className="stf-catrow">
+                <button type="button" className="stf-catnav" aria-label="Scroll categories left"
+                  onClick={() => nudge(-1)} hidden={!over}>&#8249;</button>
+                <div className="stf-cats" ref={catsRef}>
+                  <button type="button" className={'stf-cat' + (cat === 'all' ? ' on' : '')}
+                    style={{ '--tc': 'var(--stg-acc)', '--tci': 'var(--stg-onramp,#08222e)' }}
+                    onClick={() => setCat((v) => (v === 'all' ? null : 'all'))}>All A to Z</button>
+                  {RAMP_ORDER.map((c) => (
+                    <button key={c} type="button"
+                      className={'stf-cat' + (cat === c ? ' on' : '')}
+                      style={{
+                        '--tc': light ? categoryColorLight(c) : categoryColor(c),
+                        '--tci': light ? categoryOnrampLight(c) : RAMP_INK,
+                      }}
+                      onClick={() => setCat((v) => (v === c ? null : c))}>{c}</button>
+                  ))}
+                </div>
+                <button type="button" className="stf-catnav" aria-label="Scroll categories right"
+                  onClick={() => nudge(1)} hidden={!over}>&#8250;</button>
+              </div>
+              {cat ? (
+                <div className="stf-catlist">
+                  <div className="stf-eb">
+                    {cat === 'all' ? 'All daily puzzles' : cat} <em>&middot; {catList.length}</em>
+                  </div>
+                  <div className="stf-tiles">
+                    {catList.map((g) => <Tile key={g.key} g={g} played={played.has(g.key)} light={light} />)}
+                  </div>
+                </div>
+              ) : null}
+            </section>
+            <a className="stf-seeall stf-homeln" href={(mainOpt && mainOpt.href) || '/'}>Open today&rsquo;s full slate &rsaquo;</a>
+          </div>
         </div>
 
-        {/* What the doors leave over: a real Reveal or Return to board, any
-            option this card does not know, and the gold Share, last. */}
-        {secOpts.length ? (
-          <div className="stf-opts">
-            {secOpts.map((o, i) => {
-              const w = (secOpts.length % 2 === 1 && i === secOpts.length - 1) ? ' wide' : '';
-              const cls = 'stf-o' + (o.kind === 'gold' ? ' gold' : '') + w;
-              return o.href
-                ? <a key={i} className={cls} href={o.href} onClick={o.onClick}><b>{o.label}</b>{o.sub ? <i>{o.sub}</i> : null}</a>
-                : <button key={i} type="button" className={cls} onClick={o.onClick}><b>{o.label}</b>{o.sub ? <i>{o.sub}</i> : null}</button>;
-            })}
-          </div>
-        ) : null}
 
         {/* CLAIM YOUR RANK: full width, guests only. The figure is the guest's
             would-be placement on the registered board; without one (the row
@@ -2093,5 +2158,34 @@ const CSS = `
 @media (max-width:640px){
   .stf-flood{padding-right:max(24px,env(safe-area-inset-right));padding-left:max(20px,env(safe-area-inset-left));}
   .stf-fl-pair{gap:14px;}
+}
+
+/* Back to board, on the band, right of the verdict (owner, 2026-10-01). */
+.stf-cin{position:relative;}
+.stf-back{position:absolute;top:4px;right:0;z-index:1;display:inline-flex;align-items:center;gap:6px;
+  font:inherit;font-family:${MONO};font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;
+  color:inherit;background:transparent;border:1.5px solid currentColor;border-radius:7px;padding:7px 11px;cursor:pointer;}
+.stf-back span{font-size:13px;letter-spacing:0;}
+.stf-back:hover{background:color-mix(in srgb,currentColor 12%,transparent);}
+.stf-back:focus-visible{outline:2px solid currentColor;outline-offset:2px;}
+.stf-hasback .stf-verdict{padding-right:150px;}
+/* The Play similar door and its countdown. */
+.stf-pwrap{grid-column:1/-1;display:flex;gap:8px;min-width:0;}
+.stf-pwrap > .stf-door{flex:1;}
+.stf-decl{flex:none;font:inherit;font-size:13px;font-weight:800;cursor:pointer;color:var(--stg-ink);
+  background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:10px;padding:0 16px;}
+.stf-decl:hover{border-color:var(--stg-line2);}
+.stf-door.pri .stf-ring{width:38px;height:38px;
+  background:conic-gradient(currentColor var(--p,0%),color-mix(in srgb,currentColor 18%,transparent) 0);}
+.stf-door.pri .stf-ring b{width:30px;height:30px;background:var(--stg-acc);color:inherit;font-size:12px;}
+.stf-homeln{align-self:flex-start;text-decoration:none;}
+.stf-drawer .stf-catlist{margin-top:12px;}
+@media (max-width:640px){
+  .stf-back{top:2px;padding:6px 9px;font-size:9.5px;}
+  .stf-hasback .stf-verdict{padding-right:120px;}
+  .stf-pwrap{gap:6px;}
+  .stf-decl{padding:0 11px;font-size:12px;}
+  .stf-door.pri .stf-ring{width:32px;height:32px;}
+  .stf-door.pri .stf-ring b{width:25px;height:25px;font-size:11px;}
 }
 `;
