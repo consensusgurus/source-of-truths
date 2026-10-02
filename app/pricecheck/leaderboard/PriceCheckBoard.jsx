@@ -39,7 +39,9 @@ export default function PriceCheckBoard({ dateLabel = '' }) {
   const boardRows = boardNow && Array.isArray(boardNow.overall) ? boardNow.overall : [];
   const fieldToday = Math.max((boardNow && boardNow.overallField) || 0, boardRows.length);
   const scoreWord = 'pts';
-  const maxTotal = boardNow && boardNow.maxTotal ? boardNow.maxTotal : 50;
+  // Five tags at 0 to 10 each. The payload's maxTotal is the day's best score
+  // so far, which reads as "out of 30" early in a day; the run is out of 50.
+  const maxTotal = 50;
   const myRow = boardNow ? (boardNow.me || boardNow.meProvisional || null) : null;
   const leaderRow = boardRows.length ? boardRows[0] : null;
 
@@ -213,7 +215,7 @@ export default function PriceCheckBoard({ dateLabel = '' }) {
                 <p className="rn-rfine">
                   Best run on record: <b>{bestDay.winner.username}</b>,{' '}
                   {Math.round(Number(bestDay.winner.total) || 0)} pts on {bestDay.label}.
-                  {hist.data.days ? ` ${hist.data.days} days crowned.` : ''}
+                  {hist.data.days ? ` ${hist.data.days} ${hist.data.days === 1 ? 'day' : 'days'} crowned.` : ''}
                 </p>
               ) : null}
               {!champions.length && hist.state === 'ready' ? (
