@@ -213,7 +213,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
               <div key={s.key} className="hang" style={{ animationDelay: `${0.25 + i * 0.12}s, ${0.9 + i * 0.15}s`, animationDuration: `.6s, ${3.3 + (i % 3) * 0.3}s` }}>
                 <div className="string" />
                 <div className="tag" style={{ '--c': `var(--pc-${s.key})` }}>
-                  <div className="k">{String(i + 1).padStart(2, '0')} · {s.name}</div>
+                  <div className="k"><span className="kn">{String(i + 1).padStart(2, '0')} · </span>{s.name}</div>
                   <div className="n">{s.word}</div>
                   <div className="chip">{s.chip}</div>
                   <div className="pq">$<em>{s.mask}</em></div>
@@ -777,6 +777,6 @@ const CSS = `
 .ip-nav{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font:700 12px ${SANS};color:var(--pc-mute)}
 .ip-nav button{background:none;border:0;color:var(--pc-ink);font:800 13px ${SANS};cursor:pointer;padding:6px}
 @keyframes pcfade{from{opacity:0}to{opacity:1}}
-@media(max-width:600px){.tags{gap:4px}.tag{padding:25px 3px 8px}.tag .n{font-size:13px}.tag .k{font-size:8.5px;letter-spacing:.06em}.tag .chip{display:none}.tag .pq{font-size:12px;margin-top:6px}.string{height:14px}.title{font-size:42px}.pre{padding-top:8px}.gun .odo{font-size:30px}.pre-row .sub2{font-size:11.5px;max-width:200px}.lede{font-size:14px;margin-top:10px;line-height:1.4}.lede-x{display:none}.rail{margin-top:22px;height:8px}.gun{margin-top:14px}.pre .facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:22px}.pre .fact{min-width:0;padding:8px;text-align:center;border-radius:10px}.pre .fact b{font-size:18px}.pre .fact span{font-size:10px;line-height:1.25;display:block}.heat .lbl{font-size:9px;letter-spacing:.08em}}
+@media(max-width:600px){.tags{gap:4px}.tag{padding:27px 3px 8px}.tag .kn{display:none}.tag .k{white-space:nowrap;overflow:hidden;text-overflow:clip}.tag .n{font-size:13px}.tag .k{font-size:8.5px;letter-spacing:.06em}.tag .chip{display:none}.tag .pq{font-size:12px;margin-top:6px}.string{height:14px}.title{font-size:42px}.pre{padding-top:8px}.gun .odo{font-size:30px}.pre-row .sub2{font-size:11.5px;max-width:200px}.lede{font-size:14px;margin-top:10px;line-height:1.4}.lede-x{display:none}.rail{margin-top:22px;height:8px}.gun{margin-top:14px}.pre .facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:22px}.pre .fact{min-width:0;padding:8px;text-align:center;border-radius:10px}.pre .fact b{font-size:18px}.pre .fact span{font-size:10px;line-height:1.25;display:block}.heat .lbl{font-size:9px;letter-spacing:.08em}}
 @media(prefers-reduced-motion:reduce){.pc *{animation-duration:.01ms !important;animation-iteration-count:1 !important}}
 `;
