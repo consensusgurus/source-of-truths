@@ -618,8 +618,12 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
     } catch (e) {}
   }
 
-  const WALL = 'var(--stg-line3, rgba(28,30,36,0.85))';
-  const THIN = 'var(--stg-cell-line, rgba(28,30,36,0.18))';
+  // Walls must read as walls: globals.css rounds every <button> 8px and the
+  // stage's cell-line is nearly as dark as line3, so the first deploy drew a
+  // field of rounded tiles with no visible rooms. Thin rules are the faint
+  // hairline; walls are a heavy rule in the register's ink.
+  const WALL = 'color-mix(in srgb, var(--stg-ink, #0b0d12) 78%, transparent)';
+  const THIN = 'var(--stg-line, rgba(28,30,36,0.18))';
   function cellStyle(idx) {
     const r = Math.floor(idx / N), c = idx % N, id = PUZZLE.rooms[r][c];
     const wallR = c < N - 1 && PUZZLE.rooms[r][c + 1] !== id;
@@ -691,7 +695,7 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.du-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .du-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .du-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .du-cell{display:flex;align-items:center;justify-content:center;box-sizing:border-box;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;padding:0;border-top:none;border-left:none;font:inherit;}
+          .du-cell{border-radius:0 !important;display:flex;align-items:center;justify-content:center;box-sizing:border-box;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;padding:0;border-top:none;border-left:none;font:inherit;}
           .du-cell:focus-visible{outline:3px solid var(--stg-acc, ${COLORS.accent});outline-offset:-3px;}
           .du-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
         ` }} />
