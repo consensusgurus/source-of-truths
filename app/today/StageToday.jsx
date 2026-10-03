@@ -3541,4 +3541,27 @@ ${PATCH_CSS}
   .sty-pingo{padding:6px 10px;font-size:12px;}
 }
 
+/* ── ON A PHONE THE SLATE RUNS EDGE TO EDGE (owner, 2026-10-03) ──
+   The pinned row, My games, the category buttons, their open panel and the
+   circuits become full-width bands: no side margin, no rounded corners, a 1px
+   rule between cards. The section heads keep the page gutter. */
+@media (max-width:640px){
+  .sty-tiles,.sty-mine,.sty-circsec{padding-left:0;}
+  .sty-tiles::before,.sty-mine::before,.sty-circsec::before{display:none;}
+  .sty-pins,.sty-crowwrap,.sty-mine .sty-games,.sty-mine .sty-circs,.sty-circsec .sty-circs{
+    margin-left:-14px;margin-right:-14px;gap:1px;background:var(--stg-line);
+    border-top:1px solid var(--stg-line);border-bottom:1px solid var(--stg-line);}
+  .sty-crowwrap + .sty-crowwrap{margin-top:-1px;}
+  .sty-crowwrap{gap:1px;}
+  .sty-crow{gap:1px;}
+  .sty-pin,.sty-tile,.sty-mine .sty-g,.sty-circsec .sty-circ,.sty-mine .sty-circ,.sty-tdraw .sty-g{border:0;border-radius:0;}
+  .sty-tile.on{box-shadow:inset 0 0 0 2px var(--cc);}
+  .sty-tdraw{border:0;border-radius:0;padding:11px 0 0;}
+  .sty-tdh{padding:0 14px;}
+  .sty-tdraw .sty-games{gap:1px;background:var(--stg-line);border-top:1px solid var(--stg-line);}
+  .sty-mine .sty-more,.sty-circsec .sty-more{margin:0 -14px;width:calc(100% + 28px);border-radius:0;
+    border-left:0;border-right:0;border-top:0;padding:12px;}
+  .sty-minec{margin-top:0;}
+}
+
 `;
