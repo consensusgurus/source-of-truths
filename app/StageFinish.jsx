@@ -1466,7 +1466,17 @@ export default function StageFinish({
           ) : null}
           <div className="stf-ctop">
             <div className="stf-cl">
-              <div className="stf-verdict">{title}</div>
+              {/* IQ EARNED SITS NEXT TO THE VERDICT (owner, 2026-10-03). On the
+                  right edge it collided with Back to board on the band. */}
+              <div className="stf-vrow">
+                <div className="stf-verdict">{title}</div>
+                {iq && iq.gained != null ? (
+                  <div className="stf-ciq">
+                    <b>+{Number(iq.gained).toLocaleString()}</b>
+                    <i>IQ earned</i>
+                  </div>
+                ) : null}
+              </div>
               {(detail || loose.length) ? (
                 <div className="stf-detail">
                   {detail}
@@ -1477,12 +1487,6 @@ export default function StageFinish({
               ) : null}
               <BandCat run={catRun} vs={vs} />
             </div>
-            {iq && iq.gained != null ? (
-              <div className="stf-ciq">
-                <b>+{Number(iq.gained).toLocaleString()}</b>
-                <i>IQ earned</i>
-              </div>
-            ) : null}
           </div>
         </div>
       </div>
@@ -1860,7 +1864,8 @@ const CSS = `
    second thing on the band, not the first. It takes the band's own ink rather
    than the green the figures row gave it, because green on the accent is the
    one colour pairing the stage does not have. */
-.stf-ciq{flex:none;text-align:right;}
+.stf-vrow{display:flex;align-items:baseline;flex-wrap:wrap;column-gap:18px;row-gap:4px;}
+.stf-ciq{flex:none;display:flex;align-items:baseline;gap:7px;text-align:left;}
 .stf-ciq b{display:block;font-size:34px;font-weight:800;line-height:1;
   letter-spacing:-0.02em;font-variant-numeric:tabular-nums;}
 .stf-ciq i{display:block;font-style:normal;font-size:13px;font-weight:700;
@@ -2168,7 +2173,8 @@ const CSS = `
 .stf-back span{font-size:13px;letter-spacing:0;}
 .stf-back:hover{background:color-mix(in srgb,currentColor 12%,transparent);}
 .stf-back:focus-visible{outline:2px solid currentColor;outline-offset:2px;}
-.stf-hasback .stf-verdict{padding-right:150px;}
+.stf-hasback .stf-vrow{padding-right:150px;}
+.stf-vrow .stf-ciq i{margin-top:0;}
 /* The Play similar door and its countdown. */
 .stf-pwrap{grid-column:1/-1;display:flex;gap:8px;min-width:0;}
 .stf-pwrap > .stf-door{flex:1;}
@@ -2182,7 +2188,7 @@ const CSS = `
 .stf-drawer .stf-catlist{margin-top:12px;}
 @media (max-width:640px){
   .stf-back{top:2px;padding:6px 9px;font-size:9.5px;}
-  .stf-hasback .stf-verdict{padding-right:120px;}
+  .stf-hasback .stf-vrow{padding-right:120px;}
   .stf-pwrap{gap:6px;}
   .stf-decl{padding:0 11px;font-size:12px;}
   .stf-door.pri .stf-ring{width:32px;height:32px;}

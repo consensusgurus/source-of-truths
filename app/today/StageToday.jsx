@@ -150,12 +150,12 @@ function fmtDate(ymd) {
 const CIRC_PEEK_NARROW = 3;
 const AZ_KEY = 'sot_stage_az';
 
-// The three the shelf leads with, by id: the Trivia Gauntlet, the Daily Five,
-// then Sudoku (owner, 2026-09-01). lib/circuits.js orders DISPLAY_CIRCUITS the
+// The three the shelf leads with, by id: Price Check, the Trivia Gauntlet,
+// then the Daily Five (owner, 2026-10-03; was Gauntlet, Five, Sudoku). lib/circuits.js orders DISPLAY_CIRCUITS the
 // same way; this repeats it because the home's sort has to interleave that
 // lead with the reader's own progress, which that module knows nothing about.
 // On a phone the shelf's peek is exactly these three (CIRC_PEEK_NARROW).
-const CIRC_LEAD = ['gauntlet', 'five', 'sudoku'];
+const CIRC_LEAD = ['pricecheck', 'gauntlet', 'five'];
 
 // THE NEWCOMER'S ROW (owner, 2026-09-04). A reader with NO footprint at all gets
 // one row above everything else: two circuits sharing a line, then the busiest
