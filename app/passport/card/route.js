@@ -16,6 +16,7 @@ const SANS = 'Manrope';
 const MONO = 'DM Mono';
 const GROUND = '#0b0f1a';
 const AMBER = '#f4d58d';
+const SWISS = TIERS.find((t) => t.swiss);
 const INKS = ['#a78bfa', '#60a5fa', '#34d399', '#f87171', '#f59e0b'];
 
 function flap(ch, big) {
@@ -63,12 +64,15 @@ function card(scores) {
         h('div', { style: { display: 'flex', fontSize: 17, fontWeight: 800, letterSpacing: 3, color: '#7dd3fc', textTransform: 'uppercase' } }, 'I traveled on the'),
         h('div', { style: { display: 'flex', fontSize: 38, fontWeight: 800, lineHeight: 1.05, letterSpacing: -1, marginTop: 8 } }, tier.name),
         h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 18, color: AMBER, marginTop: 12 } }, `Visa-free to ${tier.vf} countries`)))
-    : h('div', { style: { display: 'flex', flexDirection: 'column', marginTop: 22 } },
-      h('div', { style: { display: 'flex', fontSize: 26, fontWeight: 700, color: '#cbd5e1', lineHeight: 1.3 } }, 'One mystery country, five rounds. Which passport will you earn?'),
-      h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: 12, marginTop: 24 } },
-        ...TIERS.map((t, i) => h('div', { key: t.short, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 } },
-          cover(t, 62),
-          h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 13, color: i === TIERS.length - 1 ? AMBER : '#8b95a8' } }, i === TIERS.length - 1 ? String(t.min) : `${t.min}+`)))));
+    // THE INVITE LEADS WITH THE SWISS PASSPORT (owner, 2026-10-03): the cover
+    // a sharp run earns, held up as the prize.
+    : h('div', { style: { display: 'flex', alignItems: 'center', gap: 28, marginTop: 28 } },
+      cover(SWISS, 150, -5),
+      h('div', { style: { display: 'flex', flexDirection: 'column', flex: 1 } },
+        h('div', { style: { display: 'flex', fontSize: 17, fontWeight: 800, letterSpacing: 3, color: '#7dd3fc', textTransform: 'uppercase' } }, 'Score 48 and earn the'),
+        h('div', { style: { display: 'flex', fontSize: 38, fontWeight: 800, lineHeight: 1.05, letterSpacing: -1, marginTop: 8 } }, SWISS.name),
+        h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 18, color: AMBER, marginTop: 12 } }, `Visa-free to ${SWISS.vf} countries`),
+        h('div', { style: { display: 'flex', fontSize: 19, fontWeight: 700, color: '#cbd5e1', marginTop: 14, lineHeight: 1.3 } }, 'One mystery country. Five rounds.')));
 
   return h('div', { style: { width: 1200, height: 630, display: 'flex', background: GROUND, padding: '44px 54px', fontFamily: SANS, color: '#f1f5f9' } },
     h('div', { style: { display: 'flex', flexDirection: 'column', width: 520, paddingRight: 34 } },
