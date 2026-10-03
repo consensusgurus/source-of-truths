@@ -1649,7 +1649,7 @@ export default function StageToday() {
                 : nxt ? `${returning === false ? 'Start with' : 'Next:'} ${nxt.name}` : 'All played today';
               return (
                 <button key={cat} type="button" className={'sty-tile' + (on ? ' on' : '')}
-                  style={{ '--cc': hueFor(cat) }} aria-expanded={on}
+                  style={{ '--cc': hueFor(cat), '--stg-onramp': light ? categoryOnrampLight(cat) : RAMP_INK }} aria-expanded={on}
                   aria-controls={`cat-${cat.replace(/\s+/g, '-')}`} onClick={() => pickCat(cat)}>
                   <span className="sty-th"><b>{cat}</b><span className="sty-ctn">{n}<i>/{games.length}</i></span></span>
                   <span className="sty-trung" aria-hidden="true">
@@ -1665,11 +1665,6 @@ export default function StageToday() {
             return (
               <div key={cat} id={`cat-${cat.replace(/\s+/g, '-')}`} className={'sty-tdraw' + (on ? '' : ' shut')}
                 data-fk={'sec:' + cat} style={{ '--cc': hueFor(cat) }}>
-                <div className="sty-tdh">
-                  <h2>{cat}</h2>
-                  <b>{games.filter((g) => done.has(g.key)).length}<i>/{games.length}</i></b>
-                  <button type="button" className="sty-tclose" onClick={() => pickCat(cat)}>Close</button>
-                </div>
                 <div className="sty-games">
                   {playedLast(games, done).map((g, i) => (
                     <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
@@ -3487,7 +3482,11 @@ ${PATCH_CSS}
   border-radius:8px;padding:12px 14px 11px 18px;cursor:pointer;overflow:hidden;}
 .sty-tile::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cc);}
 .sty-tile:hover{border-color:var(--cc);}
-.sty-tile.on{border-color:var(--cc);box-shadow:0 0 0 1px var(--cc);background:color-mix(in srgb,var(--cc) 12%,var(--stg-surf));}
+.sty-tile.on{border-color:var(--cc);background:var(--cc);color:var(--stg-onramp,#08222e);}
+.sty-tile.on .sty-ctn,.sty-tile.on .sty-ctn i,.sty-tile.on .sty-tf,.sty-tile.on .sty-tact{color:var(--stg-onramp,#08222e);}
+.sty-tile.on .sty-trung i{background:color-mix(in srgb,var(--stg-onramp,#08222e) 22%,transparent);opacity:1;}
+.sty-tile.on .sty-trung i.d{background:var(--stg-onramp,#08222e);}
+.sty-tile.on .sty-trung i.p{background:color-mix(in srgb,var(--stg-onramp,#08222e) 55%,transparent);}
 .sty-tile:focus-visible{outline:2px solid var(--cc);outline-offset:2px;}
 .sty-th{display:flex;align-items:baseline;gap:8px;}
 .sty-th b{flex:1 1 auto;min-width:0;font-size:16.5px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -3501,7 +3500,7 @@ ${PATCH_CSS}
 .sty-ctnext{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sty-tact{flex:none;font-size:12px;font-weight:700;color:var(--stg-mute);}
 .sty-tile.on .sty-tact{color:var(--stg-ink);}
-.sty-tdraw{border:1px solid var(--cc);border-radius:10px;background:var(--stg-surf);padding:13px 14px 14px;}
+.sty-tdraw{border:1px solid var(--cc);border-radius:10px;background:var(--stg-surf);padding:14px;}
 .sty-tdraw.shut{display:none;}
 .sty-tdh{display:flex;align-items:baseline;gap:11px;margin-bottom:11px;}
 .sty-tdh h2{margin:0;font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;}
@@ -3555,10 +3554,8 @@ ${PATCH_CSS}
   .sty-crowwrap{gap:1px;}
   .sty-crow{gap:1px;}
   .sty-pin,.sty-tile,.sty-mine .sty-g,.sty-circsec .sty-circ,.sty-mine .sty-circ,.sty-tdraw .sty-g{border:0;border-radius:0;}
-  .sty-tile.on{box-shadow:inset 0 0 0 2px var(--cc);}
-  .sty-tdraw{border:0;border-radius:0;padding:11px 0 0;}
-  .sty-tdh{padding:0 14px;}
-  .sty-tdraw .sty-games{gap:1px;background:var(--stg-line);border-top:1px solid var(--stg-line);}
+  .sty-tdraw{border:0;border-radius:0;padding:0;}
+  .sty-tdraw .sty-games{gap:1px;background:var(--stg-line);}
   .sty-mine .sty-more,.sty-circsec .sty-more{margin:0 -14px;width:calc(100% + 28px);border-radius:0;
     border-left:0;border-right:0;border-top:0;padding:12px;}
   .sty-minec{margin-top:0;}
