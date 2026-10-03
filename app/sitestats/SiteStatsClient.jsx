@@ -248,13 +248,24 @@ export default function SiteStatsClient() {
   const [err, setErr] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // The route answers at once with the last built figures and marks them
+  // `stale` when they are over five minutes old. A stale answer is shown
+  // straight away, then ?refresh=1 rebuilds and the new figures swap in.
   const load = useCallback(async () => {
     setLoading(true);
     setErr(false);
     try {
       const r = await fetch('/api/sitestats', { cache: 'no-store' });
       if (!r.ok) throw new Error('bad');
-      setData(await r.json());
+      const d = await r.json();
+      setData(d);
+      if (d && d.stale) {
+        const r2 = await fetch('/api/sitestats?refresh=1', { cache: 'no-store' });
+        if (r2.ok) {
+          const d2 = await r2.json();
+          if (d2 && !d2.error) setData(d2);
+        }
+      }
     } catch (e) {
       setErr(true);
     } finally {
@@ -279,7 +290,7 @@ export default function SiteStatsClient() {
         <div>
           <div className="ss-title">Site Stats</div>
           <div className="ss-sub">
-            {data ? `Updated ${clockET(data.generatedAt)} ET` : 'Loading…'}
+            {data ? `Updated ${clockET(data.generatedAt)} ET${data.stale && loading ? ', refreshing…' : ''}` : 'Loading…'}
             {data && data.viewerSource === 'fallback' && <span className="ss-flag"> · viewers: fallback</span>}
           </div>
         </div>

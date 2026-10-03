@@ -8299,3 +8299,48 @@ no board** (nothing is posted, no IQ Points, the result is kept on the device in
   IQ Points: `computeXp` skips `iq-` ids, keeping the original standalone ruling. The Page Views
   row takes the larger of result rows and finish pings (`iq-<slug>-finished`, the only record
   before 2026-09-30), and the finish rows are folded in rather than listed (`app/admin/page.js`).
+
+## The admin desk and /sitestats answer first and refresh second (2026-10-02)
+
+Measured on the live site before this: `/admin` took 10.0s and returned **18 MB**; an
+uncached `/api/sitestats` took **28.6s** (71ms on a CDN hit, but every deploy empties the CDN).
+The table read was not the cause (that was fixed 2026-08-28 by `lib/admin-results-cache.js`).
+The causes were: every tab's data built before anything painted and all of it rendered into
+the HTML, nothing reused between loads, and a cold lambda having nothing to show.
+
+- **`app/admin/page.js` is a shell.** It checks the cookie and renders `<AdminClient />` with no
+  props. Do not add data back to it.
+- **`lib/admin-data.js` holds the builders** (moved from the page verbatim) and serves them in
+  parts through **`GET /api/admin/data?part=`**: `editorial` (the action queues, always live),
+  `analytics` (first paint, player tables cut to the `PLAYERS_TOP` most recently active),
+  `players` (the full tables, on demand), `pageviews`, `retention`, `map`. The desk fetches a
+  part the first time the view that draws it opens (`useAdminPart` in `AdminClient.jsx`).
+- **One build, many slices.** `computeAnalytics()` runs once and is memoized in the lambda for
+  90s; `sliceAnalytics()` cuts it. A request past 90s gets the older build flagged `stale` at
+  once and the desk follows with `mode=fresh`; the Refresh button sends `mode=force`.
+- **`stats_payloads` (migration 59)** stores the last built payload per key (`sitestats:v1`,
+  `admin:analytics:v1`), so a cold lambda answers from the stored copy. Service-role only: the
+  admin payload carries emails. Every read and write is wrapped, so the code works before the
+  migration is applied; it just builds while the caller waits, as it used to.
+- **The full player tables load when the desk sorts, searches, exports the users CSV or presses
+  "Load all"** (`useNeedAll`, `PartialNote`). While trimmed, the totals in the copy come from
+  `counts` in the analytics part, never from the rows in hand.
+- **`etParts` is memoized by UTC hour.** Eastern time is a whole number of hours off UTC, so one
+  lookup per hour replaces a formatter call per row (builders measured 4.4x faster on 60,000
+  rows). `scripts/verify-admin-data.mjs` proves it across six daylight-saving changes and checks
+  the slicing. The returned object is shared: never write to it.
+- **The desk no longer imports `lib/data.js`** (4.5 MB of source in the browser bundle, for a
+  list picker). The editorial part sends `listOptions`. `GeoMapPanel` is a dynamic import.
+- **`/api/sitestats`** returns the last built payload at once: fresh under 5 minutes, otherwise
+  flagged `stale`, and `SiteStatsClient` then calls `?refresh=1` and swaps the new figures in.
+  `?refresh=1` never rebuilds a copy under a minute old. The build lives in
+  `lib/sitestats-build.js`: the player half and the viewer half run together, each with a 40s
+  limit, and a half that fails keeps the previous figures (`held` in the payload). With
+  migration 59 the player half is three SQL aggregates (`site_play_trends`,
+  `site_play_hourly_today`, `site_play_top_today`) instead of a whole-table load; without it,
+  it falls back to the shared row cache. `timings` in the payload says where a slow build went.
+- **`/api/cron/stats-warm`** (daily, 09:20 UTC) rebuilds and stores both payloads. It skips a
+  copy under ten minutes old, because the route is open when no `CRON_SECRET` is set.
+- **Not done, on purpose:** a per-day rollup table. The Analytics view is mostly per-player
+  figures, which a per-day table cannot supply, so the stored payload plus the memo does the
+  job a rollup was meant to do. Revisit only if the row load itself becomes the cost.

@@ -1,11 +1,13 @@
 'use client';
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Check, X, Eye, EyeOff, LogOut, Pencil, Trash2, MapPin, ShieldAlert } from 'lucide-react';
-import { LISTS } from '@/lib/data';
+import dynamic from 'next/dynamic';
 import Grain from '@/app/Grain';
-import GeoMapPanel from './GeoMapPanel';
+// The map and its world outline are only needed on Analytics -> Player Map, so
+// they load when that view opens rather than with the desk.
+const GeoMapPanel = dynamic(() => import('./GeoMapPanel'), { ssr: false, loading: () => <PartNote>Loading the map&hellip;</PartNote> });
 import { exportUsersCsv, exportGamesCsv, downloadCsvFile } from './csv-export';
 import { T } from '@/lib/theme';
 
@@ -22,6 +24,91 @@ const COLORS = {
   rust: '#b45309',
   line: 'rgba(20,22,28,0.30)',
 };
+
+// ---- Data loading (2026-10-02) ----------------------------------------------
+// The page ships no data. Each part of the desk asks /api/admin/data for what
+// it draws, when it first needs it (see lib/admin-data.js for the why).
+async function fetchPart(part, mode) {
+  const r = await fetch(`/api/admin/data?part=${part}${mode ? `&mode=${mode}` : ''}`, { cache: 'no-store' });
+  if (r.status === 401) {
+    window.location.href = '/admin/login';
+    throw new Error('signed out');
+  }
+  const d = await r.json().catch(() => null);
+  if (!r.ok || !d || d.error) throw new Error((d && d.error) || `HTTP ${r.status}`);
+  return d;
+}
+
+// One part of the desk's data. Fetches the first time `enabled` is true. The
+// server may answer with its last build flagged `stale` so there is something
+// to show at once; when it does, a second request for a fresh build follows and
+// swaps in. reload('force') rebuilds on the server; reload('fresh') just asks
+// for a current build.
+function useAdminPart(part, enabled) {
+  const [state, setState] = useState({ data: null, loading: false, refreshing: false, error: null });
+  const started = useRef(false);
+  const seq = useRef(0);
+  const run = useCallback(async (mode) => {
+    const my = ++seq.current;
+    started.current = true;
+    setState((st) => ({ ...st, loading: !st.data, refreshing: !!st.data, error: null }));
+    try {
+      let d = await fetchPart(part, mode);
+      if (my !== seq.current) return;
+      setState({ data: d, loading: false, refreshing: !!d.stale, error: null });
+      if (d.stale) {
+        d = await fetchPart(part, 'fresh');
+        if (my !== seq.current) return;
+        setState({ data: d, loading: false, refreshing: false, error: null });
+      }
+    } catch (e) {
+      if (my === seq.current) setState((st) => ({ ...st, loading: false, refreshing: false, error: e.message || 'failed' }));
+    }
+  }, [part]);
+  useEffect(() => {
+    if (enabled && !started.current) run();
+  }, [enabled, run]);
+  return { ...state, asked: started.current, reload: run };
+}
+
+// A quiet placeholder line for a part that is loading or failed.
+function PartNote({ children, error, onRetry }) {
+  return (
+    <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 15, color: error ? COLORS.rust : COLORS.faded, border: `1px dashed ${COLORS.line}` }}>
+      {children}
+      {onRetry ? (
+        <button onClick={onRetry} style={{ marginLeft: 10, background: 'transparent', border: `1px solid ${COLORS.line}`, color: COLORS.ink, padding: '4px 10px', fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer' }}>Retry</button>
+      ) : null}
+    </div>
+  );
+}
+
+// The player tables arrive with their most recently active rows only. Sorting
+// by another column or searching needs every row, so either one loads the full
+// tables; so does the button on this note.
+function useNeedAll(partial, onNeedAll, query, sort, defaultKey) {
+  useEffect(() => {
+    if (!partial || !onNeedAll) return;
+    if (query.trim() || sort.key !== defaultKey || sort.dir !== 'desc') onNeedAll().catch(() => {});
+  }, [partial, onNeedAll, query, sort.key, sort.dir, defaultKey]);
+}
+
+function PartialNote({ partial, shown, total, noun, onNeedAll }) {
+  const [busy, setBusy] = useState(false);
+  if (!partial) return null;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', margin: '0 0 12px', padding: '8px 12px', border: `1px solid ${COLORS.line}`, background: COLORS.paper, fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>
+      <span>Showing the {shown} most recently active of {total} {noun}. Sorting or searching loads the rest.</span>
+      <button
+        onClick={() => { if (busy) return; setBusy(true); onNeedAll().catch(() => {}).finally(() => setBusy(false)); }}
+        disabled={busy}
+        style={{ marginLeft: 'auto', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, padding: '5px 10px', fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.6 : 1 }}
+      >
+        {busy ? 'Loading…' : `Load all ${total}`}
+      </button>
+    </div>
+  );
+}
 
 function formatDate(iso) {
   if (!iso) return '';
@@ -522,22 +609,68 @@ function mapsPlaceUrl(name) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleaned)}`;
 }
 
-export default function AdminClient({ initialLists, initialExtras = [], initialComplaints = [], initialVoteStandings = [], initialVoteEvents = [], initialComments = [], initialAlerts = [], initialViews24h = [], initialEditorNotes = [], initialQuizSignups = [], initialQuizStats = [], initialAnonPlayers = [], initialActiveUsers = { players: { dau: 0, wau: 0, mau: 0 }, visitors: null }, initialGeoMap = null, initialDailyRetention = { games: [], breadth: { total: 0, histogram: [] } }, initialTimeByDay = { series: [], totals: {} }, initialNewUsers = { series: [], totals: {} }, initialDailyByGame = { games: [], totals: {} }, initialTopPlayersToday = { day: null, players: [], totals: {} } }) {
+export default function AdminClient() {
   const router = useRouter();
-  const [lists, setLists] = useState(initialLists);
-  const [extras, setExtras] = useState(initialExtras);
-  const [alerts, setAlerts] = useState(initialAlerts);
-  const [complaints, setComplaints] = useState(initialComplaints);
-  const [voteStandings, setVoteStandings] = useState(initialVoteStandings);
-  const [voteEvents, setVoteEvents] = useState(initialVoteEvents);
-  const [comments, setComments] = useState(initialComments);
-  const [editorNotes, setEditorNotes] = useState(initialEditorNotes);
-  const [views24h] = useState(initialViews24h);
-  const [quizSignups] = useState(initialQuizSignups);
-  const [anonPlayers] = useState(initialAnonPlayers);
-  const [quizStats] = useState(initialQuizStats);
+  const [lists, setLists] = useState([]);
+  const [extras, setExtras] = useState([]);
+  const [alerts, setAlerts] = useState([]);
+  const [complaints, setComplaints] = useState([]);
+  const [voteStandings, setVoteStandings] = useState([]);
+  const [voteEvents, setVoteEvents] = useState([]);
+  const [comments, setComments] = useState([]);
+  const [editorNotes, setEditorNotes] = useState([]);
+  const [listOptions, setListOptions] = useState([]);
   const [tab, setTab] = useState('analytics');
   const [busy, setBusy] = useState({});
+
+  // The action queues (every tab except Analytics, Daily Games and Groups).
+  // Small tables, read once on arrival; the handlers below then keep the local
+  // copies in step with what they change, exactly as before.
+  const [ed, setEd] = useState({ loading: true, error: null });
+  const loadEditorial = useCallback(async () => {
+    setEd({ loading: true, error: null });
+    try {
+      const d = await fetchPart('editorial');
+      setLists(d.lists || []);
+      setExtras(d.extras || []);
+      setAlerts(d.alerts || []);
+      setComplaints(d.complaints || []);
+      setVoteStandings(d.voteStandings || []);
+      setVoteEvents(d.voteEvents || []);
+      setComments(d.comments || []);
+      setEditorNotes(d.editorNotes || []);
+      setListOptions(d.listOptions || []);
+      setEd({ loading: false, error: null });
+    } catch (e) {
+      setEd({ loading: false, error: e.message || 'failed' });
+    }
+  }, []);
+  useEffect(() => { loadEditorial(); }, [loadEditorial]);
+
+  // Analytics, the default tab. The full player tables are a separate part,
+  // fetched once on demand and then used in place of the trimmed ones.
+  const an = useAdminPart('analytics', true);
+  const A = an.data || {};
+  const counts = A.counts || {};
+  const [allPlayers, setAllPlayers] = useState(null);
+  const allRef = useRef(null);
+  const needAllPlayers = useCallback(() => {
+    if (!allRef.current) {
+      allRef.current = fetchPart('players')
+        .then((d) => { setAllPlayers(d); return d; })
+        .catch((e) => { allRef.current = null; throw e; });
+    }
+    return allRef.current;
+  }, []);
+  const quizSignups = allPlayers ? (allPlayers.quizSignups || []) : (A.quizSignups || []);
+  const anonPlayers = allPlayers ? (allPlayers.anonPlayers || []) : (A.anonPlayers || []);
+  const playersPartial = !allPlayers && ((counts.registered || 0) > quizSignups.length || (counts.anonymous || 0) > anonPlayers.length);
+  const refreshAnalytics = useCallback(() => {
+    allRef.current = null;
+    setAllPlayers(null);
+    return an.reload('force');
+  }, [an.reload]);
+  const dailyByGame = A.dailyByGame || { games: [], totals: {} };
 
   const filtered = useMemo(() => {
     return lists.filter((l) => (tab === 'pending' ? !l.published : l.published));
@@ -552,15 +685,10 @@ export default function AdminClient({ initialLists, initialExtras = [], initialC
   const complaintsCount = complaints.length;
   const commentsCount = comments.length;
   const editorNotesCount = editorNotes.length;
-  const views24hTotal = useMemo(
-    () => views24h.reduce((n, v) => n + (v.views24h || 0), 0),
-    [views24h]
-  );
-  const quizPlaysTotal = useMemo(
-    () => quizStats.reduce((n, q) => n + (q.plays || 0), 0),
-    [quizStats]
-  );
-  const dailyPlaysTotal = (initialDailyByGame && initialDailyByGame.totals && initialDailyByGame.totals.totalPlays) || 0;
+  const dailyPlaysTotal = (dailyByGame.totals && dailyByGame.totals.totalPlays) || 0;
+  // A tab count reads as an ellipsis until its part has arrived.
+  const edN = (n) => (ed.loading ? '…' : ed.error ? '!' : n);
+  const anN = (n) => (an.data ? n : '…');
 
   async function deleteComment(id) {
     const key = `cm-${id}`;
@@ -935,25 +1063,25 @@ export default function AdminClient({ initialLists, initialExtras = [], initialC
           }}
         >
           <TabButton active={tab === 'pending'} onClick={() => setTab('pending')}>
-            Pending <span style={{ opacity: 0.6 }}>{pendingCount}</span>
+            Pending <span style={{ opacity: 0.6 }}>{edN(pendingCount)}</span>
           </TabButton>
           <TabButton active={tab === 'published'} onClick={() => setTab('published')}>
-            Published <span style={{ opacity: 0.6 }}>{publishedCount}</span>
+            Published <span style={{ opacity: 0.6 }}>{edN(publishedCount)}</span>
           </TabButton>
           <TabButton active={tab === 'extras'} onClick={() => setTab('extras')}>
-            By the people <span style={{ opacity: 0.6 }}>{extrasCount}</span>
+            By the people <span style={{ opacity: 0.6 }}>{edN(extrasCount)}</span>
           </TabButton>
           <TabButton active={tab === 'feedback'} onClick={() => setTab('feedback')}>
-            Feedback <span style={{ opacity: 0.6 }}>{complaintsCount + commentsCount}</span>
+            Feedback <span style={{ opacity: 0.6 }}>{edN(complaintsCount + commentsCount)}</span>
           </TabButton>
           <TabButton active={tab === 'research'} onClick={() => setTab('research')}>
-            Research <span style={{ opacity: 0.6 }}>{alerts.length + editorNotesCount}</span>
+            Research <span style={{ opacity: 0.6 }}>{edN(alerts.length + editorNotesCount)}</span>
           </TabButton>
           <TabButton active={tab === 'analytics'} onClick={() => setTab('analytics')}>
-            Analytics <span style={{ opacity: 0.6 }}>{views24hTotal}</span>
+            Analytics <span style={{ opacity: 0.6 }}>{anN(counts.views24hTotal || 0)}</span>
           </TabButton>
           <TabButton active={tab === 'daily'} onClick={() => setTab('daily')}>
-            Daily Games <span style={{ opacity: 0.6 }}>{dailyPlaysTotal}</span>
+            Daily Games <span style={{ opacity: 0.6 }}>{anN(dailyPlaysTotal)}</span>
           </TabButton>
           <TabButton active={tab === 'groups'} onClick={() => setTab('groups')}>
             Groups
@@ -961,13 +1089,19 @@ export default function AdminClient({ initialLists, initialExtras = [], initialC
         </div>
 
         {tab === 'analytics' ? (
-          <AnalyticsPanel views={views24h} viewsTotal={views24hTotal} quizStats={quizStats} quizPlaysTotal={quizPlaysTotal} signups={quizSignups} anonPlayers={anonPlayers} activeUsers={initialActiveUsers} geoMap={initialGeoMap} dailyRetention={initialDailyRetention} timeByDay={initialTimeByDay} newUsers={initialNewUsers} dailyByGame={initialDailyByGame} topPlayersToday={initialTopPlayersToday} />
+          <AnalyticsPanel an={an} signups={quizSignups} anonPlayers={anonPlayers} partial={playersPartial} onNeedAll={needAllPlayers} onRefresh={refreshAnalytics} />
         ) : tab === 'daily' ? (
-          <DailyGamesPanel data={initialDailyByGame} />
+          an.data ? <DailyGamesPanel data={dailyByGame} />
+            : an.error ? <PartNote error onRetry={() => an.reload()}>Could not load the daily games figures ({an.error}).</PartNote>
+            : <PartNote>Loading the daily games figures&hellip;</PartNote>
         ) : tab === 'groups' ? (
           <GroupsPanel />
+        ) : ed.loading ? (
+          <PartNote>Loading&hellip;</PartNote>
+        ) : ed.error ? (
+          <PartNote error onRetry={loadEditorial}>Could not load this tab ({ed.error}).</PartNote>
         ) : tab === 'research' ? (
-          <ResearchNotesPanel alerts={alerts} busy={busy} onResolve={resolveAlert} notes={editorNotes} lists={LISTS} onAddNote={addNote} onDeleteNote={deleteNote} />
+          <ResearchNotesPanel alerts={alerts} busy={busy} onResolve={resolveAlert} notes={editorNotes} lists={listOptions} onAddNote={addNote} onDeleteNote={deleteNote} />
         ) : tab === 'feedback' ? (
           <FeedbackPanel complaints={complaints} comments={comments} busy={busy} onDismiss={dismissComplaint} onDelete={deleteComment} onRespond={respond} />
         ) : tab === 'extras' ? (
@@ -1307,10 +1441,12 @@ function SourceBreakdown({ state }) {
 
 // Quiz signups: the email leads captured by the /quiz "join the leaderboard"
 // form. One row per email (username + email + date joined), newest first.
-function QuizSignupsPanel({ signups }) {
+function QuizSignupsPanel({ signups, partial = false, total, onNeedAll }) {
   const [query, setQuery] = useState('');
   const [expandedId, setExpandedId] = useState(null);
   const sort = useSort('recent', 'desc');
+  useNeedAll(partial, onNeedAll, query, sort, 'recent');
+  const totalSignups = total != null ? total : (signups || []).length;
 
   // Last-played and distinct days played come off the summary the server sends,
   // not off a play list. They used to be recomputed here from every play row,
@@ -1381,9 +1517,10 @@ function QuizSignupsPanel({ signups }) {
     <div>
       <p style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 10, color: COLORS.faded, margin: '0 0 14px' }}>
         Email signups from the quiz leaderboard join form.
-        {' '}{signups.length} signup{signups.length === 1 ? '' : 's'} total.
+        {' '}{totalSignups} signup{totalSignups === 1 ? '' : 's'} total.
         {' '}The 10 most recently active are shown; scroll the box for the rest. Click a row for the player's full stats (best score, accuracy, timezone, traffic source, and more) plus their last {DETAIL_ROWS} sessions and games, with the full history one click further. Click a column header to sort.
       </p>
+      <PartialNote partial={partial} shown={(signups || []).length} total={totalSignups} noun="signups" onNeedAll={onNeedAll} />
       <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
         <input
           value={query}
@@ -1839,9 +1976,10 @@ function SectionHeading({ children }) {
 }
 
 // Analytics tab: list page views and quiz views/plays, stacked into one view.
-function AnonPlayersPanel({ players }) {
+function AnonPlayersPanel({ players, partial = false, total, onNeedAll }) {
   const [query, setQuery] = useState('');
   const sort = useSort('recent', 'desc');
+  useNeedAll(partial, onNeedAll, query, sort, 'recent');
   const [expandedKey, setExpandedKey] = useState(null);
   const list = players || [];
 
@@ -1876,9 +2014,10 @@ function AnonPlayersPanel({ players }) {
     <div>
       <p style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 10, color: COLORS.faded, margin: '0 0 14px' }}>
         Players who completed quizzes without signing up, batched by browser and shown under a stable Guest handle.
-        {' '}{list.length} anonymous player{list.length === 1 ? '' : 's'}, {totalPlays} play{totalPlays === 1 ? '' : 's'} total.
+        {' '}{partial ? `${total} anonymous players.` : `${list.length} anonymous player${list.length === 1 ? '' : 's'}, ${totalPlays} play${totalPlays === 1 ? '' : 's'} total.`}
         {' '}The 10 most recently active are shown; scroll the box for the rest. Click a row to see that player&apos;s last {DETAIL_ROWS} sessions and games, with the full history one click further. Click a column header to sort.
       </p>
+      <PartialNote partial={partial} shown={list.length} total={total} noun="anonymous players" onNeedAll={onNeedAll} />
       <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Filter by guest handle or number\u2026" style={{ width: '100%', padding: '10px 12px', background: COLORS.paper, border: `1px solid ${COLORS.line}`, color: COLORS.ink, fontFamily: 'DM Mono, monospace', fontSize: 10, outline: 'none', boxSizing: 'border-box', marginBottom: 16 }} />
       {visible.length === 0 ? (
         <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 16, color: COLORS.faded, border: `1px dashed ${COLORS.line}` }}>No matches.</div>
@@ -1926,10 +2065,11 @@ function AnonPlayersPanel({ players }) {
 // shared columns (plays, device/browser/geo, last played) line up so the whole
 // audience can be ranked together, and each row still expands to its play
 // history. This backs the "All" sub-view of Quiz Plays.
-function AllPlayersPanel({ signups, anonPlayers }) {
+function AllPlayersPanel({ signups, anonPlayers, partial = false, counts = {}, onNeedAll }) {
   const [query, setQuery] = useState('');
   const [expandedKey, setExpandedKey] = useState(null);
   const sort = useSort('last', 'desc');
+  useNeedAll(partial, onNeedAll, query, sort, 'last');
 
   const rows = useMemo(() => {
     const reg = (signups || []).map((s) => ({
@@ -1997,17 +2137,21 @@ function AllPlayersPanel({ signups, anonPlayers }) {
   }
 
   const rowBorder = `1px solid ${COLORS.ink}22`;
-  const totalPlays = rows.reduce((n, r) => n + (r.plays || 0), 0);
-  const regCount = (signups || []).length;
-  const anonCount = (anonPlayers || []).length;
+  // While the tables are trimmed, the totals come from the server's counts of
+  // the full tables rather than from the rows in hand.
+  const totalPlays = partial && counts.playerPlays != null ? counts.playerPlays : rows.reduce((n, r) => n + (r.plays || 0), 0);
+  const regCount = partial && counts.registered != null ? counts.registered : (signups || []).length;
+  const anonCount = partial && counts.anonymous != null ? counts.anonymous : (anonPlayers || []).length;
+  const playerCount = regCount + anonCount;
 
   return (
     <div>
       <p style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 10, color: COLORS.faded, margin: '0 0 14px' }}>
         Every player, registered and anonymous, in one table.
-        {' '}{rows.length} player{rows.length === 1 ? '' : 's'} ({regCount} registered, {anonCount} anonymous), {totalPlays} play{totalPlays === 1 ? '' : 's'} total.
+        {' '}{playerCount} player{playerCount === 1 ? '' : 's'} ({regCount} registered, {anonCount} anonymous), {totalPlays} play{totalPlays === 1 ? '' : 's'} total.
         {' '}The 10 most recently active are shown; scroll the box for the rest. Click a row to see that player&apos;s last {DETAIL_ROWS} sessions and games, with the full history one click further. Click a column header to sort.
       </p>
+      <PartialNote partial={partial} shown={rows.length} total={playerCount} noun="players" onNeedAll={onNeedAll} />
       <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Filter by name or email…" style={{ width: '100%', padding: '10px 12px', background: COLORS.paper, border: `1px solid ${COLORS.line}`, color: COLORS.ink, fontFamily: 'DM Mono, monospace', fontSize: 10, outline: 'none', boxSizing: 'border-box', marginBottom: 16 }} />
       {visible.length === 0 ? (
         <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 16, color: COLORS.faded, border: `1px dashed ${COLORS.line}` }}>No matches.</div>
@@ -2137,11 +2281,46 @@ function ActiveUsersStrip({ data }) {
   );
 }
 
-function AnalyticsPanel({ views, viewsTotal, quizStats, quizPlaysTotal, signups, anonPlayers, activeUsers, geoMap, dailyRetention = { games: [], breadth: { total: 0, histogram: [] } }, timeByDay = { series: [], totals: {} }, newUsers = { series: [], totals: {} }, dailyByGame = { games: [], totals: {} }, topPlayersToday = { day: null, players: [], totals: {} } }) {
+function AnalyticsPanel({ an, signups, anonPlayers, partial, onNeedAll, onRefresh }) {
   const [view, setView] = useState('plays');
   const [playsView, setPlaysView] = useState('all');
   const [pvView, setPvView] = useState('all');
   const [gamesBusy, setGamesBusy] = useState(false);
+  const [usersBusy, setUsersBusy] = useState(false);
+
+  // The first-paint part, and the three views that fetch their own data the
+  // first time they are opened.
+  const A = an.data || {};
+  const counts = A.counts || {};
+  const pv = useAdminPart('pageviews', view === 'pageviews');
+  const ret = useAdminPart('retention', view === 'retention');
+  const map = useAdminPart('map', view === 'map');
+  const activeUsers = A.activeUsers || { players: { dau: 0, wau: 0, mau: 0 }, visitors: null };
+  const timeByDay = A.timeByDay || { series: [], totals: {} };
+  const newUsers = A.newUsers || { series: [], totals: {} };
+  const dailyByGame = A.dailyByGame || { games: [], totals: {} };
+  const topPlayersToday = A.topPlayersToday || { day: null, players: [], totals: {} };
+
+  const refreshAll = async () => {
+    await onRefresh();
+    // The views already opened re-ask for the build that just finished.
+    for (const part of [pv, ret, map]) if (part.asked) part.reload('fresh');
+  };
+
+  // The users CSV is one row per player, so it needs the full tables.
+  const exportUsers = async () => {
+    if (usersBusy) return;
+    setUsersBusy(true);
+    try {
+      let s = signups, a = anonPlayers;
+      if (partial) { const d = await onNeedAll(); s = d.quizSignups || []; a = d.anonPlayers || []; }
+      exportUsersCsv(s, a);
+    } catch (e) {
+      alert(`Could not build the users CSV: ${e.message || e}`);
+    } finally {
+      setUsersBusy(false);
+    }
+  };
 
   // One row per completed game, so this is the one export that still needs the
   // per-play detail the page stopped shipping. It is a deliberate whole-table
@@ -2160,18 +2339,18 @@ function AnalyticsPanel({ views, viewsTotal, quizStats, quizPlaysTotal, signups,
       setGamesBusy(false);
     }
   };
-  const regCount = (signups || []).length;
-  const anonCount = (anonPlayers || []).length;
-  const listCount = (views || []).length;
-  const quizCount = (quizStats || []).length;
-  const retentionTotal = (dailyRetention && dailyRetention.breadth && dailyRetention.breadth.total) || 0;
+  const regCount = counts.registered != null ? counts.registered : (signups || []).length;
+  const anonCount = counts.anonymous != null ? counts.anonymous : (anonPlayers || []).length;
+  const listCount = counts.lists || 0;
+  const quizCount = counts.quizzes || 0;
+  const retentionTotal = counts.retentionTotal || 0;
   // Time Played is no longer its own tab: its chart, the new-users chart, and
   // the per-game comparison all live under Quiz Plays, below the player table.
   const tabs = [
     ['plays', 'Quiz Plays', regCount + anonCount],
     ['pageviews', 'Page Views', listCount + quizCount],
     ['retention', 'Return Play', retentionTotal],
-    ['map', 'Player Map', (geoMap && geoMap.totals && geoMap.totals.locatedPlayers) || 0],
+    ['map', 'Player Map', counts.locatedPlayers || 0],
   ];
   const playsSub = [
     ['all', 'All', regCount + anonCount],
@@ -2216,9 +2395,33 @@ function AnalyticsPanel({ views, viewsTotal, quizStats, quizPlaysTotal, signups,
     alignItems: 'center',
     gap: 5,
   });
+  if (!an.data) {
+    return an.error
+      ? <PartNote error onRetry={() => an.reload()}>Could not load analytics ({an.error}).</PartNote>
+      : <PartNote>Loading analytics&hellip;</PartNote>;
+  }
+  const builtAt = A.builtAt ? new Date(A.builtAt) : null;
+  const builtLabel = builtAt && !Number.isNaN(builtAt.getTime())
+    ? builtAt.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+    : '';
   return (
     <div>
       <ActiveUsersStrip data={activeUsers} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '-6px 0 12px', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>
+        <span>
+          Figures as of {builtLabel || 'just now'}
+          {an.refreshing ? ' · refreshing…' : ''}
+          {an.error ? ` · refresh failed (${an.error})` : ''}
+        </span>
+        <button
+          onClick={refreshAll}
+          disabled={an.refreshing}
+          title="Rebuild the analytics from the latest plays"
+          style={{ background: 'transparent', border: `1px solid ${COLORS.line}`, color: COLORS.ink, padding: '3px 9px', fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: an.refreshing ? 'wait' : 'pointer', opacity: an.refreshing ? 0.6 : 1 }}
+        >
+          Refresh
+        </button>
+      </div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12, alignItems: 'center' }}>
         {/* The games CSV is one row per completed game, so it needs the play
             detail the page no longer carries. It fetches it on click, which is
@@ -2234,11 +2437,12 @@ function AnalyticsPanel({ views, viewsTotal, quizStats, quizPlaysTotal, signups,
         })}
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
           <button
-            onClick={() => exportUsersCsv(signups, anonPlayers)}
+            onClick={exportUsers}
+            disabled={usersBusy}
             title="One row per player (registered + anonymous) with the full stats the player tables show: plays, sessions, accuracy, devices, locations, first/last seen…"
             style={{ padding: '7px 12px', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, cursor: 'pointer' }}
           >
-            ↓ Users CSV
+            {usersBusy ? '↓ Building…' : '↓ Users CSV'}
           </button>
           <button
             onClick={exportGames}
@@ -2266,11 +2470,11 @@ function AnalyticsPanel({ views, viewsTotal, quizStats, quizPlaysTotal, signups,
       {view === 'plays' ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 44 }}>
           {playsView === 'registered' ? (
-            <QuizSignupsPanel signups={signups} />
+            <QuizSignupsPanel signups={signups} partial={partial && regCount > (signups || []).length} total={regCount} onNeedAll={onNeedAll} />
           ) : playsView === 'anonymous' ? (
-            <AnonPlayersPanel players={anonPlayers} />
+            <AnonPlayersPanel players={anonPlayers} partial={partial && anonCount > (anonPlayers || []).length} total={anonCount} onNeedAll={onNeedAll} />
           ) : (
-            <AllPlayersPanel signups={signups} anonPlayers={anonPlayers} />
+            <AllPlayersPanel signups={signups} anonPlayers={anonPlayers} partial={partial} counts={counts} onNeedAll={onNeedAll} />
           )}
           <TopPlayersTodayPanel data={topPlayersToday} />
           <TimeByDayPanel data={timeByDay} />
@@ -2278,11 +2482,17 @@ function AnalyticsPanel({ views, viewsTotal, quizStats, quizPlaysTotal, signups,
           <GamesRankedPanel data={dailyByGame} />
         </div>
       ) : view === 'pageviews' ? (
-        <PageViewsPanel lists={views} quizzes={quizStats} mode={pvView} />
+        pv.data ? <PageViewsPanel lists={pv.data.views24h || []} quizzes={pv.data.quizStats || []} mode={pvView} />
+          : pv.error ? <PartNote error onRetry={() => pv.reload()}>Could not load page views ({pv.error}).</PartNote>
+          : <PartNote>Loading page views&hellip;</PartNote>
       ) : view === 'retention' ? (
-        <RetentionPanel data={dailyRetention} />
+        ret.data ? <RetentionPanel data={ret.data.dailyRetention} />
+          : ret.error ? <PartNote error onRetry={() => ret.reload()}>Could not load return play ({ret.error}).</PartNote>
+          : <PartNote>Loading return play&hellip;</PartNote>
       ) : (
-        <GeoMapPanel data={geoMap} />
+        map.data ? <GeoMapPanel data={map.data.geoMap} />
+          : map.error ? <PartNote error onRetry={() => map.reload()}>Could not load the player map ({map.error}).</PartNote>
+          : <PartNote>Loading the player map&hellip;</PartNote>
       )}
     </div>
   );

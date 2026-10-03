@@ -1,275 +1,87 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-server';
-import { loadQuizResultsCached } from '@/lib/quiz-results-cache';
-import { fetchAllRows } from '@/lib/fetch-all';
-import { guestHandleFromAnon } from '@/lib/quiz-xp';
-import { QUIZZES } from '@/lib/quizzes';
-import { DAILY_KEYS } from '@/lib/daily-combined';
+import { buildSiteStats } from '@/lib/sitestats-build';
+import { readPayload, writePayload } from '@/lib/stats-payloads';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
-// Identical for every visitor, so let Vercel's CDN absorb repeat hits instead
-// of recomputing (and re-reading Supabase) per request — same egress posture as
-// /api/quiz/stats and /api/quiz/totals.
-const CACHE_HEADERS = { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' };
+export const maxDuration = 60;
 
-const TZ = 'America/New_York';
-const DAY = 24 * 60 * 60 * 1000;
+// GET /api/sitestats            -> the /sitestats payload (public, aggregate only)
+// GET /api/sitestats?refresh=1  -> rebuild now (if the stored copy is over a minute old)
+//
+// ANSWER FIRST, REFRESH SECOND (2026-10-02). A build costs several database
+// aggregates and measured 28.6s uncached. The page used to wait for it. Now
+// the last built payload is kept (in this lambda, and in stats_payloads so a
+// cold lambda has it too) and the route hands that back at once:
+//   - under FRESH_MS old: returned as is, CDN-cacheable for what is left of
+//     its fresh window.
+//   - older: returned with `stale: true`. The page shows it and then asks for
+//     ?refresh=1 in the background and swaps the new figures in.
+//   - nothing stored (first run, or migration 59 not applied and a cold
+//     lambda): built while the caller waits, which is the old behaviour.
+// ?refresh=1 never rebuilds a copy under REBUILD_FLOOR_MS old, so the public
+// URL cannot be used to queue builds back to back.
+const KEY = 'sitestats:v1';
+const FRESH_MS = 5 * 60 * 1000;
+const REBUILD_FLOOR_MS = 60 * 1000;
+const RECHECK_MS = 20 * 1000;
 
-// quiz_id -> display title. Regular quizzes resolve from QUIZZES; daily-game
-// plays carry ids like `crux-7-18-26`, which fold to the game's proper name.
-const QUIZ_TITLE = new Map((QUIZZES || []).map((q) => [q.id, q.navTitle || q.title || q.id]));
-const HIDDEN = new Set((QUIZZES || []).filter((q) => q && (q.unlisted || q.mobilePreview)).map((q) => q.id));
-const DAILY_NAME = Object.fromEntries(DAILY_KEYS.map((k) => [k, k.charAt(0).toUpperCase() + k.slice(1)]));
-const DAILY_RE = new RegExp('^(' + DAILY_KEYS.join('|') + ')-(\\d+)-(\\d+)-(\\d+)$');
+let mem = null;        // { payload, at }
+let memCheckedAt = 0;  // last time the stored row was consulted
+let inflight = null;
 
-function titleOf(id) {
-  if (!id) return 'Unknown';
-  if (QUIZ_TITLE.has(id)) return QUIZ_TITLE.get(id);
-  const m = id.match(DAILY_RE);
-  if (m) return DAILY_NAME[m[1]] || id;
-  return id;
-}
+const atOf = (payload) => Date.parse((payload && payload.generatedAt) || '') || 0;
 
-const playerKey = (r) => (r.user_id ? `u:${r.user_id}` : (r.anon_id ? `a:${r.anon_id}` : `r:${r.id}`));
-
-// US-Eastern date + hour parts for a Date, so buckets roll over on the same
-// clock the rest of the site uses.
-const ET_FMT = new Intl.DateTimeFormat('en-CA', {
-  timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23',
-});
-function etParts(d) {
-  const p = {};
-  for (const x of ET_FMT.formatToParts(d)) p[x.type] = x.value;
-  return p;
-}
-
-// Midnight "today" in US Eastern as a UTC epoch ms (handles EST/EDT), matching
-// /api/quiz/today so this page's "today" rolls over with the rest of the site.
-function startOfEasternTodayUTC() {
-  const now = new Date();
-  const ymd = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
-  for (const offH of [4, 5]) {
-    const guess = Date.parse(`${ymd}T00:00:00.000Z`) + offH * 3600 * 1000;
-    const p = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hour12: false })
-      .formatToParts(new Date(guess))
-      .reduce((a, x) => { a[x.type] = x.value; return a; }, {});
-    if (`${p.year}-${p.month}-${p.day}` === ymd && p.hour === '00') return guess;
-  }
-  return Date.parse(`${ymd}T04:00:00.000Z`);
-}
-
-// Distinct players + play count + total seconds played for quiz_results rows
-// in [start, end).
-function aggPlays(rows, start, end) {
-  const s = new Set();
-  let plays = 0;
-  let time = 0;
-  for (const r of rows) {
-    const t = r.created_at ? new Date(r.created_at).getTime() : 0;
-    if (t >= start && t < end) {
-      plays += 1;
-      s.add(playerKey(r));
-      const te = Number(r.time_elapsed);
-      if (Number.isFinite(te) && te > 0) time += te;
-    }
-  }
-  return { people: s.size, plays, time };
-}
-
-// Percent change vs a prior period. null == no baseline to compare against
-// (prev was 0 but current is not), which the UI renders as "NEW".
-function pct(cur, prev) {
-  if (prev > 0) return Math.round(((cur - prev) / prev) * 100);
-  if (cur > 0) return null;
-  return 0;
-}
-const cell = (cur, prev) => ({ now: cur, prev, pct: pct(cur, prev) });
-
-function isMissingFn(err) {
-  if (!err) return false;
-  return err.code === 'PGRST202' || err.code === '42883' || /function|schema cache|does not exist/i.test(err.message || '');
-}
-
-// Fallback when migration 36 has not been applied yet: pull the minimal
-// (visitor_id, created_at) columns for the trailing window and aggregate in JS.
-// Bounded to 40 days so the 30-60d "previous month" baseline is unavailable
-// (its % change shows "—" until the SQL function exists). Heavy relative to the
-// RPC but rare — the whole route is CDN-cached for 5 minutes.
-async function viewersFallback(now, startToday) {
-  const sinceIso = new Date(now - 40 * DAY).toISOString();
-  const [ve, qve] = await Promise.all([
-    fetchAllRows(supabaseAdmin, 'view_events', 'visitor_id,created_at', ['id'], (q) => q.gte('created_at', sinceIso)),
-    fetchAllRows(supabaseAdmin, 'quiz_view_events', 'visitor_id,created_at', ['id'], (q) => q.gte('created_at', sinceIso)),
-  ]);
-  const rows = [...(ve.data || []), ...(qve.data || [])];
-
-  const uniq = (start, end) => {
-    const s = new Set();
-    let views = 0;
-    for (const r of rows) {
-      const t = r.created_at ? new Date(r.created_at).getTime() : 0;
-      if (t >= start && t < end) { views += 1; if (r.visitor_id) s.add(r.visitor_id); }
-    }
-    return { people: s.size, views };
-  };
-  const d = uniq(now - DAY, now + 1), dp = uniq(now - 2 * DAY, now - DAY);
-  const w = uniq(now - 7 * DAY, now + 1), wp = uniq(now - 14 * DAY, now - 7 * DAY);
-  const m = uniq(now - 30 * DAY, now + 1); // 30-60d prev is outside the 40d window
-
-  const hourly = Array.from({ length: 24 }, () => ({ set: new Set(), views: 0 }));
-  for (const r of rows) {
-    const t = r.created_at ? new Date(r.created_at).getTime() : 0;
-    if (t < startToday) continue;
-    const h = Number(etParts(new Date(r.created_at)).hour) % 24;
-    hourly[h].views += 1;
-    if (r.visitor_id) hourly[h].set.add(r.visitor_id);
-  }
-
-  return {
-    viewers: {
-      unique: {
-        d: cell(d.people, dp.people),
-        w: cell(w.people, wp.people),
-        m: { now: m.people, prev: null, pct: null },
-      },
-      views: {
-        d: cell(d.views, dp.views),
-        w: cell(w.views, wp.views),
-        m: { now: m.views, prev: null, pct: null },
-      },
-    },
-    hourly: hourly.map((x) => ({ viewers: x.set.size, views: x.views })),
-    source: 'fallback',
-  };
-}
-
-// GET /api/sitestats  -> the whole /sitestats payload (public, aggregate only).
-export async function GET() {
+async function latest() {
   const now = Date.now();
-  const startToday = startOfEasternTodayUTC();
-  const nowP = etParts(new Date(now));
-  const todayET = `${nowP.year}-${nowP.month}-${nowP.day}`;
+  if (mem && now - memCheckedAt < RECHECK_MS) return mem;
+  memCheckedAt = now;
+  const stored = await readPayload(KEY);
+  if (stored && stored.payload) {
+    const at = atOf(stored.payload);
+    if (!mem || at > mem.at) mem = { payload: stored.payload, at };
+  }
+  return mem;
+}
 
-  // ---- Quiz players / plays (from the shared in-process cache) ----
-  let players = null;
-  let topToday = [];
-  let lastPlayed = [];
-  let hourlyPlayers = Array.from({ length: 24 }, () => ({ people: 0, plays: 0 }));
-  try {
-    const { data, error } = await loadQuizResultsCached(supabaseAdmin);
-    const rows = error ? [] : (data || []);
+function rebuild(prev) {
+  if (!inflight) {
+    inflight = (async () => {
+      const payload = await buildSiteStats(prev);
+      mem = { payload, at: atOf(payload) };
+      memCheckedAt = Date.now();
+      await writePayload(KEY, payload);
+      return payload;
+    })().finally(() => { inflight = null; });
+  }
+  return inflight;
+}
 
-    const pD = aggPlays(rows, now - DAY, now + 1), pDp = aggPlays(rows, now - 2 * DAY, now - DAY);
-    const pW = aggPlays(rows, now - 7 * DAY, now + 1), pWp = aggPlays(rows, now - 14 * DAY, now - 7 * DAY);
-    const pM = aggPlays(rows, now - 30 * DAY, now + 1), pMp = aggPlays(rows, now - 60 * DAY, now - 30 * DAY);
-    players = {
-      unique: { d: cell(pD.people, pDp.people), w: cell(pW.people, pWp.people), m: cell(pM.people, pMp.people) },
-      plays: { d: cell(pD.plays, pDp.plays), w: cell(pW.plays, pWp.plays), m: cell(pM.plays, pMp.plays) },
-      time: { d: cell(pD.time, pDp.time), w: cell(pW.time, pWp.time), m: cell(pM.time, pMp.time) },
-    };
+export async function GET(request) {
+  let refresh = false;
+  try { refresh = new URL(request.url).searchParams.get('refresh') === '1'; } catch (e) { /* no-op */ }
 
-    // Today's plays only, for the top-5 board and the hourly-players buckets.
-    const todayRows = rows.filter((r) => r.created_at && new Date(r.created_at).getTime() >= startToday);
-    const byQuizToday = new Map();
-    for (const r of todayRows) {
-      if (!r.quiz_id || HIDDEN.has(r.quiz_id)) continue;
-      byQuizToday.set(r.quiz_id, (byQuizToday.get(r.quiz_id) || 0) + 1);
-    }
-    topToday = [...byQuizToday.entries()]
-      .map(([id, plays]) => ({ quizId: id, title: titleOf(id), plays }))
-      .sort((a, b) => b.plays - a.plays || a.title.localeCompare(b.title))
-      .slice(0, 5);
+  const cur = await latest();
+  const age = cur ? Date.now() - cur.at : Infinity;
 
-    for (const r of todayRows) {
-      if (!r.created_at) continue;
-      const h = Number(etParts(new Date(r.created_at)).hour) % 24;
-      hourlyPlayers[h].plays += 1;
-    }
-    // distinct players per hour
-    const hourSets = Array.from({ length: 24 }, () => new Set());
-    for (const r of todayRows) {
-      if (!r.created_at) continue;
-      const h = Number(etParts(new Date(r.created_at)).hour) % 24;
-      hourSets[h].add(playerKey(r));
-    }
-    hourlyPlayers = hourlyPlayers.map((x, h) => ({ people: hourSets[h].size, plays: x.plays }));
-
-    // Last 5 completed plays, newest first (rows arrive in id/chronological order).
-    const visible = rows.filter((r) => r.quiz_id && !HIDDEN.has(r.quiz_id) && r.created_at);
-    lastPlayed = visible.slice(-60)
-      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-      .slice(0, 5)
-      .map((r) => ({
-        quizId: r.quiz_id,
-        title: titleOf(r.quiz_id),
-        name: r.user_id ? (r.username || 'Player') : (r.username || guestHandleFromAnon(r.anon_id || `r:${r.id}`)),
-        score: r.score,
-        total: r.total,
-        playedAt: r.created_at,
-      }));
-  } catch (e) {
-    console.error('sitestats players error', e);
+  if (cur && (refresh ? age < REBUILD_FLOOR_MS : age < FRESH_MS)) {
+    const left = refresh ? 0 : Math.max(10, Math.floor((FRESH_MS - age) / 1000));
+    return NextResponse.json(cur.payload, {
+      headers: { 'Cache-Control': refresh ? 'no-store' : `public, s-maxage=${left}, stale-while-revalidate=60` },
+    });
+  }
+  if (cur && !refresh) {
+    return NextResponse.json({ ...cur.payload, stale: true }, { headers: { 'Cache-Control': 'no-store' } });
   }
 
-  // ---- Site viewers (RPC first; JS fallback until migration 36 is applied) ----
-  let viewers = null;
-  let viewerSource = 'none';
-  let hourlyViewers = Array.from({ length: 24 }, () => ({ viewers: 0, views: 0 }));
   try {
-    const { data: t, error } = await supabaseAdmin.rpc('site_view_trends');
-    if (!error && Array.isArray(t) && t.length) {
-      const row = t[0];
-      const N = (v) => Number(v) || 0;
-      viewers = {
-        unique: {
-          d: cell(N(row.viewers_d), N(row.viewers_dp)),
-          w: cell(N(row.viewers_w), N(row.viewers_wp)),
-          m: cell(N(row.viewers_m), N(row.viewers_mp)),
-        },
-        views: {
-          d: cell(N(row.views_d), N(row.views_dp)),
-          w: cell(N(row.views_w), N(row.views_wp)),
-          m: cell(N(row.views_m), N(row.views_mp)),
-        },
-      };
-      viewerSource = 'rpc';
-      const { data: hv, error: hvErr } = await supabaseAdmin.rpc('site_view_hourly_today', { p_tz: TZ });
-      if (!hvErr && Array.isArray(hv)) {
-        for (const r of hv) {
-          const h = Number(r.hour);
-          if (h >= 0 && h < 24) hourlyViewers[h] = { viewers: Number(r.viewers) || 0, views: Number(r.views) || 0 };
-        }
-      }
-    } else if (isMissingFn(error)) {
-      const fb = await viewersFallback(now, startToday);
-      viewers = fb.viewers;
-      hourlyViewers = fb.hourly;
-      viewerSource = fb.source;
-    } else if (error) {
-      console.error('sitestats viewers rpc error', error);
-    }
+    const payload = await rebuild(cur ? cur.payload : null);
+    return NextResponse.json(payload, {
+      headers: { 'Cache-Control': refresh ? 'no-store' : 'public, s-maxage=60, stale-while-revalidate=60' },
+    });
   } catch (e) {
-    console.error('sitestats viewers error', e);
+    console.error('sitestats build error', e);
+    if (cur) return NextResponse.json({ ...cur.payload, stale: true }, { headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json({ error: 'unavailable' }, { status: 503, headers: { 'Cache-Control': 'no-store' } });
   }
-
-  const hourly = Array.from({ length: 24 }, (_, h) => ({
-    hour: h,
-    players: hourlyPlayers[h].people,
-    plays: hourlyPlayers[h].plays,
-    viewers: hourlyViewers[h].viewers,
-    views: hourlyViewers[h].views,
-  }));
-
-  return NextResponse.json({
-    generatedAt: new Date().toISOString(),
-    tz: TZ,
-    today: todayET,
-    players,
-    viewers,
-    viewerSource,
-    topToday,
-    lastPlayed,
-    hourly,
-  }, { headers: CACHE_HEADERS });
 }
