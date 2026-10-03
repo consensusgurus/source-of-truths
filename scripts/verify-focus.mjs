@@ -71,6 +71,20 @@ for (const p of PUZZLES) {
 }
 ok('focal points, licences and credits present');
 
+// 4b. NO BLANK OPENING FRAME (2026-10-03). Mount Fuji (#33) shipped with its
+// focal point on the snowcap, so frames 1 to 3 were a solid white square
+// (mean 253 of 255, deviation 1) and players reported the image as not
+// loading. Nothing here can see pixels (no Commons from the sandbox), so the
+// pixel check is scripts/audit-focus-frames.js, pasted into a
+// commons.wikimedia.org tab. This gate makes that audit unskippable: a row
+// above FRAMES_AUDITED_THROUGH has never been looked at, so extending the bank
+// fails until the audit is rerun and the constant raised.
+const FRAMES_AUDITED_THROUGH = 91;
+for (const p of PUZZLES) {
+  if (p.num > FRAMES_AUDITED_THROUGH) bad(`#${p.num} has not been through scripts/audit-focus-frames.js (audited through #${FRAMES_AUDITED_THROUGH}); run it, fix any BLANK row, then raise FRAMES_AUDITED_THROUGH`);
+}
+ok(`frame audit covers #1 to #${FRAMES_AUDITED_THROUGH}`);
+
 // 5. subject lists
 if (SUBJECTS.length !== 7) bad(`SUBJECTS has ${SUBJECTS.length} entries, want 7 (one per weekday)`);
 for (const s of SUBJECTS) {
