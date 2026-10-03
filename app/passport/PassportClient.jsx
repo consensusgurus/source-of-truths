@@ -985,11 +985,18 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, g.round, g.sc[4], g.status]);
 
-  function shareUrl() { return withRef(`mindloftdaily.com${PATH}${isTodays ? '' : `?p=${PUZZLE.num}`}`); }
+  // A finished run's link carries its five scores (?s=10-7-8-9-6), so the
+  // preview card shows the passport they earned. Never the country.
+  function shareUrl(withScores) {
+    const q = [];
+    if (!isTodays) q.push(`p=${PUZZLE.num}`);
+    if (withScores) q.push(`s=${sc.map((v) => v || 0).join('-')}`);
+    return withRef(`mindloftdaily.com${PATH}${q.length ? `?${q.join('&')}` : ''}`);
+  }
   function copyShare() {
     const text = playing
       ? `${NAME} #${PUZZLE.num}: one mystery country, five rounds, one passport. The daily geography run from Mind Loft.\n${shareUrl()}`
-      : shareLines(PUZZLE.num, total, sc, elapsed, shareUrl());
+      : shareLines(PUZZLE.num, total, sc, elapsed, shareUrl(true));
     if (notifyShareCredit(text)) return;
     try { if (typeof navigator !== 'undefined' && navigator.share && isMobileDevice()) { navigator.share({ text }).catch(() => {}); return; } } catch (e) {}
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}

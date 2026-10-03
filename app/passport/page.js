@@ -14,19 +14,26 @@ import { SITE_URL } from '@/lib/site';
 // puzzle number and refused for a day that is not yet live, and the Commons
 // title is stripped here because it usually names the place.
 
-export const metadata = {
-  title: 'Free Daily Geography Game: Passport | Mind Loft',
-  description:
-    'A free daily geography game. One mystery country a day, played five ways: name it from a zoomed landmark photo, build its flag, list its neighbors, pin its capital and call its size. Score out of 50 and travel home on the passport you earned. No app, no signup.',
-  alternates: { canonical: '/passport' },
-  openGraph: {
-    images: [{ url: '/og/passport.png', width: 1200, height: 630, alt: 'Passport, a daily geography game from Mind Loft' }],
-    title: 'Passport: The Daily Geography Run',
-    description: 'One mystery country, five rounds, 50 points. Which passport will you travel home on?',
-    url: '/passport', type: 'website', siteName: 'Mind Loft',
-  },
-  twitter: { images: ['/og/passport.png'], card: 'summary_large_image', title: 'Passport: The Daily Geography Run', description: 'One mystery country, five rounds, 50 points.' },
-};
+// THE LINK PREVIEW IS THE RUN'S OWN (owner, 2026-10-03): a pasted link
+// unfurls with /passport/card, the departures board and the six passports,
+// never the generic daily-puzzle card. A shared result link carries the five
+// round scores (?s=10-7-8-9-6), so its preview shows the passport they
+// earned; the page itself ignores the parameter.
+export async function generateMetadata({ searchParams }) {
+  const s = String((searchParams && searchParams.s) || '');
+  const ok = /^\d{1,2}(-\d{1,2}){4}$/.test(s);
+  const img = ok ? `/passport/card?s=${s}` : '/passport/card';
+  const title = 'Passport: One Mystery Country, Five Rounds | Mind Loft';
+  const description = 'A free daily geography run. One mystery country, five rounds: its landmark, its flag, its neighbors, its capital and its size. Score out of 50 and travel home on a real passport.';
+  const shareTitle = 'Passport · Mind Loft';
+  const shareDesc = 'One mystery country, five rounds, one score out of 50. Which passport do you travel home on?';
+  return {
+    title, description,
+    alternates: { canonical: '/passport' },
+    openGraph: { title: shareTitle, description: shareDesc, url: '/passport', type: 'website', siteName: 'Mind Loft', images: [{ url: img, width: 1200, height: 630, alt: 'Passport, a daily geography run from Mind Loft' }] },
+    twitter: { card: 'summary_large_image', title: shareTitle, description: shareDesc, images: [img] },
+  };
+}
 
 const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Passport',
