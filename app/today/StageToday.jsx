@@ -445,9 +445,17 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
       style={{
         '--i': i,
         ...(hue ? { '--cc': hue } : null),
+        // A FINISHED TILE ON THE LIGHT REGISTER MIRRORS THE DARK ONE (owner,
+        // 2026-10-03): the dark ramp's own pastel, softened 34% toward white,
+        // carrying the one dark ink on all ten. The deep light-ramp fill gave
+        // seven heavy slabs with white text beside three pastels with dark text,
+        // so a row of finished games read as two systems at two weights and was
+        // the loudest thing on the page. Inline rather than a light selector so
+        // it follows `light` exactly as --stg-onramp already does.
+        ...(grpOn && light ? { '--cc': `color-mix(in srgb, ${categoryColor(g.cat)} 66%, #fff)` } : null),
         // The ink that carries ON that step, so a filled tile reads in both
         // registers. Same rule as the newcomer row below.
-        ...(grpOn ? { '--stg-onramp': light ? categoryOnrampLight(g.cat) : RAMP_INK } : null),
+        ...(grpOn ? { '--stg-onramp': RAMP_INK } : null),
       }}>
       <span className="sty-gn"><Glyph k={g.key} size={17} />{g.name}<GroupDots dots={dots} /></span>
       {res && dots && dots.mine ? (
