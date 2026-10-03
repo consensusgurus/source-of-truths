@@ -1627,7 +1627,7 @@ export default function StageToday() {
   const catTotal = orderedCats.reduce((t, c) => t + c.games.length, 0);
   const catDoneN = orderedCats.reduce((t, c) => t + c.games.filter((g) => done.has(g.key)).length, 0);
   const catTiles = (
-    <section className="sty-cat sty-tiles" style={{ '--cc': 'var(--stg-ink2)' }}>
+    <section className={'sty-cat sty-tiles' + (catOpen ? ' has-open' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
       <div className="sty-cathead">
         <h2>Categories</h2>
         <b>{catDoneN}<i>/{catTotal}</i></b>
@@ -1649,7 +1649,14 @@ export default function StageToday() {
                 : nxt ? `${returning === false ? 'Start with' : 'Next:'} ${nxt.name}` : 'All played today';
               return (
                 <button key={cat} type="button" className={'sty-tile' + (on ? ' on' : '')}
-                  style={{ '--cc': hueFor(cat), '--stg-onramp': light ? categoryOnrampLight(cat) : RAMP_INK }} aria-expanded={on}
+                  style={{
+                    '--cc': hueFor(cat),
+                    '--stg-onramp': light ? categoryOnrampLight(cat) : RAMP_INK,
+                    // THE PASTEL A FINISHED GAME TILE WEARS (13caf3b80), used on the
+                    // OTHER buttons while one category is open (owner, 2026-10-03).
+                    '--cp': light ? `color-mix(in srgb, ${categoryColor(cat)} 66%, #fff)` : `color-mix(in srgb, ${categoryColor(cat)} 30%, var(--stg-surf))`,
+                    '--cpi': light ? RAMP_INK : 'var(--stg-ink)',
+                  }} aria-expanded={on}
                   aria-controls={`cat-${cat.replace(/\s+/g, '-')}`} onClick={() => pickCat(cat)}>
                   <span className="sty-th"><b>{cat}</b><span className="sty-ctn">{n}<i>/{games.length}</i></span></span>
                   <span className="sty-trung" aria-hidden="true">
@@ -3560,5 +3567,15 @@ ${PATCH_CSS}
     border-left:0;border-right:0;border-top:0;padding:12px;}
   .sty-minec{margin-top:0;}
 }
+
+/* WHILE ONE CATEGORY IS OPEN the other buttons take the finished-tile pastel
+   (owner, 2026-10-03), so the open one reads as the full colour among softer ones. */
+.sty-tiles.has-open .sty-tile:not(.on){background:var(--cp);border-color:var(--cp);color:var(--cpi);}
+.sty-tiles.has-open .sty-tile:not(.on) .sty-ctn,.sty-tiles.has-open .sty-tile:not(.on) .sty-ctn i,
+.sty-tiles.has-open .sty-tile:not(.on) .sty-tf,.sty-tiles.has-open .sty-tile:not(.on) .sty-tact{color:var(--cpi);}
+.sty-tiles.has-open .sty-tile:not(.on) .sty-trung i{background:color-mix(in srgb,var(--cpi) 18%,transparent);opacity:1;}
+.sty-tiles.has-open .sty-tile:not(.on) .sty-trung i.d{background:var(--cpi);}
+.sty-tiles.has-open .sty-tile:not(.on) .sty-trung i.p{background:color-mix(in srgb,var(--cpi) 50%,transparent);}
+.sty-tiles.has-open .sty-tile:not(.on):hover{border-color:var(--cc);}
 
 `;
