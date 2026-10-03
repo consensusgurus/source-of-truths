@@ -707,6 +707,10 @@ export default function StageToday() {
   // 2026-08-31). The three are DISPLAY_CIRCUITS' own lead order, which is
   // deliberate and lives in lib/circuits.js.
   const [allCircs, setAllCircs] = useState(false);
+  // CATEGORY BUTTONS (owner, 2026-10-03): one category open at a time, closed on load.
+  const [catOpen, setCatOpen] = useState(null);
+  const [catCols, setCatCols] = useState(5);
+  const [mineAll, setMineAll] = useState(false);
 
   // PINS LIVE ON THE ACCOUNT, via the hook the other home already uses, so a
   // star set on either surface is the same star. Nothing here keeps its own
@@ -1355,6 +1359,19 @@ export default function StageToday() {
   const circAsked = useRef(null);
   const circLive = useRef(true);
   useEffect(() => () => { circLive.current = false; }, []);
+  // THE FIRST-VISIT ROW (owner, 2026-10-03): Price Check, the Trivia Gauntlet and
+  // the Daily Five, pinned above the category buttons. Three across where three
+  // fit, the first two otherwise (CSS hides the third). Never labelled circuits.
+  const pinCircs = useMemo(() => ['pricecheck', 'gauntlet', 'five']
+    .map((id) => circuits.find((c) => c.id === id)).filter(Boolean), [circuits]);
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1000px)');
+    const on = () => setCatCols(mq.matches ? 5 : 2);
+    on();
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  const pickCat = (cat) => setCatOpen((cur) => (cur === cat ? null : cat));
   const [circStand, setCircStand] = useState({});
   useEffect(() => {
     if (!circAsked.current) circAsked.current = new Set();
@@ -1519,6 +1536,9 @@ export default function StageToday() {
   // The Word category opens too (owner, 2026-09-01, same day): it is the
   // biggest shelf and the one a new reader is most likely to know a game on.
   const hasPins = mineTot > 0;
+  // ON A PHONE MY GAMES SHOWS FOUR, unplayed first, so the categories stay on the first screen.
+  const mineCut0 = narrow && mineTot > 4;
+  const mineCut = mineCut0 && !mineAll;
   const openDefault = (id) => (id === CIRC_ID || id === WORD_ID ? true : (id === MINE_ID ? hasPins : false));
   const isOpen = (id) => (shelfOpen && Object.prototype.hasOwnProperty.call(shelfOpen, id)
     ? !!shelfOpen[id]
@@ -1596,6 +1616,74 @@ export default function StageToday() {
     const s = setTimeout(() => saveHomeSnap(snapRef.current), 2400);
     return () => { clearTimeout(r); clearTimeout(s); };
   }, [settled]);
+
+  // ── THE CATEGORY BUTTONS (owner, 2026-10-03) ─────────────────────────
+  // Ten buttons in place of ten rows. A button opens its games in a panel under
+  // its own row, one category at a time. EVERY panel is rendered and the shut
+  // ones are display:none, so all the game links stay in the HTML for crawlers,
+  // the same rule the old shut sections followed.
+  const tileRows = [];
+  for (let i = 0; i < orderedCats.length; i += catCols) tileRows.push(orderedCats.slice(i, i + catCols));
+  const catTotal = orderedCats.reduce((t, c) => t + c.games.length, 0);
+  const catDoneN = orderedCats.reduce((t, c) => t + c.games.filter((g) => done.has(g.key)).length, 0);
+  const catTiles = (
+    <section className="sty-cat sty-tiles" style={{ '--cc': 'var(--stg-ink2)' }}>
+      <div className="sty-cathead">
+        <h2>Categories</h2>
+        <b>{catDoneN}<i>/{catTotal}</i></b>
+      </div>
+      {tileRows.map((row, ri) => (
+        <div className="sty-crowwrap" key={ri}>
+          <div className="sty-crow" style={{ '--tc': catCols }}>
+            {row.map(({ cat, games }) => {
+              const n = games.filter((g) => done.has(g.key)).length;
+              const on = catOpen === cat;
+              const resume = games.find((g) => inprog.has(g.key) && !done.has(g.key));
+              const nxt = games.find((g) => !done.has(g.key) && !inprog.has(g.key));
+              const rungs = [
+                ...games.filter((g) => done.has(g.key)),
+                ...games.filter((g) => !done.has(g.key) && inprog.has(g.key)),
+                ...games.filter((g) => !done.has(g.key) && !inprog.has(g.key)),
+              ];
+              const line = resume ? `Resume ${resume.name}`
+                : nxt ? `${returning === false ? 'Start with' : 'Next:'} ${nxt.name}` : 'All played today';
+              return (
+                <button key={cat} type="button" className={'sty-tile' + (on ? ' on' : '')}
+                  style={{ '--cc': hueFor(cat) }} aria-expanded={on}
+                  aria-controls={`cat-${cat.replace(/\s+/g, '-')}`} onClick={() => pickCat(cat)}>
+                  <span className="sty-th"><b>{cat}</b><span className="sty-ctn">{n}<i>/{games.length}</i></span></span>
+                  <span className="sty-trung" aria-hidden="true">
+                    {rungs.map((g) => <i key={g.key} className={done.has(g.key) ? 'd' : inprog.has(g.key) ? 'p' : undefined} />)}
+                  </span>
+                  <span className="sty-tf"><span className="sty-ctnext">{line}</span><span className="sty-tact">{on ? 'Close' : 'Open'}</span></span>
+                </button>
+              );
+            })}
+          </div>
+          {row.map(({ cat, games }) => {
+            const on = catOpen === cat;
+            return (
+              <div key={cat} id={`cat-${cat.replace(/\s+/g, '-')}`} className={'sty-tdraw' + (on ? '' : ' shut')}
+                data-fk={'sec:' + cat} style={{ '--cc': hueFor(cat) }}>
+                <div className="sty-tdh">
+                  <h2>{cat}</h2>
+                  <b>{games.filter((g) => done.has(g.key)).length}<i>/{games.length}</i></b>
+                  <button type="button" className="sty-tclose" onClick={() => pickCat(cat)}>Close</button>
+                </div>
+                <div className="sty-games">
+                  {playedLast(games, done).map((g, i) => (
+                    <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
+                      canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
+                      res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </section>
+  );
 
   return (
     <div className="sty stage-page" data-stage-theme={stageTheme} ref={snapRef}>
@@ -1978,47 +2066,22 @@ export default function StageToday() {
             EVERY CARD HERE IS FILLED, and each one publishes its own
             --stg-onramp, because the ink that carries on a step is a property of
             the STEP and of the register, not of the page. */}
-        {returning === false ? (
-          <section className="sty-cat sty-new sty-rev" style={{ '--cc': 'var(--stg-ink2)' }}>
-            <div className="sty-cathead">
-              <h2>Start here</h2>
-              <b>{newcomerPicks.length}<i>&nbsp;categories</i></b>
-            </div>
-            <div className="sty-one">
-              {newcomerCircs.length ? (
-                <div className="sty-two">
-                  {newcomerCircs.map((c) => (
-                    <a key={c.id} className="sty-next" href={withTq(circuitEntryHref(c.id))}
-                      style={{
-                        '--cc': c.hue,
-                        '--ccl': categoryAccentInkLight(c.cat),
-                        '--stg-onramp': light ? categoryOnrampLight(c.cat) : RAMP_INK,
-                      }}>
-                      <div className="sty-newl">
-                        <div className="sty-eb">Circuit</div>
-                        <div className="sty-nm">{c.name}</div>
-                        {c.blurb ? <div className="sty-tag">{c.blurb}</div> : null}
-                      </div>
-                      <span className="sty-go">Play</span>
-                    </a>
-                  ))}
-                </div>
-              ) : null}
-              <div className="sty-pop">
-                {newcomerPicks.map(({ cat, game }) => (
-                  <a key={cat} className="sty-g" href={`${routeOf(game)}${tq ? '?' + tq.slice(1) : ''}`}
-                    style={{
-                      '--cc': hueFor(cat),
-                      '--ccl': categoryAccentInkLight(cat),
-                      '--stg-onramp': light ? categoryOnrampLight(cat) : RAMP_INK,
-                    }}>
-                    <span className="sty-pcat">{cat}</span>
-                    <span className="sty-gn"><Glyph k={game.key} size={17} />{game.name}</span>
-                    <span className="sty-gt">{game.tag}</span>
-                  </a>
-                ))}
-              </div>
-            </div>
+        {returning === false && pinCircs.length ? (
+          <section className="sty-pins sty-rev" aria-label="Start here">
+            {pinCircs.map((c, i) => (
+              <a key={c.id} className={'sty-pin' + (i === 2 ? ' third' : '')} href={withTq(circuitEntryHref(c.id))}
+                style={{
+                  '--cc': c.hue,
+                  '--stg-onramp': light ? categoryOnrampLight(c.games[0].cat) : RAMP_INK,
+                }}>
+                <span className="sty-pinl">
+                  <span className="sty-pine">{c.games.length} games</span>
+                  <span className="sty-pinn">{c.name}</span>
+                  {c.blurb ? <span className="sty-pinb">{c.blurb}</span> : null}
+                </span>
+                <span className="sty-pingo">Play</span>
+              </a>
+            ))}
           </section>
         ) : null}
 
@@ -2033,7 +2096,7 @@ export default function StageToday() {
             to be filled. */}
         {/* The SECTION's rule is neutral because this row is not a category:
             the cards inside it carry their own categories' colours. */}
-        {(mineTot || !who) ? (
+        {(mineTot || (!who && returning)) ? (
           <section className="sty-cat sty-mine sty-rev" style={{ '--cc': 'var(--stg-ink2)' }}>
             {/* An empty section has nothing to collapse and no fraction to
                 print, so the head keeps its title and drops both. */}
@@ -2056,14 +2119,14 @@ export default function StageToday() {
             ) : null}
             {pinned.length ? (
               <div className={'sty-games' + (isOpen(MINE_ID) ? '' : ' shut')}>
-                {playedLast(pinned, done).map((g, i) => (
+                {(mineCut ? playedLast(pinned, done).slice(0, 4) : playedLast(pinned, done)).map((g, i) => (
                   <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
                     canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
                     hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'mine:' + g.key} />
                 ))}
               </div>
             ) : null}
-            {pinnedCircs.length ? (
+            {pinnedCircs.length && !mineCut ? (
               <div className={'sty-circs sty-minec' + (isOpen(MINE_ID) ? '' : ' shut')}>
                 {pinnedCircs.map((c, i) => (
                   <a key={c.id} className={'sty-circ' + (c.n === c.games.length ? ' full' : '')}
@@ -2087,6 +2150,11 @@ export default function StageToday() {
                 ))}
               </div>
             ) : null}
+            {mineCut0 && isOpen(MINE_ID) ? (
+              <button type="button" className="sty-more" onClick={() => setMineAll((v) => !v)}>
+                {mineAll ? 'Show fewer' : `Show all ${mineTot} \u00b7 ${mineDone} played`}
+              </button>
+            ) : null}
           </section>
         ) : null}
 
@@ -2095,6 +2163,52 @@ export default function StageToday() {
             same sot_cat_order the other home reads. It renders ONCE, here or
             under the categories (`ordBelow`, decided above). */}
         {!ordBelow ? ordBar : null}
+
+        {/* 4. THE GAMES, either as nine category rows or as one A-to-Z list. */}
+        {az ? (
+          <section className="sty-cat sty-az" style={{ '--cc': 'var(--stg-ink2)' }}>
+            <div className="sty-cathead">
+              <h2>All games</h2>
+              <b>{alpha.filter((g) => done.has(g.key)).length}<i>/{alpha.length}</i></b>
+            </div>
+            <div className="sty-games">
+              {playedLast(alpha, done).map((g, i) => (
+                // A TO Z MIXES CATEGORIES exactly as My games does, so each card
+                // carries its own hue: the list loses the rows that grouped the
+                // games, and the colour is the only thing left saying what a
+                // game IS (owner, 2026-08-31).
+                <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
+                  canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
+                  hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'az:' + g.key} />
+              ))}
+            </div>
+          </section>
+        ) : reorder ? orderedCats.map(({ cat, games }, ci) => {
+          const n = games.filter((g) => done.has(g.key)).length;
+          const secId = `cat-${cat.replace(/\s+/g, '-')}`;
+          return (
+            <section key={cat} id={secId} className="sty-cat" data-fk={'sec:' + cat} style={{ '--cc': hueFor(cat) }}>
+              <div className="sty-cathead" onClick={headClick(secId)}>
+                <h2>{cat}</h2>
+                <b>{n}<i>/{games.length}</i></b>
+                {cav(secId)}
+                {reorder ? (
+                  <span className="sty-move">
+                    <button type="button" onClick={() => moveCat(cat, -1)} disabled={ci === 0} aria-label={`Move ${cat} up`}>&uarr;</button>
+                    <button type="button" onClick={() => moveCat(cat, 1)} disabled={ci === orderedCats.length - 1} aria-label={`Move ${cat} down`}>&darr;</button>
+                  </span>
+                ) : null}
+              </div>
+              <div className={'sty-games' + (isOpen(secId) ? '' : ' shut')}>
+                {playedLast(games, done).map((g, i) => (
+                  <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
+                    canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
+                    res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} />
+                ))}
+              </div>
+            </section>
+          );
+        }) : catTiles}
 
         {circuits.length ? (
           /* THE SAME OBJECT AS EVERY OTHER SECTION (owner, 2026-08-31): the 4px
@@ -2141,52 +2255,6 @@ export default function StageToday() {
             ) : null}
           </section>
         ) : null}
-
-        {/* 4. THE GAMES, either as nine category rows or as one A-to-Z list. */}
-        {az ? (
-          <section className="sty-cat sty-az" style={{ '--cc': 'var(--stg-ink2)' }}>
-            <div className="sty-cathead">
-              <h2>All games</h2>
-              <b>{alpha.filter((g) => done.has(g.key)).length}<i>/{alpha.length}</i></b>
-            </div>
-            <div className="sty-games">
-              {playedLast(alpha, done).map((g, i) => (
-                // A TO Z MIXES CATEGORIES exactly as My games does, so each card
-                // carries its own hue: the list loses the rows that grouped the
-                // games, and the colour is the only thing left saying what a
-                // game IS (owner, 2026-08-31).
-                <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
-                  canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-                  hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'az:' + g.key} />
-              ))}
-            </div>
-          </section>
-        ) : orderedCats.map(({ cat, games }, ci) => {
-          const n = games.filter((g) => done.has(g.key)).length;
-          const secId = `cat-${cat.replace(/\s+/g, '-')}`;
-          return (
-            <section key={cat} id={secId} className="sty-cat" data-fk={'sec:' + cat} style={{ '--cc': hueFor(cat) }}>
-              <div className="sty-cathead" onClick={headClick(secId)}>
-                <h2>{cat}</h2>
-                <b>{n}<i>/{games.length}</i></b>
-                {cav(secId)}
-                {reorder ? (
-                  <span className="sty-move">
-                    <button type="button" onClick={() => moveCat(cat, -1)} disabled={ci === 0} aria-label={`Move ${cat} up`}>&uarr;</button>
-                    <button type="button" onClick={() => moveCat(cat, 1)} disabled={ci === orderedCats.length - 1} aria-label={`Move ${cat} down`}>&darr;</button>
-                  </span>
-                ) : null}
-              </div>
-              <div className={'sty-games' + (isOpen(secId) ? '' : ' shut')}>
-                {playedLast(games, done).map((g, i) => (
-                  <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
-                    canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-                    res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} />
-                ))}
-              </div>
-            </section>
-          );
-        })}
 
         {ordBelow ? ordBar : null}
 
@@ -3410,4 +3478,67 @@ ${PATCH_CSS}
   [data-sty-anim] .sty-circs .sty-circ,[data-sty-anim] .sty-pulse{animation:none;}
   .sty-g,.sty-gn{transition:none;}
 }
+/* ── CATEGORY BUTTONS (owner, 2026-10-03) ── */
+.sty-crowwrap{display:flex;flex-direction:column;gap:7px;}
+.sty-crowwrap + .sty-crowwrap{margin-top:7px;}
+.sty-crow{display:grid;gap:7px;grid-template-columns:repeat(var(--tc,5),minmax(0,1fr));}
+.sty-tile{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:9px;min-height:104px;
+  text-align:left;font:inherit;color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);
+  border-radius:8px;padding:12px 14px 11px 18px;cursor:pointer;overflow:hidden;}
+.sty-tile::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cc);}
+.sty-tile:hover{border-color:var(--cc);}
+.sty-tile.on{border-color:var(--cc);box-shadow:0 0 0 1px var(--cc);background:color-mix(in srgb,var(--cc) 12%,var(--stg-surf));}
+.sty-tile:focus-visible{outline:2px solid var(--cc);outline-offset:2px;}
+.sty-th{display:flex;align-items:baseline;gap:8px;}
+.sty-th b{flex:1 1 auto;min-width:0;font-size:16.5px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-ctn{flex:none;font-family:${MONO};font-size:12px;font-weight:700;color:var(--stg-ink2);font-variant-numeric:tabular-nums;}
+.sty-ctn i{font-style:normal;color:var(--stg-mute);}
+.sty-trung{display:flex;gap:2px;height:10px;}
+.sty-trung i{flex:1 1 0;border-radius:1.5px;background:var(--stg-line);}
+.sty-trung i.d{background:var(--cc);}
+.sty-trung i.p{background:var(--cc);opacity:.5;}
+.sty-tf{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--stg-ink2);}
+.sty-ctnext{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-tact{flex:none;font-size:12px;font-weight:700;color:var(--stg-mute);}
+.sty-tile.on .sty-tact{color:var(--stg-ink);}
+.sty-tdraw{border:1px solid var(--cc);border-radius:10px;background:var(--stg-surf);padding:13px 14px 14px;}
+.sty-tdraw.shut{display:none;}
+.sty-tdh{display:flex;align-items:baseline;gap:11px;margin-bottom:11px;}
+.sty-tdh h2{margin:0;font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;}
+.sty-tdh b{font-family:${MONO};font-size:12px;font-weight:700;color:var(--stg-ink2);}
+.sty-tdh b i{font-style:normal;color:var(--stg-mute);}
+.sty-tclose{margin-left:auto;border:1px solid var(--stg-line);background:none;color:var(--stg-ink2);border-radius:999px;
+  padding:5px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;}
+.sty-tclose:hover{color:var(--stg-ink);border-color:var(--stg-line2);}
+@media (max-width:999px){ .sty-crow{grid-template-columns:repeat(2,minmax(0,1fr));} }
+@media (max-width:640px){
+  .sty-tile{min-height:76px;gap:6px;padding:10px 12px 10px 16px;}
+  .sty-th b{font-size:15px;}
+  .sty-trung{height:6px;gap:1.5px;}
+  .sty-tf{font-size:11.5px;}
+  .sty-tact{display:none;}
+  .sty-tdraw{padding:11px 10px 12px;}
+}
+/* ── THE FIRST-VISIT ROW: three across, two where three do not fit ── */
+.sty-pins{display:grid;gap:7px;grid-template-columns:repeat(3,minmax(0,1fr));}
+.sty-pin{position:relative;display:flex;align-items:center;gap:12px;min-height:62px;padding:8px 12px 8px 17px;
+  text-decoration:none;color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:8px;overflow:hidden;}
+.sty-pin::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cc);}
+.sty-pin:hover{border-color:var(--cc);}
+.sty-pin:focus-visible{outline:2px solid var(--cc);outline-offset:2px;}
+.sty-pinl{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;}
+.sty-pine{font-family:${MONO};font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-mute);}
+.sty-pinn{font-size:15.5px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-pinb{font-size:12px;font-weight:600;color:var(--stg-ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-pingo{flex:none;background:var(--cc);color:var(--stg-onramp,#08222e);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:800;}
+@media (max-width:1099px){ .sty-pins{grid-template-columns:repeat(2,minmax(0,1fr));} .sty-pin.third{display:none;} }
+@media (max-width:640px){
+  .sty-pins{gap:6px;}
+  .sty-pin{min-height:54px;padding:6px 8px 6px 14px;gap:8px;}
+  .sty-pinb{display:none;}
+  .sty-pinn{font-size:14px;}
+  .sty-pine{font-size:9px;}
+  .sty-pingo{padding:6px 10px;font-size:12px;}
+}
+
 `;
