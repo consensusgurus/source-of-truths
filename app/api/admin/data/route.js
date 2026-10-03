@@ -20,7 +20,7 @@ import { loadEditorial, loadAnalyticsPart } from '@/lib/admin-data';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 const ANALYTICS_PARTS = new Set(['analytics', 'players', 'pageviews', 'retention', 'map']);
 const NO_STORE = { 'Cache-Control': 'private, no-store' };

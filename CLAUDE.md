@@ -8341,6 +8341,14 @@ the HTML, nothing reused between loads, and a cold lambda having nothing to show
   it falls back to the shared row cache. `timings` in the payload says where a slow build went.
 - **`/api/cron/stats-warm`** (daily, 09:20 UTC) rebuilds and stores both payloads. It skips a
   copy under ten minutes old, because the route is open when no `CRON_SECRET` is set.
+- **`/api/admin/data` runs with `maxDuration = 300`, and that is load-bearing.** A cold lambda's
+  first analytics build includes the full admin row load, and at 60s it was killed before the
+  cache warmed, so every retry started cold again and the Analytics view never loaded
+  (measured on the first deploy, 2026-10-03). The old page had no limit set. Do not lower it.
+- **Migration 59 also rewrites `site_view_trends()` and `visitor_active_counts()`** to group page
+  views by visitor once instead of running one `count(distinct)` sort per window. The viewer
+  half was 25 to 27s of a 28s /sitestats build. Checked equal to the old functions on two
+  million local rows.
 - **Not done, on purpose:** a per-day rollup table. The Analytics view is mostly per-player
   figures, which a per-day table cannot supply, so the stored payload plus the memo does the
   job a rollup was meant to do. Revisit only if the row load itself becomes the cost.

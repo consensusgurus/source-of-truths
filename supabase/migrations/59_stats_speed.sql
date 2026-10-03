@@ -112,3 +112,92 @@ as $$
    order by 2 desc, 1
    limit greatest(1, least(p_limit, 200));
 $$;
+
+-- -------------------------------------------------------------------------
+-- 4. The two visitor aggregates, rewritten. Both ran one count(distinct)
+--    per window, and each of those sorts every page view in the window:
+--    six sorts for site_view_trends(), measured at 25 to 27s on the live
+--    site 2026-10-03 and the whole of the slow /sitestats build. These
+--    group the page views by visitor ONCE and count the groups, which gives
+--    the same figures from a single pass.
+--    Same definitions as migrations 30 and 36: a distinct visitor is one
+--    non-null visitor_id; rows with a null visitor_id still count as page
+--    views. Same names, arguments and return columns, so nothing that calls
+--    them changes, and existing grants are kept.
+-- -------------------------------------------------------------------------
+create or replace function site_view_trends()
+returns table (
+  viewers_d  bigint, viewers_dp bigint,
+  viewers_w  bigint, viewers_wp bigint,
+  viewers_m  bigint, viewers_mp bigint,
+  views_d    bigint, views_dp   bigint,
+  views_w    bigint, views_wp   bigint,
+  views_m    bigint, views_mp   bigint
+)
+language sql
+stable
+as $$
+  with ev as (
+    select visitor_id, created_at
+      from view_events
+     where created_at >= now() - interval '60 days'
+    union all
+    select visitor_id, created_at
+      from quiz_view_events
+     where created_at >= now() - interval '60 days'
+  ),
+  per as (
+    select
+      visitor_id,
+      count(*) filter (where created_at >= now() - interval '1 day') as c_d,
+      count(*) filter (where created_at <  now() - interval '1 day'   and created_at >= now() - interval '2 days')  as c_dp,
+      count(*) filter (where created_at >= now() - interval '7 days') as c_w,
+      count(*) filter (where created_at <  now() - interval '7 days'  and created_at >= now() - interval '14 days') as c_wp,
+      count(*) filter (where created_at >= now() - interval '30 days') as c_m,
+      count(*) filter (where created_at <  now() - interval '30 days' and created_at >= now() - interval '60 days') as c_mp
+    from ev
+    group by visitor_id
+  )
+  select
+    count(*) filter (where visitor_id is not null and c_d  > 0),
+    count(*) filter (where visitor_id is not null and c_dp > 0),
+    count(*) filter (where visitor_id is not null and c_w  > 0),
+    count(*) filter (where visitor_id is not null and c_wp > 0),
+    count(*) filter (where visitor_id is not null and c_m  > 0),
+    count(*) filter (where visitor_id is not null and c_mp > 0),
+    coalesce(sum(c_d), 0)::bigint,
+    coalesce(sum(c_dp), 0)::bigint,
+    coalesce(sum(c_w), 0)::bigint,
+    coalesce(sum(c_wp), 0)::bigint,
+    coalesce(sum(c_m), 0)::bigint,
+    coalesce(sum(c_mp), 0)::bigint
+  from per;
+$$;
+
+create or replace function visitor_active_counts()
+returns table(dau bigint, wau bigint, mau bigint)
+language sql
+stable
+as $$
+  with ev as (
+    select visitor_id, created_at
+      from view_events
+     where visitor_id is not null
+       and created_at >= now() - interval '30 days'
+    union all
+    select visitor_id, created_at
+      from quiz_view_events
+     where visitor_id is not null
+       and created_at >= now() - interval '30 days'
+  ),
+  per as (
+    select visitor_id, max(created_at) as last_at
+      from ev
+     group by visitor_id
+  )
+  select
+    count(*) filter (where last_at >= now() - interval '1 day'),
+    count(*) filter (where last_at >= now() - interval '7 days'),
+    count(*)
+  from per;
+$$;
