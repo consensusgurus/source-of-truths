@@ -1537,7 +1537,8 @@ export default function StageToday() {
   // biggest shelf and the one a new reader is most likely to know a game on.
   const hasPins = mineTot > 0;
   // ON A PHONE MY GAMES SHOWS FOUR, unplayed first, so the categories stay on the first screen.
-  const mineCut0 = narrow && mineTot > 4;
+  // Phone My games shows everything now (owner, 2026-10-03), so the cut is off.
+  const mineCut0 = false;
   const mineCut = mineCut0 && !mineAll;
   const openDefault = (id) => (id === CIRC_ID || id === WORD_ID ? true : (id === MINE_ID ? hasPins : false));
   const isOpen = (id) => (shelfOpen && Object.prototype.hasOwnProperty.call(shelfOpen, id)
@@ -2121,7 +2122,8 @@ export default function StageToday() {
             ) : null}
             {pinned.length ? (
               <div className={'sty-games' + (isOpen(MINE_ID) ? '' : ' shut')}>
-                {(mineCut ? playedLast(pinned, done).slice(0, 4) : playedLast(pinned, done)).map((g, i) => (
+                {/* ON A PHONE MY GAMES IS ALPHABETICAL (owner, 2026-10-03); desktop keeps played-last. */}
+                {(narrow ? [...pinned].sort((a, b) => a.name.localeCompare(b.name)) : playedLast(pinned, done)).map((g, i) => (
                   <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
                     canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
                     hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'mine:' + g.key} />
@@ -2164,7 +2166,6 @@ export default function StageToday() {
             with a thumb and with a keyboard, and the order they write is the
             same sot_cat_order the other home reads. It renders ONCE, here or
             under the categories (`ordBelow`, decided above). */}
-        {!ordBelow ? ordBar : null}
 
         {/* 4. THE GAMES, either as nine category rows or as one A-to-Z list. */}
         {az ? (
@@ -2212,6 +2213,9 @@ export default function StageToday() {
           );
         }) : catTiles}
 
+        {/* A TO Z AND REORDER SIT UNDER THE CATEGORIES (owner, 2026-10-03). */}
+        {ordBar}
+
         {circuits.length ? (
           /* THE SAME OBJECT AS EVERY OTHER SECTION (owner, 2026-08-31): the 4px
              left rule and the head with a count, so Circuits stops being the one
@@ -2258,7 +2262,6 @@ export default function StageToday() {
           </section>
         ) : null}
 
-        {ordBelow ? ordBar : null}
 
         {/* THE DAY'S THREE RECORDS, and the grid decides which of them share a
             row (owner, 2026-09-01). Your standing and the board are the two
@@ -3577,5 +3580,13 @@ ${PATCH_CSS}
 .sty-tiles.has-open .sty-tile:not(.on) .sty-trung i.d{background:var(--cpi);}
 .sty-tiles.has-open .sty-tile:not(.on) .sty-trung i.p{background:color-mix(in srgb,var(--cpi) 50%,transparent);}
 .sty-tiles.has-open .sty-tile:not(.on):hover{border-color:var(--cc);}
+
+/* ON A PHONE MY GAMES LEADS WITH ITS CIRCUITS, then the games (owner, 2026-10-03). */
+@media (max-width:640px){
+  .sty-mine{display:flex;flex-direction:column;}
+  .sty-mine .sty-minec{order:1;}
+  .sty-mine .sty-games{order:2;margin-top:-1px;}
+  .sty-mine .sty-more{order:3;}
+}
 
 `;
