@@ -148,7 +148,6 @@ const GAMES = [
   { key: 'calc', href: '/calc', name: 'Calc', img: '/games/btn-calc.png', store: 'sot_calc_day', tag: "Walk the calculator" , cat: 'Numbers' },
   { key: 'encore', href: '/encore', name: 'Encore', img: '/games/btn-encore.png', store: 'sot_encore_day', tag: "The daily crossword" , cat: 'Word' },
   { key: 'biz', href: '/biz', name: 'Biz', img: '/games/btn-biz.png', store: 'sot_biz_day', tag: "Business, one life" , cat: 'Trivia' },
-  { key: 'passport', href: '/passport', name: 'Passport', img: '/games/btn-passport.png', store: 'sot_passport_day', tag: "One country, five rounds" , cat: 'Geography' },
   { key: 'flank', href: '/flank', name: 'Flank', img: '/games/btn-flank.png', store: 'sot_flank_day', tag: "Name every neighbor" , cat: 'Geography' },
   { key: 'script', href: '/script', name: 'Script', img: '/games/btn-script.png', store: 'sot_script_day', tag: "Movies and TV, one life" , cat: 'Trivia' },
   { key: 'quotes', href: '/quotes', name: 'Quotes', img: '/games/btn-quotes.png', store: 'sot_quotes_day', tag: "Who said it, one life" , cat: 'Trivia' },

@@ -1255,6 +1255,8 @@ export default function CagesClient({ puzzles = [], forceNum = null }) {
               <Smartphone size={15} strokeWidth={2.5} /> Add to Home Screen
             </button>
           )}
+          {/* The finish card's stat cards land here, below Add to Home Screen (app/StageFinish.jsx). */}
+          <div id="stf-stats-slot" />
         </div>
         {showA2hsHelp && (
           <div onClick={() => setShowA2hsHelp(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(20,22,28,0.55)', zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 18 }}>

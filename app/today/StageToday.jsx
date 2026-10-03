@@ -979,7 +979,8 @@ export default function StageToday() {
       const open = new Set(data.inProgress || []);
       const d = new Set();
       const p = new Set();
-      for (const g of DAILY_GAMES) {
+      // ALL games, run-only included: a finished Passport ticks its circuit tile.
+      for (const g of ALL_DAILY_GAMES) {
         const id = `${g.key}-${M}-${D}-${yy}`;
         if (completed.has(id) || played.has(id)) d.add(g.key);
         else if (abandoned.has(id) || open.has(id)) p.add(g.key);
@@ -1577,7 +1578,7 @@ export default function StageToday() {
     </button>
   );
 
-  const playedCount = done.size;
+  const playedCount = [...done].filter((k) => LIVE_KEYS.has(k)).length;   // dailies only; a run-only game ticks its circuit, not this count
   // THE SLATE SLIDES WHEN IT REORDERS (motion pass, 2026-09-16): a category
   // moved by the reorder arrows, and a card that drops to the end of its row
   // once it is played, travel to their new place instead of teleporting. The
@@ -2142,7 +2143,7 @@ export default function StageToday() {
                     href={withTq(circuitEntryHref(c.id))} style={{ '--cc': c.hue, '--i': i }}>
                     <div className="sty-chead">
                       <div className="sty-cn">{c.name}</div>
-                      <div className="sty-cnum">{c.n}<i>/{c.games.length}</i></div>
+                      <div className="sty-cnum">{c.unit ? (c.n ? 'Played' : <i>{c.unit}</i>) : <>{c.n}<i>/{c.games.length}</i></>}</div>
                       <CircStar c={c} canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite} />
                     </div>
                     {circStand[c.id] ? (
@@ -2243,7 +2244,7 @@ export default function StageToday() {
                       width (owner, 2026-08-31). */}
                   <div className="sty-chead">
                     <div className="sty-cn">{c.name}</div>
-                    <div className="sty-cnum">{c.n}<i>/{c.games.length}</i></div>
+                    <div className="sty-cnum">{c.unit ? (c.n ? 'Played' : <i>{c.unit}</i>) : <>{c.n}<i>/{c.games.length}</i></>}</div>
                     <CircStar c={c} canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite} />
                   </div>
                   {circStand[c.id] ? (

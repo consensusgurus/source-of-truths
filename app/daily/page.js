@@ -102,7 +102,6 @@ import { PUZZLES as CALC_FULL } from '../calc/puzzles';
 import { PUZZLES as ENCORE_FULL } from '../encore/puzzles';
 import { PUZZLES as BIZ_FULL } from '../biz/puzzles';
 import { PUZZLES as FLANK_FULL } from '../flank/puzzles';
-import { PUZZLES as PASSPORT_FULL } from '../passport/puzzles';
 import { PUZZLES as WHITTLE_FULL } from '../whittle/puzzles';
 import { PUZZLES as DIAG_FULL } from '../diag/puzzles';
 import { PUZZLES as FRAME_FULL } from '../frame/puzzles';
@@ -188,7 +187,6 @@ const SPORT = SPORT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ nu
 const CALC = CALC_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const ENCORE = ENCORE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const BIZ = BIZ_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
-const PASSPORT = PASSPORT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const FLANK = FLANK_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const WHITTLE = WHITTLE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const DIAG = DIAG_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -336,7 +334,6 @@ const GAMES = [
   { key: 'calc', name: 'Calc', path: '/calc', tag: 'Walk the calculator', accent: '#be123c', bg: '#fff1f4', border: 'rgba(190,18,60,0.4)', src: CALC },
   { key: 'encore', name: 'Encore', path: '/encore', tag: 'The daily crossword', accent: '#1d4ed8', bg: '#eff6ff', border: 'rgba(29,78,216,0.4)', src: ENCORE },
   { key: 'biz', name: 'Biz', path: '/biz', tag: 'Business, one life', accent: '#0f5132', bg: '#e9f5ee', border: 'rgba(15,81,50,0.4)', src: BIZ },
-  { key: 'passport', name: 'Passport', path: '/passport', tag: 'One country, five rounds', accent: '#9f1239', bg: '#fdf2f4', border: 'rgba(159,18,57,0.35)', src: PASSPORT },
   { key: 'flank', name: 'Flank', path: '/flank', tag: 'Name every neighbor', accent: '#3f6212', bg: '#f3f8ea', border: 'rgba(63,98,18,0.4)', src: FLANK },
   { key: 'whittle', name: 'Whittle', path: '/whittle', tag: 'The sudoku, backwards', accent: '#854d0e', bg: '#fdf6e9', border: 'rgba(133,77,14,0.4)', src: WHITTLE },
   { key: 'diag', name: 'Diag', path: '/diag', tag: 'Sudoku plus the two diagonals', accent: '#0e7490', bg: '#e8f6fa', border: 'rgba(14,116,144,0.4)', src: DIAG },

@@ -1230,6 +1230,8 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
                 <Smartphone size={15} strokeWidth={2.5} /> Add to Home Screen
               </button>
             )}
+            {/* The finish card's stat cards land here, below Add to Home Screen (app/StageFinish.jsx). */}
+            <div id="stf-stats-slot" />
           </div>
           {!focusMode && !identity && (
             <div id="daily-join" style={{ margin: '18px auto 0', maxWidth: 640 }}>

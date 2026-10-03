@@ -17,7 +17,6 @@ import { T } from '@/lib/theme';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
-const CIRCUIT = 'pricecheck';
 
 function fmtTime(ms) {
   const s = Math.max(0, Math.round(ms / 1000));
@@ -29,7 +28,8 @@ function ord(n) {
   return `${n}${['th', 'st', 'nd', 'rd'][n % 10] || 'th'}`;
 }
 
-export default function PriceCheckBoard({ dateLabel = '' }) {
+// Passport (2026-10-03) reuses this page with its own circuit, name and path.
+export default function PriceCheckBoard({ dateLabel = '', circuit: CIRCUIT = 'pricecheck', name = 'Price Check', path = '/pricecheck', emptyLine = 'Nobody has run all five tags today yet. Yours would be the first.', rankedLine = 'Ranked on the five tag scores added up' }) {
   const [tab, setTab] = useState('today');
   const [myName, setMyName] = useState('');
   useEffect(() => { setMyName(savedIdentity().username || ''); }, []);
@@ -61,9 +61,9 @@ export default function PriceCheckBoard({ dateLabel = '' }) {
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="pcb-cap">
         <a className="pcb-home" href="/" aria-label="Home" title="Home"><Home size={13} strokeWidth={2.4} /></a>
-        <b>Price Check</b>
+        <b>{name}</b>
         <span className="pcb-capd">Leaderboard</span>
-        <a className="pcb-play" href="/pricecheck">Play Price Check <span aria-hidden="true">&rsaquo;</span></a>
+        <a className="pcb-play" href={path}>Play {name} <span aria-hidden="true">&rsaquo;</span></a>
       </div>
 
       {leaderRow ? (
@@ -78,7 +78,7 @@ export default function PriceCheckBoard({ dateLabel = '' }) {
 
       <div className="rn-rank" id="rn-rankings" role="region" aria-label="Rankings">
         <div className="rn-rin">
-          <h1 className="pcb-h1">Price Check leaderboard</h1>
+          <h1 className="pcb-h1">{name} leaderboard</h1>
           <div className="rn-thd">
             <div className="rn-tabs" role="tablist">
               {[['today', "Today's board"], ['arch', 'Archive'], ['all', 'All time']].map(([k, label]) => (
@@ -121,7 +121,7 @@ export default function PriceCheckBoard({ dateLabel = '' }) {
                 <div className="rn-rmsg">
                   {boardQ.state === 'loading'
                     ? 'Reading the board.'
-                    : (boardQ.state === 'error' ? 'The board could not be loaded just now.' : 'Nobody has run all five tags today yet. Yours would be the first.')}
+                    : (boardQ.state === 'error' ? 'The board could not be loaded just now.' : emptyLine)}
                 </div>
               )}
               {boardRows.length > 3 ? (
@@ -146,7 +146,7 @@ export default function PriceCheckBoard({ dateLabel = '' }) {
                 </div>
               ) : null}
               <p className="rn-rfine">
-                Ranked on the five tag scores added up, out of {maxTotal}; the clock breaks a tie.
+                {rankedLine}, out of {maxTotal}; the clock breaks a tie.
                 {boardNow && boardNow.partial
                   ? ` ${boardNow.partial} ${boardNow.partial === 1 ? 'is' : 'are'} partway through it.`
                   : ''}
@@ -228,7 +228,7 @@ export default function PriceCheckBoard({ dateLabel = '' }) {
           ) : null}
 
           <div className="pcb-foot">
-            <a className="pcb-go" href="/pricecheck">Play today&rsquo;s Price Check</a>
+            <a className="pcb-go" href={path}>Play today&rsquo;s {name}</a>
             <a className="pcb-alt" href="/circuits/gauntlet/run">Or run the Trivia Gauntlet &rsaquo;</a>
           </div>
         </div>

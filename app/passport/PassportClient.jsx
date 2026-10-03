@@ -1,6 +1,6 @@
 'use client';
 
-// Passport (owner, 2026-10-03) — the daily geography run. One mystery country
+// Passport (owner, 2026-10-03): the daily geography run. One mystery country
 // a day, played five ways, one score out of 50:
 //
 //   1 Landmark  a zoomed photo pulls back a frame per wrong country; naming
@@ -11,40 +11,27 @@
 //   4 Capital   drop a pin on an unlabeled map, scored by distance
 //   5 Numbers   five bigger-or-smaller calls on land area
 //
-// It is ONE daily game (key `passport`, Geography) and it is also a circuit
-// tile, because the run IS the game. The page is the standard stage frame
-// (cap, gate, board, LoftFinish); the run ends on the passport ladder in
-// lib/passport.js, played as a curtain the first time and settled afterwards.
+// PLAYERS SEE IT ONLY AS A CIRCUIT (owner, 2026-10-03). It is registered as a
+// daily (key `passport`) so its rows score, rank and pay IQ Points, but it is
+// RUN_ONLY in lib/daily-games: no daily list, category or count shows it. The
+// page is the run register Price Check and the Trivia Gauntlet wear: its own
+// cap, the Launch pregame (departures board, boarding pass, visa page,
+// ladder), the rounds, the Finale curtain, then a settled ending with the
+// run's leaderboard at /passport/leaderboard. Never LoftFinish.
 // The day's content is resolved on the server and only today's ships.
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { X, Smartphone } from 'lucide-react';
-import Grain from '../Grain';
+import { X } from 'lucide-react';
 import DailyRules from '../DailyRules';
-import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
-import DailyChrome from '../DailyChrome';
 import { isMobileDevice } from '@/lib/is-mobile';
 import useAbandonFlush from '../quiz/[id]/useAbandonFlush';
 import { withRef } from '@/lib/referrals';
 import { notifyShareCredit } from '../ShareCreditPop';
-import ReportIssue from '../ReportIssue';
-import StageFold from '../StageFold';
-import LoftCap from '../LoftCap';
-import StageChrome from '../StageChrome';
-import { isStage } from '@/lib/stage';
-import { useStageTheme } from '@/lib/stage-theme';
-import { gameColor, gameColorLight, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
-import GamePanel from '../GamePanel';
-import useIqStanding from '../useIqStanding';
-import useNextUnplayed, { useUnplayedSimilar } from '../useNextUnplayed';
-import useDailyBoard from '../useDailyBoard';
-import useGameAllTime from '../useGameAllTime';
-import useDayStats from '../useDayStats';
-import useCategoryRank from '../useCategoryRank';
-import LoftFinish from '../LoftFinish';
+import useCircuitBoard from '../circuits/useCircuitBoard';
+import RunNudgePop from '../circuits/RunNudgePop';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
@@ -281,6 +268,322 @@ function Finale({ scores, total, clock, inks, onDone }) {
   );
 }
 
+// ── THE LAUNCH PAGE (owner-approved mockup, 2026-10-03) ─────────────────────
+// Passport's own pregame, in the run register Price Check and the Trivia
+// Gauntlet wear: a split-flap departures board that hunts for the destination
+// and never lands, a boarding pass that IS the start button, the flight map,
+// the visa page stamping its five rounds, and the six-passport ladder.
+const AZ = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const FLAPS = 9;
+const LAUNCH_INKS = ['#a78bfa', '#60a5fa', '#34d399', '#f87171', '#f59e0b'];
+const LAUNCH_ROT = ['-7deg', '4deg', '-3deg', '6deg', '-5deg'];
+const DEMO_STAMPS = [10, 7, 8, 9, 6];
+
+function etClock() {
+  try { return new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false }); }
+  catch (e) { return ''; }
+}
+
+function Launch({ puzzle, canvasRef, onBoard }) {
+  const cells = useRef([]);
+  const sealedRef = useRef(false);
+  const [sealed, setSealed] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const [clock, setClock] = useState('');
+  const [howOpen, setHowOpen] = useState(false);
+  const [stampOn, setStampOn] = useState(0);
+  const [glint, setGlint] = useState(-1);
+
+  useEffect(() => {
+    setClock(etClock());
+    const iv = setInterval(() => setClock(etClock()), 15000);
+    return () => clearInterval(iv);
+  }, []);
+
+  // Each flap runs its own burst and rest, so the row reads like a real board
+  // hunting. Written straight to the DOM: nine cells flipping every 85ms would
+  // otherwise re-render the page eleven times a second.
+  useEffect(() => {
+    if (reducedMotion()) { cells.current.forEach((c) => { if (c) c.firstChild.textContent = '?'; }); return undefined; }
+    const timers = [];
+    const flip = (c, ch) => { c.classList.remove('flip'); void c.offsetWidth; c.classList.add('flip'); c.firstChild.textContent = ch; };
+    const hunt = (c) => {
+      if (sealedRef.current || !c) return;
+      let n = 4 + Math.floor(Math.random() * 9);
+      const step = () => {
+        if (sealedRef.current) return;
+        if (n-- <= 0) { timers.push(setTimeout(() => hunt(c), 500 + Math.random() * 1500)); return; }
+        flip(c, AZ[Math.floor(Math.random() * 26)]);
+        timers.push(setTimeout(step, 85));
+      };
+      step();
+    };
+    cells.current.forEach((c, i) => timers.push(setTimeout(() => hunt(c), 300 + i * 90)));
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  // The visa page stamps its five rounds, holds, clears, and goes again.
+  useEffect(() => {
+    if (reducedMotion()) { setStampOn(5); return undefined; }
+    let alive = true; const timers = [];
+    const loop = () => {
+      if (!alive) return;
+      setStampOn(0);
+      for (let i = 1; i <= 5; i++) timers.push(setTimeout(() => alive && setStampOn(i), 500 + (i - 1) * 520));
+      timers.push(setTimeout(loop, 500 + 5 * 520 + 3200));
+    };
+    loop();
+    return () => { alive = false; timers.forEach(clearTimeout); };
+  }, []);
+
+  // A glint climbs the ladder, cover by cover.
+  useEffect(() => {
+    if (reducedMotion()) return undefined;
+    let i = 0;
+    const iv = setInterval(() => { setGlint(i % TIERS.length); i++; }, 420);
+    return () => clearInterval(iv);
+  }, []);
+
+  function board() {
+    if (sealedRef.current) return;
+    sealedRef.current = true; setSealed(true);
+    'SEALED'.padEnd(FLAPS, ' ').split('').forEach((ch, i) => {
+      setTimeout(() => { const c = cells.current[i]; if (c) { c.classList.remove('flip'); void c.offsetWidth; c.classList.add('flip'); c.firstChild.textContent = ch; } }, i * 60);
+    });
+    setTimeout(() => setLeaving(true), reducedMotion() ? 0 : 600);
+    setTimeout(onBoard, reducedMotion() ? 50 : 1150);
+  }
+
+  return (
+    <section className={`pl${leaving ? ' leave' : ''}`}>
+      <div className="pl-eb pl-lift">{puzzle.dateLabel} · Passport No. {puzzle.num}{puzzle.sunday ? ' · Sunday Edition' : ''}</div>
+      <h1 className="pl-title pl-lift">Passport</h1>
+      <p className="pl-lede pl-lift">One mystery country. <b>Five rounds</b>, ten points each. Your score decides <b>which passport</b> you travel home on.</p>
+
+      <div className="pl-board" role="img" aria-label="Departures board: the destination is sealed until you board">
+        <div className="pl-bhd"><span>Departures · Mind Loft Air</span><span className="clk">{clock ? `${clock} ET` : ''}</span></div>
+        <div className="pl-brow">
+          <span className="lab">Destination</span>
+          <div className="pl-flaps">
+            {Array.from({ length: FLAPS }, (_, i) => (
+              <div key={i} className="cell" ref={(el) => { cells.current[i] = el; }}><span>{AZ[(i * 7) % 26]}</span></div>
+            ))}
+          </div>
+          <span className="lab">Status</span>
+          <div><span className={`pl-status${sealed ? ' off' : ''}`}><i />{sealed ? 'DEPARTED' : 'BOARDING'}</span></div>
+        </div>
+        <div className="pl-bfacts">
+          <div><span className="lab">Flight</span><b>ML {String(puzzle.num).padStart(3, '0')}</b></div>
+          <div><span className="lab">Gate</span><b>5 rounds</b></div>
+          <div><span className="lab">Best fare</span><b>50 pts</b></div>
+        </div>
+      </div>
+
+      <button type="button" className="pl-pass" onClick={board} aria-label="Board now: start the run">
+        <span className="main"><small>Boarding pass · Passenger: You</small><b>Board now &rarr;</b></span>
+        <span className="stub"><small>Seat</small><b>1A</b></span>
+      </button>
+
+      <div className="pl-map pl-lift"><canvas ref={canvasRef} width="1000" height="500" aria-hidden="true" /><span className="tag">Destination sealed until you land</span></div>
+
+      <div className="pl-sec pl-lift">
+        <div className="pl-eb">Your visa page</div>
+        <h2>Five rounds, five stamps</h2>
+        <p>Name the country from a landmark, build its flag, list its neighbors, pin its capital and call its size.</p>
+        <div className="pl-visa">
+          {ROUNDS.map((r, i) => (
+            <div key={r.k} className="slot">
+              <div className={`stamp${stampOn > i ? ' on' : ''}`} style={{ '--c': LAUNCH_INKS[i], '--r': LAUNCH_ROT[i] }}><small>{r.n}</small><b>{DEMO_STAMPS[i]}</b><em>/10</em></div>
+              <span className="lbl">{i + 1} {r.n}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="pl-sec pl-lift">
+        <div className="pl-eb">{HENLEY_EDITION}</div>
+        <h2>The passport you travel home on</h2>
+        <p>One real passport per continent, in true order of visa-free destinations.</p>
+        <div className="pl-ladder">
+          {TIERS.map((t, i) => (
+            <div key={t.short} className={`pp${i === TIERS.length - 1 ? ' top' : ''}`}>
+              <div className={`cv${glint === i ? ' glint' : ''}`} style={{ '--cv': t.cv, '--cf': t.cf, '--i': i }}>
+                <span className="t">{t.swiss ? 'Schweizer Pass' : t.t1}</span>
+                {t.swiss ? (
+                  <svg viewBox="0 0 84 84" aria-hidden="true"><path d="M34 14h16v20h20v16H50v20H34V50H14V34h20z" fill="#fff" /></svg>
+                ) : (
+                  <svg viewBox="0 0 84 84" aria-hidden="true"><circle cx="42" cy="42" r="30" fill="none" stroke="currentColor" strokeWidth="3" /><circle cx="42" cy="42" r="23" fill="none" stroke="currentColor" strokeWidth="1.5" /><path d="M42 29l3.8 8.2 9 .9-6.8 6 2 8.8L42 48.2l-8 4.7 2-8.8-6.8-6 9-.9z" fill="currentColor" /></svg>
+                )}
+                <span className="w">{t.t2}</span>
+              </div>
+              <span className="nm">{t.short}</span>
+              <span className="mn"><b>{i === TIERS.length - 1 ? t.min : `${t.min}+`}</b> · {t.vf} free</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="pl-row pl-lift">
+        <button type="button" className="pl-how" aria-expanded={howOpen} onClick={() => setHowOpen((v) => !v)}>{howOpen ? 'Hide scoring' : 'How scoring works'}</button>
+        <span className="pl-eb">Sundays bring a country with 8+ neighbors</span>
+      </div>
+      {howOpen && (
+        <div className="pl-rules">
+          <ol>
+            <li><b>Landmark.</b> A photo zoomed right in. Each wrong country pulls the camera back: 10, 8, 5 or 3 points.</li>
+            <li><b>Flag.</b> Pick its colors, its layout, then the real flag. Each wrong pick takes 3 off.</li>
+            <li><b>Borders.</b> Name every land neighbor before three strikes. Islands name the two nearest countries across the water.</li>
+            <li><b>Capital.</b> One tap on a blank map. Close enough is a full 10, and a point comes off for every step further out.</li>
+            <li><b>Numbers.</b> Five countries, bigger or smaller by land area. Two points each.</li>
+          </ol>
+          <p>The board ranks your total, then your time. Areas and capitals are from the CIA World Factbook, the passports from the {HENLEY_EDITION}. Photos from Wikimedia Commons, flags from flag-icons.</p>
+        </div>
+      )}
+    </section>
+  );
+}
+
+const LAUNCH_CSS = `
+.pl{max-width:640px;margin:0 auto;padding:6px 0 20px;text-align:center}
+.pl-eb{font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--stg-mute,#9aa8c4)}
+.pl-title{margin:10px 0 0;font-family:${STAMP_FONT};font-weight:700;font-size:clamp(46px,10vw,84px);letter-spacing:.06em;text-transform:uppercase;line-height:1;color:var(--stg-ink,#e9edf4);display:inline-block;position:relative;animation:plslam .55s cubic-bezier(.2,1.6,.4,1) .15s both}
+.pl-title::after{content:'';position:absolute;inset:-6px -14px;border:3px solid #f0718b;border-radius:10px;opacity:0;transform:rotate(-3deg) scale(1.3);animation:plring .5s .55s ease-out both}
+@keyframes plslam{from{transform:scale(2.2) rotate(-6deg);opacity:0;filter:blur(3px)}to{transform:none;opacity:1;filter:none}}
+@keyframes plring{to{opacity:.85;transform:rotate(-3deg) scale(1)}}
+.pl-lede{margin:16px auto 0;max-width:520px;font-size:15.5px;font-weight:600;line-height:1.5;color:var(--stg-mute,#9aa8c4);text-wrap:balance}
+.pl-lede b{color:var(--stg-ink,#e9edf4)}
+.pl-board{margin:22px auto 0;max-width:600px;background:linear-gradient(180deg,#1b2131,#10141f);border:1.5px solid rgba(255,255,255,.12);border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.55);overflow:hidden;text-align:left}
+.pl-bhd{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.12);font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#c9d3e6}
+.pl-bhd .clk{font-size:13px;letter-spacing:.04em;color:#f4d58d;font-variant-numeric:tabular-nums;text-transform:none}
+.pl-brow{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;padding:14px 14px 12px;align-items:center}
+.pl .lab{font-family:${MONO};font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#9aa8c4}
+.pl-flaps{display:flex;gap:3px}
+.pl-flaps .cell{position:relative;width:clamp(22px,6.2vw,36px);height:clamp(32px,8.6vw,48px);background:#151a26;border-radius:4px;display:flex;align-items:center;justify-content:center;font:500 clamp(18px,5.4vw,30px)/1 ${MONO};color:#f4d58d;box-shadow:inset 0 -2px 0 rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06);overflow:hidden}
+.pl-flaps .cell::after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.65)}
+.pl-flaps .cell.flip span{animation:plflip .12s ease-in}
+@keyframes plflip{0%{transform:rotateX(0)}50%{transform:rotateX(88deg)}100%{transform:rotateX(0)}}
+.pl-status{display:inline-flex;align-items:center;gap:8px;font:500 13px ${MONO};letter-spacing:.14em;color:#6ee7b7}
+.pl-status i{width:8px;height:8px;border-radius:50%;background:currentColor;animation:plblink 1.1s steps(1) infinite}
+.pl-status.off{color:#f4d58d}.pl-status.off i{animation:none}
+@keyframes plblink{50%{opacity:.15}}
+.pl-bfacts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid rgba(255,255,255,.12)}
+.pl-bfacts div{padding:9px 14px;border-right:1px solid rgba(255,255,255,.12)}
+.pl-bfacts div:last-child{border-right:0}
+.pl-bfacts b{display:block;font:500 15px ${MONO};color:#e9edf4}
+.pl-pass{display:flex;width:100%;max-width:600px;margin:12px auto 0;padding:0;border:0;border-radius:16px;overflow:hidden;cursor:pointer;background:#7dd3fc;color:#08222e;font:inherit;box-shadow:0 14px 34px rgba(0,0,0,.55);text-align:left}
+.pl-pass .main{flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:2px;position:relative;overflow:hidden}
+.pl-pass .main small,.pl-pass .stub small{font:500 10px ${MONO};letter-spacing:.16em;text-transform:uppercase;opacity:.75}
+.pl-pass .main b{font:800 21px ${SANS}}
+.pl-pass .main::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.5) 50%,transparent 70%);transform:translateX(-100%);animation:plsheen 2.6s 1.6s ease-in-out infinite}
+@keyframes plsheen{to{transform:translateX(100%)}}
+.pl-pass .stub{width:112px;border-left:2px dashed rgba(8,34,46,.4);padding:14px 12px;display:flex;flex-direction:column;justify-content:center;gap:2px;position:relative}
+.pl-pass .stub::before,.pl-pass .stub::after{content:'';position:absolute;left:-9px;width:16px;height:16px;border-radius:50%;background:var(--stg-ground,#0b0f1a)}
+.pl-pass .stub::before{top:-8px}.pl-pass .stub::after{bottom:-8px}
+.pl-pass .stub b{font:500 18px ${MONO}}
+.pl-pass:focus-visible,.pl-how:focus-visible{outline:2px solid #e9edf4;outline-offset:3px}
+.pl-pass:active{transform:scale(.985)}
+.pl-map{margin:26px auto 0;max-width:600px;border-radius:16px;border:1.5px solid rgba(255,255,255,.12);background:#0d1220;overflow:hidden;position:relative}
+.pl-map canvas{display:block;width:100%;height:auto;aspect-ratio:2/1}
+.pl-map .tag{position:absolute;left:12px;bottom:10px;font:500 10px ${MONO};letter-spacing:.14em;text-transform:uppercase;color:#9aa8c4}
+.pl-sec{margin:34px auto 0;max-width:600px;text-align:left}
+.pl-sec h2{margin:6px 0 4px;font-size:22px;font-weight:800;letter-spacing:-.01em;color:#e9edf4;text-wrap:balance}
+.pl-sec p{margin:0;color:#9aa8c4;font-weight:600;font-size:14px;line-height:1.5}
+.pl-visa{margin-top:14px;background:#efe9da;border-radius:14px;padding:14px 14px 26px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;position:relative;box-shadow:0 14px 34px rgba(0,0,0,.5)}
+.pl-visa::before{content:'VISAS';position:absolute;right:14px;top:8px;font:500 9px ${MONO};letter-spacing:.2em;color:#9b917b}
+.pl-visa .slot{aspect-ratio:1/1.05;border:1.5px dashed #c8bfa8;border-radius:10px;margin-top:12px;position:relative}
+.pl-visa .stamp{position:absolute;inset:4px;border:2.5px solid var(--c);border-radius:9px;color:var(--c);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:${STAMP_FONT};text-transform:uppercase;transform:rotate(var(--r));opacity:0;box-shadow:inset 0 0 0 2px #efe9da,inset 0 0 0 3.5px var(--c)}
+.pl-visa .stamp small{font-size:clamp(7px,1.8vw,10px);letter-spacing:.1em}
+.pl-visa .stamp b{font-size:clamp(16px,4.6vw,24px);font-weight:700;line-height:1}
+.pl-visa .stamp em{font-style:normal;font-family:${MONO};font-size:clamp(7px,1.7vw,9px);letter-spacing:.08em}
+.pl-visa .stamp.on{animation:plstamp .38s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes plstamp{0%{opacity:0;transform:rotate(var(--r)) scale(1.9)}60%{opacity:1}100%{opacity:.92;transform:rotate(var(--r)) scale(1)}}
+.pl-visa .lbl{position:absolute;bottom:-17px;left:0;right:0;text-align:center;font:500 9px ${MONO};letter-spacing:.1em;text-transform:uppercase;color:#7a7160;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-ladder{margin-top:16px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;align-items:end}
+.pl-ladder .pp{display:flex;flex-direction:column;align-items:center;gap:6px}
+.pl-ladder .cv{width:100%;max-width:92px;aspect-ratio:.7/1;border-radius:6px 9px 9px 6px;background:var(--cv);color:var(--cf);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8% 6%;box-shadow:0 12px 26px rgba(0,0,0,.5),inset 4px 0 0 rgba(0,0,0,.2);position:relative;overflow:hidden;animation:plrise .5s cubic-bezier(.2,1.3,.4,1) both;animation-delay:calc(var(--i) * .11s + .4s)}
+.pl-ladder .cv::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.22) 45%,transparent 60%);background-size:260% 100%;background-position:130% 0}
+.pl-ladder .cv.glint::after{animation:plglint 1.1s ease-out}
+@keyframes plglint{to{background-position:-40% 0}}
+@keyframes plrise{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
+.pl-ladder .t{font-size:clamp(5px,1.3vw,7px);letter-spacing:.12em;text-transform:uppercase;font-weight:700;text-align:center;line-height:1.3;max-height:3.9em;overflow:hidden}
+.pl-ladder svg{width:52%;height:auto}
+.pl-ladder .w{font-family:${STAMP_FONT};font-size:clamp(6px,1.6vw,9px);letter-spacing:.14em;text-transform:uppercase;min-height:1em}
+.pl-ladder .nm{font-size:12px;font-weight:800;text-align:center;line-height:1.2;color:#e9edf4}
+.pl-ladder .mn{font:500 11px ${MONO};color:#9aa8c4;text-align:center}
+.pl-ladder .mn b{color:#7dd3fc;font-weight:500}
+.pl-ladder .pp.top .nm{color:#f6c56b}
+.pl-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:26px auto 0;max-width:600px}
+.pl-how{background:none;border:0;padding:6px 0;color:#9aa8c4;font:700 13px ${SANS};text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.pl-rules{max-width:600px;margin:10px auto 0;text-align:left;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px 16px;color:#e9edf4}
+.pl-rules ol{margin:0;padding-left:20px;display:grid;gap:8px;font-size:14px;line-height:1.5}
+.pl-rules li b{color:#7dd3fc}
+.pl-rules p{margin:12px 0 0;font-size:12.5px;color:#9aa8c4;font-weight:600;line-height:1.5}
+.pl.leave .pl-lift{transition:transform .55s cubic-bezier(.6,0,.8,.4),opacity .45s;transform:translateY(-40px);opacity:0}
+@media(max-width:560px){
+  .pl-brow{grid-template-columns:1fr;gap:4px}
+  .pl-bfacts div{padding:8px 10px}
+  .pl-pass .stub{width:92px}
+  .pl-pass .main b{font-size:18px}
+  .pl-ladder{gap:5px}
+  .pl-ladder .nm{font-size:10px}
+  .pl-ladder .mn{font-size:9.5px}
+  .pl-visa{gap:5px;padding:12px 10px 26px}
+}
+@media(prefers-reduced-motion:reduce){.pl *{animation-duration:.01ms !important;animation-iteration-count:1 !important}.pl.leave .pl-lift{transition:none}}
+`;
+
+const ENDING_CSS = `
+.pc-cap{display:flex;align-items:center;gap:12px;max-width:760px;margin:0 auto;padding:12px 16px;font-size:13px;font-family:${SANS}}
+.pc-home{font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-mute,#9aa8c4);text-decoration:none}
+.pc-cap b{font-weight:900;letter-spacing:-.01em}
+.pc-capd{color:var(--stg-mute,#9aa8c4);font-weight:700}
+.pc-capt{display:flex;gap:4px;margin-left:auto}
+.pc-capt i{width:18px;height:6px;border-radius:3px;background:rgba(255,255,255,.12)}
+.pc-capt i.d{background:#7dd3fc}
+.pc-capt i.on{background:#7dd3fc;box-shadow:0 0 0 2px var(--stg-ground,#0b0f1a),0 0 0 3px #e9edf4}
+.pc-clock{font-family:${MONO};font-size:12px;color:#e9edf4;font-variant-numeric:tabular-nums}
+@media(max-width:520px){.pc-cap{gap:9px;padding:10px 12px}.pc-cap.on .pc-capd{display:none}.pc-capt i{width:12px}.pc-home{font-size:10px}}
+.pc-rules{background:none;border:1px solid rgba(255,255,255,.12);color:#9aa8c4;border-radius:999px;padding:4px 10px;font:700 11.5px ${SANS};cursor:pointer}
+.pc-lb{margin-left:auto;font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7dd3fc;text-decoration:none}
+.pc-lb:hover{color:#e9edf4}
+.pe{max-width:900px;margin:0 auto;padding:10px 0 20px;animation:pein .6s ease both}
+@keyframes pein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.pe-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:36px;align-items:center;margin-top:22px}
+.pe-cov{display:flex;justify-content:center}
+.pe-cov .pp-cover{width:min(250px,62vw)}
+.pe-copy{min-width:0;text-align:left}
+.pe-you{font:800 12px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:#7dd3fc}
+.pe-nm{font-size:clamp(32px,5vw,48px);font-weight:900;letter-spacing:-.02em;line-height:1.02;margin:8px 0 10px;text-wrap:balance;color:#e9edf4}
+.pe-ln{font-size:16.5px;line-height:1.45;margin:0 0 16px;max-width:38ch;color:#e9edf4}
+.pe-stats{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;margin-bottom:10px;max-width:400px}
+.pe-stats div{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:9px 11px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.pe-stats b{font:500 20px ${MONO};white-space:nowrap;color:#e9edf4}
+.pe-stats span{font:800 9.5px ${SANS};letter-spacing:.12em;text-transform:uppercase;color:#9aa8c4}
+.pe-rounds{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;max-width:400px}
+.pe-rounds div{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:7px 2px;text-align:center;min-width:0}
+.pe-rounds i{display:block;font:normal 800 8.5px ${SANS};letter-spacing:.05em;text-transform:uppercase;color:#9aa8c4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pe-rounds b{font:500 17px ${MONO};color:#e9edf4}
+.pe-rounds .hi{border-color:#7dd3fc}.pe-rounds .hi b{color:#7dd3fc}
+.pe-rounds .lo b{color:#fb7185}
+.pe-next{display:inline-block;margin-top:12px;font-size:13px;font-weight:700;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.12);color:#e9edf4}
+.pe-next b{color:#7dd3fc}
+.pe-btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.pe-btns a,.pe-btns button{font:800 14px ${SANS};padding:12px 18px;border-radius:12px;text-decoration:none;color:#e9edf4;border:1px solid rgba(255,255,255,.12);background:transparent;cursor:pointer}
+.pe-btns .pri{background:#7dd3fc;color:#08222e;border-color:transparent}
+.pe-btns a:focus-visible,.pe-btns button:focus-visible{outline:2px solid #e9edf4;outline-offset:3px}
+.pe-foot{margin-top:14px;font-size:12.5px;font-weight:700;color:#9aa8c4}
+.pe-foot b{color:#e9edf4;font-variant-numeric:tabular-nums}
+.pe-foot a{color:#7dd3fc}
+.pe-join{max-width:520px;margin:30px auto 0}
+@media(max-width:720px){
+  .pe-grid{grid-template-columns:1fr;gap:18px;margin-top:14px}
+  .pe-cov .pp-cover{width:min(210px,56vw)}
+  .pe-stats,.pe-rounds{max-width:none}
+  .pe-ln{font-size:15.5px}
+  .pe-btns a,.pe-btns button{flex:1 1 40%;text-align:center;padding:12px 10px}
+}
+`;
+
 export default function PassportClient({ puzzles = [], day = null, forceNum = null }) {
   // The server picked the day; the client follows it so the two never disagree
   // across midnight.
@@ -299,6 +602,7 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
   const [copied, setCopied] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [finale, setFinale] = useState(false);
+  const [nudgeReady, setNudgeReady] = useState(false);
   const [slam, setSlam] = useState(-1);
   const [numShow, setNumShow] = useState(null);
   const [shareCta, setShareCta] = useState('Share');
@@ -324,11 +628,11 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
   const started = playing && !!g.t0;
   const focusMode = playing && !showChrome;
   const LOFT = true;
-  const STAGE = isStage(KEY, searchParams);
-  const [stageTheme] = useStageTheme();
-  const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor(KEY);
-  const STAGE_ACC = { '--stg-acc-dk': gameColor(KEY), '--stg-acc-lt': gameColorLight(KEY), '--stg-onramp-lt': gameOnrampLight(KEY), '--stg-acc-ink-lt': gameAccentInkLight(KEY) };
-  const Cap = STAGE ? StageChrome : LoftCap;
+  // ONE REGISTER, the run's (owner, 2026-10-03): Passport is a circuit, so it
+  // wears the Midnight ground Price Check and the Trivia Gauntlet wear.
+  const STAGE = true;
+  const stageTheme = 'dark';
+  const STAGE_ACC = {};
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
@@ -466,13 +770,8 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
 
   const elapsed = g.t0 ? fmtTime((g.tEnd || now) - g.t0) : '0:00';
   const isTodays = PUZZLE.num === pickPuzzle(puzzles, null).num;
-  const iq = useIqStanding({ game: KEY, quizId: PUZZLE.quizId, active: done });
-  const nextUp = useNextUnplayed({ self: KEY, active: done });
-  const upNext = useUnplayedSimilar({ self: KEY, active: done });
-  const dailyBoard = useDailyBoard({ quizId: PUZZLE.quizId, active: done });
-  const allTime = useGameAllTime({ game: KEY, active: done });
-  const dayStats = useDayStats();
-  const catRank = useCategoryRank({ self: KEY, active: done });
+  // The run's board, read the way Price Check reads its own.
+  const cboard = useCircuitBoard(KEY, hydrated && done);
   const prevPuzzle = puzzles.find((x) => x.num === PUZZLE.num - 1) || null;
   const myStats = deriveStats(stats, pickPuzzle(puzzles, null).num);
 
@@ -558,6 +857,7 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
   }
   function finaleDone() {
     setFinale(false);
+    setNudgeReady(true);
     const cur = gRef.current;
     if (!cur.fin) commit({ ...cur, fin: true });
   }
@@ -1161,197 +1461,110 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
     </div>
   );
 
-  const gate = (
-    <div className={STAGE ? 'stg-gate' : undefined} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '20px', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 8 }}>{gateRules ? 'How to play' : 'Today’s destination is sealed'}</div>
-      {gateRules ? rulesBody : (
-        <>
-          <p style={{ margin: '0 0 12px', fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>One mystery country a day, played five ways. Each round stamps your passport with a score out of 10, and your total out of 50 decides which passport you leave with.</p>
-          <div className="pp-gmap"><canvas ref={canvasRef} width="1000" height="500" aria-label="A world map with flights leaving Boston" /></div>
-          <div className="pp-pass">
-            <div className="m">
-              <div className="pp-row" style={{ marginTop: 0 }}><span className="lab">Boarding pass · Mind Loft Air</span><span className="lab">Flight ML {String(PUZZLE.num).padStart(3, '0')}</span></div>
-              <div style={{ display: 'flex', gap: 14, marginTop: 6, alignItems: 'flex-end' }}>
-                <div><div className="lab">From</div><div className="big">BOS</div></div>
-                <div><div className="lab">To</div><div className="big"><span className="sealed">???</span></div></div>
-              </div>
-              <div style={{ display: 'flex', gap: 16, marginTop: 8, flexWrap: 'wrap' }}>
-                <div><div className="lab">Passenger</div><div className="val">You</div></div>
-                <div><div className="lab">Date</div><div className="val">{PUZZLE.dateLabel}</div></div>
-                <div><div className="lab">Visas</div><div className="val">0 of 5</div></div>
-              </div>
-              <div className="bar" />
-            </div>
-            <div className="stub"><div><div className="lab">Stamps</div><div className="big" style={{ fontSize: 22 }}>5</div></div><div><div className="lab">Best</div><div className="val">50</div></div></div>
+  // ── THE ENDING (owner, 2026-10-03): the run's settled screen, the way Price
+  // Check and the Trivia Gauntlet end, not a daily end card. The cover you
+  // earned, the figures, the five stamps, and the run's own leaderboard.
+  const me = cboard && cboard.data ? (cboard.data.me || cboard.data.meProvisional || null) : null;
+  const field = cboard && cboard.data && Array.isArray(cboard.data.overall) ? (cboard.data.overallField || cboard.data.uniquePlayers || cboard.data.overall.length) : null;
+  let hiR = 0, loR = 0;
+  sc.forEach((v, i) => { if ((v || 0) > (sc[hiR] || 0)) hiR = i; if ((v || 0) < (sc[loR] || 0)) loR = i; });
+  const flat = (sc[hiR] || 0) === (sc[loR] || 0);
+  const ending = (
+    <section className="pe">
+      <div className="pl-eb" style={{ textAlign: 'center' }}>{PUZZLE.dateLabel} · Passport No. {PUZZLE.num}</div>
+      <div className="pe-grid">
+        <div className="pe-cov">
+          <div className="pp-cwrap"><Cover tier={tier} /><div className="pp-issued small"><Stamp i={0} big label="Visa-free" score={tier.vf} ink={k === 0 ? 'var(--pp-bad)' : 'var(--pp-good)'} /></div></div>
+        </div>
+        <div className="pe-copy" role="status">
+          <div className="pe-you">You traveled on the</div>
+          <h1 className="pe-nm">{tier.name}</h1>
+          <p className="pe-ln">{tier.line} The destination was <b>{DAY.name}</b>: {DAY.land.name}.</p>
+          <div className="pe-stats">
+            <div><b>{total}/50</b><span>Score</span></div>
+            {me && me.rank ? <div><b>#{me.rank}</b><span>{field ? `of ${Number(field).toLocaleString()} today` : 'today'}</span></div> : null}
+            <div><b>{tier.vf}</b><span>Visa-free</span></div>
           </div>
-          <div className="pp-how">{ROUNDS.map((r, i) => <div key={r.k}><i>{i + 1}</i>{r.n}</div>)}</div>
-        </>
-      )}
-      <div style={{ marginTop: 16, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-        <button className="pp-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Board</button>
-        <div>
-          <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
-            {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
-          </button>
+          <div className="pe-rounds">
+            {ROUNDS.map((r, i) => <div key={r.k} className={flat ? '' : i === hiR ? 'hi' : i === loR ? 'lo' : ''}><i>{r.n}</i><b>{sc[i] == null ? '-' : sc[i]}</b></div>)}
+          </div>
+          <div className="pe-next">{up ? <><b>{up.min - total} more</b> and you upgrade to the {up.name}.</> : <>Top of the ladder. <b>Every border waves you through.</b></>}</div>
+          <div className="pe-btns">
+            <button type="button" className="pri" onClick={copyShare}>{copied ? 'Copied' : 'Share your passport'}</button>
+            <a href={`${PATH}/leaderboard`}>Leaderboard</a>
+            <button type="button" onClick={() => setFinale(true)}>Replay the ending</button>
+            <a href="/">Back to main</a>
+          </div>
+          <div className="pe-foot">
+            {isTodays
+              ? (countdown ? <>Next country in <b>{countdown}</b>.</> : 'A new country boards at midnight Eastern.')
+              : <>You played the {PUZZLE.dateLabel} archive. <a href={PATH}>Back to today&rsquo;s Passport</a></>}
+          </div>
         </div>
       </div>
-    </div>
+      {!identity && (
+        <div className="pe-join">
+          <JoinLeaderboardForm hideIcon heading="Put your passport on the board" identity={identity} onJoined={(id) => setIdentity(id)} />
+        </div>
+      )}
+    </section>
   );
 
   return (
-    <div className={STAGE ? 'stage-page' : 'loft-page'}
-      data-stage-theme={STAGE ? stageTheme : undefined}
-      style={{ ...(STAGE ? STAGE_ACC : null), ...VARS, minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: 'hidden' }}>
-      {!STAGE && <Grain />}
-      {!STAGE && <DailyChrome slug={KEY} name={NAME} collapsed={started} loft={LOFT} />}
-      <Cap gameKey={KEY} quizId={PUZZLE.quizId}
-        name={NAME}
-        cat="Geography"
-        outcome={playing ? null : outcome}
-        num={PUZZLE.num}
-        tiles={playing ? null : upNext}
-        dateLabel={PUZZLE.dateLabel}
-        onHelp={() => setShowHelp(true)}
-        figures={playing ? [
-          { v: unsealed ? DAY.name : 'Sealed', k: 'destination' },
-          { v: `${Math.min(5, g.round + 1)}/5`, k: 'round' },
-          { v: elapsed, k: 'time' },
-        ] : [
-          { v: `${total}/50`, k: 'score' },
-          { v: tier.short, k: 'passport' },
-          { v: elapsed, k: 'time' },
-        ]}
-      />
-      <div className="pp-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
-        <style dangerouslySetInnerHTML={{ __html: CSS }} />
-        <div style={{ maxWidth: 620, margin: '0 auto' }}>
-        <div className={STAGE ? undefined : 'loft-stage'}>
-          <div className={!STAGE && !playing ? (revealed ? 'loft-flip' : 'loft-flip on') : undefined}>
-          <div className={!STAGE && !playing ? 'loft-flip-in' : undefined}>
-          <div className={!STAGE && !playing ? 'loft-face' : undefined}>
-            {preStart ? gate : board}
-          <div className={STAGE ? undefined : 'loft-sol'}>
-          {!playing && (
-            <div style={{ maxWidth: 520, margin: '0 auto' }}>
-              {isTodays && myStats.cur >= 2 && (
-                <div style={{ fontSize: 13, fontWeight: 800, margin: '12px 0 0', color: 'var(--stg-warn, #b45309)' }}>{myStats.cur}-day streak</div>
-              )}
-              <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
-                {isTodays ? (
-                  <>{countdown ? <>Next {NAME} in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A new country drops at midnight Eastern.'}</>
-                ) : (
-                  <>You&rsquo;re playing the {PUZZLE.dateLabel} archive.{' '}<a href={PATH} style={{ color: COLORS.ember, fontWeight: 800, textDecoration: 'underline' }}>Back to today&rsquo;s {NAME} &rarr;</a></>
-                )}
-              </p>
-            </div>
-          )}
-          </div>
-          {!playing && revealed && (
-            <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Hide your passport</button>
-          )}
-          </div>
-          {!playing && !finale && (
-            <LoftFinish
-              name="Passport"
-              catRank={catRank}
-              outcome={outcome}
-              title={`${total} of 50`}
-              detail={`${tier.name} · ${elapsed}`}
-              iq={iq}
-              board={dailyBoard}
-              gameRank={allTime && allTime.ready
-                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '—',
-                    label: allTime.field != null ? `of ${Number(allTime.field).toLocaleString()} ${NAME} all time` : 'all-time rank' }
-                : null}
-              day={dayStats}
-              streak={isTodays ? myStats.cur : null}
-              handoff={false}
-              archive={puzzles
-                .filter((p) => p.live <= etToday() && p.num !== PUZZLE.num)
-                .sort((x, y) => y.num - x.num)
-                .map((p) => ({
-                  num: p.num, dateLabel: p.dateLabel, sunday: !!p.sunday, href: `${PATH}?p=${p.num}`,
-                  done: !!(stats && stats.rec && stats.rec[p.num]),
-                  score: (stats && stats.rec && stats.rec[p.num]) ? stats.rec[p.num].s : null,
-                }))}
-              options={[
-                { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your stamps and your passport, never the country', kind: 'gold', onClick: copyShare },
-                { tone: 'board', label: 'Your passport', sub: 'The cover, the stamps, the ladder', onClick: () => setRevealed(true) },
-                { tone: 'reveal', label: 'Replay the ending', sub: 'The stamps land again', onClick: () => setFinale(true) },
-                prevPuzzle && { tone: 'another', label: `Play another ${NAME}`, sub: `No. ${prevPuzzle.num}, yesterday’s country`, href: `${PATH}?p=${prevPuzzle.num}` },
-                nextUp && { tone: 'similar', label: 'Play similar', sub: `${nextUp.name} · ${nextUp.tag}`, href: nextUp.href },
-                { tone: 'replay', label: 'Replay', sub: 'This country again, unscored', onClick: resetGame },
-                { label: 'Back to main', sub: 'The day’s full board', tone: 'main', href: '/' },
-              ]}
-            />
-          )}
-          </div>
-          </div>
-        </div>
-        </div>
+    <div className="stage-page pp-root" data-stage-theme="dark"
+      style={{ ...VARS, minHeight: '100vh', background: 'var(--stg-ground,#0b0f1a)', color: 'var(--stg-ink,#e9edf4)', position: 'relative', overflowX: 'hidden', fontFamily: SANS }}>
+      <style dangerouslySetInnerHTML={{ __html: CSS + LAUNCH_CSS + ENDING_CSS }} />
+      <div className={`pc-cap${started ? ' on' : ''}`}>
+        <a href="/" className="pc-home">Mind Loft</a>
+        <b>Passport</b>
+        <span className="pc-capd">{PUZZLE.dateLabel.replace(/, \d{4}$/, '')}</span>
+        {started ? (
+          <>
+            <span className="pc-capt" aria-label={`Round ${Math.min(5, g.round + 1)} of 5`}>{ROUNDS.map((r, i) => <i key={r.k} className={i < g.round ? 'd' : i === g.round ? 'on' : ''} />)}</span>
+            <span className="pc-clock">{elapsed}</span>
+            <button type="button" className="pc-rules" onClick={() => setShowHelp(true)}>Rules</button>
+          </>
+        ) : (
+          <a className="pc-lb" href={`${PATH}/leaderboard`}>Leaderboard</a>
+        )}
+      </div>
 
-        {!STAGE && <GamePanel self={KEY} name={NAME} onShow={() => setShowChrome(true)} />}
-        <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block', margin: '30px auto 0' }}>
-          <div className={STAGE ? undefined : 'loft-report'}>
-            <ReportIssue self={KEY} name={NAME} accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
-          </div>
-          {!focusMode && mobileUi && !standalone && (
-            <button onClick={a2hsClick} style={{ marginTop: 10, width: '100%', fontFamily: SANS, fontSize: 13.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 800, height: 54, borderRadius: 10, border: 'none', background: `var(--stg-acc, ${COLORS.accent})`, color: `var(--stg-onramp, ${T.white})`, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 9, whiteSpace: 'nowrap' }}>
-              <Smartphone size={15} strokeWidth={2.5} /> Add to Home Screen
-            </button>
-          )}
-        </div>
-        {showA2hsHelp && (
-          <div onClick={() => setShowA2hsHelp(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(20,22,28,0.55)', zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 18 }}>
-            <div onClick={(e) => e.stopPropagation()} style={{ background: STAGE ? 'var(--stg-raise,#0e131f)' : T.white, borderRadius: 14, maxWidth: 430, width: '100%', padding: '22px 22px 16px', fontFamily: SANS, border: STAGE ? '1px solid var(--stg-line)' : '1.5px solid rgba(20,22,28,0.12)' }}>
-              <div style={{ fontSize: 17, fontWeight: 800, color: INK, marginBottom: 8 }}>Add {NAME} to your Home Screen</div>
-              <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>Open your browser&apos;s menu and choose <b>Add to Home Screen</b> (on iPhone, tap <b>Share</b> first). The tile opens today&apos;s country, every day.</p>
-              <button onClick={() => setShowA2hsHelp(false)} style={{ marginTop: 10, fontFamily: SANS, fontSize: 12.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, height: 44, width: '100%', borderRadius: 10, border: 'none', background: COLORS.ink, color: T.white, cursor: 'pointer' }}>Got it</button>
-            </div>
-          </div>
-        )}
-        {!focusMode && !identity && (
-          <div id="daily-join" style={{ margin: '18px auto 0' }}>
-            <JoinLeaderboardForm hideIcon heading="See your stats and join the leaderboard" identity={identity} onJoined={(id) => setIdentity(id)} />
-          </div>
-        )}
+      <div className="pp-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '8px 16px 70px' }}>
+        {hydrated && preStart && <Launch puzzle={PUZZLE} canvasRef={canvasRef} onBoard={startGame} />}
+        {hydrated && started && <div style={{ maxWidth: 620, margin: '0 auto' }}>{board}</div>}
+        {hydrated && done && !finale && ending}
       </div>
 
       {finale && done && (
         <Finale scores={sc} total={total} clock={elapsed} inks={inks} onDone={finaleDone} />
       )}
-
+      <RunNudgePop target="gauntlet" ready={nudgeReady} delay={10000} fireOnLeave />
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {showHelp && (
-        <div onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(20,22,28,0.55)', zIndex: 70, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 480, background: STAGE ? 'var(--stg-raise,#0e131f)' : COLORS.cream, borderRadius: 12, border: STAGE ? '1px solid var(--stg-line)' : `2px solid ${COLORS.ink}`, padding: '20px 22px', fontFamily: SANS, maxHeight: '86vh', overflowY: 'auto' }}>
+        <div onClick={() => setShowHelp(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(6,9,16,0.7)', zIndex: 70, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 480, background: 'var(--stg-raise,#0e131f)', borderRadius: 12, border: '1px solid var(--stg-line)', padding: '20px 22px', fontFamily: SANS, maxHeight: '86vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
               <div style={{ fontSize: 21, fontWeight: 800, color: INK }}>How to play</div>
-              <button onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
+              <button onClick={() => setShowHelp(false)} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
             </div>
             {rulesBody}
-            <button className="pp-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: COLORS.ink, color: T.white }}>Play</button>
+            <button className="pp-go" onClick={() => setShowHelp(false)} style={{ marginTop: 14 }}>Back to the round</button>
           </div>
         </div>
       )}
 
-      <StageFold />
-      <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
+      <section style={{ position: 'relative', display: started ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About {NAME}</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          {NAME} is a free daily geography game from Mind Loft: one mystery country a day, played five ways. Name it from a zoomed-in photo of a landmark, build its flag, name its land neighbors, drop a pin on its capital, and call five countries bigger or smaller by area. Each round scores out of 10, for one total out of 50.
-        </p>
-        <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Your total decides the passport you leave with, from the Sierra Leonean passport up to the Japanese, ranked by the visa-free destinations each opens in the {HENLEY_EDITION}. Everyone gets the same country, and the leaderboard ranks your total, then time.
+          {NAME} is a free daily geography run from Mind Loft: one mystery country a day, played five ways. Name it from a zoomed-in photo of a landmark, build its flag, name its land neighbors, drop a pin on its capital, and call five countries bigger or smaller by area. Each round scores out of 10, for one total out of 50.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          A new country drops every day at midnight Eastern, with a bigger one on Sundays. No app, no signup.
+          Your total decides the passport you travel home on, from the Sierra Leonean passport up to the Japanese, ranked by the visa-free destinations each opens in the {HENLEY_EDITION}. Everyone gets the same country, and the leaderboard ranks your total, then time. A new country boards every day at midnight Eastern, with a bigger one on Sundays.
         </p>
       </section>
-
-      {!STAGE && <div style={{ position: 'relative', zIndex: 2, display: focusMode ? 'none' : 'block' }}><Footer /></div>}
     </div>
   );
+
 }

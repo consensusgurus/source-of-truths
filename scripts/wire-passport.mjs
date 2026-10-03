@@ -12,6 +12,17 @@
 import fs from 'fs';
 import path from 'path';
 
+// SUPERSEDED, DO NOT RE-RUN (owner, 2026-10-03, same day): Passport became a
+// RUN-ONLY game, shown to players only as a circuit. Its rows in the daily
+// lists this script adds (grid, strip, archive, promo, end-card roster, slate
+// rail, the Geography landing page, finish sets, PREMIERES, the launch pins)
+// were taken back out by hand, and lib/daily-games RUN_ONLY keeps it out of
+// everything derived from liveDailyKeys. Re-running would put them back.
+if (!process.argv.includes('--force')) {
+  console.log('wire-passport: superseded (Passport is run-only); nothing done. See the note at the top.');
+  process.exit(0);
+}
+
 const root = process.argv[2] || '.';
 let applied = 0, skipped = 0;
 function edit(file, anchor, replacement) {

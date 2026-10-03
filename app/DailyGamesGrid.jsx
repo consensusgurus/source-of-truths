@@ -70,7 +70,6 @@ const GAMES = [
   { key: 'calc', href: '/calc', name: 'Calc', tag: 'Walk the calculator', img: '/games/btn-calc.png' },
   { key: 'encore', href: '/encore', name: 'Encore', tag: 'The daily crossword', img: '/games/btn-encore.png' },
   { key: 'biz', href: '/biz', name: 'Biz', tag: 'Business, one life', img: '/games/btn-biz.png' },
-  { key: 'passport', href: '/passport', name: 'Passport', tag: 'One country, five rounds', img: '/games/btn-passport.png' },
   { key: 'flank', href: '/flank', name: 'Flank', tag: 'Name every neighbor', img: '/games/btn-flank.png' },
   { key: 'script', href: '/script', name: 'Script', tag: 'Movies and TV, one life', img: '/games/btn-script.png' },
   { key: 'quotes', href: '/quotes', name: 'Quotes', tag: 'Who said it, one life', img: '/games/btn-quotes.png' },
@@ -166,7 +165,7 @@ const GAMES_BY_KEY = Object.fromEntries(GAMES.map((g) => [g.key, g]));
 // everywhere else.
 const CATEGORIES = [
   { key: 'word', label: 'Word', keys: ['crux', 'strata', 'lode', 'encore', 'emcee', 'shards', 'garble', 'links', 'stet', 'tuck', 'warmer', 'glyph', 'anon', 'rung', 'hinge', 'babel', 'barter'] },
-  { key: 'geography', label: 'Geography', keys: ['atlas', 'flank', 'passport', 'span', 'ping'] },
+  { key: 'geography', label: 'Geography', keys: ['atlas', 'flank', 'span', 'ping'] },
   { key: 'numbers', label: 'Numbers', keys: ['tally', 'calc', 'carve', 'cipher', 'crunch', 'blitz', 'blitzed', 'sums', 'pricer', 'dealer', 'realtor', 'agent', 'curator'] },
   // Sudoku split out of Numbers on 2026-09-01. The nine keys are exactly the
   // Sudoku circuit's pool, so the shelf, the circuit and the category are one

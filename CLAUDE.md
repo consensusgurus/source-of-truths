@@ -8383,14 +8383,24 @@ SOLVE_ONLY (flat 10, the clock decides), first-play hint via hint-gate, legacy a
 ## Passport (`/passport`): the daily geography run (launched 2026-10-03)
 
 One mystery country a day, played in five rounds of 10 points, one score out of 50, ending on a
-real passport. Key/route `passport`, category **Geography**, `miss: null`, legacy accent
-`#9f1239` / `#fda4af`. It is BOTH a daily and a circuit tile (`lib/circuits.js` id
-`passport`, `solo: true`, engine `passport`, path `/passport`, score `correct`), and it took
-the Daily Five's place in the home's lead three (CIRC_LEAD, pinCircs, TodayClient LEAD_CIRCUITS,
-LEAD_ORDER) on 2026-10-03. Wired by `scripts/wire-passport.mjs` (anchored on the Flank rows).
-Premiere window 2026-10-03 to 10-07. Share card `public/og/passport.png` from
-`scripts/bake-og.mjs passport`.
+real passport. Key/route `passport`, registered in `lib/daily-games.js` (category Geography,
+`miss: null`) so its rows score, rank and pay IQ Points, but **RUN_ONLY** (owner, 2026-10-03):
+players see it only as a circuit. `liveDailyKeys` leaves it out, so no daily list, category page,
+grid, strip, archive, count or "play similar" offers it; `circuitKeysFor` still deals it. The
+circuit tile is `lib/circuits.js` id `passport` (`solo: true`, engine `passport`, path
+`/passport`, score `correct`), and it took the Daily Five's place in the home's lead three
+(CIRC_LEAD, pinCircs, TodayClient LEAD_CIRCUITS, LEAD_ORDER). Premiere is a RUN premiere
+(PREMIERE_RUNS), 2026-10-03 to 10-07. `scripts/wire-passport.mjs` is superseded (it would re-add
+the daily listings) and refuses to run without `--force`. Share card `public/og/passport.png`.
 
+- **The page is a run, not a daily** (owner, 2026-10-03): `app/passport/PassportClient.jsx`
+  wears the Price Check / Trivia Gauntlet register (Midnight ground, sky call to action, its own
+  cap with a Leaderboard link). Pregame is `Launch`: a split-flap departures board that hunts
+  and never lands, a boarding-pass Board now button, the flight map, the visa page stamping its
+  five rounds, the six-passport ladder. The ending is the Finale curtain, then a settled screen
+  (cover, figures, the five stamps, Share / Leaderboard / Replay the ending / Back to main) and
+  the Gauntlet nudge. Never LoftFinish. The board is `/passport/leaderboard`, the Price Check
+  board component (`app/pricecheck/leaderboard/PriceCheckBoard.jsx`) with circuit `passport`.
 - **Rounds** (`lib/passport.js`): Landmark (a Commons photo zoomed 5.2x, 3.2x, 1.9x, 1x; 10/8/5/3
   for the country named at each frame), Flag (colors, layout, then the real flag; 10 less 3 a miss,
   never below 1), Borders (share of land neighbors named, out of 10, three strikes; island days name
@@ -8410,3 +8420,12 @@ Premiere window 2026-10-03 to 10-07. Share card `public/og/passport.png` from
 - The page resolves the day on the server and ships only that day, with the Commons title
   stripped; the photo comes from `/api/passport/img?n=`, which refuses a day not yet live. Flags are
   flag-icons SVGs (MIT) in `public/passport/flags/`.
+
+## Daily finish: the stat cards sit open below Add to Home Screen (owner, 2026-10-03)
+
+`app/StageFinish.jsx` no longer hides the board, the rival and the archive in a drawer inside the
+five doors. They render through a portal into `<div id="stf-stats-slot" />`, which every daily
+client places right after its Add to Home Screen button (87 clients, inserted by script), so
+they are always open and sit below it. The "Stats + leaderboard" door scrolls down to them, and
+"Play another" opens the archive there and scrolls. A surface with no slot (the quizzes) keeps
+the old closed drawer. A NEW DAILY CLIENT MUST CARRY THE SLOT after its A2HS block.

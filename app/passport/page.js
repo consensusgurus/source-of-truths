@@ -1,12 +1,9 @@
 import { Suspense } from 'react';
 import PassportClient from './PassportClient';
-import StageTail from '../StageTail';
-import { isStageServer } from '@/lib/stage';
 import { PUZZLES } from './puzzles';
 import { DAYS } from './days';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
-import { categoryCrumb } from '@/lib/game-seo';
 
 // Passport launched 2026-10-03. One mystery country a day, played five ways
 // (landmark, flag, borders, capital, numbers), one score out of 50, and the
@@ -45,7 +42,7 @@ const breadcrumbJsonLd = {
   '@context': 'https://schema.org', '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
-    categoryCrumb('passport'),
+    { '@type': 'ListItem', position: 2, name: 'Circuits', item: `${SITE_URL}/circuits` },
     { '@type': 'ListItem', position: 3, name: 'Passport' },
   ],
 };
@@ -93,7 +90,6 @@ export default function PassportPage({ searchParams }) {
       <Suspense fallback={null}>
         <PassportClient key={picked.num} puzzles={visible} day={day} forceNum={forceNum} />
       </Suspense>
-      <StageTail self="passport" stage={isStageServer('passport', searchParams)} />
     </>
   );
 }

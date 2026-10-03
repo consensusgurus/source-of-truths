@@ -933,6 +933,8 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
             </button>
           </div>
         )}
+        {/* The finish card's stat cards land here, below Add to Home Screen (app/StageFinish.jsx). */}
+        <div id="stf-stats-slot" />
         {showA2hsHelp && (
           <div onClick={() => setShowA2hsHelp(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(20,22,28,0.55)', zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 18 }}>
             <div onClick={(e) => e.stopPropagation()} style={{ background: STAGE ? 'var(--stg-raise,#0e131f)' : T.white, borderRadius: 14, maxWidth: 430, width: '100%', padding: '22px 22px 16px', fontFamily: SANS, border: STAGE ? '1px solid var(--stg-line)' : '1.5px solid rgba(20,22,28,0.12)' }}>

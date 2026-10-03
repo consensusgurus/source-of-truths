@@ -12,12 +12,12 @@
 // not flagged abandoned. An abandoned run is not a completion, so a game you
 // walked away from still reads as open.
 import { useEffect, useMemo, useState } from 'react';
-import { DAILY_GAMES, isRetiredDaily, etTodayISO } from '@/lib/daily-games';
+import { DAILY_GAMES, isRetiredDaily, isRunOnly, etTodayISO } from '@/lib/daily-games';
 import { fetchDailyMe, dailyMeQuery, dailyMeIdentity } from './dailyMeClient';
 
 export default function useDailyRoster({ active = false }) {
   const [played, setPlayed] = useState({});
-  const live = useMemo(() => DAILY_GAMES.filter((g) => !isRetiredDaily(g.key)), []);
+  const live = useMemo(() => DAILY_GAMES.filter((g) => !isRetiredDaily(g.key) && !isRunOnly(g.key)), []);
   // BUILD READS ITS ARGUMENT, never the closed-over map (fixed 2026-08-25). It
   // took `marks` and then indexed `played`, the state it is memoized ACROSS: the
   // deps are [live], so the function is built once, on the first render, where

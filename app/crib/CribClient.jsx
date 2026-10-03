@@ -847,6 +847,8 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
                 <button className="cb-tool" onClick={a2hsClick}><Smartphone size={14} /> Add to Home Screen</button>
               </div>
             )}
+            {/* The finish card's stat cards land here, below Add to Home Screen (app/StageFinish.jsx). */}
+            <div id="stf-stats-slot" />
           </div>
 
           {showA2hsHelp && (

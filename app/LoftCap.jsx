@@ -17,7 +17,7 @@
 // which is what lets `order` reach it.
 import React, { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { DAILY_GAMES, isRetiredDaily } from '@/lib/daily-games';
+import { DAILY_GAMES, isRetiredDaily, isRunOnly } from '@/lib/daily-games';
 import { SHARE_HOST } from '@/lib/site';
 import useDailyRoster from './useDailyRoster';
 import { catBlue } from '@/lib/home-blues';
@@ -33,7 +33,7 @@ const SUDOKU = new Set(((circuitById('sudoku') || {}).keys) || []);
 // Alphabetical, retired games dropped, computed once at module load: it is the
 // same list on every page and never changes within a session.
 const ALL_AZ = DAILY_GAMES
-  .filter((g) => !isRetiredDaily(g.key))
+  .filter((g) => !isRetiredDaily(g.key) && !isRunOnly(g.key))
   .map((g) => ({ key: g.key, name: g.name, tag: g.tag, href: g.href || `/${g.key}` }))
   .sort((a, b) => a.name.localeCompare(b.name));
 

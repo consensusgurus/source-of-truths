@@ -20,6 +20,7 @@
 // 'similar' comes OUT of the grid because a finisher was passing two exits
 // before reaching the one that hands them forward).
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { DAILY_GAMES, liveDailyKeys } from '@/lib/daily-games';
 import { RAMP_ORDER, RAMP_INK, categoryColor, categoryColorLight, categoryOnrampLight } from '@/lib/category-ramp';
 import { finishPick } from '@/lib/finish-sets';
@@ -1140,7 +1141,23 @@ export default function StageFinish({
   const [claimed, setClaimed] = useState(false);
   const [pubOpen, setPubOpen] = useState(false);
   // The Stats + leaderboard door's drawer (owner, 2026-10-01).
+  // THE STAT CARDS SIT OPEN BELOW ADD TO HOME SCREEN (owner, 2026-10-03). The
+  // board, the rival and the archive used to hide in a drawer inside the
+  // doors; now they are always open, carried by a portal into the slot every
+  // daily client renders right after its Add to Home Screen button
+  // (#stf-stats-slot), and the Stats + leaderboard door scrolls down to them.
+  // A surface without the slot (the quizzes) keeps the old drawer: closed
+  // inside the doors until the door opens it.
+  const [statsSlot, setStatsSlot] = useState(null);
   const [statsOpen, setStatsOpen] = useState(false);
+  useEffect(() => { try { setStatsSlot(document.getElementById('stf-stats-slot')); } catch (e) {} }, []);
+  const toStats = () => {
+    if (!statsSlot) { setStatsOpen((v) => !v); return; }
+    try {
+      const el = document.getElementById('stf-drawer');
+      if (el) el.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    } catch (e) {}
+  };
   const [dailyOpen, setDailyOpen] = useState(false);   // the All daily puzzles section   // the folded public board, when the group leads
   useEffect(() => {
     const el = catsRef.current;
@@ -1380,19 +1397,18 @@ export default function StageFinish({
     : (forward ? { name: fwdName, sub: fwdTag, href: forward.href, onClick: forward.onClick } : null);
   const isQuiz = !!boardLabel;
   const playedN = new Set([...played, ...(me ? [me.key] : [])]).size;
-  const openStats = () => setStatsOpen((v) => !v);
   const smallDoors = [];
   if (anotherOpt) {
     smallDoors.push({ k: 'another', nm: anotherOpt.label, sb: anotherOpt.sub, href: anotherOpt.href, onClick: anotherOpt.onClick });
   } else if (archiveRows.length) {
     smallDoors.push({ k: 'another', nm: name ? `Play another ${name}` : 'Play another', sb: `Every one of the ${archiveRows.length}`, btn: true,
-      onClick: () => { setStatsOpen(true); setArch(true); } });
+      onClick: () => { setArch(true); if (statsSlot) setTimeout(toStats, 60); else setStatsOpen(true); } });
   }
   if (replayOpt) {
     smallDoors.push({ k: 'replay', nm: isQuiz ? (replayOpt.label || 'Replay') : 'Replay today\u2019s', sb: replayOpt.sub, href: replayOpt.href, onClick: replayOpt.onClick });
   }
   smallDoors.push({
-    k: 'stats', nm: 'Stats + leaderboard', btn: true, onClick: openStats, expanded: statsOpen, controls: 'stf-drawer',
+    k: 'stats', nm: 'Stats + leaderboard', btn: true, onClick: toStats, ...(statsSlot ? {} : { expanded: statsOpen, controls: 'stf-drawer' }),
     sb: myRank != null ? `You are #${myRank}${field ? ` of ${field}` : ''}` : (boardLabel || 'Today\u2019s board and the archive'),
   });
   smallDoors.push(isQuiz && mainOpt
@@ -1517,7 +1533,8 @@ export default function StageFinish({
             </div>
           ) : null}
           {smallDoors.map((d, i) => door({ ...d, cls: (smallDoors.length % 2 === 1 && i === smallDoors.length - 1) ? 'wide' : '' }))}
-          <div className="stf-drawer" id="stf-drawer" hidden={!statsOpen}>
+          {(() => { const statsCards = (
+          <div className="stf-drawer stf-statcards" id="stf-drawer" hidden={!statsSlot && !statsOpen}>
         {/* THE SLOWER CASE (owner, 2026-09-07): stated plainly, in the card's
             own ink, with the figure to beat. Never a colour: red on a finished
             game reads as failure. */}
@@ -1616,6 +1633,7 @@ export default function StageFinish({
           </section>
         ) : null}
           </div>
+          ); return statsSlot ? createPortal(statsCards, statsSlot) : statsCards; })()}
           <div className="stf-drawer" id="stf-daily" hidden={!dailyOpen}>
             {/* THE GAMES, ORGANIZED AS THE OLD CARD HAD THEM (owner,
                 2026-10-01): more of this category first, then every category,
@@ -2140,6 +2158,8 @@ const CSS = `
 .stf-drawer{grid-column:1/-1;display:flex;flex-direction:column;gap:18px;min-width:0;
   background:var(--stg-raise);border:1px solid var(--stg-line);border-radius:10px;padding:14px 15px;}
 .stf-drawer[hidden]{display:none;}
+#stf-stats-slot .stf-statcards{margin-top:18px;scroll-margin-top:72px;}
+.stf-statcards{scroll-margin-top:72px;}
 @media (max-width:640px){
   .stf-doors{gap:6px;}
   .stf-door{padding:12px;gap:10px;}
