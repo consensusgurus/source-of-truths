@@ -382,7 +382,9 @@ export async function GET(request) {
   const fiveKeys = fiveFlag
     ? fiveForSuffix(suffix)
     : (circuitDef ? circuitKeysFor(circuitId, isoOfSuffix(suffix)) : []);
-  const fiveOnly = fiveKeys.length >= 2;
+  // A SOLO circuit (Passport, 2026-10-03) is one daily that is its own run:
+  // its roster of one is still a run, never a fall-through to the whole slate.
+  const fiveOnly = fiveKeys.length >= 2 || (!fiveFlag && !!(circuitDef && circuitDef.solo) && fiveKeys.length === 1);
   // Is this payload a SKILL circuit rather than the marquee? Kept separate from
   // fiveOnly because fiveOnly answers "is this a run at all", which is what
   // every scoring line below cares about, while this answers "which run", which

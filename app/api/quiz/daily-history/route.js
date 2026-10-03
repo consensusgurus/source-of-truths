@@ -163,7 +163,7 @@ export async function GET(req) {
       // not that circuit's day at all and is skipped.
       const rosterKeys = circuitOn ? circuitKeysFor(circuitId, dayISO) : null;
       const memberKeys = rosterKeys ? rosterKeys.filter((k) => dm.has(k)) : null;
-      const dayFloor = rosterKeys ? Math.max(2, Math.ceil(rosterKeys.length / 2)) : 0;
+      const dayFloor = rosterKeys ? (circuitDef.solo ? 1 : Math.max(2, Math.ceil(rosterKeys.length / 2))) : 0;
       if (circuitOn && (!memberKeys || memberKeys.length < dayFloor)) continue;
       for (const [key, rows] of dm.entries()) {
         if (memberKeys && !memberKeys.includes(key)) continue;
