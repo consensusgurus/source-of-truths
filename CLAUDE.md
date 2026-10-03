@@ -3833,6 +3833,7 @@ archive and hub chips use the short form `Sun`.
 | Etch | a 20x20 picture instead of Saturday's 15x15 and the weekday 10x10 (from 2026-08-23) |
 | Hedge | a 10x10 loop lattice instead of the weekday 7x7 |
 | Flank | a giant country with 8 to 14 borders instead of the weekday ramp's 1 to 7, and a fourth strike to spend (from launch, 2026-08-28) |
+| Passport | a country with eight or more land neighbors for the borders round (from launch, 2026-10-04) |
 | Chomp | the full cast of eleven mascots and 0-2 spare squares (and from 2026-08-22 every Chomp board carries 5-7 bolted-down bleacher walls; see app/chomp/puzzles.js) |
 | Niche | a 4x4 grid instead of the weekday 3x3, sixteen cells and twenty guesses, always on Countries, the deepest universe (from launch, 2026-08-23) |
 | Shoe | fourteen hands of blackjack instead of ten, dealt off the entire 104-card double deck instead of a 72-card cut, so a perfect counter knows exactly what is left (from 2026-10-04; before 2026-09-30 it was single-deck, seven hands off 52 against five off 36) |
@@ -8378,3 +8379,34 @@ SOLVE_ONLY (flat 10, the clock decides), first-play hint via hint-gate, legacy a
   pencil work, the other days needing a line read, dates, quizIds and no repeated board.
 - The client flags RULE BREAKS live (three alike, a line or room over half, a broken mark) but
   never a square that is merely wrong. Tap cycles empty, dot, ring.
+
+## Passport (`/passport`): the daily geography run (launched 2026-10-04)
+
+One mystery country a day, played in five rounds of 10 points, one score out of 50, ending on a
+real passport. Key/route `passport`, category **Geography**, `miss: null`, legacy accent
+`#9f1239` / `#fda4af`. It is BOTH a daily and a circuit tile (`lib/circuits.js` id
+`passport`, `solo: true`, engine `passport`, path `/passport`, score `correct`), and it took
+the Daily Five's place in the home's lead three (CIRC_LEAD, pinCircs, TodayClient LEAD_CIRCUITS,
+LEAD_ORDER) on 2026-10-03. Wired by `scripts/wire-passport.mjs` (anchored on the Flank rows).
+Premiere window 2026-10-04 to 10-08. Share card `public/og/passport.png` from
+`scripts/bake-og.mjs passport`.
+
+- **Rounds** (`lib/passport.js`): Landmark (a Commons photo zoomed 5.2x, 3.2x, 1.9x, 1x; 10/8/5/3
+  for the country named at each frame), Flag (colors, layout, then the real flag; 10 less 3 a miss,
+  never below 1), Borders (share of land neighbors named, out of 10, three strikes; island days name
+  the nearest countries across the water instead), Capital (a pin on a baked map; full marks within
+  one step, a point off per step, the step scaling with the country's size), Numbers (five
+  bigger-or-smaller land-area calls, 2 points each). The country stays hidden until the landmark
+  round ends.
+- **The ladder** (owner): one real passport per inhabited continent in true Henley Passport Index
+  2026 order: Sierra Leone 0+, Mexico 30+, Brazil 38+, Australia 44+, Switzerland 48+, Japan 50. The
+  share line names the passport and the round scores, never the day's country.
+- **The bank**: `scripts/passport-facts.mjs` (schedule, landmarks, flags, capitals),
+  `scripts/passport-factbook.mjs` (areas and capital points, CIA World Factbook), borders from
+  `app/flank/borders.js`. `node scripts/gen-passport.mjs` writes `app/passport/puzzles.js` (the light
+  index) and `app/passport/days.js` (the full days, maps baked as SVG paths in a rotated Mercator,
+  which needs `d3-geo topojson-client world-atlas` installed with `--no-save`). Stocked 31 days to
+  2026-11-03. `scripts/verify-passport.mjs` checks it. Sundays are countries with 8+ neighbors.
+- The page resolves the day on the server and ships only that day, with the Commons title
+  stripped; the photo comes from `/api/passport/img?n=`, which refuses a day not yet live. Flags are
+  flag-icons SVGs (MIT) in `public/passport/flags/`.

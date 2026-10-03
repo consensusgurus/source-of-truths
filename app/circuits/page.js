@@ -1,5 +1,5 @@
 import CircuitFrame from './CircuitFrame';
-import { ALL_CIRCUITS, DISPLAY_CIRCUITS, circuitGamesFor, circuitPageHref, isMarquee } from '@/lib/circuits';
+import { ALL_CIRCUITS, DISPLAY_CIRCUITS, circuitGamesFor, circuitPageHref, isMarquee, isSoloCircuit } from '@/lib/circuits';
 import { categoryColor, categoryColorLight } from '@/lib/category-ramp';
 import { SITE_URL } from '@/lib/site';
 
@@ -57,7 +57,7 @@ export default function CircuitsIndexPage() {
       hue: games[0] ? categoryColor(games[0].cat) : null,
       hueLight: games[0] ? categoryColorLight(games[0].cat) : null,
     };
-  }).filter((r) => r.names.length >= 2);
+  }).filter((r) => r.names.length >= 2 || (r.names.length === 1 && isSoloCircuit(r.id)));
 
   const jsonLd = {
     '@context': 'https://schema.org',

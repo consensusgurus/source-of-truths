@@ -103,6 +103,7 @@ export const DAILY_GAMES = [
   { key: 'calc', href: '/calc', name: 'Calc', tag: 'walk the calculator', store: 'sot_calc_day', accent: '#be123c', bg: '#fff1f4', border: 'rgba(190,18,60,0.4)' },
   { key: 'encore', href: '/encore', name: 'Encore', tag: 'the daily crossword', store: 'sot_encore_day', accent: '#1d4ed8', bg: '#eff6ff', border: 'rgba(29,78,216,0.4)' },
   { key: 'biz', href: '/biz', name: 'Biz', tag: 'business, one life', store: 'sot_biz_day', accent: '#0f5132', bg: '#e9f5ee', border: 'rgba(15,81,50,0.4)' },
+  { key: 'passport', href: '/passport', name: 'Passport', tag: 'one country, five rounds', store: 'sot_passport_day', accent: '#9f1239', bg: '#fdf2f4', border: 'rgba(159,18,57,0.35)' },
   { key: 'flank', href: '/flank', name: 'Flank', tag: 'name every neighbor', store: 'sot_flank_day', accent: '#3f6212', bg: '#f3f8ea', border: 'rgba(63,98,18,0.4)' },
   { key: 'script', href: '/script', name: 'Script', tag: 'movies and TV, one life', store: 'sot_script_day', accent: '#4a1d6b', bg: '#f3ecf9', border: 'rgba(74,29,107,0.4)' },
   { key: 'quotes', href: '/quotes', name: 'Quotes', tag: 'who said it, one life', store: 'sot_quotes_day', accent: '#3d4f7c', bg: '#eef1f8', border: 'rgba(61,79,124,0.4)' },

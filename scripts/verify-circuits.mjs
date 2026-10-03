@@ -25,6 +25,10 @@ import {
   RUN_GAMES, JAM_RUN_GAMES, PRICE_RUN_GAMES, RUN_ENGINES, runGamesFor, runEngine, isRunnableCircuit, runHref, circuitScoreMode,
 } from '../lib/circuits.js';
 import { SHARE_HOST } from '../lib/site.js';
+import { PUZZLES as PASSPORT_PUZZLES } from '../app/passport/puzzles.js';
+// A solo circuit before its daily's first day has no live game yet, which is
+// launch, not a broken roster.
+const LAUNCHED = (k) => k !== 'passport' || PASSPORT_PUZZLES.some((p) => p.live <= new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }));
 
 // lib/trophy-defs.js reaches for '@/lib/theme', which node cannot resolve on its
 // own, so it comes in through the alias loader and therefore has to be a dynamic
@@ -58,6 +62,9 @@ const MED = {
   // shape (a type-ahead trivia grid, somewhere between Sixes and Blocks).
   // Replace with the measured median at the next snapshot re-measure.
   niche: 150,
+  // Passport launched 2026-10-04 with no clock data: five rounds, each about
+  // a Flank or a Focus in length, so estimated at four minutes.
+  passport: 240,
   // Impound (2026-09-04) and Junkyard (2026-09-05) launched with no clock data:
   // estimated off Parker's 61s and their par ramps (7x7 par 16-35 against
   // Parker's 11-20; 8x8 par 22-46). Replace at the next snapshot re-measure.
@@ -134,7 +141,8 @@ for (const c of CIRCUITS) {
   ids.add(c.id);
   if (isMarquee(c.id)) fails.push(`a skill circuit may not use the marquee id (${MARQUEE_ID})`);
   if (!c.name || !c.blurb) fails.push(`${c.id}: needs both a name and a blurb (both are reader-facing on the band)`);
-  if (!Array.isArray(c.keys) || c.keys.length < 2) fails.push(`${c.id}: needs at least 2 games to be a run`);
+  if (!Array.isArray(c.keys) || c.keys.length < (c.solo ? 1 : 2)) fails.push(`${c.id}: needs at least 2 games to be a run`);
+  if (c.solo && (c.keys.length !== 1 || !c.run || !c.path)) fails.push(`${c.id}: a solo circuit is one daily that is its own run, at its own path`);
   else if (c.rotate) {
     // a ROTATING circuit: the cap applies to the DAY'S SELECTION, not the pool
     if (c.rotate !== MAX) fails.push(`${c.id}: rotating circuits play ${MAX} a day (rotate is ${c.rotate})`);
@@ -376,7 +384,7 @@ for (const c of CIRCUITS) {
   if (live.join(',') !== want.join(',')) {
     fails.push(`${c.id}: circuitKeysFor returned [${live.join(',')}], expected [${want.join(',')}]`);
   }
-  if (live.length < 2) {
+  if (live.length < (c.solo ? 1 : 2) && !(c.solo && !LAUNCHED(c.keys[0]))) {
     fails.push(`${c.id}: only ${live.length} live game(s) today — the band needs at least 2 to render a run`);
   }
   if (!c.rotate && live.length < c.keys.length) {
@@ -647,7 +655,7 @@ for (const c of ALL_CIRCUITS) {
     if (c.score === 'correct') {
       // The price family (2026-10-01) is the other same-unit set: five
       // guesses, scored 0 to 10 on one ratio ladder, so a sum is honest.
-      const unit = runEngine(c.id) === 'price' ? PRICE_RUN_GAMES : RUN_GAMES;
+      const unit = runEngine(c.id) === 'quiz' ? RUN_GAMES : (RUN_ENGINES[runEngine(c.id)] || RUN_GAMES);
       const off = keys.filter((k) => !unit.includes(k));
       if (off.length) fails.push(`${c.id}: ranks on a summed score but holds ${off.join(', ')}, which are not scored in the same unit`);
     } else {

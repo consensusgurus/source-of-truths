@@ -155,7 +155,7 @@ const AZ_KEY = 'sot_stage_az';
 // same way; this repeats it because the home's sort has to interleave that
 // lead with the reader's own progress, which that module knows nothing about.
 // On a phone the shelf's peek is exactly these three (CIRC_PEEK_NARROW).
-const CIRC_LEAD = ['pricecheck', 'gauntlet', 'five'];
+const CIRC_LEAD = ['pricecheck', 'gauntlet', 'passport'];   // owner, 2026-10-03: Passport replaces the Daily Five
 
 // THE NEWCOMER'S ROW (owner, 2026-09-04). A reader with NO footprint at all gets
 // one row above everything else: two circuits sharing a line, then the busiest
@@ -1281,7 +1281,7 @@ export default function StageToday() {
       const pop = games.reduce((t, g) => t + (playsBy.get(g.key) || 0), 0);
       // A circuit spans categories, so it wears its LEAD game's step rather
       // than inventing a tenth colour.
-      return { id: c.id, name: c.name, blurb: c.blurb || '', games, n, pop, hue: hueFor(games[0].cat) };
+      return { id: c.id, name: c.name, blurb: c.blurb || '', unit: c.unit || '', games, n, pop, hue: hueFor(games[0].cat) };
     }).filter(Boolean)
       // THE ORDER (owner, 2026-08-31), in four terms:
       //
@@ -1362,7 +1362,8 @@ export default function StageToday() {
   // THE FIRST-VISIT ROW (owner, 2026-10-03): Price Check, the Trivia Gauntlet and
   // the Daily Five, pinned above the category buttons. Three across where three
   // fit, the first two otherwise (CSS hides the third). Never labelled circuits.
-  const pinCircs = useMemo(() => ['pricecheck', 'gauntlet', 'five']
+  // Passport took the Five's place on 2026-10-03 (owner).
+  const pinCircs = useMemo(() => ['pricecheck', 'gauntlet', 'passport']
     .map((id) => circuits.find((c) => c.id === id)).filter(Boolean), [circuits]);
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1000px)');
@@ -2078,7 +2079,7 @@ export default function StageToday() {
                   '--stg-onramp': light ? categoryOnrampLight(c.games[0].cat) : RAMP_INK,
                 }}>
                 <span className="sty-pinl">
-                  <span className="sty-pine">{c.games.length} games</span>
+                  <span className="sty-pine">{c.unit || `${c.games.length} games`}</span>
                   <span className="sty-pinn">{c.name}</span>
                   {c.blurb ? <span className="sty-pinb">{c.blurb}</span> : null}
                 </span>
