@@ -57,6 +57,7 @@ export const DAILY_GAMES = [
   { key: 'park', href: '/parker', name: 'Parker', tag: 'get the red one out', store: 'sot_park_day', accent: '#7c5c2e', bg: '#f6efe2', border: 'rgba(124,92,46,0.35)' },
   { key: 'impound', href: '/impound', name: 'Impound', tag: 'parker on a bigger lot', store: 'sot_impound_day', accent: '#6b4a1f', bg: '#f3ece0', border: 'rgba(107,74,31,0.35)' },
   { key: 'junkyard', href: '/junkyard', name: 'Junkyard', tag: 'parker on the biggest lot', store: 'sot_junkyard_day', accent: '#5c3a16', bg: '#f0e7d8', border: 'rgba(92,58,22,0.35)' },
+  { key: 'duet', href: '/duet', name: 'Duet', tag: 'half dots, half rings', store: 'sot_duet_day', accent: '#1a7f37', bg: '#e8f5ec', border: 'rgba(26,127,55,0.35)' },
   { key: 'snug', href: '/snug', name: 'Snug', tag: 'fit the pieces, one way only', store: 'sot_snug_day', accent: '#3b5bdb', bg: '#e8ecfb', border: 'rgba(59,91,219,0.35)' },
   { key: 'check', href: '/check', name: 'Check', tag: 'red to play and sweep', store: 'sot_check_day', accent: '#166e5a', bg: '#e6f3ef', border: 'rgba(22,110,90,0.35)' },
   { key: 'hinge', href: '/hinge', name: 'Hinge', tag: 'chain the compounds', store: 'sot_hinge_day', accent: '#4f46e5', bg: '#e0e7ff', border: 'rgba(79,70,229,0.4)' },

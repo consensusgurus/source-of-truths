@@ -3823,6 +3823,7 @@ archive and hub chips use the short form `Sun`.
 | Turn | twelve empty squares instead of ten (from 2026-08-05) |
 | Yose | a 9x9 board with eleven open points against the weekday 7x7 and 8x8 (from launch, 2026-09-20) |
 | Crib | seven hands instead of five, three of them decided by the crib (from launch, 2026-09-20) |
+| Duet | a 10x10 board against the weekday 6x6 and 8x8 (from launch, 2026-10-04) |
 | Pricer | a field of 32 instead of 16, so 31 picks and five rounds (from 2026-08-16) |
 | Docket | seven entities over seven slots plus the second dimension, so fourteen open cells against a weekday's twelve, and one extra condition (from 2026-08-10) |
 | Defend | a hold for four instead of a hold for three, so a fourth white move to survive before the attack is spent (from 2026-08-12) |
@@ -8352,3 +8353,28 @@ the HTML, nothing reused between loads, and a cold lambda having nothing to show
 - **Not done, on purpose:** a per-day rollup table. The Analytics view is mostly per-player
   figures, which a per-day table cannot supply, so the stored payload plus the memo does the
   job a rollup was meant to do. Revisit only if the row load itself becomes the cost.
+
+## Duet (`/duet`): the daily balanced grid (launched 2026-10-03)
+
+A variant of the balanced binary puzzle (binairo / takuzu, the family LinkedIn's Tango belongs to)
+with WALLED ROOMS: dots and rings, half of each in every row, column and room, never three alike in
+a line, '=' / 'x' marks between neighbours. Key/route `duet`, category **Logic**, `miss: null`,
+SOLVE_ONLY (flat 10, the clock decides), first-play hint via hint-gate, legacy accent `#1a7f37` /
+`#bef264` (the Logic step; on the stage the ramp paints it). Wired by `scripts/wire-duet.mjs`
+(anchored on the Snug rows, idempotent). No PNG tiles; glyph in `lib/game-glyphs.js`. Share card
+`public/og/duet.png` from `scripts/bake-og.mjs duet`. Premiere window 2026-10-03 to 10-07.
+
+- `scripts/duet-core.mjs` is the generator's engine: full grid, rooms grown to balanced even sizes
+  (2 to 6), then clues (printed squares and marks) stripped while a GRADED solver still finishes.
+  Level 0 is pencil work (marks, the pair and gap rules, a full line or room); level 1 is a line read
+  (every legal pattern for a row or column). `cost` = squares first settled by a line read.
+- **The ramp**: Mon 6x6 cost 0, Tue 6x6 2-6, Wed 6x6 7+, Thu 8x8 0-6, Fri 8x8 7-13, Sat 8x8 the
+  hardest of a pool (14+), **Sunday 10x10** the hardest of a pool (16+). Day 1 (2026-10-03, a
+  Saturday) is the launch board and takes the Monday spec. Bank 78 days to 2026-12-19,
+  `node scripts/gen-duet.mjs > app/duet/puzzles.js` (deterministic, seeded off each date).
+- `scripts/verify-duet.mjs` imports nothing from the core: its own backtracking counter proves
+  exactly one solution, its own logical solver proves no guessing, and it checks rooms (connected,
+  even, balanced), marks and givens against the solution, sizes by weekday, Monday finishing on
+  pencil work, the other days needing a line read, dates, quizIds and no repeated board.
+- The client flags RULE BREAKS live (three alike, a line or room over half, a broken mark) but
+  never a square that is merely wrong. Tap cycles empty, dot, ring.
