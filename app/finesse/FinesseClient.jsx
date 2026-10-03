@@ -602,8 +602,8 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
 
   const turnLine = !started ? 'Ready'
     : !cardsLeft ? ''
-    : pos.seat === 2 ? 'Your turn'
-    : pos.seat === 0 ? 'Play the dummy'
+    : pos.seat === 2 ? 'Your turn · tap a lit card'
+    : pos.seat === 0 ? 'Dummy to play · tap a lit card'
     : `${SEAT_NAME[pos.seat]} to play`;
 
   const CSS = `
@@ -616,8 +616,14 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
     .fn-hand{display:flex;gap:3px;justify-content:center;}
     .fn-w .fn-hand,.fn-e .fn-hand{flex-direction:column;gap:2px;}
     .fn-cd{padding:0;border:0;background:none;width:36px;height:48px;flex:none;}
-    .fn-cd.play{cursor:pointer;}
-    .fn-cd.play:hover{transform:translateY(-3px);}
+    /* A PLAYABLE CARD HAS TO SAY SO WITHOUT A CURSOR (reader report, 2026-10-03:
+       "it says it is my turn but nothing is activated"). The only cue used to be
+       a cursor and a hover lift, neither of which exists on a touch screen, so
+       the live cards are lifted and ringed at rest. The ring sits OUTSIDE the
+       card so it never reads as the trump card's inset ring. */
+    .fn-cd{transition:transform .15s ease;}
+    .fn-cd.play{cursor:pointer;transform:translateY(-4px);border-radius:6px;outline:2px solid var(--stg-acc-ink,#e879f9);outline-offset:2px;}
+    .fn-cd.play:hover{transform:translateY(-6px);}
     .fn-cd:disabled{cursor:default;}
     .fn-gap{margin-left:5px;}
     .fn-c{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr 1fr;place-items:center;min-height:118px;}
@@ -628,7 +634,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
     .fn-msg{grid-column:2;grid-row:2;font-family:${MONO};font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--stg-mute,rgba(255,255,255,0.6));text-align:center;line-height:1.4;}
     .fn-drop{animation:fndrop .18s ease-out;}
     @keyframes fndrop{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;}}
-    @media (prefers-reduced-motion:reduce){.fn-drop{animation:none;}.fn-cd.play:hover{transform:none;}}
+    @media (prefers-reduced-motion:reduce){.fn-drop{animation:none;}.fn-cd{transition:none;}.fn-cd.play:hover{transform:translateY(-4px);}}
     .fn-btn{font-family:${SANS};font-weight:800;font-size:13px;border:1px solid var(--stg-line2,rgba(28,30,36,0.35));background:none;color:var(--stg-ink2,#3f4757);border-radius:9px;padding:9px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
     .fn-btn:disabled{opacity:0.42;cursor:default;}
     .fn-discs{display:flex;gap:3px;}
@@ -652,7 +658,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
           { v: elapsed, k: 'time' },
         ]}
       />
-      <DailyChrome />
+      <DailyChrome slug="finesse" name="Finesse" collapsed={started} loft={LOFT} />
 
       <div style={{ position: 'relative', zIndex: 2, padding: LOFT ? '0 16px 40px' : '18px 16px 40px' }}>
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
@@ -680,7 +686,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
                 <p style={{ margin: '0 0 6px' }}>
-                  All four hands face up, {R} cards each, {PUZZLE.trump ? <>{SUIT_GLYPH[TRUMP]} trumps</> : 'no trumps'}. You play South and the dummy against a perfect defence. Take {TRICK_WORD[TARGET]} of the {R} tricks.
+                  All four hands face up, {R} cards each, {PUZZLE.trump ? <>{SUIT_GLYPH[TRUMP]} trumps</> : 'no trumps'}. You play South and the dummy against a perfect defence. Take {TRICK_WORD[TARGET]} of the {R} tricks. Tap a lit card to play it.
                 </p>
               </div>
             )}
