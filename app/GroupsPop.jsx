@@ -2,8 +2,8 @@
 
 // GroupsPop — the one-time launch card for Groups (owner, 2026-09-17).
 //
-// ONCE PER BROWSER, FOR EVERYONE, ON THE HOME ONLY. Guests and signed-in
-// players alike. `sot_groups_pop` is stamped the moment it renders, so it never
+// ONCE PER BROWSER, ON THE HOME ONLY, and since 2026-10-03 only for a reader
+// with a name, on a visit AFTER the one where they chose it (see below). `sot_groups_pop` is stamped the moment it renders, so it never
 // comes back, including after a close.
 //
 // SKIPPED for a reader who is already in a group: they found the feature
@@ -26,6 +26,9 @@ import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 
 const KEY = 'sot_groups_pop';
+// First session a NAMED reader was seen in, and this session's verdict.
+const NAMED = 'sot_groups_named';
+const SESS = 'sot_groups_sess';
 
 function busy() {
   // The first-load theme flip is RETIRED and no longer stamps sot_theme_intro2
@@ -55,6 +58,23 @@ export default function GroupsPop() {
       if (q === '0') return undefined;
       force = q === '1';
       if (!force && localStorage.getItem(KEY)) return undefined;
+      // ONLY FOR A NAMED READER, AND ONLY ON A LATER VISIT (owner, 2026-10-03).
+      // A guest never sees it, and neither does the visit where a reader first
+      // chooses a name: the first session seen with a name is stamped, and the
+      // card is eligible from the NEXT session on. The decision is fixed per
+      // session in sessionStorage so registering mid-session cannot open it.
+      if (!force) {
+        let named = '';
+        try { const id = JSON.parse(localStorage.getItem('sot_quiz_identity') || 'null'); named = (id && (id.username || id.name)) || ''; } catch (e) {}
+        if (!named) return undefined;
+        let elig = sessionStorage.getItem(SESS);
+        if (elig === null) {
+          elig = localStorage.getItem(NAMED) ? '1' : '0';
+          if (elig === '0') localStorage.setItem(NAMED, new Date().toISOString().slice(0, 10));
+          sessionStorage.setItem(SESS, elig);
+        }
+        if (elig !== '1') return undefined;
+      }
     } catch (e) { return undefined; }
 
     const timers = [];
