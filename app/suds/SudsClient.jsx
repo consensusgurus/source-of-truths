@@ -831,9 +831,9 @@ export default function SudsClient({ puzzles = [], forceNum = null }) {
           .sd-user{font-weight:500;color:${STAGE ? STAGE_C : COLORS.accent};}
           .sd-notes{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);width:100%;height:100%;padding:2px;box-sizing:border-box;}
           .sd-note{display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:9px;line-height:1;color:var(--stg-ink2, #8a93a3);}
-          .sd-pad{width:100%;aspect-ratio:1;border-radius:9px;border:1.5px solid ${STAGE ? 'var(--stg-line2,rgba(255,255,255,0.17))' : 'rgba(28,30,36,0.5)'};background:${STAGE ? 'var(--stg-surf2,rgba(255,255,255,0.08))' : 'var(--white)'};font-family:${MONO};font-weight:500;color:${INK};cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:${STAGE ? 'none' : '0 2px 0 rgba(28,30,36,0.4)'};}
+          .sd-pad{width:100%;aspect-ratio:1;border-radius:9px;border:1.5px solid ${STAGE ? 'var(--stg-line2,rgba(255,255,255,0.17))' : 'rgba(28,30,36,0.5)'};background:${STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : 'var(--white)'};font-family:${MONO};font-weight:500;color:${INK};cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:${STAGE ? 'none' : '0 2px 0 rgba(28,30,36,0.4)'};}
           .sd-pad:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(28,30,36,0.4);}
-          .sd-pad.done{color:${STAGE ? 'var(--stg-dim,#5a657d)' : '#c3c8cf'};box-shadow:none;background:${STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : '#f4f5f7'};cursor:default;}
+          .sd-pad.done{color:var(--stg-mute2, #c3c8cf);box-shadow:none;background:${STAGE ? 'var(--stg-surf2,rgba(255,255,255,0.08))' : '#f4f5f7'};cursor:default;}
           .sd-pad.done span{text-decoration:line-through;}
           .sd-pad.armed{background:var(--stg-acc, ${STAGE ? STAGE_C : COLORS.accent});color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};border-color:var(--stg-acc, ${STAGE ? STAGE_C : COLORS.accent});box-shadow:${STAGE ? 'none' : '0 2px 0 rgba(154,61,12,0.55)'};}
           .sd-pad.armed .sd-pad-n{color:${STAGE ? 'color-mix(in srgb, var(--stg-onramp, #08222e) 68%, transparent)' : '#ffe0cc'};}
