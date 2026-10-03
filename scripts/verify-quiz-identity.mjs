@@ -18,7 +18,7 @@
 //
 // Runs against a fake PostgREST over an in-memory quiz_users table, so it needs
 // no database, no network and no env. Auto-discovered by verify-all.mjs.
-import { resolveQuizIdentity } from '../lib/quiz-identity.js';
+import { resolveQuizIdentity, takenResponse } from '../lib/quiz-identity.js';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -55,31 +55,43 @@ function makeAdmin(rows) {
   };
 }
 
-// The join route's branch, lifted from app/api/quiz/join/route.js so a copy
-// here cannot drift from what ships.
+// The 409 body comes from takenResponse(), the one copy both join routes send
+// (2026-10-03). branch() maps it to a short tag the assertions read.
 const src = read('app/api/quiz/join/route.js');
-const UNCLAIM = /That display name is already registered to an account with no email on file/;
-const PICK = /That display name belongs to a different account\. Pick another name\./;
-const ADDMAIL = /That display name is already registered\. If it is yours, add the email/;
+// isLockedOut()'s regex, lifted from app/SigninHelp.jsx (a JSX file node cannot import).
+const LOCK_SRC = read('app/SigninHelp.jsx').match(/export function isLockedOut[\s\S]*?(\/[^\n]+\/i)\.test/);
+const LOCK = LOCK_SRC ? new Function(`return ${LOCK_SRC[1]}`)() : null;
+const isLockedOut = (e) => !!LOCK && LOCK.test(e);
+const TAGS = {
+  username_taken_unclaimable: 'unclaimable',
+  email_other_name: 'ownemail',
+  username_taken_email_mismatch: 'mismatch',
+  username_taken: 'addmail',
+};
 function branch(user, email) {
-  const unclaimable = user.holderHasEmail === false;
-  return {
-    error: unclaimable ? 'unclaimable' : email ? 'pick' : 'addmail',
-    code: unclaimable ? 'username_taken_unclaimable' : 'username_taken',
-    recoverable: !email && !unclaimable,
-    relink: unclaimable,
-  };
+  const b = takenResponse(user, email);
+  return { ...b, tag: TAGS[b.code] };
 }
 
 let fail = 0;
 const t = (name, cond) => { if (!cond) { fail++; console.log(`\u2717 ${name}`); } else console.log(`\u2713 ${name}`); };
 
-// The route really does carry all three strings and the three flags.
-t('route carries the unclaimable copy', UNCLAIM.test(src));
-t('route keeps the pick-another-name copy', PICK.test(src));
-t('route keeps the add-your-email copy', ADDMAIL.test(src));
-t('unclaimable copy matches isLockedOut()', /already registered|belongs to a different account/i
-  .test('That display name is already registered to an account with no email on file, so only we can move it.'));
+// Every exit is reachable, keeps the SigninHelp trigger phrase, and none of
+// them tells a player to make a new account ("pick another name" is what
+// produced ctjjbm1..ctjjbm901).
+const EXITS = [
+  [{ holderHasEmail: false }, ''],
+  [{ holderHasEmail: true, viaMail: true }, 'a@b.com'],
+  [{ holderHasEmail: true }, 'a@b.com'],
+  [{ holderHasEmail: true }, ''],
+];
+for (const [u, e] of EXITS) {
+  const b = branch(u, e);
+  t(`exit ${b.code} is tagged`, !!b.tag);
+  t(`exit ${b.code} lights SigninHelp`, isLockedOut(b.error));
+  t(`exit ${b.code} never says pick another name`, !/pick another name/i.test(b.error));
+}
+t('four distinct exits', new Set(EXITS.map(([u, e]) => branch(u, e).code)).size === 4);
 
 const STEINNI = () => [{ id: 1, username: 'steinni1', email: null, anon_id: 'browser-A' }];
 const WITHMAIL = () => [{ id: 1, username: 'gator85', email: 'g@x.com', anon_id: 'browser-A' }];
@@ -117,7 +129,7 @@ t('switching browser: old account keeps its name', rows[1].username === 'other')
 rows = [...STEINNI(), { id: 2, username: 'mailer', email: 'm@x.com', anon_id: 'dev-C' }];
 r = await resolveQuizIdentity(makeAdmin(rows), { username: 'steinni1', email: 'm@x.com', anonId: 'dev-C' });
 t('email account asking for a name-only name: taken', r.error === 'username_taken' && r.holderHasEmail === true);
-t('email account: pick another name', branch(r, 'm@x.com').error === 'pick');
+t('email account: told the email is theirs under another name', branch(r, 'm@x.com').tag === 'ownemail' && branch(r, 'm@x.com').recoverable === false);
 t('email account: nothing moved', rows[0].anon_id === 'browser-A' && rows[1].username === 'mailer');
 
 // A holder WITH an email still needs that email: old copy, unchanged.
@@ -126,7 +138,7 @@ r = await resolveQuizIdentity(makeAdmin(WITHMAIL()), {
 });
 t('holder with email: taken', r.error === 'username_taken');
 t('holder with email: holderHasEmail true', r.holderHasEmail === true);
-t('holder with email: still pick another name', branch(r, 'someone@else.com').error === 'pick');
+t('holder with email, wrong email typed: asked for the right email', branch(r, 'someone@else.com').tag === 'mismatch' && branch(r, 'someone@else.com').recoverable === true);
 r = await resolveQuizIdentity(makeAdmin(WITHMAIL()), { username: 'GATOR85', email: '', anonId: 'new-browser' });
 t('holder with email, no email typed: taken and recoverable', r.error === 'username_taken' && branch(r, '').recoverable === true);
 
@@ -148,10 +160,12 @@ rows = WITHMAIL();
 r = await resolveQuizIdentity(makeAdmin(rows), { username: 'gator85', email: 'g@x.com', anonId: 'other' });
 t('own name: not taken by self', !r.error && r.username === 'gator85');
 
-// The join and claim routes must stay identical on this branch.
+// Both routes send the shared body, and neither keeps an inline copy.
 const claim = read('app/api/quiz/claim/route.js');
-const grab = (s) => s.slice(s.indexOf('const unclaimable'), s.indexOf('}, { status: 409 });'));
-t('join and claim branch byte-identical', grab(src) === grab(claim));
+for (const [nm, f] of [['join', src], ['claim', claim]]) {
+  t(`${nm} route sends takenResponse()`, /NextResponse\.json\(takenResponse\(user, email\), \{ status: 409 \}\)/.test(f));
+  t(`${nm} route keeps no inline copy`, !/Pick another name|const unclaimable/.test(f));
+}
 
 console.log(fail ? `\nquiz-identity: ${fail} FAILURE(S)` : '\nquiz-identity: all clean');
 process.exit(fail ? 1 : 0);

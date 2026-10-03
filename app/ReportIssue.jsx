@@ -80,13 +80,20 @@ export default function ReportIssue({ self, name, accent = T.accent, align = 'ce
     // open the precise puzzle the report is about.
     let path = '';
     try { path = window.location.pathname + window.location.search; } catch (e) {}
+    // The browser id is what an editor needs to find this player, and a guest
+    // has nothing else (2026-10-03: a "Guest-18D9" report with no email was
+    // unanswerable). The server turns it into a context footer.
+    let anonId = '';
+    let signedAs = '';
+    try { anonId = localStorage.getItem('sot_quiz_anon') || ''; } catch (e) {}
+    try { signedAs = savedIdentity().username || ''; } catch (e) {}
     const listId = `${self || 'daily'}-${etTodayId()}`;
     const listTitle = `Daily puzzle: ${gameName}${path ? ` · ${path}` : ''}`.slice(0, 200);
     try {
       await fetch('/api/complaints', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ listId, listTitle, message: msg.trim(), name: nm.trim(), email: email.trim() }),
+        body: JSON.stringify({ listId, listTitle, message: msg.trim(), name: nm.trim(), email: email.trim(), anonId, signedAs }),
       });
     } catch (e) {
       // Swallow — we still acknowledge to the player. Reports are best-effort.
