@@ -62,6 +62,7 @@ import useGameAllTime from '../useGameAllTime';
 import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
+import AddToHome from '../AddToHome';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
@@ -842,6 +843,9 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
               <ReportIssue self="hands" name="Hands" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
             </div>
           )}
+          {/* Add to Home Screen, then the finish card's stat cards (app/StageFinish.jsx), as every daily has them. */}
+          {!focusMode && <AddToHome name="Hands" />}
+          <div id="stf-stats-slot" />
           {!LOFT && (
           <DailyGamesGrid replay={done ? resetGame : null} self="hands" maxWidth={620}
             challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}

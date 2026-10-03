@@ -48,6 +48,7 @@ import useGameAllTime from '../useGameAllTime';
 import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
+import AddToHome from '../AddToHome';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isMobileDevice } from '@/lib/is-mobile';
 import useAbandonFlush from '../quiz/[id]/useAbandonFlush';
@@ -892,6 +893,9 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
               <ReportIssue self="sweep" name="Sweep" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
             </div>
           )}
+          {/* Add to Home Screen, then the finish card's stat cards (app/StageFinish.jsx), as every daily has them. */}
+          {!focusMode && <AddToHome name="Sweep" />}
+          <div id="stf-stats-slot" />
           {!LOFT && (
           <DailyGamesGrid
             self="sweep"

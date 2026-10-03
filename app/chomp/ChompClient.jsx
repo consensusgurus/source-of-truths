@@ -73,6 +73,7 @@ import useGameAllTime from '../useGameAllTime';
 import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
+import AddToHome from '../AddToHome';
 import useEndHold, { HOLD_SHORT, HOLD_LONG } from '../useEndHold';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isMobileDevice } from '@/lib/is-mobile';
@@ -1108,6 +1109,9 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
             <ReportIssue self="chomp" name="Chomp" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
           </div>
         )}
+        {/* Add to Home Screen, then the finish card's stat cards (app/StageFinish.jsx), as every daily has them. */}
+        {!playing && <AddToHome name="Chomp" />}
+        <div id="stf-stats-slot" />
         {!LOFT && (
         <DailyGamesGrid
           self="chomp"
