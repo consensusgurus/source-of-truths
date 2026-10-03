@@ -3823,7 +3823,7 @@ archive and hub chips use the short form `Sun`.
 | Turn | twelve empty squares instead of ten (from 2026-08-05) |
 | Yose | a 9x9 board with eleven open points against the weekday 7x7 and 8x8 (from launch, 2026-09-20) |
 | Crib | seven hands instead of five, three of them decided by the crib (from launch, 2026-09-20) |
-| Duet | a 10x10 board against the weekday 6x6 and 8x8 (from launch, 2026-10-04) |
+| Duet | a 10x10 board against the weekday 6x6 and 8x8 (from launch, 2026-10-03) |
 | Pricer | a field of 32 instead of 16, so 31 picks and five rounds (from 2026-08-16) |
 | Docket | seven entities over seven slots plus the second dimension, so fourteen open cells against a weekday's twelve, and one extra condition (from 2026-08-10) |
 | Defend | a hold for four instead of a hold for three, so a fourth white move to survive before the attack is spent (from 2026-08-12) |
@@ -3833,7 +3833,7 @@ archive and hub chips use the short form `Sun`.
 | Etch | a 20x20 picture instead of Saturday's 15x15 and the weekday 10x10 (from 2026-08-23) |
 | Hedge | a 10x10 loop lattice instead of the weekday 7x7 |
 | Flank | a giant country with 8 to 14 borders instead of the weekday ramp's 1 to 7, and a fourth strike to spend (from launch, 2026-08-28) |
-| Passport | a country with eight or more land neighbors for the borders round (from launch, 2026-10-04) |
+| Passport | a country with eight or more land neighbors for the borders round (from launch, 2026-10-03) |
 | Chomp | the full cast of eleven mascots and 0-2 spare squares (and from 2026-08-22 every Chomp board carries 5-7 bolted-down bleacher walls; see app/chomp/puzzles.js) |
 | Niche | a 4x4 grid instead of the weekday 3x3, sixteen cells and twenty guesses, always on Countries, the deepest universe (from launch, 2026-08-23) |
 | Shoe | fourteen hands of blackjack instead of ten, dealt off the entire 104-card double deck instead of a 72-card cut, so a perfect counter knows exactly what is left (from 2026-10-04; before 2026-09-30 it was single-deck, seven hands off 52 against five off 36) |
@@ -8380,7 +8380,7 @@ SOLVE_ONLY (flat 10, the clock decides), first-play hint via hint-gate, legacy a
 - The client flags RULE BREAKS live (three alike, a line or room over half, a broken mark) but
   never a square that is merely wrong. Tap cycles empty, dot, ring.
 
-## Passport (`/passport`): the daily geography run (launched 2026-10-04)
+## Passport (`/passport`): the daily geography run (launched 2026-10-03)
 
 One mystery country a day, played in five rounds of 10 points, one score out of 50, ending on a
 real passport. Key/route `passport`, category **Geography**, `miss: null`, legacy accent
@@ -8388,7 +8388,7 @@ real passport. Key/route `passport`, category **Geography**, `miss: null`, legac
 `passport`, `solo: true`, engine `passport`, path `/passport`, score `correct`), and it took
 the Daily Five's place in the home's lead three (CIRC_LEAD, pinCircs, TodayClient LEAD_CIRCUITS,
 LEAD_ORDER) on 2026-10-03. Wired by `scripts/wire-passport.mjs` (anchored on the Flank rows).
-Premiere window 2026-10-04 to 10-08. Share card `public/og/passport.png` from
+Premiere window 2026-10-03 to 10-07. Share card `public/og/passport.png` from
 `scripts/bake-og.mjs passport`.
 
 - **Rounds** (`lib/passport.js`): Landmark (a Commons photo zoomed 5.2x, 3.2x, 1.9x, 1x; 10/8/5/3
@@ -8405,8 +8405,8 @@ Premiere window 2026-10-04 to 10-08. Share card `public/og/passport.png` from
   `scripts/passport-factbook.mjs` (areas and capital points, CIA World Factbook), borders from
   `app/flank/borders.js`. `node scripts/gen-passport.mjs` writes `app/passport/puzzles.js` (the light
   index) and `app/passport/days.js` (the full days, maps baked as SVG paths in a rotated Mercator,
-  which needs `d3-geo topojson-client world-atlas` installed with `--no-save`). Stocked 31 days to
-  2026-11-03. `scripts/verify-passport.mjs` checks it. Sundays are countries with 8+ neighbors.
+  which needs `d3-geo topojson-client world-atlas` installed with `--no-save`). Stocked 31 days
+  2026-10-03 to 2026-11-02. `scripts/verify-passport.mjs` checks it. Sundays are countries with 8+ neighbors.
 - The page resolves the day on the server and ships only that day, with the Commons title
   stripped; the photo comes from `/api/passport/img?n=`, which refuses a day not yet live. Flags are
   flag-icons SVGs (MIT) in `public/passport/flags/`.

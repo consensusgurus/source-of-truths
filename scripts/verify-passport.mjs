@@ -32,7 +32,7 @@ PUZZLES.forEach((p, i) => {
   const keys = Object.keys(p).sort().join(',');
   if (keys !== 'dateLabel,live,num,quizId,sunday') fail(`#${p.num}: the light index carries ${keys}`);
 });
-if (PUZZLES[0].live !== '2026-10-04') fail(`the bank starts ${PUZZLES[0].live}, launch is 2026-10-04`);
+if (PUZZLES[0].live !== '2026-10-03') fail(`the bank starts ${PUZZLES[0].live}, launch is 2026-10-03`);
 
 // ── each day ────────────────────────────────────────────────────────────────
 const seen = new Map();

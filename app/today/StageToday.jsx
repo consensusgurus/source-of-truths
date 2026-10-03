@@ -1060,10 +1060,14 @@ export default function StageToday() {
   // reader has a reason to open today — and it arrives filled, so the row says
   // which of the two it is. Games only, so a pin on something that has since
   // retired simply drops out.
+  //
+  // THE ME VIEW IS STARS ONLY (owner, 2026-10-03): with Me picked on the
+  // switch, My games holds exactly what this reader starred; the group's games
+  // join it only in the group and Everyone views.
   const pinned = useMemo(() => {
     const stars = (favorites || []).map((k) => DAILY_GAME_MAP[k]).filter(Boolean);
     const seen = new Set(stars.map((g) => g.key));
-    const g0 = grp && grp.groups ? grp.groups.find((x) => !x.failed && x.games) : null;
+    const g0 = capLens !== 'me' && grp && grp.groups ? grp.groups.find((x) => !x.failed && x.games) : null;
     const fromGroup = g0
       ? Object.keys(g0.games || {})
         .filter((k) => !seen.has(k) && DAILY_GAME_MAP[k] && LIVE_KEYS.has(k))
@@ -1071,7 +1075,7 @@ export default function StageToday() {
       : [];
     return stars.concat(fromGroup);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [favorites, grp]);
+  }, [favorites, grp, capLens]);
 
   // THE THREE CARDS. Each answers a different question, and each falls back to
   // the best thing it can say with what has loaded (owner, 2026-08-31), because

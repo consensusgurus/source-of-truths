@@ -62,7 +62,7 @@ const MED = {
   // shape (a type-ahead trivia grid, somewhere between Sixes and Blocks).
   // Replace with the measured median at the next snapshot re-measure.
   niche: 150,
-  // Passport launched 2026-10-04 with no clock data: five rounds, each about
+  // Passport launched 2026-10-03 with no clock data: five rounds, each about
   // a Flank or a Focus in length, so estimated at four minutes.
   passport: 240,
   // Impound (2026-09-04) and Junkyard (2026-09-05) launched with no clock data:

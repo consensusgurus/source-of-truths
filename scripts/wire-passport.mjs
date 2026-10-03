@@ -39,7 +39,7 @@ edit('lib/daily-games.js',
   `colorNavy: '#b1d977' },\n  { key: 'passport', miss: null, name: 'Passport', cat: 'Geography', tag: '${D.TAG}', how: '${D.HOW}', color: '${D.COLOR}', colorNavy: '${D.NAVY}' },\n];`);
 edit('lib/daily-games.js',
   `  { key: 'duet', from: '2026-10-03', until: '2026-10-07' },`,
-  `  { key: 'duet', from: '2026-10-03', until: '2026-10-07' },\n  { key: 'passport', from: '2026-10-04', until: '2026-10-08' },`);
+  `  { key: 'duet', from: '2026-10-03', until: '2026-10-07' },\n  { key: 'passport', from: '2026-10-03', until: '2026-10-07' },`);
 
 // ─── 2. lib/sunday-editions.js ──────────────────────────────────────────────
 edit('lib/sunday-editions.js',
@@ -166,7 +166,7 @@ edit('lib/circuits.js',
   {
     id: 'passport',
     name: 'Passport',
-    // NEW on 2026-10-04 (owner, 2026-10-03). One mystery country in five
+    // NEW on 2026-10-03 (owner). One mystery country in five
     // rounds, at its own address (mindloftdaily.com/passport). It is a
     // Geography daily AND a circuit tile, and it takes the Daily Five's place
     // in the lead three on the home and in the first-visit pins.
@@ -216,7 +216,7 @@ edit('scripts/verify-circuits.mjs',
   `      const unit = runEngine(c.id) === 'quiz' ? RUN_GAMES : (RUN_ENGINES[runEngine(c.id)] || RUN_GAMES);`);
 edit('scripts/verify-circuits.mjs',
   `  niche: 150,\n`,
-  `  niche: 150,\n  // Passport launched 2026-10-04 with no clock data: five rounds, each about\n  // a Flank or a Focus in length, so estimated at four minutes.\n  passport: 240,\n`);
+  `  niche: 150,\n  // Passport launched 2026-10-03 with no clock data: five rounds, each about\n  // a Flank or a Focus in length, so estimated at four minutes.\n  passport: 240,\n`);
 edit('scripts/verify-circuits.mjs',
   `import { SHARE_HOST } from '../lib/site.js';`,
   `import { SHARE_HOST } from '../lib/site.js';\nimport { PUZZLES as PASSPORT_PUZZLES } from '../app/passport/puzzles.js';\n// A solo circuit before its daily's first day has no live game yet, which is\n// launch, not a broken roster.\nconst LAUNCHED = (k) => k !== 'passport' || PASSPORT_PUZZLES.some((p) => p.live <= new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }));`);
@@ -241,7 +241,7 @@ edit('app/today/TodayClient.jsx',
 // ─── 19. CLAUDE.md ──────────────────────────────────────────────────────────
 edit('CLAUDE.md',
   `| Flank | a giant country with 8 to 14 borders instead of the weekday ramp's 1 to 7, and a fourth strike to spend (from launch, 2026-08-28) |`,
-  `| Flank | a giant country with 8 to 14 borders instead of the weekday ramp's 1 to 7, and a fourth strike to spend (from launch, 2026-08-28) |\n| Passport | a country with eight or more land neighbors for the borders round (from launch, 2026-10-04) |`);
+  `| Flank | a giant country with 8 to 14 borders instead of the weekday ramp's 1 to 7, and a fourth strike to spend (from launch, 2026-08-28) |\n| Passport | a country with eight or more land neighbors for the borders round (from launch, 2026-10-03) |`);
 {
   const p = path.join(root, 'CLAUDE.md');
   const src = fs.readFileSync(p, 'utf8');
@@ -256,7 +256,7 @@ real passport. Key/route \`passport\`, category **Geography**, \`miss: null\`, l
 \`passport\`, \`solo: true\`, engine \`passport\`, path \`/passport\`, score \`correct\`), and it took
 the Daily Five's place in the home's lead three (CIRC_LEAD, pinCircs, TodayClient LEAD_CIRCUITS,
 LEAD_ORDER) on 2026-10-03. Wired by \`scripts/wire-passport.mjs\` (anchored on the Flank rows).
-Premiere window 2026-10-04 to 10-08. Share card \`public/og/passport.png\` from
+Premiere window 2026-10-03 to 10-07. Share card \`public/og/passport.png\` from
 \`scripts/bake-og.mjs passport\`.
 
 - **Rounds** (\`lib/passport.js\`): Landmark (a Commons photo zoomed 5.2x, 3.2x, 1.9x, 1x; 10/8/5/3
@@ -273,8 +273,8 @@ Premiere window 2026-10-04 to 10-08. Share card \`public/og/passport.png\` from
   \`scripts/passport-factbook.mjs\` (areas and capital points, CIA World Factbook), borders from
   \`app/flank/borders.js\`. \`node scripts/gen-passport.mjs\` writes \`app/passport/puzzles.js\` (the light
   index) and \`app/passport/days.js\` (the full days, maps baked as SVG paths in a rotated Mercator,
-  which needs \`d3-geo topojson-client world-atlas\` installed with \`--no-save\`). Stocked 31 days to
-  2026-11-03. \`scripts/verify-passport.mjs\` checks it. Sundays are countries with 8+ neighbors.
+  which needs \`d3-geo topojson-client world-atlas\` installed with \`--no-save\`). Stocked 31 days
+  2026-10-03 to 2026-11-02. \`scripts/verify-passport.mjs\` checks it. Sundays are countries with 8+ neighbors.
 - The page resolves the day on the server and ships only that day, with the Commons title
   stripped; the photo comes from \`/api/passport/img?n=\`, which refuses a day not yet live. Flags are
   flag-icons SVGs (MIT) in \`public/passport/flags/\`.
