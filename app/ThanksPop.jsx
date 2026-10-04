@@ -227,9 +227,7 @@ export default function ThanksPop() {
     <div className={`typ-bd${dark ? ' dk' : ''}`} role="dialog" aria-modal="true" aria-labelledby="typ-h" onClick={close}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="typ" onClick={(e) => e.stopPropagation()}>
-        <div className="typ-ramp" aria-hidden="true">
-          {RAMP.map((c) => <i key={c} style={{ background: c }} />)}
-        </div>
+        <div className="typ-ramp" aria-hidden="true" />
         <div className="typ-grab" aria-hidden="true" />
         <button type="button" ref={closeRef} className="typ-x" onClick={close} aria-label="Close">
           <X size={20} strokeWidth={2.2} />
@@ -246,6 +244,13 @@ export default function ThanksPop() {
             <li><Wrench size={18} strokeWidth={2.2} aria-hidden="true" />More feedback means better ones</li>
             <li><Check size={18} strokeWidth={2.2} aria-hidden="true" />And it stays free for everyone</li>
           </ul>
+
+          {latest && (
+            <div className="typ-last">
+              <span className="typ-last-ic"><Share2 size={16} strokeWidth={2.4} aria-hidden="true" /></span>
+              <span className="typ-last-tx"><i>Most recent share</i><b>{latest.username}</b><em>{ago(latest.at)}</em></span>
+            </div>
+          )}
 
           <label className="typ-lab" htmlFor="typ-link">{credit ? 'Your share link' : 'Share the link'}</label>
           <div className="typ-row">
@@ -279,13 +284,6 @@ export default function ThanksPop() {
             )}
           </div>
 
-          {latest && (
-            <div className="typ-last">
-              <Share2 size={15} strokeWidth={2.2} aria-hidden="true" />
-              <span>Most recent share: <b>{latest.username}</b>, {ago(latest.at)}</span>
-            </div>
-          )}
-
           <a className="typ-grp" href="/groups">
             <Users size={18} strokeWidth={2.2} aria-hidden="true" />
             <span><b>Playing with friends or family?</b> Start a private group and get your own leaderboard.</span>
@@ -301,21 +299,20 @@ export default function ThanksPop() {
   );
 }
 
-// The ten category hues, light fills, as a strip across the top.
-const RAMP = ['#0369a1', '#047857', '#1a7f37', '#e8b43a', '#fb923c', '#be123c', '#a21caf', '#6d28d9', '#fbbf24', '#3949ab'];
 
 const CSS = `
 .typ-bd{position:fixed;inset:0;z-index:4100;display:flex;align-items:center;justify-content:center;padding:20px;
   background:rgba(11,13,18,.5);animation:typfade .18s ease-out;
   --t-card:#fff;--t-ink:#0b0d12;--t-body:#3f4757;--t-mute:#5f6774;--t-line:#e7e9ee;--t-field:rgba(11,15,26,.24);
-  --t-soft:#f4f6fa;--t-acc:#2563eb;--t-cta:#2563eb;--t-good:#046c4e;--t-goodbg:#ecf7f2;--t-btn:#fff;}
+  --t-soft:#f4f6fa;--t-acc:#2563eb;--t-lastbg:#eef4ff;--t-lastline:#cfe0ff;--t-lastic:#7db0ff;--t-lastink:#1d4ed8;--t-cta:#2563eb;--t-good:#046c4e;--t-goodbg:#ecf7f2;--t-btn:#fff;}
 .typ-bd.dk{background:rgba(0,0,0,.62);
   --t-card:#151b29;--t-ink:#eef2fa;--t-body:#b9c4d8;--t-mute:#9aa8c4;--t-line:rgba(255,255,255,.14);--t-field:rgba(255,255,255,.22);
-  --t-soft:rgba(255,255,255,.05);--t-acc:#7db0ff;--t-cta:#2f6fe4;--t-good:#9fe0c2;--t-goodbg:rgba(47,191,139,.10);--t-btn:transparent;}
+  --t-soft:rgba(255,255,255,.05);--t-acc:#7db0ff;--t-lastbg:rgba(125,176,255,.12);--t-lastline:rgba(125,176,255,.35);--t-lastic:#7db0ff;--t-lastink:#7db0ff;--t-cta:#2f6fe4;--t-good:#9fe0c2;--t-goodbg:rgba(47,191,139,.10);--t-btn:transparent;}
 .typ{position:relative;width:100%;max-width:540px;max-height:calc(100vh - 40px);overflow-y:auto;background:var(--t-card);
   border:1px solid var(--t-line);border-radius:16px;box-shadow:0 24px 60px rgba(11,13,18,.35);font-family:${SANS};color:var(--t-ink);
   animation:typrise .22s ease-out;}
-.typ-ramp{display:flex;height:6px}.typ-ramp i{flex:1 1 0}
+/* One solid light blue across the top (owner, 2026-10-04): the dark register's accent, in both registers. */
+.typ-ramp{height:6px;background:#7db0ff}
 .typ-grab{display:none}
 .typ-x{position:absolute;top:16px;right:14px;width:44px;height:44px;border:none;background:transparent;border-radius:10px;color:var(--t-mute);
   display:flex;align-items:center;justify-content:center;cursor:pointer}
@@ -344,8 +341,14 @@ const CSS = `
 .typ-b{height:44px;box-sizing:border-box;border:1px solid var(--t-line);border-radius:10px;background:var(--t-btn);color:var(--t-ink);
   font-family:${SANS};font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;text-decoration:none}
 .typ-b:hover{border-color:var(--t-field)}
-.typ-last{margin-top:10px;display:flex;align-items:center;gap:8px;font-family:${MONO};font-size:12px;letter-spacing:.02em;color:var(--t-mute)}
-.typ-last b{color:var(--t-ink);font-weight:500}.typ-last svg{flex:none;color:var(--t-acc)}
+.typ-last{margin-top:16px;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;
+  background:var(--t-lastbg);border:1px solid var(--t-lastline)}
+.typ-last-ic{flex:none;width:34px;height:34px;border-radius:999px;background:var(--t-lastic);color:#0b1f4d;
+  display:flex;align-items:center;justify-content:center}
+.typ-last-tx{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:8px;row-gap:2px;min-width:0}
+.typ-last-tx i{flex-basis:100%;font-style:normal;font-family:${MONO};font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--t-lastink)}
+.typ-last-tx b{font-size:17px;font-weight:800;color:var(--t-ink);letter-spacing:-.01em}
+.typ-last-tx em{font-style:normal;font-size:13px;color:var(--t-mute)}
 .typ-grp{margin-top:12px;display:flex;align-items:flex-start;gap:10px;font-size:14px;line-height:1.5;color:var(--t-body);
   text-decoration:none;border:1px dashed var(--t-field);border-radius:10px;padding:11px 14px}
 .typ-grp b{color:var(--t-ink)}.typ-grp svg{flex:none;margin-top:1px;color:var(--t-acc)}
