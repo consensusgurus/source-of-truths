@@ -3,9 +3,11 @@
 // THANK YOU + SHARE (owner-approved, 2026-10-04). Mockup:
 // https://claude.ai/artifact/XCciwm28gw4drBDTjJ4pVM
 //
-// ONE COMPONENT, TWO POP-UPS, each shown at most ONCE per browser, ever.
+// ONE COMPONENT, TWO POP-UPS, and at most ONE showing per browser per week
+// (see LAST_KEY below). An existing player gets the return version on arrival;
+// anyone else gets the done version after a finished game.
 //
-//   RETURN ('return'). An EXISTING player, on the first page of a later visit.
+//   RETURN ('return'). An EXISTING player, on the first page of a visit.
 //   "Existing" is decided at the START of the browser session (sessionStorage
 //   key sot_thanks_sess): a play footprint already on this device when the
 //   session began. Same positive-signal test WelcomeOverlay uses, so the two
@@ -14,7 +16,7 @@
 //   copy says the owner can see who shares. A guest has no code to stamp, so
 //   the credit line becomes an invitation to pick a player name.
 //
-//   DONE ('done'). EVERYONE, new and existing, a few seconds after a finished
+//   DONE ('done'). Anyone not shown the return version this week, a few seconds after a finished
 //   game is saved (the sot:result-saved event ResultQueue fires on a 2xx post
 //   that is not an abandon row). No share credit: a plain link.
 //
@@ -37,8 +39,25 @@ import { withRef, myRefCode, ensureMyRefCode } from '@/lib/referrals';
 import { readRunParam } from '@/lib/circuits';
 import { readStageTheme } from '@/lib/stage-theme';
 
-const RETURN_KEY = 'sot_thanks_return';
-const DONE_KEY = 'sot_thanks_done';
+// ONCE A WEEK (owner, 2026-10-04, same day it shipped as once ever): at most one
+// thank-you pop-up per browser per seven days, whichever version. LAST_KEY holds
+// the ms timestamp of the last showing. The two once-ever keys from the first
+// release are read as "shown just now" so nobody who saw it today sees it again
+// before next week.
+const LAST_KEY = 'sot_thanks_last';
+const OLD_KEYS = ['sot_thanks_return', 'sot_thanks_done'];
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+function shownThisWeek() {
+  try {
+    let last = parseInt(localStorage.getItem(LAST_KEY) || '', 10);
+    if (!Number.isFinite(last) && OLD_KEYS.some((k) => localStorage.getItem(k))) {
+      last = Date.now();
+      localStorage.setItem(LAST_KEY, String(last));
+    }
+    return Number.isFinite(last) && Date.now() - last < WEEK_MS;
+  } catch (e) { return true; }
+}
 const SESS_KEY = 'sot_thanks_sess';      // 'r' returning at session start, 'n' new
 const SHOWN_KEY = 'sot_thanks_shown';    // a pop-up already showed this session
 export const RESULT_SAVED_EVENT = 'sot:result-saved';
@@ -120,7 +139,7 @@ export default function ThanksPop() {
     }
     if (!preview.current) {
       try {
-        localStorage.setItem(which === 'return' ? RETURN_KEY : DONE_KEY, '1');
+        localStorage.setItem(LAST_KEY, String(Date.now()));
         sessionStorage.setItem(SHOWN_KEY, '1');
       } catch (e) {}
     }
@@ -159,7 +178,7 @@ export default function ThanksPop() {
     } catch (e) { return undefined; }
     if (sess !== 'r') return undefined;
     try {
-      if (localStorage.getItem(RETURN_KEY)) return undefined;
+      if (shownThisWeek()) return undefined;
       if (sessionStorage.getItem(SHOWN_KEY)) return undefined;
     } catch (e) { return undefined; }
     const t = setTimeout(() => {
@@ -174,7 +193,7 @@ export default function ThanksPop() {
     let timer = null;
     const onSaved = () => {
       try {
-        if (localStorage.getItem(DONE_KEY)) return;
+        if (shownThisWeek()) return;
         if (sessionStorage.getItem(SHOWN_KEY)) return;
       } catch (e) { return; }
       if (blockedHere()) return;
@@ -182,7 +201,7 @@ export default function ThanksPop() {
       timer = setTimeout(() => {
         if (document.visibilityState === 'hidden') return;
         if (blockedHere() || anotherModalOpen()) return;
-        try { if (localStorage.getItem(DONE_KEY) || sessionStorage.getItem(SHOWN_KEY)) return; } catch (e) { return; }
+        try { if (shownThisWeek() || sessionStorage.getItem(SHOWN_KEY)) return; } catch (e) { return; }
         show('done');
       }, DONE_WAIT_MS);
     };
