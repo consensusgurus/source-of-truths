@@ -9,7 +9,11 @@
 //     they demand. From 2026-08-21 the week is Mon-Wed one-jester (means must
 //     climb Mon -> Wed) and Thu-Sun two-jester (means must climb Thu -> Sun,
 //     on the two-jester tier score). Grid size is NOT a difficulty signal.
-//   - every unplayed Thursday-through-Sunday is a two-jester board
+//   - from 2026-10-04 every board is ONE jester again, and the week ramps by
+//     size: Mon/Tue 8x8, Wed/Thu 9x9, Fri/Sat 10x10, Sunday Edition 11x11,
+//     with the second day of each size pair grading harder than the first.
+//     The 2-per-unit boards moved to their own daily, Judges
+//     (scripts/verify-judges.mjs). 2026-08-21..10-03 boards keep their era.
 // Run: node scripts/verify-jester.mjs
 import { PUZZLES } from '../app/jesters/puzzles.js';
 import { humanSolve2 } from './jester2-human.mjs';
@@ -17,6 +21,8 @@ import { gradeBoard } from './grade-jester.mjs';
 
 const CUTOVER = '2026-08-03';        // boards on or before this are played and frozen
 const TWO_FROM = '2026-08-21';       // from this date Thu-Sun seat two jesters, Mon-Wed one
+const ONE_FROM = '2026-10-04';       // from this date every board seats one jester, sized by weekday
+const SIZE_BY_DOW = { 1: 8, 2: 8, 3: 9, 4: 9, 5: 10, 6: 10, 0: 11 };
 let fails = 0;
 const fail = (msg) => { console.error('FAIL:', msg); fails++; };
 
@@ -185,6 +191,7 @@ const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const seenLayouts = new Set(), seenDates = new Set();
 const grades = [];   // one-jester (Mon-Wed from TWO_FROM)
 const grades2 = [];  // two-jester (Thu-Sun from TWO_FROM)
+const gradesNew = []; // one-jester, every day from ONE_FROM
 let prevDate = null;
 
 PUZZLES.forEach((p, i) => {
@@ -204,10 +211,13 @@ PUZZLES.forEach((p, i) => {
 
   const n = p.size;
   if (stars === 2 && n !== 10) fail(`${tag}: two-jester boards are 10x10, got ${n}`);
-  if (stars === 1 && n !== 8 && n !== 9) fail(`${tag}: unexpected size ${n}`);
+  if (stars === 1 && p.live < ONE_FROM && n !== 8 && n !== 9) fail(`${tag}: unexpected size ${n}`);
   const dow = dt.getUTCDay();
   if (p.live < TWO_FROM) {
     if (stars === 2 && !p.sunday) fail(`${tag}: two-jester board is not on a Sunday (pre-rollout era)`);
+  } else if (p.live >= ONE_FROM) {
+    if (stars !== 1) fail(`${tag}: from ${ONE_FROM} every Jesters board seats one jester (two-per-unit boards are Judges)`);
+    if (n !== SIZE_BY_DOW[dow]) fail(`${tag}: a ${DOW[dow]} from ${ONE_FROM} is ${SIZE_BY_DOW[dow]}x${SIZE_BY_DOW[dow]}, got ${n}`);
   } else {
     const wantStars = (dow === 0 || dow >= 4) ? 2 : 1;
     if (stars !== wantStars) fail(`${tag}: a ${DOW[dow]} from ${TWO_FROM} should seat ${wantStars} jester(s) per unit, got ${stars}`);
@@ -235,7 +245,8 @@ PUZZLES.forEach((p, i) => {
     const hs = humanSolve(n, p.regions);
     if (!hs.solved) fail(`${tag}: NOT human-solvable without guessing`);
     else if (hs.cols.some((c, r) => c !== sol[r])) fail(`${tag}: human solution differs from stored`);
-    if (p.live >= TWO_FROM) grades.push({ dow, score: gradeBoard(n, p.regions).score, tag });
+    if (p.live >= ONE_FROM) gradesNew.push({ dow, score: gradeBoard(n, p.regions).score, tag });
+    else if (p.live >= TWO_FROM) grades.push({ dow, score: gradeBoard(n, p.regions).score, tag });
   } else {
     const sol = p.solution;
     if (sol.length !== n || sol.some((pair) => !Array.isArray(pair) || pair.length !== 2)) fail(`${tag}: solution is not ${n} column pairs`);
@@ -285,11 +296,18 @@ const rampOf = (rows, order, label) => {
 };
 const means1 = rampOf(grades, [1, 2, 3], 'one-jester');
 const means2 = rampOf(grades2, [4, 5, 6, 0], 'two-jester');
-const futureSundays = PUZZLES.filter((p) => p.live > CUTOVER && p.sunday);
-for (const p of futureSundays) if ((p.stars || 1) !== 2) fail(`#${p.num} (${p.quizId}): unplayed Sunday is not a two-jester board`);
+// From ONE_FROM the ramp is the board size; inside each size pair the second
+// day must grade harder than the first (Mon<Tue at 8x8, Wed<Thu at 9x9, Fri<Sat at 10x10).
+const meansNew = {};
+for (const [a, b] of [[1, 2], [3, 4], [5, 6]]) {
+  const m = rampOf(gradesNew, [a, b], `one-jester ${SIZE_BY_DOW[a]}x${SIZE_BY_DOW[a]} pair`);
+  Object.assign(meansNew, m);
+}
+if (!gradesNew.some((g) => g.dow === 0)) fail(`no Sunday boards from ${ONE_FROM}`);
 
 if (fails) { console.error(`\nverify-jester: ${fails} FAILURE(S)`); process.exit(1); }
 console.log(`verify-jester: all ${PUZZLES.length} boards pass (unique + pure-deduction, structure OK)`);
 console.log('  one-jester ramp (Mon-Wed): ' + [1, 2, 3].map((w) => `${DOW[w]} ${means1[w] === undefined ? '?' : means1[w].toFixed(1)}`).join('  ->  '));
+console.log('  from ' + ONE_FROM + ' (one jester, sized by day): ' + [1, 2, 3, 4, 5, 6].map((w) => `${DOW[w]} ${SIZE_BY_DOW[w]}x ${meansNew[w] === undefined ? '?' : meansNew[w].toFixed(1)}`).join('  '));
 console.log('  two-jester ramp (Thu-Sun): ' + [4, 5, 6, 0].map((w) => `${DOW[w]} ${means2[w] === undefined ? '?' : means2[w].toFixed(1)}`).join('  ->  '));
 console.log(`  two-jester boards: ${PUZZLES.filter((p) => (p.stars || 1) === 2).length}`);

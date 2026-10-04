@@ -3810,7 +3810,7 @@ archive and hub chips use the short form `Sun`.
 | Carve | 7×7 board in nine blocks |
 | Stet | seven sentences, up to two errors each |
 | Ping | a trickier, more out-of-the-way city |
-| Jester | the hardest two-jester 10×10 board of the week (from 2026-08-21 Thu–Sat are two-jester 10×10 as well, ramping into Sunday; Mon–Wed stay one-jester) |
+| Jester | an 11x11 one-jester board against the weekday 8x8 / 9x9 / 10x10 ramp (from 2026-10-04; 2026-08-21 to 10-03 ran two-jester Thu-Sun, which moved to Judges) |
 | Sworn | six suspects sworn instead of five |
 | Garble | every answer is six letters instead of five (from 2026-07-26) |
 | Dating | six events to order instead of five (from 2026-07-26) |
@@ -3824,6 +3824,7 @@ archive and hub chips use the short form `Sun`.
 | Yose | a 9x9 board with eleven open points against the weekday 7x7 and 8x8 (from launch, 2026-09-20) |
 | Crib | seven hands instead of five, three of them decided by the crib (from launch, 2026-09-20) |
 | Duet | a 10x10 board against the weekday 6x6 and 8x8 (from launch, 2026-10-03) |
+| Judges | a 12x12 two-judge board against the weekday 10x10 (from launch, 2026-10-04) |
 | Pricer | a field of 32 instead of 16, so 31 picks and five rounds (from 2026-08-16) |
 | Docket | seven entities over seven slots plus the second dimension, so fourteen open cells against a weekday's twelve, and one extra condition (from 2026-08-10) |
 | Defend | a hold for four instead of a hold for three, so a fourth white move to survive before the attack is spent (from 2026-08-12) |
@@ -8434,3 +8435,32 @@ up, `body:has(.stf-a2hs)` hides the client's own A2HS, found as the element
 right before `<div id="stf-stats-slot" />`, so A NEW DAILY CLIENT STILL
 CARRIES ITS A2HS BUTTON IMMEDIATELY FOLLOWED BY THE SLOT
 (`scripts/verify-finish-slots.mjs` is the gate).
+
+## Judges (`/judges`): two per row, and Jesters back to one (2026-10-04)
+
+Owner ruling 2026-10-04: **Jesters is one jester per row, column and court every day again**, and its
+week ramps by BOARD SIZE (Mon/Tue 8x8, Wed/Thu 9x9, Fri/Sat 10x10, Sunday Edition 11x11, the second day
+of each size pair grading harder). The two-per-unit boards it ran Thursday to Sunday from 2026-08-21
+became their own daily, **Judges**: key/route `judges`, category **Logic**, `miss: 'Placed'`,
+SOLVE_ONLY, legacy accent `#7c2d12` / `#fdba74`, forked from JesterClient (gavel mark, `STARS`
+defaults to 2). 10x10 Monday to Saturday dealt from six difficulty bands of the jester2-human tier
+score, a 12x12 Sunday Edition. Wired by `scripts/wire-judges.mjs`. No PNG tiles; glyph in
+`lib/game-glyphs.js`.
+
+- **Jesters #79 (2026-10-04) was swapped in place** from a two-jester 10x10 to the first 11x11 a few
+  minutes into its day (owner: everything live today). A save for the old board is discarded on load
+  because the grid size no longer matches. Boards 2026-08-21 to 10-03 are frozen in their two-jester era,
+  and `scripts/verify-jester.mjs` checks each era by its own rule (`ONE_FROM = '2026-10-04'`).
+- **Generators.** One-jester boards: `scripts/jester1-produce.mjs <size>` (seeded seating, uneven court
+  growth, boundary repair, the graded human solver). Judges boards: `scripts/judges-produce.mjs <size>`.
+  Even court growth almost never converges to a unique 12x12 two-star board; what works is UNEVEN
+  appetites (a few sprawling courts, many tight ones, skew 6 to 8) plus GREEDY repair that keeps the
+  boundary move leaving the fewest rival seatings. Even so a 12x12 takes minutes of CPU each, so bank
+  Sundays in a long job, not interactively. Courts must hold 4+ cells.
+- **Hue collisions.** The stage paints court k with REGION_RAMP[k % 10], so on an 11x11 or 12x12 courts
+  k and k+10 share a hue; the banks are labelled so those never touch (verify-judges checks it).
+- **The client solver** (JudgesClient `solveBoard`) gained a one-seat-per-row column prune and a
+  court-reach suffix prune; a 12x12 two-star board resolves in under 100ms.
+- `scripts/verify-judges.mjs` shares no search code with the generator: its own cell-by-cell
+  exhaustive count proves one seating, jester2-human proves no guessing, and it checks sizes by weekday,
+  4+ cell contiguous courts, the hue rule, the Mon<...<Sat ramp, and no layout reused from Jesters.
