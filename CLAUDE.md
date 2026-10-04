@@ -3824,6 +3824,9 @@ archive and hub chips use the short form `Sun`.
 | Yose | a 9x9 board with eleven open points against the weekday 7x7 and 8x8 (from launch, 2026-09-20) |
 | Crib | seven hands instead of five, three of them decided by the crib (from launch, 2026-09-20) |
 | Duet | a 10x10 board against the weekday 6x6 and 8x8 (from launch, 2026-10-03) |
+| Lamps | a 10x10 board against the weekday 7x7 and 8x8 (from launch, 2026-10-04) |
+| Clade | a rarer animal, tier 4 of the list (from launch, 2026-10-04) |
+| Dossier | six guesses instead of eight (from launch, 2026-10-04) |
 | Judges | a 12x12 two-judge board against the weekday 10x10 (from launch, 2026-10-04) |
 | Pricer | a field of 32 instead of 16, so 31 picks and five rounds (from 2026-08-16) |
 | Docket | seven entities over seven slots plus the second dimension, so fourteen open cells against a weekday's twelve, and one extra condition (from 2026-08-10) |
@@ -8464,3 +8467,36 @@ score, a 12x12 Sunday Edition. Wired by `scripts/wire-judges.mjs`. No PNG tiles;
 - `scripts/verify-judges.mjs` shares no search code with the generator: its own cell-by-cell
   exhaustive count proves one seating, jester2-human proves no guessing, and it checks sizes by weekday,
   4+ cell contiguous courts, the hue rule, the Mon<...<Sat ramp, and no layout reused from Jesters.
+
+## Lamps, Clade and Dossier (`/lamps`, `/clade`, `/dossier`): launched 2026-10-04
+
+Three dailies in one push, wired by `scripts/wire-clade-dossier-lamps.mjs` (anchored on the Duet and
+Niche rows, idempotent). Day 1 is 2026-10-04, a Sunday, so every No. 1 is a Sunday Edition. Banks
+run 78 days to 2026-12-20. No PNG tiles; glyphs in `lib/game-glyphs.js`; share cards
+`public/og/<key>.png` from `scripts/bake-og.mjs lamps clade dossier`. Premiere 10-04 to 10-08.
+
+**Lamps** (Logic, `miss: null`, SOLVE_ONLY, first-play hint): the light-placement puzzle (akari).
+`grid[r]` is a string of `.` white, `#` blank wall, `0`-`4` numbered wall; `sol` is the lamp
+squares as `r*n+c`. `scripts/lamps-core.mjs` + `gen-lamps.mjs` build a unique board and strip wall
+numbers while a graded solver (pencil rules, then ONE look-ahead; `cost` = squares settled by a
+look-ahead) still finishes. Ramp: Mon 7x7 cost 0, Tue 1-2, Wed 3-9, Thu 8x8 0-1, Fri 2-5, Sat 6-16,
+**Sunday 10x10** 6-40. `scripts/verify-lamps.mjs` shares no code with the core. The client flags
+two lamps that see each other and an over-full numbered wall, never a lamp that is merely wrong.
+
+**Clade** (Trivia, `miss: 'Guesses'`): one hidden animal, eight guesses, each answered with the
+closest branch of the tree it shares with the answer. `app/clade/animals.js` is the list (name,
+`path` from Animals down, tier 1-4, optional `alt` names). Tier by weekday: Mon/Tue 1, Wed/Thu 2,
+Fri/Sat 3, Sunday 4. Score `11 - guesses` (floor 1), 0 when the guesses run out. THE TAXONOMY WAS
+WRITTEN FROM MEMORY and simplified to common-name branches; treat a reader report of a wrong branch
+as likely right and fix the path.
+
+**Dossier** (Trivia, `miss: 'Guesses'`): one hidden item from the day's universe
+(`app/dossier/universes.js`: US presidents, chemical elements, US states), eight guesses (six on
+Sunday), each compared with the answer on five attributes (match, higher, lower, no). Rotation Mon
+presidents, Tue elements, Wed states, Thu presidents, Fri elements, Sat states; Sundays cycle.
+Same score as Clade. A president who served two separate terms is one entry. Facts are frozen
+(nothing that changes with an election or a discovery is an attribute).
+
+Both guessing games use the three-tier word type-ahead (`matchNames`) and say so when nothing
+matches, per the type-ahead rule above. The answer never reaches the browser for a future day:
+each page filters `live <= today`.

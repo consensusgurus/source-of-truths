@@ -115,7 +115,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-15' };
+const LAUNCH_PIN = { keys: ['lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-15' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -180,6 +180,9 @@ export const GAME_META = {
   impound: { accent: '#6b4a1f', badgeBg: '#6b4a1f', badgeInk: T.white, Fin: Truck },
   junkyard: { accent: '#5c3a16', badgeBg: '#5c3a16', badgeInk: T.white, Fin: Boxes },
   judges: { accent: '#7c2d12', badgeBg: '#7c2d12', badgeInk: T.white, Fin: Crown },
+  lamps: { accent: '#9a6700', badgeBg: '#9a6700', badgeInk: T.white, Fin: Blocks },
+  clade: { accent: '#0f6b6b', badgeBg: '#0f6b6b', badgeInk: T.white, Fin: LayoutGrid },
+  dossier: { accent: '#5b3a8c', badgeBg: '#5b3a8c', badgeInk: T.white, Fin: LayoutGrid },
   duet: { accent: '#1a7f37', badgeBg: '#1a7f37', badgeInk: T.white, Fin: Blocks },
   snug: { accent: '#3b5bdb', badgeBg: '#3b5bdb', badgeInk: T.white, Fin: Puzzle },
   check: { accent: '#166e5a', badgeBg: '#166e5a', badgeInk: T.white, Fin: Swords },
@@ -317,6 +320,9 @@ const ALL_DAILY_GAMES = [
   { key: 'park',   cat: 'logic',     name: 'Parker', tag: 'Get the red one out',         blurb: 'A jammed parking lot. Slide the other cars aside and drive the red one free in as few moves as you can.', href: '/parker' },
   { key: 'impound',   cat: 'logic',     name: 'Impound', tag: 'Parker on a bigger lot',         blurb: 'Parker on a seven by seven lot, with around twenty blocks in your way. Same one gap in the wall, a good deal more between you and it.', href: '/impound' },
   { key: 'judges', cat: 'logic',     name: 'Judges', tag: 'Two per row',   blurb: 'Two judges in every row, column and colored court, and no two ever touch. A 10x10 bench all week, a 12x12 on Sunday.', href: '/judges' },
+  { key: 'lamps',   cat: 'logic',     name: 'Lamps', tag: 'Light every square',   blurb: 'Place lamps until every square is lit. No lamp may shine on another, and numbered walls say how many lamps touch them. Seven by seven early in the week, eight by eight from Thursday, ten by ten on Sundays.', href: '/lamps' },
+  { key: 'clade',   cat: 'trivia',     name: 'Clade', tag: 'Guess the animal by its family tree',   blurb: 'One hidden animal and eight guesses. Every guess shows the closest branch of the family tree it shares with the answer. A rarer animal on Sundays.', href: '/clade' },
+  { key: 'dossier',   cat: 'trivia',     name: 'Dossier', tag: 'Five clues on every guess',   blurb: 'A hidden president, element or US state. Every guess is compared with the answer on five facts: a match, higher or lower. Eight guesses, six on Sundays.', href: '/dossier' },
   { key: 'duet',   cat: 'logic',     name: 'Duet', tag: 'Half dots, half rings',   blurb: 'Dots and rings, half and half in every row, column and walled room, never three alike in a line. Six by six early in the week, eight by eight from Thursday, ten by ten on Sundays.', href: '/duet' },
   { key: 'snug',   cat: 'logic',     name: 'Snug', tag: 'Fit the pieces, one way only',   blurb: 'A board with a few squares missing and pieces that fill it exactly. Turn them, flip them, find the one way they all fit. Six by six on weekdays, seven by seven with eight pieces on Sundays.', href: '/snug' },
   { key: 'junkyard',   cat: 'logic',     name: 'Junkyard', tag: 'Parker on the biggest lot',         blurb: 'Parker on an eight by eight lot, the biggest board in the family, with close to thirty blocks in your way. Same one gap in the wall, a great deal more between you and it.', href: '/junkyard' },

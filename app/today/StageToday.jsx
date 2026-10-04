@@ -3577,15 +3577,8 @@ ${PATCH_CSS}
   .sty-minec{margin-top:0;}
 }
 
-/* WHILE ONE CATEGORY IS OPEN the other buttons take the finished-tile pastel
-   (owner, 2026-10-03), so the open one reads as the full colour among softer ones. */
-.sty-tiles.has-open .sty-tile:not(.on){background:var(--cp);border-color:var(--cp);color:var(--cpi);}
-.sty-tiles.has-open .sty-tile:not(.on) .sty-ctn,.sty-tiles.has-open .sty-tile:not(.on) .sty-ctn i,
-.sty-tiles.has-open .sty-tile:not(.on) .sty-tf,.sty-tiles.has-open .sty-tile:not(.on) .sty-tact{color:var(--cpi);}
-.sty-tiles.has-open .sty-tile:not(.on) .sty-trung i{background:color-mix(in srgb,var(--cpi) 18%,transparent);opacity:1;}
-.sty-tiles.has-open .sty-tile:not(.on) .sty-trung i.d{background:var(--cpi);}
-.sty-tiles.has-open .sty-tile:not(.on) .sty-trung i.p{background:color-mix(in srgb,var(--cpi) 50%,transparent);}
-.sty-tiles.has-open .sty-tile:not(.on):hover{border-color:var(--cc);}
+/* While one category is open ONLY the open one is highlighted; the others stay as they
+   are (owner, 2026-10-03, reversing the same day pastel on the rest). */
 
 /* ON A PHONE MY GAMES LEADS WITH ITS CIRCUITS, then the games (owner, 2026-10-03). */
 @media (max-width:640px){

@@ -65,6 +65,9 @@ import { PUZZLES as IMPOUND_FULL } from '../impound/puzzles';
 import { PUZZLES as JUNKYARD_FULL } from '../junkyard/puzzles';
 import { PUZZLES as SNUG_FULL } from '../snug/puzzles';
 import { PUZZLES as DUET_FULL } from '../duet/puzzles';
+import { PUZZLES as LAMPS_FULL } from '../lamps/puzzles';
+import { PUZZLES as CLADE_FULL } from '../clade/puzzles';
+import { PUZZLES as DOSSIER_FULL } from '../dossier/puzzles';
 import { PUZZLES as JUDGES_FULL } from '../judges/puzzles';
 import { PUZZLES as CHECK_FULL } from '../check/puzzles';
 import { PUZZLES as RUNG_FULL } from '../rung/puzzles';
@@ -150,6 +153,9 @@ const PARK = PARK_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num,
 const IMPOUND = IMPOUND_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const JUNKYARD = JUNKYARD_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const JUDGES = JUDGES_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const LAMPS = LAMPS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const CLADE = CLADE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const DOSSIER = DOSSIER_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const DUET = DUET_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SNUG = SNUG_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const CHECK = CHECK_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -299,6 +305,9 @@ const GAMES = [
   { key: 'impound', name: 'Impound', path: '/impound', tag: 'Parker on a bigger lot', accent: '#6b4a1f', bg: '#f3ece0', border: 'rgba(107,74,31,0.35)', src: IMPOUND },
   { key: 'junkyard', name: 'Junkyard', path: '/junkyard', tag: 'Parker on the biggest lot', accent: '#5c3a16', bg: '#f0e7d8', border: 'rgba(92,58,22,0.35)', src: JUNKYARD },
   { key: 'judges', name: 'Judges', path: '/judges', tag: 'Two per row', accent: '#7c2d12', bg: '#fde8dc', border: 'rgba(124,45,18,0.35)', src: JUDGES },
+  { key: 'lamps', name: 'Lamps', path: '/lamps', tag: 'Light every square', accent: '#9a6700', bg: '#fdf3d7', border: 'rgba(154,103,0,0.35)', src: LAMPS },
+  { key: 'clade', name: 'Clade', path: '/clade', tag: 'Guess the animal by its family tree', accent: '#0f6b6b', bg: '#e3f3f1', border: 'rgba(15,107,107,0.35)', src: CLADE },
+  { key: 'dossier', name: 'Dossier', path: '/dossier', tag: 'Five clues on every guess', accent: '#5b3a8c', bg: '#efe9f7', border: 'rgba(91,58,140,0.35)', src: DOSSIER },
   { key: 'duet', name: 'Duet', path: '/duet', tag: 'Half dots, half rings', accent: '#1a7f37', bg: '#e8f5ec', border: 'rgba(26,127,55,0.35)', src: DUET },
   { key: 'snug', name: 'Snug', path: '/snug', tag: 'Fit the pieces, one way only', accent: '#3b5bdb', bg: '#e8ecfb', border: 'rgba(59,91,219,0.35)', src: SNUG },
   { key: 'check', name: 'Check', path: '/check', tag: 'Red to play and sweep', accent: '#166e5a', bg: '#e6f3ef', border: 'rgba(22,110,90,0.35)', src: CHECK },
