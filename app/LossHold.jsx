@@ -15,6 +15,7 @@ import { playLoss, BEAT_FRESH, firePendingBuzz } from '@/lib/finish-beat';
 // It never collapses the board (that is StageFinish's job, and StageFinish is
 // not mounted while this is up), and it never shows the answer: the clients
 // keep the answer off the board until Reveal answer is pressed on the card.
+// (Lives only on the stage; the legacy Loft card keeps the old retry panel.)
 export default function LossHold({ gameKey, verdict, detail, chip, sub, onReplay, onCard }) {
   const [fresh] = useState(() => (typeof performance !== 'undefined' && performance.now ? performance.now() : 0) >= BEAT_FRESH);
   const [up, setUp] = useState(!fresh);
