@@ -723,6 +723,7 @@ const DOOR_ICON = {
   stats: DI(<path d="M5 20V11M12 20V4M19 20v-6" />),
   share: DI(<><circle cx="18" cy="5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="19" r="2.5" /><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4" /></>),
   more: DI(<path d="M5 12h.01M12 12h.01M19 12h.01" />),
+  reveal: DI(<><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></>),
   all: DI(<><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>),
 };
 
@@ -1379,6 +1380,15 @@ export default function StageFinish({
   const replayOpt = opts.find((o) => o.tone === 'replay') || null;
   const mainOpt = opts.find((o) => o.tone === 'main') || null;
   const backOpt = opts.find((o) => o.tone === 'board' || o.tone === 'reveal') || null;
+  // A LOSS OFFERS RETRY ON THE BAND, NOT THE ANSWER (owner, 2026-10-04). The
+  // band's one control used to read Reveal answer on a loss, which put the
+  // answer one tap from the verdict. It reads Retry now, and Reveal answer is a
+  // door in the card below, where the player has to go looking for it. A solved
+  // board keeps Back to board on the band exactly as before.
+  const revealOpt = backOpt && backOpt.tone === 'reveal' ? backOpt : null;
+  const bandOpt = revealOpt
+    ? (replayOpt ? { ...replayOpt, bandLabel: 'Retry' } : null)
+    : (backOpt ? { ...backOpt, bandLabel: 'Back to board' } : null);
   const secOpts = [
     ...opts.filter((o) => o !== forward && o !== anotherOpt && o !== replayOpt && o !== mainOpt && o !== goldOpt && o !== backOpt),
     ...(goldOpt ? [goldOpt] : []),
@@ -1418,7 +1428,11 @@ export default function StageFinish({
     smallDoors.push({ k: 'another', nm: name ? `Play another ${name}` : 'Play another', sb: `Every one of the ${archiveRows.length}`, btn: true,
       onClick: () => { setArch(true); setTimeout(toStats, 60); } });
   }
-  if (replayOpt) {
+  if (revealOpt) {
+    // The replay door would repeat the band's Retry, so a loss spends that
+    // slot on the answer instead and the door count is unchanged.
+    smallDoors.push({ k: 'reveal', nm: revealOpt.label || 'Reveal answer', sb: revealOpt.sub || 'Show what you missed', onClick: revealOpt.onClick, btn: true });
+  } else if (replayOpt) {
     smallDoors.push({ k: 'replay', nm: isQuiz ? (replayOpt.label || 'Replay') : 'Replay today\u2019s', sb: replayOpt.sub, href: replayOpt.href, onClick: replayOpt.onClick });
   }
   smallDoors.push(isQuiz && mainOpt
@@ -1482,12 +1496,12 @@ export default function StageFinish({
           that describes the run itself. On a phone they do not render at all
           -- see .stf-dx in the media query. */}
       <div className="stf-curtain" ref={bandRef}>
-        <div className={'stf-cin' + (backOpt ? ' stf-hasback' : '')}>
+        <div className={'stf-cin' + (bandOpt ? ' stf-hasback' : '')}>
           {/* BACK TO BOARD LIVES ON THE BAND (owner, 2026-10-01), right of the
               verdict, so every tile under the band can be the same size. */}
-          {backOpt ? (
-            <button type="button" className="stf-back" onClick={backOpt.onClick}>
-              <span aria-hidden="true">&#8617;</span>{backOpt.tone === 'board' ? 'Back to board' : (backOpt.label || 'Reveal answer')}
+          {bandOpt ? (
+            <button type="button" className="stf-back" onClick={bandOpt.onClick || (bandOpt.href ? () => { window.location.href = bandOpt.href; } : undefined)}>
+              <span aria-hidden="true">&#8617;</span>{bandOpt.bandLabel}
             </button>
           ) : null}
           <div className="stf-ctop">

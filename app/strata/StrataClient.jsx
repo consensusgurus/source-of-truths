@@ -715,8 +715,8 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
 
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
                 {foundWords.map((f) => <span key={f.word} className="st-word">{f.word}</span>)}
-                {playing && remaining.map((w) => <span key={w} className="st-slot">{'·'.repeat(w.length)}</span>)}
-                {!playing && remaining.map((w) => <span key={w} className="st-slot" style={{ letterSpacing: '0.08em', color: '#b91c1c' }}>{w}</span>)}
+                {(playing || (LOFT && !won && !revealed)) && remaining.map((w) => <span key={w} className="st-slot">{'·'.repeat(w.length)}</span>)}
+                {!playing && (won || !LOFT || revealed) && remaining.map((w) => <span key={w} className="st-slot" style={{ letterSpacing: '0.08em', color: '#b91c1c' }}>{w}</span>)}
               </div>
 
               {stuck && (

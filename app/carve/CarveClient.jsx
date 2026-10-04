@@ -265,8 +265,12 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
   const flashTimer = useRef(null);
   const viewedRef = useRef(false);
 
-  const assign = g.assign;
-  const locked = g.locked;
+  // A give-up keeps the player's own carving in g; the solution is drawn only once
+  // the end card's Reveal answer is pressed (the finish beat shows the board).
+  const solShown = g.status === 'revealed' && (!isLoft('carve') || revealed);
+  const allLocked = useMemo(() => [...Array(R).keys()], [R]);
+  const assign = solShown ? solFlat : g.assign;
+  const locked = solShown ? allLocked : g.locked;
   const [showChrome, setShowChrome] = useState(false);
   const playing = g.status === 'playing';
   const preStart = playing && !g.t0;
@@ -589,7 +593,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
   }
 
   function revealEnd() {
-    const g2 = { ...g, revealLocked: g.locked.length, assign: solFlat.slice(), locked: [...Array(R).keys()], status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...g, revealLocked: g.locked.length, status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     setG(g2);

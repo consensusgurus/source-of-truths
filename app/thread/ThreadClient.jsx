@@ -249,6 +249,9 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
   const focusMode = playing && !showChrome;
   const won = g.status === 'won';
   const LOFT = isLoft('thread');
+  // A lost board keeps the films not named, the threads and the plants hidden
+  // until the end card's Reveal tile; the finish beat would otherwise show them.
+  const hideSol = LOFT && g.status === 'lost' && !revealed;
   const STAGE = isStage('thread', searchParams);
   const [stageTheme] = useStageTheme();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('thread');
@@ -711,9 +714,9 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
               return (
                 <div key={i} role="listitem" className={`th-tile${on ? ' on' : ''}${missed ? ' miss' : ''}${thrClass}`}
                   aria-label={on ? `${t.t}, named` : `Tile ${i + 1}. ${t.s}`}>
-                  <div className="n"><span>{String(i + 1).padStart(2, '0')}</span>{!playing && planted.has(i) && <span style={{ color: 'var(--stg-warn, #b45309)' }}>PLANTED</span>}{!playing && NTH > 1 && <span>{THREADS[owner] ? THREADS[owner].t : ''}</span>}</div>
+                  <div className="n"><span>{String(i + 1).padStart(2, '0')}</span>{!playing && !hideSol && planted.has(i) && <span style={{ color: 'var(--stg-warn, #b45309)' }}>PLANTED</span>}{!playing && !hideSol && NTH > 1 && <span>{THREADS[owner] ? THREADS[owner].t : ''}</span>}</div>
                   <p>{t.s}</p>
-                  <div className="a">{t.t}</div>
+                  {(on || !hideSol) && <div className="a">{t.t}</div>}
                 </div>
               );
             })}
@@ -724,8 +727,8 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
               <h3>{NTH === 1 ? 'The thread' : `The threads · ${g.called.length} of ${NTH} called`}</h3>
               <div className="th-big" style={{ color: okCalls.length && NTH === 1 ? ACC : INK }}>
                 {NTH === 1
-                  ? (okCalls.length ? THREADS[okCalls[0].th].t : g.locked ? (playing ? 'Locked at 0' : THREADS[0].t) : `What do all ${N} share?`)
-                  : (THREADS.map((th, ti) => calledSet.has(ti) ? th.t : (playing ? '?' : th.t)).join(' · '))}
+                  ? (okCalls.length ? THREADS[okCalls[0].th].t : g.locked ? (playing || hideSol ? 'Locked at 0' : THREADS[0].t) : `What do all ${N} share?`)
+                  : (THREADS.map((th, ti) => calledSet.has(ti) ? th.t : (playing || hideSol ? '?' : th.t)).join(' · '))}
               </div>
               {playing && !threadsDone && (
                 <>
@@ -765,7 +768,7 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
               )}
               {!playing && (
                 <div style={{ marginTop: 10, fontSize: 13, fontWeight: 700, color: won ? `var(--stg-good, ${COLORS.green})` : `var(--stg-ink, ${COLORS.rust})` }}>
-                  {won ? `${threadBit().replace(/^t/, 'T')}. ${score} of ${TOTAL} in ${elapsed}.` : (g.locked && !okCalls.length ? `The thread was ${THREADS.map((t) => t.t).join(' and ')}. ${score} of ${TOTAL}.` : `${score} of ${TOTAL}.`)}
+                  {won ? `${threadBit().replace(/^t/, 'T')}. ${score} of ${TOTAL} in ${elapsed}.` : (g.locked && !okCalls.length && !hideSol ? `The thread was ${THREADS.map((t) => t.t).join(' and ')}. ${score} of ${TOTAL}.` : `${score} of ${TOTAL}.`)}
                 </div>
               )}
             </div>
@@ -777,10 +780,10 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
           {!playing && (
             <div style={{ maxWidth: 560, margin: '0 auto' }}>
               <div style={{ fontSize: 15, fontWeight: 800, color: INK, margin: '8px 0 0' }}>
-                {won ? <>The thread was <span style={{ color: ACC_INK }}>{THREADS.map((t) => t.t).join(' and ')}</span>.</> : <>The thread was {THREADS.map((t) => t.t).join(' and ')}.</>}
+                {won ? <>The thread was <span style={{ color: ACC_INK }}>{THREADS.map((t) => t.t).join(' and ')}</span>.</> : hideSol ? <>The thread got away.</> : <>The thread was {THREADS.map((t) => t.t).join(' and ')}.</>}
               </div>
               <div style={{ fontSize: 13, fontWeight: 600, color: FADED, margin: '6px 0 4px', lineHeight: 1.5 }}>
-                {DECOYS.length ? `Planted to read as ${DECOYS.map((d) => `${d.n.toLowerCase()} (${d.cover.length})`).join(', ')}.` : ''}
+                {DECOYS.length && !hideSol ? `Planted to read as ${DECOYS.map((d) => `${d.n.toLowerCase()} (${d.cover.length})`).join(', ')}.` : ''}
                 {' '}{won
                   ? (okCalls.every((c) => c.open >= Math.floor(N / 3) + 1) ? 'Called it from the sentences, not the titles. That is the whole game.' : 'Landed. Tomorrow, try calling it with more tiles open.')
                   : 'The thread got away. Tomorrow starts from nine new sentences.'}

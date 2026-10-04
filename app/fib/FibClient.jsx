@@ -293,6 +293,12 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('fib');
   const STAGE = isStage('fib', searchParams);
+  // A give-up writes the solution and the liar into the state; on the loft the
+  // board keeps the player's own position until the Reveal answer tile.
+  const hideAns = g.status === 'revealed' && LOFT && !revealed;
+  const viewVals = hideAns ? (g.playerVals || freshState(PUZZLE).vals) : vals;
+  const viewNotes = hideAns ? (g.playerNotes || Array(N).fill(0)) : g.notes;
+  const viewAcc = hideAns ? (g.playerAcc !== undefined ? g.playerAcc : null) : g.acc;
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('fib');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('fib'), '--stg-acc-lt': gameColorLight('fib'), '--stg-onramp-lt': gameOnrampLight('fib'), '--stg-acc-ink-lt': gameAccentInkLight('fib') };
@@ -321,8 +327,8 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
   const liveFilled = useMemo(() => vals.reduce((a, v) => a + (v ? 1 : 0), 0), [vals]);
   // reveal writes SOL into vals; readouts show the stamped pre-reveal count
   const filled = g.status === 'revealed' && g.revealFilled != null ? g.revealFilled : liveFilled;
-  const dups = useMemo(() => dupSet(vals, n), [vals, n]);
-  const clueStates = useMemo(() => PUZZLE.clues.map((cl) => clueState(cl, vals, n)), [PUZZLE, vals, n]);
+  const dups = useMemo(() => dupSet(viewVals, n), [viewVals, n]);
+  const clueStates = useMemo(() => PUZZLE.clues.map((cl) => clueState(cl, viewVals, n)), [PUZZLE, viewVals, n]);
   const brokenCount = useMemo(() => clueStates.filter((s) => s === 'broken').length, [clueStates]);
 
   useEffect(() => { gRef.current = g; }, [g]);
@@ -575,7 +581,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
 
   function revealEnd() {
     const cur = gRef.current;
-    const g2 = { ...cur, revealFilled: cur.vals.reduce((a, v) => a + (v ? 1 : 0), 0), vals: SOL.slice(), notes: Array(N).fill(0), acc: PUZZLE.liar, status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...cur, revealFilled: cur.vals.reduce((a, v) => a + (v ? 1 : 0), 0), vals: SOL.slice(), notes: Array(N).fill(0), acc: PUZZLE.liar, playerVals: cur.vals.slice(), playerNotes: cur.notes.slice(), playerAcc: cur.acc, status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     commit(g2);
@@ -687,11 +693,11 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
     const rowIsCell = gr % 2 === 0, colIsCell = gc % 2 === 0;
     if (rowIsCell && colIsCell) {
       const r = gr / 2, c = gc / 2, idx = r * n + c;
-      const v = vals[idx];
+      const v = viewVals[idx];
       const isGiven = GIVEN[idx] !== undefined;
       const isSel = sel === idx;
       const isDup = dups.has(idx);
-      const noteMask = g.notes[idx];
+      const noteMask = viewNotes[idx];
       boardCells.push(
         <div
           key={i}
@@ -731,8 +737,8 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
     if (ci === undefined) { boardCells.push(<div key={i} />); continue; }
     const cl = PUZZLE.clues[ci];
     const st = clueStates[ci];
-    const accused = g.acc === ci;
-    const isLiar = !playing && ci === PUZZLE.liar;
+    const accused = viewAcc === ci;
+    const isLiar = !playing && !hideAns && ci === PUZZLE.liar;
     const col = isLiar ? COLORS.rust : st === 'broken' ? COLORS.amber : st === 'ok' ? 'var(--stg-ink2, #b6bdc9)' : FADED;
     boardCells.push(
       <div
@@ -926,9 +932,11 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
           <div className={STAGE ? undefined : 'loft-sol'}>
           {!playing && (
             <div style={{ maxWidth: 472, margin: '0 auto' }}>
+              {!hideAns && (
               <div style={{ fontSize: 15, fontWeight: 800, color: INK, margin: '8px 0 0' }}>
                 The sign ringed in <span style={{ color: `var(--stg-ink, ${COLORS.rust})` }}>red</span> is the one that lied.
               </div>
+              )}
               {PUZZLE.sunday && (
                 <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>The Sunday Edition &mdash; a bigger 6&times;6 grid.</div>
               )}

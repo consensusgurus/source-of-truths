@@ -224,6 +224,9 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
   const preStart = playing && !g.t0;
   const solved = g.status === 'won';
   const over = !playing;
+  // A give-up keeps the article redacted until the end card's Reveal is
+  // pressed, so the finish beat leaks nothing. A win unmasks at once.
+  const unmasked = over && (solved || !LOFT || revealed);
 
   useEffect(() => { try { setMobileUi(isMobileDevice()); } catch (e) {} }, []);
 
@@ -241,7 +244,7 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
     return out;
   }, [g.guesses, CONTENT, AKA]);
 
-  const isRevealed = (tk) => over || FREEBIES.has(tk.n) || revealedNorms.has(tk.n);
+  const isRevealed = (tk) => unmasked || FREEBIES.has(tk.n) || revealedNorms.has(tk.n);
   const won = TARGETS.length > 0 && TARGETS.every((t) => revealedNorms.has(t));
 
   const revealedOcc = useMemo(() => {
@@ -604,14 +607,14 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
               <div style={{ margin: '16px 0 10px', fontSize: 24, fontWeight: 900, color: INK, lineHeight: 1.35 }}>
                 {TITLE_TOKENS.map((tk, i) => {
                   if (!tk.w) return <span key={i}>{tk.t}</span>;
-                  if (over || FREEBIES.has(tk.n) || tk.n.length < 3 || revealedNorms.has(tk.n)) {
+                  if (unmasked || FREEBIES.has(tk.n) || tk.n.length < 3 || revealedNorms.has(tk.n)) {
                     return <span key={i} style={over && solved ? { color: `var(--stg-ink, ${COLORS.hit})` } : undefined}>{tk.t}</span>;
                   }
                   // Width only, never the letters: 0.85ch per character tracks the
                   // real word's width in this face without putting it in the DOM.
                   return <span key={i} className="rd-title-slab" style={{ width: `${Math.max(1.2, tk.t.length * 0.85)}ch` }}>{'\u00a0'}</span>;
                 })}
-                {over && (
+                {unmasked && (
                   <span style={{ fontFamily: MONO, fontSize: 12, fontWeight: 500, color: FADED, marginLeft: 10 }}>
                     {solved ? 'named it' : 'revealed'}
                   </span>
@@ -637,7 +640,7 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
               {over && (
                 <div style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1px solid rgba(28,30,36,0.14)', borderRadius: 12, padding: '16px 20px', margin: '16px 0 0' }}>
                   <div style={{ fontSize: 19, fontWeight: 900, color: INK, marginBottom: 4 }}>
-                    {solved ? `Named in ${g.guesses.length} guesses.` : `The subject was ${DAY.answer}.`}
+                    {solved ? `Named in ${g.guesses.length} guesses.` : unmasked ? `The subject was ${DAY.answer}.` : 'Not named.'}
                   </div>
                   <div style={{ fontFamily: MONO, fontSize: 12.5, color: FADED }}>
                     {acc}% hit rate &middot; {pct}% of the article uncovered &middot; {elapsed}

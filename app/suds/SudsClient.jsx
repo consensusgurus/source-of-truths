@@ -279,6 +279,11 @@ export default function SudsClient({ puzzles = [], forceNum = null }) {
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
   const SURF_B = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : 'rgba(28,30,36,0.42)';
   const [revealed, setRevealed] = useState(false);
+  // A give-up keeps the player's own grid on the board until the end card's
+  // Reveal tile is pressed; the finish beat would otherwise show the answer.
+  const hideSol = LOFT && g.status === 'revealed' && !revealed;
+  const boardCells = hideSol ? (g.pre || Array(81).fill(0)) : cells;
+  const boardNotes = hideSol ? (g.preNotes || Array(81).fill(0)) : notes;
   const [shareCta, setShareCta] = useState('Share');
   useEffect(() => {
     if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`);
@@ -661,7 +666,7 @@ export default function SudsClient({ puzzles = [], forceNum = null }) {
 
   function revealEnd() {
     const next = solFlat.slice();
-    const g2 = { ...g, cells: next.map((v, i) => (givenFlat[i] ? 0 : v)), notes: Array(81).fill(0), revealFilled: liveFilled, status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...g, cells: next.map((v, i) => (givenFlat[i] ? 0 : v)), notes: Array(81).fill(0), pre: g.cells, preNotes: g.notes, revealFilled: liveFilled, status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     setSel(-1);
@@ -740,7 +745,7 @@ export default function SudsClient({ puzzles = [], forceNum = null }) {
     const r = Math.floor(idx / 9), c = idx % 9, b = boxOf(r, c);
     const isSel = idx === sel;
     const peer = sel >= 0 && !isSel && (r === selR || c === selC || b === selB);
-    const val = givenFlat[idx] || cells[idx];
+    const val = givenFlat[idx] || boardCells[idx];
     const sameVal = hlVal && val === hlVal && !isSel;
     // Plain, peer, same digit, selected. On the stage each is a lift of the
     // ground rather than a tint of white, and the two that MEAN something
@@ -911,7 +916,7 @@ export default function SudsClient({ puzzles = [], forceNum = null }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(9, minmax(0, 1fr))', gridTemplateRows: 'repeat(9, minmax(0, 1fr))', aspectRatio: '1', border: `2.5px solid rgba(28,30,36,0.85)`, borderRadius: 4, overflow: 'hidden' }}>
               {Array.from({ length: 81 }).map((_, idx) => {
                 const given = givenFlat[idx];
-                const val = given || cells[idx];
+                const val = given || boardCells[idx];
                 const base = cellStyle(idx);
                 const cls = `sd-cell ${given ? 'sd-given' : val ? 'sd-user' : ''}`;
                 return (
@@ -923,10 +928,10 @@ export default function SudsClient({ puzzles = [], forceNum = null }) {
                     onPointerCancel={cancelLong}>
                     {val ? (
                       <span style={{ fontSize: 'clamp(16px, 5vw, 23px)' }}>{val}</span>
-                    ) : notes[idx] ? (
+                    ) : boardNotes[idx] ? (
                       <div className="sd-notes">
                         {Array.from({ length: 9 }).map((__, k) => (
-                          <span key={k} className="sd-note">{(notes[idx] & (1 << (k + 1))) ? k + 1 : ''}</span>
+                          <span key={k} className="sd-note">{(boardNotes[idx] & (1 << (k + 1))) ? k + 1 : ''}</span>
                         ))}
                       </div>
                     ) : null}

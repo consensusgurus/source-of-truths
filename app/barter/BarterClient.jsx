@@ -730,6 +730,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
                   <div
                     key={k}
                     className={`bt-tile${canPlay ? ' play' : ''}${isSel ? ' sel' : ''}`}
+                    data-home={col === 2 ? '1' : undefined}
                     onPointerDown={canPlay ? () => onTile(idx) : (playing ? () => onTile(idx) : undefined)}
                     style={{
                       background: bg,
@@ -775,9 +776,11 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
           <div className={STAGE ? undefined : 'loft-sol'}>
           {!playing && (
             <div style={{ maxWidth: 472, margin: '0 auto' }}>
+              {won && (
               <div style={{ fontSize: 15, fontWeight: 800, color: INK, margin: '8px 0 0' }}>
                 The words: <span style={{ color: ACC_INK }}>{WORDS.map((w) => w.toUpperCase()).join(', ')}</span>.
               </div>
+              )}
               {PUZZLE.sunday && (
                 <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>The Sunday Edition &mdash; a bigger 7&times;7 lattice.</div>
               )}

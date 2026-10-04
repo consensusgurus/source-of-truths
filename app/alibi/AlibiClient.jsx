@@ -321,6 +321,16 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'done' && g.wrong === 0;
   const score = g.status === 'done' ? Math.max(1, TOTAL - 2 * g.wrong) : 0;
   const placedCount = CATS.reduce((n, c) => n + g.marks[c].flat().filter((m) => m === 2).length, 0);
+  // A lost case keeps the player's own marks on the board through the finish
+  // beat; the solution is drawn only once the end card's Reveal answer is pressed.
+  const shownMarks = useMemo(() => {
+    if (g.status !== 'lost' || !SOLUTION || (LOFT && !revealed)) return g.marks;
+    const marks = freshMarks(N);
+    for (const cat of CATS) {
+      for (let s = 0; s < N; s++) for (let v = 0; v < N; v++) marks[cat][s][v] = SOLUTION[cat][s] === v ? 2 : 1;
+    }
+    return marks;
+  }, [g.status, g.marks, SOLUTION, LOFT, revealed, N]);
 
   useEffect(() => {
     try {
@@ -579,11 +589,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
   function reveal() {
     if (!playing || !SOLUTION) return;
     setG((cur) => {
-      const marks = freshMarks(N);
-      for (const cat of CATS) {
-        for (let s = 0; s < N; s++) for (let v = 0; v < N; v++) marks[cat][s][v] = SOLUTION[cat][s] === v ? 2 : 1;
-      }
-      const g2 = { ...cur, marks, status: 'lost', tEnd: Date.now(), t0: cur.t0 || Date.now() };
+      const g2 = { ...cur, status: 'lost', tEnd: Date.now(), t0: cur.t0 || Date.now() };
       postResult(g2, 0);
       return g2;
     });
@@ -811,7 +817,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
                       <tr key={val}>
                         <th className="rowh">{val}</th>
                         {PUZZLE.suspects.map((name, s) => {
-                          const m = g.marks[cat.key][s][v];
+                          const m = shownMarks[cat.key][s][v];
                           return (
                             <td
                               key={name}

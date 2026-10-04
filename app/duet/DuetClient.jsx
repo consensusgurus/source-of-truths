@@ -305,6 +305,9 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
   const SURF_B = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : 'rgba(28,30,36,0.42)';
   const ACC_DEEP_INK = STAGE ? 'var(--stg-acc-ink)' : COLORS.accent;
   const [revealed, setRevealed] = useState(false);
+  // A give-up writes the solution into cells; on the loft the board keeps the
+  // player's own position until the end card's Reveal tile is pressed.
+  const viewCells = g.status === 'revealed' && LOFT && !revealed ? (g.playerCells || freshState(PUZZLE).cells) : cells;
   const [shareCta, setShareCta] = useState('Share');
   useEffect(() => {
     if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`);
@@ -548,7 +551,7 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
   }
 
   function revealEnd() {
-    const g2 = { ...g, cells: solFlat.slice(), revealFilled: liveFilled, status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...g, cells: solFlat.slice(), playerCells: cells.slice(), revealFilled: liveFilled, status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     setSel(-1);
@@ -642,7 +645,7 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
     };
   }
   function markFor(idx) {
-    const v = cells[idx];
+    const v = viewCells[idx];
     if (v === EMPTY) return null;
     const isBad = breaks.bad.has(idx);
     const given = givenSet.has(idx);
@@ -755,7 +758,7 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
           <div style={{ maxWidth: GRID_MAX, margin: '0 auto' }}>
             <div role="grid" aria-label={`Duet board, ${N} by ${N}`} style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))`, aspectRatio: '1', border: `3px solid ${WALL}`, borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
               {Array.from({ length: CELLS }).map((_, idx) => {
-                const v = cells[idx];
+                const v = viewCells[idx];
                 const r = Math.floor(idx / N), c = idx % N;
                 const word = v === EMPTY ? 'empty' : v === DOT ? 'dot' : 'ring';
                 return (

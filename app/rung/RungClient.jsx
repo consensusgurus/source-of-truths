@@ -799,12 +799,15 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
                   : won && used < par ? `You got there in ${used}, ${par - used} under par and ${used - perfect} off perfect.`
                   : won && used === par ? `You got there in ${used}, level par, ${used - perfect} off perfect.`
                   : won ? `You got there in ${used}, ${used - par} over par.`
-                  : 'One shortest ladder:'}
+                  : 'We are not printing the ladder. It is still there between these two words, so take another run at it.'}
                 {PUZZLE.routes === 1 && ' There is exactly one shortest ladder between these two words.'}
               </div>
+              {/* keepsAnswer: the shortest ladder is shown ONLY to a solver. */}
+              {won && (
               <div style={{ fontFamily: MONO, fontSize: 12.5, color: INK, fontWeight: 500, lineHeight: 1.7, wordBreak: 'break-word' }}>
                 {PUZZLE.example.join(' → ')}
               </div>
+              )}
               {PUZZLE.sunday && (
                 <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>The Sunday Edition, a much longer climb.</div>
               )}

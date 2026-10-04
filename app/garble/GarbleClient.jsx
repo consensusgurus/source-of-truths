@@ -561,6 +561,9 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
 
   const ended = !playing;
   const won = g.status === 'won';
+  // On a loss the loft keeps the unfound words and the finale blank until the
+  // end card's Reveal answer tile is pressed.
+  const ansOpen = ended && (won || !LOFT || revealed);
   const isTodays = PUZZLE.num === pickPuzzle(puzzles, null).num;
   const iq = useIqStanding({ game: 'garble', quizId: PUZZLE.quizId, active: LOFT && !playing });
   const nextUp = useNextUnplayed({ self: 'garble', active: LOFT && !playing });
@@ -594,7 +597,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
             const marked = w.marks.includes(j);
             let bg = T.white, fg = COLORS.ink, border = '1.5px solid rgba(20,22,28,0.18)';
             let letter = '';
-            if (solvedRow || ended) {
+            if (solvedRow || ansOpen) {
               letter = ch;
               if (marked) { bg = `var(--stg-acc, ${COLORS.gold})`; fg = `var(--stg-onramp, ${COLORS.goldInk})`; border = `1.5px solid ${COLORS.gold}`; }
               else { bg = solvedRow ? COLORS.ink : T.white; fg = solvedRow ? T.white : COLORS.rust; border = solvedRow ? `1.5px solid ${COLORS.ink}` : '1.5px dashed rgba(192,57,43,0.55)'; }
@@ -781,7 +784,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
               {bank.map((b, i) => {
                 const fk = b.wi + '-' + b.mi;
                 const inFlight = flying.has(fk);
-                const lit = (g.solved[b.wi] || ended) && !inFlight;
+                const lit = (g.solved[b.wi] || ansOpen) && !inFlight;
                 const fresh = lit && fx.solved === b.wi && landed && Date.now() - landed < 900;
                 return (
                   <span key={i} data-gbank={fk} className={fresh ? 'gb-land' : undefined}
@@ -794,7 +797,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
               {PUZZLE.final.split('').map((ch, j) => {
                 const isSel = playing && sel === 'final';
                 let letter = '', bg = T.white, fg = COLORS.ink, border = '1.5px solid rgba(20,22,28,0.18)';
-                if (ended || g.finalSolved) {
+                if (ansOpen || g.finalSolved) {
                   letter = ch;
                   bg = g.finalSolved ? COLORS.gold : T.white;
                   fg = g.finalSolved ? COLORS.goldInk : COLORS.rust;

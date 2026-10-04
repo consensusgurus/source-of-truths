@@ -294,7 +294,11 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
   const [dragView, setDragView] = useState(null);
   const slideToldRef = useRef(false);
 
-  const cells = g.cells;
+  // A give-up keeps the player's own tiles on the board until the end card's
+  // Reveal tile is pressed; the finish beat would otherwise show the answer.
+  // Nothing reads cells for play once the status has left 'playing'.
+  const hideSol = isLoft('tally') && g.status === 'revealed' && !revealed;
+  const cells = hideSol ? (g.pre || Array(N * N).fill(0)) : g.cells;
   const mark = useMemo(() => normMark(g.mark, N), [g.mark, N]);
   const [showChrome, setShowChrome] = useState(false);
   const playing = g.status === 'playing';
@@ -983,7 +987,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
   function revealEnd() {
     const next = Array(N * N).fill(0);
     for (const [r, c] of FREE) next[r * N + c] = PUZZLE.sol[r][c];
-    const g2 = { ...g, cells: next, mark: Array(N * N).fill(0), status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...g, cells: next, mark: Array(N * N).fill(0), pre: g.cells, status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     setSel(-1);

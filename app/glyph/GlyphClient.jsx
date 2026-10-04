@@ -540,7 +540,9 @@ export default function GlyphClient({ puzzles, forceNum }) {
   }
 
   const boardMax = W > 15 ? 620 : 560;
-  const revealed = !playing;
+  // On a loss the loft keeps the player's own letters until the end card's
+  // Reveal answer tile is pressed.
+  const revealed = !playing && (won || !LOFT || loftRevealed);
 
   const rulesBody = (
     <DailyRules

@@ -598,8 +598,11 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
               </>
             ) : (
               <div style={{ textAlign: 'center', padding: '6px 0 4px' }}>
+                {/* A give-up keeps the word hidden until the end card's Reveal tile. */}
+                {(won || !LOFT || revealed) && (<>
                 <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED }}>The word was</div>
                 <div style={{ fontFamily: SANS, fontWeight: 900, fontSize: 34, letterSpacing: '-0.5px', color: `var(--stg-ink, ${COLORS.green})`, margin: '2px 0 4px' }}>{answerWord}</div>
+                </>)}
                 <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: 13.5, color: FADED }}>
                   {won ? <>Solved in {guesses.length} guess{guesses.length === 1 ? '' : 'es'} &middot; {elapsed}{g.hintUsed ? ' · 1 hint' : ''}</>
                        : <>Gave up &middot; closest was #{bestRank || '—'} in {guesses.length} guess{guesses.length === 1 ? '' : 'es'}</>}

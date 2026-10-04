@@ -297,6 +297,9 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
   const liveScore = Math.max(1, TOTAL - 3 * g.wrong.length);
   const score = g.status === 'done' ? liveScore : 0;
   const won = g.status === 'done' && g.wrong.length === 0;
+  // A reveal (status lost) keeps the answer off the loft board until the end
+  // card's Reveal answer tile is pressed; a player who named it sees it.
+  const ansShown = g.status === 'done' || !LOFT || revealed;
 
   useEffect(() => {
     try {
@@ -647,7 +650,7 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
                 <span style={{ display: 'flex', gap: 7, flexWrap: 'wrap', flex: '1 1 auto' }}>
                   {grp.items.map((i) => {
                     const c = PUZZLE.cards[i];
-                    const isAns = !playing && i === ANSWER;
+                    const isAns = !playing && ansShown && i === ANSWER;
                     return (
                       <button
                         key={i}
@@ -710,7 +713,7 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {g.status === 'done'
                       ? (won ? <>It was <b>{ansText}</b>, named first time.</> : <>It was <b>{ansText}</b>, after {g.wrong.length} wrong name{g.wrong.length === 1 ? '' : 's'}.</>)
-                      : <>It was <b>{ansText}</b> all along.</>}
+                      : ansShown ? <>It was <b>{ansText}</b> all along.</> : <>Not named.</>}
                     {' '}<span style={{ color: FADED, fontWeight: 600 }}>{elapsed}</span>
                   </span>
                 </div>

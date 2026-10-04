@@ -304,6 +304,11 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
   const ACC_SOFT = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : COLORS.accentSoft;
   const ON_ACC = STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)';
   const won = g.status === 'won';
+  // A finish that was not a win keeps the years and the timeline hidden through
+  // the finish beat; they show only once the end card's Reveal answer is pressed.
+  // A board restored from the server has no player order, so it shows the deal.
+  const solShown = won || !LOFT || revealed;
+  const shownOrder = !solShown && g.restored ? seededOrder(PUZZLE.num, N) : g.order;
   const checksUsed = g.rows.length;
   const checksLeft = MAX_CHECKS - checksUsed;
   // a slot is locked once any check found it correct (locked cards never move)
@@ -842,9 +847,9 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
 
           <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: FADED, marginBottom: 7 }}>&uarr; Earliest{!mobileUi && playing ? <span style={{ color: '#a8adb8' }}> &middot; drag cards or use the arrows</span> : null}</div>
           <div className={shake ? 'dt-shake' : undefined} style={{ display: 'flex', flexDirection: 'column', gap: 7, userSelect: drag ? 'none' : undefined }}>
-            {g.order.map((ev, slot) => {
+            {shownOrder.map((ev, slot) => {
               const locked = lockedSlots[slot];
-              const showYear = locked || g.status !== 'playing' || (g.hintIdx === ev && g.hintUsed);
+              const showYear = locked || (g.status !== 'playing' && solShown) || (g.hintIdx === ev && g.hintUsed);
               const yearChip = showYear ? (
                 <span style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 11.5, fontWeight: 500, color: locked ? 'var(--stg-good, #14532d)' : `var(--stg-ink, ${COLORS.plumInk})`, background: `var(--stg-surf2, ${locked ? COLORS.lockSoft : COLORS.plumSoft})`, border: `1px solid ${locked ? 'var(--stg-good, rgba(21,128,61,0.4))' : 'var(--stg-line2, rgba(124,58,237,0.35))'}`, borderRadius: 6, padding: '3px 8px', whiteSpace: 'nowrap' }}>{PUZZLE.events[ev].y}</span>
               ) : null;
@@ -903,6 +908,7 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
           {/* result */}
           {!playing && (
             <>
+              {solShown && (
               <div style={{ maxWidth: 472, margin: '0 auto 12px' }}>
                 <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: FADED, marginBottom: 7 }}>The timeline</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -917,6 +923,7 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
                   ))}
                 </div>
               </div>
+              )}
               {!isTodays && (
                 <p style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
                   You&rsquo;re playing the {PUZZLE.dateLabel.replace(', 2026', '')} archive.{' '}

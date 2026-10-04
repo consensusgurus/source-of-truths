@@ -668,7 +668,7 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
                     {!open && isBroke && <small>broke here</small>}
                     {open && playing && slotLabel(s) && <small>slot {s + 1}</small>}
                   </span>
-                  {!playing && (
+                  {!playing && (won || !LOFT || revealed || (!open && marks[s] === 0)) && (
                     <span className="r">
                       {open ? <>actual<b>{truth[0]} · {truth[1]}</b></> : marks[s] === 0 ? <b>{ITEMS[it][1]}</b> : <>actual<b>{truth[0]} · {truth[1]}</b></>}
                     </span>

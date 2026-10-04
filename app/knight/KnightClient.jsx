@@ -315,6 +315,7 @@ export default function KnightClient({ puzzles = [], forceNum = null }) {
   const ACC_SOFT = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : COLORS.accentSoft;
   const ON_ACC = STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)';
   const [revealed, setRevealed] = useState(false);
+  const shownCells = g.status === 'revealed' && (!LOFT || revealed) ? solFlat : cells;
   const [shareCta, setShareCta] = useState('Share');
   useEffect(() => {
     if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`);
@@ -687,8 +688,9 @@ export default function KnightClient({ puzzles = [], forceNum = null }) {
   }
 
   function revealEnd() {
-    const next = solFlat.slice();
-    const g2 = { ...g, cells: next.map((v, i) => (givenFlat[i] ? 0 : v)), notes: Array(CELLS).fill(0), revealFilled: liveFilled, status: 'revealed', tEnd: Date.now() };
+    // The player's grid is KEPT; the solution paints only once the end
+    // card's Reveal is pressed (shownCells), so the finish beat leaks nothing.
+    const g2 = { ...g, revealFilled: liveFilled, status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     setSel(-1);
@@ -758,7 +760,7 @@ export default function KnightClient({ puzzles = [], forceNum = null }) {
   }
 
   // ── selection-aware highlighting ──
-  const selVal = sel >= 0 ? (givenFlat[sel] || cells[sel]) : 0;
+  const selVal = sel >= 0 ? (givenFlat[sel] || shownCells[sel]) : 0;
   const hlVal = armed || selVal;
   const selR = sel >= 0 ? Math.floor(sel / N) : -1;
   const selC = sel >= 0 ? sel % N : -1;
@@ -775,7 +777,7 @@ export default function KnightClient({ puzzles = [], forceNum = null }) {
     const r = Math.floor(idx / N), c = idx % N, b = boxOf(r, c);
     const isSel = idx === sel;
     const peer = sel >= 0 && !isSel && (r === selR || c === selC || b === selB);
-    const val = givenFlat[idx] || cells[idx];
+    const val = givenFlat[idx] || shownCells[idx];
     const sameVal = hlVal && val === hlVal && !isSel;
     const heavyR = c % BOX_W === BOX_W - 1 && c !== N - 1;
     const heavyB = r % BOX_H === BOX_H - 1 && r !== N - 1;
@@ -924,7 +926,7 @@ export default function KnightClient({ puzzles = [], forceNum = null }) {
             <div style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))`, aspectRatio: '1', border: '2.5px solid var(--stg-line3, rgba(28,30,36,0.85))', borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
               {Array.from({ length: CELLS }).map((_, idx) => {
                 const given = givenFlat[idx];
-                const val = given || cells[idx];
+                const val = given || shownCells[idx];
                 const cls = `kn-cell ${given ? 'kn-given' : val ? 'kn-user' : ''}`;
                 return (
                   <div key={idx} className={cls} style={cellStyle(idx)}

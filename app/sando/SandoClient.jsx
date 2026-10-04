@@ -298,7 +298,6 @@ export default function SandoClient({ puzzles = [], forceNum = null }) {
   const longRef = useRef(false);   // true when the last cell interaction was a long-press
   const longTimer = useRef(null);  // pending long-press timer
 
-  const cells = g.cells;
   const notes = g.notes;
   const [showChrome, setShowChrome] = useState(false);
   const playing = g.status === 'playing';
@@ -321,6 +320,9 @@ export default function SandoClient({ puzzles = [], forceNum = null }) {
   const ACC_SOFT = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : COLORS.accentSoft;
   const ON_ACC = STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)';
   const [revealed, setRevealed] = useState(false);
+  // A give-up keeps the player's grid in g.cells; the solution paints only
+  // once the end card's Reveal is pressed, so the finish beat leaks nothing.
+  const cells = g.status === 'revealed' && (!LOFT || revealed) ? solFlat : g.cells;
   const [shareCta, setShareCta] = useState('Share');
   useEffect(() => {
     if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`);
@@ -702,8 +704,7 @@ export default function SandoClient({ puzzles = [], forceNum = null }) {
   }
 
   function revealEnd() {
-    const next = solFlat.slice();
-    const g2 = { ...g, cells: next.map((v, i) => (givenFlat[i] ? 0 : v)), notes: Array(81).fill(0), revealFilled: liveFilled, status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...g, revealFilled: liveFilled, status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     setSel(-1);

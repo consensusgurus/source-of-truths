@@ -271,6 +271,9 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('emcee');
   const STAGE = isStage('emcee', searchParams);
+  // A give-up writes the answers into letters; on the loft the grid keeps the
+  // player's own letters until the end card's Reveal answer tile is pressed.
+  const viewLetters = g.status === 'revealed' && LOFT && !revealed ? (g.playerLetters || g.letters.map(() => '')) : g.letters;
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('emcee');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('emcee'), '--stg-acc-lt': gameColorLight('emcee'), '--stg-onramp-lt': gameOnrampLight('emcee'), '--stg-acc-ink-lt': gameAccentInkLight('emcee') };
@@ -596,7 +599,7 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
 
   function revealEnd() {
     const score = wordsCorrect(g.letters);
-    const g2 = { ...g, letters: solFlat.map((ch) => (ch === '#' ? '' : ch)), wrong: [], status: 'revealed', tEnd: Date.now(), revealScore: score };
+    const g2 = { ...g, letters: solFlat.map((ch) => (ch === '#' ? '' : ch)), playerLetters: g.letters.slice(), wrong: [], status: 'revealed', tEnd: Date.now(), revealScore: score };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, score);
     setG(g2);
@@ -850,7 +853,7 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
                     className={`mc-cell${inWord && !sel ? ' mc-inword' : ''}${sel ? ' mc-sel' : ''}${wrongMark ? ' mc-wrongmark' : ''}`}
                     onClick={() => cellClick(idx)}>
                     {numAt[idx] != null && <span className="mc-num" style={{ fontSize: numPx }}>{numAt[idx]}</span>}
-                    <span style={{ fontSize: cellPx, fontWeight: 800, color: revealMiss ? `var(--stg-mute, ${COLORS.faded})` : `var(--stg-ink, ${COLORS.ink})` }}>{letters[idx]}</span>
+                    <span style={{ fontSize: cellPx, fontWeight: 800, color: revealMiss ? `var(--stg-mute, ${COLORS.faded})` : `var(--stg-ink, ${COLORS.ink})` }}>{viewLetters[idx]}</span>
                   </div>
                 );
               })}

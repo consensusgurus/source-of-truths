@@ -851,12 +851,16 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
           <div className={STAGE ? undefined : 'loft-sol'}>
           {!playing && !endHold.held && (
             <div style={{ maxWidth: 472, margin: '0 auto' }}>
+              {won && (
+              <>
               <div style={{ fontSize: 15, fontWeight: 800, color: INK, margin: '8px 0 0' }}>
                 The key was a <span style={{ color: ACC_INK }}>sacrifice</span>.
               </div>
               <div style={{ fontSize: 13, fontWeight: 600, color: FADED, margin: '6px 0 0', lineHeight: 1.5 }}>
                 Captures are compulsory, so offering a piece is how you choose black&rsquo;s reply for them. The board falls in {BUDGET} because black never had a say.
               </div>
+              </>
+              )}
               {PUZZLE.sunday && (
                 <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>The Sunday Edition, four moves instead of three.</div>
               )}

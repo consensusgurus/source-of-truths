@@ -374,7 +374,11 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
   const guesses = g.guesses;
   const depths = useMemo(() => guesses.map((nm) => { const a = BY_NAME.get(nm); return a ? Math.max(1, sharedDepth(a.path, PATH)) : 1; }), [guesses, PATH]);
   const bestDepth = depths.reduce((m, d) => Math.max(m, d), 1);
-  const known = playing ? Math.max(bestDepth, g.hintDepth || 0, 1) : PATH.length;
+  // On a loss the tree stays at the player's deepest branch and the animal stays
+  // hidden until the end card's Reveal is pressed (the finish beat shows the board).
+  const solShown = won || !LOFT || revealed;
+  const hideSol = playing || !solShown;
+  const known = hideSol ? Math.max(bestDepth, g.hintDepth || 0, 1) : PATH.length;
   const bestIdx = depths.indexOf(bestDepth);
   const left = MAX - guesses.length;
   const guessedSet = useMemo(() => new Set(guesses), [guesses]);
@@ -609,8 +613,8 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
               {PATH.slice(0, known).map((b, i) => (
                 <div key={b} className={'cl-rung' + (playing && i === known - 1 ? ' deep' : '')} style={{ marginLeft: Math.min(i, 8) * 9 }}>{b}</div>
               ))}
-              <div className={'cl-rung ' + (playing ? 'hid' : 'ans')} style={{ marginLeft: Math.min(known, 8) * 9 }}>
-                {playing
+              <div className={'cl-rung ' + (hideSol ? 'hid' : 'ans')} style={{ marginLeft: Math.min(known, 8) * 9 }}>
+                {hideSol
                   ? (PATH.length - known > 0
                     ? `Hidden animal, ${PATH.length - known} more ${PATH.length - known === 1 ? 'branch' : 'branches'} down`
                     : 'Hidden animal, on this branch')

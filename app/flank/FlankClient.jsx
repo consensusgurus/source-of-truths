@@ -516,7 +516,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
     return (
       <div key={s.code} className="fl-slot" style={{ background: bg, borderColor: border, color }}>
         <span style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, opacity: 0.6, marginRight: 8 }}>{i + 1}</span>
-        <span style={{ fontWeight: 800 }}>{isFound || missed ? s.name : '· · · · ·'}</span>
+        <span style={{ fontWeight: 800 }}>{isFound || (missed && (!LOFT || revealed)) ? s.name : '· · · · ·'}</span>
       </div>
     );
   };

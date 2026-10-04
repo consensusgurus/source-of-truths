@@ -283,7 +283,10 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
   const dragRef = useRef(null);
   const svgRef = useRef(null);
 
-  const E = g.e;
+  // A give-up writes the cheapest network into g.e and keeps the player's
+  // track in g.mine. Until the end card's Reveal is pressed the board shows
+  // the player's own track, so the finish beat leaks nothing.
+  const E = g.status === 'revealed' && g.mine && isLoft('paths') && !revealed ? g.mine : g.e;
   const playing = g.status === 'playing';
   const preStart = playing && !g.t0;
   const started = playing && !!g.t0;
@@ -317,7 +320,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
   const MINE = g.mine || E;
   const SOL_SET = useMemo(() => new Set(SOL), [SOL]);
   const REVIEW = useMemo(() => {
-    if (!showPar) return null;
+    if (!showPar || (LOFT && g.status === 'revealed' && !revealed)) return null;
     const right = [], wrong = [], missed = [];
     LANES.forEach((l) => {
       const laid = !!MINE[l.i], used = SOL_SET.has(l.i);
@@ -326,7 +329,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
       else if (used) missed.push(l);
     });
     return { right, wrong, missed };
-  }, [showPar, MINE, SOL_SET, LANES]);
+  }, [showPar, MINE, SOL_SET, LANES, LOFT, g.status, revealed]);
 
   useEffect(() => { gRef.current = g; }, [g]);
   useEffect(() => {

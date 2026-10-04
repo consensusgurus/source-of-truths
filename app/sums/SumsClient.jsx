@@ -337,6 +337,11 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
   const ACC_SOFT = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : COLORS.accentSoft;
   const ON_ACC = STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)';
   const [revealed, setRevealed] = useState(false);
+  // A give-up keeps the player's own grid on the board until the end card's
+  // Reveal tile is pressed; the finish beat would otherwise show the answer.
+  const hideSol = LOFT && g.status === 'revealed' && !revealed;
+  const boardCells = hideSol ? (g.pre || Array(CELLS).fill(0)) : cells;
+  const boardNotes = hideSol ? (g.preNotes || Array(CELLS).fill(0)) : notes;
   const [shareCta, setShareCta] = useState('Share');
   useEffect(() => {
     if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`);
@@ -725,7 +730,7 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
 
   function revealEnd() {
     const next = solFlat.slice();
-    const g2 = { ...g, cells: next.map((v, i) => (givenFlat[i] ? 0 : v)), notes: Array(CELLS).fill(0), status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...g, cells: next.map((v, i) => (givenFlat[i] ? 0 : v)), notes: Array(CELLS).fill(0), pre: g.cells, preNotes: g.notes, status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     setSel(-1);
@@ -809,7 +814,7 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
     const black = !!givenFlat[idx];
     const isSel = idx === sel;
     const peer = !isSel && peerSet.has(idx);
-    const val = cells[idx];
+    const val = boardCells[idx];
     const sameVal = !black && hlVal && val === hlVal && !isSel;
     // THE GRID NEVER CONVERTED (Sixes, owner 2026-08-31): every fill and rule
     // takes a token with its Loft value as the fallback, so the stage gets a
@@ -979,7 +984,7 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
                   const a = PUZZLE.across[r][c], dn = PUZZLE.down[r][c];
                   const runDone = (dir) => {
                     const ri = RUNS.findIndex((run) => run.dir === dir && run.head === idx);
-                    return ri >= 0 && RUNS[ri].cells.every((x) => cells[x]);
+                    return ri >= 0 && RUNS[ri].cells.every((x) => boardCells[x]);
                   };
                   return (
                     <div key={idx} className={`su-cell su-black${a || dn ? ' su-clue' : ''}`} style={cellStyle(idx)}>
@@ -988,7 +993,7 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
                     </div>
                   );
                 }
-                const val = cells[idx];
+                const val = boardCells[idx];
                 const cls = `su-cell ${val ? 'su-user' : ''}`;
                 return (
                   <div key={idx} className={cls} style={cellStyle(idx)}
@@ -999,10 +1004,10 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
                     onPointerCancel={cancelLong}>
                     {val ? (
                       <span style={{ fontSize: N > 7 ? 'clamp(15px, 4.2vw, 24px)' : 'clamp(19px, 6.4vw, 29px)' }}>{val}</span>
-                    ) : notes[idx] ? (
+                    ) : boardNotes[idx] ? (
                       <div className="su-notes">
                         {DIGITS.map((d) => (
-                          <span key={d} className="su-note">{(notes[idx] & (1 << d)) ? d : ''}</span>
+                          <span key={d} className="su-note">{(boardNotes[idx] & (1 << d)) ? d : ''}</span>
                         ))}
                       </div>
                     ) : null}

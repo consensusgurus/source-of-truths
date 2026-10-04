@@ -8500,3 +8500,26 @@ Same score as Clade. A president who served two separate terms is one entry. Fac
 Both guessing games use the three-tier word type-ahead (`matchNames`) and say so when nothing
 matches, per the type-ahead rule above. The answer never reaches the browser for a future day:
 each page filters `live <= today`.
+
+## A loss never shows the answer, and a replayable loss HOLDS on the board (owner, 2026-10-04)
+
+The finish beat (`lib/finish-beat.js`, `app/useFinishBeat.js`) keeps the board on screen for a
+moment before the ending. That board used to be hidden by the ending's `stf-collapse`, so several
+clients had been printing the answer under it on a loss (Barter's "The words:" line, trivia
+highlights, filled grids). The beat made all of it visible. Rules now:
+
+- **Every client gates answer content on a loss behind `revealed`**: `lost && (!LOFT || revealed)`,
+  the Crux model. `revealed` is set only by the end card's Reveal answer door. KEEPS_ANSWER games
+  show the answer only on a win. A new daily follows the same rule.
+- **A loss plays `playLoss`** ("the gaps go dark"): the squares a player missed dim in reading
+  order, then the board settles grey. Per-game miss sets live in `LOSS_MISSES`
+  (`lib/finish-beats.js`); without one it falls back to the board's empty cells.
+- **On the end card after a loss, the band button reads Retry** (when the game has a replay) and
+  Reveal answer is a DOOR on the card (`StageFinish`, `revealOpt` / `bandOpt`). Reveal is never on
+  the band.
+- **Replayable losses get no intermediate card.** For the `wantsFastRetry` games (End Game,
+  Arcade, the graded attempts games, Chomp), an unsolved finish on the stage renders
+  `app/LossHold.jsx` instead of the old retry curtain: the loss animation plays over the board and
+  then a bar rises from the bottom with Replay and End game card. It STAYS until one is pressed.
+  Tapping the bar anywhere but Replay, or Escape, opens the end card; a tap during the animation
+  skips to the bar. StageFinish is not mounted while it is up, so the board is never collapsed.

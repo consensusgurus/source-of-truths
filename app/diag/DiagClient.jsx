@@ -314,6 +314,9 @@ export default function DiagClient({ puzzles = [], forceNum = null }) {
   const ACC_SOFT = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : COLORS.accentSoft;
   const ON_ACC = STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)';
   const [revealed, setRevealed] = useState(false);
+  // A give-up writes the solution into cells; on the loft the board keeps the
+  // player's own position until the end card's Reveal tile is pressed.
+  const viewCells = g.status === 'revealed' && LOFT && !revealed ? (g.playerCells || cells.map(() => 0)) : cells;
   const [shareCta, setShareCta] = useState('Share');
   useEffect(() => {
     if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`);
@@ -687,7 +690,7 @@ export default function DiagClient({ puzzles = [], forceNum = null }) {
 
   function revealEnd() {
     const next = solFlat.slice();
-    const g2 = { ...g, cells: next.map((v, i) => (givenFlat[i] ? 0 : v)), notes: Array(CELLS).fill(0), revealFilled: liveFilled, status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...g, cells: next.map((v, i) => (givenFlat[i] ? 0 : v)), playerCells: cells.slice(), revealFilled: liveFilled, status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     setSel(-1);
@@ -773,7 +776,7 @@ export default function DiagClient({ puzzles = [], forceNum = null }) {
     const r = Math.floor(idx / N), c = idx % N, b = boxOf(r, c);
     const isSel = idx === sel;
     const peer = sel >= 0 && !isSel && (r === selR || c === selC || b === selB || selDiag.has(idx));
-    const val = givenFlat[idx] || cells[idx];
+    const val = givenFlat[idx] || viewCells[idx];
     const sameVal = hlVal && val === hlVal && !isSel;
     const heavyR = c % BOX_W === BOX_W - 1 && c !== N - 1;
     const heavyB = r % BOX_H === BOX_H - 1 && r !== N - 1;
@@ -930,7 +933,7 @@ export default function DiagClient({ puzzles = [], forceNum = null }) {
               </svg>
               {Array.from({ length: CELLS }).map((_, idx) => {
                 const given = givenFlat[idx];
-                const val = given || cells[idx];
+                const val = given || viewCells[idx];
                 const cls = `dg-cell ${given ? 'dg-given' : val ? 'dg-user' : ''}`;
                 return (
                   <div key={idx} className={cls} style={cellStyle(idx)}

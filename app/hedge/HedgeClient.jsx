@@ -253,7 +253,6 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
   const viewedRef = useRef(false);
   const undoRef = useRef([]);
 
-  const H = g.h, V = g.vt;
   const playing = g.status === 'playing';
   const preStart = playing && !g.t0;
   const started = playing && !!g.t0;
@@ -261,6 +260,11 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('hedge');
   const STAGE = isStage('hedge', searchParams);
+  // A give-up writes the loop into h/vt; on the loft the board keeps the
+  // player's own lines until the end card's Reveal answer tile is pressed.
+  const hideAns = g.status === 'revealed' && LOFT && !revealed;
+  const H = hideAns ? (g.playerH || Array(NH).fill(0)) : g.h;
+  const V = hideAns ? (g.playerV || Array(NV).fill(0)) : g.vt;
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('hedge');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('hedge'), '--stg-acc-lt': gameColorLight('hedge'), '--stg-onramp-lt': gameOnrampLight('hedge'), '--stg-acc-ink-lt': gameAccentInkLight('hedge') };
@@ -576,7 +580,7 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
 
   function revealEnd() {
     const cur = gRef.current;
-    const g2 = { ...cur, h: solH.slice(), vt: solV.slice(), status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...cur, h: solH.slice(), vt: solV.slice(), playerH: cur.h.slice(), playerV: cur.vt.slice(), status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     commit(g2);

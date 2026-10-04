@@ -634,7 +634,7 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
             <div className="ds-lab">Today&rsquo;s list</div>
             <div className="ds-uni">{U.name} <span style={{ fontWeight: 700, color: FADED, fontSize: 12.5 }}>&middot; {U.rows.length} names &middot; guesses {guesses.length}/{MAX}</span></div>
             {guesses.length === 0 && <div className="ds-none">No guesses yet. Any {U.noun} is a fair first guess.</div>}
-            {[...guesses, ...(!playing && !won ? [PUZZLE.answer] : [])].map((nm, gi) => {
+            {[...guesses, ...(!playing && !won && (!LOFT || revealed) ? [PUZZLE.answer] : [])].map((nm, gi) => {
               const r = BY_NAME.get(nm);
               if (!r) return null;
               return (

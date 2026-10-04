@@ -913,12 +913,14 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
           {!playing && (
             <>
               <div style={{ maxWidth: 472, margin: '0 auto 12px' }}>
+                {(won || !LOFT || revealed) && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? 'var(--stg-raise)' : PAPER, border: `1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.18)'}`, borderRadius: 10, padding: '12px 14px' }}>
                   <MapPin size={30} strokeWidth={2.2} style={{ color: won ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, flex: '0 0 auto' }} />
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     <b style={{ fontSize: 16 }}>{TARGET.name}, {TARGET.country}.</b> <span style={{ color: FADED, fontWeight: 600 }}>{PUZZLE.blurb}</span>
                   </span>
                 </div>
+                )}
                 {PUZZLE.sunday && (
                   <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>The Sunday Edition: a trickier city to find.</div>
                 )}

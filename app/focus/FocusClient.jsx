@@ -636,7 +636,7 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
           {/* The photo. A square window; the image is cover-fit and scaled
               about the day's focal point, so every frame is a real crop of
               the same picture and the last frame is the picture itself. */}
-          <div className="fc-view" aria-label={playing ? `Frame ${frame} of ${FRAMES}` : DAY.a || 'The photo'}>
+          <div className="fc-view" aria-label={playing ? `Frame ${frame} of ${FRAMES}` : ((won || !LOFT || revealed) && DAY.a) || 'The photo'}>
             {imgOk === false ? (
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, textAlign: 'center', fontSize: 13.5, fontWeight: 700, color: FADED }}>
                 The photo did not load. Reload the page; if it keeps happening, report it below.
@@ -703,7 +703,9 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
 
           {!playing && (
             <div style={{ marginTop: 14 }}>
+              {(won || !LOFT || revealed) && (
               <div style={{ fontFamily: SANS, fontSize: 22, fontWeight: 900, letterSpacing: '-0.01em', color: INK, lineHeight: 1.1 }}>{DAY.a}</div>
+              )}
               <div style={{ marginTop: 5, fontFamily: SANS, fontSize: 12, fontWeight: 600, color: FADED }}>
                 Photo: {DAY.by || 'Wikimedia Commons'} · {DAY.lic || 'Wikimedia Commons'} · via Wikimedia Commons
               </div>

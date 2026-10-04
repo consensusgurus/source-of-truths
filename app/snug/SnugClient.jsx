@@ -413,12 +413,15 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
   const prevPuzzle = puzzles.find((x) => x.num === PUZZLE.num - 1) || null;
   const myStats = deriveStats(stats, pickPuzzle(puzzles, null).num);
 
-  // Which piece owns which square, from the placements.
+  // Which piece owns which square, from the placements. A give-up keeps the
+  // player's own pieces on the board until the end card's Reveal tile.
+  const hideSol = LOFT && g.status === 'revealed' && !revealed;
   const owner = useMemo(() => {
     const m = new Map();
-    g.placed.forEach((p, i) => { if (!p) return; for (const [r, c] of g.ori[i]) m.set(K(r + p.dr, c + p.dc), i); });
+    const src = hideSol ? (g.pre || { ori: [], placed: [] }) : g;
+    src.placed.forEach((p, i) => { if (!p) return; for (const [r, c] of src.ori[i]) m.set(K(r + p.dr, c + p.dc), i); });
     return m;
-  }, [g.placed, g.ori]);
+  }, [g.placed, g.ori, hideSol, g.pre]);
   const placedCount = useMemo(() => g.placed.filter(Boolean).length, [g.placed]);
   const hasEntries = placedCount > 0;
 
@@ -595,7 +598,7 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
   }
 
   function revealEnd() {
-    const g2 = { ...g, ori: PIECES.map((p) => norm(p)), placed: PUZZLE.sol.map(([dr, dc]) => ({ dr, dc })), status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...g, ori: PIECES.map((p) => norm(p)), placed: PUZZLE.sol.map(([dr, dc]) => ({ dr, dc })), pre: { ori: g.ori, placed: g.placed }, status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     setArmed(-1);

@@ -535,7 +535,7 @@ export default function BlitzClient({ puzzles = [], problemsByNum = {}, forceNum
     const flash = !dead && lock && g.lastRight != null && isRight;
     let bg = T.white, border = 'rgba(28,30,36,0.4)', color = COLORS.ink;
     if (flash) { bg = '#e7f3ec'; border = COLORS.green; color = COLORS.green; }
-    if (dead && isRight) { bg = '#e7f3ec'; border = COLORS.green; color = '#0f5c2e'; }
+    if (dead && isRight && (!LOFT || revealed)) { bg = '#e7f3ec'; border = COLORS.green; color = '#0f5c2e'; }
     if (dead && isPick && !isRight) { bg = '#fdecef'; border = COLORS.rust; color = COLORS.rust; }
     return (
       <button

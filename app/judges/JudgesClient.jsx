@@ -350,6 +350,9 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
   const playing = g.status === 'playing';
   const LOFT = isLoft('judges');
   const STAGE = isStage('judges', searchParams);
+  // A reveal writes the seating into cells; on the loft the court keeps the
+  // player's own seating until the end card's Reveal answer tile is pressed.
+  const cellsView = g.status === 'lost' && LOFT && !revealed ? (g.playerCells || freshCells(N)) : g.cells;
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('judges');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('judges'), '--stg-acc-lt': gameColorLight('judges'), '--stg-onramp-lt': gameOnrampLight('judges'), '--stg-acc-ink-lt': gameAccentInkLight('judges') };
@@ -380,7 +383,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
   // seating one judge therefore does NOT close its row, which is the whole game.
   const { judges, conflictSet, seated, attackedSet } = useMemo(() => {
     const js = [];
-    for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (g.cells[r][c] === 2) js.push([r, c]);
+    for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (cellsView[r][c] === 2) js.push([r, c]);
     const bad = new Set();
     for (let i = 0; i < js.length; i++) for (let j = i + 1; j < js.length; j++) {
       const [r1, c1] = js[i], [r2, c2] = js[j];
@@ -409,7 +412,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
       for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (PUZZLE.regions[r][c] === id) attacked.add(r * N + c);
     }
     return { judges: js, conflictSet: bad, seated: js.length, attackedSet: attacked };
-  }, [g.cells, N, PUZZLE, STARS]);
+  }, [cellsView, N, PUZZLE, STARS]);
 
   useEffect(() => {
     try {
@@ -707,7 +710,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
       for (let r = 0; r < N; r++) {
         for (let c = 0; c < N; c++) cells[r][c] = SOLUTION[r].includes(c) ? 2 : 1;
       }
-      const g2 = { ...cur, cells, status: 'lost', tEnd: Date.now(), t0: cur.t0 || Date.now() };
+      const g2 = { ...cur, cells, playerCells: cur.cells.map((row) => row.slice()), status: 'lost', tEnd: Date.now(), t0: cur.t0 || Date.now() };
       postResult(g2, 0);
       return g2;
     });
@@ -755,21 +758,21 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
   const { rowRemain, colRemain } = useMemo(() => {
     const rr = Array(N).fill(STARS), cc = Array(N).fill(STARS);
     for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
-      if (g.cells[r][c] === 2) { rr[r]--; cc[c]--; }
+      if (cellsView[r][c] === 2) { rr[r]--; cc[c]--; }
     }
     return { rowRemain: rr, colRemain: cc };
-  }, [g.cells, N, STARS]);
+  }, [cellsView, N, STARS]);
 
   // Courts that already hold their quota.
   const doneRegions = useMemo(() => {
     const tally = {};
     for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
-      if (g.cells[r][c] === 2) { const id = PUZZLE.regions[r][c]; tally[id] = (tally[id] || 0) + 1; }
+      if (cellsView[r][c] === 2) { const id = PUZZLE.regions[r][c]; tally[id] = (tally[id] || 0) + 1; }
     }
     const out = new Set();
     for (const id in tally) if (tally[id] >= STARS) out.add(Number(id));
     return out;
-  }, [g.cells, N, STARS, PUZZLE]);
+  }, [cellsView, N, STARS, PUZZLE]);
 
   const counterStyle = (v) => ({
     fontFamily: MONO, fontSize: Math.max(10, Math.round(cellPx * 0.32)), fontWeight: 700,
@@ -929,7 +932,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
             {PUZZLE.regions.map((row, r) => (
               <div key={r} style={{ display: 'flex' }}>
                 {row.map((id, c) => {
-                  const v = g.cells[r][c];
+                  const v = cellsView[r][c];
                   const conflict = v === 2 && conflictSet.has(r * N + c);
                   // ✗ shows for a hand-placed mark (v === 1) or, with auto-✗ on,
                   // any empty cell a seated judge rules out. Auto marks render a
@@ -1034,7 +1037,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {won
                       ? <>The whole court is seated &mdash; {g.placements} placement{g.placements === 1 ? '' : 's'}, {elapsed}.{g.hintUsed ? ' (1 hint)' : ''}</>
-                      : 'The court dissolved in quarrels — the seating was revealed.'}
+                      : (LOFT && !revealed ? 'The court dissolved in quarrels.' : 'The court dissolved in quarrels — the seating was revealed.')}
                   </span>
                 </div>
               </div>

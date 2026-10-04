@@ -318,7 +318,11 @@ export default function CagesClient({ puzzles = [], forceNum = null }) {
   const longRef = useRef(false);   // true when the last cell interaction was a long-press
   const longTimer = useRef(null);  // pending long-press timer
 
-  const cells = g.cells;
+  // A give-up keeps the player's own digits in g.cells; the solution is drawn only
+  // once the end card's Reveal answer is pressed (the finish beat shows the board).
+  const [revealed, setRevealed] = useState(false);
+  const solCells = useMemo(() => solFlat.map((v, i) => (givenFlat[i] ? 0 : v)), [solFlat, givenFlat]);
+  const cells = g.status === 'revealed' && (!isLoft('cages') || revealed) ? solCells : g.cells;
   const notes = g.notes;
   const [showChrome, setShowChrome] = useState(false);
   const playing = g.status === 'playing';
@@ -340,7 +344,6 @@ export default function CagesClient({ puzzles = [], forceNum = null }) {
   const ACC_DEEP = STAGE ? STAGE_C : COLORS.accentDeep;
   const ACC_SOFT = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : COLORS.accentSoft;
   const ON_ACC = STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)';
-  const [revealed, setRevealed] = useState(false);
   const [shareCta, setShareCta] = useState('Share');
   useEffect(() => {
     if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`);
@@ -723,8 +726,7 @@ export default function CagesClient({ puzzles = [], forceNum = null }) {
   }
 
   function revealEnd() {
-    const next = solFlat.slice();
-    const g2 = { ...g, cells: next.map((v, i) => (givenFlat[i] ? 0 : v)), notes: Array(81).fill(0), revealFilled: liveFilled, status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...g, notes: Array(81).fill(0), revealFilled: liveFilled, status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     setSel(-1);

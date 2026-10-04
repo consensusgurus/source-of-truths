@@ -214,6 +214,10 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
   const liveScore = Math.max(1, TOTAL - 3 * g.rejected);
   const score = g.status === 'done' ? liveScore : 0;
   const won = g.status === 'done' && g.rejected === 0;
+  // A reveal keeps the player's own filing on the board until the end card's
+  // Reveal tile is pressed; the finish beat would otherwise show the answer.
+  const hideSol = LOFT && g.status === 'lost' && !revealed;
+  const placeShown = hideSol ? (g.pre || Array(N).fill(0)) : g.place;
 
   const mine = useMemo(() => { const c = {}; REGIONS.forEach((r) => { c[r] = 0; }); g.place.forEach((r) => { if (r) c[r]++; }); return c; }, [g.place]);
   const countsMatch = REGIONS.every((r) => hiddenSet.has(r) || mine[r] === COUNTS[r]);
@@ -360,7 +364,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
   }
   function reveal() {
     if (!playing) return;
-    setG((cur) => { const g2 = { ...cur, place: TRUTH.slice(), status: 'lost', tEnd: Date.now(), t0: cur.t0 || Date.now() }; postResult(g2, 0); return g2; });
+    setG((cur) => { const g2 = { ...cur, place: TRUTH.slice(), pre: cur.place, status: 'lost', tEnd: Date.now(), t0: cur.t0 || Date.now() }; postResult(g2, 0); return g2; });
     setHeld(null); setVerdict(null); setEndClosed(false);
   }
   function resetGame() { try { localStorage.removeItem(STORE_KEY); } catch (e) {} setG(freshState(N)); setHeld(null); setVerdict(null); setEndClosed(false); }
@@ -535,15 +539,15 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
                 <text x="160" y="290" fill={COLORS.cC} fontSize="15" fontWeight="800" fontFamily="Manrope">C</text>
               </svg>
               {REGIONS.map((r) => {
-                const words = PUZZLE.items.map((w, i) => ({ w, i })).filter(({ i }) => g.place[i] === r);
-                const need = hiddenSet.has(r) && playing ? '?' : COUNTS[r];
+                const words = PUZZLE.items.map((w, i) => ({ w, i })).filter(({ i }) => placeShown[i] === r);
+                const need = hiddenSet.has(r) && (playing || hideSol) ? '?' : COUNTS[r];
                 const ready = !hiddenSet.has(r) && words.length === COUNTS[r];
                 const over = !hiddenSet.has(r) && words.length > COUNTS[r];
                 return (
                   <div key={r} className={`vn-zone${ready ? ' ready' : ''}${over ? ' over' : ''}${tightItems ? ' tight' : ''}`} style={{ left: ZONE[r].x, top: ZONE[r].y }} onClick={() => dropInto(r)} title={ZONE[r].label}>
                     <span className="n">{words.length}/{need}</span>
                     {words.map(({ w, i }) => (
-                      <span key={w} className="w" title={playing ? 'Tap to pick this word back up' : undefined} onClick={(e) => { if (held != null) { dropInto(r); e.stopPropagation(); return; } e.stopPropagation(); liftFrom(i); }} style={{ color: !playing ? (TRUTH[i] === g.place[i] ? COLORS.green : `var(--stg-bad, ${COLORS.rust})`) : `var(--stg-ink, ${COLORS.ink})` }}>
+                      <span key={w} className="w" title={playing ? 'Tap to pick this word back up' : undefined} onClick={(e) => { if (held != null) { dropInto(r); e.stopPropagation(); return; } e.stopPropagation(); liftFrom(i); }} style={{ color: !playing ? (TRUTH[i] === placeShown[i] ? COLORS.green : `var(--stg-bad, ${COLORS.rust})`) : `var(--stg-ink, ${COLORS.ink})` }}>
                         <span className="t">{w}</span>
                         {playing && (
                           <button type="button" className="x" aria-label={`Send ${w} back to the tray`} title="Back to the tray" onClick={(e) => { e.stopPropagation(); unfile(i); }}>&times;</button>

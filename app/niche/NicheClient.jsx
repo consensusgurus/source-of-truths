@@ -571,7 +571,8 @@ export default function NicheClient({ puzzles = [], forceNum = null }) {
   // board. Computed from the same facts the game judges by; prefers answers
   // not already used elsewhere on the board.
   const examples = useMemo(() => {
-    if (playing) return {};
+    // Withheld on the loft until the end card's reveal tile is pressed.
+    if (playing || (LOFT && !revealed)) return {};
     const out = {};
     for (let i = 0; i < CELLS; i++) {
       if (picks[i]) continue;
@@ -581,7 +582,7 @@ export default function NicheClient({ puzzles = [], forceNum = null }) {
       out[i] = (fresh.length ? fresh : all).slice(0, 2);
     }
     return out;
-  }, [playing, picks, U, PUZZLE, usedNames, CELLS, SIZE]);
+  }, [playing, picks, U, PUZZLE, usedNames, CELLS, SIZE, LOFT, revealed]);
 
   const selRow = sel >= 0 ? Math.floor(sel / SIZE) : -1;
   const selCol = sel >= 0 ? sel % SIZE : -1;

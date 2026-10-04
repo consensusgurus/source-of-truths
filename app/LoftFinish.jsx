@@ -63,6 +63,7 @@
 // 2026-08-14); the tone is what tells them apart at a glance.
 import StageFinish from './StageFinish';
 import useFinishBeat from './useFinishBeat';
+import LossHold from './LossHold';
 import React, { useEffect, useState } from 'react';
 import useDailyRoster from './useDailyRoster';
 import { Brain } from 'lucide-react';
@@ -687,7 +688,10 @@ export default function LoftFinish({
   // arrives as before. Every hook above has run, so returning here keeps the
   // hook order fixed. Dailies only: a quiz passes boardLabel. See
   // lib/finish-beat.js and app/useFinishBeat.js.
-  const beating = useFinishBeat({ key: selfKey, enabled: !boardLabel });
+  // A fast-retry loss on the stage plays its own loss beat inside LossHold
+  // and HOLDS there, so the beat here stands down for it.
+  const holdsLoss = fastRetry && !showCard && onStage;
+  const beating = useFinishBeat({ key: selfKey, enabled: !boardLabel && !holdsLoss, lost: !!outcome && outcome !== 'won' });
   if (beating) return null;
 
   if (openArchive && archive && archive.length) {
@@ -879,14 +883,10 @@ export default function LoftFinish({
     // always had.
     if (onStage) {
       return (
-        <StageFinish
-          title={retryVerdict} detail={detail} outcome={outcome} name={name}
-          retry={{
-            eyebrow: attemptRule.chip,
-            sub: attemptRule.replay,
-            onReplay: fire(replayOpt),
-            onCard: () => setShowCard(true),
-          }}
+        <LossHold
+          gameKey={selfKey} verdict={retryVerdict} detail={detail}
+          chip={attemptRule.chip} sub={attemptRule.replay}
+          onReplay={fire(replayOpt)} onCard={() => setShowCard(true)}
         />
       );
     }

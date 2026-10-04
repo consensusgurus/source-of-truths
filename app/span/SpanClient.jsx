@@ -726,7 +726,9 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
     if (VIA) return viaRoute(ADJ, PUZZLE.start, VIA, PUZZLE.end);
     return shortestRoute(ADJ, PUZZLE.start, PUZZLE.end);
   }, [playing, ADJ, PUZZLE, AVOID, VIA]);
-  const revealRoute = g.status === 'revealed' ? bestRoute : null;
+  // A give-up keeps the road hidden until the end card's Reveal tile.
+  const showBest = won || !LOFT || revealed;
+  const revealRoute = g.status === 'revealed' && showBest ? bestRoute : null;
   // every country on ANY shortest road (there are often several): a country
   // sits on one iff dist(start,c) + dist(c,end) === the shortest length.
   // Countries beyond the primary road show in a lighter blue on the map.
@@ -965,7 +967,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
           {!playing && (
             <>
               <div style={{ maxWidth: 472, margin: '0 auto 12px' }}>
-                <SpanMap chain={chain} best={won && hops === PUZZLE.perfect ? null : bestRoute} alts={altRoads} />
+                <SpanMap chain={chain} best={!showBest || (won && hops === PUZZLE.perfect) ? null : bestRoute} alts={showBest ? altRoads : null} />
                 {revealRoute && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', margin: '8px 0 4px' }}>
                     {revealRoute.map((c, i) => {

@@ -670,10 +670,11 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
   const boardRef = useRef(null);
   const [link, setLink] = useState(null);   // { pts, w, h } in board pixels
   // While playing this is the live route; once the game is over it is the route
-  // that landed each target, or the revealed one after Reveal.
+  // that landed each target, or the revealed one after Reveal. The revealed
+  // routes wait for the end card's Reveal answer (the finish beat shows the board).
   const shownRoute = playing
     ? path
-    : ((g.shown && g.shown[g.slot]) || g.routes[g.slot] || path);
+    : (((g.status !== 'revealed' || !LOFT || revealed) && g.shown && g.shown[g.slot]) || g.routes[g.slot] || path);
   useEffect(() => {
     const el = boardRef.current;
     if (!el) return undefined;

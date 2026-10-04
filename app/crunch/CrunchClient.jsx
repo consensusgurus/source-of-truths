@@ -825,7 +825,7 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
                     ? `Your closest was ${bestDiff} off, worth ${finalScore} out of 10.`
                     : `It was reachable. An exact answer needed ${need} of the six.`}
               </div>
-              {Array.isArray(PUZZLE.example) && PUZZLE.example.length > 0 && (
+              {(won || !LOFT || revealed) && Array.isArray(PUZZLE.example) && PUZZLE.example.length > 0 && (
                 <div style={{ marginTop: 12, background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 9, padding: '10px 12px' }}>
                   <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.16em', textTransform: 'uppercase', color: FADED, fontWeight: 500, marginBottom: 5 }}>One way there</div>
                   {PUZZLE.example.map((st, i) => (

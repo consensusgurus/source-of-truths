@@ -258,7 +258,6 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
   const viewedRef = useRef(false);
   const undoRef = useRef([]);
 
-  const cells = g.cells;
   const [showChrome, setShowChrome] = useState(false);
   const playing = g.status === 'playing';
   const preStart = playing && !g.t0;
@@ -277,6 +276,9 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
   const SURF_B = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : 'rgba(28,30,36,0.42)';
   const ACC_DEEP_INK = STAGE ? 'var(--stg-acc-ink)' : COLORS.accent;
   const [revealed, setRevealed] = useState(false);
+  // A give-up keeps the player's lamps in g.cells; the solution paints only
+  // once the end card's Reveal is pressed, so the finish beat leaks nothing.
+  const cells = g.status === 'revealed' && (!LOFT || revealed) ? solCells : g.cells;
   const [shareCta, setShareCta] = useState('Share');
   useEffect(() => {
     if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`);
@@ -517,7 +519,7 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
   }
 
   function revealEnd() {
-    const g2 = { ...g, cells: solCells.slice(), revealFilled: liveFilled, status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...g, revealFilled: liveFilled, status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     setSel(-1);

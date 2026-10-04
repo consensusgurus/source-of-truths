@@ -560,7 +560,12 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
 
   // Live column read-out. Free, and recomputed on every assignment.
   const MAXC = maxCarry(OP, PUZZLE.lhs.length);
-  const colInfo = useMemo(() => deriveColumns(COLS, g.assign, OP, MAXC), [COLS, g.assign, OP, MAXC]);
+  // A lost board keeps the player's own digits; the solved sum is drawn only once
+  // the end card's Reveal answer is pressed (the finish beat shows the board).
+  const shownAssign = useMemo(() => (g.status === 'lost' && (!LOFT || revealed)
+    ? (solveCipher(PUZZLE.op || 'add', PUZZLE.lhs, PUZZLE.rhs) || g.assign)
+    : g.assign), [g.status, g.assign, LOFT, revealed, PUZZLE]);
+  const colInfo = useMemo(() => deriveColumns(COLS, shownAssign, OP, MAXC), [COLS, shownAssign, OP, MAXC]);
   const colsSolved = colInfo.every((c) => c.ok === true);
   const badCol = colInfo.some((c) => c.ok === false);
   // Why an otherwise-correct board is not a win yet. The columns only test the
@@ -738,8 +743,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
 
   function reveal() {
     if (!playing) return;
-    const sol = solveCipher(PUZZLE.op || 'add', PUZZLE.lhs, PUZZLE.rhs);
-    const g2 = { ...g, assign: sol || g.assign, status: 'lost', tEnd: Date.now(), t0: g.t0 || Date.now() };
+    const g2 = { ...g, status: 'lost', tEnd: Date.now(), t0: g.t0 || Date.now() };
     finishedRef.current = true;
     setG(g2);
     setEndClosed(false);
@@ -792,7 +796,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
 
   // digit -> letters owning it
   const digitOwners = {};
-  for (const [l, d] of Object.entries(g.assign)) { (digitOwners[d] = digitOwners[d] || []).push(l); }
+  for (const [l, d] of Object.entries(shownAssign)) { (digitOwners[d] = digitOwners[d] || []).push(l); }
 
   // The carry (addition) / borrow (subtraction) written above each column.
   // A derived value is shown solid and locked; beyond the derived frontier the
@@ -885,7 +889,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
     for (let i = 0; i < maxLen - word.length; i++) cells.push(<span key={`sp${i}`} className="cf-cell" style={{ visibility: 'hidden' }} />);
     for (let i = 0; i < word.length; i++) {
       const ch = word[i];
-      const d = g.assign[ch];
+      const d = shownAssign[ch];
       const conflict = d !== undefined && digitOwners[d] && digitOwners[d].length > 1;
       cells.push(
         <button

@@ -713,7 +713,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
             </div>
           </div>
 
-          {done && (
+          {done && (won || !LOFT || revealed) && (
             <div style={{ marginTop: 12, textAlign: 'center' }}>
               <button type="button" onClick={() => setShowBest((v) => !v)}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12.5, color: FADED, textDecoration: 'underline', textUnderlineOffset: 3 }}>

@@ -667,7 +667,10 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
     setG(freshState()); setVerdict(null); setEndClosed(false);
   }
 
-  const revealed = (i) => PUZZLE.tiles[i].g || g.tested.includes(i) || !playing;
+  // A lost board keeps its unturned tiles and the rule hidden through the finish
+  // beat; they show only once the end card's Reveal answer is pressed.
+  const solShown = g.status !== 'lost' || !LOFT || loftRevealed;
+  const revealed = (i) => PUZZLE.tiles[i].g || g.tested.includes(i) || (!playing && solShown);
   const answerLabel = ruleLabel(PUZZLE.rules[ANSWER]);
 
   // How to play. Four dense paragraphs tested badly (owner, 2026-07-24), so the
@@ -885,8 +888,8 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
               {playing && <div style={{ fontFamily: SANS, fontSize: 11.5, fontWeight: 700, color: FADED }}>{g.naming ? 'Pick the one that fits every tile' : 'Tap to cross one out, free'}</div>}
             </div>
             {PUZZLE.rules.map((r, i) => {
-              const dead = !playing && i !== ANSWER;
-              const winner = !playing && i === ANSWER;
+              const dead = !playing && solShown && i !== ANSWER;
+              const winner = !playing && solShown && i === ANSWER;
               return (
                 <button
                   key={i}
@@ -935,7 +938,7 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {g.status === 'done'
                       ? (won ? <>Named at perfect on {testsUsed} test{testsUsed === 1 ? '' : 's'}.</> : <>Named it on {testsUsed} test{testsUsed === 1 ? '' : 's'}{g.wrongPicks.length ? ` and ${g.wrongPicks.length} wrong name${g.wrongPicks.length === 1 ? '' : 's'}` : ''}.</>)
-                      : <>The board beat you. The rule: <b>{answerLabel.toLowerCase()}</b>.</>}
+                      : solShown ? <>The board beat you. The rule: <b>{answerLabel.toLowerCase()}</b>.</> : <>The board beat you.</>}
                     {' '}<span style={{ color: FADED, fontWeight: 600 }}>{elapsed}</span>
                   </span>
                 </div>

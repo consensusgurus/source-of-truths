@@ -244,6 +244,9 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
   const focusMode = playing && !showChrome;
   const LOFT = isLoft('extra');
   const STAGE = isStage('extra', searchParams);
+  // On a loss the loft keeps the story redacted and the answer unprinted until
+  // the end card's Reveal answer tile is pressed.
+  const hideAns = g.status !== 'playing' && g.status !== 'won' && LOFT && !revealed;
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('extra');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('extra'), '--stg-acc-lt': gameColorLight('extra'), '--stg-onramp-lt': gameOnrampLight('extra'), '--stg-acc-ink-lt': gameAccentInkLight('extra') };
@@ -527,7 +530,7 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
       const m = /^(.*?)([;:,.!?]*)$/.exec(w);
       const core = m[1], punct = m[2];
       const hiddenSlot = HIDDEN.indexOf(i);
-      const show = hiddenSlot === -1 || revealedSet.has(i) || !playing;
+      const show = hiddenSlot === -1 || revealedSet.has(i) || (!playing && !hideAns);
       if (show) {
         const fresh = playing && i === lastTornIdx;
         return (
@@ -698,7 +701,7 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
               <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.08em', color: FADED }}>ONE CENT</span>
             </div>
             <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.09em', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.3)', paddingBottom: 6, marginBottom: 12, textTransform: 'uppercase' }}>
-              {(g.hintUsed || !playing) ? PUZZLE.dateline : (
+              {(g.hintUsed || (!playing && !hideAns)) ? PUZZLE.dateline : (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ display: 'inline-block', width: '16ch', height: '0.8em', background: 'rgba(28,30,36,0.75)', borderRadius: 2 }} />
                   <span style={{ fontStyle: 'italic', textTransform: 'none', letterSpacing: 0 }}>dateline withheld</span>
@@ -764,12 +767,14 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
           {!playing && (
             <>
               {/* the answer */}
+              {!hideAns && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? 'var(--stg-raise)' : PAPER, border: `1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.18)'}`, borderRadius: 10, padding: '12px 14px', marginBottom: 10 }}>
                 <Newspaper size={26} style={{ color: won ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, flex: '0 0 auto' }} />
                 <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                   {PUZZLE.answer} ({PUZZLE.year}). <span style={{ color: FADED, fontWeight: 600 }}>{PUZZLE.d}</span>
                 </span>
               </div>
+              )}
               {PUZZLE.sunday && (
                 <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '2px 0 8px' }}>The Sunday Edition — a trickier story to name.</div>
               )}

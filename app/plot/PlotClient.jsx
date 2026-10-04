@@ -260,7 +260,6 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
   const gridRef = useRef(null);
   const dragRef = useRef(null);
 
-  const plots = g.plots;
   const playing = g.status === 'playing';
   const preStart = playing && !g.t0;
   const started = playing && !!g.t0;
@@ -268,6 +267,10 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('plot');
   const STAGE = isStage('plot', searchParams);
+  // A give-up keeps the player's plots in g.plots; the solved map paints only
+  // once the end card's Reveal is pressed, so the finish beat leaks nothing.
+  const SOL_PLOTS = useMemo(() => PUZZLE.sol.map(([r, c, w, h]) => [r, c, w, h, CLUES.findIndex((cl) => inRect([r, c, w, h], cl[0], cl[1]))]), [PUZZLE, CLUES]);
+  const plots = g.status === 'revealed' && (!LOFT || revealed) ? SOL_PLOTS : g.plots;
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('plot');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('plot'), '--stg-acc-lt': gameColorLight('plot'), '--stg-onramp-lt': gameOnrampLight('plot'), '--stg-acc-ink-lt': gameAccentInkLight('plot') };
@@ -640,8 +643,7 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
 
   function revealEnd() {
     const cur = gRef.current;
-    const full = PUZZLE.sol.map(([r, c, w, h]) => [r, c, w, h, CLUES.findIndex((cl) => inRect([r, c, w, h], cl[0], cl[1]))]);
-    const g2 = { ...cur, plots: full, status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...cur, status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     commit(g2);

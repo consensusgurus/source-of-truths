@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import {
-  playBeat, heldRecently, BEAT_FRESH,
+  playBeat, playLoss, heldRecently, BEAT_FRESH,
   installBuzzDefer, setBeatLive, firePendingBuzz,
 } from '@/lib/finish-beat';
 
@@ -25,7 +25,7 @@ if (typeof window !== 'undefined') installBuzzDefer();
 // freshness test StageFinish's flood uses), an End Game hold already showed
 // the board, or the caller is not a daily. ?beat=1 forces one on an archived
 // finished board for review; ?beat=0 switches it off.
-export default function useFinishBeat({ key, enabled = true } = {}) {
+export default function useFinishBeat({ key, enabled = true, lost = false } = {}) {
   const [on, setOn] = useState(() => {
     if (!enabled || !key || typeof window === 'undefined') return false;
     const q = window.location.search || '';
@@ -40,7 +40,8 @@ export default function useFinishBeat({ key, enabled = true } = {}) {
   useEffect(() => {
     if (!on) return undefined;
     setBeatLive(true);
-    const h = playBeat(key);
+    // A loss plays the gaps going dark, never the win beat (owner, 2026-10-04).
+    const h = lost ? playLoss(key) : playBeat(key);
     let done = false;
     const end = () => {
       if (done) return;

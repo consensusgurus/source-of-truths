@@ -229,6 +229,9 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
   const fill = g.fill || new Array(N).fill('');
   const playing = g.status === 'playing';
   const LOFT = isLoft('anon');
+  // Giving up keeps the player's own letters; the passage is filled in only once
+  // the end card's Reveal answer is pressed (the finish beat shows the board).
+  const shownFill = g.status === 'gaveup' && (!LOFT || revealed) ? sol : fill;
   // The register comes from the shared store, not from a private effect, so
   // the switch in the cap repaints this root without a prop between them.
   // Still resolved in an effect: the server cannot know what is stored.
@@ -502,7 +505,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
 
   function giveUp() {
     setG((c) => {
-      const next = { ...c, fill: sol.slice(), status: 'gaveup', tEnd: Date.now() };
+      const next = { ...c, status: 'gaveup', tEnd: Date.now() };
       postResult(next, nSolved);
       return next;
     });
@@ -652,7 +655,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
     const c = ['an-cell'];
     if (owner[n] === curAnswer) c.push('mine');
     if (n === cur) c.push('on');
-    if (!playing && fill[n] !== sol[n]) c.push('miss');
+    if (!playing && shownFill === sol && fill[n] !== sol[n]) c.push('miss');
     return c.join(' ');
   };
 
@@ -663,7 +666,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
         className={cellCls(n)}
         style={{ width: small ? cw - 2 : cw, height: small ? ch - 2 : ch }}
         onClick={() => focusCell(n, small ? 'b' : 'q')}
-      >{fill[n] || ''}</div>
+      >{shownFill[n] || ''}</div>
     );
   }
 

@@ -287,6 +287,11 @@ export default function TowersClient({ puzzles = [], forceNum = null }) {
   const ACC_SOFT = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : COLORS.accentSoft;
   const ON_ACC = STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)';
   const [revealed, setRevealed] = useState(false);
+  // A give-up keeps the player's own grid on the board until the end card's
+  // Reveal tile is pressed; the finish beat would otherwise show the answer.
+  const hideSol = LOFT && g.status === 'revealed' && !revealed;
+  const boardCells = hideSol ? (g.pre || Array(CELLS).fill(0)) : cells;
+  const boardNotes = hideSol ? (g.preNotes || Array(CELLS).fill(0)) : notes;
   const [shareCta, setShareCta] = useState('Share');
   useEffect(() => {
     if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`);
@@ -657,7 +662,7 @@ export default function TowersClient({ puzzles = [], forceNum = null }) {
 
   function revealEnd() {
     const next = solFlat.slice();
-    const g2 = { ...g, cells: next.map((v, i) => (givenFlat[i] ? 0 : v)), notes: Array(CELLS).fill(0), revealFilled: liveFilled, status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...g, cells: next.map((v, i) => (givenFlat[i] ? 0 : v)), notes: Array(CELLS).fill(0), pre: g.cells, preNotes: g.notes, revealFilled: liveFilled, status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     setSel(-1);
@@ -738,7 +743,7 @@ export default function TowersClient({ puzzles = [], forceNum = null }) {
     const r = Math.floor(idx / N), c = idx % N;
     const isSel = idx === sel;
     const peer = sel >= 0 && !isSel && (r === selR || c === selC);
-    const val = givenFlat[idx] || cells[idx];
+    const val = givenFlat[idx] || boardCells[idx];
     const sameVal = hlVal && val === hlVal && !isSel;
     // Same conversion Sixes needed: the digits moved to the stage's ink while
     // the cells stayed white, so the whole grid rendered pale-on-white. Tokens
@@ -770,7 +775,7 @@ export default function TowersClient({ puzzles = [], forceNum = null }) {
   }
   function lineVals(kind, i) {
     const out = [];
-    for (let k = 0; k < N; k++) out.push(kind === 'row' ? cells[i * N + k] : cells[k * N + i]);
+    for (let k = 0; k < N; k++) out.push(kind === 'row' ? boardCells[i * N + k] : boardCells[k * N + i]);
     return out;
   }
   function clueState(side, i) {
@@ -929,7 +934,7 @@ export default function TowersClient({ puzzles = [], forceNum = null }) {
                   {clueEl('left', r)}
                   {Array.from({ length: N }).map((__, c) => {
                     const idx = r * N + c;
-                    const val = cells[idx];
+                    const val = boardCells[idx];
                     const cls = `tw-cell ${val ? 'tw-user' : ''}`;
                     return (
                       <div key={idx} className={cls} style={cellStyle(idx)}
@@ -940,10 +945,10 @@ export default function TowersClient({ puzzles = [], forceNum = null }) {
                         onPointerCancel={cancelLong}>
                         {val ? (
                           <span style={{ fontSize: N === 7 ? 'clamp(16px, 5vw, 24px)' : 'clamp(20px, 7vw, 30px)' }}>{val}</span>
-                        ) : notes[idx] ? (
+                        ) : boardNotes[idx] ? (
                           <div className="tw-notes" style={{ gridTemplateColumns: `repeat(${Math.ceil(N / 2)}, 1fr)` }}>
                             {Array.from({ length: N }).map((___, k) => (
-                              <span key={k} className="tw-note">{(notes[idx] & (1 << (k + 1))) ? k + 1 : ''}</span>
+                              <span key={k} className="tw-note">{(boardNotes[idx] & (1 << (k + 1))) ? k + 1 : ''}</span>
                             ))}
                           </div>
                         ) : null}

@@ -239,6 +239,9 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [g.picks, TRUE, N, ROUNDS]);
   const won = g.status === 'done' && score === TOTAL;
+  // A busted bracket keeps the true winners and the values hidden through the
+  // finish beat; they show only once the end card's Reveal answer is pressed.
+  const solShown = won || !LOFT || revealed;
 
   useEffect(() => {
     try { setStandalone(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true); setMobileUi(isMobileDevice()); } catch {}
@@ -515,14 +518,14 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
                             if (!playing) {
                               if (chosen && it === truth) cls += ' right';
                               else if (chosen) cls += ' wrong';
-                              else if (it === truth) cls += ' on';
+                              else if (solShown && it === truth) cls += ' on';
                             } else if (chosen) cls += ' on';
                             return (
                               <button key={k} type="button" className={cls} disabled={empty || !playing}
                                 onClick={() => pick(r, m, it)}
                                 title={empty ? 'Waiting on an earlier pick' : PUZZLE.items[it].name}>
                                 {empty ? '—' : PUZZLE.items[it].name}
-                                {!playing && !empty && <span className="bk-v">{fmtValue(PUZZLE.items[it].value, PUZZLE.unit)}</span>}
+                                {!playing && solShown && !empty && <span className="bk-v">{fmtValue(PUZZLE.items[it].value, PUZZLE.unit)}</span>}
                               </button>
                             );
                           })}
@@ -537,7 +540,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
                 <div className="bk-m" style={{ borderColor: COLORS.gold, background: STAGE ? 'var(--stg-surf2)' : '#fffbeb' }}>
                   <div style={{ padding: '10px 9px', fontSize: 13, fontWeight: 800, color: playing ? `var(--stg-mute, ${COLORS.faded})` : COLORS.gold, display: 'flex', alignItems: 'center', gap: 6 }}>
                     <Trophy size={13} />
-                    {playing ? (g.picks[MATCHES - 1] >= 0 ? PUZZLE.items[g.picks[MATCHES - 1]].name : 'your call') : champion.name}
+                    {(playing || !solShown) ? (g.picks[MATCHES - 1] >= 0 ? PUZZLE.items[g.picks[MATCHES - 1]].name : 'your call') : champion.name}
                   </div>
                 </div>
               </div>
@@ -563,7 +566,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px', flexWrap: 'wrap' }}>
                   <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{score}/{TOTAL}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
-                    {won ? <>A perfect bracket. Nothing busted.</> : <>{champion.name} took it at {fmtValue(champion.value, PUZZLE.unit)}.</>}
+                    {won ? <>A perfect bracket. Nothing busted.</> : solShown ? <>{champion.name} took it at {fmtValue(champion.value, PUZZLE.unit)}.</> : <>Your bracket busted.</>}
                     {' '}<span style={{ color: FADED, fontWeight: 600 }}>
                       {perRound.map(([hit, of], r) => `${ROUND_NAME(r, ROUNDS).replace('Round of ', 'R')} ${hit}/${of}`).join(' · ')} · {elapsed}
                     </span>

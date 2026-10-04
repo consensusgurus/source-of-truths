@@ -274,6 +274,9 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('encore');
   const STAGE = isStage('encore', searchParams);
+  // A give-up writes the answers into letters; on the loft the grid keeps the
+  // player's own letters until the end card's Reveal answer tile is pressed.
+  const viewLetters = g.status === 'revealed' && LOFT && !revealed ? (g.playerLetters || g.letters.map(() => '')) : g.letters;
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('encore');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('encore'), '--stg-acc-lt': gameColorLight('encore'), '--stg-onramp-lt': gameOnrampLight('encore'), '--stg-acc-ink-lt': gameAccentInkLight('encore') };
@@ -599,7 +602,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
 
   function revealEnd() {
     const score = wordsCorrect(g.letters);
-    const g2 = { ...g, letters: solFlat.map((ch) => (ch === '#' ? '' : ch)), wrong: [], status: 'revealed', tEnd: Date.now(), revealScore: score };
+    const g2 = { ...g, letters: solFlat.map((ch) => (ch === '#' ? '' : ch)), playerLetters: g.letters.slice(), wrong: [], status: 'revealed', tEnd: Date.now(), revealScore: score };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, score);
     setG(g2);
@@ -856,7 +859,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
                     className={`ec-cell${inWord && !sel ? ' ec-inword' : ''}${sel ? ' ec-sel' : ''}${wrongMark ? ' ec-wrongmark' : ''}`}
                     onClick={() => cellClick(idx)}>
                     {numAt[idx] != null && <span className="ec-num" style={{ fontSize: numPx }}>{numAt[idx]}</span>}
-                    <span style={{ fontSize: cellPx, fontWeight: 800, color: revealMiss ? `var(--stg-mute, ${COLORS.faded})` : `var(--stg-ink, ${COLORS.ink})` }}>{letters[idx]}</span>
+                    <span style={{ fontSize: cellPx, fontWeight: 800, color: revealMiss ? `var(--stg-mute, ${COLORS.faded})` : `var(--stg-ink, ${COLORS.ink})` }}>{viewLetters[idx]}</span>
                   </div>
                 );
               })}

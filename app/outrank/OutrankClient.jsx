@@ -874,7 +874,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
                   </span>
                 </div>
               </div>
-              {revealBoard()}
+              {(score > 0 || !LOFT || revealed) && revealBoard()}
               <OutrankLiveBoard board={result.board} total={TOTAL} />
               <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
                 {isTodays ? (

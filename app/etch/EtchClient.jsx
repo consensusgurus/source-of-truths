@@ -355,6 +355,9 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('etch');
   const STAGE = isStage('etch', searchParams);
+  // A give-up writes the solution into cells; on the loft the board keeps the
+  // player's own position until the end card's Reveal answer tile is pressed.
+  const viewCells = g.status === 'revealed' && LOFT && !revealed ? (g.playerCells || cells.map(() => 0)) : cells;
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('etch');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('etch'), '--stg-acc-lt': gameColorLight('etch'), '--stg-onramp-lt': gameOnrampLight('etch'), '--stg-acc-ink-lt': gameAccentInkLight('etch') };
@@ -816,7 +819,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
   function revealEnd() {
     const cur = gRef.current;
     let rf = 0; for (let i = 0; i < N; i++) if (SOL[i] === 1 && cur.cells[i] === 1) rf++;
-    const g2 = { ...cur, cells: SOL.slice(), revealFilled: rf, status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...cur, cells: SOL.slice(), playerCells: cur.cells.slice(), revealFilled: rf, status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     commit(g2);
@@ -1067,7 +1070,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
                   );
                 }
                 const r = gr - maxColClue, c = gc - maxRowClue, idx = r * W + c;
-                const v = cells[idx];
+                const v = viewCells[idx];
                 const wrong = v === 1 && SOL[idx] === 0;
                 // pv is what a pending TOUCH stroke would put here, or null.
                 // It is a preview: not written, not scored, gone if the finger
@@ -1172,9 +1175,11 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
           <div className={STAGE ? undefined : 'loft-sol'}>
           {!playing && (
             <div style={{ maxWidth: 472, margin: '0 auto' }}>
+              {(won || !LOFT || revealed) && (
               <div style={{ fontSize: 15, fontWeight: 800, color: INK, margin: '8px 0 0' }}>
                 The picture: <span style={{ color: ACC_INK }}>{PUZZLE.subject}</span>.
               </div>
+              )}
               {PUZZLE.sunday && (
                 <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>The Sunday Edition &mdash; a bigger {sizeLabel} grid.</div>
               )}

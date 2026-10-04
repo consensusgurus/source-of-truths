@@ -693,7 +693,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
         )}
 
         {/* loss reveal: the threads you missed */}
-        {lost && unsolvedCis.map((ci) => {
+        {lost && (!LOFT || revealed) && unsolvedCis.map((ci) => {
           const cc = catTone(ci);
           return (
             <div key={ci} style={{ background: STAGE ? SURF : T.white, border: `1.5px dashed ${cc.bg}`, borderRadius: 10, padding: '10px 14px', marginBottom: 8, textAlign: 'center' }}>

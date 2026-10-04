@@ -856,7 +856,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
               const mark = !locked && g.marks ? g.marks[slot] : null;
               const near = mark === NEAR;
               const done = g.status !== 'playing';
-              const showVal = locked || done || (g.hintIdx === it && g.hintUsed);
+              const showVal = locked || (done && (won || !LOFT || revealed)) || (g.hintIdx === it && g.hintUsed);
               const valChip = showVal ? (
                 <span style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 11.5, fontWeight: 500, color: locked ? `var(--stg-good, ${COLORS.lockInk})` : `var(--stg-ink, ${COLORS.brandInk})`, background: `var(--stg-surf2, ${locked ? COLORS.lockSoft : COLORS.brandSoft})`, border: `1px solid ${locked ? 'var(--stg-good, rgba(21,128,61,0.4))' : 'var(--stg-acc, rgba(134,25,143,0.35))'}`, borderRadius: 6, padding: '3px 8px', whiteSpace: 'nowrap' }}>{PUZZLE.items[it].v}</span>
               ) : null;

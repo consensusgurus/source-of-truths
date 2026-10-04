@@ -240,11 +240,16 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
   const score = g.status === 'done' ? liveScore : 0;
   const won = g.status === 'done' && g.rejected === 0 && g.hints === 0;
 
+  // A reveal keeps the player's own sheet on the board until the end card's
+  // Reveal tile is pressed; the finish beat would otherwise show the answer.
+  const hideSol = LOFT && g.status === 'lost' && !revealed;
+  const cellsShown = hideSol ? (g.pre || Array(PAIRS.length).fill(-1)) : g.cells;
+
   // the table as it stands, from whatever is filled in
   const standing = useMemo(() => {
     const t = PUZZLE.teams.map((name, i) => ({ i, name, p: 0, w: 0, d: 0, l: 0, pts: 0 }));
     PAIRS.forEach(([i,j],k) => {
-      const r = g.cells[k];
+      const r = cellsShown[k];
       if (r < 0) return;
       t[i].p++; t[j].p++;
       if (r === 0) { t[i].w++; t[i].pts += 3; t[j].l++; }
@@ -252,7 +257,7 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
       else { t[i].d++; t[j].d++; t[i].pts++; t[j].pts++; }
     });
     return t.slice().sort((a,b) => b.pts - a.pts || b.w - a.w || a.name.localeCompare(b.name));
-  }, [g.cells, PAIRS, PUZZLE]);
+  }, [cellsShown, PAIRS, PUZZLE]);
 
   useEffect(() => {
     try { setStandalone(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true); setMobileUi(isMobileDevice()); } catch {}
@@ -444,7 +449,7 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
   }
   function reveal() {
     if (!playing || !SOLUTION) return;
-    setG((cur) => { const g2 = { ...cur, cells: SOLUTION.slice(), status: 'lost', tEnd: Date.now(), t0: cur.t0 || Date.now() }; postResult(g2, 0); return g2; });
+    setG((cur) => { const g2 = { ...cur, cells: SOLUTION.slice(), pre: cur.cells, status: 'lost', tEnd: Date.now(), t0: cur.t0 || Date.now() }; postResult(g2, 0); return g2; });
     setVerdict(null); setEndClosed(false);
   }
   function resetGame() { try { localStorage.removeItem(STORE_KEY); } catch (e) {} setG(freshState(PAIRS.length)); setVerdict(null); setEndClosed(false); }
@@ -469,7 +474,7 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
     return null;
   }
   const cellLabel = (k, row) => {
-    const r = g.cells[k];
+    const r = cellsShown[k];
     if (r < 0) return '';
     const [i] = PAIRS[k];
     const homeWon = r === 0;
@@ -670,7 +675,7 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: `var(--stg-surf, ${THEME.white})`, border: '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
                   <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : g.status === 'done' ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{score}/{TOTAL}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
-                    {g.status === 'done' ? (won ? <>Rebuilt clean, first sheet, no nudges.</> : <>Rebuilt after {g.rejected} rejected sheet{g.rejected === 1 ? '' : 's'}{g.hints ? ` and ${g.hints} nudge${g.hints === 1 ? '' : 's'}` : ''}.</>) : <>The record beat you. The true results are shown above.</>}
+                    {g.status === 'done' ? (won ? <>Rebuilt clean, first sheet, no nudges.</> : <>Rebuilt after {g.rejected} rejected sheet{g.rejected === 1 ? '' : 's'}{g.hints ? ` and ${g.hints} nudge${g.hints === 1 ? '' : 's'}` : ''}.</>) : <>The record beat you.{hideSol ? '' : ' The true results are shown above.'}</>}
                     {' '}<span style={{ color: FADED, fontWeight: 600 }}>{elapsed}</span>
                   </span>
                 </div>

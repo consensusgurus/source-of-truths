@@ -282,6 +282,9 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
   const started = playing && !!g.t0;    // clock running: show the board
   const focusMode = playing && !showChrome;
   const won = g.status === 'done' && g.wrong === 0;
+  // A reveal keeps the player's own marks (and the thief) hidden until the
+  // end card's Reveal tile is pressed; the finish beat would otherwise show them.
+  const hideSol = LOFT && g.status === 'lost' && !revealed;
   const score = g.status === 'done' ? Math.max(1, TOTAL - 2 * g.wrong) : 0;
   const liarsMarked = g.marks.filter((m) => m === 2).length;
 
@@ -501,7 +504,7 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
     setG((cur) => {
       const marks = cur.marks.slice();
       for (let i = 0; i < N; i++) marks[i] = (SOLUTION.mask >> i) & 1 ? 2 : 1;
-      const g2 = { ...cur, marks, status: 'lost', tEnd: Date.now(), t0: cur.t0 || Date.now() };
+      const g2 = { ...cur, marks, pre: cur.marks, status: 'lost', tEnd: Date.now(), t0: cur.t0 || Date.now() };
       postResult(g2, 0);
       return g2;
     });
@@ -669,7 +672,7 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
         <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED, marginBottom: 8 }}>The testimony</div>
         )}
         {!preStart && PUZZLE.suspects.map((name, i) => {
-          const m = g.marks[i];
+          const m = hideSol ? (g.pre || [])[i] || 0 : g.marks[i];
           const isVerified = g.verified && g.verified.x === i;
           return (
             <div key={name} className="sw-card">
@@ -734,7 +737,7 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {g.status === 'done'
                       ? (won ? <>It was <b>{thiefName}</b> — nailed on the first accusation.</> : <>It was <b>{thiefName}</b> — found after {g.wrong} wrong accusation{g.wrong === 1 ? '' : 's'}.</>)
-                      : <>The inquest collapsed — it was <b>{thiefName}</b> all along.</>}
+                      : hideSol ? <>The inquest collapsed.</> : <>The inquest collapsed — it was <b>{thiefName}</b> all along.</>}
                     {' '}<span style={{ color: FADED, fontWeight: 600 }}>{elapsed}{g.hintUsed ? ' · 1 hint' : ''}</span>
                   </span>
                 </div>

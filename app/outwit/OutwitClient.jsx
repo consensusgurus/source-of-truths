@@ -746,7 +746,7 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
             aria-label={pr.q}
           />
         )}
-        {rp && (rp.type === 'unique' ? revealUnique(rp) : rp.options ? revealChoice(rp) : rp.buckets ? revealNumeric(rp) : revealUnique(rp))}
+        {rp && (score > 0 || !LOFT || revealed) && (rp.type === 'unique' ? revealUnique(rp) : rp.options ? revealChoice(rp) : rp.buckets ? revealNumeric(rp) : revealUnique(rp))}
       </div>
     );
   }

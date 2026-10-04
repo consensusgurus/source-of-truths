@@ -283,7 +283,6 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
   const wordSetRef = useRef(null);
   const coveredLenRef = useRef(null);
 
-  const fill = g.fill;
   const [showChrome, setShowChrome] = useState(false);
   const playing = g.status === 'playing';
   const preStart = playing && !g.t0;
@@ -302,6 +301,10 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
   const SURF_B = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : 'rgba(28,30,36,0.42)';
   const ACC_DEEP_INK = STAGE ? 'var(--stg-acc-ink)' : COLORS.accentDeep;
   const [revealed, setRevealed] = useState(false);
+  // A give-up writes the setter's chain into fill; on the loft the board keeps
+  // the player's own chain until the end card's Reveal answer tile is pressed.
+  const hideAns = g.status === 'revealed' && LOFT && !revealed;
+  const fill = hideAns ? (g.playerFill || freshState(PUZZLE).fill) : g.fill;
   const [shareCta, setShareCta] = useState('Share');
   useEffect(() => {
     if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`);
@@ -576,7 +579,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
   }
 
   function revealEnd() {
-    const g2 = { ...g, fill: WORDS.slice(), status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...g, fill: WORDS.slice(), playerFill: g.fill.slice(), status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     setG(g2);
@@ -837,6 +840,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
             <div style={{ maxWidth: 480, margin: '0 auto' }}>
               {/* Yours against the setter's, so a different valid chain reads as
                   a different route rather than a mistake */}
+              {!hideAns && (
               <div className="hg-paths">
                 {won && (
                   <div className="hg-path"><span className="hg-who">Yours</span>
@@ -851,6 +855,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
                   {PUZZLE.paths > 1 ? ` The letter counts fit ${PUZZLE.paths} chains today.` : ' Only one chain fits the letter counts today.'}
                 </div>
               </div>
+              )}
               {PUZZLE.sunday && (
                 <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '10px 0 0' }}>The Sunday Edition: eight words, six to fill, one printed.</div>
               )}

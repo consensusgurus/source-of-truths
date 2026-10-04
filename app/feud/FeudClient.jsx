@@ -820,7 +820,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
                   </span>
                 </div>
               </div>
-              {revealBoards()}
+              {(score > 0 || !LOFT || revealed) && revealBoards()}
               <FeudLiveBoard board={result.board} total={TOTAL} />
               <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
                 {isTodays ? (
