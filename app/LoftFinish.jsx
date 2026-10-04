@@ -62,6 +62,7 @@
 // four identical outlined boxes and read as one undifferentiated block (owner,
 // 2026-08-14); the tone is what tells them apart at a glance.
 import StageFinish from './StageFinish';
+import useFinishBeat from './useFinishBeat';
 import React, { useEffect, useState } from 'react';
 import useDailyRoster from './useDailyRoster';
 import { Brain } from 'lucide-react';
@@ -679,6 +680,15 @@ export default function LoftFinish({
       }
     } catch (e) {}
   }, [claimBandShown]);
+
+  // THE FINISH BEAT (owner, 2026-10-03). For a moment after a fresh finish
+  // this renders nothing, so the board stays on screen with its last move
+  // drawn and the game's own short animation plays over it; then the ending
+  // arrives as before. Every hook above has run, so returning here keeps the
+  // hook order fixed. Dailies only: a quiz passes boardLabel. See
+  // lib/finish-beat.js and app/useFinishBeat.js.
+  const beating = useFinishBeat({ key: selfKey, enabled: !boardLabel });
+  if (beating) return null;
 
   if (openArchive && archive && archive.length) {
     return (

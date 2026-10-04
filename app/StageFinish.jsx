@@ -2185,15 +2185,21 @@ const CSS = `
   .stf-fl-pair{gap:14px;}
 }
 
-/* Back to board, on the band, right of the verdict (owner, 2026-10-01). */
-.stf-cin{position:relative;}
-.stf-back{position:absolute;top:4px;right:0;z-index:1;display:inline-flex;align-items:center;gap:6px;
+/* Back to board, on the band, right of the verdict (owner, 2026-10-01).
+   IN THE FLOW, not floated over the corner (owner report, 2026-10-03: a longer
+   verdict ran the IQ into it on a phone). It used to be absolutely positioned
+   with the verdict row padded by a GUESS at its width (120px on a phone), and
+   the button is wider than that guess and changes with its own label. As a
+   flex item that never shrinks it takes exactly the room it needs, and the
+   verdict and IQ wrap in whatever is left, whatever the words. */
+.stf-cin.stf-hasback{display:flex;align-items:flex-start;gap:12px;}
+.stf-hasback > .stf-ctop{flex:1;min-width:0;}
+.stf-back{order:1;flex:none;margin-top:4px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
   font:inherit;font-family:${MONO};font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;
   color:inherit;background:transparent;border:1.5px solid currentColor;border-radius:7px;padding:7px 11px;cursor:pointer;}
 .stf-back span{font-size:13px;letter-spacing:0;}
 .stf-back:hover{background:color-mix(in srgb,currentColor 12%,transparent);}
 .stf-back:focus-visible{outline:2px solid currentColor;outline-offset:2px;}
-.stf-hasback .stf-vrow{padding-right:150px;}
 .stf-vrow .stf-ciq i{margin-top:0;}
 /* The Play similar door and its countdown. */
 .stf-pwrap{grid-column:1/-1;display:flex;gap:8px;min-width:0;}
@@ -2207,8 +2213,8 @@ const CSS = `
 .stf-homeln{align-self:flex-start;text-decoration:none;}
 .stf-drawer .stf-catlist{margin-top:12px;}
 @media (max-width:640px){
-  .stf-back{top:2px;padding:6px 9px;font-size:9.5px;}
-  .stf-hasback .stf-vrow{padding-right:120px;}
+  .stf-back{margin-top:2px;padding:6px 9px;font-size:9.5px;}
+  .stf-cin.stf-hasback{gap:10px;}
   .stf-pwrap{gap:6px;}
   .stf-decl{padding:0 11px;font-size:12px;}
   .stf-door.pri .stf-ring{width:32px;height:32px;}

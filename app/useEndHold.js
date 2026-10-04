@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { markEndHold, playBeat } from '@/lib/finish-beat';
+import { BEATS } from '@/lib/finish-beats';
 
 // The move that ends an End Game daily lands on the board in the same tick that
 // sets the game's status, so the end card used to cover the board before the
@@ -39,18 +41,43 @@ export default function useEndHold(ms = HOLD_SHORT) {
   const held = end.held;
   const timer = useRef(null);
 
+  const beat = useRef(null);
+  const stopBeat = () => { if (beat.current) { beat.current.cancel(); beat.current = null; } };
+
   const hold = useCallback((delay, note) => {
     if (timer.current) clearTimeout(timer.current);
+    const wait = delay == null ? ms : delay;
     setEnd({ held: true, note: note || null });
-    timer.current = setTimeout(() => { timer.current = null; setEnd({ held: false, note: null }); }, delay == null ? ms : delay);
+    // THE FINISH BEAT PLAYS INSIDE THIS HOLD (owner, 2026-10-03), and the
+    // mark tells LoftFinish not to add a second wait on top of it. A game
+    // with a beat of its own in lib/finish-beats.js (Four's losing beat)
+    // plays it now, in the next frame so the finishing move has rendered.
+    markEndHold();
+    stopBeat();
+    try {
+      const seg = (window.location.pathname.split('/')[1] || '').toLowerCase();
+      const key = seg === 'parker' ? 'park' : seg === 'jesters' ? 'jester' : seg;
+      if (BEATS[key]) {
+        requestAnimationFrame(() => { beat.current = playBeat(key, { within: wait }); });
+      }
+    } catch (e) {}
+    timer.current = setTimeout(() => {
+      timer.current = null;
+      setEnd({ held: false, note: null });
+      // Cancelled after the ending has covered the board, so a later Return
+      // to board shows it untouched.
+      const b = beat.current; beat.current = null;
+      if (b) setTimeout(() => b.cancel(), 1500);
+    }, wait);
   }, [ms]);
 
   const release = useCallback(() => {
     if (timer.current) { clearTimeout(timer.current); timer.current = null; }
+    stopBeat();
     setEnd({ held: false, note: null });
   }, []);
 
-  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); stopBeat(); }, []);
 
   return { held, note: end.note, hold, release };
 }

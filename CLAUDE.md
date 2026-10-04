@@ -8429,3 +8429,38 @@ client places right after its Add to Home Screen button (87 clients, inserted by
 they are always open and sit below it. The "Stats + leaderboard" door scrolls down to them, and
 "Play another" opens the archive there and scrolls. A surface with no slot (the quizzes) keeps
 the old closed drawer. A NEW DAILY CLIENT MUST CARRY THE SLOT after its A2HS block.
+
+## THE FINISH BEAT: the board stays up before the verdict (owner, 2026-10-03)
+
+Reported as "Barter cuts away before you can see the final words". Every daily that ends
+without an End Game hold mounted `StageFinish` on the same render the game ended, and its
+first effect adds `stf-collapse` to `.stage-page`, so the board vanished in the tick the
+last move landed. About eighty clients, not one.
+
+- **One gate, in `app/LoftFinish.jsx`**: `useFinishBeat({ key: selfKey, enabled: !boardLabel })`
+  makes LoftFinish render NOTHING for the beat, then the curtain as before. Every hook in
+  LoftFinish sits above that early return; a new hook goes above it too. Quizzes
+  (`boardLabel` set) are excluded.
+- **Decided in the INITIAL STATE** (`app/useFinishBeat.js`), never an effect, because the
+  first render is the one that must not mount StageFinish. No beat when the page opened on a
+  board finished earlier (performance.now() under 2000ms, the same freshness test as the
+  flood), when an End Game hold just ran (`heldRecently`, 8s), or on `?beat=0`. `?beat=1`
+  forces one on an archived board for review. A tap or a key skips it.
+- **The engine is `lib/finish-beat.js`**, Web Animations only (no class churn, cancellable,
+  overrides inline styles). Kinds: words (sweep check), audit (rows, columns, boxes), trace
+  (path lights around the loop), reveal (Etch picture), fly (Garble letters home), lock (the
+  one-life runs drain to grey and hide the dead line, colour back is the reveal), flip
+  (Shoe's dealer cards), rows (Dating), loss (Four, played INSIDE its End Game hold by
+  `app/useEndHold.js`). A game with no entry gets the plain 1s beat, a board pulse.
+- **Per-game config is `lib/finish-beats.js`, keyed by REGISTRY key** (park, jester). A
+  selector that stops matching falls back to the plain beat silently, so after renaming a
+  board class run `window.__sotBeat('<key>')` on a live board: it returns `{ms, kind, anims}`
+  and `kind: 'plain'` means the config found nothing.
+- **The win buzz waits for the beat** (`installBuzzDefer` wraps navigator.vibrate for the
+  win pattern only), so the phone does not announce the result before the screen does.
+- `visible()` is width OR height: a straight SVG line has a zero side and is still on screen.
+- **Any new end-of-game surface waits on the beat** the same way it waits on `useEndHold`.
+
+The `StageFinish` band had a related bug: Back to board was absolute with a guessed
+padding-right, so a verdict longer than "Solved" ran under it on a phone. The band is a flex
+row now (`.stf-cin.stf-hasback`) with the button in the flow, so nothing can overlap it.
