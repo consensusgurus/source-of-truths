@@ -54,6 +54,31 @@ async function findViewer(admin, { anonId, email }) {
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
+    // ?latest=1: just the most recent credited share (ThanksPop). A credit is
+    // the only share the site can see: a link with a ref code that brought a
+    // new player through a finished game. Seeded rows are not real shares.
+    if (searchParams.get('latest') === '1') {
+      try {
+        const { data } = await supabaseAdmin
+          .from('quiz_referrals')
+          .select('referrer_user_id, created_at')
+          .eq('seeded', false)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        const r = Array.isArray(data) && data[0];
+        let username = null;
+        if (r && r.referrer_user_id) {
+          const { data: u } = await supabaseAdmin
+            .from('quiz_users').select('username').eq('id', r.referrer_user_id).maybeSingle();
+          username = (u && u.username) || null;
+        }
+        return NextResponse.json({ latest: username ? { username, at: r.created_at } : null }, {
+          headers: { 'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=600' },
+        });
+      } catch {
+        return NextResponse.json({ latest: null });
+      }
+    }
     // days: 90 by default; a very large value (36500) is how the public board asks
     // for the all-time view. limit: 10 for the tile, up to 100 for that board.
     const days = Math.min(36500, Math.max(1, parseInt(searchParams.get('days'), 10) || 90));

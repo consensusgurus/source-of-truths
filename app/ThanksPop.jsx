@@ -81,6 +81,18 @@ function anotherModalOpen() {
   try { return !!document.querySelector('.gnp-bd, [role="dialog"][aria-modal="true"]'); } catch (e) { return false; }
 }
 
+function ago(iso) {
+  const t = Date.parse(iso);
+  if (!Number.isFinite(t)) return '';
+  const m = Math.max(0, Math.round((Date.now() - t) / 60000));
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m} minute${m === 1 ? '' : 's'} ago`;
+  const h = Math.round(m / 60);
+  if (h < 24) return `${h} hour${h === 1 ? '' : 's'} ago`;
+  const d = Math.round(h / 24);
+  return `${d} day${d === 1 ? '' : 's'} ago`;
+}
+
 const bare = (u) => String(u || '').replace(/^https?:\/\//, '');
 
 export default function ThanksPop() {
@@ -90,6 +102,7 @@ export default function ThanksPop() {
   const [dark, setDark] = useState(false);
   const [copied, setCopied] = useState(false);
   const [canShare, setCanShare] = useState(false);
+  const [latest, setLatest] = useState(null);   // { username, at } of the most recent credited share
   const closeRef = useRef(null);
   const preview = useRef(false);
 
@@ -114,6 +127,11 @@ export default function ThanksPop() {
     try { setDark(readStageTheme() === 'dark'); } catch (e) {}
     try { setCanShare(typeof navigator !== 'undefined' && typeof navigator.share === 'function'); } catch (e) {}
     try { window.__sotPopAt = Date.now(); } catch (e) {}
+    // The most recent credited share, fetched without holding the pop-up up.
+    fetch('/api/quiz/referrals?latest=1')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d && d.latest && d.latest.username) setLatest(d.latest); })
+      .catch(() => {});
     setLink(url);
     setCredit(cred);
     setCopied(false);
@@ -261,6 +279,13 @@ export default function ThanksPop() {
             )}
           </div>
 
+          {latest && (
+            <div className="typ-last">
+              <Share2 size={15} strokeWidth={2.2} aria-hidden="true" />
+              <span>Most recent share: <b>{latest.username}</b>, {ago(latest.at)}</span>
+            </div>
+          )}
+
           <a className="typ-grp" href="/groups">
             <Users size={18} strokeWidth={2.2} aria-hidden="true" />
             <span><b>Playing with friends or family?</b> Start a private group and get your own leaderboard.</span>
@@ -319,6 +344,8 @@ const CSS = `
 .typ-b{height:44px;box-sizing:border-box;border:1px solid var(--t-line);border-radius:10px;background:var(--t-btn);color:var(--t-ink);
   font-family:${SANS};font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;text-decoration:none}
 .typ-b:hover{border-color:var(--t-field)}
+.typ-last{margin-top:10px;display:flex;align-items:center;gap:8px;font-family:${MONO};font-size:12px;letter-spacing:.02em;color:var(--t-mute)}
+.typ-last b{color:var(--t-ink);font-weight:500}.typ-last svg{flex:none;color:var(--t-acc)}
 .typ-grp{margin-top:12px;display:flex;align-items:flex-start;gap:10px;font-size:14px;line-height:1.5;color:var(--t-body);
   text-decoration:none;border:1px dashed var(--t-field);border-radius:10px;padding:11px 14px}
 .typ-grp b{color:var(--t-ink)}.typ-grp svg{flex:none;margin-top:1px;color:var(--t-acc)}
