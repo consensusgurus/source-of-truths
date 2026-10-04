@@ -20,7 +20,6 @@
 // 'similar' comes OUT of the grid because a finisher was passing two exits
 // before reaching the one that hands them forward).
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { DAILY_GAMES, liveDailyKeys } from '@/lib/daily-games';
 import { RAMP_ORDER, RAMP_INK, categoryColor, categoryColorLight, categoryOnrampLight } from '@/lib/category-ramp';
 import { finishPick } from '@/lib/finish-sets';
@@ -51,6 +50,7 @@ import { gameStats, mmss, missWord, scoreFig as runFig } from '@/lib/daily-row-s
 import { isSolveOnly } from '@/lib/daily-games';
 import { typicalLabel } from '@/lib/game-medians';
 import GameGlyph from './GameGlyph';
+import AddToHome from './AddToHome';
 import JoinLeaderboardForm from './quiz/[id]/JoinLeaderboardForm';
 // Where this finish puts the player in each of their groups (2026-09-17).
 import FinishGroupLine from './groups/FinishGroupLine';
@@ -1140,19 +1140,11 @@ export default function StageFinish({
   const [claimOpen, setClaimOpen] = useState(false);
   const [claimed, setClaimed] = useState(false);
   const [pubOpen, setPubOpen] = useState(false);
-  // The Stats + leaderboard door's drawer (owner, 2026-10-01).
-  // THE STAT CARDS SIT OPEN BELOW ADD TO HOME SCREEN (owner, 2026-10-03). The
-  // board, the rival and the archive used to hide in a drawer inside the
-  // doors; now they are always open, carried by a portal into the slot every
-  // daily client renders right after its Add to Home Screen button
-  // (#stf-stats-slot), and the Stats + leaderboard door scrolls down to them.
-  // A surface without the slot (the quizzes) keeps the old drawer: closed
-  // inside the doors until the door opens it.
-  const [statsSlot, setStatsSlot] = useState(null);
-  const [statsOpen, setStatsOpen] = useState(false);
-  useEffect(() => { try { setStatsSlot(document.getElementById('stf-stats-slot')); } catch (e) {} }, []);
+  // THE STATS ARE ALWAYS OPEN, RIGHT UNDER THE DOORS (owner, 2026-10-03).
+  // No Stats + leaderboard door: the rival, the board(s) and the archive render
+  // directly below the doors, then Add to Home Screen, then the page's own
+  // How to play / Report an issue row. toStats only scrolls there now.
   const toStats = () => {
-    if (!statsSlot) { setStatsOpen((v) => !v); return; }
     try {
       const el = document.getElementById('stf-drawer');
       if (el) el.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
@@ -1395,6 +1387,25 @@ export default function StageFinish({
       href: setNext.g.href || `/${setNext.g.key}`, onClick: null,
     }
     : (forward ? { name: fwdName, sub: fwdTag, href: forward.href, onClick: forward.onClick } : null);
+  // THE REST OF THE SET (owner, 2026-10-03): every other unplayed game in the
+  // set the verdict band names, each its own door directly under Play similar.
+  // Never the game Play similar already offers, never the game just finished.
+  const setDoors = (() => {
+    if (!pushSet || !pushSet.open.length) return [];
+    const priKey = setNext ? setNext.g.key : null;
+    const priHref = primaryDoor ? primaryDoor.href : null;
+    const left = pushSet.open.length;
+    return pushSet.open
+      .filter((k) => k !== priKey && (!me || k !== me.key))
+      .map((k) => LIVE().find((g) => g.key === k))
+      .filter((g) => g && (g.href || `/${g.key}`) !== priHref)
+      .map((g) => ({
+        k: `set-${g.key}`, glyph: g.key, cls: 'set wide',
+        nm: <><span className="stf-dchip">Set</span>{g.name}</>,
+        sb: [`${pushSet.name} \u00b7 ${pushSet.handoff ? `${left} of ${pushSet.total} open` : `${left} left`}`, typicalLabel(g.key)].filter(Boolean).join(' \u00b7 '),
+        href: g.href || `/${g.key}`,
+      }));
+  })();
   const isQuiz = !!boardLabel;
   const playedN = new Set([...played, ...(me ? [me.key] : [])]).size;
   const smallDoors = [];
@@ -1402,15 +1413,11 @@ export default function StageFinish({
     smallDoors.push({ k: 'another', nm: anotherOpt.label, sb: anotherOpt.sub, href: anotherOpt.href, onClick: anotherOpt.onClick });
   } else if (archiveRows.length) {
     smallDoors.push({ k: 'another', nm: name ? `Play another ${name}` : 'Play another', sb: `Every one of the ${archiveRows.length}`, btn: true,
-      onClick: () => { setArch(true); if (statsSlot) setTimeout(toStats, 60); else setStatsOpen(true); } });
+      onClick: () => { setArch(true); setTimeout(toStats, 60); } });
   }
   if (replayOpt) {
     smallDoors.push({ k: 'replay', nm: isQuiz ? (replayOpt.label || 'Replay') : 'Replay today\u2019s', sb: replayOpt.sub, href: replayOpt.href, onClick: replayOpt.onClick });
   }
-  smallDoors.push({
-    k: 'stats', nm: 'Stats + leaderboard', btn: true, onClick: toStats, ...(statsSlot ? {} : { expanded: statsOpen, controls: 'stf-drawer' }),
-    sb: myRank != null ? `You are #${myRank}${field ? ` of ${field}` : ''}` : (boardLabel || 'Today\u2019s board and the archive'),
-  });
   smallDoors.push(isQuiz && mainOpt
     ? { k: 'all', nm: mainOpt.label, sb: mainOpt.sub, href: mainOpt.href, onClick: mainOpt.onClick }
     : { k: 'all', nm: 'All daily puzzles', sb: `${playedN} of ${LIVE().length} played today`, btn: true,
@@ -1421,12 +1428,12 @@ export default function StageFinish({
     nm: o.label, sb: o.sub, href: o.href, onClick: o.onClick, btn: !o.href,
   }));
   // A plain function, not a component, so React never sees a new type per render.
-  const door = ({ k, ic = null, nm, sb, href, onClick, cls = '', go = null, btn = false, expanded, controls, ring = null }) => {
+  const door = ({ k, ic = null, glyph = null, nm, sb, href, onClick, cls = '', go = null, btn = false, expanded, controls, ring = null }) => {
     const inner = (
       <>
         {ring != null
           ? <span className="stf-ring" style={{ '--p': `${((HANDOFF_S - ring) / HANDOFF_S) * 100}%` }}><b>{Math.ceil(ring)}</b></span>
-          : <span className="stf-dic">{DOOR_ICON[ic || k]}</span>}
+          : <span className="stf-dic">{glyph ? <GameGlyph gameKey={glyph} size={18} /> : DOOR_ICON[ic || k]}</span>}
         <span className="stf-dtx"><span className="stf-dnm">{nm}</span>{sb ? <span className="stf-dsb">{sb}</span> : null}</span>
         {go ? <span className="stf-dgo">{go}</span> : <span className="stf-dar" aria-hidden="true">&rsaquo;</span>}
       </>
@@ -1532,9 +1539,59 @@ export default function StageFinish({
               ) : null}
             </div>
           ) : null}
+          {setDoors.map((d) => door(d))}
           {smallDoors.map((d, i) => door({ ...d, cls: (smallDoors.length % 2 === 1 && i === smallDoors.length - 1) ? 'wide' : '' }))}
-          {(() => { const statsCards = (
-          <div className="stf-drawer stf-statcards" id="stf-drawer" hidden={!statsSlot && !statsOpen}>
+          <div className="stf-drawer" id="stf-daily" hidden={!dailyOpen}>
+            {/* THE GAMES, ORGANIZED AS THE OLD CARD HAD THEM (owner,
+                2026-10-01): more of this category first, then every category,
+                A to Z under the chip you press. */}
+            {sameCat.length ? (
+              <section>
+                <div className="stf-eb">{me ? `More ${me.cat} puzzles` : 'More puzzles'}</div>
+                <div className="stf-tiles">
+                  {sameCat.map(({ g, set }) => <Tile key={g.key} g={g} played={played.has(g.key)} light={light} set={set} />)}
+                </div>
+              </section>
+            ) : null}
+            <section>
+              <div className="stf-eb">All categories</div>
+              <div className="stf-catrow">
+                <button type="button" className="stf-catnav" aria-label="Scroll categories left"
+                  onClick={() => nudge(-1)} hidden={!over}>&#8249;</button>
+                <div className="stf-cats" ref={catsRef}>
+                  <button type="button" className={'stf-cat' + (cat === 'all' ? ' on' : '')}
+                    style={{ '--tc': 'var(--stg-acc)', '--tci': 'var(--stg-onramp,#08222e)' }}
+                    onClick={() => setCat((v) => (v === 'all' ? null : 'all'))}>All A to Z</button>
+                  {RAMP_ORDER.map((c) => (
+                    <button key={c} type="button"
+                      className={'stf-cat' + (cat === c ? ' on' : '')}
+                      style={{
+                        '--tc': light ? categoryColorLight(c) : categoryColor(c),
+                        '--tci': light ? categoryOnrampLight(c) : RAMP_INK,
+                      }}
+                      onClick={() => setCat((v) => (v === c ? null : c))}>{c}</button>
+                  ))}
+                </div>
+                <button type="button" className="stf-catnav" aria-label="Scroll categories right"
+                  onClick={() => nudge(1)} hidden={!over}>&#8250;</button>
+              </div>
+              {cat ? (
+                <div className="stf-catlist">
+                  <div className="stf-eb">
+                    {cat === 'all' ? 'All daily puzzles' : cat} <em>&middot; {catList.length}</em>
+                  </div>
+                  <div className="stf-tiles">
+                    {catList.map((g) => <Tile key={g.key} g={g} played={played.has(g.key)} light={light} />)}
+                  </div>
+                </div>
+              ) : null}
+            </section>
+            <a className="stf-seeall stf-homeln" href={(mainOpt && mainOpt.href) || '/'}>Open today&rsquo;s full slate &rsaquo;</a>
+          </div>
+        </div>
+
+
+          <div className="stf-drawer stf-statcards" id="stf-drawer">
         {/* THE SLOWER CASE (owner, 2026-09-07): stated plainly, in the card's
             own ink, with the figure to beat. Never a colour: red on a finished
             game reads as failure. */}
@@ -1633,56 +1690,6 @@ export default function StageFinish({
           </section>
         ) : null}
           </div>
-          ); return statsSlot ? createPortal(statsCards, statsSlot) : statsCards; })()}
-          <div className="stf-drawer" id="stf-daily" hidden={!dailyOpen}>
-            {/* THE GAMES, ORGANIZED AS THE OLD CARD HAD THEM (owner,
-                2026-10-01): more of this category first, then every category,
-                A to Z under the chip you press. */}
-            {sameCat.length ? (
-              <section>
-                <div className="stf-eb">{me ? `More ${me.cat} puzzles` : 'More puzzles'}</div>
-                <div className="stf-tiles">
-                  {sameCat.map(({ g, set }) => <Tile key={g.key} g={g} played={played.has(g.key)} light={light} set={set} />)}
-                </div>
-              </section>
-            ) : null}
-            <section>
-              <div className="stf-eb">All categories</div>
-              <div className="stf-catrow">
-                <button type="button" className="stf-catnav" aria-label="Scroll categories left"
-                  onClick={() => nudge(-1)} hidden={!over}>&#8249;</button>
-                <div className="stf-cats" ref={catsRef}>
-                  <button type="button" className={'stf-cat' + (cat === 'all' ? ' on' : '')}
-                    style={{ '--tc': 'var(--stg-acc)', '--tci': 'var(--stg-onramp,#08222e)' }}
-                    onClick={() => setCat((v) => (v === 'all' ? null : 'all'))}>All A to Z</button>
-                  {RAMP_ORDER.map((c) => (
-                    <button key={c} type="button"
-                      className={'stf-cat' + (cat === c ? ' on' : '')}
-                      style={{
-                        '--tc': light ? categoryColorLight(c) : categoryColor(c),
-                        '--tci': light ? categoryOnrampLight(c) : RAMP_INK,
-                      }}
-                      onClick={() => setCat((v) => (v === c ? null : c))}>{c}</button>
-                  ))}
-                </div>
-                <button type="button" className="stf-catnav" aria-label="Scroll categories right"
-                  onClick={() => nudge(1)} hidden={!over}>&#8250;</button>
-              </div>
-              {cat ? (
-                <div className="stf-catlist">
-                  <div className="stf-eb">
-                    {cat === 'all' ? 'All daily puzzles' : cat} <em>&middot; {catList.length}</em>
-                  </div>
-                  <div className="stf-tiles">
-                    {catList.map((g) => <Tile key={g.key} g={g} played={played.has(g.key)} light={light} />)}
-                  </div>
-                </div>
-              ) : null}
-            </section>
-            <a className="stf-seeall stf-homeln" href={(mainOpt && mainOpt.href) || '/'}>Open today&rsquo;s full slate &rsaquo;</a>
-          </div>
-        </div>
-
 
         {/* CLAIM YOUR RANK: full width, guests only. The figure is the guest's
             would-be placement on the registered board; without one (the row
@@ -1715,6 +1722,10 @@ export default function StageFinish({
         {claimed ? (
           <div className="stf-claimed">You&rsquo;re on the board. Every finish counts under your name now.</div>
         ) : null}
+        {/* ADD TO HOME SCREEN, below the stats on every end card (owner,
+            2026-10-03). The client's own copy, which sits right before its
+            #stf-stats-slot, is hidden while this card is up (see .stf-a2hs). */}
+        <div className="stf-a2hs"><AddToHome name={name || 'Mind Loft'} /></div>
       </div>
     </div>
   );
@@ -2158,7 +2169,16 @@ const CSS = `
 .stf-drawer{grid-column:1/-1;display:flex;flex-direction:column;gap:18px;min-width:0;
   background:var(--stg-raise);border:1px solid var(--stg-line);border-radius:10px;padding:14px 15px;}
 .stf-drawer[hidden]{display:none;}
-#stf-stats-slot .stf-statcards{margin-top:18px;scroll-margin-top:72px;}
+.stf-wrap > .stf-statcards{margin-top:14px;}
+.stf-dchip{display:inline-block;font-family:${MONO};font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;
+  padding:2px 6px;border-radius:4px;background:var(--stg-acc);color:var(--stg-onramp,#08222e);margin-right:7px;vertical-align:2px;}
+.stf-door.set{border:1.5px solid var(--stg-acc);background:color-mix(in srgb,var(--stg-acc) 12%,var(--stg-surf));}
+.stf-door.set .stf-dic{background:var(--stg-acc);color:var(--stg-onramp,#08222e);}
+.stf-a2hs:empty{display:none;}
+/* While the full card is up, the client's own Add to Home Screen (the button,
+   or the one-button wrapper, sitting right before #stf-stats-slot) steps aside
+   for the one above, so it reads once and above How to play. */
+body:has(.stf-a2hs) :is(button,div):has(+ #stf-stats-slot):has(.lucide-smartphone){display:none !important;}
 .stf-statcards{scroll-margin-top:72px;}
 @media (max-width:640px){
   .stf-doors{gap:6px;}

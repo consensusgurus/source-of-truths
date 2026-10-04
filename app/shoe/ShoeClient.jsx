@@ -626,11 +626,11 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
           {R.hands.length > (playing && cur && !cur.settled ? 1 : 0) && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
               {R.hands.map((hd, i) => (!hd.settled ? null : (
-                <span key={i} className={`sh-pill ${hd.net > 0 ? (hd.net === 15 ? 'bj' : 'w') : hd.net < 0 ? 'l' : ''}`} style={{ color: INK, background: hd.net > 0 ? (hd.net === 15 ? '#fdf3d8' : '#e7f6ec') : hd.net < 0 ? '#fbeaea' : 'var(--stg-surf, #f1f3f6)', borderColor: 'rgba(28,30,36,0.2)' }}>
+                <span key={i} className={`sh-pill ${hd.net > 0 ? (hd.net === 15 ? 'bj' : 'w') : hd.net < 0 ? 'l' : ''}`} style={{ color: 'var(--stg-ink, #0b0d12)', background: hd.net > 0 ? (hd.net === 15 ? 'color-mix(in srgb, var(--stg-gold, #e8b43a) 26%, var(--stg-surf, #ffffff))' : 'color-mix(in srgb, var(--stg-good, #047857) 20%, var(--stg-surf, #ffffff))') : hd.net < 0 ? 'color-mix(in srgb, var(--stg-bad, #be123c) 18%, var(--stg-surf, #ffffff))' : 'var(--stg-surf2, #f1f3f6)', borderColor: hd.net > 0 ? (hd.net === 15 ? 'var(--stg-gold, #e8b43a)' : 'var(--stg-good, #047857)') : hd.net < 0 ? 'var(--stg-bad, #be123c)' : 'var(--stg-line2, rgba(28,30,36,0.24))' }}>
                   #{i + 1} {fmtChips(hd.net)}
                 </span>
               )))}
-              <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 11.5, color: FADED }}>bank <b style={{ color: chips >= 0 ? COLORS.green : `var(--stg-bad, ${COLORS.rust})`, fontWeight: 700 }}>{fmtChips(chips)}</b></span>
+              <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 11.5, color: FADED }}>bank <b style={{ color: chips >= 0 ? `var(--stg-good, ${COLORS.green})` : `var(--stg-bad, ${COLORS.rust})`, fontWeight: 700 }}>{fmtChips(chips)}</b></span>
             </div>
           )}
 
@@ -667,13 +667,13 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
               )}
               {playing && R.phase === 'settled' && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 13, flexWrap: 'wrap' }}>
-                  <span className="sh-note">{cur.note} <b style={{ color: cur.net > 0 ? '#7ef0a8' : cur.net < 0 ? '#ffb1b1' : 'rgba(255,255,255,0.85)' }}>{fmtChips(cur.net)}</b></span>
+                  <span className="sh-note">{cur.note} <b style={{ color: cur.net > 0 ? 'var(--stg-good, #047857)' : cur.net < 0 ? 'var(--stg-bad, #be123c)' : 'var(--stg-ink, #0b0d12)' }}>{fmtChips(cur.net)}</b></span>
                   <button className="sh-act deal" style={{ flex: '0 0 auto', padding: '11px 22px', marginLeft: 'auto' }} onClick={dealNext}>Deal hand {R.hands.length + 1}</button>
                 </div>
               )}
               {!playing && (
                 <div style={{ marginTop: 13 }}>
-                  <span className="sh-note">{cur.note} <b style={{ color: cur.net > 0 ? '#7ef0a8' : cur.net < 0 ? '#ffb1b1' : 'rgba(255,255,255,0.85)' }}>{fmtChips(cur.net)}</b></span>
+                  <span className="sh-note">{cur.note} <b style={{ color: cur.net > 0 ? 'var(--stg-good, #047857)' : cur.net < 0 ? 'var(--stg-bad, #be123c)' : 'var(--stg-ink, #0b0d12)' }}>{fmtChips(cur.net)}</b></span>
                 </div>
               )}
 

@@ -1,14 +1,13 @@
 // verify-finish-slots — every daily client carries Add to Home Screen and the
 // finish card's stat slot, in that order (owner, 2026-10-03).
 //
-// app/StageFinish.jsx portals the board, the rival and the archive into
-// <div id="stf-stats-slot" />, which each daily client places right after its
-// Add to Home Screen button. A client WITHOUT the slot does not error: the
-// finish card quietly falls back to a closed drawer, so the stats never show
-// on that one game. That is how Chomp and nine others shipped (2026-10-03).
-// This checker is the gate: every daily client that renders LoftFinish must
-// carry an Add to Home Screen button (its own inline copy or app/AddToHome.jsx)
-// AND the slot, with the button first.
+// The finish card (app/StageFinish.jsx) renders the stats right under its
+// doors and its own Add to Home Screen below them. While it is up, a CSS rule
+// hides the client's own A2HS, which it finds as the element right BEFORE
+// <div id="stf-stats-slot" />. So every daily client that renders LoftFinish
+// must carry an Add to Home Screen button (its own inline copy or
+// app/AddToHome.jsx) AND the slot, button first, or the button shows twice.
+// Chomp and nine others shipped with neither (2026-10-03).
 import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
