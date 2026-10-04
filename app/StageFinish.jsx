@@ -1208,6 +1208,9 @@ export default function StageFinish({
     let l = HANDOFF_S;
     setLeft(l);
     const t = setInterval(() => {
+      // A pop-up is open over the card (ThanksPop sets this): the reader is
+      // looking at something else, which answers the question.
+      if (document.documentElement.dataset.sotModal) { clearInterval(t); setHandoffOff(true); return; }
       l = HANDOFF_S - (Date.now() - t0) / 1000;
       if (l <= 0) {
         clearInterval(t);

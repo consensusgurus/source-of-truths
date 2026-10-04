@@ -7,6 +7,7 @@ import ResultQueue from './ResultQueue';
 import DailyStartPing from './DailyStartPing';
 import DailySaveSync from './DailySaveSync';
 import TrophyPop from './TrophyPop';
+import ThanksPop from './ThanksPop';
 import { PriceCheckItemsGlobal } from './pricecheck/ItemsPop';
 import ChunkReload from './ChunkReload';
 import { getAllSources } from '@/lib/sources';
@@ -152,6 +153,10 @@ export default function RootLayout({ children }) {
             on an actual unlock. Anything added back here needs the owner's word
             first. */}
         <TrophyPop />
+        {/* Owner-approved (2026-10-04): the thank-you + share pop-up. Once on
+            return for existing players (with share credit), once after a
+            finished game for everyone. Never inside a run. app/ThanksPop.jsx. */}
+        <ThanksPop />
         {/* Owner-approved (2026-10-02): the Price Check items pop-up opens ten
             seconds after a run ends on whatever page the player is on. It fires
             only for a run just finished on this device. app/pricecheck/ItemsPop.jsx. */}

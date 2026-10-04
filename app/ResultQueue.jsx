@@ -169,6 +169,16 @@ async function flush() {
   }
 }
 
+// A finished game was saved: tell anything listening (ThanksPop). Abandon rows
+// are a started-and-left game, not a finish, so they stay silent.
+function announceSaved(bodyText) {
+  try {
+    const b = JSON.parse(bodyText);
+    if (!b || b.abandoned === true) return;
+    window.dispatchEvent(new CustomEvent('sot:result-saved', { detail: { quizId: b.quizId || null } }));
+  } catch (e) {}
+}
+
 function patchFetch() {
   if (patched || typeof window === 'undefined' || typeof window.fetch !== 'function') return;
   patched = true;
@@ -185,7 +195,10 @@ function patchFetch() {
           const bodyText = init.body;
           // Observe only: the caller still gets the original promise untouched.
           p.then(
-            (res) => { if (!res || (!res.ok && res.status >= 500)) enqueue(bodyText); },
+            (res) => {
+              if (!res || (!res.ok && res.status >= 500)) enqueue(bodyText);
+              else if (res.ok) announceSaved(bodyText);
+            },
             () => enqueue(bodyText),
           );
         }

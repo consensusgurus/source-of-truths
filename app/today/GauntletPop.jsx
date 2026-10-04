@@ -105,6 +105,12 @@ export default function GauntletPop({ ready = false, unplayed = false, day = '' 
     const t = setTimeout(async () => {
       const now = live.current;
       if (fired.current || !now.unplayed || !now.day) return;
+      // Never stack on the thank-you pop-up (app/ThanksPop.jsx): if it opened
+      // in the last minute, or is open, this one waits for another visit.
+      try {
+        if (document.documentElement.dataset.sotModal) return;
+        if (window.__sotPopAt && Date.now() - window.__sotPopAt < 60000) return;
+      } catch (e) {}
       // A browser that refuses storage (private mode, blocked cookies) gets
       // the prompt once per page load rather than never: the read failing is
       // not evidence it has been seen.
