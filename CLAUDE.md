@@ -8524,19 +8524,22 @@ highlights, filled grids). The beat made all of it visible. Rules now:
   Tapping the bar anywhere but Replay, or Escape, opens the end card; a tap during the animation
   skips to the bar. StageFinish is not mounted while it is up, so the board is never collapsed.
 
-## Every win ends in a FILL that grows into the curtain (owner, 2026-10-05)
+## Every win ends in an IRIS that opens into the curtain (owner, 2026-10-05)
 
 When the stage curtain follows a win (`finale` in `lib/finish-beat.js`, asked for by LoftFinish as
 `finaleWanted`: on the stage, not inside a circuit run, read synchronously because the beat decides
 on the first render), every daily ends the same way: the finished board stays up for half a second
-(`FINALE_LEAD`), then the category colour rises over the board from the bottom (one fixed element
-over `.stg-board`, or the page column `[class$="-wrap"]` on clients without one, clipped to the
-screen) and, WITHOUT STOPPING, grows to fill the screen. That colour is the curtain: StageFinish's
-flood mounts over it in the same colour, and the flood's own queue waits for any figure still loading.
+(`FINALE_LEAD`), then a circle of the category colour opens from the square the player finished on
+and grows until it covers the screen (`FINALE_IRIS`, 800ms). That colour is the curtain:
+StageFinish's flood mounts over it in the same colour, and the flood's own queue waits for any
+figure still loading.
 
-- **It never pauses.** The first cut crept to 82% and parked there until the stats loaded, then ran a
-  second animation to the top; the rise visibly stalled and restarted (owner: "that looks bad"). It is
-  one keyframe track now, rise into grow with no seam, and the rise ends still moving.
+- **The origin is the player's last tap** (a capture-phase `pointerdown` listener in
+  `lib/finish-beat.js`), used when it is under 20s old and inside the board's rectangle; otherwise,
+  for a keyboard finish, the board's centre.
+- Picked from eight mocked endings (iris, stamp, curtain drop, doors, push in, flip, blinds, shrink
+  and bloom) after a lock-and-burst and a rising fill were both shipped and pulled the same day: the
+  first stuttered on phones, the second paused visibly partway up while it waited for the stats.
 - **ONE element, animated by `transform` only.** That is the whole reason for this design: the
   lock-and-burst version shipped the same day (81 squares repainting colour, tiles animated by
   position and size, a fill height set every frame) stuttered on phones, and the owner asked for
