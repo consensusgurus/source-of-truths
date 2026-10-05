@@ -31,7 +31,7 @@ if (typeof window !== 'undefined') installBuzzDefer();
 // bursts into the curtain, and the curtain's figures land in their own order.
 const HOLD_CAP = 7000;
 
-export default function useFinishBeat({ key, enabled = true, lost = false, ready = true } = {}) {
+export default function useFinishBeat({ key, enabled = true, lost = false, ready = true, finale = false } = {}) {
   const readyRef = useRef(ready);
   readyRef.current = ready;
   const [on, setOn] = useState(() => {
@@ -41,7 +41,9 @@ export default function useFinishBeat({ key, enabled = true, lost = false, ready
     if (/[?&]beat=1(&|$)/.test(q)) return true;
     const since = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
     if (since < BEAT_FRESH) return false;
-    if (heldRecently()) return false;
+    // An End Game hold already played the beat over the board; a win that the
+    // curtain follows still gets the orbit and the burst.
+    if (heldRecently()) return finale && !lost ? 'finale' : false;
     return true;
   });
 
@@ -49,7 +51,7 @@ export default function useFinishBeat({ key, enabled = true, lost = false, ready
     if (!on) return undefined;
     setBeatLive(true);
     // A loss plays the gaps going dark, never the win beat (owner, 2026-10-04).
-    const h = lost ? playLoss(key) : playBeat(key);
+    const h = lost ? playLoss(key) : playBeat(key, { finale, finaleOnly: on === 'finale' });
     let done = false;
     const end = () => {
       if (done) return;

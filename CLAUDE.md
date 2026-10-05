@@ -8524,23 +8524,34 @@ highlights, filled grids). The beat made all of it visible. Rules now:
   Tapping the bar anywhere but Replay, or Escape, opens the end card; a tap during the animation
   skips to the bar. StageFinish is not mounted while it is up, so the board is never collapsed.
 
-## The sudokus end in LOCK AND BURST, and the burst waits for the stats (owner, 2026-10-05)
+## Every win ends in LOCK, ORBIT, BURST, and the burst waits for the stats (owner, 2026-10-05)
 
-All thirteen sudokus (`grid()` entries in `lib/finish-beats.js`, kind `burst` in
-`lib/finish-beat.js`) finish in three acts: the board LOCKS box by box (row by row on Quilt and
-Towers), the squares lift off as tiles and ORBIT the board's centre, then the tiles BURST into a
-screen-sized grid that closes into one sheet of the category colour. That sheet is the curtain:
-StageFinish's flood mounts over it in the same colour.
+Every daily's win now ends the same way when the stage curtain follows (`finale` in
+`lib/finish-beat.js`, asked for by LoftFinish as `finaleWanted`: on the stage, not inside a circuit
+run, read synchronously because the beat decides on the first render):
 
-- **The orbit is the hold.** `useFinishBeat` gets `ready: figuresShow` from LoftFinish and keeps
-  the orbit going until every figure on the verdict has loaded, or 7s after the hold began
-  (`HOLD_CAP`). So the curtain's figures land in their fixed order, not in arrival order.
-- **A beat that holds** exposes `handle.hold` and `handle.release(onCovered)` from `playBeat`.
-  Any future kind can hold the same way.
-- **The tiles are clones** on fixed positions (z 8998, the closing sheet 8999, the flood 9000);
-  `cancel()` removes them and puts the board back. A tap before the sheet covers the screen clears
-  them at once; after, they go 700ms later, under the flood.
-- **Other pop-ups wait.** `setBeatLive` stamps `data-sot-beat` on `<html>`, and ThanksPop's
+1. **Act one is the game's own beat.** The sudokus lock box by box (kind `burst`, `grid()` entries
+   in `lib/finish-beats.js`); the crosswords sweep their words; Hedge and Paths trace; Etch reveals,
+   and so on. A game with no entry gets `autolock`: its pieces are found BY SHAPE
+   (`detectPieces`: the biggest set of same-tag, same-class, similar-sized elements on the board)
+   and lock row by row. A board with no pieces to find gets a pulse.
+2. **The orbit is the hold.** The pieces lift off as tiles (clones on fixed positions, squared to
+   one size) and circle the board's centre until `ready` (LoftFinish's `figuresShow`) or 7s
+   (`HOLD_CAP` in `app/useFinishBeat.js`). A board with fewer than 9 or more than 144 pieces is cut
+   into a MOSAIC instead, which lands over it in a diagonal wave first.
+3. **The burst is the curtain.** The tiles fly into a screen-sized grid and a sheet of the category
+   colour closes over them; StageFinish's flood mounts on top in the same colour, so its figures
+   land in their fixed order rather than in arrival order.
+
+- A client with no `.stg-board` (Links, Tuck, Alibi, Jesters and about fifteen more) uses its page
+  column, `[class$="-wrap"]`, for the finale; the orbit centres on the pieces, a mosaic covers only
+  the part on screen.
+- End Game titles already play their beat inside `useEndHold`; after that hold `useFinishBeat` runs
+  the orbit and burst only (`finaleOnly`).
+- A held beat exposes `handle.hold` / `handle.release(onCovered)`. A tap before the sheet covers the
+  screen clears the tiles at once; after, they go 700ms later, under the flood. Losses are untouched
+  (`playLoss`, LossHold).
+- Other pop-ups wait: `setBeatLive` stamps `data-sot-beat` on `<html>`, and ThanksPop's
   after-a-game timer waits while that is set or a `.stf-flood` is up.
-- Review on a live board: `window.__sotBeat('suds')` plays all three acts (a short orbit, then the
-  burst) without ending anything.
+- Review on a live board: `window.__sotBeat('<key>')` plays all three acts without ending
+  anything; `window.__sotLastBeat` reports the last beat (kind, pieces, whether a finale ran).

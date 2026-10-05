@@ -691,7 +691,17 @@ export default function LoftFinish({
   // A fast-retry loss on the stage plays its own loss beat inside LossHold
   // and HOLDS there, so the beat here stands down for it.
   const holdsLoss = fastRetry && !showCard && onStage;
-  const beating = useFinishBeat({ key: selfKey, enabled: !boardLabel && !holdsLoss, lost: !!outcome && outcome !== 'won', ready: figuresShow });
+  // Read SYNCHRONOUSLY, not from onStage / runActive: both come from effects
+  // that have not landed on the first render, and the beat decides on that
+  // render. LoftFinish only mounts on the client, after a game ends.
+  const finaleWanted = (() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      const stage = onStageProp == null ? new URLSearchParams(window.location.search).get('stage') !== '0' : !!onStageProp;
+      return stage && !readRunParam();
+    } catch (e) { return false; }
+  })();
+  const beating = useFinishBeat({ key: selfKey, enabled: !boardLabel && !holdsLoss, lost: !!outcome && outcome !== 'won', ready: figuresShow, finale: finaleWanted });
   if (beating) return null;
 
   if (openArchive && archive && archive.length) {
