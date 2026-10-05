@@ -8524,20 +8524,19 @@ highlights, filled grids). The beat made all of it visible. Rules now:
   Tapping the bar anywhere but Replay, or Escape, opens the end card; a tap during the animation
   skips to the bar. StageFinish is not mounted while it is up, so the board is never collapsed.
 
-## Every win ends in a FILL that grows into the curtain, and it waits for the stats (owner, 2026-10-05)
+## Every win ends in a FILL that grows into the curtain (owner, 2026-10-05)
 
 When the stage curtain follows a win (`finale` in `lib/finish-beat.js`, asked for by LoftFinish as
 `finaleWanted`: on the stage, not inside a circuit run, read synchronously because the beat decides
-on the first render), every daily ends the same way:
+on the first render), every daily ends the same way: the finished board stays up for half a second
+(`FINALE_LEAD`), then the category colour rises over the board from the bottom (one fixed element
+over `.stg-board`, or the page column `[class$="-wrap"]` on clients without one, clipped to the
+screen) and, WITHOUT STOPPING, grows to fill the screen. That colour is the curtain: StageFinish's
+flood mounts over it in the same colour, and the flood's own queue waits for any figure still loading.
 
-1. The finished board stays up for half a second (`FINALE_LEAD`).
-2. **The fill is the hold.** The category colour rises over the board from the bottom (one fixed
-   element over `.stg-board`, or the page column `[class$="-wrap"]` on clients without one,
-   clipped to the screen). It creeps most of the way on its own and runs to the top when `ready`
-   (LoftFinish's `figuresShow`) or 7s (`HOLD_CAP` in `app/useFinishBeat.js`).
-3. **The full block grows to fill the screen**, and that colour is the curtain: StageFinish's flood
-   mounts over it in the same colour, so its figures land in their fixed order.
-
+- **It never pauses.** The first cut crept to 82% and parked there until the stats loaded, then ran a
+  second animation to the top; the rise visibly stalled and restarted (owner: "that looks bad"). It is
+  one keyframe track now, rise into grow with no seam, and the rise ends still moving.
 - **ONE element, animated by `transform` only.** That is the whole reason for this design: the
   lock-and-burst version shipped the same day (81 squares repainting colour, tiles animated by
   position and size, a fill height set every frame) stuttered on phones, and the owner asked for
