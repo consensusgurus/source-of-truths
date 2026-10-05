@@ -36,6 +36,18 @@ const WINDOWS = [
   { key: 36500, label: 'All time' },
 ];
 
+// "3m ago" style stamp for the share feed. `now` is captured in an effect so
+// the server and the first client render never disagree about the clock.
+function ago(iso, now) {
+  if (!now || !iso) return '';
+  const s = Math.max(0, (now - new Date(iso).getTime()) / 1000);
+  if (s < 60) return 'just now';
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  if (s < 86400 * 30) return `${Math.floor(s / 86400)}d ago`;
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
 export default function CommunityLeaderboardClient() {
   const [days, setDays] = useState(90);
   // 'contest' | 90 | 36500. Starts on 90 so a server render and the pre-contest
@@ -47,6 +59,20 @@ export default function CommunityLeaderboardClient() {
   const [copied, setCopied] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
   const [identity, setIdentity] = useState(null);
+  // Running feed of successful shares (owner, 2026-10-05): the board says who
+  // has brought in the most, this says who brought someone in most recently.
+  const [feed, setFeed] = useState(null);
+  const [feedAll, setFeedAll] = useState(false);
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    setNow(Date.now());
+    fetch('/api/quiz/referrals?feed=1&limit=100')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => { if (alive) setFeed(j && Array.isArray(j.feed) ? j.feed : []); })
+      .catch(() => { if (alive) setFeed([]); });
+    return () => { alive = false; };
+  }, []);
 
   const load = useCallback((d) => {
     setLoading(true);
@@ -137,7 +163,7 @@ export default function CommunityLeaderboardClient() {
     <div style={{ background: C.bg, minHeight: '100vh', fontFamily: FONT, color: C.ink }}>
       <Grain />
       <QuizNavHeader />
-      <div style={{ maxWidth: 860, margin: '0 auto', padding: '12px 20px 70px', position: 'relative' }}>
+      <div style={{ maxWidth: 860, margin: '0 auto', padding: '12px 20px 34px', position: 'relative' }}>
         <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: C.muted, textDecoration: 'none', margin: '10px 0 16px' }}>
           <ArrowLeft size={14} /> Back to all quizzes
         </Link>
@@ -270,6 +296,52 @@ export default function CommunityLeaderboardClient() {
             <div style={{ padding: 26, textAlign: 'center', color: C.soft, fontSize: 14 }}>
               {onContest ? 'No qualifying entries yet. Share your link and you are in first place.' : 'Nobody has brought in a player yet in this window. The top spot is open.'}
             </div>
+          )}
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 20px 70px', position: 'relative' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, margin: '0 0 6px' }}>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, letterSpacing: '-0.3px' }}>Latest shares</h2>
+          {feed && feed.length ? <span style={{ fontSize: 12, color: C.soft, fontWeight: 700 }}>{feed.length} most recent</span> : null}
+        </div>
+        <div style={{ fontSize: 12, color: C.soft, marginBottom: 12, lineHeight: 1.5 }}>
+          Every time a shared link brings in a new player who finishes a game, newest first.
+        </div>
+        <div style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14, overflow: 'hidden' }}>
+          {feed === null ? (
+            <div style={{ padding: 26, textAlign: 'center', color: C.soft, fontSize: 14 }}>Loading…</div>
+          ) : feed.length ? (
+            <>
+              {(feedAll ? feed : feed.slice(0, 15)).map((f, i) => {
+                const mine = me && me.username && f.sharer === me.username;
+                return (
+                  <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 15px', borderTop: i ? `1px solid ${C.line}` : 'none', background: mine ? 'rgba(232,180,58,0.10)' : 'transparent' }}>
+                    <span style={{ flex: '1 1 auto', minWidth: 0 }}>
+                      <span style={{ display: 'block', fontSize: 14.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <b style={{ fontWeight: 800 }}>{f.sharer}</b>
+                        <span style={{ color: C.muted }}> brought in </span>
+                        <b style={{ fontWeight: 700 }}>{f.joined || 'a new player'}</b>
+                      </span>
+                      {f.game ? (
+                        <span style={{ display: 'block', marginTop: 2, fontSize: 12, color: C.soft, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          via{' '}
+                          {f.game.href ? <Link href={f.game.href} style={{ color: C.soft, textDecoration: 'underline' }}>{f.game.label}</Link> : f.game.label}
+                        </span>
+                      ) : null}
+                    </span>
+                    <span style={{ flex: 'none', fontSize: 12, color: C.soft, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{ago(f.at, now)}</span>
+                  </div>
+                );
+              })}
+              {!feedAll && feed.length > 15 ? (
+                <button type="button" onClick={() => setFeedAll(true)} style={{ display: 'block', width: '100%', fontFamily: FONT, fontSize: 13, fontWeight: 800, color: C.accent, background: '#f2f4f7', border: 0, borderTop: `1px solid ${C.line}`, borderRadius: 0, padding: '11px', cursor: 'pointer' }}>
+                  Show all {feed.length}
+                </button>
+              ) : null}
+            </>
+          ) : (
+            <div style={{ padding: 26, textAlign: 'center', color: C.soft, fontSize: 14 }}>No shares have landed yet. Yours could be the first.</div>
           )}
         </div>
       </div>

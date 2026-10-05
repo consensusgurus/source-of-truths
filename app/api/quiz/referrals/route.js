@@ -3,6 +3,8 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 import { findQuizIdentity } from '@/lib/quiz-identity';
 import { ensureRefCode, topReferrers } from '@/lib/referrals-server';
 import { refShareUrl } from '@/lib/referrals';
+import { getQuiz } from '@/lib/quizzes';
+import { DAILY_GAME_MAP, dailyLabel } from '@/lib/daily-games';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -77,6 +79,50 @@ export async function GET(request) {
         });
       } catch {
         return NextResponse.json({ latest: null });
+      }
+    }
+    // ?feed=1: the running list of successful shares, newest first, for the
+    // community page. One row per credit (a person brought in through a ref
+    // link who finished a game), naming the sharer, the game that landed them,
+    // and the new player when they have since registered. Seeded rows are not
+    // real shares and are excluded, same as ?latest=1.
+    if (searchParams.get('feed') === '1') {
+      try {
+        const n = Math.min(100, Math.max(1, parseInt(searchParams.get('limit'), 10) || 50));
+        const { data } = await supabaseAdmin
+          .from('quiz_referrals')
+          .select('id, referrer_user_id, referred_user_id, quiz_id, created_at')
+          .eq('seeded', false)
+          .order('created_at', { ascending: false })
+          .limit(n);
+        const rows = Array.isArray(data) ? data : [];
+        const ids = [...new Set(rows.flatMap((x) => [x.referrer_user_id, x.referred_user_id]).filter(Boolean))];
+        const names = new Map();
+        if (ids.length) {
+          const { data: us } = await supabaseAdmin.from('quiz_users').select('id, username').in('id', ids);
+          for (const u of us || []) names.set(u.id, u.username);
+        }
+        const gameOf = (qid) => {
+          if (!qid) return null;
+          const key = /^([a-z]+)-\d{1,2}-\d{1,2}-\d{2}$/.exec(qid);
+          if (key && DAILY_GAME_MAP[key[1]]) return { label: dailyLabel(qid), href: DAILY_GAME_MAP[key[1]].href };
+          const q = getQuiz(qid);
+          return q ? { label: q.title, href: `/quiz/${qid}` } : null;
+        };
+        const feed = rows
+          .map((x) => ({
+            id: x.id,
+            sharer: names.get(x.referrer_user_id) || null,
+            joined: (x.referred_user_id && names.get(x.referred_user_id)) || null,
+            game: gameOf(x.quiz_id),
+            at: x.created_at,
+          }))
+          .filter((x) => x.sharer);
+        return NextResponse.json({ feed }, {
+          headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' },
+        });
+      } catch {
+        return NextResponse.json({ feed: [] });
       }
     }
     // days: 90 by default; a very large value (36500) is how the public board asks
