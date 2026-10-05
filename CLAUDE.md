@@ -8524,35 +8524,28 @@ highlights, filled grids). The beat made all of it visible. Rules now:
   Tapping the bar anywhere but Replay, or Escape, opens the end card; a tap during the animation
   skips to the bar. StageFinish is not mounted while it is up, so the board is never collapsed.
 
-## Every win ends in LOCK, FILL, BURST, and the burst waits for the stats (owner, 2026-10-05)
+## Every win ends in a FILL that grows into the curtain, and it waits for the stats (owner, 2026-10-05)
 
-Every daily's win now ends the same way when the stage curtain follows (`finale` in
-`lib/finish-beat.js`, asked for by LoftFinish as `finaleWanted`: on the stage, not inside a circuit
-run, read synchronously because the beat decides on the first render):
+When the stage curtain follows a win (`finale` in `lib/finish-beat.js`, asked for by LoftFinish as
+`finaleWanted`: on the stage, not inside a circuit run, read synchronously because the beat decides
+on the first render), every daily ends the same way:
 
-1. **Act one is the game's own beat.** The sudokus lock box by box (kind `burst`, `grid()` entries
-   in `lib/finish-beats.js`); the crosswords sweep their words; Hedge and Paths trace; Etch reveals,
-   and so on. A game with no entry gets `autolock`: its pieces are found BY SHAPE
-   (`detectPieces`: the biggest set of same-tag, same-class, similar-sized elements on the board)
-   and lock row by row. A board with no pieces to find gets a pulse.
-2. **The fill gauge is the hold** (owner pick, replacing orbiting tiles the same day). A deeper
-   shade of the category colour rises over the board from the bottom (over the pieces' bounding
-   box, or the on-screen part of the board): it creeps on its own, steps up as LoftFinish's reads
-   land (`progress`: IQ, then the day tiles), and runs to the top when `ready` (`figuresShow`) or
-   7s (`HOLD_CAP` in `app/useFinishBeat.js`). On a board whose pieces were locked (filled) it is a
-   multiplied deep shade; on any other board it is the colour itself.
-3. **The burst is the curtain.** The pieces (clones; fewer than 9 or more than 144 and the board is cut into a mosaic) fly into a screen-sized grid and a sheet of the category
-   colour closes over them; StageFinish's flood mounts on top in the same colour, so its figures
-   land in their fixed order rather than in arrival order.
+1. The finished board stays up for half a second (`FINALE_LEAD`).
+2. **The fill is the hold.** The category colour rises over the board from the bottom (one fixed
+   element over `.stg-board`, or the page column `[class$="-wrap"]` on clients without one,
+   clipped to the screen). It creeps most of the way on its own and runs to the top when `ready`
+   (LoftFinish's `figuresShow`) or 7s (`HOLD_CAP` in `app/useFinishBeat.js`).
+3. **The full block grows to fill the screen**, and that colour is the curtain: StageFinish's flood
+   mounts over it in the same colour, so its figures land in their fixed order.
 
-- A client with no `.stg-board` (Links, Tuck, Alibi, Jesters and about fifteen more) uses its page
-  column, `[class$="-wrap"]`, for the finale; the gauge covers the pieces, or only the on-screen part.
-- End Game titles already play their beat inside `useEndHold`; after that hold `useFinishBeat` runs
-  the fill and burst only (`finaleOnly`).
-- A held beat exposes `handle.hold`, `handle.setProgress(p)` and `handle.release(onCovered)`. A tap before the sheet covers the
-  screen clears the tiles at once; after, they go 700ms later, under the flood. Losses are untouched
-  (`playLoss`, LossHold).
-- Other pop-ups wait: `setBeatLive` stamps `data-sot-beat` on `<html>`, and ThanksPop's
+- **ONE element, animated by `transform` only.** That is the whole reason for this design: the
+  lock-and-burst version shipped the same day (81 squares repainting colour, tiles animated by
+  position and size, a fill height set every frame) stuttered on phones, and the owner asked for
+  something simpler. Keep any change here to transform and opacity on as few elements as possible.
+- The per-game beats in `lib/finish-beats.js` (sudoku audit, crossword sweep, traces) still play
+  where no curtain follows (inside a circuit run). Losses are untouched (`playLoss`, LossHold).
+- A tap before the screen is covered removes the fill at once; after, it goes 700ms later, under the
+  flood. Other pop-ups wait: `setBeatLive` stamps `data-sot-beat` on `<html>`, and ThanksPop's
   after-a-game timer waits while that is set or a `.stf-flood` is up.
-- Review on a live board: `window.__sotBeat('<key>')` plays all three acts without ending
-  anything; `window.__sotLastBeat` reports the last beat (kind, pieces, whether a finale ran).
+- Review on a live board: `window.__sotBeat('<key>')` plays it without ending anything;
+  `window.__sotLastBeat` reports the last beat.
