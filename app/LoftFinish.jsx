@@ -691,7 +691,7 @@ export default function LoftFinish({
   // A fast-retry loss on the stage plays its own loss beat inside LossHold
   // and HOLDS there, so the beat here stands down for it.
   const holdsLoss = fastRetry && !showCard && onStage;
-  const beating = useFinishBeat({ key: selfKey, enabled: !boardLabel && !holdsLoss, lost: !!outcome && outcome !== 'won' });
+  const beating = useFinishBeat({ key: selfKey, enabled: !boardLabel && !holdsLoss, lost: !!outcome && outcome !== 'won', ready: figuresShow });
   if (beating) return null;
 
   if (openArchive && archive && archive.length) {

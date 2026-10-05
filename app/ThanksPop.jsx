@@ -198,12 +198,16 @@ export default function ThanksPop() {
       } catch (e) { return; }
       if (blockedHere()) return;
       clearTimeout(timer);
-      timer = setTimeout(() => {
+      const attempt = () => {
+        // Never over an ending that is still playing (the finish beat, or the
+        // curtain's figures landing): wait for it to finish.
+        if (document.documentElement.dataset.sotBeat || document.querySelector('.stf-flood')) { timer = setTimeout(attempt, 600); return; }
         if (document.visibilityState === 'hidden') return;
         if (blockedHere() || anotherModalOpen()) return;
         try { if (shownThisWeek() || sessionStorage.getItem(SHOWN_KEY)) return; } catch (e) { return; }
         show('done');
-      }, DONE_WAIT_MS);
+      };
+      timer = setTimeout(attempt, DONE_WAIT_MS);
     };
     window.addEventListener(RESULT_SAVED_EVENT, onSaved);
     return () => { window.removeEventListener(RESULT_SAVED_EVENT, onSaved); clearTimeout(timer); };

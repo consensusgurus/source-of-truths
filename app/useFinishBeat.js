@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   playBeat, playLoss, heldRecently, BEAT_FRESH,
   installBuzzDefer, setBeatLive, firePendingBuzz,
@@ -25,7 +25,15 @@ if (typeof window !== 'undefined') installBuzzDefer();
 // freshness test StageFinish's flood uses), an End Game hold already showed
 // the board, or the caller is not a daily. ?beat=1 forces one on an archived
 // finished board for review; ?beat=0 switches it off.
-export default function useFinishBeat({ key, enabled = true, lost = false } = {}) {
+// A beat that HOLDS (the sudokus' lock and burst) keeps its middle act going
+// until `ready` (LoftFinish's figuresShow: every figure on the verdict has
+// loaded) or until HOLD_CAP after it started, whichever comes first. Then it
+// bursts into the curtain, and the curtain's figures land in their own order.
+const HOLD_CAP = 7000;
+
+export default function useFinishBeat({ key, enabled = true, lost = false, ready = true } = {}) {
+  const readyRef = useRef(ready);
+  readyRef.current = ready;
   const [on, setOn] = useState(() => {
     if (!enabled || !key || typeof window === 'undefined') return false;
     const q = window.location.search || '';
@@ -51,15 +59,35 @@ export default function useFinishBeat({ key, enabled = true, lost = false } = {}
       setOn(false);
       // The board is collapsed by the time this fires, so cancelling the
       // animations only matters to a reader who later presses Return to board.
-      setTimeout(() => h.cancel(), 1500);
+      // A held beat ends on a sheet of colour the curtain mounts over; it goes
+      // once the curtain has faded in on top of it.
+      setTimeout(() => h.cancel(), h.hold ? 700 : 1500);
     };
-    const t = setTimeout(end, h.ms);
-    // Any tap or key skips straight to the result.
-    const skip = () => end();
+    let t = 0;
+    let poll = 0;
+    let covered = false;
+    if (h.hold) {
+      const t0 = Date.now();
+      const check = () => {
+        if (done) return;
+        if (readyRef.current || Date.now() - t0 >= HOLD_CAP) {
+          h.release(() => { covered = true; end(); });
+          return;
+        }
+        poll = setTimeout(check, 80);
+      };
+      t = setTimeout(check, h.ms);
+    } else {
+      t = setTimeout(end, h.ms);
+    }
+    // Any tap or key skips straight to the result. A held beat's tiles sit
+    // over the page, so a skip before they have covered it clears them now.
+    const skip = () => { if (h.hold && !covered) h.cancel(); end(); };
     window.addEventListener('pointerdown', skip, true);
     window.addEventListener('keydown', skip, true);
     return () => {
       clearTimeout(t);
+      clearTimeout(poll);
       window.removeEventListener('pointerdown', skip, true);
       window.removeEventListener('keydown', skip, true);
       if (!done) { setBeatLive(false); firePendingBuzz(); h.cancel(); }

@@ -8523,3 +8523,24 @@ highlights, filled grids). The beat made all of it visible. Rules now:
   then a bar rises from the bottom with Replay and End game card. It STAYS until one is pressed.
   Tapping the bar anywhere but Replay, or Escape, opens the end card; a tap during the animation
   skips to the bar. StageFinish is not mounted while it is up, so the board is never collapsed.
+
+## The sudokus end in LOCK AND BURST, and the burst waits for the stats (owner, 2026-10-05)
+
+All thirteen sudokus (`grid()` entries in `lib/finish-beats.js`, kind `burst` in
+`lib/finish-beat.js`) finish in three acts: the board LOCKS box by box (row by row on Quilt and
+Towers), the squares lift off as tiles and ORBIT the board's centre, then the tiles BURST into a
+screen-sized grid that closes into one sheet of the category colour. That sheet is the curtain:
+StageFinish's flood mounts over it in the same colour.
+
+- **The orbit is the hold.** `useFinishBeat` gets `ready: figuresShow` from LoftFinish and keeps
+  the orbit going until every figure on the verdict has loaded, or 7s after the hold began
+  (`HOLD_CAP`). So the curtain's figures land in their fixed order, not in arrival order.
+- **A beat that holds** exposes `handle.hold` and `handle.release(onCovered)` from `playBeat`.
+  Any future kind can hold the same way.
+- **The tiles are clones** on fixed positions (z 8998, the closing sheet 8999, the flood 9000);
+  `cancel()` removes them and puts the board back. A tap before the sheet covers the screen clears
+  them at once; after, they go 700ms later, under the flood.
+- **Other pop-ups wait.** `setBeatLive` stamps `data-sot-beat` on `<html>`, and ThanksPop's
+  after-a-game timer waits while that is set or a `.stf-flood` is up.
+- Review on a live board: `window.__sotBeat('suds')` plays all three acts (a short orbit, then the
+  burst) without ending anything.
