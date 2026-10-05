@@ -701,7 +701,7 @@ export default function LoftFinish({
       return stage && !readRunParam();
     } catch (e) { return false; }
   })();
-  const beating = useFinishBeat({ key: selfKey, enabled: !boardLabel && !holdsLoss, lost: !!outcome && outcome !== 'won', ready: figuresShow, finale: finaleWanted });
+  const beating = useFinishBeat({ key: selfKey, enabled: !boardLabel && !holdsLoss, lost: !!outcome && outcome !== 'won', ready: figuresShow, progress: (iqReady ? 0.5 : 0) + (tilesReady ? 0.5 : 0), finale: finaleWanted });
   if (beating) return null;
 
   if (openArchive && archive && archive.length) {

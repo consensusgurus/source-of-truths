@@ -8524,7 +8524,7 @@ highlights, filled grids). The beat made all of it visible. Rules now:
   Tapping the bar anywhere but Replay, or Escape, opens the end card; a tap during the animation
   skips to the bar. StageFinish is not mounted while it is up, so the board is never collapsed.
 
-## Every win ends in LOCK, ORBIT, BURST, and the burst waits for the stats (owner, 2026-10-05)
+## Every win ends in LOCK, FILL, BURST, and the burst waits for the stats (owner, 2026-10-05)
 
 Every daily's win now ends the same way when the stage curtain follows (`finale` in
 `lib/finish-beat.js`, asked for by LoftFinish as `finaleWanted`: on the stage, not inside a circuit
@@ -8535,20 +8535,21 @@ run, read synchronously because the beat decides on the first render):
    and so on. A game with no entry gets `autolock`: its pieces are found BY SHAPE
    (`detectPieces`: the biggest set of same-tag, same-class, similar-sized elements on the board)
    and lock row by row. A board with no pieces to find gets a pulse.
-2. **The orbit is the hold.** The pieces lift off as tiles (clones on fixed positions, squared to
-   one size) and circle the board's centre until `ready` (LoftFinish's `figuresShow`) or 7s
-   (`HOLD_CAP` in `app/useFinishBeat.js`). A board with fewer than 9 or more than 144 pieces is cut
-   into a MOSAIC instead, which lands over it in a diagonal wave first.
-3. **The burst is the curtain.** The tiles fly into a screen-sized grid and a sheet of the category
+2. **The fill gauge is the hold** (owner pick, replacing orbiting tiles the same day). A deeper
+   shade of the category colour rises over the board from the bottom (over the pieces' bounding
+   box, or the on-screen part of the board): it creeps on its own, steps up as LoftFinish's reads
+   land (`progress`: IQ, then the day tiles), and runs to the top when `ready` (`figuresShow`) or
+   7s (`HOLD_CAP` in `app/useFinishBeat.js`). On a board whose pieces were locked (filled) it is a
+   multiplied deep shade; on any other board it is the colour itself.
+3. **The burst is the curtain.** The pieces (clones; fewer than 9 or more than 144 and the board is cut into a mosaic) fly into a screen-sized grid and a sheet of the category
    colour closes over them; StageFinish's flood mounts on top in the same colour, so its figures
    land in their fixed order rather than in arrival order.
 
 - A client with no `.stg-board` (Links, Tuck, Alibi, Jesters and about fifteen more) uses its page
-  column, `[class$="-wrap"]`, for the finale; the orbit centres on the pieces, a mosaic covers only
-  the part on screen.
+  column, `[class$="-wrap"]`, for the finale; the gauge covers the pieces, or only the on-screen part.
 - End Game titles already play their beat inside `useEndHold`; after that hold `useFinishBeat` runs
-  the orbit and burst only (`finaleOnly`).
-- A held beat exposes `handle.hold` / `handle.release(onCovered)`. A tap before the sheet covers the
+  the fill and burst only (`finaleOnly`).
+- A held beat exposes `handle.hold`, `handle.setProgress(p)` and `handle.release(onCovered)`. A tap before the sheet covers the
   screen clears the tiles at once; after, they go 700ms later, under the flood. Losses are untouched
   (`playLoss`, LossHold).
 - Other pop-ups wait: `setBeatLive` stamps `data-sot-beat` on `<html>`, and ThanksPop's

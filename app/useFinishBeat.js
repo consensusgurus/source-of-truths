@@ -31,9 +31,11 @@ if (typeof window !== 'undefined') installBuzzDefer();
 // bursts into the curtain, and the curtain's figures land in their own order.
 const HOLD_CAP = 7000;
 
-export default function useFinishBeat({ key, enabled = true, lost = false, ready = true, finale = false } = {}) {
+export default function useFinishBeat({ key, enabled = true, lost = false, ready = true, progress = 0, finale = false } = {}) {
   const readyRef = useRef(ready);
   readyRef.current = ready;
+  const progressRef = useRef(progress);
+  progressRef.current = progress;
   const [on, setOn] = useState(() => {
     if (!enabled || !key || typeof window === 'undefined') return false;
     const q = window.location.search || '';
@@ -72,6 +74,7 @@ export default function useFinishBeat({ key, enabled = true, lost = false, ready
       const t0 = Date.now();
       const check = () => {
         if (done) return;
+        if (h.setProgress) h.setProgress(progressRef.current);
         if (readyRef.current || Date.now() - t0 >= HOLD_CAP) {
           h.release(() => { covered = true; end(); });
           return;
