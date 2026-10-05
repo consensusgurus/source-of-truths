@@ -103,8 +103,8 @@ const AGENT = [
   HT('Bellagio', 'Las Vegas, NV', '2026-12-17', 1, 'Premier King', 199, 'Bellagio Las Vegas', 'Bellagio Fountains at night, Las Vegas, Nevada - 29174293017.jpg', 'Matt Kieffer', 'CC BY-SA 2.0'),
   F('Alaska', 'SFO', 'San Francisco', 'HNL', 'Honolulu', '2026-11-21', '7:10 PM', 'Economy', 'economy', 454, 'Alaska Airlines Boeing 737-9 MAX N928AK departing Boston June 2025 2.jpg', '4300streetcar', 'CC BY 4.0'),
   F('American', 'LAX', 'Los Angeles', 'HND', 'Tokyo Haneda', '2026-12-10', '10:05 AM', 'Business', 'business class', 3113, 'American Airlines Boeing 777-300ER (cropped).jpg', 'Venkat Mangudi', 'CC BY 2.0'),
-  F('JetBlue', 'BOS', 'Boston', 'DCA', 'Washington National', '2026-12-05', '9:20 AM', 'Economy', 'economy', 59, 'JetBlue A321LR (N4058J) at Boston.jpg', 'Tim', 'CC0'),
-  HT('The Plaza', 'New York, NY', '2026-12-16', 1, 'Lowest available room', 2725, 'The Plaza New York', 'The Plaza Hotel Manhattan NYC.jpg', 'Daniel Dimitrov', 'CC BY-SA 4.0'),
+  { ...F('JetBlue', 'BOS', 'Boston', 'DCA', 'Washington National', '2026-12-05', '9:20 AM', 'Economy', 'economy', 134, 'JetBlue A321LR (N4058J) at Boston.jpg', 'Tim', 'CC0'), gathered: '2026-10-05' }, // re-read 10/5: was $59
+  { ...HT('The Plaza', 'New York, NY', '2026-12-16', 1, 'Lowest available room', 2786, 'The Plaza New York', 'The Plaza Hotel Manhattan NYC.jpg', 'Daniel Dimitrov', 'CC BY-SA 4.0'), gathered: '2026-10-05' }, // re-read 10/5: was $2,725
   F('Southwest', 'DEN', 'Denver', 'CUN', 'Cancún', '2027-01-09', '11:10 AM', 'Economy', 'economy', 328, 'Southwest Boeing 737-8 MAX N8847Q BWI MD2.jpg', 'Acroterion', 'CC BY-SA 4.0'),
   F('JetBlue', 'JFK', 'New York', 'LHR', 'London Heathrow', '2026-12-03', '9:26 AM', 'Mint (business)', 'business class', 2559, 'JetBlue A321LR (N4058J) at Boston.jpg', 'Tim', 'CC0'),
   HT('Hotel del Coronado', 'Coronado, CA', '2026-12-17', 1, 'Victorian King', 533, 'Hotel del Coronado', 'Hotel del Coronado 10 2019-04-16.jpg', 'FASTILY', 'CC BY-SA 4.0'),
