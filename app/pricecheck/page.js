@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import PriceCheckClient from './PriceCheckClient';
-import { PRICE_KEYS, PRICE_GAMES, fmtCents } from '@/lib/price-games';
+import { PRICE_KEYS, PRICE_GAMES } from '@/lib/price-games';
 import { shipFor } from '@/lib/price-ship';
 import { SITE_URL } from '@/lib/site';
 import { PUZZLES as P_pricer } from '../pricer/puzzles';
@@ -39,7 +39,7 @@ function etTodayServer() {
 }
 // "$??,???" with as many places as the real price, so the tag hints at size
 // without saying it.
-const maskOf = (cents) => fmtCents(Math.floor(cents / 100) * 100).replace(/^\$/, '').replace(/\d/g, '?');
+// The tag shows a flat $$$ on every game: a digit mask gave away each price's magnitude.
 
 export default function PriceCheckPage({ searchParams }) {
   const today = etTodayServer();
@@ -57,7 +57,7 @@ export default function PriceCheckPage({ searchParams }) {
     const g = PRICE_GAMES[key];
     const visible = bank.filter((x) => x.live <= today || x.num === p.num).map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
     const chip = key === 'realtor' ? `${p.city}, ${p.state}` : key === 'agent' ? (p.kind === 'hotel' ? 'Hotel' : `${p.from} to ${p.to}`) : day.cat;
-    sections.push({ key, name: g.name, word: g.word, path: g.path, num: p.num, quizId: p.quizId, puzzles: visible, day, chip, mask: maskOf(p.price) });
+    sections.push({ key, name: g.name, word: g.word, path: g.path, num: p.num, quizId: p.quizId, puzzles: visible, day, chip });
   }
   const d = new Date(`${today}T12:00:00Z`);
   const dateLabel = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC' });

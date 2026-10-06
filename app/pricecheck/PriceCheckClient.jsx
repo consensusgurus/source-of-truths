@@ -220,7 +220,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
                   <div className="k"><span className="kn">{String(i + 1).padStart(2, '0')} · </span>{s.name}</div>
                   <div className="n">{s.word}</div>
                   <div className="chip">{s.chip}</div>
-                  <div className="pq">$<em>{s.mask}</em></div>
+                  <div className="pq"><em>$$$</em></div>
                   {banked[s.key] && <div className="bk">Played: {banked[s.key].score}/10 counts</div>}
                 </div>
               </div>
