@@ -30,7 +30,7 @@
 // Data comes from fetchDayStatus, the same call the existing home makes, so
 // this surface adds no new endpoint and cannot disagree with the other one
 // about what has been played.
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { DAILY_GAMES as ALL_DAILY_GAMES, DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
 
 // THE LIVE ROSTER, not the whole registry. A retired game stays in DAILY_GAMES
@@ -330,6 +330,9 @@ const SHELF_OPEN_KEY = 'sot_shelf_open';
 // THE INDEX AND PANE (owner, 2026-10-06). Which pane the reader last had up:
 // 'sty-mine', 'sty-circs' or a category name. Per browser, like the keys above.
 const PANE_KEY = 'sot_home_pane';
+const ALL_ID = 'all';
+// The server has no layout pass; an isomorphic alias keeps it from warning.
+const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 const MINE_ID = 'sty-mine';
 const CIRC_ID = 'sty-circs';
 // The Word category's section id, the same shape the render derives for every
@@ -732,9 +735,12 @@ export default function StageToday() {
   const [allCircs, setAllCircs] = useState(false);
   // CATEGORY BUTTONS (owner, 2026-10-03): one category open at a time, closed on load.
   const [catOpen, setCatOpen] = useState(null);
-  // Read in an effect, never during render: the server cannot know it.
+  // Read in a LAYOUT effect, never during render: the server cannot know it,
+  // and a layout effect lands before the browser paints the hydrated page, so
+  // a returning reader goes straight to their last pane instead of watching
+  // All games swap out for it.
   const [pane, setPane] = useState(null);
-  useEffect(() => {
+  useIsoLayoutEffect(() => {
     try { const v = localStorage.getItem(PANE_KEY); if (v) setPane(v); } catch (e) {}
   }, []);
   const pickPane = (id) => {
@@ -1590,21 +1596,18 @@ export default function StageToday() {
   // game links stay in the HTML for crawlers: the rule the shut sections and
   // the category buttons followed before this.
   //
-  // The default is My games for a reader with stars and Word for everyone
-  // else, the same two the old page opened by default. A stored pick wins, and
-  // one that no longer resolves (a category gone, the stars removed) falls
-  // back to the default rather than showing an empty pane.
-  const ix = !az && !reorder;
-  const mineShown = !!(mineTot || (!who && returning));
-  const paneIds = [
-    ...(mineShown ? [MINE_ID] : []),
-    ...(circuits.length ? [CIRC_ID] : []),
-    ...orderedCats.map((c) => c.cat),
-  ];
-  const paneDef = mineTot ? MINE_ID
-    : orderedCats.some((c) => c.cat === 'Word') ? 'Word'
-    : orderedCats[0] ? orderedCats[0].cat : CIRC_ID;
-  const paneOn = ix ? (paneIds.includes(pane) ? pane : paneDef) : null;
+  // THE DEFAULT IS ALL GAMES (owner, 2026-10-06, same day). The whole roster is
+  // static, so it paints with the first frame and waits on nothing. The first
+  // version defaulted to My games or Word and listed My games and Circuits only
+  // once their data landed, so the list grew two rows and the pane flipped half
+  // a second in, which read as the panel still loading. Every row is in the
+  // list from the first paint now, and a pane whose data is still on its way
+  // holds its place rather than handing the reader to a different one.
+  // A to Z is gone as a mode: All games IS that list. Reorder is a state of
+  // the list itself (arrows on the category rows), not a second page layout.
+  const ix = true;
+  const paneIds = [ALL_ID, MINE_ID, CIRC_ID, ...orderedCats.map((c) => c.cat)];
+  const paneOn = paneIds.includes(pane) ? pane : ALL_ID;
   const openDefault = (id) => (id === CIRC_ID || id === WORD_ID ? true : (id === MINE_ID ? hasPins : false));
   // In the index a pane is simply up or not, so its own collapse is out of play.
   const isOpen = (id) => (ix && (id === MINE_ID || id === CIRC_ID)) || (shelfOpen && Object.prototype.hasOwnProperty.call(shelfOpen, id)
@@ -1691,7 +1694,7 @@ export default function StageToday() {
   // ones are display:none, so all the game links stay in the HTML for crawlers,
   // the same rule the old shut sections followed.
   const ixBtn = (id, label, n, tot, hue) => (
-    <button key={id} type="button" role="tab" aria-selected={paneOn === id}
+    <button key={id} type="button" aria-pressed={paneOn === id}
       className={'sty-ixb' + (paneOn === id ? ' on' : '')} style={{ '--cc': hue }}
       onClick={() => pickPane(id)}>
       <i aria-hidden="true" />
@@ -1699,15 +1702,32 @@ export default function StageToday() {
       {tot ? <b>{n}<em>/{tot}</em></b> : null}
     </button>
   );
-  const ixNav = ix ? (
-    <nav className="sty-ixn" role="tablist" aria-label="Sections">
-      {mineShown ? ixBtn(MINE_ID, 'My games', mineDone, mineTot, 'var(--stg-ink)') : null}
-      {circuits.length ? ixBtn(CIRC_ID, 'Circuits',
-        circuits.filter((c) => c.n === c.games.length).length, circuits.length, 'var(--stg-mute)') : null}
-      {orderedCats.map(({ cat, games }) => ixBtn(cat, cat,
-        games.filter((g) => done.has(g.key)).length, games.length, hueFor(cat)))}
+  const alphaDone = alpha.filter((g) => done.has(g.key)).length;
+  const ixNav = (
+    <nav className={'sty-ixn' + (reorder ? ' re' : '')} aria-label="Sections">
+      {ixBtn(ALL_ID, 'All games', alphaDone, alpha.length, 'var(--stg-ink)')}
+      {ixBtn(MINE_ID, 'My games', mineDone, mineTot, 'var(--stg-acc)')}
+      {ixBtn(CIRC_ID, 'Circuits',
+        circuits.filter((c) => c.n === c.games.length).length, circuits.length, 'var(--stg-mute)')}
+      {orderedCats.map(({ cat, games }, ci) => (reorder ? (
+        <div key={cat} className={'sty-ixb sty-ixr' + (paneOn === cat ? ' on' : '')} style={{ '--cc': hueFor(cat) }}>
+          <i aria-hidden="true" />
+          <span>{cat}</span>
+          <span className="sty-move">
+            <button type="button" onClick={() => moveCat(cat, -1)} disabled={ci === 0} aria-label={`Move ${cat} up`}>&uarr;</button>
+            <button type="button" onClick={() => moveCat(cat, 1)} disabled={ci === orderedCats.length - 1} aria-label={`Move ${cat} down`}>&darr;</button>
+          </span>
+        </div>
+      ) : ixBtn(cat, cat, games.filter((g) => done.has(g.key)).length, games.length, hueFor(cat))))}
+      <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
+        onClick={() => setReorder((v) => !v)}>
+        {reorder ? 'Done' : 'Reorder'}
+      </button>
+      {reorder && handOrder ? (
+        <button type="button" className="sty-ixre" onClick={() => saveOrder(null)}>Reset order</button>
+      ) : null}
     </nav>
-  ) : null;
+  );
   const catTiles = orderedCats.map(({ cat, games }) => {
     const n = games.filter((g) => done.has(g.key)).length;
     return (
@@ -2142,7 +2162,9 @@ export default function StageToday() {
             the cards inside it carry their own categories' colours. */}
         <div className={ix ? 'sty-ix' : 'sty-ixw'}>
         {ixNav}
-        {(mineTot || (!who && returning)) ? (
+        {/* ALWAYS RENDERED now that it is a pane rather than a row: an empty
+            pane says how to fill it, where an empty row was just clutter. */}
+        {ix ? (
           <section className={'sty-cat sty-mine sty-rev' + (ix && paneOn !== MINE_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
             {/* An empty section has nothing to collapse and no fraction to
                 print, so the head keeps its title and drops both. */}
@@ -2151,7 +2173,10 @@ export default function StageToday() {
               {mineTot ? <b>{mineDone}<i>/{mineTot}</i></b> : null}
               {mineTot ? cav(MINE_ID) : null}
             </div>
-            {!mineTot ? (
+            {!mineTot && who && myLoaded ? (
+              <p className="sty-ixe">Nothing pinned yet. Star any game and it shows up here.</p>
+            ) : null}
+            {!mineTot && !who ? (
               <a className="sty-join" href="/?signup=1"
                 onClick={(e) => { e.preventDefault(); openChooseName(); }}>
                 <div className="sty-newl">
@@ -2211,55 +2236,26 @@ export default function StageToday() {
             under the categories (`ordBelow`, decided above). */}
 
         {/* 4. THE GAMES, either as nine category rows or as one A-to-Z list. */}
-        {az ? (
-          <section className="sty-cat sty-az" style={{ '--cc': 'var(--stg-ink2)' }}>
-            <div className="sty-cathead">
-              <h2>All games</h2>
-              <b>{alpha.filter((g) => done.has(g.key)).length}<i>/{alpha.length}</i></b>
-            </div>
-            <div className="sty-games">
-              {playedLast(alpha, done).map((g, i) => (
-                // A TO Z MIXES CATEGORIES exactly as My games does, so each card
-                // carries its own hue: the list loses the rows that grouped the
-                // games, and the colour is the only thing left saying what a
-                // game IS (owner, 2026-08-31).
-                <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
-                  canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-                  hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'az:' + g.key} />
-              ))}
-            </div>
-          </section>
-        ) : reorder ? orderedCats.map(({ cat, games }, ci) => {
-          const n = games.filter((g) => done.has(g.key)).length;
-          const secId = `cat-${cat.replace(/\s+/g, '-')}`;
-          return (
-            <section key={cat} id={secId} className="sty-cat" data-fk={'sec:' + cat} style={{ '--cc': hueFor(cat) }}>
-              <div className="sty-cathead" onClick={headClick(secId)}>
-                <h2>{cat}</h2>
-                <b>{n}<i>/{games.length}</i></b>
-                {cav(secId)}
-                {reorder ? (
-                  <span className="sty-move">
-                    <button type="button" onClick={() => moveCat(cat, -1)} disabled={ci === 0} aria-label={`Move ${cat} up`}>&uarr;</button>
-                    <button type="button" onClick={() => moveCat(cat, 1)} disabled={ci === orderedCats.length - 1} aria-label={`Move ${cat} down`}>&darr;</button>
-                  </span>
-                ) : null}
-              </div>
-              <div className={'sty-games' + (isOpen(secId) ? '' : ' shut')}>
-                {playedLast(games, done).map((g, i) => (
-                  <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
-                    canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-                    res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} />
-                ))}
-              </div>
-            </section>
-          );
-        }) : catTiles}
+        <section className={'sty-cat sty-az' + (paneOn === ALL_ID ? '' : ' sty-ixoff')} style={{ '--cc': 'var(--stg-ink2)' }}>
+          <div className="sty-cathead">
+            <h2>All games</h2>
+            <b>{alphaDone}<i>/{alpha.length}</i></b>
+          </div>
+          <div className="sty-games">
+            {playedLast(alpha, done).map((g, i) => (
+              // ALL GAMES MIXES CATEGORIES exactly as My games does, so each
+              // card carries its own hue (owner, 2026-08-31).
+              <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
+                canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
+                hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'az:' + g.key} />
+            ))}
+          </div>
+        </section>
+        {catTiles}
 
         {/* A TO Z AND REORDER SIT UNDER THE CATEGORIES (owner, 2026-10-03). */}
-        {ordBar}
 
-        {circuits.length ? (
+        {ix ? (
           /* THE SAME OBJECT AS EVERY OTHER SECTION (owner, 2026-08-31): the 4px
              left rule and the head with a count, so Circuits stops being the one
              block on the page wearing a bare eyebrow. Its rule is neutral for
@@ -3695,6 +3691,27 @@ ${PATCH_CSS}
   .sty-ixc .sty-games{margin-left:-14px;margin-right:-14px;gap:1px;background:var(--stg-line);
     border-top:1px solid var(--stg-line);border-bottom:1px solid var(--stg-line);}
   .sty-ixc .sty-g{border:0;border-radius:0;}
+}
+
+/* ── THE INDEX, SECOND PASS (owner, 2026-10-06) ──
+   All games leads the list and is the default; Reorder lives at the foot of
+   the list (the last chip of the strip on a phone) and puts arrows on the
+   category rows in place. While reordering on a phone the strip UNFOLDS into
+   a column, because arrows on chips in a sideways scroller cannot be aimed. */
+.sty-ixr{cursor:default;}
+.sty-ixr .sty-move{display:inline-flex;gap:4px;margin:0;}
+.sty-ixre{align-self:flex-start;margin-top:8px;border:1px solid var(--stg-line);background:none;border-radius:999px;
+  padding:6px 12px;font:inherit;font-size:12px;font-weight:700;color:var(--stg-ink2);cursor:pointer;white-space:nowrap;}
+.sty-ixre:hover{color:var(--stg-ink);}
+.sty-ixre.on{border-color:var(--stg-acc);color:var(--stg-acc-ink);}
+.sty-ixre:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-ixe{margin:0;color:var(--stg-mute);font-size:13.5px;}
+@media (max-width:900px){
+  .sty-ixre{flex:none;align-self:center;margin-top:0;padding:8px 12px;}
+  .sty-ixn.re{flex-direction:column;overflow:visible;padding-right:0;-webkit-mask-image:none;mask-image:none;}
+  .sty-ixn.re .sty-ixb{grid-template-columns:10px minmax(0,1fr) auto;}
+  .sty-ixn.re .sty-ixre{align-self:flex-start;}
+  .sty-ixn.re .sty-move button{width:36px;height:36px;}
 }
 
 `;
