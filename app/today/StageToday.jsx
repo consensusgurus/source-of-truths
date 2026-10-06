@@ -688,6 +688,26 @@ export default function StageToday() {
     root.setAttribute('data-sty-anim', '1');
     return () => root.removeAttribute('data-sty-anim');
   }, []);
+  // A GLYPH REDRAWS WHEN ITS CARD IS POINTED AT (2026-10-06). The first draw is
+  // pure CSS off the mount (sty-draw, below). A redraw needs the animation NAME
+  // to change, and changing it BACK would replay it a second time on the way
+  // out, so the class alternates gg-a / gg-b and is never removed. One
+  // delegated listener for the page, and the relatedTarget test keeps a move
+  // between two children of the same card from counting as a new arrival.
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const over = (e) => {
+      const t = e.target && e.target.closest ? e.target.closest('a,button') : null;
+      if (!t || (e.relatedTarget && t.contains(e.relatedTarget))) return;
+      const gi = t.querySelector('.sty-gi');
+      if (!gi) return;
+      const b = gi.classList.contains('gg-a');
+      gi.classList.toggle('gg-a', !b);
+      gi.classList.toggle('gg-b', b);
+    };
+    document.addEventListener('pointerover', over, { passive: true });
+    return () => document.removeEventListener('pointerover', over);
+  }, []);
   const [done, setDone] = useState(() => new Set());
   const [inprog, setInprog] = useState(() => new Set());
   // Whether daily-status has ANSWERED, which is a different question from
@@ -3484,6 +3504,23 @@ ${PATCH_CSS}
    so a long standing never keeps the reader waiting on its last row. */
 [data-sty-anim] .sty-revr{animation:sty-in .3s cubic-bezier(.2,.7,.3,1) both;
   animation-delay:calc(min(var(--i,0),9) * 26ms);}
+/* THE GLYPH DRAWS ITSELF (owner, 2026-10-06). Every glyph is one stroke path
+   with pathLength 1 (GameGlyph), so a dash of 1 offset by 1 is an undrawn
+   glyph and the animation back to 0 sketches it. FROM frame only, like
+   sty-deal: the resting state is the plain drawn glyph. It plays off the mount
+   and again each time a row opens, 140ms behind its own card so the card
+   lands first. Same visibility gate as everything here, so a hidden tab never
+   holds a glyph undrawn. The three keyframes are identical on purpose: the
+   pointer handler restarts a draw by swapping the name. */
+@keyframes sty-draw{from{stroke-dashoffset:1;}}
+@keyframes sty-draw-a{from{stroke-dashoffset:1;}}
+@keyframes sty-draw-b{from{stroke-dashoffset:1;}}
+[data-sty-anim] .sty-gi .gg-p{stroke-dasharray:1;
+  animation:sty-draw .7s cubic-bezier(.6,0,.2,1) backwards;
+  animation-delay:calc(min(var(--i,0),14) * 22ms + 140ms);}
+[data-sty-anim] .sty-gi.gg-a .gg-p{animation-name:sty-draw-a;animation-delay:0s;}
+[data-sty-anim] .sty-gi.gg-b .gg-p{animation-name:sty-draw-b;animation-delay:0s;}
+@media (prefers-reduced-motion:reduce){[data-sty-anim] .sty-gi .gg-p{animation:none;}}
 @media (prefers-reduced-motion:reduce){
   [data-sty-anim] .sty-rev,[data-sty-anim] .sty-revr,[data-sty-anim] .sty-games .sty-g,
   [data-sty-anim] .sty-circs .sty-circ,[data-sty-anim] .sty-pulse{animation:none;}
