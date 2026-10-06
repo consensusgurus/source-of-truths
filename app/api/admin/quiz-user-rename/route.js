@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/admin-auth';
 import { supabaseAdmin } from '@/lib/supabase-server';
+import { dropStoredSnapshots } from '@/lib/results-snapshot-store';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -182,11 +183,7 @@ export async function POST(request) {
     // the renamed rows instead of serving the old name out of gzipped JSON.
     let snapshotCleared = 0;
     try {
-      const { data, error } = await supabaseAdmin
-        .from('quiz_results_snapshot')
-        .delete()
-        .gt('id', 0)
-        .select('id');
+      const { data, error } = await dropStoredSnapshots(supabaseAdmin);
       if (error) console.error('quiz-user-rename snapshot clear error', error);
       else snapshotCleared = (data || []).length;
     } catch (e) {

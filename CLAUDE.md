@@ -5549,6 +5549,19 @@ behind, two newest rows kept. It caches ROWS, never a derived figure, so no
 scoring can drift. Every read and write is wrapped: if the table is missing the
 code falls back to a plain keyset load.
 
+**MOVED TO SUPABASE STORAGE (2026-10-06), and the table is retired.** By October
+the blob was ~5MB and every refresh inserted a new 5MB row and deleted the old
+one. pg_stat_statements put that insert + delete at ~29GB of WAL and ~2.5M
+written blocks since May, against under 1GB for every real write on the site,
+and it drained the project's Disk IO budget (Supabase warning email). The
+snapshot now lives in the private bucket `results-snapshots` as
+`<name>.json.gz` plus a tiny `<name>.meta.json` (`lib/results-snapshot-store.js`,
+names `quiz-results` and `admin-results`), refreshed at 6 hours old or 10,000
+rows behind. Admin routes that rewrite rows call `dropStoredSnapshots`. **Never
+put a large or frequently rewritten blob in a Postgres row again**: every
+rewrite is a full TOAST copy plus WAL, and Disk IO is the scarcest resource on
+this project's compute tier.
+
 **3. `lib/quiz-derived-cache.js` — the computed state, per lambda.** Layers 1
 and 2 stop the re-FETCHING; this stops the re-DERIVING. `computeXp` sorts and
 walks every row to build every player's IQ Points and `computeTrophies` walks
