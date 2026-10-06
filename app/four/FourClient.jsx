@@ -857,7 +857,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
             <div
               key={shake}
               className={`fr-board${shake ? ' shake' : ''}${winLine ? ' won' : ''}`}
-              style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: 6, background: `linear-gradient(180deg, ${BOARD_BLUE}, ${BOARD_BLUE_DARK})`, border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: 6, touchAction: 'manipulation' }}
+              style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: 6, background: STAGE ? BOARD_BLUE : `linear-gradient(180deg, ${BOARD_BLUE}, ${BOARD_BLUE_DARK}), ${BOARD_BLUE}`, border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: 6, touchAction: 'manipulation' }}
             >
               {Array.from({ length: COLS }).map((_, c) => {
                 const full = pos.heights[c] >= ROWS;
@@ -889,9 +889,13 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
                             <div
                               className={`fr-disc${isLast && playing ? ' fresh' : ''}${lit ? ' lit' : ''}`}
                               style={{
+                                // NO DISC MAY DEPEND ON A GRADIENT TO BE SEEN (Android
+                                // report, 2026-10-06: a phone that paints no CSS
+                                // gradients showed every disc empty). One token on
+                                // both stops -> flat; otherwise a solid base layer.
                                 background: v === 1
-                                  ? `radial-gradient(circle at 34% 30%, ${RED}, ${RED_DARK})`
-                                  : `radial-gradient(circle at 34% 30%, ${YELLOW}, ${YELLOW_DARK})`,
+                                  ? (STAGE ? RED : `radial-gradient(circle at 34% 30%, ${RED}, ${RED_DARK}), ${RED}`)
+                                  : `radial-gradient(circle at 34% 30%, ${YELLOW}, ${YELLOW_DARK}), ${YELLOW}`,
                                 '--fr-rim': v === 1 ? DISC_RIM_YOU : DISC_RIM_FOE,
                               }}
                             />

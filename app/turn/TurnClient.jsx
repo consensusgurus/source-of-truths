@@ -742,9 +742,14 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
             className={`tn-disc${flipped ? ' tn-flip' : ''}${fresh ? ' tn-fresh' : ''}`}
             style={{
               width: '76%', height: '76%', borderRadius: '50%',
+              // NO DISC MAY DEPEND ON A GRADIENT TO BE SEEN (Android report,
+              // 2026-10-06: a phone that paints no CSS gradients showed every
+              // disc as an empty white circle). Where both stops are one token
+              // the disc is a flat colour; otherwise the gradient sits over a
+              // solid base layer, which is what a broken device falls back to.
               background: v === 1
-                ? `radial-gradient(circle at 34% 30%, ${DISC_YOU_HI}, ${DISC_YOU} 62%)`
-                : `radial-gradient(circle at 34% 30%, ${DISC_FOE_HI}, ${DISC_FOE} 62%)`,
+                ? (STAGE ? DISC_YOU : `radial-gradient(circle at 34% 30%, ${DISC_YOU_HI}, ${DISC_YOU} 62%), ${DISC_YOU}`)
+                : `radial-gradient(circle at 34% 30%, ${DISC_FOE_HI}, ${DISC_FOE} 62%), ${DISC_FOE}`,
               boxShadow: '0 1px 2px rgba(0,0,0,0.35)',
             }}
           />

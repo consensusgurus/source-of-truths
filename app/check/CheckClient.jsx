@@ -794,7 +794,7 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
                     aria-label={`row ${r + 1} column ${c + 1}${v ? (isRed(v) ? ' your piece' : ' black piece') : ''}`}
                     style={{ background: bg, cursor: dark && playing ? 'pointer' : 'default', boxShadow: hintSq === sq ? `inset 0 0 0 3px ${T.successDeep}` : canLift && sel == null ? 'inset 0 0 0 2px rgba(255,255,255,0.35)' : undefined }}>
                     {v !== 0 && (
-                      <div className="ck-pc" style={{ background: isRed(v) ? `radial-gradient(circle at 34% 30%, ${RED_PC}, ${RED_PC_DK})` : `radial-gradient(circle at 34% 30%, ${BLK_PC}, ${BLK_PC_DK})` }}>
+                      <div className="ck-pc" style={{ background: isRed(v) ? `radial-gradient(circle at 34% 30%, ${RED_PC}, ${RED_PC_DK}), ${RED_PC}` : `radial-gradient(circle at 34% 30%, ${BLK_PC}, ${BLK_PC_DK}), ${BLK_PC}` }}>
                         {isKing(v) && (
                           <svg className="ck-crown" viewBox="0 0 24 20" aria-hidden="true">
                             <path d="M1.9 5.6 7 10.2 12 1.9 17 10.2 22.1 5.6 20.3 15.3 3.7 15.3 Z" />

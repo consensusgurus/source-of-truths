@@ -955,8 +955,11 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
                 const checked = piece && piece.toUpperCase() === 'K' &&
                   ((white && whiteInCheck) || (!white && blackInCheck));
                 let bg = dark ? DARK_SQ : LIGHT_SQ;
-                if (isLast) bg = `linear-gradient(${LAST_SQ},${LAST_SQ}), ${bg}`;
-                if (isSel) bg = `linear-gradient(${SEL_SQ},${SEL_SQ}), ${dark ? DARK_SQ : LIGHT_SQ}`;
+                // The last-move and selected tints are an inset shadow, not a
+                // one-colour gradient layer: some Android browsers paint no CSS
+                // gradients at all (report 2026-10-06), and the selected square
+                // is the one thing a player cannot lose sight of. Same pixels.
+                const tint = isSel ? SEL_SQ : (isLast ? LAST_SQ : null);
                 if (checked) bg = `radial-gradient(circle, rgba(192,57,43,0.85) 12%, rgba(192,57,43,0.25) 62%, transparent 74%), ${dark ? DARK_SQ : LIGHT_SQ}`;
                 return (
                   <div
@@ -966,7 +969,7 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
                     role="button"
                     tabIndex={-1}
                     aria-label={squareName(sq) + (piece ? ` ${white ? 'white' : 'black'} ${piece.toUpperCase()}` : ' empty')}
-                    style={{ background: bg, boxShadow: isHint ? `inset 0 0 0 3px ${T.successDeep}` : undefined }}
+                    style={{ background: bg, boxShadow: [isHint ? `inset 0 0 0 3px ${T.successDeep}` : null, tint && !checked ? `inset 0 0 0 999px ${tint}` : null].filter(Boolean).join(', ') || undefined }}
                   >
                     {df === 0 && (
                       <span className="df-coord" style={{ left: 2, top: 1, color: dark ? LIGHT_SQ : DARK_SQ }}>{dr + 1}</span>
