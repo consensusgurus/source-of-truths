@@ -252,6 +252,15 @@ export default function StageChrome({
   const leader = board && board.leader;
   const catHref = gameKey ? categoryHrefForGame(gameKey) : null;
   const showStrip = !!(stripOn && leader);
+  // THE ROW IS HELD FROM FIRST PAINT (owner, 2026-10-06). The strip used to
+  // arrive with the board fetch, a few hundred ms after the page painted, and
+  // push the whole board down a row as it landed: the jitter every daily
+  // showed on load. So any page that WILL ask for a board keeps the strip's
+  // exact box from the start, and a day with no leader keeps it empty rather
+  // than closing the gap. The hold carries the strip's own children with
+  // blank text, so its height is the strip's height by construction, not a
+  // measured constant that drifts when the strip's type changes.
+  const holdStrip = !showStrip && !!(stripOn && boardOn && (quizId || gameKey));
   const pct = Math.max(0, Math.min(100, Math.round((Number(progress) || 0) * 100)));
 
   return (
@@ -378,6 +387,13 @@ export default function StageChrome({
             <i>{panel ? '‹' : '›'}</i>
           </span>
         </button>
+      ) : holdStrip ? (
+        <div className="stg-strip stg-strip-hold" aria-hidden="true">
+          <span className="stg-se">{'\u00a0'}</span>
+          <b className="stg-sn">{'\u00a0'}</b>
+          <span className="stg-sf">{'\u00a0'}</span>
+          <span className="stg-sy">{'\u00a0'}<i>{'\u00a0'}</i></span>
+        </div>
       ) : null}
 
       {/* YOUR OWN NUMBERS, UNDER THE FIELD'S (owner, 2026-08-31). They used to
@@ -486,6 +502,9 @@ const CSS = `
 .stg-strip:hover{background:var(--stg-surf,rgba(255,255,255,0.045));}
 .stg-strip.on{background:var(--stg-surf2,rgba(255,255,255,0.08));}
 .stg-strip:focus-visible{outline:2px solid var(--stg-acc);outline-offset:-2px;}
+/* The held row is a div standing in for a button: a button's UA line-height
+   is normal, so the div is told the same or it lands a pixel or two off. */
+.stg-strip-hold,.stg-strip-hold:hover{cursor:default;line-height:normal;box-sizing:border-box;}
 .stg-se{font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute2,#66748f);}
 .stg-sn{font-weight:800;}
 .stg-sf{font-family:${MONO};font-size:11.5px;color:var(--stg-ink2,#aab5c7);}
