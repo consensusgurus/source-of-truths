@@ -40,6 +40,14 @@ export const RUN_DOORS = {
     go: 'Run all seven', accent: '#7dd3fc',
     tags: [['Deep', '#7dd3fc'], ['Atlas', '#6ee7b7'], ['Sport', '#bef264'], ['Biz', '#e8b43a'], ['Script', '#fb923c'], ['Quotes', '#fb7185'], ['Streak', '#e879f9']],
   },
+  // Passport is a solo page rather than a RunClient run, so it has no
+  // sot_run_passport_<day> save; runDoneToday reads its day breadcrumb.
+  passport: {
+    href: '/passport', name: 'Passport', eyebrow: 'Daily run · One country',
+    body: 'One mystery country in five rounds: a landmark, its flag, its neighbors, its capital and its size. One score out of 50, and a passport to match.',
+    go: 'Start Passport', accent: '#6ee7b7',
+    tags: [['Landmark', '#a78bfa'], ['Flag', '#60a5fa'], ['Neighbors', '#34d399'], ['Capital', '#f87171'], ['Size', '#fbbf24']],
+  },
 };
 
 function etToday() {
@@ -56,6 +64,10 @@ export function runTouchedToday(id) {
 }
 export function runDoneToday(id) {
   try {
+    if (id === 'passport') {
+      const b = JSON.parse(localStorage.getItem('sot_passport_day') || 'null');
+      return !!(b && b.d === etToday() && b.done);
+    }
     const run = JSON.parse(localStorage.getItem(`sot_run_${id}_${etToday()}`) || 'null');
     return !!(run && run.phase === 'done');
   } catch (e) { return false; }

@@ -98,12 +98,15 @@ function readArrival() {
   } catch (e) { /* storage refused: nothing to arm, nothing to show */ }
 }
 
-export default function TriviaDoorPop({ ready = false }) {
+export default function TriviaDoorPop({ ready = false, onOpenChange }) {
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState(0);
   const fired = useRef(false);
 
   const close = useCallback(() => setOpen(false), []);
+  // Tells the run whether this card is up, so the first-Gauntlet offers
+  // (RunNudgePop chain) wait until it is closed rather than stacking on it.
+  useEffect(() => { if (onOpenChange) onOpenChange(open); }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // The arrival, read once at mount. Whether the layout's beacon has minted a
   // visitor id yet does not matter: an id born inside the last minute is one

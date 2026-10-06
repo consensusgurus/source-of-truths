@@ -212,6 +212,11 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   const [boardOpen, setBoardOpen] = useState(false);
   const curtainOnce = useRef(false);
   const doneAtLoad = useRef(null);
+  // FIRST GAUNTLET EVER on this browser (owner, 2026-10-06): no earlier day's
+  // run save finished, and the once-ever offer not yet shown. Read once, at
+  // the same hydrated render that decides doneAtLoad.
+  const firstEver = useRef(false);
+  const [doorUp, setDoorUp] = useState(false);
   const lockRef = useRef(false);
   const holdRef = useRef(false);
 
@@ -226,7 +231,22 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   useEffect(() => {
     if (!hydrated) return;
     // The first hydrated render decides whether this page ARRIVED finished.
-    if (doneAtLoad.current === null) doneAtLoad.current = done;
+    if (doneAtLoad.current === null) {
+      doneAtLoad.current = done;
+      if (circuitId === 'gauntlet') {
+        try {
+          let seen = !!localStorage.getItem('sot_gauntlet_first_offer');
+          const pre = 'sot_run_gauntlet_';
+          for (let i = 0; !seen && i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (!k || !k.startsWith(pre) || k === STORE_KEY) continue;
+            const v = readJson(k);
+            if (v && v.phase === 'done') seen = true;
+          }
+          firstEver.current = !seen;
+        } catch (e) { firstEver.current = false; }
+      }
+    }
     if (done && !doneAtLoad.current && !curtainOnce.current) {
       curtainOnce.current = true;
       setCurtain(true);
@@ -757,7 +777,14 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
       {/* FROM ONE RUN TO THE OTHER (owner, 2026-10-01): a Trivia Gauntlet
           finished in this sitting offers Price Check once the finale has
           played, unless Price Check is already done today. */}
-      {circuitId === 'gauntlet' && <RunNudgePop target="pricecheck" ready={done && doneAtLoad.current === false && !curtain} delay={3500} />}
+      {/* FIRST GAUNTLET EVER (owner, 2026-10-06): Price Check, and if that is
+          declined, Passport. Waits for the /trivia door card if it is up. */}
+      {circuitId === 'gauntlet' && firstEver.current && (
+        <RunNudgePop chain={['pricecheck', 'passport']} fresh eyebrows={['Your first Gauntlet, done', 'Or try this one']}
+          ready={done && doneAtLoad.current === false && !curtain && !doorUp} delay={3500}
+          onOpen={() => { try { localStorage.setItem('sot_gauntlet_first_offer', '1'); } catch (e) {} }} />
+      )}
+      {circuitId === 'gauntlet' && !firstEver.current && <RunNudgePop target="pricecheck" ready={done && doneAtLoad.current === false && !curtain} delay={3500} />}
 
       {/* THE ONLY CHROME. Not LoftCap and not the site footer: the run is a
           sitting you sit down to, and every band above or below it was another
@@ -1472,7 +1499,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           Mounted in every phase so it can read the /trivia arrival at mount;
           it opens only on the scorecard, after the curtain, and only for a
           first-timer who came in through /trivia. See TriviaDoorPop. */}
-      <TriviaDoorPop ready={hydrated && done && !curtain} />
+      <TriviaDoorPop ready={hydrated && done && !curtain} onOpenChange={setDoorUp} />
     </div>
   );
 }

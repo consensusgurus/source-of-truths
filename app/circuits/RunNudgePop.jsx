@@ -17,25 +17,46 @@ import { RUN_DOORS, runDoneToday } from './RunDoorPop';
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
 
-export default function RunNudgePop({ target = 'gauntlet', ready = false, delay = 450, fireOnLeave = false, onClose }) {
-  const D = RUN_DOORS[target];
-  const [open, setOpen] = useState(false);
+//
+// `chain` (owner, 2026-10-06): a list of targets offered one after another.
+// Declining one (Not now, the X, Escape, the backdrop) opens the next that
+// has not been finished today; taking one navigates away. Used for the first
+// Trivia Gauntlet a browser ever finishes: Price Check, then Passport.
+// `fresh` drops the "you have not run it today" line, which reads oddly to
+// someone who has never run anything. `onOpen` fires once, when the first
+// card opens, so the caller can stamp a once-ever flag.
+export default function RunNudgePop({ target = 'gauntlet', chain = null, ready = false, delay = 450, fireOnLeave = false, fresh = false, eyebrows = null, onOpen, onClose }) {
+  const list = chain && chain.length ? chain : [target];
+  const [idx, setIdx] = useState(-1);
+  const cur = idx >= 0 ? list[idx] : null;
+  const D = cur ? RUN_DOORS[cur] : null;
+  const open = !!D;
   const fired = useRef(false);
-  const close = useCallback(() => { setOpen(false); if (onClose) onClose(); }, [onClose]);
+  const nextFrom = useCallback((from) => {
+    for (let i = from; i < list.length; i++) if (RUN_DOORS[list[i]] && !runDoneToday(list[i])) return i;
+    return -1;
+  }, [list.join('|')]); // eslint-disable-line react-hooks/exhaustive-deps
+  const close = useCallback(() => {
+    const n = nextFrom(idx + 1);
+    setIdx(n);
+    if (n < 0 && onClose) onClose();
+  }, [idx, nextFrom, onClose]);
 
   useEffect(() => {
-    if (!D || !ready || fired.current) return undefined;
+    if (!ready || fired.current) return undefined;
     const fire = () => {
       if (fired.current) return;
       fired.current = true;
-      if (runDoneToday(target)) return;
-      setOpen(true);
+      const n = nextFrom(0);
+      if (n < 0) return;
+      setIdx(n);
+      if (onOpen) onOpen();
     };
     const t = setTimeout(fire, delay);
     const onHide = () => { if (document.visibilityState === 'hidden') fire(); };
     if (fireOnLeave) document.addEventListener('visibilitychange', onHide);
     return () => { clearTimeout(t); if (fireOnLeave) document.removeEventListener('visibilitychange', onHide); };
-  }, [ready, target, D, delay, fireOnLeave]);
+  }, [ready, nextFrom, delay, fireOnLeave]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!open) return undefined;
@@ -48,11 +69,11 @@ export default function RunNudgePop({ target = 'gauntlet', ready = false, delay 
   return (
     <div className="rnp-bd" role="dialog" aria-modal="true" aria-labelledby="rnp-h" onClick={close}>
       <style dangerouslySetInnerHTML={{ __html: CSS(D.accent) }} />
-      <div className="rnp" onClick={(e) => e.stopPropagation()}>
+      <div className="rnp" key={cur} onClick={(e) => e.stopPropagation()}>
         <button type="button" className="rnp-x" onClick={close} aria-label="Close"><X size={14} strokeWidth={2.4} /></button>
-        <i className="rnp-e">One more run today</i>
+        <i className="rnp-e">{(eyebrows && eyebrows[idx]) || 'One more run today'}</i>
         <h2 className="rnp-h" id="rnp-h">{D.name}</h2>
-        <p className="rnp-p">{D.body} You have not run it today.</p>
+        <p className="rnp-p">{D.body}{fresh ? '' : ' You have not run it today.'}</p>
         <div className="rnp-tags">{D.tags.map(([t, c]) => <span key={t} style={{ background: c }}>{t}</span>)}</div>
         <a className="rnp-go" href={D.href}>Start {D.name}</a>
         <button type="button" className="rnp-no" onClick={close}>Not now</button>
