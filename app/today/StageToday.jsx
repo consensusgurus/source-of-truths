@@ -1608,6 +1608,10 @@ export default function StageToday() {
   const ix = true;
   const paneIds = [ALL_ID, MINE_ID, CIRC_ID, ...orderedCats.map((c) => c.cat)];
   const paneOn = paneIds.includes(pane) ? pane : ALL_ID;
+  // CHOOSING CIRCUITS IN THE INDEX ASKS FOR ALL OF THEM (owner, 2026-10-06): the
+  // pane is the reader's request to browse circuits, so it lists the whole
+  // roster, and the Show all bar survives only where Circuits is one row of many.
+  const circPane = ix && paneOn === CIRC_ID;
   const openDefault = (id) => (id === CIRC_ID || id === WORD_ID ? true : (id === MINE_ID ? hasPins : false));
   // In the index a pane is simply up or not, so its own collapse is out of play.
   const isOpen = (id) => (ix && (id === MINE_ID || id === CIRC_ID)) || (shelfOpen && Object.prototype.hasOwnProperty.call(shelfOpen, id)
@@ -2268,7 +2272,7 @@ export default function StageToday() {
               {cav(CIRC_ID)}
             </div>
             <div className={'sty-circs' + (isOpen(CIRC_ID) ? '' : ' shut')} ref={circRef}>
-              {(allCircs ? circuits : circLead).map((c, i) => (
+              {(allCircs || circPane ? circuits : circLead).map((c, i) => (
                 <a key={c.id} className={'sty-circ' + (c.n === c.games.length ? ' full' : '')}
                   href={withTq(circuitEntryHref(c.id))} style={{ '--cc': c.hue, '--i': i }}>
                   {/* The count sits IN the header row, not absolutely over the
@@ -2293,7 +2297,7 @@ export default function StageToday() {
                 </a>
               ))}
             </div>
-            {isOpen(CIRC_ID) && circuits.length > circLead.length ? (
+            {isOpen(CIRC_ID) && !circPane && circuits.length > circLead.length ? (
               <button type="button" className="sty-more" onClick={() => setAllCircs((v) => !v)}>
                 {allCircs ? 'Show fewer' : `Show all ${circuits.length} circuits`}
               </button>
