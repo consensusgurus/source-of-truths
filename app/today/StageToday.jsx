@@ -327,6 +327,9 @@ const leadRankOf = (id) => {
 // keeps following the default (which changes the day they star something), and
 // one they shut by hand stays shut where the default would open it.
 const SHELF_OPEN_KEY = 'sot_shelf_open';
+// THE INDEX AND PANE (owner, 2026-10-06). Which pane the reader last had up:
+// 'sty-mine', 'sty-circs' or a category name. Per browser, like the keys above.
+const PANE_KEY = 'sot_home_pane';
 const MINE_ID = 'sty-mine';
 const CIRC_ID = 'sty-circs';
 // The Word category's section id, the same shape the render derives for every
@@ -729,6 +732,15 @@ export default function StageToday() {
   const [allCircs, setAllCircs] = useState(false);
   // CATEGORY BUTTONS (owner, 2026-10-03): one category open at a time, closed on load.
   const [catOpen, setCatOpen] = useState(null);
+  // Read in an effect, never during render: the server cannot know it.
+  const [pane, setPane] = useState(null);
+  useEffect(() => {
+    try { const v = localStorage.getItem(PANE_KEY); if (v) setPane(v); } catch (e) {}
+  }, []);
+  const pickPane = (id) => {
+    setPane(id);
+    try { localStorage.setItem(PANE_KEY, id); } catch (e) {}
+  };
   const [catCols, setCatCols] = useState(5);
   const [mineAll, setMineAll] = useState(false);
 
@@ -1566,8 +1578,36 @@ export default function StageToday() {
   // Phone My games shows everything now (owner, 2026-10-03), so the cut is off.
   const mineCut0 = false;
   const mineCut = mineCut0 && !mineAll;
+  // ── THE INDEX AND PANE (owner, 2026-10-06) ──────────────────────────
+  // My games, Circuits and the ten categories are ONE LIST down the left, and
+  // the right side shows whichever the reader picked. It replaced the stack of
+  // My games / category buttons / Circuits, where opening a category pushed
+  // everything under it down the page and a starred game was on screen twice.
+  // A to Z and Reorder are whole-page modes and step outside it (`ix` false),
+  // where every section behaves exactly as it did.
+  //
+  // EVERY PANE IS RENDERED and the unpicked ones are display:none, so all the
+  // game links stay in the HTML for crawlers: the rule the shut sections and
+  // the category buttons followed before this.
+  //
+  // The default is My games for a reader with stars and Word for everyone
+  // else, the same two the old page opened by default. A stored pick wins, and
+  // one that no longer resolves (a category gone, the stars removed) falls
+  // back to the default rather than showing an empty pane.
+  const ix = !az && !reorder;
+  const mineShown = !!(mineTot || (!who && returning));
+  const paneIds = [
+    ...(mineShown ? [MINE_ID] : []),
+    ...(circuits.length ? [CIRC_ID] : []),
+    ...orderedCats.map((c) => c.cat),
+  ];
+  const paneDef = mineTot ? MINE_ID
+    : orderedCats.some((c) => c.cat === 'Word') ? 'Word'
+    : orderedCats[0] ? orderedCats[0].cat : CIRC_ID;
+  const paneOn = ix ? (paneIds.includes(pane) ? pane : paneDef) : null;
   const openDefault = (id) => (id === CIRC_ID || id === WORD_ID ? true : (id === MINE_ID ? hasPins : false));
-  const isOpen = (id) => (shelfOpen && Object.prototype.hasOwnProperty.call(shelfOpen, id)
+  // In the index a pane is simply up or not, so its own collapse is out of play.
+  const isOpen = (id) => (ix && (id === MINE_ID || id === CIRC_ID)) || (shelfOpen && Object.prototype.hasOwnProperty.call(shelfOpen, id)
     ? !!shelfOpen[id]
     : openDefault(id));
   const setOpen = (id, on) => {
@@ -1581,6 +1621,7 @@ export default function StageToday() {
   // that landed on a control of its own is not a click on the head.
   const headClick = (id) => (e) => {
     try { if (e.target && e.target.closest && e.target.closest('a,button')) return; } catch (x) {}
+    if (ix) return;
     setOpen(id, !isOpen(id));
   };
   const cav = (id) => (
@@ -1649,70 +1690,44 @@ export default function StageToday() {
   // its own row, one category at a time. EVERY panel is rendered and the shut
   // ones are display:none, so all the game links stay in the HTML for crawlers,
   // the same rule the old shut sections followed.
-  const tileRows = [];
-  for (let i = 0; i < orderedCats.length; i += catCols) tileRows.push(orderedCats.slice(i, i + catCols));
-  const catTotal = orderedCats.reduce((t, c) => t + c.games.length, 0);
-  const catDoneN = orderedCats.reduce((t, c) => t + c.games.filter((g) => done.has(g.key)).length, 0);
-  const catTiles = (
-    <section className={'sty-cat sty-tiles' + (catOpen ? ' has-open' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
-      <div className="sty-cathead">
-        <h2>Categories</h2>
-        <b>{catDoneN}<i>/{catTotal}</i></b>
-      </div>
-      {tileRows.map((row, ri) => (
-        <div className="sty-crowwrap" key={ri}>
-          <div className="sty-crow" style={{ '--tc': catCols }}>
-            {row.map(({ cat, games }) => {
-              const n = games.filter((g) => done.has(g.key)).length;
-              const on = catOpen === cat;
-              const resume = games.find((g) => inprog.has(g.key) && !done.has(g.key));
-              const nxt = games.find((g) => !done.has(g.key) && !inprog.has(g.key));
-              const rungs = [
-                ...games.filter((g) => done.has(g.key)),
-                ...games.filter((g) => !done.has(g.key) && inprog.has(g.key)),
-                ...games.filter((g) => !done.has(g.key) && !inprog.has(g.key)),
-              ];
-              const line = resume ? `Resume ${resume.name}`
-                : nxt ? `${returning === false ? 'Start with' : 'Next:'} ${nxt.name}` : 'All played today';
-              return (
-                <button key={cat} type="button" className={'sty-tile' + (on ? ' on' : '')}
-                  style={{
-                    '--cc': hueFor(cat),
-                    '--stg-onramp': light ? categoryOnrampLight(cat) : RAMP_INK,
-                    // THE PASTEL A FINISHED GAME TILE WEARS (13caf3b80), used on the
-                    // OTHER buttons while one category is open (owner, 2026-10-03).
-                    '--cp': light ? `color-mix(in srgb, ${categoryColor(cat)} 66%, #fff)` : `color-mix(in srgb, ${categoryColor(cat)} 30%, var(--stg-surf))`,
-                    '--cpi': light ? RAMP_INK : 'var(--stg-ink)',
-                  }} aria-expanded={on}
-                  aria-controls={`cat-${cat.replace(/\s+/g, '-')}`} onClick={() => pickCat(cat)}>
-                  <span className="sty-th"><b>{cat}</b><span className="sty-ctn">{n}<i>/{games.length}</i></span></span>
-                  <span className="sty-trung" aria-hidden="true">
-                    {rungs.map((g) => <i key={g.key} className={done.has(g.key) ? 'd' : inprog.has(g.key) ? 'p' : undefined} />)}
-                  </span>
-                  <span className="sty-tf"><span className="sty-ctnext">{line}</span><span className="sty-tact">{on ? 'Close' : 'Open'}</span></span>
-                </button>
-              );
-            })}
-          </div>
-          {row.map(({ cat, games }) => {
-            const on = catOpen === cat;
-            return (
-              <div key={cat} id={`cat-${cat.replace(/\s+/g, '-')}`} className={'sty-tdraw' + (on ? '' : ' shut')}
-                data-fk={'sec:' + cat} style={{ '--cc': hueFor(cat) }}>
-                <div className="sty-games">
-                  {playedLast(games, done).map((g, i) => (
-                    <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
-                      canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-                      res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} />
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ))}
-    </section>
+  const ixBtn = (id, label, n, tot, hue) => (
+    <button key={id} type="button" role="tab" aria-selected={paneOn === id}
+      className={'sty-ixb' + (paneOn === id ? ' on' : '')} style={{ '--cc': hue }}
+      onClick={() => pickPane(id)}>
+      <i aria-hidden="true" />
+      <span>{label}</span>
+      {tot ? <b>{n}<em>/{tot}</em></b> : null}
+    </button>
   );
+  const ixNav = ix ? (
+    <nav className="sty-ixn" role="tablist" aria-label="Sections">
+      {mineShown ? ixBtn(MINE_ID, 'My games', mineDone, mineTot, 'var(--stg-ink)') : null}
+      {circuits.length ? ixBtn(CIRC_ID, 'Circuits',
+        circuits.filter((c) => c.n === c.games.length).length, circuits.length, 'var(--stg-mute)') : null}
+      {orderedCats.map(({ cat, games }) => ixBtn(cat, cat,
+        games.filter((g) => done.has(g.key)).length, games.length, hueFor(cat)))}
+    </nav>
+  ) : null;
+  const catTiles = orderedCats.map(({ cat, games }) => {
+    const n = games.filter((g) => done.has(g.key)).length;
+    return (
+      <section key={cat} id={`cat-${cat.replace(/\s+/g, '-')}`}
+        className={'sty-cat sty-ixc' + (paneOn === cat ? '' : ' sty-ixoff')}
+        data-fk={'sec:' + cat} style={{ '--cc': hueFor(cat) }}>
+        <div className="sty-cathead">
+          <h2>{cat}</h2>
+          <b>{n}<i>/{games.length}</i></b>
+        </div>
+        <div className="sty-games">
+          {playedLast(games, done).map((g, i) => (
+            <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
+              canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
+              res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} />
+          ))}
+        </div>
+      </section>
+    );
+  });
 
   return (
     <div className="sty stage-page" data-stage-theme={stageTheme} ref={snapRef}>
@@ -2125,8 +2140,10 @@ export default function StageToday() {
             to be filled. */}
         {/* The SECTION's rule is neutral because this row is not a category:
             the cards inside it carry their own categories' colours. */}
+        <div className={ix ? 'sty-ix' : 'sty-ixw'}>
+        {ixNav}
         {(mineTot || (!who && returning)) ? (
-          <section className="sty-cat sty-mine sty-rev" style={{ '--cc': 'var(--stg-ink2)' }}>
+          <section className={'sty-cat sty-mine sty-rev' + (ix && paneOn !== MINE_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
             {/* An empty section has nothing to collapse and no fraction to
                 print, so the head keeps its title and drops both. */}
             <div className="sty-cathead" onClick={mineTot ? headClick(MINE_ID) : undefined}>
@@ -2248,7 +2265,7 @@ export default function StageToday() {
              block on the page wearing a bare eyebrow. Its rule is neutral for
              the reason My games' is: a circuit spans categories, so there is no
              single hue that would be honest here. */
-          <section className="sty-cat sty-circsec sty-rev" style={{ '--cc': 'var(--stg-ink2)' }}>
+          <section className={'sty-cat sty-circsec sty-rev' + (ix && paneOn !== CIRC_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
             <div className="sty-cathead" onClick={headClick(CIRC_ID)}>
               <h2>Circuits</h2>
               <b>{circuits.filter((c) => c.n === c.games.length).length}<i>/{circuits.length}</i></b>
@@ -2287,6 +2304,7 @@ export default function StageToday() {
             ) : null}
           </section>
         ) : null}
+        </div>
 
 
         {/* THE DAY'S THREE RECORDS, and the grid decides which of them share a
@@ -3623,6 +3641,60 @@ ${PATCH_CSS}
   .sty-mine .sty-minec{order:1;}
   .sty-mine .sty-games{order:2;margin-top:-1px;}
   .sty-mine .sty-more{order:3;}
+}
+
+/* ── THE INDEX AND PANE (owner, 2026-10-06) ──
+   One list on the left, one pane on the right. The grid places the list in
+   column one across both rows, the single visible pane in row one and the
+   A to Z bar under it, so the DOM order (My games, categories, bar, Circuits)
+   does not have to change and the two whole-page modes can drop the grid by
+   swapping one class. .sty-ixw is that swap: display:contents, so outside the
+   index every section is a direct flex child of the page again.
+   THE LEFT RAILS ARE GONE EVERYWHERE (same ruling). A category now says its
+   colour with a swatch in the index and beside its own heading. */
+.sty-cat{padding-left:0;}
+.sty-cat::before{display:none;}
+.sty-ixw{display:contents;}
+.sty-ixoff{display:none !important;}
+.sty-ix{display:grid;grid-template-columns:212px minmax(0,1fr);column-gap:26px;row-gap:14px;align-items:start;}
+.sty-ix > .sty-ixn{grid-column:1;grid-row:1 / span 2;}
+.sty-ix > .sty-cat{grid-column:2;grid-row:1;min-width:0;}
+.sty-ix > .sty-ord{grid-column:2;grid-row:2;}
+.sty-ixn{display:flex;flex-direction:column;gap:2px;}
+.sty-ixb{display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:center;gap:10px;border:0;
+  background:none;border-radius:8px;padding:8px 10px;font:inherit;font-size:13.5px;font-weight:700;
+  color:var(--stg-ink2);text-align:left;cursor:pointer;}
+.sty-ixb > i{width:10px;height:10px;border-radius:3px;background:var(--cc);}
+.sty-ixb > span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-ixb > b{font-family:${MONO};font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--stg-ink2);}
+.sty-ixb > b em{font-style:normal;color:var(--stg-mute);}
+.sty-ixb:hover{color:var(--stg-ink);background:var(--stg-surf);}
+.sty-ixb.on{background:var(--stg-chip);color:var(--stg-ink);font-weight:800;}
+.sty-ixb:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-ix .sty-cav{display:none;}
+.sty-ix .sty-cathead{cursor:default;}
+.sty-ixc .sty-cathead h2::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;
+  background:var(--cc);margin-right:8px;}
+/* BELOW 900px THE LIST IS A STRIP that scrolls sideways above the pane. The
+   right edge fades so a cut-off name reads as more to come, and the trailing
+   padding lets the last one scroll clear of the fade. */
+@media (max-width:900px){
+  .sty-ix{grid-template-columns:minmax(0,1fr);}
+  .sty-ix > .sty-ixn{grid-column:1;grid-row:1;}
+  .sty-ix > .sty-cat{grid-column:1;grid-row:2;}
+  .sty-ix > .sty-ord{grid-column:1;grid-row:3;}
+  .sty-ixn{flex-direction:row;gap:6px;overflow-x:auto;scrollbar-width:none;padding-right:34px;
+    -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 34px),transparent);
+    mask-image:linear-gradient(90deg,#000 calc(100% - 34px),transparent);}
+  .sty-ixn::-webkit-scrollbar{display:none;}
+  .sty-ixb{flex:none;grid-template-columns:10px auto auto;border:1px solid var(--stg-line);padding:8px 12px;}
+  .sty-ixb.on{border-color:transparent;}
+}
+/* A category pane takes the same edge-to-edge bands on a phone as My games. */
+@media (max-width:640px){
+  .sty-ixc .sty-games{margin-left:-14px;margin-right:-14px;gap:1px;background:var(--stg-line);
+    border-top:1px solid var(--stg-line);border-bottom:1px solid var(--stg-line);}
+  .sty-ixc .sty-g{border:0;border-radius:0;}
 }
 
 `;
