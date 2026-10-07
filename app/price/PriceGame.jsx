@@ -21,7 +21,7 @@
 // The bank is resolved on the server and only the picked day ships, so
 // tomorrow's price never reaches a browser.
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { X, Smartphone, ArrowUp, ArrowDown, ExternalLink } from 'lucide-react';
 import Grain from '../Grain';
@@ -54,6 +54,31 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import RunDoorPop from '../circuits/RunDoorPop';
 import { PRICE_GAMES, GUESSES, TOTAL, errOf, bandOf, scoreOf, pctLabel, fmtCents, parseGuess } from '@/lib/price-games';
+
+// AUTO COMMAS IN THE GUESS BAR (owner, 2026-10-06). The guess is regrouped as
+// it is typed, so 1250000 reads 1,250,000. Keeps one decimal point, keeps a
+// trailing k / m / b shorthand, and drops anything else. parseGuess already
+// strips commas, so scoring is unchanged.
+export function groupGuess(raw) {
+  let s = String(raw || '').replace(/[^0-9.kmbKMB]/g, '');
+  let suf = '';
+  const li = s.search(/[kmbKMB]/);
+  if (li >= 0) { suf = /\d/.test(s.slice(0, li)) ? s[li].toLowerCase() : ''; s = s.slice(0, li); }
+  const dot = s.indexOf('.');
+  let int = dot < 0 ? s : s.slice(0, dot);
+  const dec = dot < 0 ? null : s.slice(dot + 1).replace(/\./g, '');
+  int = int.replace(/^0+(?=\d)/, '');
+  const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return grouped + (dec != null ? '.' + dec : '') + suf;
+}
+// Where the caret belongs in the regrouped text: after the same number of
+// meaningful characters (digits, the point, the suffix) it followed before.
+export function caretAfter(text, sig) {
+  if (sig <= 0) return 0;
+  let n = 0;
+  for (let i = 0; i < text.length; i++) { if (text[i] !== ',' && ++n === sig) return i + 1; }
+  return text.length;
+}
 
 const COLORS = {
   cream: T.surface, ink: T.ink, ember: T.accent, rust: T.danger, faded: T.muted,
@@ -206,6 +231,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
   const gRef = useRef(g);
   const [now, setNow] = useState(() => Date.now());
   const [q, setQ] = useState('');
+  const caretRef = useRef(null);
   const [notice, setNotice] = useState(null);
   const [showHelp, setShowHelp] = useState(false);
   const [gateRules, setGateRules] = useState(false);
@@ -232,6 +258,15 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
   const viewedRef = useRef(false);
   const noticeRef = useRef(null);
   const inputRef = useRef(null);
+  // Put the caret back where the player was typing after a regroup moves commas.
+  useLayoutEffect(() => {
+    const el = inputRef.current; const sig = caretRef.current;
+    if (el == null || sig == null) return;
+    caretRef.current = null;
+    if (document.activeElement !== el) return;
+    const p = caretAfter(q, sig);
+    try { el.setSelectionRange(p, p); } catch (e) {}
+  }, [q]);
   const runDoneRef = useRef(false);
 
   const playing = g.status === 'playing';
@@ -603,8 +638,21 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
             <label className="pr-money">
               <span>$</span>
               <input ref={inputRef} type="text" inputMode="decimal" autoComplete="off" value={q}
-                onChange={(e) => setQ(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); guess(); } }}
+                onChange={(e) => {
+                  const el = e.target; const raw = el.value;
+                  const pos = el.selectionStart == null ? raw.length : el.selectionStart;
+                  caretRef.current = raw.slice(0, pos).replace(/[^0-9.kmbKMB]/g, '').length;
+                  setQ(groupGuess(raw));
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { e.preventDefault(); guess(); return; }
+                  // Backspace or Delete next to a comma removes the digit beside it,
+                  // instead of a comma that would only be put straight back.
+                  const el = e.target; const a = el.selectionStart, b = el.selectionEnd;
+                  if (a == null || a !== b) return;
+                  if (e.key === 'Backspace' && a > 0 && el.value[a - 1] === ',') el.setSelectionRange(a - 1, a - 1);
+                  else if (e.key === 'Delete' && el.value[a] === ',') el.setSelectionRange(a + 1, a + 1);
+                }}
                 placeholder={left === 1 ? 'Last guess' : 'Your guess'} aria-label="Your price guess in dollars" />
             </label>
             <button type="button" className="pr-go" onClick={guess}>Guess</button>
