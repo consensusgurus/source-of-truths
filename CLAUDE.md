@@ -8599,3 +8599,30 @@ Not in the Arcade circuit (still Blocks and Sweep); whether it joins is an owner
 - `scripts/verify-snake.mjs` checks the bank (contiguous dates, quizIds, Sunday frames) and
   the engine (determinism, wrap, reversal, tail-chase, self-bite, Sunday growth, and that a
   greedy run on every banked day eats apples).
+
+## Dario (`/dario`): the daily side-scroller, HELD FOR REVIEW (added 2026-10-07)
+
+A three-level platformer run (The Valley, The Data Center, The Launch Site), a send-up of the AI
+race told through parody billboards (ClosedAI, Goggle, Teslo, Nvideo, DeepSink, Qwan, Space-Y).
+Key/route `dario`, category **Arcade**, `miss: null`. Wired by `scripts/wire-dario.mjs`.
+
+- **HELD FOR REVIEW (owner, 2026-10-07).** The page is live and noindexed, runs post and rank, but
+  `REVIEW_HOLD` in `lib/daily-games.js` keeps it off every display list (it rides the run-only
+  filters: `liveDailyKeys`, `LoftCap`, `useDailyRoster`). It IS in `lib/daily-slate.js`, so a run
+  scores on the day's combined board like any daily. To launch: empty `REVIEW_HOLD`, drop the
+  `robots` line from `app/dario/page.js`, and wire the display lists the way `wire-snake.mjs` does.
+- **Seeded daily remix, fixed geometry.** `lib/dario-engine.js buildLevels(quizId)` keeps every
+  level's layout fixed (so every day is beatable) and seeds where the bots, robotaxis, chips and the
+  one shield crate sit, plus rocket and platform timing. The client and `scripts/verify-dario.mjs`
+  share the function. `app/dario/puzzles.js` is a calendar written by `scripts/gen-dario.mjs`.
+- **Ranked on SPEED.** A full clear posts score 10/10 and its run time in TENTHS of a second as
+  `guessesUsed` (cap 10000), so the arcade tiebreak ranks clears by time to a tenth; `timeElapsed`
+  carries whole seconds for display. An unfinished run scores 3 per level cleared plus up to 2, and
+  posts `10000 - tiles travelled`, so going further ranks higher. Best run of the day counts (Arcade).
+  The run clock counts play only: it stops for pauses and level cards and runs while dying.
+- **All-time fastest list:** `/api/quiz/dario-fastest`, best full clear per registered player across
+  every day, read off `guesses_used`. Rendered under the board.
+- **Music:** an original chiptune arrangement of Rossini's William Tell Overture finale (1829, public
+  domain), in the engine. M toggles it; the choice is remembered (`sot_dario_music`).
+- **Mobile:** a pad under the screen in portrait (hold arrows, tap Jump, Run locks on), overlaid on
+  the screen in a short landscape viewport, and a Full screen button where the browser supports it.
