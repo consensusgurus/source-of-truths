@@ -340,6 +340,7 @@ const catLabel = (c) => (c === 'Word' ? 'Words' : c);
 const CAT_FIXED = ['Word', 'Numbers', 'Logic', 'Sudoku', 'Trivia', 'Geography', 'End Game', 'Cards', 'Arcade', 'Crowd Psychology'];
 // THE REST OF THE PAGE IS PANES TOO (owner, 2026-10-07). Each id is also the
 // section's DOM id, so a #hash that names one opens it.
+const FAV_GAP = 24; const FAV_HEAD = 50; const FAV_ROW = 24;
 const STAND_ID = 'sty-standing';
 const GRP_ID = 'sty-group';
 const BOARD_ID = 'sty-board';
@@ -1914,9 +1915,60 @@ export default function StageToday() {
     if (r0 * MINH + (r0 - 1) * G >= H * 0.85) return null;
     // CAPPED (owner, 2026-10-07): the standard columns and the standard type;
     // a tile only gets taller, and never past 132px, even if that leaves room.
-    const h = Math.min(132, Math.floor((H - (r0 - 1) * G) / r0));
-    if (h <= MINH) return null;
-    return { gridAutoRows: `${h}px` };
+    // YOUR FAVORITES TAKES WHAT IT CAN (owner, 2026-10-07): as many rows as
+    // fit under tiles at their standard height, and the tiles grow into the rest.
+    const k = Math.max(0, Math.min(n, 10, Math.floor((H - (r0 * MINH + (r0 - 1) * G) - FAV_GAP - FAV_HEAD) / FAV_ROW)));
+    const used = k ? FAV_GAP + FAV_HEAD + k * FAV_ROW : 0;
+    const h = Math.min(132, Math.floor((H - used - (r0 - 1) * G) / r0));
+    if (h <= MINH && !k) return null;
+    return { style: { gridAutoRows: `${Math.max(MINH, h)}px` }, k };
+  };
+  // One read for the whole page, the first time a short category opens.
+  const [fav, setFav] = useState(null);
+  const favAsked = useRef(false);
+  const favWanted = !!(railCat && fitFor(railCat.games.length));
+  useEffect(() => {
+    if (!favWanted || favAsked.current) return;
+    favAsked.current = true;
+    const qs = identityQs();
+    fetch('/api/quiz/my-plays' + (qs ? '?' + qs : '')).then((r) => r.json())
+      .then((d) => setFav({ mine: (d && d.mine) || {}, site: (d && d.site) || {} }))
+      .catch(() => setFav({ mine: {}, site: {} }));
+  }, [favWanted]);
+  const favBlock = (cat, games, k) => {
+    if (!k) return null;
+    let rows = null; let own = false; let total = 0; let tried = 0;
+    if (fav) {
+      own = games.some((g) => fav.mine[g.key]);
+      const val = (g) => (own ? ((fav.mine[g.key] || {}).plays || 0) : (fav.site[g.key] || 0));
+      const all = games.map((g) => ({ g, v: val(g), recent: own && fav.mine[g.key] ? fav.mine[g.key].recent : '' }))
+        .sort((a, b) => b.v - a.v || a.g.name.localeCompare(b.g.name));
+      total = all.reduce((t, x) => t + x.v, 0);
+      tried = all.filter((x) => x.v > 0).length;
+      rows = all.slice(0, k);
+    }
+    const max = rows && rows.length ? Math.max(1, rows[0].v) : 1;
+    return (
+      <div className={'sty-fav' + (fav && !own ? ' site' : '')}>
+        <div className="sty-favh">
+          <div className="sty-eb">{!fav || own ? 'Your favorites' : 'Most played'}<em>{' \u00b7 '}{catLabel(cat)}{fav ? <>{' \u00b7 '}{total.toLocaleString()} {total === 1 ? 'play' : 'plays'}</> : null}</em></div>
+          {fav && own ? <div className="sty-eb">{tried} of {games.length} tried</div> : null}
+        </div>
+        <div className="sty-favc sty-eb"><span>Game</span><span>{!fav || own ? 'All-time plays' : 'All players, all time'}</span><span>{!fav || own ? 'Last 14 days' : ''}</span><span>Plays</span></div>
+        {Array.from({ length: k }).map((_, i) => {
+          const x = rows ? rows[i] : null;
+          if (!x) return <div key={i} className="sty-favr ph" aria-hidden="true"><span /><span className="tr" /><span /><span /></div>;
+          return (
+            <a key={x.g.key} className={'sty-favr' + (x.v ? '' : ' un')} href={`${routeOf(x.g)}${tq ? '?' + tq.slice(1) : ''}`}>
+              <span className="n"><Glyph k={x.g.key} size={14} />{x.g.name}</span>
+              <span className="tr"><u style={{ width: `${(x.v / max) * 100}%` }} /></span>
+              <span className="wk">{own ? Array.from({ length: 14 }).map((__, d) => <s key={d} className={x.recent[d] === '1' ? 'p' : ''} />) : null}</span>
+              <span className="c">{x.v ? x.v.toLocaleString() : '\u2013'}</span>
+            </a>
+          );
+        })}
+      </div>
+    );
   };
   const railLabel = railCat ? catLabel(railCat.cat) : 'All games';
   const railEl = (() => {
@@ -1974,6 +2026,7 @@ export default function StageToday() {
   })();
   const catTiles = orderedCats.map(({ cat, games }) => {
     const fit = paneOn === cat ? fitFor(games.length) : null;
+    const fitStyle = fit ? fit.style : undefined;
     const n = games.filter((g) => done.has(g.key)).length;
     return (
       <section key={cat} id={`cat-${cat.replace(/\s+/g, '-')}`}
@@ -1983,13 +2036,14 @@ export default function StageToday() {
           <h2>{catLabel(cat)}</h2>
           <b>{n}<i>/{games.length}</i></b>
         </div>
-        <div className={'sty-games' + (fit ? ' fit' : '')} style={fit || undefined}>
+        <div className={'sty-games' + (fit ? ' fit' : '')} style={fitStyle}>
           {playedLast(games, done).map((g, i) => (
             <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
               canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
               res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} />
           ))}
         </div>
+        {fit ? favBlock(cat, games, fit.k) : null}
       </section>
     );
   });
@@ -3736,6 +3790,24 @@ ${PATCH_CSS}
 .sty-ix > #sty-group,.sty-ix > #sty-standing,.sty-ix > #sty-board{margin-bottom:14px;}
 .sty-ix .sty-mine .sty-minec{margin-top:10px;}
 .sty-rail{display:none;}
+.sty-games.fit .sty-g{display:flex;flex-direction:column;justify-content:center;}
+.sty-fav{margin-top:24px;--cg:132px minmax(0,1fr) 150px 56px;}
+.sty-favh{display:flex;justify-content:space-between;align-items:center;height:28px;}
+.sty-favh .sty-eb,.sty-favc.sty-eb{margin:0;}
+.sty-favc{display:grid;grid-template-columns:var(--cg);gap:14px;height:22px;align-items:center;}
+.sty-favc span:last-child{text-align:right;}
+.sty-favr{box-sizing:border-box;display:grid;grid-template-columns:var(--cg);gap:14px;align-items:center;height:24px;
+  text-decoration:none;color:inherit;font-variant-numeric:tabular-nums;}
+.sty-favr .n{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-favr:hover .n{color:var(--stg-acc-ink,var(--cc));}
+.sty-favr .tr{display:block;height:14px;background:var(--stg-chip);border-radius:4px;overflow:hidden;}
+.sty-favr .tr u{display:block;height:100%;background:var(--cc);border-radius:4px;}
+.sty-favr .wk{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;}
+.sty-favr .wk s{height:14px;border-radius:3px;background:var(--stg-chip);}
+.sty-favr .wk s.p{background:var(--cc);}
+.sty-favr .c{text-align:right;font-size:13.5px;font-weight:800;}
+.sty-favr.un .n,.sty-favr.un .c{color:var(--stg-mute);font-weight:700;}
+.sty-fav.site{--cg:132px minmax(0,1fr) 0px 56px;}
 @media (min-width:1100px){
   .sty-ix.rl{grid-template-columns:212px minmax(0,1fr) 264px;}
   .sty-ix > .sty-rail{display:flex;flex-direction:column;gap:16px;grid-column:3;grid-row:1 / span 5;min-width:0;}
