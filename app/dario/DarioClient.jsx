@@ -476,7 +476,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
   function shareUrl() { return withRef(`mindloftdaily.com/dario${isTodays ? '' : `?p=${PUZZLE.num}`}`); }
 
   // Sharing hands over the LINK and nothing else (owner, 2026-10-07): the
-  // preview card (public/og/dario.png plus the page title) is the whole message.
+  // preview card (public/og/dario-v2.png plus the page title) is the whole message.
   function copyShare() {
     const url = `https://${shareUrl()}`;
     if (notifyShareCredit(url)) return;
@@ -583,7 +583,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
 
                   {preStart && (
                     <div className="dr-hero">
-                      <img src="/og/dario.png" alt="Dario: race to the frontier. Dario jumps over SaaS bots past a ClosedAI billboard while a rocket launches." className="dr-hero-img" width={1200} height={630} />
+                      <img src="/og/dario-v2.png" alt="Dario: race to the frontier. Dario jumps over SaaS bots past a ClosedAI billboard while a rocket launches." className="dr-hero-img" width={1200} height={630} />
                       <div className="dr-hero-bar">
                         <button onClick={startGame} className="dr-start">START</button>
                         <div className="dr-hero-row">
