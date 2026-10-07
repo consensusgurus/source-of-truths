@@ -695,7 +695,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
           <h2 style={{ fontSize: 15, fontWeight: 800, color: INK, margin: '0 0 8px' }}>About Dario</h2>
           <p style={{ margin: '0 0 9px' }}>
             Dario is a free daily side-scrolling platformer from Mind Loft, drawn in 16-bit pixel art. Run, jump and stomp through three short levels of the AI race,
-            past parody billboards for ClosedAI, Goggle, Teslo, DeepSink and Space-Y, and reach the AGI gate as fast as you can.
+            past parody billboards for ClosedAI, Goggle, Teslo, DeepSink and Space-Y, and reach the AGI gate as fast as you can. Stomp SaaS bots and humanoid robots, dodge Teslo and Wayno robotaxis, and grab a GIGAWATT energy drink to throw energy bolts.
           </p>
           <p style={{ margin: '0 0 9px' }}>
             The course is remixed every day and is the same for every player, so the daily board is a straight race. Run it as often as you

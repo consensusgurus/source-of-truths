@@ -7,8 +7,13 @@
 // surface in open air, clear of the start and the gate; exactly one shield
 // crate per level; every chip sits in open air; enemy counts inside the level's
 // range; and two different days do not produce the same course.
+// NO SOFT LOCKS (owner, 2026-10-07): a player stuck in the Data Center gap
+// between two stacks could neither climb out nor die. Every standing spot
+// reachable from the start must still be able to reach the gate
+// (scripts/dario-reach.mjs, a tile-grid jump model with conservative reach).
 import { PUZZLES } from '../app/dario/puzzles.js';
 import { buildLevels, SOLID_TILES } from '../lib/dario-engine.js';
+import { analyze } from './dario-reach.mjs';
 
 let fails = 0;
 const fail = (m) => { fails++; if (fails <= 40) console.error('FAIL', m); };
@@ -46,6 +51,9 @@ for (const p of PUZZLES) {
     for (const [x, y] of L.chips) if (solid(g[y][x])) fail(`${p.quizId} ${L.num}: chip inside a solid tile at ${x},${y}`);
     if (!(L.gateX > 0 && L.gateX < L.W)) fail(`${p.quizId} ${L.num}: gate off the level`);
     for (let x = L.gateX - 2; x <= L.gateX + 2; x++) if (!solid(g[12][x])) fail(`${p.quizId} ${L.num}: no ground at the gate`);
+    const R = analyze(L);
+    if (!R.reachable) fail(`${p.quizId} ${L.num}: the gate cannot be reached`);
+    if (R.traps.length) fail(`${p.quizId} ${L.num}: soft lock, stuck spots ${JSON.stringify(R.traps.slice(0, 6))}`);
   });
 }
 console.log(`dario: ${PUZZLES.length} days, ${PUZZLES[0].live} to ${PUZZLES[PUZZLES.length - 1].live}${fails ? `, ${fails} failures` : ', all clean'}`);
