@@ -341,7 +341,8 @@ const GRP_ID = 'sty-group';
 const BOARD_ID = 'sty-board';
 const LIVE_ID = 'sty-live';
 const QUIZ_ID = 'sty-quizzes';
-const INFO_PANES = [QUIZ_ID, STAND_ID, GRP_ID, BOARD_ID, LIVE_ID];
+// The live feed has no pane of its own: it rides under the board (owner, 2026-10-07).
+const INFO_PANES = [QUIZ_ID, STAND_ID, GRP_ID, BOARD_ID];
 // The Word category's section id, the same shape the render derives for every
 // category (`cat-${cat}` with spaces dashed), named here so the open-by-default
 // rule can point at it.
@@ -749,11 +750,22 @@ export default function StageToday() {
   const [pane, setPane] = useState(null);
   useIsoLayoutEffect(() => {
     try { const v = localStorage.getItem(PANE_KEY); if (v) setPane(v); } catch (e) {}
-    try { const h = String(window.location.hash || '').slice(1); if (INFO_PANES.includes(h)) setPane(h); } catch (e) {}
+    try { const h = String(window.location.hash || '').slice(1); if (INFO_PANES.includes(h)) { setPane(h); setPicked(true); } } catch (e) {}
   }, []);
   // ONLY A GAMES PANE IS REMEMBERED. A reader who last looked at the leaderboard
   // should still come back tomorrow to something they can play.
-  const pickPane = (id) => {
+  // ON A PHONE THE INDEX IS A SCREEN OF TILES (owner, 2026-10-07), and `picked`
+  // says whether one has been opened. It starts false on every load, so a phone
+  // always arrives at the tiles; a desktop never reads it. The tile that was
+  // tapped rides up to the top of the list (flipFrom is where it started).
+  const [picked, setPicked] = useState(false);
+  const flipFrom = useRef(null);
+  const pickPane = (id, ev) => {
+    try {
+      const el = ev && ev.currentTarget;
+      flipFrom.current = el && !picked ? el.getBoundingClientRect() : null;
+    } catch (e) { flipFrom.current = null; }
+    setPicked(true);
     setPane(id);
     if (INFO_PANES.includes(id)) return;
     try { localStorage.setItem(PANE_KEY, id); } catch (e) {}
@@ -1636,6 +1648,22 @@ export default function StageToday() {
   const circPane = ix && paneOn === CIRC_ID;
   // On a phone the index is a sideways strip, so a pane opened from the cap has
   // to bring its own chip into view. The quiz drawers load when their pane opens.
+  useIsoLayoutEffect(() => {
+    const from = flipFrom.current;
+    flipFrom.current = null;
+    if (!picked || !from) return;
+    try {
+      const el = document.querySelector('.sty-ixn .sty-ixb.on');
+      if (!el || !el.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const to = el.getBoundingClientRect();
+      const dx = from.left - to.left; const dy = from.top - to.top;
+      if (Math.abs(dx) + Math.abs(dy) < 2) return;
+      el.animate([
+        { transform: `translate(${dx}px,${dy}px) scaleX(${to.width ? from.width / to.width : 1})` },
+        { transform: 'none' },
+      ], { duration: 340, easing: 'cubic-bezier(.2,.7,.3,1)' });
+    } catch (e) {}
+  }, [picked, paneOn]);
   useEffect(() => {
     if (paneOn === QUIZ_ID) setNearFoot(true);
     try {
@@ -1736,14 +1764,15 @@ export default function StageToday() {
   const ixBtn = (id, label, hue) => (
     <button key={id} type="button" aria-pressed={paneOn === id}
       className={'sty-ixb' + (paneOn === id ? ' on' : '')} style={{ '--cc': hue }}
-      onClick={() => pickPane(id)}>
+      onClick={(e) => { if (picked && paneOn === id) setPicked(false); else pickPane(id, e); }}>
       <i aria-hidden="true" />
       <span>{label}</span>
+      <em className="sty-ixbk" aria-hidden="true">All sections</em>
     </button>
   );
   const alphaDone = alpha.filter((g) => done.has(g.key)).length;
   const ixNav = (
-    <nav className={'sty-ixn' + (reorder ? ' re' : '')} aria-label="Sections">
+    <nav className={'sty-ixn' + (reorder ? ' re' : '') + (picked ? ' pk' : '')} aria-label="Sections">
       {ixBtn(ALL_ID, 'All games', 'var(--stg-ink)')}
       {ixBtn(MINE_ID, 'My games', 'var(--stg-acc)')}
       {orderedCats.map(({ cat }, ci) => (reorder ? (
@@ -1763,7 +1792,6 @@ export default function StageToday() {
       {ixBtn(STAND_ID, 'My rankings', 'var(--stg-mute)')}
       {ixBtn(GRP_ID, inGrp ? grpOne.name : 'Play with friends', 'var(--stg-mute)')}
       {ixBtn(BOARD_ID, 'Leaderboard', 'var(--stg-mute)')}
-      {ixBtn(LIVE_ID, 'Live feed', 'var(--stg-mute)')}
       <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
         onClick={() => setReorder((v) => !v)}>
         {reorder ? 'Done' : 'Reorder'}
@@ -1845,13 +1873,16 @@ export default function StageToday() {
               <StagePatch key="p" on={capWait} light={light} />
             </a>
           ) : null}
-          {who && grpFig && grpFig.rank ? (
-            <a className="sty-fc sty-fca sty-f4" href="#sty-group"
-              onClick={(e) => { e.preventDefault(); goPane(GRP_ID); }}>
-              <b>{grpOrdinal(grpFig.rank)}<i> of {grpFig.members}</i></b>
-              <i>{grpFig.name}</i>
+          {/* EVERY GROUP THE READER IS IN gets a figure (owner, 2026-10-07), a
+              dash until they have a rank in it today. Tapping one opens that
+              group in the pane below. On a phone the row slides sideways. */}
+          {who && grp && Array.isArray(grp.groups) ? grp.groups.map((g) => (
+            <a key={g.code} className="sty-fc sty-fca sty-fg" href="#sty-group"
+              onClick={(e) => { e.preventDefault(); pickGroup(g.code); goPane(GRP_ID); }}>
+              <b>{g.rank ? grpOrdinal(g.rank) : '\u2013'}{typeof g.members === 'number' && g.members ? <i> of {g.members}</i> : null}</b>
+              <i>{g.name}</i>
             </a>
-          ) : null}
+          )) : null}
         </div>
         <button
           type="button"
@@ -1943,7 +1974,7 @@ export default function StageToday() {
             to be filled. */}
         {/* The SECTION's rule is neutral because this row is not a category:
             the cards inside it carry their own categories' colours. */}
-        <div className={ix ? 'sty-ix' : 'sty-ixw'}>
+        <div className={(ix ? 'sty-ix' : 'sty-ixw') + (picked ? ' mpk' : ' msel')}>
         {ixNav}
         {/* ALWAYS RENDERED now that it is a pane rather than a row: an empty
             pane says how to fill it, where an empty row was just clutter. */}
@@ -2194,7 +2225,7 @@ export default function StageToday() {
             by category, and on what the reader's own finished games add up to.
             Under 1100px it is not rendered at all and the feed is exactly what
             it was. */}
-        <section id="sty-live" className={'sty-ixp' + (paneOn !== LIVE_ID ? ' sty-ixoff' : '')}>
+        <section id="sty-live" className={'sty-ixp' + (paneOn !== BOARD_ID ? ' sty-ixoff' : '')}>
           <div className="sty-eb">
             Live feed
             {totals ? (
@@ -3516,8 +3547,14 @@ ${PATCH_CSS}
    the games: each is a pane, opened from the index like a category. */
 .sty-cap.v2{display:grid;grid-template-columns:auto minmax(60px,1fr) auto;align-items:center;gap:26px;}
 .sty-cap.v2 .sty-rt{margin-left:0;}
-.sty-capl{min-width:0;}
-.sty-capl .stl{height:22px;}
+.sty-capl{min-width:0;width:100%;max-width:460px;justify-self:center;}
+.sty-capl .stl{height:12px;}
+/* A SHORT PANE DOES NOT PULL THE ABOUT TEXT ONTO THE FIRST SCREEN (owner,
+   2026-10-07): the index holds a screen of height whatever is in the pane. */
+.sty-ix{min-height:calc(100vh - 70px);grid-template-rows:auto auto 1fr;}
+.sty-ix > .sty-ixn{grid-row:1 / span 3;}
+.sty-ix > #sty-live{grid-row:2;}
+.sty-ixbk{display:none;}
 .sty-fca{display:block;text-align:right;text-decoration:none;color:inherit;}
 .sty-fca>i{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
   text-transform:uppercase;color:var(--stg-mute);}
@@ -3534,11 +3571,13 @@ ${PATCH_CSS}
 @media (max-width:1100px){ .sty-cap.v2 .sty-who{display:none;} }
 @media (max-width:900px){
   .sty-ix > .sty-ixp{grid-column:1;grid-row:2;}
+  .sty-ix > #sty-live{grid-row:3;}
+  .sty-ix > .sty-ixn{grid-row:1;}
   .sty-ixsep{display:none;}
   /* The lit chip already names the pane, so the pane does not say it again. */
   .sty-ix > .sty-cat:not(.sty-qsec) > .sty-cathead{display:none;}
   .sty-cap.v2{gap:18px;}
-  .sty-cap.v2 .sty-f4,.sty-cap.v2 .sty-date{display:none;}
+  .sty-cap.v2 .sty-date{display:none;}
 }
 @media (max-width:640px){
   .sty-cap.v2{grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:'id fg tg' 'ld ld ld';
@@ -3547,6 +3586,48 @@ ${PATCH_CSS}
   .sty-cap.v2 .sty-capl .stl{height:6px;}
   .sty-cap.v2 .sty-figs{grid-area:fg;border-top:0;padding:0;min-height:0;gap:16px;justify-content:flex-end;}
   .sty-cap.v2 .sty-keep{padding:7px 12px;font-size:12px;}
+  /* THE FIGURES SLIDE (owner, 2026-10-07): Today, All-Time, then one per group. */
+  .sty-cap.v2{grid-template-columns:auto minmax(0,1fr) auto;}
+  .sty-cap.v2 .sty-figs{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap;justify-content:flex-start;
+    scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;}
+  .sty-cap.v2 .sty-figs::-webkit-scrollbar{display:none;}
+  .sty-cap.v2 .sty-figs > *{flex:none;scroll-snap-align:start;}
+  .sty-cap.v2 .sty-figs > :first-child{margin-left:auto;}
+  .sty-cap.v2 .sty-who{display:none;}
+  .sty-cap.v2 .sty-who + .sty-fca{margin-left:auto;}
+  .sty-cap.v2 .sty-fg > b > i{display:none;}
+  /* TILES, NOT BANDS (owner, 2026-10-07): every pane keeps the two-up cards
+     All games has, with their borders and corners. */
+  .sty-ix .sty-ixc .sty-games,.sty-ix .sty-mine .sty-games,.sty-ix .sty-mine .sty-circs,.sty-ix .sty-circsec .sty-circs{
+    margin-left:0;margin-right:0;gap:7px;background:none;border-top:0;border-bottom:0;}
+  .sty-ix .sty-ixc .sty-g,.sty-ix .sty-mine .sty-g,.sty-ix .sty-circsec .sty-circ,.sty-ix .sty-mine .sty-circ{
+    border:1px solid var(--stg-line);border-radius:8px;}
+  .sty-ix .sty-mine .sty-more,.sty-ix .sty-circsec .sty-more{margin:7px 0 0;width:100%;border:1px solid var(--stg-line);border-radius:8px;}
+  .sty-ix .sty-minec{margin-top:7px;}
 }
+/* ── A PHONE STARTS ON TILES (owner, 2026-10-07) ──
+   No strip. Every section is a tile; tapping one sends it to the top as a bar
+   and its games take the tiles' place, and tapping the bar brings the tiles
+   back. Reorder mode keeps its own unfolded column. */
+@media (max-width:640px){
+  .sty-ix > .sty-ixn:not(.re){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;overflow:visible;
+    padding-right:0;-webkit-mask-image:none;mask-image:none;}
+  .sty-ixn:not(.re) .sty-ixb{grid-template-columns:10px minmax(0,1fr) auto;min-height:54px;padding:10px 12px;
+    background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:8px;font-size:14.5px;font-weight:800;
+    color:var(--stg-ink);letter-spacing:-0.01em;}
+  .sty-ixn:not(.re) .sty-ixre{grid-column:1 / -1;justify-self:start;}
+  .sty-ix.msel > section,.sty-ix.msel > .sty-ord{display:none !important;}
+  .sty-ixn.pk:not(.re) > :not(.on){display:none;}
+  .sty-ixn.pk:not(.re) .sty-ixb.on{grid-column:1 / -1;min-height:46px;background:var(--stg-chip);border-color:transparent;
+    transform-origin:0 0;}
+  .sty-ixn.pk:not(.re) .sty-ixbk{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute);}
+  [data-sty-anim] .sty-ix.mpk > section:not(.sty-ixoff){animation:sty-in .32s cubic-bezier(.2,.7,.3,1) .08s both;}
+  [data-sty-anim] .sty-ix.msel .sty-ixn:not(.re) .sty-ixb{animation:sty-in .26s cubic-bezier(.2,.7,.3,1) both;}
+}
+@media (max-width:640px) and (prefers-reduced-motion:reduce){
+  [data-sty-anim] .sty-ix.mpk > section,[data-sty-anim] .sty-ix.msel .sty-ixn .sty-ixb{animation:none;}
+}
+.sty-fg > i{max-width:11ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-left:auto;}
 
 `;
