@@ -24,9 +24,9 @@ export function generateMetadata({ searchParams }) {
   const base = { robots: { index: false, follow: true } };
   if (!g || !c) return { ...base, title: 'A challenge on Mind Loft', description: 'Free daily puzzles. No sign-up to play.' };
   const fig = challengeFig(c);
-  const title = c.won
-    ? `${c.name} solved ${g.name} in ${fig}. Can you beat that?`
-    : `${c.name} scored ${fig} on ${g.name}. Can you beat that?`;
+  // Short on purpose: a message bubble prints this under the card and wraps a
+  // long one into three lines.
+  const title = `${c.name}: ${fig} on ${g.name}. Can you beat it?`;
   const description = `${g.name} No. ${c.n} on Mind Loft. Same board, free, no sign-up to play.`;
   const img = `/vs/card?g=${encodeURIComponent(key)}&vs=${encodeURIComponent(raw)}`;
   return {
