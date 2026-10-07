@@ -91,11 +91,20 @@ export default function useGauntletField(sections, active = true, refresh = 0) {
       const avg = {};
       const plays = {};
       const atLeast = {};
+      // The best score anybody has posted on each bank today, with no floor:
+      // the ladders scale to it, and one play is enough to scale to.
+      const top = {};
       let started = 0;
       for (const [s, d] of pairs) {
         const n = s.questions ? s.questions.length : 0;
         const read = d ? readDist(d.scoreDist, n) : null;
         if (!read) continue;
+        let best = 0;
+        for (const k of Object.keys((d && d.scoreDist) || {})) {
+          const sc = Number(k);
+          if (Number.isFinite(sc) && (Number(d.scoreDist[k]) || 0) > 0 && sc > best) best = sc;
+        }
+        top[s.key] = Math.min(n, best);
         plays[s.key] = read.plays;
         started = Math.max(started, read.plays);
         if (read.curve) {
@@ -105,7 +114,7 @@ export default function useGauntletField(sections, active = true, refresh = 0) {
         }
       }
       setField({
-        curves, avg, plays, atLeast, started,
+        curves, avg, plays, atLeast, started, top,
         // The share of attempts a score of `s` beat on that bank. Everyone who
         // scored strictly less, over everyone who played.
         beaten(key, score) {

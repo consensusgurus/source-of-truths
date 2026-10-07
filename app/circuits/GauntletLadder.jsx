@@ -85,6 +85,16 @@ const FIELD_LIFT = 0.17;  // how much of the alpha the field layer controls
 const MIN_PITCH = 2;      // px, floor for a rung plus its gap in `col`
 const BLOCK_GAP = 8;      // px between banks
 
+// HOW LONG A BLOCK IS DRAWN (owner, 2026-10-07). Not its full question count:
+// on a one-life quiz almost nobody gets near 25, so a bar that long is always
+// nearly empty. It is anchored to the best score posted today instead, set
+// close to the end and not on it, and it stretches if the player passes that.
+export function shownLength(n, top, done) {
+  const ref = Math.max(Number(top) || 0, Number(done) || 0);
+  if (!n) return 0;
+  return Math.min(n, Math.max(6, ref + 1, Math.round(ref / 0.9)));
+}
+
 // RunClient files 'won' | 'lost' | 'banked'. A banked game is one the player
 // finished earlier today on its own page, so the run steps over it; it counts
 // as cleared when it was itself run clean, which is the same call the run's
@@ -108,6 +118,8 @@ export default function GauntletLadder({
   // (0 to 1) still alive at question n of that bank. A short array is fine, a
   // missing key is fine, and an absent prop turns layer 2 off entirely.
   field = null,
+  // { [sectionKey]: number } the best score posted on that bank today.
+  tops = null,
   className = '',
 }) {
   const row = orientation !== 'col';
@@ -118,11 +130,16 @@ export default function GauntletLadder({
   // shave the rung any thinner.
   const pitch = useMemo(() => {
     if (row) return null;
-    const totalQ = sections.reduce((a, s) => a + (s.questions ? s.questions.length : 0), 0);
+    const totalQ = sections.reduce((a, s, bi) => {
+      const n = s.questions ? s.questions.length : 0;
+      const res = (results || []).find((x) => x && x.key === s.key);
+      const dn = res ? res.score : (bi === activeIndex ? activeAnswered : 0);
+      return a + shownLength(n, tops ? tops[s.key] : 0, dn);
+    }, 0);
     if (!totalQ) return MIN_PITCH;
     const gaps = Math.max(0, sections.length - 1) * BLOCK_GAP + (labels ? sections.length * 15 : 0);
     return Math.max(MIN_PITCH, (height - gaps) / totalQ);
-  }, [row, sections, height, labels]);
+  }, [row, sections, height, labels, tops, results, activeIndex, activeAnswered]);
 
   const byKey = useMemo(() => {
     const m = {};
@@ -152,8 +169,10 @@ export default function GauntletLadder({
           if (avg != null) mark = Math.min(n - 1, Math.round(avg));
         }
 
+        const topScore = tops && Number.isFinite(tops[s.key]) ? tops[s.key] : 0;
+        const shown = shownLength(n, topScore, done);
         const rungs = [];
-        for (let i = 0; i < n; i += 1) {
+        for (let i = 0; i < shown; i += 1) {
           const alive = curve && curve[i] != null ? Math.max(0, Math.min(1, curve[i])) : 0;
           let cls = '';
           if (i < done) cls = 'on';
@@ -161,6 +180,7 @@ export default function GauntletLadder({
           else if (dead) cls = 'spent';
           if (live && i === done) cls = 'now';
           if (!cls && i === mark) cls = 'avg';
+          if (!cls && topScore > 0 && i === topScore - 1) cls = 'top';
           rungs.push(
             <i
               key={i}
@@ -193,8 +213,8 @@ export default function GauntletLadder({
             ].filter(Boolean).join(' ')}
             style={{
               '--c': s.ladderColor || rampFor(bi),
-              '--q': n,
-              '--cut': `${n ? (((done + 1) / n) * 100).toFixed(2) : 0}%`,
+              '--q': shown,
+              '--cut': `${shown ? (((done + 1) / shown) * 100).toFixed(2) : 0}%`,
             }}
           >
             <span className="gl-rungs" aria-hidden="true">{rungs}</span>
@@ -225,6 +245,7 @@ const CSS = `
 .gl-b i.fatal{background:#c0392b;box-shadow:0 0 10px rgba(192,57,43,.85)}
 .gl-b i.spent{background:rgba(255,255,255,.045)}
 .gl-b i.avg{box-shadow:0 0 0 .5px rgba(255,255,255,.45)}
+.gl-b i.top{background:rgba(255,255,255,.3);box-shadow:0 0 0 .5px rgba(255,255,255,.7)}
 .gl-b.bank{opacity:.6}
 .gl-b.gone::after{content:'';position:absolute;pointer-events:none;
   background:repeating-linear-gradient(-45deg,transparent 0 5px,rgba(192,57,43,.13) 5px 6px)}
