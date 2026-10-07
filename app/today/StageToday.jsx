@@ -337,6 +337,7 @@ const CIRC_ID = 'sty-circs';
 // The registry key stays Word; the home prints Words, to sit beside Numbers
 // (owner, 2026-10-07).
 const catLabel = (c) => (c === 'Word' ? 'Words' : c);
+const CAT_FIXED = ['Word', 'Numbers', 'Logic', 'Sudoku', 'Trivia', 'Geography', 'End Game', 'Cards', 'Arcade', 'Crowd Psychology'];
 // THE REST OF THE PAGE IS PANES TOO (owner, 2026-10-07). Each id is also the
 // section's DOM id, so a #hash that names one opens it.
 const STAND_ID = 'sty-standing';
@@ -1108,12 +1109,13 @@ export default function StageToday() {
       return [...cats].sort((a, b) =>
         (rank.has(a.cat) ? rank.get(a.cat) : 99) - (rank.has(b.cat) ? rank.get(b.cat) : 99));
     }
-    if (!archive) return cats;
-    const played = (c) => c.games.reduce((n, g) => n + ((archive[g.key] && archive[g.key].played) || 0), 0);
+    // ONE FIXED ORDER FOR EVERYONE (owner, 2026-10-07), in place of most-played
+    // first: Words, Numbers, Logic, Sudoku, Trivia, Geography, then the rest.
+    const at = (c) => { const i = CAT_FIXED.indexOf(c.cat); return i < 0 ? 99 : i; };
     return [...cats].map((c, i) => [c, i])
-      .sort((a, b) => (played(b[0]) - played(a[0])) || (a[1] - b[1]))
+      .sort((a, b) => (at(a[0]) - at(b[0])) || (a[1] - b[1]))
       .map(([c]) => c);
-  }, [cats, handOrder, archive]);
+  }, [cats, handOrder]);
 
   // Every live daily, by name. Declared AFTER `cats`: a useMemo body runs during
   // render, so reading `cats` from above its own declaration is a temporal dead
@@ -1797,7 +1799,7 @@ export default function StageToday() {
       {ixBtn(CIRC_ID, 'Circuits', 'var(--stg-mute)')}
       {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)')}
       <span className="sty-ixsep" aria-hidden="true" />
-      {ixBtn(BOARD_ID, 'Leaderboards + stats', 'var(--stg-mute)', 'wide')}
+      {ixBtn(BOARD_ID, 'Leaderboards + Stats', 'var(--stg-mute)', 'wide')}
       <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
         onClick={() => setReorder((v) => !v)}>
         {reorder ? 'Done' : 'Reorder'}
@@ -1807,7 +1809,52 @@ export default function StageToday() {
       ) : null}
     </nav>
   );
+  // ── A CATEGORY PANE CARRIES ITS OWN BOARD (owner, 2026-10-07) ─────────
+  // A pane of two games left most of a desktop screen empty. Under the games
+  // now: today's board across that category, the reader's own runs in it, and
+  // their group's standing in it. Asked for once per category, when its pane
+  // first opens, and never on a phone.
+  const [catStats, setCatStats] = useState({});
+  const catAsked = useRef(null);
+  useEffect(() => {
+    if (narrow) return;
+    const c = orderedCats.find((x) => x.cat === paneOn);
+    if (!c || !c.games.length) return;
+    if (!catAsked.current) catAsked.current = new Set();
+    const g0 = grpOne && !grpOne.failed ? grpOne : null;
+    const qs = identityQs();
+    const base = `/api/quiz/daily-combined?keys=${encodeURIComponent(c.games.map((g) => g.key).join(','))}${qs ? '&' + qs : ''}`;
+    const put = (patch) => setCatStats((m) => ({ ...m, [c.cat]: { ...(m[c.cat] || {}), ...patch } }));
+    if (!catAsked.current.has(c.cat)) {
+      catAsked.current.add(c.cat);
+      fetch(base).then((r) => r.json()).then((d) => {
+        if (!d) return;
+        put({ top: Array.isArray(d.overall) ? d.overall : [], me: d.me || null, field: d.overallField || 0 });
+      }).catch(() => {});
+    }
+    const gid = c.cat + '|' + (g0 ? g0.code : '');
+    if (g0 && !catAsked.current.has(gid)) {
+      catAsked.current.add(gid);
+      fetch(`${base}&group=${encodeURIComponent(g0.code)}`).then((r) => r.json()).then((d) => {
+        const by = new Map();
+        for (const gm of (d && Array.isArray(d.games) ? d.games : [])) {
+          for (const row of (gm.board || [])) {
+            if (!row || row.abandoned) continue;
+            const cur = by.get(row.userKey) || { userKey: row.userKey, username: row.username, total: 0, games: 0 };
+            cur.total += Number(row.points) || 0; cur.games += 1;
+            by.set(row.userKey, cur);
+          }
+        }
+        put({ grp: [...by.values()].sort((a, b) => b.total - a.total), grpName: g0.name, grpCode: g0.code });
+      }).catch(() => {});
+    }
+  }, [paneOn, orderedCats, narrow, grpOne]);
   const catTiles = orderedCats.map(({ cat, games }) => {
+    const cs = !narrow && paneOn === cat ? catStats[cat] : null;
+    const csTop = cs && cs.top ? cs.top.slice(0, 10) : [];
+    const csMe = cs && cs.me && cs.me.rank && !csTop.some((r) => r.userKey === cs.me.userKey) ? cs.me : null;
+    const csGrp = cs && cs.grp && grpOne && cs.grpCode === grpOne.code ? cs.grp : null;
+    const mineIn = games.filter((g) => standBy[g.key]).length;
     const n = games.filter((g) => done.has(g.key)).length;
     return (
       <section key={cat} id={`cat-${cat.replace(/\s+/g, '-')}`}
@@ -1824,6 +1871,79 @@ export default function StageToday() {
               res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} />
           ))}
         </div>
+        {cs ? (
+          <div className="sty-cstats">
+            <div>
+              <div className="sty-eb">{catLabel(cat)} today{cs.field ? <em>{' \u00b7 '}{cs.field} {cs.field === 1 ? 'player' : 'players'}</em> : null}</div>
+              {csTop.length ? (
+                <table className="sty-tbl">
+                  <tbody>
+                    {[...csTop, ...(csMe ? [csMe] : [])].map((r, i) => (
+                      <tr key={r.userKey || i} className={meKey && r.userKey === meKey ? 'me' : ''}>
+                        <td className="sty-pos">{r.rank || i + 1}</td>
+                        <td className="sty-who">{r.username || 'Player'}</td>
+                        <td className="sty-gp">{typeof r.gamesPlayed === 'number' ? `${r.gamesPlayed}/${games.length}` : ''}</td>
+                        <td className="sty-pts">{r.total != null ? Math.round(r.total) : ''}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : <p className="sty-ixe">Nobody is on this board yet today.</p>}
+            </div>
+            <div>
+              <div className="sty-eb">Your {catLabel(cat)}<em>{' \u00b7 '}{mineIn} of {games.length} played</em></div>
+              <table className="sty-tbl sty-stbl">
+                <tbody>
+                  {games.map((g) => {
+                    const r = standBy[g.key];
+                    return (
+                      <tr key={g.key}>
+                        <td className="sty-sg"><a href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`}><Glyph k={g.key} size={15} />{g.name}</a></td>
+                        <td className="sty-srun">{r ? (gameStats(r, g.miss, g.key) || '\u2014') : 'Not played yet'}</td>
+                        <td className="sty-srk">{r ? <>#{r.rank}<i>{' of '}{r.field}</i></> : '\u2013'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {live.some((fp) => fp.game.cat === cat) ? (
+              <div>
+                <div className="sty-eb">Latest {catLabel(cat)} plays</div>
+                <table className="sty-tbl sty-stbl">
+                  <tbody>
+                    {live.filter((fp) => fp.game.cat === cat).slice(0, 8).map((fp, i) => (
+                      <tr key={`${fp.quizId}-${i}`}>
+                        <td className="sty-sg"><a href={`${routeOf(fp.game)}${tq ? '?' + tq.slice(1) : ''}`}><Glyph k={fp.game.key} size={15} />{fp.game.name}</a></td>
+                        <td className="sty-srun">{fp.score}/{fp.total}</td>
+                        <td className="sty-srk">{ago(fp.playedAt)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : null}
+            {csGrp ? (
+              <div>
+                <div className="sty-eb">{cs.grpName} in {catLabel(cat)}</div>
+                {csGrp.length ? (
+                  <table className="sty-tbl">
+                    <tbody>
+                      {csGrp.map((r, i) => (
+                        <tr key={r.userKey || i} className={grp && grp.userKey && r.userKey === grp.userKey ? 'me' : ''}>
+                          <td className="sty-pos">{i + 1}</td>
+                          <td className="sty-who">{r.username || 'Player'}</td>
+                          <td className="sty-gp">{r.games}/{games.length}</td>
+                          <td className="sty-pts">{Math.round(r.total)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : <p className="sty-ixe">Nobody in {cs.grpName} has played {catLabel(cat)} yet today.</p>}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </section>
     );
   });
@@ -3555,7 +3675,8 @@ ${PATCH_CSS}
    the games: each is a pane, opened from the index like a category. */
 .sty-cap.v2{display:grid;grid-template-columns:auto minmax(60px,1fr) auto;align-items:center;gap:26px;}
 .sty-cap.v2 .sty-rt{margin-left:0;}
-.sty-capl{min-width:0;width:100%;max-width:460px;justify-self:center;}
+/* The strip fills whatever lies between the brand and the figures (owner, 2026-10-07). */
+.sty-capl{min-width:0;width:100%;}
 .sty-capl .stl{height:12px;}
 /* A SHORT PANE DOES NOT PULL THE ABOUT TEXT ONTO THE FIRST SCREEN (owner,
    2026-10-07): the index holds a screen of height whatever is in the pane. */
@@ -3567,6 +3688,9 @@ ${PATCH_CSS}
 .sty-ix > #sty-live{grid-row:4;}
 .sty-ix > #sty-group,.sty-ix > #sty-standing,.sty-ix > #sty-board{margin-bottom:14px;}
 .sty-ix .sty-mine .sty-minec{margin-top:10px;}
+.sty-cstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:26px 30px;margin-top:28px;align-items:start;}
+.sty-cstats > div{min-width:0;}
+.sty-cstats .sty-tbl{max-width:none;}
 .sty-ixbk{display:none;}
 .sty-fca{display:block;text-align:right;text-decoration:none;color:inherit;}
 .sty-fca>i{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
@@ -3633,7 +3757,8 @@ ${PATCH_CSS}
   .sty-ixn:not(.re) .sty-ixb{grid-template-columns:10px minmax(0,1fr) auto;min-height:54px;padding:10px 12px;
     background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:8px;font-size:14.5px;font-weight:800;
     color:var(--stg-ink);letter-spacing:-0.01em;}
-  .sty-ixn:not(.re) .sty-ixre{grid-column:1 / -1;justify-self:start;}
+  /* No Reorder on a phone (owner, 2026-10-07); the order is set on a desktop. */
+  .sty-ixn:not(.re) .sty-ixre{display:none;}
   /* FOUR GROUPS, AND THEY FILL THE SCREEN (owner, 2026-10-07): the two lists,
      the categories, circuits and quizzes, then one wide tile for every board. */
   .sty-ixn:not(.re) .sty-ixb{min-height:clamp(54px,calc((100svh - 250px) / 8),88px);}

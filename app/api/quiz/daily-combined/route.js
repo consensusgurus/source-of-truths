@@ -403,7 +403,14 @@ export async function GET(request) {
   // combined clock, and the payload says so in scoreMode.
   const byTime = circuitOn && circuitScoreMode(circuitId) === 'time';
   const scoreMode = rawScore ? 'correct' : (byTime ? 'time' : 'points');
-  const games = gamesForSuffix(fiveOnly ? fiveKeys : DAILY_KEYS, suffix, today);
+  // A PLAIN SUBSET (?keys=a,b,c): the home asks for one category's board. It is
+  // the full board over fewer games: no circuit rules, nobody has to have played
+  // them all, and best-N is simply every game in the set.
+  const keysParam = (!fiveFlag && !circuitDef)
+    ? [...new Set((searchParams.get('keys') || '').split(',').map((k) => k.trim()).filter((k) => DAILY_KEYS.includes(k)))].slice(0, 40)
+    : [];
+  const keyOnly = !fiveOnly && keysParam.length > 0;
+  const games = gamesForSuffix(keyOnly ? keysParam : (fiveOnly ? fiveKeys : DAILY_KEYS), suffix, today);
   const wanted = new Set(games.map((g) => g.quizId));
   // FROZEN: the Eastern day is over, so this board is final. Rows that landed
   // after midnight still count for their own game's leaderboard (read straight
@@ -422,7 +429,7 @@ export async function GET(request) {
   // either way, so not one player's points move; only the ceiling and the
   // fraction printed beside them come right. effBestN below still caps this at
   // the number of games that actually published that day.
-  const dayBestN = circuitOn ? fiveKeys.length : (fiveOnly ? FIVE_SIZE : bestNForSuffix(suffix));
+  const dayBestN = keyOnly ? keysParam.length : (circuitOn ? fiveKeys.length : (fiveOnly ? FIVE_SIZE : bestNForSuffix(suffix)));
   // Which points rule this day pays, so the client can print the matching
   // explainer on an archived day instead of describing today's rule.
   const ladder = usesLadder(suffix);
