@@ -58,7 +58,7 @@ import { withRef } from '@/lib/referrals';
 import { T } from '@/lib/theme';
 import { arcadeRanksForKey } from '@/lib/daily-games';
 import { meRequest } from '@/app/quizMeClient';
-import { createDario, fmtRun, DARIO_TOTAL, TENTHS_CAP, LEVEL_NAMES } from '@/lib/dario-engine';
+import { createDario, fmtRun, DARIO_TOTAL, TENTHS_CAP, LEVEL_NAMES, primeDarioAudio } from '@/lib/dario-engine';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
@@ -367,6 +367,8 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
   }, [hydrated, preStart, PUZZLE.quizId]);
 
   useEffect(() => { if (engRef.current) engRef.current.setRunLock(runLock); }, [runLock]);
+  // the engine can be created after the play layer was measured; give it the view
+  useEffect(() => { if (engRef.current) engRef.current.setView(imm && fit ? fit.ar : 400 / 224); }, [imm, fit, playing]);
 
   // leaving the tab pauses the run (the clock stops with it)
   useEffect(() => {
@@ -415,16 +417,26 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
   // landscape assumes both browser bars are showing, which made the sideways
   // screen barely bigger than the upright one (owner report, 2026-10-07).
   useEffect(() => {
-    if (!imm) { setFit(null); return undefined; }
-    const ASPECT = 400 / 224;
+    if (!imm) { setFit(null); if (engRef.current) engRef.current.setView(400 / 224); return undefined; }
     const measure = () => {
       const vv = window.visualViewport;
       const W = Math.round(vv ? vv.width : window.innerWidth), H = Math.round(vv ? vv.height : window.innerHeight);
       const land = W > H;
-      const cw = land
-        ? Math.min(W - (64 * 2 + 12 * 2 + 20), (H - 12) * ASPECT)
-        : Math.min(W - 20, (H - 70 - 14 - 80) * ASPECT);
-      setFit({ w: W, h: H, cw: Math.max(200, Math.floor(cw)), land });
+      // the notch and home-bar insets the layer pads itself with
+      let sl = 0, sr = 0, stp = 0, sb = 0;
+      const lay = document.querySelector('.dr-imm');
+      if (lay) { const cs = getComputedStyle(lay); sl = parseFloat(cs.paddingLeft) || 0; sr = parseFloat(cs.paddingRight) || 0; stp = parseFloat(cs.paddingTop) || 0; sb = parseFloat(cs.paddingBottom) || 0; }
+      const iw = W - sl - sr, ih = H - stp - sb;
+      // FILL THE SPACE (owner, 2026-10-07): the picture takes the whole room
+      // between the pads. Sideways it widens (no black bars); upright it
+      // narrows, so the world is drawn bigger. Gameplay is unchanged.
+      const availW = land ? iw - (64 * 2 + 12 * 2 + 20) : iw - 16;
+      const availH = land ? ih - 12 : ih - 70 - 14 - 60 - 24;
+      const want = Math.max(300 / 224, Math.min(520 / 224, availW / Math.max(1, availH)));
+      const v = engRef.current ? engRef.current.setView(want) : Math.round((224 * want) / 2) * 2;
+      const ar = v / 224;
+      const cw = Math.min(availW, availH * ar);
+      setFit({ w: W, h: H, cw: Math.max(200, Math.floor(cw)), ar, land });
     };
     measure();
     const later = () => { measure(); setTimeout(measure, 250); setTimeout(measure, 700); };
@@ -439,6 +451,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
   }, [imm]);
 
   function startGame() {
+    if (music) primeDarioAudio();
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
     startRun();
   }
@@ -448,13 +461,14 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
     e.togglePause(); setPaused(e.isPaused());
   }, []);
   const toggleMusic = useCallback(() => {
-    setMusic((m) => {
-      const next = !m;
-      if (engRef.current) engRef.current.setMusic(next);
-      try { localStorage.setItem(MUSIC_KEY, next ? '1' : '0'); } catch (e) {}
-      return next;
-    });
-  }, []);
+    // Inside the tap itself: iOS only lets a page start sound from a gesture,
+    // and a React state updater runs later, outside it (owner report, 2026-10-07).
+    const next = !music;
+    if (next) primeDarioAudio();
+    if (engRef.current) engRef.current.setMusic(next);
+    setMusic(next);
+    try { localStorage.setItem(MUSIC_KEY, next ? '1' : '0'); } catch (e) {}
+  }, [music]);
   const goFull = useCallback(() => {
     const el = boxRef.current; if (!el) return;
     try {
@@ -530,7 +544,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
                           width={800}
                           height={448}
                           className="dr-cv"
-                          style={imm && fit ? { width: `${fit.cw}px`, maxWidth: 'none' } : undefined}
+                          style={imm && fit ? { width: `${fit.cw}px`, maxWidth: 'none', aspectRatio: String(fit.ar) } : undefined}
                           role="img"
                           aria-label="Dario game screen"
                           onPointerDown={() => { if (engRef.current && engRef.current.isPaused()) { engRef.current.resume(); setPaused(false); } }}
