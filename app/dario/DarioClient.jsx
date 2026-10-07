@@ -249,7 +249,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
   const res = g.result;
   const cleared = !!(res && res.cleared);
   const verdictTone = cleared ? 'won' : 'part';
-  const verdictWord = cleared ? 'AGI achieved' : 'Run over';
+  const verdictWord = cleared ? 'Dario now controls all software business globally' : 'A rival shipped first';
   const myStats = useMemo(() => deriveStats(stats || { rec: {} }, PUZZLE.num), [stats, PUZZLE.num]);
   const bestRec = myStats.rec && myStats.rec[PUZZLE.num];
   const bestToday = bestRec && bestRec.won && bestRec.g != null ? bestRec.g : null;
@@ -418,7 +418,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
   // ---- share -------------------------------------------------------------------
   function shareUrl() { return withRef(`mindloftdaily.com/dario${isTodays ? '' : `?p=${PUZZLE.num}`}`); }
   function shareText() {
-    if (bestToday != null) return `Dario #${PUZZLE.num} · cleared all three levels in ${fmtRun(bestToday)}\n${shareUrl()}`;
+    if (bestToday != null) return `Dario #${PUZZLE.num} · took over all software business globally in ${fmtRun(bestToday)}\n${shareUrl()}`;
     const lv = res ? LEVEL_NAMES[Math.min(res.level, 2)] : LEVEL_NAMES[0];
     return `Dario #${PUZZLE.num} · made it to ${lv}\n${shareUrl()}`;
   }
@@ -558,7 +558,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
                       )}
                       {over && res && (
                         <p style={{ margin: '12px 0 0', fontSize: 12.5, color: FADED, fontWeight: 600, textAlign: 'center' }}>
-                          {res.cleared ? `All three levels in ${fmtRun(res.tenths)}${res.splits && res.splits.length === 3 ? ` (${res.splits.map(fmtRun).join(' · ')})` : ''}.` : `Out of lives in ${LEVEL_NAMES[Math.min(2, res.level)]} after ${fmtRun(res.tenths)}.`}
+                          {res.cleared ? `Dario now controls all software business globally. All three levels in ${fmtRun(res.tenths)}${res.splits && res.splits.length === 3 ? ` (${res.splits.map(fmtRun).join(' · ')})` : ''}.` : `Out of lives in ${LEVEL_NAMES[Math.min(2, res.level)]} after ${fmtRun(res.tenths)}.`}
                           {bestToday != null && (!res.cleared || bestToday < res.tenths) ? ` Your best today is ${fmtRun(bestToday)}.` : ''}
                         </p>
                       )}
