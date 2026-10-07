@@ -82,6 +82,7 @@ export const DAILY_GAMES = [
   { key: 'strata', href: '/strata', name: 'Strata', tag: 'dig the words out', store: 'sot_strata_day', accent: '#9a3412', bg: '#fdf0e7', border: 'rgba(154,52,18,0.4)' },
   { key: 'chomp', href: '/chomp', name: 'Chomp', tag: 'eat them in order', store: 'sot_chomp_day', accent: '#a8430f', bg: '#fbeadf', border: 'rgba(168,67,15,0.4)' },
   { key: 'sweep', href: '/sweep', name: 'Sweep', tag: 'no bottom edge', store: 'sot_sweep_day', accent: '#0f766e', bg: '#e2f2f0', border: 'rgba(15,118,110,0.4)' },
+  { key: 'dario', href: '/dario', name: 'Dario', tag: 'race to the frontier', store: 'sot_dario_day', accent: '#c2410c', bg: '#fff1e6', border: 'rgba(194,65,12,0.4)' },
   { key: 'snake', href: '/snake', name: 'Snake', tag: 'same apples, same order', store: 'sot_snake_day', accent: '#65a30d', bg: '#eef7dc', border: 'rgba(101,163,13,0.4)' },
   { key: 'blocks', href: '/blocks', name: 'Blocks', tag: 'same shapes, same order', store: 'sot_blocks_day', accent: '#1d4ed8', bg: '#e8edfa', border: 'rgba(29,78,216,0.4)' },
   { key: 'docket', href: '/docket', name: 'Docket', tag: 'one setup, five deductions', store: 'sot_docket_day', accent: '#5b2333', bg: '#f7e8ec', border: 'rgba(91,35,51,0.4)' },

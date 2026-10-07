@@ -8600,17 +8600,16 @@ Not in the Arcade circuit (still Blocks and Sweep); whether it joins is an owner
   the engine (determinism, wrap, reversal, tail-chase, self-bite, Sunday growth, and that a
   greedy run on every banked day eats apples).
 
-## Dario (`/dario`): the daily side-scroller, HELD FOR REVIEW (added 2026-10-07)
+## Dario (`/dario`): the daily side-scroller (launched 2026-10-07)
 
 A three-level platformer run (The Valley, The Data Center, The Launch Site), a send-up of the AI
 race told through parody billboards (ClosedAI, Goggle, Teslo, Nvideo, DeepSink, Qwan, Space-Y).
 Key/route `dario`, category **Arcade**, `miss: null`. Wired by `scripts/wire-dario.mjs`.
 
-- **HELD FOR REVIEW (owner, 2026-10-07).** The page is live and noindexed, runs post and rank, but
-  `REVIEW_HOLD` in `lib/daily-games.js` keeps it off every display list (it rides the run-only
-  filters: `liveDailyKeys`, `LoftCap`, `useDailyRoster`). It IS in `lib/daily-slate.js`, so a run
-  scores on the day's combined board like any daily. To launch: empty `REVIEW_HOLD`, drop the
-  `robots` line from `app/dario/page.js`, and wire the display lists the way `wire-snake.mjs` does.
+- **Launched 2026-10-07** after a same-day review hold. `REVIEW_HOLD` in `lib/daily-games.js` is left in
+  place, empty, as the mechanism for holding the next game: a key in it scores and ranks but is offered
+  on no slate, grid, category, count or sitemap (it rides the run-only filters). Wired into the display
+  lists the Snake way; in the Arcade grid, archive, category page and finish set beside Snake.
 - **Seeded daily remix, fixed geometry.** `lib/dario-engine.js buildLevels(quizId)` keeps every
   level's layout fixed (so every day is beatable) and seeds where the bots, robotaxis, chips and the
   one shield crate sit, plus rocket and platform timing. The client and `scripts/verify-dario.mjs`
@@ -8622,7 +8621,9 @@ Key/route `dario`, category **Arcade**, `miss: null`. Wired by `scripts/wire-dar
   The run clock counts play only: it stops for pauses and level cards and runs while dying.
 - **All-time fastest list:** `/api/quiz/dario-fastest`, best full clear per registered player across
   every day, read off `guesses_used`. Rendered under the board.
-- **Music:** an original chiptune arrangement of Rossini's William Tell Overture finale (1829, public
-  domain), in the engine. M toggles it; the choice is remembered (`sot_dario_music`).
-- **Mobile:** a pad under the screen in portrait (hold arrows, tap Jump, Run locks on), overlaid on
-  the screen in a short landscape viewport, and a Full screen button where the browser supports it.
+- **Music (owner, 2026-10-07):** original chiptune arrangements of public-domain pieces, in the engine:
+  1-1 Mountain King (speeds up each loop), 1-2 Flight of the Bumblebee, 1-3 Ride of the Valkyries, the win
+  screen Pomp and Circumstance No. 1, game over Funeral March of a Marionette (once). M toggles it.
+- **Mobile (owner, 2026-10-07): controls never cover the screen.** Portrait: the pad sits under the screen.
+  Landscape on any coarse pointer (phone or iPad): the pad moves to the SIDES of the screen, which shrinks to
+  fit, and starting a run scrolls the game into view. Full screen uses the same side layout.

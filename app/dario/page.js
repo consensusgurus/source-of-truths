@@ -10,16 +10,27 @@ import { categoryCrumb } from '@/lib/game-seo';
 // every other daily; a row carries only the frame, and the day's course remix is
 // generated from its quizId in the client (lib/dario-engine.js buildLevels).
 //
-// HELD FOR REVIEW (owner, 2026-10-07): the page is live at /dario but noindexed
-// and kept off every slate, grid and category list (REVIEW_HOLD in
-// lib/daily-games.js). Lift both to launch.
+// LAUNCHED 2026-10-07 into the Arcade beside Blocks, Snake and Sweep.
 
 export const metadata = {
   title: 'Dario: A Daily Race to the Frontier | Mind Loft',
   description:
     'Dario is a free daily side-scrolling platformer. Run three levels of the AI race, past parody billboards, and reach the AGI gate as fast as you can. The course is remixed every day, the same for everybody, and your fastest clear counts.',
   alternates: { canonical: '/dario' },
-  robots: { index: false, follow: false },
+  openGraph: {
+    images: [{ url: '/og/dario.png', width: 1200, height: 630, alt: 'Dario, a daily side-scroller from Mind Loft' }],
+    title: 'Dario: A Daily Race to the Frontier',
+    description: 'Three levels of the AI race, one clock. The course is remixed every day and your fastest clear counts.',
+    url: '/dario',
+    type: 'website',
+    siteName: 'Mind Loft',
+  },
+  twitter: {
+    images: ['/og/dario.png'],
+    card: 'summary_large_image',
+    title: 'Dario: A Daily Race to the Frontier',
+    description: 'Three levels of the AI race, one clock. The course is remixed every day and your fastest clear counts.',
+  },
 };
 
 const breadcrumbJsonLd = {

@@ -20,6 +20,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { createPortal } from 'react-dom';
 import { HelpCircle, X, Pause, Play, RotateCcw, Maximize2, Volume2, VolumeX, Zap } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
@@ -206,6 +207,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
   const [music, setMusic] = useState(true);
   const [fsOk, setFsOk] = useState(false);
   const [fastKey, setFastKey] = useState(0);
+  const [imm, setImm] = useState(false);
   const [shareCta, setShareCta] = useState('Share');
   useEffect(() => { if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`); }, []);
   const viewedRef = useRef(false);
@@ -379,7 +381,34 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
     const cur = gRef.current;
     commit({ ...cur, status: 'playing', t0: Date.now(), result: null });
     if (engRef.current) engRef.current.start();
-  }, [releaseEnd, commit, REC_KEY]);
+    if (touchOnly) enterImm();
+  }, [releaseEnd, commit, REC_KEY, touchOnly]);
+
+  function enterImm() {
+    setImm(true);
+    try {
+      const de = document.documentElement;
+      const fn = de.requestFullscreen || de.webkitRequestFullscreen;
+      if (fn) { const pr = fn.call(de); if (pr && pr.then) pr.then(() => { try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {}); } catch (e) {} }).catch(() => {}); }
+    } catch (e) {}
+  }
+  function leaveImm(pause) {
+    if (pause && engRef.current && gRef.current.status === 'playing') { engRef.current.pause(); setPaused(true); }
+    setImm(false);
+    try { if (document.fullscreenElement || document.webkitFullscreenElement) (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) {}
+  }
+  useEffect(() => {
+    if (!imm) return undefined;
+    const b = document.body.style.overflow, h = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden'; document.documentElement.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = b; document.documentElement.style.overflow = h; };
+  }, [imm]);
+  useEffect(() => {
+    if (!imm || playing) return undefined;
+    const t = setTimeout(() => leaveImm(false), 3200);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [imm, playing]);
 
   function startGame() {
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
@@ -441,7 +470,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
       sub="The clock only runs while you play. It stops for pauses and level cards, and keeps going while you lose a life."
       steps={[
         <>Move with the <b>arrow keys</b> or <b>A D</b>, jump with <b>Space</b> or <b>Up</b> (hold for a higher jump), and hold <b>Shift</b> or <b>X</b> to run. On a phone use the pad; <b>Run</b> stays on once you tap it.</>,
-        <>Stomp the <b>rogue bots</b>. Never land on a <b>robotaxi</b> or touch a <b>rocket</b>. Bump crates for GPUs; one crate holds a <b>shield</b> that lets you take one hit.</>,
+        <>Stomp the <b>rogue SaaS bots</b> (NOW, TEAM, WDAY and friends). Never land on a <b>robotaxi</b> or touch a <b>rocket</b>. Bump crates for GPUs; one crate holds a <b>shield</b> that lets you take one hit.</>,
         <>You get <b>three lives</b>. Losing one restarts that level, and the clock keeps running.</>,
       ]}
       knack="Speed is the whole score, so learn the course on your first run and race it on the next. Running jumps go further and higher; a stomp bounces you over the next gap."
@@ -452,6 +481,34 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
   const btn = { fontFamily: SANS, fontWeight: 800, fontSize: 14, border: `2px solid var(--stg-line, ${COLORS.accent})`, background: STAGE ? SURF : '#fff', color: ACC_INK, borderRadius: 8, padding: '9px 16px', cursor: 'pointer' };
   const iconBtn = { border: `1px solid ${SURF_B}`, background: SURF, color: FADED, borderRadius: 7, width: 32, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' };
   const figLabel = { fontSize: 10.5, fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: FADED };
+
+  const gameBox = (
+                      <div ref={boxRef} className={`dr-box${touchOnly ? ' touch' : ''}`}>
+                        {imm && <button className="dr-x" aria-label="Leave full screen" onClick={() => leaveImm(true)}>&#10005;</button>}
+                        {imm && <div className="dr-rot">Turn your phone sideways for a bigger screen</div>}
+                        {playing && touchOnly && (
+                          <div className="dr-pl" aria-label="Move">
+                            <button className="dr-b" aria-label="Left" {...hold('l')}>&#9664;</button>
+                            <button className="dr-b" aria-label="Right" {...hold('r')}>&#9654;</button>
+                          </div>
+                        )}
+                        <canvas
+                          ref={(el) => { cvsRef.current = el; if (el && engRef.current) engRef.current.setCanvas(el); }}
+                          width={400}
+                          height={224}
+                          className="dr-cv"
+                          role="img"
+                          aria-label="Dario game screen"
+                          onPointerDown={() => { if (engRef.current && engRef.current.isPaused()) { engRef.current.resume(); setPaused(false); } }}
+                        />
+                        {playing && touchOnly && (
+                          <div className="dr-pr" aria-label="Run and jump">
+                            <button className={`dr-b dr-run${runLock ? ' lock' : ''}`} aria-pressed={runLock} aria-label="Run" onPointerDown={(ev) => { ev.preventDefault(); setRunLock((v) => !v); }}>RUN</button>
+                            <button className="dr-b dr-jump" aria-label="Jump" {...hold('j')}>JUMP</button>
+                          </div>
+                        )}
+                      </div>
+  );
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
@@ -517,37 +574,15 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
                             <button onClick={togglePause} aria-label={paused ? 'Resume' : 'Pause'} style={iconBtn}>{paused ? <Play size={14} /> : <Pause size={14} />}</button>
                           )}
                           <button onClick={toggleMusic} aria-label={music ? 'Music off' : 'Music on'} style={iconBtn}>{music ? <Volume2 size={15} /> : <VolumeX size={15} />}</button>
-                          {fsOk && <button onClick={goFull} aria-label="Full screen" style={iconBtn}><Maximize2 size={14} /></button>}
+                          {(fsOk || touchOnly) && <button onClick={touchOnly ? enterImm : goFull} aria-label="Full screen" style={iconBtn}><Maximize2 size={14} /></button>}
                           <button onClick={() => setShowHelp(true)} aria-label="How to play" style={iconBtn}><HelpCircle size={15} /></button>
                         </span>
                       </div>
 
-                      <div ref={boxRef} className={`dr-box${touchOnly ? ' touch' : ''}`}>
-                        <canvas
-                          ref={cvsRef}
-                          width={400}
-                          height={224}
-                          className="dr-cv"
-                          role="img"
-                          aria-label="Dario game screen"
-                          onPointerDown={() => { if (engRef.current && engRef.current.isPaused()) { engRef.current.resume(); setPaused(false); } }}
-                        />
-                        {playing && touchOnly && (
-                          <div className="dr-pad" aria-label="Game controls">
-                            <div className="dr-pl">
-                              <button className="dr-b" aria-label="Left" {...hold('l')}>&#9664;</button>
-                              <button className="dr-b" aria-label="Right" {...hold('r')}>&#9654;</button>
-                            </div>
-                            <div className="dr-pr">
-                              <button className={`dr-b dr-run${runLock ? ' lock' : ''}`} aria-pressed={runLock} aria-label="Run" onPointerDown={(ev) => { ev.preventDefault(); setRunLock((v) => !v); }}>RUN</button>
-                              <button className="dr-b dr-jump" aria-label="Jump" {...hold('j')}>JUMP</button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                      {imm && typeof document !== 'undefined' ? createPortal(<div className="dr-imm">{gameBox}</div>, document.body) : gameBox}
                       {playing && (
                         <div style={{ textAlign: 'center', marginTop: 8, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.03em', color: FADED }}>
-                          {touchOnly ? 'Hold the arrows to move, tap Jump (hold for height), tap Run to keep running. Turn your phone sideways for a bigger screen.' : 'Arrows or A D to move · Space jumps · Shift runs · P pauses · M music'}
+                          {touchOnly ? 'Hold the arrows to move, tap Jump (hold for height), tap Run to keep running. The game opens full screen; turn your phone sideways for the biggest view.' : 'Arrows or A D to move · Space jumps · Shift runs · P pauses · M music'}
                         </div>
                       )}
 
@@ -644,7 +679,9 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
             like; your fastest full clear takes the board, and the quickest clears ever made stay on the all-time list.
           </p>
           <p style={{ margin: 0 }}>
-            The music is an original chiptune arrangement of the finale of Rossini&rsquo;s William Tell Overture (1829), which is in the public domain.
+            The music is original chiptune arrangements of public-domain classics: Grieg&rsquo;s In the Hall of the Mountain King, Rimsky-Korsakov&rsquo;s
+            Flight of the Bumblebee and Wagner&rsquo;s Ride of the Valkyries for the three levels, Elgar&rsquo;s Pomp and Circumstance for a win, and
+            Gounod&rsquo;s Funeral March of a Marionette when a rival ships first.
             All companies named in the game are parodies.
           </p>
         </section>
@@ -681,26 +718,44 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
       )}
 
       <style dangerouslySetInnerHTML={{ __html: `
-        .dr-box { position: relative; width: 100%; max-width: min(900px, calc((100svh - 170px) * 1.7857)); margin: 0 auto; background: #000; border-radius: 6px; overflow: hidden; line-height: 0; }
-        .dr-cv { display: block; width: 100%; height: auto; aspect-ratio: 400 / 224; image-rendering: pixelated; image-rendering: crisp-edges; touch-action: none; }
-        .dr-pad { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0 0; line-height: normal; background: transparent; }
-        .dr-box.touch { background: transparent; overflow: visible; }
-        .dr-box.touch .dr-cv { border-radius: 6px; background: #000; }
-        .dr-pl, .dr-pr { display: flex; gap: 10px; }
-        .dr-b { width: 68px; height: 62px; border-radius: 14px; border: 1px solid var(--stg-cell-line, #cfd5df); background: var(--stg-cell, #fff); color: var(--stg-ink, #1c1f27); font: 800 15px ${SANS}; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: pointer; }
+        .dr-box { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; width: 100%; max-width: min(900px, calc((100svh - 170px) * 1.7857)); margin: 0 auto; line-height: 0; }
+        .dr-cv { grid-area: cv; display: block; width: 100%; height: auto; aspect-ratio: 400 / 224; image-rendering: pixelated; image-rendering: crisp-edges; touch-action: none; background: #000; border-radius: 6px; }
+        .dr-box { grid-template-areas: "cv"; }
+        .dr-box.touch { max-width: 900px; grid-template-columns: 1fr 1fr; grid-template-areas: "cv cv" "pl pr"; gap: 10px; }
+        .dr-pl { grid-area: pl; justify-self: start; display: flex; gap: 10px; line-height: normal; }
+        .dr-pr { grid-area: pr; justify-self: end; display: flex; gap: 10px; line-height: normal; }
+        .dr-b { width: 68px; height: 62px; border-radius: 14px; border: 1px solid var(--stg-cell-line, #cfd5df); background: var(--stg-cell, #ffffff); color: var(--stg-ink, #1c1f27); font: 800 15px ${SANS}; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: pointer; }
         .dr-b.on { filter: brightness(.86); transform: translateY(1px); }
         .dr-run.lock { background: var(--stg-acc, #c2410c); border-color: var(--stg-acc, #c2410c); color: var(--stg-onramp, #ffffff); }
         .dr-jump { width: 92px; background: var(--stg-acc, #c2410c); border-color: var(--stg-acc, #c2410c); color: var(--stg-onramp, #ffffff); }
-        @media (orientation: landscape) and (max-height: 520px) and (pointer: coarse) {
-          .dr-box.touch { max-width: calc((100svh - 16px) * 1.7857); }
-          .dr-box.touch .dr-pad { position: absolute; inset: auto 8px 8px 8px; padding: 0; pointer-events: none; }
-          .dr-box.touch .dr-pad .dr-b { pointer-events: auto; opacity: .72; width: 58px; height: 52px; }
-          .dr-box.touch .dr-pad .dr-jump { width: 74px; }
+        /* Landscape on a phone or tablet: the controls sit BESIDE the screen, never on it. */
+        @media (orientation: landscape) and (pointer: coarse) {
+          .dr-box.touch { max-width: none; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "pl cv pr"; align-items: end; gap: 12px; }
+          .dr-box.touch .dr-cv { max-width: calc((100svh - 28px) * 1.7857); justify-self: center; }
+          .dr-box.touch .dr-pl, .dr-box.touch .dr-pr { justify-self: auto; flex-direction: column; padding-bottom: 4px; }
+          .dr-box.touch .dr-b { width: 64px; height: 58px; }
+          .dr-box.touch .dr-jump { height: 76px; }
         }
-        .dr-box:fullscreen, .dr-box:-webkit-full-screen { max-width: none; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; background: #000; }
-        .dr-box:fullscreen .dr-cv { width: auto; height: 100vh; max-width: 100vw; }
-        .dr-box:fullscreen .dr-pad { position: absolute; inset: auto 12px 12px 12px; padding: 0; pointer-events: none; }
-        .dr-box:fullscreen .dr-pad .dr-b { pointer-events: auto; opacity: .72; }
+        .dr-box:fullscreen, .dr-box:-webkit-full-screen { max-width: none; width: 100vw; height: 100vh; padding: 12px; box-sizing: border-box; background: #000; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "pl cv pr"; align-items: center; gap: 12px; }
+        .dr-box:fullscreen .dr-cv { max-width: calc((100vh - 24px) * 1.7857); justify-self: center; }
+        .dr-box:fullscreen .dr-pl, .dr-box:fullscreen .dr-pr { flex-direction: column; }
+        /* Full-screen play layer on phones and tablets: covers the whole window, controls beside the screen. */
+        .dr-imm { position: fixed; inset: 0; z-index: 9999; background: #000; touch-action: none; overscroll-behavior: none; padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+        .dr-imm .dr-box, .dr-imm .dr-box.touch { position: relative; max-width: none; width: 100%; height: 100%; box-sizing: border-box; padding: 12px; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr auto; grid-template-areas: "cv cv" "pl pr"; align-items: center; align-content: center; gap: 14px; }
+        .dr-imm .dr-cv { width: 100%; max-width: calc((100svh - 150px) * 1.7857); justify-self: center; }
+        .dr-imm .dr-b { background: #1c2030; color: #ffffff; border-color: #3a4358; width: 76px; height: 70px; }
+        .dr-imm .dr-jump, .dr-imm .dr-run.lock { background: #c2410c; border-color: #c2410c; color: #ffffff; }
+        .dr-imm .dr-jump { width: 104px; }
+        .dr-x { position: absolute; top: 10px; right: 10px; z-index: 3; width: 40px; height: 40px; border-radius: 999px; border: 1px solid #3a4358; background: rgba(28,32,48,.85); color: #ffffff; font: 700 16px ${SANS}; line-height: 1; cursor: pointer; }
+        .dr-rot { display: none; }
+        @media (orientation: portrait) { .dr-imm .dr-rot { display: block; position: absolute; top: 20px; left: 14px; right: 60px; color: #9aa3bb; font: 700 12px ${SANS}; line-height: 1.3; } }
+        @media (orientation: landscape) {
+          .dr-imm .dr-box, .dr-imm .dr-box.touch { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: 1fr; grid-template-areas: "pl cv pr"; align-items: end; padding: 8px 10px; }
+          .dr-imm .dr-cv { align-self: center; max-width: calc((100svh - 16px) * 1.7857); }
+          .dr-imm .dr-pl, .dr-imm .dr-pr { flex-direction: column; padding-bottom: 6px; }
+          .dr-imm .dr-b { width: 70px; height: 64px; }
+          .dr-imm .dr-jump { width: 70px; height: 96px; }
+        }
       ` }} />
 
       {!STAGE && <div style={{ display: focusMode ? 'none' : 'block' }}><Footer /></div>}
