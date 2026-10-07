@@ -27,6 +27,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link';
 import PriceGame, { readDoneSave } from '../price/PriceGame';
 import RunNudgePop from '../circuits/RunNudgePop';
+import NextDrop from '../NextDrop';
 import ItemsPop, { itemsFor, scheduleItems, spendItems } from './ItemsPop';
 import useCircuitBoard from '../circuits/useCircuitBoard';
 import { withRef } from '@/lib/referrals';
@@ -457,6 +458,9 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
                   {me && me.rank ? <div><b>#{me.rank}</b><span>{field ? `of ${Number(field).toLocaleString()} today` : 'today'}</span></div> : null}
                   <div><b>{t[3]}</b><span>Card</span></div>
                 </div>
+                {/* NEXT DROP (owner, 2026-10-06): when tomorrow's shelf opens. */}
+                <NextDrop label="Next Price Check" sub="New items on the shelf at midnight Eastern." href="/pricecheck"
+                  accent="var(--pc-hi)" ink="var(--pc-ink)" mute="var(--pc-mute)" style={{ margin: '0 0 12px', maxWidth: 390 }} />
                 <div className="cf-games">
                   {sections.map((s, i) => <div key={s.key} className={flat ? '' : i === hi ? 'hi' : i === lo ? 'lo' : ''}><i>{s.name}</i><b>{pts[i]}</b></div>)}
                 </div>

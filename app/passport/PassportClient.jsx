@@ -41,6 +41,7 @@ import {
   haversineKm, unproject, TIERS, tierIndex, HENLEY_EDITION, shareLines,
 } from '@/lib/passport';
 import { flagSteps } from './flagkit';
+import NextDrop from '../NextDrop';
 import { DOTS, HOME } from './dots';
 
 const NAME = 'Passport';
@@ -1492,6 +1493,12 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
             {me && me.rank ? <div><b>#{me.rank}</b><span>{field ? `of ${Number(field).toLocaleString()} today` : 'today'}</span></div> : null}
             <div><b>{tier.vf}</b><span>Visa-free</span></div>
           </div>
+          {/* NEXT DROP (owner, 2026-10-06): the countdown moved up from the
+              last line of the page into its own block under the result. */}
+          {isTodays ? (
+            <NextDrop label="Next country" sub="A new destination boards at midnight Eastern." href={PATH}
+              accent="#c4b5fd" style={{ margin: '4px 0 12px', maxWidth: 400 }} />
+          ) : null}
           <div className="pe-rounds">
             {ROUNDS.map((r, i) => <div key={r.k} className={flat ? '' : i === hiR ? 'hi' : i === loR ? 'lo' : ''}><i>{r.n}</i><b>{sc[i] == null ? '-' : sc[i]}</b></div>)}
           </div>
@@ -1502,11 +1509,11 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
             <button type="button" onClick={() => setFinale(true)}>Replay the ending</button>
             <a href="/">Back to main</a>
           </div>
-          <div className="pe-foot">
-            {isTodays
-              ? (countdown ? <>Next country in <b>{countdown}</b>.</> : 'A new country boards at midnight Eastern.')
-              : <>You played the {PUZZLE.dateLabel} archive. <a href={PATH}>Back to today&rsquo;s Passport</a></>}
-          </div>
+          {!isTodays ? (
+            <div className="pe-foot">
+              You played the {PUZZLE.dateLabel} archive. <a href={PATH}>Back to today&rsquo;s Passport</a>
+            </div>
+          ) : null}
         </div>
       </div>
       {!identity && (

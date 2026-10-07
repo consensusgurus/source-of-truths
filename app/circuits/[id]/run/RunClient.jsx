@@ -55,6 +55,7 @@ import MissList, { missOf, MISS_CSS } from '../../RunMisses';
 import useCircuitHistory from '../../useCircuitHistory';
 import { T } from '@/lib/theme';
 import RunNudgePop from '../../RunNudgePop';
+import NextDrop from '../../../NextDrop';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
@@ -741,9 +742,16 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   // plus one), which is what the board itself does. Totals come back sorted
   // best first, so the nearest score above the player is simply the last one
   // that beats them.
+  // THE RACE (owner, 2026-10-06): the panel under the question leads with ONE
+  // number, how far the player is off the lead, and draws it on a track with a
+  // tick per finished player. Same projection as before, plus the leader's name
+  // and the finished totals for the ticks. A player's own row (a practice rerun
+  // after a posted run) is left out, or they would be racing themselves.
   const liveStand = useMemo(() => {
     if (!boardRows.length) return null;
-    const totals = boardRows
+    const meName = myRow && myRow.username ? myRow.username : null;
+    const rows = boardRows.filter((x) => !(meName && x.username === meName && r.practice));
+    const totals = rows
       .map((x) => Math.round(Number(x.total) || 0))
       .filter((t) => Number.isFinite(t));
     if (!totals.length) return null;
@@ -753,13 +761,18 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
     const lead = totals[0];
     return {
       pos: ahead + 1,
-      field: (boardNow && boardNow.overallField) || totals.length,
+      field: Math.max((boardNow && boardNow.overallField) || 0, totals.length),
       // What it takes to PASS, not to tie, which is the number a player can
       // act on. Null when nobody is above them.
       toNext: nextUp != null ? Math.max(1, nextUp - mine + 1) : null,
-      toLead: lead > mine ? lead - mine + 1 : 0,
+      toLead: lead >= mine ? lead - mine + 1 : 0,
+      gap: lead - mine,
+      lead,
+      leadName: (rows[0] && rows[0].username) || 'The leader',
+      mine,
+      totals,
     };
-  }, [boardRows, boardNow, answeredSoFar]);
+  }, [boardRows, boardNow, answeredSoFar, myRow, r.practice]);
 
   const lastSec = last ? sections.find((s) => s.key === last.key) : null;
   const lastMiss = missOf(lastSec, last);
@@ -1184,35 +1197,60 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     </button>
                   ))}
                 </div>
-                <div className="rn-foot">
-                  {/* THE LIFE TOKEN. One lit dot, always on screen, in the
-                      quiz's own colour. The mechanic that separates this from
-                      every other quiz on the site had no picture before it. */}
-                  <span className="rn-life"><s />One life · {sec.name}</span>
-                  {fieldOn && field.curves[sec.key] ? (
-                    <span className="rn-chip alive">
-                      {Math.round((field.curves[sec.key][r.i] || 0) * (field.plays[sec.key] || 0))} of {field.plays[sec.key]} still alive here
-                    </span>
-                  ) : null}
-                  {liveStand ? (
-                    <span className="rn-stand">
-                      <s>If you stopped here</s>
-                      <b>#{liveStand.pos}</b>
-                      <i>of {liveStand.field}</i>
-                      {liveStand.toLead === 0 ? (
-                        <em className="lead">you lead</em>
-                      ) : (
-                        <>
-                          {liveStand.toNext != null && liveStand.pos > 2 ? (
-                            <em>+{liveStand.toNext} passes {ord(liveStand.pos - 1)}</em>
-                          ) : null}
-                          <em>+{liveStand.toLead} takes the lead</em>
-                        </>
-                      )}
-                    </span>
-                  ) : null}
-                  <span className="rn-tally"><b>{answeredSoFar}</b> right in the run · {fmtTime(Date.now() - r.t0)}</span>
-                </div>
+                {/* THE RACE PANEL (owner, 2026-10-06). The old foot was four
+                    chips at one weight, and the gap to the leader was the last
+                    item inside the third. It leads now: one big number, a track
+                    with the leader, the pack and you, and at most two next
+                    steps. Life, survivors and the clock drop to a quiet line. */}
+                {(() => {
+                  const ls = liveStand;
+                  const pct = (v) => `${Math.max(0, Math.min(100, (v / Math.max(1, askable)) * 100))}%`;
+                  const state = !ls ? 'none' : ls.gap < 0 ? 'lead' : ls.gap <= 3 ? 'close' : 'behind';
+                  const alive = fieldOn && field.curves[sec.key]
+                    ? `${Math.round((field.curves[sec.key][r.i] || 0) * (field.plays[sec.key] || 0))} of ${field.plays[sec.key]} still alive here`
+                    : null;
+                  return (
+                    <div className="rn-race" data-state={state}>
+                      <div className="rn-rh">
+                        {!ls ? (
+                          <div className="rn-gap"><span className="rn-gn">{answeredSoFar}</span><span className="rn-gw"><b>right so far</b>Nobody has finished today. You set the pace.</span></div>
+                        ) : ls.gap < 0 ? (
+                          <div className="rn-gap"><span className="rn-gn">{-ls.gap}</span><span className="rn-gw"><b>ahead of 2nd</b>{ls.leadName} finished on {ls.lead}</span></div>
+                        ) : ls.gap === 0 ? (
+                          <div className="rn-gap"><span className="rn-gn">Tied</span><span className="rn-gw"><b>with the lead</b>+1 takes it from {ls.leadName}</span></div>
+                        ) : (
+                          <div className="rn-gap"><span className="rn-gn">{ls.gap}</span><span className="rn-gw"><b>behind the lead</b>{ls.leadName} finished on {ls.lead}</span></div>
+                        )}
+                        {ls ? (
+                          <div className="rn-gpos"><b>{ord(ls.pos)} of {ls.field}</b>if you stopped now</div>
+                        ) : null}
+                      </div>
+                      {ls ? (
+                        <div className="rn-trk" aria-hidden="true">
+                          <div className="rn-trail" />
+                          {ls.totals.map((t, k) => <div key={k} className="rn-ttick" style={{ left: pct(t) }} />)}
+                          <div className="rn-tfill" style={{ width: pct(ls.mine) }} />
+                          <div className="rn-tband" style={ls.gap < 0
+                            ? { left: pct(ls.lead), width: `calc(${pct(ls.mine)} - ${pct(ls.lead)})` }
+                            : { left: pct(ls.mine), width: `calc(${pct(ls.lead)} - ${pct(ls.mine)})` }} />
+                          <div className="rn-tm you" style={{ left: pct(ls.mine) }}><i>You {ls.mine}</i><span /></div>
+                          <div className="rn-tm ldr" style={{ left: pct(ls.lead) }}><i>{ls.gap < 0 ? '2nd' : '1st'} {ls.lead}</i><span /></div>
+                        </div>
+                      ) : null}
+                      {ls && ls.gap >= 0 ? (
+                        <div className="rn-steps">
+                          {ls.toNext != null && ls.pos > 2 ? <span className="rn-step"><b>+{ls.toNext}</b> passes {ord(ls.pos - 1)}</span> : null}
+                          <span className="rn-step top"><b>+{ls.toLead}</b> takes 1st</span>
+                        </div>
+                      ) : null}
+                      <div className="rn-minor">
+                        <span className="rn-mlife"><s />One life · {sec.name}</span>
+                        {alive ? <span>{alive}</span> : null}
+                        <span className="rn-mclk">{fmtTime(Date.now() - r.t0)}</span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             ) : null}
 
@@ -1341,6 +1379,15 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                       ? <div><b>{Math.round(boardQ.data.me.total * 10) / 10}</b><i>of {(boardQ.data && boardQ.data.maxTotal) || N * 15} points</i></div> : null}
                   </div>
                 </div>
+
+                {/* NEXT DROP (owner, 2026-10-06): when tomorrow's run opens. */}
+                <NextDrop
+                  label={`Next ${circuitName}`}
+                  sub="New quizzes at midnight Eastern."
+                  href={`/circuits/${circuitId}/run`}
+                  accent="#7dd3fc"
+                  style={{ margin: '16px 0 4px' }}
+                />
 
                 {guest && !claimed ? (
                   <div className="rn-claim">
@@ -1783,6 +1830,42 @@ body:has(.rn)::before{background:${T.ground};}
   .rn-stand{width:100%;gap:6px;}
   .rn-stand s{width:100%;}
 }
+
+/* THE RACE PANEL (owner, 2026-10-06). One number leads: the gap to the lead.
+   White behind, sky within three, gold out in front. */
+.rn-race{margin-top:22px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);display:grid;gap:12px;}
+.rn-rh{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;}
+.rn-gap{display:flex;align-items:baseline;gap:10px;min-width:0;}
+.rn-gn{font-family:${SANS};font-size:40px;font-weight:800;line-height:.9;color:#fff;font-variant-numeric:tabular-nums;}
+.rn-race[data-state="close"] .rn-gn{color:#7dd3fc;}
+.rn-race[data-state="lead"] .rn-gn{color:${T.gold};}
+.rn-gw{font-size:13.5px;font-weight:600;color:#9aa8c4;line-height:1.25;min-width:0;}
+.rn-gw b{display:block;font-size:15px;font-weight:700;color:#eef2fa;}
+.rn-gpos{margin-left:auto;text-align:right;font-family:${MONO};font-size:11px;color:#66748f;line-height:1.45;}
+.rn-gpos b{display:block;font-family:${SANS};font-size:18px;font-weight:800;color:#eef2fa;}
+.rn-trk{position:relative;height:44px;margin:4px 8px 0;}
+.rn-trail{position:absolute;left:0;right:0;top:20px;height:6px;border-radius:3px;background:rgba(255,255,255,.07);}
+.rn-ttick{position:absolute;top:16px;width:2px;height:14px;margin-left:-1px;border-radius:1px;background:rgba(255,255,255,.22);}
+.rn-tfill{position:absolute;left:0;top:20px;height:6px;border-radius:3px;background:var(--acc);transition:width .5s cubic-bezier(.2,.8,.2,1);}
+.rn-tband{position:absolute;top:18px;height:10px;border-radius:3px;transition:left .5s,width .5s;
+  background:repeating-linear-gradient(135deg,rgba(255,255,255,.14) 0 4px,transparent 4px 8px);}
+.rn-tm{position:absolute;top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;transition:left .5s cubic-bezier(.2,.8,.2,1);}
+.rn-tm i{font-style:normal;font-family:${MONO};font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;}
+.rn-tm span{width:14px;height:14px;border-radius:50%;margin-top:3px;border:3px solid #0e131f;}
+.rn-tm.you i{color:var(--acc);} .rn-tm.you span{background:var(--acc);}
+.rn-tm.ldr{top:auto;bottom:-2px;flex-direction:column-reverse;}
+.rn-tm.ldr span{margin:0 0 3px;background:${T.gold};} .rn-tm.ldr i{color:${T.gold};}
+.rn-steps{display:flex;gap:8px;flex-wrap:wrap;}
+.rn-step{display:inline-flex;gap:7px;align-items:baseline;font-size:13px;color:#9aa8c4;
+  background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.09);border-radius:8px;padding:6px 10px;}
+.rn-step b{font-family:${MONO};font-weight:500;color:#eef2fa;font-variant-numeric:tabular-nums;}
+.rn-step.top b{color:${T.gold};}
+.rn-minor{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-family:${MONO};font-size:10.5px;color:#66748f;}
+.rn-mlife{display:inline-flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.12em;}
+.rn-mlife s{text-decoration:none;width:8px;height:8px;border-radius:50%;background:var(--acc);}
+.rn-mclk{margin-left:auto;font-variant-numeric:tabular-nums;}
+@media (prefers-reduced-motion:reduce){.rn-tfill,.rn-tband,.rn-tm{transition:none;}}
+@media (max-width:640px){.rn-gn{font-size:34px;}.rn-gpos{margin-left:0;text-align:left;}}
 
 /* THE HANDOVER. The outgoing quiz's colour leaves on the left, the incoming
    one arrives on the right, and the name is the thing you read. */
