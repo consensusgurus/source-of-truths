@@ -50,7 +50,7 @@ if (!p || !p.complete || !p.next || p.next.set.cat !== 'Word' || !p.next.open.le
 p = finishPick('crux', done(live), live);
 if (!p || !p.complete || p.next) fail('everything done should have no next');
 p = finishPick('sweep', done([]), live);
-if (!p || p.open.join() !== 'blocks') fail('sweep should push blocks');
+if (!p || !p.open.includes('blocks') || !p.open.includes('snake')) fail('sweep should push blocks and snake');
 ok('pick cases');
 
 console.log(fails ? `\n${fails} failure(s), ${warns} warning(s)` : `\nall clear, ${warns} warning(s)`);

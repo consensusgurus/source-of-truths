@@ -95,6 +95,7 @@ import { PUZZLES as HINGE_FULL } from '../hinge/puzzles';
 import { PUZZLES as REDACT_FULL } from '../redact/puzzles';
 import { PUZZLES as STRATA_FULL } from '../strata/puzzles';
 import { PUZZLES as BLOCKS_FULL } from '../blocks/puzzles';
+import { PUZZLES as SNAKE_FULL } from '../snake/puzzles';
 import { PUZZLES as CHOMP_FULL } from '../chomp/puzzles';
 import { PUZZLES as SWEEP_FULL } from '../sweep/puzzles';
 import { PUZZLES as PATHS_FULL } from '../paths/puzzles';
@@ -183,6 +184,7 @@ const HINGE = HINGE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ nu
 const REDACT = REDACT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const STRATA = STRATA_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const BLOCKS = BLOCKS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const SNAKE = SNAKE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const CHOMP = CHOMP_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 // The field is dropped here on purpose: the archive card needs the frame only,
 // and shipping 60 days of mine maps to a page that never digs would be silly.
@@ -339,6 +341,7 @@ const GAMES = [
   { key: 'anon', name: 'Anon', path: '/anon', tag: 'A clueless acrostic', accent: '#8c2f39', bg: '#f8ecee', border: 'rgba(140,47,57,0.4)', src: ANON },
   { key: 'strata', name: 'Strata', path: '/strata', tag: 'Dig the words out', accent: '#9a3412', bg: '#fdf0e7', border: 'rgba(154,52,18,0.4)', src: STRATA },
   { key: 'chomp', name: 'Chomp', path: '/chomp', tag: 'Eat them in order', accent: '#a8430f', bg: '#fbeadf', border: 'rgba(168,67,15,0.4)', src: CHOMP },
+  { key: 'snake', name: 'Snake', path: '/snake', tag: 'Same apples, same order', accent: '#65a30d', bg: '#eef7dc', border: 'rgba(101,163,13,0.4)', src: SNAKE },
   { key: 'blocks', name: 'Blocks', path: '/blocks', tag: 'Same shapes, same order', accent: '#1d4ed8', bg: '#e8edfa', border: 'rgba(29,78,216,0.4)', src: BLOCKS },
   { key: 'sweep', name: 'Sweep', path: '/sweep', tag: 'No bottom edge', accent: '#0f766e', bg: '#e2f2f0', border: 'rgba(15,118,110,0.4)', src: SWEEP },
   { key: 'atlas', name: 'Atlas', path: '/atlas', tag: 'Twenty-five questions, one life', accent: '#047857', bg: '#e7f4ee', border: 'rgba(4,120,87,0.4)', src: ATLAS },

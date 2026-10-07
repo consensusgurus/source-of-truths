@@ -134,6 +134,7 @@ const GAMES = [
   { key: 'suffice', href: '/suffice', name: 'Suffice', img: '/games/btn-suffice.png', store: 'sot_suffice_day', tag: "Decide what is enough" , cat: 'Logic' },
   { key: 'strata', href: '/strata', name: 'Strata', img: '/games/btn-strata.png', store: 'sot_strata_day', tag: "Dig the words out" , cat: 'Word' },
   { key: 'chomp', href: '/chomp', name: 'Chomp', img: '/games/btn-chomp.png', store: 'sot_chomp_day', tag: "Eat them in order" , cat: 'Logic' },
+  { key: 'snake', href: '/snake', name: 'Snake', img: '/games/btn-snake.png', store: 'sot_snake_day', tag: "Same apples, same order" , cat: 'Arcade' },
   { key: 'blocks', href: '/blocks', name: 'Blocks', img: '/games/btn-blocks.png', store: 'sot_blocks_day', tag: "Same shapes, same order" , cat: 'Arcade' },
   { key: 'docket', href: '/docket', name: 'Docket', img: '/games/btn-docket.png', store: 'sot_docket_day', tag: "One setup, five deductions" , cat: 'Logic' },
   { key: 'plot', href: '/plot', name: 'Plot', img: '/games/btn-plot.png', store: 'sot_plot_day', tag: "Divide the whole board" , cat: 'Logic' },

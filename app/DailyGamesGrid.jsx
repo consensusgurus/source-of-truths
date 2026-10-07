@@ -142,6 +142,7 @@ const GAMES = [
   { key: 'yose', href: '/yose', name: 'Yose', tag: 'The last points on the board', img: '/games/btn-yose.png' },
   { key: 'suffice', href: '/suffice', name: 'Suffice', tag: 'Decide what is enough', img: '/games/btn-suffice.png' },
   { key: 'strata', href: '/strata', name: 'Strata', tag: 'Dig the words out', img: '/games/btn-strata.png' },
+  { key: 'snake', href: '/snake', name: 'Snake', tag: 'Same apples, same order', img: '/games/btn-snake.png' },
   { key: 'blocks', href: '/blocks', name: 'Blocks', tag: 'Same shapes, same order', img: '/games/btn-blocks.png' },
   { key: 'docket', href: '/docket', name: 'Docket', tag: 'One setup, five deductions', img: '/games/btn-docket.png' },
   { key: 'plot', href: '/plot', name: 'Plot', tag: 'Divide the whole board', img: '/games/btn-plot.png' },
@@ -180,7 +181,7 @@ const CATEGORIES = [
   { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'park', 'impound', 'junkyard', 'snug', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'paths', 'chomp', 'docket', 'plot'] },
   { key: 'endgame', label: 'End Game', keys: ['mate', 'defend', 'queen', 'four', 'check', 'chain', 'turn', 'yose'] },
   { key: 'cards', label: 'Cards', keys: ['taire', 'hands', 'shoe', 'finesse', 'crib'] },
-  { key: 'arcade', label: 'Arcade', keys: ['blocks', 'sweep'] },
+  { key: 'arcade', label: 'Arcade', keys: ['blocks', 'snake', 'sweep'] },
 ];
 
 /* The prize figure is the hook in the share teaser, so it is picked out of the

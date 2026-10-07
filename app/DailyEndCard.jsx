@@ -115,7 +115,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-15' };
+const LAUNCH_PIN = { keys: ['snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-15' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -233,6 +233,7 @@ export const GAME_META = {
   sums: { accent: '#be185d', badgeBg: '#be185d', badgeInk: T.white, Fin: Sigma },
   hinge: { accent: '#4f46e5', badgeBg: '#4f46e5', badgeInk: T.white, Fin: Link2 },
   strata: { accent: '#9a3412', badgeBg: '#9a3412', badgeInk: T.white, Fin: Layers },
+  snake: { accent: '#65a30d', badgeBg: '#65a30d', badgeInk: T.white, Fin: Grid3x3 },
   blocks: { accent: '#1d4ed8', badgeBg: '#1d4ed8', badgeInk: T.white, Fin: Grid3x3 },
   sweep:  { accent: '#0f766e', badgeBg: '#0f766e', badgeInk: T.white, Fin: Flag },
   chomp:  { accent: '#a8430f', badgeBg: '#a8430f', badgeInk: T.white, Fin: Route },
@@ -340,6 +341,7 @@ const ALL_DAILY_GAMES = [
   { key: 'redact', cat: 'trivia',     name: 'Redact', tag: 'Uncover the blacked-out article', blurb: 'A whole article about one famous subject, every word behind a block. Guess words to uncover it and name the subject.', href: '/redact' },
   { key: 'chomp', cat: 'logic',      name: 'Chomp', tag: 'Eat them in order',        blurb: 'Seven mascots, eaten in order, and a trail that never goes away. The only thing in your way is where you have already been.', href: '/chomp' },
   { key: 'sweep', cat: 'arcade',     name: 'Sweep', tag: 'No bottom edge',           blurb: 'Minesweeper that runs downward forever. The same field for everybody, never a guess, one life a run and as many runs as you like.', href: '/sweep' },
+  { key: 'snake', cat: 'arcade',    name: 'Snake', tag: 'Same apples, same order',   blurb: 'The classic snake game, with the same apples in the same order for everybody. The edges wrap, it never speeds up, and your best run counts. Every apple grows you by two on Sundays.', href: '/snake' },
   { key: 'blocks', cat: 'arcade',    name: 'Blocks', tag: 'Same shapes, same order',   blurb: 'Falling shapes in a short well, the same order for everybody, and as many runs as you like with your best one scored. It never speeds up.', href: '/blocks' },
   { key: 'strata', cat: 'word',       name: 'Strata', tag: 'Dig the words out',          blurb: 'Every letter belongs to a buried word. Take one out and the letters above it fall, which is what lets you read the next.', href: '/strata' },
   { key: 'hinge',   cat: 'word',      name: 'Hinge',   tag: 'Chain the compounds',   blurb: 'First and last word given. Fill the chain so every pair of neighbours makes a compound word or a phrase everyone knows. Any chain that holds counts.', href: '/hinge' },

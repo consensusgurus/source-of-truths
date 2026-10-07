@@ -3825,6 +3825,7 @@ archive and hub chips use the short form `Sun`.
 | Crib | seven hands instead of five, three of them decided by the crib (from launch, 2026-09-20) |
 | Duet | a 10x10 board against the weekday 6x6 and 8x8 (from launch, 2026-10-03) |
 | Lamps | a 10x10 board against the weekday 7x7 and 8x8 (from launch, 2026-10-04) |
+| Snake | every apple grows the snake by two instead of one, par 15 against the weekday 20 (from launch, 2026-10-11) |
 | Clade | a rarer animal, tier 4 of the list (from launch, 2026-10-04) |
 | Dossier | six guesses instead of eight (from launch, 2026-10-04) |
 | Judges | a 12x12 two-judge board against the weekday 10x10 (from launch, 2026-10-04) |
@@ -8564,3 +8565,37 @@ figure still loading.
   after-a-game timer waits while that is set or a `.stf-flood` is up.
 - Review on a live board: `window.__sotBeat('<key>')` plays it without ending anything;
   `window.__sotLastBeat` reports the last beat.
+
+## Snake (`/snake`): the third Arcade daily (launched 2026-10-07)
+
+The classic snake game as a daily. Key/route `snake`, category **Arcade** (beside Blocks and
+Sweep), `miss: 'Moves'`, `unit: 'apples'` (a tally game: the score is the raw apple count,
+uncapped, and a zero-apple run ranks on moves survived), legacy accent `#65a30d` / `#bef08a`.
+Arcade rules throughout: unlimited runs, the board and the local record keep the BEST run, and
+`XP_DAILY_CAP.snake = 1`. Wired by `scripts/wire-snake.mjs` (anchored on the Blocks rows).
+**No PREMIERES row on purpose (owner, 2026-10-07): it launched without the new-puzzle pop-up.**
+Not in the Arcade circuit (still Blocks and Sweep); whether it joins is an owner call.
+
+- **The day's apples are generated, not banked.** `lib/snake-engine.js` `dayPlan(quizId)` is a
+  seeded list of 800 squares; apple k lands on the k-th, or slides to the next free square in
+  reading order when the snake is lying there. The same file is the engine the client plays and
+  the verifier proves, so the two cannot drift. `app/snake/puzzles.js` carries only the frame
+  (size 15, grow, par) and is written by `scripts/gen-snake.mjs`.
+- **Rules:** a 15x15 board with WRAPPING edges and no wall, one square every 150ms for the whole
+  run (`STEP_MS`, picked as "Relaxed" off the mockup), two turns may queue between ticks, a
+  turn straight back is ignored, moving into the square the tail is leaving is legal, and only
+  your own body ends a run. The first turn starts the clock; `timeElapsed` is moves x 150ms,
+  so it is play time with pauses excluded.
+- **Weekday par 20, Sunday Edition par 15 with every apple growing the snake by two.** A greedy
+  solver eats a median 27 a weekday; par sits below it on the Blocks lesson that a solver is no
+  guide to a human. Revisit once a fortnight of real scores exists.
+- **The look (mockup v2, owner-approved):** no outer barrier, only a light grid; the snake is
+  one tapering tube in the category accent (`--stg-acc-ink`) fading toward the ground, with a
+  sheen, a darker head and eyes that look where it is going; the apple is ink with an accent
+  stem; a faint dashed ring marks where the NEXT apple will land. Colours are read off the
+  stage tokens through a probe element, so the canvas follows both registers.
+- **A run in progress survives the tab:** leaving the page pauses and saves it
+  (`sot_snake_<num>`, the engine snapshot without its plan), and the same run resumes.
+- `scripts/verify-snake.mjs` checks the bank (contiguous dates, quizIds, Sunday frames) and
+  the engine (determinism, wrap, reversal, tail-chase, self-bite, Sunday growth, and that a
+  greedy run on every banked day eats apples).
