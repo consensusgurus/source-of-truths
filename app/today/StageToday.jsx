@@ -1912,22 +1912,11 @@ export default function StageToday() {
     const cMax = Math.max(1, Math.floor((W + G) / (184 + G)));
     const r0 = Math.ceil(n / cMax);
     if (r0 * MINH + (r0 - 1) * G >= H * 0.85) return null;
-    let best = null;
-    for (let c = 1; c <= Math.min(n, cMax); c += 1) {
-      const r = Math.ceil(n / c);
-      const w = (W - (c - 1) * G) / c;
-      const h = (H - (r - 1) * G) / r;
-      if (h < MINH) continue;
-      const sc = Math.abs(Math.log((w / h) / 1.9)) + (c * r - n) * 0.15;
-      if (!best || sc < best.sc) best = { sc, c, w, h };
-    }
-    if (!best) return null;
-    const ts = Math.max(1, Math.min(best.h / 58, best.w / 190, 3.4));
-    return {
-      gridTemplateColumns: `repeat(${best.c},minmax(0,1fr))`,
-      gridAutoRows: `${Math.floor(best.h)}px`,
-      '--ts': ts.toFixed(2), '--tf': (1 + (ts - 1) * 0.6).toFixed(2),
-    };
+    // CAPPED (owner, 2026-10-07): the standard columns and the standard type;
+    // a tile only gets taller, and never past 132px, even if that leaves room.
+    const h = Math.min(132, Math.floor((H - (r0 - 1) * G) / r0));
+    if (h <= MINH) return null;
+    return { gridAutoRows: `${h}px` };
   };
   const railLabel = railCat ? catLabel(railCat.cat) : 'All games';
   const railEl = (() => {
@@ -3763,10 +3752,6 @@ ${PATCH_CSS}
 .sty-rlb li.ph span{height:8px;width:58%;border-radius:4px;background:var(--stg-chip);}
 .sty-rlb li.nt span{color:var(--stg-mute);font-weight:600;}
 .sty-rlb li.em{border-bottom-color:transparent;}
-.sty-games.fit .sty-g{display:flex;flex-direction:column;justify-content:center;padding:calc(10px * var(--tf)) calc(14px * var(--tf));}
-.sty-games.fit .sty-gn{font-size:calc(14.5px * var(--tf));gap:calc(7px * var(--tf));}
-.sty-games.fit .sty-gn .sty-gi{width:calc(17px * var(--ts));height:calc(17px * var(--ts));}
-.sty-games.fit .sty-gt{font-size:calc(11.5px * var(--tf));margin-top:calc(2px * var(--tf));}
 .sty-ixbk{display:none;}
 .sty-fca{display:block;text-align:right;text-decoration:none;color:inherit;}
 .sty-fca>i{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
@@ -3826,8 +3811,9 @@ ${PATCH_CSS}
 /* ── A PHONE STARTS ON TILES (owner, 2026-10-07) ──
    No strip. Every section is a tile; tapping one sends it to the top as a bar
    and its games take the tiles' place, and tapping the bar brings the tiles
-   back. Reorder mode keeps its own unfolded column. */
-@media (max-width:640px){
+   back. Reorder mode keeps its own unfolded column. The same from 900px
+   down (owner, 2026-10-07): wherever the left column is gone, it is tiles. */
+@media (max-width:900px){
   .sty-ix > .sty-ixn:not(.re){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;overflow:visible;
     padding-right:0;-webkit-mask-image:none;mask-image:none;}
   .sty-ixn:not(.re) .sty-ixb{grid-template-columns:10px minmax(0,1fr) auto;min-height:54px;padding:10px 12px;
@@ -3859,7 +3845,7 @@ ${PATCH_CSS}
   [data-sty-anim] .sty-ix.mpk > section:not(.sty-ixoff){animation:sty-in .32s cubic-bezier(.2,.7,.3,1) .08s both;}
   [data-sty-anim] .sty-ix.msel .sty-ixn:not(.re) .sty-ixb{animation:sty-in .26s cubic-bezier(.2,.7,.3,1) both;}
 }
-@media (max-width:640px) and (prefers-reduced-motion:reduce){
+@media (max-width:900px) and (prefers-reduced-motion:reduce){
   [data-sty-anim] .sty-ix.mpk > section,[data-sty-anim] .sty-ix.msel .sty-ixn .sty-ixb{animation:none;}
 }
 .sty-fg > i{max-width:11ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-left:auto;}
