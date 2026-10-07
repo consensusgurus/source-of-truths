@@ -63,7 +63,6 @@ import GroupsPop from '../GroupsPop';
 import useGroupStanding, { bestPlace, ordinal as grpOrdinal, memberRows, fmtPts as grpPts, MiniAvatar } from '../groups/groupStanding';
 import HomeGroupsBand from '../groups/HomeGroupsBand';
 import HomeInvite from '../groups/HomeInvite';
-import HomeFieldBand from '../groups/HomeFieldBand';
 // CHOOSE A NAME (owner report, 2026-09-17): the guest controls below pointed at
 // ?signup=1 and nothing on this page ever read it, so they only reloaded the
 // home. This is the form they open. See app/ChooseNamePop.jsx.
@@ -335,6 +334,14 @@ const ALL_ID = 'all';
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 const MINE_ID = 'sty-mine';
 const CIRC_ID = 'sty-circs';
+// THE REST OF THE PAGE IS PANES TOO (owner, 2026-10-07). Each id is also the
+// section's DOM id, so a #hash that names one opens it.
+const STAND_ID = 'sty-standing';
+const GRP_ID = 'sty-group';
+const BOARD_ID = 'sty-board';
+const LIVE_ID = 'sty-live';
+const QUIZ_ID = 'sty-quizzes';
+const INFO_PANES = [QUIZ_ID, STAND_ID, GRP_ID, BOARD_ID, LIVE_ID];
 // The Word category's section id, the same shape the render derives for every
 // category (`cat-${cat}` with spaces dashed), named here so the open-by-default
 // rule can point at it.
@@ -742,10 +749,25 @@ export default function StageToday() {
   const [pane, setPane] = useState(null);
   useIsoLayoutEffect(() => {
     try { const v = localStorage.getItem(PANE_KEY); if (v) setPane(v); } catch (e) {}
+    try { const h = String(window.location.hash || '').slice(1); if (INFO_PANES.includes(h)) setPane(h); } catch (e) {}
   }, []);
+  // ONLY A GAMES PANE IS REMEMBERED. A reader who last looked at the leaderboard
+  // should still come back tomorrow to something they can play.
   const pickPane = (id) => {
     setPane(id);
+    if (INFO_PANES.includes(id)) return;
     try { localStorage.setItem(PANE_KEY, id); } catch (e) {}
+  };
+  const goPane = (id) => {
+    pickPane(id);
+    try {
+      requestAnimationFrame(() => {
+        const el = document.querySelector('.sty-ix');
+        if (!el) return;
+        const t = el.getBoundingClientRect().top;
+        if (t < 0 || t > window.innerHeight * 0.6) el.scrollIntoView({ block: 'start' });
+      });
+    } catch (e) {}
   };
   const [catCols, setCatCols] = useState(5);
   const [mineAll, setMineAll] = useState(false);
@@ -1606,12 +1628,24 @@ export default function StageToday() {
   // A to Z is gone as a mode: All games IS that list. Reorder is a state of
   // the list itself (arrows on the category rows), not a second page layout.
   const ix = true;
-  const paneIds = [ALL_ID, MINE_ID, CIRC_ID, ...orderedCats.map((c) => c.cat)];
+  const paneIds = [ALL_ID, MINE_ID, CIRC_ID, ...orderedCats.map((c) => c.cat), ...INFO_PANES];
   const paneOn = paneIds.includes(pane) ? pane : ALL_ID;
   // CHOOSING CIRCUITS IN THE INDEX ASKS FOR ALL OF THEM (owner, 2026-10-06): the
   // pane is the reader's request to browse circuits, so it lists the whole
   // roster, and the Show all bar survives only where Circuits is one row of many.
   const circPane = ix && paneOn === CIRC_ID;
+  // On a phone the index is a sideways strip, so a pane opened from the cap has
+  // to bring its own chip into view. The quiz drawers load when their pane opens.
+  useEffect(() => {
+    if (paneOn === QUIZ_ID) setNearFoot(true);
+    try {
+      const n = document.querySelector('.sty-ixn');
+      const b = n && n.querySelector('.sty-ixb.on');
+      if (n && b && n.scrollWidth > n.clientWidth + 2) {
+        n.scrollLeft += b.getBoundingClientRect().left - n.getBoundingClientRect().left - 14;
+      }
+    } catch (e) {}
+  }, [paneOn]);
   const openDefault = (id) => (id === CIRC_ID || id === WORD_ID ? true : (id === MINE_ID ? hasPins : false));
   // In the index a pane is simply up or not, so its own collapse is out of play.
   const isOpen = (id) => (ix && (id === MINE_ID || id === CIRC_ID)) || (shelfOpen && Object.prototype.hasOwnProperty.call(shelfOpen, id)
@@ -1697,23 +1731,22 @@ export default function StageToday() {
   // its own row, one category at a time. EVERY panel is rendered and the shut
   // ones are display:none, so all the game links stay in the HTML for crawlers,
   // the same rule the old shut sections followed.
-  const ixBtn = (id, label, n, tot, hue) => (
+  // NO PLAYED FRACTIONS IN THE INDEX (owner, 2026-10-07): the strip in the cap is
+  // the day's progress, drawn once.
+  const ixBtn = (id, label, hue) => (
     <button key={id} type="button" aria-pressed={paneOn === id}
       className={'sty-ixb' + (paneOn === id ? ' on' : '')} style={{ '--cc': hue }}
       onClick={() => pickPane(id)}>
       <i aria-hidden="true" />
       <span>{label}</span>
-      {tot ? <b>{n}<em>/{tot}</em></b> : null}
     </button>
   );
   const alphaDone = alpha.filter((g) => done.has(g.key)).length;
   const ixNav = (
     <nav className={'sty-ixn' + (reorder ? ' re' : '')} aria-label="Sections">
-      {ixBtn(ALL_ID, 'All games', alphaDone, alpha.length, 'var(--stg-ink)')}
-      {ixBtn(MINE_ID, 'My games', mineDone, mineTot, 'var(--stg-acc)')}
-      {ixBtn(CIRC_ID, 'Circuits',
-        circuits.filter((c) => c.n === c.games.length).length, circuits.length, 'var(--stg-mute)')}
-      {orderedCats.map(({ cat, games }, ci) => (reorder ? (
+      {ixBtn(ALL_ID, 'All games', 'var(--stg-ink)')}
+      {ixBtn(MINE_ID, 'My games', 'var(--stg-acc)')}
+      {orderedCats.map(({ cat }, ci) => (reorder ? (
         <div key={cat} className={'sty-ixb sty-ixr' + (paneOn === cat ? ' on' : '')} style={{ '--cc': hueFor(cat) }}>
           <i aria-hidden="true" />
           <span>{cat}</span>
@@ -1722,7 +1755,15 @@ export default function StageToday() {
             <button type="button" onClick={() => moveCat(cat, 1)} disabled={ci === orderedCats.length - 1} aria-label={`Move ${cat} down`}>&darr;</button>
           </span>
         </div>
-      ) : ixBtn(cat, cat, games.filter((g) => done.has(g.key)).length, games.length, hueFor(cat))))}
+      ) : ixBtn(cat, cat, hueFor(cat))))}
+      <span className="sty-ixsep" aria-hidden="true" />
+      {ixBtn(CIRC_ID, 'Circuits', 'var(--stg-mute)')}
+      {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)')}
+      <span className="sty-ixsep" aria-hidden="true" />
+      {ixBtn(STAND_ID, 'My rankings', 'var(--stg-mute)')}
+      {ixBtn(GRP_ID, inGrp ? grpOne.name : 'Play with friends', 'var(--stg-mute)')}
+      {ixBtn(BOARD_ID, 'Leaderboard', 'var(--stg-mute)')}
+      {ixBtn(LIVE_ID, 'Live feed', 'var(--stg-mute)')}
       <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
         onClick={() => setReorder((v) => !v)}>
         {reorder ? 'Done' : 'Reorder'}
@@ -1767,14 +1808,7 @@ export default function StageToday() {
 
       {/* 1. THE CAP. One line: the identity, then the day's figures, then the
              controls at the right edge, as on every board. */}
-      <div className={'sty-cap' + (inGrp ? ' lz' + (capLens === 'me' ? ' lzme' : '') : '')} ref={capRef}>
-        {/* THE SAME BRAND AS EVERY BOARD (owner, 2026-08-31). The stage cap on
-            a game page carries the mark beside the words, and the home was
-            still setting the words alone, so the two surfaces disagreed about
-            what the site's own logo is. MindLoftMark is the one component; the
-            accent is --stg-brand (sky on the dark register, the brand blue on
-            the pale one), never a category step, on this and every stage cap
-            (owner, 2026-09-01). */}
+      <div className="sty-cap v2" ref={capRef}>
         <div className="sty-id">
           <span className="sty-brand">
             <MindLoftMark size={20} ink="var(--stg-ink)" accent="var(--stg-brand,#7dd3fc)" />
@@ -1782,197 +1816,43 @@ export default function StageToday() {
           </span>
           <span className="sty-date">{fmtDate(day)}</span>
         </div>
-        {/* THE VIEW SWITCH, centred in the cap (owner, 2026-09-25). Only a
-            reader in a group has one. It never leaves the cap: as the cap
-            narrows the things around it are shed instead (see .sty-cap.lz). */}
-        {inGrp ? (
-          <div className="sty-lens" role="group" aria-label="Whose day to show">
-            {[['me', 'Me'], ['group', grpOne.name], ['all', 'Everyone']].map(([v, label]) => (
-              <button type="button" key={v} className={lens === v ? 'on' : ''} aria-pressed={lens === v}
-                title={v === 'group' ? grpOne.name : label} onClick={() => pickLens(v)}>{label}</button>
-            ))}
-          </div>
-        ) : null}
+        {/* THE DAY'S STRIP IS THE ONLY PROGRESS FIGURE (owner, 2026-10-07): one
+            block per game in its category's colour. No played count beside it. */}
+        <div className="sty-capl"><StageLadder blocks={blocks} light={light} /></div>
         <div className="sty-rt">
         <div className="sty-figs">
-          {/* NO NAME, NO FIGURES: a reader without an account has nothing to
-              put in this bar, so it offers them the one thing that would fill
-              it rather than sitting empty (owner, 2026-08-31). */}
+          {/* NO NAME, NO FIGURES: a guest gets the one control that would fill
+              the row. Copy is the owner's (2026-10-07). */}
           {!who ? (
-            <a className="sty-signup" href="/?signup=1"
-              onClick={(e) => { e.preventDefault(); openChooseName(); }}>
-              {/* Copy is the owner's, title case (2026-09-02). */}
-              <b>Choose a Name</b><i>Keep Your Stats</i>
-            </a>
+            <a className="sty-keep" href="/?signup=1"
+              onClick={(e) => { e.preventDefault(); openChooseName(); }}>Keep stats, play with friends</a>
           ) : null}
-          {/* ON A PHONE THE WHOLE FIGURES ROW IS THE WAY TO THE STAT HUB
-              (owner, 2026-09-17): there is no room for an "All stats" link
-              beside Groups, so that link hides and this overlay makes the name
-              and every figure a tap through to the hub. Desktop never draws it. */}
-          {who ? <a className="sty-figlink" href={withTq('/quizzes/hub')} aria-label="All stats" /> : null}
           {who ? <div className="sty-who"><b>{who}</b><i>player</i></div> : null}
-          {/* THREE FIGURES, TODAY FIRST, THEN ALL TIME (owner, 2026-08-31):
-              IQ today, rank today, rank. The day is what a player came back to
-              see, and the two figures that describe it now sit together instead
-              of with the all-time rank wedged between them. The all-time rank
-              closes the row, which is also what the arrow beside it opens.
-
-              "rank today" replaces the old "today's board" label for the same
-              reason: three cells reading IQ TODAY / RANK TODAY / RANK say how
-              they relate at a glance, where a cell named after a different noun
-              did not.
-
-              An earlier cap tried to say the first two at once — the day's rank
-              MOVEMENT with the IQ in parentheses — and broke on the common case:
-              a move of 0 rendered an em dash under a label reading "rank today",
-              with a dangling "(+130)" explaining a number that was not there. A
-              day's play very often moves nobody, so the resting state of that
-              cell was a dash. Rank and the day's gain are two figures and read
-              as two.
-
-              Each is drawn only when it is real, and the movement chip appears
-              only when there IS movement: no arrow means no change, which is
-              the honest way to say it. */}
-          {/* THE PATCH (owner, 2026-09-01): while the reads are out, each cell
-              is drawn at its size with the ten-rung loop standing where the
-              figure will, no box around it, and the loop collapses off the
-              figure when its own read lands. These three cells are the ONLY
-              place it goes (owner): everything else that waits on a read sits
-              below the fold on arrival. Only a reader with a name has cells to cover; a guest
-              has the sign-up link above, which waits on nothing. The children
-              are KEYED so the StagePatch instance survives the swap from the
-              placeholder to the real figure, which is what lets the collapse
-              play over the number rather than the cover simply vanishing. A
-              cell whose value turns out to be absent (no play yet today) leaves
-              with its cover, which is honest: there was nothing to reveal. */}
-          {capLens === 'me' ? (
-            <>
-          {capWait || stats.todayXp ? (
-            <div className={'sty-fc' + (capWait ? ' wait' : '')}>
-              {capWait ? null : <b key="v" className="sty-up sty-pulse">+<RollNum value={stats.todayXp} from={0} delay={220} /></b>}
-              {capWait ? null : <i key="l">IQ today</i>}
-              {who ? <StagePatch key="p" on={capWait} light={light} /> : null}
-            </div>
-          ) : null}
-          {capWait || stats.dayRank ? (
-            <div className={'sty-fc' + (capWait ? ' wait' : '')}>
-              {capWait ? null : <b key="v">#<RollNum value={stats.dayRank} />{stats.dayField ? <i>/{stats.dayField}</i> : null}</b>}
-              {capWait ? null : <i key="l">rank today</i>}
-              {who ? <StagePatch key="p" on={capWait} light={light} /> : null}
-            </div>
-          ) : null}
-          {capWait || rank ? (
-            <div className={'sty-fc' + (capWait ? ' wait' : '')}>
-              {capWait ? null : (
-                <b key="v">
-                  #<RollNum value={rank} />
-                  {stats.rankChange ? (
-                    <i className={stats.rankChange > 0 ? 'sty-up' : 'sty-dn'}>
-                      {' '}{stats.rankChange > 0 ? '\u25b2' : '\u25bc'}{Math.abs(stats.rankChange)}
-                    </i>
-                  ) : null}
-                </b>
-              )}
-              {capWait ? null : <i key="l">rank</i>}
-              {who ? <StagePatch key="p" on={capWait} light={light} /> : null}
-            </div>
-          ) : null}
-            </>
-          ) : null}
-          {capLens === 'group' && grpFig ? (
-            <>
-              <div className="sty-fc">
-                <b>{grpFig.rank ? grpOrdinal(grpFig.rank) : '\u2013'}<i> of {grpFig.members}</i></b>
-                <i>in {grpFig.name}</i>
-              </div>
-              {grpFig.rank ? (
-                <div className="sty-fc">
-                  <b>{grpPts(grpFig.total)}</b>
-                  <i>points</i>
-                </div>
-              ) : null}
-              {grpFig.rank ? (
-                <div className="sty-fc">
-                  <b className={grpFig.leading ? 'sty-up' : 'sty-dn'}>{grpFig.leading ? '+' : '\u2212'}{grpPts(grpFig.gap)}</b>
-                  <i>{grpFig.leading ? 'lead' : 'behind'}</i>
-                </div>
-              ) : null}
-              <div className="sty-fc sty-f4">
-                <b>{grpFig.played}<i>/{total}</i></b>
-                <i>group played</i>
-              </div>
-            </>
-          ) : null}
-          {capLens === 'all' ? (
-            <>
-              {stats.dayRank ? (
-                <div className="sty-fc">
-                  <b>#{stats.dayRank}{stats.dayField ? <i>/{stats.dayField}</i> : null}</b>
-                  <i>rank today</i>
-                </div>
-              ) : null}
-              <div className="sty-fc">
-                <b>{fieldToday.toLocaleString()}</b>
-                <i>players today</i>
-              </div>
-              <div className="sty-fc">
-                <b>{((totals && totals.today) || 0).toLocaleString()}</b>
-                <i>plays today</i>
-              </div>
-            </>
-          ) : null}
-          {/* AND THE WAY THROUGH TO THE REST. Three figures is what fits on a
-              cap; everything behind them — the trophy case, the category
-              breakdown, the activity log — is the Stat Hub, and until now
-              nothing on this page said so. Only drawn for a reader who has a
-              name, because a guest has no hub to open. */}
-          {inGrp ? (
-            <a className="sty-all sty-vlk" href={withTq(capLens === 'group' && grpFig ? `/groups/${grpFig.code}` : capLens === 'all' ? '#sty-board' : '/quizzes/hub')}>
-              <span>{capLens === 'group' ? 'Group page' : capLens === 'all' ? 'Leaderboard' : 'All stats'}</span>
-              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
-                strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M5 12h13M13 6l6 6-6 6" />
-              </svg>
+          {/* TWO FIGURES, EACH A WAY THROUGH (owner, 2026-10-07): today's rank
+              opens the leaderboard pane, the all-time rank opens the Stat Hub. */}
+          {who ? (
+            <a className={'sty-fc sty-fca' + (capWait ? ' wait' : '')} href="#sty-board"
+              onClick={(e) => { e.preventDefault(); goPane(BOARD_ID); }}>
+              {capWait ? null : <b key="v">{stats.dayRank ? <>#<RollNum value={stats.dayRank} /></> : '\u2013'}</b>}
+              {capWait ? null : <i key="l">Today</i>}
+              <StagePatch key="p" on={capWait} light={light} />
             </a>
           ) : null}
-          {who && !inGrp ? (
-            <a className="sty-all sty-hub" href={withTq('/quizzes/hub')}>
-              <span>All stats</span>
-              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
-                strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M5 12h13M13 6l6 6-6 6" />
-              </svg>
+          {who ? (
+            <a className={'sty-fc sty-fca' + (capWait ? ' wait' : '')} href={withTq('/quizzes/hub')}>
+              {capWait ? null : <b key="v">{rank ? <>#<RollNum value={rank} /></> : '\u2013'}</b>}
+              {capWait ? null : <i key="l">All-Time</i>}
+              <StagePatch key="p" on={capWait} light={light} />
             </a>
           ) : null}
-          {/* GROUPS (owner, 2026-09-17): a private daily board for the people
-              you play with. Drawn for guests too, since joining a group is how
-              a guest picks a name. */}
-          {inGrp ? null : (
-          <a className="sty-all sty-grp" href={withTq('/groups')}
-            aria-label={grpBest ? `Groups, ${grpOrdinal(grpBest.rank)} in ${grpBest.name} today` : undefined}>
-            {/* JOIN A GROUP (owner, 2026-09-25). This link only draws for a
-                reader in no group now, so it says what it is for. */}
-            <span>Join a group</span>
-            {/* YOUR BEST PLACE TODAY (idea 4): "2nd" on a desktop, a number
-                badge on a phone where the bar has no room for a word. */}
-            {grpBest ? (
-              <span className="sty-gpos" title={`${grpOrdinal(grpBest.rank)} in ${grpBest.name} today`}>
-                <span className="w">{grpOrdinal(grpBest.rank)}</span><span className="n">{grpBest.rank}</span>
-              </span>
-            ) : null}
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
-              strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M5 12h13M13 6l6 6-6 6" />
-            </svg>
-          </a>
-          )}
-          {/* NO PLAYED COUNT HERE (owner, 2026-08-31): the ladder directly
-              below is that number drawn, and every category row carries its own
-              n/N. The cap says what the day has EARNED you. */}
+          {who && grpFig && grpFig.rank ? (
+            <a className="sty-fc sty-fca sty-f4" href="#sty-group"
+              onClick={(e) => { e.preventDefault(); goPane(GRP_ID); }}>
+              <b>{grpOrdinal(grpFig.rank)}<i> of {grpFig.members}</i></b>
+              <i>{grpFig.name}</i>
+            </a>
+          ) : null}
         </div>
-        {/* THE JUMP BUTTONS ARE GONE (owner, 2026-09-25): standing, board and
-            feed were three ways down a page that is one scroll long, and the
-            room went to the view switch. Only the light switch stays. */}
         <button
           type="button"
           className={'sty-cx sty-tg' + (hint ? ' hint' : '')}
@@ -1997,12 +1877,10 @@ export default function StageToday() {
           ) : null}
         </button>
         </div>
-        {/* THE EXPLICIT POINTER at the switch above, first visit only. It is
-            the cap's LAST CHILD on purpose: it reads its own parent to find
-            the glyph and measure itself against it. */}
+        {/* The cap's LAST CHILD on purpose: it reads its own parent to find
+            the switch and measure itself against it. */}
         <ThemePop />
       </div>
-      <div className="sty-prog"><span style={{ width: `${total ? (playedCount / total) * 100 : 0}%` }} /></div>
 
       <div className="sty-wrap" ref={wrapRef}>
         {/* 2. THE DAY'S PROGRESS. The page's one graphic, and it appears only
@@ -2022,106 +1900,7 @@ export default function StageToday() {
             the day's progress share a line, with the ladder squeezed to the
             right; under 1100px they stack in the order they always had. */}
 
-        <div className="sty-toprow">
-        {/* ALSO DRAWN WHEN THE GROUP HAS PLAYED (owner, 2026-09-24): the member
-            ladders live inside this section, so gating it on the reader's own
-            progress hid a groupmate's finished day from a reader who had not
-            started. A first-time reader in no group still sees nothing. */}
-        {/* THE VIEW SWITCH sits above the top row, and only for a reader in a
-            group (owner, 2026-09-25). */}
-        {!inGrp && (done.size > 0 || inprog.size > 0 || (memL && memL.played > 0)) ? (
-        <section className="sty-day sty-rev" style={memL && memL.rows.length && !narrow && memL.me ? { '--rows': 1 + memL.rows.length + (memL.rest ? 1 : 0) } : undefined}>
-          <div className="sty-eb">The day&rsquo;s progress <span className="sty-ebn"><RollNum value={playedCount} from={seenCount === null ? null : Math.min(seenCount, playedCount)} delay={360} /> of {total}</span>
-            {memL && memL.rows.length ? <span className="sty-dayg">{memL.name}</span> : null}
-          </div>
-          {/* THE READER'S LADDER SITS IN THE SAME GRID AS THE MEMBER ROWS (owner,
-              2026-09-22): name, ladder, games, points. Full width it ran past
-              the member ladders under it and its blocks landed nowhere near
-              theirs; in one grid every game is one column all the way down. */}
-          {memL && memL.rows.length && !narrow && memL.me ? (
-            <div className="sty-ml sty-mlme">
-              <span className="who"><MiniAvatar name={memL.me.username} userKey={memL.me.userKey} /><b>You</b></span>
-              <StageLadder height={ladH} blocks={blocks} light={light} />
-              <span className="gms">{memL.me.games}</span>
-              <span className="tot">{grpPts(memL.me.total)}</span>
-            </div>
-          ) : (
-            <StageLadder height={ladH} blocks={blocks} light={light} />
-          )}
-          {/* THE MEMBERS, under the reader's own ladder. On a phone the stack
-              becomes one presence row instead: ninety-four blocks across six
-              rows works out under two pixels a block at 390px, which is noise
-              rather than a graphic (owner, 2026-09-22). */}
-          {memL && memL.rows.length && !narrow ? (
-            <div className="sty-mls">
-              {memL.rows.map((m) => (
-                <div className="sty-ml" key={m.userKey}>
-                  <span className="who"><MiniAvatar name={m.username} userKey={m.userKey} /><b>{m.username}</b></span>
-                  <MemberLadder cats={cats} keys={m.keys} hueFor={hueFor} />
-                  <span className="gms">{m.games}</span>
-                  <span className="tot">{grpPts(m.total)}</span>
-                </div>
-              ))}
-              {memL.rest ? (
-                <div className="sty-ml rest">
-                  <span className="who"><MiniAvatar name={'+' + memL.rest} userKey="rest" off /><b>{memL.rest} more</b></span>
-                  <MemberLadder cats={cats} keys={EMPTY_KEYS} hueFor={hueFor} />
-                  <span className="gms">{memL.restGames}</span>
-                  <span className="tot">&mdash;</span>
-                </div>
-              ) : null}
-              <div className="sty-msum">
-                <span>{memL.name} {memL.played === 1 ? 'has' : 'have'} played <b>{memL.played} of today&rsquo;s {total}</b> between them</span>
-                <span className="k">Games &middot; Points</span>
-              </div>
-            </div>
-          ) : null}
-          {memL && memL.rows.length && narrow ? (
-            <div className="sty-pres">
-              {[memL.me].concat(memL.rows).filter(Boolean).map((m) => (
-                <span className={'sty-pm' + (m.me ? ' me' : '')} key={m.userKey}
-                  title={`${m.username}: ${m.games} ${m.games === 1 ? 'game' : 'games'}`}>
-                  <MiniAvatar name={m.username} userKey={m.userKey} />{m.games}
-                </span>
-              ))}
-              {memL.rest ? <span className="sty-pm off"><MiniAvatar name={'+' + memL.rest} userKey="rest" off />{memL.restGames}</span> : null}
-              <span className="sty-psum">{memL.played} of {total}</span>
-            </div>
-          ) : null}
-        </section>
-        ) : null}
-
-        {/* THE SLATE'S HEADING (owner, 2026-09-02). One line under the ladder,
-            above the first row of games, saying what the rest of the page is.
-            Static, so it needs no fade and shows on the server render. */}
-        {/* YOUR GROUP TODAY: the chase and the feed, or on a phone one card
-            with two faces. Nothing at all for a reader in no group, who gets
-            the invite below instead. */}
-        {lens === 'group' ? (
-          <HomeGroupsBand data={grp} withTq={withTq} narrow={narrow} group={grpOne} onPick={pickGroup}
-            cats={cats} hueFor={hueFor} total={total} />
-        ) : lens === 'all' ? (
-          <HomeFieldBand overall={overall} meKey={meKey} me={board && board.me ? board.me : null} field={fieldToday} narrow={narrow}
-            live={live.map((fp) => ({ name: fp.game.name, href: withTq(routeOf(fp.game)), hue: hueFor(fp.game.cat), score: fp.score, total: fp.total, when: ago(fp.playedAt) }))} />
-        ) : null}
-        {grp === null || invitePrev ? (
-          <HomeInvite playedToday={done.size} returning={returning} withTq={withTq} preview={invitePrev} />
-        ) : null}
-        </div>
-
-        {/* ME: the reader's own ladder rides beside the heading, since the
-            top row is gone in that view (owner, 2026-09-25). */}
-        {lens === 'me' && (done.size > 0 || inprog.size > 0) ? (
-          <div className="sty-slhd">
-            <h1 className="sty-slate">Today&rsquo;s fresh slate of puzzles</h1>
-            <div className="sty-slbar">
-              <StageLadder height={narrow ? 20 : 26} blocks={blocks} light={light} />
-              <span className="sty-eb sty-slbn">{playedCount} of {total}</span>
-            </div>
-          </div>
-        ) : (
-          <h1 className="sty-slate">Today&rsquo;s fresh slate of puzzles</h1>
-        )}
+        <h1 className="sty-sr">Mind Loft: today&rsquo;s daily puzzles</h1>
 
         {/* THE NEWCOMER'S ROW, and ONLY for a reader with no footprint.
             `returning` is the footprint test the A-to-Z bar's ordBelow already
@@ -2304,8 +2083,6 @@ export default function StageToday() {
             ) : null}
           </section>
         ) : null}
-        </div>
-
 
         {/* THE DAY'S THREE RECORDS, and the grid decides which of them share a
             row (owner, 2026-09-01). Your standing and the board are the two
@@ -2322,8 +2099,20 @@ export default function StageToday() {
             THE STANDING SCROLLS TO THE BOARD'S MEASURED HEIGHT. Sixteen rows
             beside eleven left the section ragged, and a row-count guess is wrong
             on a small field, which genuinely renders fewer than ten. */}
-        <div className={'sty-pair' + (standing.length ? ' sty-trio' : '')}
-          style={lbH ? { '--sty-lbh': lbH + 'px' } : undefined}>
+        <section id="sty-group" className={'sty-ixp' + (paneOn !== GRP_ID ? ' sty-ixoff' : '')}>
+          {inGrp ? (
+            <HomeGroupsBand data={grp} withTq={withTq} narrow={narrow} group={grpOne} onPick={pickGroup}
+              cats={cats} hueFor={hueFor} total={total} />
+          ) : (
+            <>
+              {grp === null || invitePrev ? (
+                <HomeInvite playedToday={done.size} returning={returning} withTq={withTq} preview={invitePrev} />
+              ) : null}
+              <p className="sty-ixe">A group is a private daily board for the people you play with.{' '}
+                <a href={withTq('/groups')}>Start or join one</a>.</p>
+            </>
+          )}
+        </section>
 
         {/* ONE COLUMN FOR THE RUN, not three. The figures a player wants are the
             score, the game's own miss figure and the clock, and the miss figure
@@ -2336,8 +2125,8 @@ export default function StageToday() {
             points table, and what this one is for is the RUN: what you scored,
             what it cost you and how long it took. The rank still carries how it
             placed, which is the only part of the ladder this table needs. */}
-        {standing.length ? (
-          <section id="sty-standing" className="sty-rev">
+        {(
+          <section id="sty-standing" className={'sty-ixp sty-rev' + (paneOn !== STAND_ID ? ' sty-ixoff' : '')}>
             <div className="sty-eb">
               Your standing
               <em>
@@ -2345,6 +2134,7 @@ export default function StageToday() {
                 {myRow && myRow.rank ? ` · #${myRow.rank} overall` : ''}
               </em>
             </div>
+            {!standing.length ? <p className="sty-ixe">Finish a game today and your rank in it shows up here.</p> : null}
             <div className="sty-sscroll">
               <table className="sty-tbl sty-stbl">
                 <tbody>
@@ -2363,14 +2153,14 @@ export default function StageToday() {
               </table>
             </div>
           </section>
-        ) : null}
+        )}
 
         {/* THE STANDINGS COME LAST (owner, 2026-08-31: the leaderboard does not
             need to be at the top of the page). The top of a home is for what you
             can play; where everyone finished is what you read once you have
             played it, so it sits under the games rather than above them. */}
-        {top.length ? (
-          <section id="sty-board" className="sty-rev" ref={lbRef}>
+        {(
+          <section id="sty-board" className={'sty-ixp sty-rev' + (paneOn !== BOARD_ID ? ' sty-ixoff' : '')} ref={lbRef}>
             <div className="sty-eb">Today&rsquo;s board <em>&middot; {boardCount}</em></div>
             <table className="sty-tbl">
               <tbody>
@@ -2385,8 +2175,9 @@ export default function StageToday() {
                 ))}
               </tbody>
             </table>
+            {!top.length ? <p className="sty-ixe">No scores on the board yet today.</p> : null}
           </section>
-        ) : null}
+        )}
 
         {/* THE LIVE FEED, and it is game PLAYS — not the activity log at /feed,
             which tracks list and consensus changes. It sits at the foot because
@@ -2403,7 +2194,7 @@ export default function StageToday() {
             by category, and on what the reader's own finished games add up to.
             Under 1100px it is not rendered at all and the feed is exactly what
             it was. */}
-        <section id="sty-live">
+        <section id="sty-live" className={'sty-ixp' + (paneOn !== LIVE_ID ? ' sty-ixoff' : '')}>
           <div className="sty-eb">
             Live feed
             {totals ? (
@@ -2466,8 +2257,6 @@ export default function StageToday() {
           </div>
         </section>
 
-        </div>
-
         {/* THE QUIZ CATALOGUE, UNDER THE DAY'S TWO RECORDS (owner, 2026-08-31).
             The dailies are what this home is for and they keep the top of it;
             the quizzes are the deep shelf behind them, eighteen hundred of
@@ -2484,7 +2273,7 @@ export default function StageToday() {
         {/* THE ANCHOR. A quiz end card sends the reader back here rather than
             to the separate quiz hub, so this section needs a name to land on;
             it is the only one of the page's sections that had none. */}
-        <section id="sty-quizzes" className="sty-cat sty-qsec" style={{ '--cc': 'var(--stg-ink2)' }} ref={footRef}>
+        <section id="sty-quizzes" className={'sty-cat sty-qsec' + (paneOn !== QUIZ_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
           <div className="sty-cathead">
             {/* THE HEADING IS THE DOOR (owner, 2026-09-04). This section is a
                 set of drawers standing in for a surface that now exists, so the
@@ -2572,7 +2361,10 @@ export default function StageToday() {
             })}
           </div>
         </section>
-        <HomeAbout />
+        </div>
+        {/* The lazy reads (quiz topics, the visitor count) wait on this now
+            that the quiz section is a pane and may never be on screen. */}
+        <div ref={footRef}><HomeAbout /></div>
       </div>
 
       {/* The visitor count rides the observer this page already runs for its
@@ -3716,6 +3508,45 @@ ${PATCH_CSS}
   .sty-ixn.re .sty-ixb{grid-template-columns:10px minmax(0,1fr) auto;}
   .sty-ixn.re .sty-ixre{align-self:flex-start;}
   .sty-ixn.re .sty-move button{width:36px;height:36px;}
+}
+
+/* ── ONE LINE, AND EVERYTHING ELSE A PANE (owner, 2026-10-07) ──
+   The cap is the brand, the day's strip and two ranks. The group band, your
+   standing, the board, the feed and the quiz drawers are no longer stacked under
+   the games: each is a pane, opened from the index like a category. */
+.sty-cap.v2{display:grid;grid-template-columns:auto minmax(60px,1fr) auto;align-items:center;gap:26px;}
+.sty-cap.v2 .sty-rt{margin-left:0;}
+.sty-capl{min-width:0;}
+.sty-capl .stl{height:22px;}
+.sty-fca{display:block;text-align:right;text-decoration:none;color:inherit;}
+.sty-fca>i{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--stg-mute);}
+.sty-fca:hover>b{color:var(--stg-acc-ink);}
+.sty-fca:focus-visible{outline:2px solid var(--stg-acc);outline-offset:3px;border-radius:4px;}
+.sty-keep{display:inline-flex;align-items:center;border-radius:999px;background:var(--stg-acc);
+  color:var(--stg-onramp,#08222e);padding:8px 14px;font-size:12.5px;font-weight:800;text-decoration:none;white-space:nowrap;}
+.sty-keep:hover{opacity:.9;}
+.sty-keep:focus-visible{outline:2px solid var(--stg-ink);outline-offset:2px;}
+.sty-ixsep{flex:none;height:1px;background:var(--stg-line);margin:6px 10px;}
+.sty-ix > .sty-ixp{grid-column:2;grid-row:1;min-width:0;}
+.sty-ix > .sty-cat:not(.sty-qsec) > .sty-cathead > b{display:none;}
+.sty-ixp .sty-ixe a{color:var(--stg-acc-ink);font-weight:700;}
+@media (max-width:1100px){ .sty-cap.v2 .sty-who{display:none;} }
+@media (max-width:900px){
+  .sty-ix > .sty-ixp{grid-column:1;grid-row:2;}
+  .sty-ixsep{display:none;}
+  /* The lit chip already names the pane, so the pane does not say it again. */
+  .sty-ix > .sty-cat:not(.sty-qsec) > .sty-cathead{display:none;}
+  .sty-cap.v2{gap:18px;}
+  .sty-cap.v2 .sty-f4,.sty-cap.v2 .sty-date{display:none;}
+}
+@media (max-width:640px){
+  .sty-cap.v2{grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:'id fg tg' 'ld ld ld';
+    gap:0 12px;padding:0 14px 9px;}
+  .sty-cap.v2 .sty-capl{grid-area:ld;}
+  .sty-cap.v2 .sty-capl .stl{height:6px;}
+  .sty-cap.v2 .sty-figs{grid-area:fg;border-top:0;padding:0;min-height:0;gap:16px;justify-content:flex-end;}
+  .sty-cap.v2 .sty-keep{padding:7px 12px;font-size:12px;}
 }
 
 `;
