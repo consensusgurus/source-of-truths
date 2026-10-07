@@ -50,7 +50,6 @@ import { gameStats } from '@/lib/daily-row-stats';
 import useDayStats, { fetchDayStatus, etToday } from '../useDayStats';
 import { fetchDailyBoard } from '../dailyBoardClient';
 import { IQ_TESTS } from '@/lib/iq-tests';
-import { KIDS_GAMES } from '@/lib/kids';
 import useMyGames from '../useMyGames';
 import { savedIdentity } from '@/lib/saved-identity';
 import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro } from '@/lib/stage-theme';
@@ -355,8 +354,7 @@ const QUIZ_ID = 'sty-quizzes';
 const IQ_ID = 'sty-iq';
 const COMM_ID = 'sty-comm';
 const EXAM_ID = 'sty-exams';
-const KIDS_ID = 'sty-kids';
-const INFO_PANES = [QUIZ_ID, BOARD_ID, IQ_ID, COMM_ID, EXAM_ID, KIDS_ID];
+const INFO_PANES = [QUIZ_ID, BOARD_ID, IQ_ID, COMM_ID, EXAM_ID];
 // The six standardized tests, written out: app/exams/examData.js carries every
 // question and is far too heavy to pull into the home for six names.
 const EXAM_TILES = [
@@ -364,7 +362,7 @@ const EXAM_TILES = [
   ['sat', 'SAT', 'Undergraduate admissions'], ['act', 'ACT', 'Undergraduate admissions'],
   ['gre', 'GRE', 'Graduate school admissions'], ['mcat', 'MCAT', 'Medical school admissions'],
 ];
-const KIDS_DAILY_IDS = ['sixes', 'mixup', 'sortit', 'ladder', 'unpark', 'mathdash', 'fitit'];
+
 // The IQ tests' own ramp (lib/iq-style.js), both registers, so a tile here
 // wears the colour its test page does.
 const IQ_DARK = ['#7dd3fc', '#6ee7b7', '#bef264', '#e8b43a', '#fb923c', '#fb7185', '#e879f9', '#c084fc', '#fbbf24', '#a5b4fc'];
@@ -1825,12 +1823,13 @@ export default function StageToday() {
       {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)')}
       {ixBtn(IQ_ID, 'IQ Tests', 'var(--stg-mute)')}
       {ixBtn(EXAM_ID, 'Standardized Tests', 'var(--stg-mute)')}
-      {ixBtn(KIDS_ID, 'Kids', 'var(--stg-mute)')}
+      {/* Kids and the lists are doors, not panes: each goes to its own home. */}
+      <a className="sty-ixb" href="/kids" style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" /><span>Kids</span></a>
       {/* Lists is a door, not a pane: it goes to the lists home. */}
-      <a className="sty-ixb" href={withTq('/lists')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" /><span>Lists</span></a>
+      <a className="sty-ixb" href={withTq('/lists')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" /><span>Top 10 Lists</span></a>
       <span className="sty-ixsep" aria-hidden="true" />
       {ixBtn(BOARD_ID, 'Leaderboards + Stats', 'var(--stg-mute)', 'wide')}
-      {ixBtn(COMM_ID, 'Community', 'var(--stg-mute)', 'wide')}
+      {ixBtn(COMM_ID, 'Most Appreciated', 'var(--stg-mute)', 'wide')}
       <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
         onClick={() => setReorder((v) => !v)}>
         {reorder ? 'Done' : 'Reorder'}
@@ -2638,23 +2637,9 @@ export default function StageToday() {
           </div>
           <p className="sty-ixe sty-iqn">Ten hard questions in the style of each exam, 75 seconds each. Your score is matched to a shortlist of schools.</p>
         </section>
-        <section id="sty-kids" className={'sty-cat sty-iqsec' + (paneOn !== KIDS_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
-          <div className="sty-cathead">
-            <h2><a href="/kids">Kids</a></h2>
-          </div>
-          <div className="sty-games">
-            {KIDS_GAMES.map((k, i) => (
-              <a key={k.id} className="sty-g" href={k.href} style={{ '--cc': (light ? IQ_LIGHT : IQ_DARK)[i % 10] }}>
-                <span className="sty-gn"><i className="sty-iqd" aria-hidden="true" />{k.title}</span>
-                <span className="sty-gt">{KIDS_DAILY_IDS.includes(k.id) ? 'Daily puzzle' : 'Match game'}</span>
-              </a>
-            ))}
-          </div>
-          <p className="sty-ixe sty-iqn">Little puzzles, big thinking. Free, no sign-up, nothing counts against anyone.</p>
-        </section>
         <section id="sty-comm" className={'sty-cat sty-commsec' + (paneOn !== COMM_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
           <div className="sty-cathead">
-            <h2><a href={withTq('/quizzes/community')}>Community</a></h2>
+            <h2><a href={withTq('/quizzes/community')}>Most Appreciated</a></h2>
           </div>
           <p className="sty-ixe sty-cmn">Ranked by new players brought in through a shared link. <a href={withTq('/quizzes/community')}>Full board and your link</a></p>
           <div className="sty-cm">
