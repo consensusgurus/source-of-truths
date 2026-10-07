@@ -452,5 +452,20 @@ export const PUZZLES = [
     "img": "https://commons.wikimedia.org/wiki/Special:FilePath/2024%20Ford%20F-150%20Lariat%20front%20view.jpg?width=1000",
     "credit": "Photo: Deathpallie325, CC BY 4.0, via Wikimedia Commons.",
     "creditUrl": "https://commons.wikimedia.org/wiki/File:2024_Ford_F-150_Lariat_front_view.jpg"
+  },
+  {
+    "num": 31,
+    "quizId": "dealer-10-31-26",
+    "live": "2026-10-31",
+    "dateLabel": "October 31, 2026",
+    "gathered": "2026-10-03",
+    "name": "2027 Nissan Sentra",
+    "cat": "Sedan",
+    "price": 2299000,
+    "maker": "nissanusa.com",
+    "href": "https://www.nissanusa.com/vehicles/cars/sentra.html",
+    "img": "https://commons.wikimedia.org/wiki/Special:FilePath/2026%20Nissan%20Sentra%20front%20view.jpg?width=1000",
+    "credit": "Photo: Deathpallie325, CC BY 4.0, via Wikimedia Commons.",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:2026_Nissan_Sentra_front_view.jpg"
   }
 ];

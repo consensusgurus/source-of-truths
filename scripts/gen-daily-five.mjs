@@ -132,12 +132,11 @@ for (const m of gamesSrc.matchAll(/RETIRED_DAILY = \{([^}]*)\}/g)) {
 
 // ── the medians and the budget, off the checker ─────────────────────────────
 const vfySrc = readFileSync(join(ROOT, 'scripts/verify-daily-five.mjs'), 'utf8');
-const MED = {};
-{
-  const block = /const MED = \{([\s\S]*?)\n\};/.exec(vfySrc);
-  if (!block) throw new Error('could not find MED in scripts/verify-daily-five.mjs');
-  for (const m of block[1].matchAll(/(\w+):\s*(\d+)/g)) MED[m[1]] = Number(m[2]);
-}
+// The medians moved to lib/game-medians.js on 2026-09-26 (the finish card reads
+// them too); the checker imports them from there, so read the same copy.
+import { GAME_MEDIANS } from '../lib/game-medians.js';
+const MED = { ...GAME_MEDIANS };
+if (!Object.keys(MED).length) throw new Error('lib/game-medians.js exported no medians');
 const BUDGET = {};
 {
   const b = /const BUDGET = \{([^}]*)\}/.exec(vfySrc);
