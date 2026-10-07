@@ -2407,6 +2407,7 @@ function AnalyticsPanel({ an, signups, anonPlayers, partial, onNeedAll, onRefres
   return (
     <div>
       <ActiveUsersStrip data={activeUsers} />
+      <CumulativeTotalsPanel timeByDay={timeByDay} newUsers={newUsers} registered={regCount} />
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '-6px 0 12px', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>
         <span>
           Figures as of {builtLabel || 'just now'}
@@ -2771,6 +2772,72 @@ function tbdProjectLastBucket(buckets, gran, shape) {
   if (!Number.isFinite(seconds) || seconds <= last.seconds) return null;
   const curve = gran === 'day' ? !!(shape && shape.hourCum) : !!(shape && tbdDowShape(shape));
   return { key: last.key, seconds, fraction, actual: last.seconds, curve, basisDays: (shape && shape.basisDays) || 0 };
+}
+
+// ---- Analytics -> All-time totals (2026-10-07) --------------------------------
+// Cumulative players, plays and hours since the first recorded play, each with
+// a running-total sparkline. Built entirely from the timeByDay and newUsers
+// series the analytics part already ships, so it costs no extra request.
+function cumSeries(series, pick) {
+  let run = 0;
+  return (series || []).map((r) => { run += Number(pick(r)) || 0; return { day: r.day, v: run }; });
+}
+function CumSpark({ points, color }) {
+  const W = 260, H = 54;
+  if (!points || points.length < 2) return <div style={{ height: H }} />;
+  const max = points[points.length - 1].v || 1;
+  const n = points.length - 1;
+  const xy = points.map((p, i) => [(i / n) * W, H - 2 - (p.v / max) * (H - 6)]);
+  const line = xy.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: '100%', height: H, display: 'block' }} aria-hidden="true">
+      <path d={`${line} L${W},${H} L0,${H} Z`} fill={color} fillOpacity="0.12" />
+      <path d={line} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
+function CumulativeTotalsPanel({ timeByDay, newUsers, registered }) {
+  const tSeries = (timeByDay && timeByDay.series) || [];
+  const uSeries = (newUsers && newUsers.series) || [];
+  const tt = (timeByDay && timeByDay.totals) || {};
+  const ut = (newUsers && newUsers.totals) || {};
+  const users = useMemo(() => cumSeries(uSeries, (r) => r.players), [uSeries]);
+  const plays = useMemo(() => cumSeries(tSeries, (r) => r.plays), [tSeries]);
+  const hours = useMemo(() => cumSeries(tSeries, (r) => (r.seconds || 0) / 3600), [tSeries]);
+  const firsts = [tt.firstDay, ut.firstDay].filter(Boolean).sort();
+  const since = firsts[0] || null;
+  const days = since ? Math.max(1, Math.round((Date.now() - tbdParseDay(since).getTime()) / 86400000) + 1) : 0;
+  const totalHours = (tt.totalSeconds || 0) / 3600;
+  const fmtH = totalHours >= 100 ? Math.round(totalHours).toLocaleString() : totalHours.toFixed(1);
+  const card = (label, value, unit, sub, pts, color) => (
+    <div style={{ flex: '1 1 240px', minWidth: 220, background: COLORS.paper, border: `1px solid ${COLORS.line}`, borderRadius: 12, padding: '12px 14px 8px' }}>
+      <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: COLORS.faded }}>{label}</div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 2 }}>
+        <span style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 800, fontSize: 30, lineHeight: 1.1, color }}>{value}</span>
+        <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: COLORS.faded }}>{unit}</span>
+      </div>
+      <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 9, letterSpacing: '0.07em', textTransform: 'uppercase', color: COLORS.faded, margin: '3px 0 8px' }}>{sub}</div>
+      <CumSpark points={pts} color={color} />
+    </div>
+  );
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 7 }}>
+        <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, color: COLORS.ink }}>All time</span>
+        <span style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 10, fontStyle: 'italic', color: COLORS.faded }}>
+          {since ? `since ${tbdLongDate(since)} (${days.toLocaleString()} days), running totals, registered and anonymous` : 'no plays recorded yet'}
+        </span>
+      </div>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        {card('Users', (ut.totalPlayers || 0).toLocaleString(), 'players',
+          `${(registered || 0).toLocaleString()} registered · anyone with a play`, users, COLORS.ember)}
+        {card('Plays', (tt.totalPlays || 0).toLocaleString(), 'games',
+          `${days ? Math.round((tt.totalPlays || 0) / days).toLocaleString() : 0} per day on average`, plays, COLORS.forest)}
+        {card('Hours', fmtH, 'hours played',
+          `${(tt.totalPlays ? Math.round((tt.totalSeconds || 0) / tt.totalPlays) : 0).toLocaleString()}s per play on average`, hours, COLORS.rust)}
+      </div>
+    </div>
+  );
 }
 
 function TimeByDayStat({ value, unit, label, accent }) {
