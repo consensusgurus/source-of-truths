@@ -743,7 +743,6 @@ const DOOR_ICON = {
   all: DI(<><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>),
 };
 
-const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
 const SANS = "Manrope, ui-sans-serif, system-ui, -apple-system, sans-serif";
 
 // LoftFinish's ranking, not a new one. A tone this table does not know falls to
@@ -1873,7 +1872,7 @@ const CSS = `
   color:var(--stg-ink2);cursor:pointer;font-size:14px;line-height:1;padding:5px 9px;}
 .stf-catnav:hover{border-color:var(--stg-line2);color:var(--stg-ink);}
 @media (hover:none){ .stf-catnav{display:none;} }
-.stf-cat{font-family:${MONO};font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+.stf-cat{font-family:${SANS};font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
   /* THE CHIPS TAKE THE SURFACE (owner, 2026-08-31). They were the one row on
      the card still transparent, so on the light register they showed the pale
      page ground through them while every tile and option beside them was white.
@@ -1913,7 +1912,7 @@ const CSS = `
 .stf-tile.set:hover{border-color:var(--stg-acc);}
 .stf-tile.set.done{background:none;color:var(--stg-mute);border-color:var(--stg-line);border-left-color:var(--tc);}
 .stf-tile.set.done svg{color:var(--tc);}
-.stf-fwdt .stf-setchip{font-style:normal;display:inline-block;margin-top:3px;font-family:${MONO};font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+.stf-fwdt .stf-setchip{font-style:normal;display:inline-block;margin-top:3px;font-family:${SANS};font-size:9px;letter-spacing:.12em;text-transform:uppercase;
   color:var(--stg-onramp,#08222e);background:var(--stg-acc);padding:2px 6px;border-radius:4px;}
 .stf-fwdt .stf-setchip.ok{background:none;color:var(--stg-mute);border:1px solid var(--stg-line);}
 .stf-o.on{border-color:var(--stg-acc);color:var(--stg-acc-ink);}
@@ -1930,7 +1929,7 @@ const CSS = `
    eyebrow plus the rack at rest, in the band's own ink at full strength on
    the pips (the contrast was measured at full strength, never dim an ink). */
 .stf-bcat{margin-top:9px;display:flex;align-items:center;gap:9px;flex-wrap:wrap;
-  font-family:${MONO};font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  font-family:${SANS};font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
   font-weight:700;opacity:.86;}
 .stf-bcat-x{opacity:.7;}
 .stf-rack{display:block;}
@@ -1951,8 +1950,8 @@ const CSS = `
 .stf-rack.complete .stf-rk-pips{animation:stf-swell 600ms ease-in-out both;}
 .stf-rack b small{font-size:.42em;letter-spacing:-.01em;opacity:.7;margin-left:4px;}
 .stf-rack b,.stf-rack i{animation:stf-stamp 380ms cubic-bezier(.22,.8,.26,1) both;}
-.stf-rk-done{display:inline-block;margin-top:12px;font-style:normal;font-family:${MONO};font-size:9px;
-  letter-spacing:.16em;text-transform:uppercase;font-weight:700;padding:4px 9px;
+.stf-rk-done{display:inline-block;margin-top:12px;font-style:normal;font-family:${SANS};font-size:9px;
+  letter-spacing:.12em;text-transform:uppercase;font-weight:700;padding:4px 9px;
   border:1.5px solid currentColor;border-radius:4px;animation:stf-stamp 300ms cubic-bezier(.2,.9,.3,1.3) both;}
 /* At rest on the band: the set while it is open, the category once it is done. */
 .stf-rack.band .stf-rk-pips{margin:0;gap:2px;max-width:none;justify-content:flex-start;}
@@ -1967,26 +1966,26 @@ const CSS = `
 .stf-fl-vs{flex-basis:100%;}
 .stf-vsx{display:inline-flex;align-items:baseline;gap:10px;padding:10px 14px;
   border:1.5px solid currentColor;border-radius:8px;}
-.stf-vsx .was{font-family:${MONO};font-size:12px;opacity:.7;text-decoration:line-through;}
+.stf-vsx .was{font-family:${SANS};font-size:12px;opacity:.7;text-decoration:line-through;}
 .stf-vsx .now{font-size:28px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
 .stf-vsx .arr{font-size:16px;opacity:.8;}
 /* THE RIVAL PAIR on the card (2026-09-26). */
 .stf-vs{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;}
 .stf-vside{background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:9px;padding:10px 12px;min-width:0;}
 .stf-vside .nm{display:block;font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.stf-vside b{display:block;font-family:${MONO};font-size:22px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--stg-ink);}
-.stf-vside small{display:block;font-family:${MONO};font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);margin-top:3px;}
+.stf-vside b{display:block;font-family:${SANS};font-size:22px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--stg-ink);}
+.stf-vside small{display:block;font-family:${SANS};font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);margin-top:3px;}
 .stf-vside.you{border:2px solid var(--stg-acc);padding:9px 11px;background:color-mix(in srgb,var(--stg-acc) 14%,var(--stg-surf));}
 .stf-vside.you.won{border-color:var(--stg-good);background:color-mix(in srgb,var(--stg-good) 18%,var(--stg-surf));}
 .stf-vside.you.won .nm{color:var(--stg-ink);}
-.stf-vwin{font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:5px;border:1.5px solid var(--stg-good);color:var(--stg-ink);flex:none;line-height:1.2;white-space:nowrap;}
+.stf-vwin{font-style:normal;font-family:${SANS};font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:5px;border:1.5px solid var(--stg-good);color:var(--stg-ink);flex:none;line-height:1.2;white-space:nowrap;}
 /* The Ahead chip sits BESIDE the name, not inside its clipping box: .nm hides
    overflow for the ellipsis, and a bordered chip taller than the 13px line had
    its bottom edge shaved off (owner, 2026-09-28, mobile). */
 .stf-vside.you .nm{display:flex;align-items:center;gap:6px;overflow:visible;flex-wrap:wrap;row-gap:3px;}
 .stf-vside.you .nmt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .stf-vside.you .nm{color:var(--stg-acc-ink,var(--stg-acc));}
-.stf-vsx2{font-family:${MONO};font-size:11px;color:var(--stg-mute);}
+.stf-vsx2{font-family:${SANS};font-size:11px;color:var(--stg-mute);}
 .stf-rline{margin-top:8px;font-size:13px;color:var(--stg-ink2);line-height:1.45;}
 /* THE SET, PRICED (2026-09-26). */
 .stf-pips{display:flex;gap:5px;}
@@ -1996,7 +1995,7 @@ const CSS = `
 .stf-est{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:6px;margin-top:10px;}
 .stf-estc{display:block;text-decoration:none;color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:8px;padding:8px 10px;min-width:0;}
 .stf-estc b{display:block;font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.stf-estc small{display:block;font-family:${MONO};font-size:9.5px;letter-spacing:.06em;color:var(--stg-mute);margin-top:2px;}
+.stf-estc small{display:block;font-family:${SANS};font-size:9.5px;letter-spacing:.06em;color:var(--stg-mute);margin-top:2px;}
 .stf-estc.done{opacity:.5;}
 .stf-estc.done b{text-decoration:line-through;}
 .stf-estc.next{border-color:var(--stg-gold,#e8b43a);}
@@ -2005,9 +2004,9 @@ const CSS = `
 .stf-ring{flex:none;width:50px;height:50px;border-radius:50%;display:grid;place-items:center;
   background:conic-gradient(var(--stg-gold,#e8b43a) var(--p,0%),var(--stg-line) 0);}
 .stf-ring b{width:38px;height:38px;border-radius:50%;background:var(--stg-surf);display:grid;place-items:center;
-  font-family:${MONO};font-size:13px;font-weight:700;color:var(--stg-ink);}
+  font-family:${SANS};font-size:13px;font-weight:700;color:var(--stg-ink);}
 .stf-auto{display:block;color:var(--stg-ink2);margin-bottom:3px;}
-.stf-seeall{font:inherit;font-family:${MONO};font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+.stf-seeall{font:inherit;font-family:${SANS};font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
   background:none;border:0;padding:0;color:var(--stg-acc-ink,var(--stg-acc));cursor:pointer;font-weight:700;}
 .stf-vslow{font-size:13.5px;color:var(--stg-ink2);}
 .stf-vslow b{font-weight:800;color:var(--stg-ink);}
@@ -2027,7 +2026,7 @@ const CSS = `
 
 .stf-wrap{max-width:720px;margin:0 auto;padding:22px 4px 8px;
   display:flex;flex-direction:column;gap:20px;}
-.stf-eb{font-family:${MONO};font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+.stf-eb{font-family:${SANS};font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
   color:var(--stg-mute);margin-bottom:8px;}
 .stf-eb em{font-style:normal;color:var(--stg-ink2);}
 
@@ -2080,7 +2079,7 @@ const CSS = `
 /* The elision between the five and a distant finisher. */
 .stf-tbl tr.gap td{text-align:center;letter-spacing:.3em;color:var(--stg-mute);
   padding:2px 6px;border-bottom:0;font-size:11px;}
-.stf-pos{width:44px;font-family:${MONO};font-size:12px;color:var(--stg-mute);}
+.stf-pos{width:44px;font-family:${SANS};font-size:12px;color:var(--stg-mute);}
 .stf-who{font-weight:700;}
 /* One column, right-aligned, and NOT width-capped: it holds a sentence of
    figures whose length varies by game (a sudoku has no tries, an End Game row
@@ -2095,12 +2094,12 @@ const CSS = `
   padding:9px 12px;font-size:13px;}
 .stf-archr:hover{border-color:var(--stg-line2);}
 .stf-archr .d{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.stf-archr .d i{font-style:normal;font-family:${MONO};font-size:8.5px;letter-spacing:.1em;
+.stf-archr .d i{font-style:normal;font-family:${SANS};font-size:8.5px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--stg-acc-ink);margin-left:7px;}
-.stf-archr .n{font-family:${MONO};font-size:11px;color:var(--stg-mute);}
+.stf-archr .n{font-family:${SANS};font-size:11px;color:var(--stg-mute);}
 .stf-archr .v{margin-left:auto;flex:none;display:flex;align-items:center;gap:7px;
   font-size:12.5px;font-weight:800;color:var(--stg-acc-ink);}
-.stf-archr .v em{font-style:normal;font-family:${MONO};font-size:8.5px;letter-spacing:.1em;
+.stf-archr .v em{font-style:normal;font-family:${SANS};font-size:8.5px;letter-spacing:.1em;
   text-transform:uppercase;font-weight:700;color:var(--stg-mute);}
 .stf-archr .v b{font-variant-numeric:tabular-nums;color:var(--stg-ink);}
 /* Played gives up its fill, exactly as a played tile does. */
@@ -2177,16 +2176,16 @@ const CSS = `
 .stf-fl-pair > *,.stf-fl-block,.stf-rvf > *{min-width:0;}
 .stf-fl-lab{overflow-wrap:anywhere;}
 .stf-dstrip{width:100%;box-sizing:border-box;padding-right:2px;}
-.stf-fl-lab{display:block;font-family:${MONO};font-size:clamp(9px,1.1vw,10.5px);letter-spacing:.14em;
+.stf-fl-lab{display:block;font-family:${SANS};font-size:clamp(9px,1.1vw,10.5px);letter-spacing:.12em;
   text-transform:uppercase;opacity:.8;margin-bottom:8px;font-weight:700;}
 .stf-fl-figs .stf-fl-block i,.stf-fl-figs .stf-fl-pair i{display:block;font-style:normal;font-size:clamp(12px,1.5vw,14px);font-weight:700;
   opacity:.85;margin-top:8px;letter-spacing:0;text-transform:none;font-family:${SANS};}
 .stf-rvf{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;align-items:end;}
-.stf-fl-figs .stf-rvf small{display:block;font-family:${MONO};font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.8;margin-bottom:5px;}
+.stf-fl-figs .stf-rvf small{display:block;font-family:${SANS};font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.8;margin-bottom:5px;}
 .stf-fl-figs .stf-rvf b{display:block;font-size:clamp(26px,4.4vw,40px);font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;}
 .stf-rvf .you{text-align:right;border:2px solid currentColor;border-radius:9px;padding:7px 10px;}
 .stf-rvf .you.won{border-width:3px;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 22%,transparent);}
-.stf-rvf .x{font-family:${MONO};font-size:12px;opacity:.7;padding-bottom:6px;}
+.stf-rvf .x{font-family:${SANS};font-size:12px;opacity:.7;padding-bottom:6px;}
 .stf-bars{display:flex;align-items:flex-end;gap:3px;height:clamp(40px,7vh,64px);}
 .stf-bars s{text-decoration:none;flex:1;display:block;background:rgba(0,0,0,.2);border-radius:2px 2px 0 0;
   transform-origin:bottom;animation:stf-bar 480ms cubic-bezier(.2,.8,.2,1) both;}
@@ -2204,8 +2203,8 @@ const CSS = `
 .stf-fl-fig{flex:none;animation:stf-stamp 480ms cubic-bezier(.22,.8,.26,1) both;}
 .stf-fl-fig b{display:block;font-size:clamp(24px,4.2vw,44px);font-weight:800;
   line-height:.92;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
-.stf-fl-fig i{display:block;font-style:normal;font-family:${MONO};
-  font-size:clamp(9px,1.15vw,11px);letter-spacing:.16em;text-transform:uppercase;
+.stf-fl-fig i{display:block;font-style:normal;font-family:${SANS};
+  font-size:clamp(9px,1.15vw,11px);letter-spacing:.12em;text-transform:uppercase;
   opacity:.72;margin-top:9px;}
 /* The IQ is the number they came for, so it takes a line of its own at display
    size and the standings land in a row underneath it. */
@@ -2218,7 +2217,7 @@ const CSS = `
 .stf-fl-fig.lead{flex-basis:auto;}
 .stf-fl-rack{flex-basis:auto;margin-top:0;}
 .stf-fl-rack .stf-rack b{display:block;font-size:clamp(22px,3.6vw,34px);font-weight:800;letter-spacing:-.03em;line-height:1;}
-.stf-fl-rack .stf-rack i{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.75;margin-top:6px;}
+.stf-fl-rack .stf-rack i{display:block;font-style:normal;font-family:${SANS};font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.75;margin-top:6px;}
 /* A SHORT SCREEN (an iPhone SE, a landscape phone) steps everything down so
    all six landings still fit above the tap hint. */
 @media (max-height:720px){
@@ -2235,7 +2234,7 @@ const CSS = `
   .stf-fl-skip{bottom:10px;}
 }
 .stf-fl-skip{position:absolute;left:0;right:0;bottom:26px;text-align:center;
-  font-family:${MONO};font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  font-family:${SANS};font-size:10px;letter-spacing:.12em;text-transform:uppercase;
   font-weight:700;opacity:0;animation:stf-hint 400ms ease 0s both;}
 @keyframes stf-hint{ from{opacity:0} to{opacity:.42} }
 @keyframes stf-stamp{
@@ -2288,14 +2287,14 @@ const CSS = `
 .stf-door.pri .stf-dic{background:color-mix(in srgb,currentColor 14%,transparent);color:inherit;}
 .stf-door.pri .stf-dnm{font-size:18px;}
 .stf-door.pri .stf-dsb{color:inherit;opacity:.85;}
-.stf-dgo{flex:none;font-family:${MONO};font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+.stf-dgo{flex:none;font-family:${SANS};font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
   font-weight:700;border:1.5px solid currentColor;border-radius:6px;padding:6px 10px;}
 .stf-doors > .stf-door.wide{grid-column:1/-1;}
 .stf-drawer{grid-column:1/-1;display:flex;flex-direction:column;gap:18px;min-width:0;
   background:var(--stg-raise);border:1px solid var(--stg-line);border-radius:10px;padding:14px 15px;}
 .stf-drawer[hidden]{display:none;}
 .stf-wrap > .stf-statcards{margin-top:14px;}
-.stf-dchip{display:inline-block;font-family:${MONO};font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;
+.stf-dchip{display:inline-block;font-family:${SANS};font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;
   padding:2px 6px;border-radius:4px;background:var(--stg-acc);color:var(--stg-onramp,#08222e);margin-right:7px;vertical-align:2px;}
 .stf-door.set{border:1.5px solid var(--stg-acc);background:color-mix(in srgb,var(--stg-acc) 12%,var(--stg-surf));}
 .stf-door.set .stf-dic{background:var(--stg-acc);color:var(--stg-onramp,#08222e);}
@@ -2344,15 +2343,15 @@ body:has(.stf-a2hs) :is(button,div):has(+ #stf-stats-slot):has(.lucide-smartphon
 .stf-rc .stf-back{order:0;}
 .stf-bfig{text-align:right;}
 .stf-bfig b{display:block;font-size:42px;font-weight:800;letter-spacing:-.04em;line-height:.95;font-variant-numeric:tabular-nums;}
-.stf-bfig small{display:block;margin-top:6px;font-family:${MONO};font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;}
+.stf-bfig small{display:block;margin-top:6px;font-family:${SANS};font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;}
 .stf-duel{display:flex;align-items:flex-end;gap:10px;}
 .stf-duel div{text-align:left;min-width:0;}
 .stf-duel .them{text-align:right;}
-.stf-duel small{display:block;font-family:${MONO};font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;
+.stf-duel small{display:block;font-family:${SANS};font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;
   max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .stf-duel b{display:block;font-size:36px;font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums;}
 .stf-duel .them.beat b{text-decoration:line-through;text-decoration-thickness:2px;}
-.stf-duel i{font-style:normal;font-family:${MONO};font-size:11px;font-weight:800;padding-bottom:6px;}
+.stf-duel i{font-style:normal;font-family:${SANS};font-size:11px;font-weight:800;padding-bottom:6px;}
 .stf-chline{margin-top:7px;font-size:16px;font-weight:800;letter-spacing:-.01em;}
 /* THE BAND, GRADED (owner, 2026-10-07). Gold is a literal in both registers:
    a gold dark enough to hold white ink is brown, so it keeps its value and
@@ -2390,7 +2389,7 @@ body:has(.stf-a2hs) :is(button,div):has(+ #stf-stats-slot):has(.lucide-smartphon
 }
 .stf-hasback > .stf-ctop{flex:1;min-width:0;}
 .stf-back{order:1;flex:none;margin-top:4px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
-  font:inherit;font-family:${MONO};font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;
+  font:inherit;font-family:${SANS};font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;
   color:inherit;background:transparent;border:1.5px solid currentColor;border-radius:7px;padding:7px 11px;cursor:pointer;}
 .stf-back span{font-size:13px;letter-spacing:0;}
 .stf-back:hover{background:color-mix(in srgb,currentColor 12%,transparent);}
@@ -2415,4 +2414,51 @@ body:has(.stf-a2hs) :is(button,div):has(+ #stf-stats-slot):has(.lucide-smartphon
   .stf-door.pri .stf-ring{width:32px;height:32px;}
   .stf-door.pri .stf-ring b{width:25px;height:25px;font-size:11px;}
 }
+/* ONE FAMILY ON THE CARD (owner, 2026-10-07, option B). The card used to set
+   its labels and four kinds of numbers in JetBrains Mono, which no page ever
+   loaded, so they drew in the system mono (Consolas / Courier New on Windows,
+   SF Mono on an iPhone) beside Manrope. Labels are Manrope 800 caps now, every
+   figure Manrope 800 with tabular digits, and "IQ earned" is a label too. */
+.stf-cat,
+.stf-fwdt .stf-setchip,
+.stf-bcat,
+.stf-rk-done,
+.stf-vsx .was,
+.stf-vside b,
+.stf-vside small,
+.stf-vwin,
+.stf-vsx2,
+.stf-estc small,
+.stf-ring b,
+.stf-seeall,
+.stf-eb,
+.stf-pos,
+.stf-archr .d i,
+.stf-archr .n,
+.stf-archr .v em,
+.stf-fl-lab,
+.stf-fl-figs .stf-rvf small,
+.stf-rvf .x,
+.stf-fl-fig i,
+.stf-fl-rack .stf-rack i,
+.stf-fl-skip,
+.stf-dgo,
+.stf-dchip,
+.stf-bfig small,
+.stf-duel small,
+.stf-duel i,
+.stf-back{font-weight:800;}
+.stf-pos,.stf-vside b,.stf-ring b,.stf-archr .n,.stf-vsx .was,.stf-rvf .x{font-weight:800;font-variant-numeric:tabular-nums;}
+.stf-vrow .stf-ciq i{font-size:10px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;opacity:.86;}
+/* CHALLENGE IS AS TALL AS PLAY SIMILAR (owner, 2026-10-07): same padding and
+   floor, so they match with Play similar's glyph or its countdown ring. */
+.stf-door.chal,.stf-door.pri{min-height:88px;padding:17px;}
+.stf-door.chal .stf-dic{width:50px;height:50px;border-radius:12px;}
+.stf-door.chal .stf-dnm{font-size:18px;}
+.stf-door.chal .stf-dsb{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+@media (max-width:640px){
+  .stf-door.chal .stf-dic{width:46px;height:46px;}
+  .stf-door.chal .stf-dnm{font-size:16px;}
+}
+
 `;

@@ -3788,7 +3788,7 @@ ${PATCH_CSS}
   .sty-ix.mpk > .sty-ixn.pk:not(.re) > .sty-ixre{display:none;}
   .sty-ixn.pk:not(.re) .sty-ixb.on{grid-column:1 / -1;min-height:46px;background:var(--stg-chip);border-color:transparent;
     transform-origin:0 0;}
-  .sty-ixn.pk:not(.re) .sty-ixbk{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;
+  .sty-ixn.pk:not(.re) .sty-ixb.on .sty-ixbk{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;
     letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute);}
   [data-sty-anim] .sty-ix.mpk > section:not(.sty-ixoff){animation:sty-in .32s cubic-bezier(.2,.7,.3,1) .08s both;}
   [data-sty-anim] .sty-ix.msel .sty-ixn:not(.re) .sty-ixb{animation:sty-in .26s cubic-bezier(.2,.7,.3,1) both;}
