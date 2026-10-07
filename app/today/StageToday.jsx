@@ -1917,7 +1917,10 @@ export default function StageToday() {
     // a tile only gets taller, and never past 132px, even if that leaves room.
     // YOUR FAVORITES TAKES WHAT IT CAN (owner, 2026-10-07): as many rows as
     // fit under tiles at their standard height, and the tiles grow into the rest.
-    const k = Math.max(0, Math.min(n, 10, Math.floor((H - (r0 * MINH + (r0 - 1) * G) - FAV_GAP - FAV_HEAD) / FAV_ROW)));
+    // Tiles get a comfortable 86px first when that still leaves three rows.
+    const rowsAt = (th) => Math.max(0, Math.min(n, 10, Math.floor((H - (r0 * th + (r0 - 1) * G) - FAV_GAP - FAV_HEAD) / FAV_ROW)));
+    const k86 = rowsAt(86);
+    const k = k86 >= Math.min(n, 3) ? k86 : rowsAt(MINH);
     const used = k ? FAV_GAP + FAV_HEAD + k * FAV_ROW : 0;
     const h = Math.min(132, Math.floor((H - used - (r0 - 1) * G) / r0));
     if (h <= MINH && !k) return null;
