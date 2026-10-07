@@ -49,6 +49,7 @@ import { RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight, 
 import { gameStats } from '@/lib/daily-row-stats';
 import useDayStats, { fetchDayStatus, etToday } from '../useDayStats';
 import { fetchDailyBoard } from '../dailyBoardClient';
+import { IQ_TESTS } from '@/lib/iq-tests';
 import useMyGames from '../useMyGames';
 import { savedIdentity } from '@/lib/saved-identity';
 import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro } from '@/lib/stage-theme';
@@ -350,7 +351,13 @@ const QUIZ_ID = 'sty-quizzes';
 // ONE STATS PANE (owner, 2026-10-07): the group, your rankings, the board and
 // the feed open together, in that order, under BOARD_ID. The other ids are
 // only anchors inside it now.
-const INFO_PANES = [QUIZ_ID, BOARD_ID];
+const IQ_ID = 'sty-iq';
+const COMM_ID = 'sty-comm';
+const INFO_PANES = [QUIZ_ID, BOARD_ID, IQ_ID, COMM_ID];
+// The IQ tests' own ramp (lib/iq-style.js), both registers, so a tile here
+// wears the colour its test page does.
+const IQ_DARK = ['#7dd3fc', '#6ee7b7', '#bef264', '#e8b43a', '#fb923c', '#fb7185', '#e879f9', '#c084fc', '#fbbf24', '#a5b4fc'];
+const IQ_LIGHT = ['#0369a1', '#046c4e', '#176e2f', '#7c5104', '#a3480d', '#be123c', '#a21caf', '#6d28d9', '#8a5a00', '#3949ab'];
 const STAT_ANCHORS = [STAND_ID, GRP_ID, BOARD_ID, LIVE_ID];
 // The Word category's section id, the same shape the render derives for every
 // category (`cat-${cat}` with spaces dashed), named here so the open-by-default
@@ -1805,6 +1812,8 @@ export default function StageToday() {
       <span className="sty-ixsep" aria-hidden="true" />
       {ixBtn(CIRC_ID, 'Circuits', 'var(--stg-mute)')}
       {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)')}
+      {ixBtn(IQ_ID, 'IQ Tests', 'var(--stg-mute)')}
+      {ixBtn(COMM_ID, 'Community', 'var(--stg-mute)')}
       <span className="sty-ixsep" aria-hidden="true" />
       {ixBtn(BOARD_ID, 'Leaderboards + Stats', 'var(--stg-mute)', 'wide')}
       <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
@@ -1834,7 +1843,53 @@ export default function StageToday() {
     a.addEventListener('change', on); b.addEventListener('change', on);
     return () => { a.removeEventListener('change', on); b.removeEventListener('change', on); };
   }, []);
-  const gamePane = paneOn !== BOARD_ID && paneOn !== QUIZ_ID;
+  const gamePane = !INFO_PANES.includes(paneOn);
+  // ── IQ TESTS AND THE COMMUNITY BOARD AS PANES (owner, 2026-10-07) ──────
+  // Two more of the footer's links pulled into the index. The IQ tests draw
+  // as tiles like any category. The community board draws its two top tens
+  // and the share feed side by side, read once, the first time it opens, and
+  // shown together so nothing arrives in pieces.
+  const [iqBest, setIqBest] = useState({});
+  useEffect(() => {
+    try {
+      const all = JSON.parse(localStorage.getItem('sot_iq_results') || '{}') || {};
+      const out = {};
+      for (const k of Object.keys(all)) { const b = all[k] && all[k].best; if (b && Number.isFinite(b.iq)) out[k] = b.iq; }
+      setIqBest(out);
+    } catch (e) { /* no saved tests */ }
+  }, []);
+  const [comm, setComm] = useState(null);
+  const commAsked = useRef(false);
+  useEffect(() => {
+    if (paneOn !== COMM_ID || commAsked.current) return;
+    commAsked.current = true;
+    const qs = identityQs();
+    const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    Promise.all([
+      get(`/api/quiz/referrals?days=36500&limit=10${qs ? '&' + qs : ''}`),
+      get(`/api/quiz/referrals?days=90&limit=10${qs ? '&' + qs : ''}`),
+      get('/api/quiz/referrals?feed=1&limit=10'),
+    ]).then(([a, n, f]) => setComm({
+      all: (a && Array.isArray(a.top) ? a.top : []).slice(0, 10),
+      recent: (n && Array.isArray(n.top) ? n.top : []).slice(0, 10),
+      feed: (f && Array.isArray(f.feed) ? f.feed : []).slice(0, 10),
+      me: (n && n.me) || (a && a.me) || null,
+    }));
+  }, [paneOn]);
+  const commBoard = (title, rows, empty) => (
+    <div className="sty-cmc">
+      <div className="sty-eb">{title}</div>
+      <ol>
+        {Array.from({ length: 10 }).map((_, i) => {
+          const r = rows ? rows[i] : null;
+          if (!rows) return <li key={i} className="ph" aria-hidden="true"><i>{i + 1}</i><span /><b /></li>;
+          if (!r) return <li key={i} className={i === 0 && !rows.length ? 'nt' : 'em'}><i>{rows.length ? '' : ''}</i><span>{i === 0 && !rows.length ? empty : ''}</span><b /></li>;
+          const mine = comm && comm.me && comm.me.username && r.username === comm.me.username;
+          return <li key={i} className={mine ? 'me' : ''}><i>{i + 1}</i><span>{r.username}</span><b>{r.value}<small>{r.unit ? ' ' + r.unit : ''}</small></b></li>;
+        })}
+      </ol>
+    </div>
+  );
   const railCat = orderedCats.find((x) => x.cat === paneOn) || null;
   const railId = railCat ? railCat.cat : ALL_ID;
   const railKeys = railCat ? railCat.games.map((g) => g.key).join(',') : '';
@@ -2536,6 +2591,44 @@ export default function StageToday() {
         {/* THE ANCHOR. A quiz end card sends the reader back here rather than
             to the separate quiz hub, so this section needs a name to land on;
             it is the only one of the page's sections that had none. */}
+        <section id="sty-iq" className={'sty-cat sty-iqsec' + (paneOn !== IQ_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
+          <div className="sty-cathead">
+            <h2><a href={withTq('/iq')}>IQ Tests</a></h2>
+          </div>
+          <div className="sty-games">
+            {IQ_TESTS.map((t) => (
+              <a key={t.slug} className="sty-g" href={withTq(`/iq/${t.slug}`)} style={{ '--cc': (light ? IQ_LIGHT : IQ_DARK)[t.ramp % 10] }}>
+                <span className="sty-gn"><i className="sty-iqd" aria-hidden="true" />{t.name}</span>
+                <span className="sty-gt">{t.blurb}</span>
+                {iqBest[t.slug] != null ? (
+                  <span className="sty-gres"><span className="sty-grl">Your best:</span><span className="sty-grk">IQ {iqBest[t.slug]}</span></span>
+                ) : null}
+              </a>
+            ))}
+          </div>
+          <p className="sty-ixe sty-iqn">One adaptive test per trivia category, about eight minutes each. 100 is the typical Mind Loft player.</p>
+        </section>
+        <section id="sty-comm" className={'sty-cat sty-commsec' + (paneOn !== COMM_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
+          <div className="sty-cathead">
+            <h2><a href={withTq('/quizzes/community')}>Community</a></h2>
+          </div>
+          <p className="sty-ixe sty-cmn">Ranked by new players brought in through a shared link. <a href={withTq('/quizzes/community')}>Full board and your link</a></p>
+          <div className="sty-cm">
+            {commBoard('All time \u00b7 top 10', comm ? comm.all : null, 'The top spot is open.')}
+            {commBoard('Last 90 days \u00b7 top 10', comm ? comm.recent : null, 'Nobody yet in this window.')}
+            <div className="sty-cmc">
+              <div className="sty-eb">Latest shares</div>
+              <ol className="fd">
+                {Array.from({ length: 10 }).map((_, i) => {
+                  const f = comm ? comm.feed[i] : null;
+                  if (!comm) return <li key={i} className="ph" aria-hidden="true"><span /><b /></li>;
+                  if (!f) return <li key={i} className={i === 0 && !comm.feed.length ? 'nt' : 'em'}><span>{i === 0 && !comm.feed.length ? 'No shares yet.' : ''}</span><b /></li>;
+                  return <li key={f.id || i}><span><strong>{f.sharer}</strong> brought in <strong>{f.joined || 'a new player'}</strong>{f.game && f.game.label ? <em> via {f.game.label}</em> : null}</span><b>{ago(f.at)}</b></li>;
+                })}
+              </ol>
+            </div>
+          </div>
+        </section>
         <section id="sty-quizzes" className={'sty-cat sty-qsec' + (paneOn !== QUIZ_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
           <div className="sty-cathead">
             {/* THE HEADING IS THE DOOR (owner, 2026-09-04). This section is a
@@ -3793,6 +3886,31 @@ ${PATCH_CSS}
 .sty-ix > #sty-group,.sty-ix > #sty-standing,.sty-ix > #sty-board{margin-bottom:14px;}
 .sty-ix .sty-mine .sty-minec{margin-top:10px;}
 .sty-rail{display:none;}
+.sty-iqd{flex:none;width:11px;height:11px;border-radius:3px;border:2.2px solid var(--cc);box-sizing:border-box;}
+.sty-iqn,.sty-cmn{margin:14px 0 0;}
+.sty-cmn{margin:0 0 16px;}
+.sty-cmn a{color:var(--stg-acc-ink,var(--stg-acc));font-weight:800;}
+.sty-cm{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px 26px;align-items:start;}
+.sty-cmc .sty-eb{display:block;height:24px;margin:0;}
+.sty-cmc ol{list-style:none;margin:0;padding:0;}
+.sty-cmc li{box-sizing:border-box;display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:6px;align-items:center;
+  height:34px;padding:0 6px;border-bottom:1px solid var(--stg-line);font-size:13.5px;font-variant-numeric:tabular-nums;}
+.sty-cmc ol.fd li{grid-template-columns:minmax(0,1fr) auto;}
+.sty-cmc li:last-child{border-bottom:0;}
+.sty-cmc li i{font-style:normal;font-family:${MONO};font-size:11px;color:var(--stg-mute);}
+.sty-cmc li span{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-cmc ol.fd li span{font-weight:500;color:var(--stg-ink2);}
+.sty-cmc ol.fd li strong{font-weight:800;color:var(--stg-ink);}
+.sty-cmc ol.fd li em{font-style:normal;color:var(--stg-mute);}
+.sty-cmc li b{font-weight:800;white-space:nowrap;}
+.sty-cmc li b small{font-size:11px;font-weight:600;color:var(--stg-mute);}
+.sty-cmc ol.fd li b{font-size:11.5px;font-weight:600;color:var(--stg-mute);}
+.sty-cmc li.me{background:var(--stg-chip);}
+.sty-cmc li.ph span{height:8px;width:58%;border-radius:4px;background:var(--stg-chip);}
+.sty-cmc li.nt span{color:var(--stg-mute);font-weight:600;}
+.sty-cmc li.em{border-bottom-color:transparent;}
+@media (max-width:1100px){ .sty-cm{grid-template-columns:repeat(2,minmax(0,1fr));} .sty-cm > :last-child{grid-column:1 / -1;} }
+@media (max-width:640px){ .sty-cm{grid-template-columns:minmax(0,1fr);} .sty-cm > :last-child{grid-column:auto;} }
 .sty-games.fit .sty-g{display:flex;flex-direction:column;justify-content:center;}
 .sty-fav{margin-top:24px;--cg:132px minmax(0,1fr) 150px 56px;}
 .sty-favh{display:flex;justify-content:space-between;align-items:center;height:28px;}
@@ -3898,7 +4016,7 @@ ${PATCH_CSS}
   .sty-ixn:not(.re) .sty-ixre{display:none;}
   /* FOUR GROUPS, AND THEY FILL THE SCREEN (owner, 2026-10-07): the two lists,
      the categories, circuits and quizzes, then one wide tile for every board. */
-  .sty-ixn:not(.re) .sty-ixb{min-height:clamp(54px,calc((100svh - 250px) / 8),88px);}
+  .sty-ixn:not(.re) .sty-ixb{min-height:clamp(54px,calc((100svh - 260px) / 9),88px);}
   .sty-ixn:not(.re) .sty-ixb.wide{grid-column:1 / -1;}
   .sty-ixn:not(.re) .sty-ixsep{display:block;grid-column:1 / -1;height:5px;margin:0;background:none;}
   .sty-ix.msel > section,.sty-ix.msel > .sty-ord{display:none !important;}
