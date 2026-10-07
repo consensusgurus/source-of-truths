@@ -50,6 +50,7 @@ import { gameStats } from '@/lib/daily-row-stats';
 import useDayStats, { fetchDayStatus, etToday } from '../useDayStats';
 import { fetchDailyBoard } from '../dailyBoardClient';
 import { IQ_TESTS } from '@/lib/iq-tests';
+import { KIDS_GAMES } from '@/lib/kids';
 import useMyGames from '../useMyGames';
 import { savedIdentity } from '@/lib/saved-identity';
 import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro } from '@/lib/stage-theme';
@@ -353,7 +354,17 @@ const QUIZ_ID = 'sty-quizzes';
 // only anchors inside it now.
 const IQ_ID = 'sty-iq';
 const COMM_ID = 'sty-comm';
-const INFO_PANES = [QUIZ_ID, BOARD_ID, IQ_ID, COMM_ID];
+const EXAM_ID = 'sty-exams';
+const KIDS_ID = 'sty-kids';
+const INFO_PANES = [QUIZ_ID, BOARD_ID, IQ_ID, COMM_ID, EXAM_ID, KIDS_ID];
+// The six standardized tests, written out: app/exams/examData.js carries every
+// question and is far too heavy to pull into the home for six names.
+const EXAM_TILES = [
+  ['lsat', 'LSAT', 'Law school admissions'], ['gmat', 'GMAT', 'Business school admissions'],
+  ['sat', 'SAT', 'Undergraduate admissions'], ['act', 'ACT', 'Undergraduate admissions'],
+  ['gre', 'GRE', 'Graduate school admissions'], ['mcat', 'MCAT', 'Medical school admissions'],
+];
+const KIDS_DAILY_IDS = ['sixes', 'mixup', 'sortit', 'ladder', 'unpark', 'mathdash', 'fitit'];
 // The IQ tests' own ramp (lib/iq-style.js), both registers, so a tile here
 // wears the colour its test page does.
 const IQ_DARK = ['#7dd3fc', '#6ee7b7', '#bef264', '#e8b43a', '#fb923c', '#fb7185', '#e879f9', '#c084fc', '#fbbf24', '#a5b4fc'];
@@ -1813,9 +1824,13 @@ export default function StageToday() {
       {ixBtn(CIRC_ID, 'Circuits', 'var(--stg-mute)')}
       {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)')}
       {ixBtn(IQ_ID, 'IQ Tests', 'var(--stg-mute)')}
-      {ixBtn(COMM_ID, 'Community', 'var(--stg-mute)')}
+      {ixBtn(EXAM_ID, 'Standardized Tests', 'var(--stg-mute)')}
+      {ixBtn(KIDS_ID, 'Kids', 'var(--stg-mute)')}
+      {/* Lists is a door, not a pane: it goes to the lists home. */}
+      <a className="sty-ixb" href={withTq('/lists')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" /><span>Lists</span></a>
       <span className="sty-ixsep" aria-hidden="true" />
       {ixBtn(BOARD_ID, 'Leaderboards + Stats', 'var(--stg-mute)', 'wide')}
+      {ixBtn(COMM_ID, 'Community', 'var(--stg-mute)', 'wide')}
       <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
         onClick={() => setReorder((v) => !v)}>
         {reorder ? 'Done' : 'Reorder'}
@@ -1944,7 +1959,8 @@ export default function StageToday() {
     if (!el) return undefined;
     const read = () => {
       const nav = el.querySelector('.sty-ixn');
-      const last = el.querySelector('.sty-ixb.wide');
+      const wides = el.querySelectorAll('.sty-ixb.wide');
+      const last = wides[wides.length - 1];
       if (!nav || !last) return;
       const nt = nav.getBoundingClientRect().top;
       const navH = Math.round(last.getBoundingClientRect().bottom - nt);
@@ -2607,6 +2623,34 @@ export default function StageToday() {
             ))}
           </div>
           <p className="sty-ixe sty-iqn">One adaptive test per trivia category, about eight minutes each. 100 is the typical Mind Loft player.</p>
+        </section>
+        <section id="sty-exams" className={'sty-cat sty-iqsec' + (paneOn !== EXAM_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
+          <div className="sty-cathead">
+            <h2><a href={withTq('/exams')}>Standardized Tests</a></h2>
+          </div>
+          <div className="sty-games">
+            {EXAM_TILES.map(([slug, nm, tag], i) => (
+              <a key={slug} className="sty-g" href={withTq(`/${slug}`)} style={{ '--cc': (light ? IQ_LIGHT : IQ_DARK)[i] }}>
+                <span className="sty-gn"><i className="sty-iqd" aria-hidden="true" />{nm}</span>
+                <span className="sty-gt">{tag}</span>
+              </a>
+            ))}
+          </div>
+          <p className="sty-ixe sty-iqn">Ten hard questions in the style of each exam, 75 seconds each. Your score is matched to a shortlist of schools.</p>
+        </section>
+        <section id="sty-kids" className={'sty-cat sty-iqsec' + (paneOn !== KIDS_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
+          <div className="sty-cathead">
+            <h2><a href="/kids">Kids</a></h2>
+          </div>
+          <div className="sty-games">
+            {KIDS_GAMES.map((k, i) => (
+              <a key={k.id} className="sty-g" href={k.href} style={{ '--cc': (light ? IQ_LIGHT : IQ_DARK)[i % 10] }}>
+                <span className="sty-gn"><i className="sty-iqd" aria-hidden="true" />{k.title}</span>
+                <span className="sty-gt">{KIDS_DAILY_IDS.includes(k.id) ? 'Daily puzzle' : 'Match game'}</span>
+              </a>
+            ))}
+          </div>
+          <p className="sty-ixe sty-iqn">Little puzzles, big thinking. Free, no sign-up, nothing counts against anyone.</p>
         </section>
         <section id="sty-comm" className={'sty-cat sty-commsec' + (paneOn !== COMM_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
           <div className="sty-cathead">
@@ -3886,6 +3930,7 @@ ${PATCH_CSS}
 .sty-ix > #sty-group,.sty-ix > #sty-standing,.sty-ix > #sty-board{margin-bottom:14px;}
 .sty-ix .sty-mine .sty-minec{margin-top:10px;}
 .sty-rail{display:none;}
+.sty-ixn a.sty-ixb{text-decoration:none;}
 .sty-iqd{flex:none;width:11px;height:11px;border-radius:3px;border:2.2px solid var(--cc);box-sizing:border-box;}
 .sty-iqn,.sty-cmn{margin:14px 0 0;}
 .sty-cmn{margin:0 0 16px;}
@@ -4016,7 +4061,7 @@ ${PATCH_CSS}
   .sty-ixn:not(.re) .sty-ixre{display:none;}
   /* FOUR GROUPS, AND THEY FILL THE SCREEN (owner, 2026-10-07): the two lists,
      the categories, circuits and quizzes, then one wide tile for every board. */
-  .sty-ixn:not(.re) .sty-ixb{min-height:clamp(54px,calc((100svh - 260px) / 9),88px);}
+  .sty-ixn:not(.re) .sty-ixb{min-height:clamp(54px,calc((100svh - 270px) / 11),88px);}
   .sty-ixn:not(.re) .sty-ixb.wide{grid-column:1 / -1;}
   .sty-ixn:not(.re) .sty-ixsep{display:block;grid-column:1 / -1;height:5px;margin:0;background:none;}
   .sty-ix.msel > section,.sty-ix.msel > .sty-ord{display:none !important;}
