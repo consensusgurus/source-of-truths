@@ -21,7 +21,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createPortal } from 'react-dom';
-import { HelpCircle, X, Pause, Play, RotateCcw, Maximize2, Volume2, VolumeX, Zap } from 'lucide-react';
+import { X, Pause, Play, RotateCcw, Maximize2, Volume2, VolumeX, Zap } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -559,7 +559,6 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
           num={PUZZLE.num}
           tiles={playing ? null : upNext}
           dateLabel={PUZZLE.dateLabel}
-          onHelp={() => setShowHelp(true)}
           figures={[
             { v: playing ? fmtRun(fig.tenths) : (res ? fmtRun(res.tenths) : '–'), k: 'run' },
             { v: playing ? `1-${fig.level + 1}` : (res ? (res.cleared ? 'clear' : `1-${res.level + 1}`) : '–'), k: 'level' },
@@ -589,7 +588,6 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
                         <div className="dr-hero-row">
                           <span>{bestToday != null ? `Your best today ${fmtRun(bestToday)}` : 'Three levels · one clock · a new course every day'}</span>
                           <button type="button" className="dr-hero-ic" onClick={toggleMusic} aria-label={music ? 'Sound off' : 'Sound on'}>{music ? <Volume2 size={16} /> : <VolumeX size={16} />}</button>
-                          <button type="button" className="dr-hero-ic" onClick={() => setShowHelp(true)} aria-label="How to play"><HelpCircle size={16} /></button>
                         </div>
                       </div>
                     </div>
@@ -606,17 +604,10 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
                           )}
                           <button onClick={toggleMusic} aria-label={music ? 'Music off' : 'Music on'} style={iconBtn}>{music ? <Volume2 size={15} /> : <VolumeX size={15} />}</button>
                           {(fsOk || touchOnly) && <button onClick={touchOnly ? enterImm : goFull} aria-label="Full screen" style={iconBtn}><Maximize2 size={14} /></button>}
-                          <button onClick={() => setShowHelp(true)} aria-label="How to play" style={iconBtn}><HelpCircle size={15} /></button>
                         </span>
                       </div>
 
                       {imm && typeof document !== 'undefined' ? createPortal(<div className="dr-imm" style={fit ? { height: `${fit.h}px`, width: `${fit.w}px` } : undefined}>{gameBox}</div>, document.body) : gameBox}
-                      {playing && (
-                        <div style={{ textAlign: 'center', marginTop: 8, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.03em', color: FADED }}>
-                          {touchOnly ? 'Hold the arrows to move, tap Jump (hold for height), tap Run to keep running. The game opens full screen when you start; sideways gives the biggest screen.' : 'Arrows or A D to move · Space jumps · Shift runs · P pauses · M music'}
-                        </div>
-                      )}
-
                       {over && (
                         <button onClick={startRun} style={{ marginTop: 12, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: SANS, fontWeight: 800, fontSize: 15, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, background: STAGE ? STAGE_C : T.cta, border: `2px solid ${STAGE ? STAGE_C : T.cta}`, borderRadius: 10, padding: '13px 18px', cursor: 'pointer' }}>
                           <RotateCcw size={16} /> Run it again
@@ -668,22 +659,13 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
           </div>
         </div>
 
-        <FastestList refreshKey={fastKey} myName={identity && identity.username} ink={INK} faded={FADED} surf={SURF} line={SURF_B} acc={ACC_INK} />
-
         {!STAGE && <GamePanel self="dario" name="Dario" onShow={() => setShowChrome(true)} />}
-        {!focusMode && !identity && (
-          <div id="daily-join" style={{ marginTop: 20 }}>
-            <JoinLeaderboardForm hideIcon heading="Put your name on the speed board" identity={identity} onJoined={(u) => setIdentity(u)} />
-          </div>
-        )}
-
         <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block' }}>
           {LOFT && (
             <div className={STAGE ? undefined : 'loft-report'}>
-              <ReportIssue self="dario" name="Dario" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
+              <ReportIssue self="dario" name="Dario" accent="#ffffff" align="center" />
             </div>
           )}
-          {!focusMode && <AddToHome name="Dario" />}
           <div id="stf-stats-slot" />
           {!LOFT && (
             <DailyGamesGrid
@@ -699,6 +681,16 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
         </div>
 
         <StageFold />
+        {/* Below the fold (owner, 2026-10-07): the play screen carries nothing but the game and Report an issue. */}
+        <FastestList refreshKey={fastKey} myName={identity && identity.username} ink={INK} faded={FADED} surf={SURF} line={SURF_B} acc={ACC_INK} />
+
+        {!focusMode && !identity && (
+          <div id="daily-join" style={{ marginTop: 20 }}>
+            <JoinLeaderboardForm hideIcon heading="Put your name on the speed board" identity={identity} onJoined={(u) => setIdentity(u)} />
+          </div>
+        )}
+
+        {!focusMode && <AddToHome name="Dario" />}
         <section style={{ display: (focusMode && !STAGE) ? 'none' : 'block', maxWidth: 620, margin: '26px auto 0', fontSize: 13.5, lineHeight: 1.6, color: FADED }}>
           <h2 style={{ fontSize: 15, fontWeight: 800, color: INK, margin: '0 0 8px' }}>About Dario</h2>
           <p style={{ margin: '0 0 9px' }}>

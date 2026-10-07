@@ -107,7 +107,10 @@ function useStripBoard(quizId, on) {
         setB({
           rows,
           leader: rows[0] || null,
-          field: (d.me && d.me.field) || d.plays || rows.length,
+          // EVERY PLAY COUNTS (owner, 2026-10-07): the strip's player figure is the
+          // day's total attempts, guests and retries included, not the size of the
+          // registered first-try board the rank is read from.
+          field: d.plays || (d.me && d.me.field) || rows.length,
           myRank: d.me && d.me.placement != null ? d.me.placement : null,
         });
       })
