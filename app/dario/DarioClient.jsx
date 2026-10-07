@@ -527,8 +527,8 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
                         )}
                         <canvas
                           ref={(el) => { cvsRef.current = el; if (el && engRef.current) engRef.current.setCanvas(el); }}
-                          width={400}
-                          height={224}
+                          width={800}
+                          height={448}
                           className="dr-cv"
                           style={imm && fit ? { width: `${fit.cw}px`, maxWidth: 'none' } : undefined}
                           role="img"
