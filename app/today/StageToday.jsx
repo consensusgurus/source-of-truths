@@ -775,6 +775,12 @@ export default function StageToday() {
     } catch (e) { flipFrom.current = null; }
     setPicked(true);
     setPane(id);
+    try {
+      if (picked) requestAnimationFrame(() => {
+        const ixEl = document.querySelector('.sty-ix');
+        if (ixEl && ixEl.getBoundingClientRect().top < 0) ixEl.scrollIntoView({ block: 'start' });
+      });
+    } catch (e) {}
     if (INFO_PANES.includes(id)) return;
     try { localStorage.setItem(PANE_KEY, id); } catch (e) {}
   };
@@ -1846,11 +1852,15 @@ export default function StageToday() {
           }
         }
         put({ grp: [...by.values()].sort((a, b) => b.total - a.total), grpName: g0.name, grpCode: g0.code });
-      }).catch(() => {});
+      }).catch(() => { put({ grp: [], grpName: g0.name, grpCode: g0.code }); });
     }
   }, [paneOn, orderedCats, narrow, grpOne]);
   const catTiles = orderedCats.map(({ cat, games }) => {
-    const cs = !narrow && paneOn === cat ? catStats[cat] : null;
+    // ONE REVEAL, NOT THREE (owner, 2026-10-07): nothing is drawn until the
+    // board AND the group read (when there is a group) are both in, so the
+    // blocks arrive together instead of one at a time.
+    const cs0 = !narrow && paneOn === cat ? catStats[cat] : null;
+    const cs = cs0 && cs0.top && (!grpOne || grpOne.failed || cs0.grpCode === grpOne.code) ? cs0 : null;
     const csTop = cs && cs.top ? cs.top.slice(0, 10) : [];
     const csMe = cs && cs.me && cs.me.rank && !csTop.some((r) => r.userKey === cs.me.userKey) ? cs.me : null;
     const csGrp = cs && cs.grp && grpOne && cs.grpCode === grpOne.code ? cs.grp : null;
@@ -1872,7 +1882,7 @@ export default function StageToday() {
           ))}
         </div>
         {cs ? (
-          <div className="sty-cstats">
+          <div className="sty-cstats sty-rev">
             <div>
               <div className="sty-eb">{catLabel(cat)} today{cs.field ? <em>{' \u00b7 '}{cs.field} {cs.field === 1 ? 'player' : 'players'}</em> : null}</div>
               {csTop.length ? (
@@ -3763,9 +3773,19 @@ ${PATCH_CSS}
      the categories, circuits and quizzes, then one wide tile for every board. */
   .sty-ixn:not(.re) .sty-ixb{min-height:clamp(54px,calc((100svh - 250px) / 8),88px);}
   .sty-ixn:not(.re) .sty-ixb.wide{grid-column:1 / -1;}
-  .sty-ixn:not(.re):not(.pk) .sty-ixsep{display:block;grid-column:1 / -1;height:5px;margin:0;background:none;}
+  .sty-ixn:not(.re) .sty-ixsep{display:block;grid-column:1 / -1;height:5px;margin:0;background:none;}
   .sty-ix.msel > section,.sty-ix.msel > .sty-ord{display:none !important;}
-  .sty-ixn.pk:not(.re) > :not(.on){display:none;}
+  /* THE OTHER TILES STAY, UNDER THE OPEN SECTION (owner, 2026-10-07). The list
+     dissolves into the page grid so the open bar, its pane and the remaining
+     tiles can be ordered as one column: bar, games, a gap, everything else. */
+  .sty-ix.mpk{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;column-gap:7px;row-gap:7px;align-content:start;}
+  .sty-ix.mpk > .sty-ixn.pk:not(.re){display:contents;}
+  .sty-ix.mpk > .sty-ixn.pk:not(.re) > .sty-ixb.on{order:-2;}
+  .sty-ix.mpk > section,.sty-ix.mpk > #sty-group,.sty-ix.mpk > #sty-standing,.sty-ix.mpk > #sty-board,.sty-ix.mpk > #sty-live{
+    order:-1;grid-column:1 / -1;grid-row:auto;}
+  .sty-ix.mpk > section:not(.sty-ixoff){margin-bottom:16px;}
+  .sty-ix.mpk > .sty-ixn.pk:not(.re) > .sty-ixsep{display:block;grid-column:1 / -1;height:5px;margin:0;background:none;}
+  .sty-ix.mpk > .sty-ixn.pk:not(.re) > .sty-ixre{display:none;}
   .sty-ixn.pk:not(.re) .sty-ixb.on{grid-column:1 / -1;min-height:46px;background:var(--stg-chip);border-color:transparent;
     transform-origin:0 0;}
   .sty-ixn.pk:not(.re) .sty-ixbk{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;
