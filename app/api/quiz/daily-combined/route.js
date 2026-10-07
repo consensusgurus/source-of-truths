@@ -716,7 +716,9 @@ export async function GET(request) {
         overallRankByKey.set(r.userKey, dr);
       }
     }
-    const overallBoardOut = overallNamed.slice(0, DISPLAY).map((r) => ({ ...r, rank: overallRankByKey.get(r.userKey) }));
+    // ?top=N asks for a longer board (the home's side column), capped at 30.
+    const topN = Math.min(30, Math.max(DISPLAY, parseInt(searchParams.get('top') || '', 10) || DISPLAY));
+    const overallBoardOut = overallNamed.slice(0, topN).map((r) => ({ ...r, rank: overallRankByKey.get(r.userKey) }));
 
     // THE RIVAL (owner, 2026-08-14). The named player immediately AHEAD of the
     // viewer on this board, or immediately BEHIND when the viewer is already

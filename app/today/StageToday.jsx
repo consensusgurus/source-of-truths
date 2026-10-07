@@ -1815,56 +1815,174 @@ export default function StageToday() {
       ) : null}
     </nav>
   );
-  // ── A CATEGORY PANE CARRIES ITS OWN BOARD (owner, 2026-10-07) ─────────
-  // A pane of two games left most of a desktop screen empty. Under the games
-  // now: today's board across that category, the reader's own runs in it, and
-  // their group's standing in it. Asked for once per category, when its pane
-  // first opens, and never on a phone.
-  const [catStats, setCatStats] = useState({});
-  const catAsked = useRef(null);
+  // ── THE SIDE COLUMN AND THE FITTED TILES (owner, 2026-10-07) ──────────
+  // A pane of two games left most of a desktop screen empty. Two answers,
+  // together. A fixed right-hand column carries the group's board and the
+  // overall board for whatever is selected (a category, or the whole day),
+  // cut to end level with the foot of the navigation. And a category whose
+  // tiles would not reach that line has them grown until they do. Every row
+  // of the column has its slot before any read lands, so nothing moves when
+  // the names arrive. One read per pane, once, and only on a wide screen.
+  const [wide, setWide] = useState(false);
+  const [mid, setMid] = useState(false);
   useEffect(() => {
-    if (narrow) return;
-    const c = orderedCats.find((x) => x.cat === paneOn);
-    if (!c || !c.games.length) return;
-    if (!catAsked.current) catAsked.current = new Set();
-    const g0 = grpOne && !grpOne.failed ? grpOne : null;
+    const a = window.matchMedia('(min-width: 1100px)');
+    const b = window.matchMedia('(min-width: 901px)');
+    const on = () => { setWide(a.matches); setMid(b.matches); };
+    on();
+    a.addEventListener('change', on); b.addEventListener('change', on);
+    return () => { a.removeEventListener('change', on); b.removeEventListener('change', on); };
+  }, []);
+  const gamePane = paneOn !== BOARD_ID && paneOn !== QUIZ_ID;
+  const railCat = orderedCats.find((x) => x.cat === paneOn) || null;
+  const railId = railCat ? railCat.cat : ALL_ID;
+  const railKeys = railCat ? railCat.games.map((g) => g.key).join(',') : '';
+  const [rail, setRail] = useState({});
+  const railAsked = useRef(null);
+  useEffect(() => {
+    if (!wide || !gamePane) return;
+    if (!railAsked.current) railAsked.current = new Set();
+    if (railAsked.current.has(railId)) return;
+    railAsked.current.add(railId);
     const qs = identityQs();
-    const base = `/api/quiz/daily-combined?keys=${encodeURIComponent(c.games.map((g) => g.key).join(','))}${qs ? '&' + qs : ''}`;
-    const put = (patch) => setCatStats((m) => ({ ...m, [c.cat]: { ...(m[c.cat] || {}), ...patch } }));
-    if (!catAsked.current.has(c.cat)) {
-      catAsked.current.add(c.cat);
-      fetch(base).then((r) => r.json()).then((d) => {
-        if (!d) return;
-        put({ top: Array.isArray(d.overall) ? d.overall : [], me: d.me || null, field: d.overallField || 0 });
-      }).catch(() => {});
-    }
-    const gid = c.cat + '|' + (g0 ? g0.code : '');
-    if (g0 && !catAsked.current.has(gid)) {
-      catAsked.current.add(gid);
-      fetch(`${base}&group=${encodeURIComponent(g0.code)}`).then((r) => r.json()).then((d) => {
-        const by = new Map();
-        for (const gm of (d && Array.isArray(d.games) ? d.games : [])) {
-          for (const row of (gm.board || [])) {
-            if (!row || row.abandoned) continue;
-            const cur = by.get(row.userKey) || { userKey: row.userKey, username: row.username, total: 0, games: 0 };
-            cur.total += Number(row.points) || 0; cur.games += 1;
-            by.set(row.userKey, cur);
-          }
+    const url = '/api/quiz/daily-combined?top=25'
+      + (railKeys ? '&keys=' + encodeURIComponent(railKeys) : '') + (qs ? '&' + qs : '');
+    const put = (v) => setRail((m) => ({ ...m, [railId]: v }));
+    fetch(url).then((r) => r.json()).then((d) => {
+      put({ top: d && Array.isArray(d.overall) ? d.overall : [], me: (d && d.me) || null, field: (d && d.overallField) || 0 });
+    }).catch(() => { put({ top: [], me: null, field: 0 }); });
+  }, [wide, gamePane, railId, railKeys]);
+  // The group's side of it costs no read at all: the standing already on the
+  // page carries every member's points per game, so a category is a sum.
+  const railGrp = useMemo(() => {
+    const g0 = grpOne && !grpOne.failed && grpOne.roster && grpOne.roster.length > 1 ? grpOne : null;
+    if (!g0) return null;
+    const myK = (grp && grp.userKey) || null;
+    let rows;
+    if (!railKeys) {
+      const m = memberRows(g0, myK, 999);
+      rows = [m.me, ...m.rows].filter(Boolean).map((r) => ({ userKey: r.userKey, username: r.username, total: r.total || 0, me: r.me }));
+    } else {
+      const by = new Map(g0.roster.map((m) => [m.userKey, { userKey: m.userKey, username: m.username, total: 0, me: m.userKey === myK }]));
+      for (const key of railKeys.split(',')) {
+        for (const r of ((g0.boards || {})[key] || [])) {
+          const c = by.get(r.userKey);
+          if (c) c.total += Number(r.points) || 0;
         }
-        put({ grp: [...by.values()].sort((a, b) => b.total - a.total), grpName: g0.name, grpCode: g0.code });
-      }).catch(() => { put({ grp: [], grpName: g0.name, grpCode: g0.code }); });
+      }
+      rows = [...by.values()];
     }
-  }, [paneOn, orderedCats, narrow, grpOne]);
+    rows.sort((x, y) => y.total - x.total || String(x.username || '').localeCompare(String(y.username || '')));
+    rows.forEach((r, i) => { r.rank = i + 1; });
+    let shown = rows.slice(0, 6);
+    const mine = rows.find((r) => r.me);
+    if (mine && !shown.includes(mine)) shown = [...rows.slice(0, 5), mine];
+    return { name: g0.name, rows: shown };
+  }, [grp, grpOne, railKeys]);
+  // WHERE THE NAVIGATION ENDS, and where the open pane's tiles start. Read in
+  // a layout effect so the first painted frame already has the fitted sizes.
+  const ixRef = useRef(null);
+  const [dim, setDim] = useState({ navH: 0, gw: 0, gTop: 0 });
+  useIsoLayoutEffect(() => {
+    const el = ixRef.current;
+    if (!el) return undefined;
+    const read = () => {
+      const nav = el.querySelector('.sty-ixn');
+      const last = el.querySelector('.sty-ixb.wide');
+      if (!nav || !last) return;
+      const nt = nav.getBoundingClientRect().top;
+      const navH = Math.round(last.getBoundingClientRect().bottom - nt);
+      const gs = el.querySelector('.sty-ixc:not(.sty-ixoff) > .sty-games');
+      const gr = gs ? gs.getBoundingClientRect() : null;
+      const next = { navH, gw: gr ? Math.round(gr.width) : 0, gTop: gr ? Math.round(gr.top - nt) : 0 };
+      setDim((p) => (p.navH === next.navH && p.gw === next.gw && p.gTop === next.gTop ? p : next));
+    };
+    read();
+    if (typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(read);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [paneOn, wide, mid, narrow, reorder]);
+  // The column count that fills the height with the most tile-like tiles. A
+  // category that already reaches the line at the standard size is left alone.
+  const fitFor = (n) => {
+    if (!mid || narrow || reorder || !dim.navH || !dim.gw || n < 1) return null;
+    const W = dim.gw; const H = dim.navH - dim.gTop; const G = 7; const MINH = 58;
+    if (H < 140) return null;
+    const cMax = Math.max(1, Math.floor((W + G) / (184 + G)));
+    const r0 = Math.ceil(n / cMax);
+    if (r0 * MINH + (r0 - 1) * G >= H * 0.85) return null;
+    let best = null;
+    for (let c = 1; c <= Math.min(n, cMax); c += 1) {
+      const r = Math.ceil(n / c);
+      const w = (W - (c - 1) * G) / c;
+      const h = (H - (r - 1) * G) / r;
+      if (h < MINH) continue;
+      const sc = Math.abs(Math.log((w / h) / 1.9)) + (c * r - n) * 0.15;
+      if (!best || sc < best.sc) best = { sc, c, w, h };
+    }
+    if (!best) return null;
+    const ts = Math.max(1, Math.min(best.h / 58, best.w / 190, 3.4));
+    return {
+      gridTemplateColumns: `repeat(${best.c},minmax(0,1fr))`,
+      gridAutoRows: `${Math.floor(best.h)}px`,
+      '--ts': ts.toFixed(2), '--tf': (1 + (ts - 1) * 0.6).toFixed(2),
+    };
+  };
+  const railLabel = railCat ? catLabel(railCat.cat) : 'All games';
+  const railEl = (() => {
+    if (!ix || !gamePane) return null;
+    const rd = rail[railId] || null;
+    const gN = railGrp ? railGrp.rows.length : 0;
+    const avail = dim.navH ? dim.navH - 24 - (gN ? 24 + gN * 30 + 16 : 0) : 16 * 30;
+    const n = Math.max(5, Math.min(25, Math.floor(avail / 30)));
+    const myK = meKey || (rd && rd.me && rd.me.userKey) || null;
+    let rows = [];
+    if (rd) {
+      rows = rd.top.slice(0, n);
+      const mine = rd.me && rd.me.rank ? rd.me : null;
+      if (mine && !rows.some((r) => r.userKey === mine.userKey)) rows = [...rd.top.slice(0, n - 1), mine];
+    }
+    const slots = [];
+    for (let i = 0; i < n; i += 1) {
+      const r = rows[i];
+      if (r) {
+        slots.push(
+          <li key={i} className={myK && r.userKey === myK ? 'me' : ''}>
+            <i>{r.rank || i + 1}</i><span>{r.username || 'You'}</span><b>{r.total != null ? Math.round(r.total) : ''}</b>
+          </li>
+        );
+      } else if (!rd) {
+        slots.push(<li key={i} className="ph" aria-hidden="true"><i>{i + 1}</i><span /><b /></li>);
+      } else if (i === 0) {
+        slots.push(<li key={i} className="nt"><i /><span>Nobody yet today</span><b /></li>);
+      } else {
+        slots.push(<li key={i} className="em" aria-hidden="true"><i /><span /><b /></li>);
+      }
+    }
+    return (
+      <aside className="sty-rail" aria-label="Leaderboards" style={{ '--cc': railCat ? hueFor(railCat.cat) : 'var(--stg-ink2)' }}>
+        {railGrp ? (
+          <div className="sty-rlb">
+            <div className="sty-eb">{railGrp.name}<em>{' · '}{railLabel}</em></div>
+            <ol>
+              {railGrp.rows.map((r) => (
+                <li key={r.userKey} className={r.me ? 'me' : ''}>
+                  <i>{r.rank}</i><span>{r.username || 'Player'}</span><b>{Math.round(r.total)}</b>
+                </li>
+              ))}
+            </ol>
+          </div>
+        ) : null}
+        <div className="sty-rlb">
+          <div className="sty-eb">{railLabel} today{rd && rd.field ? <em>{' · '}{rd.field} {rd.field === 1 ? 'player' : 'players'}</em> : null}</div>
+          <ol>{slots}</ol>
+        </div>
+      </aside>
+    );
+  })();
   const catTiles = orderedCats.map(({ cat, games }) => {
-    // ONE REVEAL, NOT THREE (owner, 2026-10-07): nothing is drawn until the
-    // board AND the group read (when there is a group) are both in, so the
-    // blocks arrive together instead of one at a time.
-    const cs0 = !narrow && paneOn === cat ? catStats[cat] : null;
-    const cs = cs0 && cs0.top && (!grpOne || grpOne.failed || cs0.grpCode === grpOne.code) ? cs0 : null;
-    const csTop = cs && cs.top ? cs.top.slice(0, 10) : [];
-    const csMe = cs && cs.me && cs.me.rank && !csTop.some((r) => r.userKey === cs.me.userKey) ? cs.me : null;
-    const csGrp = cs && cs.grp && grpOne && cs.grpCode === grpOne.code ? cs.grp : null;
-    const mineIn = games.filter((g) => standBy[g.key]).length;
+    const fit = paneOn === cat ? fitFor(games.length) : null;
     const n = games.filter((g) => done.has(g.key)).length;
     return (
       <section key={cat} id={`cat-${cat.replace(/\s+/g, '-')}`}
@@ -1874,86 +1992,13 @@ export default function StageToday() {
           <h2>{catLabel(cat)}</h2>
           <b>{n}<i>/{games.length}</i></b>
         </div>
-        <div className="sty-games">
+        <div className={'sty-games' + (fit ? ' fit' : '')} style={fit || undefined}>
           {playedLast(games, done).map((g, i) => (
             <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
               canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
               res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} />
           ))}
         </div>
-        {cs ? (
-          <div className="sty-cstats sty-rev">
-            <div>
-              <div className="sty-eb">{catLabel(cat)} today{cs.field ? <em>{' \u00b7 '}{cs.field} {cs.field === 1 ? 'player' : 'players'}</em> : null}</div>
-              {csTop.length ? (
-                <table className="sty-tbl">
-                  <tbody>
-                    {[...csTop, ...(csMe ? [csMe] : [])].map((r, i) => (
-                      <tr key={r.userKey || i} className={meKey && r.userKey === meKey ? 'me' : ''}>
-                        <td className="sty-pos">{r.rank || i + 1}</td>
-                        <td className="sty-who">{r.username || 'Player'}</td>
-                        <td className="sty-gp">{typeof r.gamesPlayed === 'number' ? `${r.gamesPlayed}/${games.length}` : ''}</td>
-                        <td className="sty-pts">{r.total != null ? Math.round(r.total) : ''}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : <p className="sty-ixe">Nobody is on this board yet today.</p>}
-            </div>
-            <div>
-              <div className="sty-eb">Your {catLabel(cat)}<em>{' \u00b7 '}{mineIn} of {games.length} played</em></div>
-              <table className="sty-tbl sty-stbl">
-                <tbody>
-                  {games.map((g) => {
-                    const r = standBy[g.key];
-                    return (
-                      <tr key={g.key}>
-                        <td className="sty-sg"><a href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`}><Glyph k={g.key} size={15} />{g.name}</a></td>
-                        <td className="sty-srun">{r ? (gameStats(r, g.miss, g.key) || '\u2014') : 'Not played yet'}</td>
-                        <td className="sty-srk">{r ? <>#{r.rank}<i>{' of '}{r.field}</i></> : '\u2013'}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            {live.some((fp) => fp.game.cat === cat) ? (
-              <div>
-                <div className="sty-eb">Latest {catLabel(cat)} plays</div>
-                <table className="sty-tbl sty-stbl">
-                  <tbody>
-                    {live.filter((fp) => fp.game.cat === cat).slice(0, 8).map((fp, i) => (
-                      <tr key={`${fp.quizId}-${i}`}>
-                        <td className="sty-sg"><a href={`${routeOf(fp.game)}${tq ? '?' + tq.slice(1) : ''}`}><Glyph k={fp.game.key} size={15} />{fp.game.name}</a></td>
-                        <td className="sty-srun">{fp.score}/{fp.total}</td>
-                        <td className="sty-srk">{ago(fp.playedAt)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : null}
-            {csGrp ? (
-              <div>
-                <div className="sty-eb">{cs.grpName} in {catLabel(cat)}</div>
-                {csGrp.length ? (
-                  <table className="sty-tbl">
-                    <tbody>
-                      {csGrp.map((r, i) => (
-                        <tr key={r.userKey || i} className={grp && grp.userKey && r.userKey === grp.userKey ? 'me' : ''}>
-                          <td className="sty-pos">{i + 1}</td>
-                          <td className="sty-who">{r.username || 'Player'}</td>
-                          <td className="sty-gp">{r.games}/{games.length}</td>
-                          <td className="sty-pts">{Math.round(r.total)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : <p className="sty-ixe">Nobody in {cs.grpName} has played {catLabel(cat)} yet today.</p>}
-              </div>
-            ) : null}
-          </div>
-        ) : null}
       </section>
     );
   });
@@ -2112,8 +2157,9 @@ export default function StageToday() {
             to be filled. */}
         {/* The SECTION's rule is neutral because this row is not a category:
             the cards inside it carry their own categories' colours. */}
-        <div className={(ix ? 'sty-ix' : 'sty-ixw') + (picked ? ' mpk' : ' msel')}>
+        <div ref={ixRef} className={(ix ? 'sty-ix' : 'sty-ixw') + (picked ? ' mpk' : ' msel') + (ix && gamePane ? ' rl' : '')}>
         {ixNav}
+        {railEl}
         {/* ALWAYS RENDERED now that it is a pane rather than a row: an empty
             pane says how to fill it, where an empty row was just clutter. */}
         {ix ? (
@@ -3698,9 +3744,27 @@ ${PATCH_CSS}
 .sty-ix > #sty-live{grid-row:4;}
 .sty-ix > #sty-group,.sty-ix > #sty-standing,.sty-ix > #sty-board{margin-bottom:14px;}
 .sty-ix .sty-mine .sty-minec{margin-top:10px;}
-.sty-cstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:26px 30px;margin-top:28px;align-items:start;}
-.sty-cstats > div{min-width:0;}
-.sty-cstats .sty-tbl{max-width:none;}
+.sty-rail{display:none;}
+@media (min-width:1100px){
+  .sty-ix.rl{grid-template-columns:212px minmax(0,1fr) 264px;}
+  .sty-ix > .sty-rail{display:flex;flex-direction:column;gap:16px;grid-column:3;grid-row:1 / span 5;min-width:0;}
+}
+.sty-rlb .sty-eb{display:block;height:24px;line-height:16px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-rlb ol{list-style:none;margin:0;padding:0;}
+.sty-rlb li{box-sizing:border-box;display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:6px;align-items:center;
+  height:30px;padding:0 6px;border-bottom:1px solid var(--stg-line);font-size:13px;font-variant-numeric:tabular-nums;}
+.sty-rlb li:last-child{border-bottom:0;}
+.sty-rlb li i{font-style:normal;font-family:${MONO};font-size:11px;color:var(--stg-mute);}
+.sty-rlb li span{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-rlb li b{font-weight:800;}
+.sty-rlb li.me{background:var(--stg-chip);}
+.sty-rlb li.ph span{height:8px;width:58%;border-radius:4px;background:var(--stg-chip);}
+.sty-rlb li.nt span{color:var(--stg-mute);font-weight:600;}
+.sty-rlb li.em{border-bottom-color:transparent;}
+.sty-games.fit .sty-g{display:flex;flex-direction:column;justify-content:center;padding:calc(10px * var(--tf)) calc(14px * var(--tf));}
+.sty-games.fit .sty-gn{font-size:calc(14.5px * var(--tf));gap:calc(7px * var(--tf));}
+.sty-games.fit .sty-gn .sty-gi{width:calc(17px * var(--ts));height:calc(17px * var(--ts));}
+.sty-games.fit .sty-gt{font-size:calc(11.5px * var(--tf));margin-top:calc(2px * var(--tf));}
 .sty-ixbk{display:none;}
 .sty-fca{display:block;text-align:right;text-decoration:none;color:inherit;}
 .sty-fca>i{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
