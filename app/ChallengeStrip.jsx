@@ -29,7 +29,7 @@ const CSS = `
 body:has(.stf) .stg-chal{display:none;}
 `;
 
-export default function ChallengeStrip({ gameKey, num = null }) {
+export default function ChallengeStrip({ gameKey, num = null, run = false }) {
   const [c, setC] = useState(null);
   useEffect(() => { setC(readChallenge(gameKey)); }, [gameKey]);
   if (!c) return null;
@@ -38,15 +38,20 @@ export default function ChallengeStrip({ gameKey, num = null }) {
   return (
     <div className="stg-chal" role="status">
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      {other ? (
+      {other && run ? (
+        <>
+          <b>{c.name}&rsquo;s challenge was on another day&rsquo;s run</b>
+          <span>Today&rsquo;s is a new one. Set a score and send it back.</span>
+        </>
+      ) : other ? (
         <>
           <b>{c.name}&rsquo;s challenge was on No. {c.n}</b>
           <span>This is a different board. <a href={`?p=${c.n}`}>Open No. {c.n}</a> to take it on.</span>
         </>
       ) : (
         <>
-          <b>{c.name} {c.won ? 'set' : 'scored'} {challengeFig(c)} on this board</b>
-          <span>Same puzzle. Can you beat it?</span>
+          <b>{c.name} {c.won ? 'set' : 'scored'} {challengeFig(c)} on this {run ? 'run' : 'board'}</b>
+          <span>{run ? (c.x ? `${c.x}. Can you beat it?` : 'Same run. Can you beat it?') : 'Same puzzle. Can you beat it?'}</span>
         </>
       )}
       <button type="button" aria-label="Dismiss the challenge" onClick={close}>&times;</button>

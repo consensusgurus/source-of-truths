@@ -56,6 +56,8 @@ import useCircuitHistory from '../../useCircuitHistory';
 import { T } from '@/lib/theme';
 import RunNudgePop from '../../RunNudgePop';
 import NextDrop from '../../../NextDrop';
+import ChallengeStrip from '../../../ChallengeStrip';
+import { RunChallengeButton, RunChallengeLine, runToken } from '../../../RunChallenge';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
@@ -787,6 +789,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
     // and its ink outright, which the stylesheet does explicitly.
     <div className="rn" style={{ minHeight: '100vh', background: T.ground, position: 'relative', overflowX: 'hidden' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      {circuitId === 'gauntlet' && !done ? <ChallengeStrip gameKey="gauntlet" num={runToken()} run /> : null}
       {/* FROM ONE RUN TO THE OTHER (owner, 2026-10-01): a Trivia Gauntlet
           finished in this sitting offers Price Check once the finale has
           played, unless Price Check is already done today. */}
@@ -1506,7 +1509,11 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   );
                 })()}
 
+                {circuitId === 'gauntlet' && !r.practice ? <RunChallengeLine gameKey="gauntlet" score={cleared} n={runToken()} /> : null}
                 <div className="rn-vacts rn-sacts">
+                  {circuitId === 'gauntlet' && !r.practice ? (
+                    <RunChallengeButton gameKey="gauntlet" score={cleared} total={askable} n={runToken()} status={`${perfect} of ${N} cleared`} />
+                  ) : null}
                   <button type="button" className="rn-vb" onClick={shareRun}>
                     {copied ? <Check size={15} strokeWidth={2.8} /> : <Share2 size={15} strokeWidth={2.8} />}
                     {copied ? 'Copied' : 'Share the run'}

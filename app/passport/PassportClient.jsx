@@ -42,6 +42,8 @@ import {
 } from '@/lib/passport';
 import { flagSteps } from './flagkit';
 import NextDrop from '../NextDrop';
+import ChallengeStrip from '../ChallengeStrip';
+import { RunChallengeButton, RunChallengeLine } from '../RunChallenge';
 import { DOTS, HOME } from './dots';
 
 const NAME = 'Passport';
@@ -1503,7 +1505,10 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
             {ROUNDS.map((r, i) => <div key={r.k} className={flat ? '' : i === hiR ? 'hi' : i === loR ? 'lo' : ''}><i>{r.n}</i><b>{sc[i] == null ? '-' : sc[i]}</b></div>)}
           </div>
           <div className="pe-next">{up ? <><b>{up.min - total} more</b> and you upgrade to the {up.name}.</> : <>Top of the ladder. <b>Every border waves you through.</b></>}</div>
+          <RunChallengeLine gameKey="passport" score={total} n={PUZZLE.num} />
           <div className="pe-btns">
+            <RunChallengeButton gameKey="passport" score={total} total={50} n={PUZZLE.num} archive={!isTodays}
+              t={g.t0 && g.tEnd ? Math.round((g.tEnd - g.t0) / 1000) : null} status={(TIERS[tierIndex(total)] || {}).name || ''} />
             <button type="button" className="pri" onClick={copyShare}>{copied ? 'Copied' : 'Share your passport'}</button>
             <a href={`${PATH}/leaderboard`}>Leaderboard</a>
             <button type="button" onClick={() => setFinale(true)}>Replay the ending</button>
@@ -1528,6 +1533,7 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
     <div className="stage-page pp-root" data-stage-theme="dark"
       style={{ ...VARS, minHeight: '100vh', background: 'var(--stg-ground,#0b0f1a)', color: 'var(--stg-ink,#e9edf4)', position: 'relative', overflowX: 'hidden', fontFamily: SANS }}>
       <style dangerouslySetInnerHTML={{ __html: CSS + LAUNCH_CSS + ENDING_CSS }} />
+      {playing ? <ChallengeStrip gameKey="passport" num={PUZZLE.num} run /> : null}
       <div className={`pc-cap${started ? ' on' : ''}`}>
         <a href="/" className="pc-home">Mind Loft</a>
         <b>Passport</b>

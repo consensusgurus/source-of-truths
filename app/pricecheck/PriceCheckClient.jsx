@@ -32,6 +32,8 @@ import ItemsPop, { itemsFor, scheduleItems, spendItems } from './ItemsPop';
 import useCircuitBoard from '../circuits/useCircuitBoard';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
+import ChallengeStrip from '../ChallengeStrip';
+import { RunChallengeButton, RunChallengeLine, runToken } from '../RunChallenge';
 import { PRICE_GAMES, errOf, scoreOf, fmtCents, runRankOf, runTierOf, RUN_RANKS } from '@/lib/price-games';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
@@ -185,6 +187,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
   return (
     <div className="stage-page pc" data-stage-theme={theme} style={{ ...VARS, minHeight: '100vh', background: 'var(--pc-ground)', color: 'var(--pc-ink)', fontFamily: SANS, overflowX: 'hidden', position: 'relative' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      {done ? null : <ChallengeStrip gameKey="pricecheck" num={runToken()} run />}
       <div className="pc-cap">
         <Link href="/" className="pc-home">Mind Loft</Link>
         <b>Price Check</b>
@@ -467,7 +470,9 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
                 {fti > 0
                   ? <div className="cf-next"><b>{Math.max(1, Math.ceil(RUN_RANKS[fti - 1][0] * max / 50) - total)} more</b> and you upgrade to {RUN_RANKS[fti - 1][3]}.</div>
                   : <div className="cf-next">Top of the ladder. <b>Black card.</b></div>}
+                <RunChallengeLine gameKey="pricecheck" score={total} n={runToken()} />
                 <div className="pf-btns">
+                  <RunChallengeButton gameKey="pricecheck" score={total} total={max} n={runToken()} status={`${t[3]} card`} />
                   <button type="button" className="pri" onClick={onShare}>{copied ? 'Copied' : 'Share your card'}</button>
                   <button type="button" onClick={onItems}>See the items</button>
                   <a href="/pricecheck/leaderboard">Leaderboard</a>
