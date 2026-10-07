@@ -2459,7 +2459,7 @@ export default function StageToday() {
             what it cost you and how long it took. The rank still carries how it
             placed, which is the only part of the ladder this table needs. */}
         {(
-          <section id="sty-standing" className={'sty-ixp sty-rev' + (paneOn !== BOARD_ID ? ' sty-ixoff' : '')}>
+          <section id="sty-standing" className={'sty-ixp sty-rev' + (paneOn !== BOARD_ID ? ' sty-ixoff' : '')} style={lbH ? { '--sty-lbh': `${lbH}px` } : undefined}>
             <div className="sty-eb">
               Your standing
               <em>
@@ -3913,6 +3913,18 @@ ${PATCH_CSS}
 .sty-ix > #sty-board{grid-row:3;}
 .sty-ix > #sty-live{grid-row:4;}
 .sty-ix > #sty-group,.sty-ix > #sty-standing,.sty-ix > #sty-board{margin-bottom:14px;}
+/* LEADERBOARDS + STATS, CONDENSED (owner, 2026-10-07): your standing and the
+   day's board share one row, half each, so the live feed comes up under them.
+   The standing scrolls to the board's measured height. Phones keep the stack. */
+@media (min-width:901px){
+  .sty-ix > #sty-standing{grid-row:2;justify-self:start;width:calc(50% - 14px);min-width:0;}
+  .sty-ix > #sty-board{grid-row:2;justify-self:end;width:calc(50% - 14px);min-width:0;}
+  .sty-ix > #sty-live{grid-row:3;}
+  .sty-ix #sty-standing .sty-sscroll{max-height:calc(var(--sty-lbh, 372px) - 24px);overflow-y:auto;overscroll-behavior:contain;}
+  .sty-ix #sty-standing .sty-tbl,.sty-ix #sty-board .sty-tbl{max-width:none;}
+  .sty-ix #sty-standing .sty-tbl td,.sty-ix #sty-board .sty-tbl td{padding:5px 6px;font-size:13px;}
+  .sty-ix #sty-standing .sty-srun{font-size:12px;}
+}
 .sty-ix .sty-mine .sty-minec{margin-top:10px;}
 .sty-rail{display:none;}
 .sty-ixn a.sty-ixb{text-decoration:none;}
