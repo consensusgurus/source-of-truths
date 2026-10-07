@@ -302,7 +302,7 @@ const TOPIC_SKELETON = [
   { id: 'literature', label: 'Literature' },
   { id: 'history', label: 'History' },
   { id: 'arts', label: 'Arts & Culture' },
-  { id: 'school', label: 'Standardized Tests' },
+  { id: 'school', label: 'School Tests' },
 ];
 const leadRankOf = (id) => {
   const i = CIRC_LEAD.indexOf(id);
@@ -1805,8 +1805,8 @@ export default function StageToday() {
   const alphaDone = alpha.filter((g) => done.has(g.key)).length;
   const ixNav = (
     <nav className={'sty-ixn' + (reorder ? ' re' : '') + (picked ? ' pk' : '')} aria-label="Sections">
-      {ixBtn(ALL_ID, 'All games', 'var(--stg-ink)')}
-      {ixBtn(MINE_ID, 'My games', 'var(--stg-acc)')}
+      {ixBtn(ALL_ID, 'All puzzles', 'var(--stg-ink)')}
+      {ixBtn(MINE_ID, 'My puzzles', 'var(--stg-acc)')}
       <span className="sty-ixsep" aria-hidden="true" />
       {orderedCats.map(({ cat }, ci) => (reorder ? (
         <div key={cat} className={'sty-ixb sty-ixr' + (paneOn === cat ? ' on' : '')} style={{ '--cc': hueFor(cat) }}>
@@ -1822,7 +1822,7 @@ export default function StageToday() {
       {ixBtn(CIRC_ID, 'Circuits', 'var(--stg-mute)')}
       {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)')}
       {ixBtn(IQ_ID, 'IQ Tests', 'var(--stg-mute)')}
-      {ixBtn(EXAM_ID, 'Standardized Tests', 'var(--stg-mute)')}
+      {ixBtn(EXAM_ID, 'School Tests', 'var(--stg-mute)')}
       {/* Kids and the lists are doors, not panes: each goes to its own home. */}
       <a className="sty-ixb" href="/kids" style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" /><span>Kids</span></a>
       {/* Lists is a door, not a pane: it goes to the lists home. */}
@@ -2043,7 +2043,7 @@ export default function StageToday() {
       </div>
     );
   };
-  const railLabel = railCat ? catLabel(railCat.cat) : 'All games';
+  const railLabel = railCat ? catLabel(railCat.cat) : 'All puzzles';
   const railEl = (() => {
     if (!ix || !gamePane) return null;
     const rd = rail[railId] || null;
@@ -2285,7 +2285,7 @@ export default function StageToday() {
             {/* An empty section has nothing to collapse and no fraction to
                 print, so the head keeps its title and drops both. */}
             <div className="sty-cathead" onClick={mineTot ? headClick(MINE_ID) : undefined}>
-              <h2>My games</h2>
+              <h2>My puzzles</h2>
               {mineTot ? <b>{mineDone}<i>/{mineTot}</i></b> : null}
               {mineTot ? cav(MINE_ID) : null}
             </div>
@@ -2354,7 +2354,7 @@ export default function StageToday() {
         {/* 4. THE GAMES, either as nine category rows or as one A-to-Z list. */}
         <section className={'sty-cat sty-az' + (paneOn === ALL_ID ? '' : ' sty-ixoff')} style={{ '--cc': 'var(--stg-ink2)' }}>
           <div className="sty-cathead">
-            <h2>All games</h2>
+            <h2>All puzzles</h2>
             <b>{alphaDone}<i>/{alpha.length}</i></b>
           </div>
           <div className="sty-games">
@@ -2625,7 +2625,7 @@ export default function StageToday() {
         </section>
         <section id="sty-exams" className={'sty-cat sty-iqsec' + (paneOn !== EXAM_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
           <div className="sty-cathead">
-            <h2><a href={withTq('/exams')}>Standardized Tests</a></h2>
+            <h2><a href={withTq('/exams')}>School Tests</a></h2>
           </div>
           <div className="sty-games">
             {EXAM_TILES.map(([slug, nm, tag], i) => (
