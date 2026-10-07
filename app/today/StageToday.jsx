@@ -1936,6 +1936,8 @@ export default function StageToday() {
     const gN = railGrp ? railGrp.rows.length : 0;
     const avail = dim.navH ? dim.navH - 24 - (gN ? 24 + gN * 30 + 16 : 0) : 16 * 30;
     const n = Math.max(5, Math.min(25, Math.floor(avail / 30)));
+    // The leftover pixels are shared across the rows, so the last row ends on the line.
+    const rh = dim.navH ? Math.max(30, Math.min(36, avail / n)) : 30;
     const myK = meKey || (rd && rd.me && rd.me.userKey) || null;
     let rows = [];
     if (rd) {
@@ -1976,7 +1978,7 @@ export default function StageToday() {
         ) : null}
         <div className="sty-rlb">
           <div className="sty-eb">{railLabel} today{rd && rd.field ? <em>{' · '}{rd.field} {rd.field === 1 ? 'player' : 'players'}</em> : null}</div>
-          <ol>{slots}</ol>
+          <ol style={{ '--rh': rh.toFixed(2) + 'px' }}>{slots}</ol>
         </div>
       </aside>
     );
@@ -3752,7 +3754,7 @@ ${PATCH_CSS}
 .sty-rlb .sty-eb{display:block;height:24px;line-height:16px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sty-rlb ol{list-style:none;margin:0;padding:0;}
 .sty-rlb li{box-sizing:border-box;display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:6px;align-items:center;
-  height:30px;padding:0 6px;border-bottom:1px solid var(--stg-line);font-size:13px;font-variant-numeric:tabular-nums;}
+  height:var(--rh,30px);padding:0 6px;border-bottom:1px solid var(--stg-line);font-size:13px;font-variant-numeric:tabular-nums;}
 .sty-rlb li:last-child{border-bottom:0;}
 .sty-rlb li i{font-style:normal;font-family:${MONO};font-size:11px;color:var(--stg-mute);}
 .sty-rlb li span{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
