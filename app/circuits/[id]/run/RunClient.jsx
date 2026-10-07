@@ -1385,6 +1385,14 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   </div>
                 </div>
 
+                {/* THE CHALLENGE SITS UNDER THE RESULT, FULL WIDTH (owner, 2026-10-07). */}
+                {circuitId === 'gauntlet' && !r.practice ? (
+                  <div style={{ marginTop: 16 }}>
+                    <RunChallengeLine gameKey="gauntlet" score={cleared} n={runToken()} style={{ display: 'block', textAlign: 'center' }} />
+                    <RunChallengeButton gameKey="gauntlet" score={cleared} total={askable} n={runToken()} status={`${perfect} of ${N} cleared`}
+                      style={{ display: 'flex', width: '100%', padding: '14px 18px', fontSize: 16 }} />
+                  </div>
+                ) : null}
                 {/* NEXT DROP (owner, 2026-10-06): when tomorrow's run opens. */}
                 <NextDrop
                   label={`Next ${circuitName}`}
@@ -1509,11 +1517,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   );
                 })()}
 
-                {circuitId === 'gauntlet' && !r.practice ? <RunChallengeLine gameKey="gauntlet" score={cleared} n={runToken()} /> : null}
                 <div className="rn-vacts rn-sacts">
-                  {circuitId === 'gauntlet' && !r.practice ? (
-                    <RunChallengeButton gameKey="gauntlet" score={cleared} total={askable} n={runToken()} status={`${perfect} of ${N} cleared`} />
-                  ) : null}
                   <button type="button" className="rn-vb" onClick={shareRun}>
                     {copied ? <Check size={15} strokeWidth={2.8} /> : <Share2 size={15} strokeWidth={2.8} />}
                     {copied ? 'Copied' : 'Share the run'}
