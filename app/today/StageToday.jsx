@@ -342,7 +342,11 @@ const BOARD_ID = 'sty-board';
 const LIVE_ID = 'sty-live';
 const QUIZ_ID = 'sty-quizzes';
 // The live feed has no pane of its own: it rides under the board (owner, 2026-10-07).
-const INFO_PANES = [QUIZ_ID, STAND_ID, GRP_ID, BOARD_ID];
+// ONE STATS PANE (owner, 2026-10-07): the group, your rankings, the board and
+// the feed open together, in that order, under BOARD_ID. The other ids are
+// only anchors inside it now.
+const INFO_PANES = [QUIZ_ID, BOARD_ID];
+const STAT_ANCHORS = [STAND_ID, GRP_ID, BOARD_ID, LIVE_ID];
 // The Word category's section id, the same shape the render derives for every
 // category (`cat-${cat}` with spaces dashed), named here so the open-by-default
 // rule can point at it.
@@ -750,7 +754,7 @@ export default function StageToday() {
   const [pane, setPane] = useState(null);
   useIsoLayoutEffect(() => {
     try { const v = localStorage.getItem(PANE_KEY); if (v) setPane(v); } catch (e) {}
-    try { const h = String(window.location.hash || '').slice(1); if (INFO_PANES.includes(h)) { setPane(h); setPicked(true); } } catch (e) {}
+    try { const h = String(window.location.hash || '').slice(1); if (INFO_PANES.includes(h) || STAT_ANCHORS.includes(h)) { setPane(STAT_ANCHORS.includes(h) ? BOARD_ID : h); setPicked(true); } } catch (e) {}
   }, []);
   // ONLY A GAMES PANE IS REMEMBERED. A reader who last looked at the leaderboard
   // should still come back tomorrow to something they can play.
@@ -770,15 +774,15 @@ export default function StageToday() {
     if (INFO_PANES.includes(id)) return;
     try { localStorage.setItem(PANE_KEY, id); } catch (e) {}
   };
-  const goPane = (id) => {
+  const goPane = (id, anchor) => {
     pickPane(id);
     try {
-      requestAnimationFrame(() => {
-        const el = document.querySelector('.sty-ix');
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        const el = (anchor && document.getElementById(anchor)) || document.querySelector('.sty-ix');
         if (!el) return;
         const t = el.getBoundingClientRect().top;
         if (t < 0 || t > window.innerHeight * 0.6) el.scrollIntoView({ block: 'start' });
-      });
+      }));
     } catch (e) {}
   };
   const [catCols, setCatCols] = useState(5);
@@ -1761,13 +1765,13 @@ export default function StageToday() {
   // the same rule the old shut sections followed.
   // NO PLAYED FRACTIONS IN THE INDEX (owner, 2026-10-07): the strip in the cap is
   // the day's progress, drawn once.
-  const ixBtn = (id, label, hue) => (
+  const ixBtn = (id, label, hue, cls) => (
     <button key={id} type="button" aria-pressed={paneOn === id}
-      className={'sty-ixb' + (paneOn === id ? ' on' : '')} style={{ '--cc': hue }}
+      className={'sty-ixb' + (cls ? ' ' + cls : '') + (paneOn === id ? ' on' : '')} style={{ '--cc': hue }}
       onClick={(e) => { if (picked && paneOn === id) setPicked(false); else pickPane(id, e); }}>
       <i aria-hidden="true" />
       <span>{label}</span>
-      <em className="sty-ixbk" aria-hidden="true">All sections</em>
+      <em className="sty-ixbk" aria-hidden="true">Back to categories</em>
     </button>
   );
   const alphaDone = alpha.filter((g) => done.has(g.key)).length;
@@ -1775,6 +1779,7 @@ export default function StageToday() {
     <nav className={'sty-ixn' + (reorder ? ' re' : '') + (picked ? ' pk' : '')} aria-label="Sections">
       {ixBtn(ALL_ID, 'All games', 'var(--stg-ink)')}
       {ixBtn(MINE_ID, 'My games', 'var(--stg-acc)')}
+      <span className="sty-ixsep" aria-hidden="true" />
       {orderedCats.map(({ cat }, ci) => (reorder ? (
         <div key={cat} className={'sty-ixb sty-ixr' + (paneOn === cat ? ' on' : '')} style={{ '--cc': hueFor(cat) }}>
           <i aria-hidden="true" />
@@ -1789,9 +1794,7 @@ export default function StageToday() {
       {ixBtn(CIRC_ID, 'Circuits', 'var(--stg-mute)')}
       {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)')}
       <span className="sty-ixsep" aria-hidden="true" />
-      {ixBtn(STAND_ID, 'My rankings', 'var(--stg-mute)')}
-      {ixBtn(GRP_ID, inGrp ? grpOne.name : 'Play with friends', 'var(--stg-mute)')}
-      {ixBtn(BOARD_ID, 'Leaderboard', 'var(--stg-mute)')}
+      {ixBtn(BOARD_ID, 'Leaderboards + stats', 'var(--stg-mute)', 'wide')}
       <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
         onClick={() => setReorder((v) => !v)}>
         {reorder ? 'Done' : 'Reorder'}
@@ -1856,11 +1859,21 @@ export default function StageToday() {
               onClick={(e) => { e.preventDefault(); openChooseName(); }}>Keep stats, play with friends</a>
           ) : null}
           {who ? <div className="sty-who"><b>{who}</b><i>player</i></div> : null}
+          {/* EVERY GROUP THE READER IS IN gets a figure (owner, 2026-10-07), a
+              dash until they have a rank in it today. Tapping one opens that
+              group in the pane below. On a phone the row slides sideways. */}
+          {who && grp && Array.isArray(grp.groups) ? grp.groups.map((g) => (
+            <a key={g.code} className="sty-fc sty-fca sty-fg" href="#sty-group"
+              onClick={(e) => { e.preventDefault(); pickGroup(g.code); goPane(BOARD_ID, 'sty-group'); }}>
+              <b>{g.rank ? '#' + g.rank : '\u2013'}{typeof g.members === 'number' && g.members ? <i> of {g.members}</i> : null}</b>
+              <i>{g.name}</i>
+            </a>
+          )) : null}
           {/* TWO FIGURES, EACH A WAY THROUGH (owner, 2026-10-07): today's rank
               opens the leaderboard pane, the all-time rank opens the Stat Hub. */}
           {who ? (
             <a className={'sty-fc sty-fca' + (capWait ? ' wait' : '')} href="#sty-board"
-              onClick={(e) => { e.preventDefault(); goPane(BOARD_ID); }}>
+              onClick={(e) => { e.preventDefault(); goPane(BOARD_ID, 'sty-board'); }}>
               {capWait ? null : <b key="v">{stats.dayRank ? <>#<RollNum value={stats.dayRank} /></> : '\u2013'}</b>}
               {capWait ? null : <i key="l">Today</i>}
               <StagePatch key="p" on={capWait} light={light} />
@@ -1873,16 +1886,6 @@ export default function StageToday() {
               <StagePatch key="p" on={capWait} light={light} />
             </a>
           ) : null}
-          {/* EVERY GROUP THE READER IS IN gets a figure (owner, 2026-10-07), a
-              dash until they have a rank in it today. Tapping one opens that
-              group in the pane below. On a phone the row slides sideways. */}
-          {who && grp && Array.isArray(grp.groups) ? grp.groups.map((g) => (
-            <a key={g.code} className="sty-fc sty-fca sty-fg" href="#sty-group"
-              onClick={(e) => { e.preventDefault(); pickGroup(g.code); goPane(GRP_ID); }}>
-              <b>{g.rank ? grpOrdinal(g.rank) : '\u2013'}{typeof g.members === 'number' && g.members ? <i> of {g.members}</i> : null}</b>
-              <i>{g.name}</i>
-            </a>
-          )) : null}
         </div>
         <button
           type="button"
@@ -1953,8 +1956,10 @@ export default function StageToday() {
                   '--stg-onramp': light ? categoryOnrampLight(c.games[0].cat) : RAMP_INK,
                 }}>
                 <span className="sty-pinl">
-                  <span className="sty-pine">{c.unit || `${c.games.length} games`}</span>
                   <span className="sty-pinn">{c.name}</span>
+                  {/* WHAT IT TESTS, under the name, not how many games it holds
+                      (owner, 2026-10-07). */}
+                  <span className="sty-pine">{{ pricecheck: 'Shopping test', gauntlet: 'Knowledge test', passport: 'Geography test' }[c.id] || c.unit || `${c.games.length} games`}</span>
                   {c.blurb ? <span className="sty-pinb">{c.blurb}</span> : null}
                 </span>
                 <span className="sty-pingo">Play</span>
@@ -2130,7 +2135,7 @@ export default function StageToday() {
             THE STANDING SCROLLS TO THE BOARD'S MEASURED HEIGHT. Sixteen rows
             beside eleven left the section ragged, and a row-count guess is wrong
             on a small field, which genuinely renders fewer than ten. */}
-        <section id="sty-group" className={'sty-ixp' + (paneOn !== GRP_ID ? ' sty-ixoff' : '')}>
+        <section id="sty-group" className={'sty-ixp' + (paneOn !== BOARD_ID ? ' sty-ixoff' : '')}>
           {inGrp ? (
             <HomeGroupsBand data={grp} withTq={withTq} narrow={narrow} group={grpOne} onPick={pickGroup}
               cats={cats} hueFor={hueFor} total={total} />
@@ -2157,7 +2162,7 @@ export default function StageToday() {
             what it cost you and how long it took. The rank still carries how it
             placed, which is the only part of the ladder this table needs. */}
         {(
-          <section id="sty-standing" className={'sty-ixp sty-rev' + (paneOn !== STAND_ID ? ' sty-ixoff' : '')}>
+          <section id="sty-standing" className={'sty-ixp sty-rev' + (paneOn !== BOARD_ID ? ' sty-ixoff' : '')}>
             <div className="sty-eb">
               Your standing
               <em>
@@ -3551,9 +3556,14 @@ ${PATCH_CSS}
 .sty-capl .stl{height:12px;}
 /* A SHORT PANE DOES NOT PULL THE ABOUT TEXT ONTO THE FIRST SCREEN (owner,
    2026-10-07): the index holds a screen of height whatever is in the pane. */
-.sty-ix{min-height:calc(100vh - 70px);grid-template-rows:auto auto 1fr;}
-.sty-ix > .sty-ixn{grid-row:1 / span 3;}
-.sty-ix > #sty-live{grid-row:2;}
+.sty-ix{min-height:calc(100vh - 70px);grid-template-rows:auto auto auto auto 1fr;}
+.sty-ix > .sty-ixn{grid-row:1 / span 5;}
+.sty-ix > #sty-group{grid-row:1;}
+.sty-ix > #sty-standing{grid-row:2;}
+.sty-ix > #sty-board{grid-row:3;}
+.sty-ix > #sty-live{grid-row:4;}
+.sty-ix > #sty-group,.sty-ix > #sty-standing,.sty-ix > #sty-board{margin-bottom:14px;}
+.sty-ix .sty-mine .sty-minec{margin-top:10px;}
 .sty-ixbk{display:none;}
 .sty-fca{display:block;text-align:right;text-decoration:none;color:inherit;}
 .sty-fca>i{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
@@ -3571,7 +3581,10 @@ ${PATCH_CSS}
 @media (max-width:1100px){ .sty-cap.v2 .sty-who{display:none;} }
 @media (max-width:900px){
   .sty-ix > .sty-ixp{grid-column:1;grid-row:2;}
-  .sty-ix > #sty-live{grid-row:3;}
+  .sty-ix > #sty-group{grid-row:2;}
+  .sty-ix > #sty-standing{grid-row:3;}
+  .sty-ix > #sty-board{grid-row:4;}
+  .sty-ix > #sty-live{grid-row:5;}
   .sty-ix > .sty-ixn{grid-row:1;}
   .sty-ixsep{display:none;}
   /* The lit chip already names the pane, so the pane does not say it again. */
@@ -3603,7 +3616,9 @@ ${PATCH_CSS}
   .sty-ix .sty-ixc .sty-g,.sty-ix .sty-mine .sty-g,.sty-ix .sty-circsec .sty-circ,.sty-ix .sty-mine .sty-circ{
     border:1px solid var(--stg-line);border-radius:8px;}
   .sty-ix .sty-mine .sty-more,.sty-ix .sty-circsec .sty-more{margin:7px 0 0;width:100%;border:1px solid var(--stg-line);border-radius:8px;}
-  .sty-ix .sty-minec{margin-top:7px;}
+  /* Circuits lead My games on a phone, so the gap goes under them. */
+  .sty-ix .sty-mine .sty-minec{margin-top:0;margin-bottom:10px;}
+  .sty-ix .sty-mine .sty-games{margin-top:0;}
 }
 /* ── A PHONE STARTS ON TILES (owner, 2026-10-07) ──
    No strip. Every section is a tile; tapping one sends it to the top as a bar
@@ -3616,6 +3631,11 @@ ${PATCH_CSS}
     background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:8px;font-size:14.5px;font-weight:800;
     color:var(--stg-ink);letter-spacing:-0.01em;}
   .sty-ixn:not(.re) .sty-ixre{grid-column:1 / -1;justify-self:start;}
+  /* FOUR GROUPS, AND THEY FILL THE SCREEN (owner, 2026-10-07): the two lists,
+     the categories, circuits and quizzes, then one wide tile for every board. */
+  .sty-ixn:not(.re) .sty-ixb{min-height:clamp(54px,calc((100svh - 250px) / 8),88px);}
+  .sty-ixn:not(.re) .sty-ixb.wide{grid-column:1 / -1;}
+  .sty-ixn:not(.re):not(.pk) .sty-ixsep{display:block;grid-column:1 / -1;height:5px;margin:0;background:none;}
   .sty-ix.msel > section,.sty-ix.msel > .sty-ord{display:none !important;}
   .sty-ixn.pk:not(.re) > :not(.on){display:none;}
   .sty-ixn.pk:not(.re) .sty-ixb.on{grid-column:1 / -1;min-height:46px;background:var(--stg-chip);border-color:transparent;
