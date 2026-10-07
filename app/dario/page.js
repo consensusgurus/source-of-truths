@@ -18,7 +18,7 @@ export const metadata = {
     'Dario is a free daily side-scrolling platformer. Run three levels of the AI race, past parody billboards, and reach the AGI gate as fast as you can. The course is remixed every day, the same for everybody, and your fastest clear counts.',
   alternates: { canonical: '/dario' },
   openGraph: {
-    images: [{ url: '/og/dario-v2.png', width: 1200, height: 630, alt: 'Dario, a pixel-art side-scroller racing through the AI race, from Mind Loft' }],
+    images: [{ url: '/og/dario-v3.png', width: 1200, height: 630, alt: 'Dario, a 16-bit pixel-art side-scroller racing through the AI race, from Mind Loft' }],
     title: 'Dario: A Daily Race to the Frontier',
     description: 'Stomp the SaaS bots, dodge the robotaxis and reach the AGI gate first. Three levels, one clock, a new course every day.',
     url: '/dario',
@@ -26,7 +26,7 @@ export const metadata = {
     siteName: 'Mind Loft',
   },
   twitter: {
-    images: ['/og/dario-v2.png'],
+    images: ['/og/dario-v3.png'],
     card: 'summary_large_image',
     title: 'Dario: A Daily Race to the Frontier',
     description: 'Stomp the SaaS bots, dodge the robotaxis and reach the AGI gate first. Three levels, one clock, a new course every day.',

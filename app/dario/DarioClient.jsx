@@ -476,7 +476,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
   function shareUrl() { return withRef(`mindloftdaily.com/dario${isTodays ? '' : `?p=${PUZZLE.num}`}`); }
 
   // Sharing hands over the LINK and nothing else (owner, 2026-10-07): the
-  // preview card (public/og/dario-v2.png plus the page title) is the whole message.
+  // preview card (public/og/dario-v3.png plus the page title) is the whole message.
   function copyShare() {
     const url = `https://${shareUrl()}`;
     if (notifyShareCredit(url)) return;
@@ -582,7 +582,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
 
                   {preStart && (
                     <div className="dr-hero">
-                      <img src="/og/dario-v2.png" alt="Dario: race to the frontier. Dario jumps over SaaS bots past a ClosedAI billboard while a rocket launches." className="dr-hero-img" width={1200} height={630} />
+                      <img src="/og/dario-v3.png" alt="Dario: race to the frontier. Dario jumps over SaaS bots past a ClosedAI billboard while a rocket launches." className="dr-hero-img" width={1200} height={630} />
                       <div className="dr-hero-bar">
                         <button onClick={startGame} className="dr-start">START</button>
                         <div className="dr-hero-row">
@@ -694,7 +694,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
         <section style={{ display: (focusMode && !STAGE) ? 'none' : 'block', maxWidth: 620, margin: '26px auto 0', fontSize: 13.5, lineHeight: 1.6, color: FADED }}>
           <h2 style={{ fontSize: 15, fontWeight: 800, color: INK, margin: '0 0 8px' }}>About Dario</h2>
           <p style={{ margin: '0 0 9px' }}>
-            Dario is a free daily side-scrolling platformer from Mind Loft. Run, jump and stomp through three short levels of the AI race,
+            Dario is a free daily side-scrolling platformer from Mind Loft, drawn in 16-bit pixel art. Run, jump and stomp through three short levels of the AI race,
             past parody billboards for ClosedAI, Goggle, Teslo, DeepSink and Space-Y, and reach the AGI gate as fast as you can.
           </p>
           <p style={{ margin: '0 0 9px' }}>
