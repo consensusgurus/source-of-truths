@@ -1389,8 +1389,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                 {circuitId === 'gauntlet' && !r.practice ? (
                   <div style={{ marginTop: 16 }}>
                     <RunChallengeLine gameKey="gauntlet" score={cleared} n={runToken()} style={{ display: 'block', textAlign: 'center' }} />
-                    <RunChallengeButton gameKey="gauntlet" score={cleared} total={askable} n={runToken()} status={`${perfect} of ${N} cleared`}
-                      style={{ display: 'flex', width: '100%', padding: '14px 18px', fontSize: 16 }} />
+                    <RunChallengeButton gameKey="gauntlet" score={cleared} total={askable} n={runToken()} status={`${perfect} of ${N} cleared`} door />
                   </div>
                 ) : null}
                 {/* NEXT DROP (owner, 2026-10-06): when tomorrow's run opens. */}

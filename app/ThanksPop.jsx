@@ -16,9 +16,13 @@
 //   copy says the owner can see who shares. A guest has no code to stamp, so
 //   the credit line becomes an invitation to pick a player name.
 //
-//   DONE ('done'). Anyone not shown the return version this week, a few seconds after a finished
-//   game is saved (the sot:result-saved event ResultQueue fires on a 2xx post
+//   DONE ('done'). A RETURNING player not shown the return version this week, a few seconds
+//   after a finished game is saved (the sot:result-saved event ResultQueue fires on a 2xx post
 //   that is not an abandon row). No share credit: a plain link.
+//
+// RETURNING PLAYERS ONLY (owner, 2026-10-07). A brand-new player never sees it in
+// their first session: both versions need sot_thanks_sess === 'r', and either one
+// stamps LAST_KEY, so a returning player gets at most one showing a week.
 //
 // NEVER TWO IN ONE SESSION. An existing player who saw the return pop-up this
 // session gets the done pop-up after a game in a LATER session instead.
@@ -193,6 +197,7 @@ export default function ThanksPop() {
     let timer = null;
     const onSaved = () => {
       try {
+        if (sessionStorage.getItem(SESS_KEY) !== 'r') return;
         if (shownThisWeek()) return;
         if (sessionStorage.getItem(SHOWN_KEY)) return;
       } catch (e) { return; }
