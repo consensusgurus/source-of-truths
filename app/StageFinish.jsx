@@ -1484,19 +1484,18 @@ export default function StageFinish({
     try { onArchive = /[?&]p=\d+/.test(window.location.search); } catch (e) { /* treat as today's */ }
     const who = savedIdentity().username || 'A friend';
     const raw = encodeChallenge({ ...mine, name: who, d: onArchive ? 0 : ymdCompact(etTodayISO()) });
-    const url = `${window.location.origin}/vs?g=${encodeURIComponent(me.key)}&vs=${encodeURIComponent(raw)}&v=2`; // v: bump when the card changes, a phone caches a link's preview by its URL
-    // THE MESSAGE IS ONE PLAIN LINE (owner, 2026-10-07). The card under it
-    // already carries the name, the game and the figure.
-    const text = onArchive ? 'Try to beat my score:' : 'Try to beat my score today:';
+    const url = `${window.location.origin}/vs?g=${encodeURIComponent(me.key)}&vs=${encodeURIComponent(raw)}&v=3`; // v: bump when the card changes, a phone caches a link's preview by its URL
+    // THE LINK GOES ALONE (owner, 2026-10-07). Its card says the whole
+    // sentence, so any text sent beside it would say it twice.
     const copied = () => { setChalMsg('Link copied. Paste it to a friend.'); };
     const copy = () => {
-      try { navigator.clipboard.writeText(`${text} ${url}`).then(copied, () => setChalMsg(url)); } catch (e) { setChalMsg(url); }
+      try { navigator.clipboard.writeText(url).then(copied, () => setChalMsg(url)); } catch (e) { setChalMsg(url); }
     };
     // A phone gets its own share sheet; a desktop gets the link on the
     // clipboard, because the desktop sheet is a detour nobody asked for.
     let touch = false;
     try { touch = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); } catch (e) { touch = false; }
-    if (touch && navigator.share) { navigator.share({ text, url }).catch(() => {}); } else copy();
+    if (touch && navigator.share) { navigator.share({ url }).catch(() => {}); } else copy();
   };
   const chalDoor = canChallenge ? {
     k: 'challenge', cls: 'chal', btn: true, onClick: sendChallenge, go: chalMsg ? 'Sent' : 'Send',
