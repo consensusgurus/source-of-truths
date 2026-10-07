@@ -36,7 +36,7 @@
 
 import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
-import { DAILY_GAME_MAP, PREMIERES, PREMIERE_RUNS } from '@/lib/daily-games';
+import { DAILY_GAME_MAP, PREMIERES, PREMIERE_RUNS, NO_PREMIERE } from '@/lib/daily-games';
 import { PRICE_GAMES } from '@/lib/price-games';
 import { runDoneToday } from './circuits/RunDoorPop';
 import { RAMP_INK, RAMP_INK_LIGHT, categoryColor, categoryColorLight, rampIndexFor } from '@/lib/category-ramp';
@@ -109,9 +109,9 @@ export default function PremierePop() {
     const today = etToday();
     // A run premiere wins outright: one card for the run, nothing for its
     // members, and every member stamped so no single-game card follows.
-    const runOpen = PREMIERE_RUNS.filter((r) => today >= r.from && today <= r.until);
+    const runOpen = PREMIERE_RUNS.filter((r) => today >= r.from && today <= r.until && !r.keys.some((k) => NO_PREMIERE.has(k)) && !NO_PREMIERE.has(r.id));
     const runMembers = new Set(runOpen.flatMap((r) => r.keys));
-    const open = PREMIERES.filter((p) => today >= p.from && today <= p.until && DAILY_GAME_MAP[p.key] && !runMembers.has(p.key));
+    const open = PREMIERES.filter((p) => today >= p.from && today <= p.until && DAILY_GAME_MAP[p.key] && !NO_PREMIERE.has(p.key) && !runMembers.has(p.key));
     if (!open.length && !runOpen.length) return;
     if (!force && !returning()) return;
     const runCand = runOpen.find((r) => force || (!safeGet(KEY(r.id)) && !runDoneToday(r.id)));

@@ -8610,6 +8610,9 @@ Key/route `dario`, category **Arcade**, `miss: null`. Wired by `scripts/wire-dar
   place, empty, as the mechanism for holding the next game: a key in it scores and ranks but is offered
   on no slate, grid, category, count or sitemap (it rides the run-only filters). Wired into the display
   lists the Snake way; in the Arcade grid, archive, category page and finish set beside Snake.
+- **NO new-puzzle pop-up (owner, 2026-10-07), an explicit exception to the launch rule.** Dario is in
+  `NO_PREMIERE` (`lib/daily-games.js`), which `app/PremierePop.jsx` filters before anything else, so it is
+  never announced even if a `PREMIERES` line for it is added later. Do not add one.
 - **Seeded daily remix, fixed geometry.** `lib/dario-engine.js buildLevels(quizId)` keeps every
   level's layout fixed (so every day is beatable) and seeds where the bots, robotaxis, chips and the
   one shield crate sit, plus rocket and platform timing. The client and `scripts/verify-dario.mjs`
