@@ -34,6 +34,7 @@
 //     nothing else. That includes the primary button: see ctaFor in
 //     lib/category-ramp.js for why the brand blue does not belong here.
 import React, { useEffect, useRef, useState } from 'react';
+import ChallengeStrip from './ChallengeStrip';
 import MindLoftMark from './MindLoftMark';
 import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro } from '@/lib/stage-theme';
 import ThemePop from './ThemePop';
@@ -352,6 +353,7 @@ export default function StageChrome({
       {/* A DAILY RUN (?run=a,b,c, lib/daily-run.js). Renders nothing unless the
           page was opened inside one. */}
       {gameKey ? <DailyRunRail gameKey={gameKey} /> : null}
+      {gameKey ? <ChallengeStrip gameKey={gameKey} num={num} /> : null}
 
       {showStrip ? (
         <button

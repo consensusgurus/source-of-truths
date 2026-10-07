@@ -50,6 +50,9 @@ import { gameStats, mmss, missWord, scoreFig as runFig } from '@/lib/daily-row-s
 import { isSolveOnly } from '@/lib/daily-games';
 import { typicalLabel } from '@/lib/game-medians';
 import GameGlyph from './GameGlyph';
+import { savedIdentity } from '@/lib/saved-identity';
+import { etTodayISO } from '@/lib/daily-games';
+import { readChallenge, encodeChallenge, challengeFig, challengeResult, ymdCompact } from '@/lib/challenge';
 import AddToHome from './AddToHome';
 import JoinLeaderboardForm from './quiz/[id]/JoinLeaderboardForm';
 // Where this finish puts the player in each of their groups (2026-09-17).
@@ -231,7 +234,7 @@ const FLOOD_QUICK_SETTLE = 700;
 // because the FLOOD prints that figure first, full screen, before the card
 // under it is ever seen: a quiz that only corrected the card would still open
 // its ending by announcing "#3 of 41 today".
-function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null, bandRef, onDone, quick = false, boardWhen = null, catRun = null, vs = null, rival = null, dist = null, gameName = null }) {
+function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null, bandRef, onDone, quick = false, boardWhen = null, catRun = null, vs = null, rival = null, dist = null, gameName = null, tone = '' }) {
   const [phase, setPhase] = useState('');     // '' -> up -> shrink -> out
   const [clip, setClip] = useState(null);
   const [held, setHeld] = useState(false);    // the floor has passed
@@ -416,7 +419,7 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
     // aria-hidden because every word on it is read again, in place, on the card
     // underneath — and there is nothing focusable inside it to strand.
     <div
-      className={'stf-flood' + (phase ? ' ' + phase : '')}
+      className={'stf-flood' + (phase ? ' ' + phase : '') + (tone ? ' t-' + tone : '')}
       aria-hidden="true"
       onClick={finish}
       style={clip ? { clipPath: clip, WebkitClipPath: clip } : undefined}
@@ -569,6 +572,18 @@ function runOf(key, num) {
   const time = sv && sv.t0 && sv.tEnd && sv.tEnd > sv.t0 ? Math.round((sv.tEnd - sv.t0) / 1000) : null;
   return { num, score: Number(rec.s), total: Number(rec.t) || 0, won: !!rec.won, time };
 }
+// THE PUZZLE ON SCREEN, by number, worked out from the archive rows exactly as
+// compareRuns does below (same rule, one copy would be better; this one is read
+// by the band figure and the challenge link, which need the run even when
+// there is no earlier run to compare it with).
+function currentNum(rows) {
+  const nums = rows.map((r) => Number(r.num)).filter(Number.isFinite);
+  if (!nums.length) return null;
+  const set = new Set(nums);
+  const max = Math.max(...nums), lo = Math.min(...nums);
+  for (let n = max; n >= lo; n -= 1) { if (!set.has(n)) return n; }
+  return max + 1;
+}
 function compareRuns(key, rows, scoreOnly = false) {
   const nums = rows.map((r) => Number(r.num)).filter(Number.isFinite);
   if (!nums.length) return null;
@@ -717,6 +732,7 @@ const DI = (d) => (
     strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>
 );
 const DOOR_ICON = {
+  flag: DI(<><path d="M5 21V4" /><path d="M5 4h11l-2 4 2 4H5" /></>),
   similar: DI(<path d="M5 12h12M13 6l6 6-6 6" />),
   another: DI(<><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M3 9h18M8 2v4M16 2v4" /></>),
   replay: DI(<><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></>),
@@ -930,6 +946,26 @@ export default function StageFinish({
   useEffect(() => {
     if (!me) return;
     try { setVs(compareRuns(me.key, Array.isArray(archive) ? archive : [], me.cat === 'Arcade')); } catch (e) { setVs(null); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me]);
+
+  // THIS RUN, AND A CHALLENGE IF THE TAB CAME IN ON ONE (owner, 2026-10-07).
+  // Both are localStorage / URL reads, so an effect, and the server renders
+  // neither. `run` is the finished run of the board on screen; `chal` is the
+  // other player's result off a challenge link (lib/challenge.js), kept only
+  // when it is for THIS board number.
+  const [run, setRun] = useState(null);
+  const [chal, setChal] = useState(null);
+  const [chalMsg, setChalMsg] = useState('');
+  useEffect(() => {
+    if (!me) return;
+    try {
+      const n = currentNum(Array.isArray(archive) ? archive : []);
+      const r = n != null ? runOf(me.key, n) : null;
+      setRun(r);
+      const c = readChallenge(me.key);
+      setChal(c && r && c.n === r.num ? c : null);
+    } catch (e) { setRun(null); setChal(null); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me]);
 
@@ -1330,7 +1366,7 @@ export default function StageFinish({
   // the same order on every render.
   if (isRetry) {
     return (
-      <div className={'stf stf-rtwrap' + (outcome ? ' stf-' + outcome : '')}>
+      <div className={'stf stf-rtwrap stf-miss' + (outcome ? ' stf-' + outcome : '')}>
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
         {flood ? (
@@ -1395,7 +1431,7 @@ export default function StageFinish({
   ];
   const primaryDoor = setNext
     ? {
-      name: setNext.g.name,
+      name: setNext.g.name, key: setNext.g.key,
       sub: [`${setNext.set.name} \u00b7 ${setNext.set.handoff ? `${setNext.set.open.length} of ${setNext.set.total} open` : `${setNext.set.open.length} left`}`, typicalLabel(setNext.g.key)].filter(Boolean).join(' \u00b7 '),
       href: setNext.g.href || `/${setNext.g.key}`, onClick: null,
     }
@@ -1420,12 +1456,59 @@ export default function StageFinish({
       }));
   })();
   const isQuiz = !!boardLabel;
+  // THE BAND IS GRADED BY THE RESULT (owner, 2026-10-07). Gold for a personal
+  // best, the category step for a solve, a quiet dark band with a rose rule for
+  // a miss. See `missed` just below for what counts as one.
+  // A MISS is a plain loss, or a part score on a board that still has an answer
+  // to reveal (Garble's "Partly solved"). A part score with nothing to reveal
+  // is the ordinary finish on a game that scores, and keeps the colour.
+  const missed = outcome === 'lost' || (outcome === 'part' && !!revealOpt);
+  const tone = missed ? 'lost' : (!isQuiz && vs && vs.pb ? 'pb' : '');
+  // THE ONE BIG FIGURE, right edge, under Back to board: the clock when the run
+  // was solved on one, the score on a miss. A solve-only game has no score to
+  // print, so a miss there prints nothing.
+  const myT = run && run.won && run.time != null ? run.time
+    : (outcome === 'won' && board && board.myRow && board.myRow.timeElapsed != null && !run ? Number(board.myRow.timeElapsed) : null);
+  const meSolveOnly = !!(me && isSolveOnly(me.key));
+  const bandFig = isQuiz || !me ? null
+    : myT != null ? { v: mmss(myT), l: tone === 'pb' && vs.mode === 'time' ? `New best \u00b7 was ${mmss(vs.best)}` : (tone === 'pb' ? 'New best' : (board && board.myRank != null && board.field ? `#${board.myRank} of ${board.field}` : '')) }
+    : (tone === 'lost' && run && run.total && !meSolveOnly ? { v: `${run.score}/${run.total}`, l: '' } : null);
+  // CHALLENGE A FRIEND. Mine is this run in the link's own shape; the door
+  // shows on any daily finish that has a figure worth beating.
+  const mine = run && me ? { name: '', t: run.won ? run.time : null, s: run.score, o: run.total, n: run.num, won: run.won } : null;
+  const canChallenge = !!(mine && !isQuiz && !isRetry && tone !== 'lost' && (mine.won ? (mine.t != null || !meSolveOnly) : (mine.s > 0 && !meSolveOnly)));
+  const duel = chal && mine ? { them: chal, res: challengeResult(mine, chal) } : null;
+  const sendChallenge = () => {
+    if (!mine) return;
+    let onArchive = false;
+    try { onArchive = /[?&]p=\d+/.test(window.location.search); } catch (e) { /* treat as today's */ }
+    const who = savedIdentity().username || 'A friend';
+    const raw = encodeChallenge({ ...mine, name: who, d: onArchive ? 0 : ymdCompact(etTodayISO()) });
+    const url = `${window.location.origin}/vs?g=${encodeURIComponent(me.key)}&vs=${encodeURIComponent(raw)}`;
+    const fig = challengeFig(mine);
+    const text = mine.won ? `I solved ${me.name} in ${fig}. Can you beat that?` : `I scored ${fig} on ${me.name}. Can you beat that?`;
+    const copied = () => { setChalMsg('Link copied. Paste it to a friend.'); };
+    const copy = () => {
+      try { navigator.clipboard.writeText(url).then(copied, () => setChalMsg(url)); } catch (e) { setChalMsg(url); }
+    };
+    // A phone gets its own share sheet; a desktop gets the link on the
+    // clipboard, because the desktop sheet is a detour nobody asked for.
+    let touch = false;
+    try { touch = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); } catch (e) { touch = false; }
+    if (touch && navigator.share) { navigator.share({ title: `${me.name} challenge`, text, url }).catch(() => {}); } else copy();
+  };
+  const chalDoor = canChallenge ? {
+    k: 'challenge', cls: 'chal', btn: true, onClick: sendChallenge, go: chalMsg ? 'Sent' : 'Send',
+    ic: 'flag',
+    nm: duel ? `Challenge ${chal.name} back` : 'Challenge a friend',
+    sb: chalMsg || `Send them ${challengeFig(mine)} to beat. No spoilers.`,
+  } : null;
   const playedN = new Set([...played, ...(me ? [me.key] : [])]).size;
   const smallDoors = [];
   if (anotherOpt) {
-    smallDoors.push({ k: 'another', nm: anotherOpt.label, sb: anotherOpt.sub, href: anotherOpt.href, onClick: anotherOpt.onClick });
+    smallDoors.push({ k: 'another', glyph: me ? me.key : null, nm: anotherOpt.label, sb: anotherOpt.sub, href: anotherOpt.href, onClick: anotherOpt.onClick });
   } else if (archiveRows.length) {
-    smallDoors.push({ k: 'another', nm: name ? `Play another ${name}` : 'Play another', sb: `Every one of the ${archiveRows.length}`, btn: true,
+    smallDoors.push({ k: 'another', glyph: me ? me.key : null, nm: name ? `Play another ${name}` : 'Play another', sb: `Every one of the ${archiveRows.length}`, btn: true,
       onClick: () => { setArch(true); setTimeout(toStats, 60); } });
   }
   if (revealOpt) {
@@ -1450,7 +1533,7 @@ export default function StageFinish({
       <>
         {ring != null
           ? <span className="stf-ring" style={{ '--p': `${((HANDOFF_S - ring) / HANDOFF_S) * 100}%` }}><b>{Math.ceil(ring)}</b></span>
-          : <span className="stf-dic">{glyph ? <GameGlyph gameKey={glyph} size={18} /> : DOOR_ICON[ic || k]}</span>}
+          : <span className={'stf-dic' + (glyph ? ' art' : '')}>{glyph ? <GameGlyph gameKey={glyph} size={cls.indexOf('pri') >= 0 ? 34 : 28} /> : DOOR_ICON[ic || k]}</span>}
         <span className="stf-dtx"><span className="stf-dnm">{nm}</span>{sb ? <span className="stf-dsb">{sb}</span> : null}</span>
         {go ? <span className="stf-dgo">{go}</span> : <span className="stf-dar" aria-hidden="true">&rsaquo;</span>}
       </>
@@ -1463,14 +1546,14 @@ export default function StageFinish({
   };
 
   return (
-    <div className={'stf' + (outcome ? ' stf-' + outcome : '')}>
+    <div className={'stf' + (outcome ? ' stf-' + outcome : '') + (tone === 'pb' ? ' stf-pb' : '') + (tone === 'lost' ? ' stf-miss' : '')}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
       {flood ? (
         <CurtainFlood title={title} detail={detail} iq={iq} board={board}
           gameRank={gameRank} streak={streak} ready={ready} bandRef={bandRef}
           boardWhen={boardWhen} catRun={catRun} vs={vs} rival={rival} dist={dist}
-          gameName={me ? me.name : null}
+          gameName={me ? me.name : null} tone={tone}
           onDone={() => { setFlood(false); setFloodDone(true); }} />
       ) : null}
 
@@ -1496,13 +1579,28 @@ export default function StageFinish({
           that describes the run itself. On a phone they do not render at all
           -- see .stf-dx in the media query. */}
       <div className="stf-curtain" ref={bandRef}>
-        <div className={'stf-cin' + (bandOpt ? ' stf-hasback' : '')}>
+        <div className={'stf-cin' + ((bandOpt || bandFig || duel) ? ' stf-hasback' : '')}>
           {/* BACK TO BOARD LIVES ON THE BAND (owner, 2026-10-01), right of the
-              verdict, so every tile under the band can be the same size. */}
-          {bandOpt ? (
-            <button type="button" className="stf-back" onClick={bandOpt.onClick || (bandOpt.href ? () => { window.location.href = bandOpt.href; } : undefined)}>
-              <span aria-hidden="true">&#8617;</span>{bandOpt.bandLabel}
-            </button>
+              verdict, so every tile under the band can be the same size. The
+              run's one big figure sits under it (2026-10-07), or the two
+              figures of a challenge when the tab came in on one. */}
+          {(bandOpt || bandFig || duel) ? (
+            <div className="stf-rc">
+              {bandOpt ? (
+                <button type="button" className="stf-back" onClick={bandOpt.onClick || (bandOpt.href ? () => { window.location.href = bandOpt.href; } : undefined)}>
+                  <span aria-hidden="true">&#8617;</span>{bandOpt.bandLabel}
+                </button>
+              ) : null}
+              {duel ? (
+                <div className="stf-duel">
+                  <div><small>You</small><b>{challengeFig(mine)}</b></div>
+                  <i>vs</i>
+                  <div className={'them' + (duel.res && duel.res.res === 'win' ? ' beat' : '')}><small>{duel.them.name}</small><b>{challengeFig(duel.them)}</b></div>
+                </div>
+              ) : bandFig ? (
+                <div className="stf-bfig"><b>{bandFig.v}</b>{bandFig.l ? <small>{bandFig.l}</small> : null}</div>
+              ) : null}
+            </div>
           ) : null}
           <div className="stf-ctop">
             <div className="stf-cl">
@@ -1525,6 +1623,13 @@ export default function StageFinish({
                   ) : null}
                 </div>
               ) : null}
+              {duel && duel.res ? (
+                <div className="stf-chline">
+                  {duel.res.res === 'win' ? `You beat ${duel.them.name}${duel.res.by ? ' ' + duel.res.by : ''}`
+                    : duel.res.res === 'loss' ? `${duel.them.name} holds it${duel.res.by ? ' ' + duel.res.by : ''}`
+                    : `Dead level with ${duel.them.name}`}
+                </div>
+              ) : null}
               <BandCat run={catRun} vs={vs} />
             </div>
           </div>
@@ -1541,10 +1646,13 @@ export default function StageFinish({
             mounted from the start and only hidden, so FinishGroupLine still
             makes its one read and the flood still gets its group rival. */}
         <div className="stf-doors">
+          {/* CHALLENGE A FRIEND sits directly under the result, above Play
+              similar (owner, 2026-10-07). */}
+          {chalDoor ? door(chalDoor) : null}
           {primaryDoor ? (
             <div className={'stf-pwrap' + (left != null ? ' counting' : '')}>
               {door({
-                k: 'similar', cls: 'pri', go: left != null ? null : 'Play', ring: left,
+                k: 'similar', cls: 'pri', go: left != null ? null : 'Play', ring: left, glyph: primaryDoor.key || null,
                 nm: `Play similar: ${primaryDoor.name}`,
                 sb: left != null
                   ? (left > 0 ? `Opens in ${Math.ceil(left)}s` : 'Opening') + (primaryDoor.sub ? ` \u00b7 ${primaryDoor.sub}` : '')
@@ -2230,6 +2338,56 @@ body:has(.stf-a2hs) :is(button,div):has(+ #stf-stats-slot):has(.lucide-smartphon
    flex item that never shrinks it takes exactly the room it needs, and the
    verdict and IQ wrap in whatever is left, whatever the words. */
 .stf-cin.stf-hasback{display:flex;align-items:flex-start;gap:12px;}
+/* THE RIGHT COLUMN (2026-10-07): Back to board, then the run's one big figure
+   or the two figures of a challenge. */
+.stf-rc{order:1;flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:12px;max-width:52%;}
+.stf-rc .stf-back{order:0;}
+.stf-bfig{text-align:right;}
+.stf-bfig b{display:block;font-size:42px;font-weight:800;letter-spacing:-.04em;line-height:.95;font-variant-numeric:tabular-nums;}
+.stf-bfig small{display:block;margin-top:6px;font-family:${MONO};font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;}
+.stf-duel{display:flex;align-items:flex-end;gap:10px;}
+.stf-duel div{text-align:left;min-width:0;}
+.stf-duel .them{text-align:right;}
+.stf-duel small{display:block;font-family:${MONO};font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;
+  max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.stf-duel b{display:block;font-size:36px;font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums;}
+.stf-duel .them.beat b{text-decoration:line-through;text-decoration-thickness:2px;}
+.stf-duel i{font-style:normal;font-family:${MONO};font-size:11px;font-weight:800;padding-bottom:6px;}
+.stf-chline{margin-top:7px;font-size:16px;font-weight:800;letter-spacing:-.01em;}
+/* THE BAND, GRADED (owner, 2026-10-07). Gold is a literal in both registers:
+   a gold dark enough to hold white ink is brown, so it keeps its value and
+   takes dark ink, the same ruling the ramp makes for its warm steps. */
+.stf-pb .stf-curtain,.stf-flood.t-pb{background:#e8b43a;color:#2a1f04;}
+.stf-pb .stf-curtain{position:relative;overflow:hidden;}
+.stf-pb .stf-curtain::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(105deg,transparent 42%,rgba(255,255,255,.5) 50%,transparent 58%);
+  transform:translateX(-100%);animation:stf-sheen 1000ms ease 500ms 1 both;}
+.stf-pb .stf-cin{position:relative;z-index:1;}
+@keyframes stf-sheen{ to{transform:translateX(100%)} }
+.stf-miss .stf-curtain,.stf-flood.t-lost{background:var(--stg-raise);color:var(--stg-ink);}
+.stf-miss .stf-curtain{border-bottom:1px solid var(--stg-line);}
+.stf-miss .stf-cin{border-left:4px solid var(--stg-bad);padding-left:14px;}
+@media (prefers-reduced-motion:reduce){ .stf-pb .stf-curtain::after{animation:none;} }
+/* THE CHALLENGE DOOR. Solid gold with its own dark ink set on every part of
+   it: the mock-up's sub line inherited the mute grey and could not be read. */
+.stf-door.chal{grid-column:1/-1;background:#e8b43a;border-color:#e8b43a;color:#2a1f04;}
+.stf-door.chal:hover{border-color:#e8b43a;filter:brightness(1.05);}
+.stf-door.chal .stf-dic{background:rgba(42,31,4,.14);color:#2a1f04;}
+.stf-door.chal .stf-dnm{font-size:17px;color:#2a1f04;}
+.stf-door.chal .stf-dsb{color:#2a1f04;font-weight:700;white-space:normal;}
+.stf-door.chal .stf-dgo{color:#2a1f04;}
+/* A GAME'S DOOR SHOWS THE GAME (owner, 2026-10-07): its own glyph, large, in a
+   box of its own, and it draws itself in once. */
+.stf-dic.art{width:46px;height:46px;border-radius:10px;}
+.stf-door.pri .stf-dic.art{width:56px;height:56px;border-radius:12px;}
+.stf-dic.art .gg-p{stroke-dasharray:1;animation:stf-draw 900ms ease 250ms both;}
+@keyframes stf-draw{ from{stroke-dashoffset:1} to{stroke-dashoffset:0} }
+@media (prefers-reduced-motion:reduce){ .stf-dic.art .gg-p{animation:none;} }
+@media (max-width:560px){
+  .stf-bfig b{font-size:30px;} .stf-duel b{font-size:25px;} .stf-duel{gap:7px;}
+  .stf-dic.art{width:40px;height:40px;} .stf-door.pri .stf-dic.art{width:46px;height:46px;}
+  .stf-miss .stf-cin{padding-left:10px;}
+}
 .stf-hasback > .stf-ctop{flex:1;min-width:0;}
 .stf-back{order:1;flex:none;margin-top:4px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
   font:inherit;font-family:${MONO};font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;
