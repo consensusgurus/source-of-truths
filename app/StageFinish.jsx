@@ -2452,8 +2452,8 @@ body:has(.stf-a2hs) :is(button,div):has(+ #stf-stats-slot):has(.lucide-smartphon
 .stf-vrow .stf-ciq i{font-size:10px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;opacity:.86;}
 /* CHALLENGE IS AS TALL AS PLAY SIMILAR (owner, 2026-10-07): same padding and
    floor, so they match with Play similar's glyph or its countdown ring. */
-.stf-door.chal,.stf-door.pri{min-height:88px;padding:17px;}
-.stf-door.chal .stf-dic{width:50px;height:50px;border-radius:12px;}
+.stf-door.chal,.stf-door.pri{min-height:92px;padding:17px;}
+.stf-door.chal .stf-dic{width:56px;height:56px;border-radius:12px;}
 .stf-door.chal .stf-dnm{font-size:18px;}
 .stf-door.chal .stf-dsb{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 @media (max-width:640px){
