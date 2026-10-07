@@ -1111,6 +1111,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                 activeIndex={r.phase === 'playing' ? r.si : -1}
                 activeAnswered={r.i}
                 field={fieldOn ? field.curves : null}
+                tops={field ? field.top : null}
                 labels
               />
             </div>
@@ -1348,6 +1349,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   sections={sections}
                   results={r.results}
                   field={fieldOn ? field.curves : null}
+                tops={field ? field.top : null}
                   labels
                 />
 

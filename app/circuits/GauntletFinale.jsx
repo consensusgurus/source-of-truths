@@ -52,6 +52,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { rampFor } from '@/lib/circuits';
+import { shownLength } from './GauntletLadder';
 
 const PAINT_MS = 1250;     // one bank owns the screen for this long (980 before the rank line)
 const COUNT_MS = 560;      // its number, its ladder block and its segment
@@ -137,7 +138,9 @@ export default function GauntletFinale({
     // reported either way so the line can say how many have played so far.
     const rank = field && typeof field.rank === 'function' ? field.rank(s.key, got) : null;
     const plays = field && field.plays && Number.isFinite(field.plays[s.key]) ? field.plays[s.key] : null;
-    return { key: s.key, name: s.name || s.key, subject: s.subject || '', asked, got, colour, ink: inkFor(colour), rank, plays };
+    // The bar's length: anchored to today's best on this bank, not to all 25.
+    const shown = shownLength(asked, field && field.top ? field.top[s.key] : 0, got) || 1;
+    return { key: s.key, name: s.name || s.key, subject: s.subject || '', asked, shown, got, colour, ink: inkFor(colour), rank, plays };
   }), [sections, results, field]);
 
   const running = useMemo(() => {
@@ -188,8 +191,13 @@ export default function GauntletFinale({
   const ground = painting ? cur.colour : '#0b0f1a';
   const ink = painting ? cur.ink : '#f2f6ff';
 
-  const avgPct = avgTotal != null && total > 0 ? Math.min(100, (avgTotal / total) * 100) : null;
-  const leadPct = leaderScore != null && total > 0 ? Math.min(100, (leaderScore / total) * 100) : null;
+  // THE CLIMB'S SCALE (owner, 2026-10-07): the best total on the board sits
+  // near the top of the column, not 180 at the top with everyone in the
+  // bottom fifth. The player's own total takes over if it is the best.
+  const scaleTop = Math.max(Number(leaderScore) || 0, Number(score) || 0, Number(avgTotal) || 0);
+  const scale = scaleTop > 0 ? Math.min(total, Math.max(scaleTop + 1, scaleTop / 0.9)) : total;
+  const avgPct = avgTotal != null && scale > 0 ? Math.min(100, (avgTotal / scale) * 100) : null;
+  const leadPct = leaderScore != null && scale > 0 ? Math.min(100, (leaderScore / scale) * 100) : null;
   const passedAvg = avgTotal != null && (painting ? running[step] : score) >= avgTotal;
 
   const top = Array.isArray(rows) ? rows.slice(0, 5) : [];
@@ -246,11 +254,10 @@ export default function GauntletFinale({
           rung per question: the mask draws the rungs and the width animates. */}
       <div className="gfin-lad">
         {banks.map((b, i) => {
-          const pct = i < step || restored ? (b.asked ? (b.got / b.asked) * 100 : 0)
-            : i === step ? (b.asked ? (b.got / b.asked) * 100 : 0) : 0;
-          const mask = `repeating-linear-gradient(90deg,#000 0 calc(100% / ${Math.max(1, b.asked)} * 0.78),transparent calc(100% / ${Math.max(1, b.asked)} * 0.78) calc(100% / ${Math.max(1, b.asked)}))`;
+          const pct = i <= step || restored ? Math.min(100, (b.got / b.shown) * 100) : 0;
+          const mask = `repeating-linear-gradient(90deg,#000 0 calc(100% / ${b.shown} * 0.78),transparent calc(100% / ${b.shown} * 0.78) calc(100% / ${b.shown}))`;
           return (
-            <div className="gfin-blk" key={b.key} style={{ flex: `${Math.max(1, b.asked)} 1 0` }}>
+            <div className="gfin-blk" key={b.key} style={{ flex: `${b.shown} 1 0` }}>
               <div className="gfin-trk" style={{ WebkitMaskImage: mask, maskImage: mask }} />
               <div
                 className={`gfin-fill${i === step ? ' cur' : ''}`}
@@ -278,7 +285,7 @@ export default function GauntletFinale({
               key={b.key}
               className="gfin-seg"
               style={{
-                height: `${(i <= step || restored) && total > 0 ? (b.got / total) * 100 : 0}%`,
+                height: `${(i <= step || restored) && total > 0 ? (b.got / scale) * 100 : 0}%`,
                 background: restored ? b.colour : 'currentColor',
                 transitionDuration: `${COUNT_MS + 60}ms`,
               }}
