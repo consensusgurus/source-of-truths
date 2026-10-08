@@ -1,6 +1,7 @@
 'use client';
 
-// ReportIssue — a small "Report an issue" affordance for the daily puzzles.
+// ReportIssue — a small "Submit feedback" affordance for the daily puzzles
+// (renamed from "Report an issue", owner 2026-10-08: we want ideas as well as problems).
 // It wires into the site's existing submission system: the same `complaints`
 // table + admin "Notices" tab used for list feedback, via POST /api/complaints.
 // Name and email are optional; only a short message is asked for.
@@ -22,7 +23,7 @@
 // token here needs its off-stage fallback, so the Loft render stays byte-identical.
 
 import React, { useState, useEffect } from 'react';
-import { Flag, Check, HelpCircle } from 'lucide-react';
+import { MessageSquare, Check, HelpCircle } from 'lucide-react';
 import { savedIdentity } from '@/lib/saved-identity';
 import { T } from '@/lib/theme';
 
@@ -129,16 +130,16 @@ export default function ReportIssue({ self, name, accent = T.accent, align = 'ce
         .ri-sent{margin-top:6px;font-size:12.5px;font-weight:700;color:var(--stg-good, #0e7c5a);display:inline-flex;align-items:center;gap:6px;}
       ` }} />
       {sent ? (
-        <div className="ri-sent"><Check size={13} strokeWidth={3} /> Thanks. The team will take a look.</div>
+        <div className="ri-sent"><Check size={13} strokeWidth={3} /> Thanks. We read every note.</div>
       ) : open ? (
         <div className="ri-form">
-          <div className="ri-h">Report an issue with {gameName}</div>
+          <div className="ri-h">Feedback on {gameName}</div>
           <textarea
             value={msg}
             onChange={(e) => setMsg(e.target.value)}
             rows={3}
             maxLength={1000}
-            placeholder="What went wrong? A wrong answer, a typo, something that won't load…"
+            placeholder="Found a problem, or have an idea to make it better? Tell us either way."
           />
           <div className="ri-row">
             <input type="text" value={nm} onChange={(e) => setNm(e.target.value)} maxLength={120} placeholder="Name (optional)" />
@@ -153,7 +154,7 @@ export default function ReportIssue({ self, name, accent = T.accent, align = 'ce
               onClick={submit}
               disabled={busy || !msg.trim()}
             >
-              {busy ? 'Sending…' : 'Send report'}
+              {busy ? 'Sending…' : 'Send feedback'}
             </button>
           </div>
         </div>
@@ -165,7 +166,7 @@ export default function ReportIssue({ self, name, accent = T.accent, align = 'ce
             </button>
           ) : null}
           <button type="button" className="ri-link" onClick={() => setOpen(true)}>
-            <Flag size={11} strokeWidth={2.2} /> Report an issue
+            <MessageSquare size={11} strokeWidth={2.2} /> Submit feedback
           </button>
         </span>
       )}
