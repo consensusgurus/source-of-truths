@@ -186,6 +186,8 @@ export default function CircuitRunPage({ params }) {
   if (!circuit || isMarquee(id) || !isRunnableCircuit(id)) redirect(`/circuits/${encodeURIComponent(id || '')}`);
   // Price Check is served at its own address (lib/circuits `path`).
   if (runEngine(id) === 'price') redirect('/pricecheck');
+  // Lawyering too (2026-10-08).
+  if (runEngine(id) === 'law') redirect('/lawyering');
 
   const today = etTodayServer();
   const label = (() => {

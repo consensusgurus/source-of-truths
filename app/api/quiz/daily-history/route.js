@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { loadQuizResultsCached } from '@/lib/quiz-results-cache';
 import { scoreGame, combineDaily, rankByCorrect, rankByTime, DAILY_KEYS, GAME_MAX, bestNForSuffix, etDayEndMs } from '@/lib/daily-combined';
-import { CIRCUIT_PARAM, circuitById, circuitKeysFor, circuitScoreMode, isMarquee } from '@/lib/circuits';
+import { CIRCUIT_PARAM, circuitById, circuitKeysFor, circuitScoreMode, circuitScale, isMarquee } from '@/lib/circuits';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -191,7 +191,10 @@ export async function GET(req) {
       // Re-ranks in place, and rewrites each row's `total` to questions right
       // with the clock as the tiebreak, exactly as /api/quiz/daily-combined
       // does for the same circuit.
-      if (rawScore) rankByCorrect(eligible, memberKeys);
+      // A scaled circuit (Law School) from its launch day on; earlier days keep
+      // the board they were crowned on.
+      const scaleDay = circuitOn ? circuitScale(circuitId, dayISO) : null;
+      if (rawScore || scaleDay) rankByCorrect(eligible, memberKeys, scaleDay);
       if (byTime) rankByTime(eligible, memberKeys);
       // A clock day is won by a FULL run only: a row with a lot unsolved is
       // below every full run already, and if nobody parked all three that day

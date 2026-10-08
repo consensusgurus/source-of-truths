@@ -48,6 +48,7 @@ import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
+import { useRunEmbed } from '../RunEmbed';
 import useIqStanding from '../useIqStanding';
 import useNextUnplayed, { useUnplayedSimilar } from '../useNextUnplayed';
 import useDailyBoard from '../useDailyBoard';
@@ -245,6 +246,9 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('suffice'), '--stg-acc-lt': gameColorLight('suffice'), '--stg-onramp-lt': gameOnrampLight('suffice'), '--stg-acc-ink-lt': gameAccentInkLight('suffice') };
   const [stageTheme] = useStageTheme();
+  // Inside the Lawyering run (app/RunEmbed.jsx) the page furniture drops away
+  // and the board sits on the run's dark ground; the game itself is unchanged.
+  const EMBED = useRunEmbed();
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
@@ -337,6 +341,7 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
 
   function postResult(g2, sc, wr) {
     abandon.markFlushed();
+    if (EMBED) EMBED.onResult({ key: 'suffice', score: sc, total: TOTAL, t0: g2 && g2.t0, tEnd: (g2 && g2.tEnd) || Date.now() });
     const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
     try { setStats(recordStat(PUZZLE.num, { s: sc, t: TOTAL, g: wr, won: sc === TOTAL })); } catch (e) {}
     try {
@@ -431,13 +436,13 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
+      data-stage-theme={STAGE ? (EMBED ? 'dark' : stageTheme) : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="suffice" name="Suffice" collapsed={!!g.t0} loft={LOFT} />
       )}
-      {LOFT && (
+      {LOFT && !EMBED && (
         <Cap gameKey="suffice" quizId={PUZZLE.quizId}
           name="Suffice"
           cat="Logic"
@@ -689,7 +694,7 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
             <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setLoftRevealed(false)}>&#8630; Hide game board</button>
           )}
           </div>
-          {LOFT && !playing && (
+          {LOFT && !playing && !EMBED && (
             <LoftFinish
               name="Suffice"
               catRank={catRank}
@@ -738,7 +743,7 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
             "Show overview and more" control it replaces ever did. */}
         {/* The strip in the cap answers what this opens, without being pressed. */}
         {!STAGE && <GamePanel self="suffice" name="Suffice" onShow={() => setShowChrome(true)} />}
-          <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block', margin: '30px auto 0', maxWidth: 640 }}>
+          <div style={{ display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', margin: '30px auto 0', maxWidth: 640 }}>
             {LOFT && (
               <div className={STAGE ? undefined : 'loft-report'}>
                 <ReportIssue self="suffice" name="Suffice" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />

@@ -171,7 +171,7 @@ export default function CircuitLanding({ circuit, games }) {
           ) : null}
           {runnable ? (
             <a className={complete ? 'clp-sh' : 'clp-go'} href={withTq(runHref(id))}>
-              {complete ? 'Run it again' : done ? 'Carry on with the run' : (runEngine(id) === 'jam' ? `Play all ${n} on one clock` : `Play all ${n} as one quiz`)}
+              {complete ? 'Run it again' : done ? 'Carry on with the run' : (runEngine(id) === 'jam' ? `Play all ${n} on one clock` : runEngine(id) === 'law' ? `Play all ${n} cases` : `Play all ${n} as one quiz`)}
               <ArrowRight size={15} strokeWidth={2.6} />
             </a>
           ) : null}

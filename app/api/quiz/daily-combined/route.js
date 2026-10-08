@@ -10,7 +10,7 @@ import { attemptsModeForQuizId, attemptsPlan, arcadeRanksForQuizId } from '@/lib
 import { GAME_PUZZLES, etTodayServer, suffixOfDate, gamesForSuffix } from '@/lib/daily-slate';
 import { groupByCode, membersOf, isMissingTable } from '@/lib/groups';
 import { fiveForSuffix, FIVE_SIZE } from '@/lib/daily-five';
-import { circuitKeysFor, circuitById, isMarquee, circuitScoreMode } from '@/lib/circuits';
+import { circuitKeysFor, circuitById, isMarquee, circuitScoreMode, circuitScale } from '@/lib/circuits';
 
 // The day's slate (which puzzle each game published on a date) lives in
 // lib/daily-slate.js, shared with /api/quiz/daily-me. This route used to carry
@@ -397,12 +397,15 @@ export async function GET(request) {
   // each game is still scored by the same scoreGame and still pays the same
   // ladder into its own board, its crown and IQ Points. Only the combined rows
   // this payload sorts and prints are converted, by rankByCorrect below.
-  const rawScore = circuitOn && circuitScoreMode(circuitId) === 'correct';
+  // A SCALED circuit (Law School, 2026-10-08) ranks the same way, each game
+  // first put on 0 to 10 because its games keep different totals.
+  const scaleOn = circuitOn ? circuitScale(circuitId, isoOfSuffix(suffix)) : null;
+  const rawScore = circuitOn && (circuitScoreMode(circuitId) === 'correct' || !!scaleOn);
   // ONE CIRCUIT RANKS ON THE CLOCK (owner, 2026-09-05): the Valet Gauntlet's
   // rows are converted by rankByTime the same way, lots parked then the
   // combined clock, and the payload says so in scoreMode.
   const byTime = circuitOn && circuitScoreMode(circuitId) === 'time';
-  const scoreMode = rawScore ? 'correct' : (byTime ? 'time' : 'points');
+  const scoreMode = scaleOn ? 'scaled' : (rawScore ? 'correct' : (byTime ? 'time' : 'points'));
   // A PLAIN SUBSET (?keys=a,b,c): the home asks for one category's board. It is
   // the full board over fewer games: no circuit rules, nobody has to have played
   // them all, and best-N is simply every game in the set.
@@ -546,13 +549,13 @@ export async function GET(request) {
       maxTotal = games.length;
     }
     if (rawScore) {
-      rankByCorrect(overallFull, games.map((g) => g.key));
+      rankByCorrect(overallFull, games.map((g) => g.key), scaleOn);
       // The ceiling is the day's own question count, read off the banks the way
       // scoreGame reads a game's denominator: the largest `total` any player
       // recorded for that puzzle. A bank nobody has opened yet contributes
       // nothing and the ceiling comes right the moment somebody plays it, which
       // is the same self-correcting rule the per-game denominator already uses.
-      maxTotal = gameResults.reduce((sum, g) => {
+      maxTotal = scaleOn ? games.length * scaleOn : gameResults.reduce((sum, g) => {
         let t = 0;
         for (const p of g.players.values()) t = Math.max(t, Number(p.total) || 0);
         return sum + t;

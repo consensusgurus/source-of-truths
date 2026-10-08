@@ -95,7 +95,7 @@ function blockedHere() {
   try {
     const p = window.location.pathname || '/';
     if (readRunParam()) return true;
-    if (/^\/(circuits|pricecheck|admin|daily-five)(\/|$)/.test(p)) return true;
+    if (/^\/(circuits|pricecheck|lawyering|admin|daily-five)(\/|$)/.test(p)) return true;
   } catch (e) { return true; }
   return false;
 }
