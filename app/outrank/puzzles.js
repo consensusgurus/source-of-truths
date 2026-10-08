@@ -896,7 +896,7 @@ export const PUZZLES = [
     sunday: false,
     theme: "Sounds of nature",
     flavor: "Close your eyes. Which one do you hear?",
-    items: ["A crackling fire", "A running stream", "Ocean waves", "Rain on a roof", "Birdsong", "Wind in the trees"],
+    items: ["A crackling fire", "A running stream", "Ocean waves", "Rain on leaves", "Birdsong", "Wind in the trees"],
     house: [0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5],
   },
   {
@@ -918,7 +918,7 @@ export const PUZZLES = [
     sunday: false,
     theme: "Inventions that changed everything",
     flavor: "Take one away and the world stops.",
-    items: ["The printing press", "Electricity", "The wheel", "The compass", "The internet", "Antibiotics"],
+    items: ["The printing press", "The light bulb", "The wheel", "The compass", "The internet", "Antibiotics"],
     house: [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5],
   },
   {

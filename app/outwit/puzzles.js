@@ -9527,7 +9527,7 @@ export const PUZZLES = [
       {
         type: "unique",
         tag: "Rare Bird",
-        q: "Everyone puts on one hat for a cold walk. The RAREST pick wins.",
+        q: "Everyone covers their head one way for a cold walk. The RAREST pick wins.",
         options: [
           "A fur-lined hat",
           "A beanie",
@@ -9535,7 +9535,7 @@ export const PUZZLES = [
           "A beret",
           "Nothing at all",
           "A hood",
-          "A wool cap",
+          "A bobble hat",
           "A scarf over the head"
         ],
         house: [5, 3, 6, 7, 5, 5, 4, 1, 1, 7, 1, 6, 6, 2, 4, 0, 3, 5, 2, 1, 6, 5, 6, 1, 2, 5, 6, 5, 0, 1, 1, 1, 4, 0, 1, 0, 6, 3, 5, 7, 0, 1, 2, 2, 7, 1, 7, 2]
@@ -9574,7 +9574,7 @@ export const PUZZLES = [
       {
         type: "herd",
         tag: "Herd",
-        q: "How many colored squares are on a solved Rubik cube? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        q: "How many colored squares are on a solved Rubik's Cube? Closest to the crowd's MEDIAN guess wins, right or wrong.",
         min: 5,
         max: 500,
         truth: 54,
@@ -9667,7 +9667,7 @@ export const PUZZLES = [
       {
         type: "unique",
         tag: "Rare Bird",
-        q: "Everyone stops one clock at one hour. The RAREST pick wins.",
+        q: "Everyone stops one clock at one time. The RAREST pick wins.",
         options: [
           "Three",
           "Half past four",
@@ -9676,7 +9676,7 @@ export const PUZZLES = [
           "Noon",
           "Nine",
           "Six",
-          "Midnight"
+          "Quarter to two"
         ],
         house: [7, 5, 6, 2, 6, 7, 7, 5, 6, 4, 5, 2, 4, 2, 3, 6, 3, 2, 2, 4, 4, 7, 0, 7, 4, 0, 4, 4, 6, 7, 7, 1, 0, 4, 0, 1, 5, 5, 6, 5, 7, 5, 4, 6, 2, 1, 0, 0]
       },
@@ -10014,7 +10014,7 @@ export const PUZZLES = [
         min: 1,
         max: 2000,
         truth: 120,
-        truthNote: "Around a hundred and twenty a day, inbox-wide.",
+        truthNote: "Around a hundred and twenty a day, counting everything that lands in the inbox.",
         house: [50, 140, 62, 38, 44, 44, 50, 38, 50, 44, 32, 86, 50, 62, 74, 50, 86, 62, 86, 62, 74, 50, 74, 44, 62, 86, 62, 110, 62, 50, 44, 32, 38, 50, 74, 86, 26, 50, 50, 74, 74, 110, 50, 110, 50, 44, 38, 62]
       },
       {

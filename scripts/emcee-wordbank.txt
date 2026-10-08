@@ -93,7 +93,7 @@ AVERAGE|Mean, mathematically
 AVOID|Steer clear of
 AWARD|Trophy
 AWARE|Clued in
-AWAY|Not here
+AWAY|Out of town
 AWE|Jaw-dropping wonder
 AWL|Leather punch
 AXE|Woodcutter's tool
@@ -330,7 +330,7 @@ COAT|Winter wear
 COB|Corn's core
 COD|Fish-and-chips fish
 COFFEES|Morning orders
-COG|Gear tooth
+COG|Tooth on a wheel
 COIN|Pocket change
 COLD|Winter's quality
 COLLECT|Gather up
@@ -436,7 +436,7 @@ DEFENSE|Team's other half
 DELAY|Hold up
 DELIVER|Drop off
 DELTA|River's mouth
-DEN|Cozy home room
+DEN|Lion's lair
 DENTIST|Tooth doctor
 DEPOSIT|Bank a check
 DEPTH|How deep
@@ -527,7 +527,7 @@ EIGHT|Spider's leg count
 ELBOW|Arm's bend
 ELDERLY|Getting on in years
 ELEGANT|Stylish
-ELEMENT|Table entry
+ELEMENT|Periodic table entry
 ELF|Santa's helper
 ELK|Antlered animal
 ELM|Shade tree
@@ -541,7 +541,7 @@ ENJOY|Have a good time
 ENJOYED|Had fun with
 ENTER|Go in
 ENTERED|Went in
-EPIC|Grand tale
+EPIC|Long heroic poem
 EPISODE|Series installment
 EQUAL|The same as
 EQUALLY|In the same measure
@@ -561,7 +561,7 @@ EXAMPLE|For instance
 EXCITED|Thrilled
 EXHIBIT|Museum display
 EXIST|Be
-EXIT|Way out
+EXIT|Leave the stage
 EXPENSE|Cost
 EXPLAIN|Make clear
 EXPLORE|Set out to discover
@@ -694,7 +694,7 @@ GARDENS|Flower beds
 GAS|Pump purchase
 GATE|Fence door
 GATEWAY|Entrance
-GEAR|Bike's cog
+GEAR|Equipment
 GEL|Hair goo
 GEM|Ring's sparkler
 GENERAL|Army leader
@@ -721,7 +721,7 @@ GOAT|Billy or nanny
 GOLD|First place metal
 GOLF|Course sport
 GONE|Departed
-GOO|Sticky stuff
+GOO|Slime
 GOOD|Not bad
 GOOSE|Honking bird
 GOT|Obtained
@@ -764,7 +764,7 @@ HABIT|Routine
 HABITAT|Natural home
 HAD|Possessed
 HAG|Storybook witch
-HAIL|Ice from the sky
+HAIL|Frozen storm pellets
 HAIR|Comb's target
 HALF|Fifty percent
 HALL|Corridor
@@ -808,7 +808,7 @@ HELMETS|Head protection
 HELP|Lend a hand
 HEM|Skirt's edge
 HEN|Egg layer
-HER|Belonging to she
+HER|That woman's
 HERB|Basil or thyme
 HERD|Cattle crowd
 HERO|Caped rescuer
@@ -949,7 +949,7 @@ LABEL|Jar sticker
 LABOR|Hard work
 LACE|Shoe string
 LAD|Young fellow
-LADDERS|Climbing frames
+LADDERS|Things with rungs
 LAG|Fall behind
 LAKE|Inland water
 LAMB|Spring baby
@@ -1108,7 +1108,7 @@ MESSAGE|Voicemail
 MET|Ran into
 METAL|Iron or tin
 METER|Parking timer
-MICE|Cheese nibblers
+MICE|Cat's prey
 MIDST|The thick of it
 MIGHT|Strength
 MILD|Not spicy
@@ -1230,7 +1230,7 @@ OLD|Up in years
 OMIT|Leave out
 ONCE|One time
 ONE|Number of noses you have
-ONESELF|Alone
+ONESELF|Your own self
 ONION|Tear-jerking bulb
 ONLY|Sole
 OPEN|Not shut
@@ -1251,7 +1251,7 @@ ORGANIC|Pesticide-free
 OTHER|The alternative
 OTTER|Playful swimmer
 OUGHT|Should
-OUR|Belonging to us
+OUR|We share it: ___ home
 OUT|Not in
 OUTDOOR|In the open air
 OUTER|Not inner
@@ -1270,7 +1270,7 @@ PACIFIC|Ocean west of America
 PACK|Fill a suitcase
 PACKAGE|Delivered box
 PACKING|Suitcase work
-PAD|Notepad
+PAD|Stack of writing paper
 PADDLES|Canoe pushers
 PAGE|Book leaf
 PAID|Settled up
@@ -1346,7 +1346,7 @@ PICK|Choose
 PICKING|Choosing
 PICNICS|Blanket meals
 PICTURE|Framed art
-PIE|Slice of dessert
+PIE|Apple dessert
 PIECE|Portion
 PIER|Fishing platform
 PIG|Farm oinker
@@ -1519,7 +1519,7 @@ REFLECT|Mirror's job
 REFRESH|Reload the page
 REFUSED|Said no
 REGULAR|Usual
-RELATED|Kin
+RELATED|Of the same family
 RELAX|Unwind
 RELAXED|At ease
 RELEASE|Let go
@@ -1566,7 +1566,7 @@ ROAST|Sunday dinner cut
 ROASTED|Oven-cooked
 ROB|Hold up
 ROBBERY|Heist
-ROBE|Bathrobe
+ROBE|Judge's gown
 ROBIN|Red-breasted bird
 ROBOT|Mechanical helper
 ROCK|Stone
@@ -1645,7 +1645,7 @@ SEASIDE|By the shore
 SEASONS|Spring and fall
 SEAT|Chair
 SECONDS|Minute's sixty
-SECRETS|Kept quiet
+SECRETS|Things kept quiet
 SECTION|Part
 SEE|Look at
 SEED|Planting start
@@ -1654,8 +1654,8 @@ SEEKING|Looking for
 SEEM|Appear
 SEIZE|Grab hold of
 SELL|Put on the market
-SEND|Ship off
-SENSE|Sight or smell
+SEND|Mail out
+SENSE|Sight or hearing
 SERIOUS|No joking
 SERVE|Wait on
 SERVICE|Waitstaff's work
@@ -1731,7 +1731,7 @@ SKATING|Rink pastime
 SKI|Slope slider
 SKIRT|Below-the-waist wear
 SKY|Cloud's home
-SLAM|Shut hard
+SLAM|Bang, as a door
 SLED|Snow ride
 SLEEP|Get some rest
 SLEEVES|Shirt parts
@@ -1750,7 +1750,7 @@ SMOKE|Chimney output
 SNACK|Between-meals bite
 SNAKE|Slitherer
 SNAP|Quick photo
-SNEAKER|Gym shoe
+SNEAKER|Athletic shoe
 SNOW|Winter fall
 SOAP|Shower bar
 SOB|Cry hard
@@ -1936,7 +1936,7 @@ TEXT|Phone message
 TEXTURE|Feel of a fabric
 THANK|Show gratitude
 THE|Most common article
-THEATER|Stage venue
+THEATER|Playhouse
 THEME|Party's motif
 THERAPY|Counseling
 THICK|Not thin
@@ -2027,7 +2027,7 @@ TRIM|Cut back
 TRIP|Vacation
 TRIUMPH|Big win
 TROUBLE|Hot water
-TROUSER|Pant leg
+TROUSER|___ press (pants smoother)
 TRUCK|Big rig
 TRUCKER|Big rig driver
 TRUE|Not false
@@ -2171,7 +2171,7 @@ WHILE|During
 WHIP|Beat, as cream
 WHISKER|Cat's face hair
 WHISPER|Quiet word
-WHISTLE|Ref's blower
+WHISTLE|What the ref blows
 WHITE|Snow's color
 WHO|Question word
 WHOLE|Entire
@@ -2227,7 +2227,7 @@ WRITING|Penning
 WRONG|Not right
 YACHT|Fancy boat
 YAK|Shaggy ox
-YAM|Sweet potato
+YAM|Starchy tuber
 YAP|Small dog's bark
 YARD|Three feet
 YARN|Knitter's supply
@@ -2286,7 +2286,7 @@ ANYONE|No person in particular
 ANYWAY|Regardless
 APPEAL|Plea, or charm
 APPEAR|Show up
-ARCADE|Row of games and tokens
+ARCADE|Place to play video games
 ARCHER|Bow user
 AROUND|On all sides
 ARREST|Take into custody
@@ -2624,7 +2624,7 @@ DOLLAR|Hundred cents
 DOMAIN|Territory
 DONATE|Give to charity
 DONKEY|Long-eared beast of burden
-DOODLE|Idle sketch
+DOODLE|Margin scribble
 DOTTED|Speckled
 DOUBLE|Twice as much
 DOUBTS|Second thoughts
@@ -2649,7 +2649,7 @@ EASIER|Less trouble
 EASILY|Without trouble
 EATERY|Diner
 EDIBLE|Safe to eat
-EDITOR|The one with the red pen
+EDITOR|Newsroom chief
 EFFECT|What the cause produces
 EFFORT|The trying part
 EIGHTH|Between seventh and ninth
@@ -2963,7 +2963,7 @@ IMPAIR|Weaken
 IMPORT|Bring in from abroad
 IMPOSE|Force it on someone
 INCHES|Twelve to a foot
-INCOME|What comes in
+INCOME|Earnings
 INDENT|Start of the paragraph
 INDIGO|Between blue and violet
 INDOOR|Not out in the weather
@@ -2998,7 +2998,7 @@ IRONIC|The opposite of what you'd expect
 ISLAND|Land with water all round
 ISSUES|Problems, or magazine numbers
 ITALIC|Slanted type
-ITSELF|On its own
+ITSELF|By ___ (alone)
 JACKET|Coat
 JAGGED|Saw toothed
 JARGON|Trade lingo
@@ -3090,7 +3090,7 @@ LOCKER|School hallway cubby
 LOCKET|Photo pendant
 LOOSEN|Slacken off
 LOTION|Skin cream
-LOUDER|Turn it up
+LOUDER|At a higher volume
 LOUDLY|Noisily
 LOUNGE|Sitting room
 LOVELY|Really rather nice
@@ -3873,7 +3873,7 @@ TRICKY|Hard to handle
 TRIPLE|Three times over
 TRIVIA|Pub quiz stuff
 TROOPS|Soldiers
-TROPHY|Cabinet silverware
+TROPHY|Winner's cup
 TROPIC|Near the equator
 TROUGH|Farm feeder
 TRUANT|School skipper
@@ -4306,7 +4306,7 @@ DIAPERS|Baby's wraps
 DICTATE|Say for writing down
 DIGGING|Making a hole
 DILEMMA|Rock and a hard place
-DILUTED|Watered down
+DILUTED|Made weaker, as a drink
 DIMPLES|Cheek indents
 DIRECTS|Points the way
 DISABLE|Switch it off
@@ -4894,7 +4894,7 @@ REVERSE|Back up
 REVISED|Went over the draft
 REVIVAL|Bringing it back
 REVOLVE|Turn on the spot
-REWRITE|Do it again
+REWRITE|Revise from scratch
 RHUBARB|Crumble stalk
 RICHEST|Best off of all
 RIGGING|Ship's ropes
@@ -4921,7 +4921,7 @@ SAILORS|Deck hands
 SAMPLES|Free tastes
 SANDBOX|Play area with grit
 SAPLING|Young tree
-SARDINE|Tinned little fish
+SARDINE|Canned little fish
 SATCHEL|School bag
 SAVANNA|Grassy African plain
 SAWDUST|Workshop floor covering
@@ -5427,7 +5427,7 @@ EQUIP|Kit out
 ERECT|Upright
 ERROR|Mistake
 ESSAY|School composition
-ETHIC|Work
+ETHIC|Work ___
 EVADE|Slip away from
 EVICT|Force out of a home
 EVOKE|Call to mind
@@ -5524,7 +5524,7 @@ GROAN|Sound of pain
 GROOM|Wedding's other star
 GROVE|Small wood
 GROWL|Dog's warning
-GROWN|Fully grown
+GROWN|Adult
 GRUFF|Rough of voice
 GRUNT|Pig's sound
 GUILT|What the verdict found
@@ -5741,7 +5741,7 @@ PRUNE|Cut back, or a dried plum
 PSALM|Sacred song
 PUFFY|Swollen up
 PUPPY|Young dog
-PUREE|Blended smooth
+PUREE|Blend until smooth
 PURGE|Clear it out
 PUTTY|Window sealing paste
 QUACK|Duck's word
@@ -5773,7 +5773,7 @@ REVEL|Make merry
 RIFLE|Long gun
 RIGID|Won't bend
 RINSE|Wash off
-RIPEN|Come good on the vine
+RIPEN|Mature on the vine
 RISKY|Chancy
 RIVET|Metal fastening pin
 ROACH|Kitchen pest
@@ -5853,7 +5853,7 @@ SLASH|Big cut
 SLATE|Roof tile
 SLEEK|Smooth and glossy
 SLEET|Half rain, half snow
-SLEPT|Had a kip
+SLEPT|Got some shut-eye
 SLICK|Smooth, or an oil spill
 SLIMY|Slippery and nasty
 SLING|Arm support
@@ -5941,7 +5941,7 @@ TACKY|A bit cheap-looking
 TAFFY|Pulled candy
 TALLY|Running count
 TALON|Eagle's claw
-TANGO|Two to
+TANGO|It takes two to ___
 TANGY|Sharply flavored
 TAPER|Narrow to a point
 TARDY|Late
@@ -6028,7 +6028,7 @@ VISTA|Sweeping view
 VIVID|Bright and clear
 VOWEL|A, E, I, O or U
 WACKY|Zany
-WAFER|Thin biscuit
+WAFER|Thin crisp cookie
 WALTZ|Three-time dance
 WEAVE|Work the loom
 WEDGE|Doorstop shape
@@ -6069,7 +6069,7 @@ ZESTY|Full of tang
 # Four more (ABS, ADS, ARE, AYE) already appear on the grandfathered boards
 # #1-#27, so they carry the clue those boards already print, for one voice.
 ABS|Six-pack muscles, briefly
-ADO|Much about nothing
+ADO|Much ___ About Nothing
 ADS|Commercials, for short
 AFT|Toward the stern
 AKA|Alias, in brief

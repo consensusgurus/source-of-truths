@@ -129,7 +129,7 @@ export const PUZZLES = [
       { n: 1, r: 0, c: 0, len: 3, clue: '"How ___ you?"' },
       { n: 4, r: 0, c: 4, len: 3, clue: 'Night bird asking "who?"' },
       { n: 7, r: 1, c: 0, len: 3, clue: 'Basketball hoop\'s edge' },
-      { n: 8, r: 1, c: 4, len: 3, clue: 'Dessert with a lattice crust' },
+      { n: 8, r: 1, c: 4, len: 3, clue: 'Apple dessert' },
       { n: 9, r: 2, c: 0, len: 7, clue: 'Boat\'s tie-up spot' },
       { n: 11, r: 3, c: 2, len: 3, clue: 'Perfect gymnastics score' },
       { n: 12, r: 4, c: 0, len: 7, clue: 'What pH measures' },
@@ -162,7 +162,7 @@ export const PUZZLES = [
     grid: ['#LATE', '#AWAY', 'SNAKE', 'ACRE#', 'TEEN#'],
     across: [
       { n: 1, r: 0, c: 1, len: 4, clue: 'Past the deadline' },
-      { n: 5, r: 1, c: 1, len: 4, clue: 'Not home' },
+      { n: 5, r: 1, c: 1, len: 4, clue: 'Out of town' },
       { n: 6, r: 2, c: 0, len: 5, clue: 'Slithering reptile' },
       { n: 7, r: 3, c: 0, len: 4, clue: 'Farm measure' },
       { n: 8, r: 4, c: 0, len: 4, clue: 'High schooler, usually' },
@@ -322,7 +322,7 @@ export const PUZZLES = [
       { n: 12, r: 4, c: 0, len: 3, clue: 'Blue' },
       { n: 13, r: 4, c: 1, len: 3, clue: 'Give it a whirl' },
       { n: 14, r: 4, c: 5, len: 3, clue: '"The Matrix" hero' },
-      { n: 15, r: 4, c: 6, len: 3, clue: 'Cozy TV room' },
+      { n: 15, r: 4, c: 6, len: 3, clue: 'Lion\'s lair' },
     ],
   },
   {
@@ -407,7 +407,7 @@ export const PUZZLES = [
       { n: 4, r: 1, c: 0, len: 5, clue: 'Not oblivious' },
       { n: 6, r: 2, c: 0, len: 5, clue: 'Polite, if a bit cool' },
       { n: 7, r: 3, c: 0, len: 5, clue: 'Just perfect' },
-      { n: 8, r: 4, c: 0, len: 3, clue: 'Home office, often' },
+      { n: 8, r: 4, c: 0, len: 3, clue: 'Lion\'s lair' },
     ],
     down: [
       { n: 1, r: 0, c: 2, len: 5, clue: 'Glossy jet-black bird' },
@@ -473,7 +473,7 @@ export const PUZZLES = [
     grid: ['DOE#GOO', 'OWL#END', 'NEEDLED', '##VIA##', 'PHANTOM', 'RAT#IRE', 'ODE#NET'],
     across: [
       { n: 1, r: 0, c: 0, len: 3, clue: 'Female deer' },
-      { n: 4, r: 0, c: 4, len: 3, clue: 'Sticky gunk' },
+      { n: 4, r: 0, c: 4, len: 3, clue: 'Slime' },
       { n: 7, r: 1, c: 0, len: 3, clue: 'Nighttime hooter' },
       { n: 8, r: 1, c: 4, len: 3, clue: 'Finish line, of a sort' },
       { n: 9, r: 2, c: 0, len: 7, clue: 'Teased or prodded persistently' },
@@ -530,11 +530,11 @@ export const PUZZLES = [
     size: 5,
     grid: ['##OUR', 'ABUSE', 'RATES', 'CREST', 'HER##'],
     across: [
-      { n: 1, r: 0, c: 2, len: 3, clue: 'Belonging to us' },
+      { n: 1, r: 0, c: 2, len: 3, clue: 'We share it: ___ home' },
       { n: 4, r: 1, c: 0, len: 5, clue: 'Mistreat or misuse' },
       { n: 6, r: 2, c: 0, len: 5, clue: 'Hotel room prices' },
       { n: 7, r: 3, c: 0, len: 5, clue: 'Top of a hill or wave' },
-      { n: 8, r: 4, c: 0, len: 3, clue: 'Belonging to her' },
+      { n: 8, r: 4, c: 0, len: 3, clue: 'That woman\'s' },
     ],
     down: [
       { n: 1, r: 0, c: 2, len: 5, clue: 'Farthest from the center' },
@@ -825,7 +825,7 @@ export const PUZZLES = [
       { n: 8, r: 1, c: 4, len: 3, clue: 'Rink surface' },
       { n: 9, r: 2, c: 0, len: 7, clue: 'Spectacles' },
       { n: 11, r: 3, c: 2, len: 3, clue: 'Wheel groove' },
-      { n: 12, r: 4, c: 0, len: 7, clue: 'Table entry' },
+      { n: 12, r: 4, c: 0, len: 7, clue: 'Periodic table entry' },
       { n: 16, r: 5, c: 0, len: 3, clue: 'Pump purchase' },
       { n: 17, r: 5, c: 4, len: 3, clue: 'Neither\'s partner' },
       { n: 18, r: 6, c: 0, len: 3, clue: 'Choose' },
@@ -931,7 +931,7 @@ export const PUZZLES = [
     ],
     down: [
       { n: 1, r: 0, c: 0, len: 3, clue: 'Guitar\'s booster' },
-      { n: 2, r: 0, c: 1, len: 3, clue: 'Belonging to she' },
+      { n: 2, r: 0, c: 1, len: 3, clue: 'That woman\'s' },
       { n: 3, r: 0, c: 2, len: 5, clue: 'Get up' },
       { n: 5, r: 1, c: 3, len: 4, clue: 'Lightbulb moment' },
       { n: 6, r: 1, c: 4, len: 4, clue: 'Rip' },
@@ -970,7 +970,7 @@ export const PUZZLES = [
     grid: ['#SAFE', '#AWAY', 'BLADE', 'OAR##', 'ODD##'],
     across: [
       { n: 1, r: 0, c: 1, len: 4, clue: 'Out of danger' },
-      { n: 5, r: 1, c: 1, len: 4, clue: 'Not here' },
+      { n: 5, r: 1, c: 1, len: 4, clue: 'Out of town' },
       { n: 6, r: 2, c: 0, len: 5, clue: 'Knife\'s edge' },
       { n: 7, r: 3, c: 0, len: 3, clue: 'Rowboat paddle' },
       { n: 8, r: 4, c: 0, len: 3, clue: 'Not even' },
@@ -1028,7 +1028,7 @@ export const PUZZLES = [
     grid: ['MOB##', 'OUR##', 'STATE', 'SEVEN', '#READ'],
     across: [
       { n: 1, r: 0, c: 0, len: 3, clue: 'Unruly crowd' },
-      { n: 4, r: 1, c: 0, len: 3, clue: 'Belonging to us' },
+      { n: 4, r: 1, c: 0, len: 3, clue: 'We share it: ___ home' },
       { n: 5, r: 2, c: 0, len: 5, clue: 'Fifty of them' },
       { n: 8, r: 3, c: 0, len: 5, clue: 'Lucky number' },
       { n: 9, r: 4, c: 1, len: 4, clue: 'Take in a book' },
@@ -1122,7 +1122,7 @@ export const PUZZLES = [
       { n: 1, r: 0, c: 0, len: 3, clue: 'Waiter\'s extra' },
       { n: 4, r: 1, c: 0, len: 5, clue: 'Two peas in a pod' },
       { n: 7, r: 2, c: 0, len: 5, clue: 'Mix together' },
-      { n: 8, r: 3, c: 2, len: 3, clue: 'Gear tooth' },
+      { n: 8, r: 3, c: 2, len: 3, clue: 'Tooth on a wheel' },
       { n: 9, r: 4, c: 2, len: 3, clue: 'Female sheep' },
     ],
     down: [
@@ -1278,7 +1278,7 @@ export const PUZZLES = [
     down: [
       { n: 1, r: 0, c: 2, len: 5, clue: 'Boiled-then-baked roll' },
       { n: 2, r: 0, c: 3, len: 4, clue: 'Wrinkle remover' },
-      { n: 3, r: 0, c: 4, len: 3, clue: 'Cozy home room' },
+      { n: 3, r: 0, c: 4, len: 3, clue: 'Lion\'s lair' },
       { n: 4, r: 1, c: 1, len: 4, clue: 'Bat\'s home' },
       { n: 5, r: 2, c: 0, len: 3, clue: 'Tiny' },
     ],
@@ -1400,7 +1400,7 @@ export const PUZZLES = [
       { n: 4, r: 1, c: 1, len: 4, clue: 'Take on staff' },
       { n: 5, r: 2, c: 0, len: 5, clue: 'Valentine shape' },
       { n: 6, r: 3, c: 0, len: 3, clue: 'Coffee dispenser' },
-      { n: 7, r: 4, c: 0, len: 3, clue: 'Sticky stuff' },
+      { n: 7, r: 4, c: 0, len: 3, clue: 'Slime' },
     ],
     down: [
       { n: 1, r: 0, c: 2, len: 5, clue: 'Eighty-eight keys' },
@@ -1556,7 +1556,7 @@ export const PUZZLES = [
       { n: 1, r: 0, c: 0, len: 3, clue: 'Every last bit' },
       { n: 2, r: 0, c: 1, len: 5, clue: 'Stretch for' },
       { n: 3, r: 0, c: 2, len: 5, clue: 'Dining surface' },
-      { n: 6, r: 2, c: 3, len: 3, clue: 'Belonging to us' },
+      { n: 6, r: 2, c: 3, len: 3, clue: 'We share it: ___ home' },
       { n: 7, r: 2, c: 4, len: 3, clue: 'Stop sign color' },
     ],
   },
@@ -1691,7 +1691,7 @@ export const PUZZLES = [
       { n: 9, r: 2, c: 0, len: 7, clue: 'Saved' },
       { n: 11, r: 3, c: 2, len: 3, clue: 'Little bit' },
       { n: 12, r: 4, c: 0, len: 7, clue: 'While on the other hand' },
-      { n: 16, r: 5, c: 0, len: 3, clue: 'Belonging to us' },
+      { n: 16, r: 5, c: 0, len: 3, clue: 'We share it: ___ home' },
       { n: 17, r: 5, c: 4, len: 3, clue: 'Zero' },
       { n: 18, r: 6, c: 0, len: 3, clue: 'Lock opener' },
       { n: 19, r: 6, c: 4, len: 3, clue: 'Give it a shot' },
@@ -1726,8 +1726,8 @@ export const PUZZLES = [
       { n: 9, r: 4, c: 2, len: 3, clue: 'Meadow' },
     ],
     down: [
-      { n: 1, r: 0, c: 0, len: 3, clue: 'Notepad' },
-      { n: 2, r: 0, c: 1, len: 4, clue: 'Way out' },
+      { n: 1, r: 0, c: 0, len: 3, clue: 'Stack of writing paper' },
+      { n: 2, r: 0, c: 1, len: 4, clue: 'Leave the stage' },
       { n: 3, r: 0, c: 2, len: 5, clue: 'Oyster\'s gem' },
       { n: 6, r: 2, c: 3, len: 3, clue: 'Feel sorry about' },
       { n: 7, r: 2, c: 4, len: 3, clue: 'Vote for' },
@@ -1769,7 +1769,7 @@ export const PUZZLES = [
       { n: 4, r: 1, c: 1, len: 4, clue: 'Trail' },
       { n: 5, r: 2, c: 0, len: 5, clue: 'Not true' },
       { n: 6, r: 3, c: 0, len: 3, clue: 'In the past' },
-      { n: 7, r: 4, c: 0, len: 3, clue: 'Cozy home room' },
+      { n: 7, r: 4, c: 0, len: 3, clue: 'Lion\'s lair' },
     ],
     down: [
       { n: 1, r: 0, c: 2, len: 5, clue: 'Hair spot' },
@@ -1871,7 +1871,7 @@ export const PUZZLES = [
     ],
     down: [
       { n: 1, r: 0, c: 0, len: 3, clue: 'Fireplace leftover' },
-      { n: 2, r: 0, c: 1, len: 3, clue: 'Slice of dessert' },
+      { n: 2, r: 0, c: 1, len: 3, clue: 'Apple dessert' },
       { n: 3, r: 0, c: 2, len: 7, clue: 'For instance' },
       { n: 4, r: 0, c: 4, len: 7, clue: 'Web spinners' },
       { n: 5, r: 0, c: 5, len: 3, clue: 'Coffee dispenser' },
@@ -1942,7 +1942,7 @@ export const PUZZLES = [
       { n: 4, r: 1, c: 0, len: 5, clue: 'Andean pack animal' },
       { n: 6, r: 2, c: 0, len: 5, clue: 'Desert water' },
       { n: 7, r: 3, c: 0, len: 4, clue: 'Single item' },
-      { n: 8, r: 4, c: 0, len: 3, clue: 'Cozy home room' },
+      { n: 8, r: 4, c: 0, len: 3, clue: 'Lion\'s lair' },
     ],
     down: [
       { n: 1, r: 0, c: 2, len: 5, clue: 'Bathroom bowl' },
@@ -2142,7 +2142,7 @@ export const PUZZLES = [
     ],
     down: [
       { n: 1, r: 0, c: 0, len: 3, clue: 'Shaggy ox' },
-      { n: 2, r: 0, c: 1, len: 3, clue: 'Much about nothing' },
+      { n: 2, r: 0, c: 1, len: 3, clue: 'Much ___ About Nothing' },
       { n: 3, r: 0, c: 2, len: 5, clue: 'Bread riser' },
       { n: 5, r: 1, c: 3, len: 4, clue: 'Addition sign' },
       { n: 6, r: 1, c: 4, len: 4, clue: 'Fish\'s home' },
@@ -2631,7 +2631,7 @@ export const PUZZLES = [
     grid: ['#LAST', '#AWAY', 'TRAMP', 'AGREE', 'MED##'],
     across: [
       { n: 1, r: 0, c: 1, len: 4, clue: 'Final' },
-      { n: 5, r: 1, c: 1, len: 4, clue: 'Not here' },
+      { n: 5, r: 1, c: 1, len: 4, clue: 'Out of town' },
       { n: 6, r: 2, c: 0, len: 5, clue: 'Wanderer' },
       { n: 7, r: 3, c: 0, len: 5, clue: 'See eye to eye' },
       { n: 8, r: 4, c: 0, len: 3, clue: '___ school' },
@@ -2741,7 +2741,7 @@ export const PUZZLES = [
       { n: 4, r: 0, c: 4, len: 7, clue: 'In error' },
       { n: 5, r: 0, c: 5, len: 3, clue: 'Salad dressing base' },
       { n: 6, r: 0, c: 6, len: 3, clue: 'Not even' },
-      { n: 12, r: 3, c: 3, len: 3, clue: 'Much about nothing' },
+      { n: 12, r: 3, c: 3, len: 3, clue: 'Much ___ About Nothing' },
       { n: 13, r: 4, c: 0, len: 3, clue: 'Undergarment' },
       { n: 14, r: 4, c: 1, len: 3, clue: 'Race the engine' },
       { n: 15, r: 4, c: 5, len: 3, clue: 'Night before' },
@@ -2764,7 +2764,7 @@ export const PUZZLES = [
       { n: 9, r: 4, c: 1, len: 3, clue: 'Soap-making chemical' },
     ],
     down: [
-      { n: 1, r: 0, c: 0, len: 4, clue: 'Shut hard' },
+      { n: 1, r: 0, c: 0, len: 4, clue: 'Bang, as a door' },
       { n: 2, r: 0, c: 1, len: 5, clue: 'Great danger' },
       { n: 3, r: 0, c: 2, len: 5, clue: 'Before time' },
       { n: 4, r: 0, c: 3, len: 5, clue: 'Call to mind' },
@@ -2880,7 +2880,7 @@ export const PUZZLES = [
     ],
     down: [
       { n: 1, r: 0, c: 1, len: 5, clue: 'Church\'s point' },
-      { n: 2, r: 0, c: 2, len: 5, clue: 'Two to' },
+      { n: 2, r: 0, c: 2, len: 5, clue: 'It takes two to ___' },
       { n: 3, r: 0, c: 3, len: 5, clue: 'Vast blue' },
       { n: 4, r: 0, c: 4, len: 5, clue: 'Copper coin' },
       { n: 6, r: 2, c: 0, len: 3, clue: 'Cut off' },
@@ -3176,7 +3176,7 @@ export const PUZZLES = [
       { n: 4, r: 1, c: 0, len: 3, clue: 'Had dinner' },
       { n: 5, r: 2, c: 0, len: 5, clue: 'Parking timer' },
       { n: 8, r: 3, c: 1, len: 4, clue: 'Partner' },
-      { n: 9, r: 4, c: 1, len: 4, clue: 'Shut hard' },
+      { n: 9, r: 4, c: 1, len: 4, clue: 'Bang, as a door' },
     ],
     down: [
       { n: 1, r: 0, c: 0, len: 3, clue: 'Beaver\'s build' },
@@ -3377,7 +3377,7 @@ export const PUZZLES = [
     down: [
       { n: 1, r: 0, c: 2, len: 5, clue: 'Animals of a region' },
       { n: 2, r: 0, c: 3, len: 5, clue: 'Title holder' },
-      { n: 3, r: 0, c: 4, len: 4, clue: 'Bike\'s cog' },
+      { n: 3, r: 0, c: 4, len: 4, clue: 'Equipment' },
       { n: 5, r: 2, c: 0, len: 3, clue: 'Sibling nickname' },
       { n: 6, r: 2, c: 1, len: 3, clue: 'Picnic pest' },
     ],
