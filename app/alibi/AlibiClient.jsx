@@ -308,7 +308,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('alibi'), '--stg-acc-lt': gameColorLight('alibi'), '--stg-onramp-lt': gameOnrampLight('alibi'), '--stg-acc-ink-lt': gameAccentInkLight('alibi') };
   const [stageTheme] = useStageTheme();
-  // Inside the Lawyering run (app/RunEmbed.jsx) the page furniture drops away
+  // Inside the Judged run (app/RunEmbed.jsx) the page furniture drops away
   // and the board sits on the run's dark ground; the game itself is unchanged.
   const EMBED = useRunEmbed();
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;

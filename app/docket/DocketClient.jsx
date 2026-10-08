@@ -356,7 +356,7 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('docket'), '--stg-acc-lt': gameColorLight('docket'), '--stg-onramp-lt': gameOnrampLight('docket'), '--stg-acc-ink-lt': gameAccentInkLight('docket') };
   const [stageTheme] = useStageTheme();
-  // Inside the Law School run (app/RunEmbed.jsx) the page furniture drops away
+  // Inside the Judged run (app/RunEmbed.jsx) the page furniture drops away
   // and the board sits on the run's dark ground; the game itself is unchanged.
   const EMBED = useRunEmbed();
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;

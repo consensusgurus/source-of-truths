@@ -2,7 +2,7 @@
 
 // LAW SCHOOL — the five deduction dailies as one run (owner, 2026-10-08).
 //
-// Sworn, Hearsay, Suffice, Docket and Alibi back to back on one page, each
+// Sworn, Axiom, Hearsay, Docket and Alibi back to back on one page, each
 // dressed as a case file, then an admissions verdict: the run total decides
 // which law school takes you, from Charleston to Yale (lib/law-school.js).
 //
@@ -31,12 +31,12 @@ import NextDrop from '../NextDrop';
 import useCircuitBoard from '../circuits/useCircuitBoard';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
-import { LAW_RUN_ID, LAW_LADDER, lawTierOf, lawIndexOf, lawPart } from '@/lib/law-school';
+import { LAW_RUN_ID, LAW_LADDER, lawLadderFor, lawTierOf, lawIndexOf, lawPart } from '@/lib/law-school';
 
 const CLIENTS = {
   sworn: dynamic(() => import('../sworn/SwornClient'), { ssr: false, loading: () => null }),
   hearsay: dynamic(() => import('../hearsay/HearsayClient'), { ssr: false, loading: () => null }),
-  suffice: dynamic(() => import('../suffice/SufficeClient'), { ssr: false, loading: () => null }),
+  axiom: dynamic(() => import('../axiom/AxiomClient'), { ssr: false, loading: () => null }),
   docket: dynamic(() => import('../docket/DocketClient'), { ssr: false, loading: () => null }),
   alibi: dynamic(() => import('../alibi/AlibiClient'), { ssr: false, loading: () => null }),
 };
@@ -68,10 +68,10 @@ function bankedOf(sec) {
   } catch (e) { return null; }
 }
 
-export default function LawyeringClient({ dateLabel, dateShort, sections = [] }) {
+export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
   const N = sections.length;
   const MAX = N * 10;
-  const STORE = `sot_run_lawyering_${etToday()}`;
+  const STORE = `sot_run_judged_${etToday()}`;
   const [r, setR] = useState(() => freshRun());
   const rRef = useRef(r);
   const [hydrated, setHydrated] = useState(false);
@@ -158,17 +158,20 @@ export default function LawyeringClient({ dateLabel, dateShort, sections = [] })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [between, last]);
 
+  // Today's rotating ladder (lib/law-school.js): Yale and Harvard fixed, the
+  // rungs below them dealt from their pools by the Eastern date.
+  const L = useMemo(() => lawLadderFor(etToday()), []);
   const tier = lawTierOf(total);
-  const school = LAW_LADDER[tier];
+  const school = L[tier];
 
   function shareText() {
     const per = sections.map((s, i) => `${s.name} ${counted[i] ? Math.round(parts[i]) : '-'}`).join(' · ');
     const code = sections.length === 5 ? sections.map((s, i) => Math.round(parts[i])).join('-') : '';
-    const link = `mindloftdaily.com/lawyering${code ? `?s=${code}&t=${total}` : ''}`;
-    return `Lawyering · ${dateShort} · ${total}/50\nAdmitted to ${school[1]}, admissions score ${lawIndexOf(total)}.\n${per}\n${withRef(link)}`;
+    const link = `mindloftdaily.com/judged${code ? `?s=${code}&t=${total}&d=${etToday()}` : ''}`;
+    return `Judged · ${dateShort} · ${total}/50\nAdmitted to ${school[1]}, admissions score ${lawIndexOf(total)}.\n${per}\n${withRef(link)}`;
   }
   function copyShare() {
-    const text = done ? shareText() : `Lawyering: five logic cases in one sitting. Your score decides which law school lets you in.\n${withRef('mindloftdaily.com/lawyering')}`;
+    const text = done ? shareText() : `Judged: five logic cases in one sitting. Your score decides which law school lets you in.\n${withRef('mindloftdaily.com/judged')}`;
     try { if (navigator.share && isMobileDevice()) { navigator.share({ text }).catch(() => {}); return; } } catch (e) {}
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}
   }
@@ -183,17 +186,17 @@ export default function LawyeringClient({ dateLabel, dateShort, sections = [] })
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="ls-cap">
         <Link href="/" className="ls-home">Mind Loft</Link>
-        <b>Lawyering</b>
+        <b>Judged</b>
         <span className="ls-capd">{dateShort}</span>
         {playing && <span className="ls-capt">{sections.map((s, i) => <i key={s.key} className={i < r.si ? 'd' : i === r.si ? 'on' : ''} style={{ background: i <= r.si ? `var(--ls-${s.key})` : undefined }} title={s.name} />)}</span>}
-        {!playing && <a className="ls-lb" href="/lawyering/leaderboard">Leaderboard</a>}
+        {!playing && <a className="ls-lb" href="/judged/leaderboard">Leaderboard</a>}
       </div>
 
       {hydrated && r.phase === 'idle' && (
         <section className={`pre${leaving ? ' leave' : ''}`}>
-          <div className="eb fade">{dateLabel} · Lawyering</div>
-          <h1 className="title"><span>Lawyering</span></h1>
-          <p className="lede fade">Five cases in one sitting: <b>liars under oath</b>, hearsay, a test of what is enough, a reasoning section and <b>an alibi</b>. <span className="lede-x">Your score decides which law school lets you in.</span></p>
+          <div className="eb fade">{dateLabel} · Judged</div>
+          <h1 className="title"><span>Judged</span></h1>
+          <p className="lede fade">Five cases in one sitting: <b>liars under oath</b>, a hidden precedent, hearsay, a reasoning section and <b>an alibi</b>. <span className="lede-x">Your score decides which law school lets you in.</span></p>
           {/* THE GAVEL IS THE START BUTTON: the block it strikes, the label
               under it, and the strike plays before the folders clear. */}
           <button type="button" className={`gav fade${leaving ? ' strike' : ''}`} onClick={start} aria-label="Begin the exam">
@@ -238,7 +241,7 @@ export default function LawyeringClient({ dateLabel, dateShort, sections = [] })
                 <div className="fact"><b>50</b><span>to make Yale weep</span></div>
                 <div className="fact"><b>8</b><span>schools on the ladder</span></div>
               </div>
-              <Ladder at={null} />
+              <Ladder at={null} L={L} />
             </div>
           )}
           <div className="sub2 fade">Each case is also its own daily: {sections.map((s, i) => <React.Fragment key={s.key}>{i ? ' · ' : ''}<a href={s.path}>{s.name}</a></React.Fragment>)}</div>
@@ -276,17 +279,17 @@ export default function LawyeringClient({ dateLabel, dateShort, sections = [] })
 
       {hydrated && done && (
         <Verdict key="verdict" sections={sections} counted={counted} parts={parts} total={total} dateLabel={dateLabel}
-          animate={doneAtLoad.current === false} board={board} onShare={copyShare} copied={copied} />
+          animate={doneAtLoad.current === false} board={board} onShare={copyShare} copied={copied} L={L} />
       )}
     </div>
   );
 }
 
 // ─── the school ladder, top to bottom ───────────────────────────────────────
-function Ladder({ at }) {
+function Ladder({ at, L }) {
   return (
     <ol className="lad">
-      {LAW_LADDER.map((t, i) => (
+      {L.map((t, i) => (
         <li key={t[2]} className={at === i ? 'me' : ''} style={{ '--p': t[5], '--s': t[6] }}>
           <span className="lp"><i>{t[2]}</i></span>
           <span className="ln"><b>{t[1]}</b><small>{t[3]}</small></span>
@@ -297,12 +300,12 @@ function Ladder({ at }) {
   );
 }
 
-function Pennant({ ti, squash }) {
-  const t = LAW_LADDER[ti];
+function Pennant({ ti, squash, L }) {
+  const t = L[ti];
   return (
     <div className={`pn${squash ? ' squash' : ''}`} style={{ '--p': t[5], '--s': t[6] }}>
       <div className="pn-pole" />
-      <div className="pn-flag"><span>{t[2]}</span></div>
+      <div className="pn-flag"><span style={{ fontSize: t[2].length > 10 ? 'clamp(14px,3.4vw,22px)' : t[2].length > 7 ? 'clamp(16px,3.9vw,26px)' : undefined }}>{t[2]}</span></div>
     </div>
   );
 }
@@ -312,13 +315,13 @@ function Pennant({ ti, squash }) {
 // the left starts at the bottom of the ladder and is swapped for the next
 // school up each time the running total crosses a cutoff. Then the committee
 // stamps the file and the letter slides out of its envelope.
-function Verdict({ sections, counted, parts, total, dateLabel, animate, board, onShare, copied }) {
+function Verdict({ sections, counted, parts, total, dateLabel, animate, board, onShare, copied, L }) {
   const n = sections.length;
   const max = n * 10;
   const pts = parts.map((p) => Math.round(p));
   const run50 = (v) => Math.round(max ? v * 50 / max : 0);
   const fti = lawTierOf(total);
-  const t = LAW_LADDER[fti];
+  const t = L[fti];
   const reduce = useMemo(() => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }, []);
   const play = animate && !reduce;
   const [lines, setLines] = useState(play ? 0 : n);
@@ -361,7 +364,7 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
             await sleep(150);
             if (!alive) return;
             setFace(nt); setSquash(false);
-            setUpg({ k: `${nt}-${Date.now()}`, text: `Moved up: ${LAW_LADDER[nt][2]}` });
+            setUpg({ k: `${nt}-${Date.now()}`, text: `Moved up: ${L[nt][2]}` });
             burst(nt <= 1 ? 14 : 8);
           }
           await sleep(45);
@@ -396,12 +399,12 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
 
   return (
     <section className="vf">
-      <div className="eb">{dateLabel} · Lawyering</div>
+      <div className="eb">{dateLabel} · Judged</div>
       <div className={`vf-stage${settled ? ' settled' : ''}${phase === 'stamp' ? ' thud' : ''}`}>
         <div className="vf-left">
           {upg && <div key={upg.k} className="vf-upg">{upg.text}</div>}
-          <Pennant ti={face} squash={squash} />
-          <div className="vf-pcap">{LAW_LADDER[face][1]}</div>
+          <Pennant ti={face} squash={squash} L={L} />
+          <div className="vf-pcap">{L[face][1]}</div>
           {sparks.map((p) => <i key={p.id} className="vf-spark" style={{ '--x': `${p.x}px`, '--y': `${p.y}px`, '--d': `${p.ms}ms` }} />)}
         </div>
         <div className="vf-right">
@@ -456,17 +459,17 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
             {sections.map((s, i) => <div key={s.key} className={flat ? '' : i === hi ? 'hi' : i === lo ? 'lo' : ''}><i>{s.name}</i><b>{counted[i] ? pts[i] : '-'}</b></div>)}
           </div>
           {fti > 0
-            ? <div className="vf-next"><b>{Math.max(1, LAW_LADDER[fti - 1][0] - total)} more</b> and {LAW_LADDER[fti - 1][1]} takes you instead.</div>
+            ? <div className="vf-next"><b>{Math.max(1, L[fti - 1][0] - total)} more</b> and {L[fti - 1][1]} takes you instead.</div>
             : <div className="vf-next">Top of the ladder. <b>New Haven awaits.</b></div>}
-          <NextDrop label="Next Lawyering" sub="Five new cases at midnight Eastern." href="/lawyering"
+          <NextDrop label="Tomorrow's docket" sub="Five new cases and a new set of schools at midnight Eastern." href="/judged"
             accent="var(--ls-cta)" ink="var(--ls-ink)" mute="var(--ls-mute)" style={{ margin: '14px 0 0', maxWidth: 420 }} />
           <div className="vf-btns">
             <button type="button" className="pri" onClick={onShare}>{copied ? 'Copied' : 'Share your letter'}</button>
-            <a href="/lawyering/leaderboard">Leaderboard</a>
+            <a href="/judged/leaderboard">Leaderboard</a>
             <a href="/pricecheck">Play Price Check</a>
             <a href="/">Back to main</a>
           </div>
-          <div className="vf-lad"><div className="eb">The ladder</div><Ladder at={fti} /></div>
+          <div className="vf-lad"><div className="eb">The ladder</div><Ladder at={fti} L={L} /></div>
         </div>
       )}
     </section>

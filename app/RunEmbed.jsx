@@ -1,6 +1,6 @@
 'use client';
 
-// RUN EMBED (owner, 2026-10-08, for the Lawyering run). A daily client that
+// RUN EMBED (owner, 2026-10-08, for the Judged run). A daily client that
 // is mounted INSIDE a one-page run reads this context and:
 //   - drops its own page furniture (the cap, the finish card, the about
 //     prose, the report row, the join form), so the run page owns the frame;

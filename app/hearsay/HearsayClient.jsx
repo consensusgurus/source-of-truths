@@ -283,7 +283,7 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('hearsay'), '--stg-acc-lt': gameColorLight('hearsay'), '--stg-onramp-lt': gameOnrampLight('hearsay'), '--stg-acc-ink-lt': gameAccentInkLight('hearsay') };
   const [stageTheme] = useStageTheme();
-  // Inside the Lawyering run (app/RunEmbed.jsx) the page furniture drops away
+  // Inside the Judged run (app/RunEmbed.jsx) the page furniture drops away
   // and the board sits on the run's dark ground; the game itself is unchanged.
   const EMBED = useRunEmbed();
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
