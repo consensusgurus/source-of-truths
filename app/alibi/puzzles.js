@@ -9,6 +9,16 @@
 // INDEPENDENTLY re-verified to have exactly one solution, with 8-11 clues.
 // Validate with scripts/verify-alibi.mjs after ANY edit.
 //
+// SUSPECT NAMES (owner rule, 2026-10-08, from alibi-10-8-26 on): every case
+// seats a famous, related group of real or iconic people by first name, e.g.
+// Donald/Barack/Hillary/Joe, the Beatles, the Marx Brothers, the Golden Girls.
+// Sundays seat a five-member group. Within a case the initials must differ
+// (the board shows each guest's initial as an avatar) and no name may run past
+// 9 letters (phone columns ellipsize). No group repeats within the bank.
+// Names are display only: clues, saves and scoring are all by index, so a
+// rename never touches a played result. Boards before 2026-10-08 keep their
+// original invented names.
+//
 // Clue schema (indices into suspects/rooms/objects/times):
 //   notRoom {s,r}   suspect s was never in room r
 //   notObj  {s,o}   suspect s was not carrying object o
@@ -1799,7 +1809,7 @@ export const PUZZLES = [
   },
   {
     num: 83, quizId: "alibi-10-8-26", live: "2026-10-08", dateLabel: "October 8, 2026", sunday: false,
-    suspects: ["Cornelius","Hugo","Blanche","Ingrid"],
+    suspects: ["Donald","Barack","Hillary","Joe"],
     rooms: ["Gallery","Boat House","Old Kitchen","Gate Lodge"],
     objects: ["black umbrella","coral bracelet","peacock brooch","wax seal"],
     times: ["9 pm","10 pm","11 pm","midnight"],
@@ -1820,7 +1830,7 @@ export const PUZZLES = [
   },
   {
     num: 84, quizId: "alibi-10-9-26", live: "2026-10-09", dateLabel: "October 9, 2026", sunday: false,
-    suspects: ["Dave","Clementine","Tobias","Mathilda"],
+    suspects: ["John","Paul","George","Ringo"],
     rooms: ["Billiard Room","Wine Cellar","Belvedere","Still Room"],
     objects: ["kid gloves","jet mourning brooch","ivory fan","brass telescope key"],
     times: ["9 pm","10 pm","11 pm","midnight"],
@@ -1840,7 +1850,7 @@ export const PUZZLES = [
   },
   {
     num: 85, quizId: "alibi-10-10-26", live: "2026-10-10", dateLabel: "October 10, 2026", sunday: false,
-    suspects: ["Sebastian","Odile","Vera","Cuthbert"],
+    suspects: ["Sherlock","Hercule","Jessica","Columbo"],
     rooms: ["Old Kitchen","Morning Room","Ballroom","Belvedere"],
     objects: ["pearl stickpin","black umbrella","pearl brooch","ebony cane"],
     times: ["6 pm","7 pm","8 pm","9 pm"],
@@ -1861,7 +1871,7 @@ export const PUZZLES = [
   },
   {
     num: 86, quizId: "alibi-10-11-26", live: "2026-10-11", dateLabel: "October 11, 2026", sunday: true,
-    suspects: ["Bracken","Sebastian","Cuthbert","Kitty","Marguerite"],
+    suspects: ["Monica","Chandler","Joey","Phoebe","Ross"],
     rooms: ["Aviary","Observatory","Nursery","Study","Card Room"],
     objects: ["black umbrella","beaded reticule","silk parasol","crystal decanter","glass paperweight"],
     times: ["8 pm","9 pm","10 pm","11 pm","midnight"],
@@ -1886,7 +1896,7 @@ export const PUZZLES = [
   },
   {
     num: 87, quizId: "alibi-10-12-26", live: "2026-10-12", dateLabel: "October 12, 2026", sunday: false,
-    suspects: ["Valentina","Beatrix","Leopold","Mathilda"],
+    suspects: ["Michael","Larry","Kareem","Wilt"],
     rooms: ["Solarium","Hunting Lodge","Grand Foyer","Nursery"],
     objects: ["silver hip flask","pearl stickpin","leather diary","silver cigarette holder"],
     times: ["8 pm","9 pm","10 pm","11 pm"],
@@ -1906,7 +1916,7 @@ export const PUZZLES = [
   },
   {
     num: 88, quizId: "alibi-10-13-26", live: "2026-10-13", dateLabel: "October 13, 2026", sunday: false,
-    suspects: ["Araminta","Lucius","Florentine","Dashiell"],
+    suspects: ["Elvis","Prince","Madonna","Cher"],
     rooms: ["Trophy Room","Butler's Pantry","Winter Garden","Rose Garden"],
     objects: ["crystal decanter","garnet cufflinks","brass card case","ruby hatpin"],
     times: ["8 pm","9 pm","10 pm","11 pm"],
@@ -1927,7 +1937,7 @@ export const PUZZLES = [
   },
   {
     num: 89, quizId: "alibi-10-14-26", live: "2026-10-14", dateLabel: "October 14, 2026", sunday: false,
-    suspects: ["Cavin","Hugo","Octavia","Sebastian"],
+    suspects: ["Steve","Bill","Elon","Jeff"],
     rooms: ["Laundry","Observatory","Ice House","Portrait Hall"],
     objects: ["pearl brooch","ivory comb","enamel locket","lacquer cigarette case"],
     times: ["8 pm","9 pm","10 pm","11 pm"],
@@ -1947,7 +1957,7 @@ export const PUZZLES = [
   },
   {
     num: 90, quizId: "alibi-10-15-26", live: "2026-10-15", dateLabel: "October 15, 2026", sunday: false,
-    suspects: ["Cuthbert","Alfred","Otto","Bertram"],
+    suspects: ["Albert","Isaac","Marie","Charles"],
     rooms: ["Butler's Pantry","Dairy","Turret","Scullery"],
     objects: ["silver snuffbox","brass compass","brass telescope key","leather diary"],
     times: ["7 pm","8 pm","9 pm","10 pm"],
@@ -1967,7 +1977,7 @@ export const PUZZLES = [
   },
   {
     num: 91, quizId: "alibi-10-16-26", live: "2026-10-16", dateLabel: "October 16, 2026", sunday: false,
-    suspects: ["Prudence","Vera","Ursuline","Isadora"],
+    suspects: ["Groucho","Harpo","Chico","Zeppo"],
     rooms: ["Dovecote","Boathouse","Chapel","Armory"],
     objects: ["ivory fan","monocle on a ribbon","velvet mask","pearl hairpin"],
     times: ["5 pm","6 pm","7 pm","8 pm"],
@@ -1988,7 +1998,7 @@ export const PUZZLES = [
   },
   {
     num: 92, quizId: "alibi-10-17-26", live: "2026-10-17", dateLabel: "October 17, 2026", sunday: false,
-    suspects: ["Alfred","Prudence","Minerva","Philippa"],
+    suspects: ["Brad","George","Matt","Julia"],
     rooms: ["Nursery","Ballroom","Gate Lodge","Ice House"],
     objects: ["wax-sealed envelope","ruby hatpin","crystal decanter","peacock brooch"],
     times: ["7 pm","8 pm","9 pm","10 pm"],
@@ -2010,7 +2020,7 @@ export const PUZZLES = [
   },
   {
     num: 93, quizId: "alibi-10-18-26", live: "2026-10-18", dateLabel: "October 18, 2026", sunday: true,
-    suspects: ["Hamish","Blanche","Odile","Valentina","Winston"],
+    suspects: ["Luke","Han","Yoda","Chewbacca","Darth"],
     rooms: ["Pantry","Hunting Lodge","Old Kitchen","Conservatory","Billiard Room"],
     objects: ["black umbrella","lace handkerchief","pearl brooch","velvet mask","silver hip flask"],
     times: ["8 pm","9 pm","10 pm","11 pm","midnight"],
@@ -2036,7 +2046,7 @@ export const PUZZLES = [
   },
   {
     num: 94, quizId: "alibi-10-19-26", live: "2026-10-19", dateLabel: "October 19, 2026", sunday: false,
-    suspects: ["Hugo","Blanche","Alfred","Minerva"],
+    suspects: ["Tom","Peyton","Drew","Aaron"],
     rooms: ["Hunting Lodge","Morning Room","Conservatory","Gallery"],
     objects: ["pearl stickpin","silver candlestick","velvet pouch","pearl hairpin"],
     times: ["6 pm","7 pm","8 pm","9 pm"],
@@ -2056,7 +2066,7 @@ export const PUZZLES = [
   },
   {
     num: 95, quizId: "alibi-10-20-26", live: "2026-10-20", dateLabel: "October 20, 2026", sunday: false,
-    suspects: ["Davis","Wilhelmina","Algernon","Rufus"],
+    suspects: ["Dorothy","Rose","Blanche","Sophia"],
     rooms: ["Drawing Room","Kitchen","Music Room","Belvedere"],
     objects: ["silver hip flask","pressed rose","silver matchbox","glass paperweight"],
     times: ["5 pm","6 pm","7 pm","8 pm"],
@@ -2077,7 +2087,7 @@ export const PUZZLES = [
   },
   {
     num: 96, quizId: "alibi-10-21-26", live: "2026-10-21", dateLabel: "October 21, 2026", sunday: false,
-    suspects: ["Horace","Fitzwilliam","Alfred","Opal"],
+    suspects: ["Mick","Keith","Charlie","Ronnie"],
     rooms: ["Wine Cellar","Solarium","Library","Observatory"],
     objects: ["wax-sealed envelope","lacquer cigarette case","ivory letter opener","ivory comb"],
     times: ["7 pm","8 pm","9 pm","10 pm"],
@@ -2097,7 +2107,7 @@ export const PUZZLES = [
   },
   {
     num: 97, quizId: "alibi-10-22-26", live: "2026-10-22", dateLabel: "October 22, 2026", sunday: false,
-    suspects: ["Montague","Cordelia","Lucius","Davis"],
+    suspects: ["Wolfgang","Ludwig","Johann","Frederic"],
     rooms: ["Gate Lodge","Music Conservatory","Hunting Lodge","Laundry"],
     objects: ["chatelaine keys","tarnished locket","feather quill","garnet cufflinks"],
     times: ["7 pm","8 pm","9 pm","10 pm"],
@@ -2118,7 +2128,7 @@ export const PUZZLES = [
   },
   {
     num: 98, quizId: "alibi-10-23-26", live: "2026-10-23", dateLabel: "October 23, 2026", sunday: false,
-    suspects: ["Montague","Alistair","Isadora","Beatrix"],
+    suspects: ["Jerry","George","Elaine","Kramer"],
     rooms: ["Trophy Room","Gate Lodge","Old Kitchen","Wine Cellar"],
     objects: ["ebony cane","muddy gloves","lace handkerchief","bronze medallion"],
     times: ["9 pm","10 pm","11 pm","midnight"],
@@ -2140,7 +2150,7 @@ export const PUZZLES = [
   },
   {
     num: 99, quizId: "alibi-10-24-26", live: "2026-10-24", dateLabel: "October 24, 2026", sunday: false,
-    suspects: ["Clementine","Otto","Bartholomew","Prudence"],
+    suspects: ["Serena","Venus","Roger","Novak"],
     rooms: ["Winter Garden","Smoking Room","Gun Room","Hunting Lodge"],
     objects: ["velvet mask","silver candlestick","sealing wax stamp","monocle on a ribbon"],
     times: ["8 pm","9 pm","10 pm","11 pm"],
@@ -2162,7 +2172,7 @@ export const PUZZLES = [
   },
   {
     num: 100, quizId: "alibi-10-25-26", live: "2026-10-25", dateLabel: "October 25, 2026", sunday: true,
-    suspects: ["Rupert","Yolanda","Araminta","Nathaniel","Blanche"],
+    suspects: ["George","Thomas","John","Benjamin","Alexander"],
     rooms: ["Parlor","Gate Lodge","Boot Room","Laundry","Orangery"],
     objects: ["silk parasol","embroidered handkerchief","muddy gloves","velvet pouch","silver snuffbox"],
     times: ["7 pm","8 pm","9 pm","10 pm","11 pm"],
@@ -2185,7 +2195,7 @@ export const PUZZLES = [
   },
   {
     num: 101, quizId: "alibi-10-26-26", live: "2026-10-26", dateLabel: "October 26, 2026", sunday: false,
-    suspects: ["Leopold","Lavinia","Cordelia","Florian"],
+    suspects: ["Oprah","Ellen","Johnny","Conan"],
     rooms: ["Conservatory","Laundry","Wine Vault","Card Room"],
     objects: ["opera glasses","pearl brooch","gold cigarette case","jet mourning brooch"],
     times: ["9 pm","10 pm","11 pm","midnight"],
@@ -2208,7 +2218,7 @@ export const PUZZLES = [
   },
   {
     num: 102, quizId: "alibi-10-27-26", live: "2026-10-27", dateLabel: "October 27, 2026", sunday: false,
-    suspects: ["Florian","Nathaniel","Bartholomew","Cornelius"],
+    suspects: ["Freddie","Brian","Roger","John"],
     rooms: ["Gallery","Sun Room","Card Room","Hunting Lodge"],
     objects: ["beaded reticule","chatelaine keys","crystal decanter","ivory comb"],
     times: ["7 pm","8 pm","9 pm","10 pm"],
@@ -2229,7 +2239,7 @@ export const PUZZLES = [
   },
   {
     num: 103, quizId: "alibi-10-28-26", live: "2026-10-28", dateLabel: "October 28, 2026", sunday: false,
-    suspects: ["Winifred","Ursuline","Rufus","Delphinia"],
+    suspects: ["Orville","Wilbur","Amelia","Charles"],
     rooms: ["Library","Gallery","Kitchen","Stable Yard"],
     objects: ["chatelaine keys","gilt pocket mirror","torn letter","silver hip flask"],
     times: ["8 pm","9 pm","10 pm","11 pm"],
@@ -2249,7 +2259,7 @@ export const PUZZLES = [
   },
   {
     num: 104, quizId: "alibi-10-29-26", live: "2026-10-29", dateLabel: "October 29, 2026", sunday: false,
-    suspects: ["Seraphina","Rufus","Wilhelmina","Cavin"],
+    suspects: ["Katharine","Audrey","Marilyn","Grace"],
     rooms: ["Linen Room","Smoking Lounge","Parlor","Wine Vault"],
     objects: ["enamel compact","brass compass","jet mourning brooch","kid gloves"],
     times: ["8 pm","9 pm","10 pm","11 pm"],
@@ -2270,7 +2280,7 @@ export const PUZZLES = [
   },
   {
     num: 105, quizId: "alibi-10-30-26", live: "2026-10-30", dateLabel: "October 30, 2026", sunday: false,
-    suspects: ["Vera","Cavin","Bertram","Rupert"],
+    suspects: ["Babe","Lou","Mickey","Yogi"],
     rooms: ["Aviary","Smoking Lounge","Long Gallery","Greenhouse"],
     objects: ["velvet mask","silver candlestick","enamel locket","kid gloves"],
     times: ["8 pm","9 pm","10 pm","11 pm"],
@@ -2290,7 +2300,7 @@ export const PUZZLES = [
   },
   {
     num: 106, quizId: "alibi-10-31-26", live: "2026-10-31", dateLabel: "October 31, 2026", sunday: false,
-    suspects: ["Genevieve","Yolanda","Dave","Winifred"],
+    suspects: ["Mario","Luigi","Peach","Bowser"],
     rooms: ["Orangery","Still Room","Billiard Room","Observatory"],
     objects: ["brass telescope key","silver hip flask","crystal decanter","feather quill"],
     times: ["6 pm","7 pm","8 pm","9 pm"],
@@ -2311,7 +2321,7 @@ export const PUZZLES = [
   },
   {
     num: 107, quizId: "alibi-11-1-26", live: "2026-11-01", dateLabel: "November 1, 2026", sunday: true,
-    suspects: ["Rosamund","Beatrice","Montague","Evangeline","Florian"],
+    suspects: ["Homer","Marge","Bart","Lisa","Krusty"],
     rooms: ["Long Gallery","Dairy","Sun Room","Morning Room","Old Kitchen"],
     objects: ["bronze medallion","gilt pocket mirror","velvet mask","jet mourning brooch","leather glove"],
     times: ["5 pm","6 pm","7 pm","8 pm","9 pm"],
@@ -2336,7 +2346,7 @@ export const PUZZLES = [
   },
   {
     num: 108, quizId: "alibi-11-2-26", live: "2026-11-02", dateLabel: "November 2, 2026", sunday: false,
-    suspects: ["Leopold","Rufus","Roderick","Ingrid"],
+    suspects: ["Warren","Charlie","Jamie","Ray"],
     rooms: ["Dairy","Stable Yard","Billiard Room","Cellar Stair"],
     objects: ["torn letter","crystal scent bottle","garnet cufflinks","glass paperweight"],
     times: ["9 pm","10 pm","11 pm","midnight"],
@@ -2356,7 +2366,7 @@ export const PUZZLES = [
   },
   {
     num: 109, quizId: "alibi-11-3-26", live: "2026-11-03", dateLabel: "November 3, 2026", sunday: false,
-    suspects: ["Isadora","Minerva","Cleo","Cuthbert"],
+    suspects: ["Taylor","Selena","Ariana","Billie"],
     rooms: ["Cellar Stair","Armory","Aviary","Boot Room"],
     objects: ["walnut pipe","feather quill","pearl stickpin","pearl brooch"],
     times: ["8 pm","9 pm","10 pm","11 pm"],
@@ -2378,7 +2388,7 @@ export const PUZZLES = [
   },
   {
     num: 110, quizId: "alibi-11-4-26", live: "2026-11-04", dateLabel: "November 4, 2026", sunday: false,
-    suspects: ["Vivienne","Cuthbert","Cassius","Quintina"],
+    suspects: ["Pablo","Vincent","Claude","Salvador"],
     rooms: ["Sun Room","Music Conservatory","Map Room","Boot Room"],
     objects: ["silver thimble","brass compass","folded map","silver flask"],
     times: ["6 pm","7 pm","8 pm","9 pm"],
@@ -2400,7 +2410,7 @@ export const PUZZLES = [
   },
   {
     num: 111, quizId: "alibi-11-5-26", live: "2026-11-05", dateLabel: "November 5, 2026", sunday: false,
-    suspects: ["Minerva","Delphinia","Rosalind","Bracken"],
+    suspects: ["Tiger","Arnold","Jack","Phil"],
     rooms: ["Card Room","Conservatory","Kitchen","Grand Foyer"],
     objects: ["brass key","ruby hatpin","walnut pipe","silk glove"],
     times: ["5 pm","6 pm","7 pm","8 pm"],
@@ -2421,7 +2431,7 @@ export const PUZZLES = [
   },
   {
     num: 112, quizId: "alibi-11-6-26", live: "2026-11-06", dateLabel: "November 6, 2026", sunday: false,
-    suspects: ["Alfred","Wilhelmina","Florentine","Mathilda"],
+    suspects: ["Lucy","Desi","Ethel","Fred"],
     rooms: ["Cellar Stair","Dovecote","Turret Study","Widow's Walk"],
     objects: ["silver hip flask","silk parasol","brass key","velvet pouch"],
     times: ["9 pm","10 pm","11 pm","midnight"],
@@ -2442,7 +2452,7 @@ export const PUZZLES = [
   },
   {
     num: 113, quizId: "alibi-11-7-26", live: "2026-11-07", dateLabel: "November 7, 2026", sunday: false,
-    suspects: ["Nathaniel","Philippa","Beatrix","Lavinia"],
+    suspects: ["Neil","Buzz","Yuri","Sally"],
     rooms: ["Observatory","Dovecote","Laundry","Orangery"],
     objects: ["silver snuff tin","lace handkerchief","crystal decanter","feather quill"],
     times: ["8 pm","9 pm","10 pm","11 pm"],
@@ -2464,7 +2474,7 @@ export const PUZZLES = [
   },
   {
     num: 114, quizId: "alibi-11-8-26", live: "2026-11-08", dateLabel: "November 8, 2026", sunday: true,
-    suspects: ["Araminta","Thaddeus","Rosamund","Fitzwilliam","Winston"],
+    suspects: ["Frank","Dean","Sammy","Peter","Joey"],
     rooms: ["Billiard Room","Music Room","Gate Lodge","Servants' Hall","Card Room"],
     objects: ["jade figurine","lace handkerchief","coral bracelet","pearl stickpin","feather quill"],
     times: ["5 pm","6 pm","7 pm","8 pm","9 pm"],
@@ -2488,7 +2498,7 @@ export const PUZZLES = [
   },
   {
     num: 115, quizId: "alibi-11-9-26", live: "2026-11-09", dateLabel: "November 9, 2026", sunday: false,
-    suspects: ["Cleo","Wilhelmina","Mathilda","Davis"],
+    suspects: ["Marlon","Al","James","Robert"],
     rooms: ["Billiard Room","Kitchen","Music Conservatory","Chapel"],
     objects: ["ebony cane","crystal inkwell","tortoiseshell comb","glass paperweight"],
     times: ["6 pm","7 pm","8 pm","9 pm"],
@@ -2509,7 +2519,7 @@ export const PUZZLES = [
   },
   {
     num: 116, quizId: "alibi-11-10-26", live: "2026-11-10", dateLabel: "November 10, 2026", sunday: false,
-    suspects: ["Rupert","Florian","Marguerite","Desmond"],
+    suspects: ["Bono","Edge","Adam","Larry"],
     rooms: ["Solarium","Greenhouse","Cloister","Sun Room"],
     objects: ["opera glasses","silver thimble","silver snuffbox","peacock brooch"],
     times: ["9 pm","10 pm","11 pm","midnight"],
@@ -2530,7 +2540,7 @@ export const PUZZLES = [
   },
   {
     num: 117, quizId: "alibi-11-11-26", live: "2026-11-11", dateLabel: "November 11, 2026", sunday: false,
-    suspects: ["Opal","Minerva","Otto","Ambrose"],
+    suspects: ["Ernest","Jane","Mark","Agatha"],
     rooms: ["Pantry","Gate Lodge","Turret","Dairy"],
     objects: ["wax-sealed envelope","silver cigarette holder","folded telegram","sealing wax stamp"],
     times: ["9 pm","10 pm","11 pm","midnight"],
@@ -2552,7 +2562,7 @@ export const PUZZLES = [
   },
   {
     num: 118, quizId: "alibi-11-12-26", live: "2026-11-12", dateLabel: "November 12, 2026", sunday: false,
-    suspects: ["Winifred","Minerva","Dave","Sebastian"],
+    suspects: ["Muhammad","Joe","Floyd","Rocky"],
     rooms: ["Cellar Stair","Music Room","Parlor","Grand Foyer"],
     objects: ["jade figurine","jet mourning ring","embroidered handkerchief","monogrammed handkerchief"],
     times: ["9 pm","10 pm","11 pm","midnight"],
@@ -2574,7 +2584,7 @@ export const PUZZLES = [
   },
   {
     num: 119, quizId: "alibi-11-13-26", live: "2026-11-13", dateLabel: "November 13, 2026", sunday: false,
-    suspects: ["Beatrix","Clementine","Georgiana","Lucinda"],
+    suspects: ["Gordon","Julia","Anthony","Emeril"],
     rooms: ["Gate Lodge","Gun Room","Widow's Walk","Card Room"],
     objects: ["gilt hand mirror","jade seal","ivory letter opener","brass key"],
     times: ["9 pm","10 pm","11 pm","midnight"],
@@ -2597,7 +2607,7 @@ export const PUZZLES = [
   },
   {
     num: 120, quizId: "alibi-11-14-26", live: "2026-11-14", dateLabel: "November 14, 2026", sunday: false,
-    suspects: ["Ingrid","Genevieve","Rupert","Cavin"],
+    suspects: ["Tony","Steve","Bruce","Natasha"],
     rooms: ["Trophy Room","Armory","Gun Room","Long Gallery"],
     objects: ["pearl stickpin","leather glove","silk glove","brass compass"],
     times: ["9 pm","10 pm","11 pm","midnight"],
@@ -2620,7 +2630,7 @@ export const PUZZLES = [
   },
   {
     num: 121, quizId: "alibi-11-15-26", live: "2026-11-15", dateLabel: "November 15, 2026", sunday: true,
-    suspects: ["Valentina","Clementine","Horace","Lucinda","Henrietta"],
+    suspects: ["Nick","Brian","AJ","Howie","Kevin"],
     rooms: ["Scullery","Pantry","Boathouse","Greenhouse","Old Kitchen"],
     objects: ["coral bracelet","riding crop","velvet pouch","crystal decanter","brass telescope key"],
     times: ["5 pm","6 pm","7 pm","8 pm","9 pm"],
@@ -2646,7 +2656,7 @@ export const PUZZLES = [
   },
   {
     num: 122, quizId: "alibi-11-16-26", live: "2026-11-16", dateLabel: "November 16, 2026", sunday: false,
-    suspects: ["Leopold","Dave","Nathaniel","Rosamund"],
+    suspects: ["Pele","Diego","Lionel","Cristiano"],
     rooms: ["Stable Yard","Hunting Lodge","Servants' Hall","Turret Study"],
     objects: ["silver snuff tin","glass paperweight","sealing wax stamp","ebony fan"],
     times: ["5 pm","6 pm","7 pm","8 pm"],
@@ -2668,7 +2678,7 @@ export const PUZZLES = [
   },
   {
     num: 123, quizId: "alibi-11-17-26", live: "2026-11-17", dateLabel: "November 17, 2026", sunday: false,
-    suspects: ["Percival","Algernon","Opal","Lucius"],
+    suspects: ["Humphrey","Cary","Jimmy","Gregory"],
     rooms: ["Billiard Room","Laundry","Library","Drawing Room"],
     objects: ["ivory letter opener","empty vial","enamel compact","silver flask"],
     times: ["5 pm","6 pm","7 pm","8 pm"],
@@ -2689,7 +2699,7 @@ export const PUZZLES = [
   },
   {
     num: 124, quizId: "alibi-11-18-26", live: "2026-11-18", dateLabel: "November 18, 2026", sunday: false,
-    suspects: ["Quintina","Minerva","Thaddeus","Philippa"],
+    suspects: ["Moe","Larry","Curly","Shemp"],
     rooms: ["Old Kitchen","Grand Foyer","Turret","Dairy"],
     objects: ["silver hip flask","gilt pocket mirror","leather diary","tin of pastilles"],
     times: ["8 pm","9 pm","10 pm","11 pm"],
@@ -2710,7 +2720,7 @@ export const PUZZLES = [
   },
   {
     num: 125, quizId: "alibi-11-19-26", live: "2026-11-19", dateLabel: "November 19, 2026", sunday: false,
-    suspects: ["Opal","Cleo","Cuthbert","Otto"],
+    suspects: ["David","Stephen","Graham","Neil"],
     rooms: ["Map Room","Gallery","Aviary","Long Gallery"],
     objects: ["ivory fan","folded telegram","enamel locket","silk parasol"],
     times: ["8 pm","9 pm","10 pm","11 pm"],
@@ -2732,7 +2742,7 @@ export const PUZZLES = [
   },
   {
     num: 126, quizId: "alibi-11-20-26", live: "2026-11-20", dateLabel: "November 20, 2026", sunday: false,
-    suspects: ["Tobias","Ingrid","Isadora","Florentine"],
+    suspects: ["Wayne","Mario","Bobby","Gordie"],
     rooms: ["Solarium","Grand Foyer","Hunting Lodge","Servants' Hall"],
     objects: ["gilt pocket mirror","tortoiseshell comb","silver cigarette holder","ivory comb"],
     times: ["7 pm","8 pm","9 pm","10 pm"],
@@ -2753,7 +2763,7 @@ export const PUZZLES = [
   },
   {
     num: 127, quizId: "alibi-11-21-26", live: "2026-11-21", dateLabel: "November 21, 2026", sunday: false,
-    suspects: ["Isadora","Otto","Arabella","Tobias"],
+    suspects: ["William","Harry","Kate","Meghan"],
     rooms: ["Smoking Lounge","Long Gallery","Portrait Hall","Cloister"],
     objects: ["pressed rose","crystal inkwell","ivory letter opener","silver flask"],
     times: ["8 pm","9 pm","10 pm","11 pm"],
@@ -2773,7 +2783,7 @@ export const PUZZLES = [
   },
   {
     num: 128, quizId: "alibi-11-22-26", live: "2026-11-22", dateLabel: "November 22, 2026", sunday: true,
-    suspects: ["Tobias","Phineas","Bartholomew","Rufus","Rupert"],
+    suspects: ["Harry","Ron","Albus","Draco","Severus"],
     rooms: ["Sun Room","Gate Lodge","Map Room","Dovecote","Aviary"],
     objects: ["jet mourning brooch","ivory letter opener","bronze medallion","velvet pouch","glass paperweight"],
     times: ["6 pm","7 pm","8 pm","9 pm","10 pm"],
@@ -2796,7 +2806,7 @@ export const PUZZLES = [
   },
   {
     num: 129, quizId: "alibi-11-23-26", live: "2026-11-23", dateLabel: "November 23, 2026", sunday: false,
-    suspects: ["Davis","Philippa","Mathilda","Rosamund"],
+    suspects: ["Eddie","Adam","Will","Tina"],
     rooms: ["Rose Garden","Armory","Parlor","Observatory"],
     objects: ["leather diary","monogrammed handkerchief","silver thimble","brass card case"],
     times: ["9 pm","10 pm","11 pm","midnight"],
@@ -2817,7 +2827,7 @@ export const PUZZLES = [
   },
   {
     num: 130, quizId: "alibi-11-24-26", live: "2026-11-24", dateLabel: "November 24, 2026", sunday: false,
-    suspects: ["Dave","Desmond","Blanche","Ingrid"],
+    suspects: ["Usain","Carl","Jesse","Florence"],
     rooms: ["Winter Garden","Morning Room","Gallery","Billiard Room"],
     objects: ["muddy gloves","lacquer cigarette case","gold cigarette case","velvet mask"],
     times: ["7 pm","8 pm","9 pm","10 pm"],
@@ -2837,7 +2847,7 @@ export const PUZZLES = [
   },
   {
     num: 131, quizId: "alibi-11-25-26", live: "2026-11-25", dateLabel: "November 25, 2026", sunday: false,
-    suspects: ["Beatrix","Arabella","Cornelius","Cuthbert"],
+    suspects: ["Ozzy","Sharon","Kelly","Jack"],
     rooms: ["Turret Study","Study","Solarium","Billiard Room"],
     objects: ["silver snuffbox","monocle on a ribbon","ruby hatpin","folded map"],
     times: ["8 pm","9 pm","10 pm","11 pm"],
@@ -2858,7 +2868,7 @@ export const PUZZLES = [
   },
   {
     num: 132, quizId: "alibi-11-26-26", live: "2026-11-26", dateLabel: "November 26, 2026", sunday: false,
-    suspects: ["Sebastian","Casper","Marguerite","Bracken"],
+    suspects: ["Cindy","Naomi","Linda","Kate"],
     rooms: ["Ice House","Dairy","Card Room","Belvedere"],
     objects: ["empty vial","pearl hairpin","chatelaine keys","monocle on a ribbon"],
     times: ["5 pm","6 pm","7 pm","8 pm"],
@@ -2879,7 +2889,7 @@ export const PUZZLES = [
   },
   {
     num: 133, quizId: "alibi-11-27-26", live: "2026-11-27", dateLabel: "November 27, 2026", sunday: false,
-    suspects: ["Silas","Jasper","Ursuline","Percival"],
+    suspects: ["Bill","Dan","Harold","Ernie"],
     rooms: ["Greenhouse","Cloister","Armory","Morning Room"],
     objects: ["wax seal","ebony fan","gold cigarette case","ruby hatpin"],
     times: ["9 pm","10 pm","11 pm","midnight"],
@@ -2900,7 +2910,7 @@ export const PUZZLES = [
   },
   {
     num: 134, quizId: "alibi-11-28-26", live: "2026-11-28", dateLabel: "November 28, 2026", sunday: false,
-    suspects: ["Otto","Dave","Algernon","Genevieve"],
+    suspects: ["LeBron","Stephen","Kobe","Dwyane"],
     rooms: ["Hunting Lodge","Map Room","Linen Room","Butler's Pantry"],
     objects: ["silver snuffbox","coral bracelet","tin of pastilles","wax-sealed envelope"],
     times: ["8 pm","9 pm","10 pm","11 pm"],
@@ -2922,7 +2932,7 @@ export const PUZZLES = [
   },
   {
     num: 135, quizId: "alibi-11-29-26", live: "2026-11-29", dateLabel: "November 29, 2026", sunday: true,
-    suspects: ["Nathaniel","Quintina","Cuthbert","Rosalind","Bracken"],
+    suspects: ["Kermit","Piggy","Gonzo","Fozzie","Animal"],
     rooms: ["Long Gallery","Wine Vault","Still Room","Ballroom","Parlor"],
     objects: ["silver snuffbox","monocle on a ribbon","pocket watch","coral bracelet","silver hip flask"],
     times: ["8 pm","9 pm","10 pm","11 pm","midnight"],
@@ -2945,7 +2955,7 @@ export const PUZZLES = [
   },
   {
     num: 136, quizId: "alibi-11-30-26", live: "2026-11-30", dateLabel: "November 30, 2026", sunday: false,
-    suspects: ["Otto","Rosalind","Vera","Casper"],
+    suspects: ["Snoop","Dre","Eminem","Kendrick"],
     rooms: ["Scullery","Portrait Hall","Kitchen","Stable Yard"],
     objects: ["leather diary","gold cigarette case","silver candlestick","wax seal"],
     times: ["7 pm","8 pm","9 pm","10 pm"],
