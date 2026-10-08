@@ -168,7 +168,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
     const per = sections.map((s, i) => `${s.name} ${counted[i] ? Math.round(parts[i]) : '-'}`).join(' · ');
     const code = sections.length === 5 ? sections.map((s, i) => Math.round(parts[i])).join('-') : '';
     const link = `mindloftdaily.com/judged${code ? `?s=${code}&t=${total}&d=${etToday()}` : ''}`;
-    return `Judged · ${dateShort} · ${total}/${LAW_MAX}\nAdmitted to ${school[1]}, admissions score ${lawIndexOf(total)}.\n${per}\n${withRef(link)}`;
+    return `Judged · ${dateShort} · ${total}/${LAW_MAX}\nAdmitted to ${school[1]}, admissions score ${lawIndexOf(total)}.${tier > 0 ? `\nWaitlisted at ${L[tier - 1][1]}, ${Math.max(1, L[tier - 1][0] - total)} short.` : ''}\n${per}\n${withRef(link)}`;
   }
   function copyShare() {
     const text = done ? shareText() : `Judged: five logic cases, right and fast. Your score decides which law school lets you in.\n${withRef('mindloftdaily.com/judged')}`;
@@ -296,7 +296,7 @@ function Ladder({ at, L }) {
     <ol className="lad">
       {L.map((t, i) => (
         <li key={t[2]} className={at === i ? 'me' : ''} style={{ '--p': t[5], '--s': t[6] }}>
-          <span className="lp"><i>{t[2]}</i></span>
+          <span className="lp" aria-hidden="true"><i /></span>
           <span className="ln"><b>{t[1]}</b><small>{t[3]}</small></span>
           <span className="lc">{i === LOW ? 'any score' : `${t[0]}+`}</span>
         </li>
@@ -305,12 +305,37 @@ function Ladder({ at, L }) {
   );
 }
 
-function Pennant({ ti, squash, L }) {
+// The school's placard: its colors as a banner and its full name set in type
+// that wraps, so long names ("University of North Carolina School of Law")
+// read in full. Owner, 2026-10-08: the pennants could not hold long names.
+function Placard({ ti, squash, L }) {
   const t = L[ti];
+  const long = t[1].length > 34;
   return (
     <div className={`pn${squash ? ' squash' : ''}`} style={{ '--p': t[5], '--s': t[6] }}>
-      <div className="pn-pole" />
-      <div className="pn-flag"><span style={{ fontSize: t[2].length > 10 ? 'clamp(14px,3.4vw,22px)' : t[2].length > 7 ? 'clamp(16px,3.9vw,26px)' : undefined }}>{t[2]}</span></div>
+      <div className="pn-band"><span>Rung {L.length - ti} of {L.length}</span><i /></div>
+      <div className="pn-body">
+        <div className={`pn-nm${long ? ' long' : ''}`}>{t[1]}</div>
+        <div className="pn-city">{t[3]}</div>
+      </div>
+    </div>
+  );
+}
+
+// The rung just above: the school that would have taken you with a few more
+// points. Owner, 2026-10-08: "something that shows what was one above just
+// missed." The bar runs from your rung's cutoff to the next one.
+function Missed({ total, ti, L }) {
+  if (ti <= 0) return <div className="ms top"><span>Top of the ladder</span><b>No school above Yale.</b></div>;
+  const up = L[ti - 1];
+  const floor = L[ti][0] && ti < L.length - 1 ? L[ti][0] : 0;
+  const short = Math.max(1, up[0] - total);
+  const fill = Math.max(4, Math.min(96, 100 * (total - floor) / Math.max(1, up[0] - floor)));
+  return (
+    <div className="ms" style={{ '--p': up[5], '--s': up[6] }}>
+      <div className="ms-hd"><span>Waitlisted</span><em>{short} {short === 1 ? 'point' : 'points'} short</em></div>
+      <div className="ms-nm">{up[1]}</div>
+      <div className="ms-bar"><i style={{ width: `${fill}%` }} /><b>{up[0]}</b></div>
     </div>
   );
 }
@@ -408,8 +433,8 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
       <div className={`vf-stage${settled ? ' settled' : ''}${phase === 'stamp' ? ' thud' : ''}`}>
         <div className="vf-left">
           {upg && <div key={upg.k} className="vf-upg">{upg.text}</div>}
-          <Pennant ti={face} squash={squash} L={L} />
-          <div className="vf-pcap">{L[face][1]}</div>
+          <Placard ti={face} squash={squash} L={L} />
+          {showLetter && <Missed total={total} ti={fti} L={L} />}
           {sparks.map((p) => <i key={p.id} className="vf-spark" style={{ '--x': `${p.x}px`, '--y': `${p.y}px`, '--d': `${p.ms}ms` }} />)}
         </div>
         <div className="vf-right">
@@ -463,9 +488,6 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
           <div className="vf-games">
             {sections.map((s, i) => <div key={s.key} className={flat ? '' : i === hi ? 'hi' : i === lo ? 'lo' : ''}><i>{s.name}</i><b>{counted[i] ? pts[i] : '-'}</b></div>)}
           </div>
-          {fti > 0
-            ? <div className="vf-next"><b>{Math.max(1, L[fti - 1][0] - total)} more</b> and {L[fti - 1][1]} takes you instead.</div>
-            : <div className="vf-next">Top of the ladder. <b>New Haven awaits.</b></div>}
           <NextDrop label="Tomorrow's docket" sub="Five new cases and a new set of schools at midnight Eastern." href="/judged"
             accent="var(--ls-cta)" ink="var(--ls-ink)" mute="var(--ls-mute)" style={{ margin: '14px 0 0', maxWidth: 420 }} />
           <div className="vf-btns">
@@ -542,11 +564,11 @@ const CSS = `
 .lad{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;text-align:left}
 .lad li{display:flex;align-items:center;gap:12px;padding:7px 10px;border-radius:10px;background:var(--ls-surf);border:1px solid var(--ls-line)}
 .lad li.me{border-color:var(--ls-gold);box-shadow:0 0 0 1px var(--ls-gold) inset;background:rgba(233,207,127,.08)}
-.lad .lp{flex:none;width:104px;height:26px;position:relative}
-.lad .lp::before{content:'';position:absolute;left:0;top:-2px;width:3px;height:30px;border-radius:2px;background:#d6c7a1}
-.lad .lp i{position:absolute;left:3px;top:0;height:26px;width:101px;display:flex;align-items:center;padding-left:7px;font:normal 900 8px ${SANS};letter-spacing:.06em;background:var(--p);color:var(--s);clip-path:polygon(0 0,100% 50%,0 100%)}
+.lad .lp{flex:none;width:12px;height:30px;border-radius:3px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 1px rgba(255,255,255,.18)}
+.lad .lp::before{content:'';flex:2;background:var(--p)}
+.lad .lp i{flex:1;background:var(--s)}
 .lad .ln{flex:1;min-width:0;display:flex;flex-direction:column}
-.lad .ln b{font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lad .ln b{font-size:13.5px;font-weight:800;line-height:1.25;text-wrap:balance}
 .lad .ln small{font-size:11px;color:var(--ls-mute);font-weight:700}
 .lad .lc{font:500 12px ${MONO};color:var(--ls-gold);white-space:nowrap}
 /* PLAY */
@@ -586,13 +608,27 @@ const CSS = `
 @keyframes vfup{0%{opacity:0;transform:translate(-50%,12px)}20%{opacity:1;transform:translate(-50%,0)}75%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-8px)}}
 .vf-spark{position:absolute;left:50%;top:45%;width:6px;height:6px;margin:-3px;border-radius:50%;background:var(--ls-gold);z-index:5;pointer-events:none;animation:vfspark var(--d) cubic-bezier(.2,.7,.3,1) both}
 @keyframes vfspark{from{transform:translate(0,0) scale(1);opacity:1}to{transform:translate(var(--x),var(--y)) scale(.2);opacity:0}}
-.vf-pcap{margin-top:14px;font-size:14px;font-weight:800;color:var(--ls-mute);text-align:center;min-height:20px}
-.pn{position:relative;width:min(300px,86%);aspect-ratio:1.7;transition:transform .15s ease-in;transform-origin:8% 50%;filter:drop-shadow(0 0 1px rgba(255,255,255,.55)) drop-shadow(0 0 14px rgba(255,255,255,.08))}
-.pn.squash{transform:rotateY(90deg)}
-.pn-pole{position:absolute;left:0;top:-6%;width:4.5%;height:128%;border-radius:4px;background:linear-gradient(90deg,#b9a77a,#efe2bd,#a8956a)}
-.pn-flag{position:absolute;left:4.5%;top:0;right:0;height:76%;background:var(--p);clip-path:polygon(0 0,100% 50%,0 100%);display:flex;align-items:center;padding-left:9%;box-shadow:0 20px 40px rgba(0,0,0,.5);animation:pnwave 3s ease-in-out infinite;transform-origin:0 50%}
-.pn-flag span{font:900 clamp(18px,4.4vw,30px) ${SANS};letter-spacing:.06em;color:var(--s)}
-@keyframes pnwave{0%,100%{transform:skewY(0)}50%{transform:skewY(-2.5deg)}}
+.pn{position:relative;width:min(320px,92%);background:#fffdf7;color:#1f2430;border-radius:8px;overflow:hidden;box-shadow:0 24px 50px -18px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.25);transition:transform .15s ease-in;animation:lsrise .4s ease both}
+.pn.squash{transform:rotateX(90deg)}
+.pn-band{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--p);color:var(--s);padding:10px 14px 9px;position:relative}
+.pn-band span{font:800 10px ${MONO};letter-spacing:.16em;text-transform:uppercase}
+.pn-band i{position:absolute;left:0;right:0;bottom:-5px;height:5px;background:var(--s)}
+.pn-body{padding:18px 16px 16px;min-height:118px;display:flex;flex-direction:column;justify-content:center}
+.pn-nm{font:700 24px/1.15 ${SERIF};text-wrap:balance;overflow-wrap:anywhere}
+.pn-nm.long{font-size:20px}
+.pn-city{margin-top:6px;font:700 12px ${SANS};color:#7a7360}
+.ms{width:min(320px,92%);margin-top:14px;padding:11px 13px 12px;border-radius:10px;background:var(--ls-surf);border:1px dashed var(--ls-line);text-align:left;animation:lsrise .5s .5s ease both}
+.ms-hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ms-hd span{font:800 10px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:var(--ls-mute)}
+.ms-hd em{font:normal 500 12px ${MONO};color:var(--ls-gold)}
+.ms-nm{margin-top:4px;font:700 16px/1.2 ${SERIF};text-wrap:balance}
+.ms-bar{position:relative;margin-top:9px;height:8px;border-radius:4px;background:rgba(255,255,255,.08);display:flex;align-items:center}
+.ms-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:linear-gradient(90deg,var(--ls-gold),var(--p));box-shadow:0 0 0 1px rgba(255,255,255,.12) inset;animation:msfill 1.1s .7s cubic-bezier(.2,.8,.3,1) both;transform-origin:0 50%}
+.ms-bar b{position:absolute;right:-2px;top:-17px;font:500 10px ${MONO};color:var(--ls-mute)}
+.ms-bar::after{content:'';position:absolute;right:0;top:-3px;bottom:-3px;width:2px;background:var(--s);border-radius:1px}
+@keyframes msfill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.ms.top b{display:block;margin-top:4px;font:700 16px ${SERIF}}
+.ms.top span{font:800 10px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:var(--ls-gold)}
 .vf-right{position:relative;display:flex;justify-content:center;min-height:380px;align-items:center}
 .tr{position:relative;width:min(440px,100%);background:var(--ls-paper);color:#1f2430;border-radius:6px;padding:18px 20px 16px;box-shadow:0 30px 60px -25px rgba(0,0,0,.8);font-family:${SANS};overflow:hidden}
 .tr::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 27px,rgba(31,36,48,.06) 27px 28px);pointer-events:none}
@@ -654,11 +690,11 @@ const CSS = `
 @media(max-width:720px){
 .vf-stage{display:flex;flex-direction:column;gap:16px;min-height:0}
 .vf-left{min-height:0;padding-top:16px;width:100%}
-.pn{width:240px;max-width:78%;flex:none}
+.pn,.ms{width:100%;max-width:420px;flex:none}
 .vf-right{min-height:0;width:100%}
 .env{margin-top:150px}
 .vf-btns a,.vf-btns button{flex:1 1 40%;text-align:center;padding:12px 10px}
 }
-@media(max-width:600px){.fbk-x{display:none}.desk{gap:5px;padding:18px 6px 14px}.fbody{padding:9px 6px}.fn{font-size:13px}.fc{display:none}.fk{font-size:8px;letter-spacing:.06em}.ftab{margin-left:4px;padding:3px 5px 2px;font-size:8px;letter-spacing:.04em}.fseal{font-size:8px;padding:1px 4px}.fbk{font-size:9px}.title{font-size:48px}.lede{font-size:14px}.pre-row .sub2{font-size:11.5px;max-width:200px}.facts{gap:5px}.fact{padding:7px}.fact b{font-size:16px}.fact span{font-size:9.5px}.lad .lp{width:84px}.lad .lp i{width:81px;font-size:6.5px}.ls-sechd b{font-size:16px}}
+@media(max-width:600px){.fbk-x{display:none}.desk{gap:5px;padding:18px 6px 14px}.fbody{padding:9px 6px}.fn{font-size:13px}.fc{display:none}.fk{font-size:8px;letter-spacing:.06em}.ftab{margin-left:4px;padding:3px 5px 2px;font-size:8px;letter-spacing:.04em}.fseal{font-size:8px;padding:1px 4px}.fbk{font-size:9px}.title{font-size:48px}.lede{font-size:14px}.pre-row .sub2{font-size:11.5px;max-width:200px}.facts{gap:5px}.fact{padding:7px}.fact b{font-size:16px}.fact span{font-size:9.5px}.ls-sechd b{font-size:16px}}
 @media(prefers-reduced-motion:reduce){.ls *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition:none !important}}
 `;

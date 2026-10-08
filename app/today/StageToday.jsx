@@ -155,7 +155,7 @@ const AZ_KEY = 'sot_stage_az';
 // same way; this repeats it because the home's sort has to interleave that
 // lead with the reader's own progress, which that module knows nothing about.
 // On a phone the shelf's peek is exactly these three (CIRC_PEEK_NARROW).
-const CIRC_LEAD = ['pricecheck', 'gauntlet', 'passport'];   // owner, 2026-10-03: Passport replaces the Daily Five
+const CIRC_LEAD = ['pricecheck', 'gauntlet', 'passport', 'deduction'];   // owner, 2026-10-03: Passport replaces the Daily Five; 2026-10-08: Judged fourth
 
 // THE NEWCOMER'S ROW (owner, 2026-09-04). A reader with NO footprint at all gets
 // one row above everything else: two circuits sharing a line, then the busiest

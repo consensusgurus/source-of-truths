@@ -17,13 +17,12 @@ const GROUND = '#0b0f1a';
 const GOLD = '#e9cf7f';
 const NAMES = { docket: 'Docket', sworn: 'Sworn', hearsay: 'Hearsay', alibi: 'Alibi', stands: 'Stands' };
 
-function pennant(t, w) {
-  const ht = Math.round(w * 0.62);
-  const fly = w - 14;
-  return h('div', { style: { display: 'flex', position: 'relative', width: w, height: ht + 40 } },
-    h('div', { style: { display: 'flex', position: 'absolute', left: 0, top: 0, width: 14, height: ht + 40, background: '#d6c7a1', borderRadius: 4 } }),
-    h('div', { style: { display: 'flex', position: 'absolute', left: 14, top: 0, width: 0, height: 0, borderTop: `${ht / 2}px solid transparent`, borderBottom: `${ht / 2}px solid transparent`, borderLeft: `${fly}px solid ${t[5]}` } }),
-    h('div', { style: { display: 'flex', position: 'absolute', left: 26, top: 0, height: ht, alignItems: 'center', fontSize: Math.round(w / (t[2].length > 8 ? 12 : 8.5)), fontWeight: 800, letterSpacing: 2, color: t[6] } }, t[2]));
+// The school's colors as a small banner swatch. No name inside it: the full
+// name sits beside it, so long names never have to fit a flag.
+function colors(t) {
+  return h('div', { style: { display: 'flex', flexDirection: 'column', width: 64, height: 150, borderRadius: 8, overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(255,255,255,0.25)' } },
+    h('div', { style: { display: 'flex', flex: 2, background: t[5] } }),
+    h('div', { style: { display: 'flex', flex: 1, background: t[6] } }));
 }
 
 function card(parts, tot, day) {
@@ -31,7 +30,9 @@ function card(parts, tot, day) {
   const LAW_LADDER = lawLadderFor(day);
   const res = Array.isArray(parts);
   const total = res ? (Number.isFinite(tot) ? tot : parts.reduce((a, b) => a + b, 0)) : null;
-  const t = res ? LAW_LADDER[lawTierOf(total)] : LAW_LADDER[0];
+  const ti = res ? lawTierOf(total) : 0;
+  const t = LAW_LADDER[ti];
+  const up = res && ti > 0 ? LAW_LADDER[ti - 1] : null;
   const rows = LAW_KEYS.map((k, i) => {
     const v = res ? String(parts[i] ?? 0) : '--';
     return h('div', { key: k, style: { display: 'flex', alignItems: 'center', gap: 14, padding: '9px 0', borderBottom: '1px solid rgba(255,255,255,0.07)' } },
@@ -42,11 +43,12 @@ function card(parts, tot, day) {
   });
 
   const left = h('div', { style: { display: 'flex', alignItems: 'center', gap: 26, marginTop: 30 } },
-    pennant(t, 190),
+    colors(t),
     h('div', { style: { display: 'flex', flexDirection: 'column', flex: 1 } },
       h('div', { style: { display: 'flex', fontSize: 17, fontWeight: 800, letterSpacing: 3, color: '#7dd3fc', textTransform: 'uppercase' } }, res ? 'Admitted to' : `Score ${LAW_LADDER[0][0]} and get into`),
-      h('div', { style: { display: 'flex', fontSize: 34, fontWeight: 800, lineHeight: 1.08, letterSpacing: -1, marginTop: 8 } }, t[1]),
-      h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 18, color: GOLD, marginTop: 10 } }, t[3])));
+      h('div', { style: { display: 'flex', fontSize: t[1].length > 34 ? 28 : 34, fontWeight: 800, lineHeight: 1.08, letterSpacing: -1, marginTop: 8 } }, t[1]),
+      h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 18, color: GOLD, marginTop: 10 } }, t[3]),
+      up ? h('div', { style: { display: 'flex', fontSize: 17, fontWeight: 700, color: '#94a3b8', marginTop: 12, lineHeight: 1.3 } }, `Waitlisted at ${up[1]}, ${Math.max(1, up[0] - total)} short`) : null));
 
   return h('div', { style: { width: 1200, height: 630, display: 'flex', background: GROUND, padding: '44px 54px', fontFamily: SANS, color: '#f1f5f9' } },
     h('div', { style: { display: 'flex', flexDirection: 'column', width: 540, paddingRight: 34 } },
