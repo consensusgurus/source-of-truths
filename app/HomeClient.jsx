@@ -1119,18 +1119,18 @@ function QuizTile({ quiz, leader }) {
     >
       <div style={{ flex: '0 0 auto', height: 150, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 16, padding: '0 18px', background: accent.t, borderBottom: `1.5px solid ${T.ink}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ flex: 'none', fontFamily: 'DM Mono, monospace', fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: T.surface, background: accent.c, padding: '5px 10px' }}>Quiz</span>
+          <span style={{ flex: 'none', fontFamily: 'Manrope, monospace', fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: T.surface, background: accent.c, padding: '5px 10px' }}>Quiz</span>
           <span style={{ flex: 'none', width: 46, height: 46, borderRadius: '50%', background: T.surface, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon size={23} strokeWidth={2} aria-hidden="true" style={{ color: accent.c }} /></span>
         </div>
       </div>
       <div style={{ padding: '16px 18px 18px', flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
         <h3 style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 700, fontSize: 26, lineHeight: 1.05, letterSpacing: '-0.02em', margin: '0 0 12px', fontVariationSettings: '"SOFT" 100', color: T.ink }}>{heading}</h3>
         {quiz.blurb && (<p style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 14.5, lineHeight: 1.5, color: T.slate, margin: 0 }}>{quiz.blurb}</p>)}
-        <span style={{ marginTop: 'auto', paddingTop: 16, display: 'flex', alignItems: 'baseline', gap: 6, minWidth: 0, fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: accent.c }}>
+        <span style={{ marginTop: 'auto', paddingTop: 16, display: 'flex', alignItems: 'baseline', gap: 6, minWidth: 0, fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: accent.c }}>
           <span style={{ flex: 'none' }}>Current Leader:</span>
           <span style={{ flex: '1 1 auto', minWidth: 0, fontWeight: 700, color: leader ? T.ink : T.slate, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{leader || 'Empty'}</span>
         </span>
-        <div style={{ paddingTop: 10, fontFamily: 'DM Mono, monospace', fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 700, color: accent.c }}>▶ Play</div>
+        <div style={{ paddingTop: 10, fontFamily: 'Manrope, monospace', fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 700, color: accent.c }}>▶ Play</div>
       </div>
     </Link>
   );
@@ -1339,7 +1339,7 @@ export function Tile({ list, rank, views, voteData, extras, onClick, href, showC
           {!heroPhoto.contain && (
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(18,14,10,0.55), rgba(18,14,10,0) 55%)' }} />
           )}
-          <span style={{ position: 'absolute', left: heroPhoto.contain ? 8 : 12, bottom: 8, maxWidth: 'calc(100% - 16px)', color: T.white, fontSize: 12, fontFamily: 'DM Mono, monospace', letterSpacing: '0.06em', textShadow: '0 1px 5px rgba(0,0,0,0.9)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', background: heroPhoto.contain ? 'rgba(26,22,17,0.78)' : 'transparent', padding: heroPhoto.contain ? '3px 8px' : 0 }}>
+          <span style={{ position: 'absolute', left: heroPhoto.contain ? 8 : 12, bottom: 8, maxWidth: 'calc(100% - 16px)', color: T.white, fontSize: 12, fontFamily: 'Manrope, monospace', letterSpacing: '0.06em', textShadow: '0 1px 5px rgba(0,0,0,0.9)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', background: heroPhoto.contain ? 'rgba(26,22,17,0.78)' : 'transparent', padding: heroPhoto.contain ? '3px 8px' : 0 }}>
             {heroPhoto.rank != null ? (
               <span style={{ color: '#e7cf73', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 700, fontSize: 14 }}>#{heroPhoto.rank}</span>
             ) : (
@@ -1354,7 +1354,7 @@ export function Tile({ list, rank, views, voteData, extras, onClick, href, showC
         if (HOME_V2 && !list.isUserSubmitted) return null;
         const { leftLabel, rightLabel } = getTileLabels(list);
         const monoStyle = {
-          fontFamily: 'DM Mono, monospace',
+          fontFamily: 'Manrope, monospace',
           fontSize: 10,
           letterSpacing: '0.2em',
           textTransform: 'uppercase',
@@ -1427,7 +1427,7 @@ export function Tile({ list, rank, views, voteData, extras, onClick, href, showC
         <>
           <div
             style={{
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 10,
               letterSpacing: '0.15em',
               textTransform: 'uppercase',
@@ -1561,7 +1561,7 @@ export function Tile({ list, rank, views, voteData, extras, onClick, href, showC
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: 8,
-          fontFamily: 'DM Mono, monospace',
+          fontFamily: 'Manrope, monospace',
           fontSize: 10,
           letterSpacing: '0.1em',
           textTransform: 'uppercase',

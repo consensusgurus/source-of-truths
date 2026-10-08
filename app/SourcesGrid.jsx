@@ -48,7 +48,7 @@ export default function SourcesGrid({ sources = [], minColWidth = 190, linked = 
         }
         .sot-src-count{
           flex:0 0 auto;
-          font-family:'DM Mono',monospace;font-size:11px;color:${PAL.countColor};
+          font-family:'Manrope',monospace;font-size:11px;color:${PAL.countColor};
         }
       ` }} />
       <div className="sot-src-grid">

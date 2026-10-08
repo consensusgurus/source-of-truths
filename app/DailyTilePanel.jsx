@@ -668,16 +668,16 @@ export default function DailyTilePanel({
            the calendar and stop there; the leftover navy below is untouched.) */
         .dtp-grid{flex:none;display:grid;grid-template-columns:1.05fr .95fr .95fr;gap:13px;align-items:stretch;}
         .dtp-col{min-width:0;display:flex;flex-direction:column;background:var(--white);border:1.5px solid var(--border);border-radius:11px;padding:12px 13px;}
-        .dtp-lab{display:flex;align-items:center;gap:6px;font-family:'DM Mono',ui-monospace,monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:8px;flex:none;}
+        .dtp-lab{display:flex;align-items:center;gap:6px;font-family:'Manrope',ui-monospace,monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:8px;flex:none;}
         .dtp-lab.sm{margin-top:10px;}
         /* community size lives in the leaderboard label, right aligned, rather than
            as its own stat row in column one (owner, 2026-07-29). */
-        .dtp-labct{margin-left:auto;font-family:'DM Mono',ui-monospace,monospace;font-size:9.5px;letter-spacing:.06em;color:#8a9bb8;font-weight:500;flex:none;}
+        .dtp-labct{margin-left:auto;font-family:'Manrope',ui-monospace,monospace;font-size:9.5px;letter-spacing:.06em;color:#8a9bb8;font-weight:500;flex:none;}
         .dtp-lab svg{color:var(--gc);}
         .dtp-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:none;}
         .dtp-stats>div{background:#f7f9fc;border:1px solid #dde3ec;border-radius:9px;padding:6px 9px;}
         .dtp-stats b{display:block;font-size:17px;font-weight:800;line-height:1.15;font-variant-numeric:tabular-nums;}
-        .dtp-stats span{font-family:'DM Mono',ui-monospace,monospace;font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px;display:block;}
+        .dtp-stats span{font-family:'Manrope',ui-monospace,monospace;font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px;display:block;}
         /* the rows take the height the calendar handed this column and spread
            through it, rather than bunching under the stat tiles */
         .dtp-rows{flex:1 1 auto;display:flex;flex-direction:column;justify-content:space-between;margin-top:8px;}
@@ -692,7 +692,7 @@ export default function DailyTilePanel({
         .dtp-calhd button:hover:not(:disabled){background:var(--surface);color:var(--ink);}
         .dtp-calhd button:disabled{opacity:.3;cursor:default;}
         .dtp-wd{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;flex:none;margin-bottom:3px;}
-        .dtp-wd span{font-family:'DM Mono',ui-monospace,monospace;font-size:9px;color:var(--muted);text-align:center;}
+        .dtp-wd span{font-family:'Manrope',ui-monospace,monospace;font-size:9px;color:var(--muted);text-align:center;}
         /* the month fills the column: each week row is an equal share of the height */
         .dtp-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;flex:none;}
         .dtp-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border-radius:6px;color:#4b5563;text-decoration:none;font-variant-numeric:tabular-nums;}
@@ -715,10 +715,10 @@ export default function DailyTilePanel({
         .dtp-lb{flex:1 1 auto;display:flex;flex-direction:column;justify-content:space-between;}
         .dtp-lrow{display:flex;align-items:center;gap:9px;padding:4px 0;border-bottom:1px solid #dde3ec;font-size:11.5px;color:var(--muted);}
         .dtp-lrow:last-child{border-bottom:none;}
-        .dtp-lrow .pl{width:17px;font-family:'DM Mono',ui-monospace,monospace;font-size:10.5px;color:var(--muted);flex:none;display:flex;align-items:center;}
+        .dtp-lrow .pl{width:17px;font-family:'Manrope',ui-monospace,monospace;font-size:10.5px;color:var(--muted);flex:none;display:flex;align-items:center;}
         .dtp-lrow .pl svg{color:var(--gold-ink);}
         .dtp-lrow b{color:var(--ink);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1;}
-        .dtp-lrow .sc{margin-left:auto;font-family:'DM Mono',ui-monospace,monospace;font-size:11.5px;color:var(--ink);flex:none;}
+        .dtp-lrow .sc{margin-left:auto;font-family:'Manrope',ui-monospace,monospace;font-size:11.5px;color:var(--ink);flex:none;}
         /* The game's own result, under the name. Phone-only: the desktop column
            is 320px wide and already tight with three cells on one line. */
         .dtp-lst{display:none;}
@@ -733,7 +733,7 @@ export default function DailyTilePanel({
         .dtp-tsum{margin-left:auto;font-family:'Manrope',system-ui,sans-serif;font-size:11px;font-weight:700;letter-spacing:0;text-transform:none;color:var(--muted);}
         /* legend, so the bars, the dashed line and the bubbles all say what they are */
         .dtp-tkey{flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:3px 14px;margin:-3px 0 6px;
-                  font-family:'DM Mono',ui-monospace,monospace;font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:#5b6577;}
+                  font-family:'Manrope',ui-monospace,monospace;font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:#5b6577;}
         .dtp-tkey span{display:inline-flex;align-items:center;gap:5px;}
         .dtp-tkey .sw{flex:none;display:inline-block;}
         .dtp-tkey .sw.bar{width:7px;height:11px;border-radius:2px;background:var(--gc);opacity:.85;}
@@ -744,8 +744,8 @@ export default function DailyTilePanel({
         .dtp-bars{position:relative;flex:1 1 auto;min-height:48px;display:flex;align-items:flex-end;gap:3px;border-bottom:1px solid #dde3ec;padding-bottom:1px;padding-right:var(--agut);}
         .dtp-avg{position:absolute;left:0;right:var(--agut);height:0;border-top:1px dashed var(--border);pointer-events:none;}
         .dtp-avg i{position:absolute;left:100%;bottom:-6px;margin-left:5px;font-style:normal;white-space:nowrap;
-                   font-family:'DM Mono',ui-monospace,monospace;font-size:8.5px;line-height:12px;letter-spacing:.04em;color:#5b6577;}
-        .dtp-daterow{flex:none;display:flex;gap:3px;margin-top:5px;padding-right:var(--agut);font-family:'DM Mono',ui-monospace,monospace;font-size:9px;color:#5b6577;}
+                   font-family:'Manrope',ui-monospace,monospace;font-size:8.5px;line-height:12px;letter-spacing:.04em;color:#5b6577;}
+        .dtp-daterow{flex:none;display:flex;gap:3px;margin-top:5px;padding-right:var(--agut);font-family:'Manrope',ui-monospace,monospace;font-size:9px;color:#5b6577;}
         .dtp-dc{flex:1 1 0;min-width:0;max-width:48px;display:flex;justify-content:center;white-space:nowrap;overflow:hidden;}
         .dtp-dc.today{color:#8a5300;font-weight:500;}
         .dtp-barw{flex:1 1 0;min-width:0;max-width:48px;height:100%;display:flex;align-items:flex-end;justify-content:center;text-decoration:none;border-radius:3px;}
@@ -754,7 +754,7 @@ export default function DailyTilePanel({
         .dtp-barw:hover .dtp-bar{opacity:1;}
         .dtp-bar.today{background:var(--cta);opacity:1;}
         .dtp-bar.miss{height:5px;background:var(--surface);border-radius:2px;}
-        .dtp-bx{display:flex;justify-content:space-between;margin-top:5px;padding-right:var(--agut);font-family:'DM Mono',ui-monospace,monospace;font-size:9px;color:var(--muted);}
+        .dtp-bx{display:flex;justify-content:space-between;margin-top:5px;padding-right:var(--agut);font-family:'Manrope',ui-monospace,monospace;font-size:9px;color:var(--muted);}
         /* crowd answers (outwit / outrank / feud) — the default bottom view for
            those three, with the history chart one click away via .dtp-tabs */
         .dtp-tabs{margin-left:auto;display:inline-flex;gap:2px;background:#f0f3f8;border:1px solid #dde3ec;border-radius:8px;padding:2px;flex:none;}
@@ -772,7 +772,7 @@ export default function DailyTilePanel({
         .dtp-ccard{min-width:0;background:var(--white);border:1.5px solid var(--border);border-radius:9px;padding:8px 9px;}
         .dtp-cq{display:flex;align-items:flex-start;gap:6px;font-size:11.5px;font-weight:800;line-height:1.3;color:var(--ink);margin-bottom:6px;}
         .dtp-cq span{flex:1 1 auto;min-width:0;}
-        .dtp-cq b{flex:none;font-family:'DM Mono',ui-monospace,monospace;font-size:9.5px;font-weight:500;color:#5b6577;white-space:nowrap;padding-top:1px;}
+        .dtp-cq b{flex:none;font-family:'Manrope',ui-monospace,monospace;font-size:9.5px;font-weight:500;color:#5b6577;white-space:nowrap;padding-top:1px;}
         .dtp-crows{display:flex;flex-direction:column;gap:3px;}
         .dtp-crow{position:relative;display:flex;align-items:center;gap:6px;padding:3px 7px;border-radius:5px;background:#f7f9fc;overflow:hidden;font-size:11px;}
         .dtp-crow .bar{position:absolute;left:0;top:0;bottom:0;background:var(--gc);opacity:.17;border-radius:5px;}
@@ -780,9 +780,9 @@ export default function DailyTilePanel({
         .dtp-crow.you .bar{background:var(--cta);opacity:.34;}
         .dtp-crow .nm{position:relative;flex:1 1 auto;min-width:0;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
         .dtp-crow.you .nm{color:#8a5300;}
-        .dtp-crow .sub,.dtp-crow .tg{position:relative;flex:none;font-family:'DM Mono',ui-monospace,monospace;font-size:8.5px;letter-spacing:.04em;text-transform:uppercase;color:#5b6577;white-space:nowrap;}
+        .dtp-crow .sub,.dtp-crow .tg{position:relative;flex:none;font-family:'Manrope',ui-monospace,monospace;font-size:8.5px;letter-spacing:.04em;text-transform:uppercase;color:#5b6577;white-space:nowrap;}
         .dtp-crow.you .sub,.dtp-crow.you .tg{color:#8a5300;}
-        .dtp-crow .pc{position:relative;flex:none;font-family:'DM Mono',ui-monospace,monospace;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;}
+        .dtp-crow .pc{position:relative;flex:none;font-family:'Manrope',ui-monospace,monospace;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;}
         .dtp-ctext{font-size:10.5px;font-weight:600;line-height:1.45;color:var(--slate);margin-top:6px;}
         .dtp-cfoot{flex:none;font-size:10.5px;font-weight:600;color:#5b6577;}
         @media(max-width:980px){
@@ -1025,7 +1025,7 @@ export default function DailyTilePanel({
            touched, so the phone drawer resolves exactly as it did before. That
            is the owner's explicit call: the phone version already arrived at
            this direction in August 2026, and only the desktop version was left
-           behind on three bordered cards with DM Mono labels.
+           behind on three bordered cards with Manrope labels.
 
            What changes, and why:
            - THE SLAB. The panel opens with a one-line answer instead of four

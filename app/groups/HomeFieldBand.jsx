@@ -157,7 +157,7 @@ const CSS = `
 .hfb-near > div{display:grid;grid-template-columns:34px 22px minmax(0,1fr) auto 38px;gap:8px;align-items:center;
   padding:5px 0;border-top:1px solid var(--stg-line);}
 .hfb-near > div:first-child{border-top:0;}
-.hfb-near .rk,.hfb-near .gp,.hfb-near .pt{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:12px;
+.hfb-near .rk,.hfb-near .gp,.hfb-near .pt{font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:12px;
   font-variant-numeric:tabular-nums;}
 .hfb-near .rk,.hfb-near .gp{color:var(--stg-mute);}
 .hfb-near .pt{text-align:right;color:var(--stg-ink);}

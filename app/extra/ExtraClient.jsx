@@ -72,7 +72,7 @@ const COLORS = {
 // label change could be read. A confirm this fast was never a decision.
 const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const SERIF = "Georgia, 'Times New Roman', 'Droid Serif', serif";
 const PAPER = '#fbf9f4';
 const NEWSPRINT = '#faf7ef';

@@ -53,7 +53,7 @@ import useCircuitBoard from './useCircuitBoard';
 import { T } from '@/lib/theme';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 
 // How long the handover holds before the next lot deals itself. Long enough to
 // read the verdict and watch the car leave; Continue skips it, Hold stops it.

@@ -49,7 +49,7 @@ const CELL = '#1a1d28';
 const WALL = '#3a4256';
 const BLOCK = '#2c3650';
 const BLOCK_EDGE = '#3d4a68';
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 
 // One illustrative layout per size, in cells: the red bar (row, col, len), the
 // blocker in its lane (row, col, w, h; it sits on the red row and clears by

@@ -85,7 +85,7 @@ const COLORS = {
   accent: '#15803d', accentSoft: '#e9f7ee', green: T.successDeep,
 };
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 
 function etToday() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }

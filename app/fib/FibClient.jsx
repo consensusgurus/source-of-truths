@@ -77,7 +77,7 @@ const COLORS = {
 // label change could be read. A confirm this fast was never a decision.
 const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_fib_help_seen';
 const STATS_KEY = 'sot_fib_stats';
 const TOOL_KEY = 'sot_fib_tool';   // remembered tool: 'write' | 'note'
@@ -202,7 +202,7 @@ function clueState(cl, vals, n) {
   return holds ? 'ok' : 'broken';
 }
 // Vertical signs are the SAME ascii character turned a quarter turn, never the
-// U+2227/U+2228 wedges: those are missing from DM Mono (and from Manrope on the
+// U+2227/U+2228 wedges: those are missing from Manrope (and from Manrope on the
 // share card), so they land on an arbitrary fallback font or render as tofu.
 // Rotating '>' a quarter turn clockwise swings its open end from left to up, so
 // it still points at the larger number, and '<' points down the same way.

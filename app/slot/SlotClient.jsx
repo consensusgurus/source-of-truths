@@ -63,7 +63,7 @@ const COLORS = {
   accentSoft: '#eef2e3', green: T.successDeep,
 };
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_slot_help_seen';
 const STATS_KEY = 'sot_slot_stats';
 

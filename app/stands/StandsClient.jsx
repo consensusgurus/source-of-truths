@@ -57,7 +57,7 @@ const COLORS = {
   accent: THEME.blueDeep, accentSoft: '#dbeafe', accentDeep: THEME.blueDark, green: THEME.successDeep, greenSoft: '#dcfce7', amber: '#b45309',
 };
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_stands_help_seen';
 const STATS_KEY = 'sot_stands_stats';
 const TOTAL = 12;

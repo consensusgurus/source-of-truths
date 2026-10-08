@@ -83,7 +83,7 @@ const BLK_PC = '#26282e', BLK_PC_DK = '#0e0f12';
 // label change could be read. A confirm this fast was never a decision.
 const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_check_help_seen';
 const STATS_KEY = 'sot_check_stats';
 

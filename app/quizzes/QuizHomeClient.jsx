@@ -2325,7 +2325,7 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
             .qzh .dhx-lb.daily .dhx-lb-band{background:#fdf3dc;}
             .qzh .dhx-lb.xp .dhx-lb-band{background:#e9f0ff;}
             .qzh .dhx-lb-body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:space-between;padding:9px 15px 12px;}
-            .qzh .dhx-lb-tag{display:flex;width:100%;align-items:center;gap:6px;font-family:'DM Mono',ui-monospace,monospace;font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px;}
+            .qzh .dhx-lb-tag{display:flex;width:100%;align-items:center;gap:6px;font-family:'Manrope',ui-monospace,monospace;font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px;}
             .qzh .dhx-lb-tag svg{flex:none;}
             .qzh .dhx-lb.comm .dhx-lb-tag{color:#5b21b6;}
             .qzh .dhx-lb.daily .dhx-lb-tag{color:#7c4a06;}
@@ -2339,7 +2339,7 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
             .qzh .dhx-lb-stat{flex:none;text-align:right;padding-bottom:3px;}
             .qzh .dhx-lb-stat b{display:block;font-size:20px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;}
             .qzh .dhx-lb-stat b em{font-style:normal;font-size:12px;opacity:.7;}
-            .qzh .dhx-lb-stat i{display:block;font-style:normal;font-family:'DM Mono',ui-monospace,monospace;font-size:8.5px;font-weight:600;letter-spacing:.07em;margin-top:3px;white-space:nowrap;}
+            .qzh .dhx-lb-stat i{display:block;font-style:normal;font-family:'Manrope',ui-monospace,monospace;font-size:8.5px;font-weight:600;letter-spacing:.07em;margin-top:3px;white-space:nowrap;}
             .qzh .dhx-lb-stat i.wrap{white-space:normal;line-height:1.45;}
             .qzh .dhx-lb.comm .dhx-lb-stat b{color:#7c3aed;}
             .qzh .dhx-lb.comm .dhx-lb-stat i{color:#6d28d9;}

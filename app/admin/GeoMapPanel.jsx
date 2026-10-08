@@ -34,7 +34,7 @@ const C = {
   users: T.accent,
   plays: '#b45309',
 };
-const MONO = 'DM Mono, monospace';
+const MONO = 'Manrope, monospace';
 const SANS = 'Manrope, system-ui, -apple-system, sans-serif';
 
 const fmt = (n) => Number(n || 0).toLocaleString('en-US');

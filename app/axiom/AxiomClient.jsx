@@ -79,7 +79,7 @@ const COLORS = {
 };
 const PRESS_SLOP_PX = 12;      // drift a long press tolerates before it reads as a scroll, same as Sweep's
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_axiom_help_seen';
 const STATS_KEY = 'sot_axiom_stats';
 const TOOL_KEY = 'sot_axiom_tool';   // remembered tool: 'mark' | 'test'

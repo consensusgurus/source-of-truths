@@ -28,7 +28,7 @@ import { categoryColor, categoryColorLight } from '@/lib/category-ramp';
 import { categoryTotals } from '@/lib/crown';
 import { dailyLabel, DAILY_DATED_RE, DAILY_GAME_MAP } from '@/lib/daily-games';
 
-const MONO = "'DM Mono',ui-monospace,SFMono-Regular,Menlo,monospace";
+const MONO = "'Manrope',ui-monospace,SFMono-Regular,Menlo,monospace";
 
 // -- SMALL PIECES -----------------------------------------------------------
 

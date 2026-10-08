@@ -77,7 +77,7 @@ function PartNote({ children, error, onRetry }) {
     <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 15, color: error ? COLORS.rust : COLORS.faded, border: `1px dashed ${COLORS.line}` }}>
       {children}
       {onRetry ? (
-        <button onClick={onRetry} style={{ marginLeft: 10, background: 'transparent', border: `1px solid ${COLORS.line}`, color: COLORS.ink, padding: '4px 10px', fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer' }}>Retry</button>
+        <button onClick={onRetry} style={{ marginLeft: 10, background: 'transparent', border: `1px solid ${COLORS.line}`, color: COLORS.ink, padding: '4px 10px', fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer' }}>Retry</button>
       ) : null}
     </div>
   );
@@ -97,12 +97,12 @@ function PartialNote({ partial, shown, total, noun, onNeedAll }) {
   const [busy, setBusy] = useState(false);
   if (!partial) return null;
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', margin: '0 0 12px', padding: '8px 12px', border: `1px solid ${COLORS.line}`, background: COLORS.paper, fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', margin: '0 0 12px', padding: '8px 12px', border: `1px solid ${COLORS.line}`, background: COLORS.paper, fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>
       <span>Showing the {shown} most recently active of {total} {noun}. Sorting or searching loads the rest.</span>
       <button
         onClick={() => { if (busy) return; setBusy(true); onNeedAll().catch(() => {}).finally(() => setBusy(false)); }}
         disabled={busy}
-        style={{ marginLeft: 'auto', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, padding: '5px 10px', fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.6 : 1 }}
+        style={{ marginLeft: 'auto', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, padding: '5px 10px', fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.6 : 1 }}
       >
         {busy ? 'Loading…' : `Load all ${total}`}
       </button>
@@ -230,7 +230,7 @@ function fmtEtClock(iso) {
 function Stat({ label, value }) {
   return (
     <div style={{ minWidth: 0 }}>
-      <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: COLORS.faded }}>{label}</div>
+      <div style={{ fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: COLORS.faded }}>{label}</div>
       <div style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 10, fontWeight: 700, color: COLORS.ink, marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>
     </div>
   );
@@ -320,13 +320,13 @@ function SessionTable({ plays, limit = DETAIL_ROWS }) {
   return (
     <div style={{ marginBottom: 12 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, margin: '2px 0 6px' }}>
-        <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: COLORS.faded }}>
+        <span style={{ fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: COLORS.faded }}>
           Sessions · {capped ? `${sessions.length} of ${all.length}` : all.length}
         </span>
         {all.length > limit ? <MoreButton open={showAll} n={all.length} noun="session" onClick={() => setShowAll((v) => !v)} /> : null}
       </div>
       <div style={{ border: `1px solid ${COLORS.ink}33`, background: COLORS.paper }}>
-        <div style={{ display: 'flex', gap: 12, fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: COLORS.faded, padding: '3px 12px', borderBottom: `1px solid ${COLORS.ink}33` }}>
+        <div style={{ display: 'flex', gap: 12, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: COLORS.faded, padding: '3px 12px', borderBottom: `1px solid ${COLORS.ink}33` }}>
           <H label="Session" flex="0 0 118px" />
           <H label="Plays" flex="0 0 38px" right />
           <H label="Avg %" flex="0 0 42px" right />
@@ -341,10 +341,10 @@ function SessionTable({ plays, limit = DETAIL_ROWS }) {
         </div>
         {sessions.map((s, j) => (
           <div key={s.start} style={{ display: 'flex', gap: 12, alignItems: 'center', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 10, color: COLORS.ink, padding: '3px 12px', borderBottom: j < sessions.length - 1 ? `1px solid ${COLORS.ink}1a` : 'none' }}>
-            <span style={{ flex: '0 0 118px', fontFamily: 'DM Mono, monospace', fontSize: 10 }}>{fmtShortDateTime(s.start)}</span>
-            <span style={{ flex: '0 0 38px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, fontWeight: 700, color: COLORS.ember }}>{s.plays}</span>
-            <span style={{ flex: '0 0 42px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>{s.acc != null ? `${s.acc}%` : '—'}</span>
-            <span style={{ flex: '0 0 54px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>{fmtDuration(s.time)}</span>
+            <span style={{ flex: '0 0 118px', fontFamily: 'Manrope, monospace', fontSize: 10 }}>{fmtShortDateTime(s.start)}</span>
+            <span style={{ flex: '0 0 38px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, fontWeight: 700, color: COLORS.ember }}>{s.plays}</span>
+            <span style={{ flex: '0 0 42px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>{s.acc != null ? `${s.acc}%` : '—'}</span>
+            <span style={{ flex: '0 0 54px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>{fmtDuration(s.time)}</span>
             <MultiCell values={s.devices} flex="0 0 52px" />
             <MultiCell values={s.oses} flex="0 0 52px" />
             <MultiCell values={s.browsers} flex="0 0 60px" />
@@ -369,7 +369,7 @@ function MoreButton({ open, n, noun, onClick }) {
   return (
     <button
       onClick={(e) => { e.stopPropagation(); onClick(); }}
-      style={{ padding: '2px 8px', background: 'transparent', border: `1px solid ${COLORS.line}`, borderRadius: 999, color: COLORS.ember, fontFamily: 'DM Mono, monospace', fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700, cursor: 'pointer' }}
+      style={{ padding: '2px 8px', background: 'transparent', border: `1px solid ${COLORS.line}`, borderRadius: 999, color: COLORS.ember, fontFamily: 'Manrope, monospace', fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700, cursor: 'pointer' }}
     >
       {open ? 'Show fewer' : `Show all ${n} ${noun}${n === 1 ? '' : 's'}`}
     </button>
@@ -393,13 +393,13 @@ function PlayHistoryTable({ plays, limit = DETAIL_ROWS, emptyNote }) {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, margin: '2px 0 6px' }}>
-        <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: COLORS.faded }}>
+        <span style={{ fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: COLORS.faded }}>
           Games · {capped ? `${rows.length} of ${all.length}` : all.length}
         </span>
         {all.length > limit ? <MoreButton open={showAll} n={all.length} noun="game" onClick={() => setShowAll((v) => !v)} /> : null}
       </div>
       <div style={{ border: `1px solid ${COLORS.ink}33`, background: COLORS.paper, maxHeight: showAll ? 420 : 'none', overflowY: showAll ? 'auto' : 'visible' }}>
-        <div style={{ display: 'flex', gap: 14, position: 'sticky', top: 0, background: COLORS.paper, fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: COLORS.faded, padding: '3px 12px', borderBottom: `1px solid ${COLORS.ink}33` }}>
+        <div style={{ display: 'flex', gap: 14, position: 'sticky', top: 0, background: COLORS.paper, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: COLORS.faded, padding: '3px 12px', borderBottom: `1px solid ${COLORS.ink}33` }}>
           <span style={{ flex: 3 }}>Quiz</span>
           <span style={{ flex: '0 0 76px', textAlign: 'right' }}>Score</span>
           <span style={{ flex: '0 0 56px', textAlign: 'right' }}>Time</span>
@@ -412,11 +412,11 @@ function PlayHistoryTable({ plays, limit = DETAIL_ROWS, emptyNote }) {
             <span style={{ flex: 3, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               <Link href={`/quiz/${encodeURIComponent(x.quizId)}`} target="_blank" onClick={(e) => e.stopPropagation()} style={{ color: COLORS.ink, textDecoration: 'none' }}>{x.title}</Link>
             </span>
-            <span style={{ flex: '0 0 76px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10 }}>{x.score}{x.total != null ? `/${x.total}` : ''}</span>
-            <span style={{ flex: '0 0 56px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>{formatClock(x.timeElapsed)}</span>
-            <span style={{ flex: '0 0 78px', fontFamily: 'DM Mono, monospace', fontSize: 10, color: x.device ? COLORS.ink : COLORS.faded }}>{x.device || '\u2014'}</span>
-            <span style={{ flex: '0 0 78px', fontFamily: 'DM Mono, monospace', fontSize: 10, color: x.geo ? COLORS.ink : COLORS.faded }}>{x.geo || '\u2014'}</span>
-            <span style={{ flex: '0 0 130px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>{fmtShortDateTime(x.createdAt)}</span>
+            <span style={{ flex: '0 0 76px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10 }}>{x.score}{x.total != null ? `/${x.total}` : ''}</span>
+            <span style={{ flex: '0 0 56px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>{formatClock(x.timeElapsed)}</span>
+            <span style={{ flex: '0 0 78px', fontFamily: 'Manrope, monospace', fontSize: 10, color: x.device ? COLORS.ink : COLORS.faded }}>{x.device || '\u2014'}</span>
+            <span style={{ flex: '0 0 78px', fontFamily: 'Manrope, monospace', fontSize: 10, color: x.geo ? COLORS.ink : COLORS.faded }}>{x.geo || '\u2014'}</span>
+            <span style={{ flex: '0 0 130px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>{fmtShortDateTime(x.createdAt)}</span>
           </div>
         ))}
       </div>
@@ -584,7 +584,7 @@ function MultiCell({ values, flex, align = 'left' }) {
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
-        fontFamily: 'DM Mono, monospace',
+        fontFamily: 'Manrope, monospace',
         fontSize: 10,
         color: arr.length ? COLORS.ink : COLORS.faded,
       }}
@@ -958,7 +958,7 @@ export default function AdminClient() {
           <div>
             <div
               style={{
-                fontFamily: 'DM Mono, monospace',
+                fontFamily: 'Manrope, monospace',
                 fontSize: 11,
                 letterSpacing: '0.25em',
                 textTransform: 'uppercase',
@@ -993,7 +993,7 @@ export default function AdminClient() {
               color: COLORS.ink,
               border: `1px solid ${COLORS.line}`,
               padding: '8px 14px',
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 10,
               letterSpacing: '0.18em',
               textTransform: 'uppercase',
@@ -1015,7 +1015,7 @@ export default function AdminClient() {
               color: COLORS.ink,
               border: `1px solid ${COLORS.line}`,
               padding: '8px 14px',
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 10,
               letterSpacing: '0.18em',
               textTransform: 'uppercase',
@@ -1036,7 +1036,7 @@ export default function AdminClient() {
               color: COLORS.ink,
               border: `1px solid ${COLORS.line}`,
               padding: '8px 14px',
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 10,
               letterSpacing: '0.18em',
               textTransform: 'uppercase',
@@ -1271,7 +1271,7 @@ function PageViewsPanel({ lists, quizzes, mode }) {
           background: COLORS.paper,
           border: `1px solid ${COLORS.line}`,
           color: COLORS.ink,
-          fontFamily: 'DM Mono, monospace',
+          fontFamily: 'Manrope, monospace',
           fontSize: 10,
           outline: 'none',
           marginBottom: 16,
@@ -1294,7 +1294,7 @@ function PageViewsPanel({ lists, quizzes, mode }) {
         </div>
       ) : (
         <div style={{ border: `1px solid ${COLORS.line}`, background: COLORS.paper, borderRadius: 12 }}>
-          <div style={{ display: 'flex', gap: 16, position: 'sticky', top: 0, zIndex: 1, background: COLORS.cream, fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.faded, padding: '5px 14px', borderBottom: `1px solid ${COLORS.line}` }}>
+          <div style={{ display: 'flex', gap: 16, position: 'sticky', top: 0, zIndex: 1, background: COLORS.cream, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.faded, padding: '5px 14px', borderBottom: `1px solid ${COLORS.line}` }}>
             <span style={{ flex: '0 0 36px' }}>#</span>
             {showType && <SortHead label="Type" k="type" sort={sort} flex="0 0 56px" type="string" />}
             <SortHead label={titleLabel} k="title" sort={sort} flex={3} type="string" />
@@ -1315,14 +1315,14 @@ function PageViewsPanel({ lists, quizzes, mode }) {
                   aria-expanded={isList ? isOpen : undefined}
                   style={{ display: 'flex', gap: 16, alignItems: 'center', cursor: isList ? 'pointer' : 'default', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 10, color: COLORS.ink, padding: '3px 14px', borderBottom: (isOpen || i < visible.length - 1) ? rowBorder : 'none', background: isOpen ? `${COLORS.ink}0a` : 'transparent', opacity: active ? 1 : 0.55 }}
                 >
-                  <span style={{ flex: '0 0 36px', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>
+                  <span style={{ flex: '0 0 36px', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>
                     {isList && (
                       <span style={{ display: 'inline-block', width: 7, transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.12s' }}>▸</span>
                     )}
                     {i + 1}
                   </span>
                   {showType && (
-                    <span style={{ flex: '0 0 56px', fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: r.kind === 'quiz' ? COLORS.ember : COLORS.faded }}>
+                    <span style={{ flex: '0 0 56px', fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: r.kind === 'quiz' ? COLORS.ember : COLORS.faded }}>
                       {r.kind === 'quiz' ? 'Quiz' : 'List'}
                     </span>
                   )}
@@ -1331,19 +1331,19 @@ function PageViewsPanel({ lists, quizzes, mode }) {
                       {r.title || r.id}
                     </Link>
                   </span>
-                  <span style={{ flex: '0 0 88px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: r.views24h > 0 ? COLORS.ember : COLORS.faded }}>
+                  <span style={{ flex: '0 0 88px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontWeight: 700, color: r.views24h > 0 ? COLORS.ember : COLORS.faded }}>
                     {r.views24h}
                   </span>
-                  <span style={{ flex: '0 0 88px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>
+                  <span style={{ flex: '0 0 88px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>
                     {r.viewsTotal}
                   </span>
                   {showPlays && (
-                    <span style={{ flex: '0 0 84px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: (r.plays24h || 0) > 0 ? COLORS.ink : COLORS.faded }}>
+                    <span style={{ flex: '0 0 84px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontWeight: 700, color: (r.plays24h || 0) > 0 ? COLORS.ink : COLORS.faded }}>
                       {r.plays24h == null ? '—' : r.plays24h}
                     </span>
                   )}
                   {showPlays && (
-                    <span style={{ flex: '0 0 84px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>
+                    <span style={{ flex: '0 0 84px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>
                       {r.plays == null ? '—' : r.plays}
                     </span>
                   )}
@@ -1373,7 +1373,7 @@ const CHANNEL_COLORS = {
 // per-list fetch slot: { loading } | { error } | { data }.
 function SourceBreakdown({ state }) {
   const wrap = { padding: '10px 14px 14px 44px', background: `${COLORS.ink}0a`, borderBottom: `1px solid ${COLORS.ink}22`, fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 10, color: COLORS.ink };
-  const mono = { fontFamily: 'DM Mono, monospace' };
+  const mono = { fontFamily: 'Manrope, monospace' };
   if (!state || state.loading) return <div style={{ ...wrap, ...mono, color: COLORS.faded }}>Loading sources...</div>;
   if (state.error) return <div style={{ ...wrap, ...mono, color: COLORS.ember }}>Could not load sources: {state.error}</div>;
   const d = state.data;
@@ -1532,7 +1532,7 @@ function QuizSignupsPanel({ signups, partial = false, total, onNeedAll }) {
             background: COLORS.paper,
             border: `1px solid ${COLORS.line}`,
             color: COLORS.ink,
-            fontFamily: 'DM Mono, monospace',
+            fontFamily: 'Manrope, monospace',
             fontSize: 10,
             outline: 'none',
             boxSizing: 'border-box',
@@ -1545,7 +1545,7 @@ function QuizSignupsPanel({ signups, partial = false, total, onNeedAll }) {
             background: COLORS.ink,
             border: `1px solid ${COLORS.line}`,
             color: COLORS.paper,
-            fontFamily: 'DM Mono, monospace',
+            fontFamily: 'Manrope, monospace',
             fontSize: 10,
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
@@ -1572,7 +1572,7 @@ function QuizSignupsPanel({ signups, partial = false, total, onNeedAll }) {
         </div>
       ) : (
         <div style={{ border: `1px solid ${COLORS.line}`, background: COLORS.paper, borderRadius: 12, maxHeight: expandedId != null ? PLAYERS_VIEW_H_OPEN : PLAYERS_VIEW_H, overflowY: 'auto' }}>
-          <div style={{ display: 'flex', gap: 16, position: 'sticky', top: 0, zIndex: 1, background: COLORS.cream, fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.faded, padding: '5px 14px', borderBottom: `1px solid ${COLORS.line}` }}>
+          <div style={{ display: 'flex', gap: 16, position: 'sticky', top: 0, zIndex: 1, background: COLORS.cream, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.faded, padding: '5px 14px', borderBottom: `1px solid ${COLORS.line}` }}>
             <span style={{ flex: '0 0 28px' }}>#</span>
             <SortHead label="Username" k="name" sort={sort} flex={2} type="string" />
             <SortHead label="Email" k="email" sort={sort} flex={2} type="string" />
@@ -1594,29 +1594,29 @@ function QuizSignupsPanel({ signups, partial = false, total, onNeedAll }) {
                   onClick={() => setExpandedId(open ? null : s.id)}
                   style={{ display: 'flex', gap: 16, alignItems: 'center', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 10, color: COLORS.ink, padding: '3px 14px', cursor: 'pointer', background: open ? `${COLORS.ink}0a` : 'transparent' }}
                 >
-                  <span style={{ flex: '0 0 28px', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ flex: '0 0 28px', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded, display: 'flex', alignItems: 'center', gap: 4 }}>
                     <span style={{ display: 'inline-block', width: 8, transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.12s' }}>▸</span>
                     {i + 1}
                   </span>
                   <span style={{ flex: 2, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600, fontFamily: 'Manrope, system-ui, -apple-system, sans-serif' }}>
                     {s.username}
                   </span>
-                  <span style={{ flex: 2, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'DM Mono, monospace', fontSize: 10 }}>
+                  <span style={{ flex: 2, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'Manrope, monospace', fontSize: 10 }}>
                     <a href={`mailto:${s.email}`} onClick={(e) => e.stopPropagation()} style={{ color: COLORS.ink, textDecoration: 'none' }}>{s.email}</a>
                   </span>
-                  <span style={{ flex: '0 0 42px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, fontWeight: 700, color: playCount > 0 ? COLORS.ember : COLORS.faded }}>
+                  <span style={{ flex: '0 0 42px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, fontWeight: 700, color: playCount > 0 ? COLORS.ember : COLORS.faded }}>
                     {playCount}
                   </span>
                   <MultiCell values={s.devices} flex="0 0 60px" />
                   <MultiCell values={s.oses} flex="0 0 56px" />
                   <MultiCell values={s.geos} flex="0 0 110px" />
-                  <span style={{ flex: '0 0 58px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>
+                  <span style={{ flex: '0 0 58px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>
                     {s.stats && s.stats.firstSeen ? fmtShort(s.stats.firstSeen) : '—'}
                   </span>
-                  <span style={{ flex: '0 0 118px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>
+                  <span style={{ flex: '0 0 118px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>
                     {s.lastPlayedAt ? fmtShortDateTime(s.lastPlayedAt) : '—'}
                   </span>
-                  <span style={{ flex: '0 0 56px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>
+                  <span style={{ flex: '0 0 56px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>
                     {fmtShort(s.createdAt)}
                   </span>
                 </div>
@@ -1662,7 +1662,7 @@ function ResearchPanel({ alerts, busy, onResolve }) {
         top 3 (needs a hero photo). Resolve once the research has shipped.
       </p>
       <div style={{ border: `1px solid ${COLORS.line}` }}>
-        <div style={{ display: 'flex', fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.faded, padding: '10px 14px', borderBottom: `1px solid ${COLORS.line}` }}>
+        <div style={{ display: 'flex', fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.faded, padding: '10px 14px', borderBottom: `1px solid ${COLORS.line}` }}>
           <span style={{ flex: 2 }}>List</span>
           <span style={{ flex: 2 }}>Item</span>
           <span style={{ flex: '0 0 110px' }}>Change</span>
@@ -1688,7 +1688,7 @@ function ResearchPanel({ alerts, busy, onResolve }) {
                 {a.itemName}
                 {a.rank ? <span style={{ color: COLORS.faded, fontWeight: 400 }}> · #{a.rank}</span> : null}
               </span>
-              <span style={{ flex: '0 0 110px', fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: a.changeType === 'entered_top3' ? COLORS.ember : COLORS.faded }}>
+              <span style={{ flex: '0 0 110px', fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: a.changeType === 'entered_top3' ? COLORS.ember : COLORS.faded }}>
                 {a.changeType === 'entered_top3' ? 'Into top 3' : 'Into top 10'}
               </span>
               <span style={{ flex: '0 0 130px', fontSize: 12, color: needs.length ? COLORS.ember : COLORS.faded }}>
@@ -1706,7 +1706,7 @@ function ResearchPanel({ alerts, busy, onResolve }) {
                     color: COLORS.ink,
                     border: `1px solid ${COLORS.line}`,
                     padding: '5px 10px',
-                    fontFamily: 'DM Mono, monospace',
+                    fontFamily: 'Manrope, monospace',
                     fontSize: 9,
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase',
@@ -1728,7 +1728,7 @@ function ResearchPanel({ alerts, busy, onResolve }) {
 function Metric({ label, value }) {
   return (
     <div style={{ background: COLORS.paper, borderRadius: 8, padding: '12px 18px', minWidth: 120 }}>
-      <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: COLORS.faded }}>{label}</div>
+      <div style={{ fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: COLORS.faded }}>{label}</div>
       <div style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 26, fontWeight: 700, color: COLORS.ink, lineHeight: 1.1, marginTop: 2 }}>{value}</div>
     </div>
   );
@@ -1751,7 +1751,7 @@ function VotesPanel({ standings, events, busy, onDelete }) {
         <h3 style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 700, fontSize: 20, margin: '0 0 12px' }}>Current standings</h3>
         {hasStandings ? (
           <div style={{ border: `1px solid ${COLORS.line}`, background: COLORS.paper, borderRadius: 12, maxHeight: TABLE_MAX_H, overflowY: 'auto' }}>
-            <div style={{ display: 'flex', gap: 16, position: 'sticky', top: 0, zIndex: 1, background: COLORS.cream, fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.faded, padding: '10px 14px', borderBottom: `1px solid ${COLORS.line}` }}>
+            <div style={{ display: 'flex', gap: 16, position: 'sticky', top: 0, zIndex: 1, background: COLORS.cream, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.faded, padding: '10px 14px', borderBottom: `1px solid ${COLORS.line}` }}>
               <span style={{ flex: 2 }}>List</span>
               <span style={{ flex: 2 }}>Item</span>
               <span style={{ flex: '0 0 60px', textAlign: 'right' }}>Votes</span>
@@ -1767,14 +1767,14 @@ function VotesPanel({ standings, events, busy, onDelete }) {
                     <Link href={`/list/${s.listId}`} style={{ color: COLORS.ember, textDecoration: 'none' }}>{s.listId}</Link>
                   </span>
                   <span style={{ flex: 2, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.itemName}</span>
-                  <span style={{ flex: '0 0 60px', textAlign: 'right', fontFamily: 'DM Mono, monospace', color: COLORS.faded }}>{Number(s.votes) || 0}</span>
-                  <span style={{ flex: '0 0 60px', textAlign: 'right', fontWeight: 700, fontFamily: 'DM Mono, monospace', color: s.score >= 0 ? COLORS.forest : COLORS.ember }}>{s.score >= 0 ? `+${s.score}` : s.score}</span>
-                  <span style={{ flex: '0 0 120px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 11, color: COLORS.faded }}>{s.updatedAt ? formatDate(s.updatedAt) : '—'}</span>
+                  <span style={{ flex: '0 0 60px', textAlign: 'right', fontFamily: 'Manrope, monospace', color: COLORS.faded }}>{Number(s.votes) || 0}</span>
+                  <span style={{ flex: '0 0 60px', textAlign: 'right', fontWeight: 700, fontFamily: 'Manrope, monospace', color: s.score >= 0 ? COLORS.forest : COLORS.ember }}>{s.score >= 0 ? `+${s.score}` : s.score}</span>
+                  <span style={{ flex: '0 0 120px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded }}>{s.updatedAt ? formatDate(s.updatedAt) : '—'}</span>
                   <span style={{ flex: '0 0 70px', textAlign: 'right' }}>
                     <button
                       onClick={() => onDelete && onDelete(s.listId, s.itemName)}
                       disabled={busy && busy[bkey]}
-                      style={{ cursor: 'pointer', background: 'transparent', color: COLORS.ember, border: `1px solid ${COLORS.ember}`, padding: '4px 10px', fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', opacity: busy && busy[bkey] ? 0.5 : 1 }}
+                      style={{ cursor: 'pointer', background: 'transparent', color: COLORS.ember, border: `1px solid ${COLORS.ember}`, padding: '4px 10px', fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', opacity: busy && busy[bkey] ? 0.5 : 1 }}
                     >
                       Delete
                     </button>
@@ -1796,8 +1796,8 @@ function VotesPanel({ standings, events, busy, onDelete }) {
           <div style={{ border: `1px solid ${COLORS.line}`, background: COLORS.paper, borderRadius: 12, maxHeight: TABLE_MAX_H, overflowY: 'auto' }}>
             {events.map((e, i) => (
               <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 13, color: COLORS.ink, padding: '9px 14px', borderBottom: i < events.length - 1 ? rowBorder : 'none' }}>
-                <span style={{ flex: '0 0 150px', fontFamily: 'DM Mono, monospace', fontSize: 11, color: COLORS.faded }}>{formatDate(e.createdAt)}</span>
-                <span style={{ flex: '0 0 70px', fontWeight: 700, fontFamily: 'DM Mono, monospace', color: e.delta >= 0 ? COLORS.forest : COLORS.ember }}>{e.delta === 3 ? '1st' : e.delta === 2 ? '2nd' : e.delta === 1 ? '3rd' : e.delta > 0 ? `+${e.delta}` : e.delta}</span>
+                <span style={{ flex: '0 0 150px', fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded }}>{formatDate(e.createdAt)}</span>
+                <span style={{ flex: '0 0 70px', fontWeight: 700, fontFamily: 'Manrope, monospace', color: e.delta >= 0 ? COLORS.forest : COLORS.ember }}>{e.delta === 3 ? '1st' : e.delta === 2 ? '2nd' : e.delta === 1 ? '3rd' : e.delta > 0 ? `+${e.delta}` : e.delta}</span>
                 <span style={{ flex: 2, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.itemName}</span>
                 <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   <Link href={`/list/${e.listId}`} style={{ color: COLORS.ember, textDecoration: 'none' }}>{e.listId}</Link>
@@ -1825,7 +1825,7 @@ function CommentsPanel({ comments, busy, onDelete, onRespond }) {
         return (
           <div key={c.id} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '12px 14px', borderBottom: i < comments.length - 1 ? rowBorder : 'none' }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: COLORS.faded }}>
+              <div style={{ fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded }}>
                 <Link href={`/list/${c.listId}`} style={{ color: COLORS.ember, textDecoration: 'none' }}>{c.listId}</Link>
                 {' · '}{c.name || 'Guest'}{' · '}{formatDate(c.createdAt)}
               </div>
@@ -1839,14 +1839,14 @@ function CommentsPanel({ comments, busy, onDelete, onRespond }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
               <button
                 onClick={() => onRespond && onRespond('comment', c.id, c.editorResponse)}
-                style={{ cursor: 'pointer', background: 'transparent', color: COLORS.ink, border: '1px solid ' + COLORS.line, padding: '5px 12px', fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase' }}
+                style={{ cursor: 'pointer', background: 'transparent', color: COLORS.ink, border: '1px solid ' + COLORS.line, padding: '5px 12px', fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase' }}
               >
                 {c.editorResponse ? 'Edit reply' : 'Reply'}
               </button>
               <button
                 onClick={() => onDelete && onDelete(c.id)}
                 disabled={busy && busy[bkey]}
-                style={{ cursor: 'pointer', background: 'transparent', color: COLORS.ember, border: '1px solid ' + COLORS.ember, padding: '5px 12px', fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', opacity: busy && busy[bkey] ? 0.5 : 1 }}
+                style={{ cursor: 'pointer', background: 'transparent', color: COLORS.ember, border: '1px solid ' + COLORS.ember, padding: '5px 12px', fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', opacity: busy && busy[bkey] ? 0.5 : 1 }}
               >
                 Delete
               </button>
@@ -1866,11 +1866,11 @@ function NotesPanel({ notes, lists, busy, onAdd, onDelete }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div style={{ border: `1px solid ${COLORS.line}`, padding: 16, background: COLORS.paper }}>
         <h3 style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 700, fontSize: 18, margin: '0 0 10px' }}>Post an editor's note</h3>
-        <input list="sot-all-lists" value={listId} onChange={(e) => setListId(e.target.value)} placeholder="List id (e.g. fast-food-fries)" style={{ width: '100%', boxSizing: 'border-box', padding: 10, border: `1px solid ${COLORS.line}`, background: T.white, fontFamily: 'DM Mono, monospace', fontSize: 13, marginBottom: 8 }} />
+        <input list="sot-all-lists" value={listId} onChange={(e) => setListId(e.target.value)} placeholder="List id (e.g. fast-food-fries)" style={{ width: '100%', boxSizing: 'border-box', padding: 10, border: `1px solid ${COLORS.line}`, background: T.white, fontFamily: 'Manrope, monospace', fontSize: 13, marginBottom: 8 }} />
         <datalist id="sot-all-lists">{lists.map((l) => <option key={l.id} value={l.id}>{l.title}</option>)}</datalist>
         <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} maxLength={1000} placeholder="Shown publicly as: Editor's Note: ..." style={{ width: '100%', boxSizing: 'border-box', padding: 10, border: `1px solid ${COLORS.line}`, background: T.white, fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 14, resize: 'vertical', marginBottom: 8 }} />
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <button onClick={() => { onAdd(listId, note); setNote(''); }} disabled={!!busy['note-add']} style={{ cursor: 'pointer', background: COLORS.ember, color: COLORS.cream, border: `1.5px solid ${COLORS.ember}`, padding: '9px 16px', fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700 }}>Post note</button>
+          <button onClick={() => { onAdd(listId, note); setNote(''); }} disabled={!!busy['note-add']} style={{ cursor: 'pointer', background: COLORS.ember, color: COLORS.cream, border: `1.5px solid ${COLORS.ember}`, padding: '9px 16px', fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700 }}>Post note</button>
         </div>
       </div>
       {(!notes || notes.length === 0) ? (
@@ -1880,12 +1880,12 @@ function NotesPanel({ notes, lists, busy, onAdd, onDelete }) {
           {notes.map((n, i) => (
             <div key={n.id} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '12px 14px', borderBottom: i < notes.length - 1 ? rowBorder : 'none' }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: COLORS.faded }}>
+                <div style={{ fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded }}>
                   <Link href={`/list/${n.listId}`} style={{ color: COLORS.ember, textDecoration: 'none' }}>{n.listId}</Link>{' · '}{formatDate(n.createdAt)}
                 </div>
                 <div style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 14, color: COLORS.ink, marginTop: 4, whiteSpace: 'pre-wrap' }}>{n.note}</div>
               </div>
-              <button onClick={() => onDelete(n.id)} disabled={!!busy['note-' + n.id]} style={{ flexShrink: 0, cursor: 'pointer', background: 'transparent', color: COLORS.ember, border: `1px solid ${COLORS.ember}`, padding: '5px 12px', fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Delete</button>
+              <button onClick={() => onDelete(n.id)} disabled={!!busy['note-' + n.id]} style={{ flexShrink: 0, cursor: 'pointer', background: 'transparent', color: COLORS.ember, border: `1px solid ${COLORS.ember}`, padding: '5px 12px', fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Delete</button>
             </div>
           ))}
         </div>
@@ -1918,7 +1918,7 @@ function ComplaintsPanel({ complaints, busy, onDismiss, onRespond }) {
         <div key={c.id} style={{ border: `1px solid ${COLORS.line}`, padding: 18, background: COLORS.paper }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: COLORS.faded, marginBottom: 4 }}>
+              <div style={{ fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: COLORS.faded, marginBottom: 4 }}>
                 {formatDate(c.createdAt)}
               </div>
               <Link href={`${(c.listTitle || '').startsWith('[Quiz]') ? '/quiz/' : '/list/'}${c.listId}`} style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 700, fontSize: 18, color: COLORS.ink, textDecoration: 'none' }}>
@@ -1937,7 +1937,7 @@ function ComplaintsPanel({ complaints, busy, onDismiss, onRespond }) {
                 </p>
               )}
               {(c.name || c.email) && (
-                <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 12, color: COLORS.faded, margin: '10px 0 0' }}>
+                <p style={{ fontFamily: 'Manrope, monospace', fontSize: 12, color: COLORS.faded, margin: '10px 0 0' }}>
                   {c.name ? c.name : 'Anonymous'}
                   {c.email ? (
                     <> &middot; <a href={`mailto:${c.email}`} style={{ color: COLORS.rust, textDecoration: 'none' }}>{c.email}</a></>
@@ -1948,14 +1948,14 @@ function ComplaintsPanel({ complaints, busy, onDismiss, onRespond }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0 }}>
               <button
                 onClick={() => onRespond && onRespond('review', c.id, c.editorResponse)}
-                style={{ cursor: 'pointer', background: 'transparent', border: '1.5px solid ' + COLORS.ember, color: COLORS.ember, padding: '8px 14px', fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 600 }}
+                style={{ cursor: 'pointer', background: 'transparent', border: '1.5px solid ' + COLORS.ember, color: COLORS.ember, padding: '8px 14px', fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 600 }}
               >
                 {c.editorResponse ? 'Edit reply' : 'Reply'}
               </button>
               <button
                 onClick={() => onDismiss(c.id)}
                 disabled={!!busy['c-' + c.id]}
-                style={{ cursor: 'pointer', background: 'transparent', border: '1px solid ' + COLORS.line, color: COLORS.ink, padding: '8px 14px', fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 600 }}
+                style={{ cursor: 'pointer', background: 'transparent', border: '1px solid ' + COLORS.line, color: COLORS.ink, padding: '8px 14px', fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 600 }}
               >
                 Dismiss
               </button>
@@ -1969,7 +1969,7 @@ function ComplaintsPanel({ complaints, busy, onDismiss, onRespond }) {
 
 function SectionHeading({ children }) {
   return (
-    <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: COLORS.ink, fontWeight: 700, paddingBottom: 10, marginBottom: 14, borderBottom: `1px solid ${COLORS.line}` }}>
+    <div style={{ fontFamily: 'Manrope, monospace', fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: COLORS.ink, fontWeight: 700, paddingBottom: 10, marginBottom: 14, borderBottom: `1px solid ${COLORS.line}` }}>
       {children}
     </div>
   );
@@ -2018,12 +2018,12 @@ function AnonPlayersPanel({ players, partial = false, total, onNeedAll }) {
         {' '}The 10 most recently active are shown; scroll the box for the rest. Click a row to see that player&apos;s last {DETAIL_ROWS} sessions and games, with the full history one click further. Click a column header to sort.
       </p>
       <PartialNote partial={partial} shown={list.length} total={total} noun="anonymous players" onNeedAll={onNeedAll} />
-      <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Filter by guest handle or number\u2026" style={{ width: '100%', padding: '10px 12px', background: COLORS.paper, border: `1px solid ${COLORS.line}`, color: COLORS.ink, fontFamily: 'DM Mono, monospace', fontSize: 10, outline: 'none', boxSizing: 'border-box', marginBottom: 16 }} />
+      <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Filter by guest handle or number\u2026" style={{ width: '100%', padding: '10px 12px', background: COLORS.paper, border: `1px solid ${COLORS.line}`, color: COLORS.ink, fontFamily: 'Manrope, monospace', fontSize: 10, outline: 'none', boxSizing: 'border-box', marginBottom: 16 }} />
       {visible.length === 0 ? (
         <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 16, color: COLORS.faded, border: `1px dashed ${COLORS.line}` }}>No matches.</div>
       ) : (
         <div style={{ border: `1px solid ${COLORS.line}`, background: COLORS.paper, borderRadius: 12, maxHeight: expandedKey != null ? PLAYERS_VIEW_H_OPEN : PLAYERS_VIEW_H, overflowY: 'auto' }}>
-          <div style={{ display: 'flex', gap: 16, position: 'sticky', top: 0, zIndex: 1, background: COLORS.cream, fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.faded, padding: '5px 14px', borderBottom: `1px solid ${COLORS.line}` }}>
+          <div style={{ display: 'flex', gap: 16, position: 'sticky', top: 0, zIndex: 1, background: COLORS.cream, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.faded, padding: '5px 14px', borderBottom: `1px solid ${COLORS.line}` }}>
             <span style={{ flex: '0 0 28px' }}>#</span>
             <SortHead label="Player" k="player" sort={sort} flex={2} type="string" />
             <SortHead label="Plays" k="plays" sort={sort} flex="0 0 42px" align="right" />
@@ -2038,17 +2038,17 @@ function AnonPlayersPanel({ players, partial = false, total, onNeedAll }) {
             return (
               <div key={p.key} style={{ borderBottom: i < visible.length - 1 ? rowBorder : 'none' }}>
                 <div onClick={() => setExpandedKey(open ? null : p.key)} style={{ display: 'flex', gap: 16, alignItems: 'center', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 10, color: COLORS.ink, padding: '3px 14px', cursor: 'pointer', background: open ? `${COLORS.ink}0a` : 'transparent' }}>
-                  <span style={{ flex: '0 0 32px', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ flex: '0 0 32px', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded, display: 'flex', alignItems: 'center', gap: 4 }}>
                     <span style={{ display: 'inline-block', width: 8, transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.12s' }}>&#9656;</span>
                     {i + 1}
                   </span>
                   <span style={{ flex: 2, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 700 }}>{p.label}</span>
-                  <span style={{ flex: '0 0 42px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, fontWeight: 700, color: p.plays > 0 ? COLORS.ember : COLORS.faded }}>{p.plays}</span>
+                  <span style={{ flex: '0 0 42px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, fontWeight: 700, color: p.plays > 0 ? COLORS.ember : COLORS.faded }}>{p.plays}</span>
                   <MultiCell values={p.devices} flex="0 0 62px" />
                   <MultiCell values={p.oses} flex="0 0 58px" />
                   <MultiCell values={p.geos} flex="0 0 118px" />
-                  <span style={{ flex: '0 0 60px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>{p.stats && p.stats.firstSeen ? fmtShort(p.stats.firstSeen) : '\u2014'}</span>
-                  <span style={{ flex: '0 0 118px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>{p.lastPlayed ? fmtShortDateTime(p.lastPlayed) : '\u2014'}</span>
+                  <span style={{ flex: '0 0 60px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>{p.stats && p.stats.firstSeen ? fmtShort(p.stats.firstSeen) : '\u2014'}</span>
+                  <span style={{ flex: '0 0 118px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>{p.lastPlayed ? fmtShortDateTime(p.lastPlayed) : '\u2014'}</span>
                 </div>
                 {open && <PlayerDetail playerKey={p.key} stats={p.stats} />}
               </div>
@@ -2152,12 +2152,12 @@ function AllPlayersPanel({ signups, anonPlayers, partial = false, counts = {}, o
         {' '}The 10 most recently active are shown; scroll the box for the rest. Click a row to see that player&apos;s last {DETAIL_ROWS} sessions and games, with the full history one click further. Click a column header to sort.
       </p>
       <PartialNote partial={partial} shown={rows.length} total={playerCount} noun="players" onNeedAll={onNeedAll} />
-      <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Filter by name or email…" style={{ width: '100%', padding: '10px 12px', background: COLORS.paper, border: `1px solid ${COLORS.line}`, color: COLORS.ink, fontFamily: 'DM Mono, monospace', fontSize: 10, outline: 'none', boxSizing: 'border-box', marginBottom: 16 }} />
+      <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Filter by name or email…" style={{ width: '100%', padding: '10px 12px', background: COLORS.paper, border: `1px solid ${COLORS.line}`, color: COLORS.ink, fontFamily: 'Manrope, monospace', fontSize: 10, outline: 'none', boxSizing: 'border-box', marginBottom: 16 }} />
       {visible.length === 0 ? (
         <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 16, color: COLORS.faded, border: `1px dashed ${COLORS.line}` }}>No matches.</div>
       ) : (
         <div style={{ border: `1px solid ${COLORS.line}`, background: COLORS.paper, borderRadius: 12, maxHeight: expandedKey != null ? PLAYERS_VIEW_H_OPEN : PLAYERS_VIEW_H, overflowY: 'auto' }}>
-          <div style={{ display: 'flex', gap: 16, position: 'sticky', top: 0, zIndex: 1, background: COLORS.cream, fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.faded, padding: '5px 14px', borderBottom: `1px solid ${COLORS.line}` }}>
+          <div style={{ display: 'flex', gap: 16, position: 'sticky', top: 0, zIndex: 1, background: COLORS.cream, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.faded, padding: '5px 14px', borderBottom: `1px solid ${COLORS.line}` }}>
             <span style={{ flex: '0 0 28px' }}>#</span>
             <SortHead label="Player" k="name" sort={sort} flex={2} type="string" />
             <SortHead label="Type" k="type" sort={sort} flex="0 0 76px" type="string" />
@@ -2175,22 +2175,22 @@ function AllPlayersPanel({ signups, anonPlayers, partial = false, counts = {}, o
             return (
               <div key={r.key} style={{ borderBottom: i < visible.length - 1 ? rowBorder : 'none' }}>
                 <div onClick={() => setExpandedKey(open ? null : r.key)} style={{ display: 'flex', gap: 16, alignItems: 'center', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 10, color: COLORS.ink, padding: '3px 14px', cursor: 'pointer', background: open ? `${COLORS.ink}0a` : 'transparent' }}>
-                  <span style={{ flex: '0 0 28px', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ flex: '0 0 28px', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded, display: 'flex', alignItems: 'center', gap: 4 }}>
                     <span style={{ display: 'inline-block', width: 8, transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.12s' }}>&#9656;</span>
                     {i + 1}
                   </span>
                   <span style={{ flex: 2, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600, fontFamily: 'Manrope, system-ui, -apple-system, sans-serif' }}>
                     {r.name}
-                    {r.email ? <span style={{ color: COLORS.faded, fontWeight: 400, fontFamily: 'DM Mono, monospace', fontSize: 10 }}>{' · '}{r.email}</span> : null}
+                    {r.email ? <span style={{ color: COLORS.faded, fontWeight: 400, fontFamily: 'Manrope, monospace', fontSize: 10 }}>{' · '}{r.email}</span> : null}
                   </span>
-                  <span style={{ flex: '0 0 76px', fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.06em', textTransform: 'uppercase', color: reg ? COLORS.ember : COLORS.faded }}>{reg ? 'Registered' : 'Anon'}</span>
-                  <span style={{ flex: '0 0 42px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, fontWeight: 700, color: r.plays > 0 ? COLORS.ember : COLORS.faded }}>{r.plays}</span>
-                  <span style={{ flex: '0 0 62px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, color: r.sessions > 0 ? COLORS.ink : COLORS.faded }}>{r.sessions}</span>
+                  <span style={{ flex: '0 0 76px', fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.06em', textTransform: 'uppercase', color: reg ? COLORS.ember : COLORS.faded }}>{reg ? 'Registered' : 'Anon'}</span>
+                  <span style={{ flex: '0 0 42px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, fontWeight: 700, color: r.plays > 0 ? COLORS.ember : COLORS.faded }}>{r.plays}</span>
+                  <span style={{ flex: '0 0 62px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, color: r.sessions > 0 ? COLORS.ink : COLORS.faded }}>{r.sessions}</span>
                   <MultiCell values={r.devices} flex="0 0 62px" />
                   <MultiCell values={r.oses} flex="0 0 58px" />
                   <MultiCell values={r.geos} flex="0 0 118px" />
-                  <span style={{ flex: '0 0 60px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>{r.firstSeen ? fmtShort(r.firstSeen) : '—'}</span>
-                  <span style={{ flex: '0 0 118px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>{r.lastAt ? fmtShortDateTime(r.lastAt) : '—'}</span>
+                  <span style={{ flex: '0 0 60px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>{r.firstSeen ? fmtShort(r.firstSeen) : '—'}</span>
+                  <span style={{ flex: '0 0 118px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>{r.lastAt ? fmtShortDateTime(r.lastAt) : '—'}</span>
                 </div>
                 {open && <PlayerDetail playerKey={r.key} stats={r.stats} />}
               </div>
@@ -2234,13 +2234,13 @@ function ActiveUsersStrip({ data }) {
         opacity: dim ? 0.55 : 1,
       }}
     >
-      <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: COLORS.faded }}>
+      <div style={{ fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: COLORS.faded }}>
         {label}
       </div>
       <div style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 800, fontSize: 26, lineHeight: 1.1, color: accent, marginTop: 2 }}>
         {value}
       </div>
-      <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 9, letterSpacing: '0.07em', textTransform: 'uppercase', color: COLORS.faded, marginTop: 3 }}>
+      <div style={{ fontFamily: 'Manrope, monospace', fontSize: 9, letterSpacing: '0.07em', textTransform: 'uppercase', color: COLORS.faded, marginTop: 3 }}>
         {sub}
       </div>
     </div>
@@ -2248,7 +2248,7 @@ function ActiveUsersStrip({ data }) {
   const group = (heading, note, vals, accent, dim) => (
     <div style={{ flex: '1 1 320px', minWidth: 280 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 7 }}>
-        <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, color: COLORS.ink }}>
+        <span style={{ fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, color: COLORS.ink }}>
           {heading}
         </span>
         {note && (
@@ -2264,7 +2264,7 @@ function ActiveUsersStrip({ data }) {
   );
   return (
     <div style={{ marginBottom: 26 }}>
-      <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: COLORS.ink, marginBottom: 12 }}>
+      <div style={{ fontFamily: 'Manrope, monospace', fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: COLORS.ink, marginBottom: 12 }}>
         Active Users
       </div>
       <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
@@ -2370,7 +2370,7 @@ function AnalyticsPanel({ an, signups, anonPlayers, partial, onNeedAll, onRefres
     background: on ? COLORS.ember : 'transparent',
     border: `1px solid ${on ? COLORS.ember : COLORS.line}`,
     color: on ? COLORS.paper : COLORS.ink,
-    fontFamily: 'DM Mono, monospace',
+    fontFamily: 'Manrope, monospace',
     fontSize: 11,
     letterSpacing: '0.1em',
     textTransform: 'uppercase',
@@ -2385,7 +2385,7 @@ function AnalyticsPanel({ an, signups, anonPlayers, partial, onNeedAll, onRefres
     background: on ? `${COLORS.ember}1a` : 'transparent',
     border: `1px solid ${on ? COLORS.ember : COLORS.line}`,
     color: on ? COLORS.ember : COLORS.faded,
-    fontFamily: 'DM Mono, monospace',
+    fontFamily: 'Manrope, monospace',
     fontSize: 10,
     letterSpacing: '0.08em',
     textTransform: 'uppercase',
@@ -2408,7 +2408,7 @@ function AnalyticsPanel({ an, signups, anonPlayers, partial, onNeedAll, onRefres
     <div>
       <ActiveUsersStrip data={activeUsers} />
       <CumulativeTotalsPanel timeByDay={timeByDay} newUsers={newUsers} registered={regCount} />
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '-6px 0 12px', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '-6px 0 12px', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>
         <span>
           Figures as of {builtLabel || 'just now'}
           {an.refreshing ? ' · refreshing…' : ''}
@@ -2418,7 +2418,7 @@ function AnalyticsPanel({ an, signups, anonPlayers, partial, onNeedAll, onRefres
           onClick={refreshAll}
           disabled={an.refreshing}
           title="Rebuild the analytics from the latest plays"
-          style={{ background: 'transparent', border: `1px solid ${COLORS.line}`, color: COLORS.ink, padding: '3px 9px', fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: an.refreshing ? 'wait' : 'pointer', opacity: an.refreshing ? 0.6 : 1 }}
+          style={{ background: 'transparent', border: `1px solid ${COLORS.line}`, color: COLORS.ink, padding: '3px 9px', fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: an.refreshing ? 'wait' : 'pointer', opacity: an.refreshing ? 0.6 : 1 }}
         >
           Refresh
         </button>
@@ -2441,7 +2441,7 @@ function AnalyticsPanel({ an, signups, anonPlayers, partial, onNeedAll, onRefres
             onClick={exportUsers}
             disabled={usersBusy}
             title="One row per player (registered + anonymous) with the full stats the player tables show: plays, sessions, accuracy, devices, locations, first/last seen…"
-            style={{ padding: '7px 12px', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, cursor: 'pointer' }}
+            style={{ padding: '7px 12px', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, cursor: 'pointer' }}
           >
             {usersBusy ? '↓ Building…' : '↓ Users CSV'}
           </button>
@@ -2449,7 +2449,7 @@ function AnalyticsPanel({ an, signups, anonPlayers, partial, onNeedAll, onRefres
             onClick={exportGames}
             disabled={gamesBusy}
             title="One row per completed game with the per-play detail the expanded rows show: quiz, score, correct, time, device, OS, browser, location, timezone, language, referrer"
-            style={{ padding: '7px 12px', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, cursor: gamesBusy ? 'wait' : 'pointer', opacity: gamesBusy ? 0.6 : 1 }}
+            style={{ padding: '7px 12px', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, cursor: gamesBusy ? 'wait' : 'pointer', opacity: gamesBusy ? 0.6 : 1 }}
           >
             {gamesBusy ? '↓ Building…' : '↓ Games CSV'}
           </button>
@@ -2509,7 +2509,7 @@ function RetentionBars({ rows, unitLabel, accent }) {
   const max = rows.reduce((m, r) => Math.max(m, r.count), 0);
   const total = rows.reduce((s, r) => s + r.count, 0);
   if (!total) {
-    return <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 12, color: COLORS.faded, fontStyle: 'italic' }}>No plays recorded yet.</p>;
+    return <p style={{ fontFamily: 'Manrope, monospace', fontSize: 12, color: COLORS.faded, fontStyle: 'italic' }}>No plays recorded yet.</p>;
   }
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -2518,11 +2518,11 @@ function RetentionBars({ rows, unitLabel, accent }) {
         const w = max ? Math.round((r.count / max) * 100) : 0;
         return (
           <div key={r.label} style={{ display: 'grid', gridTemplateColumns: '132px 1fr 96px', gap: 12, alignItems: 'center' }}>
-            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 12, color: COLORS.ink, textAlign: 'right' }}>{r.label}</div>
+            <div style={{ fontFamily: 'Manrope, monospace', fontSize: 12, color: COLORS.ink, textAlign: 'right' }}>{r.label}</div>
             <div style={{ background: COLORS.cream, border: `1px solid ${COLORS.line}`, borderRadius: 5, height: 22, position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', inset: 0, width: `${w}%`, background: accent, opacity: 0.85, borderRadius: 4 }} />
             </div>
-            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 12, color: COLORS.faded, textAlign: 'left' }}>
+            <div style={{ fontFamily: 'Manrope, monospace', fontSize: 12, color: COLORS.faded, textAlign: 'left' }}>
               <span style={{ color: COLORS.ink, fontWeight: 700 }}>{r.count.toLocaleString()}</span> {unitLabel}
               <span style={{ opacity: 0.7 }}> · {pct}%</span>
             </div>
@@ -2541,7 +2541,7 @@ function RetentionPanel({ data }) {
     background: on ? `${COLORS.ember}1a` : 'transparent',
     border: `1px solid ${on ? COLORS.ember : COLORS.line}`,
     color: on ? COLORS.ember : COLORS.faded,
-    fontFamily: 'DM Mono, monospace',
+    fontFamily: 'Manrope, monospace',
     fontSize: 10,
     letterSpacing: '0.08em',
     textTransform: 'uppercase',
@@ -2566,7 +2566,7 @@ function RetentionPanel({ data }) {
       {sub === 'all' ? (
         <div>
           <SectionHeading>Daily games played per user</SectionHeading>
-          <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: COLORS.faded, margin: '0 0 18px', lineHeight: 1.6 }}>
+          <p style={{ fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded, margin: '0 0 18px', lineHeight: 1.6 }}>
             Of the four daily games (Links, Span, Crux, Garble), how many distinct games each player has ever played.
             <span style={{ color: COLORS.ink }}> {breadth.total.toLocaleString()}</span> players total.
           </p>
@@ -2579,7 +2579,7 @@ function RetentionPanel({ data }) {
       ) : activeGame ? (
         <div>
           <SectionHeading>{activeGame.title} — return play</SectionHeading>
-          <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: COLORS.faded, margin: '0 0 18px', lineHeight: 1.6 }}>
+          <p style={{ fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded, margin: '0 0 18px', lineHeight: 1.6 }}>
             Players grouped by how many distinct days they have completed {activeGame.title}.
             <span style={{ color: COLORS.ink }}> {activeGame.players.toLocaleString()}</span> players ·
             <span style={{ color: COLORS.ink }}> {activeGame.returning.toLocaleString()}</span> returned at least once
@@ -2811,19 +2811,19 @@ function CumulativeTotalsPanel({ timeByDay, newUsers, registered }) {
   const fmtH = totalHours >= 100 ? Math.round(totalHours).toLocaleString() : totalHours.toFixed(1);
   const card = (label, value, unit, sub, pts, color) => (
     <div style={{ flex: '1 1 240px', minWidth: 220, background: COLORS.paper, border: `1px solid ${COLORS.line}`, borderRadius: 12, padding: '12px 14px 8px' }}>
-      <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: COLORS.faded }}>{label}</div>
+      <div style={{ fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: COLORS.faded }}>{label}</div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 2 }}>
         <span style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 800, fontSize: 30, lineHeight: 1.1, color }}>{value}</span>
-        <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: COLORS.faded }}>{unit}</span>
+        <span style={{ fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded }}>{unit}</span>
       </div>
-      <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 9, letterSpacing: '0.07em', textTransform: 'uppercase', color: COLORS.faded, margin: '3px 0 8px' }}>{sub}</div>
+      <div style={{ fontFamily: 'Manrope, monospace', fontSize: 9, letterSpacing: '0.07em', textTransform: 'uppercase', color: COLORS.faded, margin: '3px 0 8px' }}>{sub}</div>
       <CumSpark points={pts} color={color} />
     </div>
   );
   return (
     <div style={{ marginBottom: 18 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 7 }}>
-        <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, color: COLORS.ink }}>All time</span>
+        <span style={{ fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, color: COLORS.ink }}>All time</span>
         <span style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 10, fontStyle: 'italic', color: COLORS.faded }}>
           {since ? `since ${tbdLongDate(since)} (${days.toLocaleString()} days), running totals, registered and anonymous` : 'no plays recorded yet'}
         </span>
@@ -2844,10 +2844,10 @@ function TimeByDayStat({ value, unit, label, accent }) {
   return (
     <div style={{ flex: '1 1 150px', minWidth: 140, background: COLORS.paper, border: `1px solid ${COLORS.line}`, borderRadius: 8, padding: '14px 16px' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
-        <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 24, fontWeight: 700, color: accent || COLORS.ink, lineHeight: 1 }}>{value}</span>
-        {unit ? <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: COLORS.faded }}>{unit}</span> : null}
+        <span style={{ fontFamily: 'Manrope, monospace', fontSize: 24, fontWeight: 700, color: accent || COLORS.ink, lineHeight: 1 }}>{value}</span>
+        {unit ? <span style={{ fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded }}>{unit}</span> : null}
       </div>
-      <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: COLORS.faded, marginTop: 8 }}>{label}</div>
+      <div style={{ fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: COLORS.faded, marginTop: 8 }}>{label}</div>
     </div>
   );
 }
@@ -2877,7 +2877,7 @@ function TimeByDayPanel({ data }) {
   );
 
   if (!series.length) {
-    return <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 12, color: COLORS.faded, fontStyle: 'italic' }}>No completed quiz games recorded yet.</p>;
+    return <p style={{ fontFamily: 'Manrope, monospace', fontSize: 12, color: COLORS.faded, fontStyle: 'italic' }}>No completed quiz games recorded yet.</p>;
   }
 
   const totalHrs = tbdHoursValue(totals.totalSeconds || 0);
@@ -2891,7 +2891,7 @@ function TimeByDayPanel({ data }) {
     background: on ? `${COLORS.ember}1a` : 'transparent',
     border: `1px solid ${on ? COLORS.ember : COLORS.line}`,
     color: on ? COLORS.ember : COLORS.faded,
-    fontFamily: 'DM Mono, monospace',
+    fontFamily: 'Manrope, monospace',
     fontSize: 10,
     letterSpacing: '0.08em',
     textTransform: 'uppercase',
@@ -2909,7 +2909,7 @@ function TimeByDayPanel({ data }) {
   return (
     <div>
       <SectionHeading>Time spent playing quizzes</SectionHeading>
-      <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: COLORS.faded, margin: '0 0 18px', lineHeight: 1.6 }}>
+      <p style={{ fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded, margin: '0 0 18px', lineHeight: 1.6 }}>
         Total wall-clock time players spent completing quizzes, from every recorded game (registered and anonymous), bucketed in US Eastern.
         {totals.firstDay ? <span style={{ color: COLORS.ink }}> {tbdLongDate(totals.firstDay)}</span> : null}
         {totals.lastDay ? <span> → <span style={{ color: COLORS.ink }}>{tbdLongDate(totals.lastDay)}</span></span> : null}.
@@ -2935,7 +2935,7 @@ function TimeByDayPanel({ data }) {
         <button
           onClick={exportCsv}
           title="Download the currently shown buckets (period, seconds, hours, plays) as CSV"
-          style={{ marginLeft: 'auto', padding: '7px 12px', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, cursor: 'pointer' }}
+          style={{ marginLeft: 'auto', padding: '7px 12px', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, cursor: 'pointer' }}
         >
           ↓ Time CSV
         </button>
@@ -2974,7 +2974,7 @@ function TimeByDayPanel({ data }) {
           {buckets.map((b, i) => (
             <div key={b.key} style={{ flex: '1 1 0', minWidth: 2, textAlign: 'center', overflow: 'visible' }}>
               {i % labelStep === 0 ? (
-                <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 9, color: COLORS.faded, whiteSpace: 'nowrap' }}>{b.label}</span>
+                <span style={{ fontFamily: 'Manrope, monospace', fontSize: 9, color: COLORS.faded, whiteSpace: 'nowrap' }}>{b.label}</span>
               ) : null}
             </div>
           ))}
@@ -2982,7 +2982,7 @@ function TimeByDayPanel({ data }) {
         {projection ? (
           <div title={shapeTip} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: `1px solid ${COLORS.line}`, cursor: shapeTip ? 'help' : 'default' }}>
             <span style={{ flex: '0 0 auto', width: 16, height: 10, boxSizing: 'border-box', border: `1px dashed ${COLORS.ember}`, borderBottom: 'none', borderRadius: '2px 2px 0 0', background: `${COLORS.ember}14`, display: 'inline-block' }} />
-            <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded, lineHeight: 1.5 }}>
+            <span style={{ fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded, lineHeight: 1.5 }}>
               Dotted outline projects where the current {gran} finishes at the pace set so far:{' '}
               <span style={{ color: COLORS.ink }}>{tbdHoursValue(projection.seconds).value} {tbdHoursValue(projection.seconds).unit}</span>
               {' '}({tbdHoursValue(projection.actual).value} {tbdHoursValue(projection.actual).unit} banked &middot;{' '}
@@ -3050,7 +3050,7 @@ function NewUsersByDayPanel({ data }) {
   );
 
   if (!series.length) {
-    return <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 12, color: COLORS.faded, fontStyle: 'italic' }}>No players recorded yet.</p>;
+    return <p style={{ fontFamily: 'Manrope, monospace', fontSize: 12, color: COLORS.faded, fontStyle: 'italic' }}>No players recorded yet.</p>;
   }
 
   const busiest = totals.busiestDay || null;
@@ -3061,7 +3061,7 @@ function NewUsersByDayPanel({ data }) {
     background: on ? `${COLORS.ember}1a` : 'transparent',
     border: `1px solid ${on ? COLORS.ember : COLORS.line}`,
     color: on ? COLORS.ember : COLORS.faded,
-    fontFamily: 'DM Mono, monospace',
+    fontFamily: 'Manrope, monospace',
     fontSize: 10,
     letterSpacing: '0.08em',
     textTransform: 'uppercase',
@@ -3079,14 +3079,14 @@ function NewUsersByDayPanel({ data }) {
   const LegendDot = ({ color, label }) => (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
       <span style={{ width: 10, height: 10, borderRadius: 2, background: color, display: 'inline-block' }} />
-      <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.06em', textTransform: 'uppercase', color: COLORS.faded }}>{label}</span>
+      <span style={{ fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.06em', textTransform: 'uppercase', color: COLORS.faded }}>{label}</span>
     </span>
   );
 
   return (
     <div>
       <SectionHeading>New users per day</SectionHeading>
-      <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: COLORS.faded, margin: '0 0 18px', lineHeight: 1.6 }}>
+      <p style={{ fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded, margin: '0 0 18px', lineHeight: 1.6 }}>
         New players (their first-ever recorded quiz play, anonymous and registered alike) and new registered signups from the join form, bucketed in US Eastern.
         {totals.firstDay ? <span style={{ color: COLORS.ink }}> {tbdLongDate(totals.firstDay)}</span> : null}
         {totals.lastDay ? <span> &rarr; <span style={{ color: COLORS.ink }}>{tbdLongDate(totals.lastDay)}</span></span> : null}.
@@ -3116,7 +3116,7 @@ function NewUsersByDayPanel({ data }) {
         <button
           onClick={exportCsv}
           title="Download the currently shown buckets (period, new players, new signups) as CSV"
-          style={{ marginLeft: 'auto', padding: '7px 12px', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, cursor: 'pointer' }}
+          style={{ marginLeft: 'auto', padding: '7px 12px', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, cursor: 'pointer' }}
         >
           &darr; Users CSV
         </button>
@@ -3143,7 +3143,7 @@ function NewUsersByDayPanel({ data }) {
           {buckets.map((b, i) => (
             <div key={b.key} style={{ flex: '1 1 0', minWidth: 2, textAlign: 'center', overflow: 'visible' }}>
               {i % labelStep === 0 ? (
-                <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 9, color: COLORS.faded, whiteSpace: 'nowrap' }}>{b.label}</span>
+                <span style={{ fontFamily: 'Manrope, monospace', fontSize: 9, color: COLORS.faded, whiteSpace: 'nowrap' }}>{b.label}</span>
               ) : null}
             </div>
           ))}
@@ -3176,8 +3176,8 @@ function dgDayLabel(day) {
 function DgStat({ label, value, accent, dim }) {
   return (
     <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
-      <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.06em', textTransform: 'uppercase', color: COLORS.faded }}>{label}</span>
-      <span style={{ fontFamily: 'DM Mono, monospace', fontSize: dim ? 13 : 16, fontWeight: 700, color: accent || COLORS.ink, fontVariantNumeric: 'tabular-nums' }}>{value}</span>
+      <span style={{ fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.06em', textTransform: 'uppercase', color: COLORS.faded }}>{label}</span>
+      <span style={{ fontFamily: 'Manrope, monospace', fontSize: dim ? 13 : 16, fontWeight: 700, color: accent || COLORS.ink, fontVariantNumeric: 'tabular-nums' }}>{value}</span>
     </div>
   );
 }
@@ -3187,7 +3187,7 @@ function DailyGameTile({ g }) {
     <div style={{ background: COLORS.paper, border: `1px solid ${COLORS.line}`, borderRadius: 8, padding: '14px 16px 12px', opacity: quiet ? 0.55 : 1 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, borderBottom: `1px solid ${COLORS.line}`, paddingBottom: 9, marginBottom: 10 }}>
         <span style={{ fontFamily: 'Fraunces, serif', fontSize: 17, fontWeight: 600, color: COLORS.ink }}>{g.title}</span>
-        <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>{g.daysActive.toLocaleString()} {g.daysActive === 1 ? 'day' : 'days'}</span>
+        <span style={{ fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>{g.daysActive.toLocaleString()} {g.daysActive === 1 ? 'day' : 'days'}</span>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -3198,7 +3198,7 @@ function DailyGameTile({ g }) {
       </div>
 
       <div style={{ marginTop: 11, paddingTop: 9, borderTop: `1px dashed ${COLORS.line}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: COLORS.ember, fontWeight: 700 }}>Today</div>
+        <div style={{ fontFamily: 'Manrope, monospace', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: COLORS.ember, fontWeight: 700 }}>Today</div>
         <DgStat label="Plays" value={g.today.plays.toLocaleString()} dim />
         <DgStat label="Players" value={g.today.players.toLocaleString()} dim />
         <DgStat label="Avg time / play" value={dgDur(g.today.avgTime)} dim />
@@ -3230,7 +3230,7 @@ function TopPlayersTodayPanel({ data }) {
   return (
     <div>
       <SectionHeading>Today&apos;s top players</SectionHeading>
-      <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: COLORS.faded, margin: '0 0 18px', lineHeight: 1.6 }}>
+      <p style={{ fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded, margin: '0 0 18px', lineHeight: 1.6 }}>
         The ten players who spent the most time finishing games today, registered and anonymous alike.
         {data && data.day ? <span> Today is <span style={{ color: COLORS.ink }}>{dgDayLabel(data.day)}</span> (Eastern).</span> : null}
         {' '}Each individual game counts for at most {capMin} minutes, so a tab left idle on a solved puzzle cannot top the board. Where the uncapped total differs it is shown in grey.
@@ -3249,14 +3249,14 @@ function TopPlayersTodayPanel({ data }) {
             <button
               onClick={exportCsv}
               title="Download today's top ten with engaged time, plays, games, and the longest single game"
-              style={{ padding: '7px 12px', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, cursor: 'pointer' }}
+              style={{ padding: '7px 12px', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, cursor: 'pointer' }}
             >
               &#8595; Today CSV
             </button>
           </div>
 
           <div style={{ background: COLORS.paper, border: `1px solid ${COLORS.line}`, borderRadius: 8, padding: '6px 16px 10px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: COLORS.faded, padding: '7px 0', borderBottom: `1px solid ${COLORS.line}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: COLORS.faded, padding: '7px 0', borderBottom: `1px solid ${COLORS.line}` }}>
               <span style={{ flex: '0 0 22px', textAlign: 'right' }}>#</span>
               <span style={{ flex: '0 0 168px' }}>Player</span>
               <span style={{ flex: 1, minWidth: 80 }}>Engaged time</span>
@@ -3277,11 +3277,11 @@ function TopPlayersTodayPanel({ data }) {
                   title={`${r.name}${r.email ? ` (${r.email})` : ''}\n${tbdDur(r.seconds)} engaged across ${r.plays} game${r.plays === 1 ? '' : 's'} in ${r.games} title${r.games === 1 ? '' : 's'}${r.capped ? `\n${r.capped} game${r.capped === 1 ? '' : 's'} ran past the ${capMin}-minute cap (raw total ${tbdDur(r.rawSeconds)})` : ''}${r.device || r.geo ? `\n${[r.device, r.geo].filter(Boolean).join(' \u00b7 ')}` : ''}`}
                   style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '6px 0', borderBottom: i < players.length - 1 ? `1px solid ${COLORS.ink}12` : 'none' }}
                 >
-                  <span style={{ flex: '0 0 22px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 11, fontWeight: 700, color: i < 3 ? COLORS.ember : COLORS.faded }}>{i + 1}</span>
+                  <span style={{ flex: '0 0 22px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 11, fontWeight: 700, color: i < 3 ? COLORS.ember : COLORS.faded }}>{i + 1}</span>
 
                   <span style={{ flex: '0 0 168px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 12, fontWeight: 700, color: COLORS.ink }}>{r.name}</span>
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'DM Mono, monospace', fontSize: 9, letterSpacing: '0.06em', color: reg ? COLORS.ember : COLORS.faded }}>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'Manrope, monospace', fontSize: 9, letterSpacing: '0.06em', color: reg ? COLORS.ember : COLORS.faded }}>
                       {reg ? 'Registered' : 'Anon'}{r.geo ? <span style={{ color: COLORS.faded, textTransform: 'none', letterSpacing: 0 }}>{' \u00b7 '}{r.geo}</span> : null}
                     </span>
                   </span>
@@ -3290,25 +3290,25 @@ function TopPlayersTodayPanel({ data }) {
                     <span style={{ display: 'block', width: `${w}%`, height: '100%', background: COLORS.ember, borderRadius: 2 }} />
                   </span>
 
-                  <span style={{ flex: '0 0 92px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 11, fontWeight: 700, color: COLORS.ember, fontVariantNumeric: 'tabular-nums' }}>
+                  <span style={{ flex: '0 0 92px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 11, fontWeight: 700, color: COLORS.ember, fontVariantNumeric: 'tabular-nums' }}>
                     {tbdDur(r.seconds)}
                     {rawGap ? <span style={{ color: COLORS.faded, fontWeight: 400, fontSize: 9 }}>{' '}({tbdDur(r.rawSeconds)})</span> : null}
                   </span>
-                  <span style={{ flex: '0 0 44px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 11, color: COLORS.ink, fontVariantNumeric: 'tabular-nums' }}>{r.plays}</span>
-                  <span style={{ flex: '0 0 44px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 11, color: COLORS.faded, fontVariantNumeric: 'tabular-nums' }}>{r.games}</span>
+                  <span style={{ flex: '0 0 44px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.ink, fontVariantNumeric: 'tabular-nums' }}>{r.plays}</span>
+                  <span style={{ flex: '0 0 44px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded, fontVariantNumeric: 'tabular-nums' }}>{r.games}</span>
                   <span style={{ flex: '0 0 150px', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 10, color: COLORS.faded }}>
                     {r.topGame ? (
                       <Link href={`/quiz/${encodeURIComponent(r.topGame.quizId)}`} target="_blank" style={{ color: COLORS.faded, textDecoration: 'none' }}>{r.topGame.title}</Link>
                     ) : '\u2014'}
                   </span>
-                  <span style={{ flex: '0 0 66px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>{fmtEtClock(r.lastAt)}</span>
+                  <span style={{ flex: '0 0 66px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>{fmtEtClock(r.lastAt)}</span>
                 </div>
               );
             })}
           </div>
         </>
       ) : (
-        <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 12, color: COLORS.faded, fontStyle: 'italic' }}>No games finished yet today.</p>
+        <p style={{ fontFamily: 'Manrope, monospace', fontSize: 12, color: COLORS.faded, fontStyle: 'italic' }}>No games finished yet today.</p>
       )}
     </div>
   );
@@ -3362,7 +3362,7 @@ function GamesRankedPanel({ data }) {
     background: on ? `${COLORS.ember}1a` : 'transparent',
     border: `1px solid ${on ? COLORS.ember : COLORS.line}`,
     color: on ? COLORS.ember : COLORS.faded,
-    fontFamily: 'DM Mono, monospace',
+    fontFamily: 'Manrope, monospace',
     fontSize: 10,
     letterSpacing: '0.08em',
     textTransform: 'uppercase',
@@ -3386,7 +3386,7 @@ function GamesRankedPanel({ data }) {
     return (
       <div>
         <SectionHeading>Games at a glance</SectionHeading>
-        <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 12, color: COLORS.faded, fontStyle: 'italic' }}>No daily-game plays recorded yet.</p>
+        <p style={{ fontFamily: 'Manrope, monospace', fontSize: 12, color: COLORS.faded, fontStyle: 'italic' }}>No daily-game plays recorded yet.</p>
       </div>
     );
   }
@@ -3394,14 +3394,14 @@ function GamesRankedPanel({ data }) {
   const LegendKey = ({ color, label }) => (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
       <span style={{ width: 14, height: 8, borderRadius: 2, background: color, display: 'inline-block' }} />
-      <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{label}</span>
+      <span style={{ fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{label}</span>
     </span>
   );
 
   return (
     <div>
       <SectionHeading>Games at a glance</SectionHeading>
-      <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: COLORS.faded, margin: '0 0 18px', lineHeight: 1.6 }}>
+      <p style={{ fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded, margin: '0 0 18px', lineHeight: 1.6 }}>
         All {all.length} daily games ranked together: plays, unique players, and average time per play.
         Plays and players share a scale, so the gap between the two bars is repeat play. Registered and anonymous plays both count.
         {rate
@@ -3417,7 +3417,7 @@ function GamesRankedPanel({ data }) {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
-        <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: COLORS.faded, marginRight: 2 }}>Show</span>
+        <span style={{ fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: COLORS.faded, marginRight: 2 }}>Show</span>
         {[['rate', 'Per day live'], ['total', 'Lifetime total']].map(([key, label]) => (
           <button
             key={key}
@@ -3430,7 +3430,7 @@ function GamesRankedPanel({ data }) {
             {label}
           </button>
         ))}
-        <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: COLORS.faded, margin: '0 2px 0 10px' }}>Rank by</span>
+        <span style={{ fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: COLORS.faded, margin: '0 2px 0 10px' }}>Rank by</span>
         {[['plays', 'Plays'], ['players', 'Players'], ['time', 'Time / play']].map(([key, label]) => (
           <button key={key} onClick={() => setMetric(key)} style={pillStyle(metric === key)}>{label}</button>
         ))}
@@ -3442,7 +3442,7 @@ function GamesRankedPanel({ data }) {
         <button
           onClick={exportCsv}
           title="Download plays, players, plays per player, and time per play for every game shown"
-          style={{ marginLeft: 'auto', padding: '7px 12px', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, cursor: 'pointer' }}
+          style={{ marginLeft: 'auto', padding: '7px 12px', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, cursor: 'pointer' }}
         >
           &#8595; By-game CSV
         </button>
@@ -3453,7 +3453,7 @@ function GamesRankedPanel({ data }) {
           <LegendKey color={COLORS.ember} label={rate ? 'Plays / day live' : 'Total plays'} />
           <LegendKey color={COLORS.forest} label={rate ? 'Players / day live' : 'Unique players'} />
           <LegendKey color={COLORS.rust} label="Avg time / play" />
-          <span style={{ marginLeft: 'auto', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded }}>
+          <span style={{ marginLeft: 'auto', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>
             {rate ? 'Rates are per day since each game\u2019s first puzzle' : 'Raw lifetime counts \u00b7 older games are flattered'}
           </span>
         </div>
@@ -3471,9 +3471,9 @@ function GamesRankedPanel({ data }) {
               title={`${g.title}\nLifetime: ${g.plays.toLocaleString()} play${g.plays === 1 ? '' : 's'} \u00b7 ${g.players.toLocaleString()} player${g.players === 1 ? '' : 's'}${perPlayer ? ` (${perPlayer.toFixed(1)} plays each)` : ''}\nPer day live: ${g.daysLive ? (g.plays / g.daysLive).toFixed(1) : '0'} plays \u00b7 ${g.daysLive ? (g.players / g.daysLive).toFixed(1) : '0'} players\nLive ${g.daysLive.toLocaleString()} day${g.daysLive === 1 ? '' : 's'} since ${g.firstDay || 'launch'} \u00b7 ${g.daysActive.toLocaleString()} with plays\nAvg ${dgDur(g.avgTime)} per play`}
               style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '5px 0', borderBottom: i < games.length - 1 ? `1px solid ${COLORS.ink}12` : 'none', opacity: g.plays ? 1 : 0.45 }}
             >
-              <span style={{ flex: '0 0 22px', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded, textAlign: 'right' }}>{i + 1}</span>
+              <span style={{ flex: '0 0 22px', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded, textAlign: 'right' }}>{i + 1}</span>
               <span style={{ flex: '0 0 132px', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 12, fontWeight: 700, color: COLORS.ink }}>{g.title}</span>
-              <span style={{ flex: '0 0 42px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded, fontVariantNumeric: 'tabular-nums' }}>{g.daysLive ? `${g.daysLive}d` : '\u2014'}</span>
+              <span style={{ flex: '0 0 42px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded, fontVariantNumeric: 'tabular-nums' }}>{g.daysLive ? `${g.daysLive}d` : '\u2014'}</span>
 
               <span style={{ flex: 1, minWidth: 90, display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <span style={{ display: 'block', height: 9, background: `${COLORS.ink}0d`, borderRadius: 2, overflow: 'hidden' }}>
@@ -3484,21 +3484,21 @@ function GamesRankedPanel({ data }) {
                 </span>
               </span>
 
-              <span style={{ flex: '0 0 60px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 11, fontWeight: 700, color: g.plays ? COLORS.ember : COLORS.faded, fontVariantNumeric: 'tabular-nums' }}>{fmtVal(pv)}</span>
-              <span style={{ flex: '0 0 52px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 11, color: g.players ? COLORS.forest : COLORS.faded, fontVariantNumeric: 'tabular-nums' }}>{fmtVal(uv)}</span>
-              <span style={{ flex: '0 0 46px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded, fontVariantNumeric: 'tabular-nums' }}>{perPlayer ? `${perPlayer.toFixed(1)}\u00d7` : '\u2014'}</span>
+              <span style={{ flex: '0 0 60px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 11, fontWeight: 700, color: g.plays ? COLORS.ember : COLORS.faded, fontVariantNumeric: 'tabular-nums' }}>{fmtVal(pv)}</span>
+              <span style={{ flex: '0 0 52px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 11, color: g.players ? COLORS.forest : COLORS.faded, fontVariantNumeric: 'tabular-nums' }}>{fmtVal(uv)}</span>
+              <span style={{ flex: '0 0 46px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded, fontVariantNumeric: 'tabular-nums' }}>{perPlayer ? `${perPlayer.toFixed(1)}\u00d7` : '\u2014'}</span>
 
               <span style={{ flex: '0 0 108px', display: 'flex', alignItems: 'center', gap: 7 }}>
                 <span style={{ flex: 1, height: 6, background: `${COLORS.ink}0d`, borderRadius: 2, overflow: 'hidden' }}>
                   <span style={{ display: 'block', width: `${timeW}%`, height: '100%', background: COLORS.rust, borderRadius: 2 }} />
                 </span>
-                <span style={{ flex: '0 0 46px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: 10, color: g.avgTime ? COLORS.rust : COLORS.faded, fontVariantNumeric: 'tabular-nums' }}>{dgDur(g.avgTime)}</span>
+                <span style={{ flex: '0 0 46px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, color: g.avgTime ? COLORS.rust : COLORS.faded, fontVariantNumeric: 'tabular-nums' }}>{dgDur(g.avgTime)}</span>
               </span>
             </div>
           );
         })}
       </div>
-      <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, color: COLORS.faded, margin: '10px 0 0', lineHeight: 1.6 }}>
+      <p style={{ fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded, margin: '10px 0 0', lineHeight: 1.6 }}>
         Columns: days live, then {rate ? 'plays per day live, players per day live' : 'total plays, unique players'}, then plays per player (lifetime, so it does not move with the basis). A player who plays several games counts once in each game, so the per-game player counts sum to more than the site total.
       </p>
     </div>
@@ -3518,7 +3518,7 @@ function GroupsPanel() {
       .catch(() => { if (!dead) setData({ error: 'Could not load groups.' }); });
     return () => { dead = true; };
   }, []);
-  const mono = { fontFamily: 'DM Mono, monospace', fontSize: 11, color: COLORS.faded };
+  const mono = { fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded };
   const when = (iso) => (iso ? new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—');
   if (!data) return <div><SectionHeading>Groups</SectionHeading><p style={mono}>Loading…</p></div>;
   if (data.available === false) return <div><SectionHeading>Groups</SectionHeading><p style={mono}>The groups tables are not in the database yet (migration 56).</p></div>;
@@ -3555,7 +3555,7 @@ function GroupsPanel() {
             <strong style={{ fontSize: 14 }}>All groups</strong>
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, code, owner"
               style={{ marginLeft: 'auto', padding: '6px 10px', border: `1px solid ${COLORS.line}`, fontSize: 12, minWidth: 180 }} />
-            <button onClick={exportCsv} style={{ padding: '6px 10px', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, fontFamily: 'DM Mono, monospace', fontSize: 10, textTransform: 'uppercase', cursor: 'pointer' }}>↓ CSV</button>
+            <button onClick={exportCsv} style={{ padding: '6px 10px', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, fontFamily: 'Manrope, monospace', fontSize: 10, textTransform: 'uppercase', cursor: 'pointer' }}>↓ CSV</button>
           </div>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -3615,7 +3615,7 @@ function DailyGamesPanel({ data }) {
   return (
     <div>
       <SectionHeading>Daily games</SectionHeading>
-      <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: COLORS.faded, margin: '0 0 18px', lineHeight: 1.6 }}>
+      <p style={{ fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded, margin: '0 0 18px', lineHeight: 1.6 }}>
         Every completed play of the {games.length} daily games (registered and anonymous), one tile per game, most-played first. Averages are per active puzzle day across all time.
         {totals.today ? <span> Today is <span style={{ color: COLORS.ink }}>{dgDayLabel(totals.today)}</span>.</span> : null}
       </p>
@@ -3632,7 +3632,7 @@ function DailyGamesPanel({ data }) {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 14 }}>
-            <button onClick={exportGamesCsv} style={{ padding: '7px 12px', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, cursor: 'pointer' }}>↓ By-game CSV</button>
+            <button onClick={exportGamesCsv} style={{ padding: '7px 12px', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, cursor: 'pointer' }}>↓ By-game CSV</button>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 12 }}>
@@ -3640,7 +3640,7 @@ function DailyGamesPanel({ data }) {
           </div>
         </>
       ) : (
-        <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 12, color: COLORS.faded, fontStyle: 'italic' }}>No daily-game plays recorded yet.</p>
+        <p style={{ fontFamily: 'Manrope, monospace', fontSize: 12, color: COLORS.faded, fontStyle: 'italic' }}>No daily-game plays recorded yet.</p>
       )}
     </div>
   );
@@ -3688,7 +3688,7 @@ function TabButton({ active, onClick, children }) {
         color: active ? COLORS.cream : COLORS.ink,
         border: 'none',
         padding: '14px 12px',
-        fontFamily: 'DM Mono, monospace',
+        fontFamily: 'Manrope, monospace',
         fontSize: 11,
         letterSpacing: '0.18em',
         textTransform: 'uppercase',
@@ -3723,7 +3723,7 @@ function SubmissionCard({ list, busy, onApprove, onUnpublish, onReject }) {
         <div style={{ flex: 1, minWidth: 240 }}>
           <div
             style={{
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 10,
               letterSpacing: '0.2em',
               textTransform: 'uppercase',
@@ -3765,7 +3765,7 @@ function SubmissionCard({ list, busy, onApprove, onUnpublish, onReject }) {
             href={`/list/${encodeURIComponent(list.id)}`}
             target="_blank"
             style={{
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 10,
               letterSpacing: '0.18em',
               textTransform: 'uppercase',
@@ -3784,7 +3784,7 @@ function SubmissionCard({ list, busy, onApprove, onUnpublish, onReject }) {
         <summary
           style={{
             cursor: 'pointer',
-            fontFamily: 'DM Mono, monospace',
+            fontFamily: 'Manrope, monospace',
             fontSize: 10,
             letterSpacing: '0.18em',
             textTransform: 'uppercase',
@@ -3830,7 +3830,7 @@ function SubmissionCard({ list, busy, onApprove, onUnpublish, onReject }) {
               color: COLORS.cream,
               border: `1px solid ${COLORS.line}`,
               padding: '10px 16px',
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 10,
               letterSpacing: '0.18em',
               textTransform: 'uppercase',
@@ -3854,7 +3854,7 @@ function SubmissionCard({ list, busy, onApprove, onUnpublish, onReject }) {
               color: COLORS.ink,
               border: `1px solid ${COLORS.line}`,
               padding: '10px 16px',
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 10,
               letterSpacing: '0.18em',
               textTransform: 'uppercase',
@@ -3878,7 +3878,7 @@ function SubmissionCard({ list, busy, onApprove, onUnpublish, onReject }) {
             color: COLORS.ember,
             border: `1.5px solid ${COLORS.ember}`,
             padding: '10px 16px',
-            fontFamily: 'DM Mono, monospace',
+            fontFamily: 'Manrope, monospace',
             fontSize: 10,
             letterSpacing: '0.18em',
             textTransform: 'uppercase',
@@ -3947,7 +3947,7 @@ function ExtrasPanel({ extras, busy, onRename, onDelete }) {
           background: COLORS.paper,
           border: `1px solid ${COLORS.line}`,
           color: COLORS.ink,
-          fontFamily: 'DM Mono, monospace',
+          fontFamily: 'Manrope, monospace',
           fontSize: 12,
           outline: 'none',
         }}
@@ -4004,7 +4004,7 @@ function ExtrasGroup({ group, busy, onRename, onDelete }) {
         <div>
           <div
             style={{
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 10,
               letterSpacing: '0.2em',
               textTransform: 'uppercase',
@@ -4032,7 +4032,7 @@ function ExtrasGroup({ group, busy, onRename, onDelete }) {
           href={`/list/${encodeURIComponent(group.listId)}`}
           target="_blank"
           style={{
-            fontFamily: 'DM Mono, monospace',
+            fontFamily: 'Manrope, monospace',
             fontSize: 10,
             letterSpacing: '0.18em',
             textTransform: 'uppercase',
@@ -4091,7 +4091,7 @@ function ExtraRow({ listId, item, busy, onRename, onDelete }) {
       <div
         style={{
           minWidth: 44,
-          fontFamily: 'DM Mono, monospace',
+          fontFamily: 'Manrope, monospace',
           fontSize: 11,
           letterSpacing: '0.1em',
           color: item.score >= 0 ? COLORS.forest : COLORS.ember,
@@ -4200,7 +4200,7 @@ function iconButton(bg, color, busy, border) {
     color,
     border: `1.5px solid ${border || color}`,
     padding: '6px 10px',
-    fontFamily: 'DM Mono, monospace',
+    fontFamily: 'Manrope, monospace',
     fontSize: 10,
     letterSpacing: '0.16em',
     textTransform: 'uppercase',

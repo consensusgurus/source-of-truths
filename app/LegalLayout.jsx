@@ -30,7 +30,7 @@ export default function LegalLayout({ kicker, title, italic, children, updated }
           style={{
             background: 'transparent',
             border: 'none',
-            fontFamily: 'DM Mono, monospace',
+            fontFamily: 'Manrope, monospace',
             fontSize: 11,
             letterSpacing: '0.2em',
             textTransform: 'uppercase',
@@ -49,7 +49,7 @@ export default function LegalLayout({ kicker, title, italic, children, updated }
         <div style={{ borderBottom: `2px solid ${T.ink}`, paddingBottom: 20, marginTop: 16, marginBottom: 32 }}>
           <div
             style={{
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 11,
               letterSpacing: '0.25em',
               textTransform: 'uppercase',
@@ -83,7 +83,7 @@ export default function LegalLayout({ kicker, title, italic, children, updated }
             <div
               style={{
                 marginTop: 16,
-                fontFamily: 'DM Mono, monospace',
+                fontFamily: 'Manrope, monospace',
                 fontSize: 10,
                 letterSpacing: '0.2em',
                 textTransform: 'uppercase',

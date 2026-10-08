@@ -32,7 +32,7 @@ export default function ThanksPage() {
       >
         <div
           style={{
-            fontFamily: 'DM Mono, monospace',
+            fontFamily: 'Manrope, monospace',
             fontSize: 11,
             letterSpacing: '0.25em',
             textTransform: 'uppercase',
@@ -79,7 +79,7 @@ export default function ThanksPage() {
               color: T.surface,
               border: `1.5px solid ${T.ink}`,
               padding: '12px 22px',
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 11,
               letterSpacing: '0.2em',
               textTransform: 'uppercase',
@@ -97,7 +97,7 @@ export default function ThanksPage() {
               color: T.ink,
               border: `1.5px solid ${T.ink}`,
               padding: '12px 22px',
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 11,
               letterSpacing: '0.2em',
               textTransform: 'uppercase',

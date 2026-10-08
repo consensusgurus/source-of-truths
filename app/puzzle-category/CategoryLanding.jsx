@@ -33,7 +33,7 @@ import { useThemeQs } from '@/lib/stage-theme';
 import { PUZZLE_CATEGORIES, SUBSET_PARENT } from '@/lib/puzzle-categories';
 import { setsIn } from '@/lib/puzzle-sets';
 
-const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
+const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 
 // `page` is the category or set record (copy), `games` its roster, `parent`
 // the category record when `page` is a set or a subset page (null on a whole

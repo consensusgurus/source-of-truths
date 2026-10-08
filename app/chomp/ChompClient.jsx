@@ -87,7 +87,7 @@ import { DIRS, freshState, applyMove, anyLegal, isCleared, fillOf } from '@/lib/
 // label change could be read. A confirm this fast was never a decision.
 const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const COLORS = {
   ink: T.ink, cream: '#f7f8fa', faded: '#3f4757', line: '#e5e7eb',
   accent: '#a8430f', accentSoft: '#fbeadf', block: '#dc2626',

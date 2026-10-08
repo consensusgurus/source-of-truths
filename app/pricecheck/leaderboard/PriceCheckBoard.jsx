@@ -16,7 +16,7 @@ import { savedIdentity } from '@/lib/saved-identity';
 import { T } from '@/lib/theme';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 
 function fmtTime(ms) {
   const s = Math.max(0, Math.round(ms / 1000));

@@ -85,7 +85,7 @@ const REGION_FILLS_DONE = REGION_FILLS.map((hex) => {
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 });
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_judges_help_seen';
 const STATS_KEY = 'sot_judges_stats';
 const TOOL_KEY = 'sot_judges_tool';   // remembered marking tool: 'x' | 'judges'

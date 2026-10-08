@@ -315,7 +315,7 @@ export default function SnapshotClient({ listId, embedded, list: listProp, voteD
     return (
       <div style={{ padding: 48, textAlign: 'center', background: T.surface, minHeight: '100vh' }}>
         <p style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', color: T.slate }}>That list seems to have wandered off.</p>
-        <button onClick={() => router.push('/')} style={{ marginTop: 16, background: T.ink, color: T.surface, border: 'none', padding: '10px 20px', fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', cursor: 'pointer' }}>Back home</button>
+        <button onClick={() => router.push('/')} style={{ marginTop: 16, background: T.ink, color: T.surface, border: 'none', padding: '10px 20px', fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', cursor: 'pointer' }}>Back home</button>
       </div>
     );
   }
@@ -333,7 +333,7 @@ export default function SnapshotClient({ listId, embedded, list: listProp, voteD
       <div style={{ maxWidth: 760, margin: '0 auto' }}>
         {!embedded && (
           <button onClick={() => router.push(`/list/${encodeURIComponent(listId)}`)}
-            style={{ background: 'transparent', border: 'none', fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: T.ink, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, padding: '8px 0', marginBottom: 12 }}>
+            style={{ background: 'transparent', border: 'none', fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: T.ink, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, padding: '8px 0', marginBottom: 12 }}>
             <ArrowLeft size={14} strokeWidth={2.5} />Back to list
           </button>
         )}
@@ -345,7 +345,7 @@ export default function SnapshotClient({ listId, embedded, list: listProp, voteD
         <PickerRow label="Source">
           {modeOptions.map((opt) => {
             const active = mode === opt.id;
-            return <button key={opt.id} onClick={() => setMode(opt.id)} style={{ background: active ? T.ink : 'transparent', color: active ? T.surface : T.ink, border: `1.5px solid ${T.ink}`, padding: '6px 12px', fontFamily: 'DM Mono, monospace', fontSize: 10, lineHeight: 1.5, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600, cursor: 'pointer', maxWidth: '100%', textAlign: 'left' }}>{opt.label}</button>;
+            return <button key={opt.id} onClick={() => setMode(opt.id)} style={{ background: active ? T.ink : 'transparent', color: active ? T.surface : T.ink, border: `1.5px solid ${T.ink}`, padding: '6px 12px', fontFamily: 'Manrope, monospace', fontSize: 10, lineHeight: 1.5, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600, cursor: 'pointer', maxWidth: '100%', textAlign: 'left' }}>{opt.label}</button>;
           })}
         </PickerRow>
         )}
@@ -355,7 +355,7 @@ export default function SnapshotClient({ listId, embedded, list: listProp, voteD
             const active = colorScheme === key;
             return (
               <button key={key} onClick={() => setColorScheme(key)} title={scheme.label}
-                style={{ background: active ? T.ink : 'transparent', color: active ? T.surface : T.ink, border: `1.5px solid ${active ? T.ink : '#c8bdb0'}`, padding: '5px 10px', fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7 }}>
+                style={{ background: active ? T.ink : 'transparent', color: active ? T.surface : T.ink, border: `1.5px solid ${active ? T.ink : '#c8bdb0'}`, padding: '5px 10px', fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7 }}>
                 <span style={{ display: 'inline-flex', width: 20, height: 14, borderRadius: 2, overflow: 'hidden', border: active ? `1px solid ${T.surface}` : '1px solid #c8bdb0', flexShrink: 0 }}>
                   <span style={{ background: scheme.swatch[0], flex: 1 }} /><span style={{ background: scheme.swatch[1], flex: 1 }} />
                 </span>
@@ -376,7 +376,7 @@ export default function SnapshotClient({ listId, embedded, list: listProp, voteD
             );
           })}
         </PickerRow>
-        <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: T.slate, margin: '-6px 0 14px' }}>
+        <p style={{ fontFamily: 'Manrope, monospace', fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: T.slate, margin: '-6px 0 14px' }}>
           Spotlight &amp; Showcase use the top-3 photos when the list has them.
         </p>
 
@@ -392,7 +392,7 @@ export default function SnapshotClient({ listId, embedded, list: listProp, voteD
           </PosterScaler>
         </div>
 
-        <p style={{ marginTop: 20, fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: T.slate, textAlign: 'center' }}>
+        <p style={{ marginTop: 20, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: T.slate, textAlign: 'center' }}>
           1080 × 1350 · Instagram / Pinterest portrait
         </p>
         </>
@@ -411,7 +411,7 @@ export default function SnapshotClient({ listId, embedded, list: listProp, voteD
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={`/list/${encodeURIComponent(listId)}/poster-image`} alt="Instagram poster" loading="lazy" style={{ width: '100%', maxWidth: POSTER_W * 0.5, height: 'auto', display: 'block' }} />
           </div>
-          <p style={{ marginTop: 20, fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: T.slate, textAlign: 'center' }}>
+          <p style={{ marginTop: 20, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: T.slate, textAlign: 'center' }}>
             1080 × 1350 · server-rendered · /list/{list.id}/poster-image
           </p>
         </div>
@@ -424,7 +424,7 @@ export default function SnapshotClient({ listId, embedded, list: listProp, voteD
 function PickerRow({ label, children }) {
   return (
     <div style={{ marginBottom: 14 }}>
-      <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase', color: T.slate, marginBottom: 6, fontWeight: 600 }}>{label}</div>
+      <div style={{ fontFamily: 'Manrope, monospace', fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase', color: T.slate, marginBottom: 6, fontWeight: 600 }}>{label}</div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{children}</div>
     </div>
   );
@@ -433,7 +433,7 @@ function PickerRow({ label, children }) {
 function ActionButton({ onClick, children, disabled, primary }) {
   return (
     <button onClick={onClick} disabled={disabled}
-      style={{ background: primary ? T.ink : 'transparent', color: primary ? T.surface : T.ink, border: `1.5px solid ${T.ink}`, padding: '10px 16px', fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 600, cursor: disabled ? 'wait' : 'pointer', boxShadow: primary ? `3px 3px 0 ${T.accent}` : 'none', display: 'flex', alignItems: 'center', gap: 8, opacity: disabled ? 0.6 : 1 }}>
+      style={{ background: primary ? T.ink : 'transparent', color: primary ? T.surface : T.ink, border: `1.5px solid ${T.ink}`, padding: '10px 16px', fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 600, cursor: disabled ? 'wait' : 'pointer', boxShadow: primary ? `3px 3px 0 ${T.accent}` : 'none', display: 'flex', alignItems: 'center', gap: 8, opacity: disabled ? 0.6 : 1 }}>
       {children}
     </button>
   );
@@ -512,7 +512,7 @@ function PosterLedger({ list, items, modeLabel, sourceNames, pal }) {
   return (
     <div style={{ width: POSTER_W, height: POSTER_H, background: pal.bg, color: pal.text, boxSizing: 'border-box', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '48px 64px 22px', flexShrink: 0 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontFamily: 'DM Mono, monospace', fontSize: 13, letterSpacing: '0.28em', textTransform: 'uppercase', color: pal.faded, marginBottom: 18 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontFamily: 'Manrope, monospace', fontSize: 13, letterSpacing: '0.28em', textTransform: 'uppercase', color: pal.faded, marginBottom: 18 }}>
           <span style={{ color: pal.accent, fontWeight: 600 }}>Mind Loft</span>
           <span>{list.category} &middot; Top {Math.min(items.length, 10)}</span>
         </div>
@@ -533,7 +533,7 @@ function PosterLedger({ list, items, modeLabel, sourceNames, pal }) {
           );
         })}
       </div>
-      <div style={{ flexShrink: 0, padding: '14px 64px', borderTop: `2px solid ${pal.text}`, display: 'flex', justifyContent: 'space-between', fontFamily: 'DM Mono, monospace', fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', color: pal.faded }}>
+      <div style={{ flexShrink: 0, padding: '14px 64px', borderTop: `2px solid ${pal.text}`, display: 'flex', justifyContent: 'space-between', fontFamily: 'Manrope, monospace', fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', color: pal.faded }}>
         <span>{sourceNames && sourceNames.length > 0 ? `Sources: ${sourceNames.join(', ')}` : ''}</span>
         <span>mindloftdaily.com</span>
       </div>
@@ -546,7 +546,7 @@ function PosterStack({ list, items, modeLabel, sourceNames, pal }) {
   return (
     <div style={{ width: POSTER_W, height: POSTER_H, background: pal.bg, color: pal.text, boxSizing: 'border-box', fontFamily: 'Manrope, sans-serif', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '48px 56px 22px', flexShrink: 0 }}>
-        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 12, letterSpacing: '0.3em', textTransform: 'uppercase', color: pal.accent, fontWeight: 700, marginBottom: 14 }}>
+        <div style={{ fontFamily: 'Manrope, monospace', fontSize: 12, letterSpacing: '0.3em', textTransform: 'uppercase', color: pal.accent, fontWeight: 700, marginBottom: 14 }}>
           Mind Loft &middot; {list.category} &middot; {modeLabel}
         </div>
         <h1 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, textTransform: 'uppercase', fontSize: fitTitle(list.title, 74), lineHeight: 0.86, letterSpacing: '-0.04em', margin: 0, color: pal.text, maxWidth: '96%' }}>
@@ -565,8 +565,8 @@ function PosterStack({ list, items, modeLabel, sourceNames, pal }) {
         })}
       </div>
       <div style={{ flexShrink: 0, height: 46, background: pal.text, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 56px' }}>
-        <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: pal.bg, opacity: 0.8 }}>{sourceNames && sourceNames.length > 0 ? sourceNames.join(' · ') : ''}</span>
-        <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: pal.bg }}>mindloftdaily.com</span>
+        <span style={{ fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: pal.bg, opacity: 0.8 }}>{sourceNames && sourceNames.length > 0 ? sourceNames.join(' · ') : ''}</span>
+        <span style={{ fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: pal.bg }}>mindloftdaily.com</span>
       </div>
     </div>
   );
@@ -578,13 +578,13 @@ function PosterChart({ list, items, modeLabel, sourceNames, pal }) {
   return (
     <div style={{ width: POSTER_W, height: POSTER_H, background: pal.bg, color: pal.text, boxSizing: 'border-box', fontFamily: 'Manrope, sans-serif', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '46px 60px 20px', flexShrink: 0 }}>
-        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 12, letterSpacing: '0.3em', textTransform: 'uppercase', color: pal.accent, fontWeight: 700, marginBottom: 14 }}>
+        <div style={{ fontFamily: 'Manrope, monospace', fontSize: 12, letterSpacing: '0.3em', textTransform: 'uppercase', color: pal.accent, fontWeight: 700, marginBottom: 14 }}>
           Mind Loft &middot; {list.category}
         </div>
         <h1 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: fitTitle(list.title, 62), lineHeight: 0.9, letterSpacing: '-0.04em', margin: '0 0 8px', color: pal.text, maxWidth: '94%' }}>
           {list.title}
         </h1>
-        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase', color: pal.faded }}>{modeLabel}</div>
+        <div style={{ fontFamily: 'Manrope, monospace', fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase', color: pal.faded }}>{modeLabel}</div>
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '0 60px 8px' }}>
         {items.map((item, i) => {
@@ -593,7 +593,7 @@ function PosterChart({ list, items, modeLabel, sourceNames, pal }) {
           return (
             <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 9, borderBottom: i < items.length - 1 ? `1px solid rgba(${hexToRgb(pal.text)},0.12)` : 'none' }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 14 }}>
-                <span style={{ fontFamily: 'DM Mono, monospace', fontWeight: 800, fontSize: isTop ? 26 : 18, color: i < 3 ? pal.accent : pal.faded, minWidth: 44, flexShrink: 0 }}>{String(i + 1).padStart(2, '0')}</span>
+                <span style={{ fontFamily: 'Manrope, monospace', fontWeight: 800, fontSize: isTop ? 26 : 18, color: i < 3 ? pal.accent : pal.faded, minWidth: 44, flexShrink: 0 }}>{String(i + 1).padStart(2, '0')}</span>
                 <span style={{ fontFamily: 'Manrope, sans-serif', fontWeight: isTop ? 800 : 600, fontSize: isTop ? 34 : 26, color: pal.text, lineHeight: 1.02, letterSpacing: '-0.02em', flex: 1, wordBreak: 'break-word' }}>{item}</span>
               </div>
               <div style={{ height: isTop ? 16 : 11, width: `${w}%`, background: i === 0 ? pal.accent : `rgba(${hexToRgb(pal.accent)},${Math.max(1 - i * 0.07, 0.28)})`, borderRadius: 3 }} />
@@ -601,7 +601,7 @@ function PosterChart({ list, items, modeLabel, sourceNames, pal }) {
           );
         })}
       </div>
-      <div style={{ flexShrink: 0, padding: '12px 60px 24px', borderTop: `2px solid ${pal.accent}`, display: 'flex', justifyContent: 'space-between', fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: pal.faded }}>
+      <div style={{ flexShrink: 0, padding: '12px 60px 24px', borderTop: `2px solid ${pal.accent}`, display: 'flex', justifyContent: 'space-between', fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: pal.faded }}>
         <span>{sourceNames && sourceNames.length > 0 ? `Sources: ${sourceNames.join(', ')}` : ''}</span>
         <span>mindloftdaily.com</span>
       </div>
@@ -617,7 +617,7 @@ function PosterSpotlight({ list, items, modeLabel, sourceNames, pal }) {
   return (
     <div style={{ width: POSTER_W, height: POSTER_H, background: pal.bg, color: pal.text, boxSizing: 'border-box', fontFamily: 'Manrope, sans-serif', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '42px 56px 18px', flexShrink: 0 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'DM Mono, monospace', fontSize: 12, letterSpacing: '0.28em', textTransform: 'uppercase', color: pal.faded }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Manrope, monospace', fontSize: 12, letterSpacing: '0.28em', textTransform: 'uppercase', color: pal.faded }}>
           <span style={{ color: pal.accent, fontWeight: 700 }}>Mind Loft</span>
           <span>{list.category} &middot; {modeLabel}</span>
         </div>
@@ -636,12 +636,12 @@ function PosterSpotlight({ list, items, modeLabel, sourceNames, pal }) {
       <div style={{ flex: '3 0 0', display: 'flex', flexDirection: 'column', padding: '10px 56px 0' }}>
         {rest.map((item, i) => (
           <div key={i} style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 22, borderTop: `1px solid rgba(${hexToRgb(pal.text)},0.16)` }}>
-            <span style={{ fontFamily: 'DM Mono, monospace', fontWeight: 800, fontSize: 28, color: i < 2 ? pal.accent : pal.faded, minWidth: 52, flexShrink: 0 }}>{String(i + 2).padStart(2, '0')}</span>
+            <span style={{ fontFamily: 'Manrope, monospace', fontWeight: 800, fontSize: 28, color: i < 2 ? pal.accent : pal.faded, minWidth: 52, flexShrink: 0 }}>{String(i + 2).padStart(2, '0')}</span>
             <span style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 600, fontSize: 25, color: pal.text, lineHeight: 1.04, flex: 1, letterSpacing: '-0.02em', wordBreak: 'break-word' }}>{item}</span>
           </div>
         ))}
       </div>
-      <div style={{ flexShrink: 0, padding: '10px 56px 26px', display: 'flex', justifyContent: 'space-between', fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: pal.faded }}>
+      <div style={{ flexShrink: 0, padding: '10px 56px 26px', display: 'flex', justifyContent: 'space-between', fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: pal.faded }}>
         <span>{sourceNames && sourceNames.length > 0 ? `Sources: ${sourceNames.join(', ')}` : ''}</span>
         <span>mindloftdaily.com</span>
       </div>
@@ -670,14 +670,14 @@ function PosterShowcase({ list, items, modeLabel, sourceNames, pal }) {
   return (
     <div style={{ width: POSTER_W, height: POSTER_H, background: pal.bg, color: pal.text, boxSizing: 'border-box', fontFamily: 'Manrope, sans-serif', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '40px 56px 16px', flexShrink: 0 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'DM Mono, monospace', fontSize: 12, letterSpacing: '0.28em', textTransform: 'uppercase', color: pal.faded }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Manrope, monospace', fontSize: 12, letterSpacing: '0.28em', textTransform: 'uppercase', color: pal.faded }}>
           <span style={{ color: pal.accent, fontWeight: 700 }}>Mind Loft</span>
           <span>{list.category} &middot; Top {Math.min(items.length, 10)}</span>
         </div>
         <h1 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: fitTitle(list.title, 52), lineHeight: 0.9, letterSpacing: '-0.03em', margin: '14px 0 0', color: pal.text, maxWidth: '96%' }}>
           {list.title}
         </h1>
-        <div style={{ marginTop: 6, fontFamily: 'DM Mono, monospace', fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase', color: pal.faded }}>{modeLabel}</div>
+        <div style={{ marginTop: 6, fontFamily: 'Manrope, monospace', fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase', color: pal.faded }}>{modeLabel}</div>
       </div>
       <div style={{ flex: '2.6 0 0', display: 'flex', gap: 10, padding: '4px 56px 0' }}>
         <PhotoCard item={t3[0]} rank={1} big pal={pal} list={list} />
@@ -689,12 +689,12 @@ function PosterShowcase({ list, items, modeLabel, sourceNames, pal }) {
       <div style={{ flex: '2.1 0 0', display: 'flex', flexDirection: 'column', padding: '12px 56px 0' }}>
         {rest.map((item, i) => (
           <div key={i} style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 20, borderTop: `1px solid rgba(${hexToRgb(pal.text)},0.16)` }}>
-            <span style={{ fontFamily: 'DM Mono, monospace', fontWeight: 800, fontSize: 24, color: pal.faded, minWidth: 50, flexShrink: 0 }}>{String(i + 4).padStart(2, '0')}</span>
+            <span style={{ fontFamily: 'Manrope, monospace', fontWeight: 800, fontSize: 24, color: pal.faded, minWidth: 50, flexShrink: 0 }}>{String(i + 4).padStart(2, '0')}</span>
             <span style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 600, fontSize: 24, color: pal.text, lineHeight: 1.02, flex: 1, letterSpacing: '-0.02em', wordBreak: 'break-word' }}>{item}</span>
           </div>
         ))}
       </div>
-      <div style={{ flexShrink: 0, padding: '10px 56px 24px', display: 'flex', justifyContent: 'space-between', fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: pal.faded }}>
+      <div style={{ flexShrink: 0, padding: '10px 56px 24px', display: 'flex', justifyContent: 'space-between', fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: pal.faded }}>
         <span>{sourceNames && sourceNames.length > 0 ? `Sources: ${sourceNames.join(', ')}` : ''}</span>
         <span>mindloftdaily.com</span>
       </div>
@@ -707,13 +707,13 @@ function PosterScorecard({ list, items, modeLabel, sourceNames, pal }) {
   return (
     <div style={{ width: POSTER_W, height: POSTER_H, background: pal.bg, color: pal.text, boxSizing: 'border-box', fontFamily: 'Manrope, sans-serif', overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column' }}>
       <div style={{ background: pal.accent, padding: '36px 56px 28px', flexShrink: 0 }}>
-        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.36em', textTransform: 'uppercase', color: pal.bg, opacity: 0.7, marginBottom: 10 }}>
+        <div style={{ fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.36em', textTransform: 'uppercase', color: pal.bg, opacity: 0.7, marginBottom: 10 }}>
           Mind Loft &nbsp;/&nbsp; {list.category}
         </div>
         <h1 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 900, fontSize: fitTitle(list.title, 64), lineHeight: 0.92, letterSpacing: '-0.03em', margin: '0 0 12px', color: pal.bg, maxWidth: 880 }}>
           {list.title}
         </h1>
-        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 12, letterSpacing: '0.22em', textTransform: 'uppercase', color: pal.bg, opacity: 0.65 }}>
+        <div style={{ fontFamily: 'Manrope, monospace', fontSize: 12, letterSpacing: '0.22em', textTransform: 'uppercase', color: pal.bg, opacity: 0.65 }}>
           {modeLabel}
         </div>
       </div>
@@ -725,7 +725,7 @@ function PosterScorecard({ list, items, modeLabel, sourceNames, pal }) {
           return (
             <div key={i} style={{ display: 'flex', alignItems: 'center', background: isTop ? `rgba(${hexToRgb(pal.accent)},0.12)` : i % 2 === 0 ? 'transparent' : `rgba(${hexToRgb(pal.text)},0.04)`, borderBottom: `1px solid rgba(${hexToRgb(pal.text)},0.1)`, flex: isTop ? '1.5 0 0' : '1 0 0' }}>
               <div style={{ width: isTop ? 92 : 68, alignSelf: 'stretch', background: isTop ? pal.accent : isTop3 ? `rgba(${hexToRgb(pal.accent)},0.2)` : `rgba(${hexToRgb(pal.text)},0.07)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ fontFamily: 'DM Mono, monospace', fontWeight: 900, fontSize: isTop ? 48 : 26, color: isTop ? pal.bg : isTop3 ? pal.accent : pal.faded, letterSpacing: '-0.04em' }}>
+                <span style={{ fontFamily: 'Manrope, monospace', fontWeight: 900, fontSize: isTop ? 48 : 26, color: isTop ? pal.bg : isTop3 ? pal.accent : pal.faded, letterSpacing: '-0.04em' }}>
                   {i + 1}
                 </span>
               </div>
@@ -747,10 +747,10 @@ function PosterScorecard({ list, items, modeLabel, sourceNames, pal }) {
       </div>
 
       <div style={{ padding: '12px 56px', flexShrink: 0, borderTop: `2px solid ${pal.accent}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: pal.faded }}>
+        <div style={{ fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: pal.faded }}>
           {sourceNames && sourceNames.length > 0 ? `Sources: ${sourceNames.join(', ')}` : ''}
         </div>
-        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: pal.faded }}>mindloftdaily.com</div>
+        <div style={{ fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: pal.faded }}>mindloftdaily.com</div>
       </div>
     </div>
   );

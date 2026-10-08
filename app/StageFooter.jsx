@@ -26,7 +26,7 @@ import MindLoftMark from './MindLoftMark';
 import { FOOTER_COLS } from './Footer';
 import DailyRoster from './DailyRoster';
 
-const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
+const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 const SANS = 'Manrope, ui-sans-serif, system-ui, -apple-system, sans-serif';
 
 export default function StageFooter({ visitors: given }) {
@@ -62,7 +62,7 @@ export default function StageFooter({ visitors: given }) {
     <footer className="stgf" ref={ref}>
       {/* dangerouslySetInnerHTML, never a text child: React escapes an
           apostrophe on the server and <style> is a raw-text element, so the
-          font stack would ship as &#x27;JetBrains Mono&#x27; and the rule would
+          font stack would ship as &#x27;Manrope&#x27; and the rule would
           be dropped. See the note in app/circuits/CircuitFrame.jsx. */}
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="stgf-in">

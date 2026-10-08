@@ -955,7 +955,7 @@ export default function StageWelcome({ capRef }) {
   );
 }
 
-const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
+const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 
 const CSS = `
 .stw{position:fixed;inset:0;z-index:9000;cursor:pointer;display:grid;place-items:center;

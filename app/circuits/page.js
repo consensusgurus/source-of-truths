@@ -134,7 +134,7 @@ export default function CircuitsIndexPage() {
 }
 
 // NOTE: this block is a JS template literal, so no backticks in the comments.
-const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
+const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 
 const CSS = `
 .cix{display:flex;flex-direction:column;gap:30px;}

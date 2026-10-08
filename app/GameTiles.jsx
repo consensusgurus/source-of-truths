@@ -47,7 +47,7 @@ import { fetchDayStatus, etToday } from './useDayStats';
 import { categoryColor, categoryColorLight, categoryAccentInkLight } from '@/lib/category-ramp';
 import { dailyScoreText } from '@/lib/daily-games';
 
-const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
+const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 const TOP = 3;
 
 function mss(sec) {

@@ -268,7 +268,7 @@ const CSS = `
 .prm-x{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:8px;border:0;background:transparent;
   color:var(--stg-mute,#5f6774);cursor:pointer;display:grid;place-items:center;}
 .prm-x:hover{background:var(--stg-surf2,#e4e9f1);color:var(--stg-ink,#0b0d12);}
-.prm-eye{font:500 11px "DM Mono",ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;
+.prm-eye{font:500 11px "Manrope",ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;
   color:var(--stg-mute,#5f6774);display:flex;align-items:center;gap:8px;}
 .prm-eye i{width:8px;height:8px;border-radius:2px;background:var(--prm-acc,#fb923c);display:inline-block;}
 .prm h2{font-size:24px;font-weight:800;letter-spacing:-.015em;margin:6px 0 4px;line-height:1.15;}
@@ -281,11 +281,11 @@ const CSS = `
   place-items:center;color:var(--stg-ink,#0b0d12);}
 .prm-t b{display:block;font-size:15px;font-weight:800;}
 .prm-t span{display:block;font-size:12px;color:var(--stg-mute,#5f6774);line-height:1.3;}
-.prm-play{font:500 12px "DM Mono",ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;
+.prm-play{font:500 12px "Manrope",ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;
   background:var(--prm-acc,#fb923c);color:var(--prm-on,${RAMP_INK});border-radius:8px;padding:9px 14px;text-decoration:none;white-space:nowrap;}
 .prm-play:hover{filter:brightness(1.05);}
 .prm-play:focus-visible,.prm-x:focus-visible{outline:2px solid var(--stg-ink,#0b0d12);outline-offset:2px;}
-.prm-foot{margin-top:14px;font:400 11px "DM Mono",ui-monospace,Menlo,monospace;letter-spacing:.06em;
+.prm-foot{margin-top:14px;font:400 11px "Manrope",ui-monospace,Menlo,monospace;letter-spacing:.06em;
   color:var(--stg-mute,#5f6774);text-transform:uppercase;}
 @media (max-width:480px){
   .prm-row{grid-template-columns:40px 1fr;}

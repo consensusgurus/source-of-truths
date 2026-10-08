@@ -94,7 +94,7 @@ const SLOT = 'var(--stg-cell, rgba(255,255,255,0.06))';
 const SLOT_LINE = 'var(--stg-cell-line, rgba(255,255,255,0.30))';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_finesse_help_seen';
 const STATS_KEY = 'sot_finesse_stats';
 

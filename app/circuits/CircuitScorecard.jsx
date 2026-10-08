@@ -242,12 +242,12 @@ const CSS = `
 .csc-pip.open{opacity:.55;}
 .csc-pipn{display:block;font-weight:800;font-size:11.5px;letter-spacing:.02em;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis;line-height:1.45;}
-.csc-pips{display:block;font-family:'DM Mono',ui-monospace,monospace;font-size:10.5px;}
+.csc-pips{display:block;font-family:'Manrope',ui-monospace,monospace;font-size:10.5px;}
 
 .csc-card{background:var(--white,#fff);border:1.5px solid var(--border,#e5e7eb);border-radius:14px;
   overflow:hidden;margin-bottom:34px;}
 .csc-hd{padding:20px 18px 0;}
-.csc-eye{display:block;font-family:'DM Mono',ui-monospace,monospace;font-size:10.5px;letter-spacing:.14em;
+.csc-eye{display:block;font-family:'Manrope',ui-monospace,monospace;font-size:10.5px;letter-spacing:.14em;
   text-transform:uppercase;font-weight:800;margin-bottom:6px;}
 .csc-h1{font-size:26px;font-weight:800;line-height:1.2;margin:0;letter-spacing:-.01em;}
 .csc-lead{font-size:13.5px;font-weight:600;line-height:1.5;margin:7px 0 0;}
@@ -278,9 +278,9 @@ const CSS = `
   overflow:hidden;text-overflow:ellipsis;}
 .csc-rb{flex:1;min-width:40px;height:8px;border-radius:4px;background:var(--surface-alt,#eef2f7);overflow:hidden;}
 .csc-rb span{display:block;height:100%;background:var(--acc);}
-.csc-rv{font-family:'DM Mono',ui-monospace,monospace;font-size:15px;font-weight:700;flex:none;}
+.csc-rv{font-family:'Manrope',ui-monospace,monospace;font-size:15px;font-weight:700;flex:none;}
 .csc-rv em{font-style:normal;font-size:11.5px;}
-.csc-rr{width:58px;flex:none;text-align:right;font-family:'DM Mono',ui-monospace,monospace;font-size:11px;}
+.csc-rr{width:58px;flex:none;text-align:right;font-family:'Manrope',ui-monospace,monospace;font-size:11px;}
 .csc-play{flex:none;display:inline-flex;align-items:center;gap:6px;background:var(--accent,#233a63);
   border-radius:8px;padding:8px 13px;font-size:11px;font-weight:800;letter-spacing:.06em;
   text-transform:uppercase;text-decoration:none;}
@@ -288,7 +288,7 @@ const CSS = `
 /* THE BOARD, inside the card rather than a page away. */
 .csc-board{border-top:1px solid var(--border,#e5e7eb);padding:14px 18px 2px;}
 .csc-bh{display:flex;align-items:baseline;gap:9px;margin-bottom:9px;}
-.csc-bh span{font-family:'DM Mono',ui-monospace,monospace;font-size:10.5px;letter-spacing:.14em;
+.csc-bh span{font-family:'Manrope',ui-monospace,monospace;font-size:10.5px;letter-spacing:.14em;
   text-transform:uppercase;font-weight:800;}
 .csc-bh em{font-style:normal;font-size:11px;font-weight:700;}
 .csc-lb{border:1.5px solid var(--border,#e5e7eb);border-radius:11px;overflow:hidden;}

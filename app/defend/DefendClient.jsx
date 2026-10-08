@@ -104,7 +104,7 @@ const LAST_SQ = 'rgba(232,180,58,0.55)';
 // label change could be read. A confirm this fast was never a decision.
 const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_defend_help_seen';
 const STATS_KEY = 'sot_defend_stats';
 

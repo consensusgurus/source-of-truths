@@ -36,7 +36,7 @@ import { useThemeQs } from '@/lib/stage-theme';
 import CircuitFrame from '../CircuitFrame';
 import { TileGrid, deriveTileData, TILE_CSS } from '../../GameTiles';
 
-const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
+const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 
 // THIS COMPONENT OWNS THE FRAME rather than being wrapped in one by the page.
 // The cap's progress hairline is the run's own done/n, which only this

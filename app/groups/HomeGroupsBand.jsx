@@ -231,7 +231,7 @@ ${AVATAR_CSS}
   .hgb-cols > .fd > .hgb-feed > :nth-child(n+6){display:none;}
 }
 .hgb-h{display:flex;align-items:baseline;gap:9px;min-width:0;
-  font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:9.5px;letter-spacing:.12em;
+  font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:9.5px;letter-spacing:.12em;
   text-transform:uppercase;color:var(--stg-mute);}
 .hgb-nm{color:var(--stg-ink);text-decoration:none;font-weight:700;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap;max-width:16ch;}
@@ -257,7 +257,7 @@ ${AVATAR_CSS}
 
 .hgb-card{border:1px solid var(--stg-line);border-radius:12px;background:var(--stg-surf);
   padding:9px 12px;min-width:0;}
-.hgb-ft{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:.11em;
+.hgb-ft{font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:.11em;
   text-transform:uppercase;color:var(--stg-mute);padding-bottom:6px;}
 .hgb-none{font-size:12.5px;color:var(--stg-mute);padding:3px 0;}
 
@@ -266,12 +266,12 @@ ${AVATAR_CSS}
 .hgb-top b{font-weight:800;white-space:nowrap;}
 .hgb-em{font-style:normal;color:var(--stg-mute);font-size:12.5px;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap;}
-.hgb-gap{margin-left:auto;flex:none;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;
+.hgb-gap{margin-left:auto;flex:none;font-family:'Manrope',ui-monospace,Menlo,monospace;
   font-size:12.5px;font-variant-numeric:tabular-nums;}
 .hgb-gap.dn{color:var(--stg-dn);}
 .hgb-gap.up{color:var(--stg-up);}
 
-.hgb-sw{display:grid;gap:5px;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:11px;}
+.hgb-sw{display:grid;gap:5px;font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:11px;}
 .hgb-sw > div{display:grid;grid-template-columns:minmax(0,58px) minmax(0,1fr) 38px;gap:8px;align-items:center;}
 .hgb-gl{color:inherit;text-decoration:underline;text-decoration-color:var(--stg-line2);
   text-underline-offset:3px;}
@@ -292,9 +292,9 @@ ${AVATAR_CSS}
 .hgb-st > div{display:grid;grid-template-columns:16px 22px minmax(0,1fr) 42px 36px 44px;gap:8px;
   align-items:center;padding:5px 0;border-top:1px solid var(--stg-line);}
 .hgb-st > div:nth-child(2){border-top:0;}
-.hgb-st > .h{border-top:0;padding:0 0 3px;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;
+.hgb-st > .h{border-top:0;padding:0 0 3px;font-family:'Manrope',ui-monospace,Menlo,monospace;
   font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--stg-mute);}
-.hgb-st .rk,.hgb-st .rt{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:12px;
+.hgb-st .rk,.hgb-st .rt{font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:12px;
   font-variant-numeric:tabular-nums;}
 .hgb-st .rk{color:var(--stg-mute);}
 .hgb-st .rt{text-align:right;color:var(--stg-ink);}
@@ -314,7 +314,7 @@ ${AVATAR_CSS}
    is a nowrap grid item it leaves alone. One line, a bounded height and an
    explicit text-size-adjust take it out of the autosizer's reach. */
 .hgb-st > .foot{display:block;margin-top:4px;border-top:1px solid var(--stg-line);padding-top:7px;
-  font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:10.5px;line-height:1.4;color:var(--stg-mute);
+  font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:10.5px;line-height:1.4;color:var(--stg-mute);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-height:3em;
   -webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .hgb-st > .foot b{font-weight:500;color:var(--stg-ink2);}
@@ -328,13 +328,13 @@ ${AVATAR_CSS}
 .hgb-fx:first-child{border-top:0;padding-top:0;}
 .hgb-fx .ln{display:flex;flex-wrap:wrap;align-items:center;gap:4px 5px;min-width:0;line-height:22px;}
 .hgb-fx .ln b{font-size:13px;font-weight:700;margin-right:3px;white-space:nowrap;}
-.hgb-fx time{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--stg-mute);
+.hgb-fx time{font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--stg-mute);
   line-height:22px;white-space:nowrap;}
 .hgb-chip{display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 7px;border-radius:5px;
   background:var(--stg-surf2,rgba(255,255,255,.08));color:var(--stg-ink2);text-decoration:none;
   font-size:11.5px;white-space:nowrap;}
 .hgb-chip::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--cc,var(--stg-mute));}
-.hgb-chip em{font-style:normal;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:10.5px;
+.hgb-chip em{font-style:normal;font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:10.5px;
   color:var(--stg-mute);}
 .hgb-chip:hover{color:var(--stg-ink);}
 .hgb-chip:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
@@ -347,10 +347,10 @@ ${AVATAR_CSS}
 .hgb-fr .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .hgb-fr b{font-weight:700;}
 .hgb-fr em{font-style:normal;color:var(--stg-mute);}
-.hgb-fr .p{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:12px;
+.hgb-fr .p{font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:12px;
   font-variant-numeric:tabular-nums;color:var(--stg-ink);white-space:nowrap;}
 .hgb-fr .p i{font-style:normal;font-size:10.5px;color:var(--stg-mute);margin-left:4px;}
-.hgb-fr .lead{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:9.5px;font-weight:500;
+.hgb-fr .lead{font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:9.5px;font-weight:500;
   letter-spacing:.12em;text-transform:uppercase;color:var(--stg-warn,#fbbf24);
   background:color-mix(in srgb, var(--stg-warn,#fbbf24) 16%, transparent);
   border-radius:999px;padding:2px 6px;margin-left:5px;}

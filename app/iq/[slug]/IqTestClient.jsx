@@ -497,7 +497,7 @@ export default function IqTestClient({ test, pool, model, bankSize, measured }) 
 }
 
 // NOTE: a JS template literal, so no backticks in the comments.
-const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
+const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 
 
 const CSS = IQ_RAMP_CSS + `

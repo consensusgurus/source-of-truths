@@ -70,7 +70,7 @@ export default function LoginClient() {
       >
         <div
           style={{
-            fontFamily: 'DM Mono, monospace',
+            fontFamily: 'Manrope, monospace',
             fontSize: 11,
             letterSpacing: '0.25em',
             textTransform: 'uppercase',
@@ -110,7 +110,7 @@ export default function LoginClient() {
         >
           <label
             style={{
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 10,
               letterSpacing: '0.2em',
               textTransform: 'uppercase',
@@ -164,7 +164,7 @@ export default function LoginClient() {
               color: COLORS.cream,
               border: `1px solid ${COLORS.line}`,
               padding: '14px',
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 11,
               letterSpacing: '0.2em',
               textTransform: 'uppercase',

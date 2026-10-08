@@ -57,6 +57,11 @@ body {
   background: var(--accent);
   color: var(--ink);
   font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+  /* ONE TYPEFACE (owner, 2026-10-08): DM Mono and JetBrains Mono are gone and
+     every label, clock and score is Manrope. Its digits are made equal width
+     here so a ticking clock or a changing score never shifts the text beside
+     it, which is the one job the monospaced font was doing. */
+  font-variant-numeric: tabular-nums;
 }
 
 /* Fills the top safe-area strip when there IS one: the standalone / installed
@@ -685,7 +690,7 @@ html.stg-flip .stage-page * {
 .stg-tlab {
   position: absolute; top: calc(100% + 7px); right: 0; z-index: 6;
   pointer-events: none; white-space: nowrap;
-  font-family: 'DM Mono', ui-monospace, monospace; font-size: 9px;
+  font-family: 'Manrope', ui-monospace, monospace; font-size: 9px;
   letter-spacing: .13em; text-transform: uppercase; font-weight: 700;
   background: var(--stg-acc); color: var(--stg-onramp, #08222e);
   padding: 4px 8px; border-radius: 7px;
@@ -732,7 +737,7 @@ html.stg-flip .stage-page * {
 .stg-tpop-go {
   display: inline-flex; align-items: center; justify-content: center;
   padding: 8px 13px; border: 0; border-radius: 8px; cursor: pointer;
-  font-family: 'JetBrains Mono', 'DM Mono', ui-monospace, monospace;
+  font-family: 'Manrope', 'Manrope', ui-monospace, monospace;
   font-size: 10px; letter-spacing: .13em; text-transform: uppercase; font-weight: 700;
   background: var(--stg-acc, #38bdf8); color: var(--stg-onramp, #08222e);
 }

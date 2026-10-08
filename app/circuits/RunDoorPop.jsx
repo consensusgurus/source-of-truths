@@ -16,7 +16,7 @@
 // It also stays quiet when the page was opened FROM a run or a circuit
 // (?circuit= / ?five=), where the player is already inside one.
 //
-// IT WEARS THE RUN STAGE'S CLOTHES: near-black ground, DM Mono eyebrow, the
+// IT WEARS THE RUN STAGE'S CLOTHES: near-black ground, Manrope eyebrow, the
 // run's accent call to action carrying dark ink.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -25,7 +25,7 @@ import { T } from '@/lib/theme';
 
 const WAIT_MS = 900;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 
 export const RUN_DOORS = {
   pricecheck: {

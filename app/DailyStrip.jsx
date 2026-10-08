@@ -2950,7 +2950,7 @@ export default function DailyStrip({ board = null, layout = 'tiles', quizCats = 
         .dh-tile.done .dh-nolead{color:#5d7a68;}
         /* Replaces the icon + category chip on a finished tile. Wraps to two
            lines on a narrow tile, which is exactly the room those two freed. */
-        .dh-tcta{margin:6px 2px 0;font-family:'DM Mono',ui-monospace,monospace;font-size:8.5px;line-height:1.35;letter-spacing:.05em;text-transform:uppercase;color:var(--success-deep);max-width:100%;}
+        .dh-tcta{margin:6px 2px 0;font-family:'Manrope',ui-monospace,monospace;font-size:8.5px;line-height:1.35;letter-spacing:.05em;text-transform:uppercase;color:var(--success-deep);max-width:100%;}
         /* The play target on an unfinished tile: a real link stretched over the
            whole face, so the tile is one click from the game and still supports
            middle-click / open in new tab. It sits ABOVE the tile's own spans
@@ -3000,7 +3000,7 @@ export default function DailyStrip({ board = null, layout = 'tiles', quizCats = 
         .dh-tic{width:46px;height:30px;display:flex;align-items:center;justify-content:center;flex:none;margin:5px 0 6px;}
         .dh-tic img{height:24px;width:auto;max-width:30px;object-fit:contain;}
         .dh-tnm{font-size:15px;font-weight:800;letter-spacing:-.3px;line-height:1.34;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
-        .dh-tcat{margin-top:3px;font-family:'DM Mono',ui-monospace,monospace;font-size:9px;letter-spacing:.09em;text-transform:uppercase;border-radius:999px;padding:1px 6px;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+        .dh-tcat{margin-top:3px;font-family:'Manrope',ui-monospace,monospace;font-size:9px;letter-spacing:.09em;text-transform:uppercase;border-radius:999px;padding:1px 6px;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
         .dh-tmeta{display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;min-width:0;margin-top:auto;}
         .dh-mrow{display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:6px;max-width:100%;}
         .dh-nolead{color:#49525f;font-weight:600;}

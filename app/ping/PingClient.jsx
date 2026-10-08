@@ -76,7 +76,7 @@ const COLORS = {
 // label change could be read. A confirm this fast was never a decision.
 const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const PAPER = '#fbf9f4';
 const HELP_KEY = 'sot_ping_help_seen';
 const UNIT_KEY = 'sot_ping_unit';
@@ -844,7 +844,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
           {rings.map((r) => (
             <g key={`d${r.i}`} style={{ color: ringColor(r.x) }}>
               <circle cx={r.cx} cy={r.cy} r={(r.i === lastI ? 5 : 4) * u} fill="currentColor" strokeWidth={1.5} vectorEffect="non-scaling-stroke" style={{ stroke: halo }} />
-              <text x={r.cx + 7 * u} y={r.cy - 5 * u} fontSize={11 * u} fontFamily="DM Mono, ui-monospace, monospace" fill="currentColor"
+              <text x={r.cx + 7 * u} y={r.cy - 5 * u} fontSize={11 * u} fontFamily="Manrope, ui-monospace, monospace" fill="currentColor"
                 strokeWidth={3 * u} paintOrder="stroke" style={{ pointerEvents: 'none', stroke: halo }}>{narrow ? r.i + 1 : r.x.name}</text>
             </g>
           ))}

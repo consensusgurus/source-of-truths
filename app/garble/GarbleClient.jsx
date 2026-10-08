@@ -68,7 +68,7 @@ const COLORS = {
 // label change could be read. A confirm this fast was never a decision.
 const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const PAPER = '#fbf9f4';
 
 // iOS/iPadOS never fires beforeinstallprompt — A2HS lives in Safari's share

@@ -60,7 +60,7 @@ import ChallengeStrip from '../../../ChallengeStrip';
 import { RunChallengeButton, RunChallengeLine, runToken } from '../../../RunChallenge';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 
 const Q_SECONDS = 20;        // the same clock all five games run
 // HOW LONG THE HANDOVER HOLDS. 4.2s when the card was two lines, 8s once it

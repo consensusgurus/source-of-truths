@@ -59,7 +59,7 @@ const COLORS = {
   faded: T.muted,
 };
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const PAPER = '#fbf9f4';
 
 // Category palette, easiest -> trickiest: yellow, green, blue, RED — the

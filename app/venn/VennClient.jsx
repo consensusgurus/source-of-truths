@@ -65,7 +65,7 @@ const COLORS = {
   cA: `var(--stg-cA, ${T.blue})`, cB: 'var(--stg-cB, #be185d)', cC: 'var(--stg-cC, #0f766e)',
 };
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_venn_help_seen';
 const STATS_KEY = 'sot_venn_stats';
 const TOTAL = 12;

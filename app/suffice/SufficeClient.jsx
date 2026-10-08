@@ -71,7 +71,7 @@ const COLORS = {
   green: T.successDeep,
 };
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_suffice_help_seen';
 
 function etToday() {

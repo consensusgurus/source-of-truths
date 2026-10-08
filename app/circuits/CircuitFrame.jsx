@@ -31,7 +31,7 @@ import { categoryColor, categoryColorLight, categoryOnrampLight, categoryAccentI
 import MindLoftMark from '../MindLoftMark';
 import StageFooter from '../StageFooter';
 
-const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
+const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 const SANS = 'Manrope, ui-sans-serif, system-ui, -apple-system, sans-serif';
 
 export default function CircuitFrame({ cat = null, label = 'Circuits', progress = null, children }) {

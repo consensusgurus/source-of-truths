@@ -73,7 +73,7 @@ export default function SotHeader({ active }) {
 
 // No backtick anywhere in this string, comments included.
 const SANS = "'Manrope',system-ui,-apple-system,sans-serif";
-const MONO = "'DM Mono',ui-monospace,SFMono-Regular,Menlo,monospace";
+const MONO = "'Manrope',ui-monospace,SFMono-Regular,Menlo,monospace";
 
 const CSS = `
 .soth{background:var(--stg-ground,#0b0f1a);color:var(--stg-ink,#e9edf4);font-family:${SANS};

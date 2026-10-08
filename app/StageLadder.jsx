@@ -110,7 +110,7 @@ export default function StageLadder({
 const CSS = `
 .stl-wrap{display:flex;flex-direction:column;gap:9px;min-width:0;}
 .stl-wrap.v{height:100%;}
-.stl-l{font-family:'DM Mono',ui-monospace,monospace;font-size:9px;letter-spacing:.14em;
+.stl-l{font-family:'Manrope',ui-monospace,monospace;font-size:9px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--stg-mute2,#66748f);}
 .stl{display:flex;align-items:flex-end;gap:5px;width:100%;}
 .stl-b{display:flex;align-items:flex-end;gap:1px;min-width:0;height:100%;}

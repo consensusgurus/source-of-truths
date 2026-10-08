@@ -84,7 +84,7 @@ const ID = 'gauntlet';
 const WAIT_MS = 1500;
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 
 export default function GauntletPop({ ready = false, unplayed = false, day = '' }) {
   const [open, setOpen] = useState(false);

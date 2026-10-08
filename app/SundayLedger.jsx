@@ -23,7 +23,7 @@ import { categoryColor, categoryColorLight, categoryOnrampLight, RAMP_INK } from
 import { fetchDailyBoard, dailyBoardQuery, dailyBoardIdentity } from './dailyBoardClient';
 import { etToday } from './useDayStats';
 
-const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
+const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 // The week ending on `ymd` (YYYY-MM-DD, ET), as seven YYYY-MM-DD strings.

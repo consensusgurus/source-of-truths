@@ -39,7 +39,7 @@ import { gameFaq, gameFaqJsonLd, relatedGames, gameCategory } from '@/lib/game-s
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import StageFooter from './StageFooter';
 
-const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
+const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 const SANS = 'Manrope, ui-sans-serif, system-ui, -apple-system, sans-serif';
 
 export default function StageTail({ self, stage = true }) {
@@ -63,7 +63,7 @@ export default function StageTail({ self, stage = true }) {
         <section className="stq" aria-labelledby="stq-h">
           {/* dangerouslySetInnerHTML, never a text child: React escapes an
               apostrophe on the server and <style> is a raw-text element, so the
-              font stack would ship as &#x27;JetBrains Mono&#x27; and the rule
+              font stack would ship as &#x27;Manrope&#x27; and the rule
               would be dropped. See app/StageFooter.jsx. */}
           <style dangerouslySetInnerHTML={{ __html: CSS }} />
           {jsonLd ? (

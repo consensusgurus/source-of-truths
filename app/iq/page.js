@@ -103,7 +103,7 @@ export default function IqHome() {
   );
 }
 
-const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
+const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 
 const CSS = `
 .iqh{display:flex;flex-direction:column;gap:30px;}

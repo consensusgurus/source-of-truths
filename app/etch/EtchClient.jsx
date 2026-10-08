@@ -75,7 +75,7 @@ const COLORS = {
 // label change could be read. A confirm this fast was never a decision.
 const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_etch_help_seen';
 const STATS_KEY = 'sot_etch_stats';
 const TOOL_KEY = 'sot_etch_tool';   // remembered tool: 'fill' | 'mark'
@@ -269,7 +269,7 @@ const AIM_SLOP_PX = 11;
 const AIM_LABEL = { 0: 'Clear', 1: 'Fill', 2: 'Mark ×' };
 // The clue gutter is narrower than a playing square ON A PHONE ONLY, which
 // hands its width back to the squares. It is size-aware because the clue font
-// shrinks more slowly than the board grows: measured in DM Mono at the sizes
+// shrinks more slowly than the board grows: measured in Manrope at the sizes
 // clueFs actually renders, a two-digit clue is 10.8px at 10x10, 8.4px at 15x15
 // and 7.2px at 20x20, against gutters of 18.7 / 13.1 / 10.6px here. A flat
 // 0.66 clipped the 20x20 by 0.6px. Re-measure before narrowing any of these.

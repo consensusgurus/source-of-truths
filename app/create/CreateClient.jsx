@@ -174,7 +174,7 @@ export default function CreateClient({ lists }) {
           display: 'inline-flex',
           alignItems: 'center',
           gap: 6,
-          fontFamily: 'DM Mono, monospace',
+          fontFamily: 'Manrope, monospace',
           fontSize: 11,
           letterSpacing: '0.18em',
           textTransform: 'uppercase',
@@ -214,7 +214,7 @@ export default function CreateClient({ lists }) {
               onClick={() => chooseFormat(f)}
               style={{
                 cursor: 'pointer',
-                fontFamily: 'DM Mono, monospace',
+                fontFamily: 'Manrope, monospace',
                 fontSize: 13,
                 letterSpacing: '0.12em',
                 padding: '10px 18px',
@@ -297,7 +297,7 @@ export default function CreateClient({ lists }) {
                 >
                   <Plus size={16} strokeWidth={2.5} style={{ color: T.accent, flex: '0 0 auto' }} />
                   <span style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
-                    <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase', color: T.slate }}>{l.category}</span>
+                    <span style={{ fontFamily: 'Manrope, monospace', fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase', color: T.slate }}>{l.category}</span>
                     <span style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 600, fontSize: 17, fontVariationSettings: '"SOFT" 100' }}>{l.title}</span>
                   </span>
                 </button>
@@ -330,7 +330,7 @@ export default function CreateClient({ lists }) {
                 </button>
               </>
             ) : (
-              <span style={{ flex: 1, fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: T.slate }}>Open tile</span>
+              <span style={{ flex: 1, fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: T.slate }}>Open tile</span>
             )}
           </div>
         ))}
@@ -345,7 +345,7 @@ export default function CreateClient({ lists }) {
           </div>
         </div>
       </div>
-      <p style={{ textAlign: 'center', fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: T.slate, margin: '0 0 22px' }}>
+      <p style={{ textAlign: 'center', fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: T.slate, margin: '0 0 22px' }}>
         {BOARD_W} × {Math.round(boardH)} · share-ready PNG
       </p>
 
@@ -358,7 +358,7 @@ export default function CreateClient({ lists }) {
             display: 'inline-flex',
             alignItems: 'center',
             gap: 10,
-            fontFamily: 'DM Mono, monospace',
+            fontFamily: 'Manrope, monospace',
             fontSize: 13,
             letterSpacing: '0.14em',
             textTransform: 'uppercase',
@@ -383,7 +383,7 @@ export default function CreateClient({ lists }) {
 
 function SectionLabel({ children }) {
   return (
-    <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: T.slate, marginBottom: 10 }}>
+    <div style={{ fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: T.slate, marginBottom: 10 }}>
       {children}
     </div>
   );
@@ -404,7 +404,7 @@ const Board = forwardRef(function Board({ tiles, format, title, voteData, extras
             borderBottom: `2px solid ${T.ink}`,
             paddingBottom: 20,
             marginBottom: 28,
-            fontFamily: 'DM Mono, monospace',
+            fontFamily: 'Manrope, monospace',
             fontSize: 16,
             letterSpacing: '0.2em',
             textTransform: 'uppercase',
@@ -455,10 +455,10 @@ const Board = forwardRef(function Board({ tiles, format, title, voteData, extras
                 {t ? (
                   <>
                     <div style={{ marginBottom: 16 }}>
-                      <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 15, letterSpacing: '0.2em', textTransform: 'uppercase', opacity: 0.75 }}>{t.category}</span>
+                      <span style={{ fontFamily: 'Manrope, monospace', fontSize: 15, letterSpacing: '0.2em', textTransform: 'uppercase', opacity: 0.75 }}>{t.category}</span>
                     </div>
                     <h3 style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 700, fontSize: 28, lineHeight: 1.05, letterSpacing: '-0.02em', margin: '0 0 16px', fontVariationSettings: '"SOFT" 100' }}>{t.title}</h3>
-                    <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 13, letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.6, marginBottom: 10 }}>{pv.label}</div>
+                    <div style={{ fontFamily: 'Manrope, monospace', fontSize: 13, letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.6, marginBottom: 10 }}>{pv.label}</div>
                     <ol style={{ margin: 0, padding: 0, listStyle: 'none', fontFamily: 'Manrope, sans-serif', fontSize: 19 }}>
                       {pv.items.map((it, idx) => (
                         <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: idx < 2 ? `1px dashed ${T.slate}` : 'none' }}>
@@ -476,7 +476,7 @@ const Board = forwardRef(function Board({ tiles, format, title, voteData, extras
                     </ol>
                   </>
                 ) : (
-                  <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 8, color: T.slate, fontFamily: 'DM Mono, monospace', fontSize: 15, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+                  <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 8, color: T.slate, fontFamily: 'Manrope, monospace', fontSize: 15, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
                     <Plus size={28} strokeWidth={2} />
                     Tile {i + 1}
                   </span>
@@ -486,7 +486,7 @@ const Board = forwardRef(function Board({ tiles, format, title, voteData, extras
           })}
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: 28, fontFamily: 'DM Mono, monospace', fontSize: 14, letterSpacing: '0.2em', textTransform: 'uppercase', color: T.slate }}>
+        <div style={{ textAlign: 'center', marginTop: 28, fontFamily: 'Manrope, monospace', fontSize: 14, letterSpacing: '0.2em', textTransform: 'uppercase', color: T.slate }}>
           mindloftdaily.com
         </div>
       </div>

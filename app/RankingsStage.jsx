@@ -37,7 +37,7 @@ export default function RankingsStage({ children }) {
 // No backtick may appear anywhere in this string, comments included: one closes
 // the template literal and the build fails pointing somewhere else entirely.
 const SANS = "'Manrope',system-ui,-apple-system,sans-serif";
-const MONO = "'DM Mono',ui-monospace,SFMono-Regular,Menlo,monospace";
+const MONO = "'Manrope',ui-monospace,SFMono-Regular,Menlo,monospace";
 
 const CSS = `
 .rk-page{min-height:100vh;background:var(--stg-ground,#0b0f1a);color:var(--stg-ink,#e9edf4);

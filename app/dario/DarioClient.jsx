@@ -61,7 +61,7 @@ import { meRequest } from '@/app/quizMeClient';
 import { createDario, fmtRun, DARIO_TOTAL, TENTHS_CAP, LEVEL_NAMES, primeDarioAudio } from '@/lib/dario-engine';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const COLORS = { ink: T.ink, cream: '#f7f8fa', faded: '#3f4757', line: '#e5e7eb', accent: '#9a3412', accentSoft: '#fff1e6' };
 const HELP_KEY = 'sot_dario_help_seen';
 const STATS_KEY = 'sot_dario_stats';
