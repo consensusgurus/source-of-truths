@@ -35,7 +35,7 @@ export const LANE_DAYS = [
   [
     { c: 'Flags & Borders', t: 1, q: 'The flags of Denmark, Sweden, Norway, Finland and Iceland all share which design feature?', a: 'An off-center cross', d: ['A crescent moon', 'A canton of stars', 'A diagonal saltire'] },
     { c: 'Flags & Borders', t: 2, q: 'Which country occupies the southern tip of the Arabian Peninsula, bordering Saudi Arabia and Oman?', a: 'Yemen', d: ['Qatar', 'Bahrain', 'Kuwait'] },
-    { c: 'Flags & Borders', t: 3, q: 'Which country\'s flag is a horizontal tricolor of black, white and green with a red triangle at the hoist bearing a white seven-pointed star?', a: 'Jordan', d: ['Palestine', 'Sudan', 'Kuwait'] },
+    { c: 'Flags & Borders', t: 3, q: 'Which country\'s flag shows a white dragon across a diagonal split of yellow and orange?', a: 'Bhutan', d: ['Nepal', 'Sri Lanka', 'Mongolia'] },
     { c: 'Flags & Borders', t: 4, q: 'Which two national flags are a red band above a white band, alike in everything but their proportions?', a: 'Indonesia and Monaco', d: ['Poland and Czechia', 'Austria and Latvia', 'Peru and Canada'] },
     { c: 'Flags & Borders', t: 5, q: 'Campione d\'Italia is an Italian town completely surrounded by which country?', a: 'Switzerland', d: ['Austria', 'France', 'Slovenia'] },
   ],

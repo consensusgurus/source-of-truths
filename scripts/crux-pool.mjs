@@ -52,7 +52,7 @@ export const CATEGORIES = [
   { name: 'Golf scores', words: ['BIRDIE', 'EAGLE', 'BOGEY', 'ALBATROSS', 'CONDOR'] },
   { name: 'Seabirds', words: ['FULMAR', 'PETREL', 'GANNET', 'SKUA', 'PUFFIN', 'GUILLEMOT'] },
 
-  { name: 'Pottery steps', words: ['GLAZE', 'KILN', 'THROW', 'WEDGE', 'BISQUE', 'BURNISH'] },
+  { name: 'Pottery terms', words: ['GLAZE', 'KILN', 'THROW', 'WEDGE', 'BISQUE', 'BURNISH'] },
   { name: 'Golf clubs', words: ['PUTTER', 'NIBLICK', 'MASHIE', 'BRASSIE', 'CLEEK'] },
   { name: 'Baking steps', words: ['BATTER', 'PROOF', 'KNEAD', 'CREAM', 'SIFT', 'CRIMP'] },
   { name: 'Cookware', words: ['SKILLET', 'KETTLE', 'LADLE', 'COLANDER', 'RAMEKIN', 'PITCHER'] },
@@ -191,7 +191,7 @@ export const READS = {
   CRICKET: ['Cricket terms'],
   DUCK: ['Waterfowl'],
   GULLY: ['Landforms'],
-  SLIP: ['Pottery steps'],
+  SLIP: ['Pottery terms'],
   MAIDEN: ['Medieval ranks'],
   EAGLE: ['Birds of prey'],
   BIRDIE: ['Seabirds', 'Waterfowl'],

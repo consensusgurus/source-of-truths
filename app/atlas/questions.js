@@ -1157,7 +1157,7 @@ export const QUESTIONS = [
   { id: 'd46q10', cat: 'Countries & Peoples', tier: 2, q: 'The Day of the Dead, held at the start of November, is a major holiday in which country?', choices: ['Peru', 'Brazil', 'Mexico', 'Spain'], correct: 2 },
   { id: 'd46q11', cat: 'Capitals', tier: 3, q: 'Which capital city stands where the Blue Nile joins the White Nile?', choices: ['Khartoum', 'Cairo', 'Juba', 'Asmara'], correct: 0 },
   { id: 'd46q12', cat: 'Physical World', tier: 3, q: 'Which river flows through Prague?', choices: ['The Vltava', 'The Danube', 'The Oder', 'The Morava'], correct: 0 },
-  { id: 'd46q13', cat: 'Flags & Borders', tier: 3, q: 'Which country\'s flag is a horizontal tricolor of black, white and green with a red triangle at the hoist bearing a white seven-pointed star?', choices: ['Sudan', 'Kuwait', 'Palestine', 'Jordan'], correct: 3 },
+  { id: 'd46q13', cat: 'Flags & Borders', tier: 3, q: 'Which country\'s flag shows a white dragon across a diagonal split of yellow and orange?', choices: ['Nepal', 'Sri Lanka', 'Mongolia', 'Bhutan'], correct: 3 },
   { id: 'd46q14', cat: 'Places & Landmarks', tier: 3, q: 'Ha Long Bay, where thousands of limestone pillars rise from the water, draws visitors to which country?', choices: ['The Philippines', 'Laos', 'Vietnam', 'Thailand'], correct: 2 },
   { id: 'd46q15', cat: 'Countries & Peoples', tier: 3, q: 'Which game, played on horseback with long mallets, is thought to have begun in ancient Persia?', choices: ['Hurling', 'Croquet', 'Lacrosse', 'Polo'], correct: 3 },
   { id: 'd46q16', cat: 'Capitals', tier: 4, q: 'Which is the southernmost capital city of a sovereign state?', choices: ['Canberra', 'Wellington', 'Montevideo', 'Buenos Aires'], correct: 1 },

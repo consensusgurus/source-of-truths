@@ -1481,7 +1481,7 @@ export const PUZZLES = [
     ],
     categories: [
       { name: "Baking steps", words: ["BATTER", "CRIMP"] },
-      { name: "Pottery steps", words: ["THROW", "GLAZE"] },
+      { name: "Pottery terms", words: ["THROW", "GLAZE"] },
       { name: "Boxing punches", words: ["OVERHAND", "UPPERCUT"] },
       { name: "Baseball roles", words: ["SLUGGER", "SHORTSTOP"] },
     ],
@@ -1937,7 +1937,7 @@ export const PUZZLES = [
     categories: [
       { name: "Boxing punches", words: ["CROSS", "UPPERCUT"] },
       { name: "Tennis terms", words: ["VOLLEY", "TIEBREAK"] },
-      { name: "Pottery steps", words: ["THROW", "WEDGE"] },
+      { name: "Pottery terms", words: ["THROW", "WEDGE"] },
       { name: "Geology features", words: ["OUTCROP", "MORAINE"] },
     ],
     slots: [
@@ -2327,7 +2327,7 @@ export const PUZZLES = [
       { word: "GLAZE", reads: "Baking steps" },
     ],
     categories: [
-      { name: "Pottery steps", words: ["BISQUE", "GLAZE"] },
+      { name: "Pottery terms", words: ["BISQUE", "GLAZE"] },
       { name: "Golf clubs", words: ["BRASSIE", "MASHIE"] },
       { name: "Baking steps", words: ["CREAM", "SIFT"] },
       { name: "Cookware", words: ["LADLE", "SKILLET"] },
@@ -2863,10 +2863,10 @@ export const PUZZLES = [
     cols: 11,
     collisions: [
       { word: "WEDGE", reads: "Golf clubs" },
-      { word: "SLIP", reads: "Pottery steps" },
+      { word: "SLIP", reads: "Pottery terms" },
     ],
     categories: [
-      { name: "Pottery steps", words: ["WEDGE", "KILN"] },
+      { name: "Pottery terms", words: ["WEDGE", "KILN"] },
       { name: "Cricket terms", words: ["SLIP", "CREASE"] },
       { name: "Waterfowl", words: ["GADWALL", "POCHARD"] },
       { name: "Golf clubs", words: ["MASHIE", "PUTTER"] },
@@ -3378,7 +3378,7 @@ export const PUZZLES = [
       { word: "POT", reads: "Cookware" },
     ],
     categories: [
-      { name: "Pottery steps", words: ["BISQUE", "KILN"] },
+      { name: "Pottery terms", words: ["BISQUE", "KILN"] },
       { name: "Cookware", words: ["KETTLE", "RAMEKIN"] },
       { name: "Snooker terms", words: ["POT", "CANNON"] },
       { name: "Brass instruments", words: ["TROMBONE", "BUGLE"] },
@@ -3860,7 +3860,7 @@ export const PUZZLES = [
       { name: "Hats", words: ["BOWLER", "TRILBY"] },
       { name: "Carpentry joints", words: ["MITER", "MORTISE"] },
       { name: "Cricket terms", words: ["GULLY", "CREASE"] },
-      { name: "Pottery steps", words: ["BURNISH", "THROW"] },
+      { name: "Pottery terms", words: ["BURNISH", "THROW"] },
     ],
     slots: [
       { id: "1D", word: "BOWLER", row: 0, col: 1, dir: "D" },
@@ -4219,7 +4219,7 @@ export const PUZZLES = [
     ],
     categories: [
       { name: "Boxing punches", words: ["OVERHAND", "CROSS"] },
-      { name: "Pottery steps", words: ["WEDGE", "GLAZE"] },
+      { name: "Pottery terms", words: ["WEDGE", "GLAZE"] },
       { name: "Bowling terms", words: ["STRIKE", "SPARE"] },
       { name: "Golf clubs", words: ["MASHIE", "NIBLICK"] },
     ],

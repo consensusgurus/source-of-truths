@@ -37,7 +37,7 @@ export const LANE_DAYS = [
     { c: 'MLB', t: 2, q: 'The professional league abbreviated KBO plays in which country?', a: 'South Korea', d: ['Japan', 'Taiwan', 'Mexico'] },
     { c: 'MLB', t: 3, q: 'Hank Aaron finished his playing career in 1976 with which club?', a: 'The Milwaukee Brewers', d: ['The Atlanta Braves', 'The Chicago White Sox', 'The Texas Rangers'] },
     { c: 'MLB', t: 4, q: 'Which enormous venue served as the Dodgers home from 1958 through 1961?', a: 'The Los Angeles Memorial Coliseum', d: ['The Rose Bowl', 'Gilmore Field', 'Angel Stadium'] },
-    { c: 'MLB', t: 5, q: 'Who became executive director of the players union in 1966 and led it for 16 years?', a: 'Marvin Miller', d: ['Curt Flood', 'Donald Fehr', 'Robert Cannon'] },
+    { c: 'MLB', t: 5, q: 'Who became executive director of the Major League Baseball Players Association in 1966 and led it for 16 years?', a: 'Marvin Miller', d: ['Curt Flood', 'Donald Fehr', 'Robert Cannon'] },
   ],
   // day 6
   [
