@@ -1621,7 +1621,7 @@ export default function StageFinish({
             <div className="stf-rc">
               {bandOpt ? (
                 <button type="button" className="stf-back" onClick={bandOpt.onClick || (bandOpt.href ? () => { window.location.href = bandOpt.href; } : undefined)}>
-                  <span aria-hidden="true">&#8617;</span>{bandOpt.bandLabel}
+                  {bandOpt.bandLabel}
                 </button>
               ) : null}
               {duel ? (
