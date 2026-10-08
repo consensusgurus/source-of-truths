@@ -37,7 +37,7 @@ import { CATEGORY_RAMP, CATEGORY_RAMP_LIGHT } from '@/lib/category-ramp';
 import { QUIZ_HEROES, DEPT_HERO, qotdIdFor } from '@/lib/quiz-heroes';
 import { easternYmd } from '@/lib/challenges';
 
-const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
+const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 const SANS = "Manrope, ui-sans-serif, system-ui, -apple-system, sans-serif";
 
 // HOW MANY TILES A SHELF PEEKS. Geography alone is 438; a shelf is a sample

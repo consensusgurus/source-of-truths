@@ -53,8 +53,8 @@ const COLORS = {
   accent: '#be123c', accentSoft: '#fdecef', green: T.successDeep,
 };
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
-const STAMP_FONT = "'Stardos Stencil', 'DM Mono', ui-monospace, monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
+const STAMP_FONT = "'Stardos Stencil', 'Manrope', ui-monospace, monospace";
 const HELP_KEY = 'sot_passport_help_seen';
 const STATS_KEY = 'sot_passport_stats';
 const INKS = ['#a78bfa', '#60a5fa', '#34d399', '#f87171', '#fbbf24'];

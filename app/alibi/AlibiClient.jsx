@@ -80,7 +80,7 @@ const BAND_TINTS = ['#7c2230', '#5f6b7d', '#2c3a4d'];
 // Loft keeps BAND_TINTS untouched, so ?stage=0 renders exactly what shipped.
 const BAND_TINTS_STAGE = [46, 27, 15].map((p) => `color-mix(in srgb, var(--stg-acc) ${p}%, transparent)`);
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_alibi_help_seen';
 const STATS_KEY = 'sot_alibi_stats';
 const CATS = ['room', 'time', 'obj'];

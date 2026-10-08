@@ -72,7 +72,7 @@ export default function HomeInvite({ playedToday = 0, returning = null, withTq =
 
 const CSS = `
 .hgi{display:flex;flex-direction:column;gap:6px;min-width:0;align-self:start;}
-.hgi-h{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:9.5px;letter-spacing:.12em;
+.hgi-h{font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:9.5px;letter-spacing:.12em;
   text-transform:uppercase;color:var(--stg-mute);}
 .hgi-c{border:1px dashed var(--stg-line2);border-radius:12px;background:var(--stg-surf);
   padding:10px 12px;display:flex;flex-direction:column;gap:9px;min-width:0;}
@@ -85,11 +85,11 @@ const CSS = `
    var(--stg-on-acc), which does not exist, so both registers took the dark
    fallback and the light one read near-black on deep blue (owner report). */
 .hgi-go{flex:none;background:var(--stg-acc);color:var(--stg-onramp,#08222e);border-radius:9px;
-  padding:7px 13px;text-decoration:none;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  padding:7px 13px;text-decoration:none;font-family:'Manrope',ui-monospace,Menlo,monospace;
   font-size:10px;letter-spacing:.08em;text-transform:uppercase;}
 .hgi-go:hover{opacity:.9;}
 .hgi-alt{flex:none;border:1px solid var(--stg-line2);color:var(--stg-ink2);border-radius:9px;
-  padding:7px 11px;text-decoration:none;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  padding:7px 11px;text-decoration:none;font-family:'Manrope',ui-monospace,Menlo,monospace;
   font-size:10px;letter-spacing:.08em;text-transform:uppercase;}
 .hgi-alt:hover{border-color:var(--stg-line2);color:var(--stg-ink);}
 .hgi-x{margin-left:auto;background:none;border:0;color:var(--stg-mute);cursor:pointer;

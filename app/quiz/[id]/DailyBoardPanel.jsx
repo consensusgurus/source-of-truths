@@ -43,7 +43,7 @@ import { T } from '@/lib/theme';
 // Props: `self` (game key), `quizId` (scopes the combined fetch), `maxWidth`.
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const INK = T.ink;
 const SLATE = T.slate;
 const FADED = T.muted;

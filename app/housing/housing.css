@@ -1,9 +1,9 @@
 /* Housing Watch (mindloftdaily.com/housing). Every rule is scoped under .hw so
-   nothing here reaches the rest of Mind Loft. Manrope and DM Mono are already
+   nothing here reaches the rest of Mind Loft. Manrope and Manrope are already
    loaded by the root layout. */
 .hw {
   --font-manrope: 'Manrope';
-  --font-dm-mono: 'DM Mono';
+  --font-dm-mono: 'Manrope';
   --ground: #f2f1ed;
   --surface: #ffffff;
   --ink: #111111;

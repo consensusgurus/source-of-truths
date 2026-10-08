@@ -266,9 +266,9 @@ const CSS = `
   font-family:'Manrope',system-ui,-apple-system,sans-serif;}
 .rnx-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:11px;}
 .rnx-h.mt{margin-top:18px;}
-.rnx-cap{font-family:'DM Mono',ui-monospace,monospace;font-size:9px;letter-spacing:.13em;
+.rnx-cap{font-family:'Manrope',ui-monospace,monospace;font-size:9px;letter-spacing:.13em;
   text-transform:uppercase;color:#66748f;}
-.rnx-h em{font-style:normal;font-family:'DM Mono',ui-monospace,monospace;font-size:9px;
+.rnx-h em{font-style:normal;font-family:'Manrope',ui-monospace,monospace;font-size:9px;
   letter-spacing:.13em;text-transform:uppercase;color:${T.blue400};}
 
 .rnx-tiles{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
@@ -296,7 +296,7 @@ const CSS = `
 .rnx-pips{display:flex;gap:3px;margin:11px 0 10px;}
 .rnx-pips span{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.14);}
 .rnx-cm{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.rnx-cm i{font-style:normal;font-family:'DM Mono',ui-monospace,monospace;font-size:10px;color:#66748f;}
+.rnx-cm i{font-style:normal;font-family:'Manrope',ui-monospace,monospace;font-size:10px;color:#66748f;}
 /* Sky, not the brand CTA blue: see the note in RunClient's stylesheet. This
    stage's colour family is the ladder ramp, and every hue in it is a light
    pastel carrying dark ink. */
@@ -314,7 +314,7 @@ const CSS = `
   background:transparent;color:#9aa8c4;font-family:inherit;font-weight:800;font-size:12.5px;cursor:pointer;}
 .rnx-gh:hover{border-color:${T.blue400};color:#fff;}
 .rnx-gh.on{border-style:solid;border-color:${T.blue400};background:rgba(47,111,228,.12);color:#fff;}
-.rnx-gh s{text-decoration:none;font-family:'DM Mono',ui-monospace,monospace;font-weight:400;font-size:11px;
+.rnx-gh s{text-decoration:none;font-family:'Manrope',ui-monospace,monospace;font-weight:400;font-size:11px;
   color:#66748f;margin-left:6px;}
 .rnx-gh.on s{color:${T.blue200};}
 

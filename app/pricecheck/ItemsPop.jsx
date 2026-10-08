@@ -19,7 +19,7 @@ import RunNudgePop from '../circuits/RunNudgePop';
 import { PRICE_GAMES, fmtCents } from '@/lib/price-games';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const KEY = 'sot_pc_items';
 export const ITEMS_DELAY = 10000;
 const STALE_MS = 30 * 60 * 1000;

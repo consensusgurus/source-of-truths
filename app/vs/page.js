@@ -47,7 +47,7 @@ export default function ChallengePage({ searchParams }) {
   const href = ok ? challengeDest(g.href || `/${g.key}`, raw, c, etTodayISO(), run ? run.archive : true) : '/';
   const page = { minHeight: '100vh', background: '#0b0f1a', color: '#e9edf4', display: 'grid', placeItems: 'center', padding: '24px 16px', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif' };
   const card = { width: '100%', maxWidth: 460, border: '1px solid rgba(255,255,255,.11)', borderLeft: '4px solid #e8b43a', borderRadius: 12, padding: '22px 22px 24px', background: '#0e131f' };
-  const eb = { fontFamily: "'DM Mono', ui-monospace, Menlo, monospace", fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase', color: '#aab5c7', fontWeight: 700 };
+  const eb = { fontFamily: "'Manrope', ui-monospace, Menlo, monospace", fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase', color: '#aab5c7', fontWeight: 700 };
   // THE BUTTON'S INK IS SET ON THE BUTTON. The mock-up's "Take the challenge"
   // inherited a muted grey from its parent and could not be read on the fill.
   const btn = { display: 'inline-block', marginTop: 18, background: '#7dd3fc', color: '#08222e', fontWeight: 800, fontSize: 16, textDecoration: 'none', borderRadius: 9, padding: '12px 22px' };

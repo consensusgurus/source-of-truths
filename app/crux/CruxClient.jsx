@@ -104,9 +104,9 @@ const STAGE_BOARD_CSS = `
 `;
 
 // Editorial ink-and-paper identity (owner-approved mockup, 2026-07-11).
-// Fraunces + DM Mono are already loaded site-wide by app/layout.js.
+// Fraunces + Manrope are already loaded site-wide by app/layout.js.
 const SERIF = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const PAPER = '#fbf9f4';
 const TILE = T.white;
 const TILE_BORDER = 'rgba(28,30,36,0.42)';

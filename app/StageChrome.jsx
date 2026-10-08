@@ -440,7 +440,7 @@ export default function StageChrome({
 }
 
 const SANS = "'Manrope',system-ui,-apple-system,sans-serif";
-const MONO = "'DM Mono',ui-monospace,'SFMono-Regular',monospace";
+const MONO = "'Manrope',ui-monospace,'SFMono-Regular',monospace";
 
 // No backtick may appear anywhere in this string, comments included: one closes
 // the template literal and the build fails with an error pointing somewhere

@@ -75,7 +75,7 @@ export default function DailyRunRail({ gameKey }) {
 const CSS = `
 .drr{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:7px 16px;border-bottom:1px solid var(--stg-line,rgba(127,127,127,.25));
   font-family:'Manrope',system-ui,sans-serif;font-size:12px;}
-.drr-eb{font-family:'DM Mono',ui-monospace,monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute,#8a93a6);}
+.drr-eb{font-family:'Manrope',ui-monospace,monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute,#8a93a6);}
 .drr-chips{display:flex;gap:6px;flex-wrap:wrap;}
 .drr-c{padding:3px 9px;border-radius:999px;border:1px solid var(--stg-line,rgba(127,127,127,.3));color:var(--stg-ink2,inherit);
   text-decoration:none;font-weight:700;}

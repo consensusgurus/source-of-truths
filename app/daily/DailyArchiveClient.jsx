@@ -24,7 +24,7 @@ import { T } from '@/lib/theme';
 import { isRetiredDaily, dailyUnit } from '@/lib/daily-games';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const INK = T.ink;
 const FADED = T.muted;
 const MUTED = T.slate;

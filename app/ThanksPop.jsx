@@ -69,7 +69,7 @@ const RETURN_WAIT_MS = 900;
 const DONE_WAIT_MS = 5000;
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 
 function isReturningPlayer() {
   try {

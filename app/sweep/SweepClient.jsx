@@ -63,7 +63,7 @@ import { COLS, ROWS, decodeField, idx, neighbors, numberAt } from '@/lib/sweep-f
 // label change could be read. A confirm this fast was never a decision.
 const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const COLORS = {
   ink: T.ink, cream: '#f7f8fa', faded: '#3f4757', line: '#e5e7eb',
   accent: '#0f766e', accentSoft: '#e2f2f0', covered: '#c9d2e2', coveredHi: '#b7c2d6',

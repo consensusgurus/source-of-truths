@@ -9,7 +9,7 @@
 // offers today's new puzzle instead of running negative.
 import React, { useEffect, useState } from 'react';
 
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const SANS = "'Manrope', system-ui, sans-serif";
 
 function etSecondsPast(now) {

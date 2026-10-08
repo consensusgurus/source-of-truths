@@ -35,7 +35,7 @@
 //   stamp keeps it to one showing either way.
 //
 // IT WEARS THE RUN STAGE'S CLOTHES, as GauntletPop and ValetDoorPop do: the
-// near-black ground, a DM Mono eyebrow, rows as faint lifts with a rung down
+// near-black ground, a Manrope eyebrow, rows as faint lifts with a rung down
 // the left edge in each grid's own dark-ground colour (`colorNavy`, the value
 // the registry keeps for exactly this ground), and a light pastel call to
 // action carrying dark ink. Done rows are ticked and dimmed; the button names
@@ -54,7 +54,7 @@ export const SUDOKU_POP_STORE = 'sot_sudoku_pop';
 const WAIT_MS = 2000;
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 
 function etToday() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }

@@ -36,7 +36,7 @@ import { T } from '@/lib/theme';
 // them the card still renders, minus the This Quiz tile's figures.
 const C = { ember: T.accent, ink: T.ink, faded: T.muted, slate: T.slate, bord: '#e7eaf1', blue: T.blue, forest: T.success };
 const FONT = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 
 // The IQ hero's brain art, shared with the daily end card and the day-card share image.
 const BRAIN_EMPTY = '/day-card/brain-empty.png';

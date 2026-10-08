@@ -101,7 +101,7 @@ export default function ChooseNamePop() {
   );
 }
 
-const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
+const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 
 const CSS = `
 .cnp-scrim{position:fixed;inset:0;z-index:8200;display:flex;align-items:center;justify-content:center;

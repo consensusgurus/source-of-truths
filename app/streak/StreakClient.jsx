@@ -58,7 +58,7 @@ const COLORS = {
   accentSoft: '#fdecef', green: T.successDeep,
 };
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_streak_help_seen';
 const STATS_KEY = 'sot_streak_stats';
 
@@ -587,7 +587,7 @@ export default function StreakClient({ puzzles = [], questionsByNum = {}, forceN
       <circle cx="39" cy="39" r="33" fill="none" stroke="currentColor" strokeWidth="7" strokeLinecap="round"
         strokeDasharray={RING_C} strokeDashoffset={RING_C * (1 - ringFrac)} transform="rotate(-90 39 39)"
         style={{ color: ringTone, transition: 'stroke-dashoffset .1s linear' }} />
-      <text x="39" y="45" textAnchor="middle" fontFamily="DM Mono, monospace" fontSize="20" fill="currentColor" style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{ringSecs}s</text>
+      <text x="39" y="45" textAnchor="middle" fontFamily="Manrope, monospace" fontSize="20" fill="currentColor" style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{ringSecs}s</text>
     </svg>
   );
 

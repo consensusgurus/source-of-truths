@@ -86,7 +86,7 @@ const COLORS = {
   tile: '#f7edda',
 };
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_tuck_help_seen';
 const STATS_KEY = 'sot_tuck_stats';
 const SIZE = 9;

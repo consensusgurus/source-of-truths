@@ -82,7 +82,7 @@ import StageFooter from '../StageFooter';
 import HomeAbout from './HomeAbout';
 import { saveHomeSnap, releaseHomeSnap } from '@/lib/home-snapshot';
 
-const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
+const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 const SANS = "Manrope, ui-sans-serif, system-ui, -apple-system, sans-serif";
 
 const routeOf = (g) => g.href || `/${g.key}`;
@@ -711,7 +711,11 @@ export default function StageToday() {
       rank: g0.rank || null, total: me.total || 0, leading, gap, played: m.played,
     };
   }, [grp, grpOne]);
-  const dotsL = lens === 'group' ? dotsFor : null;
+  // THE GROUP LINE ON A TILE NO LONGER WAITS ON THE VIEW (owner, 2026-10-08).
+  // The Me / group / Everyone switch came off the page, but a browser that had
+  // once picked Me kept it in sot_home_lens and so never saw which games its
+  // group had played, with no way back. The tile now always says it.
+  const dotsL = dotsFor;
 
   // ARM THE ARRIVAL REVEAL, and only for a page someone is actually looking at.
   // A hidden tab does not advance an animation clock, so a section that mounts
@@ -3278,14 +3282,12 @@ ${PATCH_CSS}
 .sty-g.done.res{opacity:1;background:none;}
 .sty-g.done.res .sty-gn{color:var(--stg-mute);}
 .sty-g.done.res .sty-gi{opacity:.75;}
-/* STATE TWO, THE GROUP PLAYED IT AND YOU HAVE NOT (owner, 2026-09-25). A light
-   wash of the category over the card and a rule in the hue down the left
-   edge; the full fill belongs to a game YOU finished. The wash is 14% so the
-   group line's mute and ink tokens keep their contrast in both registers. */
-.sty-g.gw{background:color-mix(in srgb, var(--cc) 14%, var(--stg-surf));
-  border-color:color-mix(in srgb, var(--cc) 55%, var(--stg-line));
-  box-shadow:inset 3px 0 0 var(--cc);}
-.sty-g.gw:hover{border-color:var(--cc);box-shadow:inset 3px 0 0 var(--cc);}
+/* STATE TWO, THE GROUP PLAYED IT AND YOU HAVE NOT (owner, 2026-10-08, was a
+   wash and a left rule). The tile wears the same outline in the category hue
+   as a game you have started, and its description line gives way to the
+   group's leader on it; the full fill still belongs to a game YOU finished. */
+.sty-g.gw{border-color:var(--cc);}
+.sty-g.gw:hover{border-color:var(--cc);}
 /* A finished tile is the full fill, never dimmed, whether or not it has a
    result line yet. */
 .sty-g.done.grp{opacity:1;background:var(--cc);border-color:var(--cc);}

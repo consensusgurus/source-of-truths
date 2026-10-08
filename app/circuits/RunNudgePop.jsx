@@ -15,7 +15,7 @@ import { T } from '@/lib/theme';
 import { RUN_DOORS, runDoneToday } from './RunDoorPop';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 
 //
 // `chain` (owner, 2026-10-06): a list of targets offered one after another.

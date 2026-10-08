@@ -69,7 +69,7 @@ const COLORS = {
   greenSoft: '#eefaf1',
 };
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_feud_help_seen';
 const STATS_KEY = 'sot_feud_stats';
 const MAX_PER_PROMPT = 3;

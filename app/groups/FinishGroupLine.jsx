@@ -173,28 +173,28 @@ const CSS = `
 .fgl-card{background:var(--stg-raise,#0e131f);border:1px solid var(--stg-line,rgba(255,255,255,.11));border-radius:14px;padding:13px 14px 10px;}
 .fgl-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
 .fgl-h b{font-size:14.5px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.fgl-pill{flex:none;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+.fgl-pill{flex:none;font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;
   border:1px solid var(--stg-line2,rgba(255,255,255,.17));border-radius:999px;padding:2px 8px;color:var(--stg-ink2,#aab5c7);}
 .fgl-big{margin:4px 0 6px;font-size:19px;font-weight:800;letter-spacing:-.01em;}
-.fgl-mv{font-style:normal;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:12.5px;font-weight:600;margin-left:6px;white-space:nowrap;}
+.fgl-mv{font-style:normal;font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:12.5px;font-weight:600;margin-left:6px;white-space:nowrap;}
 .fgl-mv.up{color:var(--stg-up,#6ee7b7);}
 .fgl-mv.dn{color:var(--stg-dn,#fb7185);}
 .fgl-rows{display:flex;flex-direction:column;}
 .fgl-r{display:grid;grid-template-columns:18px 22px 1fr auto;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--stg-line,rgba(255,255,255,.11));font-size:13.5px;}
 .fgl-r:first-child{border-top:0;}
-.fgl-r .k{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:12px;color:var(--stg-mute,#8b95a8);text-align:right;}
+.fgl-r .k{font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:12px;color:var(--stg-mute,#8b95a8);text-align:right;}
 .fgl-r .n{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.fgl-r .s{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:12.5px;font-variant-numeric:tabular-nums;}
+.fgl-r .s{font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:12.5px;font-variant-numeric:tabular-nums;}
 /* A GAME ROW carries the run as well as what it was worth: 10/10 · 4:49 · 15. */
 .fgl-r.g{grid-template-columns:18px 22px minmax(0,1fr) auto auto;}
-.fgl-r.g .run{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:11.5px;
+.fgl-r.g .run{font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:11.5px;
   color:var(--stg-mute,#8b95a8);white-space:nowrap;}
 .fgl-gap b{font-weight:800;color:var(--stg-ink,#e9edf4);}
 .fgl-r.me{background:color-mix(in srgb, var(--stg-brand,#7dd3fc) 14%, transparent);margin:0 -8px;padding:6px 8px;border-radius:8px;border-top-color:transparent;}
 .fgl-r.me + .fgl-r{border-top-color:transparent;}
 .fgl-r.me .n{font-weight:800;}
 .fgl-gap{margin:6px 0 0;font-size:12.5px;color:var(--stg-mute,#8b95a8);}
-.fgl-link{display:inline-block;margin-top:8px;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.08em;
+.fgl-link{display:inline-block;margin-top:8px;font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.08em;
   text-transform:uppercase;color:var(--stg-ink,#e9edf4);text-decoration:underline;text-underline-offset:3px;}
 .fgl-mini{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px;padding:10px 14px;border-radius:12px;
   border:1px solid var(--stg-line,rgba(255,255,255,.11));background:var(--stg-raise,#0e131f);color:var(--stg-ink,#e9edf4);text-decoration:none;font-size:13.5px;}

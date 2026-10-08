@@ -72,7 +72,7 @@ const COLORS = {
   green: T.successDeep,
 };
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_strata_help_seen';
 const FALL_MS = 340;      // must match the CSS transition below
 const LIFT_MS = 260;      // how long a found word sits lit before it drops out

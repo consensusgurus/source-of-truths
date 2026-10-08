@@ -2462,7 +2462,7 @@ body:has(.stf-a2hs) :is(button,div):has(+ #stf-stats-slot):has(.lucide-smartphon
   .stf-door.pri .stf-ring b{width:25px;height:25px;font-size:11px;}
 }
 /* ONE FAMILY ON THE CARD (owner, 2026-10-07, option B). The card used to set
-   its labels and four kinds of numbers in JetBrains Mono, which no page ever
+   its labels and four kinds of numbers in Manrope, which no page ever
    loaded, so they drew in the system mono (Consolas / Courier New on Windows,
    SF Mono on an iPhone) beside Manrope. Labels are Manrope 800 caps now, every
    figure Manrope 800 with tabular digits, and "IQ earned" is a label too. */

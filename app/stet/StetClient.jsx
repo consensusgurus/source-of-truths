@@ -71,7 +71,7 @@ const COLORS = {
   greenSoft: '#eefaf1',
 };
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const PAPER = '#fbf9f4';
 // The proof sheet's fixed inks (see renderSentence). Physical paper, so these
 // hold on BOTH stage registers; each is measured against SH.paper.

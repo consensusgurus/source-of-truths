@@ -36,7 +36,7 @@ import useLoft from './useLoft';
 import { loftKey } from '@/lib/loft';
 import LoftCap from './LoftCap';
 
-// TYPE (owner, 2026-08-04): this meta line is Manrope, NOT DM Mono. The navy
+// TYPE (owner, 2026-08-04): this meta line is Manrope, NOT Manrope. The navy
 // header it sits under carries no mono at all, so the typewriter texture read
 // as a different product. tabular-nums does the one useful job mono was doing
 // here: the issue number and date keep a fixed digit width as they change day

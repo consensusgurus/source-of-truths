@@ -621,7 +621,7 @@ function ListDetail({ list, viewCount, voteData, userVotes, extras, relatedLists
                 </p>
                 <button
                   onClick={() => { setComplainOpen(false); setComplainSent(false); setComplainMsg(''); setComplainName(''); setComplainEmail(''); }}
-                  style={{ cursor: 'pointer', background: T.ink, color: T.surface, border: `1.5px solid ${T.ink}`, padding: '12px 20px', fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600 }}
+                  style={{ cursor: 'pointer', background: T.ink, color: T.surface, border: `1.5px solid ${T.ink}`, padding: '12px 20px', fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600 }}
                 >
                   Close
                 </button>
@@ -661,14 +661,14 @@ function ListDetail({ list, viewCount, voteData, userVotes, extras, relatedLists
                 <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                   <button
                     onClick={() => setComplainOpen(false)}
-                    style={{ cursor: 'pointer', background: 'transparent', color: T.ink, border: `1.5px solid ${T.ink}`, padding: '10px 18px', fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600 }}
+                    style={{ cursor: 'pointer', background: 'transparent', color: T.ink, border: `1.5px solid ${T.ink}`, padding: '10px 18px', fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600 }}
                   >
                     Cancel
                   </button>
                   <button
                     onClick={submitComplaint}
                     disabled={complainBusy}
-                    style={{ cursor: 'pointer', background: T.blueDeep, color: T.surface, border: `1.5px solid ${T.blueDeep}`, padding: '10px 18px', fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, opacity: complainBusy ? 0.6 : 1 }}
+                    style={{ cursor: 'pointer', background: T.blueDeep, color: T.surface, border: `1.5px solid ${T.blueDeep}`, padding: '10px 18px', fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, opacity: complainBusy ? 0.6 : 1 }}
                   >
                     {complainBusy ? 'Sending…' : 'Send to editors'}
                   </button>
@@ -714,7 +714,7 @@ function ListDetail({ list, viewCount, voteData, userVotes, extras, relatedLists
           <div style={{ marginBottom: 30 }}>
             <div
               style={{
-                fontFamily: 'DM Mono, monospace',
+                fontFamily: 'Manrope, monospace',
                 fontSize: 11,
                 letterSpacing: '0.18em',
                 textTransform: 'uppercase',
@@ -743,7 +743,7 @@ function ListDetail({ list, viewCount, voteData, userVotes, extras, relatedLists
                     background: T.accent,
                     color: T.surface,
                     border: 'none',
-                    fontFamily: 'DM Mono, monospace',
+                    fontFamily: 'Manrope, monospace',
                     fontSize: 12,
                     letterSpacing: '0.18em',
                     textTransform: 'uppercase',
@@ -784,7 +784,7 @@ function ListDetail({ list, viewCount, voteData, userVotes, extras, relatedLists
                           gap: 6,
                         }}
                       >
-                        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, opacity: 0.85 }}>
+                        <div style={{ fontFamily: 'Manrope, monospace', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, opacity: 0.85 }}>
                           {labels[slot]}{locked ? ' · cast' : ''}
                         </div>
                         <div style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 15, fontWeight: 600, flex: 1, lineHeight: 1.1, fontStyle: val ? 'normal' : 'italic', color: !val && !isActive ? T.slate : 'inherit' }}>
@@ -793,7 +793,7 @@ function ListDetail({ list, viewCount, voteData, userVotes, extras, relatedLists
                         {val && !locked && (
                           <button
                             onClick={(e) => { e.stopPropagation(); removeVoteSelection(slot); }}
-                            style={{ alignSelf: 'flex-start', background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer', fontFamily: 'DM Mono, monospace', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', padding: 0, textDecoration: 'underline' }}
+                            style={{ alignSelf: 'flex-start', background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer', fontFamily: 'Manrope, monospace', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', padding: 0, textDecoration: 'underline' }}
                           >
                             Remove
                           </button>
@@ -805,7 +805,7 @@ function ListDetail({ list, viewCount, voteData, userVotes, extras, relatedLists
 
                 <div
                   style={{
-                    fontFamily: 'DM Mono, monospace',
+                    fontFamily: 'Manrope, monospace',
                     fontSize: 10,
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase',
@@ -820,7 +820,7 @@ function ListDetail({ list, viewCount, voteData, userVotes, extras, relatedLists
                 {completing && (
                   <button
                     onClick={cancelCompleting}
-                    style={{ marginTop: 8, background: 'transparent', border: 'none', color: T.slate, cursor: 'pointer', fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', padding: 0, textDecoration: 'underline' }}
+                    style={{ marginTop: 8, background: 'transparent', border: 'none', color: T.slate, cursor: 'pointer', fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', padding: 0, textDecoration: 'underline' }}
                   >
                     Cancel
                   </button>
@@ -834,14 +834,14 @@ function ListDetail({ list, viewCount, voteData, userVotes, extras, relatedLists
                   const val = userCurrentVote[slot];
                   if (!val) {
                     return (
-                      <div key={slot} style={{ padding: '12px', minHeight: 72, border: `1.5px dashed ${T.slate}`, opacity: 0.5, fontFamily: 'DM Mono, monospace', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', color: T.slate }}>
+                      <div key={slot} style={{ padding: '12px', minHeight: 72, border: `1.5px dashed ${T.slate}`, opacity: 0.5, fontFamily: 'Manrope, monospace', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', color: T.slate }}>
                         {labels[slot]}
                       </div>
                     );
                   }
                   return (
                     <div key={slot} style={{ padding: '12px', minHeight: 72, background: colors[slot], color: T.surface, border: `1.5px solid ${colors[slot]}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, opacity: 0.85 }}>{labels[slot]}</div>
+                      <div style={{ fontFamily: 'Manrope, monospace', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, opacity: 0.85 }}>{labels[slot]}</div>
                       <div style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 15, fontWeight: 600, lineHeight: 1.1 }}>{val}</div>
                     </div>
                   );
@@ -859,7 +859,7 @@ function ListDetail({ list, viewCount, voteData, userVotes, extras, relatedLists
                   background: 'transparent',
                   color: T.ink,
                   border: `1.5px solid ${T.ink}`,
-                  fontFamily: 'DM Mono, monospace',
+                  fontFamily: 'Manrope, monospace',
                   fontSize: 11,
                   letterSpacing: '0.16em',
                   textTransform: 'uppercase',
@@ -875,7 +875,7 @@ function ListDetail({ list, viewCount, voteData, userVotes, extras, relatedLists
           {/* Choices as tiles (no rank numbers) */}
           <div
             style={{
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 11,
               letterSpacing: '0.18em',
               textTransform: 'uppercase',
@@ -938,7 +938,7 @@ function ListDetail({ list, viewCount, voteData, userVotes, extras, relatedLists
                   {isSelected && (
                     <div
                       style={{
-                        fontFamily: 'DM Mono, monospace',
+                        fontFamily: 'Manrope, monospace',
                         fontSize: 10,
                         letterSpacing: '0.12em',
                         textTransform: 'uppercase',
@@ -995,7 +995,7 @@ function ListDetail({ list, viewCount, voteData, userVotes, extras, relatedLists
                 color: T.surface,
                 border: 'none',
                 padding: '8px 16px',
-                fontFamily: 'DM Mono, monospace',
+                fontFamily: 'Manrope, monospace',
                 fontSize: 10,
                 letterSpacing: '0.18em',
                 textTransform: 'uppercase',
@@ -1051,7 +1051,7 @@ function ListDetail({ list, viewCount, voteData, userVotes, extras, relatedLists
             marginTop: 48,
             paddingTop: 18,
             borderTop: `1px solid ${T.slate}`,
-            fontFamily: 'DM Mono, monospace',
+            fontFamily: 'Manrope, monospace',
             fontSize: 9,
             letterSpacing: '0.18em',
             textTransform: 'uppercase',
@@ -1088,7 +1088,7 @@ function TabButton({ active, onClick, icon, children }) {
         color: active ? T.surface : T.ink,
         border: 'none',
         padding: '14px 12px',
-        fontFamily: 'DM Mono, monospace',
+        fontFamily: 'Manrope, monospace',
         fontSize: 11,
         letterSpacing: '0.18em',
         textTransform: 'uppercase',
@@ -1399,7 +1399,7 @@ function DataRow({ rank, item, list, unranked, showPrice }) {
               flexWrap: 'wrap',
               alignItems: 'center',
               gap: '6px 10px',
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 11,
               letterSpacing: '0.04em',
               marginTop: (list.descriptions && list.descriptions[item]) ? 10 : 10,
@@ -1664,7 +1664,7 @@ export default function DetailClient({ listId, seo = null }) {
               color: T.surface,
               border: 'none',
               padding: '10px 20px',
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 11,
               letterSpacing: '0.2em',
               textTransform: 'uppercase',

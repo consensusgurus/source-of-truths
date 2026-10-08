@@ -28,7 +28,7 @@ import { savedIdentity } from '@/lib/saved-identity';
 import { T } from '@/lib/theme';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 // SHARED, and mounted on the stage: module-level literals meant the dark ink
 // of the Loft on the near-black ground. The tokens are undefined off the stage,
 // so the fallbacks keep it exactly as it was.

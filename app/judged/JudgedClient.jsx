@@ -42,7 +42,7 @@ const CLIENTS = {
 };
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const SERIF = "'Newsreader', Georgia, 'Times New Roman', serif";
 const LOW = LAW_LADDER.length - 1;
 

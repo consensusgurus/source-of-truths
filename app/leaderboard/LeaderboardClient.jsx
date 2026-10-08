@@ -12,8 +12,8 @@ function RankRow({ rank, name, value }) {
   const medal = rank <= 3 ? MEDAL[rank - 1] : null;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 3px', borderBottom: `1px solid rgba(26,22,17,0.12)` }}>
-      <span style={{ flex: 'none', width: 24, height: 24, borderRadius: '50%', background: medal || 'transparent', border: medal ? `1.5px solid ${T.ink}` : `1.5px solid rgba(26,22,17,0.2)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'DM Mono, monospace', fontSize: 11, fontWeight: 500, color: medal ? T.ink : T.slate }}>{rank}</span>
-      <span style={{ flex: '1 1 auto', minWidth: 0, fontFamily: 'DM Mono, monospace', fontSize: 12.5, fontWeight: 500, color: T.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
+      <span style={{ flex: 'none', width: 24, height: 24, borderRadius: '50%', background: medal || 'transparent', border: medal ? `1.5px solid ${T.ink}` : `1.5px solid rgba(26,22,17,0.2)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Manrope, monospace', fontSize: 11, fontWeight: 500, color: medal ? T.ink : T.slate }}>{rank}</span>
+      <span style={{ flex: '1 1 auto', minWidth: 0, fontFamily: 'Manrope, monospace', fontSize: 12.5, fontWeight: 500, color: T.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
       <span style={{ flex: 'none', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 700, fontSize: 15, color: T.ink }}>{value}</span>
     </div>
   );
@@ -26,10 +26,10 @@ function Column({ icon: Icon, title, anon, note, rows, empty }) {
         <Icon size={16} strokeWidth={2} aria-hidden="true" style={{ flex: 'none', marginTop: 2, color: T.accent }} />
         <h2 style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 600, fontSize: 16, lineHeight: 1.1, letterSpacing: '-0.01em', margin: 0, color: T.ink }}>
           {title}
-          {anon ? <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 9.5, fontWeight: 500, letterSpacing: '0.04em', color: T.slate, marginLeft: 6, whiteSpace: 'nowrap' }}>({anon})</span> : null}
+          {anon ? <span style={{ fontFamily: 'Manrope, monospace', fontSize: 9.5, fontWeight: 500, letterSpacing: '0.04em', color: T.slate, marginLeft: 6, whiteSpace: 'nowrap' }}>({anon})</span> : null}
         </h2>
       </div>
-      <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: T.slate, marginBottom: 10 }}>{note}</div>
+      <div style={{ fontFamily: 'Manrope, monospace', fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: T.slate, marginBottom: 10 }}>{note}</div>
       <div style={{ borderTop: `2px solid ${T.accent}` }}>
         {rows.length > 0 ? rows.map((r, i) => (
           <RankRow key={`${r.name}-${i}`} rank={i + 1} name={r.name} value={r.value} />
@@ -116,10 +116,10 @@ export default function LeaderboardClient() {
       <Grain />
       <div style={{ position: 'relative', zIndex: 2 }}>
         <header style={{ padding: '40px 24px 18px', maxWidth: 1300, margin: '0 auto' }}>
-          <Link href="/quizzes" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600, color: T.slate, textDecoration: 'none', marginBottom: 22 }}>
+          <Link href="/quizzes" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600, color: T.slate, textDecoration: 'none', marginBottom: 22 }}>
             <ArrowLeft size={15} strokeWidth={2.5} /> All Quizzes
           </Link>
-          <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: T.accent, marginBottom: 10 }}>Quiz Champions</div>
+          <div style={{ fontFamily: 'Manrope, monospace', fontSize: 11, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: T.accent, marginBottom: 10 }}>Quiz Champions</div>
           <h1 style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 600, fontSize: 'clamp(34px, 7vw, 60px)', lineHeight: 0.95, letterSpacing: '-0.015em', margin: '0 0 14px', fontVariationSettings: '"SOFT" 100', color: T.ink }}>
             The <span style={{ fontStyle: 'italic', fontWeight: 400, color: T.accent }}>Quiz</span> Leaderboard
           </h1>
@@ -150,7 +150,7 @@ export default function LeaderboardClient() {
                 {[['registered', 'Registered'], ['anon', 'Anonymous'], ['combined', 'Combined']].map(([k, label], idx) => {
                   const on = view === k;
                   return (
-                    <button key={k} onClick={() => setView(k)} style={{ padding: '8px 15px', background: on ? T.ink : 'transparent', color: on ? T.surface : T.ink, border: 'none', borderLeft: idx === 0 ? 'none' : `1.5px solid ${T.ink}`, fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, cursor: 'pointer' }}>{label}</button>
+                    <button key={k} onClick={() => setView(k)} style={{ padding: '8px 15px', background: on ? T.ink : 'transparent', color: on ? T.surface : T.ink, border: 'none', borderLeft: idx === 0 ? 'none' : `1.5px solid ${T.ink}`, fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, cursor: 'pointer' }}>{label}</button>
                   );
                 })}
               </div>
@@ -158,13 +158,13 @@ export default function LeaderboardClient() {
                 {[['all', 'All Time'], ['today', 'Today']].map(([k, label], idx) => {
                   const on = period === k;
                   return (
-                    <button key={k} onClick={() => setPeriod(k)} style={{ padding: '8px 15px', background: on ? T.ink : 'transparent', color: on ? T.surface : T.ink, border: 'none', borderLeft: idx === 0 ? 'none' : `1.5px solid ${T.ink}`, fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, cursor: 'pointer' }}>{label}</button>
+                    <button key={k} onClick={() => setPeriod(k)} style={{ padding: '8px 15px', background: on ? T.ink : 'transparent', color: on ? T.surface : T.ink, border: 'none', borderLeft: idx === 0 ? 'none' : `1.5px solid ${T.ink}`, fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, cursor: 'pointer' }}>{label}</button>
                   );
                 })}
               </div>
             </div>
           )}
-          <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.03em', color: T.slate, margin: '0 0 18px', maxWidth: 720 }}>
+          <p style={{ fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.03em', color: T.slate, margin: '0 0 18px', maxWidth: 720 }}>
             {metric === 'daily'
               ? 'The signed-up player who banked the most correct answers each day. A fresh champion is crowned every day.'
               : `${view === 'anon' ? 'Players who never signed up, batched by browser and shown under a stable Guest handle.' : view === 'combined' ? 'Registered and anonymous players merged into one combined ranking.' : 'Signed-up players only. Switch to Anonymous or Combined to see everyone else.'}${period === 'today' ? ' Showing today only.' : ''}`}
@@ -177,7 +177,7 @@ export default function LeaderboardClient() {
                     <Crown size={16} strokeWidth={2} aria-hidden="true" style={{ flex: 'none', marginTop: 2, color: T.accent }} />
                     <h2 style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 600, fontSize: 16, lineHeight: 1.1, letterSpacing: '-0.01em', margin: 0, color: T.ink }}>Daily Champions</h2>
                   </div>
-                  <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: T.slate, marginBottom: 10 }}>Most correct answers each day</div>
+                  <div style={{ fontFamily: 'Manrope, monospace', fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: T.slate, marginBottom: 10 }}>Most correct answers each day</div>
                   <div style={{ borderTop: `2px solid ${T.accent}` }}>
                     {dailyRows.length > 0 ? (
                       <div className="lb-daily-grid">
@@ -202,13 +202,13 @@ export default function LeaderboardClient() {
           )}
           <style dangerouslySetInnerHTML={{ __html: `
             .lb-metrics{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;}
-            .lb-metric{display:inline-flex;align-items:center;gap:7px;padding:9px 14px;background:${T.surfaceAlt};border:1.5px solid ${T.ink};font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;color:${T.ink};cursor:pointer;}
+            .lb-metric{display:inline-flex;align-items:center;gap:7px;padding:9px 14px;background:${T.surfaceAlt};border:1.5px solid ${T.ink};font-family:'Manrope',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;color:${T.ink};cursor:pointer;}
             .lb-metric:hover{background:#e4dbc8;}
             .lb-metric.on{background:${T.accent};color:${T.surface};}
             .lb-single{max-width:none;}
             .lb-daily-grid{display:grid;grid-auto-flow:column;grid-template-rows:repeat(10,auto);gap:0 36px;}
             .lb-daily-row{display:flex;align-items:center;gap:12px;padding:8px 3px;border-bottom:1px solid rgba(26,22,17,0.12);min-width:0;}
-            .lb-daily-date{flex:none;min-width:46px;font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:${T.accent};}
+            .lb-daily-date{flex:none;min-width:46px;font-family:'Manrope',monospace;font-size:12px;font-weight:700;color:${T.accent};}
             .lb-daily-name{flex:1 1 auto;min-width:0;font-family:'Manrope',serif;font-size:15px;font-weight:500;color:${T.ink};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
             @media(max-width:680px){.lb-daily-grid{grid-auto-flow:row;grid-template-rows:none;grid-template-columns:1fr;}}
             .lb-title{min-height:46px;}

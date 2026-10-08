@@ -129,7 +129,7 @@ function stripWeight(label) {
   return typeof label === 'string' ? label.replace(/\s*·\s*[\d.]+x\s*Weight/i, '') : label;
 }
 
-const MONO = "'DM Mono', monospace";
+const MONO = "'Manrope', monospace";
 const SERIF = "'Manrope', serif";
 const SANS = "'Manrope', sans-serif";
 

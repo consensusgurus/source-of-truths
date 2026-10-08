@@ -106,7 +106,7 @@ function linkBtn(primary) {
     display: 'inline-flex',
     alignItems: 'center',
     gap: 5,
-    fontFamily: 'DM Mono, monospace',
+    fontFamily: 'Manrope, monospace',
     fontSize: 8,
     letterSpacing: '0.13em',
     textTransform: 'uppercase',
@@ -251,7 +251,7 @@ function HeroPhoto({ photo, alt, poster, href, rel, fit = 'cover', bg, pad = 0, 
               bottom: 0,
               right: 0,
               zIndex: 1,
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 7,
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
@@ -300,7 +300,7 @@ function HeroPhoto({ photo, alt, poster, href, rel, fit = 'cover', bg, pad = 0, 
             bottom: 0,
             right: 0,
             zIndex: 1,
-            fontFamily: 'DM Mono, monospace',
+            fontFamily: 'Manrope, monospace',
             fontSize: 7,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
@@ -348,7 +348,7 @@ function PhotoBox({ style }) {
       <Camera size={26} color="#9a8e7a" style={{ position: 'relative', zIndex: 1 }} strokeWidth={1.5} />
       <span
         style={{
-          fontFamily: 'DM Mono, monospace',
+          fontFamily: 'Manrope, monospace',
           fontSize: 8,
           letterSpacing: '0.14em',
           textTransform: 'uppercase',
@@ -427,7 +427,7 @@ function HeroTile({ item, rank, list, desc, pics, poster }) {
             {locality && (
               <span
                 style={{
-                  fontFamily: 'DM Mono, monospace',
+                  fontFamily: 'Manrope, monospace',
                   fontSize: 9,
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
@@ -516,7 +516,7 @@ function SmallTile({ item, rank, list, desc, pics, poster }) {
         {locality && (
           <span
             style={{
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 8,
               letterSpacing: '0.1em',
               textTransform: 'uppercase',
@@ -581,7 +581,7 @@ function LedgerRow({ item, rank, list, desc, pics, isTop, heavyDivider, poster, 
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, minWidth: 0 }}>
           <span style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 17, fontWeight: 700, color: T.ink, fontVariationSettings: '"SOFT" 100', lineHeight: 1.15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{displayName}</span>
           {locality && (
-            <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: T.slate, marginLeft: 'auto', whiteSpace: 'nowrap', flexShrink: 0 }}>{locality}</span>
+            <span style={{ fontFamily: 'Manrope, monospace', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: T.slate, marginLeft: 'auto', whiteSpace: 'nowrap', flexShrink: 0 }}>{locality}</span>
           )}
         </div>
       </div>
@@ -667,7 +667,7 @@ function LedgerRow({ item, rank, list, desc, pics, isTop, heavyDivider, poster, 
           {locality && (
             <span
               style={{
-                fontFamily: 'DM Mono, monospace',
+                fontFamily: 'Manrope, monospace',
                 fontSize: 9,
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
@@ -730,7 +730,7 @@ function LedgerRow({ item, rank, list, desc, pics, isTop, heavyDivider, poster, 
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
             <span
               style={{
-                fontFamily: 'DM Mono, monospace',
+                fontFamily: 'Manrope, monospace',
                 fontSize: 8,
                 fontWeight: 700,
                 letterSpacing: '0.13em',
@@ -790,7 +790,7 @@ function CompactRow({ item, rank }) {
       </div>
       <span style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 16, fontWeight: 700, color: T.ink, fontVariationSettings: '"SOFT" 100', lineHeight: 1.15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{displayName}</span>
       {locality && (
-        <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 8, letterSpacing: '0.1em', textTransform: 'uppercase', color: T.slate, marginLeft: 'auto', whiteSpace: 'nowrap', flexShrink: 0 }}>{locality}</span>
+        <span style={{ fontFamily: 'Manrope, monospace', fontSize: 8, letterSpacing: '0.1em', textTransform: 'uppercase', color: T.slate, marginLeft: 'auto', whiteSpace: 'nowrap', flexShrink: 0 }}>{locality}</span>
       )}
     </div>
   );
@@ -815,7 +815,7 @@ export function ListOverviewPoster({ list, voteData, extras, variant }) {
   return (
     <div style={{ width: 1080, background: T.surface, color: T.ink, boxSizing: 'border-box', padding: compact ? '38px 48px 28px' : '52px 60px 40px', position: 'relative' }}>
       {/* Masthead */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `2px solid ${T.ink}`, paddingBottom: 14, marginBottom: compact ? 20 : 28, fontFamily: 'DM Mono, monospace', fontSize: 14, letterSpacing: '0.3em', textTransform: 'uppercase', color: T.ink }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `2px solid ${T.ink}`, paddingBottom: 14, marginBottom: compact ? 20 : 28, fontFamily: 'Manrope, monospace', fontSize: 14, letterSpacing: '0.3em', textTransform: 'uppercase', color: T.ink }}>
         <span style={{ fontWeight: 600 }}>Mind Loft</span>
         <span style={{ color: T.slate, fontSize: 11 }}>{SITE_HOST}</span>
       </div>
@@ -839,7 +839,7 @@ export function ListOverviewPoster({ list, voteData, extras, variant }) {
         <div style={{ flex: 1, minWidth: 120, marginBottom: 6 }}>
           <div
             style={{
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 11,
               letterSpacing: '0.2em',
               textTransform: 'uppercase',
@@ -901,7 +901,7 @@ export function ListOverviewPoster({ list, voteData, extras, variant }) {
       </div>
 
       {/* Footer */}
-      <div style={{ marginTop: compact ? 20 : 28, borderTop: `2px solid ${T.ink}`, paddingTop: 14, display: 'flex', justifyContent: 'space-between', fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: T.slate }}>
+      <div style={{ marginTop: compact ? 20 : 28, borderTop: `2px solid ${T.ink}`, paddingTop: 14, display: 'flex', justifyContent: 'space-between', fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: T.slate }}>
         <span>Consensus · {top3 ? 'Top 3' : `Top ${Math.min(items.length, 10)}`}</span>
         <span>{SITE_HOST}/list/{list.id}</span>
       </div>
@@ -976,7 +976,7 @@ export default function ListOverview({ list, voteData, extras, viewCount, onBack
             style={{
               background: 'transparent',
               border: 'none',
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 11,
               letterSpacing: '0.2em',
               textTransform: 'uppercase',
@@ -1010,7 +1010,7 @@ export default function ListOverview({ list, voteData, extras, viewCount, onBack
           <div style={{ flex: 1, minWidth: 120, marginBottom: 6 }}>
             <div
               style={{
-                fontFamily: 'DM Mono, monospace',
+                fontFamily: 'Manrope, monospace',
                 fontSize: 'clamp(9px, 1.1vw, 11px)',
                 letterSpacing: '0.2em',
                 textTransform: 'uppercase',
@@ -1057,7 +1057,7 @@ export default function ListOverview({ list, voteData, extras, viewCount, onBack
               display: 'flex',
               alignItems: 'center',
               gap: 6,
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 10,
               letterSpacing: '0.2em',
               textTransform: 'uppercase',
@@ -1075,7 +1075,7 @@ export default function ListOverview({ list, voteData, extras, viewCount, onBack
                 color: T.accent,
                 border: `1.5px solid ${T.accent}`,
                 padding: '8px 14px',
-                fontFamily: 'DM Mono, monospace',
+                fontFamily: 'Manrope, monospace',
                 fontSize: 10,
                 letterSpacing: '0.18em',
                 textTransform: 'uppercase',
@@ -1096,7 +1096,7 @@ export default function ListOverview({ list, voteData, extras, viewCount, onBack
                   color: T.accent,
                   border: `1.5px solid ${T.accent}`,
                   padding: '8px 14px',
-                  fontFamily: 'DM Mono, monospace',
+                  fontFamily: 'Manrope, monospace',
                   fontSize: 10,
                   letterSpacing: '0.18em',
                   textTransform: 'uppercase',
@@ -1117,7 +1117,7 @@ export default function ListOverview({ list, voteData, extras, viewCount, onBack
                 color: T.ink,
                 border: `1.5px solid ${T.ink}`,
                 padding: '8px 14px',
-                fontFamily: 'DM Mono, monospace',
+                fontFamily: 'Manrope, monospace',
                 fontSize: 10,
                 letterSpacing: '0.18em',
                 textTransform: 'uppercase',
@@ -1138,7 +1138,7 @@ export default function ListOverview({ list, voteData, extras, viewCount, onBack
                 color: T.ink,
                 border: `1.5px solid ${T.ink}`,
                 padding: '8px 14px',
-                fontFamily: 'DM Mono, monospace',
+                fontFamily: 'Manrope, monospace',
                 fontSize: 10,
                 letterSpacing: '0.18em',
                 textTransform: 'uppercase',
@@ -1191,7 +1191,7 @@ export default function ListOverview({ list, voteData, extras, viewCount, onBack
                 </p>
                 <button
                   onClick={() => { setComplainOpen(false); setComplainSent(false); setComplainMsg(''); setComplainName(''); setComplainEmail(''); }}
-                  style={{ cursor: 'pointer', background: T.ink, color: T.surface, border: `1.5px solid ${T.ink}`, padding: '12px 20px', fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600 }}
+                  style={{ cursor: 'pointer', background: T.ink, color: T.surface, border: `1.5px solid ${T.ink}`, padding: '12px 20px', fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600 }}
                 >
                   Close
                 </button>
@@ -1231,14 +1231,14 @@ export default function ListOverview({ list, voteData, extras, viewCount, onBack
                 <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                   <button
                     onClick={() => setComplainOpen(false)}
-                    style={{ cursor: 'pointer', background: 'transparent', color: T.ink, border: `1.5px solid ${T.ink}`, padding: '10px 18px', fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600 }}
+                    style={{ cursor: 'pointer', background: 'transparent', color: T.ink, border: `1.5px solid ${T.ink}`, padding: '10px 18px', fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600 }}
                   >
                     Cancel
                   </button>
                   <button
                     onClick={submitComplaint}
                     disabled={complainBusy}
-                    style={{ cursor: 'pointer', background: T.blueDeep, color: T.surface, border: `1.5px solid ${T.blueDeep}`, padding: '10px 18px', fontFamily: 'DM Mono, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, opacity: complainBusy ? 0.6 : 1 }}
+                    style={{ cursor: 'pointer', background: T.blueDeep, color: T.surface, border: `1.5px solid ${T.blueDeep}`, padding: '10px 18px', fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, opacity: complainBusy ? 0.6 : 1 }}
                   >
                     {complainBusy ? 'Sending…' : 'Send to editors'}
                   </button>

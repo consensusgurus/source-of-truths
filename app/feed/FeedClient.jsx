@@ -118,7 +118,7 @@ function chipStyle(color) {
     color,
     padding: '3px 8px',
     borderRadius: 3,
-    fontFamily: 'DM Mono, monospace',
+    fontFamily: 'Manrope, monospace',
     fontSize: 10,
     letterSpacing: '0.1em',
     textTransform: 'uppercase',
@@ -155,7 +155,7 @@ function Event({ kind, kicker, date, children, color: colorOverride, chips }) {
           );
         })}
         {date && (
-          <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: COLORS.faded }}>
+          <span style={{ fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: COLORS.faded }}>
             {date}
           </span>
         )}
@@ -374,7 +374,7 @@ export default function FeedClient({ events = [] }) {
                 color: active ? COLORS.cream : c.color,
                 border: `1.5px solid ${c.color}`,
                 padding: '7px 13px',
-                fontFamily: 'DM Mono, monospace',
+                fontFamily: 'Manrope, monospace',
                 fontSize: 10,
                 letterSpacing: '0.14em',
                 textTransform: 'uppercase',

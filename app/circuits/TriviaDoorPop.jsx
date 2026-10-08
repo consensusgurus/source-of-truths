@@ -36,7 +36,7 @@
 // what survives.
 //
 // IT WEARS THE RUN STAGE'S CLOTHES, exactly as app/today/GauntletPop.jsx does
-// and for the same reason: near-black ground, DM Mono eyebrow, sky call to
+// and for the same reason: near-black ground, Manrope eyebrow, sky call to
 // action carrying dark ink. Read the note at the top of that file before
 // changing anything visual here; the two should stay one family.
 //
@@ -57,7 +57,7 @@ const PREVIEW_VALUE = 'preview';
 const FRESH_MS = 60 * 1000;
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 
 // Did this page load arrive through the door as somebody new? Reads the
 // address once, stamps the answer, and cleans the address either way so a

@@ -37,7 +37,7 @@ import { RunChallengeButton, RunChallengeLine, runToken } from '../RunChallenge'
 import { PRICE_GAMES, errOf, scoreOf, fmtCents, runRankOf, runTierOf, RUN_RANKS } from '@/lib/price-games';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const RUN_ID = 'pricecheck';
 
 function etToday() {

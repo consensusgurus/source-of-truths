@@ -25,7 +25,7 @@
 //   already knows the run exists.
 //
 // IT WEARS THE RUN STAGE'S CLOTHES, as GauntletPop and TriviaDoorPop do:
-// near-black ground, DM Mono eyebrow, the accent call to action carrying dark
+// near-black ground, Manrope eyebrow, the accent call to action carrying dark
 // ink. The picture is the run's own valet and car, so the card looks like the
 // thing it is offering.
 
@@ -41,7 +41,7 @@ const MAX_SHOWINGS = 2;
 const WAIT_MS = 900;
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 
 function etToday() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }

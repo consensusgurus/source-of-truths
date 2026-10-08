@@ -102,7 +102,7 @@ function SubmitView({ mode = 'list', onBack, onSubmit }) {
   }
 
   const labelStyle = {
-    fontFamily: 'DM Mono, monospace',
+    fontFamily: 'Manrope, monospace',
     fontSize: 10,
     letterSpacing: '0.2em',
     textTransform: 'uppercase',
@@ -150,7 +150,7 @@ function SubmitView({ mode = 'list', onBack, onSubmit }) {
         style={{
           background: 'transparent',
           border: 'none',
-          fontFamily: 'DM Mono, monospace',
+          fontFamily: 'Manrope, monospace',
           fontSize: 11,
           letterSpacing: '0.2em',
           textTransform: 'uppercase',
@@ -169,7 +169,7 @@ function SubmitView({ mode = 'list', onBack, onSubmit }) {
       <div style={{ borderBottom: `2px solid ${T.ink}`, paddingBottom: 20, marginTop: 16, marginBottom: 32 }}>
         <div
           style={{
-            fontFamily: 'DM Mono, monospace',
+            fontFamily: 'Manrope, monospace',
             fontSize: 11,
             letterSpacing: '0.25em',
             textTransform: 'uppercase',
@@ -303,7 +303,7 @@ function SubmitView({ mode = 'list', onBack, onSubmit }) {
             </h3>
             <span
               style={{
-                fontFamily: 'DM Mono, monospace',
+                fontFamily: 'Manrope, monospace',
                 fontSize: 10,
                 letterSpacing: '0.18em',
                 textTransform: 'uppercase',
@@ -388,7 +388,7 @@ function SubmitView({ mode = 'list', onBack, onSubmit }) {
                 color: T.ink,
                 border: `1.5px dashed ${T.ink}`,
                 padding: '10px 16px',
-                fontFamily: 'DM Mono, monospace',
+                fontFamily: 'Manrope, monospace',
                 fontSize: 10,
                 letterSpacing: '0.18em',
                 textTransform: 'uppercase',
@@ -434,7 +434,7 @@ function SubmitView({ mode = 'list', onBack, onSubmit }) {
               color: T.ink,
               border: `1.5px solid ${T.ink}`,
               padding: '14px 24px',
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 11,
               letterSpacing: '0.2em',
               textTransform: 'uppercase',
@@ -452,7 +452,7 @@ function SubmitView({ mode = 'list', onBack, onSubmit }) {
               color: T.surface,
               border: `1.5px solid ${T.ink}`,
               padding: '14px 28px',
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'Manrope, monospace',
               fontSize: 11,
               letterSpacing: '0.2em',
               textTransform: 'uppercase',
@@ -468,7 +468,7 @@ function SubmitView({ mode = 'list', onBack, onSubmit }) {
 
         <p
           style={{
-            fontFamily: 'DM Mono, monospace',
+            fontFamily: 'Manrope, monospace',
             fontSize: 10,
             letterSpacing: '0.18em',
             textTransform: 'uppercase',
