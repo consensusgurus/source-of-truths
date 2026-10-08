@@ -1,0 +1,15 @@
+# Retired crossword clues, read by scripts/verify-daily-banks.mjs (emcee) and
+# scripts/verify-encore.mjs. WORD|old clue, one per line.
+#
+# When a clue in emcee-wordbank.txt is corrected, boards that already went
+# live keep the clue they were played with (the past is frozen), so they no
+# longer equal the bank. A board live BEFORE 2026-09-30 may carry a clue
+# listed here for its answer; every board on or after that date must carry
+# the bank's current clue. The generators never read this file, so a retired
+# clue can never be placed on a new board.
+#
+# Retired 2026-10-08 (Emcee clue audit):
+ITS|Belonging to it
+HIS|Belonging to he
+MAT|Doormat
+GEAR|Bike shifter

@@ -2043,9 +2043,9 @@ export const PUZZLES = [
       { n: 19, r: 6, c: 4, len: 3, clue: 'Floor covering' },
     ],
     down: [
-      { n: 1, r: 0, c: 0, len: 3, clue: 'Webcam, for short' },
+      { n: 1, r: 0, c: 0, len: 3, clue: 'Video recorder, briefly' },
       { n: 2, r: 0, c: 1, len: 3, clue: 'Bullring cheer' },
-      { n: 3, r: 0, c: 2, len: 7, clue: 'Run it' },
+      { n: 3, r: 0, c: 2, len: 7, clue: 'Run, as a machine' },
       { n: 4, r: 0, c: 4, len: 7, clue: 'Little whine' },
       { n: 5, r: 0, c: 5, len: 3, clue: 'Very long stretch' },
       { n: 6, r: 0, c: 6, len: 3, clue: 'Plead' },
@@ -2091,7 +2091,7 @@ export const PUZZLES = [
       { n: 1, r: 0, c: 0, len: 3, clue: 'Physician, informally' },
       { n: 4, r: 1, c: 0, len: 4, clue: 'Egg\'s shape' },
       { n: 6, r: 2, c: 0, len: 5, clue: 'Press' },
-      { n: 8, r: 3, c: 0, len: 5, clue: 'The other side' },
+      { n: 8, r: 3, c: 0, len: 5, clue: 'Foe' },
       { n: 9, r: 4, c: 2, len: 3, clue: 'Golf ball\'s perch' },
     ],
     down: [
@@ -2119,7 +2119,7 @@ export const PUZZLES = [
     ],
     down: [
       { n: 1, r: 0, c: 1, len: 5, clue: 'Polite address to a lady' },
-      { n: 2, r: 0, c: 2, len: 5, clue: 'Very overweight' },
+      { n: 2, r: 0, c: 2, len: 5, clue: 'Medically very overweight' },
       { n: 3, r: 0, c: 3, len: 5, clue: 'Killed' },
       { n: 4, r: 0, c: 4, len: 4, clue: 'Put on the market' },
       { n: 5, r: 1, c: 0, len: 3, clue: 'Little white lie' },
@@ -2157,14 +2157,14 @@ export const PUZZLES = [
     size: 5,
     grid: ['#STEP', '#TEAR', 'BARGE', 'AISLE', 'GREEN'],
     across: [
-      { n: 1, r: 0, c: 1, len: 4, clue: 'Stair' },
+      { n: 1, r: 0, c: 1, len: 4, clue: 'Dance move' },
       { n: 5, r: 1, c: 1, len: 4, clue: 'Rip' },
       { n: 6, r: 2, c: 0, len: 5, clue: 'Canal boat' },
       { n: 7, r: 3, c: 0, len: 5, clue: 'Between the pews' },
       { n: 8, r: 4, c: 0, len: 5, clue: 'Grass color' },
     ],
     down: [
-      { n: 1, r: 0, c: 1, len: 5, clue: 'Step' },
+      { n: 1, r: 0, c: 1, len: 5, clue: 'Part of a flight' },
       { n: 2, r: 0, c: 2, len: 5, clue: 'Short and to the point' },
       { n: 3, r: 0, c: 3, len: 5, clue: 'Bald bird' },
       { n: 4, r: 0, c: 4, len: 5, clue: 'Groom the feathers' },
@@ -2209,10 +2209,10 @@ export const PUZZLES = [
       { n: 8, r: 1, c: 4, len: 3, clue: 'Vietnamese noodle soup' },
       { n: 9, r: 2, c: 0, len: 7, clue: 'Upper house member' },
       { n: 11, r: 3, c: 1, len: 3, clue: 'Tear apart' },
-      { n: 12, r: 4, c: 0, len: 7, clue: 'How you play it' },
+      { n: 12, r: 4, c: 0, len: 7, clue: 'Game plan details' },
       { n: 16, r: 5, c: 0, len: 3, clue: 'Sort or type' },
       { n: 17, r: 5, c: 4, len: 3, clue: 'Sound of delight' },
-      { n: 18, r: 6, c: 0, len: 3, clue: 'Layer of plywood' },
+      { n: 18, r: 6, c: 0, len: 3, clue: 'Toilet paper layer' },
       { n: 19, r: 6, c: 4, len: 3, clue: 'To the ___ degree' },
     ],
     down: [
@@ -2272,7 +2272,7 @@ export const PUZZLES = [
       { n: 2, r: 0, c: 2, len: 5, clue: 'Martini garnish' },
       { n: 3, r: 0, c: 3, len: 5, clue: 'Make broader' },
       { n: 5, r: 1, c: 4, len: 3, clue: 'Ink writer' },
-      { n: 6, r: 2, c: 0, len: 3, clue: 'Casual brother' },
+      { n: 6, r: 2, c: 0, len: 3, clue: 'Dude' },
     ],
   },
   {
@@ -2332,7 +2332,7 @@ export const PUZZLES = [
     across: [
       { n: 1, r: 0, c: 1, len: 3, clue: 'Big brewing tub' },
       { n: 4, r: 1, c: 0, len: 5, clue: 'One in the saddle' },
-      { n: 6, r: 2, c: 0, len: 5, clue: 'The opposite of what\'s said' },
+      { n: 6, r: 2, c: 0, len: 5, clue: 'Saying one thing and meaning the opposite' },
       { n: 7, r: 3, c: 0, len: 5, clue: 'Handbag' },
       { n: 8, r: 4, c: 1, len: 3, clue: 'Look at' },
     ],
@@ -2680,7 +2680,7 @@ export const PUZZLES = [
       { n: 6, r: 1, c: 0, len: 5, clue: 'Go in' },
       { n: 7, r: 2, c: 0, len: 5, clue: 'Run off to marry' },
       { n: 8, r: 3, c: 0, len: 5, clue: 'Line of a song' },
-      { n: 9, r: 4, c: 2, len: 3, clue: 'Doormat' },
+      { n: 9, r: 4, c: 2, len: 3, clue: 'Yoga pad' },
     ],
     down: [
       { n: 1, r: 0, c: 0, len: 4, clue: 'Banana\'s jacket' },
@@ -2976,7 +2976,7 @@ export const PUZZLES = [
     size: 5,
     grid: ['HUM##', 'OPERA', 'SPRIG', 'TERSE', '#RYE#'],
     across: [
-      { n: 1, r: 0, c: 0, len: 3, clue: 'Tuneless singing' },
+      { n: 1, r: 0, c: 0, len: 3, clue: 'Wordless singing' },
       { n: 4, r: 1, c: 0, len: 5, clue: 'Sung drama' },
       { n: 7, r: 2, c: 0, len: 5, clue: 'Small twig' },
       { n: 8, r: 3, c: 0, len: 5, clue: 'Short and to the point' },
@@ -3077,7 +3077,7 @@ export const PUZZLES = [
       { n: 12, r: 4, c: 0, len: 7, clue: 'Ship\'s captain' },
       { n: 16, r: 5, c: 0, len: 3, clue: 'Relatives' },
       { n: 17, r: 5, c: 4, len: 3, clue: 'Flightless bird' },
-      { n: 18, r: 6, c: 0, len: 3, clue: 'Belonging to it' },
+      { n: 18, r: 6, c: 0, len: 3, clue: 'Possessive that never takes an apostrophe' },
       { n: 19, r: 6, c: 4, len: 3, clue: 'Period, basically' },
     ],
     down: [
@@ -3085,7 +3085,7 @@ export const PUZZLES = [
       { n: 2, r: 0, c: 1, len: 3, clue: 'Wall climber' },
       { n: 3, r: 0, c: 2, len: 7, clue: 'What\'s left' },
       { n: 4, r: 0, c: 4, len: 7, clue: 'Franked' },
-      { n: 5, r: 0, c: 5, len: 3, clue: 'Belonging to he' },
+      { n: 5, r: 0, c: 5, len: 3, clue: 'Not hers' },
       { n: 6, r: 0, c: 6, len: 3, clue: 'So far' },
       { n: 10, r: 2, c: 3, len: 3, clue: 'Small bite' },
       { n: 12, r: 4, c: 0, len: 3, clue: 'Slope slider' },
@@ -3181,7 +3181,7 @@ export const PUZZLES = [
     down: [
       { n: 1, r: 0, c: 0, len: 3, clue: 'Beaver\'s build' },
       { n: 2, r: 0, c: 1, len: 5, clue: 'Things on a list' },
-      { n: 3, r: 0, c: 2, len: 5, clue: 'Flower\'s leaf' },
+      { n: 3, r: 0, c: 2, len: 5, clue: 'Daisy part' },
       { n: 6, r: 2, c: 3, len: 3, clue: 'Arrival time, in brief' },
       { n: 7, r: 2, c: 4, len: 3, clue: '___ sleep' },
     ],
@@ -3222,7 +3222,7 @@ export const PUZZLES = [
       { n: 4, r: 1, c: 1, len: 4, clue: 'Single item' },
       { n: 6, r: 2, c: 0, len: 5, clue: 'First rate' },
       { n: 7, r: 3, c: 0, len: 5, clue: 'Consumed' },
-      { n: 8, r: 4, c: 0, len: 3, clue: 'Layer of plywood' },
+      { n: 8, r: 4, c: 0, len: 3, clue: 'Toilet paper layer' },
     ],
     down: [
       { n: 1, r: 0, c: 1, len: 5, clue: 'Wall painting' },
@@ -3377,7 +3377,7 @@ export const PUZZLES = [
     down: [
       { n: 1, r: 0, c: 2, len: 5, clue: 'Animals of a region' },
       { n: 2, r: 0, c: 3, len: 5, clue: 'Title holder' },
-      { n: 3, r: 0, c: 4, len: 4, clue: 'Bike shifter' },
+      { n: 3, r: 0, c: 4, len: 4, clue: 'Bike\'s cog' },
       { n: 5, r: 2, c: 0, len: 3, clue: 'Sibling nickname' },
       { n: 6, r: 2, c: 1, len: 3, clue: 'Picnic pest' },
     ],
@@ -3451,7 +3451,7 @@ export const PUZZLES = [
     across: [
       { n: 1, r: 0, c: 1, len: 3, clue: 'Parking area' },
       { n: 4, r: 1, c: 0, len: 5, clue: 'Absolutely furious' },
-      { n: 6, r: 2, c: 0, len: 5, clue: 'The other side' },
+      { n: 6, r: 2, c: 0, len: 5, clue: 'Foe' },
       { n: 7, r: 3, c: 0, len: 5, clue: 'See eye to eye' },
       { n: 8, r: 4, c: 0, len: 3, clue: 'Period, basically' },
     ],

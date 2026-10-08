@@ -962,7 +962,7 @@ export const PUZZLES = [
     sunday: true,
     theme: "Playground games",
     flavor: "Sunday Edition. Seven games nobody had to be taught twice.",
-    items: ["Hopscotch", "Jump rope", "Tag", "Four square", "Musical chairs", "Marbles", "Hide and seek"],
+    items: ["Hopscotch", "Jump rope", "Tag", "Duck, duck, goose", "Red light, green light", "Marbles", "Hide and seek"],
     house: [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6],
   },
   {
@@ -973,7 +973,7 @@ export const PUZZLES = [
     sunday: false,
     theme: "Rooms in a house",
     flavor: "Where do you actually spend the evening?",
-    items: ["The attic", "The kitchen", "The bathroom", "The bedroom", "The living room", "The garden"],
+    items: ["The attic", "The kitchen", "The bathroom", "The bedroom", "The living room", "The dining room"],
     house: [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5],
   },
   {
@@ -983,7 +983,7 @@ export const PUZZLES = [
     dateLabel: "October 13, 2026",
     sunday: false,
     theme: "Gods of the old myths",
-    flavor: "Six names older than every country on the map.",
+    flavor: "Six names that outlasted the temples built for them.",
     items: ["Thor", "Anubis", "Zeus", "Poseidon", "Ra", "Athena"],
     house: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5],
   },
@@ -1105,7 +1105,7 @@ export const PUZZLES = [
     sunday: false,
     theme: "Ways to tell the time",
     flavor: "Six answers to the same simple question.",
-    items: ["An hourglass", "A wall clock", "Church bells", "A wristwatch", "A sundial", "A phone alarm"],
+    items: ["An hourglass", "A wall clock", "Church bells", "A wristwatch", "A sundial", "A phone screen"],
     house: [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5],
   },
   {
@@ -1215,7 +1215,7 @@ export const PUZZLES = [
     sunday: false,
     theme: "Islands to escape to",
     flavor: "One week, no work, six departure boards.",
-    items: ["Fiji", "Zanzibar", "Bali", "Santorini", "Maui", "Sicily"],
+    items: ["Tahiti", "Zanzibar", "Bali", "Santorini", "Maui", "Sicily"],
     house: [0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5],
   },
   {
@@ -1226,7 +1226,7 @@ export const PUZZLES = [
     sunday: false,
     theme: "Cartoon dogs",
     flavor: "Drawn, adored, and now ranked.",
-    items: ["Scooby-Doo", "Lassie", "Snoopy", "Clifford", "Pluto", "Bluey"],
+    items: ["Scooby-Doo", "Odie", "Snoopy", "Clifford", "Pluto", "Bluey"],
     house: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5],
   },
   {
@@ -1248,7 +1248,7 @@ export const PUZZLES = [
     sunday: false,
     theme: "Dinosaurs",
     flavor: "Sixty-six million years later, still a debate.",
-    items: ["Pterodactyl", "Stegosaurus", "Triceratops", "Brachiosaurus", "Tyrannosaurus rex", "Velociraptor"],
+    items: ["Ankylosaurus", "Stegosaurus", "Triceratops", "Brachiosaurus", "Tyrannosaurus rex", "Velociraptor"],
     house: [0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5],
   },
   {
@@ -1325,7 +1325,7 @@ export const PUZZLES = [
     sunday: false,
     theme: "Dumplings of the world",
     flavor: "Dough, a filling, and a very old argument.",
-    items: ["Pierogi", "Empanada", "Ravioli", "Momo", "Gyoza", "Wonton"],
+    items: ["Pierogi", "Gnocchi", "Ravioli", "Momo", "Gyoza", "Wonton"],
     house: [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5],
   },
   {
@@ -1346,7 +1346,7 @@ export const PUZZLES = [
     dateLabel: "November 15, 2026",
     sunday: true,
     theme: "Wonders of the natural world",
-    flavor: "Sunday Edition. Seven places the planet made by itself.",
+    flavor: "Sunday Edition. Seven sights the planet made by itself.",
     items: ["The Sahara Desert", "The Amazon rainforest", "The Northern Lights", "The Great Barrier Reef", "Ha Long Bay", "Mount Everest", "Victoria Falls"],
     house: [0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6],
   },
@@ -1424,7 +1424,7 @@ export const PUZZLES = [
     sunday: true,
     theme: "The night sky",
     flavor: "Sunday Edition. Seven things worth going outside for.",
-    items: ["The Milky Way", "Halley's Comet", "A total eclipse", "The Moon", "Orion's Belt", "A shooting star", "The Southern Cross"],
+    items: ["The Milky Way", "The Space Station", "A lunar eclipse", "The Moon", "Orion's Belt", "A shooting star", "The evening star"],
     house: [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6],
   },
   {
@@ -1512,7 +1512,7 @@ export const PUZZLES = [
     sunday: false,
     theme: "Trees",
     flavor: "Six of them, and one you would plant.",
-    items: ["Baobab", "Maple", "Pine", "Cherry blossom", "Oak", "Willow"],
+    items: ["Baobab", "Maple", "Pine", "Cherry tree", "Oak", "Willow"],
     house: [0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5],
   }
 ];

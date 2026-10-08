@@ -3993,7 +3993,7 @@ HER|Belonging to she
 HID|Kept out of sight
 HIM|That fellow
 HIP|Trendy
-HIS|Belonging to he
+HIS|Not hers
 HIT|Strike, or a chart-topper
 HOE|Garden tool
 HOG|Pig, or take it all
@@ -4003,7 +4003,7 @@ HOW|In what way
 HUB|Wheel's center
 HUE|Shade of color
 HUG|Warm squeeze
-HUM|Tuneless singing
+HUM|Wordless singing
 HUT|Small shelter
 ICE|Frozen water
 ICY|Slippery underfoot
@@ -4050,7 +4050,7 @@ LOW|Not high
 MAD|Furious
 MAN|Fellow
 MAP|Road guide
-MAT|Doormat
+MAT|Yoga pad
 MAY|Month of flowers
 MEN|Fellows
 MET|Ran into
@@ -5044,7 +5044,7 @@ STAG|Male deer
 STAR|Night sky twinkler
 STAY|Remain
 STEM|Flower's stalk
-STEP|Stair
+STEP|Dance move
 STEW|Slow-cooked dish
 STIR|Give it a mix
 STOP|Halt
@@ -5631,7 +5631,7 @@ ELITE|The top few
 EMPTY|Nothing in it
 ENACT|Put into law
 ENDED|Finished
-ENEMY|The other side
+ENEMY|Foe
 ENJOY|Take pleasure in
 ENSUE|Follow on
 ENTER|Go in
@@ -5864,7 +5864,7 @@ INNER|On the inside
 INPUT|What goes in
 INTRO|Opening bit
 IRATE|Absolutely furious
-IRONY|The opposite of what's said
+IRONY|Saying one thing and meaning the opposite
 ISSUE|Problem, or a magazine number
 IVORY|Piano key material
 JEANS|Denim wear
@@ -6076,7 +6076,7 @@ PENNY|Cent
 PERCH|Bird's rest
 PERIL|Great danger
 PESTO|Basil sauce
-PETAL|Flower's leaf
+PETAL|Daisy part
 PETTY|Small-minded
 PHASE|Stage of it
 PHONE|Ring on it
@@ -8295,7 +8295,7 @@ ONESELF|Do it by
 ONGOING|Still running
 OPENERS|Bottle tools
 OPENING|Way in, or the first night
-OPERATE|Run it
+OPERATE|Run, as a machine
 OPINION|Your take on it
 OPPOSED|Against it
 OPTICAL|Of the eye
@@ -9408,7 +9408,7 @@ TABLETS|Pills
 TACKLED|Brought down
 TACKLES|Fishing gear, or brings down
 TACTFUL|Nicely put
-TACTICS|How you play it
+TACTICS|Game plan details
 TADPOLE|Frog to be
 TAILORS|Suit fitters
 TAKEOFF|Wheels up

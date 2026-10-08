@@ -41,6 +41,19 @@ for (const f of ['emcee-wordbank.txt', 'encore-wordbank.txt']) {
   }
 }
 
+// a corrected clue stays valid on boards that went live before the fix
+// (the past is frozen); see scripts/clue-retired.txt
+const RETIRED_BEFORE = '2026-09-30';
+const RETIRED = new Map();
+for (const line of readFileSync(join(here, 'clue-retired.txt'), 'utf8').split('\n')) {
+  const t = line.trim();
+  if (!t || t.startsWith('#')) continue;
+  const i = t.indexOf('|');
+  const w = t.slice(0, i).trim();
+  if (!RETIRED.has(w)) RETIRED.set(w, new Set());
+  RETIRED.get(w).add(t.slice(i + 1).trim());
+}
+
 const MIN_LEN = 3, MAX_LEN = 7;
 const COPY_FROM = '2026-10-26';
 const CAP = 3;                 // an answer may appear in at most 3 boards
@@ -142,7 +155,7 @@ for (const p of PUZZLES) {
       if (!/^[A-Z]+$/.test(a)) { fail(`${id}: ${dir}${w.n} reads "${a}"`); continue; }
       const c = CLUE.get(a);
       if (!c) fail(`${id}: ${dir}${w.n} answer ${a} is not in any clue bank - a clue was invented`);
-      else if (c !== w.clue) fail(`${id}: ${dir}${w.n} answer ${a} carries "${w.clue}" but the bank's clue is "${c}"`);
+      else if (c !== w.clue && !(p.live < RETIRED_BEFORE && RETIRED.get(a)?.has(w.clue))) fail(`${id}: ${dir}${w.n} answer ${a} carries "${w.clue}" but the bank's clue is "${c}"`);
       if (/\bIGNORE\b/.test(w.clue)) fail(`${id}: ${dir}${w.n} clue is a placeholder`);
       if (p.live >= COPY_FROM) {
         for (const hit of [...scanUS(a.toLowerCase()), ...scanUS(w.clue)]) fail(`${id}: ${dir}${w.n} British form "${hit.found}" (US: ${hit.us})`);

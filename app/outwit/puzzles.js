@@ -10084,7 +10084,7 @@ export const PUZZLES = [
         min: 1,
         max: 100,
         truth: 14,
-        truthNote: "Twelve to sixteen breaths a minute at rest.",
+        truthNote: "Usually twelve to twenty a minute at rest; fourteen is typical.",
         house: [22, 20, 20, 12, 20, 16, 18, 10, 16, 28, 14, 24, 18, 12, 14, 14, 10, 18, 16, 22, 16, 14, 16, 18, 12, 22, 14, 18, 16, 18, 10, 12, 18, 20, 14, 16, 16, 16, 12, 20, 14, 20, 14, 18, 24, 12, 16, 16]
       },
       {
@@ -10175,7 +10175,7 @@ export const PUZZLES = [
         tag: "Rare Bird",
         q: "Everyone gets one machine at the gym. The RAREST pick wins.",
         options: [
-          "Free weights",
+          "Cable machine",
           "Cross trainer",
           "Ski machine",
           "Treadmill",
@@ -10978,13 +10978,13 @@ export const PUZZLES = [
         q: "Everyone is handed one cup of tea. The RAREST pick wins.",
         options: [
           "Mint",
-          "Earl Grey",
+          "Oolong",
           "Jasmine",
           "Chamomile",
           "Green tea",
           "Rooibos",
           "Black tea",
-          "Lapsang souchong"
+          "Pu-erh"
         ],
         house: [4, 3, 2, 2, 1, 0, 4, 6, 0, 7, 6, 4, 1, 6, 6, 1, 6, 2, 5, 6, 0, 3, 6, 2, 3, 7, 4, 5, 0, 7, 6, 1, 3, 5, 4, 6, 4, 0, 2, 1, 0, 0, 4, 4, 3, 6, 3, 6]
       },
@@ -11045,7 +11045,7 @@ export const PUZZLES = [
       {
         type: "unique",
         tag: "Rare Bird",
-        q: "Everyone starts one jigsaw. The RAREST place to start wins.",
+        q: "Everyone starts one jigsaw. The RAREST way to start wins.",
         options: [
           "Sort by color",
           "The biggest shape",
@@ -11092,11 +11092,11 @@ export const PUZZLES = [
       {
         type: "herd",
         tag: "Herd",
-        q: "How many lightning strikes hit the Earth each second? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        q: "How many lightning flashes happen around the world each second? Closest to the crowd's MEDIAN guess wins, right or wrong.",
         min: 1,
         max: 2000,
         truth: 44,
-        truthNote: "Around forty-four a second, worldwide.",
+        truthNote: "Around forty-four a second worldwide, most of them inside clouds.",
         house: [14, 32, 26, 20, 20, 50, 11, 20, 17, 38, 32, 26, 38, 26, 14, 17, 11, 20, 26, 17, 32, 14, 20, 20, 20, 17, 20, 17, 50, 38, 65, 20, 14, 32, 38, 26, 20, 32, 17, 26, 8, 38, 26, 50, 26, 20, 20, 32]
       },
       {
@@ -11191,7 +11191,7 @@ export const PUZZLES = [
           "Curled up",
           "On the back",
           "One arm out",
-          "With the light on",
+          "Starfish",
           "On one side",
           "Half sitting up",
           "Diagonally"
@@ -11232,11 +11232,11 @@ export const PUZZLES = [
       {
         type: "herd",
         tag: "Herd",
-        q: "How many runners finish a big city marathon, in thousands? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        q: "How many runners finished the 2024 New York City Marathon, in thousands? Closest to the crowd's MEDIAN guess wins, right or wrong.",
         min: 1,
         max: 200,
-        truth: 45,
-        truthNote: "The largest city marathons finish forty to fifty thousand people.",
+        truth: 56,
+        truthNote: "About 55,600, a world record for marathon finishers at the time.",
         house: [14, 26, 17, 50, 20, 20, 26, 20, 32, 20, 17, 20, 20, 20, 50, 17, 38, 32, 11, 11, 14, 26, 14, 32, 17, 65, 20, 20, 38, 20, 14, 38, 26, 20, 32, 17, 32, 17, 50, 26, 26, 32, 8, 38, 20, 38, 26, 26]
       },
       {
@@ -11462,7 +11462,7 @@ export const PUZZLES = [
         min: 1,
         max: 40,
         truth: 14,
-        truthNote: "Fourteen, more than almost any other country.",
+        truthNote: "Fourteen, tied with Russia for the most of any country.",
         house: [8, 9, 6, 11, 8, 8, 9, 9, 14, 6, 10, 9, 6, 8, 7, 7, 5, 10, 8, 8, 10, 8, 11, 8, 11, 10, 9, 7, 8, 12, 8, 6, 9, 9, 8, 10, 10, 11, 8, 7, 7, 8, 12, 7, 9, 10, 11, 5]
       },
       {
@@ -11624,13 +11624,13 @@ export const PUZZLES = [
         q: "Everyone is given one horse. The RAREST color wins.",
         options: [
           "Black",
-          "Palomino",
+          "Dappled",
           "Piebald",
           "Brown",
           "White",
+          "Palomino",
           "Gray",
-          "Chestnut",
-          "Dappled"
+          "Roan"
         ],
         house: [1, 1, 6, 3, 3, 0, 3, 5, 7, 4, 3, 3, 2, 3, 4, 0, 1, 4, 3, 5, 2, 7, 6, 6, 2, 0, 3, 5, 6, 4, 7, 6, 3, 0, 3, 4, 4, 5, 0, 1, 6, 0, 0, 0, 4, 5, 3, 1]
       },
@@ -11672,7 +11672,7 @@ export const PUZZLES = [
         min: 1,
         max: 100,
         truth: 24,
-        truthNote: "Twenty-four standard hours, though some places run on half-hour offsets.",
+        truthNote: "Twenty-four, one per hour, though some places run on half-hour or 45-minute offsets.",
         house: [24, 33, 21, 30, 21, 24, 27, 27, 24, 27, 18, 24, 27, 24, 30, 27, 36, 30, 33, 30, 30, 27, 18, 15, 24, 30, 24, 33, 24, 36, 24, 30, 27, 24, 21, 42, 24, 33, 18, 21, 21, 24, 18, 27, 21, 15, 24, 33]
       },
       {
@@ -12034,21 +12034,21 @@ export const PUZZLES = [
       {
         type: "herd",
         tag: "Herd",
-        q: "How many ice crystals are in one snowflake? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        q: "How many points does a snowflake crystal have? Closest to the crowd's MEDIAN guess wins, right or wrong.",
         min: 1,
-        max: 10000,
-        truth: 200,
-        truthNote: "A hundred or two, stuck together.",
-        house: [38, 50, 110, 50, 62, 44, 86, 50, 62, 74, 50, 44, 62, 110, 32, 50, 50, 74, 44, 62, 50, 62, 50, 74, 38, 62, 86, 38, 140, 74, 32, 44, 50, 26, 62, 50, 86, 86, 74, 74, 110, 44, 50, 44, 50, 38, 86, 62]
+        max: 50,
+        truth: 6,
+        truthNote: "Six, because water ice freezes in a hexagonal lattice.",
+        house: [5, 6, 9, 6, 7, 5, 9, 6, 7, 8, 6, 5, 7, 10, 3, 6, 6, 8, 6, 7, 6, 7, 6, 7, 4, 7, 9, 4, 10, 8, 4, 5, 6, 3, 7, 6, 8, 8, 8, 8, 9, 5, 6, 5, 6, 4, 9, 7]
       },
       {
         type: "match",
         tag: "Meeting Point",
-        q: "Name something you would take out in a storm. Match the MOST-picked answer.",
+        q: "Name something you grab before going out in a storm. Match the MOST-picked answer.",
         options: [
           "Flashlight",
           "Umbrella",
-          "Nothing at all",
+          "A hat",
           "Raincoat",
           "Boots"
         ],
@@ -12057,7 +12057,7 @@ export const PUZZLES = [
       {
         type: "unique",
         tag: "Rare Bird",
-        q: "Everyone visits one century for a day. The RAREST pick wins.",
+        q: "Everyone visits one era for a day. The RAREST pick wins.",
         options: [
           "The Stone Age",
           "The 1920s",
@@ -12342,28 +12342,29 @@ export const PUZZLES = [
         tag: "Meeting Point",
         q: "Name a shape. Match the MOST-picked answer.",
         options: [
-          "Square",
           "Triangle",
           "Rectangle",
-          "Circle"
+          "Circle",
+          "Star",
+          "Square"
         ],
-        house: [3, 2, 3, 2, 3, 2, 3, 3, 3, 3, 0, 0, 0, 0, 2, 0, 3, 3, 0, 1, 3, 3, 2, 3, 0, 1, 1, 3, 0, 3, 3, 0, 0, 0, 3, 1, 1, 1, 3, 3, 1, 3, 3, 1, 3, 0, 3, 3]
+        house: [2, 4, 1, 0, 2, 4, 2, 1, 0, 2, 3, 2, 4, 1, 0, 2, 2, 2, 4, 0, 2, 4, 4, 2, 2, 0, 2, 2, 2, 0, 3, 3, 1, 1, 0, 2, 2, 4, 2, 2, 4, 2, 4, 2, 2, 4, 0, 4]
       },
       {
         type: "unique",
         tag: "Rare Bird",
         q: "Everyone empties a pencil case and keeps one thing. The RAREST pick wins.",
         options: [
-          "Eraser",
-          "Ruler",
-          "Highlighter",
-          "Compass",
           "Pencil",
-          "Protractor",
           "Sharpener",
+          "Compass",
+          "Protractor",
+          "Highlighter",
+          "Ruler",
+          "Eraser",
           "Pen"
         ],
-        house: [4, 6, 1, 7, 4, 0, 2, 3, 2, 4, 0, 7, 4, 0, 0, 7, 7, 6, 1, 7, 1, 6, 7, 1, 0, 6, 2, 4, 6, 0, 7, 1, 0, 3, 4, 1, 4, 7, 7, 6, 5, 4, 5, 2, 3, 2, 1, 2]
+        house: [4, 1, 6, 4, 6, 4, 0, 3, 4, 7, 5, 0, 5, 6, 0, 0, 1, 7, 2, 7, 4, 5, 1, 7, 2, 0, 6, 2, 5, 6, 0, 1, 1, 0, 7, 5, 0, 5, 7, 7, 7, 6, 5, 6, 7, 4, 3, 1]
       },
       {
         type: "twothirds",
@@ -12373,7 +12374,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.6666666666666666,
         fracLabel: "two-thirds",
-        house: [36, 32, 57, 29, 41, 58, 47, 7, 56, 37, 25, 24, 30, 22, 49, 0, 55, 39, 28, 50, 50, 100, 26, 48, 54, 46, 52, 33, 42, 38, 43, 31, 18, 44, 45, 42, 40, 33, 25, 27, 75, 42, 34, 53, 35, 26, 51, 20]
+        house: [40, 18, 30, 56, 42, 54, 25, 55, 39, 42, 29, 25, 0, 38, 24, 57, 100, 45, 20, 34, 58, 50, 26, 33, 48, 36, 46, 52, 35, 50, 28, 43, 37, 27, 44, 7, 22, 75, 53, 33, 41, 51, 42, 32, 47, 31, 26, 49]
       }
     ]
   },
@@ -12389,51 +12390,51 @@ export const PUZZLES = [
         tag: "Road Less Traveled",
         q: "One empty corner of a garden. Which will the FEWEST players put there?",
         options: [
-          "A vegetable bed",
-          "A tree",
           "A pond",
-          "A bench"
+          "A vegetable bed",
+          "A bench",
+          "A tree"
         ],
-        house: [1, 3, 0, 2, 2, 3, 3, 1, 1, 0, 3, 3, 0, 1, 3, 3, 0, 3, 1, 3, 1, 1, 2, 0, 0, 3, 1, 1, 1, 0, 3, 3, 1, 0, 1, 1, 1, 1, 1, 3, 2, 0, 0, 2, 3, 3, 1, 2]
+        house: [3, 2, 3, 0, 2, 0, 3, 3, 3, 1, 2, 3, 3, 2, 2, 3, 3, 0, 2, 1, 1, 2, 1, 2, 1, 1, 2, 3, 2, 2, 0, 3, 3, 2, 0, 1, 2, 3, 1, 1, 3, 3, 1, 0, 2, 3, 3, 2]
       },
       {
         type: "herd",
         tag: "Herd",
         q: "How many degrees above the horizon can the top of a rainbow reach? Closest to the crowd's MEDIAN guess wins, right or wrong.",
         min: 1,
-        max: 180,
+        max: 90,
         truth: 42,
-        truthNote: "Forty-two degrees, always: the angle is fixed by how light bends in a raindrop.",
-        house: [26, 70, 30, 22, 22, 38, 26, 26, 38, 30, 54, 54, 70, 46, 46, 30, 22, 54, 70, 30, 46, 26, 30, 30, 38, 18, 30, 46, 46, 14, 54, 46, 38, 38, 90, 30, 18, 30, 38, 30, 22, 26, 30, 38, 26, 38, 54, 30]
+        truthNote: "Forty-two degrees, and only with the sun on the horizon; the higher the sun, the lower the arc.",
+        house: [90, 54, 26, 26, 22, 46, 30, 30, 30, 38, 22, 54, 26, 70, 46, 54, 30, 22, 38, 38, 30, 46, 26, 30, 30, 30, 18, 38, 46, 46, 14, 70, 46, 38, 38, 54, 30, 18, 30, 70, 30, 22, 26, 30, 38, 26, 38, 54]
       },
       {
         type: "match",
         tag: "Meeting Point",
         q: "Name something a bridge crosses. Match the MOST-picked answer.",
         options: [
-          "A canal",
           "A valley",
           "A railway",
-          "A river",
-          "A road"
+          "A canal",
+          "A road",
+          "A river"
         ],
-        house: [4, 3, 3, 4, 3, 3, 2, 4, 3, 1, 3, 3, 3, 2, 3, 1, 4, 3, 1, 4, 3, 3, 4, 4, 1, 4, 3, 1, 3, 3, 4, 4, 1, 2, 0, 2, 3, 2, 1, 0, 4, 3, 3, 0, 3, 3, 1, 3]
+        house: [4, 1, 4, 4, 4, 4, 1, 4, 1, 4, 3, 4, 3, 4, 4, 4, 1, 4, 3, 4, 3, 4, 4, 4, 0, 4, 4, 3, 0, 4, 3, 2, 4, 1, 3, 0, 2, 3, 2, 0, 0, 4, 3, 3, 0, 4, 4, 0]
       },
       {
         type: "unique",
         tag: "Rare Bird",
         q: "Everyone holds one pose. The RAREST pick wins.",
         options: [
-          "Headstand",
-          "Tree",
-          "Cobra",
-          "Bridge",
-          "Warrior",
           "Downward dog",
+          "Warrior",
+          "Tree",
+          "Bridge",
           "Crow",
-          "Child pose"
+          "Cobra",
+          "Child's pose",
+          "Headstand"
         ],
-        house: [5, 7, 4, 1, 1, 1, 2, 3, 5, 7, 7, 5, 4, 7, 5, 3, 3, 4, 1, 7, 7, 0, 4, 5, 7, 5, 4, 6, 1, 5, 2, 6, 7, 3, 7, 1, 3, 1, 2, 2, 4, 2, 0, 2, 1, 4, 5, 3]
+        house: [6, 5, 0, 0, 3, 2, 0, 5, 4, 1, 2, 6, 5, 5, 6, 6, 2, 3, 3, 0, 7, 6, 0, 3, 6, 2, 1, 3, 6, 7, 2, 6, 1, 5, 2, 6, 1, 2, 0, 1, 1, 4, 2, 0, 1, 0, 3, 5]
       },
       {
         type: "twothirds",
@@ -12443,7 +12444,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.5,
         fracLabel: "half",
-        house: [52, 31, 33, 9, 42, 29, 22, 57, 34, 49, 51, 25, 58, 50, 42, 44, 17, 45, 7, 30, 28, 27, 19, 15, 54, 24, 48, 26, 17, 11, 46, 100, 50, 55, 47, 18, 33, 0, 25, 56, 53, 75, 20, 32, 13, 19, 21, 23]
+        house: [58, 30, 49, 52, 29, 19, 25, 19, 13, 45, 57, 25, 50, 42, 100, 27, 44, 9, 51, 22, 20, 75, 18, 24, 11, 54, 42, 48, 17, 28, 33, 46, 23, 50, 55, 47, 34, 17, 7, 33, 56, 53, 21, 26, 32, 15, 0, 31]
       }
     ]
   },
@@ -12459,12 +12460,12 @@ export const PUZZLES = [
         tag: "Road Less Traveled",
         q: "A summer job for one month. Which will the FEWEST players take?",
         options: [
-          "Gardening",
           "Night shifts",
           "Cafe work",
+          "Gardening",
           "Shop work"
         ],
-        house: [2, 0, 0, 2, 2, 1, 1, 3, 2, 2, 3, 2, 2, 0, 1, 1, 3, 3, 3, 0, 1, 2, 2, 0, 3, 0, 0, 2, 0, 3, 2, 3, 1, 2, 0, 3, 3, 3, 2, 3, 3, 2, 2, 3, 2, 2, 0, 0]
+        house: [2, 2, 0, 1, 1, 2, 2, 1, 3, 1, 2, 3, 3, 1, 1, 1, 1, 2, 3, 3, 0, 1, 3, 1, 0, 0, 1, 3, 1, 1, 3, 2, 3, 1, 1, 0, 0, 3, 3, 2, 3, 3, 2, 2, 3, 1, 2, 1]
       },
       {
         type: "herd",
@@ -12474,36 +12475,36 @@ export const PUZZLES = [
         max: 1000000,
         truth: 100000,
         truthNote: "Around a hundred thousand.",
-        house: [480000, 80000, 180000, 120000, 28000, 80000, 96000, 40000, 56000, 68000, 120000, 96000, 96000, 80000, 56000, 40000, 68000, 56000, 80000, 80000, 16000, 180000, 96000, 80000, 96000, 80000, 68000, 96000, 56000, 120000, 80000, 68000, 68000, 40000, 280000, 80000, 96000, 120000, 80000, 68000, 28000, 280000, 80000, 68000, 68000, 56000, 120000, 180000]
+        house: [120000, 68000, 40000, 96000, 80000, 28000, 180000, 80000, 96000, 120000, 56000, 480000, 80000, 68000, 80000, 96000, 40000, 56000, 80000, 96000, 80000, 16000, 180000, 68000, 80000, 120000, 80000, 280000, 96000, 56000, 120000, 96000, 68000, 68000, 40000, 180000, 80000, 96000, 280000, 80000, 68000, 28000, 56000, 80000, 68000, 68000, 56000, 120000]
       },
       {
         type: "match",
         tag: "Meeting Point",
         q: "Name something in a marching band. Match the MOST-picked answer.",
         options: [
-          "Trumpet",
-          "Cymbals",
-          "Flute",
           "Trombone",
-          "Drum"
+          "Drum",
+          "Flute",
+          "Cymbals",
+          "Trumpet"
         ],
-        house: [3, 0, 0, 2, 4, 4, 4, 3, 4, 4, 0, 2, 4, 4, 4, 4, 1, 4, 4, 4, 3, 0, 0, 4, 4, 0, 1, 2, 3, 4, 2, 4, 3, 1, 4, 4, 2, 4, 4, 4, 0, 4, 3, 3, 4, 0, 0, 0]
+        house: [3, 1, 0, 4, 1, 0, 2, 4, 4, 2, 1, 0, 1, 4, 1, 1, 1, 1, 4, 1, 1, 4, 0, 0, 2, 4, 1, 1, 2, 4, 4, 1, 4, 1, 1, 3, 3, 1, 2, 1, 1, 0, 4, 1, 1, 1, 1, 0]
       },
       {
         type: "unique",
         tag: "Rare Bird",
         q: "Everyone takes one thing from the lab bench. The RAREST pick wins.",
         options: [
-          "Magnet",
-          "Barometer",
+          "Scales",
           "Bunsen burner",
           "Microscope",
-          "Test tube",
           "Pipette",
+          "Magnet",
+          "Test tube",
           "Tuning fork",
-          "Scales"
+          "Barometer"
         ],
-        house: [0, 4, 3, 7, 7, 3, 3, 4, 7, 2, 5, 4, 5, 3, 4, 0, 2, 0, 3, 4, 0, 7, 4, 0, 6, 3, 0, 4, 5, 2, 2, 2, 6, 3, 2, 1, 3, 1, 7, 4, 3, 0, 3, 7, 3, 5, 3, 0]
+        house: [2, 4, 3, 2, 2, 1, 4, 4, 7, 5, 5, 5, 4, 4, 2, 5, 0, 1, 1, 3, 2, 0, 0, 7, 0, 5, 3, 0, 4, 5, 1, 4, 2, 5, 2, 2, 1, 3, 1, 6, 4, 2, 0, 2, 6, 2, 5, 2]
       },
       {
         type: "twothirds",
@@ -12513,7 +12514,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.6,
         fracLabel: "three-fifths",
-        house: [48, 33, 26, 18, 44, 53, 22, 56, 31, 14, 23, 37, 29, 33, 36, 7, 54, 39, 50, 45, 52, 25, 32, 51, 28, 27, 57, 42, 46, 25, 35, 58, 20, 24, 42, 16, 22, 38, 47, 75, 100, 24, 49, 55, 34, 30, 50, 0]
+        house: [18, 36, 53, 48, 56, 24, 16, 33, 44, 27, 42, 23, 20, 37, 45, 24, 39, 54, 100, 50, 51, 52, 31, 28, 49, 50, 35, 29, 26, 46, 33, 25, 58, 25, 0, 42, 22, 14, 22, 47, 30, 7, 38, 57, 55, 34, 32, 75]
       }
     ]
   },
@@ -12529,12 +12530,12 @@ export const PUZZLES = [
         tag: "Road Less Traveled",
         q: "One alarm for a free Saturday. Which time will the FEWEST players set?",
         options: [
-          "9:30",
-          "8:00",
           "4:45",
-          "7:00"
+          "8:00",
+          "7:00",
+          "9:30"
         ],
-        house: [1, 1, 1, 3, 3, 3, 2, 2, 1, 3, 3, 1, 1, 3, 0, 1, 1, 0, 3, 0, 0, 1, 1, 1, 0, 3, 1, 1, 1, 0, 3, 0, 3, 1, 3, 2, 1, 3, 3, 0, 2, 1, 1, 1, 3, 1, 3, 1]
+        house: [1, 2, 1, 1, 2, 1, 1, 2, 2, 1, 2, 3, 2, 1, 2, 1, 1, 1, 0, 3, 1, 0, 3, 1, 3, 0, 3, 2, 1, 1, 0, 2, 1, 1, 2, 1, 3, 2, 3, 2, 1, 2, 1, 1, 2, 2, 1, 3]
       },
       {
         type: "herd",
@@ -12544,36 +12545,36 @@ export const PUZZLES = [
         max: 100,
         truth: 20,
         truthNote: "Twenty: sixteen pawn moves and four knight moves.",
-        house: [14, 16, 16, 18, 18, 14, 28, 20, 14, 18, 20, 14, 20, 16, 16, 22, 10, 22, 20, 14, 16, 16, 18, 18, 24, 18, 14, 16, 16, 18, 16, 22, 16, 20, 24, 10, 12, 20, 18, 16, 16, 22, 12, 22, 20, 16, 12, 12]
+        house: [14, 18, 18, 20, 14, 18, 16, 14, 20, 16, 12, 20, 14, 22, 14, 16, 24, 10, 22, 20, 16, 16, 16, 24, 18, 28, 18, 14, 16, 18, 18, 20, 22, 16, 16, 16, 10, 12, 20, 18, 16, 16, 22, 12, 22, 20, 16, 12]
       },
       {
         type: "match",
         tag: "Meeting Point",
         q: "Name a piece of furniture. Match the MOST-picked answer.",
         options: [
-          "Bed",
-          "Sofa",
-          "Bookcase",
           "Table",
-          "Chair"
+          "Bookcase",
+          "Bed",
+          "Chair",
+          "Sofa"
         ],
-        house: [4, 1, 4, 1, 4, 1, 4, 4, 4, 3, 4, 3, 3, 1, 3, 4, 2, 1, 3, 3, 3, 4, 0, 4, 4, 0, 4, 4, 4, 3, 0, 4, 3, 3, 1, 1, 4, 3, 0, 4, 3, 0, 4, 3, 2, 4, 1, 2]
+        house: [4, 3, 0, 3, 3, 3, 1, 3, 4, 4, 3, 3, 2, 3, 0, 3, 0, 2, 4, 4, 3, 0, 4, 0, 3, 2, 0, 4, 3, 0, 2, 0, 1, 3, 3, 0, 0, 4, 3, 0, 3, 2, 0, 3, 3, 1, 3, 0]
       },
       {
         type: "unique",
         tag: "Rare Bird",
         q: "Everyone spots one animal in the rainforest. The RAREST pick wins.",
         options: [
+          "Sloth",
+          "Tapir",
           "Jaguar",
           "Toucan",
-          "Frog",
-          "Sloth",
           "Snake",
-          "Tapir",
-          "Parrot",
-          "Monkey"
+          "Frog",
+          "Monkey",
+          "Parrot"
         ],
-        house: [3, 3, 1, 7, 5, 2, 6, 6, 4, 2, 7, 0, 7, 7, 4, 0, 4, 3, 6, 0, 2, 3, 1, 3, 6, 0, 7, 2, 4, 4, 6, 2, 6, 7, 6, 6, 7, 5, 7, 4, 7, 6, 7, 2, 4, 7, 0, 7]
+        house: [2, 6, 5, 4, 3, 5, 3, 6, 0, 5, 7, 7, 1, 7, 4, 4, 0, 5, 7, 6, 0, 5, 4, 1, 4, 2, 0, 6, 2, 5, 7, 6, 2, 6, 6, 6, 6, 7, 6, 6, 4, 7, 6, 7, 2, 4, 7, 0]
       },
       {
         type: "twothirds",
@@ -12583,7 +12584,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.7,
         fracLabel: "seven-tenths",
-        house: [7, 44, 31, 25, 27, 0, 75, 34, 42, 31, 25, 58, 32, 36, 56, 33, 33, 37, 35, 57, 40, 28, 44, 46, 49, 23, 39, 55, 54, 29, 100, 27, 29, 50, 42, 30, 45, 21, 53, 48, 51, 50, 42, 47, 38, 43, 52, 41]
+        house: [29, 25, 0, 31, 23, 49, 21, 100, 75, 50, 27, 44, 58, 35, 34, 42, 41, 40, 33, 37, 33, 30, 56, 25, 46, 57, 7, 39, 55, 54, 31, 44, 38, 29, 27, 42, 36, 45, 42, 53, 48, 51, 50, 28, 47, 32, 43, 52]
       }
     ]
   },
@@ -12604,7 +12605,7 @@ export const PUZZLES = [
           "A spare pair of shoes",
           "A travel pillow"
         ],
-        house: [1, 2, 2, 1, 3, 1, 1, 0, 1, 2, 1, 1, 1, 3, 1, 1, 1, 1, 3, 2, 1, 3, 2, 2, 1, 3, 2, 1, 0, 2, 2, 1, 2, 3, 1, 2, 2, 2, 1, 1, 1, 3, 3, 1, 0, 2, 3, 0]
+        house: [3, 1, 2, 0, 1, 3, 1, 1, 1, 2, 1, 2, 1, 1, 3, 1, 3, 1, 1, 3, 1, 1, 2, 2, 2, 1, 3, 2, 1, 0, 2, 2, 1, 2, 3, 1, 2, 2, 2, 1, 1, 1, 0, 3, 1, 0, 2, 3]
       },
       {
         type: "herd",
@@ -12614,36 +12615,36 @@ export const PUZZLES = [
         max: 30,
         truth: 5,
         truthNote: "Two big compound eyes and three simple ones on top.",
-        house: [2, 2, 3, 1, 1, 2, 3, 1, 3, 5, 1, 3, 1, 5, 2, 5, 4, 1, 1, 4, 4, 4, 3, 1, 3, 1, 2, 2, 5, 2, 2, 3, 4, 2, 3, 2, 2, 4, 1, 6, 6, 5, 2, 3, 1, 4, 1, 1]
+        house: [3, 1, 3, 2, 1, 4, 2, 1, 1, 6, 3, 2, 3, 1, 4, 2, 5, 4, 1, 3, 4, 1, 4, 4, 1, 3, 1, 2, 5, 5, 2, 2, 3, 2, 2, 3, 2, 2, 4, 1, 1, 6, 5, 2, 3, 1, 5, 1]
       },
       {
         type: "match",
         tag: "Meeting Point",
         q: "Name an insect. Match the MOST-picked answer.",
         options: [
-          "Bee",
+          "Butterfly",
           "Ant",
-          "Grasshopper",
+          "Bee",
           "Beetle",
-          "Butterfly"
+          "Grasshopper"
         ],
-        house: [4, 1, 2, 2, 3, 0, 1, 3, 4, 0, 4, 1, 1, 3, 3, 1, 0, 1, 1, 1, 0, 1, 0, 1, 2, 0, 4, 3, 4, 1, 1, 1, 3, 0, 0, 4, 4, 2, 1, 0, 3, 0, 4, 0, 1, 0, 4, 1]
+        house: [3, 2, 1, 3, 2, 2, 0, 4, 3, 1, 2, 2, 1, 2, 3, 1, 1, 3, 1, 2, 4, 0, 1, 1, 1, 1, 0, 1, 2, 0, 1, 1, 1, 2, 0, 0, 4, 3, 2, 2, 0, 2, 0, 4, 0, 1, 1, 3]
       },
       {
         type: "unique",
         tag: "Rare Bird",
         q: "Everyone takes one job at the party. The RAREST pick wins.",
         options: [
-          "Food",
-          "Greeting people",
-          "Music",
           "Drinks",
-          "Cleaning up",
-          "Decorations",
           "Photos",
-          "Keeping the cat calm"
+          "Greeting people",
+          "Food",
+          "Keeping the cat calm",
+          "Cleaning up",
+          "Music",
+          "Decorations"
         ],
-        house: [6, 6, 1, 3, 3, 0, 6, 7, 3, 1, 4, 5, 2, 5, 2, 0, 3, 2, 5, 0, 0, 1, 0, 1, 5, 0, 5, 2, 0, 2, 4, 0, 3, 5, 6, 3, 2, 6, 4, 3, 2, 5, 1, 7, 2, 2, 1, 0]
+        house: [7, 5, 1, 7, 0, 3, 0, 3, 6, 3, 2, 3, 0, 6, 6, 7, 0, 3, 2, 5, 5, 1, 1, 1, 2, 2, 6, 6, 3, 0, 6, 6, 0, 4, 6, 7, 3, 3, 7, 6, 4, 2, 7, 1, 0, 7, 3, 2]
       },
       {
         type: "twothirds",
@@ -12653,7 +12654,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.75,
         fracLabel: "three-quarters",
-        house: [42, 36, 46, 0, 52, 41, 40, 44, 47, 54, 7, 24, 45, 56, 34, 51, 43, 100, 44, 30, 39, 57, 33, 48, 55, 37, 53, 49, 45, 42, 26, 28, 32, 35, 30, 32, 31, 50, 34, 50, 47, 58, 38, 75, 33, 42, 46, 25]
+        house: [44, 51, 52, 7, 35, 30, 42, 0, 25, 32, 54, 36, 44, 50, 56, 42, 49, 33, 40, 45, 26, 37, 33, 42, 48, 55, 46, 47, 57, 45, 34, 47, 41, 32, 43, 30, 24, 31, 50, 34, 75, 28, 58, 38, 100, 39, 53, 46]
       }
     ]
   },
@@ -12669,12 +12670,12 @@ export const PUZZLES = [
         tag: "Road Less Traveled",
         q: "Picking a seat on a long flight. Which will the FEWEST players choose?",
         options: [
-          "Exit row",
           "Middle",
           "Window",
+          "Exit row",
           "Aisle"
         ],
-        house: [1, 3, 3, 2, 2, 0, 2, 3, 2, 2, 0, 0, 2, 0, 0, 2, 2, 3, 2, 3, 3, 2, 1, 2, 1, 2, 0, 2, 2, 2, 3, 2, 3, 2, 3, 3, 0, 2, 3, 3, 0, 2, 2, 2, 2, 3, 0, 1]
+        house: [3, 2, 3, 1, 1, 1, 1, 1, 2, 1, 1, 0, 2, 1, 0, 0, 3, 2, 2, 3, 1, 3, 2, 1, 3, 1, 1, 1, 1, 2, 1, 3, 2, 1, 3, 3, 3, 0, 2, 1, 3, 1, 1, 1, 3, 1, 3, 1]
       },
       {
         type: "herd",
@@ -12683,8 +12684,8 @@ export const PUZZLES = [
         min: 1000,
         max: 500000,
         truth: 85000,
-        truthNote: "Most novels land between eighty and ninety thousand words.",
-        house: [130000, 360000, 60000, 51000, 51000, 90000, 72000, 42000, 60000, 51000, 72000, 72000, 90000, 60000, 30000, 60000, 72000, 51000, 60000, 72000, 72000, 30000, 60000, 130000, 60000, 90000, 210000, 12000, 42000, 210000, 21000, 60000, 90000, 60000, 130000, 90000, 72000, 60000, 130000, 130000, 51000, 210000, 72000, 42000, 90000, 42000, 60000, 60000]
+        truthNote: "Most adult novels land between seventy and a hundred thousand words.",
+        house: [60000, 72000, 60000, 90000, 90000, 60000, 30000, 130000, 210000, 130000, 51000, 72000, 90000, 90000, 72000, 42000, 51000, 72000, 51000, 60000, 360000, 72000, 30000, 60000, 60000, 60000, 90000, 60000, 12000, 42000, 210000, 21000, 72000, 60000, 60000, 130000, 90000, 130000, 60000, 210000, 72000, 51000, 51000, 72000, 42000, 130000, 42000, 60000]
       },
       {
         type: "match",
@@ -12692,28 +12693,28 @@ export const PUZZLES = [
         q: "Name a spice. Match the MOST-picked answer.",
         options: [
           "Cinnamon",
-          "Cumin",
+          "Ginger",
           "Paprika",
-          "Pepper",
-          "Ginger"
+          "Cumin",
+          "Pepper"
         ],
-        house: [0, 3, 0, 1, 2, 2, 0, 0, 3, 2, 2, 3, 2, 0, 0, 3, 4, 1, 1, 2, 1, 0, 4, 3, 3, 3, 1, 3, 0, 4, 0, 2, 3, 0, 2, 1, 2, 0, 3, 1, 3, 0, 0, 1, 4, 0, 0, 2]
+        house: [2, 2, 3, 4, 0, 3, 0, 0, 0, 1, 4, 3, 2, 2, 0, 4, 4, 4, 2, 2, 4, 2, 0, 4, 0, 3, 4, 3, 4, 4, 0, 0, 2, 1, 0, 3, 2, 3, 0, 4, 1, 3, 0, 0, 1, 2, 0, 0]
       },
       {
         type: "unique",
         tag: "Rare Bird",
         q: "Everyone orders one kind of day. The RAREST pick wins.",
         options: [
-          "Crisp and frosty",
-          "A light breeze",
-          "Bright and cool",
-          "A big thunderstorm",
-          "Sunny and warm",
-          "Fresh after rain",
           "Misty",
-          "Heavy snow"
+          "Fresh after rain",
+          "A light breeze",
+          "A big thunderstorm",
+          "Heavy snow",
+          "Bright and cool",
+          "Sunny and warm",
+          "Crisp and frosty"
         ],
-        house: [4, 7, 4, 6, 2, 2, 6, 2, 4, 5, 4, 4, 5, 4, 7, 1, 5, 5, 2, 0, 1, 4, 6, 1, 5, 1, 4, 0, 3, 1, 5, 1, 0, 6, 1, 4, 4, 2, 2, 6, 0, 2, 2, 7, 3, 4, 0, 3]
+        house: [5, 7, 0, 7, 2, 4, 3, 6, 6, 3, 2, 5, 6, 6, 5, 6, 2, 5, 6, 7, 0, 1, 5, 2, 1, 6, 6, 5, 0, 7, 1, 6, 1, 0, 6, 1, 5, 7, 3, 6, 2, 1, 2, 2, 5, 4, 4, 0]
       },
       {
         type: "twothirds",
@@ -12723,7 +12724,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.4,
         fracLabel: "two-fifths",
-        house: [25, 58, 100, 12, 46, 22, 48, 4, 28, 10, 52, 23, 13, 27, 12, 6, 14, 18, 47, 26, 56, 14, 50, 16, 49, 51, 44, 8, 55, 17, 45, 53, 24, 57, 21, 7, 54, 50, 75, 20, 15, 29, 42, 0, 25, 19, 42, 33]
+        house: [58, 18, 14, 13, 23, 46, 52, 27, 15, 12, 6, 48, 17, 16, 47, 4, 12, 28, 29, 42, 14, 56, 0, 51, 26, 57, 49, 44, 10, 55, 25, 45, 53, 24, 20, 75, 25, 54, 50, 100, 22, 21, 8, 42, 7, 33, 19, 50]
       }
     ]
   },
@@ -12739,12 +12740,12 @@ export const PUZZLES = [
         tag: "Road Less Traveled",
         q: "Learning one new language this year. Which will the FEWEST players start?",
         options: [
-          "Japanese",
           "Spanish",
           "Italian",
+          "Japanese",
           "Finnish"
         ],
-        house: [1, 1, 2, 3, 1, 1, 1, 2, 1, 1, 3, 1, 0, 1, 0, 2, 1, 2, 2, 2, 0, 1, 1, 0, 0, 0, 0, 2, 3, 2, 0, 1, 0, 0, 1, 0, 0, 3, 1, 1, 0, 1, 0, 2, 3, 0, 2, 1]
+        house: [2, 3, 0, 2, 0, 1, 1, 2, 3, 0, 1, 2, 0, 1, 0, 1, 3, 0, 2, 2, 2, 0, 1, 1, 0, 0, 0, 2, 2, 3, 2, 0, 1, 0, 0, 1, 0, 0, 1, 2, 2, 0, 2, 0, 2, 3, 0, 2]
       },
       {
         type: "herd",
@@ -12754,52 +12755,52 @@ export const PUZZLES = [
         max: 100,
         truth: 26,
         truthNote: "Twenty-six bones in each foot.",
-        house: [11, 20, 23, 23, 23, 20, 26, 26, 20, 20, 23, 23, 29, 11, 26, 14, 17, 20, 14, 20, 20, 23, 26, 20, 14, 23, 17, 20, 14, 32, 17, 20, 17, 26, 26, 17, 14, 11, 17, 38, 20, 17, 29, 23, 29, 17, 14, 32]
+        house: [11, 23, 20, 23, 17, 17, 14, 26, 20, 20, 23, 23, 20, 26, 11, 26, 23, 20, 23, 14, 20, 26, 29, 20, 23, 14, 29, 17, 20, 14, 38, 20, 20, 17, 17, 26, 26, 14, 11, 17, 32, 20, 17, 32, 23, 29, 17, 14]
       },
       {
         type: "match",
         tag: "Meeting Point",
         q: "Name a type of shoe. Match the MOST-picked answer.",
         options: [
-          "Sneakers",
-          "Slippers",
-          "Sandals",
           "Boots",
-          "Flip-flops"
+          "Sandals",
+          "Flip-flops",
+          "Slippers",
+          "Sneakers"
         ],
-        house: [0, 0, 2, 3, 0, 0, 0, 0, 4, 1, 2, 2, 3, 0, 2, 0, 4, 2, 3, 3, 0, 1, 0, 3, 3, 0, 1, 3, 3, 3, 3, 4, 0, 3, 1, 2, 0, 0, 0, 2, 2, 0, 0, 0, 3, 1, 0, 1]
+        house: [4, 0, 0, 0, 0, 4, 1, 3, 1, 4, 2, 3, 0, 4, 0, 4, 0, 3, 2, 4, 0, 1, 3, 3, 4, 4, 1, 4, 4, 1, 4, 1, 4, 0, 4, 4, 3, 4, 4, 0, 4, 4, 0, 1, 1, 4, 2, 0]
       },
       {
         type: "unique",
         tag: "Rare Bird",
         q: "Everyone builds one taco. The RAREST filling wins.",
         options: [
-          "Mushroom",
-          "Beef",
-          "Tongue",
-          "Beans",
           "Cactus",
-          "Pork",
           "Fish",
-          "Chicken"
+          "Chicken",
+          "Beans",
+          "Tongue",
+          "Pork",
+          "Mushroom",
+          "Beef"
         ],
-        house: [6, 3, 2, 2, 5, 7, 1, 0, 6, 3, 5, 5, 0, 6, 0, 6, 6, 4, 1, 7, 3, 5, 7, 0, 7, 5, 7, 3, 7, 4, 4, 1, 3, 7, 1, 3, 7, 3, 6, 0, 1, 1, 1, 7, 6, 1, 5, 0]
+        house: [2, 0, 6, 2, 5, 6, 3, 1, 2, 1, 2, 3, 7, 1, 5, 7, 7, 6, 6, 4, 0, 3, 3, 7, 0, 5, 5, 1, 6, 2, 4, 3, 2, 3, 7, 7, 2, 7, 3, 6, 1, 2, 2, 1, 7, 5, 1, 5]
       },
       {
         type: "unique",
         tag: "Rarer Bird",
         q: "Everyone pours one juice. The RAREST pick wins.",
         options: [
-          "Tomato",
+          "Beet",
+          "Cranberry",
+          "Orange",
           "Pineapple",
           "Apple",
           "Celery",
           "Grape",
-          "Beet",
-          "Cranberry",
-          "Orange"
+          "Tomato"
         ],
-        house: [4, 4, 6, 0, 4, 4, 7, 1, 5, 1, 2, 7, 7, 1, 2, 1, 7, 2, 7, 3, 2, 0, 5, 7, 4, 6, 0, 7, 6, 7, 2, 1, 2, 0, 2, 3, 7, 1, 1, 7, 5, 0, 6, 6, 7, 4, 6, 2]
+        house: [6, 2, 1, 5, 0, 3, 3, 4, 4, 2, 3, 7, 6, 4, 2, 2, 3, 5, 7, 1, 3, 2, 0, 4, 3, 1, 6, 7, 7, 2, 2, 2, 2, 2, 1, 2, 3, 6, 1, 1, 6, 4, 0, 7, 4, 6, 4, 4]
       },
       {
         type: "twothirds",
@@ -12809,7 +12810,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.3333333333333333,
         fracLabel: "a third",
-        house: [56, 9, 4, 44, 20, 10, 42, 75, 17, 18, 42, 14, 52, 45, 50, 12, 13, 10, 48, 2, 12, 33, 21, 55, 54, 46, 57, 0, 16, 6, 7, 47, 25, 100, 11, 49, 8, 15, 24, 23, 22, 50, 58, 19, 53, 26, 25, 51]
+        house: [56, 7, 44, 0, 12, 14, 20, 19, 9, 16, 13, 50, 17, 52, 23, 50, 42, 24, 75, 48, 55, 18, 2, 21, 45, 54, 46, 10, 12, 25, 8, 49, 47, 33, 51, 100, 57, 4, 42, 10, 11, 22, 6, 58, 15, 53, 26, 25]
       }
     ]
   },
@@ -12825,12 +12826,12 @@ export const PUZZLES = [
         tag: "Road Less Traveled",
         q: "Wrapping a present tonight. Which will the FEWEST players reach for?",
         options: [
-          "Newspaper",
           "Plain brown paper",
-          "Patterned paper",
-          "A gift bag"
+          "A gift bag",
+          "Newspaper",
+          "Patterned paper"
         ],
-        house: [3, 3, 2, 3, 2, 3, 2, 2, 1, 2, 2, 2, 1, 3, 2, 3, 2, 3, 3, 2, 2, 1, 0, 3, 2, 2, 3, 2, 1, 1, 2, 1, 2, 2, 2, 3, 3, 2, 0, 1, 1, 3, 0, 0, 1, 3, 0, 3]
+        house: [3, 3, 1, 2, 3, 3, 3, 2, 1, 3, 1, 1, 3, 1, 3, 3, 2, 2, 3, 3, 1, 3, 0, 0, 1, 1, 1, 3, 1, 0, 1, 1, 1, 2, 1, 3, 3, 3, 3, 0, 0, 1, 3, 0, 0, 0, 3, 0]
       },
       {
         type: "herd",
@@ -12840,20 +12841,20 @@ export const PUZZLES = [
         max: 200,
         truth: 29,
         truthNote: "About twenty-nine and a half days.",
-        house: [20, 24, 20, 16, 32, 40, 32, 20, 24, 28, 28, 32, 32, 44, 28, 36, 28, 36, 36, 36, 28, 36, 32, 36, 32, 28, 32, 28, 16, 28, 28, 24, 24, 24, 24, 28, 40, 40, 28, 40, 36, 32, 28, 28, 44, 20, 40, 52]
+        house: [52, 24, 32, 20, 16, 32, 20, 32, 20, 32, 28, 28, 24, 24, 36, 28, 36, 28, 40, 40, 36, 28, 40, 32, 28, 32, 36, 32, 28, 16, 28, 36, 24, 24, 24, 40, 36, 28, 28, 28, 44, 36, 32, 28, 28, 44, 20, 40]
       },
       {
         type: "match",
         tag: "Meeting Point",
         q: "Name a Greek god. Match the MOST-picked answer.",
         options: [
-          "Poseidon",
+          "Athena",
           "Hades",
           "Zeus",
-          "Athena",
+          "Poseidon",
           "Apollo"
         ],
-        house: [3, 2, 3, 2, 2, 0, 4, 3, 2, 2, 4, 3, 4, 0, 0, 2, 2, 4, 0, 1, 2, 0, 4, 2, 3, 1, 2, 2, 3, 0, 2, 2, 0, 0, 2, 2, 2, 0, 0, 2, 3, 2, 2, 1, 2, 2, 0, 2]
+        house: [2, 2, 3, 3, 3, 3, 0, 2, 3, 2, 4, 4, 0, 4, 0, 2, 2, 2, 2, 1, 2, 1, 2, 4, 2, 0, 2, 3, 2, 3, 0, 2, 4, 0, 3, 2, 2, 2, 0, 0, 2, 3, 3, 3, 2, 2, 2, 1]
       },
       {
         type: "unique",
@@ -12862,14 +12863,14 @@ export const PUZZLES = [
         options: [
           "Make a drink",
           "Scroll",
-          "Step outside",
-          "Tidy the desk",
-          "Do a crossword",
           "Chat to someone",
+          "Step outside",
+          "Do a crossword",
           "Stretch",
-          "Stare out the window"
+          "Stare out the window",
+          "Tidy the desk"
         ],
-        house: [2, 5, 2, 7, 7, 5, 1, 3, 1, 6, 1, 0, 2, 6, 6, 5, 7, 1, 0, 0, 2, 0, 5, 6, 5, 4, 3, 2, 1, 0, 0, 5, 2, 0, 7, 0, 5, 2, 1, 0, 6, 7, 2, 7, 1, 6, 1, 4]
+        house: [3, 1, 6, 2, 7, 3, 6, 4, 3, 1, 2, 2, 5, 7, 6, 5, 5, 1, 1, 0, 0, 2, 0, 3, 0, 3, 3, 3, 3, 1, 0, 0, 6, 2, 0, 5, 0, 4, 6, 1, 0, 5, 2, 2, 6, 1, 5, 1]
       },
       {
         type: "twothirds",
@@ -12879,7 +12880,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.8,
         fracLabel: "four-fifths",
-        house: [50, 42, 56, 0, 33, 48, 7, 41, 33, 45, 38, 32, 30, 57, 58, 44, 46, 50, 42, 53, 100, 36, 35, 46, 48, 25, 52, 47, 34, 34, 45, 43, 49, 49, 75, 37, 55, 39, 44, 32, 40, 47, 54, 36, 42, 28, 38, 51]
+        house: [34, 48, 38, 42, 57, 55, 56, 32, 39, 50, 51, 38, 34, 42, 44, 7, 58, 46, 50, 53, 75, 49, 36, 41, 46, 25, 33, 52, 47, 48, 45, 35, 30, 32, 49, 100, 37, 45, 47, 44, 43, 40, 33, 54, 36, 42, 28, 0]
       }
     ]
   },
@@ -12895,12 +12896,12 @@ export const PUZZLES = [
         tag: "Road Less Traveled",
         q: "Naming a newly found moon. Which will the FEWEST players choose?",
         options: [
+          "A scientist",
           "A place on Earth",
           "A pet",
-          "A scientist",
           "A myth"
         ],
-        house: [3, 3, 3, 0, 3, 3, 0, 0, 1, 3, 3, 1, 0, 2, 0, 3, 0, 3, 0, 0, 3, 1, 3, 2, 0, 0, 2, 3, 2, 2, 2, 0, 0, 3, 0, 2, 2, 3, 2, 0, 3, 3, 1, 2, 3, 3, 1, 3]
+        house: [3, 1, 0, 1, 3, 3, 3, 3, 0, 3, 2, 3, 1, 3, 1, 0, 0, 0, 1, 0, 0, 2, 1, 3, 1, 0, 3, 1, 3, 1, 2, 2, 0, 1, 3, 0, 3, 1, 3, 2, 1, 3, 3, 1, 3, 3, 3, 1]
       },
       {
         type: "herd",
@@ -12910,36 +12911,36 @@ export const PUZZLES = [
         max: 30000,
         truth: 8849,
         truthNote: "Eight thousand eight hundred and forty-nine meters at the summit.",
-        house: [8500, 7700, 8500, 11000, 5500, 8500, 7700, 7700, 17000, 9400, 13000, 8500, 9400, 7700, 6800, 4300, 7700, 11000, 9400, 13000, 17000, 6800, 6800, 7700, 8500, 11000, 6800, 4300, 8500, 8500, 13000, 9400, 6800, 8500, 9400, 8500, 7700, 5500, 7700, 9400, 6800, 9400, 8500, 11000, 5500, 8500, 9400, 11000]
+        house: [7700, 8500, 8500, 13000, 7700, 7700, 11000, 7700, 11000, 8500, 7700, 6800, 8500, 4300, 6800, 6800, 4300, 8500, 8500, 9400, 5500, 17000, 9400, 11000, 7700, 9400, 9400, 6800, 11000, 17000, 13000, 8500, 9400, 6800, 8500, 9400, 8500, 7700, 5500, 7700, 11000, 6800, 9400, 8500, 13000, 5500, 8500, 9400]
       },
       {
         type: "match",
         tag: "Meeting Point",
         q: "Name a sport played with a ball. Match the MOST-picked answer.",
         options: [
+          "Baseball",
+          "Soccer",
           "Volleyball",
           "Tennis",
-          "Basketball",
-          "Baseball",
-          "Soccer"
+          "Basketball"
         ],
-        house: [1, 2, 4, 4, 2, 2, 2, 0, 4, 2, 1, 2, 4, 4, 0, 4, 4, 4, 3, 2, 1, 1, 3, 2, 4, 2, 1, 2, 0, 1, 4, 0, 4, 0, 4, 3, 1, 1, 3, 0, 4, 1, 4, 4, 4, 2, 0, 1]
+        house: [1, 3, 4, 1, 1, 4, 1, 4, 0, 2, 3, 3, 2, 1, 4, 3, 1, 4, 3, 2, 2, 3, 4, 3, 1, 4, 2, 1, 1, 1, 1, 4, 1, 1, 0, 4, 3, 1, 1, 3, 0, 4, 1, 3, 2, 4, 2, 0]
       },
       {
         type: "unique",
         tag: "Rare Bird",
         q: "Everyone paints one wall. The RAREST finish wins.",
         options: [
+          "Pale blue",
+          "Metallic",
           "Warm cream",
           "Deep navy",
           "Matte white",
-          "Sage green",
           "Soft gray",
           "Blackboard paint",
-          "Pale blue",
-          "Metallic"
+          "Sage green"
         ],
-        house: [0, 6, 4, 2, 4, 2, 2, 2, 0, 3, 1, 7, 1, 1, 3, 1, 1, 4, 3, 6, 0, 6, 2, 0, 3, 0, 6, 4, 4, 4, 2, 6, 4, 3, 5, 4, 7, 2, 0, 7, 6, 6, 0, 5, 2, 4, 2, 3]
+        house: [2, 1, 2, 6, 3, 5, 7, 3, 3, 0, 4, 2, 7, 2, 1, 4, 5, 1, 0, 4, 7, 0, 7, 2, 4, 4, 0, 7, 5, 4, 6, 3, 0, 4, 4, 5, 5, 4, 2, 0, 5, 5, 7, 0, 5, 3, 5, 2]
       },
       {
         type: "twothirds",
@@ -12949,7 +12950,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.75,
         fracLabel: "three-quarters",
-        house: [34, 42, 0, 46, 36, 33, 39, 30, 7, 58, 47, 42, 55, 35, 47, 53, 24, 54, 40, 44, 25, 33, 48, 46, 30, 41, 100, 75, 56, 26, 31, 52, 38, 34, 32, 37, 45, 44, 50, 32, 28, 57, 42, 50, 49, 43, 51, 45]
+        house: [55, 30, 38, 56, 30, 42, 44, 37, 41, 34, 7, 47, 42, 45, 42, 39, 53, 34, 54, 36, 32, 25, 33, 48, 46, 26, 35, 100, 33, 24, 0, 47, 52, 40, 58, 46, 45, 31, 44, 50, 32, 28, 57, 50, 75, 49, 43, 51]
       }
     ]
   },
@@ -12965,12 +12966,12 @@ export const PUZZLES = [
         tag: "Road Less Traveled",
         q: "A day on a small boat. Which job will the FEWEST players take?",
         options: [
+          "Watching for wildlife",
           "Cooking below deck",
           "Handling the ropes",
-          "Watching for wildlife",
           "Steering"
         ],
-        house: [0, 2, 3, 2, 3, 2, 3, 1, 0, 1, 3, 3, 2, 3, 3, 2, 3, 2, 3, 1, 3, 2, 1, 1, 2, 1, 2, 1, 2, 2, 3, 3, 1, 0, 0, 3, 2, 3, 0, 2, 1, 2, 2, 3, 3, 3, 3, 1]
+        house: [3, 3, 2, 3, 0, 0, 3, 2, 0, 3, 0, 3, 3, 1, 3, 2, 2, 3, 2, 3, 0, 1, 1, 0, 0, 3, 0, 2, 0, 1, 2, 3, 3, 0, 0, 0, 3, 2, 0, 0, 2, 0, 2, 1, 3, 3, 3, 3]
       },
       {
         type: "herd",
@@ -12980,7 +12981,7 @@ export const PUZZLES = [
         max: 500000,
         truth: 100000,
         truthNote: "About a hundred thousand beats a day.",
-        house: [63000, 90000, 110000, 77000, 63000, 140000, 63000, 45000, 200000, 45000, 90000, 90000, 110000, 90000, 77000, 18000, 90000, 45000, 140000, 77000, 140000, 90000, 90000, 140000, 110000, 110000, 90000, 31000, 77000, 63000, 320000, 110000, 77000, 31000, 77000, 110000, 110000, 90000, 500000, 140000, 200000, 320000, 200000, 77000, 90000, 77000, 63000, 90000]
+        house: [90000, 200000, 90000, 110000, 77000, 90000, 110000, 63000, 63000, 45000, 45000, 110000, 63000, 140000, 90000, 90000, 18000, 77000, 45000, 200000, 90000, 140000, 77000, 320000, 77000, 90000, 77000, 90000, 31000, 110000, 63000, 110000, 110000, 77000, 31000, 320000, 140000, 110000, 140000, 90000, 140000, 200000, 500000, 90000, 77000, 90000, 77000, 63000]
       },
       {
         type: "match",
@@ -12988,28 +12989,28 @@ export const PUZZLES = [
         q: "Name a pasta shape. Match the MOST-picked answer.",
         options: [
           "Spaghetti",
-          "Lasagna sheets",
-          "Fusilli",
           "Macaroni",
+          "Fusilli",
+          "Lasagna sheets",
           "Penne"
         ],
-        house: [4, 2, 4, 0, 4, 0, 0, 4, 0, 0, 2, 0, 0, 0, 2, 2, 4, 2, 2, 0, 0, 0, 0, 0, 1, 0, 0, 0, 4, 0, 4, 0, 4, 1, 3, 4, 1, 0, 3, 1, 0, 2, 0, 3, 2, 1, 4, 4]
+        house: [4, 4, 0, 2, 0, 4, 0, 0, 0, 0, 0, 2, 4, 2, 0, 0, 4, 4, 0, 3, 2, 0, 0, 0, 0, 1, 0, 0, 0, 4, 0, 4, 4, 0, 2, 3, 3, 1, 0, 3, 0, 0, 2, 0, 3, 2, 1, 4]
       },
       {
         type: "unique",
         tag: "Rare Bird",
         q: "Everyone signs up for one race. The RAREST distance wins.",
         options: [
+          "10K",
+          "A 400m sprint",
           "5K",
           "A relay leg",
-          "A 24-hour race",
-          "10K",
           "Half marathon",
-          "A 400m sprint",
-          "A one-mile fun run",
-          "Marathon"
+          "A 24-hour race",
+          "Marathon",
+          "A one-mile fun run"
         ],
-        house: [3, 0, 0, 4, 4, 3, 4, 7, 2, 1, 0, 3, 7, 6, 7, 4, 7, 4, 4, 0, 4, 1, 0, 3, 5, 6, 6, 0, 6, 3, 0, 1, 0, 7, 0, 3, 5, 0, 4, 7, 6, 3, 3, 1, 0, 6, 0, 2]
+        house: [0, 7, 4, 4, 7, 4, 7, 4, 1, 3, 2, 0, 0, 2, 2, 4, 2, 7, 4, 3, 6, 4, 2, 0, 2, 5, 6, 6, 1, 4, 3, 7, 2, 0, 2, 0, 2, 6, 0, 5, 7, 6, 3, 2, 2, 2, 6, 0]
       },
       {
         type: "twothirds",
@@ -13019,7 +13020,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.6666666666666666,
         fracLabel: "two-thirds",
-        house: [48, 41, 35, 53, 32, 25, 37, 49, 55, 30, 26, 58, 31, 42, 7, 75, 25, 24, 38, 33, 39, 34, 18, 28, 22, 0, 43, 52, 36, 57, 29, 33, 50, 46, 47, 100, 26, 56, 51, 42, 40, 44, 42, 20, 27, 45, 50, 54]
+        house: [25, 22, 33, 40, 38, 50, 36, 100, 57, 32, 52, 42, 58, 37, 55, 42, 20, 31, 49, 33, 35, 0, 39, 53, 28, 24, 7, 34, 48, 30, 43, 29, 56, 50, 46, 47, 54, 18, 25, 51, 42, 26, 44, 41, 26, 27, 45, 75]
       }
     ]
   },
@@ -13035,12 +13036,12 @@ export const PUZZLES = [
         tag: "Road Less Traveled",
         q: "A found banknote in an old coat. Which will the FEWEST players do with it?",
         options: [
-          "Put it in savings",
+          "Buy someone a gift",
           "Spend it on lunch",
-          "Frame it",
-          "Buy someone a gift"
+          "Put it in savings",
+          "Frame it"
         ],
-        house: [1, 0, 3, 3, 0, 1, 3, 1, 1, 1, 0, 2, 3, 1, 1, 0, 1, 3, 0, 3, 0, 1, 0, 0, 2, 0, 0, 1, 3, 0, 0, 1, 2, 1, 2, 1, 1, 2, 0, 1, 0, 1, 1, 1, 3, 3, 1, 0]
+        house: [1, 2, 0, 3, 2, 0, 3, 0, 0, 1, 1, 0, 2, 2, 2, 2, 1, 1, 1, 2, 3, 1, 2, 2, 1, 2, 0, 0, 1, 0, 2, 1, 1, 3, 2, 1, 1, 1, 2, 0, 1, 1, 2, 1, 1, 2, 3, 1]
       },
       {
         type: "herd",
@@ -13050,36 +13051,36 @@ export const PUZZLES = [
         max: 2000,
         truth: 200,
         truthNote: "About two hundred, and each one is technically a separate fruit.",
-        house: [65, 140, 200, 110, 65, 140, 110, 200, 90, 140, 90, 540, 320, 110, 200, 90, 90, 90, 30, 65, 90, 140, 110, 90, 90, 90, 200, 65, 90, 45, 110, 45, 90, 320, 140, 75, 110, 90, 75, 75, 75, 110, 110, 75, 320, 200, 140, 18]
+        house: [65, 65, 140, 200, 90, 75, 200, 110, 75, 90, 140, 90, 18, 110, 110, 90, 90, 90, 540, 30, 110, 90, 140, 65, 200, 90, 90, 200, 65, 90, 45, 110, 45, 90, 140, 140, 200, 110, 90, 75, 320, 75, 110, 110, 75, 320, 320, 140]
       },
       {
         type: "match",
         tag: "Meeting Point",
         q: "Name a present that always works. Match the MOST-picked answer.",
         options: [
-          "A candle",
-          "Chocolate",
           "A gift card",
+          "Flowers",
+          "Chocolate",
           "A book",
-          "Flowers"
+          "A candle"
         ],
-        house: [1, 1, 1, 1, 4, 4, 1, 3, 4, 3, 0, 1, 4, 4, 4, 0, 3, 1, 2, 2, 4, 3, 3, 4, 3, 1, 1, 3, 1, 1, 1, 3, 2, 0, 4, 1, 0, 4, 4, 4, 1, 0, 0, 1, 0, 2, 1, 3]
+        house: [1, 1, 1, 2, 2, 1, 3, 3, 2, 2, 3, 0, 3, 2, 1, 4, 0, 1, 1, 3, 2, 4, 3, 2, 3, 2, 3, 4, 2, 3, 2, 1, 2, 4, 1, 2, 1, 1, 4, 4, 4, 2, 0, 0, 2, 1, 2, 2]
       },
       {
         type: "unique",
         tag: "Rare Bird",
         q: "Everyone takes one guided tour. The RAREST pick wins.",
         options: [
-          "Ancient world",
-          "Behind the scenes",
-          "Highlights in an hour",
+          "Modern art",
           "Rooftop and views",
-          "Night tour",
-          "Storerooms",
+          "Behind the scenes",
+          "Ancient world",
           "Conservation lab",
-          "Modern art"
+          "Highlights in an hour",
+          "Night tour",
+          "Storerooms"
         ],
-        house: [0, 6, 7, 0, 5, 2, 6, 7, 7, 0, 3, 0, 1, 2, 3, 0, 2, 6, 6, 7, 7, 2, 3, 0, 2, 4, 0, 2, 7, 4, 1, 7, 3, 6, 1, 2, 0, 2, 1, 5, 3, 2, 1, 3, 5, 1, 7, 0]
+        house: [3, 0, 1, 2, 0, 5, 5, 3, 3, 6, 0, 5, 1, 4, 4, 4, 0, 3, 7, 5, 1, 0, 3, 5, 0, 5, 2, 0, 2, 1, 4, 7, 3, 5, 5, 1, 2, 0, 2, 6, 4, 3, 3, 1, 3, 5, 2, 7]
       },
       {
         type: "twothirds",
@@ -13089,7 +13090,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.4,
         fracLabel: "two-fifths",
-        house: [29, 53, 6, 44, 19, 23, 55, 58, 42, 54, 52, 50, 15, 10, 17, 24, 22, 75, 0, 46, 14, 42, 12, 12, 26, 49, 51, 28, 16, 18, 20, 14, 4, 47, 56, 100, 50, 33, 48, 45, 13, 25, 57, 7, 8, 21, 27, 25]
+        house: [47, 42, 52, 12, 8, 27, 26, 18, 58, 53, 17, 75, 54, 44, 6, 49, 21, 4, 0, 7, 46, 28, 50, 42, 23, 14, 33, 100, 12, 16, 24, 22, 51, 14, 55, 56, 20, 50, 25, 48, 45, 29, 15, 57, 25, 10, 19, 13]
       }
     ]
   },
@@ -13105,12 +13106,12 @@ export const PUZZLES = [
         tag: "Road Less Traveled",
         q: "Lunch on a working day. Which will the FEWEST players do?",
         options: [
-          "Skip it",
-          "Eat at the desk",
           "Eat with colleagues",
-          "Go out for something"
+          "Go out for something",
+          "Eat at the desk",
+          "Skip it"
         ],
-        house: [2, 0, 1, 1, 2, 2, 1, 2, 1, 1, 1, 3, 1, 1, 2, 3, 3, 3, 2, 3, 1, 1, 0, 2, 1, 0, 1, 3, 1, 3, 2, 3, 1, 0, 2, 1, 3, 3, 3, 3, 3, 0, 1, 3, 0, 2, 2, 3]
+        house: [2, 2, 0, 2, 1, 2, 1, 1, 3, 1, 1, 0, 2, 1, 1, 1, 0, 2, 2, 2, 3, 1, 0, 0, 2, 1, 0, 0, 3, 1, 3, 3, 2, 1, 0, 2, 1, 0, 2, 3, 2, 2, 0, 1, 2, 0, 2, 1]
       },
       {
         type: "herd",
@@ -13120,36 +13121,36 @@ export const PUZZLES = [
         max: 1000,
         truth: 290,
         truthNote: "A good layer manages close to three hundred.",
-        house: [250, 200, 200, 180, 220, 200, 250, 200, 130, 250, 400, 220, 200, 200, 300, 180, 300, 220, 180, 200, 200, 160, 180, 220, 220, 220, 300, 250, 250, 300, 400, 200, 130, 160, 220, 200, 160, 300, 100, 220, 220, 160, 200, 180, 250, 250, 200, 180]
+        house: [250, 220, 200, 200, 400, 200, 180, 250, 200, 130, 200, 400, 220, 200, 200, 220, 180, 300, 220, 180, 200, 300, 160, 180, 220, 200, 220, 300, 250, 220, 300, 180, 250, 130, 160, 250, 200, 160, 300, 100, 220, 220, 160, 200, 180, 250, 250, 200]
       },
       {
         type: "match",
         tag: "Meeting Point",
         q: "Name something that flies with an engine. Match the MOST-picked answer.",
         options: [
-          "Helicopter",
-          "Drone",
           "Airplane",
           "Glider",
+          "Drone",
+          "Helicopter",
           "Rocket"
         ],
-        house: [0, 2, 2, 0, 1, 1, 1, 2, 3, 2, 2, 0, 2, 0, 2, 1, 4, 4, 2, 2, 2, 2, 2, 2, 4, 4, 2, 0, 4, 0, 4, 0, 3, 4, 2, 2, 0, 2, 1, 0, 2, 2, 2, 0, 2, 2, 2, 3]
+        house: [4, 0, 3, 3, 4, 2, 2, 0, 0, 0, 0, 3, 0, 2, 0, 4, 0, 4, 3, 1, 3, 1, 3, 1, 0, 4, 4, 2, 0, 4, 0, 0, 0, 3, 0, 0, 0, 0, 2, 0, 0, 3, 0, 3, 0, 3, 0, 3]
       },
       {
         type: "unique",
         tag: "Rare Bird",
         q: "Everyone invents one strong password. The RAREST style wins.",
         options: [
-          "A phrase",
-          "Keyboard pattern",
-          "A word and numbers",
           "A pet name and a year",
           "A password manager makes it",
+          "A word and numbers",
+          "Random letters",
           "A line from a song",
           "Three random words",
-          "Random letters"
+          "Keyboard pattern",
+          "A phrase"
         ],
-        house: [0, 0, 5, 0, 6, 2, 2, 4, 0, 7, 3, 5, 6, 6, 2, 1, 7, 3, 6, 7, 6, 0, 5, 4, 2, 3, 7, 4, 3, 2, 6, 0, 2, 5, 1, 1, 7, 6, 2, 3, 3, 5, 6, 0, 7, 2, 2, 2]
+        house: [4, 2, 7, 0, 0, 2, 5, 1, 5, 0, 7, 3, 5, 5, 7, 2, 1, 7, 3, 5, 2, 5, 0, 5, 7, 3, 6, 2, 4, 3, 6, 2, 0, 2, 5, 2, 1, 7, 4, 2, 4, 3, 4, 6, 0, 7, 2, 3]
       },
       {
         type: "twothirds",
@@ -13159,7 +13160,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.8,
         fracLabel: "four-fifths",
-        house: [42, 46, 48, 36, 46, 47, 40, 36, 44, 58, 32, 42, 28, 45, 45, 38, 56, 34, 50, 0, 41, 38, 48, 42, 39, 53, 57, 35, 49, 37, 33, 49, 7, 54, 43, 50, 33, 34, 55, 51, 44, 25, 75, 30, 32, 100, 47, 52]
+        house: [38, 75, 42, 32, 50, 28, 38, 42, 46, 44, 58, 47, 34, 45, 51, 35, 41, 56, 30, 48, 7, 39, 44, 48, 49, 25, 53, 40, 57, 0, 45, 46, 32, 47, 54, 37, 50, 42, 34, 55, 49, 36, 33, 100, 36, 43, 52, 33]
       }
     ]
   },
@@ -13175,12 +13176,12 @@ export const PUZZLES = [
         tag: "Road Less Traveled",
         q: "A road trip across a continent. Which route will the FEWEST players plan?",
         options: [
-          "Along the coast",
-          "City to city",
+          "Through the mountains",
           "Straight across the flat middle",
-          "Through the mountains"
+          "City to city",
+          "Along the coast"
         ],
-        house: [1, 0, 0, 3, 2, 1, 0, 0, 0, 0, 3, 1, 0, 0, 1, 1, 0, 0, 0, 2, 0, 0, 3, 3, 3, 0, 0, 2, 3, 3, 3, 2, 1, 2, 0, 0, 1, 3, 3, 1, 3, 3, 1, 3, 0, 3, 0, 1]
+        house: [0, 3, 2, 3, 3, 1, 0, 0, 3, 0, 2, 2, 3, 0, 1, 0, 3, 0, 0, 0, 3, 2, 1, 1, 3, 0, 3, 0, 2, 3, 3, 3, 3, 2, 3, 0, 0, 2, 2, 3, 2, 3, 3, 2, 3, 1, 3, 0]
       },
       {
         type: "herd",
@@ -13190,36 +13191,36 @@ export const PUZZLES = [
         max: 20000,
         truth: 2000,
         truthNote: "Roughly two million flowers for a single jar.",
-        house: [1100, 210, 450, 360, 300, 110, 300, 300, 300, 360, 260, 210, 300, 60, 450, 300, 360, 260, 360, 150, 660, 300, 210, 360, 360, 660, 260, 210, 450, 300, 1800, 300, 1100, 360, 260, 260, 660, 300, 450, 450, 300, 450, 300, 360, 1100, 660, 660, 150]
+        house: [360, 300, 660, 300, 360, 210, 110, 260, 1100, 360, 450, 260, 210, 300, 60, 300, 360, 360, 300, 300, 150, 660, 300, 210, 450, 360, 300, 260, 210, 450, 300, 150, 660, 1800, 360, 260, 260, 660, 300, 450, 450, 300, 450, 300, 360, 1100, 660, 1100]
       },
       {
         type: "match",
         tag: "Meeting Point",
         q: "Name a magic trick. Match the MOST-picked answer.",
         options: [
-          "Disappearing act",
-          "Sawing someone in half",
-          "Pulling a rabbit from a hat",
           "Levitation",
-          "Card tricks"
+          "Disappearing act",
+          "Card tricks",
+          "Sawing someone in half",
+          "Pulling a rabbit from a hat"
         ],
-        house: [4, 4, 4, 2, 0, 2, 2, 2, 1, 4, 3, 2, 2, 0, 4, 4, 0, 1, 0, 2, 1, 1, 2, 2, 1, 4, 2, 4, 0, 0, 2, 1, 2, 2, 3, 1, 2, 4, 2, 1, 1, 1, 2, 3, 1, 1, 2, 2]
+        house: [2, 4, 4, 4, 3, 0, 3, 3, 1, 4, 4, 2, 3, 4, 0, 4, 4, 1, 3, 0, 2, 2, 3, 4, 3, 4, 4, 3, 2, 1, 1, 3, 2, 3, 3, 4, 1, 4, 3, 4, 4, 2, 2, 4, 4, 1, 2, 4]
       },
       {
         type: "unique",
         tag: "Rare Bird",
         q: "Everyone gets one view over a city. The RAREST pick wins.",
         options: [
-          "From a hill",
-          "From a tower",
-          "From a bridge",
-          "From a parking garage",
           "From a rooftop bar",
-          "From a big wheel",
+          "From a tower",
+          "From a hill",
+          "From a plane window",
           "From a cathedral roof",
-          "From a plane window"
+          "From a big wheel",
+          "From a bridge",
+          "From a parking garage"
         ],
-        house: [5, 2, 0, 1, 4, 2, 4, 1, 0, 2, 7, 0, 6, 2, 7, 0, 5, 1, 5, 0, 5, 5, 3, 1, 5, 4, 2, 0, 7, 1, 4, 6, 1, 3, 1, 4, 0, 0, 1, 2, 4, 7, 6, 7, 4, 7, 5, 1]
+        house: [1, 0, 0, 2, 4, 2, 5, 2, 1, 4, 6, 2, 5, 0, 5, 3, 1, 1, 7, 5, 0, 2, 5, 3, 5, 1, 3, 6, 0, 7, 1, 3, 2, 1, 3, 1, 3, 0, 0, 1, 2, 6, 6, 6, 6, 4, 2, 5]
       },
       {
         type: "twothirds",
@@ -13229,7 +13230,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.5,
         fracLabel: "half",
-        house: [51, 33, 58, 22, 19, 34, 33, 47, 17, 50, 49, 17, 57, 25, 9, 46, 56, 0, 31, 15, 29, 21, 27, 23, 44, 28, 55, 53, 24, 20, 11, 18, 42, 25, 13, 32, 19, 45, 100, 52, 54, 75, 50, 7, 26, 30, 48, 42]
+        house: [13, 57, 9, 30, 42, 28, 0, 7, 49, 51, 75, 53, 58, 29, 25, 19, 27, 56, 46, 19, 11, 21, 31, 17, 23, 44, 22, 55, 47, 32, 50, 17, 34, 24, 33, 15, 18, 33, 45, 42, 52, 54, 100, 50, 25, 26, 20, 48]
       }
     ]
   },
@@ -13245,12 +13246,12 @@ export const PUZZLES = [
         tag: "Road Less Traveled",
         q: "A clear night and one telescope. Which will the FEWEST players point it at?",
         options: [
-          "The Moon",
-          "Jupiter",
           "Saturn",
-          "A distant galaxy"
+          "The Moon",
+          "A distant galaxy",
+          "Jupiter"
         ],
-        house: [0, 2, 3, 2, 0, 0, 0, 2, 2, 0, 1, 2, 2, 2, 0, 1, 3, 0, 0, 0, 1, 0, 1, 1, 2, 0, 0, 2, 1, 2, 2, 2, 1, 2, 0, 3, 2, 1, 0, 0, 1, 3, 2, 3, 0, 1, 0, 0]
+        house: [0, 3, 0, 1, 3, 0, 2, 2, 0, 3, 0, 3, 1, 3, 1, 0, 3, 0, 2, 1, 0, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 3, 3, 1, 2, 0, 0, 2, 1, 0, 0, 1, 3, 1, 0, 0, 1, 0]
       },
       {
         type: "herd",
@@ -13260,36 +13261,36 @@ export const PUZZLES = [
         max: 20000,
         truth: 2000,
         truthNote: "Roughly two thousand, depending on stride.",
-        house: [2700, 2700, 2200, 1800, 1800, 2700, 1300, 1800, 2200, 360, 2200, 4000, 1800, 1500, 1300, 2200, 1800, 2700, 1500, 2700, 1500, 6300, 1800, 900, 1500, 2200, 1800, 4000, 2200, 1800, 4000, 4000, 630, 1800, 4000, 6300, 2700, 1300, 1800, 900, 1800, 1300, 1500, 2200, 11000, 2200, 1800, 6300]
+        house: [2700, 1800, 4000, 2700, 1800, 11000, 4000, 2200, 1800, 2200, 360, 4000, 1300, 2200, 1500, 1300, 6300, 1800, 2700, 1500, 2700, 1500, 2200, 1800, 900, 1500, 2200, 1800, 4000, 2200, 1800, 4000, 1500, 630, 1800, 6300, 6300, 2700, 1300, 1800, 900, 1800, 1300, 1800, 2700, 2200, 2200, 1800]
       },
       {
         type: "match",
         tag: "Meeting Point",
         q: "Name a hot drink. Match the MOST-picked answer.",
         options: [
-          "Coffee",
-          "Hot chocolate",
           "Tea",
           "Herbal tea",
+          "Hot chocolate",
+          "Coffee",
           "Hot water and lemon"
         ],
-        house: [0, 0, 2, 1, 2, 0, 3, 2, 2, 3, 0, 1, 0, 0, 1, 3, 0, 0, 3, 2, 2, 2, 0, 1, 0, 2, 3, 4, 1, 0, 2, 0, 0, 4, 1, 0, 4, 2, 1, 3, 0, 3, 1, 3, 2, 1, 4, 1]
+        house: [4, 0, 3, 3, 0, 1, 3, 3, 2, 3, 0, 0, 2, 3, 1, 2, 1, 0, 0, 3, 1, 3, 3, 1, 2, 0, 2, 3, 2, 3, 1, 3, 0, 0, 1, 2, 0, 4, 4, 2, 3, 0, 3, 1, 3, 2, 2, 4]
       },
       {
         type: "unique",
         tag: "Rare Bird",
         q: "Everyone marks one page. The RAREST way wins.",
         options: [
-          "A ribbon",
-          "Leave it face down open",
           "Remember the number",
-          "Fold the corner",
-          "A real bookmark",
-          "A receipt",
           "A leaf",
-          "A photo of the page"
+          "Fold the corner",
+          "A photo of the page",
+          "A ribbon",
+          "A receipt",
+          "A real bookmark",
+          "Leave it face down open"
         ],
-        house: [7, 0, 5, 7, 4, 2, 3, 3, 4, 3, 1, 5, 4, 4, 0, 0, 4, 2, 7, 2, 5, 5, 4, 5, 6, 7, 0, 4, 0, 4, 4, 3, 5, 7, 5, 3, 2, 2, 0, 7, 3, 6, 1, 3, 5, 2, 3, 0]
+        house: [4, 2, 2, 3, 6, 4, 6, 5, 3, 4, 0, 3, 2, 5, 4, 0, 0, 6, 2, 7, 2, 5, 6, 5, 5, 6, 7, 0, 4, 1, 4, 5, 4, 5, 0, 6, 6, 2, 2, 0, 6, 3, 6, 1, 3, 5, 2, 3]
       },
       {
         type: "unique",
@@ -13297,15 +13298,15 @@ export const PUZZLES = [
         q: "Everyone takes one job at a mountain hut. The RAREST pick wins.",
         options: [
           "Mending boots",
-          "The radio",
-          "Carrying supplies up",
-          "Chopping wood",
-          "Cooking",
           "Cleaning",
+          "Weather readings",
+          "Carrying supplies up",
           "Guiding walks",
-          "Weather readings"
+          "The radio",
+          "Chopping wood",
+          "Cooking"
         ],
-        house: [5, 2, 4, 1, 5, 6, 6, 6, 2, 0, 7, 1, 6, 1, 1, 5, 4, 4, 4, 1, 6, 3, 4, 7, 3, 3, 4, 5, 6, 5, 5, 6, 3, 1, 4, 1, 2, 3, 4, 6, 0, 6, 2, 4, 2, 3, 7, 5]
+        house: [2, 7, 4, 6, 1, 1, 7, 7, 7, 2, 0, 6, 5, 7, 1, 5, 5, 4, 1, 4, 1, 7, 4, 4, 7, 4, 4, 5, 6, 5, 6, 6, 3, 3, 1, 5, 1, 2, 3, 4, 7, 0, 6, 3, 5, 3, 4, 7]
       },
       {
         type: "twothirds",
@@ -13315,7 +13316,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.6,
         fracLabel: "three-fifths",
-        house: [47, 55, 36, 100, 22, 75, 16, 50, 46, 39, 28, 35, 49, 42, 22, 26, 42, 25, 57, 48, 34, 50, 0, 56, 58, 29, 20, 51, 54, 33, 24, 7, 44, 25, 33, 14, 24, 18, 45, 52, 27, 37, 23, 31, 30, 38, 53, 32]
+        house: [33, 42, 28, 22, 7, 38, 55, 34, 75, 100, 46, 18, 25, 57, 53, 14, 36, 50, 33, 30, 48, 26, 50, 24, 56, 58, 25, 16, 49, 54, 27, 0, 23, 44, 31, 42, 51, 24, 20, 45, 52, 35, 37, 39, 29, 32, 22, 47]
       }
     ]
   },
@@ -13331,12 +13332,12 @@ export const PUZZLES = [
         tag: "Road Less Traveled",
         q: "One hour in a big museum. Which room will the FEWEST players walk into?",
         options: [
+          "Antique ceramics",
           "Ancient Egypt",
           "Dinosaurs",
-          "Famous paintings",
-          "Antique ceramics"
+          "Famous paintings"
         ],
-        house: [0, 1, 2, 2, 3, 0, 1, 1, 0, 2, 1, 1, 1, 0, 3, 1, 2, 0, 2, 2, 0, 1, 0, 3, 1, 2, 0, 1, 0, 2, 2, 3, 3, 1, 1, 2, 1, 3, 2, 2, 1, 0, 2, 2, 1, 1, 2, 1]
+        house: [3, 3, 1, 3, 1, 1, 0, 2, 3, 0, 1, 2, 2, 2, 1, 2, 1, 3, 0, 2, 2, 0, 2, 0, 3, 2, 3, 0, 2, 1, 2, 3, 3, 3, 2, 1, 3, 2, 3, 3, 3, 2, 1, 3, 2, 2, 1, 2]
       },
       {
         type: "herd",
@@ -13346,7 +13347,7 @@ export const PUZZLES = [
         max: 500,
         truth: 81,
         truthNote: "Nine by nine, so eighty-one.",
-        house: [75, 100, 120, 90, 100, 65, 75, 90, 75, 90, 75, 81, 90, 120, 100, 55, 65, 160, 90, 120, 65, 81, 81, 90, 100, 100, 75, 100, 81, 81, 40, 65, 81, 90, 100, 55, 90, 120, 81, 81, 120, 75, 81, 81, 81, 160, 90, 81]
+        house: [75, 75, 160, 100, 90, 100, 81, 75, 160, 81, 65, 75, 81, 90, 120, 90, 55, 65, 90, 120, 81, 65, 90, 90, 100, 100, 100, 75, 120, 100, 81, 40, 65, 81, 100, 81, 55, 90, 120, 120, 81, 81, 75, 81, 81, 90, 81, 90]
       },
       {
         type: "match",
@@ -13354,28 +13355,28 @@ export const PUZZLES = [
         q: "Name a kind of water on a map. Match the MOST-picked answer.",
         options: [
           "Lake",
-          "River",
           "Ocean",
+          "River",
           "Sea",
           "Bay"
         ],
-        house: [0, 2, 0, 1, 0, 1, 2, 1, 1, 1, 2, 1, 1, 1, 4, 2, 2, 1, 1, 0, 2, 1, 1, 4, 2, 1, 0, 1, 0, 1, 0, 1, 4, 3, 3, 1, 0, 3, 0, 1, 0, 2, 0, 3, 0, 3, 1, 0]
+        house: [2, 2, 0, 0, 2, 0, 2, 1, 0, 2, 1, 3, 2, 2, 2, 4, 3, 2, 1, 1, 4, 1, 2, 2, 2, 2, 1, 2, 2, 0, 2, 0, 2, 0, 4, 3, 1, 0, 0, 0, 1, 0, 2, 0, 3, 0, 3, 2]
       },
       {
         type: "unique",
         tag: "Rare Bird",
         q: "Everyone follows one butterfly. The RAREST pick wins.",
         options: [
-          "Peacock",
+          "Fritillary",
           "Hairstreak",
-          "Swallowtail",
-          "Blue morpho",
           "Cabbage white",
+          "Peacock",
+          "Swallowtail",
           "Red admiral",
-          "Monarch",
-          "Fritillary"
+          "Blue morpho",
+          "Monarch"
         ],
-        house: [6, 0, 3, 6, 2, 2, 4, 6, 2, 1, 2, 6, 2, 0, 0, 6, 7, 0, 4, 7, 5, 5, 3, 6, 6, 3, 4, 4, 4, 6, 4, 6, 6, 3, 4, 5, 4, 4, 5, 6, 1, 6, 0, 2, 5, 5, 3, 2]
+        house: [7, 0, 2, 4, 3, 7, 2, 6, 7, 2, 7, 5, 7, 2, 0, 1, 2, 2, 1, 7, 3, 3, 5, 6, 4, 7, 7, 4, 7, 4, 7, 4, 4, 7, 3, 5, 6, 4, 5, 6, 7, 2, 5, 2, 2, 5, 6, 3]
       },
       {
         type: "twothirds",
@@ -13385,7 +13386,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.3333333333333333,
         fracLabel: "a third",
-        house: [42, 12, 13, 48, 54, 25, 12, 26, 50, 20, 2, 8, 75, 6, 57, 47, 17, 16, 25, 9, 55, 51, 49, 7, 56, 10, 23, 52, 4, 21, 53, 24, 58, 42, 19, 10, 22, 44, 50, 100, 14, 15, 33, 45, 18, 46, 11, 0]
+        house: [17, 20, 50, 48, 54, 75, 9, 6, 100, 13, 0, 12, 14, 25, 24, 55, 8, 19, 47, 33, 56, 42, 49, 57, 16, 4, 26, 23, 52, 10, 21, 53, 10, 58, 42, 25, 2, 12, 44, 50, 7, 22, 15, 51, 45, 18, 46, 11]
       }
     ]
   },
@@ -13402,50 +13403,50 @@ export const PUZZLES = [
         q: "A free ticket to a concert. Where will the FEWEST players sit?",
         options: [
           "Middle of the hall",
-          "Behind the orchestra",
           "Front row",
+          "Behind the orchestra",
           "Balcony"
         ],
-        house: [3, 0, 1, 2, 3, 1, 1, 0, 0, 1, 0, 0, 3, 0, 0, 2, 1, 3, 2, 0, 2, 0, 2, 3, 3, 0, 2, 0, 0, 2, 2, 0, 0, 0, 2, 0, 3, 2, 2, 0, 0, 2, 3, 3, 0, 2, 2, 2]
+        house: [0, 1, 1, 3, 1, 1, 1, 1, 0, 0, 1, 0, 0, 3, 0, 1, 2, 3, 3, 0, 0, 1, 1, 0, 0, 3, 0, 1, 3, 0, 2, 3, 0, 0, 0, 1, 0, 3, 1, 2, 0, 0, 1, 1, 3, 0, 2, 2]
       },
       {
         type: "herd",
         tag: "Herd",
-        q: "How many liters of water fill an average bathtub? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        q: "How many liters of water go into a typical bath? Closest to the crowd's MEDIAN guess wins, right or wrong.",
         min: 5,
         max: 1000,
         truth: 80,
         truthNote: "About eighty liters for a normal bath.",
-        house: [220, 220, 50, 600, 150, 120, 100, 100, 220, 100, 120, 150, 85, 100, 100, 350, 150, 85, 50, 100, 100, 100, 120, 350, 85, 20, 85, 100, 120, 350, 35, 70, 120, 150, 70, 120, 120, 220, 150, 70, 120, 220, 150, 70, 100, 100, 100, 85]
+        house: [220, 70, 50, 220, 85, 120, 85, 100, 100, 85, 100, 120, 350, 150, 70, 100, 100, 150, 100, 50, 350, 100, 600, 120, 100, 85, 20, 85, 100, 120, 150, 35, 150, 120, 220, 220, 120, 120, 350, 150, 70, 120, 220, 150, 70, 100, 100, 100]
       },
       {
         type: "match",
         tag: "Meeting Point",
         q: "Name a punctuation mark. Match the MOST-picked answer.",
         options: [
-          "Question mark",
           "Exclamation point",
           "Semicolon",
-          "Comma",
-          "Period"
+          "Period",
+          "Question mark",
+          "Comma"
         ],
-        house: [3, 1, 2, 0, 3, 3, 4, 3, 2, 1, 0, 4, 0, 4, 4, 4, 4, 3, 3, 3, 3, 4, 1, 2, 3, 3, 3, 0, 4, 0, 3, 1, 4, 3, 3, 1, 0, 4, 0, 3, 3, 1, 4, 4, 3, 3, 3, 0]
+        house: [0, 3, 2, 4, 2, 0, 3, 2, 2, 2, 2, 0, 4, 0, 4, 3, 3, 4, 4, 4, 4, 2, 4, 2, 2, 3, 4, 3, 0, 4, 0, 4, 2, 4, 4, 4, 1, 4, 4, 1, 3, 2, 2, 1, 4, 3, 4, 4]
       },
       {
         type: "unique",
         tag: "Rare Bird",
         q: "Everyone pulls one pair of socks. The RAREST pick wins.",
         options: [
-          "Bright yellow",
-          "Plain black",
-          "White sports socks",
           "Odd ones on purpose",
-          "Patterned",
-          "Striped",
           "Gray",
-          "Woolly"
+          "Plain black",
+          "Bright yellow",
+          "White sports socks",
+          "Woolly",
+          "Patterned",
+          "Striped"
         ],
-        house: [7, 1, 5, 1, 1, 1, 5, 2, 2, 6, 5, 6, 4, 1, 0, 2, 2, 1, 1, 6, 3, 6, 2, 4, 7, 4, 7, 2, 4, 2, 1, 3, 0, 7, 5, 1, 1, 5, 3, 6, 1, 7, 6, 5, 6, 2, 4, 0]
+        house: [1, 3, 6, 1, 2, 7, 4, 6, 7, 2, 2, 1, 6, 5, 2, 0, 2, 2, 1, 4, 4, 3, 0, 7, 4, 5, 2, 7, 2, 4, 3, 1, 4, 0, 2, 5, 1, 1, 5, 4, 6, 2, 7, 7, 5, 6, 2, 4]
       },
       {
         type: "twothirds",
@@ -13455,7 +13456,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.7,
         fracLabel: "seven-tenths",
-        house: [38, 33, 100, 42, 44, 32, 41, 46, 75, 53, 25, 7, 37, 48, 42, 40, 44, 47, 21, 49, 42, 58, 29, 55, 54, 50, 27, 31, 27, 36, 50, 43, 51, 25, 30, 57, 31, 0, 33, 29, 45, 23, 28, 34, 35, 52, 39, 56]
+        house: [37, 32, 42, 29, 40, 44, 42, 56, 46, 31, 47, 27, 33, 31, 48, 53, 30, 25, 29, 100, 57, 55, 58, 43, 0, 54, 50, 38, 51, 25, 42, 75, 27, 49, 44, 36, 50, 41, 7, 33, 21, 45, 23, 28, 34, 35, 52, 39]
       }
     ]
   },
@@ -13471,51 +13472,51 @@ export const PUZZLES = [
         tag: "Road Less Traveled",
         q: "Laundry day at home. Which job will the FEWEST players volunteer for?",
         options: [
-          "Ironing it all",
           "Hanging it out to dry",
+          "Loading the machine",
           "Folding it all",
-          "Loading the machine"
+          "Ironing it all"
         ],
-        house: [3, 1, 2, 3, 3, 2, 3, 2, 2, 2, 3, 3, 3, 1, 3, 2, 0, 1, 1, 3, 2, 0, 2, 1, 3, 1, 3, 1, 1, 3, 2, 0, 0, 3, 0, 3, 3, 3, 1, 1, 2, 1, 3, 1, 0, 2, 1, 1]
+        house: [2, 3, 2, 2, 2, 3, 0, 2, 0, 1, 1, 1, 1, 0, 3, 1, 2, 0, 2, 0, 2, 1, 0, 1, 1, 3, 0, 2, 1, 0, 3, 1, 0, 0, 3, 0, 2, 1, 1, 1, 0, 1, 1, 2, 1, 0, 1, 0]
       },
       {
         type: "herd",
         tag: "Herd",
-        q: "How many countries drive on the left? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        q: "How many countries and territories drive on the left? Closest to the crowd's MEDIAN guess wins, right or wrong.",
         min: 1,
         max: 200,
         truth: 75,
         truthNote: "About seventy-five countries and territories, roughly a third of the world.",
-        house: [30, 38, 90, 26, 22, 22, 54, 30, 30, 54, 54, 38, 30, 54, 18, 30, 46, 38, 70, 38, 30, 38, 26, 26, 30, 26, 22, 70, 30, 70, 46, 38, 38, 46, 26, 14, 46, 26, 54, 30, 30, 46, 46, 18, 30, 30, 22, 38]
+        house: [30, 38, 22, 54, 30, 38, 22, 54, 30, 70, 70, 38, 26, 30, 46, 18, 30, 38, 46, 54, 30, 38, 38, 26, 26, 54, 26, 22, 70, 30, 90, 46, 38, 38, 54, 26, 14, 46, 26, 30, 30, 30, 46, 46, 18, 30, 30, 22]
       },
       {
         type: "match",
         tag: "Meeting Point",
         q: "Name a martial art. Match the MOST-picked answer.",
         options: [
-          "Judo",
-          "Kung fu",
-          "Boxing",
           "Taekwondo",
-          "Karate"
+          "Boxing",
+          "Karate",
+          "Judo",
+          "Kung fu"
         ],
-        house: [3, 3, 0, 0, 0, 4, 4, 1, 4, 3, 3, 4, 2, 4, 2, 0, 4, 1, 0, 0, 4, 4, 4, 3, 0, 3, 1, 4, 4, 4, 0, 4, 4, 0, 2, 0, 4, 1, 4, 4, 4, 4, 4, 4, 1, 3, 0, 4]
+        house: [0, 2, 0, 1, 0, 1, 2, 2, 2, 2, 4, 2, 2, 2, 3, 2, 0, 2, 2, 0, 2, 2, 2, 4, 2, 0, 2, 2, 3, 3, 1, 3, 3, 4, 3, 2, 0, 3, 2, 3, 4, 3, 3, 3, 4, 2, 2, 0]
       },
       {
         type: "unique",
         tag: "Rare Bird",
         q: "Everyone keeps one coin for luck. The RAREST pick wins.",
         options: [
+          "A holed coin",
+          "A foreign coin",
           "A shiny new one",
+          "The smallest one",
+          "The biggest one",
           "An old coin",
           "A coin from a birth year",
-          "The biggest one",
-          "A foreign coin",
-          "A bent one",
-          "A holed coin",
-          "The smallest one"
+          "A bent one"
         ],
-        house: [3, 2, 7, 3, 6, 6, 1, 3, 1, 7, 7, 1, 0, 4, 6, 3, 4, 4, 1, 0, 6, 0, 3, 2, 5, 1, 6, 0, 1, 3, 3, 6, 0, 0, 7, 4, 5, 4, 7, 4, 5, 3, 7, 4, 7, 7, 1, 7]
+        house: [5, 3, 3, 2, 5, 0, 2, 1, 4, 2, 2, 1, 1, 0, 7, 6, 3, 3, 5, 3, 3, 5, 0, 3, 2, 4, 1, 0, 4, 1, 3, 7, 4, 0, 0, 1, 5, 4, 4, 6, 4, 4, 2, 5, 3, 7, 5, 1]
       },
       {
         type: "twothirds",
@@ -13525,7 +13526,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.8,
         fracLabel: "four-fifths",
-        house: [55, 57, 42, 36, 42, 58, 51, 42, 36, 45, 39, 28, 45, 50, 56, 41, 32, 37, 44, 50, 33, 54, 0, 34, 34, 100, 49, 48, 44, 52, 49, 43, 25, 53, 32, 33, 46, 47, 46, 38, 47, 40, 35, 75, 30, 48, 38, 7]
+        house: [55, 50, 56, 7, 40, 30, 42, 45, 45, 54, 51, 28, 34, 35, 50, 49, 39, 33, 57, 36, 75, 58, 38, 37, 48, 44, 25, 49, 32, 44, 52, 32, 34, 33, 53, 43, 42, 46, 47, 46, 0, 47, 42, 41, 100, 36, 48, 38]
       }
     ]
   },
@@ -13541,12 +13542,12 @@ export const PUZZLES = [
         tag: "Road Less Traveled",
         q: "A flat bicycle tire far from home. Which will the FEWEST players do?",
         options: [
-          "Leave the bike and come back",
-          "Call someone",
           "Patch it there",
-          "Push the bike home"
+          "Leave the bike and come back",
+          "Push the bike home",
+          "Call someone"
         ],
-        house: [2, 1, 2, 0, 1, 2, 2, 1, 2, 0, 3, 1, 0, 3, 2, 3, 1, 3, 3, 0, 2, 2, 2, 1, 1, 3, 3, 0, 3, 1, 3, 2, 3, 3, 2, 1, 2, 1, 2, 3, 0, 2, 2, 3, 1, 2, 3, 3]
+        house: [2, 2, 2, 0, 0, 0, 3, 1, 2, 2, 1, 2, 0, 0, 0, 2, 2, 3, 3, 2, 0, 1, 3, 3, 1, 0, 0, 3, 0, 3, 0, 3, 1, 0, 2, 2, 0, 2, 3, 2, 0, 0, 1, 2, 3, 0, 2, 3]
       },
       {
         type: "herd",
@@ -13556,36 +13557,36 @@ export const PUZZLES = [
         max: 400,
         truth: 190,
         truthNote: "Most countries run between 175 and 200 teaching days.",
-        house: [180, 180, 180, 180, 180, 230, 140, 270, 120, 200, 160, 270, 90, 360, 230, 360, 270, 230, 180, 200, 120, 200, 200, 180, 140, 270, 230, 180, 140, 160, 200, 270, 160, 200, 200, 160, 140, 230, 180, 180, 180, 230, 200, 180, 200, 160, 160, 230]
+        house: [140, 120, 270, 230, 270, 230, 230, 270, 180, 160, 270, 200, 180, 90, 180, 180, 180, 180, 230, 200, 120, 140, 200, 230, 180, 140, 180, 360, 180, 160, 270, 200, 160, 360, 200, 200, 160, 140, 230, 180, 180, 200, 230, 200, 180, 200, 160, 160]
       },
       {
         type: "match",
         tag: "Meeting Point",
         q: "Name a bird that can fly. Match the MOST-picked answer.",
         options: [
-          "Sparrow",
           "Pigeon",
+          "Owl",
           "Eagle",
-          "Seagull",
-          "Owl"
+          "Sparrow",
+          "Seagull"
         ],
-        house: [2, 0, 4, 2, 1, 4, 0, 2, 1, 0, 2, 1, 2, 3, 0, 0, 4, 0, 4, 0, 1, 2, 1, 2, 0, 3, 2, 2, 2, 2, 4, 1, 2, 4, 1, 0, 1, 3, 2, 1, 3, 2, 4, 0, 1, 1, 2, 2]
+        house: [1, 0, 1, 2, 3, 4, 2, 0, 3, 0, 0, 1, 2, 2, 2, 2, 0, 0, 3, 4, 0, 2, 4, 2, 2, 0, 2, 2, 3, 3, 2, 2, 1, 3, 4, 0, 0, 2, 3, 2, 1, 3, 2, 3, 0, 1, 1, 3]
       },
       {
         type: "unique",
         tag: "Rare Bird",
         q: "Everyone chooses one doorbell sound. The RAREST pick wins.",
         options: [
-          "A tune",
-          "A bird call",
+          "A knocker instead",
           "A gong",
+          "A simple ding-dong",
           "A dog bark",
           "A single chime",
           "A buzzer",
-          "A knocker instead",
-          "A simple ding-dong"
+          "A tune",
+          "A bird call"
         ],
-        house: [7, 5, 7, 6, 7, 7, 7, 7, 4, 0, 5, 6, 3, 7, 3, 1, 7, 0, 5, 5, 7, 0, 4, 0, 1, 5, 4, 6, 4, 5, 6, 5, 7, 2, 7, 6, 4, 4, 0, 4, 0, 4, 6, 7, 5, 1, 2, 1]
+        house: [5, 7, 2, 2, 2, 2, 6, 5, 4, 5, 0, 4, 5, 2, 6, 6, 2, 7, 0, 7, 4, 7, 0, 2, 0, 1, 5, 2, 5, 3, 4, 4, 4, 6, 2, 6, 5, 2, 2, 0, 4, 0, 3, 5, 6, 4, 1, 2]
       },
       {
         type: "twothirds",
@@ -13595,7 +13596,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.5,
         fracLabel: "half",
-        house: [44, 52, 23, 28, 15, 48, 58, 57, 22, 49, 24, 50, 33, 55, 17, 53, 34, 45, 0, 31, 42, 54, 30, 25, 27, 19, 50, 7, 46, 9, 56, 21, 18, 33, 26, 20, 75, 25, 51, 100, 17, 19, 13, 42, 32, 29, 11, 47]
+        house: [50, 22, 52, 33, 58, 11, 48, 7, 19, 75, 57, 44, 50, 53, 45, 30, 20, 28, 13, 27, 54, 42, 46, 55, 51, 23, 33, 29, 25, 42, 19, 56, 31, 34, 17, 24, 26, 100, 25, 49, 47, 9, 0, 15, 32, 18, 21, 17]
       }
     ]
   },
@@ -13611,12 +13612,12 @@ export const PUZZLES = [
         tag: "Road Less Traveled",
         q: "A picture to hang and one toolbox. Which will the FEWEST players pick up first?",
         options: [
-          "A tape measure",
-          "A drill",
           "A hammer",
-          "A spirit level"
+          "A drill",
+          "A spirit level",
+          "A tape measure"
         ],
-        house: [2, 2, 3, 2, 0, 0, 2, 1, 2, 1, 2, 2, 0, 3, 0, 2, 2, 1, 0, 0, 0, 0, 1, 0, 2, 2, 3, 1, 0, 2, 1, 1, 2, 3, 2, 0, 0, 0, 2, 1, 1, 2, 0, 2, 1, 2, 3, 2]
+        house: [0, 0, 3, 0, 1, 0, 0, 2, 1, 3, 3, 0, 3, 0, 3, 0, 3, 1, 3, 0, 0, 1, 3, 1, 0, 1, 2, 3, 0, 3, 3, 1, 1, 2, 0, 2, 0, 0, 0, 3, 1, 0, 2, 0, 1, 0, 3, 3]
       },
       {
         type: "herd",
@@ -13626,36 +13627,36 @@ export const PUZZLES = [
         max: 500,
         truth: 30,
         truthNote: "About thirty kilometers an hour for a big drop.",
-        house: [31, 16, 25, 25, 25, 31, 22, 25, 16, 43, 25, 31, 43, 31, 43, 31, 22, 31, 25, 43, 55, 25, 25, 22, 22, 19, 37, 55, 25, 43, 25, 37, 22, 31, 19, 37, 31, 37, 37, 25, 19, 25, 55, 37, 22, 13, 19, 70]
+        house: [16, 25, 31, 25, 25, 25, 31, 55, 22, 16, 43, 25, 37, 43, 31, 25, 25, 22, 31, 25, 43, 22, 25, 25, 22, 55, 19, 43, 31, 43, 70, 25, 37, 22, 31, 19, 37, 31, 37, 37, 25, 19, 31, 55, 37, 22, 13, 19]
       },
       {
         type: "match",
         tag: "Meeting Point",
         q: "Name a part of a song. Match the MOST-picked answer.",
         options: [
-          "Bridge",
-          "Chorus",
           "Solo",
           "Verse",
+          "Chorus",
+          "Bridge",
           "Intro"
         ],
-        house: [0, 4, 1, 4, 3, 4, 1, 1, 4, 1, 0, 3, 1, 2, 1, 3, 3, 1, 3, 4, 1, 0, 1, 3, 2, 2, 1, 1, 4, 1, 3, 0, 1, 1, 1, 1, 1, 1, 3, 4, 3, 1, 1, 3, 0, 3, 1, 4]
+        house: [0, 2, 4, 4, 2, 1, 4, 3, 2, 3, 2, 1, 2, 1, 2, 2, 1, 2, 2, 3, 4, 4, 1, 2, 2, 2, 3, 2, 1, 4, 1, 2, 0, 2, 2, 1, 2, 2, 1, 3, 4, 2, 2, 1, 2, 0, 2, 2]
       },
       {
         type: "unique",
         tag: "Rare Bird",
         q: "Everyone designs one flag with one main color. The RAREST pick wins.",
         options: [
-          "Orange",
-          "Black",
-          "White",
-          "Blue",
-          "Red",
-          "Green",
           "Purple",
-          "Yellow"
+          "Orange",
+          "Red",
+          "Yellow",
+          "Green",
+          "White",
+          "Black",
+          "Blue"
         ],
-        house: [1, 3, 6, 1, 3, 4, 0, 2, 1, 5, 4, 3, 2, 2, 1, 7, 4, 7, 4, 5, 2, 6, 4, 5, 5, 4, 3, 3, 2, 4, 3, 1, 5, 3, 1, 3, 7, 5, 2, 2, 5, 0, 4, 5, 7, 3, 7, 7]
+        house: [2, 7, 4, 5, 4, 2, 4, 0, 6, 2, 2, 5, 3, 7, 7, 5, 4, 1, 2, 7, 3, 3, 5, 5, 6, 6, 7, 4, 3, 2, 5, 4, 1, 7, 3, 2, 4, 7, 6, 2, 3, 6, 0, 5, 6, 7, 4, 7]
       },
       {
         type: "twothirds",
@@ -13665,7 +13666,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.75,
         fracLabel: "three-quarters",
-        house: [44, 39, 41, 42, 32, 37, 50, 50, 34, 28, 47, 32, 0, 100, 35, 45, 40, 38, 46, 53, 58, 56, 54, 7, 26, 42, 31, 52, 30, 55, 30, 33, 57, 49, 33, 48, 43, 34, 45, 24, 44, 75, 46, 51, 47, 36, 42, 25]
+        house: [32, 45, 37, 53, 56, 57, 30, 25, 50, 35, 46, 55, 42, 44, 33, 43, 34, 75, 40, 30, 47, 7, 44, 54, 0, 32, 50, 47, 52, 26, 45, 41, 42, 38, 49, 39, 48, 33, 100, 31, 24, 58, 42, 46, 51, 28, 36, 34]
       }
     ]
   },
@@ -13681,12 +13682,12 @@ export const PUZZLES = [
         tag: "Road Less Traveled",
         q: "Eggs for one. Which way will the FEWEST players cook them?",
         options: [
-          "Scrambled",
+          "Fried",
           "Boiled",
           "Poached",
-          "Fried"
+          "Scrambled"
         ],
-        house: [3, 3, 1, 0, 0, 1, 0, 3, 3, 3, 1, 3, 3, 0, 0, 3, 0, 3, 0, 2, 2, 3, 2, 3, 0, 0, 0, 0, 0, 0, 1, 2, 1, 3, 2, 1, 1, 3, 0, 1, 1, 0, 3, 2, 0, 3, 1, 0]
+        house: [3, 0, 1, 2, 3, 1, 3, 3, 0, 3, 1, 2, 2, 2, 0, 0, 3, 3, 3, 3, 3, 0, 3, 0, 3, 0, 0, 3, 0, 0, 0, 1, 1, 3, 3, 3, 1, 1, 3, 0, 1, 2, 0, 0, 2, 0, 1, 1]
       },
       {
         type: "herd",
@@ -13696,36 +13697,36 @@ export const PUZZLES = [
         max: 500,
         truth: 118,
         truthNote: "A hundred and eighteen have been confirmed and named.",
-        house: [170, 110, 120, 120, 100, 100, 90, 170, 120, 110, 100, 70, 170, 110, 140, 120, 220, 110, 120, 110, 140, 110, 120, 55, 100, 120, 110, 110, 90, 170, 90, 110, 110, 110, 120, 220, 100, 140, 140, 140, 70, 140, 120, 110, 90, 170, 140, 100]
+        house: [100, 110, 140, 170, 90, 120, 110, 90, 100, 170, 110, 110, 70, 120, 110, 170, 140, 110, 100, 120, 100, 120, 110, 120, 55, 140, 170, 120, 110, 120, 220, 90, 110, 110, 110, 120, 100, 100, 220, 140, 140, 70, 140, 120, 110, 90, 170, 140]
       },
       {
         type: "match",
         tag: "Meeting Point",
         q: "Name something on a desk. Match the MOST-picked answer.",
         options: [
-          "Lamp",
-          "Laptop",
-          "Pen",
+          "Mug",
           "Notebook",
-          "Mug"
+          "Pen",
+          "Laptop",
+          "Lamp"
         ],
-        house: [2, 2, 2, 0, 2, 0, 3, 2, 1, 1, 1, 3, 1, 1, 1, 2, 4, 3, 1, 1, 2, 4, 1, 3, 1, 1, 1, 4, 1, 4, 4, 4, 3, 2, 4, 3, 0, 4, 4, 1, 1, 1, 2, 1, 2, 2, 2, 1]
+        house: [2, 3, 1, 2, 0, 3, 0, 2, 2, 2, 1, 0, 3, 0, 2, 1, 2, 3, 1, 3, 3, 4, 3, 2, 3, 2, 1, 3, 2, 0, 4, 3, 3, 3, 4, 3, 3, 0, 0, 3, 0, 0, 2, 2, 1, 3, 3, 3]
       },
       {
         type: "unique",
         tag: "Rare Bird",
         q: "Everyone adds one fish to the tank. The RAREST pick wins.",
         options: [
+          "Betta",
+          "Pufferfish",
+          "Neon tetra",
           "Catfish",
           "Loach",
-          "Neon tetra",
-          "Axolotl",
-          "Guppy",
-          "Angelfish",
           "Goldfish",
-          "Betta"
+          "Guppy",
+          "Angelfish"
         ],
-        house: [3, 6, 2, 4, 6, 6, 4, 5, 4, 2, 4, 0, 0, 5, 2, 6, 2, 3, 0, 7, 4, 6, 0, 7, 5, 6, 2, 4, 5, 6, 5, 0, 7, 5, 6, 6, 5, 6, 4, 4, 6, 1, 7, 6, 1, 2, 4, 7]
+        house: [3, 6, 3, 6, 5, 6, 2, 6, 7, 5, 2, 5, 0, 0, 5, 2, 6, 2, 3, 0, 2, 3, 7, 0, 7, 5, 6, 7, 5, 5, 4, 5, 0, 5, 5, 6, 6, 5, 7, 4, 5, 7, 1, 7, 6, 1, 2, 3]
       },
       {
         type: "twothirds",
@@ -13735,7 +13736,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.6,
         fracLabel: "three-fifths",
-        house: [49, 34, 31, 29, 56, 39, 46, 16, 50, 22, 42, 0, 24, 50, 57, 54, 22, 37, 23, 42, 58, 36, 32, 18, 27, 33, 45, 75, 55, 20, 35, 100, 52, 33, 14, 30, 53, 26, 38, 48, 44, 7, 25, 47, 51, 24, 28, 25]
+        house: [42, 22, 57, 14, 56, 37, 18, 46, 7, 75, 50, 49, 32, 24, 50, 29, 54, 36, 33, 39, 42, 58, 24, 28, 20, 35, 23, 45, 100, 55, 16, 25, 33, 52, 27, 22, 30, 53, 26, 38, 48, 44, 25, 31, 47, 51, 0, 34]
       }
     ]
   },
@@ -13751,12 +13752,12 @@ export const PUZZLES = [
         tag: "Road Less Traveled",
         q: "One photo from a trip to print. Which will the FEWEST players choose?",
         options: [
-          "A street sign",
-          "A meal",
           "A view",
-          "People they were with"
+          "A street sign",
+          "People they were with",
+          "A meal"
         ],
-        house: [3, 2, 3, 1, 0, 3, 2, 1, 2, 0, 0, 1, 2, 2, 1, 3, 2, 2, 3, 0, 1, 2, 2, 2, 1, 3, 3, 2, 2, 2, 2, 1, 1, 3, 2, 2, 0, 3, 1, 3, 3, 3, 1, 0, 3, 2, 1, 3]
+        house: [0, 3, 0, 2, 3, 2, 0, 2, 0, 0, 2, 0, 0, 2, 2, 0, 2, 2, 1, 3, 3, 2, 2, 0, 2, 0, 2, 3, 0, 3, 1, 2, 0, 3, 3, 2, 1, 0, 3, 0, 0, 3, 3, 1, 0, 1, 1, 0]
       },
       {
         type: "herd",
@@ -13766,52 +13767,52 @@ export const PUZZLES = [
         max: 300,
         truth: 47,
         truthNote: "Forty-seven, plus seven pedals to change their pitch.",
-        house: [46, 30, 26, 38, 22, 38, 54, 54, 18, 30, 70, 30, 54, 46, 30, 38, 54, 90, 14, 30, 22, 46, 38, 18, 26, 38, 38, 30, 30, 38, 38, 30, 30, 46, 26, 30, 26, 30, 46, 26, 54, 70, 26, 46, 30, 22, 70, 22]
+        house: [26, 46, 38, 90, 38, 54, 30, 38, 30, 18, 54, 26, 30, 54, 46, 30, 38, 22, 22, 14, 30, 22, 70, 38, 18, 26, 38, 46, 30, 30, 38, 38, 30, 30, 46, 46, 30, 26, 30, 54, 26, 54, 70, 26, 46, 30, 22, 70]
       },
       {
         type: "match",
         tag: "Meeting Point",
         q: "Name a building in a town center. Match the MOST-picked answer.",
         options: [
+          "Town hall",
+          "Bank",
           "Library",
           "Post office",
-          "Cinema",
-          "Bank",
-          "Town hall"
+          "Cinema"
         ],
-        house: [0, 2, 0, 1, 2, 0, 1, 0, 4, 0, 4, 4, 0, 3, 4, 1, 2, 3, 1, 3, 0, 0, 1, 4, 4, 1, 4, 4, 4, 4, 3, 1, 4, 0, 1, 4, 4, 4, 3, 0, 0, 4, 1, 3, 3, 4, 0, 2]
+        house: [2, 2, 0, 0, 1, 2, 3, 0, 0, 0, 1, 3, 0, 0, 3, 4, 1, 2, 0, 2, 2, 0, 0, 1, 3, 4, 1, 0, 2, 4, 3, 2, 1, 2, 0, 0, 3, 3, 3, 2, 0, 0, 3, 1, 2, 2, 4, 0]
       },
       {
         type: "unique",
         tag: "Rare Bird",
         q: "Everyone dips fries in one thing. The RAREST pick wins.",
         options: [
-          "Nothing",
-          "Mustard",
-          "Vinegar",
-          "Curry sauce",
           "Cheese sauce",
-          "Honey",
+          "Mustard",
+          "Curry sauce",
           "Ketchup",
-          "Mayonnaise"
+          "Honey",
+          "Mayonnaise",
+          "Vinegar",
+          "Nothing"
         ],
-        house: [3, 4, 1, 7, 6, 0, 0, 2, 7, 6, 4, 0, 6, 4, 7, 0, 7, 7, 1, 0, 5, 6, 4, 6, 6, 7, 2, 7, 3, 1, 1, 2, 2, 6, 4, 6, 7, 5, 0, 0, 4, 3, 2, 1, 7, 6, 1, 6]
+        house: [2, 5, 5, 1, 3, 3, 7, 0, 3, 5, 6, 1, 0, 6, 4, 7, 0, 3, 7, 7, 0, 5, 6, 4, 5, 7, 7, 2, 3, 3, 1, 1, 3, 3, 5, 3, 6, 6, 5, 0, 0, 5, 3, 2, 1, 7, 5, 1]
       },
       {
         type: "unique",
         tag: "Rarer Bird",
         q: "Everyone takes one job in the school play. The RAREST pick wins.",
         options: [
-          "Lighting",
-          "Sound",
-          "The lead",
-          "Backstage crew",
-          "A speaking part",
           "Costumes",
           "Front of house",
-          "Prompt"
+          "Prompt",
+          "A speaking part",
+          "Lighting",
+          "The lead",
+          "Backstage crew",
+          "Sound"
         ],
-        house: [0, 0, 4, 4, 3, 0, 3, 7, 2, 2, 4, 0, 7, 0, 2, 7, 1, 3, 4, 5, 5, 5, 5, 6, 2, 4, 3, 6, 4, 2, 5, 0, 4, 2, 2, 3, 7, 7, 4, 1, 4, 0, 3, 1, 2, 5, 2, 3]
+        house: [5, 0, 0, 0, 3, 5, 4, 4, 5, 2, 2, 3, 0, 7, 0, 7, 5, 2, 4, 5, 5, 6, 6, 6, 6, 5, 3, 4, 6, 3, 2, 3, 1, 5, 7, 3, 3, 4, 6, 4, 2, 5, 0, 4, 1, 3, 6, 3]
       },
       {
         type: "twothirds",
@@ -13821,7 +13822,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.3333333333333333,
         fracLabel: "a third",
-        house: [50, 21, 25, 20, 14, 9, 11, 18, 12, 4, 52, 2, 46, 53, 56, 10, 42, 51, 13, 54, 17, 8, 0, 23, 10, 24, 100, 19, 55, 50, 47, 25, 7, 42, 6, 26, 75, 22, 57, 49, 58, 44, 16, 12, 33, 15, 48, 45]
+        house: [18, 50, 20, 13, 25, 56, 9, 21, 4, 2, 10, 52, 25, 46, 14, 23, 26, 53, 51, 19, 54, 17, 49, 7, 11, 12, 10, 45, 16, 55, 75, 47, 33, 44, 12, 8, 6, 100, 22, 50, 57, 42, 58, 24, 0, 42, 15, 48]
       }
     ]
   },
@@ -13837,12 +13838,12 @@ export const PUZZLES = [
         tag: "Road Less Traveled",
         q: "Choosing a birthday cake. Which will the FEWEST players order?",
         options: [
+          "Vanilla with sprinkles",
           "Fruitcake",
-          "Carrot cake",
           "Chocolate",
-          "Vanilla with sprinkles"
+          "Carrot cake"
         ],
-        house: [2, 3, 2, 1, 3, 0, 0, 3, 2, 2, 2, 2, 1, 3, 3, 0, 3, 2, 2, 2, 2, 2, 2, 3, 2, 1, 3, 2, 3, 3, 1, 2, 1, 2, 2, 2, 3, 3, 2, 3, 3, 1, 1, 3, 2, 2, 1, 0]
+        house: [2, 2, 0, 2, 3, 3, 0, 0, 0, 1, 1, 2, 3, 0, 2, 3, 0, 2, 3, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 0, 2, 0, 1, 0, 2, 1, 2, 2, 3, 2, 3, 0, 0, 0, 2, 3, 2, 0]
       },
       {
         type: "herd",
@@ -13852,36 +13853,36 @@ export const PUZZLES = [
         max: 200,
         truth: 32,
         truthNote: "Thirty-two, which is why the ears swivel independently.",
-        house: [7, 8, 18, 5, 8, 18, 6, 10, 14, 8, 12, 8, 12, 7, 10, 14, 10, 8, 4, 12, 7, 10, 6, 10, 6, 7, 8, 10, 8, 14, 6, 12, 7, 12, 5, 10, 23, 18, 12, 8, 14, 8, 14, 10, 8, 7, 8, 8]
+        house: [6, 8, 18, 5, 12, 10, 23, 10, 18, 10, 8, 10, 8, 14, 10, 10, 10, 12, 7, 4, 12, 7, 8, 6, 7, 6, 7, 14, 8, 8, 14, 6, 14, 7, 12, 5, 12, 8, 7, 12, 8, 14, 8, 18, 10, 8, 8, 8]
       },
       {
         type: "match",
         tag: "Meeting Point",
         q: "Name a mythical creature. Match the MOST-picked answer.",
         options: [
-          "Griffin",
           "Mermaid",
           "Phoenix",
-          "Dragon",
-          "Unicorn"
+          "Griffin",
+          "Unicorn",
+          "Dragon"
         ],
-        house: [1, 3, 4, 3, 4, 0, 0, 1, 3, 3, 2, 2, 4, 3, 1, 3, 3, 3, 3, 3, 1, 2, 3, 3, 3, 2, 1, 3, 1, 3, 3, 4, 4, 3, 4, 4, 3, 3, 4, 0, 4, 1, 2, 4, 3, 3, 3, 3]
+        house: [4, 1, 2, 0, 3, 4, 4, 0, 4, 4, 0, 4, 1, 4, 1, 3, 0, 3, 3, 3, 3, 1, 4, 4, 4, 4, 2, 4, 3, 0, 3, 3, 4, 4, 3, 2, 4, 4, 4, 4, 0, 4, 0, 1, 4, 4, 3, 4]
       },
       {
         type: "unique",
         tag: "Rare Bird",
-        q: "Everyone rolls and calls one number first. The RAREST call wins.",
+        q: "Everyone calls one result before rolling two dice. The RAREST call wins.",
         options: [
-          "Snake eyes",
           "Four",
-          "Two",
-          "One",
+          "Eight",
+          "Eleven",
           "Six",
-          "Five",
-          "Three",
-          "Double six"
+          "Snake eyes",
+          "Seven",
+          "Double six",
+          "Doubles of any kind"
         ],
-        house: [3, 3, 5, 2, 4, 5, 1, 4, 3, 5, 2, 5, 6, 5, 0, 2, 4, 4, 4, 6, 6, 7, 7, 3, 4, 3, 1, 6, 2, 1, 6, 3, 1, 4, 4, 3, 5, 2, 7, 1, 6, 0, 4, 0, 4, 3, 6, 4]
+        house: [3, 4, 5, 5, 6, 6, 6, 3, 4, 6, 4, 3, 2, 7, 6, 0, 3, 5, 1, 5, 6, 6, 4, 1, 7, 5, 4, 5, 5, 2, 1, 7, 4, 2, 5, 5, 3, 6, 2, 7, 2, 7, 0, 5, 0, 5, 4, 7]
       },
       {
         type: "twothirds",
@@ -13891,7 +13892,7 @@ export const PUZZLES = [
         max: 100,
         frac: 0.6666666666666666,
         fracLabel: "two-thirds",
-        house: [42, 48, 32, 34, 26, 47, 26, 38, 25, 20, 22, 44, 39, 35, 46, 53, 41, 25, 0, 31, 33, 37, 36, 7, 29, 50, 43, 33, 40, 56, 57, 42, 45, 54, 27, 28, 30, 75, 42, 52, 18, 51, 55, 49, 100, 58, 50, 24]
+        house: [27, 31, 36, 33, 47, 46, 32, 42, 28, 42, 26, 35, 44, 25, 48, 50, 40, 22, 26, 7, 37, 57, 29, 18, 25, 39, 75, 38, 33, 51, 56, 43, 53, 45, 54, 41, 34, 30, 100, 20, 52, 0, 42, 55, 49, 24, 58, 50]
       }
     ]
   }

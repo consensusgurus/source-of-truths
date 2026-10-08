@@ -342,6 +342,18 @@ if (RUN('emcee')) {
     const i = line.indexOf('|');
     BANK.set(line.slice(0, i).trim(), line.slice(i + 1).trim());
   }
+  // a corrected clue stays valid on boards that went live before the fix
+  // (the past is frozen); see scripts/clue-retired.txt
+  const RETIRED_BEFORE = '2026-09-30';
+  const RETIRED = new Map();
+  for (const line of readFileSync(join(here, 'clue-retired.txt'), 'utf8').split('\n')) {
+    const t = line.trim();
+    if (!t || t.startsWith('#')) continue;
+    const i = t.indexOf('|');
+    const w = t.slice(0, i).trim();
+    if (!RETIRED.has(w)) RETIRED.set(w, new Set());
+    RETIRED.get(w).add(t.slice(i + 1).trim());
+  }
   const answerOf = (p, w, dir) => {
     let s = '';
     for (let i = 0; i < w.len; i++) {
@@ -401,7 +413,7 @@ if (RUN('emcee')) {
       words.push(a);
       if (a.includes('#') || a.includes('?')) { errs.push(`${d.n}${d.dir} reads "${a}"`); continue; }
       if (!BANK.has(a)) (live ? errs : review).push(`${a} is not in the clue bank`);
-      else if (BANK.get(a) !== d.clue) (live ? errs : review).push(`${d.n}${d.dir} ${a}: clue is not the bank's ("${d.clue}")`);
+      else if (BANK.get(a) !== d.clue && !(p.live < RETIRED_BEFORE && RETIRED.get(a)?.has(d.clue))) (live ? errs : review).push(`${d.n}${d.dir} ${a}: clue is not the bank's ("${d.clue}")`);
       if (!dict.has(a.toLowerCase()) && !BANK.has(a)) review.push(`non-dict ${a}`);
     }
     if (new Set(words).size !== words.length) errs.push('an answer appears twice on the same board');
