@@ -184,6 +184,7 @@ const GROUPS = [...IRREGULAR.split('|'), ...FORMS.split('|')]
 // careful editor could not land anywhere else. If the reason will not write,
 // the item is a synonym swap and must be re-cut instead.
 const FORCED_PAIRS = [
+  ['not', 'knots', 'a number of a speed at sea can only be knots; the negative cannot follow twelve'],
   ['fewer', 'less', 'count nouns take fewer, mass nouns less: the noun decides'],
   ['amount', 'number', 'the same rule, decided by the noun'],
   ['uninterested', 'disinterested', 'impartial vs bored'],
@@ -417,6 +418,58 @@ for (const [kind, isSun, n] of [['weekday', false, 5], ['Sunday', true, 7]]) {
     if (N >= 10 && !gramAt[i]) err(`variety: sentence #${i + 1} NEVER carries the grammar error across ${N} ${kind}s from ${VARIETY_FROM}`);
   }
   console.log(`variety ${kind} (${N} days from ${VARIETY_FROM}): clean ${cleanAt.map((v) => `${(100 * v / N).toFixed(0)}%`).join('/')} · grammar ${gramAt.map((v) => `${(100 * v / N).toFixed(0)}%`).join('/')}`);
+}
+
+// VERB-FORM DIRECTION (owner rule 2026-10-08). A reader (Boy, on board #84)
+// reported "The firm said its order book had shrunk for a third quarter
+// running" marked WRONG with the fix "shrank". The key was backwards: after
+// had the participle is right, and the "fix" introduced the error. Nothing
+// above could see it, because every check here asked whether wrong and fix are
+// RELATED (two forms of shrink: yes) and never which of the two the sentence
+// needs. This block reads the words in front of the flagged verb. After a
+// form of have (or been, or a form of be for a passive) the sentence needs the
+// past participle; with no auxiliary in front it needs the simple past. A
+// verb-form error whose fix points the wrong way fails, and so does a clean
+// sentence printing "had shrank"-style copy it calls clean.
+const VERB_DIRECTION_FROM = '2026-10-08'; // boards before this are played history
+{
+  const AUX_HAVE = new Set(['have', 'has', 'had', 'having', 'been']);
+  const AUX_BE = new Set(['is', 'are', 'was', 'were', 'be', 'being', 'get', 'gets', 'got', 'getting']);
+  const SOFT = new Set(['not', 'never', 'already', 'just', 'long', 'since', 'also', 'ever', 'all', 'both', 'only', 'once', 'twice', 'first', 'now', 'then', 'still', 'nearly', 'almost', 'barely', 'hardly', 'scarcely']);
+  const forms = IRREGULAR.split('|').map((g) => g.trim().split(/\s+/))
+    .filter((g) => g.length === 3 && g[1] !== g[2] && !['be', 'have', 'do'].includes(g[0]));
+  // Simple-past forms that dictionaries ALSO list as a participle (hung meat,
+  // had proved, had showed). A key may not call one of these wrong after have.
+  const BOTH = new Set(['hung', 'proved', 'showed', 'trod', 'swelled', 'strewed', 'dived']);
+  const auxOf = (toks, i) => {
+    for (let j = i - 1; j >= 0 && j >= i - 4; j--) {
+      const w = toks[j];
+      if (AUX_HAVE.has(w)) return 'have';
+      if (AUX_BE.has(w)) return 'be';
+      if (!SOFT.has(w) && !/ly$/.test(w)) return null;
+    }
+    return null;
+  };
+  for (const p of PUZZLES) {
+    if (p.live < VERB_DIRECTION_FROM) continue;
+    p.items.forEach((it, k) => {
+      const toks = it.text.split(/\s+/).map(strip);
+      const errs = it.errors || [];
+      for (const e of errs) {
+        const w = e.wrong.toLowerCase(), f = e.fix.toLowerCase();
+        const g = forms.find((g) => g.includes(w) && g.includes(f) && w !== g[0] && f !== g[0]);
+        if (!g) continue;
+        const aux = auxOf(toks, toks.indexOf(w));
+        const need = aux ? g[2] : g[1];
+        if (f !== need && !(BOTH.has(w) && aux)) err(`#${p.num}.${k + 1}: verb-form key points the wrong way: "${w}" → "${f}", but ${aux ? `after ${aux === 'have' ? 'a form of have' : 'a passive be'} the sentence needs the participle "${g[2]}"` : `with no auxiliary the sentence needs the simple past "${g[1]}"`}: ${it.text}`);
+      }
+      toks.forEach((w, i) => {
+        if (errs.some((e) => e.wrong.toLowerCase() === w)) return;
+        const g = forms.find((g) => g[1] === w);
+        if (g && !BOTH.has(w) && auxOf(toks, i) === 'have') err(`#${p.num}.${k + 1}: unflagged "${w}" after have, where the participle "${g[2]}" is needed: ${it.text}`);
+      });
+    });
+  }
 }
 
 console.log('relations:', Object.entries(relations).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(', '));

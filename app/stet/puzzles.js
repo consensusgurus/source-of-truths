@@ -2803,7 +2803,8 @@ export const PUZZLES = [
       },
       {
         text: "The firm said its order book had shrunk for a third quarter running.",
-        errors: [{ wrong: "shrunk", fix: "shrank", kind: 'grammar', note: "The simple past is shrank; shrunk is the participle, as in has shrunk." }],
+        errors: [],
+        cleanNote: "Clean copy: had takes the participle shrunk, which is exactly what is printed.",
       },
     ],
   },
@@ -2833,7 +2834,7 @@ export const PUZZLES = [
         errors: [{ wrong: "currant", fix: "current", kind: 'wordchoice', note: "Current means present; a currant is a dried fruit." }],
       },
       {
-        text: "One critic called the early quartets torturous rather than merely difficult.",
+        text: "One critic said the plot of the third act was torturous, doubling back on itself three times.",
         errors: [{ wrong: "torturous", fix: "tortuous", kind: 'wordchoice', note: "Tortuous means winding and involved; torturous means causing torture." }],
       },
     ],
@@ -2932,7 +2933,7 @@ export const PUZZLES = [
       },
       {
         text: "The harbour master said them on the pontoon had seen nothing unusual that night.",
-        errors: [{ wrong: "them", fix: "they", kind: 'grammar', note: "The subject of the clause takes they, not them." }],
+        errors: [{ wrong: "them", fix: "they", alts: ["those"], kind: 'grammar', note: "Them cannot be the subject of had seen; they, or those, is wanted." }],
       },
     ],
   },
@@ -2987,8 +2988,8 @@ export const PUZZLES = [
         errors: [{ wrong: "doe", fix: "dough", kind: 'wordchoice', note: "Dough is flour and water mixed; a doe is a female deer or rabbit." }],
       },
       {
-        text: "The council said the licensing committee meet on the first Tuesday of the month.",
-        errors: [{ wrong: "meet", fix: "meets", kind: 'grammar', note: "The committee is one body, so the verb is meets." }],
+        text: "The council said its licensing officer meet applicants on the first Tuesday of the month.",
+        errors: [{ wrong: "meet", fix: "meets", alts: ["met"], kind: 'grammar', note: "The officer is one person, so the verb is meets." }],
       },
       {
         text: "The team said the isotope decays too quickly to be of any practical use.",
@@ -3010,7 +3011,7 @@ export const PUZZLES = [
       },
       {
         text: "The trust said the rise in referrals appear to have levelled off since June.",
-        errors: [{ wrong: "appear", fix: "appears", kind: 'grammar', note: "The subject is the rise, which is singular, so the verb is appears." }],
+        errors: [{ wrong: "appear", fix: "appears", alts: ["appeared"], kind: 'grammar', note: "The subject is the rise, which is singular, so the verb is appears." }],
       },
       {
         text: "The head paid the staff a warm complement at the end of a hard term.",
@@ -3049,7 +3050,7 @@ export const PUZZLES = [
       },
       {
         text: "The chairman admitted a degree of discomfit at the half-year figures.",
-        errors: [{ wrong: "discomfit", fix: "discomfort", kind: 'wordchoice', note: "Discomfort is unease; to discomfit is to thwart or disconcert." }],
+        errors: [{ wrong: "discomfit", fix: "discomfort", alts: ["discomfiture"], kind: 'wordchoice', note: "Discomfort is unease; to discomfit is to thwart or disconcert." }],
       },
       {
         text: "Volunteers planted a roe of alders along the bank to shade the water.",
@@ -3070,7 +3071,7 @@ export const PUZZLES = [
       },
       {
         text: "Forecasters said their would be a hard frost inland by the early hours.",
-        errors: [{ wrong: "their", fix: "there", kind: 'wordchoice', note: "There is the place word; their is the possessive." }],
+        errors: [{ wrong: "their", fix: "there", kind: 'wordchoice', note: "There introduces what exists or will happen; their is the possessive." }],
       },
       {
         text: "The trust said the drug had been withdrawn after a review of its side effects.",
@@ -3114,12 +3115,12 @@ export const PUZZLES = [
         cleanNote: "Clean copy: drunk dry is the right participle, and tapped is what you do to a barrel.",
       },
       {
-        text: "The team said the phenomena is well documented in colder seas.",
+        text: "The team said it was a phenomena well documented in colder seas.",
         errors: [{ wrong: "phenomena", fix: "phenomenon", kind: 'grammar', note: "Phenomena is the plural; a single one is a phenomenon." }],
       },
       {
-        text: "The court heard the seller had knowingly mislead the buyer, and that the boundary was described wrong in the deeds.",
-        errors: [{ wrong: "mislead", fix: "misled", kind: 'wordchoice', note: "The past of mislead is misled, with one e." }, { wrong: "wrong", fix: "wrongly", kind: 'grammar', note: "Described is a verb, so it takes the adverb wrongly." }],
+        text: "The court heard the seller had knowingly mislead the buyer, and that the boundary was described incorrect in the deeds.",
+        errors: [{ wrong: "mislead", fix: "misled", kind: 'wordchoice', note: "The past of mislead is misled, with one e." }, { wrong: "incorrect", fix: "incorrectly", kind: 'grammar', note: "Described is a verb, so it takes the adverb incorrectly." }],
       },
       {
         text: "The tapestry was cut and rehung, and the seem now falls behind the door frame.",
@@ -3203,7 +3204,7 @@ export const PUZZLES = [
         cleanNote: "Clean copy: drained is right for what a pitch does, and go ahead is the phrase.",
       },
       {
-        text: "The council said these decision had been taken in private and would stand.",
+        text: "The council said these decision, taken in private, would stand.",
         errors: [{ wrong: "these", fix: "this", kind: 'grammar', note: "Decision is singular, so the demonstrative is this." }],
       },
       {
@@ -3321,8 +3322,8 @@ export const PUZZLES = [
         cleanNote: "Clean copy: stood is right for a record that lasts, and broken is the participle.",
       },
       {
-        text: "The geologist said the seam had been mind since 1820, and that the survey had showed no subsidence.",
-        errors: [{ wrong: "mind", fix: "mined", kind: 'wordchoice', note: "To mine is to dig out; mind is the faculty of thought." }, { wrong: "showed", fix: "shown", kind: 'grammar', note: "Had takes the participle shown; showed is the simple past." }],
+        text: "The geologist said the seam had been mind since 1820, and that the survey showed no subsidence.",
+        errors: [{ wrong: "mind", fix: "mined", kind: 'wordchoice', note: "To mine is to dig out; mind is the faculty of thought." }],
       },
       {
         text: "The court heard the notice had been sent by male, and that the landlord had swore an affidavit about it.",
@@ -3389,7 +3390,7 @@ export const PUZZLES = [
       },
       {
         text: "The trust said the waiting list remain the longest in the region.",
-        errors: [{ wrong: "remain", fix: "remains", kind: 'grammar', note: "The list is singular, so the verb is remains." }],
+        errors: [{ wrong: "remain", fix: "remains", alts: ["remained"], kind: 'grammar', note: "The list is singular, so the verb is remains." }],
       },
       {
         text: "The ferry crosses the straight in forty minutes in anything short of a gale.",
@@ -3427,7 +3428,7 @@ export const PUZZLES = [
       },
       {
         text: "The forecaster said the risk to the coast depend on where the front stalls.",
-        errors: [{ wrong: "depend", fix: "depends", kind: 'grammar', note: "The subject is the risk, which is singular, so the verb is depends." }],
+        errors: [{ wrong: "depend", fix: "depends", alts: ["depended"], kind: 'grammar', note: "The subject is the risk, which is singular, so the verb is depends." }],
       },
       {
         text: "The examiners said the paper had been marked to the published criteria.",
@@ -3474,7 +3475,7 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The chair said the pole had been well attended for a wet Thursday in October.",
+        text: "The chair said the pole had drawn a good turnout for a wet Thursday in October.",
         errors: [{ wrong: "pole", fix: "poll", kind: 'wordchoice', note: "A poll is a vote or a survey; a pole is a long rod." }],
       },
       {
@@ -3484,7 +3485,7 @@ export const PUZZLES = [
       },
       {
         text: "The farmer said the two flocks makes about six hundred head between them.",
-        errors: [{ wrong: "makes", fix: "make", kind: 'grammar', note: "Two flocks is plural, so the verb is make." }],
+        errors: [{ wrong: "makes", fix: "make", alts: ["made"], kind: 'grammar', note: "Two flocks is plural, so the verb is make." }],
       },
       {
         text: "The operator said the last train had been retimed to connect with the ferry.",
@@ -3519,7 +3520,7 @@ export const PUZZLES = [
       },
       {
         text: "The forecaster said the risk of flooding rise sharply after two wet days.",
-        errors: [{ wrong: "rise", fix: "rises", kind: 'grammar', note: "The risk is singular, so the verb is rises." }],
+        errors: [{ wrong: "rise", fix: "rises", alts: ["rose"], kind: 'grammar', note: "The risk is singular, so the verb is rises." }],
       },
       {
         text: "The percussionist struck the symbol on the last bar and the hall went quiet.",
@@ -3551,7 +3552,7 @@ export const PUZZLES = [
         errors: [{ wrong: "drunk", fix: "drank", kind: 'grammar', note: "The simple past is drank; drunk is the participle, as in has drunk." }, { wrong: "weal", fix: "wheel", kind: 'wordchoice', note: "A wheel steers the car; a weal is a raised mark on the skin." }],
       },
       {
-        text: "The rare gull was cited on the estuary in March, and the warden said the losses at the tern colony looked systematic rather than local.",
+        text: "The rare gull was cited on the estuary in March, and the warden said the losses at the tern colony looked systematic, a sign the whole estuary food chain was failing.",
         errors: [{ wrong: "cited", fix: "sighted", kind: 'wordchoice', note: "Sighted means seen; cited means quoted or summoned." }, { wrong: "systematic", fix: "systemic", kind: 'wordchoice', note: "Systemic means affecting the whole system; systematic means methodical." }],
       },
       {
@@ -3614,7 +3615,7 @@ export const PUZZLES = [
       },
       {
         text: "The firm said its chairman want a decision from the board by Friday.",
-        errors: [{ wrong: "want", fix: "wants", kind: 'grammar', note: "The chairman is singular, so the verb is wants." }],
+        errors: [{ wrong: "want", fix: "wants", alts: ["wanted"], kind: 'grammar', note: "The chairman is singular, so the verb is wants." }],
       },
       {
         text: "The museum said the mask had been worn in a right of passage on the island.",
@@ -3681,8 +3682,8 @@ export const PUZZLES = [
         errors: [{ wrong: "flout", fix: "float", kind: 'wordchoice', note: "To float is to rest on water; to flout is to defy a rule." }],
       },
       {
-        text: "The baker said the dough should be need for ten minutes and no longer.",
-        errors: [{ wrong: "need", fix: "knead", kind: 'wordchoice', note: "To knead dough is to work it with the hands; need is to require." }],
+        text: "The baker said the dough wants a firm need for ten minutes and no longer.",
+        errors: [{ wrong: "need", fix: "knead", kind: 'wordchoice', note: "A knead is a working of dough by hand; a need is a requirement." }],
       },
     ],
   },
@@ -3726,7 +3727,7 @@ export const PUZZLES = [
     items: [
       {
         text: "The head said each pupil attend one residential trip in the course of a year.",
-        errors: [{ wrong: "attend", fix: "attends", kind: 'grammar', note: "Each pupil is singular, so the verb is attends." }],
+        errors: [{ wrong: "attend", fix: "attends", alts: ["attended"], kind: 'grammar', note: "Each pupil is singular, so the verb is attends." }],
       },
       {
         text: "The contractor will sew the top field with a grass ley in the spring.",
@@ -3755,7 +3756,7 @@ export const PUZZLES = [
     sunday: true,
     items: [
       {
-        text: "The catalogue essay was criticised for its turbid prose and its thin research.",
+        text: "The catalogue essay was criticised for its turbid prose, every sentence swollen with jargon.",
         errors: [{ wrong: "turbid", fix: "turgid", kind: 'wordchoice', note: "Turgid prose is swollen and pompous; turbid means cloudy with sediment." }],
       },
       {
@@ -3777,11 +3778,11 @@ export const PUZZLES = [
       },
       {
         text: "The station said the boat leaves by the shoot, and that a launch on a spring tide take under two minutes.",
-        errors: [{ wrong: "shoot", fix: "chute", kind: 'wordchoice', note: "A chute is a sloping channel; to shoot is to fire." }, { wrong: "take", fix: "takes", kind: 'grammar', note: "A launch is singular, so the verb is takes." }],
+        errors: [{ wrong: "shoot", fix: "chute", kind: 'wordchoice', note: "A chute is a sloping channel; to shoot is to fire." }, { wrong: "take", fix: "takes", alts: ["took"], kind: 'grammar', note: "A launch is singular, so the verb is takes." }],
       },
       {
-        text: "The judge said the punishment meat out by the magistrates was too light, and that the new fine reflect the scale of the profit.",
-        errors: [{ wrong: "meat", fix: "mete", kind: 'wordchoice', note: "To mete out a punishment is to deal it out; meat is flesh for eating." }, { wrong: "reflect", fix: "reflects", kind: 'grammar', note: "The fine is singular, so the verb is reflects." }],
+        text: "The judge said the magistrates should meat out a heavier punishment, and that the new fine reflect the scale of the profit.",
+        errors: [{ wrong: "meat", fix: "mete", kind: 'wordchoice', note: "To mete out a punishment is to deal it out; meat is flesh for eating." }, { wrong: "reflect", fix: "reflects", alts: ["reflected"], kind: 'grammar', note: "The fine is singular, so the verb is reflects." }],
       },
     ],
   },
@@ -3832,7 +3833,7 @@ export const PUZZLES = [
         cleanNote: "Clean copy: write-down is the accounting term and reflected is used correctly.",
       },
       {
-        text: "The head said this changes had been agreed with staff before half term.",
+        text: "The head said this three changes had been agreed with staff before half term.",
         errors: [{ wrong: "this", fix: "these", kind: 'grammar', note: "Changes is plural, so the demonstrative is these." }],
       },
       {
@@ -3897,7 +3898,7 @@ export const PUZZLES = [
       },
       {
         text: "The wine was described as having a palette of red fruit and a long finish.",
-        errors: [{ wrong: "palette", fix: "palate", kind: 'wordchoice', note: "The palate is the sense of taste; a palette holds an artist’s colours." }],
+        errors: [{ wrong: "palette", fix: "palate", kind: 'wordchoice', note: "The palate is the sense of taste; a palette holds an artist's colours." }],
       },
       {
         text: "The manager said the side done enough in the second half to take a point.",
@@ -3982,7 +3983,7 @@ export const PUZZLES = [
         errors: [{ wrong: "toe", fix: "tow", kind: 'wordchoice', note: "To tow is to pull; a toe is on the foot." }],
       },
       {
-        text: "The report counted a rising incidents of fly-tipping, and the council said its crews had responded prompt in every case.",
+        text: "The report put the incidents of fly-tipping at twice the county rate, and the council said its crews had responded prompt in every case.",
         errors: [{ wrong: "incidents", fix: "incidence", kind: 'wordchoice', note: "Incidence is the rate at which something occurs; incidents are single events." }, { wrong: "prompt", fix: "promptly", kind: 'grammar', note: "Responded is a verb, so it takes the adverb promptly." }],
       },
       {
@@ -3991,7 +3992,7 @@ export const PUZZLES = [
       },
       {
         text: "The court heard a long legal wangle over the estate, and that the solicitor written to the family only in June.",
-        errors: [{ wrong: "wangle", fix: "wrangle", kind: 'wordchoice', note: "A wrangle is a dispute; to wangle is to get by contrivance." }, { wrong: "written", fix: "wrote", kind: 'grammar', note: "The simple past is wrote; written is the participle, as in had written." }],
+        errors: [{ wrong: "wangle", fix: "wrangle", kind: 'wordchoice', note: "A wrangle is a dispute; to wangle is to get by contrivance." }, { wrong: "written", fix: "wrote", alts: ["had written"], kind: 'grammar', note: "The simple past is wrote; written is the participle, as in had written." }],
       },
       {
         text: "The operator said the diversion would add twenty minutes to the evening journey.",
@@ -4049,7 +4050,7 @@ export const PUZZLES = [
       },
       {
         text: "The stopping service gone into the loop before the express came through.",
-        errors: [{ wrong: "gone", fix: "went", kind: 'grammar', note: "The simple past is went; gone is the participle, as in had gone." }],
+        errors: [{ wrong: "gone", fix: "went", alts: ["had gone"], kind: 'grammar', note: "The simple past is went; gone is the participle, as in had gone." }],
       },
       {
         text: "The curator said the broach had been found by a detectorist in a ploughed field.",
@@ -4198,8 +4199,8 @@ export const PUZZLES = [
         errors: [{ wrong: "adopted", fix: "adapted", kind: 'wordchoice', note: "To adapt is to alter for a purpose; to adopt is to take up or take on." }, { wrong: "we", fix: "us", kind: 'grammar', note: "After between the pronoun takes the object case: the landlord and us." }],
       },
       {
-        text: "The trust gave an officious reply to a complaint about the discharge letter.",
-        errors: [{ wrong: "officious", fix: "official", kind: 'wordchoice', note: "Official means from the authority; officious means meddlesome." }],
+        text: "The trust said the closure would not be officious until the board had voted.",
+        errors: [{ wrong: "officious", fix: "official", kind: 'wordchoice', note: "Official means formally approved; officious means bossily self-important." }],
       },
       {
         text: "The organ builder said the read pipes had been revoiced and the case rewired.",
@@ -4233,7 +4234,7 @@ export const PUZZLES = [
     items: [
       {
         text: "The leader accused the group of fermenting unrest at the back of the meeting.",
-        errors: [{ wrong: "fermenting", fix: "fomenting", kind: 'wordchoice', note: "To foment trouble is to stir it up; to ferment is what yeast does." }],
+        errors: [{ wrong: "fermenting", fix: "fomenting", kind: 'wordchoice', note: "Foment is the standard verb for stirring up trouble; ferment is properly what yeast does." }],
       },
       {
         text: "The board was told the two schemes costs about the same over ten years.",
@@ -4245,7 +4246,7 @@ export const PUZZLES = [
       },
       {
         text: "The boat made twelve not against the ebb and still came in late.",
-        errors: [{ wrong: "not", fix: "knot", kind: 'wordchoice', note: "A knot is a nautical mile an hour; not is the negative." }],
+        errors: [{ wrong: "not", fix: "knots", kind: 'wordchoice', note: "A knot is a nautical mile an hour; not is the negative." }],
       },
       {
         text: "The warden said the swans had been ringed and would be tracked through the winter.",
@@ -4400,7 +4401,7 @@ export const PUZZLES = [
         cleanNote: "Clean copy: recovery time is the industry's own phrase for slack built into a timetable.",
       },
       {
-        text: "The firm said the smaller van was more economic to run on short rounds.",
+        text: "The firm said the new drivers were more economic with fuel on short rounds.",
         errors: [{ wrong: "economic", fix: "economical", kind: 'wordchoice', note: "Economical means thrifty in use; economic relates to the economy." }],
       },
     ],

@@ -175,7 +175,7 @@ export const DAYS = [
     { d: 'law', t: "The injunction had forbade the company from selling the land before the appeal.", e: [['forbade', 'forbidden', 'g', 'Had takes the participle forbidden; forbade is the simple past.']] },
     { d: 'health', t: "The trust said the ward had been closed to knew admissions until Monday.", e: [['knew', 'new', 'w', 'New means recent; knew is the past of know.']] },
     { d: 'rail', t: "The inquiry found the driver had been given a rout that avoided the closed section.", e: [['rout', 'route', 'w', 'A route is a way through; a rout is a crushing defeat.']] },
-    { d: 'biz', t: "The firm said its order book had shrunk for a third quarter running.", e: [['shrunk', 'shrank', 'g', 'The simple past is shrank; shrunk is the participle, as in has shrunk.']] },
+    { d: 'biz', t: "The firm said its order book had shrunk for a third quarter running.", c: 'Clean copy: had takes the participle shrunk, which is exactly what is printed.' },
   ],
   // ── #85 Fri 9 Oct ───────────────────────────────────────────────────────
   [
@@ -183,7 +183,7 @@ export const DAYS = [
     { d: 'coast', t: "The pilot said the channel had shoaled and the buoys would move before the spring tides.", c: 'Clean copy: shoaled means the water has grown shallower, which is the sense wanted.' },
     { d: 'sport', t: "The club said its eight had beat the course record set in 1998 by four seconds.", e: [['beat', 'beaten', 'g', 'Had takes the participle beaten; beat is the simple past.']] },
     { d: 'edu', t: "The bursar said the currant year's fees would stand until the summer term.", e: [['currant', 'current', 'w', 'Current means present; a currant is a dried fruit.']] },
-    { d: 'arts', t: "One critic called the early quartets torturous rather than merely difficult.", e: [['torturous', 'tortuous', 'w', 'Tortuous means winding and involved; torturous means causing torture.']] },
+    { d: 'arts', t: "One critic said the plot of the third act was torturous, doubling back on itself three times.", e: [['torturous', 'tortuous', 'w', 'Tortuous means winding and involved; torturous means causing torture.']] },
   ],
   // ── #86 Sat 10 Oct ──────────────────────────────────────────────────────
   [
@@ -209,7 +209,7 @@ export const DAYS = [
     { d: 'nature', t: "The reserve said the bittern had boomed from the reed bed for a third spring.", c: 'Clean copy: bitterns boom, and boomed is the word for the call they make.' },
     { d: 'biz', t: "The firm said the order had been cancelled and that it would right off the cost.", e: [['right', 'write', 'w', 'To write off a cost is the accounting sense; right means correct.']] },
     { d: 'edu', t: "The tutor marked the essay down for its course language and its wandering argument.", e: [['course', 'coarse', 'w', 'Coarse means rough or crude; a course is a path or a set of lessons.']] },
-    { d: 'coast', t: "The harbour master said them on the pontoon had seen nothing unusual that night.", e: [['them', 'they', 'g', 'The subject of the clause takes they, not them.']] },
+    { d: 'coast', t: "The harbour master said them on the pontoon had seen nothing unusual that night.", e: [['them', 'they', 'g', 'Them cannot be the subject of had seen; they, or those, is wanted.', ['those']]] },
   ],
   // ── #89 Tue 13 Oct ──────────────────────────────────────────────────────
   [
@@ -224,13 +224,13 @@ export const DAYS = [
     { d: 'rail', t: "Engineers said the bridge could not take the wait of a fully loaded lorry.", e: [['wait', 'weight', 'w', 'Weight is heaviness; to wait is to stay for something.']] },
     { d: 'biz', t: "The shop said the sail would run for a fortnight and then stock would go back up.", e: [['sail', 'sale', 'w', 'A sale is a selling; a sail catches the wind.']] },
     { d: 'food', t: "The baker said the doe had been left to prove overnight in the cold room.", e: [['doe', 'dough', 'w', 'Dough is flour and water mixed; a doe is a female deer or rabbit.']] },
-    { d: 'gov', t: "The council said the licensing committee meet on the first Tuesday of the month.", e: [['meet', 'meets', 'g', 'The committee is one body, so the verb is meets.']] },
+    { d: 'gov', t: "The council said its licensing officer meet applicants on the first Tuesday of the month.", e: [['meet', 'meets', 'g', 'The officer is one person, so the verb is meets.', ['met']]] },
     { d: 'sci', t: "The team said the isotope decays too quickly to be of any practical use.", c: 'Clean copy: decays is right for what an isotope does, and practical is the word wanted.' },
   ],
   // ── #91 Thu 15 Oct ──────────────────────────────────────────────────────
   [
     { d: 'law', t: "The lease contains a claws about subletting that the tenant says he never saw.", e: [['claws', 'clause', 'w', 'A clause is a passage in a contract; claws are on an animal.']] },
-    { d: 'health', t: "The trust said the rise in referrals appear to have levelled off since June.", e: [['appear', 'appears', 'g', 'The subject is the rise, which is singular, so the verb is appears.']] },
+    { d: 'health', t: "The trust said the rise in referrals appear to have levelled off since June.", e: [['appear', 'appears', 'g', 'The subject is the rise, which is singular, so the verb is appears.', ['appeared']]] },
     { d: 'edu', t: "The head paid the staff a warm complement at the end of a hard term.", e: [['complement', 'compliment', 'w', 'A compliment is praise; a complement completes something.']] },
     { d: 'arts', t: "The frame was guilt in the 1820s and has been regilded only once since.", e: [['guilt', 'gilt', 'w', 'Gilt means covered in gold leaf; guilt is having done wrong.']] },
     { d: 'farm', t: "The herd has been bread on the same hill farm for more than a century.", e: [['bread', 'bred', 'w', 'Bred is the past of breed; bread is the loaf.']] },
@@ -240,13 +240,13 @@ export const DAYS = [
     { d: 'coast', t: "The pilot boat put out at first light and the tug stood by until the tide turned.", c: 'Clean copy: stood by is the right phrase, and tug and tide are both used correctly.' },
     { d: 'sport', t: "The captain said the manager and me were the last to leave the pitch.", e: [['me', 'I', 'g', 'The pronoun is a subject here: the manager and I were the last.']] },
     { d: 'gov', t: "The council said the byelaw had been in force since 1974 and would not be reviewed.", c: 'Clean copy: a byelaw is a local rule made by the council, and in force is the phrase.' },
-    { d: 'biz', t: "The chairman admitted a degree of discomfit at the half-year figures.", e: [['discomfit', 'discomfort', 'w', 'Discomfort is unease; to discomfit is to thwart or disconcert.']] },
+    { d: 'biz', t: "The chairman admitted a degree of discomfit at the half-year figures.", e: [['discomfit', 'discomfort', 'w', 'Discomfort is unease; to discomfit is to thwart or disconcert.', ['discomfiture']]] },
     { d: 'nature', t: "Volunteers planted a roe of alders along the bank to shade the water.", e: [['roe', 'row', 'w', 'A row is a line; a roe is a small deer, or fish eggs.']] },
   ],
   // ── #93 Sat 17 Oct ──────────────────────────────────────────────────────
   [
     { d: 'edu', t: "Governors said the two policies seems to conflict on the question of exclusions.", e: [['seems', 'seem', 'g', 'Two policies is plural, so the verb is seem.']] },
-    { d: 'weather', t: "Forecasters said their would be a hard frost inland by the early hours.", e: [['their', 'there', 'w', 'There is the place word; their is the possessive.']] },
+    { d: 'weather', t: "Forecasters said their would be a hard frost inland by the early hours.", e: [['their', 'there', 'w', 'There introduces what exists or will happen; their is the possessive.']] },
     { d: 'health', t: "The trust said the drug had been withdrawn after a review of its side effects.", c: 'Clean copy: withdrawn is the right participle and side effects is the phrase wanted.' },
     { d: 'arts', t: "The archive said the letters had been pored over by three generations of scholars.", c: 'Clean copy: pored over is right for close reading; poured would tip a liquid.' },
     { d: 'rail', t: "The report said the driver had applied the break far too late on the descent.", e: [['break', 'brake', 'w', 'A brake stops a vehicle; a break is a pause or a fracture.']] },
@@ -257,8 +257,8 @@ export const DAYS = [
     { d: 'sport', t: "The club said the fixture had been rearranged for the following Tuesday evening.", c: 'Clean copy: rearranged is right, and fixture is the word for a scheduled match.' },
     { d: 'gov', t: "The council said the depot would move to a sight on the bypass, and admitted the vote had shook the ruling group.", e: [['sight', 'site', 'w', 'A site is a place; sight is what the eye does.'], ['shook', 'shaken', 'g', 'Had takes the participle shaken; shook is the simple past.']] },
     { d: 'food', t: "The brewery said the barrel had been tapped at noon and drunk dry by six.", c: 'Clean copy: drunk dry is the right participle, and tapped is what you do to a barrel.' },
-    { d: 'sci', t: "The team said the phenomena is well documented in colder seas.", e: [['phenomena', 'phenomenon', 'g', 'Phenomena is the plural; a single one is a phenomenon.']] },
-    { d: 'law', t: "The court heard the seller had knowingly mislead the buyer, and that the boundary was described wrong in the deeds.", e: [['mislead', 'misled', 'w', 'The past of mislead is misled, with one e.'], ['wrong', 'wrongly', 'g', 'Described is a verb, so it takes the adverb wrongly.']] },
+    { d: 'sci', t: "The team said it was a phenomena well documented in colder seas.", e: [['phenomena', 'phenomenon', 'g', 'Phenomena is the plural; a single one is a phenomenon.']] },
+    { d: 'law', t: "The court heard the seller had knowingly mislead the buyer, and that the boundary was described incorrect in the deeds.", e: [['mislead', 'misled', 'w', 'The past of mislead is misled, with one e.'], ['incorrect', 'incorrectly', 'g', 'Described is a verb, so it takes the adverb incorrectly.']] },
     { d: 'arts', t: "The tapestry was cut and rehung, and the seem now falls behind the door frame.", e: [['seem', 'seam', 'w', 'A seam is a join; seem is the verb.']] },
   ],
   // ── #95 Mon 19 Oct ──────────────────────────────────────────────────────
@@ -281,7 +281,7 @@ export const DAYS = [
   [
     { d: 'biz', t: "The firm said a lone from the bank had covered the shortfall until March.", e: [['lone', 'loan', 'w', 'A loan is money lent; lone means solitary.']] },
     { d: 'sport', t: "The club said the pitch had drained well and the game would go ahead at three.", c: 'Clean copy: drained is right for what a pitch does, and go ahead is the phrase.' },
-    { d: 'gov', t: "The council said these decision had been taken in private and would stand.", e: [['these', 'this', 'g', 'Decision is singular, so the demonstrative is this.']] },
+    { d: 'gov', t: "The council said these decision, taken in private, would stand.", e: [['these', 'this', 'g', 'Decision is singular, so the demonstrative is this.']] },
     { d: 'health', t: "The trust said the ward had been closed to visitors as a precaution.", c: 'Clean copy: precaution is the word wanted, and closed to visitors is plainly put.' },
     { d: 'food', t: "The inspector scored the kitchen two out of five, citing the pealing paint above the sink.", e: [['pealing', 'peeling', 'w', 'Peeling is coming away in strips; a peal is the sound of bells.']] },
   ],
@@ -312,7 +312,7 @@ export const DAYS = [
   // ── #101 SUN 25 Oct ─────────────────────────────────────────────────────
   [
     { d: 'sport', t: "The club said the record had stood for twenty-eight years before it was broken.", c: 'Clean copy: stood is right for a record that lasts, and broken is the participle.' },
-    { d: 'sci', t: "The geologist said the seam had been mind since 1820, and that the survey had showed no subsidence.", e: [['mind', 'mined', 'w', 'To mine is to dig out; mind is the faculty of thought.'], ['showed', 'shown', 'g', 'Had takes the participle shown; showed is the simple past.']] },
+    { d: 'sci', t: "The geologist said the seam had been mind since 1820, and that the survey showed no subsidence.", e: [['mind', 'mined', 'w', 'To mine is to dig out; mind is the faculty of thought.']] },
     { d: 'law', t: "The court heard the notice had been sent by male, and that the landlord had swore an affidavit about it.", e: [['male', 'mail', 'w', 'Mail is post; male is the sex.'], ['swore', 'sworn', 'g', 'Had takes the participle sworn; swore is the simple past.']] },
     { d: 'health', t: "Managers said much of the delays were caused by a shortage of theatre staff.", e: [['much', 'many', 'g', 'Delays can be counted, so the word is many.']] },
     { d: 'gov', t: "The chair said the ruling set no precedence, and that the committee had undertook no survey of the site.", e: [['precedence', 'precedent', 'w', 'A precedent is a case to follow; precedence is priority.'], ['undertook', 'undertaken', 'g', 'Had takes the participle undertaken; undertook is the simple past.']] },
@@ -330,7 +330,7 @@ export const DAYS = [
   // ── #103 Tue 27 Oct ─────────────────────────────────────────────────────
   [
     { d: 'law', t: "The magistrate said the driver would be find two hundred pounds and given points.", e: [['find', 'fined', 'w', 'Fined means made to pay a penalty; find is to locate.']] },
-    { d: 'health', t: "The trust said the waiting list remain the longest in the region.", e: [['remain', 'remains', 'g', 'The list is singular, so the verb is remains.']] },
+    { d: 'health', t: "The trust said the waiting list remain the longest in the region.", e: [['remain', 'remains', 'g', 'The list is singular, so the verb is remains.', ['remained']]] },
     { d: 'coast', t: "The ferry crosses the straight in forty minutes in anything short of a gale.", e: [['straight', 'strait', 'w', 'A strait is a narrow channel of water; straight means not bent.']] },
     { d: 'arts', t: "The plasterwork freeze runs the whole length of the upper hall.", e: [['freeze', 'frieze', 'w', 'A frieze is a band of decoration; to freeze is to turn to ice.']] },
     { d: 'rail', t: "The report said the express had overtook the stopping service on the fast line.", e: [['overtook', 'overtaken', 'g', 'Had takes the participle overtaken; overtook is the simple past.']] },
@@ -340,7 +340,7 @@ export const DAYS = [
     { d: 'nature', t: "The trust said the hedgerow had been laid by hand and would thicken from the base.", c: 'Clean copy: laid is right for a hedge worked by hand, and thicken is the word wanted.' },
     { d: 'gov', t: "Residents were told the new tacks on second homes would pay for the depot.", e: [['tacks', 'tax', 'w', 'Tax is the charge; tacks are small nails, or changes of course.']] },
     { d: 'biz', t: "The landlord said the tenet had left without notice and owed two quarters.", e: [['tenet', 'tenant', 'w', 'A tenant rents a property; a tenet is a principle held to be true.']] },
-    { d: 'weather', t: "The forecaster said the risk to the coast depend on where the front stalls.", e: [['depend', 'depends', 'g', 'The subject is the risk, which is singular, so the verb is depends.']] },
+    { d: 'weather', t: "The forecaster said the risk to the coast depend on where the front stalls.", e: [['depend', 'depends', 'g', 'The subject is the risk, which is singular, so the verb is depends.', ['depended']]] },
     { d: 'edu', t: "The examiners said the paper had been marked to the published criteria.", c: 'Clean copy: criteria is the right plural here, since there is more than one.' },
   ],
   // ── #105 Thu 29 Oct ─────────────────────────────────────────────────────
@@ -353,9 +353,9 @@ export const DAYS = [
   ],
   // ── #106 Fri 30 Oct ─────────────────────────────────────────────────────
   [
-    { d: 'gov', t: "The chair said the pole had been well attended for a wet Thursday in October.", e: [['pole', 'poll', 'w', 'A poll is a vote or a survey; a pole is a long rod.']] },
+    { d: 'gov', t: "The chair said the pole had drawn a good turnout for a wet Thursday in October.", e: [['pole', 'poll', 'w', 'A poll is a vote or a survey; a pole is a long rod.']] },
     { d: 'food', t: "The chef said the stock had been skimmed and left to clear overnight.", c: 'Clean copy: skimmed and clear are both kitchen senses, and nothing here is amiss.' },
-    { d: 'farm', t: "The farmer said the two flocks makes about six hundred head between them.", e: [['makes', 'make', 'g', 'Two flocks is plural, so the verb is make.']] },
+    { d: 'farm', t: "The farmer said the two flocks makes about six hundred head between them.", e: [['makes', 'make', 'g', 'Two flocks is plural, so the verb is make.', ['made']]] },
     { d: 'rail', t: "The operator said the last train had been retimed to connect with the ferry.", c: 'Clean copy: retimed is right for a changed departure, and connect is the word wanted.' },
     { d: 'law', t: "The judge called the offence venal rather than serious and imposed no penalty.", e: [['venal', 'venial', 'w', 'A venial fault is a pardonable one; venal means open to bribery.']] },
   ],
@@ -364,7 +364,7 @@ export const DAYS = [
     { d: 'edu', t: "The head said the trip had been postponed rather than cancelled outright.", c: 'Clean copy: postponed and cancelled are both used correctly, and the difference is real.' },
     { d: 'biz', t: "The board called the takeover a gambol that had not come off.", e: [['gambol', 'gamble', 'w', 'A gamble is a risk taken; to gambol is to frolic.']] },
     { d: 'sci', t: "The section had been stained with a blue die before it went under the lens.", e: [['die', 'dye', 'w', 'A dye colours things; a die is a stamp, or a cube for games.']] },
-    { d: 'weather', t: "The forecaster said the risk of flooding rise sharply after two wet days.", e: [['rise', 'rises', 'g', 'The risk is singular, so the verb is rises.']] },
+    { d: 'weather', t: "The forecaster said the risk of flooding rise sharply after two wet days.", e: [['rise', 'rises', 'g', 'The risk is singular, so the verb is rises.', ['rose']]] },
     { d: 'arts', t: "The percussionist struck the symbol on the last bar and the hall went quiet.", e: [['symbol', 'cymbal', 'w', 'A cymbal is the percussion instrument; a symbol stands for something.']] },
   ],
   // ── #108 SUN 1 Nov ──────────────────────────────────────────────────────
@@ -373,7 +373,7 @@ export const DAYS = [
     { d: 'gov', t: "The chief executive said staff moral had never been lower, and that the changes had not been explained clear to anyone.", e: [['moral', 'morale', 'w', 'Morale is spirit within a group; a moral is the lesson of a story.'], ['clear', 'clearly', 'g', 'Explained is a verb, so it takes the adverb clearly.']] },
     { d: 'arts', t: "The conservation laboratory said the rig stimulates a century of handling in a week.", e: [['stimulates', 'simulates', 'w', 'To simulate is to imitate; to stimulate is to encourage.']] },
     { d: 'law', t: "The court heard the defendant drunk four pints at lunchtime before taking the weal.", e: [['drunk', 'drank', 'g', 'The simple past is drank; drunk is the participle, as in has drunk.'], ['weal', 'wheel', 'w', 'A wheel steers the car; a weal is a raised mark on the skin.']] },
-    { d: 'sci', t: "The rare gull was cited on the estuary in March, and the warden said the losses at the tern colony looked systematic rather than local.", e: [['cited', 'sighted', 'w', 'Sighted means seen; cited means quoted or summoned.'], ['systematic', 'systemic', 'w', 'Systemic means affecting the whole system; systematic means methodical.']] },
+    { d: 'sci', t: "The rare gull was cited on the estuary in March, and the warden said the losses at the tern colony looked systematic, a sign the whole estuary food chain was failing.", e: [['cited', 'sighted', 'w', 'Sighted means seen; cited means quoted or summoned.'], ['systematic', 'systemic', 'w', 'Systemic means affecting the whole system; systematic means methodical.']] },
     { d: 'health', t: "The trust said the new clinic would be nurse-led and open on Saturdays.", c: 'Clean copy: nurse-led is correctly hyphenated and open on Saturdays is plainly put.' },
     { d: 'farm', t: "The estate said the ewes had been tupped in November and would lamb in April.", c: 'Clean copy: tupped is the farming word for putting rams to ewes, and lamb is a verb.' },
   ],
@@ -389,7 +389,7 @@ export const DAYS = [
   [
     { d: 'law', t: "The inquest heard the pilot had been the soul survivor of the crash.", e: [['soul', 'sole', 'w', 'Sole means only; a soul is the spirit.']] },
     { d: 'health', t: "The guidance proscribes the drug for children under twelve, and tells doctors to offer it first.", e: [['proscribes', 'prescribes', 'w', 'To prescribe is to order or recommend; to proscribe is to forbid.']] },
-    { d: 'biz', t: "The firm said its chairman want a decision from the board by Friday.", e: [['want', 'wants', 'g', 'The chairman is singular, so the verb is wants.']] },
+    { d: 'biz', t: "The firm said its chairman want a decision from the board by Friday.", e: [['want', 'wants', 'g', 'The chairman is singular, so the verb is wants.', ['wanted']]] },
     { d: 'arts', t: "The museum said the mask had been worn in a right of passage on the island.", e: [['right', 'rite', 'w', 'A rite is a ceremony; right is correct, or an entitlement.']] },
     { d: 'coast', t: "The coastguard said the flare had been seen from the cliff path at midnight.", c: 'Clean copy: a flare is what was fired, and seen from the cliff path is plainly put.' },
   ],
@@ -407,7 +407,7 @@ export const DAYS = [
     { d: 'biz', t: "The firm said it had joined the gild of master builders in 1974.", e: [['gild', 'guild', 'w', 'A guild is an association of tradespeople; to gild is to cover in gold.']] },
     { d: 'nature', t: "The trust said the pond had been dug out and would refill with the winter rain.", c: 'Clean copy: dug out is right for clearing a pond, and refill is the word wanted.' },
     { d: 'rail', t: "Engineers said the ballast had washed out and left the sleepers to flout in the water.", e: [['flout', 'float', 'w', 'To float is to rest on water; to flout is to defy a rule.']] },
-    { d: 'food', t: "The baker said the dough should be need for ten minutes and no longer.", e: [['need', 'knead', 'w', 'To knead dough is to work it with the hands; need is to require.']] },
+    { d: 'food', t: "The baker said the dough wants a firm need for ten minutes and no longer.", e: [['need', 'knead', 'w', 'A knead is a working of dough by hand; a need is a requirement.']] },
   ],
   // ── #113 Fri 6 Nov ──────────────────────────────────────────────────────
   [
@@ -419,7 +419,7 @@ export const DAYS = [
   ],
   // ── #114 Sat 7 Nov ──────────────────────────────────────────────────────
   [
-    { d: 'edu', t: "The head said each pupil attend one residential trip in the course of a year.", e: [['attend', 'attends', 'g', 'Each pupil is singular, so the verb is attends.']] },
+    { d: 'edu', t: "The head said each pupil attend one residential trip in the course of a year.", e: [['attend', 'attends', 'g', 'Each pupil is singular, so the verb is attends.', ['attended']]] },
     { d: 'farm', t: "The contractor will sew the top field with a grass ley in the spring.", e: [['sew', 'sow', 'w', 'To sow is to plant seed; to sew is to stitch cloth.']] },
     { d: 'weather', t: "The forecaster said the fog would lift once the due had burned off the fields.", e: [['due', 'dew', 'w', 'Dew is moisture that settles overnight; due means owing or expected.']] },
     { d: 'biz', t: "The firm said the fraud had been perpetuated by a single employee in accounts.", e: [['perpetuated', 'perpetrated', 'w', 'To perpetrate is to commit; to perpetuate is to make something continue.']] },
@@ -427,13 +427,13 @@ export const DAYS = [
   ],
   // ── #115 SUN 8 Nov ──────────────────────────────────────────────────────
   [
-    { d: 'arts', t: "The catalogue essay was criticised for its turbid prose and its thin research.", e: [['turbid', 'turgid', 'w', 'Turgid prose is swollen and pompous; turbid means cloudy with sediment.']] },
+    { d: 'arts', t: "The catalogue essay was criticised for its turbid prose, every sentence swollen with jargon.", e: [['turbid', 'turgid', 'w', 'Turgid prose is swollen and pompous; turbid means cloudy with sediment.']] },
     { d: 'food', t: "The sourdough is proved for eighteen hours before it goes into the oven.", c: "Clean copy: proved is the baker's word for letting dough rise, and it is right here." },
     { d: 'sci', t: "The caterpillar is a veracious feeder and can strip a young tree in days.", e: [['veracious', 'voracious', 'w', 'Voracious means greedy; veracious means truthful.']] },
     { d: 'gov', t: "The council said two of its lorries had stood idol since May, and that the yard had not been secured proper since then.", e: [['idol', 'idle', 'w', 'Idle means unused; an idol is an image or a person who is worshipped.'], ['proper', 'properly', 'g', 'Secured is a verb, so it takes the adverb properly.']] },
     { d: 'health', t: "The trust said there had been fewer disruption this winter than last.", e: [['fewer', 'less', 'w', 'Disruption is a mass noun, so it takes less.']] },
-    { d: 'coast', t: "The station said the boat leaves by the shoot, and that a launch on a spring tide take under two minutes.", e: [['shoot', 'chute', 'w', 'A chute is a sloping channel; to shoot is to fire.'], ['take', 'takes', 'g', 'A launch is singular, so the verb is takes.']] },
-    { d: 'law', t: "The judge said the punishment meat out by the magistrates was too light, and that the new fine reflect the scale of the profit.", e: [['meat', 'mete', 'w', 'To mete out a punishment is to deal it out; meat is flesh for eating.'], ['reflect', 'reflects', 'g', 'The fine is singular, so the verb is reflects.']] },
+    { d: 'coast', t: "The station said the boat leaves by the shoot, and that a launch on a spring tide take under two minutes.", e: [['shoot', 'chute', 'w', 'A chute is a sloping channel; to shoot is to fire.'], ['take', 'takes', 'g', 'A launch is singular, so the verb is takes.', ['took']]] },
+    { d: 'law', t: "The judge said the magistrates should meat out a heavier punishment, and that the new fine reflect the scale of the profit.", e: [['meat', 'mete', 'w', 'To mete out a punishment is to deal it out; meat is flesh for eating.'], ['reflect', 'reflects', 'g', 'The fine is singular, so the verb is reflects.', ['reflected']]] },
   ],
   // ── #116 Mon 9 Nov ──────────────────────────────────────────────────────
   [
@@ -447,7 +447,7 @@ export const DAYS = [
   [
     { d: 'health', t: "The porter found the patient prostate on the floor of the day room.", e: [['prostate', 'prostrate', 'w', 'Prostrate means lying face down; the prostate is a gland.']] },
     { d: 'biz', t: "The company said the write-down reflected a drop in the value of its yards.", c: 'Clean copy: write-down is the accounting term and reflected is used correctly.' },
-    { d: 'edu', t: "The head said this changes had been agreed with staff before half term.", e: [['this', 'these', 'g', 'Changes is plural, so the demonstrative is these.']] },
+    { d: 'edu', t: "The head said this three changes had been agreed with staff before half term.", e: [['this', 'these', 'g', 'Changes is plural, so the demonstrative is these.']] },
     { d: 'coast', t: "The pilot said the vessel had swung to the ebb and cleared the bar at first light.", c: 'Clean copy: swung to the ebb is the right phrase, and cleared the bar is plainly put.' },
     { d: 'weather', t: "The tide backed up the creak and put a foot of water across the lane.", e: [['creak', 'creek', 'w', 'A creek is a narrow inlet or a small stream; a creak is a noise.']] },
   ],
@@ -464,7 +464,7 @@ export const DAYS = [
     { d: 'sci', t: "The team said the survey had been systemic rather than opportunistic.", e: [['systemic', 'systematic', 'w', 'Systematic means methodical; systemic means affecting a whole system.']] },
     { d: 'health', t: "The cost of the agency cover has been born by the trust for two years.", e: [['born', 'borne', 'g', 'Borne is the participle of bear in this sense; born is about birth.']] },
     { d: 'biz', t: "The firm said the machinery had been deprecated over ten years in the accounts.", e: [['deprecated', 'depreciated', 'w', 'To depreciate is to lose value over time; to deprecate is to disapprove.']] },
-    { d: 'food', t: "The wine was described as having a palette of red fruit and a long finish.", e: [['palette', 'palate', 'w', 'The palate is the sense of taste; a palette holds an artist’s colours.']] },
+    { d: 'food', t: "The wine was described as having a palette of red fruit and a long finish.", e: [['palette', 'palate', 'w', 'The palate is the sense of taste; a palette holds an artist\'s colours.']] },
     { d: 'sport', t: "The manager said the side done enough in the second half to take a point.", e: [['done', 'did', 'g', 'The simple past is did; done needs an auxiliary, as in has done.']] },
   ],
   // ── #120 Fri 13 Nov ─────────────────────────────────────────────────────
@@ -487,9 +487,9 @@ export const DAYS = [
   [
     { d: 'arts', t: "The tenner sang the part from memory after the score went missing.", e: [['tenner', 'tenor', 'w', 'A tenor is the singer; a tenner is a ten-pound note.']] },
     { d: 'coast', t: "The tug took the barge under toe as far as the lock and cast off there.", e: [['toe', 'tow', 'w', 'To tow is to pull; a toe is on the foot.']] },
-    { d: 'gov', t: "The report counted a rising incidents of fly-tipping, and the council said its crews had responded prompt in every case.", e: [['incidents', 'incidence', 'w', 'Incidence is the rate at which something occurs; incidents are single events.'], ['prompt', 'promptly', 'g', 'Responded is a verb, so it takes the adverb promptly.']] },
+    { d: 'gov', t: "The report put the incidents of fly-tipping at twice the county rate, and the council said its crews had responded prompt in every case.", e: [['incidents', 'incidence', 'w', 'Incidence is the rate at which something occurs; incidents are single events.'], ['prompt', 'promptly', 'g', 'Responded is a verb, so it takes the adverb promptly.']] },
     { d: 'sci', t: "The valley floor is luxurious with fern from the beck to the tree line.", e: [['luxurious', 'luxuriant', 'w', 'Luxuriant means growing thickly; luxurious means costly and comfortable.']] },
-    { d: 'law', t: "The court heard a long legal wangle over the estate, and that the solicitor written to the family only in June.", e: [['wangle', 'wrangle', 'w', 'A wrangle is a dispute; to wangle is to get by contrivance.'], ['written', 'wrote', 'g', 'The simple past is wrote; written is the participle, as in had written.']] },
+    { d: 'law', t: "The court heard a long legal wangle over the estate, and that the solicitor written to the family only in June.", e: [['wangle', 'wrangle', 'w', 'A wrangle is a dispute; to wangle is to get by contrivance.'], ['written', 'wrote', 'g', 'The simple past is wrote; written is the participle, as in had written.', ['had written']]] },
     { d: 'rail', t: "The operator said the diversion would add twenty minutes to the evening journey.", c: 'Clean copy: diversion is the right word and add twenty minutes is plainly put.' },
     { d: 'farm', t: "The auctioneer said the store cattle had made more than last year in spite of the drought.", c: 'Clean copy: store cattle are beasts sold on to be fattened, and made is the sale sense.' },
   ],
@@ -504,7 +504,7 @@ export const DAYS = [
   // ── #124 Tue 17 Nov ─────────────────────────────────────────────────────
   [
     { d: 'law', t: "The defendant was seen to exalt on the steps outside the court.", e: [['exalt', 'exult', 'w', 'To exult is to rejoice openly; to exalt is to raise up or praise.']] },
-    { d: 'rail', t: "The stopping service gone into the loop before the express came through.", e: [['gone', 'went', 'g', 'The simple past is went; gone is the participle, as in had gone.']] },
+    { d: 'rail', t: "The stopping service gone into the loop before the express came through.", e: [['gone', 'went', 'g', 'The simple past is went; gone is the participle, as in had gone.', ['had gone']]] },
     { d: 'arts', t: "The curator said the broach had been found by a detectorist in a ploughed field.", e: [['broach', 'brooch', 'w', 'A brooch is the pin worn on clothing; to broach is to raise a subject.']] },
     { d: 'farm', t: "The milk was carried up from the parlour in a pale as it always had been.", e: [['pale', 'pail', 'w', 'A pail is a bucket; pale means light in colour.']] },
     { d: 'edu', t: "The head said the fire alarm is tested regular and the log is kept in the office.", e: [['regular', 'regularly', 'g', 'Tested is a verb, so it takes the adverb regularly.']] },
@@ -544,7 +544,7 @@ export const DAYS = [
   // ── #129 SUN 22 Nov ─────────────────────────────────────────────────────
   [
     { d: 'law', t: "The court heard the entrance had not been adopted for wheelchair users, and that the dispute now lies between the landlord and we.", e: [['adopted', 'adapted', 'w', 'To adapt is to alter for a purpose; to adopt is to take up or take on.'], ['we', 'us', 'g', 'After between the pronoun takes the object case: the landlord and us.']] },
-    { d: 'health', t: "The trust gave an officious reply to a complaint about the discharge letter.", e: [['officious', 'official', 'w', 'Official means from the authority; officious means meddlesome.']] },
+    { d: 'health', t: "The trust said the closure would not be officious until the board had voted.", e: [['officious', 'official', 'w', 'Official means formally approved; officious means bossily self-important.']] },
     { d: 'arts', t: "The organ builder said the read pipes had been revoiced and the case rewired.", e: [['read', 'reed', 'w', 'A reed vibrates to make the sound; read is what you do to a book.']] },
     { d: 'sport', t: "The club said the manager had signed a contract to the end of the season.", c: 'Clean copy: signed a contract to the end of the season is plainly put and hides nothing.' },
     { d: 'sci', t: "The gauge gives a continual record of the level, and the team said the ceiling of the borehole had failed in August.", e: [['continual', 'continuous', 'w', 'Continuous means without a break; continual means repeated with gaps.'], ['ceiling', 'sealing', 'w', 'Sealing is closing something tight; a ceiling is overhead.']] },
@@ -553,10 +553,10 @@ export const DAYS = [
   ],
   // ── #130 Mon 23 Nov ─────────────────────────────────────────────────────
   [
-    { d: 'gov', t: "The leader accused the group of fermenting unrest at the back of the meeting.", e: [['fermenting', 'fomenting', 'w', 'To foment trouble is to stir it up; to ferment is what yeast does.']] },
+    { d: 'gov', t: "The leader accused the group of fermenting unrest at the back of the meeting.", e: [['fermenting', 'fomenting', 'w', 'Foment is the standard verb for stirring up trouble; ferment is properly what yeast does.']] },
     { d: 'biz', t: "The board was told the two schemes costs about the same over ten years.", e: [['costs', 'cost', 'g', 'Two schemes is plural, so the verb is cost.']] },
     { d: 'edu', t: "The college said the hostile above the workshops had been refurbished.", e: [['hostile', 'hostel', 'w', 'A hostel provides beds; hostile means unfriendly.']] },
-    { d: 'coast', t: "The boat made twelve not against the ebb and still came in late.", e: [['not', 'knot', 'w', 'A knot is a nautical mile an hour; not is the negative.']] },
+    { d: 'coast', t: "The boat made twelve not against the ebb and still came in late.", e: [['not', 'knots', 'w', 'A knot is a nautical mile an hour; not is the negative.']] },
     { d: 'nature', t: "The warden said the swans had been ringed and would be tracked through the winter.", c: 'Clean copy: ringed is the right word for marking a bird, and tracked is plainly put.' },
   ],
   // ── #131 Tue 24 Nov ─────────────────────────────────────────────────────
@@ -597,7 +597,7 @@ export const DAYS = [
     { d: 'law', t: "The pamphlet says a poacher was hung outside the county prison in 1856.", e: [['hung', 'hanged', 'w', 'People are hanged; pictures and curtains are hung.']] },
     { d: 'arts', t: "The opera tells the tail of a fisherman who never comes home.", e: [['tail', 'tale', 'w', 'A tale is a story; a tail is on an animal.']] },
     { d: 'rail', t: "The operator said the timetable had been rewritten to build in more recovery time.", c: "Clean copy: recovery time is the industry's own phrase for slack built into a timetable." },
-    { d: 'biz', t: "The firm said the smaller van was more economic to run on short rounds.", e: [['economic', 'economical', 'w', 'Economical means thrifty in use; economic relates to the economy.']] },
+    { d: 'biz', t: "The firm said the new drivers were more economic with fuel on short rounds.", e: [['economic', 'economical', 'w', 'Economical means thrifty in use; economic relates to the economy.']] },
   ],
   // ── #136 SUN 29 Nov ─────────────────────────────────────────────────────
   [
@@ -770,7 +770,7 @@ function render(b) {
       L.push('        errors: [],');
       L.push(`        cleanNote: ${JSON.stringify(it.c)},`);
     } else {
-      const es = it.e.map((e) => `{ wrong: ${JSON.stringify(e[0])}, fix: ${JSON.stringify(e[1])}, kind: '${KIND[e[2]]}', note: ${JSON.stringify(e[3])} }`);
+      const es = it.e.map((e) => `{ wrong: ${JSON.stringify(e[0])}, fix: ${JSON.stringify(e[1])}, ${e[4] ? `alts: ${JSON.stringify(e[4])}, ` : ''}kind: '${KIND[e[2]]}', note: ${JSON.stringify(e[3])} }`);
       L.push(`        errors: [${es.join(', ')}],`);
     }
     L.push('      },');
