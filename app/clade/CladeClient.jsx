@@ -719,6 +719,7 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
             name="Clade"
             catRank={catRank}
             outcome={won ? 'won' : 'lost'}
+            challengeMetric={won ? guesses.length : null}
             title={won ? 'Solved' : 'Not solved'}
             missLabel="Guesses"
             detail={`${guesses.length}/${MAX} guesses · ${elapsed}`}

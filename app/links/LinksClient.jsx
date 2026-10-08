@@ -768,6 +768,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
               name="Links"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
+              challengeMetric={won ? g.mistakes : null}
               title={won ? 'Solved' : 'Not solved'}
               detail={`${`${g.solved.length}/4`} groups \u00b7 ${elapsed}`}
               iq={iq}

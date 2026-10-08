@@ -901,6 +901,7 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
               name="Lode"
               catRank={catRank}
               outcome={score > 0 ? 'won' : 'lost'}
+              challengeMetric={score}
               title={score > 0 ? 'Complete' : 'Not complete'}
               detail={`${score} \u00b7 ${elapsed}`}
               iq={iq}

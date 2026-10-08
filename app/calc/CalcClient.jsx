@@ -967,6 +967,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
             name="Calc"
             catRank={catRank}
             outcome={won ? 'won' : (landed ? 'part' : 'lost')}
+            challengeMetric={won ? g.tries : null}
             title={won ? (TARGETS.length > 1 ? 'All three landed' : 'Target hit') : (landed ? `${landed} of ${TARGETS.length}` : 'Not solved')}
             detail={`${score}/${TOTAL} · ${elapsed}${g.tries ? ` · ${g.tries} ${g.tries === 1 ? 'try' : 'tries'}` : ''}`}
             iq={iq}

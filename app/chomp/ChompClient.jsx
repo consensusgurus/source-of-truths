@@ -1062,6 +1062,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
               name="Chomp"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
+              challengeMetric={won ? g.moves : null}
               title={won ? 'Solved' : 'Not solved'}
               detail={`${nf(g.moves)} moves`}
               iq={iq}

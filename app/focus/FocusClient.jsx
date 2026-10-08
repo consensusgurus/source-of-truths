@@ -769,6 +769,7 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
               name="Focus"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
+              challengeMetric={won ? frame : null}
               title={won ? 'Solved' : 'Not solved'}
               detail={won ? `frame ${frame}/${FRAMES} · ${misses} wrong · ${elapsed}` : `X/${FRAMES} · ${misses} wrong · ${elapsed}`}
               iq={iq}

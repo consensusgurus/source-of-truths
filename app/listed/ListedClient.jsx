@@ -943,6 +943,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
             name="Listed"
             catRank={catRank}
             outcome={won ? 'won' : (finalScore > 0 ? 'part' : 'lost')}
+            challengeMetric={won ? checksUsed : null}
             title={won ? 'Solved' : (finalScore > 0 ? 'Partly solved' : 'Not solved')}
             detail={`${finalScore}/10 \u00b7 ${checksUsed}/${MAX_CHECKS} submits \u00b7 ${elapsed}`}
             iq={iq}

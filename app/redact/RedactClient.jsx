@@ -661,6 +661,7 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
               name="Redact"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
+              challengeMetric={won ? g.guesses.length : null}
               title={won ? 'Solved' : 'Not solved'}
               detail={`${elapsed}`}
               iq={iq}

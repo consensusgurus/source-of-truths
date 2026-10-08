@@ -1,6 +1,7 @@
 import { DAILY_GAME_MAP, etTodayISO } from '@/lib/daily-games';
 import { decodeChallenge, challengeFig, challengeDest, RUN_CHALLENGES } from '@/lib/challenge';
 import ChallengeGo from './ChallengeGo';
+import { metricDef, metricLine } from '@/lib/challenge-metric';
 
 // THE CHALLENGE LANDING (owner, 2026-10-07). /vs?g=<key>&vs=<payload>
 //
@@ -24,7 +25,7 @@ export function generateMetadata({ searchParams }) {
   const { key, raw, g, c, run } = read(searchParams);
   const base = { robots: { index: false, follow: true } };
   if (!g || !c) return { ...base, title: 'A challenge on Mind Loft', description: 'Free daily puzzles. No sign-up to play.' };
-  const fig = challengeFig(c);
+  const fig = challengeFig(c, key);
   // Short on purpose: a message bubble prints this under the card and wraps a
   // long one into three lines.
   const title = `${c.name}: ${fig} on ${g.name}. Can you beat it?`;
@@ -40,7 +41,8 @@ export function generateMetadata({ searchParams }) {
 }
 
 export default function ChallengePage({ searchParams }) {
-  const { raw, g, c, run } = read(searchParams);
+  const { key, raw, g, c, run } = read(searchParams);
+  const byMetric = !!(c && !run && c.m != null && metricDef(key));
   const ok = !!(g && c);
   const href = ok ? challengeDest(g.href || `/${g.key}`, raw, c, etTodayISO(), run ? run.archive : true) : '/';
   const page = { minHeight: '100vh', background: '#0b0f1a', color: '#e9edf4', display: 'grid', placeItems: 'center', padding: '24px 16px', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif' };
@@ -55,7 +57,7 @@ export default function ChallengePage({ searchParams }) {
       <div style={card}>
         <div style={eb}>Mind Loft{ok ? (run && !run.archive ? ` · ${g.name}` : ` · ${g.name} No. ${c.n}`) : ''}</div>
         <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1.15, margin: '10px 0 6px' }}>
-          {ok ? `${c.name} ${c.won ? 'set' : 'scored'} ${challengeFig(c)}.` : 'That challenge link did not come through whole.'}
+          {ok ? (byMetric ? metricLine(key, c.name, g.name, challengeFig(c, key)) : `${c.name} ${c.won ? 'set' : 'scored'} ${challengeFig(c, key)}.`) : 'That challenge link did not come through whole.'}
         </h1>
         <p style={{ margin: 0, fontSize: 15, color: '#aab5c7', fontWeight: 600 }}>
           {ok ? (run ? `${c.x ? c.x + '. ' : ''}Same run, same rules. Can you beat that?` : 'Same board, same rules. Can you beat that?') : 'You can still play today’s puzzles.'}

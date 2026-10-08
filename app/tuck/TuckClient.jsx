@@ -966,6 +966,7 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
               name="Tuck"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
+              challengeMetric={g.submitted ? finalScore : null}
               title={won ? 'Solved' : 'Not solved'}
               detail={`${finalScore} \u00b7 ${BENCH} benchmark \u00b7 ${elapsed}`}
               iq={iq}

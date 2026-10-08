@@ -700,6 +700,7 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
               name="Stands"
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
+              challengeMetric={score}
               title={won ? 'Solved' : (score > 0 ? 'Partly solved' : 'Not solved')}
               detail={`${`${score}/${TOTAL}`} \u00b7 ${g.rejected} rejected \u00b7 ${elapsed}`}
               iq={iq}

@@ -791,6 +791,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
               name={NAME}
               catRank={catRank}
               outcome={outcome}
+              challengeMetric={best ? Math.round(best.e * 1000) / 10 : null}
               title={score === 10 ? 'Bullseye' : `${score} of 10`}
               detail={`${fmtCents(PRICE)} · closest ${best ? fmtCents(best.c) : '—'} · ${elapsed}`}
               iq={iq}

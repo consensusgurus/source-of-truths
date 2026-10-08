@@ -1015,6 +1015,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
               name="Span"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
+              challengeMetric={won ? hops : null}
               title={won ? 'Solved' : 'Not solved'}
               detail={`${finalScore} \u00b7 ${hops} hops \u00b7 ${elapsed}`}
               iq={iq}

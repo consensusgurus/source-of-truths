@@ -744,6 +744,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
             name="Shoe"
             catRank={catRank}
             outcome={won ? 'won' : (finalScore > 0 ? 'part' : 'lost')}
+            challengeMetric={chips}
             title={won ? 'Solved' : 'Not solved'}
             detail={`${finalScore}/10 · bank ${fmtChips(chips)} · par ${fmtChips(PUZZLE.par)} · ${elapsed}`}
             iq={iq}

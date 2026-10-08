@@ -964,6 +964,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
               name="Ping"
               catRank={catRank}
               outcome={won ? 'won' : (finalScore > 0 ? 'part' : 'lost')}
+              challengeMetric={won ? guesses.length : null}
               title={won ? 'Solved' : 'Not solved'}
               detail={detailLine}
               iq={iq}

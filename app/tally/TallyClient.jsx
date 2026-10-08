@@ -1408,6 +1408,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
             name="Tally"
             catRank={catRank}
             outcome={won ? 'won' : 'lost'}
+            challengeMetric={won ? g.moves : null}
             title={won ? 'Solved' : 'Not solved'}
             detail={`${won ? Math.max(1, Math.min(10, 10 - Math.ceil(errors / 2))) : 0}/10 \u00b7 ${g.moves} moves \u00b7 ${elapsed}`}
             iq={iq}

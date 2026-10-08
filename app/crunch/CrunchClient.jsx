@@ -870,6 +870,7 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
               name="Crunch"
               catRank={catRank}
               outcome={won ? 'won' : (finalScore > 0 ? 'part' : 'lost')}
+              challengeMetric={won ? used : null}
               title={won ? 'Solved' : 'Not solved'}
               detail={`${finalScore} \u00b7 ${used} steps \u00b7 ${bestDiff == null ? '—' : (bestDiff === 0 ? 'exact' : `${bestDiff} off`)} closest \u00b7 ${elapsed}`}
               iq={iq}

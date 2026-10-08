@@ -922,6 +922,7 @@ export default function ImpoundClient({ puzzles = [], forceNum = null }) {
               name="Impound"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
+              challengeMetric={won ? used : null}
               title={won ? 'Solved' : 'Not solved'}
               detail={`${finalScore}/10 \u00b7 ${used} moves \u00b7 par ${par}, perfect ${perfect} \u00b7 ${elapsed}`}
               iq={iq}

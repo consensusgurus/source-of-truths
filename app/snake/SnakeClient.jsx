@@ -820,6 +820,7 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
                   name="Snake"
                   catRank={catRank}
                   outcome={verdictTone}
+                  challengeMetric={Number.isFinite(g.apples) ? g.apples : null}
                   title={verdictWord}
                   detail={`${g.apples} apples · ${PAR} par`}
                   iq={iq}

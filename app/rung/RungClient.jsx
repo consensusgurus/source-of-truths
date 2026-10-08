@@ -842,6 +842,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
               name="Rung"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
+              challengeMetric={won ? used : null}
               title={won ? 'Solved' : 'Not solved'}
               detail={`${finalScore}/10 \u00b7 ${used} rungs \u00b7 par ${par}, perfect ${perfect} \u00b7 ${elapsed}`}
               iq={iq}

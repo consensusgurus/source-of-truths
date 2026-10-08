@@ -1670,6 +1670,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
             name="Crux"
             catRank={catRank}
             outcome={won ? 'won' : (endScore > 0 ? 'part' : 'lost')}
+            challengeMetric={won ? guessesUsed : null}
               title={won ? 'Solved' : (endScore > 0 ? 'Partly solved' : 'Not solved')}
               detail={`${endScore}/${PUZZLE.slots.length * 2} · ${guessesUsed} guesses · ${elapsed}`}
               iq={iq}

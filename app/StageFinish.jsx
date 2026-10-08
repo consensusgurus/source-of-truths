@@ -53,6 +53,7 @@ import GameGlyph from './GameGlyph';
 import { savedIdentity } from '@/lib/saved-identity';
 import { etTodayISO } from '@/lib/daily-games';
 import { readChallenge, encodeChallenge, challengeFig, challengeResult, ymdCompact } from '@/lib/challenge';
+import { metricDef } from '@/lib/challenge-metric';
 import AddToHome from './AddToHome';
 import JoinLeaderboardForm from './quiz/[id]/JoinLeaderboardForm';
 // Where this finish puts the player in each of their groups (2026-09-17).
@@ -813,6 +814,10 @@ export default function StageFinish({
   // they are looking at it fights the one thing that page is for. Default true,
   // so every other game is unchanged.
   handoff = true,
+  // THE GAME'S OWN FIGURE FOR A CHALLENGE (owner, 2026-10-07): 47 points on
+  // Hands, 3 trades on Barter, null where the clock or the score is the right
+  // figure. lib/challenge-metric.js says what each game counts.
+  challengeMetric = null,
 }) {
   // THE RETRY ENDING. On the nine games where a replay genuinely counts, an
   // unsolved finish is not a page of furniture, it is one control (see the
@@ -1499,9 +1504,10 @@ export default function StageFinish({
   const useRow = !!(run && rowFrac > (run.total ? run.score / run.total : 0));
   const mineT = run && run.won ? (run.time != null ? run.time
     : (myRowB && myRowB.timeElapsed != null && Number(myRowB.timeElapsed) > 0 ? Math.round(Number(myRowB.timeElapsed)) : null)) : null;
-  const mine = run && me ? { name: '', t: mineT, s: useRow ? Number(myRowB.score) : run.score, o: useRow ? Number(myRowB.total) : run.total, n: run.num, won: run.won } : null;
-  const canChallenge = !!(mine && !isQuiz && !isRetry && tone !== 'lost' && (mine.won ? (mine.t != null || !meSolveOnly) : (mine.s > 0 && !meSolveOnly)));
-  const duel = chal && mine ? { them: chal, res: challengeResult(mine, chal) } : null;
+  const mine = run && me ? { name: '', t: mineT, s: useRow ? Number(myRowB.score) : run.score, o: useRow ? Number(myRowB.total) : run.total, n: run.num, won: run.won,
+    m: challengeMetric != null && Number.isFinite(Number(challengeMetric)) && metricDef(me.key) ? Number(challengeMetric) : null } : null;
+  const canChallenge = !!(mine && !isQuiz && !isRetry && tone !== 'lost' && (mine.m != null || (mine.won ? (mine.t != null || !meSolveOnly) : (mine.s > 0 && !meSolveOnly))));
+  const duel = chal && mine ? { them: chal, res: challengeResult(mine, chal, me && me.key) } : null;
   const sendChallenge = () => {
     if (!mine) return;
     let onArchive = false;
@@ -1525,7 +1531,7 @@ export default function StageFinish({
     k: 'challenge', cls: 'chal', btn: true, onClick: sendChallenge, go: chalMsg ? 'Sent' : 'Send',
     ic: 'flag',
     nm: duel ? `Challenge ${chal.name} back` : 'Challenge a friend',
-    sb: chalMsg || `Send them ${challengeFig(mine)} to beat. No spoilers.`,
+    sb: chalMsg || `Send them ${challengeFig(mine, me && me.key)} to beat. No spoilers.`,
   } : null;
   const playedN = new Set([...played, ...(me ? [me.key] : [])]).size;
   const smallDoors = [];
@@ -1617,9 +1623,9 @@ export default function StageFinish({
               ) : null}
               {duel ? (
                 <div className="stf-duel">
-                  <div><small>You</small><b>{challengeFig(mine)}</b></div>
+                  <div><small>You</small><b>{challengeFig(mine, me && me.key)}</b></div>
                   <i>vs</i>
-                  <div className={'them' + (duel.res && duel.res.res === 'win' ? ' beat' : '')}><small>{duel.them.name}</small><b>{challengeFig(duel.them)}</b></div>
+                  <div className={'them' + (duel.res && duel.res.res === 'win' ? ' beat' : '')}><small>{duel.them.name}</small><b>{challengeFig(duel.them, me && me.key)}</b></div>
                 </div>
               ) : bandFig ? (
                 <div className="stf-bfig"><b>{bandFig.v}</b>{bandFig.l ? <small>{bandFig.l}</small> : null}</div>

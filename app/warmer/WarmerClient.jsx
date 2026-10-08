@@ -664,6 +664,7 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
               name="Warmer"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
+              challengeMetric={won ? g.guesses.length : null}
               title={won ? 'Solved' : 'Not solved'}
               detail={`${elapsed}`}
               iq={iq}

@@ -753,6 +753,7 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
             name="Dossier"
             catRank={catRank}
             outcome={won ? 'won' : 'lost'}
+            challengeMetric={won ? guesses.length : null}
             title={won ? 'Solved' : 'Not solved'}
             missLabel="Guesses"
             detail={`${U.name} · ${guesses.length}/${MAX} guesses · ${elapsed}`}

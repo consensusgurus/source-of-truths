@@ -10,6 +10,7 @@
 // value computed in render would hydrate against a different one.
 import { useEffect, useState } from 'react';
 import { readChallenge, dropChallenge, challengeFig } from '@/lib/challenge';
+import { metricDef, metricLine } from '@/lib/challenge-metric';
 
 const CSS = `
 /* A FULL-WIDTH BAND, CENTRED (owner, 2026-10-07). It shipped for one preview as
@@ -50,7 +51,9 @@ export default function ChallengeStrip({ gameKey, num = null, run = false }) {
         </>
       ) : (
         <>
-          <b>{c.name} {c.won ? 'set' : 'scored'} {challengeFig(c)} on this {run ? 'run' : 'board'}</b>
+          <b>{!run && c.m != null && metricDef(gameKey)
+            ? metricLine(gameKey, c.name, 'this board', challengeFig(c, gameKey)).replace(/\.$/, '')
+            : `${c.name} ${c.won ? 'set' : 'scored'} ${challengeFig(c, gameKey)} on this ${run ? 'run' : 'board'}`}</b>
           <span>{run ? (c.x ? `${c.x}. Can you beat it?` : 'Same run. Can you beat it?') : 'Same puzzle. Can you beat it?'}</span>
         </>
       )}

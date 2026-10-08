@@ -959,6 +959,7 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
               name="Plot"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
+              challengeMetric={won ? errors : null}
               title={won ? 'Solved' : 'Not solved'}
               detail={`${endScore} \u00b7 ${errors} errors \u00b7 ${elapsed}`}
               iq={iq}

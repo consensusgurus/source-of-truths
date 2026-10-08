@@ -863,6 +863,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
               name="Finesse"
               catRank={catRank}
               outcome={done ? 'won' : 'part'}
+              challengeMetric={done ? g.tries : null}
               title={done ? 'Made' : 'Not made'}
               detail={`${finalScore}/10 · ${TRICK_WORD[TARGET]} of ${R} · ${g.tries} tr${g.tries === 1 ? 'y' : 'ies'} · ${elapsed}`}
               iq={iq}

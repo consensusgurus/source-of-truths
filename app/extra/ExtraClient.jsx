@@ -824,6 +824,7 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
               name="Extra"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
+              challengeMetric={won ? tears : null}
               title={won ? 'Solved' : 'Not solved'}
               detail={`${finalScore} \u00b7 ${`${tears}/${MAX_TEARS}`} tears`}
               iq={iq}

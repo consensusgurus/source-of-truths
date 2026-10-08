@@ -968,6 +968,7 @@ export default function BabelClient({ puzzles, forceNum }) {
               name="Babel"
               catRank={catRank}
               outcome={verdictTone}
+              challengeMetric={spread}
               title={verdictWord}
               detail={`${spread} spread \u00b7 ${BENCH} benchmark \u00b7 ${elapsed}`}
               iq={iq}

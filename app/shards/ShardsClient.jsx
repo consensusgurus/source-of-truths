@@ -1163,6 +1163,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
               name="Shards"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
+              challengeMetric={won ? finalScore : null}
               title={won ? 'Solved' : 'Not solved'}
               detail={`${finalScore} \u00b7 ${elapsed}`}
               iq={iq}

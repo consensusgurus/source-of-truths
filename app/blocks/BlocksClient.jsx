@@ -1133,6 +1133,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
               name="Blocks"
               catRank={catRank}
               outcome={verdictTone}
+              challengeMetric={rowsCleared}
               title={verdictWord}
               detail={`${rowsCleared} rows \u00b7 ${PAR} par`}
               iq={iq}

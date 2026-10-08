@@ -823,6 +823,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
               name="Barter"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
+              challengeMetric={won ? g.swaps : null}
               title={won ? 'Solved' : 'Not solved'}
               detail={`${finalScore} \u00b7 ${PAR} par \u00b7 ${`${homeCount}/${N}`} home \u00b7 ${elapsed}`}
               iq={iq}

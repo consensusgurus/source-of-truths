@@ -836,6 +836,7 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
               name="Sweep"
               catRank={catRank}
               outcome={verdictTone}
+              challengeMetric={g.score}
               title={verdictWord}
               detail={`${g.score} \u00b7 ${PAR} par`}
               iq={iq}

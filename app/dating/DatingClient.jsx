@@ -944,6 +944,7 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
               name="Dating"
               catRank={catRank}
               outcome={won ? 'won' : (finalScore > 0 ? 'part' : 'lost')}
+              challengeMetric={won ? checksUsed : null}
               title={won ? 'Solved' : 'Not solved'}
               detail={`${finalScore} \u00b7 ${`${checksUsed}/${MAX_CHECKS}`} checks \u00b7 ${lockedCount} placed`}
               iq={iq}

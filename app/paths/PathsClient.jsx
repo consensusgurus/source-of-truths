@@ -1078,6 +1078,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
               name="Paths"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
+              challengeMetric={won ? cost : null}
               title={won ? 'Solved' : 'Not solved'}
               detail={`${finalScore} \u00b7 ${cost} cost \u00b7 ${parTarget} par \u00b7 ${elapsed}`}
               iq={iq}

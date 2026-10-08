@@ -760,6 +760,7 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
               name="Hearsay"
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
+              challengeMetric={g.status === 'done' ? g.wrong.length : null}
               title={won ? 'Solved' : (score > 0 ? 'Partly solved' : 'Not solved')}
               detail={`${`${score}/${TOTAL}`} \u00b7 ${g.wrong.length} wrong \u00b7 ${elapsed}`}
               iq={iq}

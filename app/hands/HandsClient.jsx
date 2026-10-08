@@ -791,6 +791,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
               name="Hands"
               catRank={catRank}
               outcome={won ? 'won' : (finalScore > 0 ? 'part' : 'lost')}
+              challengeMetric={done ? total : null}
               title={won ? 'Solved' : 'Not solved'}
               detail={`${finalScore}/10 \u00b7 ${total} points \u00b7 par ${par}, ace ${ace} \u00b7 ${elapsed}`}
               iq={iq}

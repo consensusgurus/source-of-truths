@@ -619,6 +619,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
               name="Venn"
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
+              challengeMetric={g.status === 'done' ? g.rejected : null}
               title={won ? 'Solved' : (score > 0 ? 'Partly solved' : 'Not solved')}
               detail={`${`${score}/${TOTAL}`} \u00b7 ${g.rejected} rejected \u00b7 ${elapsed}`}
               iq={iq}

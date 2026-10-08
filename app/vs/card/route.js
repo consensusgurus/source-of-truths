@@ -2,6 +2,7 @@ import { ImageResponse } from 'next/og';
 import { renderStageCard, stageFonts, shell, hueFor, clamp, size, D, T, Col } from '@/lib/og-stage-card';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { decodeChallenge, challengeFig, mmssOf, RUN_CHALLENGES } from '@/lib/challenge';
+import { metricDef, metricLine } from '@/lib/challenge-metric';
 
 // THE CHALLENGE LINK'S PREVIEW (owner, 2026-10-07): what a messaging app draws
 // when the link is pasted. It names the sender and the figure, never the answer.
@@ -12,6 +13,7 @@ export const runtime = 'nodejs';
 
 export async function GET(req) {
   const u = new URL(req.url);
+  const key = u.searchParams.get('g') || '';
   const run = RUN_CHALLENGES[u.searchParams.get('g') || ''] || null;
   const g = DAILY_GAME_MAP[u.searchParams.get('g') || ''] || run;
   const c = decodeChallenge(u.searchParams.get('vs') || '');
@@ -24,11 +26,14 @@ export async function GET(req) {
   // dark ink, the verdict's weight. It says the one thing the link is for.
   const pad = 56;
   const name = clamp(c.name, 20);
-  const fig = challengeFig(c);
+  const fig = challengeFig(c, key);
+  // THE GAME'S OWN FIGURE (owner, 2026-10-07): 47 points on Hands, not the clock.
+  const byMetric = !run && c.m != null && !!metricDef(key);
   // A RUN says its total and its status (owner, 2026-10-07): how many right,
   // then the tier, card or quizzes cleared, and the clock when it has one.
   const status = run ? [c.x, c.t != null ? mmssOf(c.t) : ''].filter(Boolean).join(' \u00b7 ') : '';
   const line = run ? (run.unit === 'right' ? `${name} got ${c.s} of ${c.o} right in ${run.the}.` : `${name} scored ${c.s}/${c.o} on ${run.the}.`)
+    : byMetric ? metricLine(key, name, g.name, fig)
     : c.won && c.t != null ? `${name} solved ${g.name} in ${fig}.`
     : c.won ? `${name} solved ${g.name}: ${fig}.` : `${name} scored ${fig} on ${g.name}.`;
   const big = line.length <= 30 ? 74 : line.length <= 40 ? 64 : 54;

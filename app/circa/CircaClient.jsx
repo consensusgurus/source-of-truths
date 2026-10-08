@@ -809,6 +809,7 @@ export default function CircaClient({ puzzles = [], forceNum = null }) {
               name="Circa"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
+              challengeMetric={won ? guesses.length : null}
               title={won ? 'Solved' : 'Not solved'}
               detail={`${finalScore} \u00b7 ${`${Math.min(guesses.length, MAX_GUESSES)}/${MAX_GUESSES}`} guesses`}
               iq={iq}
