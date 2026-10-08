@@ -79,6 +79,40 @@ const PALETTES = [
   ['Black', 'Yellow', 'Green'], ['Red', 'Black', 'White'], ['Blue', 'Yellow', 'Red'], ['Green', 'Red'],
 ];
 
+// From this board on (2026-10-09) the layout step is a NEAR-MISS step, not a
+// shape-recognition gimme (owner, 2026-10-08: "too easy"). Its decoys are the
+// RIGHT layout with the colors out of order, so the only difference between
+// two options can be which stripe is on top. Earlier boards are frozen and
+// keep their original four-different-layouts step.
+export const SUBTLE_FROM = 7;
+
+// Every distinct reordering of a palette (duplicates collapse), right one out.
+function reorders(pal) {
+  const out = new Map();
+  const walk = (left, acc) => {
+    if (!left.length) { out.set(acc.join(','), acc); return; }
+    left.forEach((h, i) => walk([...left.slice(0, i), ...left.slice(i + 1)], [...acc, h]));
+  };
+  walk(pal.map((h) => h.toUpperCase()), []);
+  out.delete(pal.map((h) => h.toUpperCase()).join(','));
+  return [...out.values()];
+}
+// Same palette, the orientation a player could mix it up with.
+const SIBLING = { h3: 'v3', v3: 'h3', h2: 'v3', h5: 'h3', triangle: 'hoist', hoist: 'triangle', nordic: 'saltire', saltire: 'nordic', canton: 'canton2', canton2: 'canton', diagonal: 'saltire', union: 'saltire', field: 'h2', banner: 'v3' };
+
+function subtleLayouts(flag, num) {
+  const right = flagSvg(flag.lay, flag.pal);
+  const seen = new Set([right]);
+  const cands = [];
+  const add = (lay, pal, kind) => { const svg = flagSvg(lay, pal); if (seen.has(svg)) return; seen.add(svg); cands.push({ ok: false, key: `${lay}:${pal.join(',')}`, kind, svg, aria: `${LAYOUT_NAMES[lay]}: ${pal.map(colorName).join(', ')}` }); };
+  // Up to two reorderings of the real layout: the near miss that makes it hard.
+  for (const pal of shuffle(reorders(flag.pal), num * 23 + 9)) { if (cands.length >= 2) break; add(flag.lay, pal, 'order'); }
+  // Then the sibling orientation in the right colors, then any other layout.
+  const fill = [SIBLING[flag.lay], ...shuffle(DECOY_LAYOUTS, num * 13 + 5)].filter((l) => l && l !== flag.lay);
+  for (const l of fill) { if (cands.length >= 3) break; add(l, flag.pal, 'layout'); }
+  return shuffle([{ ok: true, key: `${flag.lay}:right`, kind: 'right', svg: right, aria: `${LAYOUT_NAMES[flag.lay]}: ${flag.pal.map(colorName).join(', ')}` }, ...cands.slice(0, 3)], num * 17 + 2);
+}
+
 // The three steps of a day's flag round: each a list of four options, one
 // right, in a fixed order for that day.
 export function flagSteps(flag, code, num) {
@@ -89,13 +123,13 @@ export function flagSteps(flag, code, num) {
   const pick = shuffle(share.length >= 3 ? share : cand, num * 7 + 3).slice(0, 3).map((p) => p.slice().sort(byOrder));
   const pals = shuffle([{ ok: true, names }, ...pick.map((p) => ({ ok: false, names: p }))], num * 11 + 1)
     .map((o) => ({ ...o, label: o.names.join(' · '), svg: `<svg viewBox="0 0 30 20" preserveAspectRatio="none" aria-hidden="true">${o.names.map((n, i, a) => `<rect x="${(30 / a.length) * i}" width="${30 / a.length + 0.05}" height="20" fill="${o.ok ? flag.pal[flag.pal.map(colorName).indexOf(n)] : HEX[n]}"/>`).join('')}<rect width="30" height="20" fill="none" stroke="rgba(0,0,0,.18)" stroke-width=".4"/></svg>` }));
-  const lays = shuffle([flag.lay, ...shuffle(DECOY_LAYOUTS.filter((l) => l !== flag.lay), num * 13 + 5).slice(0, 3)], num * 17 + 2)
+  const lays = num >= SUBTLE_FROM ? subtleLayouts(flag, num) : shuffle([flag.lay, ...shuffle(DECOY_LAYOUTS.filter((l) => l !== flag.lay), num * 13 + 5).slice(0, 3)], num * 17 + 2)
     .map((l) => ({ ok: l === flag.lay, label: LAYOUT_NAMES[l], svg: flagSvg(l, flag.pal) }));
   const real = shuffle([code, ...flag.also], num * 19 + 7)
     .map((c) => ({ ok: c === code, code: c, src: `/passport/flags/${c.toLowerCase()}.svg` }));
   return [
     { q: 'Pick its colors', opts: pals },
-    { q: 'Pick its layout', opts: lays },
+    { q: num >= SUBTLE_FROM ? 'Pick its layout, colors in order' : 'Pick its layout', opts: lays, fine: num >= SUBTLE_FROM },
     { q: 'Now pick the real flag', opts: real },
   ];
 }

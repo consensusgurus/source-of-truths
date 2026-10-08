@@ -434,7 +434,7 @@ function Launch({ puzzle, canvasRef, onBoard }) {
         <div className="pl-rules">
           <ol>
             <li><b>Landmark.</b> A photo zoomed right in. Each wrong country pulls the camera back: 10, 8, 5 or 3 points.</li>
-            <li><b>Flag.</b> Pick its colors, its layout, then the real flag. Each wrong pick takes 3 off.</li>
+            <li><b>Flag.</b> Pick its colors, its layout with the colors in the right order, then the real flag. Each wrong pick takes 3 off.</li>
             <li><b>Borders.</b> Name every land neighbor before three strikes. Islands name the two nearest countries across the water.</li>
             <li><b>Capital.</b> One tap on a blank map. Close enough is a full 10, and a point comes off for every step further out.</li>
             <li><b>Numbers.</b> Five countries, bigger or smaller by land area. Two points each.</li>
@@ -1011,7 +1011,7 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
       lead="One mystery country a day, played five ways. Each round stamps your passport with a score out of 10, and your total out of 50 decides which passport you leave with."
       steps={[
         <><b>Landmark.</b> A photo of somewhere in the country, zoomed right in. Type the country. Every wrong country pulls the camera back a frame: 10, 8, 5 or 3 points. Getting it right unseals the destination for the rest of the run.</>,
-        <><b>Flag.</b> Build its flag in three picks: its colors, its layout, then the real flag out of four lookalikes. Each wrong pick takes 3 off the stamp.</>,
+        <><b>Flag.</b> Build its flag in three picks: its colors, its layout with the colors in the right order (the wrong ones can differ by a single stripe), then the real flag out of four lookalikes. Each wrong pick takes 3 off the stamp.</>,
         <><b>Borders.</b> Name every country it shares a land border with; a name banks the moment it is complete. A real country that does not border costs a strike, and three end the round. An <b>island</b> names its two nearest countries across the water instead.</>,
         <><b>Capital.</b> One tap on an unlabeled map. Close enough is a full 10, and a point comes off for every step further out; the step grows with the country.</>,
         <><b>Numbers.</b> Five countries, one at a time: bigger or smaller than today&rsquo;s by land area? Two points each.</>,
@@ -1161,11 +1161,11 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
         {!doneR ? (
           <>
             <div className="pp-row"><b className="pp-q">{st + 1}. {step.q}</b><span className="pp-mono">stamp worth {flagScore(g.r1.miss)}</span></div>
-            <div className={`pp-opts${st === 2 ? ' real' : ''}`}>
+            <div className={`pp-opts${st === 2 ? ' real' : ''}${step.fine ? ' fine' : ''}`}>
               {step.opts.map((o, i) => {
                 const bad = g.r1.bad.includes(`${st}:${i}`);
                 return (
-                  <button key={i} type="button" className={`pp-opt${bad ? ' no' : ''}`} onClick={() => pickFlag(i)} disabled={bad} aria-label={o.label || `Flag option ${i + 1}`}>
+                  <button key={i} type="button" className={`pp-opt${bad ? ' no' : ''}`} onClick={() => pickFlag(i)} disabled={bad} aria-label={o.aria || o.label || `Flag option ${i + 1}`}>
                     {o.src
                       // eslint-disable-next-line @next/next/no-img-element
                       ? <img src={o.src} alt="" draggable={false} />
@@ -1341,6 +1341,7 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
     .pp-opt:hover:not(:disabled){transform:translateY(-2px);border-color:var(--stg-acc, ${COLORS.accent});}
     .pp-opt .sw{width:100%;max-width:96px;aspect-ratio:3/2;display:block;border-radius:2px;overflow:hidden;}
     .pp-opt .sw svg{width:100%;height:100%;display:block;}
+    .pp-opts.fine .pp-opt .sw{max-width:150px;box-shadow:0 0 0 1px rgba(0,0,0,.25);}
     .pp-opt img{width:100%;max-width:120px;aspect-ratio:4/3;object-fit:cover;border-radius:2px;display:block;}
     .pp-opt.no{opacity:.35;cursor:default;animation:ppshake .4s;}
     .pp-opt.no::after{content:'';position:absolute;left:12%;right:12%;top:50%;height:2px;background:var(--pp-bad);transform:rotate(-12deg);}

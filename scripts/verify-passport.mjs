@@ -9,7 +9,7 @@ import { DAYS } from '../app/passport/days.js';
 import { BORDERS } from '../app/flank/borders.js';
 import { PUZZLES as FLANK } from '../app/flank/puzzles.js';
 import { TIERS, TOTAL, ROUNDS, unproject, haversineKm, capStep } from '../lib/passport.js';
-import { flagSteps, FLAG_LAYOUTS } from '../app/passport/flagkit.js';
+import { flagSteps, FLAG_LAYOUTS, SUBTLE_FROM } from '../app/passport/flagkit.js';
 
 const fails = [], warns = [];
 const fail = (m) => fails.push(m);
@@ -80,7 +80,13 @@ for (const p of PUZZLES) {
     const steps = flagSteps(F, d.c, d.num);
     steps.forEach((s, i) => {
       if (s.opts.length !== 4 || s.opts.filter((o) => o.ok).length !== 1) fail(`${at}: flag step ${i + 1} needs 4 options, one right`);
-      const labels = s.opts.map((o) => o.label || o.code);
+      const labels = s.opts.map((o) => o.label || o.key || o.code);
+      // The near-miss rule (2026-10-09 on): the layout step must carry at least
+      // one option that is the RIGHT layout with its colors reordered.
+      if (i === 1 && d.num >= SUBTLE_FROM) {
+        if (!s.opts.some((o) => o.kind === 'order')) fail(`${at}: flag layout step has no colors-out-of-order decoy`);
+        if (new Set(s.opts.map((o) => o.svg)).size !== 4) fail(`${at}: flag layout step draws two options identically`);
+      }
       if (new Set(labels).size !== 4) fail(`${at}: flag step ${i + 1} repeats an option (${labels.join(' / ')})`);
     });
   } catch (e) { fail(`${at}: flagSteps threw ${e.message}`); }

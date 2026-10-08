@@ -8630,3 +8630,17 @@ Key/route `dario`, category **Arcade**, `miss: null`. Wired by `scripts/wire-dar
 - **Mobile (owner, 2026-10-07): controls never cover the screen.** Portrait: the pad sits under the screen.
   Landscape on any coarse pointer (phone or iPad): the pad moves to the SIDES of the screen, which shrinks to
   fit, and starting a run scrolls the game into view. Full screen uses the same side layout.
+
+## A STATE CLASS THAT SWAPS ITS BACKGROUND FOR THE STAGE MUST SWAP ITS INK TOO (owner report, 2026-10-08)
+
+Hearsay's docket names (`.hs-key`) were painted `COLORS.accentDeep`, a deep purple, straight onto
+the dark stage: 1.6:1. The same file's wrong-name chip, Stands' draw and loss cells and Strata's
+bad tile all had the SAME half-conversion: `background:${STAGE ? 'var(--stg-surf2)' : '#fee2e2'}`
+followed by a literal `color:#7f1d1d`, so the ground went dark and the ink stayed written for a
+pale pink chip (1.8:1). The tell is a ternary on the background and a bare hex on the color in the
+same rule. Fix shape: `color:${STAGE ? 'var(--stg-bad)' : '#7f1d1d'}` (or `--stg-warn`,
+`--stg-acc-ink`), border likewise. A dark literal is FINE when the rule also hardcodes a pale
+background (`.hs-card.win` on `greenSoft`): the chip carries its own ground in both registers.
+Sweep: grep every `*Client.jsx` that calls `isStage(` for `color:${COLORS.x}` and `color:#xxxxxx`
+inside CSS template rules and measure each against the dark ground; anything under 3:1 whose
+background is a stage token is broken.

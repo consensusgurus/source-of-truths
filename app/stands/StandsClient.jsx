@@ -550,8 +550,8 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
           .bk-grid th.col{writing-mode:vertical-rl;transform:rotate(180deg);height:64px;text-align:right;}
           .bk-cell{width:38px;height:34px;border-radius:7px;border: 1.5px solid var(--stg-line, rgba(28,30,36,0.18));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};font-family:${SANS};font-weight:800;font-size:13px;cursor:pointer;color:${INK};}
           .bk-cell.W{background:${COLORS.greenSoft};border-color:${COLORS.green};color:#14532d;}
-          .bk-cell.D{background:${STAGE ? 'var(--stg-surf2)' : '#fef3c7'};border-color:#b45309;color:#78350f;}
-          .bk-cell.L{background:${STAGE ? 'var(--stg-surf2)' : '#fee2e2'};border-color:#b91c1c;color:#7f1d1d;}
+          .bk-cell.D{background:${STAGE ? 'var(--stg-surf2)' : '#fef3c7'};border-color:${STAGE ? 'var(--stg-warn)' : '#b45309'};color:${STAGE ? 'var(--stg-warn)' : '#78350f'};}
+          .bk-cell.L{background:${STAGE ? 'var(--stg-surf2)' : '#fee2e2'};border-color:${STAGE ? 'var(--stg-bad)' : '#b91c1c'};color:${STAGE ? 'var(--stg-bad)' : '#7f1d1d'};}
           .bk-cell.self{background:var(--stg-surf, ${COLORS.paper});border-color:transparent;cursor:default;}
           .bk-cell.mirror{cursor:default;opacity:0.72;}
           .bk-tbl{width:100%;border-collapse:collapse;font-family:${SANS};font-size:12.5px;}
