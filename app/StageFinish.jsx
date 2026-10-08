@@ -584,7 +584,21 @@ function currentNum(rows) {
   for (let n = max; n >= lo; n -= 1) { if (!set.has(n)) return n; }
   return max + 1;
 }
-function compareRuns(key, rows, scoreOnly = false) {
+// THE FINISH ON SCREEN, NOT THE FIRST ATTEMPT (owner, 2026-10-07). The stats
+// record is WRITE-ONCE: it keeps a puzzle's first finish and never changes. On
+// a game where a replay counts (End Game, Barter, Chomp, Parker, Rung, Taire)
+// a player who busted and then solved it still had a loss in that record, so
+// the ending lost its Challenge door and printed "0/10 today" under a band
+// reading Solved. The ending's own `outcome` is the run that just happened, and
+// the save file's clock is that run's clock, so a win on screen is a win here.
+// The SCORE cannot be read back off the save, so it stays the record's; the
+// challenge door takes the board row's score when that is better (below).
+function liveRun(r, outcome) {
+  if (!r) return r;
+  if (outcome === 'won' && !r.won) return { ...r, won: true, live: true };
+  return r;
+}
+function compareRuns(key, rows, scoreOnly = false, outcome = null) {
   const nums = rows.map((r) => Number(r.num)).filter(Number.isFinite);
   if (!nums.length) return null;
   // The current puzzle is the one number the archive leaves out: a gap
@@ -597,7 +611,7 @@ function compareRuns(key, rows, scoreOnly = false) {
   let cur = null;
   for (let n = max; n >= lo; n -= 1) { if (!set.has(n)) { cur = n; break; } }
   if (cur == null) cur = max + 1;
-  const today = runOf(key, cur);
+  const today = liveRun(runOf(key, cur), outcome);
   if (!today) return null;
   const prior = rows.filter((r) => r.done && Number(r.num) < cur)
     .sort((a, b) => Number(b.num) - Number(a.num))
@@ -618,6 +632,8 @@ function compareRuns(key, rows, scoreOnly = false) {
   // SOLVE OR NOT: a score comparison would read "10 more than your last" or
   // print 0/10. Only two clocks are worth comparing on these.
   if (isSolveOnly(key)) return null;
+  // A win the record does not know about has no score of its own to compare.
+  if (today.live) return null;
   const frac = (r) => (r.total ? r.score / r.total : 0);
   const bestF = Math.max(...prior.map(frac));
   const bestRow = prior.find((r) => frac(r) === bestF);
@@ -944,7 +960,7 @@ export default function StageFinish({
   const [vs, setVs] = useState(null);
   useEffect(() => {
     if (!me) return;
-    try { setVs(compareRuns(me.key, Array.isArray(archive) ? archive : [], me.cat === 'Arcade')); } catch (e) { setVs(null); }
+    try { setVs(compareRuns(me.key, Array.isArray(archive) ? archive : [], me.cat === 'Arcade', outcome)); } catch (e) { setVs(null); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me]);
 
@@ -960,7 +976,7 @@ export default function StageFinish({
     if (!me) return;
     try {
       const n = currentNum(Array.isArray(archive) ? archive : []);
-      const r = n != null ? runOf(me.key, n) : null;
+      const r = n != null ? liveRun(runOf(me.key, n), outcome) : null;
       setRun(r);
       const c = readChallenge(me.key);
       setChal(c && r && c.n === r.num ? c : null);
@@ -1474,7 +1490,16 @@ export default function StageFinish({
     : (tone === 'lost' && run && run.total && !meSolveOnly ? { v: `${run.score}/${run.total}`, l: '' } : null);
   // CHALLENGE A FRIEND. Mine is this run in the link's own shape; the door
   // shows on any daily finish that has a figure worth beating.
-  const mine = run && me ? { name: '', t: run.won ? run.time : null, s: run.score, o: run.total, n: run.num, won: run.won } : null;
+  // The score is the better of the record's and the board row's: the record is
+  // the FIRST attempt, and on a game where a replay counts the board row is the
+  // run that ranks. The clock falls back to the board row's when the save kept
+  // none, so a solve-only win still has a figure to send.
+  const myRowB = board && board.myRow;
+  const rowFrac = myRowB && Number(myRowB.total) > 0 ? Number(myRowB.score) / Number(myRowB.total) : -1;
+  const useRow = !!(run && rowFrac > (run.total ? run.score / run.total : 0));
+  const mineT = run && run.won ? (run.time != null ? run.time
+    : (myRowB && myRowB.timeElapsed != null && Number(myRowB.timeElapsed) > 0 ? Math.round(Number(myRowB.timeElapsed)) : null)) : null;
+  const mine = run && me ? { name: '', t: mineT, s: useRow ? Number(myRowB.score) : run.score, o: useRow ? Number(myRowB.total) : run.total, n: run.num, won: run.won } : null;
   const canChallenge = !!(mine && !isQuiz && !isRetry && tone !== 'lost' && (mine.won ? (mine.t != null || !meSolveOnly) : (mine.s > 0 && !meSolveOnly)));
   const duel = chal && mine ? { them: chal, res: challengeResult(mine, chal) } : null;
   const sendChallenge = () => {

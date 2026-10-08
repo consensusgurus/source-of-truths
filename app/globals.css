@@ -785,7 +785,14 @@ html.stg-flip .stage-page * {
    home uses, so a background tab never holds the gate at its FROM state. */
 .stage-page .stg-gate { position: relative; }
 @media (min-width: 641px) {
-  html[style*="--stg-glyph"] .stage-page .stg-gate { padding-right: 132px !important; }
+  /* THE GLYPH'S ROOM IS HELD FROM FIRST PAINT (owner, 2026-10-07). This
+     padding used to wait for --stg-glyph, which StageChrome publishes in an
+     EFFECT, so every gate painted at full width and then rewrapped its prose
+     132px narrower a beat later: the jitter on every pre-start screen. Every
+     gate is a game page, every game has a glyph, so the room is reserved up
+     front and only the drawing waits for the effect. The ::after is absolute,
+     so it lands without moving anything. */
+  .stage-page .stg-gate { padding-right: 132px !important; }
   html[style*="--stg-glyph"] .stage-page .stg-gate::after {
     content: ""; position: absolute; top: 18px; right: 22px; width: 92px; height: 92px;
     pointer-events: none; background: var(--stg-acc, #7dd3fc); opacity: .34;
