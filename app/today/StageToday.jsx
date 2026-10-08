@@ -614,9 +614,14 @@ export default function StageToday() {
   // reader in a group sees the switch, and the group is their default; a
   // reader in no group gets the page exactly as it was. Remembered per
   // browser, read in an effect so the server and first paint agree.
+  // THE STORED CHOICE IS RETIRED (owner, 2026-10-08). The switch that wrote it
+  // came off the page, so a browser that had once picked Me was stuck there:
+  // no group ladders, no group figures in the cap, no group games in My
+  // Puzzles, and no way back. The saved value is now cleared on arrival and
+  // never read, so every reader in a group sees the group view.
   const [lensPick, setLensPick] = useState('');
   useEffect(() => {
-    try { const v = localStorage.getItem('sot_home_lens'); if (v === 'me' || v === 'group' || v === 'all') setLensPick(v); } catch (e) {}
+    try { localStorage.removeItem('sot_home_lens'); } catch (e) {}
   }, []);
   const pickLens = useCallback((v) => {
     setLensPick(v);
