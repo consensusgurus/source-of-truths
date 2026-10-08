@@ -218,6 +218,32 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
   const viewedRef = useRef(false);
   const noticeRef = useRef(null);
   const inputRef = useRef(null);
+  const dockRef = useRef(null);
+  // PHONE: when the keyboard opens the browser scrolls the focused input to
+  // the middle of what is left of the screen, which pushes the ring off the
+  // top. Once the keyboard has settled, slide the page so the input sits just
+  // above the keyboard and the ring fills the space above it (never scrolling
+  // the top of the ring out of view).
+  function keepRingInView() {
+    if (typeof window === 'undefined' || window.innerWidth > 640) return;
+    const vv = window.visualViewport;
+    const fit = () => {
+      const dock = dockRef.current, ring = ringRef.current;
+      if (!dock || !ring) return;
+      const top = vv ? vv.offsetTop : 0;
+      const h = vv ? vv.height : window.innerHeight;
+      const want = dock.getBoundingClientRect().bottom - (top + h) + 8;
+      const room = ring.getBoundingClientRect().top - top - 8;
+      const delta = Math.min(want, room);
+      if (Math.abs(delta) > 2) window.scrollBy(0, delta);
+    };
+    if (vv) {
+      const once = () => { vv.removeEventListener('resize', once); setTimeout(fit, 60); };
+      vv.addEventListener('resize', once);
+      setTimeout(() => vv.removeEventListener('resize', once), 1200);
+    }
+    setTimeout(fit, 350);
+  }
   // The ring is laid out in pixels from the board's measured width, so the
   // slots can be spaced evenly along the ellipse at any width.
   const ringRef = useRef(null);
@@ -616,11 +642,11 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
           .fl-input.shake{animation:flshake .3s linear;}
           @keyframes flshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
           .fl-add{font-family:${SANS};font-weight:800;font-size:15px;min-height:52px;padding:0 22px;border-radius:12px;border:0;cursor:pointer;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, ${T.white});}
-          /* PHONE: the input docks to the bottom of the screen while the run is
-             live, so the ring stays in view above the keyboard. (Sticky inside the board, so it never covers the page below; the
-             root clips overflow-x with clip, not hidden, which keeps sticky alive.) */
+          /* PHONE: the input sits right under the ring, in the flow. It is not
+             pinned: a pinned bar sits behind the keyboard, so the browser drags
+             the page to centre it and the ring scrolls away. keepRingInView()
+             lines the input up with the top of the keyboard instead. */
           @media(max-width:640px){
-            .fl-dock{position:sticky;bottom:0;z-index:40;margin:0 -16px;padding:12px 16px calc(10px + env(safe-area-inset-bottom));background:var(--stg-ground, ${T.surface});border-top:1px solid var(--stg-line, rgba(28,30,36,0.18));}
             .fl-add{padding:0 18px;}
           }
         ` }} />
@@ -725,10 +751,11 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
             </div>
 
             {playing && started && (
-              <div className="fl-dock">
+              <div className="fl-dock" ref={dockRef}>
                 <div style={{ display: 'flex', alignItems: 'stretch', gap: 10 }}>
                   <input
                     ref={inputRef}
+                    onFocus={keepRingInView}
                     className={`fl-input${notice && notice.kind === 'strike' ? ' shake' : ''}`}
                     value={q}
                     onChange={(e) => onType(e.target.value)}

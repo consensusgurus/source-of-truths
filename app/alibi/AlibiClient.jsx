@@ -26,7 +26,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { HelpCircle, X, Smartphone, Search, Eraser, Undo2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { HelpCircle, X, Smartphone, Search, Eraser, Undo2 } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -72,11 +72,12 @@ const COLORS = {
   accentSoft: '#f6e3e5',
   green: T.successDeep,
 };
-// Suspect avatars: one round initial per column, each a step lighter of the
-// register's own ink, so the heads stay tellable apart without a new colour.
-// The initial is the ground colour, which clears 4.5:1 on every step down to
-// 56% on both registers.
-const AV_MIX = [100, 88, 76, 66, 56];
+const BAND_TINTS = ['#7c2230', '#5f6b7d', '#2c3a4d'];
+// The three section bands are the puzzle's own structure, so they stay tellable
+// apart, but on the stage they are three DEPTHS OF ONE COLOUR rather than three
+// unrelated ones, mixed from the category step so they follow the register. The
+// Loft keeps BAND_TINTS untouched, so ?stage=0 renders exactly what shipped.
+const BAND_TINTS_STAGE = [46, 27, 15].map((p) => `color-mix(in srgb, var(--stg-acc) ${p}%, transparent)`);
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_alibi_help_seen';
@@ -284,9 +285,6 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
-  // Phone dock: which statement is showing, and whether the full list is open.
-  const [stepIdx, setStepIdx] = useState(0);
-  const [dockAll, setDockAll] = useState(false);
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -573,7 +571,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
         if (g.marks[cat][s][v] === 2) { placed++; if (SOLUTION[cat][s] !== v) wrong++; }
       }
     }
-    if (placed < TOTAL) { setVerdict({ soft: true, msg: `You've confirmed ${placed} of ${TOTAL} facts. Keep deducing before you accuse.` }); return; }
+    if (placed < TOTAL) { setVerdict({ soft: true, msg: `You've confirmed ${placed} of ${TOTAL} facts — keep deducing before you accuse.` }); return; }
     if (wrong > 0) {
       setG((cur) => ({ ...cur, wrong: cur.wrong + 1, t0: cur.t0 || Date.now() }));
       // Deliberately vague: naming HOW MANY marks are wrong hands back a slice
@@ -618,50 +616,22 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
     return null;
   }
 
-  // ---- witness statements: one card, used by the list and the phone dock ----
-  const nClues = PUZZLE.clues.length;
-  const stepAt = nClues ? ((stepIdx % nClues) + nClues) % nClues : 0;
-  const openCount = nClues - g.struck.filter((i) => i >= 0 && i < nClues).length;
-  function stepBy(d) { setStepIdx(stepAt + d); }
-  // Crossing off the statement on show moves the dock on to the next one still
-  // open, so a run of filing never needs the arrows.
-  function fileFromDock(i) {
-    const filing = !g.struck.includes(i);
-    toggleClue(i);
-    if (!filing) return;
-    for (let k = 1; k < nClues; k++) {
-      const j = (i + k) % nClues;
-      if (!g.struck.includes(j)) { setStepIdx(j); return; }
-    }
-  }
-  function clueCard(c, i, one) {
-    const tap = one ? () => fileFromDock(i) : () => toggleClue(i);
-    return (
-      <div key={i} className={`al-clue${one ? ' al-one' : ''}${g.struck.includes(i) ? ' done' : ''}`} onClick={tap} role="button" tabIndex={0}
-        aria-pressed={g.struck.includes(i)}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tap(); } }}>
-        {!one && <span className="al-n">{i + 1}</span>}
-        <span>{clueText(c)}</span>
-      </div>
-    );
-  }
-
   // Shared rules body — rendered in both the how-to-play modal and the start gate.
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
-      lead={`${N === 5 ? 'Five' : 'Four'} guests, ${N === 5 ? 'five' : 'four'} rooms, ${N === 5 ? 'five' : 'four'} departure times, ${N === 5 ? 'five' : 'four'} items. One arrangement fits.`}
+      lead="Four guests, four rooms, four departure times, four items. One arrangement fits."
       chips={[
         { label: '✗ = impossible', tone: 'grey' },
         { label: '● = confirmed', tone: 'good' },
       ]}
       steps={[
         <>Every witness statement is <b>true</b>, and together they pin down exactly one arrangement.</>,
-        <>Work the board's three sections (rooms, departure times, items): <b>tap</b> a cell to toggle <b>✗</b>, and <b>long-press</b> it, or right-click on a computer, to mark <b>●</b>.</>,
-        <>Each suspect gets exactly one <b>●</b> per section. Leave <b>auto-✗</b> on and marking a ● crosses off its row and column for you.</>,
+        <>Work the three boards: <b>tap</b> a cell to toggle <b>✗</b>, and <b>long-press</b> it, or right-click on a computer, to mark <b>●</b>.</>,
+        <>Each suspect gets exactly one <b>●</b> per board. Leave <b>auto-✗</b> on and marking a ● crosses off its row and column for you.</>,
         <>Confirm all <b>{TOTAL} facts</b>, then check your <b>accusation</b>.</>,
       ]}
-      knack="Work the three sections together. A fact you settle in one almost always rules out a cell in another."
+      knack="Work the three boards together. A fact you settle on one board almost always rules out a cell on another."
       footer={<>A first-try accusation is a perfect {TOTAL}, and each wrong accusation costs 2. Ties on the daily board break by fewest wrong accusations, then fastest time. A new case opens at midnight Eastern.</>}
     />
   );
@@ -669,7 +639,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
-      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'clip' : undefined }}>
+      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -700,68 +670,38 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
       <div className="al-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
         <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.al-wrap{padding-left:12px !important;padding-right:12px !important;}}
-          .al-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:10px;padding:9px 16px;min-height:44px;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
+          .al-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .al-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           .al-btn:disabled:hover{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};}
           .al-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
           .al-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, #761a26) 86%, var(--stg-ink, var(--white)));}
-          /* THE BOARD (2026-10-07 rebuild). Suspects are the COLUMNS, under a
-             round avatar; every option of every dimension is a ROW, grouped under
-             a small section label in the accent ink. Same handlers as before: s is
-             the suspect, v is the option. */
-          .al-board{max-width:760px;margin:0 auto;}
-          .al-stat{display:flex;align-items:center;gap:8px 20px;flex-wrap:wrap;margin:0 auto 14px;font-family:${MONO};font-size:11.5px;letter-spacing:0.1em;text-transform:uppercase;color:${FADED};}
-          .al-stat b{font-size:18px;font-weight:500;font-variant-numeric:tabular-nums;margin-right:5px;letter-spacing:0;}
-          .al-auto{margin-left:auto;display:inline-flex;align-items:center;gap:7px;min-height:44px;cursor:pointer;font-family:${SANS};font-size:12.5px;font-weight:700;text-transform:none;letter-spacing:0;color:${FADED};}
-          .al-grid{--al-lab:150px;--al-gap:4px;display:flex;flex-direction:column;gap:var(--al-gap);}
-          .al-row{display:grid;grid-template-columns:var(--al-lab) repeat(var(--al-n),minmax(0,1fr));gap:var(--al-gap);}
-          .al-sus{display:flex;flex-direction:column;align-items:center;gap:4px;padding-bottom:6px;min-width:0;}
-          .al-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;color:var(--stg-ground, #ffffff);flex:none;}
-          .al-sn{font-size:13px;font-weight:800;color:${INK};max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-          .al-sec{padding:10px 0 2px 6px;font-family:${MONO};font-size:11px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--stg-acc-ink, ${COLORS.accent});}
-          .al-lab{display:flex;align-items:center;padding-left:6px;font-size:14px;font-weight:700;color:var(--stg-ink2, ${COLORS.ink});min-height:44px;line-height:1.2;min-width:0;overflow-wrap:anywhere;}
-          .al-c{min-height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;background:var(--stg-cell, #ffffff);border:1px solid var(--stg-cell-line, rgba(28,30,36,0.32));color:${INK};box-sizing:border-box;transition:background .1s ease;}
-          .al-c.x{background:var(--stg-surf, #f3f1ec);border-color:var(--stg-line2, rgba(28,30,36,0.2));color:${FADED};}
-          .al-c.dot{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #ffffff);}
-          @media(hover:hover){.al-c:not(.dot):hover{background:var(--stg-surf2, #f4efe6);}}
-          .al-hint{font-family:${MONO};font-size:11px;letter-spacing:0.04em;color:${FADED};text-align:center;margin:10px 0 2px;line-height:1.5;}
-          .al-acts{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 6px;}
-          .al-verdict{font-family:${SANS};font-size:13px;font-weight:700;line-height:1.45;margin:12px 0 0;}
-          /* Witness statements: compact numbered cards, two across. A crossed-off
-             statement loses its card and is struck, never dimmed with opacity. */
-          .al-stmts{margin-top:20px;}
-          .al-shead{font-family:${MONO};font-size:11px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:${FADED};margin-bottom:8px;}
-          .al-sgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}
-          .al-clue{display:flex;gap:10px;align-items:baseline;background:var(--stg-surf, #ffffff);border:1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:8px;padding:10px 12px;min-height:44px;box-sizing:border-box;font-size:13.5px;font-weight:600;line-height:1.4;cursor:pointer;user-select:none;color:${INK};text-align:left;}
-          .al-clue .al-n{font-family:${MONO};font-size:11px;font-weight:500;color:${FADED};flex:none;}
+          .al-clue{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.14));border-left:3px solid var(--stg-acc, ${COLORS.accent});border-radius:8px;padding:8px 11px;margin-bottom:6px;font-size:13.5px;font-weight:600;line-height:1.45;cursor:pointer;user-select:none;color:${INK};}
           .al-clue b{color:var(--stg-acc-ink, ${COLORS.accent});}
-          .al-clue.done{background:transparent;border-style:dashed;color:${FADED};text-decoration:line-through;}
-          .al-clue.done b{color:inherit;}
-          .al-dock{display:none;}
-          @media(max-width:640px){
-            .al-grid{--al-lab:92px;--al-gap:3px;}
-            .al-av{width:30px;height:30px;font-size:13px;}
-            .al-sus{gap:2px;padding-bottom:4px;}
-            .al-sn{font-size:10.5px;}
-            .al-sec{font-size:9.5px;padding:7px 0 1px 4px;}
-            .al-lab{font-size:12px;padding-left:4px;}
-            .al-c{font-size:15px;border-radius:7px;}
-            .al-sgrid{grid-template-columns:1fr;}
-            /* PHONE: while the case is open the statements live in a dock pinned
-               to the foot of the screen, one at a time, with the accusation
-               button. The desktop list and its Check button step aside. */
-            .al-dockable,.al-check-d,.al-verdict-d{display:none !important;}
-            .al-dock{display:flex;flex-direction:column;gap:10px;position:sticky;bottom:0;z-index:6;margin:16px 0 0;background:var(--stg-raise, #ffffff);border:1px solid var(--stg-line2, rgba(28,30,36,0.2));border-bottom:0;border-radius:18px 18px 0 0;padding:10px 14px calc(14px + env(safe-area-inset-bottom, 0px));box-shadow:0 -10px 26px rgba(0,0,0,0.22);}
+          .al-clue.done{opacity:0.42;text-decoration:line-through;}
+          .al-tbl{border-collapse:collapse;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin:0 auto;width:100%;max-width:520px;table-layout:fixed;}
+          .al-tbl caption{font-family:${MONO};font-size:10.5px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:${FADED};text-align:left;padding:0 0 6px 2px;caption-side:top;}
+          .al-tbl th{font-size:11px;padding:6px 4px;background:${STAGE ? 'var(--stg-surf2)' : '#efece6'};font-weight:700;color:${INK};}
+          .al-tbl th.rowh{text-align:right;width:31%;padding-right:7px;font-size:12px;font-weight:700;color:${FADED};background:${STAGE ? 'var(--stg-surf2)' : '#faf8f4'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:none;}
+          .al-tbl th.colh{font-size:12px;padding:7px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:none;}
+          .al-band td{background:${STAGE ? 'var(--bgs)' : 'var(--bg)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--white)'};font-size:9.5px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;text-align:left;padding:3px 8px;border:1px solid ${STAGE ? 'var(--stg-line)' : 'var(--bg)'};}
+          @media(max-width:400px){.al-tbl th.rowh{font-size:11px;}.al-tbl th.colh{font-size:11px;}}
+          .al-td{height:34px;border: 1px solid var(--stg-line, rgba(28,30,36,0.12));text-align:center;font-size:16px;cursor:pointer;user-select:none;font-weight:800;padding:0;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};}
+          .al-td:hover{background:${STAGE ? 'var(--stg-surf2)' : '#faf6ee'};}
+          .al-td.x{color:#b9b2a6;}
+          .al-td.dot{color:var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);}
+          .al-grids{display:grid;grid-template-columns:1fr;gap:0;}
+          .al-cols{max-width:620px;margin:0 auto;}
+          /* DESKTOP: statements and board sit SIDE BY SIDE (owner, 2026-08-08).
+             Stacked, the board sat a full screen below the clues, so solving meant
+             scrolling between the two things you have to read together. Above 900px
+             the column becomes a two-track grid, clues left (wrapping as needed) and
+             the board right, both top-aligned. Below 900px nothing changes: the phone
+             keeps the single 620px column it was tuned for. */
+          @media(min-width:900px){
+            .al-cols{max-width:none;display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,440px);gap:26px;align-items:start;}
+            .al-cols .al-stmts{margin-bottom:0 !important;}
+            .al-cols .al-tbl{max-width:none;margin:0;}
           }
-          .al-grab{align-self:center;width:40px;height:4px;border-radius:2px;background:var(--stg-line2, rgba(28,30,36,0.2));}
-          .al-dtop{display:flex;justify-content:space-between;align-items:center;gap:8px;}
-          .al-dcount{font-family:${MONO};font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:${FADED};}
-          .al-dlink{background:none;border:0;padding:0 2px;min-height:44px;cursor:pointer;font-family:${MONO};font-size:10.5px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--stg-acc-ink, ${COLORS.accent});}
-          .al-dstep{display:flex;align-items:center;gap:8px;}
-          .al-nav{width:44px;height:44px;flex:none;border-radius:10px;border:1px solid var(--stg-line2, rgba(28,30,36,0.24));background:transparent;color:${INK};display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
-          .al-one{flex:1;justify-content:center;text-align:center;font-size:15px;font-weight:700;line-height:1.35;min-height:64px;align-items:center;}
-          .al-dlist{display:flex;flex-direction:column;gap:6px;max-height:42vh;overflow-y:auto;overscroll-behavior:contain;}
-          .al-dcheck{width:100%;min-height:50px;font-size:15px;}
         ` }} />
 
         <div style={{ maxWidth: 940, margin: '0 auto' }}>
@@ -815,20 +755,19 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
 
         {/* the story */}
         {!preStart && (
-        <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 14.5, lineHeight: 1.6, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1px solid rgba(28,30,36,0.14)', borderLeft: `4px solid var(--stg-acc, ${COLORS.accent})`, borderRadius: 8, padding: '12px 16px', maxWidth: 760, boxSizing: 'border-box', margin: '0 auto 12px', color: INK }}>
-          Last night at {PUZZLE.venue}, {PUZZLE.stolen} vanished. {N === 5 ? 'Five' : 'Four'} guests, {PUZZLE.suspects.slice(0, -1).join(', ')} and {PUZZLE.suspects[N - 1]}, were each alone in a different room, each left at a different hour, and each was carrying one curious item. Work out who was where, when they left, and what they carried. Every statement is true.
+        <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 14.5, lineHeight: 1.6, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1px solid rgba(28,30,36,0.14)', borderLeft: `4px solid var(--stg-acc, ${COLORS.accent})`, borderRadius: 8, padding: '12px 16px', margin: '0 0 12px', color: INK }}>
+          Last night at {PUZZLE.venue}, {PUZZLE.stolen} vanished. {N === 5 ? 'Five' : 'Four'} guests &mdash; {PUZZLE.suspects.slice(0, -1).join(', ')} and {PUZZLE.suspects[N - 1]} &mdash; were each alone in a different room, each left at a different hour, and each was carrying one curious item. Work out who was where, when they left, and what they carried. Every statement below is true.
         </div>
         )}
 
-        {/* Board header: the two figures the case turns on, plus the auto-cross
-            toggle. Sits at the top of the board, above the suspects. */}
+        {/* status bar */}
         {started && (
-        <div className="al-board al-stat">
-          <span><b style={{ color: `var(--stg-acc-ink, ${COLORS.accent})` }}>{placedCount}</b>/ {TOTAL} confirmed</span>
-          <span><b style={{ color: g.wrong ? `var(--stg-bad, ${COLORS.rust})` : INK }}>{g.wrong}</b>wrong accusation{g.wrong === 1 ? '' : 's'}</span>
+        <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED }}>
+          <span>confirmed <b style={{ color: INK, fontWeight: 500 }}>{placedCount}</b>/{TOTAL}</span>
+          <span>wrong accusations <b style={{ color: g.wrong ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{g.wrong}</b></span>
           {playing && (
-            <label className="al-auto">
-              <input type="checkbox" checked={autoX} onChange={(e) => setAutoX(e.target.checked)} style={{ accentColor: `var(--stg-acc, ${COLORS.accent})`, width: 16, height: 16 }} />
+            <label style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontFamily: SANS, fontSize: 12, fontWeight: 700, textTransform: 'none', letterSpacing: 0 }}>
+              <input type="checkbox" checked={autoX} onChange={(e) => setAutoX(e.target.checked)} style={{ accentColor: `var(--stg-acc, ${COLORS.accent})` }} />
               auto-✗ when you mark ●
             </label>
           )}
@@ -836,103 +775,98 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
         )}
 
         {!preStart && (
-        <div className="al-board al-cols">
-          {/* detective's board: suspects across, every option down, one section
-              per dimension. Cell handlers are unchanged from the table version. */}
-          <div className="al-grid" style={{ '--al-n': N }} role="group" aria-label="Detective's board">
-            <div className="al-row">
-              <span aria-hidden="true"></span>
-              {PUZZLE.suspects.map((name, s) => (
-                <div key={name} className="al-sus">
-                  <span className="al-av" aria-hidden="true" style={{ background: `color-mix(in srgb, var(--stg-ink, ${COLORS.ink}) ${AV_MIX[s % AV_MIX.length]}%, var(--stg-ground, #ffffff))` }}>{name.charAt(0)}</span>
-                  <span className="al-sn">{name}</span>
-                </div>
-              ))}
-            </div>
-            {CAT_META.map((cat) => (
-              <React.Fragment key={cat.key}>
-                <div className="al-sec">{cat.label}</div>
-                {cat.vals.map((val, v) => (
-                  <div key={val} className="al-row">
-                    <span className="al-lab">{val}</span>
-                    {PUZZLE.suspects.map((name, s) => {
-                      const m = shownMarks[cat.key][s][v];
-                      return (
-                        <div
-                          key={name}
-                          className={`al-c${m === 1 ? ' x' : m === 2 ? ' dot' : ''}`}
-                          onClick={() => { if (longFired.current) { longFired.current = false; return; } tapCell(cat.key, s, v); }}
-                          onContextMenu={(e) => { e.preventDefault(); if (longFired.current) return; toggleDot(cat.key, s, v); }}
-                          onTouchStart={() => startPress(cat.key, s, v)}
-                          onTouchEnd={endPress}
-                          onTouchMove={endPress}
-                          onTouchCancel={endPress}
-                          role="button"
-                          aria-label={`${name} / ${val}: ${m === 0 ? 'blank' : m === 1 ? 'impossible' : 'confirmed'}. Tap to toggle impossible; long-press or right-click to confirm.`}
-                        >{m === 1 ? '✗' : m === 2 ? '●' : ''}</div>
-                      );
-                    })}
-                  </div>
-                ))}
-              </React.Fragment>
-            ))}
-          </div>
-
-          {started && (
-            <div className="al-hint">Tap a cell to mark ✗ (impossible). Hold it, or right-click, to mark ● (confirmed). Each suspect gets exactly one ● per section.</div>
-          )}
-
-          {verdict && (
-            <div className="al-verdict al-verdict-d" style={{ color: verdict.soft ? FADED : `var(--stg-bad, ${COLORS.rust})` }}>{verdict.msg}</div>
-          )}
-          {playing && (
-            <div className="al-acts">
-              <button type="button" className="al-btn primary al-check-d" onClick={accuse}><Search size={14} strokeWidth={2.6} /> Check my accusation</button>
-              <button type="button" className="al-btn" onClick={undo} disabled={!canUndo}
-                aria-label="Undo last move"
-                style={canUndo ? undefined : { borderColor: 'var(--stg-line2, #c3c8cf)', color: 'var(--stg-dim, #c3c8cf)', cursor: 'default' }}>
-                <Undo2 size={14} /> Undo
-              </button>
-              <button type="button" className="al-btn" onClick={resetBoards}><Eraser size={14} /> Reset boards</button>
-              {g.wrong >= 3 && (
-                <button type="button" className="al-btn" style={{ borderColor: 'var(--stg-line2, #c3c8cf)', color: FADED }} onClick={reveal}>Reveal (ends the day)</button>
-              )}
-            </div>
-          )}
-
-          {/* witness statements: the full list (always on desktop, and on the
-              phone once the case is closed) */}
-          <div className={`al-stmts${playing ? ' al-dockable' : ''}`}>
-            <div className="al-shead">Witness statements &middot; tap one to cross it off</div>
-            <div className="al-sgrid">
-              {PUZZLE.clues.map((c, i) => clueCard(c, i))}
-            </div>
-          </div>
-
-          {/* phone dock: one statement at a time, pinned to the foot of the
-              screen while you work the board, with the accusation button. */}
-          {playing && (
-            <div className="al-dock">
-              <span className="al-grab" aria-hidden="true" />
-              <div className="al-dtop">
-                <span className="al-dcount">Statement {stepAt + 1} &middot; {openCount} of {PUZZLE.clues.length} still open</span>
-                <button type="button" className="al-dlink" onClick={() => setDockAll((v) => !v)} aria-expanded={dockAll}>{dockAll ? 'One at a time' : 'Show all'}</button>
+        <div className="al-cols">
+          {/* witness statements */}
+          <div className="al-stmts" style={{ marginBottom: 16 }}>
+            <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED, marginBottom: 8 }}>Witness statements</div>
+            {PUZZLE.clues.map((c, i) => (
+              <div key={i} className={`al-clue${g.struck.includes(i) ? ' done' : ''}`} onClick={() => toggleClue(i)} role="button" tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleClue(i); } }}>
+                <b>{i + 1}.</b> {clueText(c)}
               </div>
-              {dockAll ? (
-                <div className="al-dlist">{PUZZLE.clues.map((c, i) => clueCard(c, i))}</div>
-              ) : (
-                <div className="al-dstep">
-                  <button type="button" className="al-nav" aria-label="Previous statement" onClick={() => stepBy(-1)}><ChevronLeft size={20} /></button>
-                  {clueCard(PUZZLE.clues[stepAt], stepAt, true)}
-                  <button type="button" className="al-nav" aria-label="Next statement" onClick={() => stepBy(1)}><ChevronRight size={20} /></button>
-                </div>
-              )}
-              {verdict && (
-                <div className="al-verdict" style={{ margin: 0, color: verdict.soft ? FADED : `var(--stg-bad, ${COLORS.rust})` }}>{verdict.msg}</div>
-              )}
-              <button type="button" className="al-btn primary al-dcheck" onClick={accuse}><Search size={15} strokeWidth={2.6} /> Check my accusation</button>
+            ))}
+            <div style={{ fontSize: 11.5, fontWeight: 600, color: FADED, lineHeight: 1.5, marginTop: 8 }}>
+              Tap a statement to cross it off. Tap a board cell to toggle ✗ (impossible); long-press it (or right-click on a computer) to mark ● (confirmed). Each suspect gets exactly one ● per board.
             </div>
-          )}
+          </div>
+
+          {/* detective's boards */}
+          <div>
+            <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED, marginBottom: 8 }}>Detective&rsquo;s board</div>
+            {/* ROTATED FOR THE PHONE (owner-approved 2026-08-07). This was three
+                stacked 4x4 tables, suspects down and options across, which on a
+                phone forced a 20px cell and about 620px of stack. A phone is
+                narrow and deep, so the long axis moved to the tall axis: the four
+                suspects are the COLUMNS and all twelve options are the ROWS, under
+                a band per category. One table, everything visible at once, and the
+                cell is set by percentage so it grows with the screen instead of
+                being pinned at 40px. Cell handlers are unchanged: s is still the
+                suspect and v is still the option, they have only swapped axes. */}
+            <table className="al-tbl">
+              <tbody>
+                <tr>
+                  <th className="rowh" aria-hidden="true"></th>
+                  {PUZZLE.suspects.map((name) => <th key={name} className="colh">{name}</th>)}
+                </tr>
+                {CAT_META.map((cat, ci) => (
+                  <React.Fragment key={cat.key}>
+                    <tr className="al-band" style={{ '--bg': BAND_TINTS[ci % BAND_TINTS.length], '--bgs': BAND_TINTS_STAGE[ci % BAND_TINTS_STAGE.length] }}>
+                      <td colSpan={PUZZLE.suspects.length + 1}>{cat.label}</td>
+                    </tr>
+                    {cat.vals.map((val, v) => (
+                      <tr key={val}>
+                        <th className="rowh">{val}</th>
+                        {PUZZLE.suspects.map((name, s) => {
+                          const m = shownMarks[cat.key][s][v];
+                          return (
+                            <td
+                              key={name}
+                              className={`al-td${m === 1 ? ' x' : m === 2 ? ' dot' : ''}`}
+                              onClick={() => { if (longFired.current) { longFired.current = false; return; } tapCell(cat.key, s, v); }}
+                              onContextMenu={(e) => { e.preventDefault(); if (longFired.current) return; toggleDot(cat.key, s, v); }}
+                              onTouchStart={() => startPress(cat.key, s, v)}
+                              onTouchEnd={endPress}
+                              onTouchMove={endPress}
+                              onTouchCancel={endPress}
+                              style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
+                              role="button"
+                              aria-label={`${name} / ${val}: ${m === 0 ? 'blank' : m === 1 ? 'impossible' : 'confirmed'}. Tap to toggle impossible; long-press or right-click to confirm.`}
+                            >{m === 1 ? '✗' : m === 2 ? '●' : ''}</td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+
+            {started && (
+              <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.04em', color: FADED, textAlign: 'center', margin: '10px 0 2px', lineHeight: 1.5 }}>
+                Tap a cell to cross it off. Hold it (or right-click) to confirm a &#9679;.
+              </div>
+            )}
+
+            {verdict && (
+              <div style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: verdict.soft ? `var(--stg-mute, ${COLORS.faded})` : `var(--stg-bad, ${COLORS.rust})`, marginBottom: 10, lineHeight: 1.45 }}>
+                {verdict.msg}
+              </div>
+            )}
+            {playing && (
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
+                <button type="button" className="al-btn primary" onClick={accuse}><Search size={14} strokeWidth={2.6} /> Check my accusation</button>
+                <button type="button" className="al-btn" onClick={undo} disabled={!canUndo}
+                  aria-label="Undo last move"
+                  style={canUndo ? undefined : { borderColor: 'var(--stg-line2, #c3c8cf)', color: 'var(--stg-dim, #c3c8cf)', cursor: 'default' }}>
+                  <Undo2 size={14} /> Undo
+                </button>
+                <button type="button" className="al-btn" onClick={resetBoards}><Eraser size={14} /> Reset boards</button>
+                {g.wrong >= 3 && (
+                  <button type="button" className="al-btn" style={{ borderColor: 'var(--stg-line2, #c3c8cf)', color: FADED }} onClick={reveal}>Reveal (ends the day)</button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
         )}
 
@@ -947,8 +881,8 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
                   <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : g.status === 'done' ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{score}/{TOTAL}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {g.status === 'done'
-                      ? (won ? 'Case closed with a first-try accusation.' : `Case closed with ${g.wrong} wrong accusation${g.wrong === 1 ? '' : 's'}.`)
-                      : 'The trail went cold. The culprit walks tonight.'}
+                      ? (won ? 'Case closed — a first-try accusation.' : `Case closed with ${g.wrong} wrong accusation${g.wrong === 1 ? '' : 's'}.`)
+                      : 'The trail went cold — the culprit walks tonight.'}
                     {' '}<span style={{ color: FADED, fontWeight: 600 }}>{elapsed}</span>
                   </span>
                 </div>
@@ -1065,7 +999,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b>. The tile opens today&apos;s case, every day.</li>
+                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s case, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>
@@ -1154,8 +1088,8 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
       : g.status === 'lost' ? '🕯️ The case went cold' : '🕵️ Still on the case…';
     const streakBit = isTodays && myStats.cur >= 2 && g.status !== 'playing' ? ` · streak ${myStats.cur}` : '';
     const text = playing
-      ? `Alibi #${PUZZLE.num}, the nightly whodunit from Mind Loft.\n${withRef(`mindloftdaily.com/alibi${isTodays ? '' : `?p=${PUZZLE.num}`}`)}`
-      : `Alibi, Case #${PUZZLE.num}\n${solvedBit}${streakBit}\n${withRef(`mindloftdaily.com/alibi${isTodays ? '' : `?p=${PUZZLE.num}`}`)}`;
+      ? `Alibi #${PUZZLE.num} — the nightly whodunit from Mind Loft.\n${withRef(`mindloftdaily.com/alibi${isTodays ? '' : `?p=${PUZZLE.num}`}`)}`
+      : `Alibi — Case #${PUZZLE.num}\n${solvedBit}${streakBit}\n${withRef(`mindloftdaily.com/alibi${isTodays ? '' : `?p=${PUZZLE.num}`}`)}`;
     if (notifyShareCredit(text)) return;
     try {
       if (typeof navigator !== 'undefined' && navigator.share && isMobileDevice()) {

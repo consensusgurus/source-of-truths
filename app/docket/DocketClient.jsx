@@ -67,7 +67,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import DailyRules from '../DailyRules';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { T } from '@/lib/theme';
-import { solveDay, CHOICE_KEYS, showSolution, WORD } from './engine';
+import { solveDay, CHOICE_KEYS, showSolution } from './engine';
 
 const COLORS = {
   ink: T.ink,
@@ -145,175 +145,6 @@ function deriveStats(stats, todayNum) {
   return { played, wins, cur, max: Math.max(max, cur) };
 }
 
-// ── the sketch ───────────────────────────────────────────────────────────────
-// A free working surface: the day's real entity letters and the day's real
-// slots, laid out the way the archetype is shaped. It is the player's own
-// bookkeeping and nothing else: purely local state, never scored, never saved,
-// never posted, and gone on a new puzzle or a replay (the parent keys this
-// component on the puzzle number plus a reset counter, so remounting IS the
-// clear). It shows only what the player puts in it, so it can never hold an
-// answer the board does not already show.
-//
-// One shape per archetype:
-//   seq   one slot per position, in order
-//   hyb   one slot per position, plus a mark under each filled slot for the
-//         second dimension (the asterisk the choices use)
-//   sel   one slot per pick, unordered (the ones chosen); the tray is the rest
-//   match one zone per group, each holding any number of letters
-//
-// Paintings get picture frames (a physical object, so it keeps fixed colours
-// that read on both grounds); every other theme gets neutral slots.
-const FRAMED = new Set(['gallery', 'groupshow']);
-const FRAME = { edge: '#7a6a4a', canvas: '#e8e0cc', ink: '#2a2418' };
-
-function capFirst(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
-
-function DocketSketch({ spec, notes, notesOpen, onNotes, onToggleNotes, total }) {
-  const k = spec.k;
-  const ents = spec.ents || [];
-  const theme = spec.theme || {};
-  const framed = FRAMED.has(theme.id);
-  const isMatch = k === 'match';
-  const isSel = k === 'sel';
-  const isHyb = k === 'hyb';
-  const slotCount = isMatch ? (spec.groups || []).length : isSel ? (spec.pick || 0) : ents.length;
-  const slotLabel = (i) => (isMatch ? ((theme.groupsShort || [])[i] || String(i + 1)) : isSel ? theme.verb : String(i + 1));
-  const [at, setAt] = useState(() => Array(ents.length).fill(null));
-  const [mark, setMark] = useState(() => Array(ents.length).fill(false));
-  const [pick, setPick] = useState(null);
-
-  const inSlot = (s) => ents.map((_, e) => e).filter((e) => at[e] === s);
-  const tray = ents.map((_, e) => e).filter((e) => at[e] === null);
-
-  function tapTray(e) { setPick((p) => (p === e ? null : e)); }
-  function placeAt(s) {
-    if (pick === null) return false;
-    setAt((cur) => {
-      const nx = cur.slice();
-      // A one-letter slot sends its occupant back to the tray.
-      if (!isMatch) cur.forEach((v, e) => { if (v === s) nx[e] = null; });
-      nx[pick] = s;
-      return nx;
-    });
-    setPick(null);
-    return true;
-  }
-  function sendBack(e) { setAt((cur) => { const nx = cur.slice(); nx[e] = null; return nx; }); }
-  function tapSlot(s) {
-    if (placeAt(s)) return;
-    const occ = inSlot(s);
-    if (!isMatch && occ.length) sendBack(occ[0]);
-  }
-  function clearAll() { setAt(Array(ents.length).fill(null)); setMark(Array(ents.length).fill(false)); setPick(null); }
-
-  const tileCls = (e, extra = '') => `dk-tile${framed ? ' fr' : ''}${pick === e ? ' sel' : ''}${extra}`;
-  const letter = (e) => (<>{ents[e]}{isHyb && mark[e] && <sup className="dk-star">*</sup>}</>);
-
-  const slotWord = isMatch ? (theme.groupNoun || 'group') : isSel ? 'slot' : (theme.slot || 'position');
-  const head = isMatch
-    ? `Your sketch · ${theme.groupNouns || 'groups'}`
-    : isSel ? `Your sketch · the ${WORD[slotCount] || slotCount} ${theme.verb}` : `Your sketch · ${theme.slots || 'positions'} 1 to ${slotCount}`;
-  const placed = ents.length - tray.length;
-
-  return (
-    <div className="dk-panel dk-sketch">
-      <div className="dk-skhead">
-        <span className="dk-sklab">{head}</span>
-        <span className="dk-skfree">Free, not scored</span>
-      </div>
-      <div className="dk-skhow">
-        Tap a letter in the tray, then tap a {slotWord} to put it there. Tap a placed letter to send it back.
-        {isHyb && <> The * under a filled {theme.slot || 'slot'} marks that one {theme.attrShort}.</>}
-      </div>
-
-      {isMatch ? (
-        <div className="dk-zones" style={{ gridTemplateColumns: `repeat(${slotCount}, minmax(0,1fr))` }}>
-          {Array.from({ length: slotCount }, (_, s) => (
-            <div key={s}
-              className={`dk-zone${pick !== null ? ' armed' : ''}`}
-              role="button" tabIndex={0}
-              aria-label={pick !== null ? `Put ${ents[pick]} on ${slotLabel(s)}` : `${capFirst(slotLabel(s))}: ${inSlot(s).map((e) => ents[e]).join(', ') || 'empty'}`}
-              onClick={() => placeAt(s)}
-              onKeyDown={(ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); placeAt(s); } }}>
-              <span className="dk-zlab">{slotLabel(s)}</span>
-              <div className="dk-ztiles">
-                {inSlot(s).map((e) => (
-                  <button key={e} type="button" className={tileCls(e)} aria-label={`Send ${ents[e]} back to the tray`}
-                    onClick={(ev) => { ev.stopPropagation(); if (pick !== null) placeAt(s); else sendBack(e); }}>{letter(e)}</button>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="dk-slots" style={{ gridTemplateColumns: `repeat(${slotCount}, minmax(0,1fr))` }}>
-          {Array.from({ length: slotCount }, (_, s) => {
-            const occ = inSlot(s)[0];
-            const has = occ !== undefined;
-            return (
-              <div key={s} className="dk-slotcol">
-                <button type="button"
-                  className={`dk-slot${framed ? ' fr' : ''}${has ? ' full' : ''}${pick !== null ? ' armed' : ''}`}
-                  aria-label={pick !== null ? `Put ${ents[pick]} in ${slotWord} ${slotLabel(s)}` : has ? `Send ${ents[occ]} back from ${slotWord} ${slotLabel(s)}` : `${capFirst(slotWord)} ${slotLabel(s)}, empty`}
-                  onClick={() => tapSlot(s)}>
-                  {has ? letter(occ) : ''}
-                </button>
-                <span className="dk-slotn">{slotLabel(s)}</span>
-                {isHyb && has && (
-                  <button type="button" className={`dk-mark${mark[occ] ? ' on' : ''}`} aria-pressed={mark[occ]}
-                    aria-label={`Mark ${ents[occ]} ${theme.attrShort}`}
-                    onClick={() => setMark((cur) => { const nx = cur.slice(); nx[occ] = !nx[occ]; return nx; })}>*</button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      <div className="dk-tray">
-        <span className="dk-traylab">Tray</span>
-        {tray.length ? tray.map((e) => (
-          <button key={e} type="button" className={tileCls(e)} aria-pressed={pick === e}
-            aria-label={pick === e ? `${ents[e]} picked up, tap a ${slotWord}` : `Pick up ${ents[e]}`}
-            onClick={() => tapTray(e)}>{letter(e)}</button>
-        )) : <span className="dk-trayempty">Every letter is placed.</span>}
-        {placed > 0 && <button type="button" className="dk-fold dk-skclear" onClick={clearAll}>Clear sketch</button>}
-      </div>
-
-      {/* The scratchpad folds in here: the written half of the same diagram. It
-          IS saved with the day, as it always was. */}
-      <div className="dk-sknotes">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-          <Pencil size={14} style={{ flex: '0 0 auto', color: 'var(--stg-acc-ink, #5b2333)' }} />
-          <span className="dk-sklab" style={{ flex: '0 0 auto' }}>Notes</span>
-          {!notesOpen && !!(notes || '').trim() && (
-            <span className="dk-nlead">{(notes || '').trim().split('\n')[0]}</span>
-          )}
-          <button className="dk-fold" style={{ marginLeft: 'auto', flex: '0 0 auto' }} onClick={onToggleNotes}>
-            {notesOpen ? <>Hide <ChevronUp size={13} /></> : <>Write <ChevronDown size={13} /></>}
-          </button>
-        </div>
-        {notesOpen && (
-          <textarea
-            className="dk-notes"
-            value={notes || ''}
-            onChange={(e) => onNotes(e.target.value)}
-            placeholder={`Write deductions here. Unlike the sketch, notes stay with you through all ${total} questions and through a reload.`}
-            rows={4}
-            spellCheck={false}
-            aria-label="Scratchpad notes"
-          />
-        )}
-      </div>
-    </div>
-  );
-}
-
-// "N, K*, J" -> [{ l: 'N', star: false }, { l: 'K', star: true }, ...]
-function seqBoxes(txt) {
-  return String(txt).split(',').map((s) => s.trim()).filter(Boolean).map((s) => ({ l: s.replace(/\*$/, ''), star: /\*$/.test(s) }));
-}
-
 export default function DocketClient({ puzzles = [], forceNum = null }) {
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
   const QS = PUZZLE.questions;
@@ -342,8 +173,6 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
   const [copied, setCopied] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const [setupOpen, setSetupOpen] = useState(true);
-  // Bumped by a replay so the sketch (keyed on it) starts clean.
-  const [sketchGen, setSketchGen] = useState(0);
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const viewedRef = useRef(false);
@@ -522,7 +351,6 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
     setRevealed(false);
     setEndClosed(false);
     setSetupOpen(true);
-    setSketchGen((n) => n + 1);
   }
 
   function copyShare() {
@@ -585,7 +413,7 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
           .dk-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
           .dk-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accentDeep}) 86%, var(--stg-ink, var(--white)));}
           .dk-row{display:flex;align-items:stretch;gap:6px;margin-bottom:7px;}
-          .dk-choice{display:flex;gap:11px;align-items:flex-start;flex:1;min-width:0;text-align:left;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1.5px solid var(--stg-line, rgba(28,30,36,0.16));border-radius:10px;padding:11px 13px;min-height:48px;box-sizing:border-box;cursor:pointer;font-family:${SANS};font-size:14px;line-height:1.45;color:${INK};}
+          .dk-choice{display:flex;gap:11px;align-items:flex-start;flex:1;min-width:0;text-align:left;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1.5px solid var(--stg-line, rgba(28,30,36,0.16));border-radius:10px;padding:11px 13px;cursor:pointer;font-family:${SANS};font-size:14px;line-height:1.45;color:${INK};}
           .dk-choice:hover:not(:disabled){border-color:var(--stg-acc, ${COLORS.accent});background:var(--stg-surf2, ${COLORS.accentSoft});}
           .dk-choice:disabled{cursor:default;}
           .dk-choice .k{flex:0 0 auto;width:26px;height:26px;border-radius:6px;background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;}
@@ -597,7 +425,7 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
           .dk-choice.off{opacity:0.5;border-style:dashed;}
           .dk-choice.off .t{text-decoration:line-through;}
           .dk-choice.off:hover:not(:disabled){border-color:rgba(28,30,36,0.16);background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};}
-          .dk-x{flex:0 0 auto;width:44px;min-height:44px;border: 1.5px solid var(--stg-line, rgba(28,30,36,0.16));border-radius:10px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${FADED};cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0.5;padding:0;}
+          .dk-x{flex:0 0 auto;width:36px;border: 1.5px solid var(--stg-line, rgba(28,30,36,0.16));border-radius:10px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${FADED};cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0.5;padding:0;}
           .dk-x:hover:not(:disabled){opacity:1;border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-acc-ink, ${COLORS.accent});}
           .dk-x.on{opacity:1;background:var(--stg-acc, ${COLORS.accentDeep});border-color:var(--stg-acc, ${COLORS.accentDeep});color:var(--stg-onramp, var(--white));}
           .dk-x:disabled{cursor:default;}
@@ -607,54 +435,8 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
           .dk-notes:focus{outline:none;border-color:var(--stg-acc, ${COLORS.accent});}
           .dk-notes::placeholder{color:${FADED};opacity:0.7;}
           .dk-nlead{font-size:12.5px;font-weight:700;color:${FADED};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
-          .dk-chips{display:flex;flex-wrap:wrap;gap:7px;}
-          .dk-chip{display:inline-flex;align-items:baseline;gap:8px;max-width:100%;box-sizing:border-box;background:var(--stg-surf2, #f6f1f2);border:1.5px solid var(--stg-line2, rgba(28,30,36,0.18));border-radius:18px;padding:7px 12px;font-size:13px;font-weight:700;line-height:1.4;color:${INK};}
-          .dk-chip > span{white-space:normal;min-width:0;overflow-wrap:anywhere;}
-          .dk-chip .n{font-family:${MONO};font-weight:700;color:var(--stg-acc-ink, ${COLORS.accent});flex:0 0 auto;}
-          .dk-sketch{padding:14px 14px 12px;}
-          .dk-skhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;}
-          .dk-sklab{font-family:${MONO};font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;color:var(--stg-acc-ink, ${COLORS.accent});}
-          .dk-skfree{font-family:${MONO};font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;color:${FADED};}
-          .dk-skhow{font-size:12.5px;line-height:1.5;color:${FADED};font-weight:600;margin:5px 0 10px;}
-          .dk-slots{display:grid;gap:8px;}
-          .dk-slotcol{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;}
-          .dk-slot{width:100%;min-height:52px;aspect-ratio:3/4;max-height:96px;box-sizing:border-box;border:2px solid var(--stg-cell-line, rgba(28,30,36,0.4));background:var(--stg-cell, #fff);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:22px;font-weight:500;color:${INK};cursor:pointer;padding:0;}
-          .dk-slot.full{background:var(--stg-surf2, #f1f1f3);border-color:var(--stg-line3, rgba(28,30,36,0.5));}
-          .dk-slot.armed:not(.full){border-style:dashed;border-color:var(--stg-acc, ${COLORS.accent});}
-          .dk-slot.fr{border-width:5px;border-radius:3px;}
-          .dk-slot.fr.full{background:${FRAME.canvas};border-color:${FRAME.edge};color:${FRAME.ink};}
-          .dk-slotn{font-family:${MONO};font-size:11px;color:${FADED};font-weight:700;}
-          .dk-mark{width:100%;min-height:44px;box-sizing:border-box;border:1.5px solid var(--stg-line2, rgba(28,30,36,0.2));background:transparent;border-radius:8px;font-family:${MONO};font-size:18px;font-weight:700;color:${FADED};cursor:pointer;padding:0;}
-          .dk-mark.on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);}
-          .dk-zones{display:grid;gap:8px;}
-          .dk-zone{min-height:104px;box-sizing:border-box;border:2px solid var(--stg-cell-line, rgba(28,30,36,0.4));background:var(--stg-cell, #fff);border-radius:10px;padding:6px;display:flex;flex-direction:column;gap:6px;cursor:pointer;min-width:0;}
-          .dk-zone.armed{border-style:dashed;border-color:var(--stg-acc, ${COLORS.accent});}
-          .dk-zone:focus-visible,.dk-slot:focus-visible,.dk-tile:focus-visible{outline:2px solid var(--stg-acc, ${COLORS.accent});outline-offset:2px;}
-          .dk-zlab{font-family:${MONO};font-size:10.5px;letter-spacing:0.08em;text-transform:uppercase;font-weight:700;color:${FADED};text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-          .dk-ztiles{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;}
-          .dk-tray{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-top:12px;}
-          .dk-traylab{font-family:${MONO};font-size:10px;letter-spacing:0.14em;text-transform:uppercase;font-weight:700;color:${FADED};margin-right:2px;}
-          .dk-trayempty{font-size:12.5px;color:${FADED};font-weight:600;}
-          .dk-skclear{margin-left:auto;min-height:44px;}
-          .dk-tile{width:44px;height:48px;box-sizing:border-box;border:2px solid var(--stg-line3, rgba(28,30,36,0.5));background:var(--stg-surf2, #f1f1f3);border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-family:${MONO};font-size:18px;font-weight:500;color:${INK};cursor:pointer;padding:0;transition:transform .12s;}
-          .dk-tile.fr{border:3px solid ${FRAME.edge};background:${FRAME.canvas};color:${FRAME.ink};border-radius:4px;}
-          .dk-tile.sel{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);transform:translateY(-3px);}
-          .dk-star{font-size:.62em;margin-left:1px;}
-          .dk-sknotes{margin-top:12px;padding-top:10px;border-top:1px solid var(--stg-line, rgba(28,30,36,0.12));}
-          .dk-seq{display:inline-flex;flex-wrap:wrap;gap:4px;}
-          .dk-sbox{width:28px;height:32px;box-sizing:border-box;border:2px solid var(--stg-cell-line, rgba(28,30,36,0.4));background:var(--stg-cell, #fff);border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-family:${MONO};font-size:14px;font-weight:500;color:${INK};}
-          .dk-choice.off .dk-sbox{border-style:dashed;}
-          .dk-struck{margin-left:auto;align-self:center;flex:0 0 auto;font-family:${MONO};font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;color:${FADED};}
-          @media(max-width:640px){
-            .dk-slots,.dk-zones{gap:5px;}
-            .dk-slot{font-size:17px;border-radius:6px;}
-            .dk-slot.fr{border-width:4px;}
-            .dk-sketch{padding:12px 10px 10px;}
-            .dk-chip{font-size:12px;padding:6px 10px;}
-            .dk-sbox{width:26px;height:30px;font-size:13px;}
-            .dk-seq{gap:3px;}
-            .dk-struck{display:none;}
-          }
+          .dk-cond{display:flex;gap:9px;font-size:13.5px;line-height:1.5;color:${INK};padding:4px 0;}
+          .dk-cond .n{font-family:${MONO};font-weight:700;color:var(--stg-acc-ink, ${COLORS.accent});flex:0 0 auto;}
           .dk-pip{width:100%;height:5px;border-radius:3px;background:rgba(28,30,36,0.13);}
           .dk-pip.on{background:var(--stg-acc, ${COLORS.accent});}
           .dk-pip.miss{background:#b91c1c;}
@@ -698,7 +480,7 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
                 Today it is <b style={{ color: ACC_DEEP_INK }}>{PUZZLE.title}</b>. Read the setup and the
                 conditions, work out what they force, then answer. The conditions stay on screen the whole
                 time, because <b style={{ color: ACC_DEEP_INK }}>the deductions are meant to be reused</b>.
-                There is a sketch to lay the letters out in, a notes pad, and you can cross off a choice you have ruled out.
+                There is a scratchpad for the diagram, and you can cross off a choice you have ruled out.
                 If the format feels familiar, it is: this is the reasoning section a well known standardized
                 test used to run, and quietly retired.
               </p>
@@ -713,7 +495,7 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
                       <>Rule a choice out with the <b>&times;</b> beside it. It is struck through and stops answering, so a stray tap cannot cost you the question. Tap it again to bring it back.</>,
                     ]}
                     knack="For could-be-true, try to build one arrangement that does it. For must-be-true, try to build one that does not. One counterexample settles it either way."
-                    footer={`One point per question, ${TOTAL} today. No going back once you answer. The sketch is free and never scored, and your notes keep across all ${TOTAL}.`}
+                    footer={`One point per question, ${TOTAL} today. No going back once you answer. The scratchpad keeps your diagram across all ${TOTAL}.`}
                   />
                 </div>
               )}
@@ -726,24 +508,10 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
             </div>
           )}
 
-          {/* The sketch leads once play starts (the mockup's order): it is the
-              diagram, and the diagram outlives every individual question. */}
-          {!preStart && playing && (
-            <DocketSketch
-              key={`${PUZZLE.num}:${sketchGen}`}
-              spec={PUZZLE.spec}
-              total={TOTAL}
-              notes={g.notes}
-              notesOpen={!!g.notesOpen}
-              onNotes={(v) => setG((cur) => ({ ...cur, notes: v }))}
-              onToggleNotes={() => setG((cur) => ({ ...cur, notesOpen: !cur.notesOpen }))}
-            />
-          )}
-
           {/* ── the pinned brief: setup + conditions, always available ───────── */}
           <div className="dk-panel">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: setupOpen ? 7 : 8 }}>
-              <Scale size={15} style={{ flex: '0 0 auto', color: ACC_INK }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: setupOpen ? 7 : 0 }}>
+              <Scale size={15} color={COLORS.accent} />
               <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.09em', textTransform: 'uppercase', fontWeight: 700, color: ACC_INK }}>
                 {PUZZLE.title}
               </span>
@@ -752,12 +520,43 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
               </button>
             </div>
             {setupOpen && <div className="dk-setup" style={{ marginBottom: 9 }}>{PUZZLE.setup}</div>}
-            <div className="dk-chips" role="list" aria-label="Conditions">
+            <div style={{ borderTop: setupOpen ? '1px solid rgba(28,30,36,0.09)' : 'none', paddingTop: setupOpen ? 8 : 6 }}>
               {PUZZLE.rules.map((r, i) => (
-                <span className="dk-chip" role="listitem" key={i}><b className="n">{i + 1}</b><span>{r}</span></span>
+                <div className="dk-cond" key={i}><span className="n">({i + 1})</span><span>{r}</span></div>
               ))}
             </div>
           </div>
+
+          {/* The scratchpad lives with the conditions rather than with the
+              question, because it is the diagram, and the diagram outlives every
+              individual question. Collapsed until asked for, then it stays open. */}
+          {!preStart && playing && (
+            <div className="dk-panel" style={{ padding: g.notesOpen ? '12px 14px' : '9px 14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                <Pencil size={14} color={COLORS.accent} style={{ flex: '0 0 auto' }} />
+                <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.09em', textTransform: 'uppercase', fontWeight: 700, color: ACC_INK, flex: '0 0 auto' }}>
+                  Scratchpad
+                </span>
+                {!g.notesOpen && !!(g.notes || '').trim() && (
+                  <span className="dk-nlead">{(g.notes || '').trim().split('\n')[0]}</span>
+                )}
+                <button className="dk-fold" style={{ marginLeft: 'auto', flex: '0 0 auto' }} onClick={() => setG((cur) => ({ ...cur, notesOpen: !cur.notesOpen }))}>
+                  {g.notesOpen ? <>Hide <ChevronUp size={13} /></> : <>Write <ChevronDown size={13} /></>}
+                </button>
+              </div>
+              {g.notesOpen && (
+                <textarea
+                  className="dk-notes"
+                  value={g.notes || ''}
+                  onChange={(e) => setG((cur) => ({ ...cur, notes: e.target.value }))}
+                  placeholder={`Diagram here. It stays with you through all ${TOTAL} questions, and through a reload.`}
+                  rows={5}
+                  spellCheck={false}
+                  aria-label="Scratchpad"
+                />
+              )}
+            </div>
+          )}
 
           {!preStart && (
             <>
@@ -795,25 +594,11 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
                       else if (ci === picked) cls += ' wrong';
                     }
                     const mono = q.kind === 'accept' || q.kind === 'list';
-                    // An ORDERING (the acceptability question on a sequence or
-                    // hybrid day) reads as a row of boxes, one letter per
-                    // position, the same object as the sketch. Every other
-                    // choice is a sentence or a list and keeps its text.
-                    const boxes = q.kind === 'accept' && (PUZZLE.spec.k === 'seq' || PUZZLE.spec.k === 'hyb');
                     return (
                       <div className="dk-row" key={ci}>
                         <button className={cls} disabled={revealed || picked !== null} onClick={() => answer(ci)}>
                           <span className="k">{CHOICE_KEYS[ci]}</span>
-                          {boxes ? (
-                            <span className="t dk-seq" aria-label={c}>
-                              {seqBoxes(c).map((b, bi) => (
-                                <span key={bi} className="dk-sbox" aria-hidden="true">{b.l}{b.star && <sup className="dk-star">*</sup>}</span>
-                              ))}
-                            </span>
-                          ) : (
-                            <span className={mono ? 't mono' : 't'}>{c}</span>
-                          )}
-                          {off && !revealed && <span className="dk-struck">Crossed off</span>}
+                          <span className={mono ? 't mono' : 't'}>{c}</span>
                           {revealed && ci === answerKey && <Check size={17} style={{ marginLeft: 'auto', flex: '0 0 auto', color: `var(--stg-ink, ${COLORS.green})` }} />}
                           {revealed && ci === picked && ci !== answerKey && <X size={17} style={{ marginLeft: 'auto', flex: '0 0 auto', color: '#b91c1c' }} />}
                         </button>
@@ -983,7 +768,7 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
               <li>&ldquo;Could be true&rdquo; needs one arrangement that works. &ldquo;Must be true&rdquo; needs all of them.</li>
               <li>A question that starts &ldquo;If ...&rdquo; applies only inside that question.</li>
               <li>Cross a choice out with the &times; beside it. It stays struck through and cannot be answered until you bring it back.</li>
-              <li>The sketch is a free working surface: tap a letter in the tray, then tap a slot. It is never scored and clears on a new puzzle. The notes under it save with the day, so they survive a reload.</li>
+              <li>The scratchpad under the conditions saves with the day, so your diagram survives a reload.</li>
               <li>One point per question, {TOTAL} on the board today.</li>
             </ul>
             <button className="dk-btn primary" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}>Play</button>

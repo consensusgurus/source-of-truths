@@ -1117,7 +1117,8 @@ export default function StageToday() {
   // One pass over the registry, grouped into the ramp's order. Categories with
   // no games simply do not render, so the page cannot show an empty block.
   const cats = useMemo(() => RAMP_ORDER
-    .map((cat) => ({ cat, games: DAILY_GAMES.filter((g) => g.cat === cat) }))
+    // Within a category the games run A to Z (owner, 2026-10-08).
+    .map((cat) => ({ cat, games: DAILY_GAMES.filter((g) => g.cat === cat).sort((a, b) => a.name.localeCompare(b.name)) }))
     .filter((c) => c.games.length), []);
 
   const total = useMemo(() => cats.reduce((n, c) => n + c.games.length, 0), [cats]);
@@ -2110,7 +2111,7 @@ export default function StageToday() {
           <b>{n}<i>/{games.length}</i></b>
         </div>
         <div className={'sty-games' + (fit ? ' fit' : '')} style={fitStyle}>
-          {playedLast(games, done).map((g, i) => (
+          {games.map((g, i) => (
             <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
               canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
               res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} />

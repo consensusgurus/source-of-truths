@@ -514,7 +514,7 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
           .wm-head-l,.wm-head-r{display:flex;flex-direction:column;gap:3px;min-width:0;}
           .wm-head-r{align-items:flex-end;flex:0 0 auto;}
           .wm-eye{font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:${FADED};}
-          .wm-best{font-family:${SANS};font-weight:800;font-size:42px;line-height:1.05;letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+          .wm-best{font-family:${SANS};font-weight:800;font-size:42px;line-height:1.25;letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
           .wm-best.none{font-size:22px;color:${FADED};font-weight:700;letter-spacing:0;}
           .wm-bestrank{font-family:${MONO};font-weight:500;font-size:36px;line-height:1.05;color:${INK};font-variant-numeric:tabular-nums;}
           .wm-spectrum{display:flex;flex-direction:column;gap:6px;margin-bottom:18px;}

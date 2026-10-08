@@ -860,6 +860,11 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
             .sp-dot.todo{width:20px;height:20px;}
             .sp-dot.dest{width:32px;height:32px;}
             .sp-seg{min-height:34px;}
+            /* A dashed CSS border on a 20px circle and a short rail bunches its
+               dashes into a jagged chain on a phone, so the unvisited stops are
+               a thin solid ring and the gap is drawn as an even dash pattern. */
+            .sp-dot.todo{border-width:2.5px;border-style:solid;}
+            .sp-seg.gap{border-left:0;width:4px;border-radius:2px;background:repeating-linear-gradient(to bottom, var(--stg-cell-line, rgba(28,30,36,0.44)) 0 7px, transparent 7px 14px);}
             .sp-lbl{padding-bottom:16px;}
             .sp-tag{font-size:9px;letter-spacing:.14em;}
             .sp-nm{font-size:18px;}

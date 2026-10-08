@@ -31,7 +31,7 @@ import DailyChrome from '../DailyChrome';
 import DailyBoardPanel from '../quiz/[id]/DailyBoardPanel';
 import { isMobileDevice } from '@/lib/is-mobile';
 import useAbandonFlush from '../quiz/[id]/useAbandonFlush';
-import { CITIES, findCity, suggestCities, citiesInCountry, haversineMiles, continentOf, normCity } from '@/lib/ping-cities';
+import { CITIES, findCity, suggestCities, haversineMiles, continentOf, normCity } from '@/lib/ping-cities';
 import { withRef } from '@/lib/referrals';
 import { notifyShareCredit } from '../ShareCreditPop';
 import DailyMasthead from '../DailyMasthead';
@@ -438,8 +438,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
     return best;
   }, [guesses]);
 
-  // Live autocomplete: city names AND countries (typing "japan" lists the
-  // Japanese cities), minus anything already guessed. The list does NOT hide
+  // Live autocomplete: city names only, minus anything already guessed. The list does NOT hide
   // itself once the field exactly names a city (owner rule, 2026-08-23): it
   // used to drop the single remaining row as an "echo", so finishing a city
   // name made the row you were reaching for vanish under your finger, which
@@ -447,7 +446,10 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
   // stays; committing the guess is what clears it.
   const suggestions = useMemo(() => {
     if (!playing) return [];
-    return suggestCities(val, 8)
+    // City names only: a typed country lists nothing (owner rule, 2026-10-08).
+    const q = normCity(val);
+    return suggestCities(val, 40)
+      .filter((c) => [normCity(c.name), ...((c.aliases || []).map(normCity))].some((h) => h.includes(q)))
       .filter((c) => !guessedKeys.has(`${normCity(c.name)}|${normCity(c.country)}`))
       .slice(0, 6);
   }, [val, playing, guessedKeys]);
@@ -659,13 +661,6 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
       const hay = [normCity(top.name), ...((top.aliases || []).map(normCity))];
       if (hay.some((h) => h.startsWith(q))) { commitGuess(top); return; }
     }
-    // a typed COUNTRY: unambiguous when the atlas holds only one city in it
-    // ("iceland" -> Reykjavik), otherwise send them to the list rather than
-    // picking one of its cities for them. This runs AFTER the city-prefix
-    // check above so "mexico" still commits Mexico City.
-    const inCountry = citiesInCountry(val);
-    if (inCountry.length === 1) { commitGuess(inCountry[0]); return; }
-    if (inCountry.length > 1) { say(`Pick a city in ${inCountry[0].country}.`); return; }
     if (q.length) say('No match. Pick a city from the list.');
   }
 
@@ -857,7 +852,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
         }),
       ]}
       steps={[
-        <>Guess <b>any world city</b> to begin. There are <b>no clues</b> and <b>no guess limit</b>. Type a city, or a <b>country</b> to see the cities in it.</>,
+        <>Guess <b>any world city</b> to begin. There are <b>no clues</b> and <b>no guess limit</b>. Type a city name and pick it from the list.</>,
         <>Each guess pings back one number: the <b>distance in {unitWord(unit)}</b> to the secret city. No direction, just the distance, and it shrinks as you close in.</>,
         <>Flip the <b>mi / km</b> switch above the guess box any time. It only changes what you read, never your score.</>,
         <>Land on the city, or <b>Give up</b> and still be scored on how close your best guess got, ranked against everyone who played.</>,
@@ -1058,7 +1053,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
               {closest ? (
                 <>Closest so far: <b style={{ color: INK }}>{closest.name}</b>, {fmtDist(closest.mi)} away &middot; no guess limit</>
               ) : (
-                <>Any major world city &middot; type a <b style={{ color: INK }}>country</b> to see its cities &middot; no guess limit</>
+                <>Any major world city &middot; city names only &middot; no guess limit</>
               )}
             </div>
           )}
