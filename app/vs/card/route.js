@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { renderStageCard, stageFonts, shell, hueFor, clamp, size, D, T, Col } from '@/lib/og-stage-card';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
-import { decodeChallenge, challengeFig, mmssOf, RUN_CHALLENGES } from '@/lib/challenge';
+import { decodeChallenge, challengeFig, mmssOf, RUN_CHALLENGES, isBlankMiss } from '@/lib/challenge';
 import { metricDef, metricLine } from '@/lib/challenge-metric';
 
 // THE CHALLENGE LINK'S PREVIEW (owner, 2026-10-07): what a messaging app draws
@@ -32,7 +32,8 @@ export async function GET(req) {
   // A RUN says its total and its status (owner, 2026-10-07): how many right,
   // then the tier, card or quizzes cleared, and the clock when it has one.
   const status = run ? [c.x, c.t != null ? mmssOf(c.t) : ''].filter(Boolean).join(' \u00b7 ') : '';
-  const line = run ? (run.unit === 'right' ? `${name} got ${c.s} of ${c.o} right in ${run.the}.` : `${name} scored ${c.s}/${c.o} on ${run.the}.`)
+  const blank = !run && isBlankMiss(c);
+  const line = blank ? `${name} could not crack ${g.name}.` : run ? (run.unit === 'right' ? `${name} got ${c.s} of ${c.o} right in ${run.the}.` : `${name} scored ${c.s}/${c.o} on ${run.the}.`)
     : byMetric ? metricLine(key, name, g.name, fig)
     : c.won && c.t != null ? `${name} solved ${g.name} in ${fig}.`
     : c.won ? `${name} solved ${g.name}: ${fig}.` : `${name} scored ${fig} on ${g.name}.`;
@@ -42,7 +43,7 @@ export async function GET(req) {
     Col([
       T(line, { key: 'l', fontSize: big, fontWeight: 800, letterSpacing: '-2px', lineHeight: 1.06 }),
       ...(status ? [T(status, { key: 's', fontSize: 34, fontWeight: 800, letterSpacing: '-0.6px', marginTop: '14px' })] : []),
-      T('Can you beat that?', { key: 'q', fontSize: 40, fontWeight: 700, letterSpacing: '-0.8px', marginTop: '16px' }),
+      T(blank ? 'Can you?' : 'Can you beat that?', { key: 'q', fontSize: 40, fontWeight: 700, letterSpacing: '-0.8px', marginTop: '16px' }),
     ], { key: 'curtain', background: hue, color: D.onramp, padding: '40px ' + pad + 'px 38px' }),
   ], { key: 'body', margin: '0 -' + pad + 'px' });
   return new ImageResponse(shell(o, body), { width: size.width, height: size.height, fonts: stageFonts() });

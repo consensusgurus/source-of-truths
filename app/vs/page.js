@@ -1,5 +1,5 @@
 import { DAILY_GAME_MAP, etTodayISO } from '@/lib/daily-games';
-import { decodeChallenge, challengeFig, challengeDest, RUN_CHALLENGES } from '@/lib/challenge';
+import { decodeChallenge, challengeFig, challengeDest, RUN_CHALLENGES, isBlankMiss } from '@/lib/challenge';
 import ChallengeGo from './ChallengeGo';
 import { metricDef, metricLine } from '@/lib/challenge-metric';
 
@@ -28,7 +28,7 @@ export function generateMetadata({ searchParams }) {
   const fig = challengeFig(c, key);
   // Short on purpose: a message bubble prints this under the card and wraps a
   // long one into three lines.
-  const title = `${c.name}: ${fig} on ${g.name}. Can you beat it?`;
+  const title = !run && isBlankMiss(c) ? `${c.name} could not crack ${g.name}. Can you?` : `${c.name}: ${fig} on ${g.name}. Can you beat it?`;
   const description = run
     ? `${g.name} on Mind Loft${c.x ? `: ${c.x}` : ''}. Same run, free, no sign-up to play.`
     : `${g.name} No. ${c.n} on Mind Loft. Same board, free, no sign-up to play.`;
@@ -57,10 +57,10 @@ export default function ChallengePage({ searchParams }) {
       <div style={card}>
         <div style={eb}>Mind Loft{ok ? (run && !run.archive ? ` · ${g.name}` : ` · ${g.name} No. ${c.n}`) : ''}</div>
         <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1.15, margin: '10px 0 6px' }}>
-          {ok ? (byMetric ? metricLine(key, c.name, g.name, challengeFig(c, key)) : `${c.name} ${c.won ? 'set' : 'scored'} ${challengeFig(c, key)}.`) : 'That challenge link did not come through whole.'}
+          {ok ? (!run && isBlankMiss(c) ? `${c.name} could not crack ${g.name}.` : byMetric ? metricLine(key, c.name, g.name, challengeFig(c, key)) : `${c.name} ${c.won ? 'set' : 'scored'} ${challengeFig(c, key)}.`) : 'That challenge link did not come through whole.'}
         </h1>
         <p style={{ margin: 0, fontSize: 15, color: '#aab5c7', fontWeight: 600 }}>
-          {ok ? (run ? `${c.x ? c.x + '. ' : ''}Same run, same rules. Can you beat that?` : 'Same board, same rules. Can you beat that?') : 'You can still play today’s puzzles.'}
+          {ok ? (run ? `${c.x ? c.x + '. ' : ''}Same run, same rules. Can you beat that?` : (isBlankMiss(c) ? 'Same board, same rules. Can you crack it?' : 'Same board, same rules. Can you beat that?')) : 'You can still play today’s puzzles.'}
         </p>
         <a href={href} style={btn}>{ok ? 'Take the challenge' : 'Open Mind Loft'}</a>
       </div>

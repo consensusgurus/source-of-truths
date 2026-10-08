@@ -52,7 +52,7 @@ import { typicalLabel } from '@/lib/game-medians';
 import GameGlyph from './GameGlyph';
 import { savedIdentity } from '@/lib/saved-identity';
 import { etTodayISO } from '@/lib/daily-games';
-import { readChallenge, encodeChallenge, challengeFig, challengeResult, ymdCompact } from '@/lib/challenge';
+import { readChallenge, encodeChallenge, challengeFig, challengeResult, ymdCompact, isBlankMiss } from '@/lib/challenge';
 import { metricDef } from '@/lib/challenge-metric';
 import AddToHome from './AddToHome';
 import JoinLeaderboardForm from './quiz/[id]/JoinLeaderboardForm';
@@ -1506,7 +1506,10 @@ export default function StageFinish({
     : (myRowB && myRowB.timeElapsed != null && Number(myRowB.timeElapsed) > 0 ? Math.round(Number(myRowB.timeElapsed)) : null)) : null;
   const mine = run && me ? { name: '', t: mineT, s: useRow ? Number(myRowB.score) : run.score, o: useRow ? Number(myRowB.total) : run.total, n: run.num, won: run.won,
     m: challengeMetric != null && Number.isFinite(Number(challengeMetric)) && metricDef(me.key) ? Number(challengeMetric) : null } : null;
-  const canChallenge = !!(mine && !isQuiz && !isRetry && tone !== 'lost' && (mine.m != null || (mine.won ? (mine.t != null || !meSolveOnly) : (mine.s > 0 && !meSolveOnly))));
+  // EVERY DAILY FINISH OFFERS IT, A LOSS INCLUDED (owner, 2026-10-07). A miss
+  // with a score sends the score; a miss with nothing to beat dares them to
+  // crack it (isBlankMiss), and the link's card says so.
+  const canChallenge = !!(mine && !isQuiz && !isRetry);
   const duel = chal && mine ? { them: chal, res: challengeResult(mine, chal, me && me.key) } : null;
   const sendChallenge = () => {
     if (!mine) return;
@@ -1531,7 +1534,7 @@ export default function StageFinish({
     k: 'challenge', cls: 'chal', btn: true, onClick: sendChallenge, go: chalMsg ? 'Sent' : 'Send',
     ic: 'flag',
     nm: duel ? `Challenge ${chal.name} back` : 'Challenge a friend',
-    sb: chalMsg || `Send them ${challengeFig(mine, me && me.key)} to beat. No spoilers.`,
+    sb: chalMsg || (isBlankMiss(mine) ? 'Dare them to crack it. No spoilers.' : `Send them ${challengeFig(mine, me && me.key)} to beat. No spoilers.`),
   } : null;
   const playedN = new Set([...played, ...(me ? [me.key] : [])]).size;
   const smallDoors = [];
@@ -2396,6 +2399,19 @@ body:has(.stf-a2hs) :is(button,div):has(+ #stf-stats-slot):has(.lucide-smartphon
 @keyframes stf-sheen{ to{transform:translateX(100%)} }
 .stf-miss .stf-curtain,.stf-flood.t-lost{background:var(--stg-raise);color:var(--stg-ink);}
 .stf-miss .stf-curtain{border-bottom:1px solid var(--stg-line);}
+/* THE MISS BAND HAS TO READ AS A BAND IN DARK (owner, 2026-10-07). Raise is
+   #0e131f against a #0b0f1a page, so the band vanished and everything dimmed on
+   it (detail .78, eyebrow .86, unlit pips .28, the Retry hairline) sank into the
+   page. A rose wash off --stg-bad gives it a ground in BOTH registers, and the
+   ink on it stops leaning on opacity: secondary lines take --stg-mute instead. */
+.stf-miss .stf-curtain,.stf-flood.t-lost{background:color-mix(in srgb,var(--stg-bad) 13%,var(--stg-raise));}
+.stf-miss .stf-curtain{border-top:1px solid color-mix(in srgb,var(--stg-bad) 30%,transparent);
+  border-bottom:1px solid color-mix(in srgb,var(--stg-bad) 30%,transparent);}
+.stf-miss .stf-detail,.stf-miss .stf-bcat,.stf-miss .stf-bcat-x{opacity:1;}
+.stf-miss .stf-bcat-x{color:var(--stg-mute);}
+.stf-miss .stf-rack.band s{opacity:.5;}
+.stf-miss .stf-rack.band s.on,.stf-miss .stf-rack.band s.new{opacity:1;}
+.stf-miss .stf-back{border-color:var(--stg-ink);color:var(--stg-ink);}
 .stf-miss .stf-cin{border-left:4px solid var(--stg-bad);padding-left:14px;}
 @media (prefers-reduced-motion:reduce){ .stf-pb .stf-curtain::after{animation:none;} }
 /* THE CHALLENGE DOOR. Solid gold with its own dark ink set on every part of
