@@ -479,6 +479,9 @@ function SubmitView({ mode = 'list', onBack, onSubmit }) {
         >
           {COPY.footnote}
         </p>
+        <p style={{ fontSize: 13, color: T.slate, textAlign: 'center', margin: '8px 0 0' }}>
+          Questions? Email <a href="mailto:admin@mindloftdaily.com" style={{ color: 'inherit', fontWeight: 700 }}>admin@mindloftdaily.com</a>.
+        </p>
       </div>
     </div>
   );

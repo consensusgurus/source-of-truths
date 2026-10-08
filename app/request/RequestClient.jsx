@@ -151,6 +151,7 @@ function RequestView({ onSubmit }) {
               </div>
             </div>
             <p style={{ fontSize: 11, letterSpacing: '.04em', textTransform: 'uppercase', color: C.soft, fontWeight: 700, marginTop: 14 }}>Submissions are reviewed before going live</p>
+            <p style={{ fontSize: 13, color: C.muted, margin: '8px 0 0' }}>Questions? Email <a href="mailto:admin@mindloftdaily.com" style={{ color: 'inherit', fontWeight: 700 }}>admin@mindloftdaily.com</a>.</p>
           </div>
         </div>
 

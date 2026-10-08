@@ -86,7 +86,7 @@ export default function TermsPage() {
 
       <H2>Contact</H2>
       <p>
-        Questions about these terms can be sent to <strong>sourceoftruthsadmin@gmail.com</strong>.
+        Questions about these terms can be sent to <a href="mailto:admin@mindloftdaily.com" style={{ color: 'inherit' }}><strong>admin@mindloftdaily.com</strong></a>.
       </p>
     </LegalLayout>
   );

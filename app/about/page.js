@@ -154,7 +154,7 @@ export default function AboutPage() {
         <p>
           Corrections, source suggestions, and quiz ideas are welcome. You can{' '}
           <a href="/request" style={LINK}>request a list or quiz</a>, or write to{' '}
-          <strong>sourceoftruthsadmin@gmail.com</strong>. Mind Loft is also on{' '}
+          <a href="mailto:admin@mindloftdaily.com" style={{ color: 'inherit' }}><strong>admin@mindloftdaily.com</strong></a>. Mind Loft is also on{' '}
           <a href="https://x.com/mindloftdaily" style={LINK}>X</a> and{' '}
           <a href="https://www.instagram.com/mindloftdaily/" style={LINK}>Instagram</a>.
         </p>
