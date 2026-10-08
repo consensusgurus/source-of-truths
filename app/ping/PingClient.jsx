@@ -353,6 +353,30 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
   const inputRef = useRef(null);
+  const dockRef = useRef(null);
+  // PHONE: once the keyboard has opened, slide the page so the guess bar sits
+  // just above it and the map fills the space above (never past its top).
+  function keepMapInView() {
+    if (typeof window === 'undefined' || window.innerWidth > 640) return;
+    const vv = window.visualViewport;
+    const fit = () => {
+      const dock = dockRef.current;
+      const map = dock && dock.previousElementSibling;
+      if (!dock) return;
+      const top = vv ? vv.offsetTop : 0;
+      const h = vv ? vv.height : window.innerHeight;
+      const want = dock.getBoundingClientRect().bottom - (top + h) + 8;
+      const room = map ? map.getBoundingClientRect().top - top - 8 : want;
+      const delta = Math.min(want, room);
+      if (Math.abs(delta) > 2) window.scrollBy(0, delta);
+    };
+    if (vv) {
+      const once = () => { vv.removeEventListener('resize', once); setTimeout(fit, 60); };
+      vv.addEventListener('resize', once);
+      setTimeout(() => vv.removeEventListener('resize', once), 1200);
+    }
+    setTimeout(fit, 350);
+  }
 
   const [showChrome, setShowChrome] = useState(false);
   const playing = g.status === 'playing';
@@ -919,7 +943,11 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
             .pg-zoom{display:flex;gap:6px;position:absolute;right:10px;bottom:34px;}
             .pg-zoom button{width:44px;height:44px;border-radius:10px;border:1px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.3)'};background:${STAGE ? 'var(--stg-raise)' : 'var(--white)'};color:${INK};font-family:${SANS};font-size:20px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
             .pg-zoom button:disabled{color:${FADED};cursor:default;}
-            .pg-dock{order:99;position:sticky;bottom:0;z-index:15;margin-top:12px !important;padding:10px 0 calc(12px + env(safe-area-inset-bottom, 0px));background:${STAGE ? 'var(--stg-ground)' : 'var(--white)'};border-top:1px solid ${STAGE ? 'var(--stg-line)' : 'rgba(28,30,36,0.14)'};}
+            /* The guess bar sits right under the map, in the flow. It is not
+               pinned: a pinned bar sits behind the keyboard, so the browser
+               drags the page to centre it and the map scrolls away.
+               keepMapInView() lines it up with the top of the keyboard. */
+            .pg-dock{margin-top:12px !important;}
             .pg-dock .pg-sug{top:auto;bottom:calc(100% + 6px);}
             .pg-toast{bottom:104px !important;}
           }
@@ -1010,12 +1038,13 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
 
           {/* input row (docks at the foot of the board on a phone) */}
           {started && (
-            <div className="pg-dock" style={{ marginTop: 14 }}>
+            <div className="pg-dock" ref={dockRef} style={{ marginTop: 14 }}>
               <div style={{ display: 'flex', gap: 9, alignItems: 'stretch', position: 'relative' }}>
                 <div style={{ position: 'relative', flex: '1 1 auto' }}>
                   <Search size={17} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: FADED, pointerEvents: 'none' }} />
                   <input
                     ref={inputRef}
+                    onFocus={keepMapInView}
                     className="pg-inp"
                     type="text"
                     placeholder="Guess a city…"

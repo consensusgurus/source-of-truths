@@ -331,6 +331,19 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
+  // Letter cells on the stage read off the cell tokens so they sit right in
+  // both registers (they were hard white, so a dark page showed white tiles).
+  const CELL = STAGE ? 'var(--stg-cell)' : T.white;
+  const CELL_B = STAGE ? '1.5px solid var(--stg-cell-line)' : '1.5px solid rgba(20,22,28,0.18)';
+  const SEL_BG = STAGE ? 'color-mix(in srgb, var(--stg-acc) 10%, var(--stg-cell))' : '#eef4ff';
+  const CUR_BG = STAGE ? 'color-mix(in srgb, var(--stg-acc) 24%, var(--stg-cell))' : '#dbe7ff';
+  const SEL_FG = STAGE ? INK : COLORS.ember;
+  const SEL_LINE = STAGE ? 'var(--stg-cell-line)' : 'rgba(14,29,64,0.55)';
+  const CUR_LINE = STAGE ? 'var(--stg-acc-ink)' : COLORS.ember;
+  const DONE_BG = STAGE ? 'var(--stg-ink)' : COLORS.ink;
+  const DONE_FG = STAGE ? 'var(--stg-ground)' : T.white;
+  const MISS_FG = STAGE ? 'var(--stg-bad)' : COLORS.rust;
+  const MISS_B = STAGE ? '1.5px dashed var(--stg-bad)' : '1.5px dashed rgba(192,57,43,0.55)';
   const SURF_B = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : 'rgba(28,30,36,0.42)';
   const ACC = STAGE ? STAGE_C : COLORS.accent;
   const ACC_DEEP = STAGE ? STAGE_C : COLORS.accentDeep;
@@ -595,20 +608,20 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
         <div key={rejected ? 'm' + fx.miss : 'a'} className={rejected ? 'gb-rej' : undefined} style={{ display: 'flex', gap: 4 }}>
           {w.answer.split('').map((ch, j) => {
             const marked = w.marks.includes(j);
-            let bg = T.white, fg = COLORS.ink, border = '1.5px solid rgba(20,22,28,0.18)';
+            let bg = CELL, fg = INK, border = CELL_B;
             let letter = '';
             if (solvedRow || ansOpen) {
               letter = ch;
               if (marked) { bg = `var(--stg-acc, ${COLORS.gold})`; fg = `var(--stg-onramp, ${COLORS.goldInk})`; border = `1.5px solid ${COLORS.gold}`; }
-              else { bg = solvedRow ? COLORS.ink : T.white; fg = solvedRow ? T.white : COLORS.rust; border = solvedRow ? `1.5px solid ${COLORS.ink}` : '1.5px dashed rgba(192,57,43,0.55)'; }
+              else { bg = solvedRow ? DONE_BG : CELL; fg = solvedRow ? DONE_FG : MISS_FG; border = solvedRow ? `1.5px solid ${DONE_BG}` : MISS_B; }
             } else if (isSel) {
               letter = typed[j] || '';
-              bg = typed.length === j ? '#dbe7ff' : '#eef4ff';
-              fg = COLORS.ember;
+              bg = typed.length === j ? CUR_BG : SEL_BG;
+              fg = SEL_FG;
               // marked cells keep their feed border even while the row is
               // selected — the pale fill carries selection, the category step
               // marks a letter the finale is owed
-              border = marked ? `2.5px solid ${COLORS.gold}` : `2px solid ${typed.length === j ? COLORS.ember : 'rgba(14,29,64,0.55)'}`;
+              border = marked ? `2.5px solid ${COLORS.gold}` : `2px solid ${typed.length === j ? CUR_LINE : SEL_LINE}`;
             } else if (marked) {
               border = `2px solid ${COLORS.gold}`;
             }
@@ -777,7 +790,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
           <div style={{ marginBottom: 6 }}>{PUZZLE.words.map((w, i) => wordRow(w, i))}</div>
 
           {/* the finale */}
-          <div onClick={() => { if (playing) { setSel('final'); setTyped(''); } }} style={{ background: STAGE ? SURF : T.white, border: `2px solid ${playing && sel === 'final' ? COLORS.ember : 'rgba(20,22,28,0.14)'}`, borderRadius: 12, padding: '14px 16px', marginBottom: 16, cursor: playing ? 'pointer' : 'default' }}>
+          <div onClick={() => { if (playing) { setSel('final'); setTyped(''); } }} style={{ background: STAGE ? SURF : T.white, border: `2px solid ${playing && sel === 'final' ? CUR_LINE : (STAGE ? 'var(--stg-line2)' : 'rgba(20,22,28,0.14)')}`, borderRadius: 12, padding: '14px 16px', marginBottom: 16, cursor: playing ? 'pointer' : 'default' }}>
             <div style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.06em', color: `var(--stg-ink, ${COLORS.goldInk})`, marginBottom: 4 }}>The finale</div>
             <div style={{ fontSize: 15.5, fontWeight: 700, fontStyle: 'italic', color: INK, marginBottom: 10 }}>&ldquo;{PUZZLE.clue}&rdquo;</div>
             <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 10 }}>
@@ -788,7 +801,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
                 const fresh = lit && fx.solved === b.wi && landed && Date.now() - landed < 900;
                 return (
                   <span key={i} data-gbank={fk} className={fresh ? 'gb-land' : undefined}
-                    style={{ ...cellBase, width: 26, height: 26, fontSize: 13, background: lit ? COLORS.gold : `var(--stg-surf, ${COLORS.paper})`, color: lit ? COLORS.goldInk : COLORS.faded }}>{lit ? b.ch : '?'}</span>
+                    style={{ ...cellBase, width: 28, height: 28, fontSize: 13, borderRadius: '50%', boxSizing: 'border-box', background: lit ? COLORS.gold : (STAGE ? 'var(--stg-cell)' : COLORS.paper), color: lit ? COLORS.goldInk : (STAGE ? 'var(--stg-ink2)' : COLORS.faded), border: lit ? `1.5px solid ${COLORS.gold}` : (STAGE ? '1.5px dashed var(--stg-cell-line)' : '1.5px dashed rgba(20,22,28,0.3)') }}>{lit ? b.ch : '?'}</span>
                 );
               })}
               <span style={{ fontSize: 11, fontWeight: 700, color: FADED, alignSelf: 'center', marginLeft: 6 }}>your collected letters</span>
@@ -796,17 +809,17 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
               {PUZZLE.final.split('').map((ch, j) => {
                 const isSel = playing && sel === 'final';
-                let letter = '', bg = T.white, fg = COLORS.ink, border = '1.5px solid rgba(20,22,28,0.18)';
+                let letter = '', bg = CELL, fg = INK, border = CELL_B;
                 if (ansOpen || g.finalSolved) {
                   letter = ch;
-                  bg = g.finalSolved ? COLORS.gold : T.white;
-                  fg = g.finalSolved ? COLORS.goldInk : COLORS.rust;
-                  border = g.finalSolved ? `1.5px solid ${COLORS.gold}` : '1.5px dashed rgba(192,57,43,0.55)';
+                  bg = g.finalSolved ? COLORS.gold : CELL;
+                  fg = g.finalSolved ? COLORS.goldInk : MISS_FG;
+                  border = g.finalSolved ? `1.5px solid ${COLORS.gold}` : MISS_B;
                 } else if (isSel) {
                   letter = typed[j] || '';
-                  bg = typed.length === j ? '#dbe7ff' : '#eef4ff';
-                  fg = COLORS.ember;
-                  border = `2px solid ${typed.length === j ? COLORS.ember : 'rgba(14,29,64,0.55)'}`;
+                  bg = typed.length === j ? CUR_BG : SEL_BG;
+                  fg = SEL_FG;
+                  border = `2px solid ${typed.length === j ? CUR_LINE : SEL_LINE}`;
                 }
                 return <span key={j} style={{ ...cellBase, width: 44, height: 44, fontSize: 21, background: bg, color: fg, border }}>{letter}</span>;
               })}
@@ -821,7 +834,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
             <div style={{ maxWidth: 470 }}>
               {!mobileUi && (
                 <div style={{ textAlign: 'left', marginBottom: kbdOpen ? 8 : 0 }}>
-                  <button onClick={() => setKbdOpen((o) => !o)} style={{ background: 'none', border: '1.5px solid rgba(28,30,36,0.22)', borderRadius: 8, padding: '6px 13px', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: FADED }}>
+                  <button onClick={() => setKbdOpen((o) => !o)} style={{ background: 'none', border: STAGE ? '1.5px solid var(--stg-line2)' : '1.5px solid rgba(28,30,36,0.22)', borderRadius: 8, padding: '6px 13px', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: FADED }}>
                     {kbdOpen ? 'Hide keyboard' : 'Show keyboard'}
                   </button>
                 </div>
