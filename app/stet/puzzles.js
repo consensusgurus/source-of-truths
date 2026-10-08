@@ -417,7 +417,7 @@ export const PUZZLES = [
       },
       {
         text: 'The archipelago is comprised of eleven inhabited islands.',
-        errors: [{ wrong: 'comprised', fix: 'composed', note: 'The whole comprises its parts — "comprised of" flips it. Composed of is the fix.' }],
+        errors: [{ wrong: 'comprised', fix: 'composed', alts: ['made'], note: 'The whole comprises its parts — "comprised of" flips it. Composed of is the fix.' }],
       },
       {
         text: "The symphony's climatic third movement lost the audience entirely.",
@@ -911,7 +911,7 @@ export const PUZZLES = [
         errors: [{ wrong: 'incite', fix: 'insight', note: 'Insight is deep understanding; to incite is to stir up.' }],
       },
       {
-        text: 'The startup revenue grew steadily despite the crowded market.',
+        text: "The startup's revenue grew steadily despite the crowded market.",
         errors: [],
         cleanNote: 'Clean copy: steadily and crowded are used correctly; no change needed.',
       },
@@ -979,7 +979,7 @@ export const PUZZLES = [
       },
       {
         text: "The tenor sang the aria with remarkable pour.",
-        errors: [{ wrong: "pour", fix: "poise", kind: 'wordchoice', note: "Poise is composure; to pour is to tip a liquid out." }],
+        errors: [{ wrong: "pour", fix: "poise", alts: ["power", "verve", "flair"], kind: 'wordchoice', note: "Poise is composure (power also fits); to pour is to tip a liquid out." }],
       },
     ],
   },
@@ -1060,7 +1060,7 @@ export const PUZZLES = [
       {
         text: "Officers found the vault door had been forced with a crowbar overnight.",
         errors: [],
-        cleanNote: "Clean copy: forced is the right verb for a broken lock.",
+        cleanNote: "Clean copy: forced is the right verb for a door broken open.",
       },
       {
         text: "The captain gave the order to way anchor at first light.",
@@ -1090,7 +1090,7 @@ export const PUZZLES = [
       },
       {
         text: "The parade passed the stand in marshal order.",
-        errors: [{ wrong: "marshal", fix: "martial", kind: 'wordchoice', note: "Martial means military; a marshal is an officer." }],
+        errors: [{ wrong: "marshal", fix: "martial", alts: ["marching"], kind: 'wordchoice', note: "Martial means military; a marshal is an officer." }],
       },
       {
         text: "Heavy rain delayed the harvest across the eastern counties.",
@@ -1143,7 +1143,7 @@ export const PUZZLES = [
       },
       {
         text: "The judge called the delay completely unexcusable.",
-        errors: [{ wrong: "unexcusable", fix: "inexcusable", kind: 'wordchoice', note: "Inexcusable is the word; unexcusable is not English." }],
+        errors: [{ wrong: "unexcusable", fix: "inexcusable", kind: 'wordchoice', note: "Inexcusable is the word; unexcusable is a malformed version of it." }],
       },
     ],
   },
@@ -1174,7 +1174,7 @@ export const PUZZLES = [
       },
       {
         text: "The tenor's voice carried to the nave without ampliation.",
-        errors: [{ wrong: "ampliation", fix: "amplification", kind: 'wordchoice', note: "Amplification is sound reinforcement; ampliation means enlargement in law." }],
+        errors: [{ wrong: "ampliation", fix: "amplification", kind: 'wordchoice', note: "Amplification is sound reinforcement; ampliation is an archaic word for enlargement." }],
       },
     ],
   },
@@ -1324,7 +1324,7 @@ export const PUZZLES = [
       },
       {
         text: "The inquest censured the deputy for a lax inspection regiment.",
-        errors: [{ wrong: "regiment", fix: "regime", kind: 'wordchoice', note: "A regime is a system; a regiment is a military unit." }],
+        errors: [{ wrong: "regiment", fix: "regime", alts: ["regimen"], kind: 'wordchoice', note: "A regime is a system; a regiment is a military unit." }],
       },
       {
         text: "The basin silted up, unnoticed accept by the herons.",
@@ -1395,7 +1395,7 @@ export const PUZZLES = [
       {
         text: "The candidate made a passionate plea for calm.",
         errors: [],
-        cleanNote: "Clean copy: plea is correct; the homophone please is not needed.",
+        cleanNote: "Clean copy: plea is the right noun for an earnest appeal.",
       },
       {
         text: "The society bought the plot to prevent it being built upon by a spectator developer.",
@@ -1562,7 +1562,7 @@ export const PUZZLES = [
       },
       {
         text: "The keeper locked a pod of dolphins passing the head at dusk.",
-        errors: [{ wrong: "locked", fix: "logged", kind: 'wordchoice', note: "To log is to record; to lock is to fasten." }],
+        errors: [{ wrong: "locked", fix: "logged", alts: ["clocked", "noted", "spotted"], kind: 'wordchoice', note: "To log is to record; to lock is to fasten." }],
       },
     ],
   },
@@ -2123,7 +2123,8 @@ export const PUZZLES = [
       },
       {
         text: "The keeper described the otter's tracks in the silt as unmistakeable.",
-        errors: [{ wrong: "unmistakeable", fix: "unmistakable", kind: 'wordchoice', note: "Unmistakable drops the e before able." }],
+        errors: [],
+        cleanNote: "Clean copy: unmistakeable and unmistakable are both accepted spellings.",
       },
       {
         text: "The report recommended a phased withdrawal of funding.",
@@ -2158,7 +2159,7 @@ export const PUZZLES = [
       },
       {
         text: "The archivist thanked they who had catalogued the plates.",
-        errors: [{ wrong: "they", fix: "those", kind: 'grammar', note: "The object form is needed, so it reads thanked those who." }],
+        errors: [{ wrong: "they", fix: "those", alts: ["them"], kind: 'grammar', note: "They cannot be the object of thanked; before who, those is wanted: thanked those who." }],
       },
       {
         text: "The vicar said the parish had been served by the same family of clerks for four generations, a remarkable continuum.",
@@ -2262,7 +2263,7 @@ export const PUZZLES = [
         errors: [{ wrong: "buttrressing", fix: "buttressing", kind: 'wordchoice', note: "Buttressing has a single r after the double t." }],
       },
       {
-        text: "The archivist described the binding as limp velum over boards.",
+        text: "The archivist described the binding as velum over boards.",
         errors: [{ wrong: "velum", fix: "vellum", kind: 'wordchoice', note: "Vellum is fine calfskin; velum is an anatomical membrane." }],
       },
       {
@@ -2320,7 +2321,7 @@ export const PUZZLES = [
         cleanNote: "Clean copy: deferred is exact and correctly spelled.",
       },
       {
-        text: "The mason worked slow and steady through the frost.",
+        text: "The mason worked slow and steadily through the frost.",
         errors: [{ wrong: "slow", fix: "slowly", kind: 'grammar', note: "The verb needs an adverb, so it reads worked slowly." }],
       },
       {
@@ -2493,7 +2494,7 @@ export const PUZZLES = [
       },
       {
         text: "The mason described the arch as a segmentle rather than a true semicircle.",
-        errors: [{ wrong: "segmentle", fix: "segmental", kind: 'wordchoice', note: "Segmental is the correct architectural term." }],
+        errors: [{ wrong: "segmentle", fix: "segmental", alts: ["segment"], kind: 'wordchoice', note: "Segmental is the correct architectural term." }],
       },
     ],
   },
@@ -2701,7 +2702,7 @@ export const PUZZLES = [
       {
         text: "The magistrate said the driver had shown a callous disregard for other road users.",
         errors: [],
-        cleanNote: "Clean copy: callous means unfeeling, and it is spelled with two ls and no u.",
+        cleanNote: "Clean copy: callous means unfeeling and ends in -ous; a callus is hard skin.",
       },
       {
         text: "The two gauges on the estuary gives readings a metre apart.",

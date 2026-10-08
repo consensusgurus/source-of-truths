@@ -148,7 +148,7 @@ export const DAYS = [
   // ── #81 Mon 5 Oct ───────────────────────────────────────────────────────
   [
     { d: 'gov', t: "The scheme cannot go ahead without the ascent of the two landowners.", e: [['ascent', 'assent', 'w', 'Assent is agreement; an ascent is a climb.']] },
-    { d: 'law', t: "The magistrate said the driver had shown a callous disregard for other road users.", c: 'Clean copy: callous means unfeeling, and it is spelled with two ls and no u.' },
+    { d: 'law', t: "The magistrate said the driver had shown a callous disregard for other road users.", c: 'Clean copy: callous means unfeeling and ends in -ous; a callus is hard skin.' },
     { d: 'sci', t: "The two gauges on the estuary gives readings a metre apart.", e: [['gives', 'give', 'g', 'Two gauges is plural, so the verb is give.']] },
     { d: 'arts', t: "The critic wrote that the revue had lost none of its bite in forty years.", c: 'Clean copy: a revue is a stage show of sketches and songs, not a notice of one.' },
     { d: 'health', t: "The ward said patience would be seen in order of clinical need.", e: [['patience', 'patients', 'w', 'Patients are the people treated; patience is the virtue.']] },

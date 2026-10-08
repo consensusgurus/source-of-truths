@@ -416,7 +416,10 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
           onHelp={() => setShowHelp(true)}
           sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
           figures={playing ? [
-            { v: `${score}/${TOTAL}`, k: 'score' },
+            // Picks made, never the score: the score is graded against the real
+            // results, so showing it mid-play told the player which picks were
+            // right before they handed the sheet in (reader report 2026-10-08).
+            { v: `${filled}/${MATCHES}`, k: 'picks' },
             { v: elapsed, k: 'time' },
           ] : [
             { v: `${score}/${TOTAL}`, k: 'score' },
