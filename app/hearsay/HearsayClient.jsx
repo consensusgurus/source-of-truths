@@ -126,6 +126,16 @@ function statementText(puzzle, st) {
   if (st.type === 'knowNowOtherStill') return `${me}: “Now I know which ${n} it is, but ${speakerOf(puzzle, st.other)} still doesn't.”`;
   return '';
 }
+// The spoken words alone, for a speech bubble that already names its speaker.
+function quoteText(puzzle, st) {
+  const full = statementText(puzzle, st);
+  const pre = `${speakerOf(puzzle, st.who)}: `;
+  return full.startsWith(pre) ? full.slice(pre.length) : full;
+}
+// "Platform 9" -> "P9" for the phone board's narrow row label. Only used when
+// EVERY row label on the board has that word-plus-number shape.
+const SHORT_RE = /^(\S)\S*\s+(\d+\S*)$/;
+const shortLabel = (v) => { const m = SHORT_RE.exec(String(v)); return m ? `${m[1].toUpperCase()}${m[2]}` : String(v); };
 
 const isIosDevice = () =>
   typeof navigator !== 'undefined' &&
@@ -503,6 +513,10 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
 
   const ans = PUZZLE.cards[ANSWER] || PUZZLE.cards[0];
   const ansText = `${ans.a}, ${ans.b}${ans.c ? `, ${ans.c}` : ''}`;
+  // The board's heading and its live count. Display only.
+  const boardTitle = PUZZLE.noun === 'train' ? 'Departures' : String(PUZZLE.listLabel || '').replace(/^the\s+/i, '');
+  const standing = PUZZLE.cards.length - new Set([...g.crossed, ...g.wrong]).size;
+  const shortRows = groups.every((grp) => SHORT_RE.test(String(grp.a)));
 
   // How to play. The old version buried the whole trick ("ignorance is the
   // evidence") in the middle of a paragraph, so the rules now state the goal,
@@ -563,16 +577,87 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.hs-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .hs-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .hs-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .hs-row{display:flex;align-items:center;gap:10px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.14));border-left:3px solid var(--stg-acc, ${COLORS.accent});border-radius:9px;padding:9px 12px;margin-bottom:7px;flex-wrap:wrap;}
-          .hs-key{font-family:${MONO};font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:${COLORS.accentDeep};flex:0 0 auto;min-width:86px;}
-          .hs-card{font-family:${SANS};font-weight:800;font-size:13px;border-radius:8px;padding:8px 11px;cursor:pointer;border: 1.5px solid var(--stg-line, rgba(28,30,36,0.2));background:${STAGE ? 'var(--stg-surf)' : COLORS.cream};color:${INK};}
-          .hs-card:hover:not(:disabled){border-color:var(--stg-acc, ${COLORS.accent});}
-          .hs-card.off{opacity:0.4;text-decoration:line-through;}
-          .hs-card.wrong{background:${STAGE ? 'var(--stg-surf2)' : '#fee2e2'};border-color:#b91c1c;color:#7f1d1d;text-decoration:line-through;}
-          .hs-card.win{background:${COLORS.greenSoft};border-color:${COLORS.green};color:#14532d;}
-          .hs-card:disabled{cursor:default;}
-          .hs-say{display:flex;align-items:flex-start;gap:11px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:9px;padding:11px 13px;margin-bottom:7px;}
-          .hs-num{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));font-family:${MONO};font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;}
+          .hs-dep{background:var(--stg-panel, #0d1220);border:2px solid var(--stg-line2, #1d2535);border-radius:14px;padding:16px 20px 12px;display:flex;flex-direction:column;gap:6px;margin:0 0 6px;}
+          .hs-dep.naming{border-color:var(--stg-acc, ${COLORS.accent});}
+          .hs-dephead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:8px;margin-bottom:4px;border-bottom:1px solid var(--stg-line, #161e30);}
+          .hs-deptitle{font-family:${MONO};font-size:13px;font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:var(--stg-acc-ink, #f2c84b);}
+          .hs-depsub{font-family:${MONO};font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute, #8b95a8);}
+          .hs-depsub b{color:var(--stg-ink, #f5f0e4);font-weight:500;}
+          .hs-drow{display:flex;align-items:center;gap:14px;min-height:46px;}
+          .hs-dlab{flex:0 0 120px;font-family:${MONO};font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute, #8b95a8);line-height:1.3;overflow-wrap:anywhere;}
+          .hs-dlshort{display:none;}
+          .hs-dents{flex:1 1 auto;min-width:0;display:flex;gap:6px 12px;flex-wrap:wrap;align-items:center;}
+          .hs-fb{position:relative;display:inline-flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;min-height:44px;min-width:44px;padding:4px 2px;background:transparent;border:0;border-radius:6px;cursor:pointer;}
+          .hs-fb:disabled{cursor:default;}
+          .hs-fb:focus-visible{outline:2px solid var(--stg-acc-ink, #f2c84b);outline-offset:2px;}
+          .hs-fwords{display:flex;flex-wrap:wrap;gap:4px 7px;}
+          .hs-fw{position:relative;display:inline-flex;gap:2px;}
+          .hs-fl{position:relative;display:inline-flex;align-items:center;justify-content:center;width:18px;height:32px;border-radius:3px;background:var(--stg-cell, #1a2232);box-shadow:inset 0 0 0 1px var(--stg-line2, rgba(255,255,255,0.12));color:var(--stg-ink, #f5f0e4);font-family:${MONO};font-size:17px;font-weight:500;text-transform:uppercase;overflow:hidden;}
+          .hs-fl::after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:var(--stg-panel, #0d1220);}
+          .hs-fsub{font-family:${MONO};font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--stg-ink2, #c9d0de);padding-left:1px;}
+          .hs-fb:hover:not(:disabled) .hs-fl{box-shadow:inset 0 0 0 1.5px var(--stg-acc, ${COLORS.accent});}
+          .hs-fb.off .hs-fl{background:var(--stg-surf, #111722);box-shadow:none;color:var(--stg-mute, #8b95a8);}
+          .hs-fb.off .hs-fsub{color:var(--stg-mute, #8b95a8);}
+          .hs-fb.off .hs-fw::before,.hs-fb.wrong .hs-fw::before{content:'';position:absolute;z-index:1;left:-3px;right:-3px;top:50%;height:2px;margin-top:-1px;background:var(--stg-mute, #8b95a8);}
+          .hs-fb.wrong .hs-fl{color:var(--stg-bad, #fb7185);box-shadow:inset 0 0 0 1.5px var(--stg-bad, #fb7185);}
+          .hs-fb.wrong .hs-fw::before{background:var(--stg-bad, #fb7185);}
+          .hs-fb.win .hs-fl{background:var(--stg-good, ${COLORS.green});color:var(--stg-ground, #ffffff);box-shadow:none;}
+          .hs-fb.win .hs-fl::after{background:var(--stg-panel, #0d1220);opacity:.5;}
+          .hs-heard{display:flex;flex-direction:column;gap:10px;margin:20px 0 0;}
+          .hs-heardeye{font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:${FADED};}
+          .hs-heardeye-m{display:none;}
+          .hs-line{display:flex;gap:12px;align-items:flex-start;}
+          .hs-line.rt{flex-direction:row-reverse;}
+          .hs-av{flex:0 0 38px;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:${SANS};font-weight:800;font-size:15px;}
+          .hs-line.s0 .hs-av{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #ffffff);}
+          .hs-line.s1 .hs-av{background:var(--stg-ink2, #3f4757);color:var(--stg-ground, #ffffff);}
+          .hs-line.s2 .hs-av{background:var(--stg-good, ${COLORS.green});color:var(--stg-ground, #ffffff);}
+          .hs-bub{max-width:min(470px,82%);background:var(--stg-surf2, #ffffff);border:1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:14px;padding:11px 14px;display:flex;flex-direction:column;gap:3px;}
+          .hs-line.s0 .hs-bub{border-top-left-radius:4px;}
+          .hs-line.rt .hs-bub{border-top-right-radius:4px;}
+          .hs-line.s2 .hs-bub{border-top-left-radius:4px;}
+          .hs-bubeye{font-family:${MONO};font-size:10px;letter-spacing:.14em;text-transform:uppercase;}
+          .hs-line.s0 .hs-bubeye{color:var(--stg-acc-ink, ${COLORS.accentDeep});}
+          .hs-line.s1 .hs-bubeye{color:var(--stg-ink2, #3f4757);}
+          .hs-line.s2 .hs-bubeye{color:var(--stg-good, ${COLORS.green});}
+          .hs-bubt{font-family:${SANS};font-size:15px;font-weight:700;line-height:1.4;color:${INK};}
+          .hs-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+          .hs-acts{display:flex;justify-content:space-between;align-items:center;gap:10px 14px;flex-wrap:wrap;margin:16px 0 6px;}
+          .hs-acthint{font-family:${SANS};font-size:13px;font-weight:600;line-height:1.4;}
+          .hs-actbtns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:auto;}
+          .hs-actbtns .hs-btn{min-height:44px;}
+          .hs-name{min-height:50px !important;font-size:15px;border-radius:12px;padding:0 22px;background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #ffffff);}
+          .hs-name:hover{background:var(--stg-acc, ${COLORS.accent});filter:brightness(1.06);}
+          .hs-name.on{background:transparent;color:var(--stg-acc-ink, ${COLORS.accentDeep});border-color:var(--stg-acc, ${COLORS.accent});}
+          @media(max-width:640px){
+            .hs-dep{padding:12px;border-radius:12px;gap:4px;}
+            .hs-dephead{padding-bottom:6px;}
+            .hs-deptitle{font-size:11px;letter-spacing:.22em;}
+            .hs-depsub{font-size:10px;letter-spacing:.08em;}
+            .hs-drow{gap:8px;min-height:40px;}
+            .hs-dep:not(.shortrows) .hs-drow{flex-wrap:wrap;row-gap:0;}
+            .hs-dep:not(.shortrows) .hs-dlab{flex:1 0 100%;font-size:10px;padding-top:4px;}
+            .hs-dep.shortrows .hs-dlab{flex:0 0 32px;font-size:11px;letter-spacing:0;}
+            .hs-dep.shortrows .hs-dlfull{display:none;}
+            .hs-dep.shortrows .hs-dlshort{display:inline;}
+            .hs-dents{gap:4px 8px;}
+            .hs-fwords{gap:3px 5px;}
+            .hs-fw{gap:1px;}
+            .hs-fl{width:12px;height:26px;font-size:13px;border-radius:2px;}
+            .hs-fsub{font-size:10px;}
+            .hs-heard{margin-top:16px;gap:8px;}
+            .hs-heardeye{font-size:10px;letter-spacing:.14em;}
+            .hs-heardeye-d{display:none;}
+            .hs-heardeye-m{display:block;}
+            .hs-line{gap:8px;}
+            .hs-av{flex-basis:30px;width:30px;height:30px;font-size:13px;}
+            .hs-bub{max-width:min(290px,80%);padding:9px 12px;border-radius:12px;}
+            .hs-bubeye{display:none;}
+            .hs-bubt{font-size:14px;line-height:1.35;}
+            .hs-acthint{flex:1 0 100%;}
+            .hs-actbtns{margin-left:0;width:100%;}
+            .hs-name{flex:1 0 100%;justify-content:center;min-height:52px !important;font-size:16px;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
@@ -643,38 +728,83 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
 
         {!preStart && (
           <>
-            <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED, marginBottom: 8 }}>{PUZZLE.listLabel}</div>
-            {groups.map((grp) => (
-              <div key={grp.a} className="hs-row">
-                <span className="hs-key">{grp.a}</span>
-                <span style={{ display: 'flex', gap: 7, flexWrap: 'wrap', flex: '1 1 auto' }}>
-                  {grp.items.map((i) => {
-                    const c = PUZZLE.cards[i];
-                    const isAns = !playing && ansShown && i === ANSWER;
-                    return (
-                      <button
-                        key={i}
-                        type="button"
-                        className={`hs-card${g.wrong.includes(i) ? ' wrong' : g.crossed.includes(i) ? ' off' : ''}${isAns ? ' win' : ''}`}
-                        onClick={() => tapCard(i)}
-                        disabled={!playing}
-                        title={g.naming ? 'Name this one' : 'Cross it off'}
-                      >
-                        {c.b}{c.c ? <span style={{ fontWeight: 600, color: FADED }}> &middot; {c.c}</span> : null}
-                      </button>
-                    );
-                  })}
+            {/* THE BOARD: a split-flap departures board, one row per value of
+                the first attribute, each entry drawn as flap tiles. Tapping an
+                entry crosses it off (free, reversible) or, in naming mode,
+                names it, exactly as before. Token-coloured so it reads on both
+                registers; the answer is marked only once the day is over. */}
+            <div className={`hs-dep${g.naming ? ' naming' : ''}${shortRows ? ' shortrows' : ''}`}>
+              <div className="hs-dephead">
+                <span className="hs-deptitle">{boardTitle}</span>
+                <span className="hs-depsub">
+                  {playing
+                    ? (g.naming ? `Tap the ${PUZZLE.noun} you mean` : `One of these is the secret ${PUZZLE.noun}`)
+                    : PUZZLE.listLabel}
+                  {playing && <> &middot; <b>{standing}</b> still standing</>}
                 </span>
               </div>
-            ))}
+              {groups.map((grp) => (
+                <div key={grp.a} className="hs-drow">
+                  <span className="hs-dlab">
+                    <span className="hs-dlfull">{grp.a}</span>
+                    {shortRows && <span className="hs-dlshort" aria-hidden="true">{shortLabel(grp.a)}</span>}
+                  </span>
+                  <span className="hs-dents">
+                    {grp.items.map((i) => {
+                      const c = PUZZLE.cards[i];
+                      const isAns = !playing && ansShown && i === ANSWER;
+                      const isWrong = g.wrong.includes(i);
+                      const isOff = !isWrong && g.crossed.includes(i);
+                      const words = String(c.b).split(/\s+/).filter(Boolean);
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          className={`hs-fb${isWrong ? ' wrong' : isOff ? ' off' : ''}${isAns ? ' win' : ''}`}
+                          onClick={() => tapCard(i)}
+                          disabled={!playing}
+                          title={g.naming ? 'Name this one' : 'Cross it off'}
+                          aria-label={`${grp.a}, ${c.b}${c.c ? `, ${c.c}` : ''}${isWrong ? ', named and ruled out' : isOff ? ', crossed off' : ''}${isAns ? ', the secret one' : ''}`}
+                        >
+                          <span className="hs-fwords" aria-hidden="true">
+                            {words.map((w, wi) => (
+                              <span key={wi} className="hs-fw">
+                                {w.split('').map((ch, ci) => <span key={ci} className="hs-fl">{ch}</span>)}
+                              </span>
+                            ))}
+                          </span>
+                          {c.c ? <span className="hs-fsub" aria-hidden="true">{c.c}</span> : null}
+                        </button>
+                      );
+                    })}
+                  </span>
+                </div>
+              ))}
+            </div>
 
-            <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED, margin: '18px 0 8px' }}>What was said</div>
-            {PUZZLE.script.map((st, i) => (
-              <div key={i} className="hs-say">
-                <span className="hs-num">{i + 1}</span>
-                <span style={{ fontSize: 13.5, fontWeight: 700, color: INK, lineHeight: 1.5 }}>{statementText(PUZZLE, st)}</span>
+            {/* What was said: alternating speech bubbles, each speaker on their
+                own side, each line labelled with the one detail that speaker knows. */}
+            <div className="hs-heard">
+              <div className="hs-heardeye hs-heardeye-d">Overheard, in order</div>
+              <div className="hs-heardeye hs-heardeye-m">
+                Overheard &middot; {PUZZLE.who.map((w, i) => `${w} ${i === 0 ? 'knows the' : 'the'} ${PUZZLE.attrs[i]}`).join(', ')}
               </div>
-            ))}
+              {PUZZLE.script.map((st, i) => {
+                const k = Math.max(0, KEYS.indexOf(st.who));
+                const name = speakerOf(PUZZLE, st.who);
+                return (
+                  <div key={i} className={`hs-line s${k}${k === 1 ? ' rt' : ''}`}>
+                    <span className="hs-av" aria-hidden="true">{String(name).charAt(0)}</span>
+                    <div className="hs-bub">
+                      <span className="hs-bubeye">{i + 1} &middot; {name} &middot; knows the {attrOf(PUZZLE, st.who)}</span>
+                      <span className="hs-bubt">
+                        <span className="hs-sr">{name}: </span>{quoteText(PUZZLE, st)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </>
         )}
 
@@ -685,19 +815,25 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
         )}
 
         {started && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '12px 0 6px' }}>
-            <button
-              type="button"
-              className="hs-btn"
-              onClick={() => setG((cur) => ({ ...cur, naming: !cur.naming }))}
-              style={g.naming ? { background: `var(--stg-acc, ${COLORS.accent})`, borderColor: COLORS.accent, color: `var(--stg-onramp, ${T.white})` } : { background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(124,45,146,0.5)', color: ACC_DEEP_INK }}
-            >
-              <Ear size={14} /> {g.naming ? `Pick the ${PUZZLE.noun}…` : `Name the ${PUZZLE.noun}`}
-            </button>
-            {g.crossed.length > 0 && <button type="button" className="hs-btn" onClick={clearCrossed}><Eraser size={14} /> Clear cross-outs</button>}
-            {g.wrong.length >= 2 && (
-              <button type="button" className="hs-btn" style={{ borderColor: '#c3c8cf', color: FADED }} onClick={reveal}>Reveal (ends the day)</button>
-            )}
+          <div className="hs-acts">
+            <span className="hs-acthint" style={{ color: FADED }}>
+              {g.naming
+                ? <>Tap the {PUZZLE.noun} you mean. A wrong name costs 3 points.</>
+                : <>Tap an entry to cross it off. Free, and reversible.</>}
+            </span>
+            <span className="hs-actbtns">
+              {g.crossed.length > 0 && <button type="button" className="hs-btn" onClick={clearCrossed}><Eraser size={14} /> Clear cross-outs</button>}
+              {g.wrong.length >= 2 && (
+                <button type="button" className="hs-btn" style={{ borderColor: 'var(--stg-line3, #c3c8cf)', color: FADED }} onClick={reveal}>Reveal (ends the day)</button>
+              )}
+              <button
+                type="button"
+                className={`hs-btn hs-name${g.naming ? ' on' : ''}`}
+                onClick={() => setG((cur) => ({ ...cur, naming: !cur.naming }))}
+              >
+                <Ear size={15} /> {g.naming ? `Pick the ${PUZZLE.noun}…` : `Name the ${PUZZLE.noun}`}
+              </button>
+            </span>
           </div>
         )}
 

@@ -510,6 +510,13 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
         const c = document.createElement('span');
         c.className = 'gb-fly';
         c.textContent = w.answer[mi];
+        // The clone lives on <body>, outside the stage, so it cannot resolve
+        // the stage tokens: copy the look of the cell it leaves instead.
+        try {
+          const cs = window.getComputedStyle(from);
+          c.style.background = cs.backgroundColor; c.style.color = cs.color;
+          c.style.borderRadius = cs.borderRadius; c.style.fontFamily = cs.fontFamily;
+        } catch (e) {}
         c.style.left = a.left + 'px'; c.style.top = a.top + 'px';
         c.style.width = a.width + 'px'; c.style.height = a.height + 'px';
         document.body.appendChild(c);
@@ -573,6 +580,12 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
   const dayStats = useDayStats();
   const catRank = useCategoryRank({ self: 'garble', active: LOFT && !playing });
   const score = solvedCount + (g.finalSolved ? 5 : 0);
+  // The finale shakes on a miss on the stage board, the same beat a word row
+  // gets. Display only: read off the fx stamp submit() already writes.
+  const rejFinal = fx.missRow === 'final' && Date.now() - fx.missAt < 900;
+  // What the rules call a marked letter. The stage board rings them in the
+  // warn family; the paper board still paints them in the category blue.
+  const markWord = STAGE ? 'circled' : 'blue';
 
   const cellBase = { display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontWeight: 800, borderRadius: 6, userSelect: 'none' };
 
@@ -622,6 +635,46 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
     );
   }
 
+  // THE STAGE ROW (board rebuild, 2026-10-07): the scramble small on the left
+  // (tiles on a desktop, compact mono text on a phone, struck through once the
+  // word is untangled), the answer slots on the right. A marked square is a
+  // CIRCLE in the warn family, so the letters the finale is owed read as one
+  // set wherever they sit: ringed while open, filled once the word is solved,
+  // and the same circles fill the tray in the finale panel. Token colours
+  // only; the paper (non-stage) row above is unchanged.
+  function wordRowStage(w, i) {
+    const isSel = playing && sel === i && !g.solved[i];
+    const solvedRow = !!g.solved[i];
+    const flipping = fx.solved === i && Date.now() - fx.at < 1500;
+    const rejected = fx.missRow === i && Date.now() - fx.missAt < 900;
+    return (
+      <div key={i} className={`gb-row gs-row${isSel ? ' sel' : ''}${solvedRow ? ' done' : ''}`}
+        onClick={() => { if (playing && !g.solved[i]) { setSel(i); setTyped(''); } }}
+        style={{ '--i': i, cursor: playing && !g.solved[i] ? 'pointer' : 'default' }}>
+        <div className="gs-scr" aria-label={`Scrambled: ${w.scramble}`}>
+          {w.scramble.split('').map((ch, j) => <span key={j} aria-hidden="true">{ch}</span>)}
+        </div>
+        <span className="gs-scrt" aria-hidden="true">{w.scramble}</span>
+        <svg className="gs-arr" width="22" height="12" viewBox="0 0 22 12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><line x1="0" y1="6" x2="19" y2="6" /><polyline points="14,1 20,6 14,11" /></svg>
+        <div key={rejected ? 'm' + fx.miss : 'a'} className={`gs-ans${rejected ? ' gb-rej' : ''}`}>
+          {w.answer.split('').map((ch, j) => {
+            const marked = w.marks.includes(j);
+            let letter = '';
+            let st = '';
+            if (solvedRow) { letter = ch; st = 'ok'; }
+            else if (ansOpen) { letter = ch; st = 'rv'; }
+            else if (isSel) { letter = typed[j] || ''; st = typed.length === j ? 'cur' : 'typ'; }
+            return (
+              <span key={j} data-gcell={i + '-' + j}
+                className={`gs-slot${marked ? ' mk' : ''}${st ? ' ' + st : ''}${flipping ? ' gb-flipc' : ''}`}
+                style={{ '--j': j }}>{letter}</span>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   // Keyboard rows — shared between the inline desktop keyboard and the mobile
   // keyboard. On mobile the keys are pinned to the bottom of the screen (see the
   // fixed bar near the end of the render) so the scramble rows and finale clue
@@ -645,12 +698,14 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
         // page — but this chip's whole job is to show the reader the colour the
         // board is about to use, and a chip that has given up that fill explains
         // nothing. Barter's two do the same for the same reason.
-        { label: 'Blue letters feed the finale', style: { background: COLORS.gold, border: `1.5px solid ${COLORS.gold}`, color: COLORS.goldInk } },
+        STAGE
+          ? { label: 'Circled letters feed the finale', style: { background: 'var(--stg-warn)', border: '1.5px solid var(--stg-warn)', color: 'var(--stg-raise)', borderRadius: 999 } }
+          : { label: 'Blue letters feed the finale', style: { background: COLORS.gold, border: `1.5px solid ${COLORS.gold}`, color: COLORS.goldInk } },
       ]}
       lead="Untangle five garbled words, then the finale they feed."
       steps={[
         <><b>Tap a row</b>, type the word using exactly the letters shown, and hit <b>enter</b>. A wrong word is a <b>miss</b>.</>,
-        <>Each solved word donates its <b>blue letters</b> to <b>the finale</b>, a last answer with its clue printed up top.</>,
+        <>Each solved word donates its <b>{markWord} letters</b> to <b>the finale</b>, a last answer with its clue printed up top.</>,
         <>Solve the finale whenever you see it. It <b>ends the puzzle</b>.</>,
       ]}
       knack="The finale is worth half the board, so a blue letter or two is often enough to call it before all five words are untangled."
@@ -712,6 +767,55 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
             .gb-conf{position:fixed;top:-3vh;z-index:86;pointer-events:none;border-radius:2px;animation:gbfall linear forwards;}
             @media(max-width:560px){.gb-wrap{padding-left:14px !important;padding-right:14px !important;}}
             .gb-htp-s{display:none;}
+            .stage-page .gs-tally{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:0 0 18px;font-family:${MONO};font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);}
+            .stage-page .gs-tally b{font-size:16px;font-weight:500;color:var(--stg-ink);letter-spacing:0;}
+            .stage-page .gs-rows{display:flex;flex-direction:column;gap:12px;margin-bottom:26px;}
+            .stage-page .gs-row{display:flex;align-items:center;gap:16px;min-height:56px;border-radius:12px;}
+            .stage-page .gs-scr{display:flex;gap:4px;flex:0 0 auto;min-width:200px;}
+            .stage-page .gs-scr span{width:34px;height:34px;border-radius:6px;background:var(--stg-surf2);color:var(--stg-ink);display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:15px;}
+            .stage-page .gs-row.done .gs-scr span{color:var(--stg-mute);text-decoration:line-through;}
+            .stage-page .gs-scrt{display:none;}
+            .stage-page .gs-arr{flex:0 0 auto;color:var(--stg-mute2);}
+            .stage-page .gs-ans{display:flex;gap:6px;flex:1 1 auto;min-width:0;}
+            .stage-page .gs-slot{flex:0 1 52px;min-width:0;height:56px;box-sizing:border-box;border-radius:8px;border:2px solid var(--stg-cell-line);background:var(--stg-cell);color:var(--stg-ink);display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:24px;user-select:none;}
+            .stage-page .gs-slot.mk{border-radius:50%;border-color:var(--stg-warn);}
+            .stage-page .gs-row.sel .gs-slot{background:color-mix(in srgb,var(--stg-acc) 9%,var(--stg-cell));}
+            .stage-page .gs-slot.cur{border-color:var(--stg-acc);border-width:2.5px;background:color-mix(in srgb,var(--stg-acc) 20%,var(--stg-cell));}
+            .stage-page .gs-slot.mk.cur{border-color:var(--stg-warn);}
+            .stage-page .gs-slot.ok{border-color:var(--stg-acc);background:color-mix(in srgb,var(--stg-acc) 14%,var(--stg-cell));}
+            .stage-page .gs-slot.mk.ok{background:var(--stg-warn);border-color:var(--stg-warn);color:var(--stg-raise);}
+            .stage-page .gs-slot.rv{border-style:dashed;border-color:var(--stg-bad);background:transparent;color:var(--stg-bad);}
+            .stage-page .gs-slot.mk.rv{border-color:var(--stg-warn);color:var(--stg-warn);}
+            .stage-page .gs-fin{background:var(--stg-surf);border:2px solid var(--stg-line);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:14px;margin-bottom:16px;}
+            .stage-page .gs-fin.sel{border-color:var(--stg-acc);}
+            .stage-page .gs-fin-hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+            .stage-page .gs-fin-k{font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--stg-warn);}
+            .stage-page .gs-fin-any{font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-mute);}
+            .stage-page .gs-clue{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:400;font-size:24px;line-height:1.35;color:var(--stg-ink);}
+            .stage-page .gs-tray-k{font-family:${MONO};font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-mute);margin-bottom:-6px;}
+            .stage-page .gs-tray{display:flex;gap:6px;}
+            .stage-page .gs-coin{flex:0 1 40px;min-width:0;aspect-ratio:1/1;box-sizing:border-box;border-radius:50%;border:2px dashed var(--stg-cell-line);display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:17px;color:var(--stg-raise);}
+            .stage-page .gs-coin.on{border-style:solid;border-color:var(--stg-warn);background:var(--stg-warn);}
+            .stage-page .gs-fslots{display:flex;gap:6px;}
+            .stage-page .gs-fslot{flex:0 1 50px;}
+            .stage-page .gs-fslot.won{background:var(--stg-warn);border-color:var(--stg-warn);color:var(--stg-raise);}
+            @media(max-width:640px){
+              .stage-page .gs-rows{gap:10px;margin-bottom:20px;}
+              .stage-page .gs-row{gap:10px;min-height:50px;}
+              .stage-page .gs-scr{display:none;}
+              .stage-page .gs-scrt{display:block;flex:0 0 74px;font-family:${MONO};font-size:16px;letter-spacing:.14em;color:var(--stg-ink);overflow:hidden;}
+              .stage-page .gs-row.done .gs-scrt{color:var(--stg-mute);text-decoration:line-through;}
+              .stage-page .gs-arr{display:none;}
+              .stage-page .gs-ans{gap:5px;}
+              .stage-page .gs-slot{flex-basis:48px;height:50px;font-size:21px;}
+              .stage-page .gs-fin{border-radius:16px;padding:16px;gap:12px;margin-left:-2px;margin-right:-2px;}
+              .stage-page .gs-fin-any{display:none;}
+              .stage-page .gs-clue{font-size:20px;}
+              .stage-page .gs-tray{gap:5px;}
+              .stage-page .gs-coin{flex-basis:34px;font-size:15px;}
+              .stage-page .gs-fslots{gap:5px;}
+              .stage-page .gs-fslot{flex-basis:36px;height:46px;font-size:20px;border-radius:7px;}
+            }
             @media(max-width:520px){.gb-htp-f{display:none;}.gb-htp-s{display:inline;}}
             @media(max-width:560px){.gb-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.gb-ttl h1{font-size:21px;letter-spacing:0.02em;}.gb-ttl .gb-ttl-dt{font-size:15px;}.gb-ttl-dot{display:none;}}
           ` }} />
@@ -766,7 +870,49 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
             </div>
           )}
 
-          {!preStart && (<>
+          {STAGE && !preStart && (<>
+          <div className="gs-tally">
+            <span><b><RollNum value={solvedCount} /></b>/5 untangled</span>
+            <span aria-hidden="true">&middot;</span>
+            <span><b style={g.misses > 5 ? { color: 'var(--stg-bad)' } : undefined}><RollNum value={g.misses} /></b> {g.misses === 1 ? 'miss' : 'misses'}</span>
+            {g.finalSolved && <><span aria-hidden="true">&middot;</span><span>finale solved</span></>}
+          </div>
+
+          <div className="gs-rows">{PUZZLE.words.map((w, i) => wordRowStage(w, i))}</div>
+
+          {/* the finale */}
+          <div className={`gs-fin${playing && sel === 'final' ? ' sel' : ''}`} onClick={() => { if (playing) { setSel('final'); setTyped(''); } }} style={{ cursor: playing ? 'pointer' : 'default' }}>
+            <div className="gs-fin-hd">
+              <span className="gs-fin-k">The finale</span>
+              <span className="gs-fin-any">Fair game any time</span>
+            </div>
+            <div className="gs-clue">&ldquo;{PUZZLE.clue}&rdquo;</div>
+            <div className="gs-tray-k">Letters you have collected</div>
+            <div className="gs-tray">
+              {bank.map((b, i) => {
+                const fk = b.wi + '-' + b.mi;
+                const inFlight = flying.has(fk);
+                const lit = (g.solved[b.wi] || ansOpen) && !inFlight;
+                const fresh = lit && fx.solved === b.wi && landed && Date.now() - landed < 900;
+                return (
+                  <span key={i} data-gbank={fk} className={`gs-coin${lit ? ' on' : ''}${fresh ? ' gb-land' : ''}`}>{lit ? b.ch : ''}</span>
+                );
+              })}
+            </div>
+            <div className={`gs-fslots${rejFinal ? ' gb-rej' : ''}`} key={rejFinal ? 'fm' + fx.miss : 'fa'}>
+              {PUZZLE.final.split('').map((ch, j) => {
+                const isSel = playing && sel === 'final';
+                let letter = '', st = '';
+                if (g.finalSolved) { letter = ch; st = 'won'; }
+                else if (ansOpen) { letter = ch; st = 'rv'; }
+                else if (isSel) { letter = typed[j] || ''; st = typed.length === j ? 'cur' : 'typ'; }
+                return <span key={j} className={`gs-slot gs-fslot${st ? ' ' + st : ''}`}>{letter}</span>;
+              })}
+            </div>
+          </div>
+          </>)}
+
+          {!STAGE && !preStart && (<>
           <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap', marginBottom: 16 }}>
             <div style={{ fontSize: 12.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.05em', color: FADED }}>
               Misses <span style={{ fontSize: 17, color: g.misses > 5 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, marginLeft: 4 }}><RollNum value={g.misses} /></span>
@@ -821,14 +967,14 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
             <div style={{ maxWidth: 470 }}>
               {!mobileUi && (
                 <div style={{ textAlign: 'left', marginBottom: kbdOpen ? 8 : 0 }}>
-                  <button onClick={() => setKbdOpen((o) => !o)} style={{ background: 'none', border: '1.5px solid rgba(28,30,36,0.22)', borderRadius: 8, padding: '6px 13px', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: FADED }}>
+                  <button onClick={() => setKbdOpen((o) => !o)} style={{ background: 'none', border: STAGE ? '1.5px solid var(--stg-cell-line)' : '1.5px solid rgba(28,30,36,0.22)', borderRadius: 8, padding: '6px 13px', minHeight: STAGE ? 44 : undefined, cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: FADED }}>
                     {kbdOpen ? 'Hide keyboard' : 'Show keyboard'}
                   </button>
                 </div>
               )}
               {!mobileUi && kbdOpen && keyboardRows}
               <p style={{ fontSize: 11.5, color: FADED, fontWeight: 600, margin: mobileUi ? '0 0 2px' : '6px 0 0', textAlign: 'center' }}>
-                Use exactly the letters shown. The finale is fair game at any time.
+                {STAGE ? 'Circled squares drop their letter into the tray, and the tray spells the finale. ' : ''}Use exactly the letters shown. The finale is fair game at any time.
               </p>
               {/* Reveal is deliberately buried: below the puzzle, only once you have
                   a display name and have made progress, and it takes two taps. */}
@@ -1037,7 +1183,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
       <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 640, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Garble</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Garble is a free daily word scramble puzzle from Mind Loft. Five garbled words, one more than the classic format, each untangle into a real word using exactly the letters shown, and every solution donates its blue letters to the finale.
+          Garble is a free daily word scramble puzzle from Mind Loft. Five garbled words, one more than the classic format, each untangle into a real word using exactly the letters shown, and every solution donates its {markWord} letters to the finale.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           The finale is the sixth answer: a final word with its clue printed from the start. Solve it whenever you spot it, it ends the puzzle on the spot, so an early finale sprint is a real strategy. Wrong arrangements count as misses, and fewest misses breaks ties on the daily leaderboard.

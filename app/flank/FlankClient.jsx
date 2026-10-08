@@ -218,6 +218,10 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
   const viewedRef = useRef(false);
   const noticeRef = useRef(null);
   const inputRef = useRef(null);
+  // The ring is laid out in pixels from the board's measured width, so the
+  // slots can be spaced evenly along the ellipse at any width.
+  const ringRef = useRef(null);
+  const [ringW, setRingW] = useState(600);
 
   const playing = g.status === 'playing';
   const preStart = playing && !g.t0;
@@ -250,6 +254,16 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
   const strikes = g.wrong.length;
 
   useEffect(() => { gRef.current = g; }, [g]);
+
+  useEffect(() => {
+    const el = ringRef.current;
+    if (!el) return undefined;
+    const read = () => { const w = Math.round(el.clientWidth); if (w > 0) setRingW(w); };
+    read();
+    let ro = null;
+    try { ro = new ResizeObserver(read); ro.observe(el); } catch (e) { window.addEventListener('resize', read); }
+    return () => { if (ro) ro.disconnect(); else window.removeEventListener('resize', read); };
+  }, [preStart]);
 
   useEffect(() => {
     try {
@@ -467,6 +481,46 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
 
   const slots = useMemo(() => ANSWERS.map((code) => ({ code, name: nameOf(code) })), [ANSWERS]);
 
+  // ─── the border ring ─────────────────────────────────────────────────────
+  // One slot per land border (1 to 14), spaced at EQUAL ARC LENGTH around an
+  // ellipse rather than at equal angles: on a tall phone ellipse equal angles
+  // crowd the slots at the top and bottom until they overlap. Slot 0 sits at
+  // twelve o'clock and the rest run clockwise.
+  const RING = (() => {
+    const W = Math.max(260, ringW);
+    const phone = W < 520;
+    const n = Math.max(1, TOTAL);
+    const cw = phone ? (n <= 6 ? 104 : n <= 10 ? 92 : 80) : (n <= 8 ? 132 : n <= 11 ? 118 : 106);
+    const ch = phone ? 38 : 44;
+    const fs = phone ? (n <= 10 ? 13 : 11.5) : (n <= 11 ? 15 : 13.5);
+    const h = phone ? (n <= 6 ? 360 : n <= 10 ? 440 : 540) : (n <= 8 ? 440 : n <= 11 ? 500 : 560);
+    const ow = phone ? 136 : 184, oh = phone ? 92 : 136;
+    const rx = W / 2 - cw / 2 - 2, ry = h / 2 - ch / 2 - 4;
+    const cx = W / 2, cy = h / 2;
+    const STEPS = 720;
+    const at = (i) => { const t = -Math.PI / 2 + (i / STEPS) * 2 * Math.PI; return [rx * Math.cos(t), ry * Math.sin(t)]; };
+    const cum = [0];
+    for (let i = 1; i <= STEPS; i++) { const [x0, y0] = at(i - 1), [x1, y1] = at(i); cum.push(cum[i - 1] + Math.hypot(x1 - x0, y1 - y0)); }
+    const per = cum[STEPS];
+    const pts = [];
+    let j = 0;
+    for (let k = 0; k < n; k++) {
+      const want = (k / n) * per;
+      while (j < STEPS && cum[j + 1] < want) j++;
+      const [dx, dy] = at(j);
+      pts.push({ x: Math.round(cx + dx), y: Math.round(cy + dy), len: Math.round(Math.hypot(dx, dy)), ang: +(Math.atan2(dy, dx) * 180 / Math.PI).toFixed(1) });
+    }
+    return { pts, cw, ch, fs, h, ow, oh, phone };
+  })();
+  // Found neighbors first, in the order they were found; then the rest in the
+  // dataset's own (alphabetical-by-code) order, which only matters once the
+  // run is over and a missed name may be shown.
+  const ringSlots = (() => {
+    const out = g.found.map((code) => ({ code, name: nameOf(code), found: true, missed: false }));
+    for (const s of slots) if (!g.found.includes(s.code)) out.push({ code: s.code, name: s.name, found: false, missed: !playing });
+    return out;
+  })();
+
   function shareUrl() { return withRef(`mindloftdaily.com/flank${isTodays ? '' : `?p=${PUZZLE.num}`}`); }
   function shareText() {
     const bar = '\u{1F7E9}'.repeat(foundCount) + '⬜'.repeat(Math.max(0, TOTAL - foundCount));
@@ -505,26 +559,10 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
     />
   );
 
-  const slotChip = (s, i) => {
-    const isFound = g.found.includes(s.code);
-    const dead = !playing;
-    const missed = dead && !isFound;
-    let bg = T.white, border = 'rgba(28,30,36,0.28)', color = COLORS.faded;
-    if (isFound) { bg = '#eef7e2'; border = COLORS.accent; color = '#2c4a0a'; }
-    if (missed) { bg = '#fdecef'; border = COLORS.rust; color = COLORS.rust; }
-    if (flash === s.code) { bg = '#dff0c8'; }
-    return (
-      <div key={s.code} className="fl-slot" style={{ background: bg, borderColor: border, color }}>
-        <span style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, opacity: 0.6, marginRight: 8 }}>{i + 1}</span>
-        <span style={{ fontWeight: 800 }}>{isFound || (missed && (!LOFT || revealed)) ? s.name : '· · · · ·'}</span>
-      </div>
-    );
-  };
-
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
-      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'clip' : undefined }}>
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="flank" name="Flank" collapsed={started} loft={LOFT} />
@@ -556,15 +594,35 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
           @media(max-width:560px){.fl-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .fl-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .fl-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .fl-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-          @media(max-width:560px){.fl-grid{grid-template-columns:1fr;}}
-          .fl-slot{display:flex;align-items:center;font-family:${SANS};font-size:14px;border:2px solid;border-radius:9px;padding:10px 12px;line-height:1.3;transition:background .15s ease,border-color .15s ease;}
-          .fl-input{font-family:${SANS};font-weight:700;font-size:16px;width:100%;border: 2px solid var(--stg-line, rgba(28,30,36,0.4));border-radius:9px;padding:11px 13px;color:${INK};background:var(--stg-surf, ${T.white});outline:none;}
-          .fl-input:focus{border-color:var(--stg-acc, ${COLORS.accent});}
+          .fl-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
+          .fl-strike{width:24px;height:24px;box-sizing:border-box;border-radius:6px;border:2px solid var(--stg-bad, ${COLORS.rust});display:inline-flex;align-items:center;justify-content:center;font-family:${SANS};font-weight:800;font-size:13px;line-height:1;}
+          .fl-strike.on{background:var(--stg-bad, ${COLORS.rust});color:var(--stg-raise, ${T.white});}
+          @media(max-width:640px){.fl-strike{width:20px;height:20px;border-radius:5px;font-size:11px;}}
+          .fl-play{display:flex;flex-direction:column;gap:12px;}
+          /* The ring. Lines first, then the oval, then the slots, so every
+             line runs UNDER the shapes it joins. */
+          .fl-ring{position:relative;width:100%;}
+          .fl-line{position:absolute;left:50%;top:50%;height:0;border-top:2px dashed var(--stg-cell-line, rgba(28,30,36,0.4));transform-origin:0 50%;pointer-events:none;}
+          .fl-line.on{border-top-style:solid;border-top-color:var(--stg-acc-ink, ${COLORS.accent});}
+          .fl-core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);box-sizing:border-box;border-radius:50%;border:3px solid var(--stg-acc-ink, ${COLORS.accent});background:linear-gradient(var(--stg-acc-tint, transparent), var(--stg-acc-tint, transparent)), var(--stg-cell, ${T.white});display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;}
+          .fl-slot{position:absolute;transform:translate(-50%,-50%);box-sizing:border-box;display:flex;align-items:center;justify-content:center;text-align:center;padding:3px 8px;border-radius:22px;border:2px dashed var(--stg-cell-line, rgba(28,30,36,0.4));background:var(--stg-cell, ${T.white});color:${FADED};font-family:${SANS};font-weight:800;line-height:1.1;transition:background .15s ease,border-color .15s ease;}
+          .fl-slot.on{border-style:solid;border-color:var(--stg-acc-ink, ${COLORS.accent});background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, ${T.white});}
+          .fl-slot.miss{border-color:var(--stg-bad, ${COLORS.rust});color:var(--stg-bad, ${COLORS.rust});}
+          .fl-slot.flash{animation:flpop .5s ease;}
+          @keyframes flpop{0%{transform:translate(-50%,-50%) scale(1)}40%{transform:translate(-50%,-50%) scale(1.12)}100%{transform:translate(-50%,-50%) scale(1)}}
+          .fl-input{font-family:${SANS};font-weight:700;font-size:16px;flex:1;min-width:0;min-height:52px;box-sizing:border-box;border: 1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));border-radius:12px;padding:0 16px;color:${INK};background:var(--stg-cell, ${T.white});outline:none;}
+          .fl-input::placeholder{color:${FADED};}
+          .fl-input:focus{border-color:var(--stg-acc-ink, ${COLORS.accent});box-shadow:0 0 0 1px var(--stg-acc-ink, ${COLORS.accent});}
           .fl-input.shake{animation:flshake .3s linear;}
           @keyframes flshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-          .fl-pip{width:15px;height:15px;border-radius:4px;border:2px solid ${COLORS.rust};display:inline-block;}
-          .fl-pip.on{background:${COLORS.rust};}
+          .fl-add{font-family:${SANS};font-weight:800;font-size:15px;min-height:52px;padding:0 22px;border-radius:12px;border:0;cursor:pointer;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, ${T.white});}
+          /* PHONE: the input docks to the bottom of the screen while the run is
+             live, so the ring stays in view above the keyboard. (Sticky inside the board, so it never covers the page below; the
+             root clips overflow-x with clip, not hidden, which keeps sticky alive.) */
+          @media(max-width:640px){
+            .fl-dock{position:sticky;bottom:0;z-index:40;margin:0 -16px;padding:12px 16px calc(10px + env(safe-area-inset-bottom));background:var(--stg-ground, ${T.surface});border-top:1px solid var(--stg-line, rgba(28,30,36,0.18));}
+            .fl-add{padding:0 18px;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
@@ -619,63 +677,94 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
           </div>
           )}
 
-          {/* The prompt: today's country. A question stays with the board. */}
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 500, color: ACC_INK, marginBottom: 4 }}>
-              Today&apos;s country{PUZZLE.sunday ? ' · Sunday Edition' : ''}
+          {/* Top of the board: what to do, how far along, and the strikes. */}
+          <div className="fl-top">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: ACC_INK }}>
+                Name every land neighbor{PUZZLE.sunday ? ' · Sunday Edition' : ''}
+              </span>
+              <span style={{ fontFamily: MONO, fontSize: 13, color: FADED, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <b style={{ color: INK, fontSize: 18, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{foundCount}</b> of {TOTAL} found
+              </span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
-              <span style={{ fontFamily: SANS, fontSize: 27, fontWeight: 900, letterSpacing: '-0.01em', color: INK, lineHeight: 1.1 }}>{SUBJECT}</span>
-              <span style={{ fontFamily: SANS, fontSize: 13.5, fontWeight: 700, color: FADED }}>{TOTAL === 1 ? 'has 1 land border' : `has ${TOTAL} land borders`}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} aria-label={`${strikes} of ${STRIKES} strikes used`} role="img">
+              <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: FADED, marginRight: 4 }}>Strikes</span>
+              {Array.from({ length: STRIKES }, (_, i) => (
+                <span key={i} className={`fl-strike${i < strikes ? ' on' : ''}`} aria-hidden="true">{i < strikes ? '✕' : ''}</span>
+              ))}
             </div>
           </div>
 
-          {playing && started && (
-            <div style={{ marginBottom: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <input
-                  ref={inputRef}
-                  className={`fl-input${notice && notice.kind === 'strike' ? ' shake' : ''}`}
-                  value={q}
-                  onChange={(e) => onType(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onEnter(); } }}
-                  placeholder={`Type a country that borders ${SUBJECT}...`}
-                  autoCapitalize="off" autoComplete="off" autoCorrect="off" spellCheck={false}
-                  aria-label="Type a bordering country"
-                />
-                <span style={{ display: 'inline-flex', gap: 5, flex: 'none' }} aria-label={`${strikes} of ${STRIKES} strikes used`}>
-                  {Array.from({ length: STRIKES }, (_, i) => <i key={i} className={`fl-pip${i < strikes ? ' on' : ''}`} />)}
-                </span>
+          <div className="fl-play">
+            {/* THE RING. Today's country in the middle, one slot per land
+                border around it. Found neighbors fill the slots in the order
+                the player found them, so the slot positions say nothing about
+                where the unfound neighbors lie or what they are called. */}
+            <div className="fl-ring" ref={ringRef} style={{ height: RING.h }}>
+              {RING.pts.map((p, k) => (
+                <span key={`l${k}`} className={`fl-line${k < foundCount ? ' on' : ''}`}
+                  style={{ width: p.len, transform: `rotate(${p.ang}deg)` }} aria-hidden="true" />
+              ))}
+              <div className="fl-core" style={{ width: RING.ow, height: RING.oh }}>
+                <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: ACC_INK }}>Today</span>
+                <span style={{ fontSize: SUBJECT.length > 14 ? (RING.phone ? 15 : 18) : (RING.phone ? 19 : 25), fontWeight: 800, color: INK, lineHeight: 1.1, textAlign: 'center', padding: '0 10px' }}>{SUBJECT}</span>
+                <span style={{ fontFamily: MONO, fontSize: 11, color: `var(--stg-ink2, ${COLORS.faded})` }}>{TOTAL === 1 ? '1 land border' : `${TOTAL} land borders`}</span>
               </div>
-              <div style={{ minHeight: 19, marginTop: 6, fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: notice && notice.kind === 'strike' ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})` }}>
-                {notice ? notice.msg : ''}
+              {ringSlots.map((s, k) => {
+                const p = RING.pts[k];
+                const show = s.found || (s.missed && (!LOFT || revealed));
+                return (
+                  <div key={k}
+                    className={`fl-slot${s.found ? ' on' : ''}${s.missed ? ' miss' : ''}${flash && s.code === flash ? ' flash' : ''}`}
+                    style={{ left: p.x, top: p.y, width: RING.cw, minHeight: RING.ch, fontSize: RING.fs }}
+                    aria-label={s.found ? `Found: ${s.name}` : (show ? `Missed: ${s.name}` : 'Not found yet')}>
+                    {show ? s.name : '?'}
+                  </div>
+                );
+              })}
+            </div>
+
+            {playing && started && (
+              <div className="fl-dock">
+                <div style={{ display: 'flex', alignItems: 'stretch', gap: 10 }}>
+                  <input
+                    ref={inputRef}
+                    className={`fl-input${notice && notice.kind === 'strike' ? ' shake' : ''}`}
+                    value={q}
+                    onChange={(e) => onType(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onEnter(); } }}
+                    placeholder={`Name a country that borders ${SUBJECT}`}
+                    autoCapitalize="off" autoComplete="off" autoCorrect="off" spellCheck={false}
+                    aria-label="Type a bordering country"
+                  />
+                  <button type="button" className="fl-add" onMouseDown={(e) => e.preventDefault()} onClick={onEnter}>Add</button>
+                </div>
+                <div style={{ minHeight: 19, marginTop: 6, fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: notice && notice.kind === 'strike' ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})` }}>
+                  {notice ? notice.msg : 'A correct neighbor banks itself as soon as the name is complete.'}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {g.status === 'lost' && (
-            <div style={{ fontFamily: SANS, fontSize: 14.5, fontWeight: 800, color: `var(--stg-ink, ${COLORS.rust})`, marginBottom: 10 }}>
-              {STRIKES} strikes. The run ends at {foundCount} of {TOTAL}; the missed borders are marked below.
-            </div>
-          )}
-          {won && (
-            <div style={{ fontFamily: SANS, fontSize: 14.5, fontWeight: 800, color: COLORS.green, marginBottom: 10 }}>
-              Every border named in {elapsed}.
-            </div>
-          )}
+            {g.status === 'lost' && (
+              <div className="fl-msg" style={{ fontFamily: SANS, fontSize: 14.5, fontWeight: 800, color: `var(--stg-ink, ${COLORS.rust})` }}>
+                {STRIKES} strikes. The run ends at {foundCount} of {TOTAL}; the missed borders are marked in red.
+              </div>
+            )}
+            {won && (
+              <div className="fl-msg" style={{ fontFamily: SANS, fontSize: 14.5, fontWeight: 800, color: `var(--stg-good, ${COLORS.green})` }}>
+                Every border named in {elapsed}.
+              </div>
+            )}
 
-          <div className="fl-grid">
-            {slots.map((s, i) => slotChip(s, i))}
+            {(g.wrong.length > 0 || !playing) && (
+              <div className="fl-miss" style={{ fontFamily: MONO, fontSize: 12, color: FADED, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'baseline' }}>
+                <span style={{ letterSpacing: '0.1em', textTransform: 'uppercase' }}>Misses:</span>
+                {g.wrong.length ? g.wrong.map((code) => (
+                  <span key={code} style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: `var(--stg-bad, ${COLORS.rust})`, textDecoration: 'line-through' }}>{nameOf(code)}</span>
+                )) : <span>none</span>}
+              </div>
+            )}
           </div>
-
-          {(g.wrong.length > 0 || !playing) && (
-            <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)', fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: FADED, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'baseline' }}>
-              <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Wrong</span>
-              {g.wrong.length ? g.wrong.map((code) => (
-                <span key={code} style={{ color: `var(--stg-ink, ${COLORS.rust})`, textDecoration: 'line-through' }}>{nameOf(code)}</span>
-              )) : <span>none yet</span>}
-            </div>
-          )}
         </div>
         )}
 

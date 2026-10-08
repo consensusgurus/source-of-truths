@@ -78,6 +78,31 @@ const MAX_PER_PROMPT = 3;
 // of the crowd matched per answer set — a genuinely sharp read.
 const winBar = (total) => Math.round(total * 0.4);
 
+// A two-word topic for the progress strip, read off the question itself, so no
+// puzzle data changes. "Name a classic breakfast food." -> "BREAKFAST FOOD";
+// "Name something people do while on hold." -> "ON HOLD". Display only.
+const TOPIC_STOP = new Set(['people', 'you', 'everyone', 'kids', 'that', 'they', 'your', 'their', 'do', 'does', 'are', 'is', 'to', 'for', 'of', 'in', 'at', 'on', 'when', 'while', 'with', 'from', 'a', 'an', 'the', 'always', 'never', 'will', 'would', 'can', 'into', 'by', 'most']);
+function topicOf(q) {
+  const s = String(q || '').replace(/[.?!]+$/, '').replace(/^name\s+/i, '');
+  const words = s.split(/\s+/).filter(Boolean);
+  if (!words.length) return '';
+  const lead = words[0].toLowerCase();
+  let pick;
+  if (lead === 'something' || lead === 'someone' || lead === 'one' || lead === 'what') {
+    // The tail of the question carries the topic: "...while on hold".
+    pick = words.slice(-2);
+    while (pick.length > 1 && /^(a|an|the|they|you|people|their|your|that)$/i.test(pick[0])) pick = pick.slice(1);
+  } else {
+    // The noun phrase right after the article: "a classic breakfast food".
+    const rest = (lead === 'a' || lead === 'an' || lead === 'the') ? words.slice(1) : words;
+    const head = [];
+    for (const w of rest) { if (TOPIC_STOP.has(w.toLowerCase()) || /['\u2019]/.test(w)) break; head.push(w); if (head.length === 3) break; }
+    pick = head.length ? head.slice(-2) : rest.slice(0, 1);
+  }
+  return pick.join(' ').replace(/[,;:%]/g, '').toUpperCase();
+}
+const SLOT_HINTS = ['Most people will say', 'Second most common', 'Third most common'];
+
 const isIosDevice = () =>
   typeof navigator !== 'undefined' &&
   (/iPad|iPhone|iPod/.test(navigator.userAgent || '') ||
@@ -276,6 +301,11 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  // One question at a time (owner-approved board). Presentation only: which
+  // prompt is on screen, and how far the player has looked, for the strip.
+  const [step, setStep] = useState(0);
+  const [seen, setSeen] = useState(0);
+  const slotRefs = useRef([]);
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -349,6 +379,16 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
       }
     } catch (e) {}
   }, [g, hydrated, STORE_KEY, PUZZLE, puzzles]);
+
+  // A resumed board opens on the first prompt still waiting for an answer.
+  useEffect(() => {
+    if (!hydrated) return;
+    const i = g.entries.findIndex((row) => !row.some((t) => t && t.trim()));
+    const s = i < 0 ? P - 1 : i;
+    setStep(s);
+    setSeen((v) => Math.max(v, s));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated]);
 
   // Live game clock. `elapsed` below is derived from the current time, and it
   // used to read Date.now() during render, so the displayed clock only advanced
@@ -528,6 +568,21 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
       return g2;
     });
   }
+  // Move the board to another prompt. Navigation only: nothing is scored or
+  // saved here, and every prompt stays editable until the final lock-in.
+  function goTo(i, focus) {
+    const s = Math.max(0, Math.min(P - 1, i));
+    setStep(s);
+    setSeen((v) => Math.max(v, s));
+    if (focus) setTimeout(() => { try { const el = slotRefs.current[0]; if (el) el.focus(); } catch (e) {} }, 0);
+  }
+  function slotKey(e, j) {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    if (j < MAX_PER_PROMPT - 1) { const el = slotRefs.current[j + 1]; if (el) el.focus(); return; }
+    if (step < P - 1) goTo(step + 1, true);
+    else if (readyToFace) faceTheCrowd();
+  }
   function clearPrompt(p) {
     if (!playing) return;
     setG((cur) => ({ ...cur, entries: cur.entries.map((row, i) => (i === p ? Array(MAX_PER_PROMPT).fill('') : row)) }));
@@ -547,7 +602,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
       });
       const d = await r.json();
       if (!d || d.error || !Array.isArray(d.reveal)) {
-        say('Couldn’t reach the crowd — try again in a moment.');
+        say('Couldn’t reach the crowd. Try again in a moment.');
         setSending(false);
         return;
       }
@@ -556,14 +611,14 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
       postResult(g2, d.points, d.onBoard || 0);
       setG(g2);
     } catch (e) {
-      say('Couldn’t reach the crowd — try again in a moment.');
+      say('Couldn’t reach the crowd. Try again in a moment.');
     }
     setSending(false);
   }
 
   function resetGame() {
     try { localStorage.removeItem(STORE_KEY); } catch (e) {}
-    setG(freshState(P)); setEndClosed(false);
+    setG(freshState(P)); setEndClosed(false); setStep(0); setSeen(0);
   }
 
   function shareText() {
@@ -697,6 +752,54 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
           .fd-face:active{transform:translateY(1px);box-shadow:0 2px 0 rgba(20,22,28,0.25);}
           .fd-face:disabled{opacity:.55;cursor:default;}
           .fd-face .fd-gold{color:${COLORS.gold};}
+          .fd-play{max-width:640px;margin:0 auto;}
+          .fd-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-family:${MONO};font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 12px;}
+          .fd-strip{display:grid;gap:8px;margin:0 0 4px;}
+          .fd-seg{display:flex;flex-direction:column;gap:6px;justify-content:center;min-height:44px;padding:4px 0;background:none;border:0;cursor:pointer;text-align:left;min-width:0;}
+          .fd-bar{display:block;height:6px;border-radius:3px;background:var(--stg-cell-line, rgba(28,30,36,0.28));}
+          .fd-seg.ans .fd-bar{background:var(--stg-acc, ${COLORS.accent});}
+          .fd-seg.cur .fd-bar{background:var(--stg-ink, ${COLORS.ink});}
+          .fd-lab{font-family:${MONO};font-size:10px;letter-spacing:.12em;color:var(--stg-mute, ${COLORS.faded});white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+          .fd-seg.cur .fd-lab{color:var(--stg-ink, ${COLORS.ink});}
+          .fd-seg:focus-visible{outline:2px solid var(--stg-acc-ink, ${COLORS.accent});outline-offset:2px;border-radius:4px;}
+          .fd-qwrap{display:flex;flex-direction:column;gap:8px;margin:18px 0 18px;}
+          .fd-eye{font-family:${MONO};font-size:12px;letter-spacing:.16em;text-transform:uppercase;}
+          .fd-q{font-family:${SANS};font-size:32px;font-weight:800;line-height:1.15;letter-spacing:-.02em;}
+          .fd-board{background:var(--stg-surf, ${COLORS.accentSoft});border:2px solid var(--stg-acc, ${COLORS.accent});border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px;}
+          .fd-slot{display:flex;align-items:center;gap:12px;min-height:72px;border-radius:12px;background:var(--stg-cell, var(--white));border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));padding:0 12px 0 0;overflow:hidden;}
+          .fd-slot.on,.fd-slot:focus-within{border-color:var(--stg-acc, ${COLORS.accent});}
+          .fd-num{flex:0 0 64px;align-self:stretch;display:flex;align-items:center;justify-content:center;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));font-family:${MONO};font-size:28px;font-weight:500;}
+          .fd-field{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;cursor:text;}
+          .fd-hint{font-family:${MONO};font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
+          .fd-sin{width:100%;min-height:32px;background:transparent;border:0;outline:0;padding:0;color:${INK};font-family:${SANS};font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;}
+          .fd-sin::placeholder{color:var(--stg-mute, ${COLORS.faded});opacity:1;text-transform:none;font-weight:700;letter-spacing:0;}
+          .fd-seal{flex:0 0 56px;height:46px;border-radius:8px;background:var(--stg-ground, ${COLORS.paper});border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:18px;color:var(--stg-mute, ${COLORS.faded});}
+          .fd-note{font-family:${SANS};font-size:14px;font-weight:600;line-height:1.5;margin:16px 0 0;}
+          .fd-clear{margin-left:8px;min-height:44px;font-family:${SANS};font-size:12.5px;font-weight:800;color:var(--stg-mute, ${COLORS.faded});background:none;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;padding:0 4px;vertical-align:middle;}
+          .fd-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:22px 0 0;}
+          .fd-back{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:${INK};border:1.5px solid var(--stg-line3, rgba(28,30,36,0.42));border-radius:12px;padding:0 18px;min-height:48px;cursor:pointer;}
+          .fd-back:disabled{opacity:.4;cursor:default;}
+          .fd-next{height:auto;min-height:50px;border-radius:12px;text-transform:none;letter-spacing:0;padding:0 24px;}
+          .fd-status{font-family:${SANS};font-size:12px;font-weight:700;margin:10px 0 0;text-align:right;}
+          @media(max-width:640px){
+            .fd-strip{gap:5px;}
+            .fd-lab{display:none;}
+            .fd-qwrap{margin:14px 0 16px;gap:6px;}
+            .fd-eye{font-size:11px;letter-spacing:.14em;}
+            .fd-eyex{display:none;}
+            .fd-q{font-size:25px;line-height:1.2;}
+            .fd-board{border-radius:18px;padding:12px;gap:10px;}
+            .fd-slot{min-height:80px;gap:10px;padding-right:10px;}
+            .fd-num{flex-basis:46px;font-size:22px;}
+            .fd-hint{font-size:9px;letter-spacing:.12em;}
+            .fd-sin{font-size:17px;}
+            .fd-seal{flex-basis:40px;height:36px;font-size:14px;border-radius:7px;}
+            .fd-note{font-size:13px;line-height:1.45;}
+            .fd-nav{gap:8px;}
+            .fd-back{flex:1 1 0;min-height:52px;font-size:15px;}
+            .fd-next{flex:2 1 0;min-height:52px;justify-content:center;font-size:16px;}
+            .fd-status{text-align:center;}
+          }
           .fd-livedot{display:inline-block;width:7px;height:7px;border-radius:99px;background:${COLORS.rust};animation:fdpulse 1.4s infinite;}
           @keyframes fdpulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.35;transform:scale(.8);}}
           @media(max-width:560px){.fd-mh-tile{width:30px !important;height:30px !important;font-size:17px !important;}}
@@ -735,7 +838,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'Feud is ready'}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: '0 0 6px' }}>Five prompts, three answers each, typed blind. The answer key is live &mdash; it&rsquo;s whatever today&rsquo;s players say. The prompts stay sealed until you begin.</p>
+                <p style={{ margin: '0 0 6px' }}>Five prompts, three answers each, typed blind. The answer key is live: it&rsquo;s whatever today&rsquo;s players say. The prompts stay sealed until you begin, then come one at a time.</p>
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
@@ -749,61 +852,99 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
 
-        {/* the day's five prompts, typed blind */}
-        {!preStart && playing && (
-          <div className={STAGE ? 'stg-board' : undefined} style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: '15px 17px 12px', boxShadow: '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
-            <div style={{ display: LOFT ? 'none' : 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, marginBottom: 11, flexWrap: 'wrap' }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}><MessageSquareText size={12} /> today&rsquo;s survey</span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap', marginLeft: 'auto' }}><span className="fd-livedot" /> live answer key</span>
+        {/* the day's five prompts, typed blind, ONE AT A TIME (owner-approved
+            board): a progress strip, the question large, and a game-show answer
+            board of three numbered slots, each with its points sealed. Every
+            prompt stays editable from the strip until the final lock-in. */}
+        {!preStart && playing && (() => {
+          const row = g.entries[step] || [];
+          const done = row.some((t) => t && t.trim());
+          const last = step === P - 1;
+          return (
+          <div className={STAGE ? 'stg-board fd-play' : 'fd-play'} style={{ marginBottom: 12 }}>
+            <div className="fd-top" style={{ color: FADED }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><MessageSquareText size={12} /> Today&rsquo;s survey</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}><span className="fd-livedot" /> Live answer key, moving until midnight ET</span>
             </div>
-            <div style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, marginBottom: 12, lineHeight: 1.5 }}>
-              The board is hidden until you lock in. Answer what you think <b style={{ color: INK }}>today&rsquo;s crowd</b> will say &mdash; all three answers score, so fill every box. Your answers become votes the moment you submit.
+            <div className="fd-strip" role="list" aria-label="Your progress through today's survey" style={{ gridTemplateColumns: `repeat(${P}, minmax(0, 1fr))` }}>
+              {PROMPTS.map((pr, p) => {
+                const answered = (g.entries[p] || []).some((t) => t && t.trim());
+                const cur = p === step;
+                return (
+                  <button key={p} type="button" role="listitem" className={`fd-seg${cur ? ' cur' : ''}${answered ? ' ans' : ''}`}
+                    onClick={() => goTo(p, false)}
+                    aria-current={cur ? 'step' : undefined}
+                    aria-label={`Question ${p + 1} of ${P}${answered ? ', answered' : ', not answered yet'}`}>
+                    <span className="fd-bar" />
+                    <span className="fd-lab">{p <= seen || answered ? topicOf(pr.q) : ' '}</span>
+                  </button>
+                );
+              })}
             </div>
-            {PROMPTS.map((pr, p) => {
-              const row = g.entries[p] || [];
-              const done = row.some((t) => t && t.trim());
-              return (
-                <div key={p} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px', marginBottom: 9 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                    <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 7px' }}>{p + 1} of {P}</span>
-                    {done && <span style={{ marginLeft: 'auto', color: `var(--stg-ink, ${COLORS.green})`, display: 'flex' }}><svg viewBox="0 0 12 12" width="14" height="14" fill="none"><path d="M2.5 6.2 L5 8.6 L9.5 3.6" stroke={T.successDeep} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></span>}
-                  </div>
-                  <div style={{ fontFamily: SANS, fontSize: 15.5, fontWeight: 800, letterSpacing: '-0.01em', color: INK, lineHeight: 1.4, marginBottom: 9 }}>{pr.q}</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-                    {row.map((val, j) => (
+
+            <div className="fd-qwrap">
+              <div className="fd-eye" style={{ color: ACC_INK }}>Question {step + 1} of {P}<span className="fd-eyex"> &middot; We asked the crowd</span></div>
+              <div className="fd-q" style={{ color: INK }}>{PROMPTS[step] && PROMPTS[step].q}</div>
+            </div>
+
+            <div className="fd-board">
+              {row.map((val, j) => {
+                const filled = !!(val && val.trim());
+                return (
+                  <div key={`${step}-${j}`} className={`fd-slot${filled ? ' on' : ''}`}>
+                    <span className="fd-num" aria-hidden="true">{j + 1}</span>
+                    <label className="fd-field">
+                      <span className="fd-hint">{SLOT_HINTS[j]}</span>
                       <input
-                        key={j}
-                        className="fd-input"
+                        ref={(el) => { slotRefs.current[j] = el; }}
+                        className="fd-sin"
                         type="text"
                         maxLength={48}
                         autoComplete="off"
                         autoCorrect="off"
                         spellCheck={false}
-                        placeholder={j === 0 ? 'Most people will say...' : j === 1 ? 'Second most common...' : 'Third most common...'}
+                        enterKeyHint={j < MAX_PER_PROMPT - 1 ? 'next' : (last ? 'done' : 'next')}
+                        placeholder="Type an answer"
                         value={val}
-                        onChange={(e) => setEntry(p, j, e.target.value)}
+                        onChange={(e) => setEntry(step, j, e.target.value)}
+                        onKeyDown={(e) => slotKey(e, j)}
                       />
-                    ))}
+                    </label>
+                    <span className="fd-seal" title="Points stay sealed until you lock in" aria-label="Points sealed until you lock in">??</span>
                   </div>
-                  {done && (
-                    <button onClick={() => clearPrompt(p)} style={{ marginTop: 8, fontFamily: SANS, fontSize: 11.5, fontWeight: 800, color: FADED, background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5, padding: 0 }}>
-                      <RotateCcw size={12} /> Clear
-                    </button>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
 
-            <div style={{ textAlign: 'center', margin: '14px 0 8px' }}>
-              <button className="fd-face" onClick={faceTheCrowd} disabled={sending || !readyToFace}>
-                <Users size={17} className="fd-gold" /> {sending ? 'Facing the crowd…' : 'Face the crowd'}
-              </button>
-              <div style={{ fontFamily: SANS, fontSize: 11.5, fontWeight: 700, color: FADED, marginTop: 8 }}>
-                {readyToFace ? 'All three answers pay — each one banks the share of the crowd that said it too.' : `Answer all ${P} prompts to lock in — ${P - answeredCount} to go.`}
-              </div>
+            <div className="fd-note" style={{ color: FADED }}>
+              All three answers score: each one banks the share of today&rsquo;s crowd that said it too, and becomes a vote the moment you lock in. Points stay sealed until then. Answer what <b style={{ color: INK }}>the crowd</b> will say, not what you would.
+              {done && (
+                <button type="button" className="fd-clear" onClick={() => clearPrompt(step)}>
+                  <RotateCcw size={12} /> Clear this question
+                </button>
+              )}
+            </div>
+
+            <div className="fd-nav">
+              <button type="button" className="fd-back" onClick={() => goTo(step - 1, true)} disabled={step === 0}>Back</button>
+              {last ? (
+                <button type="button" className="fd-face fd-next" onClick={faceTheCrowd} disabled={sending || !readyToFace}>
+                  <Users size={17} className="fd-gold" /> {sending ? 'Facing the crowd…' : 'Lock in'}
+                </button>
+              ) : (
+                <button type="button" className="fd-face fd-next" onClick={() => goTo(step + 1, true)}>
+                  Next<span className="fd-eyex"> &middot; question {step + 2}</span>
+                </button>
+              )}
+            </div>
+            <div className="fd-status" style={{ color: FADED }}>
+              {readyToFace
+                ? (last ? 'Every question has an answer. Lock in to face the crowd.' : 'Every question has an answer. Lock in from the last question.')
+                : `Answer all ${P} questions to lock in. ${P - answeredCount} to go.`}
             </div>
           </div>
-        )}
+          );
+        })()}
 
 
           </div>

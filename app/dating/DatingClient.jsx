@@ -715,10 +715,10 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
       lead="Five moments from history, shuffled. Put them back in order."
       steps={[
         <>Arrange the cards from <b>earliest</b> at the top to <b>latest</b> at the bottom: {mobileUi ? 'tap the arrows to move a card' : 'drag a card where it belongs, or use the arrows'}.</>,
-        <>You get <b>{MAX_CHECKS} checks</b>. Each check locks every event you&apos;ve placed correctly and reveals its year.</>,
+        <>You get <b>{MAX_CHECKS} checks</b>. A check locks every card that sits in its right place and shows its real year on the card. Cards it did not confirm stay undated.</>,
         <>One free <b>hint</b>, on your first ever play, reveals the year of your most misplaced event.</>,
       ]}
-      knack="Anchor the two dates you are sure of, then slot the rest between them. A check spent early still tells you which placings were right."
+      knack="Anchor the two dates you are sure of, then slot the rest between them. A check spent early still pays: every card it confirms shows its year, and those years fence in the cards around them."
       footer={<>Date the whole board on your first check for a perfect 10. Each extra check costs a point, and each event you never place costs two. New moments every day at midnight Eastern.</>}
     />
   );
@@ -773,6 +773,28 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
           @media(max-width:520px){.dt-htp-f{display:none;}.dt-htp-s{display:inline;}}
           @media(max-width:560px){.dt-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.dt-ttl h1{font-size:21px;letter-spacing:0.02em;}.dt-ttl .dt-ttl-dt{font-size:15px;}.dt-ttl-dot{display:none;}}
           .dt-htp-s{display:none;}
+          .dt-sb{--dt-spw:80px;}
+          .dt-endm{display:none;}
+          .dt-sarrow{width:44px;height:44px;border-radius:10px;border:1.5px solid var(--stg-line2);background:var(--stg-surf);color:var(--stg-ink);}
+          .dt-sarrow:disabled{border-color:var(--stg-line);background:var(--stg-surf);}
+          @media(max-width:640px){
+            .dt-sb{--dt-spw:26px;}
+            .dt-endd{display:none;}
+            .dt-endm{display:block;}
+            .dt-sbhead{margin-bottom:10px !important;}
+            .dt-theme{font-size:20px !important;}
+            .dt-ckl{display:none;}
+            .dt-ck{width:20px !important;height:20px !important;}
+            .dt-card{min-height:84px !important;padding:12px !important;gap:10px !important;}
+            .dt-body{flex-direction:column;align-items:flex-start !important;gap:4px !important;}
+            .dt-yr{flex-direction:row !important;align-items:baseline !important;gap:8px !important;min-width:0 !important;}
+            .dt-yv{font-size:13px !important;}
+            .dt-node{width:18px !important;height:18px !important;margin-top:-9px !important;left:calc(var(--dt-spw) / -2 - 9px) !important;}
+            .dt-arrs{flex-direction:column;}
+            .dt-grip{display:none;}
+            .dt-acts{width:100%;}
+            .dt-cta{width:100%;justify-content:center;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
@@ -825,8 +847,105 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
 
-        {/* the board */}
-        {!preStart && (
+        {/* THE STAGE BOARD: a vertical timeline. A spine runs down the left,
+            earlier at the top and later at the bottom, with one node per card.
+            A check confirms every card sitting in its right slot; a confirmed
+            card shows its real year and its node fills with the accent. An
+            unconfirmed card shows no year (the year is not in the DOM at all),
+            except the one a hint named, and the whole board once it is over. */}
+        {!preStart && STAGE && (
+        <div className="stg-board dt-sb" style={{ background: SURF, border: `1px solid ${SURF_B}`, borderRadius: 14, padding: '16px 18px 14px', marginBottom: 12 }}>
+          <div className="dt-sbhead" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14, marginBottom: 14 }}>
+            <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--stg-acc-ink)' }}>{PUZZLE.theme ? 'Today’s theme' : 'Today'}</span>
+              <span className="dt-theme" style={{ fontFamily: SANS, fontSize: 24, fontWeight: 800, letterSpacing: '-0.01em', lineHeight: 1.2, color: INK }}>{PUZZLE.theme || `${N === 6 ? 'Six' : 'Five'} moments, earliest first`}</span>
+            </div>
+            <div role="img" aria-label={`${checksUsed} of ${MAX_CHECKS} checks used`} style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: 7, paddingTop: 2 }}>
+              <span className="dt-ckl" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED }}>Checks</span>
+              {Array.from({ length: MAX_CHECKS }, (_, i) => (
+                <span key={i} className="dt-ck" style={{ width: 22, height: 22, borderRadius: '50%', boxSizing: 'border-box', border: '2px solid var(--stg-acc)', background: i < checksUsed ? 'var(--stg-acc)' : 'transparent' }} />
+              ))}
+            </div>
+          </div>
+
+          <div className="dt-tl" style={{ display: 'flex' }}>
+            <div className="dt-spcol" aria-hidden="true" style={{ flex: '0 0 auto', width: 'var(--dt-spw)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <span className="dt-endd" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: FADED, paddingBottom: 8 }}>Earlier</span>
+              <div className="dt-spine" style={{ flex: 1, width: 4, borderRadius: 2, background: 'var(--stg-line2)' }} />
+              <span className="dt-endd" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: FADED, paddingTop: 8 }}>Later</span>
+            </div>
+            <div className={shake ? 'dt-shake dt-list' : 'dt-list'} style={{ flex: '1 1 auto', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 12, userSelect: drag ? 'none' : undefined }}>
+              <span className="dt-endm" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: FADED }}>Earlier</span>
+              {shownOrder.map((ev, slot) => {
+                const locked = lockedSlots[slot];
+                const hinted = g.hintUsed && g.hintIdx === ev;
+                const showYear = locked || (g.status !== 'playing' && solShown) || hinted;
+                const draggable = !mobileUi && playing && !locked;
+                const dragging = drag && drag.from === slot;
+                const dropHere = drag && !dragging && drag.target === slot;
+                const state = locked ? 'Locked' : (playing ? (hinted ? 'Hint' : (mobileUi ? 'Use arrows' : 'Drag')) : '');
+                return (
+                  <div key={ev} ref={(el) => { rowRefs.current[slot] = el; }} onPointerDown={draggable ? (e) => startDrag(slot, e) : undefined} title={draggable ? 'Drag to reorder' : undefined}
+                    className="dt-card"
+                    style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 14, background: dropHere ? 'color-mix(in srgb, var(--stg-acc) 16%, var(--stg-surf2))' : 'var(--stg-surf2)', border: locked || dropHere ? '2px solid var(--stg-acc)' : '1.5px solid var(--stg-line2)', borderRadius: 14, padding: '12px 14px 12px 16px', minHeight: 76, boxSizing: 'border-box', cursor: draggable ? (dragging ? 'grabbing' : 'grab') : undefined, zIndex: dragging ? 5 : undefined, transform: dragging ? `translateY(${drag.dy}px)` : undefined, boxShadow: dragging ? '0 8px 20px rgba(0,0,0,0.28)' : undefined, touchAction: draggable ? 'none' : undefined }}>
+                    {/* the node on the spine, at this card's height */}
+                    <span aria-hidden="true" className="dt-node" style={{ position: 'absolute', left: 'calc(var(--dt-spw) / -2 - 11px)', top: '50%', marginTop: -11, width: 22, height: 22, borderRadius: '50%', boxSizing: 'border-box', border: `3px solid ${locked ? 'var(--stg-acc)' : 'var(--stg-mute2)'}`, background: locked ? 'var(--stg-acc)' : 'var(--stg-ground)' }} />
+                    <div className="dt-body" style={{ flex: '1 1 auto', minWidth: 0, display: 'flex', alignItems: 'center', gap: 14 }}>
+                      <div className="dt-yr" style={{ flex: '0 0 auto', minWidth: 84, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
+                        {showYear
+                          ? <span className="dt-yv" style={{ fontFamily: MONO, fontSize: 18, fontWeight: 500, whiteSpace: 'nowrap', color: locked ? 'var(--stg-acc-ink)' : INK }}>{PUZZLE.events[ev].y}</span>
+                          : <span className="dt-yv" aria-hidden="true" style={{ fontFamily: MONO, fontSize: 18, fontWeight: 500, color: 'var(--stg-mute2)' }}>????</span>}
+                        {state ? <span className="dt-st" style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: locked ? 'var(--stg-acc-ink)' : FADED }}>{state}</span> : null}
+                      </div>
+                      <span style={{ flex: '1 1 auto', minWidth: 0, fontFamily: SANS, fontSize: 15, fontWeight: 700, lineHeight: 1.35, color: INK }}>{PUZZLE.events[ev].t}</span>
+                    </div>
+                    {draggable && (
+                      <svg className="dt-grip" aria-hidden="true" width="14" height="22" viewBox="0 0 18 26" fill="currentColor" style={{ flex: '0 0 auto', color: 'var(--stg-mute2)' }}><circle cx="5" cy="5" r="2.2" /><circle cx="13" cy="5" r="2.2" /><circle cx="5" cy="13" r="2.2" /><circle cx="13" cy="13" r="2.2" /><circle cx="5" cy="21" r="2.2" /><circle cx="13" cy="21" r="2.2" /></svg>
+                    )}
+                    {playing && !locked && (
+                      <span className="dt-arrs" style={{ flex: '0 0 auto', display: 'flex', gap: 6 }}>
+                        <button className="dt-arrow dt-sarrow" onClick={() => moveCard(slot, -1)} disabled={slot === 0 || lockedSlots.slice(0, slot).every(Boolean)} aria-label="Move earlier"><ArrowUp size={16} strokeWidth={2.5} /></button>
+                        <button className="dt-arrow dt-sarrow" onClick={() => moveCard(slot, 1)} disabled={slot === N - 1 || lockedSlots.slice(slot + 1).every(Boolean)} aria-label="Move later"><ArrowDown size={16} strokeWidth={2.5} /></button>
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+              <span className="dt-endm" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: FADED }}>Later</span>
+            </div>
+          </div>
+
+          <div className="dt-foot" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--stg-line)', flexWrap: 'wrap' }}>
+            <span style={{ flex: '1 1 220px', fontFamily: SANS, fontSize: 13, fontWeight: 600, lineHeight: 1.45, color: FADED }}>
+              {won ? <b style={{ color: INK }}>Dated in {checksUsed} check{checksUsed === 1 ? '' : 's'}.</b>
+                : playing ? <>A check locks every card in its right place and shows its year. {mobileUi ? 'Use the arrows to move the rest.' : 'Drag the rest, or use the arrows.'}</>
+                : <>Filled nodes are the cards your checks confirmed.</>}
+            </span>
+            {started && (
+              <div className="dt-acts" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                {identity && checksUsed > 0 && (
+                  <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
+                    style={{ minHeight: 44, background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12.5, color: armReveal ? 'var(--stg-bad)' : 'var(--stg-mute)', textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                    <Eye size={13} /> {armReveal ? 'Tap again, this ends the puzzle and shows the timeline' : 'Reveal the timeline & end'}
+                  </button>
+                )}
+                {hintOk && !g.hintUsed && (
+                  <button className="dt-btn" onClick={useHint} title="Reveal the year of your most misplaced event (one hint, first play only)"
+                    style={{ minHeight: 44, background: 'var(--stg-surf2)', border: '1.5px solid var(--stg-warn)', color: 'var(--stg-warn)', fontSize: 13 }}>
+                    <Lightbulb size={14} /> Hint
+                  </button>
+                )}
+                <button className="dt-btn dt-cta" onClick={checkOrder} style={{ minHeight: 48, fontSize: 15, borderRadius: 12, padding: '12px 20px', background: 'var(--stg-acc)', color: 'var(--stg-onramp)', borderColor: 'var(--stg-acc)' }}>
+                  <Check size={15} strokeWidth={3} /> Check my order &middot; {checksLeft} left
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+        )}
+
+        {/* the board (Loft / pre-stage branch) */}
+        {!preStart && !STAGE && (
         <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           {/* These figures move UP into the cap on a loft page; printing
               them twice is the one thing to avoid. */}
@@ -1097,7 +1216,7 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
       <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Dating</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Dating is a free daily history puzzle from Mind Loft. Each day deals five moments from history, shuffled out of sequence; your job is to arrange them in chronological order. You get three checks, every event you place correctly locks in with its year revealed, and a perfect first check scores a flawless 10.
+          Dating is a free daily history puzzle from Mind Loft. Each day deals five moments from history, shuffled out of sequence; your job is to arrange them in chronological order. You get three checks. Each check locks every event sitting in its right place and shows that event's year on its card, while the events it did not confirm stay undated, and a perfect first check scores a flawless 10.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           The fun is in the near-misses: history is full of events that happened far earlier, or far later, than they feel like they should have. Oxford was teaching students before the Aztecs had a capital; London had a subway before anyone had a car. Every puzzle ends with the full dated timeline, a one-line story for each moment, and one fact worth keeping.

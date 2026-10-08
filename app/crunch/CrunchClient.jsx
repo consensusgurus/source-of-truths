@@ -279,6 +279,17 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
 
   const tiles = useMemo(() => replay(PUZZLE.numbers, g.steps), [PUZZLE, g.steps]);
   const selTile = useMemo(() => (sel == null ? null : tiles.find((t) => t.id === sel) || null), [sel, tiles]);
+  // Display only. The dealt six keep their slots so a spent number can show
+  // struck through; ids match replay()'s, so selection is unchanged.
+  const liveById = {};
+  for (const t of tiles) liveById[t.id] = t;
+  const dealt = PUZZLE.numbers.map((v, i) => ({ id: `n${i}`, v }));
+  const madeLive = tiles.filter((t) => t.made);
+  // the value behind bestDiff, when a step still on the board produced it
+  let closestVal = null;
+  if (bestDiff != null) {
+    for (const st of g.steps) { if (Math.abs(st[3] - TARGET) === bestDiff) { closestVal = st[3]; break; } }
+  }
 
   useEffect(() => { gRef.current = g; }, [g]);
   useEffect(() => { if (sel != null && !selTile) { setSel(null); setOp(null); } }, [sel, selTile]);
@@ -646,17 +657,61 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.cr-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .cr-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .cr-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .cr-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-          .cr-rack{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;min-height:76px;touch-action:manipulation;}
-          .cr-tile{width:76px;height:76px;border-radius:10px;border:2px solid ${STAGE ? 'var(--stg-line2)' : TILE_EDGE};background:${STAGE ? 'var(--stg-surf2)' : TILE_FACE};color:${INK};font-family:${MONO};font-weight:500;font-size:27px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:inset 0 -4px 0 rgba(28,30,36,0.13), 0 2px 0 rgba(28,30,36,0.22);transition:transform .12s ease;}
+          .cr-tool{font-family:${SANS};font-weight:800;font-size:13px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${INK};border-radius:12px;padding:0 14px;min-height:50px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
+          .cr-panels{display:flex;gap:16px;align-items:stretch;}
+          .cr-target{flex:1;min-width:0;border:2px solid var(--stg-acc, ${COLORS.accent});background:${STAGE ? 'var(--stg-acc-tint)' : SLATE};border-radius:18px;padding:14px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;}
+          .cr-plab{font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:500;}
+          .cr-target .cr-plab{color:${STAGE ? 'var(--stg-acc-ink)' : 'rgba(255,255,255,0.75)'};}
+          .cr-tnum{font-family:${MONO};font-size:64px;line-height:1.05;font-weight:500;color:${STAGE ? 'var(--stg-ink)' : T.white};font-variant-numeric:tabular-nums;}
+          .cr-tneed{font-family:${MONO};font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:${STAGE ? 'var(--stg-mute)' : 'rgba(255,255,255,0.7)'};}
+          .cr-close{width:200px;flex:none;background:${STAGE ? 'var(--stg-surf2)' : COLORS.cream};border:1.5px solid ${STAGE ? 'var(--stg-line)' : 'rgba(28,30,36,0.18)'};border-radius:18px;padding:14px 18px;display:flex;flex-direction:column;justify-content:center;gap:6px;}
+          .cr-close .cr-plab{color:${FADED};}
+          .cr-cnum{font-family:${MONO};font-size:34px;line-height:1.05;color:${INK};font-variant-numeric:tabular-nums;}
+          .cr-cdist{font-size:14px;font-weight:800;color:${ACC_INK};}
+          .cr-cdist.exact{color:var(--stg-good, ${COLORS.green});}
+          .cr-cdist.none{color:${FADED};}
+          .cr-rack{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;min-height:64px;touch-action:manipulation;margin-top:22px;}
+          .cr-tile{width:64px;height:64px;border-radius:12px;border:2px solid ${STAGE ? 'var(--stg-cell-line)' : TILE_EDGE};background:${STAGE ? 'var(--stg-surf2)' : TILE_FACE};color:${INK};font-family:${MONO};font-weight:500;font-size:24px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s ease;padding:0;}
           .cr-tile:active{transform:translateY(1px);}
-          .cr-tile.on{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);outline:3px solid var(--stg-acc, ${COLORS.accent});outline-offset:2px;}
-          .cr-op{width:56px;height:52px;border-radius:9px;border:2px solid var(--blue-deep);background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};font-family:${MONO};font-size:22px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-          .cr-op.on{background:${STAGE ? STAGE_C : COLORS.ink};color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};}
+          .cr-tile.made{width:84px;border-color:${STAGE ? 'var(--stg-acc-ink)' : COLORS.accent};background:${STAGE ? 'var(--stg-acc-tint)' : TILE_MADE};}
+          .cr-tile.used{background:transparent;border-style:dashed;border-color:${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.3)'};color:${FADED};text-decoration:line-through;cursor:default;}
+          .cr-tile.on{background:${STAGE ? 'var(--stg-acc)' : COLORS.accentSoft};color:${STAGE ? 'var(--stg-onramp)' : INK};outline:3px solid var(--stg-acc-ink, ${COLORS.accent});outline-offset:2px;}
+          .cr-ops{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap;}
+          .cr-op{width:64px;height:52px;border-radius:12px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${STAGE ? 'var(--stg-acc-ink)' : 'var(--blue-deep)'};font-family:${MONO};font-size:24px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+          .cr-op.on{background:${STAGE ? STAGE_C : COLORS.ink};border-color:${STAGE ? STAGE_C : COLORS.ink};color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};}
           .cr-op:disabled{opacity:0.35;cursor:default;}
           .cr-rack.shake{animation:crshake .34s ease;}
           @keyframes crshake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
-          @media(max-width:420px){.cr-tile{width:62px;height:62px;font-size:23px;}.cr-op{width:50px;height:48px;}}
+          .cr-wk{margin-top:22px;display:flex;flex-direction:column;gap:8px;}
+          .cr-wkrow{display:flex;align-items:center;gap:14px;background:${STAGE ? 'var(--stg-surf2)' : COLORS.cream};border-radius:12px;padding:10px 14px;}
+          .cr-wkn{font-family:${MONO};font-size:12px;color:${FADED};width:16px;flex:none;}
+          .cr-wkeq{flex:1;min-width:0;font-family:${MONO};font-size:19px;color:${INK};font-variant-numeric:tabular-nums;}
+          .cr-wkoff{font-family:${MONO};font-size:11.5px;color:${FADED};white-space:nowrap;}
+          .cr-wkr{font-family:${MONO};font-size:19px;color:${ACC_INK};background:${STAGE ? 'var(--stg-acc-tint)' : COLORS.accentSoft};border-radius:8px;padding:3px 10px;font-variant-numeric:tabular-nums;}
+          .cr-wkr.exact{color:var(--stg-good, ${COLORS.green});}
+          .cr-acts{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+          .cr-acts .cr-tool{flex:1 1 0;}
+          .cr-lock{flex:2 1 0 !important;border:0 !important;background:var(--stg-acc, ${COLORS.ink}) !important;color:var(--stg-onramp, ${T.white}) !important;font-size:14px !important;}
+          .cr-lock.armed{background:${STAGE ? 'var(--stg-ink)' : COLORS.ink} !important;color:${STAGE ? 'var(--stg-ground)' : T.white} !important;}
+          @media(max-width:640px){
+            .cr-panels{gap:10px;}
+            .cr-target{flex:1.3;padding:10px;border-radius:16px;}
+            .cr-tnum{font-size:46px;}
+            .cr-tneed{font-size:9.5px;letter-spacing:.08em;text-align:center;}
+            .cr-close{width:auto;flex:1;padding:10px 12px;border-radius:16px;gap:2px;}
+            .cr-plab{font-size:10px;}
+            .cr-cnum{font-size:26px;}
+            .cr-cdist{font-size:13px;}
+            .cr-rack{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px;}
+            .cr-tile,.cr-tile.made{width:auto;height:56px;font-size:21px;}
+            .cr-ops{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px;}
+            .cr-op{width:auto;height:50px;font-size:22px;}
+            .cr-wk{margin-top:16px;gap:6px;}
+            .cr-wkrow{padding:8px 12px;gap:10px;border-radius:10px;}
+            .cr-wkn{display:none;}
+            .cr-wkeq,.cr-wkr{font-size:17px;}
+            .cr-acts{gap:8px;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
@@ -710,36 +765,59 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
           </div>
           )}
 
-          {/* the target board */}
-          <div style={{ background: SLATE, borderRadius: 10, padding: '12px 14px 14px', textAlign: 'center', marginBottom: 14 }}>
-            <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)', fontWeight: 500 }}>Target</div>
-            <div style={{ fontFamily: MONO, fontSize: 52, lineHeight: 1.05, fontWeight: 500, color: T.white, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.02em' }}>{TARGET}</div>
-            <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', fontWeight: 500, marginTop: 2 }}>needs {need} of the six</div>
+          {/* the target, beside the closest you have made so far */}
+          <div className="cr-panels">
+            <div className="cr-target">
+              <span className="cr-plab">Target</span>
+              <span className="cr-tnum">{TARGET}</span>
+              <span className="cr-tneed">needs {need} of the six</span>
+            </div>
+            <div className="cr-close" aria-live="polite">
+              <span className="cr-plab">Closest so far</span>
+              <span className="cr-cnum">{closestVal == null ? '—' : closestVal}</span>
+              <span className={`cr-cdist${bestDiff === 0 ? ' exact' : bestDiff == null ? ' none' : ''}`}>
+                {bestDiff == null ? 'Nothing made yet' : bestDiff === 0 ? 'Exact' : `${bestDiff} away`}
+              </span>
+            </div>
           </div>
 
-          {/* the tiles on the table */}
+          {/* the numbers: the six you were dealt (struck through once spent),
+              then any number you have made that is still on the table */}
           <div key={shake} className={`cr-rack${shake ? ' shake' : ''}`}>
-            {tiles.map((t) => (
-              <button key={t.id} type="button" className={`cr-tile${sel === t.id ? ' on' : ''}`} onClick={() => onTile(t)}
-                disabled={!playing} aria-label={`number ${t.v}`}
-                style={{ background: STAGE ? (sel === t.id ? 'var(--stg-acc)' : t.made ? 'var(--stg-panel)' : 'var(--stg-surf2)')
-                  : (sel === t.id ? COLORS.accentSoft : t.made ? TILE_MADE : TILE_FACE),
-                  color: STAGE && sel === t.id ? 'var(--stg-onramp)' : undefined, opacity: playing ? 1 : 0.75, cursor: playing ? 'pointer' : 'default' }}>
+            {dealt.map((d) => {
+              const t = liveById[d.id];
+              if (!t) {
+                return (
+                  <button key={d.id} type="button" className="cr-tile used" disabled aria-label={`number ${d.v}, used`}>{d.v}</button>
+                );
+              }
+              return (
+                <button key={t.id} type="button" className={`cr-tile${sel === t.id ? ' on' : ''}`} onClick={() => onTile(t)}
+                  disabled={!playing} aria-label={`number ${t.v}`} aria-pressed={sel === t.id}
+                  style={{ opacity: playing ? 1 : 0.75, cursor: playing ? 'pointer' : 'default' }}>
+                  {t.v}
+                </button>
+              );
+            })}
+            {madeLive.map((t) => (
+              <button key={t.id} type="button" className={`cr-tile made${sel === t.id ? ' on' : ''}`} onClick={() => onTile(t)}
+                disabled={!playing} aria-label={`number ${t.v}, made by you`} aria-pressed={sel === t.id}
+                style={{ opacity: playing ? 1 : 0.75, cursor: playing ? 'pointer' : 'default' }}>
                 {t.v}
               </button>
             ))}
-            {tiles.length === 1 && (
-              <div style={{ width: '100%', textAlign: 'center', fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: FADED, marginTop: 4 }}>
-                That is every number used up. Undo or start over if you want another run at it.
-              </div>
-            )}
           </div>
+          {tiles.length === 1 && (
+            <div style={{ textAlign: 'center', fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: FADED, marginTop: 8 }}>
+              That is every number used up. Undo or start over if you want another run at it.
+            </div>
+          )}
 
           {/* the operations */}
-          <div style={{ display: 'flex', gap: 9, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' }}>
+          <div className="cr-ops">
             {OPS.map((o) => (
               <button key={o} type="button" className={`cr-op${op === o ? ' on' : ''}`} onClick={() => onOp(o)}
-                disabled={!playing} aria-label={`operation ${o}`}>{OPL[o]}</button>
+                disabled={!playing} aria-label={`operation ${o}`} aria-pressed={op === o}>{OPL[o]}</button>
             ))}
           </div>
 
@@ -750,47 +828,44 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
             )}
           </div>
 
-          {/* the steps taken so far */}
-          {used > 0 && (
-            <div style={{ marginTop: 12, borderTop: '1px solid rgba(28,30,36,0.16)', paddingTop: 10 }}>
-              <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.16em', textTransform: 'uppercase', color: FADED, fontWeight: 500, marginBottom: 6 }}>Your working</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                {g.steps.map((st, i) => (
-                  <div key={i} style={{ fontFamily: MONO, fontSize: 13.5, fontWeight: 500, color: st[3] === TARGET ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontVariantNumeric: 'tabular-nums' }}>
-                    {st[0]} {OPL[st[1]]} {st[2]} = {st[3]}
-                    {st[3] !== TARGET && (
-                      <span style={{ color: FADED, fontSize: 11.5 }}> &nbsp;{Math.abs(st[3] - TARGET)} off</span>
-                    )}
-                  </div>
-                ))}
-              </div>
+          {/* every step taken so far, one equation per row */}
+          {(used > 0 || playing) && (
+            <div className="cr-wk">
+              <div className="cr-plab" style={{ color: FADED }}>Your working</div>
+              {used === 0 && (
+                <div style={{ fontFamily: SANS, fontSize: 13, fontWeight: 600, color: FADED }}>Each step you make lists here, with the number it gave you.</div>
+              )}
+              {g.steps.map((st, i) => (
+                <div key={i} className="cr-wkrow">
+                  <span className="cr-wkn">{i + 1}</span>
+                  <span className="cr-wkeq">{st[0]} {OPL[st[1]]} {st[2]}</span>
+                  {st[3] !== TARGET && <span className="cr-wkoff">{Math.abs(st[3] - TARGET)} off</span>}
+                  <span className={`cr-wkr${st[3] === TARGET ? ' exact' : ''}`}>= {st[3]}</span>
+                </div>
+              ))}
             </div>
           )}
 
           {playing && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' }}>
+            <div className="cr-acts">
               <button className="cr-tool" onClick={undo} disabled={!used} title="Take back the last step and put its two numbers back" style={{ opacity: used ? 1 : 0.4, cursor: used ? 'pointer' : 'default' }}>
                 <Undo2 size={14} /> Undo
               </button>
               <button className="cr-tool" onClick={startOver} disabled={!used} title="Clear every step and go back to the six you were dealt" style={{ opacity: used ? 1 : 0.4, cursor: used ? 'pointer' : 'default' }}>
                 <RotateCcw size={14} /> Start over
               </button>
+              {bestDiff != null && bestDiff > 0 && (
+                <button className={`cr-tool cr-lock${armLock ? ' armed' : ''}`} onClick={() => { if (armLock) { if (Date.now() - armLock < ARM_MIN_MS) return; setArmLock(false); lockIn(); } else { setArmLock(Date.now()); } }}>
+                  {armLock
+                    ? `Tap again to end the board at ${scoreFor(bestDiff)}/10`
+                    : `Lock in my closest, ${bestDiff} off · ${scoreFor(bestDiff)}/10`}
+                </button>
+              )}
               {hintOk && !g.hintUsed && (
-                <button className="cr-tool" onClick={useHint} title="Name a step that still reaches the target (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(180,83,9,0.5)', color: '#8a4008' }}>
+                <button className="cr-tool" onClick={useHint} title="Name a step that still reaches the target (one hint, first play only)" style={{ flex: '0 1 auto', background: STAGE ? 'var(--stg-surf2)' : COLORS.accentSoft, borderColor: STAGE ? 'var(--stg-warn)' : 'rgba(180,83,9,0.5)', color: STAGE ? 'var(--stg-warn)' : '#8a4008' }}>
                   <Lightbulb size={14} /> Hint
                 </button>
               )}
-            </div>
-          )}
-
-          {playing && bestDiff != null && bestDiff > 0 && (
-            <div style={{ textAlign: 'center', marginTop: 10 }}>
-              <button className="cr-tool" onClick={() => { if (armLock) { if (Date.now() - armLock < ARM_MIN_MS) return; setArmLock(false); lockIn(); } else { setArmLock(Date.now()); } }}
-                style={{ background: armLock ? COLORS.ink : `var(--stg-surf, ${T.white})`, color: armLock ? T.white : COLORS.ink, borderColor: COLORS.ink }}>
-                {armLock
-                  ? `Tap again to end the board at ${scoreFor(bestDiff)}/10`
-                  : `Lock in my closest, ${bestDiff} off · ${scoreFor(bestDiff)}/10`}
-              </button>
             </div>
           )}
 
@@ -803,8 +878,8 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
               Number, operation, number. Undo as often as you like.
             </span>
             <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-              style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-              <Eye size={13} /> {armReveal ? 'Tap again — ends the board and scores nothing' : 'Give up'}
+              style={{ marginLeft: 'auto', minHeight: 44, background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+              <Eye size={13} /> {armReveal ? 'Tap again: this ends the board and scores nothing' : 'Give up'}
             </button>
           </div>
         )}

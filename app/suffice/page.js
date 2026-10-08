@@ -19,7 +19,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Daily Data Sufficiency Puzzle: Suffice | Mind Loft',
   description:
-    'A free daily logic game built on the data-sufficiency format: a question you never answer, and two statements. Decide what is enough to settle it. Eight items a day, twelve on Sundays, every answer machine-proved.',
+    'A free daily logic game built on the data-sufficiency format: a question you never answer, and two statements. Three yes-or-no questions decide what is enough to settle it. Eight items a day, twelve on Sundays, every answer machine-proved.',
   alternates: { canonical: '/suffice' },
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
@@ -47,7 +47,7 @@ const gameJsonLd = {
   alternateName: 'Suffice — Daily Data Sufficiency Puzzle',
   url: `${SITE_URL}/suffice`,
   description:
-    'A free daily logic game in the data-sufficiency format: each item pairs a question with two statements, and the player decides which statements are enough to settle it rather than answering the question. Every item is machine-proved by exhaustive decision before it ships.',
+    'A free daily logic game in the data-sufficiency format: each item pairs a question with two statements, and the player decides which statements are enough to settle it rather than answering the question, by answering three yes-or-no questions: is the first statement alone enough, is the second alone enough, and are the two enough together. Every item is machine-proved by exhaustive decision before it ships.',
   genre: ['Logic puzzle', 'Deduction puzzle', 'Reasoning game', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

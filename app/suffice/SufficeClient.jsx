@@ -60,7 +60,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import DailyRules from '../DailyRules';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { T } from '@/lib/theme';
-import { getScenario, decide, linClassify, witness, CHOICES } from './engine';
+import { getScenario, decide, linClassify, witness } from './engine';
 
 const COLORS = {
   ink: T.ink,
@@ -127,6 +127,41 @@ function explainItem(it, letter) {
   }
   return { enough, witness: w };
 }
+
+// ── the three questions ──────────────────────────────────────────────────────
+// The owner-approved replacement for the five lettered choices (2026-10-07).
+// The player answers three yes-or-no questions and the ANSWER IS DERIVED from
+// them, mapping onto exactly the same internal letter the A to E buttons used
+// to post, so scoring, saves and the board are untouched. The letter itself is
+// never shown: the plain-English line below says the same thing in words.
+//   (1) alone?  (2) alone?  together?
+//   yes   yes    -           D  each alone is enough
+//   yes   no     -           A  (1) alone
+//   no    yes    -           B  (2) alone
+//   no    no     yes         C  only together
+//   no    no     no          E  not even together
+// "Together" is only asked when neither alone is enough, because if either one
+// settles it on its own, the pair settles it too.
+function deriveLetter(a) {
+  const [one, two, both] = a;
+  if (one === null || two === null) return null;
+  if (one && two) return 'D';
+  if (one) return 'A';
+  if (two) return 'B';
+  if (both === null) return null;
+  return both ? 'C' : 'E';
+}
+const LETTER_YN = { A: [true, false, null], B: [false, true, null], C: [false, false, true], D: [true, true, null], E: [false, false, false] };
+const SUMMARY = {
+  A: 'Statement (1) alone is enough, (2) alone is not.',
+  B: 'Statement (2) alone is enough, (1) alone is not.',
+  C: 'Both together are enough, neither alone is.',
+  D: 'Each statement alone is enough.',
+  E: 'Not enough, even with both together.',
+};
+const SHORT = { A: '(1) alone', B: '(2) alone', C: 'only together', D: 'each alone', E: 'not enough' };
+const YN_QS = ['Is statement (1) alone enough?', 'Is statement (2) alone enough?', 'Are they enough together?'];
+const NO_YN = [null, null, null];
 
 const freshState = (n) => ({ v: 1, i: 0, picks: Array(n).fill(null), t0: null, tEnd: null, status: 'playing' });
 const EMPTY_BOARD = { plays: 0, best: null, leaderboard: [] };
@@ -196,6 +231,9 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
   const [stats, setStats] = useState(null);
   const [copied, setCopied] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  // The three yes/no answers for the item on screen. Local working state only:
+  // what posts is the letter derived from them, at Submit.
+  const [yn, setYn] = useState({ i: -1, a: NO_YN });
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const viewedRef = useRef(false);
@@ -349,6 +387,7 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
     setG(freshState(TOTAL));
     setRevealed(false);
     setEndClosed(false);
+    setYn({ i: -1, a: NO_YN });
   }
 
   function copyShare() {
@@ -374,7 +413,21 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
   const myStats = deriveStats(stats, pickPuzzle(puzzles, null).num);
   const picked = g.picks[idx];
   const answerKey = KEY[idx];
-  const ex = revealed && answerKey ? explainItem(item, answerKey) : null;
+  // A pick that is already saved (a reload mid-item) shows its reveal too;
+  // before, the item sat locked with no Next button and the day could not go on.
+  const showReveal = revealed || !!picked;
+  const ex = showReveal && answerKey ? explainItem(item, answerKey) : null;
+  const ynCur = picked ? (LETTER_YN[picked] || NO_YN) : (yn.i === idx ? yn.a : NO_YN);
+  const derived = picked || deriveLetter(ynCur);
+  const truthYN = answerKey ? LETTER_YN[answerKey] : NO_YN;
+  const bothNo = ynCur[0] === false && ynCur[1] === false;
+  function setAns(q, v) {
+    if (!playing || revealed || picked) return;
+    const a = (yn.i === idx ? yn.a : NO_YN).slice();
+    a[q] = v;
+    if (a[0] === true || a[1] === true) a[2] = null;
+    setYn({ i: idx, a });
+  }
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
@@ -410,16 +463,40 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
           .sf-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
           .sf-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
           .sf-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accentDeep}) 86%, var(--stg-ink, var(--white)));}
-          .sf-choice{display:flex;gap:11px;align-items:flex-start;width:100%;text-align:left;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1.5px solid var(--stg-line, rgba(28,30,36,0.16));border-radius:10px;padding:11px 13px;margin-bottom:7px;cursor:pointer;font-family:${SANS};font-size:14px;line-height:1.45;color:${INK};}
-          .sf-choice:hover:not(:disabled){border-color:var(--stg-acc, ${COLORS.accent});background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .sf-choice:disabled{cursor:default;}
-          .sf-choice .k{flex:0 0 auto;width:26px;height:26px;border-radius:6px;background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;}
-          .sf-choice.right{border-color:${COLORS.green};background:${STAGE ? 'var(--stg-surf2)' : '#dcfce7'};}
-          .sf-choice.right .k{background:${COLORS.green};color:var(--white);}
-          .sf-choice.wrong{border-color:#b91c1c;background:${STAGE ? 'var(--stg-surf2)' : '#fee2e2'};}
-          .sf-choice.wrong .k{background:#b91c1c;color:var(--white);}
-          .sf-stmt{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.14));border-left:3px solid var(--stg-acc, ${COLORS.accent});border-radius:9px;padding:10px 13px;margin-bottom:7px;font-size:14.5px;line-height:1.5;color:${INK};display:flex;gap:10px;}
-          .sf-stmt .n{font-family:${MONO};font-weight:700;color:${STAGE ? 'var(--stg-acc-ink)' : COLORS.accentDeep};flex:0 0 auto;}
+          .sf-stmts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:16px;}
+          .sf-stmt{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:12px;padding:13px 15px;font-size:15px;line-height:1.5;color:${INK};display:flex;flex-direction:column;gap:6px;}
+          .sf-stmt .n{font-family:${MONO};font-size:11px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;color:${STAGE ? 'var(--stg-acc-ink)' : COLORS.accentDeep};}
+          .sf-stmt .t{font-weight:700;}
+          .sf-qlab{font-family:${MONO};font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;font-weight:700;color:${FADED};margin:0 0 8px;}
+          .sf-yn{display:flex;align-items:center;gap:14px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:12px;padding:10px 12px 10px 15px;margin-bottom:8px;}
+          .sf-yn .q{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;font-size:15.5px;font-weight:800;color:${INK};line-height:1.35;}
+          .sf-yn .why{font-size:12.5px;font-weight:600;color:${FADED};}
+          .sf-yn.off .q > span:first-child{color:${FADED};}
+          .sf-yn .vd{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:800;}
+          .sf-yn .vd.ok{color:var(--stg-good, ${COLORS.green});}
+          .sf-yn .vd.no{color:var(--stg-bad, #b91c1c);}
+          .sf-yn .seg{flex:0 0 auto;display:flex;border:1.5px solid var(--stg-line3, rgba(28,30,36,0.45));border-radius:10px;overflow:hidden;}
+          .sf-yn .seg button{min-width:66px;min-height:44px;border:0;background:transparent;color:${STAGE ? 'var(--stg-ink2)' : COLORS.ink};font-family:${SANS};font-weight:800;font-size:14px;cursor:pointer;}
+          .sf-yn .seg button + button{border-left:1.5px solid var(--stg-line3, rgba(28,30,36,0.45));}
+          .sf-yn .seg button:hover:not(:disabled){background:var(--stg-surf2, ${COLORS.accentSoft});}
+          .sf-yn .seg button.on{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);}
+          .sf-yn .seg button:disabled{cursor:default;}
+          .sf-yn.off .seg{opacity:0.4;}
+          .sf-sum{display:flex;flex-direction:column;gap:3px;border:1.5px solid var(--stg-line2, rgba(28,30,36,0.25));border-left:4px solid var(--stg-acc, ${COLORS.accent});border-radius:12px;padding:12px 15px;margin:12px 0 0;}
+          .sf-sum .l{font-family:${MONO};font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;font-weight:700;color:${FADED};}
+          .sf-sum .v{font-size:15.5px;font-weight:800;color:${INK};}
+          .sf-submit{margin-top:12px;min-height:50px;padding:0 26px;font-size:15px;justify-content:center;}
+          .sf-submit:disabled{opacity:0.45;cursor:default;}
+          .sf-submit:disabled:hover{background:var(--stg-acc, ${COLORS.accent});}
+          @media(max-width:640px){
+            .sf-stmts{grid-template-columns:1fr;gap:8px;}
+            .sf-yn{flex-direction:column;align-items:stretch;gap:9px;padding:12px 14px;}
+            .sf-yn .seg{border:0;gap:8px;overflow:visible;}
+            .sf-yn .seg button{flex:1;border:1.5px solid var(--stg-line3, rgba(28,30,36,0.45));border-radius:10px;}
+            .sf-yn .seg button + button{border-left:1.5px solid var(--stg-line3, rgba(28,30,36,0.45));}
+            .sf-yn .seg button.on{border-color:var(--stg-acc, ${COLORS.accent});}
+            .sf-submit{width:100%;}
+          }
           .sf-pip{width:100%;height:5px;border-radius:3px;background:rgba(28,30,36,0.13);}
           .sf-pip.on{background:var(--stg-acc, ${COLORS.accent});}
           .sf-pip.miss{background:#b91c1c;}
@@ -459,16 +536,18 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
               <p style={{ fontSize: 14.5, lineHeight: 1.6, color: FADED, fontWeight: 600, margin: '0 0 12px' }}>
                 Each item gives you a question and two statements. You are not asked what the answer is,
                 only whether the statements are <b style={{ color: ACC_DEEP_INK }}>enough to settle it</b>.
-                Working out the actual value is wasted time.
+                Working out the actual value is wasted time. You answer three yes-or-no questions per
+                item, and they add up to your answer.
               </p>
               {gateRules && (
                 <div style={{ marginBottom: 14 }}>
                   <DailyRules
                     accent={COLORS.accent} accentSoft={COLORS.accentSoft} accentDeep={COLORS.accentDeep}
                     steps={[
-                      <>Decide each statement <b>on its own</b> first, then the two <b>together</b>.</>,
-                      <>&ldquo;Sufficient&rdquo; means the answer is the <b>same in every case</b> the statement allows.</>,
-                      <>One <b>counterexample</b> is enough to make a statement insufficient.</>,
+                      <>&ldquo;Enough&rdquo; means the question has the <b>same answer in every case</b> the statement allows.</>,
+                      <>Answer three yes-or-no questions: is statement (1) <b>alone</b> enough, is statement (2) <b>alone</b> enough, and, only if both are No, are they enough <b>together</b>?</>,
+                      <>One <b>counterexample</b>, two cases the statement allows that answer the question differently, makes it not enough.</>,
+                      <>A line under the questions says what your three answers add up to. Press <b>Submit</b> to lock it in.</>,
                     ]}
                     knack="Hunt for the second case, not the answer. Find two values a statement still permits and it is insufficient, and you are done."
                     footer="One point per item. No going back once you answer."
@@ -507,36 +586,69 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
                     <div style={{ fontSize: 14, color: FADED, fontWeight: 600, marginBottom: 5 }}>{item.stem}</div>
                     <div style={{ fontSize: 17.5, fontWeight: 800, color: INK, lineHeight: 1.4 }}>{item.ask}</div>
                   </div>
-                  <div className="sf-stmt"><span className="n">(1)</span><span>{item.s1}</span></div>
-                  <div className="sf-stmt" style={{ marginBottom: 14 }}><span className="n">(2)</span><span>{item.s2}</span></div>
+                  <div className="sf-stmts">
+                    <div className="sf-stmt"><span className="n">Statement (1)</span><span className="t">{item.s1}</span></div>
+                    <div className="sf-stmt"><span className="n">Statement (2)</span><span className="t">{item.s2}</span></div>
+                  </div>
 
-                  {CHOICES.map((c) => {
-                    let cls = 'sf-choice';
-                    if (revealed) {
-                      if (c.k === answerKey) cls += ' right';
-                      else if (c.k === picked) cls += ' wrong';
-                    }
+                  <div className="sf-qlab">Answer three yes-or-no questions</div>
+                  {YN_QS.map((qt, qi) => {
+                    const off = qi === 2 && !bothNo;
+                    const v = ynCur[qi];
+                    const locked = !playing || showReveal;
+                    const verdict = showReveal && v !== null && truthYN[qi] !== null ? (v === truthYN[qi]) : null;
                     return (
-                      <button key={c.k} className={cls} disabled={revealed || !!picked} onClick={() => answer(c.k)}>
-                        <span className="k">{c.k}</span>
-                        <span>{c.text}</span>
-                        {revealed && c.k === answerKey && <Check size={17} style={{ marginLeft: 'auto', flex: '0 0 auto', color: `var(--stg-ink, ${COLORS.green})` }} />}
-                        {revealed && c.k === picked && c.k !== answerKey && <X size={17} style={{ marginLeft: 'auto', flex: '0 0 auto', color: '#b91c1c' }} />}
-                      </button>
+                      <div key={qi} className={`sf-yn${off ? ' off' : ''}`}>
+                        <div className="q">
+                          <span>{qt}</span>
+                          {off && !locked && <span className="why">Only asked when neither statement alone is enough.</span>}
+                          {verdict !== null && (
+                            <span className={`vd ${verdict ? 'ok' : 'no'}`}>
+                              {verdict ? <Check size={14} /> : <X size={14} />}
+                              {verdict ? 'Right' : `Wrong, it is ${truthYN[qi] ? 'yes' : 'no'}`}
+                            </span>
+                          )}
+                        </div>
+                        <div className="seg" role="radiogroup" aria-label={qt}>
+                          {[true, false].map((val) => (
+                            <button key={String(val)} type="button" role="radio" aria-checked={v === val}
+                              className={v === val ? 'on' : undefined}
+                              disabled={off || locked}
+                              onClick={() => setAns(qi, val)}>{val ? 'Yes' : 'No'}</button>
+                          ))}
+                        </div>
+                      </div>
                     );
                   })}
 
+                  {!showReveal && (
+                    <>
+                      {derived && (
+                        <div className="sf-sum" aria-live="polite">
+                          <span className="l">That makes your answer</span>
+                          <span className="v">{SUMMARY[derived]}</span>
+                        </div>
+                      )}
+                      <button className="sf-btn primary sf-submit" disabled={!derived || !playing} onClick={() => { if (derived) answer(derived); }}>
+                        Submit
+                      </button>
+                    </>
+                  )}
+
                   {/* the reveal: which statements were enough, and the
                       counterexample that proves the ones that were not */}
-                  {revealed && ex && (
+                  {showReveal && ex && (
                     <div style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, border: `1px solid var(--stg-line, ${COLORS.accent})`, borderRadius: 10, padding: '12px 14px', marginTop: 10 }}>
                       <div style={{ fontSize: 14, fontWeight: 800, color: ACC_DEEP_INK, marginBottom: 7 }}>
-                        {picked === answerKey ? 'Correct.' : `Not quite — the answer is ${answerKey}.`}
+                        {picked === answerKey ? `Correct. ${SUMMARY[answerKey]}` : `Not quite. The answer: ${SUMMARY[answerKey]}`}
                       </div>
+                      {picked && picked !== answerKey && (
+                        <div style={{ fontSize: 13, color: FADED, fontWeight: 600, marginBottom: 7 }}>You said: {SUMMARY[picked]}</div>
+                      )}
                       <div style={{ fontSize: 13.5, lineHeight: 1.6, color: INK }}>
                         <div>(1) alone {ex.enough[0] ? 'settles it' : 'is not enough'}. (2) alone {ex.enough[1] ? 'settles it' : 'is not enough'}. Together they {ex.enough[2] ? 'settle it' : 'still do not'}.</div>
                         {ex.witness && (
-                          <div style={{ marginTop: 7, paddingTop: 7, borderTop: '1px solid rgba(67,56,202,0.22)', fontFamily: MONO, fontSize: 12.5 }}>
+                          <div style={{ marginTop: 7, paddingTop: 7, borderTop: `1px solid var(--stg-line, rgba(67,56,202,0.22))`, fontFamily: MONO, fontSize: 12.5 }}>
                             Both of these fit, and disagree:<br />
                             {ex.witness.a.show} &rarr; {ex.witness.a.answer}<br />
                             {ex.witness.b.show} &rarr; {ex.witness.b.answer}
@@ -557,9 +669,9 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
                   {ITEMS.map((it, i) => (
                     <div key={i} style={{ display: 'flex', gap: 9, alignItems: 'center', padding: '5px 0', borderTop: i ? '1px solid rgba(28,30,36,0.08)' : 'none', fontSize: 13.5 }}>
                       <span style={{ fontFamily: MONO, color: FADED, flex: '0 0 auto', width: 20 }}>{i + 1}</span>
-                      <span style={{ flex: '0 0 auto', width: 22, height: 22, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 12, background: g.picks[i] === KEY[i] ? COLORS.green : '#b91c1c', color: T.white }}>{KEY[i]}</span>
+                      <span aria-label={g.picks[i] === KEY[i] ? 'right' : 'wrong'} style={{ flex: '0 0 auto', width: 22, height: 22, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', background: g.picks[i] === KEY[i] ? COLORS.green : '#b91c1c', color: T.white }}>{g.picks[i] === KEY[i] ? <Check size={14} /> : <X size={14} />}</span>
                       <span style={{ color: INK, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.ask}</span>
-                      {g.picks[i] && g.picks[i] !== KEY[i] && <span style={{ marginLeft: 'auto', flex: '0 0 auto', fontFamily: MONO, fontSize: 12, color: FADED }}>you said {g.picks[i]}</span>}
+                      {g.picks[i] && g.picks[i] !== KEY[i] && <span style={{ marginLeft: 'auto', flex: '0 0 auto', fontFamily: MONO, fontSize: 12, color: FADED }}>{SHORT[KEY[i]] || ''}, you said {SHORT[g.picks[i]] || ''}</span>}
                       {!g.picks[i] && <Minus size={14} style={{ marginLeft: 'auto', flex: '0 0 auto', color: FADED }} />}
                     </div>
                   ))}
@@ -682,8 +794,9 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
               whether the statements give enough information to answer it.
             </p>
             <ul style={{ fontSize: 13.5, lineHeight: 1.7, color: INK, margin: '0 0 12px', paddingLeft: 20 }}>
-              <li>Test statement (1) on its own, then (2) on its own, then both.</li>
-              <li>A statement is sufficient when every case it allows gives the same answer.</li>
+              <li>Answer three yes-or-no questions: is statement (1) alone enough, is statement (2) alone enough, and are they enough together.</li>
+              <li>The third is only asked when both of the first two are No, because if either statement settles it alone, the pair settles it too.</li>
+              <li>A statement is enough when every case it allows gives the same answer.</li>
               <li>Find one pair of cases that disagree and it is insufficient.</li>
               <li>One point per item, {TOTAL} on the board today.</li>
             </ul>

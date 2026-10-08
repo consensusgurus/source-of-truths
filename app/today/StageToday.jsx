@@ -1805,8 +1805,8 @@ export default function StageToday() {
   const alphaDone = alpha.filter((g) => done.has(g.key)).length;
   const ixNav = (
     <nav className={'sty-ixn' + (reorder ? ' re' : '') + (picked ? ' pk' : '')} aria-label="Sections">
-      {ixBtn(ALL_ID, 'All puzzles', 'var(--stg-ink)')}
-      {ixBtn(MINE_ID, 'My puzzles', 'var(--stg-acc)')}
+      {ixBtn(ALL_ID, 'All Puzzles', 'var(--stg-ink)')}
+      {ixBtn(MINE_ID, 'My Puzzles', 'var(--stg-acc)')}
       <span className="sty-ixsep" aria-hidden="true" />
       {orderedCats.map(({ cat }, ci) => (reorder ? (
         <div key={cat} className={'sty-ixb sty-ixr' + (paneOn === cat ? ' on' : '')} style={{ '--cc': hueFor(cat) }}>
@@ -2043,7 +2043,7 @@ export default function StageToday() {
       </div>
     );
   };
-  const railLabel = railCat ? catLabel(railCat.cat) : 'All puzzles';
+  const railLabel = railCat ? catLabel(railCat.cat) : 'All Puzzles';
   const railEl = (() => {
     if (!ix || !gamePane) return null;
     const rd = rail[railId] || null;
@@ -2285,7 +2285,7 @@ export default function StageToday() {
             {/* An empty section has nothing to collapse and no fraction to
                 print, so the head keeps its title and drops both. */}
             <div className="sty-cathead" onClick={mineTot ? headClick(MINE_ID) : undefined}>
-              <h2>My puzzles</h2>
+              <h2>My Puzzles</h2>
               {mineTot ? <b>{mineDone}<i>/{mineTot}</i></b> : null}
               {mineTot ? cav(MINE_ID) : null}
             </div>
@@ -2354,7 +2354,7 @@ export default function StageToday() {
         {/* 4. THE GAMES, either as nine category rows or as one A-to-Z list. */}
         <section className={'sty-cat sty-az' + (paneOn === ALL_ID ? '' : ' sty-ixoff')} style={{ '--cc': 'var(--stg-ink2)' }}>
           <div className="sty-cathead">
-            <h2>All puzzles</h2>
+            <h2>All Puzzles</h2>
             <b>{alphaDone}<i>/{alpha.length}</i></b>
           </div>
           <div className="sty-games">

@@ -74,6 +74,7 @@ const COLORS = {
 };
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
+const SERIF = "'Newsreader', Georgia, 'Times New Roman', serif";
 const HELP_KEY = 'sot_sworn_help_seen';
 const STATS_KEY = 'sot_sworn_stats';
 const TOTAL = 12;
@@ -229,6 +230,8 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
 
   const [g, setG] = useState(() => freshState(N));
   const [verdict, setVerdict] = useState(null);
+  // The phone stand shows one witness large at a time; this is which.
+  const [pick, setPick] = useState(0);
   const [showHelp, setShowHelp] = useState(false);
   const [gateRules, setGateRules] = useState(false); // start tile: full rules (first-timer) vs compact start card
   const [toast, setToast] = useState(null);
@@ -460,6 +463,18 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
     });
     setVerdict(null);
   }
+  // The TRUE / LYING segmented toggle: sets the scratch verdict directly, and
+  // pressing the lit side again clears it. Same 0/1/2 marks as tapMark, so the
+  // save shape is unchanged, and marks never touch the score.
+  function setMark(i, v) {
+    if (!playing) return;
+    setG((cur) => {
+      const marks = cur.marks.slice();
+      marks[i] = marks[i] === v ? 0 : v;
+      return { ...cur, marks, t0: cur.t0 || Date.now() };
+    });
+    setVerdict(null);
+  }
   function clearMarks() {
     if (!playing) return;
     setG((cur) => ({ ...cur, marks: Array(N).fill(0) }));
@@ -477,7 +492,7 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
       postResult(g2, Math.max(1, TOTAL - 2 * g2.wrong));
     } else {
       setG((cur) => ({ ...cur, wrong: cur.wrong + 1, accusedWrong: [...cur.accusedWrong, i], t0: cur.t0 || Date.now() }));
-      setVerdict({ msg: `${PUZZLE.suspects[i]} has an ironclad defence — the charge fails. (−2)` });
+      setVerdict({ msg: `${PUZZLE.suspects[i]} has an ironclad defense, so the charge fails (minus 2 points).` });
     }
   }
 
@@ -545,7 +560,7 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
       steps={[
         <>Each of the sworn gives <b>one statement</b>, and you&rsquo;re told <b>exactly how many are lying</b>. Liars&rsquo; statements are false, truth-tellers&rsquo; are true.</>,
         <>Test each theory: assume a suspect is the thief and see whether the lie count works out.</>,
-        <>Tap the <b>?</b> next to a name to keep scratch verdicts as you go.</>,
+        <>Mark each witness <b>True</b> or <b>Lying</b> to keep scratch verdicts as you go. Marks are notes for you and never change your score.</>,
         <>When you&rsquo;re sure, hit <b>Accuse</b>.</>,
       ]}
       knack="Every case has exactly one consistent story, reachable by pure logic, so a theory that leaves the lie count off by even one is dead."
@@ -586,19 +601,81 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
       )}
       <div className="sw-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
         <style dangerouslySetInnerHTML={{ __html: `
+          @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap');
           @media(max-width:560px){.sw-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .sw-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .sw-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           .sw-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
           .sw-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accentDeep}) 86%, var(--stg-ink, var(--white)));}
-          .sw-card{display:flex;align-items:center;gap:12px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.14));border-left:3px solid var(--stg-acc, ${COLORS.accent});border-radius:9px;padding:10px 12px;margin-bottom:8px;}
-          .sw-card b{color:${STAGE ? 'var(--stg-acc-ink)' : COLORS.accentDeep};}
-          .sw-mark{color:${INK};flex:0 0 auto;width:38px;height:38px;border-radius:8px;border: 1.5px solid var(--stg-line2, rgba(28,30,36,0.25));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};font-size:17px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;}
-          .sw-mark.truth{background:#dcfce7;border-color:var(--success-deep);color:var(--success-deep);}
-          .sw-mark.lie{background:${STAGE ? 'var(--stg-surf2)' : '#fee2e2'};border-color:#b91c1c;color:#b91c1c;}
-          .sw-accuse{flex:0 0 auto;font-family:${SANS};font-weight:800;font-size:12px;border:1.5px solid color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 55%, transparent);background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};border-radius:8px;padding:8px 11px;cursor:pointer;}
-          .sw-accuse:hover{background:${STAGE ? 'var(--stg-surf2)' : '#fbcfe8'};}
-          .sw-accuse:disabled{opacity:0.4;cursor:not-allowed;text-decoration:line-through;}
+          /* THE WITNESS STAND (see the board below). Stage tokens, with light
+             fallbacks so the Loft branch still renders. */
+          .sw-story{margin:0 0 14px;font-family:${SERIF};font-style:italic;font-size:18px;line-height:1.5;color:var(--stg-ink2, ${COLORS.ink});}
+          .sw-story b{font-style:normal;color:var(--stg-ink, ${COLORS.ink});}
+          .sw-meter{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 22px;}
+          .sw-meterk{font-family:${MONO};font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
+          .sw-mright{margin-left:auto;}
+          .sw-slots{display:inline-flex;gap:6px;}
+          .sw-slot{width:22px;height:22px;border-radius:6px;box-sizing:border-box;border:2px dashed var(--stg-cell-line, rgba(28,30,36,0.44));}
+          .sw-slot.on{border:2px solid var(--stg-acc-ink, ${COLORS.accent});background:var(--stg-acc, ${COLORS.accent});}
+          .sw-over{font-family:${SANS};font-size:12px;font-weight:700;color:var(--stg-bad, #b91c1c);}
+          .sw-stand{display:grid;gap:12px;align-items:start;}
+          .sw-wit{display:flex;flex-direction:column;align-items:center;gap:10px;min-width:0;}
+          .sw-bub{position:relative;width:100%;box-sizing:border-box;background:var(--stg-cell, #ffffff);border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.44));border-radius:14px;padding:13px 11px;min-height:118px;display:flex;align-items:center;margin-bottom:8px;}
+          .sw-q{font-family:${SERIF};font-size:16px;line-height:1.35;color:var(--stg-ink, ${COLORS.ink});overflow-wrap:anywhere;}
+          .sw-q b{font-weight:600;}
+          .sw-wit.m2 .sw-q{color:var(--stg-mute, ${COLORS.faded});}
+          .sw-tail{position:absolute;left:50%;bottom:-9px;width:16px;height:16px;background:var(--stg-cell, #ffffff);border-right:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.44));border-bottom:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.44));transform:translateX(-50%) rotate(45deg);}
+          .sw-av{width:72px;height:72px;flex:0 0 auto;border-radius:50%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-family:${SANS};font-size:28px;font-weight:800;background:var(--stg-cell, #ffffff);border:3px solid var(--stg-cell-line, rgba(28,30,36,0.44));color:var(--stg-ink2, ${COLORS.ink});}
+          .sw-av.m1{background:var(--stg-ink, ${COLORS.ink});border-color:var(--stg-ink, ${COLORS.ink});color:var(--stg-ground, #ffffff);}
+          .sw-av.m2{border-color:var(--stg-acc-ink, ${COLORS.accent});color:var(--stg-acc-ink, ${COLORS.accent});}
+          .sw-av.sm{width:52px;height:52px;font-size:21px;}
+          .sw-av.xs{width:26px;height:26px;font-size:11px;border-width:2px;}
+          .sw-name{font-size:15px;font-weight:800;color:var(--stg-ink, ${COLORS.ink});text-align:center;overflow-wrap:anywhere;}
+          .sw-ver{font-family:${MONO};font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;border:1px solid;border-radius:4px;padding:2px 6px;}
+          .sw-seg{display:flex;width:100%;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.44));border-radius:10px;overflow:hidden;}
+          .sw-segb{flex:1 1 0;min-width:0;min-height:44px;border:0;margin:0;border-radius:0;background:transparent;color:var(--stg-mute, ${COLORS.faded});font-family:${MONO};font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;padding:0 2px;}
+          .sw-segb + .sw-segb{border-left:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.44));}
+          .sw-segb:hover:not(:disabled){background:var(--stg-surf2, ${COLORS.accentSoft});}
+          .sw-segb:disabled{cursor:default;}
+          .sw-segb.t.on{background:var(--stg-ink, ${COLORS.ink});color:var(--stg-ground, #ffffff);}
+          .sw-segb.l.on{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #ffffff);}
+          .sw-seg.big{flex:2 1 0;}
+          .sw-seg.big .sw-segb{min-height:48px;font-size:12px;}
+          .sw-accuse{width:100%;min-height:44px;font-family:${SANS};font-weight:800;font-size:13px;border:1.5px solid var(--stg-acc-ink, ${COLORS.accent});background:transparent;color:var(--stg-acc-ink, ${COLORS.accentDeep});border-radius:10px;padding:0 10px;cursor:pointer;}
+          .sw-accuse:hover:not(:disabled){background:var(--stg-acc-tint, ${COLORS.accentSoft});}
+          .sw-accuse:disabled{opacity:0.45;cursor:not-allowed;text-decoration:line-through;}
+          .sw-accuse.big{flex:1 1 0;width:auto;min-height:48px;font-size:14px;}
+          .sw-ph{display:none;}
+          .sw-avrow{display:flex;justify-content:space-between;gap:4px;}
+          .sw-avb{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;background:transparent;border:0;border-radius:12px;padding:6px 0;cursor:pointer;color:var(--stg-ink, ${COLORS.ink});font-family:${SANS};}
+          .sw-avb.sel{background:var(--stg-surf2, ${COLORS.accentSoft});}
+          .sw-avn{font-size:12px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+          .sw-avt{font-family:${MONO};font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;}
+          .sw-focus{margin-top:14px;background:var(--stg-cell, #ffffff);border:1.5px solid var(--stg-ink, ${COLORS.ink});border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:14px;}
+          .sw-fq{font-family:${SERIF};font-size:23px;line-height:1.3;color:var(--stg-ink, ${COLORS.ink});}
+          .sw-fq b{font-weight:600;}
+          .sw-fq.m2{color:var(--stg-mute, ${COLORS.faded});}
+          .sw-trow{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:8px 6px;background:transparent;border:0;border-bottom:1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:0;text-align:left;cursor:pointer;}
+          .sw-trow.sel{background:var(--stg-surf, rgba(28,30,36,0.04));}
+          .sw-tq{flex:1 1 auto;min-width:0;font-family:${SERIF};font-size:15px;line-height:1.35;}
+          .sw-tq b{font-weight:600;}
+          .sw-tn{font-family:${SANS};font-size:12.5px;font-weight:800;margin-right:2px;}
+          .sw-foot{margin:22px 0 6px;padding:14px 16px;border-radius:12px;background:var(--stg-surf, rgba(28,30,36,0.04));border:1px solid var(--stg-line, rgba(28,30,36,0.14));display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+          .sw-foott{flex:1 1 260px;font-size:13px;font-weight:600;line-height:1.5;color:var(--stg-mute, ${COLORS.faded});}
+          .sw-foot .sw-btn{min-height:44px;}
+          @media(max-width:860px){
+            .sw-stand{gap:8px;}
+            .sw-av{width:56px;height:56px;font-size:22px;}
+            .sw-segb{font-size:10px;letter-spacing:0;}
+            .sw-q{font-size:15px;}
+          }
+          @media(max-width:640px){
+            .sw-stand{display:none;}
+            .sw-ph{display:block;}
+            .sw-story{font-size:16px;}
+            .sw-meter{margin-bottom:16px;}
+            .sw-mright{margin-left:0;flex-basis:100%;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
@@ -629,20 +706,25 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
           <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
           <div className={LOFT && !STAGE ? 'loft-sheet' : undefined}>
 
-        {/* the story — hidden behind the start tile until the player begins */}
+        {/* the story, hidden behind the start tile until the player begins */}
         {!preStart && (
-        <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 14.5, lineHeight: 1.6, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1px solid rgba(28,30,36,0.14)', borderLeft: `4px solid var(--stg-acc, ${COLORS.accent})`, borderRadius: 8, padding: '12px 16px', margin: '0 0 12px', color: INK }}>
-          Last night at {PUZZLE.venue}, {PUZZLE.stolen} vanished. {N === 6 ? 'Six' : 'Five'} locals were sworn in, and one of them is the thief. Each gave exactly one statement &mdash; but <b style={{ fontStyle: 'normal' }}>exactly {PUZZLE.k} of the {N} are lying</b>. Liars&rsquo; statements are false; everyone else&rsquo;s are true. Find the thief.
-        </div>
+        <p className="sw-story">
+          Last night at {PUZZLE.venue}, {PUZZLE.stolen} vanished. {N === 6 ? 'Six' : 'Five'} locals were sworn in, and one of them is the thief. Each gave exactly one statement, but <b>exactly {PUZZLE.k} of the {N} are lying</b>. Liars&rsquo; statements are false; everyone else&rsquo;s are true. Find the thief.
+        </p>
         )}
 
-        {/* status bar */}
-        {started && (
-        <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED }}>
-          <span>liars <b style={{ color: INK, fontWeight: 500 }}>{PUZZLE.k}</b> of {N}</span>
-          <span>marked lying <b style={{ color: liarsMarked > PUZZLE.k ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{liarsMarked}</b></span>
-          <span>wrong accusations <b style={{ color: g.wrong ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{g.wrong}</b></span>
-          {g.hintUsed && <span>&#128161; hint used</span>}
+        {/* the liars meter: one slot per liar in the case; a slot fills as you
+            mark a witness LYING. Scratch only, it never touches the score. */}
+        {!preStart && (
+        <div className="sw-meter">
+          <span className="sw-meterk">Liars marked</span>
+          <span className="sw-slots" aria-label={`${liarsMarked} of ${PUZZLE.k} liars marked`}>
+            {Array.from({ length: PUZZLE.k }, (_, s) => (
+              <span key={s} className={`sw-slot${s < liarsMarked ? ' on' : ''}`} />
+            ))}
+          </span>
+          {liarsMarked > PUZZLE.k && <span className="sw-over">{liarsMarked} marked, only {PUZZLE.k} lie</span>}
+          <span className="sw-meterk sw-mright">Wrong accusations <b style={{ color: g.wrong ? 'var(--stg-bad, #b91c1c)' : INK }}>{g.wrong}</b>{g.hintUsed ? <> &middot; hint used</> : null}</span>
         </div>
         )}
 
@@ -667,61 +749,113 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
 
-        {/* the testimony */}
-        {!preStart && (
-        <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED, marginBottom: 8 }}>The testimony</div>
-        )}
-        {!preStart && PUZZLE.suspects.map((name, i) => {
-          const m = hideSol ? (g.pre || [])[i] || 0 : g.marks[i];
-          const isVerified = g.verified && g.verified.x === i;
-          return (
-            <div key={name} className="sw-card">
-              <button
-                type="button"
-                className={`sw-mark${m === 1 ? ' truth' : m === 2 ? ' lie' : ''}`}
-                onClick={() => tapMark(i)}
-                title="Your scratch verdict: blank → truthful → lying"
-                aria-label={`${name}: ${m === 0 ? 'unmarked' : m === 1 ? 'marked truthful' : 'marked lying'}`}
-              >{m === 1 ? '✓' : m === 2 ? '✗' : '?'}</button>
-              <div style={{ flex: '1 1 auto', minWidth: 0 }}>
-                <div style={{ fontSize: 13.5, fontWeight: 800, color: INK, display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
-                  {name}
-                  {isVerified && (
-                    <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500, color: g.verified.honest ? COLORS.green : '#b91c1c', background: g.verified.honest ? '#dcfce7' : '#fee2e2', borderRadius: 4, padding: '2px 6px' }}>
-                      verified {g.verified.honest ? 'truthful' : 'lying'}
-                    </span>
-                  )}
-                  {g.accusedWrong.includes(i) && (
-                    <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500, color: FADED, background: STAGE ? 'var(--stg-surf2)' : COLORS.paper, borderRadius: 4, padding: '2px 6px' }}>cleared</span>
-                  )}
-                </div>
-                <div style={{ fontSize: 13.5, fontWeight: 600, color: INK, lineHeight: 1.45, marginTop: 2 }}>{stmtText(PUZZLE.statements[i], i)}</div>
+        {/* THE WITNESS STAND (board rebuild, 2026-10). Desktop: every witness
+            side by side, statement in a speech bubble over a letter avatar,
+            then a TRUE / LYING toggle and Accuse. Phone (<=640px): a row of
+            avatar buttons, the chosen witness large, all testimony below. Both
+            render; CSS shows one. The marks are the existing scratch verdicts. */}
+        {!preStart && (() => {
+          const markOf = (i) => (hideSol ? (g.pre || [])[i] || 0 : g.marks[i]);
+          const tagOf = (i) => {
+            if (g.accusedWrong.includes(i)) return { t: 'Cleared', c: FADED };
+            const m = markOf(i);
+            return m === 1 ? { t: 'True', c: INK } : m === 2 ? { t: 'Lying', c: ACC_DEEP_INK } : { t: 'Unmarked', c: FADED };
+          };
+          const verifiedTag = (i) => (g.verified && g.verified.x === i ? (
+            <span className="sw-ver" style={{ color: g.verified.honest ? 'var(--stg-good, #15803d)' : 'var(--stg-bad, #b91c1c)', borderColor: 'currentColor' }}>
+              verified {g.verified.honest ? 'truthful' : 'lying'}
+            </span>
+          ) : null);
+          const toggle = (i, name, big) => {
+            const m = markOf(i);
+            return (
+              <div className={`sw-seg${big ? ' big' : ''}`} role="group" aria-label={`Your scratch verdict on ${name}`}>
+                <button type="button" className={`sw-segb t${m === 1 ? ' on' : ''}`} aria-pressed={m === 1} disabled={!playing} onClick={() => setMark(i, 1)}>True</button>
+                <button type="button" className={`sw-segb l${m === 2 ? ' on' : ''}`} aria-pressed={m === 2} disabled={!playing} onClick={() => setMark(i, 2)}>Lying</button>
               </div>
-              {playing && (
-                <button type="button" className="sw-accuse" onClick={() => accuse(i)} disabled={g.accusedWrong.includes(i)}>
-                  Accuse
-                </button>
-              )}
-            </div>
+            );
+          };
+          const accuseBtn = (i, big) => (playing ? (
+            <button type="button" className={`sw-accuse${big ? ' big' : ''}`} onClick={() => accuse(i)} disabled={g.accusedWrong.includes(i)}>Accuse</button>
+          ) : null);
+          const P = Math.min(pick, N - 1);
+          const pName = PUZZLE.suspects[P];
+          return (
+            <>
+              <div className="sw-stand" style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
+                {PUZZLE.suspects.map((name, i) => {
+                  const m = markOf(i);
+                  return (
+                    <div key={name} className={`sw-wit m${m}`}>
+                      <div className="sw-bub"><span className="sw-q">{stmtText(PUZZLE.statements[i], i)}</span><span className="sw-tail" aria-hidden="true" /></div>
+                      <span className={`sw-av m${m}`} aria-hidden="true">{name.charAt(0)}</span>
+                      <span className="sw-name">{name}</span>
+                      {verifiedTag(i)}
+                      {g.accusedWrong.includes(i) && <span className="sw-ver" style={{ color: FADED, borderColor: 'var(--stg-line2, rgba(28,30,36,0.25))' }}>cleared</span>}
+                      {toggle(i, name, false)}
+                      {accuseBtn(i, false)}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="sw-ph">
+                <div className="sw-avrow">
+                  {PUZZLE.suspects.map((name, i) => {
+                    const m = markOf(i);
+                    const tg = tagOf(i);
+                    return (
+                      <button key={name} type="button" className={`sw-avb${i === P ? ' sel' : ''}`} onClick={() => setPick(i)} aria-pressed={i === P} aria-label={`${name}, ${tg.t}`}>
+                        <span className={`sw-av sm m${m}`}>{name.charAt(0)}</span>
+                        <span className="sw-avn">{name}</span>
+                        <span className="sw-avt" style={{ color: tg.c }}>{tg.t}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="sw-focus">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 17, fontWeight: 800, color: INK }}>{pName}</span>
+                    <span className="sw-meterk">Swore</span>
+                    {verifiedTag(P)}
+                  </div>
+                  <span className={`sw-fq m${markOf(P)}`}>{stmtText(PUZZLE.statements[P], P)}</span>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {toggle(P, pName, true)}
+                    {accuseBtn(P, true)}
+                  </div>
+                </div>
+                <div className="sw-meterk" style={{ margin: '18px 0 4px' }}>All testimony</div>
+                {PUZZLE.suspects.map((name, i) => (
+                  <button key={name} type="button" className={`sw-trow${i === P ? ' sel' : ''}`} onClick={() => setPick(i)}>
+                    <span className={`sw-av xs m${markOf(i)}`} aria-hidden="true">{name.charAt(0)}</span>
+                    <span className="sw-tq" style={{ color: markOf(i) === 2 ? FADED : INK }}><b className="sw-tn">{name}:</b> {stmtText(PUZZLE.statements[i], i)}</span>
+                  </button>
+                ))}
+              </div>
+            </>
           );
-        })}
+        })()}
 
         {verdict && (
-          <div style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: `var(--stg-ink, ${COLORS.rust})`, margin: '4px 0 10px', lineHeight: 1.45 }}>
+          <div style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: `var(--stg-ink, ${COLORS.rust})`, margin: '12px 0 10px', lineHeight: 1.45 }}>
             {verdict.msg}
           </div>
         )}
         {started && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '10px 0 6px' }}>
-            <button type="button" className="sw-btn" onClick={clearMarks}><Eraser size={14} /> Clear marks</button>
-            {hintOk && !g.hintUsed && (
-              <button type="button" className="sw-btn" onClick={useHint} title="Verify one witness (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(190,24,93,0.5)', color: ACC_DEEP_INK }}>
-                <Lightbulb size={14} /> Hint: verify a witness
-              </button>
-            )}
-            {g.wrong >= 3 && (
-              <button type="button" className="sw-btn" style={{ borderColor: '#c3c8cf', color: FADED }} onClick={reveal}>Reveal (ends the day)</button>
-            )}
+          <div className="sw-foot">
+            <span className="sw-foott">Mark who is TRUE and who is LYING as you test each theory, then accuse the thief. Marks are scratch notes; a wrong accusation costs 2 points.</span>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button type="button" className="sw-btn" onClick={clearMarks}><Eraser size={14} /> Clear marks</button>
+              {hintOk && !g.hintUsed && (
+                <button type="button" className="sw-btn" onClick={useHint} title="Verify one witness (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(190,24,93,0.5)', color: ACC_DEEP_INK }}>
+                  <Lightbulb size={14} /> Hint: verify a witness
+                </button>
+              )}
+              {g.wrong >= 3 && (
+                <button type="button" className="sw-btn" style={{ borderColor: 'var(--stg-line2, #c3c8cf)', color: FADED }} onClick={reveal}>Reveal (ends the day)</button>
+              )}
+            </div>
           </div>
         )}
 
@@ -736,8 +870,8 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
                   <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : g.status === 'done' ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{score}/{TOTAL}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {g.status === 'done'
-                      ? (won ? <>It was <b>{thiefName}</b> — nailed on the first accusation.</> : <>It was <b>{thiefName}</b> — found after {g.wrong} wrong accusation{g.wrong === 1 ? '' : 's'}.</>)
-                      : hideSol ? <>The inquest collapsed.</> : <>The inquest collapsed — it was <b>{thiefName}</b> all along.</>}
+                      ? (won ? <>It was <b>{thiefName}</b>, nailed on the first accusation.</> : <>It was <b>{thiefName}</b>, found after {g.wrong} wrong accusation{g.wrong === 1 ? '' : 's'}.</>)
+                      : hideSol ? <>The inquest collapsed.</> : <>The inquest collapsed. It was <b>{thiefName}</b> all along.</>}
                     {' '}<span style={{ color: FADED, fontWeight: 600 }}>{elapsed}{g.hintUsed ? ' · 1 hint' : ''}</span>
                   </span>
                 </div>

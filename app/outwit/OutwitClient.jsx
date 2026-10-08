@@ -168,6 +168,41 @@ function OutwitLiveBoard({ board }) {
   );
 }
 
+// REAL COLOUR SWATCHES (board rebuild, 2026-10-07). When every option on a
+// choice prompt is a colour, the options render as swatches painted in that
+// colour. These are deliberately physical objects with fixed values, not theme
+// tokens: "Red" has to be red on both registers. `base` is the representative
+// colour the label ink is chosen against (white or near-black, whichever reads).
+const SWATCH = {
+  red: { bg: '#c8352f' }, blue: { bg: '#2f5fc8' }, green: { bg: '#2f8f4e' }, yellow: { bg: '#e8c53a' },
+  purple: { bg: '#6f3fb3' }, black: { bg: '#141414' }, white: { bg: '#f7f7f4' }, silver: { bg: 'linear-gradient(135deg,#e6e8eb,#a9adb3 55%,#d9dce0)', base: '#c4c8cd' },
+  grey: { bg: '#8a8d91' }, gray: { bg: '#8a8d91' }, brown: { bg: '#6b4428' }, orange: { bg: '#e2731f' }, pink: { bg: '#ec8fb5' },
+  magnolia: { bg: '#f1e6d4' }, 'duck egg blue': { bg: '#c3ddd6' }, navy: { bg: '#1c2d5a' }, teal: { bg: '#11787a' },
+  cerulean: { bg: '#2a8fc7' }, sky: { bg: '#8ec8ee' }, royal: { bg: '#2649b5' }, cobalt: { bg: '#0b47a8' },
+  periwinkle: { bg: '#a3a8e8' }, prussian: { bg: '#0f3350' },
+  palomino: { bg: '#d9ac68' }, chestnut: { bg: '#8a3d1c' },
+  piebald: { bg: 'radial-gradient(circle at 28% 32%,#f4f2ec 0 22%,transparent 23%),radial-gradient(circle at 74% 70%,#f4f2ec 0 26%,transparent 27%),#161616', base: '#161616' },
+  dappled: { bg: 'radial-gradient(circle at 20% 30%,#d9d9d6 0 9%,transparent 10%),radial-gradient(circle at 55% 62%,#d9d9d6 0 11%,transparent 12%),radial-gradient(circle at 82% 26%,#d9d9d6 0 8%,transparent 9%),#7c7f84', base: '#7c7f84' },
+  'warm cream': { bg: '#f1e2c2' }, 'deep navy': { bg: '#1b2a4a' }, 'matte white': { bg: '#f2f2ee' }, 'sage green': { bg: '#9caf88' },
+  'soft gray': { bg: '#b9bcc0' }, 'soft grey': { bg: '#b9bcc0' }, 'blackboard paint': { bg: '#2b302c' }, 'pale blue': { bg: '#bcd6ee' },
+  metallic: { bg: 'linear-gradient(135deg,#f0f1f3,#9ea3aa 45%,#e4e6ea 60%,#8d9299)', base: '#bfc3c8' },
+};
+function swatchFor(opt) { return SWATCH[String(opt || '').trim().toLowerCase()] || null; }
+function swatchInk(sw) {
+  const hex = (sw.base || sw.bg).replace('#', '');
+  const ch = (k) => { const c = parseInt(hex.slice(k, k + 2), 16) / 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+  const L = 0.2126 * ch(0) + 0.7152 * ch(2) + 0.0722 * ch(4);
+  // contrast against white vs against #0b0d12 (L ~= 0.004)
+  return (1.05 / (L + 0.05)) >= ((L + 0.05) / 0.054) ? '#ffffff' : '#0b0d12';
+}
+// Prompt copy carries its key word in capitals (FEWEST, MOST, RAREST, HALF,
+// TWO-THIRDS). The board lights those words in the accent.
+function litPrompt(q, color) {
+  const parts = String(q || '').split(/(\b[A-Z]{3,}(?:-[A-Z]{3,})?\b)/);
+  const KEY = /^(FEWEST|MOST|RAREST|MEDIAN|HALF|THIRD|[A-Z]+-[A-Z]+)$/;
+  return parts.map((t, i) => (i % 2 && KEY.test(t) ? <span key={i} style={{ color }}>{t.toLowerCase()}</span> : <React.Fragment key={i}>{t}</React.Fragment>));
+}
+
 function fmtBig(n) {
   const v = Number(n) || 0;
   return v.toLocaleString('en-US');
@@ -249,6 +284,8 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
 
   const [g, setG] = useState(freshState);
   const [numVals, setNumVals] = useState({}); // promptIdx -> raw input string
+  // One prompt at a time (board rebuild, 2026-10-07): which prompt is on screen.
+  const [step, setStep] = useState(0);
   const [sending, setSending] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [gateRules, setGateRules] = useState(false); // start tile: full rules (first-timer) vs compact card
@@ -295,6 +332,8 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
   const ACC_DEEP = STAGE ? STAGE_C : COLORS.accentDeep;
   const ACC_SOFT = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : COLORS.accentSoft;
   const ON_ACC = STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)';
+  // The accent as TEXT (eyebrows, lit words): never --stg-acc, which is a fill.
+  const ACC_INK_OW = STAGE ? 'var(--stg-acc-ink)' : COLORS.accent;
   const preStart = playing && !g.t0;
   const started = playing && !!g.t0;
   const focusMode = playing && !showChrome;
@@ -330,6 +369,8 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
             nv[k] = String(v);
           }
           setNumVals(nv);
+          const firstOpen = PROMPTS.findIndex((_, k) => saved.ans[k] == null);
+          setStep(firstOpen < 0 ? Math.max(0, PROMPTS.length - 1) : firstOpen);
         }
       }
       setGateRules(!localStorage.getItem(HELP_KEY));
@@ -541,7 +582,7 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
 
   function resetGame() {
     try { localStorage.removeItem(STORE_KEY); } catch (e) {}
-    setG(freshState()); setNumVals({}); setEndClosed(false);
+    setG(freshState()); setNumVals({}); setEndClosed(false); setStep(0);
   }
 
   function shareText() {
@@ -751,6 +792,137 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
     );
   }
 
+  // ---- the play board: ONE PROMPT AT A TIME (owner-approved, 2026-10-07) ----
+  // A strip across the top with a segment per prompt (its short type label, and
+  // your locked answer under it), the current prompt large, its options as big
+  // cards or real colour swatches, and Back / Next. The last step submits
+  // through faceTheCrowd exactly as the old single button did: same payload,
+  // same "answer every prompt" check.
+  const answerLabel = (i) => {
+    const pr = PROMPTS[i];
+    const v = g.ans[i];
+    if (v == null) return '';
+    return pr.options ? String(pr.options[v] ?? '') : fmtBig(v);
+  };
+  function renderStepper() {
+    const N = PROMPTS.length;
+    const cur = Math.min(Math.max(0, step), N - 1);
+    const pr = PROMPTS[cur];
+    const val = g.ans[cur];
+    const last = cur === N - 1;
+    const allIn = answered >= N;
+    const swatches = pr.options && pr.options.every((o) => swatchFor(o));
+    const many = pr.options && pr.options.length > 4;
+    const goNext = () => setStep(Math.min(N - 1, cur + 1));
+    const submitAll = () => {
+      if (!allIn) {
+        const open = PROMPTS.findIndex((_, k) => g.ans[k] == null);
+        if (open >= 0) setStep(open);
+      }
+      faceTheCrowd();
+    };
+    const pickTag = (dark) => (
+      <span className="ow-pick" style={dark ? { background: 'var(--stg-ink, #0b0d12)', color: 'var(--stg-ground, #ffffff)' } : null}>Your pick</span>
+    );
+    return (
+      <div className="ow-step">
+        <div className="ow-strip" style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
+          {PROMPTS.map((p, i) => {
+            const done = g.ans[i] != null;
+            const on = i === cur;
+            return (
+              <button key={i} type="button" className="ow-seg" onClick={() => setStep(i)} aria-current={on ? 'step' : undefined}
+                aria-label={`Prompt ${i + 1} of ${N}, ${p.tag}${done ? `, answered ${answerLabel(i)}` : ', not answered yet'}`}>
+                <span className="ow-seg-bar" style={{ background: on ? 'var(--stg-ink, ' + COLORS.ink + ')' : done ? `var(--stg-acc, ${COLORS.accent})` : `var(--stg-cell-line, rgba(28,30,36,0.3))` }} />
+                <span className="ow-seg-tag" style={{ color: on ? INK : FADED }}>{p.tag}</span>
+                <span className="ow-seg-ans" style={{ color: done ? INK : FADED }}>{done ? answerLabel(i) : (on ? 'Now' : 'Open')}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="ow-cur">
+          <div className="ow-eyebrow" style={{ color: ACC_INK_OW }}>{cur + 1} of {N} &middot; {pr.tag}</div>
+          <div className="ow-q" style={{ color: INK }}>{litPrompt(pr.q, ACC_INK_OW)}</div>
+        </div>
+
+        {pr.options && swatches && (
+          <div className={`ow-grid${many ? ' ow-grid-many' : ''}`}>
+            {pr.options.map((opt, oi) => {
+              const sw = swatchFor(opt);
+              const on = val === oi;
+              return (
+                <button key={oi} type="button" className={`ow-sw${on ? ' ow-sw-on' : ''}`} onClick={() => setAnswer(cur, oi)} aria-pressed={on}
+                  style={{ background: sw.bg, color: swatchInk(sw) }}>
+                  <span>{opt}</span>
+                  {on && pickTag(false)}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {pr.options && !swatches && (
+          <div className={`ow-grid ow-grid-txt${many ? ' ow-grid-many' : ''}`}>
+            {pr.options.map((opt, oi) => {
+              const on = val === oi;
+              return (
+                <button key={oi} type="button" className={`ow-card${on ? ' ow-card-on' : ''}`} onClick={() => setAnswer(cur, oi)} aria-pressed={on}>
+                  <span>{opt}</span>
+                  {on && pickTag(true)}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {!pr.options && (
+          <div className="ow-numwrap">
+            <input
+              key={cur}
+              className="ow-big"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder={`${fmtBig(pr.min)} to ${fmtBig(pr.max)}`}
+              value={numVals[cur] ?? ''}
+              onChange={(e) => setNumRaw(cur, e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (last) submitAll(); else if (g.ans[cur] != null) goNext(); } }}
+              aria-label={pr.q}
+            />
+            <div className="ow-numhint" style={{ color: (numVals[cur] && val == null) ? `var(--stg-bad, ${COLORS.rust})` : FADED }}>
+              {(numVals[cur] && val == null) ? `Out of range. Any whole number from ${fmtBig(pr.min)} to ${fmtBig(pr.max)}.` : `Any whole number from ${fmtBig(pr.min)} to ${fmtBig(pr.max)}.`}
+            </div>
+          </div>
+        )}
+
+        <div className="ow-sealed">
+          <svg width="44" height="28" viewBox="0 0 44 28" fill="currentColor" aria-hidden="true" style={{ color: `var(--stg-acc-ink, ${COLORS.accent})`, flex: '0 0 auto' }}>
+            <circle cx="6" cy="8" r="3" fillOpacity=".35" /><circle cx="16" cy="6" r="3" fillOpacity=".6" /><circle cx="26" cy="9" r="3" />
+            <circle cx="36" cy="7" r="3" fillOpacity=".45" /><circle cx="11" cy="20" r="3" fillOpacity=".8" /><circle cx="21" cy="21" r="3" fillOpacity=".3" /><circle cx="31" cy="20" r="3" fillOpacity=".7" />
+          </svg>
+          <span style={{ color: INK }}>
+            The crowd&rsquo;s picks stay sealed until you lock in all {N}. You are guessing what everyone else playing today will do, and the field keeps moving until a new crowd forms at midnight Eastern.
+          </span>
+        </div>
+
+        <div className="ow-nav">
+          <button type="button" className="ow-back" onClick={() => setStep(Math.max(0, cur - 1))} disabled={cur === 0}>Back</button>
+          {last ? (
+            <button type="button" className="ow-face ow-go" onClick={submitAll} disabled={sending}>
+              <Users size={17} className="ow-gold" /> {sending ? 'Facing the crowd…' : (allIn ? 'Face the crowd' : `Face the crowd · ${N - answered} to go`)}
+            </button>
+          ) : (
+            <button type="button" className={`ow-go ${val != null ? 'ow-go-on' : 'ow-go-off'}`} onClick={goNext}>
+              {val != null ? 'Lock it in · next prompt' : 'Next prompt'}
+            </button>
+          )}
+        </div>
+        <div style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED, marginTop: 10, textAlign: 'center' }}>
+          No right answers, only what everyone else does. Lock all {N}, then see the real numbers.
+        </div>
+      </div>
+    );
+  }
+
   // Shared rules body — rendered in both the how-to-play modal and the start gate.
   const rulesBody = (
     <DailyRules
@@ -813,6 +985,58 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
           .ow-face:active{transform:translateY(1px);box-shadow:0 2px 0 rgba(20,22,28,0.25);}
           .ow-face:disabled{opacity:.55;cursor:default;}
           .ow-face .ow-gold{color:${COLORS.gold};}
+          .ow-step{display:flex;flex-direction:column;}
+          .ow-strip{display:grid;gap:8px;}
+          .ow-seg{display:flex;flex-direction:column;align-items:stretch;gap:6px;min-height:44px;background:none;border:0;padding:0 0 4px;margin:0;cursor:pointer;text-align:left;font-family:${SANS};min-width:0;}
+          .ow-seg-bar{display:block;height:6px;border-radius:3px;}
+          .ow-seg-tag{font-family:${MONO};font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+          .ow-seg-ans{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+          .ow-cur{display:flex;flex-direction:column;gap:10px;margin:28px 0 22px;}
+          .ow-eyebrow{font-family:${MONO};font-size:12px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;}
+          .ow-q{font-size:30px;font-weight:800;line-height:1.18;letter-spacing:-0.02em;}
+          .ow-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+          .ow-grid-many{grid-template-columns:repeat(4,minmax(0,1fr));}
+          .ow-grid-txt.ow-grid-many{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+          .ow-sw{position:relative;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;height:150px;border-radius:18px;border:2px solid var(--stg-line2, rgba(28,30,36,0.24));padding:16px 18px;box-sizing:border-box;font-family:${SANS};font-weight:800;font-size:20px;cursor:pointer;text-align:left;}
+          .ow-grid-many .ow-sw{height:112px;font-size:17px;padding:12px 14px;}
+          .ow-sw-on{border:4px solid var(--stg-ink, ${COLORS.ink});box-shadow:0 0 0 3px var(--stg-ground, #fff), 0 0 0 5px var(--stg-ink, ${COLORS.ink});}
+          .ow-pick{position:absolute;top:12px;right:12px;font-family:${MONO};font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;background:#0b0f1a;color:#ffffff;border:1.5px solid rgba(255,255,255,0.75);border-radius:6px;padding:4px 8px;}
+          .ow-card{position:relative;display:flex;align-items:flex-start;min-height:76px;border-radius:14px;border:2px solid var(--stg-line3, rgba(28,30,36,0.35));background:var(--stg-surf2, #fff);color:${INK};padding:30px 16px 14px;box-sizing:border-box;font-family:${SANS};font-weight:800;font-size:17px;line-height:1.25;cursor:pointer;text-align:left;}
+          .ow-card:hover{border-color:var(--stg-acc, ${COLORS.accent});}
+          .ow-card-on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);}
+          .ow-card .ow-pick{top:9px;left:14px;right:auto;border:0;}
+          .ow-numwrap{display:flex;flex-direction:column;align-items:flex-start;gap:8px;}
+          .ow-big{font-family:${MONO};font-weight:500;font-size:44px;letter-spacing:0.04em;width:280px;max-width:100%;box-sizing:border-box;border:2px solid var(--stg-cell-line, ${COLORS.ink});border-radius:14px;padding:12px 18px;background:var(--stg-cell, #fff);color:${INK};outline:none;}
+          .ow-big::placeholder{color:var(--stg-mute, ${COLORS.faded});font-size:22px;letter-spacing:0;}
+          .ow-big:focus{border-color:var(--stg-acc, ${COLORS.accent});box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 22%, transparent);}
+          .ow-numhint{font-size:13px;font-weight:700;}
+          .ow-sealed{display:flex;align-items:center;gap:14px;background:var(--stg-surf, ${COLORS.accentSoft});border:1px solid var(--stg-line, rgba(28,30,36,0.12));border-radius:14px;padding:14px 16px;margin-top:22px;font-size:14px;font-weight:600;line-height:1.45;}
+          .ow-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:20px;}
+          .ow-back{font-family:${SANS};font-weight:700;font-size:15px;background:transparent;color:${INK};border:1.5px solid var(--stg-line3, rgba(28,30,36,0.4));border-radius:12px;padding:0 20px;min-height:50px;cursor:pointer;}
+          .ow-back:disabled{opacity:.4;cursor:default;}
+          .ow-go{font-family:${SANS};font-weight:800;font-size:15px;border-radius:12px;padding:0 24px;min-height:50px;cursor:pointer;}
+          .ow-go-on{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);border:0;}
+          .ow-go-off{background:transparent;color:${INK};border:1.5px solid var(--stg-line3, rgba(28,30,36,0.4));}
+          .ow-face.ow-go{height:auto;min-height:50px;font-size:14px;}
+          @media(max-width:640px){
+            .ow-strip{gap:5px;}
+            .ow-seg-tag{font-size:8.5px;letter-spacing:0.06em;}
+            .ow-seg-ans{font-size:11.5px;}
+            .ow-cur{margin:20px 0 18px;gap:8px;}
+            .ow-eyebrow{font-size:11px;letter-spacing:0.14em;}
+            .ow-q{font-size:24px;line-height:1.2;}
+            .ow-grid{gap:10px;}
+            .ow-grid-many{grid-template-columns:repeat(2,minmax(0,1fr));}
+            .ow-sw,.ow-grid-many .ow-sw{height:auto;min-height:112px;font-size:17px;padding:12px 14px;border-radius:16px;}
+            .ow-grid:not(.ow-grid-many) .ow-sw{min-height:150px;}
+            .ow-pick{font-size:9px;top:10px;right:10px;padding:4px 6px;}
+            .ow-card{min-height:70px;font-size:15.5px;padding:28px 12px 12px;}
+            .ow-sealed{font-size:13px;padding:12px 14px;}
+            .ow-sealed svg{display:none;}
+            .ow-back{flex:1;padding:0 10px;}
+            .ow-go{flex:2;padding:0 12px;min-height:52px;}
+            .ow-face.ow-go{justify-content:center;}
+          }
           @media(max-width:560px){.ow-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.ow-ttl h1{font-size:21px;letter-spacing:0.02em;}.ow-ttl .ow-ttl-dt{font-size:15px;}.ow-ttl-dot{display:none;}}
         ` }} />
 
@@ -873,17 +1097,7 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}><Users size={12} /> five prompts vs. today&rsquo;s crowd</span>
             <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>answered <b style={{ color: INK, fontWeight: 500 }}>{answered}</b>/{PROMPTS.length}</span>
           </div>
-          {PROMPTS.map((_, i) => renderPrompt(i))}
-          {started && (
-            <div style={{ textAlign: 'center', margin: '14px 0 8px' }}>
-              <button className="ow-face" onClick={faceTheCrowd} disabled={sending || answered < PROMPTS.length}>
-                <Users size={17} className="ow-gold" /> {sending ? 'Facing the crowd…' : 'Face the crowd'}
-              </button>
-              <div style={{ fontFamily: SANS, fontSize: 11.5, fontWeight: 700, color: FADED, marginTop: 8 }}>
-                No right answers — only what everyone else does. Lock all five, then see the real numbers.
-              </div>
-            </div>
-          )}
+          {started ? renderStepper() : PROMPTS.map((_, i) => renderPrompt(i))}
         </div>
         )}
 

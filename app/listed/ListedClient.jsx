@@ -731,6 +731,47 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+  // The answer panel and its Hide control, shared by the stage board and the
+  // Loft board below so the two cannot drift.
+  const resultBlock = (
+    <>
+          <div className={STAGE ? undefined : 'loft-sol'}>
+          {/* result */}
+          {!playing && (!LOFT || revealed) && (
+            <>
+              <div style={{ maxWidth: 472, margin: '0 auto 12px' }}>
+                <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: FADED, marginBottom: 7 }}>The real ranking</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {PUZZLE.items.map((item, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 9 }}>
+                      <span style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 11, color: FADED, width: 16, textAlign: 'right', marginTop: 2 }}>{i + 1}</span>
+                      <span style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 11, fontWeight: 500, color: `var(--stg-ink, ${COLORS.brandInk})`, background: `var(--stg-surf, ${COLORS.brandSoft})`, border: '1px solid rgba(134,25,143,0.35)', borderRadius: 6, padding: '2px 7px', minWidth: 74, textAlign: 'center', whiteSpace: 'nowrap', marginTop: 1 }}>{item.v}</span>
+                      <span style={{ minWidth: 0 }}>
+                        <span style={{ display: 'block', fontFamily: SANS, fontWeight: 700, fontSize: 12.5, lineHeight: 1.35, color: INK }}>{item.t}</span>
+                        {item.d ? <span style={{ display: 'block', fontFamily: SANS, fontWeight: 600, fontSize: 11.5, lineHeight: 1.45, color: FADED, marginTop: 1 }}>{item.d}</span> : null}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ fontFamily: MONO, fontSize: 10.5, color: FADED, marginTop: 11, borderTop: '1px solid rgba(28,30,36,0.14)', paddingTop: 8 }}>Source: {PUZZLE.source}</div>
+              </div>
+              {!isTodays && (
+                <p style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
+                  You&rsquo;re playing the {PUZZLE.dateLabel.replace(', 2026', '')} archive.{' '}
+                  <a href="/listed" style={{ color: `var(--stg-ink, ${COLORS.ember})`, fontWeight: 800, textDecoration: 'underline' }}>Back to today&rsquo;s Listed &rarr;</a>
+                  {' · '}
+                  <a href="/daily" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>All daily puzzles</a>
+                </p>
+              )}
+            </>
+          )}
+          </div>
+          {LOFT && !playing && revealed && (
+            <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Hide game board</button>
+          )}
+    </>
+  );
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
@@ -779,6 +820,25 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
           .ls-arrow:disabled{opacity:.25;cursor:default;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border-color:rgba(28,30,36,0.3);color:${INK};}
           @media(max-width:560px){.ls-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.ls-ttl h1{font-size:21px;letter-spacing:0.02em;}.ls-ttl .ls-ttl-dt{font-size:15px;}.ls-ttl-dot{display:none;}}
           @media(max-width:430px){.ls-mh-tile{width:34px !important;height:34px !important;font-size:20px !important;}}
+          .ls-endm{display:none;}
+          .ls-sarrow{width:44px;height:44px;border-radius:10px;border:1.5px solid var(--stg-line2);background:var(--stg-surf);color:var(--stg-ink);}
+          .ls-sarrow:disabled{border-color:var(--stg-line);background:var(--stg-surf);}
+          @media(max-width:640px){
+            .ls-title{font-size:19px !important;margin-bottom:10px !important;}
+            .ls-tl{gap:10px !important;}
+            .ls-axis{width:8px !important;padding:4px 0 !important;}
+            .ls-bar{width:8px !important;border-radius:4px !important;}
+            .ls-endd{display:none;}
+            .ls-endm{display:block;}
+            .ls-list{gap:6px !important;}
+            .ls-rowwrap{gap:8px !important;}
+            .ls-num{width:22px !important;font-size:16px !important;}
+            .ls-row{min-height:48px !important;padding:1px 1px 1px 12px !important;border-radius:10px !important;gap:8px !important;}
+            .ls-nm{font-size:15px !important;}
+            .ls-val{font-size:12px !important;}
+            .ls-acts{width:100%;}
+            .ls-cta{width:100%;justify-content:center;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
@@ -831,8 +891,113 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
           <div className={LOFT && !STAGE && !playing ? (revealed ? 'loft-flip' : 'loft-flip on') : undefined}>
           <div className={LOFT && !STAGE && !playing ? 'loft-flip-in' : undefined}>
           <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
-        {/* the board */}
-        {!preStart && (
+        {/* THE STAGE BOARD: compact rows (about 54px, 48px on a phone) so a
+            ten-row board fits without a long scroll, beside a thin axis whose
+            two ends are this board's own hi / lo labels. A locked row fills
+            solid with the accent and shows the figure the lock already reveals;
+            nothing new is revealed here. */}
+        {!preStart && STAGE && (
+        <div className="stg-board ls-sb" style={{ background: SURF, border: `1px solid ${SURF_B}`, borderRadius: 14, padding: '14px 16px 14px', marginBottom: 12 }}>
+          {PUZZLE.cat ? (
+            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: FADED, marginBottom: 5 }}>{PUZZLE.cat} &middot; by {PUZZLE.metric.toLowerCase()}</div>
+          ) : null}
+          <div className="ls-title" style={{ fontFamily: SANS, fontWeight: 800, fontSize: 22, letterSpacing: '-0.01em', lineHeight: 1.25, color: INK, marginBottom: 14 }}>{PUZZLE.title}</div>
+
+          <div className="ls-tl" style={{ display: 'flex', gap: 14 }}>
+            <div className="ls-axis" aria-hidden="true" style={{ flex: '0 0 auto', width: 64, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2px 0' }}>
+              <span className="ls-endd" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--stg-acc-ink)', textAlign: 'center', lineHeight: 1.3, paddingBottom: 8 }}>{PUZZLE.hi}</span>
+              <div className="ls-bar" style={{ flex: 1, width: 6, borderRadius: 3, background: 'linear-gradient(to bottom, var(--stg-acc), color-mix(in srgb, var(--stg-acc) 18%, transparent))' }} />
+              <span className="ls-endd" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: FADED, textAlign: 'center', lineHeight: 1.3, paddingTop: 8 }}>{PUZZLE.lo}</span>
+            </div>
+            <div className={shake ? 'ls-shake ls-list' : 'ls-list'} style={{ flex: '1 1 auto', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 7, userSelect: drag ? 'none' : undefined }}>
+              <span className="ls-endm" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--stg-acc-ink)' }}>&uarr; {PUZZLE.hi}</span>
+              {g.order.map((it, slot) => {
+                const locked = lockedSlots[slot];
+                const mark = !locked && g.marks ? g.marks[slot] : null;
+                const near = mark === NEAR;
+                const done = g.status !== 'playing';
+                const showVal = locked || (done && (won || !LOFT || revealed)) || (g.hintIdx === it && g.hintUsed);
+                const draggable = !mobileUi && playing && !locked;
+                const dragging = drag && drag.from === slot;
+                const dropHere = drag && !dragging && drag.target === slot;
+                const rowInk = locked ? 'var(--stg-onramp)' : INK;
+                const bg = locked ? 'var(--stg-acc)' : dropHere ? 'color-mix(in srgb, var(--stg-acc) 16%, var(--stg-surf2))' : 'var(--stg-surf2)';
+                const bord = locked || dropHere ? '1.5px solid var(--stg-acc)' : near ? '1.5px solid var(--stg-warn)' : '1.5px solid var(--stg-line2)';
+                return (
+                  <div key={it} className="ls-rowwrap" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span className="ls-num" style={{ flex: '0 0 auto', width: 30, textAlign: 'right', fontFamily: MONO, fontSize: 20, fontWeight: 500, color: locked ? 'var(--stg-acc-ink)' : near ? 'var(--stg-warn)' : 'var(--stg-mute2)' }}>{slot + 1}</span>
+                    <div ref={(el) => { rowRefs.current[slot] = el; }} onPointerDown={draggable ? (e) => startDrag(slot, e) : undefined} title={draggable ? 'Drag to reorder' : undefined}
+                      className="ls-row"
+                      style={{ flex: '1 1 auto', minWidth: 0, minHeight: 54, boxSizing: 'border-box', display: 'flex', alignItems: 'center', gap: 10, background: bg, border: bord, borderRadius: 12, padding: '4px 5px 4px 16px', cursor: draggable ? (dragging ? 'grabbing' : 'grab') : undefined, position: dragging ? 'relative' : undefined, zIndex: dragging ? 5 : undefined, transform: dragging ? `translateY(${drag.dy}px)` : undefined, boxShadow: dragging ? '0 8px 20px rgba(0,0,0,0.28)' : undefined, touchAction: draggable ? 'none' : undefined }}>
+                      <span className="ls-nm" style={{ flex: '1 1 auto', minWidth: 0, fontFamily: SANS, fontSize: 16, fontWeight: 800, lineHeight: 1.2, color: rowInk }}>{PUZZLE.items[it].t}</span>
+                      {near && playing ? <span title="Off by one place" style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500, color: 'var(--stg-warn)', border: '1px solid var(--stg-warn)', borderRadius: 5, padding: '2px 6px', whiteSpace: 'nowrap' }}>Off by one</span> : null}
+                      {showVal ? (locked
+                        ? <span className="ls-val" style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 13, fontWeight: 500, color: 'var(--stg-onramp)', whiteSpace: 'nowrap', paddingRight: 11 }}>{PUZZLE.items[it].v}</span>
+                        : <span className="ls-val" style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 12.5, fontWeight: 500, color: INK, background: 'var(--stg-surf)', border: '1px solid var(--stg-line3)', borderRadius: 6, padding: '3px 8px', whiteSpace: 'nowrap', marginRight: playing ? 0 : 6 }}>{PUZZLE.items[it].v}</span>) : null}
+                      {draggable && (
+                        <svg className="ls-grip" aria-hidden="true" width="14" height="20" viewBox="0 0 18 26" fill="currentColor" style={{ flex: '0 0 auto', color: 'var(--stg-mute2)' }}><circle cx="5" cy="5" r="2.2" /><circle cx="13" cy="5" r="2.2" /><circle cx="5" cy="13" r="2.2" /><circle cx="13" cy="13" r="2.2" /><circle cx="5" cy="21" r="2.2" /><circle cx="13" cy="21" r="2.2" /></svg>
+                      )}
+                      {playing && !locked && (
+                        <span style={{ flex: '0 0 auto', display: 'flex', gap: 4 }}>
+                          <button className="ls-arrow ls-sarrow" onClick={() => moveRow(slot, -1)} disabled={slot === 0 || lockedSlots.slice(0, slot).every(Boolean)} aria-label={`Move ${PUZZLE.hi.toLowerCase()}`}><ArrowUp size={16} strokeWidth={2.5} /></button>
+                          <button className="ls-arrow ls-sarrow" onClick={() => moveRow(slot, 1)} disabled={slot === N - 1 || lockedSlots.slice(slot + 1).every(Boolean)} aria-label={`Move ${PUZZLE.lo.toLowerCase()}`}><ArrowDown size={16} strokeWidth={2.5} /></button>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+              <span className="ls-endm" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: FADED }}>&darr; {PUZZLE.lo}</span>
+            </div>
+          </div>
+
+          {/* the submit grid, so far */}
+          {started && g.rows.length > 0 && (
+            <div aria-label="Your submits so far" style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 14 }}>
+              {g.rows.map((row, ri) => (
+                <div key={ri} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ flex: '0 0 auto', width: 20, fontFamily: MONO, fontSize: 10, color: FADED }}>{ri + 1}</span>
+                  {row.map((c, ci) => (
+                    <span key={ci} style={{ width: 15, height: 15, borderRadius: 3, boxSizing: 'border-box', background: c === EXACT ? 'var(--stg-good)' : c === NEAR ? 'var(--stg-warn)' : 'transparent', border: c === GREY ? '1.5px solid var(--stg-line3)' : 'none' }} />
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="ls-foot" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--stg-line)', flexWrap: 'wrap' }}>
+            <span style={{ flex: '1 1 220px', fontFamily: SANS, fontSize: 13, fontWeight: 600, lineHeight: 1.45, color: FADED }}>
+              {won ? <b style={{ color: INK }}>Ranked in {checksUsed} submit{checksUsed === 1 ? '' : 's'}.</b>
+                : playing && g.marks && nearCount > 0 ? <b style={{ color: 'var(--stg-warn)' }}>{nearCount} row{nearCount === 1 ? ' is' : 's are'} off by exactly one place. Nudging beats rebuilding.</b>
+                : playing ? <>A submit locks every row in its exact place; locked rows turn solid and show their figure. {mobileUi ? 'Use the arrows to move the rest.' : 'Drag the rest, or use the arrows.'}</>
+                : null}
+            </span>
+            {started && (
+              <div className="ls-acts" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                {identity && checksUsed > 0 && (
+                  <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
+                    style={{ minHeight: 44, background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12.5, color: armReveal ? 'var(--stg-bad)' : 'var(--stg-mute)', textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                    <Eye size={13} /> {armReveal ? 'Tap again, this ends the puzzle and shows the real order' : 'Reveal the ranking & end'}
+                  </button>
+                )}
+                {hintOk && !g.hintUsed && (
+                  <button className="ls-btn" onClick={useHint} title="Reveal the figure of the item furthest from home (one hint, first play only)"
+                    style={{ minHeight: 44, background: 'var(--stg-surf2)', border: '1.5px solid var(--stg-warn)', color: 'var(--stg-warn)', fontSize: 13 }}>
+                    <Lightbulb size={14} /> Hint
+                  </button>
+                )}
+                <button className="ls-btn ls-cta" onClick={submitOrder} style={{ minHeight: 48, fontSize: 15, borderRadius: 12, padding: '12px 20px', background: 'var(--stg-acc)', color: 'var(--stg-onramp)', borderColor: 'var(--stg-acc)' }}>
+                  <Check size={15} strokeWidth={3} /> Submit my ranking &middot; {checksLeft} left
+                </button>
+              </div>
+            )}
+          </div>
+          {resultBlock}
+        </div>
+        )}
+
+        {/* the board (Loft / pre-stage branch) */}
+        {!preStart && !STAGE && (
         <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
             {PUZZLE.cat ? (
@@ -901,40 +1066,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
             ))}
           </div>
         )}
-          <div className={STAGE ? undefined : 'loft-sol'}>
-          {/* result */}
-          {!playing && (!LOFT || revealed) && (
-            <>
-              <div style={{ maxWidth: 472, margin: '0 auto 12px' }}>
-                <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: FADED, marginBottom: 7 }}>The real ranking</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {PUZZLE.items.map((item, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 9 }}>
-                      <span style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 11, color: FADED, width: 16, textAlign: 'right', marginTop: 2 }}>{i + 1}</span>
-                      <span style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 11, fontWeight: 500, color: `var(--stg-ink, ${COLORS.brandInk})`, background: `var(--stg-surf, ${COLORS.brandSoft})`, border: '1px solid rgba(134,25,143,0.35)', borderRadius: 6, padding: '2px 7px', minWidth: 74, textAlign: 'center', whiteSpace: 'nowrap', marginTop: 1 }}>{item.v}</span>
-                      <span style={{ minWidth: 0 }}>
-                        <span style={{ display: 'block', fontFamily: SANS, fontWeight: 700, fontSize: 12.5, lineHeight: 1.35, color: INK }}>{item.t}</span>
-                        {item.d ? <span style={{ display: 'block', fontFamily: SANS, fontWeight: 600, fontSize: 11.5, lineHeight: 1.45, color: FADED, marginTop: 1 }}>{item.d}</span> : null}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ fontFamily: MONO, fontSize: 10.5, color: FADED, marginTop: 11, borderTop: '1px solid rgba(28,30,36,0.14)', paddingTop: 8 }}>Source: {PUZZLE.source}</div>
-              </div>
-              {!isTodays && (
-                <p style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
-                  You&rsquo;re playing the {PUZZLE.dateLabel.replace(', 2026', '')} archive.{' '}
-                  <a href="/listed" style={{ color: `var(--stg-ink, ${COLORS.ember})`, fontWeight: 800, textDecoration: 'underline' }}>Back to today&rsquo;s Listed &rarr;</a>
-                  {' · '}
-                  <a href="/daily" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>All daily puzzles</a>
-                </p>
-              )}
-            </>
-          )}
-          </div>
-          {LOFT && !playing && revealed && (
-            <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Hide game board</button>
-          )}
+          {resultBlock}
         </div>
         )}
         </div>
@@ -983,8 +1115,8 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
         {/* end of the navy play stage; everything below is the light tail */}
         </div>
 
-        {/* controls */}
-        {started && (
+        {/* controls (the stage board carries its own, in its footer) */}
+        {started && !STAGE && (
           <div style={{ marginBottom: 12 }}>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
               <button className="ls-btn" onClick={submitOrder} style={{ background: `var(--stg-acc, ${COLORS.brand})`, color: `var(--stg-onramp, ${T.white})`, borderColor: COLORS.brand }}>

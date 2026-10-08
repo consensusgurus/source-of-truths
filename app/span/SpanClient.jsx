@@ -598,7 +598,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
       setJustWon(true);
       return;
     }
-    say(`${canonical} — ${g2.chain.length - 1} hop${g2.chain.length - 1 === 1 ? '' : 's'} in.`);
+    say(`${canonical}, ${g2.chain.length - 1} hop${g2.chain.length - 1 === 1 ? '' : 's'} in.`);
     setG(g2);
   }
 
@@ -784,7 +784,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
-      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'clip' : undefined }}>
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -827,6 +827,47 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
           @media(max-width:520px){.sp-htp-f{display:none;}.sp-htp-s{display:inline;}}
           @media(max-width:560px){.sp-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.sp-ttl h1{font-size:21px;letter-spacing:0.02em;}.sp-ttl .sp-ttl-dt{font-size:15px;}.sp-ttl-dot{display:none;}}
           .sp-htp-s{display:none;}
+          .sp-eyebrow{font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-acc-ink, ${COLORS.trail});}
+          .sp-route{font-size:30px;font-weight:800;letter-spacing:-.01em;line-height:1.15;color:${INK};margin:2px 0 0;}
+          .sp-line{display:flex;flex-direction:column;padding:22px 2px 0;}
+          .sp-st{display:flex;gap:18px;align-items:stretch;}
+          .sp-rail{width:40px;flex:none;display:flex;flex-direction:column;align-items:center;}
+          .sp-dot{width:28px;height:28px;flex:none;border-radius:50%;box-sizing:border-box;border:4px solid var(--stg-acc-ink, ${COLORS.trail});background:var(--stg-ground, ${T.white});}
+          .sp-dot.here{background:var(--stg-acc, ${COLORS.trail});}
+          .sp-dot.todo{width:22px;height:22px;border-style:dashed;border-color:var(--stg-cell-line, rgba(28,30,36,0.44));}
+          .sp-dot.dest{width:40px;height:40px;background:var(--stg-acc, ${COLORS.trail});}
+          .sp-seg{flex:1;width:0;min-height:38px;border-left:5px solid var(--stg-acc-ink, ${COLORS.trail});}
+          .sp-seg.gap{border-left-style:dashed;border-left-color:var(--stg-cell-line, rgba(28,30,36,0.44));}
+          .sp-lbl{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;padding:2px 0 20px;}
+          .sp-tag{font-family:${MONO};font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:${FADED};}
+          .sp-tag.here,.sp-tag.dest{color:var(--stg-acc-ink, ${COLORS.trail});}
+          .sp-nm{font-size:20px;font-weight:800;color:${INK};overflow-wrap:anywhere;}
+          .sp-nm.todo{color:${FADED};}
+          .sp-nm.dest{font-size:22px;}
+          .sp-dest{display:flex;gap:18px;align-items:center;}
+          .sp-dest .sp-lbl{padding:0;}
+          .sp-field{flex:1;display:flex;align-items:center;background:var(--stg-cell, ${T.white});border:1.5px solid var(--stg-cell-line, ${COLORS.ink});border-radius:12px;padding:0 16px;min-height:52px;box-sizing:border-box;}
+          .sp-field input{flex:1;width:100%;min-width:0;background:transparent;border:0;outline:0;color:${INK};font-family:${SANS};font-size:16px;font-weight:700;padding:0;}
+          .sp-go{font-family:${SANS};font-weight:800;font-size:15px;border:0;border-radius:12px;padding:0 22px;min-height:52px;min-width:64px;cursor:pointer;background:var(--stg-acc, ${COLORS.trail});color:var(--stg-onramp, ${T.white});}
+          .sp-sugs{position:absolute;top:100%;left:0;right:0;z-index:30;margin-top:4px;}
+          .sp-sug{min-height:44px;}
+          @media(max-width:640px){
+            .sp-route{font-size:24px;}
+            .sp-line{padding-top:18px;}
+            .sp-st,.sp-dest{gap:14px;}
+            .sp-rail{width:32px;}
+            .sp-dot{width:24px;height:24px;}
+            .sp-dot.todo{width:20px;height:20px;}
+            .sp-dot.dest{width:32px;height:32px;}
+            .sp-seg{min-height:34px;}
+            .sp-lbl{padding-bottom:16px;}
+            .sp-tag{font-size:9px;letter-spacing:.14em;}
+            .sp-nm{font-size:18px;}
+            .sp-nm.dest{font-size:20px;}
+            .sp-dock{position:sticky;bottom:0;z-index:25;background:${STAGE ? 'var(--stg-ground)' : T.surface};border-top:1px solid var(--stg-line, rgba(28,30,36,0.12));padding:12px 0 calc(12px + env(safe-area-inset-bottom, 0px));margin-bottom:0 !important;}
+            .sp-sugs{top:auto;bottom:100%;margin-top:0;margin-bottom:4px;}
+            .sp-toast{bottom:150px !important;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
@@ -883,8 +924,8 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
         {!preStart && (
         <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           {isSundayEd && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, fontFamily: MONO, fontSize: 11, letterSpacing: '0.09em', textTransform: 'uppercase', color: '#8a6d1a', background: STAGE ? 'var(--stg-surf2)' : '#fdf6e3', border: '1px solid rgba(230,185,63,0.6)', borderRadius: 7, padding: '6px 10px', marginBottom: 11, flexWrap: 'wrap' }}>
-              <b style={{ fontWeight: 800, color: '#92400e', whiteSpace: 'nowrap' }}>Sunday Edition</b>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9, fontFamily: MONO, fontSize: 11, letterSpacing: '0.09em', textTransform: 'uppercase', color: STAGE ? 'var(--stg-warn)' : '#8a6d1a', background: STAGE ? 'var(--stg-surf2)' : '#fdf6e3', border: STAGE ? '1px solid var(--stg-warn)' : '1px solid rgba(230,185,63,0.6)', borderRadius: 7, padding: '6px 10px', marginBottom: 11, flexWrap: 'wrap' }}>
+              <b style={{ fontWeight: 800, color: STAGE ? 'var(--stg-warn)' : '#92400e', whiteSpace: 'nowrap' }}>Sunday Edition</b>
               {sundayRule && (
                 <span style={{ whiteSpace: 'nowrap' }}>
                   {VIA ? <>route through <b style={{ fontWeight: 800 }}>{VIA}</b>{viaDone ? <b style={{ color: `var(--stg-ink, ${COLORS.trail})`, fontWeight: 800 }}> &#10003;</b> : null}</> : <><b style={{ fontWeight: 800 }}>{AVOID}</b> is closed today</>}
@@ -898,62 +939,112 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
             <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>perfect <b style={{ color: INK, fontWeight: 500 }}>{PUZZLE.perfect}</b> &middot; hops <b style={{ color: hops > PUZZLE.perfect ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{hops}</b> &middot; misses <b style={{ color: g.misses > 0 ? COLORS.rust : COLORS.ink, fontWeight: 500 }}>{g.misses}</b></span>
           </div>
           )}
-          {LOFT && <div className={STAGE ? undefined : 'loft-prompt'}>{PUZZLE.start} → {PUZZLE.end}</div>}
-
-          {/* the road so far */}
-          <div className={shake ? 'sp-shake' : undefined} style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 4 }}>
-            {chain.map((c, i) => {
-              const kind = i === 0 ? 'start' : won && i === chain.length - 1 ? 'goal' : 'step';
-              const parts = [chip(c, kind, `c${i}`)];
-              if (i < chain.length - 1) parts.push(arrow(`a${i}`));
-              return parts;
-            })}
-            {!won && [arrow('af'), <span key="dots" style={{ color: `var(--stg-ink2, ${T.muted})`, fontWeight: 800, letterSpacing: 2 }}>&hellip;</span>, arrow('ae'), chip(PUZZLE.end, 'end', 'endchip')]}
+          {/* the assignment, as a destination board */}
+          <div style={{ padding: '4px 2px 0' }}>
+            <div className="sp-eyebrow">Overland, border to border</div>
+            <div className="sp-route" role="heading" aria-level={2}>{PUZZLE.start} to {PUZZLE.end}</div>
           </div>
-          {won && <div style={{ fontFamily: MONO, fontSize: 11, color: `var(--stg-ink, ${COLORS.trail})`, fontWeight: 500, marginTop: 6 }}>Spanned in {chain.length - 1} hop{chain.length - 1 === 1 ? '' : 's'}.</div>}
+
+          {/* the road so far, drawn as a transit line: every stop made is a
+              filled station on a solid line, the gap still to cover is dashed,
+              and the destination waits at the bottom. Empty stations stand in
+              for the remaining hops only up to the published shortest road
+              (the cap and the rules already print it), so nothing is shown
+              that the player was not already told. */}
+          {(() => {
+            const reached = won && chain[chain.length - 1] === PUZZLE.end;
+            const stops = reached ? chain.slice(0, -1) : chain;
+            const hereIdx = playing ? stops.length - 1 : -1;
+            const empties = playing ? Math.max(0, PUZZLE.perfect - hops - 1) : 0;
+            return (
+              <div className={`sp-line${shake ? ' sp-shake' : ''}`}>
+                {stops.map((c, i) => {
+                  const isHere = i === hereIdx;
+                  const tag = i === 0 ? 'Start' : `Hop ${i}`;
+                  // the line out of a station is solid only when it leads to a
+                  // stop already made, or straight into a reached destination
+                  const solidOut = i < stops.length - 1 || reached;
+                  return (
+                    <div key={`s${i}`} className="sp-st">
+                      <div className="sp-rail" aria-hidden="true">
+                        <span className={`sp-dot${isHere ? ' here' : ''}`} />
+                        <span className={`sp-seg${solidOut ? '' : ' gap'}`} />
+                      </div>
+                      <div className="sp-lbl">
+                        <span className={`sp-tag${isHere ? ' here' : ''}`}>{isHere ? `You are here · ${tag}` : tag}</span>
+                        <span className="sp-nm">{c}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+                {Array.from({ length: empties }, (_, k) => (
+                  <div key={`e${k}`} className="sp-st" aria-hidden="true">
+                    <div className="sp-rail">
+                      <span className="sp-dot todo" />
+                      <span className="sp-seg gap" />
+                    </div>
+                    <div className="sp-lbl">
+                      <span className="sp-tag">Hop {hops + k + 1}</span>
+                      <span className="sp-nm todo">?</span>
+                    </div>
+                  </div>
+                ))}
+                <div className="sp-dest">
+                  <div className="sp-rail" aria-hidden="true"><span className="sp-dot dest" /></div>
+                  <div className="sp-lbl">
+                    <span className="sp-tag dest">{reached ? `Destination · Hop ${hops}` : 'Destination'}</span>
+                    <span className="sp-nm dest">{PUZZLE.end}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+          {won && <div style={{ fontFamily: MONO, fontSize: 11, color: `var(--stg-ink, ${COLORS.trail})`, fontWeight: 500, marginTop: 14 }}>Spanned in {chain.length - 1} hop{chain.length - 1 === 1 ? '' : 's'}.</div>}
         </div>
         )}
 
         {/* input */}
         {started && (
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'stretch' }}>
-              <div style={{ position: 'relative', flex: 1 }}>
+          <div className="sp-dock" style={{ marginBottom: 12 }}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'stretch' }}>
+              <div style={{ position: 'relative', flex: 1, display: 'flex' }}>
+                <label className="sp-field">
                 <input
+                  aria-label="Next stop"
                   ref={inputRef}
                   value={typed}
                   onChange={(e) => setTyped(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (suggestions.length === 1) addCountry(suggestions[0]); else addCountry(typed); } }}
                   placeholder={`Next stop from ${head}…`}
                   autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
-                  style={{ width: '100%', boxSizing: 'border-box', fontFamily: SANS, fontWeight: 700, fontSize: 15, color: INK, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 9, padding: '11px 13px', outline: 'none' }}
                 />
+                </label>
                 {suggestions.length > 0 && (
-                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 30, background: STAGE ? 'var(--stg-raise,#0e131f)' : T.white, border: STAGE ? '1.5px solid var(--stg-line2,rgba(255,255,255,0.17))' : '1.5px solid rgba(28,30,36,0.35)', borderRadius: 9, marginTop: 4, overflow: 'hidden', boxShadow: '0 8px 20px rgba(20,22,28,0.14)' }}>
+                  <div className="sp-sugs" style={{ background: STAGE ? 'var(--stg-raise,#0e131f)' : T.white, border: STAGE ? '1.5px solid var(--stg-line2,rgba(255,255,255,0.17))' : '1.5px solid rgba(28,30,36,0.35)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 20px rgba(20,22,28,0.14)' }}>
                     {suggestions.map((c) => (
                       <button key={c} className="sp-sug" onMouseDown={(e) => { e.preventDefault(); addCountry(c); }}>{c}</button>
                     ))}
                   </div>
                 )}
               </div>
-              <button className="sp-btn" onClick={() => { if (suggestions.length === 1) addCountry(suggestions[0]); else addCountry(typed); }} style={{ background: COLORS.trail, color: T.white, borderColor: COLORS.trail }}>Go</button>
+              <button type="button" className="sp-go" onClick={() => { if (suggestions.length === 1) addCountry(suggestions[0]); else addCountry(typed); }}>Go</button>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 9, flexWrap: 'wrap' }}>
               {chain.length > 1 && (
-                <button className="sp-btn" onClick={undo} style={{ borderColor: '#c3c8cf', color: FADED, padding: '6px 12px', fontSize: 12.5 }}>
+                <button className="sp-btn" onClick={undo} style={{ borderColor: STAGE ? 'var(--stg-line2)' : '#c3c8cf', color: FADED, padding: '6px 14px', fontSize: 12.5, minHeight: 44, borderRadius: 10 }}>
                   <Undo2 size={14} /> Undo last step
                 </button>
               )}
               {hintOk && !g.hintUsed && (
                 <button className="sp-btn" onClick={useHint} title="Take one step down a shortest road (one hint, first play only)"
-                  style={{ background: STAGE ? 'var(--stg-surf2)' : '#fdf6e3', border: '1.5px solid rgba(230,185,63,0.7)', color: '#8a6d1a', padding: '6px 12px', fontSize: 12.5 }}>
+                  style={{ background: STAGE ? 'var(--stg-surf2)' : '#fdf6e3', border: STAGE ? '1.5px solid var(--stg-warn)' : '1.5px solid rgba(230,185,63,0.7)', color: STAGE ? 'var(--stg-warn)' : '#8a6d1a', padding: '6px 14px', fontSize: 12.5, minHeight: 44, borderRadius: 10 }}>
                   <Lightbulb size={14} /> Hint
                 </button>
               )}
               {identity && (chain.length > 1 || g.misses > 0) && (
                 <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-                  style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                  <Eye size={13} /> {armReveal ? 'Tap again — ends the puzzle and shows a shortest road' : 'Reveal a road & end'}
+                  style={{ marginLeft: 'auto', minHeight: 44, background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  <Eye size={13} /> {armReveal ? 'Tap again: this ends the puzzle and shows a shortest road' : 'Reveal a road & end'}
                 </button>
               )}
             </div>
@@ -1140,7 +1231,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
-        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
+        <div className="sp-toast" style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
           {toast}
         </div>
       )}

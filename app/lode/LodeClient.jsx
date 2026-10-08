@@ -466,7 +466,7 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
     const w = entry.trim().toUpperCase();
     setEntry('');
     if (!w) return;
-    if (w.length < MIN_LEN) return say(`Too short — ${MIN_LEN} letters minimum.`, true);
+    if (w.length < MIN_LEN) return say(`Too short: ${MIN_LEN} letters minimum.`, true);
     for (const ch of w) {
       if (!LETTER_SET.has(ch)) return say(`No ${ch} on this board.`, true);
     }
@@ -586,6 +586,42 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
   const spareSorted = useMemo(() => (g.spare || []).slice().sort(), [g.spare]);
   const pct = Math.min(100, Math.round((score / Math.max(1, MAXSCORE)) * 100));
 
+  // ─── the depth gauge ─────────────────────────────────────────────────────
+  // The real ladder, with the pre-Speck state ("Unbroken", the same name the
+  // rank memo uses) at the surface. The labels sit EVENLY down the shaft, so the
+  // fill is piecewise: it reaches each label exactly when its rank is earned,
+  // rather than at score / max, which would crowd every rank but the last into
+  // the top third of the gauge.
+  const LADDER = [{ n: 'Unbroken', at: 0 }, ...PUZZLE.ranks];
+  let depthPct = 100;
+  for (let i = 0; i < LADDER.length - 1; i++) {
+    const a = LADDER[i].at, b = LADDER[i + 1].at;
+    if (score < b) {
+      depthPct = ((i + Math.max(0, score - a) / Math.max(1, b - a)) / (LADDER.length - 1)) * 100;
+      break;
+    }
+  }
+
+  // ─── the hexagon cluster ─────────────────────────────────────────────────
+  // The core in the middle, the outer letters in a ring around it, starting at
+  // twelve o'clock. Six outer letters land on a true honeycomb; the Sunday
+  // Edition's seven need a slightly wider ring so no two hexes overlap.
+  const HEX = (() => {
+    const W = 84, H = 80, n = order.length, R = n <= 6 ? 85 : 100;
+    const pts = [{ key: 'core', ch: CORE, core: true, dx: 0, dy: 0 }];
+    order.forEach((ch, k) => {
+      const a = (-90 + (k * 360) / n) * (Math.PI / 180);
+      pts.push({ key: `o${k}`, ch, core: false, dx: R * Math.cos(a), dy: R * Math.sin(a) });
+    });
+    const minX = Math.min(...pts.map((q) => q.dx)), maxX = Math.max(...pts.map((q) => q.dx));
+    const minY = Math.min(...pts.map((q) => q.dy)), maxY = Math.max(...pts.map((q) => q.dy));
+    return {
+      w: Math.round(maxX - minX + W),
+      h: Math.round(maxY - minY + H),
+      cells: pts.map((q) => ({ ...q, x: Math.round(q.dx - minX), y: Math.round(q.dy - minY) })),
+    };
+  })();
+
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft} accentDeep={COLORS.accentDeep}
@@ -646,28 +682,67 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
           .ld-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
           .ld-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accentDeep}) 86%, var(--stg-ink, var(--white)));}
           .ld-btn:disabled{opacity:0.45;cursor:default;}
-          .ld-row{display:flex;gap:10px;justify-content:center;}
-          .ld-tile{width:58px;height:58px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:${SANS};font-weight:900;font-size:25px;color:${INK};background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 2px solid var(--stg-line, rgba(28,30,36,0.16));cursor:pointer;user-select:none;box-shadow:0 2px 0 rgba(28,30,36,0.14);transition:transform .08s;}
-          .ld-tile:active{transform:translateY(2px);box-shadow:none;}
-          .ld-tile.core{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accentDeep});color:var(--stg-onramp, var(--white));box-shadow:0 2px 0 var(--stg-acc, ${COLORS.accentDeep});}
-          @media(max-width:420px){.ld-tile{width:46px;height:46px;font-size:21px;}.ld-row{gap:7px;}}
-          .ld-entry{font-family:${SANS};font-weight:800;font-size:22px;letter-spacing:0.13em;text-transform:uppercase;text-align:center;width:100%;border:none;border-bottom: 2.5px solid var(--stg-line2, rgba(28,30,36,0.22));background:transparent;color:${INK};padding:8px 4px;outline:none;caret-color:var(--stg-acc, ${COLORS.accent});}
-          .ld-entry::placeholder{letter-spacing:0.02em;font-size:14px;font-weight:700;color:#b6bcc6;text-transform:none;}
+          /* THE BOARD: shaft on the left, the dig on the right (desktop); the
+             shaft becomes a horizontal bar above the board at phone width. */
+          .ld-board{display:flex;gap:26px;align-items:stretch;}
+          .ld-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:18px;}
+          .ld-shaft{width:122px;flex:0 0 122px;display:flex;flex-direction:column;align-self:flex-start;height:470px;}
+          .ld-shaft-hd{font-family:${MONO};font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:${FADED};padding-bottom:12px;}
+          .ld-shaft-body{flex:1;display:flex;gap:10px;}
+          .ld-shaft-track{position:relative;width:18px;flex:0 0 18px;border-radius:9px;background:var(--stg-cell, #e4e7ec);box-shadow:inset 0 0 0 1.5px var(--stg-cell-line, rgba(28,30,36,0.3));overflow:hidden;}
+          .ld-shaft-fill{position:absolute;left:0;right:0;top:0;background:var(--stg-acc, ${COLORS.accent});transition:height .35s;}
+          .ld-shaft-tick{position:absolute;left:0;right:0;height:1.5px;background:var(--stg-cell-line, rgba(28,30,36,0.3));}
+          .ld-shaft-labels{position:relative;flex:1;}
+          .ld-shaft-lab{position:absolute;left:0;right:0;display:flex;flex-direction:column;line-height:1.2;}
+          .ld-gh{display:none;margin-bottom:16px;}
+          .ld-gh-track{position:relative;height:12px;border-radius:6px;background:var(--stg-cell, #e4e7ec);box-shadow:inset 0 0 0 1.5px var(--stg-cell-line, rgba(28,30,36,0.3));overflow:hidden;}
+          .ld-gh-fill{position:absolute;left:0;top:0;bottom:0;background:var(--stg-acc, ${COLORS.accent});transition:width .35s;}
+          .ld-gh-tick{position:absolute;top:0;bottom:0;width:1.5px;background:var(--stg-cell-line, rgba(28,30,36,0.3));}
+          .ld-gh-labels{display:flex;justify-content:space-between;gap:4px;margin-top:6px;font-family:${MONO};font-size:9px;letter-spacing:.06em;text-transform:uppercase;}
+          @media(max-width:640px){.ld-shaft{display:none;}.ld-gh{display:block;}.ld-board{display:block;}}
+          /* HEXES. clip-path removes borders and shadows, so the boundary is a
+             second hex: the button paints the rim (--stg-cell-line, >=3:1 on
+             both grounds) and the inset span paints the face (--stg-cell). */
+          .ld-hexes{position:relative;align-self:center;margin:0 auto;}
+          .ld-hex{position:absolute;width:84px;height:80px;border:0;padding:0;margin:0;cursor:pointer;user-select:none;background:var(--stg-cell-line, rgba(28,30,36,0.45));clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);transition:transform .08s;-webkit-tap-highlight-color:transparent;}
+          .ld-hex-in{position:absolute;inset:2.5px;display:flex;align-items:center;justify-content:center;background:var(--stg-cell, var(--white));color:${INK};font-family:${MONO};font-weight:500;font-size:28px;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);}
+          .ld-hex:hover .ld-hex-in{background:var(--stg-surf2, ${COLORS.accentSoft});}
+          .ld-hex:active{transform:scale(.95);}
+          .ld-hex:focus-visible{outline:none;background:var(--stg-acc-ink, ${COLORS.accent});}
+          .ld-hex.core{background:var(--stg-acc-ink, ${COLORS.accentDeep});}
+          .ld-hex.core .ld-hex-in{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
+          .ld-acts{display:flex;gap:8px;justify-content:center;}
+          .ld-act{min-height:46px;border-radius:12px;justify-content:center;}
+          .ld-act.mine{font-size:15px;padding:0 22px;}
+          @media(max-width:640px){.ld-act{flex:1;min-height:48px;}.ld-act.mine{flex:1.4;}}
+          .ld-entry{font-family:${MONO};font-weight:500;font-size:30px;letter-spacing:0.12em;text-transform:uppercase;text-align:center;width:100%;border:none;border-bottom: 2px solid var(--stg-cell-line, rgba(28,30,36,0.3));background:transparent;color:${INK};padding:8px 4px;outline:none;caret-color:var(--stg-acc-ink, ${COLORS.accent});min-height:54px;}
+          @media(max-width:640px){.ld-entry{font-size:26px;}}
+          .ld-entry::placeholder{letter-spacing:0.02em;font-family:${SANS};font-size:14px;font-weight:700;color:${FADED};text-transform:none;}
           .ld-shake{animation:ldshake .3s;}
           @keyframes ldshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-          .ld-track{position:relative;height:10px;border-radius:999px;background:${STAGE ? 'var(--stg-surf2)' : '#e4e7ec'};overflow:hidden;}
-          .ld-fill{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--stg-acc, ${COLORS.accent}),#d99a1a);border-radius:999px;transition:width .35s;}
-          .ld-pip{position:absolute;top:-4px;width:2px;height:18px;background:rgba(28,30,36,0.28);}
-          .ld-wtag{display:inline-flex;align-items:center;font-family:${MONO};font-size:11.5px;font-weight:500;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.16));border-radius:6px;padding:2px 7px;margin:0 5px 5px 0;color:${INK};}
-          .ld-wtag.t3{border-color:rgba(192,57,43,0.45);color:${COLORS.rust};}
-          .ld-wtag.t2{border-color:color-mix(in srgb, var(--stg-acc, ${COLORS.accentDeep}) 50%, transparent);color:var(--stg-acc-ink, ${COLORS.accent});}
-          .ld-wtag.pan{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accentDeep}) 16%, transparent);border-color:var(--stg-acc, ${COLORS.accent});font-weight:700;}
-          .ld-wtag.new{outline:2px solid var(--stg-acc, ${COLORS.accent});outline-offset:1px;}
+          .ld-haul-hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px;font-family:${MONO};font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:${FADED};}
+          .ld-legend{display:flex;gap:10px;flex-wrap:wrap;font-size:10px;letter-spacing:.04em;text-transform:none;}
+          .ld-lg{display:inline-flex;align-items:center;gap:4px;}
+          .ld-lg i{display:inline-block;width:8px;height:8px;border-radius:50%;}
+          .ld-lg.t1{color:var(--stg-ink2, ${COLORS.faded});}.ld-lg.t1 i{background:var(--stg-ink2, ${COLORS.faded});}
+          .ld-lg.t2{color:var(--stg-acc-ink, ${COLORS.accent});}.ld-lg.t2 i{background:var(--stg-acc-ink, ${COLORS.accent});}
+          .ld-lg.t3{color:var(--stg-warn, ${COLORS.rust});}.ld-lg.t3 i{background:var(--stg-warn, ${COLORS.rust});}
+          .ld-lg.pan{color:${INK};}.ld-lg.pan i{background:var(--stg-acc, ${COLORS.accent});box-shadow:0 0 0 1px var(--stg-acc-ink, ${COLORS.accentDeep});}
+          /* Haul chips, coloured by the real rarity tier: common is neutral,
+             uncommon takes the accent, rare the warm warn token, and a
+             pangram is a solid accent chip whatever its tier. */
+          .ld-wtag{display:inline-flex;align-items:center;gap:7px;font-family:${MONO};font-size:15px;font-weight:500;background:var(--stg-surf, var(--white));border: 1px solid var(--stg-line2, rgba(28,30,36,0.2));border-radius:10px;padding:7px 11px;color:${INK};}
+          .ld-wtag b{font-size:12px;font-weight:500;}
+          .ld-wtag.t2{background:var(--stg-acc-tint, transparent);border-color:color-mix(in srgb, var(--stg-acc-ink, ${COLORS.accent}) 55%, transparent);color:var(--stg-acc-ink, ${COLORS.accent});}
+          .ld-wtag.t3{background:color-mix(in srgb, var(--stg-warn, ${COLORS.rust}) 12%, transparent);border-color:color-mix(in srgb, var(--stg-warn, ${COLORS.rust}) 60%, transparent);color:var(--stg-warn, ${COLORS.rust});}
+          .ld-wtag.pan{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, ${COLORS.accentDeep});color:var(--stg-onramp, var(--white));font-weight:700;}
+          .ld-wtag.new{outline:2px solid var(--stg-acc-ink, ${COLORS.accent});outline-offset:2px;}
+          @media(max-width:640px){.ld-wtag{font-size:14px;padding:6px 10px;border-radius:9px;gap:6px;}.ld-wtag b{font-size:11px;}}
           /* Tailings: real, unscored. Deliberately the quietest tag on the
-             board — dashed and faded, so it reads as acknowledged rather than
+             board: dashed and faded, so it reads as acknowledged rather than
              earned and can never be mistaken for a scoring word. */
-          .ld-wtag.spare{background:transparent;border-style:dashed;border-color:rgba(28,30,36,0.28);color:${FADED};font-weight:500;}
-          .ld-found{max-height:280px;overflow-y:auto;overflow-x:hidden;padding:4px;}
+          .ld-wtag.spare{background:transparent;border-style:dashed;border-color:var(--stg-line2, rgba(28,30,36,0.28));color:${FADED};font-weight:500;font-size:12px;padding:3px 8px;border-radius:6px;}
+          .ld-found{display:flex;flex-wrap:wrap;gap:8px;max-height:300px;overflow-y:auto;overflow-x:hidden;padding:4px;}
         ` }} />
 
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
@@ -726,28 +801,64 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
               <span>vein <b style={{ color: ACC_INK, fontWeight: 500 }}>{VEIN}</b></span>
               <span>words <b style={{ color: INK, fontWeight: 500 }}>{g.found.length}</b></span>
               {pangramsFound > 0 && <span style={{ color: ACC_INK }}>pangram &times;{pangramsFound}</span>}
-              {!playing && <span style={{ marginLeft: 'auto', color: `var(--stg-ink, ${COLORS.green})` }}>score posted &mdash; sandbox mode</span>}
+              {!playing && <span style={{ marginLeft: 'auto', color: `var(--stg-ink, ${COLORS.green})` }}>score posted, sandbox mode</span>}
             </div>
 
-            {/* rank ladder */}
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-                <span style={{ fontFamily: SANS, fontWeight: 900, fontSize: 17, color: struck ? COLORS.green : `var(--stg-acc-ink, ${COLORS.accent})` }}>{rank.n}</span>
-                {nextRank && <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>{nextRank.at - score} to {nextRank.n}</span>}
-                {!nextRank && <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: `var(--stg-ink, ${COLORS.green})` }}>every word on the board</span>}
+            {/* current rank, in words, above the board */}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
+              <span style={{ fontFamily: SANS, fontWeight: 900, fontSize: 17, color: struck ? `var(--stg-good, ${COLORS.green})` : ACC_INK }}>{rank.n}</span>
+              {nextRank && <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>{nextRank.at - score} to {nextRank.n}</span>}
+              {!nextRank && <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: `var(--stg-good, ${COLORS.green})` }}>every word on the board</span>}
+            </div>
+
+            {/* the depth gauge, phone: a horizontal bar with the ladder under it */}
+            <div className="ld-gh" aria-hidden="true">
+              <div className="ld-gh-track">
+                <div className="ld-gh-fill" style={{ width: `${depthPct}%` }} />
+                {LADDER.slice(1, -1).map((r, i) => (
+                  <span key={r.n} className="ld-gh-tick" style={{ left: `${((i + 1) / (LADDER.length - 1)) * 100}%` }} />
+                ))}
               </div>
-              <div className="ld-track">
-                <div className="ld-fill" style={{ width: `${pct}%` }} />
-                {PUZZLE.ranks.slice(0, -1).map((r) => (
-                  <div key={r.n} className="ld-pip" style={{ left: `${Math.min(99.6, (r.at / Math.max(1, MAXSCORE)) * 100)}%` }} />
+              <div className="ld-gh-labels">
+                {LADDER.map((r) => (
+                  <span key={r.n} style={{ color: score >= r.at ? ACC_INK : FADED, fontWeight: r.n === rank.n ? 700 : 500 }}>
+                    {r.n}{r.at === VEIN ? ' ·' : ''}
+                  </span>
                 ))}
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: 26, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-              <div style={{ flex: '1 1 320px', minWidth: 290, maxWidth: 440 }}>
-                {/* entry */}
-                <div ref={shakeRef} style={{ marginBottom: 16 }}>
+            <div className="ld-board">
+              {/* the depth gauge, desktop: a vertical shaft beside the board */}
+              <div className="ld-shaft">
+                <div className="ld-shaft-hd">The shaft</div>
+                <div className="ld-shaft-body">
+                  <div className="ld-shaft-track" role="meter" aria-label={`Depth: ${score} points, rank ${rank.n}`} aria-valuemin={0} aria-valuemax={MAXSCORE} aria-valuenow={Math.min(score, MAXSCORE)}>
+                    <div className="ld-shaft-fill" style={{ height: `${depthPct}%` }} />
+                    {LADDER.slice(1, -1).map((r, i) => (
+                      <span key={r.n} className="ld-shaft-tick" style={{ top: `${((i + 1) / (LADDER.length - 1)) * 100}%` }} />
+                    ))}
+                  </div>
+                  <div className="ld-shaft-labels">
+                    {LADDER.map((r, i) => {
+                      const f = i / (LADDER.length - 1);
+                      const hit = score >= r.at;
+                      return (
+                        <div key={r.n} className="ld-shaft-lab" style={{ top: `${f * 100}%`, transform: `translateY(-${f * 100}%)` }}>
+                          <span style={{ fontSize: 13, fontWeight: 800, color: hit ? (r.n === rank.n ? INK : ACC_INK) : FADED }}>{r.n}</span>
+                          <span style={{ fontFamily: MONO, fontSize: 10, color: FADED }}>
+                            {r.at}{r.at === VEIN ? ' · vein' : ''}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="ld-main">
+                {/* entry: the word being built, on an underline */}
+                <div ref={shakeRef}>
                   <input
                     ref={inputRef}
                     className="ld-entry"
@@ -763,88 +874,91 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
                   />
                 </div>
 
-                {/* letter cluster: outer letters above and below the core */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
-                  <div className="ld-row">
-                    {topRow.map((ch, i) => <div key={`t${i}`} className="ld-tile" onMouseDown={keepFocus} onClick={() => tapLetter(ch)} role="button" aria-label={`Letter ${ch}`}>{ch}</div>)}
-                  </div>
-                  <div className="ld-row">
-                    <div className="ld-tile core" onMouseDown={keepFocus} onClick={() => tapLetter(CORE)} role="button" aria-label={`Core letter ${CORE}, required in every word`}>{CORE}</div>
-                  </div>
-                  <div className="ld-row">
-                    {botRow.map((ch, i) => <div key={`b${i}`} className="ld-tile" onMouseDown={keepFocus} onClick={() => tapLetter(ch)} role="button" aria-label={`Letter ${ch}`}>{ch}</div>)}
-                  </div>
+                {/* the letter cluster: the core in the middle, the rest around it */}
+                <div className="ld-hexes" style={{ width: HEX.w, height: HEX.h }}>
+                  {HEX.cells.map((c) => (
+                    <button
+                      key={c.key}
+                      type="button"
+                      className={`ld-hex${c.core ? ' core' : ''}`}
+                      style={{ left: c.x, top: c.y }}
+                      onMouseDown={keepFocus}
+                      onClick={() => tapLetter(c.ch)}
+                      aria-label={c.core ? `Core letter ${c.ch}, required in every word` : `Letter ${c.ch}`}
+                    >
+                      <span className="ld-hex-in">{c.ch}</span>
+                    </button>
+                  ))}
                 </div>
 
-                <div style={{ fontFamily: MONO, fontSize: 11, fontWeight: 500, letterSpacing: '0.05em', color: FADED, textAlign: 'center', marginTop: 11 }}>
-                  Letters can be reused.
+                <div style={{ fontFamily: MONO, fontSize: 11, fontWeight: 500, letterSpacing: '0.05em', color: FADED, textAlign: 'center' }}>
+                  The middle letter goes in every word. Letters can be reused.
                 </div>
 
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginTop: 12 }}>
-                  <button type="button" className="ld-btn" onMouseDown={keepFocus} onClick={() => setEntry((e) => e.slice(0, -1))} disabled={!entry}><Delete size={14} /> Delete</button>
-                  <button type="button" className="ld-btn" onMouseDown={keepFocus} onClick={shuffleLetters}><Shuffle size={14} /> Shuffle</button>
-                  <button type="button" className="ld-btn primary" onMouseDown={keepFocus} onClick={submitEntry} disabled={!playing || !entry}>Mine</button>
+                <div className="ld-acts">
+                  <button type="button" className="ld-btn ld-act" onMouseDown={keepFocus} onClick={() => setEntry((e) => e.slice(0, -1))} disabled={!entry}><Delete size={14} /> Delete</button>
+                  <button type="button" className="ld-btn ld-act" onMouseDown={keepFocus} onClick={shuffleLetters}><Shuffle size={14} /> Shuffle</button>
+                  <button type="button" className="ld-btn ld-act primary mine" onMouseDown={keepFocus} onClick={submitEntry} disabled={!playing || !entry}>Mine it</button>
                 </div>
 
                 {playing && (
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginTop: 12 }}>
-                    <button type="button" className="ld-btn" onClick={cashIn} disabled={!g.found.length}>
-                      <CheckCircle2 size={15} strokeWidth={2.4} /> {confirming ? `Post ${score} pts — sure?` : 'Cash in'}
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+                    <button type="button" className="ld-btn" onClick={cashIn} disabled={!g.found.length} style={{ minHeight: 44 }}>
+                      <CheckCircle2 size={15} strokeWidth={2.4} /> {confirming ? `Post ${score} pts, sure?` : 'Cash in'}
                     </button>
-                    {confirming && <button type="button" className="ld-btn" onClick={() => setConfirming(false)}>Keep digging</button>}
+                    {confirming && <button type="button" className="ld-btn" onClick={() => setConfirming(false)} style={{ minHeight: 44 }}>Keep digging</button>}
                   </div>
                 )}
                 {playing && (
-                  <div style={{ fontSize: 11.5, fontWeight: 600, color: FADED, textAlign: 'center', marginTop: 8, lineHeight: 1.5 }}>
+                  <div style={{ fontSize: 11.5, fontWeight: 600, color: FADED, textAlign: 'center', marginTop: -6, lineHeight: 1.5 }}>
                     {struck
                       ? 'You have struck the Lode. Cash in, or keep digging for the Mother Lode.'
                       : 'One shot counts: your first posted score is the one that ranks.'}
                   </div>
                 )}
-              </div>
 
-              {/* the haul */}
-              <div style={{ flex: '1 1 200px', minWidth: 190 }}>
-                <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED, marginBottom: 8 }}>
-                  Your haul {g.found.length > 0 && <span style={{ color: INK }}>({g.found.length})</span>}
-                </div>
-                <div className="ld-found">
-                  {foundSorted.length ? foundSorted.map((w) => {
-                    const x = WORDS.get(w);
-                    return (
-                      <span key={w} className={`ld-wtag t${x?.t || 1}${x?.g ? ' pan' : ''}${flash === w ? ' new' : ''}`} title={x?.g ? 'Pangram' : TIERS[x?.t || 1].label}>
-                        {/* Ternary, not &&: `g` is 0 or 1, and `0 && <Gem/>` renders a literal 0. */}
-                        {x?.g ? <Gem size={10} strokeWidth={2.6} style={{ marginRight: 4 }} /> : null}
-                        {w.toLowerCase()}
-                        <span style={{ marginLeft: 5, fontWeight: 800, fontSize: 10 }}>{x?.p}</span>
-                      </span>
-                    );
-                  }) : <span style={{ fontSize: 12, fontWeight: 600, color: FADED }}>Nothing mined yet.</span>}
-                </div>
-                {spareSorted.length > 0 && (
-                  <>
-                    <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED, margin: '14px 0 8px' }}>
-                      Tailings <span style={{ color: INK }}>({spareSorted.length})</span>
-                    </div>
-                    <div className="ld-found">
-                      {spareSorted.map((w) => (
-                        <span key={w} className="ld-wtag spare" title="A real word, but not one this board scores">{w.toLowerCase()}</span>
-                      ))}
-                    </div>
-                    <div style={{ fontSize: 11.5, fontWeight: 600, color: FADED, lineHeight: 1.55, marginTop: 8 }}>
-                      Real words, off the seam. They score nothing and cost nothing.
-                    </div>
-                  </>
-                )}
-                <div style={{ fontSize: 11.5, fontWeight: 600, color: FADED, lineHeight: 1.55, marginTop: 10 }}>
-                  {TIERS[1].block} common &middot; {TIERS[2].block} uncommon &middot; {TIERS[3].block} rare &middot; {PANGRAM_BLOCK} pangram. Rarity is what pays here.
-                </div>
-                {/* Every dictionary word scores, so the board carries a long tail
-                    the rarity data cannot rank. Saying so is better than letting a
-                    player conclude the tiers are wrong when an obscure word pays
-                    the base rate. */}
-                <div style={{ fontSize: 11.5, fontWeight: 600, color: FADED, lineHeight: 1.55, marginTop: 8 }}>
-                  Rarity is measured from how often a word appears in real writing. Every word in the dictionary counts here, and the most obscure ones have no usage on record at all, so those score at the common rate rather than the rare one.
+                {/* the haul: every word mined, coloured by its rarity tier */}
+                <div>
+                  <div className="ld-haul-hd">
+                    <span>Your haul &middot; {g.found.length} word{g.found.length === 1 ? '' : 's'}</span>
+                    <span className="ld-legend">
+                      <span className="ld-lg t1"><i />common 1&times;</span>
+                      <span className="ld-lg t2"><i />uncommon 2&times;</span>
+                      <span className="ld-lg t3"><i />rare 3&times;</span>
+                      <span className="ld-lg pan"><i />pangram +10</span>
+                    </span>
+                  </div>
+                  <div className="ld-found">
+                    {foundSorted.length ? foundSorted.map((w) => {
+                      const x = WORDS.get(w);
+                      return (
+                        <span key={w} className={`ld-wtag t${x?.t || 1}${x?.g ? ' pan' : ''}${flash === w ? ' new' : ''}`} title={x?.g ? 'Pangram' : TIERS[x?.t || 1].label}>
+                          {/* Ternary, not &&: `g` is 0 or 1, and `0 && <Gem/>` renders a literal 0. */}
+                          {x?.g ? <Gem size={11} strokeWidth={2.6} style={{ marginRight: 2 }} /> : null}
+                          {w}
+                          <b>+{x?.p}</b>
+                        </span>
+                      );
+                    }) : <span style={{ fontSize: 12, fontWeight: 600, color: FADED }}>Nothing mined yet.</span>}
+                  </div>
+                  {spareSorted.length > 0 && (
+                    <>
+                      <div className="ld-haul-hd" style={{ margin: '14px 0 8px' }}>
+                        <span>Tailings &middot; {spareSorted.length}</span>
+                      </div>
+                      <div className="ld-found">
+                        {spareSorted.map((w) => (
+                          <span key={w} className="ld-wtag spare" title="A real word, but not one this board scores">{w.toLowerCase()}</span>
+                        ))}
+                      </div>
+                      <div style={{ fontSize: 11.5, fontWeight: 600, color: FADED, lineHeight: 1.55, marginTop: 8 }}>
+                        Real words, off the seam. They score nothing and cost nothing.
+                      </div>
+                    </>
+                  )}
+                  <div style={{ fontSize: 11.5, fontWeight: 600, color: FADED, lineHeight: 1.55, marginTop: 10 }}>
+                    Rarity is what pays here: the multiplier scales each word&rsquo;s length bonus. Rarity is measured from how often a word appears in real writing. Every word in the dictionary counts here, and the most obscure ones have no usage on record at all, so those score at the common rate rather than the rare one.
+                  </div>
                 </div>
               </div>
             </div>
@@ -861,7 +975,7 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
                   <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: struck ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{score}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
-                    {struck ? `${rank.n} — you struck the vein at ${VEIN}.` : `${rank.n}, against a vein of ${VEIN}.`}
+                    {struck ? `${rank.n}: you struck the vein at ${VEIN}.` : `${rank.n}, against a vein of ${VEIN}.`}
                     {' '}{g.found.length} word{g.found.length === 1 ? '' : 's'}{pangramsFound ? `, ${pangramsFound} pangram${pangramsFound > 1 ? 's' : ''}` : ''}.
                     {' '}<span style={{ color: FADED, fontWeight: 600 }}>{elapsed}</span>
                   </span>

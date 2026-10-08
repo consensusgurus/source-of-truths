@@ -73,6 +73,25 @@ const COLORS = {
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'DM Mono', ui-monospace, 'SFMono-Regular', monospace";
 const PAPER = '#fbf9f4';
+// The proof sheet's fixed inks (see renderSentence). Physical paper, so these
+// hold on BOTH stage registers; each is measured against SH.paper.
+const SH = {
+  paper: '#f5f0e4',
+  ink: '#1b1a17',      // 15.3:1
+  mute: '#6b6458',     // 5.2:1, line numbers, notes, sheet header
+  rule: '#d9d0bb',     // decorative rule under the sheet header
+  dash: '#ddd3bc',     // decorative dashed rule between lines
+  edge: '#7d735d',     // the sheet's edge, 4.1:1 on the light register ground
+  btn: '#8a7f66',      // control borders on paper, 3.5:1
+  pencil: '#1f5fbf',   // the blue pencil, 5.4:1
+  pencilWash: 'rgba(31,95,191,0.13)',
+  bad: '#b42318',      // a missed slip, 5.8:1
+  badWash: 'rgba(180,35,24,0.12)',
+  good: '#1f7a3a',     // 4.7:1
+  field: '#fffdf8',    // the fix input's face, on paper
+};
+const HAND = "'Caveat', 'Segoe Print', 'Bradley Hand', cursive";
+const PROOF = "'Newsreader', Georgia, 'Times New Roman', serif";
 const HELP_KEY = 'sot_stet_help_seen';
 const STATS_KEY = 'sot_stet_stats';
 
@@ -445,7 +464,7 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
   function tapWord(itemIdx, tokIdx) {
     if (!playing || g.sub[itemIdx]) return;
     const staged = pending[itemIdx] || [];
-    if (staged.some((s) => s.tok === tokIdx)) { say('Already flagged — remove it below to change the fix.'); return; }
+    if (staged.some((s) => s.tok === tokIdx)) { say('Already flagged. Remove it below to change the fix.'); return; }
     if (staged.length >= MAX_FLAGS) { say(`You can flag up to ${MAX_FLAGS} word${MAX_FLAGS > 1 ? 's' : ''} here. Remove one first.`); return; }
     startClock();
     if (sel && sel.item === itemIdx && sel.tok === tokIdx) { setSel(null); setFixVal(''); return; }
@@ -496,7 +515,7 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
 
   function stetItem(i) {
     if (!playing || g.sub[i]) return;
-    if ((pending[i] || []).length) { say('You have a flag staged — remove it first to stet the sentence.'); return; }
+    if ((pending[i] || []).length) { say('You have a flag staged. Remove it first to stet the sentence.'); return; }
     startClock();
     finalizeItem(i, [], true);
   }
@@ -526,7 +545,7 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Stet #${PUZZLE.num} — the daily copy-desk puzzle from Mind Loft.\n${shareUrl()}`
+      ? `Stet #${PUZZLE.num}, the daily copy-desk puzzle from Mind Loft.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -545,6 +564,15 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
 
   // Plain render helper (NOT a nested component — a nested component's identity
   // would change every render and remount the fix input on each keystroke).
+  //
+  // THE PROOF SHEET (board rebuild, 2026-10). Each sentence is a numbered line
+  // on a fixed paper galley. The paper is a deliberately PHYSICAL object, so it
+  // keeps its own fixed inks (SH.*) on both registers rather than the stage
+  // tokens: --stg-ink is near-white on the dark register and would vanish on
+  // paper. Every SH ink is measured against SH.paper (ink 15.3, mute 5.2,
+  // pencil 5.4, bad 5.8, good 4.7). A corrected word is struck through in blue
+  // pencil with the fix handwritten above it; a stetted line gets a tilted
+  // STET stamp (in the right margin on desktop, under the line on a phone).
   function renderSentence(i) {
     const it = ITEMS[i];
     const sub = g.sub[i] || null;
@@ -552,14 +580,22 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
     const armed = sel && sel.item === i ? sel.tok : null;
     const r = sub ? scoreItem(i, sub) : null;
     const errTok = WRONG_TOKS[i];
-    const borderCol = r
-      ? (r.pts === r.value ? 'rgba(21,128,61,0.5)' : r.pts > 0 ? 'rgba(202,138,4,0.5)' : 'rgba(192,57,43,0.5)')
-      : 'rgba(28,30,36,0.2)';
+    const allFixed = !!(r && it.errors.length && r.pts === r.value);
+    const stampOk = !!(sub && sub.stet && !it.errors.length);
+    const stampBad = !!(sub && sub.stet && it.errors.length);
+    const ptsCol = r ? (r.pts === r.value ? SH.good : r.pts > 0 ? SH.mute : SH.bad) : SH.mute;
+    // The mark a finished line carries: a stamp, a pencilled tick, or nothing.
+    const mark = !sub ? null : (sub.stet ? (
+      <span className="st-stamp" style={{ color: stampBad ? SH.bad : SH.pencil, borderColor: stampBad ? SH.bad : SH.pencil }}>STET</span>
+    ) : allFixed ? (
+      <span className="st-hand st-tick" style={{ color: SH.pencil }}>{'✓'} fixed</span>
+    ) : null);
+    const pts = r ? <span className="st-pts" style={{ color: ptsCol }}>+{r.pts}</span> : null;
     return (
-      <div key={i} style={{ background: STAGE ? SURF : T.white, border: `1.5px solid ${borderCol}`, borderRadius: 10, padding: '12px 14px', marginBottom: 9 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-          <span style={{ fontFamily: MONO, fontSize: 11, color: FADED, flex: '0 0 auto' }}>{i + 1}</span>
-          <p style={{ margin: 0, fontFamily: SANS, fontSize: 16.5, fontWeight: 600, lineHeight: 1.65, color: INK }}>
+      <div key={i} className="st-line">
+        <span className="st-ln" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+        <div className="st-body">
+          <p className={`st-copy${sub ? ' st-copy-done' : ''}`}>
             {TOKS[i].map((t, j) => {
               if (!t.isWord) return <span key={j}>{t.raw}</span>;
               if (!sub) {
@@ -576,119 +612,130 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
                   >{t.raw}</span>
                 );
               }
-              // scored render: strike each TRUE wrong word, insert its fix after it
+              // scored render: strike each TRUE wrong word in pencil and write
+              // the fix over it by hand. Found = blue pencil, missed = red.
               const eIdx = errTok.indexOf(j);
               if (eIdx >= 0) {
                 const e = it.errors[eIdx];
-                const found = (sub.staged || []).some((s) => s.tok === j);
-                const trail = t.raw.slice(t.raw.toLowerCase().indexOf(e.wrong.toLowerCase()) + e.wrong.length);
+                const s = (sub.staged || []).find((x) => x.tok === j);
+                const accepted = [e.fix, ...(e.alts || [])].map(normFix);
+                const ok = !!s && acceptsAnswer(accepted, normFix(s.fix));
+                const col = s ? SH.pencil : SH.bad;
+                const lead = t.raw.toLowerCase().indexOf(e.wrong.toLowerCase());
+                const head = lead > 0 ? t.raw.slice(0, lead) : '';
+                const trail = t.raw.slice((lead >= 0 ? lead : 0) + e.wrong.length);
                 return (
                   <span key={j}>
-                    <s style={{ color: found ? `var(--stg-acc-ink, ${COLORS.accent})` : `var(--stg-bad, ${COLORS.rust})`, textDecorationThickness: 2 }}>{e.wrong}</s>
-                    {' '}<b style={{ color: `var(--stg-ink, ${COLORS.green})` }}>{e.fix}</b>{trail}
+                    {head}
+                    <span className="st-fixw">
+                      <s style={{ textDecorationColor: col, textDecorationThickness: 2 }}>{lead >= 0 ? t.raw.substr(lead, e.wrong.length) : e.wrong}</s>
+                      <span className="st-hand st-over" style={{ color: col }}>{ok ? s.fix : e.fix}</span>
+                    </span>
+                    {trail}
                   </span>
                 );
               }
               const wasFlag = (sub.staged || []).some((s) => s.tok === j);
-              return <span key={j} style={wasFlag ? { background: STAGE ? 'var(--stg-surf2)' : '#fdeeee', borderRadius: 3, boxShadow: '0 0 0 2px #fdeeee' } : undefined}>{t.raw}</span>;
+              return <span key={j} className={wasFlag ? 'st-misflag' : undefined}>{t.raw}</span>;
             })}
-            {sub && !it.errors.length && sub.stet && (
-              <span style={{ marginLeft: 7, fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.08em', color: `var(--stg-ink, ${COLORS.green})`, border: '1px solid rgba(21,128,61,0.45)', borderRadius: 4, padding: '1px 6px', whiteSpace: 'nowrap' }}>STET ✓</span>
-            )}
           </p>
-          {r && (
-            <span style={{ marginLeft: 'auto', flex: '0 0 auto', fontFamily: MONO, fontSize: 11, fontWeight: 500, color: r.pts === r.value ? COLORS.green : r.pts > 0 ? T.goldInk : `var(--stg-bad, ${COLORS.rust})` }}>
-              +{r.pts}
-            </span>
+
+          {/* staged flags (Sunday flow) */}
+          {!sub && staged.length > 0 && (
+            <div className="st-acts">
+              {staged.map((s) => (
+                <span key={s.tok} className="st-chip">
+                  <s style={{ textDecorationColor: SH.pencil }}>{stripTok(TOKS[i][s.tok].raw)}</s>
+                  <span className="st-hand" style={{ color: SH.pencil, fontSize: 19 }}>{s.fix}</span>
+                  <button className="st-chipx" onClick={() => unstage(i, s.tok)} aria-label="Remove this flag"><X size={15} /></button>
+                </span>
+              ))}
+              {armed == null && (
+                <>
+                  <button className="st-lock" onClick={() => finalizeItem(i, staged, false)}>Lock it in</button>
+                  {staged.length < MAX_FLAGS && (
+                    <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 600, color: SH.mute }}>Or tap another word if you smell a second error.</span>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {!sub && armed != null && (
+            <div className="st-fixbox">
+              <div style={{ fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: SH.mute, marginBottom: 6 }}>
+                Replace <b style={{ color: SH.pencil }}>&ldquo;{stripTok(TOKS[i][armed].raw)}&rdquo;</b> with:
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  ref={fixRef}
+                  className="st-inp"
+                  type="text"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  value={fixVal}
+                  onChange={(e) => setFixVal(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') submitFix(); }}
+                  placeholder="the correct word"
+                  aria-label="Your correction"
+                />
+                <button className="st-go" onClick={submitFix}>{MAX_FLAGS === 1 ? 'Fix it' : 'Flag it'}</button>
+              </div>
+              <div style={{ fontFamily: SANS, fontSize: 11.5, fontWeight: 600, color: SH.mute, marginTop: 6 }}>
+                {MAX_FLAGS === 1
+                  ? 'Tap a different word to change your pick. Submitting locks this sentence.'
+                  : 'Sunday desk: you can flag up to two words before locking the sentence.'}
+              </div>
+            </div>
+          )}
+
+          {/* stet control (only while open with nothing staged or armed), and
+              on a phone the finished line's stamp sits here, under the copy. */}
+          {(!sub && armed == null && staged.length === 0) || sub ? (
+            <div className="st-acts">
+              {!sub && (
+                <button className="st-stet" onClick={() => stetItem(i)} title="Mark this sentence as clean, with no errors">
+                  <Stamp size={14} strokeWidth={2.4} /> Stamp stet
+                </button>
+              )}
+              {sub && <span className="st-markin">{mark}{pts}</span>}
+            </div>
+          ) : null}
+
+          {sub && (
+            <div className="st-note">
+              {it.errors.length === 0 ? (
+                <>
+                  {sub.stet
+                    ? null
+                    : <>Nothing was wrong here{(sub.staged || []).length && TOKS[i][sub.staged[0].tok] ? <>, but you flagged &ldquo;{stripTok(TOKS[i][sub.staged[0].tok].raw)}&rdquo;</> : null}. </>}
+                  {it.cleanNote}
+                </>
+              ) : (
+                <>
+                  {sub.stet && <>You let it stand, but the desk didn&rsquo;t. </>}
+                  {it.errors.map((e, k) => {
+                    const s = (sub.staged || []).find((x) => x.tok === errTok[k]);
+                    const accepted = [e.fix, ...(e.alts || [])].map(normFix);
+                    const ok = acceptsAnswer(accepted, normFix(s ? s.fix : ''));
+                    return (
+                      <span key={k}>
+                        {!s && !sub.stet && <>Missed: <b style={{ color: SH.ink }}>{e.wrong}</b> &rarr; {e.fix}. </>}
+                        {s && !ok && <>Right word, but the fix is <b style={{ color: SH.ink }}>{e.fix}</b>, not &ldquo;{s.fix}&rdquo;. </>}
+                        {e.note}{' '}
+                      </span>
+                    );
+                  })}
+                </>
+              )}
+            </div>
           )}
         </div>
-
-        {/* staged flags (Sunday flow) */}
-        {!sub && staged.length > 0 && (
-          <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
-            {staged.map((s) => (
-              <span key={s.tok} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: SANS, fontSize: 12, fontWeight: 700, color: INK, background: `var(--stg-surf, ${COLORS.accentSoft})`, border: `1.5px solid rgba(3,105,161,0.4)`, borderRadius: 7, padding: '3px 8px' }}>
-                <s>{stripTok(TOKS[i][s.tok].raw)}</s> → <b style={{ color: ACC_INK }}>{s.fix}</b>
-                <button onClick={() => unstage(i, s.tok)} aria-label="Remove this flag" style={{ background: 'none', border: 'none', cursor: 'pointer', color: FADED, padding: 0, display: 'flex' }}><X size={13} /></button>
-              </span>
-            ))}
-            {armed == null && (
-              <>
-                <button className="st-lock" onClick={() => finalizeItem(i, staged, false)}>Lock it in</button>
-                {staged.length < MAX_FLAGS && (
-                  <span style={{ fontFamily: SANS, fontSize: 11.5, fontWeight: 600, color: FADED }}>…or tap another word if you smell a second error.</span>
-                )}
-              </>
-            )}
-          </div>
-        )}
-
-        {!sub && armed != null && (
-          <div style={{ marginTop: 9, paddingTop: 9, borderTop: '1px dashed rgba(28,30,36,0.16)' }}>
-            <div style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED, marginBottom: 6 }}>
-              Replace <b style={{ color: ACC_INK }}>&ldquo;{stripTok(TOKS[i][armed].raw)}&rdquo;</b> with:
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <input
-                ref={fixRef}
-                className="st-inp"
-                type="text"
-                autoCapitalize="off"
-                autoCorrect="off"
-                spellCheck={false}
-                value={fixVal}
-                onChange={(e) => setFixVal(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') submitFix(); }}
-                placeholder="the correct word"
-                aria-label="Your correction"
-              />
-              <button className="st-go" onClick={submitFix}>{MAX_FLAGS === 1 ? 'Fix it' : 'Flag it'}</button>
-            </div>
-            <div style={{ fontFamily: SANS, fontSize: 11, fontWeight: 600, color: FADED, marginTop: 6 }}>
-              {MAX_FLAGS === 1
-                ? 'Tap a different word to change your pick — submitting locks this sentence.'
-                : 'Sunday desk: you can flag up to two words before locking the sentence.'}
-            </div>
-          </div>
-        )}
-
-        {/* stet control — only while open with nothing staged/armed */}
-        {!sub && armed == null && staged.length === 0 && (
-          <div style={{ marginTop: 8 }}>
-            <button className="st-stet" onClick={() => stetItem(i)} title="Mark this sentence as clean — no errors">
-              <Stamp size={13} strokeWidth={2.4} /> Stet — it&rsquo;s clean
-            </button>
-          </div>
-        )}
-
-        {sub && (
-          <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px dashed rgba(28,30,36,0.14)', fontFamily: SANS, fontSize: 12.5, fontWeight: 600, color: FADED, lineHeight: 1.5 }}>
-            {it.errors.length === 0 ? (
-              <>
-                {sub.stet
-                  ? null
-                  : <>Nothing was wrong here{(sub.staged || []).length && TOKS[i][sub.staged[0].tok] ? <> &mdash; you flagged &ldquo;{stripTok(TOKS[i][sub.staged[0].tok].raw)}&rdquo;</> : null}. </>}
-                {it.cleanNote}
-              </>
-            ) : (
-              <>
-                {sub.stet && <>You let it stand, but the desk didn&rsquo;t. </>}
-                {it.errors.map((e, k) => {
-                  const s = (sub.staged || []).find((x) => x.tok === errTok[k]);
-                  const accepted = [e.fix, ...(e.alts || [])].map(normFix);
-                  const ok = acceptsAnswer(accepted, normFix(s ? s.fix : ''));
-                  return (
-                    <span key={k}>
-                      {!s && !sub.stet && <>Missed: <b style={{ color: INK }}>{e.wrong}</b> &rarr; {e.fix}. </>}
-                      {s && !ok && <>Right word, but the fix is <b style={{ color: INK }}>{e.fix}</b>, not &ldquo;{s.fix}&rdquo;. </>}
-                      {e.note}{' '}
-                    </span>
-                  );
-                })}
-              </>
-            )}
-          </div>
-        )}
+        {/* desktop right margin: the stamp or tick, and the line's points */}
+        <div className="st-margin" aria-hidden={sub ? undefined : 'true'}>
+          {mark}{pts}
+        </div>
       </div>
     );
   }
@@ -748,20 +795,59 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
       )}
       <div className="st-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
         <style dangerouslySetInnerHTML={{ __html: `
+          @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap');
           @media(max-width:560px){.st-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .st-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .st-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
+          /* THE PROOF SHEET. Fixed paper inks on both registers (SH). */
+          .st-sheet{background:${SH.paper};color:${SH.ink};border-radius:6px;padding:26px 30px 22px 0;border:1px solid transparent;box-shadow:0 18px 40px rgba(0,0,0,.45);}
+          html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .st-sheet{border-color:${SH.edge};box-shadow:0 10px 26px rgba(40,34,20,.16);}
+          .st-sheethd{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;padding:0 0 16px 70px;border-bottom:1px solid ${SH.rule};font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:${SH.mute};}
+          .st-line{display:flex;padding:18px 0 16px;border-bottom:1px dashed ${SH.dash};}
+          .st-ln{flex:0 0 70px;text-align:center;font-family:${MONO};font-size:13px;color:${SH.mute};padding-top:22px;}
+          .st-body{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:8px;}
+          .st-copy{margin:0;padding-top:14px;font-family:${PROOF};font-size:20px;line-height:1.9;color:${SH.ink};}
+          .st-margin{flex:0 0 84px;display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:18px;}
+          .st-markin{display:none;align-items:center;gap:10px;}
+          .st-hand{font-family:${HAND};font-weight:600;}
+          .st-tick{font-size:25px;line-height:1;white-space:nowrap;}
+          .st-pts{font-family:${MONO};font-size:12px;font-weight:500;}
+          .st-stamp{font-family:${MONO};font-weight:500;font-size:13px;letter-spacing:.2em;border:2px solid;border-radius:4px;padding:4px 8px;transform:rotate(-8deg);display:inline-block;}
+          .st-fixw{position:relative;display:inline-block;line-height:1.3;}
+          .st-over{position:absolute;left:0;top:-0.95em;font-size:23px;line-height:1;white-space:nowrap;pointer-events:none;}
+          .st-misflag{background:${SH.badWash};border-radius:3px;box-shadow:0 0 0 2px ${SH.badWash};}
           .st-w{cursor:pointer;border-radius:4px;padding:0 1px;transition:background .1s;}
-          .st-w:hover{background:var(--stg-surf2, ${COLORS.accentSoft});box-shadow:0 0 0 2px var(--stg-surf2, ${COLORS.accentSoft});}
-          .st-w-on{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);box-shadow:0 0 0 2px var(--stg-acc, ${COLORS.accent});border-radius:4px;}
-          .st-w-staged{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);box-shadow:0 0 0 2px color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 35%, transparent);border-radius:4px;text-decoration:line-through;}
-          .st-inp{font-family:${SANS};font-weight:700;font-size:16px;flex:1 1 auto;min-width:0;border:2px solid ${COLORS.ink};border-radius:9px;padding:9px 12px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};outline:none;}
-          .st-inp:focus{border-color:var(--stg-acc, ${COLORS.accent});box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);}
-          .st-go{font-family:${SANS};font-weight:800;font-size:13.5px;letter-spacing:0.04em;text-transform:uppercase;border:2px solid var(--stg-acc, ${COLORS.accent});background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-radius:9px;padding:0 18px;cursor:pointer;}
+          .st-w:hover{background:${SH.pencilWash};box-shadow:0 0 0 2px ${SH.pencilWash};}
+          .st-w:focus-visible{outline:2px solid ${SH.pencil};outline-offset:2px;}
+          .st-w-on{background:${SH.pencilWash};box-shadow:0 0 0 2px ${SH.pencil};border-radius:4px;}
+          .st-w-staged{background:${SH.pencilWash};box-shadow:0 0 0 2px ${SH.pencilWash};border-radius:4px;text-decoration:line-through;text-decoration-color:${SH.pencil};text-decoration-thickness:2px;}
+          .st-acts{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+          .st-chip{display:inline-flex;align-items:center;gap:7px;font-family:${PROOF};font-size:16px;color:${SH.ink};border:1.5px solid ${SH.btn};border-radius:8px;padding:0 4px 0 10px;min-height:44px;}
+          .st-chipx{background:none;border:none;cursor:pointer;color:${SH.mute};padding:0;width:36px;height:40px;display:flex;align-items:center;justify-content:center;}
+          .st-fixbox{padding-top:10px;border-top:1px dashed ${SH.dash};}
+          .st-inp{font-family:${SANS};font-weight:700;font-size:16px;flex:1 1 auto;min-width:0;min-height:44px;box-sizing:border-box;border:2px solid ${SH.btn};border-radius:9px;padding:9px 12px;background:${SH.field};color:${SH.ink};outline:none;}
+          .st-inp::placeholder{color:${SH.mute};}
+          .st-inp:focus{border-color:${SH.pencil};box-shadow:0 0 0 3px ${SH.pencilWash};}
+          .st-go{font-family:${SANS};font-weight:800;font-size:13.5px;letter-spacing:0.04em;text-transform:uppercase;border:2px solid ${SH.pencil};background:${SH.pencil};color:${SH.field};border-radius:9px;padding:0 18px;min-height:44px;cursor:pointer;}
           .st-go:active{transform:translateY(1px);}
-          .st-lock{font-family:${SANS};font-weight:800;font-size:12px;letter-spacing:0.04em;text-transform:uppercase;border:2px solid ${COLORS.ink};background:${COLORS.ink};color:var(--white);border-radius:8px;padding:6px 13px;cursor:pointer;}
-          .st-stet{font-family:${SANS};font-weight:800;font-size:11.5px;letter-spacing:0.05em;text-transform:uppercase;border:1.5px dashed rgba(28,30,36,0.35);background:none;color:${FADED};border-radius:7px;padding:5px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-          .st-stet:hover{border-color:${COLORS.green};color:${COLORS.green};}
+          .st-lock{font-family:${SANS};font-weight:800;font-size:12px;letter-spacing:0.04em;text-transform:uppercase;border:2px solid ${SH.ink};background:${SH.ink};color:${SH.paper};border-radius:8px;padding:0 14px;min-height:44px;cursor:pointer;}
+          .st-stet{font-family:${MONO};font-weight:500;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;border:1.5px solid ${SH.btn};background:transparent;color:${SH.mute};border-radius:22px;padding:0 16px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
+          .st-stet:hover{border-color:${SH.pencil};color:${SH.pencil};}
+          .st-note{font-family:${SANS};font-size:12.5px;font-weight:600;color:${SH.mute};line-height:1.55;}
+          .st-foot{margin:16px 0 0 70px;font-family:${SANS};font-size:13px;font-weight:600;color:${SH.mute};line-height:1.5;}
+          @media(max-width:640px){
+            .st-sheet{padding:14px 14px 12px 0;margin:0 6px;}
+            .st-sheethd{padding:0 0 10px 40px;font-size:9.5px;}
+            .st-line{padding:14px 0 12px;}
+            .st-ln{flex-basis:40px;font-size:11px;padding-top:20px;}
+            .st-copy{font-size:17px;line-height:2.15;padding-top:10px;}
+            .st-over{font-size:20px;top:-0.9em;}
+            .st-margin{display:none;}
+            .st-markin{display:inline-flex;}
+            .st-stamp{font-size:12px;padding:3px 8px;transform:rotate(-6deg);}
+            .st-tick{font-size:22px;}
+            .st-foot{margin-left:40px;font-size:12px;}
+          }
           @media(max-width:560px){.st-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.st-ttl h1{font-size:21px;letter-spacing:0.02em;}.st-ttl .st-ttl-dt{font-size:15px;}.st-ttl-dot{display:none;}}
         ` }} />
 
@@ -817,20 +903,19 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
 
         {/* the brief */}
         {!preStart && (
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? 'var(--stg-surf)' : PAPER, border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: '15px 17px 12px', boxShadow: '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
-          {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}><Pencil size={12} /> one slip per sentence &mdash; maybe</span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>filed <b style={{ color: INK, fontWeight: 500 }}>{solvedCount}</b>/{ITEMS.length}</span>
-          </div>
-          )}
-          {LOFT && <div className={STAGE ? undefined : 'loft-prompt'}>one slip per sentence, maybe</div>}
-          {ITEMS.map((_, i) => renderSentence(i))}
-          {started && (
-            <div style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED, margin: '2px 2px 6px' }}>
-              Tap the word that doesn&rsquo;t belong and fix it &mdash; or stamp a clean sentence <i>stet</i>. Wrong words and grammar slips, but never typos: spellcheck is no help.
+        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? 'var(--stg-surf)' : PAPER, border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: STAGE ? '6px 0 14px' : '15px 17px 12px', boxShadow: '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+          <div className="st-sheet">
+            <div className="st-sheethd">
+              <span>Galley {PUZZLE.num} &middot; proof for correction</span>
+              <span>{PUZZLE.sunday ? 'Up to two slips each, maybe' : 'One slip each, maybe'} &middot; filed {solvedCount}/{ITEMS.length}</span>
             </div>
-          )}
+            {ITEMS.map((_, i) => renderSentence(i))}
+            {started && (
+              <p className="st-foot">
+                Tap the word that is wrong and write the fix over it, or stamp a clean line <i>stet</i>, the proofreader&rsquo;s mark for &ldquo;let it stand.&rdquo; Wrong words and grammar slips, never typos: spellcheck is no help.
+              </p>
+            )}
+          </div>
         </div>
         )}
 
@@ -844,12 +929,12 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
                   <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: perfect ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{score}/{TOTAL}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
-                    {perfect ? 'A clean desk — every call was right.' : misses === 0 ? 'Sharp eyes — a fix or two got away.' : `${misses} mis-flag${misses === 1 ? '' : 's'} on the desk today.`}
+                    {perfect ? 'A clean desk: every call was right.' : misses === 0 ? 'Sharp eyes, but a fix or two got away.' : `${misses} mis-flag${misses === 1 ? '' : 's'} on the desk today.`}
                     {' '}<span style={{ color: FADED, fontWeight: 600 }}>{elapsed}</span>
                   </span>
                 </div>
                 {PUZZLE.sunday && (
-                  <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>The Sunday Edition — seven sentences, up to two errors each, and the desk splits hairs.</div>
+                  <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>The Sunday Edition: seven sentences, up to two errors each, and the desk splits hairs.</div>
                 )}
               </div>
               <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>

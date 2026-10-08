@@ -363,9 +363,21 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
   // on the accent. --stg-onramp flips with the register because the ACCENT flips;
   // these four do not flip, they are always the pale step, so sweeping them to
   // onramp would make them white-on-pastel in light mode.
+  //
+  // ON THE STAGE THE FOUR BANDS ARE STEPS OF THE ONE ACCENT (board rebuild,
+  // 2026-10-07), not four hues: the accent itself, the accent pushed toward
+  // the ink (paler on the dark register, deeper on the light one, so
+  // --stg-onramp only gains contrast either way), then two washes of it on
+  // the ground carrying the ordinary ink. Every pairing is token on token and
+  // clears 4.5:1 in both registers; `edge` is the band's own outline.
   const catTone = (ci) => (STAGE
-    ? { bg: CATEGORY_RAMP[ci % CATEGORY_RAMP.length], tc: RAMP_INK }
-    : CAT_COLORS[ci]);
+    ? [
+        { bg: 'var(--stg-acc)', tc: 'var(--stg-onramp)', edge: 'var(--stg-acc)' },
+        { bg: 'color-mix(in srgb, var(--stg-acc) 45%, var(--stg-ink))', tc: 'var(--stg-onramp)', edge: 'color-mix(in srgb, var(--stg-acc) 45%, var(--stg-ink))' },
+        { bg: 'color-mix(in srgb, var(--stg-acc) 32%, var(--stg-ground))', tc: 'var(--stg-ink)', edge: 'var(--stg-acc)' },
+        { bg: 'color-mix(in srgb, var(--stg-acc) 10%, var(--stg-ground))', tc: 'var(--stg-ink)', edge: 'var(--stg-acc-ink)' },
+      ][ci % 4]
+    : { ...CAT_COLORS[ci], edge: CAT_COLORS[ci].tc });
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('links');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('links'), '--stg-acc-lt': gameColorLight('links'), '--stg-onramp-lt': gameOnrampLight('links'), '--stg-acc-ink-lt': gameAccentInkLight('links') };
@@ -542,6 +554,14 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
     } catch (e) {}
   }
 
+  // Stage tiles size their type to the LONGEST WORD in the label (a phrase
+  // wraps at its spaces, a single word cannot), so PARAPHERNALIA still fits a
+  // 390px phone. `avail` is the tile's inner width in px, `cap` the ceiling.
+  function tileFs(w, avail, cap) {
+    const longest = Math.max(1, ...String(w).split(/\s+/).map((t) => t.length));
+    return Math.max(8, Math.min(cap, Math.floor((avail / (longest * 0.72)) * 2) / 2));
+  }
+
   function tileFont(w) {
     if (w.length >= 11) return 11;
     if (w.length >= 9) return 12.5;
@@ -554,10 +574,10 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
     <DailyRules
       lead="Sixteen words hide four threads of four, one shared category each."
       chips={[
-        { label: 'Easiest', style: { background: catTone(0).bg, color: catTone(0).tc, border: `1.5px solid ${catTone(0).tc}` } },
-        { label: 'Easier', style: { background: catTone(1).bg, color: catTone(1).tc, border: `1.5px solid ${catTone(1).tc}` } },
-        { label: 'Harder', style: { background: catTone(2).bg, color: catTone(2).tc, border: `1.5px solid ${catTone(2).tc}` } },
-        { label: 'Trickiest', style: { background: catTone(3).bg, color: catTone(3).tc, border: `1.5px solid ${catTone(3).tc}` } },
+        { label: 'Easiest', style: { background: catTone(0).bg, color: catTone(0).tc, border: `1.5px solid ${catTone(0).edge}` } },
+        { label: 'Easier', style: { background: catTone(1).bg, color: catTone(1).tc, border: `1.5px solid ${catTone(1).edge}` } },
+        { label: 'Harder', style: { background: catTone(2).bg, color: catTone(2).tc, border: `1.5px solid ${catTone(2).edge}` } },
+        { label: 'Trickiest', style: { background: catTone(3).bg, color: catTone(3).tc, border: `1.5px solid ${catTone(3).edge}` } },
       ]}
       steps={[
         <><b>Tap four words</b> you think share a thread, then <b>Submit</b>.</>,
@@ -616,6 +636,45 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
           @media(max-width:520px){.lk-htp-f{display:none;}.lk-htp-s{display:inline;}}
           @media(max-width:560px){.lk-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.lk-ttl h1{font-size:21px;letter-spacing:0.02em;}.lk-ttl .lk-ttl-dt{font-size:15px;}.lk-ttl-dot{display:none;}}
           .lk-htp-s{display:none;}
+          .stage-page .lk-mis{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin:0 0 14px;}
+          .stage-page .lk-mis-k{font-family:${MONO};font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute);margin-right:4px;}
+          .stage-page .lk-mis-d{width:14px;height:14px;border-radius:50%;box-sizing:border-box;border:2px solid var(--stg-cell-line);}
+          .stage-page .lk-mis-d.on{background:var(--stg-acc);border-color:var(--stg-acc);}
+          .stage-page .lk-band{min-height:96px;box-sizing:border-box;border-radius:14px;border:2px solid;margin-bottom:10px;padding:10px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;}
+          .stage-page .lk-band-k{font-family:${MONO};font-size:12px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;}
+          .stage-page .lk-band-w{font-family:${SANS};font-size:19px;font-weight:800;letter-spacing:.04em;line-height:1.25;}
+          .stage-page .lk-band-miss{background:transparent;border:2px dashed var(--stg-acc-ink);color:var(--stg-ink2);}
+          .stage-page .lk-band-miss .lk-band-k{color:var(--stg-acc-ink);}
+          .stage-page .lk-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:10px;}
+          .stage-page .lk-tile{min-height:96px;border-radius:14px;border:2px solid var(--stg-cell-line);background:var(--stg-cell);color:var(--stg-ink);box-shadow:none;font-size:var(--lk-fs,17px);letter-spacing:.03em;line-height:1.15;padding:4px 6px;transition:background .12s,transform .12s,border-color .12s;}
+          .stage-page .lk-tile:active{transform:scale(0.97);}
+          .stage-page .lk-tile.on{background:color-mix(in srgb,var(--stg-acc) 18%,var(--stg-cell));border-color:var(--stg-acc);color:var(--stg-ink);box-shadow:0 5px 12px -6px rgba(0,0,0,.45);transform:translateY(-3px);}
+          .stage-page .lk-tile.on:active{transform:translateY(-3px) scale(0.97);}
+          @media(hover:hover){.stage-page .lk-tile:not(.on):hover{border-color:var(--stg-ink2);}}
+          .stage-page .lk-selrow{display:flex;align-items:center;gap:10px;padding:6px 0 0;}
+          .stage-page .lk-pips{display:inline-flex;gap:6px;}
+          .stage-page .lk-pips span{width:22px;height:8px;border-radius:4px;background:var(--stg-cell-line);}
+          .stage-page .lk-pips span.on{background:var(--stg-acc);}
+          .stage-page .lk-selk{font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-mute);font-variant-numeric:tabular-nums;}
+          .stage-page .lk-acts{display:flex;gap:10px;padding:20px 0 14px;}
+          .stage-page .lk-act{flex:1 1 0;min-width:0;min-height:50px;border-radius:12px;border:1.5px solid var(--stg-cell-line);background:transparent;color:var(--stg-ink);font-family:${SANS};font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;touch-action:manipulation;}
+          .stage-page .lk-act:disabled{color:var(--stg-mute);cursor:default;}
+          .stage-page .lk-act.lk-go{flex:2 1 0;border:0;font-weight:800;font-size:15px;background:var(--stg-surf2);color:var(--stg-mute);}
+          .stage-page .lk-act.lk-go.ready{background:var(--stg-acc);color:var(--stg-onramp);cursor:pointer;}
+          @media(hover:hover){.stage-page .lk-act:not(:disabled):not(.lk-go):hover{background:var(--stg-surf2);}}
+          @media(max-width:640px){
+            .stage-page .lk-mis{margin-bottom:12px;}
+            .stage-page .lk-mis-d{width:12px;height:12px;}
+            .stage-page .lk-band{min-height:84px;border-radius:12px;margin-bottom:8px;padding:8px 8px;gap:3px;}
+            .stage-page .lk-band-k{font-size:11px;letter-spacing:.16em;}
+            .stage-page .lk-band-w{font-size:14px;letter-spacing:.02em;}
+            .stage-page .lk-grid{gap:8px;margin-bottom:8px;}
+            .stage-page .lk-tile{min-height:84px;border-radius:12px;font-size:var(--lk-fsm,14.5px);padding:2px;letter-spacing:.02em;}
+            .stage-page .lk-selrow{justify-content:center;padding-top:8px;}
+            .stage-page .lk-pips{display:none;}
+            .stage-page .lk-acts{gap:8px;padding:12px 0 14px;}
+            .stage-page .lk-act{min-height:52px;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 560, margin: '0 auto' }}>
@@ -668,8 +727,66 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
 
+        {/* THE STAGE BOARD (rebuild 2026-10-07): mistakes left as dots at the
+            top, solved threads collapse into full-width accent bands, bigger
+            tiles that lift when picked, an "N of 4 selected" readout, and the
+            three controls along the foot. The paper (non-stage) board below
+            is unchanged. */}
+        {STAGE && started && (
+          <div className="lk-mis" role="status" aria-label={`${MAX_MISTAKES - g.mistakes} of ${MAX_MISTAKES} mistakes left`}>
+            <span className="lk-mis-k">Mistakes left</span>
+            {Array.from({ length: MAX_MISTAKES }).map((_, i) => (
+              <span key={i} className={`lk-mis-d${i < MAX_MISTAKES - g.mistakes ? ' on' : ''}`} />
+            ))}
+          </div>
+        )}
+        {STAGE && g.solved.map((ci) => {
+          const cc = catTone(ci);
+          return (
+            <div key={ci} className={`lk-band${justSolved === ci ? ' lk-bank' : ''}`} style={{ background: cc.bg, color: cc.tc, borderColor: cc.edge }}>
+              <span className="lk-band-k">{PUZZLE.groups[ci].name}</span>
+              <span className="lk-band-w">{PUZZLE.groups[ci].words.join(' · ')}</span>
+            </div>
+          );
+        })}
+        {STAGE && !preStart && gridWords.length > 0 && (
+          <div className="lk-grid">
+            {gridWords.map((w) => {
+              const sel = selWords.includes(w);
+              return (
+                <button key={w} onClick={() => toggle(w)} aria-pressed={sel}
+                  className={`lk-tile${sel ? ' on' : ''}${shakeIds && shakeIds.has(w) ? ' shake' : ''}`}
+                  style={{ '--lk-fs': `${tileFs(w, 112, 17)}px`, '--lk-fsm': `${tileFs(w, 74, 14.5)}px` }}>
+                  {w}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {STAGE && lost && (!LOFT || revealed) && unsolvedCis.map((ci) => (
+          <div key={ci} className="lk-band lk-band-miss">
+            <span className="lk-band-k">{PUZZLE.groups[ci].name}</span>
+            <span className="lk-band-w">{PUZZLE.groups[ci].words.join(' · ')}</span>
+          </div>
+        ))}
+        {STAGE && started && (
+          <>
+            <div className="lk-selrow" aria-live="polite">
+              <span className="lk-pips" aria-hidden="true">
+                {[0, 1, 2, 3].map((i) => <span key={i} className={i < selWords.length ? 'on' : undefined} />)}
+              </span>
+              <span className="lk-selk">{selWords.length} of 4 selected</span>
+            </div>
+            <div className="lk-acts">
+              <button type="button" className="lk-act" onClick={doShuffle}><Shuffle size={15} /> Shuffle</button>
+              <button type="button" className="lk-act" onClick={() => setSelWords([])} disabled={selWords.length === 0}>Deselect</button>
+              <button type="button" className={`lk-act lk-go${selWords.length === 4 ? ' ready' : ''}`} onClick={submit} disabled={selWords.length !== 4}>Submit four</button>
+            </div>
+          </>
+        )}
+
         {/* banked groups */}
-        {g.solved.map((ci) => {
+        {!STAGE && g.solved.map((ci) => {
           const cc = catTone(ci);
           return (
             <div key={ci} className={justSolved === ci ? 'lk-bank' : undefined} style={{ background: cc.bg, border: '1.5px solid rgba(28,30,36,0.35)', borderRadius: 10, padding: '10px 14px', marginBottom: 8, textAlign: 'center', boxShadow: '2px 2px 0 rgba(28,30,36,0.10)' }}>
@@ -680,7 +797,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
         })}
 
         {/* the grid */}
-        {!preStart && gridWords.length > 0 && (
+        {!STAGE && !preStart && gridWords.length > 0 && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 7, marginBottom: 12 }}>
             {gridWords.map((w) => (
               <button key={w} onClick={() => toggle(w)}
@@ -693,7 +810,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
         )}
 
         {/* loss reveal: the threads you missed */}
-        {lost && (!LOFT || revealed) && unsolvedCis.map((ci) => {
+        {!STAGE && lost && (!LOFT || revealed) && unsolvedCis.map((ci) => {
           const cc = catTone(ci);
           return (
             <div key={ci} style={{ background: STAGE ? SURF : T.white, border: `1.5px dashed ${cc.bg}`, borderRadius: 10, padding: '10px 14px', marginBottom: 8, textAlign: 'center' }}>
@@ -704,7 +821,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
         })}
 
         {/* controls + mistake dots */}
-        {started && (
+        {!STAGE && started && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
             <button className="lk-btn" onClick={submit} disabled={selWords.length !== 4}
               style={selWords.length === 4 ? { background: `var(--stg-acc, ${COLORS.ember})`, color: `var(--stg-onramp, ${T.white})`, borderColor: COLORS.ember } : { opacity: 0.45, cursor: 'default' }}>

@@ -317,14 +317,20 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
   useEffect(() => {
     const el = ladderRef.current;
     if (!el) return undefined;
+    // The ladder climbs UPWARD now (goal at the top, start at the bottom), so
+    // "the newest word" is the row you are typing on, somewhere in the middle.
+    // Centre that row in the box; once the game is over, centre the goal.
     const go = () => {
-      try { el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }); }
-      catch (e) { el.scrollTop = el.scrollHeight; }
+      const row = el.querySelector('[data-rg-focus]');
+      if (!row) return;
+      const top = Math.max(0, row.offsetTop - (el.clientHeight - row.offsetHeight) / 2);
+      try { el.scrollTo({ top, behavior: 'smooth' }); }
+      catch (e) { el.scrollTop = top; }
     };
     go();
     const id = setTimeout(go, 70);
     return () => clearTimeout(id);
-  }, [ladder.length]);
+  }, [ladder.length, g.status]);
   useEffect(() => {
     if (!armReveal) return undefined;
     const t = setTimeout(() => setArmReveal(false), 3500);
@@ -601,23 +607,95 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
     />
   );
 
-  const Word = ({ w, prevWord, dim, outline }) => (
-    <div style={{ display: 'flex', gap: 5, justifyContent: 'center' }}>
-      {w.split('').map((ch, i) => {
-        const changed = prevWord && prevWord[i] !== ch;
-        return (
-          <div key={i} style={{
-            width: 40, height: 44, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: SANS, fontWeight: 800, fontSize: 21, textTransform: 'uppercase',
-            background: outline ? 'transparent' : changed ? COLORS.accent : (STAGE ? 'var(--stg-surf2)' : TILE),
-            color: outline ? `var(--stg-mute, ${COLORS.faded})` : changed ? T.white : `var(--stg-ink, ${COLORS.ink})`,
-            border: outline ? `2px dashed ${TILE_EDGE}` : `1.5px solid ${changed ? `var(--stg-acc, ${COLORS.accent})` : TILE_EDGE}`,
-            opacity: dim ? 0.55 : 1,
-          }}>{ch}</div>
-        );
-      })}
+  // THE LADDER (board rebuild, 2026-10-07). Two rails, the goal word at the
+  // top, the start word at the bottom, every played word a rung climbing up
+  // between them with the one letter it changed lit in the accent, the row you
+  // are typing on, and an empty dashed rung for each step still left before par.
+  // These are plain render helpers, NOT components: a component declared in the
+  // render body remounts every pass, which would drop focus from the input.
+  const tileBase = { borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box', fontFamily: MONO, fontWeight: 500, textTransform: 'uppercase', position: 'relative' };
+  const tileOf = (ch, kind, key) => {
+    let st;
+    if (kind === 'goal') st = { background: 'var(--stg-acc-tint, ' + COLORS.accentSoft + ')', border: `2px solid var(--stg-acc, ${COLORS.accent})`, color: ACC_INK };
+    else if (kind === 'new') st = { background: `var(--stg-acc, ${COLORS.accent})`, border: `2px solid var(--stg-acc, ${COLORS.accent})`, color: ON_ACC };
+    else if (kind === 'cur') st = { background: `var(--stg-cell, ${T.white})`, border: `2px solid var(--stg-acc, ${COLORS.accent})`, color: INK };
+    else if (kind === 'curNew') st = { background: `var(--stg-cell, ${T.white})`, border: `2px solid var(--stg-acc, ${COLORS.accent})`, color: ACC_INK, boxShadow: `inset 0 -4px 0 var(--stg-acc, ${COLORS.accent})` };
+    else if (kind === 'empty') st = { background: 'transparent', border: `2px dashed var(--stg-cell-line, ${TILE_EDGE})`, color: FADED };
+    else st = { background: STAGE ? 'var(--stg-surf2)' : TILE, border: `2px solid var(--stg-line2, ${TILE_EDGE})`, color: INK };
+    // The rung bar runs BEHIND the tiles, and most tile fills are translucent
+    // tokens, so the bar showed through every letter. Lay the fill over an
+    // opaque ground so a tile always hides the rail line behind it.
+    if (STAGE) st = { ...st, background: `linear-gradient(${st.background}, ${st.background}), var(--stg-ground, #0b0f1a)` };
+    return <span key={key} className="rg-tile" style={{ ...tileBase, ...st }}>{ch}</span>;
+  };
+  const rungRow = ({ key, tag, tagTone, side, bar, sticky, focus, children }) => (
+    <div key={key} className={`rg-row${sticky ? ` rg-stick-${sticky}` : ''}`} data-rg-focus={focus ? '1' : undefined}>
+      <div className="rg-tag">
+        <span style={{ color: tagTone === 'acc' ? ACC_INK : tagTone === 'ink' ? INK : FADED }}>{tag}</span>
+        {side ? <span style={{ color: FADED }}>{side}</span> : null}
+      </div>
+      <div className="rg-tiles">
+        <span className="rg-bar" style={{ background: bar }} aria-hidden="true" />
+        {children}
+      </div>
     </div>
   );
+  const wordTiles = (w, prevWord, kind) => w.split('').map((ch, i) => tileOf(ch, kind === 'done' && prevWord && prevWord[i] !== ch ? 'new' : kind, i));
+  const renderLadder = () => {
+    const rows = [];
+    const reached = won; // the last rung IS the target, so it fills the goal row
+    const climbed = reached ? g.rungs.slice(0, -1) : g.rungs;
+    const BAR_DONE = `var(--stg-line3, ${TILE_EDGE})`;
+    const BAR_EMPTY = `var(--stg-line2, ${TILE_EDGE})`;
+    // GOAL
+    rows.push(rungRow({
+      key: 'goal', tag: reached ? `Goal · rung ${used}` : 'Goal', tagTone: 'acc',
+      side: `Par ${par} · perfect ${perfect}`, bar: `var(--stg-acc, ${COLORS.accent})`, sticky: 'top', focus: !playing,
+      children: reached ? wordTiles(PUZZLE.target, ladder[ladder.length - 2], 'done') : wordTiles(PUZZLE.target, null, 'goal'),
+    }));
+    // Empty rungs still owed before par. The goal is rung `par`, the row you
+    // are typing on is rung used + 1, so the gap between them is what is left.
+    const empties = playing ? Math.max(0, par - used - 2) : (reached ? 0 : Math.max(0, par - used - 1));
+    for (let k = empties; k >= 1; k--) {
+      const n = used + (playing ? 1 : 0) + k;
+      rows.push(rungRow({
+        key: `e${n}`, tag: `${n}`, bar: BAR_EMPTY,
+        children: [0, 1, 2, 3, 4].map((i) => tileOf('', 'empty', i)),
+      }));
+    }
+    // YOU: the input row
+    if (playing) {
+      const d = draft.toLowerCase();
+      rows.push(rungRow({
+        key: 'you', tag: `You · rung ${used + 1}`, tagTone: 'ink', bar: `var(--stg-acc, ${COLORS.accent})`, focus: true,
+        children: (
+          <>
+            {[0, 1, 2, 3, 4].map((i) => tileOf(d[i] || '', d[i] && d[i] !== current[i] ? 'curNew' : 'cur', i))}
+            <input
+              ref={inputRef} className="rg-in" value={draft} inputMode="text" autoComplete="off"
+              autoCapitalize="off" autoCorrect="off" spellCheck={false} maxLength={5}
+              onChange={(e) => setDraft(e.target.value.replace(/[^a-zA-Z]/g, '').slice(0, 5))}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } }}
+              aria-label={`Type the next rung: change one letter of ${current.toUpperCase()}`}
+            />
+          </>
+        ),
+      }));
+    }
+    // Played rungs, newest first, each lit where it changed a letter.
+    for (let i = climbed.length - 1; i >= 0; i--) {
+      rows.push(rungRow({
+        key: `r${i}`, tag: `${i + 1}`, bar: BAR_DONE,
+        children: wordTiles(climbed[i], i > 0 ? climbed[i - 1] : PUZZLE.start, 'done'),
+      }));
+    }
+    // START
+    rows.push(rungRow({
+      key: 'start', tag: 'Start', bar: BAR_DONE, sticky: 'bot',
+      children: wordTiles(PUZZLE.start, null, 'start'),
+    }));
+    return rows;
+  };
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
@@ -660,10 +738,33 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.rg-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .rg-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .rg-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .rg-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-          .rg-in{font-family:${SANS};font-weight:800;font-size:20px;letter-spacing:0.28em;text-transform:uppercase;text-align:center;width:100%;max-width:230px;padding:10px 8px;border-radius:8px;border:2px solid var(--blue-deep);background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:var(--blue-deep);}
-          .rg-in:focus{outline:none;border-color:var(--stg-acc, ${COLORS.accent});}
-          .rg-ladder{max-height:46vh;overflow-y:auto;display:flex;flex-direction:column;gap:5px;padding:2px 0;}
+          .rg-tool{font-family:${SANS};font-weight:800;font-size:13px;border:1.5px solid ${STAGE ? 'var(--stg-line3)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:10px;padding:0 14px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+          .rg-ladder{position:relative;max-height:min(64vh,700px);overflow-y:auto;overscroll-behavior:contain;max-width:420px;margin:0 auto;}
+          .rg-ladder-in{position:relative;}
+          .rg-row{position:relative;padding:5px 38px 6px;background:${STAGE ? 'var(--stg-ground)' : T.white};}
+          .rg-row::before,.rg-row::after{content:'';position:absolute;top:0;bottom:0;width:8px;background:var(--stg-line3, ${TILE_EDGE});}
+          .rg-row::before{left:10px;border-radius:0;}
+          .rg-row::after{right:10px;}
+          .rg-stick-top{position:sticky;top:0;z-index:3;}
+          .rg-stick-top::before,.rg-stick-top::after{border-radius:4px 4px 0 0;}
+          .rg-stick-bot{position:sticky;bottom:0;z-index:3;}
+          .rg-stick-bot::before,.rg-stick-bot::after{border-radius:0 0 4px 4px;}
+          .rg-tag{display:flex;justify-content:space-between;gap:8px;font-family:${MONO};font-size:10px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;height:13px;line-height:13px;margin-bottom:4px;white-space:nowrap;}
+          .rg-tiles{position:relative;display:flex;justify-content:center;gap:8px;}
+          .rg-bar{position:absolute;left:-28px;right:-28px;top:50%;height:4px;margin-top:-2px;border-radius:2px;}
+          .rg-tile{width:54px;height:56px;font-size:26px;}
+          .rg-in{position:absolute;inset:0;width:100%;height:100%;opacity:0.011;border:0;padding:0;margin:0;font-size:16px;background:transparent;color:transparent;caret-color:transparent;cursor:text;z-index:2;}
+          .rg-tiles:focus-within .rg-tile{box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 30%, transparent);}
+          @media(max-width:640px){
+            .rg-row{padding:4px 22px 5px;}
+            .rg-row::before{left:4px;width:7px;}
+            .rg-row::after{right:4px;width:7px;}
+            .rg-tag{font-size:9.5px;}
+            .rg-tiles{gap:6px;}
+            .rg-bar{left:-18px;right:-18px;}
+            .rg-tile{width:min(50px,calc((100vw - 110px) / 5));height:50px;font-size:23px;}
+            .rg-ladder{max-height:58vh;}
+          }
           .rg-shake{animation:rgshake .34s ease;}
           @keyframes rgshake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
         ` }} />
@@ -719,32 +820,20 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
           </div>
           )}
 
-          <div ref={shakeRef} style={{ maxWidth: 300, margin: '0 auto' }}>
-            <div className="rg-ladder" ref={ladderRef}>
-              {ladder.map((w, i) => (
-                <Word key={`${w}-${i}`} w={w} prevWord={i > 0 ? ladder[i - 1] : null} dim={i < ladder.length - 1 && ladder.length > 6} />
-              ))}
+          <div ref={shakeRef}>
+            <div className="rg-ladder" ref={ladderRef} role="group" aria-label={`Ladder from ${PUZZLE.start.toUpperCase()} up to ${PUZZLE.target.toUpperCase()}`}>
+              <div className="rg-ladder-in">
+                {renderLadder()}
+              </div>
             </div>
             {playing && (
-              <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                <input
-                  ref={inputRef} className="rg-in" value={draft} inputMode="text" autoComplete="off"
-                  autoCapitalize="off" autoCorrect="off" spellCheck={false} maxLength={5}
-                  placeholder="_____"
-                  onChange={(e) => setDraft(e.target.value.replace(/[^a-zA-Z]/g, '').slice(0, 5))}
-                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } }}
-                  aria-label="Type the next rung"
-                />
+              <div style={{ marginTop: 12, display: 'flex', justifyContent: 'center' }}>
                 <button className="rg-btn" onClick={submit} disabled={draft.length !== 5}
-                  style={{ background: draft.length === 5 ? COLORS.ink : `var(--stg-surf, ${T.white})`, color: draft.length === 5 ? T.white : COLORS.faded, opacity: draft.length === 5 ? 1 : 0.55, cursor: draft.length === 5 ? 'pointer' : 'default' }}>
+                  style={{ minHeight: 48, padding: '0 28px', fontSize: 15, borderColor: draft.length === 5 ? `var(--stg-acc, ${COLORS.ink})` : undefined, background: draft.length === 5 ? `var(--stg-acc, ${COLORS.ink})` : `var(--stg-surf, ${T.white})`, color: draft.length === 5 ? ON_ACC : FADED, opacity: draft.length === 5 ? 1 : 0.55, cursor: draft.length === 5 ? 'pointer' : 'default' }}>
                   Climb
                 </button>
               </div>
             )}
-            <div style={{ marginTop: 12, opacity: 0.85 }}>
-              <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: FADED, textAlign: 'center', marginBottom: 5 }}>target</div>
-              <Word w={PUZZLE.target} outline />
-            </div>
           </div>
 
           <div style={{ marginTop: 12, minHeight: 22, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -764,7 +853,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
                 <RotateCcw size={14} /> Restart
               </button>
               {hintOk && !g.hintUsed && (
-                <button className="rg-tool" onClick={useHint} title="The next word of a shortest ladder from here (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(21,94,117,0.5)', color: '#124b5e' }}>
+                <button className="rg-tool" onClick={useHint} title="The next word of a shortest ladder from here (one hint, first play only)" style={{ background: `var(--stg-acc-tint, ${COLORS.accentSoft})`, borderColor: `var(--stg-acc, rgba(21,94,117,0.5))`, color: STAGE ? ACC_INK : '#124b5e' }}>
                   <Lightbulb size={14} /> Hint
                 </button>
               )}
@@ -778,7 +867,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)', flexWrap: 'wrap' }}>
             <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>One letter at a time. No undo.</span>
             <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-              style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+              style={{ marginLeft: 'auto', minHeight: 44, padding: '0 4px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
               <Eye size={13} /> {armReveal ? 'Tap again — ends the ladder and scores nothing' : 'Give up'}
             </button>
           </div>

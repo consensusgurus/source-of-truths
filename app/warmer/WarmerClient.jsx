@@ -92,6 +92,17 @@ const BANDS = [
 ];
 function bandFor(rank) { for (const b of BANDS) if (rank >= b.min && rank <= b.max) return b; return BANDS[BANDS.length - 1]; }
 function heatFrac(rank) { const f = 1 - Math.log(rank) / Math.log(N_WORDS); return Math.max(0.02, Math.min(1, f)); }
+// THE HEAT SCALE IS DATA COLOUR, defined once. Twelve steps from cold to hot,
+// keyed off the same closeness fraction the bars use. The values live in the
+// stylesheet below as --wh0..--wh11, with a darker set for the light register
+// (and the paper page), so every mark keeps 3:1 on its own ground. The answer
+// itself (rank 1) takes the success token rather than a heat step.
+const HEAT_STEPS = 12;
+function heatStep(rank) { return Math.min(HEAT_STEPS - 1, Math.floor(heatFrac(rank) * HEAT_STEPS)); }
+function heatVar(rank) { return rank === 1 ? `var(--stg-good, ${T.successDeep})` : `var(--wh${heatStep(rank)})`; }
+const HEAT_DARK = ['#7c9cf0', '#6fb0f5', '#5cc3f0', '#5fd3d6', '#6fdcb0', '#9be38a', '#cfe36a', '#f5d454', '#f8b84e', '#fb9a52', '#fb7a5a', '#fb6b6b'];
+const HEAT_LIGHT = ['#2f52b8', '#1f65b8', '#0b6fa3', '#0a7682', '#0b7a5a', '#3a7a12', '#6a6d05', '#8a6200', '#9c5200', '#b4470d', '#c2361f', '#b91c1c'];
+const heatDecl = (arr) => arr.map((c, i) => `--wh${i}:${c};`).join('');
 
 // Scoring, submitted with total=100 so the daily board (score desc → guesses →
 // time) yields the required order. SOLVERS occupy 51..100 (fewer guesses = more),
@@ -434,11 +445,12 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
   function GuessRow({ entry, pinned }) {
     const b = bandFor(entry.rank);
     const frac = heatFrac(entry.rank);
+    const hc = heatVar(entry.rank);
     return (
-      <div className={`wm-row${pinned ? ' pinned' : ''}`} style={pinned ? { borderColor: b.color } : undefined}>
+      <div className={`wm-row${pinned ? ' pinned' : ''}`} style={pinned ? { borderColor: hc } : undefined}>
         <span className="wm-word">{entry.w}</span>
-        <span className="wm-track"><span className="wm-fill" style={{ width: `${Math.round(frac * 100)}%`, background: b.color }} /></span>
-        <span className="wm-band" style={{ color: b.color }}>{b.name}</span>
+        <span className="wm-track"><span className="wm-fill" style={{ width: `${Math.round(frac * 100)}%`, background: hc }} /></span>
+        <span className="wm-band">{b.name}</span>
         <span className="wm-rank">{entry.rank === 1 ? '★' : `#${entry.rank}`}</span>
       </div>
     );
@@ -494,25 +506,58 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
           .wm-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .wm-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           @media(max-width:560px){.wm-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.wm-ttl h1{font-size:21px;}.wm-ttl-dot{display:none;}}
-          .wm-spectrum{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
-          .wm-grad{height:14px;border-radius:99px;background:linear-gradient(90deg,#3b5bdb,#0ea5e9 24%,#84cc16 47%,#f59e0b 68%,#ea580c 84%,var(--stg-acc, #dc2626));}
-          .wm-scale{display:flex;justify-content:space-between;font-family:${MONO};font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:${FADED};}
+          .wm-wrap{${heatDecl(HEAT_LIGHT)}}
+          .stage-page .wm-wrap{${heatDecl(HEAT_DARK)}}
+          html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .wm-wrap{${heatDecl(HEAT_LIGHT)}}
+          .wm-board{display:flex;flex-direction:column;}
+          .wm-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin:4px 0 14px;}
+          .wm-head-l,.wm-head-r{display:flex;flex-direction:column;gap:3px;min-width:0;}
+          .wm-head-r{align-items:flex-end;flex:0 0 auto;}
+          .wm-eye{font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:${FADED};}
+          .wm-best{font-family:${SANS};font-weight:800;font-size:42px;line-height:1.05;letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+          .wm-best.none{font-size:22px;color:${FADED};font-weight:700;letter-spacing:0;}
+          .wm-bestrank{font-family:${MONO};font-weight:500;font-size:36px;line-height:1.05;color:${INK};font-variant-numeric:tabular-nums;}
+          .wm-spectrum{display:flex;flex-direction:column;gap:6px;margin-bottom:18px;}
+          .wm-strip{display:flex;gap:3px;height:20px;}
+          .wm-strip span{flex:1;border-radius:3px;}
+          .wm-pins{position:relative;height:40px;}
+          .wm-pin{position:absolute;top:0;display:flex;flex-direction:column;align-items:center;transform:translateX(-50%);pointer-events:none;}
+          .wm-pin i{display:block;width:3px;height:12px;border-radius:2px;}
+          .wm-pin b{font-family:${MONO};font-weight:500;font-size:11px;color:${INK};white-space:nowrap;margin-top:2px;}
+          .wm-scale{display:flex;justify-content:space-between;font-family:${MONO};font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:${FADED};}
+          .wm-dock{margin-bottom:6px;}
+          .wm-listhead{font-family:${MONO};font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:${FADED};margin:14px 0 6px;}
+          @media(max-width:640px){
+            .wm-best{font-size:34px;}
+            .wm-bestrank{font-size:28px;}
+            .wm-strip{height:16px;gap:2px;}
+            .wm-pins{height:14px;}
+            .wm-pin b{display:none;}
+            .wm-pin i{width:9px;height:9px;border-radius:50%;}
+            .wm-scale .mid{display:none;}
+            .wm-board > *{margin-left:8px;margin-right:8px;}
+            .wm-dock{order:99;position:sticky;bottom:0;z-index:5;margin-bottom:0;padding:10px 0 calc(12px + env(safe-area-inset-bottom, 0px));background:${STAGE ? 'var(--stg-ground)' : T.white};border-top:1px solid ${SURF_B};}
+            .wm-dock .wm-inputrow{margin-bottom:0;}
+            .wm-dock .wm-input{min-height:52px;}
+            .wm-dock .wm-go{min-height:52px;}
+            .wm-toast{bottom:104px !important;}
+          }
           .wm-inputrow{display:flex;gap:8px;align-items:stretch;margin-bottom:6px;}
-          .wm-input{flex:1 1 auto;font-family:${SANS};font-size:16px;font-weight:600;color:${INK};border:2px solid ${COLORS.ink};border-radius:10px;padding:12px 14px;outline:none;min-width:0;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};}
+          .wm-input{flex:1 1 auto;min-height:48px;box-sizing:border-box;font-family:${SANS};font-size:17px;font-weight:700;color:${INK};border:2px solid ${STAGE ? 'var(--stg-cell-line)' : COLORS.ink};border-radius:10px;padding:12px 14px;outline:none;min-width:0;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};}
           .wm-input:focus{border-color:var(--stg-acc, ${COLORS.accent});}
-          .wm-go{flex:0 0 auto;font-family:${SANS};font-weight:800;font-size:14.5px;border:2px solid var(--stg-acc, ${COLORS.accent});background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-radius:10px;padding:0 18px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
+          .wm-go{flex:0 0 auto;min-height:48px;font-family:${SANS};font-weight:800;font-size:14.5px;border:2px solid var(--stg-acc, ${COLORS.accent});background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-radius:10px;padding:0 18px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .wm-go:disabled{opacity:.5;cursor:default;}
           .wm-meta{display:flex;align-items:center;gap:14px;font-family:${MONO};font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:${FADED};margin:2px 0 4px;flex-wrap:wrap;}
           .wm-meta b{font-weight:500;color:${INK};font-variant-numeric:tabular-nums;}
-          .wm-chip{font-family:${SANS};font-weight:800;font-size:12px;border-radius:8px;padding:6px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+          .wm-chip{font-family:${SANS};font-weight:800;font-size:12.5px;border-radius:8px;padding:6px 12px;min-height:44px;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
           .wm-actions{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
           .wm-list{display:flex;flex-direction:column;gap:6px;}
           .wm-row{display:grid;grid-template-columns:118px 1fr 74px 52px;gap:10px;align-items:center;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.12));border-radius:9px;padding:8px 12px;}
           .wm-row.pinned{border-width:2px;box-shadow:0 2px 0 rgba(28,30,36,0.06);}
           .wm-word{font-family:${SANS};font-weight:800;font-size:15px;color:${INK};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-          .wm-track{height:9px;border-radius:99px;background:${STAGE ? 'var(--stg-surf2)' : '#eef0f3'};overflow:hidden;}
+          .wm-track{height:12px;border-radius:99px;background:${STAGE ? 'var(--stg-surf2)' : '#eef0f3'};overflow:hidden;}
           .wm-fill{display:block;height:100%;border-radius:99px;transition:width .35s ease;}
-          .wm-band{font-family:${SANS};font-weight:800;font-size:11.5px;text-align:right;letter-spacing:.01em;}
+          .wm-band{font-family:${SANS};font-weight:800;font-size:11.5px;text-align:right;letter-spacing:.01em;color:${STAGE ? 'var(--stg-ink2)' : COLORS.faded};}
           .wm-rank{font-family:${MONO};font-weight:500;font-size:13px;color:${INK};text-align:right;font-variant-numeric:tabular-nums;}
           @media(max-width:520px){.wm-row{grid-template-columns:92px 1fr 44px;}.wm-band{display:none;}.wm-word{font-size:14px;}}
           .wm-pinwrap{margin-bottom:12px;}
@@ -566,28 +611,71 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
               </div>
             </div>
           )}
-          {/* the puzzle card */}
+          {/* the puzzle card: headline, heat strip, input, then every guess
+              hottest first. On a phone the input docks at the foot of the
+              board (CSS order + sticky), so it stays under the thumb. */}
           {!preStart && (
-          <div className={STAGE ? 'stg-board' : undefined} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '15px 16px 16px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 14 }}>
+          <div className={STAGE ? 'stg-board wm-board' : 'wm-board'} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '15px 16px 16px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 14 }}>
+            {started && (
+              <div className="wm-meta">
+                <span>guesses <b>{guesses.length}</b></span>
+                <span>time <b>{elapsed}</b></span>
+              </div>
+            )}
+
+            {started && (
+              <div className="wm-head">
+                <div className="wm-head-l">
+                  <span className="wm-eye">Closest so far</span>
+                  {sortedGuesses.length ? (
+                    <span className="wm-best" style={{ color: heatVar(sortedGuesses[0].rank) }}>{sortedGuesses[0].w}</span>
+                  ) : (
+                    <span className="wm-best none">No guesses yet</span>
+                  )}
+                </div>
+                <div className="wm-head-r">
+                  <span className="wm-eye">Rank</span>
+                  <span className="wm-bestrank">{bestRank != null ? `#${bestRank.toLocaleString()}` : '—'}</span>
+                </div>
+              </div>
+            )}
+
             <div className="wm-spectrum">
-              <div className="wm-grad" aria-hidden="true" />
-              <div className="wm-scale"><span>Cold &middot; far</span><span>Cool</span><span>Warm</span><span>Hot &middot; close</span></div>
+              <div className="wm-strip" aria-hidden="true">
+                {Array.from({ length: HEAT_STEPS }, (_, i) => <span key={i} style={{ background: `var(--wh${i})` }} />)}
+              </div>
+              {guesses.length > 0 && (
+                <div className="wm-pins" aria-hidden="true">
+                  {guesses.map((entry) => {
+                    const hc = heatVar(entry.rank);
+                    // Label only the closest and the latest, so the words never pile up.
+                    const label = (sortedGuesses[0] && entry.w === sortedGuesses[0].w) || (lastEntry && entry.w === lastEntry.w);
+                    const fx = heatFrac(entry.rank);
+                    // Near either end the label hangs inward so it never runs off the board.
+                    const edge = fx < 0.12 ? { transform: 'translateX(-2px)', alignItems: 'flex-start' } : (fx > 0.88 ? { transform: 'translateX(calc(-100% + 2px))', alignItems: 'flex-end' } : null);
+                    return (
+                      <span key={entry.w} className="wm-pin" style={{ left: `${(fx * 100).toFixed(1)}%`, zIndex: label ? 2 : 1, ...edge }}>
+                        <i style={{ background: hc }} />
+                        {label && <b>{entry.w}</b>}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+              <div className="wm-scale"><span>Cold &middot; far</span><span className="mid">Cool</span><span className="mid">Warm</span><span>Hot &middot; close</span></div>
             </div>
 
             {started ? (
               <>
-                <form className="wm-inputrow" onSubmit={(e) => { e.preventDefault(); commitGuess(text); }}>
-                  <input ref={inputRef} className="wm-input" value={text} onChange={(e) => setText(e.target.value)} placeholder="Type a word and press Enter" autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} aria-label="Your guess" enterKeyHint="go" />
-                  <button type="submit" className="wm-go" disabled={!text.trim()} aria-label="Submit guess"><CornerDownLeft size={16} strokeWidth={2.5} /> Guess</button>
-                </form>
-                <div className="wm-meta">
-                  <span>guesses <b>{guesses.length}</b></span>
-                  <span>closest <b>{bestRank != null ? `#${bestRank}` : '—'}</b></span>
-                  <span>time <b>{elapsed}</b></span>
+                <div className="wm-dock">
+                  <form className="wm-inputrow" onSubmit={(e) => { e.preventDefault(); commitGuess(text); }}>
+                    <input ref={inputRef} className="wm-input" value={text} onChange={(e) => setText(e.target.value)} placeholder="Type a word and press Enter" autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} aria-label="Your guess" enterKeyHint="go" />
+                    <button type="submit" className="wm-go" disabled={!text.trim()} aria-label="Submit guess"><CornerDownLeft size={16} strokeWidth={2.5} /> Guess</button>
+                  </form>
                 </div>
                 <div className="wm-actions">
                   {hintOk && !g.hintUsed && (
-                    <button onClick={useHint} className="wm-chip" title="Reveal one warm word (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, border: '1.5px solid rgba(220,38,38,0.45)', color: '#9a1c1c' }}>
+                    <button onClick={useHint} className="wm-chip" title="Reveal one warm word (one hint, first play only)" style={{ background: STAGE ? 'var(--stg-surf)' : COLORS.accentSoft, border: `1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(220,38,38,0.45)'}`, color: STAGE ? 'var(--stg-acc-ink)' : '#9a1c1c' }}>
                       <Lightbulb size={13} /> Hint
                     </button>
                   )}
@@ -609,31 +697,31 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
                 </div>
               </div>
             )}
-          </div>
-          )}
 
-          {/* latest guess, pinned */}
-          {playing && lastEntry && (
-            <div className="wm-pinwrap">
-              <div className="wm-pinlabel">Latest guess</div>
-              <GuessRow entry={lastEntry} pinned />
-            </div>
-          )}
-
-          {/* running list, hottest first */}
-          {sortedGuesses.length > 0 && (
-            <>
-              <div className="wm-pinlabel" style={{ marginBottom: 6 }}>{sortedGuesses.length} guess{sortedGuesses.length === 1 ? '' : 'es'} &middot; closest first</div>
-              <div className="wm-list">
-                {sortedGuesses.map((entry) => <GuessRow key={entry.w} entry={entry} pinned={!playing && entry.rank === 1} />)}
+            {/* latest guess, pinned */}
+            {playing && lastEntry && (
+              <div className="wm-pinwrap">
+                <div className="wm-pinlabel">Latest guess</div>
+                <GuessRow entry={lastEntry} pinned />
               </div>
-            </>
-          )}
+            )}
 
-          {started && sortedGuesses.length === 0 && (
-            <p style={{ fontFamily: SANS, fontSize: 13.5, fontWeight: 600, color: FADED, textAlign: 'center', margin: '18px 0 6px', lineHeight: 1.5 }}>
-              Guess any word. You&rsquo;ll see how close it is in meaning to today&rsquo;s secret word, on the cold-to-hot scale above. Keep going until you land it.
-            </p>
+            {/* running list, hottest first */}
+            {sortedGuesses.length > 0 && (
+              <div>
+                <div className="wm-listhead">Your {sortedGuesses.length} guess{sortedGuesses.length === 1 ? '' : 'es'}, hottest first</div>
+                <div className="wm-list">
+                  {sortedGuesses.map((entry) => <GuessRow key={entry.w} entry={entry} pinned={!playing && entry.rank === 1} />)}
+                </div>
+              </div>
+            )}
+
+            {started && sortedGuesses.length === 0 && (
+              <p style={{ fontFamily: SANS, fontSize: 13.5, fontWeight: 600, color: FADED, textAlign: 'center', margin: '8px 0 6px', lineHeight: 1.5 }}>
+                Guess any word. You&rsquo;ll see how close it is in meaning to today&rsquo;s secret word, on the cold-to-hot scale above, and its rank: #1 is the word itself, and a lower number means closer. Keep going until you land it.
+              </p>
+            )}
+          </div>
           )}
 
           {/* result footer */}
@@ -764,7 +852,7 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
-        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>{toast}</div>
+        <div className="wm-toast" style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>{toast}</div>
       )}
 
       {showHelp && (

@@ -55,6 +55,8 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { WORLD } from '@/lib/admin-world-map';
+import { projectPoint } from '@/lib/geo-project';
 
 const COLORS = {
   cream: T.surface,
@@ -106,6 +108,67 @@ function bandSkin(b, stage) {
   };
 }
 const fmtMi = (mi) => mi.toLocaleString('en-US');
+
+// ─── THE RING MAP ───────────────────────────────────────────────────────────
+// A world basemap the site already ships (lib/admin-world-map.js, Natural
+// Earth 1 projection) with each GUESSED city drawn as a dot and a ring whose
+// radius is that guess's distance. The ring is a real geodesic circle (every
+// point exactly that many miles from the guess) projected onto the map, so the
+// rings cross where the secret city can be. Built only from the guesses: the
+// answer's own coordinates are never drawn, before or after the game.
+const MAP_W = WORLD.width;
+const MAP_H = WORLD.height;
+const LAND_D = WORLD.countries.map((c) => c.d).join('');
+const CITY_BY_KEY = (() => {
+  const m = new Map();
+  for (const c of CITIES) m.set(`${normCity(c.name)}|${normCity(c.country)}`, c);
+  return m;
+})();
+const R_EARTH_MI = 3958.8;
+// Project a lon/lat list into one SVG path, lifting the pen wherever a line
+// would jump across the whole map (the date line), so nothing smears.
+function projPath(pts, close) {
+  let d = '';
+  let prev = null;
+  let split = false;
+  for (const [lon, lat] of pts) {
+    const [x, y] = projectPoint(WORLD, lon, lat);
+    if (prev && Math.abs(x - prev[0]) > MAP_W * 0.4) split = true;
+    d += `${!prev || Math.abs(x - prev[0]) > MAP_W * 0.4 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
+    prev = [x, y];
+  }
+  return { d: d + (close && !split ? 'Z' : ''), split };
+}
+const GRATICULE_D = (() => {
+  let d = '';
+  for (let lat = -60; lat <= 60; lat += 30) {
+    const pts = []; for (let lon = -180; lon <= 180; lon += 5) pts.push([lon, lat]);
+    d += projPath(pts, false).d;
+  }
+  for (let lon = -150; lon <= 180; lon += 30) {
+    const pts = []; for (let lat = -88; lat <= 88; lat += 4) pts.push([lon, lat]);
+    d += projPath(pts, false).d;
+  }
+  return d;
+})();
+// Every point `mi` miles from (lat, lng), as [lon, lat] pairs.
+function ringPoints(lat, lng, mi) {
+  const d = mi / R_EARTH_MI;
+  const p1 = (lat * Math.PI) / 180;
+  const l1 = (lng * Math.PI) / 180;
+  const out = [];
+  for (let k = 0; k <= 96; k++) {
+    const t = (k / 96) * 2 * Math.PI;
+    const p2 = Math.asin(Math.sin(p1) * Math.cos(d) + Math.cos(p1) * Math.sin(d) * Math.cos(t));
+    const l2 = l1 + Math.atan2(Math.sin(t) * Math.sin(d) * Math.cos(p1), Math.cos(d) - Math.sin(p1) * Math.sin(p2));
+    let lon = (l2 * 180) / Math.PI;
+    lon = ((lon + 540) % 360) - 180;
+    out.push([lon, (p2 * 180) / Math.PI]);
+  }
+  return out;
+}
+// The phone map is cropped to this shape; its view box keeps the same ratio.
+const PHONE_AR = 390 / 236;
 
 // Distance is computed, banded, and scored in MILES everywhere (haversineMiles,
 // BANDS, PROX_MILES). Kilometres are a display-layer conversion only, so a
@@ -282,6 +345,9 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const [unit, setUnit] = useState('mi');   // 'mi' or 'km', display only
+  // The ring map: a phone crops it to the guesses and offers +/- zoom.
+  const [narrow, setNarrow] = useState(false);
+  const [zoomStep, setZoomStep] = useState(0);
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -314,6 +380,49 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
   // key of the secret city (name|country), for comparing guesses
   const targetKey = `${normCity(TARGET.name)}|${normCity(TARGET.country)}`;
   const guessedKeys = useMemo(() => new Set(guesses.map((x) => `${normCity(x.name)}|${normCity(x.country)}`)), [guesses]);
+
+  // Rings for the map, one per guess, built from the GUESSED city's own
+  // coordinates and its distance. Nothing here reads TARGET.
+  const rings = useMemo(() => guesses.map((x, i) => {
+    const c = CITY_BY_KEY.get(`${normCity(x.name)}|${normCity(x.country)}`);
+    if (!c) return null;
+    const [cx, cy] = projectPoint(WORLD, c.lng, c.lat);
+    const pts = x.mi > 0 ? ringPoints(c.lat, c.lng, x.mi) : [];
+    const path = pts.length ? projPath(pts, true) : null;
+    let x0 = cx, x1 = cx, y0 = cy, y1 = cy;
+    for (const [lon, lat] of pts) {
+      const [px, py] = projectPoint(WORLD, lon, lat);
+      if (px < x0) x0 = px; if (px > x1) x1 = px; if (py < y0) y0 = py; if (py > y1) y1 = py;
+    }
+    if (path && path.split) { x0 = 0; x1 = MAP_W; }
+    return { i, x, cx, cy, d: path ? path.d : null, box: [x0, y0, x1, y1] };
+  }).filter(Boolean), [guesses]);
+  useEffect(() => {
+    let mq = null;
+    try { mq = window.matchMedia('(max-width: 640px)'); } catch (e) { return undefined; }
+    const on = () => setNarrow(!!mq.matches);
+    on();
+    try { mq.addEventListener('change', on); } catch (e) { try { mq.addListener(on); } catch (e2) {} }
+    return () => { try { mq.removeEventListener('change', on); } catch (e) { try { mq.removeListener(on); } catch (e2) {} } };
+  }, []);
+  // A new ring re-fits the phone map to every ring so far.
+  useEffect(() => { setZoomStep(0); }, [guesses.length]);
+  const view = useMemo(() => {
+    if (!narrow) return { x: 0, y: 0, w: MAP_W, h: MAP_H, world: true, fitW: MAP_W };
+    const worldW = MAP_H * PHONE_AR;
+    let fitW = worldW, cx = MAP_W / 2, cy = MAP_H / 2;
+    if (rings.length) {
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      for (const r of rings) { x0 = Math.min(x0, r.box[0]); y0 = Math.min(y0, r.box[1]); x1 = Math.max(x1, r.box[2]); y1 = Math.max(y1, r.box[3]); }
+      fitW = Math.min(worldW, Math.max(90, Math.max(x1 - x0, (y1 - y0) * PHONE_AR) * 1.14));
+      cx = (x0 + x1) / 2; cy = (y0 + y1) / 2;
+    }
+    const w = Math.max(60, Math.min(MAP_W, fitW / Math.pow(1.6, zoomStep)));
+    const h = w / PHONE_AR;
+    const x = Math.min(Math.max(cx - w / 2, Math.min(0, MAP_W - w)), Math.max(0, MAP_W - w));
+    const y = Math.min(Math.max(cy - h / 2, Math.min(0, MAP_H - h)), Math.max(0, MAP_H - h));
+    return { x, y, w, h, world: w >= MAP_W - 1, fitW };
+  }, [narrow, rings, zoomStep]);
 
   // display helpers bound to the player's unit choice
   const fmtDist = (mi) => fmtDistIn(mi, unit);
@@ -634,7 +743,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
             onClick={() => changeUnit(u)}
             aria-pressed={unit === u}
             title={u === 'km' ? 'Show distances in kilometers' : 'Show distances in miles'}
-            style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500, lineHeight: 1.6, border: 'none', cursor: 'pointer', padding: '2px 9px', background: unit === u ? (STAGE ? 'var(--stg-acc)' : COLORS.ink) : `var(--stg-surf, ${T.white})`, color: unit === u ? (STAGE ? 'var(--stg-onramp, #fff)' : T.white) : FADED }}
+            style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500, lineHeight: 1.6, border: 'none', cursor: 'pointer', padding: '0 12px', minWidth: 44, minHeight: 44, background: unit === u ? (STAGE ? 'var(--stg-acc)' : COLORS.ink) : `var(--stg-surf, ${T.white})`, color: unit === u ? (STAGE ? 'var(--stg-onramp, #fff)' : T.white) : FADED }}
           >
             {u}
           </button>
@@ -643,31 +752,91 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
     );
   }
 
-  // one guess-history row
+  // A guess's colour on the map and its row: the heat band it fell in, as a
+  // theme token on the stage (both registers), the found city in success green.
+  function ringColor(x) {
+    if (x.mi === 0) return STAGE ? 'var(--stg-good)' : '#166534';
+    const b = bandOf(x.mi);
+    return STAGE ? (STAGE_HUE[b.key] || 'var(--stg-acc-ink)') : b.color;
+  }
+
+  // one guess-history row: the dot ties it to its ring on the map
   function GuessRow({ x, i, last }) {
     const solvedRow = g.status !== 'playing' && x.mi === 0;
-    const b = bandOf(x.mi);
-    const skin = bandSkin(b, STAGE);
+    const prev = i > 0 ? guesses[i - 1] : null;
+    const trend = i === 0 ? 'first' : (x.mi < prev.mi ? 'closer' : (x.mi > prev.mi ? 'farther' : 'same'));
+    const rc = ringColor(x);
     const bg = solvedRow
       ? (STAGE ? 'color-mix(in srgb, var(--stg-good) 15%, var(--stg-raise))' : COLORS.greenSoft)
-      : skin.bg;
+      : (STAGE ? 'var(--stg-surf)' : PAPER);
     const border = solvedRow
       ? (STAGE ? 'color-mix(in srgb, var(--stg-good) 50%, transparent)' : 'rgba(21,128,61,0.5)')
-      : skin.border;
-    const color = solvedRow ? (STAGE ? 'var(--stg-good)' : '#166534') : skin.color;
+      : (STAGE ? 'var(--stg-line)' : 'rgba(28,30,36,0.14)');
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: bg, border: `1.5px solid ${border}`, borderRadius: 9, padding: '8px 12px', animation: last ? ' pgrow .25s ease' : undefined }}>
-        <span style={{ fontFamily: MONO, fontSize: 11, color: FADED, width: 14, flex: '0 0 auto' }}>{i + 1}</span>
-        <span style={{ fontFamily: SANS, fontSize: 15, fontWeight: 800, color: INK, flex: '1 1 auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <div className="pg-row" style={{ display: 'flex', alignItems: 'center', gap: 12, background: bg, border: `1.5px solid ${border}`, borderRadius: 12, padding: '10px 14px', minHeight: 48, boxSizing: 'border-box', animation: last ? ' pgrow .25s ease' : undefined }}>
+        <span style={{ fontFamily: MONO, fontSize: 11, color: FADED, width: 16, flex: '0 0 auto', textAlign: 'right' }}>{i + 1}</span>
+        <span aria-hidden="true" style={{ width: 12, height: 12, borderRadius: '50%', background: rc, flex: '0 0 auto' }} />
+        <span style={{ fontFamily: SANS, fontSize: 15.5, fontWeight: 800, color: INK, flex: '1 1 auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {x.name}<span style={{ color: FADED, fontWeight: 600, fontSize: 12.5 }}> · {x.country}</span>
         </span>
         {solvedRow ? (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: SANS, fontSize: 13, fontWeight: 800, color, flex: '0 0 auto' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: SANS, fontSize: 13, fontWeight: 800, color: STAGE ? 'var(--stg-good)' : '#166534', flex: '0 0 auto' }}>
             <MapPin size={15} strokeWidth={2.5} /> found it!
           </span>
         ) : (
-          <span style={{ fontFamily: MONO, fontSize: 16, fontWeight: 500, color: INK, fontVariantNumeric: 'tabular-nums', flex: '0 0 auto' }}>{fmtDist(x.mi)}</span>
+          <>
+            <span style={{ fontFamily: MONO, fontSize: 16, fontWeight: 500, color: INK, fontVariantNumeric: 'tabular-nums', flex: '0 0 auto' }}>{fmtDist(x.mi)}</span>
+            <span className="pg-trend" style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, width: 62, textAlign: 'right', flex: '0 0 auto' }}>{trend}</span>
+          </>
         )}
+      </div>
+    );
+  }
+
+  // The ring map. Desktop shows the whole world; a phone crops to the rings.
+  function renderRingMap() {
+    const vb = `${view.x.toFixed(1)} ${view.y.toFixed(1)} ${view.w.toFixed(1)} ${view.h.toFixed(1)}`;
+    const pxW = narrow ? 370 : 588;
+    const u = view.w / pxW; // view-box units per screen pixel
+    const ocean = STAGE ? 'color-mix(in srgb, var(--stg-cool) 7%, var(--stg-raise))' : '#eef5fa';
+    const land = STAGE ? 'color-mix(in srgb, var(--stg-ink) 15%, var(--stg-raise))' : '#d9dfe7';
+    const landLine = STAGE ? 'color-mix(in srgb, var(--stg-ink) 30%, var(--stg-raise))' : '#b6c0cc';
+    const grid = STAGE ? 'var(--stg-line)' : 'rgba(28,30,36,0.08)';
+    const halo = STAGE ? 'var(--stg-raise)' : '#ffffff';
+    const lastI = guesses.length - 1;
+    return (
+      <div className="pg-mapwrap" style={{ position: 'relative', marginTop: 12 }}>
+        <div className="pg-eye" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: ACC_DEEP_INK, marginBottom: 8 }}>
+          {rings.length >= 2 ? 'The secret city is where your rings cross' : 'Each guess draws a ring at its distance'}
+        </div>
+        <svg className="pg-map" viewBox={vb} preserveAspectRatio="xMidYMid meet" role="img"
+          aria-label={rings.length ? `World map with ${rings.length} distance ring${rings.length === 1 ? '' : 's'}, one per guess` : 'World map. Your guesses will appear here as distance rings.'}
+          style={{ display: 'block', width: '100%', height: 'auto', aspectRatio: narrow ? `${PHONE_AR}` : `${MAP_W} / ${MAP_H}`, background: STAGE ? 'var(--stg-raise)' : T.white, border: `1px solid ${STAGE ? 'var(--stg-line)' : 'rgba(28,30,36,0.18)'}`, borderRadius: 14 }}>
+          <path d={WORLD.sphere} fill="currentColor" style={{ color: ocean }} />
+          <path d={GRATICULE_D} fill="none" stroke="currentColor" strokeWidth={1} vectorEffect="non-scaling-stroke" style={{ color: grid }} />
+          <g style={{ color: land }}>
+            <path d={LAND_D} fill="currentColor" />
+          </g>
+          <path d={LAND_D} fill="none" stroke="currentColor" strokeWidth={0.6} vectorEffect="non-scaling-stroke" style={{ color: landLine }} />
+          {rings.map((r) => r.d && (
+            <path key={`r${r.i}`} d={r.d} fill="none" stroke="currentColor" strokeWidth={r.i === lastI ? 2.2 : 1.6}
+              strokeDasharray={r.i === lastI ? undefined : '5 4'} vectorEffect="non-scaling-stroke" style={{ color: ringColor(r.x) }} />
+          ))}
+          {rings.map((r) => (
+            <g key={`d${r.i}`} style={{ color: ringColor(r.x) }}>
+              <circle cx={r.cx} cy={r.cy} r={(r.i === lastI ? 5 : 4) * u} fill="currentColor" strokeWidth={1.5} vectorEffect="non-scaling-stroke" style={{ stroke: halo }} />
+              <text x={r.cx + 7 * u} y={r.cy - 5 * u} fontSize={11 * u} fontFamily="DM Mono, ui-monospace, monospace" fill="currentColor"
+                strokeWidth={3 * u} paintOrder="stroke" style={{ pointerEvents: 'none', stroke: halo }}>{narrow ? r.i + 1 : r.x.name}</text>
+            </g>
+          ))}
+        </svg>
+        <div className="pg-zoom">
+          <button type="button" aria-label="Zoom out" disabled={view.world} onClick={() => setZoomStep((z) => z - 1)}>&minus;</button>
+          <button type="button" aria-label="Zoom in" disabled={view.w <= 61} onClick={() => setZoomStep((z) => z + 1)}>+</button>
+        </div>
+        <div className="pg-mapnote" style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, marginTop: 7 }}>
+          {narrow ? 'Map fits your rings · numbers match your guesses' : 'Rings are drawn to scale on the map'}
+        </div>
       </div>
     );
   }
@@ -747,7 +916,19 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
           .pg-sug button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;font-family:${SANS};font-size:15px;font-weight:700;color:${INK};background:${STAGE ? 'var(--stg-raise)' : 'var(--white)'};border:none;border-bottom:1px solid var(--stg-line, rgba(28,30,36,0.08));padding:10px 13px;cursor:pointer;}
           .pg-sug button:last-child{border-bottom:none;}
           .pg-sug button:hover,.pg-sug button.on{background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .pg-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+          .pg-board{display:flex;flex-direction:column;}
+          .pg-zoom{display:none;}
+          @media(max-width:640px){
+            .pg-board > *{margin-left:8px;margin-right:8px;}
+            .pg-trend{display:none;}
+            .pg-zoom{display:flex;gap:6px;position:absolute;right:10px;bottom:34px;}
+            .pg-zoom button{width:44px;height:44px;border-radius:10px;border:1px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.3)'};background:${STAGE ? 'var(--stg-raise)' : 'var(--white)'};color:${INK};font-family:${SANS};font-size:20px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
+            .pg-zoom button:disabled{color:${FADED};cursor:default;}
+            .pg-dock{order:99;position:sticky;bottom:0;z-index:15;margin-top:12px !important;padding:10px 0 calc(12px + env(safe-area-inset-bottom, 0px));background:${STAGE ? 'var(--stg-ground)' : 'var(--white)'};border-top:1px solid ${STAGE ? 'var(--stg-line)' : 'rgba(28,30,36,0.14)'};}
+            .pg-dock .pg-sug{top:auto;bottom:calc(100% + 6px);}
+            .pg-toast{bottom:104px !important;}
+          }
+          .pg-tool{font-family:${SANS};font-weight:800;font-size:12.5px;min-height:44px;box-sizing:border-box;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
         ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
@@ -800,7 +981,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
         )}
         {/* the hunt */}
         {!preStart && (
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '15px 17px 17px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+        <div className={STAGE ? 'stg-board pg-board' : (LOFT ? 'loft-card pg-board' : 'pg-board')} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '15px 17px 17px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           {/* These figures move UP into the cap on a loft page; printing
               them twice is the one thing to avoid. */}
           {!LOFT && (
@@ -829,9 +1010,12 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
             </div>
           )}
 
-          {/* input row */}
+          {/* the ring map */}
+          {renderRingMap()}
+
+          {/* input row (docks at the foot of the board on a phone) */}
           {started && (
-            <div style={{ marginTop: 14 }}>
+            <div className="pg-dock" style={{ marginTop: 14 }}>
               <div style={{ display: 'flex', gap: 9, alignItems: 'stretch', position: 'relative' }}>
                 <div style={{ position: 'relative', flex: '1 1 auto' }}>
                   <Search size={17} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: FADED, pointerEvents: 'none' }} />
@@ -867,13 +1051,15 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
                 </div>
                 <button className="pg-go" onClick={submitTyped}>Guess</button>
               </div>
-              <div style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED, marginTop: 8 }}>
-                {closest ? (
-                  <>Closest so far: <b style={{ color: INK }}>{closest.name}</b>, {fmtDist(closest.mi)} away &middot; no guess limit</>
-                ) : (
-                  <>Any major world city &middot; type a <b style={{ color: INK }}>country</b> to see its cities &middot; no guess limit</>
-                )}
-              </div>
+            </div>
+          )}
+          {started && (
+            <div style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED, marginTop: 8 }}>
+              {closest ? (
+                <>Closest so far: <b style={{ color: INK }}>{closest.name}</b>, {fmtDist(closest.mi)} away &middot; no guess limit</>
+              ) : (
+                <>Any major world city &middot; type a <b style={{ color: INK }}>country</b> to see its cities &middot; no guess limit</>
+              )}
             </div>
           )}
 
@@ -898,7 +1084,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
               {guesses.length > 0 && (
                 <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
                   title="Give up: reveals the city and scores you on your closest guess"
-                  style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5, minHeight: 44 }}>
                   <Eye size={13} /> {armReveal ? 'Tap again to give up (you keep your closeness score)' : 'Give up & reveal'}
                 </button>
               )}
@@ -1092,7 +1278,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
-        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
+        <div className="pg-toast" style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
           {toast}
         </div>
       )}

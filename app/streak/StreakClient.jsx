@@ -471,7 +471,7 @@ export default function StreakClient({ puzzles = [], questionsByNum = {}, forceN
   }
   function copyShare() {
     const text = playing
-      ? `Streak #${PUZZLE.num} — the daily trivia gauntlet from Mind Loft. Forty questions, one life.\n${shareUrl()}`
+      ? `Streak #${PUZZLE.num}, the daily trivia gauntlet from Mind Loft. Forty questions, one life.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -501,39 +501,94 @@ export default function StreakClient({ puzzles = [], questionsByNum = {}, forceN
     <span style={{ whiteSpace: 'nowrap' }}>{label} <b style={{ color: accent || INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{value}</b></span>
   );
 
+  // ---- the board pieces (2026-10-07 rebuild) ----
+  // An answer button: a lettered badge and the choice, in stage tokens. The
+  // right answer on a dead question is lit only once the end card's Reveal is
+  // pressed on a loft page, exactly as before.
   const choiceBtn = (qq, k, dead) => {
     const isRight = k === qq.correct;
     const isPick = dead ? g.pick === k : false;
     const flash = !dead && lock && g.lastRight != null && isRight;
-    let bg = T.white, border = 'rgba(28,30,36,0.4)', color = COLORS.ink;
-    if (flash) { bg = '#e7f3ec'; border = COLORS.green; color = COLORS.green; }
-    if (dead && isRight && (!LOFT || revealed)) { bg = '#e7f3ec'; border = COLORS.green; color = '#0f5c2e'; }
-    if (dead && isPick && !isRight) { bg = '#fdecef'; border = COLORS.accent; color = COLORS.accent; }
+    const good = flash || (dead && isRight && (!LOFT || revealed));
+    const bad = dead && isPick && !isRight;
+    let tone = '';
+    if (good) tone = ' good';
+    if (bad) tone = ' bad';
     return (
       <button
         key={k}
-        className="sk-choice"
+        type="button"
+        className={`sk-choice${tone}`}
         disabled={dead || lock}
         onClick={() => answer(k)}
-        style={{ background: bg, borderColor: border, color, cursor: dead || lock ? 'default' : 'pointer' }}
+        style={{ cursor: dead || lock ? 'default' : 'pointer' }}
       >
-        <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 500, color: 'inherit', opacity: 0.65, marginRight: 9 }}>{String.fromCharCode(65 + k)}</span>
-        {qq.choices[k]}
+        <span className="sk-key" aria-hidden="true">{String.fromCharCode(65 + k)}</span>
+        <span className="sk-ct">{qq.choices[k]}</span>
       </button>
     );
   };
 
+  // The question card (category and round chips over the question), then the
+  // four answers: two across on a computer, one column on a phone.
   const qCard = (qq, dead) => (
     <div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
-        <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 500, color: ACC_INK }}>{qq.cat}</span>
-        <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 500, color: FADED, opacity: 0.75 }}>{TIER_NAMES[qq.tier - 1]}</span>
+      <div className="sk-qcard">
+        <div className="sk-chips">
+          <span className="sk-chip acc">{qq.cat}</span>
+          <span className="sk-chip">Round {qq.tier} &middot; {TIER_NAMES[qq.tier - 1]}</span>
+        </div>
+        <div className="sk-q">{qq.q}</div>
       </div>
-      <div style={{ fontFamily: SANS, fontSize: 18.5, fontWeight: 800, color: INK, lineHeight: 1.4, marginBottom: 13 }}>{qq.q}</div>
       <div className={`sk-grid${hovStale ? ' nohov' : ''}`}>
         {[0, 1, 2, 3].map((k) => choiceBtn(qq, k, dead))}
       </div>
     </div>
+  );
+
+  // THE CLIMB: five rounds of eight, each question a segment. Cleared segments
+  // fill with the accent, the one you are on is outlined, the rest are empty
+  // slots. A sidebar that fills from the bottom on a computer, a strip across
+  // the top on a phone (the same markup, re-laid by CSS).
+  const climb = (
+    <div className="sk-climb" aria-label={`The climb: ${depth} of ${TOTAL_Q} cleared`} role="img">
+      <span className="sk-climbh">The climb</span>
+      <div className="sk-tiers">
+        {TIER_NAMES.map((name, t) => {
+          const reached = depth > t * 8 || (playing && started && tierNum === t);
+          return (
+            <div key={name} className="sk-tier" style={{ order: 4 - t }}>
+              <span className={`sk-tname${reached ? ' on' : ''}`}>{name}</span>
+              <div className="sk-steps">
+                {Array.from({ length: 8 }, (_, j) => {
+                  const q = t * 8 + j;
+                  const cls = q < depth ? ' done' : (playing && started && q === g.i ? ' cur' : '');
+                  return <span key={j} className={`sk-step${cls}`} />;
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  // The per-question clock as a ring. Driven by the same remainFrac the old
+  // bar read; nothing about the timer itself changed.
+  const RING_C = 2 * Math.PI * 33;
+  // Display clamps only: for the first tick after a question paints, `now`
+  // can trail qStart, which read as 21s on a 20 second clock.
+  const ringFrac = Math.min(1, Math.max(0, remainFrac));
+  const ringSecs = Math.min(Q_SECONDS, Math.ceil(remainMs / 1000));
+  const ringTone = remainFrac > 0.4 ? `var(--stg-acc-ink, ${COLORS.green})` : remainFrac > 0.18 ? 'var(--stg-warn, #b45309)' : `var(--stg-bad, ${COLORS.accent})`;
+  const ring = (
+    <svg className="sk-ring" viewBox="0 0 78 78" role="timer" aria-label={`${ringSecs} seconds left`}>
+      <circle cx="39" cy="39" r="33" fill="none" stroke="currentColor" strokeWidth="7" style={{ color: 'var(--stg-line2, rgba(28,30,36,0.16))' }} />
+      <circle cx="39" cy="39" r="33" fill="none" stroke="currentColor" strokeWidth="7" strokeLinecap="round"
+        strokeDasharray={RING_C} strokeDashoffset={RING_C * (1 - ringFrac)} transform="rotate(-90 39 39)"
+        style={{ color: ringTone, transition: 'stroke-dashoffset .1s linear' }} />
+      <text x="39" y="45" textAnchor="middle" fontFamily="DM Mono, monospace" fontSize="20" fill="currentColor" style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{ringSecs}s</text>
+    </svg>
   );
 
   return (
@@ -574,15 +629,64 @@ export default function StreakClient({ puzzles = [], questionsByNum = {}, forceN
           @media(max-width:560px){.sk-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .sk-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .sk-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .sk-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
-          @media(max-width:560px){.sk-grid{grid-template-columns:1fr;}}
-          .sk-choice{font-family:${SANS};font-weight:700;font-size:14.5px;text-align:left;border:2px solid;border-radius:9px;padding:12px 13px;line-height:1.35;transition:background .12s ease,border-color .12s ease;}
-          .sk-grid:not(.nohov) .sk-choice:not(:disabled):hover{background:var(--stg-surf2, ${COLORS.paper});}
-          .sk-timebar{height:7px;border-radius:4px;background:var(--stg-surf, ${COLORS.paper});overflow:hidden;}
-          .sk-timefill{height:100%;border-radius:4px;transition:width .1s linear;}
+          .sk-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+          .sk-choice{display:flex;align-items:center;gap:14px;font-family:${SANS};font-weight:800;font-size:18px;text-align:left;border:1.5px solid var(--stg-line2, rgba(28,30,36,0.4));border-radius:14px;padding:14px 16px;min-height:76px;box-sizing:border-box;line-height:1.3;background:var(--stg-surf, ${T.white});color:${INK};transition:background .12s ease,border-color .12s ease;}
+          .sk-choice.good{background:color-mix(in srgb, var(--stg-good, ${COLORS.green}) 18%, var(--stg-surf, ${T.white}));border-color:var(--stg-good, ${COLORS.green});}
+          .sk-choice.bad{background:color-mix(in srgb, var(--stg-bad, ${COLORS.accent}) 16%, var(--stg-surf, ${T.white}));border-color:var(--stg-bad, ${COLORS.accent});}
+          .sk-grid:not(.nohov) .sk-choice:not(:disabled):hover{background:var(--stg-surf2, ${COLORS.paper});border-color:var(--stg-acc, ${COLORS.accent});}
+          .sk-key{width:34px;height:34px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:14px;font-weight:500;background:var(--stg-surf2, ${COLORS.paper});color:var(--stg-acc-ink, ${COLORS.accent});}
+          .sk-choice.good .sk-key{background:var(--stg-good, ${COLORS.green});color:var(--stg-ground, #ffffff);}
+          .sk-choice.bad .sk-key{background:var(--stg-bad, ${COLORS.accent});color:var(--stg-ground, #ffffff);}
+          .sk-ct{min-width:0;overflow-wrap:anywhere;}
+          .sk-play{display:flex;gap:28px;align-items:flex-start;}
+          .sk-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:20px;}
+          .sk-climb{width:96px;flex:none;display:flex;flex-direction:column;gap:10px;padding-top:4px;}
+          .sk-climbh{font-family:${MONO};font-size:10px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:${FADED};}
+          .sk-tiers{display:flex;flex-direction:column;gap:10px;}
+          .sk-tier{display:flex;flex-direction:column;gap:4px;}
+          .sk-tname{font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:${FADED};white-space:nowrap;}
+          .sk-tname.on{color:var(--stg-acc-ink, ${COLORS.accent});}
+          .sk-steps{display:flex;flex-direction:column-reverse;gap:3px;}
+          .sk-step{height:10px;border-radius:3px;box-sizing:border-box;border:1px solid var(--stg-cell-line, rgba(28,30,36,0.32));background:transparent;}
+          .sk-step.done{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});}
+          .sk-step.cur{border:2px solid var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 30%, transparent);}
+          .sk-head{display:flex;align-items:center;justify-content:space-between;gap:14px;}
+          .sk-count{display:flex;align-items:baseline;gap:10px;min-width:0;}
+          .sk-num{font-family:${MONO};font-size:64px;line-height:1;font-weight:500;color:var(--stg-acc-ink, ${COLORS.accent});font-variant-numeric:tabular-nums;}
+          .sk-cside{display:flex;flex-direction:column;gap:3px;}
+          .sk-inrow{font-size:15px;font-weight:800;color:${INK};}
+          .sk-sub{font-family:${MONO};font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:${FADED};}
+          .sk-ring{width:78px;height:78px;flex:none;}
+          .sk-qcard{background:var(--stg-surf, ${COLORS.paper});border:1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:18px;padding:24px 24px 26px;display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+          .sk-chips{display:flex;gap:8px;flex-wrap:wrap;}
+          .sk-chip{font-family:${MONO};font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;border-radius:6px;padding:4px 8px;background:var(--stg-surf2, rgba(28,30,36,0.08));color:var(--stg-ink2, ${COLORS.ink});}
+          .sk-chip.acc{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #ffffff);}
+          .sk-q{font-family:${SANS};font-size:26px;font-weight:800;line-height:1.25;letter-spacing:-0.01em;color:${INK};}
+          .sk-note{font-size:13px;font-weight:600;color:${FADED};}
+          @media(max-width:640px){
+            .sk-play{flex-direction:column;gap:16px;}
+            .sk-main{width:100%;gap:16px;}
+            .sk-climb{width:100%;padding-top:0;gap:0;}
+            .sk-climbh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+            .sk-tiers{flex-direction:row;gap:4px;}
+            .sk-tier{flex:1;min-width:0;flex-direction:column-reverse;gap:5px;order:0 !important;}
+            .sk-tname{font-size:8.5px;letter-spacing:0.08em;overflow:hidden;text-overflow:ellipsis;}
+            .sk-steps{flex-direction:row;gap:2px;}
+            .sk-step{flex:1;height:8px;border-radius:2px;}
+            .sk-num{font-size:52px;}
+            .sk-inrow{font-size:14px;}
+            .sk-ring{width:62px;height:62px;}
+            .sk-qcard{padding:18px;border-radius:16px;gap:10px;}
+            .sk-chip{font-size:10px;padding:3px 7px;}
+            .sk-q{font-size:21px;}
+            .sk-grid{grid-template-columns:1fr;gap:10px;}
+            .sk-choice{font-size:17px;min-height:62px;padding:10px 14px;}
+            .sk-key{width:32px;height:32px;font-size:13px;}
+            .sk-note{font-size:12px;}
+          }
         ` }} />
 
-        <div style={{ maxWidth: 660, margin: '0 auto' }}>
+        <div style={{ maxWidth: 760, margin: '0 auto' }}>
 
         {!LOFT && (
         <DailyMasthead
@@ -636,44 +740,48 @@ export default function StreakClient({ puzzles = [], questionsByNum = {}, forceN
           </div>
           )}
 
-          {playing && question && (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 11 }}>
-                <div className="sk-timebar" style={{ flex: 1 }}>
-                  <div className="sk-timefill" style={{ width: `${Math.round(remainFrac * 100)}%`, background: remainFrac > 0.4 ? COLORS.green : remainFrac > 0.18 ? '#b45309' : `var(--stg-acc, ${COLORS.accent})` }} />
+          <div className="sk-play">
+            {climb}
+            <div className="sk-main">
+              {/* the streak itself, large, beside the clock */}
+              <div className="sk-head">
+                <div className="sk-count">
+                  <span className="sk-num">{depth}</span>
+                  <div className="sk-cside">
+                    <span className="sk-inrow">in a row</span>
+                    <span className="sk-sub">
+                      {playing && question ? <>Question {g.i + 1} of {TOTAL_Q}</> : <>{depth} of {TOTAL_Q} cleared</>}
+                      {board && board.plays > 0 && board.best != null && <> &middot; top run {board.best}</>}
+                    </span>
+                  </div>
                 </div>
-                <span style={{ fontFamily: MONO, fontSize: 12, fontWeight: 500, color: remainFrac > 0.18 ? `var(--stg-mute, ${COLORS.faded})` : `var(--stg-acc-ink, ${COLORS.accent})`, fontVariantNumeric: 'tabular-nums', width: 30, textAlign: 'right' }}>{Math.ceil(remainMs / 1000)}s</span>
+                {playing && question && ring}
               </div>
-              <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.12em', textTransform: 'uppercase', color: FADED, opacity: 0.75, marginBottom: 6 }}>Question {g.i + 1} of {TOTAL_Q}</div>
-              {qCard(question, false)}
-            </div>
-          )}
 
-          {g.status === 'lost' && deadQuestion && (
-            <div>
-              <div style={{ fontFamily: SANS, fontSize: 14.5, fontWeight: 800, color: ACC_INK, marginBottom: 10 }}>
-                {g.timedOut ? 'Time ran out.' : 'Wrong answer.'} The run ends at {depth}.
-              </div>
-              <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.12em', textTransform: 'uppercase', color: FADED, opacity: 0.75, marginBottom: 6 }}>Question {g.i + 1} of {TOTAL_Q} — the one that got you</div>
-              {qCard(deadQuestion, true)}
-            </div>
-          )}
+              {playing && question && qCard(question, false)}
 
-          {won && (
-            <div style={{ textAlign: 'center', padding: '18px 6px 10px' }}>
-              <div style={{ fontSize: 26, fontWeight: 900, color: COLORS.green, marginBottom: 6 }}>40 for 40.</div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: FADED }}>You ran the table in {elapsed}. That is the whole gauntlet.</div>
-            </div>
-          )}
+              {g.status === 'lost' && deadQuestion && (
+                <div>
+                  <div style={{ fontFamily: SANS, fontSize: 15, fontWeight: 800, color: ACC_INK, marginBottom: 10 }}>
+                    {g.timedOut ? 'Time ran out.' : 'Wrong answer.'} The run ends at {depth}.
+                  </div>
+                  <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.12em', textTransform: 'uppercase', color: FADED, marginBottom: 8 }}>Question {g.i + 1} of {TOTAL_Q}, the one that got you</div>
+                  {qCard(deadQuestion, true)}
+                </div>
+              )}
 
-        {/* Controls. These sit INSIDE the board card: on the navy stage a
-            bare row of faded text has nothing to sit on, and the card is
-            meant to hold the whole game. */}
-        {started && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)', flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>One wrong answer ends it. Everything you clear is banked.</span>
+              {won && (
+                <div className="sk-qcard" style={{ textAlign: 'center', padding: '22px 14px' }}>
+                  <div style={{ fontSize: 26, fontWeight: 900, color: `var(--stg-good, ${COLORS.green})`, marginBottom: 6 }}>40 for 40.</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: FADED }}>You ran the table in {elapsed}. That is the whole gauntlet.</div>
+                </div>
+              )}
+
+              {started && (
+                <div className="sk-note">One wrong answer, or a clock at zero, ends the run. Everything you clear is banked.</div>
+              )}
+            </div>
           </div>
-        )}
         </div>
         )}
 
@@ -799,7 +907,7 @@ export default function StreakClient({ puzzles = [], questionsByNum = {}, forceN
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s gauntlet, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s gauntlet, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>Open your browser&apos;s menu and choose <b>Add to Home Screen</b> (or <b>Install app</b>). The tile opens today&apos;s gauntlet, every day.</p>
