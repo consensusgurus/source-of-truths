@@ -324,13 +324,12 @@ function Placard({ ti, squash, L }) {
 
 // The rung just above: the school that would have taken you with a few more
 // points. Owner, 2026-10-08: "something that shows what was one above just
-// missed." The bar runs from your rung's cutoff to the next one.
+// missed." The bar runs from zero to that school's cutoff, so a near miss reads as nearly full.
 function Missed({ total, ti, L }) {
   if (ti <= 0) return <div className="ms top"><span>Top of the ladder</span><b>No school above Yale.</b></div>;
   const up = L[ti - 1];
-  const floor = L[ti][0] && ti < L.length - 1 ? L[ti][0] : 0;
   const short = Math.max(1, up[0] - total);
-  const fill = Math.max(4, Math.min(96, 100 * (total - floor) / Math.max(1, up[0] - floor)));
+  const fill = Math.max(4, Math.min(97, 100 * total / up[0]));
   return (
     <div className="ms" style={{ '--p': up[5], '--s': up[6] }}>
       <div className="ms-hd"><span>Waitlisted</span><em>{short} {short === 1 ? 'point' : 'points'} short</em></div>
