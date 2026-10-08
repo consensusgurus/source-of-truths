@@ -152,7 +152,7 @@ export const PUZZLES = [
     "live": "2026-10-09",
     "dateLabel": "October 9, 2026",
     "sunday": false,
-    "gathered": "2026-10-01",
+    "gathered": "2026-10-08",
     "name": "Nintendo Switch 2",
     "cat": "Games",
     "price": 49900,

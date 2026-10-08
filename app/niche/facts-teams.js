@@ -8,8 +8,10 @@
 //         Jersey, the generous reading); the Commanders carry MD.
 //   can    based in Canada.
 //   champ  won its league championship in 2000 or later, through the most
-//          recently completed championships as of authoring: Super Bowl LIX,
-//          and the 2025 NBA, NHL and World Series titles.
+//          recently completed championships as of authoring: Super Bowl LX,
+//          the 2026 NBA title (Knicks) and 2026 Stanley Cup (Hurricanes),
+//          and the 2025 NBA, NHL and World Series titles. The 2026 World
+//          Series is not yet decided.
 //   animal name is a creature (Bruins are bears and the Mammoth counts, the
 //          generous reading; mythical Kraken and generic Predators do not).
 //   old    franchise founded before 1950 (original-16 MLB, Original Six NHL,
@@ -72,7 +74,7 @@ export const TEAMS = [
   { t: 'Milwaukee Bucks', lg: 'nba', st: 'WI', animal: 1, champ: 1 },
   { t: 'Minnesota Timberwolves', lg: 'nba', st: 'MN', animal: 1 },
   { t: 'New Orleans Pelicans', lg: 'nba', st: 'LA', animal: 1, bird: 1 },
-  { t: 'New York Knicks', lg: 'nba', st: 'NY', old: 1 },
+  { t: 'New York Knicks', lg: 'nba', st: 'NY', champ: 1, old: 1 },
   { t: 'Oklahoma City Thunder', a: ['okc thunder', 'okc'], lg: 'nba', st: 'OK', champ: 1 },
   { t: 'Orlando Magic', lg: 'nba', st: 'FL' },
   { t: 'Philadelphia 76ers', a: ['76ers', 'sixers'], lg: 'nba', st: 'PA', old: 1 },
