@@ -29,7 +29,7 @@ function ord(n) {
 }
 
 // Passport (2026-10-03) reuses this page with its own circuit, name and path.
-export default function PriceCheckBoard({ dateLabel = '', circuit: CIRCUIT = 'pricecheck', name = 'Price Check', path = '/pricecheck', emptyLine = 'Nobody has run all five tags today yet. Yours would be the first.', rankedLine = 'Ranked on the five tag scores added up' }) {
+export default function PriceCheckBoard({ dateLabel = '', circuit: CIRCUIT = 'pricecheck', name = 'Price Check', path = '/pricecheck', emptyLine = 'Nobody has run all five tags today yet. Yours would be the first.', rankedLine = 'Ranked on the five tag scores added up', max = 50 }) {
   const [tab, setTab] = useState('today');
   const [myName, setMyName] = useState('');
   useEffect(() => { setMyName(savedIdentity().username || ''); }, []);
@@ -41,7 +41,7 @@ export default function PriceCheckBoard({ dateLabel = '', circuit: CIRCUIT = 'pr
   const scoreWord = 'pts';
   // Five tags at 0 to 10 each. The payload's maxTotal is the day's best score
   // so far, which reads as "out of 30" early in a day; the run is out of 50.
-  const maxTotal = 50;
+  const maxTotal = max;
   const myRow = boardNow ? (boardNow.me || boardNow.meProvisional || null) : null;
   const leaderRow = boardRows.length ? boardRows[0] : null;
 

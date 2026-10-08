@@ -6,7 +6,7 @@ import PriceCheckBoard from '../../pricecheck/leaderboard/PriceCheckBoard';
 
 export const metadata = {
   title: 'Judged Leaderboard | Mind Loft',
-  description: "Today's Judged board, every crowned day, and the all-time champions. Five logic cases, each scored out of 10, one combined score out of 50.",
+  description: "Today's Judged board, every crowned day, and the all-time champions. Five logic cases, scored half on accuracy and half on speed, out of 100.",
   alternates: { canonical: '/judged/leaderboard' },
   openGraph: {
     title: 'Judged Leaderboard | Mind Loft',
@@ -27,5 +27,5 @@ function etLabel() {
 export default function JudgedLeaderboardPage() {
   return <PriceCheckBoard dateLabel={etLabel()} circuit="deduction" name="Judged" path="/judged"
     emptyLine="Nobody has argued all five cases today yet. Yours would be the first file on the desk."
-    rankedLine="Ranked on the five case scores, each out of 10, added up" />;
+    rankedLine="Ranked on the five case scores, half accuracy and half speed" max={100} />;
 }

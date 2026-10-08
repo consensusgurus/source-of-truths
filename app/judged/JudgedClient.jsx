@@ -1,8 +1,8 @@
 'use client';
 
-// LAW SCHOOL — the five deduction dailies as one run (owner, 2026-10-08).
+// JUDGED — the five deduction dailies as one run (owner, 2026-10-08).
 //
-// Sworn, Axiom, Hearsay, Docket and Alibi back to back on one page, each
+// Docket, Sworn, Hearsay, Alibi and Stands back to back on one page, each
 // dressed as a case file, then an admissions verdict: the run total decides
 // which law school takes you, from Charleston to Yale (lib/law-school.js).
 //
@@ -11,7 +11,7 @@
 // the start gate, the save, the hint and the /api/quiz/result row are exactly
 // what that game does on its own page. So the run leaves exactly what five
 // separate plays would, and the circuit board (lib/circuits 'deduction', with
-// `scale: 10`) adds those five rows up on the same 0 to 10 scale used here.
+// scorer 'judged') adds those five rows up with the same scorer used here.
 //
 // A CASE ALREADY ARGUED TODAY on its own page is not replayed: its first
 // result stands, read off that game's own save and stats, and the run steps
@@ -31,14 +31,14 @@ import NextDrop from '../NextDrop';
 import useCircuitBoard from '../circuits/useCircuitBoard';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
-import { LAW_RUN_ID, LAW_LADDER, lawLadderFor, lawTierOf, lawIndexOf, lawPart } from '@/lib/law-school';
+import { LAW_RUN_ID, LAW_LADDER, LAW_CLOCK, LAW_CASE_MAX, LAW_MAX, lawLadderFor, lawTierOf, lawIndexOf, lawCasePoints, lawAcc, lawSpeed } from '@/lib/law-school';
 
 const CLIENTS = {
   sworn: dynamic(() => import('../sworn/SwornClient'), { ssr: false, loading: () => null }),
   hearsay: dynamic(() => import('../hearsay/HearsayClient'), { ssr: false, loading: () => null }),
-  axiom: dynamic(() => import('../axiom/AxiomClient'), { ssr: false, loading: () => null }),
   docket: dynamic(() => import('../docket/DocketClient'), { ssr: false, loading: () => null }),
   alibi: dynamic(() => import('../alibi/AlibiClient'), { ssr: false, loading: () => null }),
+  stands: dynamic(() => import('../stands/StandsClient'), { ssr: false, loading: () => null }),
 };
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
@@ -52,7 +52,7 @@ function etToday() {
 }
 const freshRun = () => ({ v: 1, phase: 'idle', si: 0, t0: null, results: {} });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const r1 = (x) => Math.round(x * 10) / 10;
+const fmtClock = (s) => { const v = Math.max(0, Math.round(Number(s) || 0)); return `${Math.floor(v / 60)}:${String(v % 60).padStart(2, '0')}`; };
 
 // The first (counted) play of a case today, read off the game's own save and
 // stats record. Null when it has not been finished today.
@@ -70,7 +70,7 @@ function bankedOf(sec) {
 
 export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
   const N = sections.length;
-  const MAX = N * 10;
+  const MAX = N * LAW_CASE_MAX;
   const STORE = `sot_run_judged_${etToday()}`;
   const [r, setR] = useState(() => freshRun());
   const rRef = useRef(r);
@@ -111,9 +111,9 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
 
   // What counts for each case: the first finish of the day, wherever it happened.
   const counted = useMemo(() => sections.map((sec) => banked[sec.key] || r.results[sec.key] || null), [sections, banked, r.results]);
-  const parts = counted.map((c) => (c ? lawPart(c.score, c.total) : 0));
-  const exact = parts.reduce((a, b) => a + b, 0);
-  const total = Math.round(MAX ? exact * 50 / MAX : 0);
+  // Each case: 25 points, half accuracy and half speed (lib/law-school.js).
+  const parts = counted.map((c, i) => (c ? lawCasePoints(sections[i].key, c.score, c.total, c.secs) : 0));
+  const total = Math.round(parts.reduce((a, b) => a + b, 0));
   const allBanked = N > 0 && sections.every((s) => banked[s.key]);
 
   function start() {
@@ -168,10 +168,10 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
     const per = sections.map((s, i) => `${s.name} ${counted[i] ? Math.round(parts[i]) : '-'}`).join(' · ');
     const code = sections.length === 5 ? sections.map((s, i) => Math.round(parts[i])).join('-') : '';
     const link = `mindloftdaily.com/judged${code ? `?s=${code}&t=${total}&d=${etToday()}` : ''}`;
-    return `Judged · ${dateShort} · ${total}/50\nAdmitted to ${school[1]}, admissions score ${lawIndexOf(total)}.\n${per}\n${withRef(link)}`;
+    return `Judged · ${dateShort} · ${total}/${LAW_MAX}\nAdmitted to ${school[1]}, admissions score ${lawIndexOf(total)}.\n${per}\n${withRef(link)}`;
   }
   function copyShare() {
-    const text = done ? shareText() : `Judged: five logic cases in one sitting. Your score decides which law school lets you in.\n${withRef('mindloftdaily.com/judged')}`;
+    const text = done ? shareText() : `Judged: five logic cases, right and fast. Your score decides which law school lets you in.\n${withRef('mindloftdaily.com/judged')}`;
     try { if (navigator.share && isMobileDevice()) { navigator.share({ text }).catch(() => {}); return; } } catch (e) {}
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}
   }
@@ -196,7 +196,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
         <section className={`pre${leaving ? ' leave' : ''}`}>
           <div className="eb fade">{dateLabel} · Judged</div>
           <h1 className="title"><span>Judged</span></h1>
-          <p className="lede fade">Five cases in one sitting: <b>liars under oath</b>, a hidden precedent, hearsay, a reasoning section and <b>an alibi</b>. <span className="lede-x">Your score decides which law school lets you in.</span></p>
+          <p className="lede fade">Five cases in one sitting, opening with <b>an LSAT-style logic game</b>, then liars under oath, hearsay, an alibi and a record to rebuild. Right counts half, <b>fast</b> counts the other half. <span className="lede-x">Your score decides which law school lets you in.</span></p>
           {/* THE GAVEL IS THE START BUTTON: the block it strikes, the label
               under it, and the strike plays before the folders clear. */}
           <button type="button" className={`gav fade${leaving ? ' strike' : ''}`} onClick={start} aria-label="Begin the exam">
@@ -237,8 +237,8 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
             <div className="pre-lad">
               <div className="facts">
                 <div className="fact"><b>{N}</b><span>cases</span></div>
-                <div className="fact"><b>10</b><span>points each</span></div>
-                <div className="fact"><b>50</b><span>to make Yale weep</span></div>
+                <div className="fact"><b>20</b><span>points each</span></div>
+                <div className="fact"><b>50%</b><span>of it is speed</span></div>
                 <div className="fact"><b>8</b><span>schools on the ladder</span></div>
               </div>
               <Ladder at={null} L={L} />
@@ -253,7 +253,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
           <div className="ls-sechd">
             <span className="ls-sectag">Case {String(r.si + 1).padStart(2, '0')} · {sec.file}</span>
             <b>{sec.name}</b>
-            <span className="ls-run">Run total {Math.round(runSoFar + (between ? lawPart(secDone.score, secDone.total) : 0))}</span>
+            <span className="ls-run">Run total {Math.round(runSoFar + (between ? parts[r.si] : 0))}</span>
           </div>
           {!between && Game && !banked[sec.key] && (
             <div className="ls-host">
@@ -265,8 +265,13 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
           {between && (
             <div className="ls-between">
               <div className="eb">{sec.name} · {banked[sec.key] && !r.results[sec.key] ? 'argued earlier today, the first result stands' : 'ruling'}</div>
-              <div className="ls-bscore">{Math.round(lawPart(secDone.score, secDone.total))}<small>/10</small></div>
-              <div className="ls-braw">{secDone.unknown ? 'Result on file' : `${secDone.score} of ${secDone.total} on ${sec.name}'s own board`}</div>
+              <div className="ls-bscore">{Math.round(parts[r.si])}<small>/{LAW_CASE_MAX}</small></div>
+              {secDone.unknown ? <div className="ls-braw">Result on file</div> : (
+                <div className="ls-split">
+                  <div><span>Accuracy</span><b>{secDone.score}/{secDone.total}</b><i style={{ width: `${Math.round(100 * lawAcc(secDone.score, secDone.total))}%` }} /></div>
+                  <div><span>Speed</span><b>{secDone.secs ? fmtClock(secDone.secs) : 'no clock'}</b><i style={{ width: `${Math.round(100 * lawSpeed(sec.key, secDone.secs))}%` }} /><small>full marks under {fmtClock(LAW_CLOCK[sec.key][0])}</small></div>
+                </div>
+              )}
               {!last ? (
                 <button type="button" className="start" onClick={advance}>Next: Case {String(r.si + 2).padStart(2, '0')}, {sections[r.si + 1].name} <span aria-hidden="true">&rarr;</span></button>
               ) : (
@@ -317,9 +322,9 @@ function Pennant({ ti, squash, L }) {
 // stamps the file and the letter slides out of its envelope.
 function Verdict({ sections, counted, parts, total, dateLabel, animate, board, onShare, copied, L }) {
   const n = sections.length;
-  const max = n * 10;
+  const max = n * LAW_CASE_MAX;
   const pts = parts.map((p) => Math.round(p));
-  const run50 = (v) => Math.round(max ? v * 50 / max : 0);
+  const run50 = (v) => Math.round(v);
   const fti = lawTierOf(total);
   const t = L[fti];
   const reduce = useMemo(() => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }, []);
@@ -415,13 +420,13 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
                 {sections.slice(0, lines).map((s, i) => (
                   <div key={s.key} className="tr-l">
                     <span className="tr-c">Case {i + 1}</span>
-                    <span className="tr-n">{s.name}<small>{s.file}</small></span>
-                    <b className={pts[i] === 10 ? 'ten' : ''}>{pts[i]}<small>/10</small></b>
+                    <span className="tr-n">{s.name}<small>{counted[i] && !counted[i].unknown ? `${counted[i].score}/${counted[i].total} in ${counted[i].secs ? fmtClock(counted[i].secs) : '?'}` : s.file}</small></span>
+                    <b className={pts[i] >= LAW_CASE_MAX - 1 ? 'ten' : ''}>{pts[i]}<small>/{LAW_CASE_MAX}</small></b>
                   </div>
                 ))}
               </div>
               <div className="tr-tot">
-                <div><span>Run total</span><b>{cur}<small> / 50</small></b></div>
+                <div><span>Run total</span><b>{cur}<small> / {LAW_MAX}</small></b></div>
                 <div className="r"><span>Admissions score</span><b>{idx}</b></div>
               </div>
               {phase === 'stamp' && <div className="tr-stamp">Admitted</div>}
@@ -451,7 +456,7 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
           <h1 className="vf-nm">{t[1]}</h1>
           <p className="vf-ln">{t[4]}</p>
           <div className="vf-stats">
-            <div><b>{total}/50</b><span>Run total</span></div>
+            <div><b>{total}/{LAW_MAX}</b><span>Run total</span></div>
             <div><b>{lawIndexOf(total)}</b><span>Admissions score</span></div>
             {me && me.rank ? <div><b>#{me.rank}</b><span>{field ? `of ${Number(field).toLocaleString()} today` : 'today'}</span></div> : null}
           </div>
@@ -556,6 +561,12 @@ const CSS = `
 .ls-bscore{font-size:68px;font-weight:900;letter-spacing:-.04em;margin-top:6px}
 .ls-bscore small{font-size:24px;color:var(--ls-mute)}
 .ls-braw{color:var(--ls-mute);font-weight:700}
+.ls-split{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:420px;margin:12px auto 0;text-align:left}
+.ls-split div{position:relative;background:var(--ls-surf);border:1px solid var(--ls-line);border-radius:12px;padding:10px 12px 14px;overflow:hidden}
+.ls-split span{display:block;font:800 9.5px ${SANS};letter-spacing:.14em;text-transform:uppercase;color:var(--ls-mute)}
+.ls-split b{font:500 22px ${MONO}}
+.ls-split small{display:block;font-size:10.5px;font-weight:700;color:var(--ls-mute);margin-top:2px}
+.ls-split i{position:absolute;left:0;bottom:0;height:4px;background:var(--ls-gold);border-radius:0 2px 2px 0}
 .ls .start{margin:26px auto 0;display:inline-flex;align-items:center;gap:10px;font:900 18px ${SANS};border:0;border-radius:14px;padding:15px 28px;background:var(--ls-cta);color:var(--ls-cta-ink);cursor:pointer;box-shadow:0 14px 34px rgba(0,0,0,.55)}
 .ls .start:active{transform:scale(.97)}
 .ls-rolling{margin:26px auto 0;display:inline-flex;align-items:center;gap:10px;font:800 15px ${SANS};color:var(--ls-gold)}

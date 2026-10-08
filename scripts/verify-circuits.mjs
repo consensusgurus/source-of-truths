@@ -247,7 +247,11 @@ for (const c of CIRCUITS) {
   if (unknown.length) {
     warns.push(`${c.id}: no measured median for ${unknown.join(', ')} — order not checked for those`);
   }
-  for (let i = 1; i < keys.length; i += 1) {
+  // An OWNER-RULED OPENER (Judged, 2026-10-08: Docket leads because it is the
+  // LSAT logic-games case) stands outside the shortest-first rule. It must be
+  // the first key, and the order is checked from the second key on.
+  if (c.opener && keys[0] !== c.opener) fails.push(`${c.id}: declares opener ${c.opener} but opens with ${keys[0]}`);
+  for (let i = c.opener ? 2 : 1; i < keys.length; i += 1) {
     const a = MED[keys[i - 1]];
     const b = MED[keys[i]];
     if (a == null || b == null) continue;

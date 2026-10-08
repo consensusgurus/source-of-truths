@@ -1,7 +1,7 @@
 import { createElement as h } from 'react';
 import { ImageResponse } from 'next/og';
 import { stageFonts } from '@/lib/og-stage-card';
-import { LAW_KEYS, LAW_CASES, lawLadderFor, lawTierOf, lawIndexOf } from '@/lib/law-school';
+import { LAW_KEYS, LAW_CASES, LAW_CASE_MAX, LAW_MAX, lawLadderFor, lawTierOf, lawIndexOf } from '@/lib/law-school';
 
 // LAW SCHOOL'S SHARE CARD (2026-10-08), on the Passport pattern: one route
 // draws both. With no ?s it is the invite, Yale held up as the prize. With
@@ -15,7 +15,7 @@ const SANS = 'Manrope';
 const MONO = 'DM Mono';
 const GROUND = '#0b0f1a';
 const GOLD = '#e9cf7f';
-const NAMES = { sworn: 'Sworn', axiom: 'Axiom', hearsay: 'Hearsay', docket: 'Docket', alibi: 'Alibi' };
+const NAMES = { docket: 'Docket', sworn: 'Sworn', hearsay: 'Hearsay', alibi: 'Alibi', stands: 'Stands' };
 
 function pennant(t, w) {
   const ht = Math.round(w * 0.62);
@@ -38,13 +38,13 @@ function card(parts, tot, day) {
       h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 15, color: '#64748b', width: 74 } }, `CASE ${i + 1}`),
       h('div', { style: { display: 'flex', flex: 1, fontSize: 23, fontWeight: 800, color: '#e9edf4' } }, NAMES[k]),
       h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 15, color: '#8b95a8', marginRight: 16 } }, LAW_CASES[k].file.toUpperCase()),
-      h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 26, color: res ? GOLD : '#475569', width: 70, justifyContent: 'flex-end' } }, `${v}/10`));
+      h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 26, color: res ? GOLD : '#475569', width: 70, justifyContent: 'flex-end' } }, `${v}/${LAW_CASE_MAX}`));
   });
 
   const left = h('div', { style: { display: 'flex', alignItems: 'center', gap: 26, marginTop: 30 } },
     pennant(t, 190),
     h('div', { style: { display: 'flex', flexDirection: 'column', flex: 1 } },
-      h('div', { style: { display: 'flex', fontSize: 17, fontWeight: 800, letterSpacing: 3, color: '#7dd3fc', textTransform: 'uppercase' } }, res ? 'Admitted to' : 'Score 48 and get into'),
+      h('div', { style: { display: 'flex', fontSize: 17, fontWeight: 800, letterSpacing: 3, color: '#7dd3fc', textTransform: 'uppercase' } }, res ? 'Admitted to' : `Score ${LAW_LADDER[0][0]} and get into`),
       h('div', { style: { display: 'flex', fontSize: 34, fontWeight: 800, lineHeight: 1.08, letterSpacing: -1, marginTop: 8 } }, t[1]),
       h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 18, color: GOLD, marginTop: 10 } }, t[3])));
 
@@ -52,7 +52,7 @@ function card(parts, tot, day) {
     h('div', { style: { display: 'flex', flexDirection: 'column', width: 540, paddingRight: 34 } },
       h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 19, letterSpacing: 4, color: '#8b95a8', textTransform: 'uppercase' } }, 'Mind Loft · Daily run'),
       h('div', { style: { display: 'flex', marginTop: 16, fontSize: 78, fontWeight: 800, letterSpacing: -2, lineHeight: 1 } }, 'Judged'),
-      h('div', { style: { display: 'flex', fontSize: 21, fontWeight: 700, color: '#cbd5e1', marginTop: 10 } }, 'Five cases. One admissions letter.'),
+      h('div', { style: { display: 'flex', fontSize: 21, fontWeight: 700, color: '#cbd5e1', marginTop: 10 } }, 'Five cases. Right and fast.'),
       left,
       h('div', { style: { display: 'flex', marginTop: 'auto', alignItems: 'center', gap: 16 } },
         h('div', { style: { display: 'flex', padding: '14px 26px', borderRadius: 14, background: '#7dd3fc', color: '#08222e', fontSize: 24, fontWeight: 800, whiteSpace: 'nowrap', flexShrink: 0 } }, 'Play free'),
@@ -65,16 +65,16 @@ function card(parts, tot, day) {
           h('div', { style: { display: 'flex', flexDirection: 'column' } },
             h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 15, letterSpacing: 4, color: '#64748b' } }, 'ADMISSIONS SCORE'),
             h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 54, color: res ? '#ffffff' : '#475569' } }, res ? String(lawIndexOf(total)) : '1??')),
-          h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 30, color: res ? GOLD : '#475569' } }, res ? `${total} / 50` : '?? / 50')))));
+          h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 30, color: res ? GOLD : '#475569' } }, res ? `${total} / ${LAW_MAX}` : `?? / ${LAW_MAX}`)))));
 }
 
 export async function GET(req) {
   try {
     const s = new URL(req.url).searchParams.get('s') || '';
-    const parts = /^\d{1,2}(-\d{1,2}){4}$/.test(s) ? s.split('-').map((x) => Math.max(0, Math.min(10, Number(x)))) : null;
+    const parts = /^\d{1,2}(-\d{1,2}){4}$/.test(s) ? s.split('-').map((x) => Math.max(0, Math.min(LAW_CASE_MAX, Number(x)))) : null;
     const tRaw = new URL(req.url).searchParams.get('t');
     const tq = tRaw == null || tRaw === '' ? NaN : Number(tRaw);
-    const tot = Number.isFinite(tq) && tq >= 0 && tq <= 50 ? Math.round(tq) : null;
+    const tot = Number.isFinite(tq) && tq >= 0 && tq <= LAW_MAX ? Math.round(tq) : null;
     const dq = new URL(req.url).searchParams.get('d') || '';
     const day = /^\d{4}-\d{2}-\d{2}$/.test(dq) ? dq : new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
     return new ImageResponse(card(parts, tot, day), { width: 1200, height: 630, fonts: stageFonts(), headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=86400' } });

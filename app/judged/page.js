@@ -5,21 +5,21 @@ import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { LAW_KEYS, LAW_CASES } from '@/lib/law-school';
 import { PUZZLES as P_sworn } from '../sworn/puzzles';
 import { PUZZLES as P_hearsay } from '../hearsay/puzzles';
-import { PUZZLES as P_axiom } from '../axiom/puzzles';
 import { PUZZLES as P_docket } from '../docket/puzzles';
 import { PUZZLES as P_alibi } from '../alibi/puzzles';
+import { PUZZLES as P_stands } from '../stands/puzzles';
 
 // LAW SCHOOL, the run (owner, 2026-10-08): mindloftdaily.com/judged.
 // Each bank is resolved HERE and only today's case ships, stripped exactly the
 // way each game's own page strips it (a client never receives a solution).
 // The clients are handed a one-puzzle list, which is today's by construction.
-const BANKS = { sworn: P_sworn, axiom: P_axiom, hearsay: P_hearsay, docket: P_docket, alibi: P_alibi };
+const BANKS = { docket: P_docket, sworn: P_sworn, hearsay: P_hearsay, alibi: P_alibi, stands: P_stands };
 const SAFE = {
   sworn: (p) => { const { solution, ...safe } = p; return safe; },
   hearsay: (p) => p,
-  axiom: (p) => p,
   docket: (p) => ({ ...p, meta: { sols: p.meta ? p.meta.sols : 0 } }),
   alibi: (p) => { const { solution, ...safe } = p; return safe; },
+  stands: (p) => p,
 };
 
 export const dynamic = 'force-dynamic';
@@ -29,9 +29,9 @@ export async function generateMetadata({ searchParams }) {
   const t = String((searchParams && searchParams.t) || '');
   const ok = /^\d{1,2}(-\d{1,2}){4}$/.test(s);
   const d = String((searchParams && searchParams.d) || '');
-  const img = ok ? `/judged/card?s=${s}${/^\d{1,2}$/.test(t) ? `&t=${t}` : ''}${/^\d{4}-\d{2}-\d{2}$/.test(d) ? `&d=${d}` : ''}` : '/judged/card';
+  const img = ok ? `/judged/card?s=${s}${/^\d{1,3}$/.test(t) ? `&t=${t}` : ''}${/^\d{4}-\d{2}-\d{2}$/.test(d) ? `&d=${d}` : ''}` : '/judged/card';
   const title = 'Judged: Five Logic Cases, One Admissions Letter | Mind Loft';
-  const description = 'A free daily run of five legal-reasoning puzzles: liars under oath, a hidden precedent, hearsay, an analytical reasoning section and an alibi. Your score decides which law school lets you in, from Charleston to Yale.';
+  const description = 'A free daily run of five legal-reasoning puzzles: an LSAT-style logic game, liars under oath, hearsay, an alibi and a record to rebuild, scored half on accuracy and half on speed. Your score decides which law school lets you in, up to Yale.';
   return {
     title, description,
     alternates: { canonical: '/judged' },
@@ -65,7 +65,7 @@ export default function JudgedPage() {
   const dateShort = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
   const jsonLd = {
     '@context': 'https://schema.org', '@type': 'Game', name: 'Judged', url: `${SITE_URL}/judged`,
-    description: 'A free daily run of five legal-reasoning logic puzzles from Mind Loft: Sworn, Axiom, Hearsay, Docket and Alibi.',
+    description: 'A free daily run of five legal-reasoning logic puzzles from Mind Loft: Docket, Sworn, Hearsay, Alibi and Stands.',
     gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
     publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
   };
