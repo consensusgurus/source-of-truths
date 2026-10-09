@@ -95,7 +95,7 @@ export default function DrawingBoard() {
             <div className="drb-stat">
               <i>Drawing in</i>
               <b>{days}d</b>
-              <span>closes {DRAWING.deadlineLabel}</span>
+              <span>closes {DRAWING.endLabel}</span>
             </div>
           </div>
         </div>
@@ -200,7 +200,7 @@ const CSS = `
 .drb-eb{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:${T.blue};font-weight:800}
 .drb-h{margin:8px 0 0;font-size:30px;line-height:1.1;font-weight:800;letter-spacing:-.02em}
 .drb-p{margin:10px 0 0;font-size:14.5px;line-height:1.55;color:${T.muted}}
-.drb-hs{flex:1 1 240px;display:flex;gap:10px}
+.drb-hs{flex:1 1 320px;display:flex;gap:10px}
 .drb-stat{flex:1 1 0;border-radius:12px;background:${T.surface};padding:14px 16px}
 .drb-stat.gold{background:#fff8e6;border:1px solid #f0d48a}
 .drb-stat i{display:block;font-style:normal;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:${T.slate}}
