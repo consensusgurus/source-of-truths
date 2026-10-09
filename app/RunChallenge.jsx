@@ -77,9 +77,7 @@ export function RunChallengeButton({ gameKey, score, total, n, t = null, status 
   if (door) {
     const fig = total ? `${score} of ${total}` : String(score);
     const sb = msg || (draw
-      ? (credit
-        ? `Send them ${fig} to beat. Each new player it brings in is a ticket in the ${DRAWING.prizeLabel} drawing.`
-        : `Send them ${fig} to beat. Pick a player name and it earns you ${DRAWING.prizeLabel} drawing tickets.`)
+      ? <>Send them {fig} to beat.<b style={{ display: 'block', fontWeight: 800 }}>{credit ? `New players = ${DRAWING.prizeLabel} drawing tickets.` : `Pick a name to earn ${DRAWING.prizeLabel} tickets.`}</b></>
       : (credit
         ? `Send them ${fig} to beat. Challenging earns you share credit.`
         : `Send them ${fig} to beat. Pick a player name and challenges earn share credit.`));

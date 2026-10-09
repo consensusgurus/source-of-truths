@@ -1548,10 +1548,11 @@ export default function StageFinish({
     k: 'challenge', cls: 'chal', btn: true, onClick: sendChallenge, go: chalMsg ? 'Sent' : 'Send',
     ic: 'flag',
     nm: duel ? `Challenge ${chal.name} back` : 'Challenge a friend',
-    sb: chalMsg || (isBlankMiss(mine) ? 'Dare them to crack it.' : `Send them ${challengeFig(mine, me && me.key)} to beat.`)
-      + (!chalDraw ? ' No spoilers.'
-        : chalCredit ? ` Each new player it brings in is a ticket in the ${DRAWING.prizeLabel} drawing.`
-        : ` Pick a player name and it earns you ${DRAWING.prizeLabel} drawing tickets.`),
+    sb: chalMsg || (() => {
+      const lead = isBlankMiss(mine) ? 'Dare them to crack it.' : `Send them ${challengeFig(mine, me && me.key)} to beat.`;
+      if (!chalDraw) return `${lead} No spoilers.`;
+      return <>{lead}<b style={{ display: 'block', fontWeight: 800 }}>{chalCredit ? `New players = ${DRAWING.prizeLabel} drawing tickets.` : `Pick a name to earn ${DRAWING.prizeLabel} tickets.`}</b></>;
+    })(),
   } : null;
   const playedN = new Set([...played, ...(me ? [me.key] : [])]).size;
   const smallDoors = [];
