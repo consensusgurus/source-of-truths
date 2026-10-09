@@ -1857,7 +1857,7 @@ export default function StageToday() {
     );
   };
   const ixCount = (prog) => (prog
-    ? <em className="sty-ixc" aria-hidden="true">{prog[0] >= prog[1] ? 'Complete' : `${prog[0]} of ${prog[1]}`}</em>
+    ? <em className="sty-ixct" aria-hidden="true">{prog[0] >= prog[1] ? 'Complete' : `${prog[0]} of ${prog[1]}`}</em>
     : null);
   const ixBtn = (id, label, hue, cls) => {
     const prog = ixProg(id);
@@ -4058,7 +4058,7 @@ ${PATCH_CSS}
 .sty-rlb li.nt span{color:var(--stg-mute);font-weight:600;}
 .sty-rlb li.em{border-bottom-color:transparent;}
 .sty-ixbk{display:none;}
-.sty-ixg,.sty-ixc{display:none;}
+.sty-ixg,.sty-ixct{display:none;}
 .sty-fca{display:block;text-align:right;text-decoration:none;color:inherit;}
 .sty-fca>i{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
   text-transform:uppercase;color:var(--stg-mute);}
@@ -4159,9 +4159,9 @@ ${PATCH_CSS}
   .sty-ixn:not(.re) .sty-ixb > .sty-ixg{display:block;grid-column:1;grid-row:1 / span 2;align-self:center;}
   .sty-ixn:not(.re) .sty-ixb > span{grid-column:2;align-self:end;}
   .sty-ixn:not(.re) .sty-ixb > span:last-child,.sty-ixn:not(.re) .sty-ixb > span:nth-last-child(2):not(.sty-ixg){grid-row:1 / span 2;align-self:center;}
-  .sty-ixn:not(.re) .sty-ixb > .sty-ixc{display:block;grid-column:2;align-self:start;font-style:normal;font-size:11.5px;
+  .sty-ixn:not(.re) .sty-ixb > .sty-ixct{display:block;grid-column:2;align-self:start;font-style:normal;font-size:11.5px;
     font-weight:700;color:var(--stg-mute);letter-spacing:0;}
-  .sty-ixn:not(.re) .sty-ixb.cmp > .sty-ixc{color:var(--cc);}
+  .sty-ixn:not(.re) .sty-ixb.cmp > .sty-ixct{color:var(--cc);}
   .sty-ixg{position:relative;width:44px;height:44px;color:var(--cc);}
   .sty-ixg svg{position:absolute;fill:none;}
   .sty-ixgr{inset:0;width:44px;height:44px;stroke-width:3.5;}
@@ -4173,7 +4173,7 @@ ${PATCH_CSS}
   .sty-ixn:not(.re) .sty-ixb.cmp{background:color-mix(in srgb,var(--cc) 12%,var(--stg-surf));}
   .sty-ixn.pk:not(.re) .sty-ixb.on{grid-template-columns:10px minmax(0,1fr) auto;grid-template-rows:none;row-gap:0;}
   .sty-ixn.pk:not(.re) .sty-ixb.on > i{display:block;}
-  .sty-ixn.pk:not(.re) .sty-ixb.on > .sty-ixg,.sty-ixn.pk:not(.re) .sty-ixb.on > .sty-ixc{display:none;}
+  .sty-ixn.pk:not(.re) .sty-ixb.on > .sty-ixg,.sty-ixn.pk:not(.re) .sty-ixb.on > .sty-ixct{display:none;}
   .sty-ixn.pk:not(.re) .sty-ixb.on > span{grid-column:auto;grid-row:auto;align-self:center;}
 }
 @media (max-width:900px) and (prefers-reduced-motion:reduce){
