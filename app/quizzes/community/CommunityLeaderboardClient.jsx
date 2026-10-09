@@ -163,7 +163,7 @@ export default function CommunityLeaderboardClient() {
 
   return (
     <GroupsShell eyebrow="Community" links={[{ href: '/groups', label: 'Groups' }, { href: '/quizzes/hub', label: 'Stat Hub' }]}>
-      <div style={{ maxWidth: 860, fontFamily: FONT, color: C.ink }}>
+      <div style={{ fontFamily: FONT, color: C.ink }}>
         <div className="grp-lbl">Community</div>
         <h1 className="grp-h1" style={{ margin: '6px 0 10px' }}>Community Leaderboard</h1>
         <p style={{ margin: '0 0 4px', fontSize: 14.5, lineHeight: 1.5, color: C.muted, maxWidth: 620 }}>
@@ -190,7 +190,7 @@ export default function CommunityLeaderboardClient() {
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                <code style={{ flex: '1 1 260px', minWidth: 0, fontSize: 12.5, background: C.well, border: `1px solid ${C.line}`, borderRadius: 9, padding: '9px 11px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <code style={{ flex: '1 1 260px', minWidth: 0, fontFamily: FONT, fontSize: 13, background: C.well, border: `1px solid ${C.line}`, borderRadius: 9, padding: '9px 11px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {me.shareUrl}
                 </code>
                 <button type="button" onClick={copy} style={{ flex: 'none', display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: FONT, fontSize: 13, fontWeight: 800, color: C.ctaInk, background: C.cta, border: 0, borderRadius: 9, padding: '10px 14px', cursor: 'pointer' }}>
