@@ -519,7 +519,7 @@ export const DAYS = [
   ],
   // ── #126 Thu 19 Nov ─────────────────────────────────────────────────────
   [
-    { d: 'sport', t: "The single skull capsized above the weir and the crew swam to the bank.", e: [['skull', 'scull', 'w', 'A scull is a light racing boat, or its oar; a skull is bone.']] },
+    { d: 'sport', t: "The striker was fowled on the edge of the box and the referee gave a free kick.", e: [['fowled', 'fouled', 'w', 'To foul is to break the rules against a player; a fowl is a bird.']] },
     { d: 'law', t: "Counsel made an illusion to an earlier case that the judge said was not on point.", e: [['illusion', 'allusion', 'w', 'An allusion is an indirect reference; an illusion is a false impression.']] },
     { d: 'biz', t: "The firm said this had been the worse year for orders since 2009.", e: [['worse', 'worst', 'g', 'Comparing with every other year takes the superlative worst.']] },
     { d: 'nature', t: "The pidgin loft at the end of the allotments has been there since the war.", e: [['pidgin', 'pigeon', 'w', 'A pigeon is the bird; a pidgin is a simplified language.']] },

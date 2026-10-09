@@ -19,6 +19,8 @@
 //   bird   the nickname is a bird, a strict subset of animal (the Blue Jays
 //          and the Orioles included, the mythical Seahawks by the same
 //          generous reading that lets the Bruins be bears).
+//   nk     words in the nickname when more than one (Red Sox, Maple Leafs),
+//          so the place-name attributes count only the place's words.
 //   a      typed aliases, lowercase (the bare nickname always works).
 export const TEAMS = [
   // ── NFL ──
@@ -79,7 +81,7 @@ export const TEAMS = [
   { t: 'Orlando Magic', lg: 'nba', st: 'FL' },
   { t: 'Philadelphia 76ers', a: ['76ers', 'sixers'], lg: 'nba', st: 'PA', old: 1 },
   { t: 'Phoenix Suns', lg: 'nba', st: 'AZ' },
-  { t: 'Portland Trail Blazers', a: ['blazers', 'trailblazers'], lg: 'nba', st: 'OR' },
+  { t: 'Portland Trail Blazers', a: ['blazers', 'trailblazers'], nk: 2, lg: 'nba', st: 'OR' },
   { t: 'Sacramento Kings', lg: 'nba', st: 'CA', old: 1 },
   { t: 'San Antonio Spurs', lg: 'nba', st: 'TX', champ: 1 },
   { t: 'Toronto Raptors', lg: 'nba', st: 'ON', can: 1, animal: 1, champ: 1 },
@@ -90,9 +92,9 @@ export const TEAMS = [
   { t: 'Athletics', a: ['oakland athletics', 'as', "a's"], lg: 'mlb', st: 'CA', old: 1 },
   { t: 'Atlanta Braves', lg: 'mlb', st: 'GA', champ: 1, old: 1 },
   { t: 'Baltimore Orioles', a: ['os'], lg: 'mlb', st: 'MD', animal: 1, old: 1, bird: 1 },
-  { t: 'Boston Red Sox', lg: 'mlb', st: 'MA', champ: 1, old: 1 },
+  { t: 'Boston Red Sox', nk: 2, lg: 'mlb', st: 'MA', champ: 1, old: 1 },
   { t: 'Chicago Cubs', lg: 'mlb', st: 'IL', animal: 1, champ: 1, old: 1 },
-  { t: 'Chicago White Sox', lg: 'mlb', st: 'IL', champ: 1, old: 1 },
+  { t: 'Chicago White Sox', nk: 2, lg: 'mlb', st: 'IL', champ: 1, old: 1 },
   { t: 'Cincinnati Reds', lg: 'mlb', st: 'OH', old: 1 },
   { t: 'Cleveland Guardians', lg: 'mlb', st: 'OH', old: 1 },
   { t: 'Colorado Rockies', lg: 'mlb', st: 'CO' },
@@ -114,7 +116,7 @@ export const TEAMS = [
   { t: 'St. Louis Cardinals', a: ['st louis cardinals', 'cardinals'], lg: 'mlb', st: 'MO', animal: 1, champ: 1, old: 1, bird: 1 },
   { t: 'Tampa Bay Rays', lg: 'mlb', st: 'FL', animal: 1 },
   { t: 'Texas Rangers', lg: 'mlb', st: 'TX', champ: 1 },
-  { t: 'Toronto Blue Jays', a: ['jays'], lg: 'mlb', st: 'ON', can: 1, animal: 1, bird: 1 },
+  { t: 'Toronto Blue Jays', a: ['jays'], nk: 2, lg: 'mlb', st: 'ON', can: 1, animal: 1, bird: 1 },
   { t: 'Washington Nationals', a: ['nats'], lg: 'mlb', st: 'DC', champ: 1 },
   // ── NHL ──
   { t: 'Anaheim Ducks', lg: 'nhl', st: 'CA', animal: 1, champ: 1, bird: 1 },
@@ -124,9 +126,9 @@ export const TEAMS = [
   { t: 'Carolina Hurricanes', a: ['canes'], lg: 'nhl', st: 'NC', champ: 1 },
   { t: 'Chicago Blackhawks', lg: 'nhl', st: 'IL', champ: 1, old: 1 },
   { t: 'Colorado Avalanche', a: ['avs'], lg: 'nhl', st: 'CO', champ: 1 },
-  { t: 'Columbus Blue Jackets', lg: 'nhl', st: 'OH' },
+  { t: 'Columbus Blue Jackets', nk: 2, lg: 'nhl', st: 'OH' },
   { t: 'Dallas Stars', lg: 'nhl', st: 'TX' },
-  { t: 'Detroit Red Wings', lg: 'nhl', st: 'MI', champ: 1, old: 1 },
+  { t: 'Detroit Red Wings', nk: 2, lg: 'nhl', st: 'MI', champ: 1, old: 1 },
   { t: 'Edmonton Oilers', lg: 'nhl', st: 'AB', can: 1 },
   { t: 'Florida Panthers', lg: 'nhl', st: 'FL', animal: 1, champ: 1 },
   { t: 'Los Angeles Kings', lg: 'nhl', st: 'CA', champ: 1 },
@@ -143,10 +145,10 @@ export const TEAMS = [
   { t: 'Seattle Kraken', lg: 'nhl', st: 'WA' },
   { t: 'St. Louis Blues', a: ['st louis blues'], lg: 'nhl', st: 'MO', champ: 1 },
   { t: 'Tampa Bay Lightning', a: ['bolts'], lg: 'nhl', st: 'FL', champ: 1 },
-  { t: 'Toronto Maple Leafs', a: ['leafs'], lg: 'nhl', st: 'ON', can: 1, old: 1 },
+  { t: 'Toronto Maple Leafs', a: ['leafs'], nk: 2, lg: 'nhl', st: 'ON', can: 1, old: 1 },
   { t: 'Utah Mammoth', lg: 'nhl', st: 'UT', animal: 1 },
   { t: 'Vancouver Canucks', lg: 'nhl', st: 'BC', can: 1 },
-  { t: 'Vegas Golden Knights', a: ['las vegas golden knights', 'knights'], lg: 'nhl', st: 'NV', champ: 1 },
+  { t: 'Vegas Golden Knights', a: ['las vegas golden knights', 'knights'], nk: 2, lg: 'nhl', st: 'NV', champ: 1 },
   { t: 'Washington Capitals', a: ['caps'], lg: 'nhl', st: 'DC', champ: 1 },
   { t: 'Winnipeg Jets', lg: 'nhl', st: 'MB', can: 1 },
 ];

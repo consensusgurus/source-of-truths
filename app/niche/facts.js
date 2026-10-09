@@ -49,8 +49,12 @@ const ADJ = (() => {
 const borders = (name) => ADJ[name] || new Set();
 
 const strip = (t) => String(t).replace(/^The /, '');
-const words = (t) => normAnswer(t).split(' ').filter(Boolean);
-const NUM_WORDS = /\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|twenty|fifty|hundred|thousand)\b/;
+// Words as a player counts them: an ampersand is the word it stands for (Law &
+// Order, Deadpool & Wolverine are three words), and an apostrophe, a period or
+// an asterisk never splits a word (Schindler's List and Ocean's Eleven are two,
+// E.T. and M*A*S*H are one).
+const words = (t) => normAnswer(String(t).replace(/&/g, ' and ').replace(/['\u2019.*]/g, '')).split(' ').filter(Boolean);
+const NUM_WORDS = /\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|twenty|fifty|hundred|thousand|million)\b/;
 const hasNumber = (t) => /\d/.test(t) || NUM_WORDS.test(normAnswer(t));
 const hasDouble = (t) => /([a-z])\1/i.test(String(t).replace(/[^A-Za-z]/g, ''));
 const capList = (m) => (Array.isArray(m.cap) ? m.cap : [m.cap]).filter(Boolean);
@@ -158,9 +162,11 @@ const U_COUNTRIES = {
 // Which states host a franchise, derived from the TEAMS table rather than
 // authored twice, so the Monday and Friday universes cannot disagree. The
 // generous state readings in facts-teams.js carry over: the Giants and Jets
-// make New York, the Commanders make Maryland.
+// make New York, the Commanders make Maryland. New Jersey is added on top:
+// the Giants and Jets play their home games there, and a player who names it
+// for an NFL state is right.
 const teamStates = (lg) => new Set(TEAMS.filter((t) => t.lg === lg).map((t) => t.st));
-const NFL_STATES = teamStates('nfl');
+const NFL_STATES = new Set([...teamStates('nfl'), 'NJ']);
 const MLB_STATES = teamStates('mlb');
 
 const U_STATES = {
@@ -302,7 +308,7 @@ const U_TV = {
     { id: 'cable', label: 'First aired on a cable channel', w: 3, test: (m) => !!m.cable },
     { id: 'book', label: 'Adapted from a book, comic or video game', w: 2, test: (m) => !!m.book },
     { id: 'the', label: 'Title starts with "The"', w: 2, test: (m) => /^The /.test(m.t) },
-    { id: 'one', label: 'One-word title', w: 2, test: (m) => words(strip(m.t)).length === 1 },
+    { id: 'one', label: 'One-word title ("The" doesn\'t count)', w: 2, test: (m) => words(strip(m.t)).length === 1 },
     { id: 'num', label: 'A number in the title', w: 2, test: (m) => hasNumber(m.t) },
     { id: 'c20', label: 'Debuted before 2000', w: 3, test: (m) => m.y < 2000 },
     { id: 'c21', label: 'Debuted in 2000 or later', w: 3, test: (m) => m.y >= 2000 },
@@ -311,8 +317,8 @@ const U_TV = {
     { id: 'noemmy', label: 'Never won the best-series Emmy', w: 2, test: (m) => !m.emmy },
     { id: 'short', label: 'Ran fewer than ten seasons', w: 2, test: (m) => !m.ten },
     { id: 'nobook', label: 'Not adapted from a book, comic or game', w: 1, test: (m) => !m.book },
-    { id: 'multi', label: 'Title has more than one word', w: 2, test: (m) => words(strip(m.t)).length > 1 },
-    { id: 'w3', label: 'Title of three or more words', w: 2, test: (m) => words(strip(m.t)).length >= 3 },
+    { id: 'multi', label: 'Title has more than one word ("The" doesn\'t count)', w: 2, test: (m) => words(strip(m.t)).length > 1 },
+    { id: 'w3', label: 'Title of three or more words ("The" doesn\'t count)', w: 2, test: (m) => words(strip(m.t)).length >= 3 },
     { id: 'vowel', label: 'Title starts with a vowel ("The" doesn\'t count)', w: 1, test: (m) => startsVowel(m.t) },
     { id: 'dbl', label: 'Title has a double letter', w: 1, test: (m) => hasDouble(strip(m.t)) },
     ...letterAttrs(TVSHOWS, 'n', (L) => `Title starts with ${L} ("The" doesn't count)`, (m) => [m.t]),
@@ -336,7 +342,7 @@ const U_MUSICIANS = {
     { id: 'rap', label: 'A hip-hop or rap act', w: 3, test: (m) => !!m.rap },
     { id: 'ctry', label: 'A country act', w: 2, test: (m) => !!m.ctry },
     { id: 'one', label: 'A one-word name ("The" doesn\'t count)', w: 2, test: (m) => words(strip(m.t)).length === 1 },
-    { id: 'num', label: 'A number in the name', w: 2, test: (m) => hasNumber(m.t) },
+    { id: 'num', label: 'A number in the name', w: 2, test: (m) => hasNumber(m.t) || !!m.num },
     { id: 'male', label: 'A solo male artist', w: 3, test: (m) => !m.band && !m.fem && !m.nb },
     { id: 'halftime', label: 'Has played a Super Bowl halftime show', w: 3, test: (m) => HALFTIME.has(m.t) },
     { id: 'roty', label: 'Won the Grammy Record of the Year', w: 3, test: (m) => ROTY.has(m.t) },
@@ -347,8 +353,8 @@ const U_MUSICIANS = {
     { id: 'nonuk', label: 'Not a British act', w: 1, test: (m) => !m.uk },
     { id: 'noaoty', label: 'Never won the Grammy Album of the Year', w: 1, test: (m) => !m.aoty },
     { id: 'the', label: 'Name starts with "The"', w: 2, test: (m) => /^The /.test(m.t) },
-    { id: 'multi', label: 'A name of more than one word', w: 2, test: (m) => words(strip(m.t)).length > 1 },
-    { id: 'w3', label: 'A name of three or more words', w: 1, test: (m) => words(strip(m.t)).length >= 3 },
+    { id: 'multi', label: 'A name of more than one word ("The" doesn\'t count)', w: 2, test: (m) => words(strip(m.t)).length > 1 },
+    { id: 'w3', label: 'A name of three or more words ("The" doesn\'t count)', w: 1, test: (m) => words(strip(m.t)).length >= 3 },
     { id: 'vowel', label: 'Name starts with a vowel ("The" doesn\'t count)', w: 1, test: (m) => startsVowel(m.t) },
     { id: 'dbl', label: 'Name has a double letter', w: 1, test: (m) => hasDouble(strip(m.t)) },
     ...letterAttrs(MUSICIANS, 'n', (L) => `Name starts with ${L} ("The" doesn't count)`, (m) => [m.t]),
@@ -388,13 +394,13 @@ const U_TEAMS = {
     { id: 'bird', label: 'Named after a bird', w: 2, test: (m) => !!m.bird },
     { id: 'old', label: 'Franchise founded before 1950', w: 3, test: (m) => !!m.old },
     { id: 'nos', label: 'Nickname doesn\'t end in S', w: 2, test: (m) => !/s$/i.test(words(m.t).slice(-1)[0] || '') },
-    { id: 'city2', label: 'Two-word place name', w: 2, test: (m) => words(m.t).length >= 3 },
+    { id: 'city2', label: 'Two-word place name', w: 2, test: (m) => words(m.t).length - (m.nk || 1) >= 2 },
     { id: 'allit', label: 'Alliterative name', w: 2, test: (m) => { const w2 = words(m.t); return w2.length >= 2 && w2[0][0] === w2[w2.length - 1][0]; } },
     { id: 'mt', label: 'Plays in the Mountain time zone', w: 2, test: (m) => TZ_MT.has(m.st) },
     { id: 'nochamp', label: 'No championship since 2000', w: 2, test: (m) => !m.champ },
     { id: 'newfr', label: 'Franchise founded in 1950 or later', w: 2, test: (m) => !m.old },
     { id: 'noanimal', label: 'Not named after a creature', w: 2, test: (m) => !m.animal },
-    { id: 'city1', label: 'One-word place name', w: 2, test: (m) => words(m.t).length === 2 },
+    { id: 'city1', label: 'One-word place name', w: 2, test: (m) => words(m.t).length - (m.nk || 1) === 1 },
     { id: 'reg-ne', label: 'Based in the Northeast (Census region)', w: 2, test: (m) => US_REGION[m.st] === 'ne' },
     { id: 'reg-mw', label: 'Based in the Midwest (Census region)', w: 2, test: (m) => US_REGION[m.st] === 'mw' },
     { id: 'reg-s', label: 'Based in the South (Census region)', w: 2, test: (m) => US_REGION[m.st] === 's' },

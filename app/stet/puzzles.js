@@ -4105,8 +4105,8 @@ export const PUZZLES = [
     sunday: false,
     items: [
       {
-        text: "The single skull capsized above the weir and the crew swam to the bank.",
-        errors: [{ wrong: "skull", fix: "scull", kind: 'wordchoice', note: "A scull is a light racing boat, or its oar; a skull is bone." }],
+        text: "The striker was fowled on the edge of the box and the referee gave a free kick.",
+        errors: [{ wrong: "fowled", fix: "fouled", kind: 'wordchoice', note: "To foul is to break the rules against a player; a fowl is a bird." }],
       },
       {
         text: "Counsel made an illusion to an earlier case that the judge said was not on point.",

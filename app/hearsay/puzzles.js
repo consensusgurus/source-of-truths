@@ -1905,9 +1905,9 @@ export const PUZZLES = [
     who: ['Clemence', 'Hollis', 'Lazlo'],
     cards: [
       { a: 'Peru', b: '1967', c: 'an imperf edge' }, { a: 'Iceland', b: '1921', c: 'an imperf edge' }, { a: 'Peru', b: '1952', c: 'a comb perf' },
-      { a: 'Chile', b: '1921', c: 'a comb perf' }, { a: 'Fiji', b: '1967', c: 'an imperf edge' }, { a: 'Nepal', b: '1967', c: 'an imperf edge' },
-      { a: 'Fiji', b: '1934', c: 'a comb perf' }, { a: 'Peru', b: '1952', c: 'an imperf edge' }, { a: 'Nepal', b: '1952', c: 'a comb perf' },
-      { a: 'Peru', b: '1934', c: 'a line perf' }, { a: 'Iceland', b: '1934', c: 'a comb perf' }, { a: 'Nepal', b: '1967', c: 'a line perf' },
+      { a: 'Chile', b: '1921', c: 'a comb perf' }, { a: 'Fiji', b: '1967', c: 'an imperf edge' }, { a: 'Ghana', b: '1967', c: 'an imperf edge' },
+      { a: 'Fiji', b: '1934', c: 'a comb perf' }, { a: 'Peru', b: '1952', c: 'an imperf edge' }, { a: 'Ghana', b: '1952', c: 'a comb perf' },
+      { a: 'Peru', b: '1934', c: 'a line perf' }, { a: 'Iceland', b: '1934', c: 'a comb perf' }, { a: 'Ghana', b: '1967', c: 'a line perf' },
       { a: 'Malta', b: '1952', c: 'a line perf' }, { a: 'Peru', b: '1948', c: 'an imperf edge' }, { a: 'Fiji', b: '1967', c: 'a line perf' },
       { a: 'Malta', b: '1967', c: 'a line perf' },
     ],
@@ -1998,10 +1998,10 @@ export const PUZZLES = [
     attrs: ['team', 'leg'],
     who: ['Sabine', 'Hester'],
     cards: [
-      { a: 'the Pacers', b: 'the anchor leg' }, { a: 'the Flyers', b: 'the first leg' }, { a: 'the Dashers', b: 'the fourth leg' },
+      { a: 'the Pacers', b: 'the fifth leg' }, { a: 'the Flyers', b: 'the first leg' }, { a: 'the Dashers', b: 'the fourth leg' },
       { a: 'the Rovers', b: 'the third leg' }, { a: 'the Dashers', b: 'the second leg' }, { a: 'the Pacers', b: 'the fourth leg' },
       { a: 'the Harriers', b: 'the fourth leg' }, { a: 'the Striders', b: 'the fourth leg' }, { a: 'the Rovers', b: 'the second leg' },
-      { a: 'the Dashers', b: 'the first leg' }, { a: 'the Harriers', b: 'the anchor leg' },
+      { a: 'the Dashers', b: 'the first leg' }, { a: 'the Harriers', b: 'the fifth leg' },
     ],
     script: [
       { who: 'b', type: 'dontKnow' },

@@ -1499,7 +1499,7 @@ export const DAYS = [
 { c: 'Screen Lines', t: 1, q: 'Which character in Scooby-Doo yelps \'Zoinks!\' at the first sign of a ghost?', a: 'Shaggy Rogers', d: ['Velma Dinkley', 'Fred Jones', 'Daphne Blake'] },
 
 { c: 'Presidents & Politics', t: 2, q: 'Which former slave led the revolution in Saint-Domingue that produced the state of Haiti?', a: 'Toussaint Louverture', d: ['Jean-Jacques Dessalines', 'Henri Christophe', 'Alexandre Petion'] },
-{ c: 'History & War', t: 2, q: 'Which Norwegian officer collaborated with the German occupation so notoriously that his surname became a common word for traitor?', a: 'Vidkun Quisling', d: ['Pierre Laval', 'Anton Mussert', 'Ante Pavelic'] },
+{ c: 'History & War', t: 2, q: 'Which collaborator, installed by the German occupiers as head of government, became so notorious that his surname is a common word for traitor?', a: 'Vidkun Quisling', d: ['Pierre Laval', 'Anton Mussert', 'Ante Pavelic'] },
 { c: 'Science, Letters & Ideas', t: 2, q: 'Which German physicist discovered X-rays and won the first Nobel Prize in Physics?', a: 'Wilhelm Rontgen', d: ['Henri Becquerel', 'Philipp Lenard', 'Max von Laue'] },
 { c: 'Books & Authors', t: 2, q: 'Which character in The Iliad sulks in his tent and refuses to fight until his friend is killed?', a: 'Achilles', d: ['Agamemnon', 'Ajax', 'Diomedes'] },
 { c: 'Screen Lines', t: 2, q: 'Which character ends Rocky II by shouting \'Yo, Adrian, I did it!\'?', a: 'Rocky Balboa', d: ['Apollo Creed', 'Paulie Pennino', 'Mickey Goldmill'] },
@@ -1527,7 +1527,7 @@ export const DAYS = [
 [
 { c: 'Presidents & Politics', t: 1, q: 'Which Argentine-born doctor became a commander in the Cuban revolution and was killed in Bolivia in 1967?', a: 'Che Guevara', d: ['Camilo Cienfuegos', 'Raul Castro', 'Juan Almeida'] },
 { c: 'History & War', t: 1, q: 'Which Egyptian queen backed Julius Caesar and then Mark Antony, and died as Rome took her kingdom?', a: 'Cleopatra', d: ['Nefertiti', 'Hatshepsut', 'Berenice IV'] },
-{ c: 'Science, Letters & Ideas', t: 1, q: 'Which Italian painted the Mona Lisa?', a: 'Leonardo da Vinci', d: ['Michelangelo', 'Raphael', 'Titian'] },
+{ c: 'Science, Letters & Ideas', t: 1, q: 'Which Italian painted The Last Supper on a refectory wall in Milan?', a: 'Leonardo da Vinci', d: ['Michelangelo', 'Raphael', 'Titian'] },
 { c: 'Books & Authors', t: 1, q: 'Which author wrote the picture book in which a boy in a wolf suit orders the wild rumpus to start?', a: 'Maurice Sendak', d: ['Shel Silverstein', 'Ezra Jack Keats', 'Tomie dePaola'] },
 { c: 'Screen Lines', t: 1, q: 'Which character tells a young Peter Parker that with great power comes great responsibility?', a: 'Uncle Ben', d: ['Aunt May', 'Norman Osborn', 'J. Jonah Jameson'] },
 
@@ -1603,7 +1603,7 @@ export const DAYS = [
 { c: 'Books & Authors', t: 2, q: 'Which author sent the Nautilus and its bitter captain twenty thousand leagues under the sea?', a: 'Jules Verne', d: ['H. G. Wells', 'Robert Louis Stevenson', 'Alexandre Dumas'] },
 { c: 'Screen Lines', t: 2, q: 'Which character in Aladdin complains of having phenomenal cosmic powers and an itty-bitty living space?', a: 'Genie', d: ['Aladdin', 'Jafar', 'Iago'] },
 
-{ c: 'Presidents & Politics', t: 3, q: 'Who became the world\'s first woman prime minister when she took office in Ceylon in 1960?', a: 'Sirimavo Bandaranaike', d: ['Indira Gandhi', 'Golda Meir', 'Vijaya Lakshmi Pandit'] },
+{ c: 'Presidents & Politics', t: 3, q: 'Who became the world\'s first woman prime minister when she took office in Ceylon in 1960?', a: 'Sirimavo Bandaranaike', d: ['Benazir Bhutto', 'Golda Meir', 'Vijaya Lakshmi Pandit'] },
 { c: 'History & War', t: 3, q: 'Which Zulu king was on the throne when his regiments wiped out a British column at Isandlwana in 1879?', a: 'Cetshwayo', d: ['Shaka', 'Dingane', 'Mpande'] },
 { c: 'Science, Letters & Ideas', t: 3, q: 'Which English chemist proposed that every element consists of atoms of one characteristic weight?', a: 'John Dalton', d: ['Robert Boyle', 'Joseph Proust', 'Humphry Davy'] },
 { c: 'Books & Authors', t: 3, q: 'Which novelist had a fugitive promise his mother that he would be there wherever there is a fight so hungry people can eat?', a: 'John Steinbeck', d: ['Erskine Caldwell', 'Sinclair Lewis', 'James T. Farrell'] },
@@ -1642,7 +1642,7 @@ export const DAYS = [
 { c: 'Books & Authors', t: 3, q: 'Which character in Twelfth Night reads a forged letter telling him that some have greatness thrust upon them?', a: 'Malvolio', d: ['Sir Toby Belch', 'Orsino', 'Feste'] },
 { c: 'Screen Lines', t: 3, q: 'Which character opens his eyes after a training upload and announces \'I know kung fu\'?', a: 'Neo', d: ['Morpheus', 'Tank', 'Cypher'] },
 
-{ c: 'Presidents & Politics', t: 4, q: 'Which Mississippi organizer told the 1964 Democratic convention credentials committee that she was sick and tired of being sick and tired?', a: 'Fannie Lou Hamer', d: ['Ella Baker', 'Diane Nash', 'Daisy Bates'] },
+{ c: 'Presidents & Politics', t: 4, q: 'Which Mississippi organizer, who testified to the 1964 Democratic convention credentials committee, said she was sick and tired of being sick and tired?', a: 'Fannie Lou Hamer', d: ['Ella Baker', 'Diane Nash', 'Daisy Bates'] },
 { c: 'History & War', t: 4, q: 'Which Jewish commander turned Roman client wrote the eyewitness history of the siege and burning of Jerusalem in AD 70?', a: 'Josephus', d: ['Philo of Alexandria', 'Justus of Tiberias', 'Nicolaus of Damascus'] },
 { c: 'Science, Letters & Ideas', t: 4, q: 'Which designer told a lecture audience to have nothing in their houses that they did not know to be useful or believe to be beautiful?', a: 'William Morris', d: ['Augustus Pugin', 'Charles Rennie Mackintosh', 'Christopher Dresser'] },
 { c: 'Books & Authors', t: 4, q: 'Which novelist wrote a novel narrated by an English butler named Stevens looking back on his years of service?', a: 'Kazuo Ishiguro', d: ['Ian McEwan', 'Julian Barnes', 'Graham Swift'] },
@@ -1651,7 +1651,7 @@ export const DAYS = [
 { c: 'Presidents & Politics', t: 5, q: 'Which organizer of the 1963 March on Washington said every community needs a group of angelic troublemakers?', a: 'Bayard Rustin', d: ['A. Philip Randolph', 'Roy Wilkins', 'Whitney Young'] },
 { c: 'History & War', t: 5, q: 'Which Greek hostage in Rome, present at the destruction of Carthage, explained Roman success by the mixture of monarchy, aristocracy and democracy in its constitution?', a: 'Polybius', d: ['Posidonius', 'Dionysius of Halicarnassus', 'Appian'] },
 { c: 'Science, Letters & Ideas', t: 5, q: 'Which Victorian critic ended an attack on political economy by declaring that there is no wealth but life?', a: 'John Ruskin', d: ['Thomas Carlyle', 'Matthew Arnold', 'Walter Pater'] },
-{ c: 'Books & Authors', t: 5, q: 'Which Hungarian novelist drew on his deportation to Auschwitz as a teenager for a novel about a teenager sent from Budapest to Auschwitz and Buchenwald who cannot explain it when he gets home?', a: 'Imre Kertesz', d: ['Sandor Marai', 'Peter Nadas', 'Magda Szabo'] },
+{ c: 'Books & Authors', t: 5, q: 'Which novelist drew on his own teenage deportation to Auschwitz and Buchenwald for a novel whose young narrator cannot explain the camps when he gets home?', a: 'Imre Kertesz', d: ['Sandor Marai', 'Peter Nadas', 'Magda Szabo'] },
 { c: 'Screen Lines', t: 5, q: 'Which character on The West Wing tells the parable of a man in a hole and a friend who jumps in because he has been down there before and knows the way out?', a: 'Leo McGarry', d: ['Josh Lyman', 'Toby Ziegler', 'Jed Bartlet'] },
 ],
 
@@ -1690,7 +1690,7 @@ export const DAYS = [
 
 // ── Day 51 ──────────────────────────────────────────────────────────────
 [
-{ c: 'Presidents & Politics', t: 1, q: 'Which Georgia peanut farmer and former governor won the 1976 presidential election?', a: 'Jimmy Carter', d: ['Walter Mondale', 'Gerald Ford', 'Hubert Humphrey'] },
+{ c: 'Presidents & Politics', t: 1, q: 'Which Georgia peanut farmer and former governor won the 1976 presidential election?', a: 'Jimmy Carter', d: ['Walter Mondale', 'Ronald Reagan', 'Hubert Humphrey'] },
 { c: 'History & War', t: 1, q: 'Which Spanish soldier seized the Inca ruler Atahualpa at Cajamarca and toppled his empire?', a: 'Francisco Pizarro', d: ['Diego de Almagro', 'Hernando de Soto', 'Pedro de Valdivia'] },
 { c: 'Science, Letters & Ideas', t: 1, q: 'Which Greek philosopher was hired to tutor the young Alexander of Macedon?', a: 'Aristotle', d: ['Plato', 'Isocrates', 'Theophrastus'] },
 { c: 'Books & Authors', t: 1, q: 'Which playwright wrote both \'King Lear\' and \'The Tempest\'?', a: 'William Shakespeare', d: ['Christopher Marlowe', 'Ben Jonson', 'John Webster'] },
@@ -1874,7 +1874,7 @@ export const DAYS = [
 { c: 'Screen Lines', t: 3, q: 'Which character on Arrested Development groans \'I\'ve made a huge mistake\' after every scheme collapses?', a: 'Gob Bluth', d: ['Michael Bluth', 'Buster Bluth', 'Tobias Funke'] },
 
 { c: 'Presidents & Politics', t: 4, q: 'Which prime minister launched a 1993 campaign under the phrase back to basics?', a: 'John Major', d: ['Michael Heseltine', 'Kenneth Clarke', 'Douglas Hurd'] },
-{ c: 'History & War', t: 4, q: 'Which Greek biographer records that Caesar wept before a statue in Spain because he had done nothing at an age when Alexander had conquered the world?', a: 'Plutarch', d: ['Suetonius', 'Appian', 'Cassius Dio'] },
+{ c: 'History & War', t: 4, q: 'Which Greek biographer records that Caesar, reading a history of Alexander while in Spain, wept because he had done nothing at an age when Alexander had conquered so many nations?', a: 'Plutarch', d: ['Suetonius', 'Appian', 'Cassius Dio'] },
 { c: 'Science, Letters & Ideas', t: 4, q: 'Which linguist wrote the sentence colorless green ideas sleep furiously to show that grammar is independent of meaning?', a: 'Noam Chomsky', d: ['Roman Jakobson', 'Leonard Bloomfield', 'Zellig Harris'] },
 { c: 'Books & Authors', t: 4, q: 'Which character in Catch-22 is the mess officer who turns the war into a private trading syndicate?', a: 'Milo Minderbinder', d: ['Colonel Cathcart', 'Major Major', 'Chaplain Tappman'] },
 { c: 'Screen Lines', t: 4, q: 'Which character in My Cousin Vinny is asked by a judge to explain what a yute is?', a: 'Vinny Gambini', d: ['Mona Lisa Vito', 'Stan Rothenstein', 'Bill Gambini'] },
@@ -1882,7 +1882,7 @@ export const DAYS = [
 { c: 'Presidents & Politics', t: 5, q: 'Which president of the European Commission called in a 1979 lecture for breaking the mold of British politics?', a: 'Roy Jenkins', d: ['David Owen', 'Shirley Williams', 'William Rodgers'] },
 { c: 'History & War', t: 5, q: 'Which Roman politician turned historian wrote the surviving monographs on the Catilinarian conspiracy and the war with Jugurtha?', a: 'Sallust', d: ['Velleius Paterculus', 'Quintus Curtius Rufus', 'Cornelius Nepos'] },
 { c: 'Science, Letters & Ideas', t: 5, q: 'Which sociologist analyzed everyday life as a stage performance with a front region and a back region?', a: 'Erving Goffman', d: ['Howard Becker', 'Harold Garfinkel', 'Talcott Parsons'] },
-{ c: 'Books & Authors', t: 5, q: 'Which Albanian novelist wrote of an Italian general returning after twenty years to dig up his war dead?', a: 'Ismail Kadare', d: ['Milorad Pavic', 'Danilo Kis', 'Miroslav Krleza'] },
+{ c: 'Books & Authors', t: 5, q: 'Which Albanian novelist wrote of a foreign general returning after twenty years to dig up his country\'s war dead?', a: 'Ismail Kadare', d: ['Milorad Pavic', 'Danilo Kis', 'Miroslav Krleza'] },
 { c: 'Screen Lines', t: 5, q: 'Which character in Gattaca explains that he beat his brother at swimming because he never saved anything for the swim back?', a: 'Vincent Freeman', d: ['Anton Freeman', 'Jerome Morrow', 'Irene Cassini'] },
 ],
 
@@ -2015,14 +2015,14 @@ export const DAYS = [
 { c: 'History & War', t: 5, q: 'Which US Navy pilot filed the four-word 1942 report \'Sighted sub, sank same\'?', a: 'Donald Mason', d: ['Edward O\'Hare', 'John Waldron', 'Wade McClusky'] },
 { c: 'Science, Letters & Ideas', t: 5, q: 'Which critic argued in a 1978 book that Western scholarship invented an exotic East to help govern it?', a: 'Edward Said', d: ['Frantz Fanon', 'Homi Bhabha', 'Stuart Hall'] },
 { c: 'Books & Authors', t: 5, q: 'Which German novelist followed Franz Biberkopf out of Tegel prison into the crowds of a great square in Berlin?', a: 'Alfred Doblin', d: ['Hans Fallada', 'Erich Kastner', 'Lion Feuchtwanger'] },
-{ c: 'Screen Lines', t: 5, q: 'Which character opens The Prestige by asking the audience \'Are you watching closely?\'', a: 'John Cutter', d: ['Robert Angier', 'Alfred Borden', 'Nikola Tesla'] },
+{ c: 'Screen Lines', t: 5, q: 'Which character opens The Prestige by explaining that every great magic trick consists of three parts or acts?', a: 'John Cutter', d: ['Robert Angier', 'Alfred Borden', 'Nikola Tesla'] },
 ],
 
 // ── Day 61 ──────────────────────────────────────────────────────────────
 [
 { c: 'Presidents & Politics', t: 1, q: 'Which elderly American was sent to Paris during the Revolution and secured the French alliance of 1778?', a: 'Benjamin Franklin', d: ['John Jay', 'Silas Deane', 'Arthur Lee'] },
 { c: 'History & War', t: 1, q: 'Which gladiator led the slave rising that Crassus finally crushed in 71 BC?', a: 'Spartacus', d: ['Crixus', 'Eunus', 'Athenion'] },
-{ c: 'Science, Letters & Ideas', t: 1, q: 'Which Greek philosopher wrote dialogues in which his old teacher does most of the talking?', a: 'Plato', d: ['Xenophon', 'Aristotle', 'Antisthenes'] },
+{ c: 'Science, Letters & Ideas', t: 1, q: 'Which Greek philosopher wrote dialogues in which his old teacher does most of the talking?', a: 'Plato', d: ['Diogenes', 'Aristotle', 'Epicurus'] },
 { c: 'Books & Authors', t: 1, q: 'Which author wrote both \'Matilda\' and \'The BFG\'?', a: 'Roald Dahl', d: ['E. B. White', 'Beverly Cleary', 'Judy Blume'] },
 { c: 'Screen Lines', t: 1, q: 'Which character sings "Do you want to build a snowman?" outside her sister\'s locked bedroom door in Frozen?', a: 'Anna', d: ['Elsa', 'Olaf', 'Kristoff'] },
 
@@ -2039,7 +2039,7 @@ export const DAYS = [
 { c: 'Screen Lines', t: 3, q: 'Which character in Inception tells Arthur not to be afraid to dream a little bigger, darling, then produces a grenade launcher?', a: 'Eames', d: ['Dom Cobb', 'Yusuf', 'Saito'] },
 
 { c: 'Presidents & Politics', t: 4, q: 'Which defense lawyer in the Boston Massacre trial told the jury that facts are stubborn things?', a: 'John Adams', d: ['Josiah Quincy', 'Samuel Adams', 'James Otis'] },
-{ c: 'History & War', t: 4, q: 'Which Roman biographer records the soothsayer who warned Caesar to beware the Ides of March?', a: 'Suetonius', d: ['Plutarch', 'Cassius Dio', 'Velleius Paterculus'] },
+{ c: 'History & War', t: 4, q: 'Which Roman biographer records the soothsayer who warned Caesar to beware the Ides of March?', a: 'Suetonius', d: ['Livy', 'Tacitus', 'Velleius Paterculus'] },
 { c: 'Science, Letters & Ideas', t: 4, q: 'Which thinker sorted writers into those who know one big thing and those who know many, in an essay on Tolstoy?', a: 'Isaiah Berlin', d: ['Lionel Trilling', 'Edmund Wilson', 'Michael Oakeshott'] },
 { c: 'Books & Authors', t: 4, q: 'Which poet wrote a short poem about seven pool players at the Golden Shovel, beginning \'We real cool\'?', a: 'Gwendolyn Brooks', d: ['Lucille Clifton', 'Rita Dove', 'Sonia Sanchez'] },
 { c: 'Screen Lines', t: 4, q: 'Which character in The Wire tells a convenience store guard that you want it to be one way, but it is the other way?', a: 'Marlo Stanfield', d: ['Stringer Bell', 'Avon Barksdale', 'Chris Partlow'] },
@@ -2067,7 +2067,7 @@ export const DAYS = [
 
 { c: 'Presidents & Politics', t: 3, q: 'Which author of the Virginia Declaration of Rights refused to sign the Constitution over the lack of a bill of rights?', a: 'George Mason', d: ['Edmund Randolph', 'Patrick Henry', 'Richard Henry Lee'] },
 { c: 'History & War', t: 3, q: 'Which governor promised in a 1963 inaugural address segregation now, segregation tomorrow, and segregation forever?', a: 'George Wallace', d: ['Orval Faubus', 'Ross Barnett', 'Lester Maddox'] },
-{ c: 'Science, Letters & Ideas', t: 3, q: 'Which economist opened his great book with a pin factory to show what the division of labor can do?', a: 'Adam Smith', d: ['David Ricardo', 'Jean-Baptiste Say', 'Anne Robert Jacques Turgot'] },
+{ c: 'Science, Letters & Ideas', t: 3, q: 'Which economist opened his great book with a pin factory to show how splitting work into small steps multiplies output?', a: 'Adam Smith', d: ['David Ricardo', 'Jean-Baptiste Say', 'Anne Robert Jacques Turgot'] },
 { c: 'Books & Authors', t: 3, q: 'Which playwright ended a play with Nora walking out of her marriage and slamming the front door?', a: 'Henrik Ibsen', d: ['August Strindberg', 'Anton Chekhov', 'Maxim Gorky'] },
 { c: 'Screen Lines', t: 3, q: 'Which character in Whiplash keeps halting the band with the complaint "Not quite my tempo"?', a: 'Terence Fletcher', d: ['Andrew Neiman', 'Ryan Connolly', 'Jim Neiman'] },
 
@@ -2077,7 +2077,7 @@ export const DAYS = [
 { c: 'Books & Authors', t: 4, q: 'Which poet compared the pen resting between his finger and his thumb to the spade his father dug with?', a: 'Seamus Heaney', d: ['Michael Longley', 'Derek Mahon', 'Paul Muldoon'] },
 { c: 'Screen Lines', t: 4, q: 'Which character on Breaking Bad tells Walter White there is no such thing as a half measure, and that he should have gone all the way?', a: 'Mike Ehrmantraut', d: ['Gus Fring', 'Saul Goodman', 'Hank Schrader'] },
 
-{ c: 'Presidents & Politics', t: 5, q: 'Which Connecticut delegate proposed the compromise that gave each state equal votes in the Senate?', a: 'Roger Sherman', d: ['Oliver Ellsworth', 'William Paterson', 'Luther Martin'] },
+{ c: 'Presidents & Politics', t: 5, q: 'Which Connecticut delegate proposed the compromise that gave each state equal votes in the Senate?', a: 'Roger Sherman', d: ['Rufus King', 'William Paterson', 'Luther Martin'] },
 { c: 'History & War', t: 5, q: 'Which colonel died leading the 54th Massachusetts up the parapet of Fort Wagner in 1863?', a: 'Robert Gould Shaw', d: ['Thomas Wentworth Higginson', 'Edward Hallowell', 'James Montgomery'] },
 { c: 'Science, Letters & Ideas', t: 5, q: 'Which economist asked why firms exist at all, and answered with the cost of making a bargain?', a: 'Ronald Coase', d: ['Oliver Williamson', 'Douglass North', 'Armen Alchian'] },
 { c: 'Books & Authors', t: 5, q: 'Which Icelandic novelist won the Nobel for a saga of a stubborn sheep farmer determined to owe nothing to anyone?', a: 'Halldor Laxness', d: ['Sigrid Undset', 'Par Lagerkvist', 'Gunnar Gunnarsson'] },
@@ -2121,11 +2121,11 @@ export const DAYS = [
 [
 { c: 'Presidents & Politics', t: 1, q: 'Which mayor of New York City led the response to the attacks on the World Trade Center in September 2001?', a: 'Rudy Giuliani', d: ['Michael Bloomberg', 'David Dinkins', 'Ed Koch'] },
 { c: 'History & War', t: 1, q: 'Which king of Wessex is said in legend to have burned the cakes, and in fact beat the Danes at Edington?', a: 'Alfred the Great', d: ['Athelstan', 'Edward the Elder', 'Edmund Ironside'] },
-{ c: 'Science, Letters & Ideas', t: 1, q: 'Which astronomer first saw four moons circling Jupiter through a telescope?', a: 'Galileo Galilei', d: ['Christiaan Huygens', 'Giovanni Cassini', 'Simon Marius'] },
+{ c: 'Science, Letters & Ideas', t: 1, q: 'Which astronomer first saw four moons circling Jupiter through a telescope?', a: 'Galileo Galilei', d: ['Christiaan Huygens', 'Giovanni Cassini', 'Tycho Brahe'] },
 { c: 'Books & Authors', t: 1, q: 'Which author wrote the mystery in which a detective solves a killing aboard a snowbound train out of Istanbul?', a: 'Agatha Christie', d: ['Dorothy L. Sayers', 'Ngaio Marsh', 'Margery Allingham'] },
 { c: 'Screen Lines', t: 1, q: 'Which character brings a dance party to a halt in Greta Gerwig\'s 2023 blockbuster by asking whether the others ever think about dying?', a: 'Stereotypical Barbie', d: ['Weird Barbie', 'President Barbie', 'Ken'] },
 
-{ c: 'Presidents & Politics', t: 2, q: 'Which Russian ruler abdicated in March 1917 after strikes and mutinies in the capital?', a: 'Nicholas II', d: ['Alexander III', 'Grand Duke Michael', 'Nicholas I'] },
+{ c: 'Presidents & Politics', t: 2, q: 'Which Russian ruler abdicated in March 1917 after strikes and mutinies in the capital?', a: 'Nicholas II', d: ['Alexander III', 'Alexander II', 'Nicholas I'] },
 { c: 'History & War', t: 2, q: 'Which warrior king brought all the Hawaiian islands under a single rule by 1810?', a: 'Kamehameha I', d: ['Kalaniopuu', 'Kaumualii', 'Kalakaua'] },
 { c: 'Science, Letters & Ideas', t: 2, q: 'Which German mathematician published the calculus in his own notation and was accused by Newton supporters of stealing it?', a: 'Gottfried Leibniz', d: ['Jacob Bernoulli', 'Pierre de Fermat', 'John Wallis'] },
 { c: 'Books & Authors', t: 2, q: 'Which author wrote the novel narrated by an expelled schoolboy named Holden Caulfield?', a: 'J. D. Salinger', d: ['John Knowles', 'Bernard Malamud', 'John Cheever'] },
@@ -2147,7 +2147,7 @@ export const DAYS = [
 { c: 'History & War', t: 5, q: 'The retort \'The Guard dies, it does not surrender\' is credited to which French general at Waterloo, who always denied saying it?', a: 'Pierre Cambronne', d: ['Michel Ney', 'Emmanuel de Grouchy', 'Antoine Drouot'] },
 { c: 'Science, Letters & Ideas', t: 5, q: 'Which astronomer coined the term Big Bang on the radio while arguing against the theory?', a: 'Fred Hoyle', d: ['Arthur Eddington', 'George Gamow', 'Hermann Bondi'] },
 { c: 'Books & Authors', t: 5, q: 'Which Sudanese novelist wrote of a village on the Nile and a man returning from years of study in London?', a: 'Tayeb Salih', d: ['Abdulrazak Gurnah', 'Nuruddin Farah', 'Yusuf Idris'] },
-{ c: 'Screen Lines', t: 5, q: 'Which character in Six Feet Under says at his father\'s graveside that you cannot take a picture of this, it is already gone?', a: 'Nate Fisher', d: ['David Fisher', 'Federico Diaz', 'Nathaniel Fisher Sr.'] },
+{ c: 'Screen Lines', t: 5, q: 'Which character in Six Feet Under whispers to his sister, as she takes a farewell photo, that you cannot take a picture of this, it is already gone?', a: 'Nate Fisher', d: ['David Fisher', 'Federico Diaz', 'Nathaniel Fisher Sr.'] },
 ],
 
 // ── Day 65 ──────────────────────────────────────────────────────────────
@@ -2360,7 +2360,7 @@ export const DAYS = [
 { c: 'History & War', t: 2, q: 'Which prime minister came home from the Congress of Berlin in 1878 announcing peace with honor?', a: 'Benjamin Disraeli', d: ['William Gladstone', 'Lord Salisbury', 'Lord Palmerston'] },
 { c: 'Science, Letters & Ideas', t: 2, q: 'Which teacher, asked for a single word to live by, offered reciprocity: do not do to others what you do not want done to you?', a: 'Confucius', d: ['Mencius', 'Xunzi', 'Mozi'] },
 { c: 'Books & Authors', t: 2, q: 'Which author wrote both \'East of Eden\' and \'Cannery Row\'?', a: 'John Steinbeck', d: ['William Saroyan', 'Sinclair Lewis', 'Erskine Caldwell'] },
-{ c: 'Screen Lines', t: 2, q: 'Which character says goodbye to Buzz Lightyear with the words "So long, partner" at the end of Toy Story 4?', a: 'Woody', d: ['Bo Peep', 'Forky', 'Jessie'] },
+{ c: 'Screen Lines', t: 2, q: 'Which character watches Andy drive off to college and says "So long, partner" at the end of Toy Story 3?', a: 'Woody', d: ['Hamm', 'Buzz Lightyear', 'Jessie'] },
 
 { c: 'Presidents & Politics', t: 3, q: 'Which dismissed prime minister told a Canberra crowd in 1975 that nothing would save the governor-general?', a: 'Gough Whitlam', d: ['Malcolm Fraser', 'Bob Hawke', 'Billy Snedden'] },
 { c: 'History & War', t: 3, q: 'Which Ethiopian emperor destroyed an invading Italian army at Adwa in 1896?', a: 'Menelik II', d: ['Yohannes IV', 'Tewodros II', 'Ras Alula'] },
@@ -2405,11 +2405,11 @@ export const DAYS = [
 { c: 'History & War', t: 4, q: 'Which Mexican revolutionary raided Columbus, New Mexico in 1916 and drew a US punitive expedition after him?', a: 'Pancho Villa', d: ['Emiliano Zapata', 'Venustiano Carranza', 'Alvaro Obregon'] },
 { c: 'Science, Letters & Ideas', t: 4, q: 'Which physicist ruled that no two electrons in an atom may share the same set of quantum numbers?', a: 'Wolfgang Pauli', d: ['Arnold Sommerfeld', 'Max Born', 'Pascual Jordan'] },
 { c: 'Books & Authors', t: 4, q: 'Which French poet wrote a season in hell before he was twenty and then abandoned poetry for trading in Africa?', a: 'Arthur Rimbaud', d: ['Tristan Corbiere', 'Jules Laforgue', 'Gerard de Nerval'] },
-{ c: 'Screen Lines', t: 4, q: 'Which character in The Wire keeps insisting to McNulty that all the pieces matter?', a: 'Lester Freamon', d: ['Cedric Daniels', 'Bunk Moreland', 'Roland Pryzbylewski'] },
+{ c: 'Screen Lines', t: 4, q: 'Which character in The Wire tells a fellow detective working the wiretap that all the pieces matter?', a: 'Lester Freamon', d: ['Cedric Daniels', 'Bunk Moreland', 'Roland Pryzbylewski'] },
 
 { c: 'Presidents & Politics', t: 5, q: 'Which South African prime minister helped draft the covenant of the League of Nations and the preamble of the United Nations charter?', a: 'Jan Smuts', d: ['Louis Botha', 'J. B. M. Hertzog', 'D. F. Malan'] },
 { c: 'History & War', t: 5, q: 'Which Habsburg archduke, put on a New World throne by French bayonets and shot at Queretaro in 1867, used his last breath to cheer that country and its independence?', a: 'Maximilian I of Mexico', d: ['Miguel Miramon', 'Tomas Mejia', 'Agustin de Iturbide'] },
-{ c: 'Science, Letters & Ideas', t: 5, q: 'Which astrophysicist calculated the maximum mass a white dwarf can have before it collapses?', a: 'Subrahmanyan Chandrasekhar', d: ['Arthur Eddington', 'Lev Landau', 'Fritz Zwicky'] },
+{ c: 'Science, Letters & Ideas', t: 5, q: 'Which astrophysicist calculated the maximum mass a white dwarf can have before it collapses?', a: 'Subrahmanyan Chandrasekhar', d: ['Arthur Eddington', 'Hans Bethe', 'Fritz Zwicky'] },
 { c: 'Books & Authors', t: 5, q: 'Which novelist won the Nobel for a chronicle of four centuries around a bridge on the Drina?', a: 'Ivo Andric', d: ['Milos Crnjanski', 'Mesa Selimovic', 'Miroslav Krleza'] },
 { c: 'Screen Lines', t: 5, q: 'Which character on Mad Men introduces herself to the copywriters in the office and announces that she wants to smoke some marijuana?', a: 'Peggy Olson', d: ['Joan Holloway', 'Betty Draper', 'Megan Calvet'] },
 ],

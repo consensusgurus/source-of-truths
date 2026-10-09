@@ -224,7 +224,7 @@ export const UNIQUE = [
   { k: 'rainforest', c: 'animals', q: 'Everyone spots one animal in the rainforest. The RAREST pick wins.', o: ['Monkey', 'Parrot', 'Snake', 'Frog', 'Jaguar', 'Sloth', 'Toucan', 'Tapir'], s: 'steep' },
   { k: 'horse-color', c: 'animals', q: 'Everyone is given one horse. The RAREST color wins.', o: ['Brown', 'Black', 'White', 'Gray', 'Palomino', 'Dappled', 'Roan', 'Piebald'], s: 'steep' },
   { k: 'cat-breed', c: 'animals', q: 'Everyone chooses one cat. The RAREST pick wins.', o: ['Tabby', 'Black cat', 'Ginger', 'Siamese', 'Persian', 'Maine Coon', 'Bengal', 'Sphynx'], s: 'flat' },
-  { k: 'tank-fish', c: 'water', q: 'Everyone adds one fish to the tank. The RAREST pick wins.', o: ['Goldfish', 'Guppy', 'Angelfish', 'Neon tetra', 'Catfish', 'Betta', 'Loach', 'Pufferfish'], s: 'steep' },
+  { k: 'tank-fish', c: 'water', q: 'Everyone adds one fish to the tank. The RAREST pick wins.', o: ['Goldfish', 'Guppy', 'Angelfish', 'Molly', 'Catfish', 'Betta', 'Loach', 'Pufferfish'], s: 'steep' },
   { k: 'butterfly', c: 'animals', q: 'Everyone follows one butterfly. The RAREST pick wins.', o: ['Monarch', 'Cabbage white', 'Swallowtail', 'Red admiral', 'Blue morpho', 'Peacock', 'Fritillary', 'Hairstreak'], s: 'steep' },
   { k: 'garden-tool', c: 'tools', q: 'Everyone grabs one garden tool. The RAREST pick wins.', o: ['Trowel', 'Spade', 'Rake', 'Watering can', 'Shears', 'Fork', 'Hoe', 'Dibber'], s: 'flat' },
   { k: 'houseplant', c: 'plants', q: 'Everyone takes home one houseplant. The RAREST pick wins.', o: ['Spider plant', 'Cactus', 'Fern', 'Orchid', 'Rubber plant', 'Bonsai', 'Venus flytrap', 'Air plant'], s: 'flat' },

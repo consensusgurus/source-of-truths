@@ -66,7 +66,7 @@ export const LANE_DAYS = [
   // day 9
   [
     { c: 'NBA', t: 1, q: 'The Denver Nuggets name refers to what kind of find from Colorado mining history?', a: 'Gold', d: ['Silver', 'Coal', 'Copper'] },
-    { c: 'NBA', t: 2, q: 'The Boston Celtics nickname honors the heritage of which immigrant community in the city?', a: 'The Irish', d: ['The Italians', 'The Scots', 'The Portuguese'] },
+    { c: 'NBA', t: 2, q: 'The Celtics nickname honors the heritage of which immigrant community in their home city?', a: 'The Irish', d: ['The Italians', 'The Scots', 'The Portuguese'] },
     { c: 'NBA', t: 3, q: 'The Lakers name comes from the many lakes of which state?', a: 'Minnesota', d: ['Wisconsin', 'Michigan', 'Ohio'] },
     { c: 'NBA', t: 4, q: 'The Toronto Raptors took their name from the popularity of which 1993 film?', a: 'Jurassic Park', d: ['The Lost World', 'Land of the Lost', 'Godzilla'] },
     { c: 'NBA', t: 5, q: 'The Pistons were named for the auto parts company owned by which founding owner?', a: 'Fred Zollner', d: ['Walter Brown', 'Ben Kerner', 'Ned Irish'] },
@@ -123,7 +123,7 @@ export const LANE_DAYS = [
   [
     { c: 'NBA', t: 1, q: 'Which country did Yao Ming represent in international competition?', a: 'China', d: ['Japan', 'South Korea', 'Thailand'] },
     { c: 'NBA', t: 2, q: 'Which body governs international basketball and runs the Basketball World Cup?', a: 'FIBA', d: ['The IOC', 'UEFA', 'The IAAF'] },
-    { c: 'NBA', t: 3, q: 'Which competition is regarded as the strongest club league in Europe?', a: 'The EuroLeague', d: ['The Adriatic League', 'The Basketball Champions League', 'The British Basketball League'] },
+    { c: 'NBA', t: 3, q: 'Which competition is regarded as the strongest club basketball league in Europe?', a: 'The EuroLeague', d: ['The Adriatic League', 'The Basketball Champions League', 'The British Basketball League'] },
     { c: 'NBA', t: 4, q: 'Which Argentine guard won championships in San Antonio and an Olympic gold medal in 2004?', a: 'Manu Ginobili', d: ['Andres Nocioni', 'Fabricio Oberto', 'Luis Scola'] },
     { c: 'NBA', t: 5, q: 'Which nation won the 2002 World Championship played in Indianapolis?', a: 'Yugoslavia', d: ['Argentina', 'Spain', 'Lithuania'] },
   ],
@@ -193,8 +193,8 @@ export const LANE_DAYS = [
   ],
   // day 25
   [
-    { c: 'NBA', t: 1, q: 'Basketball is contested every four years at which multi-sport gathering held in July and August?', a: 'The Summer Olympics', d: ['The Winter Olympics', 'The Commonwealth Games', 'The Pan American Games'] },
-    { c: 'NBA', t: 2, q: 'The 1992 United States Olympic basketball squad is universally known by what name?', a: 'The Dream Team', d: ['The Fab Five', 'The Golden Generation', 'The Redeem Squad'] },
+    { c: 'NBA', t: 1, q: 'Basketball has been played every four years since 1936 at which multi-sport gathering?', a: 'The Summer Olympics', d: ['The Winter Olympics', 'The Commonwealth Games', 'The Pan American Games'] },
+    { c: 'NBA', t: 2, q: 'The United States Olympic basketball squad of Jordan, Magic and Bird is universally known by what name?', a: 'The Dream Team', d: ['The Fab Five', 'The Golden Generation', 'The Redeem Squad'] },
     { c: 'NBA', t: 3, q: 'In which year did the Olympics first allow NBA professionals to take part?', a: '1992', d: ['1988', '1996', '1984'] },
     { c: 'NBA', t: 4, q: 'Which country took the Olympic basketball bronze medal in 1992, its first as an independent nation?', a: 'Lithuania', d: ['Croatia', 'Latvia', 'Estonia'] },
     { c: 'NBA', t: 5, q: 'Which player did Portland draft in 1986 but not see on its floor until 1995?', a: 'Arvydas Sabonis', d: ['Vlade Divac', 'Zarko Paspalj', 'Sarunas Marciulionis'] },
@@ -204,7 +204,7 @@ export const LANE_DAYS = [
     { c: 'NBA', t: 1, q: 'In which decade was the league that grew into the NBA founded?', a: 'The 1940s', d: ['The 1920s', 'The 1930s', 'The 1950s'] },
     { c: 'NBA', t: 2, q: 'Which club has played in the same city since the 1946 founding and has never relocated?', a: 'The Boston Celtics', d: ['The Los Angeles Lakers', 'The Detroit Pistons', 'The Sacramento Kings'] },
     { c: 'NBA', t: 3, q: 'How many clubs made up the NBA in the 1954 to 1955 season, the smallest field in its history?', a: 'Eight', d: ['Six', 'Ten', 'Twelve'] },
-    { c: 'NBA', t: 4, q: 'Which club won the very first BAA game, played in Toronto in November 1946?', a: 'The New York Knickerbockers', d: ['The Toronto Huskies', 'The Providence Steamrollers', 'The Chicago Stags'] },
+    { c: 'NBA', t: 4, q: 'Which club won the very first BAA game, played in Toronto?', a: 'The New York Knickerbockers', d: ['The Toronto Huskies', 'The Providence Steamrollers', 'The Chicago Stags'] },
     { c: 'NBA', t: 5, q: 'Red Auerbach coached the Capitols of which city before joining the Celtics?', a: 'Washington', d: ['Baltimore', 'Chicago', 'St. Louis'] },
   ],
   // day 27

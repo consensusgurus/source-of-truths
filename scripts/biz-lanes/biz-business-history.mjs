@@ -258,7 +258,7 @@ export const LANE_DAYS = [
   // day 33
   [
     { c: 'Business History', t: 1, q: 'What is the general name for the building where a business stores goods between production and sale?', a: 'A warehouse', d: ['A workshop', 'A showroom', 'A depot office'] },
-    { c: 'Business History', t: 2, q: 'Which American\'s dot and dash code, demonstrated on a line to Baltimore in 1844, turned electric signaling into a business?', a: 'Samuel Morse', d: ['Alexander Graham Bell', 'Thomas Edison', 'Cyrus Field'] },
+    { c: 'Business History', t: 2, q: 'Which inventor\'s 1876 telephone patent, filed the same day as a rival\'s caveat, became the foundation of a communications empire?', a: 'Alexander Graham Bell', d: ['Elisha Gray', 'Thomas Edison', 'Cyrus Field'] },
     { c: 'Business History', t: 3, q: 'Which office machine, sold from 1959, made dry copies on ordinary paper and killed off carbon paper and stencils?', a: 'The photocopier', d: ['The mimeograph', 'The dictating machine', 'The addressograph'] },
     { c: 'Business History', t: 4, q: 'Which Japanese port was the single legal window for foreign trade during the two centuries of Tokugawa seclusion?', a: 'Nagasaki', d: ['Osaka', 'Hakodate', 'Kobe'] },
     { c: 'Business History', t: 5, q: 'Which 1980 American law freed railroads to set their own rates and abandon unprofitable branch lines?', a: 'The Staggers Act', d: ['The Motor Carrier Act', 'The Elkins Act', 'The Hepburn Act'] },

@@ -4724,7 +4724,7 @@ ORIGAMI|Paper folding art
 ORIGINS|Where it started
 OUTCOME|How it turned out
 OUTFITS|Whole ensembles
-OUTLETS|Where you plug in
+OUTLETS|Wall sockets
 OUTLINE|Sketch the shape
 OUTLIVE|Survive longer than
 OUTRAGE|Public fury

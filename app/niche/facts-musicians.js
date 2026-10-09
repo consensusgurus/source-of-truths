@@ -21,7 +21,10 @@
 //         Cat, Lizzo and Bad Bunny are in), because a false accept costs a
 //         shrug and a false reject costs a guess.
 //   ctry  a country act, on the same generous reading (Taylor Swift, who
-//         began in country, is in; southern rock is not).
+//         began in country, is in, and so are Beyonce and Post Malone on
+//         Cowboy Carter and F-1 Trillion; southern rock is not).
+//   num   a number in the stage name the title does not show (2Pac, the
+//         One in OneRepublic).
 //   a     typed aliases, lowercase.
 export const MUSICIANS = [
   // ── legacy rock & pop ──
@@ -43,7 +46,7 @@ export const MUSICIANS = [
   { t: 'Simon & Garfunkel', a: ['simon and garfunkel'], band: 1, us: 1, aoty: 1, hall: 1 },
   { t: 'Paul Simon', us: 1, aoty: 1, hall: 1 },
   { t: 'Paul McCartney', uk: 1, hall: 1 },
-  { t: 'John Lennon', uk: 1, hall: 1 },
+  { t: 'John Lennon', uk: 1, aoty: 1, hall: 1 },
   { t: 'Frank Sinatra', us: 1, aoty: 1 },
   { t: 'Aretha Franklin', us: 1, hall: 1, fem: 1 },
   { t: 'Ray Charles', us: 1, aoty: 1, hall: 1 },
@@ -131,7 +134,7 @@ export const MUSICIANS = [
   { t: 'Shania Twain', fem: 1, ctry: 1 },
   { t: 'Garth Brooks', us: 1, ctry: 1 },
   { t: 'Lauryn Hill', us: 1, aoty: 1, fem: 1, rap: 1 },
-  { t: 'Tupac Shakur', a: ['tupac', '2pac'], us: 1, hall: 1, rap: 1 },
+  { t: 'Tupac Shakur', a: ['tupac', '2pac'], us: 1, hall: 1, rap: 1, num: 1 },
   { t: 'The Notorious B.I.G.', a: ['notorious big', 'biggie', 'biggie smalls'], us: 1, hall: 1, rap: 1 },
   { t: 'Snoop Dogg', us: 1, rap: 1 },
   { t: 'Jay-Z', a: ['jay z'], us: 1, hall: 1, rap: 1 },
@@ -155,7 +158,7 @@ export const MUSICIANS = [
   { t: 'The Killers', band: 1, us: 1 },
   { t: 'Imagine Dragons', band: 1, us: 1 },
   { t: 'Twenty One Pilots', a: ['twenty one pilots', '21 pilots'], band: 1, us: 1 },
-  { t: 'OneRepublic', a: ['one republic'], band: 1, us: 1 },
+  { t: 'OneRepublic', a: ['one republic'], band: 1, us: 1, num: 1 },
   { t: 'Nickelback', band: 1 },
   { t: 'Norah Jones', us: 1, aoty: 1, fem: 1 },
   { t: 'Amy Winehouse', uk: 1, fem: 1 },
@@ -165,7 +168,7 @@ export const MUSICIANS = [
   { t: 'One Direction', band: 1, uk: 1 },
   { t: 'Harry Styles', uk: 1, aoty: 1 },
   { t: 'Dua Lipa', uk: 1, fem: 1 },
-  { t: 'Beyoncé', a: ['beyonce'], us: 1, aoty: 1, fem: 1 },
+  { t: 'Beyoncé', a: ['beyonce'], us: 1, aoty: 1, fem: 1, ctry: 1 },
   { t: 'Rihanna', fem: 1 },
   { t: 'Lady Gaga', us: 1, fem: 1 },
   { t: 'Katy Perry', us: 1, fem: 1 },
@@ -191,7 +194,7 @@ export const MUSICIANS = [
   { t: 'Justin Timberlake', us: 1 },
   { t: 'Usher', us: 1 },
   { t: 'Bruno Mars', us: 1, aoty: 1 },
-  { t: 'Post Malone', us: 1, rap: 1 },
+  { t: 'Post Malone', us: 1, rap: 1, ctry: 1 },
   { t: 'Kendrick Lamar', us: 1, rap: 1 },
   { t: 'Travis Scott', us: 1, rap: 1 },
   { t: 'Bad Bunny', us: 1, aoty: 1, rap: 1 },
@@ -222,10 +225,10 @@ export const MUSICIANS = [
 // are in. National-anthem performances are NOT halftime and do not count.
 export const HALFTIME = new Set(['Michael Jackson', 'Diana Ross', 'ZZ Top', 'The Temptations', 'Stevie Wonder', 'Phil Collins', 'Christina Aguilera', 'Aerosmith', 'NSYNC', 'Britney Spears', 'U2', 'Shania Twain', 'No Doubt', 'Sting', 'Janet Jackson', 'Justin Timberlake', 'Paul McCartney', 'The Rolling Stones', 'Prince', 'Bruce Springsteen', 'The Who', 'Usher', 'Madonna', 'Nicki Minaj', 'Beyoncé', "Destiny's Child", 'Bruno Mars', 'Red Hot Chili Peppers', 'Katy Perry', 'Missy Elliott', 'Coldplay', 'Lady Gaga', 'Maroon 5', 'Travis Scott', 'Shakira', 'Bad Bunny', 'The Weeknd', 'Dr. Dre', 'Snoop Dogg', 'Eminem', 'Kendrick Lamar', '50 Cent', 'Rihanna', 'SZA', 'Alicia Keys']);
 
-// Grammy Record of the Year winners, through the 2025 ceremony. Generous: a
+// Grammy Record of the Year winners, through the 2026 ceremony. Generous: a
 // credited featured artist counts, which is how Bruno Mars is in for Uptown
-// Funk and Ray Charles for a duet.
-export const ROTY = new Set(['Frank Sinatra', 'Simon & Garfunkel', 'Carole King', 'The Eagles', 'Billy Joel', 'Toto', 'Michael Jackson', 'Tina Turner', 'Paul Simon', 'Phil Collins', 'Eric Clapton', 'Whitney Houston', 'Celine Dion', 'Santana', 'U2', 'Norah Jones', 'Coldplay', 'Ray Charles', 'Green Day', 'Amy Winehouse', 'Adele', 'Daft Punk', 'Sam Smith', 'Bruno Mars', 'Billie Eilish', 'Lizzo', 'Miley Cyrus', 'Kendrick Lamar']);
+// Funk, Ray Charles for a duet and SZA for luther (2026).
+export const ROTY = new Set(['Frank Sinatra', 'Simon & Garfunkel', 'Carole King', 'The Eagles', 'Billy Joel', 'Toto', 'Michael Jackson', 'Tina Turner', 'Paul Simon', 'Phil Collins', 'Eric Clapton', 'Whitney Houston', 'Celine Dion', 'Santana', 'U2', 'Norah Jones', 'Coldplay', 'Ray Charles', 'Green Day', 'Amy Winehouse', 'Adele', 'Daft Punk', 'Sam Smith', 'Bruno Mars', 'Billie Eilish', 'Lizzo', 'Miley Cyrus', 'Kendrick Lamar', 'SZA']);
 
 // Grammy Best New Artist winners, through the 2025 ceremony.
 export const BEST_NEW = new Set(['The Beatles', 'Cyndi Lauper', 'Mariah Carey', 'Lauryn Hill', 'Christina Aguilera', 'Alicia Keys', 'Norah Jones', 'Maroon 5', 'John Legend', 'Carrie Underwood', 'Amy Winehouse', 'Adele', 'Sam Smith', 'Dua Lipa', 'Billie Eilish', 'Olivia Rodrigo', 'Chappell Roan']);

@@ -117,7 +117,7 @@ export const LANE_DAYS = [
     { c: 'Countries & Peoples', t: 2, q: 'Islam is the majority religion of which Southeast Asian country?', a: 'Indonesia', d: ['The Philippines', 'Vietnam', 'Thailand'] },
     { c: 'Countries & Peoples', t: 3, q: 'In which year was the Union of Soviet Socialist Republics formally dissolved?', a: '1991', d: ['1989', '1990', '1993'] },
     { c: 'Countries & Peoples', t: 4, q: 'Which North African country gave the Amazigh tongue official status in its 2011 constitution?', a: 'Morocco', d: ['Algeria', 'Tunisia', 'Libya'] },
-    { c: 'Countries & Peoples', t: 5, q: 'The Hmong live in the highlands of southern China, Vietnam, Laos and which fourth country?', a: 'Thailand', d: ['Cambodia', 'Myanmar', 'Nepal'] },
+    { c: 'Countries & Peoples', t: 5, q: 'The Hmong live in the highlands of southern China, Vietnam, Laos and which fourth country?', a: 'Thailand', d: ['Cambodia', 'Malaysia', 'Nepal'] },
   ],
   // day 16
   [
@@ -145,7 +145,7 @@ export const LANE_DAYS = [
   ],
   // day 19
   [
-    { c: 'Countries & Peoples', t: 1, q: 'Which currency is used in Switzerland?', a: 'The Swiss franc', d: ['The euro', 'The schilling', 'The krone'] },
+    { c: 'Countries & Peoples', t: 1, q: 'Which currency is used in South Africa?', a: 'The rand', d: ['The naira', 'The shilling', 'The cedi'] },
     { c: 'Countries & Peoples', t: 2, q: 'Which people herd reindeer across the far north of Sweden, Finland and Norway?', a: 'The Sami', d: ['The Nenets', 'The Inuit', 'The Evenks'] },
     { c: 'Countries & Peoples', t: 3, q: 'Yiddish, long used by Jewish communities across eastern Europe, is written in which alphabet?', a: 'The Hebrew alphabet', d: ['The Latin alphabet', 'The Cyrillic alphabet', 'The Greek alphabet'] },
     { c: 'Countries & Peoples', t: 4, q: 'In which year was the Kingdom of Italy proclaimed, uniting most of the peninsula under one crown?', a: '1861', d: ['1815', '1848', '1871'] },
@@ -164,7 +164,7 @@ export const LANE_DAYS = [
     { c: 'Countries & Peoples', t: 1, q: 'Baguettes and camembert cheese are traditional foods of which country?', a: 'France', d: ['Italy', 'Belgium', 'Switzerland'] },
     { c: 'Countries & Peoples', t: 2, q: 'Tet is the name given to the lunar new year holiday in which country?', a: 'Vietnam', d: ['Cambodia', 'Malaysia', 'Mongolia'] },
     { c: 'Countries & Peoples', t: 3, q: 'Turkish, Kazakh and Uzbek all belong to which language family?', a: 'Turkic', d: ['Uralic', 'Indo-Iranian', 'Mongolic'] },
-    { c: 'Countries & Peoples', t: 4, q: 'The union that created Tanzania in 1964 joined Zanzibar with which mainland territory?', a: 'Tanganyika', d: ['Nyasaland', 'Pemba', 'Buganda'] },
+    { c: 'Countries & Peoples', t: 4, q: 'The gaucho horseman culture of the pampas is shared by Argentina and which smaller neighbor?', a: 'Uruguay', d: ['Paraguay', 'Chile', 'Bolivia'] },
     { c: 'Countries & Peoples', t: 5, q: 'The Baganda, Acholi and Karamojong are among the peoples of which country?', a: 'Uganda', d: ['Kenya', 'South Sudan', 'Rwanda'] },
   ],
   // day 22
@@ -306,7 +306,7 @@ export const LANE_DAYS = [
   // day 39
   [
     { c: 'Countries & Peoples', t: 1, q: 'Pierogi and bigos are traditional dishes of which country?', a: 'Poland', d: ['Czechia', 'Hungary', 'Ukraine'] },
-    { c: 'Countries & Peoples', t: 2, q: 'In which country do most people follow Shinto alongside Buddhism?', a: 'Japan', d: ['China', 'Vietnam', 'Mongolia'] },
+    { c: 'Countries & Peoples', t: 2, q: 'Which country\'s imperial line is traditionally said to descend from the sun goddess Amaterasu?', a: 'Japan', d: ['China', 'Vietnam', 'Mongolia'] },
     { c: 'Countries & Peoples', t: 3, q: 'Slovak, Slovene and Croatian all belong to which branch of the Indo-European family?', a: 'Slavic', d: ['Romance', 'Germanic', 'Baltic'] },
     { c: 'Countries & Peoples', t: 4, q: 'Which African country counts the Bamileke and Fang among its peoples and uses both English and French officially?', a: 'Cameroon', d: ['Gabon', 'Chad', 'Central African Republic'] },
     { c: 'Countries & Peoples', t: 5, q: 'The Szekely, a Hungarian speaking community, live in the Transylvania region of which country?', a: 'Romania', d: ['Slovakia', 'Serbia', 'Ukraine'] },
@@ -332,7 +332,7 @@ export const LANE_DAYS = [
     { c: 'Countries & Peoples', t: 1, q: 'Which long wooden horn is played by herders in the Alps?', a: 'The alphorn', d: ['The bagpipes', 'The panpipes', 'The didgeridoo'] },
     { c: 'Countries & Peoples', t: 2, q: 'Which winter festival of lights is celebrated by Jewish communities?', a: 'Hanukkah', d: ['Purim', 'Passover', 'Sukkot'] },
     { c: 'Countries & Peoples', t: 3, q: 'Which country broke away from the Netherlands in 1830 to become a separate kingdom?', a: 'Belgium', d: ['Luxembourg', 'Denmark', 'Switzerland'] },
-    { c: 'Countries & Peoples', t: 4, q: 'The monk Mesrop Mashtots is credited with creating the alphabet for which language?', a: 'Armenian', d: ['Georgian', 'Coptic', 'Church Slavonic'] },
+    { c: 'Countries & Peoples', t: 4, q: 'The monk Mesrop Mashtots is credited with creating the alphabet for which language?', a: 'Armenian', d: ['Gothic', 'Coptic', 'Church Slavonic'] },
     { c: 'Countries & Peoples', t: 5, q: 'The Nubian people live along the Nile in southern Egypt and which neighboring country?', a: 'Sudan', d: ['Ethiopia', 'Chad', 'Libya'] },
   ],
   // day 43
@@ -353,7 +353,7 @@ export const LANE_DAYS = [
   ],
   // day 45
   [
-    { c: 'Countries & Peoples', t: 1, q: 'Which drink is brewed by pouring hot water over dried leaves?', a: 'Tea', d: ['Coffee', 'Cocoa', 'Cider'] },
+    { c: 'Countries & Peoples', t: 1, q: 'Which drink is made by fermenting the juice of crushed apples?', a: 'Cider', d: ['Coffee', 'Cocoa', 'Lemonade'] },
     { c: 'Countries & Peoples', t: 2, q: 'Which of these countries was part of the Soviet Union until 1991?', a: 'Latvia', d: ['Poland', 'Romania', 'Bulgaria'] },
     { c: 'Countries & Peoples', t: 3, q: 'The Maronite Church is the largest Christian community in which country?', a: 'Lebanon', d: ['Syria', 'Jordan', 'Iraq'] },
     { c: 'Countries & Peoples', t: 4, q: 'Which country gave Tamazight official status in a constitutional change in 2016?', a: 'Algeria', d: ['Morocco', 'Tunisia', 'Mauritania'] },
@@ -373,7 +373,7 @@ export const LANE_DAYS = [
     { c: 'Countries & Peoples', t: 2, q: 'Which Slavic language, written in Cyrillic, is used by most people in Sofia?', a: 'Bulgarian', d: ['Serbian', 'Macedonian', 'Ukrainian'] },
     { c: 'Countries & Peoples', t: 3, q: 'Which country declared independence from a larger federation in 1991 and has Slovene as its official language?', a: 'Slovenia', d: ['Croatia', 'Slovakia', 'Serbia'] },
     { c: 'Countries & Peoples', t: 4, q: 'The Kingdom of Serbs, Croats and Slovenes took which new name in 1929?', a: 'Yugoslavia', d: ['Illyria', 'Dalmatia', 'Pannonia'] },
-    { c: 'Countries & Peoples', t: 5, q: 'The Merina and Sakalava are among the peoples of which island country?', a: 'Madagascar', d: ['Sri Lanka', 'Mauritius', 'Comoros'] },
+    { c: 'Countries & Peoples', t: 5, q: 'The Merina and Sakalava are among the peoples of which island country?', a: 'Madagascar', d: ['Seychelles', 'Mauritius', 'Comoros'] },
   ],
   // day 48
   [
@@ -411,7 +411,7 @@ export const LANE_DAYS = [
   [
     { c: 'Countries & Peoples', t: 1, q: 'Which people were the first inhabitants of New Zealand, arriving by canoe from the Pacific?', a: 'The Maori', d: ['The Aboriginal Australians', 'The Fijians', 'The Samoans'] },
     { c: 'Countries & Peoples', t: 2, q: 'Which language, written in a form of the Arabic script, is the national language of Pakistan?', a: 'Urdu', d: ['Punjabi', 'Pashto', 'Sindhi'] },
-    { c: 'Countries & Peoples', t: 3, q: 'Which country speaks a Finno-Ugric tongue while every state around it speaks a Slavic or Germanic one?', a: 'Hungary', d: ['Romania', 'Slovakia', 'Croatia'] },
+    { c: 'Countries & Peoples', t: 3, q: 'Which Central European country speaks a Finno-Ugric language unrelated to the languages of all its neighbors?', a: 'Hungary', d: ['Romania', 'Slovakia', 'Croatia'] },
     { c: 'Countries & Peoples', t: 4, q: 'The Mossi are the largest ethnic group of which West African country?', a: 'Burkina Faso', d: ['Niger', 'Togo', 'Guinea'] },
     { c: 'Countries & Peoples', t: 5, q: 'The Shona and the Ndebele are the two largest peoples of which country?', a: 'Zimbabwe', d: ['Zambia', 'Malawi', 'Mozambique'] },
   ],

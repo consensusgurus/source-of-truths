@@ -97,7 +97,7 @@ export const LANE_DAYS = [
   ],
   // day 13
   [
-    { c: 'Capitals', t: 1, q: 'Vienna is the capital of which country?', a: 'Austria', d: ['Switzerland', 'Germany', 'Hungary'] },
+    { c: 'Capitals', t: 1, q: 'Vienna is the capital of which country?', a: 'Austria', d: ['Switzerland', 'Germany', 'Slovakia'] },
     { c: 'Capitals', t: 2, q: 'Baku is the capital of which country?', a: 'Azerbaijan', d: ['Armenia', 'Georgia', 'Turkmenistan'] },
     { c: 'Capitals', t: 3, q: 'Which capital city was known as Christiania until 1925?', a: 'Oslo', d: ['Stockholm', 'Copenhagen', 'Helsinki'] },
     { c: 'Capitals', t: 4, q: "Which city is Benin's official capital, although the government sits elsewhere?", a: 'Porto-Novo', d: ['Cotonou', 'Parakou', 'Abomey'] },
@@ -109,13 +109,13 @@ export const LANE_DAYS = [
     { c: 'Capitals', t: 2, q: 'Minsk is the capital of which country?', a: 'Belarus', d: ['Ukraine', 'Lithuania', 'Latvia'] },
     { c: 'Capitals', t: 3, q: 'Which capital city was known as Leopoldville until 1966?', a: 'Kinshasa', d: ['Brazzaville', 'Luanda', 'Libreville'] },
     { c: 'Capitals', t: 4, q: 'Which city is the judicial capital of South Africa, home to the Supreme Court of Appeal?', a: 'Bloemfontein', d: ['Durban', 'Gqeberha', 'Kimberley'] },
-    { c: 'Capitals', t: 5, q: 'Which city was the capital of the Nationalist government of the Republic of China from 1927 to 1937?', a: 'Nanjing', d: ['Chongqing', 'Wuhan', 'Guangzhou'] },
+    { c: 'Capitals', t: 5, q: 'Which city was the capital of British India until the move to Delhi was announced in 1911?', a: 'Calcutta', d: ['Lahore', 'Bombay', 'Madras'] },
   ],
   // day 15
   [
     { c: 'Capitals', t: 1, q: 'Oslo is the capital of which country?', a: 'Norway', d: ['Sweden', 'Denmark', 'Finland'] },
     { c: 'Capitals', t: 2, q: 'Riga is the capital of which country?', a: 'Latvia', d: ['Estonia', 'Lithuania', 'Belarus'] },
-    { c: 'Capitals', t: 3, q: 'Which capital city hosts the headquarters of NATO?', a: 'Brussels', d: ['The Hague', 'Paris', 'Luxembourg'] },
+    { c: 'Capitals', t: 3, q: 'Which city is home to the Court of Justice of the European Union?', a: 'Luxembourg', d: ['Frankfurt', 'Paris', 'Strasbourg'] },
     { c: 'Capitals', t: 4, q: 'Which Chilean city houses the National Congress, away from the seat of the presidency?', a: 'Valparaiso', d: ['Concepcion', 'Vina del Mar', 'Antofagasta'] },
     { c: 'Capitals', t: 5, q: 'Which city served as the wartime capital of China from 1938 to 1945?', a: 'Chongqing', d: ['Nanjing', 'Wuhan', "Xi'an"] },
   ],
@@ -164,7 +164,7 @@ export const LANE_DAYS = [
     { c: 'Capitals', t: 1, q: 'Bogota is the capital of which country?', a: 'Colombia', d: ['Venezuela', 'Ecuador', 'Panama'] },
     { c: 'Capitals', t: 2, q: 'Ljubljana is the capital of which country?', a: 'Slovenia', d: ['Croatia', 'Slovakia', 'Austria'] },
     { c: 'Capitals', t: 3, q: 'Which city is the capital of the Australian state of Queensland?', a: 'Brisbane', d: ['Cairns', 'Townsville', 'Toowoomba'] },
-    { c: 'Capitals', t: 4, q: 'Anitkabir, the mausoleum of Mustafa Kemal Ataturk, stands in which Turkish city?', a: 'Ankara', d: ['Istanbul', 'Izmir', 'Bursa'] },
+    { c: 'Capitals', t: 4, q: 'Anitkabir, the hilltop mausoleum of the founder of the Turkish republic, stands in which city?', a: 'Ankara', d: ['Istanbul', 'Izmir', 'Bursa'] },
     { c: 'Capitals', t: 5, q: 'Which Guatemalan city was the colonial capital abandoned after the earthquake of 1773?', a: 'Antigua Guatemala', d: ['Quetzaltenango', 'Coban', 'Escuintla'] },
   ],
   // day 22
@@ -281,7 +281,7 @@ export const LANE_DAYS = [
   ],
   // day 36
   [
-    { c: 'Capitals', t: 1, q: 'Riyadh is the capital of which country?', a: 'Saudi Arabia', d: ['the United Arab Emirates', 'Qatar', 'Oman'] },
+    { c: 'Capitals', t: 1, q: 'Montevideo is the capital of which country?', a: 'Uruguay', d: ['Paraguay', 'Argentina', 'Chile'] },
     { c: 'Capitals', t: 2, q: 'Kingston is the capital of which country?', a: 'Jamaica', d: ['Barbados', 'the Bahamas', 'Trinidad and Tobago'] },
     { c: 'Capitals', t: 3, q: 'Which city is the capital of the Canadian province of Manitoba?', a: 'Winnipeg', d: ['Brandon', 'Thompson', 'Steinbach'] },
     { c: 'Capitals', t: 4, q: 'Which city is the capital of Aruba?', a: 'Oranjestad', d: ['Willemstad', 'Philipsburg', 'Kralendijk'] },
@@ -421,7 +421,7 @@ export const LANE_DAYS = [
     { c: 'Capitals', t: 2, q: "Which capital city sits at the foot of Table Mountain and houses South Africa's Parliament?", a: 'Cape Town', d: ['Pretoria', 'Durban', 'Johannesburg'] },
     { c: 'Capitals', t: 3, q: 'Which capital city stands on the Manzanares?', a: 'Madrid', d: ['Lisbon', 'Rome', 'Athens'] },
     { c: 'Capitals', t: 4, q: 'Which capital city hosts the headquarters of the Organization of American States?', a: 'Washington, D.C.', d: ['Ottawa', 'Mexico City', 'Panama City'] },
-    { c: 'Capitals', t: 5, q: "Valletta is one of Europe's smallest capitals; which town is the most populous in Malta?", a: 'Birkirkara', d: ['Mosta', 'Sliema', 'Qormi'] },
+    { c: 'Capitals', t: 5, q: "Valletta is one of Europe's smallest capitals; which town is the most populous in Malta?", a: "St. Paul's Bay", d: ['Mosta', 'Sliema', 'Qormi'] },
   ],
   // day 54
   [

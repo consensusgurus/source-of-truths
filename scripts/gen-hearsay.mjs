@@ -36,12 +36,12 @@ const BANK = new URL('../app/hearsay/puzzles.js', import.meta.url);
 
 // [noun, listLabel, attrs, value pools]. Sundays need three attributes.
 const DOMAINS = [
-  ['stamp', 'the album page', ['country', 'year', 'perforation'], [['Iceland', 'Malta', 'Peru', 'Fiji', 'Chile', 'Nepal'], ['1921', '1934', '1948', '1952', '1967'], ['a line perf', 'a comb perf', 'an imperf edge']]],
+  ['stamp', 'the album page', ['country', 'year', 'perforation'], [['Iceland', 'Malta', 'Peru', 'Fiji', 'Chile', 'Ghana'], ['1921', '1934', '1948', '1952', '1967'], ['a line perf', 'a comb perf', 'an imperf edge']]],
   ['violin', 'the repair ticket', ['workshop', 'wood'], [['the Aldine shop', 'the Brook shop', 'the Cellini shop', 'the Dorn shop', 'the Ember shop', 'the Fisk shop'], ['maple', 'spruce', 'willow', 'poplar', 'cherry', 'walnut']]],
   ['canal barge', 'the wharf tally', ['basin', 'cargo'], [['Hollin Basin', 'Stoke Basin', 'Ferry Basin', 'Mill Basin', 'Gas Basin', 'Wey Basin'], ['coal', 'timber', 'grain', 'bricks', 'lime', 'salt']]],
   ['chess game', 'the club scoresheet', ['board', 'opening'], [['board one', 'board two', 'board three', 'board four', 'board five', 'board six'], ['the Sicilian', 'the French', 'the Caro-Kann', 'the English', 'the Dutch', 'the Ruy Lopez']]],
   ['tent pitch', 'the campsite map', ['field', 'shelter'], [['the Upper Field', 'the Lower Field', 'the Orchard Field', 'the River Field', 'the Beech Field', 'the Top Field'], ['a bell tent', 'a dome tent', 'a tipi', 'a yurt', 'a hammock', 'a tarp']]],
-  ['relay leg', 'the race sheet', ['team', 'leg'], [['the Harriers', 'the Striders', 'the Pacers', 'the Flyers', 'the Rovers', 'the Dashers'], ['the first leg', 'the second leg', 'the third leg', 'the fourth leg', 'the anchor leg']]],
+  ['relay leg', 'the race sheet', ['team', 'leg'], [['the Harriers', 'the Striders', 'the Pacers', 'the Flyers', 'the Rovers', 'the Dashers'], ['the first leg', 'the second leg', 'the third leg', 'the fourth leg', 'the fifth leg']]],
   ['hat', 'the fitting book', ['shop', 'trim'], [['the Bond Street shop', 'the Hill Street shop', 'the King Street shop', 'the Queen Street shop', 'the Duke Street shop', 'the Park Street shop'], ['a feather', 'a ribbon', 'a veil', 'a flower', 'a buckle']]],
   ['sculpture', 'the foundry list', ['foundry', 'patina', 'plinth'], [['Arden', 'Belmont', 'Corbett', 'Dallow', 'Easton', 'Fenby'], ['a green patina', 'a brown patina', 'a black patina', 'a gilt finish', 'a blue patina'], ['a stone plinth', 'an oak plinth', 'a steel plinth']]],
   ['kayak', 'the boathouse rack', ['rack', 'hull'], [['rack A', 'rack B', 'rack C', 'rack D', 'rack E', 'rack F'], ['a red hull', 'a yellow hull', 'a green hull', 'an orange hull', 'a blue hull', 'a white hull']]],

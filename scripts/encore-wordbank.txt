@@ -1102,7 +1102,7 @@ SHRINK|Get smaller
 SHRUGS|Lifts the shoulders
 SIGHED|Let out a long breath
 SIGNAL|Traffic light, or a wave
-SIGNED|Put your name to it
+SIGNED|Endorsed, as a check
 SILENT|Not a peep
 SILVER|Second-place metal
 SIMPLE|No trouble at all
@@ -8323,7 +8323,7 @@ OUTFLOW|What runs out
 OUTINGS|Day trips
 OUTLAST|Still going when they've stopped
 OUTLAWS|Wanted poster subjects
-OUTLETS|Where you plug in
+OUTLETS|Wall sockets
 OUTLINE|Sketch the shape
 OUTLOOK|How you see things
 OUTPOST|Far-flung station

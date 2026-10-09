@@ -340,7 +340,7 @@ export const LANE_DAYS = [
     { c: 'Deals & Disasters', t: 1, q: 'On a stock exchange, what is the name for the short code of letters that identifies a company\'s shares?', a: 'A ticker symbol', d: ['A par value', 'A round lot', 'A book entry'] },
     { c: 'Deals & Disasters', t: 2, q: 'Which Chinese e-commerce group chose the New York Stock Exchange over Hong Kong for its huge 2014 flotation?', a: 'Alibaba', d: ['JD.com', 'Baidu', 'Tencent'] },
     { c: 'Deals & Disasters', t: 3, q: 'Which state oil producer sold shares to the public for the first time in December 2019, listing on its home exchange in Riyadh?', a: 'Saudi Aramco', d: ['Adnoc', 'Kuwait Petroleum', 'QatarEnergy'] },
-    { c: 'Deals & Disasters', t: 4, q: 'In which city did Volkswagen float its Porsche sports car business in September 2022?', a: 'Frankfurt', d: ['London', 'Amsterdam', 'Zurich'] },
+    { c: 'Deals & Disasters', t: 4, q: 'In which year did Volkswagen float its Porsche sports car business, in one of Europe\'s largest stock market debuts?', a: '2022', d: ['2018', '2015', '2011'] },
     { c: 'Deals & Disasters', t: 5, q: 'Which American meal-kit company listed in 2017 at 10 dollars a share and then slid steadily, becoming a byword for a broken debut?', a: 'Blue Apron', d: ['HelloFresh', 'Chef\'d', 'Plated'] },
   ],
   // day 44
@@ -380,7 +380,7 @@ export const LANE_DAYS = [
     { c: 'Deals & Disasters', t: 1, q: 'What is the term for a company being made to sell off part of its business by order of a regulator?', a: 'A divestiture', d: ['A rights issue', 'A recapitalization', 'A tender offer'] },
     { c: 'Deals & Disasters', t: 2, q: 'The Bundeskartellamt is the competition authority of which country?', a: 'Germany', d: ['Austria', 'Switzerland', 'The Netherlands'] },
     { c: 'Deals & Disasters', t: 3, q: 'Which British body examined monopolies and takeovers from 1948 until it was renamed the Competition Commission in 1999?', a: 'The Monopolies and Mergers Commission', d: ['The Office of Fair Trading', 'The Restrictive Practices Court', 'The Board of Trade'] },
-    { c: 'Deals & Disasters', t: 4, q: 'Which American chemicals company was ordered in 1957 to give up its large shareholding in General Motors after a decade-long antitrust case?', a: 'Du Pont', d: ['Union Carbide', 'Monsanto', 'Allied Chemical'] },
+    { c: 'Deals & Disasters', t: 4, q: 'Which American chemicals company lost a 1957 Supreme Court antitrust case over its large shareholding in General Motors, and was later made to sell it?', a: 'Du Pont', d: ['Union Carbide', 'Monsanto', 'Allied Chemical'] },
     { c: 'Deals & Disasters', t: 5, q: 'Which American photocopier maker agreed a 1975 consent decree with the Federal Trade Commission that forced it to license its patents to rivals?', a: 'Xerox', d: ['Kodak', 'Addressograph-Multigraph', 'A.B. Dick'] },
   ],
   // day 49

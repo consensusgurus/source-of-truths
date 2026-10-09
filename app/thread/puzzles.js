@@ -930,7 +930,7 @@ export const PUZZLES = [
     threads: [{ t: 'Amy Adams', keys: ['amy adams', 'adams'], tiles: [0, 1, 2, 3, 4, 5, 6, 7, 8] }],
     decoys: [
       { n: 'DC superhero films', keys: ['superhero', 'comic book'], cover: [4, 5] },
-      { n: 'Based on a memoir', keys: ['memoir', 'true story'], cover: [3, 6] },
+      { n: 'Based on a true story', keys: ['true story', 'memoir'], cover: [3, 6] },
       { n: 'Musicals', keys: ['musical', 'singing'], cover: [1, 7] },
     ],
     tiles: [
@@ -939,7 +939,7 @@ export const PUZZLES = [
       { t: 'Nocturnal Animals', s: 'A gallery owner reads a violent manuscript her former husband sent her.', keys: ['nocturnal animals', 'nocturnal'] },
       { t: 'Big Eyes', s: 'A painter lets her husband take credit for her work until a courtroom test.', keys: ['big eyes'] },
       { t: 'Man of Steel', s: 'An alien farm boy decides to stop hiding and a Kryptonian general objects.', keys: ['man of steel'] },
-      { t: 'Batman v Superman: Dawn of Justice', s: 'Two heroes fight because their mothers share a name, then a monster appears.', keys: ['batman v superman', 'dawn of justice'] },
+      { t: 'Batman v Superman: Dawn of Justice', s: 'Two heroes fight until they learn their mothers share a name, then a monster appears.', keys: ['batman v superman', 'dawn of justice'] },
       { t: 'Hillbilly Elegy', s: 'A law student drives home to deal with his mother while his grandmother explains.', keys: ['hillbilly elegy', 'hillbilly'] },
       { t: 'Dear Evan Hansen', s: 'A lonely teenager lets a grieving family believe he was their son’s friend.', keys: ['dear evan hansen', 'evan hansen'] },
       { t: 'Talladega Nights', s: 'A stock car driver loses his nerve and is beaten by a French rival.', keys: ['talladega nights', 'talladega'] },
@@ -970,8 +970,8 @@ export const PUZZLES = [
     threads: [{ t: 'Courtroom dramas', keys: ['courtroom', 'court', 'trial', 'legal'], tiles: [0, 1, 2, 3, 4, 5, 6, 7, 8] }],
     decoys: [
       { n: 'Black and white films', keys: ['black and white', 'monochrome'], cover: [0, 1, 3, 4, 5, 8] },
-      { n: 'Based on a novel', keys: ['novel', 'book', 'adaptation'], cover: [1, 2, 3, 6] },
-      { n: 'Set during a war', keys: ['war', 'wartime'], cover: [4, 6, 8] },
+      { n: 'Based on a novel', keys: ['novel', 'book', 'adaptation'], cover: [1, 2, 3, 6, 8] },
+      { n: 'Set during a war', keys: ['war', 'wartime'], cover: [6, 8] },
     ],
     tiles: [
       { t: '12 Angry Men', s: 'Eleven jurors want to go home and one of them will not allow it.', keys: ['12 angry men', 'twelve angry men', 'angry men'] },
@@ -1059,8 +1059,8 @@ export const PUZZLES = [
     num: 49, quizId: 'thread-10-19-26', live: '2026-10-19', dateLabel: 'October 19, 2026', sunday: false,
     threads: [{ t: 'Prison films', keys: ['prison', 'jail', 'inmate', 'convict'], tiles: [0, 1, 2, 3, 4, 5, 6, 7, 8] }],
     decoys: [
-      { n: 'Based on a true story', keys: ['true story', 'real life', 'real events'], cover: [1, 2, 4, 7] },
-      { n: 'A sporting contest happens', keys: ['sport', 'football', 'game'], cover: [5, 8] },
+      { n: 'Based on a true story', keys: ['true story', 'real life', 'real events'], cover: [1, 2, 3, 4, 7] },
+      { n: 'A sporting contest happens', keys: ['sport', 'football', 'game'], cover: [5, 6, 8] },
       { n: 'Released in the 1960s', keys: ['1960s', 'sixties'], cover: [0, 3] },
     ],
     tiles: [
@@ -1079,8 +1079,8 @@ export const PUZZLES = [
     num: 50, quizId: 'thread-10-20-26', live: '2026-10-20', dateLabel: 'October 20, 2026', sunday: false,
     threads: [{ t: 'Films set at sea', keys: ['at sea', 'sea', 'ocean', 'sailing', 'maritime'], tiles: [0, 1, 2, 3, 4, 5, 6, 7, 8] }],
     decoys: [
-      { n: 'Something sinks', keys: ['sink', 'sinking', 'sunk'], cover: [7, 8] },
-      { n: 'Based on a novel', keys: ['novel', 'book'], cover: [0, 1, 3, 4, 5] },
+      { n: 'Set during the Second World War', keys: ['second world war', 'world war ii', 'world war 2', 'wwii', 'ww2'], cover: [1, 6] },
+      { n: 'Based on a novel', keys: ['novel', 'book'], cover: [0, 1, 3, 4, 5, 7] },
       { n: 'Directed by Alfred Hitchcock', keys: ['hitchcock'], cover: [6] },
     ],
     tiles: [
@@ -1100,7 +1100,7 @@ export const PUZZLES = [
     threads: [{ t: 'Spies', keys: ['spy', 'spies', 'espionage', 'secret agent'], tiles: [0, 1, 2, 3, 4, 5, 6, 7, 8] }],
     decoys: [
       { n: 'James Bond films', keys: ['bond', 'james bond', '007'], cover: [0, 1] },
-      { n: 'Set during the Cold War', keys: ['cold war', 'soviet', 'russians'], cover: [1, 2, 4] },
+      { n: 'Soviet agents in the plot', keys: ['soviet', 'russians', 'kgb'], cover: [1, 4, 6] },
       { n: 'Films from the 1960s', keys: ['1960s', 'sixties'], cover: [0, 1, 4, 5] },
     ],
     tiles: [
@@ -1125,7 +1125,7 @@ export const PUZZLES = [
     ],
     tiles: [
       { t: 'The Towering Inferno', s: 'A ribbon cutting party on the top floor goes badly because of the wiring.', keys: ['towering inferno'] },
-      { t: 'Airport', s: 'A woman with a bomb, a stuck airplane in the snow, and a stowaway grandmother.', keys: ['airport'] },
+      { t: 'Airport', s: 'A man with a bomb, a stuck airplane in the snow, and a stowaway grandmother.', keys: ['airport'] },
       { t: 'Earthquake', s: 'Los Angeles falls over and then a dam decides to finish the job.', keys: ['earthquake'] },
       { t: 'The Poseidon Adventure', s: 'A wave turns a liner upside down and the survivors climb toward the propeller.', keys: ['the poseidon adventure', 'poseidon adventure', 'poseidon'] },
       { t: 'The China Syndrome', s: 'A television crew films a control room by accident and nobody wants the tape.', keys: ['china syndrome'] },
@@ -1160,7 +1160,7 @@ export const PUZZLES = [
     threads: [{ t: 'Road trip films', keys: ['road trip', 'road movie', 'road'], tiles: [0, 1, 2, 3, 4, 5, 6, 7, 8] }],
     decoys: [
       { n: 'Set at a holiday', keys: ['christmas', 'holiday', 'thanksgiving'], cover: [2, 4] },
-      { n: 'Comedies', keys: ['comedy', 'funny', 'comedies'], cover: [1, 2, 3, 4, 5, 6] },
+      { n: 'Comedies', keys: ['comedy', 'funny', 'comedies'], cover: [1, 2, 3, 4, 5, 6, 7] },
       { n: 'Two people who cannot stand each other', keys: ['odd couple', 'mismatched', 'buddy'], cover: [4, 5] },
     ],
     tiles: [
@@ -1168,7 +1168,7 @@ export const PUZZLES = [
       { t: 'Smokey and the Bandit', s: 'A man drives beer across state lines while a sheriff loses his patience and his car.', keys: ['smokey and the bandit', 'smokey'] },
       { t: 'National Lampoon’s Vacation', s: 'A family drive all the way to a theme park and find it closed for maintenance.', keys: ['national lampoons vacation', 'vacation', 'lampoon'] },
       { t: 'Dumb and Dumber', s: 'Two friends drive a shaggy van to Colorado to return a briefcase full of money to a woman they barely know.', keys: ['dumb and dumber', 'dumb dumber'] },
-      { t: 'Planes, Trains and Automobiles', s: 'A marketing executive tries to reach Chicago for Thanksgiving with a shower curtain salesman.', keys: ['planes trains and automobiles', 'planes trains'] },
+      { t: 'Planes, Trains and Automobiles', s: 'A marketing executive tries to reach Chicago for Thanksgiving with a shower curtain ring salesman.', keys: ['planes trains and automobiles', 'planes trains'] },
       { t: 'Midnight Run', s: 'A bounty hunter and an accountant travel a very long way without using airplanes.', keys: ['midnight run'] },
       { t: 'Paper Moon', s: 'A con man and a small girl sell bibles to widows across Kansas.', keys: ['paper moon'] },
       { t: 'It Happened One Night', s: 'An heiress runs away, a newspaperman follows, and a blanket divides a motel room.', keys: ['it happened one night'] },
@@ -1238,7 +1238,7 @@ export const PUZZLES = [
       { t: 'The Maltese Falcon', s: 'Several people in San Francisco want a heavy bird and lie about it constantly.', keys: ['maltese falcon'] },
       { t: 'The Big Sleep', s: 'A man is hired about gambling debts and the plot gets away from everyone.', keys: ['the big sleep', 'big sleep'] },
       { t: 'The Long Goodbye', s: 'A man drives around Los Angeles looking for cat food and a missing friend.', keys: ['the long goodbye', 'long goodbye'] },
-      { t: 'Murder on the Orient Express', s: 'A Belgian with a mustache asks thirteen passengers the same questions in the snow.', keys: ['murder on the orient express', 'orient express'] },
+      { t: 'Murder on the Orient Express', s: 'A Belgian with a mustache asks a carriage full of passengers the same questions in the snow.', keys: ['murder on the orient express', 'orient express'] },
       { t: 'Death on the Nile', s: 'A honeymoon on a river cruise is interrupted by a pearl handled pistol.', keys: ['death on the nile'] },
       { t: 'Klute', s: 'A missing chemist brings a small town lawman to New York and into therapy sessions.', keys: ['klute'] },
       { t: 'Dirty Harry', s: 'A city policeman keeps count of his bullets and asks a very personal question.', keys: ['dirty harry'] },
@@ -1291,7 +1291,7 @@ export const PUZZLES = [
     decoys: [
       { n: 'Horror movies', keys: ['horror', 'scary'], cover: [0, 1, 4, 5, 7, 8] },
       { n: 'Set in a prison', keys: ['prison', 'jail'], cover: [3] },
-      { n: 'Set in a small town', keys: ['small town', 'small towns'], cover: [2, 5, 7, 8] },
+      { n: 'Set in a small town', keys: ['small town', 'small towns'], cover: [2, 4, 5, 7, 8] },
     ],
     tiles: [
       { t: '1408', s: 'A man who debunks haunted places checks into a room and cannot leave.', keys: ['1408'] },
@@ -1310,7 +1310,7 @@ export const PUZZLES = [
     threads: [{ t: 'Set in the desert', keys: ['desert', 'the desert'], tiles: [0, 1, 2, 3, 4, 5, 6, 7, 8] }],
     decoys: [
       { n: 'War movies', keys: ['war', 'military', 'soldiers'], cover: [0, 2, 8] },
-      { n: 'Based on a novel', keys: ['novel', 'book', 'adaptation'], cover: [0, 2, 3] },
+      { n: 'Based on a novel', keys: ['novel', 'book', 'adaptation'], cover: [2, 3] },
       { n: 'Animated films', keys: ['animated', 'animation', 'cartoon'], cover: [6] },
     ],
     tiles: [
@@ -1334,7 +1334,7 @@ export const PUZZLES = [
     decoys: [
       { n: 'Set in New York', keys: ['new york', 'nyc', 'manhattan'], cover: [1, 3, 9] },
       { n: 'Films about the movie business', keys: ['hollywood', 'movie business', 'show business'], cover: [0, 10] },
-      { n: 'Released in the 1980s', keys: ['1980s', '80s', 'eighties'], cover: [7, 12, 15] },
+      { n: 'Released in the 1980s', keys: ['1980s', '80s', 'eighties'], cover: [7, 9, 12, 15] },
     ],
     tiles: [
       { t: 'Sunset Boulevard', s: 'A forgotten silent star hires a young writer to fix her comeback script.', keys: ['sunset boulevard', 'sunset blvd'] },
@@ -1348,7 +1348,7 @@ export const PUZZLES = [
       { t: 'Rush Hour', s: 'Two detectives who cannot stand each other look for a consul’s daughter.', keys: ['rush hour'] },
       { t: 'Scrooged', s: 'A television executive is visited by three ghosts during a live broadcast.', keys: ['scrooged'] },
       { t: 'Mulholland Drive', s: 'An aspiring actress helps an amnesiac and the film changes its mind.', keys: ['mulholland drive', 'mulholland'] },
-      { t: 'The Holiday', s: 'Two women swap houses across an ocean and both meet someone local.', keys: ['the holiday', 'holiday'] },
+      { t: 'The Santa Clause', s: 'A father tries on a stranger’s red suit and finds the job comes with it.', keys: ['the santa clause', 'santa clause'] },
       { t: 'Beverly Hills Cop', s: 'A Detroit detective takes unofficial leave and annoys a wealthier police department.', keys: ['beverly hills cop', 'beverly hills'] },
       { t: 'Bad Santa', s: 'A drunk mall employee robs the store he works in every December.', keys: ['bad santa'] },
       { t: '500 Days of Summer', s: 'A greeting card writer misreads a romance and tells it out of order.', keys: ['500 days of summer', '500 days', 'days of summer'] },
@@ -1400,8 +1400,8 @@ export const PUZZLES = [
     threads: [{ t: 'Studio Ghibli', keys: ['ghibli', 'studio ghibli'], tiles: [0, 1, 2, 3, 4, 5, 6, 7, 8] }],
     decoys: [
       { n: 'Directed by Hayao Miyazaki', keys: ['miyazaki'], cover: [0, 1, 2, 3, 4, 5, 6, 8] },
-      { n: 'Films about flying', keys: ['flying', 'flight'], cover: [3, 6, 8] },
-      { n: 'Set during a war', keys: ['war', 'wartime'], cover: [7, 8] },
+      { n: 'Films about flying', keys: ['flying', 'flight'], cover: [3, 4, 6, 8] },
+      { n: 'Set during a war', keys: ['war', 'wartime'], cover: [3, 7, 8] },
     ],
     tiles: [
       { t: 'Spirited Away', s: 'A girl’s parents overeat at a roadside stall and she takes a job.', keys: ['spirited away'] },
@@ -1420,7 +1420,7 @@ export const PUZZLES = [
     threads: [{ t: 'Films based on a video game', keys: ['video game', 'videogame', 'game'], tiles: [0, 1, 2, 3, 4, 5, 6, 7, 8] }],
     decoys: [
       { n: 'Treasure hunts', keys: ['treasure', 'treasure hunt'], cover: [1, 6, 7] },
-      { n: 'Films with a talking animal', keys: ['talking animal', 'animals'], cover: [3, 4] },
+      { n: 'Films with a talking animal', keys: ['talking animal', 'animals'], cover: [3, 4, 5] },
       { n: 'Horror films', keys: ['horror', 'scary'], cover: [2, 8] },
     ],
     tiles: [
@@ -1440,8 +1440,8 @@ export const PUZZLES = [
     threads: [{ t: 'Set in Italy', keys: ['italy', 'italian'], tiles: [0, 1, 2, 3, 4, 5, 6, 7, 8] }],
     decoys: [
       { n: 'Foreign language films', keys: ['foreign language', 'subtitles', 'not in english'], cover: [1, 2, 8] },
-      { n: 'Films about first love', keys: ['first love', 'romance', 'love story'], cover: [3, 5] },
-      { n: 'Set in the 1950s', keys: ['1950s', 'fifties'], cover: [0, 4] },
+      { n: 'Films about first love', keys: ['first love', 'romance', 'love story'], cover: [1, 3, 5] },
+      { n: 'Set in the 1950s', keys: ['1950s', 'fifties'], cover: [0, 4, 6] },
     ],
     tiles: [
       { t: 'Roman Holiday', s: 'A princess skips her schedule for a day and meets a reporter.', keys: ['roman holiday'] },
@@ -1483,8 +1483,8 @@ export const PUZZLES = [
     ],
     decoys: [
       { n: 'Based on a comic book', keys: ['comic', 'comics', 'graphic novel'], cover: [12, 13, 15] },
-      { n: 'Outsiders in a foreign country', keys: ['fish out of water', 'foreigner', 'stranger in a strange land'], cover: [0, 2, 8, 12] },
-      { n: 'Set during a war', keys: ['war', 'wartime', 'battle'], cover: [6, 14] },
+      { n: 'Outsiders in a foreign country', keys: ['fish out of water', 'foreigner', 'stranger in a strange land'], cover: [0, 2, 5, 8, 12] },
+      { n: 'Set during a war', keys: ['war', 'wartime', 'battle'], cover: [4, 6, 14] },
     ],
     tiles: [
       { t: 'Lost in Translation', s: 'Two insomniacs meet in a hotel bar and never quite say anything.', keys: ['lost in translation'] },
@@ -1509,7 +1509,7 @@ export const PUZZLES = [
     num: 70, quizId: 'thread-11-9-26', live: '2026-11-09', dateLabel: 'November 9, 2026', sunday: false,
     threads: [{ t: 'Set in space', keys: ['space', 'outer space', 'in space'], tiles: [0, 1, 2, 3, 4, 5, 6, 7, 8] }],
     decoys: [
-      { n: 'Films about being stranded', keys: ['stranded', 'survival', 'alone'], cover: [4, 8] },
+      { n: 'Films about being stranded', keys: ['stranded', 'survival', 'alone'], cover: [4, 7, 8] },
       { n: 'Released in the 1990s', keys: ['1990s', '90s', 'nineties'], cover: [2, 5, 6] },
       { n: 'Comedies', keys: ['comedy', 'funny'], cover: [3, 6] },
     ],
@@ -1550,7 +1550,7 @@ export const PUZZLES = [
     threads: [{ t: 'Set in France', keys: ['france', 'french'], tiles: [0, 1, 2, 3, 4, 5, 6, 7, 8] }],
     decoys: [
       { n: 'Animated films', keys: ['animated', 'animation', 'cartoon'], cover: [2, 5] },
-      { n: 'Films about a stolen jewel', keys: ['heist', 'jewel thief', 'stolen jewel'], cover: [3, 6, 7] },
+      { n: 'Films about stolen loot', keys: ['heist', 'jewel thief', 'stolen jewel', 'stolen loot', 'loot'], cover: [3, 6, 7] },
       { n: 'Disney films', keys: ['disney'], cover: [2] },
     ],
     tiles: [
@@ -1560,7 +1560,7 @@ export const PUZZLES = [
       { t: 'Charade', s: 'A widow discovers her husband had four names and several angry colleagues.', keys: ['charade'] },
       { t: 'The Phantom of the Opera', s: 'A singer is coached by a man who lives beneath her workplace.', keys: ['phantom of the opera', 'phantom'] },
       { t: 'Anastasia', s: 'An orphan travels abroad to audition as a missing duchess.', keys: ['anastasia'] },
-      { t: 'The Pink Panther', s: 'A clumsy inspector investigates a stolen diamond and destroys the evidence.', keys: ['the pink panther', 'pink panther'] },
+      { t: 'The Pink Panther', s: 'A clumsy inspector hunts a stolen diamond across Paris and destroys the evidence.', keys: ['the pink panther', 'pink panther'] },
       { t: 'Ronin', s: 'Mercenaries chase a metal case whose contents nobody bothers to explain.', keys: ['ronin'] },
       { t: 'Marie Antoinette', s: 'A young queen is criticized for spending and throws excellent parties.', keys: ['marie antoinette'] },
     ],
@@ -1574,7 +1574,7 @@ export const PUZZLES = [
       { n: 'Films about survival', keys: ['survival', 'stranded'], cover: [2, 5] },
     ],
     tiles: [
-      { t: '1917', s: 'Two soldiers cross a battlefield to stop an attack that would kill their brother.', keys: ['1917'] },
+      { t: '1917', s: 'Two soldiers cross a battlefield to stop an attack, and one of them has a brother in it.', keys: ['1917'] },
       { t: 'Fast Five', s: 'Thieves drag a safe through a city and take the whole police budget.', keys: ['fast five'] },
       { t: '300', s: 'Spartans hold a narrow pass and shout a great deal about freedom.', keys: ['300', 'three hundred'] },
       { t: 'Assault on Precinct 13', s: 'Officers and prisoners defend a closing station together when a gang surrounds it.', keys: ['assault on precinct 13', 'precinct 13'] },

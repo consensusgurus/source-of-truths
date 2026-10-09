@@ -1853,7 +1853,7 @@ export const PUZZLES = [
     live: '2026-10-20',
     dateLabel: 'October 20, 2026',
     groups: [
-      { name: "Backwards animals", words: ['REED', 'TANG', 'SNUG', 'TAR'] },
+      { name: "Backwards animals", words: ['REED', 'TANG', 'FLOW', 'TAR'] },
       { name: "Wetland plants", words: ['CATTAIL', 'BULRUSH', 'SEDGE', 'WATER LILY'] },
       { name: "Road surfaces", words: ['ASPHALT', 'GRAVEL', 'CONCRETE', 'COBBLESTONE'] },
       { name: "Cozy", words: ['HOMEY', 'COMFY', 'TOASTY', 'CUDDLY'] },
@@ -1861,7 +1861,6 @@ export const PUZZLES = [
     collisions: [
       { word: 'REED', reads: "Wetland plants" },
       { word: 'TAR', reads: "Road surfaces" },
-      { word: 'SNUG', reads: "Cozy" },
     ],
   },
   {
@@ -2355,7 +2354,7 @@ export const PUZZLES = [
       { name: "___bag", words: ['BEAN', 'AIR', 'WIND', 'TEA'] },
       { name: "Legumes", words: ['LENTIL', 'CHICKPEA', 'PEANUT', 'EDAMAME'] },
       { name: "Tunes", words: ['MELODY', 'DITTY', 'JINGLE', 'REFRAIN'] },
-      { name: "Brewed drinks", words: ['COFFEE', 'KOMBUCHA', 'ALE', 'MEAD'] },
+      { name: "Brewed drinks", words: ['SAKE', 'KOMBUCHA', 'ALE', 'MEAD'] },
     ],
     collisions: [
       { word: 'BEAN', reads: "Legumes" },

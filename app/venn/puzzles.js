@@ -942,7 +942,7 @@ export const PUZZLES = [
     domain: 'country',
     rules: [{ k: 'fact', p: 'asia' }, { k: 'fact', p: 'noborder' }, { k: 'lenGte', n: 6 }],
     items: [
-      'SAMOA', 'INDIA', 'JAMAICA', 'JAPAN',
+      'SAMOA', 'INDIA', 'ICELAND', 'JAPAN',
       'MALAYSIA', 'SENEGAL', 'CAMBODIA', 'IRAQ',
       'ESTONIA', 'NORWAY', 'TONGA', 'SINGAPORE',
     ],
@@ -1062,7 +1062,7 @@ export const PUZZLES = [
     domain: 'president',
     rules: [{ k: 'fact', p: 'vpfirst' }, { k: 'fact', p: 'virginia' }, { k: 'norepeat' }],
     items: [
-      'TAYLOR', 'MONROE', 'TRUMAN', 'FORD',
+      'TAYLOR', 'MONROE', 'NIXON', 'FORD',
       'JEFFERSON', 'MCKINLEY', 'TYLER', 'HARDING',
       'MADISON', 'BIDEN', 'VAN BUREN', 'WILSON',
     ],
@@ -1181,7 +1181,7 @@ export const PUZZLES = [
     items: [
       'BOTSWANA', 'ARGENTINA', 'VIETNAM', 'BOLIVIA',
       'KUWAIT', 'BURUNDI', 'NAMIBIA', 'VENEZUELA',
-      'MAURITIUS', 'HONDURAS', 'CUBA', 'PANAMA',
+      'MAURITIUS', 'HONDURAS', 'PERU', 'PANAMA',
     ],
   },
   {
@@ -1211,7 +1211,7 @@ export const PUZZLES = [
     rules: [{ k: 'fact', p: 'lo' }, { k: 'fact', p: 'noble' }, { k: 'norepeat' }],
     items: [
       'CARBON', 'CESIUM', 'BARIUM', 'RADON',
-      'XENON', 'POTASSIUM', 'NEON', 'HYDROGEN',
+      'XENON', 'MAGNESIUM', 'NEON', 'HYDROGEN',
       'HELIUM', 'KRYPTON', 'ARGON', 'CHLORINE',
     ],
   },

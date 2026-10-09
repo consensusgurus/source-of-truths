@@ -85,7 +85,7 @@ export const LANE_DAYS = [
     { c: 'Physical World', t: 2, q: 'Which strait splits Istanbul in two and joins the Black Sea to the Sea of Marmara?', a: 'The Bosporus', d: ['The Dardanelles', 'The Kerch Strait', 'The Strait of Otranto'] },
     { c: 'Physical World', t: 3, q: 'Which sea lies between the Italian mainland, Sardinia and Sicily?', a: 'The Tyrrhenian Sea', d: ['The Ionian Sea', 'The Ligurian Sea', 'The Adriatic Sea'] },
     { c: 'Physical World', t: 4, q: 'Which desert lies between the Amu Darya and the Syr Darya, mostly in Uzbekistan?', a: 'The Kyzylkum Desert', d: ['The Karakum Desert', 'The Taklamakan Desert', 'The Gobi'] },
-    { c: 'Physical World', t: 5, q: 'The eruption of which volcano destroyed the town of Saint-Pierre on Martinique in 1902?', a: 'Mount Pelee', d: ['Soufriere Hills', 'La Grande Soufriere', 'Mount Misery'] },
+    { c: 'Physical World', t: 5, q: 'The eruption of which volcano destroyed the town of Saint-Pierre on Martinique in 1902?', a: 'Mount Pelee', d: ['Mount Liamuiga', 'La Grande Soufriere', 'Mount Misery'] },
   ],
   // day 12
   [
@@ -155,7 +155,7 @@ export const LANE_DAYS = [
   [
     { c: 'Physical World', t: 1, q: 'What is the name for the layer of the Earth that lies between the crust and the core?', a: 'The mantle', d: ['The lithosphere', 'The stratosphere', 'The outer core'] },
     { c: 'Physical World', t: 2, q: 'Which waterfall on the Zambezi is known locally as Mosi-oa-Tunya, the smoke that thunders?', a: 'Victoria Falls', d: ['Kalambo Falls', 'Boyoma Falls', 'Augrabies Falls'] },
-    { c: 'Physical World', t: 3, q: 'Which sea lies between Greece, Albania and the southern coast of Italy?', a: 'The Ionian Sea', d: ['The Aegean Sea', 'The Adriatic Sea', 'The Tyrrhenian Sea'] },
+    { c: 'Physical World', t: 3, q: 'Which sea washes the western coast of Greece and the island of Corfu, south of the Adriatic?', a: 'The Ionian Sea', d: ['The Aegean Sea', 'The Adriatic Sea', 'The Tyrrhenian Sea'] },
     { c: 'Physical World', t: 4, q: 'The Rwenzori Mountains, sometimes called the Mountains of the Moon, straddle the border of Uganda and which country?', a: 'The Democratic Republic of the Congo', d: ['Rwanda', 'Tanzania', 'South Sudan'] },
     { c: 'Physical World', t: 5, q: 'Which Antarctic volcano holds one of the few long-lived lava lakes on Earth?', a: 'Mount Erebus', d: ['Mount Terror', 'Mount Sidley', 'Deception Island'] },
   ],
@@ -211,7 +211,7 @@ export const LANE_DAYS = [
   [
     { c: 'Physical World', t: 1, q: 'Which is the highest mountain range in the world?', a: 'The Himalayas', d: ['The Andes', 'The Rocky Mountains', 'The Alps'] },
     { c: 'Physical World', t: 2, q: 'What is the name for the looping bend a river makes as it winds across flat ground?', a: 'A meander', d: ['An oxbow', 'A delta', 'A rapid'] },
-    { c: 'Physical World', t: 3, q: 'The Great Basin Desert covers almost the whole of which US state?', a: 'Nevada', d: ['Utah', 'Arizona', 'New Mexico'] },
+    { c: 'Physical World', t: 3, q: 'The Great Basin Desert covers most of which US state?', a: 'Nevada', d: ['Utah', 'Arizona', 'New Mexico'] },
     { c: 'Physical World', t: 4, q: 'Which shallow sea lies between New Guinea and the northern coast of Australia?', a: 'The Arafura Sea', d: ['The Coral Sea', 'The Timor Sea', 'The Banda Sea'] },
     { c: 'Physical World', t: 5, q: 'Which strait separates Sardinia from Corsica?', a: 'The Strait of Bonifacio', d: ['The Strait of Messina', 'The Strait of Otranto', 'The Strait of Sicily'] },
   ],

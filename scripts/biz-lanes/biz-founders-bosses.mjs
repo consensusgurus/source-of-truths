@@ -273,7 +273,7 @@ export const LANE_DAYS = [
   ],
   // day 35
   [
-    { c: 'Founders & Bosses', t: 1, q: 'Adi Dassler registered which sportswear label in 1949, after the family business broke up in a quarrel with his brother?', a: 'Adidas', d: ['Puma', 'Hummel', 'Umbro'] },
+    { c: 'Founders & Bosses', t: 1, q: 'Rudolf Dassler registered which sportswear label in 1948, after the family business broke up in a quarrel with his brother?', a: 'Puma', d: ['Adidas', 'Hummel', 'Umbro'] },
     { c: 'Founders & Bosses', t: 2, q: 'Frederick Terman, the provost who pushed his graduates to start firms nearby and helped seed Silicon Valley, taught at which university?', a: 'Stanford', d: ['Berkeley', 'Caltech', 'Santa Clara'] },
     { c: 'Founders & Bosses', t: 3, q: 'Which Hong Kong businessman started as a factory hand and founded the plastics maker Cheung Kong Industries in 1950?', a: 'Li Ka-shing', d: ['Y. K. Pao', 'Run Run Shaw', 'Stanley Ho'] },
     { c: 'Founders & Bosses', t: 4, q: 'In which year did Liu Chuanzhi and ten colleagues found the Beijing computer venture that became Lenovo?', a: '1984', d: ['1978', '1991', '1997'] },
@@ -353,7 +353,7 @@ export const LANE_DAYS = [
   ],
   // day 45
   [
-    { c: 'Founders & Bosses', t: 1, q: 'Tiffany, Cartier and Bulgari all made their names selling which kind of goods?', a: 'Jewelry', d: ['Perfume', 'Furniture', 'Porcelain'] },
+    { c: 'Founders & Bosses', t: 1, q: 'Tiffany, Cartier and Harry Winston all made their names selling which kind of goods?', a: 'Jewelry', d: ['Perfume', 'Furniture', 'Porcelain'] },
     { c: 'Founders & Bosses', t: 2, q: 'Who became the first chairman of De Beers Consolidated Mines when the South African diamond fields were amalgamated in 1888?', a: 'Cecil Rhodes', d: ['Barney Barnato', 'Alfred Beit', 'Julius Wernher'] },
     { c: 'Founders & Bosses', t: 3, q: 'Which Paris luxury house began in 1837 as a workshop making harnesses and saddles for European nobility?', a: 'Hermes', d: ['Goyard', 'Lancel', 'Delvaux'] },
     { c: 'Founders & Bosses', t: 4, q: 'What did Steve Jobs raise over the building housing his Macintosh team in 1983, to mark them as outsiders?', a: 'A pirate flag', d: ['A rainbow banner', 'A ship\'s anchor', 'A blank white sheet'] },
@@ -433,7 +433,7 @@ export const LANE_DAYS = [
   ],
   // day 55
   [
-    { c: 'Founders & Bosses', t: 1, q: 'Steinway, Bosendorfer and Bechstein all made their names building which instrument?', a: 'Pianos', d: ['Violins', 'Organs', 'Harps'] },
+    { c: 'Founders & Bosses', t: 1, q: 'Steinway, Bluthner and Bechstein all made their names building which instrument?', a: 'Pianos', d: ['Violins', 'Organs', 'Harps'] },
     { c: 'Founders & Bosses', t: 2, q: 'Leo Fender, who put the first mass-produced solid-body electric guitar on sale, ran which kind of business beforehand?', a: 'A radio repair shop', d: ['A dance hall', 'A furniture workshop', 'A record store'] },
     { c: 'Founders & Bosses', t: 3, q: 'Which electronic instrument company did Ikutaro Kakehashi found in Osaka in 1972, later famous for its drum machines?', a: 'Roland', d: ['Korg', 'Akai', 'Kawai'] },
     { c: 'Founders & Bosses', t: 4, q: 'Which American began selling theremin kits in the early 1950s and gave his surname to a family of synthesizers?', a: 'Robert Moog', d: ['Don Buchla', 'Alan Pearlman', 'Tom Oberheim'] },

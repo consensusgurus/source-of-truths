@@ -194,8 +194,8 @@ export const LANE_DAYS = [
   // day 25
   [
     { c: 'Everything Else', t: 1, q: 'Which Spanish tennis player won the French Open fourteen times?', a: 'Rafael Nadal', d: ['Carlos Moya', 'David Ferrer', 'Juan Carlos Ferrero'] },
-    { c: 'Everything Else', t: 2, q: 'The Summer Olympic Games returned to Athens in which year?', a: '2004', d: ['1996', '2000', '2008'] },
-    { c: 'Everything Else', t: 3, q: 'Which nation won the most medals at the 1998 Nagano Winter Olympic Games?', a: 'Germany', d: ['Norway', 'Russia', 'Austria'] },
+    { c: 'Everything Else', t: 2, q: 'In which year did Phil Mickelson win his first major, the Masters?', a: '2004', d: ['1996', '2000', '2008'] },
+    { c: 'Everything Else', t: 3, q: 'Which nation won the most medals at the 1998 Winter Olympic Games in Japan?', a: 'Germany', d: ['Norway', 'Russia', 'Austria'] },
     { c: 'Everything Else', t: 4, q: 'Which Soviet pole vaulter became the first man to clear six meters, in 1985?', a: 'Sergey Bubka', d: ['Rodion Gataullin', 'Konstantin Volkov', 'Vasiliy Bubka'] },
     { c: 'Everything Else', t: 5, q: 'Which trophy, bearing the sculpted faces of past winners, is presented at the Indianapolis 500?', a: 'The Borg-Warner Trophy', d: ['The Astor Cup', 'The Vanderbilt Cup', 'The Wheeler Trophy'] },
   ],
@@ -411,7 +411,7 @@ export const LANE_DAYS = [
   [
     { c: 'Everything Else', t: 1, q: 'Which Chinese city hosted the 2022 Winter Olympic Games?', a: 'Beijing', d: ['Shanghai', 'Harbin', 'Guangzhou'] },
     { c: 'Everything Else', t: 2, q: 'Which horse won the American Triple Crown in 1948?', a: 'Citation', d: ['Assault', 'Whirlaway', 'Count Fleet'] },
-    { c: 'Everything Else', t: 3, q: 'Which nation won the men\'s 4x100 meters relay gold at the 2004 Athens Olympic Games?', a: 'Great Britain', d: ['The United States', 'Nigeria', 'Jamaica'] },
+    { c: 'Everything Else', t: 3, q: 'Which nation won the men\'s 4x100 meters relay gold at the 2004 Summer Olympic Games?', a: 'Great Britain', d: ['The United States', 'Nigeria', 'Jamaica'] },
     { c: 'Everything Else', t: 4, q: 'Which golfer won the US Women\'s Open in 1948, 1950 and 1954?', a: 'Babe Didrikson Zaharias', d: ['Patty Berg', 'Louise Suggs', 'Betsy Rawls'] },
     { c: 'Everything Else', t: 5, q: 'Which Swiss resort hosted the Winter Olympic Games both before and after the Second World War?', a: 'St Moritz', d: ['Davos', 'Zermatt', 'Gstaad'] },
   ],

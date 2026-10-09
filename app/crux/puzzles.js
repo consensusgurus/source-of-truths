@@ -3049,7 +3049,7 @@ export const PUZZLES = [
     categories: [
       { name: "Card games", words: ["PIQUET", "CRIBBAGE"] },
       { name: "Fireplace tools", words: ["POKER", "FENDER"] },
-      { name: "Cookware", words: ["PITCHER", "SKILLET"] },
+      { name: "Kitchenware", words: ["PITCHER", "SKILLET"] },
       { name: "Sailing gear", words: ["TILLER", "SPINNAKER"] },
     ],
     slots: [
@@ -3311,10 +3311,10 @@ export const PUZZLES = [
     cols: 12,
     collisions: [
       { word: "SCUTTLE", reads: "Fireplace tools" },
-      { word: "GALLEY", reads: "Ship rooms" },
+      { word: "GALLEY", reads: "Ship parts" },
     ],
     categories: [
-      { name: "Ship rooms", words: ["SCUTTLE", "BRIG"] },
+      { name: "Ship parts", words: ["SCUTTLE", "BRIG"] },
       { name: "Fireplace tools", words: ["BELLOWS", "TONGS"] },
       { name: "Printing terms", words: ["GALLEY", "SERIF"] },
       { name: "Card games", words: ["BEZIQUE", "CANASTA"] },
@@ -3766,7 +3766,7 @@ export const PUZZLES = [
       { word: "NUT", reads: "Fasteners" },
     ],
     categories: [
-      { name: "Chess tactics", words: ["PIN", "FIANCHETTO", "FORK"] },
+      { name: "Chess terms", words: ["PIN", "FIANCHETTO", "FORK"] },
       { name: "Fasteners", words: ["STAPLE", "TOGGLE", "RIVET"] },
       { name: "Guitar parts", words: ["NUT", "NECK", "PICKUP"] },
       { name: "Office supplies", words: ["RULER", "FOLDER", "ERASER"] },
@@ -3802,7 +3802,7 @@ export const PUZZLES = [
       { name: "Eye parts", words: ["LENS", "RETINA"] },
       { name: "Camera parts", words: ["SHUTTER", "FLASH"] },
       { name: "Window parts", words: ["TRANSOM", "SASH"] },
-      { name: "Punctuation marks", words: ["CARET", "COLON"] },
+      { name: "Typographic marks", words: ["CARET", "COLON"] },
     ],
     slots: [
       { id: "1D", word: "COLON", row: 0, col: 7, dir: "D" },
@@ -3979,7 +3979,7 @@ export const PUZZLES = [
       { name: "Card games", words: ["CANASTA", "PIQUET", "CRIBBAGE"] },
       { name: "Fireplace tools", words: ["POKER", "FENDER", "TONGS"] },
       { name: "Guitar parts", words: ["BRIDGE", "TUNER", "FRET"] },
-      { name: "Ship rooms", words: ["SCUTTLE", "BRIG", "ORLOP"] },
+      { name: "Ship parts", words: ["SCUTTLE", "BRIG", "ORLOP"] },
     ],
     slots: [
       { id: "1D", word: "ORLOP", row: 0, col: 2, dir: "D" },
@@ -4011,7 +4011,7 @@ export const PUZZLES = [
     categories: [
       { name: "Beekeeping terms", words: ["SMOKER", "COMB"] },
       { name: "Wartime aircraft", words: ["HURRICANE", "TYPHOON"] },
-      { name: "Storms", words: ["CYCLONE", "TEMPEST"] },
+      { name: "Storms", words: ["CYCLONE", "TWISTER"] },
       { name: "Woodwind instruments", words: ["PICCOLO", "CLARINET"] },
     ],
     slots: [
@@ -4022,7 +4022,7 @@ export const PUZZLES = [
       { id: "5A", word: "CYCLONE", row: 5, col: 2, dir: "A" },
       { id: "5D", word: "CLARINET", row: 5, col: 2, dir: "D" },
       { id: "6A", word: "HURRICANE", row: 8, col: 0, dir: "A" },
-      { id: "7A", word: "TEMPEST", row: 12, col: 2, dir: "A" },
+      { id: "7A", word: "TWISTER", row: 12, col: 2, dir: "A" },
     ],
   },
   {

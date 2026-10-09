@@ -1945,7 +1945,7 @@ export const PUZZLES = [
     final: 'HEADSTRONG',
     words: [
       { answer: 'DEPICT', scramble: 'CDTPIE', marks: [5] },
-      { answer: 'WRIGHT', scramble: 'GTWRIH', marks: [1, 3] },
+      { answer: 'BRIGHT', scramble: 'GTBRIH', marks: [1, 3] },
       { answer: 'ZODIAC', scramble: 'ZIOACD', marks: [1, 2, 4] },
       { answer: 'SKETCH', scramble: 'SCHKET', marks: [0, 2, 5] },
       { answer: 'POISON', scramble: 'OONISP', marks: [5] },

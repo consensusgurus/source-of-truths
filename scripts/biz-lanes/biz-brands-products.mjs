@@ -114,7 +114,7 @@ export const LANE_DAYS = [
   // day 15
   [
     { c: 'Brands & Products', t: 1, q: 'LEGO bricks are molded from which material?', a: 'Plastic', d: ['Wood', 'Ceramic', 'Rubber'] },
-    { c: 'Brands & Products', t: 2, q: 'Which airline founded in 1919 became the flag carrier of the Netherlands?', a: 'KLM', d: ['Sabena', 'Martinair', 'Transavia'] },
+    { c: 'Brands & Products', t: 2, q: 'Which airline, founded in 1919, is the oldest still flying under its original name?', a: 'KLM', d: ['Sabena', 'Martinair', 'Transavia'] },
     { c: 'Brands & Products', t: 3, q: 'The car brand Fiat takes its name from an acronym meaning what in English?', a: 'Italian Automobile Factory of Turin', d: ['Federated Italian Auto Trades', 'Italian Alliance of Auto Traders', 'Fine Italian Automobiles of Turin'] },
     { c: 'Brands & Products', t: 4, q: 'The car brand Mercedes was named for the daughter of which Austrian businessman who sold Daimler cars?', a: 'Emil Jellinek', d: ['Adolf Rosenberger', 'Camille Jenatzy', 'Josef Ganz'] },
     { c: 'Brands & Products', t: 5, q: 'Which sugar-free drink did the Coca-Cola Company launch in 1963, its first?', a: 'Tab', d: ['Fresca', 'Diet Rite', 'Sprite Zero'] },
@@ -161,7 +161,7 @@ export const LANE_DAYS = [
   ],
   // day 21
   [
-    { c: 'Brands & Products', t: 1, q: 'Which brand of Irish stout is known for its near-black body and thick creamy head?', a: 'Guinness', d: ["Murphy's", 'Beamish', 'Newcastle Brown Ale'] },
+    { c: 'Brands & Products', t: 1, q: 'Which brand of Irish stout is known for its near-black body and thick creamy head?', a: 'Guinness', d: ["Smithwick's", 'Harp', 'Newcastle Brown Ale'] },
     { c: 'Brands & Products', t: 2, q: 'The Heineken brewing brand originated in which country?', a: 'The Netherlands', d: ['Belgium', 'Germany', 'Denmark'] },
     { c: 'Brands & Products', t: 3, q: 'Which two-word slogan did the beer brand Stella Artois use in British advertising from 1982?', a: 'Reassuringly Expensive', d: ['Refreshingly Different', 'Probably The Best', 'Made To Matter'] },
     { c: 'Brands & Products', t: 4, q: 'Which American brewer put the first nationally marketed light beer on sale in 1975?', a: 'Miller', d: ['Anheuser-Busch', 'Coors', 'Schlitz'] },

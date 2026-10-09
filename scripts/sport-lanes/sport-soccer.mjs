@@ -122,7 +122,7 @@ export const LANE_DAYS = [
   // day 16
   [
     { c: 'Soccer', t: 1, q: 'Which Newcastle and Blackburn striker retired with 260 goals in the Premier League?', a: 'Alan Shearer', d: ['Andy Cole', 'Les Ferdinand', 'Chris Sutton'] },
-    { c: 'Soccer', t: 2, q: 'In which country is the club Al Hilal based?', a: 'Saudi Arabia', d: ['Qatar', 'The United Arab Emirates', 'Egypt'] },
+    { c: 'Soccer', t: 2, q: 'In which country is the club Al Hilal based?', a: 'Saudi Arabia', d: ['Qatar', 'Kuwait', 'Egypt'] },
     { c: 'Soccer', t: 3, q: 'In which year did the Women\'s World Cup first feature 24 teams?', a: '2015', d: ['2007', '2011', '2019'] },
     { c: 'Soccer', t: 4, q: 'Which man won the World Cup as a Brazil player in 1958 and 1962 and then as head coach in 1970?', a: 'Mario Zagallo', d: ['Carlos Alberto Parreira', 'Tele Santana', 'Joao Saldanha'] },
     { c: 'Soccer', t: 5, q: 'Which Dutch club won the European Cup in 1988 by beating Benfica on penalties?', a: 'PSV Eindhoven', d: ['AZ Alkmaar', 'Twente', 'Utrecht'] },
@@ -133,7 +133,7 @@ export const LANE_DAYS = [
     { c: 'Soccer', t: 2, q: 'Which country did the forward Marta represent at international level?', a: 'Brazil', d: ['Portugal', 'Argentina', 'Colombia'] },
     { c: 'Soccer', t: 3, q: 'Which German club won the Champions League in 1997?', a: 'Borussia Dortmund', d: ['Bayern Munich', 'Schalke', 'Bayer Leverkusen'] },
     { c: 'Soccer', t: 4, q: 'In which year did women\'s soccer first appear on the Olympic program?', a: '1996', d: ['1988', '1992', '2000'] },
-    { c: 'Soccer', t: 5, q: 'Which nation won the first South American championship for national teams, staged in 1916?', a: 'Uruguay', d: ['Argentina', 'Brazil', 'Chile'] },
+    { c: 'Soccer', t: 5, q: 'Which nation won the first South American championship for national teams, staged in 1916?', a: 'Uruguay', d: ['Argentina', 'Brazil', 'Paraguay'] },
   ],
   // day 18
   [
@@ -435,7 +435,7 @@ export const LANE_DAYS = [
   [
     { c: 'Soccer', t: 1, q: 'Which Rome club is nicknamed the Giallorossi?', a: 'Roma', d: ['Lazio', 'Fiorentina', 'Parma'] },
     { c: 'Soccer', t: 2, q: 'Which country\'s clubs compete in the top division known as the K League?', a: 'South Korea', d: ['Japan', 'China', 'Thailand'] },
-    { c: 'Soccer', t: 3, q: 'By what name is the Japanese women\'s national team widely known?', a: 'Nadeshiko Japan', d: ['The Sakura Eleven', 'The Blue Cranes', 'The Rising Sun'] },
+    { c: 'Soccer', t: 3, q: 'By what name is the Australian women\'s national soccer team widely known?', a: 'The Matildas', d: ['The Socceroos', 'The Opals', 'The Wallaroos'] },
     { c: 'Soccer', t: 4, q: 'Which country reached a World Cup final for the first time in 2018?', a: 'Croatia', d: ['Belgium', 'England', 'Sweden'] },
     { c: 'Soccer', t: 5, q: 'In which year was the confederation covering North and Central America and the Caribbean formed?', a: '1961', d: ['1946', '1951', '1971'] },
   ],

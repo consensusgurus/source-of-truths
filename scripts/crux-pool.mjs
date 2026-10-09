@@ -142,7 +142,7 @@ export const CATEGORIES = [
   // pool's JAWBONE outright, which is a subset, not a trap.
   { name: 'Roof parts', words: ['GABLE', 'EAVES', 'RIDGE', 'VALLEY', 'HIP', 'GUTTER', 'DORMER', 'FASCIA', 'SOFFIT'] },
   { name: 'Bowling terms', words: ['STRIKE', 'SPARE', 'SPLIT', 'FRAME', 'TURKEY', 'ALLEY'] },
-  { name: 'Chess tactics', words: ['FORK', 'PIN', 'SKEWER', 'GAMBIT', 'FIANCHETTO', 'ZUGZWANG'] },
+  { name: 'Chess terms', words: ['FORK', 'PIN', 'SKEWER', 'GAMBIT', 'FIANCHETTO', 'ZUGZWANG'] },
   { name: 'Hairstyles', words: ['BOB', 'BUN', 'MULLET', 'QUIFF', 'POMPADOUR', 'BEEHIVE', 'MOHAWK'] },
   { name: 'Old coins', words: ['DUCAT', 'DOUBLOON', 'FLORIN', 'GUINEA', 'SOVEREIGN', 'NOBLE', 'FARTHING'] },
   { name: 'Rowing terms', words: ['STROKE', 'SCULL', 'CATCH', 'FEATHER', 'OAR'] },

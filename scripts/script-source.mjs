@@ -1597,7 +1597,7 @@ export const DAYS = [
 
 { c: 'Movies', t: 4, q: 'What error sets the plot of Kurosawa\'s High and Low in motion?', a: 'Kidnappers seize the chauffeur\'s son instead of the executive\'s', d: ['A ransom note is delivered to the wrong house', 'A police wiretap records the wrong line', 'A factory shipment is sent to a rival'] },
 { c: 'Television', t: 4, q: 'Which British sitcom was set in a Yorkshire corner shop run by a stammering, penny-pinching grocer and his put-upon nephew?', a: 'Open All Hours', d: ['Hi-de-Hi!', 'Terry and June', 'Bread'] },
-{ c: 'Actors & Directors', t: 4, q: 'Which Norwegian actress starred in Persona, Cries and Whispers and Autumn Sonata?', a: 'Liv Ullmann', d: ['Bibi Andersson', 'Harriet Andersson', 'Ingrid Thulin'] },
+{ c: 'Actors & Directors', t: 4, q: 'Which actress starred in Persona, Cries and Whispers and Autumn Sonata?', a: 'Liv Ullmann', d: ['Bibi Andersson', 'Harriet Andersson', 'Ingrid Thulin'] },
 { c: 'Awards & Box Office', t: 4, q: 'Which British film won the Academy Award for Best International Feature for 2023?', a: 'The Zone of Interest', d: ['Perfect Days', 'Society of the Snow', 'Io Capitano'] },
 { c: 'Behind the Scenes', t: 4, q: 'Which detective series was built around showing the crime first, a structure nicknamed the howcatchem?', a: 'Columbo', d: ['Ironside', 'McCloud', 'Kojak'] },
 
@@ -1655,7 +1655,7 @@ export const DAYS = [
 { c: 'Awards & Box Office', t: 2, q: 'Which 2021 superhero film was the top-grossing release worldwide that year?', a: 'Spider-Man: No Way Home', d: ['No Time to Die', 'F9', 'Dune'] },
 { c: 'Behind the Scenes', t: 2, q: 'Which 2000 Roman epic completed a supporting actor\'s remaining scenes with a digital double after he died during production?', a: 'Gladiator', d: ['Troy', 'Kingdom of Heaven', 'Alexander'] },
 
-{ c: 'Movies', t: 3, q: 'Which city\'s police department is infiltrated by an informant in The Departed?', a: 'Boston', d: ['New York', 'Chicago', 'Philadelphia'] },
+{ c: 'Movies', t: 3, q: 'In which city do the state police and the Irish mob plant moles on each other in The Departed?', a: 'Boston', d: ['New York', 'Chicago', 'Philadelphia'] },
 { c: 'Television', t: 3, q: 'Which sitcom was set in the New York garage of the Sunshine Cab Company?', a: 'Taxi', d: ['Barney Miller', 'Alice', 'Rhoda'] },
 { c: 'Actors & Directors', t: 3, q: 'Which director made Platoon, Wall Street and JFK?', a: 'Oliver Stone', d: ['Michael Mann', 'Sidney Lumet', 'Alan J. Pakula'] },
 { c: 'Awards & Box Office', t: 3, q: 'Which Academy Award category honors the people who build and dress the interiors a film is shot in?', a: 'Best Production Design', d: ['Best Costume Design', 'Best Makeup and Hairstyling', 'Best Visual Effects'] },
@@ -1702,7 +1702,7 @@ export const DAYS = [
 
 { c: 'Movies', t: 5, q: 'Through which building does the camera travel in Sokurov\'s Russian Ark?', a: 'The Winter Palace', d: ['The Kremlin', 'The Peterhof', 'The Bolshoi Theater'] },
 { c: 'Television', t: 5, q: 'Which Australian soap opera set in a women\'s prison ran from 1979 and built a cult following in Britain?', a: 'Prisoner', d: ['Bad Girls', 'Within These Walls', 'The Box'] },
-{ c: 'Actors & Directors', t: 5, q: 'Which Dutch cinematographer shot Paris, Texas and Dead Man?', a: 'Robby Muller', d: ['Ed Lachman', 'Chris Menges', 'Michael Ballhaus'] },
+{ c: 'Actors & Directors', t: 5, q: 'Which longtime Wim Wenders cinematographer shot Paris, Texas and Dead Man?', a: 'Robby Muller', d: ['Ed Lachman', 'Chris Menges', 'Michael Ballhaus'] },
 { c: 'Awards & Box Office', t: 5, q: 'Which film won the Sundance Grand Jury Prize for drama in 2003?', a: 'American Splendor', d: ['Thirteen', 'The Station Agent', 'Raising Victor Vargas'] },
 { c: 'Behind the Scenes', t: 5, q: 'Which 1960 epic replaced Anthony Mann with Stanley Kubrick about a week into shooting?', a: 'Spartacus', d: ['El Cid', 'King of Kings', 'The Fall of the Roman Empire'] },
 ],
@@ -1715,7 +1715,7 @@ export const DAYS = [
 { c: 'Awards & Box Office', t: 1, q: 'Which 2018 Marvel film was the top-grossing release worldwide that year?', a: 'Avengers: Infinity War', d: ['Black Panther', 'Jurassic World: Fallen Kingdom', 'Aquaman'] },
 { c: 'Behind the Scenes', t: 1, q: 'Which performer created and first voiced Kermit the Frog?', a: 'Jim Henson', d: ['Frank Oz', 'Caroll Spinney', 'Jerry Nelson'] },
 
-{ c: 'Movies', t: 2, q: 'Which district attorney becomes Two-Face in The Dark Knight?', a: 'Harvey Dent', d: ['Carmine Falcone', 'Jim Gordon', 'Edward Nygma'] },
+{ c: 'Movies', t: 2, q: 'Which district attorney becomes the villain Two-Face in the Batman stories?', a: 'Harvey Dent', d: ['Carmine Falcone', 'Jim Gordon', 'Edward Nygma'] },
 { c: 'Television', t: 2, q: 'Which 1970s series rebuilt a badly injured test pilot and astronaut with bionic limbs and an artificial eye?', a: 'The Six Million Dollar Man', d: ['The Bionic Woman', 'Automan', 'Manimal'] },
 { c: 'Actors & Directors', t: 2, q: 'Which actor played Aragorn in the Lord of the Rings films?', a: 'Viggo Mortensen', d: ['Karl Urban', 'Sean Bean', 'Stuart Townsend'] },
 { c: 'Awards & Box Office', t: 2, q: 'Which actress won Best Actress for playing Judy Garland in a 2019 film?', a: 'Renee Zellweger', d: ['Charlize Theron', 'Scarlett Johansson', 'Saoirse Ronan'] },
@@ -1880,7 +1880,7 @@ export const DAYS = [
 { c: 'Awards & Box Office', t: 1, q: 'Which 2018 animated sequel about a family of superheroes grossed more than 1.2 billion dollars worldwide?', a: 'Incredibles 2', d: ['Ralph Breaks the Internet', 'Hotel Transylvania 3: Summer Vacation', 'Bumblebee'] },
 { c: 'Behind the Scenes', t: 1, q: 'The giant marshmallow figure that stomps through the finale of the 1984 comedy Ghostbusters was achieved how?', a: 'A performer in a foam suit', d: ['Stop-motion animation', 'A hand-drawn animated overlay', 'A computer-generated model'] },
 
-{ c: 'Movies', t: 2, q: 'Which holiday is being celebrated when the tower is seized in Die Hard?', a: 'Christmas', d: ['Thanksgiving', 'New Year\'s Eve', 'The Fourth of July'] },
+{ c: 'Movies', t: 2, q: 'Which holiday is the office party celebrating when terrorists seize Nakatomi Plaza in the 1988 Bruce Willis thriller?', a: 'Christmas', d: ['Thanksgiving', 'New Year\'s Eve', 'The Fourth of July'] },
 { c: 'Television', t: 2, q: 'Which American childrens series opened with its host arriving home, changing into a cardigan and sneakers, and singing about being a neighbor?', a: 'Mister Rogers\' Neighborhood', d: ['Captain Kangaroo', 'Romper Room', 'The Electric Company'] },
 { c: 'Actors & Directors', t: 2, q: 'Which actor starred in Stagecoach, The Searchers and True Grit?', a: 'John Wayne', d: ['Gary Cooper', 'Randolph Scott', 'Joel McCrea'] },
 { c: 'Awards & Box Office', t: 2, q: 'Which studio released the original Star Wars trilogy?', a: 'Twentieth Century-Fox', d: ['Universal', 'Paramount', 'Columbia'] },
@@ -1935,7 +1935,7 @@ export const DAYS = [
 { c: 'Television', t: 5, q: 'Which BBC current affairs series broadcast a straight-faced 1957 report on the Swiss spaghetti harvest?', a: 'Panorama', d: ['Tonight', 'Nationwide', 'World in Action'] },
 { c: 'Actors & Directors', t: 5, q: 'Which Japanese director made Vengeance Is Mine and the 1983 version of The Ballad of Narayama?', a: 'Shohei Imamura', d: ['Nagisa Oshima', 'Masaki Kobayashi', 'Kon Ichikawa'] },
 { c: 'Awards & Box Office', t: 5, q: 'Which film won the Sundance Grand Jury Prize for drama in 1999?', a: 'Three Seasons', d: ['Tumbleweeds', 'Judy Berlin', 'American Movie'] },
-{ c: 'Behind the Scenes', t: 5, q: 'Which 1981 fantasy film introduced go motion, the stop-motion variant that blurs a model while it is being photographed?', a: 'Dragonslayer', d: ['Clash of the Titans', 'Excalibur', 'The Dark Crystal'] },
+{ c: 'Behind the Scenes', t: 5, q: 'Which 1981 fantasy film animated its dragon with go motion, the stop-motion variant that blurs a model while it is being photographed?', a: 'Dragonslayer', d: ['Clash of the Titans', 'Excalibur', 'The Dark Crystal'] },
 ],
 
 // ── Day 59 ──────────────────────────────────────────────────────────────
@@ -1976,7 +1976,7 @@ export const DAYS = [
 { c: 'Movies', t: 1, q: 'How does Kevin defend the house against the two burglars in Home Alone?', a: 'With homemade booby traps', d: ['By calling the police', 'By hiding in the attic', 'By letting the dog loose'] },
 { c: 'Television', t: 1, q: 'In the 1960s Batman series, what is the name of the Wayne family butler?', a: 'Alfred', d: ['Jarvis', 'Hudson', 'Carson'] },
 { c: 'Actors & Directors', t: 1, q: 'Which actor took over as James Bond in the 2006 Casino Royale?', a: 'Daniel Craig', d: ['Pierce Brosnan', 'Timothy Dalton', 'Clive Owen'] },
-{ c: 'Awards & Box Office', t: 1, q: 'In which Canadian city is the film festival that hands out a People\'s Choice Award each September held?', a: 'Toronto', d: ['Montreal', 'Vancouver', 'Ottawa'] },
+{ c: 'Awards & Box Office', t: 1, q: 'In which country is the Busan International Film Festival held?', a: 'South Korea', d: ['Japan', 'China', 'Taiwan'] },
 { c: 'Behind the Scenes', t: 1, q: 'Which director made a habit of appearing briefly in nearly all of his own films?', a: 'Alfred Hitchcock', d: ['Billy Wilder', 'John Ford', 'Howard Hawks'] },
 
 { c: 'Movies', t: 2, q: 'What do the thieves target in Ocean\'s Eleven?', a: 'A Las Vegas casino vault', d: ['A Monte Carlo jewelry auction', 'An armored train', 'A Swiss bank branch'] },
@@ -2024,7 +2024,7 @@ export const DAYS = [
 { c: 'Awards & Box Office', t: 3, q: 'Which film was the first to gross one billion dollars worldwide?', a: 'Titanic', d: ['Star Wars', 'Jurassic Park', 'Star Wars: The Phantom Menace'] },
 { c: 'Behind the Scenes', t: 3, q: 'Which ancient site carved from rose-colored rock served as the temple exterior in Indiana Jones and the Last Crusade?', a: 'Petra', d: ['Palmyra', 'Ephesus', 'Leptis Magna'] },
 
-{ c: 'Movies', t: 4, q: 'Where does the man whisper his secret at the end of In the Mood for Love?', a: 'Into a hollow in the ruins at Angkor Wat', d: ['Into a well behind a temple in Kyoto', 'Into a crack in the Great Wall', 'Into a hole in a Hong Kong seawall'] },
+{ c: 'Movies', t: 4, q: 'Where does the man whisper his secret at the end of In the Mood for Love?', a: 'Into a hollow in an ancient temple wall', d: ['Into a well in a Macau courtyard', 'Into a crack in the Great Wall', 'Into a hole in a Hong Kong seawall'] },
 { c: 'Television', t: 4, q: 'Which Swedish crime series, adapted from Henning Mankell novels, is set in and around the town of Ystad?', a: 'Wallander', d: ['Beck', 'The Sandhamn Murders', 'Arne Dahl'] },
 { c: 'Actors & Directors', t: 4, q: 'Which television writer created Deadwood?', a: 'David Milch', d: ['Steven Bochco', 'Tom Fontana', 'John Wells'] },
 { c: 'Awards & Box Office', t: 4, q: 'Which film won the Golden Globe for Best Motion Picture Musical or Comedy at the 2002 ceremony?', a: 'Moulin Rouge!', d: ['Gosford Park', 'Bridget Jones\'s Diary', 'Legally Blonde'] },
@@ -2059,13 +2059,13 @@ export const DAYS = [
 
 { c: 'Movies', t: 4, q: 'What does the silent man walk out of in the opening of Paris, Texas?', a: 'The desert', d: ['A prison', 'A hospital ward', 'The sea'] },
 { c: 'Television', t: 4, q: 'Which panel show, beginning in 1950, had celebrity panelists question a guest to work out their unusual occupation?', a: 'What\'s My Line?', d: ['To Tell the Truth', 'I\'ve Got a Secret', 'Truth or Consequences'] },
-{ c: 'Actors & Directors', t: 4, q: 'Which director made Butch Cassidy and the Sundance Kid and The Sting?', a: 'George Roy Hill', d: ['Sydney Pollack', 'Arthur Penn', 'John Schlesinger'] },
+{ c: 'Actors & Directors', t: 4, q: 'Which director made Butch Cassidy and the Sundance Kid and Slaughterhouse-Five?', a: 'George Roy Hill', d: ['Sydney Pollack', 'Arthur Penn', 'John Schlesinger'] },
 { c: 'Awards & Box Office', t: 4, q: 'Which film won the Golden Globe for Best Motion Picture Drama at the 2016 ceremony?', a: 'The Revenant', d: ['Spotlight', 'Room', 'Mad Max: Fury Road'] },
 { c: 'Behind the Scenes', t: 4, q: 'What did Gerry Anderson\'s team call the electronic marionette technique used on Thunderbirds?', a: 'Supermarionation', d: ['Animagic', 'Dynamation', 'Marionation'] },
 
 { c: 'Movies', t: 5, q: 'How many alternative versions of one man\'s life play out in Kieslowski\'s Blind Chance?', a: 'Three', d: ['Two', 'Four', 'Seven'] },
 { c: 'Television', t: 5, q: 'Which 1974 anime sent a sunken battleship, rebuilt as a starship, on a voyage to the planet Iscandar?', a: 'Space Battleship Yamato', d: ['Captain Harlock', 'Galaxy Express 999', 'Gatchaman'] },
-{ c: 'Actors & Directors', t: 5, q: 'Which Senegalese director made Touki Bouki?', a: 'Djibril Diop Mambety', d: ['Safi Faye', 'Moussa Sene Absa', 'Mahamat-Saleh Haroun'] },
+{ c: 'Actors & Directors', t: 5, q: 'Which director made the 1973 film Touki Bouki?', a: 'Djibril Diop Mambety', d: ['Safi Faye', 'Moussa Sene Absa', 'Mahamat-Saleh Haroun'] },
 { c: 'Awards & Box Office', t: 5, q: 'Which film won the Sundance Grand Jury Prize for drama in 2018?', a: 'The Miseducation of Cameron Post', d: ['Blindspotting', 'Hereditary', 'Sorry to Bother You'] },
 { c: 'Behind the Scenes', t: 5, q: 'Which disused west London power station was dressed as the colony processing plant in Aliens?', a: 'Acton Lane', d: ['Battersea', 'Bankside', 'Croydon B'] },
 ],
@@ -2087,7 +2087,7 @@ export const DAYS = [
 { c: 'Movies', t: 3, q: 'Where is the isolated research station in John Carpenter\'s The Thing?', a: 'Antarctica', d: ['Alaska', 'Greenland', 'Siberia'] },
 { c: 'Television', t: 3, q: 'Which BBC motoring series featured a segment called Star in a Reasonably Priced Car and an anonymous helmeted test driver?', a: 'Top Gear', d: ['Fifth Gear', 'The Grand Tour', 'Wheeler Dealers'] },
 { c: 'Actors & Directors', t: 3, q: 'Which Austro-Hungarian born Hollywood director made Sunset Boulevard, Some Like It Hot and The Apartment?', a: 'Billy Wilder', d: ['George Cukor', 'Ernst Lubitsch', 'Preston Sturges'] },
-{ c: 'Awards & Box Office', t: 3, q: 'Which actor won Best Actor for Lincoln?', a: 'Daniel Day-Lewis', d: ['Hugh Jackman', 'Denzel Washington', 'Joaquin Phoenix'] },
+{ c: 'Awards & Box Office', t: 3, q: 'Which actor won Best Actor for Lincoln?', a: 'Daniel Day-Lewis', d: ['Hugh Jackman', 'Bradley Cooper', 'Joaquin Phoenix'] },
 { c: 'Behind the Scenes', t: 3, q: 'Which series films in Atlanta, Georgia, doubling it for a small Indiana town in the 1980s?', a: 'Stranger Things', d: ['The Americans', 'Riverdale', 'Dark'] },
 
 { c: 'Movies', t: 4, q: 'What is absurd about the Arpel family home in Jacques Tati\'s Mon Oncle?', a: 'It is a gadget-filled modernist house that defeats its owners', d: ['It is built on the roof of a factory', 'It is an exact copy of a palace', 'It has no windows at all'] },
@@ -2129,7 +2129,7 @@ export const DAYS = [
 { c: 'Awards & Box Office', t: 4, q: 'Which series won the Emmy for Outstanding Drama Series in 2021?', a: 'The Crown', d: ['The Mandalorian', 'Bridgerton', 'Pose'] },
 { c: 'Behind the Scenes', t: 4, q: 'Which traveling matte process, refined for Mary Poppins, used yellow lamps to separate performers from their backgrounds?', a: 'The sodium vapor process', d: ['The blue screen process', 'The Schufftan process', 'Rotoscoping'] },
 
-{ c: 'Movies', t: 5, q: 'What is the struggling hero of Guru Dutt\'s Pyaasa?', a: 'An unrecognized poet', d: ['A railway clerk turned singer', 'A village schoolmaster', 'A painter of film posters'] },
+{ c: 'Movies', t: 5, q: 'What is the struggling hero of the 1957 Hindi film Pyaasa?', a: 'An unrecognized poet', d: ['A railway clerk turned singer', 'A village schoolmaster', 'A painter of film posters'] },
 { c: 'Television', t: 5, q: 'Which 2002 South Korean drama about first love and amnesia in snowy Chuncheon helped launch the Korean Wave in Japan?', a: 'Winter Sonata', d: ['Autumn in My Heart', 'Full House', 'Stairway to Heaven'] },
 { c: 'Actors & Directors', t: 5, q: 'Which cinematographer shot Pather Panchali and pioneered bounce lighting on Satyajit Ray\'s films?', a: 'Subrata Mitra', d: ['Soumendu Roy', 'V. K. Murthy', 'Radhu Karmakar'] },
 { c: 'Awards & Box Office', t: 5, q: 'Which film won the Sundance Grand Jury Prize for drama in 2011?', a: 'Like Crazy', d: ['Martha Marcy May Marlene', 'Another Earth', 'Pariah'] },
@@ -2210,10 +2210,10 @@ export const DAYS = [
 { c: 'Awards & Box Office', t: 1, q: 'Which 2009 film set on the moon Pandora won three Academy Awards including Best Visual Effects?', a: 'Avatar', d: ['District 9', 'Star Trek', 'Transformers: Revenge of the Fallen'] },
 { c: 'Behind the Scenes', t: 1, q: 'Which 1981 adventure cut a long planned sword fight down to a few seconds because its star was unwell on the Tunisia shoot?', a: 'Raiders of the Lost Ark', d: ['Indiana Jones and the Temple of Doom', 'The Mummy', 'Romancing the Stone'] },
 
-{ c: 'Movies', t: 2, q: 'What becomes of Chihiro\'s parents after they eat at the deserted food stalls in Spirited Away?', a: 'They are turned into pigs', d: ['They are turned to stone', 'They shrink to the size of mice', 'They forget their own daughter'] },
+{ c: 'Movies', t: 2, q: 'In Pixar\'s Up, what lifts Carl Fredricksen\'s house into the sky?', a: 'Thousands of helium balloons', d: ['A passing tornado', 'A giant kite', 'A hot air balloon burner'] },
 { c: 'Television', t: 2, q: 'Which sitcom about a Chicago police officer and his family was taken over by the nerdy neighbor Steve Urkel?', a: 'Family Matters', d: ['Growing Pains', 'Perfect Strangers', 'Step by Step'] },
 { c: 'Actors & Directors', t: 2, q: 'Which actor wore the cape in the 1978 Superman and its sequels?', a: 'Christopher Reeve', d: ['Brandon Routh', 'Dean Cain', 'Kirk Alyn'] },
-{ c: 'Awards & Box Office', t: 2, q: 'Which actor won Best Supporting Actor for Whiplash?', a: 'J.K. Simmons', d: ['Edward Norton', 'Ethan Hawke', 'Mark Ruffalo'] },
+{ c: 'Awards & Box Office', t: 2, q: 'Which actor won Best Supporting Actor for Moonlight?', a: 'Mahershala Ali', d: ['Dev Patel', 'Michael Shannon', 'Jeff Bridges'] },
 { c: 'Behind the Scenes', t: 2, q: 'Which 1980 film made the new stabilized camera rig famous by gliding it low along hotel corridors?', a: 'The Shining', d: ['Halloween', 'The Fog', 'Poltergeist'] },
 
 { c: 'Movies', t: 3, q: 'Which small cars carry out the getaway through Turin in the 1969 film The Italian Job?', a: 'Mini Coopers', d: ['Fiat 500s', 'Citroen 2CVs', 'Volkswagen Beetles'] },
@@ -2310,7 +2310,7 @@ export const DAYS = [
 { c: 'Behind the Scenes', t: 1, q: 'What happens at a table read?', a: 'The cast reads the script aloud together', d: ['The crew reviews the previous day\'s footage', 'The director chooses the camera lenses', 'The composer plays the score for the studio'] },
 
 { c: 'Movies', t: 2, q: 'What is the girls\' clique that Sandy is drawn into in Grease called?', a: 'The Pink Ladies', d: ['The T-Birds', 'The Bobby Soxers', 'The Rydell Belles'] },
-{ c: 'Television', t: 2, q: 'Which sitcom was narrated by a gifted boy stuck between an older brother and two younger ones in a chaotic family?', a: 'Malcolm in the Middle', d: ['The Middle', 'Even Stevens', 'Grounded for Life'] },
+{ c: 'Television', t: 2, q: 'Which sitcom was narrated straight to camera by a gifted boy with two older brothers and a younger one in a chaotic family?', a: 'Malcolm in the Middle', d: ['The Middle', 'Even Stevens', 'Grounded for Life'] },
 { c: 'Actors & Directors', t: 2, q: 'Which actor starred in The Hangover films and directed a 2018 version of A Star Is Born?', a: 'Bradley Cooper', d: ['Jake Gyllenhaal', 'Ed Helms', 'Zach Galifianakis'] },
 { c: 'Awards & Box Office', t: 2, q: 'Which 2024 Pixar sequel was the top-grossing film worldwide that year?', a: 'Inside Out 2', d: ['Deadpool & Wolverine', 'Despicable Me 4', 'Wicked'] },
 { c: 'Behind the Scenes', t: 2, q: 'Which historical drama series replaces its entire principal cast every two seasons so the actors match the characters\' ages?', a: 'The Crown', d: ['Downton Abbey', 'Victoria', 'Succession'] },
@@ -2384,7 +2384,7 @@ export const DAYS = [
 { c: 'Movies', t: 3, q: 'Which group of astronauts does The Right Stuff follow?', a: 'The Mercury Seven', d: ['The Apollo 11 crew', 'The Gemini twelve', 'The first space shuttle crew'] },
 { c: 'Television', t: 3, q: 'Which drama follows the crew of Firehouse 51 and is the first of a linked set of series set in the same city?', a: 'Chicago Fire', d: ['Rescue Me', 'Third Watch', 'Station 19'] },
 { c: 'Actors & Directors', t: 3, q: 'Which actor played Obi-Wan Kenobi in the 1977 Star Wars?', a: 'Alec Guinness', d: ['Peter Cushing', 'Christopher Lee', 'John Gielgud'] },
-{ c: 'Awards & Box Office', t: 3, q: 'Which 1984 supernatural comedy was the top-grossing release in North America that year?', a: 'Ghostbusters', d: ['Beverly Hills Cop', 'Indiana Jones and the Temple of Doom', 'Gremlins'] },
+{ c: 'Awards & Box Office', t: 3, q: 'Which 1984 supernatural comedy was nominated for Academy Awards for both its visual effects and its title song?', a: 'Ghostbusters', d: ['Beverly Hills Cop', 'Indiana Jones and the Temple of Doom', 'Gremlins'] },
 { c: 'Behind the Scenes', t: 3, q: 'Which 1956 epic parted a sea by pouring water into a tank and running the film backwards?', a: 'The Ten Commandments', d: ['Quo Vadis', 'Samson and Delilah', 'The Robe'] },
 
 { c: 'Movies', t: 4, q: 'What does the journalist do in the North African hotel in Antonioni\'s The Passenger?', a: 'He takes on the identity of a dead man', d: ['He burns his own film reels', 'He confesses to a crime he did not commit', 'He sells his passport to a smuggler'] },

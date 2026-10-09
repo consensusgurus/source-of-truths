@@ -13719,7 +13719,7 @@ export const PUZZLES = [
         options: [
           "Betta",
           "Pufferfish",
-          "Neon tetra",
+          "Molly",
           "Catfish",
           "Loach",
           "Goldfish",

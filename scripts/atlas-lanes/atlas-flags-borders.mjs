@@ -101,7 +101,7 @@ export const LANE_DAYS = [
     { c: 'Flags & Borders', t: 2, q: 'Which country lies immediately east of Serbia?', a: 'Bulgaria', d: ['Croatia', 'Slovenia', 'Albania'] },
     { c: 'Flags & Borders', t: 3, q: 'Which European country holds a land border with Brazil, by way of one of its overseas departments?', a: 'France', d: ['The Netherlands', 'Portugal', 'Spain'] },
     { c: 'Flags & Borders', t: 4, q: 'Which national flag and which US state flag both show a single white star on a blue square beside a white band and a red band?', a: 'Chile and Texas', d: ['Cuba and Puerto Rico', 'Panama and Ohio', 'Liberia and Georgia'] },
-    { c: 'Flags & Borders', t: 5, q: 'A 1920 treaty gave sovereignty over the Arctic archipelago of Svalbard to which country, while letting other signatories mine there?', a: 'Norway', d: ['Denmark', 'Iceland', 'Russia'] },
+    { c: 'Flags & Borders', t: 5, q: 'A 1920 treaty gave sovereignty over the Arctic archipelago of Svalbard to which country, while letting other signatories mine there?', a: 'Norway', d: ['Denmark', 'Sweden', 'Russia'] },
   ],
   // day 14
   [
@@ -149,12 +149,12 @@ export const LANE_DAYS = [
     { c: 'Flags & Borders', t: 2, q: 'How many gold stars form the circle on the flag of the European Union?', a: 'Twelve', d: ['Fifteen', 'Twenty-seven', 'Twenty-eight'] },
     { c: 'Flags & Borders', t: 3, q: 'Which African country\'s flag supplied the red, gold and green later adopted across the continent as the pan-African colors?', a: 'Ethiopia', d: ['Ghana', 'Kenya', 'Senegal'] },
     { c: 'Flags & Borders', t: 4, q: 'Bonaire, Saba and Sint Eustatius are special municipalities of which country?', a: 'The Netherlands', d: ['France', 'The United Kingdom', 'Denmark'] },
-    { c: 'Flags & Borders', t: 5, q: 'The Boundary Treaty of 1881 fixed a frontier along the highest crests of the Andes between which two countries?', a: 'Argentina and Chile', d: ['Peru and Bolivia', 'Ecuador and Colombia', 'Brazil and Bolivia'] },
+    { c: 'Flags & Borders', t: 5, q: 'The Treaty of Zuhab in 1639 fixed a frontier through the Zagros Mountains between which two empires?', a: 'The Ottoman and Safavid empires', d: ['The Ottoman and Russian empires', 'The Ottoman and Habsburg empires', 'The Mughal and Safavid empires'] },
   ],
   // day 20
   [
     { c: 'Flags & Borders', t: 1, q: 'Which continent is divided by no international boundaries at all?', a: 'Antarctica', d: ['Australia', 'Europe', 'South America'] },
-    { c: 'Flags & Borders', t: 2, q: 'The flags of Israel, Greece and Argentina are all built from which two colors?', a: 'Blue and white', d: ['Red and white', 'Green and white', 'Blue and yellow'] },
+    { c: 'Flags & Borders', t: 2, q: 'The flags of Israel, Greece and Somalia are all built from which two colors?', a: 'Blue and white', d: ['Red and white', 'Green and white', 'Blue and yellow'] },
     { c: 'Flags & Borders', t: 3, q: 'The Gulf of Aqaba is hemmed in by Egypt, Israel, Jordan and which other country?', a: 'Saudi Arabia', d: ['Syria', 'Lebanon', 'Yemen'] },
     { c: 'Flags & Borders', t: 4, q: 'Which country adopted a flag in 1995, after a referendum, that revived its Soviet-era design?', a: 'Belarus', d: ['Ukraine', 'Moldova', 'Kazakhstan'] },
     { c: 'Flags & Borders', t: 5, q: 'The Treaty of Trianon in 1920 cut about two thirds of the territory from which country?', a: 'Hungary', d: ['Austria', 'Bulgaria', 'Romania'] },
@@ -178,7 +178,7 @@ export const LANE_DAYS = [
   // day 23
   [
     { c: 'Flags & Borders', t: 1, q: 'Which country lies directly across the Skagerrak from southern Norway?', a: 'Denmark', d: ['Sweden', 'Germany', 'Poland'] },
-    { c: 'Flags & Borders', t: 2, q: 'The flag of Vietnam and the flag of China are both red fields carrying what?', a: 'Yellow stars', d: ['White crescents', 'Blue stripes', 'Green emblems'] },
+    { c: 'Flags & Borders', t: 2, q: 'The flag of Japan and the flag of Bangladesh both place what on a plain field?', a: 'A red disc', d: ['A white crescent', 'A blue cross', 'A gold star'] },
     { c: 'Flags & Borders', t: 3, q: 'The Danube forms most of the frontier between Romania and which country to its south?', a: 'Bulgaria', d: ['Serbia', 'Moldova', 'Ukraine'] },
     { c: 'Flags & Borders', t: 4, q: 'How many stars are on the flag of Brazil, one for each state plus the federal district?', a: 'Twenty-seven', d: ['Twenty-one', 'Twenty-four', 'Twenty-six'] },
     { c: 'Flags & Borders', t: 5, q: 'The Radcliffe Line of 1947 cut two big provinces of British India in half. Punjab was one. Which was the other?', a: 'Bengal', d: ['Assam', 'Bihar', 'Sindh'] },
@@ -187,7 +187,7 @@ export const LANE_DAYS = [
   [
     { c: 'Flags & Borders', t: 1, q: 'The three vertical bands of the flag of Belgium are black, yellow and what else?', a: 'Red', d: ['Green', 'Blue', 'White'] },
     { c: 'Flags & Borders', t: 2, q: 'Which island country lies in the eastern Mediterranean, south of Turkey?', a: 'Cyprus', d: ['Malta', 'Lebanon', 'Greece'] },
-    { c: 'Flags & Borders', t: 3, q: 'Which country\'s flag shows a broken trident on a gold band between two bands of ultramarine?', a: 'Barbados', d: ['Bahamas', 'Jamaica', 'Trinidad and Tobago'] },
+    { c: 'Flags & Borders', t: 3, q: 'Which country\'s flag shows a broken trident on a gold band between two bands of ultramarine?', a: 'Barbados', d: ['Bahamas', 'Saint Lucia', 'Trinidad and Tobago'] },
     { c: 'Flags & Borders', t: 4, q: 'Niue and Tokelau look to which country for their defense and foreign affairs?', a: 'New Zealand', d: ['Australia', 'France', 'The United Kingdom'] },
     { c: 'Flags & Borders', t: 5, q: 'Which country adopted a sky blue flag with a yellow star and a red diagonal stripe edged in yellow in 2006?', a: 'The Democratic Republic of the Congo', d: ['The Republic of the Congo', 'Angola', 'Chad'] },
   ],
@@ -196,7 +196,7 @@ export const LANE_DAYS = [
     { c: 'Flags & Borders', t: 1, q: 'The plain red disc on the flag of Japan represents what?', a: 'The sun', d: ['The moon', 'A cherry blossom', 'A drop of blood'] },
     { c: 'Flags & Borders', t: 2, q: 'Which country holds land on both sides of the Bosporus, so that its territory sits in two continents?', a: 'Turkey', d: ['Greece', 'Egypt', 'Georgia'] },
     { c: 'Flags & Borders', t: 3, q: 'Which country takes a white eagle wearing a golden crown as its national emblem?', a: 'Poland', d: ['Austria', 'Hungary', 'Romania'] },
-    { c: 'Flags & Borders', t: 4, q: 'The Mekong forms most of the boundary between Laos and which country?', a: 'Thailand', d: ['Vietnam', 'Cambodia', 'Myanmar'] },
+    { c: 'Flags & Borders', t: 4, q: 'The Mekong forms most of the boundary between Laos and which country?', a: 'Thailand', d: ['Vietnam', 'Malaysia', 'China'] },
     { c: 'Flags & Borders', t: 5, q: 'Which country\'s flag places a golden columnar emblem called the soyombo on the hoist band of a red, blue and red field?', a: 'Mongolia', d: ['Kyrgyzstan', 'Tajikistan', 'Bhutan'] },
   ],
   // day 26
@@ -226,7 +226,7 @@ export const LANE_DAYS = [
   // day 29
   [
     { c: 'Flags & Borders', t: 1, q: 'How many colors appear on the flag of Brazil?', a: 'Four', d: ['Two', 'Three', 'Five'] },
-    { c: 'Flags & Borders', t: 2, q: 'Which country has the Dominican Republic as its only land neighbor?', a: 'Haiti', d: ['Cuba', 'Jamaica', 'The Bahamas'] },
+    { c: 'Flags & Borders', t: 2, q: 'Which country is the only one to share a land border with The Gambia?', a: 'Senegal', d: ['Guinea', 'Mali', 'Guinea-Bissau'] },
     { c: 'Flags & Borders', t: 3, q: 'Which country adopted a flag in 1973 with a black triangle at the hoist and bands of aquamarine, gold and aquamarine?', a: 'The Bahamas', d: ['Barbados', 'Jamaica', 'Belize'] },
     { c: 'Flags & Borders', t: 4, q: 'Which country on the Atlantic coast of Africa was founded in the 1820s as a settlement for freed slaves from the United States?', a: 'Liberia', d: ['Ghana', 'Gabon', 'Guinea'] },
     { c: 'Flags & Borders', t: 5, q: 'Which country\'s flag places a black mokorotlo hat in the middle of blue, white and green bands?', a: 'Lesotho', d: ['Eswatini', 'Botswana', 'Namibia'] },
@@ -292,7 +292,7 @@ export const LANE_DAYS = [
     { c: 'Flags & Borders', t: 1, q: 'Which country lies immediately east of Bolivia?', a: 'Brazil', d: ['Peru', 'Chile', 'Argentina'] },
     { c: 'Flags & Borders', t: 2, q: 'A polar map of the world framed by two olive branches, in white on light blue, is the flag of which body?', a: 'The United Nations', d: ['The Red Cross', 'The African Union', 'The Commonwealth'] },
     { c: 'Flags & Borders', t: 3, q: 'The crescent and star carried by many later national flags came from the banner of which empire?', a: 'The Ottoman Empire', d: ['The Mughal Empire', 'The Persian Empire', 'The Umayyad Caliphate'] },
-    { c: 'Flags & Borders', t: 4, q: 'Which member of the European Union has nine land neighbors, more than any other member?', a: 'Germany', d: ['France', 'Austria', 'Poland'] },
+    { c: 'Flags & Borders', t: 4, q: 'Which member of the European Union borders nine countries in Europe, more than any other member?', a: 'Germany', d: ['Hungary', 'Austria', 'Poland'] },
     { c: 'Flags & Borders', t: 5, q: 'Which country\'s flag shows a yellow triangle over a black arrowhead on blue, standing for two volcanic peaks?', a: 'Saint Lucia', d: ['Saint Vincent and the Grenadines', 'Dominica', 'Grenada'] },
   ],
   // day 38
@@ -353,10 +353,10 @@ export const LANE_DAYS = [
   ],
   // day 45
   [
-    { c: 'Flags & Borders', t: 1, q: 'Which country sits at the southern tip of the Malay Peninsula, cut off from Malaysia by a narrow strait?', a: 'Singapore', d: ['Brunei', 'Indonesia', 'Thailand'] },
+    { c: 'Flags & Borders', t: 1, q: 'Which island city-state is joined to the Asian mainland by a causeway and a bridge?', a: 'Singapore', d: ['Malta', 'Monaco', 'San Marino'] },
     { c: 'Flags & Borders', t: 2, q: 'What is the name for the half of a flag furthest from the pole?', a: 'The fly', d: ['The hoist', 'The canton', 'The saltire'] },
     { c: 'Flags & Borders', t: 3, q: 'The white, blue and red horizontal tricolors of Russia, Slovenia and Slovakia all trace back to the flag of which country?', a: 'The Netherlands', d: ['France', 'Denmark', 'Austria'] },
-    { c: 'Flags & Borders', t: 4, q: 'The only point where four US states meet joins Utah, Colorado, New Mexico and which other state?', a: 'Arizona', d: ['Nevada', 'Wyoming', 'Kansas'] },
+    { c: 'Flags & Borders', t: 4, q: 'The only point where four US states meet joins Utah, Colorado, New Mexico and which other state?', a: 'Arizona', d: ['Nevada', 'Idaho', 'Kansas'] },
     { c: 'Flags & Borders', t: 5, q: 'Which country\'s flag places a white crescent and an eight-pointed star on the red band of a blue, red and green tricolor?', a: 'Azerbaijan', d: ['Uzbekistan', 'Turkmenistan', 'Kazakhstan'] },
   ],
   // day 46
@@ -378,7 +378,7 @@ export const LANE_DAYS = [
   // day 48
   [
     { c: 'Flags & Borders', t: 1, q: 'The flag of Germany is a horizontal tricolor of which three colors?', a: 'Black, red and gold', d: ['Black, white and red', 'Red, white and blue', 'Black, red and green'] },
-    { c: 'Flags & Borders', t: 2, q: 'Which country lies directly north of Libya across the Mediterranean?', a: 'Italy', d: ['Greece', 'Spain', 'France'] },
+    { c: 'Flags & Borders', t: 2, q: 'Which country lies directly north of Libya across the Mediterranean?', a: 'Italy', d: ['Portugal', 'Spain', 'France'] },
     { c: 'Flags & Borders', t: 3, q: 'Which country\'s flag is a vertical tricolor of green, yellow and red with no emblem at all?', a: 'Mali', d: ['Senegal', 'Guinea', 'Cameroon'] },
     { c: 'Flags & Borders', t: 4, q: 'The enclaves of Ceuta and Melilla on the North African coast are governed by which country?', a: 'Spain', d: ['Portugal', 'France', 'Italy'] },
     { c: 'Flags & Borders', t: 5, q: 'Which country\'s flag has a wide green band at the hoist with yellow above red filling the rest of the field?', a: 'Benin', d: ['Guinea', 'Ghana', 'Cameroon'] },

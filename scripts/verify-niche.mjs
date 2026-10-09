@@ -211,7 +211,7 @@ const FIXED = [
   // shrinking a cell.
   ['countries', 'g20', 19, 'G20 sovereign members'],
   ['countries', 'arab', 21, 'Arab League members in this table'],
-  ['countries', 'euro', 26, 'euro-using countries'],
+  ['countries', 'euro', 27, 'euro-using countries'],
   ['countries', 'lang-es', 20, 'Spanish-official countries'],
   ['countries', 'lang-fr', 29, 'French-official countries'],
   ['states', 'atl', 14, 'states on the Atlantic'],
@@ -227,7 +227,7 @@ const FIXED = [
   ['states', 'east', 26, 'states east of the Mississippi'],
   ['teams', 'mt', 11, 'Mountain time zone teams'],
   ['musicians', 'halftime', 45, 'Super Bowl halftime performers'],
-  ['musicians', 'roty', 28, 'Grammy Record of the Year winners'],
+  ['musicians', 'roty', 29, 'Grammy Record of the Year winners'],
   ['musicians', 'bna', 17, 'Grammy Best New Artist winners'],
   ['countries', 'lang-pt', 9, 'Portuguese-official countries'],
   ['countries', 'mon', 43, 'monarchies'],

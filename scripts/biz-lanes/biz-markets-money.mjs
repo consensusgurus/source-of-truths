@@ -147,7 +147,7 @@ export const LANE_DAYS = [
   [
     { c: 'Markets & Money', t: 1, q: 'What is the name for the levy a government takes from what a person earns each year?', a: 'Income tax', d: ['Sales tax', 'Property tax', 'Excise duty'] },
     { c: 'Markets & Money', t: 2, q: 'Under a fixed exchange rate, deliberately cutting the official value of a currency is called what?', a: 'Devaluation', d: ['Deflation', 'Dilution', 'Discounting'] },
-    { c: 'Markets & Money', t: 3, q: 'The 1992 treaty that set the rules and timetable for the single European currency was signed in which Dutch city?', a: 'Maastricht', d: ['The Hague', 'Utrecht', 'Rotterdam'] },
+    { c: 'Markets & Money', t: 3, q: 'The 1944 conference that created the International Monetary Fund and the World Bank met at which New Hampshire resort?', a: 'Bretton Woods', d: ['Hot Springs', 'Lake Placid', 'Dumbarton Oaks'] },
     { c: 'Markets & Money', t: 4, q: 'How many countries adopted the euro at its launch on the first day of 1999?', a: '11', d: ['9', '12', '15'] },
     { c: 'Markets & Money', t: 5, q: 'The American rule known as Regulation Q, dismantled during the 1980s, set a ceiling on what?', a: 'Interest paid on bank deposits', d: ['Broker commissions', 'Bank branch openings', 'Margin lending'] },
   ],
@@ -219,7 +219,7 @@ export const LANE_DAYS = [
   [
     { c: 'Markets & Money', t: 1, q: 'What is the name for the cash a buyer pays up front on a house or car, with the rest borrowed?', a: 'A down payment', d: ['A dividend', 'A surcharge', 'A rebate'] },
     { c: 'Markets & Money', t: 2, q: 'In trade policy, what is the term for selling exports abroad more cheaply than the same goods are sold at home?', a: 'Dumping', d: ['Smuggling', 'Hoarding', 'Bundling'] },
-    { c: 'Markets & Money', t: 3, q: 'Which African country abandoned its own dollar in 2009 after runaway inflation and let foreign money circulate instead?', a: 'Zimbabwe', d: ['Zambia', 'Angola', 'Mozambique'] },
+    { c: 'Markets & Money', t: 3, q: 'Which country suffered the worst hyperinflation on record in 1946, when prices doubled roughly every fifteen hours?', a: 'Hungary', d: ['Romania', 'Poland', 'Greece'] },
     { c: 'Markets & Money', t: 4, q: 'Which 1930 American law raised import duties on thousands of goods to among the highest levels in the country\'s history?', a: 'The Smoot-Hawley Tariff Act', d: ['The Fordney-McCumber Tariff Act', 'The Underwood Tariff Act', 'The McKinley Tariff Act'] },
     { c: 'Markets & Money', t: 5, q: 'What is the name economists give to the abrupt halt of foreign capital flowing into an emerging economy?', a: 'A sudden stop', d: ['A capital strike', 'A flight to quality', 'A margin spiral'] },
   ],
@@ -257,11 +257,11 @@ export const LANE_DAYS = [
   ],
   // day 33
   [
-    { c: 'Markets & Money', t: 1, q: 'What is the general word for a nation\'s official money, such as the yen or the euro?', a: 'Currency', d: ['A commodity', 'A security', 'A debenture'] },
+    { c: 'Markets & Money', t: 1, q: 'What is the general word for a nation\'s official money, such as the yen or the won?', a: 'Currency', d: ['A commodity', 'A security', 'A debenture'] },
     { c: 'Markets & Money', t: 2, q: 'What is the accounting term for profits a company keeps in the business rather than paying out to its owners?', a: 'Retained earnings', d: ['Deferred revenue', 'Gross margin', 'Paid-in capital'] },
     { c: 'Markets & Money', t: 3, q: 'What is the term for a bank\'s interest income less its interest costs, measured against the assets that earned it?', a: 'The net interest margin', d: ['The reserve ratio', 'The discount window rate', 'The capital buffer'] },
     { c: 'Markets & Money', t: 4, q: 'The secret 1910 meeting that drafted the plan for an American central banking system was held on which Georgia island?', a: 'Jekyll Island', d: ['Sapelo Island', 'Cumberland Island', 'St. Simons Island'] },
-    { c: 'Markets & Money', t: 5, q: 'Under the Bretton Woods system the United States fixed gold at how many dollars per ounce?', a: '35', d: ['20.67', '42.22', '100'] },
+    { c: 'Markets & Money', t: 5, q: 'Under the postwar fixed exchange rate system the United States fixed gold at how many dollars per ounce?', a: '35', d: ['20.67', '42.22', '100'] },
   ],
   // day 34
   [
@@ -293,7 +293,7 @@ export const LANE_DAYS = [
     { c: 'Markets & Money', t: 2, q: 'What is the formal term for the condition of owing more than one is able to pay?', a: 'Insolvency', d: ['Illiquidity', 'Arrears', 'Foreclosure'] },
     { c: 'Markets & Money', t: 3, q: 'For an investment fund, what does the abbreviation NAV stand for?', a: 'Net asset value', d: ['Nominal accrued value', 'New account volume', 'Net annual variance'] },
     { c: 'Markets & Money', t: 4, q: 'Which businessman and future ambassador was appointed in 1934 as the first chairman of the new federal regulator of the American stock markets?', a: 'Joseph Kennedy', d: ['Bernard Baruch', 'Averell Harriman', 'James Landis'] },
-    { c: 'Markets & Money', t: 5, q: 'What is the name for a central bank publicly signaling where it expects to set rates in future, in order to shape expectations?', a: 'Forward guidance', d: ['Moral suasion', 'Open mouth policy', 'Rate anchoring'] },
+    { c: 'Markets & Money', t: 5, q: 'What is the name for a central bank publicly signaling where it expects to set rates in future, in order to shape expectations?', a: 'Forward guidance', d: ['Moral suasion', 'Yield curve control', 'Rate anchoring'] },
   ],
   // day 38
   [

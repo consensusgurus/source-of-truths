@@ -105,7 +105,7 @@ export const LANE_DAYS = [
   ],
   // day 14
   [
-    { c: 'Places & Landmarks', t: 1, q: 'The Great Wall of China was built chiefly to keep out raiders coming from which direction?', a: 'The north', d: ['The south', 'The east', 'The west'] },
+    { c: 'Places & Landmarks', t: 1, q: 'Hadrian\'s Wall was built to guard Roman Britain against raiders coming from which direction?', a: 'The north', d: ['The south', 'The east', 'The west'] },
     { c: 'Places & Landmarks', t: 2, q: 'Which snow topped volcano stands alone above the plains of Tanzania and is climbed on the Machame route?', a: 'Mount Kilimanjaro', d: ['Mount Kenya', 'Mount Meru', 'Mount Elgon'] },
     { c: 'Places & Landmarks', t: 3, q: 'Which Washington DC memorial takes the form of a long wall of black granite cut into the ground and inscribed with names, designed by Maya Lin?', a: 'The Vietnam Veterans Memorial', d: ['The Korean War Veterans Memorial', 'The World War II Memorial', 'The Marine Corps Memorial'] },
     { c: 'Places & Landmarks', t: 4, q: 'Which railway bridge of 1890, built of red painted steel cantilevers, crosses a Scottish estuary west of Edinburgh?', a: 'The Forth Bridge', d: ['The Tay Bridge', 'The Erskine Bridge', 'The Kessock Bridge'] },
@@ -130,7 +130,7 @@ export const LANE_DAYS = [
   // day 17
   [
     { c: 'Places & Landmarks', t: 1, q: 'A huge seated marble figure at the west end of the National Mall in Washington DC portrays which president?', a: 'Abraham Lincoln', d: ['George Washington', 'Thomas Jefferson', 'Theodore Roosevelt'] },
-    { c: 'Places & Landmarks', t: 2, q: 'The Nazca Lines, enormous figures of animals scratched into a desert floor, lie in which country?', a: 'Peru', d: ['Chile', 'Bolivia', 'Mexico'] },
+    { c: 'Places & Landmarks', t: 2, q: 'The Nazca Lines, enormous figures of animals scratched into a desert floor, lie in which country?', a: 'Peru', d: ['Ecuador', 'Bolivia', 'Mexico'] },
     { c: 'Places & Landmarks', t: 3, q: 'The statue of Christ the Redeemer above Rio de Janeiro is built of what?', a: 'Concrete faced with soapstone', d: ['Cast bronze', 'White marble', 'Riveted steel plate'] },
     { c: 'Places & Landmarks', t: 4, q: 'The Chand Baori, a stepwell descending some thirteen levels in a great inverted pyramid of stairs, lies in which Indian state?', a: 'Rajasthan', d: ['Gujarat', 'Bihar', 'Kerala'] },
     { c: 'Places & Landmarks', t: 5, q: 'The ruined Roman city of Leptis Magna, with its harbor, forum and theater of Septimius Severus, stands on the coast of which country?', a: 'Libya', d: ['Tunisia', 'Algeria', 'Egypt'] },
@@ -157,7 +157,7 @@ export const LANE_DAYS = [
     { c: 'Places & Landmarks', t: 2, q: 'Which covered stone bridge lined with shops arches over the Grand Canal in Venice?', a: 'The Rialto Bridge', d: ['The Bridge of Sighs', 'The Accademia Bridge', 'The Ponte Vecchio'] },
     { c: 'Places & Landmarks', t: 3, q: 'The Devil\'s Throat is the largest cataract of which waterfall system on the Argentine and Brazilian border?', a: 'Iguazu Falls', d: ['Angel Falls', 'Kaieteur Falls', 'The Falls of Paulo Afonso'] },
     { c: 'Places & Landmarks', t: 4, q: 'Which French cathedral is famous for its medieval stained glass and for a maze set into the paving of its nave?', a: 'Chartres Cathedral', d: ['Strasbourg Cathedral', 'Reims Cathedral', 'Rouen Cathedral'] },
-    { c: 'Places & Landmarks', t: 5, q: 'The royal palaces of Abomey, seat of the kingdom of Dahomey, stand in which modern country?', a: 'Benin', d: ['Togo', 'Ghana', 'Burkina Faso'] },
+    { c: 'Places & Landmarks', t: 5, q: 'Lake Assal, a salt lake some 155 meters below sea level and the lowest point in Africa, lies in which country?', a: 'Djibouti', d: ['Eritrea', 'Ethiopia', 'Somalia'] },
   ],
   // day 21
   [
@@ -169,7 +169,7 @@ export const LANE_DAYS = [
   ],
   // day 22
   [
-    { c: 'Places & Landmarks', t: 1, q: 'Which city is built across more than a hundred small islands in a lagoon at the head of the Adriatic?', a: 'Venice', d: ['Naples', 'Genoa', 'Trieste'] },
+    { c: 'Places & Landmarks', t: 1, q: 'The Moorish palace and fortress of the Alhambra looks down on which Spanish city?', a: 'Granada', d: ['Seville', 'Cordoba', 'Toledo'] },
     { c: 'Places & Landmarks', t: 2, q: 'Which Roman frontier work runs coast to coast across northern England?', a: 'Hadrian\'s Wall', d: ['The Antonine Wall', 'Offa\'s Dyke', 'The Devil\'s Dyke'] },
     { c: 'Places & Landmarks', t: 3, q: 'Which hillside park in Barcelona, full of mosaic benches and gingerbread gatehouses, was designed by Antoni Gaudi?', a: 'Park Guell', d: ['Parc de la Ciutadella', 'Montjuic Park', 'Parc del Laberint'] },
     { c: 'Places & Landmarks', t: 4, q: 'A Roman aqueduct of two tiers of unmortared granite arches strides across a square in the center of which Spanish city?', a: 'Segovia', d: ['Merida', 'Tarragona', 'Salamanca'] },
@@ -195,7 +195,7 @@ export const LANE_DAYS = [
   [
     { c: 'Places & Landmarks', t: 1, q: 'The Statue of Liberty has turned green over the years because its outer skin is made of which metal?', a: 'Copper', d: ['Bronze', 'Brass', 'Lead'] },
     { c: 'Places & Landmarks', t: 2, q: 'The Taj Mahal stands on the bank of the Yamuna in which Indian city?', a: 'Agra', d: ['Jaipur', 'Lucknow', 'Bhopal'] },
-    { c: 'Places & Landmarks', t: 3, q: 'Which downtown Chicago park holds the mirrored bean shaped sculpture officially called Cloud Gate?', a: 'Millennium Park', d: ['Grant Park', 'Lincoln Park', 'Jackson Park'] },
+    { c: 'Places & Landmarks', t: 3, q: 'Which downtown Chicago park holds the mirrored bean shaped sculpture officially called Cloud Gate?', a: 'Millennium Park', d: ['Humboldt Park', 'Lincoln Park', 'Jackson Park'] },
     { c: 'Places & Landmarks', t: 4, q: 'The Tower of Hercules, a Roman lighthouse at A Coruna that still guides shipping, stands in which country?', a: 'Spain', d: ['Portugal', 'Italy', 'France'] },
     { c: 'Places & Landmarks', t: 5, q: 'The Darvaza gas crater, a burning pit in the Karakum desert nicknamed the Door to Hell, lies in which country?', a: 'Turkmenistan', d: ['Uzbekistan', 'Kazakhstan', 'Azerbaijan'] },
   ],

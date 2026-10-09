@@ -247,11 +247,11 @@ export const G20 = new Set(['Argentina', 'Australia', 'Brazil', 'Canada', 'China
 // Syria, suspended in 2011, was readmitted in 2023 and is in.
 export const ARAB_LEAGUE = new Set(['Algeria', 'Bahrain', 'Comoros', 'Djibouti', 'Egypt', 'Iraq', 'Jordan', 'Kuwait', 'Lebanon', 'Libya', 'Mauritania', 'Morocco', 'Oman', 'Qatar', 'Saudi Arabia', 'Somalia', 'Sudan', 'Syria', 'Tunisia', 'United Arab Emirates', 'Yemen']);
 
-// Countries whose money is the euro: the 20 eurozone members, plus the four
+// Countries whose money is the euro: the 21 eurozone members (Bulgaria joined 2026-01-01), plus the four
 // microstates that mint it under a monetary agreement (Andorra, Monaco, San
 // Marino, Vatican City) and the two that adopted it unilaterally (Kosovo,
 // Montenegro) — the generous reading, since all six genuinely use the euro.
-export const EURO = new Set(['Austria', 'Belgium', 'Croatia', 'Cyprus', 'Estonia', 'Finland', 'France', 'Germany', 'Greece', 'Ireland', 'Italy', 'Latvia', 'Lithuania', 'Luxembourg', 'Malta', 'Netherlands', 'Portugal', 'Slovakia', 'Slovenia', 'Spain', 'Andorra', 'Monaco', 'San Marino', 'Vatican City', 'Kosovo', 'Montenegro']);
+export const EURO = new Set(['Austria', 'Belgium', 'Bulgaria', 'Croatia', 'Cyprus', 'Estonia', 'Finland', 'France', 'Germany', 'Greece', 'Ireland', 'Italy', 'Latvia', 'Lithuania', 'Luxembourg', 'Malta', 'Netherlands', 'Portugal', 'Slovakia', 'Slovenia', 'Spain', 'Andorra', 'Monaco', 'San Marino', 'Vatican City', 'Kosovo', 'Montenegro']);
 
 // Spanish as an official or co-official national language.
 export const SPANISH = new Set(['Argentina', 'Bolivia', 'Chile', 'Colombia', 'Costa Rica', 'Cuba', 'Dominican Republic', 'Ecuador', 'El Salvador', 'Equatorial Guinea', 'Guatemala', 'Honduras', 'Mexico', 'Nicaragua', 'Panama', 'Paraguay', 'Peru', 'Spain', 'Uruguay', 'Venezuela']);
