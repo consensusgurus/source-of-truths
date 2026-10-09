@@ -4,6 +4,7 @@ import { isAdmin } from '@/lib/admin-auth';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { T } from '@/lib/theme';
 import { CONTEST, contestScore, formatScore } from '@/lib/contest';
+import { DRAWING, drawingIsLive } from '@/lib/drawing';
 import { buildFraudReview, BANDS, MIN_REFERRALS } from '@/lib/contest-fraud';
 
 export const dynamic = 'force-dynamic';
@@ -72,9 +73,14 @@ export default async function ContestReviewPage({ searchParams }) {
   // Default to the contest window, matching the board being reviewed. ?window=all
   // widens to every referral ever credited, which is what you want when checking
   // whether a suspicious account was already at it before the contest opened.
-  const all = (searchParams?.window || '') === 'all';
-  const start = all ? '1970-01-01T00:00:00Z' : CONTEST.startsAt;
-  const end = all ? new Date(Date.now() + 86400000).toISOString() : CONTEST.endsAt;
+  // While the $100 ticket drawing runs it is the default window (?window=contest
+  // still reviews the August contest); ?window=drawing forces it afterwards.
+  const w = searchParams?.window || '';
+  const all = w === 'all';
+  const drawing = !all && (w === 'drawing' || (w !== 'contest' && drawingIsLive()));
+  const WIN = drawing ? DRAWING : CONTEST;
+  const start = all ? '1970-01-01T00:00:00Z' : WIN.startsAt;
+  const end = all ? new Date(Date.now() + 86400000).toISOString() : WIN.endsAt;
 
   const { data, error } = await supabaseAdmin.rpc('quiz_contest_referrals', {
     p_start: start,
@@ -101,7 +107,7 @@ export default async function ContestReviewPage({ searchParams }) {
         </Link>
         <h1 style={{ fontSize: 30, fontWeight: 800, margin: '14px 0 6px' }}>Contest review</h1>
         <p style={{ color: C.faded, fontSize: 14, margin: '0 0 18px', maxWidth: 700, lineHeight: 1.55 }}>
-          Every referral credited {all ? 'since the site opened' : `between ${CONTEST.startLabel} and ${CONTEST.endLabel}`},
+          Every referral credited {all ? 'since the site opened' : `between ${WIN.startLabel} and ${WIN.endLabel}`},
           grouped by who earned it and scored on how much the people they brought in look like the same
           person. <strong style={{ color: C.ink }}>Nothing here is a verdict.</strong> Every signal has an
           innocent explanation, so treat a high number as a prompt to open the drill-down and look.

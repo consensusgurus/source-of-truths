@@ -42,6 +42,7 @@ import { SHARE_URL } from '@/lib/site';
 import { withRef, myRefCode, ensureMyRefCode } from '@/lib/referrals';
 import { readRunParam } from '@/lib/circuits';
 import { readStageTheme } from '@/lib/stage-theme';
+import { drawingIsLive } from '@/lib/drawing';
 
 // ONCE A WEEK (owner, 2026-10-04, same day it shipped as once ever): at most one
 // thank-you pop-up per browser per seven days, whichever version. LAST_KEY holds
@@ -181,6 +182,8 @@ export default function ThanksPop() {
       }
     } catch (e) { return undefined; }
     if (sess !== 'r') return undefined;
+    // While the $100 drawing runs, DrawingPop carries the share link instead.
+    if (drawingIsLive()) return undefined;
     try {
       if (shownThisWeek()) return undefined;
       if (sessionStorage.getItem(SHOWN_KEY)) return undefined;
@@ -196,6 +199,7 @@ export default function ThanksPop() {
   useEffect(() => {
     let timer = null;
     const onSaved = () => {
+      if (drawingIsLive()) return;
       try {
         if (sessionStorage.getItem(SESS_KEY) !== 'r') return;
         if (shownThisWeek()) return;

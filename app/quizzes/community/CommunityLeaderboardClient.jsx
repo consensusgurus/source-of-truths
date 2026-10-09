@@ -7,6 +7,7 @@ import QuizNavHeader from '../QuizNavHeader';
 import JoinLeaderboardForm from '../../quiz/[id]/JoinLeaderboardForm';
 import Grain from '../../Grain';
 import Footer from '../../Footer';
+import DrawingBoard from './DrawingBoard';
 import { T } from '@/lib/theme';
 import { CONTEST, COPY, contestIsLive, formatScore } from '@/lib/contest';
 
@@ -180,6 +181,9 @@ export default function CommunityLeaderboardClient() {
           Registered players get a unique share link, and the Share button on every quiz and daily
           game already includes it. Anyone who opens one and finishes a game counts once.
         </p>
+
+        {/* The $100 ticket drawing (owner, 2026-10-09); renders nothing once it closes. */}
+        <DrawingBoard />
 
         {/* Your standing + link */}
         <div style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14, padding: 16, marginBottom: 18 }}>
