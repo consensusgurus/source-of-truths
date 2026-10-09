@@ -992,7 +992,7 @@ export const QUESTIONS = [
   { id: 'd65q05', tier: 2, q: 'Which Swiss player won eight Wimbledon men\'s singles titles, the last in 2017?', choices: ['Stan Wawrinka', 'Roger Federer', 'Pete Sampras', 'Novak Djokovic'], correct: 1 },
   { id: 'd65q06', tier: 2, q: 'Which Swede won five straight Wimbledon men\'s singles titles from 1976 to 1980?', choices: ['Stefan Edberg', 'Mats Wilander', 'John McEnroe', 'Bjorn Borg'], correct: 3 },
   { id: 'd65q07', tier: 3, q: 'Which trophy goes to the winning nation in the men’s international team competition?', choices: ['The Hopman Cup', 'The Laver Cup', 'The Davis Cup', 'The Wightman Cup'], correct: 2 },
-  { id: 'd65q08', tier: 3, q: 'Which player won nine Wimbledon singles titles between 1978 and 1990?', choices: ['Chris Evert', 'Martina Navratilova', 'Billie Jean King', 'Steffi Graf'], correct: 1 },
+  { id: 'd65q08', tier: 3, q: 'Which American won the French Open women\'s singles title a record seven times?', choices: ['Martina Navratilova', 'Chris Evert', 'Billie Jean King', 'Steffi Graf'], correct: 1 },
   { id: 'd65q09', tier: 3, q: 'Which of the four majors closes the calendar each year?', choices: ['Wimbledon', 'The French Open', 'The US Open', 'The Australian Open'], correct: 2 },
   { id: 'd65q10', tier: 4, q: 'Which German won all four majors and Olympic gold in a single 1988 season?', choices: ['Steffi Graf', 'Martina Navratilova', 'Monica Seles', 'Chris Evert'], correct: 0 },
   { id: 'd65q11', tier: 4, q: 'Which Australian is the only man to sweep all four majors in one year twice over?', choices: ['Roy Emerson', 'Rod Laver', 'Ken Rosewall', 'John Newcombe'], correct: 1 },

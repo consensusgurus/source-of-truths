@@ -226,7 +226,7 @@ const FIXED = [
   ['states', 'reg-w', 13, 'Census West states'],
   ['states', 'east', 26, 'states east of the Mississippi'],
   ['teams', 'mt', 11, 'Mountain time zone teams'],
-  ['musicians', 'halftime', 44, 'Super Bowl halftime performers'],
+  ['musicians', 'halftime', 45, 'Super Bowl halftime performers'],
   ['musicians', 'roty', 28, 'Grammy Record of the Year winners'],
   ['musicians', 'bna', 17, 'Grammy Best New Artist winners'],
   ['countries', 'lang-pt', 9, 'Portuguese-official countries'],

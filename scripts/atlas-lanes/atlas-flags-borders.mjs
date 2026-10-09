@@ -58,7 +58,7 @@ export const LANE_DAYS = [
   // day 8
   [
     { c: 'Flags & Borders', t: 1, q: 'Which two US states share no land border with any other state?', a: 'Alaska and Hawaii', d: ['Maine and Hawaii', 'Florida and Alaska', 'Hawaii and Rhode Island'] },
-    { c: 'Flags & Borders', t: 2, q: 'On the Union Jack, the diagonal white cross on blue honors the patron saint of which country?', a: 'Scotland', d: ['Ireland', 'Wales', 'England'] },
+    { c: 'Flags & Borders', t: 2, q: 'The Japanese national flag, a red disc on a white field, is known in Japan by which name?', a: 'Hinomaru', d: ['Kyokujitsu', 'Sakura', 'Torii'] },
     { c: 'Flags & Borders', t: 3, q: 'Which country has a land border with both Israel and Saudi Arabia?', a: 'Jordan', d: ['Egypt', 'Iraq', 'Syria'] },
     { c: 'Flags & Borders', t: 4, q: 'Which country adopted a new flag in 2010 with bands of yellow, green and red and a large white star?', a: 'Myanmar', d: ['Laos', 'Bhutan', 'Cambodia'] },
     { c: 'Flags & Borders', t: 5, q: 'More than a hundred tiny enclaves were exchanged in 2015 to tidy the frontier between Bangladesh and which country?', a: 'India', d: ['Myanmar', 'Nepal', 'Bhutan'] },

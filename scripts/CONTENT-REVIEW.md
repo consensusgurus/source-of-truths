@@ -42,6 +42,37 @@ Cipher, Docket, Alibi, Rung, Warmer) are exempt.
 | Category boards (Crux, Links) | Every word fits its category's literal name. |
 | Cross-game | No board spoils another game's answer the same day (e.g. Atlas flag vs Passport country). |
 
+## The gate that enforces it (added 2026-10-09)
+
+- `scripts/content-reviewed.json` is the ledger. For each content game it holds
+  `through`, the last live date a separate reviewer has read item by item.
+- `scripts/verify-content-reviewed.mjs` is picked up by verify-all and preflight
+  automatically. It FAILS when any board goes live within 3 days (Eastern) past
+  that game's `through`, and warns with the size of the unreviewed runway
+  otherwise. An unreviewed board can no longer reach players without the gate
+  going red first.
+- A bank extension may ship unreviewed boards that are far in the future, but
+  the gate turns red 3 days before the first of them goes live. Either review
+  the whole extension at authoring time (preferred, cheapest per item) or review
+  in rolling windows.
+- **Move `through` forward only after the review is done and its fixes are
+  applied.** Moving it to silence the gate defeats the only content check the
+  repo has. A new content game gets a ledger entry the day it launches.
+- `scripts/content-review-dump.mjs FROM TO [game...]` writes the boards for a
+  date range to /tmp/content-review/<date>.json, with trivia ids expanded. Hand
+  one file to a reviewer per date.
+
+## Same-day spoilers are a real defect class
+
+The 10-10 to 10-12 reviews found a run of them. They are invisible to any
+single-game check:
+- Atlas, Biz and Quotes naming Passport's country, capital or landmark
+- Crux's APHID handing Clade its answer (Clade accepts short aliases)
+- Deep and Sport asking the same Navratilova question on the same day
+- Script naming Dossier's state
+
+Review each DATE across games, not each game across dates.
+
 ## How to run it cheaply
 
 1. Dump the new items to JSON: question, keyed answer and the other choices, or

@@ -1052,7 +1052,7 @@ export const PUZZLES = [
     country: 'China',
     lat: 22.3193,
     lng: 114.1694,
-    blurb: 'More skyscrapers than anywhere else, and most of the territory is still country park.',
+    blurb: 'More skyscrapers than anywhere else, yet about 40 percent of the territory is country park.',
   },
   {
     num: 88,

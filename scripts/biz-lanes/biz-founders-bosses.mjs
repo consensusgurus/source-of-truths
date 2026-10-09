@@ -52,7 +52,7 @@ export const LANE_DAYS = [
     { c: 'Founders & Bosses', t: 1, q: 'William Wrigley Jr. gave away which product as a premium with baking powder before making it his entire business?', a: 'Chewing gum', d: ['Soap', 'Candles', 'Coffee'] },
     { c: 'Founders & Bosses', t: 2, q: 'Which Japanese businessman invented instant noodles in 1958 and founded Nissin Food Products?', a: 'Momofuku Ando', d: ['Kazuo Inamori', 'Toshio Doko', 'Torakusu Yamaha'] },
     { c: 'Founders & Bosses', t: 3, q: 'In which year did Ray Kroc open his own first McDonald\'s restaurant, in Des Plaines, Illinois?', a: '1955', d: ['1948', '1961', '1967'] },
-    { c: 'Founders & Bosses', t: 4, q: 'Which Turkish industrial group grew out of a small Ankara grocery shop opened in 1926 and became the country\'s largest?', a: 'Koc Holding', d: ['Sabanci Holding', 'Zorlu Holding', 'Dogus Group'] },
+    { c: 'Founders & Bosses', t: 4, q: 'Which Dutch family\'s brothers Clemens and August founded the clothing chain C&A in Sneek in 1841?', a: 'Brenninkmeyer', d: ['Philips', 'Dreesmann', 'Heijn'] },
     { c: 'Founders & Bosses', t: 5, q: 'Which Lebanese-born consultant engineered the 1983 merger of ASUAG and SSIH that rescued Swiss watchmaking?', a: 'Nicolas Hayek', d: ['Ernst Thomke', 'Elmar Mock', 'Jean-Claude Biver'] },
   ],
   // day 8

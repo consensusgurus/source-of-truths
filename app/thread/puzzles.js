@@ -882,7 +882,7 @@ export const PUZZLES = [
       { t: 'Christian Bale', keys: ['christian bale', 'bale'], tiles: [1, 3, 5, 7, 9, 11, 13, 15] },
     ],
     decoys: [
-      { n: 'Based on a true story', keys: ['true story', 'real events', 'biopic'], cover: [0, 1, 5, 7, 8, 12] },
+      { n: 'Based on a true story', keys: ['true story', 'real events', 'biopic'], cover: [0, 1, 3, 4, 5, 7, 8, 12] },
       { n: 'Won an acting Oscar', keys: ['oscar', 'academy award'], cover: [1, 8] },
       { n: 'Horror films', keys: ['horror', 'ghosts', 'haunted'], cover: [6, 10] },
     ],
@@ -893,8 +893,8 @@ export const PUZZLES = [
       { t: 'American Hustle', s: 'Con artists are forced to help the government and a microwave ruins everything.', keys: ['american hustle'] },
       { t: 'Molly’s Game', s: 'A former skier runs the most expensive private card table in two cities.', keys: ['mollys game', 'molly s game'] },
       { t: 'Vice', s: 'A quiet deputy quietly acquires more authority than the man he works for.', keys: ['vice'] },
-      { t: 'It Chapter Two', s: 'Seven adults return to their home town because they promised to as children.', keys: ['it chapter two', 'chapter two'] },
-      { t: 'Ford v Ferrari', s: 'A Yorkshire driver and a Texan designer build a car to beat an Italian one.', keys: ['ford v ferrari', 'ford vs ferrari'] },
+      { t: 'It Chapter Two', s: 'Grown-up childhood friends return to their home town because they promised they would.', keys: ['it chapter two', 'chapter two'] },
+      { t: 'Ford v Ferrari', s: 'An English driver and a Texan designer build a car to beat an Italian one.', keys: ['ford v ferrari', 'ford vs ferrari'] },
       { t: 'The Eyes of Tammy Faye', s: 'A televangelist couple build a religious theme park and the money runs out.', keys: ['tammy faye', 'eyes of tammy faye'] },
       { t: 'The Dark Knight Rises', s: 'A billionaire comes out of retirement, has his back broken, and climbs out of a pit.', keys: ['dark knight rises'] },
       { t: 'Crimson Peak', s: 'A newlywed moves into a sinking mansion where red clay seeps through the floor.', keys: ['crimson peak'] },
@@ -910,7 +910,7 @@ export const PUZZLES = [
     threads: [{ t: 'Ryan Gosling', keys: ['ryan gosling', 'gosling'], tiles: [0, 1, 2, 3, 4, 5, 6, 7, 8] }],
     decoys: [
       { n: 'Set in Los Angeles', keys: ['los angeles', 'hollywood'], cover: [0, 2, 7, 8] },
-      { n: 'Playing a stunt performer', keys: ['stunt', 'stuntman'], cover: [0, 7] },
+      { n: 'Playing a stunt performer', keys: ['stunt', 'stuntman'], cover: [0, 6, 7] },
       { n: 'Action thrillers', keys: ['action', 'thriller'], cover: [0, 5, 6, 8] },
     ],
     tiles: [

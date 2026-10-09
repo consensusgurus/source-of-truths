@@ -52,7 +52,7 @@ export const LANE_DAYS = [
     { c: 'Countries & Peoples', t: 1, q: 'Which craft of folding paper into shapes is a traditional art of Japan?', a: 'Origami', d: ['Ikebana', 'Calligraphy', 'Bonsai'] },
     { c: 'Countries & Peoples', t: 2, q: 'Which alphabet, devised in the 1440s and built from simple strokes and circles, is used to write Korean?', a: 'Hangul', d: ['Katakana', 'Cyrillic', 'Devanagari'] },
     { c: 'Countries & Peoples', t: 3, q: 'Which trade tongue, a form of Malay, was adopted in 1945 as the national language of a new republic of thousands of islands?', a: 'Bahasa Indonesia', d: ['Javanese', 'Tagalog', 'Tetum'] },
-    { c: 'Countries & Peoples', t: 4, q: 'Which people, living across parts of Turkey, Iraq, Iran and Syria, speak an Indo-European language?', a: 'The Kurds', d: ['The Turkmen', 'The Assyrians', 'The Chechens'] },
+    { c: 'Countries & Peoples', t: 4, q: 'Which people, often called the largest ethnic group without a state of their own, speak an Indo-European language of western Asia?', a: 'The Kurds', d: ['The Turkmen', 'The Assyrians', 'The Chechens'] },
     { c: 'Countries & Peoples', t: 5, q: 'Which language, written in a rounded script of its own, is spoken by most people of Sri Lanka?', a: 'Sinhala', d: ['Malayalam', 'Telugu', 'Kannada'] },
   ],
   // day 8

@@ -1393,7 +1393,7 @@ export const DAYS = [
 
 { c: 'Movies', t: 3, q: 'What treasure are the children hunting beneath their town in The Goonies?', a: 'A pirate\'s hoard', d: ['A gold rush strike', 'A bank robber\'s buried loot', 'A Spanish land grant'] },
 { c: 'Television', t: 3, q: 'Which anthology series about unsettling near-future technology includes an episode set in a simulated beach resort called San Junipero?', a: 'Black Mirror', d: ['Electric Dreams', 'Inside No. 9', 'Tales from the Loop'] },
-{ c: 'Actors & Directors', t: 3, q: 'Which actor played the New Jersey mob boss at the center of The Sopranos?', a: 'James Gandolfini', d: ['Michael Imperioli', 'Ray Liotta', 'Dominic Chianese'] },
+{ c: 'Actors & Directors', t: 3, q: 'Which actor played the mob boss Tony Soprano at the center of The Sopranos?', a: 'James Gandolfini', d: ['Michael Imperioli', 'Ray Liotta', 'Dominic Chianese'] },
 { c: 'Awards & Box Office', t: 3, q: 'Which 2010 drama about the founders of Facebook won the Academy Award for Best Adapted Screenplay?', a: 'The Social Network', d: ['The King\'s Speech', '127 Hours', 'Winter\'s Bone'] },
 { c: 'Behind the Scenes', t: 3, q: 'Which 1991 Disney feature used computer animation for the ballroom itself while the dancers stayed hand-drawn?', a: 'Beauty and the Beast', d: ['The Little Mermaid', 'Aladdin', 'Pocahontas'] },
 
@@ -1448,7 +1448,7 @@ export const DAYS = [
 { c: 'Movies', t: 1, q: 'From which London railway platform do Hogwarts students board their train?', a: 'Platform nine and three-quarters', d: ['Platform thirteen', 'Platform seven and a half', 'Platform zero'] },
 { c: 'Television', t: 1, q: 'Which reality dating series ends each episode with a rose ceremony?', a: 'The Bachelor', d: ['Love Island', 'Married at First Sight', 'The Dating Game'] },
 { c: 'Actors & Directors', t: 1, q: 'Which former wrestler starred in the Fast & Furious spinoff Hobbs & Shaw and the Jumanji sequels?', a: 'Dwayne Johnson', d: ['Vin Diesel', 'John Cena', 'Jason Statham'] },
-{ c: 'Awards & Box Office', t: 1, q: 'Which 1999 Star Wars prequel was the top-grossing film worldwide that year?', a: 'Star Wars: The Phantom Menace', d: ['The Sixth Sense', 'Toy Story 2', 'The Matrix'] },
+{ c: 'Awards & Box Office', t: 1, q: 'Which 1999 space fantasy prequel was the top-grossing film worldwide that year?', a: 'Star Wars: The Phantom Menace', d: ['The Sixth Sense', 'Toy Story 2', 'The Matrix'] },
 { c: 'Behind the Scenes', t: 1, q: 'The silver shoes of the novel became ruby slippers in the 1939 film mainly to show off what?', a: 'Technicolor', d: ['The new sound system', 'A wider screen', 'A new makeup process'] },
 
 { c: 'Movies', t: 2, q: 'What does the boxer punch while training in a meat locker in Rocky?', a: 'Sides of beef', d: ['Sacks of flour', 'Blocks of ice', 'Rolled carpets'] },
@@ -1844,7 +1844,7 @@ export const DAYS = [
 { c: 'Movies', t: 1, q: 'What poisoned item does the Queen give the princess in Disney\'s Snow White?', a: 'An apple', d: ['A comb', 'A cup of wine', 'A ribbon'] },
 { c: 'Television', t: 1, q: 'Which 1970s series featured a heroine who spun on the spot to transform, armed with a golden lasso and bulletproof bracelets?', a: 'Wonder Woman', d: ['The Bionic Woman', 'Isis', 'Electra Woman and Dyna Girl'] },
 { c: 'Actors & Directors', t: 1, q: 'Which comic actor starred in Happy Gilmore, Billy Madison and The Waterboy?', a: 'Adam Sandler', d: ['Ben Stiller', 'Kevin James', 'Chris Tucker'] },
-{ c: 'Awards & Box Office', t: 1, q: 'Which 2011 Harry Potter finale was the top-grossing film worldwide that year?', a: 'Harry Potter and the Deathly Hallows Part 2', d: ['Transformers: Dark of the Moon', 'Pirates of the Caribbean: On Stranger Tides', 'The Hangover Part II'] },
+{ c: 'Awards & Box Office', t: 1, q: 'Which 2011 boy-wizard finale was the top-grossing film worldwide that year?', a: 'Harry Potter and the Deathly Hallows Part 2', d: ['Transformers: Dark of the Moon', 'Pirates of the Caribbean: On Stranger Tides', 'The Hangover Part II'] },
 { c: 'Behind the Scenes', t: 1, q: 'Which children\'s series brought Jim Henson\'s Muppets onto a New York street set to teach letters and numbers?', a: 'Sesame Street', d: ['The Muppet Show', 'Mister Rogers\' Neighborhood', 'Fraggle Rock'] },
 
 { c: 'Movies', t: 2, q: 'What kind of animal is Sid in the Ice Age films?', a: 'A sloth', d: ['A mammoth', 'A saber-toothed tiger', 'A possum'] },

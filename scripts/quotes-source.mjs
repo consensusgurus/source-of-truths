@@ -1414,7 +1414,7 @@ export const DAYS = [
 { c: 'Presidents & Politics', t: 4, q: 'Which revolutionary defined communism in 1920 as Soviet power plus the electrification of the whole country?', a: 'Vladimir Lenin', d: ['Leon Trotsky', 'Joseph Stalin', 'Nikolai Bukharin'] },
 { c: 'History & War', t: 4, q: 'Which Mongol general planned the campaigns that carried the horde into Russia and Hungary?', a: 'Subutai', d: ['Jebe', 'Batu Khan', 'Mukhali'] },
 { c: 'Science, Letters & Ideas', t: 4, q: 'Which physicist dipped a scrap of O-ring rubber into a glass of ice water at a televised hearing to show why a shuttle had exploded?', a: 'Richard Feynman', d: ['Sally Ride', 'Neil Armstrong', 'Chuck Yeager'] },
-{ c: 'Books & Authors', t: 4, q: 'Which character in Othello ends his first scene declaring \'I am not what I am\'?', a: 'Iago', d: ['Roderigo', 'Cassio', 'Brabantio'] },
+{ c: 'Books & Authors', t: 4, q: 'Which character in Othello closes his opening speech to Roderigo with \'I am not what I am\'?', a: 'Iago', d: ['Roderigo', 'Cassio', 'Brabantio'] },
 { c: 'Screen Lines', t: 4, q: 'Which character in The Grapes of Wrath promises his mother that wherever there is a fight so hungry people can eat, he will be there?', a: 'Tom Joad', d: ['Jim Casy', 'Pa Joad', 'Al Joad'] },
 
 { c: 'Presidents & Politics', t: 5, q: 'Which physicist turned dissident argued in his 1975 Nobel lecture that international security is inconceivable without an open society?', a: 'Andrei Sakharov', d: ['Alexander Solzhenitsyn', 'Yelena Bonner', 'Natan Sharansky'] },
@@ -1427,7 +1427,7 @@ export const DAYS = [
 // ── Day 43 ──────────────────────────────────────────────────────────────
 [
 { c: 'Presidents & Politics', t: 1, q: 'Who became the first woman to serve as Speaker of the United States House of Representatives, taking the gavel in 2007?', a: 'Nancy Pelosi', d: ['Dianne Feinstein', 'Barbara Mikulski', 'Patricia Schroeder'] },
-{ c: 'History & War', t: 1, q: 'Which French emperor was beaten at Waterloo in 1815 and shipped off to Saint Helena?', a: 'Napoleon Bonaparte', d: ['Louis Philippe', 'Napoleon III', 'Charles X'] },
+{ c: 'History & War', t: 1, q: 'Which French emperor is credited with the maxim that an army marches on its stomach?', a: 'Napoleon Bonaparte', d: ['Louis Philippe', 'Napoleon III', 'Charles X'] },
 { c: 'Science, Letters & Ideas', t: 1, q: 'Which British physicist wrote A Brief History of Time?', a: 'Stephen Hawking', d: ['Roger Penrose', 'Paul Dirac', 'Fred Hoyle'] },
 { c: 'Books & Authors', t: 1, q: 'Which author wrote about a bear of very little brain living in the Hundred Acre Wood?', a: 'A. A. Milne', d: ['Kenneth Grahame', 'Beatrix Potter', 'Michael Bond'] },
 { c: 'Screen Lines', t: 1, q: 'Which character on the original Star Trek pronounces the verdict \'He\'s dead, Jim\'?', a: 'Dr. McCoy', d: ['Mr. Spock', 'Montgomery Scott', 'Hikaru Sulu'] },
@@ -1442,7 +1442,7 @@ export const DAYS = [
 { c: 'History & War', t: 3, q: 'Which revolutionary signed off his 1965 farewell letter to Cuba with the words ever onward to victory?', a: 'Che Guevara', d: ['Fidel Castro', 'Camilo Cienfuegos', 'Regis Debray'] },
 { c: 'Science, Letters & Ideas', t: 3, q: 'Which philosopher used Bentham\'s design for a circular prison as the model of modern disciplinary power?', a: 'Michel Foucault', d: ['Jacques Derrida', 'Louis Althusser', 'Roland Barthes'] },
 { c: 'Books & Authors', t: 3, q: 'Which novelist opened a book with the words \'Lolita, light of my life, fire of my loins\'?', a: 'Vladimir Nabokov', d: ['Henry Miller', 'John Updike', 'Philip Roth'] },
-{ c: 'Screen Lines', t: 3, q: 'Which character asks Vicki Vale \'Have you ever danced with the devil in the pale moonlight?\' in Tim Burton\'s Batman?', a: 'The Joker', d: ['Bruce Wayne', 'Commissioner Gordon', 'Alexander Knox'] },
+{ c: 'Screen Lines', t: 3, q: 'Which character asks Bruce Wayne \'You ever dance with the devil in the pale moonlight?\' in Tim Burton\'s Batman?', a: 'The Joker', d: ['Carl Grissom', 'Commissioner Gordon', 'Alexander Knox'] },
 
 { c: 'Presidents & Politics', t: 4, q: 'Which young deputy argued at the trial of the king that no one can reign innocently?', a: 'Louis Antoine de Saint-Just', d: ['Georges Couthon', 'Bertrand Barere', 'Lazare Carnot'] },
 { c: 'History & War', t: 4, q: 'Which conquistador described the fall of the Aztec capital in a series of long letters to Charles V?', a: 'Hernan Cortes', d: ['Francisco Pizarro', 'Pedro de Alvarado', 'Panfilo de Narvaez'] },

@@ -58,7 +58,7 @@ export const LANE_DAYS = [
   // day 8
   [
     { c: 'Places & Landmarks', t: 1, q: 'The famous leaning tower at Pisa was built to serve which kind of building?', a: 'A cathedral', d: ['A palace', 'A castle', 'A town hall'] },
-    { c: 'Places & Landmarks', t: 2, q: 'The Golden Gate Bridge is painted a distinctive shade of which color?', a: 'Orange', d: ['Red', 'Gold', 'Silver'] },
+    { c: 'Places & Landmarks', t: 2, q: 'The Golden Gate Bridge is painted a distinctive shade of which color?', a: 'Orange', d: ['Green', 'Gold', 'Silver'] },
     { c: 'Places & Landmarks', t: 3, q: 'The Sydney Harbour Bridge is nicknamed after which household object, because of its shape?', a: 'A coathanger', d: ['A ladder', 'A birdcage', 'A saddle'] },
     { c: 'Places & Landmarks', t: 4, q: 'Which imperial palace outside Saint Petersburg is famous for the terraced cascade of gilded fountains running down to the sea?', a: 'Peterhof', d: ['Tsarskoye Selo', 'Gatchina', 'Pavlovsk'] },
     { c: 'Places & Landmarks', t: 5, q: 'The Minaret of Jam, a decorated brick tower standing alone in a remote mountain valley, was raised in the twelfth century in which country?', a: 'Afghanistan', d: ['Iran', 'Tajikistan', 'Pakistan'] },

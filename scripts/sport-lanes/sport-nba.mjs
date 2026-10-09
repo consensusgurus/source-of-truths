@@ -41,7 +41,7 @@ export const LANE_DAYS = [
   ],
   // day 6
   [
-    { c: 'NBA', t: 1, q: 'Which of these was a rival professional basketball league that operated from 1967 to 1976?', a: 'The American Basketball Association', d: ['The World Hockey Association', 'The Continental Football League', 'The North American Soccer League'] },
+    { c: 'NBA', t: 1, q: 'Which of these was a rival professional basketball league that operated from 1967 to 1976?', a: 'The American Basketball Association', d: ['The American Basketball League', 'The Basketball Association of America', 'The National Basketball League'] },
     { c: 'NBA', t: 2, q: 'Which nickname followed Julius Erving through his professional career?', a: 'Dr. J', d: ['The Iceman', 'The Pearl', 'Skywalker'] },
     { c: 'NBA', t: 3, q: 'The ABA team called the Colonels played in which city?', a: 'Louisville', d: ['Lexington', 'Nashville', 'Memphis'] },
     { c: 'NBA', t: 4, q: 'Who served as the first commissioner of the ABA?', a: 'George Mikan', d: ['Danny Biasone', 'Dolph Schayes', 'Bob Cousy'] },

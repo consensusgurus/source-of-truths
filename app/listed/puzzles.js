@@ -1770,7 +1770,7 @@ export const PUZZLES = [
       { t: "Russia", v: "37,653 km", d: "Most of it faces the Arctic, and much of that is frozen for much of the year." },
       { t: "Philippines", v: "36,289 km", d: "Nearly eight thousand islands spread over eleven hundred miles north to south." },
       { t: "Japan", v: "29,751 km", d: "Four main islands and roughly fourteen thousand smaller ones." },
-      { t: "Australia", v: "25,760 km", d: "A whole continent, with a remarkably smooth outline and few offshore islands." },
+      { t: "Australia", v: "25,760 km", d: "A whole continent, with a far smoother outline than the island nations ranked above it." },
       { t: "United States", v: "19,924 km", d: "Alaska alone accounts for more than half of the total." },
     ],
   },

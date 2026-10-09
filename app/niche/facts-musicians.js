@@ -9,7 +9,7 @@
 //         generous reading; Irish and Australian acts do not).
 //   us    an American act (a Puerto Rican act counts).
 //   aoty  won the Grammy Album of the Year as the credited main artist
-//         (through the 2025 ceremony).
+//         (through the 2026 ceremony).
 //   hall  inducted into the Rock & Roll Hall of Fame (through the 2025
 //         class; a Musical Excellence induction counts, the generous reading).
 //   fem   a solo female artist.
@@ -194,7 +194,7 @@ export const MUSICIANS = [
   { t: 'Post Malone', us: 1, rap: 1 },
   { t: 'Kendrick Lamar', us: 1, rap: 1 },
   { t: 'Travis Scott', us: 1, rap: 1 },
-  { t: 'Bad Bunny', us: 1, rap: 1 },
+  { t: 'Bad Bunny', us: 1, aoty: 1, rap: 1 },
   { t: 'Shakira', fem: 1 },
   { t: 'BTS', a: ['bts'], band: 1 },
   { t: 'Daft Punk', band: 1, aoty: 1 },
@@ -220,7 +220,7 @@ export const MUSICIANS = [
 // LX (February 2026). Generous: a billed guest counts, not only the
 // headliner, so Missy Elliott (2015), Nicki Minaj (2012) and 50 Cent (2022)
 // are in. National-anthem performances are NOT halftime and do not count.
-export const HALFTIME = new Set(['Michael Jackson', 'Diana Ross', 'ZZ Top', 'The Temptations', 'Stevie Wonder', 'Phil Collins', 'Christina Aguilera', 'Aerosmith', 'NSYNC', 'Britney Spears', 'U2', 'Shania Twain', 'No Doubt', 'Sting', 'Janet Jackson', 'Justin Timberlake', 'Paul McCartney', 'The Rolling Stones', 'Prince', 'Bruce Springsteen', 'The Who', 'Usher', 'Madonna', 'Nicki Minaj', 'Beyoncé', "Destiny's Child", 'Bruno Mars', 'Red Hot Chili Peppers', 'Katy Perry', 'Missy Elliott', 'Coldplay', 'Lady Gaga', 'Maroon 5', 'Travis Scott', 'Shakira', 'Bad Bunny', 'The Weeknd', 'Dr. Dre', 'Snoop Dogg', 'Eminem', 'Kendrick Lamar', '50 Cent', 'Rihanna', 'SZA']);
+export const HALFTIME = new Set(['Michael Jackson', 'Diana Ross', 'ZZ Top', 'The Temptations', 'Stevie Wonder', 'Phil Collins', 'Christina Aguilera', 'Aerosmith', 'NSYNC', 'Britney Spears', 'U2', 'Shania Twain', 'No Doubt', 'Sting', 'Janet Jackson', 'Justin Timberlake', 'Paul McCartney', 'The Rolling Stones', 'Prince', 'Bruce Springsteen', 'The Who', 'Usher', 'Madonna', 'Nicki Minaj', 'Beyoncé', "Destiny's Child", 'Bruno Mars', 'Red Hot Chili Peppers', 'Katy Perry', 'Missy Elliott', 'Coldplay', 'Lady Gaga', 'Maroon 5', 'Travis Scott', 'Shakira', 'Bad Bunny', 'The Weeknd', 'Dr. Dre', 'Snoop Dogg', 'Eminem', 'Kendrick Lamar', '50 Cent', 'Rihanna', 'SZA', 'Alicia Keys']);
 
 // Grammy Record of the Year winners, through the 2025 ceremony. Generous: a
 // credited featured artist counts, which is how Bruno Mars is in for Uptown
