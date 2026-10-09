@@ -2,11 +2,9 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Crown, Copy, Check, UserPlus, Users } from 'lucide-react';
-import QuizNavHeader from '../QuizNavHeader';
+import { Crown, Copy, Check, UserPlus } from 'lucide-react';
+import GroupsShell from '../../groups/GroupsShell';
 import JoinLeaderboardForm from '../../quiz/[id]/JoinLeaderboardForm';
-import Grain from '../../Grain';
-import Footer from '../../Footer';
 import DrawingBoard from './DrawingBoard';
 import { T } from '@/lib/theme';
 import { CONTEST, COPY, contestIsLive, formatScore } from '@/lib/contest';
@@ -15,9 +13,12 @@ import { CONTEST, COPY, contestIsLive, formatScore } from '@/lib/contest';
 // the winner and the two runners-up; this is the full ranking behind it, plus the
 // viewer's own standing and share link.
 
+// Stage tokens (owner, 2026-10-09: the page moved onto the same frame as
+// /groups and the Stat Hub), so both registers come from app/globals.css.
 const C = {
-  bg: T.white, surface: T.white, ink: T.ink, muted: T.muted,
-  soft: T.muted, line: 'rgba(20,22,28,0.30)', accent: T.accent, cta: T.cta, ctaInk: T.ctaInk,
+  ink: 'var(--stg-ink)', muted: 'var(--stg-ink2)', soft: 'var(--stg-mute)',
+  line: 'var(--stg-line)', accent: 'var(--stg-acc)', cta: 'var(--stg-acc)',
+  ctaInk: 'var(--stg-onramp)', surface: 'var(--stg-raise)', well: 'var(--stg-surf2)',
 };
 const MEDAL = [T.gold, '#b8bcc4', '#c8814b'];
 const FONT = "'Manrope', system-ui, -apple-system, sans-serif";
@@ -161,18 +162,10 @@ export default function CommunityLeaderboardClient() {
   }, [me]);
 
   return (
-    <div style={{ background: C.bg, minHeight: '100vh', fontFamily: FONT, color: C.ink }}>
-      <Grain />
-      <QuizNavHeader />
-      <div style={{ maxWidth: 860, margin: '0 auto', padding: '12px 20px 34px', position: 'relative' }}>
-        <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: C.muted, textDecoration: 'none', margin: '10px 0 16px' }}>
-          <ArrowLeft size={14} /> Back to all quizzes
-        </Link>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-          <Users size={22} style={{ color: C.accent }} />
-          <h1 style={{ margin: 0, fontSize: 30, fontWeight: 800, letterSpacing: '-0.6px' }}>Community Leaderboard</h1>
-        </div>
+    <GroupsShell eyebrow="Community" links={[{ href: '/groups', label: 'Groups' }, { href: '/quizzes/hub', label: 'Stat Hub' }]}>
+      <div style={{ maxWidth: 860, fontFamily: FONT, color: C.ink }}>
+        <div className="grp-lbl">Community</div>
+        <h1 className="grp-h1" style={{ margin: '6px 0 10px' }}>Community Leaderboard</h1>
         <p style={{ margin: '0 0 4px', fontSize: 14.5, lineHeight: 1.5, color: C.muted, maxWidth: 620 }}>
           The players bringing the most new people to Mind Loft. I&apos;m a single person
           startup, so word of mouth is how this grows.
@@ -197,7 +190,7 @@ export default function CommunityLeaderboardClient() {
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                <code style={{ flex: '1 1 260px', minWidth: 0, fontSize: 12.5, background: '#f2f4f7', border: `1px solid ${C.line}`, borderRadius: 9, padding: '9px 11px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <code style={{ flex: '1 1 260px', minWidth: 0, fontSize: 12.5, background: C.well, border: `1px solid ${C.line}`, borderRadius: 9, padding: '9px 11px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {me.shareUrl}
                 </code>
                 <button type="button" onClick={copy} style={{ flex: 'none', display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: FONT, fontSize: 13, fontWeight: 800, color: C.ctaInk, background: C.cta, border: 0, borderRadius: 9, padding: '10px 14px', cursor: 'pointer' }}>
@@ -231,7 +224,7 @@ export default function CommunityLeaderboardClient() {
                   padding: '7px 13px', borderRadius: 999,
                   border: `1px solid ${on ? C.accent : C.line}`,
                   background: on ? C.accent : C.surface,
-                  color: on ? T.white : C.muted,
+                  color: on ? C.ctaInk : C.muted,
                 }}
               >
                 {w.label}
@@ -270,7 +263,7 @@ export default function CommunityLeaderboardClient() {
                     flex: 'none', width: 26, height: 26, borderRadius: '50%',
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 12, fontWeight: 800,
-                    background: i < 3 ? MEDAL[i] : '#eef0f4',
+                    background: i < 3 ? MEDAL[i] : C.well,
                     color: i < 3 ? '#1a1408' : C.muted,
                   }}>{i + 1}</span>
                   {i === 0 ? <Crown size={16} style={{ flex: 'none', color: MEDAL[0] }} /> : null}
@@ -302,9 +295,8 @@ export default function CommunityLeaderboardClient() {
             </div>
           )}
         </div>
-      </div>
 
-      <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 20px 70px', position: 'relative' }}>
+        <div style={{ marginTop: 26 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, margin: '0 0 6px' }}>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, letterSpacing: '-0.3px' }}>Latest shares</h2>
           {feed && feed.length ? <span style={{ fontSize: 12, color: C.soft, fontWeight: 700 }}>{feed.length} most recent</span> : null}
@@ -339,7 +331,7 @@ export default function CommunityLeaderboardClient() {
                 );
               })}
               {!feedAll && feed.length > 15 ? (
-                <button type="button" onClick={() => setFeedAll(true)} style={{ display: 'block', width: '100%', fontFamily: FONT, fontSize: 13, fontWeight: 800, color: C.accent, background: '#f2f4f7', border: 0, borderTop: `1px solid ${C.line}`, borderRadius: 0, padding: '11px', cursor: 'pointer' }}>
+                <button type="button" onClick={() => setFeedAll(true)} style={{ display: 'block', width: '100%', fontFamily: FONT, fontSize: 13, fontWeight: 800, color: C.ink, background: C.well, border: 0, borderTop: `1px solid ${C.line}`, borderRadius: 0, padding: '11px', cursor: 'pointer' }}>
                   Show all {feed.length}
                 </button>
               ) : null}
@@ -355,7 +347,7 @@ export default function CommunityLeaderboardClient() {
           onClick={() => setJoinOpen(false)}
           style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(14,29,64,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
         >
-          <div onClick={(e) => e.stopPropagation()} style={{ width: 390, maxWidth: '100%', background: T.white, borderRadius: 16, padding: '22px 20px 20px', maxHeight: '88vh', overflow: 'auto' }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: 390, maxWidth: '100%', background: 'var(--stg-raise)', color: C.ink, borderRadius: 16, padding: '22px 20px 20px', maxHeight: '88vh', overflow: 'auto' }}>
             <JoinLeaderboardForm
               hideIcon
               heading="Register to get your share link"
@@ -366,7 +358,7 @@ export default function CommunityLeaderboardClient() {
         </div>
       )}
 
-      <Footer />
-    </div>
+      </div>
+    </GroupsShell>
   );
 }

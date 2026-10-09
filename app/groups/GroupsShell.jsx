@@ -148,7 +148,11 @@ function ThemeGlyph({ theme }) {
   );
 }
 
-export default function GroupsShell({ eyebrow, children }) {
+// `links` replaces the left nav chip(s); the default is what /groups has always
+// shown. The community board passes its own (2026-10-09).
+const DEFAULT_LINKS = [{ href: '/groups', label: 'Your groups' }];
+
+export default function GroupsShell({ eyebrow, children, links = DEFAULT_LINKS }) {
   const [theme, setTheme] = useStageTheme();
   return (
     <div className="stage-page grp-page" data-stage-theme={theme}
@@ -158,7 +162,7 @@ export default function GroupsShell({ eyebrow, children }) {
         <Link href="/" className="grp-mark" aria-label="Mind Loft home"><MindLoftMark size={17} /> <b>Mind <i>Loft</i></b></Link>
         <span className="grp-eb">{eyebrow}</span>
         <nav className="grp-capnav">
-          <Link href="/groups" className="grp-chip">Your groups</Link>
+          {links.map((l) => <Link key={l.href} href={l.href} className="grp-chip">{l.label}</Link>)}
           <button type="button" className="grp-chip grp-tg"
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
             aria-label={theme === 'light' ? 'Switch to dark' : 'Switch to light'}
