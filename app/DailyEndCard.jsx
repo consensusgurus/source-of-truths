@@ -115,7 +115,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-15' };
+const LAUNCH_PIN = { keys: ['gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-15' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -230,6 +230,9 @@ export const GAME_META = {
   defend: { accent: '#2f4f4f', badgeBg: '#2f4f4f', badgeInk: T.white, Fin: Shield },
   blitz: { accent: '#657512', badgeBg: '#657512', badgeInk: T.white, Fin: Zap },
   blitzed: { accent: '#3f6d1f', badgeBg: '#3f6d1f', badgeInk: T.white, Fin: Sigma },
+  gap: { accent: '#9d174d', badgeBg: '#9d174d', badgeInk: T.white, Fin: Sigma },
+  series: { accent: '#0369a1', badgeBg: '#0369a1', badgeInk: T.white, Fin: Sigma },
+  back: { accent: '#047857', badgeBg: '#047857', badgeInk: T.white, Fin: Sigma },
   sums: { accent: '#be185d', badgeBg: '#be185d', badgeInk: T.white, Fin: Sigma },
   hinge: { accent: '#4f46e5', badgeBg: '#4f46e5', badgeInk: T.white, Fin: Link2 },
   strata: { accent: '#9a3412', badgeBg: '#9a3412', badgeInk: T.white, Fin: Layers },
@@ -335,6 +338,9 @@ const ALL_DAILY_GAMES = [
   { key: 'blitz',  cat: 'numbers',   name: 'Blitz',  tag: 'Twenty problems, one life',   blurb: 'Mental arithmetic against a fifteen second clock. Twenty problems, getting harder, and one wrong answer ends the run.', href: '/blitz' },
   { key: 'sums',  cat: 'numbers',   name: 'Sums',  tag: 'The daily kakuro',   blurb: 'The cross-sums crossword. Every run of squares adds up to the total at its head, digits 1 to 9, no repeats. One solution, and the clock decides the day.', href: '/sums' },
   { key: 'blitzed',  cat: 'numbers',   name: 'Blitzed',  tag: 'Twenty problems, three numbers each',   blurb: 'Blitz with a third number on every line, like 5 + 10 × 2. Twenty problems, twenty seconds each, and one wrong answer ends the run.', href: '/blitzed' },
+  { key: 'gap', cat: 'numbers', name: 'Gap', tag: 'Twenty equations, one gap each', blurb: 'One number missing from every line, like 7 × ? = 56. Twenty problems, twenty seconds each, and one wrong answer ends the run.', href: '/gap' },
+  { key: 'series', cat: 'numbers', name: 'Series', tag: 'Twenty series, what comes next', blurb: 'A run of numbers on every line, like 3, 7, 11, 15, ?. Pick what comes next. Twenty seconds each, one life.', href: '/series' },
+  { key: 'back', cat: 'numbers', name: 'Back', tag: 'Which line makes it', blurb: 'A number and four lines of arithmetic, like ? = 56. Pick the one line that makes it. Twenty seconds each, one life.', href: '/back' },
   { key: 'defend', cat: 'endgame',     name: 'Defend', tag: 'Black to play and survive',   blurb: 'The other half of a mate puzzle. Five moves look like they stop the mate, one does, and then you have to do it again.', href: '/defend' },
   { key: 'yose',   cat: 'endgame',     name: 'Yose',   tag: 'The last points on the board',            blurb: 'A Go endgame you are already winning. A handful of open points, a perfect opponent, and one move that keeps the win. Nine by nine on Sundays.', href: '/yose' },
   { key: 'turn',   cat: 'endgame',     name: 'Turn',   tag: 'Ten squares left',            blurb: 'An Othello endgame you are already winning. One square keeps it, and the careful little move is not always it.', href: '/turn' },

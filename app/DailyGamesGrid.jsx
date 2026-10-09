@@ -151,6 +151,9 @@ const GAMES = [
   { key: 'defend', href: '/defend', name: 'Defend', tag: 'Black to play and survive', img: '/games/btn-defend.png' },
   { key: 'blitz', href: '/blitz', name: 'Blitz', tag: 'Twenty problems, one life', img: '/games/btn-blitz.png' },
   { key: 'blitzed', href: '/blitzed', name: 'Blitzed', tag: 'Twenty problems, three numbers each', img: '/games/btn-blitzed.png' },
+  { key: 'gap', href: '/gap', name: 'Gap', tag: 'Twenty equations, one gap each', img: '/games/btn-gap.png' },
+  { key: 'series', href: '/series', name: 'Series', tag: 'Twenty series, what comes next', img: '/games/btn-series.png' },
+  { key: 'back', href: '/back', name: 'Back', tag: 'Which line makes it', img: '/games/btn-back.png' },
   { key: 'sums', href: '/sums', name: 'Sums', tag: 'The daily kakuro', img: '/games/btn-sums.png' },
   { key: 'sweep', href: '/sweep', name: 'Sweep', tag: 'No bottom edge', img: '/games/btn-sweep.png' },
   { key: 'chomp', href: '/chomp', name: 'Chomp', tag: 'Eat them in order', img: '/games/btn-chomp.png' },
@@ -172,7 +175,7 @@ const GAMES_BY_KEY = Object.fromEntries(GAMES.map((g) => [g.key, g]));
 const CATEGORIES = [
   { key: 'word', label: 'Word', keys: ['crux', 'strata', 'lode', 'encore', 'emcee', 'shards', 'garble', 'links', 'stet', 'tuck', 'warmer', 'glyph', 'anon', 'rung', 'hinge', 'babel', 'barter'] },
   { key: 'geography', label: 'Geography', keys: ['atlas', 'flank', 'span', 'ping'] },
-  { key: 'numbers', label: 'Numbers', keys: ['tally', 'calc', 'carve', 'cipher', 'crunch', 'blitz', 'blitzed', 'sums', 'pricer', 'dealer', 'realtor', 'agent', 'curator'] },
+  { key: 'numbers', label: 'Numbers', keys: ['tally', 'calc', 'carve', 'cipher', 'crunch', 'blitz', 'blitzed', 'gap', 'series', 'back', 'sums', 'pricer', 'dealer', 'realtor', 'agent', 'curator'] },
   // Sudoku split out of Numbers on 2026-09-01. The nine keys are exactly the
   // Sudoku circuit's pool, so the shelf, the circuit and the category are one
   // list and cannot drift apart.

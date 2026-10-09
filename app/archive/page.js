@@ -91,6 +91,9 @@ import { PUZZLES as BARTER_FULL } from '../barter/puzzles';
 import { PUZZLES as DEFEND_FULL } from '../defend/puzzles';
 import { PUZZLES as BLITZ_FULL } from '../blitz/puzzles';
 import { PUZZLES as BLITZED_FULL } from '../blitzed/puzzles';
+import { PUZZLES as GAP_FULL } from '../gap/puzzles';
+import { PUZZLES as SERIES_FULL } from '../series/puzzles';
+import { PUZZLES as BACK_FULL } from '../back/puzzles';
 import { PUZZLES as SUMS_FULL } from '../sums/puzzles';
 import { PUZZLES as HINGE_FULL } from '../hinge/puzzles';
 import { PUZZLES as REDACT_FULL } from '../redact/puzzles';
@@ -181,6 +184,9 @@ const BARTER = BARTER_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ 
 const DEFEND = DEFEND_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const BLITZ = BLITZ_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const BLITZED = BLITZED_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+const GAP = GAP_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+const SERIES = SERIES_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+const BACK = BACK_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const SUMS = SUMS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const HINGE = HINGE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const REDACT = REDACT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -343,6 +349,9 @@ const GAMES = [
   { key: 'defend', name: 'Defend', path: '/defend', tag: 'Black to play and survive', accent: '#2f4f4f', bg: '#e9f0ef', border: 'rgba(47,79,79,0.4)', src: DEFEND },
   { key: 'blitz', name: 'Blitz', path: '/blitz', tag: 'Twenty problems, one life', accent: '#657512', bg: '#f3f7de', border: 'rgba(101,117,18,0.4)', src: BLITZ },
   { key: 'blitzed', name: 'Blitzed', path: '/blitzed', tag: 'Twenty problems, three numbers each', accent: '#3f6d1f', bg: '#eaf5e2', border: 'rgba(63,109,31,0.4)', src: BLITZED },
+  { key: 'gap', name: 'Gap', path: '/gap', tag: 'Twenty equations, one gap each', accent: '#9d174d', bg: '#fce7f3', border: 'rgba(157,23,77,0.4)', src: GAP },
+  { key: 'series', name: 'Series', path: '/series', tag: 'Twenty series, what comes next', accent: '#0369a1', bg: '#e0f2fe', border: 'rgba(3,105,161,0.4)', src: SERIES },
+  { key: 'back', name: 'Back', path: '/back', tag: 'Which line makes it', accent: '#047857', bg: '#d1fae5', border: 'rgba(4,120,87,0.4)', src: BACK },
   { key: 'sums', name: 'Sums', path: '/sums', tag: 'The daily kakuro', accent: '#be185d', bg: '#fce7f3', border: 'rgba(190,24,93,0.4)', src: SUMS },
   { key: 'redact', name: 'Redact', path: '/redact', tag: 'Uncover the story', accent: '#27272a', bg: '#f4f4f5', border: 'rgba(39,39,42,0.4)', src: REDACT },
   { key: 'paths', name: 'Paths', path: '/paths', tag: 'Link every town', accent: '#065f46', bg: '#e6f4ee', border: 'rgba(6,95,70,0.4)', src: PATHS },

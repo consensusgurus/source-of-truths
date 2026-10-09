@@ -8687,3 +8687,41 @@ then the rest), games A to Z, with a Retired shelf at the foot. `next.config.js`
   Top 10 Lists), every game's end-of-game links ("Puzzle archive"), `DailyRoster`, the category
   pages, the game FAQ, and the sitemap. Page views post as `archive` (`TRACKED_PAGES`).
 
+## The Math Gauntlet (`/math`, `/circuits/math/run`) and Gap, Series, Back (launched 2026-10-09)
+
+The math answer to the Trivia Gauntlet: five Blitz-family dailies dealt as ONE continuous run on
+the same run page and RunClient as the trivia run. Circuit id `math`, engine `math`
+(`MATH_RUN_GAMES` in lib/circuits.js: gap, series, blitz, back, blitzed), `score: 'correct'`
+(problems right, clock tiebreak), trophy `circuit-math` "Human Calculator" (bronze, Zap). `/math`
+forwards to the run like `/trivia` does.
+
+- **Three new dailies, all Numbers, all Blitzed's shape** (problems.js with PROBLEMS/PROBLEM_MAP,
+  puzzles.js with twenty qids a day, five rounds of four, one life, twenty seconds, `miss: 'Asked'`,
+  no Sunday Edition and no `sunday` field):
+  - **Gap**: an equation with one number taken out (`7 × ? = 56`); verify-gap substitutes all four
+    options and requires exactly one to hold, every step whole.
+  - **Series**: five or six terms then `?`, NO thousands separators (a comma would read as two terms).
+    verify-series carries its own rule library (constant step, ratio, second/third differences,
+    alternating steps, interleaved, sum of two/three, x·p+q, alternating ×p/+q, growing steps by
+    ratio); every fitting rule must predict the answer or nothing on the board.
+  - **Back**: `? = <target>` with four LINES of the same shape (same operators in the same order);
+    exactly one evaluates to the target. Wrong lines prefer a misread that makes the target (left
+    to right, a bracket ignored), then a same-last-digit line, then near misses.
+- **Generators** `scripts/gen-gap.mjs`, `gen-series.mjs`, `gen-back.mjs` on `scripts/mathrun-core.mjs`
+  (PRNG, Blitzed's anti-sieve chooser, balanced answer columns, day loop, writer). Verifiers share
+  NO code with them; their common checks live in `scripts/mathrun-check-lib.mjs` (deliberately not
+  named verify-*). Banks run 2026-10-09 to 2026-12-25. Extend with `--from/--days/--startnum --out`
+  into scratch and splice; never rebuild a live bank.
+- **Clients** are BlitzedClient.jsx transformed (key, copy, a `?` drawn as a dashed blank box, string
+  options for Back at 17px, long lines at a smaller size).
+- **The run deals each game at its OWN clock**: sections carry `seconds` (Blitz 15, the rest 20) and
+  RunClient reads `sec.seconds`. Math sections set the line in figures with the `?` as a blank.
+- **Blitz and Blitzed banks end 2026-11-19.** The run drops a game with no puzzle that day, so
+  restock both before then or the Math Gauntlet shrinks to three.
+
+## The Trivia Gauntlet race bar scales to the BEST score, not the question count (owner, 2026-10-09)
+
+The track under each run question used to run out of the run's whole question count (~180), so the
+field bunched in the left third. Its scale is now `max(best finished total, your live total) / 0.92`:
+the leader sits near the right edge, and once you pass them the scale follows you, live, so the You
+marker never runs off the bar. Before anyone has finished it falls back to the question count.

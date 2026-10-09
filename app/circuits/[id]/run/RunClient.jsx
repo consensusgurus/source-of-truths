@@ -44,7 +44,7 @@ import { savedIdentity } from '@/lib/saved-identity';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { withRef } from '@/lib/referrals';
 import { notifyShareCredit } from '../../../ShareCreditPop';
-import { runSummaryHref, circuitShareUrl, circuitScoreMode, circuitShareResult } from '@/lib/circuits';
+import { runSummaryHref, circuitShareUrl, circuitScoreMode, circuitShareResult, MATH_RUN_GAMES } from '@/lib/circuits';
 import GauntletLadder, { rampFor } from '../../GauntletLadder';
 import RunNextUp from '../../RunNextUp';
 import TriviaDoorPop from '../../TriviaDoorPop';
@@ -329,8 +329,12 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
     return () => clearInterval(iv);
   }, [r.phase, qStart]);
 
-  const remainMs = qStart ? Math.max(0, Q_SECONDS * 1000 - (now - qStart)) : Q_SECONDS * 1000;
-  const remainFrac = remainMs / (Q_SECONDS * 1000);
+  // EACH SECTION RUNS ITS OWN GAME'S CLOCK (2026-10-09). The trivia banks are
+  // all twenty seconds; the Math Gauntlet deals Blitz at fifteen, and the run
+  // must never give a player more time than the game itself does.
+  const qSecs = (sec && sec.seconds) || Q_SECONDS;
+  const remainMs = qStart ? Math.max(0, qSecs * 1000 - (now - qStart)) : qSecs * 1000;
+  const remainFrac = remainMs / (qSecs * 1000);
 
   useEffect(() => {
     if (r.phase !== 'playing' || !qStart || lock) return;
@@ -811,7 +815,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           background and its own ink, which it was doing already. */}
       <div className="rn-cap">
         <div className="rn-cid">
-          <i>{done ? (perfect === N ? 'Run cleared' : 'Run complete') : `Trivia · ${dateLabel}`}</i>
+          <i>{done ? (perfect === N ? 'Run cleared' : 'Run complete') : `${circuitId === 'math' ? 'Math' : 'Trivia'} · ${dateLabel}`}</i>
           <b>{circuitName}</b>
         </div>
         {capFigures.length ? (
@@ -1187,7 +1191,13 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   {tierName ? <span className="rn-chip tier">{tierName}</span> : null}
                   <span className="rn-count">{r.i + 1} of {sec.questions.length}</span>
                 </div>
-                <h2 className="rn-q">{question.q}</h2>
+                {MATH_RUN_GAMES.includes(sec.key) ? (
+                  // A math line, not a sentence: set in figures, with the ? of
+                  // Gap, Series and Back drawn as the blank to fill.
+                  <h2 className="rn-q rn-qm">{String(question.q).split('?').map((p, i) => (i === 0 ? p : [<span key={i} className="rn-blank">?</span>, p]))}</h2>
+                ) : (
+                  <h2 className="rn-q">{question.q}</h2>
+                )}
                 <div className={`rn-ch${hovStale ? ' nohov' : ''}`}>
                   {question.choices.map((c, k) => (
                     <button
@@ -1197,7 +1207,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                       onClick={() => answer(k)}
                       disabled={lock}
                     >
-                      <span className="rn-k">{k + 1}</span>{c}
+                      <span className="rn-k">{k + 1}</span>{typeof c === 'number' ? c.toLocaleString('en-US') : c}
                     </button>
                   ))}
                 </div>
@@ -1208,7 +1218,13 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     steps. Life, survivors and the clock drop to a quiet line. */}
                 {(() => {
                   const ls = liveStand;
-                  const pct = (v) => `${Math.max(0, Math.min(100, (v / Math.max(1, askable)) * 100))}%`;
+                  // THE SCALE FOLLOWS THE BEST SCORE (owner, 2026-10-09). It
+                  // was the run's whole question count (~180), so the field
+                  // bunched in the left third. The best finished total now sits
+                  // near the right edge, and once the player passes it the
+                  // scale follows them instead, live, so You never runs off.
+                  const scale = Math.max(1, ls ? Math.max(ls.totals[0] || 0, ls.mine) / 0.92 : askable);
+                  const pct = (v) => `${Math.max(0, Math.min(100, (v / scale) * 100))}%`;
                   const state = !ls ? 'none' : ls.gap < 0 ? 'lead' : ls.gap <= 3 ? 'close' : 'behind';
                   const alive = fieldOn && field.curves[sec.key]
                     ? `${Math.round((field.curves[sec.key][r.i] || 0) * (field.plays[sec.key] || 0))} of ${field.plays[sec.key]} still alive here`
@@ -1804,6 +1820,10 @@ body:has(.rn)::before{background:${T.ground};}
   font-variant-numeric:tabular-nums;}
 .rn-q{font-size:clamp(21px,2.7vw,29px);font-weight:800;letter-spacing:-.025em;line-height:1.28;
   color:#fff;margin:0 0 22px;max-width:28ch;}
+.rn-qm{font-size:clamp(28px,4vw,44px);font-weight:700;letter-spacing:-.02em;max-width:none;
+  font-variant-numeric:tabular-nums;}
+.rn-blank{display:inline-block;min-width:1.1em;padding:0 .1em;margin:0 .04em;text-align:center;
+  border:3px dashed rgba(125,211,252,.85);border-radius:8px;color:#7dd3fc;line-height:1.05;}
 .rn-ch{display:grid;gap:9px;}
 .rn-c{display:flex;align-items:center;gap:12px;text-align:left;background:rgba(255,255,255,.045);
   border:1px solid rgba(255,255,255,.12);border-radius:11px;padding:15px 16px;font-family:inherit;
@@ -2037,6 +2057,7 @@ body:has(.rn)::before{background:${T.ground};}
   .rn-rrow s{display:none;}
   .rn-go{width:100%;justify-content:center;margin-top:18px;}
   .rn-q{font-size:20px;margin-bottom:16px;}
+  .rn-qm{font-size:28px;}
   .rn-c{padding:13px 14px;font-size:14.5px;}
   .rn-foot{margin-top:16px;padding-top:13px;gap:8px;}
   .rn-tally{margin-left:0;width:100%;}

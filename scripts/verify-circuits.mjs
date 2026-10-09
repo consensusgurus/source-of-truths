@@ -111,6 +111,10 @@ const MED = {
   // 25 multiple-choice questions. Replace with the measured median once the
   // board has a fortnight of rows.
   biz: 45,
+  // The Math Gauntlet's new three (2026-10-09) and Blitzed have no measured
+  // clock yet: twenty four-choice problems at twenty seconds, so estimated
+  // around Blitz's 62. Replace at the next snapshot re-measure.
+  gap: 60, series: 65, back: 75, blitzed: 80,
   // The Price Check family, estimated (2026-10-01): five guesses, about a minute each.
   pricer: 60, dealer: 60, realtor: 60, agent: 60, curator: 60,
 };

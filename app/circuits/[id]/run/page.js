@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import RunClient from './RunClient';
 import ValetRunClient from '../../ValetRunClient';
-import { circuitById, circuitGamesFor, circuitKeysFor, circuitSlotFor, isMarquee, isRunnableCircuit, runEngine, RUN_GAMES, JAM_RUN_GAMES } from '@/lib/circuits';
+import { circuitById, circuitGamesFor, circuitKeysFor, circuitSlotFor, isMarquee, isRunnableCircuit, runEngine, runGamesFor, RUN_GAMES, JAM_RUN_GAMES, MATH_RUN_GAMES } from '@/lib/circuits';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { SITE_URL } from '@/lib/site';
 import { T } from '@/lib/theme';
@@ -21,6 +21,17 @@ import { PUZZLES as quotesPuzzles } from '../../../quotes/puzzles';
 import { QUESTION_MAP as quotesQuestions } from '../../../quotes/questions';
 import { PUZZLES as streakPuzzles } from '../../../streak/puzzles';
 import { QUESTION_MAP as streakQuestions } from '../../../streak/questions';
+
+import { PUZZLES as blitzPuzzles } from '../../../blitz/puzzles';
+import { PROBLEM_MAP as blitzProblems } from '../../../blitz/problems';
+import { PUZZLES as blitzedPuzzles } from '../../../blitzed/puzzles';
+import { PROBLEM_MAP as blitzedProblems } from '../../../blitzed/problems';
+import { PUZZLES as gapPuzzles } from '../../../gap/puzzles';
+import { PROBLEM_MAP as gapProblems } from '../../../gap/problems';
+import { PUZZLES as seriesPuzzles } from '../../../series/puzzles';
+import { PROBLEM_MAP as seriesProblems } from '../../../series/problems';
+import { PUZZLES as backPuzzles } from '../../../back/puzzles';
+import { PROBLEM_MAP as backProblems } from '../../../back/problems';
 
 import { PUZZLES as parkPuzzles } from '../../../parker/puzzles';
 import { N as PARK_N, EXIT_ROW as PARK_EXIT } from '../../../parker/solver';
@@ -55,6 +66,15 @@ const BANKS = {
   quotes: { puzzles: quotesPuzzles, questions: quotesQuestions, tiers: ['Household words', 'Well known', 'Worth knowing', 'For the reader', 'Chapter and verse'] },
   biz: { puzzles: bizPuzzles, questions: bizQuestions, tiers: ['Warm-up', 'First half', 'Second half', 'Crunch time', 'Overtime'] },
   streak: { puzzles: streakPuzzles, questions: streakQuestions, tiers: ['Warm-up', 'Easy', 'Medium', 'Hard', 'Brutal'] },
+  // THE MATH GAUNTLET (2026-10-09). The Blitz family's banks have the same
+  // shape as a trivia bank (q, choices, correct, tier), so the same run deals
+  // them. `seconds` is each game's own clock: Blitz gives fifteen, the rest
+  // twenty, and the run must not hand a player more time than the game does.
+  blitz: { puzzles: blitzPuzzles, questions: blitzProblems, seconds: 15, tiers: ['Warm-up', 'Steady', 'Quick', 'Sharp', 'Flat out'] },
+  blitzed: { puzzles: blitzedPuzzles, questions: blitzedProblems, seconds: 20, tiers: ['Warm-up', 'Steady', 'Quick', 'Sharp', 'Flat out'] },
+  gap: { puzzles: gapPuzzles, questions: gapProblems, seconds: 20, tiers: ['Warm-up', 'Steady', 'Quick', 'Sharp', 'Flat out'] },
+  series: { puzzles: seriesPuzzles, questions: seriesProblems, seconds: 20, tiers: ['Warm-up', 'Steady', 'Quick', 'Sharp', 'Flat out'] },
+  back: { puzzles: backPuzzles, questions: backProblems, seconds: 20, tiers: ['Warm-up', 'Steady', 'Quick', 'Sharp', 'Flat out'] },
 };
 
 // THE JAM ENGINE'S BANKS (2026-09-05). The Valet Gauntlet deals the three
@@ -68,6 +88,10 @@ const LOTS = {
   impound: { puzzles: impoundPuzzles, n: IMPOUND_N, exitRow: IMPOUND_EXIT },
   junkyard: { puzzles: junkyardPuzzles, n: JUNKYARD_N, exitRow: JUNKYARD_EXIT },
 };
+
+// Every math game's subject is the word Numbers, which says nothing on a list
+// of five Numbers games, so the run names what each one asks instead.
+const MATH_SUBJECT = { gap: 'The missing number', series: 'What comes next', blitz: 'Two numbers a line', back: 'Which line makes it', blitzed: 'Three numbers a line' };
 
 export const dynamic = 'force-dynamic';
 
@@ -152,6 +176,24 @@ export async function generateMetadata({ params }) {
       },
     };
   }
+  if (runEngine(c.id) === 'math') {
+    const n = circuitGamesFor(c.id, etTodayServer()).filter((g) => MATH_RUN_GAMES.includes(g.key)).length || 5;
+    const url = `${SITE_URL}/circuits/${c.id}/run`;
+    const hook = `${spell(n, true)} math games. One life each.`;
+    return {
+      title: `${c.name}: ${spell(n, true)} Mental Math Games, One Long Run | Mind Loft`,
+      description:
+        `Every daily mental math game played back to back as one run: a missing number, what comes next, quick sums, which line makes the number, and three numbers a line. ${spell(n, true)} games of twenty, one life in each, and one wrong answer ends it. No calculator. Free, no signup, new problems every day.`,
+      alternates: { canonical: `/circuits/${c.id}/run` },
+      robots: { index: false, follow: true },
+      openGraph: {
+        title: hook,
+        description: 'One wrong answer ends that game, the next one starts on its own, and you get one scorecard at the end. No calculator.',
+        url, type: 'website', siteName: 'Mind Loft',
+      },
+      twitter: { card: 'summary_large_image', title: hook, description: 'One wrong answer ends the game. Then the next one starts. How far do you get?' },
+    };
+  }
   const games = circuitGamesFor(c.id, etTodayServer()).filter((g) => RUN_GAMES.includes(g.key));
   const n = games.length || 5;
   const url = `${SITE_URL}/circuits/${c.id}/run`;
@@ -232,7 +274,7 @@ export default function CircuitRunPage({ params }) {
     );
   }
 
-  const keys = circuitKeysFor(id, today).filter((k) => RUN_GAMES.includes(k) && BANKS[k]);
+  const keys = circuitKeysFor(id, today).filter((k) => runGamesFor(id).includes(k) && BANKS[k]);
 
   const sections = [];
   for (const key of keys) {
@@ -252,7 +294,7 @@ export default function CircuitRunPage({ params }) {
       // The one line under the name, on the start list AND the scorecard: the
       // game's SUBJECT, never its day topic and never its question count. See
       // the note on `subject` in lib/daily-games.js.
-      subject: g.subject || g.cat || '',
+      subject: g.subject || MATH_SUBJECT[key] || g.cat || '',
       accent: g.color || '#233a63',
       // The game's slot in the circuit's CANONICAL key list, not in today's
       // shuffled run. The ladder colours by this so a game keeps its colour
@@ -261,6 +303,7 @@ export default function CircuitRunPage({ params }) {
       quizId: day.quizId,
       num: day.num,
       topic: day.topic || '',
+      seconds: bank.seconds || 20,
       perTier: Math.max(1, Math.round(questions.length / bank.tiers.length)),
       tierNames: bank.tiers,
       questions,
