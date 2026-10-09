@@ -646,6 +646,8 @@ export default function StageToday() {
   // Puzzles, and no way back. The saved value is now cleared on arrival and
   // never read, so every reader in a group sees the group view.
   const [lensPick, setLensPick] = useState('');
+  // MY PUZZLES' GROUP BANNER (owner, 2026-10-09): off by default, not stored.
+  const [mineGrp, setMineGrp] = useState(false);
   useEffect(() => {
     try { localStorage.removeItem('sot_home_lens'); } catch (e) {}
   }, []);
@@ -1665,6 +1667,20 @@ export default function StageToday() {
     const byId = new Map(circuits.map((c) => [c.id, c]));
     return favorites.filter(isCircPin).map((k) => byId.get(circPinId(k))).filter(Boolean);
   }, [favorites, circuits]);
+  // THE GROUP'S GAMES FOR MY PUZZLES (owner, 2026-10-09): games someone else in
+  // the reader's group played today that the reader has not played (nor
+  // started), and has not starred (a starred one is already listed). Shown
+  // only when the banner at the top of My Puzzles is switched on.
+  const grpGames = useMemo(() => {
+    if (!grpOne || grpOne.failed || !grpOne.games) return [];
+    const me = (grp && grp.userKey) || null;
+    const fav = new Set(favorites || []);
+    return Object.keys(grpOne.games)
+      .filter((k) => LIVE_KEYS.has(k) && DAILY_GAME_MAP[k] && !fav.has(k) && !done.has(k) && !inprog.has(k)
+        && (grpOne.games[k] || []).some((u) => u !== me))
+      .map((k) => DAILY_GAME_MAP[k])
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [grpOne, grp, favorites, done, inprog]);
   const mineTot = pinned.length + pinnedCircs.length;
   const mineDone = pinned.filter((g) => done.has(g.key)).length
     + pinnedCircs.filter((c) => c.n === c.games.length).length;
@@ -1889,19 +1905,21 @@ export default function StageToday() {
             <button type="button" onClick={() => moveCat(cat, 1)} disabled={ci === orderedCats.length - 1} aria-label={`Move ${cat} down`}>&darr;</button>
           </span>
         </div>
-      ) : ixBtn(cat, catLabel(cat), hueFor(cat))))}
+      ) : ixBtn(cat, cat === 'Crowd Psychology'
+        ? <><span className="sty-ixl">Crowd Psychology</span><span className="sty-ixs">Crowd</span></>
+        : catLabel(cat), hueFor(cat))))}
       <span className="sty-ixsep" aria-hidden="true" />
       {ixBtn(CIRC_ID, 'Circuits', 'var(--stg-mute)')}
       {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)')}
-      {ixBtn(IQ_ID, 'IQ Tests', 'var(--stg-mute)')}
-      {ixBtn(EXAM_ID, 'School Tests', 'var(--stg-mute)')}
+      {ixBtn(IQ_ID, 'IQ Tests', 'var(--stg-mute)', 'sty-ixmv')}
+      {ixBtn(EXAM_ID, 'School Tests', 'var(--stg-mute)', 'sty-ixmv')}
       {/* Kids and the lists are doors, not panes: each goes to its own home. */}
-      <a className="sty-ixb" href="/kids" style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('kids', null)}<span>Kids</span></a>
+      <a className="sty-ixb sty-ixmv" href="/kids" style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('kids', null)}<span>Kids</span></a>
       {/* Lists is a door, not a pane: it goes to the lists home. */}
-      <a className="sty-ixb" href={withTq('/lists')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('lists', null)}<span>Top 10 Lists</span></a>
-      <span className="sty-ixsep" aria-hidden="true" />
+      <a className="sty-ixb sty-ixmv" href={withTq('/lists')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('lists', null)}<span>Top 10 Lists</span></a>
+      <span className="sty-ixsep sty-ixmv" aria-hidden="true" />
       {ixBtn(BOARD_ID, 'Leaderboards + Stats', 'var(--stg-mute)', 'wide')}
-      {ixBtn(COMM_ID, 'Most Appreciated', 'var(--stg-mute)', 'wide')}
+      {ixBtn(COMM_ID, 'Most Appreciated', 'var(--stg-mute)', 'wide sty-ixmv')}
       <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
         onClick={() => setReorder((v) => !v)}>
         {reorder ? 'Done' : 'Reorder'}
@@ -2361,6 +2379,26 @@ export default function StageToday() {
               {mineTot ? <b>{mineDone}<i>/{mineTot}</i></b> : null}
               {mineTot ? cav(MINE_ID) : null}
             </div>
+            {inGrp && grpGames.length ? (
+              <button type="button" className={'sty-mgb' + (mineGrp ? ' on' : '')} aria-pressed={mineGrp}
+                onClick={() => setMineGrp((v) => !v)}>
+                <span><b>{grpOne.name}</b> played {grpGames.length} {grpGames.length === 1 ? 'game' : 'games'} you haven't</span>
+                <span className="go">{mineGrp ? 'Hide' : 'Show'}</span>
+              </button>
+            ) : null}
+            {mineGrp && inGrp && grpGames.length ? (
+              <>
+                <div className="sty-mgl">Played by {grpOne.name}</div>
+                <div className="sty-games sty-mgg">
+                  {grpGames.map((g, i) => (
+                    <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
+                      canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
+                      hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'mineg:' + g.key} />
+                  ))}
+                </div>
+                {pinned.length || pinnedCircs.length ? <div className="sty-mgl">Starred</div> : null}
+              </>
+            ) : null}
             {!mineTot && who && myLoaded ? (
               <p className="sty-ixe">Nothing pinned yet. Star any game and it shows up here.</p>
             ) : null}
@@ -4059,6 +4097,18 @@ ${PATCH_CSS}
 .sty-rlb li.em{border-bottom-color:transparent;}
 .sty-ixbk{display:none;}
 .sty-ixg,.sty-ixct{display:none;}
+.sty-ixs{display:none;}
+.sty-mgb{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;margin:0 0 12px;padding:10px 14px;
+  border-radius:12px;border:1px solid color-mix(in srgb,var(--stg-acc) 40%,transparent);
+  background:color-mix(in srgb,var(--stg-acc) 10%,var(--stg-surf));color:var(--stg-ink);font:inherit;font-size:13.5px;
+  font-weight:600;text-align:left;cursor:pointer;}
+.sty-mgb b{font-weight:800;}
+.sty-mgb .go{margin-left:auto;flex:none;font-size:12px;font-weight:800;padding:5px 12px;border-radius:999px;
+  background:var(--stg-acc);color:var(--stg-onramp,#08222e);}
+.sty-mgb.on .go{background:none;color:var(--stg-ink2);box-shadow:inset 0 0 0 1px var(--stg-line);}
+.sty-mgb:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-mgl{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);margin:2px 0 8px;}
+.sty-mgg{margin-bottom:16px;}
 .sty-fca{display:block;text-align:right;text-decoration:none;color:inherit;}
 .sty-fca>i{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
   text-transform:uppercase;color:var(--stg-mute);}
@@ -4175,6 +4225,13 @@ ${PATCH_CSS}
   .sty-ixn.pk:not(.re) .sty-ixb.on > i{display:block;}
   .sty-ixn.pk:not(.re) .sty-ixb.on > .sty-ixg,.sty-ixn.pk:not(.re) .sty-ixb.on > .sty-ixct{display:none;}
   .sty-ixn.pk:not(.re) .sty-ixb.on > span{grid-column:auto;grid-row:auto;align-self:center;}
+  /* Short label on the phone tile (owner, 2026-10-09): "Crowd" fits, the full
+     name ellipsized. */
+  .sty-ixn:not(.re) .sty-ixl{display:none;}
+  .sty-ixn:not(.re) .sty-ixs{display:inline;}
+  /* Leaderboards + Stats sits right under Circuits and Quizzes on the phone
+     (owner, 2026-10-09): everything after it in the source steps behind. */
+  .sty-ixn:not(.re) .sty-ixmv{order:1;}
 }
 @media (max-width:900px) and (prefers-reduced-motion:reduce){
   [data-sty-anim] .sty-ix.mpk > section,[data-sty-anim] .sty-ix.msel .sty-ixn .sty-ixb{animation:none;}
