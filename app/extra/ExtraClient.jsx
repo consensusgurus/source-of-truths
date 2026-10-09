@@ -789,7 +789,7 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
                     {gameRetired ? (
                       <>
                         Extra has retired &mdash; this was its final front page. Every past edition stays playable in{' '}
-                        <a href="/daily" style={{ color: `var(--stg-ink, ${COLORS.ember})`, fontWeight: 800, textDecoration: 'underline' }}>the archive</a>.
+                        <a href="/archive" style={{ color: `var(--stg-ink, ${COLORS.ember})`, fontWeight: 800, textDecoration: 'underline' }}>the archive</a>.
                         {' '}Meet its successor:{' '}
                         <a href="/redact" style={{ color: `var(--stg-ink, ${COLORS.ember})`, fontWeight: 800, textDecoration: 'underline' }}>Redact, the daily uncover-the-story puzzle &rarr;</a>
                       </>
@@ -808,7 +808,7 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
                     You&rsquo;re playing the {PUZZLE.dateLabel.replace(', 2026', '')} archive.{' '}
                     <a href="/extra" style={{ color: `var(--stg-ink, ${COLORS.ember})`, fontWeight: 800, textDecoration: 'underline' }}>Back to today&rsquo;s Extra &rarr;</a>
                     {' · '}
-                    <a href="/daily" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>All daily puzzles</a>
+                    <a href="/archive" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>Puzzle archive</a>
                   </>
                 )}
               </p>

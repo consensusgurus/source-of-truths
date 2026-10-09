@@ -92,7 +92,7 @@ function ComingSoon({ first }) {
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
           The daily skyscrapers puzzle — border clues count the towers you can see, and every board falls to pure logic. Come back when the first board drops.
         </p>
-        <a href="/daily" style={{ color: '#075985', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
+        <a href="/" style={{ color: '#075985', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>
     </div>
   );

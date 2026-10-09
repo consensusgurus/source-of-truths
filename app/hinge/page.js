@@ -94,7 +94,7 @@ function ComingSoon({ first }) {
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
           The daily word chain: first and last word given, every pair between a compound or a phrase everyone knows. Come back when the first chain drops.
         </p>
-        <a href="/daily" style={{ color: '#4f46e5', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
+        <a href="/" style={{ color: '#4f46e5', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>
     </div>
   );

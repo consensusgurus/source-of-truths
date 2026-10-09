@@ -68,7 +68,7 @@ function ComingSoon({ first }) {
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
           The daily blind ranking. Ten things, one at a time. Come back when the first board drops.
         </p>
-        <a href="/daily" style={{ color: '#4a5d23', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
+        <a href="/" style={{ color: '#4a5d23', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>
     </div>
   );

@@ -146,7 +146,7 @@ export default function CategoryLanding({ page, games, parent = null, groups = n
         <nav className="pcl-more" aria-label="More puzzle categories">
           <span>More puzzles:</span>
           <a href={withTq('/')}>Today&apos;s puzzles</a>
-          <a href={withTq('/daily')}>Archive</a>
+          <a href={withTq('/archive')}>Archive</a>
           <a href={withTq('/circuits')}>Circuits</a>
           {parent ? <a href={withTq(`/${parent.slug}`)}>All {parent.label.toLowerCase()}</a> : null}
           {siblings.map((c) => <a key={c.slug} href={withTq(`/${c.slug}`)}>{c.label}</a>)}

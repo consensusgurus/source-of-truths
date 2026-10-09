@@ -892,7 +892,7 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
                   ) : (
                     <>You&rsquo;re playing the {PUZZLE.dateLabel} archive. <a href="/yose" style={{ color: ACC_INK, fontWeight: 800 }}>Back to today&rsquo;s Yose &rarr;</a></>
                   )}
-                  {' '}<a href="/daily" style={{ color: ACC_INK, fontWeight: 800 }}>All daily puzzles</a>
+                  {' '}<a href="/archive" style={{ color: ACC_INK, fontWeight: 800 }}>Puzzle archive</a>
                 </p>
               </div>
             )}

@@ -83,7 +83,7 @@ function ComingSoon({ first }) {
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
           The daily five-clue guessing game. Come back when the first answer drops.
         </p>
-        <a href="/daily" style={{ color: '#1a7f37', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
+        <a href="/" style={{ color: '#1a7f37', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>
     </div>
   );

@@ -90,7 +90,7 @@ function ComingSoon({ first }) {
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
           The daily chess save. White is threatening mate, five moves look like they answer it, and one does. Come back when the first position drops.
         </p>
-        <a href="/daily" style={{ color: '#2f4f4f', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
+        <a href="/" style={{ color: '#2f4f4f', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>
     </div>
   );

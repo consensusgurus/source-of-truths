@@ -1,4 +1,5 @@
-import DailyArchiveClient from './DailyArchiveClient';
+import ArchiveClient from './ArchiveClient';
+import PageViewBeacon from '../PageViewBeacon';
 import { PUZZLES as CRUX } from '../crux/puzzles';
 import { PUZZLES as EMCEE } from '../emcee/puzzles';
 import { PUZZLES as GARBLE } from '../garble/puzzles';
@@ -212,22 +213,28 @@ const SLOT = SLOT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num,
 const HANDS = HANDS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const FINESSE = FINESSE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 
-// The daily-games hub + archive. One page listing every daily puzzle, each with
-// today's puzzle and its full back-catalog of past drops (live<=today only, so
-// future puzzles and their answers never ship). Played/unplayed state is read
-// client-side from each game's per-puzzle localStorage save.
+
+// THE PUZZLE ARCHIVE (owner, 2026-10-09). Replaced /daily, the old navy-era
+// hub, which now 308s here. One page in the home's stage style: every daily
+// game on a shelf for its category, each with its played count and its every
+// past board a tap away (?p=N on the game's own page). Played marks come from
+// the per-puzzle saves on this device plus daily-status, read on the client.
+// Retired games keep their archives on a shelf of their own at the foot.
+//
+// Server HTML carries every game and every past board as a plain link, so the
+// page is also a crawl path into the archive. Nothing here may name an answer:
+// only dates, numbers and the Sunday flag leave the server.
 
 export const metadata = {
-  title: 'Daily Puzzles — Crux, Emcee, Garble, Links, Span & More | Mind Loft',
+  title: 'Puzzle Archive: Every Past Daily Puzzle | Mind Loft',
   description:
-    "Every Mind Loft daily puzzle in one place: today's puzzle and the full archive for Crux, Emcee, Garble, Links, Span, Dating, Tally, Suds, Circa, Extra, Carve, Stet, Outwit, Tuck, Lode, Alibi, Cipher, Ping, Warmer, Jesters, Sworn, Shards, Axiom, Hearsay, Venn, Stands, and Bracket. A new puzzle in each, every day.",
-  alternates: { canonical: '/daily' },
+    'Every past Mind Loft daily puzzle in one place. Pick a game, pick a day, and play any board from the archive: crosswords, sudoku, logic, trivia, chess endgames and more.',
+  alternates: { canonical: '/archive' },
   openGraph: {
     images: [{ url: '/og/daily.png', width: 1200, height: 630, alt: 'Mind Loft: the daily puzzle archive' }],
-    title: 'Daily Puzzles — Mind Loft',
-    description:
-      "Today's puzzle and the full archive for every daily puzzle: Crux, Emcee, Garble, Links, Span, Dating, Tally, Suds, Circa, Extra, Carve, Stet, Outwit, Tuck, Lode, Alibi, Cipher, Ping, Warmer, Jesters, Sworn, Shards, Axiom, Hearsay, Venn, Stands, and Bracket.",
-    url: '/daily',
+    title: 'Puzzle Archive | Mind Loft',
+    description: 'Every past daily puzzle on Mind Loft, by game and by day.',
+    url: '/archive',
     type: 'website',
     siteName: 'Mind Loft',
   },
@@ -369,35 +376,41 @@ const breadcrumbJsonLd = {
   '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
-    { '@type': 'ListItem', position: 2, name: 'Quizzes', item: `${SITE_URL}/quizzes` },
-    { '@type': 'ListItem', position: 3, name: 'Daily Puzzles' },
+    { '@type': 'ListItem', position: 2, name: 'Puzzle Archive' },
   ],
 };
 
-export default function DailyPage() {
+export default function ArchivePage() {
   const today = etTodayServer();
   // Slim, answer-free shape: only what the archive UI needs, so puzzle content
-  // never reaches the client bundle.
+  // never reaches the client bundle. Name, tag, category and route come from
+  // lib/daily-games.js on the client, so GAMES here only has to supply `src`.
   const games = GAMES.map((g) => ({
     key: g.key,
-    name: g.name,
-    path: g.path,
-    tag: g.tag,
-    accent: g.accent,
-    bg: g.bg,
-    border: g.border,
     puzzles: g.src
       .filter((p) => p.live <= today)
-      .map((p) => ({ num: p.num, dateLabel: p.dateLabel, live: p.live, rev: p.rev || null, quizId: p.quizId, sunday: isSundayEdition(g.key, p) }))
-      .sort((a, b) => b.num - a.num),
-  }));
+      // Lean on purpose: ~130 games x every past board is the whole payload. The
+      // quizId is sent only where it is not the standard <key>-M-D-YY (the
+      // client derives that), rev only for a corrected Crux board, and the
+      // Sunday flag only when true.
+      .map((p) => {
+        const o = { n: p.num, d: p.live };
+        const [y, m, d] = String(p.live).split('-').map(Number);
+        if (p.quizId && p.quizId !== `${g.key}-${m}-${d}-${y % 100}`) o.q = p.quizId;
+        if (p.rev) o.r = p.rev;
+        if (isSundayEdition(g.key, p)) o.s = 1;
+        return o;
+      })
+      .sort((a, b) => b.n - a.n),
+  })).filter((g) => g.puzzles.length);
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <DailyArchiveClient games={games} today={today} />
+      <PageViewBeacon id="archive" />
+      <ArchiveClient games={games} today={today} />
     </>
   );
 }

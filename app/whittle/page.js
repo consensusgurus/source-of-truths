@@ -93,7 +93,7 @@ function ComingSoon({ first }) {
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
           The sudoku played backwards — a solved grid, and your job is to take the clues away without ever giving it a second answer. Come back when the first board drops.
         </p>
-        <a href="/daily" style={{ color: '#854d0e', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
+        <a href="/" style={{ color: '#854d0e', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>
     </div>
   );

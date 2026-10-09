@@ -26,6 +26,9 @@ export const FOOTER_COLS = [
     head: 'Puzzles & Quizzes',
     links: [
       { label: 'Browse Puzzles & Quizzes', href: '/' },
+      // Every past board of every daily, by game and by day (owner, 2026-10-09).
+      // Replaced /daily, which 308s here.
+      { label: 'Puzzle Archive', href: '/archive' },
       // The full index. This link is the crawl path to the whole quiz catalogue, so it
       // must stay on a server-rendered surface: see lib/quiz-catalog.js.
       { label: 'All Quizzes A-Z', href: '/quizzes/all' },

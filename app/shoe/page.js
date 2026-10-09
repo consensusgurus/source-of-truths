@@ -96,7 +96,7 @@ function ComingSoon({ first }) {
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
           The daily blackjack shoe — the same cards in the same order for every player, a par set by the book line, and a count to beat it with. Come back when the first shoe is dealt.
         </p>
-        <a href="/daily" style={{ color: '#0c4a6e', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
+        <a href="/" style={{ color: '#0c4a6e', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>
     </div>
   );

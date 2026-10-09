@@ -66,7 +66,7 @@ export default function DailyRoster({ variant = 'light' }) {
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="dr-head">
         <b>All {total} daily puzzles</b>
-        <a href="/daily">Puzzle archive</a>
+        <a href="/archive">Puzzle archive</a>
         <a href="/circuits">Circuits</a>
       </div>
       {groups.map((g) => (

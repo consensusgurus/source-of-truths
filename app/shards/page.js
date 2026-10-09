@@ -90,7 +90,7 @@ function ComingSoon({ first }) {
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
           The daily jigsaw crossword: a solved grid, shattered into lettered pieces for you to reassemble. Come back when the first grid drops.
         </p>
-        <a href="/daily" style={{ color: '#0d9488', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
+        <a href="/" style={{ color: '#0d9488', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>
     </div>
   );

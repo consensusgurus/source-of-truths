@@ -93,7 +93,7 @@ function ComingSoon({ first }) {
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
           The daily sandwich sudoku — the same 9×9 grid, with a number beside every row and column giving the total of the digits between that line&apos;s 1 and its 9. Side by side and the sandwich is empty, which is a 0. Come back when the first board drops.
         </p>
-        <a href="/daily" style={{ color: '#15616b', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
+        <a href="/" style={{ color: '#15616b', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>
     </div>
   );

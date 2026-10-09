@@ -104,7 +104,7 @@ function ComingSoon({ first }) {
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
           The daily tile-tucking word puzzle — 14 letters, one empty board, and a benchmark to beat. Come back when the first rack drops.
         </p>
-        <a href="/daily" style={{ color: '#92400e', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
+        <a href="/" style={{ color: '#92400e', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>
     </div>
   );

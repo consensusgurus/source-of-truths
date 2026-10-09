@@ -79,7 +79,7 @@ function ComingSoon({ first }) {
         <p style={{ fontSize: 14, lineHeight: 1.55, color: '#3f4757', margin: '0 0 16px' }}>
           Sweep launches {first.dateLabel}. The same field for everybody, and no bottom edge.
         </p>
-        <a href="/daily" style={{ display: 'inline-block', background: '#2563eb', color: '#fff', fontWeight: 800, fontSize: 14, padding: '11px 22px', borderRadius: 9, textDecoration: 'none' }}>
+        <a href="/archive" style={{ display: 'inline-block', background: '#2563eb', color: '#fff', fontWeight: 800, fontSize: 14, padding: '11px 22px', borderRadius: 9, textDecoration: 'none' }}>
           Today&rsquo;s slate
         </a>
       </div>

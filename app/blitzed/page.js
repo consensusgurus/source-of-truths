@@ -69,7 +69,7 @@ function ComingSoon({ first }) {
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
           Twenty problems a day, three numbers in every one, twenty seconds each, one life. Come back when the first run drops.
         </p>
-        <a href="/daily" style={{ color: '#3f6d1f', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
+        <a href="/" style={{ color: '#3f6d1f', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>
     </div>
   );

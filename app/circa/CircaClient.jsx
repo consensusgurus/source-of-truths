@@ -784,7 +784,7 @@ export default function CircaClient({ puzzles = [], forceNum = null }) {
                 {isTodays ? (
                   <>
                     Circa has retired &mdash; this was its final moment. Every past puzzle stays playable in{' '}
-                    <a href="/daily" style={{ color: `var(--stg-ink, ${COLORS.ember})`, fontWeight: 800, textDecoration: 'underline' }}>the archive</a>.
+                    <a href="/archive" style={{ color: `var(--stg-ink, ${COLORS.ember})`, fontWeight: 800, textDecoration: 'underline' }}>the archive</a>.
                     {' '}Meet its successor:{' '}
                     <a href="/outrank" style={{ color: `var(--stg-ink, ${COLORS.ember})`, fontWeight: 800, textDecoration: 'underline' }}>Outrank, the daily crowd-ranking puzzle &rarr;</a>
                   </>
@@ -793,7 +793,7 @@ export default function CircaClient({ puzzles = [], forceNum = null }) {
                     You&rsquo;re playing the {PUZZLE.dateLabel.replace(', 2026', '')} archive.{' '}
                     <a href="/circa" style={{ color: `var(--stg-ink, ${COLORS.ember})`, fontWeight: 800, textDecoration: 'underline' }}>Back to today&rsquo;s Circa &rarr;</a>
                     {' · '}
-                    <a href="/daily" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>All daily puzzles</a>
+                    <a href="/archive" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>Puzzle archive</a>
                   </>
                 )}
               </p>

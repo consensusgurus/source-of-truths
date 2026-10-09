@@ -103,7 +103,7 @@ function ComingSoon({ first }) {
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
           The daily sudoku — fill the 9×9 grid so every row, column, and box holds 1–9 once. Come back when the first board drops.
         </p>
-        <a href="/daily" style={{ color: '#ea580c', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
+        <a href="/" style={{ color: '#ea580c', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>
     </div>
   );

@@ -94,7 +94,7 @@ function ComingSoon({ first }) {
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
           The daily killer sudoku — the same 9×9 grid with no printed digits at all, just cages labelled with the total of the digits inside them. Come back when the first board drops.
         </p>
-        <a href="/daily" style={{ color: '#6b21a8', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
+        <a href="/" style={{ color: '#6b21a8', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>
     </div>
   );

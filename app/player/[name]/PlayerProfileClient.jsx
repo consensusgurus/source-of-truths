@@ -138,7 +138,7 @@ export default function PlayerProfileClient({ name }) {
             </p>
             <div className="pf-act" style={{ marginTop: 14 }}>
               <Link className="pf-btn" href="/quizzes/hub">Open the Stat Hub</Link>
-              <Link className="pf-btn ghost" href="/daily">Play today&rsquo;s slate</Link>
+              <Link className="pf-btn ghost" href="/archive">Play today&rsquo;s slate</Link>
             </div>
           </Band>
         </div>

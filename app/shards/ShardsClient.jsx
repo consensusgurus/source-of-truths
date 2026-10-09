@@ -1148,7 +1148,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
                       {prevPuzzle && (<>{' '}Meanwhile:{' '}<a href={`/shards?p=${prevPuzzle.num}`} style={{ color: `var(--stg-ink, ${COLORS.ember})`, fontWeight: 800, textDecoration: 'underline' }}>play yesterday&rsquo;s grid &rarr;</a></>)}
                     </>
                   ) : (
-                    <>You&rsquo;re playing the {PUZZLE.dateLabel.replace(', 2026', '')} archive.{' '}<a href="/shards" style={{ color: COLORS.ember, fontWeight: 800, textDecoration: 'underline' }}>Back to today&rsquo;s Shards &rarr;</a>{' · '}<a href="/daily" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>All daily puzzles</a></>
+                    <>You&rsquo;re playing the {PUZZLE.dateLabel.replace(', 2026', '')} archive.{' '}<a href="/shards" style={{ color: COLORS.ember, fontWeight: 800, textDecoration: 'underline' }}>Back to today&rsquo;s Shards &rarr;</a>{' · '}<a href="/archive" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>Puzzle archive</a></>
                   )}
                 </p>
               </>

@@ -107,7 +107,7 @@ function ComingSoon({ first }) {
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
           The daily letter-mining word puzzle &mdash; seven letters, one core, and points that pay for the rare finds. Come back when the first seam opens.
         </p>
-        <a href="/daily" style={{ color: T.goldInk, fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
+        <a href="/" style={{ color: T.goldInk, fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>
     </div>
   );

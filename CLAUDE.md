@@ -4707,10 +4707,9 @@ nobody had written the check. These twelve rules are how that stops.
     colours). Pick a ground that is not already worn by a game sitting next to it
     in the same category on the slate.
 
-    The same "silent fallback" reasoning applies to `/games/tile/<key>.png`, the
-    archive art in `app/daily/DailyArchiveClient.jsx`, which falls back to the
-    button PNG and then to a letter. That one is genuinely optional; the blue
-    tile is not.
+    (The old `/daily` archive drew `/games/tile/<key>.png` art; it was retired
+    2026-10-09 and the new `/archive` draws the stroke glyph, so that art is no
+    longer read anywhere.)
 
 ### Extending a puzzle bank in bulk (the "bank to N days" job)
 
@@ -8661,3 +8660,30 @@ stay on the classic one. Boards 10-10 to 11-30 were regenerated with
 familiar pair (no plural or -ed start/target), picks the reveal ladder whose
 least familiar word is most familiar, and lets a late Sunday relax to 12 routes
 and a 2.7 reveal floor when the fresh pool is thin.
+
+## The puzzle archive is `/archive`; `/daily` is gone (owner, 2026-10-09)
+
+The old `/daily` hub (navy cards, a leaderboard per row, one `daily-game` read per game, so about
+130 requests a load) was removed and replaced by **`/archive`**, built in the home's stage style:
+`CircuitFrame` (cap, register switch, stage footer), a hero, category chips and a search box, then
+one shelf per category in the home's fixed order (Words, Numbers, Logic, Sudoku, Trivia, Geography,
+then the rest), games A to Z, with a Retired shelf at the foot. `next.config.js` 308s `/daily` (and
+`/daily?archive=<key>`) to it.
+
+- **`app/archive/page.js` holds the bank imports**, the same list `/daily` had: one `import` per
+  game's `puzzles.js` plus a `GAMES` row with `src`. **A NEW DAILY GAME ADDS ITSELF THERE**, or it
+  has no archive. The old wire scripts anchor on `app/daily/page.js`; point new ones at the new path.
+  Name, tag, category and route come from `lib/daily-games.js`, so only `key` and `src` matter.
+- **The payload is lean on purpose** (`{n, d, q?, r?, s?}` per board): the quizId is derived as
+  `<key>-M-D-YY` on the client and sent only where it differs. Nothing that could name an answer
+  ever leaves the server.
+- **One request**, `fetchDayStatus()` (the shared cached client), merged with this device's
+  per-puzzle saves. Solved fills the square, played rings it, started dashes it; started follows the
+  t0 rule (a save with a first move, never a page merely opened).
+- A card shows the played count and bar, the last fourteen boards as day squares, Today's board, and
+  "All N days", which opens the card across the row with a two-month calendar and a link to the
+  newest board the viewer has not played. `?game=<key>` opens and scrolls to that card.
+- Linked from the footer (Puzzle Archive, in `FOOTER_COLS`), the home's side index (a door beside
+  Top 10 Lists), every game's end-of-game links ("Puzzle archive"), `DailyRoster`, the category
+  pages, the game FAQ, and the sitemap. Page views post as `archive` (`TRACKED_PAGES`).
+

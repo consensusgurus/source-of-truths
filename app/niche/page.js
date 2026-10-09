@@ -95,7 +95,7 @@ function ComingSoon({ first }) {
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
           The daily trivia grid — every cell wants an answer that fits two categories at once, and the rarer your pick the better. Come back when the first board drops.
         </p>
-        <a href="/daily" style={{ color: '#115e59', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
+        <a href="/" style={{ color: '#115e59', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>
     </div>
   );

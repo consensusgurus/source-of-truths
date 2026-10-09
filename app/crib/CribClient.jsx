@@ -773,7 +773,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
                   ) : (
                     <>You&rsquo;re playing the {PUZZLE.dateLabel} archive. <a href="/crib" style={{ color: ACC_INK, fontWeight: 800 }}>Back to today&rsquo;s Crib &rarr;</a></>
                   )}
-                  {' '}<a href="/daily" style={{ color: ACC_INK, fontWeight: 800 }}>All daily puzzles</a>
+                  {' '}<a href="/archive" style={{ color: ACC_INK, fontWeight: 800 }}>Puzzle archive</a>
                 </p>
               </div>
             )}

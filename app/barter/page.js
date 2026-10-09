@@ -88,7 +88,7 @@ function ComingSoon({ first }) {
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
           The daily letter-trade puzzle — every letter is already on the board, and you trade two tiles at a time until the words read true. Come back when the first board drops.
         </p>
-        <a href="/daily" style={{ color: '#be123c', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
+        <a href="/" style={{ color: '#be123c', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>
     </div>
   );

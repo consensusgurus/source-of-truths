@@ -376,6 +376,7 @@ const IX_GLYPHS = {
   'sty-iq': <><path d="M9 18h6M10 21h4" /><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z" /></>,
   'sty-exams': <><path d="M2.5 9.5L12 5l9.5 4.5L12 14z" /><path d="M6.5 11.5v4.5c3 2.5 8 2.5 11 0v-4.5" /></>,
   kids: <><circle cx="12" cy="12" r="8.5" /><path d="M8.5 14a4 4 0 0 0 7 0M9 10h.01M15 10h.01" /></>,
+  archive: <><rect x="3.5" y="5" width="17" height="15.5" rx="2" /><path d="M3.5 10h17M8 3v4M16 3v4M7.5 14h2M11 14h2M14.5 14h2M7.5 17h2M11 17h2" /></>,
   lists: <><path d="M10 6h10M10 12h10M10 18h10" /><path d="M4 5.5l1.5-1v4M4 11h2.5l-2.5 2.5h2.5M4 16.5h2.5l-1.3 1.3a1.2 1.2 0 1 1-1.2 1.5" /></>,
   'sty-board': <path d="M4 20V10M10 20V4M16 20v-7M21 20H3" />,
   'sty-comm': <path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z" />,
@@ -1927,6 +1928,8 @@ export default function StageToday() {
       <a className="sty-ixb sty-ixmv" href="/kids" style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('kids', null)}<span>Kids</span></a>
       {/* Lists is a door, not a pane: it goes to the lists home. */}
       <a className="sty-ixb sty-ixmv" href={withTq('/lists')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('lists', null)}<span>Top 10 Lists</span></a>
+      {/* The puzzle archive is a door too: every past board, by game and day. */}
+      <a className="sty-ixb sty-ixmv" href={withTq('/archive')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('archive', null)}<span>Puzzle Archive</span></a>
       <span className="sty-ixsep sty-ixmv" aria-hidden="true" />
       {ixBtn(BOARD_ID, 'Leaderboards + Stats', 'var(--stg-mute)', 'wide')}
       {ixBtn(COMM_ID, 'Most Appreciated', 'var(--stg-mute)', 'wide sty-ixmv')}

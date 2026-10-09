@@ -77,6 +77,13 @@ const nextConfig = {
       // are matched exactly here, so they are unaffected.
       // Renamed 2026-07-06: the Crosslock word game relaunched as Crux (same
       // game, same puzzle #1). Old links 308 to the new home.
+      // 2026-10-09: the old /daily hub was replaced by the puzzle archive in the
+      // home's stage style. Old links and deep links (?archive=<key>) carry over.
+      {
+        source: '/daily',
+        destination: '/archive',
+        permanent: true,
+      },
       {
         source: '/crosslock',
         destination: '/crux',

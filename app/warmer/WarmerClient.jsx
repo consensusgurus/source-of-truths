@@ -737,7 +737,7 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
                       {prevPuzzle && (<> {' '}Meanwhile:{' '}<a href={`/warmer?p=${prevPuzzle.num}`} style={{ color: `var(--stg-ink, ${COLORS.ember})`, fontWeight: 800, textDecoration: 'underline' }}>play yesterday&rsquo;s Warmer &rarr;</a></>)}
                     </>
                   ) : (
-                    <>You&rsquo;re playing the {PUZZLE.dateLabel.replace(', 2026', '')} archive.{' '}<a href="/warmer" style={{ color: COLORS.ember, fontWeight: 800, textDecoration: 'underline' }}>Back to today&rsquo;s Warmer &rarr;</a>{' · '}<a href="/daily" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>All daily puzzles</a></>
+                    <>You&rsquo;re playing the {PUZZLE.dateLabel.replace(', 2026', '')} archive.{' '}<a href="/warmer" style={{ color: COLORS.ember, fontWeight: 800, textDecoration: 'underline' }}>Back to today&rsquo;s Warmer &rarr;</a>{' · '}<a href="/archive" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>Puzzle archive</a></>
                   )}
                 </p>
               </div>
