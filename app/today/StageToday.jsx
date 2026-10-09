@@ -647,7 +647,13 @@ export default function StageToday() {
   // never read, so every reader in a group sees the group view.
   const [lensPick, setLensPick] = useState('');
   // MY PUZZLES' GROUP BANNER (owner, 2026-10-09): off by default, not stored.
-  const [mineGrp, setMineGrp] = useState(false);
+  // One switch PER GROUP (owner, 2026-10-09): the set of group codes switched on.
+  const [mineGrp, setMineGrp] = useState(() => new Set());
+  const flipMineGrp = useCallback((code) => setMineGrp((cur) => {
+    const n = new Set(cur);
+    if (n.has(code)) n.delete(code); else n.add(code);
+    return n;
+  }), []);
   useEffect(() => {
     try { localStorage.removeItem('sot_home_lens'); } catch (e) {}
   }, []);
@@ -1672,15 +1678,19 @@ export default function StageToday() {
   // started), and has not starred (a starred one is already listed). Shown
   // only when the banner at the top of My Puzzles is switched on.
   const grpGames = useMemo(() => {
-    if (!grpOne || grpOne.failed || !grpOne.games) return [];
+    const list = (grp && grp.groups) || [];
     const me = (grp && grp.userKey) || null;
     const fav = new Set(favorites || []);
-    return Object.keys(grpOne.games)
-      .filter((k) => LIVE_KEYS.has(k) && DAILY_GAME_MAP[k] && !fav.has(k) && !done.has(k) && !inprog.has(k)
-        && (grpOne.games[k] || []).some((u) => u !== me))
-      .map((k) => DAILY_GAME_MAP[k])
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [grpOne, grp, favorites, done, inprog]);
+    return list.filter((x) => !x.failed && x.games).map((x) => ({
+      code: x.code,
+      name: x.name,
+      games: Object.keys(x.games)
+        .filter((k) => LIVE_KEYS.has(k) && DAILY_GAME_MAP[k] && !fav.has(k) && !done.has(k) && !inprog.has(k)
+          && (x.games[k] || []).some((u) => u !== me))
+        .map((k) => DAILY_GAME_MAP[k])
+        .sort((g1, g2) => g1.name.localeCompare(g2.name)),
+    })).filter((x) => x.games.length);
+  }, [grp, favorites, done, inprog]);
   const mineTot = pinned.length + pinnedCircs.length;
   const mineDone = pinned.filter((g) => done.has(g.key)).length
     + pinnedCircs.filter((c) => c.n === c.games.length).length;
@@ -2376,29 +2386,40 @@ export default function StageToday() {
                 print, so the head keeps its title and drops both. */}
             <div className="sty-cathead" onClick={mineTot ? headClick(MINE_ID) : undefined}>
               <h2>My Puzzles</h2>
+              {who && grpGames.length ? (
+                <span className="sty-mgchips" onClick={(e) => e.stopPropagation()}>
+                  {grpGames.map((x) => (
+                    <button key={x.code} type="button" className={'sty-mgc' + (mineGrp.has(x.code) ? ' on' : '')}
+                      aria-pressed={mineGrp.has(x.code)} onClick={() => flipMineGrp(x.code)}>
+                      {x.name} <i>{x.games.length}</i>
+                    </button>
+                  ))}
+                </span>
+              ) : null}
               {mineTot ? <b>{mineDone}<i>/{mineTot}</i></b> : null}
               {mineTot ? cav(MINE_ID) : null}
             </div>
-            {inGrp && grpGames.length ? (
-              <button type="button" className={'sty-mgb' + (mineGrp ? ' on' : '')} aria-pressed={mineGrp}
-                onClick={() => setMineGrp((v) => !v)}>
-                <span><b>{grpOne.name}</b> played {grpGames.length} {grpGames.length === 1 ? 'game' : 'games'} you haven't</span>
-                <span className="go">{mineGrp ? 'Hide' : 'Show'}</span>
+            {who ? grpGames.map((x) => (
+              <button key={x.code} type="button" className={'sty-mgb' + (mineGrp.has(x.code) ? ' on' : '')}
+                aria-pressed={mineGrp.has(x.code)} onClick={() => flipMineGrp(x.code)}>
+                <span><b>{x.name}</b> played {x.games.length} {x.games.length === 1 ? 'game' : 'games'} you haven't</span>
+                <span className="go">{mineGrp.has(x.code) ? 'Hide' : 'Show'}</span>
               </button>
-            ) : null}
-            {mineGrp && inGrp && grpGames.length ? (
-              <>
-                <div className="sty-mgl">Played by {grpOne.name}</div>
+            )) : null}
+            {who ? grpGames.filter((x) => mineGrp.has(x.code)).map((x) => (
+              <div key={'gg-' + x.code}>
+                <div className="sty-mgl">Played by {x.name}</div>
                 <div className="sty-games sty-mgg">
-                  {grpGames.map((g, i) => (
+                  {x.games.map((g, i) => (
                     <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
                       canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-                      hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'mineg:' + g.key} />
+                      hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'mineg:' + x.code + ':' + g.key} />
                   ))}
                 </div>
-                {pinned.length || pinnedCircs.length ? <div className="sty-mgl">Starred</div> : null}
-              </>
-            ) : null}
+              </div>
+            )) : null}
+            {who && grpGames.some((x) => mineGrp.has(x.code)) && (pinned.length || pinnedCircs.length)
+              ? <div className="sty-mgl">Starred</div> : null}
             {!mineTot && who && myLoaded ? (
               <p className="sty-ixe">Nothing pinned yet. Star any game and it shows up here.</p>
             ) : null}
@@ -4109,6 +4130,18 @@ ${PATCH_CSS}
 .sty-mgb:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
 .sty-mgl{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);margin:2px 0 8px;}
 .sty-mgg{margin-bottom:16px;}
+/* Desktop: one chip per group beside the My Puzzles title; the phone gets the
+   banners instead (owner, 2026-10-09). */
+.sty-mgchips{display:inline-flex;flex-wrap:wrap;gap:6px;margin-left:12px;vertical-align:middle;}
+.sty-mgc{border:1px solid var(--stg-line);background:none;border-radius:999px;padding:4px 11px;font:inherit;font-size:12px;
+  font-weight:700;color:var(--stg-ink2);cursor:pointer;white-space:nowrap;}
+.sty-mgc i{font-style:normal;color:var(--stg-mute);margin-left:2px;}
+.sty-mgc:hover{color:var(--stg-ink);border-color:var(--stg-acc);}
+.sty-mgc.on{background:var(--stg-acc);border-color:var(--stg-acc);color:var(--stg-onramp,#08222e);}
+.sty-mgc.on i{color:inherit;opacity:.75;}
+.sty-mgc:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+@media (min-width:901px){.sty-mgb{display:none;}}
+@media (max-width:900px){.sty-mgchips{display:none;}}
 .sty-fca{display:block;text-align:right;text-decoration:none;color:inherit;}
 .sty-fca>i{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
   text-transform:uppercase;color:var(--stg-mute);}
