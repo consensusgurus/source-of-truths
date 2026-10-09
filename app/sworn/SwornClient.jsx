@@ -48,6 +48,7 @@ import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
+import RunDoorPop from '../circuits/RunDoorPop';
 import { useRunEmbed } from '../RunEmbed';
 import useIqStanding from '../useIqStanding';
 import useNextUnplayed, { useUnplayedSimilar } from '../useNextUnplayed';
@@ -1034,6 +1035,10 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
       )}
 
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
+      {/* THE JUDGED DOOR (owner, 2026-10-09): the first time a player ever
+          opens Sworn on its own page, the whole Judged run is offered, once per
+          case. Never inside the run itself. See app/circuits/RunDoorPop.jsx. */}
+      <RunDoorPop id="judged" game="sworn" ready={hydrated && preStart && isTodays && !EMBED} self="Sworn" />
 
       {toast && (
         <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>

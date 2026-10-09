@@ -16,6 +16,14 @@
 // It also stays quiet when the page was opened FROM a run or a circuit
 // (?circuit= / ?five=), where the player is already inside one.
 //
+// JUDGED IS ONCE PER GAME, NOT ONCE PER DAY (owner, 2026-10-09). A door with
+// `once: 'game'` fires only on a player's FIRST EVER play of that member game
+// (no plays in its local stats record, the same test the free hint uses) and
+// is stamped per game (`sot_<id>_door_<key>`), so each of the five cases offers
+// the run exactly once. Pass `game` (the registry key) for these doors. The
+// Judged run mounts the five clients on its own page through RunEmbed, so
+// callers gate `ready` on !EMBED: the run never offers itself.
+//
 // IT WEARS THE RUN STAGE'S CLOTHES: near-black ground, Manrope eyebrow, the
 // run's accent call to action carrying dark ink.
 
@@ -39,6 +47,12 @@ export const RUN_DOORS = {
     body: 'All seven daily trivia quizzes back to back, one life in each: a topic in depth, the map, sport, business, the screen, who said it, and a streak of anything at all.',
     go: 'Run all seven', accent: '#7dd3fc',
     tags: [['Deep', '#7dd3fc'], ['Atlas', '#6ee7b7'], ['Sport', '#bef264'], ['Biz', '#e8b43a'], ['Script', '#fb923c'], ['Quotes', '#fb7185'], ['Streak', '#e879f9']],
+  },
+  judged: {
+    href: '/judged', name: 'Judged', eyebrow: 'Daily run · Five cases', once: 'game',
+    body: 'Five deduction cases on one page, opening with the logic game: testimony, hearsay, an alibi and a record to rebuild. Right and fast decides which law school takes you.',
+    go: 'Take all five cases', accent: '#7dd3fc',
+    tags: [['Docket', '#c9a3ae'], ['Sworn', '#f472b6'], ['Hearsay', '#d8b4fe'], ['Alibi', '#ef8896'], ['Stands', '#93c5fd']],
   },
   // Passport is a solo page rather than a RunClient run, so it has no
   // sot_run_passport_<day> save; runDoneToday reads its day breadcrumb.
@@ -73,17 +87,37 @@ export function runDoneToday(id) {
   } catch (e) { return false; }
 }
 
-function shouldOffer(id) {
+// No recorded play of this game on this device: its stats record is absent
+// or its per-puzzle `rec` map is empty (lib/hint-gate firstEverPlay).
+function neverPlayed(game) {
+  try {
+    const st = JSON.parse(localStorage.getItem(`sot_${game}_stats`) || 'null');
+    return !st || !st.rec || Object.keys(st.rec).length === 0;
+  } catch (e) { return false; }
+}
+
+function doorKey(id, game) {
+  const D = RUN_DOORS[id];
+  return D && D.once === 'game' ? `sot_${id}_door_${game}` : `sot_${id}_door`;
+}
+
+function shouldOffer(id, game) {
+  const D = RUN_DOORS[id];
   try {
     const q = new URLSearchParams(window.location.search);
     if (q.get('circuit') || q.get('five') === '1') return false;
   } catch (e) {}
+  if (D && D.once === 'game') {
+    if (!game) return false;
+    try { if (localStorage.getItem(doorKey(id, game))) return false; } catch (e) { return false; }
+    return neverPlayed(game) && !runTouchedToday(id);
+  }
   const today = etToday();
   try { if (localStorage.getItem(`sot_${id}_door`) === today) return false; } catch (e) { return false; }
   return !runTouchedToday(id);
 }
 
-export default function RunDoorPop({ id = 'pricecheck', ready = false, self = '' }) {
+export default function RunDoorPop({ id = 'pricecheck', ready = false, self = '', game = '' }) {
   const D = RUN_DOORS[id];
   const [open, setOpen] = useState(false);
   const fired = useRef(false);
@@ -92,13 +126,13 @@ export default function RunDoorPop({ id = 'pricecheck', ready = false, self = ''
   useEffect(() => {
     if (!D || !ready || fired.current) return undefined;
     const t = setTimeout(() => {
-      if (fired.current || !shouldOffer(id)) return;
+      if (fired.current || !shouldOffer(id, game)) return;
       fired.current = true;
-      try { localStorage.setItem(`sot_${id}_door`, etToday()); } catch (e) {}
+      try { localStorage.setItem(doorKey(id, game), etToday()); } catch (e) {}
       setOpen(true);
     }, WAIT_MS);
     return () => clearTimeout(t);
-  }, [ready, id, D]);
+  }, [ready, id, D, game]);
 
   useEffect(() => {
     if (!open) return undefined;

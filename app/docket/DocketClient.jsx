@@ -55,6 +55,7 @@ import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
+import RunDoorPop from '../circuits/RunDoorPop';
 import { useRunEmbed } from '../RunEmbed';
 import useIqStanding from '../useIqStanding';
 import useNextUnplayed, { useUnplayedSimilar } from '../useNextUnplayed';
@@ -968,6 +969,10 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
       )}
 
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
+      {/* THE JUDGED DOOR (owner, 2026-10-09): the first time a player ever
+          opens Docket on its own page, the whole Judged run is offered, once per
+          case. Never inside the run itself. See app/circuits/RunDoorPop.jsx. */}
+      <RunDoorPop id="judged" game="docket" ready={hydrated && preStart && isTodays && !EMBED} self="Docket" />
 
       {showHelp && (
         <div onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}
