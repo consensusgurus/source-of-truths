@@ -8644,3 +8644,20 @@ background (`.hs-card.win` on `greenSoft`): the chip carries its own ground in b
 Sweep: grep every `*Client.jsx` that calls `isStage(` for `color:${COLORS.x}` and `color:#xxxxxx`
 inside CSS template rules and measure each against the dark ground; anything under 3:1 whose
 background is a stage token is broken.
+
+## Rung's word list has TWO ERAS (owner, 2026-10-09)
+
+Rung refused ordinary English (PRONE, PRUNE, AFTER, FIRST, MUSIC) because its
+list was 1,294 words. The lists now live in `app/rung/vocab.js`:
+`VOCAB_CLASSIC` (the frozen 1,294, never edit it) for boards live before
+`VOCAB_FROM` = 2026-10-10, and `VOCAB` (3,942: the classic list plus words at
+zipf >= 2.3 in `scripts/.lode-freq.json` that en_US hunspell knows in lower
+case, minus a slur/profanity screen and a hand pass for names) from then on.
+**Validate and measure a board only through `vocabFor(board)`**: the client,
+the hint, `verify-rung.mjs` and `gen-rung.mjs` all do. Today's 10-09 board
+would collapse from perfect 12 to 5 on the new list, which is why played boards
+stay on the classic one. Boards 10-10 to 11-30 were regenerated with
+`gen-rung.mjs --keep-through 2026-10-09`, which now enumerates every fresh
+familiar pair (no plural or -ed start/target), picks the reveal ladder whose
+least familiar word is most familiar, and lets a late Sunday relax to 12 routes
+and a 2.7 reveal floor when the fresh pool is thin.

@@ -14,8 +14,9 @@
 // lib/par.js. Floor of 1, so finishing always beats walking away. Weekday
 // perfect lines are 10 to 12 rungs and Sundays 15 or more.
 //
-// THE WORD LIST IS THE RULES. A rung must be one of the 1,294 common five-letter
-// words in VOCAB, and perfect was computed over exactly that list. Validating
+// THE WORD LIST IS THE RULES. A rung must be a word in vocabFor(PUZZLE) (see
+// ./vocab.js: boards before 2026-10-10 use the 1,294-word classic list, later
+// boards the expanded one), and perfect was computed over exactly that list. Validating
 // against anything wider would let a player find a shorter ladder than perfect
 // through vocabulary the solver never saw, and it would stop meaning anything.
 //
@@ -57,7 +58,7 @@ import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
-import { VOCAB } from './puzzles';
+import { vocabFor } from './vocab';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
@@ -271,19 +272,21 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
 
   const ladder = useMemo(() => [PUZZLE.start, ...g.rungs], [PUZZLE, g.rungs]);
   const current = ladder[ladder.length - 1];
-  const WORDS = useMemo(() => new Set(VOCAB), []);
-  // The neighbour map, built once. 1,294 connected words is a few milliseconds,
-  // and it exists only to power the hint.
+  // The board's own list: an archive board keeps the list it was measured over.
+  const BOARD_VOCAB = useMemo(() => vocabFor(PUZZLE), [PUZZLE]);
+  const WORDS = useMemo(() => new Set(BOARD_VOCAB), [BOARD_VOCAB]);
+  // The neighbour map, built once per board. A few thousand words is a few
+  // milliseconds, and it exists only to power the hint.
   const ADJ = useMemo(() => {
     const buckets = new Map();
-    for (const w of VOCAB) {
+    for (const w of BOARD_VOCAB) {
       for (let i = 0; i < 5; i++) {
         const k = `${w.slice(0, i)}_${w.slice(i + 1)}`;
         if (!buckets.has(k)) buckets.set(k, []);
         buckets.get(k).push(w);
       }
     }
-    const adj = new Map(VOCAB.map((w) => [w, []]));
+    const adj = new Map(BOARD_VOCAB.map((w) => [w, []]));
     for (const list of buckets.values()) {
       for (let a = 0; a < list.length; a++) {
         for (let b = a + 1; b < list.length; b++) {
@@ -293,7 +296,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
       }
     }
     return adj;
-  }, []);
+  }, [BOARD_VOCAB]);
 
   useEffect(() => { gRef.current = g; }, [g]);
   // Replay the shake animation WITHOUT remounting the subtree (a key change here used to
@@ -598,7 +601,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
       ]}
       steps={[
         <>Every rung must be a real word, and the letters stay where they are: <b>no anagrams</b>, no adding or dropping letters.</>,
-        <>A rung has to be one of the <b>1,294 common five-letter words</b> in the game&rsquo;s list. Par and perfect were worked out over exactly that list, so a word not in it is not a rung here.</>,
+        <>A rung has to be one of the <b>{BOARD_VOCAB.length.toLocaleString('en-US')} common five-letter words</b> in the game&rsquo;s list. Par and perfect were worked out over exactly that list, so a word not in it is not a rung here.</>,
         <><b>Perfect</b> is the shortest route that exists, found by search rather than by hand, so nobody gets under it. <b>Par</b> is the length a clean climb comes in at.</>,
         <>No <b>undo</b>: <b>restart</b> puts you back at the start word and zeroes your rungs while the clock keeps running. Climbing backwards by retyping an earlier word costs a rung too.</>,
       ]}

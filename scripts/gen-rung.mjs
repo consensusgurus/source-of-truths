@@ -21,6 +21,8 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { PUZZLES, VOCAB } from '../app/rung/puzzles.js';
+// Generates over VOCAB, the current (expanded, 2026-10-10 on) list. Never generate a
+// board dated before VOCAB_FROM: those were measured over VOCAB_CLASSIC.
 
 const here = dirname(fileURLToPath(import.meta.url));
 const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d; };
@@ -48,10 +50,24 @@ for (const w of VOCAB) for (let i = 0; i < 5; i++) { const k = w.slice(0, i) + '
 const ADJ = new Map(VOCAB.map((w) => [w, []]));
 for (const l of buckets.values()) for (let a = 0; a < l.length; a++) for (let b = a + 1; b < l.length; b++) { ADJ.get(l[a]).push(l[b]); ADJ.get(l[b]).push(l[a]); }
 
+const BFS_MEMO = new Map();
 function bfs(s) {
+  if (BFS_MEMO.has(s)) return BFS_MEMO.get(s);
   const d = new Map([[s, 0]]); const q = [s];
   for (let h = 0; h < q.length; h++) { const u = q[h]; for (const v of ADJ.get(u)) if (!d.has(v)) { d.set(v, d.get(u) + 1); q.push(v); } }
+  BFS_MEMO.set(s, d);
   return d;
+}
+const ROUTES_MEMO = new Map();
+function routesTo(s, t) {
+  if (!ROUTES_MEMO.has(s)) {
+    const ds = bfs(s);
+    const order = [...ds.entries()].sort((a, b) => a[1] - b[1]).map((e) => e[0]);
+    const p = new Map([[order[0], 1]]);
+    for (const u of order.slice(1)) { let c = 0; for (const v of ADJ.get(u)) if (ds.get(v) === ds.get(u) - 1) c += p.get(v) || 0; p.set(u, Math.min(c, 1e7)); }
+    ROUTES_MEMO.set(s, p);
+  }
+  return Math.min(ROUTES_MEMO.get(s).get(t), 9999);
 }
 function routes(ds, t) {
   const order = [...ds.entries()].sort((a, b) => a[1] - b[1]).map((e) => e[0]);
@@ -60,15 +76,41 @@ function routes(ds, t) {
   return Math.min(p.get(t), 9999);
 }
 function example(s, t, dt) {
-  // walk from target back toward start through the most familiar predecessor
-  const ds = bfs(s); const path = [t]; let u = t;
-  while (u !== s) { const c = ADJ.get(u).filter((v) => ds.get(v) === ds.get(u) - 1 && dt.get(v) === dt.get(u) + 1); c.sort((a, b) => z(b) - z(a) || (a < b ? -1 : 1)); u = c[0]; path.push(u); }
+  // One shortest ladder, chosen so its LEAST familiar word is as familiar as
+  // possible (a bottleneck path over the shortest-path DAG), ties broken toward
+  // the more familiar predecessor. A greedy most-familiar walk can strand itself
+  // on an obscure word another shortest ladder avoids entirely.
+  const ds = bfs(s); const L = ds.get(t);
+  const on = (w) => ds.has(w) && dt.has(w) && ds.get(w) + dt.get(w) === L;
+  const layers = Array.from({ length: L + 1 }, () => []);
+  for (const w of ds.keys()) if (on(w)) layers[ds.get(w)].push(w);
+  const best = new Map([[s, z(s)]]); const prev = new Map();
+  for (let k = 1; k <= L; k++) for (const u of layers[k]) {
+    let bv = -Infinity, bp = null;
+    for (const v of ADJ.get(u)) if (best.has(v) && ds.get(v) === k - 1) {
+      const val = best.get(v);
+      if (val > bv || (val === bv && (z(v) > z(bp) || (z(v) === z(bp) && v < bp)))) { bv = val; bp = v; }
+    }
+    best.set(u, Math.min(bv, z(u))); prev.set(u, bp);
+  }
+  const path = [t]; let u = t;
+  while (u !== s) { u = prev.get(u); path.push(u); }
   return path.reverse();
 }
 
+// --keep-through YYYY-MM-DD: only boards live on or before this date count as
+// used (the rest are being regenerated). Defaults to the whole bank.
+const KEEP = arg('--keep-through', '9999-12-31');
 const used = new Set();
-for (const p of PUZZLES) { used.add(p.start); used.add(p.target); }
-const FAMILIAR = VOCAB.filter((w) => z(w) >= MIN_ZIPF && !BLOCK.has(w));
+for (const p of PUZZLES) if (p.live <= KEEP) { used.add(p.start); used.add(p.target); }
+// Start and target: familiar, and a base form. With the expanded list (2026-10-10)
+// the plurals and past tenses of the common words clear MIN_ZIPF too, and a board
+// running SOULS to SEALS reads as a bank that ran out of words.
+const INFLECTED = (w) => /(s|ed)$/.test(w) && !/(ss|us|is)$/.test(w);
+const FAMILIAR = VOCAB.filter((w) => z(w) >= MIN_ZIPF && !BLOCK.has(w) && !INFLECTED(w));
+// Every word on the example ladder (the post-game reveal) must clear this, so the
+// reveal never walks through FOLIC or POLIS.
+const EX_FLOOR = 3.0;
 
 const addDays = (d, n) => { const t = new Date(d + 'T12:00:00Z'); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); };
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -79,25 +121,43 @@ for (let d = 0; d < DAYS; d++) {
   const live = addDays(FROM, d), num = STARTNUM + d;
   const sunday = new Date(live + 'T12:00:00Z').getUTCDay() === 0;
   const r = rng(num * 7907 + 3);
-  const wantPar = sunday ? [15, 16, 17, 18][Math.floor(r() * 4)] : [11, 10, 12][wk++ % 3];
+  const firstPar = sunday ? [15, 16, 17, 18][Math.floor(r() * 4)] : [11, 10, 12][wk++ % 3];
+  // A long Sunday through familiar words is rare on the expanded list, so a
+  // Sunday that cannot find its drawn length steps down toward 15 rather than
+  // spinning forever.
+  const parOrder = sunday ? [firstPar, ...[17, 16, 15].filter((x) => x < firstPar)] : [firstPar];
   let found = null;
-  for (let t = 0; t < 400000 && !found; t++) {
-    const s = FAMILIAR[Math.floor(r() * FAMILIAR.length)];
+  let wantPar = firstPar;
+  for (const pp of parOrder) {
+  if (found) break;
+  wantPar = pp;
+  // Enumerate every unused familiar pair at this length, shuffle with the board's
+  // own seed, and take the first that passes. Exhaustive, so a length with any
+  // legal pair at all is always found, and fast enough to do per board.
+  const pairs = [];
+  for (const s of FAMILIAR) {
     if (used.has(s)) continue;
     const ds = bfs(s);
-    const cands = FAMILIAR.filter((w) => !used.has(w) && w !== s && ds.get(w) === wantPar);
-    if (!cands.length) continue;
-    for (let k = 0; k < 8 && !found; k++) {
-      const tg = cands[Math.floor(r() * cands.length)];
-      const rt = routes(ds, tg);
-      if (rt > MAX_ROUTES) continue;
+    for (const w of FAMILIAR) if (!used.has(w) && w !== s && ds.get(w) === wantPar) pairs.push([s, w]);
+  }
+  for (let a = pairs.length - 1; a > 0; a--) { const b = Math.floor(r() * (a + 1)); [pairs[a], pairs[b]] = [pairs[b], pairs[a]]; }
+  // Strict first; a Sunday late in a bank, when the fresh familiar pool is thin,
+  // may relax to a few more routes and a slightly less familiar reveal word.
+  const tiers = sunday ? [[MAX_ROUTES, EX_FLOOR], [12, 2.7]] : [[MAX_ROUTES, EX_FLOOR]];
+  for (const [maxR, floor] of tiers) {
+    if (found) break;
+    for (const [s, tg] of pairs) {
+      const rt = routesTo(s, tg);
+      if (rt > maxR) continue;
       const ex = example(s, tg, bfs(tg));
-      if (ex.some((w) => BLOCK.has(w))) continue;
+      if (ex.some((w) => BLOCK.has(w) || z(w) < floor)) continue;
       found = { s, tg, rt, ex };
+      break;
     }
   }
+  }
   if (!found) throw new Error(`no ladder for ${live} at par ${wantPar}`);
-  used.add(found.s); used.add(found.tg);
+  used.add(found.s); used.add(found.tg); console.error(`${live} par ${wantPar} ${found.s}->${found.tg}`);
   const [y, m, dd] = live.split('-').map(Number);
   out.push(`  {
     num: ${num},

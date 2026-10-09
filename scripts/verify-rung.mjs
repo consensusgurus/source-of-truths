@@ -48,7 +48,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { PUZZLES, VOCAB } from '../app/rung/puzzles.js';
+import { PUZZLES, VOCAB, VOCAB_CLASSIC, VOCAB_FROM, vocabFor } from '../app/rung/puzzles.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const RUNG_VARIETY_FROM = '2026-08-03';
@@ -62,21 +62,35 @@ const note = (id, msg) => console.log(`… ${id}  ${msg}`);
 let BAD = 0;
 
 // ── VOCAB sanity ─────────────────────────────────────────────────────────
+// Two eras (app/rung/vocab.js): boards before VOCAB_FROM were measured over
+// VOCAB_CLASSIC, later boards over VOCAB. Both lists are checked, the classic
+// list must sit wholly inside VOCAB (no word that was ever a rung stops being
+// one), and every board below is measured over vocabFor(board).
 {
   const errs = [];
-  if (new Set(VOCAB).size !== VOCAB.length) errs.push(`VOCAB has ${VOCAB.length - new Set(VOCAB).size} duplicate(s)`);
-  const bad = VOCAB.filter((w) => w.length !== 5 || w !== w.toLowerCase() || !/^[a-z]+$/.test(w));
-  if (bad.length) errs.push(`${bad.length} entries are not plain lowercase 5-letter words: ${bad.slice(0, 5).join(',')}`);
+  for (const [nm, L] of [['VOCAB', VOCAB], ['VOCAB_CLASSIC', VOCAB_CLASSIC]]) {
+    if (new Set(L).size !== L.length) errs.push(`${nm} has ${L.length - new Set(L).size} duplicate(s)`);
+    const bad = L.filter((w) => w.length !== 5 || w !== w.toLowerCase() || !/^[a-z]+$/.test(w));
+    if (bad.length) errs.push(`${bad.length} ${nm} entries are not plain lowercase 5-letter words: ${bad.slice(0, 5).join(',')}`);
+  }
+  if (VOCAB_CLASSIC.length !== 1294) errs.push(`VOCAB_CLASSIC is frozen at 1,294 words, found ${VOCAB_CLASSIC.length}`);
+  const VS = new Set(VOCAB);
+  const lost = VOCAB_CLASSIC.filter((w) => !VS.has(w));
+  if (lost.length) errs.push(`${lost.length} classic words missing from VOCAB: ${lost.slice(0, 5).join(',')}`);
   // Cross-check the word count the rules copy tells players against the real list.
   const clientSrc = readFileSync(join(here, '../app/rung/RungClient.jsx'), 'utf8');
   const m = clientSrc.match(/([\d,]+)\s+common five-letter words/);
-  if (m) {
+  const dynamicCount = /\{BOARD_VOCAB\.length\.toLocaleString\([^)]*\)\}\s+common five-letter words/.test(clientSrc)
+    && /BOARD_VOCAB = useMemo\(\(\) => vocabFor\(PUZZLE\)/.test(clientSrc);
+  if (dynamicCount) {
+    // the copy reads the board's own list length, so it cannot drift
+  } else if (m) {
     const claimed = Number(m[1].replace(/,/g, ''));
     if (claimed !== VOCAB.length) errs.push(`rules copy tells players "${m[1]} common five-letter words" but VOCAB.length is ${VOCAB.length}`);
   } else {
     errs.push('could not find the "N common five-letter words" rules sentence in RungClient.jsx to cross-check');
   }
-  errs.length ? fail('VOCAB', errs.join('; ')) : ok('VOCAB', `${VOCAB.length} distinct 5-letter words, rules copy count matches`);
+  errs.length ? fail('VOCAB', errs.join('; ')) : ok('VOCAB', `classic ${VOCAB_CLASSIC.length} + expanded ${VOCAB.length} (from ${VOCAB_FROM}), classic inside expanded, rules copy reads the board's list`);
 }
 
 // ── word-ladder graph over VOCAB (bucket method) ────────────────────────
@@ -98,8 +112,9 @@ function buildAdj(vocab) {
   }
   return adj;
 }
-const ADJ = buildAdj(VOCAB);
-const VSET = new Set(VOCAB);
+const GRAPHS = new Map([[VOCAB_CLASSIC, buildAdj(VOCAB_CLASSIC)], [VOCAB, buildAdj(VOCAB)]]);
+let ADJ = GRAPHS.get(VOCAB);
+let VSET = new Set(VOCAB);
 
 function bfsDistAndRoutes(start, target) {
   if (!ADJ.has(start) || !ADJ.has(target)) return { dist: null, routes: 0 };
@@ -137,6 +152,10 @@ const targetPoolFresh = new Map();
 
 PUZZLES.forEach((p, i) => {
   const errs = [];
+  const L = vocabFor(p);
+  ADJ = GRAPHS.get(L);
+  VSET = new Set(L);
+  if ((p.live < VOCAB_FROM) !== (L === VOCAB_CLASSIC)) errs.push('vocabFor picked the wrong era');
 
   // ── identity / date consistency ─────────────────────────────────────────
   if (p.num !== i + 1) errs.push(`num ${p.num} != ${i + 1}`);
