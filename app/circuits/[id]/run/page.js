@@ -91,7 +91,7 @@ const LOTS = {
 
 // Every math game's subject is the word Numbers, which says nothing on a list
 // of five Numbers games, so the run names what each one asks instead.
-const MATH_SUBJECT = { gap: 'The missing number', series: 'What comes next', blitz: 'Two numbers a line', back: 'Which line makes it', blitzed: 'Three numbers a line' };
+const MATH_SUBJECT = { gap: 'The missing number', series: 'What comes next', blitz: 'Quick arithmetic', back: 'Which line makes it', blitzed: 'Three numbers a line' };
 
 export const dynamic = 'force-dynamic';
 
@@ -183,7 +183,7 @@ export async function generateMetadata({ params }) {
     return {
       title: `${c.name}: ${spell(n, true)} Mental Math Games, One Long Run | Mind Loft`,
       description:
-        `Every daily mental math game played back to back as one run: a missing number, what comes next, quick sums, which line makes the number, and three numbers a line. ${spell(n, true)} games of twenty, one life in each, and one wrong answer ends it. No calculator. Free, no signup, new problems every day.`,
+        `Every daily mental math game played back to back as one run: quick arithmetic, a missing number, what comes next, which line makes the number, and three numbers a line. ${spell(n, true)} games of twenty, one life in each, and one wrong answer ends it. No calculator. Free, no signup, new problems every day.`,
       alternates: { canonical: `/circuits/${c.id}/run` },
       robots: { index: false, follow: true },
       openGraph: {

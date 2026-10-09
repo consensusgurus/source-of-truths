@@ -8691,7 +8691,7 @@ then the rest), games A to Z, with a Retired shelf at the foot. `next.config.js`
 
 The math answer to the Trivia Gauntlet: five Blitz-family dailies dealt as ONE continuous run on
 the same run page and RunClient as the trivia run. Circuit id `math`, engine `math`
-(`MATH_RUN_GAMES` in lib/circuits.js: gap, series, blitz, back, blitzed), `score: 'correct'`
+(`MATH_RUN_GAMES` in lib/circuits.js: blitz, gap, series, back, blitzed; Blitz opens by owner ruling), `score: 'correct'`
 (problems right, clock tiebreak), trophy `circuit-math` "Human Calculator" (bronze, Zap). `/math`
 forwards to the run like `/trivia` does.
 
