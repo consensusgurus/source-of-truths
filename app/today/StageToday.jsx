@@ -354,6 +354,32 @@ const QUIZ_ID = 'sty-quizzes';
 const IQ_ID = 'sty-iq';
 const COMM_ID = 'sty-comm';
 const EXAM_ID = 'sty-exams';
+
+// The phone tiles' glyphs (owner, 2026-10-09), one stroke drawing per section,
+// drawn in currentColor so the ring's hue tints it. Keyed by pane id; the
+// categories key off their registry name.
+const IX_GLYPHS = {
+  all: <><rect x="4" y="4" width="7" height="7" rx="1.5" /><rect x="13" y="4" width="7" height="7" rx="1.5" /><rect x="4" y="13" width="7" height="7" rx="1.5" /><rect x="13" y="13" width="7" height="7" rx="1.5" /></>,
+  'sty-mine': <path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z" />,
+  Sudoku: <><rect x="3.5" y="3.5" width="17" height="17" rx="2" /><path d="M9.2 3.5v17M14.8 3.5v17M3.5 9.2h17M3.5 14.8h17" /></>,
+  Word: <><rect x="3.5" y="3.5" width="17" height="17" rx="3" /><path d="M8.5 16.5l3.5-9 3.5 9M9.8 13.2h4.4" /></>,
+  Logic: <><circle cx="6" cy="6" r="2.5" /><circle cx="18" cy="6" r="2.5" /><circle cx="12" cy="18" r="2.5" /><path d="M7.2 8.3l3.6 7.4M16.8 8.3l-3.6 7.4M8.5 6h7" /></>,
+  Trivia: <><circle cx="12" cy="12" r="8.5" /><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.7.3-1 .9-1 1.6v.7" /><path d="M12 17h.01" /></>,
+  'End Game': <><circle cx="12" cy="7" r="2.8" /><path d="M9.5 10.5h5l-1 5h-3z" /><path d="M7 20.5h10l-1-3.5H8z" /></>,
+  Numbers: <path d="M9.5 4l-2 16M16.5 4l-2 16M4.5 9h15M3.5 15h15" />,
+  Geography: <><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17" /><path d="M12 3.5c2.6 2.4 3.8 5.2 3.8 8.5s-1.2 6.1-3.8 8.5c-2.6-2.4-3.8-5.2-3.8-8.5s1.2-6.1 3.8-8.5z" /></>,
+  Cards: <><rect x="4" y="6" width="10" height="14" rx="1.8" /><path d="M12.5 4l5.6 1.4a1.8 1.8 0 0 1 1.3 2.2l-2.6 10.2" /></>,
+  'Crowd Psychology': <><circle cx="12" cy="8" r="3" /><path d="M6.5 19a5.5 5.5 0 0 1 11 0" /><circle cx="5" cy="10" r="2" /><circle cx="19" cy="10" r="2" /><path d="M2.5 17a3.2 3.2 0 0 1 3.6-3M21.5 17a3.2 3.2 0 0 0-3.6-3" /></>,
+  Arcade: <><rect x="3" y="8" width="18" height="10" rx="4" /><path d="M7.5 11v4M5.5 13h4" /><circle cx="15.5" cy="12" r="1" /><circle cx="18" cy="14.5" r="1" /></>,
+  'sty-circs': <><circle cx="6" cy="6" r="2.2" /><circle cx="18" cy="18" r="2.2" /><path d="M8.2 6H15a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h6.8" /></>,
+  'sty-quizzes': <><path d="M9 6h11M9 12h11M9 18h11" /><path d="M3.5 6l1.2 1.2L7 5M3.5 12l1.2 1.2L7 11M3.5 18l1.2 1.2L7 17" /></>,
+  'sty-iq': <><path d="M9 18h6M10 21h4" /><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z" /></>,
+  'sty-exams': <><path d="M2.5 9.5L12 5l9.5 4.5L12 14z" /><path d="M6.5 11.5v4.5c3 2.5 8 2.5 11 0v-4.5" /></>,
+  kids: <><circle cx="12" cy="12" r="8.5" /><path d="M8.5 14a4 4 0 0 0 7 0M9 10h.01M15 10h.01" /></>,
+  lists: <><path d="M10 6h10M10 12h10M10 18h10" /><path d="M4 5.5l1.5-1v4M4 11h2.5l-2.5 2.5h2.5M4 16.5h2.5l-1.3 1.3a1.2 1.2 0 1 1-1.2 1.5" /></>,
+  'sty-board': <path d="M4 20V10M10 20V4M16 20v-7M21 20H3" />,
+  'sty-comm': <path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z" />,
+};
 const INFO_PANES = [QUIZ_ID, BOARD_ID, IQ_ID, COMM_ID, EXAM_ID];
 // The six standardized tests, written out: app/exams/examData.js carries every
 // question and is far too heavy to pull into the home for six names.
@@ -1179,18 +1205,14 @@ export default function StageToday() {
   // THE ME VIEW IS STARS ONLY (owner, 2026-10-03): with Me picked on the
   // switch, My games holds exactly what this reader starred; the group's games
   // join it only in the group and Everyone views.
-  const pinned = useMemo(() => {
-    const stars = (favorites || []).map((k) => DAILY_GAME_MAP[k]).filter(Boolean);
-    const seen = new Set(stars.map((g) => g.key));
-    const g0 = capLens !== 'me' && grp && grp.groups ? grp.groups.find((x) => !x.failed && x.games) : null;
-    const fromGroup = g0
-      ? Object.keys(g0.games || {})
-        .filter((k) => !seen.has(k) && DAILY_GAME_MAP[k] && LIVE_KEYS.has(k))
-        .map((k) => DAILY_GAME_MAP[k])
-      : [];
-    return stars.concat(fromGroup);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [favorites, grp, capLens]);
+  //
+  // STARS ONLY, IN EVERY VIEW (owner, 2026-10-09): the group's games no longer
+  // join My Puzzles. A group game already says so on its own tile in its
+  // category, so My Puzzles is exactly what this reader starred.
+  const pinned = useMemo(
+    () => (favorites || []).map((k) => DAILY_GAME_MAP[k]).filter(Boolean),
+    [favorites],
+  );
 
   // THE THREE CARDS. Each answers a different question, and each falls back to
   // the best thing it can say with what has loaded (owner, 2026-08-31), because
@@ -1803,15 +1825,55 @@ export default function StageToday() {
   // the same rule the old shut sections followed.
   // NO PLAYED FRACTIONS IN THE INDEX (owner, 2026-10-07): the strip in the cap is
   // the day's progress, drawn once.
-  const ixBtn = (id, label, hue, cls) => (
-    <button key={id} type="button" aria-pressed={paneOn === id}
-      className={'sty-ixb' + (cls ? ' ' + cls : '') + (paneOn === id ? ' on' : '')} style={{ '--cc': hue }}
-      onClick={(e) => { if (picked && paneOn === id) setPicked(false); else pickPane(id, e); }}>
-      <i aria-hidden="true" />
-      <span>{label}</span>
-      <em className="sty-ixbk" aria-hidden="true">Back to categories</em>
-    </button>
-  );
+  //
+  // PROGRESS RINGS ON THE PHONE TILES (owner, 2026-10-09, option C of the
+  // mobile-button mockups): each tile carries its glyph inside a ring that
+  // fills as today's games in it are played, plus "N of M" under the name.
+  // This reverses the 10-07 no-fractions rule FOR THE PHONE TILES ONLY; the
+  // desktop index is unchanged (the ring and count are display:none there).
+  // A tile with nothing to count (Quizzes, IQ Tests, Kids...) shows the glyph
+  // in an empty track and no count.
+  const ixProg = (id) => {
+    if (id === ALL_ID) return [alphaDone, alpha.length];
+    if (id === MINE_ID) return pinned.length ? [pinned.filter((g) => done.has(g.key)).length, pinned.length] : null;
+    if (id === CIRC_ID) return circuits.length ? [circuits.filter((c) => c.games.length && c.n === c.games.length).length, circuits.length] : null;
+    const c = cats.find((x) => x.cat === id);
+    return c && c.games.length ? [c.games.filter((g) => done.has(g.key)).length, c.games.length] : null;
+  };
+  const ixRing = (id, prog) => {
+    const frac = prog && prog[1] ? Math.min(1, prog[0] / prog[1]) : 0;
+    const full = frac >= 1;
+    return (
+      <span className={'sty-ixg' + (full ? ' full' : '')} aria-hidden="true">
+        <svg className="sty-ixgr" viewBox="0 0 44 44">
+          <circle className="tr" cx="22" cy="22" r="19" />
+          {frac > 0 && !full ? (
+            <circle className="fl" cx="22" cy="22" r="19" strokeDasharray={`${(frac * 119.38).toFixed(1)} 119.38`}
+              transform="rotate(-90 22 22)" />
+          ) : null}
+        </svg>
+        <svg className="sty-ixgg" viewBox="0 0 24 24">{IX_GLYPHS[id] || IX_GLYPHS[ALL_ID]}</svg>
+      </span>
+    );
+  };
+  const ixCount = (prog) => (prog
+    ? <em className="sty-ixc" aria-hidden="true">{prog[0] >= prog[1] ? 'Complete' : `${prog[0]} of ${prog[1]}`}</em>
+    : null);
+  const ixBtn = (id, label, hue, cls) => {
+    const prog = ixProg(id);
+    return (
+      <button key={id} type="button" aria-pressed={paneOn === id}
+        className={'sty-ixb' + (cls ? ' ' + cls : '') + (paneOn === id ? ' on' : '') + (prog && prog[0] >= prog[1] ? ' cmp' : '')}
+        style={{ '--cc': hue }}
+        onClick={(e) => { if (picked && paneOn === id) setPicked(false); else pickPane(id, e); }}>
+        <i aria-hidden="true" />
+        {ixRing(id, prog)}
+        <span>{label}</span>
+        {ixCount(prog)}
+        <em className="sty-ixbk" aria-hidden="true">Back to categories</em>
+      </button>
+    );
+  };
   const alphaDone = alpha.filter((g) => done.has(g.key)).length;
   const ixNav = (
     <nav className={'sty-ixn' + (reorder ? ' re' : '') + (picked ? ' pk' : '')} aria-label="Sections">
@@ -1834,9 +1896,9 @@ export default function StageToday() {
       {ixBtn(IQ_ID, 'IQ Tests', 'var(--stg-mute)')}
       {ixBtn(EXAM_ID, 'School Tests', 'var(--stg-mute)')}
       {/* Kids and the lists are doors, not panes: each goes to its own home. */}
-      <a className="sty-ixb" href="/kids" style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" /><span>Kids</span></a>
+      <a className="sty-ixb" href="/kids" style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('kids', null)}<span>Kids</span></a>
       {/* Lists is a door, not a pane: it goes to the lists home. */}
-      <a className="sty-ixb" href={withTq('/lists')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" /><span>Top 10 Lists</span></a>
+      <a className="sty-ixb" href={withTq('/lists')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('lists', null)}<span>Top 10 Lists</span></a>
       <span className="sty-ixsep" aria-hidden="true" />
       {ixBtn(BOARD_ID, 'Leaderboards + Stats', 'var(--stg-mute)', 'wide')}
       {ixBtn(COMM_ID, 'Most Appreciated', 'var(--stg-mute)', 'wide')}
@@ -3996,6 +4058,7 @@ ${PATCH_CSS}
 .sty-rlb li.nt span{color:var(--stg-mute);font-weight:600;}
 .sty-rlb li.em{border-bottom-color:transparent;}
 .sty-ixbk{display:none;}
+.sty-ixg,.sty-ixc{display:none;}
 .sty-fca{display:block;text-align:right;text-decoration:none;color:inherit;}
 .sty-fca>i{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
   text-transform:uppercase;color:var(--stg-mute);}
@@ -4087,6 +4150,31 @@ ${PATCH_CSS}
     letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute);}
   [data-sty-anim] .sty-ix.mpk > section:not(.sty-ixoff){animation:sty-in .32s cubic-bezier(.2,.7,.3,1) .08s both;}
   [data-sty-anim] .sty-ix.msel .sty-ixn:not(.re) .sty-ixb{animation:sty-in .26s cubic-bezier(.2,.7,.3,1) both;}
+  /* PROGRESS RINGS (owner, 2026-10-09). Ring + glyph on the left, name over
+     "N of M" on the right; the dot steps aside. The open bar (Back to
+     categories) keeps its plain dot form. */
+  .sty-ixn:not(.re) .sty-ixb{grid-template-columns:44px minmax(0,1fr);grid-template-rows:auto auto;column-gap:11px;row-gap:1px;
+    border-radius:14px;padding:8px 12px;}
+  .sty-ixn:not(.re) .sty-ixb > i{display:none;}
+  .sty-ixn:not(.re) .sty-ixb > .sty-ixg{display:block;grid-column:1;grid-row:1 / span 2;align-self:center;}
+  .sty-ixn:not(.re) .sty-ixb > span{grid-column:2;align-self:end;}
+  .sty-ixn:not(.re) .sty-ixb > span:last-child,.sty-ixn:not(.re) .sty-ixb > span:nth-last-child(2):not(.sty-ixg){grid-row:1 / span 2;align-self:center;}
+  .sty-ixn:not(.re) .sty-ixb > .sty-ixc{display:block;grid-column:2;align-self:start;font-style:normal;font-size:11.5px;
+    font-weight:700;color:var(--stg-mute);letter-spacing:0;}
+  .sty-ixn:not(.re) .sty-ixb.cmp > .sty-ixc{color:var(--cc);}
+  .sty-ixg{position:relative;width:44px;height:44px;color:var(--cc);}
+  .sty-ixg svg{position:absolute;fill:none;}
+  .sty-ixgr{inset:0;width:44px;height:44px;stroke-width:3.5;}
+  .sty-ixgr .tr{stroke:var(--stg-line);}
+  .sty-ixgr .fl{stroke:var(--cc);stroke-linecap:round;}
+  .sty-ixgg{left:13px;top:13px;width:18px;height:18px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .sty-ixg.full{background:var(--cc);border-radius:50%;color:var(--stg-onramp,#0b0f1a);}
+  .sty-ixg.full .sty-ixgr{display:none;}
+  .sty-ixn:not(.re) .sty-ixb.cmp{background:color-mix(in srgb,var(--cc) 12%,var(--stg-surf));}
+  .sty-ixn.pk:not(.re) .sty-ixb.on{grid-template-columns:10px minmax(0,1fr) auto;grid-template-rows:none;row-gap:0;}
+  .sty-ixn.pk:not(.re) .sty-ixb.on > i{display:block;}
+  .sty-ixn.pk:not(.re) .sty-ixb.on > .sty-ixg,.sty-ixn.pk:not(.re) .sty-ixb.on > .sty-ixc{display:none;}
+  .sty-ixn.pk:not(.re) .sty-ixb.on > span{grid-column:auto;grid-row:auto;align-self:center;}
 }
 @media (max-width:900px) and (prefers-reduced-motion:reduce){
   [data-sty-anim] .sty-ix.mpk > section,[data-sty-anim] .sty-ix.msel .sty-ixn .sty-ixb{animation:none;}
