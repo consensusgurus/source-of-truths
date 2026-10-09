@@ -51,6 +51,8 @@ import { isSolveOnly } from '@/lib/daily-games';
 import { typicalLabel } from '@/lib/game-medians';
 import GameGlyph from './GameGlyph';
 import { savedIdentity } from '@/lib/saved-identity';
+import { withRef, myRefCode, ensureMyRefCode } from '@/lib/referrals';
+import { drawingIsLive, DRAWING } from '@/lib/drawing';
 import { etTodayISO } from '@/lib/daily-games';
 import { readChallenge, encodeChallenge, challengeFig, challengeResult, ymdCompact, isBlankMiss } from '@/lib/challenge';
 import { metricDef } from '@/lib/challenge-metric';
@@ -977,6 +979,18 @@ export default function StageFinish({
   const [run, setRun] = useState(null);
   const [chal, setChal] = useState(null);
   const [chalMsg, setChalMsg] = useState('');
+  // The challenge link carries the sender's referral code (owner, 2026-10-09),
+  // so a new friend who plays from it credits them, and while the $100 drawing
+  // runs the door says so. Both read after mount (clock + storage).
+  const [chalCredit, setChalCredit] = useState(false);
+  const [chalDraw, setChalDraw] = useState(false);
+  useEffect(() => {
+    let live = true;
+    setChalDraw(drawingIsLive());
+    if (myRefCode()) { setChalCredit(true); return undefined; }
+    Promise.resolve(ensureMyRefCode()).then(() => { if (live && myRefCode()) setChalCredit(true); }).catch(() => {});
+    return () => { live = false; };
+  }, []);
   useEffect(() => {
     if (!me) return;
     try {
@@ -1517,7 +1531,7 @@ export default function StageFinish({
     try { onArchive = /[?&]p=\d+/.test(window.location.search); } catch (e) { /* treat as today's */ }
     const who = savedIdentity().username || 'A friend';
     const raw = encodeChallenge({ ...mine, name: who, d: onArchive ? 0 : ymdCompact(etTodayISO()) });
-    const url = `${window.location.origin}/vs?g=${encodeURIComponent(me.key)}&vs=${encodeURIComponent(raw)}&v=3`; // v: bump when the card changes, a phone caches a link's preview by its URL
+    const url = withRef(`${window.location.origin}/vs?g=${encodeURIComponent(me.key)}&vs=${encodeURIComponent(raw)}&v=3`); // v: bump when the card changes, a phone caches a link's preview by its URL
     // THE LINK GOES ALONE (owner, 2026-10-07). Its card says the whole
     // sentence, so any text sent beside it would say it twice.
     const copied = () => { setChalMsg('Link copied. Paste it to a friend.'); };
@@ -1534,7 +1548,10 @@ export default function StageFinish({
     k: 'challenge', cls: 'chal', btn: true, onClick: sendChallenge, go: chalMsg ? 'Sent' : 'Send',
     ic: 'flag',
     nm: duel ? `Challenge ${chal.name} back` : 'Challenge a friend',
-    sb: chalMsg || (isBlankMiss(mine) ? 'Dare them to crack it. No spoilers.' : `Send them ${challengeFig(mine, me && me.key)} to beat. No spoilers.`),
+    sb: chalMsg || (isBlankMiss(mine) ? 'Dare them to crack it.' : `Send them ${challengeFig(mine, me && me.key)} to beat.`)
+      + (!chalDraw ? ' No spoilers.'
+        : chalCredit ? ` Each new player it brings in is a ticket in the ${DRAWING.prizeLabel} drawing.`
+        : ` Pick a player name and it earns you ${DRAWING.prizeLabel} drawing tickets.`),
   } : null;
   const playedN = new Set([...played, ...(me ? [me.key] : [])]).size;
   const smallDoors = [];

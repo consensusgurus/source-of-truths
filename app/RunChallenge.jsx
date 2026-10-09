@@ -8,6 +8,7 @@
 import { useEffect, useState } from 'react';
 import { encodeChallenge, readChallenge, runDayNum, ymdCompact } from '@/lib/challenge';
 import { withRef, myRefCode, ensureMyRefCode } from '@/lib/referrals';
+import { drawingIsLive, DRAWING } from '@/lib/drawing';
 
 const etToday = () => {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
@@ -48,6 +49,8 @@ export function RunChallengeButton({ gameKey, score, total, n, t = null, status 
   const [msg, setMsg] = useState('');
   const [them, setThem] = useState(null);
   const [credit, setCredit] = useState(false);
+  const [draw, setDraw] = useState(false);
+  useEffect(() => { setDraw(drawingIsLive()); }, []);
   useEffect(() => { setThem(readChallenge(gameKey)); }, [gameKey]);
   // A registered player's link carries their referral code, so a friend who comes
   // in through it and finishes a game credits them, same as the share link.
@@ -73,9 +76,13 @@ export function RunChallengeButton({ gameKey, score, total, n, t = null, status 
   const label = back ? `Challenge ${them.name} back` : 'Challenge a friend';
   if (door) {
     const fig = total ? `${score} of ${total}` : String(score);
-    const sb = msg || (credit
-      ? `Send them ${fig} to beat. Challenging earns you share credit.`
-      : `Send them ${fig} to beat. Pick a player name and challenges earn share credit.`);
+    const sb = msg || (draw
+      ? (credit
+        ? `Send them ${fig} to beat. Each new player it brings in is a ticket in the ${DRAWING.prizeLabel} drawing.`
+        : `Send them ${fig} to beat. Pick a player name and it earns you ${DRAWING.prizeLabel} drawing tickets.`)
+      : (credit
+        ? `Send them ${fig} to beat. Challenging earns you share credit.`
+        : `Send them ${fig} to beat. Pick a player name and challenges earn share credit.`));
     return (
       <>
         <style dangerouslySetInnerHTML={{ __html: DOOR_CSS }} />
