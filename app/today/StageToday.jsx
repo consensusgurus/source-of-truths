@@ -331,6 +331,13 @@ const SHELF_OPEN_KEY = 'sot_shelf_open';
 // 'sty-mine', 'sty-circs' or a category name. Per browser, like the keys above.
 const PANE_KEY = 'sot_home_pane';
 const ALL_ID = 'all';
+// THE POPULAR CIRCUITS AT THE TOP OF A CATEGORY (owner, 2026-10-09). Five
+// circuits only, in this order; the rest stay on the Circuits shelf. A circuit
+// shows on a category when any of its games lives there, plus the hand-added
+// homes in PILL_EXTRA (Passport is a geography game the owner also files under
+// Trivia). All Puzzles shows all five.
+const PILL_CIRCUITS = ['gauntlet', 'pricecheck', 'passport', 'math', 'deduction'];
+const PILL_EXTRA = { passport: ['Trivia'] };
 // The server has no layout pass; an isomorphic alias keeps it from warning.
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 const MINE_ID = 'sty-mine';
@@ -2200,6 +2207,30 @@ export default function StageToday() {
       </aside>
     );
   })();
+  // Pills in the header row on desktop, spread evenly beside the title; on a
+  // phone the header is hidden, so the same circuits stack as full-width,
+  // short tiles at the top of the pane instead (owner, 2026-10-09).
+  const circPills = (cat, mobile) => {
+    const list = PILL_CIRCUITS.map((id) => circuits.find((c) => c.id === id)).filter((c) => c && (!cat
+      || c.games.some((g) => g.cat === cat) || (PILL_EXTRA[c.id] || []).includes(cat)));
+    if (!list.length) return null;
+    return (
+      <div className={mobile ? 'sty-cpm' : 'sty-cpills'}>
+        {list.map((c) => {
+          const full = c.n === c.games.length;
+          return (
+            <a key={c.id} className={'sty-cpill' + (full ? ' full' : '')}
+              href={withTq(circuitEntryHref(c.id))} style={{ '--ph': c.hue }}>
+              <span className="nm">{c.name}</span>
+              {mobile
+                ? <span className="ct">{c.unit ? (c.n ? 'Played' : c.unit) : `${c.n}/${c.games.length}`}</span>
+                : (full ? <span className="ck">{'\u2713'}</span> : null)}
+            </a>
+          );
+        })}
+      </div>
+    );
+  };
   const catTiles = orderedCats.map(({ cat, games }) => {
     const fit = paneOn === cat ? fitFor(games.length) : null;
     const fitStyle = fit ? fit.style : undefined;
@@ -2211,7 +2242,9 @@ export default function StageToday() {
         <div className="sty-cathead">
           <h2>{catLabel(cat)}</h2>
           <b>{n}<i>/{games.length}</i></b>
+          {circPills(cat, false)}
         </div>
+        {circPills(cat, true)}
         <div className={'sty-games' + (fit ? ' fit' : '')} style={fitStyle}>
           {games.map((g, i) => (
             <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
@@ -2490,7 +2523,9 @@ export default function StageToday() {
           <div className="sty-cathead">
             <h2>All Puzzles</h2>
             <b>{alphaDone}<i>/{alpha.length}</i></b>
+            {circPills(null, false)}
           </div>
+          {circPills(null, true)}
           <div className="sty-games">
             {playedLast(alpha, done).map((g, i) => (
               // ALL GAMES MIXES CATEGORIES exactly as My games does, so each
@@ -4281,4 +4316,24 @@ ${PATCH_CSS}
 }
 .sty-fg > i{max-width:11ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-left:auto;}
 
+/* POPULAR CIRCUIT PILLS (owner, 2026-10-09). */
+.sty-cpills{flex:1;min-width:0;display:flex;flex-wrap:wrap;justify-content:space-evenly;align-items:center;
+  gap:6px 10px;align-self:center;margin-left:8px;}
+.sty-cpill{display:inline-flex;align-items:center;gap:6px;text-decoration:none;white-space:nowrap;
+  color:var(--stg-ink2);border:1px solid var(--stg-line);border-radius:999px;padding:4px 11px 4px 9px;
+  font-size:11.5px;font-weight:700;letter-spacing:.01em;line-height:1.2;}
+.sty-cpill::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--ph,var(--stg-acc));}
+.sty-cpill:hover{color:var(--stg-ink);border-color:var(--ph,var(--stg-acc));}
+.sty-cpill:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-cpill .ck{color:var(--stg-good,#22c55e);font-weight:800;}
+.sty-cpill.full .nm{color:var(--stg-mute);}
+.sty-cpm{display:none;}
+@media (max-width:900px){
+  .sty-cpills{display:none;}
+  .sty-cpm{display:flex;flex-direction:column;gap:6px;margin:0 0 10px;}
+  .sty-cpm .sty-cpill{display:flex;justify-content:space-between;width:100%;box-sizing:border-box;border-radius:8px;
+    border-left:4px solid var(--ph,var(--stg-acc));padding:9px 12px;font-size:13px;font-weight:800;color:var(--stg-ink);}
+  .sty-cpm .sty-cpill::before{display:none;}
+  .sty-cpm .sty-cpill .ct{font-size:11.5px;font-weight:700;color:var(--stg-mute);font-variant-numeric:tabular-nums;}
+}
 `;
