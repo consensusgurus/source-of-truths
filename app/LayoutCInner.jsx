@@ -35,6 +35,7 @@ import useDayStats, { etToday } from './useDayStats';
 import useGroupStanding from './groups/groupStanding';
 import StageLadder from './StageLadder';
 import MindLoftMark from './MindLoftMark';
+import { SNAP_KEY } from '@/lib/home-snapshot';
 
 const MIN_W = 1100;
 const CAT_FIXED = ['Word', 'Numbers', 'Logic', 'Sudoku', 'Trivia', 'Geography', 'End Game', 'Cards', 'Arcade', 'Crowd Psychology'];
@@ -337,7 +338,16 @@ export default function LayoutCInner({ gameKey }) {
   // The main page reads sot_home_pane for a games pane and the hash for an
   // info pane. Both go through next/link, so the switch is a client navigation
   // inside the same document: no reload, no boot flash.
-  const setPane = (id) => () => { try { localStorage.setItem(PANE_KEY, id); } catch (err) {} };
+  // THE HOME'S SNAPSHOT SHOWS THE PANE IT WAS TAKEN ON (lib/home-snapshot.js),
+  // so opening a DIFFERENT pane from here would paint the old one first and
+  // then swap. Changing the pane drops the snapshot for that one visit; the
+  // home stores a fresh one once its reads land.
+  const setPane = (id) => () => {
+    try {
+      if (localStorage.getItem(PANE_KEY) !== id) localStorage.removeItem(SNAP_KEY);
+      localStorage.setItem(PANE_KEY, id);
+    } catch (err) {}
+  };
   const ixLink = (id, label, hue) => (
     <Link key={id} className="sty-ixb" href="/today" style={{ '--cc': hue }} onClick={setPane(id)}>
       <i aria-hidden="true" /><span>{label}</span>
