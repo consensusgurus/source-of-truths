@@ -2162,7 +2162,7 @@ export default function StageToday() {
           <div className="sty-eb">{!fav || own ? 'Your favorites' : 'Most played'}<em>{' \u00b7 '}{catLabel(cat)}{fav ? <>{' \u00b7 '}{total.toLocaleString()} {total === 1 ? 'play' : 'plays'}</> : null}</em></div>
           {fav && own ? <div className="sty-eb">{tried} of {games.length} tried</div> : null}
         </div>
-        <div className="sty-favc sty-eb"><span>Game</span><span>{!fav || own ? 'All-time plays' : 'All players, all time'}</span><span>{!fav || own ? 'Last 14 days' : ''}</span>{mine ? <><span className="r">Best time</span><span className="r">Avg time</span><span className="r">Solved</span><span className="r">Streak</span></> : null}<span>Plays</span></div>
+        <div className="sty-favc sty-eb"><span>Game</span><span>{!fav || own ? 'All-time plays' : 'All players, all time'}</span><span>{!fav || own ? 'Last 14 days' : ''}</span>{mine ? <><span className="r">Best time</span><span className="r">Typical</span><span className="r">Solved</span><span className="r">Streak</span></> : null}<span>Plays</span></div>
         {Array.from({ length: k }).map((_, i) => {
           const x = rows ? rows[i] : null;
           if (!x) return <div key={i} className="sty-favr ph" aria-hidden="true"><span /><span className="tr" /><span />{mine ? <><span /><span /><span /><span /></> : null}<span /></div>;

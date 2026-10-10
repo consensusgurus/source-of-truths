@@ -59,7 +59,7 @@ export async function GET(request) {
       const isMine = (r.user_id && myKeys.has(`u:${r.user_id}`)) || (r.anon_id && myKeys.has(`a:${r.anon_id}`));
       if (!isMine) continue;
       let me = mine[key];
-      if (!me) { me = { plays: 0, recent: new Array(DAYS).fill(0), runs: 0, solved: 0, best: 0, sum: 0, days: new Set() }; mine[key] = me; }
+      if (!me) { me = { plays: 0, recent: new Array(DAYS).fill(0), runs: 0, solved: 0, best: 0, times: [], days: new Set() }; mine[key] = me; }
       me.plays += 1;
       me.days.add(Date.UTC(2000 + Number(m[4]), Number(m[2]) - 1, Number(m[3])));
       if (!r.abandoned) {
@@ -67,7 +67,7 @@ export async function GET(request) {
         const sc = Number(r.score); const tot = Number(r.total); const t = Number(r.time_elapsed) || 0;
         if (tot > 0 && sc === tot) {
           me.solved += 1;
-          if (t > 0) { me.sum += t; me.timed = (me.timed || 0) + 1; if (!me.best || t < me.best) me.best = t; }
+          if (t > 0) { me.times.push(t); if (!me.best || t < me.best) me.best = t; }
         }
       }
       const i = slot.get(`${Number(m[2])}-${Number(m[3])}-${Number(m[4])}`);
@@ -82,7 +82,9 @@ export async function GET(request) {
       while (me.days.has(d)) { streak += 1; d -= DAY; }
       mine[k] = {
         plays: me.plays, recent: me.recent.join(''), streak,
-        best: me.best || 0, avg: me.timed ? Math.round(me.sum / me.timed) : 0,
+        best: me.best || 0, // The MEDIAN, not the mean: a board left open in a tab overnight is one
+        // solve with a twelve-hour clock, and a mean lets it swamp every other.
+        avg: me.times.length ? (() => { const a = me.times.slice().sort((x, y) => x - y); const h = a.length >> 1; return Math.round(a.length % 2 ? a[h] : (a[h - 1] + a[h]) / 2); })() : 0,
         solveRate: me.runs ? Math.round((me.solved / me.runs) * 100) : null,
       };
     }
