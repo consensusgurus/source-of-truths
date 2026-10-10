@@ -18,11 +18,15 @@ export const metadata = {
   alternates: { canonical: '/today' },
 };
 
-export default function TodayPage() {
+// The stage/old-home choice comes from the URL, so it is made HERE, on the
+// server, and handed down as the initial state (see TodayClient). Resolving it
+// in a client effect painted the old home first on every load.
+export default function TodayPage({ searchParams }) {
+  const stageDefault = String((searchParams || {}).stage ?? '') !== '0';
   return (
     <div style={{ minHeight: '100vh', background: '#e7ecf3' }}>
       <QuizNavHeader />
-      <TodayClient />
+      <TodayClient stageDefault={stageDefault} />
     </div>
   );
 }

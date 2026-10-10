@@ -237,7 +237,7 @@ function TilesRow({ children, light = false }) {
   );
 }
 
-export default function TodayClient({ onSignup = null } = {}) {
+export default function TodayClient({ onSignup = null, stageDefault = true } = {}) {
   // THE HOME ON THE STAGE is its own surface, not this one re-coloured: a token
   // remap over this page moved the text and left the artwork, which is the
   // white-card-with-white-text failure in another costume. Read in an EFFECT,
@@ -253,7 +253,13 @@ export default function TodayClient({ onSignup = null } = {}) {
   // render would make the client's first paint disagree with the server's. So
   // the default here is FALSE and the stage arrives a beat later, which is the
   // same shape every clock- and storage-dependent read on this site uses.
-  const [stageOn, setStageOn] = useState(false);
+  // THE SERVER DECIDES THE FIRST PAINT (owner, 2026-10-10: "every time /today
+  // loads it flashes an old home screen"). Defaulting to FALSE meant the server
+  // HTML was this whole old marquee home, painted and then swapped for the stage
+  // once the effect ran. app/page.js fixed the same flash on '/' (2026-08-31) by
+  // reading searchParams on the server and passing the answer down; /today now
+  // does the same, so the first paint is already the stage and nothing mismatches.
+  const [stageOn, setStageOn] = useState(stageDefault);
   useEffect(() => {
     try { setStageOn(new URLSearchParams(window.location.search).get('stage') !== '0'); } catch (e) { setStageOn(true); }
   }, []);
