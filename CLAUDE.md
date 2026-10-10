@@ -8655,6 +8655,7 @@ figure still loading.
   Dating (rail through `.dt-node`), Sonar on Sweep (pings from the last tap, correctly flagged mines
   tick), Case closed on Alibi and Docket (ticks then a red stamp), Count on Yose (territory marks fill
   in waves, yours first).
+- **Fourth and fifth batches (owner, 2026-10-10):** Fountain on Lode (found chips cloned out of the hexes into the haul, rare and pangram in gold; clones carry computed styles because overlays sit outside the stage), Victory lap on Snake and Line clear on Blocks (both read the CANVAS with getImageData: Snake's body by colour against the most common cell colour, Blocks' stack against the gap pixel, rows always 16), Box run on Chain, Develop on Focus (the fc-view img), Traveler on Paths (a DFS walk over the player's lines; replaced `trace`), Balance on Tally, Dot chain on Polka (replaced its ripple), Tally up on Tuck (Scrabble values in the def, meter read off the score and benchmark text), Homing on Ping (target = the largest circle on .pg-map), Overlap on Venn, Add up on Sums, Clean sweep on Check (`cleansweep`, since `sweep` was taken), Tricks home on Finesse, Family tree on Clade, Bedrock on Strata.
 - A tap before the screen is covered removes the fill at once; after, it goes 700ms later, under the
   flood. Other pop-ups wait: `setBeatLive` stamps `data-sot-beat` on `<html>`, and ThanksPop's
   after-a-game timer waits while that is set or a `.stf-flood` is up.
