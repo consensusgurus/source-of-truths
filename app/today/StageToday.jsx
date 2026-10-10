@@ -2210,6 +2210,20 @@ export default function StageToday() {
   // Pills in the header row on desktop, spread evenly beside the title; on a
   // phone the header is hidden, so the same circuits stack as full-width,
   // short tiles at the top of the pane instead (owner, 2026-10-09).
+  // A pill wears the colour of the page it is on: a category pane paints every
+  // circuit in that category's step, and All puzzles paints each in the
+  // category most of its games belong to (owner, 2026-10-09: Trivia Gauntlet
+  // orange on All puzzles, red on Geography).
+  const pillHue = (c, cat) => {
+    if (cat) return hueFor(cat);
+    const tally = {};
+    let best = null;
+    for (const g of c.games) {
+      tally[g.cat] = (tally[g.cat] || 0) + 1;
+      if (!best || tally[g.cat] > tally[best]) best = g.cat;
+    }
+    return best ? hueFor(best) : c.hue;
+  };
   const circPills = (cat, mobile) => {
     const list = PILL_CIRCUITS.map((id) => circuits.find((c) => c.id === id)).filter((c) => c && (!cat
       || c.games.some((g) => g.cat === cat) || (PILL_EXTRA[c.id] || []).includes(cat)));
@@ -2221,7 +2235,7 @@ export default function StageToday() {
           const part = !full && c.n > 0;
           return (
             <a key={c.id} className={'sty-cpill' + (full ? ' full' : part ? ' part' : '')}
-              href={withTq(circuitEntryHref(c.id))} style={{ '--ph': c.hue }}>
+              href={withTq(circuitEntryHref(c.id))} style={{ '--ph': pillHue(c, cat) }}>
               <span className="nm">{c.name}</span>
               {mobile
                 ? (full
