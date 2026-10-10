@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import CruxClient from './CruxClient';
 import StageTail from '../StageTail';
+import LayoutC from '../LayoutC';
 import { isStageServer } from '@/lib/stage';
 import { PUZZLES } from './puzzles';
 import { SITE_URL } from '@/lib/site';
@@ -105,6 +106,7 @@ export default function CruxPage({ searchParams }) {
         <CruxClient key={forceNum || 'today'} puzzles={visiblePuzzles} forceNum={forceNum} />
       </Suspense>
       <StageTail self="crux" stage={isStageServer('crux', searchParams)} />
+      {searchParams && searchParams.layout === 'c' ? <LayoutC gameKey="crux" /> : null}
     </>
   );
 }
