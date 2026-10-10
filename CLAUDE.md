@@ -8635,6 +8635,13 @@ figure still loading.
   something simpler. Keep any change here to transform and opacity on as few elements as possible.
 - The per-game beats in `lib/finish-beats.js` (sudoku audit, crossword sweep, traces) still play
   where no curtain follows (inside a circuit run). Losses are untouched (`playLoss`, LossHold).
+- **A def flagged `last: true` plays its own ending BEFORE the iris** (owner, 2026-10-10), and the
+  iris starts when that ending returns. Ripple and lock on all thirteen sudokus and the four
+  crosswords (Crux has its own split-flap), Exit on Parker, Impound and Junkyard, Lamplight on Anon,
+  Current on Hedge, Darkroom on Etch, Gravity on a Four WIN only (`win` sub-def plus `isWin`, read
+  off `data-out` on the board, because `.won` is also set on a loss). Mockups:
+  https://claude.ai/artifact/7Lep24YDdYvc68ubxaE7Tz. Every one is opacity and transform on cells
+  plus fixed overlays (`overlay()`), never layout, for the same phone reason as the iris.
 - A tap before the screen is covered removes the fill at once; after, it goes 700ms later, under the
   flood. Other pop-ups wait: `setBeatLive` stamps `data-sot-beat` on `<html>`, and ThanksPop's
   after-a-game timer waits while that is set or a `.stf-flood` is up.

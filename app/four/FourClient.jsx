@@ -32,6 +32,8 @@ import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
 import useEndHold, { HOLD_SHORT, HOLD_LONG } from '../useEndHold';
+// The win's hold: long enough for the gravity beat to finish.
+const HOLD_WIN = 2400;
 import DailyChrome from '../DailyChrome';
 import DailyRules from '../DailyRules';
 import DailyBoardPanel from '../quiz/[id]/DailyBoardPanel';
@@ -529,7 +531,9 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
     // the board holds for HOLD_LONG with the deciding move still lit and the
     // verdict line readable. A win is your own move, so it keeps the old beat.
     // A draw is the win thrown away and reads like a loss, so it holds too.
-    endHold.hold(status === 'won' ? HOLD_SHORT : HOLD_LONG);
+    // A win plays GRAVITY in the hold (lib/finish-beat.js), which needs a
+    // little longer than the old beat; HOLD_WIN covers it (2026-10-10).
+    endHold.hold(status === 'won' ? HOLD_WIN : HOLD_LONG);
     commit(done);
   }
 
@@ -857,6 +861,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
             <div
               key={shake}
               className={`fr-board${shake ? ' shake' : ''}${winLine ? ' won' : ''}`}
+              data-out={g.status}
               style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: 6, background: STAGE ? BOARD_BLUE : `linear-gradient(180deg, ${BOARD_BLUE}, ${BOARD_BLUE_DARK}), ${BOARD_BLUE}`, border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: 6, touchAction: 'manipulation' }}
             >
               {Array.from({ length: COLS }).map((_, c) => {
