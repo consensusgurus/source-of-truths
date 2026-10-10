@@ -189,6 +189,32 @@ function mergeServerStats(s, recent, puzzles) {
   return s2;
 }
 
+const HOLES = Array.from({ length: 26 }, (_, i) => i);
+
+// The thread drawn knot to knot. Along a strip it arcs up through the
+// sprocket band; between strips (or down the phone's single reel) it bows.
+function threadPath(pts) {
+  let d = `M${pts[0].x} ${pts[0].y}`;
+  for (let i = 1; i < pts.length; i++) {
+    const p = pts[i - 1], q = pts[i];
+    const dx = q.x - p.x, dy = q.y - p.y;
+    if (Math.abs(dy) < 4) d += ` C${p.x + dx * 0.3} ${p.y - 24} ${q.x - dx * 0.3} ${q.y - 24} ${q.x} ${q.y}`;
+    else if (Math.abs(dx) < 4) d += ` C${p.x - 10} ${p.y + dy * 0.5} ${q.x - 10} ${q.y - dy * 0.5} ${q.x} ${q.y}`;
+    else d += ` C${p.x} ${p.y + dy * 0.6} ${q.x} ${q.y - dy * 0.6} ${q.x} ${q.y}`;
+  }
+  return d;
+}
+function FilmGlyph() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4" /></svg>
+  );
+}
+function ThreadGlyph() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 4h12M6 20h12M8 4v16M16 4v16M8 9c3 1 5 1 8 0M8 14c3 1 5 1 8 0" /></svg>
+  );
+}
+
 const HAPT = { wrong: [0, 26, 34, 26], hit: [12], win: [10, 40, 20, 40, 20, 60] };
 function vibrate(p) { try { if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
 
@@ -285,6 +311,30 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
   const planted = useMemo(() => { const s = new Set(); DECOYS.forEach((d) => d.cover.forEach((x) => s.add(x))); return s; }, [DECOYS]);
 
   useEffect(() => { gRef.current = g; }, [g]);
+
+  // Where the thread runs: the centre of every knot (one per named film),
+  // measured off the rendered reel so it follows the layout on any width.
+  const stripsRef = useRef(null);
+  const [knots, setKnots] = useState({ w: 0, h: 0, pts: [] });
+  useEffect(() => {
+    const el = stripsRef.current;
+    if (!el) { setKnots((cur) => (cur.pts.length ? { w: 0, h: 0, pts: [] } : cur)); return undefined; }
+    const measure = () => {
+      try {
+        const box = el.getBoundingClientRect();
+        const pts = Array.from(el.querySelectorAll('.th-knot')).map((k) => {
+          const r = k.getBoundingClientRect();
+          return { x: Math.round(r.left + r.width / 2 - box.left), y: Math.round(r.top + r.height / 2 - box.top) };
+        });
+        const next = { w: Math.round(box.width), h: Math.round(box.height), pts };
+        setKnots((cur) => (JSON.stringify(cur) === JSON.stringify(next) ? cur : next));
+      } catch (e) {}
+    };
+    measure();
+    let ro = null;
+    try { ro = new ResizeObserver(measure); ro.observe(el); } catch (e) { window.addEventListener('resize', measure); }
+    return () => { if (ro) ro.disconnect(); else window.removeEventListener('resize', measure); };
+  }, [g.solved.length, g.status, preStart, revealed, hideSol]);
 
   useEffect(() => {
     try {
@@ -599,48 +649,126 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
           .th-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .th-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           .th-btn:disabled{opacity:.45;cursor:default;}
-          .th-inbar{position:sticky;top:0;z-index:6;background:${STAGE ? 'var(--stg-ground)' : T.surface};padding:6px 0 10px;display:flex;gap:8px;align-items:center;}
-          .th-input{font-family:${SANS};font-weight:700;font-size:16px;width:100%;border:2px solid var(--stg-cell-line, rgba(28,30,36,0.4));border-radius:9px;padding:12px 13px;color:${INK};background:var(--stg-cell, ${T.white});outline:none;}
-          .th-input:focus{border-color:var(--stg-acc, ${COLORS.accent});}
+          .th-inbar{position:sticky;top:0;z-index:6;background:${STAGE ? 'var(--stg-ground)' : T.surface};padding:4px 0 14px;display:flex;gap:14px;align-items:center;}
+          .th-field{flex:1;min-width:0;display:flex;align-items:center;gap:10px;background:var(--stg-cell, ${T.white});border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));border-radius:12px;padding:0 16px;min-height:52px;box-sizing:border-box;}
+          .th-field:focus-within{border-color:var(--stg-acc-ink, ${COLORS.accent});box-shadow:0 0 0 1px var(--stg-acc-ink, ${COLORS.accent});}
+          .th-field svg{flex:none;color:${FADED};}
+          .th-input{font-family:${SANS};font-weight:700;font-size:17px;width:100%;min-width:0;border:0;padding:0;color:${INK};background:transparent;outline:none;}
+          .th-input::placeholder{color:${FADED};font-weight:600;}
           .th-input.pop{animation:thpop .28s ease;}
           @keyframes thpop{0%{transform:scale(1)}40%{transform:scale(1.02)}100%{transform:scale(1)}}
-          .th-grid{display:grid;grid-template-columns:repeat(${cols},minmax(0,1fr));gap:9px;}
-          @media(max-width:700px){.th-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
-          .th-tile{position:relative;text-align:left;font-family:${SANS};background:var(--stg-cell, ${T.white});border:1px solid var(--stg-cell-line, rgba(28,30,36,0.35));border-radius:7px;padding:12px 13px 12px;min-height:${PUZZLE.sunday ? 96 : 110}px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;color:${INK};}
-          .th-tile.on{background:var(--stg-acc-tint, ${COLORS.accentSoft});border-color:var(--stg-acc, ${COLORS.accent});}
+          .th-say{flex:none;font-size:13px;font-weight:800;color:${FADED};white-space:nowrap;text-align:right;min-width:110px;font-variant-numeric:tabular-nums;}
+          .th-say.hit{color:var(--stg-acc-ink, ${COLORS.accent});}
+          .th-say.in{display:none;min-width:0;font-size:12px;}
+          .th-reel{position:relative;}
+          .th-thread{position:absolute;left:0;top:0;z-index:1;overflow:visible;pointer-events:none;fill:none;color:var(--stg-acc-ink, ${COLORS.accent});}
+          .th-strips{display:flex;flex-direction:column;gap:14px;}
+          .th-strip{background:var(--stg-panel, #e9edf3);border-radius:6px;display:flex;flex-direction:column;}
+          .th-holes{height:14px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;overflow:hidden;}
+          .th-holes span{flex:none;width:12px;height:7px;border-radius:2px;background:var(--stg-line2, rgba(28,30,36,0.2));}
+          .th-frames{display:flex;flex-wrap:wrap;gap:10px;padding:0 10px;}
+          .th-fr{flex:1 1 0;min-width:0;display:flex;}
+          .th-side-holes{display:none;}
+          .th-tile{position:relative;z-index:2;flex:1;min-width:0;box-sizing:border-box;text-align:left;font-family:${SANS};background:var(--stg-cell, ${T.white});border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.35));border-radius:4px;padding:10px 12px;min-height:${PUZZLE.sunday ? 112 : 124}px;display:flex;flex-direction:column;gap:5px;color:${INK};}
+          .th-tile.on{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 14%, var(--stg-cell, ${T.white}));border-color:var(--stg-acc-ink, ${COLORS.accent});}
           .th-tile.thr{box-shadow:inset 0 0 0 2px var(--stg-cool, #7dd3fc);}
           .th-tile.thr2{box-shadow:inset 0 0 0 2px var(--stg-warn, #b45309);}
           .th-tile.miss{border-color:var(--stg-bad, ${COLORS.rust});}
-          .th-tile .n{font-family:${MONO};font-size:9px;letter-spacing:.14em;color:${FADED};display:flex;justify-content:space-between;}
-          .th-tile p{margin:0;font-size:${PUZZLE.sunday ? 13.5 : 15}px;line-height:1.35;font-weight:600;text-wrap:balance;}
-          .th-tile.on p{font-size:12.5px;font-weight:600;color:${STAGE ? 'var(--stg-ink2,#aab5c7)' : COLORS.faded};}
-          .th-tile .a{display:none;font-size:${PUZZLE.sunday ? 15 : 17}px;font-weight:800;letter-spacing:-.01em;color:${INK};line-height:1.15;}
+          .th-tile .n{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:${FADED};display:flex;justify-content:space-between;gap:6px;font-variant-numeric:tabular-nums;}
+          .th-tile .n .tag{color:var(--stg-acc-ink, ${COLORS.accent});}
+          .th-tile p{margin:0;font-size:${PUZZLE.sunday ? 13 : 13.5}px;line-height:1.35;font-weight:600;color:${INK};text-wrap:pretty;}
+          .th-tile.on p{font-size:11.5px;color:${FADED};}
+          .th-tile .a{display:none;margin-top:auto;font-size:${PUZZLE.sunday ? 15 : 17}px;font-weight:800;letter-spacing:-.01em;color:${INK};line-height:1.15;}
           .th-tile.on .a{display:block;}
           .th-tile.miss .a{display:block;color:var(--stg-bad, ${COLORS.rust});}
-          .th-card{background:${SURF};border:1px solid ${SURF_B};border-radius:9px;padding:14px;}
-          .th-card h3{margin:0 0 6px;font-family:${MONO};font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:${FADED};font-weight:500;}
-          .th-big{font-size:19px;font-weight:800;letter-spacing:-.01em;line-height:1.15;color:${INK};}
-          .th-tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;}
-          .th-tiers div{border:1px solid ${SURF_B};border-radius:6px;padding:7px 6px;text-align:center;}
-          .th-tiers div.on{border-color:var(--stg-acc, ${COLORS.accent});background:var(--stg-acc-tint, ${COLORS.accentSoft});}
-          .th-tiers b{display:block;font-family:${MONO};font-size:15px;font-weight:500;color:${INK};}
-          .th-tiers i{font-style:normal;font-size:9.5px;color:${FADED};letter-spacing:.05em;}
-          .th-call{display:flex;gap:8px;margin-top:10px;}
-          .th-call .th-input{font-size:15px;padding:10px 12px;min-width:0;}
-          .th-calls{display:flex;gap:6px;margin-top:10px;align-items:center;}
-          .th-calls span{width:10px;height:10px;border-radius:50%;border:1px solid var(--stg-line2, rgba(28,30,36,0.35));display:inline-block;}
-          .th-calls span.x{background:var(--stg-bad, ${COLORS.rust});border-color:var(--stg-bad, ${COLORS.rust});}
-          .th-calls span.ok{background:var(--stg-good, ${COLORS.green});border-color:var(--stg-good, ${COLORS.green});}
-          .th-note{font-size:12.5px;font-weight:700;color:${STAGE ? 'var(--stg-ink2,#aab5c7)' : COLORS.faded};margin-top:8px;min-height:18px;}
+          .th-tile .num2{display:none;}
+          .th-knot{position:absolute;left:50%;top:-8px;margin-left:-6px;width:12px;height:12px;box-sizing:border-box;border-radius:50%;background:var(--stg-acc, ${COLORS.accent});border:2px solid var(--stg-panel, #e9edf3);}
+          .th-side{display:flex;gap:12px;margin-top:16px;position:relative;z-index:2;}
+          .th-card{background:var(--stg-surf, ${T.white});border:1px solid var(--stg-line, rgba(28,30,36,0.18));border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;box-sizing:border-box;}
+          .th-card.main{flex:1;min-width:0;}
+          .th-card.score{width:176px;flex:none;}
+          .th-lab{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:${FADED};}
+          .th-lab b{color:${INK};font-variant-numeric:tabular-nums;}
+          .th-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+          .th-hd .l{display:flex;align-items:center;gap:8px;min-width:0;}
+          .th-hd .l svg{flex:none;color:var(--stg-acc-ink, ${COLORS.accent});}
+          .th-hd .sc{display:none;}
+          .th-hd .gu{display:none;}
+          .th-big{font-size:21px;font-weight:800;letter-spacing:-.01em;line-height:1.2;color:${INK};}
+          .th-tiers{display:flex;gap:8px;}
+          .th-tiers div{flex:1;display:flex;align-items:baseline;justify-content:center;gap:8px;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));border-radius:9px;padding:8px 6px;}
+          .th-tiers div.on{border-color:var(--stg-acc-ink, ${COLORS.accent});background:var(--stg-acc-tint, ${COLORS.accentSoft});}
+          .th-tiers b{font-size:16px;font-weight:800;color:${INK};font-variant-numeric:tabular-nums;}
+          .th-tiers div.on b{color:var(--stg-acc-ink, ${COLORS.accent});}
+          .th-tiers i{font-style:normal;font-size:12px;font-weight:600;color:var(--stg-ink2, ${COLORS.faded});font-variant-numeric:tabular-nums;white-space:nowrap;}
+          .th-call{display:flex;gap:8px;}
+          .th-call .th-field{min-height:46px;padding:0 14px;border-radius:11px;}
+          .th-call .th-input{font-size:15px;}
+          .th-cta{font-family:${SANS};background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, ${T.white});border:0;border-radius:11px;padding:0 22px;min-height:46px;font-weight:800;font-size:15px;cursor:pointer;white-space:nowrap;}
+          .th-cta:disabled{cursor:default;background:var(--stg-surf2, #e4e9f1);color:${FADED};}
+          .th-calls{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+          .th-calls span.p{width:11px;height:11px;box-sizing:border-box;border-radius:50%;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.35));display:inline-block;flex:none;}
+          .th-calls span.p.x{background:var(--stg-bad, ${COLORS.rust});border-color:var(--stg-bad, ${COLORS.rust});}
+          .th-calls span.p.ok{background:var(--stg-good, ${COLORS.green});border-color:var(--stg-good, ${COLORS.green});}
+          .th-calls .t{margin-left:4px;font-size:12px;font-weight:700;color:${FADED};}
+          .th-note{font-size:13px;font-weight:700;line-height:1.35;color:var(--stg-ink2, ${COLORS.faded});min-height:18px;}
           .th-note.bad{color:var(--stg-bad, ${COLORS.rust});}
           .th-note.good{color:var(--stg-good, ${COLORS.green});}
-          .th-cta{font-family:${SANS};background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, ${T.white});border:0;border-radius:7px;padding:10px 14px;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap;}
-          .th-cta:disabled{opacity:.45;cursor:default;}
-          .th-side{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
-          @media(max-width:700px){.th-side{grid-template-columns:1fr;}}
+          .th-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+          .th-row span{font-size:12px;font-weight:700;color:var(--stg-ink2, ${COLORS.faded});}
+          .th-row b{font-size:20px;font-weight:800;color:${INK};font-variant-numeric:tabular-nums;}
+          .th-row.tot{border-top:1px solid var(--stg-line, rgba(28,30,36,0.14));padding-top:8px;}
+          .th-row.tot b{font-size:24px;color:var(--stg-acc-ink, ${COLORS.accent});}
+          .th-row.tot b small{font-size:14px;color:${FADED};}
+          .th-quit{margin-top:auto;font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2, ${COLORS.faded});border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.35));border-radius:11px;min-height:44px;padding:0 14px;cursor:pointer;}
+          .th-quit:hover{border-color:var(--stg-acc-ink, ${COLORS.accent});color:${INK};}
+          @media(max-width:900px){.th-sun .th-fr{flex:1 1 calc(50% - 5px);}}
+          @media(max-width:640px){
+            .th-inbar{padding:4px 0 8px;}
+            .th-field{min-height:46px;padding:0 12px;gap:8px;}
+            .th-inbar .th-field > svg{display:none;}
+            .th-input{font-size:16px;}
+            .th-say.out{display:none;}
+            .th-say.in{display:inline;}
+            .th-strips{gap:2px;background:var(--stg-panel, #e9edf3);border-radius:6px;padding:6px 0;}
+            .th-strip{border-radius:0;background:transparent;}
+            .th-holes{display:none;}
+            .th-frames{flex-direction:column;gap:2px;padding:0;}
+            .th-fr,.th-sun .th-fr{flex:none;}
+            .th-side-holes{display:flex;width:24px;flex:none;flex-direction:column;align-items:center;justify-content:space-around;}
+            .th-side-holes span{width:8px;height:10px;border-radius:2px;background:var(--stg-line2, rgba(28,30,36,0.2));}
+            .th-side-holes.r{justify-content:space-between;padding:3px 0;box-sizing:border-box;}
+            .th-side-holes .nn{font-size:9.5px;font-weight:700;color:${FADED};font-variant-numeric:tabular-nums;}
+            .th-side-holes .nn.on{color:var(--stg-acc-ink, ${COLORS.accent});}
+            .th-tile{min-height:55px;padding:5px 10px;gap:1px;justify-content:center;}
+            .th-tile .n .num{display:none;}
+            .th-tile .n .tag{display:none;}
+            .th-live .th-tile .n{display:none;}
+            .th-tile p{font-size:12px;line-height:1.3;}
+            .th-tile.on p{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+            .th-tile .a{order:-1;margin-top:0;font-size:14px;line-height:1.25;}
+            .th-knot{left:-17px;top:50%;margin-left:-4.5px;margin-top:-4.5px;width:9px;height:9px;border:0;}
+            .th-side{flex-direction:column;gap:8px;margin-top:8px;}
+            .th-card{padding:12px 12px;gap:8px;}
+            .th-card.score{width:auto;}
+            .th-live .th-card.score{display:none;}
+            .th-live .th-card.main{background:transparent;border:0;padding:4px 0 0;}
+            .th-hd .rt{display:none;}
+            .th-live .th-hd .sc{display:inline;}
+            .th-hd .gu{display:inline-flex;align-items:center;margin-top:0;font-size:13px;}
+            .th-big{font-size:16px;}
+            .th-hd .l .stack{display:flex;flex-direction:column;}
+            .th-tiers{gap:6px;}
+            .th-tiers div{gap:6px;padding:6px 4px;}
+            .th-tiers b{font-size:14px;}
+            .th-tiers i{font-size:11px;}
+            .th-call .th-input{font-size:16px;}
+            .th-cta{padding:0 20px;}
+            .th-note{font-size:12px;}
+          }
         ` }} />
 
-        <div style={{ maxWidth: PUZZLE.sunday ? 1040 : 880, margin: '0 auto' }}>
+        <div style={{ maxWidth: PUZZLE.sunday ? 960 : 720, margin: '0 auto' }}>
 
         {!LOFT && (
         <DailyMasthead
@@ -688,44 +816,96 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
 
           {playing && (
             <div className="th-inbar">
-              <input
-                ref={inputRef}
-                className={`th-input${notice && notice.kind === 'hit' ? ' pop' : ''}`}
-                value={q}
-                onChange={(e) => onType(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Escape') setQ(''); }}
-                placeholder={g.solved.length === N ? 'Every film named. Call the thread.' : 'Type a film title…'}
-                autoCapitalize="off" autoComplete="off" autoCorrect="off" spellCheck={false}
-                aria-label="Type a film title"
-                disabled={g.solved.length === N}
-              />
-              <span style={{ fontFamily: MONO, fontSize: 11, color: notice && notice.kind === 'hit' ? `var(--stg-acc-ink, ${COLORS.accent})` : FADED, whiteSpace: 'nowrap', minWidth: 90, textAlign: 'right' }}>
-                {notice ? notice.msg : `${openCount} open`}
-              </span>
+              <label className="th-field">
+                <FilmGlyph />
+                <input
+                  ref={inputRef}
+                  className={`th-input${notice && notice.kind === 'hit' ? ' pop' : ''}`}
+                  value={q}
+                  onChange={(e) => onType(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Escape') setQ(''); }}
+                  placeholder={g.solved.length === N ? 'Every film named. Call the thread.' : 'Type a film title…'}
+                  autoCapitalize="off" autoComplete="off" autoCorrect="off" spellCheck={false}
+                  aria-label="Type a film title"
+                  disabled={g.solved.length === N}
+                />
+                <span className={`th-say in${notice && notice.kind === 'hit' ? ' hit' : ''}`} aria-live="polite">{notice ? notice.msg : `${openCount} open`}</span>
+              </label>
+              <span className={`th-say out${notice && notice.kind === 'hit' ? ' hit' : ''}`} aria-live="polite">{notice ? notice.msg : `${openCount} open`}</span>
             </div>
           )}
 
-          <div className="th-grid" role="list">
-            {TILES.map((t, i) => {
-              const on = solvedSet.has(i);
-              const owner = tileOwner[i];
-              const thrClass = NTH > 1 && calledSet.has(owner) ? (owner === 0 ? ' thr' : ' thr2') : '';
-              const missed = !playing && !on;
-              return (
-                <div key={i} role="listitem" className={`th-tile${on ? ' on' : ''}${missed ? ' miss' : ''}${thrClass}`}
-                  aria-label={on ? `${t.t}, named` : `Tile ${i + 1}. ${t.s}`}>
-                  <div className="n"><span>{String(i + 1).padStart(2, '0')}</span>{!playing && !hideSol && planted.has(i) && <span style={{ color: 'var(--stg-warn, #b45309)' }}>PLANTED</span>}{!playing && !hideSol && NTH > 1 && <span>{THREADS[owner] ? THREADS[owner].t : ''}</span>}</div>
-                  <p>{t.s}</p>
-                  {(on || !hideSol) && <div className="a">{t.t}</div>}
+          {/* The reel: the loglines as frames on film strips. Every named film
+              gets a knot, and the thread runs knot to knot in board order. */}
+          <div className="th-reel">
+            {knots.pts.length > 0 && (
+              <svg className="th-thread" width={knots.w} height={knots.h + 20} viewBox={`0 0 ${knots.w} ${knots.h + 20}`} aria-hidden="true">
+                <path d={threadPath(knots.pts)} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                {playing && !threadsDone && (() => {
+                  const p = knots.pts[knots.pts.length - 1];
+                  const edge = p.x < 40;
+                  const e = { x: edge ? p.x : knots.w * 0.55, y: knots.h + 14 };
+                  return (
+                    <>
+                      <path d={`M${p.x} ${p.y} C${edge ? p.x - 10 : p.x + 30} ${p.y + (e.y - p.y) * 0.5} ${e.x + (edge ? -10 : 40)} ${e.y - 30} ${e.x} ${e.y}`} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeDasharray="5 6" />
+                      <circle cx={e.x} cy={e.y} r="4.5" fill="currentColor" />
+                    </>
+                  );
+                })()}
+              </svg>
+            )}
+            <div ref={stripsRef} className={`th-strips${PUZZLE.sunday ? ' th-sun' : ''}${playing ? ' th-live' : ''}`} role="list">
+              {Array.from({ length: Math.ceil(TILES.length / cols) }, (_, si) => (
+                <div key={si} className="th-strip">
+                  <div className="th-holes" aria-hidden="true">{HOLES.map((h) => <span key={h} />)}</div>
+                  <div className="th-frames">
+                    {TILES.slice(si * cols, si * cols + cols).map((t, k) => {
+                      const i = si * cols + k;
+                      const on = solvedSet.has(i);
+                      const owner = tileOwner[i];
+                      const thrClass = NTH > 1 && calledSet.has(owner) ? (owner === 0 ? ' thr' : ' thr2') : '';
+                      const missed = !playing && !on;
+                      const num = String(i + 1).padStart(2, '0');
+                      return (
+                        <div key={i} className="th-fr" role="listitem">
+                          <div className="th-side-holes" aria-hidden="true"><span /><span /></div>
+                          <div className={`th-tile${on ? ' on' : ''}${missed ? ' miss' : ''}${thrClass}`}
+                            aria-label={on ? `${t.t}, named` : `Tile ${i + 1}. ${t.s}`}>
+                            {on && <span className="th-knot" aria-hidden="true" />}
+                            <div className="n">
+                              <span className="num">{num}</span>
+                              {playing && on && <span className="tag">Named</span>}
+                              {!playing && !hideSol && planted.has(i) && <span style={{ color: 'var(--stg-warn, #b45309)' }}>Planted</span>}
+                              {!playing && !hideSol && NTH > 1 && <span>{THREADS[owner] ? THREADS[owner].t : ''}</span>}
+                            </div>
+                            <p>{t.s}</p>
+                            {(on || !hideSol) && <div className="a">{t.t}</div>}
+                          </div>
+                          <div className="th-side-holes r" aria-hidden="true"><span /><span className={`nn${on ? ' on' : ''}`}>{num}</span><span /></div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="th-holes" aria-hidden="true">{HOLES.map((h) => <span key={h} />)}</div>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
 
-          <div className="th-side">
-            <div className="th-card">
-              <h3>{NTH === 1 ? 'The thread' : `The threads · ${g.called.length} of ${NTH} called`}</h3>
-              <div className="th-big" style={{ color: okCalls.length && NTH === 1 ? ACC : INK }}>
+          <div className={`th-side${playing ? ' th-live' : ''}`}>
+            <div className="th-card main">
+              <div className="th-hd">
+                <span className="l">
+                  <ThreadGlyph />
+                  <span className="th-lab">
+                    {NTH === 1 ? 'The thread' : `The threads · ${g.called.length} of ${NTH} called`}
+                    <span className="sc"> · Score <b>{score}/{TOTAL}</b></span>
+                  </span>
+                </span>
+                {playing && !threadsDone && <span className="th-lab rt">Call it any time</span>}
+                {playing && <button type="button" className="th-quit gu" onClick={giveUp}>{allCalled ? 'Reveal the rest' : 'Give up'}</button>}
+              </div>
+              <div className="th-big" style={{ color: okCalls.length && NTH === 1 ? ACC_INK : INK }}>
                 {NTH === 1
                   ? (okCalls.length ? THREADS[okCalls[0].th].t : g.locked ? (playing || hideSol ? 'Locked at 0' : THREADS[0].t) : `What do all ${N} share?`)
                   : (THREADS.map((th, ti) => calledSet.has(ti) ? th.t : (playing || hideSol ? '?' : th.t)).join(' · '))}
@@ -738,36 +918,34 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
                     ))}
                   </div>
                   <div className="th-call">
-                    <input ref={thrRef} className="th-input" value={tq} onChange={(e) => setTq(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); call(); } }}
-                      placeholder={NTH === 1 ? 'Call the thread…' : 'Call a thread…'} autoCapitalize="off" autoComplete="off" autoCorrect="off" spellCheck={false} aria-label="Call the thread" />
+                    <label className="th-field">
+                      <input ref={thrRef} className="th-input" value={tq} onChange={(e) => setTq(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); call(); } }}
+                        placeholder={NTH === 1 ? 'Call the thread…' : 'Call a thread…'} autoCapitalize="off" autoComplete="off" autoCorrect="off" spellCheck={false} aria-label="Call the thread" />
+                    </label>
                     <button type="button" className="th-cta" onClick={call} disabled={!norm(tq)}>Call</button>
                   </div>
                 </>
               )}
               <div className="th-calls" aria-label={`${wrongCalls} wrong calls of ${MAX_CALLS}`}>
-                {Array.from({ length: MAX_CALLS }, (_, i) => <span key={i} className={i < wrongCalls ? 'x' : ''} />)}
-                {okCalls.map((c, i) => <span key={`ok${i}`} className="ok" />)}
-                <span style={{ width: 'auto', height: 'auto', border: 0, borderRadius: 0, fontFamily: MONO, fontSize: 10.5, color: FADED, marginLeft: 4 }}>{playing ? `${MAX_CALLS - wrongCalls} wrong call${MAX_CALLS - wrongCalls === 1 ? '' : 's'} left` : ''}</span>
+                {Array.from({ length: MAX_CALLS }, (_, i) => <span key={i} className={`p${i < wrongCalls ? ' x' : ''}`} />)}
+                {okCalls.map((c, i) => <span key={`ok${i}`} className="p ok" />)}
+                {playing && <span className="t">{`${MAX_CALLS - wrongCalls} wrong call${MAX_CALLS - wrongCalls === 1 ? '' : 's'} left`}</span>}
               </div>
               <div className={`th-note${thrNote ? ' ' + thrNote.kind : ''}`}>
                 {thrNote ? thrNote.msg : (playing ? 'Calling early is the flex. Three wrong calls lock it.' : '')}
               </div>
             </div>
-            <div className="th-card">
-              <h3>Score</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
-                <div><div style={{ fontFamily: MONO, fontSize: 22, color: INK }}>{g.solved.length}</div><div style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '.12em', textTransform: 'uppercase', color: FADED }}>films</div></div>
-                <div><div style={{ fontFamily: MONO, fontSize: 22, color: INK }}>+{threadBonus}</div><div style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '.12em', textTransform: 'uppercase', color: FADED }}>thread</div></div>
-                <div><div style={{ fontFamily: MONO, fontSize: 22, color: ACC_INK }}>{score}<span style={{ fontSize: 13, color: FADED }}>/{TOTAL}</span></div><div style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '.12em', textTransform: 'uppercase', color: FADED }}>total</div></div>
-              </div>
+            <div className="th-card score">
+              <span className="th-lab">Score</span>
+              <div className="th-row"><span>Films</span><b>{g.solved.length}</b></div>
+              <div className="th-row"><span>Thread</span><b>+{threadBonus}</b></div>
+              <div className="th-row tot"><span>Total</span><b>{score}<small>/{TOTAL}</small></b></div>
               {playing && (
-                <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
-                  <button type="button" className="th-btn" onClick={giveUp} style={{ fontSize: 12.5, padding: '7px 12px' }}>{allCalled ? 'Reveal the rest' : 'Give up'}</button>
-                </div>
+                <button type="button" className="th-quit" onClick={giveUp}>{allCalled ? 'Reveal the rest' : 'Give up'}</button>
               )}
               {!playing && (
-                <div style={{ marginTop: 10, fontSize: 13, fontWeight: 700, color: won ? `var(--stg-good, ${COLORS.green})` : `var(--stg-ink, ${COLORS.rust})` }}>
+                <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.4, color: won ? `var(--stg-good, ${COLORS.green})` : `var(--stg-ink, ${COLORS.rust})` }}>
                   {won ? `${threadBit().replace(/^t/, 'T')}. ${score} of ${TOTAL} in ${elapsed}.` : (g.locked && !okCalls.length && !hideSol ? `The thread was ${THREADS.map((t) => t.t).join(' and ')}. ${score} of ${TOTAL}.` : `${score} of ${TOTAL}.`)}
                 </div>
               )}

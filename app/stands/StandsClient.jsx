@@ -546,21 +546,121 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.bk-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .bk-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .bk-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .bk-grid{border-collapse:separate;border-spacing:3px;font-family:${SANS};}
-          .bk-grid th{font-size:10.5px;font-weight:800;color:${FADED};padding:2px 4px;text-align:left;white-space:nowrap;}
-          .bk-grid th.col{writing-mode:vertical-rl;transform:rotate(180deg);height:64px;text-align:right;}
-          .bk-cell{width:38px;height:34px;border-radius:7px;border: 1.5px solid var(--stg-line, rgba(28,30,36,0.18));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};font-family:${SANS};font-weight:800;font-size:13px;cursor:pointer;color:${INK};}
-          .bk-cell.W{background:${COLORS.greenSoft};border-color:${COLORS.green};color:#14532d;}
-          .bk-cell.D{background:${STAGE ? 'var(--stg-surf2)' : '#fef3c7'};border-color:${STAGE ? 'var(--stg-warn)' : '#b45309'};color:${STAGE ? 'var(--stg-warn)' : '#78350f'};}
-          .bk-cell.L{background:${STAGE ? 'var(--stg-surf2)' : '#fee2e2'};border-color:${STAGE ? 'var(--stg-bad)' : '#b91c1c'};color:${STAGE ? 'var(--stg-bad)' : '#7f1d1d'};}
-          .bk-cell.self{background:var(--stg-surf, ${COLORS.paper});border-color:transparent;cursor:default;}
-          .bk-cell.mirror{cursor:default;opacity:0.72;}
-          .bk-tbl{width:100%;border-collapse:collapse;font-family:${SANS};font-size:12.5px;}
-          .bk-tbl th{font-family:${MONO};font-size:9.5px;letter-spacing:0.08em;text-transform:uppercase;color:${FADED};font-weight:500;text-align:right;padding:4px 6px;}
-          .bk-tbl th:first-child{text-align:left;}
-          .bk-tbl td{padding:5px 6px;text-align:right;font-weight:700;color:${INK};border-top:1px solid var(--stg-line, rgba(28,30,36,0.09));}
-          .bk-tbl td:first-child{text-align:left;font-weight:800;}
-          .bk-clue{display:flex;gap:9px;align-items:flex-start;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.14));border-left:3px solid var(--stg-acc, ${COLORS.accent});border-radius:8px;padding:8px 11px;margin-bottom:6px;font-size:13.5px;font-weight:600;color:${INK};}
+          /* ROUND THREE BOARD (2026-10-10). Desktop: the results grid in a card
+             with the surviving facts beside it, the table full width beneath
+             with a points bar per club. Phone (640px and under): facts first,
+             then the grid (crest and three-letter code per row), then a
+             compact table. A blank result is a cell you must see the edges of,
+             so it takes --stg-cell / --stg-cell-line; W is the accent fill, D an
+             accent-bordered tint, L a plain outline. */
+          .sd-cap{font-family:${SANS};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:${FADED};}
+          .sd-cap b{color:${INK};font-weight:800;letter-spacing:0;}
+          .sd-top{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;}
+          .sd-card{flex:1 1 auto;min-width:0;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border-radius:16px;padding:16px 16px 14px;display:flex;flex-direction:column;gap:10px;box-sizing:border-box;}
+          .sd-cardhd{display:flex;justify-content:space-between;align-items:baseline;gap:6px 12px;flex-wrap:wrap;}
+          .sd-grid{display:grid;gap:6px;align-items:center;grid-template-columns:minmax(0,140px) repeat(var(--sd-n,5),minmax(44px,52px));}
+          .sd-corner{font-family:${SANS};font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:${FADED};align-self:end;padding-bottom:4px;}
+          .sd-colh{display:flex;flex-direction:column;align-items:center;gap:4px;align-self:end;}
+          .sd-colh .ab{font-family:${SANS};font-size:10px;font-weight:700;letter-spacing:.09em;color:var(--stg-ink2, ${COLORS.faded});}
+          .sd-crest{flex:none;width:30px;height:34px;background:var(--stg-cell-line, rgba(28,30,36,0.4));clip-path:polygon(0 0,100% 0,100% 62%,50% 100%,0 62%);display:flex;align-items:center;justify-content:center;}
+          .sd-crest i{font-style:normal;width:calc(100% - 3px);height:calc(100% - 3px);background:var(--stg-cell, #fff);clip-path:polygon(0 0,100% 0,100% 62%,50% 100%,0 62%);display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding-bottom:5px;font-family:${SANS};font-size:12px;font-weight:800;color:${INK};}
+          .sd-crest.sm{width:26px;height:30px;}
+          .sd-crest.sm i{font-size:11px;padding-bottom:4px;}
+          .sd-crest.xs{width:20px;height:23px;}
+          .sd-crest.xs i{font-size:9px;padding-bottom:3px;}
+          .sd-rowh{display:flex;align-items:center;gap:8px;min-width:0;}
+          .sd-rowh .nm{font-family:${SANS};font-size:13.5px;font-weight:800;color:${INK};line-height:1.15;min-width:0;}
+          .sd-rowh .ab{display:none;font-family:${SANS};font-size:10px;font-weight:800;letter-spacing:.06em;color:${INK};}
+          .sd-cell{height:46px;width:100%;box-sizing:border-box;border-radius:8px;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.4));background:var(--stg-cell, #fff);color:${FADED};font-family:${SANS};font-size:17px;font-weight:800;padding:0;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
+          .sd-cell:disabled{cursor:default;}
+          .sd-cell:not(:disabled):hover{border-color:var(--stg-acc-ink, ${COLORS.accent});}
+          .sd-cell.W{background:var(--stg-acc, ${COLORS.accent});border:1.5px solid var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);}
+          .sd-cell.D{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 18%, transparent);border:1.5px solid var(--stg-acc-ink, ${COLORS.accent});color:var(--stg-acc-ink, ${COLORS.accentDeep});}
+          .sd-cell.L{background:transparent;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));color:${FADED};}
+          .sd-self{height:46px;border-radius:8px;background:repeating-linear-gradient(135deg, var(--stg-line2, rgba(28,30,36,0.17)) 0 5px, transparent 5px 10px);}
+          .sd-legend{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding-top:4px;font-family:${SANS};font-size:12px;font-weight:600;color:${FADED};}
+          .sd-legend > .k{display:flex;align-items:center;gap:6px;}
+          .sd-sw{width:16px;height:14px;border-radius:4px;box-sizing:border-box;}
+          .sd-sw.W{background:var(--stg-acc, ${COLORS.accent});}
+          .sd-sw.D{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 18%, transparent);border:1.5px solid var(--stg-acc-ink, ${COLORS.accent});}
+          .sd-sw.L{border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));}
+          .sd-how{font-family:${SANS};font-size:12px;font-weight:600;line-height:1.4;color:${FADED};}
+          .sd-facts{flex:0 0 196px;display:flex;flex-direction:column;gap:8px;}
+          .sd-fact{display:flex;gap:10px;align-items:flex-start;border-left:3px solid var(--stg-acc, ${COLORS.accent});padding:4px 0 4px 10px;font-family:${SANS};}
+          .sd-fact .n{font-size:12px;font-weight:800;color:var(--stg-acc-ink, ${COLORS.accentDeep});padding-top:1px;flex:none;}
+          .sd-fact .t{font-size:13.5px;font-weight:600;line-height:1.38;color:var(--stg-ink2, ${COLORS.ink});}
+          .sd-fact .t b{color:${INK};}
+          .sd-tbl{margin:18px 0 0;display:flex;flex-direction:column;font-family:${SANS};}
+          .sd-tr{display:flex;align-items:center;padding:0 12px;height:38px;border-bottom:1px solid var(--stg-line, rgba(28,30,36,0.12));}
+          .sd-tr.hd{height:auto;padding-bottom:6px;border-bottom:2px solid var(--stg-acc, ${COLORS.accent});font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:${FADED};}
+          .sd-tr .pos{width:30px;flex:none;font-size:13px;font-weight:800;color:${FADED};}
+          .sd-tr .club{flex:1;min-width:0;display:flex;align-items:center;gap:9px;font-size:14px;font-weight:800;color:${INK};}
+          .sd-tr.hd .club{color:${FADED};font-size:10px;font-weight:700;}
+          .sd-tr .club .ab{display:none;}
+          .sd-tr .c{width:34px;flex:none;text-align:center;font-size:14px;font-weight:700;color:var(--stg-ink2, ${COLORS.ink});}
+          .sd-tr.hd .c{font-size:10px;color:${FADED};}
+          .sd-tr .pts{width:46px;flex:none;text-align:center;font-size:18px;font-weight:800;color:${INK};}
+          .sd-tr.hd .pts{font-size:10px;font-weight:700;color:${FADED};}
+          .sd-tr .bar{width:196px;flex:none;padding-left:16px;box-sizing:border-box;display:flex;gap:2px;}
+          .sd-tr .bar i{flex:1;height:12px;border-radius:2px;box-sizing:border-box;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));}
+          .sd-tr .bar i.on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});}
+          .sd-tr .mbar{display:none;}
+          .sd-foot{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:16px 0 6px;}
+          .sd-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:${SANS};font-weight:800;font-size:14px;border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;background:transparent;color:var(--stg-ink2, ${COLORS.ink});border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));}
+          .sd-btn:disabled{color:${FADED};cursor:default;}
+          .sd-btn.go{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);border-color:var(--stg-acc, ${COLORS.accent});padding:0 18px;}
+          .sd-btn.go:disabled{background:transparent;color:${FADED};border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.4));cursor:not-allowed;}
+          .sd-btn.nudge{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 14%, transparent);color:var(--stg-acc-ink, ${COLORS.accentDeep});border-color:var(--stg-acc-ink, ${COLORS.accent});}
+          .sd-btn .ph{display:none;}
+          .sd-fnote{margin-left:auto;font-family:${SANS};font-size:12px;font-weight:600;line-height:1.4;color:${FADED};text-align:right;}
+          .sd-ph{display:none;}
+          @media(max-width:640px){
+            .sd-top{flex-direction:column-reverse;gap:12px;}
+            .sd-facts{flex:none;width:100%;gap:5px;}
+            .sd-fact{gap:9px;padding:2px 0 2px 9px;align-items:baseline;}
+            .sd-fact .n{font-size:11px;}
+            .sd-fact .t{font-size:13px;line-height:1.3;}
+            .sd-card{width:100%;border-radius:14px;padding:10px;gap:5px;}
+            .sd-card .sd-cardhd > span:first-child{display:none;}
+            .sd-cap{font-size:10px;}
+            .sd-grid{gap:5px;grid-template-columns:52px repeat(var(--sd-n,5),minmax(0,1fr));}
+            .sd-corner{font-size:9px;padding-bottom:2px;}
+            .sd-colh{gap:2px;}
+            .sd-colh .ab{font-size:9px;}
+            .sd-colh .sd-crest{width:24px;height:27px;}
+            .sd-colh .sd-crest i{font-size:10px;padding-bottom:4px;}
+            .sd-rowh{gap:5px;}
+            .sd-rowh .sd-crest{width:20px;height:23px;}
+            .sd-rowh .sd-crest i{font-size:9px;padding-bottom:3px;}
+            .sd-rowh .nm{display:none;}
+            .sd-rowh .ab{display:inline;}
+            .sd-cell{font-size:16px;}
+            .sd-legend{gap:10px;font-size:11px;padding-top:3px;}
+            .sd-legend .sd-how-ph{margin-left:auto;}
+            .sd-how{display:none;}
+            .sd-tbl{margin-top:12px;}
+            .sd-tr{padding:0 4px;height:30px;}
+            .sd-tr.hd{padding-bottom:4px;font-size:9px;}
+            .sd-tr .pos{width:18px;font-size:12px;}
+            .sd-tr .club{font-size:13px;}
+            .sd-tr .club .sd-crest{display:none;}
+            .sd-tr .c{width:24px;font-size:13px;}
+            .sd-tr .pts{width:72px;display:flex;align-items:center;justify-content:flex-end;gap:6px;font-size:15px;text-align:right;}
+            .sd-tr.hd .pts{display:block;}
+            .sd-tr .bar{display:none;}
+            .sd-tr .mbar{display:block;width:46px;height:8px;border-radius:4px;box-sizing:border-box;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));position:relative;overflow:hidden;}
+            .sd-tr .mbar i{position:absolute;left:0;top:0;bottom:0;background:var(--stg-acc, ${COLORS.accent});}
+            .sd-dt{display:none;}
+            .sd-ph{display:inline;}
+            .sd-foot{flex-wrap:wrap;}
+            .sd-btn.nudge{flex:1;padding:0;}
+            .sd-btn.clr{width:52px;padding:0;}
+            .sd-btn.clr .lbl{display:none;}
+            .sd-btn.go{flex:1.6;padding:0 8px;}
+            .sd-btn .dt{display:none;}
+            .sd-btn .ph{display:inline;}
+            .sd-fnote{display:none;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
@@ -606,69 +706,109 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
 
-        {!preStart && (
+        {!preStart && (() => {
+          const ab = (t) => t.slice(0, 3).toUpperCase();
+          const crest = (t, size) => <span className={`sd-crest${size ? ` ${size}` : ''}`} aria-hidden="true"><i>{t.charAt(0)}</i></span>;
+          const MAXPTS = 3 * (N - 1);
+          const LEFT = PAIRS.length - filled;
+          const WORD = { W: 'win', D: 'draw', L: 'loss' };
+          return (
           <>
-            <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED }}>
-              <span>filled <b style={{ color: INK, fontWeight: 500 }}>{filled}</b> of {PAIRS.length}</span>
-              <span>on the board <b style={{ color: (g.rejected || g.hints) ? `var(--stg-bad, ${COLORS.rust})` : COLORS.green, fontWeight: 500 }}>{liveScore}</b>/{TOTAL}</span>
-              {g.rejected > 0 && <span>rejected <b style={{ color: COLORS.rust, fontWeight: 500 }}>{g.rejected}</b></span>}
-            </div>
-
-            <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED, marginBottom: 7 }}>What survived</div>
-            {PUZZLE.clues.map((c, i) => (
-              <div key={i} className="bk-clue"><span style={{ fontFamily: MONO, fontSize: 11, color: FADED, flex: '0 0 auto' }}>{i+1}</span><span>{clueText(c)}</span></div>
-            ))}
-
-            <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap', alignItems: 'flex-start', margin: '14px 0 6px' }}>
-              <div>
-                <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED, marginBottom: 7 }}>The grid</div>
-                <div style={{ fontFamily: SANS, fontSize: 12, fontWeight: 600, color: FADED, marginBottom: 8, maxWidth: 330, lineHeight: 1.4 }}>Tap any cell to set that result: <b style={{ color: COLORS.green }}>W</b> {'\u2192'} <b style={{ color: COLORS.amber }}>D</b> {'\u2192'} <b style={{ color: COLORS.rust }}>L</b> {'\u2192'} blank. The opposite cell mirrors it. Long-press or right-click to step back.</div>
-                <table className="bk-grid"><tbody>
-                  <tr><th></th>{T.map((t, j) => <th key={j} className="col">{t}</th>)}</tr>
+            <div className="sd-top">
+              <div className="sd-card">
+                <div className="sd-cardhd">
+                  <span className="sd-cap" style={{ color: `var(--stg-acc-ink, ${COLORS.accentDeep})` }}>Results grid &middot; read across</span>
+                  <span className="sd-cap">
+                    Filled <b>{filled}</b> of {PAIRS.length}
+                    {(!LOFT || EMBED) && <> &middot; score <b style={{ color: (g.rejected || g.hints) ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-good, ${COLORS.green})` }}>{liveScore}</b>/{TOTAL}</>}
+                    {(!LOFT || EMBED) && g.rejected > 0 && <> &middot; rejected <b>{g.rejected}</b></>}
+                  </span>
+                </div>
+                <div className="sd-grid" style={{ '--sd-n': N }}>
+                  <span className="sd-corner">Row v column</span>
+                  {T.map((t, j) => (
+                    <div key={j} className="sd-colh" title={t}>{crest(t)}<span className="ab">{ab(t)}</span></div>
+                  ))}
                   {T.map((t, i) => (
-                    <tr key={i}>
-                      <th>{t}</th>
+                    <React.Fragment key={i}>
+                      <div className="sd-rowh" title={t}>{crest(t, 'sm')}<span className="nm">{t}</span><span className="ab">{ab(t)}</span></div>
                       {T.map((_, j) => {
-                        if (i === j) return <td key={j}><div className="bk-cell self" /></td>;
+                        if (i === j) return <div key={j} className="sd-self" aria-hidden="true" />;
                         const k = cellIndex(i, j);
                         const lab = cellLabel(k, i);
                         return (
-                          <td key={j}>
-                            <button type="button" className={`bk-cell${lab ? ' ' + lab : ''}`}
-                              onClick={() => cellClick(i, j)}
-                              onPointerDown={() => playing && cellPressDown(i, j)}
-                              onPointerUp={cellPressUp} onPointerLeave={cellPressUp}
-                              onContextMenu={(e) => { if (playing) { e.preventDefault(); cycleCell(i, j, -1); } }}
-                              disabled={!playing} title={`${T[i]} v ${T[j]}: tap to cycle, long-press to step back`}>{lab}</button>
-                          </td>
+                          <button key={j} type="button" className={`sd-cell${lab ? ' ' + lab : ''}`}
+                            onClick={() => cellClick(i, j)}
+                            onPointerDown={() => playing && cellPressDown(i, j)}
+                            onPointerUp={cellPressUp} onPointerLeave={cellPressUp}
+                            onContextMenu={(e) => { if (playing) { e.preventDefault(); cycleCell(i, j, -1); } }}
+                            disabled={!playing}
+                            aria-label={`${T[i]} v ${T[j]}: ${lab ? WORD[lab] : 'blank'}`}
+                            title={`${T[i]} v ${T[j]}: tap to cycle, long-press to step back`}>{lab}</button>
                         );
                       })}
-                    </tr>
+                    </React.Fragment>
                   ))}
-                </tbody></table>
+                </div>
+                <div className="sd-legend">
+                  <span className="k"><span className="sd-sw W" />W win, 3 pts</span>
+                  <span className="k"><span className="sd-sw D" />D draw, 1</span>
+                  <span className="k"><span className="sd-sw L" />L loss, 0</span>
+                  <span className="sd-ph sd-how-ph">Tap cycles &middot; hold steps back</span>
+                </div>
+                <span className="sd-how">Tap a cell to cycle W, D, L, blank. Long-press or right-click steps back. The opposite cell mirrors it.</span>
               </div>
-              <div style={{ flex: '1 1 240px', minWidth: 230 }}>
-                <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED, marginBottom: 7 }}>The table as it stands</div>
-                <table className="bk-tbl"><thead><tr><th>Club</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr></thead>
-                  <tbody>{standing.map((r) => (
-                    <tr key={r.i}><td>{r.name}</td><td>{r.p}</td><td>{r.w}</td><td>{r.d}</td><td>{r.l}</td><td style={{ fontWeight: 800 }}>{r.pts}</td></tr>
-                  ))}</tbody>
-                </table>
+
+              <div className="sd-facts">
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                  <span className="sd-cap">What survived</span>
+                  <span className="sd-cap sd-ph">Rejected <b>{g.rejected}</b></span>
+                </div>
+                {PUZZLE.clues.map((c, i) => (
+                  <div key={i} className="sd-fact"><span className="n">{i + 1}</span><span className="t">{clueText(c)}</span></div>
+                ))}
+                <span className="sd-how">{N} clubs, {PAIRS.length} matches. Exactly one set of results fits every fact.</span>
               </div>
             </div>
-          </>
-        )}
 
-        {verdict && <div style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: COLORS.rust, margin: '4px 0 8px', lineHeight: 1.45 }}>{verdict.msg}</div>}
+            <div className="sd-tbl">
+              <div className="sd-tr hd">
+                <span className="pos sd-dt">#</span>
+                <span className="club"><span className="sd-dt">The table as it stands</span><span className="sd-ph">As it stands &middot; <b style={{ color: INK }}>{filled}</b> of {PAIRS.length} filled</span></span>
+                <span className="c">P</span><span className="c">W</span><span className="c">D</span><span className="c">L</span>
+                <span className="pts">Pts</span>
+                <span className="bar">Points, of a possible {MAXPTS}</span>
+              </div>
+              {standing.map((r, pos) => (
+                <div key={r.i} className="sd-tr">
+                  <span className="pos">{pos + 1}</span>
+                  <span className="club">{crest(r.name, 'xs')}{r.name}</span>
+                  <span className="c">{r.p}</span><span className="c">{r.w}</span><span className="c">{r.d}</span><span className="c">{r.l}</span>
+                  <span className="pts"><span className="mbar" aria-hidden="true"><i style={{ width: `${Math.round((Math.min(r.pts, MAXPTS) / MAXPTS) * 100)}%` }} /></span>{r.pts}</span>
+                  <span className="bar" aria-hidden="true">
+                    {Array.from({ length: MAXPTS }).map((_, s) => <i key={s} className={s < r.pts ? 'on' : undefined} />)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </>
+          );
+        })()}
+
+        {verdict && <div style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: `var(--stg-bad, ${COLORS.rust})`, margin: '10px 0 0', lineHeight: 1.45 }}>{verdict.msg}</div>}
 
         {started && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '8px 0' }}>
-            <button type="button" className="bk-btn" onClick={submit} disabled={filled !== PAIRS.length} style={filled === PAIRS.length ? { background: `var(--stg-acc, ${COLORS.accent})`, borderColor: `var(--stg-acc, ${COLORS.accent})`, color: `var(--stg-onramp, ${THEME.white})` } : { opacity: 0.45, cursor: 'not-allowed' }}>
-              <Table2 size={14} /> Hand in the sheet
+          <div className="sd-foot">
+            <button type="button" className="sd-btn go" onClick={submit} disabled={filled !== PAIRS.length}>
+              <Table2 size={16} />
+              {filled === PAIRS.length
+                ? <>Hand in the sheet</>
+                : <><span className="dt">Hand in the sheet &middot; {PAIRS.length - filled} to fill</span><span className="ph">Hand in &middot; {PAIRS.length - filled} to fill</span></>}
             </button>
-            <button type="button" className="bk-btn" onClick={hint} style={{ background: `color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent)`, borderColor: 'color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 45%, transparent)', color: ACC_DEEP_INK }}><Lightbulb size={14} /> Nudge (−2)</button>
-            {filled > 0 && <button type="button" className="bk-btn" onClick={clearAll}><Eraser size={14} /> Clear</button>}
-            {g.rejected >= 2 && <button type="button" className="bk-btn" style={{ borderColor: '#c3c8cf', color: FADED }} onClick={reveal}>Reveal (ends the day)</button>}
+            <button type="button" className="sd-btn nudge" onClick={hint} aria-label="Nudge, fills one match, costs 2 points"><Lightbulb size={16} /> Nudge (&minus;2)</button>
+            <button type="button" className="sd-btn clr" onClick={clearAll} disabled={filled === 0} aria-label="Clear the grid"><Eraser size={16} /><span className="lbl">Clear</span></button>
+            {g.rejected >= 2 && <button type="button" className="sd-btn" onClick={reveal}>Reveal (ends the day)</button>}
+            <span className="sd-fnote">12 points, 3 off per wrong sheet, 2 per nudge.<br />Reveal opens after 2 rejected sheets.</span>
           </div>
         )}
 

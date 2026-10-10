@@ -188,6 +188,27 @@ function mergeServerStats(s, recent, puzzles) {
   return s2;
 }
 
+const COL_KEYS = 'ABCD';
+
+// The universe chip's small mark: one stroke glyph per universe, drawn in
+// currentColor so it takes the chip's ink in either register.
+function UniverseGlyph({ id }) {
+  const P = {
+    tv: <><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 3l4 4 4-4" /></>,
+    movies: <><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4" /></>,
+    countries: <><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z" /></>,
+    states: <><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z" /><path d="M9 4v14M15 6v14" /></>,
+    animals: <><circle cx="7" cy="9" r="1.8" /><circle cx="11" cy="6" r="1.8" /><circle cx="15.5" cy="7" r="1.8" /><circle cx="18" cy="11" r="1.8" /><path d="M8 17c0-2.8 2-5 4.5-5s4.5 2.2 4.5 4.5c0 2-1.5 3.5-3.5 3.5-1 0-1.6-.5-2.5-.5S9.8 20 9 20c-.6 0-1-.6-1-1.5z" /></>,
+    teams: <><path d="M8 4h8v5a4 4 0 0 1-8 0z" /><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8" /></>,
+    musicians: <><path d="M9 18V5l11-2v13" /><circle cx="6.5" cy="18" r="2.5" /><circle cx="17.5" cy="16" r="2.5" /></>,
+  };
+  const g = P[id];
+  if (!g) return null;
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flex: '0 0 auto' }}>{g}</svg>
+  );
+}
+
 const HAPT = { ok: [8], miss: [30], win: [10, 40, 20, 40, 20, 60] };
 function vibrate(p) { try { if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
 
@@ -545,7 +566,7 @@ export default function NicheClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Niche #${PUZZLE.num} — the daily trivia grid from Mind Loft. Today's universe: ${U.name}.\n${shareUrl()}`
+      ? `Niche #${PUZZLE.num}, the daily trivia grid from Mind Loft. Today's universe: ${U.name}.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -637,26 +658,111 @@ export default function NicheClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.nc-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .nc-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : COLORS.accentDeep};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .nc-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .nc-head{display:flex;align-items:center;justify-content:center;text-align:center;font-family:${SANS};font-weight:800;color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};background:color-mix(in srgb, var(--stg-acc, ${COLORS.accentDeep}) 16%, transparent);border:1.5px solid var(--stg-surf2, ${COLORS.accentTint});border-radius:8px;padding:6px 4px;line-height:1.22;min-height:44px;}
-          .nc-cell{position:relative;border: 1.5px solid var(--stg-line2, rgba(28,30,36,0.22));border-radius:8px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px 5px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;min-height:58px;overflow:hidden;}
-          .nc-cell.filled{border-color:var(--stg-surf2, ${COLORS.accentTint});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accentDeep}) 16%, transparent);cursor:default;}
-          .nc-cell.rare{border-color:var(--stg-warn, ${COLORS.gold});background:${STAGE ? 'color-mix(in srgb, var(--stg-warn) 20%, transparent)' : COLORS.goldSoft};box-shadow:0 0 0 2px rgba(180,83,9,0.18);}
-          .nc-cell.sel{border-color:var(--stg-acc, ${COLORS.accent});box-shadow:0 0 0 2.5px color-mix(in srgb, var(--stg-acc, ${COLORS.accentDeep}) 25%, transparent);}
-          .nc-cell.miss{background:${STAGE ? 'var(--stg-surf2)' : '#fafbfc'};}
-          .nc-ans{font-weight:800;font-size:12.5px;line-height:1.15;text-align:center;color:${INK};overflow-wrap:anywhere;}
-          .nc-rar{font-family:${MONO};font-size:9.5px;color:${FADED};}
-          .nc-rar.gold{color:#8a6415;font-weight:500;}
-          .nc-plus{font-size:19px;font-weight:600;color:var(--stg-mute2, #c3c8d1);}
-          .nc-ex{font-size:10.5px;line-height:1.25;color:#9aa0ab;font-style:italic;text-align:center;}
-          .nc-input{width:100%;border:none;outline:none;font-family:${SANS};font-size:15px;font-weight:700;color:${INK};background:transparent;}
-          .nc-dd{position:absolute;top:calc(100% + 5px);left:0;right:0;background:${STAGE ? 'var(--stg-raise)' : 'var(--white)'};border: 1.5px solid var(--stg-line, rgba(28,30,36,0.2));border-radius:10px;box-shadow:0 10px 26px rgba(0,0,0,0.16);z-index:20;overflow:hidden;}
-          .nc-dd button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:none;border-radius:0;padding:9px 12px;font-family:${SANS};font-size:13.5px;font-weight:700;color:${INK};cursor:pointer;}
-          .nc-dd button.hot{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accentDeep}) 16%, transparent);color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};}
-          .nc-dd button .nc-sub{margin-left:auto;font-family:${MONO};font-size:10px;color:${FADED};font-weight:400;}
-          .nc-dd button.used{opacity:0.45;cursor:default;}
-          .nc-pips{display:flex;gap:4px;align-items:center;}
-          .nc-pip{width:9px;height:9px;border-radius:50%;background:var(--stg-acc, ${COLORS.accent});}
-          .nc-pip.spent{background:#d6dae1;}
+          .nc-top{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+          .nc-uni{display:inline-flex;align-items:center;gap:8px;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #ffffff);border-radius:8px;padding:6px 12px;font-family:${SANS};font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;}
+          .nc-how{font-size:12px;font-weight:600;color:${FADED};}
+          .nc-pipwrap{margin-left:auto;display:flex;align-items:center;gap:8px;}
+          .nc-pips{display:flex;gap:4px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+          .nc-pip{width:10px;height:10px;border-radius:50%;box-sizing:border-box;background:var(--stg-acc, ${COLORS.accent});}
+          .nc-pip.spent{background:transparent;border:1.5px solid var(--stg-cell-line, #9aa0ab);}
+          .nc-left{display:none;font-size:10px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;color:${FADED};white-space:nowrap;}
+          .nc-left b{font-size:13px;letter-spacing:0;color:${INK};}
+          .nc-grid{display:flex;flex-direction:column;gap:12px;}
+          .nc-hrow,.nc-row{display:grid;grid-template-columns:var(--nc-cols);gap:12px;}
+          .nc-row{border-radius:14px;}
+          .nc-row.on{background:var(--stg-acc-tint, ${COLORS.accentSoft});}
+          .nc-corner{display:flex;flex-direction:column;justify-content:flex-end;gap:6px;padding-bottom:6px;}
+          .nc-lab{font-size:10px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;color:${FADED};}
+          .nc-ch,.nc-rh{box-sizing:border-box;border-radius:12px;background:var(--stg-surf, #ffffff);display:flex;flex-direction:column;gap:5px;}
+          .nc-ch{border-top:4px solid var(--stg-acc-ink, ${COLORS.accent});padding:9px 12px 10px;min-height:86px;}
+          .nc-rh{border-left:4px solid var(--stg-acc-ink, ${COLORS.accent});padding:10px 10px 10px 12px;min-height:104px;justify-content:center;}
+          .nc-ch.on,.nc-rh.on{background:var(--stg-acc, ${COLORS.accent});}
+          .nc-tag{font-size:10px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;color:var(--stg-acc-ink, ${COLORS.accent});}
+          .nc-tag .ts{display:none;}
+          .nc-hl{font-size:13px;font-weight:700;line-height:1.3;color:${INK};}
+          .nc-ch.on .nc-tag,.nc-ch.on .nc-hl,.nc-rh.on .nc-tag,.nc-rh.on .nc-hl{color:var(--stg-onramp, #ffffff);}
+          .nc-slot{display:flex;border-radius:12px;min-height:104px;min-width:0;}
+          .nc-slot.cb{background:var(--stg-acc-tint, ${COLORS.accentSoft});}
+          .nc-cell{flex:1;min-width:0;box-sizing:border-box;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0;margin:0;font-family:${SANS};user-select:none;-webkit-tap-highlight-color:transparent;overflow:hidden;}
+          .nc-cell.open{background:transparent;border:1.5px dashed var(--stg-cell-line, #9aa0ab);cursor:pointer;}
+          .nc-cell.open:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
+          .nc-cell.sel{background:var(--stg-acc-tint, ${COLORS.accentSoft});border:2px solid var(--stg-acc-ink, ${COLORS.accent});cursor:default;}
+          .nc-cell.filled{align-items:stretch;justify-content:flex-start;background:var(--stg-surf, #ffffff);border-left:4px solid var(--stg-acc-ink, ${COLORS.accent});padding:10px 12px;box-shadow:0 2px 0 var(--stg-line2, rgba(28,30,36,0.18));cursor:default;}
+          .nc-cell.filled.rare{border:1.5px solid var(--stg-warn, ${COLORS.gold});border-left:4px solid var(--stg-warn, ${COLORS.gold});}
+          .nc-cell.miss{background:var(--stg-cell, #fafbfc);border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.22));padding:8px;cursor:default;}
+          .nc-big{font-size:24px;font-weight:800;line-height:1;color:var(--stg-acc-ink, ${COLORS.accent});}
+          .nc-plus{font-size:24px;font-weight:600;line-height:1;color:${FADED};}
+          .nc-coord{font-size:10px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;color:${FADED};}
+          .nc-cell.sel .nc-coord{color:var(--stg-acc-ink, ${COLORS.accent});}
+          .nc-meta{display:flex;justify-content:space-between;gap:6px;font-size:10px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;color:${FADED};}
+          .nc-fits{color:var(--stg-acc-ink, ${COLORS.accent});}
+          .nc-ans{font-weight:800;font-size:15px;line-height:1.2;color:${INK};overflow-wrap:anywhere;}
+          .nc-rar{margin-top:auto;font-size:12px;font-weight:600;color:${FADED};}
+          .nc-rar.gold{color:var(--stg-warn, #8a6415);font-weight:800;}
+          .nc-ex{font-size:11px;line-height:1.3;color:${FADED};font-style:italic;text-align:center;}
+          .nc-ask{position:relative;margin-top:18px;display:flex;flex-direction:column;gap:8px;}
+          .nc-crit{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;font-weight:700;color:${FADED};min-height:24px;}
+          .nc-chip{border:1.5px solid var(--stg-acc-ink, ${COLORS.accent});color:var(--stg-acc-ink, ${COLORS.accent});border-radius:7px;padding:3px 8px;}
+          .nc-field{position:relative;}
+          .nc-box{display:flex;align-items:center;gap:10px;border-radius:12px;padding:0 14px;min-height:50px;box-sizing:border-box;background:var(--stg-cell, #ffffff);}
+          .nc-input{flex:1;min-width:0;border:none;outline:none;padding:0;font-family:${SANS};font-size:16px;font-weight:700;color:${INK};background:transparent;}
+          .nc-input::placeholder{color:${FADED};font-weight:600;}
+          .nc-dd{position:absolute;top:calc(100% + 6px);left:0;right:0;background:${STAGE ? 'var(--stg-raise)' : 'var(--white)'};border:1.5px solid var(--stg-line2, rgba(28,30,36,0.2));border-radius:12px;box-shadow:0 10px 26px rgba(0,0,0,0.18);z-index:20;overflow:hidden;}
+          .nc-dd button{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;text-align:left;background:none;border:none;border-radius:0;padding:0 14px;font-family:${SANS};font-size:14px;font-weight:700;color:${INK};cursor:pointer;}
+          .nc-dd button.hot{background:var(--stg-acc-tint, ${COLORS.accentSoft});color:var(--stg-acc-ink, ${COLORS.accentDeep});}
+          .nc-dd button .nc-sub{margin-left:auto;font-size:12px;color:${FADED};font-weight:600;}
+          .nc-dd button.used{opacity:var(--stg-inert-op, 0.45);color:${FADED};cursor:default;}
+          .nc-foot{display:flex;align-items:center;gap:14px;margin-top:18px;padding-top:12px;border-top:1px solid var(--stg-line, rgba(28,30,36,0.10));}
+          .nc-legend{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;line-height:1.4;color:${FADED};}
+          .nc-legend .sq{width:14px;height:14px;flex:0 0 auto;border-radius:4px;box-sizing:border-box;border:2px solid var(--stg-warn, ${COLORS.gold});}
+          .nc-legend .ts{display:none;}
+          .nc-end{flex:0 0 auto;margin-left:auto;display:inline-flex;align-items:center;gap:6px;background:transparent;border:0;min-height:44px;padding:0 4px;cursor:pointer;font-family:${SANS};font-size:13px;font-weight:700;color:var(--stg-ink2, ${COLORS.faded});text-decoration:underline;text-underline-offset:3px;}
+          .nc-end.armed{color:var(--stg-bad, ${COLORS.rust});}
+          .nc-g4 .nc-hl{font-size:12px;}
+          .nc-g4 .nc-ans{font-size:13px;}
+          @media(max-width:640px){
+            .nc-top{gap:8px;margin-bottom:10px;}
+            .nc-uni{font-size:10px;padding:5px 9px;gap:6px;border-radius:7px;}
+            .nc-uni .tl{display:none;}
+            .nc-how{display:none;}
+            .nc-left{display:inline;}
+            .nc-pips{gap:3px;}
+            .nc-pip{width:9px;height:9px;}
+            .nc-grid{gap:6px;}
+            .nc-hrow{grid-template-columns:repeat(${SIZE}, minmax(0,1fr));gap:8px;margin-bottom:2px;}
+            .nc-corner{display:none;}
+            .nc-row{grid-template-columns:repeat(${SIZE}, minmax(0,1fr));gap:5px 8px;border-radius:12px;}
+            .nc-ch{min-height:88px;padding:6px 8px 7px;gap:3px;border-radius:10px;}
+            .nc-ch .nc-tag{font-size:15px;letter-spacing:0;}
+            .nc-tag .tl{display:none;}
+            .nc-tag .ts{display:inline;}
+            .nc-ch .nc-hl{font-size:11px;line-height:1.28;}
+            .nc-rh{grid-column:1 / -1;min-height:24px;flex-direction:row;align-items:center;gap:8px;padding:3px 8px;border-left:0;border-radius:7px;}
+            .nc-rh .nc-tag{font-size:13px;letter-spacing:0;white-space:nowrap;}
+            .nc-rh .nc-hl{font-size:11.5px;line-height:1.25;}
+            .nc-slot{min-height:76px;border-radius:10px;}
+            .nc-cell{border-radius:10px;gap:2px;}
+            .nc-cell.filled{padding:6px 8px;gap:2px;}
+            .nc-big{font-size:20px;}
+            .nc-plus{font-size:22px;}
+            .nc-coord,.nc-meta{font-size:9px;}
+            .nc-meta .nc-fits{display:none;}
+            .nc-ans{font-size:12.5px;line-height:1.18;}
+            .nc-rar{font-size:10.5px;}
+            .nc-g4 .nc-ch .nc-hl,.nc-g4 .nc-rh .nc-hl{font-size:10.5px;}
+            .nc-g4 .nc-ans{font-size:11px;}
+            .nc-ask{margin-top:10px;gap:6px;}
+            .nc-crit{font-size:11px;gap:6px;}
+            .nc-chip{padding:2px 6px;border-radius:6px;}
+            .nc-box{min-height:48px;padding:0 12px;}
+            .nc-dd{top:auto;bottom:calc(100% + 6px);}
+            .nc-foot{gap:10px;margin-top:10px;padding-top:4px;border-top:0;}
+            .nc-legend{font-size:11px;gap:6px;line-height:1.35;}
+            .nc-legend .sq{width:12px;height:12px;border-radius:3px;}
+            .nc-legend .tl{display:none;}
+            .nc-legend .ts{display:inline;}
+            .nc-end{font-size:12.5px;padding:0 2px;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
@@ -712,109 +818,169 @@ export default function NicheClient({ puzzles = [], forceNum = null }) {
           </div>
           )}
 
-          {/* universe chip + guess pips */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 6, padding: '4px 10px' }}>
-              Universe &middot; {U.name}
+          {/* universe chip, the one-line rule, and the guess pips (spent ones hollow) */}
+          <div className="nc-top">
+            <span className="nc-uni">
+              <UniverseGlyph id={U.id} />
+              <span className="tl">Universe &middot;&nbsp;</span>{U.name}
             </span>
+            <span className="nc-how">Each cell needs one {U.noun} that fits its row and its column.</span>
             {playing && (
-              <span className="nc-pips" style={{ marginLeft: 'auto' }} aria-label={`${guessesLeft} guesses left`}>
-                {Array.from({ length: GUESSES }).map((_, i) => (
-                  <span key={i} className={`nc-pip${i < guessesUsed ? ' spent' : ''}`} />
-                ))}
+              <span className="nc-pipwrap">
+                <span className="nc-pips" aria-label={`${guessesLeft} guesses left`}>
+                  {Array.from({ length: GUESSES }).map((_, i) => (
+                    <span key={i} className={`nc-pip${i < guessesUsed ? ' spent' : ''}`} />
+                  ))}
+                </span>
+                <span className="nc-left" aria-hidden="true"><b>{guessesLeft}</b> left</span>
               </span>
             )}
           </div>
 
-          {/* the grid: column headers across the top, row headers down the side */}
-          <div style={{ display: 'grid', gridTemplateColumns: `minmax(72px, 0.8fr) repeat(${SIZE}, 1fr)`, gap: 6 }}>
-            <div />
-            {colAttrs.map((a) => (
-              <div key={a.id} className="nc-head" style={{ fontSize: SIZE === 4 ? 11 : 12 }}>{a.label}</div>
-            ))}
+          {/* the grid: column headers across the top, row headers down the side.
+              On a phone each row header becomes a full-width strip above its cells. */}
+          <div className={`nc-grid${SIZE === 4 ? ' nc-g4' : ''}`} style={{ '--nc-cols': `minmax(96px, 0.95fr) repeat(${SIZE}, minmax(0, 1fr))` }}>
+            <div className="nc-hrow">
+              <div className="nc-corner" aria-hidden="true">
+                <span className="nc-lab">Columns &darr;</span>
+                <span className="nc-lab">Rows &rarr;</span>
+              </div>
+              {colAttrs.map((a, c) => (
+                <div key={a.id} className={`nc-ch${c === selCol ? ' on' : ''}`}>
+                  <span className="nc-tag"><span className="tl">Column {COL_KEYS[c]}</span><span className="ts">{COL_KEYS[c]} &darr;</span></span>
+                  <span className="nc-hl">{a.label}</span>
+                </div>
+              ))}
+            </div>
             {rowAttrs.map((ra, r) => (
-              <React.Fragment key={ra.id}>
-                <div className="nc-head" style={{ fontSize: SIZE === 4 ? 11 : 12 }}>{ra.label}</div>
+              <div key={ra.id} className={`nc-row${r === selRow ? ' on' : ''}`}>
+                <div className={`nc-rh${r === selRow ? ' on' : ''}`}>
+                  <span className="nc-tag"><span className="tl">Row {r + 1}</span><span className="ts">{r + 1} &rarr;</span></span>
+                  <span className="nc-hl">{ra.label}</span>
+                </div>
                 {colAttrs.map((ca, c) => {
                   const i = r * SIZE + c;
                   const name = picks[i];
                   const pct = g.rar[i];
                   const rare = name && pct != null && pct <= RARE_PCT;
-                  const cls = `nc-cell${name ? ' filled' : ''}${rare ? ' rare' : ''}${i === sel ? ' sel' : ''}${!playing && !name ? ' miss' : ''}`;
-                  return (
-                    <div key={ca.id} className={cls}
-                      onClick={() => {
-                        if (!playing || name) return;
-                        setSel(i); setQuery(''); setHot(0);
-                        setTimeout(() => { try { inputRef.current && inputRef.current.focus(); } catch (e) {} }, 30);
-                      }}>
-                      {name ? (
-                        <>
-                          <span className="nc-ans" style={{ fontSize: SIZE === 4 ? 11 : 12.5 }}>{name}</span>
+                  const coord = `${r + 1}${COL_KEYS[c]}`;
+                  const slotCls = `nc-slot${c === selCol && r !== selRow ? ' cb' : ''}`;
+                  if (name) {
+                    return (
+                      <div key={ca.id} className={slotCls}>
+                        <div className={`nc-cell filled${rare ? ' rare' : ''}`}>
+                          <span className="nc-meta"><span>{coord}</span><span className="nc-fits">Fits both</span></span>
+                          <span className="nc-ans">{name}</span>
                           {pct != null && (
                             <span className={`nc-rar${rare ? ' gold' : ''}`}>{rare ? `${pct}% · rare find` : `${pct}% picked`}</span>
                           )}
-                        </>
-                      ) : playing ? (
-                        <span className="nc-plus">+</span>
-                      ) : (
-                        <span className="nc-ex">{(examples[i] || []).length ? <>e.g. {(examples[i] || []).join(', ')}</> : ''}</span>
-                      )}
+                        </div>
+                      </div>
+                    );
+                  }
+                  if (!playing) {
+                    return (
+                      <div key={ca.id} className={slotCls}>
+                        <div className="nc-cell miss">
+                          <span className="nc-coord">{coord}</span>
+                          {(examples[i] || []).length ? <span className="nc-ex">e.g. {(examples[i] || []).join(', ')}</span> : null}
+                        </div>
+                      </div>
+                    );
+                  }
+                  const isSel = i === sel;
+                  return (
+                    <div key={ca.id} className={slotCls}>
+                      <button type="button" className={`nc-cell ${isSel ? 'sel' : 'open'}`}
+                        aria-label={isSel ? `Cell ${coord}, row ${r + 1} and column ${COL_KEYS[c]}, selected` : `Answer cell ${coord}`}
+                        aria-pressed={isSel}
+                        onClick={() => {
+                          if (!playing || name) return;
+                          setSel(i); setQuery(''); setHot(0);
+                          setTimeout(() => { try { inputRef.current && inputRef.current.focus({ preventScroll: true }); } catch (e) {} }, 30);
+                        }}>
+                        {isSel ? (
+                          <>
+                            <span className="nc-big">{coord}</span>
+                            <span className="nc-coord">Answering</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="nc-plus" aria-hidden="true">+</span>
+                            <span className="nc-coord">{coord}</span>
+                          </>
+                        )}
+                      </button>
                     </div>
                   );
                 })}
-              </React.Fragment>
+              </div>
             ))}
           </div>
 
-          {/* the answer bar */}
+          {/* the answer bar: the selected cell's two conditions, then the field */}
           {playing && (
-            <div style={{ position: 'relative', marginTop: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 9, border: `2px solid ${sel >= 0 ? `var(--stg-acc, ${COLORS.accent})` : 'rgba(28,30,36,0.25)'}`, borderRadius: 10, padding: '9px 12px', background: STAGE ? SURF : T.white }}>
-                <input
-                  ref={inputRef}
-                  className="nc-input"
-                  value={query}
-                  placeholder={sel >= 0
-                    ? `A ${U.noun}: ${rowAttrs[selRow].label} + ${colAttrs[selCol].label}`
-                    : 'Tap an empty cell first'}
-                  disabled={sel < 0}
-                  onChange={(e) => { setQuery(e.target.value); setHot(0); }}
-                  onKeyDown={onKey}
-                  autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
-                  aria-label="Type an answer"
-                />
-                {suggestions.length > 0 && <CornerDownLeft size={15} color={COLORS.faded} />}
+            <div className="nc-ask">
+              <div className="nc-crit">
+                {sel >= 0 ? (
+                  <>
+                    <span className="nc-lab">Cell {selRow + 1}{COL_KEYS[selCol]}</span>
+                    <span className="nc-chip">{rowAttrs[selRow].label}</span>
+                    <span style={{ fontWeight: 800 }}>+</span>
+                    <span className="nc-chip">{colAttrs[selCol].label}</span>
+                  </>
+                ) : (
+                  <span>Tap an empty cell to answer it.</span>
+                )}
               </div>
-              {suggestions.length > 0 && (
-                <div className="nc-dd">
-                  {suggestions.map((m, i) => {
-                    const used = usedNames.has(m.t);
-                    return (
-                      <button key={m.t} className={`${i === hot ? 'hot' : ''}${used ? ' used' : ''}`}
-                        onMouseEnter={() => setHot(i)}
-                        onClick={() => { if (!used) submitPick(m); }}>
-                        <span>{m.t}</span>
-                        {used ? <span className="nc-sub">used</span> : (U.id === 'movies' || U.id === 'tv') && m.y ? <span className="nc-sub">{m.y}</span> : null}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+              <div className="nc-field">
+                <label className="nc-box" style={{ border: `2px solid ${sel >= 0 ? `var(--stg-acc-ink, ${COLORS.accent})` : 'var(--stg-cell-line, rgba(28,30,36,0.25))'}` }}>
+                  <input
+                    ref={inputRef}
+                    className="nc-input"
+                    value={query}
+                    placeholder={sel >= 0
+                      ? `Type a guess for ${selRow + 1}${COL_KEYS[selCol]}`
+                      : 'Tap an empty cell first'}
+                    disabled={sel < 0}
+                    onChange={(e) => { setQuery(e.target.value); setHot(0); }}
+                    onKeyDown={onKey}
+                    autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
+                    aria-label="Type an answer"
+                  />
+                  {suggestions.length > 0 && <CornerDownLeft size={16} color="currentColor" style={{ color: FADED, flex: '0 0 auto' }} />}
+                </label>
+                {suggestions.length > 0 && (
+                  <div className="nc-dd">
+                    {suggestions.map((m, i) => {
+                      const used = usedNames.has(m.t);
+                      return (
+                        <button key={m.t} type="button" className={`${i === hot ? 'hot' : ''}${used ? ' used' : ''}`}
+                          onMouseEnter={() => setHot(i)}
+                          onClick={() => { if (!used) submitPick(m); }}>
+                          <span>{m.t}</span>
+                          {used ? <span className="nc-sub">used</span> : (U.id === 'movies' || U.id === 'tv') && m.y ? <span className="nc-sub">{m.y}</span> : null}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
-          {/* Controls sit INSIDE the card: on the navy stage a bare row of
-              faded text has nothing to sit on. */}
+          {/* The rarity key and End and score sit under the board. */}
           {started && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)', flexWrap: 'wrap' }}>
-              <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>
-                {sel >= 0 ? 'Suggestions only offer answers from the universe. Wrong fits still cost a guess.' : 'Tap an empty cell to answer it.'}
+            <div className="nc-foot">
+              <span className="nc-legend">
+                <span className="sq" aria-hidden="true" />
+                <span className="tl">After each pick you see what share of today&apos;s players chose it. {RARE_PCT}% or less is a rare find. Wrong fits still cost a guess.</span>
+                <span className="ts">Picks show their share of players. {RARE_PCT}% or less is a rare find.</span>
               </span>
               {filled + g.misses > 0 && (
-                <button onClick={() => { if (armEnd) { if (Date.now() - armEnd < ARM_MIN_MS) return; setArmEnd(false); endNow(); } else { setArmEnd(Date.now()); } }}
-                  style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armEnd ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                  <Eye size={13} /> {armEnd ? 'Tap again — ends the board and scores it' : 'End & score'}
+                <button type="button" className={`nc-end${armEnd ? ' armed' : ''}`}
+                  onClick={() => { if (armEnd) { if (Date.now() - armEnd < ARM_MIN_MS) return; setArmEnd(false); endNow(); } else { setArmEnd(Date.now()); } }}>
+                  <Eye size={15} /> {armEnd ? 'Tap again to end and score' : 'End and score'}
                 </button>
               )}
             </div>
@@ -824,7 +990,7 @@ export default function NicheClient({ puzzles = [], forceNum = null }) {
           {!playing && (
             <div style={{ margin: '0 auto' }}>
               {PUZZLE.sunday && (
-                <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '10px 0 0' }}>The Sunday Edition &mdash; sixteen cells on the Countries universe.</div>
+                <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '10px 0 0' }}>The Sunday Edition: sixteen cells on the Countries universe.</div>
               )}
               {isTodays && myStats.cur >= 2 && (
                 <div style={{ fontSize: 13, fontWeight: 800, margin: '12px 0 0', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -948,7 +1114,7 @@ export default function NicheClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens the day&apos;s grid, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens the day&apos;s grid, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>

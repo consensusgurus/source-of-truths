@@ -20,7 +20,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { RotateCcw, X, Lightbulb, Eye, Smartphone } from 'lucide-react';
+import { RotateCcw, X, Lightbulb, Smartphone } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -716,6 +716,25 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
   const numFs = N > 10 ? 'clamp(11px, 2.4vw, 17px)' : 'clamp(12px, 2.8vw, 19px)';
   const pct = (v) => `${(v / N) * 100}%`;
 
+  // The board's paints, stage tokens first with the Loft value as fallback.
+  const P_ACC = `var(--stg-acc, ${COLORS.accent})`;
+  const P_ACC_INK = `var(--stg-acc-ink, ${COLORS.accent})`;
+  const P_CELL = 'var(--stg-cell, #ffffff)';
+  const P_CELL_LINE = 'var(--stg-cell-line, rgba(28,30,36,0.3))';
+  const P_LINE3 = 'var(--stg-line3, rgba(28,30,36,0.55))';
+  const P_BAD = `var(--stg-bad, ${WRONG_EDGE})`;
+  const P_GOOD = `var(--stg-good, ${COLORS.green})`;
+  const P_TINT = 'var(--stg-tint-mix, 26%)';
+  // The key to the board, drawn twice: in the header on desktop, below the
+  // board on a phone (CSS shows one).
+  const legend = (cls) => (
+    <div className={cls}>
+      <span className="pl-key" style={{ color: 'var(--stg-ink2, #3f4652)' }}><span className="pl-sw" style={{ background: P_CELL, border: `1.5px solid ${P_CELL_LINE}` }} />Open land</span>
+      <span className="pl-key" style={{ color: 'var(--stg-ink2, #3f4652)' }}><span className="pl-sw" style={{ background: `color-mix(in srgb, ${P_ACC} ${P_TINT}, ${P_CELL})`, border: `2px solid ${P_ACC_INK}`, borderRadius: 2 }} />Claimed</span>
+      <span className="pl-key" style={{ color: 'var(--stg-ink2, #3f4652)' }}><span className="pl-sw" style={{ background: `${WRONG_HATCH(P_BAD)}, color-mix(in srgb, ${P_BAD} 18%, ${P_CELL})`, border: `2px solid ${P_BAD}`, borderRadius: 2 }} />Wrong place</span>
+    </div>
+  );
+
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
@@ -775,6 +794,60 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
           .pl-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           .pl-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
           .pl-num{position:absolute;display:flex;align-items:center;justify-content:center;font-family:${SANS};font-weight:800;pointer-events:none;line-height:1;}
+          .pl-numv{width:63%;height:63%;box-sizing:border-box;border-radius:50%;border:1.5px solid transparent;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums;font-size:${numFs};font-size:clamp(11px, calc(100cqw / ${N} * 0.4), 22px);}
+          .pl-board{max-width:562px;margin:0 auto;font-family:${SANS};}
+          .pl-head{display:flex;flex-direction:column;gap:6px;padding:0 0 10px 22px;}
+          .pl-headrow{display:flex;justify-content:space-between;align-items:center;gap:10px 14px;flex-wrap:wrap;}
+          .pl-plat,.pl-lab,.pl-pclaim{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;}
+          .pl-pclaim{display:none;font-variant-numeric:tabular-nums;}
+          .pl-pbar{display:none;height:8px;border-radius:4px;overflow:hidden;position:relative;box-sizing:border-box;}
+          .pl-pbar > span{position:absolute;left:0;top:0;bottom:0;}
+          .pl-pbar.pl-pbar-d{display:block;height:10px;border-radius:5px;}
+          .pl-legend{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;}
+          .pl-key{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;}
+          .pl-sw{width:16px;height:16px;box-sizing:border-box;flex:none;}
+          .pl-legend-p{display:none;grid-area:legend;}
+          .pl-frame{display:grid;grid-template-columns:22px 1fr;grid-template-rows:20px auto;}
+          .pl-cols{grid-column:2;grid-row:1;display:flex;}
+          .pl-rows{grid-column:1;grid-row:2;display:flex;flex-direction:column;}
+          .pl-cols > span,.pl-rows > span{flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;}
+          .pl-rows > span{justify-content:flex-start;}
+          .pl-grid{grid-column:2;grid-row:2;container-type:inline-size;--pl-po:-5px;--pl-pi:-7px;}
+          .pl-rail{position:absolute;inset:4px;border:1.5px dashed;border-radius:2px;opacity:.55;}
+          .pl-post{position:absolute;width:8px;height:8px;}
+          .pl-pin{position:absolute;width:13px;height:13px;border-radius:50%;}
+          .pl-dims{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);white-space:nowrap;font-size:12px;font-weight:800;border:1.5px solid;border-radius:6px;padding:3px 8px;font-variant-numeric:tabular-nums;z-index:2;}
+          .pl-lower{display:grid;grid-template-columns:190px 1fr 118px;grid-template-areas:"instr instr reveal" "land err tools";gap:12px 14px;margin-top:12px;align-items:stretch;}
+          .pl-instr{grid-area:instr;font-size:13px;font-weight:600;line-height:1.45;align-self:center;}
+          .pl-reveal{grid-area:reveal;justify-self:end;align-self:center;min-height:44px;background:none;border:0;padding:0 4px;cursor:pointer;font-family:${SANS};font-weight:700;font-size:12px;text-decoration:underline;text-underline-offset:3px;}
+          .pl-land{grid-area:land;display:flex;flex-direction:column;gap:6px;font-variant-numeric:tabular-nums;}
+          .pl-err{grid-area:err;border:1.5px solid;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;}
+          .pl-errtx{font-size:12.5px;font-weight:600;line-height:1.4;}
+          .pl-tools{grid-area:tools;display:flex;flex-direction:column;gap:8px;}
+          .pl-tool2{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;font-family:${SANS};font-weight:700;font-size:14px;background:transparent;border:1.5px solid;border-radius:12px;min-height:44px;padding:0 10px;}
+          @media(max-width:640px){
+            .pl-head{padding:0 8px 10px;}
+            .pl-legend-d{display:none;}
+            .pl-pclaim{display:inline;}
+            .pl-pbar{display:block;}
+            .pl-plat,.pl-lab,.pl-pclaim{font-size:10px;}
+            .pl-frame{grid-template-columns:16px 1fr;grid-template-rows:16px auto;}
+            .pl-cols > span,.pl-rows > span{font-size:10px;}
+            .pl-grid{--pl-po:-4px;--pl-pi:-6px;}
+            .pl-rail{inset:3px;border-width:1px;}
+            .pl-post{width:6px;height:6px;}
+            .pl-pin{width:10px;height:10px;}
+            .pl-dims{font-size:11px;padding:2px 6px;bottom:5px;}
+            .pl-dims-u{display:none;}
+            .pl-lower{grid-template-columns:1fr;grid-template-areas:"err" "instr" "legend" "tools" "reveal";gap:10px;padding:0 8px;}
+            .pl-land{display:none;}
+            .pl-legend-p{display:flex;}
+            .pl-instr{font-size:12px;}
+            .pl-reveal{justify-self:center;}
+            .pl-err-tail{display:none;}
+            .pl-tools{flex-direction:row;}
+            .pl-tool2{min-height:50px;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
@@ -830,83 +903,163 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
           </div>
           )}
 
-          <div style={{ maxWidth: 470, margin: '0 auto' }}>
+          <div className="pl-board">
+            {/* The survey header: which board, how many plots, and a key to the
+                three states a square can be in. On a phone the key moves below
+                the board and the claimed count takes its place up here. */}
+            <div className="pl-head">
+              <div className="pl-headrow">
+                <span className="pl-plat" style={{ color: P_ACC_INK }}>Survey No. {PUZZLE.num} &middot; {CLUES.length} plots</span>
+                <span className="pl-pclaim" style={{ color: FADED }}>Claimed <b style={{ color: INK, fontSize: 14, fontWeight: 800 }}>{claimed}</b>/{CELLS}</span>
+                {legend('pl-legend pl-legend-d')}
+              </div>
+              <div className="pl-pbar" style={{ background: P_CELL, border: `1px solid ${P_CELL_LINE}` }}>
+                <span style={{ width: `${(claimed / CELLS) * 100}%`, background: P_ACC }} />
+              </div>
+            </div>
+
+            <div className="pl-frame">
+              <div className="pl-cols" aria-hidden="true">
+                {Array.from({ length: N }).map((_, c) => <span key={c} style={{ color: FADED }}>{String.fromCharCode(65 + c)}</span>)}
+              </div>
+              <div className="pl-rows" aria-hidden="true">
+                {Array.from({ length: N }).map((_, r) => <span key={r} style={{ color: FADED }}>{r + 1}</span>)}
+              </div>
             <div
               ref={gridRef}
               onPointerDown={onGridDown}
               onPointerMove={onGridMove}
               onPointerUp={onGridUp}
-              style={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', touchAction: 'none', userSelect: 'none', cursor: playing ? 'crosshair' : 'default', background: STAGE ? SURF : T.white, border: `2px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.75)'}`, boxSizing: 'border-box' }}
+              className="pl-grid"
+              style={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', touchAction: 'none', userSelect: 'none', cursor: playing ? 'crosshair' : 'default', background: P_CELL, outline: `2px solid ${P_LINE3}`, boxSizing: 'border-box' }}
             >
-              {/* the empty grid */}
+              {/* the empty grid: survey lines, with a stake at every corner */}
               <div style={{ position: 'absolute', inset: 0, display: 'grid', gridTemplateColumns: `repeat(${N}, 1fr)`, gridTemplateRows: `repeat(${N}, 1fr)` }}>
                 {Array.from({ length: CELLS }).map((_, i) => (
-                  <div key={i} style={{ borderRight: (i % N) === N - 1 ? 'none' : `1px solid var(--stg-line, rgba(28,30,36,0.16))`, borderBottom: Math.floor(i / N) === N - 1 ? 'none' : `1px solid var(--stg-line, rgba(28,30,36,0.16))` }} />
+                  <div key={i} style={{ borderRight: (i % N) === N - 1 ? 'none' : `1px solid ${P_CELL_LINE}`, borderBottom: Math.floor(i / N) === N - 1 ? 'none' : `1px solid ${P_CELL_LINE}` }} />
                 ))}
               </div>
-              {/* claimed plots */}
+              <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: `radial-gradient(circle at 0 0, ${P_LINE3} 2.2px, transparent 2.7px)`, backgroundSize: `${100 / N}% ${100 / N}%` }} />
+              {/* claimed plots: fenced in the accent, with a rail inside the
+                  fence and a post at each corner. A misplaced one is red AND
+                  striped, never hue alone. */}
               {plots.map((p, i) => {
                 const bad = wrongSet.has(i);
-                const tint = TINT[p[4] % TINT.length];
+                const fence = bad ? P_BAD : P_ACC_INK;
                 return (
                   <div key={`p${i}`} className="pl-plot" style={{
-                    ...(STAGE ? regionStyle(plotHue(p[4])) : null),
-                    position: 'absolute', left: pct(p[1]), top: pct(p[0]), width: pct(p[2]), height: pct(p[3]),
-                    // Stage: the plot's ramp hue mixed into the cell, edged in the hue's ink.
-                    background: STAGE ? (bad ? `${WRONG_HATCH('color-mix(in srgb, var(--stg-bad) 55%, transparent)')}, color-mix(in srgb, var(--stg-bad) 30%, var(--stg-cell))` : regionMix(1)) : (bad ? `${WRONG_HATCH('rgba(163,58,58,0.28)')}, ${WRONG_BG}` : tint[0]),
-                    border: `2px solid ${STAGE ? (bad ? 'var(--stg-bad)' : REGION_INK) : (bad ? WRONG_EDGE : tint[1])}`,
-                    borderRadius: 4, boxSizing: 'border-box', pointerEvents: 'none',
-                  }} />
-                );
-              })}
-              {/* the numbers sit above the fills */}
-              {CLUES.map((cl, k) => {
-                const i = owner[cl[0] * N + cl[1]];
-                const bad = i >= 0 && wrongSet.has(i);
-                const col = i >= 0 ? (bad ? (STAGE ? 'var(--stg-bad)' : WRONG_EDGE) : (STAGE ? REGION_INK : TINT[plots[i][4] % TINT.length][1])) : `var(--stg-ink, ${COLORS.ink})`;
-                return (
-                  <div key={`c${k}`} className="pl-num" style={{ ...(STAGE && i >= 0 ? regionStyle(plotHue(plots[i][4])) : null), left: pct(cl[1]), top: pct(cl[0]), width: pct(1), height: pct(1), fontSize: numFs, color: col }}>{cl[2]}</div>
+                    position: 'absolute', left: `calc(${pct(p[1])} + 1px)`, top: `calc(${pct(p[0])} + 1px)`, width: `calc(${pct(p[2])} - 2px)`, height: `calc(${pct(p[3])} - 2px)`,
+                    background: bad
+                      ? `${WRONG_HATCH(`color-mix(in srgb, ${P_BAD} 55%, transparent)`)}, color-mix(in srgb, ${P_BAD} 18%, ${P_CELL})`
+                      : `color-mix(in srgb, ${P_ACC} ${P_TINT}, ${P_CELL})`,
+                    border: `2.5px solid ${fence}`,
+                    borderRadius: 3, boxSizing: 'border-box', pointerEvents: 'none',
+                  }}>
+                    {!bad && <span className="pl-rail" style={{ borderColor: fence }} />}
+                    <span className="pl-post" style={{ left: 'var(--pl-po)', top: 'var(--pl-po)', background: fence }} />
+                    <span className="pl-post" style={{ right: 'var(--pl-po)', top: 'var(--pl-po)', background: fence }} />
+                    <span className="pl-post" style={{ left: 'var(--pl-po)', bottom: 'var(--pl-po)', background: fence }} />
+                    <span className="pl-post" style={{ right: 'var(--pl-po)', bottom: 'var(--pl-po)', background: fence }} />
+                  </div>
                 );
               })}
               {/* the plot being dragged out */}
               {preview && (
                 <div style={{
                   position: 'absolute', left: pct(preview[1]), top: pct(preview[0]), width: pct(preview[2]), height: pct(preview[3]),
-                  border: `2px dashed ${drag && drag.off ? 'var(--stg-line2, rgba(28,30,36,0.3))' : previewOk ? `var(--stg-good, ${COLORS.green})` : 'var(--stg-line3, rgba(28,30,36,0.55))'}`,
-                  background: drag && drag.off ? 'transparent' : previewOk ? 'rgba(21,128,61,0.13)' : 'var(--stg-surf, rgba(28,30,36,0.07))',
+                  border: `2.5px dashed ${drag && drag.off ? P_CELL_LINE : previewOk ? P_GOOD : P_LINE3}`,
+                  background: drag && drag.off ? 'transparent' : previewOk ? `color-mix(in srgb, ${P_GOOD} 22%, ${P_CELL})` : 'var(--stg-surf2, rgba(28,30,36,0.07))',
                   opacity: drag && drag.off ? 0.4 : 1,
-                  borderRadius: 4, boxSizing: 'border-box', pointerEvents: 'none',
-                }} />
+                  borderRadius: 3, boxSizing: 'border-box', pointerEvents: 'none',
+                }}>
+                  {!(drag && drag.off) && (
+                    <>
+                      <span className="pl-pin" style={{ left: 'var(--pl-pi)', top: 'var(--pl-pi)', background: previewOk ? P_GOOD : P_LINE3 }} />
+                      <span className="pl-pin" style={{ right: 'var(--pl-pi)', bottom: 'var(--pl-pi)', background: previewOk ? P_GOOD : P_LINE3 }} />
+                      {areaOf(preview) > 1 && (
+                        <span className="pl-dims" style={{ color: previewOk ? P_GOOD : INK, background: P_CELL, borderColor: previewOk ? P_GOOD : P_LINE3 }}>
+                          {preview[2]} &times; {preview[3]} = {areaOf(preview)}<span className="pl-dims-u"> cells</span>
+                        </span>
+                      )}
+                    </>
+                  )}
+                </div>
               )}
+              {/* the numbers sit above the fills, each on its own survey marker */}
+              {CLUES.map((cl, k) => {
+                const i = owner[cl[0] * N + cl[1]];
+                const bad = i >= 0 && wrongSet.has(i);
+                const inPrev = previewOk && !(drag && drag.off) && inRect(preview, cl[0], cl[1]);
+                const ink = i >= 0 ? (bad ? P_BAD : P_ACC_INK) : inPrev ? P_GOOD : INK;
+                const ring = i >= 0 ? (bad ? P_BAD : 'transparent') : inPrev ? P_GOOD : P_LINE3;
+                const ground = i >= 0 ? (bad ? `color-mix(in srgb, ${P_BAD} 18%, ${P_CELL})` : 'transparent') : P_CELL;
+                return (
+                  <div key={`c${k}`} className="pl-num" style={{ left: pct(cl[1]), top: pct(cl[0]), width: pct(1), height: pct(1) }}>
+                    <span className="pl-numv" style={{ color: ink, borderColor: ring, background: ground }}>{cl[2]}</span>
+                  </div>
+                );
+              })}
+            </div>
             </div>
           </div>
 
-          {playing && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' }}>
-              <button className="pl-tool" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" style={{ opacity: canUndo ? 1 : 0.4, cursor: canUndo ? 'pointer' : 'default' }}>
-                <RotateCcw size={14} /> Undo
-              </button>
-              {hintOk && !g.hintUsed && (
-                <button className="pl-tool" onClick={useHint} title="Survey one plot for you (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(120,53,15,0.5)', color: ACC_INK }}>
-                  <Lightbulb size={14} /> Hint
+          {started && (
+            <div className="pl-lower">
+              <span className="pl-instr" style={{ color: FADED }}>
+                Drag corner to corner to claim a plot. Tap a plot to hand it back. Drag off the board to cancel.
+              </span>
+              {identity && (claimed > 0 || errors > 0) && (
+                <button className="pl-reveal" onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
+                  style={{ color: armReveal ? P_BAD : FADED }}>
+                  {armReveal ? 'Tap again to end the puzzle and show the map' : 'Reveal and end'}
                 </button>
               )}
+              <div className="pl-land">
+                <span className="pl-lab" style={{ color: FADED }}>Land claimed</span>
+                <span style={{ fontSize: 24, fontWeight: 800, color: INK }}>{claimed}<span style={{ fontSize: 14, color: FADED }}> / {CELLS} cells</span></span>
+                <div className="pl-pbar pl-pbar-d" style={{ background: P_CELL, border: `1px solid ${P_CELL_LINE}` }}>
+                  <span style={{ width: `${(claimed / CELLS) * 100}%`, background: P_ACC }} />
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 600, color: FADED }}>{plots.length} of {CLUES.length} plots claimed</span>
+              </div>
+              {(() => {
+                // The card names the most recent misplaced plot, which is already
+                // painted red on the board, so it tells the player nothing new
+                // about the answer, only where to look.
+                let last = -1;
+                wrongSet.forEach((i) => { if (i > last) last = i; });
+                const errWord = `${errors} error${errors === 1 ? '' : 's'}`;
+                if (last >= 0) {
+                  const p = plots[last];
+                  const at = (r, c) => `${String.fromCharCode(65 + c)}${r + 1}`;
+                  const span = areaOf(p) === 1 ? at(p[0], p[1]) : `${at(p[0], p[1])} to ${at(p[0] + p[3] - 1, p[1] + p[2] - 1)}`;
+                  return (
+                    <div className="pl-err" style={{ background: `color-mix(in srgb, ${P_BAD} 12%, ${P_CELL})`, borderColor: P_BAD }}>
+                      <span className="pl-lab" style={{ color: P_BAD }}>{errWord} &middot; {span}</span>
+                      <span className="pl-errtx" style={{ color: INK }}>That fits the number, but it is not where the plot goes. Tap it to hand it back.<span className="pl-err-tail"> Every two errors cost a point off 10.</span></span>
+                    </div>
+                  );
+                }
+                return (
+                  <div className="pl-err" style={{ background: 'var(--stg-surf, transparent)', borderColor: 'var(--stg-line2, rgba(28,30,36,0.2))' }}>
+                    <span className="pl-lab" style={{ color: FADED }}>{errors > 0 ? errWord : 'No errors yet'}</span>
+                    <span className="pl-errtx" style={{ color: 'var(--stg-ink2, #3f4652)' }}>A clean solve is a perfect 10. Every two errors cost a point.</span>
+                  </div>
+                );
+              })()}
+              {legend('pl-legend pl-legend-p')}
+              <div className="pl-tools">
+                <button className="pl-tool2" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" style={{ opacity: canUndo ? 1 : 0.4, cursor: canUndo ? 'pointer' : 'default', color: 'var(--stg-ink2, #3f4652)', borderColor: P_CELL_LINE }}>
+                  <RotateCcw size={15} /> Undo
+                </button>
+                {hintOk && !g.hintUsed && (
+                  <button className="pl-tool2" onClick={useHint} title="Survey one plot for you (one hint, first play only)" style={{ color: P_ACC_INK, borderColor: P_ACC_INK }}>
+                    <Lightbulb size={15} /> Hint
+                  </button>
+                )}
+              </div>
             </div>
           )}
-
-        {started && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--stg-line, rgba(28,30,36,0.10))', flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>
-              Drag corner to corner to claim a plot. Tap a plot to hand it back. Drag off the board to cancel.
-            </span>
-            {identity && (claimed > 0 || errors > 0) && (
-              <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-                style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <Eye size={13} /> {armReveal ? 'Tap again — ends the puzzle and shows the map' : 'Reveal & end'}
-              </button>
-            )}
-          </div>
-        )}
         </div>
         )}
 

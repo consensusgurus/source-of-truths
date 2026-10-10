@@ -77,6 +77,24 @@ const TOTAL = 12;
 
 // region bits: 1 = in the first circle, 2 = the second, 4 = the third
 const REGIONS = [1, 2, 4, 3, 5, 6, 7];
+// THE LARGE DIAGRAM (desktop), in a 664x610 box. `a` is the anchor: a region
+// grows away from its neighbours as its slot stack lengthens, so A + B grows
+// up out of the lens and C only grows down, and a four-word region never sits
+// on all three.
+const DZONE = {
+  1: { x: 149, y: 140, a: 'c' },
+  2: { x: 515, y: 140, a: 'c' },
+  4: { x: 332, y: 414, a: 't' },
+  3: { x: 332, y: 176, a: 'b' },
+  5: { x: 214, y: 327, a: 'c' },
+  6: { x: 450, y: 327, a: 'c' },
+  7: { x: 332, y: 240, a: 'c' },
+};
+// THE PHONE DIAGRAM, in a 358x330 box: one count button per region.
+const PZONE = {
+  1: { x: 71, y: 86 }, 2: { x: 287, y: 86 }, 4: { x: 179, y: 271 },
+  3: { x: 179, y: 71 }, 5: { x: 104, y: 193 }, 6: { x: 254, y: 193 }, 7: { x: 179, y: 143 },
+};
 // where each region's tray sits on the diagram, and what to call it
 const ZONE = {
   1: { x: 60,  y: 96,  label: 'A only' },
@@ -444,27 +462,90 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.vn-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .vn-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .vn-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .vn-chip{font-family:${SANS};font-weight:800;font-size:12.5px;letter-spacing:0.03em;border-radius:7px;padding:7px 10px;cursor:pointer;border: 1.5px solid var(--stg-line, rgba(28,30,36,0.2));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};}
-          .vn-chip:hover{border-color:var(--stg-acc, ${COLORS.accent});}
-          .vn-chip.held{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);border-color:var(--stg-acc, ${COLORS.accent});color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};}
-          .vn-zone{position:absolute;transform:translate(-50%,-50%);width:76px;min-height:34px;border-radius:8px;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.3));background:var(--stg-cell, rgba(255,255,255,0.92));display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:2px;padding:3px;cursor:pointer;z-index:1;}
-          .vn-zone:hover,.vn-zone:focus-within{z-index:6;}
-          .vn-zone.ready{border-style:solid;border-color:var(--stg-good, ${COLORS.green});background:${STAGE ? `color-mix(in srgb, var(--stg-good, ${COLORS.green}) 22%, var(--stg-cell, #1a1d28))` : COLORS.greenSoft};}
-          .vn-zone.over{border-color:var(--stg-bad, ${COLORS.rust});}
-          .vn-zone .n{font-family:${MONO};font-size:9px;font-weight:500;color:${FADED};text-align:center;}
-          .vn-zone .w{display:flex;align-items:center;gap:2px;width:100%;box-sizing:border-box;min-height:17px;padding:1px 2px 1px 3px;border: 1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:5px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};font-family:${SANS};font-size:8.5px;font-weight:800;letter-spacing:0.01em;color:${INK};line-height:1.2;cursor:pointer;}
-          .vn-zone .w:hover{border-color:var(--stg-acc, ${COLORS.accent});background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .vn-zone .w .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;}
-          .vn-zone .w .x{flex:0 0 auto;width:13px;height:13px;padding:0;display:flex;align-items:center;justify-content:center;border:none;border-radius:4px;background:var(--stg-surf2, rgba(28,30,36,0.08));color:${FADED};font-family:${SANS};font-size:11px;font-weight:800;line-height:1;cursor:pointer;}
-          .vn-zone .w .x:hover{background:${COLORS.rust};color:${T.white};}
-          /* A filed item gets about 48px of the 76px tray once the padding and
-             the send-back button are taken out, which is ~9 characters at
-             8.5px. Knowledge boards run longer names than the letter boards
-             ever did (ARGENTINA, TENNESSEE, EISENHOWER), so a board whose
-             longest item passes 8 characters drops a step in size rather than
-             ellipsising a name the player then cannot read back. */
-          .vn-zone.tight .w{font-size:7.8px;letter-spacing:-0.005em;}
-          .vn-zone.tight .w .x{width:12px;height:12px;font-size:10px;}
+          /* ROUND THREE BOARD (2026-10-10). Desktop: three rule cards, a large
+             diagram whose regions hold one 44px slot per counted word, then the
+             tray. Phone (640px and under): the rules stack, the diagram shrinks
+             to count badges and pips, and every word lives in one roster that
+             says where it is filed. Slots, pips and roster cards are drop
+             zones, so they take --stg-cell / --stg-cell-line (CLAUDE.md, A DROP
+             ZONE IS A CELL); full and over-full signal with the border. */
+          .vn-cap{font-family:${SANS};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:${FADED};}
+          .vn-cap b{color:${INK};font-weight:800;letter-spacing:0;}
+          .vn-rules{display:flex;gap:8px;margin:0 0 10px;}
+          .vn-rule{flex:1;min-width:0;display:flex;align-items:center;gap:9px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border-radius:12px;padding:8px 12px;font-family:${SANS};font-size:14px;font-weight:800;color:${INK};line-height:1.25;}
+          .vn-rule .k{width:24px;height:24px;border-radius:12px;box-sizing:border-box;border:2.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex:none;}
+          .vn-meta{display:flex;justify-content:space-between;align-items:baseline;gap:6px 14px;flex-wrap:wrap;margin:0 0 6px;}
+          .vn-note{font-family:${SANS};font-size:13px;font-weight:700;color:var(--stg-ink2, ${COLORS.faded});}
+          .vn-dia{position:relative;width:100%;max-width:664px;aspect-ratio:664/610;margin:6px auto 0;}
+          .vn-dia svg{position:absolute;inset:0;width:100%;height:100%;}
+          .vn-z{position:absolute;width:108px;display:flex;flex-direction:column;gap:4px;z-index:1;}
+          .vn-z:hover,.vn-z:focus-within{z-index:6;}
+          .vn-z .bdg{position:absolute;top:-11px;right:-12px;z-index:2;min-width:30px;height:22px;box-sizing:border-box;border-radius:11px;padding:0 7px;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));background:var(--stg-cell, #fff);color:${INK};display:flex;align-items:center;justify-content:center;font-family:${SANS};font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;}
+          .vn-z.ready .bdg{border-color:var(--stg-good, ${COLORS.green});background:var(--stg-good, ${COLORS.green});color:var(--stg-ground, #fff);}
+          .vn-z.over .bdg{border-color:var(--stg-bad, ${COLORS.rust});color:var(--stg-bad, ${COLORS.rust});}
+          .vn-slot{display:flex;height:44px;box-sizing:border-box;border-radius:10px;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));background:var(--stg-cell, #fff);overflow:hidden;}
+          .vn-z.ready .vn-slot{border-color:var(--stg-good, ${COLORS.green});}
+          .vn-z.over .vn-slot{border-color:var(--stg-bad, ${COLORS.rust});}
+          .vn-slot .t{flex:1;min-width:0;border:0;background:transparent;color:inherit;font-family:${SANS};font-size:12.5px;font-weight:800;letter-spacing:.01em;text-align:left;padding:0 0 0 9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;}
+          .vn-slot .x{width:28px;flex:none;border:0;background:transparent;color:${FADED};font-family:${SANS};font-size:17px;font-weight:700;padding:0;cursor:pointer;}
+          .vn-slot .x:hover{color:var(--stg-bad, ${COLORS.rust});}
+          .vn-slot:hover{border-color:var(--stg-acc-ink, ${COLORS.accent});}
+          .vn-open{height:44px;box-sizing:border-box;border-radius:10px;border:2px dashed var(--stg-cell-line, rgba(28,30,36,0.4));background:var(--stg-cell, #fff);color:${FADED};font-family:${SANS};font-size:12px;font-weight:800;padding:0;cursor:default;}
+          .vn-armed .vn-open{border-color:var(--stg-acc-ink, ${COLORS.accent});color:var(--stg-acc-ink, ${COLORS.accent});cursor:pointer;}
+          /* Knowledge boards run nine-letter names (ARGENTINA, TENNESSEE), so a
+             board whose longest item passes 8 characters drops a step in size
+             rather than ellipsising a name the player then cannot read back. */
+          .vn-tight .vn-slot .t{font-size:11px;letter-spacing:0;}
+          .vn-tray{display:flex;flex-wrap:wrap;gap:8px;min-height:44px;}
+          .vn-chip{min-height:44px;box-sizing:border-box;border-radius:10px;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};font-family:${SANS};font-size:14px;font-weight:800;letter-spacing:.02em;padding:0 14px;cursor:pointer;}
+          .vn-chip:hover{border-color:var(--stg-acc-ink, ${COLORS.accent});}
+          .vn-chip.held{border:2px solid var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);}
+          .vn-pdia,.vn-roster,.vn-ph-only{display:none;}
+          .vn-pdia{position:relative;width:100%;max-width:358px;aspect-ratio:358/330;margin:8px auto 0;}
+          .vn-pdia svg{position:absolute;inset:0;width:100%;height:100%;}
+          .vn-pz{position:absolute;transform:translate(-50%,-50%);min-width:56px;min-height:48px;box-sizing:border-box;border-radius:12px;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.4));background:color-mix(in srgb, var(--stg-cell, #fff) 55%, transparent);padding:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-family:${SANS};cursor:pointer;z-index:1;}
+          .vn-armed .vn-pz{border-color:var(--stg-acc-ink, ${COLORS.accent});}
+          .vn-pz.ready{border-style:solid;border-color:var(--stg-good, ${COLORS.green});}
+          .vn-pz.over{border-style:solid;border-color:var(--stg-bad, ${COLORS.rust});}
+          .vn-pz .bdg{font-size:11px;font-weight:800;border-radius:7px;padding:0 5px;line-height:14px;color:${INK};font-variant-numeric:tabular-nums;}
+          .vn-pz.ready .bdg{background:var(--stg-good, ${COLORS.green});color:var(--stg-ground, #fff);}
+          .vn-pz.over .bdg{color:var(--stg-bad, ${COLORS.rust});}
+          .vn-pips{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;max-width:44px;}
+          .vn-pip{width:20px;height:20px;box-sizing:border-box;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:800;letter-spacing:0;color:var(--stg-ground, #fff);background:${INK};}
+          .vn-pip.open{background:transparent;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.4));}
+          .vn-roster{grid-template-columns:repeat(auto-fill, minmax(104px, 1fr));gap:6px;}
+          .vn-rc{height:44px;box-sizing:border-box;border-radius:10px;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};display:flex;overflow:hidden;min-width:0;}
+          .vn-rc.filed{border-style:dashed;background:transparent;}
+          .vn-rc.held{border:2px solid var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);}
+          .vn-rc .t{flex:1;min-width:0;border:0;background:transparent;padding:0 0 0 9px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;font-family:${SANS};cursor:pointer;text-align:left;}
+          .vn-rc .t:disabled{cursor:default;}
+          .vn-rc .w{font-size:13px;font-weight:800;letter-spacing:.01em;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+          .vn-tight .vn-rc .w{font-size:12px;letter-spacing:0;}
+          .vn-rc .g{font-size:10px;font-weight:700;color:${FADED};white-space:nowrap;}
+          .vn-rc.held .g{color:var(--stg-acc-ink, ${COLORS.accent});}
+          .vn-rc .x{width:30px;flex:none;border:0;background:transparent;color:${FADED};font-family:${SANS};font-size:17px;font-weight:700;padding:0;cursor:pointer;}
+          .vn-foot{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0 6px;}
+          .vn-ob{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2, ${COLORS.ink});border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));border-radius:12px;padding:0 16px;min-height:46px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
+          .vn-ob:disabled{color:${FADED};cursor:default;}
+          .vn-fnote{flex:1;min-width:150px;text-align:right;font-family:${SANS};font-size:12px;font-weight:600;color:${FADED};line-height:1.4;}
+          .vn-file{font-family:${SANS};font-weight:800;font-size:15px;border-radius:12px;padding:0 18px;min-height:46px;display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);border:1.5px solid var(--stg-acc, ${COLORS.accent});}
+          .vn-file:disabled{background:transparent;color:${FADED};border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.4));cursor:not-allowed;}
+          @media(max-width:640px){
+            .vn-rules{flex-direction:column;gap:5px;margin-bottom:6px;}
+            .vn-rule{background:transparent;padding:0;gap:8px;}
+            .vn-rule .k{width:20px;height:20px;border-radius:10px;font-size:10px;}
+            .vn-cap{font-size:10px;}
+            .vn-note{font-size:12px;color:${FADED};}
+            .vn-dia,.vn-tray,.vn-fnote,.vn-meta .vn-cap{display:none;}
+            .vn-pdia{display:block;}
+            .vn-ph-only{display:inline;}
+            .vn-dt-only{display:none;}
+            .vn-roster{display:grid;}
+            .vn-foot{flex-wrap:nowrap;gap:8px;}
+            .vn-file{flex:1;font-size:14px;min-height:48px;padding:0 10px;}
+            .vn-ob{min-height:48px;padding:0 14px;}
+            ${LOFT ? '.vn-foot .vn-help{display:none;}' : ''}
+          }
         ` }} />
 
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
@@ -510,78 +591,153 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
 
-        {!preStart && (
+        {!preStart && (() => {
+          // One record per region, shared by the large diagram and the phone one.
+          const regionInfo = (r) => {
+            const words = PUZZLE.items.map((w, i) => ({ w, i })).filter(({ i }) => placeShown[i] === r);
+            const hid = hiddenSet.has(r);
+            const need = hid && (playing || hideSol) ? '?' : COUNTS[r];
+            const ready = !hid && words.length === COUNTS[r];
+            const over = !hid && words.length > COUNTS[r];
+            // Open slots while playing: one per word still owed. A withheld
+            // count always offers exactly one, so the slots never print it.
+            const open = !playing ? 0 : (hid ? 1 : Math.max(0, COUNTS[r] - words.length));
+            return { words, need, ready, over, open };
+          };
+          const wordInk = (i) => (!playing ? (TRUTH[i] === placeShown[i] ? `var(--stg-good, ${COLORS.green})` : `var(--stg-bad, ${COLORS.rust})`) : INK);
+          const tag = (r) => (r === 7 ? 'All three' : ZONE[r].label);
+          const heldName = held != null ? PUZZLE.items[held] : null;
+          const circles = (cA, cB, cC, rr, sw) => (
+            <>
+              <circle cx={cA[0]} cy={cA[1]} r={rr} fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeWidth={sw} style={{ color: COLORS.cA }} />
+              <circle cx={cB[0]} cy={cB[1]} r={rr} fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeWidth={sw} style={{ color: COLORS.cB }} />
+              <circle cx={cC[0]} cy={cC[1]} r={rr} fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeWidth={sw} style={{ color: COLORS.cC }} />
+            </>
+          );
+          return (
           <>
-            <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED }}>
-              <span>filed <b style={{ color: INK, fontWeight: 500 }}>{placedCount}</b> of {N}</span>
-              <span>counts <b style={{ color: countsMatch ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{countsMatch ? 'match' : 'off'}</b></span>
-              <span>on the board <b style={{ color: g.rejected ? `var(--stg-bad, ${COLORS.rust})` : COLORS.green, fontWeight: 500 }}>{liveScore}</b>/{TOTAL}</span>
-            </div>
-
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: factNote ? 6 : 10 }}>
+            <div className="vn-rules">
               {PUZZLE.rules.map((r, i) => (
-                <span key={i} style={{ fontFamily: SANS, fontSize: 12.5, fontWeight: 800, borderRadius: 7, padding: '6px 10px', background: STAGE ? SURF : T.white, border: `2px solid ${circleColor[i]}`, color: circleColor[i] }}>
-                  {String.fromCharCode(65 + i)}: {ruleLabel(r, PUZZLE.domain)}
+                <span key={i} className="vn-rule">
+                  <span className="k" style={{ color: circleColor[i] }}>{String.fromCharCode(65 + i)}</span>
+                  <span>{ruleLabel(r, PUZZLE.domain)}</span>
                 </span>
               ))}
             </div>
-            {factNote && (
-              <div style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED, marginBottom: 10 }}>{factNote}</div>
-            )}
 
-            <div style={{ position: 'relative', width: 320, height: 300, margin: '0 auto 12px' }}>
-              <svg viewBox="0 0 320 300" width="320" height="300" style={{ position: 'absolute', inset: 0 }}>
-                <circle cx="112" cy="118" r="92" fill={COLORS.cA} fillOpacity="0.08" stroke={COLORS.cA} strokeWidth="2" />
-                <circle cx="208" cy="118" r="92" fill={COLORS.cB} fillOpacity="0.08" stroke={COLORS.cB} strokeWidth="2" />
-                <circle cx="160" cy="196" r="92" fill={COLORS.cC} fillOpacity="0.08" stroke={COLORS.cC} strokeWidth="2" />
-                <text x="40" y="44" fill={COLORS.cA} fontSize="15" fontWeight="800" fontFamily="Manrope">A</text>
-                <text x="272" y="44" fill={COLORS.cB} fontSize="15" fontWeight="800" fontFamily="Manrope">B</text>
-                <text x="160" y="290" fill={COLORS.cC} fontSize="15" fontWeight="800" fontFamily="Manrope">C</text>
+            <div className="vn-meta">
+              <span className="vn-note">{factNote}</span>
+              <span className="vn-cap">
+                Filed <b>{placedCount}</b> of {N} &middot; counts <b style={countsMatch ? { color: `var(--stg-good, ${COLORS.green})` } : undefined}>{countsMatch ? 'match' : 'off'}</b>
+                {!LOFT && <> &middot; on the board <b style={{ color: g.rejected ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-good, ${COLORS.green})` }}>{liveScore}</b>/{TOTAL}</>}
+              </span>
+            </div>
+
+            {/* THE LARGE DIAGRAM (over 640px) */}
+            <div className={`vn-dia${held != null ? ' vn-armed' : ''}${tightItems ? ' vn-tight' : ''}`}>
+              <svg viewBox="0 0 664 610" aria-hidden="true">
+                {circles([229, 194], [435, 194], [332, 372], 192, 2.5)}
+                <text x="22" y="34" fill="currentColor" style={{ color: COLORS.cA }} fontSize="24" fontWeight="800" fontFamily="Manrope, sans-serif">A</text>
+                <text x="626" y="34" fill="currentColor" style={{ color: COLORS.cB }} fontSize="24" fontWeight="800" fontFamily="Manrope, sans-serif">B</text>
+                <text x="96" y="548" fill="currentColor" style={{ color: COLORS.cC }} fontSize="24" fontWeight="800" fontFamily="Manrope, sans-serif">C</text>
               </svg>
               {REGIONS.map((r) => {
-                const words = PUZZLE.items.map((w, i) => ({ w, i })).filter(({ i }) => placeShown[i] === r);
-                const need = hiddenSet.has(r) && (playing || hideSol) ? '?' : COUNTS[r];
-                const ready = !hiddenSet.has(r) && words.length === COUNTS[r];
-                const over = !hiddenSet.has(r) && words.length > COUNTS[r];
+                const { words, need, ready, over, open } = regionInfo(r);
+                const z = DZONE[r];
+                const tf = z.a === 't' ? 'translate(-50%,0)' : (z.a === 'b' ? 'translate(-50%,-100%)' : 'translate(-50%,-50%)');
                 return (
-                  <div key={r} className={`vn-zone${ready ? ' ready' : ''}${over ? ' over' : ''}${tightItems ? ' tight' : ''}`} style={{ left: ZONE[r].x, top: ZONE[r].y }} onClick={() => dropInto(r)} title={ZONE[r].label}>
-                    <span className="n">{words.length}/{need}</span>
+                  <div key={r} className={`vn-z${ready ? ' ready' : ''}${over ? ' over' : ''}`} style={{ left: `${(z.x / 664) * 100}%`, top: `${(z.y / 610) * 100}%`, transform: tf, cursor: held != null ? 'pointer' : undefined }} onClick={() => dropInto(r)} title={ZONE[r].label}>
+                    <span className="bdg" aria-label={`${ZONE[r].label}: ${words.length} of ${need} filed`}>{words.length}/{need}</span>
                     {words.map(({ w, i }) => (
-                      <span key={w} className="w" title={playing ? 'Tap to pick this word back up' : undefined} onClick={(e) => { if (held != null) { dropInto(r); e.stopPropagation(); return; } e.stopPropagation(); liftFrom(i); }} style={{ color: !playing ? (TRUTH[i] === placeShown[i] ? COLORS.green : `var(--stg-bad, ${COLORS.rust})`) : `var(--stg-ink, ${COLORS.ink})` }}>
-                        <span className="t">{w}</span>
+                      <div key={w} className="vn-slot" style={{ color: wordInk(i) }}>
+                        <button type="button" className="t" title={playing ? 'Tap to pick this word back up' : undefined} onClick={(e) => { e.stopPropagation(); if (held != null) { dropInto(r); return; } liftFrom(i); }}>{w}</button>
                         {playing && (
                           <button type="button" className="x" aria-label={`Send ${w} back to the tray`} title="Back to the tray" onClick={(e) => { e.stopPropagation(); unfile(i); }}>&times;</button>
                         )}
-                      </span>
+                      </div>
+                    ))}
+                    {Array.from({ length: open }).map((_, k) => (
+                      <button key={`o${k}`} type="button" className="vn-open" aria-label={held != null ? `File ${heldName} in ${ZONE[r].label}` : `Open slot in ${ZONE[r].label}`} onClick={(e) => { e.stopPropagation(); dropInto(r); }}>{held != null ? 'file here' : ''}</button>
                     ))}
                   </div>
                 );
               })}
             </div>
 
-            {playing && (
-              <>
-                <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED, marginBottom: 7 }}>{held == null ? 'The tray' : 'Now tap a region'}</div>
-                <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', minHeight: 34, marginBottom: 10 }}>
-                  {trayItems.map(({ w, i }) => (
-                    <button key={w} type="button" className={`vn-chip${held === i ? ' held' : ''}`} onClick={() => liftFrom(i)}>{w}</button>
-                  ))}
-                  {!trayItems.length && <span style={{ fontSize: 12.5, fontWeight: 700, color: FADED }}>Tray empty. Check your counts, then file the sheet.</span>}
-                </div>
-              </>
-            )}
-          </>
-        )}
+            {/* THE PHONE DIAGRAM (640px and under): count buttons with pips */}
+            <div className={`vn-pdia${held != null ? ' vn-armed' : ''}`}>
+              <svg viewBox="0 0 358 330" aria-hidden="true">
+                {circles([123, 116], [235, 116], [179, 213], 114, 2.5)}
+                <text x="4" y="20" fill="currentColor" style={{ color: COLORS.cA }} fontSize="18" fontWeight="800" fontFamily="Manrope, sans-serif">A</text>
+                <text x="341" y="20" fill="currentColor" style={{ color: COLORS.cB }} fontSize="18" fontWeight="800" fontFamily="Manrope, sans-serif">B</text>
+                <text x="44" y="318" fill="currentColor" style={{ color: COLORS.cC }} fontSize="18" fontWeight="800" fontFamily="Manrope, sans-serif">C</text>
+              </svg>
+              {REGIONS.map((r) => {
+                const { words, need, ready, over, open } = regionInfo(r);
+                const z = PZONE[r];
+                return (
+                  <button key={r} type="button" className={`vn-pz${ready ? ' ready' : ''}${over ? ' over' : ''}`} style={{ left: `${(z.x / 358) * 100}%`, top: `${(z.y / 330) * 100}%` }} onClick={() => dropInto(r)}
+                    aria-label={`${ZONE[r].label}, ${words.length} of ${need} filed${words.length ? `: ${words.map((x) => x.w).join(', ')}` : ''}.${held != null ? ` Tap to file ${heldName} here.` : ''}`}>
+                    <span className="bdg">{words.length}/{need}</span>
+                    <span className="vn-pips">
+                      {words.map(({ w, i }) => (
+                        <span key={w} className="vn-pip" style={!playing ? { background: wordInk(i) } : undefined}>{w.slice(0, 2)}</span>
+                      ))}
+                      {Array.from({ length: open }).map((_, k) => <span key={`o${k}`} className="vn-pip open" />)}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
 
-        {verdict && <div style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: COLORS.rust, margin: '4px 0 8px', lineHeight: 1.45 }}>{verdict.msg}</div>}
+            {playing && (
+              <div className="vn-cap" style={{ margin: '10px 0 7px' }}>
+                <span className="vn-dt-only">The tray</span>
+                <span className="vn-ph-only">Filed <b>{placedCount}</b> of {N} &middot; counts <b style={countsMatch ? { color: `var(--stg-good, ${COLORS.green})` } : undefined}>{countsMatch ? 'match' : 'off'}</b></span>
+                {held != null && <> &middot; <span style={{ color: `var(--stg-acc-ink, ${COLORS.accent})` }}>Holding {heldName}, now tap a region</span></>}
+              </div>
+            )}
+            {playing && (
+              <div className="vn-tray">
+                {trayItems.map(({ w, i }) => (
+                  <button key={w} type="button" className={`vn-chip${held === i ? ' held' : ''}`} onClick={() => liftFrom(i)}>{w}</button>
+                ))}
+                {!trayItems.length && <span style={{ fontSize: 12.5, fontWeight: 700, color: FADED, alignSelf: 'center' }}>Tray empty. Check your counts, then file the sheet.</span>}
+              </div>
+            )}
+            {/* THE PHONE ROSTER: every word, saying where it is. */}
+            <div className={`vn-roster${tightItems ? ' vn-tight' : ''}`} style={!playing ? { marginTop: 12 } : undefined}>
+              {PUZZLE.items.map((w, i) => {
+                const at = placeShown[i];
+                const isHeld = playing && held === i;
+                return (
+                  <div key={w} className={`vn-rc${isHeld ? ' held' : (at ? ' filed' : '')}`}>
+                    <button type="button" className="t" disabled={!playing} title={playing ? (at ? 'Tap to pick this word back up' : 'Tap to pick up') : undefined} onClick={() => liftFrom(i)}>
+                      <span className="w" style={{ color: !playing ? wordInk(i) : (at ? `var(--stg-ink2, ${COLORS.ink})` : INK) }}>{w}</span>
+                      <span className="g">{isHeld ? 'Holding' : (at ? tag(at) : 'In the tray')}</span>
+                    </button>
+                    {playing && at ? (
+                      <button type="button" className="x" aria-label={`Send ${w} back to the tray`} title="Back to the tray" onClick={() => unfile(i)}>&times;</button>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </>
+          );
+        })()}
+
+        {verdict && <div style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: `var(--stg-bad, ${COLORS.rust})`, margin: '10px 0 0', lineHeight: 1.45 }}>{verdict.msg}</div>}
 
         {started && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '6px 0' }}>
-            <button type="button" className="vn-btn" onClick={submit} disabled={!canSubmit} style={canSubmit ? { background: `var(--stg-acc, ${COLORS.accent})`, borderColor: COLORS.accent, color: `var(--stg-onramp, ${T.white})` } : { opacity: 0.45, cursor: 'not-allowed' }}>
-              <Circle size={14} /> File the sheet
+          <div className="vn-foot">
+            <button type="button" className="vn-ob vn-help" onClick={() => setShowHelp(true)}><HelpCircle size={15} /> How to play</button>
+            <button type="button" className="vn-ob" onClick={clearAll} disabled={placedCount === 0}><Eraser size={14} /> Clear all</button>
+            <span className="vn-fnote">12 points, 3 off for each<br />sheet that comes back wrong.</span>
+            {g.rejected >= 2 && <button type="button" className="vn-ob" onClick={reveal}>Reveal (ends the day)</button>}
+            <button type="button" className="vn-file" onClick={submit} disabled={!canSubmit}>
+              <Circle size={14} /> File the sheet{!canSubmit && <> &middot; {placedCount < N ? 'tray first' : 'counts first'}</>}
             </button>
-            {placedCount > 0 && <button type="button" className="vn-btn" onClick={clearAll}><Eraser size={14} /> Clear all</button>}
-            {g.rejected >= 2 && <button type="button" className="vn-btn" style={{ borderColor: '#c3c8cf', color: FADED }} onClick={reveal}>Reveal (ends the day)</button>}
           </div>
         )}
 

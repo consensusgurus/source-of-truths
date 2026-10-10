@@ -85,6 +85,19 @@ const COLORS = {
   green: T.successDeep,
   tile: '#f7edda',
 };
+// Tuck's tiles are ivory pieces, a physical object, so they keep these fixed
+// values on both stage registers. The edge carries the 3:1 boundary on either
+// ground; letters, points, the crossing dot and the bad-word red all clear 4.5:1
+// on the face.
+const TILE = {
+  face: '#e6dcc8',
+  edge: '#9c8a66',
+  ink: '#1a1408',
+  pts: '#5c4a26',
+  dot: '#1a64a8',
+  badFace: '#f6dcd6',
+  bad: '#a31d12',
+};
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_tuck_help_seen';
@@ -649,7 +662,7 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
   function copyShare() {
     const streakBit = isTodays && myStats.cur >= 2 && g.status !== 'playing' ? ` · streak ${myStats.cur}` : '';
     const text = playing
-      ? `Tuck #${PUZZLE.num} — tuck ${RACK} letters into one grid. The benchmark is ${BENCH}.\n${withRef(`mindloftdaily.com/tuck${isTodays ? '' : `?p=${PUZZLE.num}`}`)}`
+      ? `Tuck #${PUZZLE.num}: tuck ${RACK} letters into one grid. The benchmark is ${BENCH}.\n${withRef(`mindloftdaily.com/tuck${isTodays ? '' : `?p=${PUZZLE.num}`}`)}`
       : `Tuck #${PUZZLE.num} · ${finalScore} pts (benchmark ${BENCH})${finalScore >= BENCH ? ' · beat the benchmark' : ''}${streakBit}\n${shareArt()}${withRef(`mindloftdaily.com/tuck${isTodays ? '' : `?p=${PUZZLE.num}`}`)}`;
     if (notifyShareCredit(text)) return;
     try {
@@ -682,13 +695,38 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
   const statusLine = (() => {
     if (erase && placedCount > 0) return { msg: 'Take-back mode: tap any tile to send it back to your rack.', cls: 'muted' };
     if (!dict && !dictErr) return { msg: 'Loading the dictionary…', cls: 'muted' };
-    if (dictErr) return { msg: 'Could not load the dictionary — refresh to try again.', cls: 'bad' };
+    if (dictErr) return { msg: 'Could not load the dictionary. Refresh to try again.', cls: 'bad' };
     if (placedCount === 0) return { msg: 'Tap a square (or a rack tile), then type. Space flips direction ➜ / ⬇', cls: 'muted' };
     if (!allValid) return { msg: 'Red runs aren’t words yet', cls: 'bad' };
     if (stray || loneTiles > 0) return { msg: 'Single letters need to join a word', cls: 'bad' };
     if (!connected) return { msg: 'Valid words, but everything must connect into one grid', cls: 'bad' };
-    if (placedCount === RACK) return { msg: `Perfect tuck! All ${RACK} letters placed — rebuild for more, or submit.`, cls: 'good' };
-    return { msg: 'Valid grid! Keep tucking letters in…', cls: 'good' };
+    if (placedCount === RACK) return { msg: `Perfect tuck! All ${RACK} letters placed. Rebuild for more, or submit.`, cls: 'good' };
+    return { msg: 'Valid grid! Keep tucking letters in.', cls: 'good' };
+  })();
+
+  // Board readouts. Every one is derived from the grid already on screen.
+  const shownScore = playing ? liveScore : finalScore;
+  const meterMax = Math.max(1, Math.round(BENCH * 1.25));
+  const pctOf = (v) => Math.max(0, Math.min(100, (v / meterMax) * 100));
+  const bonusOpen = playing && placedCount < RACK;
+  const runDir = (x) => (x.cells.length > 1 && x.cells[0][0] === x.cells[1][0] ? 'Across' : 'Down');
+  const runPts = (x) => [...x.word].reduce((n, ch) => n + (PTS[ch] || 0), 0);
+  const crossCells = (() => {
+    const across = new Set(), down = new Set(), both = new Set();
+    for (const x of runs) {
+      const into = runDir(x) === 'Across' ? across : down;
+      x.cells.forEach(([r, c]) => into.add(`${r},${c}`));
+    }
+    for (const k of across) if (down.has(k)) both.add(k);
+    return both;
+  })();
+  const crossNote = (() => {
+    const ls = [...crossCells].map((k) => { const [r, c] = k.split(',').map(Number); return grid[r][c]; }).filter(Boolean);
+    if (!ls.length) return '';
+    if (ls.length > 4) return 'Each of those letters is counted twice.';
+    const named = ls.map((l) => `the ${l}`);
+    const list = named.length === 1 ? named[0] : `${named.slice(0, -1).join(', ')} and ${named[named.length - 1]}`;
+    return `${list.charAt(0).toUpperCase()}${list.slice(1)} ${ls.length === 1 ? 'is' : 'are'} counted twice.`;
   })();
 
   // Shared rules body — rendered in both the how-to-play modal and the start gate.
@@ -747,23 +785,82 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
           .tk-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
           .tk-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, #7c3609) 86%, var(--stg-ink, var(--white)));}
           .tk-btn:disabled{opacity:0.45;cursor:default;}
-          .tk-grid{display:grid;grid-template-columns:repeat(${SIZE},1fr);gap:3px;background:var(--stg-cell-line, #dfd8cb);border:2px solid var(--stg-cell-line, ${COLORS.ink});border-radius:10px;padding:6px;max-width:432px;width:100%;box-shadow:5px 5px 0 rgba(28,30,36,0.16);}
-          .tk-cell{position:relative;aspect-ratio:1;background:${STAGE ? 'var(--stg-cell)' : '#fbf9f4'};border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:clamp(14px,3.4vw,21px);color:${INK};cursor:pointer;user-select:none;border:1px solid var(--stg-cell-line, rgba(28,30,36,0.08));}
-          .tk-cell.filled{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 22%, var(--stg-cell))' : COLORS.tile};border-color:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 35%, transparent);box-shadow:inset 0 -2px 0 color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 18%, transparent);}
-          .tk-cell.badword{background:${STAGE ? 'var(--stg-surf2)' : '#fbe3e0'};border-color:rgba(192,57,43,0.5);color:${COLORS.rust};}
-          .tk-cell.sel{outline:2.5px solid var(--stg-acc, ${COLORS.accent});outline-offset:-1px;z-index:1;}
-          .tk-dir{position:absolute;right:2px;bottom:1px;font-size:9px;color:var(--stg-acc-ink, ${COLORS.accent});}
-          .tk-tray{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0 4px;}
-          .tk-tile{position:relative;width:40px;height:44px;background:${STAGE ? 'var(--stg-surf2)' : COLORS.tile};border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(146,64,14,0.45)'};border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:19px;color:${INK};cursor:pointer;user-select:none;box-shadow:0 2px 0 color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 25%, transparent);}
-          .tk-tile .pts{position:absolute;right:3px;bottom:1px;font-size:9px;font-weight:800;color:var(--stg-acc-ink, ${COLORS.accent});}
-          .tk-tile.used{opacity:0.28;box-shadow:none;}
-          .tk-tile.armed{outline:2.5px solid var(--stg-acc, ${COLORS.accent});outline-offset:1px;}
-          .tk-wtag{display:inline-flex;align-items:center;font-family:${MONO};font-size:11.5px;font-weight:500;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.16));border-radius:6px;padding:2px 7px;margin:0 5px 5px 0;color:${INK};}
-          .tk-wtag.invalid{color:${COLORS.rust};border-color:rgba(192,57,43,0.4);}
-          .tk-status{font-size:12.5px;font-weight:700;min-height:18px;}
-          .tk-status.bad{color:${COLORS.rust};}
-          .tk-status.good{color:${COLORS.green};}
+          .tk-btn.big{min-height:48px;border-radius:12px;border-width:1.5px;padding:0 16px;font-size:14px;font-weight:700;justify-content:center;}
+          .tk-btn.big.primary{font-weight:800;font-size:15px;padding:0 22px;}
+          .tk-lab{font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:${FADED};}
+          .tk-lab b{color:${INK};font-size:14px;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;}
+          .tk-band{display:flex;align-items:center;gap:22px;margin-bottom:16px;}
+          .tk-score{font-size:40px;font-weight:800;line-height:1.05;color:${INK};font-variant-numeric:tabular-nums;}
+          .tk-meter{position:relative;height:26px;}
+          .tk-meter .trk{position:absolute;left:0;right:0;top:8px;height:12px;border-radius:6px;background:${STAGE ? 'var(--stg-cell)' : '#efe7d8'};box-shadow:inset 0 0 0 1px ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)'};}
+          .tk-meter .fill{position:absolute;left:0;top:8px;height:12px;border-radius:6px;background:var(--stg-acc, ${COLORS.accent});}
+          .tk-meter .bonus{position:absolute;top:8px;height:12px;box-sizing:border-box;border:1.5px dashed var(--stg-acc-ink, ${COLORS.accent});border-left:0;border-radius:0 6px 6px 0;}
+          .tk-meter .mark{position:absolute;top:0;width:3px;height:26px;margin-left:-1px;border-radius:2px;background:${INK};}
+          .tk-play{display:flex;gap:22px;align-items:flex-start;}
+          .tk-boardcol{flex:0 1 452px;min-width:0;}
+          .tk-grid{display:grid;grid-template-columns:repeat(${SIZE},1fr);gap:4px;background:${STAGE ? 'var(--stg-surf)' : '#efe7d8'};border:1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:16px;padding:12px;max-width:452px;width:100%;box-sizing:border-box;}
+          .tk-cell{position:relative;aspect-ratio:1;box-sizing:border-box;background:var(--stg-cell, #fbf9f4);border:1px solid var(--stg-cell-line, rgba(28,30,36,0.3));border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:clamp(15px,3.6vw,22px);color:${INK};cursor:pointer;user-select:none;}
+          /* Placed tiles are ivory pieces, a physical object with fixed colours that read on both grounds. */
+          .tk-cell.filled{background:${TILE.face};border-color:${TILE.edge};box-shadow:inset 0 -3px 0 ${TILE.edge};color:${TILE.ink};}
+          .tk-cell.badword{background:${TILE.badFace};border-color:${TILE.bad};box-shadow:inset 0 -3px 0 ${TILE.bad};color:${TILE.bad};}
+          .tk-cell .pts{position:absolute;right:4px;bottom:2px;font-size:10px;font-weight:800;line-height:1;color:${TILE.pts};}
+          .tk-cell.badword .pts{color:${TILE.bad};}
+          .tk-cell .xdot{position:absolute;left:4px;top:4px;width:7px;height:7px;border-radius:4px;background:${TILE.dot};}
+          .tk-cell.sel{border:2px solid var(--stg-acc-ink, ${COLORS.accent});}
+          .tk-cell.filled.sel,.tk-cell.badword.sel{outline:2.5px solid var(--stg-acc-ink, ${COLORS.accent});outline-offset:1px;z-index:1;}
+          .tk-dir{position:absolute;right:2px;bottom:1px;line-height:0;color:var(--stg-acc-ink, ${COLORS.accent});}
+          .tk-cell.filled .tk-dir,.tk-cell.badword .tk-dir{display:none;}
+          .tk-side{flex:1 1 180px;min-width:170px;display:flex;flex-direction:column;gap:12px;}
+          .tk-wcard{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:12px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border:1px solid var(--stg-line, rgba(28,30,36,0.14));}
+          .tk-mini{position:relative;width:28px;height:30px;box-sizing:border-box;border-radius:5px;background:${TILE.face};border:1px solid ${TILE.edge};box-shadow:inset 0 -2px 0 ${TILE.edge};color:${TILE.ink};display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;}
+          .tk-mini .pts{position:absolute;right:2px;bottom:1px;font-size:8px;font-weight:800;line-height:1;color:${TILE.pts};}
+          .tk-mini .xdot{position:absolute;left:3px;top:3px;width:5px;height:5px;border-radius:3px;background:${TILE.dot};}
+          .tk-chips{display:none;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px;}
+          .tk-wchip{display:inline-flex;align-items:center;gap:6px;border-radius:9px;padding:6px 10px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border:1px solid var(--stg-line, rgba(28,30,36,0.14));font-size:14px;font-weight:800;letter-spacing:0.04em;color:${INK};}
+          .tk-wchip b{font-size:13px;letter-spacing:0;color:${ACC_INK};}
+          .tk-wchip.invalid{color:var(--stg-bad, ${COLORS.rust});border-color:var(--stg-bad, ${COLORS.rust});}
+          .tk-legend{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:${FADED};}
+          .tk-legend i{position:relative;flex:0 0 auto;width:16px;height:16px;box-sizing:border-box;border-radius:3px;background:${TILE.face};border:1px solid ${TILE.edge};}
+          .tk-legend i::after{content:"";position:absolute;left:2px;top:2px;width:5px;height:5px;border-radius:3px;background:${TILE.dot};}
+          .tk-rackhd{display:flex;justify-content:space-between;align-items:baseline;padding:0 2px 6px;}
+          .tk-tray{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:10px 12px 12px;border-radius:12px 12px 4px 4px;background:${STAGE ? 'var(--stg-surf2)' : '#efe7d8'};border-bottom:6px solid ${STAGE ? 'var(--stg-line3)' : 'rgba(28,30,36,0.3)'};}
+          .tk-trayrow{display:flex;gap:6px;justify-content:center;}
+          .tk-tile{position:relative;width:40px;height:46px;box-sizing:border-box;background:${TILE.face};border:1px solid ${TILE.edge};border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:${TILE.ink};cursor:pointer;user-select:none;box-shadow:inset 0 -4px 0 ${TILE.edge};}
+          .tk-tile .pts{position:absolute;right:3px;bottom:3px;font-size:9px;font-weight:800;line-height:1;color:${TILE.pts};}
+          .tk-tile.used{background:transparent;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.3));box-shadow:none;color:${FADED};cursor:default;}
+          .tk-tile.used .pts{color:${FADED};}
+          .tk-tile.armed{outline:2.5px solid var(--stg-acc-ink, ${COLORS.accent});outline-offset:2px;}
+          .tk-status{font-size:13px;font-weight:700;min-height:18px;}
+          .tk-status.bad{color:var(--stg-bad, ${COLORS.rust});}
+          .tk-status.good{color:${INK};}
           .tk-status.muted{color:${FADED};}
+          .tk-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px;}
+          .tk-ph{display:none;}
+          @media(max-width:640px){
+            .tk-dk{display:none !important;}
+            .tk-ph{display:inline;}
+            .tk-band{gap:14px;margin-bottom:12px;}
+            .tk-score{font-size:32px;}
+            .tk-lab{font-size:10px;}
+            .tk-lab b{font-size:13px;}
+            .tk-meter{height:24px;}
+            .tk-meter .trk,.tk-meter .fill,.tk-meter .bonus{top:7px;height:10px;}
+            .tk-meter .mark{height:24px;}
+            .tk-play{display:block;}
+            .tk-grid{gap:3px;padding:6px;border-radius:12px;margin:0 auto;}
+            .tk-cell{border-radius:5px;font-size:clamp(14px,4.6vw,18px);}
+            .tk-cell .pts{right:2px;bottom:1px;font-size:8px;}
+            .tk-cell .xdot{left:3px;top:3px;width:5px;height:5px;}
+            .tk-side{display:none;}
+            .tk-chips{display:flex;}
+            .tk-tray{flex-direction:column;align-items:center;padding:8px 6px 10px;}
+            .tk-tile{width:44px;height:48px;border-radius:8px;font-size:21px;}
+            .tk-tile .pts{right:4px;}
+            .tk-actions{flex-wrap:nowrap;gap:8px;}
+            .tk-actions .tk-btn.big{flex:1 1 0;min-height:50px;padding:0 8px;}
+            .tk-actions .tk-btn.big.primary{flex:1.5 1 0;}
+            .tk-actions .tk-ico{display:none;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
@@ -815,105 +912,176 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
 
-        {/* score bar */}
+        {/* score band: the score, a meter to the benchmark, what is left to beat */}
         {!preStart && (
-        <div style={{ display: 'flex', gap: 18, alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 10, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED }}>
-          <span style={{ fontSize: 12 }}>score <b style={{ color: liveScore >= BENCH && liveScore > 0 ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500, fontSize: 20 }}>{playing ? liveScore : finalScore}</b></span>
-          <span>benchmark <b style={{ color: ACC_INK, fontWeight: 500 }}>{BENCH}</b></span>
-          <span>tiles <b style={{ color: INK, fontWeight: 500 }}>{placedCount}</b>/{RACK}</span>
-          {!playing && <span style={{ marginLeft: 'auto', color: `var(--stg-ink, ${COLORS.green})` }}>score submitted — sandbox mode</span>}
+        <div className="tk-band">
+          <div style={{ display: 'flex', flexDirection: 'column', minWidth: 56 }}>
+            <span className="tk-lab">Score</span>
+            <span className="tk-score">{shownScore}</span>
+          </div>
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div className="tk-meter" role="img" aria-label={`Score ${shownScore} against a benchmark of ${BENCH}`}>
+              <span className="trk" />
+              {shownScore > 0 && <span className="fill" style={{ width: `${pctOf(shownScore)}%` }} />}
+              {bonusOpen && <span className="bonus" style={{ left: `${pctOf(shownScore)}%`, width: `${Math.max(0, pctOf(shownScore + 10) - pctOf(shownScore))}%` }} />}
+              <span className="mark" style={{ left: `${pctOf(BENCH)}%` }} />
+            </div>
+            <div className="tk-lab" style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+              <span style={{ color: ACC_INK, visibility: bonusOpen ? 'visible' : 'hidden' }}>+10 all tiles</span>
+              <span style={{ color: INK }}>Benchmark {BENCH}</span>
+            </div>
+          </div>
+          <div className="tk-dk" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 74 }}>
+            <span className="tk-lab">{shownScore >= BENCH ? 'Above by' : 'To beat'}</span>
+            <span style={{ fontSize: 24, fontWeight: 800, color: ACC_INK, fontVariantNumeric: 'tabular-nums' }}>{shownScore >= BENCH ? `+${shownScore - BENCH}` : BENCH - shownScore}</span>
+          </div>
         </div>
+        )}
+        {!preStart && !playing && (
+          <div className="tk-lab" style={{ margin: '-6px 0 12px', color: INK }}>Score submitted. The board is a sandbox now.</div>
         )}
 
         {!preStart && (
-        <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-          <div style={{ flex: '1 1 300px', minWidth: 280, maxWidth: 432 }}>
+        <>
+        <div className="tk-play">
+          <div className="tk-boardcol">
             <div className="tk-grid" ref={gridRef} role="grid" aria-label="Tuck board">
               {Array.from({ length: SIZE * SIZE }, (_, i) => {
                 const r = Math.floor(i / SIZE), c = i % SIZE;
                 const v = grid[r][c];
                 const isSel = sel && sel.r === r && sel.c === c;
+                const key = `${r},${c}`;
                 return (
                   <div
                     key={i}
-                    className={`tk-cell${v ? ' filled' : ''}${badCells.has(`${r},${c}`) ? ' badword' : ''}${isSel ? ' sel' : ''}`}
+                    className={`tk-cell${v ? ' filled' : ''}${badCells.has(key) ? ' badword' : ''}${isSel ? ' sel' : ''}`}
                     onClick={() => onCell(r, c)}
                     role="gridcell"
                     aria-label={`Row ${r + 1} column ${c + 1}${v ? `: ${v}` : ''}`}
                   >
                     {v || ''}
-                    {isSel && <span className="tk-dir">{dir === 'h' ? '➜' : '⬇'}</span>}
+                    {v && <span className="pts">{PTS[v]}</span>}
+                    {v && crossCells.has(key) && <span className="xdot" />}
+                    {isSel && (
+                      <span className="tk-dir" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ transform: dir === 'h' ? undefined : 'rotate(90deg)' }}><path d="M4 12h15" /><path d="M13 6l6 6-6 6" /></svg>
+                      </span>
+                    )}
                   </div>
                 );
               })}
             </div>
+          </div>
 
-            {/* rack */}
-            <div className="tk-tray">
-              {trayFlags.map((t, i) => (
-                <div
-                  key={i}
-                  className={`tk-tile${t.used ? ' used' : ''}${armed === t.l && !t.used ? ' armed' : ''}`}
-                  onClick={() => { if ((availCounts[t.l] || 0) > 0) { startClock(); setErase(false); setArmed((a) => (a === t.l ? null : t.l)); } }}
-                  role="button"
-                  aria-label={`Tile ${t.l}, ${PTS[t.l]} points${t.used ? ', used' : ''}`}
-                >
-                  {t.l}<span className="pts">{PTS[t.l]}</span>
+          {/* words formed (desktop column) */}
+          <div className="tk-side">
+            <span className="tk-lab">Words formed &middot; {runs.length}</span>
+            {runs.length ? runs.map((x, i) => {
+              const ok = !dict || dict.has(x.word.toLowerCase());
+              return (
+                <div key={i} className="tk-wcard" style={ok ? undefined : { borderColor: `var(--stg-bad, ${COLORS.rust})` }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    <span className="tk-lab" style={ok ? { fontSize: 12 } : { fontSize: 12, color: `var(--stg-bad, ${COLORS.rust})` }}>{x.word} &middot; {runDir(x)}{ok ? '' : ' \u00b7 not a word'}</span>
+                    <span style={{ fontSize: 17, fontWeight: 800, color: ok ? ACC_INK : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums' }}>{runPts(x)}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                    {x.cells.map(([r, c], j) => (
+                      <span key={j} className="tk-mini">{grid[r][c]}<span className="pts">{PTS[grid[r][c]]}</span>{crossCells.has(`${r},${c}`) && <span className="xdot" />}</span>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
-            <div className="tk-status" style={{ textAlign: 'center' }}>
-              <span className={`tk-status ${statusLine.cls}`}>{statusLine.msg}</span>
-            </div>
-
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginTop: 12 }}>
-              {playing && (
-                <button
-                  type="button"
-                  className="tk-btn primary"
-                  disabled={!isValid || liveScore <= 0 || !dict}
-                  onClick={submitScore}
-                >
-                  <CheckCircle2 size={15} strokeWidth={2.4} /> {confirming ? `Submit ${liveScore} pts — sure?` : 'Submit score'}
-                </button>
-              )}
-              {playing && (
-                <button
-                  type="button"
-                  className={`tk-btn${erase ? ' primary' : ''}`}
-                  aria-pressed={erase}
-                  disabled={placedCount === 0 && !erase}
-                  onClick={() => { setErase((v) => !v); setArmed(null); }}
-                >
-                  <Eraser size={14} /> {erase ? 'Tap tiles to remove' : 'Take back'}
-                </button>
-              )}
-              <button type="button" className="tk-btn" onClick={clearGrid}><Trash2 size={14} /> Clear all</button>
-              {confirming && <button type="button" className="tk-btn" onClick={() => setConfirming(false)}>Keep building</button>}
-            </div>
-            {playing && (
-              <div style={{ fontSize: 11.5, fontWeight: 600, color: FADED, textAlign: 'center', marginTop: 8, lineHeight: 1.5 }}>
-                One shot counts: only your first submitted grid ranks on the daily board.
+              );
+            }) : <span style={{ fontSize: 12, fontWeight: 600, color: FADED }}>No words yet.</span>}
+            {crossCells.size > 0 && (
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <span className="tk-legend"><i /></span>
+                <span style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.45, color: FADED }}>A crossing tile, marked with a dot, scores in both of its words. {crossNote}</span>
               </div>
             )}
-          </div>
-
-          {/* words formed */}
-          <div style={{ flex: '1 1 180px', minWidth: 170 }}>
-            <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED, marginBottom: 8 }}>Words formed</div>
-            <div>
-              {runs.length ? runs.map((x, i) => (
-                <span key={i} className={`tk-wtag${dict && !dict.has(x.word.toLowerCase()) ? ' invalid' : ''}`}>
-                  {x.word.toLowerCase()}{dict && !dict.has(x.word.toLowerCase()) ? ' ?' : ''}
-                  <span style={{ marginLeft: 5, color: ACC_INK, fontWeight: 800, fontSize: 10 }}>{[...x.word].reduce((s, ch) => s + PTS[ch], 0)}</span>
-                </span>
-              )) : <span style={{ fontSize: 12, fontWeight: 600, color: FADED }}>No words yet.</span>}
-            </div>
-            <div style={{ fontSize: 11.5, fontWeight: 600, color: FADED, lineHeight: 1.55, marginTop: 10 }}>
-              Every run of 2+ letters must be a word, across and down. Intersections score in both words. All {RACK} tiles placed is +10.
-            </div>
+            <span style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.45, color: FADED }}>
+              Every run of 2 or more letters must be a word, across and down, all in one grid. Crossings score in both words. All {RACK} tiles placed is +10.
+            </span>
           </div>
         </div>
+
+        {/* words formed (phone chips) */}
+        <div className="tk-chips">
+          {runs.map((x, i) => {
+            const ok = !dict || dict.has(x.word.toLowerCase());
+            return <span key={i} className={`tk-wchip${ok ? '' : ' invalid'}`}>{x.word}{ok ? '' : ' ?'}<b>{runPts(x)}</b></span>;
+          })}
+          {crossCells.size > 0 && <span className="tk-legend"><i />crossing counts twice</span>}
+          {!runs.length && <span style={{ fontSize: 12, fontWeight: 600, color: FADED }}>Every run of 2 or more letters must be a word, across and down, all in one grid.</span>}
+        </div>
+
+        {/* rack */}
+        <div style={{ marginTop: 16 }}>
+          <div className="tk-rackhd">
+            <span className="tk-lab">Your rack<span className="tk-dk"> &middot; {RACK} letters</span></span>
+            <span className="tk-lab"><span className="tk-dk">Tiles placed</span><span className="tk-ph">Placed</span> <b>{placedCount}</b>/{RACK}</span>
+          </div>
+          <div className="tk-tray">
+            {[trayFlags.slice(0, Math.ceil(RACK / 2)), trayFlags.slice(Math.ceil(RACK / 2))].map((row, ri) => (
+              <div key={ri} className="tk-trayrow">
+                {row.map((t, j) => {
+                  const i = ri === 0 ? j : Math.ceil(RACK / 2) + j;
+                  return (
+                    <div
+                      key={i}
+                      className={`tk-tile${t.used ? ' used' : ''}${armed === t.l && !t.used ? ' armed' : ''}`}
+                      onClick={() => { if ((availCounts[t.l] || 0) > 0) { startClock(); setErase(false); setArmed((a) => (a === t.l ? null : t.l)); } }}
+                      role="button"
+                      aria-label={`Tile ${t.l}, ${PTS[t.l]} points${t.used ? ', used' : ''}`}
+                    >
+                      {t.l}<span className="pts">{PTS[t.l]}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 12, textAlign: 'center' }}>
+          {statusLine.cls === 'good' && <CheckCircle2 size={16} strokeWidth={2.6} aria-hidden="true" style={{ flex: '0 0 auto', color: 'var(--stg-good, #15803d)' }} />}
+          <span className={`tk-status ${statusLine.cls}`}>{statusLine.msg}</span>
+        </div>
+
+        <div className="tk-actions">
+          {playing && (
+            <button
+              type="button"
+              className={`tk-btn big${erase ? ' primary' : ''}`}
+              aria-pressed={erase}
+              disabled={placedCount === 0 && !erase}
+              onClick={() => { setErase((v) => !v); setArmed(null); }}
+            >
+              <Eraser size={16} className="tk-ico" /> {erase ? 'Tap tiles to remove' : 'Take back'}
+            </button>
+          )}
+          <button type="button" className="tk-btn big" onClick={clearGrid}><Trash2 size={16} className="tk-ico" /> Clear all</button>
+          {playing && (
+            <button
+              type="button"
+              className="tk-btn big primary"
+              disabled={!isValid || liveScore <= 0 || !dict}
+              onClick={submitScore}
+            >
+              <CheckCircle2 size={16} strokeWidth={2.6} className="tk-ico" /> {confirming ? `Submit ${liveScore} pts, sure?` : 'Submit score'}
+            </button>
+          )}
+        </div>
+        {confirming && (
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 8 }}>
+            <button type="button" className="tk-btn big" onClick={() => setConfirming(false)}>Keep building</button>
+          </div>
+        )}
+        {playing && (
+          <div style={{ fontSize: 12, fontWeight: 600, color: FADED, textAlign: 'center', marginTop: 10, lineHeight: 1.45 }}>
+            One shot counts: only your first submitted grid ranks on the daily board.
+          </div>
+        )}
+        </>
         )}
 
 
@@ -926,7 +1094,7 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
                   <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{finalScore}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
-                    {won ? `Beat the benchmark of ${BENCH} — the desk tips its cap.` : `Submitted against a benchmark of ${BENCH}.`}
+                    {won ? `Beat the benchmark of ${BENCH}. The desk tips its cap.` : `Submitted against a benchmark of ${BENCH}.`}
                     {' '}{g.submitted ? `${g.submitted.placed}/${RACK} tiles.` : ''}
                     {' '}<span style={{ color: FADED, fontWeight: 600 }}>{elapsed}</span>
                   </span>

@@ -378,6 +378,16 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
     return () => { try { window.removeEventListener('beforeinstallprompt', onPrompt); } catch (e) {} };
   }, []);
 
+  // Phone layout (<=640px) for the peg board and the felt, decided by width
+  // rather than device so a narrow desktop window gets the phone stack too.
+  const [narrow, setNarrow] = useState(false);
+  useEffect(() => {
+    const fit = () => { try { setNarrow(window.innerWidth <= 640); } catch (e) {} };
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, []);
+
   const myStats = useMemo(() => deriveStats(stats, PUZZLE.num), [stats, PUZZLE.num]);
   const isTodays = PUZZLE.num === pickPuzzle(puzzles, null).num;
   const iq = useIqStanding({ game: 'crib', quizId: PUZZLE.quizId, active: LOFT && !playing });
@@ -554,22 +564,6 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
     return { rows, bestT, keepBest, cut, keepMine, pts: pointsFor(hand, pickT), gap: hand.value[bestT] - hand.value[pickT] };
   })() : null;
 
-  const pips = [];
-  for (let i = 0; i < NH; i++) {
-    const done = i < g.picks.length;
-    const p = done ? earned[i] : null;
-    pips.push(
-      <span key={i} title={done ? `Hand ${i + 1}: ${p} point${p === 1 ? '' : 's'}` : `Hand ${i + 1}`}
-        style={{ width: 22, height: 8, borderRadius: 4, background: !done ? SURF_B : p === 2 ? GOOD : p === 1 ? WARN : 'var(--stg-bad, #b91c1c)', outline: i === current && playing ? `2px solid ${INK}` : 'none', outlineOffset: 1 }} />,
-    );
-  }
-
-  const cribTag = (yours) => (
-    <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 600, padding: '3px 8px', borderRadius: 5, background: yours ? 'var(--stg-acc, #a16207)' : 'transparent', color: yours ? 'var(--stg-onramp, #ffffff)' : INK, border: yours ? '1px solid transparent' : `1px solid ${SURF_B}` }}>
-      {yours ? 'Your crib' : 'Their crib'}
-    </span>
-  );
-
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
@@ -602,15 +596,13 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
       <div className="cb-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
         <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.cb-wrap{padding-left:10px !important;padding-right:10px !important;}}
-          .cb-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : COLORS.accent};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : COLORS.accent};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
+          .cb-btn{font-family:${SANS};font-weight:800;font-size:14px;border:${STAGE ? '1.5px solid var(--stg-cell-line)' : `2px solid ${COLORS.accent}`};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : COLORS.accent};border-radius:${STAGE ? 12 : 8}px;padding:9px 16px;min-height:48px;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
           .cb-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
           .cb-btn:disabled{opacity:.45;cursor:default;}
-          .cb-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-sizing:border-box;}
+          .cb-tool{font-family:${SANS};font-weight:700;font-size:14px;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${INK};border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-sizing:border-box;}
           .cb-card{-webkit-tap-highlight-color:transparent;}
           .cb-card.live:hover{transform:translateY(-4px);}
           .cb-card.live.sel:hover{transform:translateY(-10px);}
-          .cb-hand{display:flex;gap:8px;justify-content:center;flex-wrap:nowrap;padding:14px 0 6px;}
-          @media(max-width:420px){.cb-hand{gap:4px;}.cb-hand .cb-card{width:48px !important;height:70px !important;}}
           .cb-tab{width:100%;border-collapse:collapse;font-size:12.5px;}
           .cb-tab td,.cb-tab th{padding:5px 6px;text-align:right;border-bottom:1px solid ${SURF_B};white-space:nowrap;}
           .cb-tab td:first-child,.cb-tab th:first-child{text-align:left;}
@@ -645,118 +637,317 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
             </div>
           )}
 
-          {!preStart && (
-            <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <div style={{ fontSize: 14, fontWeight: 800, color: INK }}>{playing ? `Hand ${Math.min(current + 1, NH)} of ${NH}` : `All ${NH} hands`}</div>
-                {playing && cribTag(hand.yours)}
-                <div style={{ marginLeft: 'auto', display: 'inline-flex', gap: 4 }}>{pips}</div>
-              </div>
+          {!preStart && (() => {
+            // ---- the peg board and the felt (round three, 2026-10-10) ----
+            // Every readout is state the old board already printed: the points
+            // per answered hand (the pips), whose crib each hand is (the rules
+            // say it alternates, yours first), the running score and the
+            // selection. The pegs are only the score drawn as cribbage draws it.
+            const A_FILL = STAGE ? 'var(--stg-acc)' : COLORS.accent;
+            const ON_A = STAGE ? 'var(--stg-onramp)' : '#ffffff';
+            const CELL = STAGE ? 'var(--stg-cell)' : '#ffffff';
+            const CELL_LINE = STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)';
+            const GROUND = STAGE ? 'var(--stg-ground)' : T.surface;
+            const BAD = 'var(--stg-bad, #b91c1c)';
+            const FELT = STAGE ? 'color-mix(in srgb, var(--stg-acc) 9%, var(--stg-cell))' : COLORS.accentSoft;
+            const BACK = STAGE ? 'color-mix(in srgb, var(--stg-acc) 30%, var(--stg-cell))' : '#e9d9a8';
+            const K = { fontFamily: SANS, fontSize: narrow ? 10 : 11, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: FADED };
+            const short = (c) => `${RANKS[rankOf(c)]}${SUITS[suitOf(c)]}`;
 
-              {playing && (
-                <div className="cb-hand" key={`h${current}`}>
-                  {hand.cards.map((c, k) => {
-                    const thrownNow = g.shown !== null && THROWS[pickT].includes(k);
+            // The board: a start hole, then two holes a hand. The front peg
+            // stands on your total, the back peg where it stood a hand ago.
+            const front = score;
+            const back = g.picks.length ? scoreOf(g.picks.slice(0, -1)) : 0;
+            const hs = narrow ? 11 : 14;
+            const hole = (n) => {
+              if (n === front && front > 0) return <span key={n} style={{ width: narrow ? 17 : 22, height: narrow ? 17 : 22, borderRadius: '50%', boxSizing: 'border-box', background: A_FILL, border: `3px solid ${CELL}`, boxShadow: `0 0 0 2px ${A_FILL}` }} />;
+              if (n === back && back > 0) return <span key={n} style={{ width: narrow ? 16 : 20, height: narrow ? 16 : 20, borderRadius: '50%', boxSizing: 'border-box', background: CELL, border: `${narrow ? 3 : 4}px solid ${A_FILL}` }} />;
+              const passed = n < front;
+              return <span key={n} style={{ width: hs, height: hs, borderRadius: '50%', boxSizing: 'border-box', background: passed ? BACK : GROUND, border: `2px solid ${CELL_LINE}` }} />;
+            };
+            const segRes = (i) => {
+              if (i < g.picks.length) {
+                const p = earned[i];
+                return p === 2 ? { t: narrow && NH > 5 ? '+2' : 'Best +2', c: GOOD } : p === 1 ? { t: narrow && NH > 5 ? '+1' : 'Close +1', c: WARN } : { t: narrow && NH > 5 ? '+0' : 'Miss +0', c: BAD };
+              }
+              if (playing && i === current) return { t: 'Now', c: ACC_INK };
+              return { t: narrow ? `Hand ${i + 1}` : 'To come', c: FADED };
+            };
+            const pegBoard = (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: narrow ? 7 : 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+                  <span style={K}>{narrow ? 'Peg board · one hole a point' : 'The peg board · 2 points for the best throw, 1 for a close one'}</span>
+                  {narrow
+                    ? <span style={K}>{playing ? <>Hand <b style={{ color: ACC_INK }}>{Math.min(current + 1, NH)}</b> of {NH}</> : <>{NH} hands</>}</span>
+                    : <span style={K}>Front peg <b style={{ color: ACC_INK }}>{front}</b> · Back peg <b style={{ color: INK }}>{back}</b></span>}
+                </div>
+                <div role="img" aria-label={`Peg board: ${score} of ${TOTAL} points after ${g.picks.length} of ${NH} hands`}
+                  style={{ background: STAGE ? 'var(--stg-surf)' : T.white, border: STAGE ? undefined : '1px solid rgba(28,30,36,0.14)', borderRadius: narrow ? 14 : 18, padding: narrow ? '10px 8px 8px' : '16px 16px 14px', display: 'flex', alignItems: 'flex-start', gap: narrow ? 5 : 8 }}>
+                  <div style={{ width: narrow ? 18 : 44, flex: '0 0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                    <div style={{ height: narrow ? 28 : 34, display: 'flex', alignItems: 'center' }}>{hole(0)}</div>
+                    {!narrow && <span style={{ ...K, fontSize: 10 }}>Start</span>}
+                  </div>
+                  {HANDS.map((h, i) => {
+                    const r = segRes(i);
+                    const on = playing && i === current;
                     return (
-                      <Card key={c} c={c}
-                        selected={g.shown === null ? g.sel.includes(k) : thrownNow}
-                        dim={g.shown !== null && !thrownNow}
-                        ring={k === hintCard}
-                        onClick={g.shown === null && started ? () => tapCard(k) : undefined} />
+                      <div key={i} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: narrow ? 5 : 8 }}>
+                        <div style={{ width: '100%', height: narrow ? 28 : 34, boxSizing: 'border-box', borderRadius: 17, background: GROUND, border: `1.5px solid ${on ? A_FILL : 'transparent'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
+                          {hole(2 * i + 1)}{hole(2 * i + 2)}
+                        </div>
+                        {narrow ? (
+                          <>
+                            <span style={{ fontFamily: SANS, fontSize: 10, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase', color: r.c, whiteSpace: 'nowrap' }}>{r.t}</span>
+                            <span style={{ fontFamily: SANS, fontSize: 10, fontWeight: 600, color: FADED }}>{h.yours ? 'yours' : 'theirs'}</span>
+                          </>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                            <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 800, color: on ? ACC_INK : (i < g.picks.length ? INK : FADED) }}>Hand {i + 1}</span>
+                            <span style={{ fontFamily: SANS, fontSize: 11, fontWeight: 600, color: FADED }}>{h.yours ? 'your crib' : 'their crib'}</span>
+                            <span style={{ fontFamily: SANS, fontSize: 11, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: r.c, whiteSpace: 'nowrap' }}>{r.t}</span>
+                          </div>
+                        )}
+                      </div>
                     );
                   })}
                 </div>
-              )}
+                {!narrow && (
+                  <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 600, color: FADED }}>One hole a point. The front peg marks your total; the back peg, where it stood before your last hand.</span>
+                )}
+              </div>
+            );
 
-              {playing && g.shown === null && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, flexWrap: 'wrap' }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: FADED }}>
-                    {g.sel.length === 2
-                      ? `Throw ${g.sel.map((k) => cardName(hand.cards[k])).join(' and ')} to ${hand.yours ? 'your' : 'their'} crib.`
-                      : `Choose two cards for ${hand.yours ? 'your' : 'their'} crib.`}
-                  </div>
-                  <span style={{ marginLeft: 'auto', display: 'inline-flex', gap: 8 }}>
-                    {hintOk && !g.hintUsed && (
-                      <button className="cb-tool" onClick={useHint} title="Ring one card of the best throw (one hint, first play only)"><Lightbulb size={14} /> Hint</button>
-                    )}
-                    <button className="cb-btn" onClick={throwIt} disabled={g.sel.length !== 2} style={{ background: g.sel.length === 2 ? STAGE_C : undefined, color: g.sel.length === 2 ? 'var(--stg-onramp, #ffffff)' : undefined, borderColor: g.sel.length === 2 ? STAGE_C : undefined }}>Throw</button>
+            // The six cards, fanned. The cards are paper in both registers.
+            const FW = narrow ? 72 : 96;
+            const FH = narrow ? 106 : 138;
+            const SPREAD = narrow ? 49 : 74;
+            const LIFT = narrow ? 26 : 34;
+            const nC = hand.cards.length;
+            const thrownKs = g.shown !== null ? THROWS[pickT] : g.sel;
+            const fan = (
+              <div className="cb-fan" key={`h${current}`} style={{ position: 'relative', height: narrow ? 214 : 230, marginTop: narrow ? 14 : 6 }}>
+                {hand.cards.map((c, k) => {
+                  const d = k - (nC - 1) / 2;
+                  const thrownNow = g.shown !== null && THROWS[pickT].includes(k);
+                  const isSel = g.shown === null ? g.sel.includes(k) : thrownNow;
+                  const dim = g.shown !== null && !thrownNow;
+                  const ring = k === hintCard;
+                  const red = suitOf(c) === 1 || suitOf(c) === 2;
+                  const live = g.shown === null && started;
+                  const shadow = [
+                    isSel ? `0 0 0 3px ${FELT}, 0 0 0 5px ${A_FILL}` : null,
+                    ring ? `0 0 0 ${isSel ? 8 : 3}px var(--stg-ink, #b45309)` : null,
+                    isSel ? '0 14px 22px rgba(0,0,0,.35)' : '0 4px 10px rgba(0,0,0,.28)',
+                  ].filter(Boolean).join(', ');
+                  return (
+                    <button key={c} type="button" className={`cb-card${isSel ? ' sel' : ''}${live ? ' live' : ''}`}
+                      onClick={live ? () => tapCard(k) : undefined}
+                      disabled={!live}
+                      aria-label={`${RANKS[rankOf(c)]} of ${SUIT_NAMES[suitOf(c)]}${isSel ? (g.shown === null ? ', selected to throw' : ', thrown') : ''}${ring ? ', hinted' : ''}`}
+                      aria-pressed={g.shown === null ? isSel : undefined}
+                      style={{
+                        position: 'absolute', left: `calc(50% - ${FW / 2}px + ${d * SPREAD}px)`,
+                        top: (narrow ? 60 : 50) + d * d * (narrow ? 3 : 4) - (isSel ? LIFT : 0),
+                        width: FW, height: FH, boxSizing: 'border-box', borderRadius: narrow ? 8 : 10, background: FACE,
+                        border: isSel ? `3px solid ${A_FILL}` : `1.5px solid ${CELL_LINE}`, boxShadow: shadow,
+                        transform: `rotate(${d * (narrow ? 6 : 5)}deg)`, transformOrigin: '50% 100%',
+                        padding: 0, color: red ? FACE_RED : FACE_INK, fontFamily: SANS, cursor: live ? 'pointer' : 'default',
+                        opacity: dim ? 0.45 : 1, transition: 'top .14s ease, box-shadow .14s ease',
+                      }}>
+                      <span style={{ position: 'absolute', top: narrow ? 6 : 8, left: narrow ? 7 : 10, display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1 }}>
+                        <b style={{ fontSize: narrow ? 17 : 21, fontWeight: 800 }}>{RANKS[rankOf(c)]}</b>
+                        <span style={{ fontSize: narrow ? 13 : 17 }}>{SUITS[suitOf(c)]}</span>
+                      </span>
+                      <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: narrow ? 34 : 44, paddingTop: 12, lineHeight: 1 }}>{SUITS[suitOf(c)]}</span>
+                      {!narrow && <span style={{ position: 'absolute', bottom: 8, right: 10, fontSize: 21, fontWeight: 800, lineHeight: 1, transform: 'rotate(180deg)' }}>{RANKS[rankOf(c)]}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+
+            // The crib: their two face down (never seen), your two as you lift them.
+            const SW = narrow ? 34 : 46;
+            const SH = narrow ? 48 : 66;
+            const backCard = (i) => <span key={`b${i}`} aria-hidden="true" style={{ width: SW, height: SH, boxSizing: 'border-box', borderRadius: narrow ? 5 : 6, border: `2px solid ${A_FILL}`, background: `repeating-linear-gradient(45deg, ${BACK} 0 ${narrow ? 4 : 5}px, ${A_FILL} ${narrow ? 4 : 5}px ${narrow ? 6 : 7}px)` }} />;
+            const slot = (i) => {
+              const k = thrownKs[i];
+              return (
+                <span key={`s${i}`} style={{ width: SW, height: SH, boxSizing: 'border-box', borderRadius: narrow ? 5 : 6, border: `2px dashed ${k != null ? A_FILL : CELL_LINE}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontSize: narrow ? 12 : 15, fontWeight: 800, color: ACC_INK }}>
+                  {k != null ? short(hand.cards[k]) : ''}
+                </span>
+              );
+            };
+            const tag = (
+              <span style={{ fontFamily: SANS, fontSize: narrow ? 10 : 11, fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', borderRadius: narrow ? 5 : 6, padding: narrow ? '3px 7px' : '4px 9px', alignSelf: narrow ? 'flex-start' : undefined, background: hand.yours ? A_FILL : 'transparent', color: hand.yours ? ON_A : INK, border: hand.yours ? '1.5px solid transparent' : `1.5px solid ${CELL_LINE}` }}>
+                {hand.yours ? 'Your crib' : 'Their crib'}{narrow ? '' : (hand.yours ? ' · its points add' : ' · its points count against you')}
+              </span>
+            );
+            const cribBox = (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: narrow ? 5 : 8 }}>
+                {!narrow && tag}
+                <div style={{ display: 'flex', gap: narrow ? 4 : 6, alignItems: 'flex-end' }} aria-label={`The crib: two unseen cards${thrownKs.length ? `, and ${thrownKs.map((k) => cardName(hand.cards[k])).join(' and ')}` : ''}`}>
+                  {backCard(0)}{backCard(1)}{slot(0)}{slot(1)}
+                </div>
+                <span style={{ fontFamily: SANS, fontSize: narrow ? 10 : 11, fontWeight: 600, color: FADED, textAlign: 'right', lineHeight: 1.4 }}>
+                  {narrow ? 'their two: every pair, averaged' : <>Their two are unseen: the value<br />averages every pair they could throw.</>}
+                </span>
+              </div>
+            );
+
+            const prompt = g.sel.length === 2
+              ? `Throw ${g.sel.map((k) => cardName(hand.cards[k])).join(' and ')} to ${hand.yours ? 'your' : 'their'} crib.`
+              : `Choose two cards for ${hand.yours ? 'your' : 'their'} crib.`;
+            const ready = g.sel.length === 2;
+            const hintBtn = hintOk && !g.hintUsed && (
+              <button className="cb-tool" onClick={useHint} title="Ring one card of the best throw (one hint, first play only)" style={narrow ? { flex: 1 } : undefined}><Lightbulb size={16} /> Hint</button>
+            );
+            const throwBtn = (
+              <button className="cb-btn" onClick={throwIt} disabled={!ready}
+                style={{ background: ready ? STAGE_C : undefined, color: ready ? 'var(--stg-onramp, #ffffff)' : undefined, borderColor: ready ? STAGE_C : undefined, ...(narrow ? { flex: 2, fontSize: 16 } : { fontSize: 15, padding: '0 26px' }) }}>Throw</button>
+            );
+            const keptLine = g.shown === null && (
+              <div style={{ display: 'flex', justifyContent: narrow ? 'space-between' : 'center', gap: narrow ? 8 : 28, marginTop: narrow ? 4 : 6, flexWrap: 'wrap' }}>
+                {g.sel.length > 0
+                  ? <span style={{ ...K, color: ACC_INK }}>{narrow ? 'Lifted · to the crib' : 'Lifted · going to the crib'}</span>
+                  : <span style={K}>Tap two cards to lift them</span>}
+                {ready && <span style={K}>Kept · {hand.cards.filter((_, k) => !g.sel.includes(k)).map(short).join(' ')}</span>}
+              </div>
+            );
+
+            const revealPanel = playing && reveal && (
+              <div className="cb-fade" style={{ marginTop: 12, borderTop: `1px solid ${SURF_B}`, paddingTop: 14 }}>
+                <div style={{ fontSize: 15, fontWeight: 800, color: reveal.pts === 2 ? GOOD : reveal.pts === 1 ? WARN : INK, marginBottom: 6 }}>
+                  {reveal.pts === 2 ? 'The best throw. 2 points.'
+                    : reveal.pts === 1 ? `Close: ${reveal.gap.toFixed(2)} behind the best. 1 point.`
+                      : `${reveal.gap.toFixed(2)} behind the best. No points.`}
+                </div>
+                <table className="cb-tab" style={{ color: INK }}>
+                  <thead>
+                    <tr><th>Throw</th><th>Hand</th><th>{hand.yours ? 'Crib +' : 'Crib −'}</th><th>Value</th></tr>
+                  </thead>
+                  <tbody>
+                    {reveal.rows.map((t) => {
+                      const mine = t === pickT;
+                      const top = t === reveal.bestT;
+                      return (
+                        <tr key={t} style={{ background: mine ? SURF2 : 'transparent', fontWeight: top || mine ? 800 : 600 }}>
+                          <td>
+                            <span style={{ display: 'inline-flex', gap: 3, verticalAlign: 'middle' }}>
+                              {THROWS[t].map((k) => <Card key={k} c={hand.cards[k]} size="sm" />)}
+                            </span>
+                            <span style={{ marginLeft: 8, fontSize: 11, color: FADED }}>{[top && 'best', mine && 'yours'].filter(Boolean).join(' · ')}</span>
+                          </td>
+                          <td>{fmtV(hand.hand[t])}</td>
+                          <td>{fmtV(hand.crib[t])}</td>
+                          <td style={{ color: top ? GOOD : INK }}>{fmtSigned(hand.value[t])}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, marginTop: 10, lineHeight: 1.55 }}>
+                  The cut, for the look of it: <b style={{ color: INK }}>{cardName(reveal.cut)}</b>. Your four scored {scoreHand(reveal.keepMine, reveal.cut, false)} with it
+                  {(() => {
+                    const parts = scoreParts(reveal.keepMine, reveal.cut, false);
+                    return parts.length ? ` (${parts.map((p) => `${PART_NAMES[p.k]} ${p.v}`).join(', ')})` : '';
+                  })()}. The value above is the average over every cut, which is what counts.
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
+                  <button className="cb-btn" onClick={nextHand} style={{ background: STAGE_C, color: 'var(--stg-onramp, #ffffff)', borderColor: STAGE_C, ...(narrow ? { width: '100%' } : null) }}>
+                    {g.picks.length >= NH ? 'See your score' : 'Next hand'} <ArrowRight size={15} />
+                  </button>
+                </div>
+              </div>
+            );
+
+            const summary = !playing && (
+              <div>
+                <div style={K}>The deal</div>
+                <div style={{ fontSize: narrow ? 18 : 22, fontWeight: 800, color: INK, margin: '4px 0 6px' }}>All {NH} hands</div>
+                <table className="cb-tab" style={{ color: INK }}>
+                  <thead><tr><th>Hand</th><th>Crib</th><th>You threw</th><th>Best</th><th>Pts</th></tr></thead>
+                  <tbody>
+                    {HANDS.map((h, i) => {
+                      const t = g.picks[i];
+                      return (
+                        <tr key={i}>
+                          <td>{i + 1}</td>
+                          <td>{h.yours ? 'yours' : 'theirs'}</td>
+                          <td>{t != null ? THROWS[t].map((k) => cardName(h.cards[k])).join(' ') : 'none'}</td>
+                          <td>{THROWS[h.best].map((k) => cardName(h.cards[k])).join(' ')}</td>
+                          <td style={{ fontWeight: 800 }}>{t != null ? pointsFor(h, t) : 0}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                <div style={{ fontSize: endHold.held ? 15 : 13, fontWeight: 800, color: INK, marginTop: 12 }}>
+                  {`${score} of ${TOTAL}. ${bests} best throw${bests === 1 ? '' : 's'} out of ${NH}.`}
+                </div>
+              </div>
+            );
+
+            const feltHead = narrow ? (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {tag}
+                  <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 600, color: INK, lineHeight: 1.4, maxWidth: 150 }}>
+                    {hand.yours ? 'Its points add to your throw’s value.' : 'Its points come off your throw’s value.'}
                   </span>
                 </div>
-              )}
-
-              {playing && reveal && (
-                <div className="cb-fade" style={{ marginTop: 10 }}>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: reveal.pts === 2 ? GOOD : reveal.pts === 1 ? WARN : INK, marginBottom: 6 }}>
-                    {reveal.pts === 2 ? 'The best throw. 2 points.'
-                      : reveal.pts === 1 ? `Close: ${reveal.gap.toFixed(2)} behind the best. 1 point.`
-                        : `${reveal.gap.toFixed(2)} behind the best. No points.`}
-                  </div>
-                  <table className="cb-tab" style={{ color: INK }}>
-                    <thead>
-                      <tr><th>Throw</th><th>Hand</th><th>{hand.yours ? 'Crib +' : 'Crib −'}</th><th>Value</th></tr>
-                    </thead>
-                    <tbody>
-                      {reveal.rows.map((t) => {
-                        const mine = t === pickT;
-                        const top = t === reveal.bestT;
-                        return (
-                          <tr key={t} style={{ background: mine ? SURF2 : 'transparent', fontWeight: top || mine ? 800 : 600 }}>
-                            <td>
-                              <span style={{ display: 'inline-flex', gap: 3, verticalAlign: 'middle' }}>
-                                {THROWS[t].map((k) => <Card key={k} c={hand.cards[k]} size="sm" />)}
-                              </span>
-                              <span style={{ marginLeft: 8, fontSize: 11, color: FADED }}>{[top && 'best', mine && 'yours'].filter(Boolean).join(' · ')}</span>
-                            </td>
-                            <td>{fmtV(hand.hand[t])}</td>
-                            <td>{fmtV(hand.crib[t])}</td>
-                            <td style={{ color: top ? GOOD : INK }}>{fmtSigned(hand.value[t])}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                  <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, marginTop: 10, lineHeight: 1.55 }}>
-                    The cut, for the look of it: <b style={{ color: INK }}>{cardName(reveal.cut)}</b>. Your four scored {scoreHand(reveal.keepMine, reveal.cut, false)} with it
-                    {(() => {
-                      const parts = scoreParts(reveal.keepMine, reveal.cut, false);
-                      return parts.length ? ` (${parts.map((p) => `${PART_NAMES[p.k]} ${p.v}`).join(', ')})` : '';
-                    })()}. The value above is the average over every cut, which is what counts.
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
-                    <button className="cb-btn" onClick={nextHand} style={{ background: STAGE_C, color: 'var(--stg-onramp, #ffffff)', borderColor: STAGE_C }}>
-                      {g.picks.length >= NH ? 'See your score' : 'Next hand'} <ArrowRight size={15} />
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {!playing && (
-                <div style={{ marginTop: 10 }}>
-                  <table className="cb-tab" style={{ color: INK }}>
-                    <thead><tr><th>Hand</th><th>Crib</th><th>You threw</th><th>Best</th><th>Pts</th></tr></thead>
-                    <tbody>
-                      {HANDS.map((h, i) => {
-                        const t = g.picks[i];
-                        return (
-                          <tr key={i}>
-                            <td>{i + 1}</td>
-                            <td>{h.yours ? 'yours' : 'theirs'}</td>
-                            <td>{t != null ? THROWS[t].map((k) => cardName(h.cards[k])).join(' ') : '—'}</td>
-                            <td>{THROWS[h.best].map((k) => cardName(h.cards[k])).join(' ')}</td>
-                            <td style={{ fontWeight: 800 }}>{t != null ? pointsFor(h, t) : 0}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              <div style={{ fontSize: endHold.held ? 15 : 13, fontWeight: 800, color: INK, marginTop: 12 }}>
-                {playing ? `${score} point${score === 1 ? '' : 's'} so far.` : `${score} of ${TOTAL}. ${bests} best throw${bests === 1 ? '' : 's'} out of ${NH}.`}
+                {cribBox}
               </div>
-            </div>
-          )}
+            ) : (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <span style={K}>The deal</span>
+                  <span style={{ fontSize: 22, fontWeight: 800, color: INK }}>Hand {Math.min(current + 1, NH)} of {NH}</span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: INK, maxWidth: 250, lineHeight: 1.45 }}>Six cards. Keep four, throw two to the crib, a second hand that scores for whoever owns it.</span>
+                </div>
+                {cribBox}
+              </div>
+            );
+
+            return (
+              <div className={STAGE ? undefined : (LOFT ? 'loft-card' : undefined)}
+                style={{ background: STAGE ? 'transparent' : T.white, border: STAGE ? 0 : `2px solid ${COLORS.ink}`, borderRadius: STAGE ? 0 : 10, padding: STAGE ? 0 : '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+                {pegBoard}
+                <div style={{ marginTop: narrow ? 12 : 20, background: FELT, borderRadius: narrow ? 18 : 22, padding: narrow ? '14px 12px' : '18px 20px', display: 'flex', flexDirection: 'column' }}>
+                  {playing ? (
+                    <>
+                      {feltHead}
+                      {fan}
+                      {keptLine}
+                      {g.shown === null && (
+                        narrow ? (
+                          <span style={{ fontSize: 15, fontWeight: 700, color: INK, lineHeight: 1.4, paddingTop: 12 }}>{prompt}</span>
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, borderTop: `1px solid ${SURF_B}`, paddingTop: 16, marginTop: 14 }}>
+                            <span style={{ flex: 1, fontSize: 15, fontWeight: 700, color: INK, lineHeight: 1.4 }}>{prompt}</span>
+                            {hintBtn}
+                            {throwBtn}
+                          </div>
+                        )
+                      )}
+                      {revealPanel}
+                    </>
+                  ) : summary}
+                </div>
+                {playing && g.shown === null && narrow && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 12 }}>
+                    <div style={{ display: 'flex', gap: 8 }}>{hintBtn}{throwBtn}</div>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: FADED, textAlign: 'center' }}>2 points for the best throw, 1 for one within 0.75 of it. The front peg is your total.</span>
+                  </div>
+                )}
+                {playing && !narrow && (
+                  <div style={{ padding: '12px 0 0', fontSize: 12, fontWeight: 600, color: FADED }}>
+                    A throw is worth your four cards&rsquo; average over all 46 cut cards, {hand.yours ? 'plus your crib’s average' : 'minus their crib’s average'}.
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           <div className={STAGE ? undefined : 'loft-sol'}>
             {finished && !endHold.held && (

@@ -75,6 +75,20 @@ const COLORS = {
   hitSoft: '#fef3c7',
   green: T.successDeep,
 };
+// The newsprint sheet the article is printed on. A physical object, so it keeps
+// these fixed values in both stage registers: ink, meta, the last-guess
+// highlight and the missed-word red all clear 4.5:1 on the paper.
+const NP = {
+  paper: '#f5f0e4',
+  ink: '#1c1a16',
+  meta: '#5c5548',
+  rule: '#b9ae98',
+  colRule: '#cfc6b3',
+  peek: '#7a4206',
+  hitBg: '#f6d8a8',
+  hitInk: '#6b3606',
+  miss: '#991b1b',
+};
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_redact_help_seen';
@@ -447,23 +461,28 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
       // as missed, so the reader can see what they did not get.
       const missed = unmasked && !solved && !FREEBIES.has(tk.n) && !revealedNorms.has(tk.n) && tk.n.length >= 3;
       const fresh = !missed && lastNorms.includes(tk.n);
-      const style = missed
-        ? { color: STAGE ? 'var(--stg-bad)' : '#991b1b', textDecoration: 'underline', textDecorationThickness: 2, textUnderlineOffset: 3, fontWeight: 700 }
-        : fresh ? { background: `var(--stg-surf, ${COLORS.hitSoft})`, color: STAGE ? 'var(--stg-acc-ink)' : '#7c2d12', borderRadius: 3, padding: '0 1px' } : undefined;
-      return <span key={key} style={style}>{tk.t}</span>;
+      return <span key={key} className={missed ? 'rd-missed' : fresh ? 'rd-fresh' : undefined}>{tk.t}</span>;
     }
     const showLen = peek === idx;
     return (
       <span
         key={key}
         onClick={() => setPeek(showLen ? -1 : idx)}
-        className="rd-slab"
+        className={`rd-slab${showLen ? ' peek' : ''}`}
         style={{ minWidth: `${Math.max(1.2, tk.t.length * 0.62)}ch` }}
       >{showLen ? tk.t.length : ' '}</span>
     );
   }
 
   const isTodays = PUZZLE.num === pickPuzzle(puzzles, null).num;
+  // Board readouts, all from state already on screen.
+  const flashText = flash && playing
+    ? (flash.hits === -1 ? `"${flash.w}" is already free` : flash.hits === -2 ? `already guessed "${flash.w}"` : flash.hits === 0 ? `"${flash.w}" appears nowhere` : `"${flash.w}" uncovered ${flash.hits} ${flash.hits === 1 ? 'word' : 'words'}`)
+    : null;
+  const flashColor = flash && flash.hits > 0 ? (STAGE ? 'var(--stg-acc-ink)' : '#7c2d12') : `var(--stg-mute, ${COLORS.faded})`;
+  const headCount = TITLE_TOKENS.filter((tk) => tk.w && !FREEBIES.has(tk.n) && tk.n.length >= 3).length;
+  const headWords = headCount <= 1 ? 'the headline' : headCount === 2 ? 'both words of the headline' : `all ${headCount} words of the headline`;
+  const headWordsShort = headCount <= 1 ? 'the headline' : headCount === 2 ? 'both headline words' : `all ${headCount} headline words`;
   const iq = useIqStanding({ game: 'redact', quizId: PUZZLE.quizId, active: LOFT && !playing });
   const nextUp = useNextUnplayed({ self: 'redact', active: LOFT && !playing });
   const upNext = useUnplayedSimilar({ self: 'redact', active: LOFT && !playing });
@@ -504,22 +523,62 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
           .rd-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
           .rd-btn.primary{background:var(--stg-acc, ${COLORS.accentDeep});border-color:var(--stg-acc, ${COLORS.accentDeep});color:var(--stg-onramp, var(--white));}
           .rd-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, #000) 86%, var(--stg-ink, var(--white)));}
-          .rd-slab{display:inline-block;background:var(--stg-acc, ${COLORS.accentDeep});border-radius:3px;color:#e4e4e7;font-family:${MONO};font-size:11px;line-height:1.5;text-align:center;cursor:pointer;vertical-align:baseline;user-select:none;}
-          .rd-slab:hover{background:#3f3f46;}
-          .rd-article{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:12px;padding:20px 22px;font-size:15.5px;line-height:2.05;color:${INK};}
-          .rd-article p{margin:0 0 14px;}
-          .rd-article p:last-child{margin-bottom:0;}
-          .rd-title-slab{display:inline-block;background:var(--stg-acc, ${COLORS.accentDeep});border-radius:4px;color:transparent;user-select:none;-webkit-user-select:none;}
-          .rd-chip{display:inline-flex;align-items:center;gap:5px;font-family:${MONO};font-size:10.5px;letter-spacing:0.08em;text-transform:uppercase;font-weight:700;border-radius:5px;padding:3px 8px;}
-          .rd-guess{display:inline-flex;align-items:center;gap:5px;font-family:${MONO};font-size:12px;border-radius:6px;padding:2px 8px;border: 1px solid var(--stg-line, rgba(28,30,36,0.14));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};}
-          .rd-guess.hit{border-color:${COLORS.hit};background:${COLORS.hitSoft};color:#7c2d12;font-weight:700;}
-          .rd-guess.zero{color:${FADED};}
-          .rd-sticky{position:sticky;top:0;z-index:30;background:${STAGE ? 'var(--stg-ground)' : T.surface};padding:8px 0 10px;border-bottom: 1px solid var(--stg-line, rgba(28,30,36,0.1));}
-          .rd-input{flex:1;min-width:0;font-family:${SANS};font-weight:700;font-size:16px;border:2px solid var(--stg-acc, ${COLORS.accentDeep});border-radius:9px;padding:10px 13px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};outline:none;}
+          .rd-bar .rd-btn{min-height:50px;border-radius:12px;padding:0 22px;font-size:15px;justify-content:center;}
+          .rd-bar .rd-btn.quiet{border-width:1.5px;border-color:${STAGE ? 'var(--stg-line3)' : COLORS.accentDeep};color:${STAGE ? 'var(--stg-ink2)' : COLORS.accentDeep};font-weight:700;font-size:14px;padding:0 14px;}
+          .rd-field{flex:1;min-width:0;display:flex;align-items:center;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border:1.5px solid var(--stg-acc, ${COLORS.accentDeep});border-radius:12px;padding:0 16px;min-height:50px;}
+          .rd-field:focus-within{box-shadow:0 0 0 2px var(--stg-acc-ink, ${COLORS.accentDeep});}
+          .rd-input{flex:1;min-width:0;width:100%;font-family:${SANS};font-weight:700;font-size:17px;border:0;padding:0;background:transparent;color:${INK};outline:none;}
           .rd-input::placeholder{color:${FADED};font-weight:600;}
-          .rd-stat{display:flex;flex-direction:column;align-items:center;min-width:56px;}
-          .rd-stat b{font-family:${MONO};font-size:15px;color:${INK};}
-          .rd-stat span{font-family:${MONO};font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:${FADED};}
+          .rd-chip{display:inline-flex;align-items:center;gap:5px;font-family:${SANS};font-size:11px;letter-spacing:0.09em;text-transform:uppercase;font-weight:800;border-radius:6px;padding:4px 8px;border:1.5px solid var(--stg-acc, ${COLORS.accentDeep});}
+          .rd-lab{font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:${FADED};white-space:nowrap;}
+          .rd-lab b{color:${INK};font-size:16px;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;}
+          .rd-meter{display:flex;align-items:center;gap:10px;}
+          .rd-track{width:110px;height:8px;border-radius:4px;background:${STAGE ? 'var(--stg-line2)' : COLORS.accentSoft};overflow:hidden;}
+          .rd-track > i{display:block;height:100%;background:var(--stg-acc, ${COLORS.hit});}
+          .rd-flash{font-family:${SANS};font-size:13px;font-weight:700;}
+          .rd-sticky{position:sticky;top:0;z-index:30;background:${STAGE ? 'var(--stg-ground)' : T.surface};padding:10px 0 12px;display:flex;flex-direction:column;gap:10px;}
+          .rd-ph{display:none !important;}
+          /* THE NEWSPRINT. A deliberately physical object, so it keeps its own
+             paper and ink in both registers (owner ruling, board round three).
+             A hidden word is still a bare no-break space sized to the word. */
+          .rd-paper{background:${NP.paper};color:${NP.ink};border-radius:4px;padding:14px 24px 18px;border:1px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.14)'};}
+          .rd-folio{border-top:3px solid ${NP.ink};border-bottom:1px solid ${NP.ink};padding:5px 0 4px;display:flex;justify-content:space-between;gap:12px;font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:${NP.meta};font-variant-numeric:tabular-nums;}
+          .rd-head{padding:14px 0 6px;font-size:36px;font-weight:800;line-height:1.15;color:${NP.ink};}
+          .rd-title-slab{display:inline-block;height:0.92em;vertical-align:-0.1em;line-height:1;background:${NP.ink};border-radius:3px;color:transparent;user-select:none;-webkit-user-select:none;}
+          .rd-deck{display:block;font-size:12px;font-weight:600;color:${NP.meta};padding-bottom:10px;border-bottom:1px solid ${NP.rule};}
+          .rd-article{padding-top:12px;column-count:2;column-gap:26px;column-rule:1px solid ${NP.colRule};font-size:14px;line-height:23px;font-weight:500;text-align:justify;color:${NP.ink};}
+          .rd-article p{margin:0 0 8px;text-indent:1.2em;}
+          .rd-article p:first-child{text-indent:0;}
+          .rd-article p:last-child{margin-bottom:0;}
+          .rd-slab{display:inline-block;height:16px;line-height:16px;vertical-align:-3px;background:${NP.ink};border-radius:2px;color:${NP.paper};font-family:${SANS};font-size:11px;font-weight:800;text-align:center;text-indent:0;cursor:pointer;user-select:none;-webkit-user-select:none;}
+          .rd-slab:hover{background:#3a352c;}
+          .rd-slab.peek{background:${NP.peek};}
+          .rd-fresh{background:${NP.hitBg};color:${NP.hitInk};border-radius:3px;padding:0 1px;font-weight:800;}
+          .rd-missed{color:${NP.miss};text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px;font-weight:700;}
+          .rd-hist{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
+          .rd-guess{display:inline-flex;align-items:center;gap:5px;font-family:${SANS};font-size:12.5px;font-weight:700;border-radius:8px;padding:3px 9px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.14)'};background:transparent;}
+          .rd-guess b{font-weight:800;color:${STAGE ? 'var(--stg-acc-ink)' : '#7c2d12'};font-variant-numeric:tabular-nums;}
+          .rd-guess.hit{border-color:${STAGE ? 'var(--stg-acc)' : COLORS.hit};background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 14%, transparent)' : COLORS.hitSoft};color:${STAGE ? 'var(--stg-ink)' : '#7c2d12'};}
+          .rd-guess.zero{color:${FADED};}
+          @media(max-width:640px){
+            .rd-dk{display:none !important;}
+            .rd-ph{display:flex !important;}
+            .rd-sticky{gap:8px;padding:8px 0 10px;}
+            .rd-chip{font-size:10px;padding:3px 7px;}
+            .rd-lab{font-size:10px;}
+            .rd-lab b{font-size:14px;}
+            .rd-track{width:70px;height:6px;}
+            .rd-flash{font-size:12.5px;}
+            .rd-field{padding:0 12px;min-height:48px;}
+            .rd-input{font-size:16px;}
+            .rd-bar .rd-btn{min-height:48px;padding:0 18px;}
+            .rd-bar .rd-btn.quiet{width:48px;padding:0;}
+            .rd-paper{padding:12px 14px 16px;}
+            .rd-folio{font-size:9.5px;}
+            .rd-head{font-size:30px;padding:12px 0 4px;}
+            .rd-deck{font-size:11.5px;padding-bottom:9px;}
+            .rd-article{column-count:1;font-size:14px;line-height:24px;text-align:left;padding-top:10px;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
@@ -585,71 +644,87 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
             <>
               {/* sticky score block + input (typed dailies pin these to the top) */}
               <div className="rd-sticky">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: playing ? 8 : 0, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   <span className="rd-chip" style={{ background: `var(--stg-acc, ${COLORS.accentDeep})`, color: `var(--stg-onramp, ${T.white})` }}>{PUZZLE.cat}</span>
-                  <span className="rd-chip" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, color: ACC_DEEP_INK }}>{DIFF_LABEL[PUZZLE.diff] || 'Fair'}</span>
-                  <div style={{ marginLeft: 'auto', display: 'flex', gap: 14 }}>
-                    <div className="rd-stat"><b>{g.guesses.length}</b><span>Guesses</span></div>
-                    <div className="rd-stat"><b>{acc}%</b><span>Hit rate</span></div>
-                    <div className="rd-stat"><b>{pct}%</b><span>Uncovered</span></div>
-                    <div className="rd-stat"><b>{elapsed}</b><span>Time</span></div>
+                  <span className="rd-chip" style={{ background: 'transparent', color: ACC_DEEP_INK }}>{DIFF_LABEL[PUZZLE.diff] || 'Fair'}</span>
+                  {flashText && <span className="rd-flash rd-dk" style={{ marginLeft: 6, color: flashColor }}>{flashText}</span>}
+                  <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <span className="rd-lab"><b>{g.guesses.length}</b> {g.guesses.length === 1 ? 'guess' : 'guesses'} &middot; <b>{acc}%</b> hit rate</span>
+                    <div className="rd-meter rd-dk">
+                      <div className="rd-track"><i style={{ width: `${pct}%` }} /></div>
+                      <span className="rd-lab"><b style={{ fontSize: 14 }}>{pct}%</b> uncovered</span>
+                    </div>
                   </div>
                 </div>
                 {playing && (
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <input
-                      ref={inputRef}
-                      className="rd-input"
-                      value={input}
-                      maxLength={40}
-                      autoCapitalize="off"
-                      autoCorrect="off"
-                      spellCheck={false}
-                      placeholder="Guess a word..."
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') submitGuess(); }}
-                    />
+                  <div className="rd-bar" style={{ display: 'flex', gap: 8 }}>
+                    <label className="rd-field">
+                      <input
+                        ref={inputRef}
+                        className="rd-input"
+                        aria-label="Guess a word"
+                        value={input}
+                        maxLength={40}
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        placeholder="Guess a word..."
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') submitGuess(); }}
+                      />
+                    </label>
                     <button className="rd-btn primary" onClick={submitGuess}>Guess</button>
-                    <button className="rd-btn" title="Reveal the article and end the day" onClick={() => setConfirmGiveUp(true)}><Flag size={15} /></button>
+                    <button className="rd-btn quiet" title="Reveal the article and end the day" aria-label="Give up and reveal the article" onClick={() => setConfirmGiveUp(true)}><Flag size={15} /><span className="rd-dk">Give up</span></button>
                   </div>
                 )}
-                {flash && playing && (
-                  <div style={{ fontFamily: MONO, fontSize: 12, color: flash.hits > 0 ? (STAGE ? 'var(--stg-acc-ink)' : '#7c2d12') : `var(--stg-mute, ${COLORS.faded})`, marginTop: 6 }}>
-                    {flash.hits === -1 ? `"${flash.w}" is already free` : flash.hits === -2 ? `already guessed "${flash.w}"` : flash.hits === 0 ? `"${flash.w}" appears nowhere` : `"${flash.w}" uncovered ${flash.hits} ${flash.hits === 1 ? 'word' : 'words'}`}
+                <div className="rd-ph" style={{ alignItems: 'center', gap: 10 }}>
+                  {flashText && <span className="rd-flash" style={{ color: flashColor }}>{flashText}</span>}
+                  <div className="rd-meter" style={{ marginLeft: 'auto' }}>
+                    <div className="rd-track"><i style={{ width: `${pct}%` }} /></div>
+                    <span className="rd-lab"><b style={{ fontSize: 13 }}>{pct}%</b> uncovered</span>
                   </div>
-                )}
+                </div>
               </div>
 
-              {/* the redacted headline */}
-              <div style={{ margin: '16px 0 10px', fontSize: 24, fontWeight: 900, color: INK, lineHeight: 1.35 }}>
-                {TITLE_TOKENS.map((tk, i) => {
-                  if (!tk.w) return <span key={i}>{tk.t}</span>;
-                  if (unmasked || FREEBIES.has(tk.n) || tk.n.length < 3 || revealedNorms.has(tk.n)) {
-                    return <span key={i} style={over && solved ? { color: `var(--stg-ink, ${COLORS.hit})` } : undefined}>{tk.t}</span>;
-                  }
-                  // Width only, never the letters: 0.85ch per character tracks the
-                  // real word's width in this face without putting it in the DOM.
-                  return <span key={i} className="rd-title-slab" style={{ width: `${Math.max(1.2, tk.t.length * 0.85)}ch` }}>{'\u00a0'}</span>;
-                })}
-                {unmasked && (
-                  <span style={{ fontFamily: MONO, fontSize: 12, fontWeight: 500, color: FADED, marginLeft: 10 }}>
-                    {solved ? 'named it' : 'revealed'}
-                  </span>
-                )}
-              </div>
-
-              {/* the article */}
-              <div className="rd-article">
-                {paragraphs.map((para, pi) => (
-                  <p key={pi}>{para.map((tk, ti) => renderToken(tk, `${pi}-${ti}`))}</p>
-                ))}
+              {/* the newsprint: folio, redacted headline, deck, then the article */}
+              <div className="rd-paper">
+                <div className="rd-folio">
+                  <span>No. {PUZZLE.num} &middot; {PUZZLE.dateLabel}{PUZZLE.sunday ? ' \u00b7 Sunday Edition' : ''}</span>
+                  {playing && <span className="rd-dk" style={{ display: 'inline' }}>Tap a block to count its letters</span>}
+                  {playing && <span className="rd-ph" style={{ display: 'none' }}>Tap a block for its length</span>}
+                </div>
+                <div className="rd-head">
+                  {TITLE_TOKENS.map((tk, i) => {
+                    if (!tk.w) return <span key={i}>{tk.t}</span>;
+                    if (unmasked || FREEBIES.has(tk.n) || tk.n.length < 3 || revealedNorms.has(tk.n)) {
+                      return <span key={i} style={over && solved ? { color: NP.hitInk } : undefined}>{tk.t}</span>;
+                    }
+                    // Width only, never the letters: 0.85ch per character tracks the
+                    // real word's width in this face without putting it in the DOM.
+                    return <span key={i} className="rd-title-slab" aria-label={`Hidden headline word, ${tk.t.length} letters`} style={{ width: `${Math.max(1.2, tk.t.length * 0.85)}ch` }}>{'\u00a0'}</span>;
+                  })}
+                  {unmasked && (
+                    <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: NP.meta, marginLeft: 10, verticalAlign: 'middle' }}>
+                      {solved ? 'named it' : 'revealed'}
+                    </span>
+                  )}
+                </div>
+                <span className="rd-deck">
+                  <span className="rd-dk" style={{ display: 'inline' }}>A short article about one famous {String(PUZZLE.cat || 'subject').toLowerCase()}. Uncover {headWords} to win.</span>
+                  <span className="rd-ph" style={{ display: 'none' }}>One famous {String(PUZZLE.cat || 'subject').toLowerCase()}. Uncover {headWordsShort} to win.</span>
+                </span>
+                <div className="rd-article">
+                  {paragraphs.map((para, pi) => (
+                    <p key={pi}>{para.map((tk, ti) => renderToken(tk, `${pi}-${ti}`))}</p>
+                  ))}
+                </div>
               </div>
 
               {/* guess history */}
               {g.guesses.length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 }}>
+                <div className="rd-hist">
                   {[...g.guesses].reverse().map((gu, i) => (
-                    <span key={i} className={`rd-guess${gu.hits > 0 ? ' hit' : ' zero'}`}>{gu.w}{gu.hits > 0 ? ` ×${gu.hits}` : ''}</span>
+                    <span key={i} className={`rd-guess${gu.hits > 0 ? ' hit' : ' zero'}`}>{gu.w}{gu.hits > 0 ? <b>{`\u00d7${gu.hits}`}</b> : null}</span>
                   ))}
                 </div>
               )}

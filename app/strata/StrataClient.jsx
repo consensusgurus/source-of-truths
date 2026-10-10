@@ -99,6 +99,15 @@ function getAnonId() {
   } catch (e) { return ''; }
 }
 
+// The dig site's measurements for a phone (<=640) or a desktop board. A Sunday
+// grid is seven wide, so it trades band and gap for tile size to keep a tile
+// at a 44px touch target on a 390px phone.
+function boardGeom(narrow, cols) {
+  const wide = cols > 5;
+  if (narrow) return { gap: wide ? 4 : 7, band: wide ? 6 : 12, mar: wide ? 4 : 8, max: 58 };
+  return { gap: wide ? 8 : 10, band: 20, mar: 16, max: 70 };
+}
+
 const freshState = () => ({ v: 1, found: [], hints: 0, thread: false, t0: null, tEnd: null, status: 'playing' });
 const EMPTY_BOARD = { plays: 0, best: null, leaderboard: [] };
 
@@ -543,17 +552,30 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
   // The lesson for the next person measuring a live daily through an automated
   // tab: check document.visibilityState before believing an animation is stuck,
   // or call el.getAnimations().forEach(a => a.finish()) and measure after.
-  const gap = 6;
+  //
+  // Round three (2026-10-10): the board sits in a dig site, a strata band down
+  // each side and bedrock under it, beside a dig log on desktop and under one
+  // on a phone. boardGeom() is the one place the gap, band and margin are
+  // decided, so the fit below and the render agree on them.
   const [tile, setTile] = useState(56);
+  const [narrow, setNarrow] = useState(false);
   useEffect(() => {
     const fit = () => {
-      const avail = Math.min(window.innerWidth - 34, 560);
-      setTile(Math.max(30, Math.min(56, Math.floor((avail - gap * (cols - 1)) / cols))));
+      const w = window.innerWidth;
+      const nar = w <= 640;
+      const geo = boardGeom(nar, cols);
+      // The page gutter: 12px a side on a phone-sized stage, 38 otherwise; the
+      // board column then sits beside a 164px log (plus its 24px gap) on desktop.
+      const content = w <= (STAGE ? 700 : 560) ? w - 24 : Math.min(760, w - 76);
+      const avail = (nar ? content : Math.min(content - 188, 462)) - 2 * geo.band - 2 * geo.mar;
+      setNarrow(nar);
+      setTile(Math.max(30, Math.min(geo.max, Math.floor((avail - geo.gap * (cols - 1)) / cols))));
     };
     fit();
     window.addEventListener('resize', fit);
     return () => window.removeEventListener('resize', fit);
-  }, [cols]);
+  }, [cols, STAGE]);
+  const { gap, band: BAND, mar: BMAR } = boardGeom(narrow, cols);
   const step = tile + gap;
   const boardW = cols * tile + gap * (cols - 1);
   const boardH = rows * tile + gap * (rows - 1);
@@ -588,22 +610,25 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
       <div className="st-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
         <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.st-wrap{padding-left:12px !important;padding-right:12px !important;}}
-          .st-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : COLORS.accentDeep};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
+          .st-btn{font-family:${SANS};font-weight:${STAGE ? 700 : 800};font-size:14px;border:${STAGE ? '1.5px solid var(--stg-cell-line)' : `2px solid ${COLORS.accentDeep}`};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};border-radius:${STAGE ? 12 : 8}px;padding:9px 16px;min-height:48px;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
           .st-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
           .st-btn:disabled{opacity:0.4;cursor:default;}
           .st-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
           .st-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accentDeep}) 86%, var(--stg-ink, var(--white)));}
           .st-board{position:relative;margin:0 auto;touch-action:none;user-select:none;-webkit-user-select:none;}
           .st-tile{position:absolute;display:flex;align-items:center;justify-content:center;
-            font-family:${SANS};font-weight:800;border-radius:7px;cursor:pointer;
-            background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border:1px solid ${STAGE ? 'var(--stg-line)' : 'rgba(28,30,36,0.15)'};color:${INK};
+            font-family:${SANS};font-weight:800;border-radius:10px;cursor:pointer;box-sizing:border-box;
+            background:var(--st-stone, ${STAGE ? 'var(--stg-cell)' : 'var(--white)'});border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.28)'};color:${INK};
             transition:top ${FALL_MS}ms cubic-bezier(.4,.05,.35,1),left ${FALL_MS}ms cubic-bezier(.4,.05,.35,1),background 120ms,color 120ms,border-color 120ms,transform 160ms,opacity ${LIFT_MS}ms;}
           .st-tile.on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));transform:scale(1.04);}
-          .st-tile.lift{background:${COLORS.green};border-color:${COLORS.green};color:var(--white);opacity:0.15;transform:scale(0.82);}
+          .st-tile.lift{background:${STAGE ? 'var(--stg-good)' : COLORS.green};border-color:${STAGE ? 'var(--stg-good)' : COLORS.green};color:${STAGE ? 'var(--stg-ground)' : 'var(--white)'};opacity:0.15;transform:scale(0.82);}
+          .st-hole{position:absolute;box-sizing:border-box;border-radius:10px;border:1.5px dashed ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)'};pointer-events:none;}
+          .st-k{font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:${FADED};}
+          .st-k b{font-size:14px;letter-spacing:0;color:${INK};font-weight:800;}
+          .st-clear{font-family:${SANS};font-weight:700;font-size:13px;background:transparent;color:${FADED};border:0;padding:0 8px;min-height:44px;min-width:44px;text-decoration:underline;cursor:pointer;}
+          @media(max-width:640px){.st-k{font-size:10px;}.st-k b{font-size:13px;}.st-tile,.st-hole{border-radius:9px;}}
           .st-tile.bad{background:${STAGE ? 'var(--stg-surf2)' : '#fee2e2'};border-color:${STAGE ? 'var(--stg-bad)' : '#b91c1c'};color:${STAGE ? 'var(--stg-bad)' : '#7f1d1d'};}
           .st-tile.flash{border-color:var(--stg-acc, ${COLORS.accent});box-shadow:0 0 0 3px var(--stg-surf2, ${COLORS.accentSoft});}
-          .st-word{font-family:${MONO};font-size:13px;letter-spacing:0.08em;padding:5px 10px;border-radius:7px;background:#dcfce7;color:${COLORS.green};font-weight:700;}
-          .st-slot{font-family:${MONO};font-size:13px;letter-spacing:0.28em;padding:5px 10px;border-radius:7px;background:rgba(28,30,36,0.05);color:${FADED};}
         ` }} />
 
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
@@ -662,93 +687,240 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
             </div>
           )}
 
-          {!preStart && (
-            <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '2px 0 12px', flexWrap: 'wrap' }}>
-                <div style={{ fontFamily: MONO, fontSize: 12.5, fontWeight: 700, color: FADED }}>
-                  {foundWords.length}/{TOTAL} &middot; {elapsed}{g.hints ? ` · ${g.hints} hint${g.hints > 1 ? 's' : ''}` : ''}
-                </div>
-                <div style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 11.5, fontWeight: 700, color: g.thread ? `var(--stg-acc-ink, ${COLORS.accentDeep})` : 'transparent', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  {g.thread ? threadLabel : '.'}
-                </div>
-              </div>
+          {!preStart && (() => {
+            // ---- the dig site (round three, 2026-10-10) ----
+            // Every readout here is state the board already had on screen: the
+            // found words, the remaining words' LENGTHS (the old slot row printed
+            // them as dots), the hint count and the trace. Nothing new is told.
+            const A_FILL = STAGE ? 'var(--stg-acc)' : COLORS.accent;
+            const A_TINT = STAGE ? 'color-mix(in srgb, var(--stg-acc) 18%, transparent)' : COLORS.accentSoft;
+            const CELL_LINE = STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)';
+            const BAD = STAGE ? 'var(--stg-bad)' : '#b91c1c';
+            const PANEL = STAGE ? 'var(--stg-surf)' : 'rgba(28,30,36,0.04)';
+            const GROUND = STAGE ? 'var(--stg-ground)' : T.surface;
+            // Stone darkens with depth, from the cell color at the surface
+            // toward the page ground at the bottom row, in either register.
+            const stone = (r) => {
+              const t = Math.round((r / Math.max(1, rows - 1)) * 62);
+              return STAGE
+                ? `color-mix(in srgb, var(--stg-cell) ${100 - t}%, var(--stg-ground))`
+                : `color-mix(in srgb, #ffffff ${100 - t}%, #e7e2d8)`;
+            };
+            const showMissed = !playing && (won || !LOFT || revealed);
+            const logRows = foundWords.map((f, i) => ({ k: f.word, found: true, tag: `Lift ${i + 1}`, t: f.word }))
+              .concat(remaining.map((w) => ({ k: w, found: false, missed: showMissed, tag: showMissed ? 'Missed' : `Buried · ${w.length} letters`, t: showMissed ? w : '·'.repeat(w.length) })));
+            const rowInk = (s) => (s.found ? ACC_DEEP_INK : (s.missed ? BAD : FADED));
+            const rowEdge = (s) => (s.found ? A_FILL : (s.missed ? BAD : CELL_LINE));
+            const lede = PUZZLE.sunday ? 'two categories you are not told' : 'one category you are not told';
 
-              <div className="st-board" style={{ width: boardW, height: boardH, marginBottom: 16 }}>
-                {cells.map((cell) => {
-                  const pos = at.get(cell.id);
-                  const gone = removed.has(cell.id) && !liftSet.has(cell.id);
-                  if (gone && !pos) return null;
-                  const p = pos || at.get(cell.id);
-                  const cls = ['st-tile'];
-                  if (liftSet.has(cell.id)) cls.push('lift');
-                  else if (traceSet.has(cell.id)) cls.push(bad ? 'bad' : 'on');
-                  if (flash === cell.id) cls.push('flash');
-                  if (!p) return null;
-                  return (
-                    <div
-                      key={cell.id}
-                      className={cls.join(' ')}
-                      style={{
-                        width: tile, height: tile, fontSize: Math.round(tile * 0.42),
-                        top: p[0] * step, left: p[1] * step,
-                      }}
-                      data-cid={cell.id}
-                      onPointerDown={(e) => onDown(cell.id, e)}
-                    >{cell.ch}</div>
-                  );
-                })}
-              </div>
+            // Where a letter used to be: every grid square no tile stands on.
+            const taken = new Set();
+            at.forEach((p) => { if (p) taken.add(`${p[0]},${p[1]}`); });
+            const holes = [];
+            for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) if (!taken.has(`${r},${c}`)) holes.push([r, c]);
 
-              {/* What you have spelled so far. Tapping has no finger on the
-                  board to look at, so the trace needs to be readable as text. */}
-              <div style={{ minHeight: 26, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontFamily: MONO, fontSize: 16, letterSpacing: '0.22em', fontWeight: 700, color: bad ? '#b91c1c' : `var(--stg-acc-ink, ${COLORS.accentDeep})` }}>
-                  {trace.map((id) => cells[id].ch).join('')}
-                </span>
-                {trace.length > 0 && (
-                  <button
-                    onClick={() => setTrace([])}
-                    style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                  >clear</button>
+            // A strata band down one side of the board, one stone shade per row
+            // and a wavy seam between rows. SVG paint goes through currentColor.
+            const sideBand = (side) => {
+              const B = BAND;
+              let d = '';
+              for (let r = 1; r < rows; r++) {
+                const y = r * step - gap / 2;
+                const s = ((r + (side === 'r' ? 1 : 0)) % 2) ? -1 : 1;
+                d += `M0 ${y}q${B / 4} ${s * B / 4} ${B / 2} 0t${B / 2} 0`;
+              }
+              return (
+                <svg width={B} height={boardH} viewBox={`0 0 ${B} ${boardH}`} aria-hidden="true" style={{ flex: '0 0 auto', display: 'block' }}>
+                  {Array.from({ length: rows }, (_, r) => {
+                    const y0 = r === 0 ? 0 : r * step - gap / 2;
+                    const y1 = r === rows - 1 ? boardH : (r + 1) * step - gap / 2;
+                    return <rect key={r} x="0" y={y0} width={B} height={y1 - y0} fill="currentColor" style={{ color: stone(r) }} />;
+                  })}
+                  {d && <path d={d} fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: FADED }} />}
+                </svg>
+              );
+            };
+            const hatch = (h) => ({ display: 'block', height: h, borderRadius: 3, boxSizing: 'border-box', background: `repeating-linear-gradient(135deg, ${FADED} 0 2px, transparent 2px 7px)`, border: `1px solid ${FADED}` });
+
+            const site = (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: narrow ? 5 : 6, width: boardW + 2 * BAND + 2 * BMAR, maxWidth: '100%', margin: narrow ? '0 auto' : 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '0 2px' }}>
+                  <span className="st-k" style={{ fontSize: 10 }}>Surface</span>
+                  <span className="st-k" style={{ fontSize: 10, textAlign: 'right' }}>Letters fall down their column</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'stretch', boxSizing: 'border-box', padding: narrow ? '8px 0' : '16px 0', borderRadius: narrow ? 12 : 14, background: PANEL }}>
+                  {sideBand('l')}
+                  <div className="st-board" style={{ width: boardW, height: boardH, margin: `0 ${BMAR}px` }}>
+                    {holes.map(([r, c]) => (
+                      <span key={`h${r},${c}`} className="st-hole" style={{ width: tile, height: tile, top: r * step, left: c * step }} />
+                    ))}
+                    {cells.map((cell) => {
+                      const pos = at.get(cell.id);
+                      const gone = removed.has(cell.id) && !liftSet.has(cell.id);
+                      if (gone && !pos) return null;
+                      const p = pos || at.get(cell.id);
+                      const cls = ['st-tile'];
+                      if (liftSet.has(cell.id)) cls.push('lift');
+                      else if (traceSet.has(cell.id)) cls.push(bad ? 'bad' : 'on');
+                      if (flash === cell.id) cls.push('flash');
+                      if (!p) return null;
+                      return (
+                        <div
+                          key={cell.id}
+                          className={cls.join(' ')}
+                          style={{
+                            width: tile, height: tile, fontSize: Math.round(tile * 0.42),
+                            top: p[0] * step, left: p[1] * step,
+                            '--st-stone': stone(p[0]),
+                          }}
+                          data-cid={cell.id}
+                          onPointerDown={(e) => onDown(cell.id, e)}
+                        >{cell.ch}</div>
+                      );
+                    })}
+                  </div>
+                  {sideBand('r')}
+                </div>
+                {narrow ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ ...hatch(8), flex: 1 }} />
+                    <span className="st-k" style={{ fontSize: 10 }}>Bedrock, the floor</span>
+                  </div>
+                ) : (
+                  <span style={hatch(10)} />
                 )}
               </div>
+            );
 
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
-                {foundWords.map((f) => <span key={f.word} className="st-word">{f.word}</span>)}
-                {(playing || (LOFT && !won && !revealed)) && remaining.map((w) => <span key={w} className="st-slot">{'·'.repeat(w.length)}</span>)}
-                {!playing && (won || !LOFT || revealed) && remaining.map((w) => <span key={w} className="st-slot" style={{ letterSpacing: '0.08em', color: '#b91c1c' }}>{w}</span>)}
+            const traceRow = playing && (
+              <>
+                {/* What you have spelled so far. Tapping has no finger on the
+                    board to look at, so the trace needs to be readable as text. */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: narrow ? 10 : 12, flexWrap: 'wrap', padding: narrow ? '12px 0 0' : '18px 0 0', marginLeft: narrow ? 0 : 188 }}>
+                  <span className="st-k">Tracing</span>
+                  <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }} aria-live="polite" aria-label={trace.length ? `Tracing ${trace.map((id) => cells[id].ch).join('')}` : 'Nothing traced'}>
+                    {trace.map((id, i) => (
+                      <span key={`${id}-${i}`} style={{ width: narrow ? 34 : 36, height: narrow ? 38 : 40, boxSizing: 'border-box', borderRadius: 8, background: bad ? (STAGE ? 'var(--stg-surf2)' : '#fee2e2') : A_FILL, border: bad ? `1.5px solid ${BAD}` : 'none', color: bad ? BAD : ON_ACC, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontSize: narrow ? 19 : 20, fontWeight: 800 }}>{cells[id].ch}</span>
+                    ))}
+                    <span aria-hidden="true" style={{ width: narrow ? 34 : 36, height: narrow ? 38 : 40, boxSizing: 'border-box', borderRadius: 8, border: `1.5px dashed ${CELL_LINE}` }} />
+                  </div>
+                  {narrow && <div style={{ flex: 1 }} />}
+                  <button className="st-clear" onClick={() => setTrace([])} style={{ visibility: trace.length ? 'visible' : 'hidden' }} tabIndex={trace.length ? 0 : -1}>clear</button>
+                </div>
+                <div style={{ padding: narrow ? '4px 0 0' : '6px 0 0', marginLeft: narrow ? 0 : 188, fontFamily: SANS, fontSize: 12, fontWeight: 600, lineHeight: 1.45, color: FADED }}>
+                  Tap letters one at a time or drag through them. Diagonals count. A wrong trace costs nothing.
+                </div>
+              </>
+            );
+
+            const threadBtn = (
+              <button className="st-btn" onClick={revealThread} disabled={g.thread} style={narrow ? { flex: 1 } : undefined}>
+                <Lightbulb size={15} />{g.thread ? 'Thread shown' : PUZZLE.sunday ? 'Name the threads' : 'Name the thread'}
+              </button>
+            );
+            const startBtn = <button className="st-btn" onClick={showStart} style={narrow ? { flex: 1 } : undefined}><Lightbulb size={15} />Show me a start</button>;
+            const giveBtn = <button className="st-btn" onClick={giveUp}><Flag size={15} />Give up</button>;
+            const costLine = <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 600, color: FADED }}>Each costs a hint.</span>;
+
+            const stuckCard = stuck && (
+              <div style={{ border: `1.5px solid var(--stg-line, ${COLORS.accentDeep})`, borderRadius: 10, padding: '12px 14px', margin: '16px 0 0', background: `var(--stg-surf, ${COLORS.accentSoft})` }}>
+                <div style={{ fontFamily: SANS, fontWeight: 800, fontSize: 14, color: ACC_DEEP_INK, marginBottom: 4 }}>
+                  Nothing left to read. That is our fault, not yours.
+                </div>
+                <div style={{ fontFamily: SANS, fontSize: 13, color: FADED, fontWeight: 600, marginBottom: 10 }}>
+                  This board should never have been able to do that. Put {unstickTo === 0 ? 'the board' : 'it'} back
+                  to where it can still be finished and try another order. It costs nothing: no hint, no time,
+                  no points.
+                </div>
+                <button className="st-btn primary" onClick={unstick}>
+                  <RotateCcw size={15} />
+                  {unstickTo === 0
+                    ? 'Put every word back'
+                    : `Put ${foundWords.length - unstickTo} word${foundWords.length - unstickTo > 1 ? 's' : ''} back`}
+                </button>
               </div>
+            );
 
-              {stuck && (
-                <div style={{ border: `1.5px solid var(--stg-line, ${COLORS.accentDeep})`, borderRadius: 10, padding: '12px 14px', marginBottom: 14, background: `var(--stg-surf, ${COLORS.accentSoft})` }}>
-                  <div style={{ fontFamily: SANS, fontWeight: 800, fontSize: 14, color: ACC_DEEP_INK, marginBottom: 4 }}>
-                    Nothing left to read. That is our fault, not yours.
-                  </div>
-                  <div style={{ fontFamily: SANS, fontSize: 13, color: FADED, fontWeight: 600, marginBottom: 10 }}>
-                    This board should never have been able to do that. Put {unstickTo === 0 ? 'the board' : 'it'} back
-                    to where it can still be finished and try another order. It costs nothing: no hint, no time,
-                    no points.
-                  </div>
-                  <button className="st-btn primary" onClick={unstick}>
-                    <RotateCcw size={15} />
-                    {unstickTo === 0
-                      ? 'Put every word back'
-                      : `Put ${foundWords.length - unstickTo} word${foundWords.length - unstickTo > 1 ? 's' : ''} back`}
-                  </button>
-                </div>
-              )}
+            const threadLine = g.thread && (
+              <div className="st-k" style={{ color: ACC_DEEP_INK, padding: '6px 0 0' }}>Thread: {threadLabel}</div>
+            );
 
-              {playing && (
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
-                  <button className="st-btn" onClick={revealThread} disabled={g.thread}>
-                    <Lightbulb size={15} />{g.thread ? 'Thread shown' : PUZZLE.sunday ? 'Name the threads' : 'Name the thread'}
-                  </button>
-                  <button className="st-btn" onClick={showStart}><Lightbulb size={15} />Show me a start</button>
-                  <button className="st-btn" style={{ marginLeft: 'auto' }} onClick={giveUp}><Flag size={15} />Give up</button>
+            if (narrow) {
+              return (
+                <div style={{ paddingBottom: 16 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                      <span className="st-k">Dig log &middot; {foundWords.length} of {TOTAL} lifted</span>
+                      <span className="st-k">Hints <b>{g.hints}</b></span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                      {logRows.map((s) => (
+                        <span key={s.k} aria-label={s.found ? `Lifted ${s.t}` : (s.missed ? `Missed ${s.t}` : `Buried word, ${s.k.length} letters`)}
+                          style={{ flex: `${s.found || s.missed ? 1.15 : 1} 1 0`, minWidth: 54, height: 38, boxSizing: 'border-box', borderRadius: 9, border: `1.5px ${s.found ? 'solid' : 'dashed'} ${rowEdge(s)}`, background: s.found ? A_TINT : 'transparent', color: rowInk(s), display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px', fontFamily: SANS, fontSize: 13, fontWeight: 800, letterSpacing: s.found || s.missed ? '0.06em' : '0.18em' }}>{s.t}</span>
+                      ))}
+                    </div>
+                    <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 600, color: FADED }}>All {TOTAL} share {lede}.</span>
+                    {threadLine}
+                  </div>
+                  <div style={{ paddingTop: 12 }}>{site}</div>
+                  {traceRow}
+                  {stuckCard}
+                  {playing && (
+                    <>
+                      <div style={{ display: 'flex', gap: 8, paddingTop: 12 }}>{threadBtn}{startBtn}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, paddingTop: 8 }}>{costLine}{giveBtn}</div>
+                    </>
+                  )}
                 </div>
-              )}
-            </>
-          )}
+              );
+            }
+
+            // The rail's lit length runs to the last lifted word's node. Each log
+            // row is a 13px tag line, a 5px gap and a 36px chip, 12px apart.
+            const PITCH = 66;
+            const railLit = foundWords.length ? Math.min((foundWords.length - 1) * PITCH + 22, (logRows.length - 1) * PITCH + 22) : 0;
+            return (
+              <div style={{ paddingBottom: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
+                  <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 600, color: FADED }}>{TOTAL} words buried in {rows * cols} letters, all from {lede}.</span>
+                  <span className="st-k" style={{ flex: '0 0 auto' }}>Hints <b>{g.hints}</b></span>
+                </div>
+                {threadLine}
+                <div style={{ display: 'flex', gap: 24, paddingTop: 16 }}>
+                  <div style={{ width: 164, flex: '0 0 auto', display: 'flex', flexDirection: 'column' }}>
+                    <span className="st-k">Dig log</span>
+                    <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, padding: '2px 0 12px' }}>{foundWords.length} of {TOTAL} lifted</span>
+                    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 12, paddingLeft: 18 }}>
+                      <span aria-hidden="true" style={{ position: 'absolute', left: 5, top: 6, bottom: 6, width: 3, borderRadius: 2, background: CELL_LINE }} />
+                      {railLit > 0 && <span aria-hidden="true" style={{ position: 'absolute', left: 5, top: 6, height: railLit, width: 3, borderRadius: 2, background: A_FILL }} />}
+                      {logRows.map((s) => (
+                        <div key={s.k} style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                          <span aria-hidden="true" style={{ position: 'absolute', left: -18, top: 21, width: 13, height: 13, boxSizing: 'border-box', borderRadius: 7, background: s.found ? A_FILL : GROUND, border: `2px solid ${s.found ? A_FILL : rowEdge(s)}` }} />
+                          <span className="st-k" style={{ fontSize: 10, lineHeight: '13px', color: rowInk(s) }}>{s.tag}</span>
+                          <span aria-label={s.found ? `Lifted ${s.t}` : (s.missed ? `Missed ${s.t}` : `Buried word, ${s.k.length} letters`)}
+                            style={{ height: 36, boxSizing: 'border-box', borderRadius: 9, border: `1.5px ${s.found ? 'solid' : 'dashed'} ${rowEdge(s)}`, background: s.found ? A_TINT : 'transparent', color: rowInk(s), display: 'flex', alignItems: 'center', padding: '0 12px', fontFamily: SANS, fontSize: 15, fontWeight: 800, letterSpacing: s.found || s.missed ? '0.08em' : '0.3em', overflow: 'hidden', whiteSpace: 'nowrap' }}>{s.t}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 14 }}>
+                      <span aria-hidden="true" style={{ ...hatch(10), width: 22, flex: '0 0 auto', borderRadius: 2 }} />
+                      <span className="st-k">Bedrock, the floor</span>
+                    </div>
+                  </div>
+                  {site}
+                </div>
+                {traceRow}
+                {stuckCard}
+                {playing && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', paddingTop: 16 }}>
+                    {threadBtn}{startBtn}{costLine}
+                    <div style={{ flex: 1 }} />
+                    {giveBtn}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
 
           </div>
