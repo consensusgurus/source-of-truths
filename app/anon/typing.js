@@ -28,15 +28,33 @@
 // then into the first letter of the next one, which is where the eye already
 // is. Clamped at both ends rather than wrapping: a passage has a last letter.
 //
-// Bank: the next letter of the ANSWER, and when that runs out it falls into the
-// passage exactly as it always did, so walking off the end of a bank row still
-// lands somewhere real instead of stopping dead.
-export function nextCell(h, n, d, { A, owner, oidx, N }) {
+// Bank: the next letter of the ANSWER. Off the END of a row the cursor STAYS IN
+// THE BANK (owner, 2026-10-10, "you type in an answer and it's gone"): it goes to
+// the first empty letter of the next answer that still has one, starting with
+// the row just typed, and stays put when nothing is empty. It used to fall into
+// the passage, where the next letter belongs to some other answer entirely, so
+// the row the player had just finished scrolled out from under them. Off the
+// START of a row, deleting, it stays put rather than wandering into the passage.
+// `fill` is the board AFTER the keystroke; without it the cursor stays put.
+export function nextCell(h, n, d, { A, owner, oidx, N, fill }) {
   const clamp = (i) => Math.max(0, Math.min(N - 1, i));
   if (h === 'q') return clamp(n + d);
   const a = A[owner[n]];
   const i = oidx[n] + d;
-  return (i >= 0 && i < a.c.length) ? a.c[i] : clamp(n + d);
+  if (i >= 0 && i < a.c.length) return a.c[i];
+  if (d < 0) return n;
+  return nextOpen(n, { A, owner, fill });
+}
+
+// The first empty letter of the next unfinished answer, in bank order, starting
+// with the answer that owns n. The cell n itself never counts as empty.
+export function nextOpen(n, { A, owner, fill }) {
+  if (!fill) return n;
+  const T = A.length, at = owner[n];
+  for (let s = 0; s < T; s += 1) {
+    for (const c of A[(at + s) % T].c) if (c !== n && !fill[c]) return c;
+  }
+  return n;
 }
 
 // The passage split into words: each word a list of { n } letter cells and

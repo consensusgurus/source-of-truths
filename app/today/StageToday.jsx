@@ -1533,9 +1533,14 @@ export default function StageToday() {
   const [circStand, setCircStand] = useState({});
   useEffect(() => {
     if (!circAsked.current) circAsked.current = new Set();
+    // THE PILL CIRCUITS ASK FIRST (owner, 2026-10-10): a finished Gauntlet,
+    // Price Check, Passport or Judged pill reports its standing in place of
+    // the check, so those five are never the ones the cap leaves out.
+    const pillRank = (c) => { const i = PILL_CIRCUITS.indexOf(c.id); return i < 0 ? PILL_CIRCUITS.length : i; };
     const full = circuits
       .filter((c) => c.games.length && c.n === c.games.length && !circAsked.current.has(c.id))
-      .slice(0, 4);
+      .sort((a, b) => pillRank(a) - pillRank(b))
+      .slice(0, 6);
     if (!full.length) return undefined;
     const qs = identityQs();
     for (const c of full) {
@@ -2233,15 +2238,21 @@ export default function StageToday() {
         {list.map((c) => {
           const full = c.games.length > 0 && c.n === c.games.length;
           const part = !full && c.n > 0;
+          // A FINISHED PILL SAYS WHERE YOU CAME, not just that you did (owner,
+          // 2026-10-10). The check stands in until the board answers, and stays
+          // if it never does.
+          const st = full ? circStand[c.id] : null;
           return (
             <a key={c.id} className={'sty-cpill' + (full ? ' full' : part ? ' part' : '')}
               href={withTq(circuitEntryHref(c.id))} style={{ '--ph': pillHue(c, cat) }}>
               <span className="nm">{c.name}</span>
               {mobile
                 ? (full
-                  ? <span className="ct done">{'\u2713 Played'}</span>
+                  ? (st
+                    ? <span className="ct done">#{st.rank}<i> of {st.field}</i></span>
+                    : <span className="ct done">{'\u2713 Played'}</span>)
                   : <span className="ct">{c.unit ? c.unit : part ? `${c.n} of ${c.games.length} played` : `${c.games.length} games`}</span>)
-                : (full ? <span className="ck">{'\u2713'}</span> : null)}
+                : (full ? (st ? <span className="ck rk">#{st.rank}<i> of {st.field}</i></span> : <span className="ck">{'\u2713'}</span>) : null)}
             </a>
           );
         })}
@@ -4343,6 +4354,8 @@ ${PATCH_CSS}
 .sty-cpill:hover{color:var(--stg-ink);border-color:var(--ph,var(--stg-acc));}
 .sty-cpill:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
 .sty-cpill .ck{color:var(--stg-good,#22c55e);font-weight:800;}
+.sty-cpill .ck.rk,.sty-cpm .sty-cpill .ct.done{font-variant-numeric:tabular-nums;}
+.sty-cpill .ck i,.sty-cpill .ct.done i{font-style:normal;font-weight:700;color:var(--stg-mute);}
 .sty-cpill.full .nm{color:var(--stg-mute);}
 .sty-cpm{display:none;}
 @media (max-width:900px){

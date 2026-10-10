@@ -17,7 +17,9 @@
 //              word's cells, in order, and then lands on the first letter of the
 //              next word. This is the property the bug broke.
 //   bank       typing in a bank row still walks the ANSWER, in the answer's own
-//              order, and still falls into the passage off the end of a row.
+//              order, and off the end of a row STAYS IN THE BANK: the first
+//              empty letter of the next unfinished answer, or put when the board
+//              is full (owner, 2026-10-10). Deleting off the start stays put.
 //   symmetry   -1 undoes +1 in both halves, so delete retraces what typing laid
 //              down instead of leaving a gap behind.
 //   ends       neither direction ever leaves 0..N-1, and neither wraps: a
@@ -31,7 +33,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { PUZZLES } from '../app/anon/puzzles.js';
-import { nextCell, passageTokens, wordIndex } from '../app/anon/typing.js';
+import { nextCell, nextOpen, passageTokens, wordIndex } from '../app/anon/typing.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
@@ -97,11 +99,11 @@ for (const P of PUZZLES) {
     if (q0 !== Math.max(0, n - 1)) bad(`${at}: passage -1 from ${n} gave ${q0}`);
     if (n > 0 && n < N - 1 && nextCell('q', q1, -1, B) !== n) bad(`${at}: passage delete does not retrace from ${n}`);
 
-    // BANK: the answer's own order, then out into the passage.
+    // BANK: the answer's own order, and never out into the passage.
     const a = A[owner[n]], k = oidx[n];
     const b1 = nextCell('b', n, 1, B), b0 = nextCell('b', n, -1, B);
-    const wantUp = k + 1 < a.c.length ? a.c[k + 1] : Math.min(N - 1, n + 1);
-    const wantDn = k > 0 ? a.c[k - 1] : Math.max(0, n - 1);
+    const wantUp = k + 1 < a.c.length ? a.c[k + 1] : n;
+    const wantDn = k > 0 ? a.c[k - 1] : n;
     if (b1 !== wantUp) bad(`${at}: bank +1 from ${n} gave ${b1}, wanted ${wantUp}`);
     if (b0 !== wantDn) bad(`${at}: bank -1 from ${n} gave ${b0}, wanted ${wantDn}`);
     if (k + 1 < a.c.length && nextCell('b', b1, -1, B) !== n) bad(`${at}: bank delete does not retrace from ${n}`);
@@ -110,6 +112,31 @@ for (const P of PUZZLES) {
     // The two halves genuinely differ, which is the whole point: a scattered
     // answer's next letter is almost never the passage's next letter.
     if (k + 1 < a.c.length && a.c[k + 1] !== n + 1 && b1 === q1) bad(`${at}: halves agree where they must not, at ${n}`);
+  }
+
+  // BANK, end of a row with a board in hand: the first empty letter of the next
+  // unfinished answer, starting with the row just typed, and put on a full board.
+  const fill0 = new Array(N).fill('');
+  for (const [ai, a] of A.entries()) {
+    const last = a.c[a.c.length - 1];
+    // Everything filled except the next answer along: lands on its first cell.
+    const nx = A[(ai + 1) % A.length];
+    if (A.length > 1) {
+      const f = new Array(N).fill('X');
+      for (const c of nx.c) f[c] = '';
+      const got = nextCell('b', last, 1, { ...B, fill: f });
+      if (got !== nx.c[0]) bad(`${at}: end of answer ${ai} went to ${got}, wanted next answer's ${nx.c[0]}`);
+    }
+    // The row's own gap comes first.
+    if (a.c.length > 1) {
+      const f = new Array(N).fill('X'); f[a.c[0]] = '';
+      const got = nextCell('b', last, 1, { ...B, fill: f });
+      if (got !== a.c[0]) bad(`${at}: end of answer ${ai} skipped its own gap`);
+    }
+    // A full board stays put; an empty one goes nowhere off the bank.
+    if (nextCell('b', last, 1, { ...B, fill: new Array(N).fill('X') }) !== last) bad(`${at}: full board moved off answer ${ai}`);
+    const e = nextOpen(last, { A, owner, fill: fill0 });
+    if (owner[e] === undefined || e === last && a.c.length > 1) bad(`${at}: empty board end of ${ai} gave ${e}`);
   }
 
   // BANK: a whole answer typed straight through, unchanged behaviour.

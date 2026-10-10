@@ -423,11 +423,36 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
     return pick(`${h}${n}`) || pick(`b${n}`) || pick(`q${n}`);
   }, [workingHalf]);
 
+  // THE PAGE ONLY MOVES WHEN IT HAS TO (owner, 2026-10-10: "the screen moves
+  // about so quickly... you're forever scrolling up and down"). A cell already in
+  // view is left exactly where it is; one that is off screen, or hidden inside a
+  // scrolling pane, or under the pinned keys, is brought to the MIDDLE rather
+  // than to an edge, so the next letter after it is in view too. The bounds
+  // walk the cell's scrolling ancestors, because a split pane can hide a cell
+  // that sits inside the window.
+  const railH = useRef(0);
+  railH.current = rail.height || 0;
+  const inView = (el) => {
+    if (!el.getBoundingClientRect || typeof window === 'undefined') return true;
+    const r = el.getBoundingClientRect();
+    let top = 8, bottom = window.innerHeight - railH.current - 8;
+    for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+      const oy = getComputedStyle(p).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && p.scrollHeight > p.clientHeight) {
+        const pr = p.getBoundingClientRect();
+        top = Math.max(top, pr.top);
+        bottom = Math.min(bottom, pr.bottom);
+      }
+    }
+    return r.top >= top && r.bottom <= bottom;
+  };
   const focusCell = useCallback((n, from) => {
     setCur(n);
     if (from) halfRef.current = from;
     const el = cellEl(n);
-    if (el && el.scrollIntoView) el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    if (el && el.scrollIntoView && !inView(el)) el.scrollIntoView({ block: 'center', inline: 'nearest' });
+    // inView reads refs only, so it is safe to leave out of the deps.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cellEl]);
 
   // In the BANK the cursor walks the answer; in the PASSAGE it walks the
@@ -435,7 +460,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
   // costing a click per letter. The rule itself lives in ./typing.js, where a
   // checker can run it against a real board.
   const move = useCallback(
-    (n, d) => nextCell(workingHalf(), n, d, { A, owner, oidx, N }),
+    (n, d, f) => nextCell(workingHalf(), n, d, { A, owner, oidx, N, fill: f }),
     [A, owner, oidx, N, workingHalf],
   );
 
@@ -474,8 +499,12 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
       }
       return next;
     });
-    focusCell(move(cur, 1));
-  }, [playing, g.t0, cur, N, A, TOTAL, postResult, focusCell, move]);
+    // The board as it will be after this letter, so the end of a row can find
+    // the next answer that still has a gap (typing.js).
+    const after = (fill || []).slice();
+    after[cur] = ch;
+    focusCell(move(cur, 1, after));
+  }, [playing, g.t0, cur, N, A, TOTAL, postResult, focusCell, move, fill]);
 
   // Delete repeats while held, the way the OS keyboard does. The repeat reads
   // the CURRENT backspace through a ref: the callback below is rebuilt whenever
@@ -508,13 +537,13 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
       if (!playing || !g.t0 || e.metaKey || e.ctrlKey || e.altKey) return;
       if (/^[a-zA-Z]$/.test(e.key)) { type(e.key.toUpperCase()); e.preventDefault(); }
       else if (e.key === 'Backspace') { backspace(); e.preventDefault(); }
-      else if (e.key === 'ArrowRight') { focusCell(move(cur, 1)); e.preventDefault(); }
+      else if (e.key === 'ArrowRight') { focusCell(move(cur, 1, fill)); e.preventDefault(); }
       else if (e.key === 'ArrowLeft') { focusCell(move(cur, -1)); e.preventDefault(); }
       else if (e.key === 'Tab') { stepAnswer(e.shiftKey ? -1 : 1); e.preventDefault(); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [playing, g.t0, cur, type, backspace, focusCell, move, stepAnswer]);
+  }, [playing, g.t0, cur, type, backspace, focusCell, move, stepAnswer, fill]);
 
   function giveUp() {
     setG((c) => {
