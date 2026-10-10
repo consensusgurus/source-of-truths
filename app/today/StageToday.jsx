@@ -331,6 +331,9 @@ const SHELF_OPEN_KEY = 'sot_shelf_open';
 // 'sty-mine', 'sty-circs' or a category name. Per browser, like the keys above.
 const PANE_KEY = 'sot_home_pane';
 const ALL_ID = 'all';
+// Set when a phone reader goes back to the category tiles by hand, so the
+// next visit opens on the tiles rather than their last pane.
+const TILES_KEY = 'sot_home_tiles';
 // THE POPULAR CIRCUITS AT THE TOP OF A CATEGORY (owner, 2026-10-09). Five
 // circuits only, in this order; the rest stay on the Circuits shelf. A circuit
 // shows on a category when any of its games lives there, plus the hand-added
@@ -825,14 +828,23 @@ export default function StageToday() {
   // All games swap out for it.
   const [pane, setPane] = useState(null);
   useIsoLayoutEffect(() => {
-    try { const v = localStorage.getItem(PANE_KEY); if (v) setPane(v); } catch (e) {}
+    // A RETURNING READER LANDS WHERE THEY LEFT OFF (owner, 2026-10-10), on a
+    // phone too: a stored games pane reopens straight away instead of dropping
+    // them back on the tiles every visit. Only going back to the tiles by hand
+    // (TILES_KEY) brings the tiles back on the next load. Read in this layout
+    // effect so the pane is up before the first paint, never shown then shut.
+    try {
+      const v = localStorage.getItem(PANE_KEY);
+      if (v) { setPane(v); if (localStorage.getItem(TILES_KEY) !== '1') setPicked(true); }
+    } catch (e) {}
     try { const h = String(window.location.hash || '').slice(1); if (INFO_PANES.includes(h) || STAT_ANCHORS.includes(h)) { setPane(STAT_ANCHORS.includes(h) ? BOARD_ID : h); setPicked(true); } } catch (e) {}
   }, []);
   // ONLY A GAMES PANE IS REMEMBERED. A reader who last looked at the leaderboard
   // should still come back tomorrow to something they can play.
   // ON A PHONE THE INDEX IS A SCREEN OF TILES (owner, 2026-10-07), and `picked`
-  // says whether one has been opened. It starts false on every load, so a phone
-  // always arrives at the tiles; a desktop never reads it. The tile that was
+  // says whether one has been opened. A first visit arrives at the tiles; a
+  // returning one reopens its last games pane (see the layout effect above).
+  // A desktop never reads it. The tile that was
   // tapped rides up to the top of the list (flipFrom is where it started).
   const [picked, setPicked] = useState(false);
   const flipFrom = useRef(null);
@@ -850,7 +862,7 @@ export default function StageToday() {
       });
     } catch (e) {}
     if (INFO_PANES.includes(id)) return;
-    try { localStorage.setItem(PANE_KEY, id); } catch (e) {}
+    try { localStorage.setItem(PANE_KEY, id); localStorage.removeItem(TILES_KEY); } catch (e) {}
   };
   const goPane = (id, anchor) => {
     pickPane(id);
@@ -1904,7 +1916,7 @@ export default function StageToday() {
       <button key={id} type="button" aria-pressed={paneOn === id}
         className={'sty-ixb' + (cls ? ' ' + cls : '') + (paneOn === id ? ' on' : '') + (prog && prog[0] >= prog[1] ? ' cmp' : '')}
         style={{ '--cc': hue }}
-        onClick={(e) => { if (picked && paneOn === id) setPicked(false); else pickPane(id, e); }}>
+        onClick={(e) => { if (picked && paneOn === id) { setPicked(false); try { localStorage.setItem(TILES_KEY, '1'); } catch (er) {} } else pickPane(id, e); }}>
         <i aria-hidden="true" />
         {ixRing(id, prog)}
         <span>{label}</span>
