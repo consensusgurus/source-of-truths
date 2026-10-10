@@ -185,10 +185,8 @@ export default function LayoutCInner({ gameKey }) {
   const stats = useDayStats();
   const grp = useGroupStanding('today', !!host);
 
-  // ONLY behind ?layout=c, read on the client before paint.
-  useIsoLayoutEffect(() => {
-    try { setFlag(new URLSearchParams(window.location.search).get('layout') === 'c'); } catch (e) {}
-  }, []);
+  // The gate (app/LayoutC.jsx) decides whether this mounts at all.
+  useIsoLayoutEffect(() => { setFlag(true); }, []);
 
   const live = useMemo(() => new Set(liveDailyKeys()), []);
   const games = useMemo(() => ALL_GAMES.filter((g) => live.has(g.key)), [live]);
@@ -333,7 +331,7 @@ export default function LayoutCInner({ gameKey }) {
   const openGames = (cats.find((c) => c.cat === shownCat) || { games: [] }).games;
   const nextUp = openGames.find((g) => g.key !== game.key && !done.has(g.key) && !inprog.has(g.key));
   const toggleCat = (cat) => setOpenCat(shownCat === cat ? '' : cat);
-  const gameHref = (g) => (g.href || '/' + g.key) + '?layout=c';
+  const gameHref = (g) => (g.href || '/' + g.key);
 
   // The main page reads sot_home_pane for a games pane and the hash for an info pane.
   // The main page reads sot_home_pane for a games pane and the hash for an
@@ -557,7 +555,7 @@ export default function LayoutCInner({ gameKey }) {
                 <div className="lc-cal">
                   {mo.days.map((d) => (
                     <Link key={d.num} className={'lc-day' + (d.isToday ? ' t' : d.played ? ' p' : '')}
-                      href={d.isToday ? `${game.href || '/' + game.key}?layout=c` : `${game.href || '/' + game.key}?p=${d.num}&layout=c`}
+                      href={d.isToday ? `${game.href || '/' + game.key}` : `${game.href || '/' + game.key}?p=${d.num}`}
                       title={d.dateISO}>{Number(String(d.dateISO).slice(8, 10))}</Link>
                   ))}
                 </div>
