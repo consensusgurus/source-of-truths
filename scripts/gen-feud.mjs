@@ -294,8 +294,8 @@ function auditCorpus(corpus) {
   corpus.forEach((p, idx) => {
     const where = `#${idx + 1} "${String(p.q).slice(0, 52)}"`;
     if (!p.q || !p.cat || !p.shape) { errs.push(`${where}: missing q/cat/shape`); return; }
-    if (!LADDERS[p.a.length] || !LADDERS[p.a.length][p.shape]) {
-      errs.push(`${where}: no ladder for ${p.a.length} buckets / shape "${p.shape}"`);
+    if (!LADDERS[p.drawN || p.a.length] || !LADDERS[p.drawN || p.a.length][p.shape]) {
+      errs.push(`${where}: no ladder for ${p.drawN || p.a.length} buckets / shape "${p.shape}"`);
       return;
     }
     // 1. prompt text is new, and not a fixture needle
@@ -503,19 +503,30 @@ function softLint(corpus) {
 // ─────────────────────────── house crowd ─────────────────────────────────────
 // Lay one ladder from the prompt's shape family over the authored bucket order
 // and emit the vote stream sorted ascending, the way the frozen bank writes it.
+//
+// AUTHORED CROWD (`vec`, `drawN`). A prompt re-authored after its segment was
+// banked may carry its own count vector, `vec`, most popular bucket first. It
+// replaces the ladder outright and is held to the same contract (sums to 40,
+// monotone, top 8-19, floor 1). Because boards before it are already live, the
+// ladder DRAW still happens exactly as it did when the prompt was banked, on
+// `drawN` buckets (its bucket count at banking time), so the seeded stream and
+// every other board's house regenerate byte-identical. Only the vector emitted
+// for this one prompt changes.
 const vecUse = new Map();
 function houseFor(p) {
-  const fam = LADDERS[p.a.length][p.shape];
+  const n = p.drawN || p.a.length;
+  const fam = LADDERS[n][p.shape];
   const order = shuffle(fam.map((_, i) => i));
   let pick = null;
   for (const i of order) {
-    const key = `${p.a.length}:${p.shape}:${i}`;
+    const key = `${n}:${p.shape}:${i}`;
     const cap = fam[i][0] >= RARE_TOP ? RARE_CEIL : VEC_CEIL;
     if ((vecUse.get(key) || 0) < cap) { pick = { i, key }; break; }
   }
   if (!pick) die(`every ${p.shape} ladder for ${p.a.length} buckets is at its ceiling of ${VEC_CEIL}`, []);
   vecUse.set(pick.key, (vecUse.get(pick.key) || 0) + 1);
-  const counts = fam[pick.i];
+  const counts = p.vec || fam[pick.i];
+  if (counts.length !== p.a.length) die(`"${p.q}": crowd has ${counts.length} counts for ${p.a.length} buckets`, []);
   // assertions: the shape is a contract, not a suggestion
   const sum = counts.reduce((a, b) => a + b, 0);
   if (sum !== POOL) die(`ladder ${counts.join('/')} sums to ${sum}, not ${POOL}`, []);

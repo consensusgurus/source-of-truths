@@ -1442,11 +1442,11 @@ export const PUZZLES = [
     cols: 12,
     collisions: [
       { word: "KETTLE", reads: "Landforms" },
-      { word: "CORNET", reads: "Cookware" },
+      { word: "CORNET", reads: "Kitchenware" },
       { word: "SADDLE", reads: "Landforms" },
     ],
     categories: [
-      { name: "Cookware", words: ["KETTLE", "LADLE", "RAMEKIN"] },
+      { name: "Kitchenware", words: ["KETTLE", "LADLE", "RAMEKIN"] },
       { name: "Brass instruments", words: ["CORNET", "TROMBONE", "TUBA"] },
       { name: "Landforms", words: ["BUTTE", "ESKER", "TOMBOLO"] },
       { name: "Horse tack", words: ["SADDLE", "CRUPPER", "BRIDLE"] },
@@ -1656,7 +1656,7 @@ export const PUZZLES = [
     rows: 14,
     cols: 12,
     collisions: [
-      { word: "TRAP", reads: "Drum kit" },
+      { word: "TRAP", reads: "Drumming terms" },
       { word: "TRAP", reads: "Trapping gear" },
       { word: "ELBOW", reads: "Body joints" },
       { word: "SNARE", reads: "Trapping gear" },
@@ -1665,7 +1665,7 @@ export const PUZZLES = [
       { name: "Body joints", words: ["SHOULDER", "ANKLE", "WRIST"] },
       { name: "Plumbing fittings", words: ["TRAP", "ELBOW", "VALVE"] },
       { name: "Trapping gear", words: ["PITFALL", "BIRDLIME", "NOOSE"] },
-      { name: "Drum kit", words: ["SNARE", "CRASH", "RIMSHOT"] },
+      { name: "Drumming terms", words: ["SNARE", "CRASH", "RIMSHOT"] },
     ],
     slots: [
       { id: "1D", word: "CRASH", row: 0, col: 7, dir: "D" },
@@ -1903,10 +1903,10 @@ export const PUZZLES = [
     cols: 12,
     collisions: [
       { word: "KETTLE", reads: "Landforms" },
-      { word: "CORNET", reads: "Cookware" },
+      { word: "CORNET", reads: "Kitchenware" },
     ],
     categories: [
-      { name: "Cookware", words: ["KETTLE", "LADLE"] },
+      { name: "Kitchenware", words: ["KETTLE", "LADLE"] },
       { name: "Landforms", words: ["FJORD", "MESA"] },
       { name: "Brass instruments", words: ["CORNET", "TROMBONE"] },
       { name: "Plumbing fittings", words: ["GASKET", "COUPLING"] },
@@ -2118,7 +2118,7 @@ export const PUZZLES = [
     categories: [
       { name: "Baseball roles", words: ["UMPIRE", "SHORTSTOP"] },
       { name: "Baking steps", words: ["BATTER", "PROOF"] },
-      { name: "Cookware", words: ["PITCHER", "COLANDER"] },
+      { name: "Kitchenware", words: ["PITCHER", "COLANDER"] },
       { name: "Brass instruments", words: ["FLUGELHORN", "BUGLE"] },
     ],
     slots: [
@@ -2200,12 +2200,12 @@ export const PUZZLES = [
     cols: 11,
     collisions: [
       { word: "SNARE", reads: "Trapping gear" },
-      { word: "TRAP", reads: "Drum kit" },
+      { word: "TRAP", reads: "Drumming terms" },
       { word: "TRAP", reads: "Trapping gear" },
       { word: "ELBOW", reads: "Body joints" },
     ],
     categories: [
-      { name: "Drum kit", words: ["SNARE", "TIMBALE"] },
+      { name: "Drumming terms", words: ["SNARE", "TIMBALE"] },
       { name: "Plumbing fittings", words: ["TRAP", "ELBOW"] },
       { name: "Body joints", words: ["JAWBONE", "SHOULDER"] },
       { name: "Trapping gear", words: ["BIRDLIME", "PITFALL"] },
@@ -2323,14 +2323,14 @@ export const PUZZLES = [
     rows: 10,
     cols: 12,
     collisions: [
-      { word: "BISQUE", reads: "Cookware" },
+      { word: "BISQUE", reads: "Kitchenware" },
       { word: "GLAZE", reads: "Baking steps" },
     ],
     categories: [
       { name: "Pottery terms", words: ["BISQUE", "GLAZE"] },
       { name: "Golf clubs", words: ["BRASSIE", "MASHIE"] },
       { name: "Baking steps", words: ["CREAM", "SIFT"] },
-      { name: "Cookware", words: ["LADLE", "SKILLET"] },
+      { name: "Kitchenware", words: ["LADLE", "SKILLET"] },
     ],
     slots: [
       { id: "1A", word: "BISQUE", row: 0, col: 5, dir: "A" },
@@ -2714,10 +2714,10 @@ export const PUZZLES = [
     collisions: [
       { word: "COLON", reads: "Organs" },
       { word: "TONGUE", reads: "Shoe parts" },
-      { word: "COMMA", reads: "Punctuation marks" },
+      { word: "COMMA", reads: "Typographic marks" },
     ],
     categories: [
-      { name: "Punctuation marks", words: ["COLON", "ELLIPSIS", "PILCROW"] },
+      { name: "Typographic marks", words: ["COLON", "ELLIPSIS", "PILCROW"] },
       { name: "Organs", words: ["TONGUE", "GALLBLADDER", "KIDNEY"] },
       { name: "Shoe parts", words: ["VAMP", "WELT", "SHANK"] },
       { name: "Butterflies", words: ["COMMA", "BRIMSTONE", "ADMIRAL"] },
@@ -2753,7 +2753,7 @@ export const PUZZLES = [
       { name: "Court roles", words: ["MAGISTRATE", "ADVOCATE"] },
       { name: "Lock parts", words: ["WARD", "KEYHOLE"] },
       { name: "Glassware", words: ["TUMBLER", "CARAFE"] },
-      { name: "Ship rooms", words: ["ORLOP", "SCUTTLE"] },
+      { name: "Ship parts", words: ["ORLOP", "SCUTTLE"] },
     ],
     slots: [
       { id: "1D", word: "ADVOCATE", row: 0, col: 3, dir: "D" },
@@ -2833,14 +2833,14 @@ export const PUZZLES = [
     rows: 11,
     cols: 11,
     collisions: [
-      { word: "TONGS", reads: "Cookware" },
-      { word: "TRIVET", reads: "Cookware" },
+      { word: "TONGS", reads: "Kitchenware" },
+      { word: "TRIVET", reads: "Kitchenware" },
     ],
     categories: [
       { name: "Farm implements", words: ["SEEDER", "BALER"] },
       { name: "Sailing gear", words: ["CLEAT", "KEEL"] },
       { name: "Fireplace tools", words: ["TONGS", "TRIVET"] },
-      { name: "Cookware", words: ["LADLE", "COLANDER"] },
+      { name: "Kitchenware", words: ["LADLE", "COLANDER"] },
     ],
     slots: [
       { id: "1A", word: "CLEAT", row: 0, col: 0, dir: "A" },
@@ -3133,11 +3133,11 @@ export const PUZZLES = [
     collisions: [
       { word: "COLON", reads: "Organs" },
       { word: "ADMIRAL", reads: "Naval ranks" },
-      { word: "COMMA", reads: "Punctuation marks" },
+      { word: "COMMA", reads: "Typographic marks" },
     ],
     categories: [
       { name: "Organs", words: ["THYMUS", "KIDNEY", "SPLEEN"] },
-      { name: "Punctuation marks", words: ["COLON", "SEMICOLON", "CARET"] },
+      { name: "Typographic marks", words: ["COLON", "SEMICOLON", "CARET"] },
       { name: "Butterflies", words: ["ADMIRAL", "COMMA", "RINGLET"] },
       { name: "Naval ranks", words: ["PURSER", "BOSUN", "MIDSHIPMAN"] },
     ],
@@ -3374,12 +3374,12 @@ export const PUZZLES = [
     rows: 13,
     cols: 11,
     collisions: [
-      { word: "BISQUE", reads: "Cookware" },
-      { word: "POT", reads: "Cookware" },
+      { word: "BISQUE", reads: "Kitchenware" },
+      { word: "POT", reads: "Kitchenware" },
     ],
     categories: [
       { name: "Pottery terms", words: ["BISQUE", "KILN"] },
-      { name: "Cookware", words: ["KETTLE", "RAMEKIN"] },
+      { name: "Kitchenware", words: ["KETTLE", "RAMEKIN"] },
       { name: "Snooker terms", words: ["POT", "CANNON"] },
       { name: "Brass instruments", words: ["TROMBONE", "BUGLE"] },
     ],
@@ -3647,7 +3647,7 @@ export const PUZZLES = [
     ],
     categories: [
       { name: "Circle parts", words: ["CHORD", "SEGMENT"] },
-      { name: "Drum kit", words: ["CYMBAL", "RIMSHOT"] },
+      { name: "Drumming terms", words: ["CYMBAL", "RIMSHOT"] },
       { name: "Limb bones", words: ["RADIUS", "PATELLA"] },
       { name: "Music notation", words: ["CLEF", "MINIM"] },
     ],
@@ -4122,12 +4122,12 @@ export const PUZZLES = [
     cols: 11,
     collisions: [
       { word: "PITCHER", reads: "Baseball roles" },
-      { word: "POT", reads: "Cookware" },
+      { word: "POT", reads: "Kitchenware" },
     ],
     categories: [
       { name: "Baseball roles", words: ["RELIEVER", "UMPIRE"] },
       { name: "Spy trade", words: ["PLANT", "LEGEND"] },
-      { name: "Cookware", words: ["PITCHER", "LADLE"] },
+      { name: "Kitchenware", words: ["PITCHER", "LADLE"] },
       { name: "Snooker terms", words: ["POT", "REST"] },
     ],
     slots: [
@@ -4359,14 +4359,14 @@ export const PUZZLES = [
     rows: 13,
     cols: 10,
     collisions: [
-      { word: "GALLEY", reads: "Ship rooms" },
-      { word: "TRIVET", reads: "Cookware" },
+      { word: "GALLEY", reads: "Ship parts" },
+      { word: "TRIVET", reads: "Kitchenware" },
     ],
     categories: [
       { name: "Printing terms", words: ["GALLEY", "LIGATURE"] },
-      { name: "Ship rooms", words: ["FORECASTLE", "WARDROOM"] },
+      { name: "Ship parts", words: ["FORECASTLE", "WARDROOM"] },
       { name: "Fireplace tools", words: ["TRIVET", "ANDIRON"] },
-      { name: "Cookware", words: ["KETTLE", "COLANDER"] },
+      { name: "Kitchenware", words: ["KETTLE", "COLANDER"] },
     ],
     slots: [
       { id: "1D", word: "COLANDER", row: 0, col: 3, dir: "D" },

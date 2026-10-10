@@ -134,7 +134,7 @@ const catCount = new Map(), wordCount = new Map(), pairCount = new Map();
 // to start empty, so a run only counted the traps it had just made and happily
 // took a pair to its third or fourth appearance on top of the frozen boards.
 // The Sep 30 to Oct 31 batch tripped exactly that: 32 fresh boards pushed 32
-// pairs (CORNET|Cookware, SNARE|Trapping gear, MONITOR|Computer parts and the
+// pairs (CORNET|Kitchenware, SNARE|Trapping gear, MONITOR|Computer parts and the
 // rest) past the limit, and only the verifier noticed.
 const VARIETY_FROM = '2026-08-20';
 const trapSets = [];   // collision-pair sets of every board in the window, for the overlap rule

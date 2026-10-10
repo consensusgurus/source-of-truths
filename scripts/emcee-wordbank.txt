@@ -6077,7 +6077,7 @@ ALT|Key beside the space bar
 AND|Plus
 ARE|"You ___ here"
 ASP|Snake of the Nile
-AVE|Broadway, for short
+AVE|Fifth or Park, for short
 AYE|Sailor's yes
 BAA|Lamb's bleat
 BAH|Scrooge's grumble

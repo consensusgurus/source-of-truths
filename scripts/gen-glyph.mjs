@@ -42,6 +42,11 @@
 //     at (measured: its 1,292 longer answers have a minimum of exactly 3.0).
 //     That file holds nothing under four letters, so the three-letter pool is
 //     the curated list below.
+//   * NO QUESTIONABLE FILL. scripts/glyph-blocklist.mjs (sexual and bodily
+//     words, slurs and identity terms, weapons/disease/drug terms, proper
+//     nouns and obscure abbreviations) is removed from the fill pool, and a
+//     board whose recomputed runs decode to one is rejected. verify-glyph.mjs
+//     fails on the same list for boards live on or after GLYPH_BLOCK_FROM.
 //   * US SPELLINGS ONLY. The British list is filtered out of the fill pool as
 //     well as failed by the verifier.
 //   * NO WORD REPEATS INSIDE A BOARD, and no board repeats another board's
@@ -69,6 +74,11 @@
 //   --out       destination file (a whole puzzles.js-shaped file; splice its
 //               entries onto the live bank)
 //   --probe     generate but write nothing, printing the distribution
+//   --exclude   comma-separated words to keep off the range, on top of the
+//               blocklist. Meant for a one-day regeneration: pass that day's
+//               other answers (Clade animal, Dossier answer, Ping city, Focus,
+//               trivia keys...) so the grid cannot spoil them. See the
+//               cross-game rule in scripts/CONTENT-REVIEW.md.
 //
 // Sundays are 17x17 with 2 givens; weekdays are 15x15 with 3. Both are read off
 // the true UTC weekday of the date, never from a flag passed in.
@@ -76,6 +86,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join, resolve as resolvePath } from 'node:path';
+import { isGlyphBlocked } from './glyph-blocklist.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2);
@@ -219,7 +230,8 @@ for (const w of dictWords) {
   dictByLen.get(w.length).push(w);
 }
 
-const threeOk = THREE.filter((w) => dictSet.has(w));
+const EXCLUDE = new Set(String(arg('--exclude', '')).split(',').map((w) => w.trim().toUpperCase()).filter(Boolean));
+const threeOk = THREE.filter((w) => dictSet.has(w) && !isGlyphBlocked(w) && !EXCLUDE.has(w));
 const fillByLen = new Map();
 for (const w of dictWords) {
   const L = w.length;
@@ -227,6 +239,8 @@ for (const w of dictWords) {
   if (BRITISH.has(w)) continue;
   if (AVOID_STEMS.some((st) => w.includes(st))) continue;
   if (NAMEY.has(w)) continue;
+  if (isGlyphBlocked(w)) continue;             // scripts/glyph-blocklist.mjs
+  if (EXCLUDE.has(w)) continue;
   if (L === 3) continue;                       // three-letter pool is curated
   if ((freq[w.toLowerCase()] ?? 0) < FREQ_FLOOR) continue;
   if (!fillByLen.has(L)) fillByLen.set(L, []);
@@ -512,7 +526,7 @@ function makeBoard(rng, sunday, seenGrids, seenKeys, wordUse) {
   const loWords = sunday ? 38 : 30, hiWords = sunday ? 45 : 40;
   if (runNums.length < loWords || runNums.length > hiWords) return null;
   const decoded = runNums.map((a) => a.map((n) => key[n - 1]).join(''));
-  if (decoded.some((w) => !dictSet.has(w) || BRITISH.has(w))) return null;
+  if (decoded.some((w) => !dictSet.has(w) || BRITISH.has(w) || isGlyphBlocked(w) || EXCLUDE.has(w))) return null;
   if (new Set(decoded).size !== decoded.length) return null;   // no repeat inside a board
   // cross-bank variety: no answer may appear more than WORD_CEILING times over
   // the boards this rule governs (see WORD_CEILING_FROM), counted across the

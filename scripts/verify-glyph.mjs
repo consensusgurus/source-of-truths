@@ -46,6 +46,11 @@
 //              whether the dictionary happens to contain it — the site is
 //              US-spelling only, and a codeword answer being "a real word" is
 //              not sufficient if it is the wrong regional spelling.
+//   blocklist  any run that decodes to a word on scripts/glyph-blocklist.mjs
+//              (sexual and bodily words, slurs and identity terms, weapons,
+//              disease and drug terms, proper nouns, obscure abbreviations) is
+//              a hard FAIL on boards live on or after GLYPH_BLOCK_FROM
+//              (2026-10-10). Earlier boards are shipped history.
 //   sunday     must equal the true UTC weekday of `live`; quizId/live/num
 //              internally consistent (mirrors the alibi checks).
 //
@@ -65,6 +70,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { PUZZLES } from '../app/glyph/puzzles.js';
+import { isGlyphBlocked, GLYPH_BLOCK_FROM } from './glyph-blocklist.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const GLYPH_FLOOR_FROM = '2026-08-03';
@@ -267,6 +273,10 @@ PUZZLES.forEach((p, i) => {
       if (BRITISH.has(w)) britishHits.push(w);
       const pool = poolByLen.get(run.length) || [];
       if (!pool.includes(w)) { poolByLen.set(run.length, [...pool, w]); dictGaps.push(w); }
+    }
+    if (p.live >= GLYPH_BLOCK_FROM) {
+      const blocked = runs.map((run) => decodedWord(run, p.key.split(''))).filter(isGlyphBlocked);
+      if (blocked.length) errs.push(`blocklisted fill word(s) (scripts/glyph-blocklist.mjs): ${[...new Set(blocked)].join(', ')}`);
     }
     if (britishHits.length) errs.push(`British-only spelling on the board: ${[...new Set(britishHits)].join(', ')}`);
     if (dictGaps.length) notes.push(`words not in the site dictionary (supplemented for solving, review for legitimacy): ${[...new Set(dictGaps)].join(', ')}`);

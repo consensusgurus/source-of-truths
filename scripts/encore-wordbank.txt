@@ -9162,7 +9162,7 @@ SOAPBOX|Where the ranter stands
 SOARING|Flying high
 SOBERED|Came round
 SOCIETY|The community
-SOCKETS|Where you plug in
+SOCKETS|Where plugs go
 SOFTEST|Least hard of all
 SOFTENS|Takes the edge off
 SOILING|Getting it dirty

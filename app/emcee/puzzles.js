@@ -2731,7 +2731,7 @@ export const PUZZLES = [
       { n: 11, r: 3, c: 2, len: 3, clue: 'Beach souvenir' },
       { n: 13, r: 4, c: 0, len: 7, clue: 'River crossings' },
       { n: 17, r: 5, c: 0, len: 7, clue: 'Turn on the spot' },
-      { n: 18, r: 6, c: 0, len: 3, clue: 'Broadway, for short' },
+      { n: 18, r: 6, c: 0, len: 3, clue: 'Fifth or Park, for short' },
       { n: 19, r: 6, c: 4, len: 3, clue: 'Evergreen shrub' },
     ],
     down: [
@@ -3070,7 +3070,7 @@ export const PUZZLES = [
     across: [
       { n: 1, r: 0, c: 0, len: 3, clue: 'Knight\'s title' },
       { n: 4, r: 0, c: 4, len: 3, clue: 'Bashful' },
-      { n: 7, r: 1, c: 0, len: 3, clue: 'Broadway, for short' },
+      { n: 7, r: 1, c: 0, len: 3, clue: 'Fifth or Park, for short' },
       { n: 8, r: 1, c: 4, len: 3, clue: 'Neck accessory' },
       { n: 9, r: 2, c: 0, len: 7, clue: 'Beam performer' },
       { n: 11, r: 3, c: 2, len: 3, clue: 'Point, as a camera' },

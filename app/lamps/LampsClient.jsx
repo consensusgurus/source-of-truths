@@ -177,7 +177,8 @@ function mergeServerStats(s, recent, puzzles) {
 // which lamps see another lamp, which numbered walls are over or exactly met,
 // and whether the whole thing is solved.
 function analyze(cells, p) {
-  const n = p.n, N = n * n;
+  const n = p.n;
+  const N = n * n;
   const wall = (i) => p.grid[Math.floor(i / n)][i % n] !== '.';
   const lit = new Set(), badLamp = new Set(), badWall = new Set(), metWall = new Set();
   const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];

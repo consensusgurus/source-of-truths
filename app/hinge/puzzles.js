@@ -166,6 +166,6 @@ export const PUZZLES = [
   { num: 147, quizId: 'hinge-1-27-27', live: '2027-01-27', dateLabel: 'January 27, 2027', sunday: false, words: ["SAIL","BOAT","RACE","TRACK","SUIT","CASE"], reveal: null, paths: 1 },
   { num: 148, quizId: 'hinge-1-28-27', live: '2027-01-28', dateLabel: 'January 28, 2027', sunday: false, words: ["SONG","BIRD","SEED","BED","TIME","BOMB"], reveal: null, paths: 1 },
   { num: 149, quizId: 'hinge-1-29-27', live: '2027-01-29', dateLabel: 'January 29, 2027', sunday: false, words: ["COAL","MINE","FIELD","WORK","HORSE","FLY"], reveal: null, paths: 1 },
-  { num: 150, quizId: 'hinge-1-30-27', live: '2027-01-30', dateLabel: 'January 30, 2027', sunday: false, words: ["PIPE","DREAM","LAND","SLIDE","SHOW","BUSINESS"], reveal: null, paths: 1 },
+  { num: 150, quizId: 'hinge-1-30-27', live: '2027-01-30', dateLabel: 'January 30, 2027', sunday: false, words: ["GRID","LOCK","JAW","BONE","YARD","SALE"], reveal: null, paths: 1 },
   { num: 151, quizId: 'hinge-1-31-27', live: '2027-01-31', dateLabel: 'January 31, 2027', sunday: true, words: ["CHESS","MASTER","KEY","CHAIN","SAW","DUST","STORM","CLOUD"], reveal: 4, paths: 1 },
 ];
