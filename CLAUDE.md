@@ -8642,6 +8642,13 @@ figure still loading.
   off `data-out` on the board, because `.won` is also set on a loss). Mockups:
   https://claude.ai/artifact/7Lep24YDdYvc68ubxaE7Tz. Every one is opacity and transform on cells
   plus fixed overlays (`overlay()`), never layout, for the same phone reason as the iris.
+- **Second batch, same rules (owner, 2026-10-10, "apply them to similar types"):** Switch-on on
+  Lamps (reads lamp/wall/number off each square's aria-label), Coin flip on Duet and Turn, Snap on
+  Snug, Plot (`.pl-plot`, one group per plot) and Carve, Topple on Mate and Queen (the black king,
+  CHECKMATE on Mate only), Climb on Rung (only the rungs in view of its scrolling ladder) and
+  Hinge, Cascade on Shoe, Crib, Hands and Taire (clones fall to the screen floor; replaced Shoe's
+  hole-card flip), Skyline on Towers (replaced its ripple), Crowning on Jesters and Judges (seats
+  read off the aria-label). A kind that finds nothing to animate returns 0 and the iris plays alone.
 - A tap before the screen is covered removes the fill at once; after, it goes 700ms later, under the
   flood. Other pop-ups wait: `setBeatLive` stamps `data-sot-beat` on `<html>`, and ThanksPop's
   after-a-game timer waits while that is set or a `.stf-flood` is up.

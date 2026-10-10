@@ -849,7 +849,7 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
                 const bad = wrongSet.has(i);
                 const tint = TINT[p[4] % TINT.length];
                 return (
-                  <div key={`p${i}`} style={{
+                  <div key={`p${i}`} className="pl-plot" style={{
                     ...(STAGE ? regionStyle(plotHue(p[4])) : null),
                     position: 'absolute', left: pct(p[1]), top: pct(p[0]), width: pct(p[2]), height: pct(p[3]),
                     // Stage: the plot's ramp hue mixed into the cell, edged in the hue's ink.
