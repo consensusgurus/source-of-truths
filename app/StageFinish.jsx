@@ -20,6 +20,7 @@
 // 'similar' comes OUT of the grid because a finisher was passing two exits
 // before reaching the one that hands them forward).
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { DAILY_GAMES, liveDailyKeys } from '@/lib/daily-games';
 import { RAMP_ORDER, RAMP_INK, categoryColor, categoryColorLight, categoryOnrampLight } from '@/lib/category-ramp';
 import { finishPick } from '@/lib/finish-sets';
@@ -254,6 +255,7 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
   // already scheduled and then decline to reschedule it (goneRef), stranding
   // the player on a coloured screen.
   const timersRef = useRef([]);
+  const [host] = useState(() => (typeof document === 'undefined' ? null : (document.querySelector('.stage-page') || document.body)));
   const at = (ms, fn) => { timersRef.current.push(setTimeout(fn, ms)); };
   const finish = () => {
     if (doneRef.current) return;
@@ -418,7 +420,15 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return (
+  // PORTALED to the stage root (owner, 2026-10-10: the colour has to cover the
+  // header and the side rails on a wide desktop too). Rendered in place it sat
+  // inside the game's own column, which is a stacking context (`.sx-wrap` is
+  // position:relative; z-index:2 on every client), so its z-index 9000 only
+  // counted inside that column and the fixed header and rails (z 80) drew over
+  // it. The stage root makes no stacking context and still carries the --stg-*
+  // tokens the flood paints with. The band it collapses onto stays where it was.
+  if (!host) return null;
+  return createPortal((
     // aria-hidden because every word on it is read again, in place, on the card
     // underneath — and there is nothing focusable inside it to strand.
     <div
@@ -471,7 +481,7 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
           knows they do not have to. It leaves the moment the collapse starts. */}
       {hint && phase === 'up' ? <div className="stf-fl-skip">tap to skip</div> : null}
     </div>
-  );
+  ), host);
 }
 
 // Which dailies are finished TODAY, from the breadcrumb every client writes on
