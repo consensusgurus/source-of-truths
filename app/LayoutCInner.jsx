@@ -10,8 +10,8 @@
 //    the light switch on the shared stage-theme store.
 //  - THE LEFT INDEX IS THE MAIN PAGE'S INDEX, item for item and in the same
 //    order (hand order from sot_cat_order when the reader set one), and it is
-//    WIRED to the main page: a category writes sot_home_pane and opens /today
-//    on that pane, the info panes open /today#<pane>, exactly the two things
+//    WIRED to the main page: a category writes sot_home_pane and opens /
+//    on that pane, the info panes open /#<pane>, exactly the two things
 //    the home reads on load. The game's own category opens under its button.
 //  - "Hide menus & leaderboard" lives in the SUBHEADER, the game's own figures
 //    row (.stg-fg), so the control stays in place when the frame is hidden.
@@ -349,12 +349,12 @@ export default function LayoutCInner({ gameKey }) {
     } catch (err) {}
   };
   const ixLink = (id, label, hue) => (
-    <Link key={id} className="sty-ixb" href="/today" style={{ '--cc': hue }} onClick={setPane(id)}>
+    <Link key={id} className="sty-ixb" href="/" style={{ '--cc': hue }} onClick={setPane(id)}>
       <i aria-hidden="true" /><span>{label}</span>
     </Link>
   );
   const ixHash = (hash, label) => (
-    <Link key={hash} className="sty-ixb" href={'/today#' + hash} style={{ '--cc': 'var(--stg-mute)' }}>
+    <Link key={hash} className="sty-ixb" href={'/#' + hash} style={{ '--cc': 'var(--stg-mute)' }}>
       <i aria-hidden="true" /><span>{label}</span>
     </Link>
   );
@@ -398,7 +398,7 @@ export default function LayoutCInner({ gameKey }) {
       <div className="lc-cap" ref={capRef}>
         <div className="sty-cap v2">
           <div className="sty-id">
-            <Link className="sty-brand" href="/today">
+            <Link className="sty-brand" href="/">
               <MindLoftMark size={20} ink="var(--stg-ink)" accent="var(--stg-brand,#7dd3fc)" />
               <b>Mind <em>Loft</em></b>
             </Link>
@@ -410,15 +410,15 @@ export default function LayoutCInner({ gameKey }) {
               {!who ? <a className="sty-keep" href="/?signup=1">Keep stats, play with friends</a> : null}
               {who ? <div className="sty-who"><b>{who}</b><i>player</i></div> : null}
               {who && grp && Array.isArray(grp.groups) ? grp.groups.map((g) => (
-                <a key={g.code} className="sty-fca" href="/today#sty-group">
+                <Link key={g.code} className="sty-fca" href="/#sty-group">
                   <b>{g.rank ? '#' + g.rank : '–'}{typeof g.members === 'number' && g.members ? <i> of {g.members}</i> : null}</b>
                   <i>{g.name}</i>
-                </a>
+                </Link>
               )) : null}
               {who ? (
-                <a className="sty-fca" href="/today#sty-board">
+                <Link className="sty-fca" href="/#sty-board">
                   <b>{stats.dayRank ? '#' + stats.dayRank : '–'}</b><i>Today</i>
-                </a>
+                </Link>
               ) : null}
               {who ? (
                 <a className="sty-fca" href="/quizzes/hub">
