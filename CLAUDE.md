@@ -8649,6 +8649,12 @@ figure still loading.
   Hinge, Cascade on Shoe, Crib, Hands and Taire (clones fall to the screen floor; replaced Shoe's
   hole-card flip), Skyline on Towers (replaced its ripple), Crowning on Jesters and Judges (seats
   read off the aria-label). A kind that finds nothing to animate returns 0 and the iris plays alone.
+- **Third batch (owner, 2026-10-10):** Rise on Mercury (mercury runs up each thermometer read off the
+  `svg[viewBox="0 0 9 9"]` overlay), Seal on Cages (cages found by the missing dashed walls), Odometer
+  on Cipher (digits roll column by column, carries hop), Lockup on Links (`.lk-wrap` bands), Timeline on
+  Dating (rail through `.dt-node`), Sonar on Sweep (pings from the last tap, correctly flagged mines
+  tick), Case closed on Alibi and Docket (ticks then a red stamp), Count on Yose (territory marks fill
+  in waves, yours first).
 - A tap before the screen is covered removes the fill at once; after, it goes 700ms later, under the
   flood. Other pop-ups wait: `setBeatLive` stamps `data-sot-beat` on `<html>`, and ThanksPop's
   after-a-game timer waits while that is set or a `.stf-flood` is up.
