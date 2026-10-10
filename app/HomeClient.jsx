@@ -925,7 +925,6 @@ function Home({ lists, viewCounts, voteData, extras, trending = {}, openList, on
   return (
     <div style={{ position: 'relative', zIndex: 2, fontFamily: NFONT, color: NT.ink }}>
       <style dangerouslySetInnerHTML={{ __html: `
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
         .nt-wrap{max-width:1300px;margin:0 auto;padding:8px 24px 70px;}
         .nt-stickytop{position:sticky;top:0;z-index:50;background:var(--surface);}
         .nt-pillsbar{max-width:1300px;margin:0 auto;padding:10px 24px 10px;}

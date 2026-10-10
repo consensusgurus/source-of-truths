@@ -63,7 +63,6 @@ function RequestView({ onSubmit }) {
   const filledCount = items.filter((i) => i.trim()).length;
 
   const css = `
-    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
     .req{font-family:${FONT};color:${C.ink};}
     .req .lbl{display:block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${C.muted};margin-bottom:6px;}
     .req .fld{width:100%;background:var(--white);border:1px solid ${C.line};border-radius:10px;padding:11px 13px;font-family:${FONT};font-size:15px;color:${C.ink};outline:none;box-sizing:border-box;}

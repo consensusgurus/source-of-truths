@@ -480,7 +480,7 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
       if (SPARE.has(w)) {
         if ((g.spare || []).includes(w)) return say('Already set aside.', true);
         setG((cur) => ({ ...cur, spare: [...(cur.spare || []), w] }));
-        return say(`${w} is a word, but it is not in today’s lode. No points.`);
+        return say(`${w} is a real word. Today’s board doesn’t score it, so it goes in your tailings.`);
       }
       return say('Not in today’s lode.', true);
     }

@@ -1618,7 +1618,6 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
   }, [bestCat, playerStats, scope]);
 
   const css = `
-    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
     .qzh{font-family:${FONT};color:${C.ink};}
     .qzh .lbl{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:${C.muted};}
     .qzh .card{background:${C.surface};border:1px solid ${C.line};border-radius:12px;display:flex;flex-direction:column;overflow:hidden;min-width:0;}

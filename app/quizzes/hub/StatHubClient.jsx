@@ -847,7 +847,6 @@ export default function StatHubClient() {
   }, [bestCat, profile, found]);
 
   const css = `
-    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
     .qzhub{font-family:${FONT};color:${C.ink};}
     .qzhub .lbl{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:${C.muted};}
     .qzhub .card{background:${C.surface};border:1px solid ${C.line};border-radius:12px;overflow:hidden;min-width:0;}

@@ -414,6 +414,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
   const a2hsClick = () => { const e = installEvt; if (e) { setInstallEvt(null); e.prompt(); } else { setShowA2hsHelp(true); } };
 
   const [armLock, setArmLock] = useState(false);
+  const [armGive, setArmGive] = useState(false);
   // The finished board starts turned OVER, showing what to do next. Revealing
   // turns it back to the board, which on a miss is the thing worth studying.
   const [revealed, setRevealed] = useState(false);
@@ -877,6 +878,17 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
     return g2;
   }
 
+  // Give up (owner, 2026-10-10): ends the puzzle exactly as running the
+  // budget out would, so it is the same result a stuck player could reach by
+  // typing filler until the guesses were gone, minus the filler. Every guess
+  // left is spent, so the board's guess tiebreak reads it as a full spend.
+  function giveUp() {
+    if (!playing || !g.t0) return;
+    setPick(null);
+    setArmGive(false);
+    setG(concludeOutOfGuesses({ ...g, left: 0 }));
+  }
+
   // ONE lock-in, and it concludes the puzzle. Score is out of 16: a point per
   // word solved plus a point per word correctly categorized. Reached by solving
   // every word; running the budget out ends the puzzle on its own instead.
@@ -1277,7 +1289,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
       ]}
       knack="Crossings are free letters. Solve the words that touch the most slots first and the rest of the grid opens up on its own."
       note={<>No lock-in, no score: nothing counts until you <b>submit</b>.</>}
-      footer={<>Score is out of {PUZZLE.slots.length * 2}: a point per solved word, a point per correct placement. A <b>hint</b> reveals a letter and costs 1 guess plus 1 point, one per puzzle. Your first ever Crux gets one free on top.</>}
+      footer={<>Score is out of {PUZZLE.slots.length * 2}: a point per solved word, a point per correct placement. A <b>hint</b> reveals a letter and costs 1 guess plus 1 point, one per puzzle. Your first ever Crux gets one free on top. Stuck? <b>Give up</b> ends the puzzle and scores what you have solved and filed.</>}
     />
   );
 
@@ -1548,6 +1560,19 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
                   <span style={{ fontSize: 10, fontWeight: 800, opacity: 0.85 }}>&minus;1 guess &minus;1 pt</span>
                 </button>
               )}
+            </div>
+          )}
+
+          {started && !allWordsSolved && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 10, flexWrap: 'wrap', margin: '-4px 0 10px' }}>
+              {armGive && (
+                <span style={{ fontSize: 12, fontWeight: 700, color: FADED }}>Ends the puzzle now. Scores what you have solved and filed.</span>
+              )}
+              <button onClick={() => { if (armGive) { if (Date.now() - armGive < ARM_MIN_MS) return; giveUp(); } else { setArmGive(Date.now()); setTimeout(() => setArmGive(false), 3500); } }}
+                title={armGive ? 'Ends the puzzle now' : 'End the puzzle now instead of spending the rest of your guesses'}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armGive ? `var(--stg-bad, ${COLORS.rust})` : FADED, textDecoration: 'underline', textUnderlineOffset: 3, padding: 0 }}>
+                {armGive ? 'Press again' : 'Give up'}
+              </button>
             </div>
           )}
 

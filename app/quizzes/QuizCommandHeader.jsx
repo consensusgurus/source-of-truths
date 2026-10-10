@@ -291,7 +291,6 @@ export default function QuizCommandHeader({ me, onSignup, ticker = [], variant =
     return (
       <div className={inner ? 'qchm qchm-inner' : 'qchm'}>
         <style dangerouslySetInnerHTML={{ __html: `
-          @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
           /* Locked to the top (owner, 2026-08-03). sticky rather than fixed so it
              keeps its own space in flow and needs no spacer element the way the
              white bar below does. */
@@ -568,7 +567,6 @@ export default function QuizCommandHeader({ me, onSignup, ticker = [], variant =
   return (
     <div className="qch" style={{ fontFamily: FONT }}>
       <style dangerouslySetInnerHTML={{ __html: `
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
         /* The bar is position:fixed, so this wrapper reserves the height it no longer
            occupies in flow. Kept on .qch, which wraps nothing but the bar, so there is
            one rule to keep in sync instead of a separate spacer element. */

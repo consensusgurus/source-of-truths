@@ -57,6 +57,7 @@ import useGameAllTime from '../useGameAllTime';
 import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
+import { useStudyHold, StudyBar } from '../StudyHold';
 import AddToHome from '../AddToHome';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import DailyRules from '../DailyRules';
@@ -226,7 +227,19 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
   const over = !playing;
   // A give-up keeps the article redacted until the end card's Reveal is
   // pressed, so the finish beat leaks nothing. A win unmasks at once.
-  const unmasked = over && (solved || !LOFT || revealed);
+  // The study hold (app/StudyHold.jsx): a finish on THIS load keeps the board up
+  // with the answers shown before the end card takes the screen. Keyed on tEnd
+  // being fresh, so a board finished earlier and restored from its save goes
+  // straight to the card as before.
+  const study = useStudyHold();
+  const studiedEnd = useRef(null);
+  useEffect(() => {
+    if (!LOFT || g.status === 'playing' || !g.tEnd) return;
+    if (studiedEnd.current === g.tEnd) return;
+    studiedEnd.current = g.tEnd;
+    if (Date.now() - g.tEnd < 5000) study.start();
+  }, [g.status, g.tEnd]); // eslint-disable-line react-hooks/exhaustive-deps
+  const unmasked = over && (solved || !LOFT || revealed || study.active);
 
   useEffect(() => { try { setMobileUi(isMobileDevice()); } catch (e) {} }, []);
 
@@ -430,10 +443,14 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
     tokenIdx++;
     const idx = tokenIdx;
     if (isRevealed(tk)) {
-      const fresh = lastNorms.includes(tk.n);
-      return (
-        <span key={key} style={fresh ? { background: `var(--stg-surf, ${COLORS.hitSoft})`, color: '#7c2d12', borderRadius: 3, padding: '0 1px' } : undefined}>{tk.t}</span>
-      );
+      // A word the give-up uncovered (not found by a guess, not free) is marked
+      // as missed, so the reader can see what they did not get.
+      const missed = unmasked && !solved && !FREEBIES.has(tk.n) && !revealedNorms.has(tk.n) && tk.n.length >= 3;
+      const fresh = !missed && lastNorms.includes(tk.n);
+      const style = missed
+        ? { color: STAGE ? 'var(--stg-bad)' : '#991b1b', textDecoration: 'underline', textDecorationThickness: 2, textUnderlineOffset: 3, fontWeight: 700 }
+        : fresh ? { background: `var(--stg-surf, ${COLORS.hitSoft})`, color: STAGE ? 'var(--stg-acc-ink)' : '#7c2d12', borderRadius: 3, padding: '0 1px' } : undefined;
+      return <span key={key} style={style}>{tk.t}</span>;
     }
     const showLen = peek === idx;
     return (
@@ -525,7 +542,7 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
         {/* LOFT: the play area sits on the navy stage, which runs full bleed
             and fills the first screen, so the board is the one lit object. */}
         <div className={LOFT && !STAGE ? 'loft-stage' : undefined}>
-          <div className={LOFT && !STAGE && !playing ? (revealed ? 'loft-flip' : 'loft-flip on') : undefined}>
+          <div className={LOFT && !STAGE && !playing ? ((revealed || study.active) ? 'loft-flip' : 'loft-flip on') : undefined}>
           <div className={LOFT && !STAGE && !playing ? 'loft-flip-in' : undefined}>
           <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
           <div className={LOFT && !STAGE ? 'loft-sheet' : undefined}>
@@ -597,7 +614,7 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
                   </div>
                 )}
                 {flash && playing && (
-                  <div style={{ fontFamily: MONO, fontSize: 12, color: flash.hits > 0 ? '#7c2d12' : `var(--stg-mute, ${COLORS.faded})`, marginTop: 6 }}>
+                  <div style={{ fontFamily: MONO, fontSize: 12, color: flash.hits > 0 ? (STAGE ? 'var(--stg-acc-ink)' : '#7c2d12') : `var(--stg-mute, ${COLORS.faded})`, marginTop: 6 }}>
                     {flash.hits === -1 ? `"${flash.w}" is already free` : flash.hits === -2 ? `already guessed "${flash.w}"` : flash.hits === 0 ? `"${flash.w}" appears nowhere` : `"${flash.w}" uncovered ${flash.hits} ${flash.hits === 1 ? 'word' : 'words'}`}
                   </div>
                 )}
@@ -637,6 +654,7 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
                 </div>
               )}
 
+              <StudyBar hold={study} note={solved ? 'Here is the whole article.' : 'Here is the whole article. Words you missed are underlined in red.'} />
               {over && (
                 <div style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1px solid rgba(28,30,36,0.14)', borderRadius: 12, padding: '16px 20px', margin: '16px 0 0' }}>
                   <div style={{ fontSize: 19, fontWeight: 900, color: INK, marginBottom: 4 }}>
@@ -656,7 +674,7 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
             <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Hide game board</button>
           )}
           </div>
-          {LOFT && !playing && (
+          {LOFT && !playing && !study.active && (
             <LoftFinish
               name="Redact"
               catRank={catRank}

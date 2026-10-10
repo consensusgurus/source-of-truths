@@ -366,7 +366,7 @@ export default function LogicGameClient({ quizId, mobile = false }) {
         />
       )}
       <div style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '4px 38px 80px' }}>
-        <style dangerouslySetInnerHTML={{ __html: `@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');` }} />
+        <style dangerouslySetInnerHTML={{ __html: `` }} />
 
         {/* Header */}
         <div style={{ paddingBottom: 0, marginTop: 8, ...(phase === 'done' ? { maxWidth: 640, marginLeft: 'auto', marginRight: 'auto' } : null) }}>

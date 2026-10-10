@@ -647,7 +647,6 @@ export function TrophyCase({ trophies, viewing, stage }) {
 // them OUTSIDE the Stat Hub (which keeps its own superset). Same class names,
 // same values; keep the two in sync when a rule changes.
 export const profileCss = `
-  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
   .qzhub{font-family:${FONT};color:${C.ink};}
   .qzhub .lbl{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:${C.muted};}
   .qzhub .card{background:${C.surface};border:1px solid ${C.line};border-radius:12px;overflow:hidden;min-width:0;}

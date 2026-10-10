@@ -60,6 +60,7 @@ import useGameAllTime from '../useGameAllTime';
 import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
+import { useStudyHold, StudyBar } from '../StudyHold';
 import AddToHome from '../AddToHome';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import DailyRules from '../DailyRules';
@@ -231,7 +232,19 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('anon');
   // Giving up keeps the player's own letters; the passage is filled in only once
   // the end card's Reveal answer is pressed (the finish beat shows the board).
-  const shownFill = g.status === 'gaveup' && (!LOFT || revealed) ? sol : fill;
+  // The study hold (app/StudyHold.jsx): a finish on THIS load keeps the board up
+  // with the answers shown before the end card takes the screen. Keyed on tEnd
+  // being fresh, so a board finished earlier and restored from its save goes
+  // straight to the card as before.
+  const study = useStudyHold();
+  const studiedEnd = useRef(null);
+  useEffect(() => {
+    if (!LOFT || g.status === 'playing' || !g.tEnd) return;
+    if (studiedEnd.current === g.tEnd) return;
+    studiedEnd.current = g.tEnd;
+    if (Date.now() - g.tEnd < 5000) study.start();
+  }, [g.status, g.tEnd]); // eslint-disable-line react-hooks/exhaustive-deps
+  const shownFill = g.status === 'gaveup' && (!LOFT || revealed || study.active) ? sol : fill;
   // The register comes from the shared store, not from a private effect, so
   // the switch in the cap repaints this root without a prop between them.
   // Still resolved in an effect: the server cannot know what is stored.
@@ -769,7 +782,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
             color:${INK};cursor:pointer;flex:none;transition:background 90ms,border-color 90ms;}
           .an-cell.mine{background:${ACC_SOFT};border-color:#e3b9be;}
           .an-cell.on{outline:2px solid ${ACC};outline-offset:-2px;background:${ACC_SOFT};}
-          .an-cell.miss{background:${STAGE ? 'rgba(220,38,38,0.22)' : '#fee2e2'};border-color:#dc2626;color:${STAGE ? '#ffc9c9' : '#7f1d1d'};}
+          .an-cell.miss{background:${STAGE ? 'color-mix(in srgb, var(--stg-bad) 16%, var(--stg-cell))' : '#fee2e2'};border-color:${STAGE ? 'var(--stg-bad)' : '#dc2626'};color:${STAGE ? 'var(--stg-bad)' : '#7f1d1d'};font-weight:800;}
           .an-punc{align-self:center;color:var(--stg-mute2, #b6bcc7);font-weight:800;width:6px;text-align:center;}
           .an-banks{display:grid;grid-template-columns:1.25fr 1fr;gap:14px 26px;}
           @media(max-width:900px){.an-banks{grid-template-columns:1fr;}}
@@ -855,7 +868,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
         {/* LOFT: the play area sits on the navy stage, which runs full bleed
             and fills the first screen, so the board is the one lit object. */}
         <div className={LOFT && !STAGE ? 'loft-stage' : undefined}>
-          <div className={LOFT && !STAGE && !playing ? (revealed ? 'loft-flip' : 'loft-flip on') : undefined}>
+          <div className={LOFT && !STAGE && !playing ? ((revealed || study.active) ? 'loft-flip' : 'loft-flip on') : undefined}>
           <div className={LOFT && !STAGE && !playing ? 'loft-flip-in' : undefined}>
           <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
           <div className={LOFT && !STAGE ? 'loft-sheet' : undefined}>
@@ -948,6 +961,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
                   <button className="an-btn" style={{ marginLeft: 'auto' }} onClick={giveUp}><Flag size={15} />Give up</button>
                 </div>
               )}
+              <StudyBar hold={study} note={won ? 'Here is the finished passage.' : 'Here is the full passage. Your misses are marked in red.'} />
 
             </>
           )}
@@ -958,7 +972,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
             <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Hide game board</button>
           )}
           </div>
-          {LOFT && !playing && (
+          {LOFT && !playing && !study.active && (
             <LoftFinish
               name="Anon"
               catRank={catRank}

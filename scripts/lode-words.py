@@ -129,6 +129,9 @@ KEEP = {
     "tory", "tories", "realtor", "afro", "cajun", "nordic", "utopian",
     "labrador", "savannah", "sherpa", "siamese", "maltese", "quaker",
     "jesuit", "flemish", "muppet", "jedi",
+    # British and everyday words a player types lowercase (owner, 2026-10-10:
+    # a reader in England had MATT, the paint finish, banked as a tailing)
+    "matt", "biro", "biros", "mack", "macks", "goth", "goths", "geez", "gruyere", "gamay", "akita", "akitas", "pyrex", "mylar", "henley", "henleys",
 }
 
 

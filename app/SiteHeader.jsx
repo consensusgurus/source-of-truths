@@ -80,7 +80,6 @@ function CommandHeader({ active, search, onSearch, sortBy, onSort, sortButtons, 
   return (
     <div className="shc" style={{ fontFamily: FONT }}>
       <style dangerouslySetInnerHTML={{ __html: `
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
         .shc{width:100vw;margin-left:calc(50% - 50vw);}
         .shc-bar{display:flex;align-items:center;gap:12px;min-height:56px;position:sticky;top:0;z-index:90;padding:9px clamp(14px,2vw,24px);background:var(--white);border-bottom:1.5px solid var(--border);}
         .shc-word{font-size:18px;font-weight:800;letter-spacing:-0.025em;line-height:1;color:var(--ink);text-decoration:none;white-space:nowrap;flex:none;}
@@ -199,7 +198,6 @@ export default function SiteHeader({ active = 'lists', maxWidth = 1180, visitors
   return (
     <div className="sh-root" style={{ fontFamily: FONT }}>
       <style dangerouslySetInnerHTML={{ __html: `
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
         .sh-bar{display:flex;flex-direction:column;padding:12px 16px;background:var(--white);border:1.5px solid var(--border);;border-radius:16px;}
         .sh-bar.flush{border-radius:16px 16px 0 0;}
         .qzf-line{position:absolute;top:0;bottom:0;left:24px;right:24px;border-left:1px solid rgba(20,22,28,0.30);border-right:1px solid rgba(20,22,28,0.30);border-bottom:1px solid rgba(20,22,28,0.30);border-bottom-left-radius:16px;border-bottom-right-radius:16px;pointer-events:none;z-index:0;}
