@@ -94,7 +94,9 @@ export function checkBank({ QUESTIONS, QUESTION_MAP, PUZZLES, key, LANES, inhere
   const seenText = new Map();
   for (const q of QUESTIONS) {
     const k = norm(q.q);
-    if (seenText.has(k)) fail(`${q.id}: repeats the question text of ${seenText.get(k)}`);
+    // A declared recycle of the question it repeats is the one allowed repeat;
+    // the wrapper's checkRecycled (scripts/trivia-recycle.mjs) proves the rest.
+    if (seenText.has(k) && q.from !== `${key}:${seenText.get(k)}`) fail(`${q.id}: repeats the question text of ${seenText.get(k)}`);
     seenText.set(k, q.id);
   }
 

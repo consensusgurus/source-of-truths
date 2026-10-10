@@ -124,7 +124,9 @@ export function checkStreak({ QUESTIONS, QUESTION_MAP, PUZZLES }) {
       if (/[‘’“”]/.test(String(s))) fail(`${q.id}: curly quote in copy, rebuild from source`);
     }
     const nq = norm(q.q);
-    if (seenQ.has(nq)) fail(`${q.id}: duplicate question text of ${seenQ.get(nq)}`);
+    // A declared recycle (`from`, scripts/trivia-recycle.mjs) is the one allowed
+    // repeat; verify-streak.mjs proves nobody ever answered the original.
+    if (seenQ.has(nq) && q.from !== `streak:${seenQ.get(nq)}`) fail(`${q.id}: duplicate question text of ${seenQ.get(nq)}`);
     seenQ.set(nq, q.id);
     // Legacy giveaway rule (whole bank): the answer sitting in the stem whole.
     const ans = answerKey((q.choices || [])[q.correct] || '');

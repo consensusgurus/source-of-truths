@@ -63,6 +63,13 @@
 //      description of its mechanics) may appear once a day at most; spend the
 //      other four on a sport's history, people, teams, records and events.
 //      Checked by scripts/sports-rules-classifier.mjs via verify-streak.mjs.
+//  10. RECYCLE BEFORE YOU AUTHOR (owner, 2026-10-09). A tier 3 to 5 slot is
+//      filled first from questions nobody has ever answered: run
+//      node scripts/trivia-recycle-pool.mjs streak --tier 5 --lane Music and
+//      paste the entry, `from` and all. Same lane, same tier, same stem and
+//      answer. Unanswered DEEP questions may also land here, in TIER 5 ONLY and
+//      at most two a day (--deep), with the stem rewritten wherever it leaned
+//      on Deep's day topic. Rules: scripts/trivia-recycle.mjs.
 //
 // WHERE THE RUNWAY ENDS. The binding constraint is not the calendar, it is
 // tier 1 and tier 2 in the eight lanes: a genuine warm-up question has to be

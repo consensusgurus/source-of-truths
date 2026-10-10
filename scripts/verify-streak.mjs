@@ -59,8 +59,15 @@
 import { QUESTIONS, QUESTION_MAP } from '../app/streak/questions.js';
 import { PUZZLES } from '../app/streak/puzzles.js';
 import { checkStreak, LANES, COPY_FROM, ANSWER_CAP } from './streak-rules.mjs';
+import { checkRecycled } from './trivia-recycle.mjs';
 
 const { errs, warns, dates } = checkStreak({ QUESTIONS, QUESTION_MAP, PUZZLES });
+// RECYCLED QUESTIONS (owner, 2026-10-09): unanswered Streak questions recycle
+// in place, and unanswered DEEP questions may land here in tier 5 only, at most
+// two a day. Rules and proof in scripts/trivia-recycle.mjs.
+const recycle = await checkRecycled({ game: 'streak', QUESTIONS, PUZZLES });
+errs.push(...recycle.errs);
+if (recycle.recycled) console.log(`streak: ${recycle.recycled} recycled question(s) checked against the play snapshots`);
 
 for (const w of warns) console.warn(`warn: ${w}`);
 console.log(`streak: ${QUESTIONS.length} questions, ${PUZZLES.length} days checked (${dates[0]} to ${dates[dates.length - 1]}), ${LANES.length} lanes, copy floor ${COPY_FROM}, answer cap ${ANSWER_CAP}`);

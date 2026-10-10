@@ -13,6 +13,7 @@
 import { QUESTIONS, QUESTION_MAP } from '../app/quotes/questions.js';
 import { PUZZLES } from '../app/quotes/puzzles.js';
 import { checkBank, report } from './mcq-gauntlet-check.mjs';
+import { checkRecycled } from './trivia-recycle.mjs';
 
 const LANES = ['Presidents & Politics', 'History & War', 'Science, Letters & Ideas', 'Books & Authors', 'Screen Lines'];
 
@@ -62,4 +63,8 @@ const r = checkBank({
   laneStem: LANE_STEM,
   bannedPairs: BANNED,
 });
+// RECYCLED QUESTIONS (owner, 2026-10-09): scripts/trivia-recycle.mjs.
+const recycle = await checkRecycled({ game: 'quotes', QUESTIONS, PUZZLES });
+r.errs.push(...recycle.errs);
+if (recycle.recycled) console.log(`quotes: ${recycle.recycled} recycled question(s) checked against the play snapshots`);
 report(r, QUESTIONS, PUZZLES);

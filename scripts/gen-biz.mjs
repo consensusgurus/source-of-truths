@@ -54,6 +54,15 @@
 import fs from 'fs';
 import path from 'path';
 import url from 'url';
+// RECYCLED QUESTIONS (owner, 2026-10-09): an entry carrying `from: '<game>:<id>'`
+// repeats a question nobody has ever answered. The rules and the proof live in
+// scripts/trivia-recycle.mjs; this only carries the field through to the
+// shipped file, where the verifier checks it against the play snapshots.
+const fromField = (entry) => {
+  if (entry.from == null) return '';
+  if (!/^(streak|deep|atlas|sport|biz|quotes|script):d\d{2,3}q\d\d$/.test(String(entry.from))) throw new Error(`bad from "${entry.from}" on "${entry.q}"`);
+  return `, from: '${entry.from}'`;
+};
 
 const HERE = path.dirname(url.fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -201,7 +210,7 @@ for (let d = 0; d < nDays; d++) {
     for (let c = 0, w = 0; c < 4; c++) choices.push(c === correct ? entry.a : wrong[w++]);
 
     qids.push(id);
-    qLines.push(`  { id: '${id}', cat: '${esc(subject)}', tier: ${t}, q: '${esc(entry.q)}', choices: [${choices.map((c) => `'${esc(c)}'`).join(', ')}], correct: ${correct} },`);
+    qLines.push(`  { id: '${id}', cat: '${esc(subject)}', tier: ${t}, q: '${esc(entry.q)}', choices: [${choices.map((c) => `'${esc(c)}'`).join(', ')}], correct: ${correct}${fromField(entry)} },`);
   }
   if (qids.length !== TOTAL_Q) die(`day ${num}: built ${qids.length} questions, need ${TOTAL_Q}`);
 

@@ -30,6 +30,12 @@ review pass that did not write the content. The review covers every new item,
 not a sample. Solver-proved games (sudokus, logic grids, chess, Parker, Sweep,
 Cipher, Docket, Alibi, Rung, Warmer) are exempt.
 
+A RECYCLED trivia question (`from: '<game>:<id>'`, owner 2026-10-09) is new
+content for this rule: nobody has answered it, so nobody has ever caught an
+error in it. Review it like a new item, and for a Deep question moved into
+Streak tier 5 also check the rewritten stem stands on its own without Deep's
+day topic.
+
 ## What the reviewer checks, by game type
 
 | Game type | Check |

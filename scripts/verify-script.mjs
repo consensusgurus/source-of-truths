@@ -9,6 +9,7 @@
 import { QUESTIONS, QUESTION_MAP } from '../app/script/questions.js';
 import { PUZZLES } from '../app/script/puzzles.js';
 import { checkBank, report } from './mcq-gauntlet-check.mjs';
+import { checkRecycled } from './trivia-recycle.mjs';
 
 const LANES = ['Movies', 'Television', 'Actors & Directors', 'Awards & Box Office', 'Behind the Scenes'];
 
@@ -33,4 +34,8 @@ const r = checkBank({
   copyFrom: COPY_FROM,
   answerCap: 3,
 });
+// RECYCLED QUESTIONS (owner, 2026-10-09): scripts/trivia-recycle.mjs.
+const recycle = await checkRecycled({ game: 'script', QUESTIONS, PUZZLES });
+r.errs.push(...recycle.errs);
+if (recycle.recycled) console.log(`script: ${recycle.recycled} recycled question(s) checked against the play snapshots`);
 report(r, QUESTIONS, PUZZLES);

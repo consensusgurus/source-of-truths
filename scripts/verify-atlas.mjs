@@ -39,6 +39,7 @@
 import { QUESTIONS, QUESTION_MAP } from '../app/atlas/questions.js';
 import { PUZZLES } from '../app/atlas/puzzles.js';
 import { scanUS } from './us-spellings.mjs';
+import { checkRecycled } from './trivia-recycle.mjs';
 
 // The first live date the US-spelling screen and the answer-reuse ceiling
 // apply to. Everything before it is frozen.
@@ -111,7 +112,9 @@ for (const q of QUESTIONS) {
 const seenText = new Map();
 for (const q of QUESTIONS) {
   const k = norm(q.q);
-  if (seenText.has(k)) fail(`${q.id}: repeats the question text of ${seenText.get(k)}`);
+  // A declared recycle of the question it repeats is the one allowed repeat;
+  // checkRecycled (below) proves nobody ever answered the original.
+  if (seenText.has(k) && q.from !== `atlas:${seenText.get(k)}`) fail(`${q.id}: repeats the question text of ${seenText.get(k)}`);
   seenText.set(k, q.id);
 }
 
@@ -237,6 +240,12 @@ if (orphans.length) warn(`${orphans.length} questions in the bank are not used b
 
 // ---- report ---------------------------------------------------------------
 for (const w of warns) console.warn(`warn  ${w}`);
+// RECYCLED QUESTIONS (owner, 2026-10-09): every `from` must name a question the
+// play snapshots prove nobody ever answered. Rules in scripts/trivia-recycle.mjs.
+const recycle = await checkRecycled({ game: 'atlas', QUESTIONS, PUZZLES });
+errs.push(...recycle.errs);
+if (recycle.recycled) console.log(`atlas: ${recycle.recycled} recycled question(s) checked against the play snapshots`);
+
 if (errs.length) {
   for (const e of errs) console.error(`FAIL  ${e}`);
   console.error(`\n${errs.length} problem${errs.length === 1 ? '' : 's'} in ${QUESTIONS.length} questions across ${PUZZLES.length} days.`);

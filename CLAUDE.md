@@ -4752,6 +4752,10 @@ verifier passed the whole time. Rules for every bulk extension:
    parker, check, rung, taire, fib, crunch, glyph), which is why Crunch storing a
    `solutions` count above its own documented cap of 400 on 26 of 62 boards, and the Rung
    start-word collapse, both went unnoticed.
+8. **Trivia gauntlets recycle before they author (owner, 2026-10-09).** For Streak, Atlas,
+   Sport, Biz, Quotes and Script, fill hard-tier slots from the never-answered pool first
+   and author only what the pool cannot cover. Deep recycles into Streak's tier 5 only.
+   See [Recycling unanswered trivia questions](#recycling-unanswered-trivia-questions-owner-2026-10-09).
 
 ### Adding a BRAND NEW daily game
 
@@ -8318,6 +8322,71 @@ no board** (nothing is posted, no IQ Points, the result is kept on the device in
   IQ Points: `computeXp` skips `iq-` ids, keeping the original standalone ruling. The Page Views
   row takes the larger of result rows and finish pings (`iq-<slug>-finished`, the only record
   before 2026-09-30), and the finish rows are folded in rather than listed (`app/admin/page.js`).
+
+## Recycling unanswered trivia questions (owner, 2026-10-09)
+
+Every trivia gauntlet is one life in a fixed order, so a question deep in a day is seen only by
+the players who get that far, and on most days nobody does. On the 2026-10-09 snapshot about
+**2,450 questions already dealt on played days had never been answered by anyone**: Streak 867,
+Quotes 456, Biz 336, Sport 252, Script 254, Atlas 204, Deep 83, nearly all in tiers 3 to 5. To
+every player those are new questions. **They are dealt again instead of authoring replacements.**
+
+**Never answered, exactly.** `/api/quiz/board` reports `best`, the top score anyone recorded on
+the day (daily, archive and Gauntlet run plays all post under one quizId). On a day whose best is
+B, questions 1..B were answered right and B+1 was the miss that ended the best run, so it was
+SEEN. Only positions **B+2 and later** are in the pool. The day must be at least 14 days old on
+the snapshot, because a day still being played has not finished showing its questions.
+
+**The rules** (enforced by `scripts/trivia-recycle.mjs`, called from each game's verifier):
+
+1. A recycled entry carries `from: '<game>:<id>'` in the authored source (streak-source.mjs,
+   quotes-source.mjs, script-source.mjs, the atlas/sport/biz lane files). The generators carry
+   it into `questions.js`. It is the ONLY repeated question text a verifier allows.
+2. **Same game, same lane, same tier.** The tier is the difficulty the question was written to;
+   the lane keeps the day's lane cycle.
+3. **Same stem, same answer** as the original as it stands now. Distractors may be improved.
+   A wrong original is fixed in place too (content errors on played boards are fixed, owner
+   2026-10-08).
+4. **Each original is recycled once.** If the copy also goes unanswered, recycle the copy.
+5. **Deep is the exception.** Deep is one topic a day, so its unanswered questions cannot go
+   back into Deep. They go to **Streak, tier 5 only (the very end of the forty), at most two a
+   Streak day**, in whichever Streak lane fits. The stem may be rewritten and usually must be:
+   Deep stems lean on the day's topic ("the weighing of the heart", "the city on the Tiber").
+   The answer may not change.
+6. **Every rule of the receiving bank still applies**: US spellings, the sports rules cap, no
+   expiring facts, the answer cap. Old frozen days predate several of these, so some pooled
+   questions will fail. Skip them; never loosen the rule for a recycle.
+7. **Content review still applies.** A recycled question is re-read like new copy
+   (scripts/CONTENT-REVIEW.md); the 2026-10-08 audit found wrong keys on played days, and a
+   recycle must not carry one forward. It counts toward the reviewed range like any new board.
+
+**The workflow at restock time:**
+
+1. Pull a fresh snapshot in the browser (the board route is unreachable from a sandbox): fetch
+   `/api/quiz/board?quizId=<id>` for every played day of the seven games from any mindloftdaily.com
+   page, six at a time, and write `scripts/trivia-recycle/play-snapshot-<YYYY-MM-DD>.txt`, one
+   `<quizId>=<best>` per line. Return values from the page in chunks under about 1,000 characters,
+   grouped per game (`9.14:22 9.15:17 ...`), or the browser tool truncates them.
+   **Never delete an old snapshot**: each recycle is proved against a snapshot dated before its
+   copy went live, and an archive player who reaches the original later must not turn a live
+   board red.
+2. `node scripts/trivia-recycle-pool.mjs` for the summary; `node scripts/trivia-recycle-pool.mjs
+   <game> [--tier N] [--lane X]` prints the pool in source shape with `from` filled in;
+   `node scripts/trivia-recycle-pool.mjs streak --deep` prints Deep's pool for Streak tier 5 with
+   `c: '?'` (the generator refuses `?`, so a lane has to be chosen). Originals already claimed by
+   any `from` in scripts/ or a shipped bank are left out. It refuses a snapshot over a week old
+   without `--stale`.
+3. Fill the hard tiers from the pool, author the rest (mostly tiers 1 and 2, where the pool is
+   empty because everyone answers those), generate, verify, content-review.
+
+**Where this changes authoring.** The binding constraint was already tiers 1 and 2 (streak-source.mjs,
+"Where the runway ends"). Recycling makes it the only one: the pool refills the hard tiers every
+day the field fails to reach them, so authoring effort goes to warm-ups and easy questions.
+
+**Gates.** `scripts/verify-trivia-recycle.mjs` (run by verify-all) parses every snapshot and runs a
+selftest proving each rule fires on synthetic banks. Each game verifier runs `checkRecycled` on its
+own bank. IQ tests are unaffected: they calibrate only answered questions, and a recycled copy is
+a new item under its new day's id.
 
 ## The admin desk and /sitestats answer first and refresh second (2026-10-02)
 

@@ -33,6 +33,11 @@
 // 1863 stays said. What is banned is asking who "currently" holds any office, or
 // pinning a quote to a living person's present role rather than to the moment
 // they said it.
+// RECYCLE BEFORE YOU AUTHOR (owner, 2026-10-09). Hard-tier slots are filled
+// first from questions nobody has ever answered on a played day:
+//   node scripts/trivia-recycle-pool.mjs quotes --tier 5
+// prints them in this file's shape with `from: '<game>:<id>'` filled in. Same
+// lane, same tier, same stem and answer. Rules: scripts/trivia-recycle.mjs.
 export const LANES = ['Presidents & Politics', 'History & War', 'Science, Letters & Ideas', 'Books & Authors', 'Screen Lines'];
 
 export const DAYS = [

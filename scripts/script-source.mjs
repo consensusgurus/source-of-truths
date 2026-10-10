@@ -19,6 +19,11 @@
 // superlative worth asking is pinned in the stem ("the highest grossing film of
 // the 1990s", "for years the most watched"), and casting questions are asked
 // about performances already given.
+// RECYCLE BEFORE YOU AUTHOR (owner, 2026-10-09). Hard-tier slots are filled
+// first from questions nobody has ever answered on a played day:
+//   node scripts/trivia-recycle-pool.mjs script --tier 5
+// prints them in this file's shape with `from: '<game>:<id>'` filled in. Same
+// lane, same tier, same stem and answer. Rules: scripts/trivia-recycle.mjs.
 export const LANES = ['Movies', 'Television', 'Actors & Directors', 'Awards & Box Office', 'Behind the Scenes'];
 
 export const DAYS = [
