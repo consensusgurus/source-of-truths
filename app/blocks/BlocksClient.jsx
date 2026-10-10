@@ -39,7 +39,7 @@ import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
-import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
+import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight, REGION_RAMP } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
 import useIqStanding from '../useIqStanding';
 import useNextUnplayed, { useUnplayedSimilar } from '../useNextUnplayed';
@@ -227,6 +227,53 @@ function hits(grid, cols, rows, p, gx, gy, gr) {
 }
 const KICKS = [[0, 0], [-1, 0], [1, 0], [-2, 0], [2, 0], [0, -1], [-1, -1], [1, -1], [0, -2]];
 
+// THE SHAPES WEAR THE SITE'S OWN COLOURS (owner, 2026-10-10). They were nine
+// lightness steps of one blue; now each shape takes a step of the category
+// ramp (lib/category-ramp REGION_RAMP), the pastel on the dark stage and the
+// deep twin on the light one, so the well reads like the rest of Mind Loft.
+// Amber is left out because it sits on top of gold, and lime's light twin is
+// moved off the Logic green, which is indistinguishable from mint on paper.
+// The two additions (corner, plus) carry a small white diamond, which is the
+// cue the darkest-blue steps used to give. lib/blocks-seq PIECES keeps its
+// blues for the verifier; nothing on screen reads them any more.
+const PIECE_HUE = { I: 'sky', O: 'gold', T: 'violet', S: 'mint', Z: 'rose', J: 'periwinkle', L: 'orange', C: 'magenta', P: 'lime' };
+const HUE_BY_NAME = Object.fromEntries(REGION_RAMP.map((h) => [h.name, h]));
+const LIGHT_OVERRIDE = { lime: '#65a30d' };
+function pieceFill(k, light) {
+  const name = PIECE_HUE[k];
+  const h = HUE_BY_NAME[name];
+  if (!h) return '#94a3b8';
+  return light ? (LIGHT_OVERRIDE[name] || h.lt) : h.dk;
+}
+const IS_EXTRA = { C: true, P: true };
+const RAINBOW = ['sky', 'mint', 'lime', 'gold', 'orange', 'rose', 'magenta', 'violet', 'periwinkle'];
+
+// A FOUR-ROW CLEAR BANKS A BONUS ROW (owner, 2026-10-10): four rows count as
+// five. Date gated so no day already played is re-ranked; boards before this
+// date score plain rows exactly as before.
+const BONUS_FROM = '2026-10-11';
+const scoreRun = (lines, quads, bonus) => scoreRows(lines) + (bonus ? Math.max(0, Number(quads) || 0) : 0);
+
+// The next and held shapes, drawn small rather than named.
+function MiniShape({ k, light, cell = 7 }) {
+  if (!k || !ROT[k]) return <span style={{ opacity: 0.5 }}>&ndash;</span>;
+  const m = shapeAt(k, 0);
+  let x0 = 9, x1 = -1, y0 = 9, y1 = -1;
+  m.forEach((row, y) => row.forEach((v, x) => { if (v) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); } }));
+  const w = (x1 - x0 + 1) * cell, h = (y1 - y0 + 1) * cell;
+  const fill = pieceFill(k, light);
+  const rects = [];
+  m.forEach((row, y) => row.forEach((v, x) => {
+    if (!v) return;
+    rects.push(<rect key={`${x}-${y}`} x={(x - x0) * cell + 0.5} y={(y - y0) * cell + 0.5} width={cell - 1} height={cell - 1} rx={1.6} fill={fill} />);
+  }));
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-label={PIECE_LABEL[k] || k} role="img" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+      {rects}
+    </svg>
+  );
+}
+
 export default function BlocksClient({ puzzles = [], forceNum = null }) {
   const searchParams = useSearchParams();
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
@@ -280,6 +327,21 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('blocks'), '--stg-acc-lt': gameColorLight('blocks'), '--stg-onramp-lt': gameOnrampLight('blocks'), '--stg-acc-ink-lt': gameAccentInkLight('blocks') };
   const [stageTheme] = useStageTheme();
+  const LIGHT = !STAGE || stageTheme === 'light';
+  const lightRef = useRef(LIGHT);
+  lightRef.current = LIGHT;
+  const BONUS = (PUZZLE.live || '') >= BONUS_FROM;
+  const reducedRef = useRef(false);
+  useEffect(() => {
+    try { reducedRef.current = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+  }, []);
+  // Animation state for the well. Nothing in here is game state: it is drawn
+  // over the board and thrown away, so a reload or a replay simply has none.
+  const fxRef = useRef({ clear: null, lock: null, trail: [], parts: [], floats: [], over: null });
+  const wellWrapRef = useRef(null);
+  const [burst, setBurst] = useState(null);
+  const [lbTab, setLbTab] = useState('today');
+  const [bestRuns, setBestRuns] = useState(null);
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
@@ -313,7 +375,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
   // ROWS ARE THE SCORE, uncapped (see lib/blocks-seq). Par is the day's
   // benchmark rather than a ceiling: clearing it wins the card, and every row
   // above it still counts on the board.
-  const rowsCleared = scoreRows(g.lines);
+  const rowsCleared = scoreRun(g.lines, g.quads, BONUS);
   const won = over && rowsCleared >= PAR;
   // Arcade verdict, and it is deliberately NOT the same test as `won`. Par is
   // a BENCHMARK rather than a solve threshold, the posted score (rows cleared)
@@ -396,6 +458,10 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
       .then((r) => r.json())
       .then((d) => { if (d && !d.error) setBoard({ ...EMPTY_BOARD, ...d }); })
       .catch(() => {});
+    fetch('/api/quiz/blocks-best')
+      .then((r) => r.json())
+      .then((d) => { if (d && Array.isArray(d.rows)) setBestRuns(d.rows); })
+      .catch(() => {});
     if (!viewedRef.current) {
       viewedRef.current = true;
       try {
@@ -422,7 +488,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     const el = Math.min(36000, Math.max(1, Math.round(cur.ms / 1000)));
     try { localStorage.setItem(REC_KEY, '1'); } catch (e) {}
     return {
-      quizId: PUZZLE.quizId, score: scoreRows(cur.lines), total: PAR,
+      quizId: PUZZLE.quizId, score: scoreRun(cur.lines, cur.quads, BONUS), total: PAR,
       correct: 0, guessesUsed: cur.pieces, timeElapsed: el, abandoned: true,
       email: (identity && identity.email) || undefined, anonId: getAnonId(),
       isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : ''),
@@ -432,7 +498,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
   const postResult = useCallback((g2) => {
     abandon.markFlushed();
     holdEnd(HOLD_LONG);
-    const sc = scoreRows(g2.lines);
+    const sc = scoreRun(g2.lines, g2.quads, BONUS);
     const el = Math.max(1, Math.round(g2.ms / 1000));
     try { setStats(recordStat(PUZZLE.num, { s: sc, t: PAR, g: g2.pieces, won: sc >= PAR })); } catch (e) {}
     try {
@@ -448,13 +514,14 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
         }),
       }).then((r) => r.json()).then((d) => { if (d && !d.error) setBoard({ ...EMPTY_BOARD, ...d }); }).catch(() => {});
     } catch (e) {}
-  }, [holdEnd, abandon, PUZZLE.quizId, PUZZLE.num, PAR, identity]);
+  }, [holdEnd, abandon, PUZZLE.quizId, PUZZLE.num, PAR, identity, BONUS]);
 
   // ---- the engine ----------------------------------------------------------
   const endRun = useCallback(() => {
     const cur = gRef.current;
     if (cur.status !== 'playing') return;
     const g2 = { ...cur, status: 'over', tEnd: Date.now(), cur: null };
+    fxRef.current.over = { t0: performance.now() };
     commit(g2);
     postResult(g2);
   }, [commit, postResult]);
@@ -469,13 +536,30 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
   const settle = useCallback((st) => {
     const m = shapeAt(st.cur.k, st.cur.r);
     let above = false;
+    const lockCells = [];
     for (let y = 0; y < m.length; y++) for (let x = 0; x < m.length; x++) {
       if (!m[y][x]) continue;
       const by = st.cur.y + y, bx = st.cur.x + x;
       if (by < 0) { above = true; continue; }
       st.grid[by][bx] = st.cur.k;
+      lockCells.push([bx, by]);
     }
     st.pieces += 1;
+    // ---- animation bookkeeping, before the rows are spliced out ----
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const fx = fxRef.current;
+    const full = [];
+    for (let y = 0; y < ROWS; y++) if (st.grid[y].every((c) => c)) full.push(y);
+    fx.lock = full.length ? null : { cells: lockCells, t0: now };
+    if (full.length) {
+      const n = full.length;
+      const keep = [];
+      for (let y = 0; y < ROWS; y++) if (full.indexOf(y) < 0) keep.push(y);
+      const shifts = {};
+      keep.forEach((oy, i) => { shifts[n + i] = (n + i) - oy; });
+      const dur = reducedRef.current ? 80 : ([0, 380, 440, 520, 900][n] || 900);
+      fx.clear = { rows: full, keys: full.map((y) => st.grid[y].slice()), n, t0: now, dur, shifts, sparked: false };
+    } else fx.clear = null;
     let cleared = 0;
     for (let y = ROWS - 1; y >= 0; y--) {
       if (st.grid[y].every((c) => c)) { st.grid.splice(y, 1); st.grid.unshift(Array(COLS).fill(null)); cleared += 1; y += 1; }
@@ -487,10 +571,18 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
       st.combo += 1;
       if (st.combo > st.bestCombo) st.bestCombo = st.combo;
       st.lines += cleared;
+      const gain = cleared + (cleared === 4 && BONUS ? 1 : 0);
+      const mid = full.length ? (full[0] + full[full.length - 1]) / 2 : ROWS / 2;
+      fx.floats.push({ text: `+${gain} row${gain === 1 ? '' : 's'}`, y: mid + 0.5, t0: now, big: cleared === 4 });
+      if (cleared === 4 && !reducedRef.current) {
+        const el = wellWrapRef.current;
+        if (el) { el.classList.remove('bl-shake'); void el.offsetWidth; el.classList.add('bl-shake'); }
+      }
+      if (cleared === 4 || st.combo > 1) setBurst({ n: cleared, combo: st.combo, id: now });
     } else st.combo = 0;
-    if (above) { st.status = 'over'; st.tEnd = Date.now(); st.cur = null; return st; }
+    if (above) { st.status = 'over'; st.tEnd = Date.now(); st.cur = null; fx.over = { t0: now }; return st; }
     return nextPiece(st);
-  }, [COLS, ROWS, nextPiece]);
+  }, [COLS, ROWS, nextPiece, BONUS]);
 
   const act = useCallback((what) => {
     const cur = gRef.current;
@@ -512,6 +604,20 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     } else if (what === 'drop') {
       let y = st.cur.y;
       while (!hits(st.grid, COLS, ROWS, st.cur, st.cur.x, y + 1)) y += 1;
+      if (y > st.cur.y && !reducedRef.current) {
+        const dm = shapeAt(st.cur.k, st.cur.r);
+        const now = performance.now();
+        const fx = fxRef.current;
+        let bottom = 0;
+        for (let xx = 0; xx < dm.length; xx++) {
+          let top = -1;
+          for (let yy = 0; yy < dm.length; yy++) if (dm[yy][xx]) { if (top < 0) top = yy; bottom = Math.max(bottom, y + yy); }
+          if (top >= 0) fx.trail.push({ x: st.cur.x + xx, y0: Math.max(0, st.cur.y + top), y1: y + top, k: st.cur.k, t0: now });
+        }
+        for (let q = 0; q < 8; q++) fx.parts.push({ x: (st.cur.x + Math.random() * dm.length), y: bottom + 1, vx: (Math.random() - 0.5) * 0.08, vy: -Math.random() * 0.06, g: 0.004, life: 0, max: 26, s: 0.12 + Math.random() * 0.1, dust: true });
+        const el = wellWrapRef.current;
+        if (el) { el.classList.remove('bl-bump'); void el.offsetWidth; el.classList.add('bl-bump'); }
+      }
       st.raw += Math.max(0, y - st.cur.y) * 2;
       st.cur.y = y;
       settle(st);
@@ -705,17 +811,33 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
       ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
       ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
     };
-    const tile = (x, y, key, alpha, ghost) => {
-      const px = x * cell, py = y * cell, c = cell - 1, r = Math.max(2, c * 0.16);
-      if (ghost) {
-        ctx.globalAlpha = 0.3; ctx.strokeStyle = PIECES[key].c; ctx.lineWidth = 2;
-        rr(px + 2.5, py + 2.5, c - 4, c - 4, r * 0.8); ctx.stroke(); ctx.globalAlpha = 1; return;
+    const light = lightRef.current;
+    const ease = (t) => 1 - Math.pow(1 - t, 3);
+    const easeBack = (t) => { const c = 1.4; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+    // A tile: the shape's colour with a soft sheen on its upper half and a
+    // thin darker edge. `o.color` overrides the fill (the quad's rainbow, the
+    // greyed stack), `o.flash` whitens it, `o.scale`/`o.rot` break it apart.
+    const tile = (px, py, key, o = {}) => {
+      const c = cell - 1, r = Math.max(2, c * 0.18);
+      const col = o.color || pieceFill(key, light);
+      ctx.save();
+      ctx.globalAlpha = o.alpha == null ? 1 : o.alpha;
+      if (o.scale != null && o.scale !== 1) {
+        const cx = px + cell / 2, cy = py + cell / 2;
+        ctx.translate(cx, cy); ctx.scale(o.scale, o.scale); if (o.rot) ctx.rotate(o.rot); ctx.translate(-cx, -cy);
       }
-      ctx.globalAlpha = alpha === undefined ? 1 : alpha;
       rr(px + 1, py + 1, c - 1, c - 1, r);
-      ctx.fillStyle = PIECES[key].c; ctx.fill();
-      ctx.strokeStyle = PIECES[key].e; ctx.lineWidth = 1.5; ctx.stroke();
-      ctx.globalAlpha = 1;
+      ctx.fillStyle = col; ctx.fill();
+      ctx.lineWidth = 1.2; ctx.strokeStyle = 'rgba(0,0,0,0.22)'; ctx.stroke();
+      rr(px + 3, py + 3, c - 5, (c - 5) * 0.42, r * 0.7);
+      ctx.fillStyle = 'rgba(255,255,255,0.24)'; ctx.fill();
+      if (IS_EXTRA[key] && !o.color && cell >= 14) {
+        const d = cell * 0.14, cx = px + cell / 2, cy = py + cell / 2;
+        ctx.beginPath(); ctx.moveTo(cx, cy - d); ctx.lineTo(cx + d, cy); ctx.lineTo(cx, cy + d); ctx.lineTo(cx - d, cy); ctx.closePath();
+        ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.fill();
+      }
+      if (o.flash) { rr(px + 1, py + 1, c - 1, c - 1, r); ctx.fillStyle = `rgba(255,255,255,${Math.min(1, o.flash)})`; ctx.fill(); }
+      ctx.restore();
     };
     // A canvas cannot be reached by a DOM contrast sweep, so the well reads the
     // stage tokens for itself, the way Chomp's boardPalette does. Off the stage
@@ -726,20 +848,133 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
       const got = wcs && wcs.getPropertyValue(name);
       return got && got.trim() ? got.trim() : fallback;
     };
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const fx = fxRef.current;
     ctx.clearRect(0, 0, W, H);
     ctx.fillStyle = wtok('--stg-cell', '#ffffff'); rr(0, 0, W, H, 12); ctx.fill();
-    ctx.strokeStyle = wtok('--stg-cell-line', COLORS.well); ctx.lineWidth = 2; rr(1, 1, W - 2, H - 2, 11); ctx.stroke();
+    // a faint grid, so a gap reads as a gap
+    ctx.strokeStyle = light ? 'rgba(20,40,80,0.05)' : 'rgba(255,255,255,0.045)'; ctx.lineWidth = 1; ctx.beginPath();
+    for (let x = 1; x < COLS; x++) { ctx.moveTo(x * cell + 0.5, 0); ctx.lineTo(x * cell + 0.5, H); }
+    for (let y = 1; y < ROWS; y++) { ctx.moveTo(0, y * cell + 0.5); ctx.lineTo(W, y * cell + 0.5); }
+    ctx.stroke();
     const st = gRef.current;
-    for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) if (st.grid[y][x]) tile(x, y, st.grid[y][x]);
-    if (!st.cur || st.status !== 'playing') return;
-    const m = shapeAt(st.cur.k, st.cur.r);
-    const soft = pausedRef.current;
-    if (!soft) {
-      let gy = st.cur.y;
-      while (!hits(st.grid, COLS, ROWS, st.cur, st.cur.x, gy + 1)) gy += 1;
-      for (let y = 0; y < m.length; y++) for (let x = 0; x < m.length; x++) if (m[y][x] && gy + y >= 0) tile(st.cur.x + x, gy + y, st.cur.k, 1, true);
+
+    // hard-drop trails
+    fx.trail = fx.trail.filter((t) => now - t.t0 < 220);
+    for (const t of fx.trail) {
+      const a = 1 - (now - t.t0) / 220;
+      const gr = ctx.createLinearGradient(0, t.y0 * cell, 0, t.y1 * cell);
+      const tc = pieceFill(t.k, light);
+      gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(1, tc);
+      ctx.globalAlpha = 0.4 * a; ctx.fillStyle = gr;
+      ctx.fillRect(t.x * cell + cell * 0.2, t.y0 * cell, cell * 0.6, Math.max(0, (t.y1 - t.y0)) * cell);
+      ctx.globalAlpha = 1;
     }
-    for (let y = 0; y < m.length; y++) for (let x = 0; x < m.length; x++) if (m[y][x] && st.cur.y + y >= 0) tile(st.cur.x + x, st.cur.y + y, st.cur.k, soft ? 0.3 : 1);
+
+    // the clear: rows flash, then break apart from the middle out, then the
+    // rows above drop into place with a little bounce
+    const cl = fx.clear;
+    let ce = 0, fallE = 1;
+    if (cl) {
+      ce = (now - cl.t0) / cl.dur;
+      const fallStart = cl.t0 + cl.dur * 0.6;
+      fallE = Math.max(0, Math.min(1, (now - fallStart) / 200));
+      if (!cl.sparked && ce > 0.38 && !reducedRef.current) {
+        cl.sparked = true;
+        const quad = cl.n === 4;
+        cl.rows.forEach((y, ri) => cl.keys[ri].forEach((k, x) => {
+          const cnt = quad ? 4 : 2;
+          for (let q = 0; q < cnt; q++) {
+            const ang = Math.random() * Math.PI * 2, sp = (quad ? 0.26 : 0.15) * (0.4 + Math.random());
+            const hue = quad ? pieceFill(Object.keys(PIECE_HUE)[(x + ri) % 9], light) : pieceFill(k, light);
+            fx.parts.push({ x: x + 0.5, y: y + 0.5, vx: Math.cos(ang) * sp + (x - COLS / 2) * 0.01, vy: Math.sin(ang) * sp - (quad ? 0.2 : 0.12), g: 0.012, life: 0, max: quad ? 70 : 42, s: (quad ? 0.34 : 0.26) * (0.6 + Math.random() * 0.6), rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.4, col: hue });
+          }
+        }));
+        if (quad) {
+          for (let q = 0; q < 60; q++) fx.parts.push({ x: Math.random() * COLS, y: -0.4, vx: (Math.random() - 0.5) * 0.12, vy: Math.random() * 0.08 + 0.04, g: 0.004, life: 0, max: 110, s: 0.22, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.3, col: pieceFill(Object.keys(PIECE_HUE)[q % 9], light), conf: true });
+        }
+      }
+      if (ce >= 1 && fallE >= 1) fx.clear = null;
+    }
+    const lf = fx.lock && now - fx.lock.t0 < 200 ? fx.lock : null;
+    const ov = fx.over ? Math.min(1, (now - fx.over.t0) / 700) : 0;
+    const grey = wtok('--stg-mute', '#9aa2b1');
+    for (let y = 0; y < ROWS; y++) {
+      const sh = cl && cl.shifts[y] ? cl.shifts[y] * (1 - easeBack(fallE)) : 0;
+      const greyRow = ov > 0 && (ROWS - 1 - y) < ov * ROWS;
+      for (let x = 0; x < COLS; x++) {
+        const k = st.grid[y][x];
+        if (!k) continue;
+        let flash = 0;
+        if (lf && lf.cells.some((c) => c[0] === x && c[1] === y)) flash = 0.6 * (1 - (now - lf.t0) / 200);
+        tile(x * cell, (y - sh) * cell, k, { flash, color: greyRow ? grey : null, alpha: greyRow ? 0.55 : 1 });
+      }
+    }
+    if (cl && ce < 1) {
+      const quad = cl.n === 4;
+      const ph1 = Math.min(1, ce / 0.38);
+      cl.rows.forEach((y, ri) => cl.keys[ri].forEach((k, x) => {
+        if (!k) return;
+        const dist = Math.abs(x - (COLS - 1) / 2) / (COLS / 2);
+        const ph2 = Math.max(0, Math.min(1, (ce - 0.38 - dist * 0.25) / 0.4));
+        if (ph2 >= 1) return;
+        const color = quad ? pieceFill(Object.keys(PIECE_HUE)[Math.floor(x + now / 70) % 9], light) : null;
+        tile(x * cell, y * cell, k, { flash: ph1 * (quad ? 0.3 : 0.85) * (1 - ph2), scale: 1 - ph2 * 0.9, rot: ph2 * (x % 2 ? 0.8 : -0.8), alpha: 1 - ph2 * 0.6, color });
+      }));
+      if (quad && !reducedRef.current) {
+        const sx = (ce * 1.6 - 0.3) * W;
+        const top = cl.rows[0] * cell;
+        const gr = ctx.createLinearGradient(sx - 70, 0, sx + 70, 0);
+        gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(0.5, 'rgba(255,255,255,0.7)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = gr; ctx.fillRect(0, top, W, cl.rows.length * cell);
+      }
+    }
+
+    // the falling shape and its ghost
+    if (st.cur && st.status === 'playing') {
+      const m = shapeAt(st.cur.k, st.cur.r);
+      const soft = pausedRef.current;
+      if (!soft) {
+        let gy = st.cur.y;
+        while (!hits(st.grid, COLS, ROWS, st.cur, st.cur.x, gy + 1)) gy += 1;
+        ctx.save(); ctx.setLineDash([4, 3]); ctx.lineWidth = 2; ctx.strokeStyle = pieceFill(st.cur.k, light); ctx.globalAlpha = 0.55;
+        for (let y = 0; y < m.length; y++) for (let x = 0; x < m.length; x++) if (m[y][x] && gy + y >= 0) { rr((st.cur.x + x) * cell + 3, (gy + y) * cell + 3, cell - 6, cell - 6, cell * 0.14); ctx.stroke(); }
+        ctx.restore();
+      }
+      for (let y = 0; y < m.length; y++) for (let x = 0; x < m.length; x++) if (m[y][x] && st.cur.y + y >= 0) tile((st.cur.x + x) * cell, (st.cur.y + y) * cell, st.cur.k, { alpha: soft ? 0.3 : 1 });
+    }
+
+    // particles, in cell units so a resize mid-burst stays put
+    if (fx.parts.length) {
+      fx.parts = fx.parts.filter((q) => q.life < q.max);
+      for (const q of fx.parts) {
+        q.life += 1; q.vy += q.g; q.x += q.vx; q.y += q.vy; q.vx *= 0.985; q.rot = (q.rot || 0) + (q.vr || 0);
+        const a = 1 - q.life / q.max, sz = q.s * cell;
+        ctx.save(); ctx.globalAlpha = a; ctx.translate(q.x * cell, q.y * cell); ctx.rotate(q.rot);
+        if (q.dust) { ctx.fillStyle = grey; ctx.beginPath(); ctx.arc(0, 0, sz * a, 0, 7); ctx.fill(); }
+        else if (q.conf) { ctx.fillStyle = q.col; ctx.fillRect(-sz / 2, -sz / 4, sz, sz / 2); }
+        else { ctx.fillStyle = q.col; rr(-sz / 2, -sz / 2, sz, sz, sz * 0.2); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(-sz / 2 + 1, -sz / 2 + 1, sz - 2, sz * 0.35); }
+        ctx.restore();
+      }
+    }
+
+    // floating "+2 rows"
+    if (fx.floats.length) {
+      fx.floats = fx.floats.filter((f) => now - f.t0 < 1100);
+      for (const f of fx.floats) {
+        const e = (now - f.t0) / 1100;
+        ctx.save();
+        ctx.globalAlpha = e < 0.15 ? e / 0.15 : 1 - Math.max(0, (e - 0.6) / 0.4);
+        ctx.font = `800 ${f.big ? 22 : 17}px Manrope, system-ui, sans-serif`;
+        ctx.textAlign = 'center'; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(11,13,18,0.75)';
+        const ty = (f.y - e * 1.4) * cell;
+        ctx.strokeText(f.text, W / 2, ty);
+        ctx.fillStyle = f.big ? '#f5c94a' : '#ffffff'; ctx.fillText(f.text, W / 2, ty);
+        ctx.restore();
+      }
+    }
+
+    ctx.strokeStyle = wtok('--stg-cell-line', COLORS.well); ctx.lineWidth = 2; rr(1, 1, W - 2, H - 2, 11); ctx.stroke();
   }, [COLS, ROWS]);
 
   useEffect(() => {
@@ -824,6 +1059,8 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
   const replayRun = useCallback(() => {
     releaseEnd();
     const st = { ...freshState(COLS, ROWS), t0: Date.now() };
+    fxRef.current = { clear: null, lock: null, trail: [], parts: [], floats: [], over: null };
+    setBurst(null);
     nextPiece(st);
     lastRef.current = 0; dropRef.current = 0; lockRef.current = 0; resetsRef.current = 0;
     pausedRef.current = false; setPaused(false);
@@ -900,6 +1137,25 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     };
   }, [board.leaderboardFirst, board.leaderboard, rowsCleared, identity, hydrated]);
 
+  // ALL TIME: the best single run on any day, one row per registered player
+  // (/api/quiz/blocks-best). Your live run slots in when it would make the list.
+  const bestRows = useMemo(() => {
+    if (!bestRuns) return [];
+    const myName = String((identity && identity.username) || '').toLowerCase();
+    const rows = bestRuns.map((r) => ({ ...r, me: !!myName && String(r.name || '').toLowerCase() === myName }));
+    const live = started ? rowsCleared : 0;
+    if (live > 0) {
+      const mineAt = rows.findIndex((r) => r.me);
+      if (mineAt < 0 || rows[mineAt].score < live) {
+        const rest = rows.filter((r) => !r.me);
+        let at = rest.findIndex((r) => r.score < live);
+        if (at < 0) at = rest.length;
+        if (at < 5) return rest.slice(0, at).concat([{ name: 'You', score: live, me: true }], rest.slice(at)).slice(0, 5);
+      }
+    }
+    return rows.slice(0, 5);
+  }, [bestRuns, identity, started, rowsCleared]);
+
   // ---- rules ---------------------------------------------------------------
   const rulesBody = (
     <DailyRules
@@ -907,15 +1163,16 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
       accentSoft={COLORS.accentSoft}
       lead="Fit the falling shapes together and complete a full row to clear it."
       banner={`Everyone gets the same shapes in the same order today${PUZZLE.sunday ? ', in a narrower Sunday well' : ''}.`}
-      sub="Nine shapes: the seven you know, plus a corner and a plus. The two additions are the two darkest blues."
+      sub="Nine shapes: the seven you know, plus a corner and a plus. The two additions carry a small white diamond."
       steps={[
         <>Move with <b>&larr; &rarr;</b>, rotate with <b>&uarr;</b>, and hard drop with <b>space</b> on a keyboard or a <b>flick down the well</b> on a phone.</>,
         <><b>Hold</b> a shape with <b>C</b> to save it for the gap it fits.</>,
         <>Complete a row to clear it, and clear on <b>consecutive shapes</b> to build a combo.</>,
+        ...(BONUS ? [<>Clear <b>four rows with one shape</b> and it counts as <b>five</b>: a bonus row on top.</>] : []),
         <><b>Pause</b> whenever. The board is saved, so you can come back through the day and pick the same run up where you left it.</>,
       ]}
       knack="It never speeds up. The well is only 16 rows and the drop rate is the same on shape 400 as on shape one, so runs end because of a hole you left three shapes ago, not because your hands gave out."
-      footer={`Scored on ROWS CLEARED, and you can play the day as many times as you like, because Blocks keeps your BEST run rather than your first: your score IS the number of rows you clear, with no ceiling on it, and ${nf(PAR)} rows is par for the day. Ties break on FEWEST SHAPES USED, then on time, since the same rows off fewer shapes is the tidier run, and a run that clears nothing ranks on shapes survived instead. The points figure on screen (100, 300, 500 and 800 a line, 1,200 for a quad, plus a combo bonus) is there to play against, not to be scored on. Blocks pays at most 1 IQ point a day however long the run goes and however many runs you play, so nobody can grind their way up the standings: the real competition is today\u2019s leaderboard. Sundays narrow the well from 10 columns to 8.`}
+      footer={`Scored on ROWS CLEARED, and you can play the day as many times as you like, because Blocks keeps your BEST run rather than your first: your score IS the number of rows you clear, with no ceiling on it${BONUS ? ', plus one bonus row for every four-row clear' : ''}, and ${nf(PAR)} rows is par for the day. Ties break on FEWEST SHAPES USED, then on time, since the same rows off fewer shapes is the tidier run, and a run that clears nothing ranks on shapes survived instead. The points figure on screen (100, 300, 500 and 800 a line, 1,200 for a quad, plus a combo bonus) is there to play against, not to be scored on. Blocks pays at most 1 IQ point a day however long the run goes and however many runs you play, so nobody can grind their way up the standings: the real competition is today\u2019s leaderboard. Sundays narrow the well from 10 columns to 8.`}
     />
   );
 
@@ -1004,7 +1261,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
                 Shape <b style={{ color: INK }}>{nf(Math.max(1, g.idx))}</b>
               </span>
               <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: '#94a3b8' }}>
-                Next <b style={{ color: INK }}>{PIECE_LABEL[SEQ[g.idx]] || '-'}</b>
+                Next <span style={{ marginLeft: 4 }}><MiniShape k={SEQ[g.idx]} light={LIGHT} /></span>
               </span>
               {/* Hold sits up here rather than in the thumb zone: it is used a
                   fraction as often as move and rotate, and the dock below is
@@ -1013,7 +1270,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
                 {...tapProps('hold')}
                 style={{ marginLeft: 'auto', border: `1px solid ${COLORS.line}`, background: g.held ? 'var(--stg-surf, #f1f5f9)' : 'var(--stg-surf, #fff)', color: g.held ? '#94a3b8' : COLORS.faded, borderRadius: 7, padding: '5px 10px', fontSize: 10.5, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', cursor: 'pointer', touchAction: 'none' }}
               >
-                Hold{g.hold ? <> &middot; <b style={{ color: g.held ? '#94a3b8' : `var(--stg-ink, ${COLORS.ink})` }}>{PIECE_LABEL[g.hold]}</b></> : null}
+                Hold{g.hold ? <span style={{ marginLeft: 6, opacity: g.held ? 0.45 : 1 }}><MiniShape k={g.hold} light={LIGHT} cell={6} /></span> : null}
               </button>
               <button onClick={togglePause} aria-label={paused ? 'Resume' : 'Pause'} style={{ border: STAGE ? `1px solid ${SURF_B}` : `1px solid ${COLORS.line}`, background: STAGE ? SURF : '#fff', color: FADED, borderRadius: 7, width: 30, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                 {paused ? <Play size={14} /> : <Pause size={14} />}
@@ -1024,10 +1281,38 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
             </div>
 
             <div ref={boxRef} style={{ display: 'flex', gap: 14, alignItems: 'stretch', justifyContent: 'center' }}>
-              <canvas ref={cvsRef} {...wellProps} style={{ display: 'block', touchAction: 'none', cursor: started ? 'grab' : 'default' }} />
+              <div ref={wellWrapRef} className="bl-wellwrap" style={{ position: 'relative', flex: 'none' }}>
+                <canvas ref={cvsRef} {...wellProps} style={{ display: 'block', touchAction: 'none', cursor: started ? 'grab' : 'default' }} />
+                {burst && burst.n === 4 && (
+                  <div key={`q${burst.id}`} className="bl-banner" aria-live="polite">
+                    <div className="bl-banner-big">FOUR ROWS</div>
+                    {BONUS && <span className="bl-banner-sub">4 rows <em>+1 bonus</em> = 5</span>}
+                  </div>
+                )}
+                {burst && burst.combo > 1 && (
+                  <div key={`c${burst.id}`} className="bl-combo">Combo &times;{burst.combo}</div>
+                )}
+              </div>
               <aside className="bl-ladder" style={{ width: 132, flex: 'none', borderLeft: `1px solid ${COLORS.line}`, paddingLeft: 11, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ margin: '0 0 7px', fontSize: 8.5, letterSpacing: '0.13em', textTransform: 'uppercase', color: '#94a3b8', fontWeight: 800 }}>Today&rsquo;s board</div>
-                {ladder.rows.map((r) => (r.gap ? (
+                <div className="bl-tabs" role="tablist" aria-label="Leaderboard">
+                  <button type="button" role="tab" aria-selected={lbTab === 'today'} onClick={() => setLbTab('today')}>Today</button>
+                  <button type="button" role="tab" aria-selected={lbTab === 'all'} onClick={() => setLbTab('all')}>All time</button>
+                </div>
+                {lbTab === 'all' ? (
+                  bestRows.length ? bestRows.map((r, i) => (
+                    <div key={`${i}-${r.name}`} title={r.day ? `${r.name}, ${r.day}` : r.name} style={{
+                      display: 'flex', alignItems: 'baseline', gap: 6, padding: '3.5px 6px', margin: '0 -6px',
+                      fontSize: 11.5, color: r.me ? `var(--stg-acc-ink, ${COLORS.accent})` : `var(--stg-mute, ${COLORS.faded})`, fontWeight: r.me ? 800 : 500,
+                      background: r.me ? (STAGE ? 'var(--stg-surf2)' : '#eef4ff') : 'transparent', borderRadius: 5,
+                    }}>
+                      <span style={{ fontSize: 9.5, fontWeight: 700, width: 22, flex: 'none', color: r.me ? `var(--stg-acc-ink, ${COLORS.accent})` : '#9aa2b1' }}>#{i + 1}</span>
+                      <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}</span>
+                      <span style={{ fontWeight: 800 }}>{r.score}</span>
+                    </div>
+                  )) : (
+                    <div style={{ fontSize: 11, color: FADED, lineHeight: 1.4 }}>{bestRuns ? 'No runs on the board yet.' : 'Loading…'}</div>
+                  )
+                ) : ladder.rows.map((r) => (r.gap ? (
                   <div key="gap" aria-hidden="true" style={{ textAlign: 'center', color: '#c3cad6', fontSize: 11, fontWeight: 800, letterSpacing: '0.22em', lineHeight: '11px', padding: '4px 0 2px' }}>&middot;&middot;&middot;</div>
                 ) : (
                   <div key={`${r.rank}-${r.name}`} style={{
@@ -1040,6 +1325,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
                     <span style={{ fontWeight: 800 }}>{r.score}</span>
                   </div>
                 )))}
+                {lbTab === 'all' && <div style={{ fontSize: 9.5, color: '#94a3b8', marginTop: 5, lineHeight: 1.35 }}>Best single run on any day</div>}
                 <div style={{ marginTop: 'auto', paddingTop: 9, borderTop: `1px solid ${COLORS.line}` }}>
                   <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1 }}>{nf(rowsCleared)}<em style={{ fontStyle: 'normal', fontSize: 11, fontWeight: 700, color: '#94a3b8' }}> row{rowsCleared === 1 ? '' : 's'}</em></div>
                   <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.04em', color: '#94a3b8', marginTop: 3 }}>par {nf(PAR)}</div>
@@ -1050,6 +1336,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
             <div className="bl-strip" style={{ display: 'none', marginTop: 10, paddingTop: 9, borderTop: `1px solid ${COLORS.line}`, alignItems: 'center', gap: 10, fontSize: 11.5, color: FADED }}>
               <span style={{ fontWeight: 800, color: ACC_INK }}>You #{ladder.rank}</span>
               <span>par {nf(PAR)} rows</span>
+              {bestRows.length > 0 && <span title="Best single run on any day" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>Best ever {bestRows[0].score} &middot; {bestRows[0].name}</span>}
               <span style={{ marginLeft: 'auto', fontSize: 15, fontWeight: 800, color: INK }}>{nf(rowsCleared)}<em style={{ fontStyle: 'normal', fontSize: 10, color: '#94a3b8' }}> row{rowsCleared === 1 ? '' : 's'}</em></span>
             </div>
 
@@ -1291,6 +1578,21 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
         .bl-dwn { grid-area: dwn; }
         .bl-rgt { grid-area: rgt; }
         .bl-pad button { width: 100% !important; }
+        .bl-tabs { display: flex; gap: 2px; margin: 0 0 8px; background: var(--stg-surf2, #eef1f6); border-radius: 7px; padding: 2px; }
+        .bl-tabs button { flex: 1; border: 0; background: none; font: inherit; font-size: 9.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--stg-mute, #8b95a8); padding: 4px 0; border-radius: 5px; cursor: pointer; }
+        .bl-tabs button[aria-selected="true"] { background: var(--stg-cell, #ffffff); color: var(--stg-ink, #0b0d12); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+        .bl-wellwrap.bl-bump { animation: blBump .16s ease-out; }
+        .bl-wellwrap.bl-shake { animation: blShake .55s cubic-bezier(.36,.07,.19,.97); }
+        @keyframes blBump { 40% { transform: translateY(4px); } 100% { transform: none; } }
+        @keyframes blShake { 10%,90% { transform: translate(-2px,1px); } 20%,80% { transform: translate(4px,-2px); } 30%,50%,70% { transform: translate(-6px,2px) rotate(-.6deg); } 40%,60% { transform: translate(6px,-1px) rotate(.6deg); } }
+        .bl-banner { position: absolute; left: 50%; top: 38%; transform: translate(-50%,-50%) scale(.4); opacity: 0; pointer-events: none; text-align: center; white-space: nowrap; animation: blBan 1.5s cubic-bezier(.2,1.4,.35,1) forwards; z-index: 3; }
+        .bl-banner-big { font-size: 38px; font-weight: 800; letter-spacing: -.03em; line-height: 1; background: linear-gradient(90deg, #7dd3fc, #c084fc, #fb7185, #e8b43a, #6ee7b7); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 3px 0 rgba(0,0,0,.3)); }
+        .bl-banner-sub { display: inline-block; margin-top: 8px; font-size: 13px; font-weight: 800; color: #fff; background: #0b0d12; border-radius: 999px; padding: 5px 12px; }
+        .bl-banner-sub em { font-style: normal; color: #f5c94a; }
+        @keyframes blBan { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.4) rotate(-6deg); } 18% { opacity: 1; transform: translate(-50%,-50%) scale(1.12) rotate(2deg); } 30% { transform: translate(-50%,-50%) scale(1); } 78% { opacity: 1; transform: translate(-50%,-50%) scale(1); } 100% { opacity: 0; transform: translate(-50%,-62%) scale(.96); } }
+        .bl-combo { position: absolute; right: 8px; top: 8px; font-size: 12px; font-weight: 800; color: #08222e; background: #fbbf24; border-radius: 999px; padding: 4px 10px; opacity: 0; pointer-events: none; animation: blCombo 1.2s ease forwards; z-index: 3; }
+        @keyframes blCombo { 0% { opacity: 0; transform: scale(.6); } 15% { opacity: 1; transform: scale(1.15); } 30% { transform: scale(1); } 80% { opacity: 1; } 100% { opacity: 0; } }
+        @media (prefers-reduced-motion: reduce) { .bl-wellwrap, .bl-banner, .bl-combo { animation-duration: .01ms !important; } }
         @media (max-width: 640px) {
           .bl-ladder { display: none !important; }
           .bl-strip { display: flex !important; }
