@@ -46,7 +46,7 @@ import { RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight, 
 // ONE READING OF A RESULT ROW, the same one the ending curtain and the tile
 // panel use. It prints the run in the GAME'S own units — 7/16 · 3 busts · 2:11
 // — which is the whole reason Your standing can be one column instead of six.
-import { gameStats } from '@/lib/daily-row-stats';
+import { gameStats, mmss } from '@/lib/daily-row-stats';
 import useDayStats, { fetchDayStatus, etToday } from '../useDayStats';
 import { fetchDailyBoard } from '../dailyBoardClient';
 import { IQ_TESTS } from '@/lib/iq-tests';
@@ -2115,13 +2115,13 @@ export default function StageToday() {
     // YOUR FAVORITES TAKES WHAT IT CAN (owner, 2026-10-07): as many rows as
     // fit under tiles at their standard height, and the tiles grow into the rest.
     // Tiles get a comfortable 86px first when that still leaves three rows.
-    const rowsAt = (th) => Math.max(0, Math.min(n, 10, Math.floor((H - (r0 * th + (r0 - 1) * G) - FAV_GAP - FAV_HEAD) / FAV_ROW)));
+    const rowsAt = (th) => Math.max(0, Math.min(n, Math.floor((H - (r0 * th + (r0 - 1) * G) - FAV_GAP - FAV_HEAD) / FAV_ROW)));
     const k86 = rowsAt(86);
     const k = k86 >= Math.min(n, 3) ? k86 : rowsAt(MINH);
     const used = k ? FAV_GAP + FAV_HEAD + k * FAV_ROW : 0;
     const h = Math.min(132, Math.floor((H - used - (r0 - 1) * G) / r0));
     if (h <= MINH && !k) return null;
-    return { style: { gridAutoRows: `${Math.max(MINH, h)}px` }, k };
+    return { style: { gridAutoRows: `${Math.max(MINH, h)}px` }, k, cols: cMax };
   };
   // One read for the whole page, the first time a short category opens.
   const [fav, setFav] = useState(null);
@@ -2148,21 +2148,46 @@ export default function StageToday() {
       rows = all.slice(0, k);
     }
     const max = rows && rows.length ? Math.max(1, rows[0].v) : 1;
+    // YOUR RECORD, NOT JUST YOUR VOLUME (owner, 2026-10-10): a reader with
+    // history also gets best time, average time, solve rate and streak per
+    // game, all folded server-side from the rows /api/quiz/my-plays already
+    // walks, so it is the same one read. Until that read lands the row shape is
+    // the reader's (the common case), so nothing jumps when it arrives. A game
+    // they have never played says so and links to today's board.
+    const mine = !fav || own;
+    const dash = '\u2013';
     return (
-      <div className={'sty-fav' + (fav && !own ? ' site' : '')}>
+      <div className={'sty-fav' + (mine ? ' own' : ' site')}>
         <div className="sty-favh">
           <div className="sty-eb">{!fav || own ? 'Your favorites' : 'Most played'}<em>{' \u00b7 '}{catLabel(cat)}{fav ? <>{' \u00b7 '}{total.toLocaleString()} {total === 1 ? 'play' : 'plays'}</> : null}</em></div>
           {fav && own ? <div className="sty-eb">{tried} of {games.length} tried</div> : null}
         </div>
-        <div className="sty-favc sty-eb"><span>Game</span><span>{!fav || own ? 'All-time plays' : 'All players, all time'}</span><span>{!fav || own ? 'Last 14 days' : ''}</span><span>Plays</span></div>
+        <div className="sty-favc sty-eb"><span>Game</span><span>{!fav || own ? 'All-time plays' : 'All players, all time'}</span><span>{!fav || own ? 'Last 14 days' : ''}</span>{mine ? <><span className="r">Best time</span><span className="r">Avg time</span><span className="r">Solved</span><span className="r">Streak</span></> : null}<span>Plays</span></div>
         {Array.from({ length: k }).map((_, i) => {
           const x = rows ? rows[i] : null;
-          if (!x) return <div key={i} className="sty-favr ph" aria-hidden="true"><span /><span className="tr" /><span /><span /></div>;
+          if (!x) return <div key={i} className="sty-favr ph" aria-hidden="true"><span /><span className="tr" /><span />{mine ? <><span /><span /><span /><span /></> : null}<span /></div>;
+          const me = own ? fav.mine[x.g.key] : null;
+          if (own && !x.v) {
+            return (
+              <a key={x.g.key} className="sty-favr un try" href={`${routeOf(x.g)}${tq ? '?' + tq.slice(1) : ''}`}>
+                <span className="n"><Glyph k={x.g.key} size={14} />{x.g.name}</span>
+                <span className="go">Try today&apos;s {x.g.name}</span>
+              </a>
+            );
+          }
           return (
             <a key={x.g.key} className={'sty-favr' + (x.v ? '' : ' un')} href={`${routeOf(x.g)}${tq ? '?' + tq.slice(1) : ''}`}>
               <span className="n"><Glyph k={x.g.key} size={14} />{x.g.name}</span>
               <span className="tr"><u style={{ width: `${(x.v / max) * 100}%` }} /></span>
               <span className="wk">{own ? Array.from({ length: 14 }).map((__, d) => <s key={d} className={x.recent[d] === '1' ? 'p' : ''} />) : null}</span>
+              {mine ? (
+                <>
+                  <span className="m">{(me && mmss(me.best)) || dash}</span>
+                  <span className="m">{(me && mmss(me.avg)) || dash}</span>
+                  <span className="m">{me && me.solveRate != null ? me.solveRate + '%' : dash}</span>
+                  <span className="m">{me && me.streak ? me.streak + 'd' : dash}</span>
+                </>
+              ) : null}
               <span className="c">{x.v ? x.v.toLocaleString() : '\u2013'}</span>
             </a>
           );
@@ -2291,6 +2316,23 @@ export default function StageToday() {
               canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
               res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} />
           ))}
+          {/* THE EMPTY SLOT POINTS AT WHAT IS LEFT (owner, 2026-10-10): when the
+              last row of tiles has a gap and the reader has history here, the
+              gap names the games they have never tried. It only fills a slot
+              that is already empty, so nothing below it moves when it lands. */}
+          {(() => {
+            if (!fit || !fit.cols || games.length % fit.cols === 0 || !fav) return null;
+            if (!games.some((g) => fav.mine[g.key])) return null;
+            const un = games.filter((g) => !fav.mine[g.key]).sort((a, b) => a.name.localeCompare(b.name));
+            if (!un.length) return null;
+            return (
+              <a className="sty-g sty-gtry" href={`${routeOf(un[0])}${tq ? '?' + tq.slice(1) : ''}`}>
+                <span className="sty-eb">Not tried yet</span>
+                <span className="sty-gn">{un.slice(0, 3).map((g) => g.name).join(' \u00b7 ')}{un.length > 3 ? ` +${un.length - 3}` : ''}</span>
+                <span className="sty-gt">{un.length === 1 ? 'The last one in the set' : 'Try one for the full set'}</span>
+              </a>
+            );
+          })()}
         </div>
         {fit ? favBlock(cat, games, fit.k) : null}
       </section>
@@ -4178,6 +4220,16 @@ ${PATCH_CSS}
 .sty-favr .c{text-align:right;font-size:13.5px;font-weight:800;}
 .sty-favr.un .n,.sty-favr.un .c{color:var(--stg-mute);font-weight:700;}
 .sty-fav.site{--cg:132px minmax(0,1fr) 0px 56px;}
+.sty-fav.own{--cg:120px minmax(0,1fr) 150px 64px 64px 52px 48px 44px;}
+.sty-favc .r,.sty-favr .m{text-align:right;}
+.sty-favr .m{font-size:13px;color:var(--stg-ink);font-weight:600;}
+.sty-favr.try .go{grid-column:2 / -1;justify-self:start;font-size:12px;font-weight:800;color:var(--stg-acc-ink,var(--cc));
+  border:1px dashed var(--cc);border-radius:4px;padding:2px 10px;line-height:16px;}
+.sty-favr.try:hover .go{border-style:solid;}
+.sty-g.sty-gtry{background:transparent;border:1px dashed var(--cc);display:flex;flex-direction:column;justify-content:center;gap:4px;}
+.sty-g.sty-gtry .sty-eb{margin:0;color:var(--stg-acc-ink,var(--cc));}
+.sty-g.sty-gtry .sty-gn{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+@media (max-width:1240px){ .sty-fav.own{--cg:110px minmax(0,1fr) 120px 58px 58px 48px 44px 40px;} }
 @media (min-width:1100px){
   .sty-ix.rl{grid-template-columns:212px minmax(0,1fr) 264px;}
   .sty-ix > .sty-rail{display:flex;flex-direction:column;gap:16px;grid-column:3;grid-row:1 / span 5;min-width:0;}

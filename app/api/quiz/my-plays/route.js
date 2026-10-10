@@ -9,6 +9,12 @@ import { DAILY_KEYS } from '@/lib/daily-combined';
 // which of the last 14 days they played it, and the whole site's count per
 // game for a reader with no history yet. One read for the whole page, off the
 // results cache every other board already shares.
+//
+// PERSONAL BESTS RIDE THE SAME WALK (owner, 2026-10-10). The block grew best
+// time, average time, solve rate and streak per game. Every one of them is a
+// fold over the reader's own rows, which this loop already visits, so it costs
+// no read at all: no extra query, no per-day board. A "solve" is a finished run
+// at full marks (score === total), and only solved runs feed the two clocks.
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
@@ -53,12 +59,33 @@ export async function GET(request) {
       const isMine = (r.user_id && myKeys.has(`u:${r.user_id}`)) || (r.anon_id && myKeys.has(`a:${r.anon_id}`));
       if (!isMine) continue;
       let me = mine[key];
-      if (!me) { me = { plays: 0, recent: new Array(DAYS).fill(0) }; mine[key] = me; }
+      if (!me) { me = { plays: 0, recent: new Array(DAYS).fill(0), runs: 0, solved: 0, best: 0, sum: 0, days: new Set() }; mine[key] = me; }
       me.plays += 1;
+      me.days.add(Date.UTC(2000 + Number(m[4]), Number(m[2]) - 1, Number(m[3])));
+      if (!r.abandoned) {
+        me.runs += 1;
+        const sc = Number(r.score); const tot = Number(r.total); const t = Number(r.time_elapsed) || 0;
+        if (tot > 0 && sc === tot) {
+          me.solved += 1;
+          if (t > 0) { me.sum += t; me.timed = (me.timed || 0) + 1; if (!me.best || t < me.best) me.best = t; }
+        }
+      }
       const i = slot.get(`${Number(m[2])}-${Number(m[3])}-${Number(m[4])}`);
       if (i !== undefined) me.recent[i] = 1;
     }
-    for (const k of Object.keys(mine)) mine[k].recent = mine[k].recent.join('');
+    const today = Date.UTC(Y, M - 1, D); const DAY = 86400000;
+    for (const k of Object.keys(mine)) {
+      const me = mine[k];
+      // The streak runs back from today, or from yesterday when today is not
+      // played yet, so an unplayed morning does not read as a broken streak.
+      let d = me.days.has(today) ? today : today - DAY; let streak = 0;
+      while (me.days.has(d)) { streak += 1; d -= DAY; }
+      mine[k] = {
+        plays: me.plays, recent: me.recent.join(''), streak,
+        best: me.best || 0, avg: me.timed ? Math.round(me.sum / me.timed) : 0,
+        solveRate: me.runs ? Math.round((me.solved / me.runs) * 100) : null,
+      };
+    }
     return NextResponse.json({ mine, site, days: DAYS }, { headers: { 'Cache-Control': 'private, max-age=60' } });
   } catch (e) {
     return NextResponse.json(empty, { headers: { 'Cache-Control': 'no-store' } });
