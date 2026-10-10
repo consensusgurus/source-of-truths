@@ -8725,3 +8725,31 @@ The track under each run question used to run out of the run's whole question co
 field bunched in the left third. Its scale is now `max(best finished total, your live total) / 0.92`:
 the leader sits near the right edge, and once you pass them the scale follows you, live, so the You
 marker never runs off the bar. Before anyone has finished it falls back to the question count.
+
+## The five runs offer each other on ONE card (owner, 2026-10-09)
+
+The five daily runs are the Trivia Gauntlet, the Math Gauntlet, Price Check, Passport and
+Judged. `app/circuits/MoreRuns.jsx` replaced the one-at-a-time RunNudgePop hand-offs:
+
+- **`MoreRunsPop`**: the FIRST time a browser finishes any of the five (`sot_runs_pop`, stamped
+  when it opens, never again), one pop-up lists every other run not finished today on this device.
+  Mounted in RunClient (gauntlet and math, waits for the /trivia door), PriceCheckClient and
+  ItemsPop (after the items pop-up), PassportClient (after the finale) and JudgedClient (after the
+  verdict settles, via Verdict's `onSettled`).
+- **`MoreRunsList`**: the same list inline on every run's end card, under the result, always. Done
+  runs drop off; when all are done it says so. Judged passes its own `--ls-*` colours.
+- "Done today" is `runDoneToday` from RunDoorPop. A new run joins by adding a `RUN_DOORS` entry and
+  its id to `RUN_ORDER`.
+
+**The Math Gauntlet door.** `RUN_DOORS.math` is `once: 'game'` like Judged: Blitz, Blitzed, Gap,
+Series and Back each offer the whole run on the start gate of a player's first ever play of that
+game (no plays in its local stats record), once per game.
+
+**The Math Gauntlet share card.** `gauntlet-card.js` maps the five math banks too, and
+`gauntletCardProps` / `renderGauntletCard` are circuit-aware (`kind: 'math'`: MIND LOFT · MATH,
+"N problems, 5 games.", the Numbers hue). Before this the math circuit had no banks there and fell
+back to the plain quiz card. A new runnable circuit's banks must be added to `DAYS` there.
+
+**Phone home index order (owner, 2026-10-09):** under Circuits / Quizzes and Leaderboards + Stats,
+Puzzle Archive full width (`.sty-ixar`), then Most Appreciated (`.sty-ixma`), then IQ Tests, School
+Tests, Kids and Top 10 Lists (`.sty-ixm4`), all by CSS `order` inside the 900px block.

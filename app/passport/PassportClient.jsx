@@ -31,7 +31,7 @@ import useAbandonFlush from '../quiz/[id]/useAbandonFlush';
 import { withRef } from '@/lib/referrals';
 import { notifyShareCredit } from '../ShareCreditPop';
 import useCircuitBoard from '../circuits/useCircuitBoard';
-import RunNudgePop from '../circuits/RunNudgePop';
+import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
@@ -1515,6 +1515,7 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
             <button type="button" onClick={() => setFinale(true)}>Replay the ending</button>
             <a href="/">Back to main</a>
           </div>
+          <MoreRunsList self="passport" />
           {!isTodays ? (
             <div className="pe-foot">
               You played the {PUZZLE.dateLabel} archive. <a href={PATH}>Back to today&rsquo;s Passport</a>
@@ -1559,7 +1560,7 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
       {finale && done && (
         <Finale scores={sc} total={total} clock={elapsed} inks={inks} onDone={finaleDone} />
       )}
-      <RunNudgePop target="gauntlet" ready={nudgeReady} delay={10000} fireOnLeave />
+      <MoreRunsPop self="passport" ready={nudgeReady} delay={10000} fireOnLeave />
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {showHelp && (

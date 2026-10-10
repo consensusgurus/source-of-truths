@@ -54,7 +54,7 @@ import GauntletFinale from '../../GauntletFinale';
 import MissList, { missOf, MISS_CSS } from '../../RunMisses';
 import useCircuitHistory from '../../useCircuitHistory';
 import { T } from '@/lib/theme';
-import RunNudgePop from '../../RunNudgePop';
+import MoreRunsPop, { MoreRunsList } from '../../MoreRuns';
 import NextDrop from '../../../NextDrop';
 import ChallengeStrip from '../../../ChallengeStrip';
 import { RunChallengeButton, RunChallengeLine, runToken } from '../../../RunChallenge';
@@ -794,17 +794,13 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
     <div className="rn" style={{ minHeight: '100vh', background: T.ground, position: 'relative', overflowX: 'hidden' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {circuitId === 'gauntlet' && !done ? <ChallengeStrip gameKey="gauntlet" num={runToken()} run /> : null}
-      {/* FROM ONE RUN TO THE OTHER (owner, 2026-10-01): a Trivia Gauntlet
-          finished in this sitting offers Price Check once the finale has
-          played, unless Price Check is already done today. */}
-      {/* FIRST GAUNTLET EVER (owner, 2026-10-06): Price Check, and if that is
-          declined, Passport. Waits for the /trivia door card if it is up. */}
-      {circuitId === 'gauntlet' && firstEver.current && (
-        <RunNudgePop chain={['pricecheck', 'passport']} fresh eyebrows={['Your first Gauntlet, done', 'Or try this one']}
-          ready={done && doneAtLoad.current === false && !curtain && !doorUp} delay={3500}
-          onOpen={() => { try { localStorage.setItem('sot_gauntlet_first_offer', '1'); } catch (e) {} }} />
+      {/* EVERY OTHER RUN ON ONE CARD (owner, 2026-10-09): the first time a
+          browser finishes any of the five runs, one pop-up lists every other
+          run not done today. It replaced the one-at-a-time RunNudgePop chain.
+          Waits for the /trivia door card if it is up. See MoreRuns.jsx. */}
+      {(circuitId === 'gauntlet' || circuitId === 'math') && (
+        <MoreRunsPop self={circuitId} ready={done && doneAtLoad.current === false && !curtain && !doorUp} delay={3500} />
       )}
-      {circuitId === 'gauntlet' && !firstEver.current && <RunNudgePop target="pricecheck" ready={done && doneAtLoad.current === false && !curtain} delay={3500} />}
 
       {/* THE ONLY CHROME. Not LoftCap and not the site footer: the run is a
           sitting you sit down to, and every band above or below it was another
@@ -1531,6 +1527,8 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     </div>
                   );
                 })()}
+
+                {(circuitId === 'gauntlet' || circuitId === 'math') ? <MoreRunsList self={circuitId} /> : null}
 
                 <div className="rn-vacts rn-sacts">
                   <button type="button" className="rn-vb" onClick={shareRun}>

@@ -18,7 +18,7 @@
 // Only the PUZZLES lists are imported, never questions.js: the count is the
 // length of today's qids, so the megabytes of question text stay out of both
 // image routes.
-import { circuitKeysFor, circuitSlotFor, isRunnableCircuit, rampFor } from '@/lib/circuits';
+import { circuitKeysFor, circuitSlotFor, isRunnableCircuit, rampFor, runEngine } from '@/lib/circuits';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
 
 import { PUZZLES as deepPuzzles } from '../../deep/puzzles';
@@ -28,10 +28,19 @@ import { PUZZLES as bizPuzzles } from '../../biz/puzzles';
 import { PUZZLES as scriptPuzzles } from '../../script/puzzles';
 import { PUZZLES as quotesPuzzles } from '../../quotes/puzzles';
 import { PUZZLES as streakPuzzles } from '../../streak/puzzles';
+import { PUZZLES as blitzPuzzles } from '../../blitz/puzzles';
+import { PUZZLES as blitzedPuzzles } from '../../blitzed/puzzles';
+import { PUZZLES as gapPuzzles } from '../../gap/puzzles';
+import { PUZZLES as seriesPuzzles } from '../../series/puzzles';
+import { PUZZLES as backPuzzles } from '../../back/puzzles';
 
 const DAYS = {
   deep: deepPuzzles, atlas: atlasPuzzles, sport: sportPuzzles, biz: bizPuzzles,
   script: scriptPuzzles, quotes: quotesPuzzles, streak: streakPuzzles,
+  // The Math Gauntlet's five (2026-10-09). Without these the math circuit had
+  // no banks, so its share card fell back to the plain quiz card.
+  blitz: blitzPuzzles, blitzed: blitzedPuzzles, gap: gapPuzzles,
+  series: seriesPuzzles, back: backPuzzles,
 };
 
 export function etTodayServer() {
@@ -85,18 +94,20 @@ export const askedTotal = (banks) => banks.reduce((a, b) => a + (b.asked || 0), 
 // figures are the gate's figures, so there is nothing left to vary and a
 // second copy of the props would only be a second thing to forget.
 export function gauntletCardProps(circuit, banks) {
-  const name = (circuit && circuit.name) || 'Trivia Gauntlet';
+  const isMath = !!(circuit && runEngine(circuit.id) === 'math');
+  const name = (circuit && circuit.name) || (isMath ? 'Math Gauntlet' : 'Trivia Gauntlet');
   const asked = askedTotal(banks);
   return {
     name,
-    eyebrow: 'MIND LOFT · TRIVIA',
+    kind: isMath ? 'math' : 'trivia',
+    eyebrow: isMath ? 'MIND LOFT · MATH' : 'MIND LOFT · TRIVIA',
     gateEyebrow: (name + ' · one long quiz').toUpperCase(),
     // The gate's own two lines, counted rather than written down, so a roster
     // change can never leave a figure on the card that nothing else agrees
     // with. That is not hypothetical: the bank map held five banks while the
     // run had seven, and the card advertised 130 questions for a 180 question
     // run until it was caught.
-    line1: `${asked} questions, ${banks.length} quizzes.`,
+    line1: isMath ? `${asked} problems, ${banks.length} games.` : `${asked} questions, ${banks.length} quizzes.`,
     line2: 'One life each.',
     cta: 'Take your run',
     banks,

@@ -54,6 +54,14 @@ export const RUN_DOORS = {
     go: 'Take all five cases', accent: '#7dd3fc',
     tags: [['Docket', '#c9a3ae'], ['Sworn', '#f472b6'], ['Hearsay', '#d8b4fe'], ['Alibi', '#ef8896'], ['Stands', '#93c5fd']],
   },
+  // Once per GAME like Judged (owner, 2026-10-09): the first time a player
+  // ever opens one of the five on its own page.
+  math: {
+    href: '/circuits/math/run', name: 'Math Gauntlet', eyebrow: 'Daily run · Five games', once: 'game',
+    body: 'All five daily math games back to back, one life in each: quick arithmetic, a missing number, what comes next, which line makes it, and three numbers a line.',
+    go: 'Run all five', accent: '#bef264',
+    tags: [['Blitz', '#c3d94a'], ['Gap', '#f9a8d4'], ['Series', '#7dd3fc'], ['Back', '#6ee7b7'], ['Blitzed', '#a8e063']],
+  },
   // Passport is a solo page rather than a RunClient run, so it has no
   // sot_run_passport_<day> save; runDoneToday reads its day breadcrumb.
   passport: {

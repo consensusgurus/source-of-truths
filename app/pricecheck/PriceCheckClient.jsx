@@ -26,7 +26,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import PriceGame, { readDoneSave } from '../price/PriceGame';
-import RunNudgePop from '../circuits/RunNudgePop';
+import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
 import NextDrop from '../NextDrop';
 import ItemsPop, { itemsFor, scheduleItems, spendItems } from './ItemsPop';
 import useCircuitBoard from '../circuits/useCircuitBoard';
@@ -287,7 +287,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
       {showItems && (
         <ItemsPop items={itemsFor(sections, counted)} at={itemAt} setAt={setItemAt} onClose={closeItems} closeLabel="Back to your results" />
       )}
-      <RunNudgePop target="gauntlet" ready={nudge} delay={10000} fireOnLeave />
+      <MoreRunsPop self="pricecheck" ready={nudge} delay={10000} fireOnLeave />
     </div>
   );
 }
@@ -478,6 +478,7 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
                   <a href="/pricecheck/leaderboard">Leaderboard</a>
                   <a href="/">Back to main</a>
                 </div>
+                <MoreRunsList self="pricecheck" />
               </>
             )}
           </div>

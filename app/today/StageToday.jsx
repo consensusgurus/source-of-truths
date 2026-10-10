@@ -1922,17 +1922,17 @@ export default function StageToday() {
       <span className="sty-ixsep" aria-hidden="true" />
       {ixBtn(CIRC_ID, 'Circuits', 'var(--stg-mute)')}
       {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)')}
-      {ixBtn(IQ_ID, 'IQ Tests', 'var(--stg-mute)', 'sty-ixmv')}
-      {ixBtn(EXAM_ID, 'School Tests', 'var(--stg-mute)', 'sty-ixmv')}
+      {ixBtn(IQ_ID, 'IQ Tests', 'var(--stg-mute)', 'sty-ixmv sty-ixm4')}
+      {ixBtn(EXAM_ID, 'School Tests', 'var(--stg-mute)', 'sty-ixmv sty-ixm4')}
       {/* Kids and the lists are doors, not panes: each goes to its own home. */}
-      <a className="sty-ixb sty-ixmv" href="/kids" style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('kids', null)}<span>Kids</span></a>
+      <a className="sty-ixb sty-ixmv sty-ixm4" href="/kids" style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('kids', null)}<span>Kids</span></a>
       {/* Lists is a door, not a pane: it goes to the lists home. */}
-      <a className="sty-ixb sty-ixmv" href={withTq('/lists')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('lists', null)}<span>Top 10 Lists</span></a>
+      <a className="sty-ixb sty-ixmv sty-ixm4" href={withTq('/lists')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('lists', null)}<span>Top 10 Lists</span></a>
       {/* The puzzle archive is a door too: every past board, by game and day. */}
-      <a className="sty-ixb sty-ixmv" href={withTq('/archive')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('archive', null)}<span>Puzzle Archive</span></a>
+      <a className="sty-ixb sty-ixmv sty-ixar" href={withTq('/archive')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('archive', null)}<span>Puzzle Archive</span></a>
       <span className="sty-ixsep sty-ixmv" aria-hidden="true" />
       {ixBtn(BOARD_ID, 'Leaderboards + Stats', 'var(--stg-mute)', 'wide')}
-      {ixBtn(COMM_ID, 'Most Appreciated', 'var(--stg-mute)', 'wide sty-ixmv')}
+      {ixBtn(COMM_ID, 'Most Appreciated', 'var(--stg-mute)', 'wide sty-ixmv sty-ixma')}
       <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
         onClick={() => setReorder((v) => !v)}>
         {reorder ? 'Done' : 'Reorder'}
@@ -4268,6 +4268,13 @@ ${PATCH_CSS}
   /* Leaderboards + Stats sits right under Circuits and Quizzes on the phone
      (owner, 2026-10-09): everything after it in the source steps behind. */
   .sty-ixn:not(.re) .sty-ixmv{order:1;}
+  /* Then, on the phone (owner, 2026-10-09): Puzzle Archive full width, Most
+     Appreciated under it, and IQ Tests, School Tests, Kids and Top 10 Lists
+     as two pairs at the foot. */
+  .sty-ixn:not(.re) .sty-ixar{order:1;grid-column:1 / -1;}
+  .sty-ixn:not(.re) .sty-ixma{order:2;}
+  .sty-ixn:not(.re) .sty-ixm4{order:3;}
+  .sty-ixn:not(.re) .sty-ixsep.sty-ixmv{display:none;}
 }
 @media (max-width:900px) and (prefers-reduced-motion:reduce){
   [data-sty-anim] .sty-ix.mpk > section,[data-sty-anim] .sty-ix.msel .sty-ixn .sty-ixb{animation:none;}

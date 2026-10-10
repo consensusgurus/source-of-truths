@@ -28,6 +28,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import RunEmbed from '../RunEmbed';
 import NextDrop from '../NextDrop';
+import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
 import useCircuitBoard from '../circuits/useCircuitBoard';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
@@ -81,6 +82,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
   const [holding, setHolding] = useState(null);
   const [copied, setCopied] = useState(false);
   const doneAtLoad = useRef(null);
+  const [settled, setSettled] = useState(false);
 
   useEffect(() => { rRef.current = r; }, [r]);
   const commit = useCallback((next) => {
@@ -284,8 +286,11 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
 
       {hydrated && done && (
         <Verdict key="verdict" sections={sections} counted={counted} parts={parts} total={total} dateLabel={dateLabel}
-          animate={doneAtLoad.current === false} board={board} onShare={copyShare} copied={copied} L={L} />
+          animate={doneAtLoad.current === false} board={board} onShare={copyShare} copied={copied} L={L}
+          onSettled={() => setSettled(true)} />
       )}
+      {/* Every other run on one card, the first time (owner, 2026-10-09). */}
+      <MoreRunsPop self="judged" ready={settled && doneAtLoad.current === false} delay={2500} fireOnLeave />
     </div>
   );
 }
@@ -344,7 +349,7 @@ function Missed({ total, ti, L }) {
 // the left starts at the bottom of the ladder and is swapped for the next
 // school up each time the running total crosses a cutoff. Then the committee
 // stamps the file and the letter slides out of its envelope.
-function Verdict({ sections, counted, parts, total, dateLabel, animate, board, onShare, copied, L }) {
+function Verdict({ sections, counted, parts, total, dateLabel, animate, board, onShare, copied, L, onSettled }) {
   const n = sections.length;
   const max = n * LAW_CASE_MAX;
   const pts = parts.map((p) => Math.round(p));
@@ -423,6 +428,7 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
   pts.forEach((v, i) => { if (v > pts[hi]) hi = i; if (v < pts[lo]) lo = i; });
   const flat = pts[hi] === pts[lo];
   const settled = phase === 'settled';
+  useEffect(() => { if (settled && onSettled) onSettled(); }, [settled]); // eslint-disable-line react-hooks/exhaustive-deps
   const showLetter = phase === 'letter' || settled;
   const idx = lawIndexOf(cur);
 
@@ -492,9 +498,9 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
           <div className="vf-btns">
             <button type="button" className="pri" onClick={onShare}>{copied ? 'Copied' : 'Share your letter'}</button>
             <a href="/judged/leaderboard">Leaderboard</a>
-            <a href="/pricecheck">Play Price Check</a>
             <a href="/">Back to main</a>
           </div>
+          <MoreRunsList self="judged" ink="var(--ls-ink)" mute="var(--ls-mute)" line="var(--ls-line)" />
           <div className="vf-lad"><div className="eb">The ladder</div><Ladder at={fti} L={L} /></div>
         </div>
       )}

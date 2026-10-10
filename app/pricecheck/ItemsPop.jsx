@@ -15,7 +15,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { X, ExternalLink } from 'lucide-react';
-import RunNudgePop from '../circuits/RunNudgePop';
+import MoreRunsPop from '../circuits/MoreRuns';
 import { PRICE_GAMES, fmtCents } from '@/lib/price-games';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
@@ -95,7 +95,7 @@ export function PriceCheckItemsGlobal() {
   return (
     <>
       {items && <ItemsPop items={items} at={at} setAt={setAt} onClose={() => { setItems(null); setNudge(true); }} />}
-      <RunNudgePop target="gauntlet" ready={nudge} delay={10000} fireOnLeave />
+      <MoreRunsPop self="pricecheck" ready={nudge} delay={10000} fireOnLeave />
     </>
   );
 }

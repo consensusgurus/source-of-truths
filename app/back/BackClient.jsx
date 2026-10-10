@@ -48,6 +48,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import RunDoorPop from '../circuits/RunDoorPop';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -856,6 +857,11 @@ export default function BackClient({ puzzles = [], problemsByNum = {}, forceNum 
       )}
 
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
+
+      {/* THE MATH GAUNTLET DOOR (owner, 2026-10-09): the first time a player
+          ever opens this game on its own page, the whole Math Gauntlet is
+          offered instead, on the gate. See app/circuits/RunDoorPop.jsx. */}
+      <RunDoorPop id="math" game="back" ready={hydrated && preStart && isTodays} self="Back" />
 
       {showHelp && (
         <div onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}
