@@ -115,6 +115,7 @@ export const DAILY_GAMES = [
   { key: 'flank', href: '/flank', name: 'Flank', tag: 'name every neighbor', store: 'sot_flank_day', accent: '#3f6212', bg: '#f3f8ea', border: 'rgba(63,98,18,0.4)' },
   { key: 'script', href: '/script', name: 'Script', tag: 'movies and TV, one life', store: 'sot_script_day', accent: '#4a1d6b', bg: '#f3ecf9', border: 'rgba(74,29,107,0.4)' },
   { key: 'quotes', href: '/quotes', name: 'Quotes', tag: 'who said it, one life', store: 'sot_quotes_day', accent: '#3d4f7c', bg: '#eef1f8', border: 'rgba(61,79,124,0.4)' },
+  { key: 'potluck', href: '/potluck', name: 'Potluck', tag: 'three quizzes, one score', store: 'sot_potluck_day', accent: '#b4532a', bg: '#fdf1ea', border: 'rgba(180,83,42,0.4)' },
   { key: 'focus', href: '/focus', name: 'Focus', tag: 'name the zoomed-in photo', store: 'sot_focus_day', accent: '#8a4b08', bg: '#fdf3e6', border: 'rgba(138,75,8,0.4)' },
   { key: 'thread', href: '/thread', name: 'Thread', tag: 'nine films described badly, one thread', store: 'sot_thread_day', accent: '#8b2c6b', bg: '#f7e9f2', border: 'rgba(139,44,107,0.4)' },
   { key: 'slot', href: '/slot', name: 'Slot', tag: 'ten things, one at a time', store: 'sot_slot_day', accent: '#4a5d23', bg: '#eef2e3', border: 'rgba(74,93,35,0.4)' },

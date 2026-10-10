@@ -45,7 +45,7 @@ const SLATE_KEYS = [
   'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'bracket', 'lode', 'etch', 'glyph', 'hedge',
   'listed', 'mate', 'four', 'park', 'impound', 'junkyard', 'snug', 'duet', 'lamps', 'clade', 'dossier', 'judges', 'check', 'rung', 'crunch', 'taire', 'fib', 'streak',
   'feud', 'babel', 'hands', 'finesse', 'crib', 'chain', 'turn', 'yose', 'suffice', 'strata', 'redact', 'paths',
-  'deep', 'anon', 'blocks', 'snake', 'dario', 'chomp', 'sweep', 'docket', 'blitz', 'blitzed', 'gap', 'series', 'back', 'sums', 'hinge', 'defend', 'barter', 'plot', 'sixes', 'niche', 'shoe', 'queen', 'towers', 'mercury', 'polka', 'atlas', 'sport', 'calc', 'encore', 'biz', 'flank', 'knight', 'script', 'quotes', 'focus', 'thread', 'slot', 'whittle', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'diag', 'frame', 'rim',
+  'deep', 'anon', 'blocks', 'snake', 'dario', 'chomp', 'sweep', 'docket', 'blitz', 'blitzed', 'gap', 'series', 'back', 'sums', 'hinge', 'defend', 'barter', 'plot', 'sixes', 'niche', 'shoe', 'queen', 'towers', 'mercury', 'polka', 'atlas', 'sport', 'calc', 'encore', 'biz', 'flank', 'knight', 'script', 'quotes', 'potluck', 'focus', 'thread', 'slot', 'whittle', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'diag', 'frame', 'rim',
 // A retired game leaves the rail on its own the morning after its bank's last
 // drop (RETIRED_DAILY in lib/daily-games). Its key stays listed above so the
 // home board's order is unbroken if the bank is ever extended.

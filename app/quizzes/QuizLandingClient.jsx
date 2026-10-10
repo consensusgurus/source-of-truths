@@ -34,8 +34,7 @@ import MindLoftMark from '../MindLoftMark';
 import StageFooter from '../StageFooter';
 import { useStageTheme, useThemeQs } from '@/lib/stage-theme';
 import { CATEGORY_RAMP, CATEGORY_RAMP_LIGHT } from '@/lib/category-ramp';
-import { QUIZ_HEROES, DEPT_HERO, qotdIdFor } from '@/lib/quiz-heroes';
-import { easternYmd } from '@/lib/challenges';
+import { QUIZ_HEROES, DEPT_HERO } from '@/lib/quiz-heroes';
 
 const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 const SANS = "Manrope, ui-sans-serif, system-ui, -apple-system, sans-serif";
@@ -175,8 +174,10 @@ export default function QuizLandingClient() {
   // registry carries a photo for, so no slot is ever art-less.
   const feature = useMemo(() => {
     if (!byId.size) return null;
-    const ids = new Set(byId.keys());
-    const qotd = qotdIdFor(easternYmd(), ids);
+    // QUIZ OF THE DAY WAS UNPLUGGED 2026-10-09 (owner): the daily quiz pick is
+    // Potluck now, a real daily on the slate (/potluck, lib/potluck.js). The
+    // row keeps its other two tiles.
+    const qotd = null;
     const src = (id) => { const h = heroFor(byId.get(id)); return h && h.src; };
     const qsrc = qotd ? src(qotd) : null;
 
@@ -388,8 +389,7 @@ export default function QuizLandingClient() {
         {/* 2. THE FEATURED ROW: the only art on the page. */}
         {!hits && feature ? (
           <div className="qzh-three qzh-rev">
-            {feat(feature.qotd, 'Quiz of the day', true, false)}
-            {feat(feature.top, 'Most played', false, feature.waiting)}
+            {feat(feature.top, 'Most played', true, feature.waiting)}
             {feat(feature.geo, 'Geo guesser', false, false)}
           </div>
         ) : null}

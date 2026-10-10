@@ -118,6 +118,7 @@ import { PUZZLES as FRAME_FULL } from '../frame/puzzles';
 import { PUZZLES as RIM_FULL } from '../rim/puzzles';
 import { PUZZLES as SCRIPT_FULL } from '../script/puzzles';
 import { PUZZLES as QUOTES_FULL } from '../quotes/puzzles';
+import { PUZZLES as POTLUCK_FULL } from '../potluck/puzzles';
 import { PUZZLES as FOCUS_FULL } from '../focus/puzzles';
 import { PUZZLES as THREAD_FULL } from '../thread/puzzles';
 import { PUZZLES as SLOT_FULL } from '../slot/puzzles';
@@ -213,6 +214,7 @@ const FRAME = FRAME_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ nu
 const RIM = RIM_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SCRIPT = SCRIPT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const QUOTES = QUOTES_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const POTLUCK = POTLUCK_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const FOCUS = FOCUS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const THREAD = THREAD_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SLOT = SLOT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -374,6 +376,7 @@ const GAMES = [
   { key: 'frame', name: 'Frame', path: '/frame', tag: 'Sums at every edge', accent: '#b45309', bg: '#fdf3e3', border: 'rgba(180,83,9,0.4)', src: FRAME },
   { key: 'rim', name: 'Rim', path: '/rim', tag: 'Nothing printed inside', accent: '#4d7c0f', bg: '#f1f8e6', border: 'rgba(77,124,15,0.4)', src: RIM },
   { key: 'script', name: 'Script', path: '/script', tag: 'Movies and TV, one life', accent: '#4a1d6b', bg: '#f3ecf9', border: 'rgba(74,29,107,0.4)', src: SCRIPT },
+  { key: 'potluck', name: 'Potluck', path: '/potluck', tag: 'Three quizzes, one score', accent: '#b4532a', bg: '#fdf1ea', border: 'rgba(180,83,42,0.4)', src: POTLUCK },
   { key: 'quotes', name: 'Quotes', path: '/quotes', tag: 'Who said it, one life', accent: '#3d4f7c', bg: '#eef1f8', border: 'rgba(61,79,124,0.4)', src: QUOTES },
   { key: 'focus', name: 'Focus', path: '/focus', tag: 'Name the zoomed-in photo', accent: '#8a4b08', bg: '#fdf3e6', border: 'rgba(138,75,8,0.4)', src: FOCUS },
   { key: 'thread', name: 'Thread', path: '/thread', tag: 'Nine films described badly, one thread', accent: '#8b2c6b', bg: '#f7e9f2', border: 'rgba(139,44,107,0.4)', src: THREAD },

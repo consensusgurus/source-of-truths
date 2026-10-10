@@ -73,6 +73,7 @@ const GAMES = [
   { key: 'flank', href: '/flank', name: 'Flank', tag: 'Name every neighbor', img: '/games/btn-flank.png' },
   { key: 'script', href: '/script', name: 'Script', tag: 'Movies and TV, one life', img: '/games/btn-script.png' },
   { key: 'quotes', href: '/quotes', name: 'Quotes', tag: 'Who said it, one life', img: '/games/btn-quotes.png' },
+  { key: 'potluck', href: '/potluck', name: 'Potluck', tag: 'Three quizzes, one score', img: '/games/btn-potluck.png' },
   { key: 'focus', href: '/focus', name: 'Focus', tag: 'Name the zoomed-in photo', img: '/games/btn-focus.png' },
   { key: 'thread', href: '/thread', name: 'Thread', tag: 'Nine films described badly, one thread', img: '/games/btn-thread.png' },
   { key: 'slot', href: '/slot', name: 'Slot', tag: 'Ten things, one at a time', img: '/games/btn-slot.png' },
@@ -181,7 +182,7 @@ const CATEGORIES = [
   // list and cannot drift apart.
   { key: 'sudoku', label: 'Sudoku', keys: ['suds', 'sixes', 'towers', 'quilt', 'cages', 'sando', 'mercury', 'polka', 'knight', 'diag', 'frame', 'rim', 'whittle'] },
   { key: 'crowd', label: 'Crowd Psychology', keys: ['outwit', 'outrank', 'feud'] },
-  { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'focus', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'redact', 'dating', 'extra'] },
+  { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'potluck', 'focus', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'redact', 'dating', 'extra'] },
   { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'park', 'impound', 'junkyard', 'snug', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'paths', 'chomp', 'docket', 'plot'] },
   { key: 'endgame', label: 'End Game', keys: ['mate', 'defend', 'queen', 'four', 'check', 'chain', 'turn', 'yose'] },
   { key: 'cards', label: 'Cards', keys: ['taire', 'hands', 'shoe', 'finesse', 'crib'] },

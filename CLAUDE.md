@@ -3305,7 +3305,10 @@ used.
   applies to today and all future selections. (First applied 2026-06-25: idx 6,13,16,17,30,42,43,45,
   58,65,95 were scrubbed of consensus quizzes; idx 3, already past, was deliberately left untouched.)
 
-### Daily Challenge toggle (`DAILY_CHALLENGE_ON` in `lib/challenges.js`) — currently ON
+### Daily Challenge toggle (`DAILY_CHALLENGE_ON` in `lib/challenges.js`) — OFF since 2026-10-09
+
+**UNPLUGGED 2026-10-09 (owner), together with Quiz of the Day: Potluck (`/potluck`, see its section
+at the end of this file) is the daily quiz pick now.** The paragraph below is the history.
 
 `DAILY_CHALLENGE_ON = true` as of 2026-07-02 (this section previously said OFF and had gone stale;
 verify the flag on origin before relying on this file). When true, the daily challenge appears in
@@ -3327,6 +3330,10 @@ button to a static "Business News / Quiz Hub" link (it rotates `openChallenges()
   IndexNow-ping the new `/quiz/<id>` URLs (the hub URL is already live).
 
 ## Quiz hub hero system: per-quiz registry + QOTD rotation (2026-07-01)
+
+**QUIZ OF THE DAY WAS UNPLUGGED 2026-10-09 (owner).** The `/quizzes` featured row lost its QOTD tile
+(Most played leads it now) and `QuizHomeClient`'s qotd memo returns null behind `QOTD_ON = false`.
+`QOTD_POOL` / `qotdIdFor` remain in `lib/quiz-heroes.js` but nothing reader-facing calls them.
 
 The featured photos on `/quizzes` are driven by ONE per-quiz registry,
 `lib/quiz-heroes.js` (`QUIZ_HEROES`, keyed by quiz id -> `{ src, pos? }`). This
@@ -8822,3 +8829,33 @@ back to the plain quiz card. A new runnable circuit's banks must be added to `DA
 **Phone home index order (owner, 2026-10-09):** under Circuits / Quizzes and Leaderboards + Stats,
 Puzzle Archive full width (`.sty-ixar`), then Most Appreciated (`.sty-ixma`), then IQ Tests, School
 Tests, Kids and Top 10 Lists (`.sty-ixm4`), all by CSS `order` inside the 900px block.
+
+## Potluck (`/potluck`): three catalog quizzes a day, turned in when you choose (launched 2026-10-10)
+
+Owner, 2026-10-09: one daily that serves quizzes from the catalog, rotating, a VARIETY of them, and
+you do not have to play all three; a Turn it in button rather than a countdown. Key/route `potluck`,
+category **Trivia**, `miss: null`, accent `#b4532a` / navy `#f4a582`. Replaced Quiz of the Day and the
+Daily Challenge, both unplugged in the same push.
+
+- **The bank** is dated: `app/potluck/puzzles.js`, built by `scripts/gen-potluck.mjs`, checked by
+  `scripts/verify-potluck.mjs` (auto-discovered by verify-all). Each day is three quiz ids from three
+  different FORMAT FAMILIES (typed / match / visual, `POTLUCK_FAMILY` in `lib/potluck.js`) and three
+  different departments, factual only (the Daily Challenge rule), 8 to 50 answers, no quiz twice in
+  the bank. The visual family is the scarce one (~94 quizzes), which is what bounds a bank to about
+  90 days; extend by re-running the generator with `--from` after the last day and splicing, never by
+  rewriting a live day. Stocked 2026-10-10 to 2027-01-07.
+- **Only QuizClient formats.** A Potluck quiz plays on its own page as
+  `/quiz/<id>?potluck=<num>&i=<slot>`; `QuizClient.endGame` records it with `recordPotluck()` and sends
+  the player back. The full-page boards (timed-mcq, place-map, globe, geo-aerial, logic-*, survive,
+  higher-lower, closer, connections, grid-fill) post on their own and never report back, so
+  `potluckEligible` refuses them. Adding a format family means teaching that board the same hook.
+- **Scoring**: each quiz is worth 10, scaled `round(10 x score / total)`, the day is out of 30, the
+  summed quiz clocks break ties. One row, `potluck-M-D-YY`, posted ONCE by `turnInPotluck()`
+  (the Turn it in button, or automatically when the third finishes). The three ordinary quiz rows
+  QuizClient posts are left alone. Graded out of its total in `quiz-scoring` (like Crux) and paid
+  linearly in `quiz-xp` (`XP_LINEAR_DAILIES`).
+- **Run state** lives in `sot_potluck_run_<num>` and the usual daily contract keys
+  (`sot_potluck_<num>` with t0, `sot_potluck_day`, `sot_potluck_stats`), all written by lib/potluck.js.
+- Wired by `scripts/wire-potluck.mjs` (beside Quotes in every list) and
+  `scripts/wire-potluck-quizclient.mjs`. No Sunday Edition.
+

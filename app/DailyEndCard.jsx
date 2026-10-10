@@ -88,7 +88,7 @@ import {
   Club, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, UserPlus, Gavel, Shield,
   Flame, Frame, Contrast, Layers, FileText, Waypoints, Anchor, PenLine, Gamepad2, Zap, Sigma, Sandwich,
   ArrowLeftRight, Gem, Map as MapIcon, Divide, TableProperties, TrendingUp, Milestone, Plane, CornerUpRight,
-  Clapperboard, Quote, ZoomIn, Axe, Truck, Rows3, Boxes, MoveDiagonal, Crop, Scan,
+  Clapperboard, Quote, CookingPot, ZoomIn, Axe, Truck, Rows3, Boxes, MoveDiagonal, Crop, Scan,
 } from 'lucide-react';
 import ReportIssue from './ReportIssue';
 import MindLoftMark from './MindLoftMark';
@@ -115,7 +115,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-15' };
+const LAUNCH_PIN = { keys: ['potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-15' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -222,6 +222,7 @@ export const GAME_META = {
   flank: { accent: '#3f6212', badgeBg: '#3f6212', badgeInk: T.white, Fin: Milestone },
   script: { accent: '#4a1d6b', badgeBg: '#4a1d6b', badgeInk: T.white, Fin: Clapperboard },
   quotes: { accent: '#3d4f7c', badgeBg: '#3d4f7c', badgeInk: T.white, Fin: Quote },
+  potluck: { accent: '#b4532a', badgeBg: '#b4532a', badgeInk: T.white, Fin: CookingPot },
   focus: { accent: '#8a4b08', badgeBg: '#8a4b08', badgeInk: T.white, Fin: ZoomIn },
   thread: { accent: '#8b2c6b', badgeBg: '#8b2c6b', badgeInk: T.white, Fin: Waypoints },
   slot: { accent: '#4a5d23', badgeBg: '#4a5d23', badgeInk: T.white, Fin: Rows3 },
@@ -364,6 +365,7 @@ const ALL_DAILY_GAMES = [
   { key: 'thread', cat: 'trivia',   name: 'Thread', tag: 'Nine films described badly, one thread', blurb: 'Nine films described by someone who missed the point, and one thing they all share. Name the films, then call the thread, early if you dare.', href: '/thread' },
   { key: 'slot', cat: 'trivia',   name: 'Slot', tag: 'Ten things, one at a time', blurb: 'Ten things on one axis, dealt one at a time. Drop each into a slot before you see the next; nothing moves once it is down, and the reveal shows the true order beside yours.', href: '/slot' },
   { key: 'focus', cat: 'trivia',   name: 'Focus', tag: 'Name the zoomed-in photo', blurb: 'One photo a day, zoomed in close. Name it before six frames pull the camera all the way back; the earlier the frame, the more it pays.', href: '/focus' },
+  { key: 'potluck', cat: 'trivia',  name: 'Potluck', tag: 'Three quizzes, one score', blurb: 'Three quizzes a day from the catalog, one to type, one to match and one to spot, each from a different subject. Each is worth 10; turn it in whenever you are done.', href: '/potluck' },
   { key: 'quotes', cat: 'trivia',   name: 'Quotes', tag: 'Who said it, one life', blurb: 'Twenty-five famous lines, gimme to expert, five lanes a round from presidents and generals to scientists, writers and the odd film character. One wrong attribution ends the run.', href: '/quotes' },
   { key: 'biz',   cat: 'trivia',    name: 'Biz',   tag: 'Business, one life', blurb: 'Twenty-five business questions, gimme to expert, five lanes a round from brands and markets to founders, deals and business history. One wrong answer ends the run.', href: '/biz' },
   { key: 'sport', cat: 'trivia',    name: 'Sport', tag: 'Every sport, one life', blurb: 'Twenty-five sports questions, gimme to expert, five lanes a round from the NFL to the Olympics. One wrong answer ends the run.', href: '/sport' },
