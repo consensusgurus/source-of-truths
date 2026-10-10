@@ -2217,13 +2217,16 @@ export default function StageToday() {
     return (
       <div className={mobile ? 'sty-cpm' : 'sty-cpills'}>
         {list.map((c) => {
-          const full = c.n === c.games.length;
+          const full = c.games.length > 0 && c.n === c.games.length;
+          const part = !full && c.n > 0;
           return (
-            <a key={c.id} className={'sty-cpill' + (full ? ' full' : '')}
+            <a key={c.id} className={'sty-cpill' + (full ? ' full' : part ? ' part' : '')}
               href={withTq(circuitEntryHref(c.id))} style={{ '--ph': c.hue }}>
               <span className="nm">{c.name}</span>
               {mobile
-                ? <span className="ct">{c.unit ? (c.n ? 'Played' : c.unit) : `${c.n}/${c.games.length}`}</span>
+                ? (full
+                  ? <span className="ct done">{'\u2713 Played'}</span>
+                  : <span className="ct">{c.unit ? c.unit : part ? `${c.n} of ${c.games.length} played` : `${c.games.length} games`}</span>)
                 : (full ? <span className="ck">{'\u2713'}</span> : null)}
             </a>
           );
@@ -4335,5 +4338,13 @@ ${PATCH_CSS}
     border-left:4px solid var(--ph,var(--stg-acc));padding:9px 12px;font-size:13px;font-weight:800;color:var(--stg-ink);}
   .sty-cpm .sty-cpill::before{display:none;}
   .sty-cpm .sty-cpill .ct{font-size:11.5px;font-weight:700;color:var(--stg-mute);font-variant-numeric:tabular-nums;}
+  /* PLAYED READS AT A GLANCE (owner, 2026-10-09): a finished circuit is a
+     filled tile with a check, a started one names its count in ink, an
+     untouched one stays a plain outline. */
+  .sty-cpm .sty-cpill.part .ct{color:var(--stg-ink);}
+  .sty-cpm .sty-cpill.full{background:color-mix(in srgb, var(--ph,var(--stg-acc)) 16%, transparent);
+    border-color:color-mix(in srgb, var(--ph,var(--stg-acc)) 45%, transparent);}
+  .sty-cpm .sty-cpill.full .nm{color:var(--stg-ink2);}
+  .sty-cpm .sty-cpill .ct.done{color:var(--stg-good,#16a34a);font-weight:800;}
 }
 `;
