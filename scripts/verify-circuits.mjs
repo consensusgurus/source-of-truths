@@ -532,7 +532,11 @@ for (const c of ALL_CIRCUITS) {
   const href = circuitPageHref(c.id);
   if (href !== `${CIRCUIT_BASE}/${c.id}`) fails.push(`${c.id}: circuitPageHref is ${href}`);
   const url = circuitShareUrl(c.id);
-  if (!url.endsWith(`${CIRCUIT_BASE}/${c.id}`)) fails.push(`${c.id}: share url is ${url}`);
+  // A circuit may name its own share path (shareHref, e.g. /math); it must be a
+  // root path on the share host. Otherwise the share is the landing page.
+  const shareTail = c.shareHref || `${CIRCUIT_BASE}/${c.id}`;
+  if (c.shareHref && !/^\/[a-z0-9-]+$/.test(c.shareHref)) fails.push(`${c.id}: shareHref ${c.shareHref} is not a root path`);
+  if (!url.endsWith(shareTail)) fails.push(`${c.id}: share url is ${url}`);
   if (/^https?:/.test(url)) fails.push(`${c.id}: share url carries a scheme, which breaks referral restamping`);
 
   const invite = circuitShareInvite(c.id);

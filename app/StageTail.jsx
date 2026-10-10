@@ -38,13 +38,16 @@ import { gameColor, gameColorLight, gameOnrampLight, gameAccentInkLight } from '
 import { gameFaq, gameFaqJsonLd, relatedGames, gameCategory } from '@/lib/game-seo';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import StageFooter from './StageFooter';
+import LayoutC from './LayoutC';
 
 const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 const SANS = 'Manrope, ui-sans-serif, system-ui, -apple-system, sans-serif';
 
 export default function StageTail({ self, stage = true }) {
   const [theme] = useStageTheme();
-  if (!stage) return null;
+  // LAYOUT C (hidden, ?layout=c): mounted here because StageTail is on every
+  // daily page. It renders nothing without the flag.
+  if (!stage) return <LayoutC gameKey={self} />;
   const acc = {
     '--stg-acc-dk': gameColor(self),
     '--stg-acc-lt': gameColorLight(self),
@@ -57,6 +60,8 @@ export default function StageTail({ self, stage = true }) {
   const rel = game ? relatedGames(self) : [];
   const cat = game ? gameCategory(self) : null;
   return (
+    <>
+    <LayoutC gameKey={self} />
     <div className="stage-page stage-tail" data-stage-theme={theme}
       style={{ ...acc, background: 'var(--stg-ground)', color: 'var(--stg-ink,#e9edf4)', position: 'relative', zIndex: 2 }}>
       {faq.length ? (
@@ -89,6 +94,7 @@ export default function StageTail({ self, stage = true }) {
       ) : null}
       <StageFooter />
     </div>
+    </>
   );
 }
 

@@ -5,7 +5,11 @@
 import { HOME_ABOUT_LEAD, HOME_ABOUT_LINKS, HOME_FAQ } from '@/lib/home-about';
 
 const CSS = `
-.sty-about{max-width:880px;}
+/* CENTRED on the page (owner, 2026-10-09): the block sat flush left under a
+   full-width home and read as an orphan. */
+.sty-about.sty-about{max-width:880px;margin-left:auto;margin-right:auto;text-align:center;}
+.sty-about .sty-cathead{justify-content:center;}
+.sty-about ul.sty-alinks{justify-content:center;}
 .sty-about p{margin:0 0 10px;font-size:14.5px;line-height:1.6;color:var(--stg-ink2);}
 .sty-about h3{margin:18px 0 8px;font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--stg-ink);}
 .sty-about ul.sty-alinks{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;}

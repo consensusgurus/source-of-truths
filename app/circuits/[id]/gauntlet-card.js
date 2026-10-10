@@ -110,6 +110,7 @@ export function gauntletCardProps(circuit, banks) {
     line1: isMath ? `${asked} problems, ${banks.length} games.` : `${asked} questions, ${banks.length} quizzes.`,
     line2: 'One life each.',
     cta: 'Take your run',
+    shareHref: (circuit && circuit.shareHref) || null,
     banks,
     asked,
   };
