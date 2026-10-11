@@ -23,6 +23,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
 import { GROUPS } from '@/lib/daily-groups';
+import { gameColor, gameColorLight, gameOnrampLight, RAMP_INK } from '@/lib/category-ramp';
 import { fetchDailyBoard, dailyBoardQuery, dailyBoardIdentity } from './dailyBoardClient';
 import { etToday } from './useDayStats';
 
@@ -160,7 +161,7 @@ export default function SundayLedger({ light = false, withTq = (h) => h }) {
   return (
     <div className="sld-host">
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div className="sld" role="region" aria-label="Your week">
+      <div className="sld" role="region" aria-label="Your week" style={{ '--sld-today': light ? '#9a6a07' : '#e8b43a' }}>
         <span className="sld-id"><span className="sld-eb">Your week</span><span className="sld-rng">{range}</span></span>
         <span className="sld-sep" />
         <span className="sld-days">
@@ -189,7 +190,8 @@ export default function SundayLedger({ light = false, withTq = (h) => h }) {
         ) : <span className="sld-figs">Reading the week&hellip;</span>}
         {m && m.best ? <span className="sld-best">Best #{m.best.rank} &middot; {DAILY_GAME_MAP[m.best.key] ? DAILY_GAME_MAP[m.best.key].name : m.best.key}</span> : null}
         {m && m.go ? (
-          <a className="sld-go" href={withTq(m.go.href || `/${m.go.key}`)}>{m.daysPlayed ? `Start ${todayWord}` : 'Start'} &middot; {m.go.name}</a>
+          <a className="sld-go" href={withTq(m.go.href || `/${m.go.key}`)}
+            style={{ '--rc': light ? gameColorLight(m.go.key) : gameColor(m.go.key), '--ron': light ? gameOnrampLight(m.go.key) : RAMP_INK }}>{m.daysPlayed ? `Start ${todayWord}` : 'Start'} &middot; {m.go.name}</a>
         ) : null}
         <button type="button" className="sld-x" onClick={hide} aria-label="Hide your week until next Sunday">&times;</button>
       </div>
@@ -210,12 +212,12 @@ const CSS = `
 .sld-sep{width:1px;height:22px;background:var(--stg-line);flex:none;}
 .sld-days{flex:1 1 0;min-width:84px;display:flex;align-items:flex-end;justify-content:space-between;gap:4px;height:30px;}
 .sld-d{flex:1 1 0;max-width:64px;position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;outline:none;}
-.sld-d i{display:block;width:100%;min-width:8px;border-radius:3px 3px 1px 1px;background:var(--cta,#2f6fe4);}
+.sld-d i{display:block;width:100%;min-width:8px;border-radius:3px 3px 1px 1px;background:var(--stg-mute);}
 .sld-d.zero i{background:var(--stg-chip);}
-.sld-d.today i{background:var(--gold,#e8b43a);}
+.sld-d.today i{background:var(--sld-today);}
 .sld-d.wait i{background:var(--stg-chip);}
 .sld-d b{font-size:9px;font-weight:800;color:var(--stg-mute);line-height:1;}
-.sld-d.today b{color:var(--gold,#e8b43a);}
+.sld-d.today b{color:var(--sld-today);}
 .sld-d:focus-visible i{outline:2px solid var(--stg-ink);outline-offset:2px;}
 .sld-tip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--stg-ink);color:var(--stg-raise);
   font-size:11.5px;font-weight:700;padding:6px 9px;border-radius:7px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s;z-index:20;}
@@ -227,7 +229,7 @@ const CSS = `
 .sld-ds{display:none;}
 .sld-best{flex:none;background:var(--stg-chip);border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700;}
 .sld-go{flex:none;display:inline-flex;align-items:center;height:34px;padding:0 14px;border-radius:999px;
-  background:var(--cta,#2f6fe4);color:#fff;font-weight:800;font-size:13px;text-decoration:none;}
+  background:var(--rc);color:var(--ron);font-weight:800;font-size:13px;text-decoration:none;}
 .sld-go:hover{filter:brightness(1.08);}
 .sld-x{flex:none;width:34px;height:34px;border-radius:50%;border:0;background:transparent;color:var(--stg-mute);
   font:inherit;font-size:20px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0;}
