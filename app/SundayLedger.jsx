@@ -8,22 +8,24 @@
 // because the empty rows are the retention lever. Sunday's own column is
 // dashed until it is played.
 //
-// It opens ONCE, on the first Sunday arrival, and collapses to a chip for the
-// rest of the day (`sot_ledger_seen_<ymd>`). Data is /api/quiz/daily-combined
+// ONE LINE (owner, 2026-10-11): the grid, chip and expand are gone. The week
+// is a single full-width strip: seven day bars (games finished that day, today
+// in gold), points, games, days played, best finish, a Start button and an X.
+// It sheds pieces by its OWN width (container queries) so it stays one line
+// from a wide desktop down to a small phone. The X hides it until next Sunday
+// (`sot_ledger_hidden_<weekEndYmd>`), with a six-second Undo. Data is /api/quiz/daily-combined
 // for each day of the week through the shared board client, `me.perGame`
 // only, cached on the device under `sot_ledger_<sundayYmd>` so a reopen or a
 // second visit costs nothing. Today's read is the same query the home already
 // makes, so it joins that request. Sundays only, or ?ledger=1 to review it on
 // any day (the week then ends today).
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
 import { GROUPS } from '@/lib/daily-groups';
-import { categoryColor, categoryColorLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
 import { fetchDailyBoard, dailyBoardQuery, dailyBoardIdentity } from './dailyBoardClient';
 import { etToday } from './useDayStats';
 
-const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 // The week ending on `ymd` (YYYY-MM-DD, ET), as seven YYYY-MM-DD strings.
@@ -47,28 +49,22 @@ const isSunday = (ymd) => { const [Y, M, D] = ymd.split('-').map(Number); return
 
 export default function SundayLedger({ light = false, withTq = (h) => h }) {
   const [on, setOn] = useState(false);       // Sunday, or forced: decided in an effect
-  const [open, setOpen] = useState(false);
   const [today, setToday] = useState('');
-  const [week, setWeek] = useState(null);     // [{ ymd, played: {key: {finished, rank, score, total}}, total }] or null
-  const [name, setName] = useState('');
+  const [week, setWeek] = useState(null);     // [{ ymd, played: {key: {rank, score, total}}, total }] or null
+  const [hidden, setHidden] = useState(false);
+  const [undo, setUndo] = useState(false);
+  const undoT = useRef(null);
 
   useEffect(() => {
     let forced = false;
     try { forced = /[?&]ledger=1(&|$)/.test(window.location.search); } catch (e) {}
     const t = etToday();
     if (!forced && !isSunday(t)) return;
+    try { if (!forced && localStorage.getItem(`sot_ledger_hidden_${t}`)) return; } catch (e) {}
     setToday(t);
     setOn(true);
-    try {
-      const id = JSON.parse(localStorage.getItem('sot_quiz_identity') || 'null');
-      if (id && id.username) setName(id.username);
-    } catch (e) {}
-    // Open once, on the first arrival of the day.
-    try {
-      const k = `sot_ledger_seen_${t}`;
-      if (!localStorage.getItem(k) || forced) { setOpen(true); localStorage.setItem(k, '1'); }
-    } catch (e) { setOpen(true); }
   }, []);
+  useEffect(() => () => { if (undoT.current) clearTimeout(undoT.current); }, []);
 
   // THE WEEK, read once it is on. Cached per Sunday, since six of the seven
   // days are frozen boards.
@@ -112,13 +108,15 @@ export default function SundayLedger({ light = false, withTq = (h) => h }) {
     for (const g of GROUPS) {
       const keys = g.keys.filter((k) => live.has(k) && DAILY_GAME_MAP[k]);
       if (keys.length < 2) continue;
-      const counts = week.map((d) => keys.filter((k) => d.played[k]).length);
-      if (counts.some((n) => n)) rows.push({ name: g.name, cat: g.cat, keys, counts, size: keys.length });
-      else untouched.push({ name: g.name, cat: g.cat, first: DAILY_GAME_MAP[keys[0]] });
+      const n = week.reduce((s, d) => s + keys.filter((k) => d.played[k]).length, 0);
+      if (n) rows.push({ name: g.name, keys, n });
+      else untouched.push({ name: g.name, first: DAILY_GAME_MAP[keys[0]] });
     }
-    rows.sort((a, b) => b.counts.reduce((x, y) => x + y, 0) - a.counts.reduce((x, y) => x + y, 0));
+    rows.sort((a, b) => b.n - a.n);
+    const perDay = week.map((d) => ({ ymd: d.ymd, g: Object.keys(d.played).length, p: Math.round(d.total) }));
+    const games = perDay.reduce((s, d) => s + d.g, 0);
     const points = Math.round(week.reduce((s, d) => s + d.total, 0));
-    const daysPlayed = week.filter((d) => Object.keys(d.played).length).length;
+    const daysPlayed = perDay.filter((d) => d.g).length;
     let best = null;
     for (const d of week) {
       for (const key of Object.keys(d.played)) {
@@ -126,138 +124,129 @@ export default function SundayLedger({ light = false, withTq = (h) => h }) {
         if (r != null && (!best || r < best.rank)) best = { rank: r, key };
       }
     }
-    // Sunday's own move: the first open game in the most-played set, else the
-    // first open game in the first untouched set.
     const todayPlayed = week[6] ? week[6].played : {};
     let go = null;
-    for (const r of rows) { const k = r.keys.find((x) => !todayPlayed[x]); if (k) { go = { set: r.name, g: DAILY_GAME_MAP[k] }; break; } }
-    if (!go && untouched.length) go = { set: untouched[0].name, g: untouched[0].first };
-    return { rows, untouched: untouched.slice(0, 8), points, daysPlayed, best, go, anyPlay: daysPlayed > 0 };
+    for (const r of rows) { const k = r.keys.find((x) => !todayPlayed[x]); if (k) { go = DAILY_GAME_MAP[k]; break; } }
+    if (!go && untouched.length) go = untouched[0].first;
+    return { perDay, max: Math.max(1, ...perDay.map((d) => d.g)), games, points, daysPlayed, best, go };
   }, [week]);
 
-  if (!on || !today) return null;
+  if (!on || !today || hidden) return null;
   const days = weekEnding(today);
-  const hue = (cat) => (light ? categoryColorLight(cat) : categoryColor(cat));
-  const onHue = (cat) => (light ? categoryOnrampLight(cat) : RAMP_INK);
   const range = `${label(days[0])} to ${label(days[6])}`;
+  const todayWord = isSunday(today) ? 'Sunday' : 'today';
 
-  if (!open) {
+  const hide = () => {
+    try { localStorage.setItem(`sot_ledger_hidden_${today}`, '1'); } catch (e) {}
+    setUndo(true);
+    undoT.current = setTimeout(() => { setUndo(false); setHidden(true); }, 6000);
+  };
+  const unhide = () => {
+    if (undoT.current) clearTimeout(undoT.current);
+    try { localStorage.removeItem(`sot_ledger_hidden_${today}`); } catch (e) {}
+    setUndo(false);
+  };
+
+  if (undo) {
     return (
-      <>
+      <div className="sld-host">
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
-        <button type="button" className="sld-chip" onClick={() => setOpen(true)}>
-          <span className="sld-eb">Your week</span><b>{range}</b><span aria-hidden="true">&#9662;</span>
-        </button>
-      </>
+        <div className="sld-undo" role="status">Your week is hidden until next Sunday<button type="button" onClick={unhide}>Undo</button></div>
+      </div>
     );
   }
 
+  const m = model;
   return (
-    <section className="sld sty-rev">
+    <div className="sld-host">
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div className="sld-hd">
-        <div><div className="sld-eb">Your week</div><b>{range}</b></div>
-        <div className="sld-hr">
-          {name ? <span className="sld-eb">{name}</span> : null}
-          <button type="button" className="sld-x" onClick={() => setOpen(false)} aria-label="Collapse">&#9652;</button>
-        </div>
+      <div className="sld" role="region" aria-label="Your week">
+        <span className="sld-id"><span className="sld-eb">Your week</span><span className="sld-rng">{range}</span></span>
+        <span className="sld-sep" />
+        <span className="sld-days">
+          {(m ? m.perDay : days.map((ymd) => ({ ymd, g: 0, p: 0 }))).map((d, i) => {
+            const isToday = i === 6;
+            const h = d.g ? Math.max(4, Math.round(19 * d.g / (m ? m.max : 1))) : 3;
+            const tip = !m ? `${label(d.ymd)}` : d.g
+              ? `${DOW[i]} ${label(d.ymd)} · ${d.g} game${d.g === 1 ? '' : 's'} · ${d.p} pts${isToday ? ' so far' : ''}`
+              : `${DOW[i]} ${label(d.ymd)} · no games`;
+            return (
+              <span key={d.ymd} tabIndex={0} aria-label={tip}
+                className={'sld-d' + (d.g ? '' : ' zero') + (isToday ? ' today' : '') + (m ? '' : ' wait')}>
+                <span className="sld-tip">{tip}</span>
+                <i style={{ height: h }} /><b>{DAYS[i]}</b>
+              </span>
+            );
+          })}
+        </span>
+        <span className="sld-sep" />
+        {m ? (
+          <span className="sld-figs">
+            <span className="sld-pts"><strong>{m.points.toLocaleString()}</strong> pts</span>
+            <span className="sld-gms"><strong>{m.games}</strong> games</span>
+            <span><strong>{m.daysPlayed}</strong><span className="sld-dl"> of 7 days</span><span className="sld-ds">/7</span></span>
+          </span>
+        ) : <span className="sld-figs">Reading the week&hellip;</span>}
+        {m && m.best ? <span className="sld-best">Best #{m.best.rank} &middot; {DAILY_GAME_MAP[m.best.key] ? DAILY_GAME_MAP[m.best.key].name : m.best.key}</span> : null}
+        {m && m.go ? (
+          <a className="sld-go" href={withTq(m.go.href || `/${m.go.key}`)}>{m.daysPlayed ? `Start ${todayWord}` : 'Start'} &middot; {m.go.name}</a>
+        ) : null}
+        <button type="button" className="sld-x" onClick={hide} aria-label="Hide your week until next Sunday">&times;</button>
       </div>
-      {!model ? <div className="sld-wait">Reading the week&hellip;</div> : !model.anyPlay ? (
-        <div className="sld-wait">Nothing played this week yet. Sunday is a fine day to start.</div>
-      ) : (
-        <>
-          <div className="sld-figs">
-            <div className="sld-fig"><b>{model.points.toLocaleString()}</b><i>points this week</i></div>
-            <div className="sld-fig"><b>{model.daysPlayed}<small> of 7</small></b><i>days played</i></div>
-            {model.best ? <div className="sld-fig"><b>#{model.best.rank}</b><i>best finish &middot; {DAILY_GAME_MAP[model.best.key] ? DAILY_GAME_MAP[model.best.key].name : model.best.key}</i></div> : null}
-          </div>
-          <div className="sld-card">
-            <div className="sld-wk">
-              <div />
-              {DAYS.map((d, i) => <div key={i} className="sld-dh">{d}</div>)}
-              {model.rows.map((r) => (
-                <RowCells key={r.name} r={r} hue={hue(r.cat)} on={onHue(r.cat)} />
-              ))}
-            </div>
-            <div className="sld-eb sld-note">solid = set completed that day &middot; {isSunday(today) ? 'Sunday is still open' : 'today is still open'}</div>
-          </div>
-        </>
-      )}
-      {model && model.untouched.length ? (
-        <div>
-          <div className="sld-eb" style={{ marginBottom: 6 }}>Sets you never touched</div>
-          <div className="sld-un">
-            {model.untouched.map((u) => (
-              <a key={u.name} href={withTq(u.first.href || `/${u.first.key}`)} style={{ '--rc': hue(u.cat) }}>{u.name}</a>
-            ))}
-          </div>
-        </div>
-      ) : null}
-      {model && model.go && model.go.g ? (
-        <a className="sld-go" href={withTq(model.go.g.href || `/${model.go.g.key}`)}
-          style={{ '--rc': hue(DAILY_GAME_MAP[model.go.g.key].cat), '--ron': onHue(DAILY_GAME_MAP[model.go.g.key].cat) }}>
-          {isSunday(today) ? 'Start Sunday' : 'Start today'} &middot; {model.go.g.name}<span>{model.go.set}</span>
-        </a>
-      ) : null}
-    </section>
+    </div>
   );
 }
 
-function RowCells({ r, hue, on }) {
-  return (
-    <>
-      <div className="sld-rl" style={{ '--rc': hue }}><s /><span>{r.name}</span></div>
-      {r.counts.map((n, i) => (
-        <div key={i} className={'sld-c' + (n ? (n === r.size ? ' full' : ' on') : '') + (i === 6 ? ' sun' : '')}
-          style={{ '--rc': hue, '--ron': on }}>{n || ''}</div>
-      ))}
-    </>
-  );
-}
+const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const CSS = `
-.sld{display:flex;flex-direction:column;gap:12px;padding:14px;border:1px solid var(--stg-line);
-  border-radius:12px;background:var(--stg-raise);}
-.sld-eb{font-family:${MONO};font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--stg-mute);}
-.sld-hd{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;}
-.sld-hd b{display:block;font-size:20px;font-weight:800;letter-spacing:-.02em;margin-top:2px;}
-.sld-hr{display:flex;align-items:center;gap:10px;}
-.sld-x{font:inherit;background:none;border:1px solid var(--stg-line);border-radius:6px;color:var(--stg-ink2);
-  width:28px;height:28px;cursor:pointer;}
-.sld-wait{font-size:13px;color:var(--stg-ink2);}
-.sld-figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
-.sld-fig b{display:block;font-size:24px;font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;}
-.sld-fig b small{font-size:12px;opacity:.6;font-weight:700;}
-.sld-fig i{display:block;font-style:normal;font-family:${MONO};font-size:8.5px;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--stg-mute);margin-top:5px;}
-.sld-card{border:1px solid var(--stg-line);border-radius:10px;padding:11px 12px;background:var(--stg-surf);}
-.sld-wk{display:grid;grid-template-columns:minmax(96px,150px) repeat(7,minmax(0,1fr));gap:3px;align-items:center;}
-.sld-dh{font-family:${MONO};font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);text-align:center;}
-.sld-rl{font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;min-width:0;
-  padding:3px 0;line-height:1.2;}
-.sld-rl span{min-width:0;overflow-wrap:break-word;hyphens:auto;}
-.sld-rl s{text-decoration:none;width:3px;height:14px;border-radius:2px;background:var(--rc);flex:none;}
-.sld-c{height:24px;border-radius:4px;background:var(--stg-chip);display:grid;place-items:center;
-  font-family:${MONO};font-size:10px;font-weight:700;color:var(--stg-mute);}
-.sld-c.on{background:var(--rc);color:var(--ron);}
-.sld-c.full{background:var(--rc);color:var(--ron);outline:2px solid var(--stg-ink);outline-offset:-2px;}
-.sld-c.sun:not(.on):not(.full){border:1px dashed var(--stg-line2);}
-.sld-note{margin-top:8px;}
-.sld-un{display:flex;flex-wrap:wrap;gap:6px;}
-.sld-un a{font-size:12px;font-weight:700;padding:5px 9px;border:1px solid var(--stg-line);border-left:3px solid var(--rc);
-  border-radius:6px;color:var(--stg-ink);text-decoration:none;}
-.sld-un a:hover{border-color:var(--stg-line2);border-left-color:var(--rc);}
-.sld-go{display:flex;align-items:center;justify-content:space-between;gap:10px;text-decoration:none;
-  font-size:14px;font-weight:800;padding:12px 14px;border-radius:9px;background:var(--rc);color:var(--ron);}
-.sld-go span{font-family:${MONO};font-size:9px;letter-spacing:.14em;text-transform:uppercase;opacity:.8;font-weight:700;}
-.sld-chip{display:inline-flex;align-items:center;gap:8px;font:inherit;cursor:pointer;align-self:flex-start;
-  background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:99px;padding:6px 12px;color:var(--stg-ink);}
-.sld-chip b{font-size:12.5px;font-weight:800;}
-.sld-chip span:last-child{color:var(--stg-mute);}
-@media (max-width:480px){
-  .sld-wk{grid-template-columns:minmax(84px,104px) repeat(7,minmax(0,1fr));}
-  .sld-rl{font-size:11px;}
-  .sld-figs{gap:6px;}
-  .sld-fig b{font-size:20px;}
+.sld-host{container-type:inline-size;width:100%;min-width:0;}
+.sld{display:flex;align-items:center;gap:clamp(10px,1.6cqi,22px);height:48px;padding:0 6px 0 16px;width:100%;
+  background:var(--stg-raise);border:1px solid var(--stg-line);border-radius:999px;white-space:nowrap;
+  color:var(--stg-ink);font-variant-numeric:tabular-nums;}
+.sld-eb{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-mute);}
+.sld-id{display:flex;align-items:baseline;gap:8px;flex:none;}
+.sld-rng{font-size:13.5px;font-weight:800;}
+.sld-sep{width:1px;height:22px;background:var(--stg-line);flex:none;}
+.sld-days{flex:1 1 0;min-width:84px;display:flex;align-items:flex-end;justify-content:space-between;gap:4px;height:30px;}
+.sld-d{flex:1 1 0;max-width:64px;position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;outline:none;}
+.sld-d i{display:block;width:100%;min-width:8px;border-radius:3px 3px 1px 1px;background:var(--cta,#2f6fe4);}
+.sld-d.zero i{background:var(--stg-chip);}
+.sld-d.today i{background:var(--gold,#e8b43a);}
+.sld-d.wait i{background:var(--stg-chip);}
+.sld-d b{font-size:9px;font-weight:800;color:var(--stg-mute);line-height:1;}
+.sld-d.today b{color:var(--gold,#e8b43a);}
+.sld-d:focus-visible i{outline:2px solid var(--stg-ink);outline-offset:2px;}
+.sld-tip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--stg-ink);color:var(--stg-raise);
+  font-size:11.5px;font-weight:700;padding:6px 9px;border-radius:7px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s;z-index:20;}
+.sld-d:hover .sld-tip,.sld-d:focus-visible .sld-tip{opacity:1;}
+.sld-d:first-child .sld-tip{left:0;transform:none;}
+.sld-d:last-child .sld-tip{left:auto;right:0;transform:none;}
+.sld-figs{display:flex;align-items:baseline;gap:14px;font-size:13px;color:var(--stg-mute);font-weight:600;flex:none;}
+.sld-figs strong{color:var(--stg-ink);font-weight:800;font-size:14px;}
+.sld-ds{display:none;}
+.sld-best{flex:none;background:var(--stg-chip);border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700;}
+.sld-go{flex:none;display:inline-flex;align-items:center;height:34px;padding:0 14px;border-radius:999px;
+  background:var(--cta,#2f6fe4);color:#fff;font-weight:800;font-size:13px;text-decoration:none;}
+.sld-go:hover{filter:brightness(1.08);}
+.sld-x{flex:none;width:34px;height:34px;border-radius:50%;border:0;background:transparent;color:var(--stg-mute);
+  font:inherit;font-size:20px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0;}
+.sld-x:hover{background:var(--stg-chip);color:var(--stg-ink);}
+.sld-x:focus-visible{outline:2px solid var(--stg-ink);}
+.sld-undo{display:flex;align-items:center;gap:12px;height:48px;padding:0 6px 0 16px;border-radius:999px;
+  background:var(--stg-surf);border:1px solid var(--stg-line);font-size:13px;font-weight:600;color:var(--stg-mute);white-space:nowrap;}
+.sld-undo button{margin-left:auto;border:0;background:transparent;color:var(--stg-ink);font:inherit;font-weight:800;
+  cursor:pointer;padding:6px 12px;border-radius:999px;}
+.sld-undo button:hover{background:var(--stg-chip);}
+@container (max-width:980px){ .sld-best{display:none;} }
+@container (max-width:800px){ .sld-rng,.sld-gms{display:none;} }
+@container (max-width:640px){ .sld-go,.sld-dl{display:none;} .sld-ds{display:inline;} }
+@container (max-width:470px){
+  .sld,.sld-undo{height:44px;}
+  .sld{padding-left:14px;gap:10px;}
+  .sld-sep{display:none;}
+  .sld-x{width:30px;height:30px;}
 }
+@container (max-width:340px){ .sld-pts{display:none;} .sld-eb{letter-spacing:.08em;} }
+@media (prefers-reduced-motion:reduce){ .sld-tip{transition:none;} }
 `;
