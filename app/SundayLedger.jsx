@@ -68,38 +68,59 @@ export default function SundayLedger({ light = false, withTq = (h) => h }) {
   useEffect(() => () => { if (undoT.current) clearTimeout(undoT.current); }, []);
 
   // THE WEEK, read once it is on. Cached per Sunday, since six of the seven
-  // days are frozen boards.
+  // days are frozen boards. A day that FAILS to load is retried twice and is
+  // never cached: the first version wrote a failed read as an empty day and
+  // cached it, so a cold deploy showed a whole week of zeros for 20 minutes.
+  // The key carries a version so those poisoned caches are ignored.
+  const [err, setErr] = useState(false);
+  const [tries, setTries] = useState(0);
   useEffect(() => {
     if (!on || !today) return undefined;
-    const cacheKey = `sot_ledger_${today}`;
-    try {
-      const c = JSON.parse(localStorage.getItem(cacheKey) || 'null');
-      if (c && Array.isArray(c.days) && c.days.length === 7 && c.at && Date.now() - c.at < 20 * 60 * 1000) { setWeek(c.days); return undefined; }
-    } catch (e) {}
+    const cacheKey = `sot_ledger2_${today}`;
+    if (!tries) {
+      try {
+        const c = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+        if (c && Array.isArray(c.days) && c.days.length === 7 && c.at && Date.now() - c.at < 20 * 60 * 1000) { setWeek(c.days); return undefined; }
+      } catch (e) {}
+    }
     let alive = true;
+    setErr(false);
     const days = weekEnding(today);
     const ident = dailyBoardIdentity();
-    Promise.all(days.map((ymd) => {
-      const qs = dailyBoardQuery({ date: ymd === today ? null : mdy(ymd), ...ident });
-      return fetchDailyBoard(qs).then((j) => {
-        const me = j && j.me;
-        const played = {};
-        if (me && me.perGame) {
-          for (const key of Object.keys(me.perGame)) {
-            const g = me.perGame[key];
-            if (!g || g.abandoned) continue;
-            played[key] = { rank: g.rank ?? null, score: g.score ?? null, total: g.total ?? null };
-          }
+    const parse = (ymd, j) => {
+      const me = j && j.me;
+      const played = {};
+      if (me && me.perGame) {
+        for (const key of Object.keys(me.perGame)) {
+          const g = me.perGame[key];
+          if (!g || g.abandoned) continue;
+          played[key] = { rank: g.rank ?? null, score: g.score ?? null, total: g.total ?? null };
         }
-        return { ymd, played, total: me && Number.isFinite(Number(me.total)) ? Number(me.total) : 0 };
-      }).catch(() => ({ ymd, played: {}, total: 0 }));
-    })).then((out) => {
+      }
+      return { ymd, played, total: me && Number.isFinite(Number(me.total)) ? Number(me.total) : 0 };
+    };
+    const direct = (qs) => fetch('/api/quiz/daily-combined' + (qs ? '?' + qs : ''), { cache: 'no-store' })
+      .then((r) => { if (!r.ok) throw new Error('status ' + r.status); return r.json(); });
+    const readDay = (ymd) => {
+      const qs = dailyBoardQuery({ date: ymd === today ? null : mdy(ymd), ...ident });
+      const check = (j) => { if (!j || typeof j !== 'object' || j.error) throw new Error('bad'); return j; };
+      // First try joins any request the home already has in flight; retries go
+      // direct, because the shared client holds a rejected promise for 8s.
+      return fetchDailyBoard(qs).then(check)
+        .catch(() => new Promise((res) => setTimeout(res, 1500)).then(() => direct(qs)).then(check))
+        .catch(() => new Promise((res) => setTimeout(res, 3500)).then(() => direct(qs)).then(check))
+        .then((j) => ({ ...parse(ymd, j), ok: true }))
+        .catch(() => ({ ymd, played: {}, total: 0, ok: false }));
+    };
+    Promise.all(days.map(readDay)).then((out) => {
       if (!alive) return;
-      setWeek(out);
-      try { localStorage.setItem(cacheKey, JSON.stringify({ at: Date.now(), days: out })); } catch (e) {}
+      if (out.some((d) => !d.ok)) { setErr(true); return; }
+      const clean = out.map(({ ok, ...d }) => d);
+      setWeek(clean);
+      try { localStorage.setItem(cacheKey, JSON.stringify({ at: Date.now(), days: clean })); } catch (e) {}
     });
     return () => { alive = false; };
-  }, [on, today]);
+  }, [on, today, tries]);
 
   const model = useMemo(() => {
     if (!week) return null;
@@ -187,6 +208,8 @@ export default function SundayLedger({ light = false, withTq = (h) => h }) {
             <span className="sld-gms"><strong>{m.games}</strong> games</span>
             <span><strong>{m.daysPlayed}</strong><span className="sld-dl"> of 7 days</span><span className="sld-ds">/7</span></span>
           </span>
+        ) : err ? (
+          <span className="sld-figs">Couldn&rsquo;t load your week<button type="button" className="sld-retry" onClick={() => setTries((n) => n + 1)}>Retry</button></span>
         ) : <span className="sld-figs">Reading the week&hellip;</span>}
         {m && m.best ? <span className="sld-best">Best #{m.best.rank} &middot; {DAILY_GAME_MAP[m.best.key] ? DAILY_GAME_MAP[m.best.key].name : m.best.key}</span> : null}
         {m && m.go ? (
@@ -227,6 +250,9 @@ const CSS = `
 .sld-figs{display:flex;align-items:baseline;gap:14px;font-size:13px;color:var(--stg-mute);font-weight:600;flex:none;}
 .sld-figs strong{color:var(--stg-ink);font-weight:800;font-size:14px;}
 .sld-ds{display:none;}
+.sld-retry{font:inherit;font-size:12.5px;font-weight:800;border:1px solid var(--stg-line);background:transparent;color:var(--stg-ink);
+  border-radius:999px;padding:4px 10px;cursor:pointer;}
+.sld-retry:hover{background:var(--stg-chip);}
 .sld-best{flex:none;background:var(--stg-chip);border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700;}
 .sld-go{flex:none;display:inline-flex;align-items:center;height:34px;padding:0 14px;border-radius:999px;
   background:var(--rc);color:var(--ron);font-weight:800;font-size:13px;text-decoration:none;}
