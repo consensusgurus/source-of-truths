@@ -146,11 +146,11 @@ function OutrankLiveBoard({ board, total }) {
         <span style={{ fontFamily: SANS, fontSize: 11, fontWeight: 700, color: `var(--stg-mute, ${COLORS.faded})`, marginLeft: 'auto' }}>{fmtBig(board.field || 0)} in the field</span>
       </div>
       <div style={{ fontFamily: SANS, fontSize: 11.5, fontWeight: 600, color: `var(--stg-mute, ${COLORS.faded})`, lineHeight: 1.45, marginBottom: 10 }}>
-        Nothing here is final. Every new vote can reshuffle the crowd&rsquo;s order &mdash; your place climbs or slips as the field fills in.
+        Nothing here is final. Every new vote can reshuffle the crowd&rsquo;s order, so your place climbs or slips as the field fills in.
         {board.houseActive ? ' The house crowd is still seeding until ten players lock in.' : ''}
       </div>
       {top.length === 0 ? (
-        <div style={{ fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: `var(--stg-mute, ${COLORS.faded})`, padding: '6px 0' }}>No one has joined the board yet &mdash; be the first name on it.</div>
+        <div style={{ fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: `var(--stg-mute, ${COLORS.faded})`, padding: '6px 0' }}>No one has joined the board yet. Be the first name on it.</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {top.map((r, i) => (
@@ -559,8 +559,8 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
 
   async function faceTheCrowd() {
     if (!playing || sending) return;
-    if (g.fav == null) { say('Cast your vote first — tap your favorite.'); return; }
-    if (g.order.length < K) { say(`Place all ${K} in order — ${K - g.order.length} to go.`); return; }
+    if (g.fav == null) { say('Cast your vote first: tap your favorite.'); return; }
+    if (g.order.length < K) { say(`Place all ${K} in order. ${K - g.order.length} to go.`); return; }
     setSending(true);
     try {
       const answers = [g.fav, ...g.order];
@@ -571,7 +571,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
       });
       const d = await r.json();
       if (!d || d.error || !Array.isArray(d.reveal)) {
-        say('Couldn’t reach the crowd — try again in a moment.');
+        say('Couldn’t reach the crowd. Try again in a moment.');
         setSending(false);
         return;
       }
@@ -581,7 +581,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
       postResult(g2, d.points, exact);
       setG(g2);
     } catch (e) {
-      say('Couldn’t reach the crowd — try again in a moment.');
+      say('Couldn’t reach the crowd. Try again in a moment.');
     }
     setSending(false);
   }
@@ -602,7 +602,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Outrank #${PUZZLE.num} — the daily crowd-ranking puzzle from Mind Loft.\n${shareUrl()}`
+      ? `Outrank #${PUZZLE.num}: the daily crowd-ranking puzzle from Mind Loft.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -661,7 +661,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
           })}
         </div>
         <div style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED, marginTop: 10, lineHeight: 1.5 }}>
-          Your favorite: <b style={{ color: INK }}>{ITEMS[result.yourFav]}</b> &mdash; you and <b style={{ color: INK }}>{result.favPct}%</b> of the crowd.
+          Your favorite: <b style={{ color: INK }}>{ITEMS[result.yourFav]}</b>: you and <b style={{ color: INK }}>{result.favPct}%</b> of the crowd.
         </div>
       </div>
     );
@@ -723,14 +723,54 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.ork-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .ork-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .ork-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .ork-item{font-family:${SANS};font-weight:800;font-size:13.5px;border: 2px solid var(--stg-line, rgba(28,30,36,0.3));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};border-radius:9px;padding:9px 13px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;}
-          .ork-item:hover{border-color:var(--stg-acc, ${COLORS.accent});}
-          .ork-item-on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));box-shadow:0 0 0 3px rgba(232,180,58,0.45);}
-          .ork-slot{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
-          .ork-face{font-family:${SANS};font-weight:800;font-size:15px;letter-spacing:0.05em;text-transform:uppercase;border:none;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-radius:10px;padding:0 26px;height:56px;cursor:pointer;display:inline-flex;align-items:center;gap:10px;box-shadow:0 3px 0 rgba(20,22,28,0.25);}
-          .ork-face:active{transform:translateY(1px);box-shadow:0 2px 0 rgba(20,22,28,0.25);}
-          .ork-face:disabled{opacity:.55;cursor:default;}
-          .ork-face .ork-gold{color:${COLORS.gold};}
+          .ork-item{font-family:${SANS};font-weight:800;font-size:14px;min-height:44px;box-sizing:border-box;border:2px solid var(--stg-cell-line, rgba(28,30,36,0.3));background:transparent;color:${INK};border-radius:10px;padding:0 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
+          .ork-item:hover{border-color:var(--stg-acc-ink, ${COLORS.accent});}
+          .ork-item-on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
+          .ork-item-on:hover{border-color:var(--stg-acc, ${COLORS.accent});}
+          .ork-ballot,.ork-tray{display:flex;flex-wrap:wrap;gap:7px;}
+          .ork-tag{font-family:${MONO};font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-onramp, var(--white));background:var(--stg-acc, ${COLORS.accent});border-radius:5px;padding:4px 8px;white-space:nowrap;}
+          .ork-stand{display:flex;align-items:flex-end;isolation:isolate;padding:16px 10px 0 2px;}
+          .ork-step{flex:1 1 0;min-width:0;display:flex;flex-direction:column;}
+          .ork-rk{display:none;}
+          .ork-cardwrap{position:relative;padding:0 3px;margin-bottom:16px;}
+          .ork-card{box-sizing:border-box;width:100%;min-height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;padding:4px 6px;font-family:${SANS};font-weight:800;font-size:12.5px;line-height:1.15;overflow-wrap:anywhere;margin:0;}
+          .ork-card.on{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border:0;cursor:pointer;}
+          .ork-card.next{border:2px dashed var(--stg-acc-ink, ${COLORS.accent});color:var(--stg-acc-ink, ${COLORS.accent});background:var(--stg-ground, transparent);}
+          .ork-card.open{border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.3));color:var(--stg-mute, ${COLORS.faded});background:var(--stg-ground, transparent);}
+          .ork-ped{position:relative;height:var(--h);margin:0 3px;box-sizing:border-box;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));border-bottom:0;border-top:4px solid var(--stg-cell-line, rgba(28,30,36,0.3));border-radius:8px 8px 0 0;background:var(--stg-cell, var(--white));display:flex;justify-content:center;padding-top:8px;font-family:${MONO};font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--stg-mute, ${COLORS.faded});}
+          .ork-ped.on{border-top-color:var(--stg-acc-ink, ${COLORS.accent});color:var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 14%, var(--stg-cell, var(--white)));}
+          .ork-ped::before{content:'';position:absolute;left:5px;right:-9px;top:-11px;bottom:0;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.3));border-bottom:0;border-radius:8px 8px 0 0;z-index:-1;}
+          .ork-base{height:2px;background:var(--stg-cell-line, rgba(28,30,36,0.3));}
+          .ork-crowd{margin:8px 3px 0;height:26px;box-sizing:border-box;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.3));border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});white-space:nowrap;overflow:hidden;}
+          .ork-ph{display:none;}
+          .ork-legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin-top:10px;font-family:${MONO};font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
+          .ork-legend > span{display:inline-flex;align-items:center;gap:6px;}
+          .ork-sw{width:16px;height:12px;box-sizing:border-box;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));border-top:3px solid var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 14%, var(--stg-cell, var(--white)));}
+          .ork-sw.ghost{border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.3));background:transparent;}
+          .ork-facerow{display:flex;align-items:center;gap:16px;margin:22px 0 4px;flex-wrap:wrap;}
+          .ork-face-note{flex:1 1 220px;font-family:${SANS};font-size:12.5px;font-weight:600;line-height:1.45;color:var(--stg-mute, ${COLORS.faded});}
+          .ork-face{font-family:${SANS};font-weight:800;font-size:15px;border:none;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-radius:12px;padding:0 22px;min-height:52px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:10px;}
+          .ork-face:active{transform:translateY(1px);}
+          .ork-face:disabled{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 12%, var(--stg-cell, var(--white)));color:var(--stg-ink2, ${COLORS.ink});cursor:default;transform:none;}
+          .ork-face-sub{font-family:${MONO};font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
+          @media(max-width:560px){
+            .ork-theme{font-size:25px !important;}
+            .ork-ballot .ork-item{flex:1 1 30%;padding:0 6px;font-size:13px;}
+            .ork-stand{flex-direction:column;align-items:stretch;gap:6px;padding:8px 0 0;}
+            .ork-step{flex-direction:row;align-items:center;gap:8px;}
+            .ork-rk{display:block;flex:0 0 18px;text-align:right;font-family:${MONO};font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;}
+            .ork-cardwrap{flex:1 1 auto;margin:0;padding:0;}
+            .ork-cardwrap::before{content:'';position:absolute;left:6px;top:5px;width:calc(var(--w) - 6px);height:44px;box-sizing:border-box;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.3));border-radius:0 9px 9px 0;}
+            .ork-card{position:relative;width:calc(var(--w) - 6px);min-height:44px;height:44px;justify-content:flex-start;text-align:left;border-radius:0 9px 9px 0;font-size:14px;padding:0 12px;}
+            .ork-card.open{background:var(--stg-cell, var(--white));border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));}
+            .ork-ped,.ork-base{display:none;}
+            .ork-crowd{margin:0;flex:0 0 40px;}
+            .ork-dk{display:none;}
+            .ork-ph{display:inline;}
+            .ork-legend > span:last-child{margin-left:0 !important;}
+            .ork-facerow{flex-direction:column;align-items:stretch;}
+            .ork-face{width:100%;}
+          }
           @media(max-width:560px){.ork-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.ork-ttl h1{font-size:21px;letter-spacing:0.02em;}.ork-ttl .ork-ttl-dt{font-size:15px;}.ork-ttl-dot{display:none;}.ork-mh-tile{width:30px !important;height:30px !important;font-size:17px !important;}}
         ` }} />
 
@@ -787,68 +827,96 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
         {/* the day's slate */}
         {!preStart && (
         <div className={STAGE ? 'stg-board' : undefined} style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: '15px 17px 12px', boxShadow: '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
-          <div style={{ display: LOFT ? 'none' : 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, marginBottom: 9, flexWrap: 'wrap' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}><Users size={12} /> today&rsquo;s category</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: MONO, fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: FADED, marginBottom: 4 }}>
+            <Users size={12} aria-hidden="true" /> Today&rsquo;s slate &middot; {K} items
           </div>
-          <div style={{ display: 'flex', alignItems: 'stretch', gap: 10, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 12, marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'stretch', gap: 10, marginBottom: 4 }}>
             <span aria-hidden style={{ flex: '0 0 auto', width: 5, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 3 }} />
-            <span style={{ fontFamily: SANS, fontSize: 23, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.12, color: ACC_INK, textTransform: 'uppercase' }}>{PUZZLE.theme}</span>
+            <span className="ork-theme" style={{ fontFamily: SANS, fontSize: 30, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.1, color: ACC_INK, textTransform: 'uppercase' }}>{PUZZLE.theme}</span>
           </div>
-          <div style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, marginBottom: 12, lineHeight: 1.5 }}><b style={{ color: INK }}>{PUZZLE.theme}:</b> {PUZZLE.flavor}</div>
+          <div style={{ fontFamily: SANS, fontSize: 14, fontWeight: 700, color: `var(--stg-ink2, ${COLORS.faded})`, marginBottom: 18, lineHeight: 1.5 }}>{PUZZLE.flavor}</div>
 
           {playing ? (
             <>
-              {/* step 1 — your vote */}
-              <div style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px', marginBottom: 9 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 7px' }}>1 &middot; Your vote</span>
-                  {g.fav != null && <span style={{ marginLeft: 'auto', color: `var(--stg-ink, ${COLORS.green})`, display: 'flex' }}><svg viewBox="0 0 12 12" width="14" height="14" fill="none"><path d="M2.5 6.2 L5 8.6 L9.5 3.6" stroke={T.successDeep} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></span>}
+              {/* step 1: your vote */}
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
+                  <span className="ork-tag">1 &middot; Your vote</span>
+                  <span style={{ fontFamily: SANS, fontSize: 14, fontWeight: 700, color: `var(--stg-ink2, ${COLORS.ink})` }}>Tap your honest favorite. It goes into the crowd.</span>
+                  {g.fav != null && <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-label="Vote cast" style={{ marginLeft: 'auto', color: ACC_INK }}><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>}
                 </div>
-                <div style={{ fontFamily: SANS, fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK, lineHeight: 1.4, marginBottom: 9 }}>
-                  Tap your honest favorite. Your vote helps build the crowd&rsquo;s real order.
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                <div className="ork-ballot">
                   {ITEMS.map((it, i) => (
-                    <button key={i} onClick={() => pickFav(i)} className={`ork-item${g.fav === i ? ' ork-item-on' : ''}`}>
-                      {g.fav === i ? <Crown size={13} style={{ color: COLORS.gold }} /> : null}{it}
+                    <button key={i} type="button" onClick={() => pickFav(i)} aria-pressed={g.fav === i} className={`ork-item${g.fav === i ? ' ork-item-on' : ''}`}>
+                      {g.fav === i ? <Crown size={15} aria-hidden="true" /> : null}{it}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* step 2 — call the crowd */}
-              <div style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px', marginBottom: 9 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 7px' }}>2 &middot; Call the crowd</span>
-                  <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 10.5, color: FADED }}>placed {g.order.length}/{K}</span>
-                </div>
-                <div style={{ fontFamily: SANS, fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK, lineHeight: 1.4, marginBottom: 9 }}>
-                  Now forget your taste. Tap the items in the order TODAY&rsquo;S CROWD ranks them, favorite first.
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-                  {ITEMS.map((it, i) => {
-                    const pos = g.order.indexOf(i);
-                    return (
-                      <button key={i} onClick={() => tapOrder(i)} className={`ork-item${pos >= 0 ? ' ork-slot' : ''}`}>
-                        {pos >= 0 ? <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.25)', borderRadius: 4, padding: '1px 6px' }}>#{pos + 1}</span> : null}{it}
-                      </button>
-                    );
-                  })}
-                </div>
+              {/* step 2: call the crowd, built as a stand */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, flexWrap: 'wrap' }}>
+                <span className="ork-tag">2 &middot; Call the crowd</span>
+                <span style={{ fontFamily: SANS, fontSize: 14, fontWeight: 700, color: `var(--stg-ink2, ${COLORS.ink})`, flex: '1 1 260px' }}>Build the stand: tap the items in the order today&rsquo;s crowd ranks them, favorite first.</span>
+                <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED }}>placed <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{g.order.length}/{K}</b></span>
+              </div>
+              {/* YOUR stand, one step per place, tallest first. Behind it, the
+                  crowd's stand in dashed outline: sealed, with no names and no
+                  heights of its own, until the crowd is faced. */}
+              <div className="ork-stand">
+                {ITEMS.map((_, k) => {
+                  const it = g.order[k];
+                  const placed = it !== undefined;
+                  const next = k === g.order.length;
+                  const frac = K > 1 ? k / (K - 1) : 0;
+                  return (
+                    <div key={k} className="ork-step" style={{ '--h': `${Math.round(150 - frac * 100)}px`, '--w': `${Math.round(100 - frac * 45)}%` }}>
+                      <span className="ork-rk" aria-hidden="true" style={{ color: placed ? ACC_INK : FADED }}>{k + 1}</span>
+                      <div className="ork-cardwrap">
+                        {placed ? (
+                          <button type="button" className="ork-card on" onClick={() => tapOrder(it)} aria-label={`Step ${k + 1}: ${ITEMS[it]}. Tap to take it back.`}>{ITEMS[it]}</button>
+                        ) : (
+                          <div className={`ork-card ${next ? 'next' : 'open'}`} aria-label={`Step ${k + 1}: ${next ? 'next to fill' : 'open'}`}>
+                            {next ? <><span className="ork-dk">Next</span><span className="ork-ph">Next: tap below</span></> : 'Open'}
+                          </div>
+                        )}
+                      </div>
+                      <div className={`ork-ped${placed ? ' on' : ''}`} aria-hidden="true"><span>{k + 1}</span></div>
+                      <div className="ork-base" aria-hidden="true" />
+                      <span className="ork-crowd" aria-label="The crowd's step, sealed until you face the crowd"><span className="ork-dk">Crowd &middot;&nbsp;</span>+?</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="ork-legend">
+                <span><span aria-hidden="true" className="ork-sw" />Your call</span>
+                <span><span aria-hidden="true" className="ork-sw ghost" />The crowd&rsquo;s stand, sealed until you face it</span>
+                <span style={{ marginLeft: 'auto' }}>Exact step +2 &middot; one off +1</span>
+              </div>
+
+              {/* still to place */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 18, marginBottom: 6, flexWrap: 'wrap' }}>
+                <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED }}>
+                  {g.order.length < K ? <>Still to place &middot; tap one for step {g.order.length + 1}</> : <>All placed. Tap a step on the stand to take it back.</>}
+                </span>
                 {g.order.length > 0 && (
-                  <button onClick={resetOrder} style={{ marginTop: 9, fontFamily: SANS, fontSize: 11.5, fontWeight: 800, color: FADED, background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5, padding: 0 }}>
-                    <RotateCcw size={12} /> Reset the order
+                  <button type="button" onClick={resetOrder} style={{ minHeight: 44, fontFamily: SANS, fontSize: 13, fontWeight: 700, color: `var(--stg-ink2, ${COLORS.ink})`, background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0 6px' }}>
+                    <RotateCcw size={14} /> Reset the order
                   </button>
                 )}
               </div>
+              <div className="ork-tray">
+                {ITEMS.map((it, i) => (g.order.indexOf(i) >= 0 ? null : (
+                  <button key={i} type="button" onClick={() => tapOrder(i)} className="ork-item">{it}</button>
+                )))}
+              </div>
 
-              <div style={{ textAlign: 'center', margin: '14px 0 8px' }}>
+              <div className="ork-facerow">
                 <button className="ork-face" onClick={faceTheCrowd} disabled={sending || !placedAll}>
-                  <Users size={17} className="ork-gold" /> {sending ? 'Facing the crowd…' : 'Face the crowd'}
+                  <Users size={18} aria-hidden="true" /> {sending ? 'Facing the crowd…' : 'Face the crowd'}
+                  {!sending && !placedAll && <span className="ork-face-sub">{g.order.length < K ? `${K - g.order.length} to place` : 'vote first'}</span>}
                 </button>
-                <div style={{ fontFamily: SANS, fontSize: 11.5, fontWeight: 700, color: FADED, marginTop: 8 }}>
-                  Exact slot pays 2, one off pays 1. The order is whatever today&rsquo;s players vote it to be.
-                </div>
+                <span className="ork-face-note">Score {winBar(TOTAL)} of {TOTAL} and you outranked the crowd, for now. The order keeps moving all day as votes arrive.</span>
               </div>
             </>
           ) : (
@@ -988,7 +1056,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s crowd, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s crowd, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>

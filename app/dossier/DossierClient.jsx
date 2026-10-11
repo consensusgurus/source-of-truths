@@ -193,6 +193,28 @@ function matchNames(list, query, skip) {
   return [...a, ...b, ...c].slice(0, 7);
 }
 
+// PHONE: the guess box sits in the flow under the case file, never pinned.
+// When the keyboard opens, line the input row up with the top of the keyboard
+// instead of letting the browser centre it, so as much of the board as fits
+// stays in view above it (the Flank pattern).
+function keepBoardInView(el) {
+  if (typeof window === 'undefined' || window.innerWidth > 640 || !el) return;
+  const vv = window.visualViewport;
+  const fit = () => {
+    const dock = el.closest('.ds-inrow') || el;
+    const top = vv ? vv.offsetTop : 0;
+    const h = vv ? vv.height : window.innerHeight;
+    const want = dock.getBoundingClientRect().bottom - (top + h) + 8;
+    if (Math.abs(want) > 2) window.scrollBy(0, want);
+  };
+  if (vv) {
+    const once = () => { vv.removeEventListener('resize', once); setTimeout(fit, 60); };
+    vv.addEventListener('resize', once);
+    setTimeout(() => vv.removeEventListener('resize', once), 1200);
+  }
+  setTimeout(fit, 350);
+}
+
 function freshState() {
   return { v: 1, guesses: [], hintAttrs: [], hintUsed: false, status: 'playing', t0: null, tEnd: null };
 }
@@ -507,6 +529,50 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
     } catch (e) {}
   }
 
+  // THE CASE FILE: one line per fact, built only from what the evidence rows
+  // already print. A number gets a range line over the list's own span (the
+  // smallest and largest value on today's list), a category lists the values
+  // the guesses have ruled out, and a matched fact is stamped with the guess
+  // that found it.
+  const solShown = won || (!playing && (!LOFT || revealed));
+  const guessRows = guesses.map((nm) => BY_NAME.get(nm)).filter(Boolean);
+  const sheet = known.map((k) => {
+    const a = k.a;
+    if (k.exact != null) {
+      const ix = guessRows.findIndex((r) => r[a.key] === ANSWER[a.key]);
+      return { a, exact: k.exact, by: ix >= 0 ? ix + 1 : null };
+    }
+    if (a.type !== 'num') {
+      const out = [];
+      for (const r of guessRows) { const v = String(r[a.key]); if (!out.includes(v)) out.push(v); }
+      return { a, out };
+    }
+    const text = k.lo != null && k.hi != null ? `${k.lo} to ${k.hi}, not either end`
+      : k.lo != null ? `above ${k.lo}` : k.hi != null ? `below ${k.hi}` : null;
+    const span = U.rows.map((r) => r[a.key]).filter((v) => typeof v === 'number');
+    let line = null;
+    if (span.length) {
+      const mn = Math.min(...span), mx = Math.max(...span);
+      const pos = (v) => (mx > mn ? ((v - mn) / (mx - mn)) * 100 : 50);
+      const seen = [];
+      const ticks = [];
+      for (const r of guessRows) {
+        const v = r[a.key];
+        if (typeof v !== 'number' || seen.includes(v)) continue;
+        seen.push(v);
+        ticks.push({ k: 'g' + v, x: pos(v), mark: true, label: v === k.lo || v === k.hi ? v : null });
+      }
+      const labelled = ticks.filter((t) => t.label != null).map((t) => t.x);
+      const clear = (x) => labelled.every((lx) => Math.abs(lx - x) > 9);
+      if (clear(0) && !seen.includes(mn)) ticks.push({ k: 'mn', x: 0, mark: false, label: mn });
+      if (clear(100) && !seen.includes(mx)) ticks.push({ k: 'mx', x: 100, mark: false, label: mx });
+      const band = k.lo != null || k.hi != null ? [k.lo != null ? pos(k.lo) : 0, k.hi != null ? pos(k.hi) : 100] : null;
+      line = { ticks, band };
+    }
+    return { a, text, line };
+  });
+  const pinnedCount = sheet.filter((f) => f.exact != null).length;
+
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
@@ -514,7 +580,7 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
       steps={[
         <><b>Type a name</b> and choose it from the list. A name that is not on the list, or one you already tried, costs nothing.</>,
         <>Read the row: <b>filled</b> is a match, <b>higher &uarr;</b> and <b>lower &darr;</b> point from your guess toward the hidden number, <b>no</b> rules a category out.</>,
-        <>The <b>Known so far</b> line adds your clues up. You have <b>eight guesses</b>, six on the Sunday Edition.</>,
+        <>The <b>case file</b> at the top adds your clues up: a range for each number and the values ruled out for the rest. You have <b>eight guesses</b>, six on the Sunday Edition.</>,
       ]}
       knack="Guess from the middle. A number near the center of its range cuts the list in half whichever way the arrow points, and two arrows on the same fact trap the answer between them."
       footer="Solving on your first guess scores 10, and each further guess takes a point off. Running out, or revealing the answer, scores 0. One free hint, on your first ever play, pins one fact the guesses have not. The list changes through the week: presidents Monday and Thursday, elements Tuesday and Friday, states Wednesday and Saturday, and the Sunday Edition gives you six guesses instead of eight."
@@ -562,20 +628,106 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
           .ds-opt:last-child{border-bottom:none;}
           .ds-opt.top{box-shadow:inset 4px 0 0 var(--stg-acc, ${COLORS.accent});}
           .ds-hint{margin-top:7px;font-size:12px;font-weight:700;color:${FADED};}
-          .ds-uni{font-size:15px;font-weight:800;color:${INK};margin:0 0 10px;}
-          .ds-g{margin-top:9px;}
-          .ds-gn{font-size:14.5px;font-weight:800;color:${INK};margin:0 0 3px;}
-          .ds-cells{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;}
-          .ds-c{box-sizing:border-box;min-height:62px;padding:6px 5px;display:flex;flex-direction:column;gap:1px;background:var(--stg-cell, #ffffff);border:1px solid var(--stg-cell-line, rgba(11,15,26,0.3));border-radius:6px;color:${INK};min-width:0;}
-          .ds-c.hit{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #ffffff);}
-          .ds-cl{font-size:9.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;}
-          .ds-cv{font-size:11px;letter-spacing:-.03em;font-weight:800;line-height:1.15;overflow-wrap:anywhere;}
-          .ds-cn{font-size:10.5px;font-weight:700;margin-top:auto;}
-          .ds-known{margin-top:12px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;}
-          .ds-k{font-size:12px;font-weight:700;color:${INK};padding:4px 8px;border:1px solid var(--stg-cell-line, rgba(11,15,26,0.3));border-radius:6px;background:var(--stg-cell, #ffffff);}
-          .ds-k.pin{border:2px solid var(--stg-acc, ${COLORS.accent});}
-          .ds-k b{font-weight:800;text-transform:uppercase;font-size:10px;letter-spacing:.07em;margin-right:5px;}
           .ds-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+          .ds-file{margin:2px 0 0;}
+          .ds-tab{display:inline-block;background:var(--stg-ground, #f4f6f9);border:1px solid var(--stg-line, rgba(28,30,36,0.14));border-bottom:none;border-radius:10px 10px 0 0;padding:8px 16px 6px;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-acc-ink, ${COLORS.accent});position:relative;top:1px;}
+          .ds-sheet{background:var(--stg-ground, #f4f6f9);border:1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:0 14px 14px 14px;padding:14px 18px 6px;}
+          .ds-subj{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1.5px dashed var(--stg-line3, rgba(28,30,36,0.45));flex-wrap:wrap;}
+          .ds-sl,.ds-pinned,.ds-outl,.ds-evt,.ds-evk,.ds-colk{font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:${FADED};}
+          .ds-redact{width:180px;height:22px;border-radius:4px;background:repeating-linear-gradient(135deg,var(--stg-line3, rgba(28,30,36,0.45)) 0 6px,var(--stg-surf2, #e4e9f1) 6px 12px);}
+          .ds-sname{font-size:17px;font-weight:800;color:${INK};}
+          .ds-of{font-size:13px;font-weight:700;color:${FADED};}
+          .ds-narrow{display:none;}
+          .ds-pinned{margin-left:auto;white-space:nowrap;}
+          .ds-pinned b{font-size:14px;color:var(--stg-acc-ink, ${COLORS.accent});}
+          .ds-f{display:flex;align-items:center;gap:16px;min-height:62px;border-bottom:1px solid var(--stg-line, rgba(28,30,36,0.14));}
+          .ds-f:last-child{border-bottom:none;}
+          .ds-fl{width:112px;flex:none;display:flex;flex-direction:column;gap:2px;}
+          .ds-fk{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-acc-ink, ${COLORS.accent});}
+          .ds-flong{font-size:12px;font-weight:700;color:${FADED};line-height:1.25;}
+          .ds-fb{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:16px;padding:8px 0;}
+          .ds-fr{width:128px;flex:none;font-size:15px;font-weight:800;color:${INK};line-height:1.25;}
+          .ds-plong{display:none;color:${FADED};font-weight:700;}
+          .ds-open{color:${FADED};}
+          .ds-fbc .ds-fr{width:128px;}
+          .ds-line{flex:1 1 auto;position:relative;height:40px;margin:0 12px;min-width:120px;}
+          .ds-rail{position:absolute;left:0;right:0;top:9px;height:8px;border-radius:4px;background:var(--stg-surf2, #e4e9f1);box-shadow:inset 0 0 0 1px var(--stg-cell-line, rgba(11,15,26,0.44));}
+          .ds-band{position:absolute;top:7px;height:12px;border-radius:6px;background:var(--stg-acc-ink, ${COLORS.accent});}
+          .ds-tick{position:absolute;top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;font-size:10.5px;font-weight:700;color:${FADED};line-height:1.2;}
+          .ds-tick i{display:block;width:2px;height:24px;}
+          .ds-tick.m i{background:var(--stg-ink2, #3f4757);}
+          .ds-tick em{font-style:normal;}
+          .ds-outs{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+          .ds-out{padding:5px 10px;border-radius:8px;border:1.5px solid var(--stg-cell-line, rgba(11,15,26,0.44));font-size:13px;font-weight:700;color:${FADED};}
+          .ds-fbx{justify-content:flex-start;}
+          .ds-chip{padding:8px 16px;border-radius:9px;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #ffffff);font-size:16px;font-weight:800;}
+          .ds-stamp{margin-left:auto;transform:rotate(-4deg);padding:4px 10px;border:2px solid var(--stg-acc-ink, ${COLORS.accent});border-radius:6px;font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--stg-acc-ink, ${COLORS.accent});white-space:nowrap;}
+          .ds-ev{margin-top:16px;display:flex;flex-direction:column;gap:6px;}
+          .ds-evh{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+          .ds-evt{color:var(--stg-acc-ink, ${COLORS.accent});}
+          .ds-evk{letter-spacing:.06em;}
+          .ds-evr{display:flex;align-items:center;gap:10px;}
+          .ds-who{width:176px;flex:none;display:flex;align-items:center;gap:8px;min-width:0;}
+          .ds-gi{font-size:11px;font-weight:800;color:${FADED};min-width:10px;}
+          .ds-gn{font-size:14px;font-weight:800;color:${INK};line-height:1.2;}
+          .ds-cells{flex:1 1 auto;min-width:0;display:flex;gap:4px;}
+          .ds-colk{flex:1 1 0;text-align:center;min-width:0;letter-spacing:.08em;font-size:10px;}
+          .ds-c{flex:1 1 0;box-sizing:border-box;min-height:46px;padding:5px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:1px;background:var(--stg-cell, #ffffff);border:1px solid var(--stg-cell-line, rgba(11,15,26,0.3));border-radius:8px;color:${INK};min-width:0;}
+          .ds-c.hit{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #ffffff);}
+          .ds-c .ds-cl{display:none;}
+          .ds-cv{font-size:12px;letter-spacing:-.02em;font-weight:800;line-height:1.15;overflow-wrap:anywhere;}
+          .ds-cn{font-size:10.5px;font-weight:700;margin-top:0;}
+          .ds-none{padding:4px 0;}
+          .ds-ctl{display:flex;flex-direction:column;margin-top:16px;}
+          .ds-inwrap{margin-top:0;position:relative;}
+          .ds-in{height:52px;border-radius:12px;font-size:17px;}
+          .ds-go{height:52px;border-radius:12px;padding:0 24px;}
+          .ds-opt{min-height:44px;}
+          .ds-hint{font-size:13px;margin-top:9px;}
+          .ds-tools{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap;}
+          .ds-hbtn{display:inline-flex;align-items:center;gap:8px;font-family:${SANS};font-weight:800;font-size:14px;background:transparent;color:var(--stg-acc-ink, ${COLORS.accent});border:1.5px solid var(--stg-line3, rgba(28,30,36,0.35));border-radius:12px;padding:0 16px;min-height:44px;cursor:pointer;}
+          @media(max-width:640px){
+            .ds-wide{display:none;}
+            .ds-narrow{display:inline;}
+            .ds-tab{font-size:10px;padding:7px 12px 5px;}
+            .ds-sheet{padding:12px 12px 4px;}
+            .ds-subj{gap:10px;flex-wrap:nowrap;}
+            .ds-redact{flex:1 1 auto;width:auto;height:18px;}
+            .ds-of{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;}
+            .ds-pinned{display:none;}
+            .ds-f{gap:10px;min-height:56px;}
+            .ds-fl{width:58px;}
+            .ds-fk{font-size:11px;}
+            .ds-flong{display:none;}
+            .ds-plong{display:inline;}
+            .ds-fb{flex-direction:column;align-items:stretch;gap:2px;padding:6px 0;}
+            .ds-fr,.ds-fbc .ds-fr{width:auto;font-size:14px;}
+            .ds-fbc{flex-direction:row;flex-wrap:wrap;align-items:center;gap:6px;}
+            .ds-fbx{flex-direction:row;align-items:center;}
+            .ds-line{height:30px;margin:0 10px;min-width:0;}
+            .ds-rail{top:6px;height:6px;}
+            .ds-band{top:4px;height:10px;}
+            .ds-tick{font-size:9.5px;}
+            .ds-tick i{height:17px;}
+            .ds-outl{display:none;}
+            .ds-out{padding:4px 8px;font-size:12px;}
+            .ds-chip{padding:7px 14px;font-size:15px;}
+            .ds-stamp{font-size:10px;padding:3px 8px;}
+            .ds-evr{flex-direction:column;align-items:stretch;gap:3px;}
+            .ds-cols .ds-who{display:none;}
+            .ds-who{width:auto;}
+            .ds-gn{font-size:13px;}
+            .ds-cells{gap:3px;}
+            .ds-c{min-height:44px;border-radius:7px;padding:4px 2px;}
+            .ds-cv{font-size:10.5px;}
+            .ds-cn{font-size:9.5px;}
+            .ds-tools{order:-1;margin:0 0 10px;}
+            .ds-inwrap{display:flex;flex-direction:column;}
+            .ds-hint{order:-1;margin:0 0 8px;}
+            .ds-opts{position:absolute;left:0;right:0;bottom:100%;margin:0 0 6px;z-index:5;box-shadow:0 -6px 18px rgba(0,0,0,0.25);}
+            .ds-in{font-size:16px;}
+            .ds-go{padding:0 20px;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
@@ -630,16 +782,80 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
           </div>
           )}
 
-          <div style={{ maxWidth: GRID_MAX, margin: '0 auto' }}>
-            <div className="ds-lab">Today&rsquo;s list</div>
-            <div className="ds-uni">{U.name} <span style={{ fontWeight: 700, color: FADED, fontSize: 12.5 }}>&middot; {U.rows.length} names &middot; guesses {guesses.length}/{MAX}</span></div>
+          <div className="ds-file">
+            <div className="ds-tab">Case No. {PUZZLE.num} &middot; {U.name}</div>
+            <div className="ds-sheet">
+              <div className="ds-subj">
+                <span className="ds-sl">Subject</span>
+                {solShown
+                  ? <span className="ds-sname">{PUZZLE.answer}</span>
+                  : <span className="ds-redact" role="img" aria-label="Name hidden" />}
+                <span className="ds-of"><span className="ds-wide">one of {U.rows.length} names</span><span className="ds-narrow">1 of {U.rows.length}</span></span>
+                <span className="ds-pinned">Facts pinned <b>{pinnedCount}</b> / {U.attrs.length}</span>
+              </div>
+              {sheet.map((f) => (
+                <div key={f.a.key} className="ds-f">
+                  <div className="ds-fl">
+                    <span className="ds-fk">{f.a.label}</span>
+                    <span className="ds-flong">{f.a.long}</span>
+                  </div>
+                  {f.exact != null ? (
+                    <div className="ds-fb ds-fbx">
+                      <span className="ds-chip">{String(f.exact)}</span>
+                      <span className="ds-stamp">{f.by ? <>Matched &middot; guess {f.by}</> : 'Pinned by hint'}</span>
+                    </div>
+                  ) : f.a.type === 'num' ? (
+                    <div className="ds-fb">
+                      <span className="ds-fr"><span className="ds-plong">{f.a.long} </span>{f.text || <span className="ds-open">still open</span>}</span>
+                      {f.line && (
+                        <div className="ds-line" aria-hidden="true">
+                          <span className="ds-rail" />
+                          {f.line.band && <span className="ds-band" style={{ left: f.line.band[0] + '%', width: Math.max(1.5, f.line.band[1] - f.line.band[0]) + '%' }} />}
+                          {f.line.ticks.map((t) => (
+                            <span key={t.k} className={'ds-tick' + (t.mark ? ' m' : '')} style={{ left: t.x + '%' }}>
+                              <i />{t.label != null ? <em>{t.label}</em> : null}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="ds-fb ds-fbc">
+                      <span className="ds-fr"><span className="ds-plong">{f.a.long} </span><span className="ds-open">still open</span></span>
+                      {f.out.length > 0 && (
+                        <span className="ds-outs">
+                          <span className="ds-outl">Ruled out</span>
+                          {f.out.map((v) => <s key={v} className="ds-out">{v}</s>)}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="ds-ev">
+            <div className="ds-evh">
+              <span className="ds-evt">Evidence &middot; {guesses.length} of {MAX}</span>
+              <span className="ds-evk">&uarr; &darr; point to the hidden number</span>
+            </div>
+            <div className="ds-evr ds-cols" aria-hidden="true">
+              <span className="ds-who" />
+              <div className="ds-cells">
+                {U.attrs.map((a) => <span key={a.key} className="ds-colk">{a.label}</span>)}
+              </div>
+            </div>
             {guesses.length === 0 && <div className="ds-none">No guesses yet. Any {U.noun} is a fair first guess.</div>}
             {[...guesses, ...(!playing && !won && (!LOFT || revealed) ? [PUZZLE.answer] : [])].map((nm, gi) => {
               const r = BY_NAME.get(nm);
               if (!r) return null;
               return (
-                <div key={nm + ':' + gi} className="ds-g">
-                  <div className="ds-gn">{nm}{gi >= guesses.length ? ' (the answer)' : ''}</div>
+                <div key={nm + ':' + gi} className="ds-evr">
+                  <div className="ds-who">
+                    <span className="ds-gi">{gi >= guesses.length ? '' : gi + 1}</span>
+                    <span className="ds-gn">{nm}{gi >= guesses.length ? ' (the answer)' : ''}</span>
+                  </div>
                   <div className="ds-cells">
                     {U.attrs.map((a) => {
                       const c = cmp(r, a);
@@ -647,7 +863,7 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
                         <div key={a.key} className={'ds-c' + (c === 'hit' ? ' hit' : '')}>
                           <span className="ds-cl">{a.label}</span>
                           <span className="ds-cv">{String(r[a.key])}</span>
-                          <span className="ds-cn">{c === 'hit' ? 'match' : c === 'up' ? 'higher \u2191' : c === 'down' ? 'lower \u2193' : 'no'}</span>
+                          <span className="ds-cn">{c === 'hit' ? 'match' : c === 'up' ? 'higher ↑' : c === 'down' ? 'lower ↓' : 'no'}</span>
                         </div>
                       );
                     })}
@@ -655,19 +871,15 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
                 </div>
               );
             })}
-            {playing && knownChips.length > 0 && (
-              <div className="ds-known" aria-label="Known so far">
-                <span className="ds-lab" style={{ margin: 0 }}>Known so far</span>
-                {knownChips.map((k) => (
-                  <span key={k.key} className={'ds-k' + (k.pinned ? ' pin' : '')}><b>{k.label}</b>{k.text}</span>
-                ))}
-              </div>
-            )}
+          </div>
+
+          <div className="ds-ctl">
             {playing && (
               <div className="ds-inwrap">
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div className="ds-inrow" style={{ display: 'flex', gap: 8 }}>
                   <input className="ds-in" type="text" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onInputKey}
-                    placeholder="Type a name" aria-label="Guess a name" autoComplete="off" autoCorrect="off" spellCheck={false} />
+                    onFocus={(e) => keepBoardInView(e.currentTarget)}
+                    placeholder={`Type a ${U.noun}`} aria-label="Guess a name" autoComplete="off" autoCorrect="off" spellCheck={false} />
                   <button type="button" className="ds-go" onClick={() => { if (opts.length) pick(opts[0]); }} disabled={!opts.length}>Guess</button>
                 </div>
                 {opts.length > 0 && (
@@ -680,33 +892,27 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
                 <div className="ds-hint" aria-live="polite">
                   {fold(q).length >= 2 && !opts.length
                     ? 'No name on the list matches that. It has cost you nothing.'
-                    : `${left} ${left === 1 ? 'guess' : 'guesses'} left. Type, then choose a name. Enter takes the top one.`}
+                    : <>{left} {left === 1 ? 'guess' : 'guesses'} left.<span className="ds-wide"> Type, then choose a name. Enter takes the top one.</span></>}
                 </div>
               </div>
             )}
-          </div>
 
-          {playing && hintOk && !g.hintUsed && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' }}>
-              <button className="ds-tool" onClick={useHint} title="Pin one fact the guesses have not (one hint, first play only)" style={{ color: ACC_DEEP_INK }}>
-                <Lightbulb size={14} /> Hint
-              </button>
-            </div>
-          )}
-
-        {started && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--stg-line, rgba(28,30,36,0.10))', flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: `var(--stg-mute, ${COLORS.faded})` }}>
-              {left === MAX ? 'A filled cell matches. An arrow points toward the hidden number.' : 'Arrows point from your guess toward the hidden number.'}
-            </span>
-            {identity && guesses.length > 0 && (
-              <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-                style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <Eye size={13} /> {armReveal ? 'Tap again to end and show the answer' : 'Reveal & end'}
-              </button>
+            {started && ((hintOk && !g.hintUsed) || (identity && guesses.length > 0)) && (
+              <div className="ds-tools">
+                {hintOk && !g.hintUsed && (
+                  <button className="ds-hbtn" onClick={useHint} title="Pin one fact the guesses have not (one hint, first play only)">
+                    <Lightbulb size={16} /><span>Hint<span className="ds-wide">: pin a fact</span></span>
+                  </button>
+                )}
+                {identity && guesses.length > 0 && (
+                  <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
+                    style={{ marginLeft: 'auto', minHeight: 44, padding: '0 4px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 13, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <Eye size={15} /> {armReveal ? 'Tap again to end and show the answer' : 'Reveal & end'}
+                  </button>
+                )}
+              </div>
             )}
           </div>
-        )}
           <div className={STAGE ? undefined : 'loft-sol'}>
           {!playing && (
             <div style={{ maxWidth: GRID_MAX + 76, margin: '0 auto' }}>

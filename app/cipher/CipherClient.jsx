@@ -412,16 +412,15 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
   const preStart = playing && !g.t0;   // not begun: show the start tile where the board goes
   const started = playing && !!g.t0;    // clock running: show the board
   const focusMode = playing && !showChrome;
-  // Phone layout: once the clock runs, the letter picker, the digit pad and
-  // Check move into a fixed dock at the bottom of the viewport, and the inline
-  // rack + pad come out of the scroll flow. Everything else is unchanged.
+  // Phone layout: once the clock runs, the code book becomes a grid of letter
+  // tiles under the sheet and the pad a 5 by 2 block, all IN THE PAGE FLOW
+  // (owner, 2026-10: phone inputs are never pinned). Under 800px the sheet and
+  // the code book cannot sit side by side, so a narrow window gets it too.
   const dockUi = (mobileUi || narrowUi) && started;
-  // The foot of the page has to clear the pinned dock, and the reservation has to
-  // be a SPACER rather than padding on .cf-wrap: on a Loft page LoftCap zeroes that
-  // padding with !important, so the rail was covering the foot of the board
-  // outright (found alongside the Anon report, 2026-08-15). The height is read off
-  // the rail; the fallback is only for the first paint.
-  const rail = useRailClearance(dockUi && playing, 232);
+  // There is no pinned dock any more (the pad sits in the page flow), so the
+  // clearance spacer is switched off. The hook stays so the hook order does not
+  // change; with `active` false its height is always 0.
+  const rail = useRailClearance(false, 232);
   // Solving IS the win, so there is nothing left for a score to grade but
   // whether you got there. A reveal ends the day at 0, as before.
   const won = g.status === 'done';
@@ -434,7 +433,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
     } catch {}
     let mq = null, onMq = null;
     try {
-      mq = window.matchMedia('(max-width: 620px)');
+      mq = window.matchMedia('(max-width: 800px)');
       setNarrowUi(mq.matches);
       onMq = (e) => setNarrowUi(e.matches);
       if (mq.addEventListener) mq.addEventListener('change', onMq); else mq.addListener(onMq);
@@ -777,7 +776,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Cipher #${PUZZLE.num} — the daily cryptarithm from Mind Loft.\n${shareUrl()}`
+      ? `Cipher #${PUZZLE.num}, the daily cryptarithm from Mind Loft.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -818,11 +817,11 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           onClick={() => cycleCarry(i)}
           aria-label={usable ? `${carryWord} into column ${i + 1}${shown === '' ? ', not set' : `, ${shown}`}` : undefined}
         >
-          {shown}
+          <span>{shown}</span>
         </button>
       );
     }
-    return <div className="cf-row cf-carrow" key="carry"><span className="cf-op" />{cells}</div>;
+    return <div className="cf-row cf-carrow" key="carry"><span className="cf-op lab" aria-hidden="true">{carryWord}</span>{cells}</div>;
   }
   // One free mark per column: ✓ when the column is fully determined and lands,
   // ✗ when it cannot land under any legal carry. Costs nothing.
@@ -837,7 +836,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
         </span>
       );
     }
-    return <div className="cf-row cf-mkrow" key="marks"><span className="cf-op" />{cells}</div>;
+    return <div className="cf-row cf-mkrow" key="marks"><span className="cf-op lab" aria-hidden="true">Check</span>{cells}</div>;
   }
   // Digits still open to a letter: everything not taken by another letter, minus
   // 0 on a leading letter. No longer LISTED anywhere (the 0-9 candidate strip
@@ -877,8 +876,8 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           onClick={() => setDigit(d)}
           aria-label={`Digit ${d}${owners.length ? `, taken by ${owners.join(', ')}` : ''}${illegal ? `, not allowed on ${selected} because it starts a word` : ''}`}
         >
-          {d}
-          {owners.length ? <span className="who">{owners.join('')}</span> : null}
+          <span className="dg">{d}</span>
+          <span className="who">{owners.length ? owners.join('') : ''}</span>
         </button>
       );
     });
@@ -900,7 +899,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           aria-label={`Letter ${ch}${d !== undefined ? `, digit ${d}` : ', unassigned'}`}
         >
           <span className="cf-ch">{ch}</span>
-          <span className="cf-dg">{d !== undefined ? d : '·'}</span>
+          <span className={`cf-dg${d !== undefined ? '' : ' empty'}`}>{d !== undefined ? d : '·'}</span>
         </button>
       );
     }
@@ -913,7 +912,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
   }
 
   // Shared rules body — rendered in both the how-to-play modal and the start gate.
-  const strategyLine = (<>There is <b>exactly one solution</b>, and you can reach it by pure logic &mdash; start with the leftmost column of the answer, and let the carries do the talking. No guessing required.</>);
+  const strategyLine = (<>There is <b>exactly one solution</b>, and you can reach it by pure logic: start with the leftmost column of the answer, and let the carries do the talking. No guessing required.</>);
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
@@ -968,98 +967,111 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           .cf-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
           .cf-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, #0c5f59) 86%, var(--stg-ink, var(--white)));}
           .cf-btn.primary.ready{box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 22%, transparent);}
-          .cf-row{display:flex;justify-content:flex-end;align-items:center;gap:4px;margin:3px 0;}
-          .cf-op{width:26px;font-size:22px;font-weight:800;color:${FADED};text-align:center;flex:0 0 auto;}
-          .cf-cell{width:46px;height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:9px;cursor:pointer;border: 1.5px solid var(--stg-line, rgba(28,30,36,0.14));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};padding:0;font-family:${SANS};}
+          .cf-head{display:flex;justify-content:space-between;gap:6px 14px;flex-wrap:wrap;font-family:${MONO};font-size:11px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:${FADED};margin:0 0 12px;}
+          .cf-play{display:grid;grid-template-columns:minmax(0,1fr) 184px;gap:16px;align-items:stretch;}
+          .cf-play.solo{grid-template-columns:minmax(0,1fr);justify-items:center;}
+          .cf-play.dock{display:flex;flex-direction:column;gap:12px;}
+          .cf-sheet{--cf-gap:6px;--cf-opw:40px;--cf-ch:64px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border:1px solid ${STAGE ? 'var(--stg-line)' : 'rgba(28,30,36,0.14)'};border-radius:18px;padding:16px 18px 14px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;min-width:0;}
+          .cf-play.dock .cf-sheet{--cf-gap:5px;--cf-opw:22px;--cf-ch:54px;padding:8px 10px 8px;border-radius:16px;}
+          .cf-eqn{position:relative;width:max-content;max-width:100%;margin:0 auto;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+          .cf-eqn::-webkit-scrollbar{display:none;}
+          .cf-band{position:absolute;top:0;bottom:0;width:calc(var(--cf-cw) + var(--cf-gap));border-radius:12px;background:transparent;pointer-events:none;}
+          .cf-band.alt{background:${STAGE ? 'var(--stg-surf)' : 'rgba(28,30,36,0.035)'};}
+          .cf-band.ok{background:color-mix(in srgb, var(--stg-good, ${COLORS.green}) 14%, transparent);}
+          .cf-row{position:relative;display:flex;justify-content:flex-end;align-items:center;gap:var(--cf-gap);margin:6px 0;}
+          .cf-op{width:var(--cf-opw);font-size:26px;font-weight:800;color:${FADED};text-align:center;flex:0 0 auto;}
+          .cf-op.lab{font-family:${MONO};font-size:9px;letter-spacing:0.1em;text-transform:uppercase;line-height:1.2;}
+          .cf-play.dock .cf-op{font-size:20px;}
+          .cf-play.dock .cf-op.lab{visibility:hidden;}
+          .cf-cell{width:var(--cf-cw);height:var(--cf-ch);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:11px;cursor:pointer;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)'};background:${STAGE ? 'var(--stg-cell)' : 'var(--white)'};padding:0;font-family:${SANS};box-sizing:border-box;flex:0 0 auto;}
           .cf-cell:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .cf-cell.on{border-color:var(--stg-acc, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);box-shadow:0 0 0 2px color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 25%, transparent);}
-          .cf-cell .cf-ch{font-size:21px;font-weight:800;color:${INK};line-height:1.1;}
-          .cf-cell .cf-dg{font-size:14px;font-weight:800;color:var(--stg-acc-ink, ${COLORS.accent});height:17px;line-height:1.2;font-variant-numeric:tabular-nums;}
-          .cf-cell.bad .cf-dg{color:${COLORS.rust};}
-          .cf-rule{border-top:3px solid ${COLORS.ink};margin:7px 0 6px;}
+          .cf-cell.on{border:2px solid var(--stg-acc, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, ${STAGE ? 'var(--stg-cell)' : 'transparent'});}
+          .cf-cell .cf-ch{font-size:20px;font-weight:800;color:${INK};line-height:1;}
+          .cf-cell .cf-dg{font-size:21px;font-weight:800;color:var(--stg-acc-ink, ${COLORS.accent});line-height:1;font-variant-numeric:tabular-nums;}
+          .cf-cell .cf-dg.empty{color:${FADED};}
+          .cf-cell.bad{border-color:var(--stg-bad, ${COLORS.rust});}
+          .cf-cell.bad .cf-dg{color:var(--stg-bad, ${COLORS.rust});}
+          .cf-play.dock .cf-cell{border-radius:9px;}
+          .cf-play.dock .cf-cell .cf-ch{font-size:16px;}
+          .cf-play.dock .cf-cell .cf-dg{font-size:18px;}
+          .cf-rule{position:relative;margin:2px 0 2px calc(var(--cf-opw) + var(--cf-gap));height:8px;box-sizing:border-box;border-top:2px solid ${INK};border-bottom:2px solid ${INK};}
           .cf-carrow,.cf-mkrow{margin:0;}
-          .cf-carry{width:46px;height:20px;flex:0 0 auto;border-radius:5px;border:1px dashed rgba(28,30,36,0.22);background:transparent;font-family:${MONO};font-size:12px;font-weight:500;color:${FADED};cursor:pointer;padding:0;line-height:1;}
-          .cf-carry:hover:not(:disabled){background:var(--stg-surf2, ${COLORS.accentSoft});border-color:var(--stg-acc, ${COLORS.accent});}
-          .cf-carry.fixed{border:1px solid transparent;color:var(--stg-acc-ink, ${COLORS.accent});font-weight:700;cursor:default;}
-          .cf-carry.off{border-color:transparent;cursor:default;}
-          .cf-mk{width:46px;height:18px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;line-height:1;color:transparent;}
-          .cf-mk.good{color:${COLORS.green};}
-          .cf-mk.bad{color:${COLORS.rust};}
+          .cf-carry{width:var(--cf-cw);height:44px;flex:0 0 auto;border:0;background:transparent;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+          .cf-carry span{width:34px;height:28px;max-width:100%;box-sizing:border-box;border-radius:7px;border:1.5px dashed ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:16px;font-weight:700;color:${FADED};}
+          .cf-carry:hover:not(:disabled) span{background:var(--stg-surf2, ${COLORS.accentSoft});border-color:var(--stg-acc, ${COLORS.accent});}
+          .cf-carry.fixed span{border-color:transparent;color:var(--stg-acc-ink, ${COLORS.accent});font-weight:800;}
+          .cf-carry.fixed{cursor:default;}
+          .cf-carry.off{cursor:default;}
+          .cf-carry.off span{border-color:transparent;}
+          .cf-mk{width:var(--cf-cw);height:26px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800;line-height:1;color:transparent;}
+          .cf-mk.good{color:var(--stg-good, ${COLORS.green});}
+          .cf-mk.bad{color:var(--stg-bad, ${COLORS.rust});}
+          .cf-cap{font-family:${MONO};font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;line-height:1.5;color:${FADED};text-align:center;}
           /* The per-letter candidate rack (.cf-rack/.cf-chip/.cf-cands/.cf-cd)
              was REMOVED 2026-08-08. It printed a 0-9 strip inside every letter
              box and players read those numerals as the letter's digit. The pad
-             keys below carry the same information one number to a box. */
-          .cf-pad{display:grid;grid-template-columns:repeat(5,54px);gap:7px;justify-content:center;}
-          .cf-pk{position:relative;height:50px;border-radius:9px;border: 1.5px solid var(--stg-line, rgba(28,30,36,0.2));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};font-size:19px;font-weight:800;cursor:pointer;font-family:${SANS};color:${INK};}
+             keys below carry the same information one number to a box, and the
+             code book prints a letter's own digit only. */
+          .cf-book{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border:1px solid ${STAGE ? 'var(--stg-line)' : 'rgba(28,30,36,0.14)'};border-radius:18px;padding:12px 10px 10px;display:flex;flex-direction:column;gap:3px;min-width:0;}
+          .cf-bookhd{display:flex;justify-content:space-between;align-items:baseline;gap:6px;padding:0 6px 7px;margin-bottom:3px;border-bottom:1px solid ${STAGE ? 'var(--stg-line)' : 'rgba(28,30,36,0.12)'};font-family:${MONO};font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:${FADED};}
+          .cf-bookhd b{color:${INK};font-weight:800;letter-spacing:0.16em;}
+          .cf-bookls{display:flex;flex-direction:column;gap:3px;}
+          .cf-bk{display:flex;align-items:center;gap:7px;min-height:44px;width:100%;box-sizing:border-box;padding:0 8px;border-radius:10px;border:1.5px solid transparent;background:transparent;color:${INK};font-family:${SANS};cursor:pointer;position:relative;}
+          .cf-bk:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
+          .cf-bk.on{border:2px solid var(--stg-acc, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);}
+          .cf-bk.lone{box-shadow:inset 0 0 0 1.5px var(--stg-good, ${COLORS.green});}
+          .cf-bk .l{width:16px;font-size:18px;font-weight:800;text-align:left;flex:none;}
+          .cf-bk .t{font-family:${MONO};font-size:10px;font-weight:700;letter-spacing:0.06em;color:${FADED};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+          .cf-bk .t s{margin-left:4px;}
+          .cf-bk .dots{flex:1;min-width:6px;height:0;border-bottom:2px dotted ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};}
+          .cf-bk .d{width:26px;text-align:center;font-size:20px;font-weight:800;color:var(--stg-acc-ink, ${COLORS.accent});flex:none;font-variant-numeric:tabular-nums;}
+          .cf-bk .d.empty{color:${FADED};}
+          .cf-bk .d.bad{color:var(--stg-bad, ${COLORS.rust});}
+          .cf-bk .fd{display:none;}
+          .cf-play.dock .cf-book{background:transparent;border:0;padding:0;}
+          .cf-play.dock .cf-bookhd{border:0;padding:0 0 4px;margin:0;}
+          .cf-play.dock .cf-bookls{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:6px;}
+          .cf-play.dock .cf-bk{justify-content:center;gap:6px;min-height:48px;padding:0;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)'};background:${STAGE ? 'var(--stg-cell)' : 'var(--white)'};}
+          .cf-play.dock .cf-bk.on{border:2px solid var(--stg-acc, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, ${STAGE ? 'var(--stg-cell)' : 'transparent'});}
+          .cf-play.dock .cf-bk .t,.cf-play.dock .cf-bk .dots{display:none;}
+          .cf-play.dock .cf-bk .l{width:auto;font-size:17px;}
+          .cf-play.dock .cf-bk .bar{display:block;width:1.5px;height:20px;background:${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)'};}
+          .cf-play.dock .cf-bk .d{width:auto;font-size:18px;}
+          .cf-play.dock .cf-bk .fd{display:block;position:absolute;top:5px;left:6px;width:5px;height:5px;border-radius:3px;background:${INK};}
+          .cf-bk .bar{display:none;}
+          .cf-say{font-size:14px;font-weight:700;line-height:1.4;color:${INK};}
+          .cf-say.bad{color:var(--stg-bad, ${COLORS.rust});}
+          .cf-sayrow{display:flex;align-items:baseline;justify-content:space-between;gap:6px 14px;flex-wrap:wrap;margin:16px 0 10px;}
+          .cf-legend{font-family:${MONO};font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:${FADED};}
+          .cf-play.dock + .cf-sayrow{margin:10px 0 8px;}
+          .cf-pad{display:flex;gap:6px;}
+          .cf-pad.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;}
+          .cf-pk{position:relative;flex:1;min-width:0;height:58px;border-radius:12px;box-sizing:border-box;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)'};background:${STAGE ? 'var(--stg-cell)' : 'var(--white)'};cursor:pointer;font-family:${SANS};color:${INK};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0;}
+          .cf-pad.grid .cf-pk{height:50px;}
+          .cf-pk .dg{font-size:23px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;}
+          .cf-pk .who{font-size:11px;font-weight:800;line-height:1;height:11px;color:${FADED};letter-spacing:0.02em;}
           .cf-pk:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .cf-pk .who{position:absolute;top:2px;right:5px;font-size:9px;color:var(--stg-acc-ink, ${COLORS.accent});font-weight:800;letter-spacing:0.02em;}
-          .cf-pk.foot{height:38px;font-size:11.5px;text-transform:uppercase;letter-spacing:0.06em;color:${FADED};display:inline-flex;align-items:center;justify-content:center;gap:6px;}
-          .cf-pk.note{grid-column:span 2;}
-          .cf-pk.foot:not(.note){grid-column:span 3;}
-          .cf-pk.note.on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
-          .cf-pad.notes .cf-pk:not(.foot){border-style:dashed;border-color:var(--stg-acc, ${COLORS.accent});}
+          .cf-pad.notes .cf-pk{border-style:dashed;border-color:var(--stg-acc, ${COLORS.accent});}
           /* Pad key states. A digit already owned by another letter, a 0 under a
-             leading letter, or a digit crossed off in Notes now READS as such on
-             the key itself, which is what the letter rack used to be for. */
-          .cf-pk.taken{background:${STAGE ? 'var(--stg-surf2)' : '#f3f4f6'};color:rgba(28,30,36,0.32);}
-          .cf-pk.xed{color:rgba(28,30,36,0.28);text-decoration:line-through;}
+             leading letter, or a digit crossed off in Notes READS as such on the
+             key itself, which is what the letter rack used to be for. */
+          .cf-pk.taken{background:transparent;border-style:dashed;color:${FADED};}
+          .cf-pk.xed{background:transparent;color:${FADED};}
+          .cf-pk.xed .dg{text-decoration:line-through;}
           .cf-pk:disabled{opacity:0.32;cursor:default;}
-          .cf-pk:disabled:hover{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};}
+          .cf-pk:disabled:hover{background:${STAGE ? 'var(--stg-cell)' : 'var(--white)'};}
+          .cf-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+          .cf-tool{flex:1 1 0;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:${SANS};font-weight:700;font-size:14px;white-space:nowrap;background:transparent;color:${INK};border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};border-radius:12px;padding:0 12px;cursor:pointer;}
+          .cf-tool.on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
+          .cf-tool.warn{border-color:var(--stg-bad, ${COLORS.rust});color:var(--stg-bad, ${COLORS.rust});}
+          .cf-tool.quiet{color:${FADED};}
+          .cf-tool.wide{flex:1.4 1 0;}
+          .cf-play.dock ~ .cf-tools .cf-tool{min-height:46px;}
           .cf-wrap button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
-          /* A long Sunday equation can be wider than a phone column; let the
-             equation scroll sideways instead of bleeding out of the card. */
-          .cf-eqn{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
-          .cf-eqn::-webkit-scrollbar{display:none;}
-
-          /* ── Mobile dock ────────────────────────────────────────────────────
-             On a phone the equation card, the letter rack and the digit pad
-             stacked to roughly 690px inside a ~650px viewport, so the equation
-             and the pad were never on screen together and every single move
-             cost a scroll down and a scroll back. The pad, the letter picker
-             and Check now ride in a fixed bar at the bottom (the same pattern
-             Garble uses) and the equation scrolls behind it. The rack is
-             retired on mobile: its job (which digits are still open) is now
-             carried by the pad key states plus the per-letter count. */
-          /* --stg-raise, an OPAQUE step, NOT --stg-surf: surf is white at 4.5%,
-             a raised cell when it sits ON the ground and a sheet of glass when
-             it is position:fixed with the board scrolling underneath it. Same
-             defect Garble's keyboard had, fixed in the same pass (2026-09-01). */
-          .cf-dock{position:fixed;left:0;right:0;bottom:0;z-index:40;background:${STAGE ? 'var(--stg-raise,#0e131f)' : 'var(--white)'};border-top:1.5px solid rgba(20,22,28,0.14);box-shadow:0 -5px 20px rgba(20,22,28,0.13);padding:7px 10px calc(7px + env(safe-area-inset-bottom));}
-          .cf-dock.notes{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);border-top:2px solid var(--stg-acc, ${COLORS.accent});}
-          .cf-dk{max-width:470px;margin:0 auto;display:flex;flex-direction:column;gap:6px;}
-          .cf-say{font-size:11.5px;font-weight:800;line-height:1.35;text-align:center;color:${FADED};}
-          .cf-say.bad{color:${COLORS.rust};}
-          .cf-say.good{color:${COLORS.green};}
-          .cf-strip{display:grid;gap:3px;}
-          .cf-sc{height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border: 1.5px solid var(--stg-line, rgba(28,30,36,0.16));border-radius:8px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};padding:0;cursor:pointer;font-family:${SANS};min-width:0;}
-          .cf-sc .l{font-size:14px;font-weight:800;color:${INK};line-height:1;}
-          .cf-sc .d{font-family:${MONO};font-size:14px;font-weight:500;color:var(--stg-acc-ink, ${COLORS.accent});line-height:1;font-variant-numeric:tabular-nums;}
-          /* An unassigned letter shows a DOT, never a number. The count of
-             digits still open used to render here as a pill and still read as
-             the letter's value to enough people that the whole candidate
-             system came out; the green .lone ring below is the one piece of
-             that signal worth keeping, and it is not a numeral. */
-          .cf-sc .d.dim{color:rgba(28,30,36,0.30);}
-          .cf-sc.on{border-color:var(--stg-acc, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);box-shadow:0 0 0 2px color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 28%, transparent);}
-          .cf-dock.notes .cf-sc{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};}
-          .cf-dock.notes .cf-sc.on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});}
-          .cf-dock.notes .cf-sc.on .l,.cf-dock.notes .cf-sc.on .d{color:var(--white);}
-          .cf-dock.notes .cf-sc.on .d.dim{color:rgba(255,255,255,0.75);}
-          .cf-sc.lone{border-color:${COLORS.green};box-shadow:inset 0 0 0 1px ${COLORS.green};}
-          .cf-sc.lone .d.dim{color:${COLORS.green};}
-          .cf-dock .cf-pad{grid-template-columns:repeat(5,1fr);gap:6px;width:100%;}
-          .cf-dock .cf-pk{height:46px;font-size:20px;}
-          .cf-dock .cf-pk .who{font-size:11px;top:3px;right:6px;}
-          .cf-drow{display:grid;grid-template-columns:1fr 1fr 1.6fr;gap:6px;}
-          .cf-db{height:44px;border-radius:9px;border: 1.5px solid var(--stg-line, rgba(28,30,36,0.2));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};font-family:${SANS};font-size:12px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:0 6px;}
-          .cf-db.on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
-          .cf-db.go{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));font-size:13px;}
-          .cf-db.go.ready{box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 28%, transparent);}
-          .cf-db.warn{border-color:${COLORS.rust};color:${COLORS.rust};}
-          @media(max-width:560px){.cf-cell{width:40px;height:52px;}.cf-cell .cf-ch{font-size:18px;}.cf-pad{grid-template-columns:repeat(5,1fr);width:100%;}.cf-carry,.cf-mk{width:40px;}.cf-carry{height:26px;}}
+          .cf-cell:focus-visible,.cf-bk:focus-visible,.cf-pk:focus-visible,.cf-carry:focus-visible{outline:2px solid var(--stg-acc-ink, ${COLORS.accent});outline-offset:2px;}
         ` }} />
 
-        <div style={{ maxWidth: 640, margin: '0 auto' }}>
+        <div style={{ maxWidth: STAGE && started && !dockUi ? 720 : 640, margin: '0 auto' }}>
 
 
         {/* masthead: pressed CIPHER tiles with No./date inline */}
@@ -1109,61 +1121,119 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
 
-        {/* the equation */}
+        {/* the equation: a ledger sheet (carries on top, the addends, a double
+            rule, the answer, a mark under every column) beside a code book of
+            letter = digit, then the digit pad. On a phone the same pieces stack
+            in the page flow; nothing is pinned to the viewport. */}
         {!preStart && (
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '18px 20px 16px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12, maxWidth: 472, marginLeft: 'auto', marginRight: 'auto' }}>
+        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '18px 20px 16px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12, marginLeft: 'auto', marginRight: 'auto' }}>
           {!LOFT && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.14)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
             <span style={{ whiteSpace: 'nowrap' }}>every letter is a digit · {opWord}</span>
             <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>placed <b style={{ color: INK, fontWeight: 500 }}>{Object.keys(g.assign).length}/{LETTERS.length}</b></span>
           </div>
           )}
-          {LOFT && <div className={STAGE ? undefined : 'loft-prompt'}>{`every letter is a digit · ${opWord}`}</div>}
-          <div className="cf-eqn" style={{ maxWidth: (maxLen + 1) * 50, margin: '0 auto' }}>
-            {renderCarryRow()}
-            {PUZZLE.lhs.map((w, i) => renderRow(w, (OP === 'sub' ? i > 0 : i === PUZZLE.lhs.length - 1) ? opGlyph : '', `l${i}`))}
-            <div className="cf-rule" />
-            {renderRow(PUZZLE.rhs, '', 'r')}
-            {renderMarkRow()}
-          </div>
-          {playing && (
-            <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.06em', textTransform: 'uppercase', color: FADED, textAlign: 'center', marginTop: 2 }}>
-              {carryWord}s on top · column marks below · it locks itself when it lands
+          {LOFT && (
+            <div className={`cf-head${STAGE ? '' : ' loft-prompt'}`}>
+              <span>Every letter is a digit &middot; {opWord}</span>
+              {!dockUi && <span>A letter that starts a word is never 0</span>}
             </div>
           )}
-          {/* These three status lines are folded into the dock's single status
-              line on a phone, so they only render in the desktop card. */}
-          <div style={{ display: dockUi ? 'none' : 'block', fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED, textAlign: 'center', margin: '10px 0 8px', minHeight: 16 }}>
-            {playing
-              ? (noteMode
-                  ? (selected !== null
-                      ? <>Notes on: crossing candidates off <b style={{ color: ACC_INK }}>{selected}</b></>
-                      : 'Notes on: pick a letter, then tap digits to cross them off.')
-                  : (selected !== null
-                      ? <>Assigning a digit to <b style={{ color: ACC_INK }}>{selected}</b>{g.assign[selected] !== undefined ? <> · tap {selected} again to clear</> : null}</>
-                      : 'Tap a letter, then a digit — or just type.'))
-              : null}
-          </div>
-
-          {playing && !dockUi && (
-            <div className={`cf-pad${noteMode ? ' notes' : ''}`}>
-              {renderPadKeys()}
-              <button type="button" className={`cf-pk foot note${noteMode ? ' on' : ''}`} onClick={() => setNoteMode((v) => !v)} aria-pressed={noteMode}><Pencil size={13} /> notes {noteMode ? 'on' : 'off'}</button>
-              <button type="button" className="cf-pk foot" onClick={eraseSelected}><Delete size={13} /> erase letter</button>
-            </div>
-          )}
-          {playing && (
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 12 }}>
-              {/* No Check button by design: the board ends the day itself. */}
-              <button type="button" className="cf-btn" onClick={clearAll} style={clearArmed ? { borderColor: COLORS.rust, color: `var(--stg-ink, ${COLORS.rust})` } : undefined}>{clearArmed ? 'Clear all, tap again' : 'Clear'}</button>
-              {revealOk && (
-                <button type="button" className="cf-btn" style={{ borderColor: '#c3c8cf', color: FADED }} onClick={reveal}>Reveal (ends the day)</button>
+          <div className={`cf-play${dockUi ? ' dock' : ''}${playing ? '' : ' solo'}`}>
+            <div className="cf-sheet" style={{ '--cf-cw': dockUi ? `clamp(32px, calc((100vw - 104px) / ${maxLen} - 5px), 48px)` : (maxLen >= 7 ? '50px' : '54px') }}>
+              <div className="cf-eqn">
+                {Array.from({ length: maxLen }, (_, i) => {
+                  const ok = i < COLS.length && colInfo[i] ? colInfo[i].ok : null;
+                  return <span key={`b${i}`} aria-hidden="true" className={`cf-band${ok === true ? ' ok' : (i % 2 ? ' alt' : '')}`} style={{ right: `calc(${i} * (var(--cf-cw) + var(--cf-gap)) - var(--cf-gap) / 2)` }} />;
+                })}
+                {renderCarryRow()}
+                {PUZZLE.lhs.map((w, i) => renderRow(w, (OP === 'sub' ? i > 0 : i === PUZZLE.lhs.length - 1) ? opGlyph : '', `l${i}`))}
+                <div className="cf-rule" />
+                {renderRow(PUZZLE.rhs, '=', 'r')}
+                {renderMarkRow()}
+              </div>
+              {playing && (
+                <div className="cf-cap">
+                  {dockUi
+                    ? <>{carryWord}s on top &middot; &#10003; under a column that lands</>
+                    : <>{carryWord}s on top, solid when the board works them out, dashed to pencil your own &middot; it locks itself when it lands</>}
+                </div>
               )}
             </div>
+
+            {playing && (
+              <div className="cf-book">
+                <div className="cf-bookhd">
+                  {dockUi
+                    ? <span>Code book &middot; letter = digit &middot; <span style={{ color: INK }}>&bull;</span> starts a word, never 0</span>
+                    : <><b>Code book</b><span>letter = digit</span></>}
+                </div>
+                <div className="cf-bookls">
+                  {LETTERS.map((ch) => {
+                    const d = g.assign[ch];
+                    const ex = (g.excl[ch] || []).slice().sort((a, b) => a - b);
+                    const n = candidatesFor(ch).filter((x) => !ex.includes(x)).length;
+                    const lone = d === undefined && n === 1;
+                    const clash = d !== undefined && digitOwners[d] && digitOwners[d].length > 1;
+                    // One number per box: the letter's OWN digit, or a dot. The
+                    // digits crossed off in Notes sit struck in the small print,
+                    // never inside the digit's box.
+                    return (
+                      <button
+                        key={ch}
+                        type="button"
+                        className={`cf-bk${selected === ch ? ' on' : ''}${lone ? ' lone' : ''}`}
+                        onClick={() => tapLetter(ch)}
+                        aria-label={`Letter ${ch}${d !== undefined ? `, digit ${d}` : `, unassigned, ${n} digit${n === 1 ? '' : 's'} still open`}${FIRSTS.has(ch) ? ', starts a word, never 0' : ''}`}
+                      >
+                        {FIRSTS.has(ch) && <span className="fd" aria-hidden="true" />}
+                        <span className="l">{ch}</span>
+                        <span className="t" aria-hidden="true">{FIRSTS.has(ch) ? 'NOT 0' : ''}{ex.length ? <s>{ex.join(' ')}</s> : null}</span>
+                        <span className="dots" aria-hidden="true" />
+                        <span className="bar" aria-hidden="true" />
+                        <span className={`d${d === undefined ? ' empty' : (clash ? ' bad' : '')}`} aria-hidden="true">{d !== undefined ? d : '·'}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {playing && (
+            <div className="cf-sayrow">
+              <span className={`cf-say${(dockUi ? dockTone === 'bad' : (badCol || blocked)) ? ' bad' : ''}`} role="status">
+                {dockUi
+                  ? <>{dockSay}{!noteMode && selected !== null && g.assign[selected] === undefined && (g.excl[selected] || []).length ? ` Crossed off: ${(g.excl[selected] || []).slice().sort((a, b) => a - b).join(', ')}.` : ''}</>
+                  : (blocked || badCol)
+                    ? (blocked || 'A column is marked ✗. Fix that column and the rest follow.')
+                    : (noteMode
+                      ? (selected !== null
+                          ? <>Notes on: crossing digits off <b style={{ color: ACC_INK }}>{selected}</b>.</>
+                          : 'Notes on: pick a letter, then tap digits to cross them off.')
+                      : (selected !== null
+                          ? <>Assigning a digit to <b style={{ color: ACC_INK }}>{selected}</b>. {g.assign[selected] !== undefined ? <>Tap {selected} again to clear it.</> : 'Tap a key or type it.'}</>
+                          : 'Tap a letter, then a digit, or just type.'))}
+              </span>
+              {!dockUi && <span className="cf-legend">Dim key = taken{selected !== null ? <> &middot; struck = crossed off for {selected}</> : null}</span>}
+            </div>
           )}
-          {playing && !dockUi && (badCol || blocked) && (
-            <div style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, textAlign: 'center', marginTop: 8, color: `var(--stg-ink, ${COLORS.rust})` }}>
-              {blocked || `A column is marked ✗. Fix that column and the rest follow.`}
+
+          {playing && (
+            <div className={`cf-pad${dockUi ? ' grid' : ''}${noteMode ? ' notes' : ''}`}>
+              {renderPadKeys()}
+            </div>
+          )}
+          {playing && (
+            <div className="cf-tools">
+              <button type="button" className={`cf-tool${noteMode ? ' on' : ''}`} onClick={() => setNoteMode((v) => !v)} aria-pressed={noteMode}><Pencil size={15} /> {dockUi ? 'Notes' : `Notes ${noteMode ? 'on' : 'off'}`}</button>
+              <button type="button" className="cf-tool" onClick={eraseSelected}><Delete size={15} /> {dockUi ? 'Erase' : 'Erase letter'}</button>
+              {dockUi && <div style={{ flexBasis: '100%', height: 0 }} />}
+              {/* No Check button by design: the board ends the day itself. */}
+              <button type="button" className={`cf-tool${clearArmed ? ' warn' : ''}`} onClick={clearAll}>{clearArmed ? 'Clear all, tap again' : 'Clear'}</button>
+              {revealOk && (
+                <button type="button" className="cf-tool quiet wide" onClick={reveal}>Reveal (ends the day)</button>
+              )}
             </div>
           )}
         </div>
@@ -1298,7 +1368,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s equation, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s equation, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>
@@ -1323,49 +1393,6 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
         {rail.height > 0 && <div aria-hidden style={{ height: rail.height }} />}
       </div>
 
-      {/* Mobile dock. Everything a move needs, which letter and which digit,
-          pinned to the bottom of the viewport, so the
-          equation above it is read rather than scrolled to and from. The letter
-          strip replaces the 194px rack: an unassigned letter shows how many
-          digits are still open to it (green ring when only one is left, which
-          is the moment the rack's "lone" highlight used to flag), and the pad
-          keys carry the rest of that bookkeeping themselves. */}
-      {dockUi && playing && (
-        <div className={`cf-dock${noteMode ? ' notes' : ''}`} ref={rail.ref}>
-          <div className="cf-dk">
-            <div className={`cf-say${dockTone === 'bad' ? ' bad' : dockTone === 'good' ? ' good' : ''}`}>{dockSay}</div>
-            <div className="cf-strip" style={{ gridTemplateColumns: `repeat(${LETTERS.length}, minmax(0,1fr))` }}>
-              {LETTERS.map((ch) => {
-                const d = g.assign[ch];
-                const ex = g.excl[ch] || [];
-                const n = candidatesFor(ch).filter((x) => !ex.includes(x)).length;
-                const lone = d === undefined && n === 1;
-                // The count itself is NOT printed: a numeral inside a letter box
-                // reads as that letter's digit. The green ring below carries the
-                // one moment it mattered (a single digit left).
-                return (
-                  <button
-                    key={ch}
-                    type="button"
-                    className={`cf-sc${selected === ch ? ' on' : ''}${lone ? ' lone' : ''}`}
-                    onClick={() => tapLetter(ch)}
-                    aria-label={`Letter ${ch}${d !== undefined ? `, digit ${d}` : `, unassigned, ${n} digit${n === 1 ? '' : 's'} still open`}`}
-                  >
-                    <span className="l">{ch}</span>
-                    {d !== undefined ? <span className="d">{d}</span> : <span className="d dim" aria-hidden="true">&middot;</span>}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="cf-pad">{renderPadKeys()}</div>
-            <div className="cf-drow">
-              <button type="button" className={`cf-db${noteMode ? ' on' : ''}`} onClick={() => setNoteMode((v) => !v)} aria-pressed={noteMode}><Pencil size={13} /> Notes</button>
-              <button type="button" className="cf-db" onClick={eraseSelected}><Delete size={13} /> Erase</button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* the end-of-puzzle popup: the shared DailyEndCard as a dismissible modal */}
       {!playing && !endClosed && !LOFT && (
         <DailyEndCard
@@ -1385,7 +1412,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
-        <div style={{ position: 'fixed', left: '50%', bottom: dockUi ? 'calc(248px + env(safe-area-inset-bottom))' : 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
+        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
           {toast}
         </div>
       )}

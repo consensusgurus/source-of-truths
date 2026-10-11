@@ -607,7 +607,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Hinge #${PUZZLE.num} — the daily compound-word chain from Mind Loft.\n${shareUrl()}`
+      ? `Hinge #${PUZZLE.num}, the daily compound-word chain from Mind Loft.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -676,22 +676,70 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
           .hg-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .hg-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
           .hg-chain{display:flex;flex-direction:column;align-items:stretch;}
-          .hg-word{display:flex;align-items:center;justify-content:center;gap:5px;min-height:44px;}
-          .hg-cell{width:clamp(26px, 7.2vw, 36px);height:clamp(32px, 8.4vw, 42px);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:${SANS};font-weight:800;font-size:clamp(15px, 4.4vw, 20px);letter-spacing:0.02em;box-sizing:border-box;}
+          .hg-row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;column-gap:10px;}
+          .hg-tag{justify-self:end;font-family:${MONO};font-size:10px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:${FADED};white-space:nowrap;}
+          .hg-tag.you{color:var(--stg-acc-ink, ${COLORS.accent});}
+          .hg-word{display:flex;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:7px 9px;border-radius:12px;box-sizing:border-box;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.18)'};background:${STAGE ? 'var(--stg-surf)' : T.white};}
+          .hg-word.solved{cursor:pointer;}
+          .hg-word.active{border-color:var(--stg-acc, ${COLORS.accent});}
+          .hg-word.empty{border-style:dashed;}
+          .hg-screw{flex:none;color:${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.4)'};}
+          .hg-cell{width:clamp(26px, 7.2vw, 40px);height:clamp(32px, 8.4vw, 48px);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:${SANS};font-weight:800;font-size:clamp(15px, 4.4vw, 22px);letter-spacing:0.02em;box-sizing:border-box;}
           .hg-word.given .hg-cell{background:${STAGE ? 'var(--stg-surf2)' : '#e9edf3'};color:${INK};}
-          .hg-word.solved .hg-cell{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 22%, var(--stg-cell))' : COLORS.accentSoft};color:var(--stg-acc-ink, ${COLORS.accentDeep});cursor:pointer;}
+          .hg-word.solved .hg-cell{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 22%, var(--stg-cell))' : COLORS.accentSoft};color:var(--stg-acc-ink, ${COLORS.accentDeep});}
           .hg-word.solved:hover .hg-cell{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 34%, var(--stg-cell))' : COLORS.accentTint};}
-          .hg-word.active .hg-cell{border:1.5px solid var(--stg-acc, ${COLORS.accent});background:${STAGE ? 'var(--stg-cell)' : T.white};color:${INK};}
-          .hg-word.active .hg-cell.cursor{box-shadow:inset 0 -3px 0 var(--stg-acc, ${COLORS.accent});}
-          .hg-word.empty .hg-cell{border:1.5px dashed var(--stg-line2, rgba(28,30,36,0.3));background:transparent;color:${FADED};font-weight:600;}
-          .hg-link{display:flex;align-items:center;justify-content:center;gap:8px;min-height:26px;font-size:11.5px;color:${FADED};flex-wrap:wrap;padding:0 8px;}
-          .hg-link::before{content:'';width:1.5px;height:12px;background:var(--stg-line2, rgba(28,30,36,0.3));}
-          .hg-h{font-family:${MONO};letter-spacing:0.06em;font-size:11px;color:var(--stg-acc-ink, ${COLORS.accent});}
-          .hg-h.dim{font-family:${SANS};letter-spacing:0;font-weight:600;color:${FADED};}
-          .hg-h.bad{color:var(--stg-bad, ${COLORS.rust});text-decoration:line-through;}
-          .hg-in{width:100%;max-width:280px;font-family:${SANS};font-weight:800;font-size:22px;letter-spacing:0.18em;text-transform:uppercase;text-align:center;padding:10px 12px;border-radius:10px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-cell)' : T.white};color:${INK};outline:none;}
+          .hg-word.active .hg-cell{border:2px solid var(--stg-cell-line, rgba(28,30,36,0.35));background:${STAGE ? 'var(--stg-cell)' : T.white};color:${INK};}
+          .hg-word.active .hg-cell.cursor{box-shadow:inset 0 -4px 0 var(--stg-acc, ${COLORS.accent});}
+          .hg-word.empty .hg-cell{border:2px dashed var(--stg-cell-line, rgba(28,30,36,0.3));background:transparent;color:${FADED};font-weight:600;}
+          .hg-joint{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;column-gap:10px;position:relative;min-height:50px;}
+          .hg-strap{position:absolute;left:50%;top:0;bottom:0;width:3px;margin-left:-1.5px;background:var(--stg-line2, rgba(28,30,36,0.25));}
+          .hg-strap.shut{background:var(--stg-acc, ${COLORS.accent});}
+          .hg-barrel{grid-column:2;position:relative;display:flex;align-items:center;}
+          .hg-half{width:108px;height:30px;box-sizing:border-box;padding:0 12px;display:flex;align-items:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:${SANS};font-size:14px;font-weight:700;border:2px dashed var(--stg-cell-line, rgba(28,30,36,0.35));background:${STAGE ? 'var(--stg-ground)' : T.white};color:${FADED};}
+          .hg-half.a{border-radius:15px 0 0 15px;border-right:0;justify-content:flex-end;}
+          .hg-half.b{border-radius:0 15px 15px 0;border-left:0;}
+          .hg-half.known{border-style:solid;background:${STAGE ? 'var(--stg-cell)' : '#e9edf3'};color:${INK};}
+          .hg-half.shut{border-style:solid;border-color:var(--stg-acc, ${COLORS.accent});background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, ${T.white});font-weight:800;}
+          .hg-pin{width:18px;height:18px;margin:0 -2px;box-sizing:border-box;border-radius:50%;border:3px solid var(--stg-cell-line, rgba(28,30,36,0.35));background:${STAGE ? 'var(--stg-ground)' : T.white};position:relative;z-index:1;flex:none;}
+          .hg-pin.shut{border-color:var(--stg-acc, ${COLORS.accent});}
+          .hg-dets{grid-column:3;justify-self:start;display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;}
+          .hg-dlab{font-family:${MONO};font-size:9.5px;font-weight:800;letter-spacing:0.14em;color:var(--stg-bad, ${COLORS.rust});}
+          .hg-det{font-family:${SANS};font-size:13px;font-weight:700;color:var(--stg-bad, ${COLORS.rust});background:color-mix(in srgb, var(--stg-bad, ${COLORS.rust}) 12%, transparent);border-radius:6px;padding:2px 8px;text-decoration:line-through;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;}
+          .hg-play{display:flex;flex-direction:column;gap:16px;}
+          .hg-play.two{display:grid;grid-template-columns:minmax(0,1fr) 236px;gap:24px;align-items:stretch;}
+          .hg-side{display:flex;flex-direction:column;gap:12px;min-width:0;}
+          .hg-lab{font-family:${MONO};font-size:10px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:${FADED};}
+          .hg-note{display:flex;gap:8px;align-items:flex-start;border-radius:10px;padding:10px 12px;background:color-mix(in srgb, var(--stg-bad, ${COLORS.rust}) 12%, transparent);color:var(--stg-bad, ${COLORS.rust});font-size:13px;line-height:1.4;font-weight:700;}
+          .hg-entry{display:flex;flex-direction:column;gap:8px;}
+          .hg-in{width:100%;box-sizing:border-box;height:52px;font-family:${SANS};font-weight:800;font-size:22px;letter-spacing:0.18em;text-transform:uppercase;text-align:center;padding:0 12px;border-radius:10px;border:2px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-cell)' : T.white};color:${INK};outline:none;}
           .hg-in:focus{border-color:var(--stg-acc, ${COLORS.accent});}
-          .hg-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+          .hg-go{min-height:48px;justify-content:center;}
+          .hg-tools{display:flex;gap:8px;flex-wrap:wrap;}
+          .hg-tool{flex:1 1 0;min-height:44px;justify-content:center;font-family:${SANS};font-weight:700;font-size:13px;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};background:transparent;color:${INK};border-radius:12px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+          .hg-tool.hint{border-color:var(--stg-acc, ${COLORS.accent});background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 14%, transparent)' : COLORS.accentSoft};color:${ACC_DEEP_INK};}
+          .hg-tool.quiet{border-color:transparent;color:${FADED};text-decoration:underline;text-underline-offset:3px;}
+          .hg-tool.quiet.armed{color:var(--stg-bad, ${COLORS.rust});}
+          .hg-foot{font-size:12px;line-height:1.45;color:${FADED};font-weight:600;}
+          @media(max-width:640px){
+            .hg-board{padding-left:8px !important;padding-right:8px !important;}
+            .hg-play.two{display:flex;flex-direction:column;gap:12px;}
+            .hg-side .hg-lab.step,.hg-side .hg-explain{display:none;}
+            .hg-side .hg-note{order:-1;padding:8px 10px;font-size:12.5px;}
+            .hg-entry{flex-direction:row;}
+            .hg-entry .hg-in{flex:1;min-width:0;}
+            .hg-entry .hg-lab{display:none;}
+            .hg-go{width:104px;min-height:52px;flex:none;}
+            .hg-side .hg-spacer{display:none;}
+            .hg-joint{min-height:38px;}
+            .hg-half{width:88px;height:26px;font-size:12px;padding:0 10px;}
+            .hg-pin{width:16px;height:16px;}
+            .hg-word{padding:5px 7px;gap:4px;}
+            .hg-tag{font-size:9px;letter-spacing:0.1em;}
+            .hg-row,.hg-joint{column-gap:6px;}
+            .hg-dlab{display:none;}
+            .hg-det{font-size:12px;padding:2px 6px;}
+            .hg-tool{font-size:12.5px;padding:6px 8px;}
+          }
           @keyframes hg-shake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(3px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
           .hg-shake{animation:hg-shake .42s cubic-bezier(.36,.07,.19,.97) both;}
           @media (prefers-reduced-motion: reduce){.hg-shake{animation:none;}}
@@ -703,7 +751,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
           .hg-arr{color:${FADED};}
         ` }} />
 
-        <div style={{ maxWidth: 620, margin: '0 auto' }}>
+        <div style={{ maxWidth: STAGE && started ? 760 : 620, margin: '0 auto' }}>
 
         {!LOFT && (
         <DailyMasthead
@@ -747,7 +795,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
         <div className={LOFT && !STAGE && !playing ? (revealed ? 'loft-flip' : 'loft-flip on') : undefined}>
         <div className={LOFT && !STAGE && !playing ? 'loft-flip-in' : undefined}>
         <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+        <div className={`hg-board${STAGE ? ' stg-board' : (LOFT ? ' loft-card' : '')}`} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           {!LOFT && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
             <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
@@ -756,85 +804,122 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
           </div>
           )}
 
-          {/* the chain: every word a row of cells, every join a link that names
-              its hinge once both sides are in */}
-          <div key={shake} className={`hg-chain${shake ? ' hg-shake' : ''}`} style={{ maxWidth: 420, margin: '0 auto' }}>
-            {fill.map((w, i) => (
+          <div className={`hg-play${playing ? ' two' : ''}`}>
+          {/* the chain: every word a plate of letter cells, every join a hinge
+              barrel whose two halves read across the pin as the compound
+              (broad | side), shut in the accent once both words are in */}
+          <div key={shake} className={`hg-chain${shake ? ' hg-shake' : ''}`}>
+            {fill.map((w, i) => {
+              const tag = i === 0 ? 'Start' : (i === L - 1 ? 'End' : (GIVEN[i] ? 'Given' : (playing && i === cur ? 'You' : '')));
+              const dets = i + 1 < L ? (g.detours[i + 1] || []) : [];
+              const shut = i + 1 < L && !!fill[i] && !!fill[i + 1];
+              const half = (word, n) => (word ? word.toLowerCase() : `${n} letters`);
+              return (
               <React.Fragment key={i}>
-                <div className={slotCls(i)} onClick={() => backTo(i)} role={fill[i] && !GIVEN[i] && playing ? 'button' : undefined} title={fill[i] && !GIVEN[i] && playing ? 'Tap to clear this word and everything below it' : undefined}>
-                  {Array.from({ length: COUNTS[i] }).map((_, k) => {
-                    const ch = w ? w[k] : (i === cur ? (draft.toUpperCase()[k] || '') : '');
-                    const isCursor = !w && i === cur && k === Math.min(draft.length, COUNTS[i] - 1);
-                    return <span key={k} className={`hg-cell${isCursor ? ' cursor' : ''}`}>{ch || (i === cur || w ? '' : '·')}</span>;
-                  })}
+                <div className="hg-row">
+                  <span className={`hg-tag${tag === 'You' ? ' you' : ''}`}>{tag}</span>
+                  <div className={slotCls(i)} onClick={() => backTo(i)} role={fill[i] && !GIVEN[i] && playing ? 'button' : undefined} title={fill[i] && !GIVEN[i] && playing ? 'Tap to clear this word and everything below it' : undefined}>
+                    <svg className="hg-screw" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="4.8" stroke="currentColor" strokeWidth="1.5" /><path d="M3.6 6 H8.4" stroke="currentColor" strokeWidth="1.5" /></svg>
+                    {Array.from({ length: COUNTS[i] }).map((_, k) => {
+                      const ch = w ? w[k] : (i === cur ? (draft.toUpperCase()[k] || '') : '');
+                      const isCursor = !w && i === cur && k === Math.min(draft.length, COUNTS[i] - 1);
+                      return <span key={k} className={`hg-cell${isCursor ? ' cursor' : ''}`}>{ch || (i === cur || w ? '' : '·')}</span>;
+                    })}
+                    <svg className="hg-screw" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="4.8" stroke="currentColor" strokeWidth="1.5" /><path d="M6 3.6 V8.4" stroke="currentColor" strokeWidth="1.5" /></svg>
+                  </div>
+                  <span />
                 </div>
                 {i + 1 < L && (
-                  <div className="hg-link">
-                    {fill[i] && fill[i + 1]
-                      ? <span className="hg-h">{hingeLabel(fill[i], fill[i + 1])}</span>
-                      : (g.detours[i + 1] && g.detours[i + 1].length
-                        ? g.detours[i + 1].map((d) => <span key={d} className="hg-h bad">{hingeLabel(fill[i] || '', d)}</span>)
-                        : <span className="hg-h dim">{fill[i] ? `${COUNTS[i + 1]} letters` : `${COUNTS[i + 1]} letters`}</span>)}
-                    {fill[i] && !fill[i + 1] && g.detours[i + 1] && g.detours[i + 1].length > 0 && <span className="hg-h dim">{COUNTS[i + 1]} letters</span>}
+                  <div className="hg-joint">
+                    <span className={`hg-strap${shut ? ' shut' : ''}`} />
+                    <span className="hg-barrel" aria-label={shut ? hingeLabel(fill[i], fill[i + 1]) : undefined}>
+                      <span className={`hg-half a${shut ? ' shut' : (fill[i] ? ' known' : '')}`}>{half(fill[i], COUNTS[i])}</span>
+                      <span className={`hg-pin${shut ? ' shut' : ''}`} />
+                      <span className={`hg-half b${shut ? ' shut' : (fill[i + 1] ? ' known' : '')}`}>{half(fill[i + 1], COUNTS[i + 1])}</span>
+                    </span>
+                    {dets.length > 0 && (
+                      <span className="hg-dets">
+                        <span className="hg-dlab">{dets.length === 1 ? 'DETOUR' : 'DETOURS'}</span>
+                        {dets.map((d) => <span key={d} className="hg-det">{hingeLabel(fill[i] || '', d)}</span>)}
+                      </span>
+                    )}
                   </div>
                 )}
               </React.Fragment>
-            ))}
+              );
+            })}
           </div>
 
-          {playing && cur >= 0 && (
-            <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-              <input
-                ref={inputRef} className="hg-in" value={draft} inputMode="text" autoComplete="off"
-                autoCapitalize="characters" autoCorrect="off" spellCheck={false} maxLength={COUNTS[cur]}
-                placeholder={'_'.repeat(COUNTS[cur])}
-                onChange={(e) => setDraft(e.target.value.replace(/[^a-zA-Z]/g, '').slice(0, COUNTS[cur]))}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } }}
-                aria-label={`Type the ${COUNTS[cur]}-letter word that hinges from ${fill[cur - 1]}`}
-              />
-              <button className="hg-btn" onClick={submit} disabled={draft.length !== COUNTS[cur]}
-                style={{ background: draft.length === COUNTS[cur] ? `var(--stg-acc, ${COLORS.ink})` : `var(--stg-surf, ${T.white})`, color: draft.length === COUNTS[cur] ? `var(--stg-onramp, ${T.white})` : COLORS.faded, borderColor: draft.length === COUNTS[cur] ? `var(--stg-acc, ${COLORS.ink})` : undefined, opacity: draft.length === COUNTS[cur] ? 1 : 0.55, cursor: draft.length === COUNTS[cur] ? 'pointer' : 'default' }}>
-                Hinge
-              </button>
-            </div>
-          )}
-
-          <div style={{ marginTop: 12, minHeight: 22, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 800, color: deadEnd ? `var(--stg-bad, ${COLORS.rust})` : (playing ? `var(--stg-acc-ink, ${COLORS.accent})` : `var(--stg-mute, ${COLORS.faded})`) }}>
+          <div className="hg-side">
+            {playing && cur > 0 && <span className="hg-lab step">Hinge {cur} of {L - 1}</span>}
+            <span style={{ fontFamily: SANS, fontSize: playing ? 17 : 14, lineHeight: 1.3, fontWeight: 800, color: deadEnd ? `var(--stg-bad, ${COLORS.rust})` : (playing ? INK : `var(--stg-mute, ${COLORS.faded})`) }}>
               {!playing
                 ? (won ? `Chained in ${elapsed}${detourCount ? `, ${detourCount} detour${detourCount === 1 ? '' : 's'}` : ', no detours'}.` : 'The chain is shown above.')
                 : (deadEnd
                   ? `No chain reaches ${fill[L - 1]} from ${fill[cur - 1]}. Tap a word to back up; that costs nothing.`
-                  : `${fill[cur - 1]} then ${COUNTS[cur]} letters${cur === L - 2 ? `, which must also hinge to ${fill[L - 1]}` : ''}.`)}
+                  : <>{fill[cur - 1]} then <span style={{ color: `var(--stg-acc-ink, ${COLORS.accent})` }}>{COUNTS[cur]} letters</span>{cur === L - 2 ? `, which must also hinge to ${fill[L - 1]}` : ''}.</>)}
             </span>
-          </div>
+            {playing && <span className="hg-foot hg-explain" style={{ fontSize: 13 }}>Every pair of neighbors, read down, makes a compound word or a phrase everyone knows.</span>}
+            {playing && cur > 0 && !deadEnd && g.detours[cur] && g.detours[cur].length > 0 && (() => {
+              const d = g.detours[cur][g.detours[cur].length - 1];
+              return (
+                <div className="hg-note" role="status">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" style={{ flex: 'none', marginTop: 1 }}><circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.5" /><path d="M5.5 5.5 L10.5 10.5 M10.5 5.5 L5.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+                  <span>{fill[cur + 1] ? `${fill[cur - 1]} ${d} or ${d} ${fill[cur + 1]}: one of those is not a hinge. That is a detour.` : `${fill[cur - 1]} ${d} is not a hinge. That is a detour.`}</span>
+                </div>
+              );
+            })()}
 
-          {playing && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 12, flexWrap: 'wrap' }}>
-              {hinged > 0 && (
-                <button className="hg-tool" onClick={() => backTo(fill.findIndex((w, i) => w && !GIVEN[i]))} title="Clear every word you placed, for free">
-                  <RotateCcw size={14} /> Start over
+            {playing && cur >= 0 && (
+              <div className="hg-entry">
+                <span className="hg-lab">Next word</span>
+                <input
+                  ref={inputRef} className="hg-in" value={draft} inputMode="text" autoComplete="off"
+                  autoCapitalize="characters" autoCorrect="off" spellCheck={false} maxLength={COUNTS[cur]}
+                  placeholder={'_'.repeat(COUNTS[cur])}
+                  onChange={(e) => setDraft(e.target.value.replace(/[^a-zA-Z]/g, '').slice(0, COUNTS[cur]))}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } }}
+                  aria-label={`Type the ${COUNTS[cur]}-letter word that hinges from ${fill[cur - 1]}`}
+                />
+                <button type="button" className="hg-btn hg-go" onClick={(e) => { e.preventDefault(); submit(); }} disabled={draft.length !== COUNTS[cur]}
+                  style={{ background: draft.length === COUNTS[cur] ? `var(--stg-acc, ${COLORS.ink})` : 'transparent', color: draft.length === COUNTS[cur] ? `var(--stg-onramp, ${T.white})` : FADED, borderColor: draft.length === COUNTS[cur] ? `var(--stg-acc, ${COLORS.ink})` : `var(--stg-cell-line, rgba(28,30,36,0.35))`, cursor: draft.length === COUNTS[cur] ? 'pointer' : 'default', fontSize: 15 }}>
+                  Hinge
                 </button>
-              )}
-              {hintOk && !g.hintUsed && (
-                <button className="hg-tool" onClick={useHint} title="Place the next word of a chain that reaches the end (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(79,70,229,0.5)', color: ACC_DEEP_INK }}>
-                  <Lightbulb size={14} /> Hint
-                </button>
-              )}
-            </div>
-          )}
+              </div>
+            )}
 
-        {started && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)', flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: `var(--stg-mute, ${COLORS.faded})` }}>Any chain that holds counts. Tap a placed word to back up.</span>
-            {identity && (hinged > 0 || detourCount > 0) && (
-              <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-                style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <Eye size={13} /> {armReveal ? 'Tap again — ends the puzzle and shows a chain' : 'Reveal & end'}
-              </button>
+            {playing && (hinged > 0 || (hintOk && !g.hintUsed)) && (
+              <div className="hg-tools">
+                {hinged > 0 && (
+                  <button type="button" className="hg-tool" onClick={() => backTo(fill.findIndex((w, i) => w && !GIVEN[i]))} title="Clear every word you placed, for free">
+                    <RotateCcw size={14} /> Start over
+                  </button>
+                )}
+                {hintOk && !g.hintUsed && (
+                  <button type="button" className="hg-tool hint" onClick={useHint} title="Place the next word of a chain that reaches the end (one hint, first play only)">
+                    <Lightbulb size={14} /> Hint
+                  </button>
+                )}
+              </div>
+            )}
+
+            {started && <div className="hg-spacer" style={{ flex: 1 }} />}
+            {started && (
+              <span className="hg-foot">Any chain that holds counts. Tap a placed word to back up, free.{hintOk && !g.hintUsed ? ' The hint is one free next word, first play only.' : ''}</span>
+            )}
+            {started && (
+              <div className="hg-tools">
+                <button type="button" className="hg-tool" onClick={() => setShowHelp(true)}>How to play</button>
+                {identity && (hinged > 0 || detourCount > 0) && (
+                  <button type="button" className={`hg-tool quiet${armReveal ? ' armed' : ''}`} onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
+                    style={{ whiteSpace: armReveal ? 'normal' : 'nowrap', lineHeight: 1.2 }}>
+                    <Eye size={13} /> {armReveal ? 'Tap again: ends the puzzle and shows a chain' : 'Reveal and end'}
+                  </button>
+                )}
+              </div>
             )}
           </div>
-        )}
+          </div>
           <div className={STAGE ? undefined : 'loft-sol'}>
           {!playing && (
             <div style={{ maxWidth: 480, margin: '0 auto' }}>
@@ -974,7 +1059,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s chain, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s chain, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>

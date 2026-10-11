@@ -32,7 +32,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { HelpCircle, X, Flag, Delete } from 'lucide-react';
+import { HelpCircle, X, Flag, Delete, ChevronLeft, ChevronRight } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -561,8 +561,8 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const line = won
-      ? `Anon #${PUZZLE.num} — the clueless acrostic\nNamed it in ${elapsed}`
-      : `Anon #${PUZZLE.num} — the clueless acrostic\n${nSolved}/${TOTAL} answers`;
+      ? `Anon #${PUZZLE.num}, the clueless acrostic\nNamed it in ${elapsed}`
+      : `Anon #${PUZZLE.num}, the clueless acrostic\n${nSolved}/${TOTAL} answers`;
     try {
       navigator.clipboard.writeText(`${line}\nmindloftdaily.com/anon`);
       setCopied(true); setTimeout(() => setCopied(false), 1800);
@@ -693,8 +693,9 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
     return () => cancelAnimationFrame(id);
   }, [g.t0, cur, rail.height, cellEl]);
 
-  const cellCls = (n) => {
+  const cellCls = (n, small) => {
     const c = ['an-cell'];
+    if (small) c.push('bk');
     if (owner[n] === curAnswer) c.push('mine');
     if (n === cur) c.push('on');
     if (!playing && shownFill === sol && fill[n] !== sol[n]) c.push('miss');
@@ -705,7 +706,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
     return (
       <div
         ref={(el) => { if (el) cellRefs.current[`${small ? 'b' : 'q'}${n}`] = el; }}
-        className={cellCls(n)}
+        className={cellCls(n, small)}
         style={{ width: small ? cw - 2 : cw, height: small ? ch - 2 : ch }}
         onClick={() => focusCell(n, small ? 'b' : 'q')}
       >{shownFill[n] || ''}</div>
@@ -722,10 +723,16 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
     if (!a) return null;
     return (
       <div className={inDock ? 'an-dockclue' : 'an-topclue'}>
-        {curAnswer < PUZZLE.spine && <span className="an-tag">{spineLetters[curAnswer] || '?'}</span>}
-        <span className={a.cat ? 'an-cat' : 'an-cat open'}>{a.cat || 'no category'}</span>
-        <span className="an-len">{a.w.length}</span>
-        {solved[curAnswer] && <span className="an-ok">done</span>}
+        {curAnswer < PUZZLE.spine && <span className={`an-tag${spineLetters[curAnswer] ? '' : ' blank'}`}>{spineLetters[curAnswer] || '?'}</span>}
+        <div className="an-rowhead">
+          <span className={a.cat ? 'an-cat' : 'an-cat open'}>{a.cat || 'no category'}</span>
+          <span className="an-len">{a.w.length} letters</span>
+        </div>
+        {solved[curAnswer] && (
+          <span className="an-ok" role="img" aria-label="done" title="done">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+          </span>
+        )}
       </div>
     );
   }
@@ -735,32 +742,101 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
     const isSpine = ai < PUZZLE.spine;
     return (
       <div className={`an-row${owner[cur] === ai ? ' on' : ''}`}>
+        {isSpine && <span className={`an-tag${spineLetters[ai] ? '' : ' blank'}`}>{spineLetters[ai] || '?'}</span>}
         <div className="an-rowhead">
-          {isSpine && <span className="an-tag">{spineLetters[ai] || '?'}</span>}
           <span className={a.cat ? 'an-cat' : 'an-cat open'}>{a.cat || 'no category'}</span>
-          <span className="an-len">{a.w.length}</span>
-          {solved[ai] && <span className="an-ok">done</span>}
+          <span className="an-len">{a.w.length} letters</span>
         </div>
         <div className="an-boxes">{a.c.map((n) => <Cell key={n} n={n} small />)}</div>
+        {solved[ai] && (
+          <span className="an-ok" role="img" aria-label="done" title="done">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+          </span>
+        )}
       </div>
     );
   }
 
-  const passagePanel = (
-    <div className="an-quote">
-      {tokens.map((tk, i) => (
-        <div className="an-word" key={i}>
-          {tk.map((t, j) => (t.p ? <span className="an-punc" key={j}>{t.p}</span> : <Cell key={j} n={t.n} />))}
+  // YOU ARE IN: the answer the cursor sits in, large, under the spine. Every
+  // figure on it is already on the board (the row's category, length and
+  // letters), so it reveals nothing the bank row does not.
+  function YouAreIn() {
+    const a = A[curAnswer];
+    if (!a || !playing) return null;
+    return (
+      <div className="an-you">
+        <div className="an-youhead">
+          <span>You are in</span>
+          <span>{a.cat || 'no category'} &middot; {a.w.length}</span>
         </div>
-      ))}
+        <div className="an-youcells">
+          {a.c.map((n) => <span key={n} className={n === cur ? 'on' : undefined} onClick={() => focusCell(n, 'b')}>{fill[n] || ''}</span>)}
+        </div>
+        <span className="an-youtx">
+          The same {a.w.length} letters are lit in the passage. Type to fill; {touchInput ? 'Next' : 'Tab'} moves to the next answer. There is no check: a wrong word stops the passage reading as English.
+        </span>
+      </div>
+    );
+  }
+
+  const signature = (
+    <div className="an-spine">
+      {spineLetters.map((c, i) => <i key={i} className={c ? '' : 'blank'}>{c || '·'}</i>)}
     </div>
+  );
+
+  // THE PASSAGE AS A QUOTATION CARD: an open quote, the letters filling in on
+  // ruled lines, and a signature line at its foot where the spine's first
+  // letters sign it. On a narrow screen the signature sits above the halves
+  // instead, so it stays on screen while the bank is the half showing.
+  const passagePanel = (
+    <div className="an-card">
+      <div className="an-cardhead">
+        <span className="an-qmark" aria-hidden="true">&ldquo;</span>
+        <div className="an-cardlab">
+          <span>The passage &middot; nobody signed it</span>
+          <span><b>{filledCount}</b>/{N} letters</span>
+        </div>
+      </div>
+      <div className="an-quote">
+        {tokens.map((tk, i) => (
+          <div className="an-word" key={i}>
+            {tk.map((t, j) => (t.p ? <span className="an-punc" key={j}>{t.p}</span> : <Cell key={j} n={t.n} />))}
+          </div>
+        ))}
+      </div>
+      {!narrow && (
+        <div className="an-sig">
+          <span className="an-sigdash" aria-hidden="true" />
+          {signature}
+          <span className="an-siglab">Signed &middot; the spine spells who wrote it</span>
+        </div>
+      )}
+    </div>
+  );
+
+  // The extra under the spine column (stacked layout only): the answer you are
+  // in, and Give up.
+  const studyNote = won ? 'Here is the finished passage.' : 'Here is the full passage. Your misses are marked in red.';
+  const giveUpBtn = playing ? <button className="an-btn" onClick={giveUp}><Flag size={15} />Give up</button> : null;
+  const sideExtra = (
+    <>
+      <YouAreIn />
+      {giveUpBtn && <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 14 }}>{giveUpBtn}</div>}
+    </>
   );
 
   const banksPanel = (
     <div className="an-banks">
       <div>
-        <div className="an-bhead">The spine &middot; {PUZZLE.spine}<span>first letters spell who wrote it</span></div>
-        {A.slice(0, PUZZLE.spine).map((a, i) => <BankRow key={i} ai={i} />)}
+        <div className="an-bhead">The spine &middot; {PUZZLE.spine}<span>first letters sign it</span></div>
+        <div className="an-spinecol">
+          {A.slice(0, PUZZLE.spine).map((a, i) => <BankRow key={i} ai={i} />)}
+        </div>
+        {!split && !narrow && sideExtra}
+        {/* Stacked, the study hold's bar sits under the spine, beside the
+            passage it asks you to read, not below the whole bank. */}
+        {!split && !narrow && <StudyBar hold={study} note={studyNote} />}
       </div>
       <div>
         <div className={split ? 'an-bhead second' : 'an-bhead'}>The free bank &middot; {TOTAL - PUZZLE.spine}<span>no initial to obey</span></div>
@@ -800,81 +876,96 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
       <div className="an-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
         <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.an-wrap{padding-left:10px !important;padding-right:10px !important;}}
-          .an-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${ACC_DEEP};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? INK : ACC_DEEP};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
+          .an-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${ACC_DEEP};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? INK : ACC_DEEP};border-radius:8px;padding:9px 16px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .an-btn:hover{background:${ACC_SOFT};}
           .an-btn.primary{background:${ACC};border-color:${ACC};color:${ON_ACC};}
           .an-btn.primary:hover{background:${ACC_DEEP};}
+          .an-card{position:relative;}
+          .an-cardhead{display:flex;align-items:flex-start;gap:12px;margin:0 0 10px;}
+          .an-qmark{font-family:${SANS};font-weight:800;font-size:64px;line-height:44px;height:34px;color:${ACC_INK};flex:none;}
+          .an-cardlab{flex:1;display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;padding-top:4px;font-family:${MONO};font-size:11px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:${FADED};}
+          .an-cardlab b{color:${INK};font-weight:800;}
           .an-quote{display:flex;flex-wrap:wrap;gap:9px 13px;}
-          .an-word{display:flex;gap:3px;}
-          .an-cell{border:1px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.18)'};border-bottom-width:2px;border-radius:4px;background:${STAGE ? 'var(--stg-cell)' : SURF};
-            display:flex;align-items:center;justify-content:center;font-family:${SANS};font-weight:800;font-size:15px;
+          .an-word{display:flex;gap:2px;}
+          .an-cell{border:0;border-bottom:2px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};border-radius:4px 4px 0 0;background:transparent;
+            display:flex;align-items:center;justify-content:center;font-family:${SANS};font-weight:800;font-size:16px;box-sizing:border-box;
             color:${INK};cursor:pointer;flex:none;transition:background 90ms,border-color 90ms;}
-          .an-cell.mine{background:${ACC_SOFT};border-color:#e3b9be;}
-          .an-cell.on{outline:2px solid ${ACC};outline-offset:-2px;background:${ACC_SOFT};}
-          .an-cell.miss{background:${STAGE ? 'color-mix(in srgb, var(--stg-bad) 16%, var(--stg-cell))' : '#fee2e2'};border-color:${STAGE ? 'var(--stg-bad)' : '#dc2626'};color:${STAGE ? 'var(--stg-bad)' : '#7f1d1d'};font-weight:800;}
-          .an-punc{align-self:center;color:var(--stg-mute2, #b6bcc7);font-weight:800;width:6px;text-align:center;}
-          .an-banks{display:grid;grid-template-columns:1.25fr 1fr;gap:14px 26px;}
+          .an-cell.bk{background:${STAGE ? 'var(--stg-cell)' : '#eef1f5'};font-size:14px;}
+          .an-cell.mine{background:${ACC_SOFT};border-bottom-color:${ACC};}
+          .an-cell.on{background:${ACC};border-bottom-color:${ACC};color:${ON_ACC};}
+          .an-cell.miss{background:${STAGE ? 'color-mix(in srgb, var(--stg-bad) 16%, var(--stg-cell))' : '#fee2e2'};border-bottom-color:${STAGE ? 'var(--stg-bad)' : '#dc2626'};color:${STAGE ? 'var(--stg-bad)' : '#7f1d1d'};font-weight:800;}
+          .an-punc{align-self:center;color:var(--stg-mute, #6b7280);font-weight:800;width:7px;text-align:center;}
+          .an-sig{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid ${STAGE ? 'var(--stg-line)' : 'rgba(28,30,36,0.12)'};}
+          .an-sigdash{width:18px;height:2px;background:${FADED};flex:none;}
+          .an-siglab{font-family:${MONO};font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:${FADED};}
+          .an-spine{display:flex;gap:4px;align-items:center;flex-wrap:wrap;}
+          .an-spine i{width:26px;height:32px;box-sizing:border-box;border-radius:5px;background:${ACC_SOFT};border:1.5px solid ${ACC};
+            display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;font-size:17px;color:${ACC_INK};}
+          .an-spine i.blank{color:${FADED};background:transparent;}
+          .an-sigrow{display:flex;align-items:center;gap:8px;margin:0 0 12px;}
+          .an-sigrow .an-spine i{width:24px;height:30px;font-size:16px;}
+          .an-banks{display:grid;grid-template-columns:1fr 1fr;gap:14px 28px;}
           @media(max-width:900px){.an-banks{grid-template-columns:1fr;}}
           .an-split{display:grid;gap:16px;align-items:start;grid-template-columns:minmax(0,1.02fr) minmax(0,1fr);}
           .an-pane{min-width:0;overflow-y:auto;overscroll-behavior:contain;}
           .an-split .an-banks{grid-template-columns:1fr;}
           .an-bhead.second{margin-top:16px;padding-top:14px;border-top:1px solid var(--stg-line,rgba(28,30,36,0.12));}
-          .an-bhead{font-family:${MONO};font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:${FADED};
-            margin:0 0 9px;display:flex;justify-content:space-between;gap:10px;}
-          .an-bhead span{color:var(--stg-dim, #c3c8d1);}
-          .an-row{border:1px solid transparent;border-radius:8px;padding:4px 6px;margin-bottom:7px;}
-          .an-row.on{border-color:#e3b9be;background:${ACC_SOFT};}
-          .an-rowhead{display:flex;align-items:baseline;gap:8px;margin-bottom:3px;}
-          .an-tag{font-weight:900;font-size:13px;color:${ACC_INK};width:13px;}
-          .an-cat{font-family:${MONO};font-size:10px;letter-spacing:0.07em;text-transform:uppercase;color:var(--stg-mute, #4b5563);}
-          .an-cat.open{color:var(--stg-dim, #c3c8d1);font-style:italic;}
-          .an-len{margin-left:auto;font-family:${MONO};font-size:10px;color:var(--stg-dim, #c3c8d1);}
-          .an-ok{font-family:${MONO};font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:${COLORS.green};}
-          .an-boxes{display:flex;gap:3px;flex-wrap:wrap;}
-          .an-seg{display:flex;border:1px solid ${STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : 'rgba(28,30,36,0.14)'};border-radius:9px;overflow:hidden;margin-bottom:12px;}
-          .an-dock{background:#0f1f2e;border-radius:8px;margin:6px 0 0;padding:8px 9px 9px;}
+          .an-bhead{font-family:${MONO};font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:${FADED};
+            margin:0 0 8px;padding:0 4px;display:flex;justify-content:space-between;gap:10px;}
+          .an-spinecol{position:relative;}
+          .an-spinecol::before{content:'';position:absolute;left:18px;top:6px;bottom:10px;width:2px;background:${ACC};}
+          .an-row{position:relative;display:flex;align-items:center;gap:8px;min-height:34px;border-radius:8px;padding:3px 6px;margin-bottom:3px;}
+          .an-row.on{background:${ACC_SOFT};box-shadow:inset 3px 0 0 ${ACC};}
+          .an-tag{width:26px;height:28px;box-sizing:border-box;border-radius:5px;border:1.5px solid ${ACC};background:${STAGE ? 'var(--stg-ground)' : T.white};color:${ACC_INK};
+            display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex:none;position:relative;z-index:1;}
+          .an-tag.blank{color:${FADED};}
+          .an-rowhead{width:96px;flex:none;display:flex;flex-direction:column;gap:1px;min-width:0;}
+          .an-cat{font-size:11.5px;font-weight:700;line-height:1.2;color:var(--stg-ink2, #374151);}
+          .an-cat.open{color:${FADED};font-style:italic;}
+          .an-len{font-family:${MONO};font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:${FADED};}
+          .an-ok{margin-left:auto;flex:none;display:inline-flex;color:var(--stg-good, ${COLORS.green});}
+          .an-boxes{display:flex;gap:2px;flex-wrap:wrap;min-width:0;}
+          .an-you{margin-top:14px;border-radius:12px;border-left:4px solid ${ACC};background:${ACC_SOFT};padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
+          .an-youhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-family:${MONO};font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:${FADED};}
+          .an-youcells{display:flex;gap:4px;flex-wrap:wrap;}
+          .an-youcells span{width:34px;height:40px;box-sizing:border-box;border-radius:5px 5px 0 0;border-bottom:2px solid ${ACC};background:${STAGE ? 'var(--stg-cell)' : T.white};color:${INK};
+            display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;cursor:pointer;}
+          .an-youcells span.on{background:${ACC};color:${ON_ACC};}
+          .an-youtx{font-size:12.5px;line-height:1.45;font-weight:600;color:var(--stg-ink2, #374151);}
+          .an-seg{display:flex;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.25)'};border-radius:10px;overflow:hidden;margin-bottom:12px;}
+          .an-dock{margin:6px 0 0;padding:4px 0 2px;display:flex;flex-direction:column;gap:8px;}
           .an-dockhead{display:flex;align-items:center;gap:8px;}
-          .an-segd{display:flex;border:1px solid #2b4675;border-radius:7px;overflow:hidden;}
-          .an-segd button{border:0;background:#16294a;color:#93a8cc;font-family:${SANS};font-weight:800;font-size:12px;padding:6px 15px;cursor:pointer;}
+          .an-segd{display:flex;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)'};border-radius:10px;overflow:hidden;}
+          .an-segd button{min-height:44px;border:0;background:transparent;color:${STAGE ? 'var(--stg-ink2)' : '#374151'};font-family:${SANS};font-weight:800;font-size:13px;padding:0 16px;cursor:pointer;}
           .an-segd button.on{background:${ACC};color:${ON_ACC};}
           .an-nav{margin-left:auto;display:flex;gap:6px;}
-          .an-nav button{width:28px;height:28px;border-radius:6px;border:1px solid #2b4675;background:#16294a;color:#dbe9ff;cursor:pointer;font-weight:800;}
-          .an-topclue{display:flex;align-items:baseline;gap:8px;margin:-4px 0 12px;padding:0 2px;}
-          /* THE DOCK IS ITS OWN ISLAND. It carries a hardcoded navy palette that
-             predates the stage and does not read --stg-*, so the clue printed on
-             it is coloured from THAT palette: a --stg-mute here would go dark on
-             the light register and vanish against the navy. The typography is
-             still the bank row's, so the two read as the same object. */
-          .an-dockclue{display:flex;align-items:baseline;gap:8px;margin-top:8px;}
-          .an-dockclue .an-tag{color:#dbe9ff;}
-          .an-dockclue .an-cat{color:#93a8cc;}
-          .an-dockclue .an-cat.open{color:#6b80a6;}
-          .an-dockclue .an-len{color:#6b80a6;}
-          .an-dockclue .an-ok{color:#5fd3a3;}
-          .an-dockbody{margin-top:7px;display:flex;gap:3px;overflow-x:auto;padding-bottom:2px;}
-          .an-dcell{width:21px;height:26px;border-radius:4px;background:#16294a;border:1px solid #2b4675;display:flex;align-items:center;
-            justify-content:center;font-weight:800;font-size:13px;color:var(--white);flex:none;}
-          .an-dcell.on{background:${ACC};border-color:#b04a55;}
-          .an-dcell.gap{background:none;border:0;width:7px;}
-          .an-seg button{flex:1;border:0;background:${STAGE ? 'var(--stg-surf2,rgba(255,255,255,0.08))' : 'var(--white)'};padding:10px 0;font-family:${SANS};font-weight:800;font-size:13.5px;color:${STAGE ? 'var(--stg-mute,#8b95a8)' : '#8b93a1'};cursor:pointer;}
+          .an-nav button{display:flex;align-items:center;justify-content:center;padding:0;width:44px;height:44px;border-radius:10px;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)'};background:transparent;color:${INK};cursor:pointer;font-weight:800;font-size:20px;line-height:1;}
+          .an-topclue{display:flex;align-items:center;gap:8px;margin:-4px 0 12px;padding:0 2px;}
+          .an-topclue .an-cat,.an-dockclue .an-cat{font-size:12px;font-weight:800;}
+          .an-dockrow{display:flex;align-items:center;gap:10px;border-radius:10px;background:${ACC_SOFT};box-shadow:inset 3px 0 0 ${ACC};padding:6px 10px;min-width:0;}
+          .an-dockclue{display:flex;align-items:center;gap:8px;flex:none;}
+          .an-dockclue .an-rowhead{width:74px;}
+          .an-dockbody{display:flex;gap:3px;overflow-x:auto;padding-bottom:2px;min-width:0;}
+          .an-dcell{width:26px;height:32px;box-sizing:border-box;border-radius:4px 4px 0 0;background:${STAGE ? 'var(--stg-cell)' : T.white};border-bottom:2px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};display:flex;align-items:center;
+            justify-content:center;font-weight:800;font-size:16px;color:${INK};flex:none;cursor:pointer;}
+          .an-dcell.mine{border-bottom-color:${ACC};}
+          .an-dcell.on{background:${ACC};border-bottom-color:${ACC};color:${ON_ACC};}
+          .an-dcell.gap{background:none;border:0;width:7px;cursor:default;}
+          .an-seg button{flex:1;border:0;background:transparent;min-height:44px;padding:0;font-family:${SANS};font-weight:800;font-size:13.5px;color:${STAGE ? 'var(--stg-ink2)' : '#4b5563'};cursor:pointer;}
           .an-seg button.on{background:${ACC};color:${ON_ACC};}
           .an-input{position:fixed;left:0;right:0;bottom:0;z-index:40;background:${STAGE ? 'var(--stg-raise,#0e131f)' : '#e5e8ef'};
-            border-top:1.5px solid rgba(20,22,28,0.14);box-shadow:0 -4px 16px rgba(20,22,28,0.12);
-            padding:0 8px calc(4px + env(safe-area-inset-bottom));}
+            border-top:1px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(20,22,28,0.14)'};box-shadow:0 -4px 16px rgba(20,22,28,0.12);
+            padding:4px 10px calc(6px + env(safe-area-inset-bottom));}
           .an-inputin{max-width:500px;margin:0 auto;}
-          .an-input .an-kb{background:none;border-radius:0;padding:7px 0 4px;}
-          .an-kb{display:flex;flex-direction:column;gap:5px;background:${STAGE ? 'var(--stg-raise,#0e131f)' : '#e5e8ef'};border-radius:0 0 10px 10px;padding:7px 4px 9px;}
-          .an-kr{display:flex;gap:5px;justify-content:center;}
-          .an-kr button{flex:1;max-width:34px;height:42px;border:0;border-radius:6px;background:${STAGE ? 'var(--stg-surf2,rgba(255,255,255,0.08))' : 'var(--white)'};color:${INK};font-family:${SANS};
+          .an-input .an-kb{background:none;border-radius:0;padding:8px 0 4px;}
+          .an-kb{display:flex;flex-direction:column;gap:6px;background:${STAGE ? 'var(--stg-raise,#0e131f)' : '#e5e8ef'};border-radius:0 0 10px 10px;padding:7px 4px 9px;}
+          .an-kr{display:flex;gap:4px;justify-content:center;}
+          .an-kr button{flex:1;max-width:34px;height:44px;border:0;border-bottom:2px solid ${STAGE ? 'var(--stg-cell-line)' : '#b9bfcb'};border-radius:6px;background:${STAGE ? 'var(--stg-cell)' : 'var(--white)'};color:${INK};font-family:${SANS};
             touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
-            font-weight:800;font-size:15px;box-shadow:0 1px 0 #b9bfcb;cursor:pointer;}
-          .an-kr button.wide{max-width:54px;font-size:11px;background:${STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : '#c9cfdb'};}
+            font-weight:800;font-size:15px;cursor:pointer;padding:0;}
+          .an-kr button.wide{max-width:52px;font-size:11px;letter-spacing:0.08em;background:${ACC_SOFT};color:${ACC_INK};}
           .an-kr button.del{display:flex;align-items:center;justify-content:center;}
           .an-kr button:active{background:${STAGE ? 'var(--stg-line2,rgba(255,255,255,0.17))' : '#cfd6e2'};}
-          .an-spine{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin:0 0 14px;}
-          .an-spine i{width:22px;height:28px;border-radius:4px;background:${ACC_SOFT};border:1px solid ${STAGE ? 'color-mix(in srgb, var(--stg-acc) 45%, transparent)' : '#e3b9be'};
-            display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:900;font-size:15px;color:${ACC_INK};}
-          .an-spine i.blank{color:${STAGE ? 'var(--stg-dim,#5a657d)' : '#dcc6c9'};background:${STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : 'var(--white)'};border-color:${STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : 'rgba(28,30,36,0.1)'};}
         ` }} />
 
         <div style={{ maxWidth: split ? 1180 : 900, margin: '0 auto' }}>
@@ -937,16 +1028,24 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
 
           {!preStart && (
             <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '2px 0 10px', flexWrap: 'wrap' }}>
-                <div style={{ fontFamily: MONO, fontSize: 12.5, fontWeight: 700, color: FADED }}>
-                  {nSolved}/{TOTAL} answers &middot; {filledCount}/{N} letters &middot; {elapsed}
+              {!LOFT && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '2px 0 10px', flexWrap: 'wrap' }}>
+                  <div style={{ fontFamily: MONO, fontSize: 12.5, fontWeight: 700, color: FADED, fontVariantNumeric: 'tabular-nums' }}>
+                    {nSolved}/{TOTAL} answers &middot; {filledCount}/{N} letters &middot; {elapsed}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="an-spine">
-                <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: FADED, marginRight: 4 }}>Signed</span>
-                {spineLetters.map((c, i) => <i key={i} className={c ? '' : 'blank'}>{c || '·'}</i>)}
-              </div>
+              {/* On a narrow screen the signature rides above the halves, with
+                  Give up beside it, so the author's letters stay in view while
+                  the bank is the half showing. */}
+              {narrow && (
+                <div className="an-sigrow">
+                  <span className="an-siglab">Signed</span>
+                  {signature}
+                  {giveUpBtn && <span style={{ marginLeft: 'auto' }}>{giveUpBtn}</span>}
+                </div>
+              )}
 
               {narrow && !railUp && (
                 <div className="an-seg">
@@ -961,36 +1060,34 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
                    and it fits without scrolling; the bank is on the right because
                    it is the long list you work down. Each pane scrolls inside its
                    own measured frame, so the PAGE does not scroll during a solve
-                   and neither half can push the other off screen. */
+                   and neither half can push the other off screen. The answer you
+                   are in and Give up sit under the quotation card. */
                 <div className="an-split" ref={splitRef} style={{ marginBottom: 16 }}>
-                  <div className="an-pane" ref={qPaneRef} style={{ ...panelStyle, padding: '16px 16px 14px', maxHeight: paneH || undefined }}>
+                  <div className="an-pane" ref={qPaneRef} style={{ ...panelStyle, padding: '18px 22px 16px', maxHeight: paneH || undefined }}>
                     {passagePanel}
+                    {sideExtra}
                   </div>
-                  <div className="an-pane" style={{ ...panelStyle, padding: '16px 18px', maxHeight: paneH || undefined }}>
+                  <div className="an-pane" style={{ ...panelStyle, padding: '16px 14px', maxHeight: paneH || undefined }}>
                     {banksPanel}
                   </div>
                 </div>
               ) : (
                 <>
-                  {(!narrow || view === 'b') && (
-                    <div style={{ ...panelStyle, padding: '16px 18px', marginBottom: 16 }}>
-                      {banksPanel}
+                  {/* Stacked: the quotation card on top, the two banks under it. */}
+                  {(!narrow || view === 'q') && (
+                    <div style={{ ...panelStyle, padding: narrow ? '12px 12px 14px' : '18px 24px 18px', marginBottom: 16 }}>
+                      {passagePanel}
                     </div>
                   )}
-                  {(!narrow || view === 'q') && (
-                    <div style={{ ...panelStyle, padding: '16px 16px 14px', marginBottom: 16 }}>
-                      {passagePanel}
+                  {(!narrow || view === 'b') && (
+                    <div style={{ padding: narrow ? '0' : '0 2px', marginBottom: 16 }}>
+                      {banksPanel}
                     </div>
                   )}
                 </>
               )}
 
-              {playing && (
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-                  <button className="an-btn" style={{ marginLeft: 'auto' }} onClick={giveUp}><Flag size={15} />Give up</button>
-                </div>
-              )}
-              <StudyBar hold={study} note={won ? 'Here is the finished passage.' : 'Here is the full passage. Your misses are marked in red.'} />
+              {(split || narrow) && <StudyBar hold={study} note={studyNote} />}
 
             </>
           )}
@@ -1103,17 +1200,19 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
                   <button className={view === 'b' ? 'on' : ''} onClick={() => setView('b')}>Bank</button>
                 </span>
                 <span className="an-nav">
-                  <button onClick={() => stepNext(-1)} aria-label={view === 'q' ? 'Previous word' : 'Previous answer'}>&lsaquo;</button>
-                  <button onClick={() => stepNext(1)} aria-label={view === 'q' ? 'Next word' : 'Next answer'}>&rsaquo;</button>
+                  <button onClick={() => stepNext(-1)} aria-label={view === 'q' ? 'Previous word' : 'Previous answer'}><ChevronLeft size={18} strokeWidth={2.4} /></button>
+                  <button onClick={() => stepNext(1)} aria-label={view === 'q' ? 'Next word' : 'Next answer'}><ChevronRight size={18} strokeWidth={2.4} /></button>
                 </span>
               </div>
-              {view === 'q' && <CurClue inDock />}
-              <div className="an-dockbody">
-                {(view === 'b' ? passageAround(cur) : A[curAnswer].c).map((n, i) => (
-                  n < 0
-                    ? <div key={`g${i}`} className="an-dcell gap" />
-                    : <div key={n} className={`an-dcell${n === cur ? ' on' : ''}`} onClick={() => focusCell(n)}>{fill[n] || ''}</div>
-                ))}
+              <div className="an-dockrow">
+                {view === 'q' && <CurClue inDock />}
+                <div className="an-dockbody">
+                  {(view === 'b' ? passageAround(cur) : A[curAnswer].c).map((n, i) => (
+                    n < 0
+                      ? <div key={`g${i}`} className="an-dcell gap" />
+                      : <div key={n} className={`an-dcell${n === cur ? ' on' : (owner[n] === curAnswer ? ' mine' : '')}`} onClick={() => focusCell(n)}>{fill[n] || ''}</div>
+                  ))}
+                </div>
               </div>
             </div>
           )}

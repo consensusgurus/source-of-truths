@@ -902,12 +902,13 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
 
   // THE RUN LANES' header line, shared by the play screen and the handover.
   const lanesAvg = fieldOn ? field.avg : null;
+  const lanesBest = fieldOn && field.top ? field.top : null;
   const lanesHead = (
     <div className="rt-rhd">
       <span>The run</span>
       <i>
         Every {MATHRUN ? 'game' : 'quiz'} on the same scale. A miss ends a bar in red
-        {lanesAvg ? ', and the tick is today’s average.' : '.'}
+        {lanesAvg ? ', the grey tick is today’s average and the gold one today’s best.' : '.'}
       </i>
     </div>
   );
@@ -1293,6 +1294,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                             n={s.questions.length}
                             curve={fieldOn && field.curves[s.key] ? field.curves[s.key] : null}
                             avg={fieldOn && field.avg[s.key] != null ? field.avg[s.key] : null}
+                            best={fieldOn && field.top && field.top[s.key] != null ? field.top[s.key] : null}
                           />
                         </span>
                       ) : null}
@@ -1306,7 +1308,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   <p className="rn-fine tw">
                     {secondsLine(sections, 'question')} Keys 1 to 4 answer.
                     <br />Each bar is one {MATHRUN ? 'game' : 'quiz'}, every one on the same scale however many questions it has.
-                    {fieldOn ? ' The heavier the shading along a bar, the more of today\u2019s players got that far, and the tick is the average.' : ''}
+                    {fieldOn ? ' The heavier the shading along a bar, the more of today\u2019s players got that far, the grey tick is the average and the gold tick is today\u2019s best.' : ''}
                   </p>
                 ) : (
                   <p className="rn-fine">
@@ -1421,6 +1423,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     liveIndex={r.si}
                     liveAnswered={r.i}
                     avg={lanesAvg}
+                    best={lanesBest}
                   />
                 </div>
               </div>
@@ -1508,7 +1511,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
             {TOWERS && r.phase === 'verdict' && last && upNext ? (
               <div className="rt-run ho">
                 {lanesHead}
-                <RunLanes id={circuitId} sections={sections} results={r.results} upIndex={upIdx} avg={lanesAvg} />
+                <RunLanes id={circuitId} sections={sections} results={r.results} upIndex={upIdx} avg={lanesAvg} best={lanesBest} />
               </div>
             ) : null}
 
@@ -1525,7 +1528,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   {r.practice ? <i className="rn-pchip">nothing posted</i> : null}
                 </span>
                 {TOWERS ? (
-                  <RunLanes id={`${circuitId}-done`} order="run" sections={sections} results={r.results} avg={lanesAvg} className="rt-done" />
+                  <RunLanes id={`${circuitId}-done`} order="run" sections={sections} results={r.results} avg={lanesAvg} best={lanesBest} className="rt-done" />
                 ) : (
                 <GauntletLadder
                   orientation="row"

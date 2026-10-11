@@ -178,6 +178,8 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
   const [showChrome, setShowChrome] = useState(false);
+  // Phone board: which round's tab is open (display only, never saved).
+  const [bkRound, setBkRound] = useState(0);
 
   const playing = g.status === 'playing';
   const LOFT = isLoft('bracket');
@@ -218,7 +220,12 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
   const kidsOf = (r, m) => (r === 0 ? [2 * m, 2 * m + 1] : [g.picks[idOf(r - 1, 2 * m)], g.picks[idOf(r - 1, 2 * m + 1)]]);
   const filled = g.picks.filter((p) => p >= 0).length;
   const complete = filled === MATCHES;
+  // SEALED WHILE PLAYING (reader report 2026-10-08). Both figures are graded
+  // against the true winners, so while the sheet is still open they are not
+  // even computed: nothing on the page can then echo whether a pick is right.
+  // submit() grades the handed-in sheet itself, so scoring is unchanged.
   const score = useMemo(() => {
+    if (g.status === 'playing') return 0;
     let s = 0;
     for (let r = 0; r < ROUNDS; r++) {
       const w = N / Math.pow(2, r + 1);
@@ -226,8 +233,9 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
     }
     return s;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [g.picks, TRUE, N, ROUNDS]);
+  }, [g.picks, g.status, TRUE, N, ROUNDS]);
   const perRound = useMemo(() => {
+    if (g.status === 'playing') return [];
     const out = [];
     for (let r = 0; r < ROUNDS; r++) {
       const w = N / Math.pow(2, r + 1);
@@ -237,7 +245,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
     }
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [g.picks, TRUE, N, ROUNDS]);
+  }, [g.picks, g.status, TRUE, N, ROUNDS]);
   const won = g.status === 'done' && score === TOTAL;
   // A busted bracket keeps the true winners and the values hidden through the
   // finish beat; they show only once the end card's Reveal answer is pressed.
@@ -394,6 +402,224 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+  // ── the board: a real drawn bracket (desktop) and round tabs (phone) ──────
+  // Every state on it reads the player's own picks and nothing else while the
+  // sheet is open; the truth is consulted only once it has been handed in.
+  const ACC_LINE = `var(--stg-acc-ink, ${COLORS.accent})`;
+  const NEUTRAL_LINE = 'var(--stg-cell-line, rgba(28,30,36,0.3))';
+  const roundW = (r) => N / Math.pow(2, r + 1);
+  const madeIn = (r) => { let k = 0; for (let m = 0; m < roundW(r); m++) if (g.picks[idOf(r, m)] >= 0) k++; return k; };
+  const ptsLabel = (r) => { const p = Math.pow(2, r); return `${p} ${p === 1 ? 'pt' : 'pts'} a pick`; };
+  const tabName = (r) => (ROUNDS > 4 ? ROUND_NAME(r, ROUNDS).replace('Round of ', 'R') : ROUND_NAME(r, ROUNDS));
+
+  function slotButton(r, m, it, k, style) {
+    const empty = it == null || it < 0;
+    const mine = g.picks[idOf(r, m)];
+    const chosen = !empty && mine === it;
+    let cls = 'bk-s';
+    if (empty) cls += ' wait';
+    else if (!playing) {
+      const truth = TRUE[idOf(r, m)];
+      if (chosen && it === truth) cls += ' right';
+      else if (chosen) cls += ' wrong';
+      else if (solShown && it === truth) cls += ' on';
+      else cls += ' off';
+    } else if (chosen) cls += ' on';
+    else if (mine >= 0) cls += ' off';
+    const name = empty ? '' : PUZZLE.items[it].name;
+    return (
+      <button key={`${r}-${m}-${k}`} type="button" className={cls} disabled={empty || !playing} style={style}
+        onClick={() => pick(r, m, it)}
+        title={empty ? 'Waiting on an earlier pick' : name}
+        aria-label={empty ? 'Waiting on an earlier pick' : (playing && chosen ? `${name}, your pick` : name)}>
+        <span className="bk-n">{empty ? 'waiting' : name}</span>
+        {!playing && solShown && !empty && <span className="bk-v">{fmtValue(PUZZLE.items[it].value, PUZZLE.unit)}</span>}
+      </button>
+    );
+  }
+
+  const championName = (playing || !solShown) ? (g.picks[MATCHES - 1] >= 0 ? PUZZLE.items[g.picks[MATCHES - 1]].name : 'your call') : champion.name;
+  const finalPicked = g.picks[MATCHES - 1] >= 0;
+  const winBox = (style) => (
+    <div className="bk-win" style={{ border: `2px solid ${finalPicked ? ACC_LINE : NEUTRAL_LINE}`, color: (playing && !finalPicked) ? `var(--stg-mute, ${COLORS.faded})` : `var(--stg-ink, ${COLORS.ink})`, ...style }}>
+      <Trophy size={16} style={{ flex: '0 0 auto', color: ACC_LINE }} />
+      <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{championName}</span>
+    </div>
+  );
+
+  function renderDesktop() {
+    const SH = (r) => (r === 0 ? 32 : 40);
+    const colW = (r) => (r === 0 ? 184 : r === 1 ? 156 : 142);
+    const GAP = 24, Y0 = 46, WIN_W = 150;
+    const colX = []; let x = 0;
+    for (let r = 0; r < ROUNDS; r++) { colX.push(x); x += colW(r) + GAP; }
+    const winX = x, totalW = winX + WIN_W;
+    const H = (N / 2) * 80;
+    // A standard tree. Round one's entrants sit as tight pairs; every later
+    // entrant sits at the vertical midpoint of the pair that feeds it, and each
+    // pair's connector joins THOSE two and runs out at their midpoint into the
+    // one slot (or the winner box) it feeds.
+    const yE = [];                                     // yE[r][m][k]: entrant centers
+    for (let r = 0; r < ROUNDS; r++) {
+      yE.push([]);
+      for (let m = 0; m < roundW(r); m++) {
+        if (r === 0) { const c = Y0 + (m + 0.5) * 80; yE[0].push([c - (SH(0) + 2) / 2, c + (SH(0) + 2) / 2]); }
+        else yE[r].push([0, 1].map((k) => { const f = yE[r - 1][2 * m + k]; return (f[0] + f[1]) / 2; }));
+      }
+    }
+    const heads = [], lines = [], slots = [];
+    for (let r = 0; r < ROUNDS; r++) {
+      const w = roundW(r), done = madeIn(r);
+      heads.push(
+        <div key={`h${r}`} className="bk-hd" style={{ left: colX[r], width: colW(r), color: done === w ? ACC_LINE : `var(--stg-ink2, ${COLORS.faded})` }}>
+          <span>{ROUND_NAME(r, ROUNDS)}</span>
+          <i>{ptsLabel(r)} &middot; {done}/{w}</i>
+        </div>
+      );
+      for (let m = 0; m < w; m++) {
+        const sh = SH(r), kids = kidsOf(r, m), [ya, yb] = yE[r][m], c = (ya + yb) / 2;
+        slots.push(slotButton(r, m, kids[0], 0, { left: colX[r], top: ya - sh / 2, width: colW(r), height: sh, fontSize: r === 0 ? 12 : 12.5 }));
+        slots.push(slotButton(r, m, kids[1], 1, { left: colX[r], top: yb - sh / 2, width: colW(r), height: sh, fontSize: r === 0 ? 12 : 12.5 }));
+        const right = colX[r] + colW(r), nextX = r < ROUNDS - 1 ? colX[r + 1] : winX, gm = Math.round((right + nextX) / 2);
+        const on = g.picks[idOf(r, m)] >= 0;
+        lines.push({ l: right, t: ya - 1, w: gm - right + 1, h: 2, on });
+        lines.push({ l: right, t: yb - 1, w: gm - right + 1, h: 2, on });
+        lines.push({ l: gm - 1, t: ya - 1, w: 2, h: yb - ya + 2, on });
+        lines.push({ l: gm, t: c - 1, w: nextX - gm, h: 2, on });
+      }
+    }
+    const cf = (yE[ROUNDS - 1][0][0] + yE[ROUNDS - 1][0][1]) / 2;
+    return (
+      <div className="bk-desk bk-scroll">
+        <div className="bk-board" style={{ width: totalW, height: Y0 + H + 4 }}>
+          {heads}
+          <div className="bk-hd" style={{ left: winX, width: WIN_W, color: ACC_LINE }}><span>Winner</span><i>{ptsLabel(ROUNDS - 1).replace('a pick', 'the final')}</i></div>
+          {lines.map((ln, i) => <span key={`l${i}`} className="bk-ln" aria-hidden="true" style={{ left: ln.l, top: ln.t, width: ln.w, height: ln.h, background: ln.on ? ACC_LINE : NEUTRAL_LINE }} />)}
+          {slots}
+          {winBox({ left: winX, top: cf - 30, width: WIN_W, height: 60 })}
+        </div>
+      </div>
+    );
+  }
+
+  function renderPhone() {
+    const ar = Math.min(bkRound, ROUNDS - 1);
+    const w = roundW(ar);
+    const SP = 105, PH = 44, PY0 = 26;
+    const CUR_W = 60, NXT_L = 66;
+    // Each pair of this round is joined and feeds ONE slot of the next round,
+    // sitting beside it at the pair's midpoint (the winner box after the final).
+    const cy = (m) => PY0 + (m + 0.5) * SP;
+    const slots = [], lines = [], nxt = [];
+    const midL = (CUR_W + NXT_L) / 2;
+    for (let m = 0; m < w; m++) {
+      const c = cy(m), ya = c - (PH + 2) / 2, yb = c + (PH + 2) / 2, kids = kidsOf(ar, m);
+      slots.push(slotButton(ar, m, kids[0], 0, { left: 0, top: ya - PH / 2, width: `${CUR_W}%`, height: PH, fontSize: 13.5, borderRadius: 9, padding: '0 8px 0 12px' }));
+      slots.push(slotButton(ar, m, kids[1], 1, { left: 0, top: yb - PH / 2, width: `${CUR_W}%`, height: PH, fontSize: 13.5, borderRadius: 9, padding: '0 8px 0 12px' }));
+      const on = g.picks[idOf(ar, m)] >= 0;
+      lines.push({ l: `${CUR_W}%`, w: `${midL - CUR_W}%`, t: ya - 1, h: 2, on });
+      lines.push({ l: `${CUR_W}%`, w: `${midL - CUR_W}%`, t: yb - 1, h: 2, on });
+      lines.push({ l: `calc(${midL}% - 1px)`, w: 2, t: ya - 1, h: yb - ya + 2, on });
+      lines.push({ l: `${midL}%`, w: `${NXT_L - midL}%`, t: c - 1, h: 2, on });
+      if (ar < ROUNDS - 1) {
+        const nm = Math.floor(m / 2), nk = m % 2, it = kidsOf(ar + 1, nm)[nk];
+        nxt.push(slotButton(ar + 1, nm, it, nk, { left: `${NXT_L}%`, top: c - PH / 2, width: `${100 - NXT_L}%`, height: PH, fontSize: 12.5, borderRadius: 9 }));
+      }
+    }
+    // The mini map: the whole bracket as pips, one per matchup, filled once picked.
+    const MH = Math.max(56, (N / 2) * 7), STEP = 26;
+    const my = (r, m) => (m + 0.5) * MH / roundW(r);
+    const pips = [], mlines = [];
+    for (let r = 0; r < ROUNDS; r++) {
+      for (let m = 0; m < roundW(r); m++) {
+        const on = g.picks[idOf(r, m)] >= 0;
+        pips.push({ x: r * STEP, y: my(r, m) - 4, on });
+        if (r > 0) {
+          const a = my(r - 1, 2 * m), b = my(r - 1, 2 * m + 1), x0 = (r - 1) * STEP + 8, gm = r * STEP - 7;
+          mlines.push({ l: x0, t: a, w: gm - x0, h: 1 }, { l: x0, t: b, w: gm - x0, h: 1 }, { l: gm, t: a, w: 1, h: b - a }, { l: gm, t: my(r, m), w: r * STEP - gm, h: 1 });
+        }
+      }
+    }
+    const lastX = (ROUNDS - 1) * STEP;
+    mlines.push({ l: lastX + 8, t: MH / 2, w: 8, h: 1 });
+    const mapW = lastX + 34;
+    return (
+      <div className="bk-phone">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, margin: '12px 0 0' }}>
+          <div aria-hidden="true" style={{ position: 'relative', width: mapW, height: MH, flex: '0 0 auto' }}>
+            {mlines.map((ln, i) => <span key={`ml${i}`} style={{ position: 'absolute', left: ln.l, top: ln.t, width: ln.w, height: ln.h, background: NEUTRAL_LINE }} />)}
+            {pips.map((p, i) => <span key={`p${i}`} style={{ position: 'absolute', left: p.x, top: p.y, width: 8, height: 8, boxSizing: 'border-box', borderRadius: 4, background: p.on ? ACC_LINE : `var(--stg-ground, ${T.surface})`, border: p.on ? 0 : `1.5px solid var(--stg-mute, ${COLORS.faded})` }} />)}
+            <Trophy size={16} style={{ position: 'absolute', left: lastX + 17, top: MH / 2 - 8, color: ACC_LINE }} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED }}><b style={{ color: INK, fontSize: 15, fontVariantNumeric: 'tabular-nums' }}>{filled}</b> of {MATCHES} picked</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: FADED, lineHeight: 1.35 }}>{playing ? 'No feedback until you hand it in.' : 'Handed in. Every result is below.'}</span>
+          </div>
+        </div>
+        <div role="tablist" aria-label="Rounds" style={{ display: 'flex', gap: 6, margin: '12px 0 0' }}>
+          {Array.from({ length: ROUNDS }).map((_, r) => {
+            const active = r === ar, wr = roundW(r), made = madeIn(r);
+            const sub = playing ? `${made}/${wr}` : (perRound[r] ? `${perRound[r][0]}/${wr} right` : `${made}/${wr}`);
+            return (
+              <button key={r} type="button" role="tab" aria-selected={active} className="bk-tab" onClick={() => setBkRound(r)}
+                style={active
+                  ? { border: 0, background: `var(--stg-acc, ${COLORS.accent})`, color: `var(--stg-onramp, ${T.white})` }
+                  : { border: `1.5px solid ${NEUTRAL_LINE}`, background: 'transparent', color: (playing && made === wr) ? ACC_LINE : `var(--stg-ink2, ${COLORS.ink})` }}>
+                <b>{tabName(r)}</b><i>{sub}</i>
+              </button>
+            );
+          })}
+        </div>
+        <div style={{ position: 'relative', height: PY0 + w * SP, margin: '14px 0 0' }}>
+          <span style={{ position: 'absolute', left: 0, top: 0, fontFamily: MONO, fontSize: 10.5, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: ACC_LINE }}>{ROUND_NAME(ar, ROUNDS)} &middot; {ptsLabel(ar)}</span>
+          <span style={{ position: 'absolute', left: `${NXT_L}%`, top: 0, fontFamily: MONO, fontSize: 10.5, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED }}>{ar < ROUNDS - 1 ? `Feeds ${tabName(ar + 1)}` : 'Winner'}</span>
+          {lines.map((ln, i) => <span key={`pl${i}`} className="bk-ln" aria-hidden="true" style={{ left: ln.l, top: ln.t, width: ln.w, height: ln.h, background: ln.on ? ACC_LINE : NEUTRAL_LINE }} />)}
+          {slots}
+          {nxt}
+          {ar === ROUNDS - 1 && winBox({ left: `${NXT_L}%`, top: cy(0) - 30, width: `${100 - NXT_L}%`, height: 60 })}
+        </div>
+        {ar < ROUNDS - 1 && madeIn(ar) === w && (
+          <button type="button" className="bk-btn" onClick={() => setBkRound(ar + 1)} style={{ marginTop: 10, minHeight: 44 }}>Next: {ROUND_NAME(ar + 1, ROUNDS)} &rarr;</button>
+        )}
+      </div>
+    );
+  }
+
+  function renderBoard() {
+    return (
+      <>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', marginBottom: 14 }}>
+          <div style={{ flex: '1 1 320px', display: 'flex', alignItems: 'center', gap: 12, background: `var(--stg-acc-tint, ${COLORS.accentSoft})`, borderLeft: `4px solid ${ACC_LINE}`, borderRadius: 10, padding: '10px 14px' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flex: '0 0 auto', color: ACC_LINE }}><path d="M3 4h5v6h5" /><path d="M3 16h5v-6" /><path d="M13 10h4" /><path d="M17 7v6" /><path d="M17 10h4" /></svg>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
+              <span style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: ACC_LINE }}>Every matchup asks</span>
+              <span style={{ fontSize: 18, fontWeight: 800, color: INK, lineHeight: 1.25 }}>{PUZZLE.metric}</span>
+              {PUZZLE.asOf && <span style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: FADED }}>Figures as of {PUZZLE.asOf}</span>}
+            </div>
+          </div>
+          <span className="bk-desk" style={{ width: 150, fontSize: 12, fontWeight: 700, color: FADED, lineHeight: 1.4 }}>
+            {playing ? 'No feedback until you hand it in.' : `Handed in. ${filled} of ${MATCHES} picked.`}
+          </span>
+        </div>
+        {renderDesktop()}
+        {renderPhone()}
+        {started && (
+          <div className="bk-ctl">
+            <button type="button" className="bk-help" onClick={() => setShowHelp(true)} style={{ border: `1.5px solid ${NEUTRAL_LINE}`, background: 'transparent', color: INK, fontWeight: 700 }}>How to play</button>
+            {filled > 0 && <button type="button" className="bk-clear" onClick={clearAll} style={{ border: `1.5px solid ${NEUTRAL_LINE}`, background: 'transparent', color: INK, fontWeight: 700 }}><Eraser size={14} /> Clear</button>}
+            <span className="bk-note">Changing a pick clears everything it fed.</span>
+            <button type="button" className="bk-hand" onClick={submit} disabled={!complete}
+              style={complete
+                ? { border: 0, background: `var(--stg-acc, ${COLORS.accent})`, color: `var(--stg-onramp, ${T.white})`, fontWeight: 800, fontSize: 15 }
+                : { border: `1.5px dashed ${NEUTRAL_LINE}`, background: 'transparent', color: FADED, fontWeight: 800, fontSize: 15, cursor: 'not-allowed' }}>
+              <Trophy size={15} /> Hand in the bracket{complete ? '' : ` · ${MATCHES - filled} ${MATCHES - filled === 1 ? 'pick' : 'picks'} left`}
+            </button>
+          </div>
+        )}
+      </>
+    );
+  }
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
@@ -432,18 +658,38 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.bk-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .bk-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .bk-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .bk-rounds{display:flex;gap:10px;align-items:flex-start;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin;}
-          .bk-col{flex:0 0 auto;width:168px;display:flex;flex-direction:column;justify-content:space-around;gap:8px;min-height:100%;}
-          .bk-rh{font-family:${MONO};font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:${FADED};margin-bottom:2px;}
-          .bk-m{border: 1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:9px;overflow:hidden;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};}
-          .bk-s{display:block;width:100%;text-align:left;font-family:${SANS};font-size:12.5px;font-weight:700;color:${INK};background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border:none;border-bottom:1px solid var(--stg-line, rgba(28,30,36,0.08));padding:8px 9px;cursor:pointer;}
-          .bk-s:last-child{border-bottom:none;}
-          .bk-s:hover:not(:disabled){background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .bk-s:disabled{cursor:default;color:var(--muted);}
-          .bk-s.on{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};font-weight:800;box-shadow:inset 3px 0 0 var(--stg-acc, ${COLORS.accent});}
-          .bk-s.right{background:${COLORS.greenSoft};color:#14532d;box-shadow:inset 3px 0 0 ${COLORS.green};}
-          .bk-s.wrong{background:${COLORS.redSoft};color:#7f1d1d;text-decoration:line-through;box-shadow:inset 3px 0 0 ${COLORS.redInk};}
-          .bk-v{font-family:${MONO};font-size:10px;font-weight:500;color:${FADED};margin-left:6px;}
+          .bk-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin;}
+          .bk-board{position:relative;}
+          .bk-hd{position:absolute;top:0;display:flex;flex-direction:column;gap:2px;font-family:${MONO};font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;}
+          .bk-hd i{font-style:normal;font-weight:700;letter-spacing:.06em;color:var(--stg-mute, ${COLORS.faded});font-variant-numeric:tabular-nums;}
+          .bk-ln{position:absolute;border-radius:1px;}
+          .bk-s{position:absolute;box-sizing:border-box;margin:0;display:flex;align-items:center;gap:6px;text-align:left;font-family:${SANS};font-size:12.5px;font-weight:700;line-height:1.15;color:var(--stg-ink, ${COLORS.ink});background:var(--stg-cell, var(--white));border:1px solid var(--stg-cell-line, rgba(28,30,36,0.3));border-radius:7px;padding:0 8px 0 11px;cursor:pointer;}
+          .bk-s .bk-n{flex:1 1 auto;min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+          .bk-s:hover:not(:disabled){background:color-mix(in srgb, var(--stg-ink, ${COLORS.ink}) 9%, var(--stg-cell, var(--white)));}
+          .bk-s:disabled{cursor:default;}
+          .bk-s.wait{background:transparent;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.3));color:var(--stg-mute, ${COLORS.faded});font-family:${MONO};font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+          .bk-s.on{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 18%, var(--stg-cell, var(--white)));border-color:transparent;box-shadow:inset 4px 0 0 var(--stg-acc-ink, ${COLORS.accent});font-weight:800;}
+          .bk-s.off{background:transparent;color:var(--stg-mute, ${COLORS.faded});font-weight:600;}
+          .bk-s.right{background:color-mix(in srgb, var(--stg-good, ${COLORS.green}) 22%, var(--stg-cell, var(--white)));border-color:transparent;box-shadow:inset 4px 0 0 var(--stg-good, ${COLORS.green});font-weight:800;}
+          .bk-s.wrong{background:color-mix(in srgb, var(--stg-bad, ${COLORS.redInk}) 18%, var(--stg-cell, var(--white)));border-color:transparent;box-shadow:inset 4px 0 0 var(--stg-bad, ${COLORS.redInk});}
+          .bk-s.wrong .bk-n{text-decoration:line-through;}
+          .bk-v{flex:0 0 auto;font-family:${MONO};font-size:10.5px;font-weight:700;color:var(--stg-ink2, ${COLORS.faded});font-variant-numeric:tabular-nums;}
+          .bk-win{position:absolute;box-sizing:border-box;border-radius:10px;background:var(--stg-cell, var(--white));display:flex;align-items:center;justify-content:center;gap:7px;padding:0 10px;font-family:${SANS};font-size:13px;font-weight:800;text-align:center;line-height:1.2;}
+          .bk-tab{flex:1 1 0;min-width:0;min-height:50px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0 2px;cursor:pointer;font-family:${SANS};}
+          .bk-tab b{font-size:12px;font-weight:800;white-space:nowrap;}
+          .bk-tab i{font-style:normal;font-family:${MONO};font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums;}
+          .bk-phone{display:none;}
+          .bk-ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:16px 0 6px;}
+          .bk-ctl .bk-note{flex:1 1 160px;font-size:12px;font-weight:700;color:var(--stg-mute, ${COLORS.faded});text-align:right;line-height:1.4;}
+          .bk-ctl button{min-height:48px;border-radius:12px;font-family:${SANS};font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 16px;}
+          @media (max-width:640px), (pointer:coarse){
+            .bk-desk{display:none;}
+            .bk-phone{display:block;}
+            .bk-ctl .bk-help{display:none;}
+            .bk-ctl .bk-note{flex:1 1 100%;order:-1;text-align:left;}
+            .bk-ctl .bk-clear{flex:1 1 0;}
+            .bk-ctl .bk-hand{flex:2.6 1 0;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -489,76 +735,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
 
-        {!preStart && (
-          <>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 10 }}>
-              <span style={{ fontSize: 16, fontWeight: 800, color: ACC_DEEP_INK, background: `color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent)`, border: `1.5px solid var(--stg-line, ${COLORS.accent})`, borderRadius: 8, padding: '7px 12px' }}>{PUZZLE.metric}</span>
-              <span style={{ fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED }}>
-                picked <b style={{ color: INK, fontWeight: 500 }}>{filled}</b> of {MATCHES}
-                {!playing && <> &nbsp;&middot;&nbsp; scored <b style={{ color: INK, fontWeight: 500 }}>{score}</b>/{TOTAL}</>}
-              </span>
-              {PUZZLE.asOf && (
-                <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', color: FADED }}>figures as of {PUZZLE.asOf}</span>
-              )}
-            </div>
-
-            <div className="bk-rounds">
-              {Array.from({ length: ROUNDS }).map((_, r) => {
-                const w = N / Math.pow(2, r + 1);
-                return (
-                  <div key={r} className="bk-col">
-                    <div className="bk-rh">{ROUND_NAME(r, ROUNDS)}</div>
-                    {Array.from({ length: w }).map((__, m) => {
-                      const kids = kidsOf(r, m);
-                      const mine = g.picks[idOf(r, m)];
-                      const truth = TRUE[idOf(r, m)];
-                      return (
-                        <div key={m} className="bk-m">
-                          {kids.map((it, k) => {
-                            const empty = it == null || it < 0;
-                            const chosen = !empty && mine === it;
-                            let cls = 'bk-s';
-                            if (!playing) {
-                              if (chosen && it === truth) cls += ' right';
-                              else if (chosen) cls += ' wrong';
-                              else if (solShown && it === truth) cls += ' on';
-                            } else if (chosen) cls += ' on';
-                            return (
-                              <button key={k} type="button" className={cls} disabled={empty || !playing}
-                                onClick={() => pick(r, m, it)}
-                                title={empty ? 'Waiting on an earlier pick' : PUZZLE.items[it].name}>
-                                {empty ? '—' : PUZZLE.items[it].name}
-                                {!playing && solShown && !empty && <span className="bk-v">{fmtValue(PUZZLE.items[it].value, PUZZLE.unit)}</span>}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-              <div className="bk-col" style={{ width: 132 }}>
-                <div className="bk-rh">Winner</div>
-                <div className="bk-m" style={{ borderColor: COLORS.gold, background: STAGE ? 'var(--stg-surf2)' : '#fffbeb' }}>
-                  <div style={{ padding: '10px 9px', fontSize: 13, fontWeight: 800, color: playing ? `var(--stg-mute, ${COLORS.faded})` : COLORS.gold, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Trophy size={13} />
-                    {(playing || !solShown) ? (g.picks[MATCHES - 1] >= 0 ? PUZZLE.items[g.picks[MATCHES - 1]].name : 'your call') : champion.name}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-
-        {started && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '14px 0 6px' }}>
-            <button type="button" className="bk-btn" onClick={submit} disabled={!complete} style={complete ? { background: `var(--stg-acc, ${COLORS.accent})`, borderColor: COLORS.accent, color: `var(--stg-onramp, ${T.white})` } : { opacity: 0.45, cursor: 'not-allowed' }}>
-              <Trophy size={14} /> Hand in the bracket
-            </button>
-            {filled > 0 && <button type="button" className="bk-btn" onClick={clearAll}><Eraser size={14} /> Clear</button>}
-          </div>
-        )}
+        {!preStart && renderBoard()}
 
 
           </div>
@@ -723,8 +900,8 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
     const rows = perRound.map(([hit, of], r) => `${ROUND_NAME(r, ROUNDS).replace('Round of ', 'R')} ${hit}/${of}`).join(' · ');
     const streakBit = isTodays && myStats.cur >= 2 && g.status !== 'playing' ? ` · streak ${myStats.cur}` : '';
     const text = playing
-      ? `Bracket #${PUZZLE.num} — the daily bracket of facts from Mind Loft.\n${withRef(`mindloftdaily.com/bracket${isTodays ? '' : `?p=${PUZZLE.num}`}`)}`
-      : `Bracket #${PUZZLE.num} — ${score}/${TOTAL}\n${rows}${streakBit}\n${withRef(`mindloftdaily.com/bracket${isTodays ? '' : `?p=${PUZZLE.num}`}`)}`;
+      ? `Bracket #${PUZZLE.num}: the daily bracket of facts from Mind Loft.\n${withRef(`mindloftdaily.com/bracket${isTodays ? '' : `?p=${PUZZLE.num}`}`)}`
+      : `Bracket #${PUZZLE.num} · ${score}/${TOTAL}\n${rows}${streakBit}\n${withRef(`mindloftdaily.com/bracket${isTodays ? '' : `?p=${PUZZLE.num}`}`)}`;
     if (notifyShareCredit(text)) return;
     try { if (typeof navigator !== 'undefined' && navigator.share && isMobileDevice()) { navigator.share({ text }).catch(() => {}); return; } } catch (e) {}
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}

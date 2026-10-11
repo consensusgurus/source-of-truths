@@ -21,7 +21,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { X, Smartphone } from 'lucide-react';
+import { X, Smartphone, HelpCircle } from 'lucide-react';
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
@@ -552,17 +552,77 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
           .sl-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           .sl-btn:disabled{opacity:.45;cursor:default;}
           .sl-hand{position:sticky;top:0;z-index:6;background:${STAGE ? 'var(--stg-ground)' : T.surface};padding:6px 0 10px;}
-          .sl-card{border:2px solid var(--stg-acc, ${COLORS.accent});border-radius:10px;padding:12px 14px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;background:var(--stg-cell, ${T.white});color:${INK};}
+          .sl-card{border:2px solid var(--stg-acc-ink, ${COLORS.accent});border-radius:14px;display:flex;align-items:stretch;background:var(--stg-cell, ${T.white});color:${INK};overflow:hidden;}
           .sl-card.pop{animation:slpop .22s ease-out;}
           @keyframes slpop{from{opacity:0}to{opacity:1}}
-          .sl-card .lab{grid-column:1/-1;font-family:${MONO};font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-acc-ink, ${COLORS.accent});}
+          .sl-card .lab{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-acc-ink, ${COLORS.accent});}
           /* Two lines of room whatever the name, so the card, and everything
              under it, holds one height from deal to deal. */
-          .sl-card .nm{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.05;text-wrap:balance;min-height:2.1em;display:flex;align-items:center;}
-          .sl-note{font-family:${MONO};font-size:11px;line-height:17px;min-height:17px;margin-top:6px;color:var(--stg-acc-ink, ${COLORS.accent});}
-          .sl-card .cnt{font-family:${MONO};font-size:12px;color:${FADED};text-align:right;white-space:nowrap;}
+          .sl-card .nm{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.08;text-wrap:balance;min-height:2.16em;display:flex;align-items:center;}
+          .sl-note{font-size:11.5px;font-weight:700;line-height:17px;min-height:17px;margin-top:6px;color:var(--stg-acc-ink, ${COLORS.accent});}
+          .sl-card .cnt{font-size:11px;font-weight:700;color:${FADED};white-space:nowrap;}
+          .sl-crane{width:74px;flex:none;display:flex;justify-content:center;padding-top:10px;background:var(--stg-acc-tint, ${COLORS.accentSoft});color:var(--stg-acc-ink, ${COLORS.accent});}
+          .sl-crane svg{width:40px;height:64px;}
+          .sl-cbody{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:3px;padding:12px 16px;}
+          .sl-cnt-n{display:none;}
+          .sl-cside{flex:none;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;padding:0 18px;gap:2px;max-width:120px;text-align:right;}
+          .sl-cside b{font-size:22px;font-weight:800;color:${INK};font-variant-numeric:tabular-nums;line-height:1;}
+          .sl-cside .k{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:${FADED};}
           .sl-axis{font-size:15px;font-weight:800;letter-spacing:-.01em;color:${INK};margin:0 0 2px;}
           .sl-sub{font-size:12.5px;font-weight:600;color:${FADED};margin:0 0 10px;}
+          .sl-sky{display:flex;align-items:stretch;height:420px;margin:6px 4px 0;}
+          .sl-col{flex:1 1 0;min-width:0;max-width:62px;display:flex;flex-direction:column;}
+          .sl-twwrap{flex:1 1 auto;display:flex;align-items:flex-end;padding:0 3px;border-bottom:3px solid var(--stg-line3, rgba(28,30,36,0.45));}
+          .sl-tw{position:relative;width:100%;height:var(--h);box-sizing:border-box;margin:0;padding:0;border:2px solid var(--stg-cell-line, rgba(28,30,36,0.44));border-bottom:0;border-radius:6px 6px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;overflow:hidden;font-family:${SANS};color:${INK};background:transparent;}
+          .sl-tw.built{background:repeating-linear-gradient(to bottom, var(--stg-cell, ${T.white}) 0 13px, var(--stg-surf2, #e4e9f1) 13px 15px);}
+          .sl-tw.built::before{content:"";position:absolute;left:-2px;right:-2px;top:-2px;height:5px;background:var(--stg-acc-ink, ${COLORS.accent});}
+          .sl-tw.open{border-style:dashed;cursor:pointer;color:${FADED};}
+          .sl-tw.open:hover,.sl-tw.open:focus-visible{border-style:solid;border-color:var(--stg-acc-ink, ${COLORS.accent});background:var(--stg-acc-tint, ${COLORS.accentSoft});color:var(--stg-acc-ink, ${COLORS.accent});outline:none;}
+          .sl-twt{writing-mode:vertical-rl;transform:rotate(180deg);padding:12px 0;font-size:13px;font-weight:800;line-height:1.15;max-height:calc(100% - 8px);overflow:hidden;text-align:left;}
+          .sl-tw.open .sl-twt{font-size:11px;letter-spacing:.16em;text-transform:uppercase;}
+          .sl-twt .o2{display:none;}
+          .sl-tw.open:hover .o1,.sl-tw.open:focus-visible .o1{display:none;}
+          .sl-tw.open:hover .o2,.sl-tw.open:focus-visible .o2{display:inline;}
+          .sl-twl{display:none;}
+          .sl-base{height:38px;display:flex;flex-direction:column;align-items:center;gap:2px;padding-top:7px;}
+          .sl-bn{font-size:15px;font-weight:800;color:${FADED};font-variant-numeric:tabular-nums;}
+          .sl-bn.on{color:${INK};}
+          .sl-bl{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:${FADED};white-space:nowrap;}
+          .sl-skycap{font-size:12px;font-weight:600;color:${FADED};text-align:center;margin-top:8px;}
+          .sl-narrow{display:none;}
+          .sl-tools{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;align-items:center;}
+          .sl-tbtn{min-height:46px;border-radius:12px;font-size:14px;font-weight:700;padding:0 18px;justify-content:center;}
+          .sl-keys{font-size:11.5px;font-weight:600;color:${FADED};}
+          .sl-howto{margin-left:auto;}
+          @media(max-width:640px){
+            .sl-crane{width:auto;padding:10px 0 0 12px;background:transparent;}
+            .sl-crane svg{width:26px;height:42px;}
+            .sl-cbody{padding:10px 12px;gap:2px;}
+            .sl-card .nm{font-size:19px;min-height:2.3em;}
+            .sl-cnt-n{display:block;}
+            .sl-cside{display:none;}
+            .sl-sky{flex-direction:column;height:auto;margin:4px 0 0;}
+            .sl-col{flex-direction:row;max-width:none;align-items:stretch;}
+            .sl-base{order:-1;width:24px;height:auto;padding:0 8px 0 0;flex-direction:row;align-items:center;justify-content:flex-end;}
+            .sl-bl{display:none;}
+            .sl-col{min-width:0;width:100%;}
+            .sl-twwrap{flex:1 1 0;min-width:0;padding:3px 0;border-bottom:0;border-left:3px solid var(--stg-line3, rgba(28,30,36,0.45));align-items:center;}
+            .sl-tw{width:var(--w);max-width:100%;min-width:0;flex:none;height:auto;min-height:44px;border:2px solid var(--stg-cell-line, rgba(28,30,36,0.44));border-left:0;border-radius:0 8px 8px 0;flex-direction:row;justify-content:flex-start;padding:4px 12px 4px 10px;text-align:left;}
+            .sl-tw.open{border-style:dashed;border-left:0;}
+            .sl-tw.open:hover,.sl-tw.open:focus-visible{border-left:0;}
+            .sl-tw.built{background:repeating-linear-gradient(to right, var(--stg-cell, ${T.white}) 0 13px, var(--stg-surf2, #e4e9f1) 13px 15px);}
+            .sl-tw.built::before{left:auto;top:-2px;bottom:-2px;right:-2px;width:5px;height:auto;}
+            .sl-twt{writing-mode:horizontal-tb;transform:none;padding:0;font-size:14px;max-height:none;min-width:0;overflow-wrap:anywhere;}
+            .sl-tw.open .sl-twt{font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;}
+            .sl-twl{display:block;margin-left:auto;padding-left:8px;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:${FADED};white-space:nowrap;}
+            .sl-skycap{text-align:left;padding-left:30px;font-size:11px;}
+            .sl-wide{display:none;}
+            .sl-narrow{display:inline;}
+            .sl-keys{display:none;}
+            .sl-tools{gap:8px;}
+            .sl-tbtn{flex:1 1 0;min-height:50px;font-size:15px;}
+            .sl-howto{margin-left:0;}
+          }
           .sl-slots{display:grid;gap:6px;}
           .sl-slot{display:grid;grid-template-columns:40px 1fr auto;align-items:center;min-height:46px;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.35));border-radius:8px;background:var(--stg-cell, ${T.white});text-align:left;padding:0;overflow:hidden;color:${INK};font-family:${SANS};}
           .sl-slot .n{font-family:${MONO};font-size:13px;color:${FADED};text-align:center;font-variant-numeric:tabular-nums;}
@@ -640,17 +700,68 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
             <div className="sl-hand">
               {current != null ? (
                 <div key={dealt} className="sl-card pop" role="status" aria-live="polite">
-                  <div className="lab">Item {k + 1} of {N} · in hand</div>
-                  <div className="nm">{ITEMS[current][0]}</div>
-                  <div className="cnt">{openCount === 1 ? 'the last one, one slot left' : `${openCount - 1} still to come`}</div>
+                  <span className="sl-crane" aria-hidden="true">
+                    <svg viewBox="0 0 40 64" fill="none" stroke="currentColor" strokeLinecap="round">
+                      <path d="M4 4 H36" strokeWidth="3" />
+                      <path d="M20 4 V38" strokeWidth="2.5" />
+                      <path d="M20 38 C 20 50, 32 50, 32 42" strokeWidth="3" />
+                      <path d="M10 4 L20 14 L30 4" strokeWidth="1.5" />
+                    </svg>
+                  </span>
+                  <span className="sl-cbody">
+                    <span className="lab">Item {k + 1} of {N} · in hand</span>
+                    <span className="nm">{ITEMS[current][0]}</span>
+                    <span className="cnt sl-cnt-n">{openCount === 1 ? 'the last one, one slot left' : `${openCount - 1} still to come`}</span>
+                  </span>
+                  <span className="sl-cside">
+                    {openCount === 1
+                      ? <span className="k">the last one, one slot left</span>
+                      : <><b>{openCount - 1}</b><span className="k">still to come</span></>}
+                  </span>
                 </div>
               ) : null}
               {/* The line is always in the flow: a notice that came and went
                   used to push the slot list down and back up on every tap. */}
-              <div className="sl-note" aria-live="polite">{notice ? notice.msg : ' '}</div>
+              <div className="sl-note" aria-live="polite">{notice ? notice.msg : ' '}</div>
             </div>
           )}
 
+          {playing ? (
+            <>
+              {/* THE SKYLINE. One tower per slot, stepping down by RANK: slot 1
+                  is always the tallest. Never by the real figures, which would
+                  tell the player where an item goes before the reveal. */}
+              <div className="sl-sky" role="group" aria-label={`${N} slots`}>
+                {placed.map((it, s) => {
+                  const open = it == null;
+                  const Tag = open ? 'button' : 'div';
+                  const step = N > 1 ? s / (N - 1) : 0;
+                  return (
+                    <div key={s} className="sl-col" style={{ '--h': `${100 - step * 55}%`, '--w': `${100 - step * 48}%` }}>
+                      <div className="sl-twwrap">
+                        <Tag type={open ? 'button' : undefined} className={`sl-tw${open ? ' open' : ' built'}`}
+                          onClick={open ? () => place(s) : undefined}
+                          aria-label={open ? `Slot ${s + 1}, open` : `Slot ${s + 1}: ${ITEMS[it][0]}`}>
+                          {open
+                            ? <span className="sl-twt"><span className="o1">Open</span><span className="o2">Drop here</span></span>
+                            : <span className="sl-twt">{ITEMS[it][0]}</span>}
+                          {open && slotLabel(s) && <span className="sl-twl" aria-hidden="true">{slotLabel(s)}</span>}
+                        </Tag>
+                      </div>
+                      <div className="sl-base" aria-hidden="true">
+                        <span className={'sl-bn' + (open ? '' : ' on')}>{s + 1}</span>
+                        <span className="sl-bl">{slotLabel(s) || ''}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="sl-skycap">
+                <span className="sl-wide">The towers step down by slot, not by the real figures. Those show at the reveal.</span>
+                <span className="sl-narrow">Bars step down by slot, not by the real figures.</span>
+              </div>
+            </>
+          ) : (
           <div className="sl-slots" role="group" aria-label={`${N} slots`}>
             {placed.map((it, s) => {
               const open = it == null;
@@ -677,11 +788,15 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
               );
             })}
           </div>
+          )}
 
           {playing && started && (
-            <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-              <button type="button" className="sl-btn" onClick={giveUp} style={{ fontSize: 12.5, padding: '7px 12px' }}>Give up</button>
-              <span style={{ fontFamily: MONO, fontSize: 10.5, color: FADED }}>Keys 1 to {N > 9 ? '9 and 0' : N} place too.</span>
+            <div className="sl-tools">
+              <button type="button" className="sl-btn sl-tbtn" onClick={giveUp}>Give up</button>
+              <span className="sl-keys">Keys 1 to {N > 9 ? '9 and 0' : N} place too.</span>
+              <button type="button" className="sl-btn sl-tbtn sl-howto" onClick={() => setShowHelp(true)}>
+                <HelpCircle size={16} /> How to play
+              </button>
             </div>
           )}
 

@@ -196,6 +196,28 @@ const LIST = ANIMALS.map((a) => ({ name: a.name, forms: [a.name, ...(a.alt || []
 const BY_NAME = new Map(ANIMALS.map((a) => [a.name, a]));
 function sharedDepth(a, b) { let i = 0; while (i < a.length && i < b.length && a[i] === b[i]) i++; return i; }
 
+// PHONE: the guess box sits in the flow under the tree, never pinned. When the
+// keyboard opens, line the input row up with the top of the keyboard instead
+// of letting the browser centre it, so as much of the tree as fits stays in
+// view above it (the Flank pattern).
+function keepBoardInView(el) {
+  if (typeof window === 'undefined' || window.innerWidth > 640 || !el) return;
+  const vv = window.visualViewport;
+  const fit = () => {
+    const dock = el.closest('.cl-inrow') || el;
+    const top = vv ? vv.offsetTop : 0;
+    const h = vv ? vv.height : window.innerHeight;
+    const want = dock.getBoundingClientRect().bottom - (top + h) + 8;
+    if (Math.abs(want) > 2) window.scrollBy(0, want);
+  };
+  if (vv) {
+    const once = () => { vv.removeEventListener('resize', once); setTimeout(fit, 60); };
+    vv.addEventListener('resize', once);
+    setTimeout(() => vv.removeEventListener('resize', once), 1200);
+  }
+  setTimeout(fit, 350);
+}
+
 function freshState() {
   return { v: 1, guesses: [], hintDepth: 0, hintUsed: false, status: 'playing', t0: null, tEnd: null };
 }
@@ -487,6 +509,31 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
     } catch (e) {}
   }
 
+  // THE TREE AS ROWS: each known branch on the trunk, the guesses that share
+  // exactly that branch hanging off it, then the branches not found yet and the
+  // hidden animal. Built only from what the board already shows: the known
+  // branches, the branch count still to go, and each guess's own family tree.
+  const remBranches = PATH.length - known;
+  const segAfter = (i) => (!hideSol || i + 1 < known ? 'solid' : (remBranches > 0 ? 'dash' : 'dot'));
+  const treeRows = [];
+  for (let i = 0; i < known; i++) {
+    const deep = hideSol && i === known - 1;
+    treeRows.push({ k: 'br', i, deep, top: i > 0 ? segAfter(i - 1) : null, bot: segAfter(i) });
+    guesses.forEach((nm, j) => {
+      if (nm === PUZZLE.answer || depths[j] !== i + 1) return;
+      const a = BY_NAME.get(nm);
+      const nxt = a && a.path[depths[j]];
+      treeRows.push({ k: 'tw', j, line: segAfter(i), band: deep, best: playing && j === bestIdx,
+        split: nxt ? `splits off to ${nxt}` : 'no deeper branch of its own' });
+    });
+  }
+  if (hideSol && remBranches > 0) treeRows.push({ k: 'gh', n: remBranches });
+  treeRows.push({ k: 'leaf', line: hideSol ? 'dot' : 'solid' });
+  const leafNote = (remBranches > 0
+    ? `${remBranches === 1 ? 'One more branch' : `${remBranches} more branches`} down, then the animal.`
+    : 'The animal sits right on this branch.')
+    + (!playing ? '' : guesses.length === 0 ? ' Any animal is a fair first guess.' : ` Guess from inside ${PATH[known - 1]}.`);
+
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
@@ -532,7 +579,6 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
           .cl-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
           .cl-lab{font-size:11.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:${FADED};margin:0 0 6px;}
           .cl-lab b{color:${INK};}
-          .cl-none{font-size:13px;font-weight:600;color:${FADED};}
           .cl-inwrap{margin-top:14px;}
           .cl-in{flex:1 1 auto;min-width:0;height:46px;box-sizing:border-box;border:2px solid var(--stg-ink2, ${COLORS.ink});border-radius:8px;padding:0 12px;font-family:${SANS};font-size:16px;font-weight:700;color:${INK};background:var(--stg-cell, #ffffff);}
           .cl-in:focus{outline:3px solid var(--stg-acc, ${COLORS.accent});outline-offset:1px;}
@@ -542,17 +588,93 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
           .cl-opt:last-child{border-bottom:none;}
           .cl-opt.top{box-shadow:inset 4px 0 0 var(--stg-acc, ${COLORS.accent});}
           .cl-hint{margin-top:7px;font-size:12px;font-weight:700;color:${FADED};}
-          .cl-tree{display:flex;flex-direction:column;gap:4px;}
-          .cl-rung{padding:8px 11px;font-size:13.5px;font-weight:700;color:${INK};background:var(--stg-cell, #ffffff);border:1px solid var(--stg-cell-line, rgba(11,15,26,0.3));border-radius:6px;}
-          .cl-rung.deep{border:2px solid var(--stg-acc, ${COLORS.accent});}
-          .cl-rung.hid{border:2px dashed var(--stg-acc, ${COLORS.accent});background:transparent;font-weight:800;}
-          .cl-rung.ans{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #ffffff);border-color:var(--stg-acc, ${COLORS.accent});font-weight:800;}
-          .cl-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 11px;margin-top:5px;background:var(--stg-cell, #ffffff);border:1px solid var(--stg-cell-line, rgba(11,15,26,0.3));border-radius:6px;color:${INK};}
-          .cl-row.best{border:2px solid var(--stg-acc, ${COLORS.accent});}
-          .cl-row.hit{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #ffffff);border-color:var(--stg-acc, ${COLORS.accent});}
-          .cl-nm{font-size:14.5px;font-weight:800;}
-          .cl-sh{font-size:12.5px;font-weight:700;text-align:right;}
           .cl-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+          .cl-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin:2px 0 12px;}
+          .cl-head .cl-lab{color:var(--stg-acc-ink, ${COLORS.accent});margin:0 0 3px;}
+          .cl-sub{font-size:13.5px;font-weight:700;color:${FADED};line-height:1.4;}
+          .cl-meter{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:none;}
+          .cl-meter span{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:${FADED};white-space:nowrap;}
+          .cl-meter b{color:${INK};}
+          .cl-bars{display:flex;gap:4px;}
+          .cl-bar{width:22px;height:8px;border-radius:4px;box-sizing:border-box;border:1.5px solid var(--stg-acc-ink, ${COLORS.accent});}
+          .cl-bar.on{background:var(--stg-acc-ink, ${COLORS.accent});}
+          .cl-bar.off{border-style:dashed;}
+          .cl-panel{background:var(--stg-ground, #f6f7f9);border:1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:14px;padding:12px 0;overflow:hidden;}
+          .cl-r{position:relative;display:flex;align-items:center;min-height:46px;}
+          .cl-r.band{background:var(--stg-acc-tint, ${COLORS.accentSoft});}
+          .cl-r.tw{min-height:52px;}
+          .cl-lbl{width:176px;flex:none;box-sizing:border-box;padding-right:12px;display:flex;flex-direction:column;align-items:flex-end;text-align:right;gap:1px;}
+          .cl-bn{font-size:15px;font-weight:800;color:${INK};line-height:1.25;}
+          .cl-bt{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:${FADED};}
+          .cl-r.deep .cl-bn,.cl-r.deep .cl-bt{color:var(--stg-acc-ink, ${COLORS.accent});}
+          .cl-r.deep .cl-bn{font-size:16px;}
+          .cl-r.ghost .cl-bn{color:${FADED};}
+          .cl-tk{position:relative;width:40px;flex:none;align-self:stretch;}
+          .cl-ln{position:absolute;left:18px;width:0;border-left:3px solid var(--stg-acc-ink, ${COLORS.accent});}
+          .cl-ln.dash{border-left-style:dashed;}
+          .cl-ln.dot{border-left-style:dotted;}
+          .cl-ln.t{top:0;height:50%;}
+          .cl-ln.b{top:50%;bottom:0;}
+          .cl-nd{position:absolute;left:13px;top:50%;margin-top:-6.5px;width:13px;height:13px;border-radius:50%;background:var(--stg-acc-ink, ${COLORS.accent});}
+          .cl-r.deep .cl-nd{left:8px;margin-top:-11.5px;width:23px;height:23px;box-sizing:border-box;border:2px solid var(--stg-acc-ink, ${COLORS.accent});background:var(--stg-ground, #ffffff);box-shadow:inset 0 0 0 4px var(--stg-ground, #ffffff), inset 0 0 0 11px var(--stg-acc-ink, ${COLORS.accent});}
+          .cl-r.ghost .cl-nd{left:10px;margin-top:-9.5px;width:19px;height:19px;box-sizing:border-box;border:2px dashed var(--stg-acc-ink, ${COLORS.accent});background:var(--stg-cell, #ffffff);}
+          /* The finish beat (lib/finish-beats.js, def clade) draws the trunk down
+             .cl-rung markers and dims .cl-row cards: one marker per branch, 6px
+             right of the trunk, so the line it draws lands on the trunk. */
+          .cl-mk{position:absolute;left:25px;top:50%;width:1px;height:2px;margin-top:-1px;}
+          .cl-tw{position:absolute;left:21px;right:-12px;top:50%;margin-top:-1px;height:2px;background:var(--stg-cell-line, rgba(11,15,26,0.44));}
+          .cl-r.best .cl-tw{background:var(--stg-acc-ink, ${COLORS.accent});}
+          .cl-ct{flex:1 1 auto;min-width:0;padding:0 14px 0 12px;}
+          .cl-card{min-height:44px;box-sizing:border-box;padding:5px 10px;border-radius:10px;background:var(--stg-cell, #ffffff);border:1.5px solid var(--stg-cell-line, rgba(11,15,26,0.44));display:flex;align-items:center;gap:10px;color:${INK};}
+          .cl-r.best .cl-card{border:2px solid var(--stg-acc-ink, ${COLORS.accent});}
+          .cl-n{width:22px;height:22px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;background:var(--stg-surf2, #e4e9f1);color:${INK};}
+          .cl-r.best .cl-n{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #ffffff);}
+          .cl-cw{display:flex;flex-direction:column;gap:1px;min-width:0;}
+          .cl-cn{font-size:14px;font-weight:800;line-height:1.2;}
+          .cl-cs{font-size:11.5px;font-weight:700;line-height:1.3;color:${FADED};}
+          .cl-leaf{display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;padding:6px 0 4px;}
+          .cl-box{min-height:42px;box-sizing:border-box;padding:4px 14px;border:2px dashed var(--stg-acc-ink, ${COLORS.accent});border-radius:11px;display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:800;color:${INK};}
+          .cl-box i{font-style:normal;font-size:17px;color:var(--stg-acc-ink, ${COLORS.accent});}
+          .cl-box.ans{border-style:solid;background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #ffffff);}
+          .cl-box.ans .cl-n{background:var(--stg-onramp, #ffffff);color:var(--stg-acc, ${COLORS.accent});}
+          .cl-box.ans small{font-size:11.5px;font-weight:700;opacity:.9;}
+          .cl-note{flex:1 1 220px;font-size:13px;font-weight:700;line-height:1.4;color:${FADED};}
+          .cl-leafr .cl-lbl{display:none;}
+          .cl-leafr .cl-tk{margin-left:176px;}
+          .cl-pips{display:flex;gap:5px;flex:none;}
+          .cl-pip{width:10px;height:10px;border-radius:50%;box-sizing:border-box;border:1.5px solid var(--stg-cell-line, rgba(11,15,26,0.44));}
+          .cl-pip.on{background:var(--stg-acc-ink, ${COLORS.accent});border-color:var(--stg-acc-ink, ${COLORS.accent});}
+          .cl-left{display:flex;align-items:center;gap:12px;margin-top:9px;}
+          .cl-left .cl-hint{margin-top:0;font-size:13px;}
+          .cl-tools{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap;}
+          .cl-hbtn{display:inline-flex;align-items:center;gap:8px;font-family:${SANS};font-weight:800;font-size:14px;background:transparent;color:var(--stg-acc-ink, ${COLORS.accent});border:1.5px solid var(--stg-line3, rgba(28,30,36,0.35));border-radius:12px;padding:0 16px;min-height:44px;cursor:pointer;}
+          .cl-hcap{font-size:12px;font-weight:700;color:${FADED};}
+          .cl-in{height:52px;border-radius:12px;font-size:17px;}
+          .cl-go{height:52px;border-radius:12px;padding:0 24px;}
+          .cl-ctl{display:flex;flex-direction:column;margin-top:16px;}
+          .cl-inwrap{margin-top:0;position:relative;}
+          .cl-hshow{display:none;}
+          .cl-opt{min-height:44px;}
+          @media(max-width:640px){
+            .cl-head{align-items:center;}
+            .cl-sub{display:none;}
+            .cl-bar{width:16px;height:7px;}
+            .cl-panel{padding:8px 0 10px;}
+            .cl-lbl{order:3;width:auto;flex:1 1 auto;flex-direction:row;align-items:center;justify-content:space-between;text-align:left;gap:8px;padding:0 12px 0 4px;}
+            .cl-lbl.e{display:none;}
+            .cl-tk{width:40px;}
+            .cl-ct{padding:0 12px 0 14px;}
+            .cl-leafr .cl-tk{margin-left:0;}
+            .cl-leafr .cl-ct{padding-left:12px;}
+            .cl-hhide{display:none;}
+            .cl-hshow{display:inline;}
+            .cl-tools{order:-1;margin:0 0 10px;}
+            .cl-inwrap{display:flex;flex-direction:column;}
+            .cl-left{order:-1;margin:0 0 8px;}
+            .cl-opts{position:absolute;left:0;right:0;bottom:100%;margin:0 0 6px;z-index:5;box-shadow:0 -6px 18px rgba(0,0,0,0.25);}
+            .cl-in{font-size:16px;}
+            .cl-go{padding:0 20px;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
@@ -607,32 +729,106 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
           </div>
           )}
 
-          <div style={{ maxWidth: GRID_MAX, margin: '0 auto' }}>
-            <div className="cl-lab">The tree so far</div>
-            <div className="cl-tree">
-              {PATH.slice(0, known).map((b, i) => (
-                <div key={b} className={'cl-rung' + (playing && i === known - 1 ? ' deep' : '')} style={{ marginLeft: Math.min(i, 8) * 9 }}>{b}</div>
-              ))}
-              <div className={'cl-rung ' + (hideSol ? 'hid' : 'ans')} style={{ marginLeft: Math.min(known, 8) * 9 }}>
-                {hideSol
-                  ? (PATH.length - known > 0
-                    ? `Hidden animal, ${PATH.length - known} more ${PATH.length - known === 1 ? 'branch' : 'branches'} down`
-                    : 'Hidden animal, on this branch')
-                  : PUZZLE.answer}
+          <div className="cl-head">
+            <div style={{ minWidth: 0 }}>
+              <div className="cl-lab">The tree so far</div>
+              <div className="cl-sub">Each guess hangs off the deepest branch it shares with the hidden animal.</div>
+            </div>
+            <div className="cl-meter" aria-label={`Depth ${known} of ${PATH.length} branches`}>
+              <span>Depth <b>{known}</b> of {PATH.length}</span>
+              <div className="cl-bars" aria-hidden="true">
+                {PATH.map((b, i) => <i key={i} className={'cl-bar ' + (i < known ? 'on' : 'off')} />)}
               </div>
             </div>
-            <div className="cl-lab" style={{ marginTop: 16 }}>Your guesses <b>{guesses.length}</b>/{MAX}</div>
-            {guesses.length === 0 && <div className="cl-none">No guesses yet. Any animal is a fair first guess.</div>}
-            {guesses.map((nm, i) => (
-              <div key={nm} className={'cl-row' + (nm === PUZZLE.answer ? ' hit' : (playing && i === bestIdx ? ' best' : ''))}>
-                <span className="cl-nm">{nm}</span>
-                <span className="cl-sh">{nm === PUZZLE.answer ? 'the hidden animal' : `shares ${PATH[depths[i] - 1]}`}</span>
-              </div>
-            ))}
+          </div>
+
+          <div className="cl-panel">
+            {treeRows.map((r) => {
+              if (r.k === 'br') {
+                return (
+                  <div key={`b${r.i}`} className={'cl-r' + (r.deep ? ' deep band' : '')}>
+                    <div className="cl-lbl">
+                      <span className="cl-bn">{PATH[r.i]}</span>
+                      <span className="cl-bt">Branch {r.i + 1}{r.deep ? ' · deepest' : ''}</span>
+                    </div>
+                    <div className="cl-tk" aria-hidden="true">
+                      {r.top && <span className={'cl-ln t ' + r.top} />}
+                      {r.bot && <span className={'cl-ln b ' + r.bot} />}
+                      <span className="cl-nd" />
+                      <span className="cl-rung cl-mk" />
+                    </div>
+                  </div>
+                );
+              }
+              if (r.k === 'tw') {
+                const nm = guesses[r.j];
+                return (
+                  <div key={`t${nm}`} className={'cl-r tw' + (r.band ? ' band' : '') + (r.best ? ' best' : '')}>
+                    <div className="cl-lbl e" />
+                    <div className="cl-tk" aria-hidden="true">
+                      <span className={'cl-ln t ' + r.line} />
+                      <span className={'cl-ln b ' + r.line} />
+                      <span className="cl-tw" />
+                    </div>
+                    <div className="cl-ct">
+                      <div className="cl-card cl-row">
+                        <span className="cl-n">{r.j + 1}</span>
+                        <span className="cl-cw">
+                          <span className="cl-cn">{nm}</span>
+                          <span className="cl-cs">{r.split}</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              if (r.k === 'gh') {
+                return (
+                  <div key="gh" className="cl-r ghost">
+                    <div className="cl-lbl">
+                      <span className="cl-bn">Not found yet</span>
+                      <span className="cl-bt">{r.n === 1 ? `Branch ${known + 1}` : `Branches ${known + 1} to ${PATH.length}`}</span>
+                    </div>
+                    <div className="cl-tk" aria-hidden="true">
+                      <span className="cl-ln t dash" />
+                      <span className="cl-ln b dot" />
+                      <span className="cl-nd" />
+                    </div>
+                  </div>
+                );
+              }
+              return (
+                <div key="leaf" className="cl-r cl-leafr">
+                  <div className="cl-lbl e" />
+                  <div className="cl-tk" aria-hidden="true">
+                    <span className={'cl-ln t ' + r.line} />
+                    <span className="cl-tw" style={{ background: `var(--stg-acc-ink, ${COLORS.accent})` }} />
+                  </div>
+                  <div className="cl-ct cl-leaf">
+                    {hideSol ? (
+                      <span className="cl-box cl-rung hid"><i aria-hidden="true">?</i>Hidden animal</span>
+                    ) : (
+                      <span className={'cl-box ans cl-rung' + (won ? ' cl-row hit' : '')}>
+                        {won && <span className="cl-n">{guesses.length}</span>}
+                        <span className="cl-cw">
+                          <span className="cl-cn">{PUZZLE.answer}</span>
+                          <small>the hidden animal</small>
+                        </span>
+                      </span>
+                    )}
+                    {hideSol && <span className="cl-note">{leafNote}</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="cl-ctl">
             {playing && (
               <div className="cl-inwrap">
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div className="cl-inrow" style={{ display: 'flex', gap: 8 }}>
                   <input className="cl-in" type="text" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onInputKey}
+                    onFocus={(e) => keepBoardInView(e.currentTarget)}
                     placeholder="Type an animal" aria-label="Guess an animal" autoComplete="off" autoCorrect="off" spellCheck={false} />
                   <button type="button" className="cl-go" onClick={() => { if (opts.length) pick(opts[0]); }} disabled={!opts.length}>Guess</button>
                 </div>
@@ -643,36 +839,38 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
                     ))}
                   </div>
                 )}
-                <div className="cl-hint" aria-live="polite">
-                  {fold(q).length >= 2 && !opts.length
-                    ? 'No animal on the list matches that. It has cost you nothing.'
-                    : `${left} ${left === 1 ? 'guess' : 'guesses'} left. Type, then choose a name. Enter takes the top one.`}
+                <div className="cl-left">
+                  <div className="cl-pips" aria-hidden="true">
+                    {Array.from({ length: MAX }, (_, i) => <i key={i} className={'cl-pip' + (i < guesses.length ? ' on' : '')} />)}
+                  </div>
+                  <div className="cl-hint" aria-live="polite">
+                    {fold(q).length >= 2 && !opts.length
+                      ? 'No animal on the list matches that. It has cost you nothing.'
+                      : <>{left} {left === 1 ? 'guess' : 'guesses'} left.<span className="cl-hhide"> Type, then choose a name. Enter takes the top one.</span></>}
+                  </div>
                 </div>
               </div>
             )}
-          </div>
 
-          {playing && hintOk && !g.hintUsed && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' }}>
-              <button className="cl-tool" onClick={useHint} title="Show the next branch down (one hint, first play only)" style={{ color: ACC_DEEP_INK }}>
-                <Lightbulb size={14} /> Hint
-              </button>
-            </div>
-          )}
-
-        {started && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--stg-line, rgba(28,30,36,0.10))', flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: `var(--stg-mute, ${COLORS.faded})` }}>
-              {left === MAX ? 'Every guess names the closest shared branch.' : 'Guess from inside the deepest branch showing.'}
-            </span>
-            {identity && guesses.length > 0 && (
-              <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-                style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <Eye size={13} /> {armReveal ? 'Tap again to end and show the answer' : 'Reveal & end'}
-              </button>
+            {started && ((hintOk && !g.hintUsed) || (identity && guesses.length > 0)) && (
+              <div className="cl-tools">
+                {hintOk && !g.hintUsed && (
+                  <>
+                    <button className="cl-hbtn" onClick={useHint} title="Show the next branch down (one hint, first play only)">
+                      <Lightbulb size={16} /><span>Hint<span className="cl-hhide">: show the next branch</span></span>
+                    </button>
+                    <span className="cl-hcap"><span className="cl-hhide">One free hint, first play only</span><span className="cl-hshow">Free, first play only</span></span>
+                  </>
+                )}
+                {identity && guesses.length > 0 && (
+                  <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
+                    style={{ marginLeft: 'auto', minHeight: 44, padding: '0 4px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 13, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <Eye size={15} /> {armReveal ? 'Tap again to end and show the answer' : 'Reveal & end'}
+                  </button>
+                )}
+              </div>
             )}
           </div>
-        )}
           <div className={STAGE ? undefined : 'loft-sol'}>
           {!playing && (
             <div style={{ maxWidth: GRID_MAX + 76, margin: '0 auto' }}>

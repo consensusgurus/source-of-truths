@@ -76,8 +76,9 @@ export function laneOrder(lanes, order) {
 const LAST = {};
 
 // ONE BAR. `curve` (the gate) shades it by how many of today's players got
-// that far; `avg` drops a tick at today's average share of the quiz.
-export function LaneBar({ lane = null, n = 0, curve = null, avg = null, big = false }) {
+// that far; `avg` drops a tick at today's average share of the quiz, and
+// `best` a gold one at today's best score on it (owner, 2026-10-10).
+export function LaneBar({ lane = null, n = 0, curve = null, avg = null, best = null, big = false }) {
   const total = lane ? lane.n : n;
   const st = lane ? lane.st : 'next';
   const got = lane ? lane.got : 0;
@@ -94,6 +95,7 @@ export function LaneBar({ lane = null, n = 0, curve = null, avg = null, big = fa
     shade = { background: `linear-gradient(90deg,${stops.join(',')})` };
   }
   const tick = Number.isFinite(avg) && total ? Math.min(1, Math.max(0, avg / total)) : null;
+  const top = Number.isFinite(best) && best > 0 && total ? Math.min(1, Math.max(0, best / total)) : null;
   return (
     <span className={`rl-trk${big ? ' big' : ''}`} aria-hidden="true">
       <span className="rl-bar" style={st === 'up' ? { ...shade, borderColor: lane.c } : shade}>
@@ -108,6 +110,7 @@ export function LaneBar({ lane = null, n = 0, curve = null, avg = null, big = fa
         ) : null}
       </span>
       {tick != null ? <span className="rl-avg" style={{ left: pc(tick) }} /> : null}
+      {top != null ? <span className="rl-best" style={{ left: pc(top) }} /> : null}
     </span>
   );
 }
@@ -121,6 +124,7 @@ export default function RunLanes({
   liveAnswered = 0,
   upIndex = -1,
   avg = null,
+  best = null,
   order = 'live',
   className = '',
 }) {
@@ -166,10 +170,11 @@ export default function RunLanes({
       {lanes.map((ln) => {
         const on = ln.st === 'won' || ln.st === 'lost' || ln.st === 'live';
         const a = avg && Number.isFinite(avg[ln.key]) ? avg[ln.key] : null;
+        const b = best && Number.isFinite(best[ln.key]) ? best[ln.key] : null;
         return (
           <div key={ln.key} data-k={ln.key} className={`rl-row ${ln.st}`}>
             <b className="rl-nm" style={{ color: on ? ln.c : '#c9d0de' }}>{ln.name}</b>
-            <LaneBar lane={ln} avg={a} big={ln.st === 'live'} />
+            <LaneBar lane={ln} avg={a} best={b} big={ln.st === 'live'} />
             <em className={`rl-sc${on ? ' on' : ''}`}>{on ? `${ln.got}/${ln.n}` : ln.n}</em>
           </div>
         );
@@ -224,6 +229,7 @@ export const TOWER_CSS = `
 .rl-pip{position:absolute;top:0;bottom:0;box-sizing:border-box;border:2px solid;border-radius:3px;
   transition:left .4s cubic-bezier(.2,.8,.2,1)}
 .rl-avg{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;border-radius:1px;background:#8b95a8}
+.rl-best{position:absolute;top:-5px;bottom:-5px;width:3px;margin-left:-1.5px;border-radius:1px;background:#e8b43a}
 @media (prefers-reduced-motion:reduce){.rl-f,.rl-pip{transition:none}}
 @media (max-width:640px){
   .rl{gap:6px}

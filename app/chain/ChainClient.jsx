@@ -636,7 +636,7 @@ export default function ChainClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Chain #${PUZZLE.num} — the daily boxes endgame from Mind Loft.\n${shareUrl()}`
+      ? `Chain #${PUZZLE.num}: the daily boxes endgame from Mind Loft.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -683,11 +683,24 @@ export default function ChainClient({ puzzles = [], forceNum = null }) {
   };
 
   // ── board geometry ───────────────────────────────────────────────────────
+  // Drawn to scale in board units (a box is B, the rim pad is P) and placed in
+  // percentages, so the board scales to any width. On a phone a wide board
+  // turns on its side (rows become columns) so the boxes, and the edges you
+  // tap, stay big: every placed piece carries both orientations as CSS vars
+  // and the stylesheet picks one, so nothing re-renders and no hook is added.
   const { rows, cols } = PUZZLE;
   const geo = view.st.g;
-  const boardAspect = `${cols * 72 + (cols + 1) * 12} / ${rows * 72 + (rows + 1) * 12}`;
-  const gridCols = `12px ${Array.from({ length: cols }, () => 'minmax(0,1fr) 12px').join(' ')}`;
-  const gridRows = `12px ${Array.from({ length: rows }, () => 'minmax(0,1fr) 12px').join(' ')}`;
+  const BU = 114, PU = 26, BAND = 44, GAPU = 17;   // a band is ~40% of a box wide
+  const WU = 2 * PU + cols * BU, HU = 2 * PU + rows * BU;
+  const TURN = rows < cols;                         // turn the board on its side on a phone
+  const pctX = (x) => `${((x / WU) * 100).toFixed(3)}%`;
+  const pctY = (y) => `${((y / HU) * 100).toFixed(3)}%`;
+  const ptU = (r, c) => ({ x: PU + c * BU, y: PU + r * BU });
+  // a piece: {a: left, b: top, c: width, d: height}. Turned on its side the
+  // stylesheet reads it as left=b, top=a, width=d, height=c (a reflection across
+  // the diagonal, which is the same position).
+  const piece = (a, b, c, d) => ({ '--a': a, '--b': b, '--c': c, '--d': d });
+  const rectU = (x0, y0, x1, y1) => piece(pctX(x0), pctY(y0), pctX(x1 - x0), pctY(y1 - y0));
 
   function edgeColor(e) {
     const i = view.slotOf(e);
@@ -703,7 +716,10 @@ export default function ChainClient({ puzzles = [], forceNum = null }) {
   // or gave up hands them the answer and spends the puzzle for good.
   const revealKey = won && keySlot !== undefined && !view.drawnBy.has(keySlot);
 
-  function renderEdge(e, horizontal) {
+  // Every edge, as a drawn bar or an open (tappable) slot.
+  const edgeEls = [];
+  function pushEdge(e, horizontal, r, c) {
+    const a = ptU(r, c), b = horizontal ? ptU(r, c + 1) : ptU(r + 1, c);
     const i = view.slotOf(e);
     const open = i !== undefined && view.openIdx.has(i);
     const col = edgeColor(e);
@@ -711,56 +727,123 @@ export default function ChainClient({ puzzles = [], forceNum = null }) {
     const isKey = revealKey && i === keySlot;
     const hinted = playing && g.hintUsed && open && hintSet.has(i);
     const hot = open && myTurn && hoverEdge === i;
-    const thick = horizontal ? { height: 6, width: '100%' } : { width: 6, height: '100%' };
-    return (
-      <div
-        key={`${horizontal ? 'h' : 'v'}${e}`}
-        className={`ch-edge${open && myTurn ? ' live' : ''}`}
-        onMouseEnter={() => open && setHoverEdge(i)}
-        onMouseLeave={() => setHoverEdge(null)}
-        onClick={() => open && onEdge(i)}
-        style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: open && myTurn ? 'pointer' : 'default', touchAction: 'manipulation' }}
-      >
-        {/* the tap target is deliberately bigger than the line it draws */}
-        {open && myTurn && (
-          <span aria-hidden="true" style={{ position: 'absolute', left: horizontal ? 0 : -11, right: horizontal ? 0 : -11, top: horizontal ? -11 : 0, bottom: horizontal ? -11 : 0 }} />
-        )}
-        <span
-          className={`${isKey ? 'ch-key ' : ''}${isLast ? 'ch-fresh ' : ''}`}
-          style={{
-            ...thick,
-            borderRadius: 3,
-            background: col || (isKey ? `var(--stg-acc-ink, ${COLORS.accent})` : hot ? `var(--stg-acc-ink, ${COLORS.accent})` : hinted ? '#c084fc' : EDGE_OPEN),
-            opacity: col ? 1 : isKey ? 1 : hot ? 0.9 : hinted ? 0.85 : 1,
-          }}
-        />
-      </div>
-    );
-  }
-
-  const cells = [];
-  for (let rr = 0; rr <= rows * 2; rr++) {
-    for (let cc = 0; cc <= cols * 2; cc++) {
-      const evenR = rr % 2 === 0, evenC = cc % 2 === 0;
-      if (evenR && evenC) {
-        cells.push(<div key={`d${rr}-${cc}`} style={{ width: 12, height: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: DOT }} /></div>);
-      } else if (evenR) {
-        cells.push(renderEdge(geo.h(rr / 2, (cc - 1) / 2), true));
-      } else if (evenC) {
-        cells.push(renderEdge(geo.v((rr - 1) / 2, cc / 2), false));
-      } else {
-        const b = ((rr - 1) / 2) * cols + (cc - 1) / 2;
-        const o = view.st.owner[b];
-        cells.push(
-          <div key={`b${b}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: o === 1 ? BOX_MINE_BG : o === 2 ? BOX_FOE_BG : 'transparent', boxShadow: o === 1 ? BOX_MINE_RIM : 'none', borderRadius: 4, transition: 'background .25s ease' }}>
-            {o !== 0 && (
-              <span style={{ fontFamily: MONO, fontSize: 13, fontWeight: 500, color: o === 1 ? BOX_MINE_INK : BOX_FOE_INK }}>{o === 1 ? 'Y' : 'E'}</span>
-            )}
-          </div>,
-        );
-      }
+    const xs = pctX(a.x), ys = pctY(a.y);
+    if (!open || isKey) {
+      const bar = horizontal
+        ? piece(xs, `calc(${ys} - 5px)`, pctX(BU), '10px')
+        : piece(`calc(${xs} - 5px)`, ys, '10px', pctY(BU));
+      edgeEls.push(
+        <span key={`e${e}`} aria-hidden="true" className={`ch-p ch-bar ${isKey ? 'ch-key ' : ''}${isLast ? 'ch-fresh' : ''}`}
+          style={{ ...bar, background: col || `var(--stg-acc-ink, ${COLORS.accent})` }} />
+      );
+      return;
+    }
+    const tap = horizontal
+      ? piece(pctX(a.x + GAPU), `calc(${ys} - 22px)`, pctX(BU - 2 * GAPU), '44px')
+      : piece(`calc(${xs} - 22px)`, pctY(a.y + GAPU), '44px', pctY(BU - 2 * GAPU));
+    const mark = hot ? 'hot' : hinted ? 'hint' : '';
+    if (playing && started) {
+      edgeEls.push(
+        <button key={`e${e}`} type="button" className={`ch-p ch-open${myTurn ? ' live' : ''}`} style={tap}
+          aria-label={`Draw this edge${hinted ? ', one of the three hinted' : ''}`}
+          onMouseEnter={() => setHoverEdge(i)} onMouseLeave={() => setHoverEdge(null)}
+          onClick={() => onEdge(i)}>
+          <span className={`${horizontal ? 'ch-dh' : 'ch-dv'} ${mark}`} />
+        </button>
+      );
+    } else {
+      edgeEls.push(
+        <span key={`e${e}`} aria-hidden="true" className="ch-p ch-open" style={tap}><span className={horizontal ? 'ch-dh' : 'ch-dv'} /></span>
+      );
     }
   }
+  for (let r = 0; r <= rows; r++) for (let c = 0; c < cols; c++) pushEdge(geo.h(r, c), true, r, c);
+  for (let r = 0; r < rows; r++) for (let c = 0; c <= cols; c++) pushEdge(geo.v(r, c), false, r, c);
+
+  // CHAINS: the open boxes, linked wherever the edge between two of them is
+  // still undrawn, and running out through any undrawn rim edge. Read off the
+  // drawn edges and owned boxes on screen right now, nothing else: no engine,
+  // no key, no value.
+  const isOpenEdge = (e) => { const i = view.slotOf(e); return i !== undefined && view.openIdx.has(i); };
+  const owner = view.st.owner;
+  const bandEls = [], tagEls = [];
+  {
+    const nb = rows * cols, parent = Array.from({ length: nb }, (_, k) => k);
+    const find = (k) => { while (parent[k] !== k) { parent[k] = parent[parent[k]]; k = parent[k]; } return k; };
+    const links = [], stubs = [], deg = new Array(nb).fill(0);
+    const ctr = (r, c) => ptU(r + 0.5, c + 0.5);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const k = r * cols + c;
+        if (owner[k] !== 0) continue;
+        if (c + 1 < cols && owner[k + 1] === 0 && isOpenEdge(geo.v(r, c + 1))) { links.push([k, k + 1]); deg[k]++; deg[k + 1]++; parent[find(k)] = find(k + 1); }
+        if (r + 1 < rows && owner[k + cols] === 0 && isOpenEdge(geo.h(r + 1, c))) { links.push([k, k + cols]); deg[k]++; deg[k + cols]++; parent[find(k)] = find(k + cols); }
+        if (r === 0 && isOpenEdge(geo.h(0, c))) stubs.push([k, ptU(-0.25, c + 0.5)]);
+        if (r === rows - 1 && isOpenEdge(geo.h(rows, c))) stubs.push([k, ptU(rows + 0.25, c + 0.5)]);
+        if (c === 0 && isOpenEdge(geo.v(r, 0))) stubs.push([k, ptU(r + 0.5, -0.25)]);
+        if (c === cols - 1 && isOpenEdge(geo.v(r, cols))) stubs.push([k, ptU(r + 0.5, cols + 0.25)]);
+      }
+    }
+    const band = (p, q, key) => {
+      const x0 = Math.min(p.x, q.x) - BAND / 2, y0 = Math.min(p.y, q.y) - BAND / 2;
+      const x1 = Math.max(p.x, q.x) + BAND / 2, y1 = Math.max(p.y, q.y) + BAND / 2;
+      bandEls.push(<span key={key} aria-hidden="true" className="ch-p ch-band" style={rectU(x0, y0, x1, y1)} />);
+    };
+    links.forEach(([k1, k2], n) => band(ctr(Math.floor(k1 / cols), k1 % cols), ctr(Math.floor(k2 / cols), k2 % cols), `bl${n}`));
+    // Rim exits are counted (a chain that runs out to the rim is not a loop)
+    // but never drawn: a band runs box center to box center, inside the dots.
+    const comps = new Map();
+    for (let k = 0; k < nb; k++) {
+      if (owner[k] !== 0) continue;
+      const root = find(k);
+      if (!comps.has(root)) comps.set(root, { boxes: [], links: 0, stubs: 0 });
+      comps.get(root).boxes.push(k);
+    }
+    links.forEach(([k1]) => { comps.get(find(k1)).links++; });
+    stubs.forEach(([k]) => { comps.get(find(k)).stubs++; });
+    comps.forEach((cp, root) => {
+      if (cp.boxes.length === 1) {
+        // a lone open box gets a short band of its own, inside the box
+        const k = cp.boxes[0], p = ctr(Math.floor(k / cols), k % cols);
+        band(p, p, `bo${k}`);
+      }
+      const loop = cp.stubs === 0 && cp.links === cp.boxes.length && cp.boxes.length > 1;
+      const at = cp.boxes.slice().sort((p, q) => deg[p] - deg[q] || p - q)[0];
+      const p = ctr(Math.floor(at / cols), at % cols);
+      tagEls.push(
+        <span key={`t${root}`} className="ch-p ch-tag" style={rectU(p.x - 40, p.y - 25, p.x + 40, p.y + 25)}>
+          <i>{loop ? 'Loop' : 'Chain'}</i><b>{cp.boxes.length}</b>
+        </span>
+      );
+    });
+  }
+
+  const boxEls = [];
+  for (let k = 0; k < rows * cols; k++) {
+    const o = owner[k];
+    if (o === 0) continue;
+    const p = ptU(Math.floor(k / cols) + 0.5, (k % cols) + 0.5), half = (BU - 24) / 2;
+    boxEls.push(
+      <span key={`b${k}`} className={`ch-p ch-box ${o === 1 ? 'mine' : 'foe'}`} style={rectU(p.x - half, p.y - half, p.x + half, p.y + half)}>
+        {o === 1 ? 'You' : 'Eng'}
+      </span>
+    );
+  }
+  const dotEls = [];
+  for (let r = 0; r <= rows; r++) for (let c = 0; c <= cols; c++) {
+    const p = ptU(r, c);
+    dotEls.push(<span key={`d${r}-${c}`} aria-hidden="true" className="ch-p ch-dot" style={piece(pctX(p.x), pctY(p.y), '0px', '0px')} />);
+  }
+
+  // The race: every box on the table, yours filling from the left and the
+  // engine's from the right, with the winning count marked. The same two
+  // numbers the cap prints, laid out.
+  const totalBoxes = rows * cols;
+  const need = Math.floor(totalBoxes / 2) + 1;
+  const raceEls = Array.from({ length: totalBoxes }, (_, k) => {
+    const mine = k < view.score.mine, theirs = k >= totalBoxes - view.score.theirs;
+    return <span key={k} className={`ch-rc${mine ? ' mine' : theirs ? ' foe' : ''}${k === need - 1 ? ' goal' : ''}`} />;
+  });
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
@@ -801,9 +884,74 @@ export default function ChainClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.ch-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .ch-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : COLORS.accent};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : COLORS.accent};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .ch-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .ch-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:118px;box-sizing:border-box;}
-          .ch-edge{-webkit-tap-highlight-color:transparent;}
-          .ch-edge.live:hover span{transition:background .12s ease;}
+          .ch-tool{font-family:${SANS};font-weight:700;font-size:14px;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.35));background:transparent;color:var(--stg-ink, ${COLORS.ink});border-radius:12px;padding:0 14px;min-height:50px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:1 1 0;box-sizing:border-box;}
+          .ch-tool.hint{flex:1.3 1 0;font-weight:800;background:var(--stg-acc-tint, ${COLORS.accentSoft});border-color:var(--stg-acc-ink, ${COLORS.accent});}
+          .ch-tool.hint svg{color:var(--stg-acc-ink, ${COLORS.accent});}
+          .ch-ctl{display:flex;gap:10px;margin-top:16px;}
+          .ch-race{display:flex;flex-direction:column;gap:10px;margin:2px 0 18px;}
+          .ch-rl{font-family:${MONO};font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;}
+          .ch-rn{font-family:${MONO};font-size:34px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;}
+          .ch-rcs{display:flex;gap:6px;}
+          .ch-rc{flex:1 1 0;height:22px;border-radius:5px;box-sizing:border-box;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));}
+          .ch-rc.mine{border:0;background:${EDGE_MINE};}
+          .ch-rc.foe{border:0;background:${EDGE_FOE};}
+          .ch-rc.goal:not(.mine):not(.foe){border:2px solid var(--stg-ink2, ${COLORS.ink});}
+          .ch-frame{max-width:var(--mw);margin:0 auto;}
+          .ch-board{position:relative;width:100%;aspect-ratio:var(--ar);background:var(--stg-surf, ${COLORS.paper});border-radius:20px;overflow:hidden;clip-path:inset(0 round 20px);touch-action:manipulation;}
+          .ch-p{position:absolute;left:var(--a);top:var(--b);width:var(--c);height:var(--d);box-sizing:border-box;}
+          .ch-bar{border-radius:5px;}
+          .ch-band{background:color-mix(in srgb, var(--stg-acc, #4a044e) 14%, var(--stg-ground, #ffffff));border-radius:999px;}
+          .ch-tag{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;pointer-events:none;}
+          .ch-tag i{font-style:normal;font-family:${MONO};font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-ink2, ${COLORS.faded});}
+          .ch-tag b{font-family:${MONO};font-size:22px;font-weight:800;line-height:1;color:var(--stg-ink, ${COLORS.ink});font-variant-numeric:tabular-nums;}
+          .ch-box{border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;transition:background .25s ease;}
+          .ch-box.mine{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, var(--stg-cell, var(--white)));box-shadow:inset 0 0 0 2px ${EDGE_MINE};color:var(--stg-ink, ${COLORS.ink});}
+          .ch-box.foe{background:var(--stg-cell, #eceae6);box-shadow:inset 0 0 0 1px var(--stg-cell-line, transparent);color:var(--stg-ink, ${COLORS.ink});}
+          .ch-dot{width:18px !important;height:18px !important;margin:-9px 0 0 -9px;border-radius:50%;background:var(--stg-ink, ${COLORS.ink});pointer-events:none;}
+          .ch-open{padding:0;margin:0;border:0;background:transparent;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
+          button.ch-open{cursor:default;}
+          button.ch-open.live{cursor:pointer;}
+          .ch-dh{display:block;width:100%;height:0;border-top:2px dashed var(--stg-line3, rgba(28,30,36,0.45));}
+          .ch-dv{display:block;width:0;height:100%;border-left:2px dashed var(--stg-line3, rgba(28,30,36,0.45));}
+          .ch-dh.hot,.ch-dh.hint{height:6px;border-top:0;border-radius:3px;}
+          .ch-dv.hot,.ch-dv.hint{width:6px;border-left:0;border-radius:3px;}
+          .ch-dh.hot,.ch-dv.hot{background:var(--stg-acc-ink, ${COLORS.accent});opacity:.9;}
+          .ch-dh.hint,.ch-dv.hint{background:var(--stg-warn, #c084fc);}
+          .ch-status{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:16px;}
+          .ch-nb{font-size:13px;font-weight:700;color:var(--stg-mute, ${COLORS.faded});}
+          .ch-legend{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:12px;font-family:${MONO};font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
+          .ch-legend > span{display:inline-flex;align-items:center;gap:8px;}
+          .ch-sw{display:inline-block;width:26px;height:8px;border-radius:4px;flex:0 0 auto;}
+          .ch-sw.dash{height:0;border-radius:0;border-top:2px dashed var(--stg-line3, rgba(28,30,36,0.45));}
+          .ch-sw.boxs{width:16px;height:16px;border-radius:4px;background:var(--stg-cell, #eceae6);box-shadow:inset 0 0 0 1px var(--stg-cell-line, transparent);}
+          .ch-sw.band{height:12px;border-radius:6px;background:var(--stg-acc-tint, rgba(74,4,78,0.08));box-shadow:0 0 0 1px var(--stg-cell-line, transparent);}
+          .ch-narrow{display:none;}
+          @media(max-width:560px){
+            .ch-T .ch-board{aspect-ratio:var(--tar);}
+            .ch-T{max-width:none;}
+            .ch-T .ch-p{left:var(--b);top:var(--a);width:var(--d);height:var(--c);}
+            .ch-T .ch-dh{width:0;height:100%;border-top:0;border-left:2px dashed var(--stg-line3, rgba(28,30,36,0.45));}
+            .ch-T .ch-dv{width:100%;height:0;border-left:0;border-top:2px dashed var(--stg-line3, rgba(28,30,36,0.45));}
+            .ch-T .ch-dh.hot,.ch-T .ch-dh.hint{width:6px;border-left:0;}
+            .ch-T .ch-dv.hot,.ch-T .ch-dv.hint{height:6px;border-top:0;}
+            .ch-board{border-radius:18px;clip-path:inset(0 round 18px);}
+            .ch-dot{width:16px !important;height:16px !important;margin:-8px 0 0 -8px;}
+            .ch-rn{font-size:24px;}
+            .ch-rl{font-size:10px;}
+            .ch-rcs{gap:4px;}
+            .ch-rc{height:14px;border-radius:4px;}
+            .ch-race{gap:6px;margin-bottom:12px;}
+            .ch-tag b{font-size:20px;}
+            .ch-wide{display:none !important;}
+            .ch-narrow{display:inline;}
+            div.ch-narrow{display:block;}
+            .ch-legend{gap:6px 12px;font-size:10px;letter-spacing:.06em;}
+            .ch-legend .ch-sw{width:16px;height:6px;}
+            .ch-legend .ch-sw.dash{height:0;}
+            .ch-ctl{gap:8px;}
+            .ch-tool{min-height:48px;padding:0 8px;}
+            .ch-tool.hint{flex:1 1 0;}
+          }
           .ch-fresh{animation:chink .3s ease;}
           @keyframes chink{0%{transform:scale(0.2);}70%{transform:scale(1.08);}100%{transform:scale(1);}}
           .ch-key{animation:chkey 1.15s ease-in-out infinite;}
@@ -875,45 +1023,74 @@ export default function ChainClient({ puzzles = [], forceNum = null }) {
               </div>
               )}
 
-              <div style={{ maxWidth: 430, margin: '0 auto' }}>
+              {/* The race to the winning count: the box score, laid out. */}
+              <div className="ch-race">
+                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10 }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 8 }}>
+                    <span className="ch-rl" style={{ color: ACC_INK }}>You</span>
+                    <span className="ch-rn" style={{ color: ACC_INK }}>{view.score.mine}</span>
+                  </span>
+                  <span className="ch-rl" style={{ color: FADED, textAlign: 'center' }}>{totalBoxes} boxes &middot; first to {need} wins</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 8 }}>
+                    <span className="ch-rn" style={{ color: INK }}>{view.score.theirs}</span>
+                    <span className="ch-rl" style={{ color: FADED }}>Engine</span>
+                  </span>
+                </div>
+                <div aria-hidden="true" className="ch-rcs">{raceEls}</div>
+              </div>
+
+              <div className={`ch-frame${TURN ? ' ch-T' : ''}`} style={{ '--mw': `${WU}px`, '--ar': `${WU} / ${HU}`, '--tar': `${HU} / ${WU}` }}>
                 <div
                   key={shake}
                   className={`ch-board${shake ? ' shake' : ''}`}
-                  style={{ display: 'grid', gridTemplateColumns: gridCols, gridTemplateRows: gridRows, aspectRatio: boardAspect, background: STAGE ? 'var(--stg-surf2)' : COLORS.paper, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: 10, touchAction: 'manipulation' }}
+                  role="group"
+                  aria-label={`Dots and boxes board, ${rows} by ${cols}`}
                 >
-                  {cells}
+                  {bandEls}
+                  {boxEls}
+                  {tagEls}
+                  {edgeEls}
+                  {dotEls}
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
-                <div style={{ fontSize: endHold.held ? 15 : 13.5, fontWeight: endHold.held ? 800 : 700, color: INK }}>{statusLine()}</div>
-                <div style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED }}>
-                  <span style={{ color: EDGE_MINE }}>&#9632;</span> you &nbsp; <span style={{ color: EDGE_FOE }}>&#9632;</span> engine
-                </div>
+              <div className="ch-status">
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, fontSize: endHold.held ? 16 : 15, fontWeight: 800, color: INK }}>
+                  <span aria-hidden="true" style={{ width: 12, height: 12, borderRadius: 6, flex: '0 0 auto', background: (playing && view.turn === 1 && !thinking) ? EDGE_MINE : EDGE_FOE }} />
+                  {statusLine()}
+                </span>
+                {started && <span className="ch-nb ch-wide">No take-back. Every edge you draw is played.</span>}
               </div>
 
-              {playing && hintOk && !g.hintUsed && g.moves.length === 0 && (
-                <div style={{ marginTop: 10 }}>
-                  <button className="ch-tool" onClick={useHint} title="Mark three edges, one of which wins (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})` }}>
-                    <Lightbulb size={14} /> Hint
-                  </button>
-                </div>
-              )}
+              <div className="ch-legend">
+                <span><span className="ch-sw" style={{ background: EDGE_OLD }} /><span className="ch-wide">Drawn before today</span><span className="ch-narrow">Earlier</span></span>
+                <span><span className="ch-sw" style={{ background: EDGE_MINE }} /><span className="ch-wide">Yours</span><span className="ch-narrow">You</span></span>
+                <span><span className="ch-sw" style={{ background: EDGE_FOE }} /><span className="ch-wide">Engine&rsquo;s</span><span className="ch-narrow">Engine</span></span>
+                <span><span className="ch-sw dash" /><span className="ch-wide">Open, tap to draw</span><span className="ch-narrow">Open</span></span>
+                <span className="ch-wide"><span className="ch-sw boxs" />Engine&rsquo;s box</span>
+                <span className="ch-wide"><span className="ch-sw band" />A chain: open boxes linked by open edges</span>
+              </div>
 
             {/* Controls. These sit INSIDE the board card: on the navy stage a bare
                 row has nothing to sit on, and the card is meant to hold the game. */}
           {started && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 14, paddingTop: 11, borderTop: '1px solid rgba(28,30,36,0.10)', flexWrap: 'wrap' }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: FADED }}>No take-back. Every edge you draw is played.</div>
-              <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                <button className="ch-tool" onClick={revealEnd} style={{ borderColor: armReveal ? COLORS.rust : undefined, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : undefined }}>
-                  <Eye size={14} /> {armReveal ? 'Press again' : 'Give up'}
+            <>
+              <div className="ch-ctl">
+                {playing && hintOk && !g.hintUsed && g.moves.length === 0 && (
+                  <button type="button" className="ch-tool hint" onClick={useHint} title="Mark three edges, one of which wins (one hint, first play only)">
+                    <Lightbulb size={17} aria-hidden="true" />
+                    <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.2 }}><span>Hint</span><span className="ch-wide" style={{ fontSize: 12, fontWeight: 700, color: FADED }}>Marks 3 edges. One wins.</span></span>
+                  </button>
+                )}
+                <button type="button" className="ch-tool" onClick={revealEnd} style={{ borderColor: armReveal ? `var(--stg-bad, ${COLORS.rust})` : undefined, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : undefined }}>
+                  <Eye size={17} aria-hidden="true" /> {armReveal ? 'Press again' : 'Give up'}
                 </button>
-                <button className="ch-tool" onClick={restartGame} title="Record this as a loss and deal the same board again" style={{ borderColor: armRestart ? COLORS.rust : undefined, color: armRestart ? `var(--stg-bad, ${COLORS.rust})` : undefined }}>
-                  <RotateCcw size={14} /> {armRestart ? 'Press again' : 'Restart'}
+                <button type="button" className="ch-tool" onClick={restartGame} title="Record this as a loss and deal the same board again" style={{ borderColor: armRestart ? `var(--stg-bad, ${COLORS.rust})` : undefined, color: armRestart ? `var(--stg-bad, ${COLORS.rust})` : undefined }}>
+                  <RotateCcw size={17} aria-hidden="true" /> {armRestart ? 'Press again' : 'Restart'}
                 </button>
-              </span>
-            </div>
+              </div>
+              <div className="ch-nb ch-narrow" style={{ textAlign: 'center', marginTop: 6 }}>No take-back. Every edge you draw is played.</div>
+            </>
           )}
             </div>
           )}
