@@ -810,7 +810,17 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
           .tk-cell.filled.sel,.tk-cell.badword.sel{outline:2.5px solid var(--stg-acc-ink, ${COLORS.accent});outline-offset:1px;z-index:1;}
           .tk-dir{position:absolute;right:2px;bottom:1px;line-height:0;color:var(--stg-acc-ink, ${COLORS.accent});}
           .tk-cell.filled .tk-dir,.tk-cell.badword .tk-dir{display:none;}
-          .tk-side{flex:1 1 180px;min-width:170px;display:flex;flex-direction:column;gap:12px;}
+          .tk-side{flex:1 1 180px;min-width:170px;display:flex;flex-direction:column;gap:8px;align-self:flex-start;max-height:452px;}
+          /* WORDS FORMED IS A COMPACT LIST (owner, 2026-10-10): one line a word, scrolling inside the
+             board's height, so a long game never grows the column and pushes the rack down. */
+          .tk-wlist{display:flex;flex-direction:column;min-height:0;overflow-y:auto;border-radius:10px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border:1px solid var(--stg-line, rgba(28,30,36,0.14));scrollbar-width:thin;}
+          .tk-wrow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:baseline;gap:8px;padding:5px 10px;border-top:1px solid var(--stg-line, rgba(28,30,36,0.1));}
+          .tk-wrow:first-child{border-top:0;}
+          .tk-wrow .w{font-size:13px;font-weight:800;letter-spacing:0.06em;color:${INK};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+          .tk-wrow .w u{text-decoration:none;box-shadow:inset 0 -2px 0 ${TILE.dot};}
+          .tk-wrow .d{font-size:10.5px;font-weight:700;color:${FADED};text-transform:uppercase;letter-spacing:0.08em;}
+          .tk-wrow .p{font-size:14px;font-weight:800;color:${ACC_INK};font-variant-numeric:tabular-nums;min-width:22px;text-align:right;}
+          .tk-wrow.bad .w,.tk-wrow.bad .p{color:var(--stg-bad, ${COLORS.rust});}
           .tk-wcard{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:12px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border:1px solid var(--stg-line, rgba(28,30,36,0.14));}
           .tk-mini{position:relative;width:28px;height:30px;box-sizing:border-box;border-radius:5px;background:${TILE.face};border:1px solid ${TILE.edge};box-shadow:inset 0 -2px 0 ${TILE.edge};color:${TILE.ink};display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;}
           .tk-mini .pts{position:absolute;right:2px;bottom:1px;font-size:8px;font-weight:800;line-height:1;color:${TILE.pts};}
@@ -976,26 +986,24 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
           {/* words formed (desktop column) */}
           <div className="tk-side">
             <span className="tk-lab">Words formed &middot; {runs.length}</span>
-            {runs.length ? runs.map((x, i) => {
-              const ok = !dict || dict.has(x.word.toLowerCase());
-              return (
-                <div key={i} className="tk-wcard" style={ok ? undefined : { borderColor: `var(--stg-bad, ${COLORS.rust})` }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                    <span className="tk-lab" style={ok ? { fontSize: 12 } : { fontSize: 12, color: `var(--stg-bad, ${COLORS.rust})` }}>{x.word} &middot; {runDir(x)}{ok ? '' : ' \u00b7 not a word'}</span>
-                    <span style={{ fontSize: 17, fontWeight: 800, color: ok ? ACC_INK : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums' }}>{runPts(x)}</span>
-                  </div>
-                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                    {x.cells.map(([r, c], j) => (
-                      <span key={j} className="tk-mini">{grid[r][c]}<span className="pts">{PTS[grid[r][c]]}</span>{crossCells.has(`${r},${c}`) && <span className="xdot" />}</span>
-                    ))}
-                  </div>
-                </div>
-              );
-            }) : <span style={{ fontSize: 12, fontWeight: 600, color: FADED }}>No words yet.</span>}
+            {runs.length ? (
+              <div className="tk-wlist">
+                {runs.map((x, i) => {
+                  const ok = !dict || dict.has(x.word.toLowerCase());
+                  return (
+                    <div key={i} className={`tk-wrow${ok ? '' : ' bad'}`} title={ok ? undefined : 'Not a word'}>
+                      <span className="w">{x.cells.map(([r, c], j) => (crossCells.has(`${r},${c}`) ? <u key={j}>{grid[r][c]}</u> : <span key={j}>{grid[r][c]}</span>))}{ok ? '' : ' ?'}</span>
+                      <span className="d">{runDir(x)}</span>
+                      <span className="p">{runPts(x)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : <span style={{ fontSize: 12, fontWeight: 600, color: FADED }}>No words yet.</span>}
             {crossCells.size > 0 && (
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                 <span className="tk-legend"><i /></span>
-                <span style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.45, color: FADED }}>A crossing tile, marked with a dot, scores in both of its words. {crossNote}</span>
+                <span style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.45, color: FADED }}>A crossing tile, dotted on the board and underlined in the list, scores in both of its words. {crossNote}</span>
               </div>
             )}
             <span style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.45, color: FADED }}>

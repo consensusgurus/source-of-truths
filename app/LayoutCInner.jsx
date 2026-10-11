@@ -211,8 +211,11 @@ export default function LayoutCInner({ gameKey }) {
   useIsoLayoutEffect(() => {
     if (!game || !flag) return undefined;
     let el = null;
+    let fgNow = null;
     const attach = () => {
-      el = Array.from(document.querySelectorAll('.stage-page')).find((n) => n.querySelector('.stg-top')) || null;
+      const next = Array.from(document.querySelectorAll('.stage-page')).find((n) => n.querySelector('.stg-top')) || null;
+      if (el && el !== next) el.classList.remove('lc-host');
+      el = next;
       if (!el || window.innerWidth < MIN_W) {
         document.documentElement.classList.remove('lc-on');
         if (el) el.classList.remove('lc-host');
@@ -222,13 +225,31 @@ export default function LayoutCInner({ gameKey }) {
       el.classList.add('lc-host');
       document.documentElement.classList.add('lc-on');
       setHost(el);
-      setFgEl(el.querySelector('.stg-fg'));
+      fgNow = el.querySelector('.stg-fg');
+      setFgEl(fgNow);
     };
     attach();
     const late = setTimeout(attach, 500);
     window.addEventListener('resize', attach);
+    // An ARCHIVE board (?p=N) remounts the game client (every page keys it by
+    // the puzzle number), which throws away the .stage-page the panels were
+    // portalled into. Watch for that and re-attach to the new one, or the
+    // index, the right panel and the subheader vanish on every archive play.
+    let raf = 0;
+    const mo = typeof MutationObserver !== 'undefined' ? new MutationObserver(() => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const cur = Array.from(document.querySelectorAll('.stage-page')).find((n) => n.querySelector('.stg-top')) || null;
+        const fg = cur ? cur.querySelector('.stg-fg') : null;
+        if (cur !== el || (el && !el.isConnected) || (cur && fg !== fgNow)) attach();
+      });
+    }) : null;
+    if (mo) mo.observe(document.body, { childList: true, subtree: true });
     return () => {
       clearTimeout(late);
+      if (raf) cancelAnimationFrame(raf);
+      if (mo) mo.disconnect();
       window.removeEventListener('resize', attach);
       document.documentElement.classList.remove('lc-on', 'lc-focus');
       document.documentElement.style.removeProperty('--lc-hh');
