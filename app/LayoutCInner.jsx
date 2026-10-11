@@ -65,7 +65,7 @@ function identityQs() {
 // The main page's cap and index rules, copied from app/today/StageToday.jsx
 // (desktop only) so the two read identically. Keep them in step.
 const CSS = `
-html.lc-on .lc-host{padding:var(--lc-hh,56px) 330px 0 232px !important;box-sizing:border-box;min-height:100vh;}
+html.lc-on .lc-host{padding:var(--lc-hh,62px) 330px 0 232px !important;box-sizing:border-box;min-height:100vh;}
 html.lc-on.lc-focus .lc-host{padding:0 !important;}
 html.lc-on .lc-host .stg-cap,html.lc-on .lc-host .stg-strip,html.lc-on .lc-host .stg-prog{display:none !important;}
 html.lc-on .stage-tail{display:none !important;}
@@ -108,7 +108,7 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:240px;}
 .lc-cap .sty-tg{display:inline-flex;align-items:center;justify-content:center;padding:6px 9px;background:none;cursor:pointer;font:inherit;}
 @media (max-width:1400px){ .lc-cap .sty-date{display:none;} }
 
-.lc-nav{position:fixed;top:var(--lc-hh,56px);left:0;bottom:0;width:232px;z-index:80;overflow-y:auto;padding:14px 10px 24px;
+.lc-nav{position:fixed;top:var(--lc-hh,62px);left:0;bottom:0;width:232px;z-index:80;overflow-y:auto;padding:14px 10px 24px;
   background:var(--stg-ground);border-right:1px solid var(--stg-line);
   scrollbar-width:thin;scrollbar-color:transparent transparent;}
 .lc-nav:hover{scrollbar-color:var(--stg-line) transparent;}
@@ -136,7 +136,7 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:240px;}
 .lc-nav .lc-g s.pz{color:var(--stg-warn,#e8b43a);display:inline-flex;}
 .lc-nav button.sty-ixb{width:100%;}
 
-.lc-side{position:fixed;top:var(--lc-hh,56px);right:0;bottom:0;width:330px;z-index:80;display:flex;flex-direction:column;
+.lc-side{position:fixed;top:var(--lc-hh,62px);right:0;bottom:0;width:330px;z-index:80;display:flex;flex-direction:column;
   background:var(--stg-ground);border-left:1px solid var(--stg-line);}
 .lc-tabs{display:flex;border-bottom:1px solid var(--stg-line);padding:0 8px;flex:none;}
 .lc-tab{flex:1;height:40px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--stg-mute);font:700 12.5px Manrope,system-ui,sans-serif;cursor:pointer;}
@@ -218,6 +218,9 @@ export default function LayoutCInner({ gameKey }) {
       el = next;
       if (!el || window.innerWidth < MIN_W) {
         document.documentElement.classList.remove('lc-on');
+        // Too narrow means the reserve is wrong too. A missing host leaves it:
+        // the reserve rules key on .stg-top, so with no host they do nothing.
+        if (window.innerWidth < MIN_W) document.documentElement.classList.remove('lc-pre');
         if (el) el.classList.remove('lc-host');
         setHost(null);
         return;
@@ -265,7 +268,14 @@ export default function LayoutCInner({ gameKey }) {
   useEffect(() => {
     const el = capRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
-    const set = () => document.documentElement.style.setProperty('--lc-hh', el.offsetHeight + 'px');
+    // The height is also kept for the next load, so the reserve the inline
+    // script in app/layout.js applies before first paint is this reader's
+    // real cap height (it varies with name, groups and the keep-stats link).
+    const set = () => {
+      const h = el.offsetHeight;
+      document.documentElement.style.setProperty('--lc-hh', h + 'px');
+      try { if (h > 30 && h < 200) localStorage.setItem('sot_lc_hh', String(h)); } catch (e) {}
+    };
     set();
     const ro = new ResizeObserver(set);
     ro.observe(el);

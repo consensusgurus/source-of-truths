@@ -831,3 +831,28 @@ html.stg-wipe::view-transition-new(root) {
 @media (prefers-reduced-motion: reduce) {
   html.stg-wipe::view-transition-new(root) { animation: none; }
 }
+
+/* LAYOUT C, RESERVED BEFORE IT ARRIVES (owner, 2026-10-10). lc-pre is stamped
+   on <html> by the inline script in app/layout.js on a daily's route at desktop
+   width, and by app/LayoutC.jsx on a client navigation. Until LayoutCInner
+   attaches and sets lc-on, these rules give the game root the SAME padding and
+   the same hidden pieces the frame's own rules (in LayoutCInner's CSS) give it,
+   so the board paints once, in its final place. Keep the two in step: the
+   padding, the cap height fallback (62px) and the 232/330 column widths.
+   The hairlines draw the frame's three edges so the empty columns read as the
+   frame loading rather than as missing page. Keyed on .stg-top, so a route
+   with no stage root (or the quiz pages, which share StageChrome but have no
+   frame) is untouched even if the class is present. */
+html.lc-pre:not(.lc-on) .stage-page:has(.stg-top):not(.stage-page .stage-page){
+  padding:var(--lc-hh,62px) 330px 0 232px !important;box-sizing:border-box;min-height:100vh;}
+html.lc-pre:not(.lc-on) .stage-page:has(.stg-top) .stg-cap,
+html.lc-pre:not(.lc-on) .stage-page:has(.stg-top) .stg-strip,
+html.lc-pre:not(.lc-on) .stage-page:has(.stg-top) .stg-prog{display:none !important;}
+html.lc-pre:not(.lc-on):has(.stg-top) .stage-tail{display:none !important;}
+html.lc-pre:not(.lc-on) .stage-page:has(.stg-top) .stg-fg{position:relative;padding-right:240px;}
+html.lc-pre:not(.lc-on) .stage-page:has(.stg-top):not(.stage-page .stage-page)::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:79;
+  background:
+    linear-gradient(var(--stg-line),var(--stg-line)) 0 calc(var(--lc-hh,62px) - 1px)/100% 1px no-repeat,
+    linear-gradient(var(--stg-line),var(--stg-line)) 231px var(--lc-hh,62px)/1px 100% no-repeat,
+    linear-gradient(var(--stg-line),var(--stg-line)) calc(100% - 330px) var(--lc-hh,62px)/1px 100% no-repeat;}

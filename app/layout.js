@@ -14,6 +14,10 @@ import ChunkReload from './ChunkReload';
 import { getAllSources } from '@/lib/sources';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
+import { DAILY_GAMES } from '@/lib/daily-games';
+
+// Every daily's route, for the Layout C reserve script below.
+const LC_ROUTES = JSON.stringify(Array.from(new Set(DAILY_GAMES.map((g) => g.href || '/' + g.key))));
 
 const SOURCE_COUNT = getAllSources().length;
 
@@ -110,6 +114,17 @@ export default function RootLayout({ children }) {
             writeStageTheme keeps the attribute in step from here on, or a
             reader who switches TO light would stay suppressed in dark. */}
         <script dangerouslySetInnerHTML={{ __html: "(function(){try{var d=document.documentElement,q=null;try{q=new URLSearchParams(window.location.search).get('theme')}catch(e){}var t=(q==='light'||q==='dark')?q:window.localStorage.getItem('sot_theme2');if(t!=='light'&&t!=='dark')t='light';d.setAttribute('data-stage-boot',t)}catch(e){}})();" }} />
+        {/* LAYOUT C RESERVES ITS SPACE BEFORE FIRST PAINT (owner, 2026-10-10:
+            moving from the home page to a game page jittered). The desktop
+            frame (app/LayoutC.jsx) is client-only and loads after the board
+            has painted, so the board painted full width and then jumped when
+            the frame attached. On a daily's route, at the same widths and with
+            the same ?layout= rules LayoutC uses, this stamps lc-pre on <html>,
+            and globals.css pads the game root exactly as the frame will. The
+            cap height is the reader's last measured one (LayoutCInner keeps
+            it), so even that does not move. Blocking and inline for the same
+            reason as the register stamp above. */}
+        <script dangerouslySetInnerHTML={{ __html: "(function(){try{var R=" + LC_ROUTES + ",p=location.pathname.replace(/\\/+$/,'')||'/';if(R.indexOf(p)<0)return;var q=null;try{q=new URLSearchParams(location.search).get('layout')}catch(e){}var w=window.innerWidth;if(q==='off'||!(w>=1280||(q==='c'&&w>=1100)))return;var d=document.documentElement;d.classList.add('lc-pre');var h=parseInt(window.localStorage.getItem('sot_lc_hh'),10);if(h>30&&h<200)d.style.setProperty('--lc-hh',h+'px')}catch(e){}})();" }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
