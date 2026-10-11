@@ -69,6 +69,9 @@ const MED = {
   // estimated off Parker's 61s and their par ramps (7x7 par 16-35 against
   // Parker's 11-20; 8x8 par 22-46). Replace at the next snapshot re-measure.
   impound: 150, junkyard: 240,
+  // Ergo launched 2026-10-11 with no clock data: nine statements to file, a
+  // little longer than Hearsay's one card. Replace at the next re-measure.
+  ergo: 120,
   // Shoe launched 2026-08-21 with no live clock data yet: estimated from its
   // shape (five click-through blackjack hands, between Taire and Hands, ~100s).
   // It went to TEN hands on 2026-09-30, so the estimate doubled. Replace with

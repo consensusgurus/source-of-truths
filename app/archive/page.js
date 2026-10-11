@@ -86,6 +86,7 @@ import { PUZZLES as YOSE_FULL } from '../yose/puzzles';
 import { PUZZLES as CRIB_FULL } from '../crib/puzzles';
 import { PUZZLES as SUFFICE_FULL } from '../suffice/puzzles';
 import { PUZZLES as DOCKET_FULL } from '../docket/puzzles';
+import { PUZZLES as ERGO_FULL } from '../ergo/puzzles';
 import { PUZZLES as PLOT_FULL } from '../plot/puzzles';
 import { PUZZLES as BARTER_FULL } from '../barter/puzzles';
 import { PUZZLES as DEFEND_FULL } from '../defend/puzzles';
@@ -180,6 +181,7 @@ const YOSE = YOSE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num,
 const CRIB = CRIB_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SUFFICE = SUFFICE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const DOCKET = DOCKET_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ERGO = ERGO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const PLOT = PLOT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const BARTER = BARTER_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const DEFEND = DEFEND_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -345,6 +347,7 @@ const GAMES = [
   { key: 'turn', name: 'Turn', path: '/turn', tag: 'Ten squares left', accent: '#226218', bg: '#e9f3e6', border: 'rgba(34,98,24,0.4)', src: TURN },
   { key: 'yose', name: 'Yose', path: '/yose', tag: 'The last points on the board', accent: '#44403c', bg: '#efedeb', border: 'rgba(68,64,60,0.4)', src: YOSE },
   { key: 'suffice', name: 'Suffice', path: '/suffice', tag: 'Decide what is enough', accent: '#4338ca', bg: '#eef0ff', border: 'rgba(67,56,202,0.4)', src: SUFFICE },
+  { key: 'ergo', name: 'Ergo', path: '/ergo', tag: 'Must, could or cannot', accent: '#5b3a9e', bg: '#f1ecfa', border: 'rgba(91,58,158,0.4)', src: ERGO },
   { key: 'docket', name: 'Docket', path: '/docket', tag: 'One setup, five deductions', accent: '#5b2333', bg: '#f7e8ec', border: 'rgba(91,35,51,0.4)', src: DOCKET },
   { key: 'plot', name: 'Plot', path: '/plot', tag: 'Divide the whole board', accent: '#78350f', bg: '#fbf1e5', border: 'rgba(120,53,15,0.4)', src: PLOT },
   { key: 'barter', name: 'Barter', path: '/barter', tag: 'Trade the letters home', accent: '#be123c', bg: '#fdeef2', border: 'rgba(190,18,60,0.4)', src: BARTER },

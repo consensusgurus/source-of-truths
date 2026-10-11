@@ -50,9 +50,9 @@ export const RUN_DOORS = {
   },
   judged: {
     href: '/judged', name: 'Judged', eyebrow: 'Daily run · Five cases', once: 'game',
-    body: 'Five deduction cases on one page, opening with the logic game: testimony, hearsay, an alibi and a record to rebuild. Right and fast decides which law school takes you.',
+    body: 'Five deduction cases on one page, opening with if-then rules: testimony, hearsay, a logic game and an alibi. Right and fast decides which law school takes you.',
     go: 'Take all five cases', accent: '#7dd3fc',
-    tags: [['Docket', '#c9a3ae'], ['Sworn', '#f472b6'], ['Hearsay', '#d8b4fe'], ['Alibi', '#ef8896'], ['Stands', '#93c5fd']],
+    tags: [['Ergo', '#c4b5fd'], ['Sworn', '#f472b6'], ['Hearsay', '#d8b4fe'], ['Docket', '#c9a3ae'], ['Alibi', '#ef8896']],
   },
   // Once per GAME like Judged (owner, 2026-10-09): the first time a player
   // ever opens one of the five on its own page.

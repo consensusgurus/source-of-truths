@@ -61,7 +61,7 @@ import PremierePop from '../PremierePop';
 import GroupsPop from '../GroupsPop';
 // GROUP STANDINGS on the home (2026-09-17): the band, the Groups badge and the
 // member dots on the tiles all read one standing payload.
-import useGroupStanding, { bestPlace, ordinal as grpOrdinal, memberRows, fmtPts as grpPts, MiniAvatar } from '../groups/groupStanding';
+import useGroupStanding, { bestPlace, ordinal as grpOrdinal, memberRows, MiniAvatar } from '../groups/groupStanding';
 import HomeGroupsBand from '../groups/HomeGroupsBand';
 import HomeInvite from '../groups/HomeInvite';
 // CHOOSE A NAME (owner report, 2026-09-17): the guest controls below pointed at
@@ -557,15 +557,16 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
           <span className="sty-grf">of {res.field}</span>
         </span>
       ) : dots && dots.lead ? (
-        /* A GAME THE GROUP IS ON SAYS WHAT THEY DID (owner, 2026-09-22). It
-           takes the tag's line rather than a third one, so every tile keeps the
-           same height, and it is only ever drawn on a game the reader has NOT
-           played: once they have, their own result is the better line and it
-           wins above. Never the reader's own score, in either branch. */
-        <span className="sty-ggrp sty-rev">
+        /* A GAME THE GROUP IS ON SAYS WHO LEADS IT (owner, 2026-09-22; reworked
+           2026-10-10). The leader's name and their place among the members who
+           have played it ("#1 of 2"), never the group's size and never a score:
+           a leader's 15 goes without saying. It takes the tag's line, so every
+           tile keeps the same height, and it is only drawn on a game the reader
+           has NOT played: once they have, their own result wins above. */
+        <span className="sty-ggrp sty-rev" title={`${dots.name}: ${dots.lead.username} leads, #${dots.lead.rank || 1} of ${Math.max(dots.played.size, 1)} played`}>
           <span className="sty-grl">{dots.name}:</span>
-          <span className="sty-grk">{dots.lead.username} {grpPts(dots.lead.points)}</span>
-          <span className="sty-grf">{dots.played.size} of {dots.of}</span>
+          <span className="sty-grk">{dots.lead.username}</span>
+          <span className="sty-grf">#{dots.lead.rank || 1} of {Math.max(dots.played.size, 1)}</span>
         </span>
       ) : (
         <span className="sty-gt">{g.tag}</span>
@@ -713,11 +714,10 @@ export default function StageToday() {
           played: new Set((g0.games && g0.games[key]) || []),
           lead,
           // The reader's own place IN THE GROUP on this game, beside the site
-          // place the tile already prints. THE FIELD IS THE GROUP'S SIZE, not
-          // how many of them played it: "#1 of 1" is no figure at all on a game
-          // only the reader has reached, and every other group count on this
-          // page ("2 of 3" on an unplayed tile) already counts members.
-          mine: mine ? { rank: mine.rank, field: g0.roster.length } : null,
+          // place the tile already prints. THE FIELD IS HOW MANY MEMBERS HAVE
+          // PLAYED IT (owner, 2026-10-10: "#1 of 1 or however many have played
+          // NOT of total"), which replaced the group's size.
+          mine: mine ? { rank: mine.rank, field: Math.max(mine.rank || 1, new Set((g0.games && g0.games[key]) || []).size || 1) } : null,
           of: g0.roster.length,
         };
       }

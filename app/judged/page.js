@@ -2,7 +2,9 @@ import { Suspense } from 'react';
 import JudgedClient from './JudgedClient';
 import { SITE_URL } from '@/lib/site';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
-import { LAW_KEYS, LAW_CASES } from '@/lib/law-school';
+import { LAW_RUN_ID, LAW_CASES } from '@/lib/law-school';
+import { circuitKeysFor } from '@/lib/circuits';
+import { PUZZLES as P_ergo } from '../ergo/puzzles';
 import { PUZZLES as P_sworn } from '../sworn/puzzles';
 import { PUZZLES as P_hearsay } from '../hearsay/puzzles';
 import { PUZZLES as P_docket } from '../docket/puzzles';
@@ -13,8 +15,10 @@ import { PUZZLES as P_stands } from '../stands/puzzles';
 // Each bank is resolved HERE and only today's case ships, stripped exactly the
 // way each game's own page strips it (a client never receives a solution).
 // The clients are handed a one-puzzle list, which is today's by construction.
-const BANKS = { docket: P_docket, sworn: P_sworn, hearsay: P_hearsay, alibi: P_alibi, stands: P_stands };
+const BANKS = { ergo: P_ergo, docket: P_docket, sworn: P_sworn, hearsay: P_hearsay, alibi: P_alibi, stands: P_stands };
 const SAFE = {
+  // Ergo ships no answer key: the verdicts are derived in the browser.
+  ergo: (p) => p,
   sworn: (p) => { const { solution, ...safe } = p; return safe; },
   hearsay: (p) => p,
   docket: (p) => ({ ...p, meta: { sols: p.meta ? p.meta.sols : 0 } }),
@@ -31,7 +35,7 @@ export async function generateMetadata({ searchParams }) {
   const d = String((searchParams && searchParams.d) || '');
   const img = ok ? `/judged/card?s=${s}${/^\d{1,3}$/.test(t) ? `&t=${t}` : ''}${/^\d{4}-\d{2}-\d{2}$/.test(d) ? `&d=${d}` : ''}` : '/judged/card';
   const title = 'Judged: Five Logic Cases, One Admissions Letter | Mind Loft';
-  const description = 'A free daily run of five legal-reasoning puzzles: an LSAT-style logic game, liars under oath, hearsay, an alibi and a record to rebuild, scored half on accuracy and half on speed. Your score decides which law school lets you in, up to Yale.';
+  const description = 'A free daily run of five legal-reasoning puzzles: if-then rules to sort, liars under oath, hearsay, an LSAT-style logic game and an alibi, scored half on accuracy and half on speed. Your score decides which law school lets you in, up to Yale.';
   return {
     title, description,
     alternates: { canonical: '/judged' },
@@ -48,7 +52,8 @@ function etTodayServer() {
 export default function JudgedPage() {
   const today = etTodayServer();
   const sections = [];
-  for (const key of LAW_KEYS) {
+  // The day's roster (Ergo leads from 2026-10-11, Docket before).
+  for (const key of circuitKeysFor(LAW_RUN_ID, today)) {
     const bank = BANKS[key] || [];
     const p = bank.filter((x) => x.live === today)[0];
     if (!p) continue;
@@ -56,7 +61,7 @@ export default function JudgedPage() {
     sections.push({
       key, name: g.name || key, tag: g.tag || '', color: g.colorNavy || '#93c5fd',
       path: g.href || `/${key}`, num: p.num, quizId: p.quizId, sunday: !!p.sunday,
-      file: LAW_CASES[key].file, chip: LAW_CASES[key].chip,
+      file: LAW_CASES[key].file, chip: LAW_CASES[key].chip, phrase: LAW_CASES[key].phrase,
       puzzle: SAFE[key](p),
     });
   }
@@ -65,7 +70,7 @@ export default function JudgedPage() {
   const dateShort = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
   const jsonLd = {
     '@context': 'https://schema.org', '@type': 'Game', name: 'Judged', url: `${SITE_URL}/judged`,
-    description: 'A free daily run of five legal-reasoning logic puzzles from Mind Loft: Docket, Sworn, Hearsay, Alibi and Stands.',
+    description: 'A free daily run of five legal-reasoning logic puzzles from Mind Loft: Ergo, Sworn, Hearsay, Docket and Alibi.',
     gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
     publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
   };

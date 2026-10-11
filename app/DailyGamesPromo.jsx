@@ -85,6 +85,7 @@ export const DAILY_GAMES = [
   { key: 'dario', href: '/dario', name: 'Dario', tag: 'race to the frontier', store: 'sot_dario_day', accent: '#c2410c', bg: '#fff1e6', border: 'rgba(194,65,12,0.4)' },
   { key: 'snake', href: '/snake', name: 'Snake', tag: 'same apples, same order', store: 'sot_snake_day', accent: '#65a30d', bg: '#eef7dc', border: 'rgba(101,163,13,0.4)' },
   { key: 'blocks', href: '/blocks', name: 'Blocks', tag: 'same shapes, same order', store: 'sot_blocks_day', accent: '#1d4ed8', bg: '#e8edfa', border: 'rgba(29,78,216,0.4)' },
+  { key: 'ergo', href: '/ergo', name: 'Ergo', tag: 'must, could or cannot', store: 'sot_ergo_day', accent: '#5b3a9e', bg: '#f1ecfa', border: 'rgba(91,58,158,0.4)' },
   { key: 'docket', href: '/docket', name: 'Docket', tag: 'one setup, five deductions', store: 'sot_docket_day', accent: '#5b2333', bg: '#f7e8ec', border: 'rgba(91,35,51,0.4)' },
   { key: 'defend', href: '/defend', name: 'Defend', tag: 'black to play and survive', store: 'sot_defend_day', accent: '#2f4f4f', bg: '#e9f0ef', border: 'rgba(47,79,79,0.4)' },
   { key: 'blitz', href: '/blitz', name: 'Blitz', tag: 'twenty problems, one life', store: 'sot_blitz_day', accent: '#657512', bg: '#f3f7de', border: 'rgba(101,117,18,0.4)' },

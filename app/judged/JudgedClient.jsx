@@ -2,7 +2,8 @@
 
 // JUDGED — the five deduction dailies as one run (owner, 2026-10-08).
 //
-// Docket, Sworn, Hearsay, Alibi and Stands back to back on one page, each
+// Ergo, Sworn, Hearsay, Docket and Alibi back to back on one page (Docket led
+// and Stands ran before 2026-10-11; the page deals the day's roster), each
 // dressed as a case file, then an admissions verdict: the run total decides
 // which law school takes you, from Charleston to Yale (lib/law-school.js).
 //
@@ -35,6 +36,7 @@ import { isMobileDevice } from '@/lib/is-mobile';
 import { LAW_RUN_ID, LAW_LADDER, LAW_CLOCK, LAW_CASE_MAX, LAW_MAX, lawLadderFor, lawTierOf, lawIndexOf, lawCasePoints, lawAcc, lawSpeed } from '@/lib/law-school';
 
 const CLIENTS = {
+  ergo: dynamic(() => import('../ergo/ErgoClient'), { ssr: false, loading: () => null }),
   sworn: dynamic(() => import('../sworn/SwornClient'), { ssr: false, loading: () => null }),
   hearsay: dynamic(() => import('../hearsay/HearsayClient'), { ssr: false, loading: () => null }),
   docket: dynamic(() => import('../docket/DocketClient'), { ssr: false, loading: () => null }),
@@ -198,7 +200,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
         <section className={`pre${leaving ? ' leave' : ''}`}>
           <div className="eb fade">{dateLabel} · Judged</div>
           <h1 className="title"><span>Judged</span></h1>
-          <p className="lede fade">Five cases in one sitting, opening with <b>an LSAT-style logic game</b>, then liars under oath, hearsay, an alibi and a record to rebuild. Right counts half, <b>fast</b> counts the other half. <span className="lede-x">Your score decides which law school lets you in.</span></p>
+          <p className="lede fade">Five cases in one sitting, opening with <b>{(sections[0] && sections[0].phrase) || 'a logic case'}</b>{sections.length > 1 ? `, then ${sections.slice(1).map((s) => s.phrase || s.name).join(', ').replace(/, ([^,]*)$/, ' and $1')}` : ''}. Right counts half, <b>fast</b> counts the other half. <span className="lede-x">Your score decides which law school lets you in.</span></p>
           {/* THE GAVEL IS THE START BUTTON: the block it strikes, the label
               under it, and the strike plays before the folders clear. */}
           <button type="button" className={`gav fade${leaving ? ' strike' : ''}`} onClick={start} aria-label="Begin the exam">

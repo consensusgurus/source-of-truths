@@ -3832,6 +3832,7 @@ archive and hub chips use the short form `Sun`.
 | Crib | seven hands instead of five, three of them decided by the crib (from launch, 2026-09-20) |
 | Duet | a 10x10 board against the weekday 6x6 and 8x8 (from launch, 2026-10-03) |
 | Lamps | a 10x10 board against the weekday 7x7 and 8x8 (from launch, 2026-10-04) |
+| Ergo | twelve statements to sort instead of nine, under seven rules (from launch, 2026-10-11) |
 | Snake | every apple grows the snake by two instead of one, par 15 against the weekday 20 (from launch, 2026-10-11) |
 | Clade | a rarer animal, tier 4 of the list (from launch, 2026-10-04) |
 | Dossier | six guesses instead of eight (from launch, 2026-10-04) |
@@ -8882,4 +8883,33 @@ Daily Challenge, both unplugged in the same push.
   (`sot_potluck_<num>` with t0, `sot_potluck_day`, `sot_potluck_stats`), all written by lib/potluck.js.
 - Wired by `scripts/wire-potluck.mjs` (beside Quotes in every list) and
   `scripts/wire-potluck-quizclient.mjs`. No Sunday Edition.
+
+## Ergo (`/ergo`): the daily if-then sort, and it leads Judged (launched 2026-10-11)
+
+A small cast, a handful of if-then rules about who does what, and ONE FACT FOR TODAY; sort nine
+statements (twelve on the Sunday Edition) into must be true, could be true and cannot be true.
+Key/route `ergo`, category **Logic**, `miss: 'Wrong'`, score = statements filed right, first
+attempt stands, legacy accent `#5b3a9e` / navy `#c4b5fd`. Wired by `scripts/wire-ergo.mjs`
+(beside Docket in every list). Glyph in `lib/game-glyphs.js`, share card `public/og/ergo.png`
+from `scripts/bake-og.mjs ergo`. Premiere 2026-10-11 to 10-15. Like Docket, NO reader-facing copy
+names the standardized test this reasoning comes from.
+
+- **Rules are 2-SAT implications** (`if`, `onlyif`, `unless`, `never`, `least`), each a pair of
+  literals `a -> b` with its contrapositive as a "flip". Weekday ramp: Mon 5 people / 4 rules
+  (if, never), Tue 6/5 adds only if, Wed 6/5 adds unless, Thu 6/6 adds at least one, Fri 7/6,
+  Sat 7/7, Sunday 7/7 with twelve statements. Each verdict appears at least twice (three times on
+  Sunday). Traps are converses and inverses of a rule chain.
+- **No answer key ships.** `app/ergo/engine.js` enumerates every lineup the rules and the fact
+  allow (at most 128) and classifies each statement in the browser; each statement carries a
+  `why` proof chain with rule labels (R3, R3 flip) shown after the ruling.
+- Bank 63 days, 2026-10-11 to 2026-12-12, from `scripts/gen-ergo.mjs`;
+  `scripts/verify-ergo.mjs` shares no code with it and re-derives every verdict, label and proof.
+
+**JUDGED ROSTER, DATED (owner, 2026-10-10).** From 2026-10-11 Judged is Ergo (leads), Sworn,
+Hearsay, Docket, Alibi; STANDS left. Days up to 2026-10-10 keep Docket, Sworn, Hearsay, Alibi,
+Stands through the circuit's `before: { until, opener, keys }` field, which `circuitKeysFor`
+honours, so no played day changes its cases. `app/judged/page.js` deals the day's roster through
+`circuitKeysFor`, not `LAW_KEYS`; the pregame lede is built from each case's `phrase` in
+`LAW_CASES`. `LAW_CLOCK.ergo` [45, 180] is an ESTIMATE; re-measure after two weeks of boards.
+Stands no longer mounts the Judged door; Ergo does.
 

@@ -115,7 +115,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-15' };
+const LAUNCH_PIN = { keys: ['ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-15' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -199,6 +199,7 @@ export const GAME_META = {
   chain: { accent: '#4a044e', badgeBg: '#4a044e', badgeInk: T.white, Fin: Frame },
   turn: { accent: '#226218', badgeBg: '#226218', badgeInk: T.white, Fin: Contrast },
   suffice: { accent: '#4338ca', badgeBg: '#4338ca', badgeInk: T.white, Fin: CheckCircle2 },
+  ergo: { accent: '#5b3a9e', badgeBg: '#5b3a9e', badgeInk: T.white, Fin: Waypoints },
   docket: { accent: '#5b2333', badgeBg: '#5b2333', badgeInk: T.white, Fin: Gavel },
   plot: { accent: '#78350f', badgeBg: '#78350f', badgeInk: T.white, Fin: LayoutGrid },
   sixes:  { accent: '#1d4ed8', badgeBg: '#1d4ed8', badgeInk: T.white, Fin: Grid2x2 },
@@ -335,6 +336,7 @@ const ALL_DAILY_GAMES = [
   { key: 'check',  cat: 'endgame',     name: 'Check',  tag: 'Red to play and sweep',       blurb: 'A checkers position where one move sets off a chain that clears the whole board.', href: '/check' },
   { key: 'chain',  cat: 'endgame',     name: 'Chain',  tag: 'Take them, or leave them',    blurb: 'A dots and boxes endgame you are already winning. One edge keeps it, and the free box is usually bait.', href: '/chain' },
   { key: 'suffice', cat: 'logic',      name: 'Suffice', tag: 'Decide what is enough',      blurb: 'Eight questions you never answer. For each one, decide whether the two statements are enough to settle it.', href: '/suffice' },
+  { key: 'ergo', cat: 'logic',        name: 'Ergo', tag: 'Must, could or cannot', blurb: 'A few if-then rules, one fact, and nine statements to sort into must, could and cannot. Chain the rules, flip them, and watch for the ones running backwards.', href: '/ergo' },
   { key: 'docket', cat: 'logic',      name: 'Docket', tag: 'One setup, five deductions',   blurb: 'A small world and a few conditions, then five questions about what they force. Diagram once, answer five times.', href: '/docket' },
   { key: 'blitz',  cat: 'numbers',   name: 'Blitz',  tag: 'Twenty problems, one life',   blurb: 'Mental arithmetic against a fifteen second clock. Twenty problems, getting harder, and one wrong answer ends the run.', href: '/blitz' },
   { key: 'sums',  cat: 'numbers',   name: 'Sums',  tag: 'The daily kakuro',   blurb: 'The cross-sums crossword. Every run of squares adds up to the total at its head, digits 1 to 9, no repeats. One solution, and the clock decides the day.', href: '/sums' },
