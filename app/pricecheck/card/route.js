@@ -1,7 +1,7 @@
 import { createElement as h } from 'react';
 import { ImageResponse } from 'next/og';
 import { stageFonts } from '@/lib/og-stage-card';
-import { PRICE_KEYS, PRICE_GAMES, runRankOf, runTierOf } from '@/lib/price-games';
+import { PRICE_KEYS, PRICE_GAMES, runRankOf, runTierOf, RUN_RANKS, RUN_RANKS_V2 } from '@/lib/price-games';
 
 // PRICE CHECK'S SHARE CARD (owner, 2026-10-01: "it needs a great share card").
 // A result card carries the player's payment card from the run's ending: the
@@ -47,11 +47,11 @@ function payCard(ti, rank, total, max) {
     h('div', { style: { display: 'flex', alignItems: 'baseline', fontFamily: MONO, fontSize: 26 } }, String(total), h('span', { style: { fontSize: 15, opacity: 0.7, marginLeft: 6 } }, `/ ${max}`)));
 }
 
-function card(scores) {
+function card(scores, ranks = RUN_RANKS_V2) {
   const res = Array.isArray(scores);
   const total = res ? scores.reduce((a, b) => a + b, 0) : null;
   const max = PRICE_KEYS.length * 10;
-  const rank = res ? runRankOf(Math.round(total * 50 / max)) : null;
+  const rank = res ? runRankOf(Math.round(total * 50 / max), ranks) : null;
   const rows = PRICE_KEYS.map((k, i) => {
     const g = PRICE_GAMES[k];
     const v = res ? String(scores[i] ?? 0).padStart(2, '0') : '??';
@@ -66,10 +66,10 @@ function card(scores) {
       h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 20, letterSpacing: 4, color: '#8b95a8', textTransform: 'uppercase' } }, 'Mind Loft · Daily run'),
       h('div', { style: { display: 'flex', flexDirection: 'column', fontSize: res ? 72 : 92, fontWeight: 800, lineHeight: 0.95, letterSpacing: -3, marginTop: 18 } }, h('span', null, 'Price'), h('span', null, 'Check')),
       res
-        ? h('div', { style: { display: 'flex', marginTop: 26, paddingLeft: 6 } }, payCard(runTierOf(Math.round(total * 50 / max)), rank, total, max))
+        ? h('div', { style: { display: 'flex', marginTop: 26, paddingLeft: 6 } }, payCard(runTierOf(Math.round(total * 50 / max), ranks), rank, total, max))
         : h('div', { style: { display: 'flex', flexDirection: 'column', marginTop: 26 } },
           h('div', { style: { display: 'flex', fontSize: 30, fontWeight: 700, color: '#cbd5e1', lineHeight: 1.3 } }, 'Five real price tags, from pocket change to the auction block.'),
-          h('div', { style: { display: 'flex', marginTop: 14, fontSize: 24, fontWeight: 700, color: '#8b95a8' } }, 'Five guesses each, one score out of 50.')),
+          h('div', { style: { display: 'flex', marginTop: 14, fontSize: 24, fontWeight: 700, color: '#8b95a8' } }, 'Three guesses each. The first one counts most.')),
       h('div', { style: { display: 'flex', marginTop: 'auto', alignItems: 'center', gap: 16 } },
         h('div', { style: { display: 'flex', padding: '14px 26px', borderRadius: 14, background: '#7dd3fc', color: '#08222e', fontSize: 24, fontWeight: 800, whiteSpace: 'nowrap', flexShrink: 0 } }, 'Play free'),
         h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 17, color: '#cbd5e1', whiteSpace: 'nowrap' } }, 'mindloftdaily.com/pricecheck'))),
@@ -84,9 +84,13 @@ function card(scores) {
 
 export async function GET(req) {
   try {
-    const s = new URL(req.url).searchParams.get('s') || '';
+    const q = new URL(req.url).searchParams;
+    const s = q.get('s') || '';
+    // A link shared under the five-guess rule carries no r; from 2026-10-11 the
+    // share link carries r=2 and the card is graded on the recut ladder.
+    const ranks = q.get('r') === '2' ? RUN_RANKS_V2 : RUN_RANKS;
     const scores = /^\d{1,2}(-\d{1,2}){1,4}$/.test(s) ? s.split('-').map((x) => Math.max(0, Math.min(10, Number(x)))) : null;
-    return new ImageResponse(card(scores), { width: 1200, height: 630, fonts: stageFonts(), headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=86400' } });
+    return new ImageResponse(card(scores, scores ? ranks : RUN_RANKS_V2), { width: 1200, height: 630, fonts: stageFonts(), headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=86400' } });
   } catch (err) {
     console.error('pricecheck card failed', err);
     return new Response(null, { status: 302, headers: { Location: '/og/daily.png' } });

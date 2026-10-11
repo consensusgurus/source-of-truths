@@ -15,8 +15,9 @@
 // replays a game already played today: nothing is saved or posted, and the
 // run keeps the original score (owner, 2026-10-01).
 //
-// The board ranks on score, then on exact closeness (priceTiebreak, the best
-// guess's error in basis points, lower first; migration 50 and the price
+// The board ranks on score, then on exact closeness (priceTiebreak: the best
+// guess's error in basis points before 2026-10-11, the FIRST guess's after,
+// lower first; migration 50 and the price
 // branch in lib/quiz-anon + lib/daily-combined), then fewer guesses, then time.
 // The bank is resolved on the server and only the picked day ships, so
 // tomorrow's price never reaches a browser.
@@ -53,7 +54,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import RunDoorPop from '../circuits/RunDoorPop';
-import { PRICE_GAMES, GUESSES, TOTAL, errOf, bandOf, scoreOf, pctLabel, fmtCents, parseGuess } from '@/lib/price-games';
+import { PRICE_GAMES, TOTAL, CAPS, errOf, bandOf, scoreOf, pctLabel, fmtCents, parseGuess, isV2, guessesFor, pointsFor, scoreGuesses } from '@/lib/price-games';
 
 // AUTO COMMAS IN THE GUESS BAR (owner, 2026-10-06). The guess is regrouped as
 // it is typed, so 1250000 reads 1,250,000. Keeps one decimal point, keeps a
@@ -164,9 +165,12 @@ function mergeServerStats(SK, s, recent, puzzles) {
 
 // A finished solo save for this game's day, or null. The run reads this to
 // bank a game already played on its own page.
-export function readDoneSave(key, num) {
+// `when` (the puzzle's live date or quizId) rejects a save played under the
+// five-guess rule on a day the three-guess rule governs (2026-10-11 reset).
+export function readDoneSave(key, num, when) {
   try {
     const s = JSON.parse(localStorage.getItem(`sot_${key}_${num}`) || 'null');
+    if (when && isV2(when) && s && s.rule !== 2) return null;
     if (s && s.v === 2 && Array.isArray(s.guesses) && s.status === 'done') return s;
   } catch (e) {}
   return null;
@@ -226,6 +230,11 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
   const DAY = dayByNum[PUZZLE.num] || null;
   const PRICE = DAY ? DAY.price : 1;
   const STORE_KEY = `sot_${KEY}_${PUZZLE.num}`;
+  // FIRST GUESS COUNTS from 2026-10-11 (lib/price-games V2_FROM): three
+  // guesses worth up to 10, 6 and 3. An archive day keeps the rule it was
+  // played under, so both are read off the puzzle's own date.
+  const V2 = isV2(PUZZLE.live);
+  const MAXG = guessesFor(PUZZLE.live);
 
   const [g, setG] = useState(() => freshState());
   const gRef = useRef(g);
@@ -302,10 +311,13 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
     ? { '--pr-freezing': '#7dd3fc', '--pr-cold': '#93c5fd', '--pr-cool': '#c4b5fd', '--pr-warm': '#fbbf24', '--pr-hot': '#fb923c', '--pr-burning': '#f87171' }
     : { '--pr-freezing': '#0369a1', '--pr-cold': '#1d4ed8', '--pr-cool': '#6d28d9', '--pr-warm': '#a16207', '--pr-hot': '#c2410c', '--pr-burning': '#b91c1c' };
 
-  const tries = g.guesses.map((c) => ({ c, e: errOf(c, PRICE), up: c < PRICE }));
+  const tries = g.guesses.map((c, i) => ({ c, e: errOf(c, PRICE), up: c < PRICE, p: pointsFor(errOf(c, PRICE), i, V2) }));
   const best = tries.reduce((m, x) => (!m || x.e < m.e ? x : m), null);
-  const score = best ? scoreOf(best.e) : 0;
-  const left = GUESSES - tries.length;
+  const sg = scoreGuesses(g.guesses, PRICE, PUZZLE.live);
+  const score = sg.score;
+  // The guess that earned the score (under v2 not always the closest).
+  const earned = sg.at >= 0 ? tries[sg.at] : null;
+  const left = MAXG - tries.length;
   const outcome = score >= 5 ? 'won' : 'lost';
 
   useEffect(() => { gRef.current = g; }, [g]);
@@ -330,7 +342,16 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
       if (raw) {
         const saved = JSON.parse(raw);
         // v 2 only: a bracket-era save at this key must never resume here.
-        if (saved && saved.v === 2 && Array.isArray(saved.guesses)) {
+        // A save played under the old five-guess rule on a day that now runs
+        // the new one (only 2026-10-11, the day the rule changed: its boards
+        // were wiped and replayed) is thrown away with its stats record, so
+        // the player starts the day again under the new rule.
+        const stale = saved && saved.v === 2 && V2 && saved.rule !== 2 && (saved.t0 || (Array.isArray(saved.guesses) && saved.guesses.length));
+        if (stale) {
+          try { localStorage.removeItem(STORE_KEY); localStorage.removeItem(`sot_${KEY}_rec_${PUZZLE.num}`); } catch (e) {}
+          try { const st = getStats(STATS_KEY); if (st.rec[PUZZLE.num]) { const rec = { ...st.rec }; delete rec[PUZZLE.num]; localStorage.setItem(STATS_KEY, JSON.stringify({ ...st, rec })); } } catch (e) {}
+        }
+        if (!stale && saved && saved.v === 2 && Array.isArray(saved.guesses)) {
           const next = { ...freshState(), ...saved };
           gRef.current = next;
           setG(next);
@@ -366,9 +387,9 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
   useEffect(() => {
     if (!RUN || !hydrated || g.status === 'playing' || runDoneRef.current) return undefined;
     runDoneRef.current = true;
-    const bps = bpsOf(g);
+    const r2 = scoreGuesses(g.guesses, PRICE, PUZZLE.live);
     const secs = g.t0 ? Math.max(1, Math.round(((g.tEnd || Date.now()) - g.t0) / 1000)) : 0;
-    const t = setTimeout(() => { try { run.onDone && run.onDone({ key: KEY, score: bps == null ? 0 : scoreOf(bps / 10000), bps, guesses: g.guesses.slice(), secs, practice: PRACTICE }); } catch (e) {} }, 1500);
+    const t = setTimeout(() => { try { run.onDone && run.onDone({ key: KEY, score: r2.score, at: r2.at, bps: r2.bps, guesses: g.guesses.slice(), secs, practice: PRACTICE }); } catch (e) {} }, 1500);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [RUN, hydrated, g.status]);
@@ -433,10 +454,6 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
   const prevPuzzle = puzzles.find((x) => x.num === PUZZLE.num - 1) || null;
   const myStats = deriveStats(stats, pickPuzzle(puzzles, null).num);
 
-  function bpsOf(cur) {
-    const ts = cur.guesses.map((c) => errOf(c, PRICE));
-    return ts.length ? Math.round(Math.min(...ts) * 10000) : null;
-  }
   const REC_KEY = `sot_${KEY}_rec_${PUZZLE.num}`;
   const abandon = useAbandonFlush(() => {
     if (PRACTICE) return null;
@@ -452,8 +469,9 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
     abandon.markFlushed();
     if (PRACTICE) return;
     const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
-    const bps = bpsOf(g2);
-    const sc = bps == null ? 0 : scoreOf(bps / 10000);
+    const r2 = scoreGuesses(g2.guesses, PRICE, PUZZLE.live);
+    const bps = r2.bps;
+    const sc = r2.score;
     try { setStats(recordStat(STATS_KEY, PUZZLE.num, { s: sc, t: TOTAL, won: sc > 0, b: bps })); } catch (e) {}
     try { localStorage.setItem(REC_KEY, '1'); } catch (e) {}
     try {
@@ -473,7 +491,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
   function startGame() {
     const cur = gRef.current;
     if (cur.t0) return;
-    commit({ ...cur, t0: Date.now() });
+    commit({ ...cur, t0: Date.now(), rule: V2 ? 2 : 1 });
     setNow(Date.now());
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
     setTimeout(() => { try { inputRef.current && inputRef.current.focus({ preventScroll: true }); } catch (e) {} }, 50);
@@ -493,9 +511,14 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
     setQ('');
     const guesses = [...cur.guesses, c];
     const e = errOf(c, PRICE);
-    const done = e <= 0.01 || guesses.length >= GUESSES;
+    // Under v2 the day also ends once no later guess could raise the score
+    // (a 6 on guess one cannot be beaten by guesses capped at 6 and 3).
+    const now2 = scoreGuesses(guesses, PRICE, PUZZLE.live).score;
+    const locked = V2 && guesses.length < MAXG && now2 >= CAPS[guesses.length];
+    const done = e <= 0.01 || guesses.length >= MAXG || locked;
     if (done) {
-      const fin = { ...cur, guesses, status: 'done', tEnd: Date.now() };
+      const fin = { ...cur, guesses, status: 'done', tEnd: Date.now(), rule: V2 ? 2 : 1 };
+      if (locked && e > 0.01) say(`Locked in at ${now2}. No later guess can beat it.`);
       vibrate(HAPT.win);
       postResult(fin);
       commit(fin);
@@ -510,7 +533,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
   function shareText() {
     const lines = tries.map((x) => { const b = bandOf(x.e); return b.key === 'bull' ? 'Bullseye' : `${x.up ? '▲' : '▼'} ${b.label}`; });
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
-    return `${NAME} #${PUZZLE.num} · ${score}/10 · ${best ? pctLabel(best.e) : ''}${streakBit}\n${lines.join('\n')}\n${shareUrl()}`;
+    return `${NAME} #${PUZZLE.num} · ${score}/10 · ${V2 && tries[0] ? `first guess ${pctLabel(tries[0].e)}` : best ? pctLabel(best.e) : ''}${streakBit}\n${lines.join('\n')}\n${shareUrl()}`;
   }
   function copyShare() {
     const text = playing
@@ -526,13 +549,19 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
       lead={CFG.lead}
       steps={[
-        <><b>Five guesses.</b> After each one you get an arrow, <b>higher</b> or <b>lower</b>, and how hot you are: Freezing, Cold, Cool, Warm, Hot, Burning.</>,
-        <>Your score is your <b>closest guess</b>, 0 to 10. Within 1% is a <b>bullseye</b>: it scores 10 and ends the day early.</>,
+        V2
+          ? <><b>Three guesses.</b> After each one you get an arrow, <b>higher</b> or <b>lower</b>, and how hot you are: Freezing, Cold, Cool, Warm, Hot, Burning.</>
+          : <><b>Five guesses.</b> After each one you get an arrow, <b>higher</b> or <b>lower</b>, and how hot you are: Freezing, Cold, Cool, Warm, Hot, Burning.</>,
+        V2
+          ? <><b>Your first guess counts most.</b> It scores up to 10, the second up to 6, the third up to 3, and the item takes your best of the three. Within 1% is a <b>bullseye</b> and ends the day early; on the first guess it is worth the full 10.</>
+          : <>Your score is your <b>closest guess</b>, 0 to 10. Within 1% is a <b>bullseye</b>: it scores 10 and ends the day early.</>,
         <>Close is measured as a ratio, so guessing <b>half the price is as far off as guessing double</b>. Within 5% scores 8, within 15% scores 6, within 50% scores 3.</>,
         <>The price is {CFG.basis}, read on the date shown with the item.</>,
-        <>Ties on the board go to the closer guess, then fewer guesses, then time. <b>Price Check</b> plays all five price games back to back.</>,
+        V2
+          ? <>Ties on the board go to the closer first guess, then fewer guesses, then time. <b>Price Check</b> plays all five price games back to back.</>
+          : <>Ties on the board go to the closer guess, then fewer guesses, then time. <b>Price Check</b> plays all five price games back to back.</>,
       ]}
-      knack="Bracket it. A guess that comes back Cold is off by more than 75%, so your next one should move a long way; save the small steps for Hot and Burning. You can type 1.2k for $1,200 or 3.5m for $3,500,000."
+      knack={V2 ? 'Take your time on the first guess: it is the only one that can score more than 6. A guess that comes back Cold is off by more than 75%, so the next should move a long way. You can type 1.2k for $1,200 or 3.5m for $3,500,000.' : 'Bracket it. A guess that comes back Cold is off by more than 75%, so your next one should move a long way; save the small steps for Hot and Burning. You can type 1.2k for $1,200 or 3.5m for $3,500,000.'}
       footer={KEY === 'pricer' ? 'Product links go to the listing; Amazon links carry our affiliate tag, which never changes the price.' : 'Links go to the source we priced from.'}
     />
   );
@@ -546,7 +575,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
     if (!x) {
       return (
         <div key={i} className="pr-row empty">
-          <span className="n">{i + 1}</span><span className="g">&nbsp;</span><span /><span />
+          <span className="n">{i + 1}</span><span className="g">{V2 ? <span className="worth">worth up to {CAPS[i]}</span> : '\u00a0'}</span><span /><span />
         </div>
       );
     }
@@ -555,7 +584,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
     return (
       <div key={i} className="pr-row" style={{ '--row-c': b.col }}>
         <span className="n">{i + 1}</span>
-        <span className="g">{fmtCents(x.c)}</span>
+        <span className="g">{fmtCents(x.c)}{V2 && <span className={`pts${earned === x && !playing ? ' won' : ''}`}>{x.p} pt{x.p === 1 ? '' : 's'}</span>}</span>
         <span className="dir" style={{ color: b.col }}>
           {b.key === 'bull' ? '' : x.up ? <><ArrowUp size={14} strokeWidth={3} /> higher</> : <><ArrowDown size={14} strokeWidth={3} /> lower</>}
         </span>
@@ -601,7 +630,10 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
           .pr-row{display:grid;grid-template-columns:22px 1fr auto 104px;align-items:center;gap:10px;border:1.5px solid var(--pr-panel-line);border-left:5px solid var(--row-c, var(--pr-panel-line));border-radius:11px;padding:12px 14px;background:var(--pr-panel);box-shadow:var(--pr-shadow);}
           .pr-row.empty{background:transparent;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.4));box-shadow:none;}
           .pr-row .n{font-family:${MONO};font-size:12px;font-weight:500;color:${FADED};}
-          .pr-row .g{font-weight:900;font-size:19px;font-variant-numeric:tabular-nums;color:${INK};}
+          .pr-row .g{font-weight:900;font-size:19px;font-variant-numeric:tabular-nums;color:${INK};display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+          .pr-row .g .worth{font-size:12.5px;font-weight:700;color:${FADED};}
+          .pr-row .g .pts{font-size:11.5px;font-weight:800;color:${FADED};border:1px solid var(--stg-line, rgba(28,30,36,0.18));border-radius:999px;padding:1px 7px;}
+          .pr-row .g .pts.won{color:${INK};border-color:var(--stg-acc, ${COLORS.accent});}
           .pr-row .dir{font-weight:900;font-size:14px;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;}
           .pr-row .heat{display:flex;flex-direction:column;gap:4px;}
           .pr-row .heat b{align-self:flex-end;font-family:${MONO};font-weight:500;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:color-mix(in srgb, currentColor 16%, transparent);border:1px solid color-mix(in srgb, currentColor 45%, transparent);}
@@ -653,14 +685,14 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
                   if (e.key === 'Backspace' && a > 0 && el.value[a - 1] === ',') el.setSelectionRange(a - 1, a - 1);
                   else if (e.key === 'Delete' && el.value[a] === ',') el.setSelectionRange(a + 1, a + 1);
                 }}
-                placeholder={left === 1 ? 'Last guess' : 'Your guess'} aria-label="Your price guess in dollars" />
+                placeholder={left === 1 ? (V2 ? 'Last guess, worth up to 3' : 'Last guess') : V2 ? `Guess ${tries.length + 1}, worth up to ${CAPS[tries.length]}` : 'Your guess'} aria-label="Your price guess in dollars" />
             </label>
             <button type="button" className="pr-go" onClick={guess}>Guess</button>
           </div>
           <div style={{ minHeight: 19, marginTop: 6, fontSize: 12.5, fontWeight: 700, color: FADED }}>
             {notice ? notice.msg
               : tries.length ? (() => { const x = tries[tries.length - 1]; const b = bandOf(x.e); return <>{b.label}. Go <b style={{ color: INK }}>{x.up ? 'higher' : 'lower'}</b>. {left} guess{left === 1 ? '' : 'es'} left.</>; })()
-              : <>Type a price and press Enter. Big numbers: 45k or 2.5m works.</>}
+              : V2 ? <>Your first guess is worth up to 10. Press Enter to lock it in. 45k or 2.5m works.</> : <>Type a price and press Enter. Big numbers: 45k or 2.5m works.</>}
           </div>
         </>
       )}
@@ -669,14 +701,16 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
           row and older ones shift down, so the one you just made is always on
           screen. Unused slots stay below the guesses. Each row keeps its own
           guess number. */}
-      <div className="pr-rows">{[...tries.map((_, i) => tries.length - 1 - i), ...Array.from({ length: Math.max(0, GUESSES - tries.length) }, (_, j) => tries.length + j)].map((i) => guessRow(i))}</div>
+      <div className="pr-rows">{[...tries.map((_, i) => tries.length - 1 - i), ...(playing ? Array.from({ length: Math.max(0, MAXG - tries.length) }, (_, j) => tries.length + j) : [])].map((i) => guessRow(i))}</div>
 
       {!playing && (
         <div style={{ marginTop: 14, borderTop: `1px solid ${SURF_B}`, paddingTop: 14 }}>
           <div className="pr-eb" style={{ color: FADED }}>The price{PRACTICE ? ' (practice, your first score stands)' : ''}</div>
           <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: '-0.02em', color: INK }}>{fmtCents(PRICE)}</div>
           <div style={{ fontSize: 15, fontWeight: 800, color: ACC_INK, marginTop: 2 }}>
-            {score}/10 · your closest was {best ? fmtCents(best.c) : '—'}, {best ? pctLabel(best.e) : ''}
+            {V2
+              ? <>{score}/10 · {earned ? <>earned on guess {sg.at + 1}, {pctLabel(earned.e)}</> : 'no guess scored'}{tries[0] && sg.at !== 0 ? <> · first guess {pctLabel(tries[0].e)}</> : null}</>
+              : <>{score}/10 · your closest was {best ? fmtCents(best.c) : '—'}, {best ? pctLabel(best.e) : ''}</>}
           </div>
           {!RUN && (
             <>
@@ -685,6 +719,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
                   {DAY.buy} <ExternalLink size={14} />
                 </a>
               </div>
+              {V2 && <div style={{ marginTop: 12, fontSize: 12, color: FADED, fontWeight: 700 }}>The table is for the first guess. The second is capped at 6, the third at 3.</div>}
               <div className="pr-ladder">
                 {[[10, '≤1%'], [9, '≤2.5%'], [8, '≤5%'], [7, '≤10%'], [6, '≤15%'], [5, '≤25%'], [4, '≤35%'], [3, '≤50%'], [2, '≤75%'], [1, '≤100%'], [0, 'beyond']].map(([s, l]) => (
                   <div key={s} className={s === score ? 'on' : ''}><b>{s}</b>{l}</div>
@@ -729,7 +764,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
           { v: best ? String(score) : '—', k: 'best' },
         ] : [
           { v: `${score}/10`, k: 'score' },
-          { v: `${tries.length}/${GUESSES}`, k: 'guesses' },
+          { v: `${tries.length}/${MAXG}`, k: 'guesses' },
           { v: elapsed, k: 'time' },
         ]}
       />
@@ -747,7 +782,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : `${NAME} is ready`}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: '0 0 6px' }}>{CFG.lead} Five guesses; your closest is your score. The clock starts when you do.</p>
+                <p style={{ margin: '0 0 6px' }}>{CFG.lead} {V2 ? 'Three guesses, worth up to 10, 6 and 3: your first read counts most.' : 'Five guesses; your closest is your score.'} The clock starts when you do.</p>
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
@@ -814,7 +849,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
                 }))}
               options={[
                 { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your hot and cold, not the price', kind: 'gold', onClick: copyShare },
-                { tone: 'board', label: 'Return to board', sub: 'Your five guesses, hot and cold', onClick: () => setRevealed(true) },
+                { tone: 'board', label: 'Return to board', sub: 'Your guesses, hot and cold', onClick: () => setRevealed(true) },
                 { tone: 'reveal', label: `See the ${CFG.noun}`, sub: `The price and the link · ${DAY.asOfShort || ''}`, onClick: () => setShowProduct(true) },
                 { tone: 'similar', label: 'Play Price Check', sub: 'All five price games, one run', href: '/pricecheck' },
                 prevPuzzle && { tone: 'another', label: `Play another ${NAME}`, sub: `No. ${prevPuzzle.num}, yesterday’s ${CFG.noun}`, href: `${PATH}?p=${prevPuzzle.num}` },

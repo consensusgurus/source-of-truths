@@ -785,8 +785,32 @@ export async function GET(request) {
       if (memberKeys && !rankEligible(me)) me.rank = null;
     }
 
+    // PRICE CHECK'S FIELD (owner, 2026-10-11): the run's finale draws the whole
+    // field by card and a shelf of how each item went, so it needs every
+    // complete run's total and a per-item summary, guests included. Display
+    // only; nothing here ranks anyone.
+    let priceField = null;
+    if (circuitOn && circuitId === 'pricecheck') {
+      const keys = games.map((g) => g.key);
+      const full = overallFull.filter((r) => keys.every((k) => r.perGame && r.perGame[k] && !r.perGame[k].abandoned));
+      const per = {};
+      for (const k of keys) {
+        const rows = overallFull.map((r) => r.perGame && r.perGame[k]).filter((p) => p && !p.abandoned);
+        const bl = rows.map((p) => p.bps).filter((n) => typeof n === 'number' && Number.isFinite(n)).sort((a, b) => a - b);
+        const sum = rows.reduce((a, p) => a + (Number(p.score) || 0), 0);
+        per[k] = {
+          plays: rows.length,
+          avg: rows.length ? Math.round((sum / rows.length) * 10) / 10 : null,
+          bestBps: bl.length ? bl[0] : null,
+          medBps: bl.length ? bl[Math.floor(bl.length / 2)] : null,
+        };
+      }
+      priceField = { totals: full.map((r) => Math.round(r.total || 0)).slice(0, 5000), games: per };
+    }
+
     return NextResponse.json({
       date: suffix,
+      priceField,
       // Whether this payload is the five-game run or the full slate, so a
       // client cannot mistake one for the other when both are in flight.
       five: fiveOnly && !circuitOn,

@@ -22,9 +22,10 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({ searchParams }) {
   const s = String((searchParams && searchParams.s) || '');
   const ok = /^\d{1,2}(-\d{1,2}){1,4}$/.test(s);
-  const img = ok ? `/pricecheck/card?s=${s}` : '/pricecheck/card';
-  const title = 'Price Check: Five Real Prices, Five Guesses Each | Mind Loft';
-  const description = 'A free daily run of five price games: an Amazon find, a new car, a home for sale, a flight or hotel, and a luxury piece. Five guesses at each, one score out of 50.';
+  const r2 = String((searchParams && searchParams.r) || '') === '2';
+  const img = ok ? `/pricecheck/card?s=${s}${r2 ? '&r=2' : ''}` : '/pricecheck/card';
+  const title = 'Price Check: Five Real Prices, Three Guesses Each | Mind Loft';
+  const description = 'A free daily run of five price games: an Amazon find, a new car, a home for sale, a flight or hotel, and a luxury piece. Three guesses at each, the first counts most, one score out of 50.';
   return {
     title, description,
     alternates: { canonical: '/pricecheck' },

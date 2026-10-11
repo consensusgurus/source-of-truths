@@ -38,7 +38,7 @@ const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 export const RUN_DOORS = {
   pricecheck: {
     href: '/pricecheck', name: 'Price Check', eyebrow: 'Daily run · Five prices',
-    body: 'Pricer, Dealer, Realtor, Agent and Curator back to back: a find, a ride, a home, a trip and a piece. Five guesses at each, one score out of 50.',
+    body: 'Pricer, Dealer, Realtor, Agent and Curator back to back: a find, a ride, a home, a trip and a piece. Three guesses at each, the first counts most, one score out of 50.',
     go: 'Run all five', accent: '#fbbf24',
     tags: [['Pricer', '#4ade80'], ['Dealer', '#fbbf24'], ['Realtor', '#7dd3fc'], ['Agent', '#f472b6'], ['Curator', '#c4b5fd']],
   },

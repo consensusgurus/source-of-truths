@@ -2,7 +2,7 @@
 
 // PRICE CHECK — the five price games as one run (owner, 2026-10-01).
 //
-// Pricer, Dealer, Realtor, Agent and Curator back to back, five guesses at
+// Pricer, Dealer, Realtor, Agent and Curator back to back, three guesses at
 // each, one score out of 50. Each game is played by its own engine
 // (app/price/PriceGame.jsx, `run` mode) and files its own solo row, so the run
 // leaves exactly what five separate plays would. The circuit board
@@ -34,7 +34,7 @@ import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
 import ChallengeStrip from '../ChallengeStrip';
 import { RunChallengeButton, RunChallengeLine, runToken } from '../RunChallenge';
-import { PRICE_GAMES, errOf, scoreOf, fmtCents, runRankOf, runTierOf, RUN_RANKS } from '@/lib/price-games';
+import { PRICE_GAMES, fmtCents, errOf, scoreOf, pctLabel, runRankOf, runTierOf, ranksFor, isV2, scoreGuesses } from '@/lib/price-games';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
@@ -44,21 +44,22 @@ function etToday() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
 }
-const freshRun = () => ({ v: 1, phase: 'idle', si: 0, t0: null, results: {} });
+const freshRun = () => ({ v: 1, rule: 2, phase: 'idle', si: 0, t0: null, results: {} });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // The first (counted) play of a game today, read off its own solo save.
 function bankedOf(sec) {
-  const s = readDoneSave(sec.key, sec.num);
+  const s = readDoneSave(sec.key, sec.num, sec.quizId);
   if (!s || !s.guesses.length) return null;
-  const errs = s.guesses.map((c) => errOf(c, sec.day.price));
-  const i = errs.indexOf(Math.min(...errs));
-  return { score: scoreOf(errs[i]), best: s.guesses[i], guesses: s.guesses.length, secs: s.t0 && s.tEnd ? Math.round((s.tEnd - s.t0) / 1000) : 0, banked: true };
+  const sg = scoreGuesses(s.guesses, sec.day.price, sec.quizId);
+  return { score: sg.score, at: sg.at, best: sg.at >= 0 ? s.guesses[sg.at] : null, first: s.guesses[0], guesses: s.guesses.length, secs: s.t0 && s.tEnd ? Math.round((s.tEnd - s.t0) / 1000) : 0, banked: true };
 }
 
 export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }) {
   const N = sections.length;
   const MAX = N * 10;
+  const V2 = isV2(sections[0] && sections[0].quizId);
+  const RANKS = ranksFor(sections[0] && sections[0].quizId);
   const STORE = `sot_run_${RUN_ID}_${etToday()}`;
   // One register, the Trivia Gauntlet's (owner, 2026-10-01: match the
   // Gauntlet): Midnight ground, translucent white surfaces, sky call to action.
@@ -91,7 +92,9 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
     const b = {};
     for (const sec of sections) { const x = bankedOf(sec); if (x) b[sec.key] = x; }
     setBanked(b);
-    if (saved && saved.v === 1) {
+    // A run begun under the five-guess rule on a three-guess day is dropped
+    // (2026-10-11 reset), so the player replays it under the new rule.
+    if (saved && saved.v === 1 && (!V2 || saved.rule === 2)) {
       const next = { ...freshRun(), ...saved };
       rRef.current = next; setR(next);
       doneAtLoad.current = next.phase === 'done';
@@ -116,7 +119,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
   }), [sections, banked, r.results]);
   countedRef.current = counted;
   const total = counted.reduce((a, c) => a + (c ? c.score : 0), 0);
-  const rank = runRankOf(Math.round(total * 50 / Math.max(1, MAX)));
+  const rank = runRankOf(Math.round(total * 50 / Math.max(1, MAX)), RANKS);
 
   function start() {
     setLeaving(true);
@@ -131,8 +134,9 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
     const cur = rRef.current;
     const sec = sections[cur.si];
     if (!sec || res.key !== sec.key) return;
-    const best = res.guesses.length ? res.guesses.reduce((m, c) => (errOf(c, sec.day.price) < errOf(m, sec.day.price) ? c : m)) : null;
-    const results = { ...cur.results, [sec.key]: { score: res.score, best, guesses: res.guesses.length, secs: res.secs, practice: !!res.practice } };
+    const sg = scoreGuesses(res.guesses, sec.day.price, sec.quizId);
+    const best = sg.at >= 0 ? res.guesses[sg.at] : null;
+    const results = { ...cur.results, [sec.key]: { score: res.score, at: sg.at, best, first: res.guesses[0] ?? null, guesses: res.guesses.length, secs: res.secs, practice: !!res.practice } };
     const last = cur.si >= N - 1;
     const next = { ...cur, results };
     commit(next);
@@ -169,10 +173,10 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
   function shareText() {
     const per = sections.map((s, i) => `${s.name} ${counted[i] ? counted[i].score : '-'}`).join(' · ');
     const code = sections.map((s, i) => (counted[i] ? counted[i].score : 0)).join('-');
-    return `Price Check · ${dateShort} · ${total}/${MAX}\nI paid with the ${rank[3]} card: ${rank[1]}.\n${per}\n${withRef(`mindloftdaily.com/pricecheck?s=${code}`)}`;
+    return `Price Check · ${dateShort} · ${total}/${MAX}\nI paid with the ${rank[3]} card: ${rank[1]}.\n${per}\n${withRef(`mindloftdaily.com/pricecheck?s=${code}${V2 ? '&r=2' : ''}`)}`;
   }
   function copyShare() {
-    const text = done ? shareText() : `Price Check: five real prices, from Amazon to the auction block. Five guesses at each.\n${withRef('mindloftdaily.com/pricecheck')}`;
+    const text = done ? shareText() : `Price Check: five real prices, from Amazon to the auction block. Three guesses at each, and the first one counts most.\n${withRef('mindloftdaily.com/pricecheck')}`;
     try { if (navigator.share && isMobileDevice()) { navigator.share({ text }).catch(() => {}); return; } } catch (e) {}
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}
   }
@@ -200,7 +204,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
         <section className={`pre${leaving ? ' leave' : ''}`}>
           <div className="eb fade">{dateLabel} · Price Check</div>
           <h1 className="title"><span>Price</span> <span>Check</span></h1>
-          <p className="lede fade">Five real price tags, from <b>pocket change</b> to <b>the auction block</b>. Five guesses at each.<span className="lede-x"> Get warm, get close, then go big.</span></p>
+          <p className="lede fade">Five real price tags, from <b>pocket change</b> to <b>the auction block</b>. {V2 ? <>Three guesses at each, and <b>the first one counts most</b>.<span className="lede-x"> Trust your gut.</span></> : <>Five guesses at each.<span className="lede-x"> Get warm, get close, then go big.</span></>}</p>
           {/* THE PRICE GUN IS THE START BUTTON (owner, 2026-10-01, option C): the
               odometer that never lands is the gun's screen and Start is its trigger,
               straight under the title, so it is on screen on every phone. */}
@@ -238,10 +242,11 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
             <div className="pre-hw">
               <div className="facts">
                 <div className="fact"><b>{N}</b><span>price tags</span></div>
-                <div className="fact"><b>5</b><span>guesses each</span></div>
+                <div className="fact"><b>{V2 ? 3 : 5}</b><span>guesses each</span></div>
                 <div className="fact"><b>{MAX}</b><span>points to win</span></div>
                 <div className="fact"><b>1%</b><span>is a bullseye</span></div>
               </div>
+              {V2 && <div className="sub2">Your first guess can earn the full 10. The second is capped at 6, the third at 3, and the best one counts.</div>}
               <div className="heat"><div className="bar" /><div className="lbl"><span>Freezing</span><span>Cold</span><span>Warm</span><span>Hot</span><span>Burning</span><span>Bullseye</span></div></div>
             </div>
           )}
@@ -267,7 +272,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
             <div className="pc-between">
               <div className="eb">{sec.name} · {secBanked ? 'counted score' : 'your score'}</div>
               <div className="pc-bscore">{counted[r.si] ? counted[r.si].score : 0}<small>/10</small></div>
-              <div className="pc-bprice">The price was <b>{fmtCents(sec.day.price)}</b>{counted[r.si] && counted[r.si].best ? <>, your closest <b>{fmtCents(counted[r.si].best)}</b></> : null}.</div>
+              <div className="pc-bprice">The price was <b>{fmtCents(sec.day.price)}</b>{counted[r.si] && counted[r.si].best ? (V2 && counted[r.si].at >= 0 ? <>, earned on guess {counted[r.si].at + 1} at <b>{fmtCents(counted[r.si].best)}</b></> : <>, your closest <b>{fmtCents(counted[r.si].best)}</b></>) : null}.</div>
               {!between.last ? (
                 <button type="button" className="start" onClick={advance}>Next: {sections[r.si + 1].name}, {sections[r.si + 1].word.toLowerCase()} <span aria-hidden="true">&rarr;</span></button>
               ) : (
@@ -280,7 +285,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
 
       {hydrated && done && (
         <Finale key="finale" sections={sections} counted={counted} total={total} max={MAX} dateLabel={dateLabel} dateShort={dateShort}
-          animate={doneAtLoad.current === false} onOver={finaleOver} board={board}
+          animate={doneAtLoad.current === false} onOver={finaleOver} board={board} ranks={RANKS} v2={V2}
           onShare={copyShare} copied={copied} onItems={() => { spendItems(); setItemAt(0); setShowItems(true); }} />
       )}
 
@@ -302,12 +307,12 @@ const WAVE = (
   <svg viewBox="0 0 22 22" aria-hidden="true"><path d="M7 6c2 3 2 7 0 10M11 4c3 4 3 10 0 14M15 2c4 5 4 13 0 18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" /></svg>
 );
 
-function PayCard({ ti, n, max, dateShort, squash, shine }) {
-  const t = RUN_RANKS[ti];
+function PayCard({ ti, n, max, dateShort, squash, shine, ranks }) {
+  const t = ranks[ti];
   const brand = <div className="pk-brand">Mind Loft<small>Price Check</small></div>;
   const kind = <div className="pk-kind">{t[3]}{t[4] ? <small>{t[4]}</small> : null}</div>;
   const num = <div className="pk-num"><span>{n}</span><small> / {max}</small></div>;
-  const prepaid = ti === RUN_RANKS.length - 1;
+  const prepaid = ti === ranks.length - 1;
   return (
     <div className={`pk pk${ti}${squash ? ' squash' : ''}${shine ? ' shine' : ''}`}>
       {prepaid && <div className="pk-peg" />}
@@ -327,9 +332,10 @@ function PayCard({ ti, n, max, dateShort, squash, shine }) {
   );
 }
 
-function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, onOver, board, onShare, copied, onItems }) {
+function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, onOver, board, onShare, copied, onItems, ranks, v2 }) {
+  const RUN_RANKS = ranks;
   const pts = sections.map((s, i) => (counted[i] ? counted[i].score : 0));
-  const tierAt = (v) => runTierOf(Math.round(v * 50 / Math.max(1, max)));
+  const tierAt = (v) => runTierOf(Math.round(v * 50 / Math.max(1, max)), RUN_RANKS);
   const LOW = RUN_RANKS.length - 1;
   const fti = tierAt(total);
   const t = RUN_RANKS[fti];
@@ -424,7 +430,7 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
         <div className="cf-cardcol">
           {upg && <div key={upg.k} className="cf-upg">{upg.text}</div>}
           <div className="cf-cw" ref={cwRef} style={tap ? { transform: `translate(${tap.x}px,${tap.y}px) scale(.42) rotate(-10deg)` } : undefined}>
-            <PayCard key={`pk${shine}`} ti={face} n={cur} max={max} dateShort={dateShort} squash={squash} shine={shine} />
+            <PayCard key={`pk${shine}`} ti={face} n={cur} max={max} dateShort={dateShort} squash={squash} shine={shine} ranks={RUN_RANKS} />
           </div>
           {sparks.map((p) => <i key={p.id} className="cf-spark" style={{ '--x': `${p.x}px`, '--y': `${p.y}px`, '--d': `${p.ms}ms` }} />)}
         </div>
@@ -459,7 +465,9 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
                 <div className="cf-stats">
                   <div><b>{total}/{max}</b><span>Run total</span></div>
                   {me && me.rank ? <div><b>#{me.rank}</b><span>{field ? `of ${Number(field).toLocaleString()} today` : 'today'}</span></div> : null}
-                  <div><b>{t[3]}</b><span>Card</span></div>
+                  {v2
+                    ? <div><b>{counted.filter((c) => c && c.at === 0).length} of {sections.length}</b><span>First-guess scores</span></div>
+                    : <div><b>{t[3]}</b><span>Card</span></div>}
                 </div>
                 {/* NEXT DROP (owner, 2026-10-06): when tomorrow's shelf opens. */}
                 <NextDrop label="Next Price Check" sub="New items on the shelf at midnight Eastern." href="/pricecheck"
@@ -484,7 +492,126 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
           </div>
         </div>
       </div>
+      {settled && v2 && <FieldPanel sections={sections} counted={counted} total={total} max={max} board={board} ranks={RUN_RANKS} />}
     </section>
+  );
+}
+
+
+// ─── THE FIELD (owner, 2026-10-11) ──────────────────────────────────────────
+// Under the settled card: where the whole field paid on the ladder (worst on
+// the left, best on the right, you marked), the top five game by game with how
+// far off each first guess was and which guess earned the score, and how the
+// field did on each item. Every figure comes off the circuit board payload
+// (priceField and the overall rows); nothing here is stored or scored.
+const CARD_COL = [['#1e1e23', '#e9cf7f'], ['#e6b532', '#2a1f04'], ['#2f6fe4', '#ffffff'], ['#4b5a6e', '#e7edf4'], ['#fbfaf6', '#22252b']];
+const offLabel = (bps) => (typeof bps === 'number' ? pctLabel(bps / 10000) : '');
+// Which guess earned a leader's score, read off the score and the first
+// guess's error: the first guess earned it if it alone scores that much, a
+// score over 3 can only be the second guess, and the rest is the last guess.
+function earnedAt(p) {
+  if (!p || !p.score) return -1;
+  if (typeof p.bps === 'number' && Math.min(scoreOf(p.bps / 10000), 10) === p.score) return 0;
+  if (p.score > 3) return 1;
+  return Math.max(1, Math.min(2, (p.guessesUsed || 3) - 1));
+}
+
+function FieldPanel({ sections, counted, total, max, board, ranks }) {
+  const data = board && board.data;
+  const pf = data && data.priceField;
+  if (!data) return <div className="fp"><div className="fp-wait">Loading the field<span className="pc-dots" aria-hidden="true"><i /><i /><i /></span></div></div>;
+  const scale = (v) => Math.round(v * 50 / Math.max(1, max));
+  const totals = (pf && pf.totals) || [];
+  const counts = ranks.map(() => 0);
+  totals.forEach((v) => { counts[runTierOf(scale(v), ranks)] += 1; });
+  const sum = counts.reduce((a, b) => a + b, 0);
+  const ORD = ranks.map((_, i) => ranks.length - 1 - i); // worst on the left
+  const myTi = runTierOf(scale(total), ranks);
+  let pos = null;
+  if (sum) {
+    let before = 0;
+    for (const i of ORD) { if (i === myTi) break; before += counts[i]; }
+    const lo = ranks[myTi][0], hi = myTi > 0 ? ranks[myTi - 1][0] - 1 : 50;
+    const frac = hi > lo ? (scale(total) - lo + 0.5) / (hi - lo + 1) : 0.5;
+    pos = ((before + Math.max(counts[myTi], 0.0001) * Math.min(1, Math.max(0, frac))) / sum) * 100;
+    pos = Math.min(97, Math.max(3, pos));
+  }
+  const leaders = (data.overall || []).slice(0, 5);
+  const per = (pf && pf.games) || {};
+  const avgs = sections.map((s) => (per[s.key] && per[s.key].plays ? per[s.key].avg : null));
+  let tough = -1;
+  avgs.forEach((a, i) => { if (a != null && (tough < 0 || a < avgs[tough])) tough = i; });
+  const cell = (p) => {
+    if (!p) return <div className="fp-cell"><b>-</b></div>;
+    const g = earnedAt(p);
+    return (
+      <div className={`fp-cell g${g + 1}${p.score === 10 ? ' ten' : ''}`}>
+        <b>{p.score}</b>
+        {typeof p.bps === 'number' && <span>{offLabel(p.bps)}</span>}
+        <span className="gp">{[0, 1, 2].map((k) => <i key={k} className={k === g ? 'h' : k < (p.guessesUsed || 0) ? 'u' : ''} />)}</span>
+      </div>
+    );
+  };
+  return (
+    <div className="fp">
+      <div className="fp-bh"><h3>Where the field paid</h3><span>{sum ? `${sum.toLocaleString()} ${sum === 1 ? 'run' : 'runs'} today` : 'No finished runs yet'}</span></div>
+      {sum > 0 && (
+        <div className="fp-dist">
+          <div className="fp-bar">
+            {ORD.map((i, k) => {
+              const w = counts[i] / sum * 100;
+              return <span key={i} style={{ width: `${w}%`, background: CARD_COL[i][0], color: CARD_COL[i][1], animationDelay: `${k * 0.08}s` }} title={`${ranks[i][3]}: ${counts[i]}`}>{w > 10 ? ranks[i][3] : ''}</span>;
+            })}
+          </div>
+          {pos != null && <div className="fp-mark"><i style={{ left: `${pos}%` }}>You · {ranks[myTi][3]}</i></div>}
+          <div className="fp-leg">{ORD.map((i) => <span key={i}>{ranks[i][3]} <b>{counts[i].toLocaleString()}</b></span>)}</div>
+        </div>
+      )}
+      {leaders.length > 0 && (
+        <>
+          <div className="fp-bh"><h3>How the leaders did</h3><a href="/pricecheck/leaderboard">Full leaderboard</a></div>
+          <div className="fp-lb">
+            <table className="fp-t" aria-label="Today's leaders, game by game">
+              <thead><tr><th>#</th><th>Player</th>{sections.map((s) => <th key={s.key}><i style={{ background: `var(--pc-${s.key})` }} />{s.name}</th>)}<th>Total</th></tr></thead>
+              <tbody>
+                {leaders.map((L, i) => {
+                  const ti = runTierOf(scale(L.total || 0), ranks);
+                  const mine = data.me && data.me.userKey && data.me.userKey === L.userKey;
+                  return (
+                    <tr key={L.userKey || i} className={mine ? 'me' : ''} style={{ animationDelay: `${i * 0.1}s` }}>
+                      <td>{L.rank || i + 1}</td>
+                      <td className="fp-nm"><span className="cc" style={{ background: CARD_COL[ti][0] }} />{L.username}</td>
+                      {sections.map((s) => <td key={s.key}>{cell(L.perGame && L.perGame[s.key])}</td>)}
+                      <td className="fp-tot">{Math.round(L.total || 0)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className="fp-key"><span><i className="g1" />earned on guess 1</span><span><i className="g2" />guess 2</span><span><i className="g3" />guess 3</span><span>The figure under a score is how far off the first guess was.</span></div>
+        </>
+      )}
+      <div className="fp-bh"><h3>Today&rsquo;s shelf</h3><span>field average and the best first guess</span></div>
+      <div className="fp-shelf">
+        {sections.map((s, i) => {
+          const g = per[s.key];
+          const mine = counted[i];
+          return (
+            <div key={s.key} className={`fp-sh${i === tough ? ' tough' : ''}`} style={{ '--c': `var(--pc-${s.key})` }}>
+              <div className="k">{s.name}</div>
+              <div className="it">{fmtCents(s.day.price)}</div>
+              <div className="f">
+                Field avg <b>{g && g.avg != null ? g.avg : '-'}</b><br />
+                Best first guess <b>{g && g.bestBps != null ? offLabel(g.bestBps) : '-'}</b>
+                {mine && typeof mine.first === 'number' ? <><br />Yours <b>{pctLabel(errOf(mine.first, s.day.price))}</b></> : null}
+              </div>
+              {i === tough && <span className="tg">Toughest today</span>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -492,6 +619,61 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
 
 const CSS = `
 .pc *{box-sizing:border-box}
+/* THE FIELD */
+.fp{max-width:820px;margin:26px auto 0;padding:18px 16px 4px;border-top:1px solid var(--pc-line);text-align:left}
+.fp-wait{color:var(--pc-mute);font-weight:700;font-size:13px;text-align:center;padding:14px 0}
+.fp-bh{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:18px 0 0}
+.fp-bh:first-child{margin-top:0}
+.fp-bh h3{margin:0;font-size:18px;font-weight:800;letter-spacing:-.01em}
+.fp-bh span,.fp-bh a{font-size:12px;font-weight:700;color:var(--pc-mute);text-decoration:none}
+.fp-bh a{color:var(--pc-hi)}
+.fp-dist{margin:12px 0 2px}
+.fp-bar{display:flex;height:34px;border-radius:8px;overflow:hidden;border:1px solid var(--pc-line)}
+.fp-bar span{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;transform-origin:left;animation:fpgrow .9s cubic-bezier(.2,.7,.3,1) both}
+@keyframes fpgrow{from{transform:scaleX(0)}to{transform:none}}
+.fp-mark{position:relative;height:22px}
+.fp-mark i{position:absolute;top:4px;transform:translateX(-50%);font-style:normal;font-size:11px;font-weight:800;color:var(--pc-hi);white-space:nowrap}
+.fp-mark i::before{content:"";position:absolute;left:50%;top:-6px;margin-left:-5px;border:5px solid transparent;border-bottom-color:var(--pc-hi);border-top:0}
+.fp-leg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--pc-mute);font-weight:700}
+.fp-leg b{color:var(--pc-ink);font-variant-numeric:tabular-nums}
+.fp-lb{overflow-x:auto;margin-top:10px}
+.fp-t{width:100%;min-width:620px;border-collapse:separate;border-spacing:0 6px}
+.fp-t th{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--pc-mute);text-align:center;padding:0 4px;white-space:nowrap}
+.fp-t th:nth-child(-n+2){text-align:left}
+.fp-t th i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.fp-t td{background:var(--pc-surf);padding:7px 6px;border-top:1px solid var(--pc-line);border-bottom:1px solid var(--pc-line);text-align:center;vertical-align:middle}
+.fp-t td:first-child{border-left:1px solid var(--pc-line);border-radius:10px 0 0 10px;width:34px;font-weight:800;color:var(--pc-mute);font-variant-numeric:tabular-nums}
+.fp-t td:last-child{border-right:1px solid var(--pc-line);border-radius:0 10px 10px 0}
+.fp-t tr{animation:fprin .4s ease both}
+@keyframes fprin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.fp-t tr.me td{background:rgba(125,211,252,.09);border-color:rgba(125,211,252,.5)}
+.fp-nm{text-align:left!important;font-weight:800;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis}
+.fp-nm .cc{display:inline-block;width:22px;height:14px;border-radius:3px;margin-right:8px;vertical-align:-2px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
+.fp-cell{display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.1}
+.fp-cell b{font-size:17px;font-variant-numeric:tabular-nums}
+.fp-cell span{font-size:10px;font-weight:700;color:var(--pc-mute);white-space:nowrap;font-variant-numeric:tabular-nums}
+.fp-cell .gp{display:inline-flex;gap:2px;margin-top:2px}
+.fp-cell .gp i{width:6px;height:6px;border-radius:50%;background:var(--pc-rail)}
+.fp-cell .gp i.u{background:#475569}
+.fp-cell.g1 .gp i.h{background:#7dd3fc}
+.fp-cell.g2 .gp i.h{background:#a5b4fc}
+.fp-cell.g3 .gp i.h{background:#94a3b8}
+.fp-cell.ten b{color:var(--pc-good)}
+.fp-tot{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
+.fp-key{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px;font-size:11.5px;color:var(--pc-mute);font-weight:700;align-items:center}
+.fp-key i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.fp-key i.g1{background:#7dd3fc}.fp-key i.g2{background:#a5b4fc}.fp-key i.g3{background:#94a3b8}
+.fp-shelf{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:10px}
+@media(max-width:620px){.fp-shelf{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.fp-sh{border:1px solid var(--pc-line);border-radius:12px;padding:10px;background:var(--pc-surf);border-top:3px solid var(--c)}
+.fp-sh .k{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--c)}
+.fp-sh .it{font-size:15px;font-weight:800;margin:3px 0 6px;font-variant-numeric:tabular-nums}
+.fp-sh .f{font-size:11.5px;color:var(--pc-mute);font-weight:700;line-height:1.5}
+.fp-sh .f b{color:var(--pc-ink);font-variant-numeric:tabular-nums}
+.fp-sh.tough{box-shadow:0 0 0 1.5px var(--pc-bad) inset}
+.fp-sh .tg{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--pc-bad);margin-top:6px}
+@media(prefers-reduced-motion:reduce){.fp-bar span,.fp-t tr{animation:none}}
+
 .pc .eb{font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--pc-mute)}
 .pc-cap{display:flex;align-items:center;gap:12px;max-width:760px;margin:0 auto;padding:12px 16px;font-size:13px}
 .pc-home{font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--pc-mute);text-decoration:none}

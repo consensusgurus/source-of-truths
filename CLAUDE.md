@@ -8913,3 +8913,28 @@ honours, so no played day changes its cases. `app/judged/page.js` deals the day'
 `LAW_CASES`. `LAW_CLOCK.ergo` [45, 180] is an ESTIMATE; re-measure after two weeks of boards.
 Stands no longer mounts the Judged door; Ergo does.
 
+
+## Price Check scores the FIRST guess, three guesses an item (owner, 2026-10-11)
+
+From 2026-10-11 (`V2_FROM` in `lib/price-games.js`) every price game, solo and in the run,
+gives THREE guesses worth up to 10, 6 and 3 (`CAPS`); an item scores its best capped guess,
+a bullseye (within 1%) ends it, and so does a state where no later guess can beat the score.
+The board's `priceTiebreak` is the FIRST guess's error in basis points (it was the closest
+guess's). Everything branches on `isV2(live or quizId)`, so archived days replay and score
+under the five-guess rule they were played under. `scoreGuesses()` is the one scorer; never
+re-derive a score from `scoreOf` alone.
+
+- **The card ladder was recut** (`RUN_RANKS_V2`, read through `ranksFor(when)`): Black 40+,
+  Gold 34, Credit 29, Debit 22, Prepaid below. Same five cards in the same order, so every
+  card drawing indexes both ladders. A share link carries `&r=2` and the card route grades it
+  on the new ladder; a link without it is an old run.
+- **Saves carry `rule: 2`** (per-puzzle save and the run store). A v2-day save without it is
+  discarded on load (`readDoneSave(key, num, when)`, PriceGame's stale check, the run store),
+  and `ItemsPop`'s `resetOldRuleSaves` cleared every old-rule save of the 10-11 boards once,
+  on that day only. Today's five boards were wiped with `/api/admin/quiz-reset`, which now
+  takes `before` (ISO) so plays filed after the switch survive.
+- **The finale has a field panel** (`FieldPanel`, v2 only): the field's runs by card worst to
+  best with you marked, the top five game by game (score, first-guess miss, which guess earned
+  it, inferred from score and first-guess error by `earnedAt`), and a shelf per item. Its data
+  is `priceField` on `/api/quiz/daily-combined?circuit=pricecheck` plus `perGame.bps`, which
+  `lib/daily-combined` now carries through every hop for display only.

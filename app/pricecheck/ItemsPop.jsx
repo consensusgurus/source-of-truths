@@ -29,6 +29,41 @@ function etToday() {
   catch (e) { return new Date().toISOString().slice(0, 10); }
 }
 
+// THE 2026-10-11 RESET (owner: "clean the board for today"). Price Check moved
+// to three guesses with the first one weighted that day and its five boards
+// were wiped, so any save of today's five made under the old rule is cleared
+// on whatever page the player lands first: the per-puzzle save, its abandon
+// key, its stats record, the day breadcrumb and the run store. Runs once per
+// browser, and only on that day; a save carrying rule 2 is kept.
+const RESET_DAY = '2026-10-11';
+const RESET_NUM = 11;
+function resetOldRuleSaves() {
+  try {
+    if (etToday() !== RESET_DAY || localStorage.getItem('sot_pc_v2_reset')) return;
+    for (const k of ['pricer', 'dealer', 'realtor', 'agent', 'curator']) {
+      const sk = `sot_${k}_${RESET_NUM}`;
+      let save = null;
+      try { save = JSON.parse(localStorage.getItem(sk) || 'null'); } catch (e) {}
+      if (save && save.rule === 2) continue;
+      localStorage.removeItem(sk);
+      localStorage.removeItem(`sot_${k}_rec_${RESET_NUM}`);
+      try {
+        const day = JSON.parse(localStorage.getItem(`sot_${k}_day`) || 'null');
+        if (day && day.d === RESET_DAY) localStorage.removeItem(`sot_${k}_day`);
+      } catch (e) {}
+      const stk = k === 'pricer' ? 'sot_pricer2_stats' : `sot_${k}_stats`;
+      try {
+        const st = JSON.parse(localStorage.getItem(stk) || 'null');
+        if (st && st.rec && st.rec[RESET_NUM]) { const rec = { ...st.rec }; delete rec[RESET_NUM]; localStorage.setItem(stk, JSON.stringify({ ...st, rec })); }
+      } catch (e) {}
+    }
+    const rk = `sot_run_pricecheck_${RESET_DAY}`;
+    try { const run = JSON.parse(localStorage.getItem(rk) || 'null'); if (run && run.rule !== 2) localStorage.removeItem(rk); } catch (e) {}
+    if (localStorage.getItem(KEY)) { try { const st = JSON.parse(localStorage.getItem(KEY)); if (st && st.day === RESET_DAY) localStorage.removeItem(KEY); } catch (e) {} }
+    localStorage.setItem('sot_pc_v2_reset', '1');
+  } catch (e) {}
+}
+
 // Everything the pop-up shows, flattened, so it can render on any page.
 export function itemsFor(sections, counted) {
   return sections.map((s, i) => {
@@ -82,6 +117,7 @@ export function PriceCheckItemsGlobal() {
   }, []);
 
   useEffect(() => {
+    resetOldRuleSaves();
     arm();
     const on = () => arm();
     const onStore = (e) => { if (e.key === KEY) arm(); };

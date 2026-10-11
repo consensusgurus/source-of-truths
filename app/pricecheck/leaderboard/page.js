@@ -8,7 +8,7 @@ import PriceCheckBoard from './PriceCheckBoard';
 
 export const metadata = {
   title: 'Price Check Leaderboard | Mind Loft',
-  description: "Today's Price Check board, every crowned day, and the all-time champions. Five real price tags, five guesses each, one combined score out of 50.",
+  description: "Today's Price Check board, every crowned day, and the all-time champions. Five real price tags, three guesses each, one combined score out of 50.",
   alternates: { canonical: '/pricecheck/leaderboard' },
   openGraph: {
     title: 'Price Check Leaderboard | Mind Loft',
