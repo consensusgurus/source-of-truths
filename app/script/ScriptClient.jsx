@@ -44,6 +44,7 @@ import { notifyShareCredit } from '../ShareCreditPop';
 import DailyMasthead from '../DailyMasthead';
 import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
+import GauntletClimb from '../GauntletClimb';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
 import { isStage } from '@/lib/stage';
@@ -681,7 +682,20 @@ export default function ScriptClient({ puzzles = [], questionsByNum = {}, forceN
         {/* Controls. These sit INSIDE the board card: on the navy stage a
             bare row of faded text has nothing to sit on, and the card is
             meant to hold the whole game. */}
-        {started && (
+        {/* THE CLIMB (app/GauntletClimb.jsx, owner 2026-10-10): below the answers,
+            the tower, what this question is worth and the round's lanes. Its fine
+            line carries the old footer's message. Off the stage the footer stays. */}
+        {started && STAGE && (
+          <GauntletClimb total={TOTAL_Q} perTier={PER_TIER} tierNames={TIER_NAMES} qSeconds={Q_SECONDS}
+            answered={g.i} status="live" flash={lock && g.lastRight != null}
+            lanes={QUESTIONS.slice(tierNum * PER_TIER, tierNum * PER_TIER + PER_TIER).map((qq) => qq && qq.cat)} />
+        )}
+        {/* The finished board, once opened: the frozen tower only. */}
+        {!playing && STAGE && (!LOFT || revealed) && (
+          <GauntletClimb total={TOTAL_Q} perTier={PER_TIER} tierNames={TIER_NAMES} qSeconds={Q_SECONDS}
+            answered={g.i} status={won ? 'won' : 'lost'} frozen />
+        )}
+        {started && !STAGE && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)', flexWrap: 'wrap' }}>
             <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>One wrong answer ends it. Everything you clear is banked.</span>
           </div>

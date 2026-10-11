@@ -453,8 +453,10 @@ const CSS = `
 .gfin-row .p{opacity:.5}
 .gfin-row .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gfin-row.me{background:#7dd3fc;color:#08222e}
+/* .85, not .34 (2026-10-10): .34 was about 2.9:1. At .85 the label holds
+   5.06:1 or better on the dark ground and on every ramp step it paints over. */
 .gfin-skip{position:absolute;left:0;right:0;bottom:26px;text-align:center;font-size:11px;
-  font-weight:600;letter-spacing:.18em;text-transform:uppercase;opacity:.34}
+  font-weight:600;letter-spacing:.18em;text-transform:uppercase;opacity:.85}
 
 @media (max-width: 760px){
   .gfin-run{left:16px;top:42px;font-size:10px;letter-spacing:.1em}

@@ -46,6 +46,7 @@ import { withRef } from '@/lib/referrals';
 import { notifyShareCredit } from '../../../ShareCreditPop';
 import { runSummaryHref, circuitShareUrl, circuitScoreMode, circuitShareResult, MATH_RUN_GAMES } from '@/lib/circuits';
 import GauntletLadder, { rampFor } from '../../GauntletLadder';
+import RunTowers, { RunBars, MiniTower, secondsLine, TOWER_CSS } from '../../RunTowers';
 import RunNextUp from '../../RunNextUp';
 import TriviaDoorPop from '../../TriviaDoorPop';
 import useGauntletField, { FIELD_FLOOR } from '../../useGauntletField';
@@ -783,6 +784,72 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   const lastSec = last ? sections.find((s) => s.key === last.key) : null;
   const lastMiss = missOf(lastSec, last);
 
+  // THE TOWERS (owner approved 2026-10-10) are the Trivia and Math Gauntlets'
+  // presentation only. Every other run (Judged, Price Check, Passport) renders
+  // exactly as it did: the gutter ladder, the scorecard ladder, all of it.
+  const TOWERS = circuitId === 'gauntlet' || circuitId === 'math';
+  const MATHRUN = circuitId === 'math';
+  const lastIdx = last ? sections.findIndex((s) => s.key === last.key) : -1;
+  const upIdx = upNext ? sections.findIndex((s) => s.key === upNext.key) : -1;
+
+  // THE RACE PANEL, built once and drawn by both play layouts. Same markup
+  // and the same figures it always had.
+  const racePanel = r.phase === 'playing' && question ? (() => {
+                  const ls = liveStand;
+                  // THE SCALE FOLLOWS THE BEST SCORE (owner, 2026-10-09). It
+                  // was the run's whole question count (~180), so the field
+                  // bunched in the left third. The best finished total now sits
+                  // near the right edge, and once the player passes it the
+                  // scale follows them instead, live, so You never runs off.
+                  const scale = Math.max(1, ls ? Math.max(ls.totals[0] || 0, ls.mine) / 0.92 : askable);
+                  const pct = (v) => `${Math.max(0, Math.min(100, (v / scale) * 100))}%`;
+                  const state = !ls ? 'none' : ls.gap < 0 ? 'lead' : ls.gap <= 3 ? 'close' : 'behind';
+                  const alive = fieldOn && field.curves[sec.key]
+                    ? `${Math.round((field.curves[sec.key][r.i] || 0) * (field.plays[sec.key] || 0))} of ${field.plays[sec.key]} still alive here`
+                    : null;
+                  return (
+                    <div className="rn-race" data-state={state}>
+                      <div className="rn-rh">
+                        {!ls ? (
+                          <div className="rn-gap"><span className="rn-gn">{answeredSoFar}</span><span className="rn-gw"><b>right so far</b>Nobody has finished today. You set the pace.</span></div>
+                        ) : ls.gap < 0 ? (
+                          <div className="rn-gap"><span className="rn-gn">{-ls.gap}</span><span className="rn-gw"><b>ahead of 2nd</b>{ls.leadName} finished on {ls.lead}</span></div>
+                        ) : ls.gap === 0 ? (
+                          <div className="rn-gap"><span className="rn-gn">Tied</span><span className="rn-gw"><b>with the lead</b>+1 takes it from {ls.leadName}</span></div>
+                        ) : (
+                          <div className="rn-gap"><span className="rn-gn">{ls.gap}</span><span className="rn-gw"><b>behind the lead</b>{ls.leadName} finished on {ls.lead}</span></div>
+                        )}
+                        {ls ? (
+                          <div className="rn-gpos"><b>{ord(ls.pos)} of {ls.field}</b>if you stopped now</div>
+                        ) : null}
+                      </div>
+                      {ls ? (
+                        <div className="rn-trk" aria-hidden="true">
+                          <div className="rn-trail" />
+                          {ls.totals.map((t, k) => <div key={k} className="rn-ttick" style={{ left: pct(t) }} />)}
+                          <div className="rn-tfill" style={{ width: pct(ls.mine) }} />
+                          <div className="rn-tband" style={ls.gap < 0
+                            ? { left: pct(ls.lead), width: `calc(${pct(ls.mine)} - ${pct(ls.lead)})` }
+                            : { left: pct(ls.mine), width: `calc(${pct(ls.lead)} - ${pct(ls.mine)})` }} />
+                          <div className="rn-tm you" style={{ left: pct(ls.mine) }}><i>You {ls.mine}</i><span /></div>
+                          <div className="rn-tm ldr" style={{ left: pct(ls.lead) }}><i>{ls.gap < 0 ? '2nd' : '1st'} {ls.lead}</i><span /></div>
+                        </div>
+                      ) : null}
+                      {ls && ls.gap >= 0 ? (
+                        <div className="rn-steps">
+                          {ls.toNext != null && ls.pos > 2 ? <span className="rn-step"><b>+{ls.toNext}</b> passes {ord(ls.pos - 1)}</span> : null}
+                          <span className="rn-step top"><b>+{ls.toLead}</b> takes 1st</span>
+                        </div>
+                      ) : null}
+                      <div className="rn-minor">
+                        <span className="rn-mlife"><s />One life · {sec.name}</span>
+                        {alive ? <span>{alive}</span> : null}
+                        <span className="rn-mclk">{fmtTime(Date.now() - r.t0)}</span>
+                      </div>
+                    </div>
+                  );
+                })() : null;
+
   return (
     // NO SITE CHROME AT ALL. Every other daily wears DailyChrome (the site
     // masthead plus the stat bar) over LoftCap, which on this page put two
@@ -889,7 +956,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           peripheral vision instead of competing with the question. Red under
           five seconds. It holds its lane at every phase so the stage does not
           jump by three pixels between question and verdict. */}
-      <div className={`rn-tick${r.phase === 'playing' && remainFrac < 0.25 ? ' hot' : ''}`}>
+      <div className={`rn-tick${r.phase === 'playing' && remainFrac < 0.25 ? ' hot' : ''}${TOWERS ? ' tw' : ''}`}>
         <span style={{
           width: r.phase === 'playing' ? `${remainFrac * 100}%` : '0%',
           background: sec ? sec.accent : 'transparent',
@@ -1091,7 +1158,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
       ) : null}
 
       <div className="rn-wrap">
-        <div className={`rn-stage${done ? " full" : ""}`}>
+        <div className={`rn-stage${done ? " full" : ""}${TOWERS ? " tw" : ""}`}>
           {/* THE LADDER, in its own gutter, the one thing on screen that
               persists across every quiz. It is what makes this read as one
               sitting rather than seven pages. On a phone it lies down across
@@ -1103,7 +1170,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
               and on a phone the gutter is a 26px strip with its labels
               suppressed: a row of bars carrying nothing the labelled ladder
               beneath it does not carry better. */}
-          {done ? null : (
+          {done || TOWERS ? null : (
             <div className="rn-gutter">
               <span className="rn-lcap">{fieldOn ? "Today's field" : 'Run'}</span>
               <GauntletLadder
@@ -1145,7 +1212,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     <u>One life each.</u>
                   </h1>
                 )}
-                <div className="rn-roster">
+                <div className={`rn-roster${TOWERS ? (MATHRUN ? ' mth' : ' tw') : ''}`}>
                   {sections.map((s) => (
                     <div key={s.key} className="rn-rrow" style={{ '--acc': rampFor(s.slot != null ? s.slot : 0) }}>
                       <b>{s.name}</b>
@@ -1154,20 +1221,42 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                         ? <s>avg {field.avg[s.key].toFixed(1)}</s>
                         : <s />}
                       <em>{s.questions.length}</em>
+                      {/* THE GATE'S TOWERS (2026-10-10): an empty tower per
+                          quiz, shaded where today's players fell, the average
+                          outlined. The Math Gauntlet draws an empty bar. */}
+                      {TOWERS ? (MATHRUN ? <span className="rn-rbar" aria-hidden="true" /> : (
+                        <span className="rn-rtw">
+                          <MiniTower
+                            section={s}
+                            curve={fieldOn && field.curves[s.key] ? field.curves[s.key] : null}
+                            avg={fieldOn && field.avg[s.key] != null ? field.avg[s.key] : null}
+                          />
+                        </span>
+                      )) : null}
                     </div>
                   ))}
                 </div>
                 <button type="button" className="rn-go" onClick={startRun}>
                   Take your run<ArrowRight size={17} strokeWidth={2.8} />
                 </button>
-                <p className="rn-fine">
-                  Twenty seconds a question. Keys 1 to 4 answer.
-                  {fieldOn ? <><br />The dim rungs beside you are where today&rsquo;s players fell, and the bright one on each block is the average.</> : null}
-                </p>
+                {TOWERS ? (
+                  <p className="rn-fine tw">
+                    {secondsLine(sections, 'question')} Keys 1 to 4 answer.
+                    {MATHRUN ? null : (
+                      <><br />Each tower is one quiz, a square for each question.
+                        {fieldOn ? ' The heavier the shading on a square, the more of today\u2019s players reached it, and the outlined square is the average.' : ''}</>
+                    )}
+                  </p>
+                ) : (
+                  <p className="rn-fine">
+                    Twenty seconds a question. Keys 1 to 4 answer.
+                    {fieldOn ? <><br />The dim rungs beside you are where today&rsquo;s players fell, and the bright one on each block is the average.</> : null}
+                  </p>
+                )}
               </div>
             ) : null}
 
-            {r.phase === 'playing' && question ? (
+            {r.phase === 'playing' && question && !TOWERS ? (
               <div className="rn-play" style={{ '--acc': sec.accent }}>
                 <div className="rn-meta">
                   <span className="rn-game">{sec.name}</span>
@@ -1212,61 +1301,96 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     item inside the third. It leads now: one big number, a track
                     with the leader, the pack and you, and at most two next
                     steps. Life, survivors and the clock drop to a quiet line. */}
-                {(() => {
-                  const ls = liveStand;
-                  // THE SCALE FOLLOWS THE BEST SCORE (owner, 2026-10-09). It
-                  // was the run's whole question count (~180), so the field
-                  // bunched in the left third. The best finished total now sits
-                  // near the right edge, and once the player passes it the
-                  // scale follows them instead, live, so You never runs off.
-                  const scale = Math.max(1, ls ? Math.max(ls.totals[0] || 0, ls.mine) / 0.92 : askable);
-                  const pct = (v) => `${Math.max(0, Math.min(100, (v / scale) * 100))}%`;
-                  const state = !ls ? 'none' : ls.gap < 0 ? 'lead' : ls.gap <= 3 ? 'close' : 'behind';
-                  const alive = fieldOn && field.curves[sec.key]
-                    ? `${Math.round((field.curves[sec.key][r.i] || 0) * (field.plays[sec.key] || 0))} of ${field.plays[sec.key]} still alive here`
-                    : null;
-                  return (
-                    <div className="rn-race" data-state={state}>
-                      <div className="rn-rh">
-                        {!ls ? (
-                          <div className="rn-gap"><span className="rn-gn">{answeredSoFar}</span><span className="rn-gw"><b>right so far</b>Nobody has finished today. You set the pace.</span></div>
-                        ) : ls.gap < 0 ? (
-                          <div className="rn-gap"><span className="rn-gn">{-ls.gap}</span><span className="rn-gw"><b>ahead of 2nd</b>{ls.leadName} finished on {ls.lead}</span></div>
-                        ) : ls.gap === 0 ? (
-                          <div className="rn-gap"><span className="rn-gn">Tied</span><span className="rn-gw"><b>with the lead</b>+1 takes it from {ls.leadName}</span></div>
-                        ) : (
-                          <div className="rn-gap"><span className="rn-gn">{ls.gap}</span><span className="rn-gw"><b>behind the lead</b>{ls.leadName} finished on {ls.lead}</span></div>
-                        )}
-                        {ls ? (
-                          <div className="rn-gpos"><b>{ord(ls.pos)} of {ls.field}</b>if you stopped now</div>
-                        ) : null}
-                      </div>
-                      {ls ? (
-                        <div className="rn-trk" aria-hidden="true">
-                          <div className="rn-trail" />
-                          {ls.totals.map((t, k) => <div key={k} className="rn-ttick" style={{ left: pct(t) }} />)}
-                          <div className="rn-tfill" style={{ width: pct(ls.mine) }} />
-                          <div className="rn-tband" style={ls.gap < 0
-                            ? { left: pct(ls.lead), width: `calc(${pct(ls.mine)} - ${pct(ls.lead)})` }
-                            : { left: pct(ls.mine), width: `calc(${pct(ls.lead)} - ${pct(ls.mine)})` }} />
-                          <div className="rn-tm you" style={{ left: pct(ls.mine) }}><i>You {ls.mine}</i><span /></div>
-                          <div className="rn-tm ldr" style={{ left: pct(ls.lead) }}><i>{ls.gap < 0 ? '2nd' : '1st'} {ls.lead}</i><span /></div>
+                {racePanel}
+              </div>
+            ) : null}
+
+            {/* THE TOWERS PLAY SCREEN (owner approved 2026-10-10). The question
+                and its answers lead, in a card that carries the clock; every
+                other readout sits below the answers. --acc is the bank's ramp
+                step, the palette this stage runs on. */}
+            {r.phase === 'playing' && question && TOWERS ? (
+              <div className={`rn-play tw${MATHRUN ? ' mth' : ''}`} style={{ '--acc': rampFor(sec.slot != null ? sec.slot : r.si) }}>
+                <div className="rt-qcard">
+                  <div className="rn-meta">
+                    <span className="rn-game">{sec.name}</span>
+                    {MATHRUN && lineFor(sec) ? <span className="rt-sub">{lineFor(sec)}</span> : null}
+                    {question.cat || sec.topic
+                      ? <span className="rn-chip">{question.cat || sec.topic}</span> : null}
+                    {tierName ? <span className="rn-chip tier">{tierName}</span> : null}
+                    <span className="rn-count"><b>{r.i + 1}</b> of {sec.questions.length}</span>
+                  </div>
+                  {MATH_RUN_GAMES.includes(sec.key) ? (
+                    <h2 className="rn-q rn-qm">{String(question.q).split('?').map((p, i) => (i === 0 ? p : [<span key={i} className="rn-blank">?</span>, p]))}</h2>
+                  ) : (
+                    <h2 className="rn-q">{question.q}</h2>
+                  )}
+                  <div className={`rt-clk${remainFrac < 0.25 ? ' hot' : ''}`}>
+                    <span className="rt-cbar"><span style={{ width: `${remainFrac * 100}%` }} /></span>
+                    <b>{Math.ceil(remainMs / 1000)} sec</b>
+                  </div>
+                </div>
+                <div className={`rn-ch${hovStale ? ' nohov' : ''}`}>
+                  {question.choices.map((c, k) => (
+                    <button
+                      key={k}
+                      type="button"
+                      className={`rn-c${typeof c === 'number' ? ' num' : ''}${lock && k === question.correct ? ' ok' : ''}`}
+                      onClick={() => answer(k)}
+                      disabled={lock}
+                    >
+                      <span className="rn-k">{k + 1}</span>{typeof c === 'number' ? c.toLocaleString('en-US') : c}
+                    </button>
+                  ))}
+                </div>
+                <p className="rt-fine">
+                  {secondsLine([sec], MATHRUN ? 'problem' : 'question')} Keys 1 to 4 answer.{MATHRUN ? ' No calculator.' : ''}
+                </p>
+
+                {MATHRUN ? (
+                  /* THE MATH LANES, lighter: a bar per game and two lines. */
+                  <div className="rt-mth">
+                    <RunBars sections={sections} results={r.results} liveIndex={r.si} liveAnswered={r.i} />
+                    <div className="rt-mline">
+                      <span className="rt-sofar"><b>{answeredSoFar}</b> right so far</span>
+                      <span className="rt-mmiss">
+                        A miss ends {sec.name} at <b>{r.i}</b>
+                        {upNext ? ` and ${upNext.name} starts.` : ', and the run with it.'}
+                      </span>
+                      <span className="rt-mclk">One life · {fmtTime(Date.now() - r.t0)}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="rt-under">
+                      {racePanel}
+                      {/* WHAT THIS ANSWER DECIDES, both ways, before it is given. */}
+                      <div className="rt-ride">
+                        <span className="rt-rcap">Riding on this one</span>
+                        <div className="rt-rl ok">
+                          <span className="rt-rk">Right</span>
+                          <span className="rt-rt"><b>{r.i + 1}</b> straight in {sec.name}</span>
                         </div>
-                      ) : null}
-                      {ls && ls.gap >= 0 ? (
-                        <div className="rn-steps">
-                          {ls.toNext != null && ls.pos > 2 ? <span className="rn-step"><b>+{ls.toNext}</b> passes {ord(ls.pos - 1)}</span> : null}
-                          <span className="rn-step top"><b>+{ls.toLead}</b> takes 1st</span>
+                        <div className="rt-rl no">
+                          <span className="rt-rk">Wrong</span>
+                          <span className="rt-rt lg">
+                            {sec.name} ends at <b>{r.i}</b>{upNext ? `, ${upNext.name} is next` : ', and so does the run'}
+                          </span>
+                          <span className="rt-rt sm">
+                            Ends at <b>{r.i}</b>{upNext ? `, ${upNext.name} next` : ', run over'}
+                          </span>
                         </div>
-                      ) : null}
-                      <div className="rn-minor">
-                        <span className="rn-mlife"><s />One life · {sec.name}</span>
-                        {alive ? <span>{alive}</span> : null}
-                        <span className="rn-mclk">{fmtTime(Date.now() - r.t0)}</span>
                       </div>
                     </div>
-                  );
-                })()}
+                    <div className="rt-run">
+                      <div className="rt-rhd">
+                        <span>The run</span>
+                        <i>Each quiz is a tower. A miss tops it out in red.</i>
+                      </div>
+                      <RunTowers sections={sections} results={r.results} liveIndex={r.si} liveAnswered={r.i} bigIndex={r.si} />
+                    </div>
+                  </>
+                )}
               </div>
             ) : null}
 
@@ -1347,6 +1471,24 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
               </div>
             ) : null}
 
+            {/* BELOW THE HANDOVER CARD (2026-10-10): the run so far, the quiz
+                that just ended drawn big and frozen. */}
+            {TOWERS && r.phase === 'verdict' && last && upNext ? (
+              <div className={`rt-run ho${MATHRUN ? ' mth' : ''}`}>
+                {MATHRUN ? (
+                  <RunBars sections={sections} results={r.results} upIndex={upIdx} />
+                ) : (
+                  <>
+                    <div className="rt-rhd">
+                      <span>The run</span>
+                      <i>Each quiz is a tower. A miss tops it out in red.</i>
+                    </div>
+                    <RunTowers sections={sections} results={r.results} bigIndex={lastIdx} />
+                  </>
+                )}
+              </div>
+            ) : null}
+
             {done ? (
               <div className="rn-done">
                 {/* ONE PER-BANK READOUT, AT THE TOP (owner, 2026-08-30). This
@@ -1359,6 +1501,11 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   {r.practice ? 'Practice run' : 'The run'}
                   {r.practice ? <i className="rn-pchip">nothing posted</i> : null}
                 </span>
+                {TOWERS ? (
+                  MATHRUN
+                    ? <RunBars sections={sections} results={r.results} className="rt-done" />
+                    : <RunTowers sections={sections} results={r.results} className="rt-done" />
+                ) : (
                 <GauntletLadder
                   orientation="row"
                   sections={sections}
@@ -1367,6 +1514,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                 tops={field ? field.top : null}
                   labels
                 />
+                )}
 
                 <div className="rn-sc-hero">
                   <div className="rn-sc-big">
@@ -2081,5 +2229,124 @@ body:has(.rn)::before{background:${T.ground};}
   .rn-pfg{font-size:11px;}
   .rn-tab{padding:8px 7px;letter-spacing:.06em;}
   .rn-hcol i{font-size:9.5px;}
+}
+
+/* THE TOWERS (owner approved 2026-10-10): the Trivia and Math Gauntlets only.
+   Everything below is scoped to .tw / .mth / .rt- so the other runs render as
+   before. Ink on the run ground #0b0f1a and the card #141b2b: #e8ecf4 16:1,
+   #c9d0de 11:1, #8b95a8 5.7:1, #f87171 6.2:1; marks #616d88 3.3:1. */
+${TOWER_CSS}
+.rn-tick.tw{display:none;}
+.rn-stage.tw .rn-body{margin:0 auto;}
+.rn-fine.tw{color:#8b95a8;}
+
+/* The gate: a mini tower (Trivia) or an empty bar (Math) ends each row. */
+.rn-roster.tw .rn-rrow{padding:7px 0 7px 16px;min-height:57px;box-sizing:border-box;}
+.rn-roster.tw .rn-rrow s,.rn-roster.mth .rn-rrow s{color:#8b95a8;}
+.rn-roster.tw .rn-rrow em,.rn-roster.mth .rn-rrow em{color:#c9d0de;}
+.rn-rtw{width:58px;flex:none;display:flex;justify-content:flex-end;}
+.rn-rbar{width:132px;height:12px;flex:none;box-sizing:border-box;border-radius:6px;border:1.5px solid #616d88;}
+
+/* The question card leads, and carries its own clock. */
+.rt-qcard{background:#141b2b;border-radius:16px;border-top:4px solid var(--acc);padding:14px 20px 16px;}
+.tw .rn-meta{margin-bottom:12px;}
+.tw .rn-game{font-size:14px;color:var(--acc);}
+.tw .rn-chip{border:1.5px solid #616d88;color:#c9d0de;border-radius:6px;padding:4px 7px;}
+.tw .rn-chip.tier{border-color:${T.gold};color:${T.gold};}
+.tw .rn-count{font-size:12px;font-weight:700;color:#8b95a8;}
+.tw .rn-count b{color:#e8ecf4;}
+.rt-sub{font-size:13px;font-weight:600;color:#8b95a8;}
+.tw .rn-q{font-size:clamp(20px,2.7vw,25px);line-height:1.3;max-width:none;margin:0;}
+.tw .rn-qm{font-size:clamp(30px,6.4vw,62px);line-height:1.1;margin:28px 0;}
+.tw .rn-blank{border-color:var(--acc);color:var(--acc);}
+.rt-clk{display:flex;align-items:center;gap:12px;margin-top:16px;}
+.rt-cbar{flex:1;height:9px;box-sizing:border-box;border-radius:5px;border:1.5px solid #616d88;overflow:hidden;}
+.rt-cbar span{display:block;height:100%;background:var(--acc);transition:width .2s linear;}
+.rt-clk.hot .rt-cbar span{background:#f87171;}
+.rt-clk b{font-size:14px;font-weight:800;color:#e8ecf4;white-space:nowrap;font-variant-numeric:tabular-nums;}
+.rt-clk.hot b{color:#f87171;}
+
+/* The answers. */
+.tw .rn-ch{gap:8px;margin-top:12px;}
+.tw .rn-c{background:#141b2b;border:1.5px solid #616d88;border-radius:13px;min-height:56px;padding:6px 16px;
+  font-size:17px;font-weight:700;gap:14px;color:#e8ecf4;}
+.tw .rn-k{width:30px;height:30px;border-radius:8px;border:0;font-size:13.5px;font-weight:800;color:var(--acc);
+  background:color-mix(in srgb,var(--acc) 20%,#0b0f1a);}
+.tw .rn-c.ok{border-color:${T.successDeep};background:rgba(16,185,129,.16);color:#c6f5e2;}
+.tw .rn-c.ok .rn-k{background:rgba(16,185,129,.2);color:#6ee7b7;}
+.mth .rn-ch{grid-template-columns:1fr 1fr;gap:12px;}
+.mth .rn-c{position:relative;justify-content:center;text-align:center;min-height:136px;border-radius:16px;
+  padding:10px 10px 10px 48px;font-size:20px;font-weight:800;}
+.mth .rn-c.num{padding:10px;font-size:52px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
+.mth .rn-k{position:absolute;left:12px;top:12px;width:28px;height:28px;font-size:13px;}
+.rt-fine{margin:8px 0 0;font-size:11.5px;font-weight:600;color:#8b95a8;}
+
+/* Under the answers: the race beside what this answer decides. */
+.rt-under{display:flex;gap:16px;align-items:stretch;margin-top:16px;padding-top:14px;
+  border-top:1px solid rgba(255,255,255,.08);}
+.rt-under .rn-race{flex:1;min-width:0;margin-top:0;padding-top:0;border-top:0;}
+.rt-ride{width:220px;flex:none;box-sizing:border-box;background:#141b2b;border-radius:12px;padding:11px 13px;
+  display:flex;flex-direction:column;gap:8px;}
+.rt-rcap{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#8b95a8;}
+.rt-rl{display:flex;align-items:baseline;gap:8px;}
+.rt-rk{width:44px;flex:none;font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;}
+.rt-rl.ok .rt-rk{color:var(--acc);}
+.rt-rl.no .rt-rk{color:#f87171;}
+.rt-rt{font-size:13px;font-weight:800;line-height:1.35;color:#e8ecf4;}
+.rt-rt b{font-size:18px;font-variant-numeric:tabular-nums;}
+.rt-rt.sm{display:none;}
+
+/* The run row. */
+.rt-run{margin-top:18px;display:flex;flex-direction:column;gap:10px;}
+.rt-run.ho{margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);}
+.rt-rhd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+.rt-rhd span{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#8b95a8;}
+.rt-rhd i{font-style:normal;font-size:11.5px;font-weight:600;color:#8b95a8;}
+.rt-done{margin-bottom:4px;}
+
+/* The Math lanes. */
+.rt-mth{margin-top:22px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:12px;}
+.rt-mline{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
+.rt-sofar{font-size:13px;font-weight:600;color:#c9d0de;}
+.rt-sofar b{font-size:20px;font-weight:800;color:#e8ecf4;font-variant-numeric:tabular-nums;}
+.rt-mmiss{font-size:12px;font-weight:600;color:#8b95a8;}
+.rt-mmiss b{color:#e8ecf4;font-variant-numeric:tabular-nums;}
+.rt-mclk{margin-left:auto;font-size:11.5px;font-weight:700;color:#8b95a8;font-variant-numeric:tabular-nums;}
+
+@media (max-width:820px){
+  .rn-roster.tw .rn-rrow{padding:6px 0 6px 13px;min-height:0;}
+  .rn-rtw{width:48px;}
+  .rn-roster.mth .rn-rrow{flex-wrap:wrap;row-gap:8px;}
+  .rn-roster.mth .rn-rbar{flex:1 0 100%;width:auto;height:10px;border-radius:5px;}
+}
+@media (max-width:640px){
+  .rt-qcard{border-radius:14px;padding:10px 14px 13px;}
+  .tw .rn-meta{margin-bottom:8px;gap:7px;}
+  .tw .rn-game{font-size:13.5px;}
+  .tw .rn-q{font-size:19px;line-height:1.32;}
+  .tw .rn-qm{font-size:32px;margin:20px 0 22px;}
+  .rt-clk{margin-top:12px;gap:10px;}
+  .rt-clk b{font-size:13px;}
+  .tw .rn-ch{gap:7px;margin-top:10px;}
+  .tw .rn-c{min-height:52px;padding:5px 12px;font-size:16px;gap:11px;}
+  .tw .rn-k{width:28px;height:28px;font-size:13px;}
+  .mth .rn-ch{gap:10px;}
+  .mth .rn-c{min-height:104px;font-size:16px;padding:8px 8px 8px 40px;}
+  .mth .rn-c.num{padding:8px;font-size:40px;}
+  .mth .rn-k{left:9px;top:9px;width:24px;height:24px;font-size:12px;}
+  .rt-under{flex-direction:column;gap:11px;margin-top:14px;padding-top:11px;}
+  .rt-ride{order:-1;width:auto;flex-direction:row;flex-wrap:wrap;gap:6px;background:none;padding:0;}
+  .rt-rcap{display:none;}
+  .rt-rl{flex:1 1 0;min-width:0;flex-direction:column;gap:0;border-radius:9px;padding:6px 9px;}
+  .rt-rl.ok{background:color-mix(in srgb,var(--acc) 16%,#0b0f1a);}
+  .rt-rl.no{border:1.5px solid #616d88;padding:5px 8px;}
+  .rt-rk{width:auto;font-size:8.5px;}
+  .rt-rt{font-size:12px;}
+  .rt-rt b{font-size:16px;}
+  .rt-rt.lg{display:none;}
+  .rt-rt.sm{display:inline;}
+  .rt-run{margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);gap:8px;}
+  .rt-mth{margin-top:18px;padding-top:12px;gap:10px;}
+  .rt-mclk{font-size:11px;}
 }
 `;
