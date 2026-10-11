@@ -2032,9 +2032,9 @@ const CSS = `
 .stf-vsx .now{font-size:28px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
 .stf-vsx .arr{font-size:16px;opacity:.8;}
 /* THE RIVAL PAIR on the card (2026-09-26). */
-.stf-vs{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;}
+.stf-vs{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch;}
 .stf-vside{background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:9px;padding:10px 12px;min-width:0;}
-.stf-vside .nm{display:block;font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.stf-vside .nm{display:block;font-weight:700;font-size:13px;line-height:20px;min-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .stf-vside b{display:block;font-family:${SANS};font-size:22px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--stg-ink);}
 .stf-vside small{display:block;font-family:${SANS};font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);margin-top:3px;}
 .stf-vside.you{border:2px solid var(--stg-acc);padding:9px 11px;background:color-mix(in srgb,var(--stg-acc) 14%,var(--stg-surf));}
@@ -2044,7 +2044,7 @@ const CSS = `
 /* The Ahead chip sits BESIDE the name, not inside its clipping box: .nm hides
    overflow for the ellipsis, and a bordered chip taller than the 13px line had
    its bottom edge shaved off (owner, 2026-09-28, mobile). */
-.stf-vside.you .nm{display:flex;align-items:center;gap:6px;overflow:visible;flex-wrap:wrap;row-gap:3px;}
+.stf-vside.you .nm{display:flex;align-items:center;gap:6px;overflow:visible;flex-wrap:nowrap;}
 .stf-vside.you .nmt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .stf-vside.you .nm{color:var(--stg-acc-ink,var(--stg-acc));}
 .stf-vsx2{font-family:${SANS};font-size:11px;color:var(--stg-mute);}
@@ -2245,8 +2245,14 @@ const CSS = `
 .stf-rvf{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;align-items:end;}
 .stf-fl-figs .stf-rvf small{display:block;font-family:${SANS};font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.8;margin-bottom:5px;}
 .stf-fl-figs .stf-rvf b{display:block;font-size:clamp(26px,4.4vw,40px);font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;}
+/* BOTH SIDES CARRY THE SAME BOX (2026-10-10). Only You had a border and
+   padding, so with align-items:end the opponent figure sat 9px lower. The
+   opponent border is transparent; a won box trades 1px of padding for its
+   3px border so the two stay the same height. */
+.stf-rvf .them{border:2px solid transparent;border-radius:9px;padding:7px 10px;}
+.stf-rvf small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .stf-rvf .you{text-align:right;border:2px solid currentColor;border-radius:9px;padding:7px 10px;}
-.stf-rvf .you.won{border-width:3px;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 22%,transparent);}
+.stf-rvf .you.won{border-width:3px;padding:6px 9px;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 22%,transparent);}
 .stf-rvf .x{font-family:${SANS};font-size:12px;opacity:.7;padding-bottom:6px;}
 .stf-bars{display:flex;align-items:flex-end;gap:3px;height:clamp(40px,7vh,64px);}
 .stf-bars s{text-decoration:none;flex:1;display:block;background:rgba(0,0,0,.2);border-radius:2px 2px 0 0;
