@@ -1,33 +1,37 @@
 'use client';
 
-// THE RUN TOWERS (owner approved 2026-10-10), the run's shape as one tower per
-// quiz on the Trivia Gauntlet, and one bar per game on the Math Gauntlet.
+// THE RUN LANES (owner, 2026-10-10), the run's shape on the Trivia Gauntlet
+// and the Math Gauntlet alike: one row per quiz (or game), a name, a bar and a
+// score. They replaced the towers (Trivia) and the side-by-side bars (Math) the
+// same day, so both runs now draw one object.
 //
-// DISPLAY ONLY, like GauntletLadder: it reads the run's sections and results
-// and owns none of it. No hooks at all, so nothing can ever sit after an early
-// return.
+// EVERY BAR IS THE SAME WIDTH whatever the question count, so a bar is a share
+// of its own quiz: Deep's 15 and Streak's 40 sit on one scale. Fill = got/total,
+// left to right.
+//   won    full fill
+//   lost   fill to the miss, then a red end cap where the miss was
+//   live   fill to the question on screen, then an outlined pip there
+//   up     next to play (the handover): empty, rimmed in its own colour
+//   next   empty, quiet name
+// Nothing about a question past the current one is ever drawn.
 //
-// A quiz of N questions is a tower of rows (one per tier, the FIRST tier on
-// top so the tower builds down, owner 2026-10-10),
-// `perTier` cells to a row: Deep 3, the 25-question banks 5, Streak 8. Cell i
-// is question i + 1.
-//   i < got                      cleared, filled in the bank's ramp colour
-//   i === got, quiz live         the question on screen: tinted, ramp outline
-//   i === got, quiz lost         the miss that ended it: red, ink outline
-//   anything else                empty, a 1px outline that holds 3:1
-// Nothing about a question past the current one is ever drawn, only the bank
-// name, which the rules already publish.
+// THE ORDER (owner, 2026-10-10): the quiz in play rises to the TOP, finished
+// ones follow most recently finished first (so each moves down one as the next
+// comes in), upcoming ones last in run order. order="run" (the scorecard)
+// keeps run order. A reorder slides (FLIP) from where the rows last stood,
+// which survives the remount between the play screen and the handover because
+// the last positions are kept per list id at module level.
 //
 // COLOURS are the run page's own palette on its own dark ground (#0b0f1a), not
-// the --stg tokens: the ramp steps, #8b95a8 for quiet text (6.3:1), #c9d0de for
-// an upcoming name (12.4:1), #616d88 for an empty cell outline (3.7:1, a mark),
-// #f87171 for the miss (6.9:1), and #08222e for ink on any ramp fill (6.1:1 or
-// better on every step).
+// the --stg tokens: the ramp steps, #8b95a8 for quiet text (5.7:1), #c9d0de for
+// an upcoming name (11:1), #616d88 for a bar outline (3.3:1, a mark), #f87171
+// for the miss (6.2:1), and #8b95a8 for the average tick (a mark).
 
-import React from 'react';
+import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import { rampFor } from '@/lib/circuits';
 
 const MISS = '#f87171';
+const useIsoLayout = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 // RunClient files 'won' | 'lost' | 'banked'. A banked game finished on its own
 // page; short of a clean run, it ended on a miss there too.
@@ -38,16 +42,13 @@ function frozen(res) {
   return { got, lost: res.status === 'lost' || (res.status === 'banked' && got < total) };
 }
 
-function colsOf(s, n) {
-  const c = Number(s.perTier) || 0;
-  if (c > 0) return c;
-  return Math.max(1, Math.round(n / 5));
-}
+const pc = (v) => `${Math.round(Math.max(0, Math.min(1, v)) * 10000) / 100}%`;
 
-// The state of every section, in run order, shared by the towers and the bars.
+// The state of every section, in run order, plus its place in the finish order.
 function laneStates(sections, results, liveIndex, liveAnswered, upIndex) {
   const byKey = {};
-  for (const x of results || []) if (x && x.key) byKey[x.key] = x;
+  const doneAt = {};
+  (results || []).forEach((x, k) => { if (x && x.key) { byKey[x.key] = x; doneAt[x.key] = k; } });
   return sections.map((s, bi) => {
     const n = s.questions ? s.questions.length : 0;
     const res = frozen(byKey[s.key]);
@@ -55,130 +56,126 @@ function laneStates(sections, results, liveIndex, liveAnswered, upIndex) {
     const st = res ? (res.lost ? 'lost' : 'won') : (live ? 'live' : (bi === upIndex ? 'up' : 'next'));
     const got = res ? res.got : (live ? liveAnswered : 0);
     return {
-      key: s.key, name: s.name, n, got, st,
-      cols: colsOf(s, n),
+      key: s.key, name: s.name, n, got, st, bi,
+      fin: res ? doneAt[s.key] : -1,
       c: rampFor(s.slot != null ? s.slot : bi),
     };
   });
 }
 
-// ONE TOWER. `big` draws the numbered version (the live quiz, or the one that
-// just ended on the handover); `hatch` strikes out the cells a lost quiz never
-// reached, which only the big frozen tower does.
-function Tower({ lane, big, hatch }) {
-  const { n, cols, got, st } = lane;
-  const rows = [];
-  for (let start = 0; start < n; start += cols) {
-    const cells = [];
-    for (let i = start; i < Math.min(n, start + cols); i += 1) {
-      let cls = 'rt-c';
-      let num = false;
-      if (i < got) { cls += ' f'; num = true; }
-      else if (i === got && st === 'lost') { cls += ' x'; num = true; }
-      else if (i === got && st === 'live') { cls += ' now'; num = true; }
-      else if (hatch && st === 'lost') cls += ' h';
-      cells.push(<span key={i} className={cls}>{big && num ? <i>{i + 1}</i> : null}</span>);
+// Live on top, then finished (latest first), then upcoming in run order.
+export function laneOrder(lanes, order) {
+  if (order === 'run') return lanes;
+  const live = lanes.filter((l) => l.st === 'live');
+  const fin = lanes.filter((l) => l.fin >= 0).sort((a, b) => b.fin - a.fin);
+  const rest = lanes.filter((l) => l.st !== 'live' && l.fin < 0);
+  return [...live, ...fin, ...rest];
+}
+
+// Last measured offsets of each row, per list id, so a remount can slide.
+const LAST = {};
+
+// ONE BAR. `curve` (the gate) shades it by how many of today's players got
+// that far; `avg` drops a tick at today's average share of the quiz.
+export function LaneBar({ lane = null, n = 0, curve = null, avg = null, big = false }) {
+  const total = lane ? lane.n : n;
+  const st = lane ? lane.st : 'next';
+  const got = lane ? lane.got : 0;
+  const unit = total ? 1 / total : 0;
+  const filled = st === 'won' ? 1 : total ? Math.min(1, got / total) : 0;
+  let shade;
+  if (curve && total) {
+    const stops = [];
+    for (let i = 0; i < total; i += 1) {
+      const alive = curve[i] != null ? Math.max(0, Math.min(1, curve[i])) : 0;
+      const a = (0.06 + 0.54 * alive).toFixed(3);
+      stops.push(`rgba(97,109,136,${a}) ${pc(i * unit)} ${pc((i + 1) * unit)}`);
     }
-    rows.push(<span key={start} className="rt-r">{cells}</span>);
+    shade = { background: `linear-gradient(90deg,${stops.join(',')})` };
   }
+  const tick = Number.isFinite(avg) && total ? Math.min(1, Math.max(0, avg / total)) : null;
   return (
-    <span className={`rt-t${big ? ' big' : ''}${cols >= 7 ? ' w' : ''}`} style={{ '--c': lane.c }} aria-hidden="true">
-      {rows}
+    <span className={`rl-trk${big ? ' big' : ''}`} aria-hidden="true">
+      <span className="rl-bar" style={st === 'up' ? { ...shade, borderColor: lane.c } : shade}>
+        {filled > 0 ? <span className="rl-f" style={{ width: pc(filled), background: lane.c }} /> : null}
+        {st === 'lost' && got < total
+          ? <span className="rl-x" style={{ left: pc(filled), width: `max(5px, ${pc(unit)})` }} /> : null}
+        {st === 'live' && got < total ? (
+          <span
+            className="rl-pip"
+            style={{ left: pc(filled), width: `max(8px, ${pc(unit)})`, borderColor: lane.c, background: `color-mix(in srgb,${lane.c} 24%,#0b0f1a)` }}
+          />
+        ) : null}
+      </span>
+      {tick != null ? <span className="rl-avg" style={{ left: pc(tick) }} /> : null}
     </span>
   );
 }
 
-// THE RUN ROW: every quiz as a tower, in run order, the name in its ramp
-// colour under each (an upcoming one in quiet ink) and its score.
-export default function RunTowers({
-  sections = [],
-  results = [],
-  liveIndex = -1,
-  liveAnswered = 0,
-  bigIndex = -1,
-  className = '',
-}) {
-  const lanes = laneStates(sections, results, liveIndex, liveAnswered, -1);
-  return (
-    <div className={`rt-row ${className}`.trim()}>
-      {lanes.map((ln, bi) => {
-        const big = bi === bigIndex;
-        const on = ln.st !== 'next';
-        return (
-          <div key={ln.key} className={`rt-b${big ? ' big' : ''}`}>
-            <Tower lane={ln} big={big} hatch={big} />
-            <span className="rt-k">
-              <b style={{ color: on ? ln.c : '#c9d0de' }}>{ln.name}</b>
-              <em className={on ? 'on' : ''}>{on ? `${ln.got}/${ln.n}` : ln.n}</em>
-            </span>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// THE MATH LANES: one bar per game, lighter than the towers. Filled to what
-// you got, a red cap where a miss ended it, the live (or next up) bar rimmed
-// in its own colour.
-export function RunBars({
+// THE LIST.
+export default function RunLanes({
+  id = 'run',
   sections = [],
   results = [],
   liveIndex = -1,
   liveAnswered = 0,
   upIndex = -1,
+  avg = null,
+  order = 'live',
   className = '',
 }) {
-  const lanes = laneStates(sections, results, liveIndex, liveAnswered, upIndex);
+  const lanes = laneOrder(laneStates(sections, results, liveIndex, liveAnswered, upIndex), order);
+  const box = useRef(null);
+  const sig = lanes.map((l) => l.key).join('|');
+
+  // FLIP: measure where each row is now (relative to the list) and slide it
+  // from where it last stood. One read and one write per row, and nothing at
+  // all when the order did not change.
+  useIsoLayout(() => {
+    const el = box.current;
+    if (!el || !el.getBoundingClientRect) return;
+    const top0 = el.getBoundingClientRect().top;
+    const now = {};
+    const rows = Array.from(el.children);
+    for (const row of rows) now[row.dataset.k] = row.getBoundingClientRect().top - top0;
+    const prev = LAST[id];
+    LAST[id] = { sig, at: now };
+    if (!prev || prev.sig === sig) return;
+    let still = false;
+    try { still = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { still = true; }
+    if (still) return;
+    const moved = [];
+    for (const row of rows) {
+      const from = prev.at[row.dataset.k];
+      const dy = from != null ? from - now[row.dataset.k] : 0;
+      if (!dy) continue;
+      row.style.transition = 'none';
+      row.style.transform = `translateY(${dy}px)`;
+      moved.push(row);
+    }
+    if (!moved.length) return;
+    void el.offsetHeight; // one forced layout, then every row glides home
+    for (const row of moved) {
+      row.style.transition = 'transform .55s cubic-bezier(.2,.8,.2,1)';
+      row.style.transform = '';
+    }
+  }, [sig, id]);
+
   return (
-    <div className={`rb-row ${className}`.trim()}>
+    <div className={`rl ${className}`.trim()} ref={box}>
       {lanes.map((ln) => {
         const on = ln.st === 'won' || ln.st === 'lost' || ln.st === 'live';
-        const fill = ln.n ? `${Math.min(100, (ln.got / ln.n) * 100)}%` : '0%';
+        const a = avg && Number.isFinite(avg[ln.key]) ? avg[ln.key] : null;
         return (
-          <div key={ln.key} className="rb-g">
-            <b className="rb-nm" style={{ color: ln.st === 'next' ? '#c9d0de' : ln.c }}>{ln.name}</b>
-            <em className={`rb-sc${on ? ' on' : ''}`}>{on ? `${ln.got}/${ln.n}` : ln.n}</em>
-            <span
-              className="rb-bar"
-              style={{ borderColor: ln.st === 'live' || ln.st === 'up' ? ln.c : undefined }}
-              aria-hidden="true"
-            >
-              {on ? <span className="rb-f" style={{ width: fill, background: ln.c }} /> : null}
-              {ln.st === 'lost' ? <span className="rb-cap" style={{ left: `calc(${fill} + 2px)` }} /> : null}
-            </span>
+          <div key={ln.key} data-k={ln.key} className={`rl-row ${ln.st}`}>
+            <b className="rl-nm" style={{ color: on ? ln.c : '#c9d0de' }}>{ln.name}</b>
+            <LaneBar lane={ln} avg={a} big={ln.st === 'live'} />
+            <em className={`rl-sc${on ? ' on' : ''}`}>{on ? `${ln.got}/${ln.n}` : ln.n}</em>
           </div>
         );
       })}
     </div>
   );
-}
-
-// THE GATE'S MINI TOWER: empty, shaded by how many of today's players reached
-// each question (curve[i] is the share still alive at question i + 1), with
-// the average score's cell outlined bright. With no curve it is a plain empty
-// tower.
-export function MiniTower({ section, curve = null, avg = null }) {
-  const n = section.questions ? section.questions.length : 0;
-  const cols = colsOf(section, n);
-  const mark = Number.isFinite(avg) ? Math.min(n - 1, Math.round(avg)) : -1;
-  const rows = [];
-  for (let start = 0; start < n; start += cols) {
-    const cells = [];
-    for (let i = start; i < Math.min(n, start + cols); i += 1) {
-      const alive = curve && curve[i] != null ? Math.max(0, Math.min(1, curve[i])) : 0;
-      const pct = curve ? Math.round(6 + 54 * alive) : 0;
-      cells.push(
-        <span
-          key={i}
-          className={`rt-c${i === mark ? ' avg' : ''}`}
-          style={pct ? { background: `color-mix(in srgb,#616d88 ${pct}%,transparent)` } : undefined}
-        />
-      );
-    }
-    rows.push(<span key={start} className="rt-r">{cells}</span>);
-  }
-  return <span className={`rt-t mini${cols >= 7 ? ' w' : ''}`} aria-hidden="true">{rows}</span>;
 }
 
 // THE CLOCK LINE, from the sections themselves (2026-10-10). The Math Gauntlet
@@ -210,65 +207,32 @@ export function secondsLine(sections = [], unit = 'question') {
 // NO BACKTICKS IN THIS BLOCK: it is a template literal. Injected once by
 // RunClient's own stylesheet.
 export const TOWER_CSS = `
-.rt-row{display:flex;align-items:flex-end;justify-content:space-between;gap:6px;min-width:0}
-.rt-b{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:62px}
-.rt-t{display:flex;flex-direction:column;gap:2px}
-.rt-r{display:flex;gap:2px}
-.rt-c{display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:8px;height:8px;
-  border-radius:2px;border:1px solid #616d88;background:transparent}
-.rt-t.w .rt-r,.rt-t.w{gap:1.5px}
-.rt-t.w .rt-c{width:5px}
-.rt-c.f{background:var(--c);border:0}
-.rt-c.x{background:${MISS};border:1.5px solid #e8ecf4}
-.rt-c.now{background:color-mix(in srgb,var(--c) 22%,#0b0f1a);border:1.5px solid var(--c)}
-.rt-c.h{border-color:#8b95a8;background:repeating-linear-gradient(135deg,#616d88 0 1.5px,transparent 1.5px 6px)}
-.rt-c i{font-style:normal;font-size:9.5px;font-weight:800;line-height:1;color:#08222e;
-  font-variant-numeric:tabular-nums}
-.rt-c.now i{color:var(--c)}
-.rt-t.big,.rt-t.big .rt-r{gap:3px}
-.rt-t.big .rt-c{width:22px;height:22px;border-radius:5px}
-.rt-t.big .rt-c.x{border-width:2px}
-.rt-t.big .rt-c.now{border-width:2.5px}
-.rt-k{display:flex;flex-direction:column;align-items:center;line-height:1.25}
-.rt-k b{font-size:12.5px;font-weight:800;white-space:nowrap}
-.rt-k em{font-style:normal;font-size:11px;font-weight:700;color:#8b95a8;font-variant-numeric:tabular-nums}
-.rt-k em.on{color:#e8ecf4}
-
-.rt-t.mini,.rt-t.mini .rt-r{gap:2px}
-.rt-t.mini .rt-c{width:7px;height:7px;border-radius:1.5px}
-.rt-t.mini.w,.rt-t.mini.w .rt-r{gap:1.5px}
-.rt-t.mini.w .rt-c{width:5px}
-.rt-t.mini .rt-c.avg{border:1.5px solid #e8ecf4}
-
-.rb-row{display:flex;gap:10px;min-width:0}
-.rb-g{flex:1 1 0;min-width:0;display:grid;grid-template-columns:1fr auto;grid-template-areas:"nm sc" "bar bar";
-  align-items:baseline;gap:6px 4px}
-.rb-nm{grid-area:nm;font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rb-sc{grid-area:sc;font-style:normal;font-size:11.5px;font-weight:700;color:#8b95a8;font-variant-numeric:tabular-nums}
-.rb-sc.on{color:#e8ecf4}
-.rb-bar{grid-area:bar;position:relative;display:block;height:12px;box-sizing:border-box;border-radius:6px;
+.rl{display:flex;flex-direction:column;gap:7px;min-width:0}
+.rl-row{display:grid;grid-template-columns:84px minmax(0,1fr) 48px;align-items:center;gap:12px;min-height:22px}
+.rl-nm{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rl-row.live .rl-nm{font-weight:800;font-size:14px}
+.rl-sc{font-style:normal;font-size:11.5px;font-weight:700;color:#8b95a8;text-align:right;font-variant-numeric:tabular-nums}
+.rl-sc.on{color:#e8ecf4}
+.rl-row.live .rl-sc{font-size:12.5px;font-weight:800}
+.rl-trk{position:relative;display:block;height:10px;min-width:0}
+.rl-trk.big{height:16px}
+.rl-bar{position:absolute;top:0;left:0;right:0;bottom:0;display:block;box-sizing:border-box;border-radius:5px;
   border:1.5px solid #616d88;overflow:hidden}
-.rb-f{position:absolute;left:0;top:0;bottom:0}
-.rb-cap{position:absolute;top:0;bottom:0;width:6px;background:${MISS}}
-
+.rl-trk.big .rl-bar{border-radius:6px}
+.rl-f{position:absolute;left:0;top:0;bottom:0;transition:width .4s cubic-bezier(.2,.8,.2,1)}
+.rl-x{position:absolute;top:0;bottom:0;background:${MISS}}
+.rl-pip{position:absolute;top:0;bottom:0;box-sizing:border-box;border:2px solid;border-radius:3px;
+  transition:left .4s cubic-bezier(.2,.8,.2,1)}
+.rl-avg{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;border-radius:1px;background:#8b95a8}
+@media (prefers-reduced-motion:reduce){.rl-f,.rl-pip{transition:none}}
 @media (max-width:640px){
-  .rt-row{gap:3px}
-  .rt-b{min-width:0;gap:4px}
-  .rt-t,.rt-r{gap:1.5px}
-  .rt-c{width:5.5px;height:5.5px;border-radius:1px}
-  .rt-t.w,.rt-t.w .rt-r{gap:1px}
-  .rt-t.w .rt-c{width:3.4px}
-  .rt-t.big,.rt-t.big .rt-r{gap:2px}
-  .rt-t.big .rt-c{width:11px;height:11px;border-radius:2.5px}
-  .rt-t.big .rt-c.x,.rt-t.big .rt-c.now{border-width:1.5px}
-  .rt-c i{display:none}
-  .rt-k b{font-size:9.5px}
-  .rt-k em{font-size:9.5px}
-  .rt-t.mini .rt-c{width:6px;height:6px}
-  .rt-t.mini.w .rt-c{width:4px}
-  .rb-row{gap:6px}
-  .rb-g{grid-template-columns:1fr;grid-template-areas:"nm" "bar" "sc";gap:4px}
-  .rb-nm,.rb-sc{font-size:10.5px}
-  .rb-bar{height:10px;border-radius:5px}
+  .rl{gap:6px}
+  .rl-row{grid-template-columns:62px minmax(0,1fr) 40px;gap:9px;min-height:20px}
+  .rl-nm{font-size:11.5px}
+  .rl-row.live .rl-nm{font-size:12.5px}
+  .rl-sc{font-size:10.5px}
+  .rl-row.live .rl-sc{font-size:11.5px}
+  .rl-trk{height:8px}
+  .rl-trk.big{height:13px}
 }
 `;
