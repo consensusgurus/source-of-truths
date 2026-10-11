@@ -3,10 +3,13 @@
 // the rules and today's fact allow (at most 2^7 = 128), exactly as
 // scripts/verify-ergo.mjs does it with its own code.
 
+// The three bins wear the stage's own accent family, told apart by FILL rather
+// than by three unrelated hues (owner, 2026-10-11): must is the solid category
+// step, could its tint, cannot an outline. The CSS lives in ErgoClient (.b-*).
 export const BINS = [
-  { key: 'must', label: 'Must be true', short: 'Must', ground: '#1d4ed8' },
-  { key: 'could', label: 'Could be true', short: 'Could', ground: '#475569' },
-  { key: 'cannot', label: 'Cannot be true', short: 'Cannot', ground: '#b4410c' },
+  { key: 'must', label: 'Must be true', short: 'Must' },
+  { key: 'could', label: 'Could be true', short: 'Could' },
+  { key: 'cannot', label: 'Cannot be true', short: 'Cannot' },
 ];
 export const BIN_LABEL = { must: 'Must be true', could: 'Could be true', cannot: 'Cannot be true' };
 

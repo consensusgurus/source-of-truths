@@ -343,11 +343,14 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
           .eg-st{font-size:22px;font-weight:800;line-height:1.3;color:${INK};margin:6px 0 14px;}
           .eg-bins3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
           @media(max-width:560px){.eg-bins3.go{grid-template-columns:1fr;}.eg-st{font-size:19px;}}
-          .eg-go{border:none;border-radius:10px;color:#fff;padding:14px 8px;min-height:48px;font-family:${SANS};font-size:15.5px;font-weight:800;cursor:pointer;}
+          .b-must{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent}) !important;color:var(--stg-onramp, #fff) !important;}
+          .b-could{background:var(--stg-acc-tint, ${COLORS.accentSoft});border-color:var(--stg-acc, ${COLORS.accent}) !important;color:${INK} !important;}
+          .b-cannot{background:transparent;border-color:var(--stg-line3, rgba(28,30,36,0.45)) !important;color:${INK} !important;}
+          .eg-go{border:2px solid transparent;border-radius:10px;padding:14px 8px;min-height:48px;font-family:${SANS};font-size:15.5px;font-weight:800;cursor:pointer;}
           .eg-go .k{opacity:1;font-size:11px;font-weight:700;margin-left:6px;}
           @media(hover:none){.eg-go .k{display:none;}}
           .eg-bin{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border:1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-width:0;}
-          .eg-bh{color:#fff;padding:8px 11px;display:flex;align-items:center;font-size:11.5px;letter-spacing:.12em;font-weight:800;text-transform:uppercase;}
+          .eg-bh{border:0 solid transparent;border-bottom-width:2px;padding:8px 11px;display:flex;align-items:center;font-size:11.5px;letter-spacing:.12em;font-weight:800;text-transform:uppercase;}
           .eg-bh b{margin-left:auto;font-size:14px;letter-spacing:0;}
           .eg-items{padding:8px;display:flex;flex-direction:column;gap:6px;min-height:52px;}
           .eg-item{text-align:left;border:1.5px solid var(--stg-line, rgba(28,30,36,0.16));background:var(--stg-surf2, #f5f7fb);color:${INK};border-radius:8px;padding:8px 9px;min-height:40px;font-family:${SANS};font-size:13px;font-weight:700;line-height:1.35;cursor:pointer;}
@@ -357,7 +360,7 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
           .eg-pr{border-top:1px solid var(--stg-line, rgba(28,30,36,0.1));padding:12px 0;}
           .eg-pr:first-child{border-top:none;}
           .eg-ph{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-          .eg-v{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;color:#fff;border-radius:5px;padding:3px 7px;}
+          .eg-v{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;border:1.5px solid transparent;border-radius:5px;padding:3px 7px;}
           .eg-you{font-size:12.5px;font-weight:800;}
           .eg-you.ok{color:var(--stg-good, ${COLORS.green});}
           .eg-you.no{color:var(--stg-bad, #b91c1c);}
@@ -411,7 +414,9 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
             </div>
           )}
 
-          {/* the brief: setup, rules (flippable) and today's fact */}
+          {/* the brief: setup, rules (flippable) and today's fact. Nothing of
+              the board shows before Start (owner, 2026-10-11). */}
+          {!preStart && (
           <div className="eg-panel">
             <div className="eg-lab">{PUZZLE.title}</div>
             <div style={{ fontSize: 14.5, lineHeight: 1.55, color: FADED, fontWeight: 600, margin: '6px 0 2px' }}>{PUZZLE.setup}</div>
@@ -430,6 +435,7 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
             })}
             <div className="eg-fact"><span className="eg-lab" style={{ color: ACC_INK }}>Today</span>{PUZZLE.givenText}</div>
           </div>
+          )}
 
           {!preStart && playing && (
             <>
@@ -439,7 +445,7 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
                   <div className="eg-st">{ST[cur].text}</div>
                   <div className="eg-bins3 go">
                     {BINS.map((b, bi) => (
-                      <button key={b.key} type="button" className="eg-go" style={{ background: b.ground }} onClick={() => file(b.key)}>
+                      <button key={b.key} type="button" className={`eg-go b-${b.key}`} onClick={() => file(b.key)}>
                         {b.label}<span className="k">{bi + 1}</span>
                       </button>
                     ))}
@@ -459,7 +465,7 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
                   const items = ST.map((s, i) => ({ s, i })).filter(({ i }) => g.picks[i] === b.key);
                   return (
                     <div key={b.key} className="eg-bin">
-                      <div className="eg-bh" style={{ background: b.ground }}>{b.short}<b>{items.length}</b></div>
+                      <div className={`eg-bh b-${b.key}`}>{b.short}<b>{items.length}</b></div>
                       <div className="eg-items">
                         {items.length ? items.map(({ s, i }) => (
                           <button key={i} type="button" className="eg-item" title="Take it back" onClick={() => unfile(i)}>{s.text}</button>
@@ -490,7 +496,7 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
                 return (
                   <div key={i} className="eg-pr">
                     <div className="eg-ph">
-                      {showAnswers && <span className="eg-v" style={{ background: b.ground }}>{BIN_LABEL[v]}</span>}
+                      {showAnswers && <span className={`eg-v b-${b.key}`}>{BIN_LABEL[v]}</span>}
                       <span className={`eg-you ${ok ? 'ok' : 'no'}`}>{ok ? <><Check size={13} style={{ verticalAlign: '-2px' }} /> You: right</> : <><X size={13} style={{ verticalAlign: '-2px' }} /> You said {mine ? BIN_LABEL[mine].toLowerCase() : 'nothing'}</>}</span>
                     </div>
                     <div className="eg-pt">{s.text}</div>
