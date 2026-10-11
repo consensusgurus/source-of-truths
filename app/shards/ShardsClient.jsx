@@ -1045,7 +1045,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
                     return (
                       <div
                         key={i}
-                        data-cell="1" data-r={r} data-c={c}
+                        data-cell="1" data-r={r} data-c={c} data-sid={cell ? cell.id : undefined}
                         className={`sh-cell${isBlock ? ' block' : ''}${cell ? ' filled' : ''}${isArmedCell ? ' armed' : ''}${isWrong ? ' wrong' : ''}${isHome ? ' home' : ''}${isLocked ? ' locked' : ''}${cell && g.wet === cell.id ? ' wet' : ''}${cell && drag && drag.id === cell.id ? ' dragging' : ''}${hoverCls}`}
                         style={tint
                           // Stage: a placed piece is its ramp hue at twice the register's mix (a piece

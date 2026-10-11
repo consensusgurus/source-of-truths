@@ -461,7 +461,7 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
       // as missed, so the reader can see what they did not get.
       const missed = unmasked && !solved && !FREEBIES.has(tk.n) && !revealedNorms.has(tk.n) && tk.n.length >= 3;
       const fresh = !missed && lastNorms.includes(tk.n);
-      return <span key={key} className={missed ? 'rd-missed' : fresh ? 'rd-fresh' : undefined}>{tk.t}</span>;
+      return <span key={key} className={missed ? 'rd-missed' : fresh ? 'rd-fresh rd-w' : (FREEBIES.has(tk.n) ? undefined : 'rd-w')}>{tk.t}</span>;
     }
     const showLen = peek === idx;
     return (
@@ -697,7 +697,7 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
                   {TITLE_TOKENS.map((tk, i) => {
                     if (!tk.w) return <span key={i}>{tk.t}</span>;
                     if (unmasked || FREEBIES.has(tk.n) || tk.n.length < 3 || revealedNorms.has(tk.n)) {
-                      return <span key={i} style={over && solved ? { color: NP.hitInk } : undefined}>{tk.t}</span>;
+                      return <span key={i} className={FREEBIES.has(tk.n) || tk.n.length < 3 ? undefined : 'rd-w'} style={over && solved ? { color: NP.hitInk } : undefined}>{tk.t}</span>;
                     }
                     // Width only, never the letters: 0.85ch per character tracks the
                     // real word's width in this face without putting it in the DOM.

@@ -730,9 +730,9 @@ export default function CircaClient({ puzzles = [], forceNum = null }) {
               {guesses.map((y, i) => {
                 const r = rowFor(y, i);
                 return (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, background: r.bg, border: `1.5px solid ${r.border}`, borderRadius: 9, padding: '8px 12px', animation: i === guesses.length - 1 ? 'ccrow .25s ease' : undefined }}>
+                  <div key={i} className="cc-row" style={{ display: 'flex', alignItems: 'center', gap: 10, background: r.bg, border: `1.5px solid ${r.border}`, borderRadius: 9, padding: '8px 12px', animation: i === guesses.length - 1 ? 'ccrow .25s ease' : undefined }}>
                     <span style={{ fontFamily: MONO, fontSize: 11, color: FADED, width: 14, flex: '0 0 auto' }}>{i + 1}</span>
-                    <span style={{ fontFamily: MONO, fontSize: 20, fontWeight: 500, color: INK, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.06em', flex: '0 0 auto' }}>{y}</span>
+                    <span className="cc-yr" style={{ fontFamily: MONO, fontSize: 20, fontWeight: 500, color: INK, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.06em', flex: '0 0 auto' }}>{y}</span>
                     <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: SANS, fontSize: 12.5, fontWeight: 800, color: r.color, textAlign: 'right' }}>
                       {r.win ? <Target size={14} strokeWidth={2.5} /> : (r.later ? <ArrowUp size={14} strokeWidth={2.5} /> : <ArrowDown size={14} strokeWidth={2.5} />)}
                       {r.win ? r.label : <>{r.later ? 'later' : 'earlier'} &middot; {r.label}</>}
