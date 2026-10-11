@@ -8938,3 +8938,14 @@ re-derive a score from `scoreOf` alone.
   it, inferred from score and first-guess error by `earnedAt`), and a shelf per item. Its data
   is `priceField` on `/api/quiz/daily-combined?circuit=pricecheck` plus `perGame.bps`, which
   `lib/daily-combined` now carries through every hop for display only.
+- **A locked item keeps playing (owner, 2026-10-11, same day).** Reaching a score no later guess
+  can beat no longer ends the item; it stamps `lockG` (guess count) and `lockT` (time) on the save,
+  the player may keep guessing for fun or press "Stop here", and a bullseye or the third guess still
+  ends it. The board's tiebreaks read the lock moment: `guessesUsed` posts `lockG` and the clock
+  stops at `lockT`, so playing on never costs rank. Leaving during the free guesses files the locked
+  score whole through the abandon flush, never a 0.
+- **On a phone the board follows the keyboard.** While the guess input has focus on a coarse
+  pointer, `pinAsk` scrolls so the newest guess row (or the hint line) sits just above the
+  keyboard, never pushing the input off the top; it re-runs on visualViewport resize and after each
+  guess, and a 45vh spacer gives the page room to scroll. The Guess button prevents mousedown so
+  tapping it never blurs the input and bounces the keyboard.

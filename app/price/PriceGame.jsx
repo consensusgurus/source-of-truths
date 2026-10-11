@@ -267,6 +267,15 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
   const viewedRef = useRef(false);
   const noticeRef = useRef(null);
   const inputRef = useRef(null);
+  // THE KEYBOARD (owner, 2026-10-11). On a phone the keyboard covers the lower
+  // half of the screen and the browser centres the input, so the guess rows
+  // (below the input) end up under the keys. While the input has focus on a
+  // touch screen the board is scrolled so the newest feedback sits just above
+  // the keyboard, without ever pushing the input off the top.
+  const askRef = useRef(null);
+  const rowsRef = useRef(null);
+  const [kb, setKb] = useState(false);
+  const kbBlurRef = useRef(null);
   // Put the caret back where the player was typing after a regroup moves commas.
   useLayoutEffect(() => {
     const el = inputRef.current; const sig = caretRef.current;
@@ -318,9 +327,29 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
   // The guess that earned the score (under v2 not always the closest).
   const earned = sg.at >= 0 ? tries[sg.at] : null;
   const left = MAXG - tries.length;
+  // LOCKED, NOT OVER (owner, 2026-10-11). Once no later guess can beat the
+  // score, the score is locked, but the player keeps guessing to see how close
+  // they can get. The board's tiebreaks read the moment of the lock.
+  const lockedAt = V2 && g.lockG ? g.lockG : 0;
   const outcome = score >= 5 ? 'won' : 'lost';
 
   useEffect(() => { gRef.current = g; }, [g]);
+  useEffect(() => {
+    if (!kb) return undefined;
+    const vv = typeof window !== 'undefined' ? window.visualViewport : null;
+    if (!vv) return undefined;
+    let raf = 0;
+    const on = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(pinAsk); };
+    vv.addEventListener('resize', on);
+    return () => { cancelAnimationFrame(raf); vv.removeEventListener('resize', on); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kb]);
+  useEffect(() => {
+    if (!kb) return undefined;
+    const t = setTimeout(pinAsk, 60);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [g.guesses.length, kb]);
 
   useEffect(() => {
     if (RUN) return undefined;
@@ -388,7 +417,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
     if (!RUN || !hydrated || g.status === 'playing' || runDoneRef.current) return undefined;
     runDoneRef.current = true;
     const r2 = scoreGuesses(g.guesses, PRICE, PUZZLE.live);
-    const secs = g.t0 ? Math.max(1, Math.round(((g.tEnd || Date.now()) - g.t0) / 1000)) : 0;
+    const secs = g.t0 ? Math.max(1, Math.round(((g.lockT || g.tEnd || Date.now()) - g.t0) / 1000)) : 0;
     const t = setTimeout(() => { try { run.onDone && run.onDone({ key: KEY, score: r2.score, at: r2.at, bps: r2.bps, guesses: g.guesses.slice(), secs, practice: PRACTICE }); } catch (e) {} }, 1500);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -462,13 +491,20 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
     try { if (localStorage.getItem(REC_KEY)) return null; } catch (e) {}
     const el = Math.min(36000, Math.max(1, Math.round((Date.now() - (cur.t0 || Date.now())) / 1000)));
     try { localStorage.setItem(REC_KEY, '1'); } catch (e) {}
+    // A locked score is earned: leaving during the free guesses files it whole.
+    if (cur.lockG) {
+      const r3 = scoreGuesses(cur.guesses, PRICE, PUZZLE.live);
+      const el3 = Math.max(1, Math.round(((cur.lockT || Date.now()) - cur.t0) / 1000));
+      try { recordStat(STATS_KEY, PUZZLE.num, { s: r3.score, t: TOTAL, won: r3.score > 0, b: r3.bps }); } catch (e) {}
+      return { quizId: PUZZLE.quizId, score: r3.score, total: TOTAL, correct: r3.score, guessesUsed: cur.lockG, priceTiebreak: r3.bps == null ? undefined : r3.bps, timeElapsed: el3, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : ''), ...(RUN ? { circuit: 'pricecheck' } : {}) };
+    }
     return { quizId: PUZZLE.quizId, score: 0, total: TOTAL, correct: 0, guessesUsed: cur.guesses.length, timeElapsed: el, abandoned: true, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') };
   });
 
   function postResult(g2) {
     abandon.markFlushed();
     if (PRACTICE) return;
-    const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
+    const el = g2.t0 ? Math.max(1, Math.round(((g2.lockT || g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
     const r2 = scoreGuesses(g2.guesses, PRICE, PUZZLE.live);
     const bps = r2.bps;
     const sc = r2.score;
@@ -477,7 +513,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
     try {
       fetch('/api/quiz/result', {
         method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quizId: PUZZLE.quizId, score: sc, total: TOTAL, correct: sc, guessesUsed: g2.guesses.length, priceTiebreak: bps == null ? undefined : bps, timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : ''), ...(RUN ? { circuit: 'pricecheck' } : {}) }),
+        body: JSON.stringify({ quizId: PUZZLE.quizId, score: sc, total: TOTAL, correct: sc, guessesUsed: g2.lockG || g2.guesses.length, priceTiebreak: bps == null ? undefined : bps, timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : ''), ...(RUN ? { circuit: 'pricecheck' } : {}) }),
       }).catch(() => {});
     } catch (e) {}
   }
@@ -514,19 +550,56 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
     // Under v2 the day also ends once no later guess could raise the score
     // (a 6 on guess one cannot be beaten by guesses capped at 6 and 3).
     const now2 = scoreGuesses(guesses, PRICE, PUZZLE.live).score;
-    const locked = V2 && guesses.length < MAXG && now2 >= CAPS[guesses.length];
-    const done = e <= 0.01 || guesses.length >= MAXG || locked;
+    const lockNow = V2 && !cur.lockG && guesses.length < MAXG && now2 >= CAPS[guesses.length];
+    const lockFields = lockNow ? { lockG: guesses.length, lockT: Date.now() } : null;
+    const done = e <= 0.01 || guesses.length >= MAXG;
     if (done) {
-      const fin = { ...cur, guesses, status: 'done', tEnd: Date.now(), rule: V2 ? 2 : 1 };
-      if (locked && e > 0.01) say(`Locked in at ${now2}. No later guess can beat it.`);
+      const fin = { ...cur, ...lockFields, guesses, status: 'done', tEnd: Date.now(), rule: V2 ? 2 : 1 };
       vibrate(HAPT.win);
       postResult(fin);
       commit(fin);
       return;
     }
+    if (lockNow) say(`Locked in at ${now2}. Keep guessing to see how close you get; it cannot change the score.`);
     vibrate(HAPT.tick);
-    commit({ ...cur, guesses });
+    commit({ ...cur, ...lockFields, guesses });
     setTimeout(() => { try { inputRef.current && inputRef.current.focus({ preventScroll: true }); } catch (err) {} }, 30);
+  }
+
+  // A locked player can stop whenever they like.
+  function stopHere() {
+    const cur = gRef.current;
+    if (cur.status !== 'playing' || !cur.lockG) return;
+    const fin = { ...cur, status: 'done', tEnd: Date.now(), rule: 2 };
+    vibrate(HAPT.win);
+    postResult(fin);
+    commit(fin);
+  }
+
+  function pinAsk() {
+    try {
+      if (!window.matchMedia('(pointer: coarse)').matches) return;
+      const vv = window.visualViewport;
+      const ask = askRef.current;
+      if (!vv || !ask || document.activeElement !== inputRef.current) return;
+      const rows = rowsRef.current;
+      const first = rows && rows.firstElementChild;
+      const tgt = first && !first.classList.contains('empty') ? first : (ask.nextElementSibling || ask);
+      const top = vv.offsetTop, bot = vv.offsetTop + vv.height;
+      const a = ask.getBoundingClientRect(), t = tgt.getBoundingClientRect();
+      let d = t.bottom - (bot - 10);
+      d = Math.min(d, a.top - (top + 10));
+      if (Math.abs(d) > 3) window.scrollBy(0, d);
+    } catch (e) {}
+  }
+  function onAskFocus() {
+    if (kbBlurRef.current) { clearTimeout(kbBlurRef.current); kbBlurRef.current = null; }
+    setKb(true);
+    setTimeout(pinAsk, 320);
+  }
+  function onAskBlur() {
+    if (kbBlurRef.current) clearTimeout(kbBlurRef.current);
+    kbBlurRef.current = setTimeout(() => { if (document.activeElement !== inputRef.current) setKb(false); }, 300);
   }
 
   function shareUrl() { return withRef(`mindloftdaily.com${PATH}${isTodays ? '' : `?p=${PUZZLE.num}`}`); }
@@ -553,7 +626,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
           ? <><b>Three guesses.</b> After each one you get an arrow, <b>higher</b> or <b>lower</b>, and how hot you are: Freezing, Cold, Cool, Warm, Hot, Burning.</>
           : <><b>Five guesses.</b> After each one you get an arrow, <b>higher</b> or <b>lower</b>, and how hot you are: Freezing, Cold, Cool, Warm, Hot, Burning.</>,
         V2
-          ? <><b>Your first guess counts most.</b> It scores up to 10, the second up to 6, the third up to 3, and the item takes your best of the three. Within 1% is a <b>bullseye</b> and ends the day early; on the first guess it is worth the full 10.</>
+          ? <><b>Your first guess counts most.</b> It scores up to 10, the second up to 6, the third up to 3, and the item takes your best of the three. Within 1% is a <b>bullseye</b> and ends the day early; on the first guess it is worth the full 10. Once no later guess can beat your score it locks, and you can keep guessing for fun or stop.</>
           : <>Your score is your <b>closest guess</b>, 0 to 10. Within 1% is a <b>bullseye</b>: it scores 10 and ends the day early.</>,
         <>Close is measured as a ratio, so guessing <b>half the price is as far off as guessing double</b>. Within 5% scores 8, within 15% scores 6, within 50% scores 3.</>,
         <>The price is {CFG.basis}, read on the date shown with the item.</>,
@@ -575,7 +648,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
     if (!x) {
       return (
         <div key={i} className="pr-row empty">
-          <span className="n">{i + 1}</span><span className="g">{V2 ? <span className="worth">worth up to {CAPS[i]}</span> : '\u00a0'}</span><span /><span />
+          <span className="n">{i + 1}</span><span className="g">{V2 ? <span className="worth">{lockedAt ? 'for fun, score locked' : `worth up to ${CAPS[i]}`}</span> : '\u00a0'}</span><span /><span />
         </div>
       );
     }
@@ -626,6 +699,9 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
           .pr-money span{font-weight:900;font-size:22px;color:${FADED};}
           .pr-money input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:${INK};font:900 23px ${SANS};padding:14px 8px;font-variant-numeric:tabular-nums;}
           .pr-go{font:900 16px ${SANS};border:0;border-radius:12px;padding:0 26px;box-shadow:var(--pr-shadow);cursor:pointer;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #ffffff);}
+          .pr-stop{display:block;margin:2px 0 4px;font:800 13px ${SANS};background:transparent;border:1.5px solid var(--pr-panel-line);color:${INK};border-radius:999px;padding:6px 14px;cursor:pointer;}
+          .pr-kbpad{height:0;}
+          @media(pointer:coarse){.pr-kbpad{height:45vh;}}
           .pr-rows{margin-top:12px;display:flex;flex-direction:column;gap:8px;}
           .pr-row{display:grid;grid-template-columns:22px 1fr auto 104px;align-items:center;gap:10px;border:1.5px solid var(--pr-panel-line);border-left:5px solid var(--row-c, var(--pr-panel-line));border-radius:11px;padding:12px 14px;background:var(--pr-panel);box-shadow:var(--pr-shadow);}
           .pr-row.empty{background:transparent;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.4));box-shadow:none;}
@@ -666,10 +742,10 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
 
       {playing && started && (
         <>
-          <div className="pr-ask">
+          <div className="pr-ask" ref={askRef}>
             <label className="pr-money">
               <span>$</span>
-              <input ref={inputRef} type="text" inputMode="decimal" autoComplete="off" value={q}
+              <input ref={inputRef} type="text" inputMode="decimal" autoComplete="off" value={q} onFocus={onAskFocus} onBlur={onAskBlur}
                 onChange={(e) => {
                   const el = e.target; const raw = el.value;
                   const pos = el.selectionStart == null ? raw.length : el.selectionStart;
@@ -685,15 +761,18 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
                   if (e.key === 'Backspace' && a > 0 && el.value[a - 1] === ',') el.setSelectionRange(a - 1, a - 1);
                   else if (e.key === 'Delete' && el.value[a] === ',') el.setSelectionRange(a + 1, a + 1);
                 }}
-                placeholder={left === 1 ? (V2 ? 'Last guess, worth up to 3' : 'Last guess') : V2 ? `Guess ${tries.length + 1}, worth up to ${CAPS[tries.length]}` : 'Your guess'} aria-label="Your price guess in dollars" />
+                placeholder={lockedAt ? `Guess ${tries.length + 1}, just for fun` : left === 1 ? (V2 ? 'Last guess, worth up to 3' : 'Last guess') : V2 ? `Guess ${tries.length + 1}, worth up to ${CAPS[tries.length]}` : 'Your guess'} aria-label="Your price guess in dollars" />
             </label>
-            <button type="button" className="pr-go" onClick={guess}>Guess</button>
+            <button type="button" className="pr-go" onMouseDown={(e) => e.preventDefault()} onClick={guess}>Guess</button>
           </div>
           <div style={{ minHeight: 19, marginTop: 6, fontSize: 12.5, fontWeight: 700, color: FADED }}>
             {notice ? notice.msg
-              : tries.length ? (() => { const x = tries[tries.length - 1]; const b = bandOf(x.e); return <>{b.label}. Go <b style={{ color: INK }}>{x.up ? 'higher' : 'lower'}</b>. {left} guess{left === 1 ? '' : 'es'} left.</>; })()
+              : tries.length ? (() => { const x = tries[tries.length - 1]; const b = bandOf(x.e); return <>{b.label}. Go <b style={{ color: INK }}>{x.up ? 'higher' : 'lower'}</b>. {left} guess{left === 1 ? '' : 'es'} left{lockedAt ? <>, score locked at <b style={{ color: INK }}>{score}</b></> : null}.</>; })()
               : V2 ? <>Your first guess is worth up to 10. Press Enter to lock it in. 45k or 2.5m works.</> : <>Type a price and press Enter. Big numbers: 45k or 2.5m works.</>}
           </div>
+          {lockedAt > 0 && (
+            <button type="button" className="pr-stop" onMouseDown={(e) => e.preventDefault()} onClick={stopHere}>Stop here and keep {score}</button>
+          )}
         </>
       )}
 
@@ -701,7 +780,8 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
           row and older ones shift down, so the one you just made is always on
           screen. Unused slots stay below the guesses. Each row keeps its own
           guess number. */}
-      <div className="pr-rows">{[...tries.map((_, i) => tries.length - 1 - i), ...(playing ? Array.from({ length: Math.max(0, MAXG - tries.length) }, (_, j) => tries.length + j) : [])].map((i) => guessRow(i))}</div>
+      <div className="pr-rows" ref={rowsRef}>{[...tries.map((_, i) => tries.length - 1 - i), ...(playing ? Array.from({ length: Math.max(0, MAXG - tries.length) }, (_, j) => tries.length + j) : [])].map((i) => guessRow(i))}</div>
+      {kb && playing && <div className="pr-kbpad" aria-hidden="true" />}
 
       {!playing && (
         <div style={{ marginTop: 14, borderTop: `1px solid ${SURF_B}`, paddingTop: 14 }}>
