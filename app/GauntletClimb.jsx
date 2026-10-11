@@ -6,18 +6,18 @@
 // It sits BELOW the four answers, inside the board card, and never between the
 // cap and the question: the question and its answers come first.
 //
-//   The climb    a tower of five rows (one per round), bottom row first, perTier
+//   The climb    a tower of five rows (one per round), the warm-up on TOP, nearest
+//                the answers, so the grid builds DOWN (owner, 2026-10-10); perTier
 //                cells per row. Cell i is cleared (accent fill) when i < answered,
 //                the current question (tint + accent outline) when the run is
 //                live, the miss (red) when the run was lost there, else empty.
-//   Riding       what this question is worth: right takes the run to answered+1,
-//                wrong or out of time banks answered.
+//   (The riding-on-this-one box was cut, owner 2026-10-10: not necessary.)
 //   Lanes        the categories of the current round in order, the current one
 //                marked Now. Passed only when the round's questions carry
 //                distinct categories (Deep has none, so it shows no list). The
 //                rules already publish every lane, so naming them leaks nothing.
 //
-// frozen: the finished board shows the tower only, no riding panel, no lanes.
+// frozen: the finished board shows the tower only, no fine line, no lanes.
 // Stage tokens only. Phone (<=560px, the clients' breakpoint) is the compact
 // grid: 21px cells, no row labels, the current round named under it.
 
@@ -43,14 +43,6 @@ const CSS = `
 .gcl-c.miss{border:2px solid var(--stg-ink);background:var(--stg-bad);color:var(--stg-ground);}
 .gcl-under{display:none;font-size:10.5px;font-weight:700;color:var(--stg-ink2);}
 .gcl-side{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px;}
-.gcl-ride{background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:9px;}
-.gcl-pair{display:flex;gap:8px;}
-.gcl-opt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;border-radius:10px;padding:8px 10px;font-size:13px;font-weight:800;color:var(--stg-ink);}
-.gcl-opt.r{background:var(--stg-acc-tint);}
-.gcl-opt.w{border:1.5px solid var(--stg-line3);padding:7px 9px;}
-.gcl-opt i{font-style:normal;font-weight:700;text-transform:uppercase;letter-spacing:.09em;font-size:9.5px;color:var(--stg-mute);}
-.gcl-opt.r i{color:var(--stg-acc-ink);}
-.gcl-opt b{font-size:20px;font-variant-numeric:tabular-nums;}
 .gcl-fine{font-size:11.5px;font-weight:600;color:var(--stg-mute);line-height:1.4;}
 .gcl-fine.ph{display:none;}
 .gcl-lanes{display:flex;flex-direction:column;gap:5px;}
@@ -73,14 +65,7 @@ const CSS = `
   .gcl-c .e{display:none;}
   .gcl-under{display:block;}
   .gcl-side{gap:6px;}
-  .gcl-ride{background:none;border:0;padding:0;gap:6px;}
-  .gcl-ride > .gcl-cap{display:none;}
-  .gcl-pair{flex-direction:column;gap:6px;}
-  .gcl-opt{font-size:12.5px;padding:7px 10px;}
-  .gcl-opt.w{padding:6px 9px;}
-  .gcl-opt i{font-size:9px;}
-  .gcl-opt b{font-size:17px;}
-  .gcl-fine{font-size:11px;}
+              .gcl-fine{font-size:11px;}
   .gcl-fine.dt{display:none;}
   .gcl-fine.ph{display:block;}
   .gcl-lanes{display:none;}
@@ -110,7 +95,7 @@ export default function GauntletClimb({
   const laneNow = answered % perTier;
 
   const rows = [];
-  for (let t = rounds - 1; t >= 0; t--) {
+  for (let t = 0; t < rounds; t++) {
     const cells = [];
     for (let j = 0; j < perTier; j++) {
       const i = t * perTier + j;
@@ -159,15 +144,8 @@ export default function GauntletClimb({
 
       {!frozen && (
         <div className="gcl-side">
-          <div className="gcl-ride">
-            <span className="gcl-cap" style={{ fontSize: 10.5 }}>What is riding on this one</span>
-            <div className="gcl-pair">
-              <div className="gcl-opt r"><i>Right</i><span><b>{answered + 1}</b> {unit}</span></div>
-              <div className="gcl-opt w"><i>Wrong or out of time</i><span>Ends at <b>{answered}</b></span></div>
-            </div>
-            <span className="gcl-fine dt">{qSeconds} seconds a question and the clock never pauses. One wrong answer ends {endsWhat}; everything you clear is banked.</span>
-            <span className="gcl-fine ph">{qSeconds} seconds a question. Everything you clear is banked.</span>
-          </div>
+          <span className="gcl-fine dt">{qSeconds} seconds a question and the clock never pauses. One wrong answer ends {endsWhat}; everything you clear is banked.</span>
+          <span className="gcl-fine ph">{qSeconds} seconds a question. Everything you clear is banked.</span>
           {lanesOk && (
             <div className="gcl-lanes">
               <span className="gcl-cap" style={{ fontSize: 10.5 }}>{WORDS[perTier] || perTier} {laneWord}, same order every round</span>

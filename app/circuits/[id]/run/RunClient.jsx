@@ -1364,23 +1364,6 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   <>
                     <div className="rt-under">
                       {racePanel}
-                      {/* WHAT THIS ANSWER DECIDES, both ways, before it is given. */}
-                      <div className="rt-ride">
-                        <span className="rt-rcap">Riding on this one</span>
-                        <div className="rt-rl ok">
-                          <span className="rt-rk">Right</span>
-                          <span className="rt-rt"><b>{r.i + 1}</b> straight in {sec.name}</span>
-                        </div>
-                        <div className="rt-rl no">
-                          <span className="rt-rk">Wrong</span>
-                          <span className="rt-rt lg">
-                            {sec.name} ends at <b>{r.i}</b>{upNext ? `, ${upNext.name} is next` : ', and so does the run'}
-                          </span>
-                          <span className="rt-rt sm">
-                            Ends at <b>{r.i}</b>{upNext ? `, ${upNext.name} next` : ', run over'}
-                          </span>
-                        </div>
-                      </div>
                     </div>
                     <div className="rt-run">
                       <div className="rt-rhd">
@@ -2281,20 +2264,10 @@ ${TOWER_CSS}
 .mth .rn-k{position:absolute;left:12px;top:12px;width:28px;height:28px;font-size:13px;}
 .rt-fine{margin:8px 0 0;font-size:11.5px;font-weight:600;color:#8b95a8;}
 
-/* Under the answers: the race beside what this answer decides. */
+/* Under the answers: the race panel. */
 .rt-under{display:flex;gap:16px;align-items:stretch;margin-top:16px;padding-top:14px;
   border-top:1px solid rgba(255,255,255,.08);}
 .rt-under .rn-race{flex:1;min-width:0;margin-top:0;padding-top:0;border-top:0;}
-.rt-ride{width:220px;flex:none;box-sizing:border-box;background:#141b2b;border-radius:12px;padding:11px 13px;
-  display:flex;flex-direction:column;gap:8px;}
-.rt-rcap{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#8b95a8;}
-.rt-rl{display:flex;align-items:baseline;gap:8px;}
-.rt-rk{width:44px;flex:none;font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;}
-.rt-rl.ok .rt-rk{color:var(--acc);}
-.rt-rl.no .rt-rk{color:#f87171;}
-.rt-rt{font-size:13px;font-weight:800;line-height:1.35;color:#e8ecf4;}
-.rt-rt b{font-size:18px;font-variant-numeric:tabular-nums;}
-.rt-rt.sm{display:none;}
 
 /* The run row. */
 .rt-run{margin-top:18px;display:flex;flex-direction:column;gap:10px;}
@@ -2335,16 +2308,6 @@ ${TOWER_CSS}
   .mth .rn-c.num{padding:8px;font-size:40px;}
   .mth .rn-k{left:9px;top:9px;width:24px;height:24px;font-size:12px;}
   .rt-under{flex-direction:column;gap:11px;margin-top:14px;padding-top:11px;}
-  .rt-ride{order:-1;width:auto;flex-direction:row;flex-wrap:wrap;gap:6px;background:none;padding:0;}
-  .rt-rcap{display:none;}
-  .rt-rl{flex:1 1 0;min-width:0;flex-direction:column;gap:0;border-radius:9px;padding:6px 9px;}
-  .rt-rl.ok{background:color-mix(in srgb,var(--acc) 16%,#0b0f1a);}
-  .rt-rl.no{border:1.5px solid #616d88;padding:5px 8px;}
-  .rt-rk{width:auto;font-size:8.5px;}
-  .rt-rt{font-size:12px;}
-  .rt-rt b{font-size:16px;}
-  .rt-rt.lg{display:none;}
-  .rt-rt.sm{display:inline;}
   .rt-run{margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);gap:8px;}
   .rt-mth{margin-top:18px;padding-top:12px;gap:10px;}
   .rt-mclk{font-size:11px;}

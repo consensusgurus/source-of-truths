@@ -7,7 +7,8 @@
 // and owns none of it. No hooks at all, so nothing can ever sit after an early
 // return.
 //
-// A quiz of N questions is a tower of rows (one per tier, bottom row first),
+// A quiz of N questions is a tower of rows (one per tier, the FIRST tier on
+// top so the tower builds down, owner 2026-10-10),
 // `perTier` cells to a row: Deep 3, the 25-question banks 5, Streak 8. Cell i
 // is question i + 1.
 //   i < got                      cleared, filled in the bank's ramp colour
@@ -211,7 +212,7 @@ export function secondsLine(sections = [], unit = 'question') {
 export const TOWER_CSS = `
 .rt-row{display:flex;align-items:flex-end;justify-content:space-between;gap:6px;min-width:0}
 .rt-b{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:62px}
-.rt-t{display:flex;flex-direction:column-reverse;gap:2px}
+.rt-t{display:flex;flex-direction:column;gap:2px}
 .rt-r{display:flex;gap:2px}
 .rt-c{display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:8px;height:8px;
   border-radius:2px;border:1px solid #616d88;background:transparent}
