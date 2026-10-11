@@ -596,10 +596,12 @@ export default function HomeRails({
       .hr-dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.38);cursor:pointer;display:block;}
       .hr-dots i.on{background:var(--white);}
       .hr-sub{font-size:11px;color:var(--slate);padding:7px 13px;background:var(--surface);border-bottom:1px solid var(--border);flex:none;}
-      .hr-scroll{overflow-y:auto;scrollbar-width:thin;scrollbar-color:#d3d9e2 transparent;}
+      .hr-scroll{overflow-y:auto;scrollbar-width:thin;scrollbar-color:transparent transparent;}
+      .hr-scroll:hover{scrollbar-color:var(--stg-line,#d3d9e2) transparent;}
       .hr-scroll::-webkit-scrollbar{width:6px;}
       .hr-scroll::-webkit-scrollbar-track{background:transparent;}
-      .hr-scroll::-webkit-scrollbar-thumb{background:#dfe4ec;border-radius:3px;}
+      .hr-scroll::-webkit-scrollbar-thumb{background:transparent;border-radius:6px;}
+      .hr-scroll:hover::-webkit-scrollbar-thumb{background:var(--stg-line,#dfe4ec);}
       .hr-tbl{width:100%;border-collapse:collapse;}
       .hr-tbl td{padding:5px 13px;border-bottom:1px solid #f0f2f6;font-size:13px;}
       .hr-tbl tr:last-child td{border-bottom:none;}

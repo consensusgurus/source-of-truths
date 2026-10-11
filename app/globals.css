@@ -856,3 +856,18 @@ html.lc-pre:not(.lc-on) .stage-page:has(.stg-top):not(.stage-page .stage-page)::
     linear-gradient(var(--stg-line),var(--stg-line)) 0 calc(var(--lc-hh,62px) - 1px)/100% 1px no-repeat,
     linear-gradient(var(--stg-line),var(--stg-line)) 231px var(--lc-hh,62px)/1px 100% no-repeat,
     linear-gradient(var(--stg-line),var(--stg-line)) calc(100% - 330px) var(--lc-hh,62px)/1px 100% no-repeat;}
+
+/* QUIET SCROLLBARS (owner, 2026-10-11). Every scrolling pane inside a stage
+   page (Anon's passage and bank panes, typeahead lists, side panels) wears the
+   same scrollbar as the Layout C index (LayoutCInner .lc-nav): thin, invisible
+   at rest, a --stg-line thumb only while the pointer is over the pane, so a
+   pane blends into the board instead of showing a grey gutter. :where() keeps
+   the specificity at zero, so any component that styles or hides its own
+   scrollbar still wins. The page itself (html) is outside .stage-page and
+   keeps the browser's own bar. */
+:where(.stage-page) *{scrollbar-width:thin;scrollbar-color:transparent transparent;}
+:where(.stage-page) *:hover{scrollbar-color:var(--stg-line) transparent;}
+:where(.stage-page) *::-webkit-scrollbar{width:6px;height:6px;}
+:where(.stage-page) *::-webkit-scrollbar-track{background:transparent;}
+:where(.stage-page) *::-webkit-scrollbar-thumb{background:transparent;border-radius:6px;}
+:where(.stage-page) *:hover::-webkit-scrollbar-thumb{background:var(--stg-line);}

@@ -3433,8 +3433,12 @@ ${PATCH_CSS}
      fallback is a sane eleven rows for the frame before the measure lands. */
   .sty-trio .sty-sscroll{max-height:calc(var(--sty-lbh, 372px) - 24px);overflow-y:auto;
     overscroll-behavior:contain;}
-  .sty-trio .sty-sscroll::-webkit-scrollbar{width:9px;}
-  .sty-trio .sty-sscroll::-webkit-scrollbar-thumb{background:var(--stg-line2);border-radius:9px;}
+  /* Quiet scrollbar, same as the Layout C index (owner, 2026-10-11). */
+  .sty-trio .sty-sscroll{scrollbar-width:thin;scrollbar-color:transparent transparent;}
+  .sty-trio .sty-sscroll:hover{scrollbar-color:var(--stg-line) transparent;}
+  .sty-trio .sty-sscroll::-webkit-scrollbar{width:6px;}
+  .sty-trio .sty-sscroll::-webkit-scrollbar-thumb{background:transparent;border-radius:6px;}
+  .sty-trio .sty-sscroll:hover::-webkit-scrollbar-thumb{background:var(--stg-line);}
   .sty-trio .sty-sscroll::-webkit-scrollbar-track{background:transparent;}
   /* THE 900px CAP IS FOR A TABLE ALONE ON A PAGE. Paired, each table already
      has half the width and the cap left a ragged strip of ground down the right
