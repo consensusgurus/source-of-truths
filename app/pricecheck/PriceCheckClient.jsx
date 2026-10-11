@@ -506,6 +506,9 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
 // (priceField and the overall rows); nothing here is stored or scored.
 const CARD_COL = [['#1e1e23', '#e9cf7f'], ['#e6b532', '#2a1f04'], ['#2f6fe4', '#ffffff'], ['#4b5a6e', '#e7edf4'], ['#fbfaf6', '#22252b']];
 const offLabel = (bps) => (typeof bps === 'number' ? pctLabel(bps / 10000) : '');
+// The short form for a table cell: a percentage that never runs past four
+// characters, so a wild first guess cannot widen the row.
+const offShort = (bps) => { if (typeof bps !== 'number') return ''; const p = bps / 100; if (p < 0.1) return 'dead on'; if (p >= 999.5) return '999%+ off'; return `${p < 10 ? Math.round(p * 10) / 10 : Math.round(p)}% off`; };
 // Which guess earned a leader's score, read off the score and the first
 // guess's error: the first guess earned it if it alone scores that much, a
 // score over 3 can only be the second guess, and the rest is the last guess.
@@ -547,7 +550,7 @@ function FieldPanel({ sections, counted, total, max, board, ranks }) {
     return (
       <div className={`fp-cell g${g + 1}${p.score === 10 ? ' ten' : ''}`}>
         <b>{p.score}</b>
-        {typeof p.bps === 'number' && <span>{offLabel(p.bps)}</span>}
+        {typeof p.bps === 'number' && <span>{offShort(p.bps)}</span>}
         <span className="gp">{[0, 1, 2].map((k) => <i key={k} className={k === g ? 'h' : k < (p.guessesUsed || 0) ? 'u' : ''} />)}</span>
       </div>
     );
@@ -588,6 +591,20 @@ function FieldPanel({ sections, counted, total, max, board, ranks }) {
                 })}
               </tbody>
             </table>
+          </div>
+          <div className="fp-ml" aria-hidden="true">
+            {leaders.map((L, i) => {
+              const ti = runTierOf(scale(L.total || 0), ranks);
+              const mine = data.me && data.me.userKey && data.me.userKey === L.userKey;
+              return (
+                <div key={L.userKey || i} className={`fp-mr${mine ? ' me' : ''}`} style={{ animationDelay: `${i * 0.08}s` }}>
+                  <div className="fp-mh"><b>{L.rank || i + 1}</b><span className="cc" style={{ background: CARD_COL[ti][0] }} /><span className="fp-mn">{L.username}</span><span className="fp-mt">{Math.round(L.total || 0)}</span></div>
+                  <div className="fp-mg">
+                    {sections.map((s) => <div key={s.key} className="fp-mc" style={{ '--c': `var(--pc-${s.key})` }}>{cell(L.perGame && L.perGame[s.key])}</div>)}
+                  </div>
+                </div>
+              );
+            })}
           </div>
           <div className="fp-key"><span><i className="g1" />earned on guess 1</span><span><i className="g2" />guess 2</span><span><i className="g3" />guess 3</span><span>The figure under a score is how far off the first guess was.</span></div>
         </>
@@ -672,7 +689,31 @@ const CSS = `
 .fp-sh .f b{color:var(--pc-ink);font-variant-numeric:tabular-nums}
 .fp-sh.tough{box-shadow:0 0 0 1.5px var(--pc-bad) inset}
 .fp-sh .tg{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--pc-bad);margin-top:6px}
-@media(prefers-reduced-motion:reduce){.fp-bar span,.fp-t tr{animation:none}}
+@media(prefers-reduced-motion:reduce){.fp-bar span,.fp-t tr,.fp-mr{animation:none}}
+.fp-ml{display:none}
+@media(max-width:620px){
+.fp{padding-left:12px;padding-right:12px}
+.fp-lb{display:none}
+.fp-ml{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.fp-mr{background:var(--pc-surf);border:1px solid var(--pc-line);border-radius:12px;padding:8px 10px;animation:fprin .4s ease both}
+.fp-mr.me{background:rgba(125,211,252,.09);border-color:rgba(125,211,252,.5)}
+.fp-mh{display:flex;align-items:center;gap:8px;min-width:0}
+.fp-mh b{font-weight:800;color:var(--pc-mute);font-variant-numeric:tabular-nums;min-width:14px}
+.fp-mh .cc{flex:none;width:20px;height:13px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
+.fp-mn{flex:1;min-width:0;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fp-mt{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
+.fp-mg{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin-top:6px}
+.fp-mc{border-top:2px solid var(--c);padding-top:4px;min-width:0}
+.fp-mc .fp-cell b{font-size:15px}
+.fp-mc .fp-cell span{font-size:9px}
+.fp-key span:last-child{flex-basis:100%}
+}
+@media(max-width:720px){
+.cf-stage.settled .cf-cw{animation:cfshrink .7s 1.6s cubic-bezier(.4,0,.2,1) both}
+@keyframes cfshrink{from{width:min(340px,92%)}to{width:min(190px,52%)}}
+.cf-stage.settled .cf-cardcol{padding-top:6px}
+}
+@media(max-width:720px) and (prefers-reduced-motion:reduce){.cf-stage.settled .cf-cw{animation:none;width:min(190px,52%)}}
 
 .pc .eb{font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--pc-mute)}
 .pc-cap{display:flex;align-items:center;gap:12px;max-width:760px;margin:0 auto;padding:12px 16px;font-size:13px}
