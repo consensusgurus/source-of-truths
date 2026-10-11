@@ -235,20 +235,22 @@ export default function LayoutCInner({ gameKey }) {
     // the puzzle number), which throws away the .stage-page the panels were
     // portalled into. Watch for that and re-attach to the new one, or the
     // index, the right panel and the subheader vanish on every archive play.
+    // A timer, never requestAnimationFrame: rAF does not run in a background
+    // tab, so a page opened behind another would never re-attach.
     let raf = 0;
     const mo = typeof MutationObserver !== 'undefined' ? new MutationObserver(() => {
       if (raf) return;
-      raf = requestAnimationFrame(() => {
+      raf = setTimeout(() => {
         raf = 0;
         const cur = Array.from(document.querySelectorAll('.stage-page')).find((n) => n.querySelector('.stg-top')) || null;
         const fg = cur ? cur.querySelector('.stg-fg') : null;
         if (cur !== el || (el && !el.isConnected) || (cur && fg !== fgNow)) attach();
-      });
+      }, 30);
     }) : null;
     if (mo) mo.observe(document.body, { childList: true, subtree: true });
     return () => {
       clearTimeout(late);
-      if (raf) cancelAnimationFrame(raf);
+      if (raf) clearTimeout(raf);
       if (mo) mo.disconnect();
       window.removeEventListener('resize', attach);
       document.documentElement.classList.remove('lc-on', 'lc-focus');
