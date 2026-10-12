@@ -20,7 +20,7 @@
 // THE PREGAME is the dojo's entrance: two paper doors that ARE the Start
 // button, and three hanging scrolls naming the day's forms. The doors slide
 // apart before the first grid. THE ENDING is a grading: the sheet scores form
-// by form while the belt on the left is dyed up the ladder colour by colour,
+// by form while the belt on the left is dyed up the ladder color by color,
 // then the examiner's seal comes down and the belt is tied. The ending starts
 // on its own after the last grid, as Judged's and Price Check's do.
 
@@ -78,7 +78,7 @@ function bankedOf(sec) {
 }
 
 // A belt drawn in CSS: the band, the knot, two tails, and the rank tab on the
-// right tail (gold bars on black, a darker tab on every other colour).
+// right tail (gold bars on black, a darker tab on every other color).
 function Belt({ ti, tied = true, dye = false, small = false }) {
   const t = B[ti];
   return (
@@ -342,7 +342,7 @@ function NextBelt({ total, ti }) {
 
 // ─── THE GRADING ────────────────────────────────────────────────────────────
 // The sheet scores form by form and the total counts up; the belt on the left
-// starts white and is dyed the next colour up each time the running total
+// starts white and is dyed the next color up each time the running total
 // crosses a cutoff. Then the examiner's seal comes down and the belt is tied.
 function Grading({ sections, counted, parts, total, dateLabel, animate, board, onShare, copied, onSettled }) {
   const n = sections.length;
@@ -636,7 +636,7 @@ const CSS = `
 .sh-tot b small{font-size:14px;color:#7a7360}
 .sh-tot b.clk{font-size:22px}
 .sh-tot .r{text-align:right}
-.sh-seal{position:absolute;right:18px;top:40px;width:104px;height:104px;border:5px solid var(--dj-seal);border-radius:12px;color:var(--dj-seal);display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-10deg);mix-blend-mode:multiply;animation:djseal .45s cubic-bezier(.2,1.6,.4,1) both;background:rgba(180,35,42,.06)}
+.sh-seal{position:absolute;left:50%;bottom:8px;margin-left:-46px;width:92px;height:92px;border:5px solid var(--dj-seal);border-radius:12px;color:var(--dj-seal);display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-10deg);mix-blend-mode:multiply;animation:djseal .45s cubic-bezier(.2,1.6,.4,1) both;background:rgba(180,35,42,.06)}
 .sh-seal span{font:900 15px ${SANS};letter-spacing:.12em;text-transform:uppercase}
 .sh-seal small{font:800 10px ${MONO};letter-spacing:.16em;margin-top:4px}
 .sh-seal.set{animation:none;opacity:.85}
@@ -667,7 +667,7 @@ const CSS = `
 .ms{width:100%;max-width:420px}
 .gr-right{min-height:0;width:100%}
 .gr-btns a,.gr-btns button{flex:1 1 40%;text-align:center;padding:12px 10px}
-.sh-seal{width:84px;height:84px;top:44px;right:12px}
+.sh-seal{width:76px;height:76px;margin-left:-38px;bottom:10px}
 }
 @media(max-width:600px){.wall{gap:8px;padding:18px 8px 14px}.sc-body{padding:10px 5px;min-height:140px}.sc-n{font-size:17px}.sc-c{display:none}.sc-f{font-size:9.5px}.sc-k{font-size:8px;letter-spacing:.08em}.sc-bkx{display:none}.title{font-size:44px}.lede{font-size:14px}.pre-row .sub2{font-size:11.5px;max-width:200px}.facts{gap:5px}.fact{padding:7px}.fact b{font-size:16px}.fact span{font-size:9.5px}.dj-sechd b{font-size:16px}.door-frame{height:110px}.bt{width:240px}}
 @media(prefers-reduced-motion:reduce){.dj *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition:none !important}}
