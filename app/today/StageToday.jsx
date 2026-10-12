@@ -1921,7 +1921,7 @@ export default function StageToday() {
         {ixRing(id, prog)}
         <span>{label}</span>
         {ixCount(prog)}
-        <em className="sty-ixbk" aria-hidden="true">Back to categories</em>
+        <em className="sty-ixbk" aria-hidden="true">Back</em>
       </button>
     );
   };
@@ -1929,6 +1929,11 @@ export default function StageToday() {
   const ixNav = (
     <nav className={'sty-ixn' + (reorder ? ' re' : '') + (picked ? ' pk' : '')} aria-label="Sections">
       {ixBtn(ALL_ID, 'All Puzzles', 'var(--stg-ink)')}
+      {/* ON A PHONE THE SORT RIDES IN THE OPEN BAR (owner, 2026-10-12): the bar
+          has the width once "Back to categories" became "Back". It is a sibling
+          of the bar's button, not inside it (no button in a button), and the
+          CSS lays both into the same grid row. */}
+      {picked && (paneOn === ALL_ID || cats.some((c) => c.cat === paneOn)) ? sortCtl(true) : null}
       {ixBtn(MINE_ID, 'My Puzzles', 'var(--stg-acc)')}
       <span className="sty-ixsep" aria-hidden="true" />
       {orderedCats.map(({ cat }, ci) => (reorder ? (
@@ -2337,7 +2342,6 @@ export default function StageToday() {
           {sortCtl(false)}
         </div>
         {circPills(cat, true)}
-        {sortCtl(true)}
         <div className={'sty-games' + (fit ? ' fit' : '')} style={fitStyle}>
           {sortGames(games).map((g, i) => (
             <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
@@ -2637,7 +2641,6 @@ export default function StageToday() {
             {sortCtl(false)}
           </div>
           {circPills(null, true)}
-          {sortCtl(true)}
           <div className="sty-games">
             {playedLast(sortGames(alpha), done).map((g, i) => (
               // ALL GAMES MIXES CATEGORIES exactly as My games does, so each
@@ -4462,7 +4465,9 @@ ${PATCH_CSS}
 .sty-sortm{display:none;}
 @media (max-width:900px){
   .sty-sort:not(.sty-sortm){display:none;}
-  .sty-sortm{display:inline-flex;margin:0 0 10px auto;width:max-content;}
+  .sty-ix.mpk > .sty-ixn.pk:not(.re) > .sty-ixb.on{grid-row:1;}
+  .sty-ix.mpk > .sty-ixn.pk:not(.re) > .sty-sortm{display:inline-flex;grid-row:1;grid-column:1 / -1;order:-2;
+    justify-self:end;align-self:center;margin:0 58px 0 0;position:relative;z-index:1;background:var(--stg-chip);}
 }
 @media (max-width:900px){
   .sty-cpills{display:none;}
