@@ -332,6 +332,28 @@ function PayCard({ ti, n, max, dateShort, squash, shine, ranks }) {
   );
 }
 
+// NEXT SHELF, one line (owner, 2026-10-12, layout A): the countdown to the
+// next Eastern midnight, read in an effect so server and client agree.
+function msToEtMidnight() {
+  try {
+    const p = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: 'numeric', second: 'numeric', hourCycle: 'h23' }).formatToParts(new Date());
+    const g = (k) => Number((p.find((x) => x.type === k) || {}).value || 0);
+    return Math.max(0, ((24 - g('hour')) * 3600 - g('minute') * 60 - g('second')) * 1000);
+  } catch (e) { return null; }
+}
+function ShelfIn() {
+  const [ms, setMs] = useState(null);
+  useEffect(() => {
+    const tick = () => setMs(msToEtMidnight());
+    tick();
+    const id = setInterval(tick, 20000);
+    return () => clearInterval(id);
+  }, []);
+  if (ms == null) return null;
+  const m = Math.floor(ms / 60000), h = Math.floor(m / 60);
+  return <span className="cf-shelf">Next shelf in <b>{String(h).padStart(2, '0')}h {String(m % 60).padStart(2, '0')}m</b></span>;
+}
+
 function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, onOver, board, onShare, copied, onItems, ranks, v2 }) {
   const RUN_RANKS = ranks;
   const pts = sections.map((s, i) => (counted[i] ? counted[i].score : 0));
@@ -462,37 +484,45 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
                 <div className="cf-you">Your card today</div>
                 <h1 className="cf-nm">{t[1]}</h1>
                 <p className="cf-ln">{t[2]}</p>
-                <div className="cf-stats">
-                  <div><b>{total}/{max}</b><span>Run total</span></div>
-                  {me && me.rank ? <div><b>#{me.rank}</b><span>{field ? `of ${Number(field).toLocaleString()} today` : 'today'}</span></div> : null}
+                {/* LAYOUT A (owner, 2026-10-12): the three stat tiles are one line,
+                    the upgrade and the next drop are one row of pills, and the five
+                    game tiles moved into the scoreboard below as the player's own row. */}
+                <div className="cf-sl">
+                  <span><b>{total}</b> of {max}</span>
+                  {me && me.rank ? <span><b>#{me.rank}</b> {field ? `of ${Number(field).toLocaleString()} today` : 'today'}</span> : null}
                   {v2
-                    ? <div><b>{counted.filter((c) => c && c.at === 0).length} of {sections.length}</b><span>First-guess scores</span></div>
-                    : <div><b>{t[3]}</b><span>Card</span></div>}
+                    ? <span><b>{counted.filter((c) => c && c.at === 0).length}</b> of {sections.length} first-guess scores</span>
+                    : <span><b>{t[3]}</b> card</span>}
                 </div>
-                {/* NEXT DROP (owner, 2026-10-06): when tomorrow's shelf opens. */}
-                <NextDrop label="Next Price Check" sub="New items on the shelf at midnight Eastern." href="/pricecheck"
-                  accent="var(--pc-hi)" ink="var(--pc-ink)" mute="var(--pc-mute)" style={{ margin: '0 0 12px', maxWidth: 390 }} />
-                <div className="cf-games">
-                  {sections.map((s, i) => <div key={s.key} className={flat ? '' : i === hi ? 'hi' : i === lo ? 'lo' : ''}><i>{s.name}</i><b>{pts[i]}</b></div>)}
+                <div className="cf-pills">
+                  {fti > 0
+                    ? <span className="cf-next"><b>{Math.max(1, Math.ceil(RUN_RANKS[fti - 1][0] * max / 50) - total)} more</b> and you upgrade to {RUN_RANKS[fti - 1][3]}</span>
+                    : <span className="cf-next">Top of the ladder. <b>Black card.</b></span>}
+                  <ShelfIn />
                 </div>
-                {fti > 0
-                  ? <div className="cf-next"><b>{Math.max(1, Math.ceil(RUN_RANKS[fti - 1][0] * max / 50) - total)} more</b> and you upgrade to {RUN_RANKS[fti - 1][3]}.</div>
-                  : <div className="cf-next">Top of the ladder. <b>Black card.</b></div>}
+                {!v2 && (
+                  <div className="cf-games">
+                    {sections.map((s, i) => <div key={s.key} className={flat ? '' : i === hi ? 'hi' : i === lo ? 'lo' : ''}><i>{s.name}</i><b>{pts[i]}</b></div>)}
+                  </div>
+                )}
                 <RunChallengeLine gameKey="pricecheck" score={total} n={runToken()} />
                 <div className="pf-btns">
                   <RunChallengeButton gameKey="pricecheck" score={total} total={max} n={runToken()} status={`${t[3]} card`} />
-                  <button type="button" className="pri" onClick={onShare}>{copied ? 'Copied' : 'Share your card'}</button>
                   <button type="button" onClick={onItems}>See the items</button>
-                  <a href="/pricecheck/leaderboard">Leaderboard</a>
-                  <a href="/">Back to main</a>
+                  <button type="button" className="pri" onClick={onShare}>{copied ? 'Copied' : 'Share card'}</button>
                 </div>
-                <MoreRunsList self="pricecheck" />
               </>
             )}
           </div>
         </div>
       </div>
       {settled && v2 && <FieldPanel sections={sections} counted={counted} total={total} max={max} board={board} ranks={RUN_RANKS} />}
+      {settled && (
+        <div className="pf-foot">
+          <MoreRunsList self="pricecheck" />
+          <div className="pf-links"><a href="/pricecheck/leaderboard">Leaderboard</a><a href="/">Back to main</a></div>
+        </div>
+      )}
     </section>
   );
 }
@@ -539,14 +569,35 @@ function FieldPanel({ sections, counted, total, max, board, ranks }) {
     pos = ((before + Math.max(counts[myTi], 0.0001) * Math.min(1, Math.max(0, frac))) / sum) * 100;
     pos = Math.min(97, Math.max(3, pos));
   }
-  const leaders = (data.overall || []).slice(0, 5);
+  const leaders = (data.overall || []).slice(0, 5).map((L, i) => ({ ...L, _rk: L.rank || i + 1 }));
+  // THE PLAYER'S OWN ROW (owner, 2026-10-12, layout A): the five game tiles
+  // that sat beside the card are this row now. A player in the top five is
+  // highlighted where they stand; anyone else is pinned above the leaders,
+  // built from their own counted plays so a guest gets a row too.
+  const myKey = data.me && data.me.userKey;
+  const inTop = !!myKey && leaders.some((L) => L.userKey === myKey);
+  const minePer = {};
+  sections.forEach((s, i) => {
+    const c = counted[i];
+    if (!c) { minePer[s.key] = null; return; }
+    const first = typeof c.first === 'number' ? c.first : (Array.isArray(c.guesses) ? c.guesses[0] : null);
+    minePer[s.key] = {
+      score: c.score,
+      at: typeof c.at === 'number' ? c.at : undefined,
+      bps: typeof first === 'number' ? Math.round(errOf(first, s.day.price) * 10000) : undefined,
+      guessesUsed: Array.isArray(c.guesses) ? c.guesses.length : (typeof c.guesses === 'number' ? c.guesses : undefined),
+    };
+  });
+  const mineRow = { userKey: myKey || '__me', _rk: (data.me && data.me.rank) || '-', username: (data.me && data.me.username) || 'You', total, perGame: minePer, _mine: true };
+  const rows = inTop ? leaders : [mineRow, ...leaders];
+  const isMine = (L) => L._mine || (!!myKey && L.userKey === myKey);
   const per = (pf && pf.games) || {};
   const avgs = sections.map((s) => (per[s.key] && per[s.key].plays ? per[s.key].avg : null));
   let tough = -1;
   avgs.forEach((a, i) => { if (a != null && (tough < 0 || a < avgs[tough])) tough = i; });
   const cell = (p) => {
     if (!p) return <div className="fp-cell"><b>-</b></div>;
-    const g = earnedAt(p);
+    const g = typeof p.at === 'number' && p.at >= 0 ? p.at : earnedAt(p);
     return (
       <div className={`fp-cell g${g + 1}${p.score === 10 ? ' ten' : ''}`}>
         <b>{p.score}</b>
@@ -557,33 +608,20 @@ function FieldPanel({ sections, counted, total, max, board, ranks }) {
   };
   return (
     <div className="fp">
-      <div className="fp-bh"><h3>Where the field paid</h3><span>{sum ? `${sum.toLocaleString()} ${sum === 1 ? 'run' : 'runs'} today` : 'No finished runs yet'}</span></div>
-      {sum > 0 && (
-        <div className="fp-dist">
-          <div className="fp-bar">
-            {ORD.map((i, k) => {
-              const w = counts[i] / sum * 100;
-              return <span key={i} style={{ width: `${w}%`, background: CARD_COL[i][0], color: CARD_COL[i][1], animationDelay: `${k * 0.08}s` }} title={`${ranks[i][3]}: ${counts[i]}`}>{w > 10 ? ranks[i][3] : ''}</span>;
-            })}
-          </div>
-          {pos != null && <div className="fp-mark"><i style={{ left: `${pos}%` }}>You · {ranks[myTi][3]}</i></div>}
-          <div className="fp-leg">{ORD.map((i) => <span key={i}>{ranks[i][3]} <b>{counts[i].toLocaleString()}</b></span>)}</div>
-        </div>
-      )}
-      {leaders.length > 0 && (
+      {rows.length > 0 && (
         <>
-          <div className="fp-bh"><h3>How the leaders did</h3><a href="/pricecheck/leaderboard">Full leaderboard</a></div>
+          <div className="fp-bh"><h3>Today&rsquo;s scoreboard</h3><a href="/pricecheck/leaderboard">Full leaderboard</a></div>
           <div className="fp-lb">
             <table className="fp-t" aria-label="Today's leaders, game by game">
               <thead><tr><th>#</th><th>Player</th>{sections.map((s) => <th key={s.key}><i style={{ background: `var(--pc-${s.key})` }} />{s.name}</th>)}<th>Total</th></tr></thead>
               <tbody>
-                {leaders.map((L, i) => {
+                {rows.map((L, i) => {
                   const ti = runTierOf(scale(L.total || 0), ranks);
-                  const mine = data.me && data.me.userKey && data.me.userKey === L.userKey;
+                  const mine = isMine(L);
                   return (
                     <tr key={L.userKey || i} className={mine ? 'me' : ''} style={{ animationDelay: `${i * 0.1}s` }}>
-                      <td>{L.rank || i + 1}</td>
-                      <td className="fp-nm"><span className="cc" style={{ background: CARD_COL[ti][0] }} />{L.username}</td>
+                      <td>{L._rk}</td>
+                      <td className="fp-nm"><span className="cc" style={{ background: CARD_COL[ti][0] }} />{L.username}{mine && L.username !== 'You' && <em className="fp-you">You</em>}</td>
                       {sections.map((s) => <td key={s.key}>{cell(L.perGame && L.perGame[s.key])}</td>)}
                       <td className="fp-tot">{Math.round(L.total || 0)}</td>
                     </tr>
@@ -593,12 +631,12 @@ function FieldPanel({ sections, counted, total, max, board, ranks }) {
             </table>
           </div>
           <div className="fp-ml" aria-hidden="true">
-            {leaders.map((L, i) => {
+            {rows.map((L, i) => {
               const ti = runTierOf(scale(L.total || 0), ranks);
-              const mine = data.me && data.me.userKey && data.me.userKey === L.userKey;
+              const mine = isMine(L);
               return (
                 <div key={L.userKey || i} className={`fp-mr${mine ? ' me' : ''}`} style={{ animationDelay: `${i * 0.08}s` }}>
-                  <div className="fp-mh"><b>{L.rank || i + 1}</b><span className="cc" style={{ background: CARD_COL[ti][0] }} /><span className="fp-mn">{L.username}</span><span className="fp-mt">{Math.round(L.total || 0)}</span></div>
+                  <div className="fp-mh"><b>{L._rk}</b><span className="cc" style={{ background: CARD_COL[ti][0] }} /><span className="fp-mn">{L.username}{mine && L.username !== 'You' && <em className="fp-you">You</em>}</span><span className="fp-mt">{Math.round(L.total || 0)}</span></div>
                   <div className="fp-mg">
                     {sections.map((s) => <div key={s.key} className="fp-mc" style={{ '--c': `var(--pc-${s.key})` }}>{cell(L.perGame && L.perGame[s.key])}</div>)}
                   </div>
@@ -609,6 +647,21 @@ function FieldPanel({ sections, counted, total, max, board, ranks }) {
           <div className="fp-key"><span><i className="g1" />earned on guess 1</span><span><i className="g2" />guess 2</span><span><i className="g3" />guess 3</span><span>The figure under a score is how far off the first guess was.</span></div>
         </>
       )}
+      <div className="fp-paid">
+      <div className="fp-bh"><h3>Where the field paid</h3><span>{sum ? `${sum.toLocaleString()} ${sum === 1 ? 'run' : 'runs'} today` : 'No finished runs yet'}</span></div>
+      {sum > 0 && (
+        <div className="fp-dist">
+          <div className="fp-bar">
+            {ORD.map((i, k) => {
+              const w = counts[i] / sum * 100;
+              return <span key={i} style={{ width: `${w}%`, background: CARD_COL[i][0], color: CARD_COL[i][1], animationDelay: `${k * 0.08}s` }} title={`${ranks[i][3]}: ${counts[i]}`}>{''}</span>;
+            })}
+          </div>
+          {pos != null && <div className="fp-mark"><i style={{ left: `${pos}%` }}>You · {ranks[myTi][3]}</i></div>}
+          <div className="fp-leg">{ORD.map((i) => <span key={i}>{ranks[i][3]} <b>{counts[i].toLocaleString()}</b></span>)}</div>
+        </div>
+      )}
+      </div>
       <div className="fp-bh"><h3>Today&rsquo;s shelf</h3><span>field average and the best first guess</span></div>
       <div className="fp-shelf">
         {sections.map((s, i) => {
@@ -664,6 +717,10 @@ const CSS = `
 .fp-t tr{animation:fprin .4s ease both}
 @keyframes fprin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .fp-t tr.me td{background:rgba(125,211,252,.09);border-color:rgba(125,211,252,.5)}
+.fp-you{font-style:normal;font-size:9.5px;font-weight:800;letter-spacing:.12em;color:var(--pc-hi);margin-left:8px;vertical-align:1px}
+.fp-paid{margin-top:16px;padding-top:4px;border-top:1px solid var(--pc-line)}
+.fp-paid .fp-bh h3{font-size:14px}
+.fp-paid .fp-bar{height:14px;border-radius:7px}
 .fp-nm{text-align:left!important;font-weight:800;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis}
 .fp-nm .cc{display:inline-block;width:22px;height:14px;border-radius:3px;margin-right:8px;vertical-align:-2px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
 .fp-cell{display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.1}
@@ -710,10 +767,10 @@ const CSS = `
 }
 @media(max-width:720px){
 .cf-stage.settled .cf-cw{animation:cfshrink .7s 1.6s cubic-bezier(.4,0,.2,1) both}
-@keyframes cfshrink{from{width:min(340px,92%)}to{width:min(190px,52%)}}
+@keyframes cfshrink{from{width:min(340px,92%)}to{width:min(150px,42%)}}
 .cf-stage.settled .cf-cardcol{padding-top:6px}
 }
-@media(max-width:720px) and (prefers-reduced-motion:reduce){.cf-stage.settled .cf-cw{animation:none;width:min(190px,52%)}}
+@media(max-width:720px) and (prefers-reduced-motion:reduce){.cf-stage.settled .cf-cw{animation:none;width:min(150px,42%)}}
 
 .pc .eb{font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--pc-mute)}
 .pc-cap{display:flex;align-items:center;gap:12px;max-width:760px;margin:0 auto;padding:12px 16px;font-size:13px}
@@ -861,6 +918,28 @@ const CSS = `
 [data-stage-theme="light"] .cf-games .lo b{color:#b91c1c}
 .cf-next{display:inline-block;margin-top:12px;font-size:13px;font-weight:700;padding:9px 12px;border-radius:10px;background:var(--pc-surf);border:1px solid var(--pc-line)}
 .cf-next b{color:var(--pc-hi)}
+/* LAYOUT A (owner, 2026-10-12): settled, the card drops to a small badge
+   beside the result, and everything below it reads as one scoreboard. */
+@media(min-width:721px){
+.cf-stage.settled{grid-template-columns:240px minmax(0,1fr);gap:30px;min-height:0;align-items:center;margin-top:16px}
+.cf-stage.settled .cf-cardcol{min-height:0}
+.cf-stage.settled .cf-cw{width:240px}
+.cf-stage.settled .cf-right{min-height:0}
+.cf-stage.settled .cf-term{position:absolute;left:0;right:0;top:0;margin:0 auto}
+}
+.cf-stage.settled .cf-nm{font-size:clamp(30px,4vw,40px);margin:6px 0 6px}
+.cf-stage.settled .cf-ln{font-size:14.5px;margin:0 0 10px;color:var(--pc-mute)}
+.cf-sl{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:14px;font-weight:700;color:var(--pc-mute);margin-bottom:10px}
+.cf-sl b{font-size:18px;font-weight:800;color:var(--pc-ink);font-variant-numeric:tabular-nums}
+.cf-pills{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.cf-pills .cf-next{margin-top:0;border-radius:999px;padding:6px 12px}
+.cf-shelf{font-size:13px;font-weight:700;color:var(--pc-mute)}
+.cf-shelf b{color:var(--pc-ink);font-variant-numeric:tabular-nums}
+.pf-foot{max-width:820px;margin:22px auto 0;padding:0 16px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px}
+.pf-foot > :first-child{flex:1 1 360px;min-width:0}
+.pf-links{display:flex;gap:16px}
+.pf-links a{font-size:13px;font-weight:800;color:var(--pc-mute);text-decoration:none}
+.pf-links a:hover{color:var(--pc-ink)}
 .pf-btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
 .pf-btns a,.pf-btns button{font:800 14px ${SANS};padding:12px 18px;border-radius:12px;text-decoration:none;color:var(--pc-ink);border:1px solid var(--pc-line);background:transparent;cursor:pointer}
 .pf-btns .pri{background:var(--pc-cta);color:var(--pc-cta-ink);border-color:transparent}
