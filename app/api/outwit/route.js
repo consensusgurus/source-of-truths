@@ -86,10 +86,13 @@ function reveal(pr, ctx, you, poolSize) {
     if (pr.type === 'herd' && pr.truth != null) { out.truth = pr.truth; out.truthNote = pr.truthNote || null; }
     return out;
   }
-  if (ctx.kind === 'choice') return { ...base, options: pr.options, counts: ctx.counts, winner: ctx.winner };
+  // Choice-style reveals print the leave-one-out view the points were scored on.
+  const v = ctx.viewFor ? ctx.viewFor(you) : null;
+  const view = v ? { counts: v.counts, winSet: v.winIdx == null ? [] : [v.winIdx], tied: v.tied, looCounts: true } : { counts: ctx.counts };
+  if (ctx.kind === 'choice') return { ...base, options: pr.options, ...view, winner: v && v.winIdx != null ? v.winIdx : ctx.winner };
   // unique: themed (winner is an option index) or legacy numeric (winner is a number)
-  if (ctx.options) return { ...base, options: ctx.options, counts: ctx.counts, winner: ctx.winner };
-  return { ...base, min: pr.min, max: pr.max, counts: ctx.counts, winner: ctx.winner };
+  if (ctx.options) return { ...base, options: ctx.options, ...view, winner: v && v.winIdx != null ? v.winIdx : ctx.winner };
+  return { ...base, min: pr.min, max: pr.max, ...view, winner: v && v.winner != null ? v.winner : ctx.winner };
 }
 
 function etTodayServer() {

@@ -645,7 +645,8 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
     const totC = rp.counts.reduce((a, b) => a + b, 0) || 1;
     // "fewest" flags every option tied at the lowest NON-ZERO count (a 0-vote
     // option is nobody's pick, so it never wins); "crowd" flags the most-picked.
-    const winSet = rp.type === 'least' ? rarestSet(rp.counts) : commonSet(rp.counts);
+    const winSet = rp.winSet ? new Set(rp.winSet) : (rp.type === 'least' ? rarestSet(rp.counts) : commonSet(rp.counts));
+    const tiedSet = new Set(rp.tied || []);
     return (
       <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 5 }}>
         {rp.options.map((opt, oi) => {
@@ -658,7 +659,7 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
                 <div style={{ width: `${Math.round((rp.counts[oi] / maxC) * 100)}%`, height: '100%', background: you ? COLORS.gold : win ? '#94a3b8' : '#c8cfd9', borderRadius: 5, minWidth: rp.counts[oi] ? 4 : 0 }} />
               </div>
               <span style={{ flex: '0 0 74px', fontFamily: MONO, fontSize: 10.5, color: FADED, whiteSpace: 'nowrap' }}>
-                {Math.round((rp.counts[oi] / totC) * 100)}%{you ? ' · you' : win ? (rp.type === 'least' ? ' · fewest' : ' · crowd') : ''}
+                {Math.round((rp.counts[oi] / totC) * 100)}%{you ? ' · you' : win ? (rp.type === 'least' ? ' · fewest' : ' · crowd') : ''}{tiedSet.has(oi) ? ' · tied' : ''}
               </span>
             </div>
           );
@@ -700,7 +701,8 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
       const maxC = Math.max(1, ...rp.counts);
       const totC = rp.counts.reduce((a, b) => a + b, 0) || 1;
       // Flag every option tied at the rarest NON-ZERO count (never a 0-vote one).
-      const winSet = rarestSet(rp.counts);
+      const winSet = rp.winSet ? new Set(rp.winSet) : rarestSet(rp.counts);
+      const tiedSet = new Set(rp.tied || []);
       return (
         <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 5 }}>
           {rp.options.map((opt, oi) => {
@@ -713,7 +715,7 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
                   <div style={{ width: `${Math.round((rp.counts[oi] / maxC) * 100)}%`, height: '100%', background: you ? COLORS.gold : win ? COLORS.green : '#c8cfd9', borderRadius: 5, minWidth: rp.counts[oi] ? 4 : 0 }} />
                 </div>
                 <span style={{ flex: '0 0 74px', fontFamily: MONO, fontSize: 10.5, color: FADED, whiteSpace: 'nowrap' }}>
-                  {Math.round((rp.counts[oi] / totC) * 100)}%{you ? ' · you' : win ? ' · rarest' : ''}
+                  {Math.round((rp.counts[oi] / totC) * 100)}%{you ? ' · you' : win ? ' · rarest' : ''}{tiedSet.has(oi) ? ' · tied' : ''}
                 </span>
               </div>
             );
@@ -725,7 +727,7 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
       );
     }
     const maxC = Math.max(1, ...rp.counts);
-    const winSet = rarestSet(rp.counts);
+    const winSet = rp.winSet ? new Set(rp.winSet) : rarestSet(rp.counts);
     return (
       <div style={{ marginTop: 10 }}>
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 52 }}>

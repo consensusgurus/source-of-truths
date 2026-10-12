@@ -208,7 +208,9 @@ function outwitGroups(puzzle, pool, mine) {
     }
 
     const options = ctx.options || pr.options || null;
-    const counts = ctx.counts || [];
+    // The leave-one-out view the points were scored on (your vote removed).
+    const view = ctx.viewFor ? ctx.viewFor(you) : null;
+    const counts = (view && view.counts) || ctx.counts || [];
     // Legacy numeric "rare bird" days ship a min/max range instead of options,
     // so there is no bar list to show — just the winning number.
     if (!options) {
@@ -222,9 +224,9 @@ function outwitGroups(puzzle, pool, mine) {
     const rarest = picked.length ? Math.min(...picked) : 0;
     const winLabel = pr.type === 'least' ? 'fewest' : (pr.type === 'unique' ? 'rarest' : 'crowd');
     const rows = options.map((opt, oi) => {
-      const isWin = (pr.type === 'least' || pr.type === 'unique')
+      const isWin = view && view.winIdx != null ? oi === view.winIdx : ((pr.type === 'least' || pr.type === 'unique')
         ? (counts[oi] > 0 && counts[oi] === rarest)
-        : (counts[oi] === best && best > 0);
+        : (counts[oi] === best && best > 0));
       return {
         label: opt,
         pct: pctOf(counts[oi], tot),
