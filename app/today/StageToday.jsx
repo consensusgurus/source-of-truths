@@ -1698,24 +1698,23 @@ export default function StageToday() {
     const byId = new Map(circuits.map((c) => [c.id, c]));
     return favorites.filter(isCircPin).map((k) => byId.get(circPinId(k))).filter(Boolean);
   }, [favorites, circuits]);
-  // THE GROUP'S GAMES FOR MY PUZZLES (owner, 2026-10-09): games someone else in
-  // the reader's group played today that the reader has not played (nor
-  // started), and has not starred (a starred one is already listed). Shown
-  // only when the banner at the top of My Puzzles is switched on.
+  // THE GROUP'S GAMES FOR MY PUZZLES (owner, 2026-10-09): every game anyone in
+  // the reader's group (the reader included) played today. It used to drop the
+  // reader's own games and starred ones, which left the row showing one game
+  // when the group had played seven; double listing a starred game is fine
+  // (owner, 2026-10-12). Played games go last, as in every other section.
+  // Shown only when the banner at the top of My Puzzles is switched on.
   const grpGames = useMemo(() => {
     const list = (grp && grp.groups) || [];
-    const me = (grp && grp.userKey) || null;
-    const fav = new Set(favorites || []);
     return list.filter((x) => !x.failed && x.games).map((x) => ({
       code: x.code,
       name: x.name,
       games: Object.keys(x.games)
-        .filter((k) => LIVE_KEYS.has(k) && DAILY_GAME_MAP[k] && !fav.has(k) && !done.has(k) && !inprog.has(k)
-          && (x.games[k] || []).some((u) => u !== me))
+        .filter((k) => LIVE_KEYS.has(k) && DAILY_GAME_MAP[k] && (x.games[k] || []).length)
         .map((k) => DAILY_GAME_MAP[k])
-        .sort((g1, g2) => g1.name.localeCompare(g2.name)),
+        .sort((g1, g2) => (done.has(g1.key) - done.has(g2.key)) || g1.name.localeCompare(g2.name)),
     })).filter((x) => x.games.length);
-  }, [grp, favorites, done, inprog]);
+  }, [grp, done]);
   const mineTot = pinned.length + pinnedCircs.length;
   const mineDone = pinned.filter((g) => done.has(g.key)).length
     + pinnedCircs.filter((c) => c.n === c.games.length).length;
@@ -2554,7 +2553,7 @@ export default function StageToday() {
             {who ? grpGames.map((x) => (
               <button key={x.code} type="button" className={'sty-mgb' + (mineGrp.has(x.code) ? ' on' : '')}
                 aria-pressed={mineGrp.has(x.code)} onClick={() => flipMineGrp(x.code)}>
-                <span><b>{x.name}</b> played {x.games.length} {x.games.length === 1 ? 'game' : 'games'} you haven't</span>
+                <span><b>{x.name}</b> played {x.games.length} {x.games.length === 1 ? 'game' : 'games'} today</span>
                 <span className="go">{mineGrp.has(x.code) ? 'Hide' : 'Show'}</span>
               </button>
             )) : null}
