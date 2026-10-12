@@ -149,7 +149,12 @@ function buildOutrank({ puzzle, quizId, rows, anonSet, myUserId, myName, submitt
 
   const mine = detailFor(clean);
   const points = mine.total;
-  const totalVotes = counts.reduce((a, b) => a + b, 0) || 1;
+  // The reveal prints the counts the order was SORTED on (the crowd minus this
+  // player's own vote), never the full pool, or the percentages contradict the
+  // ranks whenever your vote decided a slot.
+  const graded = mine.counts || counts;
+  const gradedVotes = graded.reduce((a, b) => a + b, 0);
+  const totalVotes = gradedVotes || 1;
   const yourFav = clean[0];
   const predicted = clean.slice(1);
   const predictedPos = new Array(K).fill(-1);
@@ -161,8 +166,9 @@ function buildOutrank({ puzzle, quizId, rows, anonSet, myUserId, myName, submitt
     idx: item,
     rank: pos + 1,
     yourRank: predictedPos[item] + 1,
-    votes: counts[item],
-    pct: Math.round((counts[item] / totalVotes) * 100),
+    votes: graded[item],
+    pct: Math.round((graded[item] / totalVotes) * 100),
+    tied: (pos > 0 && graded[mine.actual[pos - 1]] === graded[item]) || (pos < K - 1 && graded[mine.actual[pos + 1]] === graded[item]),
     yourFav: item === yourFav,
     pts: mine.pts[predictedPos[item]] ?? 0,
   }));
@@ -201,7 +207,8 @@ function buildOutrank({ puzzle, quizId, rows, anonSet, myUserId, myName, submitt
     houseActive: useHouse,
     answers: clean,
     yourFav,
-    favPct: Math.round((counts[yourFav] / totalVotes) * 100),
+    gradedVotes,
+    favPct: Math.round((graded[yourFav] / totalVotes) * 100),
     reveal,
     slotPts,
     board,

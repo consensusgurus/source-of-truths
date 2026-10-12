@@ -164,13 +164,15 @@ function outrankGroups(puzzle, pool, mine) {
   const answers = (mine.answers || []).map(Number);
   const K = puzzle.items.length;
   const detail = field.detailFor(answers);
-  const totalVotes = field.counts.reduce((a, b) => a + b, 0) || 1;
+  // Same counts the order was sorted on (crowd minus your own vote).
+  const graded = detail.counts || field.counts;
+  const totalVotes = graded.reduce((a, b) => a + b, 0) || 1;
   const yourFav = answers[0];
   const predictedPos = new Array(K).fill(-1);
   answers.slice(1).forEach((item, pos) => { if (item >= 0 && item < K) predictedPos[item] = pos; });
   const rows = detail.actual.map((item, pos) => ({
     label: puzzle.items[item],
-    pct: pctOf(field.counts[item], totalVotes),
+    pct: pctOf(graded[item], totalVotes),
     you: item === yourFav,
     tag: item === yourFav ? 'your fav' : null,
     sub: predictedPos[item] >= 0 ? `you had #${predictedPos[item] + 1}` : null,

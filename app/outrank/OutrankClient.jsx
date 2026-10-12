@@ -633,7 +633,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
       <div style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '13px 15px', maxWidth: 472, margin: '0 auto 12px' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 9 }}>
           <span style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: ACC_INK }}>The crowd&rsquo;s order</span>
-          <span style={{ fontFamily: SANS, fontSize: 11, fontWeight: 700, color: FADED, marginLeft: 'auto' }}>{fmtBig(result.poolSize)} votes in</span>
+          <span style={{ fontFamily: SANS, fontSize: 11, fontWeight: 700, color: FADED, marginLeft: 'auto' }}>{result.gradedVotes != null ? `${fmtBig(result.gradedVotes)} votes, not counting yours` : `${fmtBig(result.poolSize)} votes in`}</span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {rows.map((r, i) => {
@@ -646,7 +646,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
                     <span style={{ fontFamily: SANS, fontSize: 13.5, fontWeight: r.yourFav ? 800 : 700, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {r.item}{r.yourFav ? ' ♥' : ''}
                     </span>
-                    <span style={{ fontFamily: MONO, fontSize: 10.5, color: FADED, whiteSpace: 'nowrap' }}>{r.pct}%</span>
+                    <span style={{ fontFamily: MONO, fontSize: 10.5, color: FADED, whiteSpace: 'nowrap' }}>{r.pct}%{r.tied ? ' · tied' : ''}</span>
                   </div>
                   <div style={{ height: 7, background: STAGE ? 'var(--stg-surf2)' : COLORS.paper, borderRadius: 4, overflow: 'hidden', marginTop: 3 }}>
                     <div style={{ width: `${Math.round((r.votes / maxV) * 100)}%`, height: '100%', background: r.yourFav ? COLORS.gold : '#b9c0f0', borderRadius: 4, minWidth: r.votes ? 4 : 0 }} />
