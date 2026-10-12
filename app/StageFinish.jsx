@@ -403,7 +403,27 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
         const w = window.innerWidth;
         const h = window.innerHeight;
         const px = (n) => Math.max(0, Math.round(n)) + 'px';
-        setClip(`inset(${px(r.top)} ${px(w - r.right)} ${px(h - r.bottom)} ${px(r.left)})`);
+        // LAND ON THE BAND THE READER SEES, NOT ITS BOX (owner, 2026-10-12).
+        // The band is full-bleed by negative margin, so its box runs the whole
+        // width of the page, but on a wide desktop the fixed side rails
+        // (.lc-nav left, .lc-side right) sit over both ends of it. Clipping to
+        // the box made the collapse animate its height only and land full
+        // width, and the fade then JUMPED in to the narrow visible band. So the
+        // sides are trimmed to whatever fixed rail overlaps the band's row,
+        // and the clip-path transition carries the width in with the height.
+        let left = Math.max(0, r.left);
+        let right = Math.min(w, r.right);
+        const mid = (left + right) / 2;
+        document.querySelectorAll('.lc-nav, .lc-side').forEach((rail) => {
+          const cs = window.getComputedStyle(rail);
+          if (cs.position !== 'fixed' || cs.display === 'none' || cs.visibility === 'hidden') return;
+          const q = rail.getBoundingClientRect();
+          if (q.width <= 0 || q.bottom <= r.top || q.top >= r.bottom) return;
+          if ((q.left + q.right) / 2 < mid) left = Math.max(left, q.right);   // rail on the left
+          else right = Math.min(right, q.left);                               // rail on the right
+        });
+        if (right - left < 40) { left = Math.max(0, r.left); right = Math.min(w, r.right); }   // never a sliver
+        setClip(`inset(${px(r.top)} ${px(w - right)} ${px(h - r.bottom)} ${px(left)})`);
         setPhase('shrink');
       });
     });
