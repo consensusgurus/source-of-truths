@@ -21,8 +21,12 @@
 //
 // SELECTION RULES, all re-checked by the verifier:
 //   - every verdict at least twice (three times on Sunday)
-//   - no statement restates a rule as written, and no "if" statement is true
-//     only vacuously (a must-be-true conditional needs a real chain)
+//   - no statement restates a rule as written
+//   - an "if" statement is judged ONLY on the lineups where its first half
+//     happens (the conditional reading, owner fix 2026-10-12), and its first
+//     half must be possible today. The plain material reading made "If Eva
+//     sits, Bram sits" a could on a day Bram must start, because it counted
+//     as true in every lineup where Eva starts; a player reads it as cannot.
 //   - at least one converse or inverse TRAP: an "if" statement that is a rule
 //     chain run backwards, which is could, not must
 //   - at least one must-be-true conditional that needs a FLIPPED rule
@@ -99,10 +103,13 @@ function worlds(n, rules, given) {
   }
   return out;
 }
-const evalStmt = (s, w) => (s.k === 'lit' ? holds(w, s.a) : s.k === 'if' ? (!holds(w, s.a) || holds(w, s.b)) : (holds(w, s.a) && holds(w, s.b)));
+// "If A, B" is judged over the lineups where A happens, so "B" is the test.
+const evalStmt = (s, w) => (s.k === 'lit' ? holds(w, s.a) : s.k === 'if' ? holds(w, s.b) : (holds(w, s.a) && holds(w, s.b)));
 function verdict(s, W) {
-  let t = 0; for (const w of W) if (evalStmt(s, w)) t++;
-  return t === W.length ? 'must' : t === 0 ? 'cannot' : 'could';
+  const V = s.k === 'if' ? W.filter((w) => holds(w, s.a)) : W;
+  if (!V.length) return 'vacuous';
+  let t = 0; for (const w of V) if (evalStmt(s, w)) t++;
+  return t === V.length ? 'must' : t === 0 ? 'cannot' : 'could';
 }
 // Shortest chain from literal `from` to literal `to` over the edges.
 function bfs(E, from, to, startBy) {
@@ -182,12 +189,14 @@ function connected(n, rules) {
   return seen.size === n;
 }
 
-function buildBoard(r, P) {
+// fixed: { rules, given } of a board already live. Its cast, rules and fact
+// stay exactly as played; only the statements are picked again.
+function buildBoard(r, P, fixed) {
   for (let attempt = 0; attempt < 4000; attempt++) {
     const n = P.n;
     const used = new Set();
     const kinds = shuffle(r, [...P.kinds, ...Array.from({ length: P.r - P.kinds.length }, () => pick(r, ['if', 'if', ...P.kinds]))]).slice(0, P.r);
-    const rules = kinds.map((k) => makeRule(r, k, n, used));
+    const rules = fixed ? fixed.rules : kinds.map((k) => makeRule(r, k, n, used));
     if (rules.some((x) => !x) || !connected(n, rules)) continue;
     const W0 = worlds(n, rules, null);
     if (!W0.length) continue;
@@ -207,7 +216,7 @@ function buildBoard(r, P) {
       if (f >= 2 && fr >= 2) facts.push(g);
     }
     if (!facts.length) continue;
-    const given = facts.filter((g) => g[1] === 1).length && r() < 0.8 ? pick(r, facts.filter((g) => g[1] === 1)) : pick(r, facts);
+    const given = fixed ? fixed.given : (facts.filter((g) => g[1] === 1).length && r() < 0.8 ? pick(r, facts.filter((g) => g[1] === 1)) : pick(r, facts));
     const W = worlds(n, rules, given);
     const forced = (l) => W.every((w) => holds(w, l));
     const gv = given[0];
@@ -245,10 +254,16 @@ function buildBoard(r, P) {
           else if (inv && inv.length > 1) { s.why = { t: 'trap', steps: inv }; s.trap = 1; s.len = inv.length - 1; }
           else { s.why = { t: 'free' }; s.len = 0; }
           C.push(s);
-        } else {
-          const p1 = bfs(E, given, x, 'given'); const p2 = bfs(E, given, neg(y), 'given');
-          if (p1 && p2) { s.why = { t: 'pair', a: p1, b: p2 }; s.len = Math.max(p1.length, p2.length) - 1; C.push(s); }
-        }
+        } else if (s.v === 'cannot') {
+          // Either the rules lead from the first half to the opposite of the
+          // second, or today's fact rules the second half out.
+          const p = bfs(E, x, neg(y), 'if');
+          if (p && p.length > 1) { s.why = { t: 'chain', steps: p }; s.len = p.length - 1; C.push(s); }
+          else {
+            const q = bfs(E, given, neg(y), 'given');
+            if (q && q.length > 1) { s.why = { t: 'chain', steps: q }; s.len = q.length - 1; C.push(s); }
+          }
+        }   // 'vacuous': the first half cannot happen today, never asked
       }
       // conjunction (unordered: once per pair)
       if (x[0] < y[0]) {
@@ -293,7 +308,10 @@ function buildBoard(r, P) {
     if (!flipMust.length || !trap.length) continue;
     chosen.push(...flipMust, ...trap);
     const restIf = ifs.filter((s) => !chosen.includes(s) && s.v === 'must' && !s.flip && s.len >= 2);
-    chosen.push(...pickFrom(restIf.length ? restIf : ifs.filter((s) => !chosen.includes(s)), per - 2));
+    const longIf = pickFrom(restIf, per - 2);
+    chosen.push(...longIf);
+    // top up from any other conditional when too few long musts exist
+    chosen.push(...pickFrom(ifs.filter((s) => !chosen.includes(s)), per - 2 - longIf.length));
     // and: a cannot by chain, a could, then anything
     const andCan = pickFrom(ands.filter((s) => s.v === 'cannot' && s.why.steps && s.why.steps[0].by === 'and'), 1);
     if (!andCan.length) continue;
@@ -324,6 +342,14 @@ function addDays(iso, d) { const t = new Date(`${iso}T12:00:00Z`); t.setUTCDate(
 function dateLabel(iso) { return new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' }); }
 function quizId(iso) { const [y, m, d] = iso.split('-').map(Number); return `ergo-${m}-${d}-${String(y).slice(2)}`; }
 
+// Boards that were live before the 2026-10-12 conditional fix and whose
+// statements changed with it. The client keys its save on rev, so an
+// in-flight save from the old board never lands on the new statements.
+const REV = { 'ergo-10-11-26': 2, 'ergo-10-12-26': 2 };
+// Their cast, rules and fact are read back from the bank and kept as played.
+const { PUZZLES: PRIOR } = await import(new URL('../app/ergo/puzzles.js', import.meta.url).href).catch(() => ({ PUZZLES: [] }));
+const KEEP = Object.fromEntries(PRIOR.filter((p) => REV[p.quizId]).map((p) => [p.quizId, p]));
+
 const boards = [];
 let lastThemes = [];
 for (let i = 0; i < DAYS; i++) {
@@ -331,11 +357,13 @@ for (let i = 0; i < DAYS; i++) {
   const dow = new Date(`${live}T12:00:00Z`).getUTCDay();
   const P = RAMP[dow];
   const r = rng(`${SEED}:${live}`);
-  const themeKey = pick(r, THEME_KEYS.filter((k) => !lastThemes.includes(k)));
+  const kept = KEEP[quizId(live)];
+  const themePick = pick(r, THEME_KEYS.filter((k) => !lastThemes.includes(k)));
+  const themeKey = kept ? kept.theme : themePick;
   lastThemes = [...lastThemes, themeKey].slice(-4);
-  const names = NAME_SETS[i % NAME_SETS.length].slice(0, P.n);
+  const names = kept ? kept.names : NAME_SETS[i % NAME_SETS.length].slice(0, P.n);
   const T = THEMES[themeKey];
-  const b = buildBoard(r, P);
+  const b = buildBoard(r, P, kept ? { rules: kept.rules.map((x) => ({ k: x.k, a: x.a, b: x.b })), given: kept.given } : null);
   if (!b) { console.error('no board for', live); process.exit(1); }
   const list = names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
   boards.push({
@@ -343,6 +371,7 @@ for (let i = 0; i < DAYS; i++) {
     live,
     dateLabel: dateLabel(live),
     quizId: quizId(live),
+    ...(REV[quizId(live)] ? { rev: REV[quizId(live)] } : {}),
     ...(dow === 0 ? { sunday: true } : {}),
     theme: themeKey,
     title: T.title,
@@ -368,6 +397,8 @@ const header = `// ERGO — the daily conditional-logic sort. GENERATED by scrip
 // enumerates every assignment the rules and the fact allow and classifies each
 // statement itself. 'why' is the explanation shown after the ruling: a chain of
 // literals, each step labelled with the rule (or its flip) that justifies it.
+// An "if" statement is judged only over the lineups where its first half
+// happens, and that first half is always possible today.
 //
 // Ramp by Eastern weekday: Mon 5 people / 4 rules (plain if, never both), and
 // more people, more rules and more wordings (only if, unless, at least one)

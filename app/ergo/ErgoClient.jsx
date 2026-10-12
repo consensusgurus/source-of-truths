@@ -123,7 +123,9 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
   const ST = PUZZLE.statements;
   const TOTAL = ST.length;
-  const STORE_KEY = `sot_ergo_${PUZZLE.num}`;
+  // rev: a board corrected after it went live keeps a fresh save, so picks
+  // filed against the old statements never land on the new ones.
+  const STORE_KEY = `sot_ergo_${PUZZLE.num}${PUZZLE.rev ? `_r${PUZZLE.rev}` : ''}`;
   const SOLVED = useMemo(() => solveDay(PUZZLE), [PUZZLE]);
   const KEY = SOLVED.keys;
 
@@ -400,7 +402,7 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
                       <>A rule reads one way only. &ldquo;If A, then B&rdquo; says nothing about what happens when B is true.</>,
                       <><b>Flip</b> a rule to see its contrapositive, &ldquo;if not B, then not A&rdquo;, which is always just as true.</>,
                       <>Chain rules: if A leads to B and B leads to C, then A leads to C.</>,
-                      <>&ldquo;Must be true&rdquo; means true in every lineup the rules and the fact allow. &ldquo;Could&rdquo; means in at least one. &ldquo;Cannot&rdquo; means in none.</>,
+                      <>&ldquo;Must be true&rdquo; means true in every lineup the rules and the fact allow. &ldquo;Could&rdquo; means in at least one. &ldquo;Cannot&rdquo; means in none. For an &ldquo;if&rdquo; statement, look only at the lineups where its first half happens.</>,
                     ]}
                     knack="The commonest trap is a rule run backwards. If A leads to B, knowing B tells you nothing about A."
                     footer={`One point per statement in the right bin, ${TOTAL} today. Move anything you like before you rule; you get one ruling.`}
@@ -602,6 +604,7 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
             <ul style={{ fontSize: 13.5, lineHeight: 1.7, color: INK, margin: '0 0 12px', paddingLeft: 20 }}>
               <li>&ldquo;If A, B&rdquo; never tells you anything when B is true. That backwards reading is the trap.</li>
               <li>Flip a rule to see its contrapositive: if not B, then not A. It is always just as true.</li>
+              <li>Judge an &ldquo;if A, B&rdquo; statement only on the lineups where A happens: does B always, sometimes or never follow?</li>
               <li>&ldquo;A only if B&rdquo; means if A, then B. &ldquo;Unless A, B&rdquo; means if not A, then B.</li>
               <li>Move statements freely until you rule. One ruling, one point per statement in the right bin.</li>
               <li>After the ruling, every statement shows the chain of rules that settles it.</li>

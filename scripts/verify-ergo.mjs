@@ -17,6 +17,8 @@
 //     name different people, none restates a rule as written
 //   - at least one "if" trap (could, with a rule chain running the other way)
 //     and at least one must-be-true "if" whose proof uses a flipped rule
+//   - an "if" statement is judged only over the lineups where its first half
+//     happens, and that first half must be possible today
 //   - every 'why' chain: each step is a real edge of the rules, labelled with
 //     the right rule and the right direction, and the chain proves exactly the
 //     verdict the enumeration gives
@@ -183,10 +185,13 @@ PUZZLES.forEach((p, idx) => {
     if (s.k === 'lit') { if (litVars.has(s.a[0])) fail(p, `${tag} names a person already asked about`); litVars.add(s.a[0]); }
     if (s.k === 'if' && rules.some((ru, ri) => stepLabel([ru], s.a, s.b).some((x) => !x.endsWith('flip') && eq(s.a, ru.a)))) fail(p, `${tag} restates a rule`);
     if (s.k === 'and' && rules.some((ru) => ru.k === 'never' && ((eq(s.a, ru.a) && eq(s.b, flipLit(ru.b))) || (eq(s.b, ru.a) && eq(s.a, flipLit(ru.b)))))) fail(p, `${tag} restates a never-both rule`);
-    // verdict by enumeration
-    const val = (w) => (s.k === 'lit' ? truth(w, s.a) : s.k === 'if' ? (!truth(w, s.a) || truth(w, s.b)) : (truth(w, s.a) && truth(w, s.b)));
-    const t = W.filter(val).length;
-    const v = t === W.length ? 'must' : t === 0 ? 'cannot' : 'could';
+    // verdict by enumeration. "If A, B" is judged only over the lineups where
+    // A happens (the conditional reading), and A must be possible today.
+    const V = s.k === 'if' ? W.filter((w) => truth(w, s.a)) : W;
+    if (!V.length) { fail(p, `${tag} has a first half that cannot happen today`); return; }
+    const val = (w) => (s.k === 'lit' ? truth(w, s.a) : s.k === 'if' ? truth(w, s.b) : (truth(w, s.a) && truth(w, s.b)));
+    const t = V.filter(val).length;
+    const v = t === V.length ? 'must' : t === 0 ? 'cannot' : 'could';
     counts[v]++;
     // the proof
     const why = s.why || {};
@@ -197,10 +202,15 @@ PUZZLES.forEach((p, idx) => {
       if (s.k === 'lit') {
         err = chainOk(p, rules, st, 'given', p.given);
         if (!err) claimed = eq(last(st), s.a) ? 'must' : eq(last(st), flipLit(s.a)) ? 'cannot' : null;
+      } else if (s.k === 'if' && st && st[0] && st[0].by === 'given') {
+        // today's fact rules the second half out (the first half is possible,
+        // checked above), so no lineup with the first half has the second
+        err = chainOk(p, rules, st, 'given', p.given);
+        if (!err) claimed = eq(last(st), flipLit(s.b)) ? 'cannot' : null;
       } else if (s.k === 'if') {
         err = chainOk(p, rules, st, 'if', s.a);
-        if (!err) claimed = eq(last(st), s.b) ? 'must' : null;
-        if (claimed && st.some((x) => String(x.by).endsWith('flip'))) flipMust++;
+        if (!err) claimed = eq(last(st), s.b) ? 'must' : eq(last(st), flipLit(s.b)) ? 'cannot' : null;
+        if (claimed === 'must' && st.some((x) => String(x.by).endsWith('flip'))) flipMust++;
       } else if (st && st[0] && st[0].by === 'and') {
         err = chainOk(p, rules, st, 'and', s.a);
         if (!err) claimed = eq(last(st), flipLit(s.b)) ? 'cannot' : null;
