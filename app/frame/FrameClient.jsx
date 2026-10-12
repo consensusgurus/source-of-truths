@@ -54,6 +54,8 @@ import { useStageTheme } from '@/lib/stage-theme';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
 import LoftFinish from '../LoftFinish';
+import { useRunEmbed } from '../RunEmbed';
+import RunDoorPop from '../circuits/RunDoorPop';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import useIqStanding from '../useIqStanding';
 import useNextUnplayed, { useUnplayedSimilar } from '../useNextUnplayed';
@@ -311,6 +313,9 @@ export default function FrameClient({ puzzles = [], forceNum = null }) {
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('frame'), '--stg-acc-lt': gameColorLight('frame'), '--stg-onramp-lt': gameOnrampLight('frame'), '--stg-acc-ink-lt': gameAccentInkLight('frame') };
   const [stageTheme] = useStageTheme();
+  // Inside the Enter the Dojo run (app/RunEmbed.jsx) the page furniture drops
+  // away and the board sits on the run's dark ground; the game is unchanged.
+  const EMBED = useRunEmbed();
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
@@ -496,6 +501,7 @@ export default function FrameClient({ puzzles = [], forceNum = null }) {
 
   function postResult(g2, score) {
     abandon.markFlushed();
+    if (EMBED) EMBED.onResult({ key: 'frame', score, total: 10, t0: g2 && g2.t0, tEnd: (g2 && g2.tEnd) || Date.now() });
     const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
     try { setStats(recordStat(PUZZLE.num, { s: score, t: 10, g: 0, won: g2.status === 'won' })); } catch (e) {}
     try {
@@ -849,7 +855,7 @@ export default function FrameClient({ puzzles = [], forceNum = null }) {
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
+      data-stage-theme={STAGE ? (EMBED ? 'dark' : stageTheme) : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
       {!STAGE && (
@@ -858,7 +864,7 @@ export default function FrameClient({ puzzles = [], forceNum = null }) {
       {/* LOFT: the cap replaces the title block AND the board's own stat strip.
           Frame is scored all or nothing, so the outcome is only ever won or
           lost; there is no partial state for the amber cap to carry. */}
-      {LOFT && (
+      {LOFT && !EMBED && (
         <Cap gameKey="frame" quizId={PUZZLE.quizId}
           name="Frame"
           cat="Sudoku"
@@ -1110,7 +1116,7 @@ export default function FrameClient({ puzzles = [], forceNum = null }) {
           )}
         </div>
         </div>
-        {LOFT && !playing && (
+        {LOFT && !playing && !EMBED && (
           <LoftFinish
             name="Frame"
             catRank={catRank}
@@ -1164,7 +1170,7 @@ export default function FrameClient({ puzzles = [], forceNum = null }) {
             "Show overview and more" control it replaces ever did. */}
         {/* The strip in the cap answers what this opens, without being pressed. */}
         {!STAGE && <GamePanel self="frame" name="Frame" onShow={() => setShowChrome(true)} />}
-        <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block', margin: '30px auto 0' }}>
+        <div style={{ display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', margin: '30px auto 0' }}>
           {LOFT && (
             <div className={STAGE ? undefined : 'loft-report'}>
               <ReportIssue self="frame" name="Frame" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
@@ -1210,7 +1216,7 @@ export default function FrameClient({ puzzles = [], forceNum = null }) {
             </div>
           </div>
         )}
-        {!focusMode && !identity && (
+        {!EMBED && !focusMode && !identity && (
           <div id="daily-join" style={{ margin: '18px auto 0' }}>
             <JoinLeaderboardForm hideIcon heading="See your stats and join the leaderboard" identity={identity} onJoined={(id) => { setIdentity(id); if (id && id.username) setPlayer((p) => p || { name: id.username, rank: null }); }} />
           </div>
@@ -1258,9 +1264,12 @@ export default function FrameClient({ puzzles = [], forceNum = null }) {
       )}
 
       {/* The desktop fold: the About prose below starts one screen down (app/StageFold.jsx). */}
-      <StageFold />
+      {!EMBED && <StageFold />}
+      {/* THE DOJO DOOR: the first time a player ever opens Frame on its own
+          page, the Enter the Dojo run is offered, once. Never inside the run. */}
+      <RunDoorPop id="dojo" game="frame" ready={hydrated && preStart && isTodays && !EMBED} self="Frame" />
       {/* About Frame — crawlable prose, server-rendered into the HTML */}
-      <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
+      <section style={{ position: 'relative', display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Frame</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Frame is a free daily frame sudoku from Mind Loft. Each day gives you a 9×9 grid with a number printed outside every row and column end: the sum of the three squares nearest that edge, reading inward. Thirty-six sums, all printed, every day, and rows, columns and 3×3 boxes still hold 1 through 9 exactly once. The sums do so much of the work that the board prints far fewer digits than an ordinary sudoku needs.

@@ -175,7 +175,7 @@ for (const c of CIRCUITS) {
     // can play, so an unknown name fails here rather than 404ing live.
     const eng = runEngine(c.id);
     if (!RUN_ENGINES[eng]) fails.push(`${c.id}: flagged run with engine "${eng}", which RUN_ENGINES does not name`);
-    const off = (c.keys || []).filter((k) => !runGamesFor(c.id).includes(k));
+    const off = [...(c.keys || []), ...((c.slot && c.slot.pool) || [])].filter((k) => !runGamesFor(c.id).includes(k));
     if (off.length) fails.push(`${c.id}: flagged run (${eng}) but holds ${off.join(', ')}, which that engine cannot deal`);
     if (!isRunnableCircuit(c.id)) fails.push(`${c.id}: flagged run but isRunnableCircuit says otherwise`);
     if (runHref(c.id) !== (c.path || `${CIRCUIT_BASE}/${c.id}/run`)) fails.push(`${c.id}: runHref is ${runHref(c.id)}`);
@@ -391,6 +391,14 @@ for (const c of CIRCUITS) {
         return filtered.filter((_, i) => pick.has(i));
       })()
     : filtered;
+  // a DEALT SLOT (Enter the Dojo): the fixed keys then one pool member, picked
+  // here with its own day-index math rather than read back off lib/dojo.js
+  if (c.slot && Array.isArray(c.slot.pool)) {
+    const idx = Math.floor(Date.parse(todayIso + 'T12:00:00Z') / 86400000);
+    const n = c.slot.pool.length;
+    const v = c.slot.pool[((idx % n) + n) % n];
+    if (DAILY_GAME_MAP[v] && !retiredAlready(v)) expected.push(v);
+  }
   const want = applyOrderLocal(c, expected, todayIso);
   if (live.join(',') !== want.join(',')) {
     fails.push(`${c.id}: circuitKeysFor returned [${live.join(',')}], expected [${want.join(',')}]`);
@@ -423,6 +431,31 @@ for (const c of CIRCUITS) {
 }
 if (!circuitKeysFor(MARQUEE_ID, todayIso).length) {
   warns.push(`the marquee has no run today (${todayIso}) — lib/daily-five's bank may need extending`);
+}
+
+// ── 7b. a dealt slot plays fair ─────────────────────────────────────────────
+// Over one pool-length cycle every pool member is dealt exactly once, the day
+// is always the fixed keys plus one, and the pool never repeats a fixed key.
+for (const c of CIRCUITS) {
+  if (!c.slot) continue;
+  const pool = c.slot.pool || [];
+  if (pool.length < 2) fails.push(`${c.id}: a slot pool needs at least two games`);
+  if (c.rotate) fails.push(`${c.id}: a circuit cannot both rotate and deal a slot`);
+  const dup = pool.filter((k) => c.keys.includes(k) || !DAILY_GAME_MAP[k]);
+  if (dup.length) fails.push(`${c.id}: slot pool holds ${dup.join(', ')}, which is a fixed key or not a registered game`);
+  const seen = Object.fromEntries(pool.map((k) => [k, 0]));
+  for (let d = 0; d < pool.length; d++) {
+    const iso = new Date(Date.parse(todayIso + 'T12:00:00Z') + d * 86400000).toISOString().slice(0, 10);
+    const sel = circuitKeysFor(c.id, iso);
+    const live = pool.filter((k) => !retiredAlready(k));
+    if (sel.length !== c.keys.length + 1 && live.length === pool.length) fails.push(`${c.id}: ${iso} plays ${sel.length} games, expected ${c.keys.length + 1}`);
+    if (sel.slice(0, c.keys.length).join() !== c.keys.join()) fails.push(`${c.id}: ${iso} does not open with the fixed keys`);
+    const v = sel[c.keys.length];
+    if (v in seen) seen[v] += 1;
+  }
+  for (const [k, ct] of Object.entries(seen)) {
+    if (ct !== 1) fails.push(`${c.id}: slot game ${k} dealt ${ct} times in a ${pool.length}-day cycle, expected 1`);
+  }
 }
 
 // ── 8. the trophy case matches the rosters, 1:1 ─────────────────────────────
@@ -463,6 +496,17 @@ for (const c of CIRCUITS) {
   if (!c.trophy) continue;
   const known = c.keys.filter((k) => k in MED);
   if (known.length !== c.keys.length) continue; // already warned above
+  if (c.slot) {
+    // a dealt slot's day is the fixed keys plus ONE pool game, so the tier is
+    // read off the AVERAGE day: fixed total plus the pool's mean median
+    const pool = (c.slot.pool || []).filter((k) => k in MED);
+    if (!pool.length) continue;
+    const mean = pool.reduce((a, k) => a + MED[k], 0) / pool.length;
+    const total = Math.round(known.reduce((a, k) => a + MED[k], 0) + mean);
+    const want = TIER_AT(total);
+    if (c.trophy.tier !== want) fails.push(`${c.id}: the average day totals ${total}s (${want}), trophy says ${c.trophy.tier}`);
+    continue;
+  }
   if (c.rotate) {
     // a rotating circuit's day is a WINDOW of the pool, so every window must
     // land in the declared tier, not just the pool total

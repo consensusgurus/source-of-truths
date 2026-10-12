@@ -248,6 +248,8 @@ export default function CircuitRunPage({ params }) {
   if (runEngine(id) === 'price') redirect('/pricecheck');
   // Judged too (2026-10-08).
   if (runEngine(id) === 'law') redirect('/judged');
+  // Enter the Dojo too (2026-10-12).
+  if (runEngine(id) === 'dojo') redirect('/dojo');
 
   const today = etTodayServer();
   const label = (() => {

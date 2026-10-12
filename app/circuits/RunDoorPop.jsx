@@ -54,6 +54,14 @@ export const RUN_DOORS = {
     go: 'Take all five cases', accent: '#7dd3fc',
     tags: [['Ergo', '#c4b5fd'], ['Sworn', '#f472b6'], ['Hearsay', '#d8b4fe'], ['Docket', '#c9a3ae'], ['Alibi', '#ef8896']],
   },
+  // Once per GAME like Judged: the first time a player ever opens Sixes, Suds
+  // or one of the variants on its own page (2026-10-12).
+  dojo: {
+    href: '/dojo', name: 'Enter the Dojo', eyebrow: 'Daily run · Three sudokus', once: 'game',
+    body: 'Sixes, Suds, then a variant, back to back on one page. Solve all three and the clock decides your belt, from white to black.',
+    go: 'Enter the Dojo', accent: '#e9cf7f',
+    tags: [['Sixes', '#93c5fd'], ['Suds', '#a5b4fc'], ['A variant', '#e9cf7f']],
+  },
   // Once per GAME like Judged (owner, 2026-10-09): the first time a player
   // ever opens one of the five on its own page.
   math: {

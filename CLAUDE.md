@@ -9012,3 +9012,26 @@ not evidence of a return visit. `?premiere=1` still previews.
 `bestNForSuffix` returns 50 (750 ceiling) from `BESTN_CUTOVER_3`, 25 for 07-27..10-11,
 and the older steps before that. Days before the cutover never recompute. Surfaces read
 `bestN` / `maxTotal` off the payload; never hardcode 25, 375, 50 or 750 in copy.
+
+## Enter the Dojo (`/dojo`): the daily sudoku run (owner, 2026-10-12)
+
+Judged's machinery with a sudoku roster. Sixes, Suds, then ONE variant dealt by the
+Eastern date from `DOJO_POOL` in `lib/dojo.js` (sando, quilt, mercury, cages, knight,
+polka, frame, diag: 9x9 sudokus with one extra rule; Towers and Rim left out on purpose).
+Circuit id `dojo`, engine `dojo`, scorer `dojo`, `scoreFrom: '2026-10-12'`.
+
+- **A DEALT SLOT is a new circuit shape.** `keys` is the fixed head (`['sixes','suds']`,
+  shortest first) and `slot: { pool }` is what the third grid is dealt from; `circuitKeysFor`
+  appends the day's pick, so the board route, trophies and every surface see three games.
+  `scripts/verify-circuits.mjs` recomputes the pick with its own day math (check 7), proves
+  every pool member is dealt once per pool-length cycle (7b), and tiers the trophy off the
+  AVERAGE day (fixed medians plus the pool's mean).
+- **Scoring:** out of 100, Sixes 30, Suds 35, the variant 35; each half solving, half speed
+  (speed 1 at PAR, 0 at CAP, PAR = fastest tenth of solves, CAP = 75th percentile, measured
+  2026-09-17 to 10-11; Cages' CAP held at an hour). A sudoku is right or not, so this is a race.
+- **Belts:** Black 96, Brown 90, Purple 84, Blue 77, Green 70, Orange 62, Yellow 50, White.
+- **The ten sudoku clients read `useRunEmbed()`** exactly as the five Judged clients do, and each
+  carries a once-per-game `RunDoorPop id="dojo"` gated `!EMBED`.
+- Files: `app/dojo/{page.js,DojoClient.jsx,leaderboard/page.js,card/route.js}`, `lib/dojo.js`.
+  Pregame: paper doors that are the Start button and three hanging scrolls. Ending: a grading
+  sheet scores form by form while the belt is dyed up the ladder, then the seal and the knot.
