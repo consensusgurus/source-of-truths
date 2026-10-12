@@ -8985,8 +8985,20 @@ landing pages stay at `/circuits/gauntlet` and `/circuits/math`.
   `app/math/page.js` and `MathDoor.jsx` were deleted for exactly that reason; a
   filesystem route outranks an ordinary rewrite. Do not recreate them.
 - **Never hardcode `/circuits/<id>/run`.** Link through `runHref(id)`.
-- **The /trivia door pop** (TriviaDoorPop) now fires on an arrival at `/trivia`
-  with no same-site referrer, or on `?via=trivia`, plus the existing new-visitor test.
+- **The /trivia door card (TriviaDoorPop) is no longer mounted.** It was replaced
+  the same day by GauntletMorePop (below). The file stays, unreferenced.
+
+## More-of-the-same card after a gauntlet (owner, 2026-10-12)
+
+`app/circuits/GauntletMorePop.jsx`, mounted by the run for `gauntlet` and `math`. Shows
+to a player whose WHOLE history is the two gauntlets' twelve games (local footprint AND
+daily-status archive), once per ET day, at most 5 days per gauntlet, 2s into the
+scorecard; `?more=preview` forces it. It leads with the games most like the quiz they went
+furthest in (CONFIG per gauntlet). Sport has no sports daily, so the run page passes
+TODAY's Bracket metric and Listed title with a sports flag (`todayBoards`, SPORT_RE) and
+the card leads with whichever is a sports board today. The more-runs card waits for a later
+finish if this one showed. Every key named in CONFIG must be live: re-check when a game
+retires (Circa did).
 
 ## New-game pop-ups are for returning visitors only (owner, 2026-10-12)
 

@@ -33,6 +33,9 @@ import { PROBLEM_MAP as seriesProblems } from '../../../series/problems';
 import { PUZZLES as backPuzzles } from '../../../back/puzzles';
 import { PROBLEM_MAP as backProblems } from '../../../back/problems';
 
+import { PUZZLES as bracketPuzzles } from '../../../bracket/puzzles';
+import { PUZZLES as listedPuzzles } from '../../../listed/puzzles';
+
 import { PUZZLES as parkPuzzles } from '../../../parker/puzzles';
 import { N as PARK_N, EXIT_ROW as PARK_EXIT } from '../../../parker/solver';
 import { PUZZLES as impoundPuzzles } from '../../../impound/puzzles';
@@ -119,6 +122,21 @@ const spell = (n, cap = false) => {
   const w = WORDS[n] || String(n);
   return cap ? w.charAt(0).toUpperCase() + w.slice(1) : w;
 };
+
+// TODAY'S BRACKET AND LISTED, for the Trivia Gauntlet's more-trivia card
+// (app/circuits/GauntletMorePop.jsx). Only the one-line topic and a sports
+// flag ship, never a board: a player who went furthest in Sport is pointed at
+// whichever of the two is a sports board today. A bank that has not reached
+// today simply contributes nothing.
+const SPORT_RE = /home runs?|strikeouts?|passing yards|touchdowns?|olympic|world cup|super bowl|stanley cup|world series|grand slam|\bnba\b|\bnfl\b|\bmlb\b|\bnhl\b|hitter|pitcher|quarterback|stadium|athlete|championships?/i;
+function todayBoards(today) {
+  const out = {};
+  const b = bracketPuzzles.find((p) => p.live === today);
+  if (b && b.metric) out.bracket = { label: b.metric, sport: SPORT_RE.test(b.metric) };
+  const l = listedPuzzles.find((p) => p.live === today);
+  if (l && l.title) out.listed = { label: l.title, sport: SPORT_RE.test(l.title) };
+  return out;
+}
 
 function etTodayServer() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
@@ -314,7 +332,7 @@ export default function CircuitRunPage({ params }) {
 
   return (
     <Suspense fallback={null}>
-      <RunClient circuitId={circuit.id} circuitName={circuit.name} dateLabel={label} sections={sections} />
+      <RunClient circuitId={circuit.id} circuitName={circuit.name} dateLabel={label} sections={sections} boards={circuit.id === 'gauntlet' ? todayBoards(today) : null} />
     </Suspense>
   );
 }

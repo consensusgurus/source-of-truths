@@ -48,7 +48,7 @@ import { runSummaryHref, circuitShareUrl, circuitScoreMode, circuitShareResult, 
 import GauntletLadder, { rampFor } from '../../GauntletLadder';
 import RunLanes, { LaneBar, secondsLine, TOWER_CSS } from '../../RunTowers';
 import RunNextUp from '../../RunNextUp';
-import TriviaDoorPop from '../../TriviaDoorPop';
+import GauntletMorePop from '../../GauntletMorePop';
 import useGauntletField, { FIELD_FLOOR } from '../../useGauntletField';
 import useCircuitBoard from '../../useCircuitBoard';
 import GauntletFinale from '../../GauntletFinale';
@@ -177,7 +177,7 @@ function vibrate(p) { try { if (typeof navigator !== 'undefined' && navigator.vi
 
 const freshRun = () => ({ v: 1, si: 0, i: 0, t0: null, sT0: null, phase: 'idle', results: [] });
 
-export default function RunClient({ circuitId, circuitName, dateLabel, sections = [] }) {
+export default function RunClient({ circuitId, circuitName, dateLabel, sections = [], boards = null }) {
   const N = sections.length;
   const STORE_KEY = `sot_run_${circuitId}_${etToday()}`;
 
@@ -221,6 +221,9 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   // the same hydrated render that decides doneAtLoad.
   const firstEver = useRef(false);
   const [doorUp, setDoorUp] = useState(false);
+  // The more-trivia / more-math card showed on this load: the more-runs card
+  // waits for a later finish rather than following it straight away.
+  const [moreShown, setMoreShown] = useState(false);
   const lockRef = useRef(false);
   const holdRef = useRef(false);
 
@@ -929,7 +932,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           run not done today. It replaced the one-at-a-time RunNudgePop chain.
           Waits for the /trivia door card if it is up. See MoreRuns.jsx. */}
       {(circuitId === 'gauntlet' || circuitId === 'math') && (
-        <MoreRunsPop self={circuitId} ready={done && doneAtLoad.current === false && !curtain && !doorUp} delay={3500} />
+        <MoreRunsPop self={circuitId} ready={done && doneAtLoad.current === false && !curtain && !doorUp && !moreShown} delay={3500} />
       )}
 
       {/* THE ONLY CHROME. Not LoftCap and not the site footer: the run is a
@@ -1794,11 +1797,12 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
         />
       ) : null}
 
-      {/* THE DOOR'S ONE WORD ABOUT THE REST OF THE SITE (owner, 2026-09-03).
-          Mounted in every phase so it can read the /trivia arrival at mount;
-          it opens only on the scorecard, after the curtain, and only for a
-          first-timer who came in through /trivia. See TriviaDoorPop. */}
-      <TriviaDoorPop ready={hydrated && done && !curtain} onOpenChange={setDoorUp} />
+      {/* MORE OF THE SAME KIND (owner, 2026-10-12): for a player whose whole
+          history is the gauntlets, the games most like the quiz they went
+          furthest in. Replaced the /trivia door card. See GauntletMorePop. */}
+      {(circuitId === 'gauntlet' || circuitId === 'math') && (
+        <GauntletMorePop circuitId={circuitId} ready={hydrated && done && !curtain} results={r.results} sections={sections} boards={boards} onOpenChange={setDoorUp} onShown={() => setMoreShown(true)} />
+      )}
     </div>
   );
 }
