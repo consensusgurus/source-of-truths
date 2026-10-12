@@ -2126,15 +2126,41 @@ export default function StageToday() {
   // One read for the whole page, the first time a short category opens.
   const [fav, setFav] = useState(null);
   const favAsked = useRef(false);
-  const favWanted = !!(railCat && fitFor(railCat.games.length));
+  // THE PUZZLE PANES SORT A TO Z OR BY POPULARITY (owner, 2026-10-12). A to Z
+  // is the default; Popular orders by the whole site's plays over the trailing
+  // seven ET days, which rides the same my-plays read the favorites block uses.
+  // One choice for every pane, remembered per browser.
+  const [sortBy, setSortBy] = useState('az');
+  useEffect(() => {
+    try { if (localStorage.getItem('sot_home_sort') === 'pop') setSortBy('pop'); } catch (e) { /* storage off */ }
+  }, []);
+  const pickSort = (v) => {
+    setSortBy(v);
+    try { localStorage.setItem('sot_home_sort', v); } catch (e) { /* storage off */ }
+  };
+  const favWanted = !!(railCat && fitFor(railCat.games.length)) || sortBy === 'pop';
   useEffect(() => {
     if (!favWanted || favAsked.current) return;
     favAsked.current = true;
     const qs = identityQs();
     fetch('/api/quiz/my-plays' + (qs ? '?' + qs : '')).then((r) => r.json())
-      .then((d) => setFav({ mine: (d && d.mine) || {}, site: (d && d.site) || {} }))
-      .catch(() => setFav({ mine: {}, site: {} }));
+      .then((d) => setFav({ mine: (d && d.mine) || {}, site: (d && d.site) || {}, week: (d && d.week) || {} }))
+      .catch(() => setFav({ mine: {}, site: {}, week: {} }));
   }, [favWanted]);
+  // A to Z until the week's counts land, so nothing jumps twice.
+  const sortGames = (list) => {
+    if (sortBy !== 'pop' || !fav || !fav.week) return list;
+    const w = fav.week;
+    return list.slice().sort((a, b) => ((w[b.key] || 0) - (w[a.key] || 0)) || a.name.localeCompare(b.name));
+  };
+  const sortCtl = (mobile) => (
+    <div className={mobile ? 'sty-sort sty-sortm' : 'sty-sort'} role="group" aria-label="Sort puzzles"
+      onClick={(e) => e.stopPropagation()}>
+      <button type="button" aria-pressed={sortBy === 'az'} onClick={() => pickSort('az')}>A&ndash;Z</button>
+      <button type="button" aria-pressed={sortBy === 'pop'} onClick={() => pickSort('pop')}
+        title="Most played across the site over the last 7 days">Popular</button>
+    </div>
+  );
   const favBlock = (cat, games, k) => {
     if (!k) return null;
     let rows = null; let own = false; let total = 0; let tried = 0;
@@ -2308,10 +2334,12 @@ export default function StageToday() {
           <h2>{catLabel(cat)}</h2>
           <b>{n}<i>/{games.length}</i></b>
           {circPills(cat, false)}
+          {sortCtl(false)}
         </div>
         {circPills(cat, true)}
+        {sortCtl(true)}
         <div className={'sty-games' + (fit ? ' fit' : '')} style={fitStyle}>
-          {games.map((g, i) => (
+          {sortGames(games).map((g, i) => (
             <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
               canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
               res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} />
@@ -2606,10 +2634,12 @@ export default function StageToday() {
             <h2>All Puzzles</h2>
             <b>{alphaDone}<i>/{alpha.length}</i></b>
             {circPills(null, false)}
+            {sortCtl(false)}
           </div>
           {circPills(null, true)}
+          {sortCtl(true)}
           <div className="sty-games">
-            {playedLast(alpha, done).map((g, i) => (
+            {playedLast(sortGames(alpha), done).map((g, i) => (
               // ALL GAMES MIXES CATEGORIES exactly as My games does, so each
               // card carries its own hue (owner, 2026-08-31).
               <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
@@ -4426,6 +4456,14 @@ ${PATCH_CSS}
 .sty-cpill .ck i,.sty-cpill .ct.done i{font-style:normal;font-weight:700;color:var(--stg-mute);}
 .sty-cpill.full .nm{color:var(--stg-mute);}
 .sty-cpm{display:none;}
+.sty-sort{margin-left:auto;align-self:center;flex:none;display:inline-flex;gap:2px;padding:2px;border:1px solid var(--stg-cell-line);border-radius:999px;}
+.sty-sort button{border:0;border-radius:999px;background:transparent;color:var(--stg-ink2);font:800 11px/1 ${SANS};letter-spacing:.05em;text-transform:uppercase;padding:5px 10px;cursor:pointer;}
+.sty-sort button[aria-pressed="true"]{background:var(--stg-ink);color:var(--stg-ground);}
+.sty-sortm{display:none;}
+@media (max-width:900px){
+  .sty-sort:not(.sty-sortm){display:none;}
+  .sty-sortm{display:inline-flex;margin:0 0 10px auto;width:max-content;}
+}
 @media (max-width:900px){
   .sty-cpills{display:none;}
   .sty-cpm{display:flex;flex-direction:column;gap:6px;margin:0 0 10px;}

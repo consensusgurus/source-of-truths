@@ -21,6 +21,9 @@ export const fetchCache = 'force-no-store';
 const KEYS = new Set(DAILY_KEYS);
 const RE = /^(.+)-(\d+)-(\d+)-(\d+)$/;
 const DAYS = 14;
+// The home's Popular sort reads the site's plays over the trailing seven ET
+// days (owner, 2026-10-12), off the same walk.
+const WEEK = 7;
 
 function etToday() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
@@ -31,7 +34,7 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const anonId = (searchParams.get('anonId') || '').trim() || null;
   const email = (searchParams.get('email') || '').trim() || null;
-  const empty = { mine: {}, site: {}, days: DAYS };
+  const empty = { mine: {}, site: {}, week: {}, days: DAYS };
   try {
     let myKeys = new Set();
     if (anonId || email) {
@@ -49,12 +52,15 @@ export async function GET(request) {
       slot.set(`${d.getUTCMonth() + 1}-${d.getUTCDate()}-${d.getUTCFullYear() % 100}`, i);
     }
     const site = {};
+    const week = {};
     const mine = {};
     for (const r of (data || [])) {
       const m = r && r.quiz_id ? String(r.quiz_id).match(RE) : null;
       if (!m || !KEYS.has(m[1])) continue;
       const key = m[1];
       site[key] = (site[key] || 0) + 1;
+      const wi = slot.get(`${Number(m[2])}-${Number(m[3])}-${Number(m[4])}`);
+      if (wi !== undefined && wi >= DAYS - WEEK) week[key] = (week[key] || 0) + 1;
       if (!myKeys.size) continue;
       const isMine = (r.user_id && myKeys.has(`u:${r.user_id}`)) || (r.anon_id && myKeys.has(`a:${r.anon_id}`));
       if (!isMine) continue;
@@ -88,7 +94,7 @@ export async function GET(request) {
         solveRate: me.runs ? Math.round((me.solved / me.runs) * 100) : null,
       };
     }
-    return NextResponse.json({ mine, site, days: DAYS }, { headers: { 'Cache-Control': 'private, max-age=60' } });
+    return NextResponse.json({ mine, site, week, days: DAYS }, { headers: { 'Cache-Control': 'private, max-age=60' } });
   } catch (e) {
     return NextResponse.json(empty, { headers: { 'Cache-Control': 'no-store' } });
   }
