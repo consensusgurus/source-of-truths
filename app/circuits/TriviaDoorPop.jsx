@@ -12,9 +12,9 @@
 //
 // IT FIRES FOR EXACTLY ONE KIND OF PERSON, and each condition is a reason:
 //
-//   THROUGH THE DOOR. /trivia forwards to the run with `?via=trivia` on the
-//   address (lib/trivia-door). Somebody who typed /circuits/gauntlet/run, or
-//   followed a link from inside the site, already knows the site is there.
+//   THROUGH THE DOOR. Landed on /trivia from outside the site (no same-site
+//   referrer), or carrying `?via=trivia` (lib/trivia-door). Somebody who
+//   followed a link from inside the site already knows the site is there.
 //
 //   NEW TO THE SITE. No visitor id yet, or one minted on this very page load
 //   (lib/visitor stamps `sot_vid_born` when it mints, for exactly this kind of
@@ -68,7 +68,14 @@ function readArrival() {
   let preview = false;
   try {
     const u = new URL(window.location.href);
-    through = u.searchParams.get(DOOR_PARAM) === DOOR_VALUE;
+    // THE DOOR IS THE ADDRESS NOW (2026-10-12). /trivia serves the run itself
+    // instead of forwarding with ?via=trivia, and every link on the site points
+    // at /trivia, so the address alone no longer says "came from outside". An
+    // arrival on /trivia with no same-site referrer does. ?via=trivia still
+    // counts, for any printed link that carries it.
+    let external = true;
+    try { external = !document.referrer || new URL(document.referrer).origin !== window.location.origin; } catch (e) {}
+    through = u.searchParams.get(DOOR_PARAM) === DOOR_VALUE || (u.pathname === '/trivia' && external);
     preview = u.searchParams.get(PREVIEW_PARAM) === PREVIEW_VALUE;
     if (u.searchParams.has(DOOR_PARAM) || u.searchParams.has(PREVIEW_PARAM)) {
       u.searchParams.delete(DOOR_PARAM);

@@ -43,7 +43,7 @@ export const RUN_DOORS = {
     tags: [['Pricer', '#4ade80'], ['Dealer', '#fbbf24'], ['Realtor', '#7dd3fc'], ['Agent', '#f472b6'], ['Curator', '#c4b5fd']],
   },
   gauntlet: {
-    href: '/circuits/gauntlet/run', name: 'Trivia Gauntlet', eyebrow: 'Daily run · Seven quizzes',
+    href: '/trivia', name: 'Trivia Gauntlet', eyebrow: 'Daily run · Seven quizzes',
     body: 'All seven daily trivia quizzes back to back, one life in each: a topic in depth, the map, sport, business, the screen, who said it, and a streak of anything at all.',
     go: 'Run all seven', accent: '#7dd3fc',
     tags: [['Deep', '#7dd3fc'], ['Atlas', '#6ee7b7'], ['Sport', '#bef264'], ['Biz', '#e8b43a'], ['Script', '#fb923c'], ['Quotes', '#fb7185'], ['Streak', '#e879f9']],
@@ -57,7 +57,7 @@ export const RUN_DOORS = {
   // Once per GAME like Judged (owner, 2026-10-09): the first time a player
   // ever opens one of the five on its own page.
   math: {
-    href: '/circuits/math/run', name: 'Math Gauntlet', eyebrow: 'Daily run · Five games', once: 'game',
+    href: '/math', name: 'Math Gauntlet', eyebrow: 'Daily run · Five games', once: 'game',
     body: 'All five daily math games back to back, one life in each: quick arithmetic, a missing number, what comes next, which line makes it, and three numbers a line.',
     go: 'Run all five', accent: '#bef264',
     tags: [['Blitz', '#c3d94a'], ['Gap', '#f9a8d4'], ['Series', '#7dd3fc'], ['Back', '#6ee7b7'], ['Blitzed', '#a8e063']],

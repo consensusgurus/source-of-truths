@@ -70,8 +70,22 @@ const nextConfig = {
       },
     ];
   },
+  // THE GAUNTLET RUNS LIVE AT THEIR SHORT ADDRESSES (owner, 2026-10-12).
+  // /trivia and /math SERVE the run page (one page, no copy), and the long
+  // addresses 308 to them with the query string carried, so every visit and
+  // every analytics row lands on one path. Redirects match the incoming
+  // request only, so the rewrite's internal target never loops back. The
+  // share-card routes under /circuits/<id>/run/ are untouched.
+  async rewrites() {
+    return [
+      { source: '/trivia', destination: '/circuits/gauntlet/run' },
+      { source: '/math', destination: '/circuits/math/run' },
+    ];
+  },
   async redirects() {
     return [
+      { source: '/circuits/gauntlet/run', destination: '/trivia', permanent: true },
+      { source: '/circuits/math/run', destination: '/math', permanent: true },
       // 2026-07-18: the Quizzes hub is now the site root (sourceoftruths.com).
       // The legacy /quizzes index 308s to it. Sub-pages (/quizzes/hub, etc.)
       // are matched exactly here, so they are unaffected.

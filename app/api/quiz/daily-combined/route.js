@@ -303,7 +303,7 @@ function groupPayload({ suffix, frozen, maxTotal, gameCount, gameResults, overal
       if (!r.abandoned) u.finished += 1;
     }
   }
-  const N = Math.max(1, bestN || 25);
+  const N = Math.max(1, bestN || 50);
   const overall = groupRank(
     [...byUser.values()]
       .map((u) => {

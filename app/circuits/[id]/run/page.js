@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import RunClient from './RunClient';
 import ValetRunClient from '../../ValetRunClient';
-import { circuitById, circuitGamesFor, circuitKeysFor, circuitSlotFor, isMarquee, isRunnableCircuit, runEngine, runGamesFor, RUN_GAMES, JAM_RUN_GAMES, MATH_RUN_GAMES } from '@/lib/circuits';
+import { circuitById, circuitGamesFor, circuitKeysFor, circuitSlotFor, isMarquee, isRunnableCircuit, runEngine, runHref, runGamesFor, RUN_GAMES, JAM_RUN_GAMES, MATH_RUN_GAMES } from '@/lib/circuits';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { SITE_URL } from '@/lib/site';
 import { T } from '@/lib/theme';
@@ -156,13 +156,13 @@ export async function generateMetadata({ params }) {
   const c = circuitById(decodeURIComponent(params.id));
   if (!c) return {};
   if (runEngine(c.id) === 'jam') {
-    const url = `${SITE_URL}/circuits/${c.id}/run`;
+    const url = `${SITE_URL}${runHref(c.id)}`;
     const hook = 'Three jammed lots. One clock.';
     return {
       title: `${c.name} — Parker, Impound and Junkyard on One Clock | Mind Loft`,
       description:
         'The three daily sliding-block puzzles played back to back as one run: a six by six, a seven by seven and an eight by eight, each with a red car to slide out of the one gap in the wall. One clock across all three, and the fastest valet takes the day. Free, no signup, new lots every day.',
-      alternates: { canonical: `/circuits/${c.id}/run` },
+      alternates: { canonical: runHref(c.id) },
       robots: { index: false, follow: true },
       openGraph: {
         title: hook,
@@ -178,13 +178,13 @@ export async function generateMetadata({ params }) {
   }
   if (runEngine(c.id) === 'math') {
     const n = circuitGamesFor(c.id, etTodayServer()).filter((g) => MATH_RUN_GAMES.includes(g.key)).length || 5;
-    const url = `${SITE_URL}/circuits/${c.id}/run`;
+    const url = `${SITE_URL}${runHref(c.id)}`;
     const hook = `${spell(n, true)} math games. One life each.`;
     return {
       title: `${c.name}: ${spell(n, true)} Mental Math Games, One Long Run | Mind Loft`,
       description:
         `Every daily mental math game played back to back as one run: quick arithmetic, a missing number, what comes next, which line makes the number, and three numbers a line. ${spell(n, true)} games of twenty, one life in each, and one wrong answer ends it. No calculator. Free, no signup, new problems every day.`,
-      alternates: { canonical: `/circuits/${c.id}/run` },
+      alternates: { canonical: runHref(c.id) },
       robots: { index: false, follow: true },
       openGraph: {
         title: hook,
@@ -196,13 +196,13 @@ export async function generateMetadata({ params }) {
   }
   const games = circuitGamesFor(c.id, etTodayServer()).filter((g) => RUN_GAMES.includes(g.key));
   const n = games.length || 5;
-  const url = `${SITE_URL}/circuits/${c.id}/run`;
+  const url = `${SITE_URL}${runHref(c.id)}`;
   const hook = `${spell(n, true)} trivia quizzes. One life each.`;
   return {
     title: `${c.name} — ${spell(n, true)} Trivia Quizzes, One Long Run | Mind Loft`,
     description:
       `Quiz show practice, ${spell(n)} rounds deep. Every daily trivia quiz played back to back as one run: a topic in depth, the whole map, every sport, the business of everything, and forty questions of anything at all. Twenty seconds a question, one life in each quiz, and one wrong answer ends it. Free, no signup, new questions every day.`,
-    alternates: { canonical: `/circuits/${c.id}/run` },
+    alternates: { canonical: runHref(c.id) },
     robots: { index: false, follow: true },
     openGraph: {
       title: hook,

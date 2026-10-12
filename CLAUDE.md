@@ -8972,3 +8972,31 @@ and rolling referrers (7 days vs the week before).
   columns (and their `views` / `quiz_views` reads), `visitor_active_counts()`, Return
   Play, the Player Map, and the full-history Time Played / New Users charts. The
   builders stay in `lib/admin-data.js` for `scripts/verify-admin-data.mjs`.
+
+## The Gauntlet runs live at /trivia and /math (owner, 2026-10-12)
+
+`/trivia` and `/math` SERVE the run page through `rewrites()` in next.config.js, and
+`/circuits/gauntlet/run` and `/circuits/math/run` 308 to them, query string intact.
+One page, one address, one analytics row. Both circuits carry `path` (so every
+`runHref` link uses the short address) and `shareHref` (so every share does). The
+landing pages stay at `/circuits/gauntlet` and `/circuits/math`.
+
+- **A rewrite only works if no page file claims the path.** `app/trivia/page.js`,
+  `app/math/page.js` and `MathDoor.jsx` were deleted for exactly that reason; a
+  filesystem route outranks an ordinary rewrite. Do not recreate them.
+- **Never hardcode `/circuits/<id>/run`.** Link through `runHref(id)`.
+- **The /trivia door pop** (TriviaDoorPop) now fires on an arrival at `/trivia`
+  with no same-site referrer, or on `?via=trivia`, plus the existing new-visitor test.
+
+## New-game pop-ups are for returning visitors only (owner, 2026-10-12)
+
+PremierePop requires `seenBeforeToday()` (lib/visitor.js: the visitor id was minted
+before today's Eastern midnight, or has no birth stamp because it predates the stamp
+or was adopted) AND a play signal. A per-puzzle save written by today's first game is
+not evidence of a return visit. `?premiere=1` still previews.
+
+## Daily best-N is 50 from 2026-10-12
+
+`bestNForSuffix` returns 50 (750 ceiling) from `BESTN_CUTOVER_3`, 25 for 07-27..10-11,
+and the older steps before that. Days before the cutover never recompute. Surfaces read
+`bestN` / `maxTotal` off the payload; never hardcode 25, 375, 50 or 750 in copy.

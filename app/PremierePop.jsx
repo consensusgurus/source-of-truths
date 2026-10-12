@@ -14,7 +14,8 @@
 //   past its `until` is silent forever; nobody back after a month is handed a
 //   stack of old launches.
 //
-//   RETURNING. Positive play signals only: a stored identity, any
+//   RETURNING. Seen on an earlier ET day (lib/visitor seenBeforeToday, since
+//   2026-10-12) AND a positive play signal: a stored identity, any
 //   sot_<key>_day breadcrumb, or any per-puzzle save. sot_quiz_anon is minted
 //   on first paint and proves nothing (same test WelcomeOverlay used).
 //
@@ -42,6 +43,7 @@ import { runDoneToday } from './circuits/RunDoorPop';
 import { RAMP_INK, RAMP_INK_LIGHT, categoryColor, categoryColorLight, rampIndexFor } from '@/lib/category-ramp';
 import GameGlyph from './GameGlyph';
 import { fetchDayStatus, etToday } from './useDayStats';
+import { seenBeforeToday } from '@/lib/visitor';
 
 const KEY = (k) => `sot_premiere_${k}`;
 
@@ -113,7 +115,11 @@ export default function PremierePop() {
     const runMembers = new Set(runOpen.flatMap((r) => r.keys));
     const open = PREMIERES.filter((p) => today >= p.from && today <= p.until && DAILY_GAME_MAP[p.key] && !NO_PREMIERE.has(p.key) && !runMembers.has(p.key));
     if (!open.length && !runOpen.length) return;
-    if (!force && !returning()) return;
+    // NEW ARRIVALS GET NOTHING (owner, 2026-10-12, after a first-day visitor was
+    // handed Ergo): the browser must have been here on an earlier ET day as
+    // well as carry a play signal. A save written by today's first game proves
+    // nothing on its own.
+    if (!force && !(seenBeforeToday() && returning())) return;
     const runCand = runOpen.find((r) => force || (!safeGet(KEY(r.id)) && !runDoneToday(r.id)));
     if (runCand) {
       const timers = [];

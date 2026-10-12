@@ -339,7 +339,7 @@ function TodayPane({ board, boardErr, members, viewer, day, today, setDay }) {
   const played = new Set(rows.filter((r) => (r.total || 0) > 0).map((r) => r.userKey));
   const scored = rows.filter((r) => (r.total || 0) > 0);
   const waiting = members.filter((m) => !played.has(m.userKey));
-  const max = (board && board.maxTotal) || 375;
+  const max = (board && board.maxTotal) || 750;
   return (
     <div className="gp-pane">
       <DayNav day={day} today={today} setDay={setDay} frozen={board && board.frozen} />

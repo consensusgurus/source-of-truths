@@ -229,7 +229,7 @@ export default function PriceCheckBoard({ dateLabel = '', circuit: CIRCUIT = 'pr
 
           <div className="pcb-foot">
             <a className="pcb-go" href={path}>Play today&rsquo;s {name}</a>
-            <a className="pcb-alt" href="/circuits/gauntlet/run">Or run the Trivia Gauntlet &rsaquo;</a>
+            <a className="pcb-alt" href="/trivia">Or run the Trivia Gauntlet &rsaquo;</a>
           </div>
         </div>
       </div>
