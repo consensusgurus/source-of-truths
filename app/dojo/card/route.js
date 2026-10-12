@@ -94,7 +94,7 @@ export async function GET(req) {
   try {
     const q = new URL(req.url).searchParams;
     const s = q.get('s') || '';
-    const parts = /^\d{1,2}(-\d{1,2}){2}$/.test(s) ? s.split('-').map((x) => Math.max(0, Math.min(35, Number(x)))) : null;
+    const parts = /^\d{1,2}(-\d{1,2}){2}$/.test(s) ? s.split('-').map((x) => Math.max(0, Math.min(40, Number(x)))) : null;
     const tRaw = q.get('t');
     const tq = tRaw == null || tRaw === '' ? NaN : Number(tRaw);
     const tot = Number.isFinite(tq) && tq >= 0 && tq <= DOJO_MAX ? Math.round(tq) : null;

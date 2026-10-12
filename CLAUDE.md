@@ -9026,7 +9026,7 @@ Circuit id `dojo`, engine `dojo`, scorer `dojo`, `scoreFrom: '2026-10-12'`.
   `scripts/verify-circuits.mjs` recomputes the pick with its own day math (check 7), proves
   every pool member is dealt once per pool-length cycle (7b), and tiers the trophy off the
   AVERAGE day (fixed medians plus the pool's mean).
-- **Scoring:** out of 100, Sixes 30, Suds 35, the variant 35; each half solving, half speed
+- **Scoring:** out of 100, Sixes 25, Suds 35, the variant 40 (each form worth more than the last); each half solving, half speed
   (speed 1 at PAR, 0 at CAP, PAR = fastest tenth of solves, CAP = 75th percentile, measured
   2026-09-17 to 10-11; Cages' CAP held at an hour). A sudoku is right or not, so this is a race.
 - **Belts:** Black 96, Brown 90, Purple 84, Blue 77, Green 70, Orange 62, Yellow 50, White.
