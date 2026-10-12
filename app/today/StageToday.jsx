@@ -1925,6 +1925,28 @@ export default function StageToday() {
       </button>
     );
   };
+  // THE PUZZLE PANES SORT A TO Z OR BY POPULARITY (owner, 2026-10-12). A to Z
+  // is the default; Popular orders by the whole site's plays over the trailing
+  // seven ET days, which rides the same my-plays read the favorites block uses.
+  // One choice for every pane, remembered per browser.
+  const [sortBy, setSortBy] = useState('az');
+  useEffect(() => {
+    try { if (localStorage.getItem('sot_home_sort') === 'pop') setSortBy('pop'); } catch (e) { /* storage off */ }
+  }, []);
+  const pickSort = (v) => {
+    setSortBy(v);
+    try { localStorage.setItem('sot_home_sort', v); } catch (e) { /* storage off */ }
+  };
+  // Declared ABOVE ixNav, which renders it: below it was a temporal dead zone
+  // and took the homepage down (2026-10-12).
+  const sortCtl = (mobile) => (
+    <div className={mobile ? 'sty-sort sty-sortm' : 'sty-sort'} role="group" aria-label="Sort puzzles"
+      onClick={(e) => e.stopPropagation()}>
+      <button type="button" aria-pressed={sortBy === 'az'} onClick={() => pickSort('az')}>A&ndash;Z</button>
+      <button type="button" aria-pressed={sortBy === 'pop'} onClick={() => pickSort('pop')}
+        title="Most played across the site over the last 7 days">Popular</button>
+    </div>
+  );
   const alphaDone = alpha.filter((g) => done.has(g.key)).length;
   const ixNav = (
     <nav className={'sty-ixn' + (reorder ? ' re' : '') + (picked ? ' pk' : '')} aria-label="Sections">
@@ -2131,18 +2153,6 @@ export default function StageToday() {
   // One read for the whole page, the first time a short category opens.
   const [fav, setFav] = useState(null);
   const favAsked = useRef(false);
-  // THE PUZZLE PANES SORT A TO Z OR BY POPULARITY (owner, 2026-10-12). A to Z
-  // is the default; Popular orders by the whole site's plays over the trailing
-  // seven ET days, which rides the same my-plays read the favorites block uses.
-  // One choice for every pane, remembered per browser.
-  const [sortBy, setSortBy] = useState('az');
-  useEffect(() => {
-    try { if (localStorage.getItem('sot_home_sort') === 'pop') setSortBy('pop'); } catch (e) { /* storage off */ }
-  }, []);
-  const pickSort = (v) => {
-    setSortBy(v);
-    try { localStorage.setItem('sot_home_sort', v); } catch (e) { /* storage off */ }
-  };
   const favWanted = !!(railCat && fitFor(railCat.games.length)) || sortBy === 'pop';
   useEffect(() => {
     if (!favWanted || favAsked.current) return;
@@ -2158,14 +2168,6 @@ export default function StageToday() {
     const w = fav.week;
     return list.slice().sort((a, b) => ((w[b.key] || 0) - (w[a.key] || 0)) || a.name.localeCompare(b.name));
   };
-  const sortCtl = (mobile) => (
-    <div className={mobile ? 'sty-sort sty-sortm' : 'sty-sort'} role="group" aria-label="Sort puzzles"
-      onClick={(e) => e.stopPropagation()}>
-      <button type="button" aria-pressed={sortBy === 'az'} onClick={() => pickSort('az')}>A&ndash;Z</button>
-      <button type="button" aria-pressed={sortBy === 'pop'} onClick={() => pickSort('pop')}
-        title="Most played across the site over the last 7 days">Popular</button>
-    </div>
-  );
   const favBlock = (cat, games, k) => {
     if (!k) return null;
     let rows = null; let own = false; let total = 0; let tried = 0;
