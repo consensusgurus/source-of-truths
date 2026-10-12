@@ -19,6 +19,15 @@
 //   - the tree is then scrambled by random sibling swaps at every level, which
 //     keeps who-meets-whom and moves the champion's slot around.
 //
+// RECOGNIZABLE NAMES (owner ruling 2026-10-12, after the 10-12 board of Kongur
+// Tagh, Gangkhar Puensum and Gyachung Kang): every item must be something a
+// general US player has heard of. The pools in gen-bracket-pools.mjs are curated
+// to that standard and are the allowlist verify-bracket.mjs enforces. Towers,
+// volcanoes, state high points and bridge spans were retired as topics because
+// none of them fills a sixteen-item board with famous names. Oct 14 to Nov 30
+// was regenerated on the curated pools the same day (boards through Oct 13 are
+// live or already published and stay frozen).
+//
 // CONTENT RULES (owner, restated for this extension):
 //   - every value is a FROZEN, citable measurement. No active player's career
 //     total, no current ranking, no live capacity, no population estimate. The
@@ -50,11 +59,7 @@ const TOPICS = {
   island:    { fam: 'area',   pool: P.ISLAND_AREA,     unit: 'km2',    dir: 'max', metric: 'Which ISLAND is bigger?', short: 'Bigger island wins' , margin: 0.02 },
   lake:      { fam: 'area',   pool: P.LAKE_AREA,       unit: 'km2',    dir: 'max', metric: 'Which LAKE is bigger?', short: 'Bigger lake wins' , margin: 0.03 },
   stateArea: { fam: 'area',   pool: P.STATE_AREA,      unit: 'km2',    dir: 'max', metric: 'Which STATE is bigger by total area (land and water)?', short: 'Bigger state wins', margin: 0.01 },
-  tower:     { fam: 'height', pool: P.TOWER,           unit: 'm',      dir: 'max', metric: 'Which TOWER is taller?', short: 'Taller tower wins' , margin: 0.01 },
-  taller:    { fam: 'height', pool: dedupe([...P.TALLER_BANK, ...P.VOLCANO]), unit: 'm', dir: 'max', metric: 'Which is TALLER?', short: 'Taller wins' , margin: 0.01 },
-  volcano:   { fam: 'height', pool: P.VOLCANO,         unit: 'm',      dir: 'max', metric: 'Which VOLCANO rises higher?', short: 'Higher volcano wins' , margin: 0.01 },
-  highpoint: { fam: 'height', pool: P.HIGHPOINT,       unit: 'm',      dir: 'max', metric: 'Which STATE HIGH POINT is higher?', short: 'Higher summit wins' , margin: 0.01 },
-  bridge:    { fam: 'length', pool: P.BRIDGE_SPAN,     unit: 'm',      dir: 'max', metric: 'Which BRIDGE has the longer main span?', short: 'Longer span wins' , margin: 0.02 },
+  taller:    { fam: 'height', pool: P.TALLER_BANK, unit: 'm', dir: 'max', metric: 'Which is TALLER?', short: 'Taller wins' , margin: 0.01 },
   river:     { fam: 'length', pool: P.RIVER,           unit: 'km',     dir: 'max', metric: 'Which RIVER is longer?', short: 'Longer river wins', alias: ['Which is LONGER?'] , margin: 0.05 },
   box:       { fam: 'box',    pool: P.BOX_OFFICE,      unit: 'usdm',   dir: 'max', metric: 'Which grossed MORE worldwide?', short: 'Bigger box office wins' , margin: 0.02 },
   statePop:  { fam: 'people', pool: P.STATE_POP_2020,  unit: 'people', dir: 'max', metric: 'Which STATE had more people in the 2020 Census?', short: 'More people wins' , margin: 0.005 },
@@ -68,25 +73,24 @@ const TOPICS = {
 // One topic per day from 2026-10-14. Sundays (Oct 18, 25, Nov 1, 8, 15, 22, 29)
 // take a 32-item board, so they draw only on pools deep enough for one.
 const SCHEDULE = [
-  // from 2026-10-14
-  'tower', 'k', 'river', 'box',
+  // from 2026-10-14 (regenerated 2026-10-12 on the recognizable-names pools)
+  'river', 'k', 'box', 'taller',
   // from 2026-10-18
-  'statePop', 'lake', 'yards', 'river', 'small', 'hr', 'lake',
+  'statePop', 'lake', 'yards', 'latS', 'small', 'hr', 'island',
   // from 2026-10-25
-  'latN', 'statePop', 'volcano', 'k', 'island', 'bridge', 'taller',
+  'latN', 'cityPop', 'taller', 'k', 'country', 'river', 'box',
   // from 2026-11-01
-  'hr', 'country', 'box', 'highpoint', 'latN', 'yards', 'taller',
+  'hr', 'statePop', 'lake', 'yards', 'latN', 'island', 'taller',
   // from 2026-11-08
-  'stateArea', 'stateFew', 'latN', 'volcano', 'bridge', 'yards', 'island',
+  'stateArea', 'stateFew', 'k', 'river', 'box', 'small', 'yards',
   // from 2026-11-15
-  'taller', 'k', 'cityPop', 'volcano', 'small', 'highpoint', 'hr',
+  'taller', 'cityPop', 'latS', 'hr', 'lake', 'k', 'box',
   // from 2026-11-22
-  'country', 'latS', 'river', 'box', 'stateArea', 'statePop', 'country',
+  'country', 'yards', 'river', 'statePop', 'taller', 'hr', 'island',
   // from 2026-11-29
-  'latS', 'lake',
+  'latS', 'stateArea',
 ];
 
-function dedupe(pairs) { const s = new Set(); return pairs.filter(([n]) => (s.has(n) ? false : s.add(n))); }
 function mulberry32(a) { return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 const addDays = (iso, k) => { const d = new Date(iso + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + k); return d.toISOString().slice(0, 10); };
 const dayDiff = (a, b) => Math.round((new Date(b + 'T00:00:00Z') - new Date(a + 'T00:00:00Z')) / 864e5);

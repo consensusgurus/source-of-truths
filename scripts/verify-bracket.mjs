@@ -15,11 +15,19 @@
 //     as "Ping An Finance Centre" and "Sydney Harbour Bridge" are allowed), and
 //     no live sports board: every sport unit on these boards must be a RETIRED
 //     player's final total, which the metric says in so many words
+//   - from FAME_FROM (2026-10-14, owner ruling 2026-10-12): RECOGNIZABLE NAMES
+//     ONLY. Every item must be a member of a curated pool in
+//     scripts/gen-bracket-pools.mjs, which holds only names a general US player
+//     would know. A board of Kongur Tagh and Gyachung Kang is unplayable, not hard.
+//     To add a name, add it to a pool on purpose; this check is the gate.
 // Run: node scripts/verify-bracket.mjs
 import { PUZZLES } from '../app/bracket/puzzles.js';
+import * as POOLS from './gen-bracket-pools.mjs';
 import { scanUS } from './us-spellings.mjs';
 
 const COPY_FROM = '2026-10-14';
+const FAME_FROM = '2026-10-14';
+const FAMOUS = new Set(Object.values(POOLS).flatMap((pool) => pool.map(([name]) => name)));
 const PROPER = ['Ping An Finance Centre', 'Lakhta Centre', 'CTF Finance Centre', 'Sydney Harbour Bridge'];
 
 let fails = 0;
@@ -77,6 +85,10 @@ PUZZLES.forEach((p, i) => {
       if (rel(k, k + 1) < 0.35) fail(`${tag}: first-round matchup ${k / 2 + 1} is too close for a warm-up`);
     }
     if (rel(finalists[0], finalists[1]) > 0.22) fail(`${tag}: the final is not close enough to be a coin flip`);
+  }
+
+  if (p.live >= FAME_FROM) {
+    for (const x of p.items) if (!FAMOUS.has(x.name)) fail(`${tag}: "${x.name}" is not in a curated pool (scripts/gen-bracket-pools.mjs), so nobody has vetted that players will recognize it`);
   }
 
   if (p.live >= COPY_FROM) {

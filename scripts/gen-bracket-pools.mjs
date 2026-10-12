@@ -7,6 +7,17 @@
 // was left out rather than guessed. Values reused from the live bank keep the
 // bank's own figure so the same thing never reads two ways on two days.
 //
+// RECOGNIZABLE NAMES ONLY (owner ruling 2026-10-12). Bracket is a guessing game
+// about things the player has heard of. A board of Kongur Tagh, Gangkhar Puensum
+// and Gyachung Kang is not hard, it is unplayable: nobody can reason about a name
+// they have never seen. So every pool holds only names a general US player would
+// recognize, and a topic that cannot fill sixteen slots with famous things is
+// retired rather than padded (towers, volcanoes, state high points and bridge
+// spans went 2026-10-12; their best-known members moved into TALLER_BANK).
+// Curated with English Wikipedia pageviews as a floor and judgment on top.
+// scripts/verify-bracket.mjs fails any board from 2026-10-14 on that carries a
+// name that is not in one of these pools, so this file IS the allowlist.
+//
 // A pool entry is [name, value]. Values within one pool never tie, because a tie
 // would make a matchup unanswerable (the generator re-checks per board anyway).
 
@@ -56,40 +67,34 @@ export const SMALL_COUNTRY_AREA = [
   ['Rwanda', 26338], ['Haiti', 27750], ['Albania', 28748],
 ];
 
-// Islands: the live bank's island figures, plus the bank's own Greenland, Baffin,
-// Sumatra, Hokkaido and Tasmania from its area boards.
+// Islands everyone has heard of. New figures (New Guinea, Borneo, Madagascar,
+// Honshu, Sicily, Sardinia, Crete, Corsica, Long Island, Maui, Isle of Man,
+// Martha's Vineyard) from Wikidata, 2026-10-12. Islands that are also a country
+// with outlying territory (Cuba, Iceland, Sri Lanka, Puerto Rico) are left out,
+// since island and country areas differ.
 export const ISLAND_AREA = [
-  ['Greenland', 2166086], ['Baffin Island', 507451], ['Sumatra', 473481],
-  ['Great Britain', 209331], ['Victoria Island', 217291], ['Ellesmere Island', 196235],
-  ['Sulawesi', 174600], ['South Island', 150437], ['Java', 128297], ['North Island', 113729],
-  ['Luzon', 109965], ['Newfoundland', 108860], ['Mindanao', 97530], ['Ireland', 84421],
-  ['Hokkaido', 77984], ['Hispaniola', 77900], ['Sakhalin', 72492], ['Seram', 70370],
-  ['Banks Island', 70028], ['Tasmania', 68401], ['Devon Island', 55247], ['Alexander Island', 49070],
-  ['Isla Grande de Tierra del Fuego', 47992], ['Axel Heiberg Island', 43178], ['Melville Island', 42149],
-  ['Southampton Island', 41214], ['Marajo', 40100], ['Spitsbergen', 39044], ['Kyushu', 36782],
-  ['New Britain', 36520], ['Taiwan Island', 35883], ['Prince of Wales Island', 33339],
-  ['Vancouver Island', 32134], ['Timor', 30777], ['Shikoku', 18297], ['Halmahera Island', 17780],
-  ['Prince Patrick Island', 15848], ['Bangka Island', 11413], ['Sumba Island', 10711],
-  ['Mindoro', 10572], ['Cape Breton Island', 10311], ['Bougainville Island', 9318],
-  ['Kodiak Island', 9311], ['Cyprus', 9234], ['New Ireland', 7405], ['Bali Island', 5633],
-  ['Vanua Levu', 5587],
+  ['Greenland', 2166086], ['New Guinea', 785753], ['Borneo', 748168], ['Madagascar', 587295],
+  ['Baffin Island', 507451], ['Sumatra', 473481], ['Honshu', 227940], ['Great Britain', 209331],
+  ['South Island', 150437], ['Java', 128297], ['North Island', 113729], ['Luzon', 109965],
+  ['Newfoundland', 108860], ['Ireland', 84421], ['Hokkaido', 77984], ['Hispaniola', 77900],
+  ['Tasmania', 68401], ['Taiwan Island', 35883], ['Vancouver Island', 32134], ['Sicily', 25711],
+  ['Sardinia', 23949], ['Jamaica', 10991], ['Kodiak Island', 9311], ['Cyprus', 9234],
+  ['Corsica', 8680], ['Crete', 8336], ['Bali', 5633], ['Long Island', 3566], ['Maui', 1883],
+  ['Isle of Man', 572], ['Martha\'s Vineyard', 227],
 ];
 
-// Lakes: the bank's figures where it has them (seasonal and ephemeral lakes such as
-// Eyre and Poyang are left out), plus well-documented surface areas.
+// Lakes everyone has heard of. Seasonal, shrinking and reservoir lakes (Eyre,
+// Great Salt Lake, Dead Sea, Mead, Powell) are left out. Okeechobee and
+// Winnipesaukee from Wikidata, 2026-10-12.
 export const LAKE_AREA = [
   ['Lake Superior', 82350], ['Lake Victoria', 68100], ['Lake Huron', 59600],
   ['Lake Michigan', 57750], ['Lake Tanganyika', 32900], ['Lake Baikal', 31722],
   ['Great Bear Lake', 31153], ['Lake Malawi', 29600], ['Great Slave Lake', 27200],
-  ['Lake Erie', 25744], ['Lake Winnipeg', 24400], ['Lake Balkhash', 18740], ['Lake Ontario', 18960],
-  ['Lake Ladoga', 17700], ['Lake Maracaibo', 13210], ['Lake Onega', 9800], ['Lake Titicaca', 8562],
-  ['Lake Nicaragua', 8264], ['Lake Athabasca', 7850], ['Reindeer Lake', 6650], ['Lake Turkana', 6405],
-  ['Issyk-Kul', 6236], ['Lake Vanern', 5650], ['Lake Albert', 5270], ['Lake Mweru', 5120],
-  ['Lake Taymyr', 4560], ['Lake of the Woods', 4350], ['Lake Van', 3755], ['Lake Tana', 3600],
-  ['Lake Peipus', 3555], ['Lake Kivu', 2700], ['Lake Tai', 2250], ['Lake Champlain', 1269],
-  ['Lake Toba', 1130], ['Lake Biwa', 670], ['Lake Taupo', 616], ['Lake Geneva', 580],
-  ['Lake Constance', 536], ['Lake Tahoe', 497], ['Lake Garda', 370], ['Lake Maggiore', 212],
-  ['Lake Como', 146], ['Lake Lucerne', 114], ['Crater Lake', 53], ['Loch Ness', 56],
+  ['Lake Erie', 25744], ['Lake Winnipeg', 24400], ['Lake Ontario', 18960],
+  ['Lake Titicaca', 8562], ['Lake Nicaragua', 8264], ['Lake Okeechobee', 1890],
+  ['Lake Champlain', 1269], ['Lake Geneva', 580], ['Lake Constance', 536], ['Lake Tahoe', 497],
+  ['Lake Garda', 370], ['Lake Maggiore', 212], ['Lake Winnipesaukee', 185], ['Lake Como', 146],
+  ['Lake Lucerne', 114], ['Loch Ness', 56], ['Crater Lake', 53],
 ];
 
 // US states by TOTAL area, water included (Census); the question says so, since
@@ -112,95 +117,31 @@ export const STATE_AREA = [
 ];
 
 // ---- height, m ----------------------------------------------------------------
-// The live bank's "Which is TALLER?" pool (mountains plus structures), reused as-is.
+// "Which is TALLER?": famous mountains (summit elevation) and famous structures
+// (structural height). The Himalayan 8,000ers past K2 and the Caucasus and Pamir
+// peaks were cut 2026-10-12. New figures (Matterhorn, Pikes Peak, Grand Teton,
+// Olympus, Half Dome, Kosciuszko, Ben Nevis, Table Mountain, Tokyo Skytree,
+// Woolworth, Trump Tower, St. Peter's, Taj Mahal, Tower Bridge, Arc de Triomphe,
+// Brandenburg Gate) from Wikidata, 2026-10-12. Statue of Liberty and the Great
+// Pyramid are left out: both have two common heights.
 export const TALLER_BANK = [
-  ['Mount Everest', 8850], ['K2', 8611], ['Lhotse', 8516], ['Makalu', 8485], ['Cho Oyu', 8188],
-  ['Dhaulagiri', 8167], ['Manaslu', 8163], ['Nanga Parbat', 8126], ['Broad Peak', 8051],
-  ['Shishapangma', 8027], ['Gyachung Kang', 7952], ['Nanda Devi', 7816], ['Terich Mir', 7708],
-  ['Kongur Tagh', 7649], ['Gangkhar Puensum', 7570], ['Ismoil Somoni Peak', 7495], ['Noshaq', 7492],
-  ['Jengish Chokusu', 7439], ['Pumori', 7161], ['Khan Tengri', 7010], ['Aconcagua', 6962],
-  ['Ojos del Salado', 6893], ['Huascaran', 6768], ['Llullaillaco', 6723], ['Nevado Sajama', 6542],
-  ['Illimani', 6438], ['Mount Elbrus', 5642], ['Mount Saint Elias', 5500], ['Dykh-Tau', 5204],
-  ['Mount Kenya', 5199], ['Shkhara', 5193], ['Mount Ararat', 5137], ['Mount Kazbek', 5033],
-  ['Pico Bolivar', 4978], ['Puncak Jaya', 4884], ['Mont Blanc', 4810], ['Klyuchevskaya Sopka', 4800],
-  ['Dufourspitze', 4634], ['Dom', 4546], ['Finsteraarhorn', 4274], ['Mauna Kea', 4207],
-  ['Jungfrau', 4167],
-  ['Shanghai Tower', 632], ['Lotte World Tower', 556], ['CN Tower', 553], ['One World Trade Center', 546],
-  ['Ostankino Tower', 540], ['Taipei 101', 508], ['Oriental Pearl Tower', 468], ['Empire State Building', 443],
-  ['Petronas Towers', 452], ['Willis Tower', 442], ['John Hancock Center', 344], ['Eiffel Tower', 324],
-  ['Chrysler Building', 319], ['Transamerica Pyramid', 260], ['The Shard', 244], ['Golden Gate Bridge', 227],
-  ['Hoover Dam', 221], ['Gateway Arch', 192], ['Space Needle', 184], ['Sagrada Familia', 173],
-  ['Washington Monument', 169], ['Ulm Minster', 162], ['London Eye', 135], ['Sydney Harbour Bridge', 134],
-  ['Saturn V', 111], ['Atomium', 102], ['Big Ben', 96], ['Flatiron Building', 94], ['Brooklyn Bridge', 84],
-  ['Notre-Dame de Paris', 69], ['Leaning Tower of Pisa', 58], ['Colosseum', 48], ['Christ the Redeemer', 30],
-];
-
-// The live bank's skyscraper pool, reused as-is.
-export const TOWER = [
-  ['Burj Khalifa', 830], ['Merdeka 118', 679], ['Shanghai Tower', 632], ['Abraj Al Bait', 601],
-  ['Ping An Finance Centre', 599], ['Lotte World Tower', 556], ['One World Trade Center', 546],
-  ['CTF Finance Centre', 530], ['Lakhta Centre', 462], ['Empire State Building', 443],
-  ['Zifeng Tower', 450], ['Willis Tower', 442], ['Guangzhou International Finance Center', 440],
-  ['111 West 57th Street', 435], ['432 Park Avenue', 426], ['Marina 101', 425],
-  ['Kuala Lumpur Tower', 421], ['Princess Tower', 414], ['2 World Trade Center', 403],
-  ['CITIC Plaza', 390], ['Shun Hing Square', 384], ['Emirates Office Tower', 355], ['Aon Center', 346],
-  ['Mercury City Tower', 339], ['First Canadian Place', 298], ['SEG Plaza', 292],
-  ['70 Pine Street', 290], ['40 Wall Street', 284], ['One Raffles Place', 280],
-  ['Bitexco Financial Tower', 266],
-];
-
-// Volcanoes, summit elevation. Etna and Krakatoa (whose summits keep changing) are out.
-export const VOLCANO = [
-  ['Ojos del Salado', 6893], ['Llullaillaco', 6723], ['Chimborazo', 6263], ['Cotopaxi', 5897],
-  ['Kilimanjaro', 5895], ['Mount Elbrus', 5642], ['Mount Damavand', 5610],
-  ['Popocatepetl', 5426], ['Mount Ararat', 5137], ['Klyuchevskaya Sopka', 4800], ['Mount Rainier', 4392],
-  ['Mount Shasta', 4322], ['Mauna Kea', 4207], ['Mauna Loa', 4169], ['Mount Cameroon', 4040],
-  ['Mount Erebus', 3794], ['Mount Fuji', 3776], ['Mount Adams', 3743], ['Mount Teide', 3715],
-  ['Mount Nyiragongo', 3470], ['Mount Hood', 3429], ['Mount Baker', 3286], ['Lassen Peak', 3187],
-  ['Mount Tambora', 2850], ['Mount St. Helens', 2549], ['Hekla', 1491], ['Mount Pinatubo', 1486],
-  ['Mount Pelee', 1397], ['Mount Vesuvius', 1281], ['Kilauea', 1247], ['Sakurajima', 1117],
-  ['Stromboli', 924],
-];
-
-// US state high points.
-export const HIGHPOINT = [
-  ['Denali (Alaska)', 6190], ['Mount Whitney (California)', 4421], ['Mount Elbert (Colorado)', 4401],
-  ['Mount Rainier (Washington)', 4392], ['Gannett Peak (Wyoming)', 4209], ['Mauna Kea (Hawaii)', 4207],
-  ['Kings Peak (Utah)', 4123], ['Wheeler Peak (New Mexico)', 4013], ['Boundary Peak (Nevada)', 4007],
-  ['Granite Peak (Montana)', 3904], ['Borah Peak (Idaho)', 3859], ['Humphreys Peak (Arizona)', 3852],
-  ['Mount Hood (Oregon)', 3429], ['Guadalupe Peak (Texas)', 2667], ['Black Elk Peak (South Dakota)', 2208],
-  ['Mount Mitchell (North Carolina)', 2037], ['Clingmans Dome (Tennessee)', 2025],
-  ['Mount Washington (New Hampshire)', 1917], ['Mount Rogers (Virginia)', 1746],
-  ['Panorama Point (Nebraska)', 1654], ['Mount Marcy (New York)', 1629], ['Mount Katahdin (Maine)', 1606],
-  ['Black Mesa (Oklahoma)', 1516], ['Spruce Knob (West Virginia)', 1482], ['Brasstown Bald (Georgia)', 1458],
-  ['Mount Mansfield (Vermont)', 1340], ['Black Mountain (Kentucky)', 1263], ['Mount Sunflower (Kansas)', 1232],
-  ['Sassafras Mountain (South Carolina)', 1085], ['White Butte (North Dakota)', 1069],
-  ['Mount Greylock (Massachusetts)', 1064], ['Backbone Mountain (Maryland)', 1024],
-  ['Mount Davis (Pennsylvania)', 979], ['Magazine Mountain (Arkansas)', 839],
-  ['Cheaha Mountain (Alabama)', 735], ['Mount Frissell (Connecticut)', 725],
-  ['Eagle Mountain (Minnesota)', 701], ['Mount Arvon (Michigan)', 603], ['Timms Hill (Wisconsin)', 595],
-  ['High Point (New Jersey)', 550], ['Taum Sauk Mountain (Missouri)', 540], ['Hawkeye Point (Iowa)', 509],
-  ['Campbell Hill (Ohio)', 472], ['Hoosier Hill (Indiana)', 383], ['Charles Mound (Illinois)', 376],
-  ['Jerimoth Hill (Rhode Island)', 247], ['Woodall Mountain (Mississippi)', 246],
-  ['Driskill Mountain (Louisiana)', 163], ['Ebright Azimuth (Delaware)', 137], ['Britton Hill (Florida)', 105],
-];
-
-// Bridges, length of the main span.
-export const BRIDGE_SPAN = [
-  ['Akashi Kaikyo Bridge', 1991], ['1915 Canakkale Bridge', 2023], ['Xihoumen Bridge', 1650],
-  ['Great Belt East Bridge', 1624], ['Osman Gazi Bridge', 1550], ['Yi Sun-sin Bridge', 1545],
-  ['Runyang Bridge', 1490], ['Humber Bridge', 1410], ['Yavuz Sultan Selim Bridge', 1408],
-  ['Jiangyin Bridge', 1385], ['Tsing Ma Bridge', 1377], ['Hardanger Bridge', 1310],
-  ['Verrazzano-Narrows Bridge', 1298], ['Golden Gate Bridge', 1280], ['High Coast Bridge', 1210],
-  ['Mackinac Bridge', 1158], ['Russky Bridge', 1104], ['Sutong Bridge', 1088],
-  ['Bosphorus Bridge', 1074], ['George Washington Bridge', 1067], ['Stonecutters Bridge', 1018],
-  ['25 de Abril Bridge', 1013], ['Forth Road Bridge', 1006], ['Severn Bridge', 988],
-  ['Pont de Normandie', 856], ['Tacoma Narrows Bridge', 853], ['Kanmon Bridge', 712],
-  ['Ambassador Bridge', 564], ['Quebec Bridge', 549], ['Forth Bridge', 521],
-  ['New River Gorge Bridge', 518], ['Bayonne Bridge', 504], ['Sydney Harbour Bridge', 503],
-  ['Williamsburg Bridge', 488], ['Brooklyn Bridge', 486], ['Lions Gate Bridge', 473],
-  ['Manhattan Bridge', 448], ['Hell Gate Bridge', 298], ['Clifton Suspension Bridge', 214],
-  ['Menai Suspension Bridge', 176],
+  ['Mount Everest', 8850], ['K2', 8611], ['Aconcagua', 6962], ['Denali', 6190],
+  ['Kilimanjaro', 5895], ['Mount Elbrus', 5642], ['Mount Kenya', 5199], ['Mount Ararat', 5137],
+  ['Mont Blanc', 4810], ['Matterhorn', 4478], ['Mount Whitney', 4421], ['Mount Rainier', 4392],
+  ['Pikes Peak', 4302], ['Mauna Kea', 4207], ['Grand Teton', 4199], ['Mount Fuji', 3776],
+  ['Mount Hood', 3429], ['Mount Olympus', 2918], ['Half Dome', 2693], ['Mount St. Helens', 2549],
+  ['Mount Kosciuszko', 2228], ['Mount Mitchell', 2037], ['Mount Washington', 1917],
+  ['Ben Nevis', 1345], ['Mount Vesuvius', 1281], ['Table Mountain', 1085],
+  ['Burj Khalifa', 830], ['Tokyo Skytree', 634], ['CN Tower', 553], ['One World Trade Center', 546],
+  ['Taipei 101', 508], ['Petronas Towers', 452], ['Empire State Building', 443],
+  ['John Hancock Center', 344], ['Eiffel Tower', 324], ['Chrysler Building', 319],
+  ['Transamerica Pyramid', 260], ['Woolworth Building', 241], ['Golden Gate Bridge', 227],
+  ['Trump Tower', 202], ['Gateway Arch', 192], ['Space Needle', 184], ['Sagrada Familia', 173],
+  ['Washington Monument', 169], ['St. Peter\'s Basilica', 137], ['London Eye', 135],
+  ['Saturn V', 111], ['Atomium', 102], ['Big Ben', 96], ['Flatiron Building', 94],
+  ['Taj Mahal', 73], ['Notre-Dame de Paris', 69], ['Tower Bridge', 65],
+  ['Leaning Tower of Pisa', 58], ['Arc de Triomphe', 50], ['Colosseum', 48],
+  ['Christ the Redeemer', 30], ['Brandenburg Gate', 26],
 ];
 
 // ---- length, km ---------------------------------------------------------------
@@ -209,29 +150,26 @@ export const BRIDGE_SPAN = [
 // Amur-Argun, Brahmaputra) or whose figure varies widely by source (Purus,
 // Jurua, Japura, Sao Francisco). The Amazon is out too: whether it or the
 // Nile is longer is the best-known dispute in the field. Blue Nile corrected
-// to the common reference figure (fact-check 2026-09-24).
+// to the common reference figure (fact-check 2026-09-24). Cut 2026-10-12 as
+// unrecognizable: Lena, Parana, Salween, Fraser, Vilyuy, Paraguay, Pearl, Rio
+// Negro, Tarim, Vitim, Pechora, Kama, Uruguay, Angara, Nizhnyaya Tunguska, Blue
+// Nile, Limpopo, Po. Added from Wikidata: Euphrates, Snake, Tennessee, Delaware,
+// Tiber, Jordan.
 export const RIVER = [
-  ['Nile', 6650], ['Yangtze River', 6300], ['Yellow River', 5464],
-  ['Parana River', 4880], ['River Congo', 4700], ['Mekong River', 4350], ['Lena River', 4294],
-  ['Niger River', 4180], ['Volga', 3530], ['Yukon River', 3190], ['Indus River', 3180],
-  ['St. Lawrence River', 3058], ['Rio Grande', 3051],
-  ['Nizhnyaya Tunguska', 2989], ['Danube', 2850],
-  ['Salween River', 2815],
-  ['Fraser River', 2657], ['Vilyuy', 2650], ['Paraguay River', 2621], ['Pearl River', 2400],
-  ['Arkansas River', 2364], ['Dnieper', 2285], ['Rio Negro', 2250], ['Tarim River', 2030],
-  ['Tigris', 1850], ['Vitim', 1837], ['Pechora', 1809], ['Kama', 1805], ['Uruguay River', 1790],
-  ['Blue Nile', 1600], ['Angara', 1779],
-  // Added 2026-09-23: widely cited lengths, mostly shorter rivers so a board's
-  // bottom half has room for first-round routs.
-  ['Ganges', 2525], ['Zambezi', 2574], ['Murray River', 2508], ['Colorado River', 2330],
-  ['Orinoco', 2140], ['Columbia River', 2000], ['Limpopo River', 1750], ['Ohio River', 1579],
-  ['Rhine', 1233], ['Elbe', 1094], ['Loire', 1006], ['Rhone', 813], ['Seine', 777],
-  ['Po', 652], ['Hudson River', 507], ['Thames', 346],
+  ['Nile', 6650], ['Yangtze River', 6300], ['Yellow River', 5464], ['River Congo', 4700],
+  ['Mekong River', 4350], ['Niger River', 4180], ['Volga', 3530], ['Yukon River', 3190],
+  ['Indus River', 3180], ['St. Lawrence River', 3058], ['Rio Grande', 3051], ['Danube', 2850],
+  ['Euphrates', 2800], ['Zambezi', 2574], ['Ganges', 2525], ['Murray River', 2508],
+  ['Arkansas River', 2364], ['Colorado River', 2330], ['Dnieper', 2285], ['Orinoco', 2140],
+  ['Columbia River', 2000], ['Tigris', 1850], ['Snake River', 1735], ['Ohio River', 1579],
+  ['Rhine', 1233], ['Elbe', 1094], ['Tennessee River', 1049], ['Loire', 1006], ['Rhone', 813],
+  ['Seine', 777], ['Delaware River', 579], ['Hudson River', 507], ['Tiber', 405],
+  ['Thames', 346], ['Jordan River', 252],
 ];
 
 // ---- latitude, degrees (south negative) ----------------------------------------
 export const CITY_LAT = [
-  ['Tromso', 69.65], ['Murmansk', 68.97], ['Nuuk', 64.18], ['Reykjavik', 64.15], ['Anchorage', 61.22],
+  ['Murmansk', 68.97], ['Nuuk', 64.18], ['Reykjavik', 64.15], ['Anchorage', 61.22],
   ['Helsinki', 60.17], ['Oslo', 59.91], ['Stockholm', 59.33], ['Edinburgh', 55.95], ['Moscow', 55.75],
   ['Copenhagen', 55.68], ['Dublin', 53.35], ['Amsterdam', 52.37], ['Berlin', 52.52], ['Warsaw', 52.23],
   ['London', 51.51], ['Kyiv', 50.45], ['Prague', 50.08], ['Vancouver', 49.26], ['Paris', 48.86],
@@ -248,13 +186,11 @@ export const CITY_LAT = [
   ['Dakar', 14.69], ['Manila', 14.6], ['Bangkok', 13.76], ['Chennai', 13.08], ['Caracas', 10.49],
   ['Addis Ababa', 9.03], ['Panama City', 8.98], ['Colombo', 6.93], ['Lagos', 6.52], ['Accra', 5.56],
   ['Bogota', 4.61], ['Kuala Lumpur', 3.15], ['Singapore', 1.3], ['Quito', -0.22], ['Nairobi', -1.29],
-  ['Kinshasa', -4.32], ['Jakarta', -6.18], ['Dar es Salaam', -6.79], ['Luanda', -8.84], ['Lima', -12.06],
-  ['Apia', -13.83], ['Brasilia', -15.79], ['La Paz', -16.5], ['Harare', -17.83], ['Suva', -18.14],
-  ['Antananarivo', -18.88], ['Rio de Janeiro', -22.91], ['Sao Paulo', -23.55], ['Maputo', -25.97],
-  ['Johannesburg', -26.2], ['Brisbane', -27.47], ['Durban', -29.86], ['Perth', -31.96],
+  ['Kinshasa', -4.32], ['Jakarta', -6.18], ['Dar es Salaam', -6.79], ['Lima', -12.06],
+  ['Brasilia', -15.79], ['La Paz', -16.5], ['Harare', -17.83],   ['Rio de Janeiro', -22.91], ['Sao Paulo', -23.55],   ['Johannesburg', -26.2], ['Brisbane', -27.47], ['Durban', -29.86], ['Perth', -31.96],
   ['Santiago', -33.44], ['Sydney', -33.87], ['Cape Town', -33.93], ['Buenos Aires', -34.6],
   ['Montevideo', -34.9], ['Adelaide', -34.93], ['Auckland', -36.85], ['Melbourne', -37.81],
-  ['Wellington', -41.29], ['Hobart', -42.88], ['Punta Arenas', -53.16], ['Ushuaia', -54.8],
+  ['Wellington', -41.29], ['Hobart', -42.88], ['Ushuaia', -54.8],
 ];
 
 // ---- box office, $M worldwide --------------------------------------------------
