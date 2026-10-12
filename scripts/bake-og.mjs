@@ -55,7 +55,8 @@ for (const key of keys) {
 }
 
 if (wantSite) {
-  bytes += await write('brand', cards.renderBrandCard());
+  const { QUIZZES } = await import('../lib/quizzes.js');
+  bytes += await write('brand', cards.renderBrandCard(QUIZZES.length));
   bytes += await write('daily', cards.renderDailyCard());
   bytes += await write('quizzes', cards.renderQuizzesCard());
   bytes += await write('lists', cards.renderListsBrandCard());

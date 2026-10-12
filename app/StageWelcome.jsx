@@ -48,8 +48,8 @@
 // leaves them as a ladder along the foot, and only then do the words land.
 // The words are chosen by footprint: a reader with a name gets the welcome
 // and the gap-branched figures exactly as before; a reader without one gets
-// the mark, the wordmark and the three lines (Gain IQ Points / Sharpen
-// Your Mind / Elevate Your Thinking), which is the one moment the brand explains
+// the mark, the wordmark and the three lines (Sharpen Your Mind / Gain
+// IQ Points / Elevate Your Thinking), which is the one moment the brand explains
 // itself to someone who has not met it. The ladder keeps looping for as long
 // as the reads take, so the hold is a loading state rather than a freeze, and
 // the collapse onto the cap is unchanged.
@@ -201,10 +201,13 @@ const HELLO = 'Welcome back, ';
 // THE THREE LINES, for a reader with no footprint. They stamp in one at a time
 // like figures, because on this screen they are the figures.
 const LINES = [
-  // Title case, and in THIS order (owner, 2026-09-04). Climb the Board came off:
-  // it named a mechanic on the one screen whose job is to say what the site is for.
-  { k: 'l1', line: true, v: 'Gain IQ Points' },
-  { k: 'l2', line: true, v: 'Sharpen Your Mind' },
+  // Title case, and in THIS order (owner, 2026-10-12: Sharpen Your Mind lands
+  // first, then Gain IQ Points; it was IQ first from 2026-09-04). The same three
+  // lines, in the same order, are the site share card and the X banner. Climb
+  // the Board came off: it named a mechanic on the one screen whose job is to
+  // say what the site is for.
+  { k: 'l1', line: true, v: 'Sharpen Your Mind' },
+  { k: 'l2', line: true, v: 'Gain IQ Points' },
   { k: 'l3', line: true, v: 'Elevate Your Thinking' },
 ];
 // Short names for the bands: the ramp's own order, two words at most.

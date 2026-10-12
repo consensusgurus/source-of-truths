@@ -36,14 +36,14 @@ export const metadata = {
   title: `Mind Loft | Sharpen Your Mind`,
   description: `Daily puzzles and quizzes to sharpen your brain. Word, number and logic puzzles, plus 1,000+ timed quizzes across films, music, geography, sports, and brands. Then browse consensus Top 10 Lists where ${SOURCE_COUNT} experts and aggregators agree on the best restaurants, hotels, products, films, and books.`,
   openGraph: {
-    images: [{ url: '/og/brand.png', width: 1200, height: 630, alt: 'Mind Loft: daily puzzles and quizzes' }],
+    images: [{ url: '/og/brand.png?v=20261012', width: 1200, height: 630, alt: 'Mind Loft: Sharpen your mind. Gain IQ points. Elevate your thinking.' }],
     title: `Mind Loft | Sharpen Your Mind`,
     description: `Daily puzzles and quizzes to sharpen your brain. Word, number and logic puzzles, plus 1,000+ timed quizzes across films, music, geography, sports, and brands. Then browse consensus Top 10 Lists where ${SOURCE_COUNT} experts and aggregators agree on the best restaurants, hotels, products, films, and books.`,
     url: `${SITE_URL}`,
     type: 'website',
   },
   twitter: {
-    images: ['/og/brand.png'],
+    images: ['/og/brand.png?v=20261012'],
     card: 'summary_large_image',
     title: `Mind Loft | Sharpen Your Mind`,
     description: `Daily puzzles and quizzes to sharpen your brain. Word, number and logic puzzles, plus 1,000+ timed quizzes across films, music, geography, sports, and brands. Then browse consensus Top 10 Lists where ${SOURCE_COUNT} experts and aggregators agree on the best restaurants, hotels, products, films, and books.`,

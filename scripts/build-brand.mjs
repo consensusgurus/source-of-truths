@@ -93,31 +93,45 @@ const tile = (px, fill) => page(px, px,
   `<div class="t">${mark(Math.round(px * fill))}</div>`,
   `.t{width:${px}px;height:${px}px;display:flex;align-items:center;justify-content:center;background:${GROUND}}`);
 
-const bars = RAMP.map((c, i) => `<i style="background:${c};height:${Math.round(56 + i * (244 / 9))}px"></i>`).join('');
+// THE BANNER (owner, 2026-10-12): the three lines in their fixed order, each on
+// a ramp step, then every category as a chip so the banner shows the width of
+// the site. Kept clear of the bottom-left quarter, where X lays the avatar.
+const LINES = [['Sharpen your mind.', RAMP[0]], ['Gain IQ points.', RAMP[1]], ['Elevate your thinking.', RAMP[2]]];
+// [name, ramp index] in the order the home shelves run.
+const CATS = [['Word', 0], ['Numbers', 1], ['Logic', 2], ['Sudoku', 9], ['Trivia', 4],
+  ['Geography', 5], ['End Game', 3], ['Cards', 6], ['Arcade', 8], ['Crowd', 7]];
+const lines = LINES.map(([t, c]) => `<div class="ln"><i style="background:${c}"></i>${t}</div>`).join('');
+const chip = ([n, i]) => `<span><i style="background:${RAMP[i]}"></i>${n}</span>`;
+// Three rows, 4/3/3, so no category is left on a line by itself.
+const chips = [CATS.slice(0, 4), CATS.slice(4, 7), CATS.slice(7)].map((r) => `<div class="row">${r.map(chip).join('')}</div>`).join('');
+const band = RAMP.map((c) => `<i style="background:${c}"></i>`).join('');
 
 const banner = page(1500, 500, `
+<div class="band">${band}</div>
 <div class="wrap">
   <div class="left">
-    <div class="brand">${mark(58)}<b>Mind <em>Loft</em></b></div>
-    <h1>Sharpen Your Mind.</h1>
-    <p>Eighty-four daily puzzles and a thousand quizzes. Free.</p>
+    <div class="brand">${mark(50)}<b>Mind <em>Loft</em></b></div>
+    ${lines}
   </div>
-  <div class="ramp">${bars}</div>
+  <div class="cats">${chips}</div>
 </div>`, `
-.wrap{width:1500px;height:500px;display:flex;align-items:center;justify-content:space-between;padding:0 96px 76px}
+.band{display:flex;height:8px}.band i{flex:1}
+.wrap{width:1500px;height:492px;display:flex;align-items:center;justify-content:space-between;padding:0 96px 70px 96px}
 .left{display:flex;flex-direction:column;align-items:flex-start}
-.brand{display:flex;align-items:center;gap:16px;margin-bottom:26px}
-.brand b{font-size:40px;font-weight:800;letter-spacing:-.01em}
+.brand{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.brand b{font-size:34px;font-weight:800;letter-spacing:-.01em}
 .brand b em{font-style:normal;color:${SKY}}
-h1{font-size:84px;font-weight:800;letter-spacing:-.035em;line-height:1}
-p{font-size:26px;font-weight:600;color:${INK2};margin-top:20px}
-.ramp{display:flex;align-items:flex-end;gap:17px;flex:none;border-bottom:2px solid rgba(255,255,255,.15)}
-.ramp i{display:block;width:32px;border-radius:6px 6px 2px 2px}
+.ln{display:flex;align-items:center;font-size:62px;font-weight:800;letter-spacing:-.035em;line-height:1.12}
+.ln i{display:block;width:9px;height:46px;border-radius:5px;margin-right:22px}
+.cats{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.cats .row{display:flex;gap:10px}
+.cats span{display:flex;align-items:center;gap:9px;font-size:21px;font-weight:600;color:${INK};background:#151922;border:1px solid #252b36;border-radius:999px;padding:9px 16px}
+.cats span i{display:block;width:10px;height:10px;border-radius:5px}
 `);
 
 mkdirSync(join(ROOT, 'public', 'brand'), { recursive: true });
 
-const browser = await chromium.launch();
+const browser = await chromium.launch(process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {});
 async function shot(rel, w, h, html) {
   const p = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
   await p.setContent(html, { waitUntil: 'load' });
@@ -128,9 +142,12 @@ async function shot(rel, w, h, html) {
   console.log('  ' + rel + '  ' + w + 'x' + h);
 }
 
-await shot('app/icon.png', 512, 512, tile(512, TILE_FILL));
-await shot('app/apple-icon.png', 180, 180, tile(180, TILE_FILL));
-await shot('public/brand/x-avatar.png', 400, 400, tile(400, AVATAR_FILL));
+// `--banner` redraws the banner alone, so a copy change does not re-render the icons.
+if (!process.argv.includes('--banner')) {
+  await shot('app/icon.png', 512, 512, tile(512, TILE_FILL));
+  await shot('app/apple-icon.png', 180, 180, tile(180, TILE_FILL));
+  await shot('public/brand/x-avatar.png', 400, 400, tile(400, AVATAR_FILL));
+}
 await shot('public/brand/x-banner.png', 1500, 500, banner);
 await browser.close();
 
