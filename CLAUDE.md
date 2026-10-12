@@ -9035,3 +9035,11 @@ Circuit id `dojo`, engine `dojo`, scorer `dojo`, `scoreFrom: '2026-10-12'`.
 - Files: `app/dojo/{page.js,DojoClient.jsx,leaderboard/page.js,card/route.js}`, `lib/dojo.js`.
   Pregame: paper doors that are the Start button and three hanging scrolls. Ending: a grading
   sheet scores form by form while the belt is dyed up the ladder, then the seal and the knot.
+- **Same evening (owner, 2026-10-12):** Cages and Polka left the variant pool from 2026-10-13
+  (`DOJO_POOL_BEFORE` keeps launch day's eight, mirrored as `slot.before` for the verifier);
+  the rotating **Sudoku circuit was retired** (trophy row removed, `/circuits/sudoku` 308s to
+  `/dojo`, categories and sets point at `dojo`, the family list is `SUDOKU_POOL` in
+  lib/circuits.js); `SudokuCircuitPop` became `app/circuits/DojoPop.jsx`, shown two seconds onto
+  the end card of ANY Sudoku-category game, once a day, unless the Dojo is done today or the page
+  is inside another run. The pregame Dojo doors on the sudoku clients came out. Dojo is a `lead`
+  circuit (5), so it sits with the other popular runs.

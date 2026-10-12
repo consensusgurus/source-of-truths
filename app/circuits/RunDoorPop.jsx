@@ -54,8 +54,8 @@ export const RUN_DOORS = {
     go: 'Take all five cases', accent: '#7dd3fc',
     tags: [['Ergo', '#c4b5fd'], ['Sworn', '#f472b6'], ['Hearsay', '#d8b4fe'], ['Docket', '#c9a3ae'], ['Alibi', '#ef8896']],
   },
-  // Once per GAME like Judged: the first time a player ever opens Sixes, Suds
-  // or one of the variants on its own page (2026-10-12).
+  // Listed for MoreRuns; the sudoku pages offer the Dojo through
+  // app/circuits/DojoPop.jsx on the end card instead (owner, 2026-10-12).
   dojo: {
     href: '/dojo', name: 'Enter the Dojo', eyebrow: 'Daily run · Three sudokus', once: 'game',
     body: 'Sixes, Suds, then a variant, back to back on one page. Solve all three and the clock decides your belt, from white to black.',
@@ -199,3 +199,5 @@ const CSS = (acc) => `
 @keyframes rdpsheen{0%{left:-60%}40%,100%{left:130%}}
 @media(prefers-reduced-motion:reduce){.rdp-bd,.rdp,.rdp-tags span,.rdp-go:after{animation:none;}}
 `;
+
+export const RUN_DOOR_CSS = CSS;

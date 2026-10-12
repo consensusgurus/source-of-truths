@@ -86,6 +86,9 @@ const nextConfig = {
     return [
       { source: '/circuits/gauntlet/run', destination: '/trivia', permanent: true },
       { source: '/circuits/math/run', destination: '/math', permanent: true },
+      // 2026-10-12: the rotating Sudoku circuit was retired for Enter the Dojo.
+      { source: '/circuits/sudoku', destination: '/dojo', permanent: true },
+      { source: '/circuits/sudoku/:path*', destination: '/dojo', permanent: true },
       // 2026-07-18: the Quizzes hub is now the site root (sourceoftruths.com).
       // The legacy /quizzes index 308s to it. Sub-pages (/quizzes/hub, etc.)
       // are matched exactly here, so they are unaffected.

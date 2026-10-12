@@ -375,6 +375,13 @@ function applyOrderLocal(c, live, day) {
   return [...shuffleLocal(head, seedLocal(`${day}:${c.id}`)), ...tail];
 }
 
+// A slot pool may be DATED (Dojo, 2026-10-12: Cages and Polka left after launch
+// day): days up to `before.until` deal from `before.pool`.
+function slotPoolLocal(c, iso) {
+  const b = c.slot && c.slot.before;
+  return b && Array.isArray(b.pool) && iso <= b.until ? b.pool : c.slot.pool;
+}
+
 // ── 7. the read accessors agree with the data ───────────────────────────────
 for (const c of CIRCUITS) {
   const live = circuitKeysFor(c.id, todayIso);
@@ -395,8 +402,9 @@ for (const c of CIRCUITS) {
   // here with its own day-index math rather than read back off lib/dojo.js
   if (c.slot && Array.isArray(c.slot.pool)) {
     const idx = Math.floor(Date.parse(todayIso + 'T12:00:00Z') / 86400000);
-    const n = c.slot.pool.length;
-    const v = c.slot.pool[((idx % n) + n) % n];
+    const pool = slotPoolLocal(c, todayIso);
+    const n = pool.length;
+    const v = pool[((idx % n) + n) % n];
     if (DAILY_GAME_MAP[v] && !retiredAlready(v)) expected.push(v);
   }
   const want = applyOrderLocal(c, expected, todayIso);
@@ -444,8 +452,20 @@ for (const c of CIRCUITS) {
   const dup = pool.filter((k) => c.keys.includes(k) || !DAILY_GAME_MAP[k]);
   if (dup.length) fails.push(`${c.id}: slot pool holds ${dup.join(', ')}, which is a fixed key or not a registered game`);
   const seen = Object.fromEntries(pool.map((k) => [k, 0]));
+  // the cycle is checked from the first day the CURRENT pool deals
+  const from = c.slot.before && c.slot.before.until >= todayIso
+    ? new Date(Date.parse(c.slot.before.until + 'T12:00:00Z') + 86400000).toISOString().slice(0, 10)
+    : todayIso;
+  // and the frozen days still deal from the old pool
+  if (c.slot.before) {
+    const b = c.slot.before.until;
+    const got = circuitKeysFor(c.id, b)[c.keys.length];
+    const idxB = Math.floor(Date.parse(b + 'T12:00:00Z') / 86400000);
+    const want = c.slot.before.pool[((idxB % c.slot.before.pool.length) + c.slot.before.pool.length) % c.slot.before.pool.length];
+    if (got !== want) fails.push(`${c.id}: ${b} deals ${got}, but the dated pool says ${want}`);
+  }
   for (let d = 0; d < pool.length; d++) {
-    const iso = new Date(Date.parse(todayIso + 'T12:00:00Z') + d * 86400000).toISOString().slice(0, 10);
+    const iso = new Date(Date.parse(from + 'T12:00:00Z') + d * 86400000).toISOString().slice(0, 10);
     const sel = circuitKeysFor(c.id, iso);
     const live = pool.filter((k) => !retiredAlready(k));
     if (sel.length !== c.keys.length + 1 && live.length === pool.length) fails.push(`${c.id}: ${iso} plays ${sel.length} games, expected ${c.keys.length + 1}`);

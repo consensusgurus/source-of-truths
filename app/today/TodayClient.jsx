@@ -50,7 +50,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import StageToday from './StageToday';
 import { useStageTheme } from '@/lib/stage-theme';
 import { DAILY_GAMES, DAILY_GAME_MAP } from '@/lib/daily-games';
-import { CIRCUITS, ALL_CIRCUITS, DISPLAY_CIRCUITS, CIRCUIT_BASE, circuitById, circuitKeysFor, circuitPageHref, circuitEntryHref } from '@/lib/circuits';
+import { CIRCUITS, ALL_CIRCUITS, DISPLAY_CIRCUITS, CIRCUIT_BASE, SUDOKU_POOL, circuitById, circuitKeysFor, circuitPageHref, circuitEntryHref } from '@/lib/circuits';
 import { catBlue } from '@/lib/home-blues';
 import StageLadder from '../StageLadder';
 import { fetchDayStatus, etToday, DAY_ROSTER } from '../useDayStats';
@@ -268,7 +268,7 @@ export default function TodayClient({ onSignup = null, stageDefault = true } = {
   // its own category. Static, so the server and client render the same rows.
   const shelves = useMemo(() => {
     const live = new Set(DAY_ROSTER);
-    const pool = (circuitById('sudoku') || { keys: [] }).keys.filter((k) => live.has(k));
+    const pool = SUDOKU_POOL.filter((k) => live.has(k));
     const poolSet = new Set(pool);
     return CAT_ORDER.map((name) => {
       let games;
@@ -528,7 +528,7 @@ export default function TodayClient({ onSignup = null, stageDefault = true } = {
       if (!games.length) return null;
       let color = catColor(games[0].cat);
       if (c.marquee) color = '#e8b43a';
-      else if (c.id === 'sudoku') color = catBlue('sudoku');
+      else if (c.id === 'dojo') color = catBlue('sudoku');
       return { kind: 'circuit', id: c.id, name: c.name, blurb: c.blurb || '', color, games };
     }).filter(Boolean);
   }, [today]);

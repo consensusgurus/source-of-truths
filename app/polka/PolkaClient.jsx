@@ -47,7 +47,6 @@ import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gam
 import GamePanel from '../GamePanel';
 import LoftFinish from '../LoftFinish';
 import { useRunEmbed } from '../RunEmbed';
-import RunDoorPop from '../circuits/RunDoorPop';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import useIqStanding from '../useIqStanding';
 import useNextUnplayed, { useUnplayedSimilar } from '../useNextUnplayed';
@@ -1204,9 +1203,6 @@ export default function PolkaClient({ puzzles = [], forceNum = null }) {
 
       {/* The desktop fold: the About prose below starts one screen down (app/StageFold.jsx). */}
       {!EMBED && <StageFold />}
-      {/* THE DOJO DOOR: the first time a player ever opens Polka on its own
-          page, the Enter the Dojo run is offered, once. Never inside the run. */}
-      <RunDoorPop id="dojo" game="polka" ready={hydrated && preStart && isTodays && !EMBED} self="Polka" />
       {/* About Polka — crawlable prose, server-rendered into the HTML */}
       <section style={{ position: 'relative', display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Polka</h2>

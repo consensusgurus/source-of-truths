@@ -21,14 +21,14 @@ import { DAILY_GAMES, isRetiredDaily, isRunOnly } from '@/lib/daily-games';
 import { SHARE_HOST } from '@/lib/site';
 import useDailyRoster from './useDailyRoster';
 import { catBlue } from '@/lib/home-blues';
-import { circuitById } from '@/lib/circuits';
+import { SUDOKU_POOL } from '@/lib/circuits';
 import { loftKey } from '@/lib/loft';
 
 // The home page pulls the sudoku grids OUT of Numbers into a Sudoku shelf of
 // their own, and that shelf is the sudoku circuit's pool. Mirror it from the
 // same source rather than restating the list, or Suds wears orange here and
 // violet there.
-const SUDOKU = new Set(((circuitById('sudoku') || {}).keys) || []);
+const SUDOKU = new Set(SUDOKU_POOL);
 
 // Alphabetical, retired games dropped, computed once at module load: it is the
 // same list on every page and never changes within a session.
