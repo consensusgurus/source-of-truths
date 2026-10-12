@@ -7,7 +7,8 @@
 // and only said "there is a site here".
 //
 // WHO SEES IT: anyone finishing a gauntlet whose ENTIRE play history is the
-// two gauntlets' twelve games (playing both runs still counts as runs-only). First run or fifth day, same test. Read two ways,
+// two gauntlets' twelve games plus Passport (playing several runs still counts
+// as runs-only). Passport mounts it too, with its own CONFIG entry. First run or fifth day, same test. Read two ways,
 // and both must agree:
 //   this device  no stats record, day breadcrumb, or started save for any
 //                daily outside the seven (a save that was only opened has no
@@ -44,7 +45,7 @@ const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 
 const keysOf = (id) => ((circuitById(id) || {}).keys) || [];
 // Plays inside either gauntlet do not disqualify; anything else does.
-const RUNS_ONLY = new Set([...keysOf('gauntlet'), ...keysOf('math')]);
+const RUNS_ONLY = new Set([...keysOf('gauntlet'), ...keysOf('math'), 'passport']);
 
 // Price Check is a run, not a daily, so it is described here rather than read
 // off the registry. Its glyph is Pricer's.
@@ -75,6 +76,18 @@ const CONFIG = {
       streak: 'More quick-fire trivia.',
     },
     also: ['passport', 'bracket', 'listed', 'ping', 'dating', 'thread', 'focus', 'potluck', 'dossier', 'flank'],
+  },
+  // Passport is one country in five rounds, so there is no "went furthest";
+  // it always leads with the geography dailies.
+  passport: {
+    eyebrow: 'Mind Loft · More geography',
+    fallbackHead: 'Passport stamped. The map does not stop here.',
+    fallbackSub: 'Three more geography games, new every day, the same for everyone.',
+    fallbackLead: ['atlas', 'ping', 'flank'],
+    fallbackWhy: 'More geography, new every day.',
+    lead: {},
+    why: {},
+    also: ['span', 'bracket', 'listed', 'dating'],
   },
   math: {
     eyebrow: 'Mind Loft · More numbers',
@@ -204,7 +217,7 @@ export default function GauntletMorePop({ circuitId = 'gauntlet', ready = false,
   const also = C.also.filter((k) => !leadKeys.includes(k)).map((k) => gameOf(k, boards)).filter(Boolean).slice(0, 4);
 
   const head = bestSec ? `You went furthest in ${bestSec.name}. Try these next.` : C.fallbackHead;
-  const sub = bestSec ? `${best.score} of ${best.total} on ${bestSec.name}. ${why}` : 'Every one of these is new every day, the same for everyone.';
+  const sub = bestSec ? `${best.score} of ${best.total} on ${bestSec.name}. ${why}` : (C.fallbackSub || 'Every one of these is new every day, the same for everyone.');
 
   const tile = (g, size) => (
     <span className="gmp-tile" style={{ background: g.color, width: size, height: size }}>

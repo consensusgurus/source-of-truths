@@ -32,6 +32,7 @@ import { withRef } from '@/lib/referrals';
 import { notifyShareCredit } from '../ShareCreditPop';
 import useCircuitBoard from '../circuits/useCircuitBoard';
 import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
+import GauntletMorePop from '../circuits/GauntletMorePop';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
@@ -1561,6 +1562,8 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
         <Finale scores={sc} total={total} clock={elapsed} inks={inks} onDone={finaleDone} />
       )}
       <MoreRunsPop self="passport" ready={nudgeReady} delay={10000} fireOnLeave />
+      {/* More geography for a runs-only player, after the finale (owner, 2026-10-12). See GauntletMorePop. */}
+      <GauntletMorePop circuitId="passport" ready={hydrated && done && !finale} />
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {showHelp && (
