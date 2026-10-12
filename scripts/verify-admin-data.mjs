@@ -79,9 +79,7 @@ function between(startMark, endMark) {
     anonPlayers: order(N_ANON).map((i) => ({ key: `a:${i}`, plays: 3, lastPlayed: iso(i) })),
     views24h: [{ views24h: 4 }, { views24h: 6 }],
     quizStats: [{ plays: 10 }, { plays: 5 }, { plays: 0 }],
-    dailyRetention: { breadth: { total: 42 } },
-    geoMap: { totals: { locatedPlayers: 9 } },
-    activeUsers: {}, timeByDay: {}, newUsers: {}, dailyByGame: {}, topPlayersToday: {},
+    dailyByGame: {}, topPlayersToday: {},
     builtAt: 'x', rowCount: 1, timings: {},
   };
   const parts = sliceAnalytics(full);
@@ -91,7 +89,7 @@ function between(startMark, endMark) {
   if (A.quizSignups[0].id !== `u${N_REG - 1}` || A.quizSignups[PLAYERS_TOP - 1].id !== `u${N_REG - PLAYERS_TOP}`) fail('signups are not the most recently active, newest first');
   if (A.anonPlayers[0].key !== `a:${N_ANON - 1}` || A.anonPlayers[PLAYERS_TOP - 1].key !== `a:${N_ANON - PLAYERS_TOP}`) fail('anon players are not the most recently active, newest first');
   const c = A.counts;
-  const want = { registered: N_REG, anonymous: N_ANON, playerPlays: N_REG * 2 + N_ANON * 3, lists: 2, quizzes: 3, views24hTotal: 10, quizPlaysTotal: 15, retentionTotal: 42, locatedPlayers: 9 };
+  const want = { registered: N_REG, anonymous: N_ANON, playerPlays: N_REG * 2 + N_ANON * 3, lists: 2, quizzes: 3, views24hTotal: 10, quizPlaysTotal: 15 };
   for (const k of Object.keys(want)) if (c[k] !== want[k]) fail(`counts.${k} = ${c[k]}, expected ${want[k]}`);
   if (full.quizSignups.length !== N_REG || full.quizSignups[0].id !== `u${order(N_REG)[0]}`) fail('sliceAnalytics reordered or cut the full table it was given');
   for (const [name, part] of Object.entries(parts)) {

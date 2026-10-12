@@ -13,6 +13,7 @@
 
 import { NextResponse } from 'next/server';
 import { warmAnalytics, storedAge } from '@/lib/admin-data';
+import { warmPulse } from '@/lib/admin-pulse';
 import { buildSiteStats } from '@/lib/sitestats-build';
 import { readPayload, writePayload } from '@/lib/stats-payloads';
 
@@ -33,8 +34,8 @@ export async function GET(request) {
   // The route is open when no CRON_SECRET is set, so it refuses to rebuild a
   // copy that is already recent. A second hit inside the window does nothing.
   const RECENT_MS = 10 * 60 * 1000;
-  const [adminAge, siteAge] = await Promise.all([storedAge(), storedAge('sitestats:v1')]);
-  const [admin, site] = await Promise.allSettled([
+  const [adminAge, siteAge, pulseAge] = await Promise.all([storedAge(), storedAge('sitestats:v1'), storedAge('admin:pulse:v1')]);
+  const [admin, site, pulse] = await Promise.allSettled([
     adminAge < RECENT_MS ? Promise.resolve({ skipped: 'recent' }) : warmAnalytics(),
     siteAge < RECENT_MS ? Promise.resolve({ skipped: 'recent' }) : (async () => {
       const prev = await readPayload('sitestats:v1');
@@ -42,8 +43,10 @@ export async function GET(request) {
       const stored = await writePayload('sitestats:v1', payload);
       return { stored, held: payload.held, timings: payload.timings };
     })(),
+    pulseAge < RECENT_MS ? Promise.resolve({ skipped: 'recent' }) : warmPulse(),
   ]);
   out.admin = admin.status === 'fulfilled' ? admin.value : { error: String(admin.reason?.message || admin.reason) };
   out.sitestats = site.status === 'fulfilled' ? site.value : { error: String(site.reason?.message || site.reason) };
+  out.pulse = pulse.status === 'fulfilled' ? pulse.value : { error: String(pulse.reason?.message || pulse.reason) };
   return NextResponse.json(out, { headers: { 'Cache-Control': 'no-store' } });
 }

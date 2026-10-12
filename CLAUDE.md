@@ -8949,3 +8949,26 @@ re-derive a score from `scoreOf` alone.
   keyboard, never pushing the input off the top; it re-runs on visualViewport resize and after each
   guess, and a 45vh spacer gives the page room to scroll. The Guess button prevents mousedown so
   tapping it never blurs the input and bounces the keyboard.
+
+## The admin desk opens on PULSE (owner, 2026-10-12)
+
+`/admin` -> Analytics opens on **Pulse** (`app/admin/PulsePanel.jsx`, served as
+`/api/admin/data?part=pulse` by `lib/admin-pulse.js`): active players (DAU/WAU/MAU),
+visitors, the share of visitors who played, new players, new sign-ups, sign-up rate,
+time played, time per player, games finished and page views, each for the last 24h /
+7 days / 30 days against the same span just before; a 90-day rolling DAU/WAU/MAU chart;
+and rolling referrers (7 days vs the week before).
+
+- **It is its own light build, on purpose.** The old Analytics build measured 5.6s and
+  497KB on 2026-10-12 (156k play rows), and the desk's first paint waited on it. Pulse
+  is one pass over the same cached rows plus `quiz_users.created_at` and the
+  `site_view_trends()` RPC: ~0.5s of derive and ~11KB. The heavy build now runs only
+  when Players, Page Views or the Daily Games tab is opened. Do not fold Pulse back into
+  `computeAnalytics`.
+- **Definitions match /sitestats**: rolling now-anchored windows, a player is playerKey,
+  a visitor is a distinct visitor_id, time played is uncapped time_elapsed. Visitors are
+  never called DAU.
+- **Dropped as drains, 2026-10-12:** the all-time totals panel, the all-time view
+  columns (and their `views` / `quiz_views` reads), `visitor_active_counts()`, Return
+  Play, the Player Map, and the full-history Time Played / New Users charts. The
+  builders stay in `lib/admin-data.js` for `scripts/verify-admin-data.mjs`.

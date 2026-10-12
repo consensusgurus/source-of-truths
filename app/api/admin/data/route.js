@@ -2,11 +2,11 @@
 // GET /api/admin/data?part=<part>[&mode=fresh|force]
 //
 //   editorial  the action queues (submissions, extras, feedback, research)
-//   analytics  the default Analytics view, player tables cut to the most recent
+//   pulse      the default view: rolling actives, visitors, new players, sign-ups,
+//              time played and referrers (lib/admin-pulse.js, its own light build)
+//   analytics  the player tables, cut to the most recent, plus the Daily Games figures
 //   players    the full player tables (on demand)
-//   pageviews  list and quiz page views
-//   retention  daily-game return play
-//   map        the player map
+//   pageviews  list and quiz page views (last 24h)
 //
 // Auth: the admin cookie, or the x-admin-token header (ADMIN_TASK_TOKEN), the
 // same pair every other read-only admin route accepts. Never cached anywhere
@@ -17,12 +17,13 @@
 import { NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/admin-auth';
 import { loadEditorial, loadAnalyticsPart } from '@/lib/admin-data';
+import { loadPulse } from '@/lib/admin-pulse';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const maxDuration = 300;
 
-const ANALYTICS_PARTS = new Set(['analytics', 'players', 'pageviews', 'retention', 'map']);
+const ANALYTICS_PARTS = new Set(['analytics', 'players', 'pageviews']);
 const NO_STORE = { 'Cache-Control': 'private, no-store' };
 
 function tokenOk(request) {
@@ -43,6 +44,7 @@ export async function GET(request) {
   try {
     let data = null;
     if (part === 'editorial') data = await loadEditorial();
+    else if (part === 'pulse') data = await loadPulse(mode);
     else if (ANALYTICS_PARTS.has(part)) data = await loadAnalyticsPart(part, mode);
     else return NextResponse.json({ error: 'unknown part' }, { status: 400, headers: NO_STORE });
     if (!data) return NextResponse.json({ error: 'unavailable' }, { status: 503, headers: NO_STORE });

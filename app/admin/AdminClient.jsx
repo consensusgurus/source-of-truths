@@ -3,12 +3,9 @@ import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Check, X, Eye, EyeOff, LogOut, Pencil, Trash2, MapPin, ShieldAlert } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import Grain from '@/app/Grain';
-// The map and its world outline are only needed on Analytics -> Player Map, so
-// they load when that view opens rather than with the desk.
-const GeoMapPanel = dynamic(() => import('./GeoMapPanel'), { ssr: false, loading: () => <PartNote>Loading the map&hellip;</PartNote> });
 import { exportUsersCsv, exportGamesCsv, downloadCsvFile } from './csv-export';
+import PulsePanel from './PulsePanel';
 import { T } from '@/lib/theme';
 
 // Local theme palette: the live-site look (Manrope + soft blue) applied to the
@@ -647,9 +644,13 @@ export default function AdminClient() {
   }, []);
   useEffect(() => { loadEditorial(); }, [loadEditorial]);
 
-  // Analytics, the default tab. The full player tables are a separate part,
+  // Analytics, the default tab, opens on Pulse (its own light part). The heavy
+  // build behind the player tables and Daily Games is only asked for when one
+  // of those is opened. The full player tables are a separate part again,
   // fetched once on demand and then used in place of the trimmed ones.
-  const an = useAdminPart('analytics', true);
+  const [anView, setAnView] = useState('pulse');
+  const pulse = useAdminPart('pulse', tab === 'analytics');
+  const an = useAdminPart('analytics', tab === 'daily' || (tab === 'analytics' && anView === 'plays'));
   const A = an.data || {};
   const counts = A.counts || {};
   const [allPlayers, setAllPlayers] = useState(null);
@@ -688,7 +689,8 @@ export default function AdminClient() {
   const dailyPlaysTotal = (dailyByGame.totals && dailyByGame.totals.totalPlays) || 0;
   // A tab count reads as an ellipsis until its part has arrived.
   const edN = (n) => (ed.loading ? '…' : ed.error ? '!' : n);
-  const anN = (n) => (an.data ? n : '…');
+  const anN = (n) => (an.data ? n : '');
+  const dauNow = pulse.data && pulse.data.metrics && pulse.data.metrics.players ? pulse.data.metrics.players.day.now : null;
 
   async function deleteComment(id) {
     const key = `cm-${id}`;
@@ -1078,7 +1080,7 @@ export default function AdminClient() {
             Research <span style={{ opacity: 0.6 }}>{edN(alerts.length + editorNotesCount)}</span>
           </TabButton>
           <TabButton active={tab === 'analytics'} onClick={() => setTab('analytics')}>
-            Analytics <span style={{ opacity: 0.6 }}>{anN(counts.views24hTotal || 0)}</span>
+            Analytics <span style={{ opacity: 0.6 }} title="Active players, last 24h">{dauNow != null ? dauNow : ''}</span>
           </TabButton>
           <TabButton active={tab === 'daily'} onClick={() => setTab('daily')}>
             Daily Games <span style={{ opacity: 0.6 }}>{anN(dailyPlaysTotal)}</span>
@@ -1089,7 +1091,7 @@ export default function AdminClient() {
         </div>
 
         {tab === 'analytics' ? (
-          <AnalyticsPanel an={an} signups={quizSignups} anonPlayers={anonPlayers} partial={playersPartial} onNeedAll={needAllPlayers} onRefresh={refreshAnalytics} />
+          <AnalyticsPanel an={an} pulse={pulse} view={anView} setView={setAnView} signups={quizSignups} anonPlayers={anonPlayers} partial={playersPartial} onNeedAll={needAllPlayers} onRefresh={refreshAnalytics} />
         ) : tab === 'daily' ? (
           an.data ? <DailyGamesPanel data={dailyByGame} />
             : an.error ? <PartNote error onRetry={() => an.reload()}>Could not load the daily games figures ({an.error}).</PartNote>
@@ -1299,9 +1301,7 @@ function PageViewsPanel({ lists, quizzes, mode }) {
             {showType && <SortHead label="Type" k="type" sort={sort} flex="0 0 56px" type="string" />}
             <SortHead label={titleLabel} k="title" sort={sort} flex={3} type="string" />
             <SortHead label="Views 24h" k="views24h" sort={sort} flex="0 0 88px" align="right" />
-            <SortHead label="Views all" k="viewsTotal" sort={sort} flex="0 0 88px" align="right" />
             {showPlays && <SortHead label="Plays 24h" k="plays24h" sort={sort} flex="0 0 84px" align="right" />}
-            {showPlays && <SortHead label="Plays all" k="plays" sort={sort} flex="0 0 84px" align="right" />}
           </div>
           {visible.map((r, i) => {
             const active = r.views24h > 0 || (r.plays24h || 0) > 0;
@@ -1334,17 +1334,9 @@ function PageViewsPanel({ lists, quizzes, mode }) {
                   <span style={{ flex: '0 0 88px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontWeight: 700, color: r.views24h > 0 ? COLORS.ember : COLORS.faded }}>
                     {r.views24h}
                   </span>
-                  <span style={{ flex: '0 0 88px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>
-                    {r.viewsTotal}
-                  </span>
                   {showPlays && (
                     <span style={{ flex: '0 0 84px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontWeight: 700, color: (r.plays24h || 0) > 0 ? COLORS.ink : COLORS.faded }}>
                       {r.plays24h == null ? '—' : r.plays24h}
-                    </span>
-                  )}
-                  {showPlays && (
-                    <span style={{ flex: '0 0 84px', textAlign: 'right', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>
-                      {r.plays == null ? '—' : r.plays}
                     </span>
                   )}
                 </div>
@@ -2202,87 +2194,11 @@ function AllPlayersPanel({ signups, anonPlayers, partial = false, counts = {}, o
   );
 }
 
-// Analytics tab: switched between Quiz Plays and Page Views. Quiz Plays has its
-// own sub-toggle (All / Registered / Anonymous). Page Views has a sub-toggle
-// (All / Lists / Quizzes) over the unified PageViewsPanel; quiz page views and
-// the former Quiz Stats play columns are folded in there. Only one table is on
-// screen at a time.
-// DAU / WAU / MAU strip pinned to the top of the Analytics tab. Two signals
-// side by side: "Active players" (distinct quiz players — registered + anonymous
-// browsers — from existing data, with full history) and "Unique visitors"
-// (distinct site visitors across all pages, from visitor_active_counts(); shows
-// a pending note until migration 30 is applied and data accrues).
-function ActiveUsersStrip({ data }) {
-  const players = (data && data.players) || { dau: 0, wau: 0, mau: 0 };
-  const visitors = data && data.visitors ? data.visitors : null;
-  const cols = [
-    ['DAU', 'dau', 'past 24 hours'],
-    ['WAU', 'wau', 'past 7 days'],
-    ['MAU', 'mau', 'past 30 days'],
-  ];
-  const nf = (n) => (typeof n === 'number' ? n.toLocaleString() : '\u2014');
-  const card = (label, value, sub, accent, dim) => (
-    <div
-      key={label}
-      style={{
-        flex: 1,
-        minWidth: 92,
-        background: COLORS.paper,
-        border: `1px solid ${COLORS.line}`,
-        borderRadius: 12,
-        padding: '11px 14px',
-        opacity: dim ? 0.55 : 1,
-      }}
-    >
-      <div style={{ fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: COLORS.faded }}>
-        {label}
-      </div>
-      <div style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 800, fontSize: 26, lineHeight: 1.1, color: accent, marginTop: 2 }}>
-        {value}
-      </div>
-      <div style={{ fontFamily: 'Manrope, monospace', fontSize: 9, letterSpacing: '0.07em', textTransform: 'uppercase', color: COLORS.faded, marginTop: 3 }}>
-        {sub}
-      </div>
-    </div>
-  );
-  const group = (heading, note, vals, accent, dim) => (
-    <div style={{ flex: '1 1 320px', minWidth: 280 }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 7 }}>
-        <span style={{ fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, color: COLORS.ink }}>
-          {heading}
-        </span>
-        {note && (
-          <span style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 10, fontStyle: 'italic', color: COLORS.faded }}>
-            {note}
-          </span>
-        )}
-      </div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        {cols.map(([label, key, sub]) => card(label, vals ? nf(vals[key]) : '\u2014', sub, accent, dim))}
-      </div>
-    </div>
-  );
-  return (
-    <div style={{ marginBottom: 26 }}>
-      <div style={{ fontFamily: 'Manrope, monospace', fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: COLORS.ink, marginBottom: 12 }}>
-        Active Users
-      </div>
-      <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-        {group('Active players', 'distinct quiz players', players, COLORS.ember, false)}
-        {group(
-          'Unique visitors',
-          visitors ? 'distinct site visitors' : 'pending migration 30',
-          visitors,
-          COLORS.forest,
-          !visitors
-        )}
-      </div>
-    </div>
-  );
-}
-
-function AnalyticsPanel({ an, signups, anonPlayers, partial, onNeedAll, onRefresh }) {
-  const [view, setView] = useState('plays');
+// Analytics tab (reworked 2026-10-12): Pulse (rolling actives, visitors, new
+// players, sign-ups, time played, referrers; PulsePanel.jsx), Players (the
+// player tables, today's top players and the games ranking) and Page Views
+// (last 24h). Only one view is on screen at a time.
+function AnalyticsPanel({ an, pulse, view, setView, signups, anonPlayers, partial, onNeedAll, onRefresh }) {
   const [playsView, setPlaysView] = useState('all');
   const [pvView, setPvView] = useState('all');
   const [gamesBusy, setGamesBusy] = useState(false);
@@ -2293,18 +2209,13 @@ function AnalyticsPanel({ an, signups, anonPlayers, partial, onNeedAll, onRefres
   const A = an.data || {};
   const counts = A.counts || {};
   const pv = useAdminPart('pageviews', view === 'pageviews');
-  const ret = useAdminPart('retention', view === 'retention');
-  const map = useAdminPart('map', view === 'map');
-  const activeUsers = A.activeUsers || { players: { dau: 0, wau: 0, mau: 0 }, visitors: null };
-  const timeByDay = A.timeByDay || { series: [], totals: {} };
-  const newUsers = A.newUsers || { series: [], totals: {} };
   const dailyByGame = A.dailyByGame || { games: [], totals: {} };
   const topPlayersToday = A.topPlayersToday || { day: null, players: [], totals: {} };
 
   const refreshAll = async () => {
     await onRefresh();
     // The views already opened re-ask for the build that just finished.
-    for (const part of [pv, ret, map]) if (part.asked) part.reload('fresh');
+    if (pv.asked) pv.reload('fresh');
   };
 
   // The users CSV is one row per player, so it needs the full tables.
@@ -2341,16 +2252,15 @@ function AnalyticsPanel({ an, signups, anonPlayers, partial, onNeedAll, onRefres
   };
   const regCount = counts.registered != null ? counts.registered : (signups || []).length;
   const anonCount = counts.anonymous != null ? counts.anonymous : (anonPlayers || []).length;
-  const listCount = counts.lists || 0;
-  const quizCount = counts.quizzes || 0;
-  const retentionTotal = counts.retentionTotal || 0;
-  // Time Played is no longer its own tab: its chart, the new-users chart, and
-  // the per-game comparison all live under Quiz Plays, below the player table.
+  const listCount = pv.data ? (pv.data.views24h || []).length : (counts.lists || 0);
+  const quizCount = pv.data ? (pv.data.quizStats || []).length : (counts.quizzes || 0);
+  // Pulse is the default (2026-10-12). Return Play, the Player Map and the
+  // all-time charts were dropped: they were the costliest part of the build
+  // and all-time figures are not wanted here.
   const tabs = [
-    ['plays', 'Quiz Plays', regCount + anonCount],
-    ['pageviews', 'Page Views', listCount + quizCount],
-    ['retention', 'Return Play', retentionTotal],
-    ['map', 'Player Map', counts.locatedPlayers || 0],
+    ['pulse', 'Pulse', null],
+    ['plays', 'Players', an.data ? regCount + anonCount : null],
+    ['pageviews', 'Page Views (24h)', pv.data ? listCount + quizCount : null],
   ];
   const playsSub = [
     ['all', 'All', regCount + anonCount],
@@ -2395,10 +2305,53 @@ function AnalyticsPanel({ an, signups, anonPlayers, partial, onNeedAll, onRefres
     alignItems: 'center',
     gap: 5,
   });
+  const tabRow = (
+    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16, alignItems: 'center' }}>
+      {tabs.map(([key, label, count]) => (
+        <button key={key} onClick={() => setView(key)} style={tabStyle(view === key)}>
+          {label}
+          {count != null ? <span style={{ opacity: 0.6 }}>{count}</span> : null}
+        </button>
+      ))}
+    </div>
+  );
+  if (view === 'pulse') {
+    return (
+      <div>
+        {tabRow}
+        {pulse.data ? <PulsePanel part={pulse} />
+          : pulse.error ? <PartNote error onRetry={() => pulse.reload()}>Could not load the pulse ({pulse.error}).</PartNote>
+          : <PartNote>Loading the pulse&hellip;</PartNote>}
+      </div>
+    );
+  }
+  if (view === 'pageviews') {
+    return (
+      <div>
+        {tabRow}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 22, paddingLeft: 2 }}>
+          {pvSub.map(([key, label, count]) => (
+            <button key={key} onClick={() => setPvView(key)} style={subTabStyle(pvView === key)}>
+              {label}
+              {pv.data ? <span style={{ opacity: 0.6 }}>{count}</span> : null}
+            </button>
+          ))}
+        </div>
+        {pv.data ? <PageViewsPanel lists={pv.data.views24h || []} quizzes={pv.data.quizStats || []} mode={pvView} />
+          : pv.error ? <PartNote error onRetry={() => pv.reload()}>Could not load page views ({pv.error}).</PartNote>
+          : <PartNote>Loading page views&hellip;</PartNote>}
+      </div>
+    );
+  }
   if (!an.data) {
-    return an.error
-      ? <PartNote error onRetry={() => an.reload()}>Could not load analytics ({an.error}).</PartNote>
-      : <PartNote>Loading analytics&hellip;</PartNote>;
+    return (
+      <div>
+        {tabRow}
+        {an.error
+          ? <PartNote error onRetry={() => an.reload()}>Could not load the players ({an.error}).</PartNote>
+          : <PartNote>Loading the players&hellip;</PartNote>}
+      </div>
+    );
   }
   const builtAt = A.builtAt ? new Date(A.builtAt) : null;
   const builtLabel = builtAt && !Number.isNaN(builtAt.getTime())
@@ -2406,8 +2359,7 @@ function AnalyticsPanel({ an, signups, anonPlayers, partial, onNeedAll, onRefres
     : '';
   return (
     <div>
-      <ActiveUsersStrip data={activeUsers} />
-      <CumulativeTotalsPanel timeByDay={timeByDay} newUsers={newUsers} registered={regCount} />
+      {tabRow}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '-6px 0 12px', fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded }}>
         <span>
           Figures as of {builtLabel || 'just now'}
@@ -2424,18 +2376,6 @@ function AnalyticsPanel({ an, signups, anonPlayers, partial, onNeedAll, onRefres
         </button>
       </div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12, alignItems: 'center' }}>
-        {/* The games CSV is one row per completed game, so it needs the play
-            detail the page no longer carries. It fetches it on click, which is
-            the right moment to pay for it. */}
-        {tabs.map(([key, label, count]) => {
-          const on = view === key;
-          return (
-            <button key={key} onClick={() => setView(key)} style={tabStyle(on)}>
-              {label}
-              <span style={{ opacity: 0.6 }}>{count}</span>
-            </button>
-          );
-        })}
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
           <button
             onClick={exportUsers}
@@ -2478,129 +2418,16 @@ function AnalyticsPanel({ an, signups, anonPlayers, partial, onNeedAll, onRefres
             <AllPlayersPanel signups={signups} anonPlayers={anonPlayers} partial={partial} counts={counts} onNeedAll={onNeedAll} />
           )}
           <TopPlayersTodayPanel data={topPlayersToday} />
-          <TimeByDayPanel data={timeByDay} />
-          <NewUsersByDayPanel data={newUsers} />
           <GamesRankedPanel data={dailyByGame} />
-        </div>
-      ) : view === 'pageviews' ? (
-        pv.data ? <PageViewsPanel lists={pv.data.views24h || []} quizzes={pv.data.quizStats || []} mode={pvView} />
-          : pv.error ? <PartNote error onRetry={() => pv.reload()}>Could not load page views ({pv.error}).</PartNote>
-          : <PartNote>Loading page views&hellip;</PartNote>
-      ) : view === 'retention' ? (
-        ret.data ? <RetentionPanel data={ret.data.dailyRetention} />
-          : ret.error ? <PartNote error onRetry={() => ret.reload()}>Could not load return play ({ret.error}).</PartNote>
-          : <PartNote>Loading return play&hellip;</PartNote>
-      ) : (
-        map.data ? <GeoMapPanel data={map.data.geoMap} />
-          : map.error ? <PartNote error onRetry={() => map.reload()}>Could not load the player map ({map.error}).</PartNote>
-          : <PartNote>Loading the player map&hellip;</PartNote>
-      )}
-    </div>
-  );
-}
-
-// Analytics -> Return Play. Shows how many players come back to the daily games.
-// An "All daily games" tab gives the cross-game breadth (players who touched 1
-// of the four games, 2, 3, or all 4); each per-game tab gives that game's
-// return distribution — players by number of DISTINCT days they've completed it
-// (1 day = played once, 2 = came back once more, and so on). Players include
-// anonymous browsers, keyed the same way as the active-user counts.
-function RetentionBars({ rows, unitLabel, accent }) {
-  const max = rows.reduce((m, r) => Math.max(m, r.count), 0);
-  const total = rows.reduce((s, r) => s + r.count, 0);
-  if (!total) {
-    return <p style={{ fontFamily: 'Manrope, monospace', fontSize: 12, color: COLORS.faded, fontStyle: 'italic' }}>No plays recorded yet.</p>;
-  }
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      {rows.map((r) => {
-        const pct = total ? Math.round((r.count / total) * 100) : 0;
-        const w = max ? Math.round((r.count / max) * 100) : 0;
-        return (
-          <div key={r.label} style={{ display: 'grid', gridTemplateColumns: '132px 1fr 96px', gap: 12, alignItems: 'center' }}>
-            <div style={{ fontFamily: 'Manrope, monospace', fontSize: 12, color: COLORS.ink, textAlign: 'right' }}>{r.label}</div>
-            <div style={{ background: COLORS.cream, border: `1px solid ${COLORS.line}`, borderRadius: 5, height: 22, position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', inset: 0, width: `${w}%`, background: accent, opacity: 0.85, borderRadius: 4 }} />
-            </div>
-            <div style={{ fontFamily: 'Manrope, monospace', fontSize: 12, color: COLORS.faded, textAlign: 'left' }}>
-              <span style={{ color: COLORS.ink, fontWeight: 700 }}>{r.count.toLocaleString()}</span> {unitLabel}
-              <span style={{ opacity: 0.7 }}> · {pct}%</span>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-function RetentionPanel({ data }) {
-  const games = (data && data.games) || [];
-  const breadth = (data && data.breadth) || { total: 0, histogram: [] };
-  const [sub, setSub] = useState('all');
-  const subTabStyle = (on) => ({
-    padding: '6px 12px',
-    background: on ? `${COLORS.ember}1a` : 'transparent',
-    border: `1px solid ${on ? COLORS.ember : COLORS.line}`,
-    color: on ? COLORS.ember : COLORS.faded,
-    fontFamily: 'Manrope, monospace',
-    fontSize: 10,
-    letterSpacing: '0.08em',
-    textTransform: 'uppercase',
-    fontWeight: 600,
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: 5,
-  });
-  const subs = [['all', 'All daily games', breadth.total], ...games.map((g) => [g.key, g.title, g.players])];
-  const activeGame = sub === 'all' ? null : games.find((g) => g.key === sub) || null;
-  return (
-    <div>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 22, paddingLeft: 2 }}>
-        {subs.map(([key, label, count]) => (
-          <button key={key} onClick={() => setSub(key)} style={subTabStyle(sub === key)}>
-            {label}
-            <span style={{ opacity: 0.6 }}>{count}</span>
-          </button>
-        ))}
-      </div>
-      {sub === 'all' ? (
-        <div>
-          <SectionHeading>Daily games played per user</SectionHeading>
-          <p style={{ fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded, margin: '0 0 18px', lineHeight: 1.6 }}>
-            Of the four daily games (Links, Span, Crux, Garble), how many distinct games each player has ever played.
-            <span style={{ color: COLORS.ink }}> {breadth.total.toLocaleString()}</span> players total.
-          </p>
-          <RetentionBars
-            accent={COLORS.ember}
-            unitLabel="players"
-            rows={(breadth.histogram || []).map((h) => ({ label: `${h.games} game${h.games === 1 ? '' : 's'}`, count: h.count }))}
-          />
-        </div>
-      ) : activeGame ? (
-        <div>
-          <SectionHeading>{activeGame.title} — return play</SectionHeading>
-          <p style={{ fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded, margin: '0 0 18px', lineHeight: 1.6 }}>
-            Players grouped by how many distinct days they have completed {activeGame.title}.
-            <span style={{ color: COLORS.ink }}> {activeGame.players.toLocaleString()}</span> players ·
-            <span style={{ color: COLORS.ink }}> {activeGame.returning.toLocaleString()}</span> returned at least once
-            {activeGame.players ? <span style={{ opacity: 0.8 }}> ({Math.round((activeGame.returning / activeGame.players) * 100)}%)</span> : null}.
-          </p>
-          <RetentionBars
-            accent={COLORS.forest}
-            unitLabel="players"
-            rows={(activeGame.histogram || []).map((h) => ({ label: `${h.days} day${h.days === 1 ? '' : 's'}`, count: h.count }))}
-          />
         </div>
       ) : null}
     </div>
   );
 }
 
-// ---- Analytics -> Time Played -------------------------------------------------
-// Total wall-clock time players spent completing quizzes, per day, across the
-// full quiz_results history. The daily series arrives gap-filled from the server
-// (buildTimeByDay); this panel adds a Day / Week / Month granularity toggle
-// (aggregated client-side), a summary strip, a column chart, and a CSV export.
+// ---- Shared formatting helpers -------------------------------------------------
+// Left behind when the Time Played panel moved into Pulse (2026-10-12); the
+// Daily Games tab and the top-players panel still use them.
 const TBD_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 // Parse a 'YYYY-MM-DD' day at UTC noon so calendar labels never slip across a
 // timezone boundary.
@@ -2626,220 +2453,6 @@ function tbdHoursValue(seconds) {
   if (h >= 1) return { value: h.toFixed(1), unit: 'hours' };
   return { value: String(Math.round(secs / 60)), unit: 'min' };
 }
-function tbdLongDate(day) {
-  const d = tbdParseDay(day);
-  return `${TBD_MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
-}
-// Roll the daily series up into the chosen granularity. Day passes through;
-// Week groups by the Sunday that starts each row's week; Month groups by
-// calendar month. Each bucket keeps a display label, a full-range sub-label for
-// the tooltip, summed seconds, and summed plays.
-function tbdBucketize(series, gran) {
-  const rows = series || [];
-  if (gran === 'day') {
-    return rows.map((r) => ({
-      key: r.day,
-      label: `${TBD_MONTHS[tbdParseDay(r.day).getUTCMonth()]} ${tbdParseDay(r.day).getUTCDate()}`,
-      full: tbdLongDate(r.day),
-      seconds: r.seconds,
-      plays: r.plays,
-    }));
-  }
-  const map = new Map();
-  for (const r of rows) {
-    const d = tbdParseDay(r.day);
-    let key, label, full;
-    if (gran === 'week') {
-      const start = new Date(d.getTime());
-      start.setUTCDate(start.getUTCDate() - start.getUTCDay()); // back to Sunday
-      key = `${start.getUTCFullYear()}-${String(start.getUTCMonth() + 1).padStart(2, '0')}-${String(start.getUTCDate()).padStart(2, '0')}`;
-      label = `${TBD_MONTHS[start.getUTCMonth()]} ${start.getUTCDate()}`;
-      full = `Week of ${TBD_MONTHS[start.getUTCMonth()]} ${start.getUTCDate()}, ${start.getUTCFullYear()}`;
-    } else {
-      key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
-      label = `${TBD_MONTHS[d.getUTCMonth()]} '${String(d.getUTCFullYear()).slice(2)}`;
-      full = `${TBD_MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
-    }
-    const cur = map.get(key) || { key, label, full, seconds: 0, plays: 0 };
-    cur.seconds += r.seconds;
-    cur.plays += r.plays;
-    map.set(key, cur);
-  }
-  return Array.from(map.values()).sort((a, b) => a.key.localeCompare(b.key));
-}
-
-// ---- In-progress bucket projection --------------------------------------------
-// The final bucket is nearly always still running (today, this week, this
-// month), so its bar reads as a collapse next to the completed period beside
-// it. These helpers work out how much of that period has already elapsed in US
-// Eastern (the zone the server buckets in) and extrapolate where the bucket
-// lands at the pace set so far. The chart draws that as a dotted outline on top
-// of the solid bar, so the real number stays visually distinct from the guess.
-
-// Below this much of the period elapsed the extrapolation is multiplying noise,
-// so no projection is drawn at all.
-const TBD_MIN_ELAPSED = 0.1;
-
-// Current wall clock in US Eastern: the day key it falls on, plus how many
-// seconds into that day we are.
-function tbdEasternNow() {
-  const parts = {};
-  for (const p of new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/New_York',
-    hourCycle: 'h23',
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit',
-  }).formatToParts(new Date())) parts[p.type] = p.value;
-  return {
-    day: `${parts.year}-${parts.month}-${parts.day}`,
-    secondsIntoDay: Number(parts.hour) * 3600 + Number(parts.minute) * 60 + Number(parts.second),
-  };
-}
-
-// Share of a typical day's play that has landed by the current moment. The
-// server ships a measured intraday curve (buildPlayShape): hourCum[h] is the
-// cumulative share of a day's seconds banked by the END of ET hour h. We
-// interpolate inside the current hour so the number advances smoothly. Without
-// a curve this degrades to plain clock time, which is the old behavior.
-function tbdDayShare(now, shape) {
-  const clock = Math.min(1, now.secondsIntoDay / 86400);
-  const cum = shape && Array.isArray(shape.hourCum) && shape.hourCum.length === 24 ? shape.hourCum : null;
-  if (!cum) return clock;
-  const h = Math.min(23, Math.floor(now.secondsIntoDay / 3600));
-  const within = Math.min(1, (now.secondsIntoDay - h * 3600) / 3600);
-  const prev = h === 0 ? 0 : cum[h - 1];
-  return Math.max(0, Math.min(1, prev + (cum[h] - prev) * within));
-}
-
-// The weekday curve, or null when the server could not measure one.
-function tbdDowShape(shape) {
-  const d = shape && Array.isArray(shape.dow) && shape.dow.length === 7 ? shape.dow : null;
-  return d && d.every((x) => typeof x === 'number' && x > 0) ? d : null;
-}
-
-// Fraction (0-1] of the bucket's EXPECTED VOLUME that has already landed, or 0
-// when the bucket is a finished past period. This is deliberately not "how much
-// clock time has passed": dividing by demand-so-far is what makes the projection
-// hold up at 8am as well as at 8pm. Bucket keys match the ones tbdBucketize builds.
-function tbdElapsedFraction(bucketKey, gran, shape) {
-  const now = tbdEasternNow();
-  const dayFrac = tbdDayShare(now, shape);
-  const d = tbdParseDay(now.day);
-  const dow = tbdDowShape(shape);
-
-  if (gran === 'day') return bucketKey === now.day ? dayFrac : 0;
-
-  if (gran === 'week') {
-    const start = new Date(d.getTime());
-    start.setUTCDate(start.getUTCDate() - start.getUTCDay()); // back to Sunday
-    const key = `${start.getUTCFullYear()}-${String(start.getUTCMonth() + 1).padStart(2, '0')}-${String(start.getUTCDate()).padStart(2, '0')}`;
-    if (bucketKey !== key) return 0;
-    const today = d.getUTCDay();
-    if (!dow) return (today + dayFrac) / 7;
-    // Completed weekdays at their full share, plus today's share scaled by how
-    // far into today's own curve we are.
-    let done = 0;
-    for (let i = 0; i < today; i++) done += dow[i];
-    return Math.max(0, Math.min(1, done + dow[today] * dayFrac));
-  }
-
-  const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
-  if (bucketKey !== key) return 0;
-  const daysInMonth = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
-  if (!dow) return (d.getUTCDate() - 1 + dayFrac) / daysInMonth;
-  // Weight every calendar day of the month by its weekday share, so a month
-  // carrying an extra weekend is not treated as if its days were interchangeable.
-  const firstDow = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).getUTCDay();
-  let done = 0, all = 0;
-  for (let i = 0; i < daysInMonth; i++) {
-    const w = dow[(firstDow + i) % 7];
-    all += w;
-    if (i < d.getUTCDate() - 1) done += w;
-    else if (i === d.getUTCDate() - 1) done += w * dayFrac;
-  }
-  return all > 0 ? Math.max(0, Math.min(1, done / all)) : (d.getUTCDate() - 1 + dayFrac) / daysInMonth;
-}
-
-// Extrapolation of the trailing bucket: seconds so far divided by the share of
-// the period's expected volume that has already landed. Returns null for a
-// bucket that is complete, empty, or too early in the period to project.
-function tbdProjectLastBucket(buckets, gran, shape) {
-  const last = buckets && buckets.length ? buckets[buckets.length - 1] : null;
-  if (!last || !(last.seconds > 0)) return null;
-  const fraction = tbdElapsedFraction(last.key, gran, shape);
-  if (!(fraction >= TBD_MIN_ELAPSED) || fraction >= 0.999) return null;
-  const seconds = last.seconds / fraction;
-  if (!Number.isFinite(seconds) || seconds <= last.seconds) return null;
-  const curve = gran === 'day' ? !!(shape && shape.hourCum) : !!(shape && tbdDowShape(shape));
-  return { key: last.key, seconds, fraction, actual: last.seconds, curve, basisDays: (shape && shape.basisDays) || 0 };
-}
-
-// ---- Analytics -> All-time totals (2026-10-07) --------------------------------
-// Cumulative players, plays and hours since the first recorded play, each with
-// a running-total sparkline. Built entirely from the timeByDay and newUsers
-// series the analytics part already ships, so it costs no extra request.
-function cumSeries(series, pick) {
-  let run = 0;
-  return (series || []).map((r) => { run += Number(pick(r)) || 0; return { day: r.day, v: run }; });
-}
-function CumSpark({ points, color }) {
-  const W = 260, H = 54;
-  if (!points || points.length < 2) return <div style={{ height: H }} />;
-  const max = points[points.length - 1].v || 1;
-  const n = points.length - 1;
-  const xy = points.map((p, i) => [(i / n) * W, H - 2 - (p.v / max) * (H - 6)]);
-  const line = xy.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: '100%', height: H, display: 'block' }} aria-hidden="true">
-      <path d={`${line} L${W},${H} L0,${H} Z`} fill={color} fillOpacity="0.12" />
-      <path d={line} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke" />
-    </svg>
-  );
-}
-function CumulativeTotalsPanel({ timeByDay, newUsers, registered }) {
-  const tSeries = (timeByDay && timeByDay.series) || [];
-  const uSeries = (newUsers && newUsers.series) || [];
-  const tt = (timeByDay && timeByDay.totals) || {};
-  const ut = (newUsers && newUsers.totals) || {};
-  const users = useMemo(() => cumSeries(uSeries, (r) => r.players), [uSeries]);
-  const plays = useMemo(() => cumSeries(tSeries, (r) => r.plays), [tSeries]);
-  const hours = useMemo(() => cumSeries(tSeries, (r) => (r.seconds || 0) / 3600), [tSeries]);
-  const firsts = [tt.firstDay, ut.firstDay].filter(Boolean).sort();
-  const since = firsts[0] || null;
-  const days = since ? Math.max(1, Math.round((Date.now() - tbdParseDay(since).getTime()) / 86400000) + 1) : 0;
-  const totalHours = (tt.totalSeconds || 0) / 3600;
-  const fmtH = totalHours >= 100 ? Math.round(totalHours).toLocaleString() : totalHours.toFixed(1);
-  const card = (label, value, unit, sub, pts, color) => (
-    <div style={{ flex: '1 1 240px', minWidth: 220, background: COLORS.paper, border: `1px solid ${COLORS.line}`, borderRadius: 12, padding: '12px 14px 8px' }}>
-      <div style={{ fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: COLORS.faded }}>{label}</div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 2 }}>
-        <span style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 800, fontSize: 30, lineHeight: 1.1, color }}>{value}</span>
-        <span style={{ fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded }}>{unit}</span>
-      </div>
-      <div style={{ fontFamily: 'Manrope, monospace', fontSize: 9, letterSpacing: '0.07em', textTransform: 'uppercase', color: COLORS.faded, margin: '3px 0 8px' }}>{sub}</div>
-      <CumSpark points={pts} color={color} />
-    </div>
-  );
-  return (
-    <div style={{ marginBottom: 18 }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 7 }}>
-        <span style={{ fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, color: COLORS.ink }}>All time</span>
-        <span style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 10, fontStyle: 'italic', color: COLORS.faded }}>
-          {since ? `since ${tbdLongDate(since)} (${days.toLocaleString()} days), running totals, registered and anonymous` : 'no plays recorded yet'}
-        </span>
-      </div>
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-        {card('Users', (ut.totalPlayers || 0).toLocaleString(), 'players',
-          `${(registered || 0).toLocaleString()} registered · anyone with a play`, users, COLORS.ember)}
-        {card('Plays', (tt.totalPlays || 0).toLocaleString(), 'games',
-          `${days ? Math.round((tt.totalPlays || 0) / days).toLocaleString() : 0} per day on average`, plays, COLORS.forest)}
-        {card('Hours', fmtH, 'hours played',
-          `${(tt.totalPlays ? Math.round((tt.totalSeconds || 0) / tt.totalPlays) : 0).toLocaleString()}s per play on average`, hours, COLORS.rust)}
-      </div>
-    </div>
-  );
-}
-
 function TimeByDayStat({ value, unit, label, accent }) {
   return (
     <div style={{ flex: '1 1 150px', minWidth: 140, background: COLORS.paper, border: `1px solid ${COLORS.line}`, borderRadius: 8, padding: '14px 16px' }}>
@@ -2848,307 +2461,6 @@ function TimeByDayStat({ value, unit, label, accent }) {
         {unit ? <span style={{ fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded }}>{unit}</span> : null}
       </div>
       <div style={{ fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: COLORS.faded, marginTop: 8 }}>{label}</div>
-    </div>
-  );
-}
-
-function TimeByDayPanel({ data }) {
-  const series = (data && data.series) || [];
-  const totals = (data && data.totals) || {};
-  const shape = (data && data.shape) || null; // measured intraday / weekday curve
-  const [gran, setGran] = useState('day');
-  const buckets = useMemo(() => tbdBucketize(series, gran), [series, gran]);
-  // The trailing bucket is usually still running, so project where it lands and
-  // let the y-scale include that projection so the dotted top always fits.
-  const projection = useMemo(() => tbdProjectLastBucket(buckets, gran, shape), [buckets, gran, shape]);
-  // Put the measured curve behind a hover on the legend, so a projection that
-  // looks wrong can be checked against the shape it came from without going to
-  // the data.
-  const shapeTip = useMemo(() => {
-    const cum = shape && Array.isArray(shape.hourCum) && shape.hourCum.length === 24 ? shape.hourCum : null;
-    if (!cum) return '';
-    const rows = [];
-    for (let h = 2; h < 24; h += 3) rows.push(`${String((h + 1) % 24).padStart(2, '0')}:00  ${(cum[h] * 100).toFixed(0)}%`);
-    return `Share of a typical day's play banked by each ET hour.\nMedian of the last ${shape.basisDays} complete days (${shape.firstDay} to ${shape.lastDay}):\n\n${rows.join('\n')}`;
-  }, [shape]);
-  const maxSeconds = useMemo(
-    () => Math.max(buckets.reduce((m, b) => Math.max(m, b.seconds), 0), projection ? projection.seconds : 0),
-    [buckets, projection]
-  );
-
-  if (!series.length) {
-    return <p style={{ fontFamily: 'Manrope, monospace', fontSize: 12, color: COLORS.faded, fontStyle: 'italic' }}>No completed quiz games recorded yet.</p>;
-  }
-
-  const totalHrs = tbdHoursValue(totals.totalSeconds || 0);
-  const avgActive = tbdHoursValue(totals.avgActiveDaySeconds || 0);
-  const busiest = totals.busiestDay || null;
-  // Evenly spread up to ~9 x-axis labels so a long daily history stays legible.
-  const labelStep = Math.max(1, Math.ceil(buckets.length / 9));
-
-  const granStyle = (on) => ({
-    padding: '6px 12px',
-    background: on ? `${COLORS.ember}1a` : 'transparent',
-    border: `1px solid ${on ? COLORS.ember : COLORS.line}`,
-    color: on ? COLORS.ember : COLORS.faded,
-    fontFamily: 'Manrope, monospace',
-    fontSize: 10,
-    letterSpacing: '0.08em',
-    textTransform: 'uppercase',
-    fontWeight: 600,
-    cursor: 'pointer',
-  });
-
-  const exportCsv = () => {
-    const unitLabel = gran === 'day' ? 'Day' : gran === 'week' ? 'Week of' : 'Month';
-    const head = [unitLabel, 'Seconds', 'Hours', 'Plays'];
-    const rows = buckets.map((b) => [b.full, b.seconds, (b.seconds / 3600).toFixed(3), b.plays]);
-    downloadCsvFile(`sot-time-played-by-${gran}`, head, rows);
-  };
-
-  return (
-    <div>
-      <SectionHeading>Time spent playing quizzes</SectionHeading>
-      <p style={{ fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded, margin: '0 0 18px', lineHeight: 1.6 }}>
-        Total wall-clock time players spent completing quizzes, from every recorded game (registered and anonymous), bucketed in US Eastern.
-        {totals.firstDay ? <span style={{ color: COLORS.ink }}> {tbdLongDate(totals.firstDay)}</span> : null}
-        {totals.lastDay ? <span> → <span style={{ color: COLORS.ink }}>{tbdLongDate(totals.lastDay)}</span></span> : null}.
-      </p>
-
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 22 }}>
-        <TimeByDayStat value={totalHrs.value} unit={totalHrs.unit} label="Total time played" accent={COLORS.ember} />
-        <TimeByDayStat value={(totals.totalPlays || 0).toLocaleString()} unit="games" label="Completed games" accent={COLORS.ink} />
-        <TimeByDayStat value={(totals.activeDays || 0).toLocaleString()} unit="days" label="Days with plays" accent={COLORS.ink} />
-        <TimeByDayStat value={avgActive.value} unit={avgActive.unit} label="Avg / active day" accent={COLORS.forest} />
-        <TimeByDayStat
-          value={busiest ? tbdHoursValue(busiest.seconds).value : '—'}
-          unit={busiest ? tbdHoursValue(busiest.seconds).unit : ''}
-          label={busiest ? `Busiest day · ${tbdLongDate(busiest.day)}` : 'Busiest day'}
-          accent={COLORS.rust}
-        />
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
-        {[['day', 'Day'], ['week', 'Week'], ['month', 'Month']].map(([key, label]) => (
-          <button key={key} onClick={() => setGran(key)} style={granStyle(gran === key)}>{label}</button>
-        ))}
-        <button
-          onClick={exportCsv}
-          title="Download the currently shown buckets (period, seconds, hours, plays) as CSV"
-          style={{ marginLeft: 'auto', padding: '7px 12px', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, cursor: 'pointer' }}
-        >
-          ↓ Time CSV
-        </button>
-      </div>
-
-      <div style={{ background: COLORS.paper, border: `1px solid ${COLORS.line}`, borderRadius: 8, padding: '18px 16px 10px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: buckets.length > 60 ? 1 : 2, height: 190 }}>
-          {buckets.map((b) => {
-            const h = maxSeconds ? Math.max(b.seconds > 0 ? 2 : 0, Math.round((b.seconds / maxSeconds) * 178)) : 0;
-            const proj = projection && projection.key === b.key ? projection : null;
-            const projH = proj && maxSeconds ? Math.round((proj.seconds / maxSeconds) * 178) : 0;
-            return (
-              <div
-                key={b.key}
-                title={`${b.full}\n${tbdDur(b.seconds)} \u00b7 ${b.plays.toLocaleString()} game${b.plays === 1 ? '' : 's'}${proj ? `\nOn pace for ${tbdDur(proj.seconds)} (${proj.curve ? `${Math.round(proj.fraction * 100)}% of a typical ${gran} of play is in by now` : `${Math.round(proj.fraction * 100)}% of the ${gran} elapsed`})` : ''}`}
-                style={{ flex: '1 1 0', minWidth: 2, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}
-              >
-                {proj ? (
-                  <div
-                    style={{
-                      height: Math.max(3, projH - h),
-                      boxSizing: 'border-box',
-                      border: `1px dashed ${COLORS.ember}`,
-                      borderBottom: 'none',
-                      borderRadius: '3px 3px 0 0',
-                      background: `${COLORS.ember}14`,
-                    }}
-                  />
-                ) : null}
-                <div style={{ height: h, background: COLORS.ember, opacity: 0.85, borderRadius: proj ? 0 : '3px 3px 0 0' }} />
-              </div>
-            );
-          })}
-        </div>
-        <div style={{ display: 'flex', gap: buckets.length > 60 ? 1 : 2, marginTop: 8, borderTop: `1px solid ${COLORS.line}`, paddingTop: 8 }}>
-          {buckets.map((b, i) => (
-            <div key={b.key} style={{ flex: '1 1 0', minWidth: 2, textAlign: 'center', overflow: 'visible' }}>
-              {i % labelStep === 0 ? (
-                <span style={{ fontFamily: 'Manrope, monospace', fontSize: 9, color: COLORS.faded, whiteSpace: 'nowrap' }}>{b.label}</span>
-              ) : null}
-            </div>
-          ))}
-        </div>
-        {projection ? (
-          <div title={shapeTip} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: `1px solid ${COLORS.line}`, cursor: shapeTip ? 'help' : 'default' }}>
-            <span style={{ flex: '0 0 auto', width: 16, height: 10, boxSizing: 'border-box', border: `1px dashed ${COLORS.ember}`, borderBottom: 'none', borderRadius: '2px 2px 0 0', background: `${COLORS.ember}14`, display: 'inline-block' }} />
-            <span style={{ fontFamily: 'Manrope, monospace', fontSize: 10, color: COLORS.faded, lineHeight: 1.5 }}>
-              Dotted outline projects where the current {gran} finishes at the pace set so far:{' '}
-              <span style={{ color: COLORS.ink }}>{tbdHoursValue(projection.seconds).value} {tbdHoursValue(projection.seconds).unit}</span>
-              {' '}({tbdHoursValue(projection.actual).value} {tbdHoursValue(projection.actual).unit} banked &middot;{' '}
-              {projection.curve
-                ? `${Math.round(projection.fraction * 100)}% of a typical ${gran}'s play lands by this point, measured over the last ${projection.basisDays} days`
-                : `${Math.round(projection.fraction * 100)}% of the ${gran} elapsed, clock time`})
-            </span>
-          </div>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-
-// ---- Analytics -> New Users (below the Time Played chart) ---------------------
-// Two daily acquisition series plotted side by side: new first-play PLAYERS
-// (anonymous + registered, from quiz_results) and new registered SIGNUPS (the
-// /quiz join form). Server (buildNewUsersByDay) gap-fills the daily series; this
-// panel adds the same Day / Week / Month toggle, summary strip, grouped column
-// chart, and CSV export as the Time Played panel above it.
-function nubBucketize(series, gran) {
-  const rows = series || [];
-  if (gran === 'day') {
-    return rows.map((r) => ({
-      key: r.day,
-      label: `${TBD_MONTHS[tbdParseDay(r.day).getUTCMonth()]} ${tbdParseDay(r.day).getUTCDate()}`,
-      full: tbdLongDate(r.day),
-      players: r.players,
-      signups: r.signups,
-    }));
-  }
-  const map = new Map();
-  for (const r of rows) {
-    const d = tbdParseDay(r.day);
-    let key, label, full;
-    if (gran === 'week') {
-      const start = new Date(d.getTime());
-      start.setUTCDate(start.getUTCDate() - start.getUTCDay()); // back to Sunday
-      key = `${start.getUTCFullYear()}-${String(start.getUTCMonth() + 1).padStart(2, '0')}-${String(start.getUTCDate()).padStart(2, '0')}`;
-      label = `${TBD_MONTHS[start.getUTCMonth()]} ${start.getUTCDate()}`;
-      full = `Week of ${TBD_MONTHS[start.getUTCMonth()]} ${start.getUTCDate()}, ${start.getUTCFullYear()}`;
-    } else {
-      key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
-      label = `${TBD_MONTHS[d.getUTCMonth()]} '${String(d.getUTCFullYear()).slice(2)}`;
-      full = `${TBD_MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
-    }
-    const cur = map.get(key) || { key, label, full, players: 0, signups: 0 };
-    cur.players += r.players;
-    cur.signups += r.signups;
-    map.set(key, cur);
-  }
-  return Array.from(map.values()).sort((a, b) => a.key.localeCompare(b.key));
-}
-
-function NewUsersByDayPanel({ data }) {
-  const series = (data && data.series) || [];
-  const totals = (data && data.totals) || {};
-  const [gran, setGran] = useState('day');
-  const buckets = useMemo(() => nubBucketize(series, gran), [series, gran]);
-  // Shared y-scale across both series so the two bars are directly comparable.
-  const maxVal = useMemo(
-    () => buckets.reduce((m, b) => Math.max(m, b.players, b.signups), 0),
-    [buckets],
-  );
-
-  if (!series.length) {
-    return <p style={{ fontFamily: 'Manrope, monospace', fontSize: 12, color: COLORS.faded, fontStyle: 'italic' }}>No players recorded yet.</p>;
-  }
-
-  const busiest = totals.busiestDay || null;
-  const labelStep = Math.max(1, Math.ceil(buckets.length / 9));
-
-  const granStyle = (on) => ({
-    padding: '6px 12px',
-    background: on ? `${COLORS.ember}1a` : 'transparent',
-    border: `1px solid ${on ? COLORS.ember : COLORS.line}`,
-    color: on ? COLORS.ember : COLORS.faded,
-    fontFamily: 'Manrope, monospace',
-    fontSize: 10,
-    letterSpacing: '0.08em',
-    textTransform: 'uppercase',
-    fontWeight: 600,
-    cursor: 'pointer',
-  });
-
-  const exportCsv = () => {
-    const unitLabel = gran === 'day' ? 'Day' : gran === 'week' ? 'Week of' : 'Month';
-    const head = [unitLabel, 'New players', 'New signups'];
-    const rows = buckets.map((b) => [b.full, b.players, b.signups]);
-    downloadCsvFile(`sot-new-users-by-${gran}`, head, rows);
-  };
-
-  const LegendDot = ({ color, label }) => (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-      <span style={{ width: 10, height: 10, borderRadius: 2, background: color, display: 'inline-block' }} />
-      <span style={{ fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.06em', textTransform: 'uppercase', color: COLORS.faded }}>{label}</span>
-    </span>
-  );
-
-  return (
-    <div>
-      <SectionHeading>New users per day</SectionHeading>
-      <p style={{ fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded, margin: '0 0 18px', lineHeight: 1.6 }}>
-        New players (their first-ever recorded quiz play, anonymous and registered alike) and new registered signups from the join form, bucketed in US Eastern.
-        {totals.firstDay ? <span style={{ color: COLORS.ink }}> {tbdLongDate(totals.firstDay)}</span> : null}
-        {totals.lastDay ? <span> &rarr; <span style={{ color: COLORS.ink }}>{tbdLongDate(totals.lastDay)}</span></span> : null}.
-      </p>
-
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 22 }}>
-        <TimeByDayStat value={(totals.totalPlayers || 0).toLocaleString()} unit="players" label="New players (all-time)" accent={COLORS.ember} />
-        <TimeByDayStat value={(totals.totalSignups || 0).toLocaleString()} unit="signups" label="New signups (all-time)" accent={COLORS.forest} />
-        <TimeByDayStat value={(totals.activeDays || 0).toLocaleString()} unit="days" label="Days with new players" accent={COLORS.ink} />
-        <TimeByDayStat value={(totals.avgActiveDayPlayers || 0).toLocaleString()} unit="/ day" label="Avg new players / active day" accent={COLORS.ink} />
-        <TimeByDayStat
-          value={busiest ? (busiest.players || 0).toLocaleString() : '—'}
-          unit={busiest ? 'players' : ''}
-          label={busiest ? `Busiest day · ${tbdLongDate(busiest.day)}` : 'Busiest day'}
-          accent={COLORS.rust}
-        />
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
-        {[['day', 'Day'], ['week', 'Week'], ['month', 'Month']].map(([key, label]) => (
-          <button key={key} onClick={() => setGran(key)} style={granStyle(gran === key)}>{label}</button>
-        ))}
-        <div style={{ display: 'flex', gap: 14, marginLeft: 14 }}>
-          <LegendDot color={COLORS.ember} label="New players" />
-          <LegendDot color={COLORS.forest} label="New signups" />
-        </div>
-        <button
-          onClick={exportCsv}
-          title="Download the currently shown buckets (period, new players, new signups) as CSV"
-          style={{ marginLeft: 'auto', padding: '7px 12px', background: COLORS.ink, border: `1px solid ${COLORS.ink}`, color: COLORS.cream, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, cursor: 'pointer' }}
-        >
-          &darr; Users CSV
-        </button>
-      </div>
-
-      <div style={{ background: COLORS.paper, border: `1px solid ${COLORS.line}`, borderRadius: 8, padding: '18px 16px 10px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: buckets.length > 60 ? 2 : 4, height: 190 }}>
-          {buckets.map((b) => {
-            const ph = maxVal ? Math.max(b.players > 0 ? 2 : 0, Math.round((b.players / maxVal) * 178)) : 0;
-            const sh = maxVal ? Math.max(b.signups > 0 ? 2 : 0, Math.round((b.signups / maxVal) * 178)) : 0;
-            return (
-              <div
-                key={b.key}
-                title={`${b.full}\n${b.players.toLocaleString()} new player${b.players === 1 ? '' : 's'} · ${b.signups.toLocaleString()} new signup${b.signups === 1 ? '' : 's'}`}
-                style={{ flex: '1 1 0', minWidth: 2, height: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 1 }}
-              >
-                <div style={{ flex: '1 1 0', minWidth: 1, height: ph, background: COLORS.ember, opacity: 0.85, borderRadius: '3px 3px 0 0' }} />
-                <div style={{ flex: '1 1 0', minWidth: 1, height: sh, background: COLORS.forest, opacity: 0.85, borderRadius: '3px 3px 0 0' }} />
-              </div>
-            );
-          })}
-        </div>
-        <div style={{ display: 'flex', gap: buckets.length > 60 ? 2 : 4, marginTop: 8, borderTop: `1px solid ${COLORS.line}`, paddingTop: 8 }}>
-          {buckets.map((b, i) => (
-            <div key={b.key} style={{ flex: '1 1 0', minWidth: 2, textAlign: 'center', overflow: 'visible' }}>
-              {i % labelStep === 0 ? (
-                <span style={{ fontFamily: 'Manrope, monospace', fontSize: 9, color: COLORS.faded, whiteSpace: 'nowrap' }}>{b.label}</span>
-              ) : null}
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
