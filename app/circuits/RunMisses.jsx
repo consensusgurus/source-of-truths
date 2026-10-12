@@ -14,6 +14,7 @@
 // picked, and that already rides on the run's result row and on the per-puzzle
 // save a game finished on its own page wrote.
 
+import { mathText } from '@/app/MathText';
 import React from 'react';
 
 export function missOf(section, res) {
@@ -41,12 +42,12 @@ export function MissAnswer({ miss }) {
   if (!miss || miss.cleared) return null;
   return (
     <div className="rnm-miss">
-      <div className="rnm-q">{miss.q}</div>
+      <div className="rnm-q">{mathText(miss.q)}</div>
       <div className="rnm-ans">
-        {miss.yours ? <span className="rnm-w">you said {miss.yours}</span> : null}
+        {miss.yours ? <span className="rnm-w">you said {mathText(miss.yours)}</span> : null}
         {miss.timedOut ? <span className="rnm-w">the clock ran out</span> : null}
         {miss.unknown ? <span className="rnm-w">answered wrong</span> : null}
-        <span className="rnm-r">{miss.right}</span>
+        <span className="rnm-r">{mathText(miss.right)}</span>
       </div>
     </div>
   );
@@ -72,12 +73,12 @@ export default function MissList({ sections = [], results = [], colourOf }) {
                 <div className="rnm-q cleared">Cleared. Every question.</div>
               ) : (
                 <>
-                  <div className="rnm-q">{m.q}</div>
+                  <div className="rnm-q">{mathText(m.q)}</div>
                   <div className="rnm-ans">
-                    {m.yours ? <span className="rnm-w">you said {m.yours}</span> : null}
+                    {m.yours ? <span className="rnm-w">you said {mathText(m.yours)}</span> : null}
                     {m.timedOut ? <span className="rnm-w">the clock ran out</span> : null}
                     {m.unknown ? <span className="rnm-w">answered wrong</span> : null}
-                    <span className="rnm-r">{m.right}</span>
+                    <span className="rnm-r">{mathText(m.right)}</span>
                   </div>
                 </>
               )}

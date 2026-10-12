@@ -12,6 +12,7 @@
 // rule in a fixed library that fits the shown terms predicts the answer or
 // nothing on the board.
 
+import { mathText } from '@/app/MathText';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useHoverStale } from '@/lib/hover-armed';
 import { useSearchParams } from 'next/navigation';
@@ -71,7 +72,7 @@ const fmtNum = (n) => (typeof n === 'number' ? n.toLocaleString('en-US') : Strin
 // The printed line. A ? is the gap the player fills, drawn as a blank box.
 function lineOf(q) {
   const parts = String(q).split('?');
-  return parts.map((p, i) => (i === 0 ? p : [<span key={i} className="bd-blank">?</span>, p]));
+  return parts.map((p, i) => (i === 0 ? <React.Fragment key="h">{mathText(p)}</React.Fragment> : [<span key={i} className="bd-blank">?</span>, <React.Fragment key={'p' + i}>{mathText(p)}</React.Fragment>]));
 }
 
 const isIosDevice = () =>
@@ -547,7 +548,7 @@ export default function SeriesClient({ puzzles = [], problemsByNum = {}, forceNu
         style={{ background: bg, borderColor: border, color, cursor: dead || lock ? 'default' : 'pointer' }}
       >
         <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 500, color: 'inherit', opacity: 0.6 }}>{k + 1}</span>
-        <span style={{ fontFamily: MONO, fontSize: typeof pp.choices[k] === 'string' ? 17 : 21, fontWeight: 500, letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>{fmtNum(pp.choices[k])}</span>
+        <span style={{ fontFamily: MONO, fontSize: typeof pp.choices[k] === 'string' ? 17 : 21, fontWeight: 500, letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>{mathText(fmtNum(pp.choices[k]))}</span>
       </button>
     );
   };

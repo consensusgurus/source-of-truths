@@ -35,6 +35,7 @@
 // unplayed that the server has a row for, which is the failure this file has to
 // avoid rather than the one it is likely to notice.
 
+import { mathText } from '@/app/MathText';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useHoverStale } from '@/lib/hover-armed';
 import { ArrowRight, Pause, Play, Home, Share2, Check, RotateCcw } from 'lucide-react';
@@ -1345,9 +1346,9 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                 {MATH_RUN_GAMES.includes(sec.key) ? (
                   // A math line, not a sentence: set in figures, with the ? of
                   // Gap, Series and Back drawn as the blank to fill.
-                  <h2 className="rn-q rn-qm">{String(question.q).split('?').map((p, i) => (i === 0 ? p : [<span key={i} className="rn-blank">?</span>, p]))}</h2>
+                  <h2 className="rn-q rn-qm">{String(question.q).split('?').map((p, i) => (i === 0 ? <React.Fragment key="h">{mathText(p)}</React.Fragment> : [<span key={i} className="rn-blank">?</span>, <React.Fragment key={'p' + i}>{mathText(p)}</React.Fragment>]))}</h2>
                 ) : (
-                  <h2 className="rn-q">{question.q}</h2>
+                  <h2 className="rn-q">{mathText(question.q)}</h2>
                 )}
                 <div className={`rn-ch${hovStale ? ' nohov' : ''}`}>
                   {question.choices.map((c, k) => (
@@ -1358,7 +1359,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                       onClick={() => answer(k)}
                       disabled={lock}
                     >
-                      <span className="rn-k">{k + 1}</span>{typeof c === 'number' ? c.toLocaleString('en-US') : c}
+                      <span className="rn-k">{k + 1}</span>{typeof c === 'number' ? c.toLocaleString('en-US') : mathText(c)}
                     </button>
                   ))}
                 </div>
@@ -1387,9 +1388,9 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     <span className="rn-count"><b>{r.i + 1}</b> of {sec.questions.length}</span>
                   </div>
                   {MATH_RUN_GAMES.includes(sec.key) ? (
-                    <h2 className="rn-q rn-qm">{String(question.q).split('?').map((p, i) => (i === 0 ? p : [<span key={i} className="rn-blank">?</span>, p]))}</h2>
+                    <h2 className="rn-q rn-qm">{String(question.q).split('?').map((p, i) => (i === 0 ? <React.Fragment key="h">{mathText(p)}</React.Fragment> : [<span key={i} className="rn-blank">?</span>, <React.Fragment key={'p' + i}>{mathText(p)}</React.Fragment>]))}</h2>
                   ) : (
-                    <h2 className="rn-q">{question.q}</h2>
+                    <h2 className="rn-q">{mathText(question.q)}</h2>
                   )}
                   <div className={`rt-clk${remainFrac < 0.25 ? ' hot' : ''}`}>
                     <span className="rt-cbar"><span style={{ width: `${remainFrac * 100}%` }} /></span>
@@ -1405,7 +1406,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                       onClick={() => answer(k)}
                       disabled={lock}
                     >
-                      <span className="rn-k">{k + 1}</span>{typeof c === 'number' ? c.toLocaleString('en-US') : c}
+                      <span className="rn-k">{k + 1}</span>{typeof c === 'number' ? c.toLocaleString('en-US') : mathText(c)}
                     </button>
                   ))}
                 </div>
@@ -1462,16 +1463,16 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   {lastMiss && !lastMiss.cleared ? (
                     <>
                       <div className="rnm-q">
-                        {lastMiss.q}
+                        {mathText(lastMiss.q)}
                         <b className="rn-vsc">
                           <i style={{ color: lastSec ? rampFor(lastSec.slot) : T.blue }}>{lastSec ? lastSec.name : 'That quiz'}</i> {last.score} of {last.total}
                         </b>
                       </div>
                       <div className="rnm-ans">
-                        {lastMiss.yours ? <span className="rnm-w">you said {lastMiss.yours}</span> : null}
+                        {lastMiss.yours ? <span className="rnm-w">you said {mathText(lastMiss.yours)}</span> : null}
                         {lastMiss.timedOut ? <span className="rnm-w">the clock ran out</span> : null}
                         {lastMiss.unknown ? <span className="rnm-w">answered wrong</span> : null}
-                        <span className="rnm-r">{lastMiss.right}</span>
+                        <span className="rnm-r">{mathText(lastMiss.right)}</span>
                       </div>
                     </>
                   ) : (

@@ -16,6 +16,7 @@
 // that the answer cannot be picked out by its last digit, by its size, or by
 // where it sits once the options are sorted.
 
+import { mathText } from '@/app/MathText';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useHoverStale } from '@/lib/hover-armed';
 import { useSearchParams } from 'next/navigation';
@@ -546,14 +547,14 @@ export default function BlitzedClient({ puzzles = [], problemsByNum = {}, forceN
         style={{ background: bg, borderColor: border, color, cursor: dead || lock ? 'default' : 'pointer' }}
       >
         <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 500, color: 'inherit', opacity: 0.6 }}>{k + 1}</span>
-        <span style={{ fontFamily: MONO, fontSize: 21, fontWeight: 500, letterSpacing: '-0.01em' }}>{fmtNum(pp.choices[k])}</span>
+        <span style={{ fontFamily: MONO, fontSize: 21, fontWeight: 500, letterSpacing: '-0.01em' }}>{mathText(fmtNum(pp.choices[k]))}</span>
       </button>
     );
   };
 
   const qCard = (pp, dead) => (
     <div>
-      <div className="bd-prob">{pp.q}</div>
+      <div className="bd-prob">{mathText(pp.q)}</div>
       <div className={`bd-grid${hovStale ? ' nohov' : ''}`}>
         {[0, 1, 2, 3].map((k) => choiceBtn(pp, k, dead))}
       </div>
