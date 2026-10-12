@@ -1523,13 +1523,67 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     in words. The ladder is the one that reads at a glance and
                     names every bank, so it is the one that stays, and it leads
                     the card. */}
-                <span className="rn-lcap">
-                  {r.practice ? 'Practice run' : 'The run'}
-                  {r.practice ? <i className="rn-pchip">nothing posted</i> : null}
-                </span>
-                {TOWERS ? (
-                  <RunLanes id={`${circuitId}-done`} order="run" sections={sections} results={r.results} avg={lanesAvg} best={lanesBest} className="rt-done" />
-                ) : (
+                {/* THE FINISH IS HALF AND HALF ON THE GAUNTLETS (owner, 2026-10-12):
+                    today's top five plus your own row on the left, the run's
+                    bands on the right, in the space the bands alone used to
+                    fill. Same board read as the figures below (boardQ), and the
+                    score is whatever unit the board ranks on. */}
+                {!TOWERS ? (
+                  <span className="rn-lcap">
+                    {r.practice ? 'Practice run' : 'The run'}
+                    {r.practice ? <i className="rn-pchip">nothing posted</i> : null}
+                  </span>
+                ) : null}
+                {TOWERS ? (() => {
+                  const bd = boardQ.data;
+                  const rows = (bd && Array.isArray(bd.overall) ? bd.overall : []).slice(0, 5);
+                  const me = bd ? (bd.me || bd.meProvisional || null) : null;
+                  const meIn = !!(me && rows.some((x) => x.userKey && x.userKey === me.userKey));
+                  const fmtS = (v) => (bd && bd.scoreMode === 'correct'
+                    ? Math.round(Number(v) || 0) : Math.round((Number(v) || 0) * 10) / 10);
+                  return (
+                    <div className="rt-split">
+                      <div className="rt-t5">
+                        <span className="rn-lcap">
+                          Today&rsquo;s top 5{bd && bd.overallField ? <i className="rt-t5f"> of {bd.overallField}</i> : null}
+                        </span>
+                        {boardQ.state === 'loading' && !bd ? (
+                          <div className="rt-t5m">Reading the board.</div>
+                        ) : !rows.length ? (
+                          <div className="rt-t5m">{boardQ.state === 'error' ? 'The board could not be loaded just now.' : 'Nobody on the board yet.'}</div>
+                        ) : (
+                          <div className="rt-t5l">
+                            {rows.map((row, i) => {
+                              const mine = !!(me && row.userKey && row.userKey === me.userKey);
+                              const pos = Number.isFinite(row.rank) ? row.rank : i + 1;
+                              return (
+                                <div key={row.userKey || i} className={`rt-t5r${mine ? ' me' : ''}${pos <= 3 ? ` p${pos}` : ''}`}>
+                                  <span className="rt-t5p">{pos}</span>
+                                  <span className="rt-t5n">{mine ? 'You' : (row.username || 'Guest')}</span>
+                                  <span className="rt-t5s">{fmtS(row.total)}</span>
+                                </div>
+                              );
+                            })}
+                            {me && !meIn ? (
+                              <div className="rt-t5r me gap">
+                                <span className="rt-t5p">{Number.isFinite(me.rank) ? me.rank : '-'}</span>
+                                <span className="rt-t5n">You</span>
+                                <span className="rt-t5s">{fmtS(me.total)}</span>
+                              </div>
+                            ) : null}
+                          </div>
+                        )}
+                      </div>
+                      <div className="rt-runc">
+                        <span className="rn-lcap">
+                          {r.practice ? 'Practice run' : 'The run'}
+                          {r.practice ? <i className="rn-pchip">nothing posted</i> : null}
+                        </span>
+                        <RunLanes id={`${circuitId}-done`} order="run" sections={sections} results={r.results} avg={lanesAvg} best={lanesBest} className="rt-done" />
+                      </div>
+                    </div>
+                  );
+                })() : (
                 <GauntletLadder
                   orientation="row"
                   sections={sections}
@@ -2347,6 +2401,34 @@ ${TOWER_CSS}
 .rt-rhd span{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#8b95a8;}
 .rt-rhd i{font-style:normal;font-size:11.5px;font-weight:600;color:#8b95a8;}
 .rt-done{margin:6px 0 4px;}
+/* The finish split (owner, 2026-10-12): top 5 left, the run's bands right. */
+.rt-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start;}
+.rt-split .rn-lcap{margin-bottom:8px;}
+.rt-t5f{font-style:normal;color:#4f5b73;}
+.rt-t5l{display:flex;flex-direction:column;gap:3px;}
+.rt-t5r{display:flex;align-items:center;gap:10px;padding:4px 9px;border-radius:6px;min-height:20px;
+  border:1px solid transparent;font-size:13px;font-weight:600;}
+.rt-t5p{font-family:${MONO};font-size:11.5px;color:#66748f;width:26px;flex:none;font-variant-numeric:tabular-nums;}
+.rt-t5r.p1 .rt-t5p{color:#e8b43a;}
+.rt-t5r.p2 .rt-t5p{color:#b8bcc4;}
+.rt-t5r.p3 .rt-t5p{color:#c8814b;}
+.rt-t5n{flex:1;min-width:0;color:#dce6f7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rt-t5s{font-family:${MONO};font-size:12.5px;color:#fff;font-variant-numeric:tabular-nums;}
+.rt-t5r.me{background:rgba(47,111,228,.18);border-color:rgba(96,165,250,.35);}
+.rt-t5r.me .rt-t5n{color:#fff;font-weight:800;}
+.rt-t5r.gap{margin-top:6px;position:relative;}
+.rt-t5r.gap::before{content:'';position:absolute;left:9px;right:9px;top:-5px;border-top:1px dashed rgba(255,255,255,.12);}
+.rt-t5m{font-size:12px;font-weight:600;color:#8b95a8;padding:4px 0;}
+.rt-split .rt-done{margin:0;}
+.rt-split .rt-done.rl{gap:4px;}
+.rt-split .rt-done .rl-row{grid-template-columns:62px minmax(0,1fr) 40px;gap:9px;min-height:20px;}
+.rt-split .rt-done .rl-nm{font-size:12px;}
+.rt-split .rt-done .rl-sc{font-size:11px;}
+.rt-split .rt-done .rl-trk{height:8px;}
+@media (max-width:680px){
+  .rt-split{grid-template-columns:minmax(0,1fr);gap:18px;}
+  .rt-split .rt-runc{order:-1;}
+}
 
 @media (max-width:820px){
   .rn-roster.tw .rn-rrow{padding:7px 0 7px 13px;flex-wrap:wrap;row-gap:8px;}
