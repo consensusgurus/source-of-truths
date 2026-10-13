@@ -341,7 +341,8 @@ const TILES_KEY = 'sot_home_tiles';
 // shows on a category when any of its games lives there, plus the hand-added
 // homes in PILL_EXTRA (Passport is a geography game the owner also files under
 // Trivia). All Puzzles shows all five.
-const PILL_CIRCUITS = ['gauntlet', 'pricecheck', 'passport', 'deduction', 'dojo', 'room'];
+// Math Gauntlet restored beside the Trivia Gauntlet (owner, 2026-10-13 evening).
+const PILL_CIRCUITS = ['gauntlet', 'math', 'pricecheck', 'passport', 'deduction', 'dojo', 'room'];
 // CIRCUITS-PANE ONLY (owner, 2026-10-13): the Valet Gauntlet is less developed,
 // so it is never offered on the main page (pills, phone runs, the shelf peek);
 // it shows only when the reader opens Circuits, or has starred it.

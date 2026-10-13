@@ -9222,3 +9222,24 @@ site-wide in `localStorage.sot_clock_shown` ('1' = shown).
 - Known stragglers outside the figures row are untouched: Babel prints the elapsed time
   inside its own score line during play, and the circuit run page renders its own
   figures row. Bring them under the same switch if players ask.
+
+### The leader and the leaderboard follow the same rule (owner, 2026-10-13)
+
+`lib/reveal-pref.js` (`useRevealPref`, `REVEAL`) is now the ONE hook for all three
+hidden-until-asked things on a daily, each its own site-wide remembered choice:
+
+| Preference | Key | Where |
+|---|---|---|
+| clock | `sot_clock_shown` | the `'time'` figure, `StageChrome` |
+| leader | `sot_leader_shown` | the status strip's "Show leader", `StageChrome` |
+| leaderboard | `sot_board_shown` | the strip's "Show leaderboard" (opens the rankings panel) AND the desktop right panel's Board tab, `LayoutCInner` |
+
+- **On a daily the status strip is a ROW of two buttons**, not one button: "Show leader"
+  (reveals the leader's name, result and field in place) and "Show leaderboard" (opens the
+  rankings panel). It draws from first paint, so it also does the old hold row's job. The
+  old leader-only strip is now the quiz path alone.
+- **The rankings panel's open state IS the leaderboard preference on a daily**, so a player
+  who opens it keeps it open on every daily until they close it. Quizzes keep local state.
+- **Desktop Layout C hides `.stg-panel`** because the same preference drives its Board tab;
+  without that rule the panel would open inline under the figures as well.
+- The Group tab is deliberately NOT gated: opening it is already a deliberate click.

@@ -36,6 +36,7 @@ import useGroupStanding from './groups/groupStanding';
 import StageLadder from './StageLadder';
 import MindLoftMark from './MindLoftMark';
 import { SNAP_KEY } from '@/lib/home-snapshot';
+import { useRevealPref, REVEAL } from '@/lib/reveal-pref';
 
 const MIN_W = 1100;
 const CAT_FIXED = ['Word', 'Numbers', 'Logic', 'Sudoku', 'Trivia', 'Geography', 'End Game', 'Cards', 'Arcade', 'Crowd Psychology'];
@@ -68,6 +69,9 @@ const CSS = `
 html.lc-on .lc-host{padding:var(--lc-hh,62px) 330px 0 232px !important;box-sizing:border-box;min-height:100vh;}
 html.lc-on.lc-focus .lc-host{padding:0 !important;}
 html.lc-on .lc-host .stg-cap,html.lc-on .lc-host .stg-strip,html.lc-on .lc-host .stg-prog{display:none !important;}
+/* The phone's rankings panel shares the leaderboard preference with this
+   column's Board tab, so on a desktop frame it must not also open inline. */
+html.lc-on .lc-host .stg-panel{display:none !important;}
 html.lc-on .stage-tail{display:none !important;}
 html.lc-on .lc-host .stg-fg{position:relative;padding-right:240px;}
 .lc-sub-btn{position:absolute;right:20px;top:50%;transform:translateY(-50%);height:30px;padding:0 12px;border-radius:999px;
@@ -162,6 +166,14 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:240px;}
 .lc-how{font-size:14px;line-height:1.55;}
 .lc-empty{color:var(--stg-mute);}
 .lc-hold{height:200px;}
+.lc-reveal{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:36px 8px;color:var(--stg-mute);}
+.lc-reveal-btn{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 16px;border-radius:999px;cursor:pointer;
+  border:1px solid var(--stg-line,rgba(255,255,255,.16));background:transparent;color:var(--stg-ink);
+  font:700 13px Manrope,system-ui,sans-serif;}
+.lc-reveal-btn:hover{border-color:var(--stg-acc);}
+.lc-reveal-btn:focus-visible,.lc-hide:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.lc-hide{border:0;background:none;padding:0;cursor:pointer;color:var(--stg-mute);font:600 12px Manrope,system-ui,sans-serif;text-decoration:underline;text-underline-offset:2px;}
+.lc-hide:hover{color:var(--stg-ink);}
 `;
 
 export default function LayoutCInner({ gameKey }) {
@@ -185,6 +197,10 @@ export default function LayoutCInner({ gameKey }) {
   const light = theme === 'light';
   const stats = useDayStats();
   const grp = useGroupStanding('today', !!host);
+  // THE BOARD TAB IS HIDDEN UNTIL ASKED FOR (owner, 2026-10-13): the same
+  // remembered preference the phone's "Show leaderboard" sets, so the two
+  // can never disagree. See lib/reveal-pref.js.
+  const [boardShown, toggleBoard] = useRevealPref(REVEAL.leaderboard);
 
   // The gate (app/LayoutC.jsx) decides whether this mounts at all.
   useIsoLayoutEffect(() => { setFlag(true); }, []);
@@ -530,10 +546,23 @@ export default function LayoutCInner({ gameKey }) {
           ))}
         </div>
         <div className="lc-body">
-          {tab === 'board' ? (
+          {tab === 'board' && !boardShown ? (
+            <div className="lc-reveal">
+              <span>Today's leaderboard is hidden.</span>
+              <button type="button" className="lc-reveal-btn" onClick={toggleBoard} aria-pressed="false">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2"
+                  strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" />
+                </svg>
+                Show leaderboard
+              </button>
+            </div>
+          ) : null}
+          {tab === 'board' && boardShown ? (
             board === null ? <div className="lc-hold" aria-hidden="true" /> : (
               <>
-                <div className="lc-cap2"><span>Today{field ? ` · ${field} ${field === 1 ? 'player' : 'players'}` : ''}</span></div>
+                <div className="lc-cap2"><span>Today{field ? ` · ${field} ${field === 1 ? 'player' : 'players'}` : ''}</span>
+                  <button type="button" className="lc-hide" onClick={toggleBoard} aria-pressed="true">Hide leaderboard</button></div>
                 {board.length ? board.slice(0, 14).map((r, i) => {
                   const isMe = meRow && r.userKey && r.userKey === meRow.userKey;
                   return (

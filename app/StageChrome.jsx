@@ -48,6 +48,7 @@ import { gameStatsShort } from '@/lib/daily-row-stats';
 import { categoryHrefForGame } from '@/lib/puzzle-categories';
 import { glyphFor, GLYPH_BOX } from '@/lib/game-glyphs';
 import RollNum from './RollNum';
+import { useRevealPref, REVEAL } from '@/lib/reveal-pref';
 import DailyRunRail from './DailyRunRail';
 
 // A FIGURE THAT IS A PLAIN COUNT ROLLS; anything else swaps (motion pass,
@@ -176,37 +177,10 @@ function useStarted(gameKey, num) {
 // the whole site (sot_clock_shown) so a player who likes the race opts in once.
 // Hidden is the first paint on the server and the client alike, and the stored
 // choice arrives in an effect, so there is no hydration mismatch. A custom
-// event keeps two mounted chromes (or two tabs, via storage) in step.
-const CLOCK_KEY = 'sot_clock_shown';
-const CLOCK_EVT = 'sot-clock';
+// event keeps two mounted chromes (or two tabs, via storage) in step. The hook
+// is shared with the leader and the leaderboard: see lib/reveal-pref.js.
 function isClockFigure(f) {
   return !!f && String(f.k || '').toLowerCase() === 'time';
-}
-function useClockShown() {
-  const [shown, setShown] = useState(false);
-  useEffect(() => {
-    const read = () => {
-      try { setShown(window.localStorage.getItem(CLOCK_KEY) === '1'); } catch (e) {}
-    };
-    read();
-    const onStorage = (e) => { if (!e || e.key === CLOCK_KEY) read(); };
-    window.addEventListener(CLOCK_EVT, read);
-    window.addEventListener('storage', onStorage);
-    return () => {
-      window.removeEventListener(CLOCK_EVT, read);
-      window.removeEventListener('storage', onStorage);
-    };
-  }, []);
-  const toggle = () => {
-    const next = !shown;
-    setShown(next);
-    try {
-      if (next) window.localStorage.setItem(CLOCK_KEY, '1');
-      else window.localStorage.removeItem(CLOCK_KEY);
-      window.dispatchEvent(new Event(CLOCK_EVT));
-    } catch (e) {}
-  };
-  return [shown, toggle];
 }
 
 export default function StageChrome({
@@ -237,9 +211,21 @@ export default function StageChrome({
   // which is why none of the eighty call sites moved.
   panelBody = null,
 }) {
-  const [panel, setPanel] = useState(false);
   const started = useStarted(gameKey, num);
-  const [clockShown, toggleClock] = useClockShown();
+  const [clockShown, toggleClock] = useRevealPref(REVEAL.clock);
+  // THE LEADER AND THE LEADERBOARD ARE HIDDEN UNTIL ASKED FOR on a daily (owner,
+  // 2026-10-13), and each choice is remembered site-wide. On a daily the
+  // rankings panel's open state IS the leaderboard preference, shared with the
+  // desktop right panel (LayoutCInner); a quiz keeps its own local state.
+  const daily = !!gameKey;
+  const [leaderShown, toggleLeader] = useRevealPref(REVEAL.leader);
+  const [boardShown, , setBoardShown] = useRevealPref(REVEAL.leaderboard);
+  const [panelLocal, setPanelLocal] = useState(false);
+  const panel = daily ? boardShown : panelLocal;
+  const setPanel = (v) => {
+    const next = typeof v === 'function' ? v(panel) : v;
+    if (daily) setBoardShown(next); else setPanelLocal(next);
+  };
   // The switch reads the SAME store the page root reads, so the glyph and the
   // ground can never disagree about which register is showing.
   const [theme, setTheme] = useStageTheme();
@@ -304,6 +290,9 @@ export default function StageChrome({
   const leader = board && board.leader;
   const catHref = gameKey ? categoryHrefForGame(gameKey) : null;
   const showStrip = !!(stripOn && leader);
+  // A daily's strip is the two reveal controls and draws from first paint;
+  // the old leader-only strip below is now the quiz path alone.
+  const dailyStrip = !!(daily && stripOn && boardOn);
   // THE ROW IS HELD FROM FIRST PAINT (owner, 2026-10-06). The strip used to
   // arrive with the board fetch, a few hundred ms after the page painted, and
   // push the whole board down a row as it landed: the jitter every daily
@@ -406,7 +395,48 @@ export default function StageChrome({
       {gameKey ? <DailyRunRail gameKey={gameKey} /> : null}
       {gameKey ? <ChallengeStrip gameKey={gameKey} num={num} /> : null}
 
-      {showStrip ? (
+      {dailyStrip ? (
+        // THE DAILY STRIP IS TWO CONTROLS (owner, 2026-10-13): the leader and the
+        // leaderboard, each hidden until asked for and remembered once shown.
+        // It renders from first paint whatever the board fetch does, so it also
+        // does the old hold's job: the row never arrives late and shoves the
+        // board down.
+        <div className={'stg-strip stg-strip2' + (panel ? ' on' : '')}>
+          {leaderShown ? (
+            <button type="button" className="stg-sl" onClick={toggleLeader}
+              aria-pressed="true" title="Hide the leader">
+              <span className="stg-se">Leader</span>
+              {leader ? (
+                <>
+                  <b className="stg-sn">{leader.username || 'Guest'}</b>
+                  <span className="stg-sf">
+                    {gameStatsShort(leader, gameKey) || `${Math.round(Number(leader.score) || 0)} ${scoreWord}`}
+                  </span>
+                  <span className="stg-sd">
+                    {'· '}{board.field} {board.field === 1 ? 'player' : 'players'}
+                  </span>
+                </>
+              ) : (
+                <span className="stg-sf">{board ? 'Nobody has finished yet' : '\u00a0'}</span>
+              )}
+            </button>
+          ) : (
+            <button type="button" className="stg-sl stg-show" onClick={toggleLeader}
+              aria-pressed="false" title="Show who is leading today">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"
+                strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" />
+              </svg>
+              <span>Show leader</span>
+            </button>
+          )}
+          <button type="button" className="stg-sy stg-sb" onClick={() => setPanel((v) => !v)}
+            aria-expanded={panel} aria-controls="stg-rankings">
+            {panel ? 'Hide leaderboard' : 'Show leaderboard'}
+            <i>{panel ? '‹' : '›'}</i>
+          </button>
+        </div>
+      ) : showStrip ? (
         <button
           type="button"
           className={'stg-strip' + (panel ? ' on' : '')}
@@ -588,6 +618,17 @@ const CSS = `
 /* The held row is a div standing in for a button: a button's UA line-height
    is normal, so the div is told the same or it lands a pixel or two off. */
 .stg-strip-hold,.stg-strip-hold:hover{cursor:default;line-height:normal;box-sizing:border-box;}
+/* THE DAILY STRIP: a row holding two buttons rather than one button. Each
+   button inherits the row's type and carries no chrome of its own, so the row
+   reads exactly as the old strip did; the row itself is no longer a control. */
+.stg-strip2,.stg-strip2:hover{cursor:default;line-height:normal;box-sizing:border-box;}
+:where(.stg-strip2)>button{display:flex;align-items:center;gap:11px;min-width:0;background:none;border:0;padding:0;margin:0;
+  font:inherit;color:inherit;cursor:pointer;text-align:left;}
+.stg-strip2>button:focus-visible{outline:2px solid var(--stg-acc);outline-offset:3px;border-radius:4px;}
+.stg-show{color:var(--stg-ink2,#aab5c7);font-family:${MONO};font-size:9.5px;font-weight:500;
+  letter-spacing:.12em;text-transform:uppercase;gap:7px;}
+.stg-show:hover{color:var(--stg-ink,#e9edf4);}
+.stg-sb{flex:none;}
 .stg-se{font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute2,#66748f);}
 .stg-sn{font-weight:800;}
 .stg-sf{font-family:${MONO};font-size:11.5px;color:var(--stg-ink2,#aab5c7);}
@@ -622,6 +663,7 @@ const CSS = `
   .stg-fg{gap:0;justify-content:space-between;padding:8px 13px;}
   .stg-fg>div{min-width:0;}
   .stg-strip{padding:8px 13px;gap:8px;font-size:11.5px;}
+  :where(.stg-strip2)>button{gap:8px;}
   /* The player count is the first thing to go: the strip's job on a phone is
      the leader's result and your own place. */
   .stg-sd{display:none;}
