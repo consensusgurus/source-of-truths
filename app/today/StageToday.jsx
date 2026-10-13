@@ -4613,7 +4613,7 @@ ${PATCH_CSS}
   .sty-rbig .st .gr{color:var(--stg-ink2);font-weight:800;text-align:right;}
   .sty-rics{display:grid;grid-template-columns:repeat(var(--n,6),minmax(0,1fr));gap:4px;}
   .sty-ric{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;text-decoration:none;color:var(--stg-ink);}
-  .sty-ric .sq{width:46px;height:46px;border-radius:11px;display:grid;place-items:center;text-align:center;
+  .sty-ric .sq{width:100%;max-width:60px;height:46px;border-radius:11px;display:grid;place-items:center;text-align:center;
     font-size:10.5px;font-weight:800;line-height:1.05;padding:0 2px;overflow:hidden;color:var(--stg-ink);
     background:color-mix(in srgb, var(--ph,var(--stg-acc)) 16%, var(--stg-surf));
     border:1.5px solid color-mix(in srgb, var(--ph,var(--stg-acc)) 55%, transparent);}
