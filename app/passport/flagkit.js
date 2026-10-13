@@ -113,6 +113,66 @@ function subtleLayouts(flag, num) {
   return shuffle([{ ok: true, key: `${flag.lay}:right`, kind: 'right', svg: right, aria: `${LAYOUT_NAMES[flag.lay]}: ${flag.pal.map(colorName).join(', ')}` }, ...cands.slice(0, 3)], num * 17 + 2);
 }
 
+// From this board on (2026-10-14) the COLOR step is a shade test too (owner,
+// 2026-10-13: "still a bit too easy, make more subtle color variations").
+// Before it, the decoys were whole different palettes painted in stock
+// colors while the right one wore the flag's real shades, so the right answer
+// was the only swatch that looked like a real flag. Now every decoy is the
+// RIGHT palette in the real shades with exactly ONE color nudged to a
+// neighboring shade (crimson toward maroon or orange-red, royal blue toward
+// navy or sky, white toward cream or ice), and the swatches carry no text,
+// because "Red" vs "Maroon" names a shade a player cannot be expected to know
+// and could misname the real flag. Earlier boards are frozen.
+export const SUBTLE_COLORS_FROM = 12;
+
+// Where each color family can be nudged to. Two directions apiece.
+const SHADE_TOWARD = {
+  Red: ['#7A1020', '#F05A28'], Maroon: ['#D0202E', '#4A1020'], Orange: ['#D2141E', '#F8C020'],
+  Yellow: ['#E89A10', '#F6EC8C'], Green: ['#005A50', '#5AA02C'], Teal: ['#0A7D3C', '#0050A0'],
+  'Sky blue': ['#2A60B0', '#B8D8F0'], Blue: ['#0A1E5A', '#4A98DC'], Navy: ['#2050B0', '#05081E'],
+  Black: ['#1C2A48', '#4A4A4A'], White: ['#F3E6C4', '#D8E6F2'],
+};
+const SHADE_STEP = 64; // RGB distance of a nudge: plainly a different shade side by side, never a different color
+function fineName(hex) {
+  const [r, g, b] = rgb(hex);
+  let best = NAMED[0], d = Infinity;
+  for (const n of NAMED) { const e = (r - n[1][0]) ** 2 + (g - n[1][1]) ** 2 + (b - n[1][2]) ** 2; if (e < d) { d = e; best = n; } }
+  return best[0];
+}
+const toHex = (c) => '#' + c.map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('').toUpperCase();
+export function nudge(hex, target) {
+  const a = rgb(hex), b = rgb(target);
+  const dist = Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) || 1;
+  const t = Math.max(0.3, Math.min(1, SHADE_STEP / dist));
+  return toHex(a.map((v, i) => v + (b[i] - v) * t));
+}
+const swatch = (hexes) => `<svg viewBox="0 0 30 20" preserveAspectRatio="none" aria-hidden="true">${hexes.map((h, i, a) => `<rect x="${(30 / a.length) * i}" width="${30 / a.length + 0.05}" height="20" fill="${h}"/>`).join('')}<rect width="30" height="20" fill="none" stroke="rgba(0,0,0,.18)" stroke-width=".4"/></svg>`;
+
+function subtleColors(flag, num) {
+  // The flag's distinct colors in its real shades, in a fixed reading order.
+  const right = [...new Map(flag.pal.map((h) => [h.toUpperCase(), h.toUpperCase()])).values()]
+    .sort((x, y) => byOrder(colorName(x), colorName(y)) || x.localeCompare(y));
+  const aria = (hs) => hs.map((h) => fineName(h)).join(', ');
+  const cands = [];
+  right.forEach((h, i) => (SHADE_TOWARD[fineName(h)] || SHADE_TOWARD[colorName(h)] || []).forEach((t) => {
+    const hs = right.slice(); hs[i] = nudge(h, t); cands.push({ i, hs });
+  }));
+  const seen = new Set([right.join(',')]);
+  const picked = []; const used = new Set();
+  const order = shuffle(cands, num * 29 + 11);
+  // Spread the nudges over different colors first, then allow repeats.
+  for (const pass of [0, 1]) for (const c of order) {
+    if (picked.length >= 3) break;
+    const k = c.hs.join(','); if (seen.has(k)) continue;
+    if (pass === 0 && used.has(c.i)) continue;
+    seen.add(k); used.add(c.i); picked.push(c);
+  }
+  return shuffle([
+    { ok: true, key: right.join(','), kind: 'right', svg: swatch(right), aria: `Colors: ${aria(right)}` },
+    ...picked.map((c) => ({ ok: false, key: c.hs.join(','), kind: 'shade', svg: swatch(c.hs), aria: `Colors: ${aria(c.hs)}` })),
+  ], num * 11 + 1);
+}
+
 // The three steps of a day's flag round: each a list of four options, one
 // right, in a fixed order for that day.
 export function flagSteps(flag, code, num) {
@@ -121,14 +181,14 @@ export function flagSteps(flag, code, num) {
   const cand = PALETTES.filter((p) => p.slice().sort().join('|') !== key);
   const share = cand.filter((p) => p.some((n) => names.includes(n)));
   const pick = shuffle(share.length >= 3 ? share : cand, num * 7 + 3).slice(0, 3).map((p) => p.slice().sort(byOrder));
-  const pals = shuffle([{ ok: true, names }, ...pick.map((p) => ({ ok: false, names: p }))], num * 11 + 1)
+  const pals = num >= SUBTLE_COLORS_FROM ? subtleColors(flag, num) : shuffle([{ ok: true, names }, ...pick.map((p) => ({ ok: false, names: p }))], num * 11 + 1)
     .map((o) => ({ ...o, label: o.names.join(' · '), svg: `<svg viewBox="0 0 30 20" preserveAspectRatio="none" aria-hidden="true">${o.names.map((n, i, a) => `<rect x="${(30 / a.length) * i}" width="${30 / a.length + 0.05}" height="20" fill="${o.ok ? flag.pal[flag.pal.map(colorName).indexOf(n)] : HEX[n]}"/>`).join('')}<rect width="30" height="20" fill="none" stroke="rgba(0,0,0,.18)" stroke-width=".4"/></svg>` }));
   const lays = num >= SUBTLE_FROM ? subtleLayouts(flag, num) : shuffle([flag.lay, ...shuffle(DECOY_LAYOUTS.filter((l) => l !== flag.lay), num * 13 + 5).slice(0, 3)], num * 17 + 2)
     .map((l) => ({ ok: l === flag.lay, label: LAYOUT_NAMES[l], svg: flagSvg(l, flag.pal) }));
   const real = shuffle([code, ...flag.also], num * 19 + 7)
     .map((c) => ({ ok: c === code, code: c, src: `/passport/flags/${c.toLowerCase()}.svg` }));
   return [
-    { q: 'Pick its colors', opts: pals },
+    { q: num >= SUBTLE_COLORS_FROM ? 'Pick its exact shades' : 'Pick its colors', opts: pals, fine: num >= SUBTLE_COLORS_FROM },
     { q: num >= SUBTLE_FROM ? 'Pick its layout, colors in order' : 'Pick its layout', opts: lays, fine: num >= SUBTLE_FROM },
     { q: 'Now pick the real flag', opts: real },
   ];

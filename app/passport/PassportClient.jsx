@@ -435,7 +435,7 @@ function Launch({ puzzle, canvasRef, onBoard }) {
         <div className="pl-rules">
           <ol>
             <li><b>Landmark.</b> A photo zoomed right in. Each wrong country pulls the camera back: 10, 8, 5 or 3 points.</li>
-            <li><b>Flag.</b> Pick its colors, its layout with the colors in the right order, then the real flag. Each wrong pick takes 3 off.</li>
+            <li><b>Flag.</b> Pick its exact shades, its layout with the colors in the right order, then the real flag. Each wrong pick takes 3 off.</li>
             <li><b>Borders.</b> Name every land neighbor before three strikes. Islands name the two nearest countries across the water.</li>
             <li><b>Capital.</b> One tap on a blank map. Close enough is a full 10, and a point comes off for every step further out.</li>
             <li><b>Numbers.</b> Five countries, bigger or smaller by land area. Two points each.</li>

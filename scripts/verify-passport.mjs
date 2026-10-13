@@ -9,7 +9,7 @@ import { DAYS } from '../app/passport/days.js';
 import { BORDERS } from '../app/flank/borders.js';
 import { PUZZLES as FLANK } from '../app/flank/puzzles.js';
 import { TIERS, TOTAL, ROUNDS, unproject, haversineKm, capStep } from '../lib/passport.js';
-import { flagSteps, FLAG_LAYOUTS, SUBTLE_FROM } from '../app/passport/flagkit.js';
+import { flagSteps, FLAG_LAYOUTS, SUBTLE_FROM, SUBTLE_COLORS_FROM } from '../app/passport/flagkit.js';
 
 const fails = [], warns = [];
 const fail = (m) => fails.push(m);
@@ -86,6 +86,18 @@ for (const p of PUZZLES) {
       if (i === 1 && d.num >= SUBTLE_FROM) {
         if (!s.opts.some((o) => o.kind === 'order')) fail(`${at}: flag layout step has no colors-out-of-order decoy`);
         if (new Set(s.opts.map((o) => o.svg)).size !== 4) fail(`${at}: flag layout step draws two options identically`);
+      }
+      // The shade rule (2026-10-14 on): the color step's decoys are the right
+      // palette with one color nudged, so every option has the right color
+      // COUNT and differs from the answer in exactly one swatch.
+      if (i === 0 && d.num >= SUBTLE_COLORS_FROM) {
+        const right = s.opts.find((o) => o.ok).key.split(',');
+        for (const o of s.opts.filter((x) => !x.ok)) {
+          const hs = o.key.split(',');
+          if (o.kind !== 'shade' || hs.length !== right.length || hs.filter((h, j) => h !== right[j]).length !== 1) fail(`${at}: flag color decoy ${o.key} is not a one-shade nudge of ${right.join(',')}`);
+        }
+        if (s.opts.some((o) => o.label)) fail(`${at}: flag shade step prints color names`);
+        if (new Set(s.opts.map((o) => o.svg)).size !== 4) fail(`${at}: flag color step draws two options identically`);
       }
       if (new Set(labels).size !== 4) fail(`${at}: flag step ${i + 1} repeats an option (${labels.join(' / ')})`);
     });
