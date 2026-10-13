@@ -3812,6 +3812,7 @@ archive and hub chips use the short form `Sun`.
 | Diag | fourteen printed digits instead of the weekday 16 to 26 (from 2026-09-08) |
 | Frame | two printed digits instead of the weekday 4 to 14, under all thirty-six sums (from 2026-09-08) |
 | Rim | thirteen of the thirty-six gutters printed instead of the weekday 16 to 30 (from 2026-09-08) |
+| Giant | ninety of 256 clues and the only day that needs more than singles, against 96 to 128 on weekdays (from 2026-10-18) |
 | Circa | a trickier moment to place |
 | Extra | a trickier story to name |
 | Carve | 7×7 board in nine blocks |
@@ -4260,6 +4261,33 @@ the client (the trick `verify-endgame-playout.mjs` uses), stub `document.element
 grid of known coordinates, and drive synthetic pointer sequences. That is how commit-on-lift, the
 hold-to-aim discriminator, the line lock, the free marks, the win path and the unchanged mouse path
 were all confirmed before the push, along with a unit test of the commit's error arithmetic.
+
+## Giant is the 16x16 SUDOKU, and the phone plays it a quarter at a time (launched 2026-10-13)
+
+An ordinary sudoku at sixteen: 16 rows, 16 columns and sixteen 4x4 boxes, each holding the
+symbols 1 to 9 then A to G. The bank stores a symbol as 1..16; the client draws 10..16 as A..G
+and the keyboard takes A-G. Route `/giant`, key `giant`, legacy hue slate indigo #3949ab.
+
+- **NOT in Enter the Dojo (owner, 2026-10-13).** It joins the Sudoku category, `SUDOKU_POOL`
+  (home Sudoku shelf, daily cap hue) and the 'Classic sudokus' set, but `lib/dojo.js` is untouched.
+- **The ramp is CLUES, not technique, and that is measured.** `node scripts/gen-giant.mjs
+  --measure 12`: a greedy dig under singles alone bottoms out at 90 to 98 clues (median 94), and
+  under the full toolkit at 89 to 97 (median 94). The harder techniques buy almost nothing on a
+  16x16, so a level-2 weekday above ~95 clues would be rejected forever. Weekdays run level 1:
+  Mon 128, Tue 120, Wed 112, Thu 106, Fri 100, Sat 96. Only the **Sunday Edition (90)** is dug
+  past the singles floor by local search and pinned to level 2.
+- **Uniqueness is proved twice.** The verifier's policed logical solver only makes deductions
+  that follow from the clues, so finishing the grid proves one solution; its exhaustive counter
+  (per-cell option sets plus forced singles at every node) re-proves it on every weekday board.
+  A Sunday costs the counter ~25s, so Sundays run it only under `verify-giant.mjs --full`.
+  `scripts/giant-mutation-test.mjs` breaks the bank nine ways; all caught.
+- **The phone has a WHOLE BOARD / ZOOM IN switch** (under 560px, remembered in
+  `sot_giant_zoom`, zoom by default). Sixteen squares across 390px are ~22px, half a finger
+  target, so the zoomed view plays one 8x8 quarter (two boxes each way) at full size with a
+  minimap to move. Selecting a square anywhere brings its quarter into view. **A finished board
+  always shows whole**: the finish ripple (`lib/finish-beats.js`, box [4, 4]) wants all 256.
+- Client is `mkgiant.py` (not committed), a transform of DiagClient with the diagonal taken out.
+- Bank 2026-10-13 to 2026-12-31 (80 boards). Extend with `gen-giant.mjs --until`; it only appends.
 
 ## Frame and Rim are the GUTTER SUDOKUS, and they share one engine (launched 2026-09-08)
 

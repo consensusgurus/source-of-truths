@@ -115,7 +115,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-15' };
+const LAUNCH_PIN = { keys: ['giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-15' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -210,6 +210,7 @@ export const GAME_META = {
   mercury: { accent: '#991b1b', badgeBg: '#991b1b', badgeInk: T.white, Fin: Thermometer },
   polka: { accent: '#16a34a', badgeBg: '#16a34a', badgeInk: T.white, Fin: CircleDot },
   diag: { accent: '#0e7490', badgeBg: '#0e7490', badgeInk: T.white, Fin: MoveDiagonal },
+  giant: { accent: '#3949ab', badgeBg: '#3949ab', badgeInk: T.white, Fin: LayoutGrid },
   frame: { accent: '#b45309', badgeBg: '#b45309', badgeInk: T.white, Fin: Crop },
   rim: { accent: '#4d7c0f', badgeBg: '#4d7c0f', badgeInk: T.white, Fin: Scan },
   whittle: { accent: '#854d0e', badgeBg: '#854d0e', badgeInk: T.white, Fin: Axe },
@@ -308,6 +309,7 @@ const ALL_DAILY_GAMES = [
   { key: 'mercury', cat: 'sudoku' ,  name: 'Mercury', tag: 'The daily thermo sudoku',  blurb: 'Digits climb every thermometer from its bulb. Pure visual ordering, one logical solution, and Sundays print almost nothing.', href: '/mercury' },
   { key: 'knight', cat: 'sudoku' ,   name: 'Knight', tag: 'The daily anti-knight sudoku',     blurb: 'One rule on top of sudoku: no digit repeats a knight move away. Select a square and its knights light up, and the board prints as few as thirteen digits.', href: '/knight' },
   { key: 'whittle', cat: 'sudoku' ,  name: 'Whittle', tag: 'The sudoku, backwards',            blurb: 'The one played backwards: a solved grid, eighteen clues, and you take clues out for as long as it still has one answer.', href: '/whittle' },
+  { key: 'giant',  cat: 'sudoku' ,   name: 'Giant',  tag: 'The daily 16×16 sudoku',    blurb: 'Sudoku at sixteen: rows, columns and 4x4 boxes each hold 1 to 9 and A to G. 256 squares and a proper long sit.', href: '/giant' },
   { key: 'diag',  cat: 'sudoku' ,   name: 'Diag',  tag: 'The daily diagonal sudoku',    blurb: 'Sudoku X: both long diagonals hold 1 to 9 as well, so two extra houses cross the grid and the board prints fewer clues.', href: '/diag' },
   { key: 'frame',  cat: 'sudoku' ,   name: 'Frame',  tag: 'The daily frame sudoku',    blurb: 'Sudoku with the sum of the outer three squares printed at every row and column end. Thirty-six sums, and the board prints as few as two digits.', href: '/frame' },
   { key: 'rim',  cat: 'sudoku' ,   name: 'Rim',  tag: 'The daily outside sudoku',    blurb: 'Sudoku with nothing printed inside the grid: the clues sit in the margin, three digits at a time, and the blank gutters are the puzzle.', href: '/rim' },

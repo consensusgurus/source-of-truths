@@ -83,6 +83,7 @@ const GAMES = [
   { key: 'towers', href: '/towers', name: 'Towers', tag: 'Count the towers in view', img: '/games/btn-towers.png' },
   { key: 'mercury', href: '/mercury', name: 'Mercury', tag: 'The daily thermo sudoku', img: '/games/btn-mercury.png' },
   { key: 'polka', href: '/polka', name: 'Polka', tag: 'No numbers, only dots', img: '/games/btn-polka.png' },
+  { key: 'giant', href: '/giant', name: 'Giant', tag: 'The daily 16×16 sudoku', img: '/games/btn-giant.png' },
   { key: 'diag', href: '/diag', name: 'Diag', tag: 'The daily diagonal sudoku', img: '/games/btn-diag.png' },
   { key: 'frame', href: '/frame', name: 'Frame', tag: 'The daily frame sudoku', img: '/games/btn-frame.png' },
   { key: 'rim', href: '/rim', name: 'Rim', tag: 'The daily outside sudoku', img: '/games/btn-rim.png' },
@@ -181,7 +182,7 @@ const CATEGORIES = [
   // Sudoku split out of Numbers on 2026-09-01. The nine keys are exactly the
   // Sudoku circuit's pool, so the shelf, the circuit and the category are one
   // list and cannot drift apart.
-  { key: 'sudoku', label: 'Sudoku', keys: ['suds', 'sixes', 'towers', 'quilt', 'cages', 'sando', 'mercury', 'polka', 'knight', 'diag', 'frame', 'rim', 'whittle'] },
+  { key: 'sudoku', label: 'Sudoku', keys: ['suds', 'sixes', 'towers', 'quilt', 'cages', 'sando', 'mercury', 'polka', 'knight', 'diag', 'frame', 'rim', 'giant', 'whittle'] },
   { key: 'crowd', label: 'Crowd Psychology', keys: ['outwit', 'outrank', 'feud'] },
   { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'potluck', 'focus', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'redact', 'dating', 'extra'] },
   { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'park', 'impound', 'junkyard', 'snug', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'paths', 'chomp', 'ergo', 'docket', 'plot'] },
