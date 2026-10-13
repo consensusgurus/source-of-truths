@@ -9200,3 +9200,25 @@ game and every other run, and puts it in the sitemap. The page then mounts
 reader's register, as Price Check does), emits `runBreadcrumbJsonLd('<id>')`, and gives its
 Game schema an image (its `/card` route is fine). A run whose page is deliberately noindex
 (the Trivia and Math Gauntlets, whose landing pages rank instead) goes in `RUN_LANDINGS`.
+
+## THE DAILY CLOCK IS HIDDEN BY DEFAULT (owner rule, 2026-10-13)
+
+Players said the running clock made them nervous. On every DAILY puzzle page the
+elapsed-time figure in the stage figures row (the figure keyed `'time'`, which all
+dailies pass as `{ v: elapsed, k: 'time' }`) now renders as a "Show" control with a
+clock glyph. One tap reveals it, one tap hides it again, and the choice is remembered
+site-wide in `localStorage.sot_clock_shown` ('1' = shown).
+
+- **It lives in ONE place, `StageChrome.jsx` (`useClockShown`, `isClockFigure`).**
+  Never re-implement it per game. A new daily keeps passing `{ v: elapsed, k: 'time' }`
+  and inherits the behaviour.
+- **Display only.** The clock still runs, still posts `timeElapsed`, still breaks ties
+  and still prints on the end card, share text and leaderboards. Only the live readout
+  during play is hidden.
+- **DAILIES ONLY, not quizzes** (owner). It is gated on `gameKey`, which quizzes never
+  pass; a quiz's countdown ('Time left') is something the player needs and stays visible.
+- Hidden is the first paint on server and client alike; the stored choice arrives in an
+  effect, so there is no hydration mismatch.
+- Known stragglers outside the figures row are untouched: Babel prints the elapsed time
+  inside its own score line during play, and the circuit run page renders its own
+  figures row. Bring them under the same switch if players ask.

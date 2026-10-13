@@ -162,6 +162,53 @@ function useStarted(gameKey, num) {
   return on;
 }
 
+// THE CLOCK IS HIDDEN UNTIL ASKED FOR (owner, 2026-10-13: "users complain it
+// makes them too nervous"). Every daily passes its elapsed time as the figure
+// keyed 'time' (171 of them, all elapsed, none a countdown), so the rule lives
+// here once rather than in eighty clients. The clock still RUNS and still
+// posts: this hides a number, it does not change what is recorded or ranked.
+//
+// DAILY PUZZLES ONLY (owner, same day). Quizzes render this chrome too, with no
+// gameKey, and their clock is a countdown the player needs ('Time left'), so
+// the hiding is gated on gameKey and a quiz page is exactly as it was.
+//
+// One tap shows it, one tap hides it again, and the choice is remembered for
+// the whole site (sot_clock_shown) so a player who likes the race opts in once.
+// Hidden is the first paint on the server and the client alike, and the stored
+// choice arrives in an effect, so there is no hydration mismatch. A custom
+// event keeps two mounted chromes (or two tabs, via storage) in step.
+const CLOCK_KEY = 'sot_clock_shown';
+const CLOCK_EVT = 'sot-clock';
+function isClockFigure(f) {
+  return !!f && String(f.k || '').toLowerCase() === 'time';
+}
+function useClockShown() {
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const read = () => {
+      try { setShown(window.localStorage.getItem(CLOCK_KEY) === '1'); } catch (e) {}
+    };
+    read();
+    const onStorage = (e) => { if (!e || e.key === CLOCK_KEY) read(); };
+    window.addEventListener(CLOCK_EVT, read);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener(CLOCK_EVT, read);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+  const toggle = () => {
+    const next = !shown;
+    setShown(next);
+    try {
+      if (next) window.localStorage.setItem(CLOCK_KEY, '1');
+      else window.localStorage.removeItem(CLOCK_KEY);
+      window.dispatchEvent(new Event(CLOCK_EVT));
+    } catch (e) {}
+  };
+  return [shown, toggle];
+}
+
 export default function StageChrome({
   gameKey,
   num = null,
@@ -192,6 +239,7 @@ export default function StageChrome({
 }) {
   const [panel, setPanel] = useState(false);
   const started = useStarted(gameKey, num);
+  const [clockShown, toggleClock] = useClockShown();
   // The switch reads the SAME store the page root reads, so the glyph and the
   // ground can never disagree about which register is showing.
   const [theme, setTheme] = useStageTheme();
@@ -410,9 +458,30 @@ export default function StageChrome({
           invented to survive. */}
       {figures.length ? (
         <div className="stg-fg">
-          {figures.map((f, i) => (
+          {figures.map((f, i) => (gameKey && isClockFigure(f) ? (
+            <button
+              key={f.k || i}
+              type="button"
+              className={'stg-clk' + (clockShown ? ' on' : '')}
+              onClick={toggleClock}
+              aria-pressed={clockShown}
+              aria-label={clockShown ? 'Hide the clock' : 'Show the clock'}
+              title={clockShown ? 'Hide the clock' : 'Show the clock'}
+            >
+              {clockShown ? <b>{figure(f.v)}</b> : (
+                <b className="stg-clk-off">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"
+                    strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+                    <circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2.5" /><path d="M9.5 2.5h5" />
+                  </svg>
+                  <span>Show</span>
+                </b>
+              )}
+              <i>{f.k}</i>
+            </button>
+          ) : (
             <div key={f.k || i}><b>{figure(f.v)}</b><i>{f.k}</i></div>
-          ))}
+          )))}
         </div>
       ) : null}
 
@@ -466,6 +535,15 @@ const CSS = `
   font-variant-numeric:tabular-nums;}
 .stg-fg i{font-family:${MONO};font-style:normal;font-size:9.5px;font-weight:500;letter-spacing:.12em;
   text-transform:uppercase;color:var(--stg-mute2,#66748f);}
+/* The clock figure is a button: hidden by default, one tap to show it. It keeps
+   the figure's own shape so the row does not shift when it is toggled, and it
+   carries no pill or border, since every other figure in the row has none. */
+.stg-fg .stg-clk{display:flex;flex-direction:column;align-items:flex-start;background:none;border:0;
+  padding:0;margin:0;cursor:pointer;color:inherit;font:inherit;text-align:left;min-width:0;}
+.stg-clk-off{display:inline-flex;align-items:center;gap:5px;color:var(--stg-ink2,#aab5c7);}
+.stg-clk-off span{font-size:11px;letter-spacing:.1em;text-transform:uppercase;}
+.stg-clk:hover .stg-clk-off{color:var(--stg-ink,#e9edf4);}
+.stg-clk:focus-visible{outline:2px solid var(--stg-acc);outline-offset:3px;border-radius:4px;}
 
 .stg-cx{display:inline-flex;align-items:center;gap:6px;font-family:${MONO};font-size:10px;
   letter-spacing:.11em;text-transform:uppercase;color:var(--stg-ink2,#aab5c7);border:1px solid var(--stg-line);
