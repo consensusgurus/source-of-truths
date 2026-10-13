@@ -1608,6 +1608,53 @@ export default function StageToday() {
   }, []);
   const ladH = narrow ? 20 : 54;
 
+  // THE PHONE'S RUNS (owner, 2026-10-13). Every run on the phone pills reports
+  // how many people played it today, and once the reader has finished it,
+  // where they came on the site board and in their group. One request per run:
+  // with a group it is the circuit's group board, which carries the site field
+  // and site rank too; without one it is the plain circuit board, asked with
+  // the reader's identity only once they have a rank to read off it, so an
+  // unfinished run's request is the same URL for everybody and caches.
+  // Phone only (the pills are a phone surface), and asked once per state.
+  const [runsMq, setRunsMq] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 900px)');
+    const on = () => setRunsMq(mq.matches);
+    on();
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  const [runStat, setRunStat] = useState({});
+  const runAsked = useRef(null);
+  const runGrp = grpOne && !grpOne.failed && grpOne.code ? grpOne : null;
+  useEffect(() => {
+    if (!runsMq || grp === undefined) return undefined;
+    if (!runAsked.current) runAsked.current = new Set();
+    const qs = identityQs();
+    for (const id of PILL_CIRCUITS) {
+      const c = circuits.find((x) => x.id === id);
+      if (!c) continue;
+      const full = c.games.length > 0 && c.n === c.games.length;
+      const ask = `${id}|${full ? 1 : 0}|${runGrp ? runGrp.code : ''}`;
+      if (runAsked.current.has(ask)) continue;
+      runAsked.current.add(ask);
+      const url = runGrp
+        ? `/api/quiz/daily-combined?circuit=${encodeURIComponent(id)}&group=${encodeURIComponent(runGrp.code)}${qs ? '&' + qs : ''}`
+        : `/api/quiz/daily-combined?circuit=${encodeURIComponent(id)}${full && qs ? '&' + qs : ''}`;
+      fetch(url)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (!circLive.current || !d) return;
+          const v = runGrp
+            ? { players: d.siteField || 0, rank: d.siteRank || null, gfield: d.field || 0, grank: d.me && d.me.rank ? d.me.rank : null }
+            : { players: d.overallField || (Array.isArray(d.overall) ? d.overall.length : 0), rank: d.me && d.me.rank ? d.me.rank : null };
+          setRunStat((m) => ({ ...m, [id]: v }));
+        })
+        .catch(() => {});
+    }
+    return undefined;
+  }, [runsMq, circuits, grp, runGrp && runGrp.code]);
+
   // WHERE THE A-TO-Z / REORDER BAR SITS (owner, 2026-09-02). A first-time or
   // unregistered visitor on a phone gets it at the FOOT of the categories, not
   // the top: those two controls rearrange a page the reader has not read yet,
@@ -2298,12 +2345,24 @@ export default function StageToday() {
     }
     return best ? hueFor(best) : c.hue;
   };
+  // A pill's lead category, for its colour and the ink that sits on it.
+  const pillCat = (c, cat) => {
+    if (cat) return cat;
+    const tally = {};
+    let best = null;
+    for (const g of c.games) {
+      tally[g.cat] = (tally[g.cat] || 0) + 1;
+      if (!best || tally[g.cat] > tally[best]) best = g.cat;
+    }
+    return best || (c.games[0] && c.games[0].cat);
+  };
   const circPills = (cat, mobile) => {
     const list = PILL_CIRCUITS.map((id) => circuits.find((c) => c.id === id)).filter((c) => c && (!cat
       || c.games.some((g) => g.cat === cat) || (PILL_EXTRA[c.id] || []).includes(cat)));
     if (!list.length) return null;
+    if (mobile) return runsMobile(list, cat);
     return (
-      <div className={mobile ? 'sty-cpm' : 'sty-cpills'}>
+      <div className="sty-cpills">
         {list.map((c) => {
           const full = c.games.length > 0 && c.n === c.games.length;
           const part = !full && c.n > 0;
@@ -2315,16 +2374,76 @@ export default function StageToday() {
             <a key={c.id} className={'sty-cpill' + (full ? ' full' : part ? ' part' : '')}
               href={withTq(circuitEntryHref(c.id))} style={{ '--ph': pillHue(c, cat) }}>
               <span className="nm">{c.name}</span>
-              {mobile
-                ? (full
-                  ? (st
-                    ? <span className="ct done">#{st.rank}<i> of {st.field}</i></span>
-                    : <span className="ct done">{'\u2713 Played'}</span>)
-                  : <span className="ct">{c.unit ? c.unit : part ? `${c.n} of ${c.games.length} played` : `${c.games.length} games`}</span>)
-                : (full ? (st ? <span className="ck rk">#{st.rank}<i> of {st.field}</i></span> : <span className="ck">{'\u2713'}</span>) : null)}
+              {full ? (st ? <span className="ck rk">#{st.rank}<i> of {st.field}</i></span> : <span className="ck">{'\u2713'}</span>) : null}
             </a>
           );
         })}
+      </div>
+    );
+  };
+  // THE PHONE'S RUNS (owner, 2026-10-13). The most played run the reader has
+  // not finished is one big card; every other run is a small icon. Finish the
+  // big one and the next most played takes its place, until every run is an
+  // icon. Runs are one piece, so nothing here shows how far into one you are:
+  // a run reads as players today until you finish it, then as your place on
+  // the site board and in your group.
+  const RUN_SHORT = { gauntlet: 'Trivia', pricecheck: 'Prices', passport: 'Passport', math: 'Math', deduction: 'Judged', dojo: 'Dojo' };
+  const runsMobile = (list, cat) => {
+    const ord = list.map((c, i) => [c, i])
+      .sort((a, b) => ((b[0].pop || 0) - (a[0].pop || 0)) || (a[1] - b[1]))
+      .map((x) => x[0]);
+    const isFull = (c) => c.games.length > 0 && c.n === c.games.length;
+    const big = ord.find((c) => !isFull(c)) || null;
+    const rest = ord.filter((c) => c !== big);
+    const gname = runGrp ? runGrp.name : '';
+    const look = (c) => {
+      const pc = pillCat(c, cat);
+      return {
+        '--ph': hueFor(pc),
+        '--stg-onramp': light ? categoryOnrampLight(pc) : RAMP_INK,
+      };
+    };
+    const fmtN = (n) => Number(n || 0).toLocaleString('en-US');
+    return (
+      <div className="sty-rnm">
+        {big ? (() => {
+          const st = runStat[big.id];
+          return (
+            <a className="sty-rbig" href={withTq(circuitEntryHref(big.id))} style={look(big)}>
+              <span className="ey">Most played today</span>
+              <b className="nm">{big.name}</b>
+              <span className="go">Play</span>
+              {big.blurb ? <span className="ln">{big.blurb}</span> : null}
+              <span className="st">
+                <span>{st ? `${fmtN(st.players)} ${st.players === 1 ? 'player' : 'players'} today` : '\u00a0'}</span>
+                {runGrp ? <span className="gr">{st ? (st.gfield ? `${st.gfield} ${gname} in` : `No ${gname} yet`) : '\u00a0'}</span> : null}
+              </span>
+            </a>
+          );
+        })() : null}
+        {rest.length ? (
+          <div className="sty-rics" style={{ '--n': Math.max(rest.length, 5) }}>
+            {rest.map((c) => {
+              const st = runStat[c.id];
+              const done = isFull(c);
+              // A finished run with no rank yet (the board has not answered,
+              // or the reader is a guest) falls back to its crowd, never a blank.
+              const ranked = done && st && st.rank;
+              return (
+                <a key={c.id} className={'sty-ric' + (done ? ' done' : '')}
+                  href={withTq(circuitEntryHref(c.id))} style={look(c)} aria-label={c.name}>
+                  <span className="sq">{RUN_SHORT[c.id] || c.name}</span>
+                  <span className="l1">{ranked ? `#${st.rank} of ${fmtN(st.players)}` : st ? `${fmtN(st.players)} played` : '\u00a0'}</span>
+                  {runGrp ? (
+                    <span className="l2">{st
+                      ? (done && st.grank ? `#${st.grank} ${gname}` : (st.gfield ? `${st.gfield} ${gname}` : '\u00a0'))
+                      : '\u00a0'}</span>
+                  ) : null}
+                </a>
+              );
+            })}
+          </div>
+        ) : null}
       </div>
     );
   };
@@ -4470,20 +4589,34 @@ ${PATCH_CSS}
   .sty-ix.mpk > .sty-ixn.pk:not(.re) > .sty-sortm{display:inline-flex;grid-row:1;grid-column:1 / -1;order:-2;
     justify-self:end;align-self:center;margin:0 58px 0 0;position:relative;z-index:1;background:var(--stg-chip);}
 }
+.sty-rnm{display:none;}
 @media (max-width:900px){
   .sty-cpills{display:none;}
-  .sty-cpm{display:flex;flex-direction:column;gap:6px;margin:0 0 10px;}
-  .sty-cpm .sty-cpill{display:flex;justify-content:space-between;width:100%;box-sizing:border-box;border-radius:8px;
-    border-left:4px solid var(--ph,var(--stg-acc));padding:9px 12px;font-size:13px;font-weight:800;color:var(--stg-ink);}
-  .sty-cpm .sty-cpill::before{display:none;}
-  .sty-cpm .sty-cpill .ct{font-size:11.5px;font-weight:700;color:var(--stg-mute);font-variant-numeric:tabular-nums;}
-  /* PLAYED READS AT A GLANCE (owner, 2026-10-09): a finished circuit is a
-     filled tile with a check, a started one names its count in ink, an
-     untouched one stays a plain outline. */
-  .sty-cpm .sty-cpill.part .ct{color:var(--stg-ink);}
-  .sty-cpm .sty-cpill.full{background:color-mix(in srgb, var(--ph,var(--stg-acc)) 16%, transparent);
-    border-color:color-mix(in srgb, var(--ph,var(--stg-acc)) 45%, transparent);}
-  .sty-cpm .sty-cpill.full .nm{color:var(--stg-ink2);}
-  .sty-cpm .sty-cpill .ct.done{color:var(--stg-good,#16a34a);font-weight:800;}
+  /* THE PHONE'S RUNS (owner, 2026-10-13): the most played unfinished run is
+     one big card, every other run a small icon. */
+  .sty-rnm{display:flex;flex-direction:column;gap:8px;margin:0 0 12px;}
+  .sty-rbig{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center;text-decoration:none;
+    color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);border-left:4px solid var(--ph,var(--stg-acc));
+    border-radius:8px;padding:10px 12px;}
+  .sty-rbig .ey{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);}
+  .sty-rbig .nm{font-size:16px;font-weight:800;line-height:1.2;}
+  .sty-rbig .go{grid-row:1 / 3;grid-column:2;background:var(--ph,var(--stg-acc));color:var(--stg-onramp,#08222e);
+    border-radius:999px;padding:8px 16px;font-size:12.5px;font-weight:800;}
+  .sty-rbig .ln{grid-column:1 / -1;font-size:12px;line-height:1.4;color:var(--stg-ink2);margin-top:4px;}
+  .sty-rbig .st{grid-column:1 / -1;display:flex;justify-content:space-between;gap:10px;margin-top:6px;padding-top:6px;
+    border-top:1px solid var(--stg-line);font-size:11.5px;font-weight:700;color:var(--stg-mute);font-variant-numeric:tabular-nums;}
+  .sty-rbig .st .gr{color:var(--stg-ink2);font-weight:800;text-align:right;}
+  .sty-rics{display:grid;grid-template-columns:repeat(var(--n,6),minmax(0,1fr));gap:4px;}
+  .sty-ric{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;text-decoration:none;color:var(--stg-ink);}
+  .sty-ric .sq{width:46px;height:46px;border-radius:11px;display:grid;place-items:center;text-align:center;
+    font-size:10.5px;font-weight:800;line-height:1.05;padding:0 2px;overflow:hidden;color:var(--stg-ink);
+    background:color-mix(in srgb, var(--ph,var(--stg-acc)) 16%, var(--stg-surf));
+    border:1.5px solid color-mix(in srgb, var(--ph,var(--stg-acc)) 55%, transparent);}
+  .sty-ric.done .sq{background:var(--ph,var(--stg-acc));border-color:var(--ph,var(--stg-acc));color:var(--stg-onramp,#08222e);}
+  .sty-ric .l1,.sty-ric .l2{max-width:100%;font-size:10px;font-weight:700;color:var(--stg-mute);white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;line-height:1.25;}
+  .sty-ric.done .l1{color:var(--stg-ink);font-weight:800;}
+  .sty-ric .l2{color:var(--stg-ink2);font-weight:800;}
+  .sty-ric:focus-visible .sq,.sty-rbig:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
 }
 `;

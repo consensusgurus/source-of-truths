@@ -230,8 +230,10 @@ function chooseGuestRow(rows, anonId, quizId) {
 // to that group's members, and nothing else changes: the same scoreGame, the
 // same ladder, the same crowd recomputes, the same day freeze. A group ranks
 // its members on the site's own daily points and on each game's own order, so
-// it can never disagree with the site board about a result. Only the full slate
-// is grouped; a run flag alongside it is ignored.
+// it can never disagree with the site board about a result. The full slate is
+// re-scored over the members; a SKILL CIRCUIT is grouped too (owner,
+// 2026-10-13), by narrowing the circuit's own ranked board to the members (see
+// circuitGroupPayload below). The marquee five is still never grouped.
 function groupRank(rows, keyOf) {
   let rank = 0, prev = null, seen = 0;
   for (const r of rows) {
@@ -448,7 +450,7 @@ export async function GET(request) {
   // missing table costs one small query and never a board computation.
   const groupCode = (searchParams.get('group') || '').trim();
   let groupRef = null;
-  if (groupCode && !fiveOnly) {
+  if (groupCode && (!fiveOnly || circuitOn)) {
     try {
       const group = await groupByCode(supabaseAdmin, groupCode);
       if (!group) return NextResponse.json({ date: suffix, group: null, error: 'not_found' }, { status: 404, headers: NO_STORE_HEADERS });
@@ -565,7 +567,7 @@ export async function GET(request) {
       }, 0);
     }
 
-    if (groupRef) {
+    if (groupRef && !circuitOn) {
       return NextResponse.json(
         groupPayload({ suffix, frozen, maxTotal, gameCount, gameResults, overallFull, group: groupRef.group, members: groupRef.members, bestN: effBestN }),
         { headers: frozen ? GROUP_FROZEN_HEADERS : GROUP_HEADERS },
@@ -786,6 +788,53 @@ export async function GET(request) {
       // combineDaily already stamped a rank over the whole field, so without
       // this an incomplete circuit player would keep it and read as ranked.
       if (memberKeys && !rankEligible(me)) me.rank = null;
+    }
+
+    // A CIRCUIT'S GROUP BOARD (owner, 2026-10-13: "these tiles and runs
+    // generally should also rank against group"). It is the circuit's own
+    // ranked board narrowed to the group's members, so it can never disagree
+    // with the site board about who beat whom: the same order (points, or
+    // questions right, or lots and clock), the same play-every-game gate, the
+    // same tie key. Nothing is re-scored. It also carries the SITE figures
+    // (field and the viewer's site rank) so the home asks once per circuit.
+    if (groupRef && circuitOn) {
+      const keys = new Set(groupRef.members.map((m) => m.userKey));
+      const nameOf = new Map(groupRef.members.map((m) => [m.userKey, m.username]));
+      let dr = 0, prevT = null, seenN = 0;
+      const board = overallFull
+        .filter((r) => keys.has(r.userKey) && rankEligible(r))
+        .map((r) => {
+          seenN += 1;
+          const t10 = (rawScore || byTime)
+            ? `${Math.round((r.total || 0) * 10)}|${Math.round(r.timeTotal || 0)}`
+            : Math.round((r.total || 0) * 10);
+          if (prevT === null || t10 !== prevT) { dr = seenN; prevT = t10; }
+          return {
+            userKey: r.userKey,
+            username: nameOf.get(r.userKey) || r.username,
+            rank: dr,
+            total: r.total,
+            timeTotal: r.timeTotal ?? null,
+            siteRank: overallRankByKey.get(r.userKey) ?? null,
+          };
+        });
+      const mine = myKey ? (board.find((r) => r.userKey === myKey) || null) : null;
+      return NextResponse.json({
+        date: suffix,
+        frozen,
+        circuit: circuitId,
+        scoreMode,
+        maxTotal,
+        group: { code: groupRef.group.code, name: groupRef.group.name },
+        memberCount: groupRef.members.length,
+        // Members who have finished the whole circuit, i.e. the group field.
+        field: board.length,
+        overall: board.slice(0, topN),
+        me: mine,
+        // The site board's own figures, as the plain circuit payload states them.
+        siteField: overallFull.length,
+        siteRank: me && me.rank ? me.rank : null,
+      }, { headers: frozen ? GROUP_FROZEN_HEADERS : GROUP_HEADERS });
     }
 
     // PRICE CHECK'S FIELD (owner, 2026-10-11): the run's finale draws the whole
