@@ -63,7 +63,6 @@ import GroupsPop from '../GroupsPop';
 // member dots on the tiles all read one standing payload.
 import useGroupStanding, { bestPlace, ordinal as grpOrdinal, memberRows, MiniAvatar } from '../groups/groupStanding';
 import HomeGroupsBand from '../groups/HomeGroupsBand';
-import BoardsPane from './BoardsPane';
 import HomeInvite from '../groups/HomeInvite';
 // CHOOSE A NAME (owner report, 2026-09-17): the guest controls below pointed at
 // ?signup=1 and nothing on this page ever read it, so they only reloaded the
@@ -156,7 +155,7 @@ const AZ_KEY = 'sot_stage_az';
 // same way; this repeats it because the home's sort has to interleave that
 // lead with the reader's own progress, which that module knows nothing about.
 // On a phone the shelf's peek is exactly these three (CIRC_PEEK_NARROW).
-const CIRC_LEAD = ['pricecheck', 'gauntlet', 'passport', 'deduction', 'dojo', 'room'];   // owner, 2026-10-03: Passport replaces the Daily Five; 2026-10-08: Judged fourth
+const CIRC_LEAD = ['pricecheck', 'gauntlet', 'passport', 'deduction', 'dojo', 'room', 'valet'];   // owner, 2026-10-03: Passport replaces the Daily Five; 2026-10-08: Judged fourth
 
 // THE NEWCOMER'S ROW (owner, 2026-09-04). A reader with NO footprint at all gets
 // one row above everything else: two circuits sharing a line, then the busiest
@@ -340,7 +339,7 @@ const TILES_KEY = 'sot_home_tiles';
 // shows on a category when any of its games lives there, plus the hand-added
 // homes in PILL_EXTRA (Passport is a geography game the owner also files under
 // Trivia). All Puzzles shows all five.
-const PILL_CIRCUITS = ['gauntlet', 'pricecheck', 'passport', 'math', 'deduction', 'dojo', 'room'];
+const PILL_CIRCUITS = ['gauntlet', 'pricecheck', 'passport', 'deduction', 'dojo', 'room', 'valet'];   // owner, 2026-10-13: the seven built runs only
 const PILL_EXTRA = { passport: ['Trivia'], dojo: ['Logic'] };   // owner, 2026-10-13: Dojo also shows under Logic
 // The server has no layout pass; an isomorphic alias keeps it from warning.
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
@@ -640,8 +639,6 @@ export default function StageToday() {
   // the band could show one group while the tiles showed another. Remembered
   // per browser, and read in an effect like everything else kept on device.
   const [grpPick, setGrpPick] = useState('');
-  // Which board the Leaderboards + Stats pane shows: 'all' or a group code.
-  const [lbScope, setLbScope] = useState('all');
   // ?groupinvite=1 forces the no-group invite into view for a look, which is
   // otherwise impossible for anyone who works here: being in a group is exactly
   // what stops it mounting. Read in an effect, like every other query override
@@ -2555,8 +2552,8 @@ export default function StageToday() {
               dash until they have a rank in it today. Tapping one opens that
               group in the pane below. On a phone the row slides sideways. */}
           {who && grp && Array.isArray(grp.groups) ? grp.groups.map((g) => (
-            <a key={g.code} className="sty-fc sty-fca sty-fg" href="#sty-board"
-              onClick={(e) => { e.preventDefault(); pickGroup(g.code); setLbScope(g.code); goPane(BOARD_ID, 'sty-board'); }}>
+            <a key={g.code} className="sty-fc sty-fca sty-fg" href="#sty-group"
+              onClick={(e) => { e.preventDefault(); pickGroup(g.code); goPane(BOARD_ID, 'sty-group'); }}>
               <b>{g.rank ? '#' + g.rank : '\u2013'}{typeof g.members === 'number' && g.members ? <i> of {g.members}</i> : null}</b>
               <i>{g.name}</i>
             </a>
@@ -2565,7 +2562,7 @@ export default function StageToday() {
               opens the leaderboard pane, the all-time rank opens the Stat Hub. */}
           {who ? (
             <a className={'sty-fc sty-fca' + (capWait ? ' wait' : '')} href="#sty-board"
-              onClick={(e) => { e.preventDefault(); setLbScope('all'); goPane(BOARD_ID, 'sty-board'); }}>
+              onClick={(e) => { e.preventDefault(); goPane(BOARD_ID, 'sty-board'); }}>
               {capWait ? null : <b key="v">{stats.dayRank ? <>#<RollNum value={stats.dayRank} /></> : '\u2013'}</b>}
               {capWait ? null : <i key="l">Today</i>}
               <StagePatch key="p" on={capWait} light={light} />
@@ -2833,22 +2830,177 @@ export default function StageToday() {
           </section>
         ) : null}
 
-        {/* LEADERBOARDS + STATS (owner, 2026-10-13). One section, rebuilt from
-            the approved mockup in app/today/BoardsPane.jsx: the day's figures
-            against the last seven days (shown only when growing), the most
-            played games, the day by category and by hour, superlatives, a heat
-            grid of every game, ONE leaderboard that steps between Everyone and
-            each of the reader's groups, and your standing. It replaced four
-            sections (group band, standing, board, live feed). The component
-            mounts only while the pane is open: its figures are their own
-            request, and a closed pane keeps it out of the stored home snapshot. */}
-        <section id="sty-board" className={'sty-ixp sty-lbs' + (paneOn !== BOARD_ID ? ' sty-ixoff' : '')} ref={lbRef}>
-          {paneOn === BOARD_ID ? (
-            <BoardsPane games={DAILY_GAMES} hueFor={hueFor} withTq={withTq} total={total}
-              top={top} myOut={myOut} meKey={meKey} boardCount={boardCount}
-              grp={grp} scope={lbScope} setScope={setLbScope}
-              standing={standing} myRow={myRow} who={who} />
-          ) : null}
+        {/* THE DAY'S THREE RECORDS, and the grid decides which of them share a
+            row (owner, 2026-09-01). Your standing and the board are the two
+            tables, they answer the same question from opposite ends — how did I
+            do, how did everyone do — and a reader looking at one wants the other
+            beside it rather than a screen away. So they pair, and the feed,
+            which is a list rather than a table, takes the full width underneath
+            where its rows can tile instead of running single file down a half.
+
+            Without a standing there is nothing to pair, so the layout falls back
+            to what it was: board and feed side by side. One DOM order serves
+            both, since the areas are only declared on .sty-trio.
+
+            THE STANDING SCROLLS TO THE BOARD'S MEASURED HEIGHT. Sixteen rows
+            beside eleven left the section ragged, and a row-count guess is wrong
+            on a small field, which genuinely renders fewer than ten. */}
+        <section id="sty-group" className={'sty-ixp' + (paneOn !== BOARD_ID ? ' sty-ixoff' : '')}>
+          {inGrp ? (
+            <HomeGroupsBand data={grp} withTq={withTq} narrow={narrow} group={grpOne} onPick={pickGroup}
+              cats={cats} hueFor={hueFor} total={total} />
+          ) : (
+            <>
+              {grp === null || invitePrev ? (
+                <HomeInvite playedToday={done.size} returning={returning} withTq={withTq} preview={invitePrev} />
+              ) : null}
+              <p className="sty-ixe">A group is a private daily board for the people you play with.{' '}
+                <a href={withTq('/groups')}>Start or join one</a>.</p>
+            </>
+          )}
+        </section>
+
+        {/* ONE COLUMN FOR THE RUN, not three. The figures a player wants are the
+            score, the game's own miss figure and the clock, and the miss figure
+            is a DIFFERENT THING in every game: busts in Hands, digs in Sweep,
+            unplaced tiles in Tuck, nothing at all in Suds. No shared column
+            header is true of all of them, so the word travels in the CELL with
+            its own number and the column is headed by neither.
+
+            NO POINTS COLUMN (owner, 2026-09-01). The board beside it is the
+            points table, and what this one is for is the RUN: what you scored,
+            what it cost you and how long it took. The rank still carries how it
+            placed, which is the only part of the ladder this table needs. */}
+        {(
+          <section id="sty-standing" className={'sty-ixp sty-rev' + (paneOn !== BOARD_ID ? ' sty-ixoff' : '')} style={lbH ? { '--sty-lbh': `${lbH}px` } : undefined}>
+            <div className="sty-eb">
+              Your standing
+              <em>
+                {' · '}{standing.length} played
+                {myRow && myRow.rank ? ` · #${myRow.rank} overall` : ''}
+              </em>
+            </div>
+            {!standing.length ? <p className="sty-ixe">Finish a game today and your rank in it shows up here.</p> : null}
+            <div className="sty-sscroll">
+              <table className="sty-tbl sty-stbl">
+                <tbody>
+                  {standing.map((r, i) => (
+                    <tr key={r.key} className="sty-revr" style={{ '--cc': hueFor(r.g.cat), '--i': i }}>
+                      <td className="sty-sg">
+                        <a href={`${routeOf(r.g)}${tq ? '?' + tq.slice(1) : ''}`}>
+                          <Glyph k={r.key} size={15} />{r.g.name}
+                        </a>
+                      </td>
+                      <td className="sty-srun">{gameStats(r, r.g.miss, r.key) || '—'}</td>
+                      <td className="sty-srk">#{r.rank}<i>{' of '}{r.field}</i></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        {/* THE STANDINGS COME LAST (owner, 2026-08-31: the leaderboard does not
+            need to be at the top of the page). The top of a home is for what you
+            can play; where everyone finished is what you read once you have
+            played it, so it sits under the games rather than above them. */}
+        {(
+          <section id="sty-board" className={'sty-ixp sty-rev' + (paneOn !== BOARD_ID ? ' sty-ixoff' : '')} ref={lbRef}>
+            <div className="sty-eb">Today&rsquo;s board <em>&middot; {boardCount}</em></div>
+            <table className="sty-tbl">
+              <tbody>
+                {[...top, ...(myOut ? [myOut] : [])].map((r, i) => (
+                  <tr key={(r && r.userKey) || i} style={{ '--i': i }}
+                    className={'sty-revr' + (meKey && r.userKey === meKey ? ' me' : '')}>
+                    <td className="sty-pos">{r.rank || i + 1}</td>
+                    <td className="sty-who">{r.username || 'Player'}</td>
+                    <td className="sty-gp">{typeof r.gamesPlayed === 'number' ? `${r.gamesPlayed}/${total}` : ''}</td>
+                    <td className="sty-pts">{r.total != null ? Math.round(r.total) : ''}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {!top.length ? <p className="sty-ixe">No scores on the board yet today.</p> : null}
+          </section>
+        )}
+
+        {/* THE LIVE FEED, and it is game PLAYS — not the activity log at /feed,
+            which tracks list and consensus changes. It sits at the foot because
+            it is what you read when you are done, not what you arrive for.
+
+            THE FIGURES ARE THE DAY'S, AND THE ROWS CARRY NO NAMES. That is the
+            existing feed's rule and it is kept deliberately: promoting one
+            person's run into a headline is a different product.
+
+            THE PANEL BESIDE IT IS WIDE-ONLY, and it exists because the feed at
+            full width is a wall of ten short rows with half a screen spare. It
+            spends that room on the two figures the eyebrow could only state —
+            the day's plays and the time played — drawn as the shape of the day
+            by category, and on what the reader's own finished games add up to.
+            Under 1100px it is not rendered at all and the feed is exactly what
+            it was. */}
+        <section id="sty-live" className={'sty-ixp' + (paneOn !== BOARD_ID ? ' sty-ixoff' : '')}>
+          <div className="sty-eb">
+            Live feed
+            {totals ? (
+              <em>
+                {' · '}{(totals.today || 0).toLocaleString()} plays
+                {totals.todayTime ? ` · ${hhmm(totals.todayTime)} played` : ''}
+              </em>
+            ) : null}
+          </div>
+          <div className="sty-lwide">
+            {live.length ? (
+              <div className="sty-live" style={{ '--lrows': Math.ceil(live.length / 2) }}>
+                {live.map((fp, i) => (
+                  <a key={`${fp.quizId}-${i}`} className="sty-lrow sty-revr" href={`${routeOf(fp.game)}${tq ? '?' + tq.slice(1) : ''}`}
+                    style={{ '--cc': hueFor(fp.game.cat), '--i': i }}>
+                    <Glyph k={fp.game.key} size={15} />
+                    <span className="sty-lname">{fp.game.name}</span>
+                    <span className="sty-lsc">{fp.score}<i>/{fp.total}</i></span>
+                    <span className="sty-lwhen">{ago(fp.playedAt)}</span>
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <div className="sty-lnone">{feed ? 'No plays yet today.' : 'Loading the feed…'}</div>
+            )}
+            {standing.length ? (
+              <div className="sty-lstats sty-rev">
+                {catPlays.length ? (
+                  <div className="sty-lviz">
+                    <div className="sty-eb">The day by category</div>
+                    {catPlays.map((cp) => (
+                      <div className="sty-lbar" key={cp[0]} style={{ '--cc': hueFor(cp[0]) }}>
+                        <span className="sty-lbn">{cp[0]}</span>
+                        <span className="sty-lbt">
+                          <i style={{ width: `${catPlayMax ? (cp[1] / catPlayMax) * 100 : 0}%` }} />
+                        </span>
+                        <span className="sty-lbv">{cp[1].toLocaleString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+                {/* NOTHING ABOUT THE READER LIVES HERE (owner, 2026-09-01).
+                    This section's own rule, three comments up, is that its
+                    figures are the DAY'S and its rows carry no names — and the
+                    first thing I did with the room was put the reader's share of
+                    the day and four YOU figures in it, which is the same
+                    mistake the rule was written against. Your standing is where
+                    a reader's own day is reported; this is the site's. */}
+                <div className="sty-lfigs">
+                  {totals && totals.todayPlayers ? (
+                    <div><b>{totals.todayPlayers.toLocaleString()}</b><i>players today</i></div>
+                  ) : null}
+                  {avgPlay ? <div><b>{hhmm(avgPlay)}</b><i>average play</i></div> : null}
+                  {totals && totals.today ? (
+                    <div><b>{totals.today.toLocaleString()}</b><i>plays today</i></div>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
+          </div>
         </section>
 
         {/* THE QUIZ CATALOGUE, UNDER THE DAY'S TWO RECORDS (owner, 2026-08-31).
@@ -4176,14 +4328,12 @@ ${PATCH_CSS}
 .sty-ix > #sty-board{grid-row:3;}
 .sty-ix > #sty-live{grid-row:4;}
 .sty-ix > #sty-group,.sty-ix > #sty-standing,.sty-ix > #sty-board{margin-bottom:14px;}
-.sty-ix > #sty-board.sty-lbs{grid-row:1;width:auto;justify-self:stretch;min-width:0;margin-bottom:0;}
 /* LEADERBOARDS + STATS, CONDENSED (owner, 2026-10-07): your standing and the
    day's board share one row, half each, so the live feed comes up under them.
    The standing scrolls to the board's measured height. Phones keep the stack. */
 @media (min-width:901px){
   .sty-ix > #sty-standing{grid-row:2;justify-self:start;width:calc(50% - 14px);min-width:0;}
   .sty-ix > #sty-board{grid-row:2;justify-self:end;width:calc(50% - 14px);min-width:0;}
-  .sty-ix > #sty-board.sty-lbs{grid-row:1;justify-self:stretch;width:auto;}
   .sty-ix > #sty-live{grid-row:3;}
   .sty-ix #sty-standing .sty-sscroll{max-height:calc(var(--sty-lbh, 372px) - 24px);overflow-y:auto;overscroll-behavior:contain;}
   .sty-ix #sty-standing .sty-tbl,.sty-ix #sty-board .sty-tbl{max-width:none;}
@@ -4307,7 +4457,6 @@ ${PATCH_CSS}
   .sty-ix > #sty-group{grid-row:2;}
   .sty-ix > #sty-standing{grid-row:3;}
   .sty-ix > #sty-board{grid-row:4;}
-  .sty-ix > #sty-board.sty-lbs{grid-row:2;}
   .sty-ix > #sty-live{grid-row:5;}
   .sty-ix > .sty-ixn{grid-row:1;}
   .sty-ixsep{display:none;}
