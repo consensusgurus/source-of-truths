@@ -87,7 +87,8 @@ export default function DojoPop({ ready = false, self = '' }) {
       const keys = circuitKeysFor('dojo', today);
       const tags = keys.map((k) => { const x = DAILY_GAME_MAP[k] || {}; return [x.name || k, x.colorNavy || '#93c5fd']; });
       setView({
-        dojo, more, tags, mine: keys.includes(self), name: g.name,
+        // An archive replay (?p=) is unscored, so it never 'already counts'.
+        dojo, more, tags, mine: keys.includes(self) && !/[?&]p=/.test(window.location.search), name: g.name,
         variant: tags.length > 2 ? tags[tags.length - 1][0] : 'a variant',
       });
     }), WAIT_MS);
