@@ -52,6 +52,7 @@ for (const key of Object.keys(FIELDS).filter((k) => !ONLY || k === ONLY)) {
     if (key === 'realtor' && imgs.length !== 3) bad('a home needs exactly three photos: curb, kitchen, one more room');
     for (const u of imgs) {
       if (!/^https:\/\//.test(u || '')) bad(`img not https: ${u}`);
+      if (key === 'realtor' && !/^https:\/\/ssl\.cdn-redfin\.com\/photo\/.+_\d+\.jpg$/.test(u || '')) bad(`realtor photo must be a Redfin CDN JPEG ending in its _<version>.jpg suffix (the image route walks that suffix): ${u}`);
       if (BANNED.test(u || '')) bad(`img on a banned host: ${u}`);
       if (/\.(webp|avif)(\?|$)/i.test(u || '')) bad('img must be JPEG or PNG');
     }
@@ -80,6 +81,9 @@ for (const key of Object.keys(FIELDS).filter((k) => !ONLY || k === ONLY)) {
     // The item card must build, and must not say the price.
     const ship = shipFor(key, p);
     if (!ship || !ship.name || !ship.asOf || !ship.buy || !ship.imgs || !ship.imgs.length) bad('the item card does not build');
+    // Listing photos are not stable: Realtor must route every photo through the
+    // caching, self-healing /api/realtor/img route, never hotlink the listing.
+    if (key === 'realtor' && ship && ship.imgs && ship.imgs.some((im) => !/^\/api\/realtor\/img\?n=\d+&i=[0-2]$/.test(im.src || ''))) bad('Realtor photos must go through /api/realtor/img, never hotlinked');
     else {
       const txt = [ship.name, ship.cat, ship.line, ...(ship.facts || [])].join(' ');
       const dollars = Math.floor(p.price / 100).toLocaleString('en-US');

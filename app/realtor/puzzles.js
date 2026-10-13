@@ -297,9 +297,9 @@ export const PUZZLES = [
     "broker": "Compass, Raleigh",
     "href": "https://www.redfin.com/NC/Raleigh/610-Rocky-Knob-Ct-27601/home/189999234",
     "imgs": [
-      "https://ssl.cdn-redfin.com/photo/102/bigphoto/588/10195588_1_0.jpg",
-      "https://ssl.cdn-redfin.com/photo/102/bigphoto/588/10195588_4_0.jpg",
-      "https://ssl.cdn-redfin.com/photo/102/bigphoto/588/10195588_9_0.jpg"
+      "https://ssl.cdn-redfin.com/photo/102/bigphoto/588/10195588_1_1.jpg",
+      "https://ssl.cdn-redfin.com/photo/102/bigphoto/588/10195588_4_1.jpg",
+      "https://ssl.cdn-redfin.com/photo/102/bigphoto/588/10195588_9_1.jpg"
     ]
   },
   {
