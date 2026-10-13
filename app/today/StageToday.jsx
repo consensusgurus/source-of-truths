@@ -340,7 +340,7 @@ const TILES_KEY = 'sot_home_tiles';
 // homes in PILL_EXTRA (Passport is a geography game the owner also files under
 // Trivia). All Puzzles shows all five.
 const PILL_CIRCUITS = ['gauntlet', 'pricecheck', 'passport', 'math', 'deduction', 'dojo', 'room'];
-const PILL_EXTRA = { passport: ['Trivia'] };
+const PILL_EXTRA = { passport: ['Trivia'], dojo: ['Logic'] };   // owner, 2026-10-13: Dojo also shows under Logic
 // The server has no layout pass; an isomorphic alias keeps it from warning.
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 const MINE_ID = 'sty-mine';
@@ -1624,36 +1624,6 @@ export default function StageToday() {
     mq.addEventListener('change', on);
     return () => mq.removeEventListener('change', on);
   }, []);
-  const [runStat, setRunStat] = useState({});
-  const runAsked = useRef(null);
-  const runGrp = grpOne && !grpOne.failed && grpOne.code ? grpOne : null;
-  useEffect(() => {
-    if (!runsMq || grp === undefined) return undefined;
-    if (!runAsked.current) runAsked.current = new Set();
-    const qs = identityQs();
-    for (const id of PILL_CIRCUITS) {
-      const c = circuits.find((x) => x.id === id);
-      if (!c) continue;
-      const full = c.games.length > 0 && c.n === c.games.length;
-      const ask = `${id}|${full ? 1 : 0}|${runGrp ? runGrp.code : ''}`;
-      if (runAsked.current.has(ask)) continue;
-      runAsked.current.add(ask);
-      const url = runGrp
-        ? `/api/quiz/daily-combined?circuit=${encodeURIComponent(id)}&group=${encodeURIComponent(runGrp.code)}${qs ? '&' + qs : ''}`
-        : `/api/quiz/daily-combined?circuit=${encodeURIComponent(id)}${full && qs ? '&' + qs : ''}`;
-      fetch(url)
-        .then((r) => (r.ok ? r.json() : null))
-        .then((d) => {
-          if (!circLive.current || !d) return;
-          const v = runGrp
-            ? { players: d.siteField || 0, rank: d.siteRank || null, gfield: d.field || 0, grank: d.me && d.me.rank ? d.me.rank : null }
-            : { players: d.overallField || (Array.isArray(d.overall) ? d.overall.length : 0), rank: d.me && d.me.rank ? d.me.rank : null };
-          setRunStat((m) => ({ ...m, [id]: v }));
-        })
-        .catch(() => {});
-    }
-    return undefined;
-  }, [runsMq, circuits, grp, runGrp && runGrp.code]);
 
   // WHERE THE A-TO-Z / REORDER BAR SITS (owner, 2026-09-02). A first-time or
   // unregistered visitor on a phone gets it at the FOOT of the categories, not
@@ -1807,6 +1777,41 @@ export default function StageToday() {
   // pane is the reader's request to browse circuits, so it lists the whole
   // roster, and the Show all bar survives only where Circuits is one row of many.
   const circPane = ix && paneOn === CIRC_ID;
+  const [runStat, setRunStat] = useState({});
+  const runAsked = useRef(null);
+  const runGrp = grpOne && !grpOne.failed && grpOne.code ? grpOne : null;
+  useEffect(() => {
+    if (grp === undefined) return undefined;
+    // The phone's pills ask for their runs; the Circuits pane, at any width,
+    // asks for every run it shows (owner, 2026-10-13: big cards there too).
+    const ids = new Set(runsMq ? PILL_CIRCUITS : []);
+    if (circPane) for (const c of circuits) ids.add(c.id);
+    if (!ids.size) return undefined;
+    if (!runAsked.current) runAsked.current = new Set();
+    const qs = identityQs();
+    for (const id of ids) {
+      const c = circuits.find((x) => x.id === id);
+      if (!c) continue;
+      const full = c.games.length > 0 && c.n === c.games.length;
+      const ask = `${id}|${full ? 1 : 0}|${runGrp ? runGrp.code : ''}`;
+      if (runAsked.current.has(ask)) continue;
+      runAsked.current.add(ask);
+      const url = runGrp
+        ? `/api/quiz/daily-combined?circuit=${encodeURIComponent(id)}&group=${encodeURIComponent(runGrp.code)}${qs ? '&' + qs : ''}`
+        : `/api/quiz/daily-combined?circuit=${encodeURIComponent(id)}${full && qs ? '&' + qs : ''}`;
+      fetch(url)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (!circLive.current || !d) return;
+          const v = runGrp
+            ? { players: d.siteField || 0, rank: d.siteRank || null, gfield: d.field || 0, grank: d.me && d.me.rank ? d.me.rank : null }
+            : { players: d.overallField || (Array.isArray(d.overall) ? d.overall.length : 0), rank: d.me && d.me.rank ? d.me.rank : null };
+          setRunStat((m) => ({ ...m, [id]: v }));
+        })
+        .catch(() => {});
+    }
+    return undefined;
+  }, [runsMq, circPane, circuits, grp, runGrp && runGrp.code]);
   // On a phone the index is a sideways strip, so a pane opened from the cap has
   // to bring its own chip into view. The quiz drawers load when their pane opens.
   useIsoLayoutEffect(() => {
@@ -2388,6 +2393,48 @@ export default function StageToday() {
   // a run reads as players today until you finish it, then as your place on
   // the site board and in your group.
   const RUN_SHORT = { gauntlet: 'Trivia', pricecheck: 'Prices', passport: 'Passport', math: 'Math', deduction: 'Judged', dojo: 'Dojo', room: 'Room' };
+  const runFull = (c) => c.games.length > 0 && c.n === c.games.length;
+  const fmtN = (n) => Number(n || 0).toLocaleString('en-US');
+  const runLook = (c, cat) => {
+    const pc = pillCat(c, cat);
+    return { '--ph': hueFor(pc), '--stg-onramp': light ? categoryOnrampLight(pc) : RAMP_INK };
+  };
+  // THE GROUP LINE SAYS SOMETHING OR IS NOT THERE (owner, 2026-10-13): no
+  // group, or nobody in it has finished the run today, and the line and its
+  // room are gone rather than held open.
+  const runGroupText = (c, st) => {
+    if (!runGrp || !st) return null;
+    const gname = runGrp.name;
+    if (runFull(c) && st.grank) return `#${st.grank} of ${st.gfield} ${gname}`;
+    if (st.gfield) return `${st.gfield} ${gname} played`;
+    return null;
+  };
+  // ONE BIG RUN CARD: the phone's lead run and every card in the Circuits pane.
+  const runCard = (c, cat, eyebrow, extra) => {
+    const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
+    const done = runFull(c);
+    const gtxt = runGroupText(c, st);
+    const left = !st ? '\u00a0'
+      : (done && st.rank ? `You: #${st.rank} of ${fmtN(st.players)}` : `${fmtN(st.players)} ${st.players === 1 ? 'player' : 'players'} today`);
+    return (
+      <a key={c.id} className={'sty-rbig' + (done ? ' done' : '')} href={withTq(circuitEntryHref(c.id))} style={runLook(c, cat)}>
+        {eyebrow ? <span className="ey">{eyebrow}</span> : null}
+        <b className="nm">{c.name}{extra || null}</b>
+        <span className="go">{done ? 'Results' : 'Play'}</span>
+        {c.blurb ? <span className="ln">{c.blurb}</span> : null}
+        <span className="st">
+          <span>{left}</span>
+          {gtxt ? <span className="gr">{gtxt}</span> : null}
+        </span>
+      </a>
+    );
+  };
+  // THE PHONE'S RUNS (owner, 2026-10-13). The most played run the reader has
+  // not finished is one big card; every other run is a tile on a strip you
+  // flick through (no visible scrollbar), carrying its full name. Finish the
+  // big one and the next most played takes its place, until every run is a
+  // tile. Nothing shows how far into a run you are: it reads as players today
+  // until you finish it, then as your place on the site board and the group.
   const runsMobile = (list, cat) => {
     // MOST PLAYED is the run's own player count, the figure the reader sees on
     // it. Until every run has answered, the summed plays of its games stand
@@ -2397,53 +2444,24 @@ export default function StageToday() {
     const ord = list.map((c, i) => [c, i])
       .sort((a, b) => (popOf(b[0]) - popOf(a[0])) || (a[1] - b[1]))
       .map((x) => x[0]);
-    const isFull = (c) => c.games.length > 0 && c.n === c.games.length;
-    const big = ord.find((c) => !isFull(c)) || null;
+    const big = ord.find((c) => !runFull(c)) || null;
     const rest = ord.filter((c) => c !== big);
-    const gname = runGrp ? runGrp.name : '';
-    const look = (c) => {
-      const pc = pillCat(c, cat);
-      return {
-        '--ph': hueFor(pc),
-        '--stg-onramp': light ? categoryOnrampLight(pc) : RAMP_INK,
-      };
-    };
-    const fmtN = (n) => Number(n || 0).toLocaleString('en-US');
     return (
       <div className="sty-rnm">
-        {big ? (() => {
-          const st = runStat[big.id];
-          return (
-            <a className="sty-rbig" href={withTq(circuitEntryHref(big.id))} style={look(big)}>
-              <span className="ey">Most played today</span>
-              <b className="nm">{big.name}</b>
-              <span className="go">Play</span>
-              {big.blurb ? <span className="ln">{big.blurb}</span> : null}
-              <span className="st">
-                <span>{st ? `${fmtN(st.players)} ${st.players === 1 ? 'player' : 'players'} today` : '\u00a0'}</span>
-                {runGrp ? <span className="gr">{st ? (st.gfield ? `${st.gfield} ${gname} in` : `No ${gname} yet`) : '\u00a0'}</span> : null}
-              </span>
-            </a>
-          );
-        })() : null}
+        {big ? runCard(big, cat, 'Most played today') : null}
         {rest.length ? (
-          <div className="sty-rics" style={{ '--n': Math.max(rest.length, 5) }}>
+          <div className="sty-rics">
             {rest.map((c) => {
               const st = runStat[c.id];
-              const done = isFull(c);
-              // A finished run with no rank yet (the board has not answered,
-              // or the reader is a guest) falls back to its crowd, never a blank.
+              const done = runFull(c);
               const ranked = done && st && st.rank;
+              const gtxt = runGroupText(c, st);
               return (
                 <a key={c.id} className={'sty-ric' + (done ? ' done' : '')}
-                  href={withTq(circuitEntryHref(c.id))} style={look(c)} aria-label={c.name}>
-                  <span className="sq">{RUN_SHORT[c.id] || c.name}</span>
+                  href={withTq(circuitEntryHref(c.id))} style={runLook(c, cat)}>
+                  <span className="sq">{c.name}</span>
                   <span className="l1">{ranked ? `#${st.rank} of ${fmtN(st.players)}` : st ? `${fmtN(st.players)} played` : '\u00a0'}</span>
-                  {runGrp ? (
-                    <span className="l2">{st
-                      ? (done && st.grank ? `#${st.grank} ${gname}` : (st.gfield ? `${st.gfield} ${gname}` : '\u00a0'))
-                      : '\u00a0'}</span>
-                  ) : null}
+                  {gtxt ? <span className="l2">{gtxt}</span> : null}
                 </a>
               );
             })}
@@ -2650,6 +2668,10 @@ export default function StageToday() {
             to be filled. */}
         {/* The SECTION's rule is neutral because this row is not a category:
             the cards inside it carry their own categories' colours. */}
+        {/* THE RUNS LEAD THE PHONE'S HOME TOO (owner, 2026-10-13), above the
+            category tiles, the same block All Puzzles opens with. Phone only:
+            the block draws nothing above 900px. */}
+        {!picked ? <div className="sty-rhome">{circPills(null, true)}</div> : null}
         <div ref={ixRef} className={(ix ? 'sty-ix' : 'sty-ixw') + (picked ? ' mpk' : ' msel') + (ix && gamePane ? ' rl' : '')}>
         {ixNav}
         {railEl}
@@ -2792,31 +2814,13 @@ export default function StageToday() {
               <b>{circuits.filter((c) => c.n === c.games.length).length}<i>/{circuits.length}</i></b>
               {cav(CIRC_ID)}
             </div>
-            <div className={'sty-circs' + (isOpen(CIRC_ID) ? '' : ' shut')} ref={circRef}>
-              {(allCircs || circPane ? circuits : circLead).map((c, i) => (
-                <a key={c.id} className={'sty-circ' + (c.n === c.games.length ? ' full' : '')}
-                  href={withTq(circuitEntryHref(c.id))} style={{ '--cc': c.hue, '--i': i }}>
-                  {/* The count sits IN the header row, not absolutely over the
-                      card: floating it top-right meant a long name ran
-                      underneath it, which "Trivia Gauntlet" did on every
-                      width (owner, 2026-08-31). */}
-                  <div className="sty-chead">
-                    <div className="sty-cn">{c.name}</div>
-                    <div className="sty-cnum">{c.unit ? (c.n ? 'Played' : <i>{c.unit}</i>) : <>{c.n}<i>/{c.games.length}</i></>}</div>
-                    <CircStar c={c} canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite} />
-                  </div>
-                  {circStand[c.id] ? (
-                    <div className="sty-cres sty-rev">
-                      <span className="sty-grl">You:</span>
-                      <span className="sty-grk">#{circStand[c.id].rank}</span>
-                      <span className="sty-grf">of {circStand[c.id].field}</span>
-                    </div>
-                  ) : (
-                    <div className="sty-cb">{c.blurb}</div>
-                  )}
-                  <div className="sty-cbar"><span style={{ width: `${(c.n / c.games.length) * 100}%` }} /></div>
-                </a>
-              ))}
+            {/* EVERY CIRCUIT IS A BIG CARD WITH ITS OWN PLAY BUTTON (owner,
+                2026-10-13), the same card that leads the phone's runs: what it
+                is, players today, and once finished your place on the site
+                board and in your group. */}
+            <div className={'sty-rcards' + (isOpen(CIRC_ID) ? '' : ' shut')} ref={circRef}>
+              {(allCircs || circPane ? circuits : circLead).map((c) => runCard(c, null, null,
+                <CircStar c={c} canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite} />))}
             </div>
             {isOpen(CIRC_ID) && !circPane && circuits.length > circLead.length ? (
               <button type="button" className="sty-more" onClick={() => setAllCircs((v) => !v)}>
@@ -4594,34 +4598,46 @@ ${PATCH_CSS}
   .sty-ix.mpk > .sty-ixn.pk:not(.re) > .sty-sortm{display:inline-flex;grid-row:1;grid-column:1 / -1;order:-2;
     justify-self:end;align-self:center;margin:0 58px 0 0;position:relative;z-index:1;background:var(--stg-chip);}
 }
+/* THE RUN CARD (owner, 2026-10-13): the phone's lead run and every card in
+   the Circuits pane, at any width. */
+.sty-rbig{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center;text-decoration:none;
+  color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);border-left:4px solid var(--ph,var(--stg-acc));
+  border-radius:8px;padding:10px 12px;}
+.sty-rbig .ey{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);}
+.sty-rbig .nm{display:flex;align-items:center;gap:6px;font-size:16px;font-weight:800;line-height:1.2;}
+.sty-rbig .nm .sty-star{position:static;flex:none;width:22px;height:22px;--cc:var(--ph);}
+.sty-rbig .go{grid-row:1 / 3;grid-column:2;background:var(--ph,var(--stg-acc));color:var(--stg-onramp,#08222e);
+  border-radius:999px;padding:9px 18px;font-size:13px;font-weight:800;}
+.sty-rbig .ln{grid-column:1 / -1;font-size:12px;line-height:1.4;color:var(--stg-ink2);margin-top:4px;}
+.sty-rbig .st{grid-column:1 / -1;display:flex;justify-content:space-between;gap:10px;margin-top:6px;padding-top:6px;
+  border-top:1px solid var(--stg-line);font-size:11.5px;font-weight:700;color:var(--stg-mute);font-variant-numeric:tabular-nums;}
+.sty-rbig.done .st > span:first-child{color:var(--stg-ink);font-weight:800;}
+.sty-rbig .st .gr{color:var(--stg-ink2);font-weight:800;text-align:right;}
+.sty-rbig:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-rcards{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));}
+.sty-rcards.shut{display:none;}
 .sty-rnm{display:none;}
 @media (max-width:900px){
   .sty-cpills{display:none;}
+  .sty-rcards{grid-template-columns:minmax(0,1fr);}
   /* THE PHONE'S RUNS (owner, 2026-10-13): the most played unfinished run is
-     one big card, every other run a small icon. */
-  .sty-rnm{display:flex;flex-direction:column;gap:8px;margin:0 0 12px;}
-  .sty-rbig{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center;text-decoration:none;
-    color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);border-left:4px solid var(--ph,var(--stg-acc));
-    border-radius:8px;padding:10px 12px;}
-  .sty-rbig .ey{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);}
-  .sty-rbig .nm{font-size:16px;font-weight:800;line-height:1.2;}
-  .sty-rbig .go{grid-row:1 / 3;grid-column:2;background:var(--ph,var(--stg-acc));color:var(--stg-onramp,#08222e);
-    border-radius:999px;padding:8px 16px;font-size:12.5px;font-weight:800;}
-  .sty-rbig .ln{grid-column:1 / -1;font-size:12px;line-height:1.4;color:var(--stg-ink2);margin-top:4px;}
-  .sty-rbig .st{grid-column:1 / -1;display:flex;justify-content:space-between;gap:10px;margin-top:6px;padding-top:6px;
-    border-top:1px solid var(--stg-line);font-size:11.5px;font-weight:700;color:var(--stg-mute);font-variant-numeric:tabular-nums;}
-  .sty-rbig .st .gr{color:var(--stg-ink2);font-weight:800;text-align:right;}
-  .sty-rics{display:grid;grid-template-columns:repeat(var(--n,6),minmax(0,1fr));gap:4px;}
-  .sty-ric{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;text-decoration:none;color:var(--stg-ink);}
-  .sty-ric .sq{width:100%;max-width:60px;height:46px;border-radius:11px;display:grid;place-items:center;text-align:center;
-    font-size:10.5px;font-weight:800;line-height:1.05;padding:0 2px;overflow:hidden;color:var(--stg-ink);
+     one big card, the rest a strip of named tiles you flick through. */
+  .sty-rnm{display:flex;flex-direction:column;gap:8px;margin:0 0 12px;min-width:0;}
+  .sty-rhome{grid-column:1 / -1;min-width:0;}
+  .sty-rics{display:flex;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 0 2px;}
+  .sty-rics::-webkit-scrollbar{display:none;}
+  .sty-ric{flex:0 0 108px;scroll-snap-align:start;display:flex;flex-direction:column;gap:3px;min-width:0;
+    text-decoration:none;color:var(--stg-ink);}
+  .sty-ric .sq{height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;
+    padding:0 8px;font-size:12.5px;font-weight:800;line-height:1.15;color:var(--stg-ink);
     background:color-mix(in srgb, var(--ph,var(--stg-acc)) 16%, var(--stg-surf));
     border:1.5px solid color-mix(in srgb, var(--ph,var(--stg-acc)) 55%, transparent);}
   .sty-ric.done .sq{background:var(--ph,var(--stg-acc));border-color:var(--ph,var(--stg-acc));color:var(--stg-onramp,#08222e);}
-  .sty-ric .l1,.sty-ric .l2{max-width:100%;font-size:10px;font-weight:700;color:var(--stg-mute);white-space:nowrap;
+  .sty-ric .l1,.sty-ric .l2{padding:0 2px;font-size:10.5px;font-weight:700;color:var(--stg-mute);white-space:nowrap;
     overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;line-height:1.25;}
   .sty-ric.done .l1{color:var(--stg-ink);font-weight:800;}
   .sty-ric .l2{color:var(--stg-ink2);font-weight:800;}
-  .sty-ric:focus-visible .sq,.sty-rbig:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+  .sty-ric:focus-visible .sq{outline:2px solid var(--stg-acc);outline-offset:2px;}
 }
 `;
