@@ -2389,8 +2389,13 @@ export default function StageToday() {
   // the site board and in your group.
   const RUN_SHORT = { gauntlet: 'Trivia', pricecheck: 'Prices', passport: 'Passport', math: 'Math', deduction: 'Judged', dojo: 'Dojo' };
   const runsMobile = (list, cat) => {
+    // MOST PLAYED is the run's own player count, the figure the reader sees on
+    // it. Until every run has answered, the summed plays of its games stand
+    // in, so the order settles once rather than shuffling run by run.
+    const byPlayers = list.every((c) => runStat[c.id]);
+    const popOf = (c) => (byPlayers ? runStat[c.id].players : (c.pop || 0));
     const ord = list.map((c, i) => [c, i])
-      .sort((a, b) => ((b[0].pop || 0) - (a[0].pop || 0)) || (a[1] - b[1]))
+      .sort((a, b) => (popOf(b[0]) - popOf(a[0])) || (a[1] - b[1]))
       .map((x) => x[0]);
     const isFull = (c) => c.games.length > 0 && c.n === c.games.length;
     const big = ord.find((c) => !isFull(c)) || null;
