@@ -80,25 +80,20 @@ const COLORS = {
   accentSoft: '#ede9fe',
   green: T.successDeep,
 };
-// Same answer the board palette pass gave Hands, Taire and Shoe: the felt
-// carried no information and was the largest object on the page, so it is a
-// SURFACE and the table EDGE carries the category. A card face is light in
-// either register, so it takes the token a chessboard light square does.
-const FELT = 'var(--stg-surf2, #23303f)';
-const FELT_EDGE = 'color-mix(in srgb, var(--stg-acc, #4c1d95) 60%, transparent)';
-const CARD_FACE = 'var(--stg-sq-l, #fdfcf9)';
-const CARD_EDGE = 'rgba(20,22,28,0.30)';
-const RED_PIP = 'var(--stg-bad, #c8282e)';
-const BLACK_PIP = T.ink;
-const SLOT = 'var(--stg-cell, rgba(255,255,255,0.06))';
-const SLOT_LINE = 'var(--stg-cell-line, rgba(255,255,255,0.30))';
+// THE BOARD (round four, 2026-10-13): a compass table on a felt tinted with
+// the category accent, the trick in a round well in the middle. Card faces
+// are paper in both registers, as Crib's are: white, near-black and red ink.
+const FELT = 'color-mix(in srgb, var(--stg-acc, #4c1d95) 9%, var(--stg-cell, #ffffff))';
+const CARD_FACE = '#ffffff';
+const CARD_EDGE = 'rgba(22,24,29,0.30)';
+const RED_PIP = '#b91c1c';
+const BLACK_PIP = '#16181d';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = SANS;
 const HELP_KEY = 'sot_finesse_help_seen';
 const STATS_KEY = 'sot_finesse_stats';
 
-const SEAT_NAME = ['North', 'East', 'South', 'West'];
 const POINTS_BY_TRY = [10, 8, 6, 4];
 const pointsFor = (tries) => POINTS_BY_TRY[Math.min(Math.max(tries, 1) - 1, POINTS_BY_TRY.length - 1)];
 const TRICK_WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
@@ -206,41 +201,21 @@ function vibrate(p) { try { if (typeof navigator !== 'undefined' && navigator.vi
 // one line each and keeps the save file to a list of small integers.
 const freshState = () => ({ v: 1, plays: [], tries: 1, status: 'playing', t0: null, tEnd: null });
 
-function CardFace({ card, R, size = 'md', dim = false, trump = false }) {
+// One card face. Sized by its container (width set by the row it sits in,
+// height by aspect ratio), and its type is sized off its own width with
+// container units, so a Sunday's eight cards and a Monday's four read alike.
+// Under 46px wide the corner index gives way to one centred rank and suit.
+function CardFace({ card, R, trump = false }) {
   const s = suitOf(card, R);
   const red = s === 1 || s === 2;
-  const big = size === 'lg';
+  const rk = RANK_NAMES[R][rankOf(card, R)];
   return (
-    <div style={{
-      width: '100%', height: '100%', borderRadius: big ? 8 : 5, background: CARD_FACE,
-      border: `1px solid ${CARD_EDGE}`,
-      boxShadow: trump ? `inset 0 0 0 1.5px ${FELT_EDGE}` : 'none',
-      color: red ? RED_PIP : BLACK_PIP, fontFamily: SANS, fontWeight: 800,
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      lineHeight: 1, userSelect: 'none', opacity: dim ? 0.55 : 1,
-    }}>
-      <span style={{ fontSize: big ? 22 : 'clamp(11px,3.6vw,15px)', letterSpacing: '-0.04em' }}>{RANK_NAMES[R][rankOf(card, R)]}</span>
-      <span style={{ fontSize: big ? 19 : 'clamp(10px,3vw,13px)', marginTop: 1 }}>{SUIT_GLYPH[s]}</span>
-    </div>
-  );
-}
-
-// A hand held sideways. East and West are read, never played from, so their
-// cards are chips rather than cards: one line each, and six of them stack in
-// the width a single upright card would need.
-function SideCard({ card, R, trump }) {
-  const s = suitOf(card, R);
-  const red = s === 1 || s === 2;
-  return (
-    <div style={{
-      height: 20, borderRadius: 4, background: CARD_FACE, border: `1px solid ${CARD_EDGE}`,
-      boxShadow: trump ? `inset 0 0 0 1.5px ${FELT_EDGE}` : 'none',
-      color: red ? RED_PIP : BLACK_PIP, fontFamily: SANS, fontWeight: 800, fontSize: 11,
-      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, lineHeight: 1,
-    }}>
-      <span style={{ letterSpacing: '-0.03em' }}>{RANK_NAMES[R][rankOf(card, R)]}</span>
-      <span>{SUIT_GLYPH[s]}</span>
-    </div>
+    <span className="fn-face" style={{ color: red ? RED_PIP : BLACK_PIP }}>
+      <span className="fn-ix"><b>{rk}</b><span>{SUIT_GLYPH[s]}</span></span>
+      <span className="fn-pip">{SUIT_GLYPH[s]}</span>
+      <span className="fn-mini"><b>{rk}</b><span>{SUIT_GLYPH[s]}</span></span>
+      {trump && <span className="fn-tr" aria-hidden="true" />}
+    </span>
   );
 }
 
@@ -594,60 +569,186 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
     />
   );
 
-  const seatOrder = [0, 3, 1, 2];
   const handFor = (seat) => handOrder(pos.m[seat], R);
   const trickAt = (seat) => {
     const hit = pos.played.find((p) => p.seat === seat);
     return hit ? hit.card : null;
   };
 
-  const turnLine = !started ? 'Ready'
-    : !cardsLeft ? ''
-    : pos.seat === 2 ? 'Your turn · tap a lit card'
-    : pos.seat === 0 ? 'Dummy to play · tap a lit card'
-    : `${SEAT_NAME[pos.seat]} to play`;
+  // ---- everything the table reads, derived from the play list ----
+  // Nothing here is new information: the winner of a trick in progress is the
+  // three printed rules applied to cards already face up on the table.
+  const SEAT_WORD = ['Dummy', 'East', 'You', 'West'];
+  const SEAT_CAPS = ['DUMMY', 'EAST', 'YOU', 'WEST'];
+  const SUIT_WORD = ['spades', 'hearts', 'diamonds', 'clubs'];
+  const cardTxt = (c) => `${RANK_NAMES[R][rankOf(c, R)]}${SUIT_GLYPH[suitOf(c, R)]}`;
+  const leaderOf = (played) => {
+    let best = played[0];
+    for (let i = 1; i < played.length; i++) {
+      const c = played[i], cs = suitOf(c.card, R), bs = suitOf(best.card, R);
+      if (cs === bs) { if (rankOf(c.card, R) > rankOf(best.card, R)) best = c; }
+      else if (TRUMP >= 0 && cs === TRUMP && bs !== TRUMP) best = c;
+    }
+    return best;
+  };
+  const winningSeat = pos.played.length > 1 ? leaderOf(pos.played).seat : -1;
+  const trickNo = pos.tricks.length + 1;
+  const need = Math.max(0, TARGET - pos.ns);
+  const cap1 = (w) => w.replace(/^./, (c) => c.toUpperCase());
+
+  // The last play, in words.
+  const lastLine = (() => {
+    const n = g.plays.length;
+    if (!started || !n) return '';
+    if (!pos.played.length) {
+      const t = pos.tricks[pos.tricks.length - 1];
+      const wc = t.cards.find((x) => x.seat === t.winner).card;
+      return `${t.winner === 2 ? 'You' : SEAT_WORD[t.winner]} won trick ${pos.tricks.length} with the ${cardTxt(wc)}.`;
+    }
+    const seat = pos.seats[n - 1];
+    const card = g.plays[n - 1];
+    const who = SEAT_WORD[seat];
+    if (pos.played.length === 1) return `${who} led the ${cardTxt(card)}.`;
+    const before = leaderOf(pos.played.slice(0, -1));
+    const ledS = suitOf(pos.played[0].card, R);
+    const cs = suitOf(card, R);
+    if (winningSeat === seat) {
+      const whose = before.seat === 2 ? 'your' : before.seat === 0 ? "dummy's" : `${SEAT_WORD[before.seat]}'s`;
+      return `${who} ${cs !== ledS ? 'ruffed' : 'covered'} ${whose} ${cardTxt(before.card)} with the ${cardTxt(card)}.`;
+    }
+    return cs === ledS ? `${who} followed with the ${cardTxt(card)}.` : `${who} discarded the ${cardTxt(card)}.`;
+  })();
+
+  // What is legal now, in words.
+  const nowLine = (() => {
+    if (!started) return 'Ready.';
+    if (done) return `Contract made: ${TRICK_WORD[pos.ns]} of ${R}.`;
+    if (!playing || !cardsLeft) return '';
+    const s = pos.seat;
+    if (!isNS(s)) return thinking ? `${SEAT_WORD[s]} is thinking.` : `${SEAT_WORD[s]} to play.`;
+    const mine = bits(pos.m[s]);
+    if (pos.led < 0) return s === 2 ? 'Your lead: any card can go.' : 'Dummy to lead: any card can go.';
+    const lit = mine.filter((c) => legal(pos.m, s, pos.led, c)).length;
+    if (mine.some((c) => suitOf(c, R) === pos.led)) {
+      return `${s === 2 ? 'You' : 'Dummy'} must follow ${SUIT_WORD[pos.led]}: ${lit === 1 ? 'one card is' : `${TRICK_WORD[lit] || lit} cards are`} lit.`;
+    }
+    return `${s === 2 ? 'You have' : 'Dummy has'} no ${SUIT_WORD[pos.led]}, so any of ${s === 2 ? 'your' : 'its'} ${TRICK_WORD[lit] || lit} cards can go.`;
+  })();
+  const ruleLine = `Follow suit if you can. Highest of the suit led wins${PUZZLE.trump ? ', and a trump beats anything else' : ''}. Short of ${TRICK_WORD[TARGET]}, the board rewinds to trick one.`;
 
   const CSS = `
-    .fn-felt{background:${FELT};border:9px solid ${FELT_EDGE};border-radius:12px;padding:10px 8px;touch-action:manipulation;}
-    .fn-tbl{display:grid;grid-template-columns:52px minmax(0,1fr) 52px;grid-template-areas:"pn pn pn" "pw pc pe" "ps ps ps";gap:7px;}
+    /* THE TABLE (round four, 2026-10-13). One grid: North across the top,
+       West / the well / East across the middle, South across the bottom. Every
+       size below the 560px line comes from the same rules at smaller values,
+       and the well's cards are placed in percentages of the well. */
+    .fn-felt{background:${FELT};border-radius:22px;padding:16px 16px 14px;display:grid;grid-template-columns:132px minmax(0,1fr) 132px;grid-template-areas:"pn pn pn" "pw pc pe" "ps ps ps";gap:12px 10px;touch-action:manipulation;}
     .fn-n{grid-area:pn;} .fn-w{grid-area:pw;} .fn-e{grid-area:pe;} .fn-s{grid-area:ps;} .fn-c{grid-area:pc;}
-    .fn-seat{display:flex;flex-direction:column;gap:3px;min-width:0;}
-    .fn-lbl{font-family:${MONO};font-size:8.5px;letter-spacing:0.13em;text-transform:uppercase;color:var(--stg-mute,rgba(255,255,255,0.6));text-align:center;padding-bottom:2px;border-bottom:1.5px solid transparent;}
-    .fn-seat.on .fn-lbl{color:var(--stg-acc-ink,#e879f9);border-bottom-color:var(--stg-acc,#e879f9);}
-    .fn-hand{display:flex;gap:3px;justify-content:center;}
-    .fn-w .fn-hand,.fn-e .fn-hand{flex-direction:column;gap:2px;}
-    .fn-cd{padding:0;border:0;background:none;width:36px;height:48px;flex:none;}
+    .fn-n,.fn-s{display:flex;flex-direction:column;align-items:center;gap:9px;min-width:0;}
+    .fn-tag{font-family:${SANS};font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute,#5b6475);border-radius:6px;padding:4px 9px;border:1.5px solid transparent;line-height:1.2;text-align:center;}
+    .fn-tag.on{background:var(--stg-acc,${COLORS.accent});color:var(--stg-onramp,#ffffff);}
+    .fn-row{display:flex;gap:7px;justify-content:center;width:100%;}
+    .fn-cd{--cw:min(68px,calc((100% - (var(--n) - 1) * 7px - var(--sg)) / var(--n)));padding:0;border:0;background:none;width:var(--cw);flex:none;aspect-ratio:68/96;border-radius:9px;transition:transform .15s ease;font-family:${SANS};position:relative;}
+    .fn-cd.fn-gap{margin-left:6px;}
+    .fn-face{position:absolute;inset:0;box-sizing:border-box;border-radius:9px;background:${CARD_FACE};border:1.5px solid ${CARD_EDGE};box-shadow:0 2px 6px rgba(0,0,0,.22);container-type:inline-size;display:block;user-select:none;line-height:1;}
+    .fn-ix{position:absolute;top:7%;left:10%;display:flex;flex-direction:column;align-items:center;}
+    .fn-ix b{font-size:28cqw;font-weight:800;letter-spacing:-.03em;}
+    .fn-ix span{font-size:22cqw;margin-top:1px;}
+    .fn-pip{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:46cqw;padding-top:16%;}
+    .fn-mini{display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;}
+    .fn-mini b{font-size:40cqw;font-weight:800;letter-spacing:-.04em;}
+    .fn-mini span{font-size:36cqw;margin-top:2px;}
+    @container (max-width:46px){.fn-ix,.fn-pip{display:none;}.fn-mini{display:flex;}}
+    .fn-tr{position:absolute;top:6%;right:8%;width:7px;height:7px;border-radius:50%;background:var(--stg-acc-ink-lt,${COLORS.accent});}
     /* A PLAYABLE CARD HAS TO SAY SO WITHOUT A CURSOR (reader report, 2026-10-03:
-       "it says it is my turn but nothing is activated"). The only cue used to be
-       a cursor and a hover lift, neither of which exists on a touch screen, so
-       the live cards are lifted and ringed at rest. The ring sits OUTSIDE the
-       card so it never reads as the trump card's inset ring. */
-    .fn-cd{transition:transform .15s ease;}
-    .fn-cd.play{cursor:pointer;transform:translateY(-4px);border-radius:6px;outline:2px solid var(--stg-acc-ink,#e879f9);outline-offset:2px;}
-    .fn-cd.play:hover{transform:translateY(-6px);}
+       "it says it is my turn but nothing is activated"). The live cards are
+       lifted and ringed at rest, and the ring sits OUTSIDE the card. */
+    .fn-cd.play{cursor:pointer;transform:translateY(-5px);}
+    .fn-cd.play .fn-face{border:2.5px solid var(--stg-acc,${COLORS.accent});box-shadow:0 0 0 2px ${FELT},0 0 0 3.5px var(--stg-acc,${COLORS.accent}),0 8px 14px rgba(0,0,0,.3);}
+    .fn-cd.play:hover{transform:translateY(-8px);}
+    .fn-cd.play:focus-visible{outline:2px solid var(--stg-ink,${COLORS.ink});outline-offset:5px;}
     .fn-cd:disabled{cursor:default;}
-    .fn-gap{margin-left:5px;}
-    .fn-c{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr 1fr;place-items:center;min-height:118px;}
-    .fn-slot{width:30px;height:40px;border-radius:5px;background:${SLOT};border:1px solid ${SLOT_LINE};}
-    .fn-slot.full{background:transparent;border-color:transparent;}
-    .fn-sn{grid-column:2;grid-row:1;} .fn-sw{grid-column:1;grid-row:2;}
-    .fn-se{grid-column:3;grid-row:2;} .fn-ss{grid-column:2;grid-row:3;}
-    .fn-msg{grid-column:2;grid-row:2;font-family:${MONO};font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--stg-mute,rgba(255,255,255,0.6));text-align:center;line-height:1.4;}
-    .fn-drop{animation:fndrop .18s ease-out;}
+    .fn-side{display:flex;flex-direction:column;justify-content:center;gap:8px;min-width:0;}
+    .fn-e{align-items:flex-end;}
+    .fn-slab{font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute,#5b6475);}
+    .fn-slab.on{color:var(--stg-acc-ink,${COLORS.accent});font-weight:800;}
+    .fn-pills{display:flex;flex-direction:column;gap:5px;width:100%;}
+    .fn-pill{height:40px;box-sizing:border-box;border-radius:7px;background:${CARD_FACE};border:1.5px solid ${CARD_EDGE};display:flex;align-items:center;gap:6px;padding:0 10px;font-family:${SANS};font-size:17px;font-weight:800;letter-spacing:-.02em;}
+    .fn-pill span{font-weight:600;}
+    .fn-e .fn-pill{justify-content:flex-end;}
+    .fn-pill.fn-gap{margin-top:5px;}
+    .fn-pill.tr{box-shadow:inset 3px 0 0 var(--stg-acc-ink-lt,${COLORS.accent});}
+    .fn-e .fn-pill.tr{box-shadow:inset -3px 0 0 var(--stg-acc-ink-lt,${COLORS.accent});}
+    .fn-note{font-family:${SANS};font-size:11px;font-weight:600;color:var(--stg-mute,#5b6475);line-height:1.4;}
+    .fn-c{display:flex;align-items:center;justify-content:center;min-width:0;}
+    .fn-well{position:relative;width:min(290px,100%);aspect-ratio:1;border-radius:50%;background:var(--stg-ground,#eef1f5);border:1.5px solid var(--stg-line,rgba(28,30,36,0.18));container-type:inline-size;box-sizing:border-box;}
+    .fn-wl{position:absolute;left:0;right:0;text-align:center;font-family:${SANS};font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute,#5b6475);}
+    .fn-slot{position:absolute;width:23.5%;aspect-ratio:68/96;box-sizing:border-box;border-radius:9px;}
+    .fn-sn{top:11.5%;left:38.25%;} .fn-ss{top:55%;left:38.25%;} .fn-sw{top:33.2%;left:6.2%;} .fn-se{top:33.2%;right:6.2%;}
+    .fn-slot.empty{border:2px dashed var(--stg-cell-line,rgba(28,30,36,0.35));background:var(--stg-cell,#ffffff);}
+    .fn-slot.next{border:2.5px dashed var(--stg-acc,${COLORS.accent});background:color-mix(in srgb,var(--stg-acc,${COLORS.accent}) 18%,var(--stg-cell,#ffffff));display:flex;align-items:center;justify-content:center;text-align:center;font-family:${SANS};font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--stg-acc-ink,${COLORS.accent});line-height:1.3;}
+    .fn-slot .fn-face{box-shadow:0 6px 12px rgba(0,0,0,.28);}
+    .fn-slot.win .fn-face{box-shadow:0 0 0 3px var(--stg-ground,#eef1f5),0 0 0 5px var(--stg-warn,#b45309);}
+    .fn-win{position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);font-family:${SANS};font-size:9.5px;font-weight:800;letter-spacing:.08em;color:var(--stg-warn,#b45309);background:var(--stg-ground,#eef1f5);border-radius:5px;padding:2px 5px;white-space:nowrap;z-index:2;}
+    .fn-drop{animation:fndrop .18s ease-out;position:absolute;inset:0;}
     @keyframes fndrop{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;}}
-    @media (prefers-reduced-motion:reduce){.fn-drop{animation:none;}.fn-cd{transition:none;}.fn-cd.play:hover{transform:translateY(-4px);}}
-    .fn-btn{font-family:${SANS};font-weight:800;font-size:13px;border:1px solid var(--stg-line2,rgba(28,30,36,0.35));background:none;color:var(--stg-ink2,#3f4757);border-radius:9px;padding:9px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+    .fn-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px 20px;flex-wrap:wrap;margin-bottom:16px;}
+    .fn-k{font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute,#5b6475);}
+    .fn-k b{font-weight:800;}
+    .fn-ct{font-family:${SANS};font-size:22px;font-weight:800;color:var(--stg-ink,${COLORS.ink});letter-spacing:-.01em;}
+    .fn-cs{font-family:${SANS};font-size:12px;font-weight:600;color:var(--stg-mute,#5b6475);}
+    .fn-slots{display:flex;gap:6px;align-items:flex-end;}
+    .fn-ts{display:flex;flex-direction:column;align-items:center;gap:4px;}
+    .fn-tb{width:var(--tw,42px);height:var(--th,56px);box-sizing:border-box;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:${SANS};font-size:14px;font-weight:800;background:var(--stg-cell,#ffffff);border:2px solid var(--stg-cell-line,rgba(28,30,36,0.35));}
+    .fn-tb.beyond{border:1.5px dashed var(--stg-line,rgba(28,30,36,0.25));}
+    .fn-tb.won{background:var(--stg-acc,${COLORS.accent});border-color:var(--stg-acc,${COLORS.accent});color:var(--stg-onramp,#ffffff);}
+    .fn-tb.lost{color:var(--stg-mute,#5b6475);}
+    .fn-tb.now{border:2px solid var(--stg-acc,${COLORS.accent});}
+    .fn-tn{font-family:${SANS};font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--stg-mute,#5b6475);}
+    .fn-tn.now{color:var(--stg-acc-ink,${COLORS.accent});font-weight:800;}
+    .fn-status{display:flex;flex-direction:column;gap:3px;padding:14px 2px 0;}
+    .fn-say{font-family:${SANS};font-size:15px;font-weight:700;line-height:1.4;color:var(--stg-ink,${COLORS.ink});}
+    .fn-rule{font-family:${SANS};font-size:12px;font-weight:600;color:var(--stg-mute,#5b6475);line-height:1.45;}
+    .fn-dk{display:inline;}
+    .fn-ph{display:none;}
+    @media (max-width:560px){
+      .fn-felt{border-radius:18px;padding:12px 10px;grid-template-columns:56px minmax(0,1fr) 56px;gap:12px 6px;}
+      .fn-tag{font-size:10px;padding:3px 8px;border-radius:5px;}
+      .fn-row{gap:6px;}
+      .fn-cd{--cw:min(60px,calc((100% - (var(--n) - 1) * 6px - var(--sg)) / var(--n)));}
+      .fn-cd.fn-gap{margin-left:4px;}
+      .fn-slab{font-size:9px;font-weight:800;letter-spacing:.08em;}
+      .fn-e .fn-slab{text-align:right;}
+      .fn-pills{gap:4px;}
+      .fn-pill{height:var(--ph,30px);border-radius:6px;font-size:14px;gap:2px;padding:0;justify-content:center;}
+      .fn-e .fn-pill{justify-content:center;}
+      .fn-pill.fn-gap{margin-top:3px;}
+      .fn-note{display:none;}
+      .fn-well{width:min(200px,100%);}
+      .fn-wl{font-size:9px;letter-spacing:.1em;}
+      .fn-slot{border-radius:7px;}
+      .fn-slot .fn-face{border-radius:7px;}
+      .fn-slot.next{font-size:9px;}
+      .fn-win{font-size:8.5px;bottom:-8px;}
+      .fn-dk{display:none;}
+      .fn-ph{display:inline;}
+      .fn-head{align-items:center;margin-bottom:12px;gap:8px 12px;}
+      .fn-ct{font-size:16px;}
+      .fn-cs{display:none;}
+      .fn-tb{width:var(--twm,24px);height:var(--thm,32px);border-radius:5px;font-size:12px;}
+      .fn-slots{gap:4px;}
+      .fn-tn{display:none;}
+      .fn-say{font-size:14px;}
+      .fn-rule{font-size:11px;}
+    }
+    @media (prefers-reduced-motion:reduce){.fn-drop{animation:none;}.fn-cd{transition:none;}.fn-cd.play:hover{transform:translateY(-5px);}}
+    .fn-btn{font-family:${SANS};font-weight:800;font-size:13px;border:1px solid var(--stg-line2,rgba(28,30,36,0.35));background:none;color:var(--stg-ink2,#3f4757);border-radius:9px;padding:9px 14px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
     .fn-btn:disabled{opacity:0.42;cursor:default;}
-    .fn-discs{display:flex;gap:3px;}
-    .fn-discs i{width:9px;height:9px;border-radius:50%;background:rgba(var(--stg-fieldink,255,255,255),0.16);display:block;}
-    .fn-discs i.got{background:var(--stg-acc,${COLORS.accent});}
-    .fn-discs i.lost{background:var(--stg-sq-d,#94a1b5);}
     .fn-line{font-family:${MONO};font-size:12px;line-height:1.85;color:var(--stg-ink,${COLORS.ink});}
-    .fn-line b{font-weight:500;color:var(--stg-acc-ink,${COLORS.accent});}
+    .fn-line b{font-weight:800;color:var(--stg-acc-ink,${COLORS.accent});}
   `;
 
   return (
-    <div style={{ minHeight: '100vh', background: STAGE ? STAGE_GROUND : (LOFT ? T.navy : COLORS.cream), fontFamily: SANS, position: 'relative', overflowX: 'hidden', ...(STAGE ? STAGE_ACC : null) }} className={STAGE ? 'stage-page' : undefined} data-stage-theme={STAGE ? stageTheme : undefined}>
+    <div style={{ minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : (LOFT ? T.navy : COLORS.cream), color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, fontFamily: SANS, position: 'relative', overflowX: 'hidden', ...(STAGE ? STAGE_ACC : null) }} className={STAGE ? 'stage-page' : undefined} data-stage-theme={STAGE ? stageTheme : undefined}>
       <Grain />
       <Cap
         game="finesse" quizId={PUZZLE.quizId} name="Finesse" num={PUZZLE.num}
@@ -703,72 +804,158 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
         )}
 
         {!preStart && (
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? 'transparent' : T.white, border: STAGE ? 0 : `2px solid ${COLORS.ink}`, borderRadius: STAGE ? 0 : 10, padding: STAGE ? 0 : '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-            <span style={{ whiteSpace: 'nowrap' }}>tricks <b style={{ color: INK, fontWeight: 500 }}>{pos.ns}</b></span>
-            <span style={{ whiteSpace: 'nowrap' }}>tries <b style={{ color: misses > 0 ? `var(--stg-bad, ${COLORS.rust})` : INK, fontWeight: 500 }}>{g.tries}</b></span>
-            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>make <b style={{ color: ACC_INK, fontWeight: 500 }}>{TARGET}</b></span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: SANS, fontSize: 11.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+            <span style={{ whiteSpace: 'nowrap' }}>tricks <b style={{ color: INK, fontWeight: 800 }}>{pos.ns}</b></span>
+            <span style={{ whiteSpace: 'nowrap' }}>tries <b style={{ color: misses > 0 ? `var(--stg-bad, ${COLORS.rust})` : INK, fontWeight: 800 }}>{g.tries}</b></span>
+            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
           </div>
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 12.5, color: INK, fontWeight: 700, marginBottom: 10, flexWrap: 'wrap' }}>
-            <span>{PUZZLE.trump ? <>Trumps <span style={{ color: TRUMP === 1 || TRUMP === 2 ? RED_PIP : INK, fontSize: 15 }}>{SUIT_GLYPH[TRUMP]}</span></> : 'No trumps'}</span>
-            <span style={{ color: FADED }}>&middot;</span>
-            <span>Make <b style={{ color: ACC_INK }}>{TRICK_WORD[TARGET]}</b> of {R}</span>
-            <span className="fn-discs" style={{ marginLeft: 'auto' }}>
-              {Array.from({ length: R }).map((_, i) => (
-                <i key={i} className={i < pos.ns ? 'got' : i < pos.ns + pos.ew ? 'lost' : undefined} />
-              ))}
-            </span>
-          </div>
-
-          <div style={{ maxWidth: 400, margin: '0 auto' }}>
-            <div className="fn-felt">
-              <div className="fn-tbl">
-                {seatOrder.map((seat) => {
-                  const side = seat === 1 || seat === 3;
-                  const cls = seat === 0 ? 'fn-n' : seat === 1 ? 'fn-e' : seat === 2 ? 'fn-s' : 'fn-w';
-                  const cards = handFor(seat);
-                  let prevSuit = -1;
-                  return (
-                    <div key={seat} className={`fn-seat ${cls}${pos.seat === seat && !!cardsLeft && playing ? ' on' : ''}`}>
-                      <span className="fn-lbl">{seat === 0 ? 'Dummy' : seat === 2 ? 'You' : SEAT_NAME[seat]}</span>
-                      <div className="fn-hand">
-                        {cards.map((card) => {
-                          const gap = prevSuit >= 0 && suitOf(card, R) !== prevSuit;
-                          prevSuit = suitOf(card, R);
-                          const trump = TRUMP >= 0 && suitOf(card, R) === TRUMP;
-                          if (side) return <SideCard key={card} card={card} R={R} trump={trump} />;
-                          const live = myTurn && pos.seat === seat && legal(pos.m, seat, pos.led, card);
-                          return (
-                            <button key={card} type="button" className={`fn-cd${live ? ' play' : ''}${gap ? ' fn-gap' : ''}`}
-                              onClick={() => playCard(card)} disabled={!live}
-                              aria-label={`${RANK_NAMES[R][rankOf(card, R)]} of ${['spades', 'hearts', 'diamonds', 'clubs'][suitOf(card, R)]}`}>
-                              <CardFace card={card} R={R} trump={trump} />
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
-                <div className="fn-c">
-                  {[0, 1, 2, 3].map((seat) => {
-                    const card = trickAt(seat);
-                    const cls = seat === 0 ? 'fn-sn' : seat === 1 ? 'fn-se' : seat === 2 ? 'fn-ss' : 'fn-sw';
-                    return (
-                      <div key={seat} className={`fn-slot ${cls}${card != null ? ' full' : ''}`}>
-                        {card != null ? <div className="fn-drop" style={{ width: '100%', height: '100%' }}><CardFace card={card} R={R} trump={TRUMP >= 0 && suitOf(card, R) === TRUMP} /></div> : null}
-                      </div>
-                    );
-                  })}
-                  <div className="fn-msg">{thinking ? 'Thinking' : turnLine}</div>
+          {/* The contract, and one slot per trick: filled for a trick you
+              took, outlined for the one in play, solid up to the target and
+              dashed beyond it. */}
+          {(() => {
+            const many = R > 6;
+            const vars = { '--tw': many ? '34px' : '42px', '--th': many ? '46px' : '56px', '--twm': many ? '18px' : '24px', '--thm': many ? '26px' : '32px' };
+            return (
+              <div className="fn-head">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
+                  <span className="fn-k fn-dk">The contract</span>
+                  <span className="fn-ct">
+                    {TARGET} of {R}<span className="fn-dk"> tricks</span> &middot; {PUZZLE.trump ? <>{SUIT_GLYPH[TRUMP]} trumps</> : 'no trumps'}
+                  </span>
+                  <span className="fn-cs">Exactly makeable. Best play takes {TRICK_WORD[TARGET]} and never more.</span>
+                  <span className="fn-k fn-ph"><b style={{ color: ACC_INK }}>{pos.ns}</b> taken &middot; {need ? <>need <b style={{ color: INK }}>{need}</b> more</> : 'contract made'}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+                  <div className="fn-slots" style={vars} role="img" aria-label={`${pos.ns} of ${TARGET} tricks taken, ${pos.tricks.length} of ${R} played`}>
+                    {Array.from({ length: R }).map((_, i) => {
+                      const t = pos.tricks[i];
+                      const now = !t && i === pos.tricks.length && started && playing && !!cardsLeft;
+                      const cls = t ? (isNS(t.winner) ? 'won' : 'lost') : now ? 'now' : (i < TARGET ? '' : 'beyond');
+                      return (
+                        <span key={i} className="fn-ts">
+                          <span className={`fn-tb ${cls}`}>{t ? (isNS(t.winner) ? '✓' : '–') : ''}</span>
+                          <span className={`fn-tn${now ? ' now' : ''}`}>{now ? 'NOW' : `T${i + 1}`}</span>
+                        </span>
+                      );
+                    })}
+                  </div>
+                  <span className="fn-k fn-dk"><b style={{ color: ACC_INK }}>{pos.ns}</b> taken &middot; {need ? <>need <b style={{ color: INK }}>{need}</b> more</> : 'contract made'}</span>
                 </div>
               </div>
-            </div>
-          </div>
+            );
+          })()}
+
+          {(() => {
+            const handRow = (seat) => {
+              const cards = handFor(seat);
+              const groups = new Set(handOrder(START[seat], R).map((c) => suitOf(c, R))).size;
+              const turn = myTurn && pos.seat === seat;
+              let prevSuit = -1;
+              return (
+                <div className="fn-hand fn-row" style={{ '--n': R, '--sg': `${Math.max(0, groups - 1) * 6}px` }}>
+                  {cards.map((card) => {
+                    const gap = prevSuit >= 0 && suitOf(card, R) !== prevSuit;
+                    prevSuit = suitOf(card, R);
+                    const trump = TRUMP >= 0 && suitOf(card, R) === TRUMP;
+                    const live = turn && legal(pos.m, seat, pos.led, card);
+                    return (
+                      <button key={card} type="button" className={`fn-cd${live ? ' play' : ''}${gap ? ' fn-gap' : ''}`}
+                        onClick={() => playCard(card)} disabled={!live}
+                        aria-label={`${RANK_NAMES[R][rankOf(card, R)]} of ${SUIT_WORD[suitOf(card, R)]}${seat === 0 ? ', dummy' : ''}${live ? ', playable' : ''}`}>
+                        <CardFace card={card} R={R} trump={trump} />
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            };
+            const tag = (seat) => {
+              const base = seat === 0 ? 'North · Dummy' : 'South · You';
+              if (myTurn && pos.seat === seat) return <span className="fn-tag on">{base} · Your play</span>;
+              const played = trickAt(seat) != null && playing;
+              return <span className="fn-tag">{base}{played ? <> · Played<span className="fn-dk"> to this trick</span></> : ''}</span>;
+            };
+            const side = (seat) => {
+              const cards = handFor(seat);
+              const on = playing && started && !!cardsLeft && pos.seat === seat;
+              let prevSuit = -1;
+              return (
+                <div className={`fn-side ${seat === 1 ? 'fn-e' : 'fn-w'}`}>
+                  <span className={`fn-slab${on ? ' on' : ''}`}>
+                    {seat === 1 ? 'East' : 'West'}
+                    <span className="fn-dk">{on ? ' · To play' : ' · Defender'}</span>
+                  </span>
+                  <div className="fn-hand fn-pills" style={{ '--ph': R > 6 ? '24px' : '30px' }}>
+                    {cards.map((card) => {
+                      const s = suitOf(card, R);
+                      const gap = prevSuit >= 0 && s !== prevSuit;
+                      prevSuit = s;
+                      const trump = TRUMP >= 0 && s === TRUMP;
+                      return (
+                        <span key={card} className={`fn-pill${gap ? ' fn-gap' : ''}${trump ? ' tr' : ''}`} style={{ color: s === 1 || s === 2 ? RED_PIP : BLACK_PIP }}>
+                          {RANK_NAMES[R][rankOf(card, R)]}<span>{SUIT_GLYPH[s]}</span>
+                        </span>
+                      );
+                    })}
+                  </div>
+                  {seat === 3 && <span className="fn-note">Plays perfectly.</span>}
+                </div>
+              );
+            };
+            const leadSeat = pos.played.length ? pos.played[0].seat : -1;
+            const nextSeat = playing && started && !!cardsLeft ? pos.seat : -1;
+            return (
+              <>
+                <div className="fn-felt fn-tbl">
+                  <div className="fn-n">{tag(0)}{handRow(0)}</div>
+                  {side(3)}
+                  <div className="fn-c">
+                    <div className="fn-well" aria-label={`Trick ${Math.min(trickNo, R)}${pos.played.length ? `: ${pos.played.map((p) => `${SEAT_WORD[p.seat]} ${cardTxt(p.card)}`).join(', ')}` : ''}`}>
+                      <span className="fn-wl" style={{ top: '4.8%' }}>{cardsLeft || pos.played.length ? `Trick ${trickNo}` : 'All played'}</span>
+                      {[0, 1, 2, 3].map((seat) => {
+                        const card = trickAt(seat);
+                        const cls = seat === 0 ? 'fn-sn' : seat === 1 ? 'fn-se' : seat === 2 ? 'fn-ss' : 'fn-sw';
+                        if (card != null) {
+                          const win = seat === winningSeat;
+                          return (
+                            <div key={seat} className={`fn-slot ${cls}${win ? ' win' : ''}`}>
+                              <div className="fn-drop"><CardFace card={card} R={R} trump={TRUMP >= 0 && suitOf(card, R) === TRUMP} /></div>
+                              {win && <span className="fn-win">WINNING</span>}
+                            </div>
+                          );
+                        }
+                        if (seat === nextSeat) {
+                          return (
+                            <div key={seat} className={`fn-slot ${cls} next`}>
+                              <span><span className="fn-dk">{SEAT_CAPS[seat]}<br /></span>NEXT</span>
+                            </div>
+                          );
+                        }
+                        return <div key={seat} className={`fn-slot ${cls} empty`} />;
+                      })}
+                      <span className="fn-wl" style={{ top: '90.3%' }}>
+                        {leadSeat >= 0 ? `${SEAT_CAPS[leadSeat]} led` : nextSeat >= 0 ? `${SEAT_CAPS[nextSeat]} ${nextSeat === 2 ? 'lead' : 'leads'}` : ''}
+                      </span>
+                    </div>
+                  </div>
+                  {side(1)}
+                  <div className="fn-s">{handRow(2)}{tag(2)}</div>
+                </div>
+
+                <div className="fn-status" aria-live="polite">
+                  <span className="fn-say">{[lastLine, nowLine].filter(Boolean).join(' ')}</span>
+                  <span className="fn-rule">
+                    <span className="fn-dk">{ruleLine}</span>
+                    <span className="fn-ph">Short of {TRICK_WORD[TARGET]}, the board rewinds to trick one.</span>
+                  </span>
+                </div>
+              </>
+            );
+          })()}
 
           <div style={{ display: 'flex', gap: 8, marginTop: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button type="button" className="fn-btn" onClick={takeBack} disabled={!playing || !started || !g.plays.length}>

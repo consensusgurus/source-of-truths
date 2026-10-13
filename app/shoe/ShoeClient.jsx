@@ -61,7 +61,7 @@ import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import {
-  RANK_LABEL, SUIT_PIP, rankOf, suitOf, isRed,
+  RANK_LABEL, SUIT_PIP, rankOf, suitOf, isRed, cardName, STAKE,
   replay, handTotal, scoreForPoints, fmtChips,
 } from './rules';
 
@@ -81,12 +81,22 @@ const COLORS = {
 // a surface now, and the table's EDGE carries the category instead. A card face
 // is light in either register, so it takes the same token a chessboard's light
 // square does. Loft (?stage=0) still renders the original felt via the fallback.
-const FELT = 'var(--stg-surf2, #0d5175)';
-const FELT_EDGE = 'color-mix(in srgb, var(--stg-acc, #082f49) 60%, transparent)';
-const CARD_FACE = 'var(--stg-sq-l, #fdfcf9)';
-const CARD_EDGE = 'rgba(20,22,28,0.30)';
-const RED_PIP = 'var(--stg-bad, #c8282e)';
-const BLACK_PIP = T.ink;
+//
+// Round four (2026-10-13): the felt is a card table with an arched top. It is
+// still a THEMED island (a 9% accent tint over the cell colour, pale in light
+// and dark in dark), so everything printed on it takes a stage token, and its
+// small print takes --stg-ink2 rather than --stg-mute, which is specified
+// against the page ground and reads short on a raised surface (see the
+// shoe-felt contrast note). Card FACES are physical objects: white with
+// near-black and red ink in both registers, as Crib's are.
+const FELT = 'color-mix(in srgb, var(--stg-acc, #0c4a6e) 9%, var(--stg-cell, #ffffff))';
+const FELT_INK2 = 'var(--stg-ink2, #3f4757)';
+const WELL = 'var(--stg-ground, #eef1f6)';
+const CARD_BACK = 'color-mix(in srgb, var(--stg-acc, #0c4a6e) 30%, var(--stg-cell, #ffffff))';
+const CARD_FACE = '#ffffff';
+const CARD_EDGE = 'var(--stg-cell-line, rgba(20,22,28,0.30))';
+const RED_PIP = '#b91c1c';
+const BLACK_PIP = '#16181d';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
@@ -198,19 +208,37 @@ const isIosDevice = () =>
 
 const freshState = () => ({ v: 1, acts: [], status: 'playing', t0: null, tEnd: null });
 
-function CardFace({ card, down = false }) {
+// One playing card. `w` is its width in px; the height keeps a 92:130 face.
+// A face-down card carries NOTHING about its rank or suit, in the DOM or the
+// label: the dealer's hole card stays unknown until the engine reveals it.
+function CardFace({ card, down = false, w = 92 }) {
+  const h = Math.round(w * 130 / 92);
+  const r = Math.round(w * 0.11);
   if (down) {
     return (
-      <div className="sh-card sh-back" aria-label="Face-down card" />
+      <div className="sh-card sh-back" role="img" aria-label="Dealer hole card, face down" style={{ width: w, height: h, borderRadius: r }} />
     );
   }
   const red = isRed(card);
+  const s = w / 92;
+  const rk = RANK_LABEL[rankOf(card)];
+  const pip = SUIT_PIP[suitOf(card)];
   return (
-    <div className="sh-card" style={{ color: red ? RED_PIP : BLACK_PIP }}>
-      <span className="sh-rank">{RANK_LABEL[rankOf(card)]}</span>
-      <span className="sh-suit">{SUIT_PIP[suitOf(card)]}</span>
+    <div className="sh-card" role="img" aria-label={cardName(card)} style={{ width: w, height: h, borderRadius: r, color: red ? RED_PIP : BLACK_PIP }}>
+      <span aria-hidden="true" style={{ position: 'absolute', top: Math.round(7 * s), left: Math.round(9 * s), display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1 }}>
+        <b style={{ fontSize: Math.round(21 * s), fontWeight: 800, letterSpacing: '-0.03em' }}>{rk}</b>
+        <span style={{ fontSize: Math.round(17 * s) }}>{pip}</span>
+      </span>
+      <span aria-hidden="true" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: Math.round(42 * s), paddingTop: Math.round(14 * s), lineHeight: 1 }}>{pip}</span>
     </div>
   );
+}
+
+// Card width for a row of n cards, so a dealer who draws to five or six still
+// fits between the side columns (desktop) or the phone's felt.
+function cardW(n, narrow) {
+  if (narrow) return n <= 3 ? 76 : n === 4 ? 64 : n === 5 ? 54 : 46;
+  return n <= 3 ? 92 : n === 4 ? 76 : n === 5 ? 62 : 54;
 }
 
 export default function ShoeClient({ puzzles = [], forceNum = null }) {
@@ -276,6 +304,16 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
   const ACC_SOFT = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : COLORS.accentSoft;
   const ON_ACC = STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)';
   const [revealed, setRevealed] = useState(false);
+  // Phone layout (<=560px, the client's own breakpoint), decided by width
+  // rather than device so a narrow desktop window gets the phone stack too.
+  const [narrow, setNarrow] = useState(false);
+  useEffect(() => {
+    const fit = () => { try { setNarrow(window.innerWidth <= 560); } catch (e) {} };
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, []);
+  const [showOut, setShowOut] = useState(false);
   const [shareCta, setShareCta] = useState('Share');
   useEffect(() => {
     if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`);
@@ -500,7 +538,6 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
     setG(freshState()); setEndClosed(false); setRevealed(false);
   }
 
-  const dealerUpVal = cur ? RANK_LABEL[rankOf(cur.d[0])] : '';
 
   const rulesBody = (
     <DailyRules
@@ -553,30 +590,27 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.sho-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .sho-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .sho-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .sh-felt{background:${FELT};border:10px solid ${FELT_EDGE};border-radius:12px;padding:14px 14px 12px;touch-action:manipulation;}
-          .sh-card{width:clamp(44px,11.5vw,56px);aspect-ratio:5/7;border-radius:6px;background:${CARD_FACE};border:1px solid ${CARD_EDGE};box-shadow:0 2px 5px rgba(8,15,25,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;user-select:none;font-family:${SANS};font-weight:800;flex:none;}
-          .sh-rank{font-size:clamp(15px,4.4vw,19px);letter-spacing:-0.04em;}
-          .sh-suit{font-size:clamp(13px,3.8vw,16px);margin-top:2px;}
-          .sh-back{background:repeating-linear-gradient(45deg,#0a3d5c,#0a3d5c 4px,${FELT_EDGE} 4px,${FELT_EDGE} 8px);border-color:rgba(255,255,255,0.25);}
-          .sh-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-height:52px;}
-          .sh-lab{font-family:${MONO};font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--stg-mute, rgba(255,255,255,0.75));width:52px;flex:none;}
-          .sh-tot{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:26px;padding:0 7px;border-radius:6px;background:var(--stg-cell, rgba(255,255,255,0.14));border:1px solid var(--stg-cell-line, rgba(255,255,255,0.25));font-family:${MONO};font-size:12px;color:var(--stg-ink, var(--white));}
-          .sh-tot.made{background:var(--stg-acc, rgba(255,255,255,0.92));color:var(--stg-onramp, ${INK});border-color:var(--stg-acc, rgba(255,255,255,0.9));font-weight:700;}
-          .sh-pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-family:${MONO};font-size:11px;font-weight:500;border:1px solid var(--stg-line2, rgba(255,255,255,0.28));color:var(--stg-ink, var(--white));background:var(--stg-surf, rgba(255,255,255,0.10));}
-          .sh-pill.w{background:rgba(74,222,128,0.22);border-color:rgba(74,222,128,0.55);}
-          .sh-pill.l{background:rgba(248,113,113,0.20);border-color:rgba(248,113,113,0.5);}
-          .sh-pill.bj{background:rgba(232,180,58,0.28);border-color:rgba(232,180,58,0.7);}
-          .sh-act{font-family:${SANS};font-weight:800;font-size:15px;letter-spacing:0.02em;border:2px solid var(--stg-cell-line, rgba(255,255,255,0.9));background:var(--stg-cell, rgba(255,255,255,0.94));color:var(--stg-ink, ${COLORS.ink});border-radius:9px;padding:12px 0;flex:1 1 0;cursor:pointer;}
+          .sh-felt{background:${FELT};touch-action:manipulation;position:relative;box-sizing:border-box;}
+          .sh-card{position:relative;flex:none;box-sizing:border-box;background:${CARD_FACE};border:1.5px solid ${CARD_EDGE};box-shadow:0 6px 12px rgba(0,0,0,.28);user-select:none;font-family:${SANS};}
+          .sh-back{background:repeating-linear-gradient(45deg,${CARD_BACK} 0 6px,var(--stg-acc, ${ACCENT}) 6px 8px);border:2px solid var(--stg-acc, ${ACCENT});}
+          .sh-k{font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:${FELT_INK2};}
+          .sh-chip{display:inline-flex;align-items:center;gap:6px;font-family:${SANS};font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:16px;white-space:nowrap;font-variant-numeric:tabular-nums;}
+          .sh-act{font-family:${SANS};font-weight:800;font-size:16px;flex:1 1 0;min-width:0;min-height:56px;border-radius:12px;background:transparent;color:var(--stg-ink, ${COLORS.ink});border:1.5px solid var(--stg-cell-line, rgba(28,30,36,.44));cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;box-sizing:border-box;padding:0 8px;}
+          .sh-act:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
           .sh-act:active{transform:translateY(1px);}
-          .sh-act:disabled{opacity:0.35;cursor:default;}
-          .sh-act.gold{background:color-mix(in srgb, var(--stg-acc, ${ACCENT}) 16%, transparent);border-color:var(--stg-acc, #e8b43a);color:var(--stg-acc-ink, #5b4104);}
-          .sh-act.deal{background:color-mix(in srgb, var(--stg-acc, ${ACCENT}) 16%, transparent);border-color:var(--stg-acc, rgba(255,255,255,0.9));color:var(--stg-acc-ink, ${COLORS.accent});}
-          .sh-note{font-family:${SANS};font-weight:800;font-size:14px;color:var(--stg-ink, var(--white));}
-          .sh-strip{display:flex;align-items:center;gap:12px;font-family:${MONO};font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--stg-mute, rgba(255,255,255,0.72));margin-top:11px;flex-wrap:wrap;}
-          .sh-strip b{color:var(--stg-ink, var(--white));font-weight:500;font-variant-numeric:tabular-nums;}
+          .sh-act small{font-size:11px;font-weight:700;letter-spacing:.04em;}
+          .sh-act.dbl{color:var(--stg-acc-ink, ${ACCENT});border-color:var(--stg-acc, ${ACCENT});}
+          .sh-act.dbl small{color:var(--stg-acc-ink, ${ACCENT});}
+          .sh-act:disabled{cursor:default;border-style:dashed;border-color:var(--stg-line2, rgba(28,30,36,.24));color:${FELT_INK2};background:transparent;transform:none;}
+          .sh-act:disabled small{color:${FELT_INK2};}
+          .sh-act.deal{flex:0 0 auto;padding:0 24px;background:var(--stg-acc, ${ACCENT});border-color:var(--stg-acc, ${ACCENT});color:var(--stg-onramp, #ffffff);}
+          .sh-act.deal:hover{background:var(--stg-acc, ${ACCENT});filter:brightness(1.06);}
+          .sh-note{font-family:${SANS};font-weight:800;font-size:15px;color:var(--stg-ink, ${COLORS.ink});}
+          .sh-out{display:flex;flex-direction:column;gap:2px;padding:6px 8px;border-radius:8px;background:${WELL};}
+          .sh-outbtn{font-family:${SANS};font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:transparent;color:var(--stg-ink, ${COLORS.ink});border:1.5px solid var(--stg-cell-line, rgba(28,30,36,.44));border-radius:10px;min-height:44px;padding:0 12px;cursor:pointer;}
         ` }} />
 
-        <div style={{ maxWidth: 620, margin: '0 auto' }}>
+        <div style={{ maxWidth: 680, margin: '0 auto' }}>
 
         {!LOFT && (
         <DailyMasthead
@@ -620,75 +654,261 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
         <div className={LOFT && !STAGE && !playing ? (revealed ? 'loft-flip' : 'loft-flip on') : undefined}>
         <div className={LOFT && !STAGE && !playing ? 'loft-flip-in' : undefined}>
         <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? 'transparent' : T.white, border: STAGE ? 0 : `2px solid ${COLORS.ink}`, borderRadius: STAGE ? 0 : 10, padding: STAGE ? 0 : '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+          {(() => {
+            // ---- the results strip, the felt and the actions (round four, 2026-10-13) ----
+            // Every readout is state the old board already printed or the
+            // engine already derives: each settled hand's net, the hand in
+            // play, par and ace, the totals (rules.handTotal), the stake, the
+            // cards left in the shoe (R.pos), and the cards of hands already
+            // settled. Nothing here shows a card the player has not seen face
+            // up: the hole card renders as a back until the engine reveals it,
+            // and no undealt card is ever read.
+            const K2 = { fontFamily: SANS, fontSize: narrow ? 10 : 11, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--stg-mute, #5f6774)' };
+            const GOODV = `var(--stg-good, ${COLORS.green})`;
+            const BADV = `var(--stg-bad, ${COLORS.rust})`;
+            const ACCV = `var(--stg-acc, ${ACCENT})`;
+            const ACC_INKV = `var(--stg-acc-ink, ${ACCENT})`;
+            const netInk = (n) => (n > 0 ? GOODV : n < 0 ? BADV : 'var(--stg-ink2, #3f4757)');
+            const short = (c) => `${RANK_LABEL[rankOf(c)]}${SUIT_PIP[suitOf(c)]}`;
+            const totWord = (cards) => {
+              const t = handTotal(cards);
+              if (t.total > 21) return `Bust ${t.total}`;
+              if (t.total === 21 && cards.length === 2) return 'Blackjack';
+              return `${t.soft ? 'Soft' : 'Hard'} ${t.total}`;
+            };
+            const settledHands = R.hands.map((hd, i) => ({ hd, i })).filter((x) => x.hd.settled);
+            const inPlay = playing && cur && !cur.settled;
+            const nowIdx = inPlay ? R.hands.length - 1 : -1;
+            const handWord = HANDS === 10 ? 'Ten' : HANDS === 14 ? 'Fourteen' : HANDS === 7 ? 'Seven' : HANDS === 5 ? 'Five' : String(HANDS);
 
-          {/* settled-hand ledger */}
-          {R.hands.length > (playing && cur && !cur.settled ? 1 : 0) && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
-              {R.hands.map((hd, i) => (!hd.settled ? null : (
-                <span key={i} className={`sh-pill ${hd.net > 0 ? (hd.net === 15 ? 'bj' : 'w') : hd.net < 0 ? 'l' : ''}`} style={{ color: 'var(--stg-ink, #0b0d12)', background: hd.net > 0 ? (hd.net === 15 ? 'color-mix(in srgb, var(--stg-gold, #e8b43a) 26%, var(--stg-surf, #ffffff))' : 'color-mix(in srgb, var(--stg-good, #047857) 20%, var(--stg-surf, #ffffff))') : hd.net < 0 ? 'color-mix(in srgb, var(--stg-bad, #be123c) 18%, var(--stg-surf, #ffffff))' : 'var(--stg-surf2, #f1f3f6)', borderColor: hd.net > 0 ? (hd.net === 15 ? 'var(--stg-gold, #e8b43a)' : 'var(--stg-good, #047857)') : hd.net < 0 ? 'var(--stg-bad, #be123c)' : 'var(--stg-line2, rgba(28,30,36,0.24))' }}>
-                  #{i + 1} {fmtChips(hd.net)}
-                </span>
-              )))}
-              <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 11.5, color: FADED }}>bank <b style={{ color: chips >= 0 ? `var(--stg-good, ${COLORS.green})` : `var(--stg-bad, ${COLORS.rust})`, fontWeight: 700 }}>{fmtChips(chips)}</b></span>
-            </div>
-          )}
-
-          {/* the table */}
-          {cur && (
-            <div className="sh-felt">
-              <div className="sh-row" style={{ marginBottom: 9 }}>
-                <span className="sh-lab">Dealer</span>
-                {cur.d.map((c, i) => (
-                  <CardFace key={i} card={c} down={i === 1 && !cur.reveal} />
-                ))}
-                {cur.d.length > 2 || cur.reveal ? (
-                  <span className={`sh-tot${handTotal(cur.d).total > 21 ? '' : ' made'}`}>{handTotal(cur.d).total > 21 ? 'bust' : handTotal(cur.d).total}</span>
-                ) : (
-                  <span className="sh-tot">{dealerUpVal === 'A' ? 'A showing' : `${dealerUpVal} up`}</span>
+            // The results strip: one cell per hand of the day.
+            const cells = [];
+            for (let i = 0; i < HANDS; i++) {
+              const hd = R.hands[i];
+              const done = hd && hd.settled;
+              const now = i === nowIdx;
+              const big = HANDS > 10 && narrow;
+              const base = { flex: '1 1 0', minWidth: 0, height: narrow ? 34 : 40, boxSizing: 'border-box', borderRadius: narrow ? 6 : 8, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, fontFamily: SANS, fontVariantNumeric: 'tabular-nums' };
+              if (done) {
+                cells.push(
+                  <div key={i} title={`Hand ${i + 1}: ${hd.note} ${fmtChips(hd.net)}`} style={{ ...base, background: 'var(--stg-cell, #ffffff)', border: '1.5px solid var(--stg-line2, rgba(28,30,36,.24))' }}>
+                    {!narrow && <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.08em', color: 'var(--stg-ink2, #3f4757)' }}>H{i + 1}</span>}
+                    <b style={{ fontSize: big ? 10 : narrow ? 11 : 13, fontWeight: 800, color: netInk(hd.net) }}>{fmtChips(hd.net)}</b>
+                  </div>,
+                );
+              } else if (now) {
+                cells.push(
+                  <div key={i} aria-current="step" title={`Hand ${i + 1}, in play`} style={{ ...base, background: 'var(--stg-acc-tint, rgba(12,74,110,.12))', border: `2px solid ${ACCV}` }}>
+                    {narrow
+                      ? <b style={{ fontSize: big ? 9 : 11, fontWeight: 800, letterSpacing: '.04em', color: ACC_INKV }}>NOW</b>
+                      : <>
+                        <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.08em', color: ACC_INKV }}>NOW</span>
+                        <b style={{ fontSize: 13, fontWeight: 800, color: ACC_INKV }}>H{i + 1}</b>
+                      </>}
+                  </div>,
+                );
+              } else {
+                cells.push(
+                  <div key={i} title={`Hand ${i + 1}, to come`} style={{ ...base, background: 'transparent', border: '1.5px dashed var(--stg-cell-line, rgba(28,30,36,.44))' }}>
+                    {!narrow && <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.08em', color: 'var(--stg-mute, #5f6774)' }}>H{i + 1}</span>}
+                  </div>,
+                );
+              }
+            }
+            const parAce = <span style={K2}>Par <b style={{ color: 'var(--stg-ink, #0b0d12)' }}>{fmtChips(PUZZLE.par)}</b> &middot; Ace <b style={{ color: 'var(--stg-warn, #9c5d02)' }}>{fmtChips(PUZZLE.ace)}</b></span>;
+            const strip = (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: narrow ? 5 : 9 }}>
+                {!narrow && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+                    <span style={K2}>{handWord} hands &middot; {STAKE} chips a hand</span>
+                    {parAce}
+                  </div>
+                )}
+                <div role="list" aria-label={`Results: ${settledHands.length} of ${HANDS} hands settled, bank ${fmtChips(chips)}`} style={{ display: 'flex', gap: narrow ? 3 : 5 }}>
+                  {cells.map((c, i) => <div key={i} role="listitem" style={{ display: 'contents' }}>{c}</div>)}
+                </div>
+                {narrow && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                    <span style={K2}>{playing ? <>Hand {handNo} of {HANDS}</> : <>{HANDS} hands</>}</span>
+                    {parAce}
+                  </div>
                 )}
               </div>
-              <div className="sh-row">
-                <span className="sh-lab">You</span>
-                {cur.p.map((c, i) => <CardFace key={i} card={c} />)}
-                <span className={`sh-tot${cur.settled ? (handTotal(cur.p).total > 21 ? '' : ' made') : ' made'}`}>
-                  {handTotal(cur.p).total > 21 ? 'bust' : `${handTotal(cur.p).soft && handTotal(cur.p).total < 21 ? 'soft ' : ''}${handTotal(cur.p).total}`}
+            );
+
+            if (!cur) return strip;
+
+            // ---- the table ----
+            const dTot = handTotal(cur.d);
+            const pTot = handTotal(cur.p);
+            const upCard = cur.d[0];
+            const shows = rankOf(upCard) === 14 ? 'Ace' : String(handTotal([upCard]).total);
+            const stake = cur.doubled ? STAKE * 2 : STAKE;
+            const dW = cardW(cur.d.length, narrow);
+            const pW = cardW(cur.p.length, narrow);
+            const gap = narrow ? 8 : 10;
+            const chipSz = narrow ? { fontSize: 12, padding: '5px 11px' } : { fontSize: 13, padding: '6px 12px' };
+            const dealerChip = cur.reveal ? (
+              <span className="sh-chip" style={{ ...chipSz, background: dTot.total > 21 ? 'transparent' : 'var(--stg-cell, #ffffff)', border: `1.5px solid ${dTot.total > 21 ? BADV : 'var(--stg-cell-line, rgba(28,30,36,.44))'}`, color: dTot.total > 21 ? BADV : 'var(--stg-ink, #0b0d12)' }}>{totWord(cur.d)}</span>
+            ) : (
+              <span className="sh-chip" style={{ fontSize: 12, padding: '6px 11px', border: '1.5px solid var(--stg-cell-line, rgba(28,30,36,.44))', color: 'var(--stg-ink, #0b0d12)' }}>Shows {shows}</span>
+            );
+            const pBust = pTot.total > 21;
+            const playerChip = (
+              <span className="sh-chip" aria-live="polite" style={{ ...chipSz, background: pBust ? 'transparent' : ACCV, border: `1.5px solid ${pBust ? BADV : ACCV}`, color: pBust ? BADV : 'var(--stg-onramp, #ffffff)' }}>{totWord(cur.p)}</span>
+            );
+            const stakeChip = (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: SANS, fontSize: narrow ? 10 : 11, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: FELT_INK2 }}>
+                <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: '50%', boxSizing: 'border-box', border: '3px dashed var(--stg-warn, #9c5d02)', background: WELL }} />
+                Stake {stake}{cur.doubled ? ' · doubled' : ''}
+              </span>
+            );
+
+            const dealerRow = (
+              <div style={{ display: 'flex', gap, marginTop: narrow ? 8 : 10, alignItems: 'center', justifyContent: 'center' }}>
+                {cur.d.map((c, i) => <CardFace key={i} card={c} w={dW} down={i === 1 && !cur.reveal} />)}
+                {!narrow && <span style={{ marginLeft: 6 }}>{dealerChip}</span>}
+              </div>
+            );
+            const band = (
+              <div style={{ marginTop: narrow ? 16 : 22, alignSelf: 'stretch', borderTop: '1.5px solid var(--stg-line2, rgba(28,30,36,.24))', borderBottom: '1.5px solid var(--stg-line2, rgba(28,30,36,.24))', padding: narrow ? '6px 0' : '7px 0', textAlign: 'center', fontFamily: SANS, fontSize: narrow ? 9 : 10, fontWeight: 800, letterSpacing: narrow ? '.11em' : '.14em', textTransform: 'uppercase', color: FELT_INK2 }}>
+                {(narrow ? ['Peeks', 'Stands on all 17s', '3 to 2'] : ['Dealer peeks', 'Stands on all 17s', 'Natural pays 3 to 2']).map((t, i) => (
+                  <React.Fragment key={i}>{i > 0 ? ' · ' : ''}<span style={{ whiteSpace: 'nowrap' }}>{t}</span></React.Fragment>
+                ))}
+              </div>
+            );
+            const playerRow = narrow ? (
+              <>
+                <div style={{ display: 'flex', gap, marginTop: 18, justifyContent: 'center' }}>
+                  {cur.p.map((c, i) => <CardFace key={i} card={c} w={pW} />)}
+                </div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  {playerChip}{stakeChip}
+                </div>
+              </>
+            ) : (
+              <div style={{ display: 'flex', gap, marginTop: 24, alignItems: 'center', justifyContent: 'center' }}>
+                {cur.p.map((c, i) => <CardFace key={i} card={c} w={pW} />)}
+                <div style={{ marginLeft: 6, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
+                  {playerChip}{stakeChip}
+                </div>
+              </div>
+            );
+
+            // The actions, or the settled hand's note and the next deal.
+            const noteLine = (
+              <span className="sh-note">{cur.note} <b style={{ color: netInk(cur.net) }}>{fmtChips(cur.net)}</b></span>
+            );
+            const canDouble = R.legal.includes('D');
+            const actions = playing && R.phase === 'act' ? (
+              <div style={{ display: 'flex', gap: narrow ? 8 : 10 }}>
+                <button type="button" className="sh-act" onClick={() => act('H')}>Hit</button>
+                <button type="button" className="sh-act" onClick={() => act('S')}>Stand</button>
+                <button type="button" className="sh-act dbl" onClick={() => act('D')} disabled={!canDouble}
+                  aria-label={canDouble ? `Double, stake to ${STAKE * 2}` : 'Double, first two cards only'}>
+                  Double <small>{canDouble ? `· ${STAKE * 2}` : (narrow ? '' : '· first two only')}</small>
+                </button>
+              </div>
+            ) : playing && R.phase === 'settled' ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <span style={{ flex: '1 1 160px' }}>{noteLine}</span>
+                <button type="button" className="sh-act deal" onClick={dealNext} style={narrow ? { flex: '1 1 100%' } : undefined}>Deal hand {R.hands.length + 1}</button>
+              </div>
+            ) : !playing ? (
+              <div style={{ minHeight: 30, display: 'flex', alignItems: 'center' }}>{noteLine}</div>
+            ) : null;
+
+            // Already out: every settled hand, newest first, with the cards
+            // both sides showed face up and the result.
+            const outRows = settledHands.slice().reverse();
+            const outCards = settledHands.reduce((s, x) => s + x.hd.p.length + x.hd.d.length, 0);
+            const outRow = ({ hd, i }, compact) => {
+              const res = hd.net > 0 ? `Won ${hd.net}` : hd.net < 0 ? `Lost ${-hd.net}` : 'Push';
+              const dWord = handTotal(hd.d).total > 21 ? 'bust' : handTotal(hd.d).total;
+              const pWord = handTotal(hd.p).total > 21 ? 'bust' : handTotal(hd.p).total;
+              return (
+                <div key={i} className="sh-out" style={compact ? { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', columnGap: 10, rowGap: 2 } : undefined}>
+                  <span style={{ fontFamily: SANS, fontSize: 10, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: netInk(hd.net), minWidth: compact ? 92 : undefined }}>Hand {i + 1} &middot; {res}</span>
+                  <span style={{ fontFamily: SANS, fontSize: 11, fontWeight: 700, color: 'var(--stg-ink, #0b0d12)' }}>You {hd.p.map(short).join(' ')} &middot; {pWord}</span>
+                  <span style={{ fontFamily: SANS, fontSize: 11, fontWeight: 600, color: FELT_INK2 }}>Dlr {hd.d.map(short).join(' ')} &middot; {dWord}</span>
+                </div>
+              );
+            };
+
+            const gaugePct = PUZZLE.shoe.length ? Math.max(0, Math.min(1, cardsLeft / PUZZLE.shoe.length)) : 0;
+            const gauge = (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                <span className="sh-k" style={{ fontSize: 10, fontWeight: 800 }}>Shoe</span>
+                <div role="img" aria-label={`${cardsLeft} of ${PUZZLE.shoe.length} cards left in the shoe`} style={{ width: 34, height: 150, boxSizing: 'border-box', borderRadius: 8, border: '1.5px solid var(--stg-cell-line, rgba(28,30,36,.44))', background: WELL, position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: `${Math.round(gaugePct * 100)}%`, background: `repeating-linear-gradient(0deg, ${ACCV} 0 2px, ${CARD_BACK} 2px 5px)`, transition: 'height .3s ease' }} />
+                </div>
+                <b style={{ fontFamily: SANS, fontSize: 16, fontWeight: 800, color: 'var(--stg-ink, #0b0d12)', fontVariantNumeric: 'tabular-nums' }}>{cardsLeft}</b>
+                <span style={{ fontFamily: SANS, fontSize: 10, fontWeight: 700, color: FELT_INK2, textAlign: 'center', lineHeight: 1.3 }}>of {PUZZLE.shoe.length}<br />left</span>
+              </div>
+            );
+
+            const center = (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 0 }}>
+                <span className="sh-k" style={narrow ? { fontSize: 10 } : undefined}>
+                  {narrow ? <>Dealer &middot; {cur.reveal ? totWord(cur.d) : `shows ${shows}`}</> : 'Dealer'}
                 </span>
-                {cur.doubled && <span className="sh-pill">doubled</span>}
+                {dealerRow}
+                {band}
+                {playerRow}
+                <span className="sh-k" style={{ marginTop: 10, fontSize: narrow ? 10 : 11 }}>You &middot; hand {Math.min(R.hands.length, HANDS)}</span>
               </div>
+            );
 
-              {/* action row */}
-              {playing && R.phase === 'act' && (
-                <div style={{ display: 'flex', gap: 8, marginTop: 13 }}>
-                  <button className="sh-act" onClick={() => act('H')}>Hit</button>
-                  <button className="sh-act" onClick={() => act('S')}>Stand</button>
-                  <button className="sh-act gold" onClick={() => act('D')} disabled={!R.legal.includes('D')}>Double</button>
-                </div>
-              )}
-              {playing && R.phase === 'settled' && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 13, flexWrap: 'wrap' }}>
-                  <span className="sh-note">{cur.note} <b style={{ color: cur.net > 0 ? 'var(--stg-good, #047857)' : cur.net < 0 ? 'var(--stg-bad, #be123c)' : 'var(--stg-ink, #0b0d12)' }}>{fmtChips(cur.net)}</b></span>
-                  <button className="sh-act deal" style={{ flex: '0 0 auto', padding: '11px 22px', marginLeft: 'auto' }} onClick={dealNext}>Deal hand {R.hands.length + 1}</button>
-                </div>
-              )}
-              {!playing && (
-                <div style={{ marginTop: 13 }}>
-                  <span className="sh-note">{cur.note} <b style={{ color: cur.net > 0 ? 'var(--stg-good, #047857)' : cur.net < 0 ? 'var(--stg-bad, #be123c)' : 'var(--stg-ink, #0b0d12)' }}>{fmtChips(cur.net)}</b></span>
-                </div>
-              )}
+            if (narrow) {
+              return (
+                <>
+                  <div style={{ padding: '0 6px' }}>{strip}</div>
+                  <div className="sh-felt" style={{ marginTop: 12, borderRadius: '150px 150px 18px 18px', padding: '22px 14px 12px', display: 'flex', flexDirection: 'column' }}>
+                    {center}
+                    <div style={{ marginTop: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                      <span className="sh-k" style={{ fontSize: 10, letterSpacing: '.06em' }}>Shoe <b style={{ color: 'var(--stg-ink, #0b0d12)' }}>{cardsLeft}</b> of {PUZZLE.shoe.length} left</span>
+                      <button type="button" className="sh-outbtn" aria-expanded={showOut} aria-controls="sh-outlist" onClick={() => setShowOut((v) => !v)} disabled={!outRows.length} style={!outRows.length ? { borderStyle: 'dashed', color: FELT_INK2, cursor: 'default' } : undefined}>
+                        Already out &middot; {outCards}
+                      </button>
+                    </div>
+                    {showOut && outRows.length > 0 && (
+                      <div id="sh-outlist" style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 220, overflowY: 'auto' }}>
+                        {outRows.map((x) => outRow(x, true))}
+                      </div>
+                    )}
+                  </div>
+                  {actions && <div style={{ padding: '12px 6px 0' }}>{actions}</div>}
+                </>
+              );
+            }
 
-              <div className="sh-strip">
-                <span>hand <b>{handNo}/{HANDS}</b></span>
-                <span>bank <b>{fmtChips(chips)}</b></span>
-                <span style={{ marginLeft: 'auto' }}>shoe <b>{cardsLeft}</b> left</span>
-              </div>
-            </div>
-          )}
+            return (
+              <>
+                {strip}
+                <div className="sh-felt" style={{ marginTop: 18, borderRadius: '200px 200px 22px 22px', padding: '26px 22px 16px', display: 'grid', gridTemplateColumns: '118px minmax(0,1fr) 58px', columnGap: 14 }}>
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ position: 'absolute', left: 0, right: 0, top: 124, bottom: 0, display: 'flex', flexDirection: 'column', gap: 7, minHeight: 0 }}>
+                      <span className="sh-k" style={{ fontSize: 10, fontWeight: 800 }}>Already out</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 7, overflowY: 'auto', minHeight: 0 }}>
+                        {outRows.length ? outRows.map((x) => outRow(x, false)) : <span style={{ fontFamily: SANS, fontSize: 11, fontWeight: 600, color: FELT_INK2, lineHeight: 1.4 }}>Settled hands land here.</span>}
+                      </div>
+                    </div>
+                  </div>
+                  {center}
+                  <div style={{ paddingTop: 124 }}>{gauge}</div>
+                  {actions && (
+                    <div style={{ gridColumn: '1 / -1', marginTop: 16, borderTop: '1px solid var(--stg-line, rgba(28,30,36,.14))', paddingTop: 14 }}>{actions}</div>
+                  )}
+                </div>
+              </>
+            );
+          })()}
 
-          {/* the standing anchor line: what par and ace are on this shoe */}
+          {/* the standing anchor line */}
           {started && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 11, flexWrap: 'wrap', fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>
-              <span>Par {fmtChips(PUZZLE.par)} scores 8 &middot; ace {fmtChips(PUZZLE.ace)} scores 10. The book banks par; the count beats it.</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, padding: narrow ? '0 6px' : 0, flexWrap: 'wrap', fontFamily: SANS, fontSize: 12, fontWeight: 600, color: FADED }}>
+              <span>Same shoe, same order for everybody. Par {fmtChips(PUZZLE.par)} scores 8 &middot; ace {fmtChips(PUZZLE.ace)} scores 10. The book banks par; the count beats it.</span>
             </div>
           )}
 

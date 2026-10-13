@@ -75,16 +75,18 @@ const COLORS = {
 // a surface now, and the table's EDGE carries the category instead. A card face
 // is light in either register, so it takes the same token a chessboard's light
 // square does. Loft (?stage=0) still renders the original felt via the fallback.
-const FELT = 'var(--stg-surf2, #1f6b52)';
-const FELT_EDGE = 'color-mix(in srgb, var(--stg-acc, #14503c) 60%, transparent)';
-const CARD_FACE = 'var(--stg-sq-l, #fdfcf9)';
-const CARD_EDGE = 'rgba(20,22,28,0.30)';
-const RED_PIP = T.danger;
-const BLACK_PIP = T.ink;
-// Cards carry their rank and suit in the TOP-LEFT corner, the way real cards
-// do, because that corner is the only part of a covered card you can see. The
-// fan reveals REVEAL px of each card beneath, which is exactly the index block.
-const CARD_W = 52, CARD_H = 74, REVEAL = 26;
+// Round four (2026-10-13): the felt is the category accent mixed into the cell
+// ground, as Crib's is, so it reads as a table in both registers. Card FACES are
+// paper in both registers (playing cards are physical objects): white, with
+// near-black and red ink.
+const FELT = 'color-mix(in srgb, var(--stg-acc, #1d6b4f) 9%, var(--stg-cell, #e6f2ec))';
+const CARD_FACE = '#ffffff';
+const CARD_EDGE = 'var(--stg-cell-line, rgba(20,22,28,0.30))';
+const RED_PIP = '#b91c1c';
+const BLACK_PIP = '#16181d';
+const SUIT_PIP = (c) => (suitOf(c) === 1 ? '♥' : '♠');
+const SUIT_NAME = (c) => (suitOf(c) === 1 ? 'hearts' : 'spades');
+const NUM_WORD = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight'];
 
 // The arm-then-confirm controls do not move when armed, so the second tap of
 // an accidental double-tap used to land on the armed state long before the
@@ -198,36 +200,48 @@ function vibrate(p) { try { if (typeof navigator !== 'undefined' && navigator.vi
 
 const freshState = () => ({ v: 1, moves: [], restarts: 0, hintUsed: false, status: 'playing', t0: null, tEnd: null });
 
-function CardFace({ card, covered, outline, onClick, label }) {
+// One playing card. `pile` cards (free cells, home) carry rank over suit in the
+// corner; tableau cards carry rank and suit on one line plus a suit at the top
+// right, because the top strip is all a buried card shows. Only an uncovered card
+// shows the big centre pip. Lifted (in hand) cards rise with an accent ring;
+// `drop` marks a card that is a legal place for the card in hand.
+function CardFace({ card, w, h, pile = false, covered = false, lifted = false, hinted = false, drop = false, onClick, label, style }) {
   const red = suitOf(card) === 1;
-  const pip = red ? '♥' : '♠';
+  const pip = SUIT_PIP(card);
+  const rs = Math.round(w * (pile ? 0.23 : 0.22));
+  const ss = Math.round(w * 0.18);
+  const big = Math.round(w * (pile ? 0.45 : 0.46));
+  const ring = lifted
+    ? `0 0 0 3px ${FELT}, 0 0 0 5px var(--stg-acc, #1d6b4f), 0 14px 22px rgba(0,0,0,.38)`
+    : hinted ? `0 0 0 3px ${FELT}, 0 0 0 5px var(--stg-warn, #b45309), 0 3px 8px rgba(0,0,0,.25)`
+      : covered ? '0 2px 6px rgba(0,0,0,.22)' : '0 3px 8px rgba(0,0,0,.25)';
   return (
-    <div onClick={onClick} role={onClick ? 'button' : undefined} tabIndex={-1} aria-label={label}
-      className="ta-card"
+    <button type="button" onClick={onClick} disabled={!onClick} aria-label={label}
+      className={`ta-card${lifted ? ' lifted' : ''}`}
       style={{
-        width: CARD_W, height: CARD_H, borderRadius: 7, background: CARD_FACE,
-        border: `1px solid ${CARD_EDGE}`,
-        boxShadow: covered ? 'inset 0 -7px 9px -7px rgba(20,22,28,0.42)' : '0 2px 5px rgba(20,22,28,0.34)',
-        color: red ? RED_PIP : BLACK_PIP, fontFamily: SANS, fontWeight: 800,
-        position: 'relative', lineHeight: 1, cursor: onClick ? 'pointer' : 'default',
-        outline: outline || 'none', outlineOffset: outline ? '1px' : 0, userSelect: 'none',
-        flexShrink: 0,
+        width: w, height: h, boxSizing: 'border-box', borderRadius: Math.round(w * 0.1), background: CARD_FACE,
+        border: lifted ? '3px solid var(--stg-acc, #1d6b4f)' : `1.5px solid ${CARD_EDGE}`,
+        boxShadow: ring, color: red ? RED_PIP : BLACK_PIP, fontFamily: SANS, padding: 0,
+        position: 'relative', lineHeight: 1, cursor: onClick ? 'pointer' : 'default', userSelect: 'none',
+        outline: drop ? '2.5px dashed var(--stg-acc, #1d6b4f)' : 'none', outlineOffset: drop ? 3 : 0,
+        flexShrink: 0, ...style,
       }}>
-      <span style={{ position: 'absolute', top: 5, left: 6, fontSize: 15, letterSpacing: '-0.04em' }}>{RANK_LABEL[rankOf(card)]}</span>
-      <span style={{ position: 'absolute', top: 21, left: 7, fontSize: 12 }}>{pip}</span>
-      {!covered && <span style={{ position: 'absolute', right: 7, bottom: 5, fontSize: 26, opacity: 0.92 }}>{pip}</span>}
-    </div>
-  );
-}
-function Slot({ children, onClick, live, label }) {
-  return (
-    <div onClick={onClick} role={onClick ? 'button' : undefined} tabIndex={-1} aria-label={label}
-      style={{
-        width: CARD_W, height: CARD_H, borderRadius: 7, border: `1.5px dashed rgba(var(--stg-fieldink, 255,255,255), ${live ? '0.9' : '0.34'})`,
-        background: `var(--stg-cell, ${live ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.10)'})`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        cursor: onClick ? 'pointer' : 'default',
-      }}>{children}</div>
+      {pile ? (
+        <span style={{ position: 'absolute', top: Math.round(w * 0.08), left: Math.round(w * 0.1), display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1 }}>
+          <b style={{ fontSize: rs, fontWeight: 800 }}>{RANK_LABEL[rankOf(card)]}</b>
+          <span style={{ fontSize: Math.round(rs * 0.8) }}>{pip}</span>
+        </span>
+      ) : (
+        <>
+          <span style={{ position: 'absolute', top: Math.round(w * 0.07), left: Math.round(w * 0.1), display: 'flex', alignItems: 'baseline', gap: 2, lineHeight: 1 }}>
+            <b style={{ fontSize: rs, fontWeight: 800, letterSpacing: '-0.03em' }}>{RANK_LABEL[rankOf(card)]}</b>
+            <span style={{ fontSize: ss }}>{pip}</span>
+          </span>
+          <span aria-hidden="true" style={{ position: 'absolute', top: Math.round(w * 0.07), right: Math.round(w * 0.1), fontSize: ss, lineHeight: 1 }}>{pip}</span>
+        </>
+      )}
+      {!covered && <span aria-hidden="true" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: big, paddingTop: Math.round(h * 0.12), lineHeight: 1 }}>{pip}</span>}
+    </button>
   );
 }
 
@@ -278,6 +292,25 @@ export default function TaireClient({ puzzles = [], forceNum = null }) {
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
+  // Phone layout (<=560px, the page's own breakpoint) and the measured felt
+  // width the card size is cut from. Display only.
+  const [narrow, setNarrow] = useState(false);
+  const [feltW, setFeltW] = useState(0);
+  const [feltEl, setFeltEl] = useState(null);
+  useEffect(() => {
+    const fit = () => { try { setNarrow(window.innerWidth <= 560); } catch (e) {} };
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, []);
+  useEffect(() => {
+    if (!feltEl) return undefined;
+    const read = () => { try { setFeltW(feltEl.clientWidth); } catch (e) {} };
+    read();
+    let ro = null;
+    try { ro = new ResizeObserver(read); ro.observe(feltEl); } catch (e) {}
+    return () => { try { ro && ro.disconnect(); } catch (e) {} };
+  }, [feltEl]);
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -659,13 +692,20 @@ export default function TaireClient({ puzzles = [], forceNum = null }) {
           .ta-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .ta-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           .ta-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-          .ta-felt{background:${FELT};border:10px solid ${FELT_EDGE};border-radius:12px;padding:14px 12px 18px;touch-action:manipulation;}
-          .ta-card{-webkit-tap-highlight-color:transparent;transition:transform .12s ease;}
-          .ta-card:active{transform:translateY(1px);}
+          .ta-felt{background:${FELT};border-radius:22px;padding:18px 20px 16px;touch-action:manipulation;display:flex;flex-direction:column;}
+          @media(max-width:560px){.ta-felt{border-radius:18px;padding:12px;}}
+          .ta-card{-webkit-tap-highlight-color:transparent;transition:transform .12s ease, box-shadow .12s ease;}
+          .ta-card:disabled{cursor:default;}
           .ta-felt.shake{animation:tashake .34s ease;}
           @keyframes tashake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
-          .ta-cols{display:grid;gap:14px;justify-content:center;}
-          @media(max-width:430px){.ta-cols{gap:7px;}}
+          .ta-k{font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:${FADED};}
+          @media(max-width:560px){.ta-k{font-size:10px;}}
+          .ta-drop{box-sizing:border-box;background:color-mix(in srgb, var(--stg-acc, #1d6b4f) 22%, var(--stg-cell, #ffffff));border:2.5px dashed var(--stg-acc, #1d6b4f);color:var(--stg-acc-ink, #1d6b4f);font-family:${SANS};font-weight:800;letter-spacing:.06em;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+          .ta-hole{box-sizing:border-box;background:var(--stg-cell, rgba(0,0,0,0.06));border:2px dashed var(--stg-cell-line, rgba(28,30,36,0.3));padding:0;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
+          .ta-ctl{font-family:${SANS};font-weight:700;font-size:14px;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};background:transparent;color:${INK};border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;box-sizing:border-box;}
+          .ta-ctl:hover:not(:disabled){background:var(--stg-surf2, rgba(28,30,36,0.05));}
+          .ta-ctl:disabled{cursor:default;color:${FADED};}
+          @media (prefers-reduced-motion: reduce){.ta-card{transition:none !important;}.ta-felt.shake{animation:none;}}
         ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
@@ -707,124 +747,307 @@ export default function TaireClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
 
-        {!preStart && (
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
-          {/* These figures move UP into the cap on a loft page; printing
-              them twice is the one thing to avoid. */}
-          {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-            <span style={{ whiteSpace: 'nowrap' }}>moves <b style={{ color: used > par ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{used}</b></span>
-            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>par <b style={{ color: ACC_INK, fontWeight: 500 }}>{par}</b> &middot; perfect <b style={{ color: INK, fontWeight: 500 }}>{perfect}</b></span>
-          </div>
-          )}
+        {!preStart && (() => {
+          // ---- the felt (round four, 2026-10-13) ----
+          // Every readout is state the board already holds: the move count
+          // against perfect and par, the free cells, the home piles, and the
+          // legal destinations of the card in hand (rules.destinations).
+          const FW = feltW || (narrow ? 358 : 620);
+          const gapMin = narrow ? 8 : 14;
+          const CW = Math.max(44, Math.min(narrow ? 76 : 100, Math.floor((FW - gapMin * (COLS - 1)) / COLS)));
+          const CH = Math.round(CW * 1.4);
+          const REV = Math.round(CH * (narrow ? 0.31 : 0.29));
+          const LIFT = Math.round(CH * 0.11);
+          const PW = narrow ? 62 : 84;
+          const PH = Math.round(PW * 1.4);
+          const maxLen = Math.max(4, ...state.cols.map((c) => c.length));
+          const tabH = CH + REV * (maxLen - 1) + LIFT;
+          const pitch = COLS > 1 ? (FW - CW) / (COLS - 1) : 0;
+          const openCells = CELLS - state.free.length;
+          const short = (c) => `${RANK_LABEL[rankOf(c)]}${SUIT_PIP(c)}`;
+          const named = (c) => `${RANK_LABEL[rankOf(c)]} of ${SUIT_NAME(c)}`;
+          const inHand = sel != null && playing;
+          const ACC_FILL = 'var(--stg-acc, #1d6b4f)';
+          const LINE = 'var(--stg-line, rgba(28,30,36,0.18))';
 
-          <div style={{ maxWidth: 430, margin: '0 auto' }}>
-          <div key={shake} className={`ta-felt${shake ? ' shake' : ''}`}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-              <div>
-                <div style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--stg-ink2, rgba(255,255,255,0.72))', marginBottom: 5 }}>free cells</div>
-                <div style={{ display: 'flex', gap: 7 }}>
-                  {Array.from({ length: CELLS }).map((_, i) => {
-                    const card = state.free[i];
-                    const live = sel != null && dests.includes(FREE) && !card;
-                    return (
-                      <Slot key={i} live={live} label={`free cell ${i + 1}`} onClick={() => (card ? onCard(card) : onDest(FREE))}>
-                        {card != null && <CardFace card={card} onClick={() => onCard(card)} label={`${RANK_LABEL[rankOf(card)]} in a free cell`}
-                          outline={sel === card ? `3px solid ${COLORS.ink}` : hintCards && hintCards.includes(card) ? '3px solid #facc15' : null} />}
-                      </Slot>
-                    );
-                  })}
+          // The status line, derived from rules.destinations for the card in hand.
+          const placeWords = () => {
+            const out = [];
+            if (dests.includes(FND)) out.push('home');
+            const empties = dests.filter((d) => d !== FND && d !== FREE && !state.cols[d].length).length;
+            dests.forEach((d) => {
+              if (d === FND || d === FREE || !state.cols[d].length) return;
+              out.push(`onto the ${short(state.cols[d][state.cols[d].length - 1])}`);
+            });
+            if (empties === 1) out.push('the empty column');
+            else if (empties > 1) out.push(`any of ${empties} empty columns`);
+            if (dests.includes(FREE)) out.push(openCells === 1 ? 'the open free cell' : 'an open free cell');
+            return out;
+          };
+          let status, sub = null;
+          if (!playing) {
+            status = won ? (used === perfect ? `Home in ${used}. That is perfect.` : `Home in ${used}. Par was ${par}.`) : 'You left it on the table.';
+          } else if (inHand) {
+            const w = placeWords();
+            const n = w.length;
+            const list = n <= 1 ? (w[0] || '') : n === 2 ? `${w[0]} or ${w[1]}` : `${w.slice(0, -1).join(', ')}, or ${w[n - 1]}`;
+            status = n ? `${short(sel)} is in hand. ${NUM_WORD[n] || n} place${n === 1 ? '' : 's'} it can go: ${list}.` : `${short(sel)} is in hand.`;
+            sub = 'Tap the card again to put it back. Nothing has moved yet.';
+          } else {
+            status = movable.length ? 'Tap a card to pick it up.' : 'Nothing can move. Restart the board.';
+            sub = 'Every card moved is one move, sending it home included.';
+          }
+
+          // The par track: one segment per move of the proven-minimum line,
+          // the cushion to par drawn thinner after it, filled for moves used.
+          const segN = Math.max(par, used);
+          const track = (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: narrow ? 5 : 9 }}>
+              {!narrow && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+                  <span className="ta-k">The line · {perfect} moves is the proven minimum</span>
+                  <span className="ta-k" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                    <b style={{ color: used > par ? 'var(--stg-bad, #b91c1c)' : ACC_INK }}>{used}</b> used · {used <= par ? `${par - used} to par` : `${used - par} over par`}
+                  </span>
                 </div>
+              )}
+              <div role="img" aria-label={`${used} moves used. Perfect is ${perfect}, par is ${par}.`} style={{ display: 'flex', gap: narrow ? 2 : 3, alignItems: 'center' }}>
+                {Array.from({ length: segN }).map((_, i) => {
+                  const cushion = i >= perfect && i < par;
+                  const over = i >= par;
+                  const filled = i < used;
+                  return (
+                    <span key={i} style={{
+                      flex: 1, minWidth: 0, borderRadius: narrow ? 2 : 3,
+                      height: cushion ? (narrow ? 4 : 6) : (narrow ? 7 : 10),
+                      marginLeft: i === perfect && i > 0 ? (narrow ? 3 : 5) : 0,
+                      background: filled ? (over ? 'var(--stg-bad, #b91c1c)' : ACC_FILL) : LINE,
+                    }} />
+                  );
+                })}
+                <span className="ta-k" style={{ marginLeft: narrow ? 4 : 6, fontWeight: 800 }}>Par</span>
               </div>
-              <div>
-                <div style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--stg-ink2, rgba(255,255,255,0.72))', marginBottom: 5, textAlign: 'right' }}>home</div>
-                <div style={{ display: 'flex', gap: 7 }}>
-                  {[0, 1].map((s) => {
-                    const top = fnd[s];
-                    const live = sel != null && dests.includes(FND) && suitOf(sel) === s;
-                    return (
-                      <Slot key={s} live={live} label={`${s === 1 ? 'hearts' : 'spades'} home pile`} onClick={() => onDest(FND)}>
-                        {top > 0
-                          ? <CardFace card={s * 16 + top} label={`${RANK_LABEL[top]} home`} />
-                          : <span style={{ color: s === 1 ? 'var(--stg-bad, rgba(255,190,190,0.85))' : 'var(--stg-ink2, rgba(255,255,255,0.7))', fontSize: 19 }}>{s === 1 ? '♥' : '♠'}</span>}
-                      </Slot>
-                    );
-                  })}
-                </div>
-              </div>
+              {narrow && (
+                <span className="ta-k" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                  Perfect {perfect} is the proven minimum · <b style={{ color: used > par ? 'var(--stg-bad, #b91c1c)' : ACC_INK }}>{used}</b> used · {used <= par ? `${par - used} to par` : `${used - par} over`}
+                </span>
+              )}
             </div>
+          );
 
-            <div className="ta-cols" style={{ gridTemplateColumns: `repeat(${COLS}, ${CARD_W}px)` }}>
-              {state.cols.map((col, j) => {
-                const live = sel != null && dests.includes(j);
+          const freeRow = (
+            <div style={{ display: 'flex', gap: narrow ? 8 : 10 }}>
+              {Array.from({ length: CELLS }).map((_, i) => {
+                const card = state.free[i];
+                if (card != null) {
+                  return (
+                    <CardFace key={`f${i}`} card={card} w={PW} h={PH} pile
+                      lifted={inHand && sel === card} hinted={!!(hintCards && hintCards.includes(card))}
+                      onClick={playing ? () => onCard(card) : undefined}
+                      label={`${named(card)} in a free cell${sel === card ? ', in hand' : ''}`}
+                      style={{ transform: inHand && sel === card ? `translateY(-${LIFT}px)` : 'none' }} />
+                  );
+                }
+                // Only the first open cell is offered as the drop: the rules
+                // treat free cells as one pool, so one target says it plainly.
+                const live = inHand && dests.includes(FREE) && i === state.free.length;
+                return live ? (
+                  <button key={`f${i}`} type="button" className="ta-drop" onClick={() => onDest(FREE)}
+                    aria-label={`Free cell, open: drop the ${named(sel)} here`}
+                    style={{ width: PW, height: PH, borderRadius: narrow ? 8 : 9, fontSize: narrow ? 10 : 11 }}>
+                    {!narrow && <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5v14" /><path d="M6 13l6 6 6-6" /></svg>}
+                    <span>Drop{narrow ? <br /> : ' '}here</span>
+                  </button>
+                ) : (
+                  <button key={`f${i}`} type="button" className="ta-hole" onClick={() => onDest(FREE)} disabled={!inHand}
+                    aria-label={`Free cell ${i + 1}, open`}
+                    style={{ width: PW, height: PH, borderRadius: narrow ? 8 : 9, cursor: inHand ? 'pointer' : 'default' }} />
+                );
+              })}
+            </div>
+          );
+
+          const homeRow = (
+            <div style={{ display: 'flex', gap: narrow ? 8 : 14 }}>
+              {[0, 1].map((s) => {
+                const top = fnd[s];
+                const live = inHand && dests.includes(FND) && suitOf(sel) === s;
+                const pipCh = s === 1 ? '♥' : '♠';
+                const nm = s === 1 ? 'hearts' : 'spades';
+                const pile = top > 0 ? (
+                  <CardFace card={s * 16 + top} w={PW} h={PH} pile drop={live}
+                    onClick={live ? () => onDest(FND) : undefined}
+                    label={live ? `${nm} home, ${RANK_LABEL[top]} on top: send the ${named(sel)} home` : `${nm} home, ${RANK_LABEL[top]} on top`}
+                    style={live ? null : { boxShadow: `0 0 0 3px ${FELT}, 0 0 0 4.5px var(--stg-cell-line, rgba(28,30,36,0.35)), 0 4px 10px rgba(0,0,0,.22)` }} />
+                ) : live ? (
+                  <button type="button" className="ta-drop" onClick={() => onDest(FND)}
+                    aria-label={`${nm} home, empty: send the ${named(sel)} home`}
+                    style={{ width: PW, height: PH, borderRadius: narrow ? 8 : 9, fontSize: narrow ? 10 : 11 }}>
+                    <span style={{ fontSize: narrow ? 24 : 30, lineHeight: 1 }} aria-hidden="true">{pipCh}</span>
+                    <span>Home</span>
+                  </button>
+                ) : (
+                  <button type="button" className="ta-hole" onClick={() => onDest(FND)} disabled={!inHand}
+                    aria-label={`${nm} home, empty`}
+                    style={{ width: PW, height: PH, borderRadius: narrow ? 8 : 9, color: FADED, fontSize: narrow ? 26 : 34, fontFamily: SANS, cursor: inHand ? 'pointer' : 'default' }}>
+                    <span aria-hidden="true">{pipCh}</span>
+                  </button>
+                );
                 return (
-                  <div key={j} onClick={() => (col.length ? null : onDest(j))}
-                    style={{
-                      minHeight: CARD_H + REVEAL * 3 + 8, borderRadius: 7, padding: 3,
-                      border: `1.5px dashed rgba(var(--stg-fieldink, 255,255,255), ${live ? '0.9' : '0.16'})`,
-                      background: live ? 'var(--stg-cell, rgba(255,255,255,0.16))' : 'transparent',
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0, cursor: live ? 'pointer' : 'default',
-                    }}>
-                    {col.map((card, k) => {
-                      const isBottom = k === col.length - 1;
-                      return (
-                        <div key={card} style={{ marginTop: k === 0 ? 0 : -(CARD_H - REVEAL), zIndex: k }}>
-                          <CardFace card={card} label={`${RANK_LABEL[rankOf(card)]} of ${suitOf(card) === 1 ? 'hearts' : 'spades'}`}
-                            onClick={() => (isBottom ? onCard(card) : live ? onDest(j) : onCard(col[col.length - 1]))}
-                            covered={!isBottom}
-                            outline={sel === card ? `3px solid ${COLORS.ink}` : hintCards && hintCards.includes(card) ? '3px solid #facc15' : null} />
-                        </div>
-                      );
-                    })}
-                    {!col.length && <div style={{ height: CARD_H, display: 'flex', alignItems: 'center', color: 'var(--stg-mute2, rgba(255,255,255,0.5))', fontSize: 11, fontFamily: MONO }}>empty</div>}
+                  <div key={s} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: narrow ? 6 : 8 }}>
+                    {pile}
+                    {narrow ? (
+                      <span style={{ fontFamily: SANS, fontSize: 9.5, fontWeight: 800, letterSpacing: '0.06em', color: top > 0 ? ACC_INK : FADED, fontVariantNumeric: 'tabular-nums' }}>{top} OF {RANKS}</span>
+                    ) : (
+                      <div style={{ display: 'flex', gap: RANKS > 8 ? 2 : 3 }} role="img" aria-label={`${nm} home: ${top} of ${RANKS}`}>
+                        {Array.from({ length: RANKS }).map((_, k) => (
+                          <span key={k} style={{ width: RANKS > 8 ? 6 : 7, height: RANKS > 8 ? 6 : 7, borderRadius: '50%', background: k < top ? ACC_FILL : LINE }} />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 );
               })}
             </div>
-          </div>
-          </div>
+          );
 
-          <div style={{ marginTop: 12, minHeight: 22, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 800, color: playing ? `var(--stg-acc-ink, ${COLORS.accent})` : `var(--stg-mute, ${COLORS.faded})` }}>
-              {!playing
-                ? (won ? (used === perfect ? `Home in ${used}. That is perfect.` : `Home in ${used}. Par was ${par}.`) : 'You left it on the table.')
-                : sel != null ? 'Now tap where it goes.' : movable.length ? 'Tap a card to pick it up.' : 'Nothing can move. Restart the board.'}
-            </span>
-            {g.restarts > 0 && playing && (
-              <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 11, color: FADED, fontWeight: 500 }}>{g.restarts} restart{g.restarts === 1 ? '' : 's'}</span>
-            )}
-          </div>
+          const tableau = (
+            <div ref={setFeltEl} style={{ position: 'relative', height: tabH, marginTop: narrow ? 16 : 20 }}>
+              {state.cols.map((col, j) => {
+                const x = Math.round(j * pitch);
+                const live = inHand && dests.includes(j);
+                const bottom = col.length ? col[col.length - 1] : null;
+                return (
+                  <React.Fragment key={j}>
+                    {col.length ? (
+                      <span aria-hidden="true" className="ta-hole" style={{ position: 'absolute', left: x, top: LIFT, width: CW, height: CH, borderRadius: Math.round(CW * 0.1) }} />
+                    ) : live ? (
+                      <button type="button" className="ta-drop" onClick={() => onDest(j)}
+                        aria-label={`Empty column ${j + 1}: drop the ${named(sel)} here`}
+                        style={{ position: 'absolute', left: x, top: LIFT, width: CW, height: CH, borderRadius: Math.round(CW * 0.1), fontSize: narrow ? 10 : 11 }}>
+                        {!narrow && <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5v14" /><path d="M6 13l6 6 6-6" /></svg>}
+                        <span>Drop{narrow ? <br /> : ' '}here</span>
+                      </button>
+                    ) : (
+                      <button type="button" className="ta-hole" onClick={() => onDest(j)} disabled={!inHand}
+                        aria-label={`Column ${j + 1}, empty`}
+                        style={{ position: 'absolute', left: x, top: LIFT, width: CW, height: CH, borderRadius: Math.round(CW * 0.1), cursor: inHand ? 'pointer' : 'default' }} />
+                    )}
+                    {col.map((card, k) => {
+                      const isBottom = k === col.length - 1;
+                      const lifted = inHand && sel === card;
+                      return (
+                        <CardFace key={card} card={card} w={CW} h={CH} covered={!isBottom}
+                          lifted={lifted} hinted={!!(hintCards && hintCards.includes(card))}
+                          drop={live && isBottom}
+                          onClick={playing ? () => (isBottom ? onCard(card) : live ? onDest(j) : onCard(bottom)) : undefined}
+                          label={`${named(card)}${lifted ? ', in hand' : live && isBottom ? `: put the ${named(sel)} on it` : isBottom ? '' : ', buried'}`}
+                          style={{ position: 'absolute', left: x, top: LIFT + k * REV - (lifted ? LIFT : 0), zIndex: k + 1 }} />
+                      );
+                    })}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          );
 
-          {playing && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 12, flexWrap: 'wrap' }}>
-              <button className="ta-tool" onClick={restart} disabled={!used} title="Redeal the same board and zero the move count" style={{ opacity: used ? 1 : 0.4, cursor: used ? 'pointer' : 'default' }}>
-                <RotateCcw size={14} /> Restart deal
-              </button>
-              {hintOk && !g.hintUsed && (
-                <button className="ta-tool" onClick={useHint} title="Light up every card that can move (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(29,107,79,0.5)', color: '#155e45' }}>
-                  <Lightbulb size={14} /> Hint
-                </button>
+          const giveUp = started && (
+            <button type="button" onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: narrow ? 13 : 12, color: armReveal ? 'var(--stg-bad, #b91c1c)' : INK, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5, minHeight: 44, padding: narrow ? '0 6px' : 0, textAlign: 'left' }}>
+              <Eye size={13} /> {armReveal ? 'Tap again: ends the deal and scores nothing' : 'Give up'}
+            </button>
+          );
+          const restartBtn = playing && (
+            <button type="button" className="ta-ctl" onClick={restart} disabled={!used} title="Redeal the same board and zero the move count"
+              style={narrow ? { flex: 1, minHeight: 50 } : null}>
+              <RotateCcw size={16} /> Restart deal
+            </button>
+          );
+          const hintBtn = playing && hintOk && !g.hintUsed && (
+            <button type="button" className="ta-ctl" onClick={useHint} title="Light up every card that can move (one hint, first play only)">
+              <Lightbulb size={16} /> Hint
+            </button>
+          );
+          const restartChip = g.restarts > 0 && playing && (
+            <span style={{ fontFamily: SANS, fontSize: 11, color: FADED, fontWeight: 700, whiteSpace: 'nowrap' }}>{g.restarts} restart{g.restarts === 1 ? '' : 's'}</span>
+          );
+
+          return (
+            <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? 'transparent' : T.white, border: STAGE ? 0 : `2px solid ${COLORS.ink}`, borderRadius: STAGE ? 0 : 10, padding: STAGE ? 0 : '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+              {/* These figures move UP into the cap on a loft page; printing
+                  them twice is the one thing to avoid. */}
+              {!LOFT && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: SANS, fontSize: 11.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+                  <span style={{ whiteSpace: 'nowrap' }}>moves <b style={{ color: used > par ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})` }}>{used}</b></span>
+                  <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
+                  <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>par <b style={{ color: ACC_INK }}>{par}</b> &middot; perfect <b style={{ color: INK }}>{perfect}</b></span>
+                </div>
+              )}
+
+              {track}
+
+              <div key={shake} className={`ta-felt${shake ? ' shake' : ''}`} style={{ marginTop: narrow ? 12 : 18 }}>
+                {narrow ? (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span className="ta-k">Free cells{CELLS > 1 ? ` · ${openCells} open` : ''}</span>
+                      <span className="ta-k">Home</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: 6 }}>
+                      {freeRow}
+                      {homeRow}
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <span className="ta-k">Free cells · {openCells} open</span>
+                      {freeRow}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
+                      <span className="ta-k">Home · ace up to {RANK_LABEL[RANKS]}</span>
+                      {homeRow}
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ height: 1, background: LINE, marginTop: narrow ? 14 : 16 }} />
+
+                {tableau}
+
+                <div style={{ marginTop: narrow ? 10 : 14, display: 'flex', alignItems: 'center', gap: 10, borderTop: narrow ? 0 : `1px solid ${LINE}`, paddingTop: narrow ? 0 : 14 }}>
+                  <div aria-live="polite" style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    <span style={{ fontFamily: SANS, fontSize: narrow ? 14 : 15, fontWeight: 700, lineHeight: 1.4, color: !playing ? (won ? 'var(--stg-good, #15803d)' : FADED) : INK }}>{status}</span>
+                    {sub && !narrow && <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 600, color: FADED }}>{sub}</span>}
+                  </div>
+                  {!narrow && restartChip}
+                  {!narrow && hintBtn}
+                  {!narrow && restartBtn}
+                </div>
+              </div>
+
+              {narrow ? (
+                (playing || started) && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingTop: 12 }}>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      {restartBtn}
+                      {hintBtn}
+                      {giveUp}
+                    </div>
+                    {restartChip && <div style={{ textAlign: 'center' }}>{restartChip}</div>}
+                  </div>
+                )
+              ) : (
+                started && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, paddingTop: 6, flexWrap: 'wrap' }}>
+                    <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 600, color: FADED }}>One card at a time. Down by one, other color. No undo.</span>
+                    {giveUp}
+                  </div>
+                )
               )}
             </div>
-          )}
-
-        {/* Controls. These sit INSIDE the board card: on the navy stage a
-            bare row of faded text has nothing to sit on, and the card is
-            meant to hold the whole game. */}
-        {started && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)', flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>
-              Tap a card, then tap where it goes. No undo.
-            </span>
-            <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-              style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-              <Eye size={13} /> {armReveal ? 'Tap again — ends the deal and scores nothing' : 'Give up'}
-            </button>
-          </div>
-        )}
-        </div>
-        )}
+          );
+        })()}
 
 
           <div className={STAGE ? undefined : 'loft-sol'}>

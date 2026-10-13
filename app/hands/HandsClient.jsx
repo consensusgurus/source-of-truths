@@ -69,6 +69,7 @@ import { T } from '@/lib/theme';
 import {
   RANK_LABEL, SUIT_PIP, rankOf, suitOf, isRed, cardName,
   lineScores, totalOf, bustsOf, scoreForPoints, rowCells, colCells,
+  SCORE, HAND_NAME, scoreHand,
 } from './rules';
 
 const COLORS = {
@@ -78,22 +79,38 @@ const COLORS = {
   accentSoft: '#f6eaea',
   green: T.successDeep,
 };
-// The felt carried no information and was the largest object in the game, so it is
-// a surface now, and the table's EDGE carries the category instead. A card face
-// is light in either register, so it takes the same token a chessboard's light
-// square does. Loft (?stage=0) still renders the original felt via the fallback.
-const FELT = 'var(--stg-surf2, #7c2230)';
-const FELT_EDGE = 'color-mix(in srgb, var(--stg-acc, #511018) 60%, transparent)';
-const CARD_FACE = 'var(--stg-sq-l, #fdfcf9)';
-const CARD_EDGE = 'rgba(20,22,28,0.30)';
-const RED_PIP = 'var(--stg-bad, #c8282e)';
-const BLACK_PIP = T.ink;
+// The felt is the category accent mixed thin into the cell token, the same
+// table Crib plays on, so it follows both registers. Card FACES are paper in
+// both registers (playing cards are physical objects): white, near-black and
+// red ink, exactly as Crib draws them.
+const FELT = 'color-mix(in srgb, var(--stg-acc, #7f1d1d) 9%, var(--stg-cell, #f6eaea))';
+const FACE = '#ffffff';
+const FACE_INK = '#16181d';
+const FACE_RED = '#b91c1c';
+const FACE_EDGE = 'rgba(20,22,28,0.30)';
+const A_FILL = 'var(--stg-acc, #7f1d1d)';
+const ON_A = 'var(--stg-onramp, #ffffff)';
+const A_INK = 'var(--stg-acc-ink, #7f1d1d)';
+const A_TINT = 'color-mix(in srgb, var(--stg-acc, #7f1d1d) 16%, var(--stg-cell, #ffffff))';
+const CELL = 'var(--stg-cell, #ffffff)';
+const CELL_LINE = 'var(--stg-cell-line, rgba(28,30,36,0.35))';
+const S_INK = 'var(--stg-ink, #16181d)';
+const S_INK2 = 'var(--stg-ink2, #2c3446)';
+const S_MUTE = 'var(--stg-mute, #525c70)';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
+const MONO = SANS;
 const HELP_KEY = 'sot_hands_help_seen';
 const STATS_KEY = 'sot_hands_stats';
 
+// The pay table, best hand first, read straight off the rules' SCORE so the
+// two can never disagree. Names come from HAND_NAME with the article dropped.
+const handLabel = (v) => {
+  const n = HAND_NAME[v] || 'nothing';
+  const bare = n.replace(/^(a|an) /, '');
+  return bare.charAt(0).toUpperCase() + bare.slice(1);
+};
+const PAY = Object.values(SCORE).sort((a, b) => b - a);
 function pickPuzzle(puzzles, forceNum) {
   if (!puzzles.length) return null;
   if (forceNum) {
@@ -194,61 +211,67 @@ function vibrate(p) { try { if (typeof navigator !== 'undefined' && navigator.vi
 
 const freshState = () => ({ v: 1, placed: [], muckAt: -1, status: 'playing', t0: null, tEnd: null });
 
-function CardFace({ card, size = 'md', dim = false }) {
+// A playing card face. `sz` sets the type: 'cell' (a grid square), 'cellS'
+// (a phone grid square), 'big' (the card on offer), 'bigS' (the phone's card
+// on offer). The face is white in both registers; `ghost` is the hover preview,
+// the same face washed with the accent and outlined dashed, never dimmed with
+// opacity (ink on a coloured ground keeps its full contrast).
+const FACE_SIZES = {
+  cell: { r: 17, s: 13, c: 26, top: 5, left: 7, pad: 12, rad: 8 },
+  cellS: { r: 15, s: 12, c: 22, top: 4, left: 6, pad: 12, rad: 7 },
+  big: { r: 24, s: 19, c: 52, top: 8, left: 10, pad: 16, rad: 11 },
+  bigS: { r: 18, s: 14, c: 30, top: 5, left: 7, pad: 12, rad: 8 },
+};
+function CardFace({ card, sz = 'cell', ghost = false, ring = false }) {
   const red = isRed(card);
-  const big = size === 'lg';
+  const f = FACE_SIZES[sz] || FACE_SIZES.cell;
+  const big = sz === 'big' || sz === 'bigS';
   return (
     <div style={{
-      width: '100%', height: '100%', borderRadius: big ? 8 : 6, background: CARD_FACE,
-      border: `1px solid ${CARD_EDGE}`,
-      boxShadow: big ? '0 3px 8px rgba(20,22,28,0.34)' : '0 1px 3px rgba(20,22,28,0.28)',
-      color: red ? RED_PIP : BLACK_PIP, fontFamily: SANS, fontWeight: 800,
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      lineHeight: 1, userSelect: 'none', opacity: dim ? 0.55 : 1,
+      position: 'relative', width: '100%', height: '100%', boxSizing: 'border-box', borderRadius: f.rad,
+      background: ghost ? 'color-mix(in srgb, var(--stg-acc, #7f1d1d) 12%, #ffffff)' : FACE,
+      border: ghost ? `2.5px dashed ${A_FILL}` : ring ? `3px solid ${A_FILL}` : `1.5px solid ${FACE_EDGE}`,
+      boxShadow: ghost ? 'none' : ring ? `0 0 0 3px ${FELT}, 0 0 0 5px ${A_FILL}, 0 14px 22px rgba(0,0,0,.32)` : big ? '0 4px 10px rgba(0,0,0,.28)' : '0 3px 7px rgba(0,0,0,.22)',
+      color: red ? FACE_RED : FACE_INK, fontFamily: SANS, userSelect: 'none',
     }}>
-      <span style={{ fontSize: big ? 30 : 'clamp(14px,4.4vw,17px)', letterSpacing: '-0.04em' }}>{RANK_LABEL[rankOf(card)]}</span>
-      <span style={{ fontSize: big ? 26 : 'clamp(12px,3.6vw,15px)', marginTop: big ? 3 : 1 }}>{SUIT_PIP[suitOf(card)]}</span>
+      <span style={{ position: 'absolute', top: f.top, left: f.left, display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1 }}>
+        <b style={{ fontSize: f.r, fontWeight: 800, letterSpacing: '-0.03em' }}>{RANK_LABEL[rankOf(card)]}</b>
+        <span style={{ fontSize: f.s }}>{SUIT_PIP[suitOf(card)]}</span>
+      </span>
+      <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: f.c, paddingTop: f.pad, lineHeight: 1 }}>{SUIT_PIP[suitOf(card)]}</span>
     </div>
   );
 }
 
-// Every counter on the board is the SAME square, whether it totals a row, a
-// column, or the whole grid. They used to inherit their track's size, which made
-// the row counters tall cards and the column counters short bars: two different
-// shapes for one identical job, and the tall column pushed the board out past
-// the felt. CHIP is the one number that governs them.
-const CHIP = 26;
-
-// A line's counter. A line that is still filling shows a dot rather than a zero,
-// because it has not busted yet, it just is not a hand yet.
-function ScoreChip({ value, complete, total }) {
-  const premium = complete && value >= 10;
-  const made = complete && value > 0;
-  // A MADE HAND'S CHIP IS A LITTLE CARD and stays pale in both registers, so
-  // its ink is the same near-black as a card's pips. A line that has not
-  // finished is a RECESS in the felt, and that one has to follow the register:
-  // it used to be white at 14% with white ink at 62%, which is a recess on the
-  // dark felt and, on the pale one, invisible ink on an invisible box (measured
-  // 1.11:1, the worst thing on the site).
-  const bg = total || made ? 'var(--stg-sq-l, rgba(255,255,255,0.92))' : premium ? '#f7e2b0' : 'rgba(var(--stg-fieldink, 255,255,255), 0.14)';
-  const bd = premium ? '#c99a2e' : made || total ? 'rgba(20,22,28,0.18)' : 'rgba(var(--stg-fieldink, 255,255,255), 0.30)';
-  const fg = total ? COLORS.accent : premium ? '#7a5305' : made ? COLORS.ink : 'var(--stg-mute2, rgba(255,255,255,0.62))';
+// A small face for the muck slot: rank and suit centred.
+function MiniCard({ card, w = 34, h = 48 }) {
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: bg, border: `1px solid ${bd}`, borderRadius: 5,
-      fontFamily: MONO, fontWeight: total ? 700 : 500, fontSize: 12, color: fg,
-      width: CHIP, height: CHIP, flex: 'none',
-    }}>{complete ? value : '·'}</div>
+    <span style={{ width: w, height: h, flex: 'none', boxSizing: 'border-box', borderRadius: 6, background: FACE, border: `1.5px solid ${FACE_EDGE}`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontSize: 12, fontWeight: 800, color: isRed(card) ? FACE_RED : FACE_INK, lineHeight: 1 }}>
+      {RANK_LABEL[rankOf(card)]}{SUIT_PIP[suitOf(card)]}
+    </span>
   );
 }
 
-// Centers a counter inside whatever track it lands in, so the column counters
-// under a full-width cell and the row counters in the narrow last track are the
-// same box in the same place.
-function ChipCell({ children }) {
-  return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{children}</div>;
+// One line's state, for its chip. `k` is how many cards the line holds now.
+// A preview (the card on offer hovering a square on the line) adds one.
+function lineChip({ k, full, value, preview, cardTxt, axis, n, wouldBe }) {
+  if (preview) {
+    const to = k + 1;
+    if (to === 5) {
+      return { kind: 'prev', k, to, wouldBe, t1: `\u2192 ${handLabel(wouldBe)}`, t2: `+${wouldBe}`, s: `\u2192+${wouldBe}` };
+    }
+    return { kind: 'prev', k, to, t1: axis === 'Row' ? `${k} \u2192 ${to} of 5` : `${k} \u2192 ${to}`, t2: `with ${cardTxt}`, s: `${k}\u2192${to}` };
+  }
+  if (full && value > 0) return { kind: 'made', t1: handLabel(value), t2: `+${value}`, s: `+${value}` };
+  if (full) return { kind: 'bust', t1: 'No hand', t2: '+0', s: '+0' };
+  return { kind: 'open', t1: `${k} of 5`, t2: `${axis} ${n}`, s: `${k}/5` };
 }
+const CHIP_LOOK = {
+  open: { bg: 'transparent', bd: `1.5px solid ${CELL_LINE}`, ink: S_INK2, ink2: S_MUTE },
+  bust: { bg: 'transparent', bd: `1.5px solid ${CELL_LINE}`, ink: S_MUTE, ink2: S_MUTE },
+  prev: { bg: A_TINT, bd: `1.5px dashed ${A_FILL}`, ink: A_INK, ink2: A_INK },
+  made: { bg: A_FILL, bd: `1.5px solid ${A_FILL}`, ink: ON_A, ink2: ON_A },
+};
 
 export default function HandsClient({ puzzles = [], forceNum = null }) {
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
@@ -276,6 +299,20 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
   const [showBest, setShowBest] = useState(false);
   const toastTimer = useRef(null);
   const endHold = useEndHold();
+  // The board's hover / hold / focus preview: the empty square the card on
+  // offer is shown ghosted in. heldRef swallows the click that ends a touch
+  // hold, so holding previews and a second tap places.
+  const [preview, setPreview] = useState(null);
+  const heldRef = useRef(null);
+  const holdTimer = useRef(null);
+  // Phone layout at the client's own 560px breakpoint, decided by width.
+  const [narrow, setNarrow] = useState(false);
+  useEffect(() => {
+    const fit = () => { try { setNarrow(window.innerWidth <= 560); } catch (e) {} };
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, []);
 
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
 
@@ -295,6 +332,9 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
   const consumed = g.placed.length + (g.muckAt >= 0 ? 1 : 0);
   const current = consumed < PUZZLE.deck.length ? PUZZLE.deck[consumed] : null;
   const muckLeft = g.muckAt < 0;
+  // A new card on offer (or the end) clears any preview.
+  useEffect(() => { setPreview(null); heldRef.current = null; }, [consumed, g.status]);
+  useEffect(() => () => { if (holdTimer.current) clearTimeout(holdTimer.current); }, []);
   const playing = g.status === 'playing';
   // Focus mode: while the puzzle is live the leaderboard / share / other-games
   // block is folded away behind one button, the same arrangement every other
@@ -539,18 +579,109 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
     />
   );
 
-  // AN EMPTY SQUARE IS A SLOT CUT IN THE FELT. --stg-cell is the token for
-  // exactly that and it is opaque and tuned per register, so the slot is darker
-  // than the felt on the dark register and lighter on the pale one, which is
-  // what a slot looks like either way. The dashed edge is ink as an alpha
-  // channel for the same reason: white on white was no edge at all.
-  const cellStyle = (filled, live) => ({
-    aspectRatio: '0.78', borderRadius: 6,
-    border: filled ? 'none' : `1.5px dashed rgba(var(--stg-fieldink, 255,255,255), ${live ? '0.62' : '0.24'})`,
-    background: filled ? 'transparent' : `var(--stg-cell, ${live ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.10)'})`,
-    cursor: live ? 'pointer' : 'default',
-    padding: 0, WebkitTapHighlightColor: 'transparent',
+  // ---- the board (round four, 2026-10-13) ---------------------------------
+  // Everything below is drawn from state the board already holds: the grid, the
+  // card on offer, the muck, par, ace and the deal's ceiling. The preview shows
+  // ONLY the card already on offer, never a card still to come.
+  const pvIdx = (preview != null && playing && started && current != null && grid[preview] == null) ? preview : null;
+  const pvR = pvIdx != null ? Math.floor(pvIdx / 5) : -1;
+  const pvC = pvIdx != null ? pvIdx % 5 : -1;
+  const curTxt = current != null ? `${RANK_LABEL[rankOf(current)]}${SUIT_PIP[suitOf(current)]}` : '';
+  const rowK = [0, 1, 2, 3, 4].map((i) => rowCells(grid, i).filter((x) => x != null).length);
+  const colK = [0, 1, 2, 3, 4].map((j) => colCells(grid, j).filter((x) => x != null).length);
+  const madeCount = {};
+  scores.forEach((v, i) => { const full = i < 5 ? rowFull[i] : colFull[i - 5]; if (full && v > 0) madeCount[v] = (madeCount[v] || 0) + 1; });
+
+  const cellHandlers = (idx) => ({
+    onClick: () => {
+      if (heldRef.current === idx) { heldRef.current = null; return; }
+      place(idx);
+    },
+    onPointerEnter: (e) => { if (e.pointerType === 'mouse') setPreview(idx); },
+    onPointerLeave: (e) => {
+      if (holdTimer.current) { clearTimeout(holdTimer.current); holdTimer.current = null; }
+      if (e.pointerType === 'mouse') setPreview((p) => (p === idx ? null : p));
+    },
+    onPointerDown: (e) => {
+      heldRef.current = null;
+      if (e.pointerType === 'mouse') return;
+      if (holdTimer.current) clearTimeout(holdTimer.current);
+      holdTimer.current = setTimeout(() => { holdTimer.current = null; heldRef.current = idx; setPreview(idx); }, 380);
+    },
+    onPointerUp: () => { if (holdTimer.current) { clearTimeout(holdTimer.current); holdTimer.current = null; } },
+    onPointerCancel: () => { if (holdTimer.current) { clearTimeout(holdTimer.current); holdTimer.current = null; } },
+    onFocus: () => setPreview(idx),
+    onBlur: () => setPreview((p) => (p === idx ? null : p)),
+    onContextMenu: (e) => { e.preventDefault(); },
   });
+
+  // The 5x5 of squares with a chip at the end of every row and under every
+  // column. `cards` is the 25 squares; `interactive` wires the live board.
+  const renderGrid = (cards, sc, rFull, cFull, rK, cK, interactive) => {
+    const cw = narrow ? 54 : 62;
+    const chipFor = (i) => {
+      const isRow = i < 5;
+      const n = isRow ? i : i - 5;
+      const full = isRow ? rFull[n] : cFull[n];
+      const prev = interactive && pvIdx != null && (isRow ? pvR === n : pvC === n);
+      let wouldBe = 0;
+      if (prev && (isRow ? rK[n] : cK[n]) === 4) {
+        const line = (isRow ? rowCells(cards, n) : colCells(cards, n)).map((x, q) => (x == null && (isRow ? q === pvC : q === pvR) ? current : x));
+        wouldBe = scoreHand(line);
+      }
+      return lineChip({ k: isRow ? rK[n] : cK[n], full, value: sc[i], preview: prev, cardTxt: curTxt, axis: isRow ? 'Row' : 'Col', n: n + 1, wouldBe });
+    };
+    const chipEl = (i) => {
+      const ch = chipFor(i);
+      const L = CHIP_LOOK[ch.kind];
+      const isRow = i < 5;
+      const label = `${isRow ? 'Row' : 'Column'} ${(i % 5) + 1}: ${ch.kind === 'made' ? `${handLabel(sc[i]).toLowerCase()}, ${sc[i]} points` : ch.kind === 'bust' ? 'complete, no hand' : ch.kind === 'prev' ? (ch.to === 5 ? `the ${curTxt} here would complete it as ${handLabel(ch.wouldBe).toLowerCase()}, ${ch.wouldBe} points` : `${ch.k} of 5, ${ch.to} with the ${curTxt}`) : ch.t1}`;
+      if (narrow) {
+        return (
+          <span key={`ch${i}`} className="hd-chip" aria-label={label} title={label}
+            style={{ height: isRow ? 40 : 30, boxSizing: 'border-box', borderRadius: 7, background: L.bg, border: L.bd, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontSize: 11, fontWeight: 800, color: L.ink, whiteSpace: 'nowrap', minWidth: 0 }}>{ch.s}</span>
+        );
+      }
+      return (
+        <span key={`ch${i}`} className="hd-chip" aria-label={label} title={label}
+          style={isRow
+            ? { minHeight: 44, boxSizing: 'border-box', borderRadius: 8, background: L.bg, border: L.bd, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '4px 9px', gap: 1, minWidth: 0 }
+            : { minHeight: 56, height: '100%', boxSizing: 'border-box', borderRadius: 8, background: L.bg, border: L.bd, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: '4px 3px', gap: 2, minWidth: 0 }}>
+          <b style={{ fontSize: isRow ? 12 : 11, fontWeight: 800, color: L.ink, lineHeight: 1.2 }}>{ch.t1}</b>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: L.ink2, lineHeight: 1.2 }}>{ch.t2}</span>
+        </span>
+      );
+    };
+    return (
+      <div className="hd-board" style={{ display: 'grid', gridTemplateColumns: narrow ? `repeat(5, minmax(0, ${cw}px)) minmax(34px, 1fr)` : `repeat(5, minmax(0, ${cw}px)) minmax(72px, 1fr)`, gap: narrow ? 5 : '8px 7px', alignItems: 'center', width: '100%' }}>
+        {[0, 1, 2, 3, 4].map((r) => (
+          <React.Fragment key={`r${r}`}>
+            {[0, 1, 2, 3, 4].map((c) => {
+              const idx = r * 5 + c;
+              const card = cards[idx];
+              const sq = { aspectRatio: narrow ? '54 / 72' : '62 / 86', width: '100%', boxSizing: 'border-box', borderRadius: narrow ? 7 : 8, padding: 0, position: 'relative' };
+              if (!interactive) {
+                return <div key={idx} style={sq}>{card != null ? <CardFace card={card} sz={narrow ? 'cellS' : 'cell'} /> : null}</div>;
+              }
+              const live = playing && card == null && current != null && !!g.t0;
+              const ghost = idx === pvIdx;
+              return (
+                <button key={idx} type="button" className={`hd-cell${live ? ' live' : ''}`} disabled={!live}
+                  {...(live ? cellHandlers(idx) : {})}
+                  aria-label={card != null ? cardName(card) : ghost ? `Row ${r + 1}, column ${c + 1}: place the ${cardName(current)} here` : `Empty square, row ${r + 1}, column ${c + 1}`}
+                  style={{ ...sq, background: card != null ? 'transparent' : CELL, border: card != null ? 'none' : `1.5px solid ${CELL_LINE}`, cursor: live ? 'pointer' : 'default', WebkitTapHighlightColor: 'transparent', WebkitTouchCallout: 'none', userSelect: 'none' }}>
+                  {card != null ? <CardFace card={card} sz={narrow ? 'cellS' : 'cell'} /> : ghost ? <CardFace card={current} sz={narrow ? 'cellS' : 'cell'} ghost /> : null}
+                </button>
+              );
+            })}
+            {chipEl(r)}
+          </React.Fragment>
+        ))}
+        {[0, 1, 2, 3, 4].map((c) => chipEl(5 + c))}
+        <span aria-hidden="true" />
+      </div>
+    );
+  };
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
@@ -595,14 +726,10 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
           .hd-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           .hd-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
           .hd-tool:disabled{opacity:0.4;cursor:default;}
-          .hd-felt{background:${FELT};border:10px solid ${FELT_EDGE};border-radius:12px;padding:13px 12px 15px;touch-action:manipulation;}
-          /* minmax(0,1fr) on the card tracks, NOT 1fr: a bare 1fr floors at the
-             cell's min-content width, so the five card columns refused to shrink
-             and pushed the counter track out through the felt's right border.
-             The counter track is a fixed CHIP px, so it never competes for space. */
-          .hd-board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) ${CHIP}px;gap:6px;align-items:center;width:100%;}
+          .hd-felt{background:${FELT};border-radius:22px;touch-action:manipulation;}
           .hd-cell{transition:transform .1s ease;}
-          .hd-cell:active{transform:translateY(1px);}
+          .hd-cell.live:active{transform:translateY(1px);}
+          .hd-cell.live:focus-visible{outline:2px solid var(--stg-ink, #16181d);outline-offset:2px;}
           .hd-offer{animation:hdpop .18s ease;}
           @keyframes hdpop{from{transform:scale(0.9);opacity:0.4;}to{transform:scale(1);opacity:1;}}
         ` }} />
@@ -645,107 +772,176 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
 
-        {!preStart && (
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
-          {/* These figures move UP into the cap on a loft page; printing
-              them twice is the one thing to avoid. */}
-          {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-            <span style={{ whiteSpace: 'nowrap' }}>points <b style={{ color: total >= par ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{total}</b></span>
-            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>par <b style={{ color: ACC_INK, fontWeight: 500 }}>{par}</b> &middot; ace <b style={{ color: INK, fontWeight: 500 }}>{ace}</b></span>
-          </div>
-          )}
+        {!preStart && (() => {
+          const K = { fontFamily: SANS, fontSize: narrow ? 10 : 11, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: S_MUTE };
+          const ceil = PUZZLE.ceiling || 0;
+          const max = Math.max(ceil, ace, total, 1);
+          const pct = (v) => Math.max(0, Math.min(100, (v / max) * 100));
+          const parP = pct(par), aceP = pct(ace);
+          // A label sits beside its marker on the side away from the other one,
+          // so par and ace never print over each other.
+          const parAnchor = parP > 14 ? 'translateX(calc(-100% - 5px))' : 'translateX(5px)';
+          const aceAnchor = aceP < 86 ? 'translateX(5px)' : 'translateX(calc(-100% - 5px))';
+          const track = (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: narrow ? 4 : 8, marginBottom: narrow ? 10 : 18 }}>
+              {!narrow && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+                  <span style={K}>Ten hands · five rows, five columns</span>
+                  <span style={K}>Best this deal allows · <b style={{ color: S_INK }}>{ceil}</b></span>
+                </div>
+              )}
+              <div role="img" aria-label={`Score track: ${total} points so far. Par ${par}, ace ${ace}, best this deal allows ${ceil}.`}
+                style={{ position: 'relative', height: narrow ? 40 : 34 }}>
+                <div style={{ position: 'absolute', left: 0, right: 0, top: narrow ? 15 : 6, height: narrow ? 8 : 10, borderRadius: 5, background: CELL, border: `1px solid ${CELL_LINE}`, boxSizing: 'border-box' }} />
+                <div style={{ position: 'absolute', left: 0, width: `${pct(total)}%`, minWidth: total > 0 ? 8 : 0, top: narrow ? 15 : 6, height: narrow ? 8 : 10, borderRadius: 5, background: A_FILL, transition: 'width .3s ease' }} />
+                {[[parP, par, 'Par', S_INK2, parAnchor], [aceP, ace, 'Ace', 'var(--stg-warn, #8a5406)', aceAnchor]].map(([p, v, nm, col, tr]) => (
+                  <React.Fragment key={nm}>
+                    <span style={{ position: 'absolute', left: `${p}%`, top: narrow ? 11 : 0, width: 2, height: narrow ? 16 : 22, marginLeft: -1, background: col }} />
+                    <span style={{ position: 'absolute', left: `${p}%`, top: narrow ? 0 : 21, transform: tr, fontFamily: SANS, fontSize: narrow ? 9 : 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: col, whiteSpace: 'nowrap' }}>{nm} {v}</span>
+                  </React.Fragment>
+                ))}
+                {narrow && <span style={{ position: 'absolute', right: 0, top: 27, fontFamily: SANS, fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: S_MUTE }}>Best {ceil}</span>}
+              </div>
+            </div>
+          );
 
-          <div style={{ maxWidth: 430, margin: '0 auto' }}>
-            <div className="hd-felt">
-              {/* the card on offer, and the muck */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 13 }}>
-                <div>
-                  <div style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--stg-ink2, rgba(255,255,255,0.72))', marginBottom: 5 }}>on offer</div>
-                  <div key={consumed} className="hd-offer" style={{ width: 58, height: 76 }}>
-                    {current != null ? <CardFace card={current} size="lg" /> : (
-                      <div style={{ width: '100%', height: '100%', borderRadius: 8, border: '1.5px dashed rgba(var(--stg-fieldink, 255,255,255), 0.34)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--stg-mute2, rgba(255,255,255,0.6))', fontFamily: MONO, fontSize: 11 }}>done</div>
+          const left = 25 - g.placed.length;
+          const toCome = Math.max(0, PUZZLE.deck.length - consumed - (current != null ? 1 : 0));
+          const mucked = g.muckAt >= 0 ? PUZZLE.deck[g.muckAt] : null;
+          const muckTitle = 'Throw this card away and take the next one, sight unseen. One a day.';
+          const bigCard = (w, h, sz) => (
+            <div key={consumed} className="hd-offer" style={{ width: w, height: h, flex: 'none' }}>
+              {playing && current != null ? <CardFace card={current} sz={sz} ring={started} /> : (
+                <div style={{ width: '100%', height: '100%', boxSizing: 'border-box', borderRadius: 10, background: CELL, border: `1.5px dashed ${CELL_LINE}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontSize: 12, fontWeight: 700, color: S_MUTE, textAlign: 'center', padding: 6 }}>Board full</div>
+              )}
+            </div>
+          );
+          const muckBtn = (full) => (
+            <button className="hd-tool" onClick={muck} title={muckTitle}
+              style={{ minHeight: 44, ...(full ? { width: '100%', justifyContent: 'center' } : null) }}>
+              <Undo2 size={15} /> Muck this card
+            </button>
+          );
+          const madeList = PAY.filter((v) => madeCount[v]).map((v) => `${handLabel(v).toLowerCase()}${madeCount[v] > 1 ? ` ×${madeCount[v]}` : ''} +${v * madeCount[v]}`);
+          const offerLine = done ? 'Board full. That is the round.'
+            : current != null ? (started ? <>Tap a square for the <span style={{ whiteSpace: 'nowrap' }}>{curTxt}</span>.</> : 'Press Start to deal.') : '';
+
+          const payTable = (
+            <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 3, borderTop: `1px solid ${CELL_LINE}`, paddingTop: 10 }} aria-label="Pay table">
+              <span style={{ ...K, fontSize: 10, fontWeight: 800, marginBottom: 3 }}>Pay table</span>
+              {PAY.map((v) => {
+                const hit = madeCount[v] || 0;
+                return (
+                  <div key={v} style={{ display: 'flex', justifyContent: 'space-between', gap: 6, fontSize: 12, fontWeight: hit ? 800 : 600, color: hit ? A_INK : S_INK2 }}>
+                    <span>{hit ? '✓ ' : ''}{handLabel(v)}{hit > 1 ? ` ×${hit}` : ''}</span>
+                    <span style={{ fontVariantNumeric: 'tabular-nums' }}>{v}</span>
+                  </div>
+                );
+              })}
+            </div>
+          );
+
+          const deskLeft = (
+            <div style={{ width: 150, flex: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <span style={K}>{done ? 'The deal · done' : `The deal · card ${Math.min(consumed + 1, PUZZLE.deck.length)}`}</span>
+              {bigCard(104, 146, 'big')}
+              <span style={{ fontSize: 13, fontWeight: 700, color: S_INK, lineHeight: 1.4 }}>{offerLine}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: S_MUTE, lineHeight: 1.4 }}>{left} square{left === 1 ? '' : 's'} left · {toCome} card{toCome === 1 ? '' : 's'} still to come</span>
+              {mucked != null ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                  <MiniCard card={mucked} />
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: S_MUTE, lineHeight: 1.35 }}>Muck used<br />one per deal</span>
+                </div>
+              ) : !playing ? (
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: S_MUTE, lineHeight: 1.35, marginTop: 2 }}>Muck not used</span>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 2 }}>
+                  {muckBtn(true)}
+                  <span style={{ fontSize: 11, fontWeight: 600, color: S_MUTE, lineHeight: 1.35 }}>One per deal. The next card comes blind.</span>
+                </div>
+              )}
+              {payTable}
+            </div>
+          );
+
+          const phoneHead = (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              {bigCard(64, 90, 'bigS')}
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <span style={{ fontSize: 14, fontWeight: 800, color: S_INK }}>{done ? 'Board full' : `Card ${Math.min(consumed + 1, PUZZLE.deck.length)} · ${started ? 'tap a square' : 'press Start'}`}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: S_MUTE, lineHeight: 1.35 }}>
+                  {left} square{left === 1 ? '' : 's'} left · {mucked != null ? <>muck used ({RANK_LABEL[rankOf(mucked)]}{SUIT_PIP[suitOf(mucked)]})</> : `${toCome} to come`}
+                </span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: madeList.length ? A_INK : S_MUTE, lineHeight: 1.35 }}>
+                  {madeList.length ? `Made: ${madeList.join(' · ')}` : 'Made: nothing yet'}
+                </span>
+              </div>
+              {mucked == null && playing && (
+                <button className="hd-tool" onClick={muck} title={muckTitle} aria-label="Muck this card"
+                  style={{ minHeight: 44, minWidth: 44, flexDirection: 'column', gap: 2, padding: '4px 8px', fontSize: 11 }}>
+                  <Undo2 size={15} /> Muck
+                </button>
+              )}
+            </div>
+          );
+
+          return (
+            <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? 'transparent' : T.white, border: STAGE ? 0 : `2px solid ${COLORS.ink}`, borderRadius: STAGE ? 0 : 10, padding: STAGE ? 0 : '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+              {/* These figures move UP into the cap on a loft page; printing
+                  them twice is the one thing to avoid. */}
+              {!LOFT && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+                <span style={{ whiteSpace: 'nowrap' }}>points <b style={{ color: total >= par ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{total}</b></span>
+                <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
+                <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>par <b style={{ color: ACC_INK, fontWeight: 500 }}>{par}</b> &middot; ace <b style={{ color: INK, fontWeight: 500 }}>{ace}</b></span>
+              </div>
+              )}
+
+              {track}
+
+              {narrow ? (
+                <div className="hd-felt" style={{ padding: 12, borderRadius: 18, display: 'flex', flexDirection: 'column' }}>
+                  {phoneHead}
+                  <div style={{ marginTop: 14 }}>{renderGrid(grid, scores, rowFull, colFull, rowK, colK, true)}</div>
+                  {playing && (
+                    <span style={{ fontSize: 11, fontWeight: 600, color: S_MUTE, lineHeight: 1.4, paddingTop: 10 }}>Press and hold a square to preview its row and column before you commit.</span>
+                  )}
+                </div>
+              ) : (
+                <div className="hd-felt" style={{ padding: '18px 18px 16px', display: 'flex', gap: 18 }}>
+                  {deskLeft}
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {renderGrid(grid, scores, rowFull, colFull, rowK, colK, true)}
+                    {playing && (
+                      <span style={{ fontSize: 12, fontWeight: 600, color: S_MUTE, marginTop: 'auto', paddingTop: 8, lineHeight: 1.45 }}>Hovering a square shows what each of its two lines would hold. A line scores the moment its fifth card lands.</span>
                     )}
                   </div>
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: 'var(--stg-ink, rgba(255,255,255,0.86))', lineHeight: 1.45 }}>
-                    {done ? 'Board full. That is the round.'
-                      : current != null ? `${cardName(current)}. Tap a square.`
-                      : ''}
-                  </div>
-                  <button className="hd-tool" onClick={muck} disabled={!muckLeft || !playing}
-                    title="Throw this card away and take the next one, sight unseen. One a day."
-                    style={{ marginTop: 8, background: muckLeft && playing ? `color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent)` : 'var(--stg-surf2, rgba(255,255,255,0.55))', borderColor: `color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 50%, transparent)`, color: `var(--stg-ink, #6d1a1a)` }}>
-                    <Undo2 size={14} /> {muckLeft ? 'Muck (1 left)' : 'Muck used'}
+              )}
+              <div style={{ padding: '10px 2px 0', fontSize: narrow ? 11 : 12, fontWeight: 600, color: S_MUTE }}>Same deal for everybody. Every square serves one row and one column.</div>
+
+              {done && (won || !LOFT || revealed) && (
+                <div style={{ marginTop: 12, textAlign: 'center' }}>
+                  <button type="button" onClick={() => setShowBest((v) => !v)}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12.5, color: FADED, textDecoration: 'underline', textUnderlineOffset: 3, minHeight: 44 }}>
+                    {showBest ? 'Hide the best arrangement' : `The best board found on these cards was ${PUZZLE.ceiling}. See it`}
                   </button>
-                  <div style={{ fontFamily: MONO, fontSize: 10, color: 'var(--stg-ink2, rgba(255,255,255,0.6))', marginTop: 6 }}>
-                    {25 - g.placed.length} square{25 - g.placed.length === 1 ? '' : 's'} left
-                  </div>
-                </div>
-              </div>
-
-              {/* the grid, with row scores down the right and column scores along the bottom */}
-              <div className="hd-board">
-                {Array.from({ length: 5 }).map((_, r) => (
-                  <React.Fragment key={`r${r}`}>
-                    {Array.from({ length: 5 }).map((_, c) => {
-                      const idx = r * 5 + c;
-                      const card = grid[idx];
-                      const live = playing && card == null && current != null && !!g.t0;
-                      return (
-                        <button key={idx} className="hd-cell" onClick={() => place(idx)} disabled={!live}
-                          aria-label={card != null ? cardName(card) : `empty square, row ${r + 1} column ${c + 1}`}
-                          style={cellStyle(card != null, live)}>
-                          {card != null ? <CardFace card={card} /> : null}
-                        </button>
-                      );
-                    })}
-                    <ChipCell><ScoreChip value={scores[r]} complete={rowFull[r]} /></ChipCell>
-                  </React.Fragment>
-                ))}
-                {Array.from({ length: 5 }).map((_, c) => (
-                  <ChipCell key={`c${c}`}><ScoreChip value={scores[5 + c]} complete={colFull[c]} /></ChipCell>
-                ))}
-                <ChipCell><ScoreChip value={total} complete total /></ChipCell>
-              </div>
-            </div>
-          </div>
-
-          {done && (won || !LOFT || revealed) && (
-            <div style={{ marginTop: 12, textAlign: 'center' }}>
-              <button type="button" onClick={() => setShowBest((v) => !v)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12.5, color: FADED, textDecoration: 'underline', textUnderlineOffset: 3 }}>
-                {showBest ? 'Hide the best arrangement' : `The best board found on these cards was ${PUZZLE.ceiling}. See it`}
-              </button>
-              {showBest && (
-                <div style={{ marginTop: 10, maxWidth: 430, margin: '10px auto 0' }}>
-                  <div className="hd-felt" style={{ borderColor: 'var(--stg-line2, #3d3d46)', background: 'var(--stg-panel, #4a4a55)' }}>
-                    <div className="hd-board">
-                      {Array.from({ length: 5 }).map((_, r) => (
-                        <React.Fragment key={`br${r}`}>
-                          {Array.from({ length: 5 }).map((_, c) => (
-                            <div key={`b${r}${c}`} style={{ aspectRatio: '0.78' }}><CardFace card={PUZZLE.best[r * 5 + c]} dim /></div>
-                          ))}
-                          <ChipCell><ScoreChip value={bestScores[r]} complete /></ChipCell>
-                        </React.Fragment>
-                      ))}
-                      {Array.from({ length: 5 }).map((_, c) => (
-                        <ChipCell key={`bc${c}`}><ScoreChip value={bestScores[5 + c]} complete /></ChipCell>
-                      ))}
-                      <ChipCell><ScoreChip value={PUZZLE.ceiling} complete total /></ChipCell>
+                  {showBest && (
+                    <div style={{ marginTop: 10, textAlign: 'left' }}>
+                      <div className="hd-felt" style={{ padding: narrow ? 12 : 18, maxWidth: narrow ? undefined : 520, margin: '0 auto' }}>
+                        <div style={{ ...K, marginBottom: 10 }}>The best known arrangement · {PUZZLE.ceiling}</div>
+                        {renderGrid(PUZZLE.best, bestScores, [true, true, true, true, true], [true, true, true, true, true], [5, 5, 5, 5, 5], [5, 5, 5, 5, 5], false)}
+                      </div>
+                      <div style={{ fontSize: 12, color: FADED, fontWeight: 600, marginTop: 8, lineHeight: 1.5 }}>
+                        The best arrangement of these 26 cards our search could find. It is not a target and not a proven maximum: you would have to have seen the whole deal coming to build it, which is exactly why the round is scored against par and ace, both of which are rounds played blind.
+                      </div>
                     </div>
-                  </div>
-                  <div style={{ fontSize: 12, color: FADED, fontWeight: 600, marginTop: 8, lineHeight: 1.5 }}>
-                    The best arrangement of these 26 cards our search could find. It is not a target and not a proven maximum: you would have to have seen the whole deal coming to build it, which is exactly why the round is scored against par and ace, both of which are rounds played blind.
-                  </div>
+                  )}
                 </div>
               )}
             </div>
-          )}
-        </div>
-        )}
+          );
+        })()}
 
 
           <div className={STAGE ? undefined : 'loft-sol'}>
