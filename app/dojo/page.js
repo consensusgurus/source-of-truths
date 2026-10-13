@@ -3,6 +3,7 @@ import DojoClient from './DojoClient';
 import { SITE_URL } from '@/lib/site';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { DOJO_RUN_ID, DOJO_FORMS, dojoWeight } from '@/lib/dojo';
+import { primeDojoClocks } from '@/lib/dojo-clocks';
 import { circuitKeysFor } from '@/lib/circuits';
 import { PUZZLES as P_sixes } from '../sixes/puzzles';
 import { PUZZLES as P_suds } from '../suds/puzzles';
@@ -45,8 +46,12 @@ function etTodayServer() {
   catch (e) { return new Date().toISOString().slice(0, 10); }
 }
 
-export default function DojoPage() {
+export default async function DojoPage() {
   const today = etTodayServer();
+  // The day's speed clocks, measured from recent solves (lib/dojo-clocks.js),
+  // so the verdict here and the board grade the same way.
+  let clocks = null;
+  try { clocks = await primeDojoClocks(today); } catch (e) {}
   const sections = [];
   for (const key of circuitKeysFor(DOJO_RUN_ID, today)) {
     const bank = BANKS[key] || [];
@@ -74,7 +79,7 @@ export default function DojoPage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Suspense fallback={null}>
-        <DojoClient dateLabel={dateLabel} dateShort={dateShort} sections={sections} />
+        <DojoClient dateLabel={dateLabel} dateShort={dateShort} sections={sections} clocks={clocks} />
       </Suspense>
     </>
   );

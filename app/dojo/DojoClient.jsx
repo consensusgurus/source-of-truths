@@ -91,7 +91,10 @@ function Belt({ ti, tied = true, dye = false, small = false }) {
   );
 }
 
-export default function DojoClient({ dateLabel, dateShort, sections = [] }) {
+export default function DojoClient({ dateLabel, dateShort, sections = [], clocks: clocksIn = null }) {
+  // The day's clocks come from the server (lib/dojo-clocks.js); the seed covers a
+  // page served before they could be measured.
+  const CLK = clocksIn || DOJO_CLOCK;
   const N = sections.length;
   const STORE = `sot_run_dojo_${etToday()}`;
   const [r, setR] = useState(() => freshRun());
@@ -133,7 +136,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [] }) {
   const board = useCircuitBoard(DOJO_RUN_ID, hydrated && done);
 
   const counted = useMemo(() => sections.map((sec) => banked[sec.key] || r.results[sec.key] || null), [sections, banked, r.results]);
-  const parts = counted.map((c, i) => (c ? dojoGridPoints(sections[i].key, c.score, c.total, c.secs) : 0));
+  const parts = counted.map((c, i) => (c ? dojoGridPoints(sections[i].key, c.score, c.total, c.secs, CLK) : 0));
   const total = Math.round(parts.reduce((a, b) => a + b, 0));
   const allBanked = N > 0 && sections.every((s) => banked[s.key]);
 
@@ -287,7 +290,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [] }) {
               {secDone.unknown ? <div className="dj-braw">Result on file</div> : (
                 <div className="dj-split">
                   <div><span>Solve</span><b>{dojoAcc(secDone.score, secDone.total) >= 1 ? 'Clean' : 'Not solved'}</b><i style={{ width: `${Math.round(100 * dojoAcc(secDone.score, secDone.total))}%` }} /></div>
-                  <div><span>Speed</span><b>{secDone.secs ? fmtClock(secDone.secs) : 'no clock'}</b><i style={{ width: `${Math.round(100 * dojoSpeed(sec.key, secDone.secs))}%` }} /><small>full marks under {fmtClock(DOJO_CLOCK[sec.key][0])}</small></div>
+                  <div><span>Speed</span><b>{secDone.secs ? fmtClock(secDone.secs) : 'no clock'}</b><i style={{ width: `${Math.round(100 * dojoSpeed(sec.key, secDone.secs, CLK))}%` }} /><small>full marks under {fmtClock((CLK[sec.key] || DOJO_CLOCK[sec.key])[0])}</small></div>
                 </div>
               )}
               {!last ? (

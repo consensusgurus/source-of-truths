@@ -979,7 +979,11 @@ export default function LoftFinish({
   // Everything above has run, so this is safe: same hooks, same order, every
   // render. See app/StageFinish.jsx for why the ending is a band and not a card.
   if (onStage) {
+    // The sudoku end card's Dojo/more-sudokus pop rides the stage curtain too:
+    // this branch is where nearly every finish lands now.
     return (
+      <>
+      <DojoPop ready self={selfKey} />
       <StageFinish
         title={retryVerdict || title} detail={detail} iq={iq} board={board} day={day} streak={streak}
         missLabel={missLabel} gameRank={gameRank} outcome={outcome} options={options} name={name}
@@ -1006,6 +1010,7 @@ export default function LoftFinish({
            shows a figure. */
         ready={figuresShow}
       />
+      </>
     );
   }
 

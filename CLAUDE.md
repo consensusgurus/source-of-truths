@@ -9026,6 +9026,7 @@ Circuit id `dojo`, engine `dojo`, scorer `dojo`, `scoreFrom: '2026-10-12'`.
   `scripts/verify-circuits.mjs` recomputes the pick with its own day math (check 7), proves
   every pool member is dealt once per pool-length cycle (7b), and tiers the trophy off the
   AVERAGE day (fixed medians plus the pool's mean).
+- **Clocks ADAPT (owner, 2026-10-12 night):** a day's [PAR, CAP] per grid come from `lib/dojo-clocks.js`, which reads EVERY solve of that game over the 28 days before the day (25th / 90th percentile, first filed row per player, rows filed before the day began) and blends with the seed `DOJO_CLOCK` (top-10 boards' 25th / 75th) by solve count, measured-only at 80 solves. Fixed per day, so finish verdict and board agree and archived days never re-score. The routes call `primeCircuitClocks` before `circuitScorer`; `/dojo` primes and passes `clocks` to the client.
 - **Scoring:** out of 100, Sixes 25, Suds 35, the variant 40 (each form worth more than the last); each half solving, half speed
   (speed 1 at PAR, 0 at CAP, PAR = fastest tenth of solves, CAP = 75th percentile, measured
   2026-09-17 to 10-11; Cages' CAP held at an hour). A sudoku is right or not, so this is a race.
@@ -9040,6 +9041,9 @@ Circuit id `dojo`, engine `dojo`, scorer `dojo`, `scoreFrom: '2026-10-12'`.
   the rotating **Sudoku circuit was retired** (trophy row removed, `/circuits/sudoku` 308s to
   `/dojo`, categories and sets point at `dojo`, the family list is `SUDOKU_POOL` in
   lib/circuits.js); `SudokuCircuitPop` became `app/circuits/DojoPop.jsx`, shown two seconds onto
-  the end card of ANY Sudoku-category game, once a day, unless the Dojo is done today or the page
-  is inside another run. The pregame Dojo doors on the sudoku clients came out. Dojo is a `lead`
+  the end card of ANY Sudoku-category game, once a day, unless the page is inside another run. It is
+  mounted on the stage curtain branch too (it was missing there, so most players never saw it), waits
+  for the flood to clear, and holds the hand-off countdown. NEWER players (visitor id under 14 days old,
+  `isNewerVisitor`) also get up to four unplayed sudokus on the same card; with the Dojo done today they
+  get only those. The pregame Dojo doors on the sudoku clients came out. Dojo is a `lead`
   circuit (5), so it sits with the other popular runs.

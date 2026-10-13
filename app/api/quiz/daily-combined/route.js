@@ -11,6 +11,7 @@ import { GAME_PUZZLES, etTodayServer, suffixOfDate, gamesForSuffix } from '@/lib
 import { groupByCode, membersOf, isMissingTable } from '@/lib/groups';
 import { fiveForSuffix, FIVE_SIZE } from '@/lib/daily-five';
 import { circuitKeysFor, circuitById, isMarquee, circuitScoreMode, circuitScorer } from '@/lib/circuits';
+import { primeCircuitClocks } from '@/lib/dojo-clocks';
 
 // The day's slate (which puzzle each game published on a date) lives in
 // lib/daily-slate.js, shared with /api/quiz/daily-me. This route used to carry
@@ -399,6 +400,8 @@ export async function GET(request) {
   // this payload sorts and prints are converted, by rankByCorrect below.
   // A SCORED circuit (Judged, 2026-10-08) ranks the same way, each game
   // turned into points by its own scorer (half accuracy, half speed).
+  // Dojo grades on the day's measured clocks (lib/dojo-clocks.js); prime them first.
+  if (circuitOn) await primeCircuitClocks(circuitId, isoOfSuffix(suffix));
   const scaleOn = circuitOn ? circuitScorer(circuitId, isoOfSuffix(suffix)) : null;
   const rawScore = circuitOn && (circuitScoreMode(circuitId) === 'correct' || !!scaleOn);
   // ONE CIRCUIT RANKS ON THE CLOCK (owner, 2026-09-05): the Valet Gauntlet's

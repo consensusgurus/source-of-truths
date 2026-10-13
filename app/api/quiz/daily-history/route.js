@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 import { loadQuizResultsCached } from '@/lib/quiz-results-cache';
 import { scoreGame, combineDaily, rankByCorrect, rankByTime, DAILY_KEYS, GAME_MAX, bestNForSuffix, etDayEndMs } from '@/lib/daily-combined';
 import { CIRCUIT_PARAM, circuitById, circuitKeysFor, circuitScoreMode, circuitScorer, isMarquee } from '@/lib/circuits';
+import { primeCircuitClocks } from '@/lib/dojo-clocks';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -193,6 +194,7 @@ export async function GET(req) {
       // does for the same circuit.
       // A scaled circuit (Law School) from its launch day on; earlier days keep
       // the board they were crowned on.
+      if (circuitOn) await primeCircuitClocks(circuitId, dayISO);
       const scaleDay = circuitOn ? circuitScorer(circuitId, dayISO) : null;
       if (rawScore || scaleDay) rankByCorrect(eligible, memberKeys, scaleDay && scaleDay.fn);
       if (byTime) rankByTime(eligible, memberKeys);
