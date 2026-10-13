@@ -42,6 +42,7 @@ const LIVE_KEYS = new Set(liveDailyKeys());
 const DAILY_GAMES = ALL_DAILY_GAMES.filter((g) => LIVE_KEYS.has(g.key));
 import { DISPLAY_CIRCUITS, RUN_GAMES, circuitKeysFor, circuitEntryHref } from '@/lib/circuits';
 import GameGlyph from '../GameGlyph';
+import CircuitArt from '../CircuitArt';
 import { RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
 // ONE READING OF A RESULT ROW, the same one the ending curtain and the tile
 // panel use. It prints the run in the GAME'S own units — 7/16 · 3 busts · 2:11
@@ -156,7 +157,7 @@ const AZ_KEY = 'sot_stage_az';
 // same way; this repeats it because the home's sort has to interleave that
 // lead with the reader's own progress, which that module knows nothing about.
 // On a phone the shelf's peek is exactly these three (CIRC_PEEK_NARROW).
-const CIRC_LEAD = ['pricecheck', 'gauntlet', 'passport', 'deduction', 'dojo', 'room', 'valet'];   // owner, 2026-10-03: Passport replaces the Daily Five; 2026-10-08: Judged fourth
+const CIRC_LEAD = ['pricecheck', 'gauntlet', 'passport', 'deduction', 'dojo', 'room'];   // owner, 2026-10-03: Passport replaces the Daily Five; 2026-10-08: Judged fourth
 
 // THE NEWCOMER'S ROW (owner, 2026-09-04). A reader with NO footprint at all gets
 // one row above everything else: two circuits sharing a line, then the busiest
@@ -340,7 +341,11 @@ const TILES_KEY = 'sot_home_tiles';
 // shows on a category when any of its games lives there, plus the hand-added
 // homes in PILL_EXTRA (Passport is a geography game the owner also files under
 // Trivia). All Puzzles shows all five.
-const PILL_CIRCUITS = ['gauntlet', 'pricecheck', 'passport', 'deduction', 'dojo', 'room', 'valet'];   // owner, 2026-10-13: the seven built runs only
+const PILL_CIRCUITS = ['gauntlet', 'pricecheck', 'passport', 'deduction', 'dojo', 'room'];
+// CIRCUITS-PANE ONLY (owner, 2026-10-13): the Valet Gauntlet is less developed,
+// so it is never offered on the main page (pills, phone runs, the shelf peek);
+// it shows only when the reader opens Circuits, or has starred it.
+const SHELF_ONLY = new Set(['valet']);
 const PILL_EXTRA = { passport: ['Trivia'], dojo: ['Logic'] };   // owner, 2026-10-13: Dojo also shows under Logic
 // The server has no layout pass; an isomorphic alias keeps it from warning.
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
@@ -1706,7 +1711,7 @@ export default function StageToday() {
   const circLead = useMemo(() => {
     const byId = new Map(circuits.map((c) => [c.id, c]));
     const lead = LEAD_CIRCUITS.map((id) => byId.get(id)).filter(Boolean);
-    const rest = circuits.filter((c) => !LEAD_CIRCUITS.includes(c.id));
+    const rest = circuits.filter((c) => !LEAD_CIRCUITS.includes(c.id) && !SHELF_ONLY.has(c.id));
     return [...lead, ...rest].slice(0, Math.max(1, circPeek));
   }, [circuits, circPeek]);
 
@@ -2413,14 +2418,15 @@ export default function StageToday() {
     return null;
   };
   // ONE BIG RUN CARD: the phone's lead run and every card in the Circuits pane.
-  const runCard = (c, cat, eyebrow, extra) => {
+  const runCard = (c, cat, eyebrow, extra, art) => {
     const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
     const done = runFull(c);
     const gtxt = runGroupText(c, st);
     const left = !st ? '\u00a0'
       : (done && st.rank ? `You: #${st.rank} of ${fmtN(st.players)}` : `${fmtN(st.players)} ${st.players === 1 ? 'player' : 'players'} today`);
     return (
-      <a key={c.id} className={'sty-rbig' + (done ? ' done' : '')} href={withTq(circuitEntryHref(c.id))} style={runLook(c, cat)}>
+      <a key={c.id} className={'sty-rbig' + (done ? ' done' : '') + (art ? ' art' : '')} href={withTq(circuitEntryHref(c.id))} style={runLook(c, cat)}>
+        {art ? <CircuitArt id={c.id} /> : null}
         {eyebrow ? <span className="ey">{eyebrow}</span> : null}
         <b className="nm">{c.name}{extra || null}</b>
         <span className="go">{done ? 'Results' : 'Play'}</span>
@@ -2750,6 +2756,7 @@ export default function StageToday() {
                 {pinnedCircs.map((c, i) => (
                   <a key={c.id} className={'sty-circ' + (c.n === c.games.length ? ' full' : '')}
                     href={withTq(circuitEntryHref(c.id))} style={{ '--cc': c.hue, '--i': i }}>
+                    <CircuitArt id={c.id} />
                     <div className="sty-chead">
                       <div className="sty-cn">{c.name}</div>
                       <div className="sty-cnum">{c.unit ? (c.n ? 'Played' : <i>{c.unit}</i>) : <>{c.n}<i>/{c.games.length}</i></>}</div>
@@ -2823,7 +2830,7 @@ export default function StageToday() {
                 board and in your group. */}
             <div className={'sty-rcards' + (isOpen(CIRC_ID) ? '' : ' shut')} ref={circRef}>
               {(allCircs || circPane ? circuits : circLead).map((c) => runCard(c, null, null,
-                <CircStar c={c} canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite} />))}
+                <CircStar c={c} canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite} />, true))}
             </div>
             {isOpen(CIRC_ID) && !circPane && circuits.length > circLead.length ? (
               <button type="button" className="sty-more" onClick={() => setAllCircs((v) => !v)}>
@@ -4467,6 +4474,21 @@ ${PATCH_CSS}
 .sty-rbig:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
 .sty-rcards{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));}
 .sty-rcards.shut{display:none;}
+/* CIRCUIT ART (owner, 2026-10-13): a drawn band across the top of a run card,
+   on the Circuits pane and the starred circuits in My games only. The band is
+   the card hue at 13 percent over the surface; .k shapes take that same ground
+   so they read as sitting on top. On the pale register the stroke darkens so
+   it carries on white, the same treatment the finished-circuit figure gets. */
+.ca{display:flex;align-items:center;justify-content:center;height:112px;
+  --ca-bg:color-mix(in srgb, var(--art) 13%, var(--stg-surf));background:var(--ca-bg);color:var(--art);}
+.ca svg{width:220px;height:110px;max-width:100%;}
+.ca .k{fill:var(--ca-bg);}
+.ca .ko{stroke:var(--ca-bg);}
+[data-stage-theme=light] .ca{color:color-mix(in srgb, var(--art) 62%, #0b0d12);}
+.sty-rbig.art{overflow:hidden;}
+.sty-rbig .ca{--art:var(--ph,var(--stg-acc));grid-column:1 / -1;grid-row:1;margin:-10px -12px 8px;}
+.sty-rbig.art .go{grid-row:2 / 4;}
+.sty-circ .ca{--art:var(--cc);margin:-12px -14px 10px -16px;}
 .sty-rnm{display:none;}
 @media (max-width:900px){
   .sty-cpills{display:none;}
