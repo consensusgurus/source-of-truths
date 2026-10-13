@@ -23,6 +23,7 @@
 // looks like one object.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { circuitKeysFor, SUDOKU_POOL } from '@/lib/circuits';
@@ -108,8 +109,11 @@ export default function DojoPop({ ready = false, self = '' }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [view, close]);
 
-  if (!view) return null;
-  return (
+  if (!view || typeof document === 'undefined') return null;
+  // PORTALED TO <body>: the stage curtain collapses the page with a rule that
+  // hides every sibling of the finish card (globals.css .stf-collapse), and
+  // this card mounts beside it, so in place it rendered display:none.
+  return createPortal(
     <div className="rdp-bd" role="dialog" aria-modal="true" aria-labelledby="djp-h" onClick={close}>
       <style dangerouslySetInnerHTML={{ __html: RUN_DOOR_CSS(ACCENT) + MORE_CSS }} />
       <div className="rdp" onClick={(e) => e.stopPropagation()}>
@@ -144,7 +148,8 @@ export default function DojoPop({ ready = false, self = '' }) {
         ) : null}
         <button type="button" className="rdp-no" onClick={close}>Not now</button>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
