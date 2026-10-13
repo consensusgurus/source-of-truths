@@ -41,6 +41,7 @@ const CLIENTS = {
   sando: dynamic(() => import('../sando/SandoClient'), { ssr: false, loading: () => null }),
   quilt: dynamic(() => import('../quilt/QuiltClient'), { ssr: false, loading: () => null }),
   mercury: dynamic(() => import('../mercury/MercuryClient'), { ssr: false, loading: () => null }),
+  arrow: dynamic(() => import('../arrow/ArrowClient'), { ssr: false, loading: () => null }),
   cages: dynamic(() => import('../cages/CagesClient'), { ssr: false, loading: () => null }),
   knight: dynamic(() => import('../knight/KnightClient'), { ssr: false, loading: () => null }),
   polka: dynamic(() => import('../polka/PolkaClient'), { ssr: false, loading: () => null }),

@@ -3812,6 +3812,7 @@ archive and hub chips use the short form `Sun`.
 | Diag | fourteen printed digits instead of the weekday 16 to 26 (from 2026-09-08) |
 | Frame | two printed digits instead of the weekday 4 to 14, under all thirty-six sums (from 2026-09-08) |
 | Rim | thirteen of the thirty-six gutters printed instead of the weekday 16 to 30 (from 2026-09-08) |
+| Arrow | eight printed digits under twelve arrows, against twenty-eight under nine on a Monday (from launch, 2026-10-13) |
 | Giant | ninety of 256 clues and the only day that needs more than singles, against 96 to 128 on weekdays (from 2026-10-18) |
 | Circa | a trickier moment to place |
 | Extra | a trickier story to name |
@@ -4288,6 +4289,38 @@ and the keyboard takes A-G. Route `/giant`, key `giant`, legacy hue slate indigo
   always shows whole**: the finish ripple (`lib/finish-beats.js`, box [4, 4]) wants all 256.
 - Client is `mkgiant.py` (not committed), a transform of DiagClient with the diagonal taken out.
 - Bank 2026-10-13 to 2026-12-31 (80 boards). Extend with `gen-giant.mjs --until`; it only appends.
+
+## Arrow (`/arrow`) is the ARROW SUDOKU, and a shaft is NOT a house (launched 2026-10-13)
+
+Ordinary 9x9, ordinary boxes, ordinary printed digits, plus ARROWS: each runs from a circle through
+a shaft of two to four squares (steps to any of the eight neighbours), and the circle holds the SUM
+of the shaft. Key/route `arrow`, category **Sudoku**, `miss: null`, SOLVE_ONLY, first-play hint,
+legacy accent fuchsia `#86198f` / navy `#f0abfc`. Wired by `scripts/wire-arrow.mjs` (beside
+Mercury in every list). No PNG tiles; glyph in `lib/game-glyphs.js`; share card
+`public/og/arrow.png` from `scripts/bake-og.mjs arrow`. Premiere 2026-10-13 to 10-17. The client
+is a fork of Mercury with the thermometer overlay swapped for `ArrowOverlay` (a ring, a thin line
+and an arrowhead, painted `currentColor` on a `--stg-mute` style colour per the SVG-paint rule),
+and it carries Mercury's RunEmbed wiring.
+
+- **A SHAFT IS NOT A HOUSE.** Digits may repeat along one arrow when the two squares share no row,
+  column or box, so the arrow rule supplies sums and eliminations only, never a hidden single.
+- **The ramp is the printed-given count** with the arrow count stepping up late in the week:
+  Mon 28, Tue 25, Wed 22, Thu 19 (nine arrows, shafts 2-3), Fri 16, Sat 13 (ten), **Sunday 8**
+  (twelve, shafts 2-4). Measured first: the greedy floor is 11 to 17 with nine arrows, 9 to 13
+  with ten, 5 to 12 with twelve.
+- **ARROW NECESSITY is checked**: on every board the printed digits read as a plain sudoku admit
+  more than one grid. Layout rules: no shared squares, no turn of 90 degrees or more, no shaft
+  touching itself, no two diagonal steps crossing.
+- `scripts/arrow-core.mjs` + `gen-arrow.mjs` (deterministic, resumable through
+  `/tmp/build/arrow-bank.jsonl`) build the bank: 111 days, 2026-10-13 to 2027-01-31.
+  `scripts/verify-arrow.mjs` shares no code with the core and `scripts/arrow-mutation-test.mjs`
+  breaks the bank eleven ways.
+- **The uniqueness counter MUST propagate.** A cell-by-cell search with only a running-sum bound took
+  78 seconds on one twelve-arrow Sunday; arrow support plus singles at every node takes milliseconds.
+- **In Enter the Dojo's variant pool from 2026-10-14** (owner, 2026-10-13), between Quilt and
+  Mercury. The pool's `before` is now a CHAIN (`before.before`), walked by `dojoPoolFor` and by
+  verify-circuits, so 10-12 keeps its eight-game pool and 10-13 its six-game pool. Its seed clock
+  [470, 1900] is an estimate the adaptive clocks replace.
 
 ## Frame and Rim are the GUTTER SUDOKUS, and they share one engine (launched 2026-09-08)
 

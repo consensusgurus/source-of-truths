@@ -88,7 +88,7 @@ import {
   Club, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, UserPlus, Gavel, Shield,
   Flame, Frame, Contrast, Layers, FileText, Waypoints, Anchor, PenLine, Gamepad2, Zap, Sigma, Sandwich,
   ArrowLeftRight, Gem, Map as MapIcon, Divide, TableProperties, TrendingUp, Milestone, Plane, CornerUpRight,
-  Clapperboard, Quote, CookingPot, ZoomIn, Axe, Truck, Rows3, Boxes, MoveDiagonal, Crop, Scan,
+  Clapperboard, Quote, CookingPot, ZoomIn, Axe, Truck, Rows3, Boxes, MoveDiagonal, Crop, Scan, MoveDownRight,
 } from 'lucide-react';
 import ReportIssue from './ReportIssue';
 import MindLoftMark from './MindLoftMark';
@@ -115,7 +115,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-15' };
+const LAUNCH_PIN = { keys: ['arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-15' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -208,6 +208,7 @@ export const GAME_META = {
   queen: { accent: '#a16207', badgeBg: '#a16207', badgeInk: T.white, Fin: Gem },
   towers: { accent: '#075985', badgeBg: '#075985', badgeInk: T.white, Fin: Building2 },
   mercury: { accent: '#991b1b', badgeBg: '#991b1b', badgeInk: T.white, Fin: Thermometer },
+  arrow: { accent: '#86198f', badgeBg: '#86198f', badgeInk: T.white, Fin: MoveDownRight },
   polka: { accent: '#16a34a', badgeBg: '#16a34a', badgeInk: T.white, Fin: CircleDot },
   diag: { accent: '#0e7490', badgeBg: '#0e7490', badgeInk: T.white, Fin: MoveDiagonal },
   giant: { accent: '#3949ab', badgeBg: '#3949ab', badgeInk: T.white, Fin: LayoutGrid },
@@ -307,6 +308,7 @@ const ALL_DAILY_GAMES = [
   { key: 'sixes',  cat: 'sudoku' ,   name: 'Sixes',  tag: 'The daily mini sudoku',     blurb: 'A 6x6 sudoku in boxes two tall and three wide. The short one: nothing counts against you, so the clock decides the day.', href: '/sixes' },
   { key: 'towers', cat: 'sudoku' ,   name: 'Towers', tag: 'Count the towers in view',  blurb: 'A skyline Latin square: border clues count the towers you can see, taller ones hiding shorter. 5x5 weekdays, 7x7 Sundays.', href: '/towers' },
   { key: 'mercury', cat: 'sudoku' ,  name: 'Mercury', tag: 'The daily thermo sudoku',  blurb: 'Digits climb every thermometer from its bulb. Pure visual ordering, one logical solution, and Sundays print almost nothing.', href: '/mercury' },
+  { key: 'arrow', cat: 'sudoku' ,  name: 'Arrow', tag: 'The daily arrow sudoku',  blurb: 'Every circle is the sum of its arrow. Small sums laid over a 9x9, one logical solution, and Sundays print just eight digits.', href: '/arrow' },
   { key: 'knight', cat: 'sudoku' ,   name: 'Knight', tag: 'The daily anti-knight sudoku',     blurb: 'One rule on top of sudoku: no digit repeats a knight move away. Select a square and its knights light up, and the board prints as few as thirteen digits.', href: '/knight' },
   { key: 'whittle', cat: 'sudoku' ,  name: 'Whittle', tag: 'The sudoku, backwards',            blurb: 'The one played backwards: a solved grid, eighteen clues, and you take clues out for as long as it still has one answer.', href: '/whittle' },
   { key: 'giant',  cat: 'sudoku' ,   name: 'Giant',  tag: 'The daily 16×16 sudoku',    blurb: 'Sudoku at sixteen: rows, columns and 4x4 boxes each hold 1 to 9 and A to G. 256 squares and a proper long sit.', href: '/giant' },

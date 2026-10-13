@@ -17,6 +17,7 @@ import { PUZZLES as SHOE_FULL } from '../shoe/puzzles';
 import { PUZZLES as QUEEN_FULL } from '../queen/puzzles';
 import { PUZZLES as TOWERS_FULL } from '../towers/puzzles';
 import { PUZZLES as MERCURY_FULL } from '../mercury/puzzles';
+import { PUZZLES as ARROW_FULL } from '../arrow/puzzles';
 import { PUZZLES as POLKA_FULL } from '../polka/puzzles';
 import { PUZZLES as KNIGHT_FULL } from '../knight/puzzles';
 const QUILT = QUILT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -28,6 +29,7 @@ const SHOE = SHOE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num,
 const QUEEN = QUEEN_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const TOWERS = TOWERS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const MERCURY = MERCURY_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ARROW = ARROW_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const POLKA = POLKA_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const KNIGHT = KNIGHT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 import { PUZZLES as CARVE } from '../carve/puzzles';
@@ -287,6 +289,7 @@ const GAMES = [
   { key: 'cages', name: 'Cages', path: '/cages', tag: 'Killer sudoku, no clues', accent: '#6b21a8', bg: '#f6f2fd', border: 'rgba(107,33,168,0.4)', src: CAGES },
   { key: 'towers', name: 'Towers', path: '/towers', tag: 'Skyscrapers, clues on the border', accent: '#075985', bg: '#eaf4fa', border: 'rgba(7,89,133,0.4)', src: TOWERS },
   { key: 'mercury', name: 'Mercury', path: '/mercury', tag: 'The daily thermo sudoku', accent: '#991b1b', bg: '#fdf1f1', border: 'rgba(153,27,27,0.4)', src: MERCURY },
+  { key: 'arrow', name: 'Arrow', path: '/arrow', tag: 'The daily arrow sudoku', accent: '#86198f', bg: '#fbf0fc', border: 'rgba(134,25,143,0.4)', src: ARROW },
   { key: 'polka', name: 'Polka', path: '/polka', tag: 'Kropki, no numbers at all', accent: '#16a34a', bg: '#ecf9f1', border: 'rgba(22,163,74,0.4)', src: POLKA },
   { key: 'knight', name: 'Knight', path: '/knight', tag: 'Sudoku plus the knight rule', accent: '#3730a3', bg: '#f1f0fd', border: 'rgba(55,48,163,0.4)', src: KNIGHT },
   { key: 'queen', name: 'Queen', path: '/queen', tag: 'White to play and promote', accent: '#a16207', bg: '#faf3e3', border: 'rgba(161,98,7,0.4)', src: QUEEN },

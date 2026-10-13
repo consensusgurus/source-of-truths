@@ -101,6 +101,7 @@ export const DAILY_GAMES = [
   { key: 'plot', href: '/plot', name: 'Plot', tag: 'divide the whole board', store: 'sot_plot_day', accent: '#78350f', bg: '#fbf1e5', border: 'rgba(120,53,15,0.4)' },
   { key: 'towers', href: '/towers', name: 'Towers', tag: 'the daily skyscrapers puzzle', store: 'sot_towers_day', accent: '#075985', bg: '#eaf4fa', border: 'rgba(7,89,133,0.4)' },
   { key: 'mercury', href: '/mercury', name: 'Mercury', tag: 'the daily thermo sudoku', store: 'sot_mercury_day', accent: '#991b1b', bg: '#fdf1f1', border: 'rgba(153,27,27,0.4)' },
+  { key: 'arrow', href: '/arrow', name: 'Arrow', tag: 'the daily arrow sudoku', store: 'sot_arrow_day', accent: '#86198f', bg: '#fbf0fc', border: 'rgba(134,25,143,0.4)' },
   { key: 'polka', href: '/polka', name: 'Polka', tag: 'the daily kropki sudoku', store: 'sot_polka_day', accent: '#16a34a', bg: '#ecf9f1', border: 'rgba(22,163,74,0.4)' },
   { key: 'giant', href: '/giant', name: 'Giant', tag: 'the daily 16×16 sudoku', store: 'sot_giant_day', accent: '#3949ab', bg: '#eceefa', border: 'rgba(57,73,171,0.4)' },
   { key: 'diag', href: '/diag', name: 'Diag', tag: 'the daily diagonal sudoku', store: 'sot_diag_day', accent: '#0e7490', bg: '#e8f6fa', border: 'rgba(14,116,144,0.4)' },

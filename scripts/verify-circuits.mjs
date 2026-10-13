@@ -377,9 +377,12 @@ function applyOrderLocal(c, live, day) {
 
 // A slot pool may be DATED (Dojo, 2026-10-12: Cages and Polka left after launch
 // day): days up to `before.until` deal from `before.pool`.
+// The chain may nest (Arrow joined 2026-10-14): the deepest era whose
+// `until` still covers the day wins.
 function slotPoolLocal(c, iso) {
-  const b = c.slot && c.slot.before;
-  return b && Array.isArray(b.pool) && iso <= b.until ? b.pool : c.slot.pool;
+  let pool = c.slot.pool;
+  for (let b = c.slot && c.slot.before; b && Array.isArray(b.pool); b = b.before) if (iso <= b.until) pool = b.pool;
+  return pool;
 }
 
 // ── 7. the read accessors agree with the data ───────────────────────────────
@@ -457,11 +460,11 @@ for (const c of CIRCUITS) {
     ? new Date(Date.parse(c.slot.before.until + 'T12:00:00Z') + 86400000).toISOString().slice(0, 10)
     : todayIso;
   // and the frozen days still deal from the old pool
-  if (c.slot.before) {
-    const b = c.slot.before.until;
+  for (let era = c.slot.before; era; era = era.before) {
+    const b = era.until;
     const got = circuitKeysFor(c.id, b)[c.keys.length];
     const idxB = Math.floor(Date.parse(b + 'T12:00:00Z') / 86400000);
-    const want = c.slot.before.pool[((idxB % c.slot.before.pool.length) + c.slot.before.pool.length) % c.slot.before.pool.length];
+    const want = era.pool[((idxB % era.pool.length) + era.pool.length) % era.pool.length];
     if (got !== want) fails.push(`${c.id}: ${b} deals ${got}, but the dated pool says ${want}`);
   }
   for (let d = 0; d < pool.length; d++) {
