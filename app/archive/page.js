@@ -120,6 +120,7 @@ import { PUZZLES as DIAG_FULL } from '../diag/puzzles';
 import { PUZZLES as FRAME_FULL } from '../frame/puzzles';
 import { PUZZLES as RIM_FULL } from '../rim/puzzles';
 import { PUZZLES as GIANT_FULL } from '../giant/puzzles';
+import { PUZZLES as SUMO_FULL } from '../sumo/puzzles';
 import { PUZZLES as SCRIPT_FULL } from '../script/puzzles';
 import { PUZZLES as QUOTES_FULL } from '../quotes/puzzles';
 import { PUZZLES as POTLUCK_FULL } from '../potluck/puzzles';
@@ -216,6 +217,7 @@ const FLANK = FLANK_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ nu
 const WHITTLE = WHITTLE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const DIAG = DIAG_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const FRAME = FRAME_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const SUMO = SUMO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const GIANT = GIANT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const RIM = RIM_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SCRIPT = SCRIPT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -382,6 +384,7 @@ const GAMES = [
   { key: 'whittle', name: 'Whittle', path: '/whittle', tag: 'The sudoku, backwards', accent: '#854d0e', bg: '#fdf6e9', border: 'rgba(133,77,14,0.4)', src: WHITTLE },
   { key: 'diag', name: 'Diag', path: '/diag', tag: 'Sudoku plus the two diagonals', accent: '#0e7490', bg: '#e8f6fa', border: 'rgba(14,116,144,0.4)', src: DIAG },
   { key: 'frame', name: 'Frame', path: '/frame', tag: 'Sums at every edge', accent: '#b45309', bg: '#fdf3e3', border: 'rgba(180,83,9,0.4)', src: FRAME },
+  { key: 'sumo', name: 'Sumo', path: '/sumo', tag: 'The greater-than sudoku', accent: '#8a6d0b', bg: '#faf5e6', border: 'rgba(138,109,11,0.4)', src: SUMO },
   { key: 'giant', name: 'Giant', path: '/giant', tag: 'Sudoku at sixteen', accent: '#3949ab', bg: '#eceefa', border: 'rgba(57,73,171,0.4)', src: GIANT },
   { key: 'rim', name: 'Rim', path: '/rim', tag: 'Nothing printed inside', accent: '#4d7c0f', bg: '#f1f8e6', border: 'rgba(77,124,15,0.4)', src: RIM },
   { key: 'script', name: 'Script', path: '/script', tag: 'Movies and TV, one life', accent: '#4a1d6b', bg: '#f3ecf9', border: 'rgba(74,29,107,0.4)', src: SCRIPT },

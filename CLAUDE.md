@@ -3814,6 +3814,7 @@ archive and hub chips use the short form `Sun`.
 | Rim | thirteen of the thirty-six gutters printed instead of the weekday 16 to 30 (from 2026-09-08) |
 | Arrow | eight printed digits under twelve arrows, against twenty-eight under nine on a Monday (from launch, 2026-10-13) |
 | Giant | ninety of 256 clues and the only day that needs more than singles, against 96 to 128 on weekdays (from 2026-10-18) |
+| Sumo | no digits at all, only the 108 signs, and it needs more than singles (from 2026-10-18) |
 | Circa | a trickier moment to place |
 | Extra | a trickier story to name |
 | Carve | 7×7 board in nine blocks |
@@ -4262,6 +4263,31 @@ the client (the trick `verify-endgame-playout.mjs` uses), stub `document.element
 grid of known coordinates, and drive synthetic pointer sequences. That is how commit-on-lift, the
 hold-to-aim discriminator, the line lock, the free marks, the win path and the unchanged mouse path
 were all confirmed before the push, along with a unit test of the commit's error arithmetic.
+
+## Sumo is the GREATER-THAN SUDOKU, and its signs are the grid lines (launched 2026-10-13)
+
+An ordinary 9x9 plus a sign on every edge INSIDE a 3x3 box (12 per box, 108 in all) saying
+which square holds the larger digit. Route `/sumo`, key `sumo`, legacy hue ochre #8a6d0b.
+
+- **The signs ARE the grid lines (owner pick E1, 2026-10-13).** No < or > glyphs: every in-box
+  line is drawn as one SVG path that bends at its middle into a point aimed at the SMALLER
+  square, in `--stg-cell-dot`, so it reads as a line in both registers. The cells' own in-box
+  borders are transparent; only box borders are borders. Mockups: the "Greater-Than Sudoku
+  Options" canvas artifact.
+- **The ramp is digits, then technique, and that is measured** (`gen-sumo.mjs --measure`): the
+  greedy floor is 0 to 7 printed digits and ~15% of grids are unique with none. Mon 8, Tue 6,
+  Wed 4, Thu 2, Fri 0 at level 1 (sign reading + singles); Sat 2 and the Sunday Edition 0 at
+  level 2 (also locked candidates and subsets). Sign reading is in BOTH levels: box chains
+  (k squares chained below means at least k+1) and bound propagation along every sign.
+- **In Enter the Dojo from 2026-10-14**, joining with Arrow the same day: the from-10-14 pool
+  is eight, ordered so no two sum rules (Sando, Arrow, Frame) and no two order rules (Mercury,
+  Sumo) are neighbours around the cycle. Sumo first deals 2026-10-15. Seed clock [520, 1500];
+  the adapting clocks replace it as solves come in.
+- **Groups:** Marked sudokus split when Sumo arrived (every Sudoku group was at the five-key
+  ceiling): Marked keeps Quilt, Arrow, Knight; Order sudokus is Mercury, Polka, Sumo.
+- Engine `scripts/sumo-core.mjs` (generator only); `verify-sumo.mjs` is independent and policed;
+  `sumo-mutation-test.mjs` (10 of 10). Client is `mksumo.py` (not committed), a transform of
+  DiagClient. Bank 2026-10-13 to 2026-12-31; extend with `gen-sumo.mjs --until` (appends only).
 
 ## Giant is the 16x16 SUDOKU, and the phone plays it a quarter at a time (launched 2026-10-13)
 

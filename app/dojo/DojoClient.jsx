@@ -47,6 +47,7 @@ const CLIENTS = {
   polka: dynamic(() => import('../polka/PolkaClient'), { ssr: false, loading: () => null }),
   frame: dynamic(() => import('../frame/FrameClient'), { ssr: false, loading: () => null }),
   diag: dynamic(() => import('../diag/DiagClient'), { ssr: false, loading: () => null }),
+  sumo: dynamic(() => import('../sumo/SumoClient'), { ssr: false, loading: () => null }),
 };
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";

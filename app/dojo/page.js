@@ -16,13 +16,14 @@ import { PUZZLES as P_knight } from '../knight/puzzles';
 import { PUZZLES as P_polka } from '../polka/puzzles';
 import { PUZZLES as P_frame } from '../frame/puzzles';
 import { PUZZLES as P_diag } from '../diag/puzzles';
+import { PUZZLES as P_sumo } from '../sumo/puzzles';
 
 // ENTER THE DOJO, the run (owner, 2026-10-12): mindloftdaily.com/dojo.
 // Each bank is resolved HERE and only today's grid ships, exactly as each
 // game's own page ships it. The clients are handed a one-puzzle list, which is
 // today's by construction. The day's three come from lib/circuits
 // circuitKeysFor('dojo', day): Sixes, Suds, then the dealt variant.
-const BANKS = { sixes: P_sixes, suds: P_suds, sando: P_sando, quilt: P_quilt, mercury: P_mercury, arrow: P_arrow, cages: P_cages, knight: P_knight, polka: P_polka, frame: P_frame, diag: P_diag };
+const BANKS = { sixes: P_sixes, suds: P_suds, sando: P_sando, quilt: P_quilt, mercury: P_mercury, arrow: P_arrow, cages: P_cages, knight: P_knight, polka: P_polka, frame: P_frame, diag: P_diag, sumo: P_sumo };
 
 export const dynamic = 'force-dynamic';
 
