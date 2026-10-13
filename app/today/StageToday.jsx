@@ -1,0 +1,4533 @@
+'use client';
+
+// THE HOME, ON THE STAGE.
+//
+// The first attempt at this was a token remap over the existing home, and it
+// produced exactly the failure the stage rollout spent a day removing: the
+// text moved and the artwork did not, so band headings went dark on dark and
+// tile names went near-white on light plates. The home is not convertible by
+// swapping variables, because the parts that make it the home — every tile's
+// artwork, every band's hue — are not variables. It needs its own design.
+//
+// So this is a separate surface, and it applies the stage's seven rules to a
+// HOME rather than to a board:
+//
+//   1. THE PAGE IS THE THING. One cap line. No masthead, no stat bar, no rails.
+//   2. ONE GROUND, ONE COLOUR FAMILY. The ground is --stg-ground; the family is
+//      the nine category steps, and nothing else on the page spends a colour.
+//   3. ONE GRAPHIC IN THREE LAYERS. On a board that is the ladder of the game's
+//      own units. A home's units are the eighty dailies, so THE DAY is one
+//      ladder of eighty rungs in nine blocks — lit for played, half for in
+//      progress, dark for untouched. It is the page's hero, and the block
+//      widths are honest: the categories genuinely differ in size.
+//   4. FIGURES, NEVER PROSE. Played, rank, category counts. No sentences.
+//   5. DRAW THE FIELD ONLY WHEN REAL. A crowd count renders only above zero.
+//   6. EXPAND IN FLOW. Nothing here overlays anything.
+//
+// The registry's nine categories map exactly onto the nine ramp steps and add
+// up to eighty games, so the ladder is the whole roster with nothing left over.
+//
+// Data comes from fetchDayStatus, the same call the existing home makes, so
+// this surface adds no new endpoint and cannot disagree with the other one
+// about what has been played.
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { DAILY_GAMES as ALL_DAILY_GAMES, DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
+
+// THE LIVE ROSTER, not the whole registry. A retired game stays in DAILY_GAMES
+// so its archived days keep scoring, so listing from that array put Circa
+// (retired 2026-07-20) back in the Trivia row and in the lead/up-next picks
+// (owner, 2026-09-01). Reading through liveDailyKeys covers Extra on
+// 2026-09-29 too, with no deploy needed on the day. Same fix as StageFinish.
+const LIVE_KEYS = new Set(liveDailyKeys());
+const DAILY_GAMES = ALL_DAILY_GAMES.filter((g) => LIVE_KEYS.has(g.key));
+import { DISPLAY_CIRCUITS, RUN_GAMES, circuitKeysFor, circuitEntryHref } from '@/lib/circuits';
+import GameGlyph from '../GameGlyph';
+import CircuitArt from '../CircuitArt';
+import { RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
+// ONE READING OF A RESULT ROW, the same one the ending curtain and the tile
+// panel use. It prints the run in the GAME'S own units — 7/16 · 3 busts · 2:11
+// — which is the whole reason Your standing can be one column instead of six.
+import { gameStats, mmss } from '@/lib/daily-row-stats';
+import useDayStats, { fetchDayStatus, etToday } from '../useDayStats';
+import { fetchDailyBoard } from '../dailyBoardClient';
+import { IQ_TESTS } from '@/lib/iq-tests';
+import useMyGames from '../useMyGames';
+import { savedIdentity } from '@/lib/saved-identity';
+import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro } from '@/lib/stage-theme';
+import ThemePop from '../ThemePop';
+import StageLadder from '../StageLadder';
+import StageWelcome from '../StageWelcome';
+import SundayLedger from '../SundayLedger';
+import PremierePop from '../PremierePop';
+import GroupsPop from '../GroupsPop';
+// GROUP STANDINGS on the home (2026-09-17): the band, the Groups badge and the
+// member dots on the tiles all read one standing payload.
+import useGroupStanding, { bestPlace, ordinal as grpOrdinal, memberRows, MiniAvatar } from '../groups/groupStanding';
+import HomeGroupsBand from '../groups/HomeGroupsBand';
+import BoardsPane from './BoardsPane';
+import HomeInvite from '../groups/HomeInvite';
+// CHOOSE A NAME (owner report, 2026-09-17): the guest controls below pointed at
+// ?signup=1 and nothing on this page ever read it, so they only reloaded the
+// home. This is the form they open. See app/ChooseNamePop.jsx.
+import ChooseNamePop, { openChooseName } from '../ChooseNamePop';
+import MindLoftMark from '../MindLoftMark';
+import StagePatch, { PATCH_CSS } from '../StagePatch';
+import RollNum from '../RollNum';
+import useFlip from '../useFlip';
+// THE FOOTER IS SHARED (2026-08-31). It used to be drawn here, because this
+// was the only stage surface that needed one; the circuit pages needed the
+// same object, and two drawings of one footer is exactly the drift this file
+// warns about elsewhere. app/StageFooter.jsx owns the drawing and imports
+// FOOTER_COLS from app/Footer.jsx, so the site's link map is still the only
+// copy of the links.
+import StageFooter from '../StageFooter';
+import HomeAbout from './HomeAbout';
+import { saveHomeSnap, releaseHomeSnap } from '@/lib/home-snapshot';
+
+const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
+const SANS = "Manrope, ui-sans-serif, system-ui, -apple-system, sans-serif";
+
+const routeOf = (g) => g.href || `/${g.key}`;
+
+// PLAYED GOES TO THE END OF ITS SECTION (owner, 2026-09-01). A row is a list of
+// what to play, and the ones already played are a record: they were sitting in
+// the middle of every category, so the reader had to skip past this morning to
+// find this afternoon. A stable two-way partition, so the order inside each
+// half is whatever the section already chose.
+function playedLast(list, done) {
+  if (!list || !done || !done.size) return list;
+  const open = [], shut = [];
+  for (const g of list) (done.has(g.key) ? shut : open).push(g);
+  return open.concat(shut);
+}
+
+// A daily's quizId is '<key>-M-D-YY', so the key is everything before the first
+// numeric part. Quiz plays that are not dailies resolve to nothing and are left
+// out: this is the daily home, and its feed is the dailies.
+function gameOfQuizId(id) {
+  const m = /^([a-z]+)-\d+-\d+-\d+$/.exec(String(id || ''));
+  return m ? DAILY_GAME_MAP[m[1]] || null : null;
+}
+
+function ago(iso) {
+  const t = Date.parse(iso);
+  if (!Number.isFinite(t)) return '';
+  const s = Math.max(0, Math.round((Date.now() - t) / 1000));
+  if (s < 60) return 'just now';
+  const m = Math.round(s / 60);
+  if (m < 60) return m + 'm ago';
+  const h = Math.round(m / 60);
+  if (h < 24) return h + 'h ago';
+  return Math.round(h / 24) + 'd ago';
+}
+
+function hhmm(sec) {
+  const x = Math.max(0, Math.round(Number(sec) || 0));
+  const h = Math.floor(x / 3600);
+  const m = Math.round((x % 3600) / 60);
+  return h ? h + 'h ' + m + 'm' : m + 'm';
+}
+
+// The same identity the rest of the site sends: this surface must not disagree
+// with the old home about whose board it is showing.
+function identityQs() {
+  const p = new URLSearchParams();
+  try { const a = localStorage.getItem('sot_quiz_anon'); if (a) p.set('anonId', a); } catch (e) {}
+  try {
+    const id = JSON.parse(localStorage.getItem('sot_quiz_identity') || 'null');
+    if (id && id.email) p.set('email', id.email);
+  } catch (e) {}
+  return p.toString();
+}
+
+function fmtDate(ymd) {
+  if (!ymd) return '';
+  const [y, m, d] = ymd.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return dt.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC' });
+}
+
+// A phone shows three circuits at most; a wider screen shows however many fit
+// on one row, which is measured rather than guessed (owner, 2026-08-31).
+const CIRC_PEEK_NARROW = 3;
+const AZ_KEY = 'sot_stage_az';
+
+// The three the shelf leads with, by id: Price Check, the Trivia Gauntlet,
+// then the Daily Five (owner, 2026-10-03; was Gauntlet, Five, Sudoku). lib/circuits.js orders DISPLAY_CIRCUITS the
+// same way; this repeats it because the home's sort has to interleave that
+// lead with the reader's own progress, which that module knows nothing about.
+// On a phone the shelf's peek is exactly these three (CIRC_PEEK_NARROW).
+const CIRC_LEAD = ['pricecheck', 'gauntlet', 'passport', 'deduction', 'dojo', 'room'];   // owner, 2026-10-03: Passport replaces the Daily Five; 2026-10-08: Judged fourth
+
+// THE NEWCOMER'S ROW (owner, 2026-09-04). A reader with NO footprint at all gets
+// one row above everything else: two circuits sharing a line, then the busiest
+// daily in each of the ten categories. EVERY object in it is FILLED with its
+// category step and carries that step's own ink, which is the treatment the
+// circuit CTA already had and which nothing else on this page wears. That is the
+// whole point of the row: a first-time reader meets ten colours that mean the
+// ten categories, and meets them before the page asks them to read anything.
+//
+// WHY THESE TWO CIRCUITS. The Gauntlet is already the site's lead (CIRC_LEAD
+// pins it first on the shelf below and /trivia pops its door for exactly this
+// visitor) and the Five is the marquee. They are the two runs the rest of the
+// page leads with, said one screen earlier.
+const NEWCOMER_CIRCS = ['gauntlet', 'five'];
+
+// NO TILE MAY NAME A GAME THE GAUNTLET ALREADY HOLDS (owner, 2026-09-04).
+// RUN_GAMES is the site's own name for the seven one-life, twenty-second,
+// four-choice quizzes, and it is exactly the Gauntlet's roster, so reading it
+// rather than hand-listing keys keeps this correct when that roster next moves.
+// Two reasons the row skips them. The Gauntlet is already the first card on it,
+// so a tile naming one of its members says the same thing twice. And they are
+// structurally ONE game over seven banks, which is why they dominate their two
+// categories on plays alone (measured 2026-09-04: the six run-shaped Trivia
+// games took 26 to 41 plays and every other Trivia game 12 or fewer, and Atlas
+// took 35 against 12 to 15 for the rest of Geography). Ranking on the raw count
+// would therefore hand Trivia and Geography to the quiz shape every day and the
+// row would never show what else those two categories contain.
+//
+// Only Trivia and Geography are affected, since those are the only categories
+// RUN_GAMES draws from. A category left with nothing keeps its whole roster.
+const NEWCOMER_SKIP = new Set(RUN_GAMES);
+
+// THE EDITORIAL FLOOR (owner ruling, 2026-09-04). Today's plays are the real
+// ordering and they cost nothing, since board.games carries them already. But at
+// 6am ET every category is on single digits, so the ten picks would be noise. A
+// category therefore keeps its hand-picked default until its busiest game clears
+// NEWCOMER_FLOOR. The COUNT itself is never printed (owner, same day): the floor
+// decides which game the tile names and nothing else.
+//
+// ONE KEY PER RAMP_ORDER CATEGORY. A key that has retired, or that has been
+// moved to another category, falls through to that category's first game rather
+// than blanking the tile.
+const NEWCOMER_PICKS = {
+  Word: 'encore',
+  Numbers: 'crunch',
+  Logic: 'alibi',
+  'End Game': 'mate',
+  // Trivia and Geography name their busiest NON-run game, measured 2026-09-04.
+  Trivia: 'dating',
+  Geography: 'span',
+  Cards: 'taire',
+  'Crowd Psychology': 'feud',
+  Arcade: 'sweep',
+  Sudoku: 'suds',
+};
+const NEWCOMER_FLOOR = 25;
+
+// HOW MANY QUIZZES A TOPIC SHOWS BEFORE "show all". The catalogue is over
+// eighteen hundred quizzes and Geography alone is four hundred and thirty
+// eight, so an expanded topic that simply listed everything would be a
+// thousand rows of the home page.
+const QUIZ_PEEK = 15;
+
+// A PEEK IS A SPREAD, NOT A BATCH, and newest-first alone does not give one.
+// Quizzes ship in families of a dozen at a time, so the newest fifteen in a
+// topic are routinely the same quiz fifteen times: Geography's peek opened as
+// four "Click the Countries of X No Outline" followed by eight "Erase X by
+// Capital (No Skips)", which tells a reader nothing about what is in the topic
+// and reads like a bug.
+//
+// So the peek takes at most two per family off the newest-first list. A family
+// is recognised by TWO keys, because one does not catch them all and the two
+// failure modes are different:
+//
+//   - the PREFIX key, everything before a colon or else the first three words,
+//     catches "Which Is Closer: X" and "LSAT Logic Games: X", whose titles vary
+//     only at the end;
+//   - the ENDS key, first word plus last word, catches "Erase X by Capital (No
+//     Skips)", whose titles vary in the MIDDLE and so share no prefix.
+//
+// Digits are stripped before keying, so "Name All 64 Crayola Colors" and "Name
+// All 48 Crayola Colors" are one family rather than two. A quiz is held back
+// when EITHER of its keys is already at the cap.
+//
+// It is a heuristic and it is asked to do one job: thin a shipped batch. It
+// will occasionally hold back two quizzes that merely rhyme, which costs
+// nothing, because the topic still has hundreds behind "show all" in true
+// newest-first order. The ORDER is the route's; this only chooses which fifteen
+// are shown first.
+const FAMILY_CAP = 2;
+function words(text) {
+  return String(text || '').toLowerCase().replace(/[^a-z ]+/g, ' ').split(/\s+/).filter(Boolean);
+}
+function keysOf(title) {
+  const head = String(title || '').split(':')[0];
+  const hw = words(head);
+  const w = words(title);
+  const prefix = (hw.length < w.length ? hw : w.slice(0, 3)).join(' ');
+  const ends = w.length ? w[0] + ' ' + w[w.length - 1] : '';
+  return [prefix, ends].filter(Boolean);
+}
+function peekOf(list, n) {
+  const seen = new Map();
+  const picked = [];
+  const held = [];
+  for (const q of list) {
+    if (picked.length >= n) break;
+    const ks = keysOf(q.title);
+    if (ks.some((k) => (seen.get(k) || 0) >= FAMILY_CAP)) { held.push(q); continue; }
+    for (const k of ks) seen.set(k, (seen.get(k) || 0) + 1);
+    picked.push(q);
+  }
+  // A topic with fewer families than n still shows n: the cap thins a batch, it
+  // never shortens the peek.
+  for (const q of held) { if (picked.length >= n) break; picked.push(q); }
+  return picked;
+}
+
+// THE PRE-LOAD SKELETON, and it is a skeleton rather than the answer.
+// /api/quiz/topics is the authority on which topics exist, what they are
+// called and what is in them; this list exists only so the section has its
+// real height and its real labels before the fetch lands, instead of growing
+// fifteen rows under the reader's scroll. It is DEPT_NAV's order, which is
+// also the order /quizzes/all renders, so the loaded list drops straight into
+// the same rows and nothing moves.
+//
+// It is written out rather than imported from lib/quiz-departments.js on
+// purpose: that module carries the two-thousand-line id map and the icon set,
+// and this surface needs fifteen labels. If the two ever disagree the ROUTE
+// wins, because the section replaces this list wholesale the moment data
+// arrives.
+const TOPIC_SKELETON = [
+  { id: 'movies', label: 'Movies' },
+  { id: 'music', label: 'Music' },
+  { id: 'gaming', label: 'Gaming' },
+  { id: 'travel', label: 'Travel' },
+  { id: 'sports', label: 'Sports' },
+  { id: 'geography', label: 'Geography' },
+  { id: 'food', label: 'Food & Drink' },
+  { id: 'business', label: 'Business' },
+  { id: 'science', label: 'Science & Nature' },
+  { id: 'entertainment', label: 'Entertainment' },
+  { id: 'word', label: 'Word Puzzles' },
+  { id: 'literature', label: 'Literature' },
+  { id: 'history', label: 'History' },
+  { id: 'arts', label: 'Arts & Culture' },
+  { id: 'school', label: 'School Tests' },
+];
+const leadRankOf = (id) => {
+  const i = CIRC_LEAD.indexOf(id);
+  return i < 0 ? CIRC_LEAD.length : i;
+};
+
+// WHICH SECTIONS ARE OPEN, and a first load opens NONE of them (owner,
+// 2026-09-01). Eighty games in nine grids is a lot of page to hand a reader who
+// has not asked for any of it, so the slate opens as a run of TITLES: every
+// section paints its own ruled head with its count, and the head is the control
+// that opens it.
+//
+// THE CARDS STAY IN THE HTML, hidden with display:none rather than dropped from
+// the render. That is not about animation: this page is the crawl path to every
+// daily, and a collapse that removed the cards would take ~80 internal links
+// with it.
+//
+// OPENING A SECTION STICKS, per browser, beside sot_cat_order and the A to Z
+// view flag and for the same reason all three gave: a view preference belongs
+// to the screen, not to the account. The stored value is an explicit OVERRIDE
+// map, never a list of open sections: a section the reader has never touched
+// keeps following the default (which changes the day they star something), and
+// one they shut by hand stays shut where the default would open it.
+const SHELF_OPEN_KEY = 'sot_shelf_open';
+// THE INDEX AND PANE (owner, 2026-10-06). Which pane the reader last had up:
+// 'sty-mine', 'sty-circs' or a category name. Per browser, like the keys above.
+const PANE_KEY = 'sot_home_pane';
+const ALL_ID = 'all';
+// Set when a phone reader goes back to the category tiles by hand, so the
+// next visit opens on the tiles rather than their last pane.
+const TILES_KEY = 'sot_home_tiles';
+// THE POPULAR CIRCUITS AT THE TOP OF A CATEGORY (owner, 2026-10-09). Five
+// circuits only, in this order; the rest stay on the Circuits shelf. A circuit
+// shows on a category when any of its games lives there, plus the hand-added
+// homes in PILL_EXTRA (Passport is a geography game the owner also files under
+// Trivia). All Puzzles shows all five.
+const PILL_CIRCUITS = ['gauntlet', 'pricecheck', 'passport', 'deduction', 'dojo', 'room'];
+// CIRCUITS-PANE ONLY (owner, 2026-10-13): the Valet Gauntlet is less developed,
+// so it is never offered on the main page (pills, phone runs, the shelf peek);
+// it shows only when the reader opens Circuits, or has starred it.
+const SHELF_ONLY = new Set(['valet']);
+const PILL_EXTRA = { passport: ['Trivia'], dojo: ['Logic'] };   // owner, 2026-10-13: Dojo also shows under Logic
+// The server has no layout pass; an isomorphic alias keeps it from warning.
+const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+const MINE_ID = 'sty-mine';
+const CIRC_ID = 'sty-circs';
+// The registry key stays Word; the home prints Words, to sit beside Numbers
+// (owner, 2026-10-07).
+const catLabel = (c) => (c === 'Word' ? 'Words' : c);
+const CAT_FIXED = ['Word', 'Numbers', 'Logic', 'Sudoku', 'Trivia', 'Geography', 'End Game', 'Cards', 'Arcade', 'Crowd Psychology'];
+// THE REST OF THE PAGE IS PANES TOO (owner, 2026-10-07). Each id is also the
+// section's DOM id, so a #hash that names one opens it.
+const FAV_GAP = 24; const FAV_HEAD = 50; const FAV_ROW = 24;
+const STAND_ID = 'sty-standing';
+const GRP_ID = 'sty-group';
+const BOARD_ID = 'sty-board';
+const LIVE_ID = 'sty-live';
+const QUIZ_ID = 'sty-quizzes';
+// The live feed has no pane of its own: it rides under the board (owner, 2026-10-07).
+// ONE STATS PANE (owner, 2026-10-07): the group, your rankings, the board and
+// the feed open together, in that order, under BOARD_ID. The other ids are
+// only anchors inside it now.
+const IQ_ID = 'sty-iq';
+const COMM_ID = 'sty-comm';
+const EXAM_ID = 'sty-exams';
+
+// The phone tiles' glyphs (owner, 2026-10-09), one stroke drawing per section,
+// drawn in currentColor so the ring's hue tints it. Keyed by pane id; the
+// categories key off their registry name.
+const IX_GLYPHS = {
+  all: <><rect x="4" y="4" width="7" height="7" rx="1.5" /><rect x="13" y="4" width="7" height="7" rx="1.5" /><rect x="4" y="13" width="7" height="7" rx="1.5" /><rect x="13" y="13" width="7" height="7" rx="1.5" /></>,
+  'sty-mine': <path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z" />,
+  Sudoku: <><rect x="3.5" y="3.5" width="17" height="17" rx="2" /><path d="M9.2 3.5v17M14.8 3.5v17M3.5 9.2h17M3.5 14.8h17" /></>,
+  Word: <><rect x="3.5" y="3.5" width="17" height="17" rx="3" /><path d="M8.5 16.5l3.5-9 3.5 9M9.8 13.2h4.4" /></>,
+  Logic: <><circle cx="6" cy="6" r="2.5" /><circle cx="18" cy="6" r="2.5" /><circle cx="12" cy="18" r="2.5" /><path d="M7.2 8.3l3.6 7.4M16.8 8.3l-3.6 7.4M8.5 6h7" /></>,
+  Trivia: <><circle cx="12" cy="12" r="8.5" /><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.7.3-1 .9-1 1.6v.7" /><path d="M12 17h.01" /></>,
+  'End Game': <><circle cx="12" cy="7" r="2.8" /><path d="M9.5 10.5h5l-1 5h-3z" /><path d="M7 20.5h10l-1-3.5H8z" /></>,
+  Numbers: <path d="M9.5 4l-2 16M16.5 4l-2 16M4.5 9h15M3.5 15h15" />,
+  Geography: <><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17" /><path d="M12 3.5c2.6 2.4 3.8 5.2 3.8 8.5s-1.2 6.1-3.8 8.5c-2.6-2.4-3.8-5.2-3.8-8.5s1.2-6.1 3.8-8.5z" /></>,
+  Cards: <><rect x="4" y="6" width="10" height="14" rx="1.8" /><path d="M12.5 4l5.6 1.4a1.8 1.8 0 0 1 1.3 2.2l-2.6 10.2" /></>,
+  'Crowd Psychology': <><circle cx="12" cy="8" r="3" /><path d="M6.5 19a5.5 5.5 0 0 1 11 0" /><circle cx="5" cy="10" r="2" /><circle cx="19" cy="10" r="2" /><path d="M2.5 17a3.2 3.2 0 0 1 3.6-3M21.5 17a3.2 3.2 0 0 0-3.6-3" /></>,
+  Arcade: <><rect x="3" y="8" width="18" height="10" rx="4" /><path d="M7.5 11v4M5.5 13h4" /><circle cx="15.5" cy="12" r="1" /><circle cx="18" cy="14.5" r="1" /></>,
+  'sty-circs': <><circle cx="6" cy="6" r="2.2" /><circle cx="18" cy="18" r="2.2" /><path d="M8.2 6H15a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h6.8" /></>,
+  'sty-quizzes': <><path d="M9 6h11M9 12h11M9 18h11" /><path d="M3.5 6l1.2 1.2L7 5M3.5 12l1.2 1.2L7 11M3.5 18l1.2 1.2L7 17" /></>,
+  'sty-iq': <><path d="M9 18h6M10 21h4" /><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z" /></>,
+  'sty-exams': <><path d="M2.5 9.5L12 5l9.5 4.5L12 14z" /><path d="M6.5 11.5v4.5c3 2.5 8 2.5 11 0v-4.5" /></>,
+  kids: <><circle cx="12" cy="12" r="8.5" /><path d="M8.5 14a4 4 0 0 0 7 0M9 10h.01M15 10h.01" /></>,
+  archive: <><rect x="3.5" y="5" width="17" height="15.5" rx="2" /><path d="M3.5 10h17M8 3v4M16 3v4M7.5 14h2M11 14h2M14.5 14h2M7.5 17h2M11 17h2" /></>,
+  lists: <><path d="M10 6h10M10 12h10M10 18h10" /><path d="M4 5.5l1.5-1v4M4 11h2.5l-2.5 2.5h2.5M4 16.5h2.5l-1.3 1.3a1.2 1.2 0 1 1-1.2 1.5" /></>,
+  'sty-board': <path d="M4 20V10M10 20V4M16 20v-7M21 20H3" />,
+  'sty-comm': <path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z" />,
+};
+const INFO_PANES = [QUIZ_ID, BOARD_ID, IQ_ID, COMM_ID, EXAM_ID];
+// The six standardized tests, written out: app/exams/examData.js carries every
+// question and is far too heavy to pull into the home for six names.
+const EXAM_TILES = [
+  ['lsat', 'LSAT', 'Law school admissions'], ['gmat', 'GMAT', 'Business school admissions'],
+  ['sat', 'SAT', 'Undergraduate admissions'], ['act', 'ACT', 'Undergraduate admissions'],
+  ['gre', 'GRE', 'Graduate school admissions'], ['mcat', 'MCAT', 'Medical school admissions'],
+];
+
+// The IQ tests' own ramp (lib/iq-style.js), both registers, so a tile here
+// wears the colour its test page does.
+const IQ_DARK = ['#7dd3fc', '#6ee7b7', '#bef264', '#e8b43a', '#fb923c', '#fb7185', '#e879f9', '#c084fc', '#fbbf24', '#a5b4fc'];
+const IQ_LIGHT = ['#0369a1', '#046c4e', '#176e2f', '#7c5104', '#a3480d', '#be123c', '#a21caf', '#6d28d9', '#8a5a00', '#3949ab'];
+const STAT_ANCHORS = [STAND_ID, GRP_ID, BOARD_ID, LIVE_ID];
+// The Word category's section id, the same shape the render derives for every
+// category (`cat-${cat}` with spaces dashed), named here so the open-by-default
+// rule can point at it.
+const WORD_ID = 'cat-Word';
+
+// THE CIRCUITS SHELF OPENS FOR EVERYONE, first visit included, on ONE ROW led
+// by the Gauntlet, the Daily Five and Sudoku in that order (owner, 2026-09-01,
+// second ruling that day; it had been gauntlet-led and stars-only). Show all
+// still opens the rest, and that is also where the other circuits' stars are.
+const LEAD_CIRCUITS = CIRC_LEAD;
+
+// A starred CIRCUIT is stored as `c:<id>` in the same favorites column the
+// game stars write to (owner, 2026-09-01). My games is one shelf of the things
+// a reader wants in front of them and a circuit is one of those things; the
+// prefix is what stops a circuit id colliding with a game key, and it is why
+// every consumer that reads that column for GAMES needed no change at all.
+const CIRC_PIN = 'c:';
+const circPinKey = (id) => CIRC_PIN + id;
+const isCircPin = (k) => typeof k === 'string' && k.slice(0, 2) === CIRC_PIN;
+const circPinId = (k) => (isCircPin(k) ? k.slice(2) : null);
+
+// ONE DRAWING PER GAME, PAINTED BY THE SURFACE. The glyph is a single stroke
+// path in currentColor, so the card's own --cc (its category step) colours it,
+// and it flips with the register for free. See lib/game-glyphs.js for why these
+// replaced the two hand-maintained PNG sets.
+// ONE GAME CARD, used by the category rows and by My games, so a star behaves
+// the same in both and there is one place to change what a card shows.
+// A PLAYED CARD SWAPS ITS TAGLINE FOR ITS RESULT (owner, 2026-09-01). The tag
+// says what the game IS, which is what a reader needs before they play it and
+// nothing they need after; once the day has an answer for that game, the same
+// line carries the answer instead. No extra row, no extra height, and the one
+// question a home board could not answer — "how did I do at that one" — is now
+// on the card itself rather than only in the table below.
+// THE STAR POPS WHEN IT IS PRESSED, not when it mounts: a class set straight
+// on the button for the length of the animation, so a card that mounts already
+// starred stays still and only a press plays it. Keyed off the press rather
+// than the .on state for exactly that reason.
+function starPop(el) {
+  try {
+    el.classList.remove('pop');
+    void el.offsetWidth;
+    el.classList.add('pop');
+    setTimeout(() => el.classList.remove('pop'), 500);
+  } catch (e) {}
+}
+
+// WHO IN YOUR GROUP HAS PLAYED THIS (owner, 2026-09-17, idea 7, reworked the
+// same day). One small disc per member of the viewer's first group who has
+// played this game today, sitting ON THE TITLE ROW so every tile keeps the same
+// height, and the tile itself FILLS with the category hue (owner: "flip the
+// color scheme of games played by group ... filled in with whyte letters"). No
+// member has played it, no discs and no fill: a row of empty dots said nothing
+// on ninety tiles and buried the tags.
+const DOTS_MAX = 4;
+// The folded remainder row draws an empty ladder, and one shared empty Set
+// keeps that from allocating a new one on every render.
+const EMPTY_KEYS = new Set();
+function GroupDots({ dots }) {
+  if (!dots || !dots.played || !dots.played.size) return null;
+  const on = dots.roster.filter((m) => dots.played.has(m.userKey));
+  if (!on.length) return null;
+  const shown = on.slice(0, DOTS_MAX);
+  const more = on.length - shown.length;
+  const label = on.length === dots.roster.length ? `all ${on.length}` : `${on.length} of ${dots.roster.length}`;
+  return (
+    <span className="sty-gdots" title={`${dots.name}: ${label} played`}>
+      {shown.map((m) => (
+        <i key={m.userKey} aria-hidden="true">{String(m.username || '?').slice(0, 1).toUpperCase()}</i>
+      ))}
+      {more > 0 ? <i aria-hidden="true">{`+${more}`}</i> : null}
+      <span className="sty-sr">{dots.name}: {label} played</span>
+    </span>
+  );
+}
+
+// ONE LADDER PER MEMBER (owner, 2026-09-22). The home's only picture, repeated
+// thin under the reader's own, so the whole group's day reads in one glance:
+// who is playing, how far in, and which blocks they have that you do not.
+//
+// It is NOT app/StageLadder: that one draws the field layer and the pop, ships
+// its own stylesheet, and would inject six more copies of it. This is the same
+// shape with none of that, which is all a member row needs.
+function MemberLadder({ cats, keys, hueFor }) {
+  return (
+    <span className="sty-mlad" aria-hidden="true">
+      {cats.map(({ cat, games }) => (
+        <span className="sty-mlb" key={cat} style={{ flex: games.length + ' 1 0', '--cc': hueFor(cat) }}>
+          {games.map((g) => <i key={g.key} className={keys.has(g.key) ? 'on' : ''} />)}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue, res, i = 0, fk = null, dotsFor = null, light = true }) {
+  const dots = dotsFor ? dotsFor(g.key) : null;
+  const isDone = done.has(g.key);
+  // THREE STATES, NEVER TWO (owner, 2026-09-25): nobody has played it (the
+  // plain surface), the GROUP has played it and you have not (.gw, a wash and
+  // a rule in the hue, below), and YOU have finished it (the category's full
+  // fill, .grp). The fill used to mean "anyone in the group", reader included,
+  // so a game you finished and a game only your friends had touched wore the
+  // same tile. The class name .grp is historical: it now means "yours, done".
+  const grpOn = isDone;
+  const grpWash = !isDone && !!(dots && dots.played && dots.played.size);
+  const state = isDone ? 'done' : inprog.has(g.key) ? 'open' : '';
+  const on = !!(favorites && favorites.includes(g.key));
+  // MY GAMES MIXES CATEGORIES, so each card carries its OWN hue rather than
+  // inheriting the section's (owner, 2026-08-31). In a category row every card
+  // is that category anyway, so passing nothing keeps the row's colour.
+  return (
+    <a className={`sty-g ${state}${res ? ' res' : ''}${grpOn ? ' grp' : grpWash ? ' gw' : ''}${canPin ? ' pin' : ''}`} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`}
+      data-fk={fk || g.key}
+      style={{
+        '--i': i,
+        ...(hue ? { '--cc': hue } : null),
+        // A FINISHED TILE ON THE LIGHT REGISTER MIRRORS THE DARK ONE (owner,
+        // 2026-10-03): the dark ramp's own pastel, softened 34% toward white,
+        // carrying the one dark ink on all ten. The deep light-ramp fill gave
+        // seven heavy slabs with white text beside three pastels with dark text,
+        // so a row of finished games read as two systems at two weights and was
+        // the loudest thing on the page. Inline rather than a light selector so
+        // it follows `light` exactly as --stg-onramp already does.
+        ...(grpOn && light ? { '--cc': `color-mix(in srgb, ${categoryColor(g.cat)} 66%, #fff)` } : null),
+        // The ink that carries ON that step, so a filled tile reads in both
+        // registers. Same rule as the newcomer row below.
+        ...(grpOn ? { '--stg-onramp': RAMP_INK } : null),
+      }}>
+      <span className="sty-gn"><Glyph k={g.key} size={17} />{g.name}<GroupDots dots={dots} /></span>
+      {res && dots && dots.mine ? (
+        /* BOTH PLACES, SIDE BY SIDE (owner, 2026-09-22): where you came in the
+           group, then where you came on the site. A tile is about 136px of
+           usable width, and the line may not wrap, so only the FIRST figure is
+           labelled: the bare one is the site place this line has always shown,
+           and the group's own name in front of the other says which is which.
+           The full sentence is on the title for a hover and a screen reader. */
+        <span className="sty-gres sty-gres2 sty-rev"
+          title={`${dots.name}: #${dots.mine.rank} of ${dots.mine.field} \u00b7 site: #${res.rank} of ${res.field}`}>
+          <span className="sty-grl">{dots.name}</span>
+          <span className="sty-grk">#{dots.mine.rank}</span>
+          <span className="sty-grf">of {dots.mine.field}</span>
+          <span className="sty-gsep" aria-hidden="true">&middot;</span>
+          <span className="sty-grk">#{res.rank}</span>
+          <span className="sty-grf">of {res.field}</span>
+        </span>
+      ) : res ? (
+        <span className="sty-gres sty-rev">
+          <span className="sty-grl">You:</span>
+          <span className="sty-grk">#{res.rank}</span>
+          <span className="sty-grf">of {res.field}</span>
+        </span>
+      ) : dots && dots.lead ? (
+        /* A GAME THE GROUP IS ON SAYS WHO LEADS IT (owner, 2026-09-22; reworked
+           2026-10-10). The leader's name and their place among the members who
+           have played it ("#1 of 2"), never the group's size and never a score:
+           a leader's 15 goes without saying. It takes the tag's line, so every
+           tile keeps the same height, and it is only drawn on a game the reader
+           has NOT played: once they have, their own result wins above. */
+        <span className="sty-ggrp sty-rev" title={`${dots.name}: ${dots.lead.username} leads, #${dots.lead.rank || 1} of ${Math.max(dots.played.size, 1)} played`}>
+          <span className="sty-grl">{dots.name}:</span>
+          <span className="sty-grk">{dots.lead.username}</span>
+          <span className="sty-grf">#{dots.lead.rank || 1} of {Math.max(dots.played.size, 1)}</span>
+        </span>
+      ) : (
+        <span className="sty-gt">{g.tag}</span>
+      )}
+      {canPin ? (
+        <button
+          type="button"
+          className={'sty-star' + (on ? ' on' : '')}
+          aria-label={on ? `Unstar ${g.name}` : `Star ${g.name}`}
+          title={on ? 'Remove from My games' : 'Add to My games'}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); starPop(e.currentTarget); toggleFavorite(g.key); }}
+        >
+          <svg viewBox="0 0 24 24" width="13" height="13" fill={on ? 'currentColor' : 'none'}
+            stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 4l2.4 5 5.6.8-4 3.9 1 5.5-5-2.7-5 2.7 1-5.5-4-3.9 5.6-.8z" />
+          </svg>
+        </button>
+      ) : null}
+    </a>
+  );
+}
+
+// The same star as GameCard's, on a circuit card. It sits IN the header row
+// rather than floating at the corner, because that corner already holds the
+// circuit's own N/M count.
+function CircStar({ c, canPin, favorites, toggleFavorite }) {
+  if (!canPin) return null;
+  const key = circPinKey(c.id);
+  const on = !!(favorites && favorites.includes(key));
+  return (
+    <button
+      type="button"
+      className={'sty-star' + (on ? ' on' : '')}
+      aria-label={on ? `Unstar ${c.name}` : `Star ${c.name}`}
+      title={on ? 'Remove from My games' : 'Add to My games'}
+      onClick={(e) => { e.preventDefault(); e.stopPropagation(); starPop(e.currentTarget); toggleFavorite(key); }}
+    >
+      <svg viewBox="0 0 24 24" width="13" height="13" fill={on ? 'currentColor' : 'none'}
+        stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+        <path d="M12 4l2.4 5 5.6.8-4 3.9 1 5.5-5-2.7-5 2.7 1-5.5-4-3.9 5.6-.8z" />
+      </svg>
+    </button>
+  );
+}
+
+// A thin wrapper, not a copy: the only local part is the class the page styles.
+function Glyph({ k, size = 20 }) {
+  return <GameGlyph gameKey={k} size={size} className="sty-gi" />;
+}
+
+export default function StageToday() {
+  const [stageTheme, setStageTheme] = useStageTheme();
+  const tq = useThemeQs();
+  const intro = useThemeIntro();  // and, once per browser, the switch played for them
+  const hint = useThemeHint();  // one pointer at the light switch, first visit only   // carries a ?theme= review override across links
+  // circuitEntryHref may or may not already carry a query, so the override
+  // joins with the right separator rather than always an ampersand.
+  const withTq = (href) => (tq ? href + (href.includes('?') ? tq : '?' + tq.slice(1)) : href);
+  // The day's own numbers, from the hook the site header already uses, so this
+  // cap and that one cannot disagree. Name resolves after mount because it
+  // reads localStorage.
+  const stats = useDayStats();
+  const [who, setWho] = useState('');
+  useEffect(() => { setWho(savedIdentity().username || ''); }, []);
+  // The viewer's groups today. undefined while reading, null for no groups.
+  const grp = useGroupStanding('today');
+  // WHICH GROUP, owned here rather than in the band, because it drives four
+  // surfaces at once: the panel, the member ladders, the tile lines and the
+  // cap's badge (owner, 2026-09-22). Two copies of this choice disagreed, so
+  // the band could show one group while the tiles showed another. Remembered
+  // per browser, and read in an effect like everything else kept on device.
+  const [grpPick, setGrpPick] = useState('');
+  // Which board the Leaderboards + Stats pane shows: 'all' or a group code.
+  const [lbScope, setLbScope] = useState('all');
+  // ?groupinvite=1 forces the no-group invite into view for a look, which is
+  // otherwise impossible for anyone who works here: being in a group is exactly
+  // what stops it mounting. Read in an effect, like every other query override
+  // on this page, so the server and the first client paint agree.
+  const [invitePrev, setInvitePrev] = useState(false);
+  useEffect(() => {
+    try { setGrpPick(localStorage.getItem('sot_grp_home') || ''); } catch (e) {}
+    try { setInvitePrev(new URLSearchParams(window.location.search).get('groupinvite') === '1'); } catch (e) {}
+  }, []);
+  // THE VIEW (owner, 2026-09-25): Me, the chosen group, or Everyone. Only a
+  // reader in a group sees the switch, and the group is their default; a
+  // reader in no group gets the page exactly as it was. Remembered per
+  // browser, read in an effect so the server and first paint agree.
+  // THE STORED CHOICE IS RETIRED (owner, 2026-10-08). The switch that wrote it
+  // came off the page, so a browser that had once picked Me was stuck there:
+  // no group ladders, no group figures in the cap, no group games in My
+  // Puzzles, and no way back. The saved value is now cleared on arrival and
+  // never read, so every reader in a group sees the group view.
+  const [lensPick, setLensPick] = useState('');
+  // MY PUZZLES' GROUP BANNER (owner, 2026-10-09): off by default, not stored.
+  // One switch PER GROUP (owner, 2026-10-09): the set of group codes switched on.
+  const [mineGrp, setMineGrp] = useState(() => new Set());
+  const flipMineGrp = useCallback((code) => setMineGrp((cur) => {
+    const n = new Set(cur);
+    if (n.has(code)) n.delete(code); else n.add(code);
+    return n;
+  }), []);
+  useEffect(() => {
+    try { localStorage.removeItem('sot_home_lens'); } catch (e) {}
+  }, []);
+  const pickLens = useCallback((v) => {
+    setLensPick(v);
+    try { localStorage.setItem('sot_home_lens', v); } catch (e) {}
+  }, []);
+  const pickGroup = useCallback((code) => {
+    setGrpPick(code);
+    try { localStorage.setItem('sot_grp_home', code); } catch (e) {}
+  }, []);
+  const grpOne = useMemo(() => {
+    const list = (grp && grp.groups) || [];
+    if (!list.length) return null;
+    return list.find((x) => x.code === grpPick) || list.find((x) => !x.failed) || list[0];
+  }, [grp, grpPick]);
+  const inGrp = !!grpOne;
+  const lens = inGrp ? (lensPick || 'group') : 'group';
+  // The badge follows the chosen group rather than the best of all of them, so
+  // the header cannot name a place the page below it is not showing.
+  const grpBest = grpOne && grpOne.rank
+    ? { rank: grpOne.rank, name: grpOne.name, code: grpOne.code }
+    : null;
+  const dotsFor = useMemo(() => {
+    const g0 = grpOne && !grpOne.failed && grpOne.roster && grpOne.roster.length > 1 ? grpOne : null;
+    if (!g0) return null;
+    const myKey = (grp && grp.userKey) || null;
+    const cache = {};
+    return (key) => {
+      if (!cache[key]) {
+        // THE GROUP'S LEADER ON THIS GAME, for the tile's own line (2026-09-22).
+        // The reader's own row is skipped when picking it, so a tile can never
+        // report the reader's score: that is what the `res` line is for, and
+        // the home tile rule has said so since 2026-08-31.
+        const rows = (g0.boards && g0.boards[key]) || [];
+        let lead = null;
+        let mine = null;
+        for (const r of rows) {
+          if (r.userKey === myKey) { mine = r; continue; }
+          if (r.abandoned) continue;
+          if (!lead || r.points > lead.points) lead = r;
+        }
+        cache[key] = {
+          name: g0.name,
+          roster: g0.roster,
+          played: new Set((g0.games && g0.games[key]) || []),
+          lead,
+          // The reader's own place IN THE GROUP on this game, beside the site
+          // place the tile already prints. THE FIELD IS HOW MANY MEMBERS HAVE
+          // PLAYED IT (owner, 2026-10-10: "#1 of 1 or however many have played
+          // NOT of total"), which replaced the group's size.
+          mine: mine ? { rank: mine.rank, field: Math.max(mine.rank || 1, new Set((g0.games && g0.games[key]) || []).size || 1) } : null,
+          of: g0.roster.length,
+        };
+      }
+      return cache[key];
+    };
+  }, [grp, grpOne]);
+  // EVERY MEMBER'S DAY, for the ladders under the reader's own. Capped at six
+  // rows including the reader, ordered by points, with the tail folded. Null
+  // when the reader is in no group, or alone in one: a stack of one ladder is
+  // the ladder that is already there.
+  const mem = useMemo(() => {
+    const g0 = grpOne && !grpOne.failed && grpOne.roster && grpOne.roster.length > 1 ? grpOne : null;
+    if (!g0) return null;
+    const m = memberRows(g0, (grp && grp.userKey) || null, 6);
+    return m.rows.length ? { ...m, name: g0.name } : null;
+  }, [grp, grpOne]);
+  // WHAT THE CHOSEN VIEW DRAWS. The group view is the page as it was; Me and
+  // Everyone drop the member ladders and the group lines on the tiles, so a
+  // tile falls back to the reader's own place or the game's tag.
+  const memL = lens === 'group' ? mem : null;
+  // THE CAP FOLLOWS THE VIEW (owner, 2026-09-25). The switch lives in the cap
+  // now, and the figures beside it answer for whichever view is chosen: Me is
+  // the three it always showed, the group view is your place, points and gap
+  // in the chosen group, Everyone is today's field. A reader in no group has
+  // no switch and sees the Me figures, exactly as before.
+  const capLens = inGrp ? lens : 'me';
+  const grpFig = useMemo(() => {
+    const g0 = grpOne && !grpOne.failed ? grpOne : null;
+    if (!g0) return null;
+    const m = memberRows(g0, (grp && grp.userKey) || null, 999);
+    const all = [m.me, ...m.rows].filter(Boolean).sort((a, b) => b.total - a.total);
+    const me = m.me;
+    if (!me) return { name: g0.name, code: g0.code, members: g0.roster ? g0.roster.length : 0, played: m.played };
+    const top = all[0];
+    const next = all.find((x) => !x.me) || null;
+    const leading = top && me.total >= top.total;
+    const gap = leading ? (next ? me.total - next.total : 0) : (top ? top.total - me.total : 0);
+    return {
+      name: g0.name, code: g0.code,
+      members: g0.roster ? g0.roster.length : all.length,
+      rank: g0.rank || null, total: me.total || 0, leading, gap, played: m.played,
+    };
+  }, [grp, grpOne]);
+  // THE GROUP LINE ON A TILE NO LONGER WAITS ON THE VIEW (owner, 2026-10-08).
+  // The Me / group / Everyone switch came off the page, but a browser that had
+  // once picked Me kept it in sot_home_lens and so never saw which games its
+  // group had played, with no way back. The tile now always says it.
+  const dotsL = dotsFor;
+
+  // ARM THE ARRIVAL REVEAL, and only for a page someone is actually looking at.
+  // A hidden tab does not advance an animation clock, so a section that mounts
+  // there holds the FROM state (opacity 0) for as long as the tab stays in the
+  // background: harmless for a reader, since the fade plays when they look, but
+  // it means every automated read of this page comes back blank. Without the
+  // attribute the animation rules do not match at all and the content simply
+  // renders. Not re-armed on a later visibilitychange: fading in a section that
+  // has been sitting in the DOM for a minute is worse than not fading it.
+  useEffect(() => {
+    if (typeof document === 'undefined' || document.visibilityState !== 'visible') return undefined;
+    const root = document.documentElement;
+    root.setAttribute('data-sty-anim', '1');
+    return () => root.removeAttribute('data-sty-anim');
+  }, []);
+  // A GLYPH REDRAWS WHEN ITS CARD IS POINTED AT (2026-10-06). The first draw is
+  // pure CSS off the mount (sty-draw, below). A redraw needs the animation NAME
+  // to change, and changing it BACK would replay it a second time on the way
+  // out, so the class alternates gg-a / gg-b and is never removed. One
+  // delegated listener for the page, and the relatedTarget test keeps a move
+  // between two children of the same card from counting as a new arrival.
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const over = (e) => {
+      const t = e.target && e.target.closest ? e.target.closest('a,button') : null;
+      if (!t || (e.relatedTarget && t.contains(e.relatedTarget))) return;
+      const gi = t.querySelector('.sty-gi');
+      if (!gi) return;
+      const b = gi.classList.contains('gg-a');
+      gi.classList.toggle('gg-a', !b);
+      gi.classList.toggle('gg-b', b);
+    };
+    document.addEventListener('pointerover', over, { passive: true });
+    return () => document.removeEventListener('pointerover', over);
+  }, []);
+  const [done, setDone] = useState(() => new Set());
+  const [inprog, setInprog] = useState(() => new Set());
+  // Whether daily-status has ANSWERED, which is a different question from
+  // whether `done` has anything in it: an empty `done` means "nothing finished"
+  // once the answer is in and "we do not know yet" before it. The unfinished
+  // filter below has to tell those apart, or a guest would be told they
+  // finished nothing for as long as that request is in flight.
+  const [statusIn, setStatusIn] = useState(false);
+  // The finished games that are NEW since the reader last looked, and how many
+  // they had seen finished then: the ladder stamps the former, the count rolls
+  // up from the latter. Both empty until the status lands.
+  const [newDone, setNewDone] = useState(() => new Set());
+  const [seenCount, setSeenCount] = useState(null);
+  const [day, setDay] = useState('');
+  // Seventeen circuit cards is a wall on a page whose job is today's puzzles,
+  // so the shelf opens on its lead three and the rest are one tap away (owner,
+  // 2026-08-31). The three are DISPLAY_CIRCUITS' own lead order, which is
+  // deliberate and lives in lib/circuits.js.
+  const [allCircs, setAllCircs] = useState(false);
+  // CATEGORY BUTTONS (owner, 2026-10-03): one category open at a time, closed on load.
+  const [catOpen, setCatOpen] = useState(null);
+  // Read in a LAYOUT effect, never during render: the server cannot know it,
+  // and a layout effect lands before the browser paints the hydrated page, so
+  // a returning reader goes straight to their last pane instead of watching
+  // All games swap out for it.
+  const [pane, setPane] = useState(null);
+  useIsoLayoutEffect(() => {
+    // A RETURNING READER LANDS WHERE THEY LEFT OFF (owner, 2026-10-10), on a
+    // phone too: a stored games pane reopens straight away instead of dropping
+    // them back on the tiles every visit. Only going back to the tiles by hand
+    // (TILES_KEY) brings the tiles back on the next load. Read in this layout
+    // effect so the pane is up before the first paint, never shown then shut.
+    try {
+      const v = localStorage.getItem(PANE_KEY);
+      if (v) { setPane(v); if (localStorage.getItem(TILES_KEY) !== '1') setPicked(true); }
+    } catch (e) {}
+    try { const h = String(window.location.hash || '').slice(1); if (INFO_PANES.includes(h) || STAT_ANCHORS.includes(h)) { setPane(STAT_ANCHORS.includes(h) ? BOARD_ID : h); setPicked(true); } } catch (e) {}
+  }, []);
+  // ONLY A GAMES PANE IS REMEMBERED. A reader who last looked at the leaderboard
+  // should still come back tomorrow to something they can play.
+  // ON A PHONE THE INDEX IS A SCREEN OF TILES (owner, 2026-10-07), and `picked`
+  // says whether one has been opened. A first visit arrives at the tiles; a
+  // returning one reopens its last games pane (see the layout effect above).
+  // A desktop never reads it. The tile that was
+  // tapped rides up to the top of the list (flipFrom is where it started).
+  const [picked, setPicked] = useState(false);
+  const flipFrom = useRef(null);
+  const pickPane = (id, ev) => {
+    try {
+      const el = ev && ev.currentTarget;
+      flipFrom.current = el && !picked ? el.getBoundingClientRect() : null;
+    } catch (e) { flipFrom.current = null; }
+    setPicked(true);
+    setPane(id);
+    try {
+      if (picked) requestAnimationFrame(() => {
+        const ixEl = document.querySelector('.sty-ix');
+        if (ixEl && ixEl.getBoundingClientRect().top < 0) ixEl.scrollIntoView({ block: 'start' });
+      });
+    } catch (e) {}
+    if (INFO_PANES.includes(id)) return;
+    try { localStorage.setItem(PANE_KEY, id); localStorage.removeItem(TILES_KEY); } catch (e) {}
+  };
+  const goPane = (id, anchor) => {
+    pickPane(id);
+    try {
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        const el = (anchor && document.getElementById(anchor)) || document.querySelector('.sty-ix');
+        if (!el) return;
+        const t = el.getBoundingClientRect().top;
+        if (t < 0 || t > window.innerHeight * 0.6) el.scrollIntoView({ block: 'start' });
+      }));
+    } catch (e) {}
+  };
+  const [catCols, setCatCols] = useState(5);
+  const [mineAll, setMineAll] = useState(false);
+
+  // PINS LIVE ON THE ACCOUNT, via the hook the other home already uses, so a
+  // star set on either surface is the same star. Nothing here keeps its own
+  // copy of the list.
+  const { favorites, canPin, toggleFavorite, loaded: myLoaded } = useMyGames();
+
+  // How many of each game's archive this player has done, which is what "your
+  // most played" means and what the default category order sorts by. It rides
+  // on the fetchDayStatus payload the day state already reads, so it costs no
+  // request.
+  const [archive, setArchive] = useState(null);
+
+  // THE HAND ORDER lives on this browser, under the SAME key the other home
+  // writes (sot_cat_order), so a reader who dragged their categories there
+  // finds them in that order here. Null means the default, which is how much
+  // this player has played each category.
+  const [handOrder, setHandOrder] = useState(null);
+  const [reorder, setReorder] = useState(false);
+
+  // A TO Z: one flat list of every daily instead of nine category rows (owner,
+  // 2026-08-31). It is a VIEW, not an order, so it does not touch
+  // sot_cat_order — a reader who arranges their categories still finds that
+  // arrangement waiting when they switch back. Persisted under its own key so
+  // the choice survives a reload, the way a view preference should.
+  const [az, setAz] = useState(false);
+  useEffect(() => {
+    try { setAz(localStorage.getItem(AZ_KEY) === '1'); } catch (e) {}
+  }, []);
+
+  // NULL until this browser's overrides are read, which is what keeps the
+  // server and the first client paint agreeing on the default: everything shut.
+  const [shelfOpen, setShelfOpen] = useState(null);
+  useEffect(() => {
+    try {
+      const raw = JSON.parse(localStorage.getItem(SHELF_OPEN_KEY) || 'null');
+      if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+        const clean = {};
+        for (const k of Object.keys(raw)) if (typeof raw[k] === 'boolean') clean[k] = raw[k];
+        setShelfOpen(clean);
+      } else setShelfOpen({});
+    } catch (e) { setShelfOpen({}); }
+  }, []);
+  const toggleAz = () => {
+    setAz((v) => {
+      const next = !v;
+      try { localStorage.setItem(AZ_KEY, next ? '1' : '0'); } catch (e) {}
+      return next;
+    });
+  };
+
+
+  useEffect(() => {
+    try {
+      const raw = JSON.parse(localStorage.getItem('sot_cat_order') || 'null');
+      if (Array.isArray(raw) && raw.length) setHandOrder(raw);
+    } catch (e) {}
+  }, []);
+  const saveOrder = (next) => {
+    setHandOrder(next);
+    try {
+      if (next) localStorage.setItem('sot_cat_order', JSON.stringify(next));
+      else localStorage.removeItem('sot_cat_order');
+    } catch (e) {}
+  };
+  // THE LIVE FEED, at the foot of this page rather than a link away to /feed,
+  // which is the ACTIVITY LOG and a different thing entirely (owner,
+  // 2026-08-31). Same two endpoints the other home's feed reads, so the two
+  // cannot disagree about how busy the day is.
+  const [feed, setFeed] = useState(null);
+  const [totals, setTotals] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/quiz/recent')
+      .then((r) => r.json())
+      .then((d) => { if (alive && d && Array.isArray(d.plays)) setFeed(d.plays); })
+      .catch(() => {});
+    fetch('/api/quiz/totals')
+      .then((r) => r.json())
+      .then((d) => { if (alive && d && !d.error) setTotals(d); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
+
+  // THE QUIZ CATALOGUE, BY TOPIC, and the site's visitor count for the footer.
+  // Both belong to the bottom of this page, so both are fetched when the bottom
+  // of the page is actually reached rather than on arrival: the topics payload
+  // is a hundred and sixty kilobytes of titles and most readers never scroll
+  // to it. One observer serves both because they light up at the same moment
+  // and two would be two of the same thing.
+  //
+  // The route is generated at build time and cached at the edge for a day, so
+  // the cost of the fetch itself is a CDN hit, not a database read.
+  const [topics, setTopics] = useState(null);
+  const [visitors, setVisitors] = useState(null);
+  const footRef = useRef(null);
+  // THE ARRIVAL COLLAPSES ONTO THIS. See app/StageWelcome.jsx: the flood
+  // measures the cap late and clips down to its rectangle, so the figures it
+  // was holding land in the cells they live in.
+  const capRef = useRef(null);
+  const [nearFoot, setNearFoot] = useState(false);
+  useEffect(() => {
+    const el = footRef.current;
+    // No IntersectionObserver (old browser, jsdom) means fetch it rather than
+    // never showing the counts: degrading to the eager behaviour is fine, and
+    // silently rendering an empty section is not.
+    if (!el || typeof IntersectionObserver === 'undefined') { setNearFoot(true); return undefined; }
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) { setNearFoot(true); io.disconnect(); }
+    }, { rootMargin: '600px 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  // ── ARRIVING ON A SECTION BY HASH ───────────────────────────────────────
+  //
+  // A quiz end card sends the reader to /#sty-quizzes. The browser's own hash
+  // scroll happens at load, and this whole page is a client component whose
+  // sections do not exist until React has rendered, so the jump lands at the
+  // top of the page every time and looks like a broken link rather than a slow
+  // one. The section is then LAZY on top of that: its content waits on an
+  // IntersectionObserver, so scrolling to it is also what fills it in.
+  //
+  // So: on mount, look for the element the hash names, and keep looking for a
+  // short while rather than once. Capped at ~4s of animation frames, because a
+  // page that scrolls itself a minute after it opened is worse than one that
+  // never did. Runs only when a hash is actually present, so a plain visit is
+  // untouched, and the id pattern is checked so nothing else can steer it.
+  useEffect(() => {
+    let hash = '';
+    try { hash = String(window.location.hash || '').slice(1); } catch (e) { return undefined; }
+    if (!hash || !/^sty-[a-z-]+$/.test(hash)) return undefined;
+    let timer = 0;
+    let done = false;
+    const started = Date.now();
+    const tick = () => {
+      if (done) return;
+      const el = document.getElementById(hash);
+      // ⚠️ THE ARRIVAL CURTAIN LOCKS THE BODY WHILE IT PLAYS, so a scroll
+      // issued under it does not merely land late, it does nothing at all and
+      // the attempt is spent. A reader arriving here on a day they have not
+      // seen the welcome would land at the top of the page, which is the exact
+      // failure this effect exists to prevent. So wait for the lock to lift.
+      let locked = false;
+      try { locked = getComputedStyle(document.body).overflow === 'hidden'; } catch (e) {}
+      if (el && !locked) {
+        const before = window.scrollY;
+        try { el.scrollIntoView({ block: 'start' }); } catch (e) { el.scrollIntoView(); }
+        // Landing is CONFIRMED rather than assumed: the page either moved or
+        // the section is already at the top. Anything else is a scroll that
+        // did not take, and the loop is what gets another go at it.
+        if (window.scrollY !== before || Math.abs(el.getBoundingClientRect().top) < 4) { done = true; return; }
+      }
+      if (Date.now() - started > 12000) return;
+      timer = setTimeout(tick, 120);
+    };
+    // ⚠️ setTimeout, NOT requestAnimationFrame. A HIDDEN TAB RUNS NO rAF, so an
+    // rAF loop never ticks once for a link opened in a background tab, which is
+    // also why every automated check of this page reported it as not scrolling.
+    // A timer runs either way, and this loop is cheap enough not to care.
+    timer = setTimeout(tick, 0);
+    // A reader who starts scrolling has taken over. Yanking them back to a
+    // section they just left is worse than never having jumped.
+    const stop = () => { done = true; };
+    window.addEventListener('wheel', stop, { passive: true, once: true });
+    window.addEventListener('touchstart', stop, { passive: true, once: true });
+    window.addEventListener('keydown', stop, { once: true });
+    return () => {
+      done = true;
+      clearTimeout(timer);
+      window.removeEventListener('wheel', stop);
+      window.removeEventListener('touchstart', stop);
+      window.removeEventListener('keydown', stop);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!nearFoot) return undefined;
+    let alive = true;
+    fetch('/api/quiz/topics')
+      .then((r) => r.json())
+      .then((d) => { if (alive && d && Array.isArray(d.topics) && d.topics.length) setTopics(d.topics); })
+      .catch(() => {});
+    fetch('/api/visitors')
+      .then((r) => r.json())
+      .then((d) => { if (alive && d && typeof d.visitors === 'number') setVisitors(d.visitors); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [nearFoot]);
+
+  // Which topics are open, and which have been shown in full. A Set rather than
+  // one open topic at a time: the rows are fifteen quizzes each, so several
+  // open at once is a shelf rather than a wall, and closing one to read another
+  // is a click the reader did not ask to spend.
+  const [openTopics, setOpenTopics] = useState(() => new Set());
+  const [fullTopics, setFullTopics] = useState(() => new Set());
+  const toggleTopic = (id) => setOpenTopics((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+  const topicList = topics || TOPIC_SKELETON;
+  const quizTotal = topics ? topics.reduce((a, t) => a + t.count, 0) : 0;
+
+  const [board, setBoard] = useState(null);
+  // THE OVERALL RANK comes from /api/quiz/me, the same place the site header
+  // reads it. daily-status computes the identical figure internally (posNow) but
+  // does not return it, and adding a second source for one number is how two
+  // surfaces end up disagreeing about a player's rank.
+  const [mine, setMine] = useState(null);
+  // WHETHER EACH READ HAS ANSWERED, success or failure, which is what the
+  // patches below key on. `mine === null` cannot tell a pending read from a
+  // guest with no account or a failed one, and a cover that waits on a value
+  // that is never coming is a cover that never leaves.
+  const [mineIn, setMineIn] = useState(false);
+  const [boardIn, setBoardIn] = useState(false);
+  const snapRef = useRef(null);
+
+  useEffect(() => {
+    let alive = true;
+    const qs = identityQs();
+    if (!qs) { setMineIn(true); return undefined; }
+    // ADOPT THE PRELOAD (2026-09-25). app/page.js starts this exact request
+    // during HTML parse, keyed anonId, email, then light=1. The stage used to
+    // ignore it and ask again, so every signed-in home load made /me twice.
+    // A key mismatch (identity changed since parse) or a failed preload just
+    // falls through to a normal fetch.
+    const preKey = qs + '&light=1';
+    const pre = (typeof window !== 'undefined' && window.__sotMe && window.__sotMe.key === preKey)
+      ? window.__sotMe.promise
+      : null;
+    const fresh = () => fetch('/api/quiz/me?light=1&' + qs).then((r) => r.json());
+    (pre ? pre.then((d) => d || fresh()) : fresh())
+      .then((d) => { if (alive && d && d.found !== false) setMine(d); })
+      .catch(() => {})
+      .finally(() => { if (alive) setMineIn(true); });
+    return () => { alive = false; };
+  }, []);
+  useEffect(() => {
+    let alive = true;
+    // THROUGH THE SHARED CLIENT (2026-09-04). The arrival asks for this same
+    // board for its Today column, and the two mount together, so without the
+    // client one home load made the identical request twice. `identityQs`
+    // produces the string `dailyBoardQuery` produces, which is what makes the
+    // two the same key rather than two questions that happen to have one answer.
+    fetchDailyBoard(identityQs())
+      .then((d) => { if (alive && d && Array.isArray(d.overall)) setBoard(d); })
+      .catch(() => {})
+      .finally(() => { if (alive) setBoardIn(true); });
+    return () => { alive = false; };
+  }, []);
+
+  // The register decides which end of the ramp a category wears, exactly as it
+  // does on a board: the pale step on the dark ground, its dark twin on the pale.
+  const light = stageTheme === 'light';
+  const hueFor = (cat) => (light ? categoryColorLight(cat) : categoryColor(cat));
+
+  useEffect(() => {
+    let alive = true;
+    setDay(etToday());
+    fetchDayStatus().then((data) => {
+      if (!alive || !data) return;
+      const [Y, M, D] = etToday().split('-').map(Number);
+      const yy = Y % 100;
+      const completed = new Set(data.completed || []);
+      const played = new Set(data.played || []);
+      const abandoned = new Set(data.abandoned || []);
+      const open = new Set(data.inProgress || []);
+      const d = new Set();
+      const p = new Set();
+      // ALL games, run-only included: a finished Passport ticks its circuit tile.
+      for (const g of ALL_DAILY_GAMES) {
+        const id = `${g.key}-${M}-${D}-${yy}`;
+        if (completed.has(id) || played.has(id)) d.add(g.key);
+        else if (abandoned.has(id) || open.has(id)) p.add(g.key);
+      }
+      setDone(d);
+      setInprog(p);
+      setStatusIn(true);
+      // WHAT IS NEW SINCE THE READER LAST LOOKED (motion pass, 2026-09-16). The
+      // ladder stamps the rungs that lit since the last visit and the count
+      // rolls up from what it read then, so coming back from a game shows the
+      // one thing that changed rather than the whole ladder fading in as a
+      // block. The stamp is a day-keyed list of finished keys in localStorage;
+      // a new day starts from nothing, so the first visit of a day stamps every
+      // rung the reader has already earned, which is the honest reading of
+      // "since you last looked".
+      try {
+        const k = 'sot_home_seen_done';
+        const today = etToday();
+        const raw = JSON.parse(localStorage.getItem(k) || 'null');
+        const seen = raw && raw.day === today && Array.isArray(raw.keys) ? new Set(raw.keys) : new Set();
+        const fresh = new Set([...d].filter((key) => !seen.has(key)));
+        setNewDone(fresh);
+        setSeenCount(raw && raw.day === today ? seen.size : 0);
+        localStorage.setItem(k, JSON.stringify({ day: today, keys: [...d] }));
+      } catch (e) {}
+      if (data.archive) setArchive(data.archive);
+    }).catch(() => {});
+    return () => { alive = false; };
+  }, []);
+
+  // One pass over the registry, grouped into the ramp's order. Categories with
+  // no games simply do not render, so the page cannot show an empty block.
+  const cats = useMemo(() => RAMP_ORDER
+    // Within a category the games run A to Z (owner, 2026-10-08).
+    .map((cat) => ({ cat, games: DAILY_GAMES.filter((g) => g.cat === cat).sort((a, b) => a.name.localeCompare(b.name)) }))
+    .filter((c) => c.games.length), []);
+
+  const total = useMemo(() => cats.reduce((n, c) => n + c.games.length, 0), [cats]);
+
+  // THE ORDER OF THE CATEGORY ROWS. A hand order wins; otherwise they sort by
+  // how much of each category this player has actually played, so the page
+  // opens on what they use. A category the stored order does not name (a new
+  // one, most likely) keeps its ramp position at the end rather than vanishing.
+  const orderedCats = useMemo(() => {
+    if (handOrder && handOrder.length) {
+      const rank = new Map(handOrder.map((c, i) => [c, i]));
+      return [...cats].sort((a, b) =>
+        (rank.has(a.cat) ? rank.get(a.cat) : 99) - (rank.has(b.cat) ? rank.get(b.cat) : 99));
+    }
+    // ONE FIXED ORDER FOR EVERYONE (owner, 2026-10-07), in place of most-played
+    // first: Words, Numbers, Logic, Sudoku, Trivia, Geography, then the rest.
+    const at = (c) => { const i = CAT_FIXED.indexOf(c.cat); return i < 0 ? 99 : i; };
+    return [...cats].map((c, i) => [c, i])
+      .sort((a, b) => (at(a[0]) - at(b[0])) || (a[1] - b[1]))
+      .map(([c]) => c);
+  }, [cats, handOrder]);
+
+  // Every live daily, by name. Declared AFTER `cats`: a useMemo body runs during
+  // render, so reading `cats` from above its own declaration is a temporal dead
+  // zone, and it took the homepage down rather than warning.
+  const alpha = useMemo(
+    () => cats.flatMap((c) => c.games).slice().sort((a, b) => a.name.localeCompare(b.name)),
+    [cats],
+  );
+
+  const moveCat = (cat, dir) => {
+    const cur = orderedCats.map((c) => c.cat);
+    const i = cur.indexOf(cat);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= cur.length) return;
+    const next = [...cur];
+    next[i] = cur[j]; next[j] = cur[i];
+    saveOrder(next);
+  };
+
+  // MY GAMES: the starred set, in the order they were starred, PLUS anything
+  // the reader's group has played today (owner, 2026-09-17: "when group members
+  // play other games, those should surface in the 'my games' section"). A game
+  // the group is on is the same kind of thing as a starred one — something this
+  // reader has a reason to open today — and it arrives filled, so the row says
+  // which of the two it is. Games only, so a pin on something that has since
+  // retired simply drops out.
+  //
+  // THE ME VIEW IS STARS ONLY (owner, 2026-10-03): with Me picked on the
+  // switch, My games holds exactly what this reader starred; the group's games
+  // join it only in the group and Everyone views.
+  //
+  // STARS ONLY, IN EVERY VIEW (owner, 2026-10-09): the group's games no longer
+  // join My Puzzles. A group game already says so on its own tile in its
+  // category, so My Puzzles is exactly what this reader starred.
+  const pinned = useMemo(
+    () => (favorites || []).map((k) => DAILY_GAME_MAP[k]).filter(Boolean),
+    [favorites],
+  );
+
+  // THE THREE CARDS. Each answers a different question, and each falls back to
+  // the best thing it can say with what has loaded (owner, 2026-08-31), because
+  // a card that renders empty while a fetch settles is worse than one that
+  // starts general and sharpens.
+  //
+  //   1  YOURS      the game you are mid-way through, else the one you have
+  //                 played most and have not played today, else the next unplayed.
+  //   2  EVERYONE'S the most played daily on the site today.
+  //   3  THE BOARD  who is winning, and a way down to the standings.
+  const mostPlayedMine = useMemo(() => {
+    if (!archive) return null;
+    const pool = DAILY_GAMES.filter((g) => !done.has(g.key));
+    let best = null; let bn = 0;
+    for (const g of pool) {
+      const n = (archive[g.key] && archive[g.key].played) || 0;
+      if (n > bn) { bn = n; best = g; }
+    }
+    return bn > 0 ? best : null;
+  }, [archive, done]);
+
+  const lead = useMemo(() => {
+    const open = DAILY_GAMES.find((g) => inprog.has(g.key));
+    if (open) return { game: open, eyebrow: 'Finish', cta: 'Resume' };
+    if (mostPlayedMine) return { game: mostPlayedMine, eyebrow: 'Your most played', cta: 'Play' };
+    const fresh = DAILY_GAMES.find((g) => !done.has(g.key));
+    return fresh ? { game: fresh, eyebrow: 'Up next', cta: 'Play' } : null;
+  }, [inprog, done, mostPlayedMine]);
+
+  const popular = useMemo(() => {
+    const bg = board && Array.isArray(board.games) ? board.games : null;
+    if (!bg) return null;
+    // NEVER THE SAME GAME AS THE LEAD CARD. The busiest daily is very often the
+    // one you are mid-way through, and two cards side by side naming the same
+    // game is one card's worth of information in two cards' worth of space.
+    const skip = lead && lead.game ? lead.game.key : null;
+    let best = null; let bn = -1;
+    for (const b of bg) {
+      const g = b && DAILY_GAME_MAP[b.key];
+      if (!g || typeof b.plays !== 'number' || g.key === skip) continue;
+      if (b.plays > bn) { bn = b.plays; best = { game: g, plays: b.plays }; }
+    }
+    return best;
+  }, [board, lead]);
+
+  // TODAY'S BOARD. Top eight, plus your own row appended when you are outside
+  // it — a leaderboard that cannot show you your own position is a scoreboard
+  // for other people.
+  const overall = board && Array.isArray(board.overall) ? board.overall : [];
+  const meKey = board && board.me ? board.me.userKey : null;
+  const top = overall.slice(0, 10);
+  const myRow = meKey ? overall.find((r) => r && r.userKey === meKey) : null;
+  const myOut = myRow && !top.some((r) => r && r.userKey === meKey) ? myRow : null;
+  const topRow = top[0] && top[0].total != null ? top[0] : null;
+
+  // THE DAY'S FIELD SIZE BELONGS ON THE BOARD, NOT THE FEED (owner, 2026-08-31).
+  // It used to sit in the live feed's header between plays and time played,
+  // where it read as one more traffic figure, while the board above it reported
+  // its own ROW COUNT as "10 players", which says ten people played today when
+  // ten is just how many rows fit. So the board names what it is a top ten OF.
+  // `todayPlayers` counts everyone who played today, guests included, while the
+  // board ranks registered players only; that is the same denominator the end
+  // card's "#N of M" already uses. Falls back to the row count until totals
+  // land, and whenever the field is not actually bigger than the rows shown.
+  const fieldToday = (totals && totals.todayPlayers) || 0;
+  const boardCount = fieldToday > top.length
+    ? `Top ${top.length} of ${fieldToday.toLocaleString()} players`
+    : `${overall.length} ${overall.length === 1 ? 'player' : 'players'}`;
+
+  // YOUR STANDING. How the reader finished in each game they have played today,
+  // which is the one thing this home could not answer: a card said "done" and
+  // the ladder lit a rung, both of them binary, and the board below reports the
+  // COMBINED day. Where you came in Crux was nowhere on the page (owner,
+  // 2026-09-01).
+  //
+  // IT COSTS NO REQUEST. daily-combined is already fetched for the board above,
+  // and its `me.perGame` is keyed by every game the reader scored today. The
+  // rank on it is the registered-only board rank the route already substitutes,
+  // so this cannot disagree with the game's own board about where you came.
+  //
+  // Retired games are filtered out for the same reason the roster is: an
+  // archived day still scores, so a retired key can appear here.
+  const standing = useMemo(() => {
+    const pg = board && board.me && board.me.perGame ? board.me.perGame : null;
+    if (!pg) return [];
+    const out = [];
+    for (const key of Object.keys(pg)) {
+      const g = DAILY_GAME_MAP[key];
+      const r = pg[key];
+      if (!g || !LIVE_KEYS.has(key) || !r || r.rank == null) continue;
+      // AN UNFINISHED GAME HAS NO STANDING (owner, 2026-09-01). An abandoned
+      // row is a started-and-left run: it is filed, and it does score, so it
+      // arrives here carrying a real rank. But "you came 12th" is not true of a
+      // game the reader walked out of, and it read as one more finished game on
+      // the card and in this table. Dropping it here fixes all three at once,
+      // since the card reads standBy off this memo and the eyebrow counts it.
+      //
+      // THE TEST IS POSITIVE EVIDENCE OF A FINISH, not the absence of a flag,
+      // and it takes two signals because neither one covers both readers.
+      // `abandoned` travels on the row itself and is exact for a REGISTERED
+      // player: a real finish supersedes an earlier abandon in combineDaily, so
+      // the flag is true only when they never finished, and an explicit `false`
+      // is a finish we can vouch for the moment the board lands. A GUEST's
+      // perGame comes from guestProvisional, which carries rank and field and
+      // nothing else, so the flag is undefined and the local `done` set is the
+      // test instead — daily-status builds it from the same never-finished
+      // definition and it crosses devices.
+      //
+      // Written this way round so no row can appear ranked and then vanish: an
+      // undefined flag waits for the status rather than being read as a finish.
+      if (!(r.abandoned === false || (statusIn && done.has(key)))) continue;
+      out.push({ ...r, key, g });
+    }
+    // BEST FIRST. The question is "how did I do", so the answer opens with the
+    // best answer; rank breaks a tie on points, and the name breaks that.
+    out.sort((a, b) => (b.points || 0) - (a.points || 0)
+      || (a.rank || 999) - (b.rank || 999)
+      || a.g.name.localeCompare(b.g.name));
+    return out;
+  }, [board, done, statusIn]);
+  const standBy = useMemo(() => {
+    const m = {};
+    for (const s of standing) m[s.key] = s;
+    return m;
+  }, [standing]);
+
+  // TODAY'S PLAYS BY CATEGORY. totals.todayByQuiz is a play count per quizId and
+  // a daily's quizId carries its key, so the day's shape falls out of a payload
+  // the page already has. Drawn in the nine ramp steps, which is the only colour
+  // family this surface spends.
+  const catPlays = useMemo(() => {
+    const t = totals && totals.todayByQuiz ? totals.todayByQuiz : null;
+    if (!t) return [];
+    const m = new Map();
+    for (const qid of Object.keys(t)) {
+      const g = gameOfQuizId(qid);
+      if (!g || !LIVE_KEYS.has(g.key)) continue;
+      m.set(g.cat, (m.get(g.cat) || 0) + (Number(t[qid]) || 0));
+    }
+    return RAMP_ORDER.filter((c) => m.get(c)).map((c) => [c, m.get(c)]);
+  }, [totals]);
+  const catPlayMax = catPlays.reduce((a, r) => Math.max(a, r[1]), 0);
+  const avgPlay = totals && totals.today ? Math.round((totals.todayTime || 0) / totals.today) : 0;
+
+  // Resolvable dailies only, most recent first, capped: a feed is a glance at
+  // what is happening, not a log.
+  const live = useMemo(() => {
+    if (!feed) return [];
+    const out = [];
+    for (const f of feed) {
+      const game = gameOfQuizId(f && f.quizId);
+      if (!game || f.total == null) continue;
+      out.push({ ...f, game });
+      if (out.length >= 10) break;
+    }
+    return out;
+  }, [feed]);
+
+  // CIRCUITS. The set is DISPLAY_CIRCUITS and the membership is
+  // circuitKeysFor(id, day), which is the call that owns rotation — reading
+  // the raw keys instead would show yesterday's run on a rotating circuit.
+  // Today's plays per game, off the board this page already fetches. Defined
+  // HERE rather than borrowed: playsOf and bgames belong to the other home, and
+  // reaching for them by name compiled cleanly and threw at runtime.
+  const playsBy = useMemo(() => {
+    const m = new Map();
+    const gs = board && Array.isArray(board.games) ? board.games : [];
+    for (const g of gs) if (g && g.key) m.set(g.key, g.plays || 0);
+    return m;
+  }, [board]);
+
+  // THE NEWCOMER'S TEN. One tile per category, in ramp order rather than the
+  // reader's own (a reader with no footprint has not ordered anything, and the
+  // ramp is the order the categories are numbered in). The busiest daily in the
+  // category once its leader has cleared the floor, the editorial default until
+  // then. Costs no request: playsBy is already on the page.
+  const newcomerPicks = useMemo(() => cats.map(({ cat, games }) => {
+    // The run-shaped quizzes come out FIRST, so they can win neither the count
+    // nor the fallback. A category they would empty keeps its whole roster.
+    const open = games.filter((g) => !NEWCOMER_SKIP.has(g.key));
+    const pool = open.length ? open : games;
+    let best = null; let bn = -1;
+    for (const g of pool) {
+      const p = playsBy.get(g.key) || 0;
+      if (p > bn) { bn = p; best = g; }
+    }
+    if (best && bn >= NEWCOMER_FLOOR) return { cat, game: best };
+    const pick = DAILY_GAME_MAP[NEWCOMER_PICKS[cat]];
+    const ok = pick && pick.cat === cat && LIVE_KEYS.has(pick.key) && !NEWCOMER_SKIP.has(pick.key);
+    return { cat, game: ok ? pick : pool[0] };
+  }), [cats, playsBy]);
+
+  const circuits = useMemo(() => {
+    if (!day) return [];
+    return DISPLAY_CIRCUITS.map((c) => {
+      let keys = [];
+      try { keys = circuitKeysFor(c.id, day) || []; } catch (e) { keys = []; }
+      const games = keys.map((k) => DAILY_GAME_MAP[k]).filter(Boolean);
+      if (!games.length) return null;
+      const n = games.filter((g) => done.has(g.key)).length;
+      // A circuit spans categories, so it wears its LEAD game's step rather
+      // than inventing a tenth colour.
+      // POPULARITY IS THE SUM OF ITS GAMES' PLAYS TODAY (owner, 2026-08-31), so
+      // the shelf leads with what the site is actually playing rather than a
+      // fixed editorial order. Summed, not averaged: a circuit of five busy
+      // games IS a busier circuit than one of two.
+      const pop = games.reduce((t, g) => t + (playsBy.get(g.key) || 0), 0);
+      // A circuit spans categories, so it wears its LEAD game's step rather
+      // than inventing a tenth colour.
+      return { id: c.id, name: c.name, blurb: c.blurb || '', unit: c.unit || '', games, n, pop, hue: hueFor(games[0].cat) };
+    }).filter(Boolean)
+      // THE ORDER (owner, 2026-08-31), in four terms:
+      //
+      //   1  A FINISHED CIRCUIT GOES TO THE END. It is a record, not an
+      //      invitation, and that applies to the two pinned ones too — finish
+      //      the Gauntlet and it leaves the front.
+      //   2  Then the two the site leads with: the Gauntlet, then the Five.
+      //   3  Then the ones the reader is furthest INTO. Three sudokus done says
+      //      more about what they want next than any editorial order does.
+      //   4  Popularity settles the rest, so a reader who has started nothing
+      //      still sees the busiest circuits first.
+      //
+      // Stable on the original index underneath, so equal circuits never swap
+      // places between renders.
+      .map((c, i) => [c, i])
+      .sort((a, b) => {
+        const A = a[0], B = b[0];
+        const doneA = A.n === A.games.length ? 1 : 0;
+        const doneB = B.n === B.games.length ? 1 : 0;
+        return (doneA - doneB)
+          || (leadRankOf(A.id) - leadRankOf(B.id))
+          || (B.n - A.n)
+          || (B.pop - A.pop)
+          || (a[1] - b[1]);
+      })
+      .map(([c]) => c);
+  }, [day, done, light, playsBy]);   // eslint-disable-line react-hooks/exhaustive-deps
+
+  // THE TWO CIRCUITS ON THE NEWCOMER ROW, read out of the shelf's own memo so
+  // the name, the blurb and the hue cannot disagree with the shelf below, and so
+  // the Five's hue follows its rotating lead game rather than being guessed. It
+  // needs the day, so both cards arrive with the rest of the day's data; the ten
+  // tiles under them do not wait on it.
+  //
+  // TWO CARDS ON ONE LINE MUST NOT WEAR THE SAME STEP. A circuit takes its LEAD
+  // GAME's category, and the marquee crosses every category by construction, so
+  // on any day its lead happens to be a Trivia game both cards come out the same
+  // orange and read as one block rather than two (live, 2026-09-04). The ramp
+  // already carries this rule for the shelves, which owe their neighbours 30
+  // degrees; a card owes the card beside it at least a different step. So the
+  // second circuit walks its OWN games for the first category not already on the
+  // row, which keeps the hue category-derived rather than invented, and changes
+  // nothing on a day the two leads already differ.
+  const newcomerCircs = useMemo(() => {
+    const out = []; const used = new Set();
+    for (const id of NEWCOMER_CIRCS) {
+      const c = circuits.find((x) => x.id === id);
+      if (!c || !c.games.length) continue;
+      const pick = c.games.find((g) => !used.has(g.cat)) || c.games[0];
+      used.add(pick.cat);
+      out.push({ ...c, cat: pick.cat, hue: hueFor(pick.cat) });
+    }
+    return out;
+  }, [circuits, light]);   // eslint-disable-line react-hooks/exhaustive-deps
+
+  // A CIRCUIT'S STANDING, and only a FINISHED circuit has one (owner,
+  // 2026-09-01). The combined board refuses to rank a player who has not played
+  // every game of a skill circuit — see rankRequiresAll in the daily-combined
+  // route — so a part-done circuit has no honest figure to show, and a finished
+  // one is exactly the case where the card no longer needs its blurb: the
+  // reader has read it, played it, and wants the result instead.
+  //
+  // ONE REQUEST PER FINISHED CIRCUIT, asked once and never re-asked (the ref,
+  // not state, so the effect cannot chase its own writes), and capped: a reader
+  // finishes one or two circuits in a day, not seventeen.
+  //
+  // THE ANSWER IS KEPT WHATEVER THE EFFECT DOES NEXT (owner report, 2026-09-01:
+  // a finished Gauntlet showed 7/7 and no rank while the API returned #4).
+  // `circuits` is rebuilt whenever the live plays tick, so this effect re-ran
+  // every few seconds; its cleanup flipped an `alive` flag that made the
+  // in-flight response DROP on arrival, and the circuit was already in the
+  // asked set, so it was never asked again. The request is keyed by circuit and
+  // the write is keyed by circuit, so a late answer is never a stale one: the
+  // only thing that may discard it is the component unmounting.
+  const circAsked = useRef(null);
+  const circLive = useRef(true);
+  useEffect(() => () => { circLive.current = false; }, []);
+  // THE FIRST-VISIT ROW (owner, 2026-10-03): Price Check, the Trivia Gauntlet and
+  // the Daily Five, pinned above the category buttons. Three across where three
+  // fit, the first two otherwise (CSS hides the third). Never labelled circuits.
+  // Passport took the Five's place on 2026-10-03 (owner).
+  const pinCircs = useMemo(() => ['pricecheck', 'gauntlet', 'passport']
+    .map((id) => circuits.find((c) => c.id === id)).filter(Boolean), [circuits]);
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1000px)');
+    const on = () => setCatCols(mq.matches ? 5 : 2);
+    on();
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  const pickCat = (cat) => setCatOpen((cur) => (cur === cat ? null : cat));
+  const [circStand, setCircStand] = useState({});
+  useEffect(() => {
+    if (!circAsked.current) circAsked.current = new Set();
+    // THE PILL CIRCUITS ASK FIRST (owner, 2026-10-10): a finished Gauntlet,
+    // Price Check, Passport or Judged pill reports its standing in place of
+    // the check, so those five are never the ones the cap leaves out.
+    const pillRank = (c) => { const i = PILL_CIRCUITS.indexOf(c.id); return i < 0 ? PILL_CIRCUITS.length : i; };
+    const full = circuits
+      .filter((c) => c.games.length && c.n === c.games.length && !circAsked.current.has(c.id))
+      .sort((a, b) => pillRank(a) - pillRank(b))
+      .slice(0, 6);
+    if (!full.length) return undefined;
+    const qs = identityQs();
+    for (const c of full) {
+      circAsked.current.add(c.id);
+      fetch(`/api/quiz/daily-combined?circuit=${encodeURIComponent(c.id)}${qs ? '&' + qs : ''}`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (!circLive.current || !d) return;
+          const rank = d.me && d.me.rank != null ? d.me.rank : null;
+          const field = d.overallField || (Array.isArray(d.overall) ? d.overall.length : 0);
+          setCircStand((m) => ({ ...m, [c.id]: rank ? { rank, field } : null }));
+        })
+        .catch(() => { if (circLive.current) setCircStand((m) => ({ ...m, [c.id]: null })); });
+    }
+    return undefined;
+  }, [circuits]);
+  // THE LADDER SHRINKS ON A PHONE and its key comes off entirely (owner,
+  // 2026-08-31: "takes up too much space"). The key is nine labelled swatches,
+  // which wrap to three lines at 390 and push the first playable thing off the
+  // screen — and every one of those counts is repeated on its own category row
+  // further down. The graphic itself still says which categories are done,
+  // because that is what its colour is for; it just says it in less height.
+  // THE STANDING SCROLLS TO THE BOARD'S HEIGHT (owner, 2026-09-01). Paired at
+  // full width they are two tables of different lengths, and a sixteen-row
+  // standing beside an eleven-row board left the right-hand column short and the
+  // section ragged. The board is measured rather than guessed at a row count,
+  // because a small field genuinely renders fewer than ten rows. No feedback
+  // loop: the standing's height does not affect the board's, since the pair is
+  // align-items:start.
+  const lbRef = useRef(null);
+  const [lbH, setLbH] = useState(null);
+  useEffect(() => {
+    const el = lbRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const set = () => setLbH(Math.round(el.getBoundingClientRect().height));
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
+    // myOut is an object rebuilt every render, so the dep is its PRESENCE:
+    // passing the object itself tore down and rebuilt the observer on every
+    // pass, which is a lot of churn for a height that only moves when the
+    // board gains or loses its trailing "you" row.
+  }, [top.length, standing.length, !!myOut]);
+
+  const [narrow, setNarrow] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)');
+    const on = () => setNarrow(mq.matches);
+    on();
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  const ladH = narrow ? 20 : 54;
+
+  // THE PHONE'S RUNS (owner, 2026-10-13). Every run on the phone pills reports
+  // how many people played it today, and once the reader has finished it,
+  // where they came on the site board and in their group. One request per run:
+  // with a group it is the circuit's group board, which carries the site field
+  // and site rank too; without one it is the plain circuit board, asked with
+  // the reader's identity only once they have a rank to read off it, so an
+  // unfinished run's request is the same URL for everybody and caches.
+  // Phone only (the pills are a phone surface), and asked once per state.
+  const [runsMq, setRunsMq] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 900px)');
+    const on = () => setRunsMq(mq.matches);
+    on();
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+
+  // WHERE THE A-TO-Z / REORDER BAR SITS (owner, 2026-09-02). A first-time or
+  // unregistered visitor on a phone gets it at the FOOT of the categories, not
+  // the top: those two controls rearrange a page the reader has not read yet,
+  // and on a 390px screen they took the first line under the cap. A returning
+  // or registered reader keeps them at the top, where a habit expects them.
+  // "Returning" is the footprint test WelcomeOverlay uses: a saved identity,
+  // any sot_<key>_day breadcrumb, or any per-puzzle save. null until the effect
+  // runs, so the server and the first client paint agree (bar at the top); a
+  // new phone visitor sees it drop once, on that first paint only.
+  const [returning, setReturning] = useState(null);
+  useEffect(() => {
+    let r = false;
+    try {
+      if (localStorage.getItem('sot_quiz_identity')) r = true;
+      for (let i = 0; !r && i < localStorage.length; i += 1) {
+        const k = localStorage.key(i) || '';
+        if (!k.startsWith('sot_')) continue;
+        // Only a GAME's breadcrumb counts. sot_welcome_day (the arrival curtain's
+        // once-a-day stamp), sot_hub_* and sot_theme* are written on a first
+        // visit and would make every reader look like a returning one, which is
+        // exactly what happened on the first deploy of this (2026-09-02).
+        if (/^sot_(?!welcome_|hub_|theme|quiz_|vid_)[a-z]+_day$/.test(k)) r = true;
+        else if (/^sot_(?!welcome_|hub_|theme|quiz_|vid_)[a-z]+_\d/.test(k)) r = true;
+      }
+    } catch (e) { r = true; }
+    setReturning(r);
+  }, []);
+  const ordBelow = narrow && returning === false;
+  const ordBar = (
+    <div className="sty-ord">
+      <button type="button" className={'sty-more sty-ordb' + (az ? ' on' : '')} onClick={toggleAz}>
+        {az ? 'By category' : 'A to Z'}
+      </button>
+      {/* Reordering categories is meaningless while the categories are not
+          being shown, so the control goes away rather than sitting there
+          inert. */}
+      {!az ? (
+        <button type="button" className="sty-more sty-ordb" onClick={() => setReorder((v) => !v)}>
+          {reorder ? 'Done reordering' : 'Reorder categories'}
+        </button>
+      ) : null}
+      {!az && reorder && handOrder ? (
+        <button type="button" className="sty-more sty-ordb" onClick={() => saveOrder(null)}>Reset to default</button>
+      ) : null}
+    </div>
+  );
+
+  // HOW MANY CIRCUITS FIT is a question only the rendered grid can answer, so
+  // it is read off the element's own computed columns rather than derived from
+  // a breakpoint. Re-measured on resize; falls back to three before it mounts.
+  const circRef = useRef(null);
+  const [circCols, setCircCols] = useState(3);
+  useEffect(() => {
+    const el = circRef.current;
+    if (!el) return undefined;
+    const read = () => {
+      const cols = window.getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length;
+      if (cols > 0) setCircCols(cols);
+    };
+    read();
+    const ro = new ResizeObserver(read);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [circuits.length]);
+  // THE SHELF OPENS ON EXACTLY ONE FULL ROW (owner, 2026-09-01). One card in a
+  // seven-column grid is a hole rather than a shelf, so the peek is however many
+  // circuits FIT across, measured off the grid's own computed columns rather
+  // than guessed from a breakpoint.
+  //
+  // The Gauntlet, the Five and Sudoku lead it whatever their state, in that
+  // order. The sort below sends a FINISHED circuit to the end, which is right
+  // for the shelf in general and wrong for the three the page is built around:
+  // finish the Gauntlet at 7/7 and it would leave the front on the very day it
+  // was played. A phone's peek is exactly the three.
+  const circPeek = narrow ? CIRC_PEEK_NARROW : Math.max(1, circCols);
+  const circLead = useMemo(() => {
+    const byId = new Map(circuits.map((c) => [c.id, c]));
+    const lead = LEAD_CIRCUITS.map((id) => byId.get(id)).filter(Boolean);
+    const rest = circuits.filter((c) => !LEAD_CIRCUITS.includes(c.id) && !SHELF_ONLY.has(c.id));
+    return [...lead, ...rest].slice(0, Math.max(1, circPeek));
+  }, [circuits, circPeek]);
+
+  // The starred CIRCUITS, resolved against today's cards so a circuit carries
+  // the day's real roster. Declared below `circuits` on purpose: this body runs
+  // during render, so reading a const declared further down is a TDZ throw.
+  const pinnedCircs = useMemo(() => {
+    if (!favorites || !favorites.length) return [];
+    const byId = new Map(circuits.map((c) => [c.id, c]));
+    return favorites.filter(isCircPin).map((k) => byId.get(circPinId(k))).filter(Boolean);
+  }, [favorites, circuits]);
+  // THE GROUP'S GAMES FOR MY PUZZLES (owner, 2026-10-09): every game anyone in
+  // the reader's group (the reader included) played today. It used to drop the
+  // reader's own games and starred ones, which left the row showing one game
+  // when the group had played seven; double listing a starred game is fine
+  // (owner, 2026-10-12). Played games go last, as in every other section.
+  // Shown only when the banner at the top of My Puzzles is switched on.
+  const grpGames = useMemo(() => {
+    const list = (grp && grp.groups) || [];
+    return list.filter((x) => !x.failed && x.games).map((x) => ({
+      code: x.code,
+      name: x.name,
+      games: Object.keys(x.games)
+        .filter((k) => LIVE_KEYS.has(k) && DAILY_GAME_MAP[k] && (x.games[k] || []).length)
+        .map((k) => DAILY_GAME_MAP[k])
+        .sort((g1, g2) => (done.has(g1.key) - done.has(g2.key)) || g1.name.localeCompare(g2.name)),
+    })).filter((x) => x.games.length);
+  }, [grp, done]);
+  const mineTot = pinned.length + pinnedCircs.length;
+  const mineDone = pinned.filter((g) => done.has(g.key)).length
+    + pinnedCircs.filter((c) => c.n === c.games.length).length;
+
+  // ── which sections are open ─────────────────────────────────────────
+  // The Circuits shelf opens for EVERY reader, first visit included (owner,
+  // 2026-09-01): its one row is the Gauntlet, the Five and Sudoku, which is the
+  // page's own invitation. My games opens only for a reader with stars, since
+  // it is empty for anyone else, and every category stays a title until opened.
+  // A stored override (a shelf shut by hand) still wins over either default.
+  // The Word category opens too (owner, 2026-09-01, same day): it is the
+  // biggest shelf and the one a new reader is most likely to know a game on.
+  const hasPins = mineTot > 0;
+  // ON A PHONE MY GAMES SHOWS FOUR, unplayed first, so the categories stay on the first screen.
+  // Phone My games shows everything now (owner, 2026-10-03), so the cut is off.
+  const mineCut0 = false;
+  const mineCut = mineCut0 && !mineAll;
+  // ── THE INDEX AND PANE (owner, 2026-10-06) ──────────────────────────
+  // My games, Circuits and the ten categories are ONE LIST down the left, and
+  // the right side shows whichever the reader picked. It replaced the stack of
+  // My games / category buttons / Circuits, where opening a category pushed
+  // everything under it down the page and a starred game was on screen twice.
+  // A to Z and Reorder are whole-page modes and step outside it (`ix` false),
+  // where every section behaves exactly as it did.
+  //
+  // EVERY PANE IS RENDERED and the unpicked ones are display:none, so all the
+  // game links stay in the HTML for crawlers: the rule the shut sections and
+  // the category buttons followed before this.
+  //
+  // THE DEFAULT IS ALL GAMES (owner, 2026-10-06, same day). The whole roster is
+  // static, so it paints with the first frame and waits on nothing. The first
+  // version defaulted to My games or Word and listed My games and Circuits only
+  // once their data landed, so the list grew two rows and the pane flipped half
+  // a second in, which read as the panel still loading. Every row is in the
+  // list from the first paint now, and a pane whose data is still on its way
+  // holds its place rather than handing the reader to a different one.
+  // A to Z is gone as a mode: All games IS that list. Reorder is a state of
+  // the list itself (arrows on the category rows), not a second page layout.
+  const ix = true;
+  const paneIds = [ALL_ID, MINE_ID, CIRC_ID, ...orderedCats.map((c) => c.cat), ...INFO_PANES];
+  const paneOn = paneIds.includes(pane) ? pane : ALL_ID;
+  // CHOOSING CIRCUITS IN THE INDEX ASKS FOR ALL OF THEM (owner, 2026-10-06): the
+  // pane is the reader's request to browse circuits, so it lists the whole
+  // roster, and the Show all bar survives only where Circuits is one row of many.
+  const circPane = ix && paneOn === CIRC_ID;
+  const [runStat, setRunStat] = useState({});
+  const runAsked = useRef(null);
+  const runGrp = grpOne && !grpOne.failed && grpOne.code ? grpOne : null;
+  useEffect(() => {
+    if (grp === undefined) return undefined;
+    // The phone's pills ask for their runs; the Circuits pane, at any width,
+    // asks for every run it shows (owner, 2026-10-13: big cards there too).
+    const ids = new Set(runsMq ? PILL_CIRCUITS : []);
+    if (circPane) for (const c of circuits) ids.add(c.id);
+    if (!ids.size) return undefined;
+    if (!runAsked.current) runAsked.current = new Set();
+    const qs = identityQs();
+    for (const id of ids) {
+      const c = circuits.find((x) => x.id === id);
+      if (!c) continue;
+      const full = c.games.length > 0 && c.n === c.games.length;
+      const ask = `${id}|${full ? 1 : 0}|${runGrp ? runGrp.code : ''}`;
+      if (runAsked.current.has(ask)) continue;
+      runAsked.current.add(ask);
+      const url = runGrp
+        ? `/api/quiz/daily-combined?circuit=${encodeURIComponent(id)}&group=${encodeURIComponent(runGrp.code)}${qs ? '&' + qs : ''}`
+        : `/api/quiz/daily-combined?circuit=${encodeURIComponent(id)}${full && qs ? '&' + qs : ''}`;
+      fetch(url)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (!circLive.current || !d) return;
+          const v = runGrp
+            ? { players: d.siteField || 0, rank: d.siteRank || null, gfield: d.field || 0, grank: d.me && d.me.rank ? d.me.rank : null }
+            : { players: d.overallField || (Array.isArray(d.overall) ? d.overall.length : 0), rank: d.me && d.me.rank ? d.me.rank : null };
+          setRunStat((m) => ({ ...m, [id]: v }));
+        })
+        .catch(() => {});
+    }
+    return undefined;
+  }, [runsMq, circPane, circuits, grp, runGrp && runGrp.code]);
+  // On a phone the index is a sideways strip, so a pane opened from the cap has
+  // to bring its own chip into view. The quiz drawers load when their pane opens.
+  useIsoLayoutEffect(() => {
+    const from = flipFrom.current;
+    flipFrom.current = null;
+    if (!picked || !from) return;
+    try {
+      const el = document.querySelector('.sty-ixn .sty-ixb.on');
+      if (!el || !el.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const to = el.getBoundingClientRect();
+      const dx = from.left - to.left; const dy = from.top - to.top;
+      if (Math.abs(dx) + Math.abs(dy) < 2) return;
+      el.animate([
+        { transform: `translate(${dx}px,${dy}px) scaleX(${to.width ? from.width / to.width : 1})` },
+        { transform: 'none' },
+      ], { duration: 340, easing: 'cubic-bezier(.2,.7,.3,1)' });
+    } catch (e) {}
+  }, [picked, paneOn]);
+  useEffect(() => {
+    if (paneOn === QUIZ_ID) setNearFoot(true);
+    try {
+      const n = document.querySelector('.sty-ixn');
+      const b = n && n.querySelector('.sty-ixb.on');
+      if (n && b && n.scrollWidth > n.clientWidth + 2) {
+        n.scrollLeft += b.getBoundingClientRect().left - n.getBoundingClientRect().left - 14;
+      }
+    } catch (e) {}
+  }, [paneOn]);
+  const openDefault = (id) => (id === CIRC_ID || id === WORD_ID ? true : (id === MINE_ID ? hasPins : false));
+  // In the index a pane is simply up or not, so its own collapse is out of play.
+  const isOpen = (id) => (ix && (id === MINE_ID || id === CIRC_ID)) || (shelfOpen && Object.prototype.hasOwnProperty.call(shelfOpen, id)
+    ? !!shelfOpen[id]
+    : openDefault(id));
+  const setOpen = (id, on) => {
+    setShelfOpen((cur) => {
+      const next = { ...(cur || {}), [id]: !!on };
+      try { localStorage.setItem(SHELF_OPEN_KEY, JSON.stringify(next)); } catch (e) {}
+      return next;
+    });
+  };
+  // The head is the toggle, but it also carries the reorder arrows, so a click
+  // that landed on a control of its own is not a click on the head.
+  const headClick = (id) => (e) => {
+    try { if (e.target && e.target.closest && e.target.closest('a,button')) return; } catch (x) {}
+    if (ix) return;
+    setOpen(id, !isOpen(id));
+  };
+  const cav = (id) => (
+    <button
+      type="button"
+      className={'sty-cav' + (isOpen(id) ? ' on' : '')}
+      aria-expanded={isOpen(id)}
+      aria-label={isOpen(id) ? 'Collapse this section' : 'Show this section'}
+      onClick={(e) => { e.stopPropagation(); setOpen(id, !isOpen(id)); }}
+    >
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"
+        strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M6 9l6 6 6-6" />
+      </svg>
+    </button>
+  );
+
+  const playedCount = [...done].filter((k) => LIVE_KEYS.has(k)).length;   // dailies only; a run-only game ticks its circuit, not this count
+  // THE SLATE SLIDES WHEN IT REORDERS (motion pass, 2026-09-16): a category
+  // moved by the reorder arrows, and a card that drops to the end of its row
+  // once it is played, travel to their new place instead of teleporting. The
+  // hook measures every [data-fk] under the wrap after each commit.
+  const wrapRef = useRef(null);
+  useFlip(wrapRef);
+  // light=1 returns the flat `rank`; full mode nests it under ranks.xp. Both are
+  // the IQ board's position, so read either.
+  const rank = mine ? ((mine.ranks && mine.ranks.xp) || mine.rank || null) : null;
+  // The cap's three figures come off two reads (daily-status via useDayStats,
+  // /api/quiz/me for the all-time rank); the cells wait until BOTH are in, so
+  // the row lands once rather than one figure at a time.
+  const capWait = !!who && (!stats.ready || !mineIn);
+
+  // THE DAY, as one ladder. Blocks flex by their game count, so a block's width
+  // says how big its category is, which is true and useful rather than decorative.
+  const blocks = useMemo(() => cats.map(({ cat, games }) => ({
+    n: games.length,
+    c: hueFor(cat),
+    on: games.map((g) => done.has(g.key)),
+    half: games.map((g) => inprog.has(g.key)),
+    pop: games.map((g) => newDone.has(g.key)),
+  })), [cats, done, inprog, newDone, light]);   // eslint-disable-line react-hooks/exhaustive-deps
+
+  // UP NEXT is the first game of the day nobody has started, in registry order,
+  // preferring one already in progress: finishing beats starting.
+  const next = useMemo(() => {
+    const open = DAILY_GAMES.find((g) => inprog.has(g.key));
+    return open || DAILY_GAMES.find((g) => !done.has(g.key)) || null;
+  }, [done, inprog]);
+
+  // LAST KNOWN PAGE (owner, 2026-09-27; lib/home-snapshot.js). Once every
+  // read that shapes the page has landed, the stored snapshot (if one is up)
+  // gives way to this live page, changed figures roll or flash, and a moment
+  // later the settled page is stored for the next visit. The pause before the
+  // swap costs nothing, since the snapshot is on screen meanwhile, and lets
+  // the live page's own entrance motion finish out of sight.
+  const settled = !!(stats.ready && mineIn && statusIn && boardIn && myLoaded && grp !== undefined);
+  useEffect(() => {
+    if (!settled) return undefined;
+    const r = setTimeout(() => releaseHomeSnap(snapRef.current), 700);
+    const s = setTimeout(() => saveHomeSnap(snapRef.current), 2400);
+    return () => { clearTimeout(r); clearTimeout(s); };
+  }, [settled]);
+
+  // ── THE CATEGORY BUTTONS (owner, 2026-10-03) ─────────────────────────
+  // Ten buttons in place of ten rows. A button opens its games in a panel under
+  // its own row, one category at a time. EVERY panel is rendered and the shut
+  // ones are display:none, so all the game links stay in the HTML for crawlers,
+  // the same rule the old shut sections followed.
+  // NO PLAYED FRACTIONS IN THE INDEX (owner, 2026-10-07): the strip in the cap is
+  // the day's progress, drawn once.
+  //
+  // PROGRESS RINGS ON THE PHONE TILES (owner, 2026-10-09, option C of the
+  // mobile-button mockups): each tile carries its glyph inside a ring that
+  // fills as today's games in it are played, plus "N of M" under the name.
+  // This reverses the 10-07 no-fractions rule FOR THE PHONE TILES ONLY; the
+  // desktop index is unchanged (the ring and count are display:none there).
+  // A tile with nothing to count (Quizzes, IQ Tests, Kids...) shows the glyph
+  // in an empty track and no count.
+  const ixProg = (id) => {
+    if (id === ALL_ID) return [alphaDone, alpha.length];
+    if (id === MINE_ID) return pinned.length ? [pinned.filter((g) => done.has(g.key)).length, pinned.length] : null;
+    if (id === CIRC_ID) return circuits.length ? [circuits.filter((c) => c.games.length && c.n === c.games.length).length, circuits.length] : null;
+    const c = cats.find((x) => x.cat === id);
+    return c && c.games.length ? [c.games.filter((g) => done.has(g.key)).length, c.games.length] : null;
+  };
+  const ixRing = (id, prog) => {
+    const frac = prog && prog[1] ? Math.min(1, prog[0] / prog[1]) : 0;
+    const full = frac >= 1;
+    return (
+      <span className={'sty-ixg' + (full ? ' full' : '')} aria-hidden="true">
+        <svg className="sty-ixgr" viewBox="0 0 44 44">
+          <circle className="tr" cx="22" cy="22" r="19" />
+          {frac > 0 && !full ? (
+            <circle className="fl" cx="22" cy="22" r="19" strokeDasharray={`${(frac * 119.38).toFixed(1)} 119.38`}
+              transform="rotate(-90 22 22)" />
+          ) : null}
+        </svg>
+        <svg className="sty-ixgg" viewBox="0 0 24 24">{IX_GLYPHS[id] || IX_GLYPHS[ALL_ID]}</svg>
+      </span>
+    );
+  };
+  const ixCount = (prog) => (prog
+    ? <em className="sty-ixct" aria-hidden="true">{prog[0] >= prog[1] ? 'Complete' : `${prog[0]} of ${prog[1]}`}</em>
+    : null);
+  const ixBtn = (id, label, hue, cls) => {
+    const prog = ixProg(id);
+    return (
+      <button key={id} type="button" aria-pressed={paneOn === id}
+        className={'sty-ixb' + (cls ? ' ' + cls : '') + (paneOn === id ? ' on' : '') + (prog && prog[0] >= prog[1] ? ' cmp' : '')}
+        style={{ '--cc': hue }}
+        onClick={(e) => { if (picked && paneOn === id) { setPicked(false); try { localStorage.setItem(TILES_KEY, '1'); } catch (er) {} } else pickPane(id, e); }}>
+        <i aria-hidden="true" />
+        {ixRing(id, prog)}
+        <span>{label}</span>
+        {ixCount(prog)}
+        <em className="sty-ixbk" aria-hidden="true">Back</em>
+      </button>
+    );
+  };
+  // THE PUZZLE PANES SORT A TO Z OR BY POPULARITY (owner, 2026-10-12). A to Z
+  // is the default; Popular orders by the whole site's plays over the trailing
+  // seven ET days, which rides the same my-plays read the favorites block uses.
+  // One choice for every pane, remembered per browser.
+  const [sortBy, setSortBy] = useState('az');
+  useEffect(() => {
+    try { if (localStorage.getItem('sot_home_sort') === 'pop') setSortBy('pop'); } catch (e) { /* storage off */ }
+  }, []);
+  const pickSort = (v) => {
+    setSortBy(v);
+    try { localStorage.setItem('sot_home_sort', v); } catch (e) { /* storage off */ }
+  };
+  // Declared ABOVE ixNav, which renders it: below it was a temporal dead zone
+  // and took the homepage down (2026-10-12).
+  const sortCtl = (mobile) => (
+    <div className={mobile ? 'sty-sort sty-sortm' : 'sty-sort'} role="group" aria-label="Sort puzzles"
+      onClick={(e) => e.stopPropagation()}>
+      <button type="button" aria-pressed={sortBy === 'az'} onClick={() => pickSort('az')}>A&ndash;Z</button>
+      <button type="button" aria-pressed={sortBy === 'pop'} onClick={() => pickSort('pop')}
+        title="Most played across the site over the last 7 days">Popular</button>
+    </div>
+  );
+  const alphaDone = alpha.filter((g) => done.has(g.key)).length;
+  const ixNav = (
+    <nav className={'sty-ixn' + (reorder ? ' re' : '') + (picked ? ' pk' : '')} aria-label="Sections">
+      {ixBtn(ALL_ID, 'All Puzzles', 'var(--stg-ink)')}
+      {/* ON A PHONE THE SORT RIDES IN THE OPEN BAR (owner, 2026-10-12): the bar
+          has the width once "Back to categories" became "Back". It is a sibling
+          of the bar's button, not inside it (no button in a button), and the
+          CSS lays both into the same grid row. */}
+      {picked && (paneOn === ALL_ID || cats.some((c) => c.cat === paneOn)) ? sortCtl(true) : null}
+      {ixBtn(MINE_ID, 'My Puzzles', 'var(--stg-acc)')}
+      <span className="sty-ixsep" aria-hidden="true" />
+      {orderedCats.map(({ cat }, ci) => (reorder ? (
+        <div key={cat} className={'sty-ixb sty-ixr' + (paneOn === cat ? ' on' : '')} style={{ '--cc': hueFor(cat) }}>
+          <i aria-hidden="true" />
+          <span>{catLabel(cat)}</span>
+          <span className="sty-move">
+            <button type="button" onClick={() => moveCat(cat, -1)} disabled={ci === 0} aria-label={`Move ${cat} up`}>&uarr;</button>
+            <button type="button" onClick={() => moveCat(cat, 1)} disabled={ci === orderedCats.length - 1} aria-label={`Move ${cat} down`}>&darr;</button>
+          </span>
+        </div>
+      ) : ixBtn(cat, cat === 'Crowd Psychology'
+        ? <><span className="sty-ixl">Crowd Psychology</span><span className="sty-ixs">Crowd</span></>
+        : catLabel(cat), hueFor(cat))))}
+      <span className="sty-ixsep" aria-hidden="true" />
+      {ixBtn(CIRC_ID, 'Circuits', 'var(--stg-mute)')}
+      {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)')}
+      {/* DESKTOP INDEX ORDER (owner, 2026-10-13): Circuits, Quizzes, Puzzle Archive
+          and Leaderboards + Stats are one group; the tests, Kids and the lists
+          are their own group below; Most Appreciated comes last. The phone
+          reorders these with the order classes in the 900px block, unchanged. */}
+      {/* The puzzle archive is a door: every past board, by game and day. */}
+      <a className="sty-ixb sty-ixmv sty-ixar" href={withTq('/archive')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('archive', null)}<span>Puzzle Archive</span></a>
+      {ixBtn(BOARD_ID, 'Leaderboards + Stats', 'var(--stg-mute)', 'wide')}
+      <span className="sty-ixsep sty-ixmv" aria-hidden="true" />
+      {ixBtn(IQ_ID, 'IQ Tests', 'var(--stg-mute)', 'sty-ixmv sty-ixm4')}
+      {ixBtn(EXAM_ID, 'School Tests', 'var(--stg-mute)', 'sty-ixmv sty-ixm4')}
+      {/* Kids and the lists are doors, not panes: each goes to its own home. */}
+      <a className="sty-ixb sty-ixmv sty-ixm4" href="/kids" style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('kids', null)}<span>Kids</span></a>
+      <a className="sty-ixb sty-ixmv sty-ixm4" href={withTq('/lists')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('lists', null)}<span>Top 10 Lists</span></a>
+      <span className="sty-ixsep sty-ixmv" aria-hidden="true" />
+      {ixBtn(COMM_ID, 'Most Appreciated', 'var(--stg-mute)', 'wide sty-ixmv sty-ixma')}
+      <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
+        onClick={() => setReorder((v) => !v)}>
+        {reorder ? 'Done' : 'Reorder'}
+      </button>
+      {reorder && handOrder ? (
+        <button type="button" className="sty-ixre" onClick={() => saveOrder(null)}>Reset order</button>
+      ) : null}
+    </nav>
+  );
+  // ── THE SIDE COLUMN AND THE FITTED TILES (owner, 2026-10-07) ──────────
+  // A pane of two games left most of a desktop screen empty. Two answers,
+  // together. A fixed right-hand column carries the group's board and the
+  // overall board for whatever is selected (a category, or the whole day),
+  // cut to end level with the foot of the navigation. And a category whose
+  // tiles would not reach that line has them grown until they do. Every row
+  // of the column has its slot before any read lands, so nothing moves when
+  // the names arrive. One read per pane, once, and only on a wide screen.
+  const [wide, setWide] = useState(false);
+  const [mid, setMid] = useState(false);
+  useEffect(() => {
+    const a = window.matchMedia('(min-width: 1100px)');
+    const b = window.matchMedia('(min-width: 901px)');
+    const on = () => { setWide(a.matches); setMid(b.matches); };
+    on();
+    a.addEventListener('change', on); b.addEventListener('change', on);
+    return () => { a.removeEventListener('change', on); b.removeEventListener('change', on); };
+  }, []);
+  const gamePane = !INFO_PANES.includes(paneOn);
+  // ── IQ TESTS AND THE COMMUNITY BOARD AS PANES (owner, 2026-10-07) ──────
+  // Two more of the footer's links pulled into the index. The IQ tests draw
+  // as tiles like any category. The community board draws its two top tens
+  // and the share feed side by side, read once, the first time it opens, and
+  // shown together so nothing arrives in pieces.
+  const [iqBest, setIqBest] = useState({});
+  useEffect(() => {
+    try {
+      const all = JSON.parse(localStorage.getItem('sot_iq_results') || '{}') || {};
+      const out = {};
+      for (const k of Object.keys(all)) { const b = all[k] && all[k].best; if (b && Number.isFinite(b.iq)) out[k] = b.iq; }
+      setIqBest(out);
+    } catch (e) { /* no saved tests */ }
+  }, []);
+  const [comm, setComm] = useState(null);
+  const commAsked = useRef(false);
+  useEffect(() => {
+    if (paneOn !== COMM_ID || commAsked.current) return;
+    commAsked.current = true;
+    const qs = identityQs();
+    const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    Promise.all([
+      get(`/api/quiz/referrals?days=36500&limit=10${qs ? '&' + qs : ''}`),
+      get(`/api/quiz/referrals?days=90&limit=10${qs ? '&' + qs : ''}`),
+      get('/api/quiz/referrals?feed=1&limit=10'),
+    ]).then(([a, n, f]) => setComm({
+      all: (a && Array.isArray(a.top) ? a.top : []).slice(0, 10),
+      recent: (n && Array.isArray(n.top) ? n.top : []).slice(0, 10),
+      feed: (f && Array.isArray(f.feed) ? f.feed : []).slice(0, 10),
+      me: (n && n.me) || (a && a.me) || null,
+    }));
+  }, [paneOn]);
+  const commBoard = (title, rows, empty) => (
+    <div className="sty-cmc">
+      <div className="sty-eb">{title}</div>
+      <ol>
+        {Array.from({ length: 10 }).map((_, i) => {
+          const r = rows ? rows[i] : null;
+          if (!rows) return <li key={i} className="ph" aria-hidden="true"><i>{i + 1}</i><span /><b /></li>;
+          if (!r) return <li key={i} className={i === 0 && !rows.length ? 'nt' : 'em'}><i>{rows.length ? '' : ''}</i><span>{i === 0 && !rows.length ? empty : ''}</span><b /></li>;
+          const mine = comm && comm.me && comm.me.username && r.username === comm.me.username;
+          return <li key={i} className={mine ? 'me' : ''}><i>{i + 1}</i><span>{r.username}</span><b>{r.credits != null ? r.credits : ''}<small>{r.credits === 1 ? ' player' : ' players'}</small></b></li>;
+        })}
+      </ol>
+    </div>
+  );
+  const railCat = orderedCats.find((x) => x.cat === paneOn) || null;
+  const railId = railCat ? railCat.cat : ALL_ID;
+  const railKeys = railCat ? railCat.games.map((g) => g.key).join(',') : '';
+  const [rail, setRail] = useState({});
+  const railAsked = useRef(null);
+  useEffect(() => {
+    if (!wide || !gamePane) return;
+    if (!railAsked.current) railAsked.current = new Set();
+    if (railAsked.current.has(railId)) return;
+    railAsked.current.add(railId);
+    const qs = identityQs();
+    const url = '/api/quiz/daily-combined?top=25'
+      + (railKeys ? '&keys=' + encodeURIComponent(railKeys) : '') + (qs ? '&' + qs : '');
+    const put = (v) => setRail((m) => ({ ...m, [railId]: v }));
+    fetch(url).then((r) => r.json()).then((d) => {
+      put({ top: d && Array.isArray(d.overall) ? d.overall : [], me: (d && d.me) || null, field: (d && d.overallField) || 0 });
+    }).catch(() => { put({ top: [], me: null, field: 0 }); });
+  }, [wide, gamePane, railId, railKeys]);
+  // The group's side of it costs no read at all: the standing already on the
+  // page carries every member's points per game, so a category is a sum.
+  const railGrp = useMemo(() => {
+    const g0 = grpOne && !grpOne.failed && grpOne.roster && grpOne.roster.length > 1 ? grpOne : null;
+    if (!g0) return null;
+    const myK = (grp && grp.userKey) || null;
+    let rows;
+    if (!railKeys) {
+      const m = memberRows(g0, myK, 999);
+      rows = [m.me, ...m.rows].filter(Boolean).map((r) => ({ userKey: r.userKey, username: r.username, total: r.total || 0, me: r.me }));
+    } else {
+      const by = new Map(g0.roster.map((m) => [m.userKey, { userKey: m.userKey, username: m.username, total: 0, me: m.userKey === myK }]));
+      for (const key of railKeys.split(',')) {
+        for (const r of ((g0.boards || {})[key] || [])) {
+          const c = by.get(r.userKey);
+          if (c) c.total += Number(r.points) || 0;
+        }
+      }
+      rows = [...by.values()];
+    }
+    rows.sort((x, y) => y.total - x.total || String(x.username || '').localeCompare(String(y.username || '')));
+    rows.forEach((r, i) => { r.rank = i + 1; });
+    let shown = rows.slice(0, 6);
+    const mine = rows.find((r) => r.me);
+    if (mine && !shown.includes(mine)) shown = [...rows.slice(0, 5), mine];
+    return { name: g0.name, rows: shown };
+  }, [grp, grpOne, railKeys]);
+  // WHERE THE NAVIGATION ENDS, and where the open pane's tiles start. Read in
+  // a layout effect so the first painted frame already has the fitted sizes.
+  const ixRef = useRef(null);
+  const [dim, setDim] = useState({ navH: 0, gw: 0, gTop: 0 });
+  useIsoLayoutEffect(() => {
+    const el = ixRef.current;
+    if (!el) return undefined;
+    const read = () => {
+      const nav = el.querySelector('.sty-ixn');
+      const wides = el.querySelectorAll('.sty-ixb.wide');
+      const last = wides[wides.length - 1];
+      if (!nav || !last) return;
+      const nt = nav.getBoundingClientRect().top;
+      const navH = Math.round(last.getBoundingClientRect().bottom - nt);
+      const gs = el.querySelector('.sty-ixc:not(.sty-ixoff) > .sty-games');
+      const gr = gs ? gs.getBoundingClientRect() : null;
+      const next = { navH, gw: gr ? Math.round(gr.width) : 0, gTop: gr ? Math.round(gr.top - nt) : 0 };
+      setDim((p) => (p.navH === next.navH && p.gw === next.gw && p.gTop === next.gTop ? p : next));
+    };
+    read();
+    if (typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(read);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [paneOn, wide, mid, narrow, reorder]);
+  // The column count that fills the height with the most tile-like tiles. A
+  // category that already reaches the line at the standard size is left alone.
+  const fitFor = (n) => {
+    if (!mid || narrow || reorder || !dim.navH || !dim.gw || n < 1) return null;
+    const W = dim.gw; const H = dim.navH - dim.gTop; const G = 7; const MINH = 58;
+    if (H < 140) return null;
+    const cMax = Math.max(1, Math.floor((W + G) / (184 + G)));
+    const r0 = Math.ceil(n / cMax);
+    if (r0 * MINH + (r0 - 1) * G >= H * 0.85) return null;
+    // CAPPED (owner, 2026-10-07): the standard columns and the standard type;
+    // a tile only gets taller, and never past 132px, even if that leaves room.
+    // YOUR FAVORITES TAKES WHAT IT CAN (owner, 2026-10-07): as many rows as
+    // fit under tiles at their standard height, and the tiles grow into the rest.
+    // Tiles get a comfortable 86px first when that still leaves three rows.
+    const rowsAt = (th) => Math.max(0, Math.min(n, Math.floor((H - (r0 * th + (r0 - 1) * G) - FAV_GAP - FAV_HEAD) / FAV_ROW)));
+    const k86 = rowsAt(86);
+    const k = k86 >= Math.min(n, 3) ? k86 : rowsAt(MINH);
+    const used = k ? FAV_GAP + FAV_HEAD + k * FAV_ROW : 0;
+    const h = Math.min(132, Math.floor((H - used - (r0 - 1) * G) / r0));
+    if (h <= MINH && !k) return null;
+    return { style: { gridAutoRows: `${Math.max(MINH, h)}px` }, k, cols: cMax };
+  };
+  // One read for the whole page, the first time a short category opens.
+  const [fav, setFav] = useState(null);
+  const favAsked = useRef(false);
+  const favWanted = !!(railCat && fitFor(railCat.games.length)) || sortBy === 'pop';
+  useEffect(() => {
+    if (!favWanted || favAsked.current) return;
+    favAsked.current = true;
+    const qs = identityQs();
+    fetch('/api/quiz/my-plays' + (qs ? '?' + qs : '')).then((r) => r.json())
+      .then((d) => setFav({ mine: (d && d.mine) || {}, site: (d && d.site) || {}, week: (d && d.week) || {} }))
+      .catch(() => setFav({ mine: {}, site: {}, week: {} }));
+  }, [favWanted]);
+  // A to Z until the week's counts land, so nothing jumps twice.
+  const sortGames = (list) => {
+    if (sortBy !== 'pop' || !fav || !fav.week) return list;
+    const w = fav.week;
+    return list.slice().sort((a, b) => ((w[b.key] || 0) - (w[a.key] || 0)) || a.name.localeCompare(b.name));
+  };
+  const favBlock = (cat, games, k) => {
+    if (!k) return null;
+    let rows = null; let own = false; let total = 0; let tried = 0;
+    if (fav) {
+      own = games.some((g) => fav.mine[g.key]);
+      const val = (g) => (own ? ((fav.mine[g.key] || {}).plays || 0) : (fav.site[g.key] || 0));
+      const all = games.map((g) => ({ g, v: val(g), recent: own && fav.mine[g.key] ? fav.mine[g.key].recent : '' }))
+        .sort((a, b) => b.v - a.v || a.g.name.localeCompare(b.g.name));
+      total = all.reduce((t, x) => t + x.v, 0);
+      tried = all.filter((x) => x.v > 0).length;
+      rows = all.slice(0, k);
+    }
+    const max = rows && rows.length ? Math.max(1, rows[0].v) : 1;
+    // YOUR RECORD, NOT JUST YOUR VOLUME (owner, 2026-10-10): a reader with
+    // history also gets best time, average time, solve rate and streak per
+    // game, all folded server-side from the rows /api/quiz/my-plays already
+    // walks, so it is the same one read. Until that read lands the row shape is
+    // the reader's (the common case), so nothing jumps when it arrives. A game
+    // they have never played says so and links to today's board.
+    const mine = !fav || own;
+    const dash = '\u2013';
+    return (
+      <div className={'sty-fav' + (mine ? ' own' : ' site')}>
+        <div className="sty-favh">
+          <div className="sty-eb">{!fav || own ? 'Your favorites' : 'Most played'}<em>{' \u00b7 '}{catLabel(cat)}{fav ? <>{' \u00b7 '}{total.toLocaleString()} {total === 1 ? 'play' : 'plays'}</> : null}</em></div>
+          {fav && own ? <div className="sty-eb">{tried} of {games.length} tried</div> : null}
+        </div>
+        <div className="sty-favc sty-eb"><span>Game</span><span>{!fav || own ? 'All-time plays' : 'All players, all time'}</span><span>{!fav || own ? 'Last 14 days' : ''}</span>{mine ? <><span className="r">Best time</span><span className="r">Typical</span><span className="r">Solved</span><span className="r">Streak</span></> : null}<span>Plays</span></div>
+        {Array.from({ length: k }).map((_, i) => {
+          const x = rows ? rows[i] : null;
+          if (!x) return <div key={i} className="sty-favr ph" aria-hidden="true"><span /><span className="tr" /><span />{mine ? <><span /><span /><span /><span /></> : null}<span /></div>;
+          const me = own ? fav.mine[x.g.key] : null;
+          if (own && !x.v) {
+            return (
+              <a key={x.g.key} className="sty-favr un try" href={`${routeOf(x.g)}${tq ? '?' + tq.slice(1) : ''}`}>
+                <span className="n"><Glyph k={x.g.key} size={14} />{x.g.name}</span>
+                <span className="go">Try today&apos;s {x.g.name}</span>
+              </a>
+            );
+          }
+          return (
+            <a key={x.g.key} className={'sty-favr' + (x.v ? '' : ' un')} href={`${routeOf(x.g)}${tq ? '?' + tq.slice(1) : ''}`}>
+              <span className="n"><Glyph k={x.g.key} size={14} />{x.g.name}</span>
+              <span className="tr"><u style={{ width: `${(x.v / max) * 100}%` }} /></span>
+              <span className="wk">{own ? Array.from({ length: 14 }).map((__, d) => <s key={d} className={x.recent[d] === '1' ? 'p' : ''} />) : null}</span>
+              {mine ? (
+                <>
+                  <span className="m">{(me && mmss(me.best)) || dash}</span>
+                  <span className="m">{(me && mmss(me.avg)) || dash}</span>
+                  <span className="m">{me && me.solveRate != null ? me.solveRate + '%' : dash}</span>
+                  <span className="m">{me && me.streak ? me.streak + 'd' : dash}</span>
+                </>
+              ) : null}
+              <span className="c">{x.v ? x.v.toLocaleString() : '\u2013'}</span>
+            </a>
+          );
+        })}
+      </div>
+    );
+  };
+  const railLabel = railCat ? catLabel(railCat.cat) : 'All Puzzles';
+  const railEl = (() => {
+    if (!ix || !gamePane) return null;
+    const rd = rail[railId] || null;
+    const gN = railGrp ? railGrp.rows.length : 0;
+    const avail = dim.navH ? dim.navH - 24 - (gN ? 24 + gN * 30 + 16 : 0) : 16 * 30;
+    const n = Math.max(5, Math.min(25, Math.floor(avail / 30)));
+    // The leftover pixels are shared across the rows, so the last row ends on the line.
+    const rh = dim.navH ? Math.max(30, Math.min(36, avail / n)) : 30;
+    const myK = meKey || (rd && rd.me && rd.me.userKey) || null;
+    let rows = [];
+    if (rd) {
+      rows = rd.top.slice(0, n);
+      const mine = rd.me && rd.me.rank ? rd.me : null;
+      if (mine && !rows.some((r) => r.userKey === mine.userKey)) rows = [...rd.top.slice(0, n - 1), mine];
+    }
+    const slots = [];
+    for (let i = 0; i < n; i += 1) {
+      const r = rows[i];
+      if (r) {
+        slots.push(
+          <li key={i} className={myK && r.userKey === myK ? 'me' : ''}>
+            <i>{r.rank || i + 1}</i><span>{r.username || 'You'}</span><b>{r.total != null ? Math.round(r.total) : ''}</b>
+          </li>
+        );
+      } else if (!rd) {
+        slots.push(<li key={i} className="ph" aria-hidden="true"><i>{i + 1}</i><span /><b /></li>);
+      } else if (i === 0) {
+        slots.push(<li key={i} className="nt"><i /><span>Nobody yet today</span><b /></li>);
+      } else {
+        slots.push(<li key={i} className="em" aria-hidden="true"><i /><span /><b /></li>);
+      }
+    }
+    return (
+      <aside className="sty-rail" aria-label="Leaderboards" style={{ '--cc': railCat ? hueFor(railCat.cat) : 'var(--stg-ink2)' }}>
+        {railGrp ? (
+          <div className="sty-rlb">
+            <div className="sty-eb">{railGrp.name}<em>{' · '}{railLabel}</em></div>
+            <ol>
+              {railGrp.rows.map((r) => (
+                <li key={r.userKey} className={r.me ? 'me' : ''}>
+                  <i>{r.rank}</i><span>{r.username || 'Player'}</span><b>{Math.round(r.total)}</b>
+                </li>
+              ))}
+            </ol>
+          </div>
+        ) : null}
+        <div className="sty-rlb">
+          <div className="sty-eb">{railLabel} today{rd && rd.field ? <em>{' · '}{rd.field} {rd.field === 1 ? 'player' : 'players'}</em> : null}</div>
+          <ol style={{ '--rh': rh.toFixed(2) + 'px' }}>{slots}</ol>
+        </div>
+      </aside>
+    );
+  })();
+  // Pills in the header row on desktop, spread evenly beside the title; on a
+  // phone the header is hidden, so the same circuits stack as full-width,
+  // short tiles at the top of the pane instead (owner, 2026-10-09).
+  // A pill wears the colour of the page it is on: a category pane paints every
+  // circuit in that category's step, and All puzzles paints each in the
+  // category most of its games belong to (owner, 2026-10-09: Trivia Gauntlet
+  // orange on All puzzles, red on Geography).
+  const pillHue = (c, cat) => {
+    if (cat) return hueFor(cat);
+    const tally = {};
+    let best = null;
+    for (const g of c.games) {
+      tally[g.cat] = (tally[g.cat] || 0) + 1;
+      if (!best || tally[g.cat] > tally[best]) best = g.cat;
+    }
+    return best ? hueFor(best) : c.hue;
+  };
+  // A pill's lead category, for its colour and the ink that sits on it.
+  const pillCat = (c, cat) => {
+    if (cat) return cat;
+    const tally = {};
+    let best = null;
+    for (const g of c.games) {
+      tally[g.cat] = (tally[g.cat] || 0) + 1;
+      if (!best || tally[g.cat] > tally[best]) best = g.cat;
+    }
+    return best || (c.games[0] && c.games[0].cat);
+  };
+  const circPills = (cat, mobile) => {
+    const list = PILL_CIRCUITS.map((id) => circuits.find((c) => c.id === id)).filter((c) => c && (!cat
+      || c.games.some((g) => g.cat === cat) || (PILL_EXTRA[c.id] || []).includes(cat)));
+    if (!list.length) return null;
+    if (mobile) return runsMobile(list, cat);
+    return (
+      <div className="sty-cpills">
+        {list.map((c) => {
+          const full = c.games.length > 0 && c.n === c.games.length;
+          const part = !full && c.n > 0;
+          // A FINISHED PILL SAYS WHERE YOU CAME, not just that you did (owner,
+          // 2026-10-10). The check stands in until the board answers, and stays
+          // if it never does.
+          const st = full ? circStand[c.id] : null;
+          return (
+            <a key={c.id} className={'sty-cpill' + (full ? ' full' : part ? ' part' : '')}
+              href={withTq(circuitEntryHref(c.id))} style={{ '--ph': pillHue(c, cat) }}>
+              <span className="nm">{c.name}</span>
+              {full ? (st ? <span className="ck rk">#{st.rank}<i> of {st.field}</i></span> : <span className="ck">{'\u2713'}</span>) : null}
+            </a>
+          );
+        })}
+      </div>
+    );
+  };
+  // THE PHONE'S RUNS (owner, 2026-10-13). The most played run the reader has
+  // not finished is one big card; every other run is a small icon. Finish the
+  // big one and the next most played takes its place, until every run is an
+  // icon. Runs are one piece, so nothing here shows how far into one you are:
+  // a run reads as players today until you finish it, then as your place on
+  // the site board and in your group.
+  const RUN_SHORT = { gauntlet: 'Trivia', pricecheck: 'Prices', passport: 'Passport', math: 'Math', deduction: 'Judged', dojo: 'Dojo', room: 'Room' };
+  const runFull = (c) => c.games.length > 0 && c.n === c.games.length;
+  const fmtN = (n) => Number(n || 0).toLocaleString('en-US');
+  const runLook = (c, cat) => {
+    const pc = pillCat(c, cat);
+    return { '--ph': hueFor(pc), '--stg-onramp': light ? categoryOnrampLight(pc) : RAMP_INK };
+  };
+  // THE GROUP LINE SAYS SOMETHING OR IS NOT THERE (owner, 2026-10-13): no
+  // group, or nobody in it has finished the run today, and the line and its
+  // room are gone rather than held open.
+  const runGroupText = (c, st) => {
+    if (!runGrp || !st) return null;
+    const gname = runGrp.name;
+    if (runFull(c) && st.grank) return `#${st.grank} of ${st.gfield} ${gname}`;
+    if (st.gfield) return `${st.gfield} ${gname} played`;
+    return null;
+  };
+  // ONE BIG RUN CARD: the phone's lead run and every card in the Circuits pane.
+  const runCard = (c, cat, eyebrow, extra, art) => {
+    const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
+    const done = runFull(c);
+    const gtxt = runGroupText(c, st);
+    const left = !st ? '\u00a0'
+      : (done && st.rank ? `You: #${st.rank} of ${fmtN(st.players)}` : `${fmtN(st.players)} ${st.players === 1 ? 'player' : 'players'} today`);
+    return (
+      <a key={c.id} className={'sty-rbig' + (done ? ' done' : '') + (art ? ' art' : '')} href={withTq(circuitEntryHref(c.id))} style={runLook(c, cat)}>
+        {art ? <CircuitArt id={c.id} /> : null}
+        {eyebrow ? <span className="ey">{eyebrow}</span> : null}
+        <b className="nm">{c.name}{extra || null}</b>
+        <span className="go">{done ? 'Results' : 'Play'}</span>
+        {c.blurb ? <span className="ln">{c.blurb}</span> : null}
+        <span className="st">
+          <span>{left}</span>
+          {gtxt ? <span className="gr">{gtxt}</span> : null}
+        </span>
+      </a>
+    );
+  };
+  // THE PHONE'S RUNS (owner, 2026-10-13). The most played run the reader has
+  // not finished is one big card; every other run is a tile on a strip you
+  // flick through (no visible scrollbar), carrying its full name. Finish the
+  // big one and the next most played takes its place, until every run is a
+  // tile. Nothing shows how far into a run you are: it reads as players today
+  // until you finish it, then as your place on the site board and the group.
+  const runsMobile = (list, cat) => {
+    // MOST PLAYED is the run's own player count, the figure the reader sees on
+    // it. Until every run has answered, the summed plays of its games stand
+    // in, so the order settles once rather than shuffling run by run.
+    const byPlayers = list.every((c) => runStat[c.id]);
+    const popOf = (c) => (byPlayers ? runStat[c.id].players : (c.pop || 0));
+    const ord = list.map((c, i) => [c, i])
+      .sort((a, b) => (popOf(b[0]) - popOf(a[0])) || (a[1] - b[1]))
+      .map((x) => x[0]);
+    const big = ord.find((c) => !runFull(c)) || null;
+    const rest = ord.filter((c) => c !== big);
+    return (
+      <div className="sty-rnm">
+        {big ? runCard(big, cat, 'Most played today') : null}
+        {rest.length ? (
+          <div className="sty-rics">
+            {rest.map((c) => {
+              const st = runStat[c.id];
+              const done = runFull(c);
+              const ranked = done && st && st.rank;
+              const gtxt = runGroupText(c, st);
+              return (
+                <a key={c.id} className={'sty-ric' + (done ? ' done' : '')}
+                  href={withTq(circuitEntryHref(c.id))} style={runLook(c, cat)}>
+                  <span className="sq">{c.name}</span>
+                  <span className="l1">{ranked ? `#${st.rank} of ${fmtN(st.players)}` : st ? `${fmtN(st.players)} played` : '\u00a0'}</span>
+                  {gtxt ? <span className="l2">{gtxt}</span> : null}
+                </a>
+              );
+            })}
+          </div>
+        ) : null}
+      </div>
+    );
+  };
+  // THE GROUP TOGGLE (owner, 2026-10-09; on All Puzzles too from 2026-10-13):
+  // a chip per group beside the title on desktop, a banner on the phone, and
+  // the games that group played today once switched on. One state, so a group
+  // shown in My Puzzles is shown in All Puzzles too.
+  const grpChips = () => (who && grpGames.length ? (
+    <span className="sty-mgchips" onClick={(e) => e.stopPropagation()}>
+      {grpGames.map((x) => (
+        <button key={x.code} type="button" className={'sty-mgc' + (mineGrp.has(x.code) ? ' on' : '')}
+          aria-pressed={mineGrp.has(x.code)} onClick={() => flipMineGrp(x.code)}>
+          {x.name} <i>{x.games.length}</i>
+        </button>
+      ))}
+    </span>
+  ) : null);
+  const grpBanners = () => (who ? grpGames.map((x) => (
+    <button key={x.code} type="button" className={'sty-mgb' + (mineGrp.has(x.code) ? ' on' : '')}
+      aria-pressed={mineGrp.has(x.code)} onClick={() => flipMineGrp(x.code)}>
+      <span><b>{x.name}</b> played {x.games.length} {x.games.length === 1 ? 'game' : 'games'} today</span>
+      <span className="go">{mineGrp.has(x.code) ? 'Hide' : 'Show'}</span>
+    </button>
+  )) : null);
+  const grpLists = (pre) => (who ? grpGames.filter((x) => mineGrp.has(x.code)).map((x) => (
+    <div key={'gg-' + x.code}>
+      <div className="sty-mgl">Played by {x.name}</div>
+      <div className="sty-games sty-mgg">
+        {x.games.map((g, i) => (
+          <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
+            canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
+            hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={pre + ':' + x.code + ':' + g.key} />
+        ))}
+      </div>
+    </div>
+  )) : null);
+  const catTiles = orderedCats.map(({ cat, games }) => {
+    const fit = paneOn === cat ? fitFor(games.length) : null;
+    const fitStyle = fit ? fit.style : undefined;
+    const n = games.filter((g) => done.has(g.key)).length;
+    return (
+      <section key={cat} id={`cat-${cat.replace(/\s+/g, '-')}`}
+        className={'sty-cat sty-ixc' + (paneOn === cat ? '' : ' sty-ixoff')}
+        data-fk={'sec:' + cat} style={{ '--cc': hueFor(cat) }}>
+        <div className="sty-cathead">
+          <h2>{catLabel(cat)}</h2>
+          <b>{n}<i>/{games.length}</i></b>
+          {circPills(cat, false)}
+          {sortCtl(false)}
+        </div>
+        {circPills(cat, true)}
+        <div className={'sty-games' + (fit ? ' fit' : '')} style={fitStyle}>
+          {sortGames(games).map((g, i) => (
+            <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
+              canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
+              res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} />
+          ))}
+          {/* THE EMPTY SLOT POINTS AT WHAT IS LEFT (owner, 2026-10-10): when the
+              last row of tiles has a gap and the reader has history here, the
+              gap names the games they have never tried. It only fills a slot
+              that is already empty, so nothing below it moves when it lands. */}
+          {(() => {
+            if (!fit || !fit.cols || games.length % fit.cols === 0 || !fav) return null;
+            if (!games.some((g) => fav.mine[g.key])) return null;
+            const un = games.filter((g) => !fav.mine[g.key]).sort((a, b) => a.name.localeCompare(b.name));
+            if (!un.length) return null;
+            return (
+              <a className="sty-g sty-gtry" href={`${routeOf(un[0])}${tq ? '?' + tq.slice(1) : ''}`}>
+                <span className="sty-eb">Not tried yet</span>
+                <span className="sty-gn">{un.slice(0, 3).map((g) => g.name).join(' \u00b7 ')}{un.length > 3 ? ` +${un.length - 3}` : ''}</span>
+                <span className="sty-gt">{un.length === 1 ? 'The last one in the set' : 'Try one for the full set'}</span>
+              </a>
+            );
+          })()}
+        </div>
+        {fit ? favBlock(cat, games, fit.k) : null}
+      </section>
+    );
+  });
+
+  return (
+    <div className="sty stage-page" data-stage-theme={stageTheme} ref={snapRef}>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      <StageWelcome capRef={capRef} />
+      {/* NEW-GAME PREMIERES: once per launch, returning players who have not
+          played it, after the arrival has finished. See app/PremierePop.jsx. */}
+      <PremierePop />
+      {/* GROUPS LAUNCH: once per browser, after everything above. See app/GroupsPop.jsx. */}
+      <GroupsPop />
+      {/* The name form, opened by ?signup=1 or by either guest control below. */}
+      <ChooseNamePop />
+
+      {/* 1. THE CAP. One line: the identity, then the day's figures, then the
+             controls at the right edge, as on every board. */}
+      <div className="sty-cap v2" ref={capRef}>
+        <div className="sty-id">
+          <span className="sty-brand">
+            <MindLoftMark size={20} ink="var(--stg-ink)" accent="var(--stg-brand,#7dd3fc)" />
+            <b>Mind <em>Loft</em></b>
+          </span>
+          <span className="sty-date">{fmtDate(day)}</span>
+        </div>
+        {/* THE DAY'S STRIP IS THE ONLY PROGRESS FIGURE (owner, 2026-10-07): one
+            block per game in its category's colour. No played count beside it. */}
+        <div className="sty-capl"><StageLadder blocks={blocks} light={light} /></div>
+        <div className="sty-rt">
+        <div className="sty-figs">
+          {/* NO NAME, NO FIGURES: a guest gets the one control that would fill
+              the row. Copy is the owner's (2026-10-07). */}
+          {!who ? (
+            <a className="sty-keep" href="/?signup=1"
+              onClick={(e) => { e.preventDefault(); openChooseName(); }}>Keep stats, play with friends</a>
+          ) : null}
+          {who ? <div className="sty-who"><b>{who}</b><i>player</i></div> : null}
+          {/* EVERY GROUP THE READER IS IN gets a figure (owner, 2026-10-07), a
+              dash until they have a rank in it today. Tapping one opens that
+              group in the pane below. On a phone the row slides sideways. */}
+          {who && grp && Array.isArray(grp.groups) ? grp.groups.map((g) => (
+            <a key={g.code} className="sty-fc sty-fca sty-fg" href="#sty-board"
+              onClick={(e) => { e.preventDefault(); pickGroup(g.code); setLbScope(g.code); goPane(BOARD_ID, 'sty-board'); }}>
+              <b>{g.rank ? '#' + g.rank : '\u2013'}{typeof g.members === 'number' && g.members ? <i> of {g.members}</i> : null}</b>
+              <i>{g.name}</i>
+            </a>
+          )) : null}
+          {/* TWO FIGURES, EACH A WAY THROUGH (owner, 2026-10-07): today's rank
+              opens the leaderboard pane, the all-time rank opens the Stat Hub. */}
+          {who ? (
+            <a className={'sty-fc sty-fca' + (capWait ? ' wait' : '')} href="#sty-board"
+              onClick={(e) => { e.preventDefault(); setLbScope('all'); goPane(BOARD_ID, 'sty-board'); }}>
+              {capWait ? null : <b key="v">{stats.dayRank ? <>#<RollNum value={stats.dayRank} /></> : '\u2013'}</b>}
+              {capWait ? null : <i key="l">Today</i>}
+              <StagePatch key="p" on={capWait} light={light} />
+            </a>
+          ) : null}
+          {who ? (
+            <a className={'sty-fc sty-fca' + (capWait ? ' wait' : '')} href={withTq('/quizzes/hub')}>
+              {capWait ? null : <b key="v">{rank ? <>#<RollNum value={rank} /></> : '\u2013'}</b>}
+              {capWait ? null : <i key="l">All-Time</i>}
+              <StagePatch key="p" on={capWait} light={light} />
+            </a>
+          ) : null}
+        </div>
+        <button
+          type="button"
+          className={'sty-cx sty-tg' + (hint ? ' hint' : '')}
+          onClick={() => setStageTheme(stageTheme === 'light' ? 'dark' : 'light')}
+          aria-label={stageTheme === 'light' ? 'Switch to dark' : 'Switch to light'}
+          title={stageTheme === 'light' ? 'Switch to dark' : 'Switch to light'}
+        >
+          {stageTheme === 'light' ? (
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+              strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+              <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+              strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4" />
+            </svg>
+          )}
+          {intro ? (
+            <span className="stg-tlab">{intro === 'light' ? 'Light mode' : 'Dark mode'}</span>
+          ) : null}
+        </button>
+        </div>
+        {/* The cap's LAST CHILD on purpose: it reads its own parent to find
+            the switch and measure itself against it. */}
+        <ThemePop />
+      </div>
+
+      <div className="sty-wrap" ref={wrapRef}>
+        {/* 2. THE DAY'S PROGRESS. The page's one graphic, and it appears only
+            once there is progress to report (owner, 2026-09-01): a first-time
+            reader has nothing started, so an all-dark ladder would be a bar
+            of nothing at the top of the page. It arrives with the first
+            half-colour (started) or full-colour (finished) block, and
+            everything above it simply sits higher until then. `done` and
+            `inprog` are both empty on the server and on the first client
+            paint, so SSR and hydration agree on "absent". */}
+        {/* THE SUNDAY LEDGER (owner, 2026-09-07): the week, on a Sunday, above
+            everything. Renders nothing on the other six days and nothing on the
+            server; see app/SundayLedger.jsx. */}
+        <SundayLedger light={light} withTq={withTq} />
+
+        {/* THE TOP ROW (owner, 2026-09-17). On a wide screen the groups band and
+            the day's progress share a line, with the ladder squeezed to the
+            right; under 1100px they stack in the order they always had. */}
+
+        <h1 className="sty-sr">Mind Loft: today&rsquo;s daily puzzles</h1>
+
+        {/* THE NEWCOMER'S ROW, and ONLY for a reader with no footprint.
+            `returning` is the footprint test the A-to-Z bar's ordBelow already
+            uses (a saved identity, any sot_<key>_day breadcrumb, any per-puzzle
+            save), and it is null until its effect runs. So the server and the
+            first client paint render NOTHING and the row arrives after mount:
+            a returning reader, who is the far commoner case, never sees it
+            flicker in and back out.
+
+            EVERY CARD HERE IS FILLED, and each one publishes its own
+            --stg-onramp, because the ink that carries on a step is a property of
+            the STEP and of the register, not of the page. */}
+        {returning === false && pinCircs.length ? (
+          <section className="sty-pins sty-rev" aria-label="Start here">
+            {pinCircs.map((c, i) => (
+              <a key={c.id} className={'sty-pin' + (i === 2 ? ' third' : '')} href={withTq(circuitEntryHref(c.id))}
+                style={{
+                  '--cc': c.hue,
+                  '--stg-onramp': light ? categoryOnrampLight(c.games[0].cat) : RAMP_INK,
+                }}>
+                <span className="sty-pinl">
+                  <span className="sty-pinn">{c.name}</span>
+                  {/* WHAT IT TESTS, under the name, not how many games it holds
+                      (owner, 2026-10-07). */}
+                  <span className="sty-pine">{{ pricecheck: 'Shopping test', gauntlet: 'Knowledge test', passport: 'Geography test', dojo: 'Sudoku test', room: 'Crowd test' }[c.id] || c.unit || `${c.games.length} games`}</span>
+                  {c.blurb ? <span className="sty-pinb">{c.blurb}</span> : null}
+                </span>
+                <span className="sty-pingo">Play</span>
+              </a>
+            ))}
+          </section>
+        ) : null}
+
+        {/* NO CARDS ABOVE MY GAMES (owner, 2026-08-31). The three of them —
+               what you are mid-way through, what is most played, who is
+               leading — each restated something the page already says further
+               down, and together they pushed the reader's OWN games below the
+               fold. My games is the top section now; the day's ladder above it
+               is the only thing that outranks a reader's own choices. */}
+        {/* MY GAMES: the starred set, above everything a reader did not choose.
+            Only shown when there are stars, so it never sits there empty asking
+            to be filled. */}
+        {/* The SECTION's rule is neutral because this row is not a category:
+            the cards inside it carry their own categories' colours. */}
+        {/* THE RUNS LEAD THE PHONE'S HOME TOO (owner, 2026-10-13), above the
+            category tiles, the same block All Puzzles opens with. Phone only:
+            the block draws nothing above 900px. */}
+        {!picked ? <div className="sty-rhome">{circPills(null, true)}</div> : null}
+        <div ref={ixRef} className={(ix ? 'sty-ix' : 'sty-ixw') + (picked ? ' mpk' : ' msel') + (ix && gamePane ? ' rl' : '')}>
+        {ixNav}
+        {railEl}
+        {/* ALWAYS RENDERED now that it is a pane rather than a row: an empty
+            pane says how to fill it, where an empty row was just clutter. */}
+        {ix ? (
+          <section className={'sty-cat sty-mine sty-rev' + (ix && paneOn !== MINE_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
+            {/* An empty section has nothing to collapse and no fraction to
+                print, so the head keeps its title and drops both. */}
+            <div className="sty-cathead" onClick={mineTot ? headClick(MINE_ID) : undefined}>
+              <h2>My Puzzles</h2>
+              {grpChips()}
+              {mineTot ? <b>{mineDone}<i>/{mineTot}</i></b> : null}
+              {mineTot ? cav(MINE_ID) : null}
+            </div>
+            {grpBanners()}
+            {grpLists('mineg')}
+            {who && grpGames.some((x) => mineGrp.has(x.code)) && (pinned.length || pinnedCircs.length)
+              ? <div className="sty-mgl">Starred</div> : null}
+            {!mineTot && who && myLoaded ? (
+              <p className="sty-ixe">Nothing pinned yet. Star any game and it shows up here.</p>
+            ) : null}
+            {!mineTot && !who ? (
+              <a className="sty-join" href="/?signup=1"
+                onClick={(e) => { e.preventDefault(); openChooseName(); }}>
+                <div className="sty-newl">
+                  <div className="sty-eb">Nothing pinned yet</div>
+                  <div className="sty-jn">Choose a Name</div>
+                  <div className="sty-tag">Keep your stats, take a rank on the daily
+                    boards, and star any game to pin it here.</div>
+                </div>
+                <span className="sty-go">Choose</span>
+              </a>
+            ) : null}
+            {pinned.length ? (
+              <div className={'sty-games' + (isOpen(MINE_ID) ? '' : ' shut')}>
+                {/* ON A PHONE MY GAMES IS ALPHABETICAL (owner, 2026-10-03); desktop keeps played-last. */}
+                {(narrow ? [...pinned].sort((a, b) => a.name.localeCompare(b.name)) : playedLast(pinned, done)).map((g, i) => (
+                  <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
+                    canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
+                    hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'mine:' + g.key} />
+                ))}
+              </div>
+            ) : null}
+            {/* STARRED CIRCUITS ARE STRIPS HERE (owner, 2026-10-13): the drawn art
+                lives on the Circuits pane only, and a reader who starred a run
+                already knows what it is, so no description either. */}
+            {pinnedCircs.length && !mineCut ? (
+              <div className={'sty-cpills sty-minep sty-minec' + (isOpen(MINE_ID) ? '' : ' shut')}>
+                {pinnedCircs.map((c) => {
+                  const full = c.games.length > 0 && c.n === c.games.length;
+                  const st = full ? circStand[c.id] : null;
+                  return (
+                    <a key={c.id} className={'sty-cpill' + (full ? ' full' : c.n > 0 ? ' part' : '')}
+                      href={withTq(circuitEntryHref(c.id))} style={{ '--ph': c.hue }}>
+                      <span className="nm">{c.name}</span>
+                      {full ? (st ? <span className="ck rk">#{st.rank}<i> of {st.field}</i></span> : <span className="ck">{'\u2713'}</span>) : null}
+                    </a>
+                  );
+                })}
+              </div>
+            ) : null}
+            {mineCut0 && isOpen(MINE_ID) ? (
+              <button type="button" className="sty-more" onClick={() => setMineAll((v) => !v)}>
+                {mineAll ? 'Show fewer' : `Show all ${mineTot} \u00b7 ${mineDone} played`}
+              </button>
+            ) : null}
+          </section>
+        ) : null}
+
+        {/* THE ORDER IS THE READER'S. Arrows rather than dragging: they work
+            with a thumb and with a keyboard, and the order they write is the
+            same sot_cat_order the other home reads. It renders ONCE, here or
+            under the categories (`ordBelow`, decided above). */}
+
+        {/* 4. THE GAMES, either as nine category rows or as one A-to-Z list. */}
+        <section className={'sty-cat sty-az' + (paneOn === ALL_ID ? '' : ' sty-ixoff')} style={{ '--cc': 'var(--stg-ink2)' }}>
+          <div className="sty-cathead">
+            <h2>All Puzzles</h2>
+            <b>{alphaDone}<i>/{alpha.length}</i></b>
+            {grpChips()}
+            {circPills(null, false)}
+            {sortCtl(false)}
+          </div>
+          {circPills(null, true)}
+          {grpBanners()}
+          {grpLists('azg')}
+          {who && grpGames.some((x) => mineGrp.has(x.code)) ? <div className="sty-mgl">All Puzzles</div> : null}
+          <div className="sty-games">
+            {playedLast(sortGames(alpha), done).map((g, i) => (
+              // ALL GAMES MIXES CATEGORIES exactly as My games does, so each
+              // card carries its own hue (owner, 2026-08-31).
+              <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
+                canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
+                hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'az:' + g.key} />
+            ))}
+          </div>
+        </section>
+        {catTiles}
+
+        {/* A TO Z AND REORDER SIT UNDER THE CATEGORIES (owner, 2026-10-03). */}
+
+        {ix ? (
+          /* THE SAME OBJECT AS EVERY OTHER SECTION (owner, 2026-08-31): the 4px
+             left rule and the head with a count, so Circuits stops being the one
+             block on the page wearing a bare eyebrow. Its rule is neutral for
+             the reason My games' is: a circuit spans categories, so there is no
+             single hue that would be honest here. */
+          <section className={'sty-cat sty-circsec sty-rev' + (ix && paneOn !== CIRC_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
+            <div className="sty-cathead" onClick={headClick(CIRC_ID)}>
+              <h2>Circuits</h2>
+              <b>{circuits.filter((c) => c.n === c.games.length).length}<i>/{circuits.length}</i></b>
+              {cav(CIRC_ID)}
+            </div>
+            {/* EVERY CIRCUIT IS A BIG CARD WITH ITS OWN PLAY BUTTON (owner,
+                2026-10-13), the same card that leads the phone's runs: what it
+                is, players today, and once finished your place on the site
+                board and in your group. */}
+            <div className={'sty-rcards' + (isOpen(CIRC_ID) ? '' : ' shut')} ref={circRef}>
+              {(allCircs || circPane ? circuits : circLead).map((c) => runCard(c, null, null,
+                <CircStar c={c} canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite} />, circPane))}
+            </div>
+            {isOpen(CIRC_ID) && !circPane && circuits.length > circLead.length ? (
+              <button type="button" className="sty-more" onClick={() => setAllCircs((v) => !v)}>
+                {allCircs ? 'Show fewer' : `Show all ${circuits.length} circuits`}
+              </button>
+            ) : null}
+          </section>
+        ) : null}
+
+        {/* LEADERBOARDS + STATS (owner, 2026-10-13). One section, rebuilt from
+            the approved mockup in app/today/BoardsPane.jsx: the day's figures
+            against the last seven days (shown only when growing), the most
+            played games, the day by category and by hour, superlatives, a heat
+            grid of every game, ONE leaderboard that steps between Everyone and
+            each of the reader's groups, and your standing. It replaced four
+            sections (group band, standing, board, live feed). The component
+            mounts only while the pane is open: its figures are their own
+            request, and a closed pane keeps it out of the stored home snapshot. */}
+        <section id="sty-board" className={'sty-ixp sty-lbs' + (paneOn !== BOARD_ID ? ' sty-ixoff' : '')} ref={lbRef}>
+          {paneOn === BOARD_ID ? (
+            <BoardsPane games={DAILY_GAMES} hueFor={hueFor} withTq={withTq} total={total}
+              top={top} myOut={myOut} meKey={meKey} boardCount={boardCount}
+              grp={grp} scope={lbScope} setScope={setLbScope}
+              standing={standing} myRow={myRow} who={who} />
+          ) : null}
+        </section>
+
+        {/* THE QUIZ CATALOGUE, UNDER THE DAY'S TWO RECORDS (owner, 2026-08-31).
+            The dailies are what this home is for and they keep the top of it;
+            the quizzes are the deep shelf behind them, eighteen hundred of
+            them, and a shelf that size only works as a set of drawers. So each
+            topic is a row that opens in place, shows fifteen, and offers the
+            rest.
+
+            IT SPENDS NO COLOUR. The stage's family is the nine category steps
+            of the daily roster, and these fifteen topics are not those nine:
+            painting them would put a sixteenth, seventeenth and eighteenth hue
+            on a page whose whole rule is one family. So the section's rule is
+            neutral, exactly as My games' and Circuits' are, and the topics are
+            told apart by their names and their counts. */}
+        {/* THE ANCHOR. A quiz end card sends the reader back here rather than
+            to the separate quiz hub, so this section needs a name to land on;
+            it is the only one of the page's sections that had none. */}
+        <section id="sty-iq" className={'sty-cat sty-iqsec' + (paneOn !== IQ_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
+          <div className="sty-cathead">
+            <h2><a href={withTq('/iq')}>IQ Tests</a></h2>
+          </div>
+          <div className="sty-games">
+            {IQ_TESTS.map((t) => (
+              <a key={t.slug} className="sty-g" href={withTq(`/iq/${t.slug}`)} style={{ '--cc': (light ? IQ_LIGHT : IQ_DARK)[t.ramp % 10] }}>
+                <span className="sty-gn"><i className="sty-iqd" aria-hidden="true" />{t.name}</span>
+                <span className="sty-gt">{t.blurb}</span>
+                {iqBest[t.slug] != null ? (
+                  <span className="sty-gres"><span className="sty-grl">Your best:</span><span className="sty-grk">IQ {iqBest[t.slug]}</span></span>
+                ) : null}
+              </a>
+            ))}
+          </div>
+          <p className="sty-ixe sty-iqn">One adaptive test per trivia category, about eight minutes each. 100 is the typical Mind Loft player.</p>
+        </section>
+        <section id="sty-exams" className={'sty-cat sty-iqsec' + (paneOn !== EXAM_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
+          <div className="sty-cathead">
+            <h2><a href={withTq('/exams')}>School Tests</a></h2>
+          </div>
+          <div className="sty-games">
+            {EXAM_TILES.map(([slug, nm, tag], i) => (
+              <a key={slug} className="sty-g" href={withTq(`/${slug}`)} style={{ '--cc': (light ? IQ_LIGHT : IQ_DARK)[i] }}>
+                <span className="sty-gn"><i className="sty-iqd" aria-hidden="true" />{nm}</span>
+                <span className="sty-gt">{tag}</span>
+              </a>
+            ))}
+          </div>
+          <p className="sty-ixe sty-iqn">Ten hard questions in the style of each exam, 75 seconds each. Your score is matched to a shortlist of schools.</p>
+        </section>
+        <section id="sty-comm" className={'sty-cat sty-commsec' + (paneOn !== COMM_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
+          <div className="sty-cathead">
+            <h2><a href={withTq('/quizzes/community')}>Most Appreciated</a></h2>
+          </div>
+          <p className="sty-ixe sty-cmn">Ranked by new players brought in through a shared link. <a href={withTq('/quizzes/community')}>Full board and your link</a></p>
+          <div className="sty-cm">
+            {commBoard('All time \u00b7 top 10', comm ? comm.all : null, 'The top spot is open.')}
+            {commBoard('Last 90 days \u00b7 top 10', comm ? comm.recent : null, 'Nobody yet in this window.')}
+            <div className="sty-cmc">
+              <div className="sty-eb">Latest shares</div>
+              <ol className="fd">
+                {Array.from({ length: 10 }).map((_, i) => {
+                  const f = comm ? comm.feed[i] : null;
+                  if (!comm) return <li key={i} className="ph" aria-hidden="true"><span /><b /></li>;
+                  if (!f) return <li key={i} className={i === 0 && !comm.feed.length ? 'nt' : 'em'}><span>{i === 0 && !comm.feed.length ? 'No shares yet.' : ''}</span><b /></li>;
+                  return <li key={f.id || i}><span><strong>{f.sharer}</strong> brought in <strong>{f.joined || 'a new player'}</strong>{f.game && f.game.label ? <em> via {f.game.label}</em> : null}</span><b>{ago(f.at)}</b></li>;
+                })}
+              </ol>
+            </div>
+          </div>
+        </section>
+        <section id="sty-quizzes" className={'sty-cat sty-qsec' + (paneOn !== QUIZ_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
+          <div className="sty-cathead">
+            {/* THE HEADING IS THE DOOR (owner, 2026-09-04). This section is a
+                set of drawers standing in for a surface that now exists, so the
+                word Quizzes goes to it. Every other category head on this page
+                is a label for what is under it and stays one; this one is the
+                only head with somewhere else to be. */}
+            <h2><a href={withTq('/quizzes')}>Quizzes</a></h2>
+            {/* DRAWN ONLY WHEN REAL: no figure until the catalogue has landed,
+                rather than a zero that is not true yet. */}
+            {quizTotal ? (
+              <b>{quizTotal.toLocaleString()}<i>/{topicList.length} topics</i></b>
+            ) : null}
+            {/* NOT THE A-Z INDEX ANY MORE. This pointed at /quizzes/all and
+                said Full index, because the index WAS the only other quiz
+                surface. /quizzes is the quiz home now, and it is what a reader
+                who has opened three drawers wants; the A-Z is still one click
+                on from it, and every topic row below still links into it
+                directly. */}
+            <a className="sty-all sty-qall" href={withTq('/quizzes')}>
+              <span>All quizzes</span>
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
+                strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5 12h13M13 6l6 6-6 6" />
+              </svg>
+            </a>
+          </div>
+          <div className="sty-topics">
+            {topicList.map((t) => {
+              const open = openTopics.has(t.id);
+              const all = fullTopics.has(t.id);
+              const list = t.quizzes || [];
+              const shown = all ? list : peekOf(list, QUIZ_PEEK);
+              return (
+                <div key={t.id} className={'sty-topic' + (open ? ' on' : '')}>
+                  <button
+                    type="button"
+                    className="sty-trow"
+                    aria-expanded={open}
+                    aria-controls={`sty-t-${t.id}`}
+                    onClick={() => toggleTopic(t.id)}
+                  >
+                    <span className="sty-tn">{t.label}</span>
+                    {t.count ? <span className="sty-tc">{t.count}</span> : null}
+                    <svg className="sty-tv" viewBox="0 0 24 24" width="13" height="13" fill="none"
+                      stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"
+                      strokeLinejoin="round" aria-hidden="true">
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </button>
+                  {open ? (
+                    <div className="sty-tbody" id={`sty-t-${t.id}`}>
+                      {shown.length ? (
+                        <>
+                          <div className="sty-qgrid">
+                            {shown.map((q) => (
+                              <a key={q.id} className="sty-ql" href={`/quiz/${q.id}`}>{q.title}</a>
+                            ))}
+                          </div>
+                          <div className="sty-tfoot">
+                            {list.length > QUIZ_PEEK ? (
+                              <button
+                                type="button"
+                                className="sty-more sty-tmore"
+                                onClick={() => setFullTopics((prev) => {
+                                  const next = new Set(prev);
+                                  if (next.has(t.id)) next.delete(t.id); else next.add(t.id);
+                                  return next;
+                                })}
+                              >
+                                {all ? 'Show fewer' : `Show all ${t.count}`}
+                              </button>
+                            ) : null}
+                            <a className="sty-more sty-tmore" href={`/quizzes/all#${t.id}`}>
+                              {t.label} A to Z
+                            </a>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="sty-lnone">Loading the catalogue&hellip;</div>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+        </div>
+        {/* The lazy reads (quiz topics, the visitor count) wait on this now
+            that the quiz section is a pane and may never be on screen. */}
+        <div ref={footRef}><HomeAbout /></div>
+      </div>
+
+      {/* The visitor count rides the observer this page already runs for its
+          topics, so the footer asks for nothing of its own here. */}
+      <StageFooter visitors={visitors} />
+    </div>
+  );
+}
+
+const CSS = `
+.sty{min-height:100vh;background:var(--stg-ground);color:var(--stg-ink);
+  font-family:${SANS};-webkit-font-smoothing:antialiased;}
+.sty *{box-sizing:border-box;}
+
+/* ── the cap: one line ─────────────────────────────────────────────────── */
+.sty-cap{display:flex;align-items:center;gap:22px;padding:11px 22px;position:relative;
+  border-bottom:1px solid var(--stg-line);}
+.sty-id{display:flex;align-items:baseline;gap:11px;min-width:0;}
+/* The mark and the words are ONE object, so they centre on each other; the date
+   still hangs off the NAME's baseline, which is what .sty-id keeps its baseline
+   alignment for.
+
+   A FLEX BOX ONLY HAS A BASELINE IF ONE OF ITS ITEMS IS ALIGNED TO ONE (owner,
+   2026-09-04). This box centred BOTH of its items, so it exposed none, and a
+   flex item without a baseline is given one synthesised from its bottom margin
+   edge: .sty-id was aligning the date to the bottom of the 20px MARK rather
+   than to the baseline of the words, and the date sat a few pixels low and off
+   the line. So the box is baseline-aligned and the mark alone opts out, which
+   keeps the mark centred on the words exactly as before and hands .sty-id the
+   name's real baseline to hang the date on. */
+.sty-brand{display:flex;align-items:baseline;gap:8px;min-width:0;}
+.sty-brand>svg{align-self:center;}
+.sty-id b{font-size:16px;font-weight:800;letter-spacing:-0.01em;white-space:nowrap;}
+.sty-id b em{font-style:normal;color:var(--stg-brand,#7dd3fc);}
+.sty-date{font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--stg-mute);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;}
+.sty-figs{display:flex;gap:20px;margin-left:auto;}
+/* THE RIGHT-HAND GROUP: the figures, the view's link and the light switch.
+   One box, so that with the switch in the cap there are exactly three tracks
+   to centre it between. */
+.sty-rt{display:flex;align-items:center;gap:22px;margin-left:auto;min-width:0;}
+.sty-rt .sty-figs{margin-left:0;}
+/* WITH THE SWITCH: brand | switch | figures. The two outer tracks are EQUAL,
+   so the switch sits on the cap's real centre line rather than centred in
+   whatever space the figures leave. */
+.sty-cap.lz{display:grid;grid-template-columns:minmax(max-content,1fr) auto minmax(max-content,1fr);}
+/* Each outer track is at least as wide as what it holds. When both fit, the
+   two are equal and the switch is dead centre; when the right side needs more
+   (the Me view keeps your name), the switch gives way a little rather than
+   anything overlapping it. */
+.sty-cap.lz .sty-rt{justify-content:flex-end;}
+.sty-cap .sty-lens{margin:0;align-self:center;justify-self:center;}
+.sty-figs b.sty-dn{color:var(--stg-dn);}
+/* The one control a reader in no group gets in the cap: a pill, not a link. */
+.sty-cap .sty-grp{border:1px solid var(--stg-acc);border-radius:999px;padding:6px 11px;}
+.sty-cap .sty-grp:hover{background:var(--stg-acc-tint);opacity:1;}
+/* THE STRIP-DOWN LADDER (owner, 2026-09-25). The switch never moves; as the
+   cap narrows the things around it go, least useful first: the date, your
+   name, the link's words (the arrow stays), the fourth figure. */
+@media (max-width:1400px){ .sty-cap.lz .sty-date{display:none;} }
+/* YOUR NAME STAYS ON THE ME VIEW (owner, 2026-09-25): it sits at the left of
+   the three figures there at every width. The group and Everyone views shed it. */
+@media (max-width:1260px){ .sty-cap.lz:not(.lzme) .sty-who{display:none;} }
+@media (max-width:1120px){ .sty-cap.lzme .sty-vlk{display:none;} }
+/* TABLET: two rows, the same shape the phone uses, so nothing is squeezed. */
+@media (min-width:641px) and (max-width:900px){
+  .sty-cap.lz.lz{grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:'id ln tg' 'fg fg fg';
+    row-gap:8px;}
+  .sty-cap.lz.lz .sty-rt{display:contents;}
+  .sty-cap.lz.lz .sty-id{grid-area:id;}
+  .sty-cap.lz.lz .sty-lens{grid-area:ln;}
+  .sty-cap.lz.lz .sty-tg{grid-area:tg;}
+  .sty-cap.lz.lz .sty-figs{grid-area:fg;justify-content:space-between;border-top:1px solid var(--stg-line);padding-top:8px;}
+  .sty-cap.lz.lz .sty-f4{display:block;}
+  .sty-cap.lz.lz .sty-vlk{display:inline-flex;}
+  .sty-cap.lz.lz .sty-vlk span{display:inline;}
+}
+@media (max-width:1120px){ .sty-cap.lz .sty-vlk span{display:none;} }
+@media (max-width:1000px){ .sty-cap.lz .sty-f4{display:none;} }
+@media (max-width:860px){ .sty-cap.lz .sty-rt,.sty-cap.lz .sty-figs{gap:14px;} }
+.sty-figs>div{text-align:right;}
+/* A FIGURE CELL is positioned so its patch can cover it; while waiting it holds
+   a figure's footprint so the cap does not reflow when the number lands. */
+.sty-fc{position:relative;}
+.sty-fc.wait{min-width:54px;min-height:30px;}
+${PATCH_CSS}
+.sty-figs b{display:block;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1;}
+.sty-figs b i{font-style:normal;font-weight:600;color:var(--stg-mute);font-size:12px;}
+.sty-figs>div>i{font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--stg-mute);}
+.sty-who b{font-weight:800;}
+/* Not a figure and not a chip: a link at the end of the figures, in the
+   accent, so it reads as the continuation of the row rather than a control
+   competing with the three at the right edge. */
+.sty-all{display:inline-flex;align-items:center;align-self:center;gap:6px;flex:none;
+  text-decoration:none;color:var(--stg-acc-ink);font-family:${MONO};font-size:9.5px;
+  letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;}
+.sty-all:hover{opacity:.78;}
+.sty-figlink{display:none;}
+/* THE TOP ROW: stacked by default, two columns once there is room for both.
+   THE GRID IS GATED ON :has() RATHER THAN A CLASS (2026-09-22), because the
+   invite in that slot retires itself from inside the component: a class set by
+   the parent would keep reserving a column for something no longer drawn. */
+.sty-toprow{display:flex;flex-direction:column;gap:16px;}
+.sty-toprow:empty{display:none;}
+@media (min-width:1100px){
+  .sty-toprow:has(> .sty-day):has(> .hgb),.sty-toprow:has(> .hgi){
+    display:grid;grid-template-columns:minmax(0,352px) minmax(0,1fr);
+    gap:24px;align-items:stretch;}
+  /* THE LADDER GROWS INTO THE ROW rather than leaving a hole beside a taller
+     card (owner, 2026-09-22). Only the ladder takes the slack: the member rows
+     and the summary under it keep their own size. It needs no JS and no measure
+     and it UNDOES ITSELF, because dismissing the invite unmounts .hgi, the
+     :has() stops matching, the grid goes, and the ladder is back to its own
+     height.
+
+     NO CAP. There was a 118px one, on the theory that a tall panel would draw
+     an absurd bar chart. It was binding in BOTH states and so defeated the
+     whole point: beside the invite the ladder stopped short of the card, and
+     beside the group panel it left 41px of dead space under the member rows.
+     The row's height is set by the card, which is bounded content, so letting
+     the ladder take all of the slack is what makes the two columns end on the
+     same line. */
+  .sty-toprow:has(> .hgb) .sty-day,.sty-toprow:has(> .hgi) .sty-day{
+    display:flex;flex-direction:column;}
+  .sty-toprow:has(> .hgb) .sty-day > .stl-wrap,
+  .sty-toprow:has(> .hgi) .sty-day > .stl-wrap{
+    flex:1 1 auto;display:flex;flex-direction:column;min-height:0;}
+  .sty-toprow:has(> .hgb) .sty-day > .stl-wrap .stl,
+  .sty-toprow:has(> .hgi) .sty-day > .stl-wrap .stl{flex:1 1 auto;}
+  .sty-toprow:has(> .hgb) .sty-day > .sty-mlme{flex:1 1 auto;align-items:stretch;}
+  .sty-toprow:has(> .hgb) .sty-day > .sty-mlme > .stl-wrap{display:flex;flex-direction:column;}
+  .sty-toprow:has(> .hgb) .sty-day > .sty-mlme > .stl-wrap .stl{flex:1 1 auto;}
+  .sty-toprow:has(> .hgb) .sty-day > .sty-mlme > span{align-self:end;}
+  /* EVERY MEMBER GETS AN EQUAL SHARE OF THE HEIGHT (owner, 2026-09-23). Beside
+     the group band the slack used to go to the reader alone, so one tall
+     ladder sat over a stack of thin ones. Now the reader and each member row
+     (the folded remainder counts as one) take the same fraction, so a block
+     means the same thing in every row. --rows is set inline from the roster.
+     .sty-mls goes display:contents so its rows join this grid; its divider is
+     redrawn in the row gap so it takes no height from the first member. */
+  .sty-toprow:has(> .hgb) .sty-day:has(> .sty-mlme){display:grid;
+    grid-template-rows:auto repeat(var(--rows,2),minmax(0,1fr)) auto;row-gap:12px;}
+  .sty-toprow:has(> .hgb) .sty-day:has(> .sty-mlme) > .sty-eb{margin-bottom:-4px;}
+  .sty-toprow:has(> .hgb) .sty-day:has(> .sty-mlme) .sty-mls{display:contents;}
+  .sty-toprow:has(> .hgb) .sty-day:has(> .sty-mlme) .sty-ml{align-items:stretch;min-height:0;}
+  .sty-toprow:has(> .hgb) .sty-day:has(> .sty-mlme) .sty-ml > span:not(.sty-mlad){align-self:center;}
+  .sty-toprow:has(> .hgb) .sty-day:has(> .sty-mlme) .sty-mlme > .stl-wrap .stl{flex:1 1 0;min-height:0;}
+  .sty-toprow:has(> .hgb) .sty-day:has(> .sty-mlme) .sty-mlad{height:auto;}
+  .sty-toprow:has(> .hgb) .sty-day:has(> .sty-mlme) .sty-mls > .sty-ml:first-child{position:relative;}
+  .sty-toprow:has(> .hgb) .sty-day:has(> .sty-mlme) .sty-mls > .sty-ml:first-child::before{content:'';
+    position:absolute;left:0;right:0;top:-6px;border-top:1px solid var(--stg-line);}
+  .sty-toprow:has(> .hgb) .sty-day:has(> .sty-mlme) .sty-msum{margin-top:0;}
+  .sty-toprow:has(> .hgb) .sty-day,.sty-toprow:has(> .hgi) .sty-day{order:2;min-width:0;}
+  .sty-toprow:has(> .hgb) .hgb,.sty-toprow:has(> .hgi) .hgi{order:1;min-width:0;}
+}
+/* THE MEMBER LADDERS. The reader's own keeps its full height above them; these
+   sit at a quarter of it, so the graphic still belongs to the reader. */
+/* THE EYEBROW STAYS A BLOCK and the group's name FLOATS to the end of its
+   line. It was a flex row for one deploy, and RollNum (the rolling count in
+   .sty-ebn) stacks its digits in a clipped box with no text baseline of its
+   own, so align-items:baseline had nothing to align and the figure sat off
+   the line beside the words (owner report: "the 1 looks off centre"). A float
+   leaves the inline flow, and the count in it, exactly as it was. */
+.sty-dayg{float:right;padding-left:10px;color:var(--stg-mute);max-width:40%;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-mls{display:grid;gap:6px;margin-top:9px;padding-top:9px;border-top:1px solid var(--stg-line);}
+.sty-ml{display:grid;grid-template-columns:minmax(0,132px) minmax(0,1fr) 28px 46px;gap:10px;align-items:center;}
+.sty-ml .who{display:flex;align-items:center;gap:7px;min-width:0;font-size:12.5px;}
+.sty-ml .who b{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-ml .gms{font-family:${MONO};font-size:11px;color:var(--stg-mute);text-align:right;
+  font-variant-numeric:tabular-nums;}
+.sty-ml .tot{font-family:${MONO};font-size:12px;color:var(--stg-ink2);text-align:right;
+  font-variant-numeric:tabular-nums;}
+.sty-ml.rest .who b{font-weight:500;color:var(--stg-mute);}
+.sty-mlad{display:flex;gap:5px;height:14px;min-width:0;}
+/* The reader row: the ladder cell stretches, the labels sit on its baseline.
+   The 5px category gap above matches .stl's, so the columns line up. */
+.sty-mlme{align-items:end;}
+.sty-mlme > .stl-wrap{min-width:0;}
+.sty-mlme .who,.sty-mlme .gms,.sty-mlme .tot{padding-bottom:1px;}
+.sty-mlb{display:flex;gap:1px;min-width:0;}
+.sty-mlb i{flex:1 1 0;min-width:0;background:var(--stg-line);border-radius:1px;}
+.sty-mlb i.on{background:var(--cc);}
+.sty-msum{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:4px;padding-top:7px;
+  border-top:1px solid var(--stg-line);font-family:${MONO};font-size:10.5px;color:var(--stg-mute);}
+.sty-msum b{font-weight:500;color:var(--stg-ink2);}
+.sty-msum .k{margin-left:auto;}
+/* THE PRESENCE ROW, which is what the stack becomes on a phone. */
+.sty-pres{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:9px;padding-top:9px;
+  border-top:1px solid var(--stg-line);}
+.sty-pm{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--stg-line);
+  border-radius:999px;padding:2px 8px 2px 3px;font-family:${MONO};font-size:11px;color:var(--stg-ink2);
+  font-variant-numeric:tabular-nums;}
+.sty-pm.me{border-color:var(--stg-acc);color:var(--stg-acc-ink);}
+.sty-pm.off{color:var(--stg-mute);}
+.sty-psum{margin-left:auto;font-family:${MONO};font-size:10.5px;color:var(--stg-mute);
+  font-variant-numeric:tabular-nums;}
+/* THE GROUPS BADGE (2026-09-17). A word on a desktop, a number on a phone. */
+.sty-gpos{display:inline-flex;align-items:center;border-radius:999px;padding:2px 7px;letter-spacing:.04em;
+  background:var(--stg-brand,#7dd3fc);color:var(--stg-raise,#0e131f);font-variant-numeric:tabular-nums;}
+.sty-gpos .n{display:none;}
+/* THE MEMBER DISCS, on the title row so no tile grows (2026-09-17). Tonal
+   rather than per-member colour: the tile they sit on is already the category's
+   own step, and seven avatar hues on top of it is a third palette. */
+.sty-gdots{display:none;align-items:center;gap:2px;margin-left:auto;flex:none;}
+/* THE STAR IS PINNED TO THE TILE'S CORNER (top 6, right 6, 24 square), so the
+   discs leave it room rather than running under it (owner report, 2026-09-17).
+   23px = the star's reach past the tile's own 12px padding, plus a hair. */
+.sty-g.pin .sty-gdots{margin-right:23px;}
+.sty-gdots i{width:16px;height:16px;border-radius:50%;display:grid;place-items:center;
+  font-style:normal;font-size:8.5px;font-weight:800;line-height:1;
+  background:color-mix(in srgb, var(--stg-onramp,#08222e) 22%, transparent);
+  color:var(--stg-onramp,#08222e);}
+.sty-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+/* A GAME SOMEBODY IN YOUR GROUP HAS PLAYED IS FILLED (owner, 2026-09-17): the
+   category's own step with the ink that carries on it, so the slate says at a
+   glance which of today's puzzles the group is already on. */
+.sty-g.grp{background:var(--cc);border-color:var(--cc);color:var(--stg-onramp);}
+.sty-g.grp .sty-gn,.sty-g.grp .sty-gi,.sty-g.grp:hover .sty-gn{color:var(--stg-onramp);}
+/* A FINISHED TILE MUTES ITS OWN NAME (.sty-g.done.res .sty-gn), which on a
+   filled tile left the game's name grey on the category's own step (owner
+   report, 2026-09-17: "Emcee in the image needs to be white"). Same
+   specificity race for the glyph, so both are said again here, harder. */
+.sty-g.grp.done .sty-gn,.sty-g.grp.done.res .sty-gn,.sty-g.grp.done.res:hover .sty-gn{color:var(--stg-onramp);}
+.sty-g.grp.done .sty-gi,.sty-g.grp.done.res .sty-gi{color:var(--stg-onramp);opacity:1;}
+.sty-g.grp .sty-gt,.sty-g.grp .sty-grl,.sty-g.grp .sty-grf{color:color-mix(in srgb, var(--stg-onramp) 74%, transparent);}
+.sty-g.grp .sty-grk,.sty-g.grp .sty-star{color:var(--stg-onramp);}
+.sty-g.grp:hover{border-color:var(--cc);}
+/* A filled tile is never dimmed: the fill IS the mark, and half-strength ink on
+   a saturated ground is the contrast trap this file warns about elsewhere. */
+.sty-g.done.grp{opacity:1;}
+.sty-g.done.grp.res{background:var(--cc);}
+.sty-all:focus-visible{outline:2px solid var(--stg-acc);outline-offset:3px;border-radius:4px;}
+/* The only semantic colour on this page: a climb and a slip have to read
+   apart at a glance, and they are not the category family. */
+.sty-up{color:var(--stg-up);}
+.sty-dn{color:var(--stg-dn);}
+/* The movement chip is an <i> INSIDE the figure, and .sty-figs b i (0,2,1)
+   outranks a bare .sty-up (0,1,0), so the arrow would render mute grey.
+   NOTE: this block is a JS template literal, so no backticks in comments. */
+.sty-figs b i.sty-up{color:var(--stg-up);}
+.sty-figs b i.sty-dn{color:var(--stg-dn);}
+.sty-tg{display:inline-flex;align-items:center;justify-content:center;padding:6px 9px;
+  background:none;cursor:pointer;font:inherit;}
+.sty-tg.hint{border-color:var(--stg-acc);color:var(--stg-acc-ink);animation:stg-hintring 1.9s ease-out 3;}
+/* THE FIRST-VISIT POINTER at the light switch: a ring pulsing out of the glyph,
+   three times, then gone for good. A ring rather than a colour change, so it
+   draws the eye without the control ever looking like it is in a state it is
+   not. */
+@keyframes stg-hintring{
+  0%{box-shadow:0 0 0 0 var(--stg-acc);}
+  70%{box-shadow:0 0 0 10px transparent;}
+  100%{box-shadow:0 0 0 0 transparent;}
+}
+@media (prefers-reduced-motion: reduce){ .hint{animation:none !important;} }
+.sty-cx{flex:none;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--stg-ink2);text-decoration:none;border:1px solid var(--stg-line);
+  border-radius:8px;padding:6px 10px;}
+.sty-cx:hover{border-color:var(--stg-line2);color:var(--stg-ink);}
+.sty-prog{height:2px;background:var(--stg-surf2);}
+.sty-prog span{display:block;height:100%;background:var(--stg-ink2);transition:width .4s ease;}
+
+/* FILLS THE SCREEN (owner, 2026-08-31). The 1100px column left a third of a
+   desktop empty, and this page is a board of small tiles rather than a column
+   of prose: the grids simply deal more per row as the window grows. The one
+   thing that does NOT want the full width is the standings table, which is
+   four columns of figures and reads worse the further apart they sit. */
+.sty-wrap{max-width:none;margin:0 auto;padding:26px 22px 72px;
+  display:flex;flex-direction:column;gap:26px;}
+.sty-eb{font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--stg-mute);margin-bottom:9px;}
+.sty-ebn{color:var(--stg-ink);margin-left:6px;}
+
+/* ── the day ───────────────────────────────────────────────────────────── */
+/* THE LADDER IS THE WHOLE SECTION now: its legend went with the counters, and
+   its 12px top margin went with it, so the graphic ends where it ends and the
+   wrap's own 26px is the only gap below it. */
+
+/* ── up next: the one filled control on the page ───────────────────────── */
+/* ── the three cards ───────────────────────────────────────────────────── */
+.sty-three{display:grid;gap:9px;grid-template-columns:1.4fr 1fr 1fr;align-items:stretch;}
+/* The CTA is the LAST FLOW ITEM with margin-top:auto, not an absolutely
+   positioned one over a reserved strip of padding. The padding version put the
+   button on top of the tagline by a few pixels the moment a tagline ran long,
+   and "a few pixels" is a thing that changes with every font and every string.
+   In flow the card simply grows, and the row's cards match because the grid
+   stretches them. */
+.sty-card{display:flex;flex-direction:column;gap:2px;text-decoration:none;
+  color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);
+  border-left:4px solid var(--cc);border-radius:11px;padding:14px 16px;min-width:0;}
+.sty-card:hover{border-color:var(--stg-line2);border-left-color:var(--cc);}
+.sty-card:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+/* The LEAD card is the only filled thing on the page, as Up Next was: one
+   control carries the accent, everything else marks with it. */
+.sty-card.lead{background:var(--cc);border-color:transparent;color:var(--stg-onramp,#08222e);}
+.sty-card.lead .sty-eb,.sty-card.lead .sty-tag{color:inherit;opacity:.78;}
+.sty-card.lead .sty-gi{color:currentColor;}
+.sty-card .sty-nm{font-size:20px;font-weight:800;letter-spacing:-0.015em;line-height:1.15;}
+.sty-card.lead .sty-nm{font-size:24px;}
+.sty-card .sty-tag{font-size:12px;font-weight:600;color:var(--stg-mute);margin-top:1px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-card .sty-go{align-self:flex-start;margin-top:12px;}
+.sty-card .sty-go.ghost{background:none;color:var(--cc);border:1px solid var(--cc);}
+.sty-allin{justify-content:center;}
+
+/* ── a star on every card ──────────────────────────────────────────────── */
+.sty-g{position:relative;}
+.sty-star{position:absolute;top:6px;right:6px;display:flex;align-items:center;justify-content:center;
+  width:24px;height:24px;border:0;border-radius:8px;background:none;cursor:pointer;
+  color:var(--stg-mute2);opacity:0;transition:opacity .12s;}
+/* PINNING POPS (motion pass, 2026-09-16): the star scales up and back and a
+   ring in the row hue leaves it. The .pop class is set by the press itself
+   (starPop above) for half a second, so a card that mounts already starred
+   stays still; the hold in a hidden tab is harmless because the resting state
+   is the star. */
+@keyframes sty-starpop{0%{transform:scale(1);}45%{transform:scale(1.4);}100%{transform:scale(1);}}
+@keyframes sty-starring{from{box-shadow:0 0 0 0 var(--cc);opacity:.8;}to{box-shadow:0 0 0 11px transparent;opacity:0;}}
+.sty-star.pop svg{animation:sty-starpop .26s cubic-bezier(.2,.7,.3,1);}
+.sty-star.pop::after{content:"";position:absolute;inset:2px;border-radius:8px;pointer-events:none;
+  animation:sty-starring .42s ease-out both;}
+@media (prefers-reduced-motion:reduce){.sty-star.pop svg,.sty-star.pop::after{animation:none;}}
+.sty-g:hover .sty-star,.sty-star:focus-visible,.sty-star.on{opacity:1;}
+.sty-star.on{color:var(--cc);}
+.sty-star:hover{background:var(--stg-chip);color:var(--cc);}
+/* A touch screen has no hover, so the star is always there. */
+@media (hover:none){ .sty-star{opacity:1;} }
+.sty-mine .sty-cathead h2{letter-spacing:-0.01em;}
+
+/* ── reordering ────────────────────────────────────────────────────────── */
+.sty-signup{display:flex;flex-direction:column;text-decoration:none;color:var(--stg-onramp,#08222e);
+  background:var(--stg-acc);border-radius:8px;padding:5px 12px;}
+.sty-signup b{font-size:13px;font-weight:800;line-height:1.2;}
+.sty-signup i{font-style:normal;font-size:11px;font-weight:700;line-height:1.2;opacity:.85;}
+/* ── the live feed ─────────────────────────────────────────────────────── */
+.sty-live{display:grid;gap:5px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));}
+.sty-lrow{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--stg-ink);
+  background:var(--stg-surf);border:1px solid var(--stg-line);border-left:3px solid var(--cc);
+  border-radius:8px;padding:8px 11px;min-width:0;}
+.sty-lrow:hover{border-color:var(--stg-line2);border-left-color:var(--cc);}
+.sty-lrow .sty-gi{color:var(--cc);}
+.sty-lname{font-size:13px;font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-lsc{margin-left:auto;flex:none;font-family:${MONO};font-size:12px;font-weight:700;
+  font-variant-numeric:tabular-nums;}
+.sty-lsc i{font-style:normal;color:var(--stg-mute);}
+.sty-lwhen{flex:none;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--stg-mute2);width:62px;text-align:right;}
+.sty-lnone{color:var(--stg-mute);font-size:13px;font-weight:600;}
+
+/* ── the standings and the feed, paired ───────────────────────────────── */
+.sty-pair{display:grid;gap:22px;align-items:start;}
+@media (min-width:900px){
+  .sty-pair{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
+  /* Paired, the feed is a column rather than a shelf, so its rows go single
+     file instead of trying to tile inside half the width. */
+  .sty-pair .sty-live{grid-template-columns:minmax(0,1fr);}
+}
+
+.sty-ord{display:flex;gap:7px;}
+.sty-ordb{width:auto;margin-top:0;padding:7px 13px;}
+/* The active view reads as chosen rather than merely available. */
+.sty-ordb.on{border-color:var(--stg-acc);color:var(--stg-acc-ink);}
+.sty-move{display:inline-flex;gap:4px;margin-left:10px;}
+.sty-move button{width:24px;height:24px;border:1px solid var(--stg-line);border-radius:6px;
+  background:none;color:var(--stg-ink2);cursor:pointer;font-size:12px;line-height:1;}
+.sty-move button:hover:not(:disabled){border-color:var(--cc);color:var(--cc);}
+.sty-move button:disabled{opacity:.3;cursor:default;}
+
+.sty-next{display:flex;align-items:center;gap:18px;text-decoration:none;
+  background:var(--cc);color:var(--stg-onramp, ${RAMP_INK});
+  border-radius:12px;padding:18px 20px;}
+.sty-next .sty-eb{color:inherit;opacity:.72;margin-bottom:5px;}
+.sty-nm{font-size:26px;font-weight:800;letter-spacing:-0.02em;line-height:1.1;}
+.sty-tag{font-size:13.5px;font-weight:600;opacity:.8;margin-top:3px;}
+.sty-go{margin-left:auto;flex:none;font-size:14px;font-weight:800;
+  border:1.5px solid currentColor;border-radius:9px;padding:9px 18px;}
+/* THE INVERSION HAS TO NAME ITS OWN INK. Do NOT write background:currentColor
+   beside a color: in one rule: currentColor is the COMPUTED color, which that
+   same rule has already changed, so chip and card come out the same colour and
+   the control vanishes under the pointer. */
+.sty-next:hover .sty-go{background:var(--stg-onramp);color:var(--cc);border-color:var(--stg-onramp);}
+.sty-allin{cursor:default;}
+
+/* ── today's board ─────────────────────────────────────────────────────── */
+.sty-tbl{width:100%;max-width:900px;border-collapse:collapse;font-variant-numeric:tabular-nums;}
+.sty-tbl td{padding:7px 6px;border-bottom:1px solid var(--stg-line);font-size:13.5px;}
+.sty-tbl tr:last-child td{border-bottom:0;}
+.sty-tbl tr.me td{background:var(--stg-chip);font-weight:800;}
+/* The mute token is tuned against the PAGE ground; on the me row's chip it
+   lands at 4.34:1, so the supporting figures step up one token there. */
+.sty-tbl tr.me .sty-pos,.sty-tbl tr.me .sty-gp{color:var(--stg-ink2);}
+.sty-pos{width:40px;font-family:${MONO};font-size:12px;color:var(--stg-mute);}
+.sty-who{font-weight:700;}
+.sty-gp{width:70px;text-align:right;color:var(--stg-mute);font-size:12px;}
+.sty-pts{width:56px;text-align:right;font-weight:800;}
+
+/* ── your standing ─────────────────────────────────────────────────────── */
+.sty-stbl{max-width:none;}
+.sty-sg a{display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+  color:var(--stg-ink);font-weight:700;}
+.sty-sg a:hover{color:var(--cc);}
+/* The run in the game's own units. Muted because the NAME and the RANK are what
+   the eye is scanning down; this is the detail it stops on. */
+.sty-srun{color:var(--stg-mute);font-size:12.5px;}
+.sty-srk{width:110px;text-align:right;font-family:${MONO};font-size:12px;
+  color:var(--stg-ink2);white-space:nowrap;}
+.sty-srk i{font-style:normal;color:var(--stg-mute);}
+@media (max-width:560px){
+  /* The field size is the first thing to go: which of 94 you came is a figure
+     the rank already implies, and the row has to fit 390px. */
+  .sty-srk{width:auto;}
+  .sty-srk i{display:none;}
+  .sty-srun{font-size:11.5px;}
+}
+
+/* PAIRED WITH THE BOARD, AND SCROLLED TO ITS HEIGHT. The trio only declares its
+   areas above 900px; below it the three sections stack in DOM order, standing
+   first, and the standing is its natural length with no scroller, because a
+   scrolling panel inside a scrolling page is the worst thing a phone can be
+   handed. */
+.sty-sscroll{min-width:0;}
+@media (min-width:900px){
+  .sty-trio{grid-template-areas:'st bd' 'lv lv';}
+  .sty-trio #sty-standing{grid-area:st;min-width:0;}
+  .sty-trio #sty-board{grid-area:bd;min-width:0;}
+  .sty-trio #sty-live{grid-area:lv;min-width:0;}
+  /* --sty-lbh is the BOARD's measured height, heading included; the scroller
+     sits under a heading of its own, so it takes that height less one. The
+     fallback is a sane eleven rows for the frame before the measure lands. */
+  .sty-trio .sty-sscroll{max-height:calc(var(--sty-lbh, 372px) - 24px);overflow-y:auto;
+    overscroll-behavior:contain;}
+  /* Quiet scrollbar, same as the Layout C index (owner, 2026-10-11). */
+  .sty-trio .sty-sscroll{scrollbar-width:thin;scrollbar-color:transparent transparent;}
+  .sty-trio .sty-sscroll:hover{scrollbar-color:var(--stg-line) transparent;}
+  .sty-trio .sty-sscroll::-webkit-scrollbar{width:6px;}
+  .sty-trio .sty-sscroll::-webkit-scrollbar-thumb{background:transparent;border-radius:6px;}
+  .sty-trio .sty-sscroll:hover::-webkit-scrollbar-thumb{background:var(--stg-line);}
+  .sty-trio .sty-sscroll::-webkit-scrollbar-track{background:transparent;}
+  /* THE 900px CAP IS FOR A TABLE ALONE ON A PAGE. Paired, each table already
+     has half the width and the cap left a ragged strip of ground down the right
+     of the board while its own name and figure columns sat too far apart
+     (owner, 2026-09-01). In the trio the column IS the measure. */
+  .sty-trio .sty-tbl{max-width:none;}
+  /* TWO COLUMNS, READ DOWN (owner, 2026-09-01). auto-fill gave four across at
+     this width and a feed read four-abreast is four separate short lists; a
+     reader follows one column down. grid-auto-flow:column with an explicit row
+     count is what fills top-to-bottom before moving right, and --lrows is set
+     from the render so the two columns stay even at any feed length. */
+  .sty-trio .sty-live{grid-template-columns:repeat(2,minmax(0,1fr));
+    grid-template-rows:repeat(var(--lrows,5),auto);grid-auto-flow:column;}
+}
+
+/* ── the day, drawn, beside the feed ───────────────────────────────────── */
+/* WIDE ONLY. Under 1100px this is not rendered and the feed is exactly what it
+   was: a phone has no room to spend and nothing here is worth a scroll. */
+.sty-lwide{display:grid;gap:22px;min-width:0;}
+.sty-lstats{display:none;}
+@media (min-width:1100px){
+  /* The feed is two columns now and the chart is the thing worth looking at, so
+     the split moved toward the chart rather than away from it. */
+  .sty-trio .sty-lwide{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);align-items:start;}
+  .sty-trio .sty-lstats{display:grid;gap:18px;align-content:start;}
+}
+.sty-lviz{display:grid;gap:8px;}
+.sty-lviz .sty-eb{margin-bottom:3px;}
+/* WIDER BLOCKS (owner, 2026-09-01). The bars were 7px hairlines with a 74px
+   label that ellipsed "Crowd Psychology" to "Crowd Psycho…", which is a chart
+   drawn apologetically. With the reader's own figures out of this panel there is
+   room to draw it properly: the label reads in full and the bar is a block. */
+.sty-lbar{display:grid;grid-template-columns:118px minmax(0,1fr) auto;align-items:center;gap:11px;}
+.sty-lbn{font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--stg-mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* The track is a component boundary rather than text, so it owes 3:1 and takes
+   the raised surface; the fill is the category's own step. */
+.sty-lbt{display:block;height:14px;border-radius:5px;background:var(--stg-surf2);overflow:hidden;}
+.sty-lbt i{display:block;height:100%;background:var(--cc);border-radius:5px;
+  transition:width .35s ease;}
+.sty-lbv{font-family:${MONO};font-size:12px;font-weight:700;color:var(--stg-ink2);
+  white-space:nowrap;font-variant-numeric:tabular-nums;min-width:34px;text-align:right;}
+.sty-lbv i{font-style:normal;font-weight:600;color:var(--stg-mute);}
+.sty-lfigs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;
+  border-top:1px solid var(--stg-line);padding-top:14px;}
+.sty-lfigs b{display:block;font-size:19px;font-weight:800;line-height:1.1;
+  font-variant-numeric:tabular-nums;}
+.sty-lfigs i{font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--stg-mute);}
+
+/* ── a played card reports its result ──────────────────────────────────── */
+.sty-gres{display:flex;align-items:baseline;gap:7px;margin-top:2px;font-size:11.5px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-grk{font-weight:800;color:var(--stg-ink);}
+/* "You:" NAMES THE FIGURE (owner, 2026-09-01). A bare #3 of 10 on a card in a
+   grid of cards reads as something about the game; the two characters in front
+   of it say whose result it is, and the score came off in the same pass because
+   the rank already answers the question the card is being asked. */
+.sty-grl{font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--stg-mute);}
+.sty-grf{font-weight:600;color:var(--stg-mute);}
+/* TWO PLACES ON ONE LINE, and it may not wrap: the type steps down, the gaps
+   close, the group's name truncates, and nothing here may grow. flex-wrap is
+   said out loud because this line is the one place a second figure could push
+   itself onto a second row and change every tile's height. */
+/* Measured on the live page: the narrowest tile the slate ever draws is 166px
+   of inner width (the phone's two-up at 390px), and the longest line this can
+   produce at these sizes is about 150px. Under more pressure than that the
+   group's NAME is what gives way, because it is the only shrinkable item. */
+.sty-gres2{gap:3px;flex-wrap:nowrap;}
+.sty-gres2 .sty-grl{font-size:9.5px;font-weight:500;letter-spacing:.12em;flex:0 1 auto;min-width:0;
+  max-width:8ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-gres2 .sty-grk{font-size:11px;flex:none;}
+.sty-gres2 .sty-grf{font-size:10px;font-weight:500;flex:none;}
+.sty-gsep{flex:none;color:var(--stg-line2);}
+.sty-g.grp .sty-gsep{color:color-mix(in srgb, var(--stg-onramp) 55%, transparent);}
+/* WHAT THE GROUP DID ON THIS GAME, in the tag's slot on a tile the reader has
+   not played (2026-09-22). Same shape as the played line above it, so a slate
+   mixing the two reads as one column rather than two treatments. */
+.sty-ggrp{display:flex;align-items:baseline;gap:7px;margin-top:2px;font-size:11.5px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-ggrp .sty-grk{overflow:hidden;text-overflow:ellipsis;}
+/* The same line on a circuit card, which is a block rather than a flex child. */
+.sty-cres{display:flex;align-items:baseline;gap:7px;margin-top:5px;font-size:11.5px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* PLAYED IS DIM, BUT A RESULT IS NOT. .done wears opacity:.42, and opacity on a
+   parent cannot be undone by a child, so a rank printed inside one lands around
+   2:1 whatever colour it is given. A card that has something to say therefore
+   states "played" in COLOUR instead: the name steps down to the muted token
+   (which clears 4.5:1 on both registers) and the figures keep their own. */
+.sty-g.done.res{opacity:1;background:none;}
+.sty-g.done.res .sty-gn{color:var(--stg-mute);}
+.sty-g.done.res .sty-gi{opacity:.75;}
+/* STATE TWO, THE GROUP PLAYED IT AND YOU HAVE NOT (owner, 2026-10-08, was a
+   wash and a left rule). The tile wears the same outline in the category hue
+   as a game you have started, and its description line gives way to the
+   group's leader on it; the full fill still belongs to a game YOU finished. */
+.sty-g.gw{border-color:var(--cc);}
+.sty-g.gw:hover{border-color:var(--cc);}
+/* A finished tile is the full fill, never dimmed, whether or not it has a
+   result line yet. */
+.sty-g.done.grp{opacity:1;background:var(--cc);border-color:var(--cc);}
+
+/* ── circuits ──────────────────────────────────────────────────────────── */
+.sty-circs{display:grid;gap:7px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));}
+/* Circuits is a .sty-cat now, so its head carries the title and the grid sits
+   under it exactly as a category's games do. */
+.sty-circsec .sty-circs{margin-top:0;}
+.sty-more{display:block;width:100%;margin-top:7px;background:var(--stg-surf);
+  border:1px solid var(--stg-line);border-radius:8px;padding:9px;cursor:pointer;
+  font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--stg-ink2);}
+.sty-more:hover{border-color:var(--stg-line2);color:var(--stg-ink);}
+.sty-more:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-circ{position:relative;display:block;text-decoration:none;color:var(--stg-ink);
+  background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:8px;
+  padding:12px 14px 13px 16px;overflow:hidden;}
+.sty-circ::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cc);}
+.sty-circ:hover{border-color:var(--cc);}
+.sty-chead{display:flex;align-items:baseline;gap:10px;}
+.sty-cn{font-size:15px;font-weight:800;letter-spacing:-0.01em;min-width:0;}
+.sty-cnum{margin-left:auto;flex:none;}
+/* THREE lines, not two. Every circuit blurb is a full sentence and the two
+   line clamp cut the longest of them off mid-clause; the cards share a grid
+   row, so letting them run to three costs one line across the shelf and clips
+   nothing. */
+.sty-cb{font-size:11.5px;font-weight:600;color:var(--stg-mute);margin-top:3px;line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.sty-cbar{height:4px;border-radius:2px;background:var(--stg-surf2);margin-top:10px;overflow:hidden;}
+.sty-cbar span{display:block;height:100%;background:var(--cc);}
+.sty-cnum{font-family:${MONO};font-size:11.5px;font-weight:700;color:var(--stg-ink2);}
+.sty-cnum i{font-style:normal;color:var(--stg-mute);}
+/* A finished circuit is MARKED, not dimmed. The ladder dims a played rung
+   because a rung is a graphic; a card carries prose, and half-strength prose on
+   this ground reads at 2.4:1. So completion moves into the figure — the count
+   takes the category hue and the bar fills — and the words stay legible. */
+.sty-circ.full .sty-cnum{color:var(--cc);}
+.sty-circ.full .sty-cnum i{color:var(--cc);opacity:.6;}
+/* ON A PALE GROUND A CATEGORY HUE IS A RULE, NOT INK. The nine hues are picked
+   to carry a 4px bar and a border, which owe 3:1; as TEXT on the white card
+   they owe 4.5 and the warm ones are nowhere near it (Trivia's orange is
+   2.26:1 on white, measured live on the light home). So the light register
+   darkens the hue rather than dropping it, which keeps the category readable
+   AS that category. The denominator takes the ordinary muted ink instead of
+   the same hue at .6: opacity composites toward the ground, so on a pale one
+   it makes the quiet half quieter AND lighter, which is the wrong direction
+   twice. Hierarchy comes from size and weight here, as everywhere else. */
+[data-stage-theme=light] .sty-circ.full .sty-cnum{color:color-mix(in srgb, var(--cc) 55%, #0b0d12);}
+[data-stage-theme=light] .sty-circ.full .sty-cnum i{color:var(--stg-mute);opacity:1;}
+.sty-circ.full{border-color:color-mix(in srgb, var(--cc) 40%, transparent);}
+
+/* ── the categories ────────────────────────────────────────────────────── */
+.sty-cat{position:relative;padding-left:16px;}
+.sty-cat::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:4px;
+  border-radius:2px;background:var(--cc);}
+/* A LABEL, NOT A PEER. .sty-wrap is a flex column with a 26px gap (22 on a
+   phone), so this heading was spending a whole section gap plus its own margin,
+   40px of air under one line of type. The negative bottom margin hands most of
+   that back: 14px here and 10px on a phone, the same distance a category head
+   already sits above its own grid. */
+.sty-lens{display:inline-flex;align-self:flex-start;gap:2px;padding:3px;max-width:100%;overflow-x:auto;
+  border:1px solid var(--stg-line);border-radius:999px;background:var(--stg-surf);scrollbar-width:none;margin-bottom:-8px;}
+.sty-lens button{border:0;background:none;border-radius:999px;padding:6px 14px;font:inherit;font-size:12.5px;
+  font-weight:700;color:var(--stg-ink2);cursor:pointer;white-space:nowrap;max-width:18ch;overflow:hidden;
+  text-overflow:ellipsis;flex:none;}
+.sty-lens button:hover{color:var(--stg-ink);}
+.sty-lens button.on{background:var(--stg-acc);color:var(--stg-onramp,#08222e);}
+.sty-lens button:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-slhd{display:flex;align-items:center;flex-wrap:wrap;gap:10px 24px;margin:4px 0 -12px;}
+.sty-slhd .sty-slate{margin:0;flex:none;}
+.sty-slbar{flex:1 1 360px;display:flex;align-items:center;gap:12px;min-width:0;}
+.sty-slbar > :first-child{flex:1 1 auto;min-width:0;}
+.sty-slbn{flex:none;margin:0;}
+@media (max-width:640px){
+  .sty-slbar{flex-basis:100%;}
+}
+.sty-slate{margin:4px 0 -12px;font-size:19px;font-weight:800;letter-spacing:-.015em;line-height:1.15;color:var(--stg-ink);}
+.sty-cathead{display:flex;align-items:baseline;gap:11px;margin-bottom:10px;}
+.sty-cathead h2{margin:0;font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;}
+.sty-cathead b{font-family:${MONO};font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--stg-ink2);}
+.sty-cathead b i{font-style:normal;color:var(--stg-mute);}
+.sty-games{display:grid;gap:7px;grid-template-columns:repeat(auto-fill,minmax(184px,1fr));}
+/* A grid track's automatic minimum is MIN-CONTENT, and .sty-gt is nowrap, so a
+   long tagline widens its own track and pushes the ladder off a phone instead
+   of ellipsing inside it. Measured: the ladder ran 426px wide at 390. The floor
+   has to be released on the track AND on the item. */
+.sty-g,.sty-circ{min-width:0;}
+.sty-g>*{min-width:0;max-width:100%;}
+.sty-g{display:block;text-decoration:none;background:var(--stg-surf);
+  border:1px solid var(--stg-line);border-radius:8px;padding:10px 12px;color:var(--stg-ink);
+  transition:border-color .12s,transform .12s cubic-bezier(.2,.7,.3,1),box-shadow .12s;}
+/* A CARD DEEPENS INTO ITS CATEGORY on hover (motion pass, 2026-09-16): the
+   border and the name take the row hue and the card lifts a pixel. The glyph
+   already wears the hue at rest, so this is the same colour arriving on two
+   more things rather than a new one. */
+.sty-g:hover{border-color:var(--cc);transform:translateY(-1px);
+  box-shadow:0 3px 10px rgba(var(--stg-lift,11,15,26),.08);}
+.sty-g:hover .sty-gn{color:var(--cc);}
+.sty-gn{transition:color .12s;}
+.sty-g.done:hover{transform:none;}
+.sty-gn{display:flex;align-items:center;gap:7px;font-size:14.5px;font-weight:800;
+  letter-spacing:-0.01em;}
+/* The glyph wears the row's hue while the name stays ink, so the colour marks
+   the category without costing the name any contrast. BUT the Up Next card is
+   FILLED with that same hue, so a glyph painted --cc there is invisible: on any
+   surface whose ground is the accent, the glyph takes the card's own ink. */
+.sty-gi{flex:none;color:var(--cc);}
+.sty-next .sty-gi{color:currentColor;opacity:.85;}
+.sty-nm{display:flex;align-items:center;gap:11px;}
+.sty-gt{display:block;font-size:11.5px;font-weight:600;color:var(--stg-mute);margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* Played is DIM, not struck through: the day is a record, not a chore list. */
+.sty-g.open{border-color:var(--cc);}
+.sty-g:focus-visible,.sty-next:focus-visible,.sty-cx:focus-visible{
+  outline:2px solid var(--cc, var(--stg-ink2));outline-offset:2px;}
+
+@media (max-width:560px){
+  .sty-gp{display:none;}
+  .sty-circs{grid-template-columns:minmax(0,1fr);}
+}
+@media (max-width:640px){
+  /* The name never wraps, and the DATE does not run on a phone at all: it was
+     costing a whole line of the cap to say what day it is, which is the one
+     thing a reader opening a daily already knows. The room goes to the mark. */
+  /* TWO DELIBERATE ROWS, not three accidental ones (owner, 2026-08-31:
+     "quizzes wraps to its own line on mobile"). Left to flex-wrap the cap put
+     the name on line 1, five figures on line 2, and stranded the toggle and the
+     Quizzes link alone on line 3. Row 1 is the identity and the two controls,
+     row 2 is the figures, and nothing is left over. */
+  /* TWO BARS OF THE SAME HEIGHT (owner, 2026-08-31). Bar one is what this page
+     is and how to move around it: the name, the date, and the three controls.
+     Bar two is who you are and how the day is going — or, for a reader with no
+     account, the one thing worth offering them. */
+  /* FIVE COLUMNS, because there are four controls now (owner, 2026-09-01).
+     Your standing was added without an area of its own, so auto-placement put
+     it in the figures row with the IQ and the ranks, where a bordered icon
+     among four text figures reads as a fifth figure that lost its label. It
+     belongs with the other three ways out of the page. */
+  .sty-cap,.sty-cap.lz{display:grid;grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:'id tg' 'fg fg';
+    align-items:center;gap:0 8px;padding:0 14px;}
+  /* WITH THE SWITCH, row one is brand, switch, light switch; the figures keep
+     row two. The right-hand box dissolves so its children take their areas. */
+  .sty-cap.lz{grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:'id ln tg' 'fg fg fg';}
+  .sty-cap.lz .sty-lens{grid-area:ln;justify-self:center;}
+  .sty-cap.lz .sty-lens button{padding:5px 10px;font-size:12px;max-width:10ch;}
+  .sty-cap.lz .sty-f4{display:block;}
+  .sty-cap.lz .sty-vlk{display:none;}
+  .sty-rt{display:contents;}
+  .sty-id{grid-area:id;flex:none;min-width:0;padding:9px 0;}
+  .sty-brand{gap:7px;}
+  .sty-brand svg{width:17px;height:17px;}
+  .sty-all{font-size:9px;gap:5px;}
+  .sty-figs{position:relative;}
+  .sty-hub{display:none;}
+  .sty-figlink{display:block;position:absolute;inset:0;z-index:1;}
+  .sty-figlink:focus-visible{outline:2px solid var(--stg-acc);outline-offset:-2px;border-radius:6px;}
+  .sty-grp{position:relative;z-index:2;}
+  .sty-gpos{padding:0 5px;min-width:16px;height:16px;justify-content:center;font-size:9px;}
+  .sty-gpos .w{display:none;}
+  .sty-gpos .n{display:inline;}
+  .sty-tg{grid-area:tg;}
+  .sty-date{display:none;}
+  .sty-figs{grid-area:fg;margin-left:0;gap:0;justify-content:space-between;
+    border-top:1px solid var(--stg-line);padding:9px 0;min-height:44px;align-items:center;}
+  .sty-figs>div{min-width:0;}
+  /* THE GUEST CONTROL IS ONE LINE on a phone (owner, 2026-09-02): the two
+     lines become one, "Choose a Name - Keep Your Stats".
+     IT IS NOT THE ONLY THING IN THE ROW, which the 2026-09-02 version assumed
+     when it took flex:1 1 100%: the Groups link sits in .sty-figs beside it.
+     Measured at 375px, that made a 282px, 40px-tall slab of saturated accent
+     ending 12px from a 12px text link, which read as running straight into it
+     (owner, 2026-09-22). It sizes to its own content now, so the gap is real
+     and the two things in the row look like two things. */
+  .sty-signup{flex:0 1 auto;flex-direction:row;align-items:baseline;gap:5px;min-width:0;
+    padding:7px 12px;min-height:34px;justify-content:center;overflow:hidden;}
+  .sty-signup b{font-size:13px;}
+  .sty-signup i{font-size:11.5px;white-space:nowrap;}
+  .sty-signup i::before{content:'- ';}
+  .sty-three{grid-template-columns:1fr;}
+  .sty-ord{flex-wrap:wrap;}
+  .sty-wrap{padding:18px 14px 56px;gap:22px;}
+  .sty-nm{font-size:21px;}
+  .sty-next{padding:15px 16px;gap:12px;}
+  .sty-go{padding:8px 13px;font-size:13px;}
+  .sty-games{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
+}
+@media (max-width:380px){
+  .sty-figs{gap:12px;}
+}
+
+/* -- the newcomer row ---------------------------------------------------- */
+/* The circuits and the tiles are one stack, so the shelf below keeps the wrap
+   gap it has rather than the row spending two of them. */
+.sty-one{display:flex;flex-direction:column;gap:9px;}
+/* TWO CIRCUITS SHARE A LINE, and the line breaks itself: auto-fit against a
+   300px floor gives two across on a desktop and one on a phone with no media
+   query to keep in step with the others. */
+.sty-two{display:grid;gap:9px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));}
+/* Half the width takes the name down a step. The bar was written as the one
+   full-width control on the page. */
+.sty-two .sty-nm{font-size:21px;}
+.sty-newl{min-width:0;}
+/* NO OPACITY ON A FILLED CARD. Its two quiet lines inherit the fill ink and then
+   dim it, which on this ground composites TOWARD the fill: measured on the
+   Trivia step the eyebrow lands at 3.85:1 and the blurb at 4.47, both under the
+   4.5 they owe at their sizes. Hierarchy comes from size and weight, which is
+   the same ruling the category bands carry. */
+.sty-new .sty-next .sty-eb,.sty-new .sty-next .sty-tag{opacity:1;}
+/* The same 184px track the category shelves deal on, so the tiles line up with
+   the rows underneath instead of forming a second grid. */
+.sty-pop{display:grid;gap:7px;grid-template-columns:repeat(auto-fill,minmax(184px,1fr));}
+/* THE TILES ARE INVERTED (owner, 2026-09-04): the category step is the FILL
+   rather than a hairline and a glyph, and everything on the tile takes that
+   ink that step carries. Elsewhere on this page a hue is an edge; here it is
+   the subject, because the row exists to say what the ten categories ARE. */
+.sty-new .sty-pop .sty-g{background:var(--cc);border-color:transparent;color:var(--stg-onramp);}
+.sty-new .sty-pop .sty-gi,.sty-new .sty-pop .sty-pcat,.sty-new .sty-pop .sty-gt{color:currentColor;}
+/* A border cannot mark a hover on a card whose border is its own fill, so the
+   ring goes inside and is drawn in the ink the tile already carries. */
+.sty-new .sty-pop .sty-g:hover{border-color:transparent;box-shadow:inset 0 0 0 2px currentColor;}
+/* And the focus ring cannot be --cc here either: that is the fill it would be
+   drawn on top of. */
+.sty-new .sty-pop .sty-g:focus-visible,.sty-new .sty-two .sty-next:focus-visible{
+  outline:2px solid currentColor;outline-offset:2px;}
+
+/* -- and the SAME row, outlined, on the light register (owner, 2026-09-04) --
+   TEN FILLED CARDS ARE A DIFFERENT OBJECT ON A PALE GROUND. On the dark
+   register a filled step is the brightest thing in view and the row reads as
+   ten colours; on the pale one the page is already bright, so the same ten
+   fills stop being an accent and become the surface, and the row shouts over
+   everything under it. The colour still has to say which category each card
+   speaks for, so it moves from the fill to a 2px ring, and the card goes back
+   to the ground and the ink every other card on this page uses. The dark rules
+   above are untouched: only the register changes.
+
+   THE LINE IS --ccl, NOT --cc. A step drawn to be FILLED is not a colour you
+   can draw a hairline in: End Game, Trivia and Arcade keep their light value
+   on this register and flip their ink instead of darkening, so as an edge on
+   paper they measure 1.5 to 2:1 and those three cards would read as having no
+   border at all beside the other seven. --ccl is the ramp value that already
+   solves this -- CATEGORY_RAMP_INK_LIGHT, the step deepened until it is
+   legible as TEXT, held to 4.5:1 on a white card by the ramp verifier -- so
+   all ten edges come out at one strength, and the category name and the glyph
+   can carry the colour too instead of going grey. */
+[data-stage-theme=light] .sty-new .sty-pop .sty-g{
+  background:var(--stg-surf);color:var(--stg-ink);
+  border-color:var(--ccl);box-shadow:inset 0 0 0 1px var(--ccl);}
+[data-stage-theme=light] .sty-new .sty-pop .sty-gi,
+[data-stage-theme=light] .sty-new .sty-pop .sty-pcat{color:var(--ccl);}
+[data-stage-theme=light] .sty-new .sty-pop .sty-gt{color:var(--stg-mute);}
+/* The hover ring thickens the edge the tile already has rather than being a
+   second, different mark. */
+[data-stage-theme=light] .sty-new .sty-pop .sty-g:hover{
+  border-color:var(--ccl);box-shadow:inset 0 0 0 2px var(--ccl);}
+[data-stage-theme=light] .sty-new .sty-pop .sty-g:focus-visible,
+[data-stage-theme=light] .sty-new .sty-two .sty-next:focus-visible{
+  outline:2px solid var(--ccl);}
+/* The two circuit cards are the same object one size up, so they take the same
+   treatment: nothing on this row should be filled while its neighbour is not. */
+[data-stage-theme=light] .sty-new .sty-two .sty-next{
+  background:var(--stg-surf);color:var(--stg-ink);
+  box-shadow:inset 0 0 0 2px var(--ccl);}
+[data-stage-theme=light] .sty-new .sty-two .sty-next .sty-eb{color:var(--ccl);}
+[data-stage-theme=light] .sty-new .sty-two .sty-next .sty-tag{color:var(--stg-mute);}
+[data-stage-theme=light] .sty-new .sty-two .sty-next .sty-gi{color:var(--ccl);opacity:1;}
+/* THE ONE FILLED MOMENT LEFT is the chip under the pointer. It fills with the
+   same deepened value the rest of the card is drawn in, so the card ground is
+   the ink: white on all ten by the same 4.5:1 the ramp verifier holds them to,
+   which is the one inversion that needs no per-step ink at all. */
+[data-stage-theme=light] .sty-new .sty-two .sty-next .sty-go{
+  border-color:var(--ccl);color:var(--ccl);}
+[data-stage-theme=light] .sty-new .sty-two .sty-next:hover .sty-go{
+  background:var(--ccl);color:var(--stg-surf);border-color:var(--ccl);}
+/* MY GAMES, TO A READER WHO HAS NONE. The same offer the cap makes, at the size
+   of the cards above it, and on the same tokens the cap button already proved in
+   both registers: the accent as the fill and the ink published for it. */
+.sty-join{display:flex;align-items:center;gap:18px;text-decoration:none;
+  background:var(--stg-acc);color:var(--stg-onramp);border-radius:12px;padding:18px 20px;}
+.sty-join .sty-eb{color:inherit;margin-bottom:5px;}
+.sty-join .sty-jn{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.1;}
+.sty-join .sty-tag{font-size:13.5px;font-weight:600;margin-top:4px;}
+.sty-join:hover .sty-go{background:var(--stg-onramp);color:var(--stg-acc);border-color:var(--stg-onramp);}
+.sty-join:focus-visible{outline:2px solid currentColor;outline-offset:2px;}
+/* ONE LINE IS ALL THE ROW ADDS TO A TILE: which category it speaks for. */
+.sty-pcat{display:block;font-family:${MONO};font-size:8.5px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+@media (max-width:560px){
+  .sty-pop{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
+  /* A name, a blurb and a button do not share a 390px line, so a circuit card
+     stacks and the control keeps the left edge the copy above it has. */
+  .sty-next,.sty-join{flex-direction:column;align-items:flex-start;}
+  .sty-two .sty-nm{font-size:19px;}
+  .sty-join .sty-jn{font-size:21px;}
+  .sty-next .sty-go,.sty-join .sty-go{margin-left:0;}
+}
+
+/* NOTE: this block is a JS template literal, so no backticks in comments. */
+
+/* -- quizzes, by topic --------------------------------------------------- */
+/* A ROW OF DRAWERS, not a grid of cards. Every other block on this page deals
+   tiles because its items are eighty games a reader picks between; this one is
+   fifteen topics over eighteen hundred quizzes, and the thing being chosen is
+   which drawer to open. Rows also mean the count sits in a column and reads
+   down the list, which is the figure a reader is scanning for. */
+.sty-qall{margin-left:auto;}
+/* THE ONLY HEADING ON THIS PAGE THAT IS A LINK, so it takes the heads own ink
+   and says so only under the pointer: a permanently underlined head would read
+   as a different kind of object from the nine above it. */
+.sty-qsec h2 a{color:inherit;text-decoration:none;}
+.sty-qsec h2 a:hover{text-decoration:underline;text-underline-offset:3px;}
+.sty-qsec h2 a:focus-visible{outline:2px solid var(--stg-acc);outline-offset:3px;border-radius:4px;}
+.sty-topics{display:flex;flex-direction:column;gap:5px;}
+.sty-topic{background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:8px;
+  overflow:hidden;}
+.sty-topic.on{border-color:var(--stg-line2);}
+.sty-trow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;
+  background:none;border:0;padding:11px 14px;font-family:inherit;color:var(--stg-ink);}
+.sty-trow:hover{background:var(--stg-chip);}
+.sty-trow:focus-visible{outline:2px solid var(--stg-acc);outline-offset:-2px;}
+.sty-tn{font-size:14.5px;font-weight:800;letter-spacing:-0.01em;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-tc{margin-left:auto;flex:none;font-family:${MONO};font-size:12px;font-weight:700;
+  font-variant-numeric:tabular-nums;color:var(--stg-ink2);}
+/* The caret is the only thing on the row that says it opens, so it turns
+   rather than swapping to a second glyph. */
+.sty-tv{flex:none;color:var(--stg-mute2);transition:transform .16s ease;}
+.sty-topic.on .sty-tv{transform:rotate(180deg);color:var(--stg-ink2);}
+/* A topic with no count yet has no caret column to balance against, so the
+   caret keeps the right edge on its own. */
+.sty-trow>.sty-tv:nth-child(2){margin-left:auto;}
+.sty-tbody{padding:2px 14px 13px;border-top:1px solid var(--stg-line);}
+/* THE TITLES ARE THE POINT, so they are a plain list of links in columns
+   rather than fifteen more bordered cards: a card per quiz would make a topic
+   look like the game roster above it, which it is not. */
+.sty-qgrid{display:grid;gap:1px 26px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  padding-top:10px;}
+.sty-ql{display:block;min-width:0;font-size:13.5px;font-weight:600;line-height:1.45;
+  color:var(--stg-ink2);text-decoration:none;padding:5px 0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-ql:hover{color:var(--stg-acc-ink);}
+.sty-ql:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;border-radius:4px;}
+.sty-tfoot{display:flex;gap:7px;margin-top:9px;}
+.sty-tmore{width:auto;margin-top:0;flex:1 1 auto;text-align:center;text-decoration:none;
+  display:flex;align-items:center;justify-content:center;}
+
+@media (max-width:640px){
+  .sty-qgrid{grid-template-columns:minmax(0,1fr);}
+  .sty-tfoot{flex-direction:column;}
+}
+@media (prefers-reduced-motion:reduce){.sty-tv{transition:none;}}
+@media (prefers-reduced-motion:reduce){.sty-prog span{transition:none;}}
+
+/* ── A SHUT SECTION IS ITS HEAD (owner, 2026-09-01) ──
+   display:none rather than an unrendered grid, so the cards stay in the HTML:
+   this page is the crawl path to every daily, and dropping them would drop ~80
+   internal links with them. The head is unchanged, which is what makes the shut
+   page a run of the same ruled titles the open one is built from. */
+.sty-games.shut,.sty-circs.shut{display:none;}
+.sty-cathead:has(.sty-cav){cursor:pointer;}
+.sty-cav{margin-left:auto;flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:26px;border:0;border-radius:8px;background:none;cursor:pointer;
+  color:var(--stg-mute2);transition:transform .18s,color .12s,background .12s;}
+.sty-cathead:hover .sty-cav{color:var(--stg-ink);background:var(--stg-chip);}
+.sty-cav.on{transform:rotate(180deg);}
+.sty-cav:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+/* A circuit's star sits IN the header row: the corner a card star would take is
+   already the circuit's N/M count. */
+.sty-chead .sty-star{position:static;flex:none;width:22px;height:22px;margin-left:2px;}
+.sty-circ:hover .sty-star{opacity:1;}
+.sty-minec{margin-top:7px;}
+@media (prefers-reduced-motion:reduce){.sty-cav{transition:none;}}
+
+/* ── A SECTION FADES IN AS ITS DATA LANDS (owner, 2026-09-01) ──
+   The page is fed by four separate requests (day status, the combined board,
+   totals, the feed) and every section they fill used to snap into place as its
+   payload happened to arrive, which read as the page assembling itself in
+   pieces. Each of those sections is rendered only once it has something to
+   say, so it MOUNTS at the moment its data lands and this animation plays once
+   off the mount: no state, no effect, nothing to keep in step with the fetch.
+   Opacity and a 6px rise, never height or scale, so the ResizeObserver on the
+   board (which watches box size, not transforms) reads one height throughout.
+   ARMED BY [data-sty-anim], which the component sets only when the document is
+   VISIBLE at mount. A browser does not advance an animation clock in a hidden
+   tab, so without that gate a page loaded in the background holds every one of
+   these at opacity 0 indefinitely and reads as blank to anything but a reader
+   who focuses the tab. Unarmed, these rules do not match and the content simply
+   renders.
+   NO APOSTROPHES anywhere in this stylesheet: it is a text child of a style
+   element, so React escapes them. */
+@keyframes sty-in{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+[data-sty-anim] .sty-rev{animation:sty-in .34s cubic-bezier(.2,.7,.3,1) both;}
+/* A ROW DEALS ITS CARDS (motion pass, 2026-09-16). A grid going from
+   display:none to grid restarts the animations of its children, so one rule
+   plays every time a section opens AND on first paint for the sections that
+   open by default, with no state: each card rises in 22ms after the one before
+   it, capped at fourteen steps so a nineteen-card row is dealt in about a
+   third of a second. --i is set inline by the card. Same visibility gate. */
+@keyframes sty-deal{from{opacity:0;transform:translateY(6px);}}
+[data-sty-anim] .sty-games .sty-g,[data-sty-anim] .sty-circs .sty-circ{
+  animation:sty-deal .38s cubic-bezier(.2,.7,.3,1) backwards;
+  animation-delay:calc(min(var(--i,0),14) * 22ms);}
+/* sty-deal names only a FROM frame on purpose: the TO frame is whatever the
+   card would otherwise be, so a played card lands at its own dimmed opacity
+   instead of a fill-mode holding it at 1 forever. */
+/* THE DAY'S IQ ARRIVES WITH A PULSE behind the figure as it rolls up. */
+@keyframes sty-pulse{0%{background:transparent;}30%{background:color-mix(in srgb,var(--stg-up) 18%,transparent);}100%{background:transparent;}}
+[data-sty-anim] .sty-pulse{animation:sty-pulse .9s ease-out .2s both;border-radius:5px;padding:0 3px;margin:0 -3px;}
+/* The rows of a table or a feed come in as a run rather than a block, capped
+   so a long standing never keeps the reader waiting on its last row. */
+[data-sty-anim] .sty-revr{animation:sty-in .3s cubic-bezier(.2,.7,.3,1) both;
+  animation-delay:calc(min(var(--i,0),9) * 26ms);}
+/* THE GLYPH DRAWS ITSELF (owner, 2026-10-06). Every glyph is one stroke path
+   with pathLength 1 (GameGlyph), so a dash of 1 offset by 1 is an undrawn
+   glyph and the animation back to 0 sketches it. FROM frame only, like
+   sty-deal: the resting state is the plain drawn glyph. It plays off the mount
+   and again each time a row opens, 140ms behind its own card so the card
+   lands first. Same visibility gate as everything here, so a hidden tab never
+   holds a glyph undrawn. The three keyframes are identical on purpose: the
+   pointer handler restarts a draw by swapping the name. */
+@keyframes sty-draw{from{stroke-dashoffset:1;}}
+@keyframes sty-draw-a{from{stroke-dashoffset:1;}}
+@keyframes sty-draw-b{from{stroke-dashoffset:1;}}
+[data-sty-anim] .sty-gi .gg-p{stroke-dasharray:1;
+  animation:sty-draw .7s cubic-bezier(.6,0,.2,1) backwards;
+  animation-delay:calc(min(var(--i,0),14) * 22ms + 140ms);}
+[data-sty-anim] .sty-gi.gg-a .gg-p{animation-name:sty-draw-a;animation-delay:0s;}
+[data-sty-anim] .sty-gi.gg-b .gg-p{animation-name:sty-draw-b;animation-delay:0s;}
+@media (prefers-reduced-motion:reduce){[data-sty-anim] .sty-gi .gg-p{animation:none;}}
+@media (prefers-reduced-motion:reduce){
+  [data-sty-anim] .sty-rev,[data-sty-anim] .sty-revr,[data-sty-anim] .sty-games .sty-g,
+  [data-sty-anim] .sty-circs .sty-circ,[data-sty-anim] .sty-pulse{animation:none;}
+  .sty-g,.sty-gn{transition:none;}
+}
+/* ── CATEGORY BUTTONS (owner, 2026-10-03) ── */
+.sty-crowwrap{display:flex;flex-direction:column;gap:7px;}
+.sty-crowwrap + .sty-crowwrap{margin-top:7px;}
+.sty-crow{display:grid;gap:7px;grid-template-columns:repeat(var(--tc,5),minmax(0,1fr));}
+.sty-tile{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:9px;min-height:104px;
+  text-align:left;font:inherit;color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);
+  border-radius:8px;padding:12px 14px 11px 18px;cursor:pointer;overflow:hidden;}
+.sty-tile::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cc);}
+.sty-tile:hover{border-color:var(--cc);}
+.sty-tile.on{border-color:var(--cc);background:var(--cc);color:var(--stg-onramp,#08222e);}
+.sty-tile.on .sty-ctn,.sty-tile.on .sty-ctn i,.sty-tile.on .sty-tf,.sty-tile.on .sty-tact{color:var(--stg-onramp,#08222e);}
+.sty-tile.on .sty-trung i{background:color-mix(in srgb,var(--stg-onramp,#08222e) 22%,transparent);opacity:1;}
+.sty-tile.on .sty-trung i.d{background:var(--stg-onramp,#08222e);}
+.sty-tile.on .sty-trung i.p{background:color-mix(in srgb,var(--stg-onramp,#08222e) 55%,transparent);}
+.sty-tile:focus-visible{outline:2px solid var(--cc);outline-offset:2px;}
+.sty-th{display:flex;align-items:baseline;gap:8px;}
+.sty-th b{flex:1 1 auto;min-width:0;font-size:16.5px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-ctn{flex:none;font-family:${MONO};font-size:12px;font-weight:700;color:var(--stg-ink2);font-variant-numeric:tabular-nums;}
+.sty-ctn i{font-style:normal;color:var(--stg-mute);}
+.sty-trung{display:flex;gap:2px;height:10px;}
+.sty-trung i{flex:1 1 0;border-radius:1.5px;background:var(--stg-line);}
+.sty-trung i.d{background:var(--cc);}
+.sty-trung i.p{background:var(--cc);opacity:.5;}
+.sty-tf{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--stg-ink2);}
+.sty-ctnext{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-tact{flex:none;font-size:12px;font-weight:700;color:var(--stg-mute);}
+.sty-tile.on .sty-tact{color:var(--stg-ink);}
+.sty-tdraw{border:1px solid var(--cc);border-radius:10px;background:var(--stg-surf);padding:14px;}
+.sty-tdraw.shut{display:none;}
+.sty-tdh{display:flex;align-items:baseline;gap:11px;margin-bottom:11px;}
+.sty-tdh h2{margin:0;font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;}
+.sty-tdh b{font-family:${MONO};font-size:12px;font-weight:700;color:var(--stg-ink2);}
+.sty-tdh b i{font-style:normal;color:var(--stg-mute);}
+.sty-tclose{margin-left:auto;border:1px solid var(--stg-line);background:none;color:var(--stg-ink2);border-radius:999px;
+  padding:5px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;}
+.sty-tclose:hover{color:var(--stg-ink);border-color:var(--stg-line2);}
+@media (max-width:999px){ .sty-crow{grid-template-columns:repeat(2,minmax(0,1fr));} }
+@media (max-width:640px){
+  .sty-tile{min-height:76px;gap:6px;padding:10px 12px 10px 16px;}
+  .sty-th b{font-size:15px;}
+  .sty-trung{height:6px;gap:1.5px;}
+  .sty-tf{font-size:11.5px;}
+  .sty-tact{display:none;}
+  .sty-tdraw{padding:11px 10px 12px;}
+}
+/* ── THE FIRST-VISIT ROW: three across, two where three do not fit ── */
+.sty-pins{display:grid;gap:7px;grid-template-columns:repeat(3,minmax(0,1fr));}
+.sty-pin{position:relative;display:flex;align-items:center;gap:12px;min-height:62px;padding:8px 12px 8px 17px;
+  text-decoration:none;color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:8px;overflow:hidden;}
+.sty-pin::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cc);}
+.sty-pin:hover{border-color:var(--cc);}
+.sty-pin:focus-visible{outline:2px solid var(--cc);outline-offset:2px;}
+.sty-pinl{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;}
+.sty-pine{font-family:${MONO};font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-mute);}
+.sty-pinn{font-size:15.5px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-pinb{font-size:12px;font-weight:600;color:var(--stg-ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-pingo{flex:none;background:var(--cc);color:var(--stg-onramp,#08222e);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:800;}
+@media (max-width:1099px){ .sty-pins{grid-template-columns:repeat(2,minmax(0,1fr));} .sty-pin.third{display:none;} }
+@media (max-width:640px){
+  .sty-pins{gap:6px;}
+  .sty-pin{min-height:54px;padding:6px 8px 6px 14px;gap:8px;}
+  .sty-pinb{display:none;}
+  .sty-pinn{font-size:14px;}
+  .sty-pine{font-size:9px;}
+  .sty-pingo{padding:6px 10px;font-size:12px;}
+}
+
+/* ── ON A PHONE THE SLATE RUNS EDGE TO EDGE (owner, 2026-10-03) ──
+   The pinned row, My games, the category buttons, their open panel and the
+   circuits become full-width bands: no side margin, no rounded corners, a 1px
+   rule between cards. The section heads keep the page gutter. */
+@media (max-width:640px){
+  .sty-tiles,.sty-mine,.sty-circsec{padding-left:0;}
+  .sty-tiles::before,.sty-mine::before,.sty-circsec::before{display:none;}
+  .sty-pins,.sty-crowwrap,.sty-mine .sty-games,.sty-mine .sty-circs,.sty-circsec .sty-circs{
+    margin-left:-14px;margin-right:-14px;gap:1px;background:var(--stg-line);
+    border-top:1px solid var(--stg-line);border-bottom:1px solid var(--stg-line);}
+  .sty-crowwrap + .sty-crowwrap{margin-top:-1px;}
+  .sty-crowwrap{gap:1px;}
+  .sty-crow{gap:1px;}
+  .sty-pin,.sty-tile,.sty-mine .sty-g,.sty-circsec .sty-circ,.sty-mine .sty-circ,.sty-tdraw .sty-g{border:0;border-radius:0;}
+  .sty-tdraw{border:0;border-radius:0;padding:0;}
+  .sty-tdraw .sty-games{gap:1px;background:var(--stg-line);}
+  .sty-mine .sty-more,.sty-circsec .sty-more{margin:0 -14px;width:calc(100% + 28px);border-radius:0;
+    border-left:0;border-right:0;border-top:0;padding:12px;}
+  .sty-minec{margin-top:0;}
+}
+
+/* While one category is open ONLY the open one is highlighted; the others stay as they
+   are (owner, 2026-10-03, reversing the same day pastel on the rest). */
+
+/* ON A PHONE MY GAMES LEADS WITH ITS CIRCUITS, then the games (owner, 2026-10-03). */
+@media (max-width:640px){
+  .sty-mine{display:flex;flex-direction:column;}
+  .sty-mine .sty-minec{order:1;}
+  .sty-mine .sty-games{order:2;margin-top:-1px;}
+  .sty-mine .sty-more{order:3;}
+}
+
+/* ── THE INDEX AND PANE (owner, 2026-10-06) ──
+   One list on the left, one pane on the right. The grid places the list in
+   column one across both rows, the single visible pane in row one and the
+   A to Z bar under it, so the DOM order (My games, categories, bar, Circuits)
+   does not have to change and the two whole-page modes can drop the grid by
+   swapping one class. .sty-ixw is that swap: display:contents, so outside the
+   index every section is a direct flex child of the page again.
+   THE LEFT RAILS ARE GONE EVERYWHERE (same ruling). A category now says its
+   colour with a swatch in the index and beside its own heading. */
+.sty-cat{padding-left:0;}
+.sty-cat::before{display:none;}
+.sty-ixw{display:contents;}
+.sty-ixoff{display:none !important;}
+.sty-ix{display:grid;grid-template-columns:212px minmax(0,1fr);column-gap:26px;row-gap:14px;align-items:start;}
+.sty-ix > .sty-ixn{grid-column:1;grid-row:1 / span 2;}
+.sty-ix > .sty-cat{grid-column:2;grid-row:1;min-width:0;}
+.sty-ix > .sty-ord{grid-column:2;grid-row:2;}
+.sty-ixn{display:flex;flex-direction:column;gap:2px;}
+.sty-ixb{display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:center;gap:10px;border:0;
+  background:none;border-radius:8px;padding:8px 10px;font:inherit;font-size:13.5px;font-weight:700;
+  color:var(--stg-ink2);text-align:left;cursor:pointer;}
+.sty-ixb > i{width:10px;height:10px;border-radius:3px;background:var(--cc);}
+.sty-ixb > span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-ixb > b{font-family:${MONO};font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--stg-ink2);}
+.sty-ixb > b em{font-style:normal;color:var(--stg-mute);}
+.sty-ixb:hover{color:var(--stg-ink);background:var(--stg-surf);}
+.sty-ixb.on{background:var(--stg-chip);color:var(--stg-ink);font-weight:800;}
+.sty-ixb:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-ix .sty-cav{display:none;}
+.sty-ix .sty-cathead{cursor:default;}
+.sty-ixc .sty-cathead h2::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;
+  background:var(--cc);margin-right:8px;}
+/* BELOW 900px THE LIST IS A STRIP that scrolls sideways above the pane. The
+   right edge fades so a cut-off name reads as more to come, and the trailing
+   padding lets the last one scroll clear of the fade. */
+@media (max-width:900px){
+  .sty-ix{grid-template-columns:minmax(0,1fr);}
+  .sty-ix > .sty-ixn{grid-column:1;grid-row:1;}
+  .sty-ix > .sty-cat{grid-column:1;grid-row:2;}
+  .sty-ix > .sty-ord{grid-column:1;grid-row:3;}
+  .sty-ixn{flex-direction:row;gap:6px;overflow-x:auto;scrollbar-width:none;padding-right:34px;
+    -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 34px),transparent);
+    mask-image:linear-gradient(90deg,#000 calc(100% - 34px),transparent);}
+  .sty-ixn::-webkit-scrollbar{display:none;}
+  .sty-ixb{flex:none;grid-template-columns:10px auto auto;border:1px solid var(--stg-line);padding:8px 12px;}
+  .sty-ixb.on{border-color:transparent;}
+}
+/* A category pane takes the same edge-to-edge bands on a phone as My games. */
+@media (max-width:640px){
+  .sty-ixc .sty-games{margin-left:-14px;margin-right:-14px;gap:1px;background:var(--stg-line);
+    border-top:1px solid var(--stg-line);border-bottom:1px solid var(--stg-line);}
+  .sty-ixc .sty-g{border:0;border-radius:0;}
+}
+
+/* ── THE INDEX, SECOND PASS (owner, 2026-10-06) ──
+   All games leads the list and is the default; Reorder lives at the foot of
+   the list (the last chip of the strip on a phone) and puts arrows on the
+   category rows in place. While reordering on a phone the strip UNFOLDS into
+   a column, because arrows on chips in a sideways scroller cannot be aimed. */
+.sty-ixr{cursor:default;}
+.sty-ixr .sty-move{display:inline-flex;gap:4px;margin:0;}
+.sty-ixre{align-self:flex-start;margin-top:8px;border:1px solid var(--stg-line);background:none;border-radius:999px;
+  padding:6px 12px;font:inherit;font-size:12px;font-weight:700;color:var(--stg-ink2);cursor:pointer;white-space:nowrap;}
+.sty-ixre:hover{color:var(--stg-ink);}
+.sty-ixre.on{border-color:var(--stg-acc);color:var(--stg-acc-ink);}
+.sty-ixre:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-ixe{margin:0;color:var(--stg-mute);font-size:13.5px;}
+@media (max-width:900px){
+  .sty-ixre{flex:none;align-self:center;margin-top:0;padding:8px 12px;}
+  .sty-ixn.re{flex-direction:column;overflow:visible;padding-right:0;-webkit-mask-image:none;mask-image:none;}
+  .sty-ixn.re .sty-ixb{grid-template-columns:10px minmax(0,1fr) auto;}
+  .sty-ixn.re .sty-ixre{align-self:flex-start;}
+  .sty-ixn.re .sty-move button{width:36px;height:36px;}
+}
+
+/* ── ONE LINE, AND EVERYTHING ELSE A PANE (owner, 2026-10-07) ──
+   The cap is the brand, the day's strip and two ranks. The group band, your
+   standing, the board, the feed and the quiz drawers are no longer stacked under
+   the games: each is a pane, opened from the index like a category. */
+.sty-cap.v2{display:grid;grid-template-columns:auto minmax(60px,1fr) auto;align-items:center;gap:26px;}
+.sty-cap.v2 .sty-rt{margin-left:0;}
+/* The strip fills whatever lies between the brand and the figures (owner, 2026-10-07). */
+.sty-capl{min-width:0;width:100%;}
+.sty-capl .stl{height:12px;}
+/* A SHORT PANE DOES NOT PULL THE ABOUT TEXT ONTO THE FIRST SCREEN (owner,
+   2026-10-07): the index holds a screen of height whatever is in the pane. */
+.sty-ix{min-height:calc(100vh - 70px);grid-template-rows:auto auto auto auto 1fr;}
+.sty-ix > .sty-ixn{grid-row:1 / span 5;}
+.sty-ix > #sty-group{grid-row:1;}
+.sty-ix > #sty-standing{grid-row:2;}
+.sty-ix > #sty-board{grid-row:3;}
+.sty-ix > #sty-live{grid-row:4;}
+.sty-ix > #sty-group,.sty-ix > #sty-standing,.sty-ix > #sty-board{margin-bottom:14px;}
+.sty-ix > #sty-board.sty-lbs{grid-row:1;width:auto;justify-self:stretch;min-width:0;margin-bottom:0;}
+/* LEADERBOARDS + STATS, CONDENSED (owner, 2026-10-07): your standing and the
+   day's board share one row, half each, so the live feed comes up under them.
+   The standing scrolls to the board's measured height. Phones keep the stack. */
+@media (min-width:901px){
+  .sty-ix > #sty-standing{grid-row:2;justify-self:start;width:calc(50% - 14px);min-width:0;}
+  .sty-ix > #sty-board{grid-row:2;justify-self:end;width:calc(50% - 14px);min-width:0;}
+  .sty-ix > #sty-board.sty-lbs{grid-row:1;justify-self:stretch;width:auto;}
+  .sty-ix > #sty-live{grid-row:3;}
+  .sty-ix #sty-standing .sty-sscroll{max-height:calc(var(--sty-lbh, 372px) - 24px);overflow-y:auto;overscroll-behavior:contain;}
+  .sty-ix #sty-standing .sty-tbl,.sty-ix #sty-board .sty-tbl{max-width:none;}
+  .sty-ix #sty-standing .sty-tbl td,.sty-ix #sty-board .sty-tbl td{padding:5px 6px;font-size:13px;}
+  .sty-ix #sty-standing .sty-srun{font-size:12px;}
+}
+.sty-ix .sty-mine .sty-minec{margin-top:10px;}
+.sty-rail{display:none;}
+.sty-ixn a.sty-ixb{text-decoration:none;}
+.sty-iqd{flex:none;width:11px;height:11px;border-radius:3px;border:2.2px solid var(--cc);box-sizing:border-box;}
+.sty-iqn,.sty-cmn{margin:14px 0 0;}
+.sty-cmn{margin:0 0 16px;}
+.sty-cmn a{color:var(--stg-acc-ink,var(--stg-acc));font-weight:800;}
+.sty-cm{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px 26px;align-items:start;}
+.sty-cmc .sty-eb{display:block;height:24px;margin:0;}
+.sty-cmc ol{list-style:none;margin:0;padding:0;}
+.sty-cmc li{box-sizing:border-box;display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:6px;align-items:center;
+  height:34px;padding:0 6px;border-bottom:1px solid var(--stg-line);font-size:13.5px;font-variant-numeric:tabular-nums;}
+.sty-cmc ol.fd li{grid-template-columns:minmax(0,1fr) auto;}
+.sty-cmc li:last-child{border-bottom:0;}
+.sty-cmc li i{font-style:normal;font-family:${MONO};font-size:11px;color:var(--stg-mute);}
+.sty-cmc li span{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-cmc ol.fd li span{font-weight:500;color:var(--stg-ink2);}
+.sty-cmc ol.fd li strong{font-weight:800;color:var(--stg-ink);}
+.sty-cmc ol.fd li em{font-style:normal;color:var(--stg-mute);}
+.sty-cmc li b{font-weight:800;white-space:nowrap;}
+.sty-cmc li b small{font-size:11px;font-weight:600;color:var(--stg-mute);}
+.sty-cmc ol.fd li b{font-size:11.5px;font-weight:600;color:var(--stg-mute);}
+.sty-cmc li.me{background:var(--stg-chip);}
+.sty-cmc li.ph span{height:8px;width:58%;border-radius:4px;background:var(--stg-chip);}
+.sty-cmc li.nt span{color:var(--stg-mute);font-weight:600;}
+.sty-cmc li.em{border-bottom-color:transparent;}
+@media (max-width:1100px){ .sty-cm{grid-template-columns:repeat(2,minmax(0,1fr));} .sty-cm > :last-child{grid-column:1 / -1;} }
+@media (max-width:640px){ .sty-cm{grid-template-columns:minmax(0,1fr);} .sty-cm > :last-child{grid-column:auto;} }
+.sty-games.fit .sty-g{display:flex;flex-direction:column;justify-content:center;}
+.sty-fav{margin-top:24px;--cg:132px minmax(0,1fr) 150px 56px;}
+.sty-favh{display:flex;justify-content:space-between;align-items:center;height:28px;}
+.sty-favh .sty-eb,.sty-favc.sty-eb{margin:0;}
+.sty-favc{display:grid;grid-template-columns:var(--cg);gap:14px;height:22px;align-items:center;}
+.sty-favc span:last-child{text-align:right;}
+.sty-favr{box-sizing:border-box;display:grid;grid-template-columns:var(--cg);gap:14px;align-items:center;height:24px;
+  text-decoration:none;color:inherit;font-variant-numeric:tabular-nums;}
+.sty-favr .n{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-favr:hover .n{color:var(--stg-acc-ink,var(--cc));}
+.sty-favr .tr{display:block;height:14px;background:var(--stg-chip);border-radius:4px;overflow:hidden;}
+.sty-favr .tr u{display:block;height:100%;background:var(--cc);border-radius:4px;}
+.sty-favr .wk{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;}
+.sty-favr .wk s{height:14px;border-radius:3px;background:var(--stg-chip);}
+.sty-favr .wk s.p{background:var(--cc);}
+.sty-favr .c{text-align:right;font-size:13.5px;font-weight:800;}
+.sty-favr.un .n,.sty-favr.un .c{color:var(--stg-mute);font-weight:700;}
+.sty-fav.site{--cg:132px minmax(0,1fr) 0px 56px;}
+.sty-fav.own{--cg:120px minmax(0,1fr) 150px 64px 64px 52px 48px 44px;}
+.sty-favc .r,.sty-favr .m{text-align:right;}
+.sty-favr .m{font-size:13px;color:var(--stg-ink);font-weight:600;}
+.sty-favr.try .go{grid-column:2 / -1;justify-self:start;font-size:12px;font-weight:800;color:var(--stg-acc-ink,var(--cc));
+  border:1px dashed var(--cc);border-radius:4px;padding:2px 10px;line-height:16px;}
+.sty-favr.try:hover .go{border-style:solid;}
+.sty-g.sty-gtry{background:transparent;border:1px dashed var(--cc);display:flex;flex-direction:column;justify-content:center;gap:4px;}
+.sty-g.sty-gtry .sty-eb{margin:0;color:var(--stg-acc-ink,var(--cc));}
+.sty-g.sty-gtry .sty-gn{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+@media (max-width:1240px){ .sty-fav.own{--cg:110px minmax(0,1fr) 120px 58px 58px 48px 44px 40px;} }
+@media (min-width:1100px){
+  .sty-ix.rl{grid-template-columns:212px minmax(0,1fr) 264px;}
+  .sty-ix > .sty-rail{display:flex;flex-direction:column;gap:16px;grid-column:3;grid-row:1 / span 5;min-width:0;}
+}
+.sty-rlb .sty-eb{display:block;height:24px;line-height:16px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-rlb ol{list-style:none;margin:0;padding:0;}
+.sty-rlb li{box-sizing:border-box;display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:6px;align-items:center;
+  height:var(--rh,30px);padding:0 6px;border-bottom:1px solid var(--stg-line);font-size:13px;font-variant-numeric:tabular-nums;}
+.sty-rlb li:last-child{border-bottom:0;}
+.sty-rlb li i{font-style:normal;font-family:${MONO};font-size:11px;color:var(--stg-mute);}
+.sty-rlb li span{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-rlb li b{font-weight:800;}
+.sty-rlb li.me{background:var(--stg-chip);}
+.sty-rlb li.ph span{height:8px;width:58%;border-radius:4px;background:var(--stg-chip);}
+.sty-rlb li.nt span{color:var(--stg-mute);font-weight:600;}
+.sty-rlb li.em{border-bottom-color:transparent;}
+.sty-ixbk{display:none;}
+.sty-ixg,.sty-ixct{display:none;}
+.sty-ixs{display:none;}
+.sty-mgb{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;margin:0 0 12px;padding:10px 14px;
+  border-radius:12px;border:1px solid color-mix(in srgb,var(--stg-acc) 40%,transparent);
+  background:color-mix(in srgb,var(--stg-acc) 10%,var(--stg-surf));color:var(--stg-ink);font:inherit;font-size:13.5px;
+  font-weight:600;text-align:left;cursor:pointer;}
+.sty-mgb b{font-weight:800;}
+.sty-mgb .go{margin-left:auto;flex:none;font-size:12px;font-weight:800;padding:5px 12px;border-radius:999px;
+  background:var(--stg-acc);color:var(--stg-onramp,#08222e);}
+.sty-mgb.on .go{background:none;color:var(--stg-ink2);box-shadow:inset 0 0 0 1px var(--stg-line);}
+.sty-mgb:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-mgl{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);margin:2px 0 8px;}
+.sty-mgg{margin-bottom:16px;}
+/* Desktop: one chip per group beside the My Puzzles title; the phone gets the
+   banners instead (owner, 2026-10-09). */
+.sty-mgchips{display:inline-flex;flex-wrap:wrap;gap:6px;margin-left:12px;vertical-align:middle;}
+.sty-mgc{border:1px solid var(--stg-line);background:none;border-radius:999px;padding:4px 11px;font:inherit;font-size:12px;
+  font-weight:700;color:var(--stg-ink2);cursor:pointer;white-space:nowrap;}
+.sty-mgc i{font-style:normal;color:var(--stg-mute);margin-left:2px;}
+.sty-mgc:hover{color:var(--stg-ink);border-color:var(--stg-acc);}
+.sty-mgc.on{background:var(--stg-acc);border-color:var(--stg-acc);color:var(--stg-onramp,#08222e);}
+.sty-mgc.on i{color:inherit;opacity:.75;}
+.sty-mgc:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+@media (min-width:901px){.sty-mgb{display:none;}}
+@media (max-width:900px){.sty-mgchips{display:none;}}
+/* STARRED CIRCUITS IN MY PUZZLES ARE STRIPS (owner, 2026-10-13), on the phone too. */
+.sty-cpills.sty-minep{flex:none;justify-content:flex-start;margin-left:0;margin-bottom:12px;}
+.sty-cpills.sty-minep.shut{display:none;}
+.sty-fca{display:block;text-align:right;text-decoration:none;color:inherit;}
+.sty-fca>i{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--stg-mute);}
+.sty-fca:hover>b{color:var(--stg-acc-ink);}
+.sty-fca:focus-visible{outline:2px solid var(--stg-acc);outline-offset:3px;border-radius:4px;}
+.sty-keep{display:inline-flex;align-items:center;border-radius:999px;background:var(--stg-acc);
+  color:var(--stg-onramp,#08222e);padding:8px 14px;font-size:12.5px;font-weight:800;text-decoration:none;white-space:nowrap;}
+.sty-keep:hover{opacity:.9;}
+.sty-keep:focus-visible{outline:2px solid var(--stg-ink);outline-offset:2px;}
+.sty-ixsep{flex:none;height:1px;background:var(--stg-line);margin:6px 10px;}
+.sty-ix > .sty-ixp{grid-column:2;grid-row:1;min-width:0;}
+.sty-ix > .sty-cat:not(.sty-qsec) > .sty-cathead > b{display:none;}
+.sty-ixp .sty-ixe a{color:var(--stg-acc-ink);font-weight:700;}
+@media (max-width:1100px){ .sty-cap.v2 .sty-who{display:none;} }
+@media (max-width:900px){
+  .sty-ix > .sty-ixp{grid-column:1;grid-row:2;}
+  .sty-ix > #sty-group{grid-row:2;}
+  .sty-ix > #sty-standing{grid-row:3;}
+  .sty-ix > #sty-board{grid-row:4;}
+  .sty-ix > #sty-board.sty-lbs{grid-row:2;}
+  .sty-ix > #sty-live{grid-row:5;}
+  .sty-ix > .sty-ixn{grid-row:1;}
+  .sty-ixsep{display:none;}
+  /* The lit chip already names the pane, so the pane does not say it again. */
+  .sty-ix > .sty-cat:not(.sty-qsec) > .sty-cathead{display:none;}
+  .sty-cap.v2{gap:18px;}
+  .sty-cap.v2 .sty-date{display:none;}
+}
+@media (max-width:640px){
+  .sty-cap.v2{grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:'id fg tg' 'ld ld ld';
+    gap:0 12px;padding:0 14px 9px;}
+  .sty-cap.v2 .sty-capl{grid-area:ld;}
+  .sty-cap.v2 .sty-capl .stl{height:6px;}
+  .sty-cap.v2 .sty-figs{grid-area:fg;border-top:0;padding:0;min-height:0;gap:16px;justify-content:flex-end;}
+  .sty-cap.v2 .sty-keep{padding:7px 12px;font-size:12px;}
+  /* THE FIGURES SLIDE (owner, 2026-10-07): Today, All-Time, then one per group. */
+  .sty-cap.v2{grid-template-columns:auto minmax(0,1fr) auto;}
+  .sty-cap.v2 .sty-figs{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap;justify-content:flex-start;
+    scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;}
+  .sty-cap.v2 .sty-figs::-webkit-scrollbar{display:none;}
+  .sty-cap.v2 .sty-figs > *{flex:none;scroll-snap-align:start;}
+  .sty-cap.v2 .sty-figs > :first-child{margin-left:auto;}
+  .sty-cap.v2 .sty-who{display:none;}
+  .sty-cap.v2 .sty-who + .sty-fca{margin-left:auto;}
+  .sty-cap.v2 .sty-fg > b > i{display:none;}
+  /* TILES, NOT BANDS (owner, 2026-10-07): every pane keeps the two-up cards
+     All games has, with their borders and corners. */
+  .sty-ix .sty-ixc .sty-games,.sty-ix .sty-mine .sty-games,.sty-ix .sty-mine .sty-circs,.sty-ix .sty-circsec .sty-circs{
+    margin-left:0;margin-right:0;gap:7px;background:none;border-top:0;border-bottom:0;}
+  .sty-ix .sty-ixc .sty-g,.sty-ix .sty-mine .sty-g,.sty-ix .sty-circsec .sty-circ,.sty-ix .sty-mine .sty-circ{
+    border:1px solid var(--stg-line);border-radius:8px;}
+  .sty-ix .sty-mine .sty-more,.sty-ix .sty-circsec .sty-more{margin:7px 0 0;width:100%;border:1px solid var(--stg-line);border-radius:8px;}
+  /* Circuits lead My games on a phone, so the gap goes under them. */
+  .sty-ix .sty-mine .sty-minec{margin-top:0;margin-bottom:10px;}
+  .sty-ix .sty-mine .sty-games{margin-top:0;}
+}
+/* ── A PHONE STARTS ON TILES (owner, 2026-10-07) ──
+   No strip. Every section is a tile; tapping one sends it to the top as a bar
+   and its games take the tiles' place, and tapping the bar brings the tiles
+   back. Reorder mode keeps its own unfolded column. The same from 900px
+   down (owner, 2026-10-07): wherever the left column is gone, it is tiles. */
+@media (max-width:900px){
+  .sty-ix > .sty-ixn:not(.re){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;overflow:visible;
+    padding-right:0;-webkit-mask-image:none;mask-image:none;}
+  .sty-ixn:not(.re) .sty-ixb{grid-template-columns:10px minmax(0,1fr) auto;min-height:54px;padding:10px 12px;
+    background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:8px;font-size:14.5px;font-weight:800;
+    color:var(--stg-ink);letter-spacing:-0.01em;}
+  /* No Reorder on a phone (owner, 2026-10-07); the order is set on a desktop. */
+  .sty-ixn:not(.re) .sty-ixre{display:none;}
+  /* FOUR GROUPS, AND THEY FILL THE SCREEN (owner, 2026-10-07): the two lists,
+     the categories, circuits and quizzes, then one wide tile for every board. */
+  .sty-ixn:not(.re) .sty-ixb{min-height:clamp(54px,calc((100svh - 270px) / 11),88px);}
+  .sty-ixn:not(.re) .sty-ixb.wide{grid-column:1 / -1;}
+  .sty-ixn:not(.re) .sty-ixsep{display:block;grid-column:1 / -1;height:5px;margin:0;background:none;}
+  .sty-ix.msel > section,.sty-ix.msel > .sty-ord{display:none !important;}
+  /* THE OTHER TILES STAY, UNDER THE OPEN SECTION (owner, 2026-10-07). The list
+     dissolves into the page grid so the open bar, its pane and the remaining
+     tiles can be ordered as one column: bar, games, a gap, everything else. */
+  .sty-ix.mpk{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;column-gap:7px;row-gap:7px;align-content:start;}
+  .sty-ix.mpk > .sty-ixn.pk:not(.re){display:contents;}
+  .sty-ix.mpk > .sty-ixn.pk:not(.re) > .sty-ixb.on{order:-2;}
+  .sty-ix.mpk > section,.sty-ix.mpk > #sty-group,.sty-ix.mpk > #sty-standing,.sty-ix.mpk > #sty-board,.sty-ix.mpk > #sty-live{
+    order:-1;grid-column:1 / -1;grid-row:auto;}
+  .sty-ix.mpk > section:not(.sty-ixoff){margin-bottom:16px;}
+  .sty-ix.mpk > .sty-ixn.pk:not(.re) > .sty-ixsep{display:block;grid-column:1 / -1;height:5px;margin:0;background:none;}
+  .sty-ix.mpk > .sty-ixn.pk:not(.re) > .sty-ixre{display:none;}
+  .sty-ixn.pk:not(.re) .sty-ixb.on{grid-column:1 / -1;min-height:46px;background:var(--stg-chip);border-color:transparent;
+    transform-origin:0 0;}
+  .sty-ixn.pk:not(.re) .sty-ixb.on .sty-ixbk{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute);}
+  [data-sty-anim] .sty-ix.mpk > section:not(.sty-ixoff){animation:sty-in .32s cubic-bezier(.2,.7,.3,1) .08s both;}
+  [data-sty-anim] .sty-ix.msel .sty-ixn:not(.re) .sty-ixb{animation:sty-in .26s cubic-bezier(.2,.7,.3,1) both;}
+  /* PROGRESS RINGS (owner, 2026-10-09). Ring + glyph on the left, name over
+     "N of M" on the right; the dot steps aside. The open bar (Back to
+     categories) keeps its plain dot form. */
+  .sty-ixn:not(.re) .sty-ixb{grid-template-columns:44px minmax(0,1fr);grid-template-rows:auto auto;column-gap:11px;row-gap:1px;
+    border-radius:14px;padding:8px 12px;}
+  .sty-ixn:not(.re) .sty-ixb > i{display:none;}
+  .sty-ixn:not(.re) .sty-ixb > .sty-ixg{display:block;grid-column:1;grid-row:1 / span 2;align-self:center;}
+  .sty-ixn:not(.re) .sty-ixb > span{grid-column:2;align-self:end;}
+  .sty-ixn:not(.re) .sty-ixb > span:last-child,.sty-ixn:not(.re) .sty-ixb > span:nth-last-child(2):not(.sty-ixg){grid-row:1 / span 2;align-self:center;}
+  .sty-ixn:not(.re) .sty-ixb > .sty-ixct{display:block;grid-column:2;align-self:start;font-style:normal;font-size:11.5px;
+    font-weight:700;color:var(--stg-mute);letter-spacing:0;}
+  .sty-ixn:not(.re) .sty-ixb.cmp > .sty-ixct{color:var(--cc);}
+  .sty-ixg{position:relative;width:44px;height:44px;color:var(--cc);}
+  .sty-ixg svg{position:absolute;fill:none;}
+  .sty-ixgr{inset:0;width:44px;height:44px;stroke-width:3.5;}
+  .sty-ixgr .tr{stroke:var(--stg-line);}
+  .sty-ixgr .fl{stroke:var(--cc);stroke-linecap:round;}
+  .sty-ixgg{left:13px;top:13px;width:18px;height:18px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .sty-ixg.full{background:var(--cc);border-radius:50%;color:var(--stg-onramp,#0b0f1a);}
+  .sty-ixg.full .sty-ixgr{display:none;}
+  .sty-ixn:not(.re) .sty-ixb.cmp{background:color-mix(in srgb,var(--cc) 12%,var(--stg-surf));}
+  .sty-ixn.pk:not(.re) .sty-ixb.on{grid-template-columns:10px minmax(0,1fr) auto;grid-template-rows:none;row-gap:0;}
+  .sty-ixn.pk:not(.re) .sty-ixb.on > i{display:block;}
+  .sty-ixn.pk:not(.re) .sty-ixb.on > .sty-ixg,.sty-ixn.pk:not(.re) .sty-ixb.on > .sty-ixct{display:none;}
+  .sty-ixn.pk:not(.re) .sty-ixb.on > span{grid-column:auto;grid-row:auto;align-self:center;}
+  /* Short label on the phone tile (owner, 2026-10-09): "Crowd" fits, the full
+     name ellipsized. */
+  .sty-ixn:not(.re) .sty-ixl{display:none;}
+  .sty-ixn:not(.re) .sty-ixs{display:inline;}
+  /* Leaderboards + Stats sits right under Circuits and Quizzes on the phone
+     (owner, 2026-10-09): everything after it in the source steps behind. */
+  .sty-ixn:not(.re) .sty-ixmv{order:1;}
+  /* Then, on the phone (owner, 2026-10-09): Puzzle Archive full width, Most
+     Appreciated under it, and IQ Tests, School Tests, Kids and Top 10 Lists
+     as two pairs at the foot. */
+  .sty-ixn:not(.re) .sty-ixar{order:1;grid-column:1 / -1;}
+  .sty-ixn:not(.re) .sty-ixma{order:2;}
+  .sty-ixn:not(.re) .sty-ixm4{order:3;}
+  .sty-ixn:not(.re) .sty-ixsep.sty-ixmv{display:none;}
+}
+@media (max-width:900px) and (prefers-reduced-motion:reduce){
+  [data-sty-anim] .sty-ix.mpk > section,[data-sty-anim] .sty-ix.msel .sty-ixn .sty-ixb{animation:none;}
+}
+.sty-fg > i{max-width:11ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-left:auto;}
+
+/* POPULAR CIRCUIT PILLS (owner, 2026-10-09). */
+.sty-cpills{flex:1;min-width:0;display:flex;flex-wrap:wrap;justify-content:space-evenly;align-items:center;
+  gap:6px 10px;align-self:center;margin-left:8px;}
+.sty-cpill{display:inline-flex;align-items:center;gap:6px;text-decoration:none;white-space:nowrap;
+  color:var(--stg-ink2);border:1px solid var(--stg-line);border-radius:999px;padding:4px 11px 4px 9px;
+  font-size:11.5px;font-weight:700;letter-spacing:.01em;line-height:1.2;}
+.sty-cpill::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--ph,var(--stg-acc));}
+.sty-cpill:hover{color:var(--stg-ink);border-color:var(--ph,var(--stg-acc));}
+.sty-cpill:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-cpill .ck{color:var(--stg-good,#22c55e);font-weight:800;}
+.sty-cpill .ck.rk,.sty-cpm .sty-cpill .ct.done{font-variant-numeric:tabular-nums;}
+.sty-cpill .ck i,.sty-cpill .ct.done i{font-style:normal;font-weight:700;color:var(--stg-mute);}
+.sty-cpill.full .nm{color:var(--stg-mute);}
+.sty-cpm{display:none;}
+.sty-sort{margin-left:auto;align-self:center;flex:none;display:inline-flex;gap:2px;padding:2px;border:1px solid var(--stg-cell-line);border-radius:999px;}
+.sty-sort button{border:0;border-radius:999px;background:transparent;color:var(--stg-ink2);font:800 11px/1 ${SANS};letter-spacing:.05em;text-transform:uppercase;padding:5px 10px;cursor:pointer;}
+.sty-sort button[aria-pressed="true"]{background:var(--stg-ink);color:var(--stg-ground);}
+.sty-sortm{display:none;}
+@media (max-width:900px){
+  .sty-sort:not(.sty-sortm){display:none;}
+  .sty-ix.mpk > .sty-ixn.pk:not(.re) > .sty-ixb.on{grid-row:1;}
+  .sty-ix.mpk > .sty-ixn.pk:not(.re) > .sty-sortm{display:inline-flex;grid-row:1;grid-column:1 / -1;order:-2;
+    justify-self:end;align-self:center;margin:0 58px 0 0;position:relative;z-index:1;background:var(--stg-chip);}
+}
+/* THE RUN CARD (owner, 2026-10-13): the phone's lead run and every card in
+   the Circuits pane, at any width. */
+.sty-rbig{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center;text-decoration:none;
+  color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);border-left:4px solid var(--ph,var(--stg-acc));
+  border-radius:8px;padding:10px 12px;}
+.sty-rbig .ey{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);}
+.sty-rbig .nm{display:flex;align-items:center;gap:6px;font-size:16px;font-weight:800;line-height:1.2;}
+.sty-rbig .nm .sty-star{position:static;flex:none;width:22px;height:22px;--cc:var(--ph);}
+.sty-rbig .go{grid-row:1 / 3;grid-column:2;background:var(--ph,var(--stg-acc));color:var(--stg-onramp,#08222e);
+  border-radius:999px;padding:9px 18px;font-size:13px;font-weight:800;}
+.sty-rbig .ln{grid-column:1 / -1;font-size:12px;line-height:1.4;color:var(--stg-ink2);margin-top:4px;}
+.sty-rbig .st{grid-column:1 / -1;display:flex;justify-content:space-between;gap:10px;margin-top:6px;padding-top:6px;
+  border-top:1px solid var(--stg-line);font-size:11.5px;font-weight:700;color:var(--stg-mute);font-variant-numeric:tabular-nums;}
+.sty-rbig.done .st > span:first-child{color:var(--stg-ink);font-weight:800;}
+.sty-rbig .st .gr{color:var(--stg-ink2);font-weight:800;text-align:right;}
+.sty-rbig:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-rcards{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));}
+.sty-rcards.shut{display:none;}
+/* CIRCUIT ART (owner, 2026-10-13): a drawn band across the top of a run card,
+   on the Circuits pane and the starred circuits in My games only. The band is
+   the card hue at 13 percent over the surface; .k shapes take that same ground
+   so they read as sitting on top. On the pale register the stroke darkens so
+   it carries on white, the same treatment the finished-circuit figure gets. */
+.ca{display:flex;align-items:center;justify-content:center;height:112px;
+  --ca-bg:color-mix(in srgb, var(--art) 13%, var(--stg-surf));background:var(--ca-bg);color:var(--art);}
+.ca svg{width:220px;height:110px;max-width:100%;}
+.ca .k{fill:var(--ca-bg);}
+.ca .ko{stroke:var(--ca-bg);}
+[data-stage-theme=light] .ca{color:color-mix(in srgb, var(--art) 62%, #0b0d12);}
+.sty-rbig.art{overflow:hidden;}
+.sty-rbig .ca{--art:var(--ph,var(--stg-acc));grid-column:1 / -1;grid-row:1;margin:-10px -12px 8px;}
+.sty-rbig.art .go{grid-row:2 / 4;}
+.sty-circ .ca{--art:var(--cc);margin:-12px -14px 10px -16px;}
+.sty-rnm{display:none;}
+@media (max-width:900px){
+  .sty-cpills{display:none;}
+  .sty-rcards{grid-template-columns:minmax(0,1fr);}
+  /* THE PHONE'S RUNS (owner, 2026-10-13): the most played unfinished run is
+     one big card, the rest a strip of named tiles you flick through. */
+  .sty-rnm{display:flex;flex-direction:column;gap:8px;margin:0 0 12px;min-width:0;}
+  .sty-rhome{grid-column:1 / -1;min-width:0;}
+  .sty-cpills.sty-minep:not(.shut){display:flex;}
+  /* NO SPARE LINE UNDER THE RUNS (owner, 2026-10-13): the block sits close
+     on the tiles unless a group line is showing, which is the only time it
+     needs the room. */
+  .sty-rhome:not(:has(.l2,.gr)) .sty-rnm{margin-bottom:0;}
+  .sty-rhome:not(:has(.l2,.gr)){margin-bottom:-10px;}
+  .sty-rics{display:flex;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 0 2px;}
+  .sty-rics::-webkit-scrollbar{display:none;}
+  .sty-ric{flex:0 0 108px;scroll-snap-align:start;display:flex;flex-direction:column;gap:3px;min-width:0;
+    text-decoration:none;color:var(--stg-ink);}
+  .sty-ric .sq{height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;
+    padding:0 8px;font-size:12.5px;font-weight:800;line-height:1.15;color:var(--stg-ink);
+    background:color-mix(in srgb, var(--ph,var(--stg-acc)) 16%, var(--stg-surf));
+    border:1.5px solid color-mix(in srgb, var(--ph,var(--stg-acc)) 55%, transparent);}
+  .sty-ric.done .sq{background:var(--ph,var(--stg-acc));border-color:var(--ph,var(--stg-acc));color:var(--stg-onramp,#08222e);}
+  .sty-ric .l1,.sty-ric .l2{padding:0 2px;font-size:10.5px;font-weight:700;color:var(--stg-mute);white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;line-height:1.25;}
+  .sty-ric.done .l1{color:var(--stg-ink);font-weight:800;}
+  .sty-ric .l2{color:var(--stg-ink2);font-weight:800;}
+  .sty-ric:focus-visible .sq{outline:2px solid var(--stg-acc);outline-offset:2px;}
+}
+`;
