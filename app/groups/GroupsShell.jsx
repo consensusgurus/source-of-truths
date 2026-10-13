@@ -95,7 +95,7 @@ export function inviteUrl(code) {
 // Share sheet where the device has one, the clipboard where it does not.
 export async function shareInvite(code, name) {
   const url = inviteUrl(code);
-  const text = `Join ${name} on Mind Loft. We rank each other on the daily puzzles. Code ${code}.`;
+  const text = `Join ${name} on Mind Loft with one click. We rank each other on the daily puzzles.`;
   try {
     if (navigator.share) { await navigator.share({ title: name, text, url }); return 'shared'; }
   } catch (e) {
