@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 import { findQuizIdentity, resolveAnonSet } from '@/lib/quiz-identity';
 import { PUZZLES } from '@/app/feud/puzzles';
 import { scoreFeudField, cleanBallot, HOUSE_CUTOFF } from '@/lib/feud-score';
+import { roomReadFrom } from '@/lib/read-room';
 
 // /api/feud  { quizId, answers:[[a1..a3] per prompt], anonId, email? }  (POST)
 //            ?quizId=..&anonId=..&email=..                              (GET)
@@ -153,6 +154,9 @@ function buildFeud({ puzzle, quizId, rows, anonSet, myUserId, myName, submitted,
     you: youEntry ? { rank: youEntry.rank, total: youEntry.total } : null,
     youTotal: points,
     youRegistered: !!youEntry,
+    // Read the Room (lib/read-room.js): where you stand among the named
+    // players, a guest placed as if registered.
+    read: roomReadFrom(ranked, youEntry, points),
   };
 
   const payload = {

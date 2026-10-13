@@ -51,6 +51,8 @@ import useGameAllTime from '../useGameAllTime';
 import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
+import { useRunEmbed } from '../RunEmbed';
+import RunDoorPop from '../circuits/RunDoorPop';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
@@ -293,6 +295,9 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('outrank'), '--stg-acc-lt': gameColorLight('outrank'), '--stg-onramp-lt': gameOnrampLight('outrank'), '--stg-acc-ink-lt': gameAccentInkLight('outrank') };
   const [stageTheme] = useStageTheme();
+  // Inside the Read the Room run (app/RunEmbed.jsx) the page furniture drops
+  // away and the board sits on the run's dark ground; the game is unchanged.
+  const EMBED = useRunEmbed();
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
@@ -510,6 +515,8 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
 
   function postResult(g2, sc, exact) {
     abandon.markFlushed();
+    // The room's read is where this run stands in the live field (lib/read-room.js).
+    if (EMBED) EMBED.onResult({ key: 'outrank', score: sc, total: TOTAL, t0: g2 && g2.t0, tEnd: (g2 && g2.tEnd) || Date.now(), read: (g2 && g2.result && g2.result.board && g2.result.board.read) || null, field: (g2 && g2.result && (g2.result.realCount != null ? g2.result.realCount : g2.result.board && g2.result.board.field)) || null });
     const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
     try { setStats(recordStat(PUZZLE.num, { s: sc, t: TOTAL, g: 0, won: sc >= winBar(TOTAL) })); } catch (e) {}
     try {
@@ -690,7 +697,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
+      data-stage-theme={STAGE ? (EMBED ? 'dark' : stageTheme) : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
@@ -699,7 +706,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
       {!STAGE && (
       <DailyChrome slug="outrank" name="Outrank" collapsed={started} loft={LOFT} />
       )}
-      {LOFT && (
+      {LOFT && !EMBED && (
         <Cap gameKey="outrank" quizId={PUZZLE.quizId}
           name="Outrank"
           cat="Crowd Psychology"
@@ -944,7 +951,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
               </div>
               {(score > 0 || !LOFT || revealed) && revealBoard()}
               <OutrankLiveBoard board={result.board} total={TOTAL} />
-              <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
+              <p className={STAGE ? undefined : 'loft-tailnote'} style={{ display: EMBED ? 'none' : undefined, fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
                 {isTodays ? (
                   <>
                     {countdown ? <>Next Outrank in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A new crowd forms at midnight Eastern.'}
@@ -973,7 +980,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
             <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Hide game board</button>
           )}
           </div>
-          {LOFT && !playing && (
+          {LOFT && !playing && !EMBED && (
             <LoftFinish
               name="Outrank"
               catRank={catRank}
@@ -1023,7 +1030,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
             "Show overview and more" control it replaces ever did. */}
         {/* The strip in the cap answers what this opens, without being pressed. */}
         {!STAGE && <GamePanel self="outrank" name="Outrank" onShow={() => setShowChrome(true)} />}
-        <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block', margin: '30px auto 0' }}>
+        <div style={{ display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', margin: '30px auto 0' }}>
           {LOFT && (
             <div className={STAGE ? undefined : 'loft-report'}>
               <ReportIssue self="outrank" name="Outrank" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
@@ -1067,7 +1074,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
             </div>
           </div>
         )}
-        {!focusMode && !identity && (
+        {!EMBED && !focusMode && !identity && (
           <div id="daily-join" style={{ margin: '18px auto 0' }}>
             <JoinLeaderboardForm hideIcon heading="See your stats and join the leaderboard" identity={identity} onJoined={(id) => { setIdentity(id); if (id && id.username) setPlayer((p) => p || { name: id.username, rank: null }); }} />
           </div>
@@ -1119,9 +1126,12 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
       )}
 
       {/* The desktop fold: the About prose below starts one screen down (app/StageFold.jsx). */}
-      <StageFold />
+      {!EMBED && <StageFold />}
+      {/* THE ROOM DOOR: on today's start gate, the Read the Room run is
+          offered, once a day. Never inside the run. */}
+      <RunDoorPop id="room" game="outrank" ready={hydrated && preStart && isTodays && !EMBED} self="Outrank" />
       {/* About Outrank — crawlable prose for search, server-rendered into the HTML */}
-      <section style={{ display: (focusMode && !STAGE) ? 'none' : 'block', position: 'relative', zIndex: 2, maxWidth: 640, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
+      <section style={{ display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', position: 'relative', zIndex: 2, maxWidth: 640, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Outrank</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Outrank is a free daily puzzle from Mind Loft where the crowd itself is the answer key. Every day brings a new themed slate, breakfast classics, candy bars, karaoke closers, the seven deadly sins, and every player makes two moves: vote for their honest favorite, then predict how the entire field of players ranks the whole list. Your vote helps build the real order; your prediction is scored against it.

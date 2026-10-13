@@ -155,7 +155,7 @@ const AZ_KEY = 'sot_stage_az';
 // same way; this repeats it because the home's sort has to interleave that
 // lead with the reader's own progress, which that module knows nothing about.
 // On a phone the shelf's peek is exactly these three (CIRC_PEEK_NARROW).
-const CIRC_LEAD = ['pricecheck', 'gauntlet', 'passport', 'deduction', 'dojo'];   // owner, 2026-10-03: Passport replaces the Daily Five; 2026-10-08: Judged fourth
+const CIRC_LEAD = ['pricecheck', 'gauntlet', 'passport', 'deduction', 'dojo', 'room'];   // owner, 2026-10-03: Passport replaces the Daily Five; 2026-10-08: Judged fourth
 
 // THE NEWCOMER'S ROW (owner, 2026-09-04). A reader with NO footprint at all gets
 // one row above everything else: two circuits sharing a line, then the busiest
@@ -339,7 +339,7 @@ const TILES_KEY = 'sot_home_tiles';
 // shows on a category when any of its games lives there, plus the hand-added
 // homes in PILL_EXTRA (Passport is a geography game the owner also files under
 // Trivia). All Puzzles shows all five.
-const PILL_CIRCUITS = ['gauntlet', 'pricecheck', 'passport', 'math', 'deduction', 'dojo'];
+const PILL_CIRCUITS = ['gauntlet', 'pricecheck', 'passport', 'math', 'deduction', 'dojo', 'room'];
 const PILL_EXTRA = { passport: ['Trivia'] };
 // The server has no layout pass; an isomorphic alias keeps it from warning.
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
@@ -2387,7 +2387,7 @@ export default function StageToday() {
   // icon. Runs are one piece, so nothing here shows how far into one you are:
   // a run reads as players today until you finish it, then as your place on
   // the site board and in your group.
-  const RUN_SHORT = { gauntlet: 'Trivia', pricecheck: 'Prices', passport: 'Passport', math: 'Math', deduction: 'Judged', dojo: 'Dojo' };
+  const RUN_SHORT = { gauntlet: 'Trivia', pricecheck: 'Prices', passport: 'Passport', math: 'Math', deduction: 'Judged', dojo: 'Dojo', room: 'Room' };
   const runsMobile = (list, cat) => {
     // MOST PLAYED is the run's own player count, the figure the reader sees on
     // it. Until every run has answered, the summed plays of its games stand
@@ -2630,7 +2630,7 @@ export default function StageToday() {
                   <span className="sty-pinn">{c.name}</span>
                   {/* WHAT IT TESTS, under the name, not how many games it holds
                       (owner, 2026-10-07). */}
-                  <span className="sty-pine">{{ pricecheck: 'Shopping test', gauntlet: 'Knowledge test', passport: 'Geography test', dojo: 'Sudoku test' }[c.id] || c.unit || `${c.games.length} games`}</span>
+                  <span className="sty-pine">{{ pricecheck: 'Shopping test', gauntlet: 'Knowledge test', passport: 'Geography test', dojo: 'Sudoku test', room: 'Crowd test' }[c.id] || c.unit || `${c.games.length} games`}</span>
                   {c.blurb ? <span className="sty-pinb">{c.blurb}</span> : null}
                 </span>
                 <span className="sty-pingo">Play</span>

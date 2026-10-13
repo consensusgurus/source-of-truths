@@ -54,7 +54,7 @@ export default function CategoryLanding({ page, games, parent = null, groups = n
   const circuit = page.circuit || catPage.circuit || null;
   const current = page.href || `/${page.slug}`;
   // A Gauntlet is already a run by name; the rest are named as circuits.
-  const circuitCta = circuit ? (/^Enter /.test(circuitName(circuit)) ? circuitName(circuit) : /gauntlet/i.test(circuitName(circuit)) ? `Run the ${circuitName(circuit)}` : `Run the ${circuitName(circuit)} circuit`) : '';
+  const circuitCta = circuit ? (circuit === 'room' ? 'Walk into Read the Room' : /^Enter /.test(circuitName(circuit)) ? circuitName(circuit) : /gauntlet/i.test(circuitName(circuit)) ? `Run the ${circuitName(circuit)}` : `Run the ${circuitName(circuit)} circuit`) : '';
 
   return (
     <CircuitFrame cat={cat} label={parent ? `${parent.label} · ${page.label || page.name}` : page.label}>

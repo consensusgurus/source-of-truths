@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 import { findQuizIdentity, resolveAnonSet } from '@/lib/quiz-identity';
 import { PUZZLES } from '@/app/outrank/puzzles';
 import { scoreOutrankField, validBallot, HOUSE_CUTOFF } from '@/lib/outrank-score';
+import { roomReadFrom } from '@/lib/read-room';
 
 // /api/outrank  { quizId, answers:[fav, r1..rN], anonId, email? }  (POST)
 //               ?quizId=..&anonId=..&email=..                       (GET)
@@ -194,6 +195,9 @@ function buildOutrank({ puzzle, quizId, rows, anonSet, myUserId, myName, submitt
     you: youEntry ? { rank: youEntry.rank, total: youEntry.total } : null,
     youTotal: points,
     youRegistered: !!youEntry,
+    // Read the Room (lib/read-room.js): where you stand among the named
+    // players, a guest placed as if registered.
+    read: roomReadFrom(ranked, youEntry, points),
   };
 
   const payload = {

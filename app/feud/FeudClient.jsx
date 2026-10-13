@@ -51,6 +51,8 @@ import useGameAllTime from '../useGameAllTime';
 import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
+import { useRunEmbed } from '../RunEmbed';
+import RunDoorPop from '../circuits/RunDoorPop';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
@@ -319,6 +321,9 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('feud'), '--stg-acc-lt': gameColorLight('feud'), '--stg-onramp-lt': gameOnrampLight('feud'), '--stg-acc-ink-lt': gameAccentInkLight('feud') };
   const [stageTheme] = useStageTheme();
+  // Inside the Read the Room run (app/RunEmbed.jsx) the page furniture drops
+  // away and the board sits on the run's dark ground; the game is unchanged.
+  const EMBED = useRunEmbed();
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
@@ -537,6 +542,8 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
 
   function postResult(g2, sc, onBoardCount) {
     abandon.markFlushed();
+    // The room's read is where this run stands in the live field (lib/read-room.js).
+    if (EMBED) EMBED.onResult({ key: 'feud', score: sc, total: TOTAL, t0: g2 && g2.t0, tEnd: (g2 && g2.tEnd) || Date.now(), read: (g2 && g2.result && g2.result.board && g2.result.board.read) || null, field: (g2 && g2.result && (g2.result.realCount != null ? g2.result.realCount : g2.result.board && g2.result.board.field)) || null });
     const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
     try { setStats(recordStat(PUZZLE.num, { s: sc, t: TOTAL, g: 0, won: sc >= winBar(TOTAL) })); } catch (e) {}
     try {
@@ -713,7 +720,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
+      data-stage-theme={STAGE ? (EMBED ? 'dark' : stageTheme) : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
@@ -722,7 +729,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
       {!STAGE && (
       <DailyChrome slug="feud" name="Feud" collapsed={playing && !!g.t0} loft={LOFT} />
       )}
-      {LOFT && (
+      {LOFT && !EMBED && (
         <Cap gameKey="feud" quizId={PUZZLE.quizId}
           name="Feud"
           cat="Crowd Psychology"
@@ -963,7 +970,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
               </div>
               {(score > 0 || !LOFT || revealed) && revealBoards()}
               <FeudLiveBoard board={result.board} total={TOTAL} />
-              <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
+              <p className={STAGE ? undefined : 'loft-tailnote'} style={{ display: EMBED ? 'none' : undefined, fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
                 {isTodays ? (
                   <>
                     {countdown ? <>The key freezes and a new survey opens in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A new survey opens at midnight Eastern.'}
@@ -992,7 +999,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
             <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Hide game board</button>
           )}
           </div>
-          {LOFT && !playing && (
+          {LOFT && !playing && !EMBED && (
             <LoftFinish
               name="Feud"
               catRank={catRank}
@@ -1042,7 +1049,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
             "Show overview and more" control it replaces ever did. */}
         {/* The strip in the cap answers what this opens, without being pressed. */}
         {!STAGE && <GamePanel self="feud" name="Feud" onShow={() => setShowChrome(true)} />}
-        <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block', margin: '30px auto 0' }}>
+        <div style={{ display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', margin: '30px auto 0' }}>
           {LOFT && (
             <div className={STAGE ? undefined : 'loft-report'}>
               <ReportIssue self="feud" name="Feud" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
@@ -1086,7 +1093,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
             </div>
           </div>
         )}
-        {!focusMode && !identity && (
+        {!EMBED && !focusMode && !identity && (
           <div id="daily-join" style={{ margin: '18px auto 0' }}>
             <JoinLeaderboardForm hideIcon heading="See your stats and join the leaderboard" identity={identity} onJoined={(id) => { setIdentity(id); if (id && id.username) setPlayer((p) => p || { name: id.username, rank: null }); }} />
           </div>
@@ -1133,9 +1140,12 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
       )}
 
       {/* The desktop fold: the About prose below starts one screen down (app/StageFold.jsx). */}
-      <StageFold />
+      {!EMBED && <StageFold />}
+      {/* THE ROOM DOOR: on today's start gate, the Read the Room run is
+          offered, once a day. Never inside the run. */}
+      <RunDoorPop id="room" game="feud" ready={hydrated && preStart && isTodays && !EMBED} self="Feud" />
       {/* About Feud — crawlable prose for search, server-rendered into the HTML */}
-      <section style={{ display: (focusMode && !STAGE) ? 'none' : 'block', position: 'relative', zIndex: 2, maxWidth: 640, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
+      <section style={{ display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', position: 'relative', zIndex: 2, maxWidth: 640, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Feud</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Feud is a free daily crowd-survey game from Mind Loft with a live answer key. Every day brings five everyday prompts, name something people do when they can&rsquo;t sleep, name a food that&rsquo;s better as a leftover, and you type three answers per prompt, blind. There is no hidden answer list written by an editor: the key is the live tally of what today&rsquo;s players actually say. Your answers are votes, and the moment you lock in they join the crowd everyone else is scored against.

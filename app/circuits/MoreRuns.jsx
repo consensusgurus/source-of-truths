@@ -2,8 +2,8 @@
 
 // MoreRuns — every other daily run, on one card (owner, 2026-10-09).
 //
-// The six runs are the Trivia Gauntlet, the Math Gauntlet, Price Check,
-// Passport, Judged and Enter the Dojo (2026-10-12). Finishing one used to offer ONE other (RunNudgePop:
+// The seven runs are the Trivia Gauntlet, the Math Gauntlet, Price Check,
+// Passport, Judged, Enter the Dojo (2026-10-12) and Read the Room (2026-10-13). Finishing one used to offer ONE other (RunNudgePop:
 // the Gauntlet offered Price Check, Price Check and Passport offered the
 // Gauntlet), so a player saw the rest one at a time, if at all. Now:
 //
@@ -27,7 +27,7 @@ import { X } from 'lucide-react';
 import { T } from '@/lib/theme';
 import { RUN_DOORS, runDoneToday } from './RunDoorPop';
 
-export const RUN_ORDER = ['gauntlet', 'math', 'pricecheck', 'passport', 'judged', 'dojo'];
+export const RUN_ORDER = ['gauntlet', 'math', 'pricecheck', 'passport', 'judged', 'dojo', 'room'];
 export const RUNS_POP_STORE = 'sot_runs_pop';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";

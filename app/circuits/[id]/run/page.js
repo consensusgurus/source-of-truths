@@ -250,6 +250,8 @@ export default function CircuitRunPage({ params }) {
   if (runEngine(id) === 'law') redirect('/judged');
   // Enter the Dojo too (2026-10-12).
   if (runEngine(id) === 'dojo') redirect('/dojo');
+  // Read the Room too (2026-10-13).
+  if (runEngine(id) === 'room') redirect('/room');
 
   const today = etTodayServer();
   const label = (() => {

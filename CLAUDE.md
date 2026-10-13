@@ -9047,3 +9047,29 @@ Circuit id `dojo`, engine `dojo`, scorer `dojo`, `scoreFrom: '2026-10-12'`.
   `isNewerVisitor`) also get up to four unplayed sudokus on the same card; with the Dojo done today they
   get only those. The pregame Dojo doors on the sudoku clients came out. Dojo is a `lead`
   circuit (5), so it sits with the other popular runs.
+
+## Read the Room (`/room`): the daily crowd run (owner, 2026-10-13)
+
+Outwit, Outrank and Feud back to back on one page, then a verdict on how well you read the
+people in the room. Circuit id `room`, engine `room`, scorer `room`, `scoreFrom: '2026-10-13'`,
+`lead: 6`, trophy `circuit-room` "Room Reader" (bronze, Users). Files: `lib/read-room.js`,
+`app/room/{page.js,RoomClient.jsx,leaderboard/page.js,card/route.js}`.
+
+- **Scored on WHERE YOU STAND, never on points.** The three games' points mean different things
+  (Outwit /10, Outrank /12, Feud /500), so each room pays a third of 100 times the share of the
+  other players in it you out-read: `beat = (field - rank) / (field - 1)`, alone in a room pays
+  the whole third. Ranks are the crowd games' own registered-only standings, so the verdict and
+  the circuit board can never disagree. Ladder: Mind Reader 95, The Host 80, Life of the Party
+  60, Plus-One 40, Wallflower 20, Wrong Party 0.
+- **The crowd APIs return `board.read: { rank, field }`** (`roomReadFrom`): a registered player's
+  own rank, a guest placed as if registered, after everyone who scored the same or more.
+- **IT MOVES (owner: "let it move").** The verdict shows at the finish as a reading of the room
+  at that moment, says it is still filling, re-reads every 30s while the page is open (re-POSTing
+  the saved answers, which the crowd APIs answer without filing a second row), and the next
+  morning a card shows where the room settled and the final board rank.
+- **Embedded like Judged and the Dojo**: each crowd client reads `useRunEmbed()`, hides its cap,
+  finish card and tail inside the run, and reports `{score,total,read,field}` through
+  `EMBED.onResult`. A played game is banked off its own `sot_<key>_<num>` save.
+- **The door**: Outwit, Outrank and Feud each mount `RunDoorPop id="room"` on today's start gate
+  (once per day). Placed in the home's lead circuits, MoreRuns (seven runs), the crowd category
+  page and the sitemap.

@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 import { findQuizIdentity } from '@/lib/quiz-identity';
 import { PUZZLES } from '@/app/outwit/puzzles';
 import { scoreOutwitField, HOUSE_CUTOFF } from '@/lib/outwit-score';
+import { roomReadFrom } from '@/lib/read-room';
 
 // POST /api/outwit  { quizId, answers:[5], anonId, email? }
 //
@@ -203,6 +204,9 @@ export async function POST(request) {
       you: youEntry ? { rank: youEntry.rank, total: youEntry.total } : null,
       youTotal: points,
       youRegistered: !!youEntry,
+      // Read the Room (lib/read-room.js): where you stand among the named
+      // players, a guest placed as if registered.
+      read: roomReadFrom(ranked, youEntry, points),
     };
 
     // Record the pick (first submission per browser only; replays never insert).
