@@ -41,7 +41,7 @@ import {
   KEY, TOTAL, ROUNDS, ZOOM, LANDMARK_PTS, flagScore, STRIKES, bordersScore, capitalScore, NUMBER_PTS,
   haversineKm, unproject, TIERS, tierIndex, HENLEY_EDITION, shareLines,
 } from '@/lib/passport';
-import { flagSteps } from './flagkit';
+import { flagSteps, TWINS_FROM } from './flagkit';
 import NextDrop from '../NextDrop';
 import ChallengeStrip from '../ChallengeStrip';
 import { RunChallengeButton, RunChallengeLine } from '../RunChallenge';
@@ -904,7 +904,7 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
       return;
     }
     const st = cur.r1.st + 1;
-    if (st >= 3) { award(cur, 1, flagScore(cur.r1.miss), { r1: { ...cur.r1, st } }); return; }
+    if (st >= steps.length) { award(cur, 1, flagScore(cur.r1.miss), { r1: { ...cur.r1, st } }); return; }
     vibrate(HAPT.tick);
     commit({ ...cur, r1: { ...cur.r1, st } });
   }
@@ -1012,7 +1012,7 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
       lead="One mystery country a day, played five ways. Each round stamps your passport with a score out of 10, and your total out of 50 decides which passport you leave with."
       steps={[
         <><b>Landmark.</b> A photo of somewhere in the country, zoomed right in. Type the country. Every wrong country pulls the camera back a frame: 10, 8, 5 or 3 points. Getting it right unseals the destination for the rest of the run.</>,
-        <><b>Flag.</b> Build its flag in three picks: its colors, its layout with the colors in the right order (the wrong ones can differ by a single stripe), then the real flag out of four lookalikes. Each wrong pick takes 3 off the stamp.</>,
+        <><b>Flag.</b> Build its flag: its exact shades, then its layout with the colors in the right order (the wrong ones can differ by a single stripe). If other countries fly a flag that builds the same way, a last pick asks for the real one among those twins, which differ only in the details. Each wrong pick takes 3 off the stamp.</>,
         <><b>Borders.</b> Name every country it shares a land border with; a name banks the moment it is complete. A real country that does not border costs a strike, and three end the round. An <b>island</b> names its two nearest countries across the water instead.</>,
         <><b>Capital.</b> One tap on an unlabeled map. Close enough is a full 10, and a point comes off for every step further out; the step grows with the country.</>,
         <><b>Numbers.</b> Five countries, one at a time: bigger or smaller than today&rsquo;s by land area? Two points each.</>,
@@ -1140,7 +1140,7 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
   const round1 = () => {
     const st = g.r1.st;
     const doneR = sc[1] != null;
-    const step = steps[Math.min(st, 2)];
+    const step = steps[Math.min(st, steps.length - 1)];
     const pal = DAY.flag.pal;
     return (
       <>
@@ -1151,18 +1151,18 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
             <div className="pp-flag empty">?</div>
           ) : st === 1 ? (
             <div className="pp-flag wash" dangerouslySetInnerHTML={{ __html: steps[0].opts.find((o) => o.ok).svg }} />
-          ) : st === 2 ? (
+          ) : st === 2 && steps.length > 2 ? (
             <div className="pp-flag build" dangerouslySetInnerHTML={{ __html: steps[1].opts.find((o) => o.ok).svg }} />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
             <img className="pp-flag real" src={`/passport/flags/${DAY.c.toLowerCase()}.svg`} alt={`Flag of ${DAY.name}`} />
           )}
         </div>
-        <div className="pp-steps">{[0, 1, 2].map((i) => <span key={i} className={i < st ? 'done' : i === st && !doneR ? 'on' : ''} />)}</div>
+        <div className="pp-steps">{steps.map((_, i) => <span key={i} className={i < st ? 'done' : i === st && !doneR ? 'on' : ''} />)}</div>
         {!doneR ? (
           <>
             <div className="pp-row"><b className="pp-q">{st + 1}. {step.q}</b><span className="pp-mono">stamp worth {flagScore(g.r1.miss)}</span></div>
-            <div className={`pp-opts${st === 2 ? ' real' : ''}${step.fine ? ' fine' : ''}`}>
+            <div className={`pp-opts${st === 2 ? ' real' : ''}${step.fine ? ' fine' : ''}${step.opts.length < 4 ? ` n${step.opts.length}` : ''}`}>
               {step.opts.map((o, i) => {
                 const bad = g.r1.bad.includes(`${st}:${i}`);
                 return (
@@ -1179,7 +1179,7 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
           </>
         ) : (
           <>
-            <p className="pp-reveal">{g.r1.miss ? `${g.r1.miss} wrong pick${g.r1.miss === 1 ? '' : 's'}.` : 'Clean build, no wrong picks.'} The lookalikes were {DAY.flag.also.map(nameOf).join(', ')}.</p>
+            <p className="pp-reveal">{g.r1.miss ? `${g.r1.miss} wrong pick${g.r1.miss === 1 ? '' : 's'}.` : 'Clean build, no wrong picks.'}{!steps[2] ? '' : PUZZLE.num >= TWINS_FROM ? ` Its twin${steps[2].codes.length === 1 ? ' was' : 's were'} ${steps[2].codes.map(nameOf).join(', ')}.` : ` The lookalikes were ${steps[2].codes.map(nameOf).join(', ')}.`}</p>
             {nextBtn('Next: the borders')}
           </>
         )}
@@ -1342,6 +1342,8 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
     .pp-opt:hover:not(:disabled){transform:translateY(-2px);border-color:var(--stg-acc, ${COLORS.accent});}
     .pp-opt .sw{width:100%;max-width:96px;aspect-ratio:3/2;display:block;border-radius:2px;overflow:hidden;}
     .pp-opt .sw svg{width:100%;height:100%;display:block;}
+    .pp-opts.n2{grid-template-columns:repeat(2,1fr);max-width:340px;}
+    .pp-opts.n3{grid-template-columns:repeat(3,1fr);max-width:510px;}
     .pp-opts.fine .pp-opt .sw{max-width:150px;box-shadow:0 0 0 1px rgba(0,0,0,.25);}
     .pp-opt img{width:100%;max-width:120px;aspect-ratio:4/3;object-fit:cover;border-radius:2px;display:block;}
     .pp-opt.no{opacity:.35;cursor:default;animation:ppshake .4s;}

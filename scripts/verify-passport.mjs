@@ -9,7 +9,7 @@ import { DAYS } from '../app/passport/days.js';
 import { BORDERS } from '../app/flank/borders.js';
 import { PUZZLES as FLANK } from '../app/flank/puzzles.js';
 import { TIERS, TOTAL, ROUNDS, unproject, haversineKm, capStep } from '../lib/passport.js';
-import { flagSteps, FLAG_LAYOUTS, SUBTLE_FROM, SUBTLE_COLORS_FROM } from '../app/passport/flagkit.js';
+import { flagSteps, FLAG_LAYOUTS, SUBTLE_FROM, SUBTLE_COLORS_FROM, TWINS_FROM, TWINS } from '../app/passport/flagkit.js';
 
 const fails = [], warns = [];
 const fail = (m) => fails.push(m);
@@ -79,7 +79,9 @@ for (const p of PUZZLES) {
   try {
     const steps = flagSteps(F, d.c, d.num);
     steps.forEach((s, i) => {
-      if (s.opts.length !== 4 || s.opts.filter((o) => o.ok).length !== 1) fail(`${at}: flag step ${i + 1} needs 4 options, one right`);
+      const twinStep = i === 2 && d.num >= TWINS_FROM;
+      const nOk = twinStep ? s.opts.length >= 2 && s.opts.length <= 4 : s.opts.length === 4;
+      if (!nOk || s.opts.filter((o) => o.ok).length !== 1) fail(`${at}: flag step ${i + 1} needs ${twinStep ? '2 to 4' : '4'} options, one right`);
       const labels = s.opts.map((o) => o.label || o.key || o.code);
       // The near-miss rule (2026-10-09 on): the layout step must carry at least
       // one option that is the RIGHT layout with its colors reordered.
@@ -99,8 +101,15 @@ for (const p of PUZZLES) {
         if (s.opts.some((o) => o.label)) fail(`${at}: flag shade step prints color names`);
         if (new Set(s.opts.map((o) => o.svg)).size !== 4) fail(`${at}: flag color step draws two options identically`);
       }
-      if (new Set(labels).size !== 4) fail(`${at}: flag step ${i + 1} repeats an option (${labels.join(' / ')})`);
+      if (new Set(labels).size !== labels.length) fail(`${at}: flag step ${i + 1} repeats an option (${labels.join(' / ')})`);
     });
+    // The twin rule (2026-10-14 on): a third step exists only with twins,
+    // and every twin has a flag file and is not the country itself.
+    if (d.num >= TWINS_FROM) {
+      const tw = TWINS[d.c] || [];
+      if ((steps.length === 3) !== (tw.length > 0)) fail(`${at}: flag round has ${steps.length} steps but ${tw.length} twins`);
+      for (const c of tw) if (c === d.c || !fs.existsSync(`public/passport/flags/${c.toLowerCase()}.svg`)) fail(`${at}: bad flag twin ${c}`);
+    }
   } catch (e) { fail(`${at}: flagSteps threw ${e.message}`); }
 
   // Capital: names and points pair up, the pins land on the map, and the pins

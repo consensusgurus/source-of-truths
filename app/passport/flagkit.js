@@ -173,6 +173,27 @@ function subtleColors(flag, num) {
   ], num * 11 + 1);
 }
 
+// From this board on (2026-10-14) the real-flag step only runs when it can
+// ask something the build did not already answer (owner, 2026-10-13: "if you
+// get 2, aren't you done?"). After the shades and the layout, the preview IS
+// the flag, so four different-looking flags made step 3 a matching exercise.
+// Now its decoys are TWINS: real flags that build the same schematic (same
+// layout, same colors in the same order) and differ only in an emblem, a
+// shade or a proportion, so the only way to pick right is to know the flag.
+// A country with no real twin plays a two-step round. Earlier boards are
+// frozen. Keyed by country: add a line when a twin-bearing country is banked.
+export const TWINS_FROM = 12;
+export const TWINS = {
+  PE: ['CA'], CA: ['PE'],
+  HR: ['PY', 'NL', 'LU'], NL: ['LU', 'HR', 'PY'],
+  HU: ['TJ'],
+  CN: ['VN', 'KG'], VN: ['CN', 'KG'],
+  AR: ['NI', 'SV', 'HN'],
+  IN: ['NE'],
+  AT: ['LB', 'LV'],
+};
+export function realTwins(code, num) { return num >= TWINS_FROM ? (TWINS[code] || []) : null; }
+
 // The three steps of a day's flag round: each a list of four options, one
 // right, in a fixed order for that day.
 export function flagSteps(flag, code, num) {
@@ -185,11 +206,12 @@ export function flagSteps(flag, code, num) {
     .map((o) => ({ ...o, label: o.names.join(' · '), svg: `<svg viewBox="0 0 30 20" preserveAspectRatio="none" aria-hidden="true">${o.names.map((n, i, a) => `<rect x="${(30 / a.length) * i}" width="${30 / a.length + 0.05}" height="20" fill="${o.ok ? flag.pal[flag.pal.map(colorName).indexOf(n)] : HEX[n]}"/>`).join('')}<rect width="30" height="20" fill="none" stroke="rgba(0,0,0,.18)" stroke-width=".4"/></svg>` }));
   const lays = num >= SUBTLE_FROM ? subtleLayouts(flag, num) : shuffle([flag.lay, ...shuffle(DECOY_LAYOUTS.filter((l) => l !== flag.lay), num * 13 + 5).slice(0, 3)], num * 17 + 2)
     .map((l) => ({ ok: l === flag.lay, label: LAYOUT_NAMES[l], svg: flagSvg(l, flag.pal) }));
-  const real = shuffle([code, ...flag.also], num * 19 + 7)
+  const twins = realTwins(code, num);
+  const real = shuffle([code, ...(twins || flag.also)], num * 19 + 7)
     .map((c) => ({ ok: c === code, code: c, src: `/passport/flags/${c.toLowerCase()}.svg` }));
   return [
     { q: num >= SUBTLE_COLORS_FROM ? 'Pick its exact shades' : 'Pick its colors', opts: pals, fine: num >= SUBTLE_COLORS_FROM },
     { q: num >= SUBTLE_FROM ? 'Pick its layout, colors in order' : 'Pick its layout', opts: lays, fine: num >= SUBTLE_FROM },
-    { q: 'Now pick the real flag', opts: real },
-  ];
+    { q: twins ? 'Now pick the real flag, they differ in the details' : 'Now pick the real flag', opts: real, codes: twins || flag.also },
+  ].filter((st, i) => i < 2 || !twins || twins.length);
 }
