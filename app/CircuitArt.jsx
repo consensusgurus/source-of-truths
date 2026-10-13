@@ -33,6 +33,21 @@ const ART = {
       </g>
     </>
   ),
+  // MATH GAUNTLET (owner, 2026-10-13): a flash card, the bolt of the trophy
+  // (Human Calculator), the operators, and five pips for its five games.
+  math: (
+    <>
+      <rect x="58" y="22" width="112" height="60" rx="9" {...T} />
+      <text x="114" y="62" fontSize="26" {...TX}>7×8=?</text>
+      <path d="M194 10 L178 44 H191 L183 72 L208 34 H194 L202 10 Z" {...T} />
+      <path d="M30 36 h14 M37 29 v14 M28 66 h16" strokeWidth="2.5" opacity=".6" />
+      <g stroke="none" fill="currentColor" opacity=".6"><circle cx="36" cy="59" r="2.2" /><circle cx="36" cy="73" r="2.2" /></g>
+      <g stroke="none" fill="currentColor">
+        <circle cx="90" cy="102" r="4" /><circle cx="102" cy="102" r="4" /><circle cx="114" cy="102" r="4" />
+        <circle cx="126" cy="102" r="4" opacity=".35" /><circle cx="138" cy="102" r="4" opacity=".35" />
+      </g>
+    </>
+  ),
   passport: (
     <>
       <rect x="58" y="14" width="74" height="92" rx="7" {...T} />
