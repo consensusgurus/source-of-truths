@@ -2032,16 +2032,20 @@ export default function StageToday() {
       <span className="sty-ixsep" aria-hidden="true" />
       {ixBtn(CIRC_ID, 'Circuits', 'var(--stg-mute)')}
       {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)')}
+      {/* DESKTOP INDEX ORDER (owner, 2026-10-13): Circuits, Quizzes, Puzzle Archive
+          and Leaderboards + Stats are one group; the tests, Kids and the lists
+          are their own group below; Most Appreciated comes last. The phone
+          reorders these with the order classes in the 900px block, unchanged. */}
+      {/* The puzzle archive is a door: every past board, by game and day. */}
+      <a className="sty-ixb sty-ixmv sty-ixar" href={withTq('/archive')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('archive', null)}<span>Puzzle Archive</span></a>
+      {ixBtn(BOARD_ID, 'Leaderboards + Stats', 'var(--stg-mute)', 'wide')}
+      <span className="sty-ixsep sty-ixmv" aria-hidden="true" />
       {ixBtn(IQ_ID, 'IQ Tests', 'var(--stg-mute)', 'sty-ixmv sty-ixm4')}
       {ixBtn(EXAM_ID, 'School Tests', 'var(--stg-mute)', 'sty-ixmv sty-ixm4')}
       {/* Kids and the lists are doors, not panes: each goes to its own home. */}
       <a className="sty-ixb sty-ixmv sty-ixm4" href="/kids" style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('kids', null)}<span>Kids</span></a>
-      {/* Lists is a door, not a pane: it goes to the lists home. */}
       <a className="sty-ixb sty-ixmv sty-ixm4" href={withTq('/lists')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('lists', null)}<span>Top 10 Lists</span></a>
-      {/* The puzzle archive is a door too: every past board, by game and day. */}
-      <a className="sty-ixb sty-ixmv sty-ixar" href={withTq('/archive')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('archive', null)}<span>Puzzle Archive</span></a>
       <span className="sty-ixsep sty-ixmv" aria-hidden="true" />
-      {ixBtn(BOARD_ID, 'Leaderboards + Stats', 'var(--stg-mute)', 'wide')}
       {ixBtn(COMM_ID, 'Most Appreciated', 'var(--stg-mute)', 'wide sty-ixmv sty-ixma')}
       <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
         onClick={() => setReorder((v) => !v)}>
