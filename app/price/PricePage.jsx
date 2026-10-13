@@ -72,6 +72,7 @@ export default function PricePage({ gameKey, PUZZLES, searchParams }) {
     genre: ['Price guessing', 'Puzzle', 'Trivia'],
     gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
     numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+    image: `${SITE_URL}/og/${gameKey}.png`,
     publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
   };
   const breadcrumbJsonLd = {

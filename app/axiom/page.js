@@ -38,8 +38,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/axiom.png', width: 1200, height: 630, alt: 'Axiom — the daily hidden-rule puzzle from Mind Loft' }],
-    title: 'Axiom — Find the Hidden Rule',
+    images: [{ url: '/og/axiom.png', width: 1200, height: 630, alt: 'Axiom, the daily hidden-rule puzzle from Mind Loft' }],
+    title: 'Axiom: Find the Hidden Rule',
     description:
       'Green tiles obey a rule you cannot see. Red ones break it. Five candidates, a handful of tests, and most tiles teach you nothing. A new daily logic puzzle from Mind Loft.',
     url: '/axiom',
@@ -49,7 +49,7 @@ export const metadata = {
   twitter: {
     images: ['/og/axiom.png'],
     card: 'summary_large_image',
-    title: 'Axiom — Find the Hidden Rule',
+    title: 'Axiom: Find the Hidden Rule',
     description: 'One hidden rule, five candidates, and a test budget that punishes guessing. Play today’s board.',
   },
 };
@@ -58,7 +58,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Axiom',
-  alternateName: 'Axiom — Daily Rule-Induction Puzzle',
+  alternateName: 'Axiom: Daily Rule-Induction Puzzle',
   url: `${SITE_URL}/axiom`,
   description:
     'A free daily logic puzzle: a hidden rule splits a board of words into green and red, five candidate rules are listed, and a small budget of tests decides which one fits. Every board is machine-verified to have exactly one consistent rule.',

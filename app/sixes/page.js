@@ -26,8 +26,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/sixes.png', width: 1200, height: 630, alt: 'Sixes — a daily mini sudoku from Mind Loft' }],
-    title: 'Sixes — A Daily Mini Sudoku',
+    images: [{ url: '/og/sixes.png', width: 1200, height: 630, alt: 'Sixes, a daily mini sudoku from Mind Loft' }],
+    title: 'Sixes: A Daily Mini Sudoku',
     description:
       'Fill the 6×6 grid so every row, column, and box holds 1–6 once. A two-minute sudoku with one logical solution, from Mind Loft, daily.',
     url: '/sixes',
@@ -37,7 +37,7 @@ export const metadata = {
   twitter: {
     images: ['/og/sixes.png'],
     card: 'summary_large_image',
-    title: 'Sixes — A Daily Mini Sudoku',
+    title: 'Sixes: A Daily Mini Sudoku',
     description:
       'Fill the 6×6 grid so every row, column, and box holds 1–6 once. The short sudoku: a clean solve wins and the clock breaks the tie.',
   },
@@ -47,15 +47,16 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Sixes',
-  alternateName: 'Sixes — Daily Mini Sudoku',
+  alternateName: 'Sixes: Daily Mini Sudoku',
   url: `${SITE_URL}/sixes`,
   description:
-    'A free daily mini sudoku: fill a 6×6 grid so that every row, every column, and every 2×3 box contains the digits 1–6 exactly once. Each board has one solution reachable by pure logic — solve it for a perfect score, and ties break on fastest time.',
+    'A free daily mini sudoku: fill a 6×6 grid so that every row, every column, and every 2×3 box contains the digits 1–6 exactly once. Each board has one solution reachable by pure logic. Solve it for a perfect score, and ties break on fastest time.',
   genre: ['Logic puzzle', 'Sudoku', 'Number puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/sixes.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

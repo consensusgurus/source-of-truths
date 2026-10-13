@@ -24,8 +24,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/redact.png', width: 1200, height: 630, alt: 'Redact — a daily uncover-the-article game from Mind Loft' }],
-    title: 'Redact — Uncover the Article',
+    images: [{ url: '/og/redact.png', width: 1200, height: 630, alt: 'Redact, a daily uncover-the-article game from Mind Loft' }],
+    title: 'Redact: Uncover the Article',
     description:
       'Every meaningful word of today’s article is hidden behind a black block. Guess words, watch the story surface, and name the subject. From Mind Loft.',
     url: '/redact',
@@ -35,7 +35,7 @@ export const metadata = {
   twitter: {
     images: ['/og/redact.png'],
     card: 'summary_large_image',
-    title: 'Redact — Uncover the Article',
+    title: 'Redact: Uncover the Article',
     description: 'An entire article, blacked out. Guess words to reveal it and name the subject. Today’s article is up.',
   },
 };
@@ -44,7 +44,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Redact',
-  alternateName: 'Redact — Daily Uncover-the-Article Game',
+  alternateName: 'Redact: Daily Uncover-the-Article Game',
   url: `${SITE_URL}/redact`,
   description:
     'A free daily word-deduction game. A capsule article about one famous subject is fully redacted; guessing a word reveals every occurrence of it, and the player wins by uncovering the subject’s name. A category chip gives the opening minutes direction, and Sunday subjects are harder.',

@@ -20,13 +20,13 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Killer Sudoku: Cages | Mind Loft',
   description:
-    'A free daily killer sudoku — no digits printed, just cages labelled with the total of the digits inside them. Fill the 9×9 grid so every row, column, and 3×3 box holds 1–9 with no repeats. One logical solution and never a guess, notes and a free hint, a new board every day, and a harder Edition on Sundays.',
+    'A free daily killer sudoku: no digits printed, just cages labelled with the total of the digits inside them. Fill the 9×9 grid so every row, column, and 3×3 box holds 1–9 with no repeats. One logical solution and never a guess, notes and a free hint, a new board every day, and a harder Edition on Sundays.',
   alternates: { canonical: '/cages' },
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/cages.png', width: 1200, height: 630, alt: 'Cages — a daily killer sudoku from Mind Loft' }],
-    title: 'Cages — A Daily Killer Sudoku',
+    images: [{ url: '/og/cages.png', width: 1200, height: 630, alt: 'Cages, a daily killer sudoku from Mind Loft' }],
+    title: 'Cages: A Daily Killer Sudoku',
     description:
       'Killer sudoku: not one digit is printed, and the cage totals are the whole clue set. One logical solution, never a guess. A new board from Mind Loft, daily.',
     url: '/cages',
@@ -36,7 +36,7 @@ export const metadata = {
   twitter: {
     images: ['/og/cages.png'],
     card: 'summary_large_image',
-    title: 'Cages — A Daily Killer Sudoku',
+    title: 'Cages: A Daily Killer Sudoku',
     description:
       'A killer sudoku with no printed digits. Fill the 9×9 grid from the cage totals alone.',
   },
@@ -46,15 +46,16 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Cages',
-  alternateName: 'Cages — Daily Killer Sudoku',
+  alternateName: 'Cages: Daily Killer Sudoku',
   url: `${SITE_URL}/cages`,
   description:
-    'A free daily killer sudoku: no digits are printed at all. The 9×9 grid is partitioned into cages, each labelled with the total of the digits inside it and never repeating a digit, and those totals are the only clues. Fill the grid so that every row, every column, and every 3×3 box contains the digits 1–9 exactly once. Each board has one solution and can always be reached by logic alone — solve it with no errors for a perfect score, and ties break on fastest time.',
+    'A free daily killer sudoku: no digits are printed at all. The 9×9 grid is partitioned into cages, each labelled with the total of the digits inside it and never repeating a digit, and those totals are the only clues. Fill the grid so that every row, every column, and every 3×3 box contains the digits 1–9 exactly once. Each board has one solution and can always be reached by logic alone. Solve it with no errors for a perfect score, and ties break on fastest time.',
   genre: ['Logic puzzle', 'Killer sudoku', 'Sudoku', 'Number puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/cages.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

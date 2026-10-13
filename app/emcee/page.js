@@ -16,7 +16,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Mini Crossword: Emcee | Mind Loft',
   description:
-    'A free daily mini crossword — a 5×5 grid of everyday words with fair Across and Down clues, done in a minute or two. Fill every square and turn the grid in with one check, and Sundays go bigger.',
+    'A free daily mini crossword: a 5×5 grid of everyday words with fair Across and Down clues, done in a minute or two. Fill every square and turn the grid in with one check, and Sundays go bigger.',
   alternates: { canonical: '/emcee' },
   manifest: '/api/pwa-manifest?game=emcee',
   icons: {
@@ -34,8 +34,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/emcee.png', width: 1200, height: 630, alt: 'Emcee — a daily mini crossword from Mind Loft' }],
-    title: 'Emcee — A Daily Mini Crossword',
+    images: [{ url: '/og/emcee.png', width: 1200, height: 630, alt: 'Emcee, a daily mini crossword from Mind Loft' }],
+    title: 'Emcee: A Daily Mini Crossword',
     description:
       'A proper mini crossword, five by five: everyday words, fair clues, and a timer that stops when the grid is right. A new grid from Mind Loft, daily.',
     url: '/emcee',
@@ -45,7 +45,7 @@ export const metadata = {
   twitter: {
     images: ['/og/emcee.png'],
     card: 'summary_large_image',
-    title: 'Emcee — A Daily Mini Crossword',
+    title: 'Emcee: A Daily Mini Crossword',
     description:
       'A proper mini crossword, five by five: everyday words, fair clues, and a timer that stops when the grid is right.',
   },
@@ -55,7 +55,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Emcee',
-  alternateName: 'Emcee — Daily Mini Crossword',
+  alternateName: 'Emcee: Daily Mini Crossword',
   url: `${SITE_URL}/emcee`,
   description:
     'A free daily mini crossword: a 5×5 grid of everyday words with numbered Across and Down clues, solvable in a minute or two. You turn in a full grid with one press of Check grid; a clean, fast solve tops the daily leaderboard, and Sundays step up to a 7×7 pinwheel.',

@@ -21,7 +21,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Daily Liars Puzzle, Find the Thief: Sworn | Mind Loft',
   description:
-    'A free daily Knights-and-Knaves logic puzzle — a handful of locals under oath, exactly so many of them lying, one of them a thief. Work the contradictions and name the culprit. A new inquest every day, six sworn on Sundays.',
+    'A free daily Knights-and-Knaves logic puzzle: a handful of locals under oath, exactly so many of them lying, one of them a thief. Work the contradictions and name the culprit. A new inquest every day, six sworn on Sundays.',
   alternates: { canonical: '/sworn' },
   manifest: '/api/pwa-manifest?game=sworn',
   icons: {
@@ -39,10 +39,10 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/sworn.png', width: 1200, height: 630, alt: 'Sworn — the daily liars puzzle from Mind Loft' }],
-    title: 'Sworn — A Fresh Pack of Liars Every Day',
+    images: [{ url: '/og/sworn.png', width: 1200, height: 630, alt: 'Sworn, the daily liars puzzle from Mind Loft' }],
+    title: 'Sworn: A Fresh Pack of Liars Every Day',
     description:
-      'Everyone testified. An exact number of them lied. One is the thief. Follow the contradictions, weigh the lie count, and name the culprit — exactly one story holds together. From Mind Loft.',
+      'Everyone testified. An exact number of them lied. One is the thief. Follow the contradictions, weigh the lie count, and name the culprit. Exactly one story holds together. From Mind Loft.',
     url: '/sworn',
     type: 'website',
     siteName: 'Mind Loft',
@@ -50,7 +50,7 @@ export const metadata = {
   twitter: {
     images: ['/og/sworn.png'],
     card: 'summary_large_image',
-    title: 'Sworn — A Fresh Pack of Liars Every Day',
+    title: 'Sworn: A Fresh Pack of Liars Every Day',
     description:
       'Five sworn statements, an exact number of lies, one thief. Crack today’s inquest.',
   },
@@ -60,10 +60,10 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Sworn',
-  alternateName: 'Sworn — Daily Liars Puzzle',
+  alternateName: 'Sworn: Daily Liars Puzzle',
   url: `${SITE_URL}/sworn`,
   description:
-    'A free daily Knights-and-Knaves style logic puzzle: suspects give sworn statements, an exact number of them are lying, and one is the thief. Every case is machine-verified to have exactly one consistent world — pure deduction names the culprit.',
+    'A free daily Knights-and-Knaves style logic puzzle: suspects give sworn statements, an exact number of them are lying, and one is the thief. Every case is machine-verified to have exactly one consistent world. Pure deduction names the culprit.',
   genre: ['Logic puzzle', 'Deduction puzzle', 'Liars puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

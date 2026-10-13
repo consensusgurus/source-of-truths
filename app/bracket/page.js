@@ -35,15 +35,15 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/bracket.png', width: 1200, height: 630, alt: 'Bracket — the daily bracket of facts from Mind Loft' }],
-    title: 'Bracket — The Daily Bracket of Facts',
+    images: [{ url: '/og/bracket.png', width: 1200, height: 630, alt: 'Bracket, the daily bracket of facts from Mind Loft' }],
+    title: 'Bracket: The Daily Bracket of Facts',
     description: 'Sixteen contenders, one question, fifteen picks. Your winners carry forward, so a first-round mistake takes every later line down with it.',
     url: '/bracket', type: 'website', siteName: 'Mind Loft',
   },
   twitter: {
     images: ['/og/bracket.png'],
     card: 'summary_large_image',
-    title: 'Bracket — The Daily Bracket of Facts',
+    title: 'Bracket: The Daily Bracket of Facts',
     description: 'Sixteen contenders, one question, and a bracket that busts exactly like your Final Four.',
   },
 };

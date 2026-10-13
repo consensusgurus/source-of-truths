@@ -21,22 +21,23 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/streak.png', width: 1200, height: 630, alt: 'Streak — a daily puzzle from Mind Loft' }],
-    title: 'Streak — The Daily Trivia Gauntlet',
+    images: [{ url: '/og/streak.png', width: 1200, height: 630, alt: 'Streak, a daily puzzle from Mind Loft' }],
+    title: 'Streak: The Daily Trivia Gauntlet',
     description: 'Forty questions, one life. How deep can you go before one wrong answer ends the run?',
     url: '/streak', type: 'website', siteName: 'Mind Loft',
   },
-  twitter: { images: ['/og/streak.png'], card: 'summary_large_image', title: 'Streak — The Daily Trivia Gauntlet', description: 'Forty questions, one life. How deep can you go?' },
+  twitter: { images: ['/og/streak.png'], card: 'summary_large_image', title: 'Streak: The Daily Trivia Gauntlet', description: 'Forty questions, one life. How deep can you go?' },
 };
 
 const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Streak',
-  alternateName: 'Streak — Daily Trivia Survival', url: `${SITE_URL}/streak`,
+  alternateName: 'Streak: Daily Trivia Survival', url: `${SITE_URL}/streak`,
   description:
     'A free daily trivia survival game. Forty multiple-choice questions climb from easy to brutal in five rounds of eight, cycling eight categories. One wrong answer, or a twenty-second clock at zero, ends the run, and every question cleared is a point. Everyone plays the same forty questions in the same order each day, and the daily leaderboard ranks the deepest runs with ties broken by time.',
   genre: ['Trivia', 'Quiz', 'Survival'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/streak.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 const breadcrumbJsonLd = {

@@ -22,22 +22,23 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/focus.png', width: 1200, height: 630, alt: 'Focus — a daily puzzle from Mind Loft' }],
-    title: 'Focus — The Daily Zoomed Photo Game',
+    images: [{ url: '/og/focus.png', width: 1200, height: 630, alt: 'Focus, a daily puzzle from Mind Loft' }],
+    title: 'Focus: The Daily Zoomed Photo Game',
     description: 'One photo a day, zoomed all the way in. Name it before the camera pulls all the way back.',
     url: '/focus', type: 'website', siteName: 'Mind Loft',
   },
-  twitter: { images: ['/og/focus.png'], card: 'summary_large_image', title: 'Focus — The Daily Zoomed Photo Game', description: 'One photo a day, zoomed all the way in. Six frames to name it.' },
+  twitter: { images: ['/og/focus.png'], card: 'summary_large_image', title: 'Focus: The Daily Zoomed Photo Game', description: 'One photo a day, zoomed all the way in. Six frames to name it.' },
 };
 
 const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Focus',
-  alternateName: 'Focus — Daily Zoomed Picture Quiz', url: `${SITE_URL}/focus`,
+  alternateName: 'Focus: Daily Zoomed Picture Quiz', url: `${SITE_URL}/focus`,
   description:
     'A free daily picture game. One photo is shown each day as a tight crop at nine times magnification, and the puzzle is to name it. Every wrong name pulls the camera back one frame; the sixth frame is the whole photo and one last guess. The earlier the frame, the more it scores. A different subject every day of the week, and everyone gets the same photo, so the daily leaderboard ranks by frame, then fewest wrong names, then time.',
   genre: ['Trivia', 'Picture Quiz', 'Quiz', 'Puzzle'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/focus.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 const breadcrumbJsonLd = {

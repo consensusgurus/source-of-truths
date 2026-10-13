@@ -22,8 +22,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/barter.png', width: 1200, height: 630, alt: 'Barter — the daily letter-trade puzzle from Mind Loft' }],
-    title: 'Barter — Trade the Letters Home',
+    images: [{ url: '/og/barter.png', width: 1200, height: 630, alt: 'Barter, the daily letter-trade puzzle from Mind Loft' }],
+    title: 'Barter: Trade the Letters Home',
     description:
       'Every letter the answer needs is already on the board. Trade two tiles at a time and solve the lattice at par. A new board from Mind Loft, daily.',
     url: '/barter',
@@ -33,7 +33,7 @@ export const metadata = {
   twitter: {
     images: ['/og/barter.png'],
     card: 'summary_large_image',
-    title: 'Barter — Trade the Letters Home',
+    title: 'Barter: Trade the Letters Home',
     description: 'Six interlocking words, scrambled in place. Trade tiles home against a proven par.',
   },
 };
@@ -42,7 +42,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Barter',
-  alternateName: 'Barter — Daily Letter-Trade Puzzle',
+  alternateName: 'Barter: Daily Letter-Trade Puzzle',
   url: `${SITE_URL}/barter`,
   description:
     'A free daily word puzzle. Six words interlock in a lattice and every letter the answer needs is already on the board, scrambled. Trade two tiles at a time: green means home and locks, yellow means the letter belongs elsewhere in a word crossing that square. The trade budget is the proven minimum (par) plus five, so solving at par is a perfect game. Sundays run a bigger 7x7 Edition with eight words.',
@@ -51,6 +51,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/barter.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

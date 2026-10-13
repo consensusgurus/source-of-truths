@@ -18,7 +18,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Light-Up Logic Puzzle: Lamps | Mind Loft',
   description:
-    'A free daily logic puzzle. Place lamps to light every square: a lamp shines along its row and column until a wall, no lamp may shine on another, and numbered walls say how many lamps touch them. One logical solution, 10x10 on Sundays.',
+    'A free daily light-up logic puzzle (akari): place lamps to light every square, with no lamp shining on another and numbered walls counting their lamps.',
   alternates: { canonical: '/lamps' },
   openGraph: {
     images: [{ url: '/og/lamps.png', width: 1200, height: 630, alt: 'Lamps, a daily light-every-square logic puzzle from Mind Loft' }],
@@ -51,6 +51,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/lamps.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

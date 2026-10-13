@@ -27,28 +27,29 @@ export const metadata = {
   openGraph: {
     // Static share card, per the 2026-09-02 rule: a new daily ships
     // public/og/<key>.png plus these two lines, never an opengraph-image route.
-    images: [{ url: '/og/impound.png', width: 1200, height: 630, alt: 'Impound — a daily puzzle from Mind Loft' }],
-    title: 'Impound — The Bigger Daily Sliding Block Puzzle',
+    images: [{ url: '/og/impound.png', width: 1200, height: 630, alt: 'Impound, a daily puzzle from Mind Loft' }],
+    title: 'Impound: The Bigger Daily Sliding Block Puzzle',
     description: 'Parker on a bigger lot. Seven by seven, twenty blocks in your way, and one gap in the wall. A new jam from Mind Loft, daily.',
     url: '/impound', type: 'website', siteName: 'Mind Loft',
   },
   twitter: {
     images: ['/og/impound.png'],
     card: 'summary_large_image',
-    title: 'Impound — The Bigger Daily Sliding Block Puzzle',
+    title: 'Impound: The Bigger Daily Sliding Block Puzzle',
     description: 'A seven by seven lot, blocked in on all four sides, one gap in the wall. Slide your way out.',
   },
 };
 
 const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Impound',
-  alternateName: 'Impound — The Bigger Daily Sliding Block Puzzle',
+  alternateName: 'Impound: The Bigger Daily Sliding Block Puzzle',
   url: `${SITE_URL}/impound`,
   description:
     'A free daily sliding-block puzzle, and the bigger sibling of Parker. Around twenty blocks fill a seven by seven lot and each slides along one axis only; the red block must reach the exit gap on the middle rank. Every board is machine generated and solved exactly by breadth-first search, so the perfect line is the true fewest moves that exist rather than an estimate, and par sits a cushion above it as the number a clean solve lands on. Perfect scores ten and par scores eight. The week climbs: Monday to Wednesday run 16 to 25 moves, Thursday to Saturday 23 to 35, and Sundays 34 to 50.',
   genre: ['Sliding block puzzle', 'Logic puzzle', 'Puzzle'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/impound.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 const breadcrumbJsonLd = {

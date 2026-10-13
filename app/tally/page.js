@@ -15,7 +15,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Number Puzzle (Sudoku-style): Tally | Mind Loft',
   description:
-    'A free daily number puzzle — fill the grid from a rack of tiles so every row and column hits its target. A logic puzzle in the sudoku family, with a new board every day and a bigger 6×6 grid on Sundays.',
+    'A free daily number puzzle: fill the grid from a rack of tiles so every row and column hits its target. A logic puzzle in the sudoku family, with a new board every day and a bigger 6×6 grid on Sundays.',
   alternates: { canonical: '/tally' },
   manifest: '/api/pwa-manifest?game=tally',
   icons: {
@@ -33,8 +33,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/tally.png', width: 1200, height: 630, alt: 'Tally — a daily number-ledger puzzle from Mind Loft' }],
-    title: 'Tally — A Daily Number-Ledger Puzzle',
+    images: [{ url: '/og/tally.png', width: 1200, height: 630, alt: 'Tally, a daily number-ledger puzzle from Mind Loft' }],
+    title: 'Tally: A Daily Number-Ledger Puzzle',
     description:
       'Fill the grid from your rack so every row and column adds up to its target. One solution, fewest moves wins. A new number puzzle from Mind Loft, daily.',
     url: '/tally',
@@ -44,7 +44,7 @@ export const metadata = {
   twitter: {
     images: ['/og/tally.png'],
     card: 'summary_large_image',
-    title: 'Tally — A Daily Number-Ledger Puzzle',
+    title: 'Tally: A Daily Number-Ledger Puzzle',
     description:
       'Fill the grid from your rack so every row and column adds up to its target. Fewest moves wins.',
   },
@@ -54,10 +54,10 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Tally',
-  alternateName: 'Tally — Daily Number Puzzle',
+  alternateName: 'Tally: Daily Number Puzzle',
   url: `${SITE_URL}/tally`,
   description:
-    'A free daily logic puzzle in the sudoku family: fill an N×N grid from a fixed rack of number tiles so every row and column adds up to its printed target. Each board has one solution — solve it in the fewest moves for a perfect score, and ties break on fewest errors then fastest time.',
+    'A free daily logic puzzle in the sudoku family: fill an N×N grid from a fixed rack of number tiles so every row and column adds up to its printed target. Each board has one solution. Solve it in the fewest moves for a perfect score, and ties break on fewest errors then fastest time.',
   genre: ['Logic puzzle', 'Number puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

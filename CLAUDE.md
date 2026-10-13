@@ -9160,3 +9160,43 @@ people in the room. Circuit id `room`, engine `room`, scorer `room`, `scoreFrom:
 - **The door**: Outwit, Outrank and Feud each mount `RunDoorPop id="room"` on today's start gate
   (once per day). Placed in the home's lead circuits, MoreRuns (seven runs), the crowd category
   page and the sitemap.
+
+## SEO for every new daily and every new run: the launch checklist (2026-10-13)
+
+An audit of every game and run page on 2026-10-13 found the furniture a launch forgets: 90 Game
+schemas with no image (two pointing at files that did not exist), Dario with no Game schema at
+all, 415 em dashes in titles, share text and alt text, five run pages with no footer, no
+questions and no links into the games they are made of, and the sixteen newest descriptions
+running past the ~160 characters a search result shows. All fixed in one pass, and
+**`node scripts/verify-page-seo.mjs` is now the gate** (auto-discovered by verify-all). It
+fails a launch that skips any of these, so a new page cannot quietly ship without them.
+
+**A new DAILY ships, in its `app/<route>/page.js`:**
+
+1. A static `title` of **70 characters or fewer** ending `| Mind Loft`, leading with the
+   searcher's words ("Free Daily Arrow Sudoku: Arrow | Mind Loft"), not the brand name alone.
+2. A `description` of **160 characters or fewer**: what kind of puzzle it is in plain words,
+   the one rule that defines it, and "free" and "daily". `scripts/page-seo-baseline.json`
+   grandfathers the older long ones and is a burn-down list: it may shrink, never grow.
+3. `alternates.canonical` equal to the registry href, `openGraph` and `twitter` naming
+   `public/og/<key>.png` (bake it with `scripts/bake-og.mjs <key>`).
+4. A `gameJsonLd` (`'@type': 'Game'`) with `image: \`${SITE_URL}/og/<key>.png\``, plus the
+   BreadcrumbList through `categoryCrumb(key)` and `<StageTail self="<key>">` after the client.
+5. Crawlable prose in the client: an "About <Name>" or "How <Name> works" section.
+6. **No em dash** in any title, description, alt or alternateName (the site copy rule; share
+   cards and search results are site copy).
+
+**Nothing else to register.** The sitemap's game segment is DERIVED from `lib/daily-games.js`
+(every registry href, REVIEW_HOLD excluded) and from `lib/run-seo.js` RUN_PAGES, so a new
+daily or run is submitted by existing. The FAQ, sibling links and FAQPage schema come from
+`lib/game-seo.js`. After the deploy, ping IndexNow for the new url
+(`https://api.indexnow.org/indexnow?url=https://mindloftdaily.com/<route>&key=598abff60a4ec1cbbe4ae6fc007be9a0`).
+
+**A new RUN with its own address** (a circuit with `path`, like `/dojo`) also needs an entry in
+`RUN_PAGES` in `lib/run-seo.js`: its path, an accent game, the kind of run, and ONE plain
+sentence on how it is scored. That entry is what prints the run's questions, links every member
+game and every other run, and puts it in the sitemap. The page then mounts
+`<StageTail run="<id>" theme="dark" />` after the client (drop `theme` if the run follows the
+reader's register, as Price Check does), emits `runBreadcrumbJsonLd('<id>')`, and gives its
+Game schema an image (its `/card` route is fine). A run whose page is deliberately noindex
+(the Trivia and Math Gauntlets, whose landing pages rank instead) goes in `RUN_LANDINGS`.

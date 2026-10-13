@@ -17,7 +17,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // before anything reaches the client.
 
 export const metadata = {
-  title: 'Free Daily Word Puzzle, Seven Letters, Rare Words Pay: Lode | Mind Loft',
+  title: 'Free Daily Seven-Letter Word Puzzle: Lode | Mind Loft',
   description:
     'A free daily word puzzle and a fresh spin on the letters puzzle. Seven letters, one core letter every word must use, and points that reward rare words over long ones. Strike the vein, then chase the Mother Lode. New board every day.',
   alternates: { canonical: '/lode' },
@@ -37,8 +37,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/lode.png', width: 1200, height: 630, alt: 'Lode — the daily letter-mining word puzzle from Mind Loft' }],
-    title: 'Lode — A Daily Word Puzzle Where Rare Words Pay',
+    images: [{ url: '/og/lode.png', width: 1200, height: 630, alt: 'Lode, the daily letter-mining word puzzle from Mind Loft' }],
+    title: 'Lode: A Daily Word Puzzle Where Rare Words Pay',
     description:
       'Seven letters, one core letter, four letters minimum. Common words are chip shots; the rare ones are worth three times as much. Strike the vein, then dig for the Mother Lode.',
     url: '/lode',
@@ -48,7 +48,7 @@ export const metadata = {
   twitter: {
     images: ['/og/lode.png'],
     card: 'summary_large_image',
-    title: 'Lode — A Daily Word Puzzle Where Rare Words Pay',
+    title: 'Lode: A Daily Word Puzzle Where Rare Words Pay',
     description:
       'Seven letters, one core letter, and scoring that rewards the words nobody else finds.',
   },
@@ -58,7 +58,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Lode',
-  alternateName: 'Lode — Daily Letter-Mining Word Puzzle',
+  alternateName: 'Lode: Daily Letter-Mining Word Puzzle',
   url: `${SITE_URL}/lode`,
   description:
     'A free daily word puzzle: everyone gets the same seven letters and one core letter that every word must contain. Words are four letters or longer and letters may be reused. Points scale with how rare a word is rather than how long it is, a pangram uses every letter, and each day carries a vein to strike and a Mother Lode to chase.',

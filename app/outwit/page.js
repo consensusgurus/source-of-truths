@@ -38,10 +38,10 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/outwit.png', width: 1200, height: 630, alt: 'Outwit — the daily crowd puzzle from Mind Loft' }],
-    title: 'Outwit — The Daily Crowd Puzzle',
+    images: [{ url: '/og/outwit.png', width: 1200, height: 630, alt: 'Outwit, the daily crowd puzzle from Mind Loft' }],
+    title: 'Outwit: The Daily Crowd Puzzle',
     description:
-      'Your opponent is everyone playing today. Five quick prompts, no right answers — only what the crowd does. From Mind Loft.',
+      'Your opponent is everyone playing today. Five quick prompts, no right answers. Only what the crowd does. From Mind Loft.',
     url: '/outwit',
     type: 'website',
     siteName: 'Mind Loft',
@@ -49,7 +49,7 @@ export const metadata = {
   twitter: {
     images: ['/og/outwit.png'],
     card: 'summary_large_image',
-    title: 'Outwit — The Daily Crowd Puzzle',
+    title: 'Outwit: The Daily Crowd Puzzle',
     description:
       'Five prompts against everyone playing today. Predict the crowd, then watch the real numbers roll in.',
   },
@@ -59,7 +59,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Outwit',
-  alternateName: 'Outwit — Daily Crowd Puzzle',
+  alternateName: 'Outwit: Daily Crowd Puzzle',
   url: `${SITE_URL}/outwit`,
   description:
     'A free daily game-theory puzzle: five prompts against every other player. Pick what the fewest pick, guess the crowd median, match the crowd favorite, make the rarest pick, then undercut the average by the day\u2019s fraction, which changes daily. Scored against the real player pool.',

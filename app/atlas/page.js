@@ -21,22 +21,23 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/atlas.png', width: 1200, height: 630, alt: 'Atlas — a daily puzzle from Mind Loft' }],
-    title: 'Atlas — The Daily Geography Gauntlet',
+    images: [{ url: '/og/atlas.png', width: 1200, height: 630, alt: 'Atlas, a daily puzzle from Mind Loft' }],
+    title: 'Atlas: The Daily Geography Gauntlet',
     description: 'Twenty-five questions on the world, one life. How far around the map can you get before one wrong answer ends the run?',
     url: '/atlas', type: 'website', siteName: 'Mind Loft',
   },
-  twitter: { images: ['/og/atlas.png'], card: 'summary_large_image', title: 'Atlas — The Daily Geography Gauntlet', description: 'Twenty-five questions on the world, one life. How far can you get?' },
+  twitter: { images: ['/og/atlas.png'], card: 'summary_large_image', title: 'Atlas: The Daily Geography Gauntlet', description: 'Twenty-five questions on the world, one life. How far can you get?' },
 };
 
 const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Atlas',
-  alternateName: 'Atlas — Daily Geography Quiz', url: `${SITE_URL}/atlas`,
+  alternateName: 'Atlas: Daily Geography Quiz', url: `${SITE_URL}/atlas`,
   description:
     'A free daily geography quiz game. Twenty-five multiple-choice questions about the world climb from easy to expert in five rounds of five, cycling the same five subjects each round: capitals, the physical world, flags and borders, places and landmarks, and countries and peoples. One wrong answer, or a twenty-second clock at zero, ends the run, and every question cleared is a point. Everyone plays the same twenty-five questions in the same order each day, and the daily leaderboard ranks the longest runs with ties broken by time.',
   genre: ['Geography', 'Trivia', 'Quiz', 'Survival'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/atlas.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 const breadcrumbJsonLd = {

@@ -25,8 +25,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/towers.png', width: 1200, height: 630, alt: 'Towers — a daily skyscrapers puzzle from Mind Loft' }],
-    title: 'Towers — A Daily Skyscrapers Puzzle',
+    images: [{ url: '/og/towers.png', width: 1200, height: 630, alt: 'Towers, a daily skyscrapers puzzle from Mind Loft' }],
+    title: 'Towers: A Daily Skyscrapers Puzzle',
     description:
       'Count the towers in view: border clues, one logical solution, a new board daily from Mind Loft. 5×5 weekdays, 7×7 Sundays.',
     url: '/towers',
@@ -36,7 +36,7 @@ export const metadata = {
   twitter: {
     images: ['/og/towers.png'],
     card: 'summary_large_image',
-    title: 'Towers — A Daily Skyscrapers Puzzle',
+    title: 'Towers: A Daily Skyscrapers Puzzle',
     description:
       'Count the towers in view: border clues, one logical solution, a new board daily. A clean solve wins and the clock breaks the tie.',
   },
@@ -46,15 +46,16 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Towers',
-  alternateName: 'Towers — Daily Skyscrapers Puzzle',
+  alternateName: 'Towers: Daily Skyscrapers Puzzle',
   url: `${SITE_URL}/towers`,
   description:
-    'A free daily skyscrapers puzzle: fill the grid so every row and column holds each tower height exactly once, guided by border clues that count the visible towers, taller ones hiding shorter ones behind them. One solution reachable by pure logic — solve it for a perfect score, and ties break on fastest time.',
+    'A free daily skyscrapers puzzle: fill the grid so every row and column holds each tower height exactly once, guided by border clues that count the visible towers, taller ones hiding shorter ones behind them. One solution reachable by pure logic. Solve it for a perfect score, and ties break on fastest time.',
   genre: ['Logic puzzle', 'Latin square', 'Number puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/towers.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

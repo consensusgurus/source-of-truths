@@ -21,8 +21,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/glyph.png', width: 1200, height: 630, alt: 'Glyph — a daily codeword from Mind Loft' }],
-    title: 'Glyph — A Daily Codeword',
+    images: [{ url: '/og/glyph.png', width: 1200, height: 630, alt: 'Glyph, a daily codeword from Mind Loft' }],
+    title: 'Glyph: A Daily Codeword',
     description:
       'No clues. Every letter is a number, and the same number always means the same letter. Crack the code, fill the grid.',
     url: '/glyph',
@@ -32,7 +32,7 @@ export const metadata = {
   twitter: {
     images: ['/og/glyph.png'],
     card: 'summary_large_image',
-    title: 'Glyph — A Daily Codeword',
+    title: 'Glyph: A Daily Codeword',
     description: 'A crossword with no clues. Every letter is a number. Crack all 26.',
   },
 };
@@ -41,7 +41,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Glyph',
-  alternateName: 'Glyph — Daily Codeword',
+  alternateName: 'Glyph: Daily Codeword',
   url: `${SITE_URL}/glyph`,
   description:
     'A free daily codeword puzzle: a filled crossword grid where every letter has been replaced by a number from 1 to 26, consistently across the board. There are no clues. Working from two or three given letters, letter frequency, word shapes and the crossings, you deduce what every number stands for. All 26 letters appear in every key, each board uses only common dictionary words, and each has exactly one consistent solution, so it is always solvable by deduction and never by guesswork. A clean solve with no checks earns a perfect score, and ties break on fewest checks then fastest time.',
@@ -50,6 +50,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/glyph.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

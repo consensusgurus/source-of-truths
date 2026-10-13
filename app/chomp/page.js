@@ -19,8 +19,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/chomp.png', width: 1200, height: 630, alt: 'Chomp — a daily route puzzle from Mind Loft' }],
-    title: 'Chomp — A Daily Route Puzzle',
+    images: [{ url: '/og/chomp.png', width: 1200, height: 630, alt: 'Chomp, a daily route puzzle from Mind Loft' }],
+    title: 'Chomp: A Daily Route Puzzle',
     description: 'Eat them in order. Your own trail is the maze.',
     url: '/chomp',
     type: 'website',
@@ -29,7 +29,7 @@ export const metadata = {
   twitter: {
     images: ['/og/chomp.png'],
     card: 'summary_large_image',
-    title: 'Chomp — A Daily Route Puzzle',
+    title: 'Chomp: A Daily Route Puzzle',
     description: 'Eat them in order. Your own trail is the maze.',
   },
 };
@@ -38,7 +38,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Chomp',
-  alternateName: 'Chomp — Daily Route Puzzle',
+  alternateName: 'Chomp: Daily Route Puzzle',
   url: `${SITE_URL}/chomp`,
   description:
     'A daily route puzzle. A cast of mascots eaten in order on a shared board, where every square you touch becomes a permanent wall.',
@@ -47,6 +47,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/chomp.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 

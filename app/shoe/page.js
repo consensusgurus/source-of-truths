@@ -28,7 +28,7 @@ export const metadata = {
   alternates: { canonical: '/shoe' },
   openGraph: {
     images: [{ url: '/og/shoe.png', width: 1200, height: 630, alt: 'Shoe: a daily card-counting puzzle from Mind Loft' }],
-    title: 'Shoe — The Daily Blackjack Shoe',
+    title: 'Shoe: The Daily Blackjack Shoe',
     description:
       'Everyone plays the same shoe: ten hands of blackjack, fixed deal, and a par set by basic strategy. Beat the book by counting. From Mind Loft.',
     url: '/shoe',
@@ -38,7 +38,7 @@ export const metadata = {
   twitter: {
     images: ['/og/shoe.png'],
     card: 'summary_large_image',
-    title: 'Shoe — The Daily Blackjack Shoe',
+    title: 'Shoe: The Daily Blackjack Shoe',
     description:
       'Ten hands of blackjack, one fixed shoe, the same cards for everyone. Par is the book line. The count is how you beat it.',
   },
@@ -48,7 +48,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Shoe',
-  alternateName: 'Shoe — Daily Blackjack Puzzle',
+  alternateName: 'Shoe: Daily Blackjack Puzzle',
   url: `${SITE_URL}/shoe`,
   description:
     'A free daily blackjack puzzle: ten hands dealt from one fixed 72-card, two-deck shoe, identical for every player, scored against the chips basic strategy banks on the same cards. Hit, stand, or double; dealer stands on all 17s; blackjack pays 3:2; no splits. Sundays deal fourteen hands off the entire 104-card double deck.',
@@ -57,6 +57,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/shoe.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

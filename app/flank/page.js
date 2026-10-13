@@ -22,22 +22,23 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/flank.png', width: 1200, height: 630, alt: 'Flank — a daily puzzle from Mind Loft' }],
-    title: 'Flank — The Daily Borders Game',
+    images: [{ url: '/og/flank.png', width: 1200, height: 630, alt: 'Flank, a daily puzzle from Mind Loft' }],
+    title: 'Flank: The Daily Borders Game',
     description: 'One country a day. Name every country on its border before three wrong guesses end the run.',
     url: '/flank', type: 'website', siteName: 'Mind Loft',
   },
-  twitter: { images: ['/og/flank.png'], card: 'summary_large_image', title: 'Flank — The Daily Borders Game', description: 'One country a day. Name every country on its border.' },
+  twitter: { images: ['/og/flank.png'], card: 'summary_large_image', title: 'Flank: The Daily Borders Game', description: 'One country a day. Name every country on its border.' },
 };
 
 const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Flank',
-  alternateName: 'Flank — Daily Country Borders Quiz', url: `${SITE_URL}/flank`,
+  alternateName: 'Flank: Daily Country Borders Quiz', url: `${SITE_URL}/flank`,
   description:
     'A free daily geography game. One country is revealed each day, and the puzzle is to name every country that shares a land border with it. A correct neighbor banks itself as soon as it is typed; a real country that does not border costs a strike, and three strikes end the run, with a fourth on the Sunday Edition giants. Everyone plays the same country each day, and the daily leaderboard ranks borders named, then fewest wrong guesses, then time.',
   genre: ['Geography', 'Trivia', 'Quiz', 'Word Game'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/flank.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 const breadcrumbJsonLd = {

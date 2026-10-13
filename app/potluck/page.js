@@ -19,7 +19,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Quiz Mix: Potluck | Mind Loft',
   description:
-    'A free daily trivia mix. Three quizzes a day, each a different kind and a different subject: one to name, one to match, one to spot. Play any of them, turn it in when you are done, and race the daily leaderboard. No app, no signup, a new three every day.',
+    'A free daily trivia mix: three quizzes, each a different kind and subject. Play any of them, turn it in when you are done, and race the daily leaderboard.',
   alternates: { canonical: '/potluck' },
   openGraph: {
     images: [{ url: '/og/potluck.png', width: 1200, height: 630, alt: 'Potluck, a daily puzzle from Mind Loft' }],
@@ -38,6 +38,7 @@ const gameJsonLd = {
   genre: ['Trivia', 'Quiz'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/potluck.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 const breadcrumbJsonLd = {

@@ -16,7 +16,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Daily History Puzzle, Guess the Year: Circa | Mind Loft',
   description:
-    'A free daily history puzzle — one famous moment, six guesses to pin the exact year. Every miss plays hot and cold: earlier or later, and how close you are. Land within three years to solve it; a dead-on first guess is a perfect score.',
+    'A free daily history puzzle: one famous moment, six guesses to pin the exact year. Every miss plays hot and cold: earlier or later, and how close you are. Land within three years to solve it; a dead-on first guess is a perfect score.',
   alternates: { canonical: '/circa' },
   manifest: '/api/pwa-manifest?game=circa',
   icons: {
@@ -34,10 +34,10 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/circa.png', width: 1200, height: 630, alt: 'Circa — the daily year hunt from Mind Loft' }],
-    title: 'Circa — The Daily Year Hunt',
+    images: [{ url: '/og/circa.png', width: 1200, height: 630, alt: 'Circa, the daily year hunt from Mind Loft' }],
+    title: 'Circa: The Daily Year Hunt',
     description:
-      'One historical moment a day. Six guesses to pin the exact year — every miss tells you earlier or later, hotter or colder. From Mind Loft.',
+      'One historical moment a day. Six guesses to pin the exact year. Every miss tells you earlier or later, hotter or colder. From Mind Loft.',
     url: '/circa',
     type: 'website',
     siteName: 'Mind Loft',
@@ -45,9 +45,9 @@ export const metadata = {
   twitter: {
     images: ['/og/circa.png'],
     card: 'summary_large_image',
-    title: 'Circa — The Daily Year Hunt',
+    title: 'Circa: The Daily Year Hunt',
     description:
-      'One historical moment a day. Six guesses to pin the exact year — hot-and-cold feedback on every miss.',
+      'One historical moment a day. Six guesses to pin the exact year. Hot-and-cold feedback on every miss.',
   },
 };
 
@@ -55,10 +55,10 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Circa',
-  alternateName: 'Circa — Daily History Puzzle',
+  alternateName: 'Circa: Daily History Puzzle',
   url: `${SITE_URL}/circa`,
   description:
-    'A free daily history puzzle: one famous moment, six guesses to pin the exact year it happened. Hot-and-cold feedback after every guess — land within three years to solve it, and hit the exact year for a perfect score.',
+    'A free daily history puzzle: one famous moment, six guesses to pin the exact year it happened. Hot-and-cold feedback after every guess. Land within three years to solve it, and hit the exact year for a perfect score.',
   genre: ['History puzzle', 'Trivia puzzle', 'Guessing puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

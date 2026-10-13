@@ -22,8 +22,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/queen.png', width: 1200, height: 630, alt: 'Queen — a daily king-and-pawn endgame from Mind Loft' }],
-    title: 'Queen — A Daily Pawn Endgame',
+    images: [{ url: '/og/queen.png', width: 1200, height: 630, alt: 'Queen, a daily king-and-pawn endgame from Mind Loft' }],
+    title: 'Queen: A Daily Pawn Endgame',
     description:
       'Walk the pawn in against a perfect defence. One move keeps the win and every other throws it away. A new position from Mind Loft, daily.',
     url: '/queen',
@@ -33,7 +33,7 @@ export const metadata = {
   twitter: {
     images: ['/og/queen.png'],
     card: 'summary_large_image',
-    title: 'Queen — A Daily Pawn Endgame',
+    title: 'Queen: A Daily Pawn Endgame',
     description: 'King and pawn against king. One move keeps the win.',
   },
 };
@@ -42,7 +42,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Queen',
-  alternateName: 'Queen — Daily King and Pawn Endgame',
+  alternateName: 'Queen: Daily King and Pawn Endgame',
   url: `${SITE_URL}/queen`,
   description:
     'A free daily chess endgame puzzle. Each position is a king and one pawn against a bare king, with a tablebase-proven safe promotion in a fixed number of moves and exactly one first move that keeps it. Tap a piece to see its legal squares, then walk the whole win in against a perfect defence: an unsafe promotion or a stalemate is the draw it is over the board. A clean solve earns a perfect score and ties break on fastest time. The budget deepens through the week and the Sunday Edition is a win in twelve.',
@@ -51,6 +51,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/queen.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

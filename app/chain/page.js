@@ -21,8 +21,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/chain.png', width: 1200, height: 630, alt: 'Chain — a daily dots and boxes endgame from Mind Loft' }],
-    title: 'Chain — A Daily Dots and Boxes Endgame',
+    images: [{ url: '/og/chain.png', width: 1200, height: 630, alt: 'Chain, a daily dots and boxes endgame from Mind Loft' }],
+    title: 'Chain: A Daily Dots and Boxes Endgame',
     description:
       'One edge still wins it. Take the free box and you may have just lost the board. A new position from Mind Loft, daily.',
     url: '/chain',
@@ -32,7 +32,7 @@ export const metadata = {
   twitter: {
     images: ['/og/chain.png'],
     card: 'summary_large_image',
-    title: 'Chain — A Daily Dots and Boxes Endgame',
+    title: 'Chain: A Daily Dots and Boxes Endgame',
     description: 'You are winning, one edge keeps it, and the free box is bait. No take-backs.',
   },
 };
@@ -41,7 +41,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Chain',
-  alternateName: 'Chain — Daily Dots and Boxes Puzzle',
+  alternateName: 'Chain: Daily Dots and Boxes Puzzle',
   url: `${SITE_URL}/chain`,
   description:
     'A free daily dots-and-boxes puzzle, picked up at the endgame. Each position is a real, reachable board with you to move and the game already won, with exactly one edge that keeps the win and every other edge losing it. A wrong edge is not refused: a perfect solver plays the rest of the game, so the win is gone for good. Completing a box claims it and grants another move, and the board carries an odd number of boxes so a tie is impossible. The win scores ten, a loss one, and ties break on fewest errors then fastest time. Weekdays are a 3 by 5 board and Sundays a 5 by 5.',
@@ -50,6 +50,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/chain.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

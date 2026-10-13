@@ -27,8 +27,8 @@ export const metadata = {
   openGraph: {
     // Static share card, pre-rendered once into public/og/ (see the 2026-09-02
     // build-time note in CLAUDE.md): a new daily ships the PNG, not a route.
-    images: [{ url: '/og/sums.png', width: 1200, height: 630, alt: 'Sums — a daily kakuro from Mind Loft' }],
-    title: 'Sums — A Daily Kakuro',
+    images: [{ url: '/og/sums.png', width: 1200, height: 630, alt: 'Sums, a daily kakuro from Mind Loft' }],
+    title: 'Sums: A Daily Kakuro',
     description:
       'Every run of squares adds up to the total at its head, digits 1 to 9, no repeats. A daily cross-sums puzzle with one logical solution, from Mind Loft.',
     url: '/sums',
@@ -38,7 +38,7 @@ export const metadata = {
   twitter: {
     images: ['/og/sums.png'],
     card: 'summary_large_image',
-    title: 'Sums — A Daily Kakuro',
+    title: 'Sums: A Daily Kakuro',
     description:
       'Every run of squares adds up to the total at its head, digits 1 to 9, no repeats. One logical solution, and the clock decides the day.',
   },
@@ -48,7 +48,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Sums',
-  alternateName: 'Sums — Daily Kakuro',
+  alternateName: 'Sums: Daily Kakuro',
   url: `${SITE_URL}/sums`,
   description:
     'A free daily kakuro: a crossword-shaped grid where every run of white squares carries a total. Fill each run with digits 1 to 9 that add to its total, never repeating a digit inside a run. Each board has one solution reachable by deduction alone; solve it for a perfect score, and ties break on fastest time.',
@@ -57,6 +57,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/sums.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

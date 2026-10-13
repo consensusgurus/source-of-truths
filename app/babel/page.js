@@ -21,8 +21,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/babel.png', width: 1200, height: 630, alt: 'Babel — the daily word tile endgame from Mind Loft' }],
-    title: 'Babel — The Daily Word Tile Endgame',
+    images: [{ url: '/og/babel.png', width: 1200, height: 630, alt: 'Babel, the daily word tile endgame from Mind Loft' }],
+    title: 'Babel: The Daily Word Tile Endgame',
     description:
       'Five tiles, no bag, and one exchange left. Their rack is knowable, so the only question is whether to race or block. From Mind Loft.',
     url: '/babel',
@@ -32,7 +32,7 @@ export const metadata = {
   twitter: {
     images: ['/og/babel.png'],
     card: 'summary_large_image',
-    title: 'Babel — The Daily Word Tile Endgame',
+    title: 'Babel: The Daily Word Tile Endgame',
     description: 'The bag is empty and their rack is knowable. Go out first, or make them sit on a tile they cannot play.',
   },
 };
@@ -41,7 +41,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Babel',
-  alternateName: 'Babel — Daily Word Tile Endgame Puzzle',
+  alternateName: 'Babel: Daily Word Tile Endgame Puzzle',
   url: `${SITE_URL}/babel`,
   description:
     'A free daily word puzzle: a word tile game picked up at the very end. The bag is empty, the player holds five tiles (six in the Sunday Edition) and the opponent holds the rest, so the opponent’s rack can be deduced exactly from the bag, the board and your own rack. Scoring is by spread, and every position ships with a benchmark achieved by the same solver that plays the defence.',
@@ -50,7 +50,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
-  image: `${SITE_URL}/games/hero/babel.png`,
+  image: `${SITE_URL}/og/babel.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

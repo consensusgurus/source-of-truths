@@ -21,7 +21,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Daily Logic Puzzle, Two Per Row: Judges | Mind Loft',
   description:
-    'A free daily placement puzzle in the Star Battle family: seat two judges in every row, column and colored court, with no two judges touching. Exactly one solution, pure deduction. A 10x10 bench every day and a 12x12 Sunday Edition.',
+    'A free daily Star Battle logic puzzle: seat two judges in every row, column and colored court, with no two touching. One solution, pure deduction.',
   alternates: { canonical: '/judges' },
   openGraph: {
     images: [{ url: '/og/judges.png', width: 1200, height: 630, alt: 'Judges, the daily two-per-row placement puzzle from Mind Loft' }],
@@ -54,6 +54,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/judges.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 

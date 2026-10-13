@@ -31,8 +31,8 @@ export const metadata = {
     apple: [{ url: '/stands-icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Stands' },
-  openGraph: { images: [{ url: '/og/stands.png', width: 1200, height: 630, alt: 'Stands — a daily logic puzzle from Mind Loft' }], title: 'Stands — Rebuild the Lost Results Table', description: 'Everyone played everyone once. Win 3, draw 1. The sheet is gone and a few facts survive, and only one set of results fits them all.', url: '/stands', type: 'website', siteName: 'Mind Loft' },
-  twitter: { images: ['/og/stands.png'], card: 'summary_large_image', title: 'Stands — Rebuild the Lost Results Table', description: 'Everyone played everyone once. Win 3, draw 1. The sheet is gone and a few facts survive, and only one set of results fits them all.' },
+  openGraph: { images: [{ url: '/og/stands.png', width: 1200, height: 630, alt: 'Stands, a daily logic puzzle from Mind Loft' }], title: 'Stands: Rebuild the Lost Results Table', description: 'Everyone played everyone once. Win 3, draw 1. The sheet is gone and a few facts survive, and only one set of results fits them all.', url: '/stands', type: 'website', siteName: 'Mind Loft' },
+  twitter: { images: ['/og/stands.png'], card: 'summary_large_image', title: 'Stands: Rebuild the Lost Results Table', description: 'Everyone played everyone once. Win 3, draw 1. The sheet is gone and a few facts survive, and only one set of results fits them all.' },
 };
 
 const gameJsonLd = {

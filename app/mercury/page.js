@@ -26,8 +26,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/mercury.png', width: 1200, height: 630, alt: 'Mercury — a daily thermo sudoku from Mind Loft' }],
-    title: 'Mercury — A Daily Thermo Sudoku',
+    images: [{ url: '/og/mercury.png', width: 1200, height: 630, alt: 'Mercury, a daily thermo sudoku from Mind Loft' }],
+    title: 'Mercury: A Daily Thermo Sudoku',
     description:
       'Digits climb the thermometers: a 9×9 sudoku with pure visual ordering and one logical solution, from Mind Loft, daily.',
     url: '/mercury',
@@ -37,7 +37,7 @@ export const metadata = {
   twitter: {
     images: ['/og/mercury.png'],
     card: 'summary_large_image',
-    title: 'Mercury — A Daily Thermo Sudoku',
+    title: 'Mercury: A Daily Thermo Sudoku',
     description:
       'Digits climb the thermometers: a 9×9 sudoku with pure visual ordering. A clean solve wins and the clock breaks the tie.',
   },
@@ -47,15 +47,16 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Mercury',
-  alternateName: 'Mercury — Daily Thermo Sudoku',
+  alternateName: 'Mercury: Daily Thermo Sudoku',
   url: `${SITE_URL}/mercury`,
   description:
-    'A free daily thermo sudoku: an ordinary 9×9 grid plus thermometers along which the digits strictly increase from bulb to tip. Each board has one solution reachable by pure logic — solve it for a perfect score, and ties break on fastest time.',
+    'A free daily thermo sudoku: an ordinary 9×9 grid plus thermometers along which the digits strictly increase from bulb to tip. Each board has one solution reachable by pure logic. Solve it for a perfect score, and ties break on fastest time.',
   genre: ['Logic puzzle', 'Sudoku', 'Number puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/mercury.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

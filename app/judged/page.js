@@ -1,4 +1,6 @@
 import { Suspense } from 'react';
+import StageTail from '../StageTail';
+import { runBreadcrumbJsonLd } from '@/lib/run-seo';
 import JudgedClient from './JudgedClient';
 import { SITE_URL } from '@/lib/site';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
@@ -35,7 +37,7 @@ export async function generateMetadata({ searchParams }) {
   const d = String((searchParams && searchParams.d) || '');
   const img = ok ? `/judged/card?s=${s}${/^\d{1,3}$/.test(t) ? `&t=${t}` : ''}${/^\d{4}-\d{2}-\d{2}$/.test(d) ? `&d=${d}` : ''}` : '/judged/card';
   const title = 'Judged: Five Logic Cases, One Admissions Letter | Mind Loft';
-  const description = 'A free daily run of five legal-reasoning puzzles: if-then rules to sort, liars under oath, hearsay, an LSAT-style logic game and an alibi, scored half on accuracy and half on speed. Your score decides which law school lets you in, up to Yale.';
+  const description = 'A free daily run of five legal-reasoning puzzles: if-then rules, liars under oath, hearsay, a logic game and an alibi. Right and fast picks your law school.';
   return {
     title, description,
     alternates: { canonical: '/judged' },
@@ -72,14 +74,17 @@ export default function JudgedPage() {
     '@context': 'https://schema.org', '@type': 'Game', name: 'Judged', url: `${SITE_URL}/judged`,
     description: 'A free daily run of five legal-reasoning logic puzzles from Mind Loft: Ergo, Sworn, Hearsay, Docket and Alibi.',
     gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
+    image: `${SITE_URL}/judged/card`,
     publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
   };
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(runBreadcrumbJsonLd('deduction')) }} />
       <Suspense fallback={null}>
         <JudgedClient dateLabel={dateLabel} dateShort={dateShort} sections={sections} />
       </Suspense>
+      <StageTail run="deduction" theme="dark" />
     </>
   );
 }

@@ -23,22 +23,23 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/blitz.png', width: 1200, height: 630, alt: 'Blitz — a daily puzzle from Mind Loft' }],
-    title: 'Blitz — The Daily Mental Math Ladder',
+    images: [{ url: '/og/blitz.png', width: 1200, height: 630, alt: 'Blitz, a daily puzzle from Mind Loft' }],
+    title: 'Blitz: The Daily Mental Math Ladder',
     description: 'Twenty problems, fifteen seconds each, one life. How far up can you get in your head?',
     url: '/blitz', type: 'website', siteName: 'Mind Loft',
   },
-  twitter: { images: ['/og/blitz.png'], card: 'summary_large_image', title: 'Blitz — The Daily Mental Math Ladder', description: 'Twenty problems, fifteen seconds each, one life. No calculator, no second chances.' },
+  twitter: { images: ['/og/blitz.png'], card: 'summary_large_image', title: 'Blitz: The Daily Mental Math Ladder', description: 'Twenty problems, fifteen seconds each, one life. No calculator, no second chances.' },
 };
 
 const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Blitz',
-  alternateName: 'Blitz — Daily Mental Math', url: `${SITE_URL}/blitz`,
+  alternateName: 'Blitz: Daily Mental Math', url: `${SITE_URL}/blitz`,
   description:
     'A free daily mental arithmetic game. Twenty multiple-choice problems climb from two-digit addition and the times tables to two-digit multiplication, awkward percentages, order of operations and cubes, in five rounds of four. A wrong answer, or a fifteen-second clock at zero, ends the run, and every problem cleared is a point. Every wrong option on the board is a real arithmetic mistake rather than filler, so the answer cannot be picked out by its last digit or its size. Everyone plays the same twenty problems in the same order each day, and the daily leaderboard ranks the longest runs with ties broken by time.',
   genre: ['Educational', 'Puzzle', 'Mental math'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/blitz.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 const breadcrumbJsonLd = {

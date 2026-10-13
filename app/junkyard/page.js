@@ -31,28 +31,29 @@ export const metadata = {
   openGraph: {
     // Static share card, per the 2026-09-02 rule: a new daily ships
     // public/og/<key>.png plus these two lines, never an opengraph-image route.
-    images: [{ url: '/og/junkyard.png', width: 1200, height: 630, alt: 'Junkyard — a daily puzzle from Mind Loft' }],
-    title: 'Junkyard — The Biggest Daily Sliding Block Puzzle',
+    images: [{ url: '/og/junkyard.png', width: 1200, height: 630, alt: 'Junkyard, a daily puzzle from Mind Loft' }],
+    title: 'Junkyard: The Biggest Daily Sliding Block Puzzle',
     description: 'The biggest lot in the family. Eight by eight, close to thirty blocks in your way, and one gap in the wall. A new jam from Mind Loft, daily.',
     url: '/junkyard', type: 'website', siteName: 'Mind Loft',
   },
   twitter: {
     images: ['/og/junkyard.png'],
     card: 'summary_large_image',
-    title: 'Junkyard — The Biggest Daily Sliding Block Puzzle',
+    title: 'Junkyard: The Biggest Daily Sliding Block Puzzle',
     description: 'An eight by eight lot, blocked in on all four sides, one gap in the wall. Slide your way out.',
   },
 };
 
 const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Junkyard',
-  alternateName: 'Junkyard — The Biggest Daily Sliding Block Puzzle',
+  alternateName: 'Junkyard: The Biggest Daily Sliding Block Puzzle',
   url: `${SITE_URL}/junkyard`,
   description:
     'A free daily sliding-block puzzle, and the biggest board in the Parker family. Close to thirty blocks fill an eight by eight lot and each slides along one axis only; the red block must reach the exit gap in the right-hand wall. Every board is machine generated and solved exactly by breadth-first search, so the perfect line is the true fewest moves that exist rather than an estimate, and par sits a cushion above it as the number a clean solve lands on. Perfect scores ten and par scores eight. The week climbs: Monday to Wednesday run 22 to 35 moves, Thursday to Saturday 31 to 47, and Sundays 44 and up.',
   genre: ['Sliding block puzzle', 'Logic puzzle', 'Puzzle'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/junkyard.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 const breadcrumbJsonLd = {

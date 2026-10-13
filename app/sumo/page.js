@@ -19,7 +19,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Greater-Than Sudoku (Inequality Sudoku): Sumo | Mind Loft',
   description:
-    'A free daily greater-than sudoku, also called inequality sudoku. An ordinary 9×9 plus 108 signs inside the boxes saying which square is bigger. One logical solution, notes and a free hint, a new board every day, and a Sunday Edition with no digits at all.',
+    'A free daily greater-than sudoku (inequality sudoku): a 9×9 with signs inside every box showing which square is bigger. One logical solution, new every day.',
   alternates: { canonical: '/sumo' },
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
@@ -54,6 +54,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/sumo.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

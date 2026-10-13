@@ -24,8 +24,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/suffice.png', width: 1200, height: 630, alt: 'Suffice — a daily data-sufficiency puzzle from Mind Loft' }],
-    title: 'Suffice — Decide What Is Enough',
+    images: [{ url: '/og/suffice.png', width: 1200, height: 630, alt: 'Suffice, a daily data-sufficiency puzzle from Mind Loft' }],
+    title: 'Suffice: Decide What Is Enough',
     description:
       'You are given a question and two statements, and you never answer the question. You say whether the statements settle it. A new set every day. From Mind Loft.',
     url: '/suffice',
@@ -35,7 +35,7 @@ export const metadata = {
   twitter: {
     images: ['/og/suffice.png'],
     card: 'summary_large_image',
-    title: 'Suffice — Decide What Is Enough',
+    title: 'Suffice: Decide What Is Enough',
     description: 'A question you never answer and two statements. Is that enough? Today’s set is up.',
   },
 };
@@ -44,7 +44,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Suffice',
-  alternateName: 'Suffice — Daily Data Sufficiency Puzzle',
+  alternateName: 'Suffice: Daily Data Sufficiency Puzzle',
   url: `${SITE_URL}/suffice`,
   description:
     'A free daily logic game in the data-sufficiency format: each item pairs a question with two statements, and the player decides which statements are enough to settle it rather than answering the question, by answering three yes-or-no questions: is the first statement alone enough, is the second alone enough, and are the two enough together. Every item is machine-proved by exhaustive decision before it ships.',

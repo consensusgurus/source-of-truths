@@ -29,8 +29,8 @@ export const metadata = {
   openGraph: {
     // Static share card, pre-rendered once into public/og/ (see the 2026-09-02
     // build-time note in CLAUDE.md): a new daily ships the PNG, not a route.
-    images: [{ url: '/og/finesse.png', width: 1200, height: 630, alt: 'Finesse — a daily double dummy from Mind Loft' }],
-    title: 'Finesse — A Daily Double Dummy',
+    images: [{ url: '/og/finesse.png', width: 1200, height: 630, alt: 'Finesse, a daily double dummy from Mind Loft' }],
+    title: 'Finesse: A Daily Double Dummy',
     description:
       'All four hands face up, one suit trumps, a perfect defence. Take the tricks the contract asks for. A daily bridge-style card puzzle with no luck in it, from Mind Loft.',
     url: '/finesse',
@@ -40,7 +40,7 @@ export const metadata = {
   twitter: {
     images: ['/og/finesse.png'],
     card: 'summary_large_image',
-    title: 'Finesse — A Daily Double Dummy',
+    title: 'Finesse: A Daily Double Dummy',
     description:
       'Four hands face up, one suit trumps, a defence that never errs. Find the line that brings the contract home.',
   },
@@ -50,7 +50,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Finesse',
-  alternateName: 'Finesse — Daily Double Dummy',
+  alternateName: 'Finesse: Daily Double Dummy',
   url: `${SITE_URL}/finesse`,
   description:
     'A free daily double dummy: a bridge-style card puzzle with all four hands face up. You play South and the dummy opposite, one suit is trumps, and the contract names how many tricks you must take. The defenders are played by an exact solver, so the deal has no luck in it. Every board is proved exactly makeable before it ships, and ties break on fastest time.',
@@ -59,6 +59,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/finesse.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

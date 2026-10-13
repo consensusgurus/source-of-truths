@@ -27,28 +27,29 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/check.png', width: 1200, height: 630, alt: 'Check — a daily puzzle from Mind Loft' }],
-    title: 'Check — A Daily Checkers Puzzle',
+    images: [{ url: '/og/check.png', width: 1200, height: 630, alt: 'Check, a daily puzzle from Mind Loft' }],
+    title: 'Check: A Daily Checkers Puzzle',
     description: 'One move sweeps the board, and there is no take-back. A new shot from Mind Loft, daily.',
     url: '/check', type: 'website', siteName: 'Mind Loft',
   },
   twitter: {
     images: ['/og/check.png'],
     card: 'summary_large_image',
-    title: 'Check — A Daily Checkers Puzzle',
+    title: 'Check: A Daily Checkers Puzzle',
     description: 'Take every black piece in three moves. Only one first move does it.',
   },
 };
 
 const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Check',
-  alternateName: 'Check — Daily Checkers Puzzle',
+  alternateName: 'Check: Daily Checkers Puzzle',
   url: `${SITE_URL}/check`,
   description:
     'A free daily checkers puzzle. Each board is red to play with a forced sweep: capture every black piece within a fixed number of moves, three on weekdays and four on Sundays, with exactly one first move that works. A wrong move is not refused: the engine answers and you finish the board knowing the sweep has gone.',
   genre: ['Checkers puzzle', 'Draughts puzzle', 'Logic puzzle', 'Puzzle'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/check.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 const breadcrumbJsonLd = {

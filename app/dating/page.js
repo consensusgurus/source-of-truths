@@ -13,7 +13,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily History Ordering Puzzle: Dating | Mind Loft',
   description:
-    'A free daily history puzzle — put five moments from history in chronological order in three checks or fewer. Every correct placement locks in with its year. New puzzle every day, and six moments in the Sunday Edition.',
+    'A free daily history puzzle: put five moments from history in chronological order in three checks or fewer. Every correct placement locks in with its year. New puzzle every day, and six moments in the Sunday Edition.',
   alternates: { canonical: '/dating' },
   manifest: '/api/pwa-manifest?game=dating',
   icons: {
@@ -31,8 +31,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/dating.png', width: 1200, height: 630, alt: 'Dating — a daily put-history-in-order puzzle from Mind Loft' }],
-    title: 'Dating — A Daily Put-History-In-Order Puzzle',
+    images: [{ url: '/og/dating.png', width: 1200, height: 630, alt: 'Dating, a daily put-history-in-order puzzle from Mind Loft' }],
+    title: 'Dating: A Daily Put-History-In-Order Puzzle',
     description:
       'Five moments a day, shuffled out of sequence. Arrange them oldest to newest in three checks or fewer. A new history puzzle from Mind Loft.',
     url: '/dating',
@@ -42,7 +42,7 @@ export const metadata = {
   twitter: {
     images: ['/og/dating.png'],
     card: 'summary_large_image',
-    title: 'Dating — A Daily Put-History-In-Order Puzzle',
+    title: 'Dating: A Daily Put-History-In-Order Puzzle',
     description:
       'Five moments a day. Put them in chronological order in three checks or fewer.',
   },
@@ -52,10 +52,10 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Dating',
-  alternateName: 'Dating — Daily History Ordering Puzzle',
+  alternateName: 'Dating: Daily History Ordering Puzzle',
   url: `${SITE_URL}/dating`,
   description:
-    'A free daily history puzzle: five events, shuffled. Arrange them in chronological order — each of your three checks locks the events you placed correctly and reveals their years.',
+    'A free daily history puzzle: five events, shuffled. Arrange them in chronological order. Each of your three checks locks the events you placed correctly and reveals their years.',
   genre: ['History puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

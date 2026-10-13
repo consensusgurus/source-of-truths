@@ -15,7 +15,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Daily Cryptarithm, Crack the Letter Math: Cipher | Mind Loft',
   description:
-    'A free daily cryptarithm — one WORD + WORD = WORD equation where every letter hides a different digit. Exactly one solution, no guessing required. Crack it clean for a perfect 10, and take on four addends in the Sunday Edition.',
+    'A free daily cryptarithm: one WORD + WORD = WORD equation where every letter hides a different digit. Exactly one solution, no guessing required. Crack it clean for a perfect 10, and take on four addends in the Sunday Edition.',
   alternates: { canonical: '/cipher' },
   manifest: '/api/pwa-manifest?game=cipher',
   icons: {
@@ -33,8 +33,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/cipher.png', width: 1200, height: 630, alt: 'Cipher — the daily cryptarithm from Mind Loft' }],
-    title: 'Cipher — The Daily Cryptarithm',
+    images: [{ url: '/og/cipher.png', width: 1200, height: 630, alt: 'Cipher, the daily cryptarithm from Mind Loft' }],
+    title: 'Cipher: The Daily Cryptarithm',
     description:
       'One letter-arithmetic equation a day: every letter is a different digit, and there is exactly one solution. From Mind Loft.',
     url: '/cipher',
@@ -44,9 +44,9 @@ export const metadata = {
   twitter: {
     images: ['/og/cipher.png'],
     card: 'summary_large_image',
-    title: 'Cipher — The Daily Cryptarithm',
+    title: 'Cipher: The Daily Cryptarithm',
     description:
-      'Every letter hides a digit. One equation a day, exactly one solution — crack it clean for a perfect 10.',
+      'Every letter hides a digit. One equation a day, exactly one solution. Crack it clean for a perfect 10.',
   },
 };
 
@@ -54,10 +54,10 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Cipher',
-  alternateName: 'Cipher — Daily Cryptarithm Puzzle',
+  alternateName: 'Cipher: Daily Cryptarithm Puzzle',
   url: `${SITE_URL}/cipher`,
   description:
-    'A free daily cryptarithm (alphametic) puzzle: one WORD + WORD = WORD equation where every letter stands for a different digit. The week ramps from two addends to three, with four in the Sunday Edition. Each puzzle is machine-verified to have exactly one solution, so pure column logic cracks it — no guessing.',
+    'A free daily cryptarithm (alphametic) puzzle: one WORD + WORD = WORD equation where every letter stands for a different digit. The week ramps from two addends to three, with four in the Sunday Edition. Each puzzle is machine-verified to have exactly one solution, so pure column logic cracks it. No guessing.',
   genre: ['Number puzzle', 'Logic puzzle', 'Math puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

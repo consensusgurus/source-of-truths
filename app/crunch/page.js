@@ -19,22 +19,23 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/crunch.png', width: 1200, height: 630, alt: 'Crunch — a daily puzzle from Mind Loft' }],
-    title: 'Crunch — A Daily Numbers Game',
+    images: [{ url: '/og/crunch.png', width: 1200, height: 630, alt: 'Crunch, a daily puzzle from Mind Loft' }],
+    title: 'Crunch: A Daily Numbers Game',
     description: 'Six numbers, four operations, one target. Always reachable, rarely obvious. A new round from Mind Loft, daily.',
     url: '/crunch', type: 'website', siteName: 'Mind Loft',
   },
-  twitter: { images: ['/og/crunch.png'], card: 'summary_large_image', title: 'Crunch — A Daily Numbers Game', description: 'Six numbers and a target. Can you get there exactly?' },
+  twitter: { images: ['/og/crunch.png'], card: 'summary_large_image', title: 'Crunch: A Daily Numbers Game', description: 'Six numbers and a target. Can you get there exactly?' },
 };
 
 const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Crunch',
-  alternateName: 'Rung — Daily Word Ladder', url: `${SITE_URL}/crunch`,
+  alternateName: 'Rung: Daily Word Ladder', url: `${SITE_URL}/crunch`,
   description:
     'A free daily numbers game in the Countdown mould. Six numbers, the four operations, and a three-digit target. Every intermediate value must be a positive whole number, and you need not use all six. Every round is proved to have an exact solution by two independent solvers before it ships, and the difficulty is set by how many of the six the shortest solution needs: four or five on weekdays, all six on Sundays. Hitting the target exactly scores ten, within five scores seven, within ten scores five.',
   genre: ['Numbers game', 'Arithmetic puzzle', 'Puzzle'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/crunch.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 const breadcrumbJsonLd = {

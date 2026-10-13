@@ -31,8 +31,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/calc.png', width: 1200, height: 630, alt: 'Calc — a daily number path puzzle from Mind Loft' }],
-    title: 'Calc — Walk the Calculator',
+    images: [{ url: '/og/calc.png', width: 1200, height: 630, alt: 'Calc, a daily number path puzzle from Mind Loft' }],
+    title: 'Calc: Walk the Calculator',
     description:
       'Step across a grid of numbers and operators from the first button to the last, and land on exactly the target. A free daily number puzzle from Mind Loft.',
     url: '/calc',
@@ -42,7 +42,7 @@ export const metadata = {
   twitter: {
     images: ['/og/calc.png'],
     card: 'summary_large_image',
-    title: 'Calc — Walk the Calculator',
+    title: 'Calc: Walk the Calculator',
     description:
       'One route across the buttons comes out at the target. Find it. A free daily number puzzle from Mind Loft.',
   },
@@ -52,7 +52,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Calc',
-  alternateName: 'Calc — Daily Number Path Puzzle',
+  alternateName: 'Calc: Daily Number Path Puzzle',
   url: `${SITE_URL}/calc`,
   description:
     'A free daily number puzzle: walk across a grid of calculator buttons from the top-left to the bottom-right, one touching button at a time, building a sum that reads left to right. Land on exactly the target to win. No button may be used twice, and a division that would not come out whole is not a legal step.',
@@ -61,6 +61,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/calc.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

@@ -1,4 +1,6 @@
 import { Suspense } from 'react';
+import StageTail from '../StageTail';
+import { runBreadcrumbJsonLd } from '@/lib/run-seo';
 import PassportClient from './PassportClient';
 import { PUZZLES } from './puzzles';
 import { DAYS } from './days';
@@ -24,7 +26,7 @@ export async function generateMetadata({ searchParams }) {
   const ok = /^\d{1,2}(-\d{1,2}){4}$/.test(s);
   const img = ok ? `/passport/card?s=${s}` : '/passport/card';
   const title = 'Passport: One Mystery Country, Five Rounds | Mind Loft';
-  const description = 'A free daily geography run. One mystery country, five rounds: its landmark, its flag, its neighbors, its capital and its size. Score out of 50 and travel home on a real passport.';
+  const description = 'A free daily geography run: one mystery country in five rounds, from landmark and flag to neighbors, capital and size. Score out of 50 and earn a passport.';
   const shareTitle = 'Passport · Mind Loft';
   const shareDesc = 'One mystery country, five rounds, one score out of 50. Which passport do you travel home on?';
   return {
@@ -42,6 +44,7 @@ const gameJsonLd = {
     'A free daily geography game. Each day has one mystery country, played in five rounds of 10 points: name the country from a landmark photo that zooms out with every wrong guess, build its flag in three picks, name its land neighbors before three strikes, drop a pin on its capital, and call five countries bigger or smaller. The score out of 50 decides which real passport, from the Henley Passport Index, the player travels home on. Everyone gets the same country each day.',
   genre: ['Trivia', 'Geography Quiz', 'Quiz', 'Puzzle'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
+    image: `${SITE_URL}/og/passport.png`,
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
@@ -97,6 +100,7 @@ export default function PassportPage({ searchParams }) {
       <Suspense fallback={null}>
         <PassportClient key={picked.num} puzzles={visible} day={day} forceNum={forceNum} />
       </Suspense>
+      <StageTail run="passport" theme="dark" />
     </>
   );
 }

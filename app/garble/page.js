@@ -13,7 +13,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Word Scramble Puzzle: Garble | Mind Loft',
   description:
-    'A free daily word scramble puzzle — untangle five garbled words, feed their gold letters into a clued finale, and finish in the fewest misses. New puzzle every day, and a six-letter Sunday Edition each week.',
+    'A free daily word scramble puzzle: untangle five garbled words, feed their gold letters into a clued finale, and finish in the fewest misses. New puzzle every day, and a six-letter Sunday Edition each week.',
   alternates: { canonical: '/garble' },
   manifest: '/api/pwa-manifest?game=garble',
   icons: {
@@ -31,8 +31,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/garble.png', width: 1200, height: 630, alt: 'Garble — a daily word scramble puzzle from Mind Loft' }],
-    title: 'Garble — A Daily Word Scramble',
+    images: [{ url: '/og/garble.png', width: 1200, height: 630, alt: 'Garble, a daily word scramble puzzle from Mind Loft' }],
+    title: 'Garble: A Daily Word Scramble',
     description:
       'Five garbled words, one clued finale. Untangle it in the fewest misses. A new word puzzle from Mind Loft.',
     url: '/garble',
@@ -42,7 +42,7 @@ export const metadata = {
   twitter: {
     images: ['/og/garble.png'],
     card: 'summary_large_image',
-    title: 'Garble — A Daily Word Scramble',
+    title: 'Garble: A Daily Word Scramble',
     description: 'Five garbled words, one clued finale. Untangle it in the fewest misses.',
   },
 };
@@ -51,10 +51,10 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Garble',
-  alternateName: 'Garble — Daily Word Scramble',
+  alternateName: 'Garble: Daily Word Scramble',
   url: `${SITE_URL}/garble`,
   description:
-    'A free daily word scramble puzzle: untangle five garbled words using exactly the letters shown. Each solution donates its gold letters to a clued finale — solve the finale any time to end the puzzle. Fewest misses wins the tiebreak.',
+    'A free daily word scramble puzzle: untangle five garbled words using exactly the letters shown. Each solution donates its gold letters to a clued finale. Solve the finale any time to end the puzzle. Fewest misses wins the tiebreak.',
   genre: ['Word puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

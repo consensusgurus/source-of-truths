@@ -19,7 +19,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Daily Logic Puzzle, Solve the Whodunit: Alibi | Mind Loft',
   description:
-    'A free daily logic deduction puzzle — four suspects, four rooms, four departure times, four curious items, and five of each in the Sunday Edition. Every witness statement is true; work the deduction boards and close the case. A new mystery every day.',
+    'A free daily logic deduction puzzle: four suspects, four rooms, four departure times, four curious items, and five of each in the Sunday Edition. Every witness statement is true; work the deduction boards and close the case. A new mystery every day.',
   alternates: { canonical: '/alibi' },
   manifest: '/api/pwa-manifest?game=alibi',
   icons: {
@@ -36,9 +36,9 @@ export const metadata = {
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Alibi' },
   openGraph: {
     images: [{ url: '/og/alibi.png', width: 1200, height: 630, alt: 'Alibi: a daily logic puzzle from Mind Loft' }],
-    title: 'Alibi — A Fresh Mystery Every Day',
+    title: 'Alibi: A Fresh Mystery Every Day',
     description:
-      'Four suspects, one stolen treasure. Work the deduction boards, corner the truth, and close the case — every statement is true, and there is exactly one solution. From Mind Loft.',
+      'Four suspects, one stolen treasure. Work the deduction boards, corner the truth, and close the case. Every statement is true, and there is exactly one solution. From Mind Loft.',
     url: '/alibi',
     type: 'website',
     siteName: 'Mind Loft',
@@ -46,7 +46,7 @@ export const metadata = {
   twitter: {
     images: ['/og/alibi.png'],
     card: 'summary_large_image',
-    title: 'Alibi — A Fresh Mystery Every Day',
+    title: 'Alibi: A Fresh Mystery Every Day',
     description:
       'Four suspects, three deduction boards, exactly one solution. Close tonight’s case.',
   },
@@ -56,10 +56,10 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Alibi',
-  alternateName: 'Alibi — Daily Logic Deduction Puzzle',
+  alternateName: 'Alibi: Daily Logic Deduction Puzzle',
   url: `${SITE_URL}/alibi`,
   description:
-    'A free daily Einstein-style logic puzzle dressed as a whodunit: four suspects, four rooms, four departure times, four items, with a five-suspect Sunday Edition. Every witness statement is true, and each case is machine-verified to have exactly one solution — pure deduction closes it.',
+    'A free daily Einstein-style logic puzzle dressed as a whodunit: four suspects, four rooms, four departure times, four items, with a five-suspect Sunday Edition. Every witness statement is true, and each case is machine-verified to have exactly one solution. Pure deduction closes it.',
   genre: ['Logic puzzle', 'Deduction puzzle', 'Mystery puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

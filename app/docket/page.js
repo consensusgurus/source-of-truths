@@ -30,8 +30,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/docket.png', width: 1200, height: 630, alt: 'Docket — a daily logic game from Mind Loft' }],
-    title: 'Docket — One Setup, Five Deductions',
+    images: [{ url: '/og/docket.png', width: 1200, height: 630, alt: 'Docket, a daily logic game from Mind Loft' }],
+    title: 'Docket: One Setup, Five Deductions',
     description:
       'Read a small formal world and a few conditions, work out what they force, then answer five questions off the same diagram. The reasoning format a well known standardized test retired. A new one every day, from Mind Loft.',
     url: '/docket',
@@ -41,7 +41,7 @@ export const metadata = {
   twitter: {
     images: ['/og/docket.png'],
     card: 'summary_large_image',
-    title: 'Docket — One Setup, Five Deductions',
+    title: 'Docket: One Setup, Five Deductions',
     description: 'A small world, a few conditions, and five questions about what they force. Today’s docket is up.',
   },
 };
@@ -50,7 +50,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Docket',
-  alternateName: 'Docket — Daily Logic Game',
+  alternateName: 'Docket: Daily Logic Game',
   url: `${SITE_URL}/docket`,
   description:
     'A free daily analytical reasoning puzzle. Each day gives a setup describing a small world, a numbered list of conditions constraining it, and five multiple-choice questions about what the conditions do and do not force. Every answer is proved by exhaustive enumeration of the arrangements the conditions allow before the puzzle ships.',

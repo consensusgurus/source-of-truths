@@ -21,8 +21,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/fib.png', width: 1200, height: 630, alt: 'Fib — a daily logic puzzle with one lying clue, from Mind Loft' }],
-    title: 'Fib — One Clue Is Lying',
+    images: [{ url: '/og/fib.png', width: 1200, height: 630, alt: 'Fib, a daily logic puzzle with one lying clue, from Mind Loft' }],
+    title: 'Fib: One Clue Is Lying',
     description:
       'A Latin square with inequality clues, except one clue is false. Solve the grid and name the liar. A new logic puzzle from Mind Loft, daily.',
     url: '/fib',
@@ -32,7 +32,7 @@ export const metadata = {
   twitter: {
     images: ['/og/fib.png'],
     card: 'summary_large_image',
-    title: 'Fib — One Clue Is Lying',
+    title: 'Fib: One Clue Is Lying',
     description: 'The open end of every sign points at the larger number. One of them is lying. Solve the grid, then name the liar.',
   },
 };
@@ -41,7 +41,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Fib',
-  alternateName: 'Fib — Daily Logic Puzzle',
+  alternateName: 'Fib: Daily Logic Puzzle',
   url: `${SITE_URL}/fib`,
   description:
     'A free daily logic puzzle: fill an n by n grid so every row and column holds each number once, guided by inequality signs between neighbouring squares whose open end points at the larger number. Exactly one sign is false, so a contradiction may be your own mistake or may be the lie. Solve the grid and accuse the lying sign. Each board admits exactly one grid and exactly one lying clue, so the answer is provable with no guessing. A clean solve earns a perfect score, and ties break on fewest errors then fastest time.',
@@ -50,6 +50,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/fib.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

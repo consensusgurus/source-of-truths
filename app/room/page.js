@@ -1,4 +1,6 @@
 import { Suspense } from 'react';
+import StageTail from '../StageTail';
+import { runBreadcrumbJsonLd } from '@/lib/run-seo';
 import RoomClient from './RoomClient';
 import { SITE_URL } from '@/lib/site';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
@@ -41,7 +43,7 @@ export async function generateMetadata({ searchParams }) {
   const ok = /^\d{1,3}(-\d{1,3}){2}$/.test(s);
   const img = ok ? `/room/card?s=${s}${/^\d{1,3}$/.test(t) ? `&t=${t}` : ''}${/^\d{4}-\d{2}-\d{2}$/.test(d) ? `&d=${d}` : ''}` : '/room/card';
   const title = 'Read the Room: Three Crowd Games, No Answer Key | Mind Loft';
-  const description = 'A free daily run of three crowd psychology games: dodge the herd in Outwit, call its order in Outrank, and say what it said in Feud. There is no answer key, only tonight’s players, and your read of the room moves until midnight.';
+  const description = 'A free daily run of three crowd games: Outwit, Outrank and Feud. No answer key, only tonight\'s players, and your read of the room moves until midnight.';
   return {
     title, description,
     alternates: { canonical: '/room' },
@@ -78,14 +80,17 @@ export default function RoomPage() {
     '@context': 'https://schema.org', '@type': 'Game', name: 'Read the Room', url: `${SITE_URL}/room`,
     description: 'A free daily run of three crowd psychology games from Mind Loft: Outwit, Outrank and Feud.',
     gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
+    image: `${SITE_URL}/room/card`,
     publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
   };
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(runBreadcrumbJsonLd('room')) }} />
       <Suspense fallback={null}>
         <RoomClient dateLabel={dateLabel} dateShort={dateShort} sections={sections} />
       </Suspense>
+      <StageTail run="room" theme="dark" />
     </>
   );
 }

@@ -31,8 +31,8 @@ export const metadata = {
     apple: [{ url: '/venn-icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Venn' },
-  openGraph: { images: [{ url: '/og/venn.png', width: 1200, height: 630, alt: 'Venn — a daily logic puzzle from Mind Loft' }], title: 'Venn — Sort Every Word Into Its Region', description: 'Three circles, twelve words, seven regions, and a count on every one. The counts are the proof: a word in the wrong place is a number that refuses to add up.', url: '/venn', type: 'website', siteName: 'Mind Loft' },
-  twitter: { images: ['/og/venn.png'], card: 'summary_large_image', title: 'Venn — Sort Every Word Into Its Region', description: 'Three circles, twelve words, seven regions, and a count on every one. The counts are the proof: a word in the wrong place is a number that refuses to add up.' },
+  openGraph: { images: [{ url: '/og/venn.png', width: 1200, height: 630, alt: 'Venn, a daily logic puzzle from Mind Loft' }], title: 'Venn: Sort Every Word Into Its Region', description: 'Three circles, twelve words, seven regions, and a count on every one. The counts are the proof: a word in the wrong place is a number that refuses to add up.', url: '/venn', type: 'website', siteName: 'Mind Loft' },
+  twitter: { images: ['/og/venn.png'], card: 'summary_large_image', title: 'Venn: Sort Every Word Into Its Region', description: 'Three circles, twelve words, seven regions, and a count on every one. The counts are the proof: a word in the wrong place is a number that refuses to add up.' },
 };
 
 const gameJsonLd = {

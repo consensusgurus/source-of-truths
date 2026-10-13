@@ -14,9 +14,9 @@ import { categoryCrumb } from '@/lib/game-seo';
 // sentences with finer copy-desk calls.
 
 export const metadata = {
-  title: 'Daily Copy-Desk Word Puzzle, Find the Wrong Word or Grammar Slip: Stet | Mind Loft',
+  title: 'Free Daily Copy-Editing Word Puzzle: Stet | Mind Loft',
   description:
-    "A free daily word puzzle — you're the copy editor. Almost every sentence in today's brief hides one wrong word or grammar slip (real words only, so spellcheck can't save you): free reign, should of, a mute point. But some sentences are clean — stamp those 'stet.' Tap it, fix it, keep a clean desk.",
+    "A free daily word puzzle: you're the copy editor. Almost every sentence in today's brief hides one wrong word or grammar slip (real words only, so spellcheck can't save you): free reign, should of, a mute point. But some sentences are clean. Stamp those 'stet.' Tap it, fix it, keep a clean desk.",
   alternates: { canonical: '/stet' },
   manifest: '/api/pwa-manifest?game=stet',
   icons: {
@@ -34,10 +34,10 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/stet.png', width: 1200, height: 630, alt: 'Stet — the daily copy-desk puzzle from Mind Loft' }],
-    title: 'Stet — The Daily Copy-Desk Puzzle',
+    images: [{ url: '/og/stet.png', width: 1200, height: 630, alt: 'Stet, the daily copy-desk puzzle from Mind Loft' }],
+    title: 'Stet: The Daily Copy-Desk Puzzle',
     description:
-      'One news brief a day, one wrong word per sentence — maybe. Every error is a real word, so spellcheck is no help. Tap it, fix it — or stamp clean copy stet. From Mind Loft.',
+      'A free daily copy-editing puzzle: one news brief, a wrong word or grammar slip hiding in each sentence, or none. Fix the slip, or stamp clean copy stet.',
     url: '/stet',
     type: 'website',
     siteName: 'Mind Loft',
@@ -45,9 +45,9 @@ export const metadata = {
   twitter: {
     images: ['/og/stet.png'],
     card: 'summary_large_image',
-    title: 'Stet — The Daily Copy-Desk Puzzle',
+    title: 'Stet: The Daily Copy-Desk Puzzle',
     description:
-      'Almost every sentence hides one wrong word. Spellcheck can’t see it. Can you? Careful — some are clean.',
+      'Almost every sentence hides one wrong word. Spellcheck can’t see it. Can you? Careful. Some are clean.',
   },
 };
 
@@ -55,10 +55,10 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Stet',
-  alternateName: 'Stet — Daily Copy-Desk Word Puzzle',
+  alternateName: 'Stet: Daily Copy-Desk Word Puzzle',
   url: `${SITE_URL}/stet`,
   description:
-    'A free daily word puzzle: a short news brief where almost every sentence hides one wrong word — an eggcorn, a swapped homophone, a malaprop, a grammar slip. Every error is a real word, so a spellchecker sails past it. Tap the word, type the fix — or stamp clean copy stet.',
+    'A free daily word puzzle: a short news brief where almost every sentence hides one wrong word: an eggcorn, a swapped homophone, a malaprop, a grammar slip. Every error is a real word, so a spellchecker sails past it. Tap the word, type the fix. Or stamp clean copy stet.',
   genre: ['Word puzzle', 'Language puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

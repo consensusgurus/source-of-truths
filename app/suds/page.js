@@ -15,7 +15,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Sudoku: Suds | Mind Loft',
   description:
-    'A free daily sudoku — fill the 9×9 grid so every row, column, and 3×3 box holds 1–9 with no repeats. One logical solution, notes and a free hint, a new board every day, and a harder Edition on Sundays.',
+    'A free daily sudoku: fill the 9×9 grid so every row, column, and 3×3 box holds 1–9 with no repeats. One logical solution, notes and a free hint, a new board every day, and a harder Edition on Sundays.',
   alternates: { canonical: '/suds' },
   manifest: '/api/pwa-manifest?game=suds',
   icons: {
@@ -33,8 +33,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/suds.png', width: 1200, height: 630, alt: 'Suds — a daily sudoku from Mind Loft' }],
-    title: 'Suds — A Daily Sudoku',
+    images: [{ url: '/og/suds.png', width: 1200, height: 630, alt: 'Suds, a daily sudoku from Mind Loft' }],
+    title: 'Suds: A Daily Sudoku',
     description:
       'Fill the 9×9 grid so every row, column, and box holds 1–9 once. One solution, clean solve wins. A new sudoku from Mind Loft, daily.',
     url: '/suds',
@@ -44,7 +44,7 @@ export const metadata = {
   twitter: {
     images: ['/og/suds.png'],
     card: 'summary_large_image',
-    title: 'Suds — A Daily Sudoku',
+    title: 'Suds: A Daily Sudoku',
     description:
       'Fill the 9×9 grid so every row, column, and box holds 1–9 once. A clean, error-free solve wins.',
   },
@@ -54,10 +54,10 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Suds',
-  alternateName: 'Suds — Daily Sudoku',
+  alternateName: 'Suds: Daily Sudoku',
   url: `${SITE_URL}/suds`,
   description:
-    'A free daily sudoku: fill a 9×9 grid so that every row, column, and 3×3 box contains the digits 1–9 exactly once. Each board has one logical solution — solve it with no errors for a perfect score, and ties break on fewest errors then fastest time.',
+    'A free daily sudoku: fill a 9×9 grid so that every row, column, and 3×3 box contains the digits 1–9 exactly once. Each board has one logical solution. Solve it with no errors for a perfect score, and ties break on fewest errors then fastest time.',
   genre: ['Logic puzzle', 'Sudoku', 'Number puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

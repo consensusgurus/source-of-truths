@@ -1,4 +1,6 @@
 import { Suspense } from 'react';
+import StageTail from '../StageTail';
+import { runBreadcrumbJsonLd } from '@/lib/run-seo';
 import PriceCheckClient from './PriceCheckClient';
 import { PRICE_KEYS, PRICE_GAMES } from '@/lib/price-games';
 import { shipFor } from '@/lib/price-ship';
@@ -25,7 +27,7 @@ export async function generateMetadata({ searchParams }) {
   const r2 = String((searchParams && searchParams.r) || '') === '2';
   const img = ok ? `/pricecheck/card?s=${s}${r2 ? '&r=2' : ''}` : '/pricecheck/card';
   const title = 'Price Check: Five Real Prices, Three Guesses Each | Mind Loft';
-  const description = 'A free daily run of five price games: an Amazon find, a new car, a home for sale, a flight or hotel, and a luxury piece. Three guesses at each, the first counts most, one score out of 50.';
+  const description = 'A free daily run of five price games: an Amazon find, a new car, a home, a trip and a luxury piece. Three guesses each, the first counts most, scored out of 50.';
   return {
     title, description,
     alternates: { canonical: '/pricecheck' },
@@ -67,14 +69,17 @@ export default function PriceCheckPage({ searchParams }) {
     '@context': 'https://schema.org', '@type': 'Game', name: 'Price Check', url: `${SITE_URL}/pricecheck`,
     description: 'A free daily run of five price-guessing games from Mind Loft: Pricer, Dealer, Realtor, Agent and Curator.',
     gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
+    image: `${SITE_URL}/pricecheck/card`,
     publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
   };
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(runBreadcrumbJsonLd('pricecheck')) }} />
       <Suspense fallback={null}>
         <PriceCheckClient dateLabel={dateLabel} dateShort={dateShort} sections={sections} />
       </Suspense>
+      <StageTail run="pricecheck" />
     </>
   );
 }

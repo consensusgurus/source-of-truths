@@ -18,7 +18,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Number Series Game: Series | Mind Loft',
   description:
-    'A free daily number pattern game: twenty series like 3, 7, 11, 15, 19, ? climb from steady steps and doubling to growing gaps, woven pairs, squares and cubes. Pick what comes next. Twenty seconds each, one life, everyone plays the same twenty. No app, no signup, new series every day.',
+    'A free daily number series game: twenty patterns like 3, 7, 11, 15, ? to finish. Twenty seconds each, one life, and the same twenty for everyone.',
   alternates: { canonical: '/series' },
   openGraph: {
     images: [{ url: '/og/series.png', width: 1200, height: 630, alt: 'Series, a daily puzzle from Mind Loft' }],
@@ -37,6 +37,7 @@ const gameJsonLd = {
   genre: ['Educational', 'Puzzle', 'Mental math'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/series.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 const breadcrumbJsonLd = {

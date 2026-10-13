@@ -19,11 +19,11 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily 16x16 Sudoku: Giant | Mind Loft',
   description:
-    'A free daily 16×16 sudoku (hexadoku): sixteen rows, columns and 4×4 boxes, each holding 1 to 9 and A to G once. One logical solution, notes, a phone zoom view, a new board every day, and a ninety-clue Edition on Sundays.',
+    'A free daily 16×16 sudoku (hexadoku): place 1 to 9 and A to G once in every row, column and box. One logical solution and a new board every day.',
   alternates: { canonical: '/giant' },
   openGraph: {
-    images: [{ url: '/og/giant.png', width: 1200, height: 630, alt: 'Giant — a daily 16×16 sudoku from Mind Loft' }],
-    title: 'Giant — A Daily 16×16 Sudoku',
+    images: [{ url: '/og/giant.png', width: 1200, height: 630, alt: 'Giant, a daily 16×16 sudoku from Mind Loft' }],
+    title: 'Giant: A Daily 16×16 Sudoku',
     description:
       'Sudoku at sixteen: 256 squares, 1 to 9 and A to G. One logical solution, a new board every day, from Mind Loft.',
     url: '/giant',
@@ -33,7 +33,7 @@ export const metadata = {
   twitter: {
     images: ['/og/giant.png'],
     card: 'summary_large_image',
-    title: 'Giant — A Daily 16×16 Sudoku',
+    title: 'Giant: A Daily 16×16 Sudoku',
     description:
       'Sudoku at sixteen: 256 squares, 1 to 9 and A to G. A clean solve wins and the clock breaks the tie.',
   },
@@ -43,15 +43,16 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Giant',
-  alternateName: 'Giant — Daily 16×16 Sudoku (Hexadoku)',
+  alternateName: 'Giant: Daily 16×16 Sudoku (Hexadoku)',
   url: `${SITE_URL}/giant`,
   description:
-    'A free daily 16×16 sudoku: sixteen rows, columns and 4×4 boxes, each holding the symbols 1 to 9 and A to G exactly once. Each board has one solution reachable by pure logic — solve it for a perfect score, and ties break on fastest time.',
+    'A free daily 16×16 sudoku: sixteen rows, columns and 4×4 boxes, each holding the symbols 1 to 9 and A to G exactly once. Each board has one solution reachable by pure logic. Solve it for a perfect score, and ties break on fastest time.',
   genre: ['Logic puzzle', 'Sudoku', 'Number puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/giant.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

@@ -1,4 +1,6 @@
 import { Suspense } from 'react';
+import StageTail from '../StageTail';
+import { runBreadcrumbJsonLd } from '@/lib/run-seo';
 import DojoClient from './DojoClient';
 import { SITE_URL } from '@/lib/site';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
@@ -34,7 +36,7 @@ export async function generateMetadata({ searchParams }) {
   const d = String((searchParams && searchParams.d) || '');
   const img = ok ? `/dojo/card?s=${s}${/^\d{1,3}$/.test(t) ? `&t=${t}` : ''}${/^\d{4}-\d{2}-\d{2}$/.test(d) ? `&d=${d}` : ''}` : '/dojo/card';
   const title = 'Enter the Dojo: Three Daily Sudokus, One Belt | Mind Loft';
-  const description = 'A free daily sudoku run: a six by six warm-up, the classic nine by nine, then a variant such as sandwich, killer, jigsaw or thermo. Solve all three fast to earn your belt, from white to black.';
+  const description = 'A free daily sudoku run: a 6×6 warm-up, the classic 9×9, then a variant like sandwich, jigsaw or thermo. Solve all three fast to earn your belt, white to black.';
   return {
     title, description,
     alternates: { canonical: '/dojo' },
@@ -75,14 +77,17 @@ export default async function DojoPage() {
     '@context': 'https://schema.org', '@type': 'Game', name: 'Enter the Dojo', url: `${SITE_URL}/dojo`,
     description: 'A free daily run of three sudokus from Mind Loft: Sixes, Suds and a rotating variant, ending in a belt from white to black.',
     gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
+    image: `${SITE_URL}/dojo/card`,
     publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
   };
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(runBreadcrumbJsonLd('dojo')) }} />
       <Suspense fallback={null}>
         <DojoClient dateLabel={dateLabel} dateShort={dateShort} sections={sections} clocks={clocks} />
       </Suspense>
+      <StageTail run="dojo" theme="dark" />
     </>
   );
 }

@@ -25,8 +25,8 @@ export const metadata = {
   openGraph: {
     // Static share card, pre-rendered once into public/og/ (see the 2026-09-02
     // build-time note in CLAUDE.md): a new daily ships the PNG, not a route.
-    images: [{ url: '/og/hinge.png', width: 1200, height: 630, alt: 'Hinge — a daily word chain from Mind Loft' }],
-    title: 'Hinge — A Daily Compound-Word Chain',
+    images: [{ url: '/og/hinge.png', width: 1200, height: 630, alt: 'Hinge, a daily word chain from Mind Loft' }],
+    title: 'Hinge: A Daily Compound-Word Chain',
     description:
       'First word and last word given. Fill the chain so every pair of neighbours makes a compound word or a phrase everyone knows. Any chain that holds counts.',
     url: '/hinge',
@@ -36,7 +36,7 @@ export const metadata = {
   twitter: {
     images: ['/og/hinge.png'],
     card: 'summary_large_image',
-    title: 'Hinge — A Daily Compound-Word Chain',
+    title: 'Hinge: A Daily Compound-Word Chain',
     description:
       'FIRE to PLAN in six words, every pair a compound. The clock is the score and detours break ties.',
   },
@@ -46,7 +46,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Hinge',
-  alternateName: 'Hinge — Daily Word Chain',
+  alternateName: 'Hinge: Daily Word Chain',
   url: `${SITE_URL}/hinge`,
   description:
     'A free daily word chain: the first and last word are given, and every word between has to make a compound word or a common two-word phrase with its neighbours. Any chain the vocabulary accepts counts. Finish for a perfect score; ties break on fastest time, then fewest detours.',
@@ -55,6 +55,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/hinge.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

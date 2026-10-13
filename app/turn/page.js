@@ -21,8 +21,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/turn.png', width: 1200, height: 630, alt: 'Turn — a daily Othello endgame from Mind Loft' }],
-    title: 'Turn — A Daily Othello Endgame',
+    images: [{ url: '/og/turn.png', width: 1200, height: 630, alt: 'Turn, a daily Othello endgame from Mind Loft' }],
+    title: 'Turn: A Daily Othello Endgame',
     description:
       'One square still wins it. Flip the whole row or flip one disc: only one of them holds. A new position from Mind Loft, daily.',
     url: '/turn',
@@ -32,7 +32,7 @@ export const metadata = {
   twitter: {
     images: ['/og/turn.png'],
     card: 'summary_large_image',
-    title: 'Turn — A Daily Othello Endgame',
+    title: 'Turn: A Daily Othello Endgame',
     description: 'Ten squares left, you are winning, and one square keeps it. No take-backs.',
   },
 };
@@ -41,7 +41,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Turn',
-  alternateName: 'Turn — Daily Othello Endgame Puzzle',
+  alternateName: 'Turn: Daily Othello Endgame Puzzle',
   url: `${SITE_URL}/turn`,
   description:
     'A free daily Othello (Reversi) puzzle, picked up at the endgame. Each position is a real, reachable board with you to move and the game already won, with exactly one square that keeps the win and every other square ending level or behind. A wrong square is not refused: a solver that reads the position to the last disc plays out the rest, so the win is gone for good. A player with no legal square passes, which is most of the tactics at this stage. The win scores ten, a loss one, and ties break on fewest errors then fastest time. Weekdays leave ten empty squares and Sundays twelve.',
@@ -50,6 +50,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/turn.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

@@ -29,8 +29,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/knight.png', width: 1200, height: 630, alt: 'Knight — a daily anti-knight sudoku from Mind Loft' }],
-    title: 'Knight — A Daily Anti-Knight Sudoku',
+    images: [{ url: '/og/knight.png', width: 1200, height: 630, alt: 'Knight, a daily anti-knight sudoku from Mind Loft' }],
+    title: 'Knight: A Daily Anti-Knight Sudoku',
     description:
       'One rule added to sudoku: no digit repeats a knight’s move away. Far fewer clues, one logical solution, from Mind Loft, daily.',
     url: '/knight',
@@ -40,7 +40,7 @@ export const metadata = {
   twitter: {
     images: ['/og/knight.png'],
     card: 'summary_large_image',
-    title: 'Knight — A Daily Anti-Knight Sudoku',
+    title: 'Knight: A Daily Anti-Knight Sudoku',
     description:
       'One rule added to sudoku: no digit repeats a knight’s move away. A clean solve wins and the clock breaks the tie.',
   },
@@ -50,15 +50,16 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Knight',
-  alternateName: 'Knight — Daily Anti-Knight Sudoku',
+  alternateName: 'Knight: Daily Anti-Knight Sudoku',
   url: `${SITE_URL}/knight`,
   description:
-    'A free daily anti-knight sudoku: an ordinary 9×9 grid plus one extra rule, that no digit may repeat a chess knight’s move away from itself. Each board has one solution reachable by pure logic — solve it for a perfect score, and ties break on fastest time.',
+    'A free daily anti-knight sudoku: an ordinary 9×9 grid plus one extra rule, that no digit may repeat a chess knight’s move away from itself. Each board has one solution reachable by pure logic. Solve it for a perfect score, and ties break on fastest time.',
   genre: ['Logic puzzle', 'Sudoku', 'Number puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/knight.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

@@ -15,7 +15,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Number Puzzle: Carve | Mind Loft',
   description:
-    'A free daily equal-sum puzzle — carve the grid into connected blocks, one per colored anchor, so every block adds to the same target. One valid carving, a clean solve wins, and Sundays go bigger.',
+    'A free daily equal-sum puzzle: carve the grid into connected blocks, one per colored anchor, so every block adds to the same target. One valid carving, a clean solve wins, and Sundays go bigger.',
   alternates: { canonical: '/carve' },
   manifest: '/api/pwa-manifest?game=carve',
   icons: {
@@ -33,8 +33,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/carve.png', width: 1200, height: 630, alt: 'Carve — a daily equal-sum puzzle from Mind Loft' }],
-    title: 'Carve — A Daily Equal-Sum Puzzle',
+    images: [{ url: '/og/carve.png', width: 1200, height: 630, alt: 'Carve, a daily equal-sum puzzle from Mind Loft' }],
+    title: 'Carve: A Daily Equal-Sum Puzzle',
     description:
       'Slice the grid into connected blocks that all add to the same target. Exactly one valid carving. A new board from Mind Loft, daily.',
     url: '/carve',
@@ -44,7 +44,7 @@ export const metadata = {
   twitter: {
     images: ['/og/carve.png'],
     card: 'summary_large_image',
-    title: 'Carve — A Daily Equal-Sum Puzzle',
+    title: 'Carve: A Daily Equal-Sum Puzzle',
     description:
       'Slice the grid into connected blocks that all add to the same target. A clean, error-free carve wins.',
   },
@@ -54,10 +54,10 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Carve',
-  alternateName: 'Carve — Daily Equal-Sum Puzzle',
+  alternateName: 'Carve: Daily Equal-Sum Puzzle',
   url: `${SITE_URL}/carve`,
   description:
-    'A free daily number puzzle: carve a digit grid into connected blocks, one grown from each colored anchor, so every block sums to the same target. Each board has exactly one valid carving — solve it with no errors for a perfect score, and ties break on fewest errors then fastest time.',
+    'A free daily number puzzle: carve a digit grid into connected blocks, one grown from each colored anchor, so every block sums to the same target. Each board has exactly one valid carving. Solve it with no errors for a perfect score, and ties break on fewest errors then fastest time.',
   genre: ['Logic puzzle', 'Number puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

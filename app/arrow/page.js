@@ -20,7 +20,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Arrow Sudoku: Arrow | Mind Loft',
   description:
-    'A free daily arrow sudoku. An ordinary 9×9 plus arrows: the digit in each circle is the sum of the digits along its arrow. One logical solution, notes and a free hint, a new board every day, and a twelve-arrow Edition on Sundays.',
+    'A free daily arrow sudoku: each circled digit is the sum of the digits along its arrow. One logical solution, notes and a hint, and a new board every day.',
   alternates: { canonical: '/arrow' },
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
@@ -55,6 +55,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/arrow.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

@@ -27,28 +27,29 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/hands.png', width: 1200, height: 630, alt: 'Hands — a daily puzzle from Mind Loft' }],
-    title: 'Hands — A Daily Poker Solitaire Puzzle',
+    images: [{ url: '/og/hands.png', width: 1200, height: 630, alt: 'Hands, a daily puzzle from Mind Loft' }],
+    title: 'Hands: A Daily Poker Solitaire Puzzle',
     description: 'Same deal for everybody, so the leaderboard ranks decisions and not luck. Ten hands, one muck, no undo. A new deal from Mind Loft, daily.',
     url: '/hands', type: 'website', siteName: 'Mind Loft',
   },
   twitter: {
     images: ['/og/hands.png'],
     card: 'summary_large_image',
-    title: 'Hands — A Daily Poker Solitaire Puzzle',
+    title: 'Hands: A Daily Poker Solitaire Puzzle',
     description: 'Twenty five cards, ten poker hands, one muck. Beat par if you can.',
   },
 };
 
 const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Hands',
-  alternateName: 'Hands — Daily Poker Solitaire Puzzle',
+  alternateName: 'Hands: Daily Poker Solitaire Puzzle',
   url: `${SITE_URL}/hands`,
   description:
     'A free daily poker solitaire puzzle. Cards arrive one at a time from a fixed 26 card deal and are placed into a five by five grid, which is read as ten poker hands: five rows and five columns, each card serving one of each. A placed card never moves and there is no undo. Every player in the world gets the identical shuffle, so the game carries no luck and the leaderboard ranks decisions. One muck a day discards the card on offer and takes the next one sight unseen, so the finished board is always the 26 cards minus exactly one. Hands are scored on the British table, where a straight pays more than a flush. Each deal ships with two targets that are both real solver playouts rather than formulas: par, the median of four hundred blind runs, which scores eight, and ace, the best of those runs, which scores ten.',
   genre: ['Card puzzle', 'Poker', 'Solitaire', 'Puzzle'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/hands.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 const breadcrumbJsonLd = {

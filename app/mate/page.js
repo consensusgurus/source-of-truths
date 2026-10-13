@@ -21,8 +21,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/mate.png', width: 1200, height: 630, alt: 'Mate — a daily chess puzzle from Mind Loft' }],
-    title: 'Mate — A Daily Chess Puzzle',
+    images: [{ url: '/og/mate.png', width: 1200, height: 630, alt: 'Mate, a daily chess puzzle from Mind Loft' }],
+    title: 'Mate: A Daily Chess Puzzle',
     description:
       'White to play and mate. One key move works and every other fails. A new position from Mind Loft, daily.',
     url: '/mate',
@@ -32,7 +32,7 @@ export const metadata = {
   twitter: {
     images: ['/og/mate.png'],
     card: 'summary_large_image',
-    title: 'Mate — A Daily Chess Puzzle',
+    title: 'Mate: A Daily Chess Puzzle',
     description: 'White to play and force checkmate in two. Only one move does it.',
   },
 };
@@ -41,7 +41,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Mate',
-  alternateName: 'Mate — Daily Chess Puzzle',
+  alternateName: 'Mate: Daily Chess Puzzle',
   url: `${SITE_URL}/mate`,
   description:
     'A free daily chess mate puzzle. Each position has White to move and a forced checkmate in a fixed number of moves, with exactly one first move that works and every alternative refuted. Tap a piece to see its legal squares, then play the whole line: Black answers with its best defence and you deliver the mate. A clean solve earns a perfect score, and ties break on fewest misses then fastest time. Weekdays are mate in two and Sundays are mate in three.',
@@ -50,6 +50,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/mate.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

@@ -18,7 +18,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Missing-Number Math Game: Gap | Mind Loft',
   description:
-    'A free daily mental math game where every line is an equation with one number missing, like 7 × ? = 56. Twenty problems climb from one-step sums to two-step lines, percentages, squares and roots. Twenty seconds each, one life, everyone plays the same twenty. No app, no signup, new problems every day.',
+    'A free daily mental math game: twenty equations with one number missing, like 7 × ? = 56. Twenty seconds each, one life, the same twenty for everyone.',
   alternates: { canonical: '/gap' },
   openGraph: {
     images: [{ url: '/og/gap.png', width: 1200, height: 630, alt: 'Gap, a daily puzzle from Mind Loft' }],
@@ -37,6 +37,7 @@ const gameJsonLd = {
   genre: ['Educational', 'Puzzle', 'Mental math'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/gap.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 const breadcrumbJsonLd = {

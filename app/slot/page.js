@@ -14,7 +14,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // consumers get the light rows only.
 
 export const metadata = {
-  title: 'Free Daily Blind Ranking Puzzle, Ten Things One at a Time: Slot | Mind Loft',
+  title: 'Free Daily Blind Ranking Puzzle: Slot | Mind Loft',
   description:
     'A free daily blind ranking puzzle. Ten real things on one axis arrive one at a time, and each has to be placed in a slot before the next is shown. Nothing moves once it is down. No app, no signup, a new board every day.',
   alternates: { canonical: '/slot' },
@@ -37,6 +37,7 @@ const gameJsonLd = {
   genre: ['Trivia', 'Puzzle', 'Quiz'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/slot.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 const breadcrumbJsonLd = {

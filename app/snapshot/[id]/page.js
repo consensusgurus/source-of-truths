@@ -6,7 +6,7 @@ export async function generateMetadata({ params }) {
   const list = LISTS.find((l) => l.id === id);
   if (list) {
     return {
-      title: `${list.title} — Snapshot | Mind Loft`,
+      title: `${list.title}: Snapshot | Mind Loft`,
       description: list.blurb,
       robots: { index: false, follow: false },
     };

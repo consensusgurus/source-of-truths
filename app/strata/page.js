@@ -26,8 +26,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/strata.png', width: 1200, height: 630, alt: 'Strata — a daily word game with gravity, from Mind Loft' }],
-    title: 'Strata — Find a Word, Watch the Board Fall',
+    images: [{ url: '/og/strata.png', width: 1200, height: 630, alt: 'Strata, a daily word game with gravity, from Mind Loft' }],
+    title: 'Strata: Find a Word, Watch the Board Fall',
     description:
       'Every letter belongs to one of the day’s hidden words. Trace one and it lifts out, the letters above it drop, and the board you were reading is gone. A new grid every day. From Mind Loft.',
     url: '/strata',
@@ -37,7 +37,7 @@ export const metadata = {
   twitter: {
     images: ['/og/strata.png'],
     card: 'summary_large_image',
-    title: 'Strata — Find a Word, Watch the Board Fall',
+    title: 'Strata: Find a Word, Watch the Board Fall',
     description: 'A daily word grid with gravity. Most of today’s words cannot be read until the board collapses.',
   },
 };
@@ -46,7 +46,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Strata',
-  alternateName: 'Strata — Daily Word Excavation Game',
+  alternateName: 'Strata: Daily Word Excavation Game',
   url: `${SITE_URL}/strata`,
   description:
     'A free daily word game played on a grid of letters where every letter belongs to one of the hidden answers. Finding a word removes its letters and the remaining letters fall, reshaping the board so that words which could not be read before become readable. Every board is machine-proved to have no dead end in any order of play.',

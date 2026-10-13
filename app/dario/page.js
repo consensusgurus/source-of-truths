@@ -15,7 +15,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Dario: A Daily Race to the Frontier | Mind Loft',
   description:
-    'Dario is a free daily side-scrolling platformer. Run three levels of the AI race, past parody billboards, and reach the AGI gate as fast as you can. The course is remixed every day, the same for everybody, and your fastest clear counts.',
+    'A free daily side-scrolling platformer: three levels of the AI race on a course remixed every day for everyone. Your fastest clear goes on the leaderboard.',
   alternates: { canonical: '/dario' },
   openGraph: {
     images: [{ url: '/og/dario-v3.png', width: 1200, height: 630, alt: 'Dario, a 16-bit pixel-art side-scroller racing through the AI race, from Mind Loft' }],
@@ -31,6 +31,23 @@ export const metadata = {
     title: 'Dario: A Daily Race to the Frontier',
     description: 'Stomp the SaaS bots, dodge the robotaxis and reach the AGI gate first. Three levels, one clock, a new course every day.',
   },
+};
+
+const gameJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Game',
+  name: 'Dario',
+  alternateName: 'Dario: Daily Side-Scrolling Platformer',
+  url: `${SITE_URL}/dario`,
+  description:
+    'A free daily side-scrolling platformer: three levels, one clock, a course remixed every day and the same for everybody. Your fastest clear of the day ranks on the leaderboard.',
+  genre: ['Platformer', 'Arcade', 'Action'],
+  gamePlatform: 'Web browser',
+  isAccessibleForFree: true,
+  inLanguage: 'en',
+  numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/dario-v3.png`,
+  publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 
 const breadcrumbJsonLd = {
@@ -58,6 +75,7 @@ export default function DarioPage({ searchParams }) {
   const forceNum = Number.isInteger(n) && n > 0 ? n : null;
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(gameJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <Suspense fallback={null}>
         <DarioClient key={forceNum || 'today'} puzzles={list} forceNum={forceNum} />

@@ -31,8 +31,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/crux.png', width: 1200, height: 630, alt: 'Crux — a daily word puzzle from Mind Loft' }],
-    title: 'Crux — A Daily Word Puzzle',
+    images: [{ url: '/og/crux.png', width: 1200, height: 630, alt: 'Crux, a daily word puzzle from Mind Loft' }],
+    title: 'Crux: A Daily Word Puzzle',
     description:
       'A clueless crossword. Eight interlocking words, four categories to untangle, eighteen shared guesses. A new daily word puzzle from Mind Loft.',
     url: '/crux',
@@ -42,7 +42,7 @@ export const metadata = {
   twitter: {
     images: ['/og/crux.png'],
     card: 'summary_large_image',
-    title: 'Crux — A Daily Word Puzzle',
+    title: 'Crux: A Daily Word Puzzle',
     description:
       'A clueless crossword. Eight interlocking words, four categories to untangle, eighteen shared guesses.',
   },
@@ -52,7 +52,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Crux',
-  alternateName: 'Crux — Daily Word Puzzle',
+  alternateName: 'Crux: Daily Word Puzzle',
   url: `${SITE_URL}/crux`,
   description:
     'A clueless crossword and a free daily word puzzle. Four categories are the only hints: guess real words on a shared budget, lock letters into the grid, then file each solved word under its category.',

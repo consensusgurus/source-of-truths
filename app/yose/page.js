@@ -54,6 +54,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/yose.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

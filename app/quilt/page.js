@@ -18,13 +18,13 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Jigsaw Sudoku: Quilt | Mind Loft',
   description:
-    'A free daily jigsaw sudoku — fill the 9×9 grid so every row, column, and irregular region holds 1–9 with no repeats. One logical solution and never a guess, notes and a free hint, a new board every day, and a harder Edition on Sundays.',
+    'A free daily jigsaw sudoku: fill the 9×9 grid so every row, column, and irregular region holds 1–9 with no repeats. One logical solution and never a guess, notes and a free hint, a new board every day, and a harder Edition on Sundays.',
   alternates: { canonical: '/quilt' },
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/quilt.png', width: 1200, height: 630, alt: 'Quilt — a daily jigsaw sudoku from Mind Loft' }],
-    title: 'Quilt — A Daily Jigsaw Sudoku',
+    images: [{ url: '/og/quilt.png', width: 1200, height: 630, alt: 'Quilt, a daily jigsaw sudoku from Mind Loft' }],
+    title: 'Quilt: A Daily Jigsaw Sudoku',
     description:
       'Sudoku with the boxes redrawn. Nine irregular regions, one logical solution, and a clean solve wins. A new board from Mind Loft, daily.',
     url: '/quilt',
@@ -34,7 +34,7 @@ export const metadata = {
   twitter: {
     images: ['/og/quilt.png'],
     card: 'summary_large_image',
-    title: 'Quilt — A Daily Jigsaw Sudoku',
+    title: 'Quilt: A Daily Jigsaw Sudoku',
     description:
       'Fill the 9×9 grid so every row, column, and irregular region holds 1–9 once. An error-free solve wins.',
   },
@@ -44,15 +44,16 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Quilt',
-  alternateName: 'Quilt — Daily Jigsaw Sudoku',
+  alternateName: 'Quilt: Daily Jigsaw Sudoku',
   url: `${SITE_URL}/quilt`,
   description:
-    'A free daily jigsaw sudoku: fill a 9×9 grid so that every row, every column, and each of nine irregular regions contains the digits 1–9 exactly once. Each board has one solution and can always be reached by logic alone — solve it with no errors for a perfect score, and ties break on fastest time.',
+    'A free daily jigsaw sudoku: fill a 9×9 grid so that every row, every column, and each of nine irregular regions contains the digits 1–9 exactly once. Each board has one solution and can always be reached by logic alone. Solve it with no errors for a perfect score, and ties break on fastest time.',
   genre: ['Logic puzzle', 'Sudoku', 'Jigsaw sudoku', 'Number puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/quilt.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

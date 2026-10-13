@@ -21,8 +21,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/four.png', width: 1200, height: 630, alt: 'Four — a daily Connect Four puzzle from Mind Loft' }],
-    title: 'Four — A Daily Connect Four Puzzle',
+    images: [{ url: '/og/four.png', width: 1200, height: 630, alt: 'Four, a daily Connect Four puzzle from Mind Loft' }],
+    title: 'Four: A Daily Connect Four Puzzle',
     description:
       'One column wins. Every other drop throws it away, and the engine does not give it back. A new position from Mind Loft, daily.',
     url: '/four',
@@ -32,7 +32,7 @@ export const metadata = {
   twitter: {
     images: ['/og/four.png'],
     card: 'summary_large_image',
-    title: 'Four — A Daily Connect Four Puzzle',
+    title: 'Four: A Daily Connect Four Puzzle',
     description: 'A forced win in four, and only one column keeps it. No take-backs.',
   },
 };
@@ -41,7 +41,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Four',
-  alternateName: 'Four — Daily Connect Four Puzzle',
+  alternateName: 'Four: Daily Connect Four Puzzle',
   url: `${SITE_URL}/four`,
   description:
     'A free daily Connect Four puzzle. Each position is a real, reachable board with you to move and a forced win, with exactly one column that keeps it and every other drop losing it. A wrong drop is not refused: a perfect solver plays the rest of the game, so the win is gone for good and you play on for a draw. The win scores ten, a draw four, a loss one, and ties break on fewest wrong drops then fastest time. Weekdays are a win in four and Sundays a win in five.',
@@ -50,6 +50,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/four.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

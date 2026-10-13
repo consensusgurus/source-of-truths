@@ -27,7 +27,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Daily Word Puzzle, Hotter or Colder: Warmer | Mind Loft',
   description:
-    'A free daily word puzzle — one secret word, and every guess tells you how close it is in meaning on a cold-to-hot spectrum. Ocean is scorching for "sea," pencil is freezing. Unlimited guesses; the leaderboard ranks fewest guesses, fastest time. The Sunday Edition hides a rarer word.',
+    'A free daily word puzzle: one secret word, and every guess tells you how close it is in meaning on a cold-to-hot spectrum. Ocean is scorching for "sea," pencil is freezing. Unlimited guesses; the leaderboard ranks fewest guesses, fastest time. The Sunday Edition hides a rarer word.',
   alternates: { canonical: '/warmer' },
   manifest: '/api/pwa-manifest?game=warmer',
   icons: {
@@ -45,8 +45,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/warmer.png', width: 1200, height: 630, alt: 'Warmer — a daily hot-and-cold word puzzle from Mind Loft' }],
-    title: 'Warmer — Hotter or Colder',
+    images: [{ url: '/og/warmer.png', width: 1200, height: 630, alt: 'Warmer, a daily hot-and-cold word puzzle from Mind Loft' }],
+    title: 'Warmer: Hotter or Colder',
     description:
       'One secret word a day. Every guess is scored by meaning, cold to hot, until you land the word. A new one every day from Mind Loft.',
     url: '/warmer',
@@ -56,8 +56,8 @@ export const metadata = {
   twitter: {
     images: ['/og/warmer.png'],
     card: 'summary_large_image',
-    title: 'Warmer — Hotter or Colder',
-    description: 'One secret word a day. Guess by meaning — hotter or colder — until you land it.',
+    title: 'Warmer: Hotter or Colder',
+    description: 'One secret word a day. Guess by meaning, hotter or colder, until you land it.',
   },
 };
 
@@ -65,10 +65,10 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Warmer',
-  alternateName: 'Warmer — Daily Hot-and-Cold Word Puzzle',
+  alternateName: 'Warmer: Daily Hot-and-Cold Word Puzzle',
   url: `${SITE_URL}/warmer`,
   description:
-    'A free daily word puzzle: one secret word, and every guess is scored by how close it is in meaning on a cold-to-hot spectrum. Unlimited guesses — the daily leaderboard ranks players on fewest guesses, fastest time breaking ties.',
+    'A free daily word puzzle: one secret word, and every guess is scored by how close it is in meaning on a cold-to-hot spectrum. Unlimited guesses. The daily leaderboard ranks players on fewest guesses, fastest time breaking ties.',
   genre: ['Word puzzle', 'Guessing puzzle', 'Vocabulary puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

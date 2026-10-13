@@ -24,8 +24,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/encore.png', width: 1200, height: 630, alt: 'Encore — the daily crossword from Mind Loft' }],
-    title: 'Encore — A Daily Crossword',
+    images: [{ url: '/og/encore.png', width: 1200, height: 630, alt: 'Encore, the daily crossword from Mind Loft' }],
+    title: 'Encore: A Daily Crossword',
     description:
       'The big grid, every day: nine by nine, around twenty-six answers, everyday words and fair clues. A new crossword from Mind Loft, daily.',
     url: '/encore',
@@ -35,7 +35,7 @@ export const metadata = {
   twitter: {
     images: ['/og/encore.png'],
     card: 'summary_large_image',
-    title: 'Encore — A Daily Crossword',
+    title: 'Encore: A Daily Crossword',
     description:
       'The big grid, every day: nine by nine, around twenty-six answers, everyday words and fair clues.',
   },
@@ -45,7 +45,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Encore',
-  alternateName: 'Encore — Daily Crossword',
+  alternateName: 'Encore: Daily Crossword',
   url: `${SITE_URL}/encore`,
   description:
     'A free daily crossword: a 9x9 grid of everyday words with numbered Across and Down clues, fully checked so every square belongs to both an across and a down answer. You turn in a full grid with one press of Check grid; a clean fast solve tops the daily leaderboard, and the Sunday Edition steps up to 11x11.',
@@ -54,6 +54,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/encore.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

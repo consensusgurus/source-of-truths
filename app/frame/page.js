@@ -27,8 +27,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/frame.png', width: 1200, height: 630, alt: 'Frame — a daily frame sudoku from Mind Loft' }],
-    title: 'Frame — A Daily Frame Sudoku',
+    images: [{ url: '/og/frame.png', width: 1200, height: 630, alt: 'Frame, a daily frame sudoku from Mind Loft' }],
+    title: 'Frame: A Daily Frame Sudoku',
     description:
       'Sudoku with the sum of the outer three squares printed at every row and column end. Fewer clues, one logical solution, from Mind Loft, daily.',
     url: '/frame',
@@ -38,7 +38,7 @@ export const metadata = {
   twitter: {
     images: ['/og/frame.png'],
     card: 'summary_large_image',
-    title: 'Frame — A Daily Frame Sudoku',
+    title: 'Frame: A Daily Frame Sudoku',
     description:
       'Sudoku with a sum printed at every row and column end. A clean solve wins and the clock breaks the tie.',
   },
@@ -48,15 +48,16 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Frame',
-  alternateName: 'Frame — Daily Frame Sudoku',
+  alternateName: 'Frame: Daily Frame Sudoku',
   url: `${SITE_URL}/frame`,
   description:
-    'A free daily frame sudoku: an ordinary 9×9 grid with the sum of the three cells nearest each edge printed outside every row and column end. Each board has one solution reachable by pure logic — solve it for a perfect score, and ties break on fastest time.',
+    'A free daily frame sudoku: an ordinary 9×9 grid with the sum of the three cells nearest each edge printed outside every row and column end. Each board has one solution reachable by pure logic. Solve it for a perfect score, and ties break on fastest time.',
   genre: ['Logic puzzle', 'Sudoku', 'Number puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/frame.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

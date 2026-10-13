@@ -22,28 +22,29 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/parker.png', width: 1200, height: 630, alt: 'Parker — a daily puzzle from Mind Loft' }],
-    title: 'Parker — A Daily Sliding Block Puzzle',
+    images: [{ url: '/og/parker.png', width: 1200, height: 630, alt: 'Parker, a daily puzzle from Mind Loft' }],
+    title: 'Parker: A Daily Sliding Block Puzzle',
     description: 'You are in the red one. Everybody has blocked you in, and there is one gap in the wall. A new jam from Mind Loft, daily.',
     url: '/parker', type: 'website', siteName: 'Mind Loft',
   },
   twitter: {
     images: ['/og/parker.png'],
     card: 'summary_large_image',
-    title: 'Parker — A Daily Sliding Block Puzzle',
+    title: 'Parker: A Daily Sliding Block Puzzle',
     description: 'Blocked in on all four sides, one gap in the wall. Slide your way out.',
   },
 };
 
 const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Parker',
-  alternateName: 'Parker — Daily Sliding Block Puzzle',
+  alternateName: 'Parker: Daily Sliding Block Puzzle',
   url: `${SITE_URL}/parker`,
   description:
     'A free daily sliding-block puzzle. Blocks fill a six by six lot and each slides along one axis only; the red block must reach the exit gap. Every board is machine generated and solved exactly, so the perfect line is the true fewest moves that exist rather than an estimate, and par sits a cushion above it as the number a clean solve lands on. Perfect scores ten and par scores eight. The week climbs: Monday to Wednesday run 11 to 14 moves, Thursday to Saturday 16 to 20, and Sundays 32 to 38.',
   genre: ['Sliding block puzzle', 'Logic puzzle', 'Puzzle'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/parker.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 const breadcrumbJsonLd = {

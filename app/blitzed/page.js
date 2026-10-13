@@ -22,22 +22,23 @@ export const metadata = {
   alternates: { canonical: '/blitzed' },
   openGraph: {
     // Static share card: pre-rendered once into public/og/ (see CLAUDE.md, 2026-09-02).
-    images: [{ url: '/og/blitzed.png', width: 1200, height: 630, alt: 'Blitzed — a daily puzzle from Mind Loft' }],
-    title: 'Blitzed — The Daily Three-Number Mental Math Ladder',
+    images: [{ url: '/og/blitzed.png', width: 1200, height: 630, alt: 'Blitzed, a daily puzzle from Mind Loft' }],
+    title: 'Blitzed: The Daily Three-Number Mental Math Ladder',
     description: 'Twenty problems, three numbers in every one, twenty seconds each, one life. How far up can you get in your head?',
     url: '/blitzed', type: 'website', siteName: 'Mind Loft',
   },
-  twitter: { images: ['/og/blitzed.png'], card: 'summary_large_image', title: 'Blitzed — The Daily Three-Number Mental Math Ladder', description: 'Twenty problems, three numbers in every one, twenty seconds each, one life. No calculator, no second chances.' },
+  twitter: { images: ['/og/blitzed.png'], card: 'summary_large_image', title: 'Blitzed: The Daily Three-Number Mental Math Ladder', description: 'Twenty problems, three numbers in every one, twenty seconds each, one life. No calculator, no second chances.' },
 };
 
 const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Blitzed',
-  alternateName: 'Blitzed — Daily Three-Number Mental Math', url: `${SITE_URL}/blitzed`,
+  alternateName: 'Blitzed: Daily Three-Number Mental Math', url: `${SITE_URL}/blitzed`,
   description:
     'A free daily mental arithmetic game where every one of the twenty multiple-choice problems has three numbers and two operations, like 5 + 10 × 2. They climb from small chains and the times tables to brackets, percentages of a number with a tail, two-digit products, squares and cubes, in five rounds of four. A wrong answer, or a twenty-second clock at zero, ends the run, and every problem cleared is a point. Every wrong option on the board is a real arithmetic mistake rather than filler, most often the answer you get by doing the first operation and stopping, so the answer cannot be picked out by its last digit or its size. Everyone plays the same twenty problems in the same order each day, and the daily leaderboard ranks the longest runs with ties broken by time.',
   genre: ['Educational', 'Puzzle', 'Mental math'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/blitzed.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 const breadcrumbJsonLd = {

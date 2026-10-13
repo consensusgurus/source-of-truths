@@ -19,22 +19,23 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/rung.png', width: 1200, height: 630, alt: 'Rung — a daily puzzle from Mind Loft' }],
-    title: 'Rung — A Daily Word Ladder',
+    images: [{ url: '/og/rung.png', width: 1200, height: 630, alt: 'Rung, a daily puzzle from Mind Loft' }],
+    title: 'Rung: A Daily Word Ladder',
     description: 'One letter at a time, every rung a word. Beat par, chase the perfect ladder. A new climb from Mind Loft, daily.',
     url: '/rung', type: 'website', siteName: 'Mind Loft',
   },
-  twitter: { images: ['/og/rung.png'], card: 'summary_large_image', title: 'Rung — A Daily Word Ladder', description: 'Change one letter at a time. Can you get under par?' },
+  twitter: { images: ['/og/rung.png'], card: 'summary_large_image', title: 'Rung: A Daily Word Ladder', description: 'Change one letter at a time. Can you get under par?' },
 };
 
 const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Rung',
-  alternateName: 'Rung — Daily Word Ladder', url: `${SITE_URL}/rung`,
+  alternateName: 'Rung: Daily Word Ladder', url: `${SITE_URL}/rung`,
   description:
     'A free daily word ladder puzzle. Climb from a start word to a target word changing one letter at a time, with every rung a real five-letter word. The perfect line is the exact shortest ladder, found by breadth-first search and confirmed by an independent bidirectional search, and most boards have only one shortest route. Par sits a cushion above perfect and is beatable. Perfect scores ten and par scores eight. Weekday perfect lines run 10 to 12 rungs and Sundays 15 or more.',
   genre: ['Word ladder', 'Word puzzle', 'Puzzle'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/rung.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 const breadcrumbJsonLd = {

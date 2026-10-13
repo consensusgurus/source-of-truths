@@ -18,7 +18,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Animal Guessing Game: Clade | Mind Loft',
   description:
-    'A free daily animal guessing game. Name an animal and learn the closest branch of the family tree it shares with the hidden one. Eight guesses to close in, a new animal every day, a rare one on Sundays.',
+    'A free daily animal guessing game: each guess shows the closest branch of the family tree it shares with the hidden animal. Eight guesses to find it.',
   alternates: { canonical: '/clade' },
   openGraph: {
     images: [{ url: '/og/clade.png', width: 1200, height: 630, alt: 'Clade, a daily animal family-tree guessing game from Mind Loft' }],
@@ -51,6 +51,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/clade.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

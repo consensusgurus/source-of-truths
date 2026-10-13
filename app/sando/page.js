@@ -19,13 +19,13 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Sandwich Sudoku: Sando | Mind Loft',
   description:
-    'A free daily sandwich sudoku — the number beside each row and column is the total of the digits sitting between that line\u2019s 1 and its 9, so a 0 means the sandwich is empty and the two are side by side. Fill the 9×9 grid so every row, column, and 3×3 box holds 1–9 with no repeats. One logical solution and never a guess, notes and a free hint, a new board every day, and a harder Edition on Sundays.',
+    'A free daily sandwich sudoku: the number beside each row and column is the total of the digits sitting between that line\u2019s 1 and its 9, so a 0 means the sandwich is empty and the two are side by side. Fill the 9×9 grid so every row, column, and 3×3 box holds 1–9 with no repeats. One logical solution and never a guess, notes and a free hint, a new board every day, and a harder Edition on Sundays.',
   alternates: { canonical: '/sando' },
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/sando.png', width: 1200, height: 630, alt: 'Sando — a daily sandwich sudoku from Mind Loft' }],
-    title: 'Sando — A Daily Sandwich Sudoku',
+    images: [{ url: '/og/sando.png', width: 1200, height: 630, alt: 'Sando, a daily sandwich sudoku from Mind Loft' }],
+    title: 'Sando: A Daily Sandwich Sudoku',
     description:
       'Sandwich sudoku: each border clue totals the digits between that line\u2019s 1 and its 9, and a 0 means the sandwich is empty. One logical solution, never a guess. A new board from Mind Loft, daily.',
     url: '/sando',
@@ -35,7 +35,7 @@ export const metadata = {
   twitter: {
     images: ['/og/sando.png'],
     card: 'summary_large_image',
-    title: 'Sando — A Daily Sandwich Sudoku',
+    title: 'Sando: A Daily Sandwich Sudoku',
     description:
       'Each margin clue totals the digits between that line\u2019s 1 and its 9, and a 0 means an empty sandwich. A daily sandwich sudoku.',
   },
@@ -45,15 +45,16 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Sando',
-  alternateName: 'Sando — Daily Sandwich Sudoku',
+  alternateName: 'Sando: Daily Sandwich Sudoku',
   url: `${SITE_URL}/sando`,
   description:
-    'A free daily sandwich sudoku: every row and column holds one 1 and one 9, and the number printed outside it is the total of the digits sitting between those two. Side by side, the sandwich is empty and the clue is 0; at the two ends, everything else is inside and the clue is 35. Fill the 9×9 grid so that every row, every column, and every 3×3 box contains the digits 1–9 exactly once and every sandwich adds up. Each board has one solution and can always be reached by logic alone — solve it with no errors for a perfect score, and ties break on fastest time.',
+    'A free daily sandwich sudoku: every row and column holds one 1 and one 9, and the number printed outside it is the total of the digits sitting between those two. Side by side, the sandwich is empty and the clue is 0; at the two ends, everything else is inside and the clue is 35. Fill the 9×9 grid so that every row, every column, and every 3×3 box contains the digits 1–9 exactly once and every sandwich adds up. Each board has one solution and can always be reached by logic alone. Solve it with no errors for a perfect score, and ties break on fastest time.',
   genre: ['Logic puzzle', 'Sandwich sudoku', 'Sudoku', 'Number puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/sando.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

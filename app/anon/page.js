@@ -22,8 +22,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/anon.png', width: 1200, height: 630, alt: 'Anon — a daily acrostic with no clues, from Mind Loft' }],
-    title: 'Anon — A Daily Acrostic With No Clues',
+    images: [{ url: '/og/anon.png', width: 1200, height: 630, alt: 'Anon, a daily acrostic with no clues, from Mind Loft' }],
+    title: 'Anon: A Daily Acrostic With No Clues',
     description:
       'An unsigned passage, a bank of answers, and no clues anywhere. Fill it in and it tells you who wrote it.',
     url: '/anon',
@@ -33,7 +33,7 @@ export const metadata = {
   twitter: {
     images: ['/og/anon.png'],
     card: 'summary_large_image',
-    title: 'Anon — A Daily Acrostic With No Clues',
+    title: 'Anon: A Daily Acrostic With No Clues',
     description: 'An unsigned passage and a bank of answers. Finish it and it names its own author.',
   },
 };
@@ -42,7 +42,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Anon',
-  alternateName: 'Anon — Daily Acrostic Puzzle',
+  alternateName: 'Anon: Daily Acrostic Puzzle',
   url: `${SITE_URL}/anon`,
   description:
     'A free daily acrostic puzzle with no clues. A passage from a published work sits in a grid of empty boxes, one box per letter, and every box also belongs to exactly one answer in the bank below, so the two halves are the same letters seen twice and a letter entered in either one appears in the other. Some answers carry a category tight enough to recite, such as a planet or a chess piece, and those are the way into the board; the rest carry no category at all and have to come from the passage reading as English. The first letters of the spine answers spell the author of the passage. There are no checks and no hints: a wrong answer stops the passage making sense, which is the only feedback the puzzle needs.',
@@ -51,6 +51,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/anon.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 

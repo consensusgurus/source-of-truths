@@ -21,8 +21,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/plot.png', width: 1200, height: 630, alt: 'Plot — a daily rectangle puzzle from Mind Loft' }],
-    title: 'Plot — A Daily Rectangle Puzzle',
+    images: [{ url: '/og/plot.png', width: 1200, height: 630, alt: 'Plot, a daily rectangle puzzle from Mind Loft' }],
+    title: 'Plot: A Daily Rectangle Puzzle',
     description:
       'Every number is the size of its own plot. Divide the board into rectangles until the whole map is claimed. A new logic puzzle from Mind Loft, daily.',
     url: '/plot',
@@ -32,7 +32,7 @@ export const metadata = {
   twitter: {
     images: ['/og/plot.png'],
     card: 'summary_large_image',
-    title: 'Plot — A Daily Rectangle Puzzle',
+    title: 'Plot: A Daily Rectangle Puzzle',
     description: 'Every number is the size of its own plot. Divide the whole board, one solution, no guessing.',
   },
 };
@@ -41,7 +41,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Plot',
-  alternateName: 'Plot — Daily Rectangle Puzzle',
+  alternateName: 'Plot: Daily Rectangle Puzzle',
   url: `${SITE_URL}/plot`,
   description:
     'A free daily rectangle puzzle (shikaku): numbers are scattered across a grid and each one gives the area of the plot it belongs to. Divide the whole board into rectangles so that every rectangle contains exactly one number and covers exactly that many cells. Each board has exactly one solution and is reachable by pure deduction, with no guessing. A clean, error-free solve earns a perfect score, and ties break on fewest errors then fastest time.',
@@ -50,6 +50,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/plot.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

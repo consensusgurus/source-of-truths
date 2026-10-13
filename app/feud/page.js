@@ -39,10 +39,10 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/feud.png', width: 1200, height: 630, alt: 'Feud — the daily crowd-survey game from Mind Loft' }],
-    title: 'Feud — The Daily Crowd-Survey Game',
+    images: [{ url: '/og/feud.png', width: 1200, height: 630, alt: 'Feud, the daily crowd-survey game from Mind Loft' }],
+    title: 'Feud: The Daily Crowd-Survey Game',
     description:
-      'The answer key is live: it’s whatever today’s players say. Five prompts, three answers each — match the crowd. From Mind Loft.',
+      'The answer key is live: it’s whatever today’s players say. Five prompts, three answers each. Match the crowd. From Mind Loft.',
     url: '/feud',
     type: 'website',
     siteName: 'Mind Loft',
@@ -50,9 +50,9 @@ export const metadata = {
   twitter: {
     images: ['/og/feud.png'],
     card: 'summary_large_image',
-    title: 'Feud — The Daily Crowd-Survey Game',
+    title: 'Feud: The Daily Crowd-Survey Game',
     description:
-      'Five everyday prompts. Type what you think the crowd will say — every answer is a vote, and the key keeps moving all day.',
+      'Five everyday prompts. Type what you think the crowd will say. Every answer is a vote, and the key keeps moving all day.',
   },
 };
 
@@ -60,7 +60,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Feud',
-  alternateName: 'Feud — Daily Crowd-Survey Game',
+  alternateName: 'Feud: Daily Crowd-Survey Game',
   url: `${SITE_URL}/feud`,
   description:
     'A free daily crowd game: five everyday survey prompts, up to three answers each, and a live answer key built from every player’s answers. Match the crowd, bank the percentages, and watch the key move all day.',

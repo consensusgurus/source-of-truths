@@ -18,7 +18,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Trivia Guessing Game: Dossier | Mind Loft',
   description:
-    'A free daily trivia guessing game. Name a US president, a chemical element or a US state and see how five of its facts compare with the hidden answer: a match, higher or lower. Eight guesses, six on Sundays.',
+    'A free daily trivia guessing game: guess a president, element or state and see how five of its facts compare with the hidden answer. Eight guesses.',
   alternates: { canonical: '/dossier' },
   openGraph: {
     images: [{ url: '/og/dossier.png', width: 1200, height: 630, alt: 'Dossier, a daily five-clue trivia guessing game from Mind Loft' }],
@@ -51,6 +51,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/dossier.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

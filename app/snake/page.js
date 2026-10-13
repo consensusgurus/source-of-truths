@@ -14,7 +14,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Snake Game: Same Apples for Everyone | Mind Loft',
   description:
-    'Snake is a free daily snake game. Everyone gets the same apples in the same order, so the leaderboard compares play and not luck. The edges wrap, the pace never speeds up, and you can play as many runs as you like with your best one scored. A Sunday Edition where every apple grows you by two.',
+    'A free daily snake game with the same apples in the same order for everyone, so the leaderboard compares play, not luck. Your best run of the day counts.',
   alternates: { canonical: '/snake' },
   openGraph: {
     images: [{ url: '/og/snake.png', width: 1200, height: 630, alt: 'Snake, a daily snake game from Mind Loft' }],
@@ -45,6 +45,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/snake.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 

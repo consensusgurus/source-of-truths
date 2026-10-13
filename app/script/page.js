@@ -22,21 +22,22 @@ export const metadata = {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
     images: [{ url: '/og/script.png', width: 1200, height: 630, alt: 'Script, a daily puzzle from Mind Loft' }],
-    title: 'Script — The Daily Movie and TV Gauntlet',
+    title: 'Script: The Daily Movie and TV Gauntlet',
     description: 'Twenty-five questions on film and television, one life. How far can you get before one wrong answer ends the run?',
     url: '/script', type: 'website', siteName: 'Mind Loft',
   },
-  twitter: { images: ['/og/script.png'], card: 'summary_large_image', title: 'Script — The Daily Movie and TV Gauntlet', description: 'Twenty-five questions on film and television, one life. How far can you get?' },
+  twitter: { images: ['/og/script.png'], card: 'summary_large_image', title: 'Script: The Daily Movie and TV Gauntlet', description: 'Twenty-five questions on film and television, one life. How far can you get?' },
 };
 
 const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Script',
-  alternateName: 'Script — Daily Film And Television Trivia', url: `${SITE_URL}/script`,
+  alternateName: 'Script: Daily Film And Television Trivia', url: `${SITE_URL}/script`,
   description:
     'A free daily film and television trivia game. Twenty-five multiple-choice questions climb from easy to expert in five rounds of five, cycling the same five lanes each round: movies, television, actors and directors, awards and box office, and behind the scenes. One wrong answer, or a twenty-second clock at zero, ends the run, and every question cleared is a point. Everyone plays the same twenty-five questions in the same order each day, and the daily leaderboard ranks the longest runs with ties broken by time. Every answer is a settled fact rather than a cast list, a streaming deal or a record that falls next month.',
   genre: ['Film', 'Television', 'Trivia', 'Quiz', 'Survival'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/script.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 const breadcrumbJsonLd = {

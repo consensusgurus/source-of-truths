@@ -17,15 +17,15 @@ import { categoryCrumb } from '@/lib/game-seo';
 // so tomorrow's position (and the move that saves it) never reaches the browser.
 
 export const metadata = {
-  title: 'Free Daily Chess Puzzle (Black to Play and Survive): Defend | Mind Loft',
+  title: 'Free Daily Chess Defense Puzzle: Defend | Mind Loft',
   description:
     'A free daily chess puzzle from the defending side. White is threatening mate, at least five moves look like they answer it, and exactly one does. Tap a piece and its legal squares light up, so no chess notation is needed. Finding the save only buys the next one: hold the position for three moves against White’s best try, keep a streak, and Sundays hold for four.',
   alternates: { canonical: '/defend' },
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/defend.png', width: 1200, height: 630, alt: 'Defend — a daily chess puzzle from Mind Loft' }],
-    title: 'Defend — A Daily Chess Puzzle',
+    images: [{ url: '/og/defend.png', width: 1200, height: 630, alt: 'Defend, a daily chess puzzle from Mind Loft' }],
+    title: 'Defend: A Daily Chess Puzzle',
     description:
       'Black to play and survive. Five moves look like a defence, one is, and finding it only buys you the next one. A new position from Mind Loft, daily.',
     url: '/defend',
@@ -35,7 +35,7 @@ export const metadata = {
   twitter: {
     images: ['/og/defend.png'],
     card: 'summary_large_image',
-    title: 'Defend — A Daily Chess Puzzle',
+    title: 'Defend: A Daily Chess Puzzle',
     description: 'White is threatening mate. Five moves look like they stop it. One does.',
   },
 };
@@ -44,7 +44,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Defend',
-  alternateName: 'Defend — Daily Chess Puzzle',
+  alternateName: 'Defend: Daily Chess Puzzle',
   url: `${SITE_URL}/defend`,
   description:
     'A free daily chess defence puzzle. Each position has Black to move with White already threatening checkmate, and every legal move loses to a forced mate except one, with at least five that look like they answer the threat. Tap a piece to see its legal squares, then play the position out: White answers with its stubbornest try and exactly one move survives again. Surviving earns a perfect score, and ties break on fewest misses then fastest time. Weekdays hold for three moves and Sundays hold for four.',
@@ -53,6 +53,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/defend.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

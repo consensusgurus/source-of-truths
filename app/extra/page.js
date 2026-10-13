@@ -16,7 +16,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Daily History Puzzle, Name the Redacted Headline: Extra | Mind Loft',
   description:
-    "A free daily history puzzle — one historic front page with the giveaway words blacked out. Name the story; every wrong guess tears one more word free. Six tears, one hint, and a perfect score for naming it cold.",
+    "A free daily history puzzle: one historic front page with the giveaway words blacked out. Name the story; every wrong guess tears one more word free. Six tears, one hint, and a perfect score for naming it cold.",
   alternates: { canonical: '/extra' },
   manifest: '/api/pwa-manifest?game=extra',
   icons: {
@@ -34,8 +34,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/extra.png', width: 1200, height: 630, alt: 'Extra — the daily front page from Mind Loft' }],
-    title: 'Extra — The Daily Front Page',
+    images: [{ url: '/og/extra.png', width: 1200, height: 630, alt: 'Extra, the daily front page from Mind Loft' }],
+    title: 'Extra: The Daily Front Page',
     description:
       "One historic headline a day, with the giveaway words blacked out. Name the story before the censor strips run out. From Mind Loft.",
     url: '/extra',
@@ -45,9 +45,9 @@ export const metadata = {
   twitter: {
     images: ['/og/extra.png'],
     card: 'summary_large_image',
-    title: 'Extra — The Daily Front Page',
+    title: 'Extra: The Daily Front Page',
     description:
-      'One historic headline a day, redacted. Name the story — every wrong guess tears a word free.',
+      'One historic headline a day, redacted. Name the story. Every wrong guess tears a word free.',
   },
 };
 
@@ -55,10 +55,10 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Extra',
-  alternateName: 'Extra — Daily History Puzzle',
+  alternateName: 'Extra: Daily History Puzzle',
   url: `${SITE_URL}/extra`,
   description:
-    'A free daily history puzzle: a historic newspaper front page with the giveaway words blacked out. Name the story — a wrong guess or a tear reveals one more word, and naming it with zero tears is a perfect cold read.',
+    'A free daily history puzzle: a historic newspaper front page with the giveaway words blacked out. Name the story. A wrong guess or a tear reveals one more word, and naming it with zero tears is a perfect cold read.',
   genre: ['History puzzle', 'Trivia puzzle', 'Word puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

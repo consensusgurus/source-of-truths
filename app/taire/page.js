@@ -25,28 +25,29 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/taire.png', width: 1200, height: 630, alt: 'Taire — a daily puzzle from Mind Loft' }],
-    title: 'Taire — A Daily Solitaire Puzzle',
+    images: [{ url: '/og/taire.png', width: 1200, height: 630, alt: 'Taire, a daily puzzle from Mind Loft' }],
+    title: 'Taire: A Daily Solitaire Puzzle',
     description: 'Send all twenty home. Beat par, chase perfect, and there is no undo. A new deal from Mind Loft, daily.',
     url: '/taire', type: 'website', siteName: 'Mind Loft',
   },
   twitter: {
     images: ['/og/taire.png'],
     card: 'summary_large_image',
-    title: 'Taire — A Daily Solitaire Puzzle',
+    title: 'Taire: A Daily Solitaire Puzzle',
     description: 'Two suits, nothing hidden, no luck. Get under par if you can.',
   },
 };
 
 const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Taire',
-  alternateName: 'Taire — Daily Solitaire Puzzle',
+  alternateName: 'Taire: Daily Solitaire Puzzle',
   url: `${SITE_URL}/taire`,
   description:
     'A free daily solitaire puzzle. Two suits are dealt face up into columns of four beside one or two free cells, and every card must be sent home to its foundation. Nothing is hidden and nothing is shuffled mid-game, so the deal carries no luck and is always winnable. Every deal is machine generated and solved exactly, so the perfect line is the true minimum number of moves rather than an estimate, confirmed by a second independent solver. Par sits a cushion above perfect and is beatable. Perfect scores ten and par scores eight. The week climbs on a different dial each rung: Monday to Wednesday are short sixteen-card deals with a perfect line of 18 to 24, Thursday to Saturday run the full twenty cards at 28 to 34, and the Sunday Edition keeps twenty cards but allows a single free cell.',
   genre: ['Solitaire', 'Card puzzle', 'Logic puzzle', 'Puzzle'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/taire.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 const breadcrumbJsonLd = {

@@ -21,8 +21,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/hedge.png', width: 1200, height: 630, alt: 'Hedge — a daily loop puzzle from Mind Loft' }],
-    title: 'Hedge — A Daily Loop Puzzle',
+    images: [{ url: '/og/hedge.png', width: 1200, height: 630, alt: 'Hedge, a daily loop puzzle from Mind Loft' }],
+    title: 'Hedge: A Daily Loop Puzzle',
     description:
       'One closed loop, every number satisfied. A new slitherlink from Mind Loft, daily.',
     url: '/hedge',
@@ -32,7 +32,7 @@ export const metadata = {
   twitter: {
     images: ['/og/hedge.png'],
     card: 'summary_large_image',
-    title: 'Hedge — A Daily Loop Puzzle',
+    title: 'Hedge: A Daily Loop Puzzle',
     description: 'Draw one closed loop so every number has exactly that many sides on it.',
   },
 };
@@ -41,7 +41,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Hedge',
-  alternateName: 'Hedge — Daily Slitherlink',
+  alternateName: 'Hedge: Daily Slitherlink',
   url: `${SITE_URL}/hedge`,
   description:
     'A free daily slitherlink (loop the loop): draw one single closed loop along the grid lines so that each numbered cell has exactly that many of its four sides used by the loop. Only some cells are numbered, and a blank cell places no constraint on the loop. The loop never branches or crosses itself, and every board has exactly one solution. A clean, error-free solve earns a perfect score, and ties break on fewest errors then fastest time.',
@@ -50,6 +50,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/hedge.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

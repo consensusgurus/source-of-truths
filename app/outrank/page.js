@@ -39,8 +39,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/outrank.png', width: 1200, height: 630, alt: 'Outrank — the daily crowd-ranking puzzle from Mind Loft' }],
-    title: 'Outrank — The Daily Crowd-Ranking Puzzle',
+    images: [{ url: '/og/outrank.png', width: 1200, height: 630, alt: 'Outrank, the daily crowd-ranking puzzle from Mind Loft' }],
+    title: 'Outrank: The Daily Crowd-Ranking Puzzle',
     description:
       'Vote your favorite, then call the crowd’s order. The answer key is everyone playing today. From Mind Loft.',
     url: '/outrank',
@@ -50,7 +50,7 @@ export const metadata = {
   twitter: {
     images: ['/og/outrank.png'],
     card: 'summary_large_image',
-    title: 'Outrank — The Daily Crowd-Ranking Puzzle',
+    title: 'Outrank: The Daily Crowd-Ranking Puzzle',
     description:
       'One themed slate a day. Vote your favorite, predict the crowd’s full ranking, then watch the real order roll in.',
   },
@@ -60,7 +60,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Outrank',
-  alternateName: 'Outrank — Daily Crowd-Ranking Puzzle',
+  alternateName: 'Outrank: Daily Crowd-Ranking Puzzle',
   url: `${SITE_URL}/outrank`,
   description:
     'A free daily crowd puzzle: vote your favorite from a themed slate, then predict how the whole field of players ranks the list. The answer key is built from every player’s vote and keeps moving all day.',

@@ -37,14 +37,23 @@ import { useStageTheme } from '@/lib/stage-theme';
 import { gameColor, gameColorLight, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import { gameFaq, gameFaqJsonLd, relatedGames, gameCategory } from '@/lib/game-seo';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
+import { runPageOf, runFaq, runFaqJsonLd, otherRuns } from '@/lib/run-seo';
 import StageFooter from './StageFooter';
 import LayoutC from './LayoutC';
 
 const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 const SANS = 'Manrope, ui-sans-serif, system-ui, -apple-system, sans-serif';
 
-export default function StageTail({ self, stage = true }) {
-  const [theme] = useStageTheme();
+// RUN PAGES (2026-10-13): handed `run` (a circuit id from lib/run-seo.js
+// RUN_PAGES) it prints the run's questions and links to the other runs
+// instead, under the same heading and footer. The runs draw their own dark
+// ground whatever the reader's register, so they pass theme="dark" and the
+// tail follows the run rather than flipping to a pale strip under it.
+export default function StageTail({ self, stage = true, run = null, theme: forced = null }) {
+  const [stored] = useStageTheme();
+  const theme = forced || stored;
+  const runPage = run ? runPageOf(run) : null;
+  if (runPage) self = runPage.accent;
   // LAYOUT C (hidden, ?layout=c): mounted here because StageTail is on every
   // daily page. It renders nothing without the flag.
   if (!stage) return <LayoutC gameKey={self} />;
@@ -54,14 +63,14 @@ export default function StageTail({ self, stage = true }) {
     '--stg-onramp-lt': gameOnrampLight(self),
     '--stg-acc-ink-lt': gameAccentInkLight(self),
   };
-  const game = DAILY_GAME_MAP[self];
-  const faq = game ? gameFaq(self) : [];
-  const jsonLd = game ? gameFaqJsonLd(self) : null;
-  const rel = game ? relatedGames(self) : [];
-  const cat = game ? gameCategory(self) : null;
+  const game = runPage ? { name: runPage.name } : DAILY_GAME_MAP[self];
+  const faq = runPage ? runFaq(run) : game ? gameFaq(self) : [];
+  const jsonLd = runPage ? runFaqJsonLd(run) : game ? gameFaqJsonLd(self) : null;
+  const rel = runPage ? otherRuns(run) : game ? relatedGames(self) : [];
+  const cat = runPage ? { label: 'Runs', href: '/circuits' } : game ? gameCategory(self) : null;
   return (
     <>
-    <LayoutC gameKey={self} />
+    {runPage ? null : <LayoutC gameKey={self} />}
     <div className="stage-page stage-tail" data-stage-theme={theme}
       style={{ ...acc, background: 'var(--stg-ground)', color: 'var(--stg-ink,#e9edf4)', position: 'relative', zIndex: 2 }}>
       {faq.length ? (

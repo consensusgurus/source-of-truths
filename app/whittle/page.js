@@ -30,8 +30,8 @@ export const metadata = {
     'A free daily puzzle: a solved 6×6 sudoku with eighteen printed clues, and your job is to take clues away. A clue comes out only while the grid still has one answer. Reach the proven fewest for a perfect ten. New board daily.',
   alternates: { canonical: '/whittle' },
   openGraph: {
-    images: [{ url: '/og/whittle.png', width: 1200, height: 630, alt: 'Whittle — the daily sudoku played backwards, from Mind Loft' }],
-    title: 'Whittle — The Daily Sudoku, Backwards',
+    images: [{ url: '/og/whittle.png', width: 1200, height: 630, alt: 'Whittle, the daily sudoku played backwards, from Mind Loft' }],
+    title: 'Whittle: The Daily Sudoku, Backwards',
     description:
       'Take clues out of a solved sudoku for as long as it still has one answer. The order is the whole game. From Mind Loft, daily.',
     url: '/whittle',
@@ -41,7 +41,7 @@ export const metadata = {
   twitter: {
     images: ['/og/whittle.png'],
     card: 'summary_large_image',
-    title: 'Whittle — The Daily Sudoku, Backwards',
+    title: 'Whittle: The Daily Sudoku, Backwards',
     description:
       'A solved grid, eighteen clues, and one question: which can you take out? Reach the proven fewest for a perfect ten.',
   },
@@ -51,7 +51,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Whittle',
-  alternateName: 'Whittle — The Daily Sudoku Played Backwards',
+  alternateName: 'Whittle: The Daily Sudoku Played Backwards',
   url: `${SITE_URL}/whittle`,
   description:
     'A free daily logic puzzle. You are given a solved 6×6 sudoku with eighteen of its digits printed as clues, and you remove clues one at a time. A clue may be removed only while the grid still has exactly one solution, nothing can be put back, and the day ends when no clue can be removed. Every board carries the proven fewest clues any order can leave standing.',
@@ -60,6 +60,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/whittle.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 

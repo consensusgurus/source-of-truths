@@ -23,8 +23,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/paths.png', width: 1200, height: 630, alt: 'Paths — a daily network puzzle from Mind Loft' }],
-    title: 'Paths — A Daily Network Puzzle',
+    images: [{ url: '/og/paths.png', width: 1200, height: 630, alt: 'Paths, a daily network puzzle from Mind Loft' }],
+    title: 'Paths: A Daily Network Puzzle',
     description:
       'One depot, a scatter of towns, a river in the way. Link them all for as little as you can.',
     url: '/paths',
@@ -34,7 +34,7 @@ export const metadata = {
   twitter: {
     images: ['/og/paths.png'],
     card: 'summary_large_image',
-    title: 'Paths — A Daily Network Puzzle',
+    title: 'Paths: A Daily Network Puzzle',
     description: 'Link every town to the depot for as little as you can. A new board every day.',
   },
 };
@@ -43,7 +43,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Paths',
-  alternateName: 'Paths — Daily Network Puzzle',
+  alternateName: 'Paths: Daily Network Puzzle',
   url: `${SITE_URL}/paths`,
   description:
     'A free daily network puzzle: lay track along a lattice of lanes until every town is linked back to the depot, spending as little as possible. An open lane costs one, a ridge lane costs two, and a river crossing costs three. Later in the week cliffs block lanes outright and stretches of old track are free to run along. Every board carries the exact cheapest network that exists on it, found by a Steiner-tree solver, so a perfect score is provable and nobody can beat it. Ties break on cost, then on time.',
@@ -52,6 +52,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/paths.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

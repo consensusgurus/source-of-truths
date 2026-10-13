@@ -16,7 +16,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Daily Word Puzzle, Same Letters, Highest Score Wins: Tuck | Mind Loft',
   description:
-    'A free daily word puzzle — everyone gets the same 14 letters, and 15 in the Sunday Edition. Tuck them into your own interlocking crossword grid: every run must be a word, intersections score double, and each day has a solver-verified benchmark to beat.',
+    'A free daily word puzzle: everyone gets the same 14 letters, and 15 in the Sunday Edition. Tuck them into your own interlocking crossword grid: every run must be a word, intersections score double, and each day has a solver-verified benchmark to beat.',
   alternates: { canonical: '/tuck' },
   manifest: '/api/pwa-manifest?game=tuck',
   icons: {
@@ -34,8 +34,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/tuck.png', width: 1200, height: 630, alt: 'Tuck — the daily tile-tucking word puzzle from Mind Loft' }],
-    title: 'Tuck — The Daily Tile-Tucking Word Puzzle',
+    images: [{ url: '/og/tuck.png', width: 1200, height: 630, alt: 'Tuck, the daily tile-tucking word puzzle from Mind Loft' }],
+    title: 'Tuck: The Daily Tile-Tucking Word Puzzle',
     description:
       'Fourteen letters, one empty board, no single answer. Everyone plays the same rack, and the highest score wins the day. From Mind Loft.',
     url: '/tuck',
@@ -45,7 +45,7 @@ export const metadata = {
   twitter: {
     images: ['/og/tuck.png'],
     card: 'summary_large_image',
-    title: 'Tuck — The Daily Tile-Tucking Word Puzzle',
+    title: 'Tuck: The Daily Tile-Tucking Word Puzzle',
     description:
       'Everyone gets the same 14 letters. Tuck them into your own crossword grid and beat today’s benchmark.',
   },
@@ -55,7 +55,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Tuck',
-  alternateName: 'Tuck — Daily Tile-Tucking Word Puzzle',
+  alternateName: 'Tuck: Daily Tile-Tucking Word Puzzle',
   url: `${SITE_URL}/tuck`,
   description:
     'A free daily word puzzle: everyone gets the same 14 standard-weighted letters and builds their own interlocking crossword on a 9×9 board. Every run of letters must be a dictionary word, intersections score in both words, and each day carries a solver-verified benchmark to beat.',

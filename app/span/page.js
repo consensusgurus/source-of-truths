@@ -13,7 +13,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Geography Border Puzzle: Span | Mind Loft',
   description:
-    'A free daily geography puzzle — connect two countries with the shortest chain of land borders you can find. Perfect is the shortest road on the map. New route every day.',
+    'A free daily geography puzzle: connect two countries with the shortest chain of land borders you can find. Perfect is the shortest road on the map. New route every day.',
   alternates: { canonical: '/span' },
   manifest: '/api/pwa-manifest?game=span',
   icons: {
@@ -30,9 +30,9 @@ export const metadata = {
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Span' },
   openGraph: {
     images: [{ url: '/og/span.png', width: 1200, height: 630, alt: 'Span: a daily route puzzle from Mind Loft' }],
-    title: 'Span — A Daily Border-Hopping Geography Puzzle',
+    title: 'Span: A Daily Border-Hopping Geography Puzzle',
     description:
-      'Two countries a day. Chain land borders between them in the fewest moves — perfect is the shortest road on the map. A new geography puzzle from Mind Loft.',
+      'Two countries a day. Chain land borders between them in the fewest moves. Perfect is the shortest road on the map. A new geography puzzle from Mind Loft.',
     url: '/span',
     type: 'website',
     siteName: 'Mind Loft',
@@ -40,7 +40,7 @@ export const metadata = {
   twitter: {
     images: ['/og/span.png'],
     card: 'summary_large_image',
-    title: 'Span — A Daily Border-Hopping Geography Puzzle',
+    title: 'Span: A Daily Border-Hopping Geography Puzzle',
     description:
       'Two countries a day. Chain land borders between them in the fewest moves.',
   },
@@ -50,10 +50,10 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Span',
-  alternateName: 'Span — Daily Geography Border Puzzle',
+  alternateName: 'Span: Daily Geography Border Puzzle',
   url: `${SITE_URL}/span`,
   description:
-    'A free daily geography puzzle: connect a start country to a destination with a chain of land borders. Perfect is the shortest possible road — every extra move costs a point, and misses break ties.',
+    'A free daily geography puzzle: connect a start country to a destination with a chain of land borders. Perfect is the shortest possible road. Every extra move costs a point, and misses break ties.',
   genre: ['Geography puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

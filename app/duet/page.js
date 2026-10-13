@@ -20,7 +20,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Binary Logic Puzzle: Duet | Mind Loft',
   description:
-    'A free daily logic grid. Fill every square with a dot or a ring: every row, column and walled room is half and half, never three alike in a line. One logical solution, a new board every day, 10x10 on Sundays.',
+    'A free daily binary logic puzzle: fill each square with a dot or a ring so every row, column and room is half and half, never three alike in a line.',
   alternates: { canonical: '/duet' },
   openGraph: {
     images: [{ url: '/og/duet.png', width: 1200, height: 630, alt: 'Duet, a daily dots-and-rings logic grid from Mind Loft' }],
@@ -53,6 +53,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/duet.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

@@ -18,7 +18,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Daily City Puzzle, Guess the City by Distance: Ping | Mind Loft',
   description:
-    'A free daily geography puzzle — one secret world city, no clues. Guess any city and Ping tells you exactly how many miles away it is. Home in and keep guessing until you find it; the fewer guesses, the better your score.',
+    'A free daily geography puzzle: one secret world city, no clues. Guess any city and Ping tells you exactly how many miles away it is. Home in and keep guessing until you find it; the fewer guesses, the better your score.',
   alternates: { canonical: '/ping' },
   manifest: '/api/pwa-manifest?game=ping',
   icons: {
@@ -36,8 +36,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/ping.png', width: 1200, height: 630, alt: 'Ping — the daily city hunt from Mind Loft' }],
-    title: 'Ping — The Daily City Hunt',
+    images: [{ url: '/og/ping.png', width: 1200, height: 630, alt: 'Ping, the daily city hunt from Mind Loft' }],
+    title: 'Ping: The Daily City Hunt',
     description:
       'One secret city a day, no clues. Guess a city and get the exact miles to the target. Home in and find it. From Mind Loft.',
     url: '/ping',
@@ -47,7 +47,7 @@ export const metadata = {
   twitter: {
     images: ['/og/ping.png'],
     card: 'summary_large_image',
-    title: 'Ping — The Daily City Hunt',
+    title: 'Ping: The Daily City Hunt',
     description:
       'One secret city a day, no clues. Every guess pings back the exact distance in miles to the target.',
   },
@@ -57,10 +57,10 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Ping',
-  alternateName: 'Ping — Daily City Puzzle',
+  alternateName: 'Ping: Daily City Puzzle',
   url: `${SITE_URL}/ping`,
   description:
-    'A free daily geography puzzle: one secret world city, no clues. Guess any city and each guess returns the great-circle distance in miles to the target. Keep guessing until you find it — the fewer guesses, the better.',
+    'A free daily geography puzzle: one secret world city, no clues. Guess any city and each guess returns the great-circle distance in miles to the target. Keep guessing until you find it. The fewer guesses, the better.',
   genre: ['Geography puzzle', 'Trivia puzzle', 'Guessing puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

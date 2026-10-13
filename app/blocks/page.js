@@ -21,8 +21,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/blocks.png', width: 1200, height: 630, alt: 'Blocks — a daily falling-shapes puzzle from Mind Loft' }],
-    title: 'Blocks — A Daily Falling-Shapes Puzzle',
+    images: [{ url: '/og/blocks.png', width: 1200, height: 630, alt: 'Blocks, a daily falling-shapes puzzle from Mind Loft' }],
+    title: 'Blocks: A Daily Falling-Shapes Puzzle',
     description: 'Same shapes, same order, for everybody. Unlimited runs, best one counts, and it never speeds up.',
     url: '/blocks',
     type: 'website',
@@ -31,7 +31,7 @@ export const metadata = {
   twitter: {
     images: ['/og/blocks.png'],
     card: 'summary_large_image',
-    title: 'Blocks — A Daily Falling-Shapes Puzzle',
+    title: 'Blocks: A Daily Falling-Shapes Puzzle',
     description: 'Same shapes, same order, for everybody. Unlimited runs, best one counts, and it never speeds up.',
   },
 };
@@ -40,7 +40,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Blocks',
-  alternateName: 'Blocks — Daily Falling-Shapes Puzzle',
+  alternateName: 'Blocks: Daily Falling-Shapes Puzzle',
   url: `${SITE_URL}/blocks`,
   description:
     'A daily falling-shapes puzzle. The same shape order for every player, unlimited runs with your best one scored, a fixed drop rate and a short well.',
@@ -49,6 +49,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/blocks.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 

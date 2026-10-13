@@ -24,7 +24,7 @@ export const metadata = {
   alternates: { canonical: '/sweep' },
   openGraph: {
     images: [{ url: '/og/sweep.png', width: 1200, height: 630, alt: 'Sweep: a daily arcade puzzle from Mind Loft' }],
-    title: 'Sweep — A Daily Minesweeper With No Bottom',
+    title: 'Sweep: A Daily Minesweeper With No Bottom',
     description: 'The same field for everybody, no guessing ever required, and no bottom edge.',
     url: '/sweep',
     type: 'website',
@@ -33,7 +33,7 @@ export const metadata = {
   twitter: {
     images: ['/og/sweep.png'],
     card: 'summary_large_image',
-    title: 'Sweep — A Daily Minesweeper With No Bottom',
+    title: 'Sweep: A Daily Minesweeper With No Bottom',
     description: 'The same field for everybody, no guessing ever required, and no bottom edge.',
   },
 };
@@ -42,7 +42,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Sweep',
-  alternateName: 'Sweep — Daily Minesweeper',
+  alternateName: 'Sweep: Daily Minesweeper',
   url: `${SITE_URL}/sweep`,
   description:
     'A daily minesweeper with no bottom edge. The same field for every player, proven solvable without guessing, one life a run and unlimited runs.',
@@ -51,6 +51,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/sweep.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 

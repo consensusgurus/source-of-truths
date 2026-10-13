@@ -27,8 +27,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/rim.png', width: 1200, height: 630, alt: 'Rim — a daily outside sudoku from Mind Loft' }],
-    title: 'Rim — A Daily Outside Sudoku',
+    images: [{ url: '/og/rim.png', width: 1200, height: 630, alt: 'Rim, a daily outside sudoku from Mind Loft' }],
+    title: 'Rim: A Daily Outside Sudoku',
     description:
       'Sudoku with nothing printed inside the grid: the clues sit in the margin. One logical solution, from Mind Loft, daily.',
     url: '/rim',
@@ -38,7 +38,7 @@ export const metadata = {
   twitter: {
     images: ['/og/rim.png'],
     card: 'summary_large_image',
-    title: 'Rim — A Daily Outside Sudoku',
+    title: 'Rim: A Daily Outside Sudoku',
     description:
       'Sudoku with nothing printed inside the grid, only digits in the margin. A clean solve wins and the clock breaks the tie.',
   },
@@ -48,15 +48,16 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Rim',
-  alternateName: 'Rim — Daily Outside Sudoku',
+  alternateName: 'Rim: Daily Outside Sudoku',
   url: `${SITE_URL}/rim`,
   description:
-    'A free daily outside sudoku: a 9×9 grid with no digits printed inside it, where the three digits of the cells nearest an edge are printed outside some row and column ends. Each board has one solution reachable by pure logic — solve it for a perfect score, and ties break on fastest time.',
+    'A free daily outside sudoku: a 9×9 grid with no digits printed inside it, where the three digits of the cells nearest an edge are printed outside some row and column ends. Each board has one solution reachable by pure logic. Solve it for a perfect score, and ties break on fastest time.',
   genre: ['Logic puzzle', 'Sudoku', 'Number puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/rim.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',

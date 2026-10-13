@@ -13,7 +13,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Word Grouping Puzzle: Links | Mind Loft',
   description:
-    'A free daily word grouping puzzle — sixteen words hide four threads of four. Find every thread before four mistakes find you. New puzzle every day, and the Sunday Edition lays twice as many traps.',
+    'A free daily word grouping puzzle: sixteen words hide four threads of four. Find every thread before four mistakes find you. New puzzle every day, and the Sunday Edition lays twice as many traps.',
   alternates: { canonical: '/links' },
   manifest: '/api/pwa-manifest?game=links',
   icons: {
@@ -31,8 +31,8 @@ export const metadata = {
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
-    images: [{ url: '/og/links.png', width: 1200, height: 630, alt: 'Links — a daily word grouping puzzle from Mind Loft' }],
-    title: 'Links — A Daily Word Grouping Puzzle',
+    images: [{ url: '/og/links.png', width: 1200, height: 630, alt: 'Links, a daily word grouping puzzle from Mind Loft' }],
+    title: 'Links: A Daily Word Grouping Puzzle',
     description:
       'Sixteen words, four hidden groups, four mistakes to spare. The words that look like they belong together usually don’t. A new word puzzle from Mind Loft.',
     url: '/links',
@@ -42,7 +42,7 @@ export const metadata = {
   twitter: {
     images: ['/og/links.png'],
     card: 'summary_large_image',
-    title: 'Links — A Daily Word Grouping Puzzle',
+    title: 'Links: A Daily Word Grouping Puzzle',
     description:
       'Sixteen words, four hidden groups, four mistakes to spare.',
   },
@@ -52,10 +52,10 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Links',
-  alternateName: 'Links — Daily Word Grouping Puzzle',
+  alternateName: 'Links: Daily Word Grouping Puzzle',
   url: `${SITE_URL}/links`,
   description:
-    'A free daily word grouping puzzle: sixteen words hide four threads of four. Bank each thread in its color, easiest yellow to trickiest red — four mistakes and the board wins.',
+    'A free daily word grouping puzzle: sixteen words hide four threads of four. Bank each thread in its color, easiest yellow to trickiest red. Four mistakes and the board wins.',
   genre: ['Word puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

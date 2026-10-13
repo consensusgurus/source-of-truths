@@ -18,7 +18,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Reverse Mental Math Game: Back | Mind Loft',
   description:
-    'A free daily mental math game played backwards: each problem gives a number, like ? = 56, and four lines of arithmetic, and exactly one makes it. Twenty problems climb from the times tables to brackets, squares, percentages and two-digit products. Twenty seconds each, one life. No app, no signup, new problems every day.',
+    'A free daily reverse math game: each problem gives the answer and four lines of arithmetic, and exactly one makes it. Twenty seconds each, one life.',
   alternates: { canonical: '/back' },
   openGraph: {
     images: [{ url: '/og/back.png', width: 1200, height: 630, alt: 'Back, a daily puzzle from Mind Loft' }],
@@ -37,6 +37,7 @@ const gameJsonLd = {
   genre: ['Educational', 'Puzzle', 'Mental math'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/back.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
 const breadcrumbJsonLd = {

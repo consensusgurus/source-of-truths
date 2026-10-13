@@ -177,7 +177,7 @@ export async function generateMetadata({ params }) {
     const url = `${SITE_URL}${runHref(c.id)}`;
     const hook = 'Three jammed lots. One clock.';
     return {
-      title: `${c.name} — Parker, Impound and Junkyard on One Clock | Mind Loft`,
+      title: `${c.name}: Parker, Impound and Junkyard on One Clock | Mind Loft`,
       description:
         'The three daily sliding-block puzzles played back to back as one run: a six by six, a seven by seven and an eight by eight, each with a red car to slide out of the one gap in the wall. One clock across all three, and the fastest valet takes the day. Free, no signup, new lots every day.',
       alternates: { canonical: runHref(c.id) },
@@ -217,7 +217,7 @@ export async function generateMetadata({ params }) {
   const url = `${SITE_URL}${runHref(c.id)}`;
   const hook = `${spell(n, true)} trivia quizzes. One life each.`;
   return {
-    title: `${c.name} — ${spell(n, true)} Trivia Quizzes, One Long Run | Mind Loft`,
+    title: `${c.name}: ${spell(n, true)} Trivia Quizzes, One Long Run | Mind Loft`,
     description:
       `Quiz show practice, ${spell(n)} rounds deep. Every daily trivia quiz played back to back as one run: a topic in depth, the whole map, every sport, the business of everything, and forty questions of anything at all. Twenty seconds a question, one life in each quiz, and one wrong answer ends it. Free, no signup, new questions every day.`,
     alternates: { canonical: runHref(c.id) },

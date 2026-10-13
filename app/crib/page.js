@@ -27,7 +27,7 @@ export const metadata = {
     images: [{ url: '/og/crib.png', width: 1200, height: 630, alt: 'Crib, a daily cribbage puzzle from Mind Loft' }],
     title: 'Crib: A Daily Cribbage Puzzle',
     description:
-      'Six cards, throw two. Every throw valued over every cut card and every crib. From Mind Loft, daily.',
+      'A free daily cribbage puzzle: six cards, throw two to the crib. Every throw is valued over every cut and every crib. Five hands a day, seven on Sundays.',
     url: '/crib',
     type: 'website',
     siteName: 'Mind Loft',
@@ -54,6 +54,7 @@ const gameJsonLd = {
   isAccessibleForFree: true,
   inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/crib.png`,
   publisher: {
     '@type': 'Organization',
     name: 'Mind Loft',
