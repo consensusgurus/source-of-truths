@@ -23,7 +23,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { X, Lightbulb, Eye, RotateCcw, Smartphone } from 'lucide-react';
+import { X, Lightbulb, Smartphone } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -83,7 +83,6 @@ const BLK_PC = '#26282e', BLK_PC_DK = '#0e0f12';
 // label change could be read. A confirm this fast was never a decision.
 const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_check_help_seen';
 const STATS_KEY = 'sot_check_stats';
 
@@ -635,7 +634,7 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Check #${PUZZLE.num} — the daily checkers shot from Mind Loft.\n${shareUrl()}`
+      ? `Check #${PUZZLE.num}: the daily checkers shot from Mind Loft.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -713,13 +712,41 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.ck-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .ck-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .ck-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .ck-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+          /* Game-local colours, one set per register. The squares themselves are
+             the shared --stg-sq-l / --stg-sq-d pair; these are the marks drawn on
+             them. The light block carries the boot-stamp guard (app/globals.css). */
+          .ck-root{--ck-sel-l:#f2cf6b;--ck-sel-d:#b8871c;--ck-last-l:#e3dbc2;--ck-last-d:#5c5236;--ck-dot:#d5dbe5;--ck-rim:#e9edf4;--ck-frame:#5a6680;--ck-btn:#5a6680;--ck-lift:rgba(233,237,244,0.55);
+            --ck-soft:color-mix(in srgb, var(--stg-acc, #e8b43a) 24%, var(--stg-ground, #0b0f1a));}
+          html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .ck-root{--ck-sel-l:#f6d77e;--ck-sel-d:#c9962a;--ck-last-l:#f4ecd4;--ck-last-d:#b5a882;--ck-dot:#1e2433;--ck-rim:#0f1420;--ck-frame:#0f1420;--ck-btn:#78839a;--ck-lift:rgba(15,20,32,0.55);
+            --ck-soft:color-mix(in srgb, var(--stg-acc, #e8b43a) 32%, #ffffff);}
+          .ck-k{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute,#8b95a8);}
+          .ck-k b{color:var(--stg-acc-ink,#7c5104);font-weight:800;}
+          .ck-meter{display:flex;gap:4px;margin-top:8px;}
+          .ck-seg{flex:1;height:8px;border-radius:2px;background:var(--stg-line2,rgba(255,255,255,.17));}
+          .ck-seg.done{background:var(--stg-acc,#e8b43a);}
+          .ck-seg.now{background:var(--ck-soft);box-shadow:inset 0 0 0 2px var(--stg-acc-ink,#e8b43a);}
+          .ck-short{display:none;}
           .ck-sq{position:relative;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;}
-          .ck-pc{width:76%;height:76%;border-radius:50%;pointer-events:none;box-shadow:inset 0 -3px 5px rgba(0,0,0,0.34), inset 0 3px 4px rgba(255,255,255,0.22);display:flex;align-items:center;justify-content:center;}
-          .ck-crown{width:54%;height:54%;display:block;overflow:visible;fill:rgba(255,255,255,0.9);filter:drop-shadow(0 1px 1.5px rgba(0,0,0,0.45));}
-          .ck-dot{position:absolute;width:26%;height:26%;border-radius:50%;background:rgba(255,255,255,0.62);pointer-events:none;}
+          .ck-pc{width:74%;height:74%;border-radius:50%;pointer-events:none;box-shadow:0 0 0 2px var(--ck-rim), inset 0 -3px 5px rgba(0,0,0,0.34), inset 0 3px 4px rgba(255,255,255,0.22);display:flex;align-items:center;justify-content:center;}
+          .ck-crown{width:54%;height:54%;display:block;overflow:visible;fill:#f3f4f6;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,0.45));}
+          .ck-dot{position:absolute;width:28%;height:28%;border-radius:50%;background:var(--ck-dot);pointer-events:none;}
           .ck-board.shake{animation:ckshake .34s ease;}
           @keyframes ckshake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
+          .ck-chip{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 12px;border-radius:9px;border:1px solid var(--stg-line2,rgba(255,255,255,.17));background:var(--stg-cell,#1a1d28);font-size:14px;font-weight:700;color:var(--stg-ink,#e9edf4);white-space:nowrap;}
+          .ck-chip i{width:14px;height:14px;border-radius:50%;flex:none;box-shadow:0 0 0 2px var(--ck-rim);}
+          .ck-ctl{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2,#aab5c7);border:1.5px solid var(--ck-btn);border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
+          .ck-ctl:hover{background:var(--stg-surf2,rgba(255,255,255,.08));color:var(--stg-ink,#e9edf4);}
+          .ck-ctl.armed{border-color:var(--stg-bad,#fb7185);color:var(--stg-bad,#fb7185);}
+          .ck-link{background:none;border:none;cursor:pointer;font-family:${SANS};font-weight:700;font-size:12px;color:var(--stg-ink2,#aab5c7);text-decoration:underline;text-underline-offset:3px;white-space:nowrap;min-height:44px;min-width:84px;padding:0;text-align:right;}
+          .ck-link.armed{color:var(--stg-bad,#fb7185);}
+          .ck-note{font-size:12px;font-weight:600;color:var(--stg-mute,#8b95a8);line-height:1.45;}
+          @media(max-width:560px){
+            .ck-long{display:none;}
+            .ck-short{display:inline;}
+            .ck-ctlrow .ck-note{display:none;}
+            .ck-ctlrow .ck-ctl{flex:1;}
+            .ck-status-t{font-size:15px !important;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
@@ -728,7 +755,7 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
         <DailyMasthead
           slug="check" num={PUZZLE.num} dateLabel={PUZZLE.dateLabel} accent={COLORS.accent}
           blockGap={5} helpTop={13} marginBottom={16} onHelp={() => setShowHelp(true)}
-          sunday={PUZZLE.sunday && <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition &middot; Clear in 4</span>}
+          sunday={PUZZLE.sunday && <span style={{ fontFamily: SANS, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition &middot; Clear in 4</span>}
           blocks={'CHECK'.split('').map((ch, i) => (
             <div key={i} style={{ width: 40, height: 44, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontWeight: 900, fontSize: 24, background: i === 4 ? `var(--stg-acc, ${COLORS.accent})` : COLORS.ink, color: T.white, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.65)' }}>{ch}</div>
           ))}
@@ -761,23 +788,68 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
 
-        {!preStart && (
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
-          {/* These figures move UP into the cap on a loft page; printing
-              them twice is the one thing to avoid. */}
-          {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-            <span style={{ whiteSpace: 'nowrap' }}>taken <b style={{ color: INK, fontWeight: 500 }}>{taken}/{blkStart}</b></span>
-            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>
-              {playing ? <>moves left <b style={{ color: left <= 1 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-acc-ink, ${COLORS.accent})`, fontWeight: 500 }}>{left}</b></> : <>clear in <b style={{ color: INK, fontWeight: 500 }}>{BUDGET}</b></>}
-            </span>
+        {!preStart && (() => {
+          // What the board says in words: one status sentence and one muted
+          // helper line, both read from state the board already shows.
+          const selPiece = sel != null ? pos[sel] : 0;
+          const jumpOn = myMoves.some((m) => m.caught && m.caught.length);
+          const selTargets = targets.size;
+          let title = statusLine();
+          let help = '';
+          if (playing) {
+            if (thinking || awaitingReply) help = 'Black replies a beat after your move.';
+            else {
+              // The title stays the move count while a piece is up (as drawn);
+              // the helper line says what the pick-up means.
+              title = left === 1
+                ? 'Last move. It has to take everything left.'
+                : `Your move. ${left} moves to take the last ${blkLeft} black ${blkLeft === 1 ? 'piece' : 'pieces'}.`;
+              if (sel != null) {
+                const pc = isKing(selPiece) ? 'king' : 'man';
+                const only = selTargets === 1;
+                help = jumpOn
+                  ? [`Your ${pc} is picked up. A jump is on, and captures are compulsory${only ? ', so it is the only move.' : '. The dots are where it can go.'}`,
+                     `Your ${pc} is picked up. A jump is on${only ? ', so it is the only move.' : '. Tap a dot.'}`]
+                  : [`Your ${pc} is picked up. The dots are where it can go. Tap it again to put it down.`,
+                     `Your ${pc} is picked up. Tap a dot to move it.`];
+              } else {
+                help = jumpOn ? 'Tap a red piece, then tap where it goes. A jump is on, so you must take.' : 'Tap a red piece, then tap where it goes.';
+              }
+            }
+          }
+          const tally = (red) => {
+            let k = 0, m = 0;
+            for (let i = 0; i < pos.length; i++) { const v = pos[i]; if (!v || isRed(v) !== red) continue; if (isKing(v)) k++; else m++; }
+            const bits = [];
+            if (k) bits.push(`${k} ${k === 1 ? 'king' : 'kings'}`);
+            if (m) bits.push(`${m} ${m === 1 ? 'man' : 'men'}`);
+            return bits.length ? bits.join(', ') : 'none left';
+          };
+          const count = (red) => { let n = 0; for (let i = 0; i < pos.length; i++) { const v = pos[i]; if (v && isRed(v) === red) n++; } return n; };
+          const moveNo = Math.min(BUDGET, redMovesMade + (playing ? 1 : 0));
+          const redBg = `radial-gradient(circle at 34% 30%, ${RED_PC}, ${RED_PC_DK} 70%), ${RED_PC}`;
+          const blkBg = 'radial-gradient(circle at 34% 30%, #3a3d45, #0e0f12 70%), #26282e';
+          return (
+        <div className={`ck-root ${STAGE ? 'stg-board' : (LOFT ? 'loft-card' : '')}`} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+          {/* The top meter: one segment per move in the budget, and how many
+              black pieces are off. Replaces the old stat strip on every page. */}
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
+              <span className="ck-k">{playing
+                ? <>{<span className="ck-long">Your move </span>}<span className="ck-short">Move </span><b>{moveNo}</b> of {BUDGET}</>
+                : <><b>{redMovesMade}</b> of {BUDGET} moves played</>}</span>
+              <span className="ck-k" style={{ textAlign: 'right' }}>{taken} of {blkStart} <span className="ck-long">black pieces </span>taken</span>
+            </div>
+            <div className="ck-meter" aria-hidden="true">
+              {Array.from({ length: BUDGET }).map((_, i) => (
+                <span key={i} className={`ck-seg${i < redMovesMade ? ' done' : (playing && i === redMovesMade ? ' now' : '')}`} />
+              ))}
+            </div>
           </div>
-          )}
 
-          <div style={{ maxWidth: 430, margin: '0 auto' }}>
+          <div style={{ maxWidth: 480, margin: '0 auto' }}>
             <div key={shake} className={`ck-board${shake ? ' shake' : ''}`}
-              style={{ display: 'grid', gridTemplateColumns: `repeat(${SIZE}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${SIZE}, minmax(0, 1fr))`, aspectRatio: '1 / 1', border: `2px solid ${COLORS.ink}`, borderRadius: 6, overflow: 'hidden', touchAction: 'manipulation' }}>
+              style={{ display: 'grid', gridTemplateColumns: `repeat(${SIZE}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${SIZE}, minmax(0, 1fr))`, aspectRatio: '1 / 1', boxShadow: '0 0 0 2px var(--ck-frame)', borderRadius: 6, overflow: 'hidden', touchAction: 'manipulation' }}>
               {Array.from({ length: SIZE * SIZE }).map((_, sq) => {
                 const r = Math.floor(sq / SIZE), c = sq % SIZE;
                 const dark = playable(r, c);
@@ -787,14 +859,14 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
                 const onPath = lastPath.includes(sq);
                 const canLift = myTurn && movable.has(sq);
                 let bg = dark ? DARK_SQ : LIGHT_SQ;
-                if (onPath) bg = `linear-gradient(rgba(232,180,58,0.45),rgba(232,180,58,0.45)), ${bg}`;
-                if (isSel) bg = `linear-gradient(rgba(255,255,255,0.32),rgba(255,255,255,0.32)), ${dark ? DARK_SQ : LIGHT_SQ}`;
+                if (onPath) bg = dark ? 'var(--ck-last-d)' : 'var(--ck-last-l)';
+                if (isSel) bg = dark ? 'var(--ck-sel-d)' : 'var(--ck-sel-l)';
                 return (
                   <div key={sq} className="ck-sq" onClick={() => onSquare(sq)} role="button" tabIndex={-1}
                     aria-label={`row ${r + 1} column ${c + 1}${v ? (isRed(v) ? ' your piece' : ' black piece') : ''}`}
-                    style={{ background: bg, cursor: dark && playing ? 'pointer' : 'default', boxShadow: hintSq === sq ? `inset 0 0 0 3px ${T.successDeep}` : canLift && sel == null ? 'inset 0 0 0 2px rgba(255,255,255,0.35)' : undefined }}>
+                    style={{ background: bg, cursor: dark && playing ? 'pointer' : 'default', boxShadow: hintSq === sq ? 'inset 0 0 0 4px var(--stg-acc-ink, #7c5104)' : canLift && sel == null ? 'inset 0 0 0 2px var(--ck-lift)' : undefined }}>
                     {v !== 0 && (
-                      <div className="ck-pc" style={{ background: isRed(v) ? `radial-gradient(circle at 34% 30%, ${RED_PC}, ${RED_PC_DK}), ${RED_PC}` : `radial-gradient(circle at 34% 30%, ${BLK_PC}, ${BLK_PC_DK}), ${BLK_PC}` }}>
+                      <div className="ck-pc" style={{ background: isRed(v) ? redBg : blkBg }}>
                         {isKing(v) && (
                           <svg className="ck-crown" viewBox="0 0 24 20" aria-hidden="true">
                             <path d="M1.9 5.6 7 10.2 12 1.9 17 10.2 22.1 5.6 20.3 15.3 3.7 15.3 Z" />
@@ -808,44 +880,61 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
                 );
               })}
             </div>
-          </div>
 
-          <div style={{ marginTop: 12, minHeight: 22, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: endHold.held ? 15 : 13, fontWeight: 800, color: playing ? `var(--stg-acc-ink, ${COLORS.accent})` : (endHold.held ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-mute, ${COLORS.faded})`) }}>{statusLine()}</span>
-            <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 11, color: FADED, fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: RED_PC, display: 'inline-block' }} /> you
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: BLK_PC, display: 'inline-block', marginLeft: 6 }} /> black
-            </span>
-          </div>
-
-          {playing && hintOk && !g.hintUsed && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 12, flexWrap: 'wrap' }}>
-              <button className="ck-tool" onClick={useHint} title="Name the piece that moves (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(22,110,90,0.5)', color: '#12543f' }}>
-                <Lightbulb size={14} /> Hint
-              </button>
+            <div style={{ marginTop: 16, display: 'flex', alignItems: 'flex-start', gap: 12, minHeight: 44 }}>
+              <span aria-hidden="true" style={{ flex: 'none', width: 12, height: 12, marginTop: 6, borderRadius: '50%', background: playing ? 'var(--stg-acc, #e8b43a)' : (won ? 'var(--stg-good, #047857)' : 'var(--stg-bad, #be123c)'), boxShadow: '0 0 0 2px var(--ck-rim)' }} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }} role="status" aria-live="polite">
+                <span className="ck-status-t" style={{ fontSize: endHold.held ? 18 : 17, fontWeight: 800, color: INK }}>{title}</span>
+                {help && <span style={{ fontSize: 13, fontWeight: 600, color: FADED, lineHeight: 1.4 }}>{Array.isArray(help) ? <><span className="ck-long">{help[0]}</span><span className="ck-short">{help[1]}</span></> : help}</span>}
+              </div>
             </div>
-          )}
 
-        {/* Controls. These sit INSIDE the board card: on the navy stage a bare
-            row of faded text has nothing to sit on, and the card is meant to
-            hold the whole game. */}
-        {started && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)', flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>Tap a red piece, then tap where it goes. No take-back.</span>
-            <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-              <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmRestart(false); setArmReveal(Date.now()); } }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <Eye size={13} /> {armReveal ? 'Tap again — ends the board and scores nothing' : 'Give up'}
-              </button>
-              <button onClick={() => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartGame(); } else { setArmReveal(false); setArmRestart(Date.now()); } }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armRestart ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <RotateCcw size={13} /> {armRestart ? 'Tap again — records a loss and deals a fresh board' : 'Restart'}
-              </button>
-            </span>
+            <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 7 }}>
+              <span className="ck-k">On the board</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                <span className="ck-chip"><i style={{ background: redBg }} /><span>You &middot; <span className="ck-long">{tally(true)}</span><span className="ck-short">{count(true)}</span></span></span>
+                <span className="ck-chip"><i style={{ background: blkBg }} /><span>Black &middot; <span className="ck-long">{tally(false)}</span><span className="ck-short">{count(false)}</span></span></span>
+              </div>
+            </div>
           </div>
+
+        {/* Controls. Armed labels stay SHORT and each control reserves its
+            width, so the first tap never reflows the row out from under the
+            finger (the Mate pattern). The consequence prints on its own line. */}
+        {started && (
+          <>
+          <div className="ck-ctlrow" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--stg-line, rgba(28,30,36,0.10))' }}>
+            <span className="ck-note" style={{ flex: 1 }}>{hintOk && !g.hintUsed ? 'Hint names the piece that moves. ' : ''}Restart records a 0 and deals the same board.</span>
+            {hintOk && !g.hintUsed && (
+              <button className="ck-ctl" onClick={useHint} title="Name the piece that moves (one hint, first play only)">
+                <Lightbulb size={15} aria-hidden="true" /> Hint
+              </button>
+            )}
+            <button className={`ck-ctl${armRestart ? ' armed' : ''}`} style={{ minWidth: 124 }}
+              onClick={() => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartGame(); } else { setArmReveal(false); setArmRestart(Date.now()); } }}
+              title={armRestart ? 'Records a 0 and deals the same board again' : 'Record a 0 and deal the same board again'}>
+              {armRestart ? 'Press again' : 'Restart'}
+            </button>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginTop: 6 }}>
+            <span className="ck-note">
+              <span className="ck-long">You are red, moving up. Take every black piece within {BUDGET} of your moves. There is no take-back.</span>
+              <span className="ck-short">No take-back. Restart records a 0.</span>
+            </span>
+            <button className={`ck-link${armReveal ? ' armed' : ''}`}
+              onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmRestart(false); setArmReveal(Date.now()); } }}
+              title={armReveal ? 'Ends the board and scores nothing' : 'End the board now, scoring nothing'}>
+              {armReveal ? 'Press again' : 'Give up'}
+            </button>
+          </div>
+          <div className="ck-armed" aria-live="polite" style={{ minHeight: 18, fontSize: 12, fontWeight: 700, color: 'var(--stg-bad, #be123c)', textAlign: 'right', lineHeight: 1.4 }}>
+            {armReveal ? 'Ends the board and scores nothing.' : armRestart ? 'Records a 0 and deals the same board again.' : ''}
+          </div>
+          </>
         )}
         </div>
-        )}
+          );
+        })()}
 
 
           <div className={STAGE ? undefined : 'loft-sol'}>
@@ -873,12 +962,12 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
                 {isTodays ? (
                   <>
                     {countdown ? <>Next Check in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A new board drops at midnight Eastern.'}
-                    {prevPuzzle && (<>{' '}Meanwhile: <a href={`/check?p=${prevPuzzle.num}`} style={{ color: COLORS.ember, fontWeight: 800, textDecoration: 'underline' }}>play yesterday&rsquo;s Check &rarr;</a></>)}
+                    {prevPuzzle && (<>{' '}Meanwhile: <a href={`/check?p=${prevPuzzle.num}`} style={{ color: STAGE ? ACC_INK : COLORS.ember, fontWeight: 800, textDecoration: 'underline' }}>play yesterday&rsquo;s Check &rarr;</a></>)}
                   </>
                 ) : (
                   <>
                     You&rsquo;re playing the {PUZZLE.dateLabel.replace(', 2026', '')} archive.{' '}
-                    <a href="/check" style={{ color: COLORS.ember, fontWeight: 800, textDecoration: 'underline' }}>Back to today&rsquo;s Check &rarr;</a>
+                    <a href="/check" style={{ color: STAGE ? ACC_INK : COLORS.ember, fontWeight: 800, textDecoration: 'underline' }}>Back to today&rsquo;s Check &rarr;</a>
                     {' · '}<a href="/archive" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>Puzzle archive</a>
                   </>
                 )}
@@ -896,11 +985,11 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               title={won ? 'Solved' : 'Not solved'}
-              detail={`${`${taken}/${blkStart}`} taken \u00b7 ${elapsed}`}
+              detail={`${taken} of ${blkStart} taken \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
-                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '\u2014',
+                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '\u2013',
                     label: allTime.field != null ? `of ${Number(allTime.field).toLocaleString()} Check all time` : 'all-time rank' }
                 : null}
               day={dayStats}
@@ -943,7 +1032,7 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
         <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block', margin: '30px auto 0' }}>
           {LOFT && (
             <div className={STAGE ? undefined : 'loft-report'}>
-              <ReportIssue self="check" name="Check" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
+              <ReportIssue self="check" name="Check" accent="var(--stg-acc)" align="center" onHelp={() => setShowHelp(true)} />
             </div>
           )}
           {!LOFT && (
@@ -969,12 +1058,12 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s board, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s board, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>Open your browser&apos;s menu and choose <b>Add to Home Screen</b> (or <b>Install app</b>). The tile opens today&apos;s board, every day.</p>
               )}
-              <button onClick={() => setShowA2hsHelp(false)} style={{ marginTop: 10, fontFamily: SANS, fontSize: 12.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, height: 44, width: '100%', borderRadius: 10, border: 'none', background: COLORS.ink, color: T.white, cursor: 'pointer' }}>Got it</button>
+              <button onClick={() => setShowA2hsHelp(false)} style={{ marginTop: 10, fontFamily: SANS, fontSize: 12.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, height: 44, width: '100%', borderRadius: 10, border: 'none', background: STAGE ? 'var(--stg-ink)' : COLORS.ink, color: STAGE ? 'var(--stg-ground)' : T.white, cursor: 'pointer' }}>Got it</button>
             </div>
           </div>
         )}
@@ -1000,7 +1089,7 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
-        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>{toast}</div>
+        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: STAGE ? 'var(--stg-ink)' : COLORS.ink, color: STAGE ? 'var(--stg-ground)' : T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>{toast}</div>
       )}
 
       {showHelp && (
@@ -1012,7 +1101,7 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
               <button onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
             </div>
             {rulesBody}
-            <button className="ck-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: COLORS.ink, color: T.white }}>Play</button>
+            <button className="ck-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: STAGE ? 'var(--stg-ink)' : COLORS.ink, color: STAGE ? 'var(--stg-ground)' : T.white }}>Play</button>
           </div>
         </div>
       )}

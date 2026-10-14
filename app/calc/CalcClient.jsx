@@ -129,7 +129,7 @@ function evalRoute(n, cells, route) {
   }
   return acc;
 }
-const glyphOf = (v) => (v === '*' ? '×' : v === '/' ? '÷' : v);
+const glyphOf = (v) => (v === '*' ? '×' : v === '/' ? '÷' : v === '-' ? '−' : v);
 
 const isIosDevice = () =>
   typeof navigator !== 'undefined' &&
@@ -644,7 +644,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Calc #${PUZZLE.num} — walk the calculator, from Mind Loft.\n${shareUrl()}`
+      ? `Calc #${PUZZLE.num}: walk the calculator, from Mind Loft.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -662,9 +662,6 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
   }
 
   // ── the running tape ──
-  const tapeText = path.length === 1
-    ? 'Tap a button touching START.'
-    : path.map((i) => glyphOf(PUZZLE.cells[i])).join(' ') + (atNumber ? ' =' : '');
 
   // ── the route drawn under the buttons ──
   const boardRef = useRef(null);
@@ -675,6 +672,16 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
   const shownRoute = playing
     ? path
     : (((g.status !== 'revealed' || !LOFT || revealed) && g.shown && g.shown[g.slot]) || g.routes[g.slot] || path);
+  // The tape and the Holding figure read the route on the board: the live
+  // walk while playing, the landed or revealed route once it is over.
+  const tapeRoute = playing ? path : shownRoute;
+  const tapeHead = tapeRoute[tapeRoute.length - 1];
+  const tapeTotal = evalRoute(N, PUZZLE.cells, tapeRoute);
+  const tapeAtNumber = isNumCell(N, tapeHead);
+  const tapeAtEnd = tapeHead === END;
+  const tapeText = tapeRoute.length === 1 && playing
+    ? 'Tap a button touching START.'
+    : tapeRoute.map((i) => glyphOf(PUZZLE.cells[i])).join(' ');
   useEffect(() => {
     const el = boardRef.current;
     if (!el) return undefined;
@@ -702,7 +709,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
   // Shared rules body — rendered in both the how-to-play modal and the start gate.
   const rulesBody = (
     <DailyRules
-      accent={COLORS.accent} accentSoft={COLORS.accentSoft}
+      accent={STAGE ? 'var(--stg-acc)' : COLORS.accent} accentSoft={COLORS.accentSoft}
       lead="Walk from START to END one button at a time. The buttons alternate, so the walk hands you a number, then an operator, then a number: the route you walk is a sum, and it has to come out at the target."
       steps={[
         <>Tap any button that <b>touches</b> the one you are on, up, down, left or right. Tap the button you are on, or the one behind you, to <b>step back</b>. Arrow keys work too.</>,
@@ -746,26 +753,115 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.cl-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .cl-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : COLORS.accent};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : COLORS.accent};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .cl-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .cl-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-          .cl-key{position:relative;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-family:${MONO};font-weight:500;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;padding:0;min-width:0;border-radius:50%;transition:transform .09s ease,background .12s ease,color .12s ease;}
-          .cl-num{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accentDeep}) 16%, transparent);color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};border:1.5px solid var(--stg-surf2, ${COLORS.accentTint});}
-          .cl-op{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${FADED};border:1.5px dashed rgba(28,30,36,0.22);}
-          .cl-key.on{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border:1.5px solid var(--stg-acc, ${COLORS.accent});}
-          .cl-key.head{background:var(--stg-acc, ${COLORS.accentDeep});border-color:var(--stg-acc, ${COLORS.accentDeep});box-shadow:0 0 0 4px var(--stg-surf2, ${COLORS.accentTint});}
-          .cl-key.reach{border:1.5px solid var(--stg-acc, ${COLORS.accent});}
-          .cl-key.reach:hover{transform:scale(1.07);}
-          .cl-key.blocked{opacity:.3;cursor:default;}
-          .cl-key.term{border-radius:14px;}
-          .cl-key.solved{background:${COLORS.green};border-color:${COLORS.green};color:var(--white);}
-          .cl-flag{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-family:${MONO};font-size:8px;letter-spacing:.1em;text-transform:uppercase;background:${COLORS.ink};color:var(--white);padding:1px 5px;border-radius:99px;font-weight:500;pointer-events:none;}
-          .cl-goal{border: 2px solid var(--stg-line, rgba(28,30,36,0.16));border-radius:11px;padding:6px 16px 8px;text-align:center;min-width:104px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};cursor:pointer;font-family:${SANS};}
-          .cl-goal.act{border-color:var(--stg-acc, ${COLORS.accent});box-shadow:0 0 0 3px var(--stg-surf2, ${COLORS.accentTint});}
-          .cl-goal.got{border-color:${COLORS.green};background:${STAGE ? 'var(--stg-surf2)' : '#f2fbf6'};cursor:default;}
-          .cl-goal .k{font-family:${MONO};font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:${FADED};}
-          .cl-goal .v{font-size:34px;font-weight:800;line-height:1.1;letter-spacing:-.03em;color:${INK};font-variant-numeric:tabular-nums;}
-          .cl-goal.got .v{color:${COLORS.green};}
-          .cl-goal.solo{border:none;padding:0;min-width:0;background:none;}
-          .cl-goal.solo .v{font-size:50px;}
+          .cl-lab{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute);}
+          .cl-lab b{color:var(--stg-acc-ink);font-weight:800;}
+          .cl-route{display:flex;flex-direction:column;gap:8px;margin:0 0 14px;}
+          .cl-route-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
+          .cl-segs{display:flex;gap:3px;}
+          .cl-segs span{flex:1;height:8px;border-radius:2px;background:var(--stg-line2);}
+          .cl-segs span.on{background:var(--stg-acc);}
+          .cl-panel{background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:20px;padding:18px 20px 16px;display:flex;flex-direction:column;align-items:center;}
+          .cl-head{width:100%;max-width:560px;display:flex;align-items:stretch;gap:12px;}
+          .cl-tgts{width:132px;flex:none;display:flex;flex-direction:column;gap:6px;}
+          .cl-tgt{flex:1;box-sizing:border-box;border-radius:14px;background:var(--stg-acc);color:var(--stg-onramp);border:2px solid var(--stg-acc);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 0;font-family:${SANS};min-height:44px;}
+          .cl-tgt .k{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;}
+          .cl-tgt .v{font-size:38px;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums;}
+          .cl-tgts.multi .cl-tgt{flex-direction:row;gap:8px;padding:4px 8px;cursor:pointer;}
+          .cl-tgts.multi .cl-tgt .v{font-size:22px;}
+          .cl-tgts.multi .cl-tgt.idle{background:var(--stg-cell);color:var(--stg-ink);border-color:var(--stg-cell-line);}
+          .cl-tgts.multi .cl-tgt.got{background:var(--stg-cell);color:var(--stg-good);border-color:var(--stg-good);cursor:default;}
+          .cl-well{flex:1;min-width:0;box-sizing:border-box;border-radius:14px;background:var(--stg-ground);border:1px solid var(--stg-line);display:flex;align-items:center;padding:10px 16px;gap:14px;}
+          .cl-tape{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;}
+          .cl-tape-k,.cl-hold-k{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);}
+          .cl-tape-clip{overflow:hidden;direction:rtl;text-align:left;white-space:nowrap;}
+          .cl-tape-v{direction:ltr;unicode-bidi:isolate;display:inline-block;font-size:19px;font-weight:700;color:var(--stg-ink2);white-space:nowrap;font-variant-numeric:tabular-nums;}
+          .cl-hold{display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding-left:14px;border-left:1.5px solid var(--stg-line);flex:none;}
+          .cl-hold-v{font-size:30px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;color:var(--stg-ink);white-space:nowrap;}
+          .cl-hold-v i{font-style:normal;color:var(--stg-acc-ink);}
+          .cl-hold-v.good{color:var(--stg-good);}
+          .cl-hold-v.bad{color:var(--stg-bad);}
+          .cl-board{position:relative;width:min(478px,100%);margin:26px auto 0;}
+          .cl-board.n7{width:min(500px,100%);}
+          .cl-grid{display:grid;gap:14px;position:relative;z-index:2;}
+          .cl-board.n7 .cl-grid{gap:10px;}
+          .cl-key{position:relative;aspect-ratio:1;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-family:${SANS};font-weight:800;font-variant-numeric:tabular-nums;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;padding:0;min-width:0;border-radius:50%;transition:transform .09s ease,background .12s ease,color .12s ease;font-size:26px;}
+          .cl-board.n7 .cl-key{font-size:22px;}
+          .cl-num{background:var(--stg-cell);color:var(--stg-ink);border:1.5px solid var(--stg-cell-line);}
+          .cl-op{background:var(--stg-surf);color:var(--stg-ink2);border:1.5px dashed var(--stg-cell-line);font-size:22px;}
+          .cl-board.n7 .cl-op{font-size:19px;}
+          .cl-key.on{background:color-mix(in srgb, var(--stg-acc) 22%, var(--stg-cell));color:var(--stg-ink);border:2px solid var(--stg-acc);}
+          .cl-key.head{background:var(--stg-acc);color:var(--stg-onramp);border:2px solid var(--stg-acc);box-shadow:0 0 0 5px color-mix(in srgb, var(--stg-acc) 26%, transparent);}
+          .cl-key.reach{border:3px solid var(--stg-acc);}
+          .cl-key.reach:hover{transform:scale(1.06);}
+          .cl-key.blocked{color:var(--stg-mute);border-color:var(--stg-line2);cursor:default;}
+          .cl-key.term{border-radius:18px;}
+          .cl-key.solved{background:var(--stg-good);border-color:var(--stg-good);color:var(--stg-onramp);}
+          .cl-flag{position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-family:${SANS};font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:var(--stg-ink);color:var(--stg-ground);padding:2px 7px;border-radius:99px;pointer-events:none;line-height:1.2;}
+          .cl-say{width:100%;max-width:560px;margin-top:22px;display:flex;align-items:center;gap:12px;}
+          .cl-say-ic{width:46px;height:46px;flex:none;box-sizing:border-box;border-radius:12px;border:2px solid var(--stg-acc);color:var(--stg-acc-ink);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;}
+          .cl-say-t{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0;}
+          .cl-say-a{font-size:15px;font-weight:700;color:var(--stg-ink);line-height:1.35;}
+          .cl-say-b{font-size:12px;font-weight:600;color:var(--stg-mute);}
+          .cl-foot{width:100%;margin-top:22px;display:flex;align-items:center;justify-content:flex-end;gap:10px;border-top:1px solid var(--stg-line);padding-top:14px;}
+          .cl-foot-n{flex:1;font-size:12px;font-weight:600;color:var(--stg-mute);}
+          .cl-tool{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2);border:1.5px solid var(--stg-cell-line);border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
+          .cl-tool:hover:not(:disabled){background:var(--stg-surf2);}
+          .cl-tool:disabled{color:var(--stg-mute);border-color:var(--stg-line2);cursor:default;}
+          .cl-tool.hint{color:var(--stg-acc-ink);border-color:var(--stg-acc);}
+          .cl-under{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0 12px;padding:12px 2px 0;}
+          .cl-under-n{flex:1 1 180px;min-width:0;font-size:12px;font-weight:600;color:var(--stg-mute);}
+          .cl-under-m{display:none;}
+          .cl-reveal{margin-left:auto;background:none;border:none;cursor:pointer;font-family:${SANS};font-weight:700;font-size:12px;color:var(--stg-ink2);text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0;display:inline-flex;align-items:center;gap:5px;flex:none;}
+          .cl-reveal.armed{color:var(--stg-bad);}
+          .cl-pick{font-family:${SANS};font-weight:800;font-size:13px;border-radius:10px;padding:0 14px;min-height:44px;cursor:pointer;border:1.5px solid var(--stg-cell-line);background:var(--stg-cell);color:var(--stg-ink);}
+          .cl-pick.act{border:2px solid var(--stg-acc);background:color-mix(in srgb, var(--stg-acc) 22%, var(--stg-cell));}
+          .cl-pick.got{color:var(--stg-good);}
+          @media(max-width:560px){
+            .cl-lab{font-size:10px;}
+            .cl-route{gap:6px;margin-bottom:12px;}
+            .cl-route-top .cl-lab.ends{display:none;}
+            .cl-segs{gap:2px;}
+            .cl-segs span{height:6px;}
+            .cl-panel{background:transparent;border:none;border-radius:0;padding:0 12px;}
+            .cl-head{gap:8px;}
+            .cl-tgts{width:92px;}
+            .cl-tgt{border-radius:12px;padding:6px 0;}
+            .cl-tgt .k{font-size:9px;}
+            .cl-tgt .v{font-size:28px;}
+            .cl-tgts.multi .cl-tgt{padding:2px 6px;gap:6px;}
+            .cl-tgts.multi .cl-tgt .k{display:none;}
+            .cl-tgts.multi .cl-tgt .v{font-size:19px;}
+            .cl-well{border-radius:12px;padding:8px 12px;gap:10px;}
+            .cl-tape-k .lr{display:none;}
+            .cl-tape-k,.cl-hold-k{font-size:9px;}
+            .cl-tape-v{font-size:15px;}
+            .cl-hold{padding-left:10px;}
+            .cl-hold-k{display:none;}
+            .cl-hold-v{font-size:24px;}
+            .cl-board{width:min(338px,100%);margin-top:22px;}
+            .cl-board.n7{width:min(352px,100%);}
+            .cl-grid{gap:10px;}
+            .cl-board.n7 .cl-grid{gap:7px;}
+            .cl-key{font-size:20px;}
+            .cl-op{font-size:17px;}
+            .cl-board.n7 .cl-key{font-size:17px;}
+            .cl-board.n7 .cl-op{font-size:15px;}
+            .cl-key.term{border-radius:14px;}
+            .cl-key.head{box-shadow:0 0 0 4px color-mix(in srgb, var(--stg-acc) 26%, transparent);}
+            .cl-flag{top:-9px;font-size:8px;letter-spacing:.06em;padding:1px 5px;}
+            .cl-say{margin-top:18px;}
+            .cl-say-ic{display:none;}
+            .cl-say-a{font-size:14px;}
+            .cl-say-b .d{display:none;}
+            .cl-say-b .m{display:inline !important;}
+            .cl-foot{border-top:none;padding-top:0;margin-top:14px;gap:8px;}
+            .cl-foot-n{display:none;}
+            .cl-tool{flex:1;padding:0 10px;}
+            .cl-under-d{display:none;}
+            .cl-under-m{display:inline;font-size:11px;}
+            .cl-under{padding:4px 12px 0;}
+            .cl-route{padding:0 12px;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 680, margin: '0 auto' }}>
@@ -814,57 +910,74 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
         <div className={LOFT && !STAGE && !playing ? (revealed ? 'loft-flip' : 'loft-flip on') : undefined}>
         <div className={LOFT && !STAGE && !playing ? 'loft-flip-in' : undefined}>
         <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
-          {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>tries <b style={{ color: INK, fontWeight: 500 }}>{g.tries}</b></span>
+        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: STAGE ? '0' : '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+          {/* the route so far, one segment per button on the board */}
+          <div className="cl-route">
+            <div className="cl-route-top">
+              <span className="cl-lab">Your route · <b>{shownRoute.length}</b> of {CELLS} buttons</span>
+              <span className="cl-lab ends">Start top left · End bottom right</span>
+            </div>
+            <div className="cl-segs" aria-hidden="true">
+              {Array.from({ length: CELLS }).map((_, k) => <span key={k} className={k < shownRoute.length ? 'on' : undefined} />)}
+            </div>
           </div>
-          )}
 
-          {/* the target, or Sunday's three */}
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', alignItems: 'stretch', flexWrap: 'wrap', marginBottom: 10 }}>
-            {TARGETS.map((t, k) => {
-              const got = !!g.routes[k];
-              const solo = TARGETS.length === 1;
-              return (
-                <div key={k} className={`cl-goal${solo ? ' solo' : ''}${got ? ' got' : (k === g.slot ? ' act' : '')}`} onClick={() => pickSlot(k)}>
-                  <div className="k">{solo ? 'Target' : `Target ${k + 1}${got ? ' ✓' : ''}`}</div>
-                  <div className="v">{t.target}</div>
+          <div className="cl-panel">
+          {/* the target, or Sunday's three, beside the running tape */}
+          <div className="cl-head">
+            <div className={`cl-tgts${TARGETS.length > 1 ? ' multi' : ''}`}>
+              {TARGETS.length === 1 ? (
+                <div className="cl-tgt"><span className="k">Target</span><b className="v">{TARGETS[0].target}</b></div>
+              ) : TARGETS.map((t, k) => {
+                const got = !!g.routes[k];
+                const act = !got && k === g.slot;
+                return (
+                  <button key={k} type="button" className={`cl-tgt${got ? ' got' : (act ? '' : ' idle')}`} onClick={() => pickSlot(k)}
+                    aria-label={`Target ${k + 1}, ${t.target}${got ? ', landed' : (act ? ', walking now' : '')}`} aria-pressed={act}>
+                    <span className="k">T{k + 1}</span><b className="v">{t.target}</b>{got ? <span aria-hidden="true">✓</span> : null}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="cl-well">
+              <div className="cl-tape">
+                <span className="cl-tape-k">The tape<span className="lr">, left to right</span></span>
+                <div className="cl-tape-clip">
+                  <span className="cl-tape-v">{tapeText}</span>
                 </div>
-              );
-            })}
-          </div>
-
-          {/* the running tape */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : '1px solid rgba(28,30,36,0.14)', borderRadius: 9, padding: '9px 12px', marginBottom: 12, minHeight: 44, overflowX: 'auto' }}>
-            <span style={{ fontFamily: MONO, fontSize: 13.5, color: FADED, whiteSpace: 'nowrap', flex: 1 }}>{tapeText}</span>
-            <b style={{ fontFamily: SANS, fontWeight: 800, fontSize: 21, fontVariantNumeric: 'tabular-nums', flex: 'none', paddingLeft: 10, borderLeft: '2px solid rgba(28,30,36,0.14)', color: atEnd ? (total === TARGETS[g.slot].target ? COLORS.green : `var(--stg-bad, ${COLORS.rust})`) : `var(--stg-ink, ${COLORS.ink})` }}>
-              {atNumber ? total : '–'}
-            </b>
+              </div>
+              <div className="cl-hold">
+                <span className="cl-hold-k">{tapeAtEnd ? 'Ends on' : 'Holding'}</span>
+                <b className={`cl-hold-v${tapeAtEnd ? (tapeTotal === TARGETS[g.slot].target ? ' good' : ' bad') : ''}`}>
+                  {tapeAtNumber ? tapeTotal : <>{evalRoute(N, PUZZLE.cells, tapeRoute.slice(0, -1))} <i>{glyphOf(PUZZLE.cells[tapeHead])}</i></>}
+                </b>
+              </div>
+            </div>
           </div>
 
           {/* the board */}
-          <div style={{ maxWidth: GRID_MAX, margin: '0 auto', position: 'relative' }}>
+          <div className={`cl-board${N > 6 ? ' n7' : ''}`}>
             {link && (
               <svg width={link.w} height={link.h} viewBox={`0 0 ${link.w} ${link.h}`} style={{ position: 'absolute', left: 0, top: 0, zIndex: 1, pointerEvents: 'none' }} aria-hidden="true">
-                <polyline points={link.pts} fill="none" stroke={COLORS.accent} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" opacity="0.85" />
+                <polyline points={link.pts} fill="none" style={{ stroke: won ? 'var(--stg-good)' : 'var(--stg-acc)' }} strokeWidth={N > 6 ? 6 : 8} strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             )}
-            <div ref={boardRef} style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gap: N > 6 ? 6 : 8, position: 'relative', zIndex: 2 }}>
+            <div ref={boardRef} className="cl-grid" style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
               {Array.from({ length: CELLS }).map((_, idx) => {
                 const v = PUZZLE.cells[idx];
                 const num = isNumCell(N, idx);
                 const on = shownRoute.includes(idx);
                 const isHead = playing && idx === head;
                 const term = idx === 0 || idx === END;
+                const canGo = playing && reachable.has(idx);
                 const blocked = playing && !on && neighboursOf(N, head).includes(idx) && !reachable.has(idx);
                 const cls = ['cl-key', num ? 'cl-num' : 'cl-op', term ? 'term' : '', on ? 'on' : '', isHead ? 'head' : '',
-                  playing && reachable.has(idx) ? 'reach' : '', blocked ? 'blocked' : '',
+                  canGo ? 'reach' : '', blocked ? 'blocked' : '',
                   !playing && won && term ? 'solved' : ''].filter(Boolean).join(' ');
                 return (
-                  <button key={idx} type="button" className={cls} onClick={() => tap(idx)} aria-label={num ? `number ${v}` : `operator ${v}`}>
-                    <span style={{ fontSize: N > 6 ? 'clamp(13px, 4.2vw, 20px)' : 'clamp(15px, 4.8vw, 23px)' }}>{glyphOf(v)}</span>
+                  <button key={idx} type="button" className={cls} onClick={() => tap(idx)}
+                    aria-label={`${num ? 'number' : 'operator'} ${glyphOf(v)}${term ? (idx === 0 ? ', start' : ', end') : ''}${canGo ? ', you can step here' : ''}${isHead ? ', you are here' : ''}`}>
+                    <span>{glyphOf(v)}</span>
                     {term && <span className="cl-flag">{idx === 0 ? 'Start' : 'End'}</span>}
                   </button>
                 );
@@ -872,36 +985,57 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
             </div>
           </div>
 
-          {/* tools */}
-          {playing && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' }}>
-              <button className="cl-tool" onClick={stepBack} disabled={path.length < 2} title="Step back one button (Backspace)" style={path.length < 2 ? { opacity: 0.4, cursor: 'default' } : undefined}>
-                <CornerUpLeft size={14} /> Step back
-              </button>
-              <button className="cl-tool" onClick={clearRoute} disabled={path.length < 2} title="Back to START (Esc)" style={path.length < 2 ? { opacity: 0.4, cursor: 'default' } : undefined}>
-                <RotateCcw size={14} /> Back to start
-              </button>
-              {hintOk && !g.hintUsed && (
-                <button className="cl-tool" onClick={useHint} title="Walk the opening of a route (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: `var(--stg-surf2, ${COLORS.accentTint})`, color: ACC_DEEP_INK }}>
-                  <Lightbulb size={14} /> Hint
-                </button>
-              )}
+          {started && (
+            <div className="cl-say" aria-live="polite">
+              <span className="cl-say-ic" aria-hidden="true">{atEnd ? '=' : glyphOf(PUZZLE.cells[head])}</span>
+              <div className="cl-say-t">
+                <span className="cl-say-a">
+                  {atEnd
+                    ? `This route ends on ${total}. Step back to try another line.`
+                    : path.length === 1
+                      ? 'Tap a button touching START to set off.'
+                      : reachable.size === 0
+                        ? `Holding ${atNumber ? total : `${evalRoute(N, PUZZLE.cells, path.slice(0, -1))} ${glyphOf(PUZZLE.cells[head])}`}. No way on from here: step back.`
+                      : atNumber
+                        ? `Holding ${total}. Pick the operator that comes next: ${reachable.size} way${reachable.size === 1 ? '' : 's'} on.`
+                        : `Holding ${evalRoute(N, PUZZLE.cells, path.slice(0, -1))} ${glyphOf(PUZZLE.cells[head])}. Pick the number it acts on: ${reachable.size} way${reachable.size === 1 ? '' : 's'} on.`}
+                </span>
+                <span className="cl-say-b">
+                  <span className="d">Ringed buttons touch the one you are on. Tap the last button again to step back.</span>
+                  <span className="m" style={{ display: 'none' }}>Ringed buttons are legal. Tap the last one again to step back.</span>
+                </span>
+              </div>
             </div>
           )}
 
+          {/* tools */}
+          {playing && (
+            <div className="cl-foot">
+              <span className="cl-foot-n">Landing on END with the wrong total costs a try, nothing else.</span>
+              {hintOk && !g.hintUsed && (
+                <button type="button" className="cl-tool hint" onClick={useHint} title="Walk the opening of a route (one hint, first play only)">
+                  <Lightbulb size={15} aria-hidden="true" /> Hint
+                </button>
+              )}
+              <button type="button" className="cl-tool" onClick={stepBack} disabled={path.length < 2} title="Step back one button (Backspace)">
+                Step back
+              </button>
+              <button type="button" className="cl-tool" onClick={clearRoute} disabled={path.length < 2} title="Back to START (Esc)">
+                Back to start
+              </button>
+            </div>
+          )}
+          </div>
+
         {started && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)', flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>
-              {atEnd
-                ? `This route ends on ${total}. Step back to try another line.`
-                : path.length === 1
-                  ? 'Tap a button touching START to set off.'
-                  : `Holding ${atNumber ? total : `${evalRoute(N, PUZZLE.cells, path.slice(0, -1))} ${glyphOf(PUZZLE.cells[head])}`}. ${reachable.size} way${reachable.size === 1 ? '' : 's'} on.`}
+          <div className="cl-under">
+            <span className="cl-under-n">
+              <span className="cl-under-d">No button twice. A division that does not come out whole is not a legal step.</span>
+              <span className="cl-under-m">A wrong total at END costs a try.</span>
             </span>
             {identity && (path.length > 1 || landed > 0) && (
-              <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-                style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <Eye size={13} /> {armReveal ? 'Tap again — ends the puzzle and shows a route' : 'Reveal & end'}
+              <button type="button" className={`cl-reveal${armReveal ? ' armed' : ''}`} onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
+                <Eye size={13} aria-hidden="true" /> {armReveal ? 'Tap again: ends the puzzle and shows a route' : 'Reveal and end'}
               </button>
             )}
           </div>
@@ -913,7 +1047,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
                 <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', margin: '12px 0 0' }}>
                   {TARGETS.map((t, k) => (
                     <button key={k} type="button" onClick={() => setG((cur) => ({ ...cur, slot: k }))}
-                      style={{ fontFamily: SANS, fontWeight: 800, fontSize: 12, borderRadius: 8, padding: '6px 11px', cursor: 'pointer', border: `1.5px solid var(--stg-acc, ${k === g.slot ? COLORS.accent : 'rgba(28,30,36,0.2)'})`, background: k === g.slot ? `color-mix(in srgb, var(--stg-acc, ${COLORS.accentDeep}) 16%, transparent)` : T.white, color: g.routes[k] ? COLORS.green : COLORS.faded }}>
+                      className={`cl-pick${k === g.slot ? ' act' : ''}${g.routes[k] ? ' got' : ''}`} aria-pressed={k === g.slot}>
                       {t.target} {g.routes[k] ? '✓' : ''}
                     </button>
                   ))}
@@ -925,7 +1059,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
                   : <>{TARGETS[g.slot].routes} routes reach {TARGETS[g.slot].target}, out of {PUZZLE.boardRoutes.toLocaleString()} legal routes. The shortest uses {TARGETS[g.slot].minLen} buttons.</>}
               </div>
               {PUZZLE.sunday && (
-                <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>The Sunday Edition &mdash; three targets on the one board.</div>
+                <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>The Sunday Edition: three targets on the one board.</div>
               )}
               {isTodays && myStats.cur >= 2 && (
                 <div style={{ fontSize: 13, fontWeight: 800, margin: '12px 0 0', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -973,7 +1107,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
             iq={iq}
             board={dailyBoard}
             gameRank={allTime && allTime.ready
-              ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '—',
+              ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '–',
                   label: allTime.field != null ? `of ${Number(allTime.field).toLocaleString()} Calc all time` : 'all-time rank' }
               : null}
             day={dayStats}
@@ -1044,14 +1178,14 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s board, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s board, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   Open your browser&apos;s menu and choose <b>Add to Home Screen</b> (or <b>Install app</b>). The tile opens today&apos;s board, every day.
                 </p>
               )}
-              <button onClick={() => setShowA2hsHelp(false)} style={{ marginTop: 10, fontFamily: SANS, fontSize: 12.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, height: 44, width: '100%', borderRadius: 10, border: 'none', background: COLORS.ink, color: T.white, cursor: 'pointer' }}>Got it</button>
+              <button onClick={() => setShowA2hsHelp(false)} style={{ marginTop: 10, fontFamily: SANS, fontSize: 12.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, height: 44, width: '100%', borderRadius: 10, border: 'none', background: STAGE ? 'var(--stg-acc)' : COLORS.ink, color: STAGE ? 'var(--stg-onramp)' : T.white, cursor: 'pointer' }}>Got it</button>
             </div>
           </div>
         )}
@@ -1082,7 +1216,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
-        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
+        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: STAGE ? 'var(--stg-ink)' : COLORS.ink, color: STAGE ? 'var(--stg-ground)' : T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
           {toast}
         </div>
       )}
@@ -1096,7 +1230,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
               <button onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
             </div>
             {rulesBody}
-            <button className="cl-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: COLORS.ink, color: T.white, borderColor: COLORS.ink }}>Play</button>
+            <button className="cl-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, minHeight: 44, background: STAGE ? 'var(--stg-acc)' : COLORS.ink, color: STAGE ? 'var(--stg-onramp)' : T.white, borderColor: STAGE ? 'var(--stg-acc)' : COLORS.ink }}>Play</button>
           </div>
         </div>
       )}

@@ -101,7 +101,7 @@ function ComingSoon({ first }) {
         </div>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: T.ink, margin: '0 0 8px' }}>Carve launches {first ? first.dateLabel : 'soon'}.</h1>
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
-          The daily equal-sum puzzle — slice the grid into connected blocks that all add to the same target. Come back when the first board drops.
+          The daily equal-sum puzzle: slice the grid into connected blocks that all add to the same target. Come back when the first board drops.
         </p>
         <a href="/" style={{ color: '#7c3aed', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>

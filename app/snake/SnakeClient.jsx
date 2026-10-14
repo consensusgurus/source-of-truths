@@ -76,7 +76,7 @@ const COLORS = {
 };
 const HELP_KEY = 'sot_snake_help_seen';
 const STATS_KEY = 'sot_snake_stats';
-const BOARD_MAX = 460;
+const BOARD_MAX = 480;
 const SAVE_EVERY = 12;   // ticks between saves of a run in progress
 
 const DIRS = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } };
@@ -180,6 +180,9 @@ function freshG() {
 }
 
 const HAPT = { eat: [8], end: [20, 40, 20] };
+function Arrow({ r }) {
+  return <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" style={{ fill: 'currentColor', transform: `rotate(${r}deg)` }}><path d="M12 5 L20 18 L4 18 Z" /></svg>;
+}
 function vibrate(p) { try { if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
 
 export default function SnakeClient({ puzzles = [], forceNum = null }) {
@@ -361,7 +364,12 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
   const readPalette = useCallback(() => {
     const pr = probeRef.current;
     if (!pr || typeof window === 'undefined') return null;
-    const get = (expr) => { pr.style.color = expr; return parseColor(getComputedStyle(pr).color); };
+    const raw = (expr) => { pr.style.color = expr; return getComputedStyle(pr).color; };
+    const get = (expr) => parseColor(raw(expr));
+    // The register decides every colour on the board: the probe sits inside
+    // the stage page, so these read the LIGHT tokens in light and the dark
+    // ones in dark, and the board is redrawn when the register flips.
+    const accFill = get(`var(--stg-acc, ${COLORS.accent})`);
     const acc = get(`var(--stg-acc-ink, ${COLORS.accent})`);
     const ink = get(`var(--stg-ink, ${COLORS.ink})`);
     const ground = get('var(--stg-ground, #f7f8fa)');
@@ -371,9 +379,12 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
     const lum = (c) => (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) / 255;
     const dark = lum(ground) < 0.4;
     const pal = {
-      acc, ink, ground, cell, mute, bad, dark,
-      head: mixc(acc, ink, 0.38),
-      grid: `rgba(${ink[0]},${ink[1]},${ink[2]},${dark ? 0.06 : 0.085})`,
+      acc, accFill, ink, ground, cell, mute, bad, dark,
+      // the body is the category fill with a darker rim: on the pale register
+      // the rim is the accent's own text step, on the dark one a deeper amber
+      rim: dark ? mixc(accFill, [0, 0, 0], 0.32) : acc,
+      appleHi: dark ? [255, 255, 255] : mixc(ink, cell, 0.5),
+      grid: raw('var(--stg-line2, rgba(128,128,128,0.2))'),
     };
     palRef.current = pal;
     return pal;
@@ -387,7 +398,7 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
     const ctx = cv.getContext('2d');
     const W = parseFloat(cv.style.width) || 300, n = SIZE, cs = W / n;
     ctx.clearRect(0, 0, W, W);
-    // a light grid, and no outer wall: the edges wrap
+    // the grid, and no outer wall: the edges wrap
     ctx.strokeStyle = pal.grid; ctx.lineWidth = 1;
     for (let i = 0; i <= n; i++) {
       const p0 = Math.min(W - 0.5, Math.round(i * cs) + 0.5);
@@ -396,64 +407,58 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
     }
     const S = e ? e.snake : [{ x: (n / 2) | 0, y: (n / 2) | 0 }, { x: ((n / 2) | 0) - 1, y: (n / 2) | 0 }, { x: ((n / 2) | 0) - 2, y: (n / 2) | 0 }];
     const dir = e ? e.dir : { x: 1, y: 0 };
-    // the next apple, a faint dashed ring
+    // the next apple: a dashed ring in the muted ink
     if (e && e.alive) {
       const nx = peekNext(e);
       if (nx) {
-        ctx.save(); ctx.strokeStyle = rgb(pal.mute); ctx.globalAlpha = 0.55; ctx.lineWidth = 1.5; ctx.setLineDash([2.5, 2.5]);
-        ctx.beginPath(); ctx.arc(nx.x * cs + cs / 2, nx.y * cs + cs / 2, cs * 0.28, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+        ctx.save(); ctx.strokeStyle = rgb(pal.mute); ctx.lineWidth = 2; ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.arc(nx.x * cs + cs / 2, nx.y * cs + cs / 2, cs * 0.34, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
       }
     }
-    // the apple
+    // the apple: an ink ball with a highlight and an accent stem
     if (e && e.apple) {
-      const ax = e.apple.x * cs + cs / 2, ay = e.apple.y * cs + cs / 2 + cs * 0.04;
-      ctx.fillStyle = rgb(pal.ink); ctx.beginPath(); ctx.arc(ax, ay, cs * 0.3, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = rgb(pal.cell); ctx.globalAlpha = 0.35; ctx.beginPath(); ctx.arc(ax - cs * 0.1, ay - cs * 0.1, cs * 0.08, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
+      const ax = e.apple.x * cs + cs / 2, ay = e.apple.y * cs + cs / 2 + cs * 0.03;
+      ctx.fillStyle = rgb(pal.ink); ctx.beginPath(); ctx.arc(ax, ay, cs * 0.33, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = rgb(pal.appleHi); ctx.beginPath(); ctx.arc(ax - cs * 0.11, ay - cs * 0.11, cs * 0.085, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = rgb(pal.acc); ctx.lineWidth = Math.max(1.5, cs * 0.08); ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(ax, ay - cs * 0.24); ctx.quadraticCurveTo(ax + cs * 0.04, ay - cs * 0.36, ax + cs * 0.14, ay - cs * 0.4); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ax, ay - cs * 0.27); ctx.quadraticCurveTo(ax + cs * 0.04, ay - cs * 0.39, ax + cs * 0.15, ay - cs * 0.42); ctx.stroke();
     }
-    // the snake: one rounded tube, thick at the head and tapering to the tail
+    // the snake: one rounded tube in the category fill with a darker rim,
+    // thick at the head and tapering to the tail
     const L = S.length;
     const ctr = (c) => ({ x: c.x * cs + cs / 2, y: c.y * cs + cs / 2 });
-    const widthAt = (t) => cs * (0.74 - 0.26 * t);
-    const colAt = (t) => rgb(mixc(pal.acc, pal.ground, t * 0.45));
-    const seg = (a, b, t) => {
-      ctx.strokeStyle = colAt(t); ctx.lineWidth = widthAt(t); ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-    };
-    ctx.lineJoin = 'round';
+    const widthAt = (t) => cs * (0.84 - 0.36 * t);
+    const pieces = [];
     for (let s = L - 1; s >= 1; s--) {
       const a = S[s], b = S[s - 1], t = (s - 0.5) / Math.max(1, L - 1), pa = ctr(a), pb = ctr(b);
       const dx = b.x - a.x, dy = b.y - a.y;
-      if (Math.abs(dx) + Math.abs(dy) === 1) { seg(pa, pb, t); continue; }
+      if (Math.abs(dx) + Math.abs(dy) === 1) { pieces.push([pa, pb, t]); continue; }
       // across a wrap: run each half off its own edge
       const sx = Math.abs(dx) > 1 ? -Math.sign(dx) : dx, sy = Math.abs(dy) > 1 ? -Math.sign(dy) : dy;
-      seg(pa, { x: pa.x + sx * cs * 0.75, y: pa.y + sy * cs * 0.75 }, t);
-      seg({ x: pb.x - sx * cs * 0.75, y: pb.y - sy * cs * 0.75 }, pb, t);
+      pieces.push([pa, { x: pa.x + sx * cs * 0.75, y: pa.y + sy * cs * 0.75 }, t]);
+      pieces.push([{ x: pb.x - sx * cs * 0.75, y: pb.y - sy * cs * 0.75 }, pb, t]);
     }
-    // a soft sheen down the back, one stroke per unbroken run so the joins stay clean
-    ctx.save(); ctx.globalAlpha = 0.2; ctx.strokeStyle = rgb(pal.cell); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    ctx.lineWidth = cs * 0.13; ctx.beginPath();
-    let open = false;
-    for (let s = L - 1; s >= 1; s--) {
-      const a = S[s], b = S[s - 1], q1 = ctr(a), q2 = ctr(b);
-      if (Math.abs(b.x - a.x) + Math.abs(b.y - a.y) !== 1) { open = false; continue; }
-      if (!open) { ctx.moveTo(q1.x, q1.y); open = true; }
-      ctx.lineTo(q2.x, q2.y);
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    for (const [col, extra] of [[rgb(pal.rim), 4], [rgb(pal.accFill), 0]]) {
+      ctx.strokeStyle = col;
+      for (const [a, b, t] of pieces) {
+        ctx.lineWidth = widthAt(t) + extra;
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      }
     }
-    ctx.stroke(); ctx.restore();
     // the head, with eyes looking where it is going
-    const h = ctr(S[0]), hr = cs * 0.43;
-    ctx.fillStyle = rgb(pal.head); ctx.beginPath(); ctx.arc(h.x + dir.x * cs * 0.04, h.y + dir.y * cs * 0.04, hr, 0, Math.PI * 2); ctx.fill();
-    const px = -dir.y, py = dir.x, fwd = cs * 0.1, side = cs * 0.17;
+    const h = ctr(S[0]), hr = cs * 0.42;
+    ctx.fillStyle = rgb(pal.rim); ctx.beginPath(); ctx.arc(h.x, h.y, hr + 2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = rgb(pal.accFill); ctx.beginPath(); ctx.arc(h.x, h.y, hr, 0, Math.PI * 2); ctx.fill();
+    const px = -dir.y, py = dir.x, fwd = cs * 0.14, side = cs * 0.18;
     for (const k of [1, -1]) {
       const ex = h.x + dir.x * fwd + px * side * k, ey = h.y + dir.y * fwd + py * side * k;
       ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(ex, ey, cs * 0.12, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#0b0d12'; ctx.beginPath(); ctx.arc(ex + dir.x * cs * 0.04, ey + dir.y * cs * 0.04, cs * 0.06, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#0b0f1a'; ctx.beginPath(); ctx.arc(ex + dir.x * cs * 0.05, ey + dir.y * cs * 0.05, cs * 0.06, 0, Math.PI * 2); ctx.fill();
     }
     // where it ended
     if (e && e.death) {
-      ctx.strokeStyle = rgb(pal.bad); ctx.lineWidth = 2.5;
+      ctx.strokeStyle = rgb(pal.bad); ctx.lineWidth = 3;
       const x = e.death.x * cs + 2, y = e.death.y * cs + 2, w = cs - 4, r = cs * 0.25;
       ctx.beginPath();
       ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + w, r); ctx.arcTo(x + w, y + w, x, y + w, r);
@@ -653,8 +658,17 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+  const shownLen = playing ? fig.len : (g.run && g.run.snake ? g.run.snake.length : fig.len);
+  const tapRestart = () => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; armBoard(); } else setArmRestart(Date.now()); };
+  const statusLine = over
+    ? (g.won ? 'You filled the board.' : `${nf(g.apples)} apple${g.apples === 1 ? '' : 's'} in ${nf(g.moves)} moves, ${fmtTime(g.moves * STEP_MS)} of play.${bestToday != null && bestToday > g.apples ? ` Your best today is ${nf(bestToday)}.` : ''}`)
+    : !g.t0
+      ? 'Make your first turn to start. The dashed ring is where apple 2 lands.'
+      : paused
+        ? 'Paused. Any turn resumes the run.'
+        : <><span className="sn-wide">{`${nf(shownApples)} apple${shownApples === 1 ? '' : 's'} in ${nf(shownMoves)} moves. `}</span>{`The dashed ring is where apple ${nf(shownApples + 2)} lands.`}</>;
+
   const btn = { fontFamily: SANS, fontWeight: 800, fontSize: 14, border: `2px solid var(--stg-line, ${COLORS.accent})`, background: STAGE ? SURF : '#fff', color: ACC_INK, borderRadius: 8, padding: '9px 16px', cursor: 'pointer' };
-  const padBtn = { width: '100%', height: 52, borderRadius: 12, border: STAGE ? '1px solid var(--stg-cell-line)' : `1px solid ${COLORS.line}`, background: STAGE ? 'var(--stg-cell)' : '#fff', color: STAGE ? 'var(--stg-ink,#e9edf4)' : FADED, fontSize: 18, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' };
   const figLabel = { fontSize: 10.5, fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: FADED };
 
   return (
@@ -729,19 +743,17 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
                   )}
 
                   {!preStart && (
-                    <div className={STAGE ? 'stg-board' : undefined} style={{ background: STAGE ? SURF : '#fff', border: STAGE ? `1px solid ${SURF_B}` : `1px solid ${COLORS.line}`, borderRadius: 12, padding: 14, position: 'relative', maxWidth: BOARD_MAX + 30, margin: '0 auto' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 10, flexWrap: 'wrap' }}>
-                        <span style={figLabel}>Apples <b style={{ color: INK }}>{nf(shownApples)}</b></span>
-                        <span style={figLabel}>Length <b style={{ color: INK }}>{nf(playing ? fig.len : (g.run && g.run.snake ? g.run.snake.length : fig.len))}</b></span>
-                        <span style={figLabel}>Moves <b style={{ color: INK }}>{nf(shownMoves)}</b></span>
-                        {playing && g.t0 && (
-                          <button onClick={togglePause} aria-label={paused ? 'Resume' : 'Pause'} style={{ marginLeft: 'auto', border: `1px solid ${SURF_B}`, background: SURF, color: FADED, borderRadius: 7, width: 30, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                            {paused ? <Play size={14} /> : <Pause size={14} />}
-                          </button>
-                        )}
-                        <button onClick={() => setShowHelp(true)} aria-label="How to play" style={{ marginLeft: playing && g.t0 ? 0 : 'auto', border: `1px solid ${SURF_B}`, background: SURF, color: FADED, borderRadius: 7, width: 30, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                          <HelpCircle size={15} />
-                        </button>
+                    <div className={STAGE ? 'stg-board' : undefined} style={{ background: STAGE ? SURF : '#fff', border: STAGE ? `1px solid ${SURF_B}` : `1px solid ${COLORS.line}`, borderRadius: 12, padding: 14, position: 'relative', maxWidth: BOARD_MAX + 80, margin: '0 auto' }}>
+                      {/* the meter: apples against the day's par, one segment an apple */}
+                      <div className="sn-meter" data-sn-meter="">
+                        <div className="sn-meter-row">
+                          <span>Apples · <b className="sn-acc">{nf(shownApples)}</b> · par {nf(PAR)}</span>
+                          <span className="sn-meter-r sn-wide">{shownApples >= PAR ? `${nf(shownApples - PAR)} past par · no ceiling` : `${nf(PAR - shownApples)} to par · no ceiling`}</span>
+                          <span className="sn-meter-r sn-narrow">Length {nf(shownLen)} · {nf(shownMoves)} moves</span>
+                        </div>
+                        <div className="sn-segs" aria-hidden="true">
+                          {Array.from({ length: Math.max(1, PAR) }, (_, i) => <span key={i} className={i < shownApples ? 'on' : undefined} />)}
+                        </div>
                       </div>
 
                       <div ref={boxRef} style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
@@ -757,24 +769,40 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
                         />
                         {playing && (!g.t0 || paused) && (
                           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 14, pointerEvents: 'none' }}>
-                            <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', background: STAGE ? 'var(--stg-raise,#0e131f)' : '#fff', color: INK, border: `1px solid ${SURF_B}`, borderRadius: 999, padding: '7px 13px' }}>
+                            <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', background: STAGE ? 'var(--stg-raise,#0e131f)' : '#fff', color: INK, border: `1px solid ${STAGE ? 'var(--stg-line2)' : SURF_B}`, borderRadius: 999, padding: '8px 14px' }}>
                               {!g.t0 ? 'Turn to start' : 'Paused · any turn resumes'}
                             </span>
                           </div>
                         )}
                       </div>
 
+                      {/* one status sentence and one muted helper line */}
+                      <div className="sn-status">
+                        <span className="sn-len" aria-label={`Length ${shownLen}`}><span>Length</span><b>{nf(shownLen)}</b></span>
+                        <div className="sn-words">
+                          <span className="sn-say" data-sn-status="">{statusLine}</span>
+                          <span className="sn-help">{over ? 'Every run posts, and the board keeps your best one.' : (touchOnly ? 'Swipe on the board or use the pad. Edges wrap.' : 'Edges wrap and the pace never changes. Only your own body ends a run.')}</span>
+                        </div>
+                      </div>
+
                       {playing && (
-                        <div className="sn-pad" style={{ marginTop: 12 }}>
-                          <button className="sn-up" style={padBtn} {...padProps('up')} aria-label="Up">&#9650;</button>
-                          <button className="sn-lf" style={padBtn} {...padProps('left')} aria-label="Left">&#9664;</button>
-                          <button className="sn-dn" style={padBtn} {...padProps('down')} aria-label="Down">&#9660;</button>
-                          <button className="sn-rt" style={padBtn} {...padProps('right')} aria-label="Right">&#9654;</button>
+                        <div className="sn-pad">
+                          <button type="button" className="sn-k sn-pz sn-fill" onClick={togglePause} disabled={!g.t0} aria-label={paused ? 'Resume' : 'Pause'}>{paused ? 'Resume' : 'Pause'}</button>
+                          <button type="button" className="sn-k sn-up" {...padProps('up')} aria-label="Up"><Arrow r={0} /></button>
+                          <button type="button" className={`sn-k sn-rs${armRestart ? ' armed' : ''}`} onClick={tapRestart} disabled={!g.t0} aria-label={armRestart ? 'Tap again to restart the run' : 'Restart run'}>{armRestart ? 'Tap again' : 'Restart'}</button>
+                          <button type="button" className="sn-k sn-lf" {...padProps('left')} aria-label="Left"><Arrow r={270} /></button>
+                          <button type="button" className="sn-k sn-dn" {...padProps('down')} aria-label="Down"><Arrow r={180} /></button>
+                          <button type="button" className="sn-k sn-rt" {...padProps('right')} aria-label="Right"><Arrow r={90} /></button>
                         </div>
                       )}
                       {playing && (
-                        <div style={{ textAlign: 'center', marginTop: 9, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.03em', color: FADED }}>
-                          {touchOnly ? 'Swipe on the board or use the pad' : 'Arrows or W A S D to turn · space pauses'}
+                        <div className="sn-desk">
+                          <span className="sn-keys" aria-hidden="true">
+                            <span className="sn-key">&larr;</span><span className="sn-key">&uarr;</span><span className="sn-key">&darr;</span><span className="sn-key">&rarr;</span>
+                            <span className="sn-keys-t">or W A S D. Space pauses.</span>
+                          </span>
+                          <button type="button" className={`sn-btn sn-line${armRestart ? ' armed' : ''}`} onClick={tapRestart} disabled={!g.t0} aria-label={armRestart ? 'Press again to restart the run' : 'Restart run'}>{armRestart ? 'Press again' : 'Restart run'}</button>
+                          <button type="button" className="sn-btn sn-fill" onClick={togglePause} disabled={!g.t0}>{paused ? <><Play size={15} aria-hidden="true" /> Resume</> : <><Pause size={15} aria-hidden="true" /> Pause</>}</button>
                         </div>
                       )}
 
@@ -782,31 +810,15 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
                         <button
                           onClick={armBoard}
                           style={{
-                            marginTop: 12, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                            marginTop: 14, width: '100%', minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                             fontFamily: SANS, fontWeight: 800, fontSize: 15, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white,
-                            background: STAGE ? STAGE_C : T.cta, border: `2px solid ${STAGE ? STAGE_C : T.cta}`, borderRadius: 10, padding: '13px 18px', cursor: 'pointer',
+                            background: STAGE ? STAGE_C : T.cta, border: `2px solid ${STAGE ? STAGE_C : T.cta}`, borderRadius: 12, padding: '13px 18px', cursor: 'pointer',
                           }}
                         >
                           <RotateCcw size={16} /> Play again
                         </button>
                       )}
-                      {playing && g.t0 && (
-                        <div style={{ textAlign: 'center', marginTop: 10 }}>
-                          <button
-                            type="button"
-                            onClick={() => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; armBoard(); } else setArmRestart(Date.now()); }}
-                            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armRestart ? ACC_INK : FADED, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}
-                          >
-                            <RotateCcw size={13} /> {armRestart ? 'Press again to start over' : 'Restart run'}
-                          </button>
-                        </div>
-                      )}
-                      {over && (
-                        <p style={{ margin: '12px 0 0', fontSize: 12.5, color: FADED, fontWeight: 600, textAlign: 'center' }}>
-                          {g.won ? 'You filled the board.' : `${nf(g.apples)} apple${g.apples === 1 ? '' : 's'} in ${nf(g.moves)} moves, ${fmtTime(g.moves * STEP_MS)} of play.`}
-                          {bestToday != null && bestToday > g.apples ? ` Your best today is ${nf(bestToday)}.` : ''}
-                        </p>
-                      )}
+                      <p className="sn-foot">{touchOnly ? 'Same apples for everyone today. Your best run counts.' : 'Same apples for everyone today. Play as often as you like; your best run counts.'}</p>
                     </div>
                   )}
 
@@ -826,7 +838,7 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
                   iq={iq}
                   board={dailyBoard}
                   gameRank={allTime && allTime.ready
-                    ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '—',
+                    ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '–',
                         label: allTime.field != null ? `of ${Number(allTime.field).toLocaleString()} Snake all time` : 'all-time rank' }
                     : null}
                   day={dayStats}
@@ -939,9 +951,52 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
       )}
 
       <style dangerouslySetInnerHTML={{ __html: `
-        .sn-pad { display: grid; grid-template-areas: ". up ." "lf dn rt"; grid-template-columns: repeat(3, 64px); gap: 8px; justify-content: center; }
-        .sn-up { grid-area: up; } .sn-lf { grid-area: lf; } .sn-dn { grid-area: dn; } .sn-rt { grid-area: rt; }
-        @media (min-width: 900px) and (hover: hover) { .sn-pad { display: none; } }
+        .sn-meter { display: flex; flex-direction: column; gap: 8px; margin: 0 auto 14px; max-width: ${BOARD_MAX}px; }
+        .sn-meter-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--stg-mute, #5f6774); }
+        .sn-acc { color: var(--stg-acc-ink, #8a5a00); font-weight: 800; }
+        .sn-narrow { display: none; }
+        .sn-segs { display: flex; gap: 3px; }
+        .sn-segs > span { flex: 1; height: 8px; border-radius: 2px; background: var(--stg-line2, #c3cad6); }
+        .sn-segs > span.on { background: var(--stg-acc, #fbbf24); }
+        .sn-status { display: flex; align-items: center; gap: 12px; max-width: ${BOARD_MAX}px; margin: 16px auto 0; }
+        .sn-len { width: 46px; height: 46px; flex: none; border-radius: 12px; background: var(--stg-acc, #fbbf24); color: var(--stg-onramp, #1c1a14); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; gap: 2px; }
+        .sn-len > span { font-size: 8.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+        .sn-len > b { font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums; }
+        .sn-words { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .sn-say { font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--stg-ink, #0b0d12); }
+        .sn-help { font-size: 12px; font-weight: 600; line-height: 1.35; color: var(--stg-mute, #5f6774); }
+        .sn-k, .sn-btn { font-family: ${SANS}; cursor: pointer; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 7px; -webkit-tap-highlight-color: transparent; }
+        .sn-k:disabled, .sn-btn:disabled { cursor: default; background: transparent; border: 1.5px solid var(--stg-line2, #c3cad6); color: var(--stg-mute, #5f6774); filter: none; }
+        .sn-pad { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-areas: "pz up rs" "lf dn rt"; gap: 8px; max-width: 420px; margin: 16px auto 0; }
+        .sn-k { height: 60px; border-radius: 14px; border: 1.5px solid var(--stg-line3, #78839a); background: var(--stg-cell, #ffffff); color: var(--stg-ink, #0b0d12); font-size: 14px; font-weight: 800; padding: 0; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+        .sn-k:active { background: var(--stg-surf2, #e4e9f1); }
+        .sn-pz { grid-area: pz; } .sn-up { grid-area: up; } .sn-rs { grid-area: rs; } .sn-lf { grid-area: lf; } .sn-dn { grid-area: dn; } .sn-rt { grid-area: rt; }
+        .sn-rs { background: transparent; color: var(--stg-ink2, #3f4757); font-size: 13px; font-weight: 700; touch-action: manipulation; }
+        .sn-rs.armed { border-color: var(--stg-acc-ink, #8a5a00); color: var(--stg-acc-ink, #8a5a00); }
+        .sn-pz { touch-action: manipulation; }
+        .sn-fill { background: var(--stg-acc, #fbbf24); border: 0; color: var(--stg-onramp, #1c1a14); }
+        .sn-fill:active { background: var(--stg-acc, #fbbf24); filter: brightness(.94); }
+        .sn-desk { display: none; }
+        .sn-foot { margin: 14px auto 0; max-width: ${BOARD_MAX}px; font-size: 12px; font-weight: 600; line-height: 1.4; color: var(--stg-mute, #5f6774); text-align: center; }
+        @media (max-width: 560px) {
+          .sn-wide { display: none; } .sn-narrow { display: inline; }
+          .sn-meter-row { font-size: 10px; }
+          .sn-segs { gap: 2px; } .sn-segs > span { height: 6px; }
+          .sn-status .sn-len { display: none; }
+          .sn-say { font-size: 14px; }
+          .sn-help { font-size: 11.5px; }
+        }
+        @media (min-width: 900px) and (hover: hover) {
+          .sn-pad { display: none; }
+          .sn-desk { display: flex; align-items: center; justify-content: flex-end; gap: 10px; max-width: ${BOARD_MAX + 100}px; margin: 16px auto 0; padding-top: 14px; border-top: 1px solid var(--stg-line, #e5e7eb); }
+          .sn-keys { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--stg-mute, #5f6774); }
+          .sn-key { min-width: 36px; height: 36px; box-sizing: border-box; border-radius: 8px; border: 1.5px solid var(--stg-line3, #78839a); background: var(--stg-cell, #fff); color: var(--stg-ink2, #3f4757); font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; padding: 0 8px; }
+          .sn-keys-t { margin-left: 4px; min-width: 0; line-height: 1.3; }
+          .sn-btn { min-height: 48px; white-space: nowrap; border-radius: 12px; padding: 0 18px; font-size: 14px; font-weight: 800; }
+          .sn-line { background: transparent; border: 1.5px solid var(--stg-line3, #78839a); color: var(--stg-ink2, #3f4757); font-weight: 700; }
+          .sn-line.armed { border-color: var(--stg-acc-ink, #8a5a00); color: var(--stg-acc-ink, #8a5a00); }
+          .sn-btn.sn-fill { padding: 0 22px; }
+        }
         @keyframes snShake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
         .sn-shake { animation: snShake .32s ease-out 1; }
         @media (prefers-reduced-motion: reduce) { .sn-shake { animation: none; } }

@@ -31,7 +31,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { X, Lightbulb, Eye, Smartphone, RotateCcw } from 'lucide-react';
+import { X, Lightbulb, Smartphone } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -86,12 +86,15 @@ const COLORS = {
 };
 // The board itself. Warm walnut, the colours a chess player expects, so the
 // game reads as chess before a word of copy is seen.
-// The squares come off the stage's own pair now, so the board follows the light
-// switch. Beech and walnut were two mid-tone woods: the brightest surface on a
-// near-black page, and a palette belonging to nothing else on the site.
+// The Slate board (owner pick A, 2026-10-14), shared with Swindle's SwBoard so
+// the chess games read as one family: cool grey squares off --stg-chess-l/-d
+// (both registers), two-tone pieces with a hairline, a gold ring for the
+// selection and the hint, a gold last move, and coordinates OUTSIDE the board.
 const LIGHT_SQ = 'var(--stg-chess-l, #e8ecf3)';
 const DARK_SQ = 'var(--stg-chess-d, #a7b3c6)';
-const SEL_SQ = 'rgba(107,68,35,0.55)';
+const GOLD = '#e8b43a';
+// Last move is an inset-shadow wash, not a gradient layer: some Android
+// browsers paint no CSS gradients at all (report 2026-10-06).
 const LAST_SQ = 'rgba(232,180,58,0.55)';
 
 // The arm-then-confirm controls do not move when armed, so the second tap of
@@ -99,7 +102,6 @@ const LAST_SQ = 'rgba(232,180,58,0.55)';
 // label change could be read. A confirm this fast was never a decision.
 const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_mate_help_seen';
 const STATS_KEY = 'sot_mate_stats';
 
@@ -436,9 +438,6 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
   const SURF_B = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : 'rgba(28,30,36,0.42)';
-  // The last-move wash is the accent, so on the light register it has to become
-  // the accent's dark twin rather than staying the pale gold of the dark one.
-  const LAST_TINT = STAGE ? 'color-mix(in srgb, var(--stg-acc) 55%, transparent)' : LAST_SQ;
   const won = g.status === 'won';
   const errors = g.errors;
   // What the round posted. Read ONLY by the cap, and only once the round is
@@ -920,7 +919,7 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Mate #${PUZZLE.num} — the daily chess endgame from Mind Loft.\n${shareUrl()}`
+      ? `Mate #${PUZZLE.num}: the daily chess endgame from Mind Loft.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -952,6 +951,41 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
       footer="The mate scores 10, and missing it scores nothing, the same as giving up. Ties break on fastest time. Weekdays are mate in two, Sundays step up to mate in three."
     />
   );
+
+  // ---- the board's words (round seven), all derived from state ----
+  // The meter counts White's moves against the budget; it never says whether a
+  // move was the key, because End Game shows no running verdict.
+  const whitePlayed = Math.ceil(moves.length / 2);
+  const meterDone = whitePlayed;
+  const meterCur = myTurn ? whitePlayed : -1;
+  const meterLeft = playing
+    ? <><span className="mt-lg">Your move </span><span className="mt-sh">Move </span><b>{Math.min(PUZZLE.mateIn, whitePlayed + (awaitingReply ? 0 : 1))}</b> of {PUZZLE.mateIn}</>
+    : <>Moves played <b>{whitePlayed}</b> of {PUZZLE.mateIn}</>;
+  const meterRight = !playing
+    ? (won ? ['Checkmate', 'Checkmate'] : g.status === 'lost' ? ['No mate', 'No mate'] : ['Ended', 'Ended'])
+    : awaitingReply ? ['Black to reply', 'Black to reply']
+    : movesLeft <= 1 ? ['This move has to mate', 'This move mates']
+    : [`Mate in ${movesLeft}`, `Mate in ${movesLeft}`];
+  const sayLine = !playing
+    ? (won ? 'Checkmate.' : g.status === 'lost' ? 'Out of moves. The mate is still there.' : 'You ended it there. The mate is still there.')
+    : awaitingReply ? 'Black is thinking...'
+    : movesLeft <= 1 ? 'Deliver mate.' : `White to play, mate in ${movesLeft}.`;
+  const PIECE_NAME = { K: 'King', Q: 'Queen', R: 'Rook', B: 'Bishop', N: 'Knight', P: 'Pawn' };
+  const COUNT_WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+  const selPiece = sel != null ? pos[sel] : null;
+  const selName = selPiece ? PIECE_NAME[selPiece.toUpperCase()] : '';
+  const helpLine = !playing ? null
+    : awaitingReply ? ['Black answers with its stiffest defence.', 'Black answers with its stiffest defence.']
+    : selPiece ? (targets.length
+      ? [`${selName} on ${squareName(sel)} picked up. ${targets.length === 1 ? 'Its one legal square is marked.' : `Its ${COUNT_WORD[targets.length] || targets.length} legal squares are marked.`} Tap one to play it.`,
+        `${selName} on ${squareName(sel)} picked up. Tap a marked square to play it.`]
+      : [`The ${selName.toLowerCase()} on ${squareName(sel)} has no legal move. Pick another piece.`, `The ${selName.toLowerCase()} on ${squareName(sel)} cannot move.`])
+    : ['Tap one of your pieces to see where it can go.', 'Tap one of your pieces to see where it can go.'];
+  const linePairs = [];
+  for (let i = 0; i < sanList.length; i += 2) linePairs.push([sanList[i], sanList[i + 1]]);
+  const hintShown = playing && hintOk && !g.hintUsed;
+  const ctlNote = `${hintShown ? 'Hint names the piece, never the square. ' : ''}Restart records a 0.`;
+  const footNote = `White to play. One first move forces mate in ${PUZZLE.mateIn}. Any legal move is played, and there is no take-back.`;
 
   const fileLabels = 'abcdefgh'.split('');
 
@@ -993,19 +1027,66 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
           ]}
         />
       )}
-      <div className="mt-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
+      <div className="mt-wrap mt-root" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
         <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.mt-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .mt-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid var(--blue-deep);background:${STAGE ? 'transparent' : 'var(--white)'};color:var(--blue-deep);border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .mt-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .mt-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2,rgba(255,255,255,0.17))' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2,rgba(255,255,255,0.08))' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
           .mt-sq{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;}
           .mt-pc{display:block;width:88%;height:88%;pointer-events:none;filter:drop-shadow(0 1.5px 0 rgba(0,0,0,0.22));}
-          .mt-dot{position:absolute;width:28%;height:28%;border-radius:50%;background:rgba(28,30,36,0.32);pointer-events:none;}
-          .mt-ring{position:absolute;inset:6%;border-radius:50%;border:min(1.1vw,6px) solid rgba(28,30,36,0.3);pointer-events:none;}
           .mt-board.shake{animation:mtshake .34s ease;}
           @keyframes mtshake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
-          .mt-coord{position:absolute;font-family:${MONO};font-size:min(2vw,10px);font-weight:500;opacity:.62;pointer-events:none;}
+          .mt-root{--mt-dot:rgba(233,237,244,.30);--mt-frame:0 0 0 1px rgba(255,255,255,.10),0 12px 30px rgba(0,0,0,.45);--mt-rim:var(--stg-ground,#0b0f1a);}
+          html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .mt-root{--mt-dot:rgba(11,13,18,.24);--mt-frame:0 0 0 1px rgba(11,15,26,.10),0 10px 28px rgba(11,15,26,.16);--mt-rim:#1c1a14;}
+          .mt-sh{display:none;}
+          .mt-meter{margin:0 0 14px;display:flex;flex-direction:column;gap:8px;}
+          .mt-mhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+          .mt-k{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute,#8b95a8);}
+          .mt-k b{color:var(--stg-acc-ink,#e8b43a);font-weight:800;}
+          .mt-mhead .mt-k:last-child{text-align:right;}
+          .mt-segs{display:flex;gap:4px;}
+          .mt-seg{flex:1;height:8px;border-radius:2px;background:var(--stg-line2,rgba(255,255,255,0.17));}
+          .mt-seg.done{background:var(--stg-acc,#e8b43a);}
+          .mt-seg.cur{background:var(--stg-acc-tint,rgba(232,180,58,0.18));box-shadow:inset 0 0 0 2px var(--stg-acc-ink,#e8b43a);}
+          .mt-boardbox{max-width:480px;margin:0 auto;}
+          .mt-bd{display:grid;grid-template-columns:14px minmax(0,1fr);grid-template-rows:minmax(0,1fr) 16px;gap:4px 6px;}
+          .mt-rk{display:grid;grid-template-rows:repeat(8,minmax(0,1fr));}
+          .mt-fl{grid-column:2;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));}
+          .mt-rk span,.mt-fl span{display:flex;align-items:center;justify-content:center;font:700 10px Manrope,system-ui,sans-serif;color:var(--stg-mute,#5f6774);}
+          .mt-rk span{justify-content:flex-end;}
+          .mt-dot{position:absolute;width:30%;height:30%;border-radius:50%;background:var(--mt-dot);pointer-events:none;}
+          .mt-ring{position:absolute;inset:6%;border-radius:50%;border:4px solid var(--mt-dot);pointer-events:none;}
+          .mt-status{max-width:480px;margin:16px auto 0;display:flex;align-items:flex-start;gap:12px;}
+          .mt-pip{flex:none;width:12px;height:12px;margin-top:6px;border-radius:50%;background:var(--stg-acc,#e8b43a);box-shadow:0 0 0 2px var(--mt-rim);}
+          .mt-say{display:block;font-size:17px;font-weight:800;color:var(--stg-ink,#e9edf4);}
+          .mt-help{display:block;margin-top:3px;font-size:13px;font-weight:600;line-height:1.4;color:var(--stg-mute,#8b95a8);}
+          .mt-line{max-width:480px;margin:14px auto 0;display:flex;flex-direction:column;gap:7px;}
+          .mt-chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+          .mt-chip{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 11px;border-radius:9px;border:1px solid var(--stg-line2,rgba(255,255,255,0.17));background:var(--stg-cell,#1a1d28);color:var(--stg-ink,#e9edf4);font-size:14px;font-weight:700;white-space:nowrap;}
+          .mt-chip i{font-style:normal;color:var(--stg-mute,#8b95a8);}
+          .mt-chip.next{background:transparent;border:1.5px dashed var(--stg-acc-ink,#e8b43a);font-weight:800;}
+          .mt-chip.next span{color:var(--stg-acc-ink,#e8b43a);}
+          .mt-ctl{max-width:480px;margin:16px auto 0;padding-top:14px;border-top:1px solid var(--stg-line,rgba(255,255,255,0.11));display:flex;align-items:center;justify-content:flex-end;gap:10px;}
+          .mt-ctl-note{flex:1;font-size:12px;font-weight:600;line-height:1.4;color:var(--stg-mute,#8b95a8);}
+          .mt-ob{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2,#aab5c7);border:1.5px solid var(--stg-line3,rgba(255,255,255,0.42));border-radius:12px;padding:0 16px;min-height:48px;min-width:104px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
+          .mt-ob:hover{background:var(--stg-surf2,rgba(255,255,255,0.08));}
+          .mt-ob.mt-rs{min-width:124px;}
+          .mt-ob.armed{color:var(--stg-bad,#fb7185);border-color:var(--stg-bad,#fb7185);}
+          .mt-foot{max-width:480px;margin:10px auto 0;display:flex;justify-content:space-between;align-items:center;gap:16px;}
+          .mt-foot-note{font-size:12px;font-weight:600;line-height:1.4;color:var(--stg-mute,#8b95a8);}
+          .mt-giveup{background:none;border:none;cursor:pointer;font-family:${SANS};font-size:12.5px;font-weight:700;color:var(--stg-ink2,#aab5c7);text-decoration:underline;text-underline-offset:3px;white-space:nowrap;padding:0 2px;min-height:44px;min-width:84px;text-align:right;}
+          .mt-giveup.armed{color:var(--stg-bad,#fb7185);}
+          .mt-armed{max-width:480px;margin:2px auto 0;text-align:right;font-size:12px;font-weight:700;line-height:1.4;color:var(--stg-bad,#fb7185);}
+          @media(max-width:560px){
+            .mt-lg{display:none;}.mt-sh{display:inline;}
+            .mt-k{font-size:10px;}.mt-segs{gap:3px;}.mt-seg{height:7px;}.mt-meter{margin-bottom:12px;gap:6px;}
+            .mt-status{margin-top:14px;gap:10px;padding:0 3px;}.mt-pip{width:10px;height:10px;}
+            .mt-say{font-size:15px;}.mt-help{font-size:12px;margin-top:2px;}
+            .mt-line{margin-top:12px;padding:0 3px;}.mt-line-k{display:none;}
+            .mt-chips{gap:6px;}.mt-chip{height:32px;padding:0 9px;font-size:13px;}
+            .mt-ctl{border-top:none;padding-top:0;margin-top:14px;}.mt-ctl-note{display:none;}.mt-ctl .mt-ob{flex:1;min-height:46px;}
+            .mt-foot-note{font-size:11.5px;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
@@ -1021,7 +1102,7 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
           helpTop={13}
           marginBottom={16}
           onHelp={() => setShowHelp(true)}
-          sunday={PUZZLE.sunday && <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition &middot; Mate in 3</span>}
+          sunday={PUZZLE.sunday && <span style={{ fontFamily: SANS, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition &middot; Mate in 3</span>}
           blocks={'MATE'.split('').map((ch, i) => (
               <div key={i} style={{ width: 44, height: 44, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontWeight: 900, fontSize: 26, background: i === 3 ? `var(--stg-acc, ${COLORS.accent})` : COLORS.ink, color: T.white, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.65)' }}>{ch}</div>
             ))}
@@ -1061,22 +1142,37 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
           {/* These figures move UP into the cap on a loft page; printing them
               twice is the one thing to avoid. */}
           {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: SANS, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
             {/* Kept and posted throughout, shown only once the round is over:
                 a counter ticking up is itself a notice that the move was wrong. */}
             {!playing && <span style={{ whiteSpace: 'nowrap' }}>misses <b style={{ color: errors > 0 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{errors}</b></span>}
-            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
             <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>
               {playing ? <>mate in <b style={{ color: ACC_INK, fontWeight: 500 }}>{Math.max(1, movesLeft)}</b></> : <>mate in <b style={{ color: INK, fontWeight: 500 }}>{PUZZLE.mateIn}</b></>}
             </span>
           </div>
           )}
 
-          <div style={{ maxWidth: 430, margin: '0 auto' }}>
+          {/* THE TOP METER (round seven): how far along the line you are, one
+              segment per move of the budget, with the current move ringed. It
+              counts moves, never verdicts: End Game shows no running score. */}
+          <div className="mt-meter">
+            <div className="mt-mhead">
+              <span className="mt-k">{meterLeft}</span>
+              <span className="mt-k"><span className="mt-lg">{meterRight[0]}</span><span className="mt-sh">{meterRight[1]}</span></span>
+            </div>
+            <div className="mt-segs" aria-hidden="true">
+              {Array.from({ length: PUZZLE.mateIn }).map((_, i) => (
+                <span key={i} className={`mt-seg${i < meterDone ? ' done' : (i === meterCur ? ' cur' : '')}`} />
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-boardbox">
+          <div className="mt-bd">
+            <div className="mt-rk" aria-hidden="true">{[8, 7, 6, 5, 4, 3, 2, 1].map((n) => <span key={n}>{n}</span>)}</div>
             <div
-              key={shake}
-              className={`mt-board${shake ? ' shake' : ''}`}
-              style={{ display: 'grid', gridTemplateColumns: 'repeat(8, minmax(0, 1fr))', gridTemplateRows: 'repeat(8, minmax(0, 1fr))', aspectRatio: '1 / 1', border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 4, overflow: 'hidden', touchAction: 'manipulation' }}
+              key={shake} className={`mt-board${shake ? ' shake' : ''}`}
+              style={{ display: 'grid', gridTemplateColumns: 'repeat(8, minmax(0, 1fr))', gridTemplateRows: 'repeat(8, minmax(0, 1fr))', aspectRatio: '1 / 1', borderRadius: 10, overflow: 'hidden', boxShadow: 'var(--mt-frame)', touchAction: 'manipulation' }}
             >
               {Array.from({ length: 64 }).map((_, sq) => {
                 const r = rowOf(sq), f = fileOf(sq);
@@ -1089,13 +1185,11 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
                 const isHint = hintPiece === sq;
                 const checked = piece && piece.toUpperCase() === 'K' &&
                   ((white && whiteInCheck) || (!white && blackInCheck));
-                let bg = dark ? DARK_SQ : LIGHT_SQ;
-                // The last-move and selected tints are an inset shadow, not a
-                // one-colour gradient layer: some Android browsers paint no CSS
-                // gradients at all (report 2026-10-06), and the selected square
-                // is the one thing a player cannot lose sight of. Same pixels.
-                const tint = isSel ? null : (isLast ? LAST_TINT : null);
-                if (checked) bg = `radial-gradient(circle, rgba(192,57,43,0.85) 12%, rgba(192,57,43,0.25) 62%, transparent 74%), ${dark ? DARK_SQ : LIGHT_SQ}`;
+                // Slate marks, as SwBoard: a gold ring for the selection and the
+                // hint, a gold wash for the last move, a rose glow on a checked king.
+                const base = dark ? DARK_SQ : LIGHT_SQ;
+                const bg = checked ? `radial-gradient(circle, rgba(225,29,72,0.9) 14%, rgba(225,29,72,0.35) 58%, transparent 74%), ${base}` : base;
+                const rings = [isSel || isHint ? `inset 0 0 0 3px ${GOLD}` : null, isLast && !checked ? `inset 0 0 0 999px ${LAST_SQ}` : null].filter(Boolean).join(', ');
                 return (
                   <div
                     key={sq}
@@ -1104,14 +1198,8 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
                     role="button"
                     tabIndex={-1}
                     aria-label={squareName(sq) + (piece ? ` ${white ? 'white' : 'black'} ${piece.toUpperCase()}` : ' empty')}
-                    style={{ background: bg, boxShadow: [isHint || isSel ? `inset 0 0 0 3px #e8b43a` : null, tint && !checked ? `inset 0 0 0 999px ${tint}` : null].filter(Boolean).join(', ') || undefined }}
+                    style={{ background: bg, boxShadow: rings || undefined }}
                   >
-                    {f === 0 && (
-                      <span className="mt-coord" style={{ left: 2, top: 1, color: dark ? LIGHT_SQ : DARK_SQ }}>{8 - r}</span>
-                    )}
-                    {r === 7 && (
-                      <span className="mt-coord" style={{ right: 3, bottom: 1, color: dark ? LIGHT_SQ : DARK_SQ }}>{fileLabels[f]}</span>
-                    )}
                     {piece && <Piece code={piece} />}
                     {isTarget && !piece && <span className="mt-dot" />}
                     {isTarget && piece && <span className="mt-ring" />}
@@ -1119,74 +1207,69 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
                 );
               })}
             </div>
+            <div className="mt-fl" aria-hidden="true">{fileLabels.map((x) => <span key={x}>{x}</span>)}</div>
+          </div>
           </div>
 
-          <div style={{ marginTop: 12, minHeight: 22, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: endHold.held ? 15 : 13, fontWeight: 800, color: playing ? `var(--stg-acc-ink, ${COLORS.accent})` : (endHold.held ? `var(--stg-ink, ${COLORS.ink})` : FADED) }}>
-              {!playing
-                ? (won ? 'Checkmate.' : g.status === 'lost' ? 'Out of moves. The mate is still there.' : 'You ended it there. The mate is still there.')
-                : awaitingReply
-                  ? 'Black is thinking...'
-                  : movesLeft <= 1
-                    ? 'Deliver mate.'
-                    : `White to play, mate in ${movesLeft}.`}
-            </span>
-            {sanList.length > 0 && (
-              <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 12, color: FADED, fontWeight: 500 }}>
-                {sanList.map((s, i) => (i % 2 === 0 ? `${i / 2 + 1}. ${s}` : s)).join(' ')}
-              </span>
-            )}
+          <div className="mt-status" role="status" aria-live="polite">
+            <span className="mt-pip" aria-hidden="true" />
+            <div style={{ minWidth: 0 }}>
+              <span className="mt-say">{sayLine}</span>
+              {helpLine && <span className="mt-help"><span className="mt-lg">{helpLine[0]}</span><span className="mt-sh">{helpLine[1]}</span></span>}
+            </div>
           </div>
-
           {slowMate && (
-            <div style={{ marginTop: 6, fontFamily: SANS, fontSize: 12.5, fontWeight: 600, color: FADED, lineHeight: 1.45 }}>
+            <div style={{ maxWidth: 480, margin: '8px auto 0', fontFamily: SANS, fontSize: 12.5, fontWeight: 600, color: FADED, lineHeight: 1.45 }}>
               <b style={{ color: INK, fontWeight: 800 }}>{slowMate.san}</b>{' '}
               forces mate too, but in {slowMate.depth}, not {PUZZLE.mateIn}. Only a mate in
               exactly {PUZZLE.mateIn} counts here.
             </div>
           )}
 
-          {playing && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 12, flexWrap: 'wrap' }}>
-              {hintOk && !g.hintUsed && (
-                <button className="mt-tool" onClick={useHint} title="Name the piece that moves (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(107,68,35,0.5)', color: '#5c3a1e' }}>
-                  <Lightbulb size={14} /> Hint
-                </button>
-              )}
+          {(linePairs.length > 0 || myTurn) && (
+            <div className="mt-line">
+              <span className="mt-k mt-line-k">The line so far</span>
+              <div className="mt-chips">
+                {linePairs.map((pr, i) => (
+                  <span key={i} className="mt-chip"><i>{i + 1}.</i><span>{pr[0]}</span>{pr[1] ? <span>{pr[1]}</span> : null}</span>
+                ))}
+                {myTurn && <span className="mt-chip next"><i>{linePairs.length + 1}.</i><span>your move</span></span>}
+              </div>
             </div>
           )}
 
-        {/* Controls. These sit INSIDE the board card: on the navy stage a bare
-            row has nothing to sit on, and the card is meant to hold the game. */}
+        {/* Controls (round seven): outline Hint and Restart, Give up as a text
+            link. Both arm-then-confirm, with the consequence printed below so
+            the row never reflows under the reader's finger. */}
         {started && (
-          /* Armed labels stay SHORT and each button reserves a fixed width: the
-             old armed copy was far wider than the resting label, so the row
-             reflowed on the first tap and the button slid out from under the
-             reader's finger. The consequence prints below the row instead. */
-          <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>
-                Tap a white piece, then tap where it goes. There is no take-back.
-              </span>
-              <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-                <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmRestart(false); setArmReveal(Date.now()); } }}
-                  title={armReveal ? 'Ends the puzzle and scores nothing' : 'End the puzzle now, scoring nothing'}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-start', gap: 5, minWidth: 104, padding: 0 }}>
-                  <Eye size={13} style={{ flexShrink: 0 }} /> {armReveal ? 'Press again' : 'Give up'}
+          <>
+            <div className="mt-ctl">
+              <span className="mt-ctl-note">{ctlNote}</span>
+              {hintShown && (
+                <button type="button" className="mt-ob" onClick={useHint} title="Name the piece that moves (one hint, first play only)">
+                  <Lightbulb size={15} aria-hidden="true" /> Hint
                 </button>
-                <button onClick={() => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartGame(); } else { setArmReveal(false); setArmRestart(Date.now()); } }}
-                  title={armRestart ? 'Records a 0 and resets the board' : 'Record a 0 and reset the board'}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armRestart ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-start', gap: 5, minWidth: 104, padding: 0 }}>
-                  <RotateCcw size={13} style={{ flexShrink: 0 }} /> {armRestart ? 'Press again' : 'Restart'}
-                </button>
-              </span>
+              )}
+              <button type="button" className={`mt-ob mt-rs${armRestart ? ' armed' : ''}`}
+                onClick={() => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartGame(); } else { setArmReveal(false); setArmRestart(Date.now()); } }}
+                title={armRestart ? 'Records a 0 and resets the board' : 'Record a 0 and reset the board'}>
+                {armRestart ? 'Press again' : 'Restart'}
+              </button>
+            </div>
+            <div className="mt-foot">
+              <span className="mt-foot-note"><span className="mt-lg">{footNote}</span><span className="mt-sh">No take-back. Restart records a 0.</span></span>
+              <button type="button" className={`mt-giveup${armReveal ? ' armed' : ''}`}
+                onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmRestart(false); setArmReveal(Date.now()); } }}
+                title={armReveal ? 'Ends the puzzle and scores nothing' : 'End the puzzle now, scoring nothing'}>
+                {armReveal ? 'Press again' : 'Give up'}
+              </button>
             </div>
             {(armReveal || armRestart) && (
-              <div style={{ fontFamily: SANS, fontSize: 11.5, fontWeight: 700, color: `var(--stg-ink, ${COLORS.rust})`, marginTop: 6, textAlign: 'right', lineHeight: 1.4 }}>
+              <div className="mt-armed">
                 {armReveal ? 'Ends the puzzle and scores nothing.' : 'Records a 0 and resets the board.'}
               </div>
             )}
-          </div>
+          </>
         )}
         </div>
       )}
@@ -1211,7 +1294,7 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
                 </div>
               )}
               {PUZZLE.sunday && (
-                <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>The Sunday Edition &mdash; a mate in three.</div>
+                <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>The Sunday Edition: a mate in three.</div>
               )}
               {isTodays && myStats.cur >= 2 && (
                 <div style={{ fontSize: 13, fontWeight: 800, margin: '12px 0 0', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -1253,11 +1336,11 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               title={won ? 'Solved' : 'Not solved'}
-              detail={`${errors} misses \u00b7 ${PUZZLE.mateIn} mate in \u00b7 ${elapsed}`}
+              detail={`${errors} ${errors === 1 ? 'miss' : 'misses'} \u00b7 mate in ${PUZZLE.mateIn} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
-                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '\u2014',
+                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '\u2013',
                     label: allTime.field != null ? `of ${Number(allTime.field).toLocaleString()} Mate all time` : 'all-time rank' }
                 : null}
               day={dayStats}
@@ -1330,7 +1413,7 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s position, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s position, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>

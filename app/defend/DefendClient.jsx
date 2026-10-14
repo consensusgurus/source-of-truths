@@ -36,7 +36,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { X, Lightbulb, Eye, Smartphone, RotateCcw } from 'lucide-react';
+import { X, Lightbulb, Smartphone } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -91,12 +91,15 @@ const COLORS = {
 };
 // The same walnut board Mate uses. It is chess, and a player should recognise it
 // as chess before reading a word.
-// The squares come off the stage's own pair now, so the board follows the light
-// switch. Beech and walnut were two mid-tone woods: the brightest surface on a
-// near-black page, and a palette belonging to nothing else on the site.
+// The Slate board (owner pick A, 2026-10-14), shared with Swindle's SwBoard so
+// the chess games read as one family: cool grey squares off --stg-chess-l/-d
+// (both registers), two-tone pieces with a hairline, a gold ring for the
+// selection and the hint, a gold last move, and coordinates OUTSIDE the board.
 const LIGHT_SQ = 'var(--stg-chess-l, #e8ecf3)';
 const DARK_SQ = 'var(--stg-chess-d, #a7b3c6)';
-const SEL_SQ = 'rgba(47,79,79,0.55)';
+const GOLD = '#e8b43a';
+// Last move is an inset-shadow wash, not a gradient layer: some Android
+// browsers paint no CSS gradients at all (report 2026-10-06).
 const LAST_SQ = 'rgba(232,180,58,0.55)';
 
 // The arm-then-confirm controls do not move when armed, so the second tap of
@@ -104,7 +107,6 @@ const LAST_SQ = 'rgba(232,180,58,0.55)';
 // label change could be read. A confirm this fast was never a decision.
 const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_defend_help_seen';
 const STATS_KEY = 'sot_defend_stats';
 
@@ -789,7 +791,7 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Defend #${PUZZLE.num} — the daily chess save from Mind Loft.\n${shareUrl()}`
+      ? `Defend #${PUZZLE.num}: the daily chess save from Mind Loft.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -823,6 +825,39 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+  // ---- the board's words (round seven), all derived from state ----
+  // The meter counts your moves against the hold; it never says whether a move
+  // was the save, because End Game shows no running verdict.
+  const meterDone = savesMade;
+  const meterCur = myTurn ? savesMade : -1;
+  const meterLeft = <>Held <b>{savesMade}</b> of {HOLD}<span className="df-lg"> moves</span></>;
+  const meterRight = !playing
+    ? (won ? ['You held', 'You held'] : g.status === 'lost' ? ['Mated', 'Mated'] : ['Ended', 'Ended'])
+    : awaitingReply ? ['White to reply', 'White to reply']
+    : [`${holdLeft} more to hold`, `${holdLeft} more to hold`];
+  const sayLine = !playing
+    ? (won ? 'You held.' : g.status === 'lost' ? 'Mated. The save is still there.' : 'You ended it there. The save is still there.')
+    : awaitingReply ? 'White is thinking...'
+    : `${blackInCheck ? 'Check. ' : ''}${moves.length === 0
+      ? `Black to play. Mate in ${HOLD} against everything else.`
+      : holdLeft <= 1 ? 'One more move to hold.' : `Black to play, hold for ${holdLeft}.`}`;
+  const PIECE_NAME = { K: 'King', Q: 'Queen', R: 'Rook', B: 'Bishop', N: 'Knight', P: 'Pawn' };
+  const COUNT_WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+  const selPiece = sel != null ? pos[sel] : null;
+  const selName = selPiece ? PIECE_NAME[selPiece.toUpperCase()] : '';
+  const helpLine = !playing ? null
+    : awaitingReply ? ['White answers with its strongest try.', 'White answers with its strongest try.']
+    : selPiece ? (targets.length
+      ? [`${selName} on ${squareName(sel)} picked up. ${targets.length === 1 ? 'Only one square is marked.' : `Its ${COUNT_WORD[targets.length] || targets.length} legal squares are marked.`} Tap one to play it.`,
+        `${selName} on ${squareName(sel)} picked up. ${targets.length === 1 ? 'One square is marked.' : 'Tap a marked square to play it.'}`]
+      : [`The ${selName.toLowerCase()} on ${squareName(sel)} has no legal move. Pick another piece.`, `The ${selName.toLowerCase()} on ${squareName(sel)} cannot move.`])
+    : ['Tap one of your black pieces to see where it can go.', 'Tap one of your black pieces to see where it can go.'];
+  const linePairs = [];
+  for (let i = 0; i < sanList.length; i += 2) linePairs.push([sanList[i], sanList[i + 1]]);
+  const hintShown = playing && hintOk && !g.hintUsed && !moves.length;
+  const ctlNote = `${hintShown ? 'Hint names the piece, never the square. ' : ''}You are Black, so the board is drawn from your side. Restart records a 0.`;
+  const footNote = `White mates against every move but one. Hold for ${HOLD} moves. Any legal move is played, and there is no take-back.`;
+
   const fileLabels = 'abcdefgh'.split('');
 
   return (
@@ -851,27 +886,74 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
           sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
           figures={playing ? [
             { v: elapsed, k: 'time' },
-            { v: Math.max(1, holdLeft), k: 'hold for' },
+            { v: Math.max(1, holdLeft), k: 'moves to hold' },
           ] : [
             { v: errors, k: 'misses' },
-            { v: HOLD, k: 'hold for' },
+            { v: HOLD, k: 'moves to hold' },
             { v: elapsed, k: 'time' },
           ]}
         />
       )}
-      <div className="df-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
+      <div className="df-wrap df-root" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
         <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.df-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .df-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .df-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .df-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
           .df-sq{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;}
           .df-pc{display:block;width:88%;height:88%;pointer-events:none;filter:drop-shadow(0 1.5px 0 rgba(0,0,0,0.22));}
-          .df-dot{position:absolute;width:28%;height:28%;border-radius:50%;background:rgba(28,30,36,0.32);pointer-events:none;}
-          .df-ring{position:absolute;inset:6%;border-radius:50%;border:min(1.1vw,6px) solid rgba(28,30,36,0.3);pointer-events:none;}
           .df-board.shake{animation:dfshake .34s ease;}
           @keyframes dfshake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
-          .df-coord{position:absolute;font-family:${MONO};font-size:min(2vw,10px);font-weight:500;opacity:.62;pointer-events:none;}
+          .df-root{--df-dot:rgba(233,237,244,.30);--df-frame:0 0 0 1px rgba(255,255,255,.10),0 12px 30px rgba(0,0,0,.45);--df-rim:var(--stg-ground,#0b0f1a);}
+          html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .df-root{--df-dot:rgba(11,13,18,.24);--df-frame:0 0 0 1px rgba(11,15,26,.10),0 10px 28px rgba(11,15,26,.16);--df-rim:#1c1a14;}
+          .df-sh{display:none;}
+          .df-meter{margin:0 0 14px;display:flex;flex-direction:column;gap:8px;}
+          .df-mhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+          .df-k{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute,#8b95a8);}
+          .df-k b{color:var(--stg-acc-ink,#e8b43a);font-weight:800;}
+          .df-mhead .df-k:last-child{text-align:right;}
+          .df-segs{display:flex;gap:4px;}
+          .df-seg{flex:1;height:8px;border-radius:2px;background:var(--stg-line2,rgba(255,255,255,0.17));}
+          .df-seg.done{background:var(--stg-acc,#e8b43a);}
+          .df-seg.cur{background:var(--stg-acc-tint,rgba(232,180,58,0.18));box-shadow:inset 0 0 0 2px var(--stg-acc-ink,#e8b43a);}
+          .df-boardbox{max-width:480px;margin:0 auto;}
+          .df-bd{display:grid;grid-template-columns:14px minmax(0,1fr);grid-template-rows:minmax(0,1fr) 16px;gap:4px 6px;}
+          .df-rk{display:grid;grid-template-rows:repeat(8,minmax(0,1fr));}
+          .df-fl{grid-column:2;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));}
+          .df-rk span,.df-fl span{display:flex;align-items:center;justify-content:center;font:700 10px Manrope,system-ui,sans-serif;color:var(--stg-mute,#5f6774);}
+          .df-rk span{justify-content:flex-end;}
+          .df-dot{position:absolute;width:30%;height:30%;border-radius:50%;background:var(--df-dot);pointer-events:none;}
+          .df-ring{position:absolute;inset:6%;border-radius:50%;border:4px solid var(--df-dot);pointer-events:none;}
+          .df-status{max-width:480px;margin:16px auto 0;display:flex;align-items:flex-start;gap:12px;}
+          .df-pip{flex:none;width:12px;height:12px;margin-top:6px;border-radius:50%;background:var(--stg-acc,#e8b43a);box-shadow:0 0 0 2px var(--df-rim);}
+          .df-say{display:block;font-size:17px;font-weight:800;color:var(--stg-ink,#e9edf4);}
+          .df-help{display:block;margin-top:3px;font-size:13px;font-weight:600;line-height:1.4;color:var(--stg-mute,#8b95a8);}
+          .df-line{max-width:480px;margin:14px auto 0;display:flex;flex-direction:column;gap:7px;}
+          .df-chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+          .df-chip{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 11px;border-radius:9px;border:1px solid var(--stg-line2,rgba(255,255,255,0.17));background:var(--stg-cell,#1a1d28);color:var(--stg-ink,#e9edf4);font-size:14px;font-weight:700;white-space:nowrap;}
+          .df-chip i{font-style:normal;color:var(--stg-mute,#8b95a8);}
+          .df-chip.next{background:transparent;border:1.5px dashed var(--stg-acc-ink,#e8b43a);font-weight:800;}
+          .df-chip.next span{color:var(--stg-acc-ink,#e8b43a);}
+          .df-ctl{max-width:480px;margin:16px auto 0;padding-top:14px;border-top:1px solid var(--stg-line,rgba(255,255,255,0.11));display:flex;align-items:center;justify-content:flex-end;gap:10px;}
+          .df-ctl-note{flex:1;font-size:12px;font-weight:600;line-height:1.4;color:var(--stg-mute,#8b95a8);}
+          .df-ob{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2,#aab5c7);border:1.5px solid var(--stg-line3,rgba(255,255,255,0.42));border-radius:12px;padding:0 16px;min-height:48px;min-width:104px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
+          .df-ob:hover{background:var(--stg-surf2,rgba(255,255,255,0.08));}
+          .df-ob.df-rs{min-width:124px;}
+          .df-ob.armed{color:var(--stg-bad,#fb7185);border-color:var(--stg-bad,#fb7185);}
+          .df-foot{max-width:480px;margin:10px auto 0;display:flex;justify-content:space-between;align-items:center;gap:16px;}
+          .df-foot-note{font-size:12px;font-weight:600;line-height:1.4;color:var(--stg-mute,#8b95a8);}
+          .df-giveup{background:none;border:none;cursor:pointer;font-family:${SANS};font-size:12.5px;font-weight:700;color:var(--stg-ink2,#aab5c7);text-decoration:underline;text-underline-offset:3px;white-space:nowrap;padding:0 2px;min-height:44px;min-width:84px;text-align:right;}
+          .df-giveup.armed{color:var(--stg-bad,#fb7185);}
+          .df-armed{max-width:480px;margin:2px auto 0;text-align:right;font-size:12px;font-weight:700;line-height:1.4;color:var(--stg-bad,#fb7185);}
+          @media(max-width:560px){
+            .df-lg{display:none;}.df-sh{display:inline;}
+            .df-k{font-size:10px;}.df-segs{gap:3px;}.df-seg{height:7px;}.df-meter{margin-bottom:12px;gap:6px;}
+            .df-status{margin-top:14px;gap:10px;padding:0 3px;}.df-pip{width:10px;height:10px;}
+            .df-say{font-size:15px;}.df-help{font-size:12px;margin-top:2px;}
+            .df-line{margin-top:12px;padding:0 3px;}.df-line-k{display:none;}
+            .df-chips{gap:6px;}.df-chip{height:32px;padding:0 9px;font-size:13px;}
+            .df-ctl{border-top:none;padding-top:0;margin-top:14px;}.df-ctl-note{display:none;}.df-ctl .df-ob{flex:1;min-height:46px;}
+            .df-foot-note{font-size:11.5px;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
@@ -886,7 +968,7 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
           helpTop={13}
           marginBottom={16}
           onHelp={() => setShowHelp(true)}
-          sunday={PUZZLE.sunday && <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition &middot; Hold for 4</span>}
+          sunday={PUZZLE.sunday && <span style={{ fontFamily: SANS, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition &middot; Hold for 4</span>}
           blocks={'DEFEND'.split('').map((ch, i) => (
               <div key={i} style={{ width: 40, height: 44, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontWeight: 900, fontSize: 24, background: i === 5 ? `var(--stg-acc, ${COLORS.accent})` : COLORS.ink, color: T.white, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.65)' }}>{ch}</div>
             ))}
@@ -924,25 +1006,40 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
           {/* These figures move UP into the cap on a loft page; printing them
               twice is the one thing to avoid. */}
           {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: SANS, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
             {/* Kept and posted throughout, shown only once the round is over:
                 a counter ticking up is itself a notice that the move was wrong. */}
             {!playing && <span style={{ whiteSpace: 'nowrap' }}>misses <b style={{ color: errors > 0 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{errors}</b></span>}
-            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
             <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>
               {playing ? <>hold for <b style={{ color: ACC_INK, fontWeight: 500 }}>{Math.max(1, holdLeft)}</b></> : <>hold for <b style={{ color: INK, fontWeight: 500 }}>{HOLD}</b></>}
             </span>
           </div>
           )}
 
-          <div style={{ maxWidth: 430, margin: '0 auto' }}>
-            {/* Drawn from Black's side: display index d maps to square 63 - d, so
-                rank 1 is at the top and your own pieces are the near ones. */}
+          {/* THE TOP METER (round seven): how far along the line you are, one
+              segment per move of the budget, with the current move ringed. It
+              counts moves, never verdicts: End Game shows no running score. */}
+          <div className="df-meter">
+            <div className="df-mhead">
+              <span className="df-k">{meterLeft}</span>
+              <span className="df-k"><span className="df-lg">{meterRight[0]}</span><span className="df-sh">{meterRight[1]}</span></span>
+            </div>
+            <div className="df-segs" aria-hidden="true">
+              {Array.from({ length: HOLD }).map((_, i) => (
+                <span key={i} className={`df-seg${i < meterDone ? ' done' : (i === meterCur ? ' cur' : '')}`} />
+              ))}
+            </div>
+          </div>
+
+          <div className="df-boardbox">
+          <div className="df-bd">
+            <div className="df-rk" aria-hidden="true">{[1, 2, 3, 4, 5, 6, 7, 8].map((n) => <span key={n}>{n}</span>)}</div>
             <div
-              key={shake}
-              className={`df-board${shake ? ' shake' : ''}`}
-              style={{ display: 'grid', gridTemplateColumns: 'repeat(8, minmax(0, 1fr))', gridTemplateRows: 'repeat(8, minmax(0, 1fr))', aspectRatio: '1 / 1', border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 4, overflow: 'hidden', touchAction: 'manipulation' }}
+              key={shake} className={`df-board${shake ? ' shake' : ''}`}
+              style={{ display: 'grid', gridTemplateColumns: 'repeat(8, minmax(0, 1fr))', gridTemplateRows: 'repeat(8, minmax(0, 1fr))', aspectRatio: '1 / 1', borderRadius: 10, overflow: 'hidden', boxShadow: 'var(--df-frame)', touchAction: 'manipulation' }}
             >
+              {/* Drawn from Black's side: display index d maps to square 63 - d, so
+                rank 1 is at the top and your own pieces are the near ones. */}
               {Array.from({ length: 64 }).map((_, d) => {
                 const sq = 63 - d;
                 const dr = d >> 3, df = d & 7;
@@ -955,13 +1052,11 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
                 const isHint = hintPiece === sq;
                 const checked = piece && piece.toUpperCase() === 'K' &&
                   ((white && whiteInCheck) || (!white && blackInCheck));
-                let bg = dark ? DARK_SQ : LIGHT_SQ;
-                // The last-move and selected tints are an inset shadow, not a
-                // one-colour gradient layer: some Android browsers paint no CSS
-                // gradients at all (report 2026-10-06), and the selected square
-                // is the one thing a player cannot lose sight of. Same pixels.
-                const tint = isSel ? null : (isLast ? LAST_SQ : null);
-                if (checked) bg = `radial-gradient(circle, rgba(192,57,43,0.85) 12%, rgba(192,57,43,0.25) 62%, transparent 74%), ${dark ? DARK_SQ : LIGHT_SQ}`;
+                // Slate marks, as SwBoard: a gold ring for the selection and the
+                // hint, a gold wash for the last move, a rose glow on a checked king.
+                const base = dark ? DARK_SQ : LIGHT_SQ;
+                const bg = checked ? `radial-gradient(circle, rgba(225,29,72,0.9) 14%, rgba(225,29,72,0.35) 58%, transparent 74%), ${base}` : base;
+                const rings = [isSel || isHint ? `inset 0 0 0 3px ${GOLD}` : null, isLast && !checked ? `inset 0 0 0 999px ${LAST_SQ}` : null].filter(Boolean).join(', ');
                 return (
                   <div
                     key={d}
@@ -970,14 +1065,8 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
                     role="button"
                     tabIndex={-1}
                     aria-label={squareName(sq) + (piece ? ` ${white ? 'white' : 'black'} ${piece.toUpperCase()}` : ' empty')}
-                    style={{ background: bg, boxShadow: [isHint || isSel ? `inset 0 0 0 3px #e8b43a` : null, tint && !checked ? `inset 0 0 0 999px ${tint}` : null].filter(Boolean).join(', ') || undefined }}
+                    style={{ background: bg, boxShadow: rings || undefined }}
                   >
-                    {df === 0 && (
-                      <span className="df-coord" style={{ left: 2, top: 1, color: dark ? LIGHT_SQ : DARK_SQ }}>{dr + 1}</span>
-                    )}
-                    {dr === 7 && (
-                      <span className="df-coord" style={{ right: 3, bottom: 1, color: dark ? LIGHT_SQ : DARK_SQ }}>{fileLabels[7 - df]}</span>
-                    )}
                     {piece && <Piece code={piece} />}
                     {isTarget && !piece && <span className="df-dot" />}
                     {isTarget && piece && <span className="df-ring" />}
@@ -985,64 +1074,62 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
                 );
               })}
             </div>
+            <div className="df-fl" aria-hidden="true">{[...fileLabels].reverse().map((x) => <span key={x}>{x}</span>)}</div>
+          </div>
           </div>
 
-          <div style={{ marginTop: 12, minHeight: 22, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: endHold.held ? 15 : 13, fontWeight: 800, color: playing ? `var(--stg-acc-ink, ${COLORS.accent})` : (endHold.held ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-mute, ${COLORS.faded})`) }}>
-              {!playing
-                ? (won ? 'You held.' : g.status === 'lost' ? 'Mated. The save is still there.' : 'You ended it there. The save is still there.')
-                : awaitingReply
-                  ? 'White is thinking...'
-                  : moves.length === 0
-                    ? `Black to play. Mate in ${HOLD} against everything else.`
-                    : holdLeft <= 1
-                      ? 'One more move to hold.'
-                      : `Black to play, hold for ${holdLeft}.`}
-            </span>
-            {sanList.length > 0 && (
-              <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 12, color: FADED, fontWeight: 500 }}>
-                {sanList.map((s, i) => (i % 2 === 0 ? `${i / 2 + 1}... ${s}` : s)).join(' ')}
-              </span>
-            )}
+          <div className="df-status" role="status" aria-live="polite">
+            <span className="df-pip" aria-hidden="true" />
+            <div style={{ minWidth: 0 }}>
+              <span className="df-say">{sayLine}</span>
+              {helpLine && <span className="df-help"><span className="df-lg">{helpLine[0]}</span><span className="df-sh">{helpLine[1]}</span></span>}
+            </div>
           </div>
 
-          {playing && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 12, flexWrap: 'wrap' }}>
-              {hintOk && !g.hintUsed && !moves.length && (
-                <button className="df-tool" onClick={useHint} title="Name the piece that moves (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(47,79,79,0.5)', color: '#23413f' }}>
-                  <Lightbulb size={14} /> Hint
-                </button>
-              )}
+          {(linePairs.length > 0 || myTurn) && (
+            <div className="df-line">
+              <span className="df-k df-line-k">The line so far</span>
+              <div className="df-chips">
+                {linePairs.map((pr, i) => (
+                  <span key={i} className="df-chip"><i>{i + 1}...</i><span>{pr[0]}</span>{pr[1] ? <span>{pr[1]}</span> : null}</span>
+                ))}
+                {myTurn && <span className="df-chip next"><i>{linePairs.length + 1}...</i><span>your move</span></span>}
+              </div>
             </div>
           )}
 
-        {/* Controls. These sit INSIDE the board card: on the navy stage a bare
-            row has nothing to sit on, and the card is meant to hold the game. */}
+        {/* Controls (round seven): outline Hint and Restart, Give up as a text
+            link. Both arm-then-confirm, with the consequence printed below so
+            the row never reflows under the reader's finger. */}
         {started && (
-          <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>
-                Tap a black piece, then tap where it goes. There is no take-back.
-              </span>
-              <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-                <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmRestart(false); setArmReveal(Date.now()); } }}
-                  title={armReveal ? 'Ends the puzzle and scores nothing' : 'End the puzzle now, scoring nothing'}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-start', gap: 5, minWidth: 104, padding: 0 }}>
-                  <Eye size={13} style={{ flexShrink: 0 }} /> {armReveal ? 'Press again' : 'Give up'}
+          <>
+            <div className="df-ctl">
+              <span className="df-ctl-note">{ctlNote}</span>
+              {hintShown && (
+                <button type="button" className="df-ob" onClick={useHint} title="Name the piece that moves (one hint, first play only)">
+                  <Lightbulb size={15} aria-hidden="true" /> Hint
                 </button>
-                <button onClick={() => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartGame(); } else { setArmReveal(false); setArmRestart(Date.now()); } }}
-                  title={armRestart ? 'Records a 0 and resets the board' : 'Record a 0 and reset the board'}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armRestart ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-start', gap: 5, minWidth: 104, padding: 0 }}>
-                  <RotateCcw size={13} style={{ flexShrink: 0 }} /> {armRestart ? 'Press again' : 'Restart'}
-                </button>
-              </span>
+              )}
+              <button type="button" className={`df-ob df-rs${armRestart ? ' armed' : ''}`}
+                onClick={() => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartGame(); } else { setArmReveal(false); setArmRestart(Date.now()); } }}
+                title={armRestart ? 'Records a 0 and resets the board' : 'Record a 0 and reset the board'}>
+                {armRestart ? 'Press again' : 'Restart'}
+              </button>
+            </div>
+            <div className="df-foot">
+              <span className="df-foot-note"><span className="df-lg">{footNote}</span><span className="df-sh">No take-back. Restart records a 0.</span></span>
+              <button type="button" className={`df-giveup${armReveal ? ' armed' : ''}`}
+                onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmRestart(false); setArmReveal(Date.now()); } }}
+                title={armReveal ? 'Ends the puzzle and scores nothing' : 'End the puzzle now, scoring nothing'}>
+                {armReveal ? 'Press again' : 'Give up'}
+              </button>
             </div>
             {(armReveal || armRestart) && (
-              <div style={{ fontFamily: SANS, fontSize: 11.5, fontWeight: 700, color: `var(--stg-ink, ${COLORS.rust})`, marginTop: 6, textAlign: 'right', lineHeight: 1.4 }}>
+              <div className="df-armed">
                 {armReveal ? 'Ends the puzzle and scores nothing.' : 'Records a 0 and resets the board.'}
               </div>
             )}
-          </div>
+          </>
         )}
         </div>
       )}
@@ -1070,7 +1157,7 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
                 </div>
               )}
               {PUZZLE.sunday && (
-                <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>The Sunday Edition &mdash; a hold for four.</div>
+                <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>The Sunday Edition: a hold for four.</div>
               )}
               {isTodays && myStats.cur >= 2 && (
                 <div style={{ fontSize: 13, fontWeight: 800, margin: '12px 0 0', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -1112,11 +1199,11 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               title={won ? 'Solved' : 'Not solved'}
-              detail={`${errors} misses \u00b7 ${HOLD} hold for \u00b7 ${elapsed}`}
+              detail={`${errors} ${errors === 1 ? 'miss' : 'misses'} \u00b7 hold for ${HOLD} moves \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
-                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '\u2014',
+                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '\u2013',
                     label: allTime.field != null ? `of ${Number(allTime.field).toLocaleString()} Defend all time` : 'all-time rank' }
                 : null}
               day={dayStats}
@@ -1189,7 +1276,7 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s position, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s position, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>

@@ -484,7 +484,7 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
   }
   function copyShare() {
     const text = playing
-      ? `Focus #${PUZZLE.num} — the daily zoomed-photo game from Mind Loft. Name it before the camera pulls all the way back.\n${shareUrl()}`
+      ? `Focus #${PUZZLE.num}: the daily zoomed-photo game from Mind Loft. Name it before the camera pulls all the way back.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -512,16 +512,6 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
     />
   );
 
-  const pip = (i) => {
-    const f = i + 1;
-    let bg = 'var(--stg-cell, #ffffff)', bd = 'var(--stg-cell-line, rgba(28,30,36,0.28))';
-    if (!playing) {
-      if (won) { if (f < frame) { bg = `var(--stg-bad, ${COLORS.rust})`; bd = bg; } else if (f === frame) { bg = `var(--stg-good, ${COLORS.green})`; bd = bg; } }
-      else { bg = `var(--stg-bad, ${COLORS.rust})`; bd = bg; }
-    } else if (f < frame) { bg = `var(--stg-bad, ${COLORS.rust})`; bd = bg; }
-    else if (f === frame) { bg = ACC; bd = ACC; }
-    return <i key={f} className="fc-pip" style={{ background: bg, borderColor: bd }} aria-label={`frame ${f}`} />;
-  };
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
@@ -558,27 +548,95 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
           @media(max-width:560px){.fc-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .fc-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .fc-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .fc-view{position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;border-radius:8px;background:var(--stg-cell, #eef0f3);border:1px solid var(--stg-cell-line, rgba(28,30,36,0.28));}
+          /* ROUND SEVEN BOARD (owner-approved mockup, 2026-10-14). A meter of the
+             six frames with the points each one pays, one panel holding the
+             photo, the type-ahead and the misses, and a status line at its
+             foot. Every colour is a stage token, so both registers read. */
+          .fc-col{max-width:640px;margin:0 auto;}
+          .fc-meter{display:flex;flex-direction:column;gap:7px;margin:0 0 14px;}
+          .fc-mhead{display:flex;justify-content:space-between;align-items:baseline;gap:6px 14px;flex-wrap:wrap;font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
+          .fc-mhead b{color:var(--stg-acc-ink, ${COLORS.accent});font-weight:800;}
+          .fc-segs{display:flex;gap:6px;}
+          .fc-seg{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;}
+          .fc-seg i{display:block;height:8px;box-sizing:border-box;border-radius:3px;border:1.5px solid var(--stg-line2, rgba(28,30,36,0.24));background:transparent;transition:background .2s;}
+          .fc-seg span{font-family:${SANS};font-size:10.5px;font-weight:700;color:var(--stg-mute, ${COLORS.faded});white-space:nowrap;}
+          .fc-seg.miss i{background:var(--stg-mute, ${COLORS.faded});border-color:var(--stg-mute, ${COLORS.faded});}
+          .fc-seg.cur i{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});}
+          .fc-seg.cur span{color:var(--stg-acc-ink, ${COLORS.accent});font-weight:800;}
+          .fc-seg.won i{background:var(--stg-good, ${COLORS.green});border-color:var(--stg-good, ${COLORS.green});}
+          .fc-seg.won span{color:var(--stg-good, ${COLORS.green});font-weight:800;}
+          .fc-panel{background:var(--stg-surf, #fff);border:1px solid var(--stg-line, rgba(28,30,36,0.18));border-radius:20px;padding:20px 24px 16px;display:flex;flex-direction:column;}
+          .fc-phead{display:flex;justify-content:space-between;align-items:baseline;gap:6px 12px;flex-wrap:wrap;margin-bottom:10px;}
+          .fc-phead .l{font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
+          .fc-phead .l b{color:var(--stg-acc-ink, ${COLORS.accent});font-weight:800;}
+          .fc-phead .r{font-family:${SANS};font-size:12px;font-weight:700;color:var(--stg-mute, ${COLORS.faded});}
+          .fc-view{position:relative;width:100%;max-width:420px;margin:0 auto;aspect-ratio:1/1;overflow:hidden;border-radius:14px;background:var(--stg-cell, #eef0f3);border:1px solid var(--stg-line2, rgba(28,30,36,0.28));}
           .fc-view img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;user-select:none;-webkit-user-drag:none;pointer-events:none;transition:transform .9s cubic-bezier(.2,.8,.2,1),filter .9s ease;}
           @media(prefers-reduced-motion:reduce){.fc-view img{transition:none;}}
-          .fc-tag{position:absolute;top:10px;font-family:${MONO};font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:rgba(0,0,0,.58);padding:4px 7px;border-radius:4px;}
-          .fc-ladder{display:flex;gap:6px;margin-top:10px;}
-          .fc-pip{flex:1;height:8px;border-radius:2px;border:1px solid;display:block;transition:background .2s;}
-          .fc-input{font-family:${SANS};font-weight:700;font-size:16px;width:100%;border:2px solid var(--stg-cell-line, rgba(28,30,36,0.4));border-radius:9px;padding:12px 13px;color:${INK};background:var(--stg-cell, ${T.white});outline:none;}
-          .fc-input:focus{border-color:var(--stg-acc, ${COLORS.accent});}
+          /* The two tags sit ON the photo, not on the page, so they are one dark
+             chip in both registers: a photo has no register. */
+          .fc-tag{position:absolute;top:10px;font-family:${SANS};font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#e8ecf4;background:rgba(11,15,26,.86);padding:5px 8px;border-radius:6px;}
+          .fc-ask{position:relative;margin-top:16px;}
+          .fc-field{position:relative;}
+          .fc-input{font-family:${SANS};font-weight:700;font-size:17px;width:100%;box-sizing:border-box;height:56px;border:2px solid var(--stg-acc, ${COLORS.accent});border-radius:12px;padding:0 16px;color:${INK};background:${STAGE ? 'transparent' : T.white};outline:none;}
+          .fc-input.has-n{padding-right:230px;}
+          .fc-input::placeholder{color:var(--stg-mute, ${COLORS.faded});opacity:1;}
+          .fc-input:focus{box-shadow:0 0 0 3px var(--stg-acc-tint, ${COLORS.accentSoft});}
+          .stage-page .fc-input:focus{border-bottom-color:var(--stg-acc, ${COLORS.accent}) !important;}
           .fc-input.shake{animation:fcshake .3s linear;}
           @keyframes fcshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-          .fc-sugg{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:8;background:var(--stg-raise, ${T.white});border:1px solid var(--stg-cell-line, rgba(28,30,36,0.4));border-radius:9px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.25);}
-          .fc-sugg button{display:flex;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--stg-line, rgba(28,30,36,0.1));padding:11px 14px;font-family:${SANS};font-weight:700;font-size:15px;color:${INK};cursor:pointer;align-items:center;gap:10px;}
-          .fc-sugg button:first-child{border-top:0;}
-          .fc-sugg button:hover,.fc-sugg button:focus-visible{background:var(--stg-acc-tint, ${COLORS.accentSoft});outline:none;}
-          .fc-sugg button small{margin-left:auto;font-family:${MONO};font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:${FADED};}
-          .fc-miss{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--stg-line, rgba(28,30,36,0.18));border-radius:7px;background:var(--stg-surf, transparent);font-family:${SANS};font-weight:700;font-size:14px;color:${INK};}
-          .fc-miss .x{color:var(--stg-bad, ${COLORS.rust});font-family:${MONO};}
-          .fc-miss small{margin-left:auto;font-family:${MONO};font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:${FADED};}
+          .fc-count{position:absolute;right:16px;top:50%;transform:translateY(-50%);pointer-events:none;font-family:${SANS};font-size:12px;font-weight:700;color:var(--stg-mute, ${COLORS.faded});white-space:nowrap;}
+          .fc-sugg{display:flex;flex-direction:column;gap:6px;margin-top:6px;}
+          .fc-sugg button{display:flex;width:100%;min-height:48px;box-sizing:border-box;text-align:left;align-items:center;gap:10px;padding:8px 16px;border-radius:12px;background:transparent;border:1.5px solid var(--stg-line3, rgba(28,30,36,0.45));font-family:${SANS};font-weight:800;font-size:15px;color:${INK};cursor:pointer;}
+          .fc-sugg button:hover,.fc-sugg button:focus-visible{background:var(--stg-surf2, ${COLORS.accentSoft});outline:none;}
+          .fc-sugg button.top{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);}
+          .fc-sugg button.top:hover,.fc-sugg button.top:focus-visible{background:var(--stg-acc, ${COLORS.accent});box-shadow:0 0 0 3px var(--stg-acc-tint, ${COLORS.accentSoft});}
+          .fc-sugg button small{margin-left:auto;font-family:${SANS};font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:inherit;}
+          .fc-misses{margin-top:14px;display:flex;flex-direction:column;gap:6px;}
+          .fc-misses .lbl{font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
+          .fc-miss{display:flex;align-items:center;gap:10px;min-height:40px;box-sizing:border-box;padding:6px 14px;border:1px solid var(--stg-line, rgba(28,30,36,0.18));border-radius:10px;background:var(--stg-surf2, #f4f6f9);font-family:${SANS};font-weight:700;font-size:14px;}
+          .fc-miss .x{color:var(--stg-bad, ${COLORS.rust});font-weight:800;}
+          .fc-miss .w{color:var(--stg-ink2, ${COLORS.ink});text-decoration:line-through;}
+          .fc-miss small{margin-left:auto;font-family:${SANS};font-size:12px;font-weight:700;color:var(--stg-mute, ${COLORS.faded});white-space:nowrap;}
+          .fc-foot{margin-top:16px;border-top:1px solid var(--stg-line, rgba(28,30,36,0.18));padding-top:14px;display:flex;flex-direction:column;gap:2px;font-family:${SANS};}
+          .fc-foot .s{font-size:14px;font-weight:700;color:${INK};}
+          .fc-foot .s.miss{color:var(--stg-bad, ${COLORS.rust});}
+          .fc-foot .h{font-size:12px;font-weight:600;color:var(--stg-mute, ${COLORS.faded});}
+          .fc-under{margin:12px 4px 0;font-family:${SANS};font-size:12px;font-weight:600;color:var(--stg-mute, ${COLORS.faded});}
+          .fc-ph{display:none;}
+          @media(max-width:700px){
+            .fc-in{padding:0 8px;}
+            .fc-panel{background:transparent;border:0;border-radius:0;padding:0;}
+            .fc-meter{gap:5px;margin-bottom:12px;}
+            .fc-segs{gap:4px;}
+            .fc-seg{gap:3px;}
+            .fc-seg i{height:6px;border-radius:2px;}
+            .fc-seg span{font-size:10px;}
+            .fc-mhead{font-size:10px;letter-spacing:.06em;}
+            .fc-meter .fc-segs{order:1;}
+            .fc-meter .fc-mhead{order:2;}
+            .fc-phead{margin-bottom:8px;}
+            .fc-phead .l{font-size:10.5px;}
+            .fc-phead .r{font-size:11.5px;}
+            .fc-view{max-width:340px;border-radius:12px;}
+            .fc-tag{top:8px;font-size:10px;padding:4px 7px;}
+            .fc-ask{margin-top:10px;}
+            .fc-input{height:50px;font-size:16px;padding:0 14px;}
+            .fc-input.has-n{padding-right:90px;}
+            .fc-count{right:14px;font-size:11px;}
+            .fc-sugg{gap:5px;margin-top:5px;}
+            .fc-sugg button{min-height:46px;padding:6px 14px;font-size:14.5px;}
+            .fc-misses{flex-direction:row;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px;}
+            .fc-miss{min-height:0;padding:5px 9px;border-radius:8px;font-size:12px;gap:6px;}
+            .fc-miss small{display:none;}
+            .fc-foot{padding-top:10px;margin-top:12px;}
+            .fc-foot .s{font-size:13.5px;}
+            .fc-dk,.fc-under{display:none;}
+            .fc-ph{display:inline;}
+          }
         ` }} />
 
-        <div style={{ maxWidth: 560, margin: '0 auto' }}>
+        <div className="fc-col">
 
         {!LOFT && (
         <DailyMasthead
@@ -615,22 +673,39 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
         )}
 
         {!preStart && (
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
-          {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-            <span style={{ whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-              <Aperture size={13} style={{ color: ACC_INK }} />
-              <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{frame}/{FRAMES}</b>
-              <span>frame</span>
-            </span>
-            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>misses <b style={{ color: INK, fontWeight: 500 }}>{misses}</b></span>
+        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? 'transparent' : T.white, border: STAGE ? 0 : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: STAGE ? 0 : '13px 15px 15px', marginBottom: 12 }}>
+          <div className="fc-in">
+          {/* THE METER. Six frames, each labelled with what naming it there
+              pays, so the cost of a miss is on screen before it is spent. */}
+          <div className="fc-meter">
+            <div className="fc-mhead">
+              <span>Frame <b>{playing ? frame : (won ? frame : FRAMES)}</b> of {FRAMES}</span>
+              <span>
+                {playing
+                  ? (frame === FRAMES ? <>Last frame &middot; name it for <b>1</b></> : <>Name it now for <b>{pointsFor(frame)}</b> &middot; each miss costs 1</>)
+                  : (won ? <>Named at frame {frame} &middot; <b>{score}</b> point{score === 1 ? '' : 's'}</> : <>Out of frames &middot; <b>0</b> points</>)}
+              </span>
+            </div>
+            <div className="fc-segs" aria-label={`frame ${frame} of ${FRAMES}`}>
+              {Array.from({ length: FRAMES }, (_, i) => {
+                const f = i + 1;
+                const st = playing ? (f < frame ? 'miss' : f === frame ? 'cur' : 'next')
+                  : won ? (f < frame ? 'miss' : f === frame ? 'won' : 'next') : 'miss';
+                const pts = pointsFor(f);
+                return (
+                  <div key={f} className={`fc-seg ${st}`}>
+                    <i />
+                    <span>{st === 'miss' ? 'Missed' : `${pts} ${pts === 1 ? 'pt' : 'pts'}`}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-          )}
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10, marginBottom: 10, fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 500 }}>
-            <span style={{ color: ACC_INK }}>{SUBJECT.label}</span>
-            <span style={{ color: FADED }}>{playing ? (frame === FRAMES ? 'Last frame · the whole photo' : frame === 1 ? 'Every miss pulls back' : `${FRAMES - frame} more pull${FRAMES - frame === 1 ? '' : 's'} left`) : (won ? `Solved at frame ${frame}` : 'Out of frames')}</span>
+          <div className="fc-panel">
+          <div className="fc-phead">
+            <span className="l"><span className="fc-dk">The photo &middot; </span>{SUBJECT.prompt}</span>
+            <span className="r">{playing ? (frame === FRAMES ? 'Last frame, the whole photo' : `${FRAMES - frame} more pull${FRAMES - frame === 1 ? '' : 's'} left`) : (won ? `Solved at frame ${frame}` : 'Out of frames')}</span>
           </div>
 
           {/* The photo. A square window; the image is cover-fit and scaled
@@ -651,53 +726,46 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
               />
             )}
             {imgOk === null && (
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: MONO, fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: FADED }}>Developing…</div>
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED }}>Developing…</div>
             )}
-            <span className="fc-tag" style={{ left: 10 }}>Frame <b style={{ color: `var(--stg-acc-ink, ${COLORS.accent})`, fontWeight: 500 }}>{viewFrame}</b> of {FRAMES}</span>
-            <span className="fc-tag" style={{ right: 10 }}>{ZOOM[viewFrame - 1]}×</span>
-          </div>
-          <div className="fc-ladder" aria-label={`frame ${frame} of ${FRAMES}`}>
-            {Array.from({ length: FRAMES }, (_, i) => pip(i))}
+            <span className="fc-tag" style={{ left: 10 }}>Frame {viewFrame} of {FRAMES}</span>
+            <span className="fc-tag" style={{ right: 10 }}>{ZOOM[viewFrame - 1]}&times;<span className="fc-dk"> zoom</span></span>
           </div>
 
           {playing && started && (
-            <div ref={askRef} style={{ marginTop: 14, position: 'relative' }}>
-              <input
-                ref={inputRef}
-                className={`fc-input${notice && notice.kind === 'miss' ? ' shake' : ''}`}
-                value={q}
-                onChange={(e) => { setQ(e.target.value); setOpen(true); }}
-                onFocus={() => setOpen(true)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') { e.preventDefault(); onEnter(); }
-                  else if (e.key === 'Escape') { setOpen(false); }
-                }}
-                placeholder={frame === FRAMES ? `Last guess. ${SUBJECT.prompt}` : SUBJECT.prompt}
-                autoCapitalize="off" autoComplete="off" autoCorrect="off" spellCheck={false}
-                aria-label={SUBJECT.prompt}
-                aria-autocomplete="list" aria-expanded={open && suggestions.length > 0}
-              />
+            <div ref={askRef} className="fc-ask">
+              <div className="fc-field">
+                <input
+                  ref={inputRef}
+                  className={`fc-input${notice && notice.kind === 'miss' ? ' shake' : ''}${fold(q).length >= 2 ? ' has-n' : ''}`}
+                  value={q}
+                  onChange={(e) => { setQ(e.target.value); setOpen(true); }}
+                  onFocus={() => setOpen(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') { e.preventDefault(); onEnter(); }
+                    else if (e.key === 'Escape') { setOpen(false); }
+                  }}
+                  placeholder={frame === FRAMES ? `Last guess. ${SUBJECT.prompt}` : SUBJECT.prompt}
+                  autoCapitalize="off" autoComplete="off" autoCorrect="off" spellCheck={false}
+                  aria-label={SUBJECT.prompt}
+                  aria-autocomplete="list" aria-expanded={open && suggestions.length > 0}
+                />
+                {fold(q).length >= 2 && (
+                  <span className="fc-count" aria-live="polite">
+                    {suggestions.length === 0 ? 'No match'
+                      : <>{suggestions.length === 6 ? 'Top 6' : suggestions.length}<span className="fc-dk">{suggestions.length === 6 ? ' names on today’s list' : ` name${suggestions.length === 1 ? '' : 's'} on today’s list match${suggestions.length === 1 ? 'es' : ''}`}</span><span className="fc-ph">{suggestions.length === 6 ? ' shown' : ` match${suggestions.length === 1 ? 'es' : ''}`}</span></>}
+                  </span>
+                )}
+              </div>
               {open && suggestions.length > 0 && (
                 <div className="fc-sugg" role="listbox">
                   {suggestions.map((s, i) => (
-                    <button type="button" key={s} role="option" aria-selected={i === 0} onMouseDown={(e) => e.preventDefault()} onClick={() => guess(s)}>
+                    <button type="button" key={`${s}-${i}`} role="option" aria-selected={i === 0} className={i === 0 ? 'top' : undefined} onMouseDown={(e) => e.preventDefault()} onClick={() => guess(s)}>
                       {s}{i === 0 && <small>Enter</small>}
                     </button>
                   ))}
                 </div>
               )}
-              <div style={{ minHeight: 19, marginTop: 6, fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: notice && notice.kind === 'miss' ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})` }}>
-                {/* THE LIST COMMITS, IT DOES NOT FILL. Every other autocomplete on earth
-                    puts the suggestion in the box and waits, so a reader taps one to see
-                    it written down and has spent a frame instead. That is worth warning
-                    about, but the warning has to name the COST in the unit on screen: it
-                    read "A pick is a guess", which invents "pick" for an action nobody
-                    has named and then defines it as another word from the rules panel
-                    (owner, 2026-09-01: "that seems dumb"). Say what happens. */}
-                {notice ? notice.msg
-                  : noMatch ? <>No name on today’s list matches that. <b style={{ color: INK }}>It has cost you nothing.</b></>
-                  : <>Type, then choose a name. <b style={{ color: INK }}>Choosing one spends a frame.</b></>}
-              </div>
             </div>
           )}
 
@@ -716,12 +784,35 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
           )}
 
           {(g.wrong.length > 0) && (
-            <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div className="fc-misses">
+              <span className="lbl">Not it</span>
               {[...g.wrong].reverse().map((w, i) => (
-                <div key={w} className="fc-miss"><span className="x">✗</span>{w}<small>frame {g.wrong.length - i}</small></div>
+                <div key={`${w}-${i}`} className="fc-miss"><span className="x" aria-hidden="true">✗</span><span className="w">{w}</span><small>frame {g.wrong.length - i}</small></div>
               ))}
             </div>
           )}
+
+          {/* THE STATUS LINE. One sentence on where the day stands and one
+              muted line on how to play it. A miss notice and the no-match
+              note take the sentence while they apply; neither costs a frame,
+              and the no-match note says so in as many words. */}
+          {playing && started && (
+            <div className="fc-foot">
+              <span className={`s${notice && notice.kind === 'miss' ? ' miss' : ''}`} aria-live="polite">
+                {notice ? notice.msg
+                  : noMatch ? <>No name on today’s list matches that. It has cost you nothing.</>
+                  : frame === FRAMES ? <>Last frame: the whole photo, and one guess left.</>
+                  : misses === 0 ? <>Frame 1 is the tightest crop, and it pays {pointsFor(1)} points.</>
+                  : <>{['One miss', 'Two misses', 'Three misses', 'Four misses'][misses - 1]}: the camera has pulled back {['once', 'twice', 'three times', 'four times'][misses - 1]}.</>}
+              </span>
+              <span className="h">Type, then choose a name. Choosing one spends a frame.<span className="fc-dk"> Enter takes the top name.</span></span>
+            </div>
+          )}
+          </div>
+          {playing && started && (
+            <div className="fc-under">Frame {FRAMES} is the whole photo and one last guess. A typo never costs anything.</div>
+          )}
+          </div>
         </div>
         )}
 
@@ -747,12 +838,12 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
                 {isTodays ? (
                   <>
                     {countdown ? <>Next Focus in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A new photo drops at midnight Eastern.'}
-                    {prevPuzzle && (<>{' '}Meanwhile: <a href={`/focus?p=${prevPuzzle.num}`} style={{ color: COLORS.ember, fontWeight: 800, textDecoration: 'underline' }}>try yesterday&rsquo;s photo &rarr;</a></>)}
+                    {prevPuzzle && (<>{' '}Meanwhile: <a href={`/focus?p=${prevPuzzle.num}`} style={{ color: `var(--stg-acc-ink, ${COLORS.ember})`, fontWeight: 800, textDecoration: 'underline' }}>try yesterday&rsquo;s photo &rarr;</a></>)}
                   </>
                 ) : (
                   <>
                     You&rsquo;re playing the {PUZZLE.dateLabel.replace(', 2026', '')} archive.{' '}
-                    <a href="/focus" style={{ color: COLORS.ember, fontWeight: 800, textDecoration: 'underline' }}>Back to today&rsquo;s Focus &rarr;</a>
+                    <a href="/focus" style={{ color: `var(--stg-acc-ink, ${COLORS.ember})`, fontWeight: 800, textDecoration: 'underline' }}>Back to today&rsquo;s Focus &rarr;</a>
                     {' · '}<a href="/archive" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>Puzzle archive</a>
                   </>
                 )}
@@ -775,7 +866,7 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
-                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '—',
+                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '–',
                     label: allTime.field != null ? `of ${Number(allTime.field).toLocaleString()} Focus all time` : 'all-time rank' }
                 : null}
               day={dayStats}
@@ -837,7 +928,7 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s photo, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s photo, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>Open your browser&apos;s menu and choose <b>Add to Home Screen</b> (or <b>Install app</b>). The tile opens today&apos;s photo, every day.</p>

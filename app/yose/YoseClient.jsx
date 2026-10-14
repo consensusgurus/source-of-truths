@@ -88,7 +88,6 @@ const MARK = 'var(--stg-ink, #b45309)';
 
 const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_yose_help_seen';
 const STATS_KEY = 'sot_yose_stats';
 
@@ -658,7 +657,7 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
-      lead="Go, picked up at the very end. The walls are built and the territories are settled; a handful of open points decide who wins. You play the coloured stones."
+      lead="Go, picked up at the very end. The walls are built and the territories are settled; a handful of open points decide who wins. You play the gold stones, the engine plays White."
       banner={<>{PUZZLE.pts.length} open points. To win you must <b>{needText(PUZZLE.komi)}</b>, and perfect play wins by exactly half a point.</>}
       steps={[
         <><b>Tap an open point</b> to place a stone. Only the open points are in play: the marked squares are settled territory and nobody may play there.</>,
@@ -686,15 +685,24 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
   };
 
   // ── board drawing ────────────────────────────────────────────────────────
+  // On the stage every paint is a game-local custom property defined for both
+  // registers in the style block below (.yo-root), read through a style prop
+  // because SVG presentation attributes cannot read a custom property. The
+  // Loft keeps its wood board and literal stones.
   const revealKey = won;
   const U = 40;                       // one grid step in SVG units
   const PAD = 34;
   const SIZE = PAD * 2 + U * (N - 1);
   const at = (i) => ({ x: PAD + (i % N) * U, y: PAD + ((i / N) | 0) * U });
+  const P_GRID = STAGE ? 'var(--yo-grid)' : GRID;
+  const P_YOU = STAGE ? 'var(--stg-acc, #e8b43a)' : STONE_YOU;
+  const P_YOU_RIM = STAGE ? 'var(--yo-you-rim)' : 'rgba(0,0,0,0.35)';
+  const P_FOE = STAGE ? 'var(--yo-wst)' : STONE_FOE;
+  const P_FOE_RIM = STAGE ? 'var(--yo-wst-rim)' : STONE_FOE_EDGE;
   const lines = [];
   for (let k = 0; k < N; k++) {
-    lines.push(<line key={`h${k}`} x1={PAD} y1={PAD + k * U} x2={PAD + (N - 1) * U} y2={PAD + k * U} style={{ stroke: GRID, strokeWidth: 1.4 }} />);
-    lines.push(<line key={`v${k}`} x1={PAD + k * U} y1={PAD} x2={PAD + k * U} y2={PAD + (N - 1) * U} style={{ stroke: GRID, strokeWidth: 1.4 }} />);
+    lines.push(<line key={`h${k}`} x1={PAD} y1={PAD + k * U} x2={PAD + (N - 1) * U} y2={PAD + k * U} style={{ stroke: P_GRID, strokeWidth: 1.2 }} />);
+    lines.push(<line key={`v${k}`} x1={PAD + k * U} y1={PAD} x2={PAD + k * U} y2={PAD + (N - 1) * U} style={{ stroke: P_GRID, strokeWidth: 1.2 }} />);
   }
   const pieces = [];
   for (let i = 0; i < N * N; i++) {
@@ -708,25 +716,30 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
     const fresh = view.last && view.last.p === i;
     if (v === BLACK || v === WHITE) {
       pieces.push(
-        <circle key={`s${i}`} className={fresh ? 'yo-fresh' : undefined} cx={x} cy={y} r={U * 0.46}
-          style={{ fill: v === BLACK ? STONE_YOU : STONE_FOE, stroke: v === BLACK ? 'rgba(0,0,0,0.35)' : STONE_FOE_EDGE, strokeWidth: 1.2 }} />,
+        <circle key={`s${i}`} className={fresh ? 'yo-fresh' : undefined} cx={x} cy={y} r={U * 0.42}
+          style={{ fill: v === BLACK ? P_YOU : P_FOE, stroke: v === BLACK ? P_YOU_RIM : P_FOE_RIM, strokeWidth: STAGE ? 2 : 1.2 }} />,
       );
-      if (fresh) pieces.push(<circle key={`l${i}`} cx={x} cy={y} r={U * 0.13} style={{ fill: v === BLACK ? STONE_FOE : STONE_YOU }} />);
+      if (fresh) pieces.push(<circle key={`l${i}`} cx={x} cy={y} r={U * 0.1} style={{ fill: STAGE ? (v === BLACK ? 'var(--stg-onramp, #1c1a14)' : 'var(--yo-you-rim)') : (v === BLACK ? STONE_FOE : STONE_YOU) }} />);
     } else if (v === BTERR || v === WTERR) {
-      const s = U * 0.26;
+      const s = U * 0.25;
       pieces.push(<rect key={`t${i}`} x={x - s / 2} y={y - s / 2} width={s} height={s} rx={2}
-        style={{ fill: v === BTERR ? STONE_YOU : STONE_FOE, stroke: v === BTERR ? 'none' : STONE_FOE_EDGE, strokeWidth: 1, opacity: 0.9 }} />);
+        style={{ fill: v === BTERR ? P_YOU : P_FOE, stroke: v === BTERR ? P_YOU_RIM : P_FOE_RIM, strokeWidth: STAGE ? 1.4 : 1 }} />);
     } else if (isOpenPt && open) {
-      pieces.push(<circle key={`d${i}`} cx={x} cy={y} r={U * (hot ? 0.16 : 0.11)} style={{ fill: hot ? DOT_HOT : DOT }} />);
+      if (hot && STAGE) {
+        pieces.push(<circle key={`d${i}`} cx={x} cy={y} r={U * 0.37} style={{ fill: 'var(--yo-soft)', stroke: 'var(--stg-acc-ink, #7c5104)', strokeWidth: 1.8, strokeDasharray: '4 3' }} />);
+      } else {
+        pieces.push(<circle key={`d${i}`} cx={x} cy={y} r={U * (hot ? 0.16 : 0.11)} style={{ fill: STAGE ? 'var(--yo-dot)' : (hot ? DOT_HOT : DOT) }} />);
+      }
     }
     if (view.lastCap.has(i) && v === EMPTY) {
-      pieces.push(<circle key={`c${i}`} cx={x} cy={y} r={U * 0.3} style={{ fill: 'none', stroke: GRID, strokeWidth: 1.2, strokeDasharray: '3 3' }} />);
+      pieces.push(<circle key={`c${i}`} cx={x} cy={y} r={U * 0.3} style={{ fill: 'none', stroke: P_GRID, strokeWidth: 1.2, strokeDasharray: '3 3' }} />);
     }
     if (hinted) pieces.push(<circle key={`h${i}`} cx={x} cy={y} r={U * 0.44} style={{ fill: 'none', stroke: MARK, strokeWidth: 2.6 }} />);
     if (isKey) pieces.push(<circle key={`k${i}`} className="yo-key" cx={x} cy={y} r={U * 0.5} style={{ fill: 'none', stroke: MARK, strokeWidth: 3 }} />);
     if (isOpenPt) {
       pieces.push(
         <rect key={`z${i}`} x={x - U / 2} y={y - U / 2} width={U} height={U}
+          aria-label={`${pointName(i, N)}${open ? ', open' : ''}`}
           style={{ fill: 'transparent', cursor: open ? 'pointer' : 'default' }}
           onMouseEnter={() => open && setHoverPt(i)}
           onMouseLeave={() => setHoverPt(null)}
@@ -736,8 +749,8 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
   }
   const coords = [];
   for (let k = 0; k < N; k++) {
-    coords.push(<text key={`cx${k}`} x={PAD + k * U} y={SIZE - 6} textAnchor="middle" style={{ fill: FADED, fontFamily: MONO, fontSize: 10 }}>{COLS[k]}</text>);
-    coords.push(<text key={`cy${k}`} x={10} y={PAD + k * U + 3.5} textAnchor="middle" style={{ fill: FADED, fontFamily: MONO, fontSize: 10 }}>{N - k}</text>);
+    coords.push(<text key={`cx${k}`} x={PAD + k * U} y={SIZE - 6} textAnchor="middle" style={{ fill: FADED, fontFamily: SANS, fontWeight: 700, fontSize: 10 }}>{COLS[k]}</text>);
+    coords.push(<text key={`cy${k}`} x={10} y={PAD + k * U + 3.5} textAnchor="middle" style={{ fill: FADED, fontFamily: SANS, fontWeight: 700, fontSize: 10 }}>{N - k}</text>);
   }
 
   return (
@@ -760,11 +773,10 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
           sunday={PUZZLE.sunday ? 'Sunday Edition · 9×9' : null}
           figures={playing ? [
             { v: elapsed, k: 'time' },
-            { v: `${view.area.black}–${view.area.white}`, k: 'area' },
             { v: PUZZLE.komi, k: 'komi' },
           ] : [
             { v: errors, k: 'errors' },
-            { v: `${view.area.black}–${view.area.white}`, k: 'area' },
+            { v: PUZZLE.komi, k: 'komi' },
             { v: elapsed, k: 'time' },
           ]}
         />
@@ -774,7 +786,35 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.yo-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .yo-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : COLORS.accent};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : COLORS.accent};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .yo-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .yo-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:104px;box-sizing:border-box;}
+          /* Game-local colours, one set per register: the board and its grid,
+             White's stones and rims, your stones' rim, the open-point dot. Your
+             stones are the category accent in both. The light block carries the
+             boot-stamp guard (app/globals.css). */
+          .yo-root{--yo-board:#1d2638;--yo-grid:#4a5670;--yo-wst:#e8ecf4;--yo-wst-rim:#8b95a8;--yo-you-rim:#a87a14;--yo-dot:#8b95a8;--yo-btn:#5a6680;
+            --yo-soft:color-mix(in srgb, var(--stg-acc, #e8b43a) 22%, var(--stg-ground, #0b0f1a));}
+          html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .yo-root{--yo-board:#e3e7ee;--yo-grid:#78839a;--yo-wst:#ffffff;--yo-wst-rim:#525c70;--yo-you-rim:#7c5104;--yo-dot:#525c70;--yo-btn:#78839a;
+            --yo-soft:color-mix(in srgb, var(--stg-acc, #e8b43a) 30%, #ffffff);}
+          .yo-k{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute,#8b95a8);}
+          .yo-k b{color:var(--stg-acc-ink,#7c5104);font-weight:800;}
+          .yo-meter{display:flex;gap:5px;margin-top:8px;}
+          .yo-seg{flex:1;height:8px;border-radius:3px;box-sizing:border-box;background:var(--stg-line2,rgba(255,255,255,.17));}
+          .yo-seg.you{background:var(--stg-acc,#e8b43a);border:1.5px solid var(--yo-you-rim);}
+          .yo-seg.eng{background:var(--yo-wst);border:1.5px solid var(--yo-wst-rim);}
+          .yo-short{display:none;}
+          .yo-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--stg-line2,rgba(255,255,255,.17));border-radius:999px;padding:5px 11px;font-size:12px;font-weight:700;color:var(--stg-ink2,#aab5c7);white-space:nowrap;}
+          .yo-chip b{color:var(--stg-ink,#e9edf4);font-size:14px;font-weight:800;}
+          .yo-chip i{width:11px;height:11px;border-radius:50%;box-sizing:border-box;flex:none;}
+          .yo-leg{display:flex;align-items:center;gap:6px;white-space:nowrap;}
+          .yo-ctl{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2,#aab5c7);border:1.5px solid var(--yo-btn);border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
+          .yo-ctl:hover{background:var(--stg-surf2,rgba(255,255,255,.08));color:var(--stg-ink,#e9edf4);}
+          .yo-ctl.armed{border-color:var(--stg-bad,#fb7185);color:var(--stg-bad,#fb7185);}
+          .yo-ctl.primary{background:var(--stg-acc,#e8b43a);color:var(--stg-onramp,#1c1a14);border-color:var(--stg-acc,#e8b43a);font-weight:800;padding:0 22px;}
+          .yo-ctl.primary:hover{filter:brightness(1.05);}
+          .yo-ctl.primary.armed{box-shadow:0 0 0 2px var(--stg-ground,#0b0f1a), 0 0 0 4px var(--stg-acc-ink,#e8b43a);}
+          .yo-ctl:disabled{cursor:default;background:transparent;color:var(--stg-mute,#8b95a8);border:1.5px dashed var(--stg-line2,rgba(255,255,255,.17));filter:none;box-shadow:none;}
+          .yo-link{background:none;border:none;cursor:pointer;font-family:${SANS};font-weight:700;font-size:12px;color:var(--stg-ink2,#aab5c7);text-decoration:underline;text-underline-offset:3px;white-space:nowrap;min-height:44px;min-width:84px;padding:0;text-align:right;}
+          .yo-link.armed{color:var(--stg-bad,#fb7185);}
+          .yo-note{font-size:12px;font-weight:600;color:var(--stg-mute,#8b95a8);line-height:1.45;}
           .yo-svg{display:block;width:100%;height:auto;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;}
           .yo-fresh{animation:yopop .26s ease;transform-box:fill-box;transform-origin:center;}
           @keyframes yopop{0%{transform:scale(0.3);}70%{transform:scale(1.06);}100%{transform:scale(1);}}
@@ -783,6 +823,13 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
           .yo-board.shake{animation:yoshake .34s ease;}
           @keyframes yoshake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
           @media (prefers-reduced-motion: reduce){.yo-fresh,.yo-key,.yo-board.shake{animation:none;}}
+          @media(max-width:560px){
+            .yo-long{display:none;}
+            .yo-short{display:inline;}
+            .yo-ctlrow .yo-note{display:none;}
+            .yo-ctlrow .yo-ctl{flex:1;}
+            .yo-head{flex-direction:column;align-items:flex-start !important;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
@@ -810,63 +857,121 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
             </div>
           )}
 
-          {!preStart && (
-            <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
-              {!LOFT && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-                {!playing && <span>errors <b style={{ color: INK, fontWeight: 500 }}>{errors}</b></span>}
-                <span>time <b style={{ color: INK, fontWeight: 500 }}>{elapsed}</b></span>
-                <span style={{ marginLeft: 'auto' }}>komi <b style={{ color: INK, fontWeight: 500 }}>{PUZZLE.komi}</b></span>
+          {!preStart && (() => {
+            // The meter: one segment per open point at the start, painted by
+            // whoever played a stone, in order. Passes do not fill a point.
+            const total = PUZZLE.pts.length;
+            const stones = [];
+            g.moves.forEach((p, k) => { if (p >= 0) stones.push(k % 2 === 0 ? 'you' : 'eng'); });
+            const stillOpen = PUZZLE.pts.filter((p) => view.cells[p] === EMPTY).length;
+            const myNo = Math.floor(g.moves.length / 2) + 1;
+            let title = statusLine();
+            let help = '';
+            if (playing) {
+              const L = view.last;
+              if (thinking || view.toMove === WHITE) {
+                help = L && L.by === BLACK ? (L.p >= 0 ? `You played ${pointName(L.p, N)}.` : 'You passed.') : '';
+              } else if (L && L.by === WHITE && L.p >= 0) {
+                title = `Your move. White answered at ${pointName(L.p, N)}.`;
+                help = 'Tap an open point. Two passes in a row end it and the board is counted by area.';
+              } else if (L && L.by === WHITE && L.p < 0) {
+                help = 'Pass back to end the game and count, or play on.';
+              } else {
+                help = 'Tap an open point. Two passes in a row end it and the board is counted by area.';
+              }
+            }
+            const canHint = playing && hintOk && !g.hintUsed && g.moves.length === 0 && started;
+            return (
+            <div className={`yo-root ${STAGE ? 'stg-board' : (LOFT ? 'loft-card' : '')}`} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+              {/* The top meter replaces the old stat strip and the cryptic
+                  area figure: points played, by whom, and how many are open.
+                  No clock on the board. */}
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
+                  <span className="yo-k"><span className="yo-long">Open points &middot; </span><b>{Math.min(stones.length, total)}</b> of {total} played</span>
+                  <span className="yo-k" style={{ textAlign: 'right' }}>{stillOpen} still open</span>
+                </div>
+                <div className="yo-meter" aria-hidden="true">
+                  {Array.from({ length: total }).map((_, i) => (
+                    <span key={i} className={`yo-seg${i < stones.length ? ` ${stones[i]}` : ''}`} />
+                  ))}
+                </div>
               </div>
-              )}
 
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: FADED, textAlign: 'center', marginBottom: 8 }}>
-                To win: {needText(PUZZLE.komi)} on area.
-              </div>
-
-              <div style={{ maxWidth: 470, margin: '0 auto' }}>
-                <div key={shake} className={`yo-board${shake ? ' shake' : ''}`} style={{ background: BOARD, border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, overflow: 'hidden' }}>
+              <div style={{ maxWidth: 504, margin: '0 auto' }}>
+                <div className="yo-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 12 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: INK }}>To win: {needText(PUZZLE.komi)}.</span>
+                  <span style={{ display: 'flex', gap: 6 }}>
+                    <span className="yo-chip"><i style={{ background: 'var(--stg-acc, #e8b43a)', border: '2px solid var(--yo-you-rim)' }} />You <b>{view.area.black}</b></span>
+                    <span className="yo-chip"><i style={{ background: 'var(--yo-wst)', border: '2px solid var(--yo-wst-rim)' }} />White <b>{view.area.white}</b></span>
+                  </span>
+                </div>
+                <div key={shake} className={`yo-board${shake ? ' shake' : ''}`}
+                  style={STAGE
+                    ? { background: 'var(--yo-board)', boxShadow: 'inset 0 0 0 1.5px var(--stg-line2)', borderRadius: 14, overflow: 'hidden', maxWidth: 480, margin: '0 auto' }
+                    : { background: BOARD, border: `2px solid ${COLORS.ink}`, borderRadius: 10, overflow: 'hidden', maxWidth: 480, margin: '0 auto' }}>
                   <svg className="yo-svg" viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={`Go board, ${N} by ${N}`}>
                     {lines}
                     {pieces}
                     {coords}
                   </svg>
                 </div>
-              </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
-                <div style={{ fontSize: endHold.held ? 15 : 13.5, fontWeight: endHold.held ? 800 : 700, color: INK }}>{statusLine()}</div>
-                <div style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ width: 9, height: 9, borderRadius: '50%', background: STONE_YOU, display: 'inline-block' }} /> you
-                  <span style={{ width: 9, height: 9, borderRadius: '50%', background: STONE_FOE, border: '1px solid rgba(28,30,36,0.3)', display: 'inline-block', marginLeft: 4 }} /> white
+                <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: '6px 14px', flexWrap: 'wrap', fontSize: 12, fontWeight: 700, color: FADED }}>
+                  <span className="yo-leg"><span style={{ width: 10, height: 10, borderRadius: 2, boxSizing: 'border-box', background: 'var(--stg-acc, #e8b43a)', border: '1.5px solid var(--yo-you-rim)' }} />Your territory</span>
+                  <span className="yo-leg"><span style={{ width: 10, height: 10, borderRadius: 2, boxSizing: 'border-box', background: 'var(--yo-wst)', border: '1.5px solid var(--yo-wst-rim)' }} />White&rsquo;s territory</span>
+                  <span className="yo-leg"><span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--yo-dot)' }} />Open point</span>
+                </div>
+
+                <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 12, minHeight: 46 }}>
+                  {playing && (
+                    <span aria-hidden="true" style={{ width: 46, height: 46, flex: 'none', borderRadius: 12, background: 'var(--stg-acc, #e8b43a)', color: 'var(--stg-onramp, #1c1a14)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>
+                      <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.06em' }}>MOVE</span>
+                      <b style={{ fontSize: 19, fontWeight: 800 }}>{myNo}</b>
+                    </span>
+                  )}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }} role="status" aria-live="polite">
+                    <span style={{ fontSize: endHold.held ? 17 : 15, fontWeight: 800, color: INK }}>{title}</span>
+                    {help && <span style={{ fontSize: 12.5, fontWeight: 600, color: FADED, lineHeight: 1.4 }}>{help}</span>}
+                  </div>
                 </div>
               </div>
-
-              {playing && hintOk && !g.hintUsed && g.moves.length === 0 && started && (
-                <div style={{ marginTop: 10 }}>
-                  <button className="yo-tool" onClick={useHint} title="Ring three points, one of which wins (one hint, first play only)">
-                    <Lightbulb size={14} /> Hint
-                  </button>
-                </div>
-              )}
 
           {started && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 14, paddingTop: 11, borderTop: `1px solid ${SURF_B}`, flexWrap: 'wrap' }}>
-              <button className="yo-tool" onClick={passTurn} disabled={!myTurn} style={{ opacity: myTurn ? 1 : 0.5, borderColor: armPass ? 'var(--stg-warn, #b45309)' : undefined }}>
-                <Hand size={14} /> {armPass ? 'Press to pass' : 'Pass'}
+            <>
+            <div className="yo-ctlrow" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--stg-line, rgba(28,30,36,0.10))' }}>
+              <span className="yo-note" style={{ flex: 1 }}>{canHint ? 'Hint rings three points, one of which wins. ' : ''}Pass asks twice before it counts.</span>
+              {canHint && (
+                <button className="yo-ctl" onClick={useHint} title="Ring three points, one of which wins (one hint, first play only)">
+                  <Lightbulb size={15} aria-hidden="true" /> Hint
+                </button>
+              )}
+              <button className={`yo-ctl${armRestart ? ' armed' : ''}`} style={{ minWidth: 124 }} onClick={restartGame}
+                title={armRestart ? 'Records a loss and deals the same board again' : 'Record a loss and deal the same board again'}>
+                <RotateCcw size={14} aria-hidden="true" style={{ flexShrink: 0 }} /> {armRestart ? 'Press again' : 'Restart'}
               </button>
-              <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                <button className="yo-tool" onClick={revealEnd} style={{ borderColor: armReveal ? COLORS.rust : undefined, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : undefined }}>
-                  <Eye size={14} /> {armReveal ? 'Press again' : 'Give up'}
-                </button>
-                <button className="yo-tool" onClick={restartGame} title="Record this as a loss and deal the same board again" style={{ borderColor: armRestart ? COLORS.rust : undefined, color: armRestart ? `var(--stg-bad, ${COLORS.rust})` : undefined }}>
-                  <RotateCcw size={14} /> {armRestart ? 'Press again' : 'Restart'}
-                </button>
+              <button className={`yo-ctl primary${armPass ? ' armed' : ''}`} style={{ minWidth: 168 }} onClick={passTurn} disabled={!myTurn}>
+                <Hand size={15} aria-hidden="true" style={{ flexShrink: 0 }} /> {armPass ? 'Press to pass' : 'Pass'}
+              </button>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginTop: 6 }}>
+              <span className="yo-note">
+                <span className="yo-long">White answers perfectly. A win scores 10, anything else 0. Restart records a loss.</span>
+                <span className="yo-short">No take-back. Restart records a loss.</span>
               </span>
+              <button className={`yo-link${armReveal ? ' armed' : ''}`} onClick={revealEnd}
+                title={armReveal ? 'Ends the game and scores nothing' : 'End the game now, scoring nothing'}>
+                {armReveal ? 'Press again' : 'Give up'}
+              </button>
             </div>
+            <div aria-live="polite" style={{ minHeight: 18, fontSize: 12, fontWeight: 700, color: (armReveal || armRestart) ? 'var(--stg-bad, #be123c)' : INK, textAlign: 'right', lineHeight: 1.4 }}>
+              {armReveal ? 'Ends the game and scores nothing.' : armRestart ? 'Records a loss and deals the same board again.' : armPass ? 'Press Pass again to pass. Two passes in a row end the game.' : ''}
+            </div>
+            </>
           )}
             </div>
-          )}
+            );
+          })()}
 
           <div className={STAGE ? undefined : 'loft-sol'}>
             {!playing && !endHold.held && (
@@ -907,11 +1012,11 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               title={won ? 'Solved' : 'Not solved'}
-              detail={`${errors} errors · ${view.area.black}–${view.area.white} area · ${elapsed}`}
+              detail={`${errors} error${errors === 1 ? "" : "s"} · You ${view.area.black}, White ${view.area.white} · ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
-                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '—',
+                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '\u2013',
                     label: allTime.field != null ? `of ${Number(allTime.field).toLocaleString()} Yose all time` : 'all-time rank' }
                 : null}
               day={dayStats}
@@ -947,7 +1052,7 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
           <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block', margin: '30px auto 0' }}>
             {LOFT && (
               <div className={STAGE ? undefined : 'loft-report'}>
-                <ReportIssue self="yose" name="Yose" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
+                <ReportIssue self="yose" name="Yose" accent="var(--stg-acc)" align="center" onHelp={() => setShowHelp(true)} />
               </div>
             )}
             {!LOFT && (
@@ -1009,7 +1114,7 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
-        <div style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', bottom: 26, zIndex: 60, background: COLORS.ink, color: T.white, fontFamily: SANS, fontSize: 13.5, fontWeight: 700, padding: '10px 16px', borderRadius: 9, boxShadow: '0 6px 18px rgba(0,0,0,0.28)', maxWidth: '88vw', textAlign: 'center' }}>{toast}</div>
+        <div style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', bottom: 26, zIndex: 60, background: STAGE ? 'var(--stg-ink)' : COLORS.ink, color: STAGE ? 'var(--stg-ground)' : T.white, fontFamily: SANS, fontSize: 13.5, fontWeight: 700, padding: '10px 16px', borderRadius: 9, boxShadow: '0 6px 18px rgba(0,0,0,0.28)', maxWidth: '88vw', textAlign: 'center' }}>{toast}</div>
       )}
 
       {showHelp && (

@@ -74,6 +74,7 @@ const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const PAPER = '#fbf9f4';
+const NUM_WORD = { 4: 'Four', 5: 'Five', 6: 'Six', 7: 'Seven', 8: 'Eight', 9: 'Nine' };
 const HELP_KEY = 'sot_carve_help_seen';
 const STATS_KEY = 'sot_carve_stats';
 
@@ -284,7 +285,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
   const [stageTheme] = useStageTheme();
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
-  const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
+  const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : THEME.white;
   const SURF_B = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : 'rgba(28,30,36,0.42)';
   const ACC = STAGE ? STAGE_C : COLORS.accent;
   // THE ACCENT AS TEXT. On the light register the accent has two values,
@@ -518,7 +519,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
     if (here >= 0) {
       // tap a painted square: un-carve it (locked regions stay put)
       if (locked.includes(here)) return;
-      if (!removalKeepsConnected(assign, here, idx)) { say('Un-carve from the edges — that square holds the block together.'); return; }
+      if (!removalKeepsConnected(assign, here, idx)) { say('Un-carve from the edges. That square holds the block together.'); return; }
       const nextAssign = assign.slice();
       nextAssign[idx] = -1;
       setG({ ...g, assign: nextAssign });
@@ -527,14 +528,14 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
     }
     // paint into the selected region: must touch the block, must not overshoot
     const reg = cur;
-    if (locked.includes(reg)) { say('That block is locked in — pick another color.'); return; }
+    if (locked.includes(reg)) { say('That block is locked in. Pick another one.'); return; }
     const touches = nbrsOf(idx).some((j) => assign[j] === reg);
-    if (!touches) { say('Grow the block — carve squares that touch it.'); return; }
+    if (!touches) { say('Grow the block: carve squares that touch it.'); return; }
     const nextSum = sums[reg] + gridFlat[idx];
     if (nextSum > TARGET) {
       setBounce(idx);
       setTimeout(() => setBounce(-1), 420);
-      say(`Too big — that square pushes the block past ${TARGET}.`);
+      say(`Too big: that square pushes the block past ${TARGET}.`);
       return;
     }
     const g2 = { ...g, assign: assign.slice(), locked: g.locked };
@@ -547,7 +548,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
         if (flashTimer.current) clearTimeout(flashTimer.current);
         flashTimer.current = setTimeout(() => setFlash(null), 700);
         setG(g2);
-        say('Right total, wrong cut — that block clears back to its anchor.');
+        say('Right total, wrong cut. That block clears back to its anchor.');
         return;
       }
       setG(g2);
@@ -589,7 +590,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
       }
     }
     setG(g2);
-    say('Hint carved — one square painted for you.');
+    say('Hint carved: one square painted for you.');
   }
 
   function revealEnd() {
@@ -639,7 +640,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Carve #${PUZZLE.num} — the daily equal-sum puzzle from Mind Loft.\n${shareUrl()}`
+      ? `Carve #${PUZZLE.num}: the daily equal-sum puzzle from Mind Loft.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -656,33 +657,37 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
     } catch (e) {}
   }
 
-  // carve borders: a heavier edge wherever two different assignments meet
+  // carve borders: a heavier edge wherever two different assignments meet.
+  // On the stage a carved block is its ramp hue mixed into the cell (22%, a
+  // locked one 44%), the digit stays page ink, and every block boundary is a
+  // 3px rule in page ink so the cut reads in both registers.
   function cellStyle(idx) {
     const r = Math.floor(idx / N), c = idx % N;
     const reg = assign[idx];
     const hue = reg >= 0 ? REGION_HUES[reg % REGION_HUES.length] : null;
     const isLocked = reg >= 0 && locked.includes(reg);
-    let bg = STAGE ? 'var(--stg-surf)' : THEME.white;
-    // On the stage a carved block is its ramp hue mixed into the cell at the
-    // register's tint mix, a locked one at twice it, and the digit is page ink;
-    // the Loft keeps its nine pastels with dark ink, untouched.
-    if (hue) bg = STAGE ? regionMix(isLocked ? 2 : 1) : (isLocked ? hue.mid : hue.soft);
     const edge = (j) => {
       if (j < 0) return true;
       return assign[j] !== reg;
     };
     const rightIdx = c < N - 1 ? idx + 1 : -1;
     const downIdx = r < N - 1 ? idx + N : -1;
-    // A hue cell keeps its PAPER rules and ink: its ground is a pale literal in
-    // both registers, so a white hairline would vanish on it exactly as a dark
-    // one vanishes on the stage.
-    const onStage = STAGE && !hue;
-    const thin = `1px solid ${STAGE ? 'var(--stg-line)' : 'rgba(28,30,36,0.16)'}`;
-    const thickColor = STAGE ? (hue ? REGION_INK : 'var(--stg-line3)') : 'rgba(28,30,36,0.78)';
+    if (STAGE) {
+      const thick = '3px solid var(--stg-ink)';
+      const thin = '1px solid var(--stg-line)';
+      return {
+        ...(hue ? regionStyle(reg) : null),
+        background: hue ? `color-mix(in srgb, var(--hue) ${isLocked ? 44 : 22}%, var(--stg-cell))` : 'var(--stg-cell)',
+        borderRight: c === N - 1 ? 0 : (edge(rightIdx) && (reg >= 0 || assign[rightIdx] >= 0) ? thick : thin),
+        borderBottom: r === N - 1 ? 0 : (edge(downIdx) && (reg >= 0 || assign[downIdx] >= 0) ? thick : thin),
+      };
+    }
+    const bg = hue ? (isLocked ? hue.mid : hue.soft) : THEME.white;
+    const thin = '1px solid rgba(28,30,36,0.16)';
+    const thickColor = 'rgba(28,30,36,0.78)';
     return {
-      ...(STAGE && hue ? regionStyle(reg) : null),
       background: bg,
-      color: hue ? (STAGE ? 'var(--stg-ink)' : '#0b0d12') : undefined,
+      color: hue ? '#0b0d12' : undefined,
       borderRight: c === N - 1 ? 'none' : (edge(rightIdx) && (reg >= 0 || (rightIdx >= 0 && assign[rightIdx] >= 0)) ? `2.5px solid ${thickColor}` : thin),
       borderBottom: r === N - 1 ? 'none' : (edge(downIdx) && (reg >= 0 || (downIdx >= 0 && assign[downIdx] >= 0)) ? `2.5px solid ${thickColor}` : thin),
     };
@@ -690,18 +695,18 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
 
   // reveal locks every block; show how many the player had locked
   const lockedCount = g.status === 'revealed' && g.revealLocked != null ? g.revealLocked : locked.length;
-  const cellPx = N === 7 ? 'clamp(15px, 4.6vw, 21px)' : 'clamp(16px, 5vw, 23px)';
+  const carvedCount = assign.filter((x) => x >= 0).length;
 
   // Shared rules body — rendered in both the how-to-play modal and the start gate.
   const rulesBody = (
     <DailyRules
-      accent={COLORS.accent} accentSoft={COLORS.accentSoft}
+      accent={STAGE ? 'var(--stg-acc)' : COLORS.accent} accentSoft={COLORS.accentSoft}
       lead={<>Carve the grid into <b>{R} connected blocks</b> that each add up to <b>{TARGET}</b>.</>}
       steps={[
         <>Every block grows out from its <b>ringed anchor square</b>, and there is exactly one way to carve the board.</>,
         <>Pick a colour below the board, or tap its anchor, then tap squares that <b>touch that block</b> to paint them in. Tap a painted square to un-carve it.</>,
         <>Each colour chip shows its block&rsquo;s running total.</>,
-        <>The moment a block hits {TARGET} it is checked: a true block <b>locks in</b>, a wrong one shakes <b style={{ color: `var(--stg-ink, ${COLORS.rust})` }}>red</b>, clears back to its anchor and counts as an <b>error</b>.</>,
+        <>The moment a block hits {TARGET} it is checked: a true block <b>locks in</b>, a wrong one shakes <b style={{ color: `var(--stg-bad, ${COLORS.rust})` }}>red</b>, clears back to its anchor and counts as an <b>error</b>.</>,
       ]}
       knack="Start with the anchors hemmed in by edges or big numbers. A block with only one way to grow settles its neighbours for you."
       footer={<>No errors is a perfect 10, and every error costs a point. One free <b>hint</b>, on your first ever play, paints a correct square. Ties break on fewest errors, then fastest time. Sundays go bigger: a 7&times;7 board in nine blocks.</>}
@@ -748,22 +753,93 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
       <div className="cv-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
         <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.cv-wrap{padding-left:12px !important;padding-right:12px !important;}}
-          .cv-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid var(--blue-deep);background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:var(--blue-deep);border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
+          .cv-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};min-height:44px;border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .cv-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           @keyframes cvfade{from{opacity:0;}}
           @keyframes cvstamp{from{opacity:0;transform:scale(.94);}}
           @keyframes cvshake{0%,100%{transform:translateX(0);}25%{transform:translateX(-3px);}75%{transform:translateX(3px);}}
           @keyframes cvbounce{0%,100%{transform:scale(1);}50%{transform:scale(0.9);}}
           @media(max-width:560px){.cv-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.cv-ttl h1{font-size:21px;letter-spacing:0.02em;}.cv-ttl .cv-ttl-dt{font-size:15px;}.cv-ttl-dot{display:none;}}
-          .cv-cell{display:flex;align-items:center;justify-content:center;font-family:${MONO};box-sizing:border-box;cursor:pointer;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;transition:background .12s;}
-          .cv-cell.cv-wrongflash{background:${STAGE ? 'var(--stg-surf2)' : '#fdecec'} !important;animation:cvshake .32s ease;}
+          .cv-lab{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute);}
+          .cv-lab b{color:var(--stg-acc-ink);font-weight:800;}
+          .cv-prog{display:flex;flex-direction:column;gap:8px;margin:0 0 14px;}
+          .cv-prog-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
+          .cv-segs{display:flex;gap:4px;}
+          .cv-segs span{flex:1;height:8px;border-radius:2px;background:var(--stg-line2);}
+          .cv-segs span.on{background:var(--stg-acc);}
+          .cv-panel{background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:20px;padding:22px 20px 16px;display:flex;flex-direction:column;align-items:center;}
+          .cv-grid{display:grid;aspect-ratio:1;width:min(438px,100%);box-sizing:border-box;border:3px solid var(--stg-ink);border-radius:6px;overflow:hidden;}
+          .cv-grid.n7{width:min(476px,100%);}
+          .cv-panel.n7 .cv-pick,.cv-panel.n7 .cv-say{max-width:476px;}
+          .cv-cell{display:flex;align-items:center;justify-content:center;font-family:${SANS};box-sizing:border-box;cursor:pointer;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;transition:background .12s;border:0;border-radius:0;padding:0;margin:0;background:var(--stg-cell);color:var(--stg-ink);}
+          .cv-cell:focus-visible{outline:3px solid var(--stg-acc);outline-offset:-3px;}
+          .cv-cell .d{position:relative;font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--stg-ink);}
+          .cv-grid.n7 .cv-cell .d{font-size:23px;}
+          .cv-cell.seed .d{font-weight:800;}
+          .cv-cell.cv-wrongflash{background:color-mix(in srgb, var(--stg-bad) 30%, var(--stg-cell)) !important;animation:cvshake .32s ease;}
           .cv-cell.cv-bounce{animation:cvbounce .3s ease;}
-          .cv-seed-ring{position:absolute;inset:14%;border-radius:99px;pointer-events:none;}
-          .cv-chip{position:relative;border:none;border-radius:9px;cursor:pointer;padding:7px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;font-family:${MONO};background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};box-shadow:0 2px 0 rgba(28,30,36,0.35);border: 1.5px solid var(--stg-line, rgba(28,30,36,0.4));min-width:0;}
-          .cv-chip:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(28,30,36,0.35);}
-          .cv-chip.on{border-width:2.5px;}
-          .cv-chip.done{opacity:.55;box-shadow:none;cursor:default;}
-          .cv-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border: 1.5px solid var(--stg-line2, rgba(28,30,36,0.35));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+          .cv-seed-ring{position:absolute;inset:18%;border-radius:99px;pointer-events:none;border:2.5px solid var(--stg-ink);}
+          .cv-pick{width:100%;max-width:438px;margin-top:20px;display:flex;flex-direction:column;gap:6px;}
+          .cv-chips{display:grid;gap:6px;}
+          .cv-chip{min-height:64px;box-sizing:border-box;border-radius:12px;border:1.5px solid var(--stg-cell-line);background:var(--stg-cell);padding:7px 6px;font-family:${SANS};display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:5px;cursor:pointer;min-width:0;}
+          .cv-chip.on{border:2.5px solid var(--hue-ink);background:color-mix(in srgb, var(--hue) 16%, var(--stg-cell));}
+          .cv-chip.done{background:color-mix(in srgb, var(--hue) 30%, var(--stg-cell));cursor:default;}
+          .cv-chip-top{display:flex;align-items:center;justify-content:space-between;gap:4px;}
+          .cv-chip-n{width:20px;height:20px;flex:none;border-radius:50%;background:var(--hue-ink);color:var(--stg-cell);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;}
+          .cv-chip-t{font-size:13px;font-weight:800;color:var(--stg-ink);font-variant-numeric:tabular-nums;white-space:nowrap;}
+          .cv-chip-bar{height:5px;border-radius:3px;background:var(--stg-line2);overflow:hidden;display:flex;}
+          .cv-chip-bar span{background:var(--hue-ink);}
+          /* six chips share the 438px board width (68px each): a two-digit total ('19/30') ran 3px past the chip edge, so on wide screens the chip trims its inner spacing and the picked chip draws its heavier edge inside, not by widening the border. */
+          @media(min-width:561px){.cv-chip{padding:7px 4px;}.cv-chip.on{border-width:1.5px;box-shadow:inset 0 0 0 1px var(--hue-ink);}.cv-chip-top{gap:3px;}.cv-chip-n{width:18px;height:18px;font-size:10px;}.cv-chip-t{font-size:12px;}}
+          .cv-say{width:100%;max-width:438px;margin-top:18px;display:flex;align-items:center;gap:12px;}
+          .cv-say-ic{width:46px;height:46px;flex:none;box-sizing:border-box;border-radius:12px;border:2.5px solid var(--hue-ink);background:color-mix(in srgb, var(--hue) 24%, var(--stg-cell));color:var(--stg-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;}
+          .cv-say-ic span{font-size:9px;font-weight:800;letter-spacing:.06em;}
+          .cv-say-ic b{font-size:19px;font-weight:800;}
+          .cv-say-t{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0;}
+          .cv-say-a{font-size:15px;font-weight:700;color:var(--stg-ink);line-height:1.35;}
+          .cv-say-b{font-size:12px;font-weight:600;color:var(--stg-mute);}
+          .cv-foot{width:100%;margin-top:18px;border-top:1px solid var(--stg-line);padding-top:12px;display:flex;align-items:center;gap:12px;}
+          .cv-foot-n{flex:1;font-size:12px;font-weight:600;color:var(--stg-mute);}
+          .cv-tool{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2);border:1.5px solid var(--stg-cell-line);border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:none;}
+          .cv-tool:hover{background:var(--stg-surf2);}
+          .cv-tool.hint{color:var(--stg-acc-ink);border-color:var(--stg-acc);}
+          .cv-under{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0 12px;padding:12px 2px 0;}
+          .cv-under-n{flex:1 1 180px;min-width:0;font-size:12px;font-weight:600;color:var(--stg-mute);}
+          .cv-reveal{margin-left:auto;background:none;border:none;cursor:pointer;font-family:${SANS};font-weight:700;font-size:12px;color:var(--stg-ink2);text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0;display:inline-flex;align-items:center;gap:5px;flex:none;}
+          .cv-reveal.armed{color:var(--stg-bad);}
+          .cv-m{display:none;}
+          @media(max-width:560px){
+            .cv-lab{font-size:10px;}
+            .cv-prog{gap:6px;margin-bottom:14px;padding:0 12px;}
+            .cv-prog-top .cv-lab.sq{display:none;}
+            .cv-segs{gap:3px;}
+            .cv-segs span{height:6px;}
+            .cv-panel{background:transparent;border:none;border-radius:0;padding:0 12px;}
+            .cv-grid{width:min(342px,100%);border-radius:5px;}
+            .cv-grid.n7{width:min(358px,100%);}
+            .cv-cell .d{font-size:21px;}
+            .cv-grid.n7 .cv-cell .d{font-size:18px;}
+            .cv-seed-ring{inset:16%;border-width:2px;}
+            .cv-pick{margin-top:14px;}
+            .cv-chips{grid-template-columns:repeat(3, minmax(0,1fr)) !important;}
+            .cv-pick .cv-lab{display:none;}
+            .cv-chip{min-height:48px;border-radius:11px;padding:6px 8px;}
+            .cv-chip-t{font-size:14px;}
+            .cv-chip-bar{height:4px;}
+            .cv-say{margin-top:14px;gap:10px;}
+            .cv-say-ic{width:42px;height:42px;border-radius:10px;}
+            .cv-say-ic span{font-size:8px;}
+            .cv-say-ic b{font-size:17px;}
+            .cv-say-a{font-size:14px;line-height:1.3;}
+            .cv-foot{border-top:none;padding-top:0;margin-top:12px;justify-content:flex-end;}
+            .cv-foot-n{display:none;}
+            .cv-foot:not(:has(.cv-tool)){display:none;}
+            .cv-tool{flex:1;}
+            .cv-under{padding:10px 12px 0;border-top:1px solid var(--stg-line);margin-top:12px;}
+            .cv-under-n{font-size:11px;}
+            .cv-d{display:none;}
+            .cv-m{display:inline;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
@@ -818,84 +894,95 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
 
         {/* the board */}
         {!preStart && (
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: `var(--stg-surf, ${THEME.white})`, border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
-          {/* These figures move UP into the cap on a loft page; printing
-              them twice is the one thing to avoid. */}
-          {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-            <span style={{ whiteSpace: 'nowrap' }}>every block <b style={{ color: ACC_INK, fontWeight: 500 }}>= {TARGET}</b></span>
-            <span style={{ whiteSpace: 'nowrap' }}>errors <b style={{ color: errors > 0 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{errors}</b></span>
-            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>blocks <b style={{ color: lockedCount === R ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{lockedCount}</b>/{R}</span>
-          </div>
-          )}
-
-          {/* the grid */}
-          <div style={{ maxWidth: N === 7 ? 476 : 456, margin: '0 auto' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))`, aspectRatio: '1', border: `2.5px solid rgba(28,30,36,0.85)`, borderRadius: 4, overflow: 'hidden' }}>
-              {Array.from({ length: T }).map((_, idx) => {
-                const reg = assign[idx];
-                const hue = reg >= 0 ? REGION_HUES[reg % REGION_HUES.length] : null;
-                const isSeed = seedOf[idx] >= 0;
-                const wrongFlash = flash && flash.cells.includes(idx);
-                return (
-                  <div key={idx} className={`cv-cell${wrongFlash ? ' cv-wrongflash' : ''}${bounce === idx ? ' cv-bounce' : ''}`} style={cellStyle(idx)} onClick={() => cellClick(idx)}>
-                    {isSeed && hue && <span className="cv-seed-ring" style={{ border: `2.5px solid ${STAGE ? REGION_INK : hue.line}` }} />}
-                    <span style={{ fontSize: cellPx, fontWeight: isSeed ? 700 : 500, color: hue ? (STAGE ? 'var(--stg-ink)' : '#0b0d12') : INK, position: 'relative' }}>{gridFlat[idx]}</span>
-                  </div>
-                );
-              })}
+        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: `var(--stg-surf, ${THEME.white})`, border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: STAGE ? 0 : '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+          {/* blocks locked so far, one segment per block */}
+          <div className="cv-prog">
+            <div className="cv-prog-top">
+              <span className="cv-lab">Blocks · <b>{lockedCount}</b> of {R} locked</span>
+              <span className="cv-lab sq">{carvedCount} of {T} squares carved</span>
+            </div>
+            <div className="cv-segs" aria-hidden="true">
+              {Array.from({ length: R }).map((_, k) => <span key={k} className={(g.status === 'revealed' ? k < lockedCount : locked.includes(k)) ? 'on' : undefined} />)}
             </div>
           </div>
 
+          <div className={`cv-panel${N === 7 ? " n7" : ""}`}>
+          {/* the grid */}
+            <div className={`cv-grid${N === 7 ? ' n7' : ''}`} style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))` }}>
+              {Array.from({ length: T }).map((_, idx) => {
+                const reg = assign[idx];
+                const isSeed = seedOf[idx] >= 0;
+                const wrongFlash = flash && flash.cells.includes(idx);
+                const isLk = reg >= 0 && locked.includes(reg);
+                return (
+                  <button key={idx} type="button" className={`cv-cell${isSeed ? ' seed' : ''}${wrongFlash ? ' cv-wrongflash' : ''}${bounce === idx ? ' cv-bounce' : ''}`} style={cellStyle(idx)} onClick={() => cellClick(idx)}
+                    aria-label={`${gridFlat[idx]}${reg >= 0 ? `, block ${reg + 1}${isLk ? ', locked' : ''}` : ', not carved'}${isSeed ? ', anchor' : ''}`}>
+                    {isSeed && <span className="cv-seed-ring" />}
+                    <span className="d">{gridFlat[idx]}</span>
+                  </button>
+                );
+              })}
+            </div>
+
           {/* region brushes */}
           {playing && (
-            <>
-              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${R}, minmax(0, 1fr))`, gap: 5, maxWidth: N === 7 ? 476 : 456, margin: '16px auto 0' }}>
+              <div className="cv-pick">
+                <span className="cv-lab">Pick a block to grow</span>
+                <div className="cv-chips" style={{ gridTemplateColumns: `repeat(${R > 6 ? Math.ceil(R / 2) : R}, minmax(0, 1fr))` }}>
                 {Array.from({ length: R }).map((_, k) => {
-                  const hue = REGION_HUES[k % REGION_HUES.length];
                   const done = locked.includes(k);
                   const on = cur === k && !done;
+                  const pct = Math.min(100, Math.round((100 * (done ? TARGET : sums[k])) / TARGET));
                   return (
-                    <button key={k} className={`cv-chip${on ? ' on' : ''}${done ? ' done' : ''}`} onClick={() => { if (!done) setCur(k); }}
-                      aria-label={`carve block ${k + 1}`}
-                      style={STAGE
-                        ? { ...regionStyle(k), borderColor: on ? REGION_INK : undefined, background: done ? regionMix(2) : (on ? regionMix(1) : 'var(--stg-surf)') }
-                        : { borderColor: on ? hue.line : undefined, background: done ? hue.mid : (on ? hue.soft : THEME.white) }}>
-                      <span style={{ width: 14, height: 14, borderRadius: 99, background: STAGE ? REGION_INK : hue.line, display: 'inline-block' }} />
-                      <span style={{ fontSize: 10.5, fontWeight: 500, color: (done || on) && !STAGE ? '#0b0d12' : `var(--stg-ink, ${COLORS.ink})`, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
-                        {done ? '✓' : `${sums[k]}/${TARGET}`}
+                    <button key={k} type="button" className={`cv-chip${on ? ' on' : ''}${done ? ' done' : ''}`} onClick={() => { if (!done) setCur(k); }}
+                      aria-label={`Block ${k + 1}${done ? ', locked' : `, ${sums[k]} of ${TARGET}`}${on ? ', growing now' : ''}`} aria-pressed={on}
+                      style={regionStyle(k)}>
+                      <span className="cv-chip-top">
+                        <span className="cv-chip-n" aria-hidden="true">{k + 1}</span>
+                        <span className="cv-chip-t">{done ? `${TARGET} ✓` : `${sums[k]}/${TARGET}`}</span>
                       </span>
+                      <span className="cv-chip-bar" aria-hidden="true"><span style={{ width: `${pct}%` }} /></span>
                     </button>
                   );
                 })}
+                </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 10, flexWrap: 'wrap' }}>
-                {hintOk && !g.hintUsed && (
-                  <button className="cv-tool" onClick={useHint} title="Paint one correct square (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(124,58,237,0.5)', color: '#5b21b6' }}>
-                    <Lightbulb size={14} /> Hint
-                  </button>
-                )}
-                <span className="cv-tool" style={{ cursor: 'default', borderStyle: 'dashed', color: FADED }}>
-                  <Eraser size={14} /> Tap a painted square to un-carve it
-                </span>
-              </div>
-            </>
           )}
 
-        {/* Controls. These sit INSIDE the board card: on the navy stage a bare
-            row of faded text has nothing to sit on, and the card is meant to
-            hold the whole game. */}
-        {/* controls */}
+          {started && !locked.includes(cur) && (
+            <div className="cv-say" aria-live="polite" style={regionStyle(cur)}>
+              <span className="cv-say-ic" aria-hidden="true"><span>BLOCK</span><b>{cur + 1}</b></span>
+              <div className="cv-say-t">
+                <span className="cv-say-a">Block {cur + 1} holds {sums[cur]}. It needs {TARGET - sums[cur]} more.</span>
+                <span className="cv-say-b">
+                  <span className="cv-d">Tap a square touching block {cur + 1} to add it. Tap a painted square to un-carve it.</span>
+                  <span className="cv-m">Tap a touching square to add it. Tap a painted one to un-carve it.</span>
+                </span>
+              </div>
+            </div>
+          )}
+
+          {playing && (
+            <div className="cv-foot">
+              <span className="cv-foot-n">A block is checked the moment it reaches {TARGET}. A wrong one clears back to its anchor and costs a point.</span>
+              {hintOk && !g.hintUsed && (
+                <button type="button" className="cv-tool hint" onClick={useHint} title="Paint one correct square (one hint, first play only)">
+                  <Lightbulb size={15} aria-hidden="true" /> Hint
+                </button>
+              )}
+            </div>
+          )}
+          </div>
+
         {started && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)', flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>
-              Pick a color, then tap squares next to its ringed anchor. A block locks when it hits {TARGET} on the nose.
+          <div className="cv-under">
+            <span className="cv-under-n">
+              <span className="cv-d">{NUM_WORD[R] || R} connected blocks, each grown from its ringed anchor. One carving works.</span>
+              <span className="cv-m">A wrong block at {TARGET} clears to its anchor and costs a point.</span>
             </span>
             {identity && (g.t0 || errors > 0) && (
-              <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-                style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <Eye size={13} /> {armReveal ? 'Tap again — ends the puzzle and shows the carving' : 'Reveal & end'}
+              <button type="button" className={`cv-reveal${armReveal ? ' armed' : ''}`} onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
+                <Eye size={13} aria-hidden="true" /> {armReveal ? 'Tap again: ends the puzzle and shows the carving' : 'Reveal and end'}
               </button>
             )}
           </div>
@@ -947,7 +1034,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
-                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '\u2014',
+                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '\u2013',
                     label: allTime.field != null ? `of ${Number(allTime.field).toLocaleString()} Carve all time` : 'all-time rank' }
                 : null}
               day={dayStats}
@@ -1022,14 +1109,14 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s board, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s board, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   Open your browser&apos;s menu and choose <b>Add to Home Screen</b> (or <b>Install app</b>). The tile opens today&apos;s board, every day.
                 </p>
               )}
-              <button onClick={() => setShowA2hsHelp(false)} style={{ marginTop: 10, fontFamily: SANS, fontSize: 12.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, height: 44, width: '100%', borderRadius: 10, border: 'none', background: COLORS.ink, color: THEME.white, cursor: 'pointer' }}>Got it</button>
+              <button onClick={() => setShowA2hsHelp(false)} style={{ marginTop: 10, fontFamily: SANS, fontSize: 12.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, height: 44, width: '100%', borderRadius: 10, border: 'none', background: STAGE ? 'var(--stg-acc)' : COLORS.ink, color: STAGE ? 'var(--stg-onramp)' : THEME.white, cursor: 'pointer' }}>Got it</button>
             </div>
           </div>
         )}
@@ -1066,7 +1153,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
-        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: THEME.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
+        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: STAGE ? 'var(--stg-ink)' : COLORS.ink, color: STAGE ? 'var(--stg-ground)' : THEME.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
           {toast}
         </div>
       )}
@@ -1081,7 +1168,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
               <button onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
             </div>
             {rulesBody}
-            <button className="cv-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: COLORS.ink, color: THEME.white }}>Play</button>
+            <button className="cv-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: STAGE ? 'var(--stg-acc)' : COLORS.ink, color: STAGE ? 'var(--stg-onramp)' : THEME.white, borderColor: STAGE ? 'var(--stg-acc)' : undefined }}>Play</button>
           </div>
         </div>
       )}

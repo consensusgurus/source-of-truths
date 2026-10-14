@@ -653,8 +653,8 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
   // pointer if that square is open, trades places with a tile sitting there,
   // and dropped OFF the board it goes home to the rack (free). A printed or
   // blocked square refuses it and it snaps back.
-  function freeSession(i, rect) {
-    return { i, r: Math.floor(i / N), c: i % N, pw: rect.width + GAP, ph: rect.height + GAP,
+  function freeSession(i, rect, gap = GAP) {
+    return { i, r: Math.floor(i / N), c: i % N, pw: rect.width + gap, ph: rect.height + gap,
       live: false, x0: 0, y0: 0, dx: 0, dy: 0, to: -1, ok: false, off: false };
   }
   function freeTarget(d, dx, dy) {
@@ -680,7 +680,11 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
     const i = r * N + c;
     if (!playing || !isFree(i) || !cells[i] || !e || !e.currentTarget) return;
     longRef.current.fired = false;
-    const d = freeSession(i, e.currentTarget.getBoundingClientRect());
+    // the pitch is the square plus the grid's REAL gap, which the stylesheet
+    // widens on desktop
+    let gap = GAP;
+    try { const gs = getComputedStyle(e.currentTarget.parentElement); gap = parseFloat(gs.columnGap) || GAP; } catch (err) {}
+    const d = freeSession(i, e.currentTarget.getBoundingClientRect(), gap);
     d.x0 = e.clientX; d.y0 = e.clientY;
     dragRef.current = d;
     try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
@@ -865,7 +869,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Tally #${PUZZLE.num} — balance every row and column from the rack. Fewest moves is ${FEWEST}.\n${shareUrl()}`
+      ? `Tally #${PUZZLE.num}: balance every row and column from the rack. Fewest moves is ${FEWEST}.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -882,38 +886,44 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
     } catch (e) {}
   }
 
-  // ── board geometry: cells scale with the column, so it fits phone → desktop ──
+  // ── board geometry: cells scale with the column, so it fits phone to desktop ──
   const BOARD_MAX = N === 6 ? 432 : 384;
-  const TARGETW = 46;
-  const gridTemplate = `repeat(${N}, minmax(0, 1fr)) ${TARGETW}px`;
+  const gridTemplate = `repeat(${N}, minmax(0, 1fr)) minmax(0, 1.1fr)`;
+  // the rack always shows 1 to 9, so a digit the day does not hold reads as none
+  const RACK = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const placedCount = BANK.length - rackLeft;
 
   // A target says what its line still needs, so the sum is on the board and
   // not in your head: the figure under the target is what the open squares
-  // must add up to, and the dots are how many squares that is. A full line
-  // that hits its target turns solid; one that cannot come right says by how
-  // much.
+  // must add up to, and how many squares that is. A full line that hits its
+  // target turns solid; one that cannot come right says by how much.
   function targetChip(i, isRow, key) {
     const st = lineState(i, isRow);
     const lit = cur >= 0 && (isRow ? Math.floor(cur / N) === i : cur % N === i);
-    const bg = st.ok ? AGREE : SURF;
-    const bd = st.ok ? AGREE : st.bad ? `var(--stg-bad, rgba(180,83,9,0.75))` : lit ? NOTE : SURF_B;
-    const tc = st.ok ? AGREE_INK : st.bad ? `var(--stg-bad, ${COLORS.amber})` : INK;
     const need = st.tgt - st.sum;
     const label = isRow ? 'Row' : 'Column';
-    const sub = st.ok ? '✓' : st.bad ? `${st.over ? 'over' : 'short'} ${Math.abs(need)}` : `${need} in ${st.empty}`;
+    const sub = st.ok ? 'Balanced' : st.bad ? `${st.over ? 'over' : 'short'} ${Math.abs(need)}` : `${need} in ${st.empty}`;
     return (
-      <div key={key} className={`tl-tgt${lit ? ' lit' : ''}`}
-        aria-label={`${label} ${i + 1}: target ${st.tgt}, ${st.ok ? 'balanced' : st.bad ? `${st.over ? 'over' : 'short'} by ${Math.abs(need)}` : `${need} still needed across ${st.empty} square${st.empty === 1 ? '' : 's'}`}`}
-        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: 11, border: `${lit && !st.ok ? 2 : 1.5}px solid ${bd}`, background: bg, fontFamily: MONO, lineHeight: 1.02, padding: '2px 0', minHeight: 34, boxSizing: 'border-box' }}>
-        <span style={{ fontSize: 15, fontWeight: 700, color: tc }}>{st.tgt}</span>
-        <span style={{ fontSize: 9, fontWeight: 700, color: st.ok ? AGREE_INK : st.bad ? `var(--stg-bad, ${COLORS.amber})` : FADED, marginTop: 1, whiteSpace: 'nowrap' }}>{sub}</span>
+      <div key={key} className={`tl-tgt${lit ? ' lit' : ''}${st.ok ? ' ok' : ''}${st.bad && !st.ok ? ' bad' : ''}`}
+        aria-label={`${label} ${i + 1}: target ${st.tgt}, ${st.ok ? 'balanced' : st.bad ? `${st.over ? 'over' : 'short'} by ${Math.abs(need)}` : `${need} still needed across ${st.empty} square${st.empty === 1 ? '' : 's'}`}`}>
+        <span className="v">{st.tgt}</span>
+        <span className="s">{sub}</span>
       </div>
     );
   }
+  // the picked square's row and column, for the need line under the board
+  const curLines = cur >= 0 ? [
+    { k: `Row ${Math.floor(cur / N) + 1}`.toUpperCase(), st: lineState(Math.floor(cur / N), true) },
+    { k: `Column ${(cur % N) + 1}`.toUpperCase(), st: lineState(cur % N, false) },
+  ] : null;
+  const needText = (st) => (st.ok ? 'Balanced'
+    : st.bad ? `${st.over ? 'Over' : 'Short'} by ${Math.abs(st.tgt - st.sum)}`
+    : `${st.tgt - st.sum} still needed in ${st.empty} square${st.empty === 1 ? '' : 's'}`);
 
   // Shared rules body — rendered in both the how-to-play modal and the start gate.
   const rulesBody = (
     <DailyRules
+      accent={STAGE ? 'var(--stg-acc)' : undefined}
       lead="Fill every open square so each row and column adds up to the target at its end."
       chips={[
         { label: 'Use every tile once' },
@@ -978,38 +988,107 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
           @keyframes tlstamp{from{opacity:0;transform:scale(.94);}}
           @media(max-width:520px){.tl-htp-f{display:none;}.tl-htp-s{display:inline;}}
           @media(max-width:560px){.tl-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.tl-ttl h1{font-size:21px;letter-spacing:0.02em;}.tl-ttl .tl-ttl-dt{font-size:15px;}.tl-ttl-dot{display:none;}}
-          .tl-cell{aspect-ratio:1;border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:22px;font-weight:700;color:${INK};box-sizing:border-box;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;transition:background .12s ease, box-shadow .12s ease;}
-          /* out of play: a hatched slab, so it reads as no square at all */
-          .tl-blocked{background:${STAGE ? 'repeating-linear-gradient(135deg, var(--stg-line) 0 2px, transparent 2px 7px)' : `repeating-linear-gradient(135deg, rgba(28,30,36,0.16) 0 2px, transparent 2px 7px)`};border:1px solid ${STAGE ? 'var(--stg-line)' : 'rgba(28,30,36,0.12)'};}
-          .tl-given{background:${STAGE ? 'var(--stg-surf2)' : '#eef0f3'};color:${FADED};font-weight:600;}
-          .tl-empty{background:${STAGE ? 'var(--stg-cell)' : 'var(--white)'};border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.28)'};cursor:pointer;}
+          .tl-lab{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute);}
+          .tl-lab b{color:var(--stg-acc-ink);font-weight:800;}
+          .tl-prog{display:flex;flex-direction:column;gap:8px;margin:0 0 14px;}
+          .tl-prog-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
+          .tl-segs{display:flex;gap:3px;}
+          .tl-segs span{flex:1;height:8px;border-radius:2px;background:var(--stg-line2);}
+          .tl-segs span.on{background:var(--stg-acc);}
+          .tl-panel{--tl-block:#05070d;background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:20px;padding:20px 20px 16px;display:flex;flex-direction:column;align-items:center;}
+          html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .tl-panel{--tl-block:#1e2433;}
+          .tl-grid{display:grid;gap:8px;width:min(480px,100%);}
+          .tl-cell{aspect-ratio:1;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:${SANS};font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--stg-ink);box-sizing:border-box;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;transition:background .12s ease, box-shadow .12s ease;padding:0;margin:0;min-width:0;}
+          .tl-grid.n6 .tl-cell{font-size:26px;border-radius:10px;}
+          .tl-cell:focus-visible{outline:3px solid var(--stg-acc);outline-offset:2px;}
+          /* out of play: a dark slab, so it reads as no square at all */
+          .tl-blocked{background:var(--tl-block);border:1.5px solid var(--tl-block);}
+          .tl-given{background:color-mix(in srgb, var(--stg-ink) 14%, var(--stg-cell));border:1.5px solid transparent;color:var(--stg-ink);}
+          .tl-empty{background:var(--stg-cell);border:1.5px dashed var(--stg-cell-line);cursor:pointer;}
           /* the row and column of the picked square, so a line reads as one */
-          .tl-cell.peer.tl-empty{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 9%, var(--stg-cell))' : '#f2f8f4'};}
-          .tl-cell.peer.tl-given{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 9%, var(--stg-surf2))' : '#e8f1eb'};}
+          .tl-cell.peer.tl-empty,.tl-cell.peer.tl-placed{background:color-mix(in srgb, var(--stg-acc) 12%, var(--stg-cell));}
+          .tl-cell.peer.tl-given{background:color-mix(in srgb, var(--stg-acc) 12%, color-mix(in srgb, var(--stg-ink) 14%, var(--stg-cell)));}
           /* an armed digit has somewhere to go: every open square says so */
-          .tl-empty.hot{border-color:${AGREE};border-style:dashed;}
+          .tl-empty.hot{border:2px dashed var(--stg-acc);}
           @media(hover:hover){.tl-empty.hot:hover{box-shadow:0 0 0 3px ${RING};}}
-          .tl-placed{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1.5px solid var(--stg-line2, rgba(28,30,36,0.55));cursor:grab;box-shadow:0 2.5px 0 ${STAGE ? 'rgba(0,0,0,0.45)' : 'rgba(28,30,36,0.45)'};position:relative;touch-action:none;}
-          .tl-placed.same{color:${AGREE};}
-          .tl-cell.cur{border:2px solid ${AGREE};box-shadow:0 0 0 3px ${RING};}
-          .tl-placed.tl-drag{cursor:grabbing;box-shadow:${STAGE ? `0 0 0 3px ${RING}, 0 7px 15px rgba(0,0,0,0.55)` : '0 7px 15px rgba(14,29,64,0.3)'};}
-          .tl-placed.tl-drag.home{opacity:.55;}
+          .tl-placed{background:var(--stg-cell);border:2.5px solid var(--stg-acc);color:var(--stg-acc-ink);cursor:grab;box-shadow:0 3px 0 color-mix(in srgb, var(--stg-acc) 28%, transparent);position:relative;touch-action:none;}
+          .tl-placed.same{background:color-mix(in srgb, var(--stg-acc) 18%, var(--stg-cell));}
+          .tl-cell.cur{border:3px solid var(--stg-acc);background:color-mix(in srgb, var(--stg-acc) 28%, var(--stg-cell));box-shadow:none;}
+          .tl-placed.cur{box-shadow:0 0 0 3px ${RING};}
+          .tl-placed.tl-drag{cursor:grabbing;box-shadow:0 0 0 3px ${RING}, 0 7px 15px rgba(0,0,0,0.35);}
+          .tl-placed.tl-drag.home{border-style:dashed;background:var(--stg-surf2);}
           /* the square a drag would land on */
-          .tl-cell.tl-drop{border:2px solid ${AGREE};box-shadow:0 0 0 3px ${RING};}
-          .tl-cell.tl-drop-no{box-shadow:0 0 0 3px var(--stg-bad, ${COLORS.rust});}
-          .tl-act{font-family:${SANS};font-weight:800;font-size:12.5px;border: 1.5px solid var(--stg-line2, rgba(28,30,36,0.35));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};border-radius:7px;padding:6px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;}
-          .tl-act:hover:not(:disabled){border-color:${NOTE};color:${NOTE};}
-          .tl-act:disabled{opacity:0.38;cursor:default;}
-          .tl-tgt{cursor:default;transition:border-color .12s ease;}
+          .tl-cell.tl-drop{border:3px solid var(--stg-acc);box-shadow:0 0 0 3px ${RING};}
+          .tl-cell.tl-drop-no{box-shadow:0 0 0 3px var(--stg-bad);}
+          .tl-tgt{cursor:default;transition:border-color .12s ease;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:14px;line-height:1.05;box-sizing:border-box;background:var(--stg-ground);border:1.5px solid var(--stg-cell-line);font-family:${SANS};min-height:64px;padding:2px 0;min-width:0;}
+          .tl-tgt .v{font-size:22px;font-weight:800;color:var(--stg-ink);font-variant-numeric:tabular-nums;}
+          .tl-tgt .s{font-size:11px;font-weight:800;color:var(--stg-mute);white-space:nowrap;}
+          .tl-tgt.lit{border:2.5px solid var(--stg-acc);}
+          .tl-tgt.lit .s{color:var(--stg-acc-ink);}
+          .tl-tgt.ok{background:var(--stg-acc);border:2px solid var(--stg-acc);}
+          .tl-tgt.ok .v,.tl-tgt.ok .s{color:var(--stg-onramp);}
+          .tl-tgt.bad{border:2px solid var(--stg-bad);}
+          .tl-tgt.bad .v,.tl-tgt.bad .s{color:var(--stg-bad);}
+          .tl-need{width:100%;max-width:560px;margin-top:16px;box-sizing:border-box;border-radius:14px;background:var(--stg-ground);border:1px solid var(--stg-line);padding:10px 14px;display:flex;flex-direction:column;gap:8px;min-height:44px;justify-content:center;}
+          .tl-need-row{display:flex;align-items:center;gap:10px;}
+          .tl-need-l{min-width:132px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-acc-ink);}
+          .tl-need-t{font-size:13px;font-weight:700;color:var(--stg-ink);}
+          .tl-need-t.bad{color:var(--stg-bad);}
+          .tl-need-h{font-size:13px;font-weight:600;color:var(--stg-mute);}
+          .tl-say{width:100%;max-width:560px;margin-top:14px;display:flex;flex-direction:column;gap:2px;}
+          .tl-say-a{font-size:15px;font-weight:700;color:var(--stg-ink);line-height:1.35;}
+          .tl-say-b{font-size:12px;font-weight:600;color:var(--stg-mute);}
+          .tl-tiles{width:100%;max-width:560px;margin-top:14px;display:flex;flex-direction:column;gap:6px;}
+          .tl-tiles-top{display:flex;justify-content:space-between;gap:12px;}
           /* the rack: one key per digit, with what is left of it */
-          .tl-rack{display:grid;grid-template-columns:repeat(auto-fit,minmax(46px,1fr));gap:7px;max-width:${N === 6 ? 432 : 384}px;margin:0 auto;}
-          .tl-rtile{position:relative;height:52px;border-radius:10px;border: 1.5px solid var(--stg-line2, rgba(28,30,36,0.55));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};font-family:${MONO};font-size:22px;font-weight:700;color:${INK};cursor:pointer;box-shadow:0 2.5px 0 ${STAGE ? 'rgba(0,0,0,0.45)' : 'rgba(28,30,36,0.45)'};padding:0;}
-          .tl-rtile:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(28,30,36,0.45);}
-          .tl-rtile .n{position:absolute;right:4px;bottom:3px;font-size:10px;font-weight:800;color:${FADED};line-height:1;}
-          .tl-rtile.sel{border:2px solid ${AGREE};background:${AGREE};color:${AGREE_INK};box-shadow:0 0 0 3px ${RING};}
-          .tl-rtile.sel .n{color:${AGREE_INK};opacity:.85;}
-          .tl-rtile.out{opacity:.28;cursor:default;box-shadow:none;}
-          .tl-rtile.out .n{display:none;}
+          .tl-rack{display:grid;grid-template-columns:repeat(9, minmax(0,1fr));gap:6px;}
+          .tl-rtile{position:relative;height:60px;box-sizing:border-box;border-radius:12px;border:1.5px solid var(--stg-cell-line);background:var(--stg-cell);font-family:${SANS};cursor:pointer;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1;min-width:0;}
+          .tl-rtile .d{font-size:23px;font-weight:800;color:var(--stg-ink);}
+          .tl-rtile .n{font-size:11px;font-weight:800;color:var(--stg-mute);}
+          .tl-rtile:hover:not(:disabled){background:var(--stg-surf2);}
+          .tl-rtile.sel{border:2px solid var(--stg-acc);background:var(--stg-acc);box-shadow:0 0 0 3px ${RING};}
+          .tl-rtile.sel .d,.tl-rtile.sel .n{color:var(--stg-onramp);}
+          .tl-rtile.out{background:transparent;border:1.5px dashed var(--stg-line2);cursor:default;}
+          .tl-rtile.out .d{color:var(--stg-mute);text-decoration:line-through;}
+          .tl-foot{width:100%;margin-top:18px;display:flex;align-items:center;justify-content:flex-end;gap:10px;border-top:1px solid var(--stg-line);padding-top:14px;}
+          .tl-foot-n{flex:1;font-size:12px;font-weight:600;color:var(--stg-mute);}
+          .tl-act{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2);border:1.5px solid var(--stg-cell-line);border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
+          .tl-act:hover:not(:disabled){background:var(--stg-surf2);}
+          .tl-act:disabled{color:var(--stg-mute);border-color:var(--stg-line2);cursor:default;}
+          .tl-act.hint{color:var(--stg-acc-ink);border-color:var(--stg-acc);}
+          .tl-under{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0 12px;padding:12px 2px 0;}
+          .tl-under-n{flex:1 1 180px;min-width:0;font-size:12px;font-weight:600;color:var(--stg-mute);}
+          .tl-reveal{margin-left:auto;background:none;border:none;cursor:pointer;font-family:${SANS};font-weight:700;font-size:12px;color:var(--stg-ink2);text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0;display:inline-flex;align-items:center;gap:5px;flex:none;}
+          .tl-reveal.armed{color:var(--stg-bad);}
+          .tl-m{display:none;}
+          @media(max-width:560px){
+            .tl-lab{font-size:10px;}
+            .tl-prog{gap:6px;padding:0 10px;}
+            .tl-segs{gap:2px;}
+            .tl-segs span{height:6px;}
+            .tl-panel{background:transparent;border:none;border-radius:0;padding:0 10px;}
+            .tl-grid{gap:6px;width:min(348px,100%);}
+            .tl-cell{font-size:24px;border-radius:10px;}
+            .tl-grid.n6 .tl-cell{font-size:20px;border-radius:9px;}
+            .tl-tgt{min-height:50px;border-radius:12px;gap:2px;}
+            .tl-tgt .v{font-size:18px;}
+            .tl-tgt .s{font-size:10px;}
+            .tl-grid.n6 .tl-tgt .v{font-size:16px;}
+            .tl-grid.n6 .tl-tgt .s{font-size:9px;}
+            .tl-need{display:none;}
+            .tl-say-a{font-size:14px;}
+            .tl-rack{grid-template-columns:repeat(5, minmax(0,1fr));}
+            .tl-rtile{height:52px;border-radius:11px;}
+            .tl-rtile .d{font-size:21px;}
+            .tl-rtile .n{font-size:10px;}
+            .tl-foot{border-top:none;padding-top:0;margin-top:10px;gap:8px;}
+            .tl-foot-n{display:none;}
+            .tl-act{flex:1;padding:0 8px;}
+            .tl-under{padding:4px 10px 0;}
+            .tl-under-n{font-size:11px;}
+            .tl-d{display:none;}
+            .tl-m{display:inline;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
@@ -1065,25 +1144,27 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
           <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
         {/* the ledger */}
         {!preStart && (
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
-          {/* These figures move UP into the cap on a loft page; printing them
-              twice is the one thing to avoid. */}
-          {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-            <span style={{ whiteSpace: 'nowrap' }}>moves <b style={{ color: errors > 0 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{g.moves}</b> &middot; fewest <b style={{ color: INK, fontWeight: 500 }}>{FEWEST}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>lines <b style={{ color: linesOk === 2 * N ? AGREE : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{linesOk}</b>/{2 * N}</span>
+        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: STAGE ? 0 : '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+          {/* tiles placed so far, one segment per tile on the rack */}
+          <div className="tl-prog">
+            <div className="tl-prog-top">
+              <span className="tl-lab">Tiles · <b>{placedCount}</b> of {BANK.length} placed</span>
+              <span className="tl-lab"><span className="tl-d">{linesOk} of {2 * N} lines balanced</span><span className="tl-m">{linesOk}/{2 * N} lines</span></span>
+            </div>
+            <div className="tl-segs" aria-hidden="true">
+              {BANK.map((_, k) => <span key={k} className={k < placedCount ? 'on' : undefined} />)}
+            </div>
           </div>
-          )}
 
+          <div className="tl-panel">
           {/* board: N cells + a row-target column, then a col-target row beneath */}
-          <div style={{ maxWidth: BOARD_MAX, margin: '0 auto' }}>
-            <div className={shakeCell >= 0 ? 'tl-shake' : undefined} style={{ display: 'grid', gridTemplateColumns: gridTemplate, gap: GAP }}>
+            <div className={`tl-grid${N === 6 ? ' n6' : ''}${shakeCell >= 0 ? ' tl-shake' : ''}`} style={{ gridTemplateColumns: gridTemplate }}>
               {Array.from({ length: N }).map((_, r) => (
                 <React.Fragment key={`row${r}`}>
                   {Array.from({ length: N }).map((__, c) => {
                     const i = r * N + c;
                     const peer = playing && cur >= 0 && i !== cur && (Math.floor(cur / N) === r || cur % N === c) ? ' peer' : '';
-                    if (BLOCK[r][c]) return <div key={i} className="tl-cell tl-blocked" />;
+                    if (BLOCK[r][c]) return <div key={i} className="tl-cell tl-blocked" aria-label="out of play" />;
                     if (GIVEN[r][c]) return <div key={i} className={`tl-cell tl-given${peer}`} aria-label={`printed ${GIVEN[r][c]}`}>{GIVEN[r][c]}</div>;
                     if (cells[i]) {
                       // a placed tile follows the finger while dragged; the
@@ -1098,7 +1179,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
                       const dropCls = dv && dv.to === i && !isDrag ? (dv.ok ? ' tl-drop' : ' tl-drop-no') : '';
                       const same = playing && arm && cells[i] === arm ? ' same' : '';
                       return (
-                        <div key={i} className={`tl-cell tl-placed${i === cur && playing ? ' cur' : ''}${peer}${same}${isDrag ? ' tl-drag' : ''}${isDrag && dv.off ? ' home' : ''}${dropCls}`}
+                        <button type="button" key={i} className={`tl-cell tl-placed${i === cur && playing ? ' cur' : ''}${peer}${same}${isDrag ? ' tl-drag' : ''}${isDrag && dv.off ? ' home' : ''}${dropCls}`}
                           style={tf ? { transform: tf, transition: isDrag ? 'none' : 'transform .12s ease', zIndex: isDrag ? 3 : 2 } : (dv ? { transition: 'transform .12s ease' } : undefined)}
                           onClick={() => cellClick(r, c)}
                           onPointerDown={(e) => pressStart(e, r, c)}
@@ -1106,16 +1187,15 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
                           onPointerUp={pressEnd}
                           onPointerCancel={pressCancel}
                           onContextMenu={(e) => { e.preventDefault(); pressCancel(); liftTile(i); setCur(-1); }}
-                          role={playing ? 'button' : undefined}
                           aria-label={playing ? `${cells[i]}, row ${r + 1} column ${c + 1}. Tap to pick it up, tap twice to send it home.` : `${cells[i]}`}
                           title={playing ? (i === cur ? 'Tap a square to move it there, or tap it again to send it home' : 'Drag to move or swap. Tap twice to send it home.') : undefined}
-                        >{cells[i]}</div>
+                        >{cells[i]}</button>
                       );
                     }
                     const dropHere = dragView && dragView.to === i && dragView.ok;
                     const hot = playing && arm && left[arm] > 0 ? ' hot' : '';
                     const pickedTile = playing && cur >= 0 && cells[cur] ? ' hot' : '';
-                    return <div key={i} role={playing ? 'button' : undefined} aria-label={playing ? `empty, row ${r + 1} column ${c + 1}` : undefined}
+                    return <button type="button" key={i} aria-label={`empty, row ${r + 1} column ${c + 1}${i === cur && playing ? ', picked' : ''}`}
                       className={`tl-cell tl-empty${hot || pickedTile}${i === cur && playing ? ' cur' : ''}${peer}${dropHere ? ' tl-drop' : ''}`} onClick={() => cellClick(r, c)} />;
                   })}
                   {targetChip(r, true, `rt${r}`)}
@@ -1124,63 +1204,92 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
               {Array.from({ length: N }).map((_, c) => targetChip(c, false, `ct${c}`))}
               <div />
             </div>
-          </div>
 
           {/* rack */}
           {playing && (
             <>
-              <div style={{ display: 'flex', alignItems: 'baseline', fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.12em', textTransform: 'uppercase', color: FADED, margin: '18px 2px 8px', maxWidth: BOARD_MAX, marginLeft: 'auto', marginRight: 'auto' }}>
-                <span>Your tiles &middot; use every one</span>
-                <span style={{ marginLeft: 'auto' }}>{rackLeft} left</span>
-              </div>
-              <div className="tl-rack">
-                {DIGITS.map((d) => (
-                  <button key={d} className={`tl-rtile${left[d] <= 0 ? ' out' : (arm === d ? ' sel' : '')}`} onClick={() => pickDigit(d)}
-                    disabled={left[d] <= 0}
-                    aria-pressed={arm === d}
-                    aria-label={`${d}, ${Math.max(0, left[d])} left`}>
-                    {d}<span className="n">{left[d] > 0 ? `×${left[d]}` : ''}</span>
-                  </button>
-                ))}
+              {/* what the picked square's two lines still need */}
+              <div className="tl-need">
+                {curLines ? curLines.map((ln) => (
+                  <div key={ln.k} className="tl-need-row">
+                    <span className="tl-need-l">{ln.k} · {ln.st.tgt}</span>
+                    <span className={`tl-need-t${ln.st.bad ? ' bad' : ''}`}>{needText(ln.st)}</span>
+                  </div>
+                )) : <span className="tl-need-h">Pick a square to see what its row and column still need.</span>}
               </div>
 
-              {/* what the next tap does, directly under the tiles it governs */}
-              <div style={{ fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: FADED, marginTop: 13, minHeight: 18, textAlign: 'center' }}>
-                {cur >= 0 && cells[cur]
-                  ? `Moving ${cells[cur]}: tap a square to put it there, or tap it again to send it home`
-                  : cur >= 0
-                    ? 'Tap a digit to place it in the picked square'
-                    : arm
-                      ? `Placing ${arm}s: tap empty squares (${Math.max(0, left[arm])} left)`
-                      : 'Tap a digit, then tap squares. Or tap a square, then a digit.'}
+              {/* what the next tap does, right above the tiles it governs */}
+              <div className="tl-say" aria-live="polite">
+                <span className="tl-say-a">
+                  {cur >= 0 && cells[cur]
+                    ? `Moving ${cells[cur]}. Tap a square to put it there, or tap it again to send it home.`
+                    : cur >= 0
+                      ? <><span className="tl-d">Row {Math.floor(cur / N) + 1}, column {(cur % N) + 1} is picked. Tap a tile to place it there.</span><span className="tl-m">{curLines ? curLines.map((ln) => `${ln.k[0] + ln.k.slice(1).toLowerCase()} ${ln.st.ok ? 'is balanced' : ln.st.bad ? `is ${ln.st.over ? 'over' : 'short'} by ${Math.abs(ln.st.tgt - ln.st.sum)}` : `needs ${ln.st.tgt - ln.st.sum} in ${ln.st.empty}`}.`).join(' ') : ''} Tap a tile to place it.</span></>
+                      : arm
+                        ? `Placing ${arm}s. Tap empty squares (${Math.max(0, left[arm])} left).`
+                        : 'Tap a tile, then tap squares. Or tap a square, then a tile.'}
+                </span>
+                <span className="tl-say-b">
+                  <span className="tl-d">{cur >= 0 && !cells[cur] ? 'Or pick a tile first and tap squares. ' : ''}Drag a placed tile to move or swap it.</span>
+                  <span className="tl-m">Drag a placed tile to move or swap it.</span>
+                </span>
+              </div>
+
+              <div className="tl-tiles">
+                <div className="tl-tiles-top">
+                  <span className="tl-lab">Your tiles · use every one</span>
+                  <span className="tl-lab">{rackLeft} left</span>
+                </div>
+                <div className="tl-rack">
+                  {RACK.map((d) => {
+                    const n = Math.max(0, left[d]);
+                    return (
+                      <button key={d} type="button" className={`tl-rtile${n <= 0 ? ' out' : (arm === d ? ' sel' : '')}`} onClick={() => pickDigit(d)}
+                        disabled={n <= 0}
+                        aria-pressed={arm === d}
+                        aria-label={`${d}, ${n} left`}>
+                        <span className="d">{d}</span><span className="n">{n > 0 ? `×${n}` : 'none'}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* controls, with the tiles they act on (owner, 2026-08-31) */}
               {started && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--stg-line, rgba(28,30,36,0.10))', flexWrap: 'wrap' }}>
-              <button className="tl-act" onClick={undo} disabled={!hist.length}
-                title="Step the board back one change (Ctrl+Z). Your move count stands: undo restores the grid, not the score.">
-                <Undo2 size={14} /> Undo
-              </button>
-              <button className="tl-act" onClick={clearBoard} disabled={!anyPlaced}
-                title="Send every tile home to the rack. Free, and Undo puts the board back.">
-                <Eraser size={14} /> Clear board
-              </button>
-              {hintOk && !g.hintUsed && (
-                <button className="tl-btn" onClick={useHint} title="Fill the next square you can work out (one hint, first play only)"
-                  style={{ background: STAGE ? 'var(--stg-surf2)' : '#fdf6e3', border: '1.5px solid rgba(230,185,63,0.7)', color: STAGE ? 'var(--stg-warn, #e9c46a)' : '#8a6d1a', padding: '6px 12px', fontSize: 12.5 }}>
-                  <Lightbulb size={14} /> Hint
+              <div className="tl-foot">
+                <span className="tl-foot-n">Sending a tile home, Undo and Clear board are free. Placing or moving costs a move.</span>
+                {hintOk && !g.hintUsed && (
+                  <button type="button" className="tl-act hint" onClick={useHint} title="Fill the next square you can work out (one hint, first play only)">
+                    <Lightbulb size={15} aria-hidden="true" /> Hint
+                  </button>
+                )}
+                <button type="button" className="tl-act" onClick={undo} disabled={!hist.length}
+                  title="Step the board back one change (Ctrl+Z). Your move count stands: undo restores the grid, not the score.">
+                  Undo
                 </button>
-              )}
-              {identity && g.moves > 0 && (
-                <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-                  style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                  <Eye size={13} /> {armReveal ? 'Tap again: ends the puzzle and fills the solution' : 'Reveal & end'}
+                <button type="button" className="tl-act" onClick={clearBoard} disabled={!anyPlaced}
+                  title="Send every tile home to the rack. Free, and Undo puts the board back.">
+                  Clear board
                 </button>
-              )}
               </div>
               )}
             </>
+          )}
+          </div>
+
+          {started && (
+            <div className="tl-under">
+              <span className="tl-under-n">
+                <span className="tl-d">Shaded squares are printed. Dark squares are out of play.</span>
+                <span className="tl-m">Sending a tile home is free.</span>
+              </span>
+              {identity && g.moves > 0 && (
+                <button type="button" className={`tl-reveal${armReveal ? ' armed' : ''}`} onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
+                  <Eye size={13} aria-hidden="true" /> {armReveal ? 'Tap again: ends the puzzle and fills the solution' : 'Reveal and end'}
+                </button>
+              )}
+            </div>
           )}
 
           <div className={STAGE ? undefined : 'loft-sol'}>
@@ -1215,7 +1324,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
             iq={iq}
             board={dailyBoard}
             gameRank={allTime && allTime.ready
-              ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '\u2014',
+              ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '\u2013',
                   label: allTime.field != null ? `of ${Number(allTime.field).toLocaleString()} Tally all time` : 'all-time rank' }
               : null}
             day={dayStats}
@@ -1291,14 +1400,14 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s ledger, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s ledger, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   Open your browser&apos;s menu and choose <b>Add to Home Screen</b> (or <b>Install app</b>). The tile opens today&apos;s ledger, every day.
                 </p>
               )}
-              <button onClick={() => setShowA2hsHelp(false)} style={{ marginTop: 10, fontFamily: SANS, fontSize: 12.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, height: 44, width: '100%', borderRadius: 10, border: 'none', background: COLORS.ink, color: T.white, cursor: 'pointer' }}>Got it</button>
+              <button onClick={() => setShowA2hsHelp(false)} style={{ marginTop: 10, fontFamily: SANS, fontSize: 12.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, height: 44, width: '100%', borderRadius: 10, border: 'none', background: STAGE ? 'var(--stg-acc)' : COLORS.ink, color: STAGE ? 'var(--stg-onramp)' : T.white, cursor: 'pointer' }}>Got it</button>
             </div>
           </div>
         )}
@@ -1335,7 +1444,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
-        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
+        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: STAGE ? 'var(--stg-ink)' : COLORS.ink, color: STAGE ? 'var(--stg-ground)' : T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
           {toast}
         </div>
       )}
@@ -1350,7 +1459,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
               <button onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
             </div>
             {rulesBody}
-            <button className="tl-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: COLORS.ink, color: T.white }}>Play</button>
+            <button className="tl-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: STAGE ? 'var(--stg-acc)' : COLORS.ink, color: STAGE ? 'var(--stg-onramp)' : T.white, borderColor: STAGE ? 'var(--stg-acc)' : undefined }}>Play</button>
           </div>
         </div>
       )}

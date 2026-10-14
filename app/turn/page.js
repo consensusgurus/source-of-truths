@@ -44,7 +44,7 @@ const gameJsonLd = {
   alternateName: 'Turn: Daily Othello Endgame Puzzle',
   url: `${SITE_URL}/turn`,
   description:
-    'A free daily Othello (Reversi) puzzle, picked up at the endgame. Each position is a real, reachable board with you to move and the game already won, with exactly one square that keeps the win and every other square ending level or behind. A wrong square is not refused: a solver that reads the position to the last disc plays out the rest, so the win is gone for good. A player with no legal square passes, which is most of the tactics at this stage. The win scores ten, a loss one, and ties break on fewest errors then fastest time. Weekdays leave ten empty squares and Sundays twelve.',
+    'A free daily Othello (Reversi) puzzle, picked up at the endgame. Each position is a real, reachable board with you to move and the game already won, with exactly one square that keeps the win and every other square ending level or behind. A wrong square is not refused: a solver that reads the position to the last disc plays out the rest, so the win is gone for good. A player with no legal square passes, which is most of the tactics at this stage. The win scores ten, a loss or giving up nothing, and ties break on fewest errors then fastest time. Weekdays leave ten empty squares and Sundays twelve.',
   genre: ['Othello puzzle', 'Reversi puzzle', 'Strategy puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

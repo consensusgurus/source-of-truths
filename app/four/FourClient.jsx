@@ -112,7 +112,6 @@ const DISC_RIM_FOE = 'var(--stg-ink, transparent)';
 // label change could be read. A confirm this fast was never a decision.
 const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_four_help_seen';
 const STATS_KEY = 'sot_four_stats';
 
@@ -335,6 +334,18 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
   // on the board, and the point of the 2026-08-11 rule is that nothing tells you
   // the round is decided while you still have drops to make.
   const hintCols = useMemo(() => (g.hintUsed ? hintColumns(PUZZLE) : []), [g.hintUsed, PUZZLE]);
+
+  // The engine's last disc keeps a marker for the whole of your turn, so the
+  // answer you are replying to is never lost in the stack. Engine plies are the
+  // odd ones; its row is read off the board as it stood right after that ply.
+  const engLast = useMemo(() => {
+    let k = moves.length - 1;
+    if (k >= 0 && k % 2 === 0) k -= 1;
+    if (k < 0) return null;
+    const col = moves[k];
+    const b = boardFrom(PUZZLE.cells, moves.slice(0, k + 1));
+    return { col, row: b.heights[col] - 1 };
+  }, [PUZZLE, moves]);
 
   // The four cells to light up once somebody connects.
   const winLine = useMemo(() => {
@@ -662,7 +673,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
   }
   function shareText() {
     const g5 = won ? 5 : drawn ? 2 : g.status === 'lost' ? 1 : 0;
-    const squares = (won ? '\u{1F534}' : drawn ? '\u{1F7E1}' : '⬜').repeat(Math.max(1, g5)) + '⬜'.repeat(5 - Math.max(1, g5));
+    const squares = (won ? '\u{1F7E1}' : drawn ? '\u{1F7E0}' : '⬜').repeat(Math.max(1, g5)) + '⬜'.repeat(5 - Math.max(1, g5));
     const hintBit = g.hintUsed ? ' · \u{1F4A1}' : '';
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
     const verdict = won ? `won in ${PUZZLE.winIn}` : drawn ? 'held a draw' : g.status === 'lost' ? 'lost it' : 'gave up';
@@ -671,7 +682,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Four #${PUZZLE.num} — the daily Connect Four position from Mind Loft.\n${shareUrl()}`
+      ? `Four #${PUZZLE.num}: the daily Connect Four position from Mind Loft.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -691,19 +702,19 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
-      lead={<>You are <b>red</b>, you drop first, and the position is already won for you: a forced <b>win in {PUZZLE.winIn}</b> of your moves.</>}
+      lead={<>You drop the <b>gold</b> discs, you move first, and the position is already won for you: a forced <b>win in {PUZZLE.winIn}</b> of your moves.</>}
       chips={[
         { label: 'Win = 10', tone: 'good' },
         { label: 'Draw = 4', tone: 'warn' },
-        { label: 'Win thrown away, or gave up = 0', tone: 'bad' },
+        { label: 'Loss or gave up = 0', tone: 'bad' },
       ]}
       steps={[
         <><b>Tap a column</b> to drop a disc. Exactly <b>one</b> column wins, every other drop throws it away.</>,
         <>A wrong drop is <b>not taken back</b>. The engine plays on and it is perfect, so once the win is gone it never comes back and you are playing for a draw.</>,
         <>One free <b>hint</b>, on your first ever play, greys out two columns that do not win.</>,
       ]}
-      knack="The engine always answers with its most stubborn defence, and the same one for everybody, so the game you play is the game everyone else plays."
-      footer="Ties break on fewest wrong drops, then fastest time. Weekdays are a win in four, Sundays step up to a win in five."
+      knack="The engine always answers with its most stubborn defense, and the same one for everybody, so the game you play is the game everyone else plays."
+      footer="Restart records a 0 and deals the same board. Ties break on fewest wrong drops, then fastest time. Weekdays are a win in four, Sundays step up to a win in five."
     />
   );
 
@@ -762,29 +773,67 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.fr-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .fr-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .fr-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .fr-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-          .fr-col{display:flex;flex-direction:column;gap:0;cursor:pointer;-webkit-tap-highlight-color:transparent;min-width:0;}
+          /* Game-local colours, one set per register: the cabinet, the holes, the
+             engine's discs and their rims, the marker on the engine's last disc.
+             Your discs are the category accent in both. The light block carries
+             the boot-stamp guard (app/globals.css). */
+          .fr-root{--fr-board:#1d2638;--fr-hole:#0b0f1a;--fr-hole-line:#2a3448;--fr-foe:#e8ecf4;--fr-foe-rim:#8b95a8;--fr-mark:#0b0f1a;--fr-you-rim:#a87a14;--fr-btn:#5a6680;
+            --fr-soft:color-mix(in srgb, var(--stg-acc, #e8b43a) 22%, var(--stg-ground, #0b0f1a));}
+          html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .fr-root{--fr-board:#c9d1de;--fr-hole:#ffffff;--fr-hole-line:#9aa5b8;--fr-foe:#2c3446;--fr-foe-rim:#0f1420;--fr-mark:#ffffff;--fr-you-rim:#7c5104;--fr-btn:#78839a;
+            --fr-soft:color-mix(in srgb, var(--stg-acc, #e8b43a) 30%, #ffffff);}
+          .fr-k{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute,#8b95a8);}
+          .fr-k b{color:var(--stg-acc-ink,#7c5104);font-weight:800;}
+          .fr-meter{display:flex;gap:6px;margin-top:8px;}
+          .fr-seg{flex:1;height:8px;border-radius:3px;box-sizing:border-box;background:var(--stg-line2,rgba(255,255,255,.17));}
+          .fr-seg.done{background:var(--stg-acc,#e8b43a);}
+          .fr-seg.now{background:var(--fr-soft);border:1.5px solid var(--stg-acc-ink,#e8b43a);}
+          .fr-short{display:none;}
+          .fr-colbtns{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;padding:0 10px;margin-bottom:8px;}
+          .fr-colbtn{height:44px;box-sizing:border-box;border-radius:10px;border:1.5px solid var(--fr-btn);background:transparent;color:var(--stg-ink2,#aab5c7);font-family:${SANS};padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1;cursor:pointer;min-width:0;}
+          .fr-colbtn .n{font-size:15px;font-weight:800;}
+          .fr-colbtn .s{font-size:9px;font-weight:800;letter-spacing:.06em;}
+          .fr-colbtn.hot{border:2px solid var(--stg-acc-ink,#e8b43a);background:var(--fr-soft);color:var(--stg-acc-ink,#e8b43a);}
+          .fr-colbtn.full{border:1.5px dashed var(--stg-line2,rgba(255,255,255,.17));color:var(--stg-mute,#8b95a8);cursor:default;}
+          .fr-colbtn:disabled{cursor:default;}
+          .fr-colbtn.grey{opacity:.45;}
+          .fr-col{display:flex;flex-direction:column;gap:6px;cursor:pointer;-webkit-tap-highlight-color:transparent;min-width:0;border-radius:8px;}
           .fr-col.dead{cursor:default;}
+          .fr-col.hot{background:var(--fr-soft);}
           .fr-cell{position:relative;aspect-ratio:1 / 1;display:flex;align-items:center;justify-content:center;min-width:0;}
-          .fr-hole{width:82%;height:82%;border-radius:50%;background:${HOLE};box-shadow:inset 0 3px 5px rgba(0,0,0,0.28), inset 0 0 0 1px var(--stg-cell-line, transparent);}
-          .fr-disc{width:82%;height:82%;border-radius:50%;box-shadow:inset 0 -3px 6px rgba(0,0,0,0.32), inset 0 3px 4px rgba(255,255,255,0.35), inset 0 0 0 1.5px var(--fr-rim, transparent);}
+          .fr-hole{width:84%;height:84%;box-sizing:border-box;border-radius:50%;background:var(--fr-hole);border:1.5px solid var(--fr-hole-line);box-shadow:inset 0 3px 5px rgba(0,0,0,0.22);}
+          .fr-disc{width:84%;height:84%;box-sizing:border-box;border-radius:50%;border:3px solid var(--fr-rim, transparent);display:flex;align-items:center;justify-content:center;}
+          .fr-mark{width:23%;height:23%;border-radius:50%;background:var(--fr-mark);}
           .fr-disc.fresh{animation:frdrop .34s cubic-bezier(.35,.05,.55,1);}
           @keyframes frdrop{0%{transform:translateY(-420%);}70%{transform:translateY(0);}82%{transform:translateY(-9%);}100%{transform:translateY(0);}}
-          /* THE WINNING FOUR (owner, 2026-09-01). The ring was var(--white): on the
-             light register that is a white ring on a white board, so the line
-             that decided the game was lit and nobody could see it. It is INK
-             now, which is the one colour guaranteed to read on the board in
-             either register, and the rest of the discs step back while the
-             four pulse, so the line is the only thing left on the board. */
+          /* THE WINNING FOUR (owner, 2026-09-01). The ring is INK, the one colour
+             guaranteed to read on the board in either register, and the rest of
+             the discs step back while the four pulse. */
           .fr-disc.lit{animation:frlit 1.15s ease-in-out infinite;position:relative;z-index:1;}
           .fr-board.won .fr-disc:not(.lit){opacity:.38;}
           .fr-board.won .fr-hole{opacity:.55;}
-          @keyframes frlit{0%,100%{transform:scale(1);box-shadow:inset 0 -3px 6px rgba(0,0,0,0.32), 0 0 0 3px var(--stg-ink, var(--white)), 0 0 0 6px color-mix(in srgb, var(--stg-ink, #fff) 55%, transparent);}50%{transform:scale(1.08);box-shadow:inset 0 -3px 6px rgba(0,0,0,0.32), 0 0 0 3px var(--stg-ink, var(--white)), 0 0 0 11px color-mix(in srgb, var(--stg-ink, #fff) 18%, transparent);}}
-          .fr-ghost{position:absolute;width:82%;height:82%;border-radius:50%;border:2px dashed rgba(255,255,255,0.72);}
+          @keyframes frlit{0%,100%{transform:scale(1);box-shadow:0 0 0 3px var(--stg-ink, var(--white)), 0 0 0 6px color-mix(in srgb, var(--stg-ink, #fff) 55%, transparent);}50%{transform:scale(1.08);box-shadow:0 0 0 3px var(--stg-ink, var(--white)), 0 0 0 11px color-mix(in srgb, var(--stg-ink, #fff) 18%, transparent);}}
+          .fr-ghost{position:absolute;width:84%;height:84%;box-sizing:border-box;border-radius:50%;border:3px dashed var(--stg-acc-ink,#e8b43a);}
           .fr-board.shake{animation:frshake .34s ease;}
           @keyframes frshake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
-          .fr-caps{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:6px;padding:0 8px;}
-          .fr-cap{height:7px;border-radius:4px;background:transparent;}
+          .fr-leg{display:flex;align-items:center;gap:6px;}
+          .fr-leg i{width:14px;height:14px;border-radius:50%;box-sizing:border-box;flex:none;display:flex;align-items:center;justify-content:center;}
+          .fr-ctl{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2,#aab5c7);border:1.5px solid var(--fr-btn);border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
+          .fr-ctl:hover{background:var(--stg-surf2,rgba(255,255,255,.08));color:var(--stg-ink,#e9edf4);}
+          .fr-ctl.armed{border-color:var(--stg-bad,#fb7185);color:var(--stg-bad,#fb7185);}
+          .fr-ctl.primary{background:var(--stg-acc,#e8b43a);color:var(--stg-onramp,#1c1a14);border-color:var(--stg-acc,#e8b43a);font-weight:800;}
+          .fr-ctl.primary:hover{filter:brightness(1.05);background:var(--stg-acc,#e8b43a);color:var(--stg-onramp,#1c1a14);}
+          .fr-link{background:none;border:none;cursor:pointer;font-family:${SANS};font-weight:700;font-size:12px;color:var(--stg-ink2,#aab5c7);text-decoration:underline;text-underline-offset:3px;white-space:nowrap;min-height:44px;min-width:84px;padding:0;text-align:right;}
+          .fr-link.armed{color:var(--stg-bad,#fb7185);}
+          .fr-note{font-size:12px;font-weight:600;color:var(--stg-mute,#8b95a8);line-height:1.45;}
+          @media(max-width:560px){
+            .fr-long{display:none;}
+            .fr-short{display:inline;}
+            .fr-colbtns{gap:4px;padding:0 6px;}
+            .fr-colbtn .s{font-size:8px;}
+            .fr-ctlrow .fr-note{display:none;}
+            .fr-ctlrow .fr-ctl{flex:1;}
+            .fr-legrow{flex-wrap:wrap;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
@@ -800,7 +849,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
           helpTop={13}
           marginBottom={16}
           onHelp={() => setShowHelp(true)}
-          sunday={PUZZLE.sunday && <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition &middot; Win in 5</span>}
+          sunday={PUZZLE.sunday && <span style={{ fontFamily: SANS, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition &middot; Win in 5</span>}
           blocks={'FOUR'.split('').map((ch, i) => (
               <div key={i} style={{ width: 44, height: 44, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontWeight: 900, fontSize: 26, background: i === 3 ? `var(--stg-acc, ${COLORS.accent})` : COLORS.ink, color: T.white, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.65)' }}>{ch}</div>
             ))}
@@ -819,7 +868,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'Four is ready'}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: '0 0 6px' }}>You are red, and the position is won: there is a forced win in {PUZZLE.winIn}. Only one column keeps it. Drop the wrong one and the engine, which is perfect, will not give it back.</p>
+                <p style={{ margin: '0 0 6px' }}>You drop the gold discs, and the position is won: there is a forced win in {PUZZLE.winIn}. Only one column keeps it. Drop the wrong one and the engine, which is perfect, will not give it back.</p>
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
@@ -833,45 +882,78 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
 
-        {!preStart && (
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
-          {/* These figures move UP into the cap on a loft page; printing them
-              twice is the one thing to avoid. */}
-          {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-            {/* The tally is kept and posted throughout, but only SHOWN once the
-                game is over: a counter ticking up is itself a notice that the
-                drop was wrong. */}
-            {!playing && <span style={{ whiteSpace: 'nowrap' }}>wrong drops <b style={{ color: errors > 0 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{errors}</b></span>}
-            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>
-              {/* The puzzle's brief, not a live readout. */}
-              <>win in <b style={{ color: INK, fontWeight: 500 }}>{PUZZLE.winIn}</b></>
-            </span>
-          </div>
-          )}
-
-          <div style={{ maxWidth: 430, margin: '0 auto' }}>
-            {/* the lip above the board, so a hovered column reads before you commit */}
-            <div className="fr-caps" aria-hidden="true">
-              {Array.from({ length: COLS }).map((_, c) => (
-                <div key={c} className="fr-cap" style={{ background: myTurn && hoverCol === c && pos.heights[c] < ROWS ? RED : 'transparent' }} />
+        {!preStart && (() => {
+          const made = Math.ceil(moves.length / 2);
+          const fullCols = [];
+          for (let c = 0; c < COLS; c++) if (pos.heights[c] >= ROWS) fullCols.push(c + 1);
+          const fullNote = fullCols.length === 0 ? ''
+            : fullCols.length === 1 ? `Column ${fullCols[0]} is full`
+            : `Columns ${fullCols.slice(0, -1).join(', ')} and ${fullCols[fullCols.length - 1]} are full`;
+          let title = statusLine();
+          let help = '';
+          if (playing) {
+            if (thinking || awaitingReply) help = `You dropped in column ${lastCol + 1}.`;
+            else if (moves.length === 0) help = 'Exactly one column keeps the win. A wrong drop is not taken back.';
+            else {
+              title = `Your move. The engine answered in column ${lastCol + 1}.`;
+              help = 'Tap a column or its number to drop. A wrong drop is not taken back.';
+            }
+          }
+          const canHint = playing && hintOk && !g.hintUsed;
+          return (
+        <div className={`fr-root ${STAGE ? 'stg-board' : (LOFT ? 'loft-card' : '')}`} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+          {/* The top meter: your drops against the win's length. It counts what
+              you have done and never grades it. No clock on the board. */}
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
+              <span className="fr-k"><span className="fr-long">Your drops &middot; </span><b>{made}</b>{made <= PUZZLE.winIn ? <> of {PUZZLE.winIn}</> : null} made</span>
+              <span className="fr-k" style={{ textAlign: 'right' }}><span className="fr-long">Engine plays perfectly</span><span className="fr-short">Win in {PUZZLE.winIn}</span></span>
+            </div>
+            <div className="fr-meter" aria-hidden="true">
+              {Array.from({ length: PUZZLE.winIn }).map((_, i) => (
+                <span key={i} className={`fr-seg${i < made ? ' done' : (myTurn && i === made ? ' now' : '')}`} />
               ))}
+            </div>
+          </div>
+
+          <div style={{ maxWidth: 516, margin: '0 auto' }}>
+            {/* One real button per column: the number, and FULL once it is. */}
+            <div className="fr-colbtns">
+              {Array.from({ length: COLS }).map((_, c) => {
+                const full = pos.heights[c] >= ROWS;
+                const greyed = hintCols.includes(c) && playing;
+                const hot = myTurn && hoverCol === c && !full;
+                return (
+                  <button key={c} type="button"
+                    className={`fr-colbtn${full ? ' full' : ''}${hot ? ' hot' : ''}${greyed ? ' grey' : ''}`}
+                    aria-label={`Column ${c + 1}${full ? ', full' : ''}`}
+                    disabled={full || !playing}
+                    onMouseEnter={() => setHoverCol(c)}
+                    onMouseLeave={() => setHoverCol((v) => (v === c ? null : v))}
+                    onClick={() => { if (!gRef.current.t0) { startGame(); return; } if (myTurn && !full) drop(c); }}>
+                    <span className="n">{c + 1}</span>
+                    <span className="s">{full ? 'FULL' : '▼'}</span>
+                  </button>
+                );
+              })}
             </div>
             <div
               key={shake}
               className={`fr-board${shake ? ' shake' : ''}${winLine ? ' won' : ''}`}
               data-out={g.status}
-              style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: 6, background: STAGE ? BOARD_BLUE : `linear-gradient(180deg, ${BOARD_BLUE}, ${BOARD_BLUE_DARK}), ${BOARD_BLUE}`, border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: 6, touchAction: 'manipulation' }}
+              style={STAGE
+                ? { display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: 6, background: 'var(--fr-board)', boxShadow: 'inset 0 0 0 1.5px var(--stg-line2)', borderRadius: 14, padding: 10, touchAction: 'manipulation' }
+                : { display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: 6, background: `linear-gradient(180deg, ${BOARD_BLUE}, ${BOARD_BLUE_DARK}), ${BOARD_BLUE}`, border: `2px solid ${COLORS.ink}`, borderRadius: 10, padding: 6, touchAction: 'manipulation' }}
             >
               {Array.from({ length: COLS }).map((_, c) => {
                 const full = pos.heights[c] >= ROWS;
                 const greyed = hintCols.includes(c) && playing;
                 const landing = pos.heights[c];
+                const hot = myTurn && hoverCol === c && !full;
                 return (
                   <div
                     key={c}
-                    className={`fr-col${full || !myTurn ? ' dead' : ''}`}
+                    className={`fr-col${full || !myTurn ? ' dead' : ''}${hot ? ' hot' : ''}`}
                     onMouseEnter={() => setHoverCol(c)}
                     onMouseLeave={() => setHoverCol((v) => (v === c ? null : v))}
                     onClick={() => { if (!gRef.current.t0) { startGame(); return; } if (myTurn && !full) drop(c); }}
@@ -886,24 +968,28 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
                       const v = pos.cells[idx];
                       const isLast = lastCol === c && lastRow === r;
                       const lit = winLine && winLine.includes(idx);
-                      const ghost = myTurn && hoverCol === c && !full && r === landing;
+                      const ghost = hot && r === landing;
+                      const engMark = v === 2 && engLast && engLast.col === c && engLast.row === r;
                       return (
                         <div key={r} className="fr-cell">
-                          {v === 0 && <div className="fr-hole" />}
+                          {v === 0 && !ghost && <div className="fr-hole" />}
                           {v !== 0 && (
                             <div
                               className={`fr-disc${isLast && playing ? ' fresh' : ''}${lit ? ' lit' : ''}`}
                               style={{
                                 // NO DISC MAY DEPEND ON A GRADIENT TO BE SEEN (Android
-                                // report, 2026-10-06: a phone that paints no CSS
-                                // gradients showed every disc empty). One token on
-                                // both stops -> flat; otherwise a solid base layer.
-                                background: v === 1
-                                  ? (STAGE ? RED : `radial-gradient(circle at 34% 30%, ${RED}, ${RED_DARK}), ${RED}`)
-                                  : `radial-gradient(circle at 34% 30%, ${YELLOW}, ${YELLOW_DARK}), ${YELLOW}`,
-                                '--fr-rim': v === 1 ? DISC_RIM_YOU : DISC_RIM_FOE,
+                                // report, 2026-10-06). Flat on the stage; the Loft keeps
+                                // its gloss over a solid base layer.
+                                background: STAGE
+                                  ? (v === 1 ? 'var(--stg-acc, #e8b43a)' : 'var(--fr-foe)')
+                                  : v === 1
+                                    ? `radial-gradient(circle at 34% 30%, ${RED}, ${RED_DARK}), ${RED}`
+                                    : `radial-gradient(circle at 34% 30%, ${YELLOW}, ${YELLOW_DARK}), ${YELLOW}`,
+                                '--fr-rim': STAGE ? (v === 1 ? 'var(--fr-you-rim)' : 'var(--fr-foe-rim)') : 'transparent',
                               }}
-                            />
+                            >
+                              {engMark && <span className="fr-mark" aria-hidden="true" />}
+                            </div>
                           )}
                           {ghost && <span className="fr-ghost" />}
                         </div>
@@ -913,63 +999,67 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
                 );
               })}
             </div>
-          </div>
 
-          <div style={{ marginTop: 12, minHeight: 22, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: endHold.held ? 15 : 13, fontWeight: 800, color: playing ? `var(--stg-acc-ink, ${COLORS.accent})` : (endHold.held ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-mute, ${COLORS.faded})`) }}>
-              {statusLine()}
-            </span>
-            <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 11, color: FADED, fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: RED, display: 'inline-block' }} /> you
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: YELLOW, display: 'inline-block', marginLeft: 6 }} /> engine
-            </span>
-          </div>
-
-          {playing && hintOk && !g.hintUsed && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 12, flexWrap: 'wrap' }}>
-              <button className="fr-tool" onClick={useHint} title="Grey out two losing columns (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(35,58,99,0.45)', color: '#1b3268' }}>
-                <Lightbulb size={14} /> Hint
-              </button>
-            </div>
-          )}
-
-        {/* Controls. These sit INSIDE the board card: on the navy stage a bare
-            row has nothing to sit on, and the card is meant to hold the game. */}
-        {started && (
-          /* Both controls arm on the first tap and fire on the second. The armed
-             label is deliberately SHORT and each button reserves a fixed width,
-             because the old armed copy ("Tap again — records a loss and deals a
-             fresh board") was far wider than "Restart": the row reflowed on the
-             first tap and the button slid out from under the reader's finger, so
-             the confirming tap landed on nothing. The consequence now prints on
-             its own line BELOW the row, where it cannot move either button. */
-          <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>
-                Tap a column to drop. There is no take-back.
+            <div className="fr-legrow" style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px 16px' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 12, fontWeight: 700, color: FADED, flexWrap: 'wrap' }}>
+                <span className="fr-leg"><i style={{ background: 'var(--stg-acc, #e8b43a)', border: '2px solid var(--fr-you-rim)' }} />You</span>
+                <span className="fr-leg"><i style={{ background: 'var(--fr-foe)', border: '2px solid var(--fr-foe-rim)' }} />Engine</span>
+                <span className="fr-leg"><i style={{ background: 'var(--fr-foe)', border: '2px solid var(--fr-foe-rim)' }}><span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--fr-mark)' }} /></i>Last drop</span>
               </span>
-              <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-                <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmRestart(false); setArmReveal(Date.now()); } }}
-                  title={armReveal ? 'Ends the game and scores nothing' : 'End the game now, scoring nothing'}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-start', gap: 5, minWidth: 104, padding: 0 }}>
-                  <Eye size={13} style={{ flexShrink: 0 }} /> {armReveal ? 'Press again' : 'Give up'}
-                </button>
-                <button onClick={() => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartGame(); } else { setArmReveal(false); setArmRestart(Date.now()); } }}
-                  title={armRestart ? 'Records a loss and deals a fresh board' : 'Record a loss and deal a fresh board'}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armRestart ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-start', gap: 5, minWidth: 104, padding: 0 }}>
-                  <RotateCcw size={13} style={{ flexShrink: 0 }} /> {armRestart ? 'Press again' : 'Restart'}
-                </button>
-              </span>
+              {fullNote && <span style={{ fontSize: 12, fontWeight: 700, color: FADED }}>{fullNote}</span>}
             </div>
-            {(armReveal || armRestart) && (
-              <div style={{ fontFamily: SANS, fontSize: 11.5, fontWeight: 700, color: `var(--stg-ink, ${COLORS.rust})`, marginTop: 6, textAlign: 'right', lineHeight: 1.4 }}>
-                {armReveal ? 'Ends the game and scores nothing.' : 'Records a loss and deals a fresh board.'}
+
+            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 12, minHeight: 46 }}>
+              {playing && (
+                <span aria-hidden="true" style={{ width: 46, height: 46, flex: 'none', borderRadius: 12, background: 'var(--stg-acc, #e8b43a)', color: 'var(--stg-onramp, #1c1a14)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>
+                  <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.06em' }}>DROP</span>
+                  <b style={{ fontSize: 19, fontWeight: 800 }}>{made + 1}</b>
+                </span>
+              )}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }} role="status" aria-live="polite">
+                <span style={{ fontSize: endHold.held ? 17 : 15, fontWeight: 800, color: INK }}>{title}</span>
+                {help && <span style={{ fontSize: 12.5, fontWeight: 600, color: FADED, lineHeight: 1.4 }}>{help}</span>}
               </div>
+            </div>
+          </div>
+
+        {/* Controls. Both arm on the first tap and fire on the second. Armed
+            labels stay SHORT and each control reserves its width, so the row
+            never reflows under the finger; the consequence prints below. */}
+        {started && (
+          <>
+          <div className="fr-ctlrow" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--stg-line, rgba(28,30,36,0.10))' }}>
+            <span className="fr-note" style={{ flex: 1 }}>{canHint ? 'One free hint on your first play greys out two columns that do not win.' : 'Restart records a 0 and deals the same board.'}</span>
+            <button className={`fr-ctl${armRestart ? ' armed' : ''}`} style={{ minWidth: 124 }}
+              onClick={() => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartGame(); } else { setArmReveal(false); setArmRestart(Date.now()); } }}
+              title={armRestart ? 'Records a 0 and deals the same board again' : 'Record a 0 and deal the same board again'}>
+              <RotateCcw size={14} aria-hidden="true" style={{ flexShrink: 0 }} /> {armRestart ? 'Press again' : 'Restart'}
+            </button>
+            {canHint && (
+              <button className="fr-ctl primary" onClick={useHint} title="Grey out two columns that do not win (one hint, first play only)">
+                <Lightbulb size={15} aria-hidden="true" /> Use hint
+              </button>
             )}
           </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginTop: 6 }}>
+            <span className="fr-note">
+              <span className="fr-long">A win scores 10 and a draw 4. A loss or giving up scores nothing, and Restart records a 0. Sundays are a win in five.</span>
+              <span className="fr-short">No take-back. Restart records a 0.</span>
+            </span>
+            <button className={`fr-link${armReveal ? ' armed' : ''}`}
+              onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmRestart(false); setArmReveal(Date.now()); } }}
+              title={armReveal ? 'Ends the game and scores nothing' : 'End the game now, scoring nothing'}>
+              {armReveal ? 'Press again' : 'Give up'}
+            </button>
+          </div>
+          <div aria-live="polite" style={{ minHeight: 18, fontSize: 12, fontWeight: 700, color: (armReveal || armRestart) ? 'var(--stg-bad, #be123c)' : INK, textAlign: 'right', lineHeight: 1.4 }}>
+            {armReveal ? 'Ends the game and scores nothing.' : armRestart ? 'Records a 0 and deals the same board again.' : ''}
+          </div>
+          </>
         )}
         </div>
-      )}
+          );
+        })()}
 
 
           <div className={STAGE ? undefined : 'loft-sol'}>
@@ -1037,7 +1127,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
-                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '\u2014',
+                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '\u2013',
                     label: allTime.field != null ? `of ${Number(allTime.field).toLocaleString()} Four all time` : 'all-time rank' }
                 : null}
               day={dayStats}
@@ -1080,7 +1170,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
         <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block', margin: '30px auto 0' }}>
           {LOFT && (
             <div className={STAGE ? undefined : 'loft-report'}>
-              <ReportIssue self="four" name="Four" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
+              <ReportIssue self="four" name="Four" accent="var(--stg-acc)" align="center" onHelp={() => setShowHelp(true)} />
             </div>
           )}
           {!LOFT && (
@@ -1110,14 +1200,14 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s position, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s position, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   Open your browser&apos;s menu and choose <b>Add to Home Screen</b> (or <b>Install app</b>). The tile opens today&apos;s position, every day.
                 </p>
               )}
-              <button onClick={() => setShowA2hsHelp(false)} style={{ marginTop: 10, fontFamily: SANS, fontSize: 12.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, height: 44, width: '100%', borderRadius: 10, border: 'none', background: COLORS.ink, color: T.white, cursor: 'pointer' }}>Got it</button>
+              <button onClick={() => setShowA2hsHelp(false)} style={{ marginTop: 10, fontFamily: SANS, fontSize: 12.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, height: 44, width: '100%', borderRadius: 10, border: 'none', background: STAGE ? 'var(--stg-ink)' : COLORS.ink, color: STAGE ? 'var(--stg-ground)' : T.white, cursor: 'pointer' }}>Got it</button>
             </div>
           </div>
         )}
@@ -1152,7 +1242,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
-        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
+        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: STAGE ? 'var(--stg-ink)' : COLORS.ink, color: STAGE ? 'var(--stg-ground)' : T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
           {toast}
         </div>
       )}
@@ -1166,7 +1256,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
               <button onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
             </div>
             {rulesBody}
-            <button className="fr-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: COLORS.ink, color: T.white }}>Play</button>
+            <button className="fr-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: STAGE ? 'var(--stg-ink)' : COLORS.ink, color: STAGE ? 'var(--stg-ground)' : T.white }}>Play</button>
           </div>
         </div>
       )}
@@ -1179,7 +1269,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
           Four is a free daily Connect Four puzzle from Mind Loft. Every position is a real, reachable board with you to move and a forced win already there, and your job is to find the one column that keeps it. Tap a column and the disc drops, so there is nothing to learn before you play.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Each board has exactly one winning column, checked by two independent solvers, and the win takes exactly the stated number of moves against the stiffest defence, never fewer. What makes it bite is that a wrong drop is not refused. The engine is perfect and it plays the game out, so a careless move costs the win for good and leaves you fighting for a draw.
+          Each board has exactly one winning column, checked by two independent solvers, and the win takes exactly the stated number of moves against the stiffest defense, never fewer. What makes it bite is that a wrong drop is not refused. The engine is perfect and it plays the game out, so a careless move costs the win for good and leaves you fighting for a draw.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new position drops every day at midnight Eastern, and Sundays step up to a win in five. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More dailies: <a href="/mate" style={{ color: INK, fontWeight: 800 }}>Mate</a>, our daily chess endgame, <a href="/etch" style={{ color: INK, fontWeight: 800 }}>Etch</a>, our daily nonogram, and <a href="/suds" style={{ color: INK, fontWeight: 800 }}>Suds</a>, our daily sudoku.

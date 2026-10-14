@@ -98,7 +98,6 @@ const MARK = 'var(--stg-ink, #f2c94c)';         // the reveal ring and the hint
 // label change could be read. A confirm this fast was never a decision.
 const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_turn_help_seen';
 const STATS_KEY = 'sot_turn_stats';
 
@@ -658,7 +657,7 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Turn #${PUZZLE.num} — the daily Othello endgame from Mind Loft.\n${shareUrl()}`
+      ? `Turn #${PUZZLE.num}: the daily Othello endgame from Mind Loft.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -678,17 +677,17 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
-      lead="Othello, picked up at the end. You are black, and the game is already won for you."
+      lead="Othello, picked up at the end. You play the gold discs, and the game is already won for you."
       banner={<>{PUZZLE.empties} empty squares, and exactly <b>one</b> of them keeps the win.</>}
       steps={[
-        <><b>Tap a ringed square</b> to play there. Your disc must trap a line of white discs against another black one, and every disc you trap flips.</>,
+        <><b>Tap a ringed square</b> to play there. Your disc must trap a line of the engine&rsquo;s discs against another of yours, and every disc you trap flips.</>,
         <>With no legal square you <b>pass</b> and the engine goes again, which cuts both ways and is most of the tactics down here.</>,
         <>A wrong square is <b>not taken back</b>. The engine solves the position to the last disc, so once the win is gone it never comes back.</>,
         <>Finding the square is not the whole job: every move after it has to hold the win too. <b>Most discs</b> at the end takes it, and a level board is not a win.</>,
         <>One free <b>hint</b>, on your first ever play, rings three squares, one of which wins.</>,
       ]}
       knack="The habit to distrust is your own. Flipping as few discs as possible is good Othello most of the time, which is exactly why it is not always right here: some days the square that turns the whole row is the only move that wins, and some days neither extreme does. Read the board, not the reflex."
-      footer="Winning scores 10, losing 1, giving up nothing. Ties break on fewest errors, then fastest time. Sundays step up to 12 empty squares."
+      footer="Winning scores 10. Losing or giving up scores nothing. Ties break on fewest errors, then fastest time. Sundays step up to 12 empty squares."
     />
   );
 
@@ -731,9 +730,10 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
         onMouseEnter={() => open && setHoverSq(sq)}
         onMouseLeave={() => setHoverSq(null)}
         onClick={() => open && onSquare(sq)}
+        aria-label={`${SQ_NAME(sq)}${v === 1 ? ', your disc' : v === 2 ? ', engine disc' : open ? ', you can play here' : ''}`}
         style={{
           position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: hot ? 'var(--stg-surf2, #4c8a41)' : FELT,
+          background: STAGE ? (hot ? 'var(--tn-hot)' : fresh ? 'var(--tn-last)' : 'var(--tn-sq)') : (hot ? 'var(--stg-surf2, #4c8a41)' : FELT),
           cursor: open ? 'pointer' : 'default', touchAction: 'manipulation',
         }}
       >
@@ -744,18 +744,22 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
               width: '76%', height: '76%', borderRadius: '50%',
               // NO DISC MAY DEPEND ON A GRADIENT TO BE SEEN (Android report,
               // 2026-10-06: a phone that paints no CSS gradients showed every
-              // disc as an empty white circle). Where both stops are one token
-              // the disc is a flat colour; otherwise the gradient sits over a
-              // solid base layer, which is what a broken device falls back to.
-              background: v === 1
-                ? (STAGE ? DISC_YOU : `radial-gradient(circle at 34% 30%, ${DISC_YOU_HI}, ${DISC_YOU} 62%), ${DISC_YOU}`)
-                : `radial-gradient(circle at 34% 30%, ${DISC_FOE_HI}, ${DISC_FOE} 62%), ${DISC_FOE}`,
-              boxShadow: '0 1px 2px rgba(0,0,0,0.35)',
+              // disc as an empty white circle). On the stage both discs are
+              // flat game-local colours, one per register, ringed so either
+              // reads on the square; the Loft keeps its gloss over a solid base.
+              background: STAGE
+                ? (v === 1 ? 'var(--stg-acc, #e8b43a)' : 'var(--tn-eng)')
+                : v === 1
+                  ? `radial-gradient(circle at 34% 30%, ${DISC_YOU_HI}, ${DISC_YOU} 62%), ${DISC_YOU}`
+                  : `radial-gradient(circle at 34% 30%, ${DISC_FOE_HI}, ${DISC_FOE} 62%), ${DISC_FOE}`,
+              boxShadow: STAGE ? '0 0 0 2px var(--tn-rim)' : '0 1px 2px rgba(0,0,0,0.35)',
             }}
           />
         )}
         {v === 0 && open && (
-          <span style={{ width: '26%', height: '26%', borderRadius: '50%', background: hot ? DOT_HOT : DOT }} />
+          STAGE
+            ? <span style={{ width: '34%', height: '34%', boxSizing: 'border-box', borderRadius: '50%', border: '3px solid var(--tn-dot)', background: hot ? 'var(--tn-dot)' : 'transparent' }} />
+            : <span style={{ width: '26%', height: '26%', borderRadius: '50%', background: hot ? DOT_HOT : DOT }} />
         )}
         {v === 0 && hinted && !open && (
           <span style={{ width: '26%', height: '26%', borderRadius: '50%', background: MARK }} />
@@ -810,6 +814,31 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
           .tn-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : COLORS.accent};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : COLORS.accent};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .tn-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
           .tn-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:118px;box-sizing:border-box;}
+          /* Game-local colours, one set per register: the squares, the grid and
+             frame, the engine's discs, the ring every disc wears, the pip on a
+             legal square. Your discs are the category accent in both. The light
+             block carries the boot-stamp guard (app/globals.css). */
+          .tn-root{--tn-sq:var(--stg-sq-d,#39414f);--tn-last:#5c5236;--tn-hot:#4a5366;--tn-grid:#222a3a;--tn-frame:#5a6680;--tn-eng:#e9edf4;--tn-rim:#0b0f1a;--tn-dot:#d5dbe5;--tn-btn:#5a6680;
+            --tn-soft:color-mix(in srgb, var(--stg-acc, #e8b43a) 24%, var(--stg-ground, #0b0f1a));}
+          html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .tn-root{--tn-last:#b5a882;--tn-hot:#a9b4c5;--tn-grid:#6f7c92;--tn-frame:#0f1420;--tn-eng:#1e2433;--tn-rim:#1c1a14;--tn-dot:#1e2433;--tn-btn:#78839a;
+            --tn-soft:color-mix(in srgb, var(--stg-acc, #e8b43a) 32%, #ffffff);}
+          .tn-k{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute,#8b95a8);}
+          .tn-k b{color:var(--stg-acc-ink,#7c5104);font-weight:800;}
+          .tn-meter{display:flex;gap:4px;margin-top:8px;}
+          .tn-seg{flex:1;height:8px;border-radius:2px;background:var(--stg-line2,rgba(255,255,255,.17));}
+          .tn-seg.you{background:var(--stg-acc,#e8b43a);}
+          .tn-seg.eng{background:var(--tn-eng);}
+          .tn-seg.now{background:var(--tn-soft);box-shadow:inset 0 0 0 2px var(--stg-acc-ink,#e8b43a);}
+          .tn-short{display:none;}
+          .tn-coord{font-size:10px;font-weight:800;color:var(--stg-mute,#8b95a8);text-align:center;display:flex;align-items:center;justify-content:center;}
+          .tn-chip{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 12px;border-radius:9px;border:1px solid var(--stg-line2,rgba(255,255,255,.17));background:var(--stg-cell,#1a1d28);font-size:14px;font-weight:700;color:var(--stg-ink,#e9edf4);white-space:nowrap;}
+          .tn-chip i{width:14px;height:14px;border-radius:50%;flex:none;box-shadow:0 0 0 2px var(--tn-rim);}
+          .tn-ctl{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2,#aab5c7);border:1.5px solid var(--tn-btn);border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
+          .tn-ctl:hover{background:var(--stg-surf2,rgba(255,255,255,.08));color:var(--stg-ink,#e9edf4);}
+          .tn-ctl.armed{border-color:var(--stg-bad,#fb7185);color:var(--stg-bad,#fb7185);}
+          .tn-link{background:none;border:none;cursor:pointer;font-family:${SANS};font-weight:700;font-size:12px;color:var(--stg-ink2,#aab5c7);text-decoration:underline;text-underline-offset:3px;white-space:nowrap;min-height:44px;min-width:84px;padding:0;text-align:right;}
+          .tn-link.armed{color:var(--stg-bad,#fb7185);}
+          .tn-note{font-size:12px;font-weight:600;color:var(--stg-mute,#8b95a8);line-height:1.45;}
           .tn-sq{-webkit-tap-highlight-color:transparent;transition:background .12s ease;}
           .tn-disc{display:block;}
           .tn-fresh{animation:tnpop .28s ease;}
@@ -817,9 +846,17 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
           .tn-flip{animation:tnflip .42s ease;}
           @keyframes tnflip{0%{transform:rotateY(0deg) scale(1);}50%{transform:rotateY(90deg) scale(0.92);}100%{transform:rotateY(0deg) scale(1);}}
           .tn-key{animation:tnkey 1.15s ease-in-out infinite;}
-          @keyframes tnkey{0%,100%{box-shadow:0 0 0 0 rgba(242,201,76,0.65);}50%{box-shadow:0 0 0 7px rgba(242,201,76,0);}}
+          @keyframes tnkey{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb, var(--stg-ink, #e9edf4) 60%, transparent);}50%{box-shadow:0 0 0 7px color-mix(in srgb, var(--stg-ink, #e9edf4) 0%, transparent);}}
           .tn-board.shake{animation:tnshake .34s ease;}
           @keyframes tnshake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
+          @media(max-width:560px){
+            .tn-long{display:none;}
+            .tn-short{display:inline;}
+            .tn-ctlrow .tn-note{display:none;}
+            .tn-ctlrow .tn-ctl{flex:1;}
+            .tn-status-t{font-size:15px !important;}
+            .tn-rule{display:none;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
@@ -834,7 +871,7 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
             helpTop={13}
             marginBottom={16}
             onHelp={() => setShowHelp(true)}
-            sunday={PUZZLE.sunday && <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition &middot; 12 squares</span>}
+            sunday={PUZZLE.sunday && <span style={{ fontFamily: SANS, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition &middot; 12 squares</span>}
             blocks={'TURN'.split('').map((ch, i) => (
               <div key={i} style={{ width: 44, height: 44, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontWeight: 900, fontSize: 26, background: i === 3 ? `var(--stg-acc, ${COLORS.accent})` : COLORS.ink, color: T.white, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.65)' }}>{ch}</div>
             ))}
@@ -867,70 +904,117 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
             </div>
           )}
 
-          {!preStart && (
-            <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
-              {/* These figures move UP into the cap on a loft page; printing them
-                  twice is the one thing to avoid. */}
-              {!LOFT && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-                {/* Kept and posted throughout, shown only once the board is
-                    counted: a counter ticking up is itself a notice. */}
-                {!playing && <span style={{ whiteSpace: 'nowrap' }}>errors <b style={{ color: errors > 0 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{errors}</b></span>}
-                <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-                <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>
-                  discs <b style={{ color: INK, fontWeight: 500 }}>{view.score.mine}</b>
-                  <span style={{ opacity: 0.55 }}> &ndash; </span>
-                  <b style={{ color: FADED, fontWeight: 500 }}>{view.score.theirs}</b>
-                </span>
+          {!preStart && (() => {
+            // The meter: one segment per square that was empty at the start,
+            // painted in the colour of whoever filled it, in order.
+            const filled = g.moves.map((sq) => view.placedBy.get(sq));
+            const emptyNow = view.cells.filter((v) => v === 0).length;
+            const nFlip = view.lastFlips.size;
+            const NUMW = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+            const flipBit = `flipped ${NUMW[nFlip] || nFlip} ${nFlip === 1 ? 'disc' : 'discs'}`;
+            let title = statusLine();
+            let help = '';
+            if (playing) {
+              if (thinking || view.turn === 2) {
+                if (view.lastSq != null) help = `You played ${SQ_NAME(view.lastSq)} and ${flipBit}.`;
+              } else if (view.lastSq == null) {
+                help = 'Ringed squares are the ones you can play.';
+              } else if (view.passedBack) {
+                title = 'The engine has no move. Play again.';
+                help = `You played ${SQ_NAME(view.lastSq)} and ${flipBit}. Ringed squares are the ones you can play.`;
+              } else {
+                help = `The engine played ${SQ_NAME(view.lastSq)} and ${flipBit}. Ringed squares are the ones you can play.`;
+              }
+            }
+            return (
+            <div className={`tn-root ${STAGE ? 'stg-board' : (LOFT ? 'loft-card' : '')}`} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+              {/* The top meter replaces the old stat strip: squares played, by
+                  whom, and how many are still empty. No clock on the board. */}
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
+                  <span className="tn-k"><b>{g.moves.length}</b> of {PUZZLE.empties} <span className="tn-long">squares </span>played</span>
+                  <span className="tn-k" style={{ textAlign: 'right' }}>{emptyNow} empty</span>
+                </div>
+                <div className="tn-meter" aria-hidden="true">
+                  {Array.from({ length: PUZZLE.empties }).map((_, i) => (
+                    <span key={i} className={`tn-seg${i < filled.length ? (filled[i] === 1 ? ' you' : ' eng') : (myTurn && i === filled.length ? ' now' : '')}`} />
+                  ))}
+                </div>
               </div>
-              )}
 
-              <div style={{ maxWidth: 430, margin: '0 auto' }}>
+              <div style={{ maxWidth: 498, margin: '0 auto', display: 'grid', gridTemplateColumns: '14px minmax(0, 1fr)', gap: '0 4px' }}>
+                <div style={{ display: 'grid', gridTemplateRows: 'repeat(8, 1fr)', padding: '4px 0' }} aria-hidden="true">
+                  {[8, 7, 6, 5, 4, 3, 2, 1].map((n) => <span key={n} className="tn-coord">{n}</span>)}
+                </div>
                 <div
                   key={shake}
                   className={`tn-board${shake ? ' shake' : ''}`}
-                  style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gridTemplateRows: 'repeat(8, 1fr)', gap: 2, aspectRatio: '1 / 1', background: FELT_LINE, border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: 3, touchAction: 'manipulation', overflow: 'hidden' }}
+                  style={STAGE
+                    ? { display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gridTemplateRows: 'repeat(8, 1fr)', gap: 2, aspectRatio: '1 / 1', background: 'var(--tn-grid)', padding: 2, borderRadius: 6, boxShadow: '0 0 0 2px var(--tn-frame)', touchAction: 'manipulation', overflow: 'hidden', margin: 2 }
+                    : { display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gridTemplateRows: 'repeat(8, 1fr)', gap: 2, aspectRatio: '1 / 1', background: FELT_LINE, border: `2px solid ${COLORS.ink}`, borderRadius: 10, padding: 3, touchAction: 'manipulation', overflow: 'hidden' }}
                 >
                   {squares}
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 2, padding: '3px 3px 0', fontFamily: MONO, fontSize: 9.5, color: FADED, textAlign: 'center' }}>
-                  {files.map((f) => <span key={f}>{f}</span>)}
+                <span />
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 2, padding: '4px 4px 0' }} aria-hidden="true">
+                  {files.map((f) => <span key={f} className="tn-coord">{f}</span>)}
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
-                <div style={{ fontSize: endHold.held ? 15 : 13.5, fontWeight: endHold.held ? 800 : 700, color: INK }}>{statusLine()}</div>
-                <div style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ width: 9, height: 9, borderRadius: '50%', background: DISC_YOU, display: 'inline-block' }} /> you
-                  <span style={{ width: 9, height: 9, borderRadius: '50%', background: DISC_FOE, border: '1px solid rgba(28,30,36,0.3)', display: 'inline-block', marginLeft: 4 }} /> engine
+              <div style={{ maxWidth: 480, margin: '14px auto 0' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, minHeight: 44 }}>
+                  <span aria-hidden="true" style={{ flex: 'none', width: 12, height: 12, marginTop: 6, borderRadius: '50%', background: playing ? 'var(--stg-acc, #e8b43a)' : (won ? 'var(--stg-good, #047857)' : 'var(--stg-bad, #be123c)'), boxShadow: '0 0 0 2px var(--tn-rim)' }} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }} role="status" aria-live="polite">
+                    <span className="tn-status-t" style={{ fontSize: endHold.held ? 18 : 17, fontWeight: 800, color: INK }}>{title}</span>
+                    {help && <span style={{ fontSize: 13, fontWeight: 600, color: FADED, lineHeight: 1.4 }}>{help}</span>}
+                  </div>
+                </div>
+
+                <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 7 }}>
+                  <span className="tn-k">Discs now</span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                    <span className="tn-chip"><i style={{ background: 'var(--stg-acc, #e8b43a)' }} />You &middot; {view.score.mine}</span>
+                    <span className="tn-chip"><i style={{ background: 'var(--tn-eng)' }} />Engine &middot; {view.score.theirs}</span>
+                    <span className="tn-note tn-rule" style={{ fontSize: 12.5 }}>Most discs at the end wins. A tie is not a win.</span>
+                  </div>
                 </div>
               </div>
 
-              {playing && hintOk && !g.hintUsed && g.moves.length === 0 && (
-                <div style={{ marginTop: 10 }}>
-                  <button className="tn-tool" onClick={useHint} title="Ring three squares, one of which wins (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})` }}>
-                    <Lightbulb size={14} /> Hint
-                  </button>
-                </div>
-              )}
-
-            {/* Controls. These sit INSIDE the board card: on the navy stage a bare
-                row has nothing to sit on, and the card is meant to hold the game. */}
+            {/* Controls. Armed labels stay SHORT and each control reserves its
+                width, so the first tap never reflows the row; the consequence
+                prints on its own line below. */}
           {started && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 14, paddingTop: 11, borderTop: '1px solid rgba(28,30,36,0.10)', flexWrap: 'wrap' }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: FADED }}>No take-back. Every square you play is played.</div>
-              <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                <button className="tn-tool" onClick={revealEnd} style={{ borderColor: armReveal ? COLORS.rust : undefined, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : undefined }}>
-                  <Eye size={14} /> {armReveal ? 'Press again' : 'Give up'}
+            <>
+            <div className="tn-ctlrow" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--stg-line, rgba(28,30,36,0.10))' }}>
+              <span className="tn-note" style={{ flex: 1 }}>{hintOk && !g.hintUsed && g.moves.length === 0 ? 'Hint rings three squares, one of which wins. ' : ''}Restart records a loss and deals the same board.</span>
+              {hintOk && !g.hintUsed && g.moves.length === 0 && (
+                <button className="tn-ctl" onClick={useHint} title="Ring three squares, one of which wins (one hint, first play only)">
+                  <Lightbulb size={15} aria-hidden="true" /> Hint
                 </button>
-                <button className="tn-tool" onClick={restartGame} title="Record this as a loss and deal the same board again" style={{ borderColor: armRestart ? COLORS.rust : undefined, color: armRestart ? `var(--stg-bad, ${COLORS.rust})` : undefined }}>
-                  <RotateCcw size={14} /> {armRestart ? 'Press again' : 'Restart'}
-                </button>
+              )}
+              <button className={`tn-ctl${armRestart ? ' armed' : ''}`} style={{ minWidth: 124 }} onClick={restartGame}
+                title={armRestart ? 'Records a loss and deals the same board again' : 'Record a loss and deal the same board again'}>
+                <RotateCcw size={14} aria-hidden="true" style={{ flexShrink: 0 }} /> {armRestart ? 'Press again' : 'Restart'}
+              </button>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginTop: 6 }}>
+              <span className="tn-note">
+                <span className="tn-long">The game is won for you with {PUZZLE.empties} squares left, and one square keeps it. There is no take-back.</span>
+                <span className="tn-short">No take-back. Restart records a loss.</span>
               </span>
+              <button className={`tn-link${armReveal ? ' armed' : ''}`} onClick={revealEnd}
+                title={armReveal ? 'Ends the board and scores nothing' : 'End the board now, scoring nothing'}>
+                {armReveal ? 'Press again' : 'Give up'}
+              </button>
             </div>
+            <div aria-live="polite" style={{ minHeight: 18, fontSize: 12, fontWeight: 700, color: (armReveal || armRestart) ? 'var(--stg-bad, #be123c)' : INK, textAlign: 'right', lineHeight: 1.4 }}>
+              {armReveal ? 'Ends the board and scores nothing.' : armRestart ? 'Records a loss and deals the same board again.' : ''}
+            </div>
+            </>
           )}
             </div>
-          )}
+            );
+          })()}
 
 
           <div className={STAGE ? undefined : 'loft-sol'}>
@@ -954,7 +1038,7 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
                   <div style={{ fontSize: 12.5, fontStyle: 'italic', color: FADED, marginTop: 8 }}>The Sunday Edition, with two more squares to read.</div>
                 )}
                 {isTodays && myStats.cur >= 2 && (
-                  <div style={{ fontSize: 12.5, fontWeight: 800, color: '#b45309', marginTop: 8 }}>{myStats.cur}-day streak</div>
+                  <div style={{ fontSize: 12.5, fontWeight: 800, color: 'var(--stg-warn, #9c5d02)', marginTop: 8 }}>{myStats.cur}-day streak</div>
                 )}
                 <p style={{ fontSize: 12.5, fontWeight: 600, color: FADED, marginTop: 12, lineHeight: 1.6 }}>
                   {isTodays ? (
@@ -977,11 +1061,11 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               title={won ? 'Solved' : 'Not solved'}
-              detail={`${errors} errors \u00b7 ${`${view.score.mine}\u2013${view.score.theirs}`} discs \u00b7 ${elapsed}`}
+              detail={`${errors} error${errors === 1 ? "" : "s"} \u00b7 ${`${view.score.mine}\u2013${view.score.theirs}`} discs \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
-                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '\u2014',
+                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '\u2013',
                     label: allTime.field != null ? `of ${Number(allTime.field).toLocaleString()} Turn all time` : 'all-time rank' }
                 : null}
               day={dayStats}
@@ -1025,7 +1109,7 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
           <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block', margin: '30px auto 0' }}>
             {LOFT && (
               <div className={STAGE ? undefined : 'loft-report'}>
-                <ReportIssue self="turn" name="Turn" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
+                <ReportIssue self="turn" name="Turn" accent="var(--stg-acc)" align="center" onHelp={() => setShowHelp(true)} />
               </div>
             )}
             {!LOFT && (
@@ -1087,7 +1171,7 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
-        <div style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', bottom: 26, zIndex: 60, background: COLORS.ink, color: T.white, fontFamily: SANS, fontSize: 13.5, fontWeight: 700, padding: '10px 16px', borderRadius: 9, boxShadow: '0 6px 18px rgba(0,0,0,0.28)' }}>{toast}</div>
+        <div style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', bottom: 26, zIndex: 60, background: STAGE ? 'var(--stg-ink)' : COLORS.ink, color: STAGE ? 'var(--stg-ground)' : T.white, fontFamily: SANS, fontSize: 13.5, fontWeight: 700, padding: '10px 16px', borderRadius: 9, boxShadow: '0 6px 18px rgba(0,0,0,0.28)' }}>{toast}</div>
       )}
 
       {showHelp && (

@@ -20,7 +20,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Go Endgame Puzzle: Yose | Mind Loft',
   description:
-    'A free daily Go endgame. The territories are settled and a few points are still open. You play Black against a perfect engine, and the komi is set so that best play wins by exactly half a point, so every point counts. A new board every day and a bigger 9x9 Edition on Sundays.',
+    'A free daily Go endgame. The territories are settled and a few points are still open. You play the gold stones against a perfect engine, and the komi is set so that best play wins by exactly half a point, so every point counts. A new board every day and a bigger 9x9 Edition on Sundays.',
   alternates: { canonical: '/yose' },
   openGraph: {
     // Static share card (2026-09-02 rule): pre-rendered once into public/og/.
@@ -48,7 +48,7 @@ const gameJsonLd = {
   alternateName: 'Yose: A Daily Go Endgame',
   url: `${SITE_URL}/yose`,
   description:
-    'A free daily Go endgame: a small board with its territories settled and a few open points left. You play Black against an engine that plays perfectly, and the komi is set so best play wins by exactly half a point. Ranked on how many attempts the win took, then time.',
+    'A free daily Go endgame: a small board with its territories settled and a few open points left. You play the gold stones against an engine that plays perfectly, and the komi is set so best play wins by exactly half a point. Ranked on how many attempts the win took, then time.',
   genre: ['Board game', 'Go', 'Endgame puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

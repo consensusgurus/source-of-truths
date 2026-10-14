@@ -274,6 +274,10 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
   // Seven squares at 62px on a weekday, eleven at 50px on a Sunday: the board
   // widens for the Edition rather than shrinking every square to fit a phone.
   const GRID_MAX = N > 7 ? 560 : 448;
+  // Kakuro boards print their totals down the top row and left column, so the
+  // first playable row is called row 1 when that border is all black.
+  const ROW_OFF = useMemo(() => (givenFlat.slice(0, N).every(Boolean) ? 0 : 1), [givenFlat, N]);
+  const COL_OFF = useMemo(() => (Array.from({ length: N }, (_, r) => givenFlat[r * N]).every(Boolean) ? 0 : 1), [givenFlat, N]);
 
   const [g, setG] = useState(() => freshState(CELLS));
   const [sel, setSel] = useState(-1);          // selected square index, -1 = none
@@ -780,7 +784,7 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Sums #${PUZZLE.num} — the daily kakuro from Mind Loft.\n${shareUrl()}`
+      ? `Sums #${PUZZLE.num}: the daily kakuro from Mind Loft.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -824,19 +828,19 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
     // Mixing toward white is a no-op in light, where --stg-cell is white.
     const XW = 'color-mix(in srgb, var(--stg-cell) 84%, #fff)';
     let bg = STAGE ? XW : T.white;
-    // A clue square is the page GROUND, not a tint of the cell: on the dark
-    // register a 9% ink mix over the ground came out within a few points of
+    // A clue square is its own near-black block (--su-block, set on .su-grid),
+    // never a tint of the cell: a 9% ink mix came out within a few points of
     // the cell itself and the board read as one grey sheet (seen live 9/3).
-    if (black) bg = STAGE ? 'var(--stg-ground)' : '#e9edf3';
-    if (peer) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 16%, ' + XW + ')' : COLORS.accentSoft;
-    if (sameVal) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 34%, ' + XW + ')' : COLORS.accentTint;
-    if (isSel) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, ' + XW + ')' : COLORS.accentPick;
+    if (black) bg = STAGE ? 'var(--su-block, #05070d)' : '#e9edf3';
+    if (peer) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 14%, ' + XW + ')' : COLORS.accentSoft;
+    if (sameVal) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 22%, ' + XW + ')' : COLORS.accentTint;
+    if (isSel) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 30%, ' + XW + ')' : COLORS.accentPick;
     return {
       background: bg,
-      boxShadow: isSel ? `inset 0 0 0 2.5px var(--stg-acc, ${COLORS.accent})` : undefined,
+      boxShadow: isSel ? `inset 0 0 0 3px var(--stg-acc, ${COLORS.accent})` : undefined,
       zIndex: isSel ? 1 : undefined,
-      borderRight: '1px solid var(--stg-cell-line, rgba(28,30,36,0.18))',
-      borderBottom: '1px solid var(--stg-cell-line, rgba(28,30,36,0.18))',
+      borderRight: STAGE ? '1px solid var(--stg-line2)' : '1px solid rgba(28,30,36,0.18)',
+      borderBottom: STAGE ? '1px solid var(--stg-line2)' : '1px solid rgba(28,30,36,0.18)',
       borderLeft: c === 0 ? 'none' : undefined,
       borderTop: r === 0 ? 'none' : undefined,
       cursor: black ? 'default' : 'pointer',
@@ -846,7 +850,7 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
   // Shared rules body — rendered in both the how-to-play modal and the start gate.
   const rulesBody = (
     <DailyRules
-      accent={COLORS.accent} accentSoft={COLORS.accentSoft}
+      accent={STAGE ? 'var(--stg-acc)' : COLORS.accent} accentSoft={COLORS.accentSoft}
       lead="A run is a strip of white squares, across or down, and the black square at its head prints the run's total: the across total top right, the down total bottom left. Fill every run with digits 1 to 9 that add up to its total, and never repeat a digit inside a run."
       steps={[
         <><b>Some totals can only be made one way.</b> 3 in two squares is 1+2, 4 is 1+3, 16 is 7+9, 17 is 8+9. In three squares 6 is 1+2+3, 7 is 1+2+4, 23 is 6+8+9, 24 is 7+8+9. Those runs are where you start.</>,
@@ -894,32 +898,107 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.su-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .su-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .su-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .su-cell{display:flex;align-items:center;justify-content:center;font-family:${MONO};box-sizing:border-box;cursor:pointer;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;}
-          .su-user{font-weight:500;color:var(--stg-acc-ink, ${COLORS.accent});}
-          .su-notes{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);width:100%;height:100%;padding:2px;box-sizing:border-box;}
-          .su-note{display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:${N > 7 ? 7.5 : 9.5}px;line-height:1;color:${STAGE ? 'var(--stg-mute2,#8a93a3)' : '#8a93a3'};}
+          .su-lab{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute);}
+          .su-lab b{color:var(--stg-acc-ink);font-weight:800;}
+          .su-prog{display:flex;flex-direction:column;gap:8px;margin:0 0 14px;}
+          .su-prog-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
+          .su-segs{display:flex;gap:3px;}
+          .su-segs span{flex:1;height:8px;border-radius:2px;background:var(--stg-line2);}
+          .su-segs span.on{background:var(--stg-acc);}
+          .su-panel{background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:20px;padding:20px 20px 16px;display:flex;flex-direction:column;align-items:center;}
+          .su-grid{--su-block:#05070d;--su-block-ink:#e9edf4;--su-block-line:#3d4862;--su-clue-done:#6ee7b7;display:grid;aspect-ratio:1;width:min(453px,100%);box-sizing:border-box;border:2.5px solid var(--stg-ink);border-radius:6px;overflow:hidden;}
+          html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .su-grid{--su-block:#1e2433;--su-block-ink:#ffffff;--su-block-line:#5a6680;--su-clue-done:#6ee7b7;}
+          .su-grid.big{width:min(560px,100%);}
+          .su-cell{display:flex;align-items:center;justify-content:center;font-family:${SANS};box-sizing:border-box;cursor:pointer;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;padding:0;margin:0;border:0;border-radius:0;color:var(--stg-acc-ink);}
+          .su-cell:focus-visible{outline:3px solid var(--stg-acc);outline-offset:-3px;}
+          .su-v{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--stg-acc-ink);}
+          .su-grid.big .su-v{font-size:22px;}
+          .su-user{color:var(--stg-acc-ink);}
+          .su-notes{position:absolute;inset:4px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);}
+          .su-note{display:flex;align-items:center;justify-content:center;font-family:${SANS};font-size:11px;font-weight:700;line-height:1;color:var(--stg-ink2);}
+          .su-grid.big .su-notes{inset:2px;}
+          .su-grid.big .su-note{font-size:8.5px;}
           .su-black{cursor:default;}
-          .su-clue::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom right,transparent calc(50% - 0.5px),var(--stg-line2, rgba(28,30,36,0.28)) calc(50% - 0.5px),var(--stg-line2, rgba(28,30,36,0.28)) calc(50% + 0.5px),transparent calc(50% + 0.5px));pointer-events:none;}
-          .su-a,.su-d{position:absolute;font-family:${MONO};font-size:${N > 7 ? 'clamp(8px, 2.2vw, 11px)' : 'clamp(9.5px, 2.6vw, 13px)'};line-height:1;font-weight:500;color:${INK};z-index:1;}
-          .su-a{top:${N > 7 ? 2 : 3}px;right:${N > 7 ? 2 : 4}px;}
-          .su-d{bottom:${N > 7 ? 2 : 3}px;left:${N > 7 ? 2 : 4}px;}
-          .su-a.done,.su-d.done{color:var(--stg-acc-ink, ${COLORS.accent});}
-          .su-combo{font-family:${SANS};font-size:12px;color:${FADED};display:flex;flex-direction:column;gap:5px;min-height:22px;}
-          .su-combo-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
-          .su-combo-lbl{font-family:${MONO};font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--stg-acc-ink, ${COLORS.accent});white-space:nowrap;}
-          .su-combo-left{white-space:nowrap;font-weight:700;color:${INK};}
-          .su-combo-hint{font-weight:600;}
-          .su-set{font-family:${MONO};font-size:12px;color:${INK};padding:1px 7px;border-radius:6px;background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 16%, var(--stg-cell))' : COLORS.accentSoft};white-space:nowrap;}
-          .su-set.x{color:${FADED};text-decoration:line-through;background:transparent;padding:1px 2px;}
-          .su-pad{width:100%;aspect-ratio:1;border-radius:9px;border: 1.5px solid var(--stg-line, rgba(28,30,36,0.5));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};font-family:${MONO};font-weight:500;color:${INK};cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 2px 0 rgba(28,30,36,0.4);}
-          .su-pad:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(28,30,36,0.4);}
-          .su-pad.done{color:${STAGE ? 'var(--stg-mute2,#c3c8cf)' : '#c3c8cf'};box-shadow:none;background:${STAGE ? 'var(--stg-surf2)' : '#f4f5f7'};cursor:default;}
+          .su-clue::after{content:'';position:absolute;inset:0;background:linear-gradient(to top right,transparent calc(50% - 1px),var(--su-block-line) 50%,transparent calc(50% + 1px));pointer-events:none;}
+          .su-a,.su-d{position:absolute;font-family:${SANS};font-size:15px;line-height:1;font-weight:800;color:var(--su-block-ink);z-index:1;}
+          .su-a{top:6px;right:7px;}
+          .su-d{bottom:6px;left:7px;}
+          .su-grid.big .su-a,.su-grid.big .su-d{font-size:11px;}
+          .su-grid.big .su-a{top:3px;right:3px;}
+          .su-grid.big .su-d{bottom:3px;left:3px;}
+          .su-a.done,.su-d.done{color:var(--su-clue-done);}
+          .su-combo{width:100%;max-width:560px;margin-top:16px;box-sizing:border-box;border-radius:14px;background:var(--stg-ground);border:1px solid var(--stg-line);padding:10px 14px;font-family:${SANS};font-size:13px;color:var(--stg-mute);display:flex;flex-direction:column;gap:8px;min-height:44px;justify-content:center;}
+          .su-combo-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+          .su-combo-lbl{min-width:132px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-acc-ink);white-space:nowrap;}
+          .su-combo-left{min-width:92px;white-space:nowrap;font-size:13px;font-weight:700;color:var(--stg-ink);}
+          .su-combo-hint{font-weight:600;color:var(--stg-mute);}
+          .su-set{font-family:${SANS};font-size:14px;font-weight:800;letter-spacing:.08em;color:var(--stg-ink);padding:3px 10px;border-radius:7px;background:color-mix(in srgb, var(--stg-acc) 18%, var(--stg-cell));white-space:nowrap;}
+          .su-set.x{color:var(--stg-mute);font-weight:700;letter-spacing:0;text-decoration:line-through;background:transparent;padding:3px 2px;}
+          .su-say{width:100%;max-width:560px;margin-top:14px;display:flex;flex-direction:column;gap:2px;}
+          .su-say-a{font-size:15px;font-weight:700;color:var(--stg-ink);}
+          .su-say-b{font-size:12px;font-weight:600;color:var(--stg-mute);}
+          .su-pads{width:100%;max-width:560px;margin-top:14px;display:grid;grid-template-columns:repeat(9, minmax(0,1fr));gap:6px;}
+          .su-pad{height:56px;border-radius:12px;border:1.5px solid var(--stg-cell-line);background:var(--stg-cell);font-family:${SANS};font-size:22px;font-weight:800;color:var(--stg-ink);cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;padding:0;min-width:0;}
+          .su-pad:hover:not(.done){background:var(--stg-surf2);}
+          .su-pad.done{color:var(--stg-mute);background:var(--stg-surf2);border-color:var(--stg-line2);cursor:default;}
           .su-pad.done span{text-decoration:line-through;text-decoration-thickness:2px;}
-          .su-pad.armed{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-color:var(--stg-acc, ${COLORS.accent});box-shadow:0 2px 0 var(--stg-acc, ${COLORS.accentDeep});}
-          .su-pad.armed .su-pad-n{color:${STAGE ? 'color-mix(in srgb, var(--stg-onramp, #08222e) 68%, transparent)' : COLORS.accentTint};}
-          .su-pad .su-pad-n{position:absolute;bottom:2px;right:4px;font-size:8px;color:${STAGE ? 'var(--stg-mute2,#aab0bb)' : '#aab0bb'};font-weight:500;}
-          .su-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-          .su-tool.on{background:${STAGE ? STAGE_C : COLORS.ink};color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};border-color:${STAGE ? STAGE_C : COLORS.ink};}
+          .su-pad.armed{background:var(--stg-acc);color:var(--stg-onramp);border-color:var(--stg-acc);}
+          .su-pad.erase{display:none;font-size:13px;font-weight:700;color:var(--stg-ink2);}
+          .su-tools{width:100%;margin-top:16px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--stg-line);padding-top:14px;}
+          .su-tool{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2);border:1.5px solid var(--stg-cell-line);border-radius:12px;padding:0 14px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;}
+          .su-tool:hover:not(:disabled){background:var(--stg-surf2);}
+          .su-tool:disabled{color:var(--stg-mute);border-color:var(--stg-line2);cursor:default;}
+          .su-tool.on{background:var(--stg-acc);color:var(--stg-onramp);border-color:var(--stg-acc);}
+          .su-tool.on .st{color:var(--stg-onramp);}
+          .su-tool.armed{color:var(--stg-bad);border-color:var(--stg-bad);background:color-mix(in srgb, var(--stg-bad) 10%, transparent);}
+          .su-tool.hint{color:var(--stg-acc-ink);border-color:var(--stg-acc);}
+          .su-tool .st{font-weight:700;}
+          .su-tool.ph-only{display:none;}
+          .su-under{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0 12px;padding:12px 2px 0;}
+          .su-under-n{flex:1 1 180px;min-width:0;font-size:12px;font-weight:600;color:var(--stg-mute);}
+          .su-reveal{margin-left:auto;background:none;border:none;cursor:pointer;font-family:${SANS};font-weight:700;font-size:12px;color:var(--stg-ink2);text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0;display:inline-flex;align-items:center;gap:5px;flex:none;}
+          .su-reveal.armed{color:var(--stg-bad);}
+          .su-m{display:none;}
+          @media(max-width:560px){
+            .su-prog{padding:0 12px;margin-bottom:12px;}
+            .su-prog-top{display:none;}
+            .su-segs{gap:2px;}
+            .su-segs span{height:6px;}
+            .su-panel{background:transparent;border:none;border-radius:0;padding:0 12px;}
+            .su-grid{width:min(342px,100%);border-width:2px;border-radius:5px;}
+            .su-grid.big{width:100%;}
+            .su-v{font-size:22px;}
+            .su-grid.big .su-v{font-size:16px;}
+            .su-notes{inset:2px;}
+            .su-note{font-size:9px;font-weight:800;}
+            .su-grid.big .su-note{font-size:6.5px;}
+            .su-a,.su-d{font-size:12px;}
+            .su-a{top:4px;right:4px;}
+            .su-d{bottom:4px;left:4px;}
+            .su-grid.big .su-a,.su-grid.big .su-d{font-size:8.5px;}
+            .su-grid.big .su-a{top:2px;right:2px;}
+            .su-grid.big .su-d{bottom:2px;left:2px;}
+            .su-combo{margin-top:10px;border-radius:12px;background:var(--stg-surf);padding:8px 12px;gap:6px;}
+            .su-combo-row{gap:8px;}
+            .su-combo-lbl{min-width:104px;font-size:10px;letter-spacing:.06em;}
+            .su-combo-left{min-width:0;font-size:12px;}
+            .su-set{font-size:13px;padding:2px 8px;border-radius:6px;}
+            .su-say{margin-top:10px;}
+            .su-say-a{font-size:14px;}
+            .su-pads{grid-template-columns:repeat(5, minmax(0,1fr));margin-top:12px;}
+            .su-pad{height:48px;border-radius:11px;font-size:21px;}
+            .su-pad.erase{display:flex;}
+            .su-tools{display:grid;grid-template-columns:repeat(4, minmax(0,1fr));gap:6px;border-top:none;padding-top:0;margin-top:8px;}
+            .su-tool{flex-direction:column;padding:0;font-size:13px;line-height:1.15;gap:0;}
+            .su-tool .st{font-size:10px;text-transform:uppercase;color:var(--stg-mute);}
+            .su-tool.on .st{color:var(--stg-onramp);}
+            .su-tool.erase-t{display:none;}
+            .su-tool.hint{grid-column:1 / -1;flex-direction:row;gap:6px;}
+            .su-under{padding:6px 12px 0;}
+            .su-under-n{font-size:11px;}
+            .su-d-only{display:none;}
+            .su-m{display:inline;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
@@ -968,19 +1047,21 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
         <div className={LOFT && !STAGE && !playing ? (revealed ? 'loft-flip' : 'loft-flip on') : undefined}>
         <div className={LOFT && !STAGE && !playing ? 'loft-flip-in' : undefined}>
         <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
-          {/* Both figures move UP into the cap on a loft page; printing them
-              twice is the one thing to avoid. */}
-          {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>filled <b style={{ color: filledCount === FREE.length ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{filledCount}</b>/{FREE.length}</span>
+        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: STAGE ? 0 : '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+          {/* squares filled so far, one segment per square */}
+          <div className="su-prog">
+            <div className="su-prog-top">
+              <span className="su-lab">Squares · <b>{filledCount}</b> of {FREE.length} filled</span>
+              <span className="su-lab">Wrong entries are not flagged</span>
+            </div>
+            <div className="su-segs" aria-hidden="true">
+              {FREE.map((_, k) => <span key={k} className={k < filledCount ? 'on' : undefined} />)}
+            </div>
           </div>
-          )}
 
+          <div className="su-panel">
           {/* the grid: black squares carry the totals, split on the diagonal */}
-          <div style={{ maxWidth: GRID_MAX, margin: '0 auto' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))`, aspectRatio: '1', border: '2.5px solid var(--stg-line3, rgba(28,30,36,0.85))', borderRadius: 4, overflow: 'hidden' }}>
+            <div className={`su-grid${N > 7 ? ' big' : ''}`} style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))` }}>
               {Array.from({ length: CELLS }).map((_, idx) => {
                 const r = Math.floor(idx / N), c = idx % N;
                 const black = !!givenFlat[idx];
@@ -991,7 +1072,8 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
                     return ri >= 0 && RUNS[ri].cells.every((x) => boardCells[x]);
                   };
                   return (
-                    <div key={idx} className={`su-cell su-black${a || dn ? ' su-clue' : ''}`} style={cellStyle(idx)}>
+                    <div key={idx} className={`su-cell su-black${a || dn ? ' su-clue' : ''}`} style={cellStyle(idx)}
+                      aria-label={a || dn ? `${a ? `${a} across` : ''}${a && dn ? ', ' : ''}${dn ? `${dn} down` : ''}` : undefined}>
                       {a ? <span className={`su-a${runDone('a') ? ' done' : ''}`}>{a}</span> : null}
                       {dn ? <span className={`su-d${runDone('d') ? ' done' : ''}`}>{dn}</span> : null}
                     </div>
@@ -1000,32 +1082,32 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
                 const val = boardCells[idx];
                 const cls = `su-cell ${val ? 'su-user' : ''}`;
                 return (
-                  <div key={idx} className={cls} style={cellStyle(idx)}
+                  <button key={idx} type="button" className={cls} style={cellStyle(idx)}
+                    aria-label={`Row ${r + ROW_OFF}, column ${c + COL_OFF}${val ? `, ${val}` : ', empty'}${idx === sel ? ', picked' : ''}`}
                     onClick={() => cellClick(idx)}
                     onPointerDown={() => startLong(idx)}
                     onPointerUp={cancelLong}
                     onPointerLeave={cancelLong}
                     onPointerCancel={cancelLong}>
                     {val ? (
-                      <span style={{ fontSize: N > 7 ? 'clamp(15px, 4.2vw, 24px)' : 'clamp(19px, 6.4vw, 29px)' }}>{val}</span>
+                      <span className="su-v">{val}</span>
                     ) : boardNotes[idx] ? (
-                      <div className="su-notes">
+                      <span className="su-notes">
                         {DIGITS.map((d) => (
                           <span key={d} className="su-note">{(boardNotes[idx] & (1 << d)) ? d : ''}</span>
                         ))}
-                      </div>
+                      </span>
                     ) : null}
-                  </div>
+                  </button>
                 );
               })}
             </div>
-          </div>
 
           {/* The combo line: the whole trick of the game, read off the selected
               square's runs. Total, what is still owed, and every digit set that
               can still finish the run given what is already placed. */}
           {playing && (
-            <div className="su-combo" style={{ maxWidth: GRID_MAX, margin: '10px auto 0' }}>
+            <div className="su-combo">
               {comboInfo.length ? comboInfo.map((ci) => {
                 const live = ci.sets.filter((x) => x.live);
                 const dead = ci.sets.filter((x) => !x.live);
@@ -1044,65 +1126,73 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
             </div>
           )}
 
+          {started && (
+            <div className="su-say" aria-live="polite">
+              <span className="su-say-a">
+                {armed
+                  ? `Placing ${armed}. Tap squares to fill it.`
+                  : sel >= 0
+                    ? `Row ${Math.floor(sel / N) + ROW_OFF}, column ${(sel % N) + COL_OFF} is picked. Tap a number to ${noteMode ? 'pencil it' : 'fill it'}.`
+                    : 'Tap a square, then a number.'}
+              </span>
+              <span className="su-say-b">
+                {armed
+                  ? `Long-press a square to pencil it. Tap ${armed} again to put it down.`
+                  : <><span className="su-d-only">Or pick a number first and tap every square it goes in. Long-press a square to pencil.</span><span className="su-m">Long-press a square to pencil the picked number.</span></>}
+              </span>
+            </div>
+          )}
+
           {/* number pad + tools */}
           {playing && (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(9, minmax(0, 1fr))', gap: 5, maxWidth: GRID_MAX, margin: '14px auto 0' }}>
+              <div className="su-pads">
                 {DIGITS.map((d) => {
                   const done = !!digitDone[d];
                   return (
-                    <button key={d} className={`su-pad${done ? ' done' : ''}${armed === d ? ' armed' : ''}`} onClick={() => { if (!done) padTap(d); }} aria-label={`enter ${d}`}>
-                      <span style={{ fontSize: 'clamp(16px, 4.6vw, 24px)' }}>{d}</span>
+                    <button key={d} type="button" className={`su-pad${done ? ' done' : ''}${armed === d ? ' armed' : ''}`} onClick={() => { if (!done) padTap(d); }} aria-label={`Enter ${d}`} aria-pressed={armed === d}>
+                      <span>{d}</span>
                     </button>
                   );
                 })}
+                <button type="button" className="su-pad erase" onClick={() => eraseCell(sel)} aria-label="Erase the picked square">Erase</button>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 10, flexWrap: 'wrap' }}>
-                <button className={`su-tool${noteMode ? ' on' : ''}`} onClick={() => setNoteMode((m) => !m)} title="Toggle pencil notes (N)">
-                  <Pencil size={14} /> Notes {noteMode ? 'on' : 'off'}
+              <div className="su-tools">
+                <button type="button" className={`su-tool${noteMode ? ' on' : ''}`} onClick={() => setNoteMode((m) => !m)} aria-pressed={noteMode} title="Toggle pencil notes (N)">
+                  <b style={{ fontWeight: 700 }}>Notes<span className="su-d-only">:</span></b> <span className="st">{noteMode ? 'on' : 'off'}</span>
                 </button>
-                <button className="su-tool" onClick={toggleAutoAdv} aria-pressed={autoAdv} title="Move to the next empty square after each number you enter">
-                  <ArrowRight size={14} /> Auto-move {autoAdv ? 'on' : 'off'}
+                <button type="button" className={`su-tool${autoAdv ? ' on' : ''}`} onClick={toggleAutoAdv} aria-pressed={autoAdv} title="Move to the next empty square after each number you enter">
+                  <b style={{ fontWeight: 700 }}>Auto-move<span className="su-d-only">:</span></b> <span className="st">{autoAdv ? 'on' : 'off'}</span>
                 </button>
-                <button className="su-tool" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" style={{ opacity: canUndo ? 1 : 0.4, cursor: canUndo ? 'pointer' : 'default' }}>
-                  <RotateCcw size={14} /> Undo
+                <button type="button" className="su-tool" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)">
+                  Undo
                 </button>
-                <button className="su-tool" onClick={() => eraseCell(sel)} title="Erase selected square (Backspace)">
-                  <Eraser size={14} /> Erase
+                <button type="button" className="su-tool erase-t" onClick={() => eraseCell(sel)} title="Erase selected square (Backspace)">
+                  Erase
                 </button>
-                <button className="su-tool" onClick={clearBoard} disabled={!hasEntries}
-                  title="Clear every number you have entered and start the grid over on the same clock"
-                  style={hasEntries
-                    ? (armClear
-                      ? { background: STAGE ? 'var(--stg-surf2)' : '#fdeeee', borderColor: 'rgba(192,57,43,0.5)', color: `var(--stg-ink, ${COLORS.rust})` }
-                      : undefined)
-                    : { opacity: 0.4, cursor: 'default' }}>
-                  <Trash2 size={14} /> {armClear ? 'Tap again to clear' : 'Clear'}
+                <button type="button" className={`su-tool${armClear ? ' armed' : ''}`} onClick={clearBoard} disabled={!hasEntries}
+                  title="Clear every number you have entered and start the grid over on the same clock">
+                  {armClear ? 'Tap again to clear' : 'Clear board'}
                 </button>
                 {hintOk && !g.hintUsed && (
-                  <button className="su-tool" onClick={useHint} title="Fill one correct square (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(29,78,216,0.5)', color: ACC_DEEP_INK }}>
-                    <Lightbulb size={14} /> Hint
+                  <button type="button" className="su-tool hint" onClick={useHint} title="Fill one correct square (one hint, first play only)">
+                    <Lightbulb size={15} aria-hidden="true" /> Hint
                   </button>
                 )}
               </div>
             </>
           )}
+          </div>
 
-        {/* Controls sit INSIDE the board card on purpose: on the navy stage a
-            bare row of faded text has nothing to sit on. */}
         {started && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)', flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: armed ? `var(--stg-acc-ink, ${COLORS.accent})` : `var(--stg-mute, ${COLORS.faded})` }}>
-              {armed
-                ? `Placing ${armed}: tap squares to fill, long-press to pencil. Tap ${armed} again to put it down.`
-                : sel >= 0
-                  ? (noteMode ? 'Tap a number to pencil it in' : 'Tap a number, or pick a number then tap squares')
-                  : 'Tap a square then a number, or pick a number then tap squares'}
+          <div className="su-under">
+            <span className="su-under-n">
+              <span className="su-d-only">Across totals sit top right, down totals bottom left. No digit twice in a run.</span>
+              <span className="su-m">Wrong entries are not flagged.</span>
             </span>
             {identity && filledCount > 0 && (
-              <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-                style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <Eye size={13} /> {armReveal ? 'Tap again — ends the puzzle and fills the solution' : 'Reveal & end'}
+              <button type="button" className={`su-reveal${armReveal ? ' armed' : ''}`} onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
+                <Eye size={13} aria-hidden="true" /> {armReveal ? 'Tap again: ends the puzzle and fills the solution' : 'Reveal and end'}
               </button>
             )}
           </div>
@@ -1158,7 +1248,7 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
             iq={iq}
             board={dailyBoard}
             gameRank={allTime && allTime.ready
-              ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '—',
+              ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '–',
                   label: allTime.field != null ? `of ${Number(allTime.field).toLocaleString()} Sums all time` : 'all-time rank' }
               : null}
             day={dayStats}
@@ -1237,14 +1327,14 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s kakuro, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s kakuro, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   Open your browser&apos;s menu and choose <b>Add to Home Screen</b> (or <b>Install app</b>). The tile opens today&apos;s kakuro, every day.
                 </p>
               )}
-              <button onClick={() => setShowA2hsHelp(false)} style={{ marginTop: 10, fontFamily: SANS, fontSize: 12.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, height: 44, width: '100%', borderRadius: 10, border: 'none', background: COLORS.ink, color: T.white, cursor: 'pointer' }}>Got it</button>
+              <button onClick={() => setShowA2hsHelp(false)} style={{ marginTop: 10, fontFamily: SANS, fontSize: 12.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, height: 44, width: '100%', borderRadius: 10, border: 'none', background: STAGE ? 'var(--stg-acc)' : COLORS.ink, color: STAGE ? 'var(--stg-onramp)' : T.white, cursor: 'pointer' }}>Got it</button>
             </div>
           </div>
         )}
@@ -1276,7 +1366,7 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
-        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
+        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: STAGE ? 'var(--stg-ink)' : COLORS.ink, color: STAGE ? 'var(--stg-ground)' : T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
           {toast}
         </div>
       )}
@@ -1290,7 +1380,7 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
               <button onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
             </div>
             {rulesBody}
-            <button className="su-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: COLORS.ink, color: T.white }}>Play</button>
+            <button className="su-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: STAGE ? 'var(--stg-acc)' : COLORS.ink, color: STAGE ? 'var(--stg-onramp)' : T.white, borderColor: STAGE ? 'var(--stg-acc)' : undefined }}>Play</button>
           </div>
         </div>
       )}

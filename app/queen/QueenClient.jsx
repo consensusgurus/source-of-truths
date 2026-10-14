@@ -23,7 +23,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { X, Lightbulb, Eye, Smartphone, RotateCcw } from 'lucide-react';
+import { X, Lightbulb, Smartphone } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -78,20 +78,22 @@ const COLORS = {
 };
 // The board itself: the same warm walnut as Mate, because it IS chess and the
 // two should read as siblings.
-// The squares come off the stage's own pair now, so the board follows the light
-// switch. Beech and walnut were two mid-tone woods: the brightest surface on a
-// near-black page, and a palette belonging to nothing else on the site.
+// The Slate board (owner pick A, 2026-10-14), shared with Swindle's SwBoard so
+// the chess games read as one family: cool grey squares off --stg-chess-l/-d
+// (both registers), two-tone pieces with a hairline, a gold ring for the
+// selection and the hint, a gold last move, and coordinates OUTSIDE the board.
 const LIGHT_SQ = 'var(--stg-chess-l, #e8ecf3)';
 const DARK_SQ = 'var(--stg-chess-d, #a7b3c6)';
-const SEL_SQ = 'rgba(161,98,7,0.5)';
-const LAST_SQ = 'rgba(224,174,74,0.55)';
+const GOLD = '#e8b43a';
+// Last move is an inset-shadow wash, not a gradient layer: some Android
+// browsers paint no CSS gradients at all (report 2026-10-06).
+const LAST_SQ = 'rgba(232,180,58,0.55)';
 
 // The arm-then-confirm controls do not move when armed, so the second tap of
 // an accidental double-tap used to land on the armed state long before the
 // label change could be read. A confirm this fast was never a decision.
 const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_queen_help_seen';
 const STATS_KEY = 'sot_queen_stats';
 
@@ -732,7 +734,7 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Queen #${PUZZLE.num} — the daily pawn endgame from Mind Loft.\n${shareUrl()}`
+      ? `Queen #${PUZZLE.num}: the daily pawn endgame from Mind Loft.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -765,6 +767,41 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+  // ---- the board's words (round seven), all derived from state ----
+  // The meter counts White's moves against the budget; it never says whether a
+  // move kept the win, because End Game shows no running verdict.
+  const whitePlayed = Math.ceil(moves.length / 2);
+  const meterDone = whitePlayed;
+  const meterCur = myTurn ? whitePlayed : -1;
+  const meterLeft = playing
+    ? <><span className="qn-lg">Your move </span><span className="qn-sh">Move </span><b>{Math.min(PUZZLE.winIn, whitePlayed + (awaitingReply ? 0 : 1))}</b> of {PUZZLE.winIn}</>
+    : <>Moves played <b>{whitePlayed}</b> of {PUZZLE.winIn}</>;
+  const meterRight = !playing
+    ? (won ? ['Promoted', 'Promoted'] : g.status === 'lost' ? ['No queen', 'No queen'] : ['Ended', 'Ended'])
+    : awaitingReply ? ['Black to reply', 'Black to reply']
+    : movesLeft <= 1 ? ['This move has to queen', 'Queen now']
+    : [`${movesLeft} moves to queen the pawn`, `${movesLeft} to queen`];
+  const sayLine = !playing
+    ? (won ? 'The queen stands. Promoted.' : g.status === 'lost' ? 'No queen. The win is still there.' : 'You ended it there. The win is still there.')
+    : awaitingReply ? 'Black is thinking...'
+    : movesLeft <= 1 ? 'Queen the pawn.' : `Your move. Queen the pawn safely in ${movesLeft}.`;
+  const COUNT_WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+  const selName = sel == null ? '' : sel === pos.wk ? 'King' : sel === pos.p ? 'Pawn' : '';
+  const marked = targets.length === 1 ? 'Its one legal square is marked.' : `Its ${COUNT_WORD[targets.length] || targets.length} legal squares are marked.`;
+  const helpLine = !playing ? null
+    : awaitingReply ? ['Black’s king defends perfectly.', 'Black’s king defends perfectly.']
+    : selName ? (!targets.length
+      ? [`The ${selName.toLowerCase()} on ${squareName(sel)} has no legal move. Pick the other piece.`, `The ${selName.toLowerCase()} on ${squareName(sel)} cannot move.`]
+      : selName === 'Pawn'
+        ? [`Pawn on ${squareName(sel)} picked up. ${marked} A queen Black can take back is a draw.`, `Pawn on ${squareName(sel)} picked up. A queen Black can take back is a draw.`]
+        : [`King on ${squareName(sel)} picked up. ${marked} Tap one to play it.`, `King on ${squareName(sel)} picked up. Tap a marked square to play it.`])
+    : ['Tap your king or pawn to see where it can go.', 'Tap your king or pawn to see where it can go.'];
+  const linePairs = [];
+  for (let i = 0; i < sanList.length; i += 2) linePairs.push([sanList[i], sanList[i + 1]]);
+  const hintShown = playing && hintOk && !g.hintUsed;
+  const ctlNote = `${hintShown ? 'Hint says king or pawn, never the square. ' : ''}Restart records a 0.`;
+  const footNote = `King and pawn against king. Promote safely within ${PUZZLE.winIn} moves against a perfect defence. There is no take-back.`;
+
   const fileLabels = 'abcdefgh'.split('');
 
   return (
@@ -790,24 +827,72 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
           sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
           figures={playing ? [
             { v: elapsed, k: 'time' },
-            { v: Math.max(1, movesLeft), k: 'promote in' },
+            { v: Math.max(1, movesLeft), k: 'moves to queen' },
           ] : [
             { v: errors, k: 'misses' },
-            { v: PUZZLE.winIn, k: 'promote in' },
+            { v: PUZZLE.winIn, k: 'moves to queen' },
             { v: elapsed, k: 'time' },
           ]}
         />
       )}
-      <div className="qn-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
+      <div className="qn-wrap qn-root" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
         <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.qn-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .qn-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .qn-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .qn-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
           .qn-sq{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;}
           .qn-pc{display:block;width:88%;height:88%;pointer-events:none;filter:drop-shadow(0 1.5px 0 rgba(0,0,0,0.22));}
-          .qn-dot{position:absolute;width:28%;height:28%;border-radius:50%;background:rgba(28,30,36,0.32);pointer-events:none;}
-          .qn-coord{position:absolute;font-family:${MONO};font-size:min(2vw,10px);font-weight:500;opacity:.62;pointer-events:none;}
+          .qn-root{--qn-dot:rgba(233,237,244,.30);--qn-frame:0 0 0 1px rgba(255,255,255,.10),0 12px 30px rgba(0,0,0,.45);--qn-rim:var(--stg-ground,#0b0f1a);}
+          html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .qn-root{--qn-dot:rgba(11,13,18,.24);--qn-frame:0 0 0 1px rgba(11,15,26,.10),0 10px 28px rgba(11,15,26,.16);--qn-rim:#1c1a14;}
+          .qn-sh{display:none;}
+          .qn-meter{margin:0 0 14px;display:flex;flex-direction:column;gap:8px;}
+          .qn-mhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+          .qn-k{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute,#8b95a8);}
+          .qn-k b{color:var(--stg-acc-ink,#e8b43a);font-weight:800;}
+          .qn-mhead .qn-k:last-child{text-align:right;}
+          .qn-segs{display:flex;gap:4px;}
+          .qn-seg{flex:1;height:8px;border-radius:2px;background:var(--stg-line2,rgba(255,255,255,0.17));}
+          .qn-seg.done{background:var(--stg-acc,#e8b43a);}
+          .qn-seg.cur{background:var(--stg-acc-tint,rgba(232,180,58,0.18));box-shadow:inset 0 0 0 2px var(--stg-acc-ink,#e8b43a);}
+          .qn-boardbox{max-width:480px;margin:0 auto;}
+          .qn-bd{display:grid;grid-template-columns:14px minmax(0,1fr);grid-template-rows:minmax(0,1fr) 16px;gap:4px 6px;}
+          .qn-rk{display:grid;grid-template-rows:repeat(8,minmax(0,1fr));}
+          .qn-fl{grid-column:2;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));}
+          .qn-rk span,.qn-fl span{display:flex;align-items:center;justify-content:center;font:700 10px Manrope,system-ui,sans-serif;color:var(--stg-mute,#5f6774);}
+          .qn-rk span{justify-content:flex-end;}
+          .qn-dot{position:absolute;width:30%;height:30%;border-radius:50%;background:var(--qn-dot);pointer-events:none;}
+          .qn-ring{position:absolute;inset:6%;border-radius:50%;border:4px solid var(--qn-dot);pointer-events:none;}
+          .qn-status{max-width:480px;margin:16px auto 0;display:flex;align-items:flex-start;gap:12px;}
+          .qn-pip{flex:none;width:12px;height:12px;margin-top:6px;border-radius:50%;background:var(--stg-acc,#e8b43a);box-shadow:0 0 0 2px var(--qn-rim);}
+          .qn-say{display:block;font-size:17px;font-weight:800;color:var(--stg-ink,#e9edf4);}
+          .qn-help{display:block;margin-top:3px;font-size:13px;font-weight:600;line-height:1.4;color:var(--stg-mute,#8b95a8);}
+          .qn-line{max-width:480px;margin:14px auto 0;display:flex;flex-direction:column;gap:7px;}
+          .qn-chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+          .qn-chip{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 11px;border-radius:9px;border:1px solid var(--stg-line2,rgba(255,255,255,0.17));background:var(--stg-cell,#1a1d28);color:var(--stg-ink,#e9edf4);font-size:14px;font-weight:700;white-space:nowrap;}
+          .qn-chip i{font-style:normal;color:var(--stg-mute,#8b95a8);}
+          .qn-chip.next{background:transparent;border:1.5px dashed var(--stg-acc-ink,#e8b43a);font-weight:800;}
+          .qn-chip.next span{color:var(--stg-acc-ink,#e8b43a);}
+          .qn-ctl{max-width:480px;margin:16px auto 0;padding-top:14px;border-top:1px solid var(--stg-line,rgba(255,255,255,0.11));display:flex;align-items:center;justify-content:flex-end;gap:10px;}
+          .qn-ctl-note{flex:1;font-size:12px;font-weight:600;line-height:1.4;color:var(--stg-mute,#8b95a8);}
+          .qn-ob{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2,#aab5c7);border:1.5px solid var(--stg-line3,rgba(255,255,255,0.42));border-radius:12px;padding:0 16px;min-height:48px;min-width:104px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
+          .qn-ob:hover{background:var(--stg-surf2,rgba(255,255,255,0.08));}
+          .qn-ob.qn-rs{min-width:124px;}
+          .qn-ob.armed{color:var(--stg-bad,#fb7185);border-color:var(--stg-bad,#fb7185);}
+          .qn-foot{max-width:480px;margin:10px auto 0;display:flex;justify-content:space-between;align-items:center;gap:16px;}
+          .qn-foot-note{font-size:12px;font-weight:600;line-height:1.4;color:var(--stg-mute,#8b95a8);}
+          .qn-giveup{background:none;border:none;cursor:pointer;font-family:${SANS};font-size:12.5px;font-weight:700;color:var(--stg-ink2,#aab5c7);text-decoration:underline;text-underline-offset:3px;white-space:nowrap;padding:0 2px;min-height:44px;min-width:84px;text-align:right;}
+          .qn-giveup.armed{color:var(--stg-bad,#fb7185);}
+          .qn-armed{max-width:480px;margin:2px auto 0;text-align:right;font-size:12px;font-weight:700;line-height:1.4;color:var(--stg-bad,#fb7185);}
+          @media(max-width:560px){
+            .qn-lg{display:none;}.qn-sh{display:inline;}
+            .qn-k{font-size:10px;}.qn-segs{gap:3px;}.qn-seg{height:7px;}.qn-meter{margin-bottom:12px;gap:6px;}
+            .qn-status{margin-top:14px;gap:10px;padding:0 3px;}.qn-pip{width:10px;height:10px;}
+            .qn-say{font-size:15px;}.qn-help{font-size:12px;margin-top:2px;}
+            .qn-line{margin-top:12px;padding:0 3px;}.qn-line-k{display:none;}
+            .qn-chips{gap:6px;}.qn-chip{height:32px;padding:0 9px;font-size:13px;}
+            .qn-ctl{border-top:none;padding-top:0;margin-top:14px;}.qn-ctl-note{display:none;}.qn-ctl .qn-ob{flex:1;min-height:46px;}
+            .qn-foot-note{font-size:11.5px;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
@@ -822,7 +907,7 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
           helpTop={13}
           marginBottom={16}
           onHelp={() => setShowHelp(true)}
-          sunday={PUZZLE.sunday && <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition &middot; Win in 12</span>}
+          sunday={PUZZLE.sunday && <span style={{ fontFamily: SANS, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition &middot; Win in 12</span>}
           blocks={'QUEEN'.split('').map((ch, i) => (
               <div key={i} style={{ width: 44, height: 44, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontWeight: 900, fontSize: 26, background: i === 0 ? `var(--stg-acc, ${COLORS.accent})` : COLORS.ink, color: i === 0 ? `var(--stg-onramp, ${T.white})` : T.white, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.65)' }}>{ch}</div>
             ))}
@@ -856,19 +941,35 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
         {!preStart && (
         <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: SANS, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
             {!playing && <span style={{ whiteSpace: 'nowrap' }}>misses <b style={{ color: errors > 0 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{errors}</b></span>}
-            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
             <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>
               {playing ? <>promote in <b style={{ color: ACC_INK, fontWeight: 500 }}>{Math.max(1, movesLeft)}</b></> : <>promote in <b style={{ color: INK, fontWeight: 500 }}>{PUZZLE.winIn}</b></>}
             </span>
           </div>
           )}
 
-          <div style={{ maxWidth: 430, margin: '0 auto' }}>
+          {/* THE TOP METER (round seven): how far along the line you are, one
+              segment per move of the budget, with the current move ringed. It
+              counts moves, never verdicts: End Game shows no running score. */}
+          <div className="qn-meter">
+            <div className="qn-mhead">
+              <span className="qn-k">{meterLeft}</span>
+              <span className="qn-k"><span className="qn-lg">{meterRight[0]}</span><span className="qn-sh">{meterRight[1]}</span></span>
+            </div>
+            <div className="qn-segs" aria-hidden="true">
+              {Array.from({ length: PUZZLE.winIn }).map((_, i) => (
+                <span key={i} className={`qn-seg${i < meterDone ? ' done' : (i === meterCur ? ' cur' : '')}`} />
+              ))}
+            </div>
+          </div>
+
+          <div className="qn-boardbox">
+          <div className="qn-bd">
+            <div className="qn-rk" aria-hidden="true">{[8, 7, 6, 5, 4, 3, 2, 1].map((n) => <span key={n}>{n}</span>)}</div>
             <div
-              className="qn-board"
-              style={{ display: 'grid', gridTemplateColumns: 'repeat(8, minmax(0, 1fr))', gridTemplateRows: 'repeat(8, minmax(0, 1fr))', aspectRatio: '1 / 1', border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 4, overflow: 'hidden', touchAction: 'manipulation' }}
+              className={"qn-board"}
+              style={{ display: 'grid', gridTemplateColumns: 'repeat(8, minmax(0, 1fr))', gridTemplateRows: 'repeat(8, minmax(0, 1fr))', aspectRatio: '1 / 1', borderRadius: 10, overflow: 'hidden', boxShadow: 'var(--qn-frame)', touchAction: 'manipulation' }}
             >
               {Array.from({ length: 64 }).map((_, sq) => {
                 const r = rowOf(sq), f = fileOf(sq);
@@ -879,9 +980,12 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
                 const isTarget = targets.includes(sq);
                 const isLast = lastMove && (lastMove.from === sq || lastMove.to === sq);
                 const isHint = hintPiece === sq;
-                let bg = dark ? DARK_SQ : LIGHT_SQ;
-                if (isLast) bg = `linear-gradient(${LAST_SQ},${LAST_SQ}), ${bg}`;
-                // Selection is a gold ring (Slate board, 2026-10-14), set on the box shadow below.
+                const checked = false;
+                // Slate marks, as SwBoard: a gold ring for the selection and the
+                // hint, a gold wash for the last move, a rose glow on a checked king.
+                const base = dark ? DARK_SQ : LIGHT_SQ;
+                const bg = checked ? `radial-gradient(circle, rgba(225,29,72,0.9) 14%, rgba(225,29,72,0.35) 58%, transparent 74%), ${base}` : base;
+                const rings = [isSel || isHint ? `inset 0 0 0 3px ${GOLD}` : null, isLast && !checked ? `inset 0 0 0 999px ${LAST_SQ}` : null].filter(Boolean).join(', ');
                 return (
                   <div
                     key={sq}
@@ -890,74 +994,71 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
                     role="button"
                     tabIndex={-1}
                     aria-label={squareName(sq) + (piece ? ` ${white ? 'white' : 'black'} ${piece === 'k' ? 'K' : piece}` : ' empty')}
-                    style={{ background: bg, boxShadow: isHint || isSel ? `inset 0 0 0 3px #e8b43a` : undefined }}
+                    style={{ background: bg, boxShadow: rings || undefined }}
                   >
-                    {f === 0 && (
-                      <span className="qn-coord" style={{ left: 2, top: 1, color: dark ? LIGHT_SQ : DARK_SQ }}>{8 - r}</span>
-                    )}
-                    {r === 7 && (
-                      <span className="qn-coord" style={{ right: 3, bottom: 1, color: dark ? LIGHT_SQ : DARK_SQ }}>{fileLabels[f]}</span>
-                    )}
                     {piece && <Piece code={piece} />}
                     {isTarget && !piece && <span className="qn-dot" />}
+                    {isTarget && piece && <span className="qn-ring" />}
                   </div>
                 );
               })}
             </div>
+            <div className="qn-fl" aria-hidden="true">{fileLabels.map((x) => <span key={x}>{x}</span>)}</div>
+          </div>
           </div>
 
-          <div style={{ marginTop: 12, minHeight: 22, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: endHold.held ? 15 : 13, fontWeight: 800, color: playing ? `var(--stg-acc-ink, ${COLORS.accent})` : (endHold.held ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-mute, ${COLORS.faded})`) }}>
-              {!playing
-                ? (won ? 'The queen stands. Promoted.' : g.status === 'lost' ? 'No queen. The win is still there.' : 'You ended it there. The win is still there.')
-                : awaitingReply
-                  ? 'Black is thinking...'
-                  : movesLeft <= 1
-                    ? 'Queen the pawn.'
-                    : `Your move. Promote in ${movesLeft}.`}
-            </span>
-            {sanList.length > 0 && (
-              <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 12, color: FADED, fontWeight: 500 }}>
-                {sanList.map((s, i) => (i % 2 === 0 ? `${i / 2 + 1}. ${s}` : s)).join(' ')}
-              </span>
-            )}
+          <div className="qn-status" role="status" aria-live="polite">
+            <span className="qn-pip" aria-hidden="true" />
+            <div style={{ minWidth: 0 }}>
+              <span className="qn-say">{sayLine}</span>
+              {helpLine && <span className="qn-help"><span className="qn-lg">{helpLine[0]}</span><span className="qn-sh">{helpLine[1]}</span></span>}
+            </div>
           </div>
 
-          {playing && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 12, flexWrap: 'wrap' }}>
-              {hintOk && !g.hintUsed && (
-                <button className="qn-tool" onClick={useHint} title="Name the piece that moves (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(161,98,7,0.5)', color: '#7c4d05' }}>
-                  <Lightbulb size={14} /> Hint
-                </button>
-              )}
+          {(linePairs.length > 0 || myTurn) && (
+            <div className="qn-line">
+              <span className="qn-k qn-line-k">The line so far</span>
+              <div className="qn-chips">
+                {linePairs.map((pr, i) => (
+                  <span key={i} className="qn-chip"><i>{i + 1}.</i><span>{pr[0]}</span>{pr[1] ? <span>{pr[1]}</span> : null}</span>
+                ))}
+                {myTurn && <span className="qn-chip next"><i>{linePairs.length + 1}.</i><span><span className="qn-lg">your move</span><span className="qn-sh">you</span></span></span>}
+              </div>
             </div>
           )}
 
+        {/* Controls (round seven): outline Hint and Restart, Give up as a text
+            link. Both arm-then-confirm, with the consequence printed below so
+            the row never reflows under the reader's finger. */}
         {started && (
-          <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>
-                Tap your king or pawn, then tap where it goes. There is no take-back.
-              </span>
-              <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-                <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmRestart(false); setArmReveal(Date.now()); } }}
-                  title={armReveal ? 'Ends the puzzle and scores nothing' : 'End the puzzle now, scoring nothing'}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-start', gap: 5, minWidth: 104, padding: 0 }}>
-                  <Eye size={13} style={{ flexShrink: 0 }} /> {armReveal ? 'Press again' : 'Give up'}
+          <>
+            <div className="qn-ctl">
+              <span className="qn-ctl-note">{ctlNote}</span>
+              {hintShown && (
+                <button type="button" className="qn-ob" onClick={useHint} title="Name the piece that moves (one hint, first play only)">
+                  <Lightbulb size={15} aria-hidden="true" /> Hint
                 </button>
-                <button onClick={() => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartGame(); } else { setArmReveal(false); setArmRestart(Date.now()); } }}
-                  title={armRestart ? 'Records a 0 and resets the board' : 'Record a 0 and reset the board'}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armRestart ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-start', gap: 5, minWidth: 104, padding: 0 }}>
-                  <RotateCcw size={13} style={{ flexShrink: 0 }} /> {armRestart ? 'Press again' : 'Restart'}
-                </button>
-              </span>
+              )}
+              <button type="button" className={`qn-ob qn-rs${armRestart ? ' armed' : ''}`}
+                onClick={() => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartGame(); } else { setArmReveal(false); setArmRestart(Date.now()); } }}
+                title={armRestart ? 'Records a 0 and resets the board' : 'Record a 0 and reset the board'}>
+                {armRestart ? 'Press again' : 'Restart'}
+              </button>
+            </div>
+            <div className="qn-foot">
+              <span className="qn-foot-note"><span className="qn-lg">{footNote}</span><span className="qn-sh">No take-back. Restart records a 0.</span></span>
+              <button type="button" className={`qn-giveup${armReveal ? ' armed' : ''}`}
+                onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmRestart(false); setArmReveal(Date.now()); } }}
+                title={armReveal ? 'Ends the puzzle and scores nothing' : 'End the puzzle now, scoring nothing'}>
+                {armReveal ? 'Press again' : 'Give up'}
+              </button>
             </div>
             {(armReveal || armRestart) && (
-              <div style={{ fontFamily: SANS, fontSize: 11.5, fontWeight: 700, color: `var(--stg-ink, ${COLORS.rust})`, marginTop: 6, textAlign: 'right', lineHeight: 1.4 }}>
+              <div className="qn-armed">
                 {armReveal ? 'Ends the puzzle and scores nothing.' : 'Records a 0 and resets the board.'}
               </div>
             )}
-          </div>
+          </>
         )}
         </div>
       )}
@@ -1020,11 +1121,11 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               title={won ? 'Solved' : 'Not solved'}
-              detail={`${errors} misses · ${PUZZLE.winIn} promote in · ${elapsed}`}
+              detail={`${errors} ${errors === 1 ? 'miss' : 'misses'} · promote in ${PUZZLE.winIn} moves · ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
-                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '—',
+                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '\u2013',
                     label: allTime.field != null ? `of ${Number(allTime.field).toLocaleString()} Queen all time` : 'all-time rank' }
                 : null}
               day={dayStats}
@@ -1096,7 +1197,7 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s position, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s position, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>

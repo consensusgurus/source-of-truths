@@ -101,7 +101,7 @@ function ComingSoon({ first }) {
         </div>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: T.ink, margin: '0 0 8px' }}>Tally launches {first ? first.dateLabel : 'soon'}.</h1>
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
-          The daily number ledger — fill the grid from your rack so every row and column adds up to its target. Come back when the first board drops.
+          The daily number ledger: fill the grid from your rack so every row and column adds up to its target. Come back when the first board drops.
         </p>
         <a href="/" style={{ color: T.successDeep, fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>

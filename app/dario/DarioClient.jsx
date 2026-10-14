@@ -58,7 +58,7 @@ import { withRef } from '@/lib/referrals';
 import { T } from '@/lib/theme';
 import { arcadeRanksForKey } from '@/lib/daily-games';
 import { meRequest } from '@/app/quizMeClient';
-import { createDario, fmtRun, DARIO_TOTAL, TENTHS_CAP, LEVEL_NAMES, primeDarioAudio } from '@/lib/dario-engine';
+import { createDario, buildLevels, fmtRun, DARIO_TOTAL, TENTHS_CAP, LEVEL_NAMES, primeDarioAudio } from '@/lib/dario-engine';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
@@ -154,7 +154,7 @@ function FastestList({ refreshKey, myName, ink, faded, surf, line, acc }) {
     <section style={{ maxWidth: 620, margin: '22px auto 0', background: surf, border: `1px solid ${line}`, borderRadius: 12, padding: '14px 16px' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
         <h2 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: ink, display: 'flex', alignItems: 'center', gap: 6 }}><Zap size={15} /> Fastest clears, all time</h2>
-        {best != null && <span style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700, color: faded }}>Your best ever <b style={{ color: ink, fontFamily: MONO }}>{fmtRun(best)}</b></span>}
+        {best != null && <span style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700, color: faded }}>Your best ever <b style={{ color: ink, fontVariantNumeric: 'tabular-nums' }}>{fmtRun(best)}</b></span>}
       </div>
       <p style={{ margin: '4px 0 10px', fontSize: 12, color: faded }}>Every day's course is a different remix, so this is the master list of raw speed. Registered players only, one row each.</p>
       {rows == null ? (
@@ -167,10 +167,10 @@ function FastestList({ refreshKey, myName, ink, faded, surf, line, acc }) {
             const me = myName && r.name === myName;
             return (
               <li key={`${r.name}-${i}`} style={{ display: 'grid', gridTemplateColumns: '28px minmax(0,1fr) auto auto', gap: 10, alignItems: 'baseline', padding: '6px 0', borderTop: i ? `1px solid ${line}` : 'none', fontSize: 13.5, color: ink, fontWeight: me ? 800 : 600 }}>
-                <span style={{ fontFamily: MONO, color: i < 3 ? acc : faded, fontWeight: 800 }}>{i + 1}</span>
+                <span style={{ color: i < 3 ? acc : faded, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>{i + 1}</span>
                 <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}{me ? ' (you)' : ''}</span>
-                <span style={{ fontSize: 11.5, color: faded, fontFamily: MONO }}>{dateOfQuiz(r.quizId)}</span>
-                <span style={{ fontFamily: MONO, fontVariantNumeric: 'tabular-nums', fontWeight: 800 }}>{fmtRun(r.tenths)}</span>
+                <span style={{ fontSize: 11.5, color: faded, fontVariantNumeric: 'tabular-nums' }}>{dateOfQuiz(r.quizId)}</span>
+                <span style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 800 }}>{fmtRun(r.tenths)}</span>
               </li>
             );
           })}
@@ -192,7 +192,10 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
   const engRef = useRef(null);
   const cvsRef = useRef(null);
   const boxRef = useRef(null);
-  const [fig, setFig] = useState({ level: 0, tenths: 0, lives: 3, gpus: 0 });
+  const [fig, setFig] = useState({ level: 0, tenths: 0, lives: 3, gpus: 0, prog: 0 });
+  // The day's level widths, for the meter. buildLevels is pure, so this is the
+  // same course the engine plays.
+  const LEVEL_W = useMemo(() => { try { return buildLevels(PUZZLE.quizId).map((l) => l.W); } catch (e) { return [1, 1, 1]; } }, [PUZZLE.quizId]);
   const [paused, setPaused] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -358,7 +361,14 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
       quizId: PUZZLE.quizId,
       music,
       onEnd: (r) => onEndRef.current(r),
-      onTick: (s) => { setFig({ level: s.level, tenths: s.tenths, lives: s.lives, gpus: s.gpus }); setPaused(!!(engRef.current && engRef.current.isPaused())); },
+      onTick: (s) => {
+        // peek() is the engine's existing read of the run so far: progress is
+        // whole tiles reached across the course, the figure the score uses.
+        let prog = 0;
+        try { const pk = engRef.current && engRef.current.peek(); if (pk) prog = pk.progress || 0; } catch (e) {}
+        setFig({ level: s.level, tenths: s.tenths, lives: s.lives, gpus: s.gpus, prog });
+        setPaused(!!(engRef.current && engRef.current.isPaused()));
+      },
     });
     engRef.current = eng;
     if (gRef.current.status === 'playing' && gRef.current.t0) eng.start();
@@ -430,7 +440,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
       // FILL THE SPACE (owner, 2026-10-07): the picture takes the whole room
       // between the pads. Sideways it widens (no black bars); upright it
       // narrows, so the world is drawn bigger. Gameplay is unchanged.
-      const availW = land ? iw - (64 * 2 + 12 * 2 + 20) : iw - 16;
+      const availW = land ? iw - (64 * 2 + 12 * 2 + 20) : iw - 24;
       const availH = land ? ih - 12 : ih - 70 - 14 - 60 - 24;
       const want = Math.max(300 / 224, Math.min(520 / 224, availW / Math.max(1, availH)));
       const v = engRef.current ? engRef.current.setView(want) : Math.round((224 * want) / 2) * 2;
@@ -520,25 +530,62 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
   );
 
   const btn = { fontFamily: SANS, fontWeight: 800, fontSize: 14, border: `2px solid var(--stg-line, ${COLORS.accent})`, background: STAGE ? SURF : '#fff', color: ACC_INK, borderRadius: 8, padding: '9px 16px', cursor: 'pointer' };
-  const iconBtn = { border: `1px solid ${SURF_B}`, background: SURF, color: FADED, borderRadius: 7, width: 32, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' };
-  const figLabel = { fontSize: 10.5, fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: FADED };
+
+  // ---- the meter and the status line ------------------------------------------
+  const curLevel = Math.min(2, playing ? fig.level : (res ? res.level : 0));
+  const progTiles = playing ? fig.prog : (res ? res.progress : 0);
+  const segFill = (i) => {
+    if (over && cleared) return 1;
+    if (i < curLevel) return 1;
+    if (i > curLevel) return 0;
+    let before = 0; for (let k = 0; k < i; k++) before += LEVEL_W[k] || 0;
+    return Math.max(0, Math.min(1, (progTiles - before) / Math.max(1, LEVEL_W[i] || 1)));
+  };
+  const livesNow = playing ? fig.lives : (res ? Math.max(0, 3 - (res.deaths || 0)) : 3);
+  const gpusNow = playing ? fig.gpus : (res ? res.gpus : 0);
+  const LEVEL_LINES = [
+    ['The Valley: raise the round.', 'Stomp the bots, never land on a robotaxi.'],
+    ['The Data Center: bring the cluster online.', 'Stomp the bots, never land on a robotaxi.'],
+    ['The Launch Site: ship the model.', 'Stomp the bots and never touch a rocket.'],
+  ];
+  const statusLine = over && res
+    ? (res.cleared
+      ? `Dario now controls all software business globally. All three levels in ${fmtRun(res.tenths)}${res.splits && res.splits.length === 3 ? ` (${res.splits.map(fmtRun).join(' · ')})` : ''}.`
+      : `Out of lives in ${LEVEL_NAMES[Math.min(2, res.level)]} after ${fmtRun(res.tenths)}.`) + (bestToday != null && (!res.cleared || bestToday < res.tenths) ? ` Your best today is ${fmtRun(bestToday)}.` : '')
+    : paused
+      ? 'Paused. Tap the screen or press Resume to carry on.'
+      : (touchOnly ? LEVEL_LINES[curLevel][1].replace(', never', '. Never') : `${LEVEL_LINES[curLevel][0]} ${LEVEL_LINES[curLevel][1]}`);
+  const helpLine = over
+    ? 'Every run posts, and the board keeps your fastest full clear.'
+    : touchOnly ? 'Run stays on once you tap it. Hold Jump for a higher jump.' : 'Losing a life restarts the level. The clock keeps running, and stops only for pauses and level cards.';
+
+  const PauseIco = () => <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style={{ fill: 'currentColor' }}><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>;
+  const PlayIco = () => <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style={{ fill: 'currentColor' }}><path d="M7 4.5v15l12.5-7.5z" /></svg>;
+  const Tri = ({ r }) => <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" style={{ fill: 'currentColor', transform: `rotate(${r}deg)` }}><path d="M12 5 L20 18 L4 18 Z" /></svg>;
+  const padL = (
+    <div className="dr-pl" aria-label="Move">
+      <button type="button" className="dr-b" aria-label="Left" {...hold('l')}><Tri r={270} /></button>
+      <button type="button" className="dr-b" aria-label="Right" {...hold('r')}><Tri r={90} /></button>
+    </div>
+  );
+  const padR = (
+    <div className="dr-pr" aria-label="Run and jump">
+      <button type="button" className={`dr-b dr-run${runLock ? ' lock' : ''}`} aria-pressed={runLock} aria-label="Run" onPointerDown={(ev) => { ev.preventDefault(); setRunLock((v) => !v); }}>RUN{runLock && <span className="dr-on">ON</span>}</button>
+      <button type="button" className="dr-b dr-jump" aria-label="Jump" {...hold('j')}>JUMP</button>
+    </div>
+  );
 
   const gameBox = (
-                      <div ref={boxRef} className={`dr-box${touchOnly ? ' touch' : ''}`}>
+                      <div ref={boxRef} className={`dr-box${touchOnly ? ' touch' : ''}${imm ? ' in-imm' : ''}`}>
                         {imm && (
                           <div className="dr-ctl">
-                            <button className="dr-x" aria-label="Leave full screen" onClick={() => leaveImm(true)}>&#10005;</button>
-                            <button className="dr-x" aria-label={music ? 'Sound off' : 'Sound on'} onClick={toggleMusic}>{music ? <Volume2 size={17} /> : <VolumeX size={17} />}</button>
-                            {playing && <button className="dr-x" aria-label={paused ? 'Resume' : 'Pause'} onClick={togglePause}>{paused ? <Play size={16} /> : <Pause size={16} />}</button>}
+                            <button type="button" className="dr-x" aria-label="Leave full screen" onClick={() => leaveImm(true)}>&#10005;</button>
+                            <button type="button" className="dr-x" aria-label={music ? 'Sound off' : 'Sound on'} onClick={toggleMusic}>{music ? <Volume2 size={17} /> : <VolumeX size={17} />}</button>
+                            {playing && <button type="button" className="dr-x" aria-label={paused ? 'Resume' : 'Pause'} onClick={togglePause}>{paused ? <Play size={16} /> : <Pause size={16} />}</button>}
                           </div>
                         )}
                         {imm && <div className="dr-rot">Turn your phone sideways for a bigger screen</div>}
-                        {playing && touchOnly && (
-                          <div className="dr-pl" aria-label="Move">
-                            <button className="dr-b" aria-label="Left" {...hold('l')}>&#9664;</button>
-                            <button className="dr-b" aria-label="Right" {...hold('r')}>&#9654;</button>
-                          </div>
-                        )}
+                        {playing && touchOnly && padL}
                         <canvas
                           ref={(el) => { cvsRef.current = el; if (el && engRef.current) engRef.current.setCanvas(el); }}
                           width={800}
@@ -549,12 +596,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
                           aria-label="Dario game screen"
                           onPointerDown={() => { if (engRef.current && engRef.current.isPaused()) { engRef.current.resume(); setPaused(false); } }}
                         />
-                        {playing && touchOnly && (
-                          <div className="dr-pr" aria-label="Run and jump">
-                            <button className={`dr-b dr-run${runLock ? ' lock' : ''}`} aria-pressed={runLock} aria-label="Run" onPointerDown={(ev) => { ev.preventDefault(); setRunLock((v) => !v); }}>RUN</button>
-                            <button className="dr-b dr-jump" aria-label="Jump" {...hold('j')}>JUMP</button>
-                          </div>
-                        )}
+                        {playing && touchOnly && padR}
                       </div>
   );
 
@@ -609,30 +651,66 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
 
                   {!preStart && (
                     <div className={STAGE ? 'stg-board' : undefined} style={{ background: STAGE ? SURF : '#fff', border: STAGE ? `1px solid ${SURF_B}` : `1px solid ${COLORS.line}`, borderRadius: 12, padding: 12, position: 'relative', margin: '0 auto' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10, flexWrap: 'wrap' }}>
-                        <span style={figLabel}>Run <b style={{ color: INK, fontFamily: MONO }}>{fmtRun(playing ? fig.tenths : (res ? res.tenths : 0))}</b></span>
-                        <span style={figLabel}>Level <b style={{ color: INK }}>{LEVEL_NAMES[Math.min(2, playing ? fig.level : (res ? res.level : 0))]}</b></span>
-                        <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
-                          {playing && (
-                            <button onClick={togglePause} aria-label={paused ? 'Resume' : 'Pause'} style={iconBtn}>{paused ? <Play size={14} /> : <Pause size={14} />}</button>
-                          )}
-                          <button onClick={toggleMusic} aria-label={music ? 'Music off' : 'Music on'} style={iconBtn}>{music ? <Volume2 size={15} /> : <VolumeX size={15} />}</button>
-                          {(fsOk || touchOnly) && <button onClick={touchOnly ? enterImm : goFull} aria-label="Full screen" style={iconBtn}><Maximize2 size={14} /></button>}
-                        </span>
+                      {/* the meter: the course is three levels, each filled as far as Dario has got */}
+                      <div className="dr-meter" data-dr-meter="">
+                        <div className="dr-meter-row">
+                          <span><span className="dr-wide">The course · </span>Level <b className="dr-acc">{curLevel + 1}</b> of 3<span className="dr-narrow"> · {LEVEL_NAMES[curLevel]}</span></span>
+                          <span>{livesNow} {livesNow === 1 ? 'life' : 'lives'}<span className="dr-wide"> left</span> · {gpusNow} GPU{gpusNow === 1 ? '' : 's'}</span>
+                        </div>
+                        <div className="dr-segs">
+                          {LEVEL_NAMES.map((nm, i) => (
+                            <span key={nm} className="dr-seg">
+                              <span className="dr-bar" role="img" aria-label={`${nm}: ${Math.round(segFill(i) * 100)} percent`}><span style={{ width: `${(segFill(i) * 100).toFixed(1)}%` }} /></span>
+                              <span className={`dr-nm${i === curLevel && !(over && cleared) ? ' on' : ''}`}>{nm}</span>
+                            </span>
+                          ))}
+                        </div>
                       </div>
 
-                      {imm && typeof document !== 'undefined' ? createPortal(<div className="dr-imm" style={fit ? { height: `${fit.h}px`, width: `${fit.w}px` } : undefined}>{gameBox}</div>, document.body) : gameBox}
+                      {imm && typeof document !== 'undefined' ? createPortal(
+                        <div className={STAGE ? 'dr-imm stage-page' : 'dr-imm'} data-stage-theme={STAGE ? stageTheme : undefined}
+                          style={{ ...(STAGE ? STAGE_ACC : null), ...(fit ? { height: `${fit.h}px`, width: `${fit.w}px` } : null) }}>{gameBox}</div>, document.body) : gameBox}
+
+                      {touchOnly && playing && (
+                        <div className="dr-tools dr-tools-t">
+                          <span className="dr-tip">Turn your phone sideways or go full screen for a bigger view.</span>
+                          <button type="button" className="dr-ib" onClick={toggleMusic} aria-label={music ? 'Sound off' : 'Sound on'}>{music ? <Volume2 size={18} /> : <VolumeX size={18} />}</button>
+                          <button type="button" className="dr-ib" onClick={enterImm} aria-label="Full screen"><Maximize2 size={18} /></button>
+                          <button type="button" className="dr-ib dr-fill" onClick={togglePause} aria-label={paused ? 'Resume' : 'Pause'}>{paused ? <PlayIco /> : <PauseIco />}</button>
+                        </div>
+                      )}
+
+                      <div className="dr-status">
+                        <span className="dr-world" aria-label={`World 1-${curLevel + 1}`}><span>World</span><b>1-{curLevel + 1}</b></span>
+                        <div className="dr-words">
+                          <span className="dr-say">{statusLine}</span>
+                          <span className="dr-help">{helpLine}</span>
+                        </div>
+                      </div>
+
+                      {touchOnly && playing && !imm && (
+                        <div className="dr-padrow">{padL}{padR}</div>
+                      )}
+
+                      {!touchOnly && playing && (
+                        <div className="dr-tools dr-tools-d">
+                          <span className="dr-keys" aria-hidden="true">
+                            <span className="dr-key">&larr;</span><span className="dr-key">&rarr;</span><span className="dr-kt">move</span>
+                            <span className="dr-key">Space</span><span className="dr-kt">jump</span>
+                            <span className="dr-key">Shift</span><span className="dr-kt">run</span>
+                          </span>
+                          <button type="button" className="dr-ib" onClick={toggleMusic} aria-label={music ? 'Sound off' : 'Sound on'}>{music ? <Volume2 size={18} /> : <VolumeX size={18} />}</button>
+                          {fsOk && <button type="button" className="dr-ib" onClick={goFull} aria-label="Full screen"><Maximize2 size={18} /></button>}
+                          <button type="button" className="dr-pause dr-fill" onClick={togglePause}>{paused ? <><PlayIco /> Resume</> : <><PauseIco /> Pause</>}</button>
+                        </div>
+                      )}
+
                       {over && (
-                        <button onClick={startRun} style={{ marginTop: 12, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: SANS, fontWeight: 800, fontSize: 15, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, background: STAGE ? STAGE_C : T.cta, border: `2px solid ${STAGE ? STAGE_C : T.cta}`, borderRadius: 10, padding: '13px 18px', cursor: 'pointer' }}>
+                        <button onClick={startRun} style={{ marginTop: 14, width: '100%', minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: SANS, fontWeight: 800, fontSize: 15, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, background: STAGE ? STAGE_C : T.cta, border: `2px solid ${STAGE ? STAGE_C : T.cta}`, borderRadius: 12, padding: '13px 18px', cursor: 'pointer' }}>
                           <RotateCcw size={16} /> Run it again
                         </button>
                       )}
-                      {over && res && (
-                        <p style={{ margin: '12px 0 0', fontSize: 12.5, color: FADED, fontWeight: 600, textAlign: 'center' }}>
-                          {res.cleared ? `Dario now controls all software business globally. All three levels in ${fmtRun(res.tenths)}${res.splits && res.splits.length === 3 ? ` (${res.splits.map(fmtRun).join(' · ')})` : ''}.` : `Out of lives in ${LEVEL_NAMES[Math.min(2, res.level)]} after ${fmtRun(res.tenths)}.`}
-                          {bestToday != null && (!res.cleared || bestToday < res.tenths) ? ` Your best today is ${fmtRun(bestToday)}.` : ''}
-                        </p>
-                      )}
+                      <p className="dr-foot">{touchOnly ? 'Your fastest full clear counts.' : 'Same course for everyone today. Run it as often as you like; your fastest full clear counts.'}</p>
                     </div>
                   )}
 
@@ -651,7 +729,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
                   iq={iq}
                   board={dailyBoard}
                   gameRank={allTime && allTime.ready
-                    ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '—', label: allTime.field != null ? `of ${Number(allTime.field).toLocaleString()} Dario all time` : 'all-time rank' }
+                    ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '–', label: allTime.field != null ? `of ${Number(allTime.field).toLocaleString()} Dario all time` : 'all-time rank' }
                     : null}
                   day={dayStats}
                   streak={isTodays ? myStats.cur : null}
@@ -756,15 +834,18 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
 
       <style dangerouslySetInnerHTML={{ __html: `
         .dr-box { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; width: 100%; max-width: min(900px, calc((100svh - 170px) * 1.7857)); margin: 0 auto; line-height: 0; }
-        .dr-cv { grid-area: cv; display: block; width: 100%; height: auto; aspect-ratio: 400 / 224; image-rendering: pixelated; image-rendering: crisp-edges; touch-action: none; background: #000; border-radius: 6px; }
+        .dr-cv { grid-area: cv; display: block; width: 100%; height: auto; aspect-ratio: 400 / 224; image-rendering: pixelated; image-rendering: crisp-edges; touch-action: none; background: #000; border-radius: 8px; }
         .dr-box { grid-template-areas: "cv"; }
         .dr-box.touch { max-width: 900px; grid-template-columns: 1fr 1fr; grid-template-areas: "cv cv" "pl pr"; gap: 10px; }
-        .dr-pl { grid-area: pl; justify-self: start; display: flex; gap: 10px; line-height: normal; }
-        .dr-pr { grid-area: pr; justify-self: end; display: flex; gap: 10px; line-height: normal; }
-        .dr-b { width: 68px; height: 62px; border-radius: 14px; border: 1px solid var(--stg-cell-line, #cfd5df); background: var(--stg-cell, #ffffff); color: var(--stg-ink, #1c1f27); font: 800 15px ${SANS}; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: pointer; }
-        .dr-b.on { filter: brightness(.86); transform: translateY(1px); }
-        .dr-run.lock { background: var(--stg-acc, #c2410c); border-color: var(--stg-acc, #c2410c); color: var(--stg-onramp, #ffffff); }
-        .dr-jump { width: 92px; background: var(--stg-acc, #c2410c); border-color: var(--stg-acc, #c2410c); color: var(--stg-onramp, #ffffff); }
+        .dr-pl { grid-area: pl; justify-self: start; display: flex; gap: 8px; line-height: normal; }
+        .dr-pr { grid-area: pr; justify-self: end; display: flex; gap: 8px; align-items: flex-end; line-height: normal; }
+        .dr-b { width: 80px; height: 72px; box-sizing: border-box; border-radius: 16px; border: 1.5px solid var(--stg-line3, #78839a); background: var(--stg-cell, #ffffff); color: var(--stg-ink, #0b0d12); font: 800 15px ${SANS}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; line-height: 1; padding: 0; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; cursor: pointer; }
+        .dr-b.on { background: var(--stg-surf2, #e4e9f1); transform: translateY(1px); }
+        .dr-run { width: 72px; font-size: 13px; background: transparent; color: var(--stg-ink2, #3f4757); }
+        .dr-run.lock { border: 2px solid var(--stg-acc-ink, #8a5a00); background: var(--stg-acc-tint, #fdf0c8); color: var(--stg-acc-ink, #8a5a00); }
+        .dr-on { font-size: 9px; letter-spacing: .06em; }
+        .dr-jump { width: 84px; height: 92px; border: 0; background: var(--stg-acc, #fbbf24); color: var(--stg-onramp, #1c1a14); font-size: 16px; }
+        .dr-jump.on { background: var(--stg-acc, #fbbf24); filter: brightness(.94); }
         /* Landscape on a phone or tablet: the controls sit BESIDE the screen, never on it. */
         @media (orientation: landscape) and (pointer: coarse) {
           .dr-box.touch { max-width: none; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "pl cv pr"; align-items: end; gap: 12px; }
@@ -772,21 +853,29 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
           .dr-box.touch .dr-pl, .dr-box.touch .dr-pr { justify-self: auto; flex-direction: column; padding-bottom: 4px; }
           .dr-box.touch .dr-b { width: 64px; height: 58px; }
           .dr-box.touch .dr-jump { height: 76px; }
+          .dr-padrow { display: none !important; }
         }
-        .dr-box:fullscreen, .dr-box:-webkit-full-screen { max-width: none; width: 100vw; height: 100vh; padding: 12px; box-sizing: border-box; background: #000; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "pl cv pr"; align-items: center; gap: 12px; }
+        /* Upright on a phone, outside the play layer: the pad sits at the foot, under the status line. */
+        @media (orientation: portrait) {
+          .dr-box.touch:not(.in-imm) { grid-template-columns: minmax(0, 1fr); grid-template-areas: "cv"; }
+          .dr-box.touch:not(.in-imm) > .dr-pl, .dr-box.touch:not(.in-imm) > .dr-pr { display: none; }
+        }
+        .dr-padrow { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-top: 18px; }
+        .dr-padrow .dr-pl, .dr-padrow .dr-pr { justify-self: auto; }
+        .dr-box:fullscreen, .dr-box:-webkit-full-screen { max-width: none; width: 100vw; height: 100vh; padding: 12px; box-sizing: border-box; background: var(--stg-ground, #000); grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "pl cv pr"; align-items: center; gap: 12px; }
         .dr-box:fullscreen .dr-cv { max-width: calc((100vh - 24px) * 1.7857); justify-self: center; }
         .dr-box:fullscreen .dr-pl, .dr-box:fullscreen .dr-pr { flex-direction: column; }
-        /* Full-screen play layer on phones and tablets: covers the whole window, controls beside the screen. */
-        .dr-imm { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; background: #000; touch-action: none; overscroll-behavior: none; padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+        /* Full-screen play layer on phones and tablets: covers the whole window, controls beside the screen. It
+           carries the stage page's register, so it is pale in light and dark in dark like the page under it. */
+        .dr-imm { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; min-height: 0; background: var(--stg-ground, #000); color: var(--stg-ink, #fff); touch-action: none; overscroll-behavior: none; padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
         .dr-imm .dr-box, .dr-imm .dr-box.touch { position: relative; max-width: none; width: 100%; height: 100%; box-sizing: border-box; padding: 12px; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr auto; grid-template-areas: "cv cv" "pl pr"; align-items: center; align-content: center; gap: 14px; }
         .dr-imm .dr-cv { width: 100%; max-width: calc((100svh - 150px) * 1.7857); justify-self: center; }
-        .dr-imm .dr-b { background: #1c2030; color: #ffffff; border-color: #3a4358; width: 76px; height: 70px; }
-        .dr-imm .dr-jump, .dr-imm .dr-run.lock { background: #c2410c; border-color: #c2410c; color: #ffffff; }
-        .dr-imm .dr-jump { width: 104px; }
+        .dr-imm .dr-b { width: 72px; height: 70px; }
+        .dr-imm .dr-jump { width: 92px; height: 84px; }
         .dr-ctl { position: absolute; top: 10px; right: 10px; z-index: 3; display: flex; gap: 8px; line-height: normal; }
-        .dr-x { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 999px; border: 1px solid #3a4358; background: rgba(28,32,48,.85); color: #ffffff; font: 700 16px ${SANS}; line-height: 1; cursor: pointer; }
+        .dr-x { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 999px; border: 1.5px solid var(--stg-line3, #3a4358); background: var(--stg-raise, #1c2030); color: var(--stg-ink, #ffffff); font: 700 16px ${SANS}; line-height: 1; cursor: pointer; }
         .dr-rot { display: none; }
-        @media (orientation: portrait) { .dr-imm .dr-rot { display: block; position: absolute; top: 20px; left: 14px; right: 160px; color: #9aa3bb; font: 700 12px ${SANS}; line-height: 1.3; } }
+        @media (orientation: portrait) { .dr-imm .dr-rot { display: block; position: absolute; top: 20px; left: 14px; right: 170px; color: var(--stg-mute, #9aa3bb); font: 700 12px ${SANS}; line-height: 1.3; } }
         @media (orientation: landscape) {
           .dr-imm .dr-box, .dr-imm .dr-box.touch { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: 1fr; grid-template-areas: "pl cv pr"; align-items: end; padding: 6px 10px; gap: 12px; }
           .dr-imm .dr-cv { align-self: center; max-width: calc((100svh - 16px) * 1.7857); }
@@ -795,16 +884,54 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
           .dr-imm .dr-b { width: 64px; height: 60px; }
           .dr-imm .dr-jump { width: 64px; height: 90px; }
         }
+        /* The meter, the status line and the controls around the screen. */
+        .dr-meter { display: flex; flex-direction: column; gap: 8px; margin: 0 0 14px; }
+        .dr-meter-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--stg-mute, #5f6774); }
+        .dr-acc { color: var(--stg-acc-ink, #8a5a00); font-weight: 800; }
+        .dr-narrow { display: none; }
+        .dr-segs { display: flex; gap: 6px; }
+        .dr-seg { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+        .dr-bar { display: flex; height: 8px; border-radius: 3px; overflow: hidden; background: var(--stg-line2, #c3cad6); }
+        .dr-bar > span { display: block; background: var(--stg-acc, #fbbf24); transition: width .2s linear; }
+        .dr-nm { font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--stg-mute, #5f6774); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dr-nm.on { color: var(--stg-acc-ink, #8a5a00); }
+        .dr-status { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+        .dr-world { width: 46px; height: 46px; flex: none; border-radius: 12px; background: var(--stg-acc, #fbbf24); color: var(--stg-onramp, #1c1a14); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; line-height: 1; }
+        .dr-world > span { font-size: 8.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+        .dr-world > b { font-size: 16px; font-weight: 800; }
+        .dr-words { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .dr-say { font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--stg-ink, #0b0d12); }
+        .dr-help { font-size: 12px; font-weight: 600; line-height: 1.35; color: var(--stg-mute, #5f6774); }
+        .dr-tools { display: flex; align-items: center; gap: 10px; }
+        .dr-tools-d { justify-content: flex-end; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--stg-line, #e5e7eb); }
+        .dr-tools-t { margin-top: 10px; gap: 8px; }
+        .dr-tip { flex: 1; min-width: 0; font-size: 12px; font-weight: 600; line-height: 1.35; color: var(--stg-mute, #5f6774); }
+        .dr-keys { flex: 1; min-width: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 5px; font-size: 12px; font-weight: 600; color: var(--stg-mute, #5f6774); }
+        .dr-key { min-width: 36px; height: 36px; box-sizing: border-box; border-radius: 8px; border: 1.5px solid var(--stg-line3, #78839a); background: var(--stg-cell, #fff); color: var(--stg-ink2, #3f4757); font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; padding: 0 8px; }
+        .dr-kt { margin: 0 4px 0 2px; }
+        .dr-ib, .dr-pause { flex: none; box-sizing: border-box; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 7px; cursor: pointer; font-family: ${SANS}; -webkit-tap-highlight-color: transparent; }
+        .dr-ib { width: 48px; padding: 0; border: 1.5px solid var(--stg-line3, #78839a); background: transparent; color: var(--stg-ink2, #3f4757); }
+        .dr-pause { padding: 0 18px; font-size: 14px; font-weight: 800; }
+        .dr-fill { border: 0; background: var(--stg-acc, #fbbf24); color: var(--stg-onramp, #1c1a14); }
+        .dr-foot { margin: 14px 0 0; font-size: 12px; font-weight: 600; line-height: 1.4; color: var(--stg-mute, #5f6774); }
+        @media (max-width: 560px) {
+          .dr-wide { display: none; } .dr-narrow { display: inline; }
+          .dr-meter-row { font-size: 10px; }
+          .dr-segs { gap: 4px; } .dr-bar { height: 7px; } .dr-nm { display: none; }
+          .dr-status .dr-world { display: none; }
+          .dr-say { font-size: 14px; } .dr-help { font-size: 11.5px; }
+          .dr-keys { display: none; }
+        }
         /* The start screen: the share card, then one big button. */
-        .dr-hero { max-width: 900px; margin: 0 auto; border-radius: 12px; overflow: hidden; background: #12141c; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+        .dr-hero { max-width: 900px; margin: 0 auto; border-radius: 12px; overflow: hidden; background: var(--stg-raise, #12141c); border: 1px solid var(--stg-line, transparent); }
         .dr-hero-img { display: block; width: 100%; height: auto; aspect-ratio: 1200 / 630; image-rendering: pixelated; }
         .dr-hero-bar { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 16px 16px 18px; }
-        .dr-start { width: min(100%, 420px); font-family: "Press Start 2P", ui-monospace, monospace; font-size: 22px; letter-spacing: .08em; color: #ffffff; background: #c2410c; border: 0; border-bottom: 6px solid #7c2d12; border-radius: 12px; padding: 18px 24px; cursor: pointer; }
-        .dr-start:hover { filter: brightness(1.08); }
-        .dr-start:active { transform: translateY(3px); border-bottom-width: 3px; }
-        .dr-start:focus-visible { outline: 3px solid #f2c14e; outline-offset: 3px; }
-        .dr-hero-row { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; color: #c9d2e0; font: 700 12px ${SANS}; line-height: 1.4; }
-        .dr-hero-ic { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 999px; border: 1px solid #3a4358; background: #1c2030; color: #ffffff; cursor: pointer; }
+        .dr-start { width: min(100%, 420px); min-height: 60px; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 20px; font-weight: 400; letter-spacing: .08em; color: var(--stg-onramp, #1c1a14); background: var(--stg-acc, #fbbf24); border: 0; border-bottom: 5px solid color-mix(in srgb, var(--stg-acc, #fbbf24) 62%, #000); border-radius: 12px; padding: 16px 24px; cursor: pointer; }
+        .dr-start:hover { filter: brightness(1.05); }
+        .dr-start:active { transform: translateY(3px); border-bottom-width: 2px; }
+        .dr-start:focus-visible { outline: 3px solid var(--stg-acc-ink, #8a5a00); outline-offset: 3px; }
+        .dr-hero-row { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; color: var(--stg-ink2, #3f4757); font: 700 12px ${SANS}; line-height: 1.4; }
+        .dr-hero-ic { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 999px; border: 1.5px solid var(--stg-line3, #78839a); background: transparent; color: var(--stg-ink2, #3f4757); cursor: pointer; }
       ` }} />
 
       {!STAGE && <div style={{ display: focusMode ? 'none' : 'block' }}><Footer /></div>}

@@ -86,21 +86,151 @@ const STAGE_BOARD_CSS = `
 .stage-page .cx-a{display:flex;justify-content:center;}
 .stage-page .cx-a > *{flex:0 1 660px;min-width:0;}
 @media(max-width:640px){.stage-page .cx-a{align-items:stretch;}}
-.stage-page .cl-key:not(.cl-kx){background:var(--stg-surf2,rgba(255,255,255,0.08))!important;
-  color:var(--stg-ink,#e9edf4)!important;border:1px solid var(--stg-line,rgba(255,255,255,0.11))!important;}
 .stage-page .cl-btn{background:transparent!important;color:var(--stg-ink,#e9edf4)!important;
   border:1.5px solid var(--stg-line2,rgba(255,255,255,0.17))!important;}
-.stage-page .cl-cat{border:1px solid var(--stg-line,rgba(255,255,255,0.11));border-radius:8px;}
-.stage-page .cx-tries{color:var(--stg-mute,#8b95a8);}
-/* The category strip is the second biggest block on the page after the board,
-   and it is a row of labels, not a panel. Trimmed to read closer to the
-   ladder's weight, which is what buys the board its rows back. */
-.stage-page .cl-cats{gap:6px;}
-.stage-page .cl-cat{padding:6px 9px !important;gap:3px;}
-.stage-page .cl-cat-nm{font-size:11px !important;}
-.stage-page .cl-cat-ws{gap:4px !important;}
-.stage-page .cl-cat-ws > *{padding:1px 9px !important;font-size:11.5px !important;}
 .stage-page hr{border-color:var(--stg-line,rgba(255,255,255,0.11));}
+/* THE FOUR CATEGORY PASTELS (round seven, owner-approved mockup). Crux's own
+   colours, not the category ramp: yellow, green, blue, red, each a pale fill
+   carrying its own near-black ink. A pale fill with dark ink reads on either
+   ground, so the pair is the same in both registers; only the hairline that
+   keeps a pastel off a pale page is register-specific. */
+.stage-page{--cx-c0:#f2cc5b;--cx-t0:#3d3104;--cx-c1:#86cf94;--cx-t1:#0f2e16;--cx-c2:#9cc3f0;--cx-t2:#0b2c4f;--cx-c3:#f09a9a;--cx-t3:#4a0e0e;--cx-pill:#ffffff;--cx-catbd:transparent;}
+.stage-page[data-stage-theme='light']{--cx-c0:#f2cc5b;--cx-t0:#3d3104;--cx-c1:#86cf94;--cx-t1:#0f2e16;--cx-c2:#9cc3f0;--cx-t2:#0b2c4f;--cx-c3:#f09a9a;--cx-t3:#4a0e0e;--cx-pill:#ffffff;--cx-catbd:var(--stg-line2);}
+/* A key at rest is a raised surface on dark and a white key on light; a
+   spent mark is a solid grey mixed from the register's own ink and cell, so
+   it is opaque, quieter than a key, and carries --stg-ink2 legibly in both. */
+.stage-page{--cx-key:var(--stg-surf2);--cx-keybd:var(--stg-line2);--cx-spent:color-mix(in srgb, var(--stg-ink) 20%, var(--stg-cell));}
+.stage-page[data-stage-theme='light']{--cx-key:var(--stg-surf);--cx-keybd:var(--stg-line2);--cx-spent:color-mix(in srgb, var(--stg-ink) 20%, var(--stg-cell));}
+/* the board's own panel (desktop only): the mockup's white card on light,
+   a raised surface on dark. On a phone the board sits on the ground. */
+.stage-page .cx-panel{background:var(--stg-surf);border:1px solid var(--stg-line2);border-radius:20px;padding:18px 20px 16px;margin-top:14px;}
+.stage-page .cx-cur::after{background:var(--stg-ink);}
+.stage-page .cx-armed{box-shadow:0 0 0 2.5px var(--stg-ink) !important;z-index:2;}
+.stage-page .cx-unfiled::after{background:var(--stg-onramp);height:2.5px;bottom:4px;}
+.stage-page .cx-pip{border:1px solid var(--stg-onramp);box-shadow:none;width:calc(var(--cs) * 0.24);height:calc(var(--cs) * 0.24);top:2px;right:2px;border-radius:2px;box-sizing:border-box;}
+@media(max-width:640px){
+  .stage-page .cx-panel{background:transparent;border:0;border-radius:0;padding:0;margin-top:8px;}
+}
+`;
+
+// Round seven furniture, written once and read by both registers through the
+// stage tokens (each with a fallback for the ?stage=0 escape hatch).
+const CX_R7_CSS = `
+.cx-ph{display:none;}
+.cx-lbl{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute,#5f6774);}
+.cx-lbl b{color:var(--stg-acc-ink,#0369a1);font-weight:800;}
+.cx-lbl b.low{color:var(--stg-bad,#c0392b);}
+.cx-meter{display:flex;flex-direction:column;gap:8px;padding-top:4px;}
+.cx-mtop{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;}
+.cx-segs{display:flex;gap:4px;}
+.cx-segs i{flex:1;height:8px;border-radius:2px;background:var(--stg-line2,#c3cad6);}
+.cx-segs i.on{background:var(--stg-acc,#0369a1);}
+.cx-guess{display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.cx-guess .cx-lbl b{font-size:15px;letter-spacing:0;}
+.cx-pips{display:flex;gap:3px;flex-wrap:nowrap;min-width:0;}
+.cx-pips i{flex:0 1 7px;min-width:3px;height:12px;border-radius:2px;background:var(--stg-line2,#c3cad6);}
+.cx-pips i.on{background:var(--stg-acc,#0369a1);}
+.cx-pips i.on.low{background:var(--stg-bad,#c0392b);}
+.cx-chead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:8px;}
+.cx-chead .cx-lbl b{color:var(--stg-ink,#0f1420);}
+.cx-chead-r{font-size:11px;font-weight:700;color:var(--stg-mute,#5f6774);white-space:nowrap;}
+.cl-cats{margin-bottom:16px;}
+.cl-cat{border:1px solid var(--cx-catbd,transparent);border-radius:12px;gap:7px !important;padding:9px 10px;min-height:48px;box-sizing:border-box;align-items:stretch !important;}
+.cl-cat.cx-drop{outline:2.5px dashed currentColor;outline-offset:2px;}
+.cl-cat.cx-drop:focus-visible{outline-style:solid;}
+.cl-cat-nm{font-size:11.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;line-height:1.25;}
+.cl-cat-ws{display:flex;gap:5px;min-width:0;}
+.cx-slot0,.cx-pill{height:26px;box-sizing:border-box;border-radius:7px;font-family:${SANS};font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;overflow:hidden;white-space:nowrap;min-width:0;padding:0 6px;}
+.cx-slot0{flex:1 1 0;border:1.5px dashed;background:transparent;}
+.cx-pill{flex:0 1 auto;background:var(--cx-pill,#fff);border:1.5px solid var(--cx-pill,#fff);position:relative;text-overflow:ellipsis;}
+button.cx-pill::before{content:'';position:absolute;left:-2px;right:-2px;top:-9px;bottom:-9px;}
+.cx-num{position:absolute;top:2px;left:3px;font-size:calc(var(--cs) * 0.22);font-weight:800;line-height:1;}
+.cx-slotbar{display:flex;align-items:center;gap:10px;margin-top:14px;}
+.cx-ob{font-family:${SANS};font-weight:700;font-size:13px;background:transparent;color:var(--stg-ink2,#3f4757);border:1.5px solid var(--stg-dim,#616774);border-radius:12px;min-height:44px;cursor:pointer;touch-action:manipulation;}
+.cx-ob:hover{background:var(--stg-surf2,#e4e9f1);}
+.cx-ob:focus-visible,.cx-go:focus-visible,.cx-giveup:focus-visible,.cx-k:focus-visible{outline:2.5px solid var(--stg-acc,#0369a1);outline-offset:2px;}
+.cx-sq{width:44px;height:44px;flex:none;padding:0;display:inline-flex;align-items:center;justify-content:center;}
+.cx-hint{flex:none;padding:0 14px;line-height:1.15;}
+.cx-hint.off{color:var(--stg-mute,#5f6774);border-color:var(--stg-line2,#c3cad6);cursor:not-allowed;}
+.cx-hint.off:hover{background:transparent;}
+.cx-slotlbl{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
+.cx-slotlbl .t{font-size:15px;font-weight:800;color:var(--stg-ink,#0f1420);white-space:nowrap;}
+.cx-slotlbl .s{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cx-slotlbl .s{font-size:12px;font-weight:600;color:var(--stg-mute,#5f6774);}
+.cx-trywrap{margin-top:12px;display:flex;flex-direction:column;gap:6px;}
+.cx-tryhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;}
+.cx-notplaced{font-size:12px;font-weight:700;color:var(--stg-mute,#5f6774);}
+.cx-notplaced b{color:var(--stg-ink,#0f1420);letter-spacing:.12em;}
+.cx-tryrow{display:flex;gap:4px;flex-wrap:wrap;}
+.cx-mk{width:28px;height:28px;box-sizing:border-box;border-radius:6px;font-size:14px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;font-style:normal;flex:none;}
+.cx-mk.g{background:var(--stg-acc,#0369a1);color:var(--stg-onramp,#fff);border:0;}
+.cx-mk.y{background:transparent;color:var(--stg-ink,#0f1420);border:2px solid var(--stg-acc,#0369a1);}
+.cx-mk.x{background:var(--cx-spent,#c9cdd4);color:var(--stg-ink2,#3f4757);border:0;}
+.cx-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;font-weight:700;color:var(--stg-mute,#5f6774);margin-top:2px;}
+.cx-legend span{display:inline-flex;align-items:center;gap:5px;}
+.cx-legend .cx-mk{width:12px;height:12px;border-radius:3px;}
+.cx-foot{display:flex;align-items:center;justify-content:flex-end;gap:10px;border-top:1px solid var(--stg-line2,#c3cad6);padding-top:14px;margin-top:14px;}
+.cx-say{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.cx-say .s{font-size:14px;font-weight:700;color:var(--stg-ink,#0f1420);}
+.cx-say .h{font-size:12px;font-weight:600;color:var(--stg-mute,#5f6774);}
+.cx-acts{display:flex;gap:10px;flex:none;}
+.cx-wide{padding:0 16px;min-height:48px;font-size:14px;}
+.cx-go{font-family:${SANS};font-weight:800;font-size:14px;background:var(--stg-acc,#0369a1);color:var(--stg-onramp,#fff);border:2px solid var(--stg-acc,#0369a1);border-radius:12px;padding:0 18px;min-height:48px;cursor:pointer;touch-action:manipulation;}
+.cx-go.armed{background:transparent;color:var(--stg-ink,#0f1420);border-color:var(--stg-bad,#c0392b);}
+.cx-under{display:flex;justify-content:space-between;align-items:center;gap:16px;padding-top:6px;}
+.cx-under .n{font-size:12px;font-weight:600;color:var(--stg-mute,#5f6774);}
+.cx-giveup{flex:none;background:none;border:0;padding:0 4px;min-height:44px;cursor:pointer;font-family:${SANS};font-size:12px;font-weight:700;color:var(--stg-ink2,#3f4757);text-decoration:underline;text-underline-offset:3px;white-space:nowrap;}
+.cx-giveup.armed{color:var(--stg-bad,#c0392b);}
+.cx-kb{max-width:470px;margin:12px auto 0;}
+.cx-kbrow{display:flex;gap:4px;margin-bottom:5px;justify-content:center;}
+.cl-key.cx-k{flex:1 0 0;min-width:0;height:44px;border-radius:6px;font-size:15px;background:var(--cx-key,#fff);color:var(--stg-ink,#0f1420);border:1px solid var(--cx-keybd,#c3cad6);box-sizing:border-box;}
+.cl-key.cx-k.g{background:var(--stg-acc,#0369a1);color:var(--stg-onramp,#fff);border-color:var(--stg-acc,#0369a1);}
+.cl-key.cx-k.y{border:2px solid var(--stg-acc,#0369a1);}
+.cl-key.cx-k.x{background:var(--cx-spent,#c9cdd4);color:var(--stg-ink2,#3f4757);border-color:transparent;}
+.cl-key.cx-k.cx-kent{flex:1.6 0 0;font-size:12px;background:var(--stg-acc,#0369a1);color:var(--stg-onramp,#fff);border-color:var(--stg-acc,#0369a1);}
+.cl-key.cx-k.cx-kback{background:var(--cx-key,#fff);color:var(--stg-ink,#0f1420);border-color:var(--cx-keybd,#c3cad6);font-size:17px;}
+@media(max-width:640px){
+  .cx-dk{display:none;}
+  .cx-ph{display:inline;}
+  .cx-meter{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:6px 10px;padding-top:2px;}
+  .cx-mtop,.cx-guess{display:contents;}
+  .cx-lbl{font-size:10px;white-space:nowrap;}
+  .cx-segs{gap:3px;}
+  .cx-segs i{height:6px;}
+  .cx-pips i{height:10px;}
+  .cx-chead{display:none;}
+  .cl-cats{grid-template-columns:1fr 1fr !important;gap:6px !important;margin-bottom:8px;}
+  .cl-cat{border-radius:10px;min-height:0;}
+  .cl-cat-nm{font-size:10px;}
+  .cl-cat-ws{gap:4px;}
+  .cx-slot0,.cx-pill{height:20px;font-size:9.5px;border-radius:6px;}
+  button.cx-pill::before{top:-12px;bottom:-12px;}
+  .cx-slotbar{gap:8px;margin-top:8px;}
+  .cx-slotlbl{line-height:1.2;}
+  .cx-slotlbl .t{font-size:14px;white-space:normal;}
+  .cx-slotlbl .s{font-size:11px;}
+  .cx-hint{font-size:12px;padding:0 10px;}
+  .cx-trywrap{margin-top:7px;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:8px;}
+  .cx-tryhead{order:2;flex-direction:column;align-items:flex-start;gap:0;line-height:1.2;}
+  .cx-tryhead .cx-lbl{font-size:11px;letter-spacing:0;text-transform:none;}
+  .cx-notplaced{font-size:11px;}
+  .cx-tries{order:1;max-height:none !important;overflow:visible !important;}
+  .cx-tryrow{gap:2px;flex-wrap:nowrap;}
+  .cx-tryrow:not(:last-child){display:none;}
+  .cx-tryrow .cx-mk{width:23px;height:23px;font-size:12px;border-radius:5px;}
+  .cx-legend{display:none;}
+  .cx-foot{border-top:0;padding-top:0;margin-top:7px;flex-wrap:wrap;}
+  .cx-say .s{font-size:13px;}
+  .cx-say .h{display:none;}
+  .cx-acts{flex:1 1 100%;}
+  .cx-acts:empty{display:none;}
+  .cx-acts .cx-go{flex:1;}
+  .cx-under{padding-top:0;}
+  .cx-under .n{font-size:11.5px;}
+  .cx-kb{margin-top:8px;}
+  .cl-key.cx-k{font-size:16px;}
+}
+@media(max-width:400px){.cx-tryrow .cx-mk{width:21px;height:21px;font-size:11px;}}
 `;
 
 // Editorial ink-and-paper identity (owner-approved mockup, 2026-07-11).
@@ -635,7 +765,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
     // flips: pale step on dark, dark twin on light. These chips do not flip —
     // they are always the pale CATEGORY_RAMP step — so the sweep that moved
     // every RAMP_INK to --stg-onramp made them white-on-pastel in light mode.
-    ? { bg: CATEGORY_RAMP[ci % CATEGORY_RAMP.length], tc: RAMP_INK }
+    ? { bg: `var(--cx-c${ci % 4})`, tc: `var(--cx-t${ci % 4})` }
     : CAT_COLORS[ci]);
   // TEXT and FILL are different problems here, which is why there are two
   // names rather than one restyled COLORS. Near-black TEXT is invisible on
@@ -782,7 +912,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
     if (guess === slot.word) {
       g2.solved = { ...g2.solved, [sel]: true };
       g2.order = [...g2.order, sel];
-      say(`${slot.word} — solved. File it under a category.`);
+      say(`${slot.word} solved. File it under a category.`);
     }
     sweepAutoSolve(g2);
 
@@ -848,7 +978,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
     if (!playing) return;
     const occupants = Object.keys(g.assigned).filter((w) => g.assigned[w] === ci && w !== word);
     if (occupants.length >= PUZZLE.categories[ci].words.length) {
-      say(`${PUZZLE.categories[ci].name} is already full — tap a word there to take it back`);
+      say(`${PUZZLE.categories[ci].name} is already full. Tap a word there to take it back.`);
       return;
     }
     setG({ ...g, assigned: { ...g.assigned, [word]: ci } });
@@ -952,12 +1082,12 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
       // The cost rides along in the message: a reveal that finishes the word
       // skips the plain hint toast, and the player still needs to hear it.
       say(paid
-        ? `${slot.word} — solved, for 1 guess and 1 point. File it under a category.`
-        : `${slot.word} — solved. File it under a category.`);
+        ? `${slot.word} solved, for 1 guess and 1 point. File it under a category.`
+        : `${slot.word} solved. File it under a category.`);
       setSel(nextUnsolved(g2, sel));
       setPick(slot.word);
     } else {
-      say(paid ? 'Letter revealed — 1 guess and 1 point.' : 'Free hint used — that was the one.');
+      say(paid ? 'Letter revealed: 1 guess and 1 point.' : 'Free hint used. That was the one.');
     }
     setG(g2);
   }
@@ -1068,7 +1198,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
   }
   function copyShare() {
     const text = playing
-      ? `Crux #${PUZZLE.num} \u2014 a clueless crossword. Can you crack it?\n${shareUrl()}`
+      ? `Crux #${PUZZLE.num}: a clueless crossword. Can you crack it?\n${shareUrl()}`
       : shareText();
     // Mobile: native share sheet (like the big daily puzzles) — the receiving
     // app gets the text directly, line breaks intact, no clipboard quirks.
@@ -1212,7 +1342,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
     }
     const inSel = playing && selCellKeys.has(k) && !g.solved[sel];
     const base = {
-      width: 'var(--cs)', height: 'var(--cs)', borderRadius: 4,
+      width: 'var(--cs)', height: 'var(--cs)', borderRadius: STAGE ? 'var(--cx-r, 5px)' : 4, boxSizing: 'border-box',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontFamily: SANS, fontWeight: 800, fontSize: 'calc(var(--cs) * 0.48)',
       cursor: playing ? 'pointer' : 'default', userSelect: 'none',
@@ -1225,15 +1355,21 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
     // A LOCKED LETTER IS THE WIN STATE, so on the stage it takes the game's
     // own category step. Left as near-black it would be a near-black cell on
     // a near-black ground: the one place the fill genuinely stops working.
-    if (green) return { ...base, background: SPAL ? BOARD_C : COLORS.ink, color: SPAL ? BOARD_ON : T.white, border: `1.5px solid ${SPAL ? BOARD_C : COLORS.ink}`, boxShadow: SPAL ? 'none' : 'inset 0 2px 4px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.5)' };
-    if (lost) return { ...base, background: SPAL ? 'transparent' : TILE, color: `var(--stg-ink, ${COLORS.rust})`, border: '1.5px dashed rgba(192,57,43,0.55)' };
+    // ROUND SEVEN (owner-approved mockup): a LOCKED letter is a filled
+    // accent square carrying the accent's own ink. The category pastels are
+    // Crux's own colours now, not the ramp, so the accent no longer claims a
+    // category. The selected word is an accent wash with an accent edge, the
+    // cursor square takes an ink ring, and an empty square is a board cell.
+    if (green) return { ...base, background: SPAL ? 'var(--stg-acc)' : COLORS.ink, color: SPAL ? 'var(--stg-onramp)' : T.white, border: `1.5px solid ${SPAL ? 'var(--stg-acc)' : COLORS.ink}`, boxShadow: SPAL ? 'none' : 'inset 0 2px 4px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.5)' };
+    if (lost) return { ...base, background: SPAL ? 'var(--stg-cell)' : TILE, color: `var(--stg-bad, ${COLORS.rust})`, border: `1.5px dashed ${SPAL ? 'var(--stg-bad)' : 'rgba(192,57,43,0.55)'}` };
     if (inSel) {
       const isCursor = cursorKey === k;
       return {
         ...base,
-        background: SPAL ? (isCursor ? SPAL.selCur : SPAL.sel) : (isCursor ? '#dce9ff' : '#edf3ff'),
+        background: SPAL ? 'var(--stg-acc-tint)' : (isCursor ? '#dce9ff' : '#edf3ff'),
         color: SPAL ? INK : COLORS.ember,
-        border: `2px solid ${SPAL ? (isCursor ? BOARD_C : SPAL.selB) : (isCursor ? COLORS.ember : 'rgba(37,99,235,0.5)')}`,
+        border: SPAL ? '1.5px solid var(--stg-acc)' : `2px solid ${isCursor ? COLORS.ember : 'rgba(37,99,235,0.5)'}`,
+        ...(SPAL && isCursor ? { boxShadow: '0 0 0 2.5px var(--stg-ink)', zIndex: 1 } : null),
       };
     }
     return { ...base, background: SPAL ? SPAL.tile : TILE, color: SPAL ? INK : `var(--stg-ink, ${COLORS.ink})`, border: `1.5px solid ${SPAL ? SPAL.tileB : TILE_BORDER}`, boxShadow: SPAL ? 'none' : 'inset 0 1px 2px rgba(28,30,36,0.07)' };
@@ -1267,6 +1403,60 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
     ? { g: { bg: BOARD_C, fg: BOARD_ON }, y: { bg: 'color-mix(in srgb, var(--stg-ink) 34%, transparent)', fg: INK }, x: { bg: SPAL.spent, fg: SPAL.spentInk } }
     : { g: { bg: COLORS.ink, fg: T.white }, y: { bg: '#e6b93f', fg: '#5c4a06' }, x: { bg: '#c9cdd4', fg: '#40434b' } };
 
+  // ROUND SEVEN board furniture (owner-approved mockup, 2026-10-14). Pure
+  // presentation: every value below is read from state the game already keeps.
+  const slotName = (id) => `${parseInt(id, 10)} ${String(id).endsWith('A') ? 'Across' : 'Down'}`;
+  const spentHere = ((g.slotGuesses || {})[sel]) || 0;
+  const nFiled = PUZZLE.slots.filter((s) => g.solved[s.id] && g.assigned[s.word] !== undefined).length;
+  const openN = editable.length;
+  // The status line: one sentence on what to do now, one muted line on how.
+  let footSay = null;
+  let footHelp = null;
+  if (playing) {
+    if (readyToLock) {
+      footSay = g.left <= 0 ? 'Out of guesses. Everything solved is filed: submit to score it.' : 'Every word is solved and filed. Submit when you are ready.';
+      footHelp = 'One submit ends the puzzle. You can still move a filed word first.';
+    } else if (pick) {
+      footSay = <>Filing <b>{pick}</b>: tap a category above.</>;
+      footHelp = 'Filing stays secret until you submit.';
+    } else if (allWordsSolved || g.left <= 0) {
+      footSay = g.left <= 0 ? 'Out of guesses. File your solved words, then submit.' : 'Every word is solved. File each one, then submit.';
+      footHelp = 'Tap a word on the board, then a category.';
+    } else if (slot && g.solved[sel]) {
+      footSay = `${slotName(sel)} is solved. Pick an open word.`;
+    } else if (slot) {
+      footSay = typed.length < openN
+        ? <><span className="cx-dk">Type the {openN} open square{openN === 1 ? '' : 's'} of {slotName(sel)}, then Enter.</span><span className="cx-ph">Type the {openN} open square{openN === 1 ? '' : 's'}, then Enter.</span></>
+        : <>Press Enter to guess {slotName(sel)}.</>;
+      footHelp = 'A locked letter also fills the word it crosses.';
+    }
+  }
+  // The keyboard: the three tries marks, so a key reads the same as a square.
+  const cruxKeyboard = (g.left > 0 && !allWordsSolved) ? (
+    <div className="cx-kb" role="group" aria-label="Keyboard">
+      {KB.map((row, ri) => (
+        <div key={ri} className="cx-kbrow">
+          {ri === 2 && (
+            <button type="button" className="cl-key cl-kx cx-k cx-kent" onClick={() => onKey('ENTER')} aria-label="Enter guess"
+              style={STAGE ? undefined : { background: COLORS.ember, color: T.white }}>ENTER</button>
+          )}
+          {row.split('').map((ch) => {
+            const st = keyState[ch];
+            const kc = st ? kbColors[st] : { bg: T.white, fg: COLORS.ink };
+            return (
+              <button key={ch} type="button" className={`cl-key cl-kx cx-k${st ? ` ${st}` : ''}`} onClick={() => onKey(ch)}
+                aria-label={`${ch}${st === 'g' ? ', locked' : st === 'y' ? ', in the word' : st === 'x' ? ', not in the word' : ''}`}
+                style={STAGE ? undefined : { background: kc.bg, color: kc.fg }}>{ch}</button>
+            );
+          })}
+          {ri === 2 && (
+            <button type="button" className="cl-key cx-k cx-kent cx-kback" onClick={() => onKey('BACK')} aria-label="Delete">&#9003;</button>
+          )}
+        </div>
+      ))}
+    </div>
+  ) : null;
+
   // Shared rules body — rendered in both the how-to-play modal and the start tile.
   const rulesBody = (
     <DailyRules
@@ -1275,8 +1465,9 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
       chips={STAGE ? [
         // The swatches are the BOARD's own values, not a description of them,
         // so the legend cannot drift from the grid again.
-        { label: 'Filled = right letter, right square', style: { background: BOARD_C, color: BOARD_ON, border: `1.5px solid ${BOARD_C}` } },
-        { label: 'Shaded = in the word, different square', style: { background: 'color-mix(in srgb, var(--stg-ink) 34%, transparent)', color: INK, border: '1.5px solid var(--stg-line2)' } },
+        { label: 'Filled = right letter, right square', style: { background: 'var(--stg-acc)', color: 'var(--stg-onramp)', border: '2px solid var(--stg-acc)' } },
+        { label: 'Outlined = in the word, different square', style: { background: 'transparent', color: INK, border: '2px solid var(--stg-acc)' } },
+        { label: 'Grey = not in the word', style: { background: 'var(--cx-spent)', color: 'var(--stg-ink2)', border: '2px solid var(--cx-spent)' } },
       ] : [
         { label: 'Dark = right letter, right square', style: { background: COLORS.ink, color: T.white, border: `1.5px solid var(--stg-line, ${COLORS.ink})` } },
         { label: 'Yellow = in the word, different square', style: { background: '#e6b93f', color: '#5c4a06', border: '1.5px solid #5c4a06' } },
@@ -1379,8 +1570,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
              which is the better trade. At 1080 tall nothing changes at all. */
           .cl-grid{--cs:min(${CS_FILL}px, calc((596px - ${(COLS - 1) * 3}px)/${COLS}), max(${CS_MIN}px, calc((100vh - var(--cx-room, ${VROOM}px) - ${GAPS}px)/${ROWS})));}
           @media (max-width:900px){.cl-grid{--cs:min(${CS_FILL}px, calc((100vw - ${88 + (COLS - 1) * 3}px)/${COLS}), max(${CS_MIN}px, calc((100vh - var(--cx-room, ${VROOM}px) - ${GAPS}px)/${ROWS})));}}
-          @media (max-width:560px){.cx-wrap{padding-left:14px !important;padding-right:14px !important;}.cl-grid{--cs:min(46px, calc((100vw - ${52 + (COLS - 1) * 3}px)/${COLS}));}.cl-panel{padding:11px 11px 13px !important;}.cl-cat{flex-direction:column;align-items:flex-start;gap:5px;padding:9px 11px !important;}}
-          @media (max-width:430px){.cl-cats{grid-template-columns:1fr;}}
+          @media (max-width:560px){.cx-wrap{padding-left:16px !important;padding-right:16px !important;}.cl-grid{--cs:min(46px, calc((100vw - ${52 + (COLS - 1) * 3}px)/${COLS}));}.cl-panel{padding:${STAGE ? '0' : '11px 11px 13px'} !important;}.cl-cat{flex-direction:column;align-items:stretch;gap:3px;padding:5px 7px !important;}}
           .cx-htp-s{display:none;}
           @media(max-width:520px){.cx-htp-f{display:none;}.cx-htp-s{display:inline;}}
           @media(max-width:560px){.cx-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.cx-ttl h1{font-size:21px;letter-spacing:0.02em;}.cx-ttl .cx-ttl-dt{font-size:15px;}.cx-ttl-dot{display:none;}}
@@ -1404,6 +1594,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
           @keyframes cxpulseA{0%{box-shadow:0 0 0 0 rgba(37,99,235,0);}45%{transform:scale(1.18);box-shadow:0 0 0 5px rgba(37,99,235,0.4);}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(37,99,235,0);}}
           @keyframes cxpulseB{0%{box-shadow:0 0 0 0 rgba(37,99,235,0);}45%{transform:scale(1.18);box-shadow:0 0 0 5px rgba(37,99,235,0.4);}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(37,99,235,0);}}
           @keyframes cxcat{from{background:${STAGE ? 'transparent' : 'var(--white)'};color:transparent;transform:scale(.82);}}
+          ${CX_R7_CSS}
         ` }} />
 
         {/* puzzle content centered: the page column is 1180, the puzzle column
@@ -1466,42 +1657,66 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
             // panel reads as a second ground nobody asked for.
             ? { background: 'transparent', border: 'none', borderRadius: 0, padding: 0, boxShadow: 'none', marginBottom: 12 }
             : { background: `var(--stg-surf, ${T.white})`, border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: '14px 16px 16px', boxShadow: '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
-            {!LOFT && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12 }}>
-              <span style={{ whiteSpace: 'nowrap' }}><b style={{ color: g.left <= 3 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{g.left}</b> guesses</span>
-              <span style={{ flex: 1, height: 5, background: 'rgba(28,30,36,0.1)', borderRadius: 3, overflow: 'hidden', minWidth: 36 }}>
-                <span style={{ display: 'block', height: '100%', width: `${Math.max(0, Math.min(100, (g.left / PUZZLE.guesses) * 100))}%`, background: g.left <= 3 ? COLORS.rust : COLORS.ember, transition: 'width .2s' }} />
-              </span>
-              <span style={{ whiteSpace: 'nowrap' }}><b style={{ color: INK, fontWeight: 500 }}>{g.order.length}</b>/{PUZZLE.slots.length} words</span>
+            <div className="cx-in">
+            {/* THE METER (round seven). Words solved as eight segments, and the
+                shared guess budget as one pip per guess, so both of the
+                numbers a player is spending read at a glance. */}
+            <div className="cx-meter">
+              <div className="cx-mtop">
+                <span className="cx-lbl cx-words"><span className="cx-dk">Words solved &middot; <b>{g.order.length}</b> of {PUZZLE.slots.length}</span><span className="cx-ph"><b>{g.order.length}</b>/{PUZZLE.slots.length} solved</span></span>
+                {playing && g.order.length > 0 && (
+                  <span className="cx-lbl cx-dk">{nFiled} filed{solvedUnfiled.length ? <> &middot; {solvedUnfiled.length} waiting to file</> : null}</span>
+                )}
+              </div>
+              <div className="cx-segs" aria-hidden="true">
+                {PUZZLE.slots.map((s, i) => <i key={s.id} className={i < g.order.length ? 'on' : undefined} />)}
+              </div>
+              <div className="cx-guess">
+                <span className="cx-lbl"><span className="cx-dk">Guesses left </span><b className={g.left <= 3 ? 'low' : undefined}>{g.left}</b><span className="cx-ph"> of {PUZZLE.guesses} guesses left</span></span>
+                <span className="cx-pips" aria-label={`${g.left} of ${PUZZLE.guesses} guesses left`}>
+                  {Array.from({ length: PUZZLE.guesses }, (_, i) => <i key={i} className={i < g.left ? (g.left <= 3 ? 'on low' : 'on') : undefined} />)}
+                </span>
+              </div>
             </div>
-            )}
 
-            {/* category clues — the headline turns into a filing prompt once
+            <div className="cx-panel">
+            {/* category clues: the headline turns into a filing prompt once
                 there are solved words waiting to be placed */}
-            <div style={{ fontSize: 12.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.05em', color: FADED, marginBottom: 8 }}>
-              {playing && solvedUnfiled.length > 0
-                ? <>The categories: tap to file completed words</>
-                : <>The categories: each hides {PUZZLE.categories[0].words.length === 3 ? 'three' : 'two'} of the {PUZZLE.slots.length === 12 ? 'twelve' : 'eight'} words</>}
+            <div className="cx-chead">
+              <span className="cx-lbl">
+                {playing && pick
+                  ? <>Filing <b>{pick}</b>: tap a category</>
+                  : playing && solvedUnfiled.length > 0
+                    ? <>The categories &middot; tap to file completed words</>
+                    : <>The categories &middot; each hides {PUZZLE.categories[0].words.length === 3 ? 'three' : 'two'} of the {PUZZLE.slots.length === 12 ? 'twelve' : 'eight'} words</>}
+              </span>
+              {playing && <span className="cx-chead-r">Filing stays secret until you submit</span>}
             </div>
             {/* No inline grid-template-columns: it beat the .cl-cats rules,
                 which is why the 430px one never fired. Columns live in CSS. */}
-            <div className="cl-cats" style={{ marginBottom: 16 }}>
+            <div className="cl-cats">
               {PUZZLE.categories.map((cat, ci) => {
                 const cc = catTone(ci);
                 const filed = Object.keys(g.assigned).filter((w) => g.assigned[w] === ci);
                 const clickable = playing && pick;
                 return (
-                  <div key={ci} className="cl-cat" onClick={clickable ? () => fileWord(pick, ci) : undefined}
-                    style={{ background: cc.bg, borderRadius: 8, padding: '10px 12px', border: STAGE ? 'none' : '1.5px solid rgba(28,30,36,0.35)', boxShadow: STAGE ? 'none' : '2px 2px 0 rgba(28,30,36,0.10)', cursor: clickable ? 'pointer' : 'default', outline: clickable ? `2.5px dashed ${cc.tc}` : 'none', outlineOffset: 2 }}>
-                    <div className="cl-cat-nm" style={{ color: cc.tc, fontWeight: 800, fontSize: 12.5, textTransform: 'uppercase', letterSpacing: '.03em', lineHeight: 1.25, textShadow: STAGE ? 'none' : '0 1px 0 rgba(255,255,255,0.35)' }}>{cat.name}</div>
-                    <div className="cl-cat-ws" style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                  <div key={ci} className={`cl-cat${clickable ? ' cx-drop' : ''}`}
+                    onClick={clickable ? () => fileWord(pick, ci) : undefined}
+                    role={clickable ? 'button' : undefined}
+                    tabIndex={clickable ? 0 : undefined}
+                    aria-label={clickable ? `File ${pick} under ${cat.name}` : undefined}
+                    onKeyDown={clickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); fileWord(pick, ci); } } : undefined}
+                    style={{ background: cc.bg, color: cc.tc, cursor: clickable ? 'pointer' : 'default' }}>
+                    <div className="cl-cat-nm" style={{ color: cc.tc }}>{cat.name}</div>
+                    <div className="cl-cat-ws">
                       {cat.words.map((_, i) => {
                         const w = shown ? cat.words[i] : filed[i];
-                        if (!w) return <span key={i} style={{ background: 'rgba(255,255,255,0.28)', color: cc.tc, borderRadius: 6, padding: '3px 14px', fontWeight: 800, fontSize: 12.5 }}>?</span>;
-                        if (shown) return <span key={i} style={{ background: 'rgba(255,255,255,0.28)', color: cc.tc, borderRadius: 6, padding: '3px 8px', fontWeight: 700, fontSize: 12.5, opacity: 0.85 }}>{w}</span>;
+                        if (!w) return <span key={i} className="cx-slot0" style={{ color: cc.tc, borderColor: cc.tc }}>?</span>;
+                        if (shown) return <span key={i} className="cx-pill" style={{ color: cc.tc }}>{w}</span>;
                         return (
-                          <button key={i} onClick={playing ? (e) => { e.stopPropagation(); unfile(w); } : undefined} title={playing ? 'Tap to take back' : undefined}
-                            style={{ background: 'rgba(255,255,255,0.6)', color: cc.tc, border: 'none', borderRadius: 6, padding: '3px 8px', fontWeight: 800, fontSize: 12.5, fontFamily: SANS, cursor: playing ? 'pointer' : 'default' }}>
+                          <button key={i} type="button" className="cx-pill" onClick={playing ? (e) => { e.stopPropagation(); unfile(w); } : undefined} title={playing ? 'Tap to take back' : undefined}
+                            aria-label={playing ? `${w}, filed here. Tap to take it back` : w}
+                            style={{ color: cc.tc, cursor: playing ? 'pointer' : 'default' }}>
                             {w}
                           </button>
                         );
@@ -1527,10 +1742,11 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
                 }
                 const armed = fileArmKeys.has(k);
                 const cls = [cursorKey === k ? 'cx-cur' : '', armed ? 'cx-armed' : '', (!armed && fileUnfiledKeys.has(k)) ? 'cx-unfiled' : ''].filter(Boolean).join(' ') || undefined;
+                const locked = !!g.greens[k] && !(st.background && String(st.background).includes('--cx-c'));
                 return (
                   <div key={k} className={cls} onClick={() => cellClick(r, c)} style={st}>
-                    {startNum[k] ? <span style={{ position: 'absolute', top: 0, left: 3, fontSize: 'calc(var(--cs) * 0.24)', fontFamily: SERIF, fontStyle: 'italic', fontWeight: 700, opacity: 0.55 }}>{startNum[k]}</span> : null}
-                    {fileFiledPip[k] !== undefined ? <span className="cx-pip" style={{ background: CAT_COLORS[fileFiledPip[k]].bg }} /> : null}
+                    {startNum[k] ? <span className="cx-num" style={{ color: locked ? (STAGE ? 'var(--stg-onramp)' : T.white) : (String(st.background || '').includes('--cx-c') ? st.color : (STAGE && playing && selCellKeys.has(k) ? 'var(--stg-ink2, #aab5c7)' : FADED)) }}>{startNum[k]}</span> : null}
+                    {fileFiledPip[k] !== undefined ? <span className="cx-pip" style={{ background: catTone(fileFiledPip[k]).bg }} /> : null}
                     {cellLetter(r, c, info)}
                   </div>
                 );
@@ -1538,119 +1754,103 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
               </div>
             </div>
 
-          {/* selected slot bar — only while there are still words to guess */}
+          {/* selected slot bar: only while there are still words to guess */}
           {started && slot && !allWordsSolved && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 16, marginBottom: 10, flexWrap: 'wrap' }}>
-              <button className="cl-key" onClick={() => cycleSlot(-1)} aria-label="Previous word" style={{ background: `var(--stg-surf2, ${COLORS.paper})`, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ChevronLeft size={17} /></button>
-              <div style={{ fontSize: 14, fontWeight: 800, color: INK }}>
-                {slotLabel(sel)} <span style={{ color: FADED, fontWeight: 700 }}>&middot; {slot.word.length} letters &middot; {(g.slotGuesses[sel] || 0)} guess{(g.slotGuesses[sel] || 0) === 1 ? '' : 'es'} spent</span>
+            <div className="cx-slotbar">
+              <button type="button" className="cx-ob cx-sq" onClick={() => cycleSlot(-1)} aria-label="Previous word"><ChevronLeft size={19} strokeWidth={2.5} /></button>
+              <div className="cx-slotlbl">
+                <span className="t">{slotName(sel)} &middot; {slot.word.length} letters</span>
+                <span className="s">{spentHere} guess{spentHere === 1 ? '' : 'es'} spent<span className="cx-dk"> on this word</span><span className="cx-ph"> here</span></span>
               </div>
-              <button className="cl-key" onClick={() => cycleSlot(1)} aria-label="Next word" style={{ background: `var(--stg-surf2, ${COLORS.paper})`, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ChevronRight size={17} /></button>
+              <button type="button" className="cx-ob cx-sq" onClick={() => cycleSlot(1)} aria-label="Next word"><ChevronRight size={19} strokeWidth={2.5} /></button>
               {freeHintOk && (
-                <button className="cl-key" onClick={() => revealHint(false)} title="Reveal one letter in this word. Free, and only on your first ever Crux."
-                  style={{ marginLeft: 'auto', background: STAGE ? 'var(--stg-surf2)' : '#fdf6e3', border: '1.5px solid rgba(230,185,63,0.7)', height: 30, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 800, color: STAGE ? INK : '#8a6d1a' }}>
-                  <Lightbulb size={14} /> Free hint
+                <button type="button" className="cx-ob cx-hint" onClick={() => revealHint(false)} title="Reveal one letter in this word. Free, and only on your first ever Crux."
+                  aria-label="Free hint, reveals one letter, only on your first ever Crux">
+                  <span className="cx-dk">Free hint</span><span className="cx-ph">Free<br />hint</span>
                 </button>
               )}
               {paidHintOk && (
-                <button className="cl-key" onClick={() => revealHint(true)} disabled={!canAffordPaid}
+                <button type="button" className={`cx-ob cx-hint${canAffordPaid ? '' : ' off'}`} onClick={() => revealHint(true)} aria-disabled={!canAffordPaid}
                   title={canAffordPaid ? 'Reveal one letter in this word. Costs 1 guess and 1 point off your score.' : 'Not enough guesses left to buy a hint.'}
-                  style={{ marginLeft: freeHintOk ? 0 : 'auto', background: canAffordPaid ? (STAGE ? 'var(--stg-surf2)' : '#fdf6e3') : (STAGE ? 'var(--stg-surf)' : 'rgba(28,30,36,0.05)'), border: `1.5px solid ${canAffordPaid ? 'rgba(230,185,63,0.7)' : (STAGE ? 'var(--stg-line)' : 'rgba(28,30,36,0.16)')}`, height: 30, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 800, color: canAffordPaid ? (STAGE ? INK : '#8a6d1a') : FADED, cursor: canAffordPaid ? 'pointer' : 'not-allowed' }}>
-                  <Lightbulb size={14} /> Hint
-                  <span style={{ fontSize: 10, fontWeight: 800, opacity: 0.85 }}>&minus;1 guess &minus;1 pt</span>
+                  aria-label={canAffordPaid ? 'Hint, costs 1 guess and 1 point' : 'Hint, not enough guesses left'}>
+                  <span className="cx-dk">{freeHintOk ? <>Hint &middot; &minus;1 guess &minus;1 pt</> : <>Hint &middot; costs 1 guess and 1 point</>}</span><span className="cx-ph">Hint<br />&minus;1 guess &minus;1 pt</span>
                 </button>
               )}
             </div>
           )}
 
-          {started && !allWordsSolved && (
-            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 10, flexWrap: 'wrap', margin: '-4px 0 10px' }}>
-              {armGive && (
-                <span style={{ fontSize: 12, fontWeight: 700, color: FADED }}>Ends the puzzle now. Scores what you have solved and filed.</span>
-              )}
-              <button onClick={() => { if (armGive) { if (Date.now() - armGive < ARM_MIN_MS) return; giveUp(); } else { setArmGive(Date.now()); setTimeout(() => setArmGive(false), 3500); } }}
-                title={armGive ? 'Ends the puzzle now' : 'End the puzzle now instead of spending the rest of your guesses'}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armGive ? `var(--stg-bad, ${COLORS.rust})` : FADED, textDecoration: 'underline', textUnderlineOffset: 3, padding: 0 }}>
-                {armGive ? 'Press again' : 'Give up'}
-              </button>
-            </div>
-          )}
-
-          {/* every try on this slot, oldest first — see the guessLog note in submit() */}
+          {/* every try on this slot, oldest first: see the guessLog note in submit() */}
           {started && tries.length > 0 && !g.solved[sel] && (
-            <div style={{ marginBottom: 10 }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 5, flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 11.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.05em', color: FADED }}>
-                  {tries.length === 1 ? 'Your try' : `Your ${tries.length} tries`}
-                </span>
+            <div className="cx-trywrap">
+              <div className="cx-tryhead">
+                <span className="cx-lbl"><span className="cx-dk">{tries.length === 1 ? 'Your try' : `Your ${tries.length} tries`} at {slotName(sel)}</span><span className="cx-ph">Try {tries.length} of {tries.length}</span></span>
                 {presentUnplaced ? (
-                  <span style={{ fontSize: 11.5, color: FADED, fontWeight: 700 }}>
-                    in word: <b style={{ color: '#8a6d1a' }}>{presentUnplaced.split('').join(' ')}</b>
-                  </span>
+                  <span className="cx-notplaced"><span className="cx-dk">In the word, not placed: </span><span className="cx-ph">Not placed: </span><b>{presentUnplaced.split('').join(' ')}</b></span>
                 ) : null}
               </div>
               <div className="cx-tries" ref={triesRef}>
                 {tries.map((t, ti) => (
-                  <div key={ti} style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', opacity: ti === tries.length - 1 ? 1 : 0.66 }}>
-                    {t.word.split('').map((ch, i) => {
-                      const mc = markColor[t.marks[i]] || markColor.x;
-                      return <span key={i} style={{ width: 26, height: 26, borderRadius: 5, background: mc.bg, color: mc.fg, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13 }}>{ch}</span>;
-                    })}
+                  <div key={ti} className="cx-tryrow">
+                    {t.word.split('').map((ch, i) => <span key={i} className={`cx-mk ${t.marks[i] || 'x'}`}>{ch}</span>)}
                   </div>
                 ))}
+              </div>
+              <div className="cx-legend">
+                <span><i className="cx-mk g" />Right square, locks in</span>
+                <span><i className="cx-mk y" />In the word, other square</span>
+                <span><i className="cx-mk x" />Not in the word</span>
               </div>
             </div>
           )}
 
-          {/* desktop-only keyboard toggle — physical typing always works, so the
-              on-screen keys are collapsed by default and expand on demand */}
-          {started && g.left > 0 && !allWordsSolved && !mobileUi && (
-            <div style={{ textAlign: 'center', marginBottom: kbdOpen ? 8 : 0 }}>
-              <button onClick={() => setKbdOpen((o) => !o)} style={{ background: 'none', border: '1.5px solid rgba(28,30,36,0.22)', borderRadius: 8, padding: '6px 13px', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: FADED }}>
-                {kbdOpen ? 'Hide keyboard' : 'Show keyboard'}
-              </button>
+          {/* THE STATUS LINE: one sentence on what to do now, one muted line
+              on how it works, and the actions on the right. */}
+          {started && (
+            <div className="cx-foot">
+              <div className="cx-say">
+                <span className="s">{footSay}</span>
+                {footHelp ? <span className="h">{footHelp}</span> : null}
+              </div>
+              <div className="cx-acts">
+                {g.left > 0 && !allWordsSolved && !mobileUi && (
+                  <button type="button" className="cx-ob cx-wide" onClick={() => setKbdOpen((o) => !o)} aria-expanded={kbdOpen}>
+                    {kbdOpen ? 'Hide keyboard' : 'Show keyboard'}
+                  </button>
+                )}
+                {/* lock it in: single shot, concludes the puzzle, armed two-tap */}
+                {readyToLock ? (
+                  <button type="button" className={`cx-go${armLock ? ' armed' : ''}`} onClick={() => { if (armLock) { if (Date.now() - armLock < ARM_MIN_MS) return; lockIn(); } else { setArmLock(Date.now()); setTimeout(() => setArmLock(false), 3500); } }}>
+                    {armLock ? 'Tap again: this ends the puzzle' : 'Submit answers'}
+                  </button>
+                ) : (slot && !g.solved[sel] && !allWordsSolved && g.left > 0 && !mobileUi) ? (
+                  <button type="button" className="cx-go" onClick={() => onKey('ENTER')}>Enter guess</button>
+                ) : null}
+              </div>
             </div>
           )}
-          {/* keyboard (hidden once solved/out of guesses; on desktop also waits for the toggle) */}
-          {started && g.left > 0 && !allWordsSolved && (mobileUi || kbdOpen) && (
-            <div style={{ maxWidth: 470, margin: '0 auto' }}>
-              {KB.map((row, ri) => (
-                <div key={ri} style={{ display: 'flex', gap: 4, marginBottom: 5, justifyContent: 'center' }}>
-                  {ri === 2 && (
-                    <button className="cl-key cl-kx" onClick={() => onKey('ENTER')} style={{ flex: '1.6 0 0', height: 44, background: STAGE ? STAGE_C : COLORS.ember, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 11.5 }}>ENTER</button>
-                  )}
-                  {row.split('').map((ch) => {
-                    const st = keyState[ch];
-                    const kc = st ? kbColors[st] : (SPAL ? { bg: SPAL.key, fg: INK } : { bg: T.white, fg: COLORS.ink });
-                    return (
-                      <button key={ch} className="cl-key cl-kx" onClick={() => onKey(ch)} style={{ flex: '1 0 0', height: 44, background: kc.bg, color: kc.fg, fontSize: 15, border: st ? 'none' : (SPAL ? SPAL.keyB : '1.5px solid rgba(20,22,28,0.15)') }}>{ch}</button>
-                    );
-                  })}
-                  {ri === 2 && (
-                    <button className="cl-key" onClick={() => onKey('BACK')} aria-label="Delete" style={{ flex: '1.6 0 0', height: 44, background: `var(--stg-surf2, ${COLORS.paper})`, color: INK, fontSize: 16 }}>&#9003;</button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+          {started && !mobileUi && kbdOpen && cruxKeyboard}
+          </div>
 
-          {/* filing helper — the board is the word bank now, so this is just a
-              nudge; the "Placing X" state mirrors the armed word on the grid */}
-          {started && solvedUnfiled.length > 0 && (
-            <div style={{ margin: '2px 0 12px', fontSize: 13, fontWeight: 700, color: FADED, textAlign: 'center' }}>
-              {pick
-                ? <>Placing <span style={{ color: `var(--stg-ink, ${COLORS.ember})`, fontWeight: 800 }}>{pick}</span>: tap a category above</>
-                : <>Tap a completed word on the board, then a category. <span style={{ opacity: .85 }}>Underlined words aren&rsquo;t filed yet.</span></>}
+          {/* under the panel: the filing nudge and Give up */}
+          {started && (solvedUnfiled.length > 0 || !allWordsSolved) && (
+            <div className="cx-under">
+              <span className="n">
+                {armGive ? 'Ends the puzzle now. Scores what you have solved and filed.'
+                  : (playing && !pick && solvedUnfiled.length > 0)
+                    ? <><span className="cx-dk">{solvedUnfiled.join(', ')} {solvedUnfiled.length === 1 ? 'is' : 'are'} solved but not filed (underlined). Tap {solvedUnfiled.length === 1 ? 'it' : 'one'} on the board, then a category.</span><span className="cx-ph">{solvedUnfiled.join(', ')} {solvedUnfiled.length === 1 ? 'is' : 'are'} solved, not filed: tap {solvedUnfiled.length === 1 ? 'it' : 'one'}, then a category.</span></>
+                    : null}
+              </span>
+              {!allWordsSolved && (
+                <button type="button" className={`cx-giveup${armGive ? ' armed' : ''}`} onClick={() => { if (armGive) { if (Date.now() - armGive < ARM_MIN_MS) return; giveUp(); } else { setArmGive(Date.now()); setTimeout(() => setArmGive(false), 3500); } }}
+                  title={armGive ? 'Ends the puzzle now' : 'End the puzzle now instead of spending the rest of your guesses'}>
+                  {armGive ? 'Press again' : 'Give up'}
+                </button>
+              )}
             </div>
           )}
+          {started && mobileUi && cruxKeyboard}
+          </div>
 
-          {/* lock it in: single shot, concludes the puzzle — armed two-tap */}
-          {readyToLock && (
-            <button onClick={() => { if (armLock) { if (Date.now() - armLock < ARM_MIN_MS) return; lockIn(); } else { setArmLock(Date.now()); setTimeout(() => setArmLock(false), 3500); } }}
-              style={{ width: '100%', fontFamily: SANS, fontWeight: 800, fontSize: 15, letterSpacing: '0.05em', textTransform: 'uppercase', padding: '15px 10px', borderRadius: 10, border: 'none', background: armLock ? (STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : COLORS.ink) : (STAGE ? STAGE_C : COLORS.ember), color: STAGE ? (armLock ? INK : 'var(--stg-onramp, #08222e)') : T.white, cursor: 'pointer', marginTop: 18, marginBottom: 14 }}>
-              {armLock ? 'Tap again — this ends the puzzle' : 'Submit answers'}
-            </button>
-          )}
           <div className={STAGE ? undefined : 'loft-sol'}>
             {/* result */}
             {!playing && (
@@ -1701,7 +1901,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
-                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '\u2014',
+                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : 'n/a',
                     label: allTime.field != null ? `of ${Number(allTime.field).toLocaleString()} Crux all time` : 'all-time rank' }
                 : null}
               day={dayStats}
@@ -1794,7 +1994,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> — the colored-crossword tile opens today&apos;s puzzle, every day.</li>
+                  <li>Tap <b>Add</b>. The colored-crossword tile opens today&apos;s puzzle, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>
@@ -1872,7 +2072,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
           Crux is a free daily word puzzle from Mind Loft, a clueless crossword. Eight hidden words (twelve in the Sunday Edition) interlock in a compact grid, and the only hints are four visible categories; working out which words belong to them is the puzzle.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Guess real words to reveal letters: dark tiles lock a letter into its square and every crossing, yellow tiles mean the letter belongs elsewhere in the word. The whole board shares one guess budget, and a single submit files each solved word under its category: a point per solve, a point per correct placement.
+          Guess real words to reveal letters: filled tiles lock a letter into its square and every crossing, outlined tiles mean the letter belongs elsewhere in the word. The whole board shares one guess budget, and a single submit files each solved word under its category: a point per solve, a point per correct placement.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new Crux puzzle arrives every day, with a bigger Sunday Edition each week. No app, no signup. Play free in your browser and compare score, guesses, and time on the daily leaderboard. Prefer scrambles? Try <a href="/garble" style={{ color: INK, fontWeight: 800 }}>Garble</a>, our daily word scramble.
