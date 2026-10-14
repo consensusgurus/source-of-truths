@@ -7846,6 +7846,14 @@ deliberate and none of them a gap to fill later:
   as those banks grow. Mix-Up, Sort It and Ladder have their own generated banks
   (`scripts/gen-kids-*.mjs`, guarded by `isMain` so importing one for its vocabulary does not
   regenerate); Math Dash is generated from the day number at request time (`lib/kids-mathdash.js`).
+- **Recycling, confirmed 2026-10-14 (owner: "recycle the puzzles back through upon completion of
+  the inventory").** Mix-Up, Sort It, Ladder and Fit It hold 60 boards each from `KIDS_EPOCH`, so
+  their first lap ends 2026-11-09 and puzzle 61 is board 1 again, with no extension needed. Sixes
+  and Unpark cut their growing pool at the day SHOWN (`p.live <= day.dateIso`), never at today:
+  a pool cut at today grows daily, every archive number slides onto a different board, and the
+  date-keyed save slot then holds another board's state. Once the grown-up bank stops publishing
+  (Parker 2026-11-30, Sixes 2027-01-31 today) the pool freezes and simply loops. `verify-kids`
+  fails a page that cuts at today or picks without `pickCycleAt`, and prints each bank's lap.
 - **Its own look, `app/kids/KidsShell.jsx`**: Fredoka and Nunito, a butter ground, candy hues,
   `.kd-*` classes, the shared `KidsShell` layout, `useKidsSave`, `Confetti` and the six inline SVG
   `SHAPES`. Deliberately not the stage tokens or the Loft. Nothing on a kids page counts against

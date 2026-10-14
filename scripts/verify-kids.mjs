@@ -207,6 +207,33 @@ const load = async (rel) => import(pathToFileURL(join(root, rel)).href);
   const easy = park.PUZZLES.filter((p) => p.live <= today && !p.sunday && p.par <= 14);
   if (easy.length < 7) bad(`unpark: only ${easy.length} easy live boards`);
   else ok(`unpark: ${easy.length} easy live boards in the kids pool`);
+  // Archive stability: a page must cut its growing pool at the day being shown
+  // (day.dateIso), never at today, or past puzzle numbers drift to new boards.
+  for (const g of ['sixes', 'unpark']) {
+    const src = readFileSync(join(root, `app/kids/${g}/page.js`), 'utf8');
+    if (/p\.live <= today\b/.test(src)) bad(`${g}: pool is cut at today, so archive days drift; cut it at day.dateIso`);
+    else if (!/p\.live <= day\.dateIso/.test(src)) bad(`${g}: pool is not cut at day.dateIso`);
+    else ok(`${g}: pool cut at the day shown, archive picks are stable`);
+  }
+}
+
+// ---------------------------------------------------------------- cycles
+// The fixed banks never run out: a page picks bank[(n - 1) % length] through
+// pickCycleAt, so when the last board has been shown the bank starts over
+// from board 1. Report where each one is in its lap, and fail any page that
+// picks some other way.
+{
+  const { KIDS_EPOCH, kidsDayNumber, kidsDateForDay } = await load('lib/kids-daily.js');
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+  const n = kidsDayNumber(today);
+  for (const g of ['mixup', 'sortit', 'ladder', 'fitit']) {
+    const { PUZZLES } = await load(`app/kids/${g}/puzzles.js`);
+    const src = readFileSync(join(root, `app/kids/${g}/page.js`), 'utf8');
+    if (!/pickCycleAt\(PUZZLES, day\.n\)/.test(src)) { bad(`${g}: page does not cycle its bank with pickCycleAt`); continue; }
+    const lap = Math.floor((n - 1) / PUZZLES.length) + 1;
+    const lapEnd = kidsDateForDay(lap * PUZZLES.length);
+    ok(`${g}: ${PUZZLES.length} boards from ${KIDS_EPOCH}, lap ${lap} on board ${((n - 1) % PUZZLES.length) + 1}, starts over after ${lapEnd}`);
+  }
 }
 
 // ---------------------------------------------------------------- hub + registry

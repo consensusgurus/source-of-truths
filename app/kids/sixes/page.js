@@ -31,8 +31,14 @@ export const dynamic = 'force-dynamic';
 export default function KidsSixesPage({ searchParams }) {
   const today = etTodayISO();
   const day = resolveKidsDay(searchParams, today);
-  const gentle = PUZZLES.filter((p) => p.live <= today && p.level === 1 && !p.sunday);
-  const pool = gentle.length ? gentle : PUZZLES.filter((p) => p.live <= today);
+  // The pool is the boards live AS OF THE DAY BEING SHOWN, not as of today.
+  // The grown-up bank keeps going live, so a pool cut at today grows and every
+  // archive day's pick would slide onto a different board, under a save slot
+  // still holding the old board's state. Cut at the day's own date, each
+  // puzzle number maps to the same board forever, and once the grown-up bank
+  // stops publishing the pool freezes and simply loops (lib/kids-daily.js).
+  const gentle = PUZZLES.filter((p) => p.live <= day.dateIso && p.level === 1 && !p.sunday);
+  const pool = gentle.length ? gentle : PUZZLES.filter((p) => p.live <= day.dateIso);
   const p = pickCycleAt(pool, day.n);
   const board = p ? { given: p.given, sol: p.sol, num: p.num } : null;
   return (
