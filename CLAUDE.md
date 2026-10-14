@@ -4871,6 +4871,33 @@ launch push. If no, do not add a `sunday` field at all — an always-false flag 
 unfinished feature to the next session, which is exactly how the five vestigial ones
 above came to be.
 
+### A new game changes the category and set COPY too (owner rule, 2026-10-14)
+
+The category pages (`/card-games`, `/logic-puzzles`, ...) and the set pages under them take
+their ROSTER from the registry at render time, so a new game appears there the day its row
+lands. Their PROSE does not. `lib/puzzle-categories.js` and `lib/puzzle-sets.js` state the
+count and list the games by hand ("Seven free daily card games: a solitaire and a FreeCell
+deal...", "All seven, every day"), and nothing derives them. The 2026-10-14 audit found 25
+stale counts across nine pages at once: card games said five and had seven, logic 22 vs 23,
+numbers 13 vs 16, chess 3 vs 4, endgames 8 vs 9, the crowd FAQ said four with three games,
+and the rule-finding, classic-sudoku and board-endgame sets were each one short. The marked
+sudokus set still described Mercury and Polka after both had moved to the order sudokus.
+
+**Whenever a game launches, moves between sets, or retires, in the SAME push:**
+
+1. Update every count in that category's record AND its set's record: `description`, `lede`,
+   the "All N, every day" FAQ answer, and any count in `title` / `h1` / `start`. Numbers are
+   spelled out as words in this copy.
+2. Add the game to the LIST in the prose (description, lede, and the `how` paragraph that
+   walks the games), and to the `title` / `h1` if they name the members (chess, card games,
+   board endgames do). A "deepest of the five" or "hardest of the three" line goes stale the
+   same way; rewrite it so it does not carry a count.
+3. A game that MOVED sets comes out of the old set's prose and FAQ too.
+4. Run `node scripts/verify-category-copy.mjs`. It fails on any description or lede that
+   OPENS with a count that disagrees with the live roster, and on any "All N" FAQ answer that
+   does. It cannot see whether the list of games in the prose is complete; step 2 is by hand.
+   `verify-all` picks it up automatically.
+
 ---
 
 ## NOTHING TELLS YOU THE ROUND IS LOST WHILE YOU CAN STILL PLAY (owner rule, 2026-08-11)
