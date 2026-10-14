@@ -254,7 +254,7 @@ const BONUS_FROM = '2026-10-11';
 // 4 rows 6, so a double is worth more than two singles and a four-row clear is
 // the prize. Supersedes the +1 bonus row above. Date gated the same way, so no
 // day already played is re-ranked; `pts` is the running total in the saved run.
-const TIER_FROM = '2026-10-15';
+const TIER_FROM = '2026-10-14';
 const TIER_POINTS = { 1: 1, 2: 3, 3: 4, 4: 6 };
 const scoreRun = (st, bonus, tier) => tier
   ? Math.max(0, Number(st.pts) || 0)
@@ -443,6 +443,10 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     }
     if (saved && saved.v === 1 && Array.isArray(saved.grid) && saved.grid.length === ROWS && saved.grid[0].length === COLS) {
       const s = { ...freshState(COLS, ROWS), ...saved };
+      // A run saved before the points rule went live carries no `pts`. Seed it
+      // from what it had already cleared (rows plus the old +1 per four-row
+      // clear) so a paused run never loses the score it banked.
+      if (TIER && saved.pts == null) s.pts = scoreRows(Number(saved.lines) || 0) + Math.max(0, Number(saved.quads) || 0);
       gRef.current = s; setG(s);
       if (s.status === 'playing' && s.t0) { pausedRef.current = true; setPaused(true); }
     }
@@ -450,7 +454,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     setStats(getStats());
     try { setIdentity(JSON.parse(localStorage.getItem('sot_quiz_identity'))); } catch (e) {}
     setHydrated(true);
-  }, [STORE_KEY, REC_KEY, COLS, ROWS, PUZZLE.num, PUZZLE.resetAt]);
+  }, [STORE_KEY, REC_KEY, COLS, ROWS, PUZZLE.num, PUZZLE.resetAt, TIER]);
 
   // ---- identity + board + view ping ---------------------------------------
   useEffect(() => {
