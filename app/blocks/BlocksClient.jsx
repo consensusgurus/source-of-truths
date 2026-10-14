@@ -39,7 +39,7 @@ import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
-import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight, REGION_RAMP } from '@/lib/category-ramp';
+import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
 import useIqStanding from '../useIqStanding';
 import useNextUnplayed, { useUnplayedSimilar } from '../useNextUnplayed';
@@ -187,7 +187,7 @@ function freshState(cols, rows) {
   return {
     v: 1, grid: Array.from({ length: rows }, () => Array(cols).fill(null)),
     idx: 0, cur: null, hold: null, held: false,
-    raw: 0, lines: 0, quads: 0, combo: 0, bestCombo: 0, pieces: 0,
+    raw: 0, lines: 0, quads: 0, pts: 0, combo: 0, bestCombo: 0, pieces: 0,
     status: 'playing', t0: null, tEnd: null, ms: 0,
   };
 }
@@ -227,32 +227,38 @@ function hits(grid, cols, rows, p, gx, gy, gr) {
 }
 const KICKS = [[0, 0], [-1, 0], [1, 0], [-2, 0], [2, 0], [0, -1], [-1, -1], [1, -1], [0, -2]];
 
-// THE SHAPES WEAR THE SITE'S OWN COLOURS (owner, 2026-10-10). They were nine
-// lightness steps of one blue; now each shape takes a step of the category
-// ramp (lib/category-ramp REGION_RAMP), the pastel on the dark stage and the
-// deep twin on the light one, so the well reads like the rest of Mind Loft.
-// Amber is left out because it sits on top of gold, and lime's light twin is
-// moved off the Logic green, which is indistinguishable from mint on paper.
-// The two additions (corner, plus) carry a small white diamond, which is the
-// cue the darkest-blue steps used to give. lib/blocks-seq PIECES keeps its
-// blues for the verifier; nothing on screen reads them any more.
-const PIECE_HUE = { I: 'sky', O: 'gold', T: 'violet', S: 'mint', Z: 'rose', J: 'periwinkle', L: 'orange', C: 'magenta', P: 'lime' };
-const HUE_BY_NAME = Object.fromEntries(REGION_RAMP.map((h) => [h.name, h]));
-const LIGHT_OVERRIDE = { lime: '#65a30d' };
+// THE SHAPES WEAR THE ARCADE YELLOW (owner, 2026-10-14). Blocks is an Arcade
+// game, so every shape takes a shade of the Arcade amber (#fbbf24 in
+// lib/category-ramp) instead of a step of the full category ramp, which made
+// the well read as every category at once. Nine shades a register: paler
+// golds on the dark stage, deeper ambers and browns on the light one so a
+// shape never washes into a white cell. Neighbouring common shapes are kept
+// several steps apart so a mixed stack still reads shape by shape.
+// The corner and the plus no longer carry a white diamond (owner, 2026-10-14):
+// they are told apart by shape alone, like the other seven.
+// lib/blocks-seq PIECES keeps its blues for the verifier; nothing on screen
+// reads them any more.
+const PIECE_DARK = { I: '#fde68a', O: '#fbbf24', T: '#d97706', S: '#fcd34d', Z: '#b45309', J: '#f59e0b', L: '#eab308', C: '#ca8a04', P: '#fde047' };
+const PIECE_LIGHT = { I: '#fbbf24', O: '#f59e0b', T: '#b45309', S: '#eab308', Z: '#92400e', J: '#d97706', L: '#ca8a04', C: '#a16207', P: '#78350f' };
+const PIECE_HUE = PIECE_DARK;
 function pieceFill(k, light) {
-  const name = PIECE_HUE[k];
-  const h = HUE_BY_NAME[name];
-  if (!h) return '#94a3b8';
-  return light ? (LIGHT_OVERRIDE[name] || h.lt) : h.dk;
+  return (light ? PIECE_LIGHT : PIECE_DARK)[k] || '#94a3b8';
 }
-const IS_EXTRA = { C: true, P: true };
-const RAINBOW = ['sky', 'mint', 'lime', 'gold', 'orange', 'rose', 'magenta', 'violet', 'periwinkle'];
 
 // A FOUR-ROW CLEAR BANKS A BONUS ROW (owner, 2026-10-10): four rows count as
 // five. Date gated so no day already played is re-ranked; boards before this
 // date score plain rows exactly as before.
 const BONUS_FROM = '2026-10-11';
-const scoreRun = (lines, quads, bonus) => scoreRows(lines) + (bonus ? Math.max(0, Number(quads) || 0) : 0);
+// BIGGER CLEARS PAY MORE (owner, 2026-10-14): from this date the score is
+// POINTS, not rows. One shape clearing 1 row scores 1, 2 rows 3, 3 rows 4 and
+// 4 rows 6, so a double is worth more than two singles and a four-row clear is
+// the prize. Supersedes the +1 bonus row above. Date gated the same way, so no
+// day already played is re-ranked; `pts` is the running total in the saved run.
+const TIER_FROM = '2026-10-15';
+const TIER_POINTS = { 1: 1, 2: 3, 3: 4, 4: 6 };
+const scoreRun = (st, bonus, tier) => tier
+  ? Math.max(0, Number(st.pts) || 0)
+  : scoreRows(st.lines) + (bonus ? Math.max(0, Number(st.quads) || 0) : 0);
 
 // The next and held shapes, drawn small rather than named.
 function MiniShape({ k, light, cell = 7 }) {
@@ -330,7 +336,9 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
   const LIGHT = !STAGE || stageTheme === 'light';
   const lightRef = useRef(LIGHT);
   lightRef.current = LIGHT;
-  const BONUS = (PUZZLE.live || '') >= BONUS_FROM;
+  const TIER = (PUZZLE.live || '') >= TIER_FROM;
+  const BONUS = !TIER && (PUZZLE.live || '') >= BONUS_FROM;
+  const UNIT = TIER ? 'point' : 'row';
   const reducedRef = useRef(false);
   useEffect(() => {
     try { reducedRef.current = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
@@ -375,7 +383,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
   // ROWS ARE THE SCORE, uncapped (see lib/blocks-seq). Par is the day's
   // benchmark rather than a ceiling: clearing it wins the card, and every row
   // above it still counts on the board.
-  const rowsCleared = scoreRun(g.lines, g.quads, BONUS);
+  const rowsCleared = scoreRun(g, BONUS, TIER);
   const won = over && rowsCleared >= PAR;
   // Arcade verdict, and it is deliberately NOT the same test as `won`. Par is
   // a BENCHMARK rather than a solve threshold, the posted score (rows cleared)
@@ -488,7 +496,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     const el = Math.min(36000, Math.max(1, Math.round(cur.ms / 1000)));
     try { localStorage.setItem(REC_KEY, '1'); } catch (e) {}
     return {
-      quizId: PUZZLE.quizId, score: scoreRun(cur.lines, cur.quads, BONUS), total: PAR,
+      quizId: PUZZLE.quizId, score: scoreRun(cur, BONUS, TIER), total: PAR,
       correct: 0, guessesUsed: cur.pieces, timeElapsed: el, abandoned: true,
       email: (identity && identity.email) || undefined, anonId: getAnonId(),
       isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : ''),
@@ -498,7 +506,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
   const postResult = useCallback((g2) => {
     abandon.markFlushed();
     holdEnd(HOLD_LONG);
-    const sc = scoreRun(g2.lines, g2.quads, BONUS);
+    const sc = scoreRun(g2, BONUS, TIER);
     const el = Math.max(1, Math.round(g2.ms / 1000));
     try { setStats(recordStat(PUZZLE.num, { s: sc, t: PAR, g: g2.pieces, won: sc >= PAR })); } catch (e) {}
     try {
@@ -514,7 +522,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
         }),
       }).then((r) => r.json()).then((d) => { if (d && !d.error) setBoard({ ...EMPTY_BOARD, ...d }); }).catch(() => {});
     } catch (e) {}
-  }, [holdEnd, abandon, PUZZLE.quizId, PUZZLE.num, PAR, identity, BONUS]);
+  }, [holdEnd, abandon, PUZZLE.quizId, PUZZLE.num, PAR, identity, BONUS, TIER]);
 
   // ---- the engine ----------------------------------------------------------
   const endRun = useCallback(() => {
@@ -571,9 +579,10 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
       st.combo += 1;
       if (st.combo > st.bestCombo) st.bestCombo = st.combo;
       st.lines += cleared;
-      const gain = cleared + (cleared === 4 && BONUS ? 1 : 0);
+      const gain = TIER ? (TIER_POINTS[cleared] || cleared) : cleared + (cleared === 4 && BONUS ? 1 : 0);
+      if (TIER) st.pts = (Number(st.pts) || 0) + gain;
       const mid = full.length ? (full[0] + full[full.length - 1]) / 2 : ROWS / 2;
-      fx.floats.push({ text: `+${gain} row${gain === 1 ? '' : 's'}`, y: mid + 0.5, t0: now, big: cleared === 4 });
+      fx.floats.push({ text: `+${gain} ${TIER ? 'point' : 'row'}${gain === 1 ? '' : 's'}`, y: mid + 0.5, t0: now, big: cleared === 4 });
       if (cleared === 4 && !reducedRef.current) {
         const el = wellWrapRef.current;
         if (el) { el.classList.remove('bl-shake'); void el.offsetWidth; el.classList.add('bl-shake'); }
@@ -582,7 +591,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     } else st.combo = 0;
     if (above) { st.status = 'over'; st.tEnd = Date.now(); st.cur = null; fx.over = { t0: now }; return st; }
     return nextPiece(st);
-  }, [COLS, ROWS, nextPiece, BONUS]);
+  }, [COLS, ROWS, nextPiece, BONUS, TIER]);
 
   const act = useCallback((what) => {
     const cur = gRef.current;
@@ -831,11 +840,6 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
       ctx.lineWidth = 1.2; ctx.strokeStyle = 'rgba(0,0,0,0.22)'; ctx.stroke();
       rr(px + 3, py + 3, c - 5, (c - 5) * 0.42, r * 0.7);
       ctx.fillStyle = 'rgba(255,255,255,0.24)'; ctx.fill();
-      if (IS_EXTRA[key] && !o.color && cell >= 14) {
-        const d = cell * 0.14, cx = px + cell / 2, cy = py + cell / 2;
-        ctx.beginPath(); ctx.moveTo(cx, cy - d); ctx.lineTo(cx + d, cy); ctx.lineTo(cx, cy + d); ctx.lineTo(cx - d, cy); ctx.closePath();
-        ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.fill();
-      }
       if (o.flash) { rr(px + 1, py + 1, c - 1, c - 1, r); ctx.fillStyle = `rgba(255,255,255,${Math.min(1, o.flash)})`; ctx.fill(); }
       ctx.restore();
     };
@@ -1075,7 +1079,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
   // ---- share ---------------------------------------------------------------
   function shareText() {
     const sun = PUZZLE.sunday ? ' · Sunday' : '';
-    return `Blocks #${PUZZLE.num}${sun} · ${nf(rowsCleared)} row${rowsCleared === 1 ? '' : 's'} · par ${nf(PAR)} · ${nf(g.raw)} points\nmindloftdaily.com/blocks`;
+    return `Blocks #${PUZZLE.num}${sun} · ${nf(rowsCleared)} ${UNIT}${rowsCleared === 1 ? '' : 's'} · par ${nf(PAR)}${TIER ? '' : ` · ${nf(g.raw)} points`}\nmindloftdaily.com/blocks`;
   }
   function copyShare() {
     const txt = shareText();
@@ -1163,16 +1167,19 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
       accentSoft={COLORS.accentSoft}
       lead="Fit the falling shapes together and complete a full row to clear it."
       banner={`Everyone gets the same shapes in the same order today${PUZZLE.sunday ? ', in a narrower Sunday well' : ''}.`}
-      sub="Nine shapes: the seven you know, plus a corner and a plus. The two additions carry a small white diamond."
+      sub="Nine shapes: the seven you know, plus a corner and a plus. "
       steps={[
         <>Move with <b>&larr; &rarr;</b>, rotate with <b>&uarr;</b>, and hard drop with <b>space</b> on a keyboard or a <b>flick down the well</b> on a phone.</>,
         <><b>Hold</b> a shape with <b>C</b> to save it for the gap it fits.</>,
         <>Complete a row to clear it, and clear on <b>consecutive shapes</b> to build a combo.</>,
+        ...(TIER ? [<>Bigger clears pay more. One shape clearing <b>1 row</b> scores <b>1 point</b>, <b>2 rows</b> score <b>3</b>, <b>3 rows</b> score <b>4</b>, and <b>4 rows</b> score <b>6</b>.</>] : []),
         ...(BONUS ? [<>Clear <b>four rows with one shape</b> and it counts as <b>five</b>: a bonus row on top.</>] : []),
         <><b>Pause</b> whenever. The board is saved, so you can come back through the day and pick the same run up where you left it.</>,
       ]}
       knack="It never speeds up. The well is only 16 rows and the drop rate is the same on shape 400 as on shape one, so runs end because of a hole you left three shapes ago, not because your hands gave out."
-      footer={`Scored on ROWS CLEARED, and you can play the day as many times as you like, because Blocks keeps your BEST run rather than your first: your score IS the number of rows you clear, with no ceiling on it${BONUS ? ', plus one bonus row for every four-row clear' : ''}, and ${nf(PAR)} rows is par for the day. Ties break on FEWEST SHAPES USED, then on time, since the same rows off fewer shapes is the tidier run, and a run that clears nothing ranks on shapes survived instead. The points figure on screen (100, 300, 500 and 800 a line, 1,200 for a quad, plus a combo bonus) is there to play against, not to be scored on. Blocks pays at most 1 IQ point a day however long the run goes and however many runs you play, so nobody can grind their way up the standings: the real competition is today\u2019s leaderboard. Sundays narrow the well from 10 columns to 8.`}
+      footer={TIER
+        ? `Scored on POINTS, and you can play the day as many times as you like, because Blocks keeps your BEST run rather than your first. Every clear scores by its size: 1 row is 1 point, 2 rows 3, 3 rows 4 and 4 rows 6, with no ceiling on the total, and ${nf(PAR)} points is par for the day. Ties break on FEWEST SHAPES USED, then on time, since the same points off fewer shapes is the tidier run, and a run that clears nothing ranks on shapes survived instead. Blocks pays at most 1 IQ point a day however long the run goes and however many runs you play, so nobody can grind their way up the standings: the real competition is today\u2019s leaderboard. Sundays narrow the well from 10 columns to 8.`
+        : `Scored on ROWS CLEARED, and you can play the day as many times as you like, because Blocks keeps your BEST run rather than your first: your score IS the number of rows you clear, with no ceiling on it${BONUS ? ', plus one bonus row for every four-row clear' : ''}, and ${nf(PAR)} rows is par for the day. Ties break on FEWEST SHAPES USED, then on time, since the same rows off fewer shapes is the tidier run, and a run that clears nothing ranks on shapes survived instead. The points figure on screen (100, 300, 500 and 800 a line, 1,200 for a quad, plus a combo bonus) is there to play against, not to be scored on. Blocks pays at most 1 IQ point a day however long the run goes and however many runs you play, so nobody can grind their way up the standings: the real competition is today\u2019s leaderboard. Sundays narrow the well from 10 columns to 8.`}
     />
   );
 
@@ -1198,10 +1205,10 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
           onHelp={() => setShowHelp(true)}
           sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
           figures={playing ? [
-            { v: rowsCleared, k: 'rows' },
+            { v: rowsCleared, k: TIER ? 'points' : 'rows' },
             { v: PAR, k: 'par' },
           ] : [
-            { v: rowsCleared, k: 'rows' },
+            { v: rowsCleared, k: TIER ? 'points' : 'rows' },
             { v: PAR, k: 'par' },
           ]}
         />
@@ -1286,7 +1293,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
                 {burst && burst.n === 4 && (
                   <div key={`q${burst.id}`} className="bl-banner" aria-live="polite">
                     <div className="bl-banner-big">FOUR ROWS</div>
-                    {BONUS && <span className="bl-banner-sub">4 rows <em>+1 bonus</em> = 5</span>}
+                    {TIER ? <span className="bl-banner-sub">4 rows = <em>6 points</em></span> : BONUS && <span className="bl-banner-sub">4 rows <em>+1 bonus</em> = 5</span>}
                   </div>
                 )}
                 {burst && burst.combo > 1 && (
@@ -1327,7 +1334,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
                 )))}
                 {lbTab === 'all' && <div style={{ fontSize: 9.5, color: '#94a3b8', marginTop: 5, lineHeight: 1.35 }}>Best single run on any day</div>}
                 <div style={{ marginTop: 'auto', paddingTop: 9, borderTop: `1px solid ${COLORS.line}` }}>
-                  <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1 }}>{nf(rowsCleared)}<em style={{ fontStyle: 'normal', fontSize: 11, fontWeight: 700, color: '#94a3b8' }}> row{rowsCleared === 1 ? '' : 's'}</em></div>
+                  <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1 }}>{nf(rowsCleared)}<em style={{ fontStyle: 'normal', fontSize: 11, fontWeight: 700, color: '#94a3b8' }}> {UNIT}{rowsCleared === 1 ? '' : 's'}</em></div>
                   <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.04em', color: '#94a3b8', marginTop: 3 }}>par {nf(PAR)}</div>
                 </div>
               </aside>
@@ -1337,7 +1344,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
               <span style={{ fontWeight: 800, color: ACC_INK }}>You #{ladder.rank}</span>
               <span>par {nf(PAR)} rows</span>
               {bestRows.length > 0 && <span title="Best single run on any day" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>Best ever {bestRows[0].score} &middot; {bestRows[0].name}</span>}
-              <span style={{ marginLeft: 'auto', fontSize: 15, fontWeight: 800, color: INK }}>{nf(rowsCleared)}<em style={{ fontStyle: 'normal', fontSize: 10, color: '#94a3b8' }}> row{rowsCleared === 1 ? '' : 's'}</em></span>
+              <span style={{ marginLeft: 'auto', fontSize: 15, fontWeight: 800, color: INK }}>{nf(rowsCleared)}<em style={{ fontStyle: 'normal', fontSize: 10, color: '#94a3b8' }}> {UNIT}{rowsCleared === 1 ? '' : 's'}</em></span>
             </div>
 
             {/* The pad IS the T piece: [[0,1,0],[1,1,1]], and nothing else.
@@ -1400,8 +1407,8 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
                   <p style={{ margin: '0 0 13px', fontSize: 13.5, lineHeight: 1.55, color: FADED }}>
                     Saved. Come back any time before midnight and pick this run up where you left it.
                   </p>
-                  <div style={{ fontSize: 40, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1 }}>{nf(rowsCleared)}<span style={{ fontSize: 19, color: 'var(--stg-mute, #94a3b8)' }}> row{rowsCleared === 1 ? '' : 's'}</span></div>
-                  <p style={{ margin: '7px 0 13px', fontSize: 13, color: FADED }}>par {nf(PAR)} &middot; {nf(g.raw)} points &middot; shape {nf(g.idx)} &middot; {fmtTime(g.ms)}</p>
+                  <div style={{ fontSize: 40, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1 }}>{nf(rowsCleared)}<span style={{ fontSize: 19, color: 'var(--stg-mute, #94a3b8)' }}> {UNIT}{rowsCleared === 1 ? '' : 's'}</span></div>
+                  <p style={{ margin: '7px 0 13px', fontSize: 13, color: FADED }}>par {nf(PAR)}{TIER ? null : <> &middot; {nf(g.raw)} points</>} &middot; shape {nf(g.idx)} &middot; {fmtTime(g.ms)}</p>
                   <button onClick={togglePause} style={{ ...btn, background: STAGE ? STAGE_C : T.cta, borderColor: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Resume</button>
                 </div>
               </div>
@@ -1422,7 +1429,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
               outcome={verdictTone}
               challengeMetric={rowsCleared}
               title={verdictWord}
-              detail={`${rowsCleared} rows \u00b7 ${PAR} par`}
+              detail={`${rowsCleared} ${UNIT}${rowsCleared === 1 ? '' : 's'} \u00b7 ${PAR} par`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1537,8 +1544,8 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
           won={won}
           quizId={PUZZLE.quizId}
           completed
-          score={<>{nf(rowsCleared)} row{rowsCleared === 1 ? '' : 's'} cleared &middot; par {nf(PAR)}</>}
-          subline={<>{nf(g.raw)} points &middot; {nf(g.quads)} quad{g.quads === 1 ? '' : 's'} &middot; best combo {nf(g.bestCombo)} &middot; {nf(g.pieces)} shapes</>}
+          score={<>{nf(rowsCleared)} {UNIT}{rowsCleared === 1 ? '' : 's'}{TIER ? '' : ' cleared'} &middot; par {nf(PAR)}</>}
+          subline={<>{TIER ? null : <>{nf(g.raw)} points &middot; </>}{nf(g.quads)} quad{g.quads === 1 ? '' : 's'} &middot; best combo {nf(g.bestCombo)} &middot; {nf(g.pieces)} shapes</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={replayRun}
