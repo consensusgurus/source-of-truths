@@ -73,12 +73,12 @@ const NUMBER_PREVIEW = [
 ];
 
 const ACTIVITIES = [
+  { id: 'color-match', href: '/kids/color-match', title: 'Color Match', desc: 'Match each color word to its color. Ten pairs.', tag: 'Learning', ready: true, band: '#fdeaea', preview: COLOR_PREVIEW },
+  { id: 'letter-match', href: '/kids/letter-match', title: 'Letter Match', desc: 'Match capital and lowercase letters. Twenty-six pairs.', tag: 'Learning', ready: true, band: '#fde7f0', preview: LETTER_PREVIEW },
+  { id: 'addition-match', href: '/kids/addition-match', title: 'Addition Match', desc: 'Match each addition to its answer. Fourteen pairs.', tag: 'Learning', ready: true, band: '#eef3fe', preview: ADD_PREVIEW },
   { id: 'memory-match', href: '/kids/memory-match', title: 'Treats Match', desc: 'Flip the cards and find the matching treats. Up to four players.', tag: 'Game', ready: true, band: '#eef3fe', preview: PREVIEW },
   { id: 'pizza-match', href: '/kids/pizza-match', title: 'Pizza Match', desc: 'Find all fourteen matching pizzas. Up to four players.', tag: 'Game', ready: true, band: '#fdeede', preview: PIZZA_PREVIEW },
   { id: 'dog-match', href: '/kids/dog-match', title: 'Dog Match', desc: 'Find all fourteen matching dog breeds. Up to four players.', tag: 'Game', ready: true, band: '#eaf6ef', preview: DOG_PREVIEW },
-  { id: 'color-match', href: '/kids/color-match', title: 'Color Match', desc: 'Match each color word to its color. Ten pairs.', tag: 'Learning', ready: true, band: '#fdeaea', preview: COLOR_PREVIEW },
-  { id: 'addition-match', href: '/kids/addition-match', title: 'Addition Match', desc: 'Match each addition to its answer. Fourteen pairs.', tag: 'Learning', ready: true, band: '#eef3fe', preview: ADD_PREVIEW },
-  { id: 'letter-match', href: '/kids/letter-match', title: 'Letter Match', desc: 'Match capital and lowercase letters. Twenty-six pairs.', tag: 'Learning', ready: true, band: '#fde7f0', preview: LETTER_PREVIEW },
   { id: 'fantasy-match', href: '/kids/fantasy-match', title: 'Fantasy Match', desc: 'Match unicorns, princesses, princes, castles, and dragons. Fifteen pairs.', tag: 'Game', ready: true, band: '#f1ecfb', preview: FANTASY_PREVIEW },
   { id: 'word-match', href: '/kids/word-match', title: 'Word Match', desc: 'Match each word to its picture. Twelve pairs.', tag: 'Learning', ready: true, band: '#e7f6ef', preview: WORD_PREVIEW },
   { id: 'number-match', href: '/kids/number-match', title: 'Number Match', desc: 'Match each number to its spelling, 0 to 15. Sixteen pairs.', tag: 'Learning', ready: true, band: '#eef3fe', preview: NUMBER_PREVIEW },
