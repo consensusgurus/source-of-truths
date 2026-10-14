@@ -417,7 +417,7 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
         const mid = (left + right) / 2;
         document.querySelectorAll('.lc-nav, .lc-side').forEach((rail) => {
           const cs = window.getComputedStyle(rail);
-          if (cs.position !== 'fixed' || cs.display === 'none' || cs.visibility === 'hidden') return;
+          if ((cs.position !== 'fixed' && cs.position !== 'absolute') || cs.display === 'none' || cs.visibility === 'hidden') return;
           const q = rail.getBoundingClientRect();
           if (q.width <= 0 || q.bottom <= r.top || q.top >= r.bottom) return;
           if ((q.left + q.right) / 2 < mid) left = Math.max(left, q.right);   // rail on the left

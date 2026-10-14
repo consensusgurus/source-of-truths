@@ -15,8 +15,8 @@
 //    the home reads on load. The game's own category opens under its button.
 //  - "Hide menus & leaderboard" lives in the SUBHEADER, the game's own figures
 //    row (.stg-fg), so the control stays in place when the frame is hidden.
-//  - The index scrolls with a thin, ground-coloured scrollbar that only shows
-//    while the pointer is over it.
+//  - Nothing in the frame scrolls on its own (owner, 2026-10-14): the index and
+//    the right panel ride the page, so the whole page scrolls together.
 //
 // It PORTALS INTO the game's .stage-page root (the one holding .stg-top) so it
 // inherits the register's --stg-* tokens, which are undefined outside it.
@@ -114,16 +114,11 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:240px;}
 
 /* NO RULES BETWEEN THE COLUMNS (owner, 2026-10-14): the home draws none, so a
    game page draws none either. The index sits exactly where the home's does:
-   22px in, 26px under the cap, 212px wide, 26px to the content. The list is a
-   fixed 212 so a scrollbar takes the gutter, never the buttons. */
-.lc-nav{position:fixed;top:var(--lc-hh,62px);left:0;bottom:0;width:260px;z-index:80;overflow-y:auto;overflow-x:hidden;padding:26px 0 24px 22px;
-  background:var(--stg-ground);
-  scrollbar-width:thin;scrollbar-color:transparent transparent;}
-.lc-nav:hover{scrollbar-color:var(--stg-line) transparent;}
-.lc-nav::-webkit-scrollbar{width:6px;}
-.lc-nav::-webkit-scrollbar-track{background:transparent;}
-.lc-nav::-webkit-scrollbar-thumb{background:transparent;border-radius:6px;}
-.lc-nav:hover::-webkit-scrollbar-thumb{background:var(--stg-line);}
+   22px in, 26px under the cap, 212px wide, 26px to the content. Both side
+   columns are absolute, not fixed, so they scroll with the page (owner,
+   2026-10-14: no scroller of their own). */
+.lc-nav{position:absolute;top:var(--lc-hh,62px);left:0;width:260px;z-index:80;padding:26px 0 24px 22px;
+  background:var(--stg-ground);}
 .lc-nav .sty-ixn{display:flex;flex-direction:column;gap:2px;width:212px;}
 .lc-nav .sty-ixb{display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:center;gap:10px;border:0;
   background:none;border-radius:8px;padding:8px 10px;font:inherit;font-size:13.5px;font-weight:700;
@@ -144,15 +139,14 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:240px;}
 .lc-nav .lc-g s.pz{color:var(--stg-warn,#e8b43a);display:inline-flex;}
 .lc-nav button.sty-ixb{width:100%;}
 
-.lc-side{position:fixed;top:var(--lc-hh,62px);right:0;bottom:0;width:330px;z-index:80;display:flex;flex-direction:column;
+.lc-side{position:absolute;top:var(--lc-hh,62px);right:0;width:330px;z-index:80;display:flex;flex-direction:column;
   background:var(--stg-ground);}
 /* The tab bar is exactly as tall as the game's subheader (.stg-fg, measured
    into --lc-fgh), so its rule and the subheader's are one line. */
 .lc-tabs{display:flex;border-bottom:1px solid var(--stg-line);padding:0 8px;flex:none;height:var(--lc-fgh,41px);}
 .lc-tab{flex:1;height:100%;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--stg-mute);font:700 12.5px Manrope,system-ui,sans-serif;cursor:pointer;}
 .lc-tab.on{color:var(--stg-ink);border-bottom-color:var(--stg-acc);}
-.lc-body{flex:1;overflow-y:auto;padding:16px 20px;font-size:13px;scrollbar-width:thin;scrollbar-color:transparent transparent;}
-.lc-body:hover{scrollbar-color:var(--stg-line) transparent;}
+.lc-body{padding:16px 20px;font-size:13px;}
 .lc-cap2{display:flex;justify-content:space-between;font-size:12px;color:var(--stg-mute);margin-bottom:6px;}
 .lc-row{display:grid;grid-template-columns:24px 1fr auto;gap:10px;padding:7px 0;border-bottom:1px solid var(--stg-line);align-items:baseline;}
 .lc-row span:first-child{color:var(--stg-mute);font-weight:700;}
