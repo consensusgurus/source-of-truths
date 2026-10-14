@@ -598,8 +598,8 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
     const H = railH;
     const gapOf = (a, b) => (a.kind === 'me' || b.kind === 'me' ? 30 : 21);
     const arr = race.items
-      .map((it) => ({ ...it, y: Math.max(it.kind === 'me' ? 14 : 10, Math.min(1, it.score / race.max) * H) }))
-      .sort((a, b) => a.y - b.y || (a.kind === 'me' ? 1 : -1));
+      .map((it) => ({ ...it, y: Math.max(14, Math.min(1, it.score / race.max) * H) }))
+      .sort((a, b) => a.y - b.y || a.score - b.score || (a.kind === 'me' ? 1 : -1));
     for (let k = 1; k < arr.length; k++) arr[k].y = Math.max(arr[k].y, arr[k - 1].y + gapOf(arr[k - 1], arr[k]));
     let floor = H - 10;
     for (let k = arr.length - 1; k >= 0; k--) {
