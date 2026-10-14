@@ -44,9 +44,9 @@ export const RUN_DOORS = {
   },
   gauntlet: {
     href: '/trivia', name: 'Trivia Gauntlet', eyebrow: 'Daily run · Seven quizzes',
-    body: 'All seven daily trivia quizzes back to back, one life in each: a topic in depth, the map, sport, business, the screen, who said it, and a streak of anything at all.',
+    body: 'Seven daily trivia quizzes back to back, one life in each: a topic in depth, a streak of anything at all, and five that rotate daily through geography, science, sport, the arts, history, business, the screen and famous lines.',
     go: 'Run all seven', accent: '#7dd3fc',
-    tags: [['Deep', '#7dd3fc'], ['Atlas', '#6ee7b7'], ['Sport', '#bef264'], ['Biz', '#e8b43a'], ['Script', '#fb923c'], ['Quotes', '#fb7185'], ['Streak', '#e879f9']],
+    tags: [['Deep', '#7dd3fc'], ['Atlas', '#6ee7b7'], ['Sci', '#5eead4'], ['Art', '#fb7185'], ['History', '#e8b43a'], ['Sport', '#bef264'], ['Streak', '#e879f9']],
   },
   judged: {
     href: '/judged', name: 'Judged', eyebrow: 'Daily run · Five cases', once: 'game',

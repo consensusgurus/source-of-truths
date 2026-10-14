@@ -9285,3 +9285,41 @@ finished by line sums and the rack count alone; the rest needed trial and error.
   count. Each target shows what its line still needs (`7 in 2`).
 - **Scoring did not change**: 10 minus one point per two moves over the fewest, ties on extra
   moves then time. The hint fills the next square the human solver settles.
+
+## Sci, Art, History and the Trivia Encore (launched 2026-10-15)
+
+Three new trivia gauntlets on Biz's shape (25 questions, five tiers of five, one life, twenty
+seconds, `miss: 'Asked'`, no Sunday Edition): **Sci** (`/sci`: Human Body, Space, Chemistry &
+Physics, Life Science, Inventions), **Art** (`/art`: Art, Music, Books, Architecture & Design,
+Food & Drink) and **History** (`/history`: Ancient World, Middle Ages, Empires & Revolutions,
+War & Conflict, Modern Era). Banks 2026-10-15 to 2026-12-01 from `scripts/<key>-lanes/`,
+built by `scripts/gen-<key>.mjs` (append-only, `--check`), verified by `scripts/verify-<key>.mjs`.
+Wired by `scripts/wire-sci-art-history.mjs`. Every lane was written against
+`scripts/trivia-lane-check.mjs`, which fails dashes, British spelling, self-answering stems and
+answer overuse, and WARNS on facts already asked in any other trivia bank. Read its warns: the
+existing banks already hold most textbook gimmes, so a new lane is mostly a dedupe exercise.
+
+**THE GAUNTLET ROTATES (owner, 2026-10-14).** Still seven a day: Streak and Deep every day plus
+FIVE of the eight banks in `TRIVIA_POOL` (lib/circuits.js), a sliding window that moves one bank
+a day from `TRIVIA_SPLIT_FROM` (2026-10-15), so each bank plays the Gauntlet five days in eight.
+`triviaSplit(day)` is the only copy of the selection; `circuitKeysFor` reads it for any circuit
+carrying `split: 'in'` or `split: 'out'`. Days up to 2026-10-14 deal the old fixed seven through
+`before`. `keys` on the Gauntlet is now ten long (the canonical colour list), `cap: 10`, and
+`LADDER_RAMP` grew to ten steps so no two banks share a colour. `scripts/verify-circuits.mjs`
+recomputes the split with its own date math (`splitLocal`) and proves 7 + 3 every day, no bank in
+both, the pair covering the pool, and five-in-eight fairness.
+
+**THE TRIVIA ENCORE** (circuit `triviaencore`, served at `/triviaencore` by a rewrite like
+`/trivia`; never create `app/triviaencore/page.js`) is the three banks that sat out the day's
+Gauntlet, played on the same run page and RunClient with the towers layout. Its own board,
+`score: 'correct'`, trophy "Curtain Call" (bronze). Its rankings panel and end-card board carry a
+**combined Gauntlet + Encore** figure per player (joined by userKey from a second
+`useCircuitBoard('gauntlet')` read), sorted on the Encore by default with a switch to sort on the
+combined total. Nothing about it is stored: each bank still posts its ordinary row.
+
+**The finish order on the Gauntlet:** `app/circuits/EncorePop.jsx` (stage-and-curtain art) opens
+after the curtain when an Encore exists today and has not been run on this device, and the
+end card leads with a "Take the Trivia Encore" door. The more-runs and more-trivia cards
+(`MoreRunsPop`, `MoreRunsList`, `GauntletMorePop`) now show on the ENCORE's finish instead; on the
+Gauntlet they only show when there is no Encore left to offer (`afterCards` in RunClient).
+`?encore=preview` forces the pop-up for review.

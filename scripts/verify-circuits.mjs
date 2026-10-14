@@ -58,6 +58,9 @@ const MED = {
   // The three crowd games post no comparable clock: you submit picks against a
   // pool, so the row's time is how long you deliberated. Estimated, flagged.
   outwit: 90, outrank: 90, feud: 90,
+  // The trivia banks of the gauntlet shape: twenty-five questions like Atlas and
+  // Biz. ESTIMATES (2026-10-14) for the five that were never measured.
+  script: 45, quotes: 45, sci: 45, art: 45, history: 45,
   // Niche launched 2026-08-21 with no live clock data yet: estimated from its
   // shape (a type-ahead trivia grid, somewhere between Sixes and Blocks).
   // Replace with the measured median at the next snapshot re-measure.
@@ -268,6 +271,46 @@ for (const c of CIRCUITS) {
   }
 }
 
+// THE TRIVIA SPLIT, recomputed here with its own date math rather than read
+// back off lib/circuits.js (2026-10-14). Eight banks, five a day in the
+// Gauntlet and three in the Encore, sliding one bank a day from 2026-10-15.
+const SPLIT_POOL = ['atlas', 'sci', 'sport', 'art', 'script', 'history', 'biz', 'quotes'];
+const SPLIT_FROM = '2026-10-15';
+function splitLocal(c, iso) {
+  if (c.split === 'out' && iso < SPLIT_FROM) return [];
+  if (c.split === 'in' && iso < SPLIT_FROM) return c.before.keys.slice();
+  const days = Math.round((Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) - Date.UTC(2026, 9, 15)) / 86400000);
+  const live = SPLIT_POOL.filter((k) => DAILY_GAME_MAP[k] && !(RETIRED_DAILY[k] && RETIRED_DAILY[k] <= iso));
+  const n = live.length;
+  const at = ((days % n) + n) % n;
+  const inn = [];
+  for (let i = 0; i < 5 && i < n; i += 1) inn.push(live[(at + i) % n]);
+  if (c.split === 'out') return live.filter((k) => !inn.includes(k));
+  return c.keys.filter((k) => !SPLIT_POOL.includes(k) || inn.includes(k));
+}
+{
+  // every pool bank plays five days in eight in the Gauntlet and three in the
+  // Encore, never both on one day, and between them they cover the pool
+  const g = CIRCUITS.find((c) => c.split === 'in');
+  const e = CIRCUITS.find((c) => c.split === 'out');
+  if (g && e) {
+    const inCt = Object.fromEntries(SPLIT_POOL.map((k) => [k, 0]));
+    for (let i = 0; i < 8; i += 1) {
+      const iso = new Date(Date.UTC(2026, 9, 15) + i * 86400000).toISOString().slice(0, 10);
+      const gk = circuitKeysFor(g.id, iso);
+      const ek = circuitKeysFor(e.id, iso);
+      if (gk.length !== 7) fails.push(`${g.id}: ${iso} plays ${gk.length}, expected 7`);
+      if (ek.length !== 3) fails.push(`${e.id}: ${iso} plays ${ek.length}, expected 3`);
+      if (ek.some((k) => gk.includes(k))) fails.push(`${iso}: a bank is in both the Gauntlet and the Encore`);
+      const both = [...gk, ...ek].filter((k) => SPLIT_POOL.includes(k)).sort().join();
+      if (both !== [...SPLIT_POOL].sort().join()) fails.push(`${iso}: Gauntlet + Encore do not cover the trivia pool`);
+      for (const k of gk) if (k in inCt) inCt[k] += 1;
+    }
+    for (const [k, v] of Object.entries(inCt)) if (v !== 5) fails.push(`${k}: in the Gauntlet ${v} of 8 days, expected 5`);
+    if (circuitKeysFor(e.id, '2026-10-14').length) fails.push(`${e.id}: plays before the split began`);
+  }
+}
+
 // ── 5b. a circuit that declares its own order obeys it ──────────────────────
 // `keys` still has to ascend (it is the canonical list and the ladder colours
 // from it), which check 5 above already proved. What is checked here is the
@@ -281,9 +324,10 @@ for (const c of CIRCUITS) {
   }
   for (const c of CIRCUITS) {
     if (!c.order || !Array.isArray(c.order.tail)) continue;
-    const canon = (c.keys || []).slice();
     const seen = new Set();
     for (const iso of DAYS) {
+      const canon = c.split ? splitLocal(c, iso) : (c.keys || []).slice();
+      if (!canon.length) continue;
       const got = circuitKeysFor(c.id, iso);
       if (got.length !== canon.length) {
         fails.push(`${c.id}: ${iso} returned ${got.length} keys, expected ${canon.length}`);
@@ -310,8 +354,9 @@ for (const c of CIRCUITS) {
     // opening on one of its five games a third as often as the rest (it took
     // the low bits of an LCG). 700 days is enough for the bound to be tight
     // without being flaky.
-    const headLen = canon.length - c.order.tail.length;
-    if (headLen > 1) {
+    const canonLen = c.split ? splitLocal(c, '2027-01-01').length : (c.keys || []).length;
+    const headLen = canonLen - c.order.tail.length;
+    if (headLen > 1 && !c.split) {
       const LONG = 700;
       const opens = new Map();
       for (let i = 0; i < LONG; i += 1) {
@@ -410,14 +455,14 @@ for (const c of CIRCUITS) {
     const v = pool[((idx % n) + n) % n];
     if (DAILY_GAME_MAP[v] && !retiredAlready(v)) expected.push(v);
   }
-  const want = applyOrderLocal(c, expected, todayIso);
+  const want = applyOrderLocal(c, c.split ? splitLocal(c, todayIso) : expected, todayIso);
   if (live.join(',') !== want.join(',')) {
     fails.push(`${c.id}: circuitKeysFor returned [${live.join(',')}], expected [${want.join(',')}]`);
   }
-  if (live.length < (c.solo ? 1 : 2) && !(c.solo && !LAUNCHED(c.keys[0]))) {
+  if (live.length < (c.solo ? 1 : 2) && !(c.solo && !LAUNCHED(c.keys[0])) && !(c.split === 'out' && todayIso < SPLIT_FROM)) {
     fails.push(`${c.id}: only ${live.length} live game(s) today — the band needs at least 2 to render a run`);
   }
-  if (!c.rotate && live.length < c.keys.length) {
+  if (!c.rotate && !c.split && live.length < c.keys.length) {
     warns.push(`${c.id}: down to ${live.length} live games (retirement), was ${c.keys.length}`);
   }
 }
@@ -544,7 +589,9 @@ for (const c of CIRCUITS) {
     }
     continue;
   }
-  const total = known.reduce((a, k) => a + MED[k], 0);
+  // a SPLIT roster's day is its share of the trivia pool, so tier the day
+  const dayKeys = c.split ? splitLocal(c, '2027-01-01') : known;
+  const total = dayKeys.reduce((a, k) => a + (MED[k] || 0), 0);
   const want = TIER_AT(total);
   if (c.trophy.tier !== want) {
     fails.push(`${c.id}: trophy tier is ${c.trophy.tier} but the roster totals ${total}s, which is ${want}`);

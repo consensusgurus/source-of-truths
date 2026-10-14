@@ -57,6 +57,8 @@ import MissList, { missOf, MISS_CSS } from '../../RunMisses';
 import useCircuitHistory from '../../useCircuitHistory';
 import { T } from '@/lib/theme';
 import MoreRunsPop, { MoreRunsList } from '../../MoreRuns';
+import EncorePop from '../../EncorePop';
+import { runDoneToday } from '../../RunDoorPop';
 import NextDrop from '../../../NextDrop';
 import ChallengeStrip from '../../../ChallengeStrip';
 import { RunChallengeButton, RunChallengeLine, runToken } from '../../../RunChallenge';
@@ -178,8 +180,20 @@ function vibrate(p) { try { if (typeof navigator !== 'undefined' && navigator.vi
 
 const freshRun = () => ({ v: 1, si: 0, i: 0, t0: null, sT0: null, phase: 'idle', results: [] });
 
-export default function RunClient({ circuitId, circuitName, dateLabel, sections = [], boards = null }) {
+export default function RunClient({ circuitId, circuitName, dateLabel, sections = [], boards = null, encore = null }) {
   const N = sections.length;
+  // THE TRIVIA ENCORE (owner, 2026-10-14). The Encore is the three banks that
+  // sat out today's Gauntlet. On the Gauntlet its pop-up and end-card door
+  // come first, and the more-runs / more-trivia cards wait for the Encore's
+  // own finish. On the Encore the board also shows the combined total.
+  const ENCORE = circuitId === 'triviaencore';
+  const GAUNT = circuitId === 'gauntlet';
+  const encoreOn = GAUNT && encore && Array.isArray(encore.games) && encore.games.length >= 2;
+  const [encoreDone, setEncoreDone] = useState(false);
+  const [encoreUp, setEncoreUp] = useState(false);
+  // Which cards come after a finished run: on the Gauntlet only when there is
+  // no Encore left to offer today.
+  const afterCards = ENCORE || circuitId === 'math' || (GAUNT && (!encoreOn || encoreDone));
   const STORE_KEY = `sot_run_${circuitId}_${etToday()}`;
 
   const [r, setR] = useState(() => freshRun());
@@ -229,6 +243,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   const holdRef = useRef(false);
 
   useEffect(() => { rRef.current = r; }, [r]);
+  useEffect(() => { if (encoreOn) setEncoreDone(runDoneToday('triviaencore')); }, [encoreOn]);
   useEffect(() => { lockRef.current = lock; }, [lock]);
   useEffect(() => { holdRef.current = hold; }, [hold]);
 
@@ -276,6 +291,9 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   // with no board at all. The hook does not refetch while `active` stays true,
   // so this is the same single request it always was.
   const boardGate = useCircuitBoard(circuitId, hydrated && !done);
+  // The Gauntlet's board, read on the Encore for the combined column.
+  const gauntBoard = useCircuitBoard('gauntlet', ENCORE && hydrated);
+  const [sortBy, setSortBy] = useState('encore');
 
   // ── hydration ────────────────────────────────────────────────────────────
   // Restores a run in progress, and on a fresh one marks every game already
@@ -669,6 +687,29 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   const leaderScore = leaderRow && Number.isFinite(Number(leaderRow.total))
     ? Math.round(Number(leaderRow.total)) : null;
   const myRow = boardNow ? (boardNow.me || boardNow.meProvisional || null) : null;
+  // THE COMBINED COLUMN (Trivia Encore, owner 2026-10-14): each Encore row
+  // also carries that player's Gauntlet + Encore total when they have both.
+  // Sorted on the Encore by default; the switch sorts on the combined total.
+  const gRows = ENCORE && gauntBoard.data && Array.isArray(gauntBoard.data.overall) ? gauntBoard.data.overall : [];
+  const gBy = new Map(gRows.filter((x) => x && x.userKey).map((x) => [x.userKey, x]));
+  const gMe = ENCORE && gauntBoard.data ? (gauntBoard.data.me || gauntBoard.data.meProvisional || null) : null;
+  const comboOf = (row) => {
+    if (!row) return null;
+    const g = row.userKey ? gBy.get(row.userKey) : null;
+    const gg = g || (myRow && row === myRow ? gMe : null);
+    return gg ? Math.round((Number(row.total) || 0) + (Number(gg.total) || 0)) : null;
+  };
+  const hasCombo = ENCORE && gRows.length > 0;
+  const viewRows = hasCombo && sortBy === 'combined'
+    ? boardRows
+      .map((row, i) => ({ row, i, c: comboOf(row) }))
+      .sort((a, b) => ((b.c == null ? -1 : b.c) - (a.c == null ? -1 : a.c)) || (a.i - b.i))
+      .map((x, i) => ({ ...x.row, rank: i + 1 }))
+    : boardRows;
+  const comboTxt = (row) => {
+    const c = hasCombo ? comboOf(row) : null;
+    return c == null ? '' : ` \u00B7 ${c} combined`;
+  };
   // The strip needs a leader to be worth a line. With nobody through the whole
   // roster yet it says nothing, so it is not drawn and the cap chip is the way
   // in. Hidden while a question is up, and at the finish where the scorecard
@@ -791,7 +832,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   // THE TOWERS (owner approved 2026-10-10) are the Trivia and Math Gauntlets'
   // presentation only. Every other run (Judged, Price Check, Passport) renders
   // exactly as it did: the gutter ladder, the scorecard ladder, all of it.
-  const TOWERS = circuitId === 'gauntlet' || circuitId === 'math';
+  const TOWERS = circuitId === 'gauntlet' || circuitId === 'math' || ENCORE;
   const MATHRUN = circuitId === 'math';
   const upIdx = upNext ? sections.findIndex((s) => s.key === upNext.key) : -1;
 
@@ -932,8 +973,8 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           browser finishes any of the five runs, one pop-up lists every other
           run not done today. It replaced the one-at-a-time RunNudgePop chain.
           Waits for the /trivia door card if it is up. See MoreRuns.jsx. */}
-      {(circuitId === 'gauntlet' || circuitId === 'math') && (
-        <MoreRunsPop self={circuitId} ready={done && doneAtLoad.current === false && !curtain && !doorUp && !moreShown} delay={3500} />
+      {afterCards && (
+        <MoreRunsPop self={ENCORE ? 'gauntlet' : circuitId} ready={done && doneAtLoad.current === false && !curtain && !doorUp && !moreShown} delay={3500} />
       )}
 
       {/* THE ONLY CHROME. Not LoftCap and not the site footer: the run is a
@@ -1075,12 +1116,19 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     {boardNow && fieldToday === 1 ? 'player' : 'players'}
                   </s>
                 </div>
+                {hasCombo ? (
+                  <div className="rn-sortsw" role="group" aria-label="Sort the board">
+                    <span>Sort by</span>
+                    <button type="button" className={sortBy === 'encore' ? 'on' : ''} aria-pressed={sortBy === 'encore'} onClick={() => setSortBy('encore')}>Encore</button>
+                    <button type="button" className={sortBy === 'combined' ? 'on' : ''} aria-pressed={sortBy === 'combined'} onClick={() => setSortBy('combined')}>Gauntlet + Encore</button>
+                  </div>
+                ) : null}
 
                 {/* THE PODIUM. Height carries the place, so first reads as
                     first before a single figure is read. */}
-                {boardRows.length ? (
+                {viewRows.length ? (
                   <div className="rn-pod">
-                    {[boardRows[1], boardRows[0], boardRows[2]].map((row, i) => {
+                    {[viewRows[1], viewRows[0], viewRows[2]].map((row, i) => {
                       const place = i === 1 ? 1 : (i === 0 ? 2 : 3);
                       if (!row) return <div key={place} className="rn-pstep empty" />;
                       return (
@@ -1090,6 +1138,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                           <span className="rn-pfg">
                             {Math.round(Number(row.total) || 0)} <u>{scoreWord}</u>
                             {rightUnit && row.timeTotal ? ` \u00B7 ${fmtTime(row.timeTotal * 1000)}` : ''}
+                            {comboTxt(row)}
                           </span>
                         </div>
                       );
@@ -1103,23 +1152,24 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   </div>
                 )}
 
-                {boardRows.length > 3 ? (
+                {viewRows.length > 3 ? (
                   <div className="rn-rlist">
-                    {boardRows.slice(3).map((row) => (
+                    {viewRows.slice(3).map((row) => (
                       <div key={row.userKey || row.username} className="rn-rrow2">
                         <span className="rn-rpos">{row.rank || ''}</span>
                         <b className="rn-rnm">{row.username || 'Guest'}</b>
                         <span className="rn-rfg">
                           {Math.round(Number(row.total) || 0)} {scoreWord}
                           {rightUnit && row.timeTotal ? <s>{` \u00B7 ${fmtTime(row.timeTotal * 1000)}`}</s> : null}
+                          {hasCombo ? <s>{comboTxt(row)}</s> : null}
                         </span>
                       </div>
                     ))}
-                    {myRow && !boardRows.some((row) => row.userKey && myRow.userKey && row.userKey === myRow.userKey) ? (
+                    {myRow && !viewRows.some((row) => row.userKey && myRow.userKey && row.userKey === myRow.userKey) ? (
                       <div className="rn-rrow2 me">
                         <span className="rn-rpos">{myRow.rank || ''}</span>
                         <b className="rn-rnm">You</b>
-                        <span className="rn-rfg">{Math.round(Number(myRow.total) || 0)} {scoreWord}</span>
+                        <span className="rn-rfg">{Math.round(Number(myRow.total) || 0)} {scoreWord}{hasCombo ? <s>{comboTxt(myRow)}</s> : null}</span>
                       </div>
                     ) : null}
                   </div>
@@ -1701,6 +1751,15 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   );
                   return (
                     <div className="rn-doors">
+                      {encoreOn ? (
+                        <a className="rn-door pri rn-encore" href={encore.href || '/triviaencore'}>
+                          <span className="rn-dtx">
+                            <span className="rn-dnm">{encoreDone ? 'Trivia Encore: played' : 'Take the Trivia Encore'}</span>
+                            <span className="rn-dsb">{encore.games.map((g) => g.name).join(', ')} sat out today&rsquo;s Gauntlet</span>
+                          </span>
+                          <span className="rn-dar" aria-hidden="true">&rsaquo;</span>
+                        </a>
+                      ) : null}
                       {door('miss',
                         missN ? `See the ${missN === 1 ? 'question' : `${missN} questions`} you missed` : 'See where each run ended',
                         missN ? 'Each question that ended a quiz, with the right answer' : 'You cleared every quiz',
@@ -1732,19 +1791,26 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     <div className="rn-bmsg">The board could not be loaded just now.</div>
                   ) : (
                     <div className="rn-lb">
-                      {((boardQ.data && boardQ.data.overall) || []).slice(0, 5).map((row, i) => (
+                      {hasCombo ? (
+                        <div className="rn-sortsw" role="group" aria-label="Sort the board">
+                          <span>Sort by</span>
+                          <button type="button" className={sortBy === 'encore' ? 'on' : ''} aria-pressed={sortBy === 'encore'} onClick={() => setSortBy('encore')}>Encore</button>
+                          <button type="button" className={sortBy === 'combined' ? 'on' : ''} aria-pressed={sortBy === 'combined'} onClick={() => setSortBy('combined')}>Gauntlet + Encore</button>
+                        </div>
+                      ) : null}
+                      {(boardQ.data ? viewRows : []).slice(0, 5).map((row, i) => (
                         <div key={row.userKey || i} className={`rn-brow${boardQ.data.me && row.userKey === boardQ.data.me.userKey ? ' me' : ''}`}>
                           <span className="rn-bp">{i + 1}</span>
                           <span className="rn-bn">{row.username || 'Guest'}</span>
-                          <span className="rn-bs">{Math.round(row.total * 10) / 10}</span>
+                          <span className="rn-bs">{Math.round(row.total * 10) / 10}{hasCombo && comboOf(row) != null ? <small className="rn-bc">{comboOf(row)} combined</small> : null}</span>
                         </div>
                       ))}
                       {boardQ.data && boardQ.data.me
-                        && !((boardQ.data.overall || []).slice(0, 5).some((x) => x.userKey === boardQ.data.me.userKey)) ? (
+                        && !(viewRows.slice(0, 5).some((x) => x.userKey === boardQ.data.me.userKey)) ? (
                           <div className="rn-brow me">
                             <span className="rn-bp">{boardQ.data.me.rank || '—'}</span>
                             <span className="rn-bn">You</span>
-                            <span className="rn-bs">{Math.round(boardQ.data.me.total * 10) / 10}</span>
+                            <span className="rn-bs">{Math.round(boardQ.data.me.total * 10) / 10}{hasCombo && comboOf(boardQ.data.me) != null ? <small className="rn-bc">{comboOf(boardQ.data.me)} combined</small> : null}</span>
                           </div>
                         ) : null}
                     </div>
@@ -1758,7 +1824,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   );
                 })()}
 
-                {(circuitId === 'gauntlet' || circuitId === 'math') ? <MoreRunsList self={circuitId} /> : null}
+                {afterCards ? <MoreRunsList self={ENCORE ? 'gauntlet' : circuitId} /> : null}
 
                 <div className="rn-vacts rn-sacts">
                   <button type="button" className="rn-vb" onClick={shareRun}>
@@ -1801,13 +1867,30 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
       {/* MORE OF THE SAME KIND (owner, 2026-10-12): for a player whose whole
           history is the gauntlets, the games most like the quiz they went
           furthest in. Replaced the /trivia door card. See GauntletMorePop. */}
-      {(circuitId === 'gauntlet' || circuitId === 'math') && (
-        <GauntletMorePop circuitId={circuitId} ready={hydrated && done && !curtain} results={r.results} sections={sections} boards={boards} onOpenChange={setDoorUp} onShown={() => setMoreShown(true)} />
+      {encoreOn && !encoreDone ? (
+        <EncorePop
+          ready={hydrated && done && !curtain && doneAtLoad.current === false && !r.practice}
+          games={encore.games}
+          href={encore.href || '/triviaencore'}
+          onOpenChange={(o) => { setEncoreUp(o); setDoorUp(o); }}
+          onShown={() => setMoreShown(true)}
+        />
+      ) : null}
+      {afterCards && (
+        <GauntletMorePop circuitId={ENCORE ? 'gauntlet' : circuitId} ready={hydrated && done && !curtain} results={r.results} sections={sections} boards={boards} onOpenChange={setDoorUp} onShown={() => setMoreShown(true)} />
       )}
     </div>
   );
 }
 const CSS = `
+.rn-sortsw{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0 10px;font-size:12px;font-weight:700}
+.rn-sortsw > span{opacity:.75;text-transform:uppercase;letter-spacing:.08em;font-size:10.5px;margin-right:2px}
+.rn-sortsw button{border:1.5px solid currentColor;background:transparent;color:inherit;border-radius:999px;padding:4px 11px;font:inherit;cursor:pointer;opacity:.8}
+.rn-sortsw button.on{background:#7dd3fc;border-color:#7dd3fc;color:#08222e;opacity:1}
+.rn-bc{display:block;font-size:10.5px;font-weight:600;opacity:.75}
+.rn-door.rn-encore{border-color:#e8b43a}
+.rn-door.rn-encore .rn-dnm{color:#e8b43a}
+
 ${MISS_CSS}
 /* THE RUN IS A DARK STAGE, not white cards on navy (owner, 2026-08-30, "it
    should look just like the mock-up"). Every other daily puts its board in a

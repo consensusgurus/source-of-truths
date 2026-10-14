@@ -19,6 +19,12 @@ import { PUZZLES as scriptPuzzles } from '../../../script/puzzles';
 import { QUESTION_MAP as scriptQuestions } from '../../../script/questions';
 import { PUZZLES as quotesPuzzles } from '../../../quotes/puzzles';
 import { QUESTION_MAP as quotesQuestions } from '../../../quotes/questions';
+import { PUZZLES as sciPuzzles } from '../../../sci/puzzles';
+import { QUESTION_MAP as sciQuestions } from '../../../sci/questions';
+import { PUZZLES as artPuzzles } from '../../../art/puzzles';
+import { QUESTION_MAP as artQuestions } from '../../../art/questions';
+import { PUZZLES as historyPuzzles } from '../../../history/puzzles';
+import { QUESTION_MAP as historyQuestions } from '../../../history/questions';
 import { PUZZLES as streakPuzzles } from '../../../streak/puzzles';
 import { QUESTION_MAP as streakQuestions } from '../../../streak/questions';
 
@@ -68,6 +74,9 @@ const BANKS = {
   script: { puzzles: scriptPuzzles, questions: scriptQuestions, tiers: ['Opening credits', 'First act', 'Second act', 'Third act', 'The credits roll'] },
   quotes: { puzzles: quotesPuzzles, questions: quotesQuestions, tiers: ['Household words', 'Well known', 'Worth knowing', 'For the reader', 'Chapter and verse'] },
   biz: { puzzles: bizPuzzles, questions: bizQuestions, tiers: ['Warm-up', 'First half', 'Second half', 'Crunch time', 'Overtime'] },
+  sci: { puzzles: sciPuzzles, questions: sciQuestions, tiers: ['Hypothesis', 'Experiment', 'Observation', 'Analysis', 'Discovery'] },
+  art: { puzzles: artPuzzles, questions: artQuestions, tiers: ['Sketch', 'Draft', 'Study', 'Gallery', 'Masterpiece'] },
+  history: { puzzles: historyPuzzles, questions: historyQuestions, tiers: ['Living memory', 'The textbook', 'The archive', 'The footnotes', 'The primary sources'] },
   streak: { puzzles: streakPuzzles, questions: streakQuestions, tiers: ['Warm-up', 'Easy', 'Medium', 'Hard', 'Brutal'] },
   // THE MATH GAUNTLET (2026-10-09). The Blitz family's banks have the same
   // shape as a trivia bank (q, choices, correct, tier), so the same run deals
@@ -212,6 +221,19 @@ export async function generateMetadata({ params }) {
       twitter: { card: 'summary_large_image', title: hook, description: 'One wrong answer ends the game. Then the next one starts. How far do you get?' },
     };
   }
+  if (c.id === 'triviaencore') {
+    const url = `${SITE_URL}${runHref(c.id)}`;
+    const hook = 'Trivia Encore: three more quizzes. One life each.';
+    return {
+      title: 'Trivia Encore: Three More Daily Trivia Quizzes | Mind Loft',
+      description:
+        'The three daily trivia quizzes that sat out today\'s Trivia Gauntlet, played back to back as one run. Twenty seconds a question, one life in each. Free, no signup.',
+      alternates: { canonical: runHref(c.id) },
+      robots: { index: false, follow: true },
+      openGraph: { title: hook, description: 'The quizzes that sat out today\'s Gauntlet. One wrong answer ends each one.', url, type: 'website', siteName: 'Mind Loft' },
+      twitter: { card: 'summary_large_image', title: hook, description: 'One wrong answer ends the quiz. Then the next one starts. How far do you get?' },
+    };
+  }
   const games = circuitGamesFor(c.id, etTodayServer()).filter((g) => RUN_GAMES.includes(g.key));
   const n = games.length || 5;
   const url = `${SITE_URL}${runHref(c.id)}`;
@@ -219,7 +241,7 @@ export async function generateMetadata({ params }) {
   return {
     title: `${c.name}: ${spell(n, true)} Trivia Quizzes, One Long Run | Mind Loft`,
     description:
-      `Quiz show practice, ${spell(n)} rounds deep. Every daily trivia quiz played back to back as one run: a topic in depth, the whole map, every sport, the business of everything, and forty questions of anything at all. Twenty seconds a question, one life in each quiz, and one wrong answer ends it. Free, no signup, new questions every day.`,
+      `Quiz show practice, ${spell(n)} rounds deep. Every daily trivia quiz played back to back as one run: a topic in depth, forty questions of anything at all, and five more that rotate daily through geography, science, sport, the arts, history, business, the screen and famous lines. Twenty seconds a question, one life in each quiz, and one wrong answer ends it. Free, no signup, new questions every day.`,
     alternates: { canonical: runHref(c.id) },
     robots: { index: false, follow: true },
     openGraph: {
@@ -234,6 +256,16 @@ export async function generateMetadata({ params }) {
       description: 'One wrong answer ends the quiz. Then the next one starts. How far do you get?',
     },
   };
+}
+
+// The Trivia Encore's games for the day (owner, 2026-10-14): the three banks
+// that sat out the Gauntlet, offered on its finish. Only banks with a puzzle
+// today count; fewer than two means no Encore.
+function encoreFor(today) {
+  const games = circuitKeysFor('triviaencore', today)
+    .filter((k) => BANKS[k] && dayFor(BANKS[k], today))
+    .map((k) => ({ key: k, name: (DAILY_GAME_MAP[k] || {}).name || k }));
+  return games.length >= 2 ? { games, href: runHref('triviaencore') } : null;
 }
 
 export default function CircuitRunPage({ params }) {
@@ -321,7 +353,7 @@ export default function CircuitRunPage({ params }) {
       // The game's slot in the circuit's CANONICAL key list, not in today's
       // shuffled run. The ladder colours by this so a game keeps its colour
       // from one day to the next even though its position moves.
-      slot: circuitSlotFor(circuit.id, key),
+      slot: circuitSlotFor(circuit.id === 'triviaencore' ? 'gauntlet' : circuit.id, key),
       quizId: day.quizId,
       num: day.num,
       topic: day.topic || '',
@@ -336,7 +368,14 @@ export default function CircuitRunPage({ params }) {
 
   return (
     <Suspense fallback={null}>
-      <RunClient circuitId={circuit.id} circuitName={circuit.name} dateLabel={label} sections={sections} boards={circuit.id === 'gauntlet' ? todayBoards(today) : null} />
+      <RunClient
+        circuitId={circuit.id}
+        circuitName={circuit.name}
+        dateLabel={label}
+        sections={sections}
+        boards={circuit.id === 'gauntlet' ? todayBoards(today) : null}
+        encore={circuit.id === 'gauntlet' ? encoreFor(today) : null}
+      />
     </Suspense>
   );
 }

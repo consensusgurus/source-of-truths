@@ -123,6 +123,9 @@ import { PUZZLES as GIANT_FULL } from '../giant/puzzles';
 import { PUZZLES as SUMO_FULL } from '../sumo/puzzles';
 import { PUZZLES as SCRIPT_FULL } from '../script/puzzles';
 import { PUZZLES as QUOTES_FULL } from '../quotes/puzzles';
+import { PUZZLES as SCI_FULL } from '../sci/puzzles';
+import { PUZZLES as ART_FULL } from '../art/puzzles';
+import { PUZZLES as HISTORY_FULL } from '../history/puzzles';
 import { PUZZLES as POTLUCK_FULL } from '../potluck/puzzles';
 import { PUZZLES as FOCUS_FULL } from '../focus/puzzles';
 import { PUZZLES as THREAD_FULL } from '../thread/puzzles';
@@ -222,6 +225,9 @@ const GIANT = GIANT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ nu
 const RIM = RIM_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SCRIPT = SCRIPT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const QUOTES = QUOTES_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const SCI = SCI_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+const ART = ART_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+const HISTORY = HISTORY_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const POTLUCK = POTLUCK_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const FOCUS = FOCUS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const THREAD = THREAD_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -388,6 +394,9 @@ const GAMES = [
   { key: 'giant', name: 'Giant', path: '/giant', tag: 'Sudoku at sixteen', accent: '#3949ab', bg: '#eceefa', border: 'rgba(57,73,171,0.4)', src: GIANT },
   { key: 'rim', name: 'Rim', path: '/rim', tag: 'Nothing printed inside', accent: '#4d7c0f', bg: '#f1f8e6', border: 'rgba(77,124,15,0.4)', src: RIM },
   { key: 'script', name: 'Script', path: '/script', tag: 'Movies and TV, one life', accent: '#4a1d6b', bg: '#f3ecf9', border: 'rgba(74,29,107,0.4)', src: SCRIPT },
+  { key: 'sci', name: 'Sci', path: '/sci', tag: 'Science, one life', accent: '#0f766e', bg: '#e8f5f3', border: 'rgba(15,118,110,0.4)', src: SCI },
+  { key: 'art', name: 'Art', path: '/art', tag: 'Arts and culture, one life', accent: '#9d174d', bg: '#fbeef3', border: 'rgba(157,23,77,0.4)', src: ART },
+  { key: 'history', name: 'History', path: '/history', tag: 'History, one life', accent: '#854d0e', bg: '#f8f1e4', border: 'rgba(133,77,14,0.4)', src: HISTORY },
   { key: 'potluck', name: 'Potluck', path: '/potluck', tag: 'Three quizzes, one score', accent: '#b4532a', bg: '#fdf1ea', border: 'rgba(180,83,42,0.4)', src: POTLUCK },
   { key: 'quotes', name: 'Quotes', path: '/quotes', tag: 'Who said it, one life', accent: '#3d4f7c', bg: '#eef1f8', border: 'rgba(61,79,124,0.4)', src: QUOTES },
   { key: 'focus', name: 'Focus', path: '/focus', tag: 'Name the zoomed-in photo', accent: '#8a4b08', bg: '#fdf3e6', border: 'rgba(138,75,8,0.4)', src: FOCUS },

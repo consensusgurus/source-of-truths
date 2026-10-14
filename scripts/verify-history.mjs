@@ -1,0 +1,260 @@
+// Structural gate for the History bank. Run after every authoring pass:
+//
+//   node scripts/verify-history.mjs
+//
+// Cloned from scripts/verify-biz.mjs (2026-10-14); the differences are the
+// lane list, the quizId prefix, and a copy window that opens on day 1, since
+// History launched under the current authoring rules and has no frozen past.
+//
+// It checks only what a machine can check. The TRUTH of a fact is still a
+// human job, and so is whether a tier-5 question is really hard. What this
+// catches is the stuff that silently ships wrong: a question that hands over
+// its own answer, a repeated question, a day whose correct answers pile into
+// one column, a tier or subject ramp out of order, the same answer twice in
+// one run, and (as a warning) the same FACT asked twice on different days,
+// which is the failure the first pass at this bank actually had.
+//
+// Question ids are 'd<day>q<slot>', the day zero padded to two digits and
+// widening to three past day 99, the slot always two. Each day's qids must
+// carry that day's own number as their prefix.
+//
+// TWO WHOLE-BANK CHECKS RUN OVER A DATED COPY WINDOW, not per day:
+//
+//   US SPELLINGS (authoring standard rule 8, bulk rule 4). Every reader-facing
+//   string (the stem and all four choices) goes through the shared screen in
+//   scripts/us-spellings.mjs. Real titles and names keep their own spelling, so
+//   SPELL_ALLOW below lists the proper nouns that are skipped verbatim: the
+//   International Labour Organization is the body's actual name, exactly as
+//   the brief's Australian Labor Party, Lloyd's and Labour Party are.
+//   LOCAL_BRITISH is a small local supplement for the families
+//   the shared list misses; see the comment on it.
+//
+//   ANSWER REUSE, COUNTED ACROSS THE WHOLE WINDOW rather than per day (rule 7,
+//   bulk rule 3). Per-day legality passes happily on a bank that answers
+//   "Amazon" forty times, which is how Rung, Listed, Mate, Four and Crux all
+//   degraded. The ceiling is ANSWER_CAP: no answer may be correct more than
+//   four times in the window. Answers are counted with a leading "the"
+//   stripped, so "The Bubble Act" and "Bubble Act" are one answer.
+//
+// BOTH ARE SCOPED FROM A DATED COPY FLOOR (rule 10, "the past is frozen").
+// HISTORY_COPY_FROM is the first live date the new rules apply to; days before it
+// shipped under the old rules and are history, not a backlog. For this game
+// the floor is day 1, so the whole bank is screened.
+import { QUESTIONS, QUESTION_MAP } from '../app/history/questions.js';
+import { PUZZLES } from '../app/history/puzzles.js';
+import { scanUS } from './us-spellings.mjs';
+import { checkRecycled } from './trivia-recycle.mjs';
+
+// The first live date the US-spelling screen and the answer-reuse ceiling
+// apply to: day 1, the launch.
+const HISTORY_COPY_FROM = '2026-10-15';
+// No answer may be correct more than this many times at or after the floor.
+const ANSWER_CAP = 4;
+// Proper names that keep their own spelling; skipped verbatim by the screen
+// before either word list runs over the string.
+const SPELL_ALLOW = [
+  'The International Labour Organization', 'International Labour Organization',
+  'Australian Labor Party', "Lloyd's", 'Labour Party',
+];
+// Families of British form the authoring brief names by hand (rule 4:
+// "...programme, grey, metre, centre, harbour, favourite, kilometre,
+// tricolour") that the shared list in us-spellings.mjs does not carry: it has
+// 'metre' and 'litre' but matches on word boundaries, so 'kilometre' slips
+// through, and it has no 'tricolour' at all. The doubled-l family is sampled
+// there rather than exhausted, so the common forms ('modelled', 'signalled',
+// 'labelling', 'fuelling') are listed here too. Kept local rather than pushed into the shared file,
+// because that file screens several other games against their own dated floors
+// and a new entry there can fail copy nobody is looking at.
+const LOCAL_BRITISH = [
+  ['tricolours', 'tricolors'], ['tricolour', 'tricolor'],
+  ['kilometres', 'kilometers'], ['kilometre', 'kilometer'],
+  ['modelled', 'modeled'], ['unravelled', 'unraveled'], ['marshalled', 'marshaled'],
+  ['counselling', 'counseling'], ['signalling', 'signaling'], ['spiralling', 'spiraling'],
+  ['cancelling', 'canceling'], ['labelling', 'labeling'], ['fuelling', 'fueling'],
+].map(([brit, us]) => [new RegExp(`\\b${brit}\\b`, 'i'), us]);
+
+const errs = [];
+const warns = [];
+const fail = (m) => errs.push(m);
+const warn = (m) => warns.push(m);
+
+const norm = (s) => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+  .replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+// Ids where the answer is unavoidably in the wording. Empty on this bank:
+// every giveaway the check found here was a real bug and was rewritten. Add an
+// id only when the thing asked about is literally named after the answer,
+// never to silence a leak.
+const INHERENT = new Set([]);
+const STOP = new Set(['the', 'a', 'an', 'of', 'and', 'in', 'on', 'at', 'to', 'for', 'is', 'it', 'its', 'his', 'her', 'their', 'was', 'were', 'by', 'from', 'about', 'as', 'or', 'no', 'not', 'one', 'two', 'three', 'four', 'five', 'six', 'ten']);
+
+// A day is five tiers of five, and every tier block runs the same five
+// lanes in this order. Both are the shape of the game, not a convention.
+const SUBJECTS = ['Ancient World', 'Middle Ages', 'Empires & Revolutions', 'War & Conflict', 'Modern Era'];
+const PER_TIER = SUBJECTS.length;
+const TOTAL_Q = 25;
+const RAMP = [];
+for (let t = 1; t <= 5; t++) for (let s = 0; s < PER_TIER; s++) RAMP.push(t);
+
+// ---- bank-level -----------------------------------------------------------
+const ids = new Set();
+for (const q of QUESTIONS) {
+  if (ids.has(q.id)) fail(`duplicate question id ${q.id}`);
+  ids.add(q.id);
+  if (!/^d\d{2,3}q\d\d$/.test(q.id)) fail(`${q.id}: id is not d<NN>q<NN> or d<NNN>q<NN>`);
+  if (!Array.isArray(q.choices) || q.choices.length !== 4) fail(`${q.id}: needs exactly 4 choices`);
+  else if (new Set(q.choices.map(norm)).size !== 4) fail(`${q.id}: choices are not all distinct`);
+  if (!Number.isInteger(q.correct) || q.correct < 0 || q.correct > 3) fail(`${q.id}: correct index out of range`);
+  if (![1, 2, 3, 4, 5].includes(q.tier)) fail(`${q.id}: tier must be 1..5`);
+  if (!SUBJECTS.includes(q.cat)) fail(`${q.id}: cat "${q.cat}" is not one of the five subjects`);
+  if (!q.q || !q.q.trim().endsWith('?')) warn(`${q.id}: question does not end in a question mark`);
+  for (const s of [q.q, ...q.choices]) if (String(s).includes('—')) fail(`${q.id}: em dash in copy`);
+
+  // The giveaway check: a question may never contain its own answer, whole or
+  // in its distinctive words.
+  const ans = q.choices[q.correct] || '';
+  const qn = ` ${norm(q.q)} `;
+  const an = norm(ans);
+  if (an && qn.includes(` ${an} `)) fail(`${q.id}: question contains its own answer ("${ans}")`);
+  const words = an.split(' ').filter((w) => w.length > 2 && !STOP.has(w));
+  if (words.length && !INHERENT.has(q.id) && words.every((w) => qn.includes(` ${w} `))) fail(`${q.id}: question contains every distinctive word of its answer ("${ans}")`);
+}
+
+const seenText = new Map();
+for (const q of QUESTIONS) {
+  const k = norm(q.q);
+  // A declared recycle of the question it repeats is the one allowed repeat;
+  // checkRecycled (below) proves nobody ever answered the original.
+  if (seenText.has(k) && q.from !== `history:${seenText.get(k)}`) fail(`${q.id}: repeats the question text of ${seenText.get(k)}`);
+  seenText.set(k, q.id);
+}
+
+// The same fact asked twice, in two different lanes, on two different days.
+// Two questions that share an ANSWER and any distinctive word are the shape of
+// it (a merger asked from both ends, both answering the same acquirer). A
+// warning rather than a failure: a famous name is the fair answer to several
+// genuinely different questions, so a human decides.
+const TEMPLATE = new Set(('which what who whom whose where when many name named known called nickname company companies firm firms brand brands group business businesses maker makers chain chains retailer store stores product products line lines year years decade first last later founded launched introduced sold sells sell owns owned bought buy acquired merged deal deals price prices term takes states united american british french german japanese swiss dutch italian swedish chinese indian korean european country city these that this from with their they there only into over under after before famous popular common often usually still large largest biggest small').split(' '));
+const distinct = (s) => new Set(norm(s).split(' ').filter((w) => w.length > 3 && !TEMPLATE.has(w)));
+const byAnswer = new Map();
+for (const q of QUESTIONS) {
+  const k = norm(q.choices[q.correct]).replace(/^the /, '');
+  if (!byAnswer.has(k)) byAnswer.set(k, []);
+  byAnswer.get(k).push(q);
+}
+for (const [, group] of byAnswer) {
+  for (let i = 0; i < group.length; i++) for (let j = i + 1; j < group.length; j++) {
+    const b = distinct(group[j].q);
+    const shared = [...distinct(group[i].q)].filter((w) => b.has(w));
+    if (shared.length) warn(`${group[i].id} and ${group[j].id} share an answer and the word(s) ${shared.join(', ')} — check they are not the same fact twice`);
+  }
+}
+
+// ---- day-level ------------------------------------------------------------
+const usedQids = new Map();
+const liveOf = new Map();   // qid -> the live date of the day that plays it
+const dates = [];
+
+for (const p of PUZZLES) {
+  const tag = `day ${p.num}`;
+  if (dates.includes(p.live)) fail(`${tag}: duplicate live date ${p.live}`);
+  dates.push(p.live);
+  if (p.quizId !== `history-${Number(p.live.slice(5, 7))}-${Number(p.live.slice(8, 10))}-${p.live.slice(2, 4)}`) fail(`${tag}: quizId ${p.quizId} does not match live date ${p.live}`);
+  if ('sunday' in p) fail(`${tag}: History runs no Sunday Edition, so no day may be flagged sunday`);
+  if (!Array.isArray(p.qids) || p.qids.length !== TOTAL_Q) { fail(`${tag}: needs exactly ${TOTAL_Q} qids`); continue; }
+
+  const qs = [];
+  const wantPrefix = `d${String(p.num).padStart(2, '0')}q`;
+  for (const id of p.qids) {
+    if (!id.startsWith(wantPrefix)) fail(`${tag}: qid ${id} does not carry this day's prefix ${wantPrefix}`);
+    if (usedQids.has(id)) fail(`${tag}: qid ${id} already used on day ${usedQids.get(id)}`);
+    usedQids.set(id, p.num);
+    liveOf.set(id, p.live);
+    const q = QUESTION_MAP[id];
+    if (!q) { fail(`${tag}: qid ${id} is not in the bank`); continue; }
+    qs.push(q);
+  }
+  if (qs.length !== TOTAL_Q) continue;
+
+  qs.forEach((q, i) => {
+    if (q.tier !== RAMP[i]) fail(`${tag}: slot ${i + 1} is tier ${q.tier}, the ramp wants ${RAMP[i]}`);
+    const want = SUBJECTS[i % PER_TIER];
+    if (q.cat !== want) fail(`${tag}: slot ${i + 1} is ${q.cat}, the subject cycle wants ${want}`);
+  });
+
+  // Correct-answer column spread: 25 questions over 4 columns, so every column
+  // carries at least 5 and no column repeats three times running.
+  const pos = qs.map((q) => q.correct);
+  for (let k = 0; k < 4; k++) {
+    const n = pos.filter((x) => x === k).length;
+    if (n < 5) fail(`${tag}: column ${String.fromCharCode(65 + k)} is correct only ${n} times`);
+  }
+  for (let i = 2; i < pos.length; i++) if (pos[i] === pos[i - 1] && pos[i] === pos[i - 2]) fail(`${tag}: three correct answers in a row in column ${String.fromCharCode(65 + pos[i])}`);
+
+  // The same answer twice in one day makes the second one guessable.
+  const answers = new Map();
+  qs.forEach((q) => {
+    const a = norm(q.choices[q.correct]);
+    if (answers.has(a)) fail(`${tag}: "${q.choices[q.correct]}" is the answer to both ${answers.get(a)} and ${q.id}`);
+    answers.set(a, q.id);
+  });
+}
+
+// The bank drops one day at a time, so the dates must be contiguous.
+for (let i = 1; i < dates.length; i++) {
+  const prev = Date.parse(`${dates[i - 1]}T00:00:00Z`);
+  const cur = Date.parse(`${dates[i]}T00:00:00Z`);
+  if (cur - prev !== 86400000) fail(`day ${PUZZLES[i].num}: ${dates[i]} does not follow ${dates[i - 1]} by one day`);
+}
+
+// ---- copy window: US spellings and the answer-reuse ceiling ---------------
+// Both are scoped to days live on or after HISTORY_COPY_FROM, so the frozen past is
+// not retroactively failed. A question no day plays has no live date and so is
+// outside the window; the orphan warning below is what catches those.
+const inWindow = QUESTIONS.filter((q) => (liveOf.get(q.id) || '') >= HISTORY_COPY_FROM);
+
+for (const q of inWindow) {
+  for (const s of [q.q, ...(q.choices || [])]) {
+    for (const hit of scanUS(s, SPELL_ALLOW)) fail(`${q.id}: British spelling "${hit.found}" in copy (US: ${hit.us})`);
+    // The local supplement gets the same proper-name exemption as the shared
+    // screen, so a real name is skipped once rather than twice.
+    let bare = String(s);
+    for (const a of SPELL_ALLOW) if (a && bare.includes(a)) bare = bare.split(a).join(' ');
+    for (const [re, us] of LOCAL_BRITISH) {
+      const m = bare.match(re);
+      if (m) fail(`${q.id}: British spelling "${m[0]}" in copy (US: ${us})`);
+    }
+  }
+}
+
+const answerUse = new Map();
+for (const q of inWindow) {
+  const a = norm(q.choices[q.correct]).replace(/^the /, '');
+  if (!a) continue;
+  if (!answerUse.has(a)) answerUse.set(a, []);
+  answerUse.get(a).push(q.id);
+}
+for (const [, ids] of answerUse) {
+  if (ids.length > ANSWER_CAP) {
+    const q = QUESTION_MAP[ids[0]];
+    fail(`"${q.choices[q.correct]}" is the correct answer ${ids.length} times since ${HISTORY_COPY_FROM}, over the ceiling of ${ANSWER_CAP} (${ids.join(', ')})`);
+  }
+}
+
+const orphans = QUESTIONS.filter((q) => !usedQids.has(q.id));
+if (orphans.length) warn(`${orphans.length} questions in the bank are not used by any day (${orphans.slice(0, 5).map((q) => q.id).join(', ')}...)`);
+
+// ---- report ---------------------------------------------------------------
+for (const w of warns) console.warn(`warn  ${w}`);
+// RECYCLED QUESTIONS (owner, 2026-10-09): every `from` must name a question the
+// play snapshots prove nobody ever answered. Rules in scripts/trivia-recycle.mjs.
+const recycle = await checkRecycled({ game: 'history', QUESTIONS, PUZZLES });
+errs.push(...recycle.errs);
+if (recycle.recycled) console.log(`history: ${recycle.recycled} recycled question(s) checked against the play snapshots`);
+
+if (errs.length) {
+  for (const e of errs) console.error(`FAIL  ${e}`);
+  console.error(`\n${errs.length} problem${errs.length === 1 ? '' : 's'} in ${QUESTIONS.length} questions across ${PUZZLES.length} days.`);
+  process.exit(1);
+}
+console.log(`ok: ${QUESTIONS.length} questions, ${PUZZLES.length} days, ${dates[0]} to ${dates[dates.length - 1]}, ${warns.length} warning${warns.length === 1 ? '' : 's'}.`);
+console.log(`    copy window from ${HISTORY_COPY_FROM}: ${inWindow.length} questions screened for British spellings, ${answerUse.size} distinct answers, none over ${ANSWER_CAP}.`);

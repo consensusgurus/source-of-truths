@@ -27,6 +27,9 @@ import { PUZZLES as sportPuzzles } from '../../sport/puzzles';
 import { PUZZLES as bizPuzzles } from '../../biz/puzzles';
 import { PUZZLES as scriptPuzzles } from '../../script/puzzles';
 import { PUZZLES as quotesPuzzles } from '../../quotes/puzzles';
+import { PUZZLES as sciPuzzles } from '../../sci/puzzles';
+import { PUZZLES as artPuzzles } from '../../art/puzzles';
+import { PUZZLES as historyPuzzles } from '../../history/puzzles';
 import { PUZZLES as streakPuzzles } from '../../streak/puzzles';
 import { PUZZLES as blitzPuzzles } from '../../blitz/puzzles';
 import { PUZZLES as blitzedPuzzles } from '../../blitzed/puzzles';
@@ -37,6 +40,7 @@ import { PUZZLES as backPuzzles } from '../../back/puzzles';
 const DAYS = {
   deep: deepPuzzles, atlas: atlasPuzzles, sport: sportPuzzles, biz: bizPuzzles,
   script: scriptPuzzles, quotes: quotesPuzzles, streak: streakPuzzles,
+  sci: sciPuzzles, art: artPuzzles, history: historyPuzzles,
   // The Math Gauntlet's five (2026-10-09). Without these the math circuit had
   // no banks, so its share card fell back to the plain quiz card.
   blitz: blitzPuzzles, blitzed: blitzedPuzzles, gap: gapPuzzles,

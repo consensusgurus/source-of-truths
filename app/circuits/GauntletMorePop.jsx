@@ -56,7 +56,7 @@ const EXTRA = {
 const CONFIG = {
   gauntlet: {
     eyebrow: 'Mind Loft · More trivia',
-    fallbackHead: 'Seven quizzes down. The trivia does not stop here.',
+    fallbackHead: 'That is the trivia run done. The trivia does not stop here.',
     fallbackLead: ['bracket', 'listed', 'potluck'],
     fallbackWhy: 'More trivia, new every day.',
     lead: {
@@ -66,6 +66,9 @@ const CONFIG = {
       quotes: ['dating', 'listed', 'potluck'],
       deep: ['potluck', 'bracket', 'listed'],
       streak: ['potluck', 'bracket', 'listed'],
+      sci: ['clade', 'dossier', 'potluck'],
+      art: ['thread', 'focus', 'potluck'],
+      history: ['dating', 'listed', 'dossier'],
     },
     why: {
       atlas: 'These three are geography too.',
@@ -74,8 +77,11 @@ const CONFIG = {
       quotes: 'More for the well read.',
       deep: 'More quick-fire trivia.',
       streak: 'More quick-fire trivia.',
+      sci: 'An animal and an element to track down by deduction.',
+      art: 'More for the eye and the well read.',
+      history: 'Put events in order, rank the past, and name the president.',
     },
-    also: ['passport', 'bracket', 'listed', 'ping', 'dating', 'thread', 'focus', 'potluck', 'dossier', 'flank'],
+    also: ['passport', 'bracket', 'listed', 'ping', 'dating', 'thread', 'focus', 'potluck', 'dossier', 'flank', 'clade'],
   },
   // Passport is one country in five rounds, so there is no "went furthest";
   // it always leads with the geography dailies.
