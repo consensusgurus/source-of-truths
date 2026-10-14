@@ -45,7 +45,7 @@ const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 
 const keysOf = (id) => ((circuitById(id) || {}).keys) || [];
 // Plays inside either gauntlet do not disqualify; anything else does.
-const RUNS_ONLY = new Set([...keysOf('gauntlet'), ...keysOf('math'), 'passport']);
+const RUNS_ONLY = new Set([...keysOf('gauntlet'), ...keysOf('math'), ...keysOf('passport'), 'passport']);
 
 // Price Check is a run, not a daily, so it is described here rather than read
 // off the registry. Its glyph is Pricer's.
@@ -83,13 +83,13 @@ const CONFIG = {
     },
     also: ['passport', 'bracket', 'listed', 'ping', 'dating', 'thread', 'focus', 'potluck', 'dossier', 'flank', 'clade'],
   },
-  // Passport is one country in five rounds, so there is no "went furthest";
-  // it always leads with the geography dailies.
+  // Passport plays Span, Flank and Ping (from 2026-10-15), so it leads with
+  // the geography the run did not deal: Atlas, then two map-and-fact dailies.
   passport: {
     eyebrow: 'Mind Loft · More geography',
     fallbackHead: 'Passport stamped. The map does not stop here.',
-    fallbackSub: 'Three more geography games, new every day, the same for everyone.',
-    fallbackLead: ['atlas', 'ping', 'flank'],
+    fallbackSub: 'Three more games for the map, new every day, the same for everyone.',
+    fallbackLead: ['atlas', 'bracket', 'dossier'],
     fallbackWhy: 'More geography, new every day.',
     lead: {},
     why: {},

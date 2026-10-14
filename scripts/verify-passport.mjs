@@ -8,7 +8,9 @@ import { PUZZLES } from '../app/passport/puzzles.js';
 import { DAYS } from '../app/passport/days.js';
 import { BORDERS } from '../app/flank/borders.js';
 import { PUZZLES as FLANK } from '../app/flank/puzzles.js';
-import { TIERS, TOTAL, ROUNDS, unproject, haversineKm, capStep } from '../lib/passport.js';
+import { TIERS, TOTAL, ROUNDS, unproject, haversineKm, capStep, LEGS, LEGS_FROM, legPoints } from '../lib/passport.js';
+import { passportRunDay } from '../lib/passport-run.js';
+import { fairPair, SIZES_N } from '../lib/passport-sizes.js';
 import { flagSteps, FLAG_LAYOUTS, SUBTLE_FROM, SUBTLE_COLORS_FROM, TWINS_FROM, TWINS } from '../app/passport/flagkit.js';
 
 const fails = [], warns = [];
@@ -30,7 +32,9 @@ PUZZLES.forEach((p, i) => {
   }
   prev = p.live;
   const keys = Object.keys(p).sort().join(',');
-  if (keys !== 'dateLabel,live,num,quizId,sunday') fail(`#${p.num}: the light index carries ${keys}`);
+  // From LEGS_FROM a day is the run (v: 2): Span, Flank, Ping and the sizes.
+  const run = p.live >= LEGS_FROM;
+  if (run ? (keys !== 'dateLabel,live,num,quizId,sunday,v' || p.v !== 2) : keys !== 'dateLabel,live,num,quizId,sunday') fail(`#${p.num}: the light index carries ${keys}${p.v ? ' v' + p.v : ''}`);
 });
 if (PUZZLES[0].live !== '2026-10-03') fail(`the bank starts ${PUZZLES[0].live}, launch is 2026-10-03`);
 
@@ -39,8 +43,21 @@ const seen = new Map();
 const flankByDate = new Map(FLANK.map((f) => [f.live, f.c]));
 const addDays = (iso, n) => new Date(Date.parse(iso + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10);
 for (const p of PUZZLES) {
-  const d = DAYS[p.num];
   const at = `#${p.num} ${p.live}`;
+  if (p.v === 2) {
+    // A run day: all three games have a board, and nine fair size calls with
+    // no country asked twice.
+    if (DAYS[p.num]) fail(`${at}: a run day carries a five-round day`);
+    const r = passportRunDay(p.live, p.quizId);
+    if (!r) { fail(`${at}: Span, Flank or Ping has no board`); continue; }
+    if (r.calls.length !== SIZES_N) fail(`${at}: ${r.calls.length} size calls, want ${SIZES_N}`);
+    if (r.calls.some((c) => !fairPair(c.a, c.b))) fail(`${at}: an unfair size call`);
+    if (new Set(r.calls.map((c) => c.b)).size !== r.calls.length) fail(`${at}: a country is asked twice`);
+    for (const c of r.calls) if (!c.aName || !c.bName || !(c.aArea > 0) || !(c.bArea > 0)) fail(`${at}: size call ${c.a}/${c.b} incomplete`);
+    if (p.sunday !== !!r.sections[1].light.sunday) warns.push(`${at}: Flank's Sunday flag differs`);
+    continue;
+  }
+  const d = DAYS[p.num];
   if (!d) { fail(`${at}: no day`); continue; }
   if (d.num !== p.num) fail(`${at}: day num ${d.num}`);
   const B = BORDERS[d.c];
@@ -148,6 +165,8 @@ for (const p of PUZZLES) {
 
 // ── the rules ───────────────────────────────────────────────────────────────
 if (ROUNDS.length * 10 !== TOTAL) fail(`${ROUNDS.length} rounds of 10 is not ${TOTAL}`);
+if (LEGS.reduce((t, l) => t + l.max, 0) !== TOTAL) fail(`the four legs do not add up to ${TOTAL}`);
+for (const l of LEGS) if (legPoints(l.k, 1, 1) !== l.max || legPoints(l.k, 0, 1) !== 0) fail(`legPoints is wrong for ${l.k}`);
 TIERS.forEach((t, i) => {
   if (i === 0 && t.min !== 0) fail('the bottom passport must start at 0');
   if (i > 0 && !(t.min > TIERS[i - 1].min && t.vf >= TIERS[i - 1].vf)) fail(`tier ${t.short} is out of order`);

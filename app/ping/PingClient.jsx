@@ -37,6 +37,7 @@ import { notifyShareCredit } from '../ShareCreditPop';
 import DailyMasthead from '../DailyMasthead';
 import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
+import { useRunEmbed } from '../RunEmbed';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
 import { isStage } from '@/lib/stage';
@@ -349,6 +350,8 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
   const [narrow, setNarrow] = useState(false);
   const [zoomStep, setZoomStep] = useState(0);
   const searchParams = useSearchParams();
+  // Inside the Passport run (app/passport/PassportRunClient.jsx), owner 2026-10-14.
+  const EMBED = useRunEmbed();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
@@ -637,6 +640,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
 
   function postResult(g2, score) {
     abandon.markFlushed();
+    if (EMBED) EMBED.onResult({ key: 'ping', score, total: TOTAL, t0: g2 && g2.t0, tEnd: (g2 && g2.tEnd) || Date.now() });
     const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
     const solved = g2.status === 'won';
     try { setStats(recordStat(PUZZLE.num, { s: score, t: TOTAL, g: solved ? g2.guesses.length : null, won: solved })); } catch (e) {}
@@ -901,7 +905,8 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
+      data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
+      data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
@@ -914,7 +919,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
           strip. The prompt and the miles/kilometres toggle both stay in the card: one is a
           question and the other is a CONTROL, and neither is a figure. Ping pays
           proximity credit on a give-up, so the cap can go amber. */}
-      {LOFT && (
+      {LOFT && !EMBED && (
         <Cap gameKey="ping" quizId={PUZZLE.quizId}
           name="Ping"
           cat="Geography"
@@ -1184,7 +1189,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
             <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Hide game board</button>
           )}
           </div>
-          {LOFT && !playing && (
+          {LOFT && !playing && !EMBED && (
             <LoftFinish
               name="Ping"
               catRank={catRank}
@@ -1237,7 +1242,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
         {/* The strip in the cap answers what this opens, without being pressed. */}
         {!STAGE && <GamePanel self="ping" name="Ping" onShow={() => setShowChrome(true)} />}
         {/* standard quiz-page bottom: challenge + stats + join + leaderboard */}
-        <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block', margin: '30px auto 0' }}>
+        <div style={{ display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', margin: '30px auto 0' }}>
           {LOFT && (
             <div className={STAGE ? undefined : 'loft-report'}>
               <ReportIssue self="ping" name="Ping" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
@@ -1281,7 +1286,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
             </div>
           </div>
         )}
-        {!focusMode && !identity && (
+        {!EMBED && !focusMode && !identity && (
           <div id="daily-join" style={{ margin: '18px auto 0' }}>
             <JoinLeaderboardForm hideIcon heading="See your stats and join the leaderboard" identity={identity} onJoined={(id) => { setIdentity(id); if (id && id.username) setPlayer((p) => p || { name: id.username, rank: null }); }} />
           </div>
@@ -1338,9 +1343,9 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
       )}
 
       {/* The desktop fold: the About prose below starts one screen down (app/StageFold.jsx). */}
-      <StageFold />
+      {!EMBED && <StageFold />}
       {/* About Ping — crawlable prose for search, server-rendered into the HTML */}
-      <section style={{ display: (focusMode && !STAGE) ? 'none' : 'block', position: 'relative', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
+      <section style={{ display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', position: 'relative', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Ping</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Ping is a free daily geography puzzle from Mind Loft, the daily city hunt. Each day there&rsquo;s one secret city somewhere in the world and not a single clue to start. Name any well-known city and Ping answers with one number: the great-circle distance to the target, in miles or kilometers, whichever you prefer.

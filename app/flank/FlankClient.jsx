@@ -34,6 +34,7 @@ import { notifyShareCredit } from '../ShareCreditPop';
 import DailyMasthead from '../DailyMasthead';
 import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
+import { useRunEmbed } from '../RunEmbed';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
 import { isStage } from '@/lib/stage';
@@ -214,6 +215,8 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
   const searchParams = useSearchParams();
+  // Inside the Passport run (app/passport/PassportRunClient.jsx), owner 2026-10-14.
+  const EMBED = useRunEmbed();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const viewedRef = useRef(false);
   const noticeRef = useRef(null);
@@ -408,6 +411,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
     const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
     const score = g2.found.length;
     try { setStats(recordStat(PUZZLE.num, { s: score, t: TOTAL, won: g2.status === 'won' })); } catch (e) {}
+    if (EMBED) EMBED.onResult({ key: 'flank', score, total: TOTAL, t0: g2 && g2.t0, tEnd: (g2 && g2.tEnd) || Date.now() });
     try {
       fetch('/api/quiz/result', {
         method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
@@ -587,7 +591,8 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
+      data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
+      data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'clip' : undefined }}>
       {!STAGE && <Grain />}
       {!STAGE && (
@@ -596,7 +601,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
       {/* LOFT: the cap replaces the title block AND the board's own stat
           strip. Naming some of the borders is a partial, so the cap goes
           amber on anything banked. */}
-      {LOFT && (
+      {LOFT && !EMBED && (
         <Cap gameKey="flank" quizId={PUZZLE.quizId}
           name="Flank"
           cat="Geography"
@@ -834,7 +839,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
             <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Hide game board</button>
           )}
           </div>
-          {LOFT && !playing && (
+          {LOFT && !playing && !EMBED && (
             <LoftFinish
               name="Flank"
               catRank={catRank}
@@ -879,7 +884,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
 
         {/* The strip in the cap answers what this opens, without being pressed. */}
         {!STAGE && <GamePanel self="flank" name="Flank" onShow={() => setShowChrome(true)} />}
-        <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block', margin: '30px auto 0' }}>
+        <div style={{ display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', margin: '30px auto 0' }}>
           {LOFT && (
             <div className={STAGE ? undefined : 'loft-report'}>
               <ReportIssue self="flank" name="Flank" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
@@ -917,7 +922,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
             </div>
           </div>
         )}
-        {!focusMode && !identity && (
+        {!EMBED && !focusMode && !identity && (
           <div id="daily-join" style={{ margin: '18px auto 0' }}>
             <JoinLeaderboardForm hideIcon heading="See your stats and join the leaderboard" identity={identity} onJoined={(id) => { setIdentity(id); if (id && id.username) setPlayer((p) => p || { name: id.username, rank: null }); }} />
           </div>
@@ -953,8 +958,8 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
       )}
 
       {/* The desktop fold: the About prose below starts one screen down (app/StageFold.jsx). */}
-      <StageFold />
-      <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
+      {!EMBED && <StageFold />}
+      <section style={{ position: 'relative', display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Flank</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Flank is a free daily geography game from Mind Loft. One country is revealed each day, and your job is to name every country that shares a land border with it. A correct neighbor banks itself the moment you finish typing it. A real country that does not border costs a strike, and three strikes end the run, so the game is less about typing speed and more about whether you can actually see the map in your head.

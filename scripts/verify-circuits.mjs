@@ -152,7 +152,9 @@ for (const c of CIRCUITS) {
   if (isMarquee(c.id)) fails.push(`a skill circuit may not use the marquee id (${MARQUEE_ID})`);
   if (!c.name || !c.blurb) fails.push(`${c.id}: needs both a name and a blurb (both are reader-facing on the band)`);
   if (!Array.isArray(c.keys) || c.keys.length < (c.solo ? 1 : 2)) fails.push(`${c.id}: needs at least 2 games to be a run`);
-  if (c.solo && (c.keys.length !== 1 || !c.run || !c.path)) fails.push(`${c.id}: a solo circuit is one daily that is its own run, at its own path`);
+  // A solo circuit (Passport) ran as one daily on its own; since 2026-10-15 it
+  // deals four, so the one-game shape survives only in its dated roster.
+  if (c.solo && (!c.run || !c.path || (c.keys.length !== 1 && !(c.before && Array.isArray(c.before.keys) && c.before.keys.length === 1)))) fails.push(`${c.id}: a solo circuit is one daily that is its own run, at its own path`);
   else if (c.rotate) {
     // a ROTATING circuit: the cap applies to the DAY'S SELECTION, not the pool
     if (c.rotate !== MAX) fails.push(`${c.id}: rotating circuits play ${MAX} a day (rotate is ${c.rotate})`);
@@ -434,7 +436,10 @@ function slotPoolLocal(c, iso) {
 // ── 7. the read accessors agree with the data ───────────────────────────────
 for (const c of CIRCUITS) {
   const live = circuitKeysFor(c.id, todayIso);
-  const filtered = c.keys.filter((k) => DAILY_GAME_MAP[k] && !retiredAlready(k));
+  // A DATED ROSTER (Judged 2026-10-11, Passport 2026-10-15): days up to
+  // before.until deal before.keys. The split circuits read theirs in splitLocal.
+  const datedKeys = !c.split && c.before && Array.isArray(c.before.keys) && todayIso <= c.before.until ? c.before.keys : c.keys;
+  const filtered = datedKeys.filter((k) => DAILY_GAME_MAP[k] && !retiredAlready(k));
   // for a rotating circuit the expected selection is RECOMPUTED here with its
   // own day-index math, never read back off the library it is checking
   const expected = c.rotate && filtered.length > c.rotate
@@ -463,7 +468,7 @@ for (const c of CIRCUITS) {
   if (live.length < (c.solo ? 1 : 2) && !(c.solo && !LAUNCHED(c.keys[0])) && !(c.split === 'out' && todayIso < SPLIT_FROM)) {
     fails.push(`${c.id}: only ${live.length} live game(s) today — the band needs at least 2 to render a run`);
   }
-  if (!c.rotate && !c.split && live.length < c.keys.length) {
+  if (!c.rotate && !c.split && live.length < datedKeys.length) {
     warns.push(`${c.id}: down to ${live.length} live games (retirement), was ${c.keys.length}`);
   }
 }

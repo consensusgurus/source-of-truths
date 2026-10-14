@@ -2,6 +2,9 @@ import { Suspense } from 'react';
 import StageTail from '../StageTail';
 import { runBreadcrumbJsonLd } from '@/lib/run-seo';
 import PassportClient from './PassportClient';
+import PassportRunClient from './PassportRunClient';
+import { passportRunDay } from '@/lib/passport-run';
+import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { PUZZLES } from './puzzles';
 import { DAYS } from './days';
 import { T } from '@/lib/theme';
@@ -16,6 +19,12 @@ import { SITE_URL } from '@/lib/site';
 // puzzle number and refused for a day that is not yet live, and the Commons
 // title is stripped here because it usually names the place.
 
+// FROM 2026-10-15 (owner, 2026-10-14) a day is a RUN: the day's Span, Flank
+// and Ping on this page, then nine bigger-or-smaller calls on the countries
+// they were about (lib/passport-run.js). A light-index entry with v: 2 is a
+// run day; the five-round days before it still play through PassportClient,
+// from days.js, for the archive.
+
 // THE LINK PREVIEW IS THE RUN'S OWN (owner, 2026-10-03): a pasted link
 // unfurls with /passport/card, the departures board and the six passports,
 // never the generic daily-puzzle card. A shared result link carries the five
@@ -23,12 +32,12 @@ import { SITE_URL } from '@/lib/site';
 // earned; the page itself ignores the parameter.
 export async function generateMetadata({ searchParams }) {
   const s = String((searchParams && searchParams.s) || '');
-  const ok = /^\d{1,2}(-\d{1,2}){4}$/.test(s);
+  const ok = /^\d{1,2}(-\d{1,2}){3,4}$/.test(s);
   const img = ok ? `/passport/card?s=${s}` : '/passport/card';
-  const title = 'Passport: One Mystery Country, Five Rounds | Mind Loft';
-  const description = 'A free daily geography run: one mystery country in five rounds, from landmark and flag to neighbors, capital and size. Score out of 50 and earn a passport.';
+  const title = 'Passport: A Daily Geography Run | Mind Loft';
+  const description = 'A free daily geography run: the day\'s Span, Flank and Ping back to back, then nine countries called bigger or smaller. Score out of 50 and earn a passport.';
   const shareTitle = 'Passport · Mind Loft';
-  const shareDesc = 'One mystery country, five rounds, one score out of 50. Which passport do you travel home on?';
+  const shareDesc = 'Span, Flank, Ping and nine size calls, one score out of 50. Which passport do you travel home on?';
   return {
     title, description,
     alternates: { canonical: '/passport' },
@@ -41,7 +50,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Passport',
   alternateName: 'Passport: Daily Geography Game', url: `${SITE_URL}/passport`,
   description:
-    'A free daily geography game. Each day has one mystery country, played in five rounds of 10 points: name the country from a landmark photo that zooms out with every wrong guess, build its flag in three picks, name its land neighbors before three strikes, drop a pin on its capital, and call five countries bigger or smaller. The score out of 50 decides which real passport, from the Henley Passport Index, the player travels home on. Everyone gets the same country each day.',
+    "A free daily geography run. Each day plays the day's Span (the shortest chain of land borders between two countries), Flank (every land neighbor of one country) and Ping (a secret city found by distance), each worth 10, then nine bigger-or-smaller calls on land area, worth 20, on countries from those three games. The score out of 50 decides which real passport, from the Henley Passport Index, the player travels home on. Everyone plays the same boards each day.",
   genre: ['Trivia', 'Geography Quiz', 'Quiz', 'Puzzle'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
     image: `${SITE_URL}/og/passport.png`,
@@ -90,6 +99,24 @@ export default function PassportPage({ searchParams }) {
   const n = Number(searchParams && searchParams.p);
   const forceNum = Number.isInteger(n) && n > 0 && visible.some((p) => p.num === n) ? n : null;
   const picked = (forceNum && visible.find((p) => p.num === forceNum)) || visible[visible.length - 1];
+  if (picked.v === 2) {
+    const run = passportRunDay(picked.live, picked.quizId);
+    if (!run) return <ComingSoon first={null} />;
+    const sections = run.sections.map((sec) => {
+      const g = DAILY_GAME_MAP[sec.key] || {};
+      return { ...sec, name: g.name || sec.key, tag: g.tag || '', color: g.colorNavy || '#93c5fd', path: g.href || `/${sec.key}` };
+    });
+    return (
+      <>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(gameJsonLd) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+        <Suspense fallback={null}>
+          <PassportRunClient key={picked.num} puzzles={visible} puzzle={picked} sections={sections} calls={run.calls} isTodays={picked.num === visible[visible.length - 1].num} />
+        </Suspense>
+        <StageTail run="passport" theme="dark" />
+      </>
+    );
+  }
   const full = DAYS[picked.num];
   const { t: _title, ...land } = full.land;
   const day = { ...full, land };

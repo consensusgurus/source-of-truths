@@ -27,6 +27,6 @@ function etLabel() {
 
 export default function PassportLeaderboardPage() {
   return <PriceCheckBoard dateLabel={etLabel()} circuit="passport" name="Passport" path="/passport"
-    emptyLine="Nobody has landed today's country yet. Yours would be the first passport on the board."
-    rankedLine="Ranked on the five round scores added up" />;
+    emptyLine="Nobody has landed yet today. Yours would be the first passport on the board."
+    rankedLine="Ranked on the four legs added up, out of 50" />;
 }

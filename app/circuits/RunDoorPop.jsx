@@ -91,8 +91,8 @@ export const RUN_DOORS = {
   // Passport is a solo page rather than a RunClient run, so it has no
   // sot_run_passport_<day> save; runDoneToday reads its day breadcrumb.
   passport: {
-    href: '/passport', name: 'Passport', eyebrow: 'Daily run · One country',
-    body: 'One mystery country in five rounds: a landmark, its flag, its neighbors, its capital and its size. One score out of 50, and a passport to match.',
+    href: '/passport', name: 'Passport', eyebrow: 'Daily run · Four legs',
+    body: 'The day\'s Span, Flank and Ping on one page, then nine countries from them called bigger or smaller. One score out of 50, and a passport to match.',
     go: 'Start Passport', accent: '#6ee7b7',
     tags: [['Landmark', '#a78bfa'], ['Flag', '#60a5fa'], ['Neighbors', '#34d399'], ['Capital', '#f87171'], ['Size', '#fbbf24']],
   },

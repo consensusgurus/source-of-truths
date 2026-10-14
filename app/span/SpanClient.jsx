@@ -48,6 +48,7 @@ import DailyMasthead from '../DailyMasthead';
 import { isLoft } from '@/lib/loft';
 import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
+import { useRunEmbed } from '../RunEmbed';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
 import { isStage } from '@/lib/stage';
@@ -367,6 +368,8 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const searchParams = useSearchParams();
+  // Inside the Passport run (app/passport/PassportRunClient.jsx), owner 2026-10-14.
+  const EMBED = useRunEmbed();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
@@ -547,6 +550,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
 
   function postResult(g2, score) {
     abandon.markFlushed();
+    if (EMBED) EMBED.onResult({ key: 'span', score, total: 10, t0: g2 && g2.t0, tEnd: (g2 && g2.tEnd) || Date.now() });
     const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
     try { setStats(recordStat(PUZZLE.num, { s: score, t: 10, g: g2.misses, won: g2.status === 'won' && (g2.chain.length - 1) === PUZZLE.perfect })); } catch (e) {}
     try {
@@ -783,7 +787,8 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
+      data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
+      data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'clip' : undefined }}>
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
@@ -792,7 +797,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
       {!STAGE && (
       <DailyChrome slug="span" name="Span" collapsed={started} loft={LOFT} />
       )}
-      {LOFT && (
+      {LOFT && !EMBED && (
         <Cap gameKey="span" quizId={PUZZLE.quizId}
           name="Span"
           cat="Geography"
@@ -1106,7 +1111,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
             <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Hide game board</button>
           )}
           </div>
-          {LOFT && !playing && (
+          {LOFT && !playing && !EMBED && (
             <LoftFinish
               name="Span"
               catRank={catRank}
@@ -1159,7 +1164,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
         {/* The strip in the cap answers what this opens, without being pressed. */}
         {!STAGE && <GamePanel self="span" name="Span" onShow={() => setShowChrome(true)} />}
         {/* standard quiz-page bottom: challenge + stats + join + leaderboard */}
-        <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block', margin: '30px auto 0' }}>
+        <div style={{ display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', margin: '30px auto 0' }}>
           {LOFT && (
             <div className={STAGE ? undefined : 'loft-report'}>
               <ReportIssue self="span" name="Span" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
@@ -1203,7 +1208,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
             </div>
           </div>
         )}
-        {!focusMode && !identity && (
+        {!EMBED && !focusMode && !identity && (
           <div id="daily-join" style={{ margin: '18px auto 0' }}>
             <JoinLeaderboardForm hideIcon heading="See your stats and join the leaderboard" identity={identity} onJoined={(id) => { setIdentity(id); if (id && id.username) setPlayer((p) => p || { name: id.username, rank: null }); }} />
           </div>
@@ -1257,9 +1262,9 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
       )}
 
       {/* The desktop fold: the About prose below starts one screen down (app/StageFold.jsx). */}
-      <StageFold />
+      {!EMBED && <StageFold />}
       {/* About Span — crawlable prose for search, server-rendered into the initial HTML */}
-      <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
+      <section style={{ position: 'relative', display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Span</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Span is a free daily geography puzzle from Mind Loft. Each day hands you two countries; your job is to connect them with the shortest chain of land borders you can find. Match the shortest path on the map and you&apos;ve spanned the day.

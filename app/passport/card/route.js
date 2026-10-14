@@ -1,7 +1,7 @@
 import { createElement as h } from 'react';
 import { ImageResponse } from 'next/og';
 import { stageFonts } from '@/lib/og-stage-card';
-import { ROUNDS, TIERS, tierIndex } from '@/lib/passport';
+import { ROUNDS, TIERS, tierIndex, LEGS, isLegsDay } from '@/lib/passport';
 
 // PASSPORT'S SHARE CARD (owner, 2026-10-03: a link to Passport must not look
 // like a daily puzzle). The run's own picture, on the Price Check pattern:
@@ -42,17 +42,25 @@ function cover(t, w, rot) {
     h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: Math.max(7, 8.5 * s), letterSpacing: 2 * s, textTransform: 'uppercase' } }, t.t2 || 'Pass'));
 }
 
+// From 2026-10-15 a run is four legs (Span, Flank, Ping, Sizes), so a result
+// link carries four scores and the invite shows the four legs.
+function etToday() {
+  try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
+  catch (e) { return new Date().toISOString().slice(0, 10); }
+}
 function card(scores) {
   const res = Array.isArray(scores);
+  const legsCard = res ? scores.length === 4 : isLegsDay(etToday());
+  const ROWS = legsCard ? LEGS : ROUNDS;
   const total = res ? scores.reduce((a, b) => a + b, 0) : null;
   const k = res ? tierIndex(total) : null;
   const tier = res ? TIERS[k] : null;
 
-  const rows = ROUNDS.map((r, i) => {
+  const rows = ROWS.map((r, i) => {
     const v = res ? String(scores[i] ?? 0).padStart(2, '0') : '??';
     return h('div', { key: r.k, style: { display: 'flex', alignItems: 'center', gap: 16, padding: '5px 0' } },
       h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 150, padding: '7px 0', borderRadius: 9, border: `2.5px solid ${INKS[i]}`, color: INKS[i], fontFamily: MONO, fontSize: 17, letterSpacing: 3, textTransform: 'uppercase', transform: `rotate(${[-3, 2, -2, 3, -2][i]}deg)` } }, r.n),
-      h('div', { style: { display: 'flex', flex: 1, fontFamily: MONO, fontSize: 15, color: '#64748b' } }, `ROUND ${i + 1}`),
+      h('div', { style: { display: 'flex', flex: 1, fontFamily: MONO, fontSize: 15, color: '#64748b' } }, legsCard ? `LEG ${i + 1} · /${r.max}` : `ROUND ${i + 1}`),
       h('div', { style: { display: 'flex', gap: 5 } }, flap(v[0]), flap(v[1])));
   });
   const totalDigits = res ? String(total).padStart(2, '0') : '??';
@@ -72,7 +80,7 @@ function card(scores) {
         h('div', { style: { display: 'flex', fontSize: 17, fontWeight: 800, letterSpacing: 3, color: '#7dd3fc', textTransform: 'uppercase' } }, 'Score 48 and earn the'),
         h('div', { style: { display: 'flex', fontSize: 38, fontWeight: 800, lineHeight: 1.05, letterSpacing: -1, marginTop: 8 } }, SWISS.name),
         h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 18, color: AMBER, marginTop: 12 } }, `Visa-free to ${SWISS.vf} countries`),
-        h('div', { style: { display: 'flex', fontSize: 19, fontWeight: 700, color: '#cbd5e1', marginTop: 14, lineHeight: 1.3 } }, 'One mystery country. Five rounds.')));
+        h('div', { style: { display: 'flex', fontSize: 19, fontWeight: 700, color: '#cbd5e1', marginTop: 14, lineHeight: 1.3 } }, legsCard ? 'Span, Flank, Ping and nine size calls.' : 'One mystery country. Five rounds.')));
 
   return h('div', { style: { width: 1200, height: 630, display: 'flex', background: GROUND, padding: '44px 54px', fontFamily: SANS, color: '#f1f5f9' } },
     h('div', { style: { display: 'flex', flexDirection: 'column', width: 520, paddingRight: 34 } },
@@ -98,7 +106,9 @@ function card(scores) {
 export async function GET(req) {
   try {
     const s = new URL(req.url).searchParams.get('s') || '';
-    const scores = /^\d{1,2}(-\d{1,2}){4}$/.test(s) ? s.split('-').map((x) => Math.max(0, Math.min(10, Number(x)))) : null;
+    const v1 = /^\d{1,2}(-\d{1,2}){4}$/.test(s);
+    const v2 = /^\d{1,2}(-\d{1,2}){3}$/.test(s);
+    const scores = v1 || v2 ? s.split('-').map((x, i) => Math.max(0, Math.min(v2 ? LEGS[i].max : 10, Number(x)))) : null;
     return new ImageResponse(card(scores), { width: 1200, height: 630, fonts: stageFonts(), headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=86400' } });
   } catch (err) {
     console.error('passport card failed', err);

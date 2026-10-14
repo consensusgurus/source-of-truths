@@ -3852,7 +3852,7 @@ archive and hub chips use the short form `Sun`.
 | Etch | a 20x20 picture instead of Saturday's 15x15 and the weekday 10x10 (from 2026-08-23) |
 | Hedge | a 10x10 loop lattice instead of the weekday 7x7 |
 | Flank | a giant country with 8 to 14 borders instead of the weekday ramp's 1 to 7, and a fourth strike to spend (from launch, 2026-08-28) |
-| Passport | a country with eight or more land neighbors for the borders round (from launch, 2026-10-03) |
+| Passport | to 2026-10-14 a country with eight or more land neighbors for the borders round; from 2026-10-15 the run carries Span's, Flank's and Ping's own Sunday Editions |
 | Chomp | the full cast of eleven mascots and 0-2 spare squares (and from 2026-08-22 every Chomp board carries 5-7 bolted-down bleacher walls; see app/chomp/puzzles.js) |
 | Niche | a 4x4 grid instead of the weekday 3x3, sixteen cells and twenty guesses, always on Countries, the deepest universe (from launch, 2026-08-23) |
 | Shoe | fourteen hands of blackjack instead of ten, dealt off the entire 104-card double deck instead of a 72-card cut, so a perfect counter knows exactly what is left (from 2026-10-04; before 2026-09-30 it was single-deck, seven hands off 52 against five off 36) |
@@ -8648,6 +8648,32 @@ the daily listings) and refuses to run without `--force`. Share card `public/og/
 - The page resolves the day on the server and ships only that day, with the Commons title
   stripped; the photo comes from `/api/passport/img?n=`, which refuses a day not yet live. Flags are
   flag-icons SVGs (MIT) in `public/passport/flags/`.
+
+### Passport became a four-leg run on 2026-10-15 (owner, 2026-10-14)
+
+Getting the landmark photo and the flag right every day was too much process, so from 2026-10-15
+(`LEGS_FROM` in `lib/passport.js`) a day is **the day's Span, Flank and Ping, then nine
+bigger-or-smaller calls on land area**, still out of 50 on the same six passports. Days up to
+2026-10-14 stay the five-round game, frozen, and the five-round client still plays them.
+
+- **The three games are the real games**, mounted through `app/RunEmbed.jsx` like the Judged and
+  Dojo runs (`app/passport/PassportRunClient.jsx`). Each files its own ordinary row; a game already
+  finished today on its own page is banked off its save and stats and not replayed. Span, Flank and
+  Ping read `useRunEmbed()` and hide their cap, finish card, join form and tail inside the run.
+- **Points**: `legPoints(key, score, total)` scales each game to 10 and the sizes to 20, rounded.
+  The circuit board adds the four rows with `passportScorer` (circuit `scorer: 'passport'`,
+  `scoreFrom: '2026-10-15'`); the passport row itself is calls right out of 9.
+- **The sizes** (`lib/passport-sizes.js`, areas in `lib/country-areas.js`): three calls per game,
+  drawn from Span's road, Flank's country and its ring, and Ping's city's country. A pair is dealt
+  only when the two are 1.3 times apart and a second area table agrees by 1.15, so no call turns on
+  a disputed figure; no country is asked twice. `lib/passport-run.js` builds a day from the three
+  banks and is what the page and `verify-passport.mjs` both read.
+- **The circuit roster is dated**: `keys: ['span','flank','ping','passport']` with
+  `before: { until: '2026-10-14', keys: ['passport'] }`. `solo: true` stays, for the old days.
+- **The bank** keeps nums 1 to 12 in `days.js`; from num 13 the light index carries `v: 2` and no
+  day file. Stocked to 2026-11-30, the end of the Span, Flank and Ping banks: extend those first,
+  then rerun `gen-passport.mjs` with a later `RUN_UNTIL`.
+- The share line and the card carry four scores (`?s=a-b-c-d`) and never name a country.
 
 ## Daily finish: doors, set doors, stats, Add to Home, then How to play (owner, 2026-10-03)
 
