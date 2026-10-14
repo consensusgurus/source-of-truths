@@ -613,8 +613,8 @@ export default function GlyphClient({ puzzles, forceNum }) {
           .gls-bar{display:flex;gap:3px;margin-top:8px;}
           .gls-seg{flex:1;height:8px;border-radius:2px;background:var(--stg-line2);}
           .gls-seg.on{background:var(--stg-acc);}
-          .gls-grid{display:grid;gap:1px;background:var(--stg-cell-line);box-shadow:0 0 0 2px var(--stg-ink);border-radius:6px;overflow:hidden;margin:16px auto 0;}
-          .gls .gl-cell{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;padding:0;margin:0;border:0;border-radius:0;background:var(--stg-cell);color:var(--stg-ink);font-family:${SANS};cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;}
+          .gls-grid{--xw-cell:color-mix(in srgb, var(--stg-cell) 84%, #fff);display:grid;gap:1px;background:color-mix(in srgb, var(--stg-cell-line), var(--stg-ink) 25%);box-shadow:0 0 0 2px var(--stg-ink);border-radius:6px;overflow:hidden;margin:16px auto 0;}
+          .gls .gl-cell{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;padding:0;margin:0;border:0;border-radius:0;background:var(--xw-cell);color:var(--stg-ink);font-family:${SANS};cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;}
           .gls .gl-cell:disabled{cursor:default;}
           /* Black squares: the register's darkest ground (the ground in dark,
              the ink in light), pressed further toward black so they read as
@@ -622,9 +622,9 @@ export default function GlyphClient({ puzzles, forceNum }) {
              the grid gap so runs of blocks merge into one mass. */
           .gls{--gl-blk:color-mix(in srgb, color-mix(in srgb, var(--stg-ground) var(--stg-dk), var(--stg-ink)) 45%, #000);}
           .gls .gl-cell.blk{background:var(--gl-blk);box-shadow:0 0 0 1px var(--gl-blk);cursor:default;}
-          .gls .gl-cell.kin{background:color-mix(in srgb, var(--stg-acc) 20%, var(--stg-cell));}
+          .gls .gl-cell.kin{background:color-mix(in srgb, var(--stg-acc) 20%, var(--xw-cell));}
           .gls .gl-cell.cur{box-shadow:inset 0 0 0 2.5px var(--stg-acc);}
-          .gls .gl-cell.bad{background:color-mix(in srgb, var(--stg-bad) 14%, var(--stg-cell));box-shadow:inset 0 0 0 2px var(--stg-bad);}
+          .gls .gl-cell.bad{background:color-mix(in srgb, var(--stg-bad) 14%, var(--xw-cell));box-shadow:inset 0 0 0 2px var(--stg-bad);}
           .gls .gl-num{position:absolute;top:2px;left:3px;font-size:8.5px;font-weight:700;line-height:1;color:var(--stg-mute);}
           .gls .gl-cell.kin .gl-num,.gls .gl-cell.bad .gl-num{color:var(--stg-ink);}
           .gls .gl-ltr{font-weight:800;line-height:1;padding-top:22%;color:var(--stg-ink);}

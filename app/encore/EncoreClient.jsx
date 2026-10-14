@@ -803,14 +803,14 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.ec-meter{gap:6px;margin-bottom:12px;}.ec-k{font-size:10px;}.ec-bar{height:6px;}}
 
           .ec-gridbox{width:100%;margin:0 auto;container-type:inline-size;}
-          .ec-grid{display:grid;aspect-ratio:1;gap:1px;background:var(--stg-cell-line, rgba(28,30,36,0.3));border-radius:7px;overflow:hidden;box-shadow:0 0 0 2.5px var(--stg-ink, ${COLORS.ink});}
+          .ec-grid{--xw-cell:color-mix(in srgb, var(--stg-cell, #fff) 84%, #fff);display:grid;aspect-ratio:1;gap:1px;background:color-mix(in srgb, var(--stg-cell-line, rgba(28,30,36,0.3)), var(--stg-ink, #0b0d12) 25%);border-radius:7px;overflow:hidden;box-shadow:0 0 0 2.5px var(--stg-ink, ${COLORS.ink});}
           @media(max-width:560px){.ec-grid{border-radius:6px;box-shadow:0 0 0 2px var(--stg-ink, ${COLORS.ink});}}
-          .ec-cell{display:flex;align-items:center;justify-content:center;font-family:${SANS};box-sizing:border-box;cursor:pointer;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;background:var(--stg-cell, #fff);}
+          .ec-cell{display:flex;align-items:center;justify-content:center;font-family:${SANS};box-sizing:border-box;cursor:pointer;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;background:var(--xw-cell);}
           .ec-cell .ec-l{font-weight:800;line-height:1;padding-top:12%;color:var(--stg-ink, ${COLORS.ink});}
-          .ec-cell.ec-blk{background:color-mix(in srgb, var(--stg-ground, ${COLORS.ink}) 55%, black);cursor:default;}
+          .ec-cell.ec-blk{background:color-mix(in srgb, var(--stg-ground, ${COLORS.ink}) 35%, black);cursor:default;}
           html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .ec-cell.ec-blk{background:var(--stg-ink);}
-          .ec-cell.ec-inword{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 22%, var(--stg-cell, #fff));}
-          .ec-cell.ec-wrongmark{background:color-mix(in srgb, var(--stg-bad, ${COLORS.rust}) 15%, var(--stg-cell, #fff));animation:ecshake .3s ease;}
+          .ec-cell.ec-inword{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 22%, var(--xw-cell));}
+          .ec-cell.ec-wrongmark{background:color-mix(in srgb, var(--stg-bad, ${COLORS.rust}) 15%, var(--xw-cell));animation:ecshake .3s ease;}
           .ec-cell.ec-wrongmark .ec-l{color:var(--stg-bad, ${COLORS.rust});}
           .ec-cell.ec-sel{background:var(--stg-acc, ${COLORS.accent});box-shadow:inset 0 0 0 3px var(--stg-ink, ${COLORS.ink});}
           .ec-cell.ec-sel .ec-l,.ec-cell.ec-sel .ec-num{color:var(--stg-onramp, #fff);}
@@ -877,6 +877,26 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
             .ec-check{flex:1.4;min-height:48px;}
             .ec-hint-long{display:none;}.ec-hint-short{display:inline;}
           }
+
+          /* PHONE: grid, clue bar and keyboard must share one screen. The meter
+             and the crossing line come off, the bar flips direction again, and
+             the full clue lists open from a Clues button BELOW the controls so
+             they never push the keyboard down. */
+          @media(max-width:560px){
+            .ec-meter,.ec-xnote{display:none !important;}
+            .ec-clue{margin-top:8px;}
+            .ec-clue .ec-out{min-height:46px;width:40px;}
+            .ec-cbar{padding:5px 10px;}
+            .ec-cbar .ec-cb-txt{font-size:15px;}
+            .ec-kb{margin-top:8px;gap:5px;}
+            .ec-key{height:44px;font-size:15px;}
+            .ec-acts{margin-top:8px;}
+            .ec-acts .ec-out,.ec-check{min-height:44px;}
+            .ec-panel .ec-lists{order:20;}
+            .ec-panel .ec-acts{order:10;}
+          }
+          .ec-clues-btn{display:none;}
+          @media(max-width:560px){.ec-clues-btn{display:inline-flex;}}
           .ec-under{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:6px 4px 0;}
           .ec-under span{font-size:12px;font-weight:600;line-height:1.45;color:var(--stg-mute, ${COLORS.faded});}
           .ec-reveal{flex:none;min-height:44px;background:none;border:0;cursor:pointer;font-family:${SANS};font-weight:700;font-size:12px;color:var(--stg-ink2, ${COLORS.faded});text-decoration:underline;text-underline-offset:3px;display:inline-flex;align-items:center;gap:5px;padding:0 2px;}
@@ -989,8 +1009,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
                 <ChevronLeft size={20} strokeWidth={2.5} />
               </button>
               <button type="button" className="ec-cbar"
-                onClick={() => { if (isNarrow()) setListOpen((o) => !o); else setDir((d) => (d === 'A' ? 'D' : 'A')); }}
-                aria-expanded={listOpen}
+                onClick={() => setDir((d) => (d === 'A' ? 'D' : 'A'))}
                 title="Flip Across and Down">
                 <span className="ec-cb-top">{curWord.n} {curWord.dir === 'A' ? 'Across' : 'Down'} &middot; {curWord.len} letters</span>
                 <span className="ec-cb-dir">{curWord.n} {curWord.dir === 'A' ? 'Across' : 'Down'}</span>
@@ -1047,6 +1066,9 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
           {playing && (
             <div className="ec-acts">
               <span className="ec-help">Filled clues fade. The outlined clue crosses your square.</span>
+              <button type="button" className="ec-out ec-clues-btn" onClick={() => setListOpen((o) => !o)} aria-expanded={listOpen}>
+                {listOpen ? 'Hide clues' : 'Clues'}
+              </button>
               {hintOk && !g.hintUsed && (
                 <button type="button" className="ec-out" onClick={useHint} title="Reveal one letter (one hint, first play only)">
                   <Lightbulb size={15} /> <span className="ec-hint-long">Hint &middot; one letter</span><span className="ec-hint-short">Hint</span>

@@ -778,15 +778,15 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
           .mc-segs span.on{background:var(--stg-acc, ${COLORS.accent});}
           .mc-panel{background:var(--stg-surf, #fff);border:1px solid var(--stg-line, rgba(28,30,36,0.18));border-radius:20px;padding:22px 24px 16px;display:flex;flex-direction:column;align-items:center;}
           .mc-gridbox{width:100%;margin:0 auto;container-type:inline-size;}
-          .mc-grid{display:grid;aspect-ratio:1;border-radius:8px;overflow:hidden;gap:1px;background:var(--stg-cell-line, rgba(28,30,36,0.4));box-shadow:0 0 0 2.5px var(--stg-ink, ${COLORS.ink});}
-          .mc-cell{display:flex;align-items:center;justify-content:center;font-family:${SANS};box-sizing:border-box;cursor:pointer;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;background:var(--stg-cell, #fff);}
+          .mc-grid{--xw-cell:color-mix(in srgb, var(--stg-cell, #fff) 84%, #fff);display:grid;aspect-ratio:1;border-radius:8px;overflow:hidden;gap:1px;background:color-mix(in srgb, var(--stg-cell-line, rgba(28,30,36,0.4)), var(--stg-ink, #0b0d12) 25%);box-shadow:0 0 0 2.5px var(--stg-ink, ${COLORS.ink});}
+          .mc-cell{display:flex;align-items:center;justify-content:center;font-family:${SANS};box-sizing:border-box;cursor:pointer;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;background:var(--xw-cell);}
           .mc-cell.mc-blk{background:var(--mc-blk);cursor:default;}
           .mc-cell.mc-inword{background:var(--mc-soft);}
           .mc-cell.mc-sel{background:var(--stg-acc, ${COLORS.accent});box-shadow:inset 0 0 0 3px var(--stg-ink, ${COLORS.ink});}
           .mc-ch{font-weight:800;line-height:1;padding-top:.22em;color:var(--stg-ink, ${COLORS.ink});}
           .mc-cell.mc-rev .mc-ch{color:var(--stg-mute, ${COLORS.faded});}
           .mc-cell.mc-sel .mc-ch,.mc-cell.mc-sel .mc-num{color:var(--stg-onramp, #fff);}
-          .mc-cell.mc-wrongmark:not(.mc-sel){background:color-mix(in srgb, var(--stg-bad, ${COLORS.rust}) 16%, var(--stg-cell, #fff));}
+          .mc-cell.mc-wrongmark:not(.mc-sel){background:color-mix(in srgb, var(--stg-bad, ${COLORS.rust}) 16%, var(--xw-cell));}
           .mc-cell.mc-wrongmark:not(.mc-sel) .mc-ch{color:var(--stg-bad, ${COLORS.rust});}
           .mc-cell.mc-wrongmark{animation:mcshake .3s ease;}
           .mc-num{position:absolute;top:.4em;left:.55em;font-family:${SANS};font-weight:800;line-height:1;color:var(--stg-ink2, rgba(28,30,36,0.7));pointer-events:none;}
