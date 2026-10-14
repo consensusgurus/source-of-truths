@@ -51,6 +51,7 @@ import LoftFinish from '../LoftFinish';
 import AddToHome from '../AddToHome';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isMobileDevice } from '@/lib/is-mobile';
+import { useRevealPref, REVEAL } from '@/lib/reveal-pref';
 import useAbandonFlush from '../quiz/[id]/useAbandonFlush';
 import useEndHold, { HOLD_LONG } from '../useEndHold';
 import { notifyShareCredit } from '../ShareCreditPop';
@@ -85,7 +86,7 @@ const numInk = (n) => {
 };
 const HELP_KEY = 'sot_sweep_help_seen';
 const STATS_KEY = 'sot_sweep_stats';
-const VIEW_ROWS = 15;          // rows of field on screen at once
+const VIEW_ROWS = 13;          // rows of field on screen at once (the window is 9:13, see .sw-view)
 const LONG_PRESS_MS = 340;     // hold to flag, for a phone with no right button
 const PRESS_SLOP_PX = 12;      // drift a long press tolerates before it reads as a scroll
 const DIG_MAX_MS = 200;        // a press held longer than this NEVER digs. See the cell handlers.
@@ -164,7 +165,7 @@ function deriveStats(s, todayNum) {
 // because a deep run touches a few hundred cells and the save has to be small
 // enough to write on every click.
 function freshState() {
-  return { v: 1, open: [], flag: [], score: 0, digs: 0, boom: -1, status: 'playing', t0: null, tEnd: null, ms: 0 };
+  return { v: 1, open: [], flag: [], last: [], score: 0, digs: 0, boom: -1, status: 'playing', t0: null, tEnd: null, ms: 0 };
 }
 
 export default function SweepClient({ puzzles = [], forceNum = null }) {
@@ -371,17 +372,18 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
     const flag = new Set(state.flag);
     const stack = [startIdx];
     let gained = 0;
+    const added = [];
     while (stack.length) {
       const i = stack.pop();
       if (i < 0 || i >= ROWS * COLS) continue;
       if (open.has(i) || flag.has(i)) continue;
-      open.add(i); gained++;
+      open.add(i); gained++; added.push(i);
       const r = Math.floor(i / COLS), c = i % COLS;
       if (numberAt(FIELD, r, c) === 0) {
         for (const [rr, cc] of neighbors(r, c)) stack.push(idx(rr, cc));
       }
     }
-    return { open: [...open], gained };
+    return { open: [...open], gained, added };
   }, [FIELD]);
 
   const dig = useCallback((i) => {
@@ -394,8 +396,8 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
       const g2 = { ...cur, t0, open: [...cur.open, i], boom: i, digs: cur.digs + 1, status: 'over', tEnd: Date.now() };
       commit(g2); postResult(g2); return;
     }
-    const { open, gained } = openFrom({ ...cur, t0 }, i);
-    commit({ ...cur, t0, open, score: cur.score + gained, digs: cur.digs + 1 });
+    const { open, gained, added } = openFrom({ ...cur, t0 }, i);
+    commit({ ...cur, t0, open, last: added, score: cur.score + gained, digs: cur.digs + 1 });
   }, [FIELD, flagSet, openSet, openFrom, commit, postResult]);
 
   // Clicking a number whose mines are all flagged opens the rest of its
@@ -420,15 +422,16 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
       const g2 = { ...cur, open: [...cur.open, bomb], boom: bomb, digs: cur.digs + 1, status: 'over', tEnd: Date.now() };
       commit(g2); postResult(g2); return;
     }
-    let open = cur.open, gained = 0;
+    let open = cur.open, gained = 0, added = [];
     let work = { ...cur };
     for (const j of rest) {
       const res = openFrom(work, j);
       work = { ...work, open: res.open };
       gained += res.gained;
+      added = added.concat(res.added);
       open = res.open;
     }
-    commit({ ...cur, open, score: cur.score + gained, digs: cur.digs + 1 });
+    commit({ ...cur, open, last: added, score: cur.score + gained, digs: cur.digs + 1 });
   }, [FIELD, openSet, flagSet, openFrom, commit, postResult]);
 
   const toggleFlag = useCallback((i) => {
@@ -534,8 +537,78 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
       rows: out.slice(0, TOP).concat(meAt >= TOP ? [{ gap: true }, out[meAt]] : []),
       rank: meAt + 1,
       field: out.length,
+      others: rows,
     };
   }, [board.leaderboardFirst, board.leaderboard, g.score, identity, hydrated]);
+
+  // ---- the rival rail (owner, 2026-10-14) -----------------------------------
+  // Today's field plotted by CELLS on one vertical rail, par marked, with you
+  // sliding down it as you dig. It answers the one question a run is really
+  // asking, "who do I pass next and how far is it", which the old five-row
+  // ladder made you work out. Built off the same `ladder.others` the ladder
+  // reads, so it costs no request of its own. At most six other players are
+  // plotted: the top four, the one directly ahead of you, the one directly
+  // behind. Everyone else is still counted in the "of N" line.
+  // HIDDEN UNTIL ASKED FOR (owner, 2026-10-13): names and standings on the
+  // rail follow the site-wide leaderboard choice, and the clock chip follows
+  // the clock choice, exactly as the panel and the cap do (lib/reveal-pref).
+  const [clockShown] = useRevealPref(REVEAL.clock);
+  const [boardShown, , setBoardShown] = useRevealPref(REVEAL.leaderboard);
+  const race = useMemo(() => {
+    const others = (boardShown ? (ladder.others || []) : []).filter((r) => Number.isFinite(r.score));
+    const mine = g.score;
+    let next = null, behind = null;
+    for (const r of others) {
+      if (r.score > mine && (!next || r.score < next.score)) next = r;
+      if (r.score <= mine && (!behind || r.score > behind.score)) behind = r;
+    }
+    const top = others.reduce((m, r) => Math.max(m, r.score), 0);
+    const pick = [];
+    const add = (r) => { if (r && !pick.includes(r)) pick.push(r); };
+    others.slice().sort((a, b) => b.score - a.score).slice(0, 4).forEach(add);
+    add(next); add(behind);
+    const max = Math.max(PAR * 1.15, top * 1.06, mine * 1.08, 30);
+    const items = pick.map((r, k) => ({
+      key: `o${k}-${r.name}`, name: r.name, score: r.score,
+      kind: r === next ? 'next' : (r.score === top && top > 0 ? 'lead' : 'other'),
+    }));
+    items.push({ key: 'par', name: 'Par', score: PAR, kind: 'par' });
+    items.push({ key: 'me', name: 'You', score: mine, kind: 'me' });
+    return { max, items, next, lead: top > mine ? null : (others.length ? 'you' : null) };
+  }, [ladder.others, g.score, PAR, boardShown]);
+
+  // The rail's labels are spread out so two close scores never print on top
+  // of each other, which needs the rail's real height in pixels.
+  const railRef = useRef(null);
+  const [railH, setRailH] = useState(0);
+  useEffect(() => {
+    const el = railRef.current;
+    if (!el) return undefined;
+    const read = () => setRailH(el.clientHeight || 0);
+    read();
+    if (typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(read);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [g.t0]);
+  const railPlaced = useMemo(() => {
+    if (!railH) return [];
+    const GAP = 22, H = railH;
+    const arr = race.items
+      .map((it) => ({ ...it, y: Math.min(1, it.score / race.max) * H }))
+      .sort((a, b) => a.y - b.y || (a.kind === 'me' ? 1 : -1));
+    for (let k = 1; k < arr.length; k++) arr[k].y = Math.max(arr[k].y, arr[k - 1].y + GAP);
+    for (let k = arr.length - 1; k >= 0; k--) arr[k].y = Math.min(arr[k].y, H - 10 - (arr.length - 1 - k) * GAP);
+    for (const it of arr) it.y = Math.max(8, it.y);
+    return arr;
+  }, [race, railH]);
+  const pctOf = (v) => `${Math.min(100, (v / race.max) * 100).toFixed(2)}%`;
+  const toPar = PAR - g.score;
+  const raceLine = !boardShown
+    ? (toPar > 0 ? <><b style={{ color: ACC_INK }}>{nf(toPar)}</b> cell{toPar === 1 ? '' : 's'} to par</> : <b style={{ color: ACC_INK }}>Par cleared</b>)
+    : race.next
+    ? <><b style={{ color: INK }}>{race.next.name}</b> is <b style={{ color: ACC_INK }}>{nf(race.next.score - g.score)}</b> cell{race.next.score - g.score === 1 ? '' : 's'} ahead</>
+    : (race.lead === 'you' ? <b style={{ color: ACC_INK }}>You lead today</b> : <>First on the board today</>);
 
   // ---- rules ---------------------------------------------------------------
   const rulesBody = (
@@ -558,6 +631,9 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
 
   // ---- the field -----------------------------------------------------------
   const lastRow = Math.min(ROWS - 1, Math.max(VIEW_ROWS + 1, depth + 6));
+  // The squares the last dig opened, in the order the cascade reached them,
+  // so they arrive as a ripple rather than all at once. Drawn only.
+  const lastOrder = new Map((g.last || []).map((j, k) => [j, k]));
   const cells = [];
   for (let r = 0; r <= lastRow; r++) {
     for (let c = 0; c < COLS; c++) {
@@ -567,9 +643,18 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
       const isBoom = g.boom === i;
       const n = isOpen && !isBoom ? numberAt(FIELD, r, c) : 0;
       const showMine = over && FIELD[i] && !isBoom && isFlag;
+      // THE FRONTIER: a covered square touching an opened one. It is where
+      // every next move is, so it carries a faint accent rim.
+      let front = false;
+      if (!isOpen && !isFlag && playing) {
+        for (const [rr, cc] of neighbors(r, c)) { if (openSet.has(idx(rr, cc))) { front = true; break; } }
+      }
+      const fresh = isOpen && !isBoom && lastOrder.has(i);
+      const cls = 'sw-c ' + (isBoom ? 'bm' : showMine ? 'mn' : isFlag ? 'fl' : isOpen ? ('op' + (fresh ? ' nw' : '')) : (front ? 'cv fr' : 'cv'));
       cells.push(
         <div
           key={i}
+          className={cls}
           onContextMenu={(e) => {
             e.preventDefault();
             // ONLY a real right click gets here. Android Chrome fires contextmenu
@@ -628,16 +713,12 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
             else dig(i);
           }}
           style={{
-            aspectRatio: '1', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: SANS, fontWeight: 800, fontSize: 14, userSelect: 'none', WebkitUserSelect: 'none',
-            WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation',
             cursor: over ? 'default' : 'pointer',
-            background: isBoom ? '#dc2626' : showMine ? '#94a3b8' : isFlag ? '#fde68a' : isOpen ? 'var(--stg-panel, #fff)' : `var(--stg-cell, ${COLORS.covered})`,
             color: isBoom ? '#fff' : (STAGE && n ? numInk(n) : NUM_COLOR[n] || `var(--stg-mute, ${COLORS.faded})`),
-            boxShadow: isOpen && !isBoom ? 'none' : 'inset 0 0 0 1px var(--stg-cell-line, transparent), inset 0 -2px 0 rgba(15,23,42,0.10)',
+            animationDelay: fresh ? `${Math.min(lastOrder.get(i) * 12, 360)}ms` : undefined,
           }}
         >
-          {isBoom ? '✹' : isFlag ? '⚑' : showMine ? '✹' : (isOpen && n ? n : '')}
+          {isBoom ? '✹' : showMine ? '✹' : (isOpen && n ? n : '')}
         </div>
       );
     }
@@ -721,82 +802,102 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
         )}
 
         {!preStart && (
-          <div className={STAGE ? 'stg-board' : undefined} style={{ background: STAGE ? SURF : '#fff', border: STAGE ? `1px solid ${SURF_B}` : `1px solid ${COLORS.line}`, borderRadius: 12, padding: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: '#94a3b8' }}>
-                Depth <b style={{ color: INK }}>{nf(depth)}</b>
-              </span>
-              <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: '#94a3b8' }}>
-                Digs <b style={{ color: INK }}>{nf(g.digs)}</b>
-              </span>
-              <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: '#94a3b8' }}>
-                Flags <b style={{ color: INK }}>{nf(g.flag.length)}</b>
-              </span>
-              <span style={{ marginLeft: 'auto', fontSize: 10.5, fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: '#94a3b8' }}>{fmtTime(g.ms)}</span>
+          <div className={STAGE ? 'stg-board' : undefined} style={{ '--sw-acc': STAGE ? 'var(--stg-acc)' : COLORS.accent, '--sw-flag': ACC_INK, '--sw-on': ON_ACC, background: STAGE ? SURF : '#fff', border: STAGE ? `1px solid ${SURF_B}` : `1px solid ${COLORS.line}`, borderRadius: 12, padding: 14 }}>
+            {/* THE HEADLINE IS THE SCORE (owner, 2026-10-14): cells uncovered,
+                big, with depth, digs and the clock as quiet chips beside it. */}
+            <div className="sw-head">
+              <div className="sw-score">
+                <span className="sw-big" style={{ color: INK }}>{nf(g.score)}</span>
+                <span style={{ color: FADED }}>cell{g.score === 1 ? '' : 's'} &middot; par {nf(PAR)}</span>
+              </div>
+              <div className="sw-chip"><span>Depth</span><b style={{ color: INK }}>{nf(depth)}</b></div>
+              <div className="sw-chip"><span>Digs</span><b style={{ color: INK }}>{nf(g.digs)}</b></div>
+              {clockShown && <div className="sw-chip"><span>Time</span><b style={{ color: INK }}>{fmtTime(g.ms)}</b></div>}
             </div>
 
-            <div style={{ display: 'flex', gap: 14, alignItems: 'stretch', justifyContent: 'center' }}>
-              <div
-                ref={viewRef}
-                className="sw-view"
-                style={{
-                  flex: 1, minWidth: 0, maxWidth: 360, height: VIEW_ROWS * 38,
-                  overflowY: 'auto', overflowX: 'hidden', background: STAGE ? 'var(--stg-panel)' : '#eef1f6',
-                  border: `1px solid ${COLORS.line}`, borderRadius: 10, padding: 3,
-                }}
-              >
-                <div style={{ display: 'grid', gridTemplateColumns: `repeat(${COLS}, 1fr)`, gap: 3 }}>{cells}</div>
+            {/* On a phone the rail turns into a strip above the board. */}
+            <div className="sw-strip" style={{ color: FADED }}>
+              <div className="sw-track">
+                <span className="sw-fill" style={{ width: pctOf(g.score) }} />
+                {race.items.filter((it) => it.kind !== 'me').map((it) => (
+                  it.kind === 'par'
+                    ? <span key={it.key} className="sw-parpin" style={{ left: pctOf(it.score) }} />
+                    : <span key={it.key} className={`sw-pin ${it.kind}`} style={{ left: pctOf(it.score) }} />
+                ))}
+              </div>
+              <div className="sw-stripline">
+                {boardShown
+                  ? <span>You #{ladder.rank} of {nf(ladder.field)}</span>
+                  : <button type="button" className="sw-show" onClick={() => setBoardShown(true)}>Show leaderboard</button>}
+                <span style={{ marginLeft: 'auto', textAlign: 'right' }}>{raceLine}</span>
+              </div>
+            </div>
+
+            <div className="sw-play">
+              <div className="sw-viewwrap">
+                <div
+                  ref={viewRef}
+                  className={'sw-view' + (over && g.boom >= 0 ? ' sw-boom' : '')}
+                >
+                  <div className={'sw-grid' + (playing ? ' live' : '')}>{cells}</div>
+                </div>
               </div>
 
-              <aside className="sw-ladder" style={{ width: 132, flex: 'none', borderLeft: `1px solid ${COLORS.line}`, paddingLeft: 11, display: 'flex', flexDirection: 'column', fontSize: 11.5, color: FADED }}>
-                <div style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: '#94a3b8', marginBottom: 7 }}>Today &middot; you #{ladder.rank}</div>
-                {ladder.rows.map((r) => (r.gap ? (
-                  <div key="gap" aria-hidden="true" style={{ textAlign: 'center', color: '#c3cad6', fontSize: 11, fontWeight: 800, letterSpacing: '0.22em', lineHeight: '11px', padding: '4px 0 2px' }}>&middot;&middot;&middot;</div>
-                ) : (
-                  <div key={`${r.rank}-${r.name}`} style={{ display: 'flex', gap: 6, padding: '3px 0', color: r.me ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-mute, ${COLORS.faded})`, fontWeight: r.me ? 800 : 600 }}>
-                    <span style={{ fontSize: 9.5, fontWeight: 700, width: 30, flex: 'none', color: r.me ? `var(--stg-acc-ink, ${COLORS.accent})` : '#9aa2b1' }}>#{r.rank}</span>
-                    <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}</span>
-                    <span style={{ fontWeight: 800 }}>{r.score}</span>
-                  </div>
-                )))}
-                <div style={{ marginTop: 'auto', paddingTop: 9, borderTop: `1px solid ${COLORS.line}` }}>
-                  <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1 }}>{nf(g.score)}<em style={{ fontStyle: 'normal', fontSize: 11, fontWeight: 700, color: '#94a3b8' }}> cell{g.score === 1 ? '' : 's'}</em></div>
-                  <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.04em', color: '#94a3b8', marginTop: 3 }}>par {nf(PAR)}</div>
+              <aside className="sw-rail" aria-label="Today's runs by cells uncovered">
+                <div className="sw-raillab" style={{ color: FADED }}>{boardShown ? <>Today &middot; you #{ladder.rank} of {nf(ladder.field)}</> : <>Today</>}</div>
+                <div ref={railRef} className="sw-railbox">
+                  <span className="sw-railtrack" />
+                  <span className="sw-railfill" style={{ height: `${Math.min(1, g.score / race.max) * railH}px` }} />
+                  {railPlaced.map((it) => (
+                    it.kind === 'me' ? (
+                      <div key={it.key} className="sw-mk me" style={{ top: it.y }}>
+                        <span className="sw-mechip">You &middot; {nf(it.score)}</span>
+                      </div>
+                    ) : it.kind === 'par' ? (
+                      <div key={it.key} className="sw-mk par" style={{ top: it.y, color: ACC_INK }}>
+                        <span className="sw-pardash" />Par &middot; {nf(it.score)}
+                      </div>
+                    ) : (
+                      <div key={it.key} className={`sw-mk ${it.kind}`} style={{ top: it.y, color: it.kind === 'next' ? INK : FADED }}>
+                        <span className="sw-dot" />
+                        <span className="sw-nm">{it.name}</span>
+                        <span>&middot; {nf(it.score)}</span>
+                      </div>
+                    )
+                  ))}
                 </div>
+                <div className="sw-next" style={{ color: FADED }}>{raceLine}</div>
+                {!boardShown && (
+                  <button type="button" className="sw-show" style={{ marginTop: 10 }} onClick={() => setBoardShown(true)}>Show leaderboard</button>
+                )}
               </aside>
-            </div>
-
-            <div className="sw-strip" style={{ display: 'none', marginTop: 10, paddingTop: 9, borderTop: `1px solid ${COLORS.line}`, alignItems: 'center', gap: 10, fontSize: 11.5, color: FADED }}>
-              <span style={{ fontWeight: 800, color: ACC_INK }}>You #{ladder.rank}</span>
-              <span>par {nf(PAR)} cells</span>
-              <span style={{ marginLeft: 'auto', fontSize: 15, fontWeight: 800, color: INK }}>{nf(g.score)}<em style={{ fontStyle: 'normal', fontSize: 10, color: '#94a3b8' }}> cell{g.score === 1 ? '' : 's'}</em></span>
             </div>
 
             {/* Dig or flag. A phone has no right button and a long press is a
                 secret, so the mode is a visible switch as well. */}
             {!over && (
-              <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12 }}>
-                <div style={{ display: 'inline-flex', border: `1px solid ${COLORS.line}`, borderRadius: 10, overflow: 'hidden' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: 14 }}>
+                <div className="sw-mode" role="group" aria-label="Tap mode">
                   {[[false, 'Dig', Pickaxe], [true, 'Flag', Flag]].map(([mode, label, Icon]) => (
                     <button
                       key={label}
                       type="button"
+                      aria-pressed={flagMode === mode}
                       onClick={() => setFlagMode(mode)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 7, fontFamily: SANS, fontWeight: 800, fontSize: 14,
-                        padding: '11px 22px', border: 'none', cursor: 'pointer',
-                        background: flagMode === mode ? `var(--stg-acc, ${COLORS.accent})` : '#fff',
-                        color: flagMode === mode ? T.white : `var(--stg-mute, ${COLORS.faded})`,
-                      }}
+                      className={flagMode === mode ? 'on' : undefined}
+                      style={flagMode === mode ? { color: ON_ACC } : { color: FADED }}
                     >
-                      <Icon size={15} /> {label}
+                      <Icon size={16} /> {label}
                     </button>
                   ))}
                 </div>
               </div>
             )}
-            <div className="sw-keys" style={{ textAlign: 'center', marginTop: 9, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.03em', color: '#9aa2b1' }}>
-              click to dig &middot; right click or long press to flag &middot; F switches mode &middot; click a finished number to open its neighbours &middot; a held press never digs
+            <div className="sw-keys" style={{ color: FADED }}>
+              Right click or press F to flag &middot; click a finished number to open around it
+            </div>
+            <div className="sw-keys-m" style={{ color: FADED }}>
+              Hold a square to flag it
             </div>
 
             {over && (
@@ -968,12 +1069,91 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
       )}
 
       <style dangerouslySetInnerHTML={{ __html: `
-        .sw-view::-webkit-scrollbar { width: 6px; }
-        .sw-view::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+        .sw-head { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+        .sw-score { display: flex; align-items: baseline; gap: 8px; margin-right: auto; }
+        .sw-big { font-size: 44px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+        .sw-score > span:last-child { font-size: 14px; font-weight: 700; }
+        .sw-chip { display: flex; flex-direction: column; padding: 7px 13px; border-radius: 10px; background: color-mix(in srgb, var(--stg-ink, #0b0d12) 6%, transparent); min-width: 54px; }
+        .sw-chip span { font-size: 10px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--stg-mute, #6b7280); }
+        .sw-chip b { font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+        .sw-play { display: flex; gap: 28px; align-items: stretch; justify-content: center; }
+        .sw-viewwrap { flex: 1; min-width: 0; max-width: 400px; }
+        .sw-view { aspect-ratio: 9 / 13; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--stg-ink, #0b0d12) 14%, transparent) transparent;
+          -webkit-mask-image: linear-gradient(#000 88%, transparent); mask-image: linear-gradient(#000 88%, transparent); }
+        .sw-view::-webkit-scrollbar { width: 5px; }
+        .sw-view::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--stg-ink, #0b0d12) 14%, transparent); border-radius: 999px; }
+        .sw-grid { display: grid; grid-template-columns: repeat(${COLS}, 1fr); gap: 4px; padding: 3px; }
+
+        .sw-c { aspect-ratio: 1; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+          font-family: ${SANS}; font-weight: 800; font-size: clamp(13px, 4.2vw, 17px); user-select: none; -webkit-user-select: none;
+          -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: background-color .12s ease, filter .12s ease; }
+        .sw-c.cv { background: var(--stg-cell, #c9d2e2); box-shadow: inset 0 0 0 1px var(--stg-cell-line, transparent), inset 0 1px 0 rgba(255,255,255,.08), inset 0 -2px 0 rgba(0,0,0,.20); }
+        .sw-c.cv.fr { box-shadow: inset 0 0 0 1px var(--stg-cell-line, transparent), inset 0 1px 0 rgba(255,255,255,.08), inset 0 -2px 0 rgba(0,0,0,.20), 0 0 0 1.5px color-mix(in srgb, var(--sw-acc) 55%, transparent); }
+        .sw-c.op { background: color-mix(in srgb, var(--stg-ink, #0b0d12) 4%, transparent); }
+        .sw-c.op.nw { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--sw-acc) 38%, transparent); animation: sw-pop .26s cubic-bezier(.2,.9,.3,1.3) both; }
+        .sw-c.fl { background: var(--stg-cell, #c9d2e2); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--sw-flag) 70%, transparent); }
+        .sw-c.fl::after { content: ""; width: 36%; height: 44%; background: var(--sw-flag); clip-path: polygon(0 0, 100% 30%, 0 60%, 0 100%, 12% 100%, 12% 0); }
+        .sw-c.mn { background: color-mix(in srgb, var(--stg-ink, #0b0d12) 22%, transparent); color: var(--stg-ink, #0b0d12); }
+        .sw-c.bm { background: #dc2626; }
+        @media (hover: hover) { .sw-grid.live .sw-c.cv:hover, .sw-grid.live .sw-c.fl:hover { filter: brightness(1.14); } }
+        @keyframes sw-pop { from { transform: scale(.55); opacity: 0; } to { transform: none; opacity: 1; } }
+        .sw-boom { animation: sw-shake .42s ease-out 1; }
+        @keyframes sw-shake { 0%,100% { transform: none; } 20% { transform: translateX(-6px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
+
+        .sw-rail { width: 200px; flex: none; display: flex; flex-direction: column; }
+        .sw-raillab { font-size: 10.5px; font-weight: 800; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: 14px; }
+        .sw-railbox { position: relative; flex: 1; min-height: 200px; }
+        .sw-railtrack, .sw-railfill { position: absolute; left: 8px; top: 0; width: 2px; border-radius: 1px; }
+        .sw-railtrack { bottom: 0; background: color-mix(in srgb, var(--stg-ink, #0b0d12) 12%, transparent); }
+        .sw-railfill { background: var(--sw-acc); transition: height .3s ease; }
+        .sw-mk { position: absolute; left: 3px; right: 0; transform: translateY(-50%); display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; white-space: nowrap; transition: top .3s ease; }
+        .sw-mk .sw-nm { overflow: hidden; text-overflow: ellipsis; min-width: 0; max-width: 104px; }
+        .sw-dot { width: 12px; height: 12px; flex: none; border-radius: 50%; background: color-mix(in srgb, var(--stg-ink, #0b0d12) 28%, transparent); box-shadow: 0 0 0 3px var(--stg-ground, #f7f8fa); }
+        .sw-mk.next .sw-dot { background: var(--stg-ink, #0b0d12); }
+        .sw-mk.next { font-weight: 800; }
+        .sw-mk.lead .sw-dot { background: var(--sw-acc); }
+        .sw-mk.par { left: 0; font-weight: 800; }
+        .sw-pardash { width: 26px; flex: none; border-top: 2px dashed currentColor; }
+        .sw-mk.me { left: 0; z-index: 2; }
+        .sw-mechip { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px 4px 6px; border-radius: 999px; background: var(--sw-acc); color: var(--sw-on); font-weight: 800; font-size: 13px; }
+        .sw-mechip::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--sw-on); }
+        .sw-next { margin-top: 12px; font-size: 13px; font-weight: 700; line-height: 1.35; }
+
+        .sw-strip { display: none; margin-bottom: 14px; }
+        .sw-track { position: relative; height: 4px; border-radius: 2px; margin: 4px 4px 0; background: color-mix(in srgb, var(--stg-ink, #0b0d12) 12%, transparent); }
+        .sw-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; background: var(--sw-acc); transition: width .3s ease; }
+        .sw-pin { position: absolute; top: -3px; width: 10px; height: 10px; border-radius: 50%; transform: translateX(-50%); background: color-mix(in srgb, var(--stg-ink, #0b0d12) 30%, transparent); box-shadow: 0 0 0 2px var(--stg-ground, #f7f8fa); }
+        .sw-pin.next { background: var(--stg-ink, #0b0d12); }
+        .sw-pin.lead { background: var(--sw-acc); }
+        .sw-parpin { position: absolute; top: -6px; height: 16px; border-left: 2px dashed var(--sw-flag); }
+        .sw-stripline { display: flex; gap: 10px; margin-top: 10px; font-size: 12.5px; font-weight: 700; }
+
+        .sw-mode { display: inline-flex; padding: 4px; border-radius: 12px; background: color-mix(in srgb, var(--stg-ink, #0b0d12) 6%, transparent); }
+        .sw-mode button { display: flex; align-items: center; justify-content: center; gap: 8px; font-family: ${SANS}; font-weight: 800; font-size: 15px; padding: 11px 26px; border: none; border-radius: 9px; background: transparent; cursor: pointer; }
+        .sw-mode button.on { background: var(--sw-acc); }
+        .sw-show { align-self: flex-start; font-family: ${SANS}; font-size: 12.5px; font-weight: 800; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+          background: transparent; color: var(--stg-ink, #0b0d12); border: 1.5px solid color-mix(in srgb, var(--stg-ink, #0b0d12) 22%, transparent); }
+        .sw-show:hover { border-color: var(--sw-acc); }
+        .sw-keys, .sw-keys-m { text-align: center; margin-top: 10px; font-size: 12px; font-weight: 600; }
+        .sw-keys-m { display: none; }
+
         @media (max-width: 640px) {
-          .sw-ladder { display: none !important; }
-          .sw-strip { display: flex !important; }
-          .sw-keys { display: none !important; }
+          .sw-rail { display: none !important; }
+          .sw-strip { display: block; }
+          .sw-keys { display: none; }
+          .sw-keys-m { display: block; }
+          .sw-viewwrap { max-width: none; }
+          .sw-chip { display: none; }
+          .sw-big { font-size: 38px; }
+          .sw-grid { gap: 3px; padding: 2px; }
+          .sw-c { border-radius: 6px; }
+          .sw-mode { width: 100%; }
+          .sw-mode button { flex: 1; padding: 13px 0; font-size: 16px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .sw-c.op.nw, .sw-boom { animation: none; }
+          .sw-mk, .sw-railfill, .sw-fill { transition: none; }
         }
       ` }} />
 
