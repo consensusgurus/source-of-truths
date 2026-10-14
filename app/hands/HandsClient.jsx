@@ -927,7 +927,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
                     {showBest ? 'Hide the best arrangement' : `The best board found on these cards was ${PUZZLE.ceiling}. See it`}
                   </button>
                   {showBest && (
-                    <div style={{ marginTop: 10, textAlign: 'left' }}>
+                    <div id="hd-best" style={{ marginTop: 10, textAlign: 'left' }}>
                       <div className="hd-felt" style={{ padding: narrow ? 12 : 18, maxWidth: narrow ? undefined : 520, margin: '0 auto' }}>
                         <div style={{ ...K, marginBottom: 10 }}>The best known arrangement · {PUZZLE.ceiling}</div>
                         {renderGrid(PUZZLE.best, bestScores, [true, true, true, true, true], [true, true, true, true, true], [5, 5, 5, 5, 5], [5, 5, 5, 5, 5], false)}
@@ -1012,8 +1012,13 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
                 }))}
               options={[
                 { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },
-                { tone: won ? 'board' : 'reveal', label: won ? 'Return to board' : 'Reveal answer',
-                  sub: won ? 'Your finished board' : 'Show what you missed', onClick: () => setRevealed(true) },
+                // Hands has no single answer, so a short round reveals the best
+                // arrangement our search found on these cards: open the board AND
+                // that panel, rather than flipping back to the player's own grid
+                // and leaving the answer behind a second link (owner, 2026-10-13).
+                { tone: won ? 'board' : 'reveal', label: won ? 'Return to board' : 'Reveal the best board',
+                  sub: won ? 'Your finished board' : 'The best arrangement of these cards',
+                  onClick: () => { setRevealed(true); if (!won) { setShowBest(true); setTimeout(() => { try { document.getElementById('hd-best')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }, 380); } } },
               prevPuzzle && { tone: 'another', label: 'Play another Hands', sub: `No. ${prevPuzzle.num}, yesterday\u2019s puzzle`, href: `/hands?p=${prevPuzzle.num}` },
                 nextUp && { tone: 'similar', label: 'Play similar', sub: `${nextUp.name} \u00b7 ${nextUp.tag}`, href: nextUp.href },
                 { tone: 'replay', label: 'Replay', sub: 'This puzzle again, unscored', onClick: resetGame },

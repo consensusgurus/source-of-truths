@@ -1167,8 +1167,10 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
                 }))}
               options={[
                 { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },
-                { tone: won ? 'board' : 'reveal', label: won ? 'Return to board' : 'Reveal answer',
-                  sub: won ? 'Your finished board' : 'Show what you missed', onClick: () => setRevealed(true) },
+                // Tuck stores no solution grid (only the benchmark figure), so there
+                // is no answer to reveal: this is always a return to the board
+                // (owner, 2026-10-13).
+                { tone: 'board', label: 'Return to board', sub: 'Your finished board', onClick: () => setRevealed(true) },
               prevPuzzle && { tone: 'another', label: 'Play another Tuck', sub: `No. ${prevPuzzle.num}, yesterday\u2019s puzzle`, href: `/tuck?p=${prevPuzzle.num}` },
                 nextUp && { tone: 'similar', label: 'Play similar', sub: `${nextUp.name} \u00b7 ${nextUp.tag}`, href: nextUp.href },
                 { tone: 'replay', label: 'Replay', sub: 'This puzzle again, unscored', onClick: resetGame },
