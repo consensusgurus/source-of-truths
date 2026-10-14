@@ -624,7 +624,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
   // jester) is ever written to storage.
   function tapCell(r, c) {
     if (!playing) return;
-    if (isLocked(r, c)) { say('The hint seated that jester — it stays.'); return; }
+    if (isLocked(r, c)) { say('The hint seated that jester, so it stays.'); return; }
     pushHist(g.cells, g.placements);
     setG((cur) => {
       const cells = cur.cells.map((row) => row.slice());
@@ -644,7 +644,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
   // the jester clears its marks automatically.
   function toggleJester(r, c) {
     if (!playing) return;
-    if (isLocked(r, c)) { say('The hint seated that jester — it stays.'); return; }
+    if (isLocked(r, c)) { say('The hint seated that jester, so it stays.'); return; }
     pushHist(g.cells, g.placements);
     setG((cur) => {
       const cells = cur.cells.map((row) => row.slice());
@@ -720,13 +720,17 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
 
   // Shrink to fit rather than scroll: a board you cannot see end to end makes
   // row and column counting impossible, which is most of a two-jester solve.
-  // COUNTER_GUTTER is the margin the per-row remaining-seat numbers sit in.
-  const COUNTER_GUTTER = vw && vw <= 560 ? 17 : 22;
+  // COUNTER_GUTTER is the margin the per-row seat pips sit in (gap + pip).
+  const PHONE = !!(vw && vw <= 560);
+  const PIP = PHONE ? 10 : 12;
+  const PIP_GAP = PHONE ? 6 : 10;
+  const COUNTER_GUTTER = PIP + PIP_GAP;
+  const EDGE = 2.5;                           // the board's firm outer edge
   const boardBoxRef = useRef(null);
   const [boxW, setBoxW] = useState(0);
   const cellPx = useMemo(() => {
-    const base = N >= 10 ? 38 : N === 9 ? 42 : 46;
-    const frame = 6 + COUNTER_GUTTER;         // board border + counter gutter
+    const base = N >= 11 ? 42 : N === 10 ? 46 : N === 9 ? 50 : 54;
+    const frame = EDGE * 2 + COUNTER_GUTTER;  // board edge + pip gutter
     // The measured box when we have it, the old estimate only until the first
     // measurement lands, so the very first paint is never wildly wrong.
     const box = boxW || (vw ? Math.min(vw - (vw <= 560 ? 20 : 76), 640) : 0);
@@ -735,7 +739,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
     // The floor is low enough that it never binds before the box does, so a
     // narrow phone still gets a whole board rather than a scroller.
     return Math.max(22, Math.min(base, Math.floor(avail / N)));
-  }, [boxW, vw, N, COUNTER_GUTTER]);
+  }, [boxW, vw, N, COUNTER_GUTTER, EDGE]);
 
   // Seats still to fill in each row and column. This is the whole mental load
   // on a two-jester board, where "does this row want one more or two?" is not
@@ -770,11 +774,71 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
     return out;
   }, [cellsView, N, STARS, PUZZLE]);
 
-  const counterStyle = (v) => ({
-    fontFamily: MONO, fontSize: Math.max(10, Math.round(cellPx * 0.32)), fontWeight: 700,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    color: v < 0 ? `var(--stg-bad, ${COLORS.rust})` : v === 0 ? 'var(--stg-dim, rgba(28,30,36,0.28))' : `var(--stg-ink, ${COLORS.ink})`,
-  });
+  // A pip at the end of every row and under every column: a hollow ring while
+  // the line still owes a seat, the accent once it holds its quota, the page's
+  // red if it holds too many. A two-jester line that holds one rings in accent.
+  const pipStyle = (v) => {
+    const full = v === 0, over = v < 0, part = v > 0 && v < STARS;
+    return {
+      width: PIP, height: PIP, borderRadius: '50%', boxSizing: 'border-box', flex: '0 0 auto',
+      background: over ? 'var(--stg-bad, #b91c1c)' : full ? `var(--stg-acc, ${COLORS.accent})` : 'transparent',
+      border: (full || over) ? 'none' : `2px solid ${part ? `var(--stg-acc, ${COLORS.accent})` : 'var(--stg-mute, #6b7280)'}`,
+    };
+  };
+
+  // Seats per court, for the court strip under the board.
+  const courtHeld = useMemo(() => {
+    const out = Array(N).fill(0);
+    for (const [r, c] of jesters) { const id = PUZZLE.regions[r][c]; if (id < N) out[id]++; }
+    return out;
+  }, [jesters, N, PUZZLE]);
+
+  // The plain status line. Built only from what is on the board (seat count,
+  // rows still open, any clash the rules already show in red), so it never
+  // states a deduction the player has not made.
+  const statusLine = useMemo(() => {
+    const W = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve'];
+    const word = (n) => (n < W.length ? W[n] : String(n));
+    const kinds = [];
+    let touch = false;
+    for (let i = 0; i < jesters.length && !touch; i++) for (let j = i + 1; j < jesters.length; j++) {
+      const [r1, c1] = jesters[i], [r2, c2] = jesters[j];
+      if (Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1) { touch = true; break; }
+    }
+    if (touch) kinds.push('two jesters touch');
+    if (rowRemain.some((v) => v < 0)) kinds.push(STARS === 2 ? 'a row holds more than two' : 'two jesters share a row');
+    if (colRemain.some((v) => v < 0)) kinds.push(STARS === 2 ? 'a column holds more than two' : 'two jesters share a column');
+    if (courtHeld.some((v) => v > STARS)) kinds.push(STARS === 2 ? 'a court holds more than two' : 'two jesters share a court');
+    if (!seated) return `Nothing seated yet. ${word(N)} rows need ${STARS === 2 ? 'two jesters each' : 'a jester'}.`;
+    if (kinds.length) {
+      const list = kinds.length === 1 ? kinds[0] : `${kinds.slice(0, -1).join(', ')} and ${kinds[kinds.length - 1]}`;
+      return `${word(seated)} seated, with a clash: ${list}.`;
+    }
+    const open = rowRemain.filter((v) => v > 0).length;
+    const need = STARS === 2 ? 'jesters' : 'a jester';
+    return `${word(seated)} seated, no clashes. ${open === 1 ? `One row still needs ${need}` : `${word(open)} rows still need ${need}`}.`;
+  }, [jesters, seated, rowRemain, colRemain, courtHeld, STARS, N]);
+
+  // Board geometry and the wall colours. Walls are the register's ink, so they
+  // read dark on the light stage and light on the dark one; lines inside a
+  // court are the cell rule token.
+  const WALL = STAGE ? 'var(--stg-ink, #e9edf4)' : COLORS.ink;
+  const THIN = STAGE ? 'var(--stg-cell-line, rgba(255,255,255,0.36))' : 'rgba(28,30,36,0.18)';
+  const WALL_W = PHONE ? 2 : 2.5;
+  const boardW = N * cellPx + EDGE * 2;
+  const dotPx = Math.max(4, Math.round(cellPx * 0.11));
+
+  // The ✗ / Seat a jester tool, one segmented control.
+  const toolSwitch = (
+    <div className="je-seg" role="group" aria-label="What a tap places">
+      <button type="button" className={`je-tool${tool === 'x' ? ' on' : ''}`} onClick={() => setTool('x')} title="Rule cells out (default)" aria-pressed={tool === 'x'}>
+        <span aria-hidden="true" style={{ fontWeight: 900, fontSize: 14, lineHeight: 1 }}>✗</span> Rule out
+      </button>
+      <button type="button" className={`je-tool${tool === 'jester' ? ' on' : ''}`} onClick={() => setTool('jester')} title="Seat a jester" aria-pressed={tool === 'jester'}>
+        <JesterMark size={17} color="currentColor" /> Seat a jester
+      </button>
+    </div>
+  );
 
   // Shared rules body — rendered in both the how-to-play modal and the start gate.
   const rulesBody = (
@@ -783,13 +847,13 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
       lead={<>Seat exactly <b>{STARS === 2 ? 'two jesters' : 'one jester'}</b> in every row, every column and every colored court.</>}
       chips={[
         { label: 'Red = quarrelling jesters', tone: 'bad' },
-        { label: 'Edge number = seats still owed', tone: 'grey' },
-        { label: 'Faded court = full', tone: 'good' },
+        { label: 'Filled pip = line seated', tone: 'grey' },
+        { label: 'Ticked court = seated', tone: 'good' },
       ]}
       steps={[
         <>Jesters are jealous, so <b>no two may touch</b>, not even diagonally.</>,
-        <>The <b>✗</b> / <b>🃏</b> buttons set what a tap places, opening on <b>✗</b> to rule a cell out and remembering your choice. <b>Hold</b> a cell (right-click on a computer) to seat a jester in either mode, and tap a seated jester to lift it.</>,
-        <>Leave <b>auto-✗</b> on and seating a jester pencils out its neighbours, plus its row, column or court once that one is full; lift the jester and those marks clear too. <b>Undo</b> rolls back your last move.</>,
+        <>The <b>✗ Rule out</b> / <b>Seat a jester</b> switch sets what a tap places, opening on <b>✗</b> and remembering your choice. <b>Hold</b> a cell (right-click on a computer) to seat a jester in either mode, and tap a seated jester to lift it.</>,
+        <>Seating a jester dots out its neighbours, plus its row, column or court once that one is full; lift the jester and those dots clear too. Your own <b>✗</b> marks stay as <b>✗</b>. <b>Undo</b> rolls back your last move.</>,
         <>The board completes itself the moment the last jester is seated legally.</>,
       ]}
       knack="Every board has exactly one legal seating, reachable by pure deduction, so never guess. A court penned into a single row already owes that row its seat."
@@ -828,28 +892,56 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
       <div className="je-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
         <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.je-wrap{padding-left:10px !important;padding-right:10px !important;}}
-          .je-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
+          .je-btn{font-family:${SANS};font-weight:700;font-size:14px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:transparent;color:${INK};border-radius:12px;padding:0 16px;min-height:46px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
           .je-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
+          .je-btn:disabled{color:var(--stg-mute, #6b7280);cursor:default;}
+          .je-btn:disabled:hover{background:transparent;}
           .je-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
           .je-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accentDeep}) 86%, var(--stg-ink, var(--white)));}
-          .je-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-          .je-tool.on{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-color:var(--stg-acc, ${COLORS.accent});}
+          /* THE TOOL SWITCH: one segmented control, the live segment filled with the accent. */
+          .je-seg{display:flex;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};border-radius:12px;padding:3px;gap:3px;flex:0 0 auto;}
+          .je-tool{font-family:${SANS};font-weight:700;font-size:13px;border:0;background:transparent;color:${INK};border-radius:9px;min-height:44px;padding:0 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
+          .je-tool:hover{background:var(--stg-surf2, rgba(28,30,36,0.06));}
+          .je-tool.on,.je-tool.on:hover{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));font-weight:800;}
+          .je-top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin:0 auto 16px;}
+          .je-cap{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:${FADED};}
+          .je-bar{display:flex;gap:4px;}
+          .je-bar span{flex:1;height:10px;border-radius:3px;}
+          .je-foot{display:flex;align-items:center;gap:12px;border-top:1px solid ${STAGE ? 'var(--stg-line)' : 'rgba(28,30,36,0.15)'};margin-top:18px;padding-top:14px;}
+          .je-acts{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+          .je-tool-foot{display:none;}
+          .je-link{font-family:${SANS};font-weight:700;font-size:13px;background:none;border:0;color:${INK};text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0 10px;cursor:pointer;}
+          .je-under{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:6px;}
+          @media(max-width:560px){
+            .je-top{margin-bottom:12px;}
+            .je-top .je-seg{display:none;}
+            .je-cap{font-size:10px;}
+            .je-bar{gap:3px;}
+            .je-bar span{height:7px;border-radius:2px;}
+            .je-courts-cap{display:none;}
+            .je-foot{flex-direction:column;align-items:stretch;border-top:0;margin-top:14px;padding-top:0;}
+            .je-tool-foot{display:flex;margin-top:4px;}
+            .je-tool-foot .je-seg{flex:1;}
+            .je-tool-foot .je-tool{flex:1;min-height:46px;font-size:14px;padding:0 8px;}
+            .je-acts{justify-content:flex-start;}
+            .je-acts .je-btn{padding:0 12px;white-space:nowrap;}
+            .je-acts .je-clear{flex:1 1 auto;}
+          }
           /* THE COURT READS BRIGHTER ON THE DARK STAGE (owner, 2026-09-08: "can we make
              this a bit brighter on dark mode?"). The shared region ramp mixes a hue into
              the cell at --stg-tint-mix, 26% dark / 12% light, and on Jesters the courts
              are the whole puzzle, so 26 read as a muddy heat map. The board re-declares
              the mix through --stg-dk (100% dark, 0% light): 52% on the dark register (owner
              asked for more after 40),
-             the light register's 12% untouched. Other region boards keep the token. */
-          .je-court{--stg-tint-mix:calc(12% + var(--stg-dk, 100%) * 0.40);}
-          .je-cell{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;}
-          .je-cell:hover::after{content:'';position:absolute;inset:0;background:rgba(28,30,36,0.07);}
-          /* The mark is the register's INK, not a hardcoded near-black: on the dark stage
-             rgba(28,30,36,.45) was invisible on every court (owner, 2026-09-08: "I can't
-             even see the xs"). Ink at 85% on the dark register, 50% on the light one (via --stg-dk,
-             so light stays where it was); the JSX's own .6 for auto marks multiplies in. */
-          .je-x{color:color-mix(in srgb, var(--stg-ink, #1c1e24) calc(50% + var(--stg-dk, 100%) * 0.35), transparent);font-size:15px;font-weight:800;}
-          @media(max-width:560px){.je-board-scroll{overflow-x:auto;padding-bottom:6px;}}
+             the light register's 12% untouched. Other region boards keep the token.
+             The court strip under the board wears the same mix so a swatch matches its court. */
+          .je-court,.je-tints{--stg-tint-mix:calc(12% + var(--stg-dk, 100%) * 0.40);}
+          .je-cell{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;box-sizing:border-box;}
+          .je-cell:hover::after{content:'';position:absolute;inset:0;background:color-mix(in srgb, var(--stg-ink, #1c1e24) 8%, transparent);}
+          /* A hand ✗ is the player's own mark: full register ink, never faded, so it reads
+             apart from the faint dots the seated jesters derive on their own. */
+          .je-x{color:var(--stg-ink, #1c1e24);font-weight:800;line-height:1;}
+          .je-dot{display:block;border-radius:50%;background:var(--stg-mute, #6b7280);}
         ` }} />
 
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
@@ -881,18 +973,19 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
           <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
           <div className={LOFT && !STAGE ? 'loft-sheet' : undefined}>
 
-        {/* status bar */}
+        {/* THE COURT: k of N seated over an N-segment bar, and the tool switch
+            beside it on a computer (on a phone it sits at the foot). */}
         {!preStart && (
-        <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED }}>
-          <span>seated <b style={{ color: INK, fontWeight: 500 }}>{seated}</b>/{SEATS}</span>
-          <span>quarrels <b style={{ color: conflictSet.size ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{conflictSet.size ? conflictSet.size : 0}</b></span>
-          {g.hintUsed && <span>&#128161; hint used</span>}
-          {playing && (
-            <label style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontFamily: SANS, fontSize: 12, fontWeight: 700, textTransform: 'none', letterSpacing: 0 }}>
-              <input type="checkbox" checked={autoX} onChange={(e) => setAutoX(e.target.checked)} style={{ accentColor: `var(--stg-acc, ${COLORS.accent})` }} />
-              auto-✗ when you seat a jester
-            </label>
-          )}
+        <div className="je-top" style={{ maxWidth: Math.max(boardW, 480) }}>
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: PHONE ? 6 : 8 }}>
+            <span className="je-cap">The court &middot; <b style={{ color: ACC_DEEP_INK, fontWeight: 800 }}>{Math.min(seated, SEATS)}</b> of {SEATS} seated</span>
+            <div className="je-bar" role="progressbar" aria-label="Jesters seated" aria-valuemin={0} aria-valuemax={SEATS} aria-valuenow={Math.min(seated, SEATS)}>
+              {Array.from({ length: SEATS }, (_, i) => (
+                <span key={i} style={{ background: i < seated ? `var(--stg-acc, ${COLORS.accent})` : `var(--stg-line2, rgba(28,30,36,0.18))` }} />
+              ))}
+            </div>
+          </div>
+          {started && toolSwitch}
         </div>
         )}
 
@@ -904,7 +997,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
                 <p style={{ margin: '0 0 6px' }}>Seat {STARS === 2 ? 'two jesters' : 'one jester'} in every row, column and colored court, with none touching. The board stays covered until you begin.</p>
                 {STARS === 2 && (
-                  <p style={{ margin: '0 0 6px' }}>This court takes <b>two</b> per row, column and court, so a second jester in a row is correct here and only a third is a quarrel. The numbers around the edge count the seats each row and column still owes.</p>
+                  <p style={{ margin: '0 0 6px' }}>This court takes <b>two</b> per row, column and court, so a second jester in a row is correct here and only a third is a quarrel. The pip at the end of each row and under each column fills once that line holds both its jesters.</p>
                 )}
               </div>
             )}
@@ -922,25 +1015,24 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
         {/* the board */}
         {!preStart && (
         <div className="je-board-scroll" ref={boardBoxRef} style={{ textAlign: 'center' }}>
-         <div style={{ display: 'inline-block' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-          <div className="je-court" style={{ display: 'inline-block', border: `3px solid ${T.ink}`, borderRadius: 10, overflow: 'hidden', background: T.ink, boxShadow: '0 2px 10px rgba(20,22,28,0.12)' }}>
-            {PUZZLE.regions.map((row, r) => (
-              <div key={r} style={{ display: 'flex' }}>
-                {row.map((id, c) => {
+         <div style={{ display: 'inline-block', textAlign: 'left' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: PIP_GAP }}>
+          <div className="je-court" style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, ${cellPx}px)`, gridAutoRows: `${cellPx}px`, border: `${EDGE}px solid ${WALL}`, borderRadius: 6, overflow: 'hidden', background: WALL }}>
+            {PUZZLE.regions.map((row, r) => row.map((id, c) => {
                   const v = cellsView[r][c];
                   const conflict = v === 2 && conflictSet.has(r * N + c);
-                  // ✗ shows for a hand-placed mark (v === 1) or, with auto-✗ on,
-                  // any empty cell a seated jester rules out. Auto marks render a
-                  // touch lighter and disappear the moment their jester is lifted.
+                  // ✗ shows only for a hand-placed mark (v === 1). With auto-✗ on,
+                  // an empty cell a seated jester rules out shows a faint dot instead,
+                  // and the dot disappears the moment its jester is lifted.
                   const autoMark = autoX && v === 0 && attackedSet.has(r * N + c);
                   const showX = v === 1 || autoMark;
                   const locked = isLocked(r, c);
-                  const bTop = r > 0 && PUZZLE.regions[r - 1][c] !== id ? `2px solid ${T.ink}` : r > 0 ? '1px solid rgba(28,30,36,0.18)' : 'none';
-                  const bLeft = c > 0 && PUZZLE.regions[r][c - 1] !== id ? `2px solid ${T.ink}` : c > 0 ? '1px solid rgba(28,30,36,0.18)' : 'none';
+                  // Heavier walls between courts, thin lines inside a court.
+                  const bTop = r > 0 ? (PUZZLE.regions[r - 1][c] !== id ? `${WALL_W}px solid ${WALL}` : `1px solid ${THIN}`) : 'none';
+                  const bLeft = c > 0 ? (PUZZLE.regions[r][c - 1] !== id ? `${WALL_W}px solid ${WALL}` : `1px solid ${THIN}`) : 'none';
                   return (
                     <div
-                      key={c}
+                      key={`${r}-${c}`}
                       className="je-cell"
                       onClick={() => { if (longFired.current) { longFired.current = false; return; } tapCell(r, c); }}
                       onContextMenu={(e) => { e.preventDefault(); if (longFired.current) return; toggleJester(r, c); }}
@@ -958,69 +1050,86 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
                           ? (conflict ? 'color-mix(in srgb, var(--stg-bad) 38%, var(--stg-cell))' : regionMix(doneRegions.has(id) ? 0.5 : 1))
                           : (conflict ? '#fecaca' : (doneRegions.has(id) ? REGION_FILLS_DONE : REGION_FILLS)[id % REGION_FILLS.length]), borderTop: bTop, borderLeft: bLeft, boxShadow: locked ? `inset 0 0 0 2px var(--stg-acc, ${COLORS.accent})` : 'none', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
                     >
-                      {v !== 2 && showX && <span className="je-x" style={autoMark ? { opacity: 0.6 } : undefined}>✗</span>}
-                      {v === 2 && <JesterMark size={Math.round(cellPx * 0.6)} conflict={conflict} />}
+                      {v === 1 && <span className="je-x" style={{ fontSize: Math.max(13, Math.round(cellPx * 0.36)) }}>✗</span>}
+                      {v === 0 && autoMark && <span className="je-dot" style={{ width: dotPx, height: dotPx }} />}
+                      {v === 2 && <JesterMark size={Math.round(cellPx * 0.6)} color={`var(--stg-ink, ${COLORS.ink})`} conflict={conflict} />}
                     </div>
                   );
-                })}
-              </div>
-            ))}
+                }))}
           </div>
-          {/* seats still to fill in each row */}
-          <div style={{ display: 'flex', flexDirection: 'column', paddingTop: 3 }}>
+          {/* a pip at the end of every row: filled once that row has its jester */}
+          <div style={{ display: 'flex', flexDirection: 'column', paddingTop: EDGE }}>
             {rowRemain.map((v, r) => (
               <div key={r} role="img" aria-label={v === 0 ? `Row ${r + 1} is full` : v < 0 ? `Row ${r + 1} has ${-v} too many` : `Row ${r + 1} needs ${v} more`}
-                style={{ ...counterStyle(v), width: COUNTER_GUTTER, height: cellPx }}>{v === 0 ? '✓' : v}</div>
+                style={{ height: cellPx, display: 'flex', alignItems: 'center' }}><span style={pipStyle(v)} /></div>
             ))}
           </div>
           </div>
-          {/* seats still to fill in each column */}
-          <div style={{ display: 'flex', paddingLeft: 3 }}>
+          {/* a pip under every column */}
+          <div style={{ display: 'flex', paddingLeft: EDGE, marginTop: PIP_GAP }}>
             {colRemain.map((v, c) => (
               <div key={c} role="img" aria-label={v === 0 ? `Column ${c + 1} is full` : v < 0 ? `Column ${c + 1} has ${-v} too many` : `Column ${c + 1} needs ${v} more`}
-                style={{ ...counterStyle(v), width: cellPx, height: COUNTER_GUTTER }}>{v === 0 ? '✓' : v}</div>
+                style={{ width: cellPx, display: 'flex', justifyContent: 'center' }}><span style={pipStyle(v)} /></div>
             ))}
-            <div style={{ width: COUNTER_GUTTER }} />
+          </div>
+          {/* the court strip: one swatch per court in its tint, ticked once seated */}
+          <div className="je-tints" style={{ width: boardW, marginTop: PHONE ? 12 : 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span className="je-cap je-courts-cap">Courts &middot; {STARS === 2 ? 'two jesters each' : 'one jester each'}</span>
+            <div style={{ display: 'flex', gap: PHONE ? 4 : 6 }}>
+              {courtHeld.map((k, id) => {
+                const done = k >= STARS;
+                return (
+                  <span key={id} role="img" aria-label={`Court ${id + 1}: ${done ? 'seated' : k > 0 ? `${k} of ${STARS} seated` : 'open'}`}
+                    style={{ ...(STAGE ? regionStyle(id) : null), flex: 1, minWidth: 0, height: PHONE ? 24 : 30, borderRadius: PHONE ? 6 : 8, boxSizing: 'border-box',
+                      background: STAGE ? regionMix(1) : REGION_FILLS[id % REGION_FILLS.length],
+                      border: done ? `2px solid var(--stg-acc, ${COLORS.accent})` : `1px solid var(--stg-line2, rgba(28,30,36,0.2))`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: PHONE ? 11 : 13, fontWeight: 800, color: INK }}>
+                    {done ? '✓' : ''}
+                  </span>
+                );
+              })}
+            </div>
           </div>
          </div>
         </div>
         )}
 
+        {/* the status line, the tool switch on a phone, Clear marks and Reveal */}
         {started && (
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', margin: '12px 0 2px' }}>
-            <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED }}>Tap places</span>
-            <button type="button" className={`je-tool${tool === 'x' ? ' on' : ''}`} onClick={() => setTool('x')} title="Rule cells out (default)" aria-pressed={tool === 'x'}>
-              <span style={{ fontWeight: 900, fontSize: 14, lineHeight: 1 }}>✗</span> Mark
-            </button>
-            <button type="button" className={`je-tool${tool === 'jester' ? ' on' : ''}`} onClick={() => setTool('jester')} title="Seat a jester" aria-pressed={tool === 'jester'}>
-              <JesterMark size={14} color={tool === 'jester' ? `var(--stg-onramp, ${T.white})` : `var(--stg-acc-ink, ${COLORS.accentDeep})`} /> Jester
-            </button>
-          </div>
-        )}
-
-        {started && (
-          <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.04em', color: FADED, textAlign: 'center', margin: '6px 0 0', lineHeight: 1.5 }}>
-            {tool === 'jester'
-              ? 'Seating jesters: tap to seat one, tap again to lift it. Switch to ✗ to rule cells out.'
-              : 'Ruling out: tap to mark a cell ✗, tap again to clear it. Switch to 🃏 to seat jesters — or just hold / right-click any cell to seat one.'}
-          </div>
-        )}
-
-        {started && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', margin: '12px 0 6px' }}>
-            <button type="button" className="je-btn" onClick={clearBoard}><Eraser size={14} /> Clear board</button>
-            <button type="button" className="je-btn" onClick={undo} disabled={!canUndo} aria-label="Undo last move" style={canUndo ? undefined : { borderColor: 'var(--stg-line2, #c3c8cf)', color: 'var(--stg-mute2, #c3c8cf)', cursor: 'default' }}><Undo2 size={14} /> Undo</button>
-            {hintOk && !g.hintUsed && (
-              <button type="button" className="je-btn" onClick={useHint} title="Seat one correct jester (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(124,58,237,0.5)', color: ACC_DEEP_INK }}>
-                <Lightbulb size={14} /> Hint: seat one jester
+          <div className="je-foot">
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <span aria-live="polite" style={{ fontSize: PHONE ? 14 : 15, fontWeight: 700, lineHeight: 1.4, color: conflictSet.size ? `var(--stg-bad, ${COLORS.rust})` : INK }}>{statusLine}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.4, color: FADED }}>
+                {autoX ? 'Dots are squares your jesters rule out on their own. ✗ marks are yours. ' : '✗ marks are yours. '}
+                {mobileUi ? 'Hold a square to seat a jester in either mode.' : 'Hold or right-click a square to seat a jester in either mode.'}
+                {g.hintUsed ? ' Hint used.' : ''}
+              </span>
+            </div>
+            <div className="je-tool-foot">{toolSwitch}</div>
+            <div className="je-acts">
+              <button type="button" className="je-btn je-clear" onClick={clearBoard} aria-label="Clear marks: empty the board">Clear marks</button>
+              <button type="button" className="je-btn" onClick={undo} disabled={!canUndo} aria-label="Undo last move"><Undo2 size={15} /> Undo</button>
+              {hintOk && !g.hintUsed && (
+                <button type="button" className="je-btn" onClick={useHint} title="Seat one correct jester (one hint, first play only)" aria-label="Hint: seat one jester">
+                  <Lightbulb size={15} /> Hint
+                </button>
+              )}
+              <button type="button" className="je-link" onClick={reveal} aria-label={revealArmed ? 'Tap again to reveal the seating. This ends the day.' : 'Reveal the seating'}
+                style={revealArmed ? { color: `var(--stg-bad, ${COLORS.rust})` } : undefined}>
+                {revealArmed ? 'Tap again to reveal (ends the day)' : 'Reveal'}
               </button>
-            )}
-            <button type="button" className="je-btn" onClick={reveal} style={{ borderColor: revealArmed ? COLORS.rust : '#c3c8cf', color: revealArmed ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})` }}>
-              <Eye size={14} /> {revealArmed ? 'Tap again to reveal (ends the day)' : 'Reveal'}
-            </button>
+            </div>
           </div>
         )}
-
+        {started && (
+          <div className="je-under">
+            <span style={{ fontSize: 12, fontWeight: 600, color: FADED }}>{STARS === 2 ? 'Two' : 'One'} per row, column and court. No two touch, not even corners.</span>
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: 7, minHeight: 44, cursor: 'pointer', fontSize: 12, fontWeight: 700, color: FADED }}>
+              <input type="checkbox" checked={autoX} onChange={(e) => setAutoX(e.target.checked)} style={{ width: 16, height: 16, accentColor: `var(--stg-acc, ${COLORS.accent})` }} />
+              Show dots
+            </label>
+          </div>
+        )}
 
           </div>
           <div className={STAGE ? undefined : 'loft-sol'}>
@@ -1032,8 +1141,8 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
                   <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{won ? 'Solved' : 'Not solved'}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {won
-                      ? <>The whole court is seated &mdash; {g.placements} placement{g.placements === 1 ? '' : 's'}, {elapsed}.{g.hintUsed ? ' (1 hint)' : ''}</>
-                      : (LOFT && !revealed ? 'The court dissolved in quarrels.' : 'The court dissolved in quarrels — the seating was revealed.')}
+                      ? <>The whole court is seated: {g.placements} placement{g.placements === 1 ? '' : 's'}, {elapsed}.{g.hintUsed ? ' (1 hint)' : ''}</>
+                      : (LOFT && !revealed ? 'The court dissolved in quarrels.' : 'The court dissolved in quarrels. The seating was revealed.')}
                   </span>
                 </div>
               </div>
@@ -1149,7 +1258,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s court, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s court, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>

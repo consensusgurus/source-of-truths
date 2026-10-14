@@ -25,7 +25,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { HelpCircle, X, Smartphone, Lightbulb, Eraser, Eye, Undo2 } from 'lucide-react';
+import { HelpCircle, X, Smartphone, Lightbulb, Undo2 } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -266,6 +266,11 @@ function freshState(n) {
     tEnd: null,
   };
 }
+
+const NUM_WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
+  'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty', 'twenty-one', 'twenty-two', 'twenty-three', 'twenty-four'];
+const numWord = (n) => NUM_WORDS[n] || String(n);
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 // A gavel, drawn inline so it is crisp at any cell size.
 function JudgeMark({ size = 22, color = `var(--stg-acc-ink, ${COLORS.accentDeep})`, conflict = false }) {
@@ -628,7 +633,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
   // judge) is ever written to storage.
   function tapCell(r, c) {
     if (!playing) return;
-    if (isLocked(r, c)) { say('The hint seated that judge — it stays.'); return; }
+    if (isLocked(r, c)) { say('The hint seated that judge. It stays.'); return; }
     pushHist(g.cells, g.placements);
     setG((cur) => {
       const cells = cur.cells.map((row) => row.slice());
@@ -648,7 +653,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
   // the judge clears its marks automatically.
   function toggleJudge(r, c) {
     if (!playing) return;
-    if (isLocked(r, c)) { say('The hint seated that judge — it stays.'); return; }
+    if (isLocked(r, c)) { say('The hint seated that judge. It stays.'); return; }
     pushHist(g.cells, g.placements);
     setG((cur) => {
       const cells = cur.cells.map((row) => row.slice());
@@ -724,22 +729,27 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
 
   // Shrink to fit rather than scroll: a board you cannot see end to end makes
   // row and column counting impossible, which is most of a two-judge solve.
-  // COUNTER_GUTTER is the margin the per-row remaining-seat numbers sit in.
-  const COUNTER_GUTTER = vw && vw <= 560 ? 17 : 22;
+  // PIP_GUTTER is the margin the per-row seat pips sit in (two pips and the gap
+  // that parts them from the board).
+  const PHONE = !!vw && vw <= 560;
+  const PIP = PHONE ? 7 : 9;
+  const PIP_GAP = PHONE ? 2 : 3;
+  const SIDE_GAP = PHONE ? 5 : 10;
+  const PIP_GUTTER = PIP * STARS + PIP_GAP * (STARS - 1) + SIDE_GAP;
   const boardBoxRef = useRef(null);
   const [boxW, setBoxW] = useState(0);
   const cellPx = useMemo(() => {
-    const base = N >= 10 ? 38 : N === 9 ? 42 : 46;
-    const frame = 6 + COUNTER_GUTTER;         // board border + counter gutter
+    const base = N >= 12 ? 40 : 44;
+    const frame = 6 + PIP_GUTTER;             // the board's outer edge + pip gutter
     // The measured box when we have it, the old estimate only until the first
     // measurement lands, so the very first paint is never wildly wrong.
     const box = boxW || (vw ? Math.min(vw - (vw <= 560 ? 20 : 76), 640) : 0);
     if (!box) return base;
-    const avail = Math.min(box, 640) - frame;
+    const avail = Math.min(box, 600) - frame;
     // The floor is low enough that it never binds before the box does, so a
     // narrow phone still gets a whole board rather than a scroller.
-    return Math.max(22, Math.min(base, Math.floor(avail / N)));
-  }, [boxW, vw, N, COUNTER_GUTTER]);
+    return Math.max(20, Math.min(base, Math.floor(avail / N)));
+  }, [boxW, vw, N, PIP_GUTTER]);
 
   // Seats still to fill in each row and column. This is the whole mental load
   // on a two-judge board, where "does this row want one more or two?" is not
@@ -763,22 +773,71 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
     return { rowRemain: rr, colRemain: cc };
   }, [cellsView, N, STARS]);
 
-  // Courts that already hold their quota.
-  const doneRegions = useMemo(() => {
-    const tally = {};
+  // Judges seated in each court, and the courts that already hold their quota.
+  const { courtHeld, doneRegions } = useMemo(() => {
+    const tally = Array(N).fill(0);
     for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
-      if (cellsView[r][c] === 2) { const id = PUZZLE.regions[r][c]; tally[id] = (tally[id] || 0) + 1; }
+      if (cellsView[r][c] === 2) tally[PUZZLE.regions[r][c]]++;
     }
     const out = new Set();
-    for (const id in tally) if (tally[id] >= STARS) out.add(Number(id));
-    return out;
+    tally.forEach((n, id) => { if (n >= STARS) out.add(id); });
+    return { courtHeld: tally, doneRegions: out };
   }, [cellsView, N, STARS, PUZZLE]);
 
-  const counterStyle = (v) => ({
-    fontFamily: MONO, fontSize: Math.max(10, Math.round(cellPx * 0.32)), fontWeight: 700,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    color: v < 0 ? `var(--stg-bad, ${COLORS.rust})` : v === 0 ? 'var(--stg-dim, rgba(28,30,36,0.28))' : `var(--stg-ink, ${COLORS.ink})`,
-  });
+  // The court strip reads in the order the courts first appear on the board,
+  // top-left to bottom-right, so a swatch is easy to match to its court.
+  const courtOrder = useMemo(() => {
+    const seen = [];
+    for (const row of PUZZLE.regions) for (const id of row) if (!seen.includes(id)) seen.push(id);
+    return seen;
+  }, [PUZZLE]);
+
+  // The plain status line under the board. It reports only what is already on
+  // the board (counts, clashes, a line holding one judge of two), never a seat
+  // the player has not found.
+  const statusLine = useMemo(() => {
+    if (!seated) return `No judges seated yet. Every row, column and court takes ${numWord(STARS)}.`;
+    const rowsN = rowRemain.map((v) => STARS - v);
+    const colsN = colRemain.map((v) => STARS - v);
+    if (conflictSet.size) {
+      const r = rowsN.findIndex((x) => x > STARS);
+      if (r >= 0) return `Clash: row ${r + 1} holds ${numWord(rowsN[r])} judges. Lift one.`;
+      const c = colsN.findIndex((x) => x > STARS);
+      if (c >= 0) return `Clash: column ${c + 1} holds ${numWord(colsN[c])} judges. Lift one.`;
+      const k = courtHeld.findIndex((x) => x > STARS);
+      if (k >= 0) return `Clash: one court holds ${numWord(courtHeld[k])} judges. Lift one.`;
+      for (let i = 0; i < judges.length; i++) for (let j = i + 1; j < judges.length; j++) {
+        const [r1, c1] = judges[i], [r2, c2] = judges[j];
+        if (Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1) {
+          return `Clash: the judges at row ${r1 + 1}, column ${c1 + 1} and row ${r2 + 1}, column ${c2 + 1} touch. Lift one.`;
+        }
+      }
+      return 'Clash on the bench. Lift a judge shown in red.';
+    }
+    const head = `${cap(numWord(seated))} seated, no clashes.`;
+    if (STARS < 2) return head;
+    const hr = rowsN.findIndex((x) => x > 0 && x < STARS);
+    if (hr >= 0) return `${head} Row ${hr + 1} has one judge and needs a second.`;
+    const hc = colsN.findIndex((x) => x > 0 && x < STARS);
+    if (hc >= 0) return `${head} Column ${hc + 1} has one judge and needs a second.`;
+    return head;
+  }, [seated, STARS, rowRemain, colRemain, courtHeld, conflictSet, judges]);
+
+  // Two pips per line: one fills per seat taken; a line over its quota shows red.
+  const pips = (n, label) => (
+    <span role="img" aria-label={label} style={{ display: 'inline-flex', gap: PIP_GAP }}>
+      {Array.from({ length: STARS }, (_, i) => {
+        const on = n > i;
+        const over = n > STARS;
+        return (
+          <span key={i} style={{ width: PIP, height: PIP, borderRadius: '50%', boxSizing: 'border-box', flex: '0 0 auto',
+            background: on ? (over ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-acc, ${COLORS.accent})`) : 'transparent',
+            border: on ? 0 : `1.5px solid var(--stg-mute2, ${COLORS.faded})` }} />
+        );
+      })}
+    </span>
+  );
+  const seatWord = (n) => (n > STARS ? `${n} judges, ${n - STARS} too many` : `${n} of ${STARS} seated`);
 
   // Shared rules body — rendered in both the how-to-play modal and the start gate.
   const rulesBody = (
@@ -787,18 +846,31 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
       lead={<>Seat exactly <b>{STARS === 2 ? 'two judges' : 'one judge'}</b> in every row, every column and every colored court.</>}
       chips={[
         { label: 'Red = quarrelling judges', tone: 'bad' },
-        { label: 'Edge number = seats still owed', tone: 'grey' },
+        { label: 'Edge pips = judges seated', tone: 'grey' },
         { label: 'Faded court = full', tone: 'good' },
       ]}
       steps={[
         <>Judges keep their distance, so <b>no two may touch</b>, not even diagonally. A second judge in a row is correct; only a third quarrels.</>,
-        <>The <b>✗</b> / <b>⚖</b> buttons set what a tap places, opening on <b>✗</b> to rule a cell out and remembering your choice. <b>Hold</b> a cell (right-click on a computer) to seat a judge in either mode, and tap a seated judge to lift it.</>,
-        <>Leave <b>auto-✗</b> on and seating a judge pencils out its neighbours, plus its row, column or court once that one is full; lift the judge and those marks clear too. <b>Undo</b> rolls back your last move.</>,
+        <>The <b>✗ Rule out</b> / <b>Seat a judge</b> switch sets what a tap places, opening on <b>✗</b> to rule a square out and remembering your choice. <b>Hold</b> a square (right-click on a computer) to seat a judge in either mode, and tap a seated judge to lift it.</>,
+        <>Leave <b>auto rule-out</b> on and seating a judge dots out its neighbours, plus its row, column or court once that one is full; lift the judge and those dots clear too. <b>Undo</b> rolls back your last move.</>,
         <>The board completes itself the moment the last judge is seated legally.</>,
       ]}
       knack="Every board has exactly one legal seating, reachable by pure deduction, so never guess. Count in blocks: if three courts sit entirely inside three rows, those rows owe all six of their seats to those courts."
       footer="Ties break on fewest placements, then fastest time. Monday through Saturday seat a 10x10 bench that climbs in difficulty through the week, and the Sunday Edition is a 12x12. For one per row on a board that grows through the week, play Jesters."
     />
+  );
+
+  // What a tap places: one segmented control, the chosen half filled with the
+  // accent. Same state, same remembered key (TOOL_KEY) as before.
+  const toolSwitch = (
+    <div className="je-seg" role="group" aria-label="What a tap places" style={PHONE ? { width: '100%', boxSizing: 'border-box' } : undefined}>
+      <button type="button" className={`je-tool${tool === 'x' ? ' on' : ''}`} onClick={() => setTool('x')} title="Rule squares out (default)" aria-pressed={tool === 'x'} style={PHONE ? { flex: 1 } : undefined}>
+        <span aria-hidden="true" style={{ fontWeight: 900, fontSize: 14, lineHeight: 1 }}>✗</span> Rule out
+      </button>
+      <button type="button" className={`je-tool${tool === 'judges' ? ' on' : ''}`} onClick={() => setTool('judges')} title="Seat a judge" aria-pressed={tool === 'judges'} style={PHONE ? { flex: 1 } : undefined}>
+        <JudgeMark size={18} color={tool === 'judges' ? `var(--stg-onramp, ${T.white})` : `var(--stg-ink2, ${COLORS.ink})`} /> Seat a judge
+      </button>
+    </div>
   );
 
   return (
@@ -832,12 +904,16 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
       <div className="je-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
         <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.je-wrap{padding-left:10px !important;padding-right:10px !important;}}
-          .je-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
+          .je-btn{font-family:${SANS};font-weight:700;font-size:14px;border:1.5px solid ${STAGE ? 'var(--stg-mute2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink2)' : 'var(--blue-deep)'};border-radius:12px;padding:0 16px;min-height:46px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
           .je-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           .je-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
           .je-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accentDeep}) 86%, var(--stg-ink, var(--white)));}
-          .je-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-          .je-tool.on{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-color:var(--stg-acc, ${COLORS.accent});}
+          /* The tool switch: one segmented control, the chosen half filled with the accent. */
+          .je-seg{display:flex;border:1.5px solid var(--stg-mute2, rgba(28,30,36,0.45));border-radius:12px;padding:3px;gap:3px;}
+          .je-tool{font-family:${SANS};font-weight:700;font-size:13.5px;border:0;background:transparent;color:var(--stg-ink2, ${COLORS.ink});border-radius:9px;min-height:44px;padding:0 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
+          .je-tool:hover{background:var(--stg-surf2, rgba(28,30,36,0.06));}
+          .je-tool.on{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));font-weight:800;}
+          .je-link{font-family:${SANS};font-weight:700;font-size:13px;background:none;border:0;padding:0 8px;min-height:44px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
           /* THE COURT READS BRIGHTER ON THE DARK STAGE (owner, 2026-09-08: "can we make
              this a bit brighter on dark mode?"). The shared region ramp mixes a hue into
              the cell at --stg-tint-mix, 26% dark / 12% light, and on Judges the courts
@@ -845,15 +921,18 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
              the mix through --stg-dk (100% dark, 0% light): 52% on the dark register (owner
              asked for more after 40),
              the light register's 12% untouched. Other region boards keep the token. */
-          .je-court{--stg-tint-mix:calc(12% + var(--stg-dk, 100%) * 0.40);}
-          .je-cell{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;}
-          .je-cell:hover::after{content:'';position:absolute;inset:0;background:rgba(28,30,36,0.07);}
-          /* The mark is the register's INK, not a hardcoded near-black: on the dark stage
-             rgba(28,30,36,.45) was invisible on every court (owner, 2026-09-08: "I can't
-             even see the xs"). Ink at 85% on the dark register, 50% on the light one (via --stg-dk,
-             so light stays where it was); the JSX's own .6 for auto marks multiplies in. */
-          .je-x{color:color-mix(in srgb, var(--stg-ink, #1c1e24) calc(50% + var(--stg-dk, 100%) * 0.35), transparent);font-size:15px;font-weight:800;}
-          @media(max-width:560px){.je-board-scroll{overflow-x:auto;padding-bottom:6px;}}
+          .je-court,.je-courts{--stg-tint-mix:calc(12% + var(--stg-dk, 100%) * 0.40);}
+          /* Walls between courts are heavy and drawn in the register's ink (light on
+             the dark stage, near-black on the light one); lines inside a court are thin. */
+          .je-court{--je-wall:color-mix(in srgb, var(--stg-ink, #1c1e24) 84%, var(--stg-cell, #ffffff));--je-thin:var(--stg-line2, rgba(28,30,36,0.18));}
+          .je-cell{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;box-sizing:border-box;}
+          .je-cell:hover::after{content:'';position:absolute;inset:0;background:var(--stg-b2, rgba(28,30,36,0.07));}
+          /* The player's own mark is solid register ink (owner, 2026-09-08: "I can't even
+             see the xs"). Squares the seated judges rule out on their own draw a faint dot
+             instead, so the two never read as the same thing. */
+          .je-x{color:var(--stg-ink, #1c1e24);font-weight:800;line-height:1;}
+          .je-dot{display:block;border-radius:50%;background:var(--stg-mute, #6b7488);}
+          @media(max-width:560px){.je-board-scroll{overflow-x:auto;}}
         ` }} />
 
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
@@ -885,21 +964,6 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
           <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
           <div className={LOFT && !STAGE ? 'loft-sheet' : undefined}>
 
-        {/* status bar */}
-        {!preStart && (
-        <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED }}>
-          <span>seated <b style={{ color: INK, fontWeight: 500 }}>{seated}</b>/{SEATS}</span>
-          <span>quarrels <b style={{ color: conflictSet.size ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{conflictSet.size ? conflictSet.size : 0}</b></span>
-          {g.hintUsed && <span>&#128161; hint used</span>}
-          {playing && (
-            <label style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontFamily: SANS, fontSize: 12, fontWeight: 700, textTransform: 'none', letterSpacing: 0 }}>
-              <input type="checkbox" checked={autoX} onChange={(e) => setAutoX(e.target.checked)} style={{ accentColor: `var(--stg-acc, ${COLORS.accent})` }} />
-              auto-✗ when you seat a judge
-            </label>
-          )}
-        </div>
-        )}
-
         {/* start gate — the court stays covered until Start begins the clock */}
         {preStart && (
           <div className={STAGE ? 'stg-gate' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '22px', maxWidth: 440, margin: '0 auto', display: 'flex', flexDirection: 'column' }}>
@@ -908,7 +972,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
                 <p style={{ margin: '0 0 6px' }}>Seat {STARS === 2 ? 'two judges' : 'one judge'} in every row, column and colored court, with none touching. The board stays covered until you begin.</p>
                 {STARS === 2 && (
-                  <p style={{ margin: '0 0 6px' }}>This court takes <b>two</b> per row, column and court, so a second judge in a row is correct here and only a third is a quarrel. The numbers around the edge count the seats each row and column still owes.</p>
+                  <p style={{ margin: '0 0 6px' }}>This court takes <b>two</b> per row, column and court, so a second judge in a row is correct here and only a third is a quarrel. The pips at the end of each row and under each column fill as their seats are taken.</p>
                 )}
               </div>
             )}
@@ -923,28 +987,48 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
 
-        {/* the board */}
+        {/* the board: the bench count, the court, its pips and the court strip */}
         {!preStart && (
-        <div className="je-board-scroll" ref={boardBoxRef} style={{ textAlign: 'center' }}>
-         <div style={{ display: 'inline-block' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-          <div className="je-court" style={{ display: 'inline-block', border: `3px solid ${T.ink}`, borderRadius: 10, overflow: 'hidden', background: T.ink, boxShadow: '0 2px 10px rgba(20,22,28,0.12)' }}>
-            {PUZZLE.regions.map((row, r) => (
-              <div key={r} style={{ display: 'flex' }}>
-                {row.map((id, c) => {
+        <div className="je-board-scroll" ref={boardBoxRef}>
+         <div style={{ maxWidth: PHONE ? undefined : Math.max(N * cellPx + PIP_GUTTER + 6, 540), margin: '0 auto' }}>
+          {/* THE BENCH: k of 2N seated, one segment per seat */}
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, marginBottom: PHONE ? 14 : 16 }}>
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: PHONE ? 6 : 8 }}>
+              <span style={{ fontFamily: SANS, fontSize: PHONE ? 10.5 : 11, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: FADED, fontVariantNumeric: 'tabular-nums' }}>
+                The bench &middot; <b style={{ color: `var(--stg-acc-ink, ${COLORS.accentDeep})`, fontWeight: 800 }}>{seated}</b> of {SEATS} seated
+                {g.placements > 0 && <> &middot; {g.placements} placed</>}
+                {g.hintUsed && <> &middot; hint used</>}
+              </span>
+              <div role="img" aria-label={`${seated} of ${SEATS} judges seated`} style={{ display: 'flex', gap: PHONE ? 2 : 3 }}>
+                {Array.from({ length: SEATS }, (_, i) => (
+                  <span key={i} style={{ flex: 1, height: PHONE ? 7 : 10, borderRadius: PHONE ? 2 : 3,
+                    background: i < seated ? (seated > SEATS || conflictSet.size ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-acc, ${COLORS.accent})`) : `var(--stg-line2, ${SURF_B})` }} />
+                ))}
+              </div>
+            </div>
+            {started && !PHONE && toolSwitch}
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+           <div style={{ display: 'flex', gap: SIDE_GAP, padding: 3 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: PHONE ? 7 : 9 }}>
+              <div className="je-court" style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, ${cellPx}px)`, gridAutoRows: `${cellPx}px`, borderRadius: PHONE ? 5 : 6, overflow: 'hidden', boxShadow: '0 0 0 2.5px var(--je-wall)' }}>
+                {PUZZLE.regions.map((row, r) => row.map((id, c) => {
                   const v = cellsView[r][c];
                   const conflict = v === 2 && conflictSet.has(r * N + c);
-                  // ✗ shows for a hand-placed mark (v === 1) or, with auto-✗ on,
-                  // any empty cell a seated judge rules out. Auto marks render a
-                  // touch lighter and disappear the moment their judge is lifted.
+                  // ✗ shows only for a hand-placed mark (v === 1). With auto rule-out
+                  // on, an empty square a seated judge rules out draws a faint dot
+                  // instead, and it disappears the moment its judge is lifted.
                   const autoMark = autoX && v === 0 && attackedSet.has(r * N + c);
                   const showX = v === 1 || autoMark;
                   const locked = isLocked(r, c);
-                  const bTop = r > 0 && PUZZLE.regions[r - 1][c] !== id ? `2px solid ${T.ink}` : r > 0 ? '1px solid rgba(28,30,36,0.18)' : 'none';
-                  const bLeft = c > 0 && PUZZLE.regions[r][c - 1] !== id ? `2px solid ${T.ink}` : c > 0 ? '1px solid rgba(28,30,36,0.18)' : 'none';
+                  const wallT = r > 0 && PUZZLE.regions[r - 1][c] !== id;
+                  const wallL = c > 0 && PUZZLE.regions[r][c - 1] !== id;
+                  const bTop = r === 0 ? 'none' : wallT ? '2px solid var(--je-wall)' : '1px solid var(--je-thin)';
+                  const bLeft = c === 0 ? 'none' : wallL ? '2px solid var(--je-wall)' : '1px solid var(--je-thin)';
                   return (
                     <div
-                      key={c}
+                      key={`${r}-${c}`}
                       className="je-cell"
                       onClick={() => { if (longFired.current) { longFired.current = false; return; } tapCell(r, c); }}
                       onContextMenu={(e) => { e.preventDefault(); if (longFired.current) return; toggleJudge(r, c); }}
@@ -962,67 +1046,101 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
                           ? (conflict ? 'color-mix(in srgb, var(--stg-bad) 38%, var(--stg-cell))' : regionMix(doneRegions.has(id) ? 0.5 : 1))
                           : (conflict ? '#fecaca' : (doneRegions.has(id) ? REGION_FILLS_DONE : REGION_FILLS)[id % REGION_FILLS.length]), borderTop: bTop, borderLeft: bLeft, boxShadow: locked ? `inset 0 0 0 2px var(--stg-acc, ${COLORS.accent})` : 'none', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
                     >
-                      {v !== 2 && showX && <span className="je-x" style={autoMark ? { opacity: 0.6 } : undefined}>✗</span>}
+                      {v === 1 && <span className="je-x" style={{ fontSize: Math.max(12, Math.round(cellPx * 0.42)) }}>✗</span>}
+                      {v === 0 && autoMark && <span className="je-dot" aria-hidden="true" style={{ width: Math.max(4, Math.round(cellPx * 0.12)), height: Math.max(4, Math.round(cellPx * 0.12)) }} />}
                       {v === 2 && <JudgeMark size={Math.round(cellPx * 0.6)} conflict={conflict} />}
                     </div>
                   );
-                })}
+                }))}
               </div>
-            ))}
+              {/* two pips under every column */}
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, ${cellPx}px)` }}>
+                {colRemain.map((v, c) => (
+                  <span key={c} style={{ justifySelf: 'center', display: 'flex' }}>{pips(STARS - v, `Column ${c + 1}: ${seatWord(STARS - v)}`)}</span>
+                ))}
+              </div>
+              {/* the court strip: one swatch per court in its own tint */}
+              <div className="je-courts" style={{ width: N * cellPx, display: 'flex', flexDirection: 'column', gap: 8, marginTop: PHONE ? 4 : 6 }}>
+                {!PHONE && <span style={{ fontFamily: SANS, fontSize: 11, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: FADED }}>Courts &middot; {numWord(STARS)} judges each</span>}
+                <div style={{ display: 'flex', gap: PHONE ? 3 : 5 }}>
+                  {courtOrder.map((id) => {
+                    const n = courtHeld[id] || 0;
+                    const full = n === STARS;
+                    const over = n > STARS;
+                    return (
+                      <span key={id} role="img" aria-label={`Court ${id + 1}: ${seatWord(n)}`}
+                        style={{ ...(STAGE ? regionStyle(id) : null), flex: 1, minWidth: 0, height: PHONE ? 24 : 30, borderRadius: PHONE ? 6 : 8, boxSizing: 'border-box',
+                          background: STAGE ? regionMix(1) : REGION_FILLS[id % REGION_FILLS.length],
+                          border: over ? `2px solid var(--stg-bad, ${COLORS.rust})` : full ? `2px solid var(--stg-acc, ${COLORS.accent})` : `1px solid var(--stg-line2, ${SURF_B})`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontFamily: SANS, fontSize: PHONE ? 10 : 12, fontWeight: 800, color: over ? `var(--stg-bad, ${COLORS.rust})` : INK, fontVariantNumeric: 'tabular-nums' }}>
+                        {full ? '✓' : `${n}/${STARS}`}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+            {/* two pips at the end of every row */}
+            <div style={{ display: 'grid', gridAutoRows: `${cellPx}px`, alignContent: 'start' }}>
+              {rowRemain.map((v, r) => (
+                <span key={r} style={{ alignSelf: 'center', display: 'flex' }}>{pips(STARS - v, `Row ${r + 1}: ${seatWord(STARS - v)}`)}</span>
+              ))}
+            </div>
+           </div>
           </div>
-          {/* seats still to fill in each row */}
-          <div style={{ display: 'flex', flexDirection: 'column', paddingTop: 3 }}>
-            {rowRemain.map((v, r) => (
-              <div key={r} role="img" aria-label={v === 0 ? `Row ${r + 1} is full` : v < 0 ? `Row ${r + 1} has ${-v} too many` : `Row ${r + 1} needs ${v} more`}
-                style={{ ...counterStyle(v), width: COUNTER_GUTTER, height: cellPx }}>{v === 0 ? '✓' : v}</div>
-            ))}
-          </div>
-          </div>
-          {/* seats still to fill in each column */}
-          <div style={{ display: 'flex', paddingLeft: 3 }}>
-            {colRemain.map((v, c) => (
-              <div key={c} role="img" aria-label={v === 0 ? `Column ${c + 1} is full` : v < 0 ? `Column ${c + 1} has ${-v} too many` : `Column ${c + 1} needs ${v} more`}
-                style={{ ...counterStyle(v), width: cellPx, height: COUNTER_GUTTER }}>{v === 0 ? '✓' : v}</div>
-            ))}
-            <div style={{ width: COUNTER_GUTTER }} />
-          </div>
+
+          {/* the foot: a plain status line, the tool switch on a phone, then the controls */}
+          {started && (
+            <div style={{ marginTop: PHONE ? 14 : 16, borderTop: PHONE ? 'none' : `1px solid var(--stg-line, ${SURF_B})`, paddingTop: PHONE ? 0 : 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <span aria-live="polite" style={{ fontFamily: SANS, fontSize: PHONE ? 14 : 15, fontWeight: 700, lineHeight: 1.4, color: conflictSet.size ? `var(--stg-bad, ${COLORS.rust})` : INK }}>{statusLine}</span>
+                  <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 600, lineHeight: 1.45, color: FADED }}>
+                    {autoX ? 'A line rules itself out once both its seats are taken. ' : ''}
+                    {tool === 'judges'
+                      ? 'Tap seats a judge, tap again to lift it.'
+                      : (PHONE ? 'Hold a square to seat a judge in either mode.' : 'Hold or right-click a square to seat a judge in either mode.')}
+                  </span>
+                </div>
+                {!PHONE && (
+                  <>
+                    <button type="button" className="je-btn" onClick={undo} disabled={!canUndo} aria-label="Undo last move" style={canUndo ? undefined : { color: `var(--stg-mute2, ${COLORS.faded})`, cursor: 'default' }}><Undo2 size={14} /> Undo</button>
+                    <button type="button" className="je-btn" onClick={clearBoard} style={{ minHeight: 48 }}>Clear marks</button>
+                  </>
+                )}
+              </div>
+
+              {PHONE && <div style={{ marginTop: 16 }}>{toolSwitch}</div>}
+
+              {PHONE && (
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 10 }}>
+                  <button type="button" className="je-btn" onClick={clearBoard} style={{ flex: 1 }}>Clear marks</button>
+                  <button type="button" className="je-btn" onClick={undo} disabled={!canUndo} aria-label="Undo last move" style={canUndo ? undefined : { color: `var(--stg-mute2, ${COLORS.faded})`, cursor: 'default' }}><Undo2 size={14} /> Undo</button>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginTop: PHONE ? 6 : 10 }}>
+                {!PHONE && <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 600, color: FADED }}>{cap(numWord(STARS))} per row, column and court. No two touch, not even corners.</span>}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginLeft: PHONE ? 0 : 'auto', width: PHONE ? '100%' : undefined, justifyContent: PHONE ? 'space-between' : 'flex-end' }}>
+                  {hintOk && !g.hintUsed && (
+                    <button type="button" className="je-btn" onClick={useHint} title="Seat one correct judge (one hint, first play only)" style={{ minHeight: 44, fontSize: 13, borderColor: `var(--stg-acc, ${COLORS.accent})`, color: ACC_DEEP_INK, ...(PHONE ? { flex: '1 0 100%' } : null) }}>
+                      <Lightbulb size={14} /> Hint: seat one judge
+                    </button>
+                  )}
+                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: 7, minHeight: 44, padding: '0 6px', cursor: 'pointer', fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: `var(--stg-ink2, ${COLORS.ink})` }}>
+                    <input type="checkbox" checked={autoX} onChange={(e) => setAutoX(e.target.checked)} style={{ width: 18, height: 18, margin: 0, accentColor: `var(--stg-acc, ${COLORS.accent})` }} />
+                    Auto rule-out
+                  </label>
+                  <button type="button" className="je-link" onClick={reveal} style={{ color: revealArmed ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink2, ${COLORS.faded})` }}>
+                    {revealArmed ? 'Tap again to reveal (ends the day)' : 'Reveal'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
          </div>
         </div>
-        )}
-
-        {started && (
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', margin: '12px 0 2px' }}>
-            <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED }}>Tap places</span>
-            <button type="button" className={`je-tool${tool === 'x' ? ' on' : ''}`} onClick={() => setTool('x')} title="Rule cells out (default)" aria-pressed={tool === 'x'}>
-              <span style={{ fontWeight: 900, fontSize: 14, lineHeight: 1 }}>✗</span> Mark
-            </button>
-            <button type="button" className={`je-tool${tool === 'judges' ? ' on' : ''}`} onClick={() => setTool('judges')} title="Seat a judge" aria-pressed={tool === 'judges'}>
-              <JudgeMark size={14} color={tool === 'judges' ? `var(--stg-onramp, ${T.white})` : `var(--stg-acc-ink, ${COLORS.accentDeep})`} /> Judge
-            </button>
-          </div>
-        )}
-
-        {started && (
-          <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.04em', color: FADED, textAlign: 'center', margin: '6px 0 0', lineHeight: 1.5 }}>
-            {tool === 'judges'
-              ? 'Seating judges: tap to seat one, tap again to lift it. Switch to ✗ to rule cells out.'
-              : 'Ruling out: tap to mark a cell ✗, tap again to clear it. Switch to ⚖ to seat judges — or just hold / right-click any cell to seat one.'}
-          </div>
-        )}
-
-        {started && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', margin: '12px 0 6px' }}>
-            <button type="button" className="je-btn" onClick={clearBoard}><Eraser size={14} /> Clear board</button>
-            <button type="button" className="je-btn" onClick={undo} disabled={!canUndo} aria-label="Undo last move" style={canUndo ? undefined : { borderColor: 'var(--stg-line2, #c3c8cf)', color: 'var(--stg-mute2, #c3c8cf)', cursor: 'default' }}><Undo2 size={14} /> Undo</button>
-            {hintOk && !g.hintUsed && (
-              <button type="button" className="je-btn" onClick={useHint} title="Seat one correct judge (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(124,58,237,0.5)', color: ACC_DEEP_INK }}>
-                <Lightbulb size={14} /> Hint: seat one judge
-              </button>
-            )}
-            <button type="button" className="je-btn" onClick={reveal} style={{ borderColor: revealArmed ? COLORS.rust : '#c3c8cf', color: revealArmed ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})` }}>
-              <Eye size={14} /> {revealArmed ? 'Tap again to reveal (ends the day)' : 'Reveal'}
-            </button>
-          </div>
         )}
 
 
@@ -1036,8 +1154,8 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
                   <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{won ? 'Solved' : 'Not solved'}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {won
-                      ? <>The whole court is seated &mdash; {g.placements} placement{g.placements === 1 ? '' : 's'}, {elapsed}.{g.hintUsed ? ' (1 hint)' : ''}</>
-                      : (LOFT && !revealed ? 'The court dissolved in quarrels.' : 'The court dissolved in quarrels — the seating was revealed.')}
+                      ? <>The whole court is seated: {g.placements} placement{g.placements === 1 ? '' : 's'}, {elapsed}.{g.hintUsed ? ' (1 hint)' : ''}</>
+                      : (LOFT && !revealed ? 'The court dissolved in quarrels.' : 'The court dissolved in quarrels. The seating was revealed.')}
                   </span>
                 </div>
               </div>
@@ -1153,7 +1271,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s court, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s court, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>

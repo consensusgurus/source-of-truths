@@ -47,7 +47,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { HelpCircle, X, RotateCcw, Flag } from 'lucide-react';
+import { X, RotateCcw, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -80,7 +80,7 @@ import { isMobileDevice } from '@/lib/is-mobile';
 import useAbandonFlush from '../quiz/[id]/useAbandonFlush';
 import { notifyShareCredit } from '../ShareCreditPop';
 import { T } from '@/lib/theme';
-import { DIRS, freshState, applyMove, anyLegal, isCleared, fillOf } from '@/lib/chomp-engine';
+import { DIRS, DIR_KEYS, freshState, applyMove, anyLegal, isCleared, fillOf, canEnter } from '@/lib/chomp-engine';
 
 // The arm-then-confirm controls do not move when armed, so the second tap of
 // an accidental double-tap used to land on the armed state long before the
@@ -143,126 +143,13 @@ function scoreOf(eaten, total) {
   return Math.max(0, Math.min(9, Math.round((eaten / total) * 10)));
 }
 
-// ---- the gator's head ------------------------------------------------------
-// Drawn in LOCAL coordinates with +x pointing the way it is travelling, then
-// rotated into place. Everything below is therefore written as if the gator
-// always faces right, which is the only way jaw geometry stays readable.
-//
-// It is a long snout rather than a disc: two jaw halves hinged at the back, with
-// teeth along the bite line, an eye ridge sitting proud on top, and a nostril at
-// the tip. The jaws swing open on the move that swallows a mascot and clamp shut
-// when the run ends.
-const GATOR = { skin: '#3f8f3f', dark: '#2a6b2a', belly: '#8fca7a', teeth: '#ffffff' };
-
-// THE BOARD'S PALETTE, read off the stage tokens at draw time.
-//
-// Canvas cannot use a CSS variable, so the values have to be resolved from the
-// element and passed in. Doing it per draw rather than once at mount is what
-// makes the board follow the light switch and the category ramp without any
-// prop threading: both change the computed value, and the next frame picks it up.
-//
-// The gator takes the CATEGORY ACCENT rather than its old green, so the board
-// reads as part of the page instead of as a widget dropped onto it. That frees
-// the accent from also marking the next mascot, which now takes a plain ink ring:
-// on a dark stage that is the highest-contrast marker available and it never
-// competes with the animal.
-function boardPalette(el) {
-  const cs = typeof window !== 'undefined' && el ? getComputedStyle(el) : null;
-  const v = (name, fallback) => {
-    if (!cs) return fallback;
-    const got = cs.getPropertyValue(name);
-    return got && got.trim() ? got.trim() : fallback;
-  };
-  const acc = v('--stg-acc', GATOR.skin);
-  return {
-    plate: v('--stg-panel', '#ffffff'),
-    grid: v('--stg-line', '#eef1f5'),
-    edge: v('--stg-line2', v('--stg-line', '#e2e6ec')),
-    bench: v('--stg-line2', '#333a48'),
-    benchLine: v('--stg-mute2', 'rgba(255,255,255,0.30)'),
-    ink: v('--stg-ink', '#1c1e24'),
-    mute: v('--stg-mute2', '#c4ccd8'),
-    onramp: v('--stg-onramp', '#ffffff'),
-    skin: acc,
-    belly: acc,
-    dark: v('--stg-onramp', GATOR.dark),
-    teeth: v('--stg-ink', '#ffffff'),
-    accent: acc,
-  };
-}
-function drawHead(ctx, cellXY, facing, cell, dead, chewing, pad, pal = boardPalette(null)) {
-  const [hx, hy] = cellXY;
-  const f = facing && (facing[0] || facing[1]) ? facing : [1, 0];
-  const cx = pad + hx * cell + cell / 2, cy = pad + hy * cell + cell / 2;
-  const c = cell;
-  const gape = dead ? 0.04 : chewing ? 0.46 : 0.26;   // radians, per jaw
-
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.rotate(Math.atan2(f[1], f[0]));
-
-  // one jaw: a wedge from the hinge out to the snout, drawn either side of the
-  // bite line. `sign` is -1 for the upper jaw, +1 for the lower.
-  const jaw = (sign, len, thick, fill) => {
-    ctx.save();
-    ctx.rotate(sign * gape);
-    ctx.beginPath();
-    ctx.moveTo(-c * 0.34, 0);
-    ctx.lineTo(len, 0);
-    ctx.quadraticCurveTo(len + c * 0.05, sign * thick * 0.5, len - c * 0.06, sign * thick);
-    ctx.lineTo(-c * 0.26, sign * thick * 1.05);
-    ctx.quadraticCurveTo(-c * 0.40, sign * thick * 0.6, -c * 0.34, 0);
-    ctx.closePath();
-    ctx.fillStyle = fill;
-    ctx.fill();
-    // teeth along the bite line, biggest at the front
-    if (gape > 0.10) {
-      ctx.fillStyle = pal.teeth;
-      for (let i = 0; i < 4; i++) {
-        const x = len - c * 0.10 - i * c * 0.10;
-        const w = c * (0.055 - i * 0.006);
-        ctx.beginPath();
-        ctx.moveTo(x - w, 0);
-        ctx.lineTo(x + w, 0);
-        ctx.lineTo(x, sign * c * 0.11);
-        ctx.closePath();
-        ctx.fill();
-      }
-    }
-    ctx.restore();
-  };
-
-  jaw(1, c * 0.46, c * 0.20, pal.belly);     // lower jaw, paler, drawn first
-  jaw(-1, c * 0.52, c * 0.26, pal.skin);     // upper jaw, on top
-
-  // the eye ridge, sitting proud on the skull behind the snout
-  ctx.save();
-  ctx.rotate(-gape);
-  const ex = -c * 0.14, ey = -c * 0.24;
-  ctx.fillStyle = pal.skin;
-  ctx.beginPath(); ctx.arc(ex, ey, c * 0.13, 0, 7); ctx.fill();
-  ctx.fillStyle = dead ? pal.dark : pal.teeth;
-  ctx.beginPath(); ctx.arc(ex, ey, c * 0.085, 0, 7); ctx.fill();
-  if (dead) {
-    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(1, c * 0.035);
-    ctx.beginPath();
-    ctx.moveTo(ex - c * 0.05, ey - c * 0.05); ctx.lineTo(ex + c * 0.05, ey + c * 0.05);
-    ctx.moveTo(ex + c * 0.05, ey - c * 0.05); ctx.lineTo(ex - c * 0.05, ey + c * 0.05);
-    ctx.stroke();
-  } else {
-    // a slit pupil, because a round one reads as a frog
-    ctx.fillStyle = '#0b0d12';
-    ctx.beginPath();
-    ctx.ellipse(ex, ey, Math.max(0.7, c * 0.022), c * 0.062, 0, 0, 7);
-    ctx.fill();
-  }
-  // nostril at the very tip of the snout
-  ctx.fillStyle = pal.dark;
-  ctx.beginPath(); ctx.arc(c * 0.40, -c * 0.13, Math.max(0.8, c * 0.032), 0, 7); ctx.fill();
-  ctx.restore();
-
-  ctx.restore();
-}
+// ---- the board's geometry and words ---------------------------------------
+// GAP is the gutter between squares; the arrow in an open square is drawn
+// pointing left and rotated to the direction it names.
+const GAP = 4;
+const DIR_WORD = { up: 'up', down: 'down', left: 'left', right: 'right' };
+const WAYS_WORD = { 2: 'Two', 3: 'Three', 4: 'Four' };
+const ARROW_ROT = { left: 0, up: 90, right: 180, down: -90 };
 
 // ---- stats (identical shape to every other daily) --------------------------
 function getStats() {
@@ -332,11 +219,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
   const [armGive, setArmGive] = useState(false);
   const [armRestart, setArmRestart] = useState(false);
   const [nowTick, setNowTick] = useState(0);
-  const [sprites, setSprites] = useState({});
-  const cvsRef = useRef(null);
   const boxRef = useRef(null);
-  const cellRef = useRef(30);
-  const blockRef = useRef(null);
   const viewedRef = useRef(false);
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
 
@@ -398,22 +281,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
   const score10 = scoreOf(g.pi, NPEL);
   const won = over && cleared;
   const myStats = useMemo(() => deriveStats(stats || { rec: {} }, PUZZLE.num), [stats, PUZZLE.num]);
-  const elapsed = g.ms + (started && !over && g.tMark ? Date.now() - g.tMark : 0);
   const fillPct = Math.round(fillOf(PUZZLE, g) * 100);
-
-  // the mascot art, loaded once
-  useEffect(() => {
-    let live = true;
-    const out = {};
-    let left = CAST.length;
-    CAST.forEach((m) => {
-      const im = new window.Image();
-      im.src = `/games/chomp/${m}.png`;
-      im.onload = im.onerror = () => { left -= 1; if (!left && live) setSprites({ ...out }); };
-      out[m] = im;
-    });
-    return () => { live = false; };
-  }, [CAST]);
 
   // ---- hydrate -------------------------------------------------------------
   useEffect(() => {
@@ -554,171 +422,124 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
   // `touchAction` is left alone so the page scrolls over it like any other
   // element.
 
-  // ---- canvas --------------------------------------------------------------
-  // sizeBoard redraws through drawRef rather than closing over `draw`. It only
-  // depends on the board dimensions, so a captured `draw` would be the one from
-  // first render, back when the mascot art had not loaded. On desktop nothing
-  // resizes after that and the state-driven redraw covers it, but a phone fires
-  // resize every time the address bar hides, which repainted the board with an
-  // empty sprite table and made the mascots vanish mid-run.
-  const drawRef = useRef(null);
+  // ---- the board -----------------------------------------------------------
+  // THE BOARD IS DOM AND SVG NOW (board redesign, 2026-10-13), not a canvas.
+  // Every colour on it is a stage token read by the browser, so it follows the
+  // light switch and the category ramp with nothing resolved by hand, and it
+  // stays crisp at any pixel ratio. The pitch (square plus gap) is the one
+  // number that has to be measured: it comes off the width of the box, and on
+  // a desktop off the window height too, so the board never runs under the fold.
+  //
+  // A phone fires resize every time the address bar hides; the measure is cheap
+  // and only sets state when the pitch actually changes.
+  const [pitch, setPitch] = useState(56);
   const sizeBoard = useCallback(() => {
-    const box = boxRef.current, cvs = cvsRef.current;
-    if (!box || !cvs) return;
+    const box = boxRef.current;
+    if (!box || typeof window === 'undefined') return;
     const fw = Math.max(140, box.clientWidth);
-    const fh = (typeof window !== 'undefined' ? window.innerHeight : 800) - 330;
-    // The ceiling is per square, so a smaller board must be allowed BIGGER
-    // squares or it shrinks on screen as the puzzles get harder. 46 keeps a 7x7
-    // and an 8x8 at roughly the width the old 10x10 filled.
-    const cell = Math.max(15, Math.min(46, Math.floor(Math.min((fw - PAD * 2) / PUZZLE.w, (fh - PAD * 2) / PUZZLE.h))));
-    cellRef.current = cell;
-    const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
-    const W = PUZZLE.w * cell + PAD * 2, H = PUZZLE.h * cell + PAD * 2;
-    cvs.width = W * dpr; cvs.height = H * dpr;
-    cvs.style.width = `${W}px`; cvs.style.height = `${H}px`;
-    cvs.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
-    if (drawRef.current) drawRef.current();
+    const phone = window.innerWidth <= 640;
+    const fh = phone ? Infinity : window.innerHeight - 400;
+    // The ceiling is per square, so a smaller board is allowed BIGGER squares
+    // rather than shrinking on screen as the puzzles get harder.
+    const p = Math.max(26, Math.min(64, Math.floor(Math.min((fw + GAP) / PUZZLE.w, (fh + GAP) / PUZZLE.h))));
+    setPitch((cur) => (cur === p ? cur : p));
   }, [PUZZLE.w, PUZZLE.h]);
 
-  const draw = useCallback(() => {
-    const cvs = cvsRef.current;
-    if (!cvs) return;
-    const ctx = cvs.getContext('2d');
-    const cell = cellRef.current;
-    const W = PUZZLE.w * cell + PAD * 2, H = PUZZLE.h * cell + PAD * 2;
-    const st = gRef.current;
-    const pal = boardPalette(cvs);
-    // board coordinates -> canvas coordinates, gutter included
-    const px = (x) => PAD + x * cell;
-    const rr = (x, y, w, h, r) => {
-      ctx.beginPath();
-      ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-      ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-      ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-      ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
+  const PITCH = pitch;
+  const SQ = PITCH - GAP;
+  const SQR = Math.max(5, Math.round(SQ * 0.15));
+  const BW = PUZZLE.w * PITCH - GAP, BH = PUZZLE.h * PITCH - GAP;
+  // NEVER A BLANK MASCOT SQUARE: until a mascot's art has actually loaded, and
+  // for good if it fails, the square shows the mascot's order number instead.
+  const [broken, setBroken] = useState({});
+  const [loaded, setLoaded] = useState({});
+  const markBroken = useCallback((m) => setBroken((b) => (b[m] ? b : { ...b, [m]: true })), []);
+  const markLoaded = useCallback((m) => setLoaded((b) => (b[m] ? b : { ...b, [m]: true })), []);
+  const wallSet = useMemo(() => new Set((PUZZLE.walls || []).map(([x, y]) => y * PUZZLE.w + x)), [PUZZLE.walls, PUZZLE.w]);
+  const playable = PUZZLE.w * PUZZLE.h - (PUZZLE.walls ? PUZZLE.walls.length : 0);
+  const railFrac = NPEL > 1 ? Math.min(g.pi, NPEL - 1) / (NPEL - 1) : 0;
+  const ctr = (v) => v * PITCH + SQ / 2;
+  const trailD = g.body.map(([x, y], i) => `${i ? 'L' : 'M'}${ctr(x)} ${ctr(y)}`).join(' ');
+  // the head: eyes sit forward of centre, either side of the line of travel
+  const head = useMemo(() => {
+    const [hx, hy] = g.body[0];
+    const f = g.facing && (g.facing[0] || g.facing[1]) ? g.facing : [1, 0];
+    const cx = hx * PITCH + SQ / 2, cy = hy * PITCH + SQ / 2;
+    const fw = SQ * 0.15, sd = SQ * 0.14;
+    const px = -f[1], py = f[0];
+    return {
+      cx, cy, er: Math.max(2.5, SQ * 0.068),
+      eyes: [[cx + f[0] * fw + px * sd, cy + f[1] * fw + py * sd], [cx + f[0] * fw - px * sd, cy + f[1] * fw - py * sd]],
     };
+  }, [g.body, g.facing, PITCH, SQ]);
+  const dead = over && !cleared;
+  // the squares the head can legally enter, straight from the engine
+  const legal = useMemo(() => {
+    if (g.status !== 'playing') return [];
+    const [hx, hy] = g.body[0];
+    return DIR_KEYS.filter((k) => canEnter(PUZZLE, g, hx + DIRS[k][0], hy + DIRS[k][1]));
+  }, [PUZZLE, g]);
+  const stillOpen = useMemo(() => {
+    if (cleared) return false;
+    const [hx, hy] = g.body[0];
+    return DIR_KEYS.some((k) => canEnter(PUZZLE, { ...g, status: 'playing' }, hx + DIRS[k][0], hy + DIRS[k][1]));
+  }, [PUZZLE, g, cleared]);
+  const nextName = cleared ? null : LABEL[CAST[g.pi]];
+  // The pad echoes the dashed squares: a key that leads somewhere open takes an
+  // accent edge, and when exactly one does, that key fills, the mockup's
+  // "only one way on" made touchable.
+  const padTone = (k) => (!started || !legal.includes(k) ? '' : legal.length === 1 ? ' is-only' : ' is-open');
 
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = pal.plate; rr(0, 0, W, H, 12); ctx.fill();
-    ctx.strokeStyle = pal.grid; ctx.lineWidth = 1;
-    for (let i = 1; i < PUZZLE.w; i++) { ctx.beginPath(); ctx.moveTo(px(i), PAD); ctx.lineTo(px(i), PAD + PUZZLE.h * cell); ctx.stroke(); }
-    for (let i = 1; i < PUZZLE.h; i++) { ctx.beginPath(); ctx.moveTo(PAD, px(i)); ctx.lineTo(PAD + PUZZLE.w * cell, px(i)); ctx.stroke(); }
-    ctx.strokeStyle = pal.edge; ctx.lineWidth = 1;
-    rr(PAD - 0.5, PAD - 0.5, PUZZLE.w * cell + 1, PUZZLE.h * cell + 1, 4); ctx.stroke();
-
-    // ---- the bleachers: bolted down, never enterable ------------------------
-    for (const [wx, wy] of (PUZZLE.walls || [])) {
-      ctx.fillStyle = pal.bench;
-      rr(px(wx) + 1.5, px(wy) + 1.5, cell - 3, cell - 3, 4); ctx.fill();
-      ctx.strokeStyle = pal.benchLine; ctx.lineWidth = Math.max(1, cell * 0.045);
-      for (let k = 1; k <= 2; k++) {
-        const yy = px(wy) + (cell * k) / 3 + 1;
-        ctx.beginPath(); ctx.moveTo(px(wx) + cell * 0.18, yy); ctx.lineTo(px(wx) + cell * 0.82, yy); ctx.stroke();
-      }
+  // THE STATUS LINE, every clause read off the live state.
+  let statusMain;
+  let statusSub = null;
+  if (playing) {
+    const lead = g.chewing && g.pi > 0
+      ? `${LABEL[CAST[g.pi - 1]]} eaten.`
+      : g.moves === 0 ? `The ${nextName} goes first.` : `Heading for the ${nextName}.`;
+    const ways = legal.map((k) => DIR_WORD[k]);
+    const waysLine = !ways.length ? ''
+      : ways.length === 1 ? ` Only one way on from here: ${ways[0]}.`
+      : ` ${WAYS_WORD[ways.length]} ways on from here: ${ways.slice(0, -1).join(', ')} or ${ways[ways.length - 1]}.`;
+    statusMain = lead + waysLine;
+    // the solid-mascot reminder, only when one is actually touching the head
+    const [hx, hy] = g.body[0];
+    for (let k = g.pi + 1; k < PUZZLE.pellets.length; k++) {
+      const [mx, my] = PUZZLE.pellets[k];
+      const dx = mx - hx, dy = my - hy;
+      if (Math.abs(dx) + Math.abs(dy) !== 1) continue;
+      const rel = dx < 0 ? 'to your left' : dx > 0 ? 'to your right' : dy < 0 ? 'above you' : 'below you';
+      statusSub = `The ${LABEL[CAST[k]]} ${rel} is solid until its turn.`;
+      break;
     }
+  } else if (cleared) {
+    statusMain = `All ${NPEL} eaten in ${nf(g.moves)} moves.`;
+    statusSub = 'Your result is recorded.';
+  } else if (stillOpen) {
+    statusMain = `Run ended with ${g.pi} of ${NPEL} eaten. The ${nextName} was next.`;
+    statusSub = 'Your result is recorded as it stood.';
+  } else {
+    statusMain = `Boxed in with ${g.pi} of ${NPEL} eaten. The ${nextName} was next.`;
+    statusSub = 'Your result is recorded.';
+  }
+  const boardLabel = `Chomp board, ${PUZZLE.w} by ${PUZZLE.h}. ${g.pi} of ${NPEL} mascots eaten${nextName ? `, the ${nextName} is next` : ''}. ${g.body.length} of ${playable} squares covered.`;
 
-    // ---- the gator's body ---------------------------------------------------
-    // Solid green, the same skin as the head, and drawn as one continuous animal
-    // rather than a row of tiles: each segment is a slab that OVERLAPS its
-    // neighbours along the direction of travel, so the joins disappear. The last
-    // segment tapers to a tail and a few segments carry legs, which is what
-    // makes it read as growing rather than as a trail of paint.
-    const body = st.body;
-    const n = body.length;
-    const dirTo = (a, b) => [Math.sign(b[0] - a[0]), Math.sign(b[1] - a[1])];
-    ctx.fillStyle = pal.skin;
-    for (let i = 1; i < n; i++) {
-      const [bx, by] = body[i];
-      const inset = cell * 0.13;
-      // grow the slab towards each neighbour so consecutive cells fuse
-      let x0 = px(bx) + inset, y0 = px(by) + inset;
-      let x1 = px(bx) + cell - inset, y1 = px(by) + cell - inset;
-      for (const nb of [body[i - 1], body[i + 1]]) {
-        if (!nb) continue;
-        const d = dirTo(body[i], nb);
-        if (d[0] > 0) x1 = px(bx) + cell;
-        if (d[0] < 0) x0 = px(bx);
-        if (d[1] > 0) y1 = px(by) + cell;
-        if (d[1] < 0) y0 = px(by);
-      }
-      rr(x0, y0, x1 - x0, y1 - y0, Math.max(2, cell * 0.16));
-      ctx.fill();
-
-      // legs, on every third segment, poking out either side of the spine
-      if (i % 3 === 1 && i < n - 1) {
-        const d = dirTo(body[i], body[i - 1]);
-        const perp = [-d[1], d[0]];
-        const cxm = px(bx) + cell / 2, cym = px(by) + cell / 2;
-        for (const sgn of [1, -1]) {
-          const lx = cxm + perp[0] * sgn * cell * 0.36, ly = cym + perp[1] * sgn * cell * 0.36;
-          ctx.beginPath();
-          ctx.ellipse(lx, ly, cell * 0.15, cell * 0.09,
-            Math.atan2(perp[1] * sgn, perp[0] * sgn), 0, 7);
-          ctx.fill();
-        }
-      }
-    }
-    // the tail: a wedge running off the last segment, away from the body
-    if (n > 1) {
-      const tail = body[n - 1];
-      const d = dirTo(body[n - 2], tail);
-      const cxm = px(tail[0]) + cell / 2, cym = px(tail[1]) + cell / 2;
-      const perp = [-d[1], d[0]];
-      ctx.beginPath();
-      ctx.moveTo(cxm + perp[0] * cell * 0.30, cym + perp[1] * cell * 0.30);
-      ctx.lineTo(cxm + d[0] * cell * 0.62, cym + d[1] * cell * 0.62);
-      ctx.lineTo(cxm - perp[0] * cell * 0.30, cym - perp[1] * cell * 0.30);
-      ctx.closePath();
-      ctx.fillStyle = pal.skin;
-      ctx.fill();
-    }
-
-    // ---- the mascots still to eat, the next one lit -------------------------
-    for (let i = st.pi; i < PUZZLE.pellets.length; i++) {
-      const [mx, my] = PUZZLE.pellets[i];
-      const next = i === st.pi;
-      if (next) {
-        // The accent belongs to the gator now, so the one square the player is
-        // aiming at is marked in ink instead: the strongest contrast the stage
-        // has, in either register, and it cannot be confused with the animal.
-        ctx.globalAlpha = 0.14;
-        ctx.fillStyle = pal.ink;
-        rr(px(mx) + 1, px(my) + 1, cell - 2, cell - 2, 5); ctx.fill();
-        ctx.globalAlpha = 1;
-        ctx.strokeStyle = pal.ink; ctx.lineWidth = 2;
-        rr(px(mx) + 1, px(my) + 1, cell - 2, cell - 2, 5); ctx.stroke();
-      }
-      const im = sprites[CAST[i]];
-      ctx.globalAlpha = next ? 1 : 0.7;
-      if (im && im.complete && im.naturalWidth) {
-        ctx.drawImage(im, px(mx) + 2, px(my) + 2, cell - 4, cell - 4);
-      } else {
-        // never leave a mascot square blank: if the art has not landed yet, or
-        // failed, fall back to a numbered disc so the board is always playable
-        ctx.beginPath();
-        ctx.arc(px(mx) + cell / 2, px(my) + cell / 2, cell * 0.34, 0, 7);
-        ctx.fillStyle = next ? pal.ink : pal.mute;
-        ctx.fill();
-        ctx.fillStyle = next ? pal.plate : pal.onramp;
-        ctx.font = `700 ${Math.round(cell * 0.44)}px ${SANS}`;
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(String(i + 1), px(mx) + cell / 2, px(my) + cell / 2 + 0.5);
-      }
-      ctx.globalAlpha = 1;
-    }
-
-    drawHead(ctx, st.body[0], st.facing, cell, st.status !== 'playing', st.chewing, PAD, pal);
-
-    const bl = blockRef.current;
-    if (bl && Date.now() - bl.at < BLOCK_MS && bl.x >= 0 && bl.y >= 0 && bl.x < PUZZLE.w && bl.y < PUZZLE.h) {
-      ctx.strokeStyle = COLORS.block; ctx.lineWidth = 2;
-      rr(px(bl.x) + 2, px(bl.y) + 2, cell - 4, cell - 4, 3); ctx.stroke();
-    }
-  }, [PUZZLE.w, PUZZLE.h, PUZZLE.pellets, PUZZLE.walls, CAST, sprites]);
-
-  useEffect(() => { drawRef.current = draw; blockRef.current = blocked; draw(); }, [draw, g, blocked, sprites]);
-  // the art arriving must repaint at the CURRENT size, not just on next state
-  useEffect(() => { if (drawRef.current) drawRef.current(); }, [sprites]);
+  // Restart while playing, Try again once the run is over. Drawn in one place on
+  // a desktop (the status row) and another on a phone (the foot), the same
+  // control and the same two-tap arming either way.
+  const restartCtl = () => (playing ? (
+    <button
+      onClick={() => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartRun(); } else { setArmGive(false); setArmRestart(Date.now()); } }}
+      title={armRestart ? 'Records this run as it stands, then deals the board again' : 'Record this run as it stands and start the board over'}
+      className={`ch-ctl${armRestart ? ' is-armed' : ''}`}
+    >
+      <RotateCcw size={16} style={{ flexShrink: 0 }} aria-hidden="true" /> {armRestart ? 'Press again' : 'Restart'}
+    </button>
+  ) : (
+    <button onClick={tryAgain} title="Play this board again. Your recorded result stands." className="ch-ctl is-again">
+      <RotateCcw size={16} style={{ flexShrink: 0 }} aria-hidden="true" /> Try again
+    </button>
+  ));
   useEffect(() => {
     if (!armGive) return undefined;
     const t = setTimeout(() => setArmGive(false), 3500);
@@ -942,102 +763,177 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
         )}
 
         {!preStart && (
-          <div className={STAGE ? 'stg-board' : undefined} style={{ background: STAGE ? SURF : '#fff', border: STAGE ? `1px solid ${SURF_B}` : `1px solid ${COLORS.line}`, borderRadius: 12, padding: 14 }}>
-            {/* the cast, in eating order, with the next one lit */}
-            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center', marginBottom: 11 }}>
-              {CAST.map((m, i) => {
-                const done = i < g.pi, next = i === g.pi;
-                return (
-                  <div key={m} style={{
-                    display: 'flex', alignItems: 'center', gap: 3, padding: '2px 8px 2px 3px', borderRadius: 20,
-                    fontSize: 10.5, fontWeight: 800, letterSpacing: '0.02em',
-                    // THE CAST CHIPS. The pending fill and its ink were both
-                    // Loft values, so on the stage the row read as dark grey on
-                    // dark (owner, 2026-08-31). The NEXT chip keeps the accent,
-                    // which is the one thing the row has to say.
-                    background: next ? `var(--stg-chip, ${COLORS.accentSoft})` : done ? 'transparent' : 'var(--stg-surf2, #f4f6f8)',
-                    color: next ? `var(--stg-acc-ink, ${COLORS.accent})` : 'var(--stg-ink2, #94a3b8)',
-                    opacity: done ? 0.4 : 1,
-                  }}>
-                    <img src={`/games/chomp/${m}.png`} alt="" width={18} height={18} style={{ display: 'block' }} />
-                    {done ? '✓' : LABEL[m]}
-                  </div>
-                );
-              })}
+          <div className={STAGE ? 'stg-board' : undefined} style={{ background: STAGE ? SURF : '#fff', border: STAGE ? `1px solid ${SURF_B}` : `1px solid ${COLORS.line}`, borderRadius: 12, padding: STAGE ? '2px 0 0' : 14 }}>
+            {/* THE CAST RAIL (board redesign, 2026-10-13). Every mascot in eating
+                order as its own art in a round token, joined by a progress line.
+                Eaten ones fade under an accent check, the next one is ringed in
+                the accent. Desktop names every token; a phone shows the icons
+                and names only the next one, in the line above. */}
+            <div className="ch-castwrap">
+              <div className="ch-casthead">
+                <span className="ch-lbl ch-dsk">The cast &middot; eat in this order</span>
+                <span className="ch-lbl ch-ph">
+                  {cleared ? 'All eaten' : <>Next &middot; <b className="ch-nextname">{LABEL[CAST[g.pi]]}</b></>}
+                </span>
+                <span className="ch-lbl"><b style={{ color: 'var(--stg-acc-ink)' }}>{g.pi}</b> of {NPEL} eaten</span>
+              </div>
+              <div className="ch-rail">
+                <span className="ch-rail-line" aria-hidden="true" />
+                <span className="ch-rail-fill" aria-hidden="true" style={{ width: `calc((100% - var(--ch-tw)) * ${railFrac})` }} />
+                {CAST.map((m, i) => {
+                  const done = i < g.pi, next = i === g.pi;
+                  return (
+                    <div key={m} className={`ch-tok${next ? ' is-next' : ''}${done ? ' is-done' : ''}`}>
+                      <span className="ch-tok-disc">
+                        {!loaded[m] && <span className="ch-tok-num">{i + 1}</span>}
+                        {!broken[m] && <img src={`/games/chomp/${m}.png`} alt="" onLoad={() => markLoaded(m)} onError={() => markBroken(m)} className={`ch-tok-img${loaded[m] ? '' : ' ch-wait'}`} />}
+                        {done && (
+                          <span className="ch-tok-check" aria-hidden="true">
+                            <svg viewBox="0 0 12 12" width="100%" height="100%" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6.2l2 2 4-4.4" /></svg>
+                          </span>
+                        )}
+                      </span>
+                      <span className="ch-tok-name ch-dsk">{LABEL[m]}</span>
+                      <span className="ch-sr">{`${i + 1}. ${LABEL[m]}${done ? ', eaten' : next ? ', next' : ''}`}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12, paddingBottom: 11, borderBottom: `1px solid ${COLORS.line}` }}>
-              {stat('Eaten', `${g.pi}/${NPEL}`, COLORS.accent)}
-              {stat('Moves', nf(g.moves))}
-              {stat('Board', `${fillPct}%`)}
-              {stat('Clock', fmtTime(elapsed))}
-              <button onClick={() => setShowHelp(true)} aria-label="How to play" style={{ border: STAGE ? `1px solid ${SURF_B}` : `1px solid ${COLORS.line}`, background: STAGE ? SURF : '#fff', color: FADED, borderRadius: 7, width: 30, height: 28, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                <HelpCircle size={15} />
-              </button>
-            </div>
+            <div className="ch-panel">
+              <div ref={boxRef} className="ch-boxfit">
+                <div className="ch-board" role="img" aria-label={boardLabel} style={{ width: BW, height: BH }}>
+                  {/* the squares: yours tinted, bleachers bolted down */}
+                  {Array.from({ length: PUZZLE.w * PUZZLE.h }, (_, idx) => {
+                    const x = idx % PUZZLE.w, y = Math.floor(idx / PUZZLE.w);
+                    const wall = wallSet.has(idx);
+                    const mine = !wall && !!g.occ[idx];
+                    return (
+                      <span key={idx} className={`ch-sq${mine ? ' is-mine' : ''}${wall ? ' is-wall' : ''}`}
+                        style={{ left: x * PITCH, top: y * PITCH, width: SQ, height: SQ, borderRadius: SQR }} />
+                    );
+                  })}
+                  {/* the gator: one continuous accent body, then the head */}
+                  <svg className="ch-trail" width={BW} height={BH} viewBox={`0 0 ${BW} ${BH}`} aria-hidden="true">
+                    <path d={trailD} fill="none" strokeWidth={Math.round(SQ * 0.37)} strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'var(--stg-acc)' }} />
+                    {g.body.length > 1 && (
+                      <path d={trailD} fill="none" strokeWidth={Math.max(2, SQ * 0.05)} strokeDasharray={`2 ${Math.round(SQ * 0.23)}`} strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'var(--stg-onramp)', strokeOpacity: 0.5 }} />
+                    )}
+                    <circle cx={head.cx} cy={head.cy} r={SQ * 0.38} style={{ fill: 'var(--stg-acc)' }} />
+                    {dead ? head.eyes.map(([ex, ey], k) => (
+                      <path key={k} d={`M${ex - head.er} ${ey - head.er}L${ex + head.er} ${ey + head.er}M${ex + head.er} ${ey - head.er}L${ex - head.er} ${ey + head.er}`}
+                        strokeWidth={Math.max(1.5, SQ * 0.035)} strokeLinecap="round" style={{ stroke: 'var(--stg-onramp)' }} />
+                    )) : head.eyes.map(([ex, ey], k) => (
+                      <circle key={k} cx={ex} cy={ey} r={head.er} style={{ fill: 'var(--stg-onramp)' }} />
+                    ))}
+                  </svg>
+                  {/* the mascots still to eat, numbered, the next one boxed in ink */}
+                  {PUZZLE.pellets.map(([mx, my], i) => {
+                    if (i < g.pi) return null;
+                    const next = i === g.pi;
+                    const m = CAST[i];
+                    const inset = Math.round(SQ * 0.07);
+                    return (
+                      <span key={m} className={`ch-pel${next ? ' is-next' : ''}`}
+                        style={{ left: mx * PITCH + inset, top: my * PITCH + inset, width: SQ - inset * 2, height: SQ - inset * 2, borderRadius: Math.round(SQ * 0.2), borderWidth: next ? (SQ >= 50 ? 3 : 2.5) : 0 }}>
+                        {!loaded[m] && <span className="ch-pel-fallback">{i + 1}</span>}
+                        {!broken[m] && <img src={`/games/chomp/${m}.png`} alt={LABEL[m]} onLoad={() => markLoaded(m)} onError={() => markBroken(m)} className={`ch-pel-img${loaded[m] ? '' : ' ch-wait'}`} />}
+                        <span className="ch-pel-n" style={SQ < 50 ? { minWidth: 15, height: 15, fontSize: 9, left: -4, top: -4 } : null}>{i + 1}</span>
+                      </span>
+                    );
+                  })}
+                  {/* where the head can go next: the owner's small assist */}
+                  {started && legal.map((k) => {
+                    const [hx, hy] = g.body[0];
+                    const d = DIRS[k];
+                    const tx = hx + d[0], ty = hy + d[1];
+                    // no arrow over a mascot: the dashed box alone, so the art stays readable
+                    const onPel = PUZZLE.pellets.some(([mx, my]) => mx === tx && my === ty);
+                    return (
+                      <span key={k} className="ch-open" style={{ left: tx * PITCH, top: ty * PITCH, width: SQ, height: SQ, borderRadius: SQR }}>
+                        {SQ >= 50 && !onPel && (
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+                            style={{ stroke: 'var(--stg-acc)', transform: `rotate(${ARROW_ROT[k]}deg)` }}>
+                            <path d="M19 12H5" /><path d="M11 6l-6 6 6 6" />
+                          </svg>
+                        )}
+                      </span>
+                    );
+                  })}
+                  {blocked && blocked.x >= 0 && blocked.y >= 0 && blocked.x < PUZZLE.w && blocked.y < PUZZLE.h && (
+                    <span className="ch-blocked" style={{ left: blocked.x * PITCH, top: blocked.y * PITCH, width: SQ, height: SQ, borderRadius: SQR }} />
+                  )}
+                  {!cleared && SQ >= 50 && (() => {
+                    const [nx, ny] = PUZZLE.pellets[g.pi];
+                    const above = ny > 0;
+                    const leftSide = nx < PUZZLE.w / 2;
+                    return (
+                      <span className="ch-nexttag ch-dsk" aria-hidden="true" style={{
+                        top: above ? ny * PITCH - 22 : (ny + 1) * PITCH - 2,
+                        ...(leftSide ? { left: nx * PITCH } : { right: BW - (nx * PITCH + SQ) }),
+                      }}>Next &middot; {LABEL[CAST[g.pi]]}</span>
+                    );
+                  })()}
+                </div>
+              </div>
 
-            <div ref={boxRef} style={{ display: 'flex', justifyContent: 'center' }}>
-              <canvas ref={cvsRef} style={{ display: 'block' }} />
+              <div className="ch-cov" style={{ width: BW }}>
+                <span className="ch-lbl">Board covered &middot; {g.body.length} of {playable}</span>
+                <div className="ch-cov-bar" aria-hidden="true">
+                  {Array.from({ length: playable }, (_, k) => (
+                    <span key={k} className={k < g.body.length ? 'is-on' : undefined} />
+                  ))}
+                </div>
+              </div>
+
+              {/* THE STATUS LINE: what just happened and what is open, in plain
+                  words, read off the live state. Never a claim the board does not
+                  support: the ways-on list is the engine's own canEnter. */}
+              <div className="ch-status">
+                <div className="ch-status-text" aria-live="polite">
+                  <span className="ch-status-main">{statusMain}</span>
+                  <span className="ch-status-sub">
+                    {statusSub || (
+                      <>
+                        <span className="ch-keys">Arrow keys or WASD to move. A blocked move is refused, not fatal.</span>
+                        <span className="ch-touchhint">Hold an arrow to keep going. A blocked move is refused, not fatal.</span>
+                      </>
+                    )}
+                  </span>
+                </div>
+                {engaged && <span className="ch-dsk-flex">{restartCtl()}</span>}
+              </div>
             </div>
 
             <div className="ch-dock">
               <div className="ch-pad">
-                <button className="ch-up" style={dockBtn} {...holdProps('up')} aria-label="Move up">&#9650;</button>
-                <button className="ch-lf" style={dockBtn} {...holdProps('left')} aria-label="Move left">&#9664;</button>
-                <button className="ch-dn" style={dockBtn} {...holdProps('down')} aria-label="Move down">&#9660;</button>
-                <button className="ch-rt" style={dockBtn} {...holdProps('right')} aria-label="Move right">&#9654;</button>
+                <button className={`ch-up${padTone('up')}`} {...holdProps('up')} aria-label="Move up">&#9650;</button>
+                <button className={`ch-lf${padTone('left')}`} {...holdProps('left')} aria-label="Move left">&#9664;</button>
+                <button className={`ch-dn${padTone('down')}`} {...holdProps('down')} aria-label="Move down">&#9660;</button>
+                <button className={`ch-rt${padTone('right')}`} {...holdProps('right')} aria-label="Move right">&#9654;</button>
               </div>
             </div>
 
-            <div className="ch-keys" style={{ textAlign: 'center', marginTop: 9, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.03em', color: 'var(--stg-ink2, #9aa2b1)' }}>
-              &larr; &uarr; &darr; &rarr; or WASD &middot; hold to keep going &middot; a blocked move is refused, not fatal
-            </div>
-            <div className="ch-touchhint" style={{ display: 'none', textAlign: 'center', marginTop: 8, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.03em', color: 'var(--stg-ink2, #9aa2b1)' }}>
-              Use the pad to move &middot; hold an arrow to keep going
-            </div>
-
             {engaged && (
-              <div style={{ marginTop: 12, paddingTop: 11, borderTop: `1px solid ${COLORS.line}` }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                  <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>
-                    {playing ? 'Where you have been is a wall. There is no take-back.' : 'Your result is recorded. Play it again as often as you like.'}
+              <div className="ch-foot">
+                <div className="ch-foot-row">
+                  <span className="ch-foot-hint">
+                    {playing ? 'Your trail stays put. Score is how far down the cast you get.' : 'Your result is recorded. Play it again as often as you like.'}
                   </span>
-                  <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 14 }}>
-                    {playing ? (
-                      <>
-                      {/* Both controls reserve a fixed width and each disarms
-                          the other, so the row cannot reflow under a thumb
-                          mid-confirm and two things can never be armed at once.
-                          The icons tell the two 'Press again' states apart, and
-                          the consequence line below names whichever is armed. */}
-                      <button
-                        onClick={() => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartRun(); } else { setArmGive(false); setArmRestart(Date.now()); } }}
-                        title={armRestart ? 'Records this run as it stands, then deals the board again' : 'Record this run as it stands and start the board over'}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armRestart ? `var(--stg-acc-ink, ${COLORS.accent})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-start', gap: 5, minWidth: 104, padding: 0 }}
-                      >
-                        <RotateCcw size={13} style={{ flexShrink: 0 }} /> {armRestart ? 'Press again' : 'Restart'}
-                      </button>
-                      <button
-                        onClick={() => { if (armGive) { if (Date.now() - armGive < ARM_MIN_MS) return; setArmGive(false); giveUp(); } else { setArmRestart(false); setArmGive(Date.now()); } }}
-                        title={armGive ? 'Ends the run and records it as it stands' : 'End the run now and record it as it stands'}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armGive ? COLORS.block : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-start', gap: 5, minWidth: 104, padding: 0 }}
-                      >
-                        <Flag size={13} style={{ flexShrink: 0 }} /> {armGive ? 'Press again' : 'Give up'}
-                      </button>
-                      </>
-                    ) : (
-                      <button
-                        onClick={tryAgain}
-                        title="Play this board again. Your recorded result stands."
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: ACC_INK, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-start', gap: 5, minWidth: 104, padding: 0 }}
-                      >
-                        <RotateCcw size={13} style={{ flexShrink: 0 }} /> Try again
-                      </button>
-                    )}
-                  </span>
+                  <span className="ch-ph-flex">{restartCtl()}</span>
+                  {playing && (
+                    <button
+                      onClick={() => { if (armGive) { if (Date.now() - armGive < ARM_MIN_MS) return; setArmGive(false); giveUp(); } else { setArmRestart(false); setArmGive(Date.now()); } }}
+                      title={armGive ? 'Ends the run and records it as it stands' : 'End the run now and record it as it stands'}
+                      className={`ch-giveup${armGive ? ' is-armed' : ''}`}
+                    >
+                      <Flag size={13} style={{ flexShrink: 0 }} aria-hidden="true" /> {armGive ? 'Press again' : 'Give up'}
+                    </button>
+                  )}
                 </div>
                 {(armGive || armRestart) && (
-                  <div style={{ fontFamily: SANS, fontSize: 11.5, fontWeight: 700, color: armGive ? COLORS.block : `var(--stg-acc-ink, ${COLORS.accent})`, marginTop: 6, textAlign: 'right', lineHeight: 1.4 }}>
+                  <div className="ch-armline" style={{ color: armGive ? 'var(--stg-bad)' : 'var(--stg-acc-ink)' }}>
                     {armGive
                       ? 'Ends the run and records it as it stands.'
                       : 'Records this run as it stands, then deals the board again.'}
@@ -1188,25 +1084,106 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
       )}
 
       <style dangerouslySetInnerHTML={{ __html: `
-        .ch-dock { display: flex; justify-content: center; margin-top: 12px; }
+        .ch-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+        .ch-lbl { font-family: ${SANS}; font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--stg-mute, #525c70); font-variant-numeric: tabular-nums; }
+        .ch-ph, .ch-ph-flex { display: none; }
+        .ch-dsk-flex { display: inline-flex; }
+        .ch-castwrap { display: flex; flex-direction: column; gap: 10px; }
+        .ch-casthead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+        .ch-nextname { color: var(--stg-ink, #0f1420); font-size: 13px; letter-spacing: 0; text-transform: none; }
+        .ch-rail { --ch-tw: 58px; --ch-td: 40px; position: relative; display: flex; justify-content: space-between; }
+        .ch-rail-line, .ch-rail-fill { position: absolute; left: calc(var(--ch-tw) / 2); top: calc(var(--ch-td) / 2 - 1.5px); height: 3px; border-radius: 2px; }
+        .ch-rail-line { right: calc(var(--ch-tw) / 2); background: var(--stg-line2, #cdd3dd); }
+        .ch-rail-fill { background: var(--stg-acc); }
+        .ch-tok { position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px; width: var(--ch-tw); }
+        .ch-tok-disc { position: relative; width: var(--ch-td); height: var(--ch-td); box-sizing: border-box; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--stg-ground, #fff); border: 1.5px solid var(--stg-line2, #cdd3dd); }
+        .ch-tok.is-next .ch-tok-disc { border: 0; box-shadow: 0 0 0 3px var(--stg-ground, #fff), 0 0 0 5px var(--stg-acc); }
+        .ch-tok-img { display: block; width: 75%; height: 75%; object-fit: contain; }
+        .ch-tok.is-done .ch-tok-img { opacity: .45; }
+        .ch-wait { position: absolute; width: 1px !important; height: 1px !important; opacity: 0; }
+        .ch-tok-num { font-family: ${SANS}; font-size: 13px; font-weight: 800; color: var(--stg-ink, #0f1420); }
+        .ch-tok-check { position: absolute; right: -4px; bottom: -4px; width: 18px; height: 18px; box-sizing: border-box; padding: 3px; border-radius: 50%; background: var(--stg-acc); color: var(--stg-onramp, #fff); box-shadow: 0 0 0 2px var(--stg-ground, #fff); display: flex; }
+        .ch-tok-name { font-family: ${SANS}; font-size: 11px; font-weight: 600; color: var(--stg-mute, #525c70); white-space: nowrap; }
+        .ch-tok.is-next .ch-tok-name { font-weight: 800; color: var(--stg-ink, #0f1420); }
+
+        .ch-panel { margin-top: 16px; background: var(--stg-surf, #fff); border: 1px solid var(--stg-line, #cdd3dd); border-radius: 20px; display: flex; flex-direction: column; align-items: center; padding: 20px 20px 16px; }
+        .ch-boxfit { width: 100%; display: flex; justify-content: center; }
+        .ch-board { position: relative; flex: none; }
+        .ch-sq { position: absolute; box-sizing: border-box; background: var(--stg-b1, #f1f3f7); border: 1px solid var(--stg-line, #cdd3dd); }
+        .ch-sq.is-mine { background: var(--stg-acc-tint, rgba(15,118,110,.18)); }
+        .ch-sq.is-wall { background: var(--stg-sq-d, #94a1b5) repeating-linear-gradient(180deg, transparent 0 30%, var(--stg-ground, #fff) 30% 36%, transparent 36% 64%, var(--stg-ground, #fff) 64% 70%, transparent 70% 100%); border-color: var(--stg-sq-d, #94a1b5); }
+        .ch-trail { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; }
+        .ch-pel { position: absolute; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 0 solid var(--stg-ink, #0f1420); }
+        .ch-pel.is-next { background: var(--stg-surf, #fff); }
+        .ch-pel-img { display: block; width: 82%; height: 82%; object-fit: contain; opacity: .8; }
+        .ch-pel.is-next .ch-pel-img { opacity: 1; }
+        .ch-pel-fallback { width: 70%; height: 70%; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--stg-chip, #dfe4ec); color: var(--stg-ink, #0f1420); font-family: ${SANS}; font-weight: 800; font-size: 15px; }
+        .ch-pel-n { position: absolute; left: -5px; top: -5px; min-width: 18px; height: 18px; padding: 0 4px; box-sizing: border-box; border-radius: 9px; background: var(--stg-chip, #dfe4ec); color: var(--stg-ink, #0f1420); font-family: ${SANS}; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+        .ch-pel.is-next .ch-pel-n { background: var(--stg-ink, #0f1420); color: var(--stg-ground, #fff); }
+        .ch-open { position: absolute; box-sizing: border-box; border: 2.5px dashed var(--stg-acc); display: flex; align-items: center; justify-content: center; pointer-events: none; }
+        .ch-blocked { position: absolute; box-sizing: border-box; border: 2.5px solid var(--stg-bad, #be123c); pointer-events: none; }
+        .ch-nexttag { position: absolute; z-index: 2; padding: 3px 8px; border-radius: 7px; background: var(--stg-ink, #0f1420); color: var(--stg-ground, #fff); font-family: ${SANS}; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; pointer-events: none; }
+
+        .ch-cov { display: flex; flex-direction: column; gap: 5px; margin-top: 16px; max-width: 100%; }
+        .ch-cov-bar { display: flex; gap: 2px; }
+        .ch-cov-bar span { flex: 1; height: 6px; border-radius: 2px; background: var(--stg-line2, #cdd3dd); }
+        .ch-cov-bar span.is-on { background: var(--stg-acc); }
+
+        .ch-status { width: 100%; margin-top: 16px; display: flex; align-items: center; gap: 10px; border-top: 1px solid var(--stg-line, #cdd3dd); padding-top: 14px; }
+        .ch-status-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+        .ch-status-main { font-family: ${SANS}; font-size: 15px; font-weight: 700; line-height: 1.4; color: var(--stg-ink, #0f1420); }
+        .ch-status-sub { font-family: ${SANS}; font-size: 12px; font-weight: 600; line-height: 1.45; color: var(--stg-mute, #525c70); }
+        .ch-touchhint { display: none; }
+
+        .ch-ctl { display: inline-flex; align-items: center; justify-content: center; gap: 7px; font-family: ${SANS}; font-weight: 700; font-size: 14px; background: transparent; color: var(--stg-ink2, #2c3446); border: 1.5px solid var(--stg-mute2, #78839a); border-radius: 12px; padding: 0 16px; min-height: 48px; min-width: 132px; cursor: pointer; }
+        .ch-ctl.is-armed { color: var(--stg-acc-ink); border-color: var(--stg-acc); }
+        .ch-ctl.is-again { color: var(--stg-acc-ink); border-color: var(--stg-acc); }
+        .ch-foot { padding: 12px 0 0; }
+        .ch-foot-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .ch-foot-hint { font-family: ${SANS}; font-size: 12px; font-weight: 600; color: var(--stg-mute, #525c70); }
+        .ch-giveup { flex: none; display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 104px; min-height: 44px; padding: 0 4px; background: none; border: 0; cursor: pointer; font-family: ${SANS}; font-size: 12px; font-weight: 700; color: var(--stg-ink2, #2c3446); }
+        .ch-giveup.is-armed { color: var(--stg-bad, #be123c); }
+        .ch-armline { font-family: ${SANS}; font-size: 11.5px; font-weight: 700; margin-top: 2px; text-align: right; line-height: 1.4; }
+
+        .ch-dock { display: flex; justify-content: center; margin-top: 14px; }
         .ch-pad {
           display: grid;
-          grid-template-areas: ". up ." "lf dn rt";
-          grid-template-columns: repeat(3, 58px);
-          gap: 5px;
+          grid-template-areas: "lf up rt" "lf dn rt";
+          grid-template-columns: repeat(3, 64px);
+          grid-template-rows: repeat(2, 50px);
+          gap: 6px;
           justify-content: center;
         }
         .ch-up { grid-area: up; }
         .ch-lf { grid-area: lf; }
         .ch-dn { grid-area: dn; }
         .ch-rt { grid-area: rt; }
-        .ch-pad button { width: 100% !important; }
+        .ch-pad button { border-radius: 12px; border: 1.5px solid var(--stg-mute2, #78839a); background: var(--stg-surf, #fff); color: var(--stg-ink, #0f1420); font-family: ${SANS}; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+        .ch-pad button.is-open { border: 2px solid var(--stg-acc); }
+        .ch-pad button.is-only { background: var(--stg-acc); border-color: var(--stg-acc); color: var(--stg-onramp, #fff); }
+        @media (min-width: 901px) and (hover: hover) and (pointer: fine) {
+          .ch-dock { display: none; }
+        }
         @media (max-width: 640px) {
-          .ch-keys { display: none !important; }
-          .ch-touchhint { display: block !important; }
-          .ch-dock { margin-top: 10px; }
-          .ch-pad { grid-template-columns: repeat(3, 64px); gap: 6px; }
-          .ch-pad button { height: 58px !important; }
+          .ch-dsk, .ch-dsk-flex, .ch-keys, .ch-foot-hint { display: none !important; }
+          .ch-ph { display: inline; }
+          .ch-ph-flex { display: flex; flex: 1; }
+          .ch-ph-flex .ch-ctl { flex: 1; min-height: 46px; }
+          .ch-touchhint { display: inline; }
+          .ch-lbl { font-size: 10px; }
+          .ch-castwrap { gap: 8px; }
+          .ch-rail { --ch-tw: 30px; --ch-td: 30px; }
+          .ch-rail-line, .ch-rail-fill { height: 2px; top: calc(var(--ch-td) / 2 - 1px); }
+          .ch-tok-check { width: 14px; height: 14px; padding: 2px; }
+          .ch-tok.is-next .ch-tok-disc { box-shadow: 0 0 0 2px var(--stg-ground, #fff), 0 0 0 4px var(--stg-acc); }
+          .ch-panel { margin-top: 12px; border-radius: 18px; padding: 12px; }
+          .ch-cov { margin-top: 10px; gap: 4px; }
+          .ch-cov-bar { gap: 1px; }
+          .ch-cov-bar span { height: 5px; border-radius: 1px; }
+          .ch-status { margin-top: 12px; padding-top: 10px; }
+          .ch-status-main { font-size: 14px; }
+          .ch-foot-row { justify-content: flex-start; }
+          .ch-giveup { font-size: 13px; padding: 0 10px; }
         }
       ` }} />
 

@@ -624,6 +624,56 @@ function Glyph({ k, size = 20 }) {
   return <GameGlyph gameKey={k} size={size} className="sty-gi" />;
 }
 
+// THE CIRCUIT PILLS WRAP EVENLY (owner, 2026-10-14). A plain flex-wrap row
+// fills the first line and drops the leftover pill onto a line of its own, so
+// seven pills read as six and one. This measures every pill once in a hidden
+// layer, finds the fewest lines that fit the row, and deals the pills across
+// those lines evenly by count (seven over two lines is four and three). The
+// widths never depend on the line count, so measuring cannot loop.
+const PILL_GAP = 10;
+// n items over r lines as evenly as counts allow, the longer lines first
+// (seven over three is 3, 2, 2, never 3, 3, 1).
+function pillLines(arr, r) {
+  const n = arr.length, base = Math.floor(n / r), extra = n % r, out = [];
+  let i = 0;
+  for (let k = 0; k < r && i < n; k++) { const len = base + (k < extra ? 1 : 0); out.push(arr.slice(i, i + len)); i += len; }
+  return out;
+}
+function BalancedPills({ children }) {
+  const items = (Array.isArray(children) ? children : [children]).filter(Boolean);
+  const boxRef = useRef(null);
+  const measRef = useRef(null);
+  const [rows, setRows] = useState(1);
+  useLayoutEffect(() => {
+    const box = boxRef.current, meas = measRef.current;
+    if (!box || !meas) return undefined;
+    const fit = () => {
+      const W = box.clientWidth;
+      const ws = Array.from(meas.children).map((el) => el.offsetWidth);
+      const n = ws.length;
+      if (!W || !n) return;
+      let best = n;
+      for (let r = 1; r <= n; r++) {
+        const ok = pillLines(ws, r).every((chunk) => chunk.reduce((x, y) => x + y, 0) + PILL_GAP * (chunk.length - 1) <= W);
+        if (ok) { best = r; break; }
+      }
+      setRows((prev) => (prev === best ? prev : best));
+    };
+    fit();
+    let ro = null;
+    if (typeof ResizeObserver !== 'undefined') { ro = new ResizeObserver(fit); ro.observe(box); }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit).catch(() => {});
+    return () => { if (ro) ro.disconnect(); };
+  }, [items.length]);
+  const lines = pillLines(items, rows);
+  return (
+    <div className={'sty-cpills' + (rows > 1 ? ' rows' : '')} ref={boxRef}>
+      <div className="sty-cpmeas" ref={measRef} aria-hidden="true">{items}</div>
+      {rows > 1 ? lines.map((ln, i) => <div key={i} className="sty-cprow">{ln}</div>) : items}
+    </div>
+  );
+}
+
 export default function StageToday() {
   const [stageTheme, setStageTheme] = useStageTheme();
   const tq = useThemeQs();
@@ -2380,7 +2430,7 @@ export default function StageToday() {
     if (!list.length) return null;
     if (mobile) return runsMobile(list, cat);
     return (
-      <div className="sty-cpills">
+      <BalancedPills>
         {list.map((c) => {
           const full = c.games.length > 0 && c.n === c.games.length;
           const part = !full && c.n > 0;
@@ -2396,7 +2446,7 @@ export default function StageToday() {
             </a>
           );
         })}
-      </div>
+      </BalancedPills>
     );
   };
   // THE PHONE'S RUNS (owner, 2026-10-13). The most played run the reader has
@@ -4447,6 +4497,10 @@ ${PATCH_CSS}
 /* POPULAR CIRCUIT PILLS (owner, 2026-10-09). */
 .sty-cpills{flex:1;min-width:0;display:flex;flex-wrap:wrap;justify-content:space-evenly;align-items:center;
   gap:6px 10px;align-self:center;margin-left:8px;}
+.sty-cpills{position:relative;}
+.sty-cpills.rows{flex-direction:column;flex-wrap:nowrap;align-items:stretch;}
+.sty-cprow{display:flex;justify-content:space-evenly;align-items:center;gap:6px 10px;}
+.sty-cpmeas{position:absolute;left:0;top:0;display:flex;gap:6px 10px;white-space:nowrap;visibility:hidden;pointer-events:none;height:0;overflow:visible;}
 .sty-cpill{display:inline-flex;align-items:center;gap:6px;text-decoration:none;white-space:nowrap;
   color:var(--stg-ink2);border:1px solid var(--stg-line);border-radius:999px;padding:4px 11px 4px 9px;
   font-size:11.5px;font-weight:700;letter-spacing:.01em;line-height:1.2;}
