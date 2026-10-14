@@ -931,7 +931,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
              see the xs"). Squares the seated judges rule out on their own draw a faint dot
              instead, so the two never read as the same thing. */
           .je-x{color:var(--stg-ink, #1c1e24);font-weight:800;line-height:1;}
-          .je-dot{display:block;border-radius:50%;background:var(--stg-mute, #6b7488);}
+          .je-dot{display:block;border-radius:50%;background:var(--stg-ink, #1c1e24);opacity:1;}
           @media(max-width:560px){.je-board-scroll{overflow-x:auto;}}
         ` }} />
 
@@ -1047,7 +1047,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
                           : (conflict ? '#fecaca' : (doneRegions.has(id) ? REGION_FILLS_DONE : REGION_FILLS)[id % REGION_FILLS.length]), borderTop: bTop, borderLeft: bLeft, boxShadow: locked ? `inset 0 0 0 2px var(--stg-acc, ${COLORS.accent})` : 'none', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
                     >
                       {v === 1 && <span className="je-x" style={{ fontSize: Math.max(12, Math.round(cellPx * 0.42)) }}>✗</span>}
-                      {v === 0 && autoMark && <span className="je-dot" aria-hidden="true" style={{ width: Math.max(4, Math.round(cellPx * 0.12)), height: Math.max(4, Math.round(cellPx * 0.12)) }} />}
+                      {v === 0 && autoMark && <span className="je-dot" aria-hidden="true" style={{ width: Math.max(6, Math.round(cellPx * 0.2)), height: Math.max(6, Math.round(cellPx * 0.2)) }} />}
                       {v === 2 && <JudgeMark size={Math.round(cellPx * 0.6)} conflict={conflict} />}
                     </div>
                   );

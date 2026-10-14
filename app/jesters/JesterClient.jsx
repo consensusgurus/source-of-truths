@@ -826,7 +826,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
   const THIN = STAGE ? 'var(--stg-cell-line, rgba(255,255,255,0.36))' : 'rgba(28,30,36,0.18)';
   const WALL_W = PHONE ? 2 : 2.5;
   const boardW = N * cellPx + EDGE * 2;
-  const dotPx = Math.max(4, Math.round(cellPx * 0.11));
+  const dotPx = Math.max(6, Math.round(cellPx * 0.2));
 
   // The ✗ / Seat a jester tool, one segmented control.
   const toolSwitch = (
@@ -941,7 +941,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
           /* A hand ✗ is the player's own mark: full register ink, never faded, so it reads
              apart from the faint dots the seated jesters derive on their own. */
           .je-x{color:var(--stg-ink, #1c1e24);font-weight:800;line-height:1;}
-          .je-dot{display:block;border-radius:50%;background:var(--stg-mute, #6b7280);}
+          .je-dot{display:block;border-radius:50%;background:var(--stg-ink, #1c1e24);opacity:1;}
         ` }} />
 
         <div style={{ maxWidth: 640, margin: '0 auto' }}>

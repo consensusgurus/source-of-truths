@@ -147,9 +147,6 @@ function scoreOf(eaten, total) {
 // GAP is the gutter between squares; the arrow in an open square is drawn
 // pointing left and rotated to the direction it names.
 const GAP = 4;
-const DIR_WORD = { up: 'up', down: 'down', left: 'left', right: 'right' };
-const WAYS_WORD = { 2: 'Two', 3: 'Three', 4: 'Four' };
-const ARROW_ROT = { left: 0, up: 90, right: 180, down: -90 };
 
 // ---- stats (identical shape to every other daily) --------------------------
 function getStats() {
@@ -468,27 +465,56 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
     const fw = SQ * 0.15, sd = SQ * 0.14;
     const px = -f[1], py = f[0];
     return {
-      cx, cy, er: Math.max(2.5, SQ * 0.068),
+      cx, cy, er: Math.max(2.5, SQ * 0.068), deg: Math.round(Math.atan2(f[1], f[0]) * 180 / Math.PI),
       eyes: [[cx + f[0] * fw + px * sd, cy + f[1] * fw + py * sd], [cx + f[0] * fw - px * sd, cy + f[1] * fw - py * sd]],
     };
   }, [g.body, g.facing, PITCH, SQ]);
   const dead = over && !cleared;
-  // the squares the head can legally enter, straight from the engine
-  const legal = useMemo(() => {
-    if (g.status !== 'playing') return [];
-    const [hx, hy] = g.body[0];
-    return DIR_KEYS.filter((k) => canEnter(PUZZLE, g, hx + DIRS[k][0], hy + DIRS[k][1]));
-  }, [PUZZLE, g]);
+  // THE GATOR'S LEGS AND TAIL (owner, 2026-10-14: make it look like an
+  // alligator). A front pair sits on the square behind the head, a back pair on
+  // the square before the tail, each splayed out sideways and swept back; the
+  // tail tapers to a point off the last square. Short bodies get what fits.
+  const gator = useMemo(() => {
+    const b = g.body, n = b.length, legs = [];
+    const c = (v) => v * PITCH + SQ / 2;
+    const legAt = (i) => {
+      const [x, y] = b[i], [qx, qy] = b[i - 1];
+      const dx = qx - x, dy = qy - y, px = -dy, py = dx, X = c(x), Y = c(y);
+      const nx = i < n - 1 ? b[i + 1][0] - x : 0, ny = i < n - 1 ? b[i + 1][1] - y : 0;
+      for (const sd of [1, -1]) {
+        if (px * sd === nx && py * sd === ny) continue; // this side runs into the body at a bend
+        const ax = X + px * sd * SQ * 0.1, ay = Y + py * sd * SQ * 0.1;
+        const kx = X + px * sd * SQ * 0.3 + dx * SQ * 0.06, ky = Y + py * sd * SQ * 0.3 + dy * SQ * 0.06;
+        const fx = X + px * sd * SQ * 0.38 - dx * SQ * 0.12, fy = Y + py * sd * SQ * 0.38 - dy * SQ * 0.12;
+        legs.push({ d: `M${ax} ${ay}L${kx} ${ky}L${fx} ${fy}`, fx, fy });
+      }
+    };
+    // a leg pair hidden under a bend reads as a stray bracket, so each pair
+    // takes the nearest square where the body runs straight
+    const straight = (i) => i > 0 && i < n - 1
+      && b[i - 1][0] - b[i][0] === b[i][0] - b[i + 1][0] && b[i - 1][1] - b[i][1] === b[i][1] - b[i + 1][1];
+    const pick = (from, to, step) => { for (let i = from; step > 0 ? i <= to : i >= to; i += step) if (straight(i)) return i; return from; };
+    let front = -1;
+    if (n >= 2) { front = n >= 3 ? pick(1, Math.min(3, n - 2), 1) : 1; legAt(front); }
+    if (n >= 5) { const back = pick(n - 2, Math.max(front + 2, n - 4), -1); if (back > front + 1) legAt(back); }
+    let tail = null;
+    if (n >= 2) {
+      const [x, y] = b[n - 1], [qx, qy] = b[n - 2];
+      const dx = x - qx, dy = y - qy, px = -dy, py = dx, X = c(x), Y = c(y), w = SQ * 0.185;
+      tail = `M${X + px * w} ${Y + py * w}L${X + dx * SQ * 0.48} ${Y + dy * SQ * 0.48}L${X - px * w} ${Y - py * w}Z`;
+    }
+    return { legs, tail };
+  }, [g.body, PITCH, SQ]);
   const stillOpen = useMemo(() => {
     if (cleared) return false;
     const [hx, hy] = g.body[0];
     return DIR_KEYS.some((k) => canEnter(PUZZLE, { ...g, status: 'playing' }, hx + DIRS[k][0], hy + DIRS[k][1]));
   }, [PUZZLE, g, cleared]);
   const nextName = cleared ? null : LABEL[CAST[g.pi]];
-  // The pad echoes the dashed squares: a key that leads somewhere open takes an
-  // accent edge, and when exactly one does, that key fills, the mockup's
-  // "only one way on" made touchable.
-  const padTone = (k) => (!started || !legal.includes(k) ? '' : legal.length === 1 ? ' is-only' : ' is-open');
+  // NO MOVE HINTS (owner, 2026-10-14): the board no longer marks where the head
+  // can go, the pad no longer lights the open keys, and the status line no
+  // longer lists the ways on. Finding the way is the puzzle.
+  const padTone = () => '';
 
   // THE STATUS LINE, every clause read off the live state.
   let statusMain;
@@ -497,11 +523,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
     const lead = g.chewing && g.pi > 0
       ? `${LABEL[CAST[g.pi - 1]]} eaten.`
       : g.moves === 0 ? `The ${nextName} goes first.` : `Heading for the ${nextName}.`;
-    const ways = legal.map((k) => DIR_WORD[k]);
-    const waysLine = !ways.length ? ''
-      : ways.length === 1 ? ` Only one way on from here: ${ways[0]}.`
-      : ` ${WAYS_WORD[ways.length]} ways on from here: ${ways.slice(0, -1).join(', ')} or ${ways[ways.length - 1]}.`;
-    statusMain = lead + waysLine;
+    statusMain = lead;
     // the solid-mascot reminder, only when one is actually touching the head
     const [hx, hy] = g.body[0];
     for (let k = g.pi + 1; k < PUZZLE.pellets.length; k++) {
@@ -816,17 +838,39 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
                   })}
                   {/* the gator: one continuous accent body, then the head */}
                   <svg className="ch-trail" width={BW} height={BH} viewBox={`0 0 ${BW} ${BH}`} aria-hidden="true">
+                    {/* legs: a front pair just behind the head and a back pair near the tail */}
+                    {gator.legs.map((l, k) => (
+                      <g key={'lg' + k}>
+                        <path d={l.d} fill="none" strokeWidth={Math.max(4, SQ * 0.14)} strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'var(--stg-acc)' }} />
+                        <circle cx={l.fx} cy={l.fy} r={Math.max(3, SQ * 0.085)} style={{ fill: 'var(--stg-acc)' }} />
+                      </g>
+                    ))}
                     <path d={trailD} fill="none" strokeWidth={Math.round(SQ * 0.37)} strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'var(--stg-acc)' }} />
+                    {gator.tail && <path d={gator.tail} style={{ fill: 'var(--stg-acc)' }} />}
                     {g.body.length > 1 && (
                       <path d={trailD} fill="none" strokeWidth={Math.max(2, SQ * 0.05)} strokeDasharray={`2 ${Math.round(SQ * 0.23)}`} strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'var(--stg-onramp)', strokeOpacity: 0.5 }} />
                     )}
-                    <circle cx={head.cx} cy={head.cy} r={SQ * 0.38} style={{ fill: 'var(--stg-acc)' }} />
-                    {dead ? head.eyes.map(([ex, ey], k) => (
-                      <path key={k} d={`M${ex - head.er} ${ey - head.er}L${ex + head.er} ${ey + head.er}M${ex + head.er} ${ey - head.er}L${ex - head.er} ${ey + head.er}`}
-                        strokeWidth={Math.max(1.5, SQ * 0.035)} strokeLinecap="round" style={{ stroke: 'var(--stg-onramp)' }} />
-                    )) : head.eyes.map(([ex, ey], k) => (
-                      <circle key={k} cx={ex} cy={ey} r={head.er} style={{ fill: 'var(--stg-onramp)' }} />
-                    ))}
+                    {/* the head: a long snout with teeth, nostrils, and raised eyes */}
+                    <g transform={`translate(${head.cx} ${head.cy}) rotate(${head.deg}) scale(${SQ})`}>
+                      <path d="M-0.34 -0.22 Q-0.34 -0.31 -0.2 -0.31 L0.08 -0.25 L0.42 -0.16 Q0.53 -0.13 0.53 0 Q0.53 0.13 0.42 0.16 L0.08 0.25 L-0.2 0.31 Q-0.34 0.31 -0.34 0.22 Z" style={{ fill: 'var(--stg-acc)' }} />
+                      <path d="M0.52 0 L0.04 0" fill="none" strokeWidth="0.03" strokeLinecap="round" style={{ stroke: 'var(--stg-onramp)', strokeOpacity: 0.85 }} />
+                      <path d="M0.14 -0.235 L0.2 -0.22 L0.17 -0.17 Z M0.25 -0.21 L0.31 -0.195 L0.28 -0.145 Z M0.36 -0.18 L0.41 -0.165 L0.39 -0.12 Z M0.14 0.235 L0.2 0.22 L0.17 0.17 Z M0.25 0.21 L0.31 0.195 L0.28 0.145 Z M0.36 0.18 L0.41 0.165 L0.39 0.12 Z" style={{ fill: 'var(--stg-onramp)' }} />
+                      <circle cx="0.47" cy="-0.05" r="0.022" style={{ fill: 'var(--stg-onramp)' }} />
+                      <circle cx="0.47" cy="0.05" r="0.022" style={{ fill: 'var(--stg-onramp)' }} />
+                      {[-1, 1].map((sd) => (
+                        <g key={sd}>
+                          <circle cx="-0.1" cy={sd * 0.2} r="0.115" style={{ fill: 'var(--stg-acc)' }} />
+                          {dead ? (
+                            <path d={`M-0.16 ${sd * 0.2 - 0.06}L-0.04 ${sd * 0.2 + 0.06}M-0.04 ${sd * 0.2 - 0.06}L-0.16 ${sd * 0.2 + 0.06}`} fill="none" strokeWidth="0.035" strokeLinecap="round" style={{ stroke: 'var(--stg-onramp)' }} />
+                          ) : (
+                            <>
+                              <circle cx="-0.1" cy={sd * 0.2} r="0.075" style={{ fill: 'var(--stg-onramp)' }} />
+                              <ellipse cx="-0.085" cy={sd * 0.2} rx="0.022" ry="0.055" style={{ fill: 'var(--stg-acc)' }} />
+                            </>
+                          )}
+                        </g>
+                      ))}
+                    </g>
                   </svg>
                   {/* the mascots still to eat, numbered, the next one boxed in ink */}
                   {PUZZLE.pellets.map(([mx, my], i) => {
@@ -840,24 +884,6 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
                         {!loaded[m] && <span className="ch-pel-fallback">{i + 1}</span>}
                         {!broken[m] && <img src={`/games/chomp/${m}.png`} alt={LABEL[m]} onLoad={() => markLoaded(m)} onError={() => markBroken(m)} className={`ch-pel-img${loaded[m] ? '' : ' ch-wait'}`} />}
                         <span className="ch-pel-n" style={SQ < 50 ? { minWidth: 15, height: 15, fontSize: 9, left: -4, top: -4 } : null}>{i + 1}</span>
-                      </span>
-                    );
-                  })}
-                  {/* where the head can go next: the owner's small assist */}
-                  {started && legal.map((k) => {
-                    const [hx, hy] = g.body[0];
-                    const d = DIRS[k];
-                    const tx = hx + d[0], ty = hy + d[1];
-                    // no arrow over a mascot: the dashed box alone, so the art stays readable
-                    const onPel = PUZZLE.pellets.some(([mx, my]) => mx === tx && my === ty);
-                    return (
-                      <span key={k} className="ch-open" style={{ left: tx * PITCH, top: ty * PITCH, width: SQ, height: SQ, borderRadius: SQR }}>
-                        {SQ >= 50 && !onPel && (
-                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
-                            style={{ stroke: 'var(--stg-acc)', transform: `rotate(${ARROW_ROT[k]}deg)` }}>
-                            <path d="M19 12H5" /><path d="M11 6l-6 6 6 6" />
-                          </svg>
-                        )}
                       </span>
                     );
                   })}
@@ -1120,7 +1146,6 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
         .ch-pel-fallback { width: 70%; height: 70%; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--stg-chip, #dfe4ec); color: var(--stg-ink, #0f1420); font-family: ${SANS}; font-weight: 800; font-size: 15px; }
         .ch-pel-n { position: absolute; left: -5px; top: -5px; min-width: 18px; height: 18px; padding: 0 4px; box-sizing: border-box; border-radius: 9px; background: var(--stg-chip, #dfe4ec); color: var(--stg-ink, #0f1420); font-family: ${SANS}; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
         .ch-pel.is-next .ch-pel-n { background: var(--stg-ink, #0f1420); color: var(--stg-ground, #fff); }
-        .ch-open { position: absolute; box-sizing: border-box; border: 2.5px dashed var(--stg-acc); display: flex; align-items: center; justify-content: center; pointer-events: none; }
         .ch-blocked { position: absolute; box-sizing: border-box; border: 2.5px solid var(--stg-bad, #be123c); pointer-events: none; }
         .ch-nexttag { position: absolute; z-index: 2; padding: 3px 8px; border-radius: 7px; background: var(--stg-ink, #0f1420); color: var(--stg-ground, #fff); font-family: ${SANS}; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; pointer-events: none; }
 
@@ -1159,8 +1184,6 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
         .ch-dn { grid-area: dn; }
         .ch-rt { grid-area: rt; }
         .ch-pad button { border-radius: 12px; border: 1.5px solid var(--stg-mute2, #78839a); background: var(--stg-surf, #fff); color: var(--stg-ink, #0f1420); font-family: ${SANS}; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
-        .ch-pad button.is-open { border: 2px solid var(--stg-acc); }
-        .ch-pad button.is-only { background: var(--stg-acc); border-color: var(--stg-acc); color: var(--stg-onramp, #fff); }
         @media (min-width: 901px) and (hover: hover) and (pointer: fine) {
           .ch-dock { display: none; }
         }
