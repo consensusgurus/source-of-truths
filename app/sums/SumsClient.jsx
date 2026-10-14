@@ -819,14 +819,18 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
     // THE GRID NEVER CONVERTED (Sixes, owner 2026-08-31): every fill and rule
     // takes a token with its Loft value as the fallback, so the stage gets a
     // dark grid under its pale ink and the Loft render is unchanged.
-    let bg = STAGE ? 'var(--stg-cell)' : T.white;
+    // Open squares lift off the clue squares in dark (2026-10-14, the crossword
+    // fix): --stg-cell over --stg-ground is 1.14:1, one grey sheet on a phone.
+    // Mixing toward white is a no-op in light, where --stg-cell is white.
+    const XW = 'color-mix(in srgb, var(--stg-cell) 84%, #fff)';
+    let bg = STAGE ? XW : T.white;
     // A clue square is the page GROUND, not a tint of the cell: on the dark
     // register a 9% ink mix over the ground came out within a few points of
     // the cell itself and the board read as one grey sheet (seen live 9/3).
     if (black) bg = STAGE ? 'var(--stg-ground)' : '#e9edf3';
-    if (peer) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 16%, var(--stg-cell))' : COLORS.accentSoft;
-    if (sameVal) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 34%, var(--stg-cell))' : COLORS.accentTint;
-    if (isSel) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, var(--stg-cell))' : COLORS.accentPick;
+    if (peer) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 16%, ' + XW + ')' : COLORS.accentSoft;
+    if (sameVal) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 34%, ' + XW + ')' : COLORS.accentTint;
+    if (isSel) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, ' + XW + ')' : COLORS.accentPick;
     return {
       background: bg,
       boxShadow: isSel ? `inset 0 0 0 2.5px var(--stg-acc, ${COLORS.accent})` : undefined,
