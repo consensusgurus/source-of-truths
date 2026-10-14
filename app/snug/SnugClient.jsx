@@ -30,7 +30,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { X, RotateCcw, Lightbulb, Eye, Smartphone, RotateCw, FlipHorizontal2, Trash2 } from 'lucide-react';
+import { X, Lightbulb, Smartphone, RotateCw, FlipHorizontal2 } from 'lucide-react';
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
@@ -83,6 +83,22 @@ const COLORS = {
   accentDeep: '#26409e',
   green: T.successDeep,
 };
+// THE PIECE COLOURS, REGISTER-AWARE (2026-10-14 board rebuild). Each piece
+// wears its own hue, mixed with the stage ink: on the dark stage the ink is
+// light, so the pieces come out pastel; on the light stage it is dark, so they
+// come out mid-tone. The number on a piece is dark in BOTH registers (--stg-dk
+// is 100% on dark and 0% on light), so it reads on every hue. Holes are hatched
+// in two steps of ink over the ground. No attribute selectors, so nothing here
+// can flash the wrong register on boot.
+const PIECE_HUES = ['#5eead4', '#93c5fd', '#fcd34d', '#f9a8d4', '#c4b5fd', '#fdba74', '#a3e635', '#fca5a5'];
+const PIECE_VARS = {
+  ...Object.fromEntries(PIECE_HUES.map((h, i) => [`--sg-p${i}`, `color-mix(in srgb, ${h} 74%, var(--stg-ink, #0b0d12))`])),
+  '--sg-pink': 'color-mix(in srgb, var(--stg-ground, #0b0f1a) var(--stg-dk, 0%), var(--stg-ink, #0b0d12))',
+  '--sg-void1': 'color-mix(in srgb, var(--stg-ink, #0b0d12) 5%, var(--stg-ground, #eef1f6))',
+  '--sg-void2': 'color-mix(in srgb, var(--stg-ink, #0b0d12) 18%, var(--stg-ground, #eef1f6))',
+  '--sg-wall': 'var(--stg-ink2, #3f4757)',
+};
+const pc = (i) => `var(--sg-p${i % PIECE_HUES.length})`;
 const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
@@ -238,6 +254,9 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
   const [g, setG] = useState(() => freshState(PUZZLE));
   const [armed, setArmed] = useState(-1);      // piece in hand, -1 = none
   const [hover, setHover] = useState(null);    // [r, c] under the pointer while a piece is in hand
+  const [aim, setAim] = useState(null);        // [r, c] a touch has aimed at: the outline shows, a second tap drops
+  const [coarse, setCoarse] = useState(false); // a touch screen, which aims with a first tap
+  const ptrRef = useRef('mouse');              // the pointer type of the latest press on the board
   const [flash, setFlash] = useState(null);    // K(r,c) of a square that refused a drop
   const [canUndo, setCanUndo] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -285,7 +304,6 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
   const SURF_B = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : 'rgba(28,30,36,0.42)';
-  const ACC_DEEP_INK = STAGE ? 'var(--stg-acc-ink)' : COLORS.accentDeep;
   const [revealed, setRevealed] = useState(false);
   const [shareCta, setShareCta] = useState('Share');
   useEffect(() => {
@@ -313,6 +331,7 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
     try {
       setStandalone(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true);
       setMobileUi(isMobileDevice());
+      setCoarse(window.matchMedia('(hover: none), (pointer: coarse)').matches);
     } catch {}
     const onBip = (e) => { e.preventDefault(); setInstallEvt(e); };
     const onInstalled = () => { setStandalone(true); setInstallEvt(null); };
@@ -529,6 +548,7 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
     commit({ ...g, placed, moves: g.moves + 1 });
     setArmed(-1);
     setHover(null);
+    setAim(null);
   }
   function liftPiece(i) {
     if (!playing || !g.placed[i]) return;
@@ -546,10 +566,21 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
     const own = owner.get(k);
     if (own != null) { liftPiece(own); return; }
     if (armed < 0) return;
+    if (ptrRef.current !== 'mouse') {
+      // Touch: the first tap shows the outline where the piece would land; a
+      // second tap on that outline drops it, a tap elsewhere moves it.
+      if (aim && ghost && ghost.cells && ghost.cells.has(k)) { dropPiece(armed, ghost.at.dr, ghost.at.dc); return; }
+      const cand = candidates(armed, r, c);
+      if (!cand.length) { setAim(null); flashCell(r, c); return; }
+      setAim([r, c]);
+      return;
+    }
     const cand = candidates(armed, r, c);
     if (!cand.length) { flashCell(r, c); return; }
     dropPiece(armed, cand[0].dr, cand[0].dc);
   }
+  // A new piece in hand (or none) drops any touch aim.
+  useEffect(() => { setAim(null); }, [armed]);
   function padTap(i) {
     if (!playing || g.placed[i]) return;
     setArmed((a) => (a === i ? -1 : i));
@@ -659,43 +690,50 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
     } catch (e) {}
   }
 
-  // ── the ghost: where the piece in hand would land from the hovered square ──
+  // ── the outline: where the piece in hand would land from the aimed square ──
+  // A mouse aims by hovering. A touch aims with a first tap (`aim`), and a
+  // second tap on the outline drops the piece (approved assist, 2026-10-14).
   const ghost = useMemo(() => {
-    if (armed < 0 || !hover || !playing) return null;
-    const cand = candidates(armed, hover[0], hover[1]);
-    if (!cand.length) return { bad: K(hover[0], hover[1]) };
+    const spot = aim || hover;
+    if (armed < 0 || !spot || !playing) return null;
+    const cand = candidates(armed, spot[0], spot[1]);
+    if (!cand.length) return { bad: K(spot[0], spot[1]) };
     const s = new Set(g.ori[armed].map(([r, c]) => K(r + cand[0].dr, c + cand[0].dc)));
-    return { cells: s };
+    return { cells: s, at: cand[0] };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [armed, hover, g.ori, owner, playing]);
+  }, [armed, hover, aim, g.ori, owner, playing]);
 
-  // A placed piece paints in the category step, and the SEAMS between two
-  // pieces are the ground showing through, so the board reads as one tiled
-  // object rather than a bag of coloured shapes.
-  const GROUND = STAGE ? 'var(--stg-ground)' : T.white;
-  function cellStyle(r, c) {
-    const k = K(r, c);
-    const own = owner.get(k);
-    const st = { position: 'relative', boxSizing: 'border-box', cursor: playing ? 'pointer' : 'default' };
-    if (own != null) {
-      const hot = armed === own;
-      st.background = hot ? `var(--stg-acc-ink, ${COLORS.accentDeep})` : `var(--stg-acc, ${COLORS.accent})`;
-      const nb = [[-1, 0, 'borderTop'], [1, 0, 'borderBottom'], [0, -1, 'borderLeft'], [0, 1, 'borderRight']];
-      for (const [dr, dc, side] of nb) {
-        const o2 = owner.get(K(r + dr, c + dc));
-        if (o2 !== own) st[side] = `2px solid ${GROUND}`;
-      }
-      if (!playing && won) st.background = `var(--stg-acc, ${COLORS.accent})`;
-      return st;
-    }
-    st.background = STAGE ? 'var(--stg-cell)' : '#f3f5f8';
-    st.boxShadow = 'inset 0 0 0 1px var(--stg-cell-line, rgba(28,30,36,0.18))';
-    if (ghost && ghost.cells && ghost.cells.has(k)) st.background = STAGE ? 'color-mix(in srgb, var(--stg-acc) 40%, var(--stg-cell))' : COLORS.accentTint;
-    if ((ghost && ghost.bad === k) || flash === k) st.background = STAGE ? 'color-mix(in srgb, var(--stg-bad, #e05a5a) 40%, var(--stg-cell))' : '#fde2e2';
-    return st;
-  }
+  // Each placed piece's first square (row-major) carries its number, and the
+  // covered meter is segmented by piece colour in pad order.
+  const firstOf = useMemo(() => {
+    const m = new Map();
+    owner.forEach((i, k) => { if (!m.has(i) || k < m.get(i)) m.set(i, k); });
+    return m;
+  }, [owner]);
+  const coverSegs = useMemo(() => {
+    const n = new Array(NP).fill(0);
+    owner.forEach((i) => { n[i] += 1; });
+    return n.map((c, i) => ({ i, c })).filter((x) => x.c > 0);
+  }, [owner, NP]);
+  const covered = coverSegs.reduce((a, x) => a + x.c, 0);
 
-  const CELL = `clamp(${W > 6 ? 34 : 38}px, ${W > 6 ? 11 : 12.5}vw, ${W > 6 ? 54 : 60}px)`;
+  // THE STATUS LINE, read straight off the board, plus one muted helper line.
+  const statusText = armed >= 0
+    ? (ghost && ghost.bad != null
+      ? `Piece ${armed + 1} does not fit there. Turn it, or try another square.`
+      : ghost && ghost.cells
+        ? (aim ? `Piece ${armed + 1} in hand. Tap the outline again to drop it.` : `Piece ${armed + 1} in hand. The dashed outline is where it lands.`)
+        : (coarse ? `Piece ${armed + 1} in hand. Tap once to see the outline, again to drop.` : `Piece ${armed + 1} in hand. Point at the board to see where it lands.`))
+    : placedCount
+      ? `${placedCount} of ${NP} pieces in. Pick the next one from the pad.`
+      : `Pick a piece from the pad to start: ${NP} pieces, ${REGION.size} squares.`;
+  const helpText = coarse
+    ? 'Tap a placed piece to lift it. Undo and Clear are free.'
+    : 'R rotates and F flips the piece in hand. Click a placed piece to lift it.';
+
+  // Desktop squares are fixed; a phone fits the board to the screen width.
+  const CELL_D = W > 6 ? 46 : 54;
+  const CELL_M = W > 6 ? 48 : 54;
 
   const rulesBody = (
     <DailyRules
@@ -711,31 +749,16 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
     />
   );
 
-  // A pad piece is ONE solid shape, not a grid of dots: the squares are drawn
-  // edge to edge, the silhouette gets a single outline, faint seams inside it
-  // show how many squares it holds, and a small ring marks the handle (the
-  // piece's first square, which is the one a board tap prefers to land).
-  const pieceTile = (i) => {
+  // A piece drawn as its own squares in its own colour, in its current
+  // orientation. `unit` names the CSS variable that sizes one square, and the
+  // drawing never grows past its tile (max-width), so a long piece scales down.
+  const pieceShape = (i, unit) => {
     const o = g.ori[i];
     const w = Math.max(...o.map((x) => x[1])) + 1, h = Math.max(...o.map((x) => x[0])) + 1;
-    const set = new Set(o.map(([r, c]) => K(r, c)));
     const U = 20;
-    const edge = [], seam = [];
-    for (const [r, c] of o) {
-      const x = c * U, y = r * U;
-      if (!set.has(K(r - 1, c))) edge.push(`M${x} ${y}h${U}`);
-      if (!set.has(K(r + 1, c))) edge.push(`M${x} ${y + U}h${U}`);
-      if (!set.has(K(r, c - 1))) edge.push(`M${x} ${y}v${U}`);
-      if (!set.has(K(r, c + 1))) edge.push(`M${x + U} ${y}v${U}`);
-      if (set.has(K(r + 1, c))) seam.push(`M${x} ${y + U}h${U}`);
-      if (set.has(K(r, c + 1))) seam.push(`M${x + U} ${y}v${U}`);
-    }
     return (
-      <svg className="sg-mini" viewBox={`-2 -2 ${w * U + 4} ${h * U + 4}`} style={{ width: `calc(${w} * var(--sg-u))`, height: `calc(${h} * var(--sg-u))` }} aria-hidden="true" focusable="false">
-        {o.map(([r, c]) => <rect key={`${r}-${c}`} className="sg-fill" x={c * U} y={r * U} width={U} height={U} />)}
-        <path className="sg-seam" d={seam.join('')} />
-        <path className="sg-edge" d={edge.join('')} />
-        <circle className="sg-hand" cx={(o[0][1] + 0.5) * U} cy={(o[0][0] + 0.5) * U} r={U * 0.17} />
+      <svg viewBox={`0 0 ${w * U} ${h * U}`} style={{ width: `calc(${w} * var(${unit}))`, maxWidth: '100%', height: 'auto', display: 'block' }} aria-hidden="true" focusable="false">
+        {o.map(([r, c]) => <rect key={`${r}-${c}`} x={c * U + 1} y={r * U + 1} width={U - 2} height={U - 2} rx={3.5} style={{ fill: pc(i) }} />)}
       </svg>
     );
   };
@@ -743,7 +766,7 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
-      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      style={{ ...(STAGE ? STAGE_ACC : null), ...PIECE_VARS, minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="snug" name="Snug" collapsed={started} loft={LOFT} />
@@ -769,29 +792,90 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.sg-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .sg-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .sg-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .sg-board{display:grid;gap:0;margin:0 auto;width:max-content;max-width:100%;touch-action:manipulation;user-select:none;-webkit-tap-highlight-color:transparent;}
-          .sg-cell{width:${CELL};height:${CELL};border-radius:2px;transition:background .12s;}
-          .sg-cell.void{visibility:hidden;pointer-events:none;}
-          .sg-pad{--sg-u:22px;display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:center;margin:18px auto 0;padding:12px 10px;border-radius:12px;background:${STAGE ? 'var(--stg-surf2)' : '#f3f5f8'};}
-          @media(max-width:560px){.sg-pad{--sg-u:18px;gap:8px 10px;}}
-          .sg-piece{display:inline-flex;align-items:center;justify-content:center;min-width:calc(2 * var(--sg-u) + 16px);min-height:calc(2 * var(--sg-u) + 16px);padding:8px;border-radius:10px;border:2px solid transparent;background:transparent;cursor:pointer;transition:transform .12s,opacity .2s;}
-          .sg-piece:hover{transform:translateY(-2px);}
-          .sg-piece.armed{border-color:var(--stg-acc-ink, ${COLORS.accentDeep});background:${STAGE ? 'var(--stg-surf)' : T.white};}
-          .sg-piece.used{opacity:.22;pointer-events:none;}
-          .sg-piece:focus-visible{outline:2px solid var(--stg-acc, ${COLORS.accent});outline-offset:2px;}
-          .sg-mini{display:block;overflow:visible;}
-          .sg-fill{fill:var(--stg-acc, ${COLORS.accent});}
-          .sg-piece.armed .sg-fill{fill:var(--stg-acc-ink, ${COLORS.accentDeep});}
-          .sg-seam{fill:none;stroke:${STAGE ? 'var(--stg-ground)' : T.white};stroke-width:1;opacity:.45;}
-          .sg-edge{fill:none;stroke:${STAGE ? 'var(--stg-ground)' : T.white};stroke-width:2.5;stroke-linecap:square;}
-          .sg-piece.armed .sg-edge{stroke:var(--stg-acc, ${COLORS.accent});}
-          .sg-hand{fill:${STAGE ? 'var(--stg-ground)' : T.white};opacity:.9;}
-          .sg-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-          .sg-tool.on{background:${STAGE ? STAGE_C : COLORS.ink};color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};border-color:${STAGE ? STAGE_C : COLORS.ink};}
-          .sg-tool[disabled]{opacity:.4;cursor:default;}
+          .sg-meter{margin:0 0 14px;}
+          .sg-mlab{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
+          .sg-mlab b{color:var(--stg-acc-ink, ${COLORS.accentDeep});font-weight:800;font-size:13px;letter-spacing:0;}
+          .sg-mbar{display:flex;height:10px;border-radius:3px;overflow:hidden;background:var(--stg-line2, rgba(11,15,26,0.24));margin-top:8px;}
+          .sg-mbar span{display:block;height:100%;transition:width .18s ease-out;}
+          .sg-panel{background:var(--stg-surf, #ffffff);border:1px solid var(--stg-line, rgba(11,15,26,0.14));border-radius:20px;padding:22px 22px 14px;}
+          .sg-play{display:flex;gap:24px;align-items:flex-start;justify-content:center;}
+          .sg-frame{--sg-cell:${CELL_D}px;display:grid;grid-template-columns:repeat(${W}, var(--sg-cell));grid-auto-rows:var(--sg-cell);gap:3px;padding:6px;border-radius:12px;box-shadow:0 0 0 2px var(--sg-wall);flex:0 0 auto;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
+          .sg-cell{border-radius:6px;box-sizing:border-box;position:relative;display:flex;align-items:flex-start;justify-content:flex-start;padding:5px 7px;font-family:${SANS};font-weight:800;font-size:13px;line-height:1;color:var(--sg-pink);cursor:${playing ? 'pointer' : 'default'};transition:background .12s;}
+          .sg-cell.void{background:repeating-linear-gradient(45deg, var(--sg-void1) 0 5px, var(--sg-void2) 5px 10px);cursor:default;pointer-events:none;}
+          .sg-cell.open{background:var(--stg-cell, #ffffff);box-shadow:inset 0 0 0 1px var(--stg-cell-line, rgba(11,15,26,0.44));}
+          .sg-cell.open.ghost{background:color-mix(in srgb, var(--sg-hand) 24%, var(--stg-cell, #ffffff));box-shadow:none;outline:2.5px dashed var(--sg-hand);outline-offset:-2.5px;}
+          .sg-cell.open.bad{background:color-mix(in srgb, var(--stg-bad, #be123c) 34%, var(--stg-cell, #ffffff));}
+          .sg-side{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:12px;container-type:inline-size;}
+          @container (max-width: 330px){
+            .sg-well{flex-direction:column;align-items:stretch;gap:12px;}
+            .sg-hand{min-height:84px;}
+            .sg-turns{flex-direction:row;}
+            .sg-turn{flex:1 1 0;padding:0 8px;}
+          }
+          .sg-lab{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
+          .sg-well{border:2px solid var(--sg-hand);border-radius:14px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:118px;box-sizing:border-box;}
+          .sg-well.empty{border-style:dashed;border-color:var(--stg-line2, rgba(11,15,26,0.24));}
+          .sg-hand{--sg-hu:26px;flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;}
+          .sg-none{font-size:13px;font-weight:600;color:var(--stg-mute, ${COLORS.faded});}
+          .sg-wellmsg{display:none;}
+          .sg-turns{display:flex;flex-direction:column;gap:8px;flex:0 0 auto;}
+          .sg-turn{min-height:44px;padding:0 14px;border-radius:12px;border:1.5px solid var(--stg-line2, rgba(11,15,26,0.24));background:transparent;color:var(--stg-ink2, ${COLORS.ink});font-family:${SANS};font-weight:700;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;white-space:nowrap;}
+          .sg-turn:hover:not(:disabled){background:var(--stg-surf2, ${COLORS.accentSoft});}
+          .sg-turn:disabled{opacity:.45;cursor:default;}
+          .sg-pad{--sg-u:14px;display:grid;grid-template-columns:repeat(3, minmax(0, 1fr));gap:8px;}
+          .sg-tile{position:relative;min-height:88px;border-radius:12px;box-sizing:border-box;border:1px solid var(--stg-line, rgba(11,15,26,0.14));background:transparent;display:flex;align-items:center;justify-content:center;padding:18px 8px 8px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity .2s, transform .12s;}
+          .sg-tile:hover:not(.used){transform:translateY(-2px);}
+          .sg-tile.armed{border:2.5px solid var(--sg-hand);background:var(--stg-cell, #ffffff);}
+          .sg-tile.used{opacity:.35;cursor:default;}
+          .sg-tile:focus-visible{outline:2px solid var(--stg-acc, ${COLORS.accent});outline-offset:2px;}
+          .sg-tnum{position:absolute;top:5px;left:8px;font-size:11px;font-weight:800;color:var(--stg-mute, ${COLORS.faded});}
+          .sg-tick{position:absolute;top:4px;right:8px;font-size:12px;font-weight:800;color:var(--stg-acc-ink, ${COLORS.accentDeep});}
+          .sg-foot{display:flex;align-items:center;gap:10px;border-top:1px solid var(--stg-line, rgba(11,15,26,0.14));padding-top:14px;margin-top:20px;flex-wrap:wrap;}
+          .sg-stat{flex:1 1 280px;display:flex;flex-direction:column;gap:3px;min-width:0;}
+          .sg-msg{font-size:15px;font-weight:700;line-height:1.4;color:var(--stg-ink, ${COLORS.ink});}
+          .sg-msg.warn{color:var(--stg-bad, ${COLORS.rust});}
+          .sg-help{font-size:12px;font-weight:600;line-height:1.45;color:var(--stg-mute, ${COLORS.faded});}
+          .sg-ob{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2, ${COLORS.ink});border:1.5px solid var(--stg-line2, rgba(11,15,26,0.24));border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
+          .sg-ob:hover:not(:disabled){background:var(--stg-surf2, ${COLORS.accentSoft});}
+          .sg-ob:disabled{color:var(--stg-mute, ${COLORS.faded});cursor:default;opacity:.7;}
+          .sg-ob.armed{color:var(--stg-bad, ${COLORS.rust});border-color:var(--stg-bad, ${COLORS.rust});}
+          .sg-below{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 4px 0;flex-wrap:wrap;}
+          .sg-rule{font-size:12px;font-weight:600;color:var(--stg-mute, ${COLORS.faded});}
+          .sg-link{font-family:${SANS};font-size:12.5px;font-weight:700;background:none;border:0;color:var(--stg-ink2, ${COLORS.ink});text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0 6px;cursor:pointer;}
+          .sg-link.armed{color:var(--stg-bad, ${COLORS.rust});}
+          .sg-dk{display:inline;}
+          .sg-ph{display:none;}
+          @media(max-width:720px){
+            .sg-dk{display:none;}
+            .sg-ph{display:inline;}
+            .sg-meter{margin-bottom:16px;}
+            .sg-mbar{height:7px;border-radius:2px;margin-top:6px;}
+            .sg-panel{background:transparent;border:0;border-radius:0;padding:0;}
+            .sg-play{flex-direction:column;align-items:stretch;gap:16px;}
+            .sg-frame{--sg-cell:min(${CELL_M}px, calc((100vw - 42px - ${(W - 1) * 3}px) / ${W}));align-self:center;padding:5px;border-radius:11px;}
+            .sg-cell{border-radius:5px;font-size:12px;padding:4px 6px;}
+            .sg-side{gap:12px;}
+            .sg-side > .sg-lab{display:none;}
+            .sg-well{min-height:0;padding:10px 12px;justify-content:flex-start;}
+            .sg-hand{--sg-hu:18px;flex:0 0 auto;width:min(96px, 28vw);}
+            .sg-well.empty .sg-hand{display:none;}
+            .sg-wellmsg{display:block;flex:1 1 auto;min-width:0;font-size:13px;font-weight:700;line-height:1.35;color:var(--stg-ink, ${COLORS.ink});}
+            .sg-wellmsg.warn{color:var(--stg-bad, ${COLORS.rust});}
+            .sg-turns{flex-direction:row;}
+            .sg-turn{width:46px;height:46px;min-height:46px;padding:0;}
+            .sg-turn .sg-tl{display:none;}
+            .sg-pad{--sg-u:10px;grid-template-columns:repeat(${NP <= 6 ? NP : Math.ceil(NP / 2)}, minmax(0, 1fr));gap:5px;}
+            .sg-tile{min-height:66px;border-radius:10px;padding:14px 3px 5px;}
+            .sg-tnum{top:3px;left:5px;font-size:10px;}
+            .sg-tick{top:2px;right:5px;font-size:11px;}
+            .sg-foot{border-top:0;padding-top:0;margin-top:14px;}
+            .sg-foot .sg-stat .sg-msg{display:none;}
+            .sg-foot .sg-ob{flex:1 1 0;}
+            .sg-below{padding-top:4px;}
+          }
         ` }} />
 
-        <div style={{ maxWidth: 620, margin: '0 auto' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
 
         {!LOFT && (
         <DailyMasthead
@@ -843,73 +927,121 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
           </div>
           )}
 
-          {/* the board: hidden squares are the holes, painted squares the pieces */}
-          <div className="sg-board" style={{ gridTemplateColumns: `repeat(${W}, ${CELL})` }} onPointerLeave={() => setHover(null)} aria-label="Snug board">
-            {Array.from({ length: W * H }).map((_, idx) => {
-              const r = Math.floor(idx / W), c = idx % W;
-              const k = K(r, c);
-              if (!REGION.has(k)) return <div key={idx} className="sg-cell void" />;
-              const own = owner.get(k);
-              return (
-                <div key={idx} className="sg-cell" style={cellStyle(r, c)}
-                  role="button" aria-label={own != null ? `piece ${own + 1}, row ${r + 1} column ${c + 1}` : `empty square, row ${r + 1} column ${c + 1}`}
-                  onClick={() => cellClick(r, c)}
-                  onPointerEnter={(e) => { if (armed >= 0 && e.pointerType === 'mouse') setHover([r, c]); }} />
-              );
-            })}
+          {/* THE COVERED METER (2026-10-14): squares covered, one segment per
+              placed piece in that piece's colour. */}
+          <div className="sg-meter" role="meter" aria-valuemin={0} aria-valuemax={REGION.size} aria-valuenow={covered}
+            aria-label={`Board covered: ${covered} of ${REGION.size} squares`}>
+            <span className="sg-mlab">
+              <span className="sg-dk">Board covered &middot; <b>{covered}</b> of {REGION.size} squares</span>
+              <span className="sg-ph">Covered &middot; <b>{covered}</b> of {REGION.size}</span>
+            </span>
+            <div className="sg-mbar" aria-hidden="true">
+              {coverSegs.map((s) => (
+                <span key={s.i} style={{ width: `${(s.c / REGION.size) * 100}%`, background: pc(s.i) }} />
+              ))}
+            </div>
           </div>
 
-          {/* the pad + tools */}
-          {playing && (
-            <>
-              <div className="sg-pad" role="toolbar" aria-label="Pieces">
-                {PIECES.map((_, i) => (
-                  <button key={i} type="button" className={`sg-piece${armed === i ? ' armed' : ''}${g.placed[i] ? ' used' : ''}`} onClick={() => padTap(i)} aria-pressed={armed === i} aria-label={`Piece ${i + 1}, ${PIECES[i].length} squares${g.placed[i] ? ', on the board' : ''}`}>
-                    {pieceTile(i, false)}
-                  </button>
-                ))}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 10, flexWrap: 'wrap' }}>
-                <button className="sg-tool" onClick={() => turn('rot')} disabled={armed < 0} title="Rotate the piece in hand (R)">
-                  <RotateCw size={14} /> Rotate
-                </button>
-                <button className="sg-tool" onClick={() => turn('flip')} disabled={armed < 0} title="Flip the piece in hand (F)">
-                  <FlipHorizontal2 size={14} /> Flip
-                </button>
-                <button className="sg-tool" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)">
-                  <RotateCcw size={14} /> Undo
-                </button>
-                <button className="sg-tool" onClick={clearBoard} disabled={!hasEntries}
-                  title="Take every piece off the board on the same clock"
-                  style={hasEntries && armClear ? { background: STAGE ? 'var(--stg-surf2)' : '#fdeeee', borderColor: 'rgba(192,57,43,0.5)', color: `var(--stg-ink, ${COLORS.rust})` } : undefined}>
-                  <Trash2 size={14} /> {armClear ? 'Tap again to clear' : 'Clear'}
-                </button>
-                {hintOk && !g.hintUsed && (
-                  <button className="sg-tool" onClick={useHint} title="Drop one piece where it belongs (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(59,91,219,0.5)', color: ACC_DEEP_INK }}>
-                    <Lightbulb size={14} /> Hint
-                  </button>
-                )}
-              </div>
-            </>
-          )}
+          <div className="sg-panel" style={{ '--sg-hand': armed >= 0 ? pc(armed) : 'var(--stg-line2, rgba(11,15,26,0.24))' }}>
+          <div className="sg-play">
+            {/* the board: hatched squares are the holes, coloured squares the pieces */}
+            <div className="sg-frame" aria-label="Snug board"
+              onPointerDown={(e) => { ptrRef.current = e.pointerType || 'mouse'; }}
+              onPointerLeave={(e) => { if (e.pointerType === 'mouse') setHover(null); }}>
+              {Array.from({ length: W * H }).map((_, idx) => {
+                const r = Math.floor(idx / W), c = idx % W;
+                const k = K(r, c);
+                if (!REGION.has(k)) return <div key={idx} className="sg-cell void" aria-hidden="true" />;
+                const own = owner.get(k);
+                if (own != null) {
+                  return (
+                    <div key={idx} className="sg-cell" style={{ background: pc(own) }}
+                      role="button" aria-label={`Row ${r + 1}, column ${c + 1}, piece ${own + 1}${playing ? ', tap to lift it' : ''}`}
+                      onClick={() => cellClick(r, c)}>
+                      {firstOf.get(own) === k ? own + 1 : null}
+                    </div>
+                  );
+                }
+                const gh = !!(ghost && ghost.cells && ghost.cells.has(k));
+                const bad = (ghost && ghost.bad === k) || flash === k;
+                return (
+                  <div key={idx} className={`sg-cell open${gh ? ' ghost' : ''}${bad ? ' bad' : ''}`}
+                    role="button" aria-label={`Row ${r + 1}, column ${c + 1}, ${gh ? `piece ${armed + 1} would land here` : 'empty'}`}
+                    onClick={() => cellClick(r, c)}
+                    onPointerEnter={(e) => { if (armed >= 0 && e.pointerType === 'mouse') setHover([r, c]); }} />
+                );
+              })}
+            </div>
 
-        {started && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)', flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: armed >= 0 ? `var(--stg-acc-ink, ${COLORS.accent})` : `var(--stg-mute, ${COLORS.faded})` }}>
-              {armed >= 0
-                ? `Piece ${armed + 1} in hand: tap the board where one of its squares goes. Rotate or Flip to turn it.`
-                : placedCount
-                  ? 'Tap a piece to pick it up, or tap one on the board to lift it back.'
-                  : 'Tap a piece on the pad to pick it up.'}
-            </span>
-            {identity && placedCount > 0 && (
-              <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-                style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <Eye size={13} /> {armReveal ? 'Tap again: ends the puzzle and fills the board' : 'Reveal & end'}
-              </button>
+            {/* the piece in hand, then the pad */}
+            {playing && (
+              <div className="sg-side">
+                <span className="sg-lab">{armed >= 0 ? <>In hand &middot; piece {armed + 1}</> : 'In hand'}</span>
+                <div className={`sg-well${armed < 0 ? ' empty' : ''}`}>
+                  <div className="sg-hand">
+                    {armed >= 0 ? pieceShape(armed, '--sg-hu') : <span className="sg-none sg-dk">Nothing in hand. Pick a piece below.</span>}
+                  </div>
+                  <span className={`sg-wellmsg${ghost && ghost.bad != null ? ' warn' : ''}`} aria-live="polite">{statusText}</span>
+                  <div className="sg-turns">
+                    <button type="button" className="sg-turn" onClick={() => turn('rot')} disabled={armed < 0} aria-label="Rotate the piece in hand (R)" title="Rotate the piece in hand (R)">
+                      <RotateCw size={16} strokeWidth={2.4} aria-hidden="true" /><span className="sg-tl">Rotate &middot; R</span>
+                    </button>
+                    <button type="button" className="sg-turn" onClick={() => turn('flip')} disabled={armed < 0} aria-label="Flip the piece in hand (F)" title="Flip the piece in hand (F)">
+                      <FlipHorizontal2 size={16} strokeWidth={2.4} aria-hidden="true" /><span className="sg-tl">Flip &middot; F</span>
+                    </button>
+                  </div>
+                </div>
+                <span className="sg-lab">The pad &middot; keys 1 to {Math.min(NP, 9)}</span>
+                <div className="sg-pad" role="toolbar" aria-label="Pieces">
+                  {PIECES.map((_, i) => {
+                    const used = !!g.placed[i];
+                    return (
+                      <button key={i} type="button" className={`sg-tile${armed === i ? ' armed' : ''}${used ? ' used' : ''}`}
+                        onClick={() => padTap(i)} aria-pressed={armed === i} disabled={used}
+                        aria-label={`Piece ${i + 1}, ${PIECES[i].length} squares${used ? ', on the board' : armed === i ? ', in hand' : ''}`}>
+                        <span className="sg-tnum" aria-hidden="true">{i + 1}</span>
+                        {used && <span className="sg-tick" aria-hidden="true">&#10003;</span>}
+                        {pieceShape(i, '--sg-u')}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             )}
           </div>
-        )}
+
+          {/* one status sentence, one muted helper line, the outline buttons */}
+          {started && (
+            <div className="sg-foot">
+              <div className="sg-stat">
+                <span className={`sg-msg${ghost && ghost.bad != null ? ' warn' : ''}`}>{statusText}</span>
+                <span className="sg-help">{helpText}</span>
+              </div>
+              <button type="button" className="sg-ob" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)">Undo</button>
+              <button type="button" className={`sg-ob${hasEntries && armClear ? ' armed' : ''}`} onClick={clearBoard} disabled={!hasEntries}
+                title="Take every piece off the board on the same clock">
+                {armClear ? 'Tap again to clear' : 'Clear'}
+              </button>
+              {hintOk && !g.hintUsed && (
+                <button type="button" className="sg-ob" onClick={useHint} title="Drop one piece where it belongs (one hint, first play only)">
+                  <Lightbulb size={15} aria-hidden="true" /> Hint
+                </button>
+              )}
+            </div>
+          )}
+          </div>
+
+          {started && (
+            <div className="sg-below">
+              <span className="sg-rule sg-dk">Cover the board exactly. Pieces turn and flip, and only one way works.</span>
+              {identity && placedCount > 0 ? (
+                <button type="button" className={`sg-link${armReveal ? ' armed' : ''}`}
+                  onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
+                  {armReveal ? 'Tap again to reveal (ends the puzzle)' : 'Reveal'}
+                </button>
+              ) : <span />}
+            </div>
+          )}
           <div className={STAGE ? undefined : 'loft-sol'}>
           {!playing && (
             <div style={{ maxWidth: 460, margin: '0 auto' }}>
@@ -1030,7 +1162,7 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s board, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s board, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>

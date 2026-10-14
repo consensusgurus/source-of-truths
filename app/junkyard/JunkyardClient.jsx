@@ -72,6 +72,7 @@ import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
+import JamLot from '../JamLot';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { regionStyle, REGION_INK } from '@/lib/category-ramp';
@@ -617,6 +618,11 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
     setSel(null);
   }
 
+  function giveUpTap() {
+    if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); }
+    else setArmReveal(Date.now());
+  }
+
   function resetGame() {
     try { localStorage.removeItem(STORE_KEY); } catch (e) {}
     commit(freshState());
@@ -635,12 +641,12 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
     const head = won
       ? `Junkyard #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday' : ''} · ${used} moves, ${vs} · ${elapsed}${hintBit}${streakBit}`
-      : `Junkyard #${PUZZLE.num} · left it junkyarded`;
+      : `Junkyard #${PUZZLE.num} · left it in the junkyard`;
     return `${head}\n${squares}\n${shareUrl()}`;
   }
   function copyShare() {
     const text = playing
-      ? `Junkyard #${PUZZLE.num} \u2014 the bigger daily sliding-block jam from Mind Loft. An eight by eight lot, you are in the red one, and there is one gap in the wall.\n${shareUrl()}`
+      ? `Junkyard #${PUZZLE.num}: the biggest daily sliding-block jam from Mind Loft. An eight by eight lot, you are in the red one, and there is one gap in the wall.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -696,11 +702,11 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
           figures={playing ? [
             { v: used, k: 'moves' },
             { v: elapsed, k: 'time' },
-            { v: `${par} · ${perfect}`, k: 'par · perfect' },
+            ...(STAGE ? [] : [{ v: `${par} · ${perfect}`, k: 'par · perfect' }]),
           ] : [
             { v: finalScore, k: 'score' },
             { v: used, k: 'moves' },
-            { v: `${par} · ${perfect}`, k: 'par · perfect' },
+            { v: `${par} / ${perfect}`, k: 'par / perfect' },
             { v: elapsed, k: 'time' },
           ]}
         />
@@ -758,7 +764,14 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
 
-        {!preStart && (
+        {!preStart && STAGE && (
+          <JamLot N={N} exitRow={EXIT_ROW} blocks={blocks} sel={sel} targets={targets} hintBlock={hintBlock} shake={shake}
+            onCell={onCell} playing={playing} used={used} par={par} perfect={perfect} restarts={g.restarts}
+            onRestart={restart} hintAvail={hintOk && !g.hintUsed} onHint={useHint}
+            armed={!!armReveal} onGiveUp={giveUpTap}
+            doneLine={won ? (used === perfect ? `Out in ${used}. That is perfect.` : `Out in ${used}. Par was ${par}.`) : 'You left it in the junkyard.'} />
+        )}
+        {!preStart && !STAGE && (
         <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           {/* These figures move UP into the cap on a loft page; printing
               them twice is the one thing to avoid. */}
@@ -849,7 +862,7 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
           <div style={{ marginTop: 12, minHeight: 22, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 800, color: playing ? `var(--stg-acc-ink, ${COLORS.accent})` : `var(--stg-mute, ${COLORS.faded})` }}>
               {!playing
-                ? (won ? (used === perfect ? `Out in ${used}. That is perfect.` : `Out in ${used}. Par was ${par}.`) : 'You left it junkyarded.')
+                ? (won ? (used === perfect ? `Out in ${used}. That is perfect.` : `Out in ${used}. Par was ${par}.`) : 'You left it in the junkyard.')
                 : sel != null ? 'Now tap where it goes.' : 'Tap a block to pick it up.'}
             </span>
             {g.restarts > 0 && playing && (
@@ -880,7 +893,7 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
             </span>
             <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
               style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-              <Eye size={13} /> {armReveal ? 'Tap again — ends the board and scores nothing' : 'Give up'}
+              <Eye size={13} /> {armReveal ? 'Tap again to give up and score nothing' : 'Give up'}
             </button>
           </div>
         )}
@@ -1011,7 +1024,7 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s board, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s board, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>Open your browser&apos;s menu and choose <b>Add to Home Screen</b> (or <b>Install app</b>). The tile opens today&apos;s board, every day.</p>

@@ -24,7 +24,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { RotateCcw, X, Lightbulb, Eye, Smartphone, Pencil, Check as CheckIcon } from 'lucide-react';
+import { RotateCcw, X, Lightbulb, Eye, Smartphone, Pencil, Delete, Check as CheckIcon } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -210,6 +210,33 @@ function clueGlyph(cl) {
   return cl[4] === '>' ? '>' : '<';
 }
 const isVertical = (cl) => cl[0] !== cl[2];
+// THE SIGN AS A CHEVRON (2026-10-14 board rebuild). Drawn as an SVG polyline
+// so it never depends on a font glyph. The open end faces the larger number:
+// a horizontal '>' opens left, a vertical '>' (top larger) opens up, a 'v'.
+function chevronPts(cl) {
+  if (!isVertical(cl)) return cl[4] === '>' ? '9,5 16,12 9,19' : '15,5 8,12 15,19';
+  return cl[4] === '>' ? '5,9 12,16 19,9' : '5,15 12,8 19,15';
+}
+// Where a sign sits, in words: long for the stat chip on desktop, short on a phone.
+function signWhere(cl, short) {
+  if (!isVertical(cl)) {
+    return short ? `R${cl[0] + 1} · C${cl[1] + 1}-${cl[3] + 1}` : `Row ${cl[0] + 1}, cols ${cl[1] + 1} to ${cl[3] + 1}`;
+  }
+  return short ? `C${cl[1] + 1} · R${cl[0] + 1}-${cl[2] + 1}` : `Col ${cl[1] + 1}, rows ${cl[0] + 1} to ${cl[2] + 1}`;
+}
+// THE BOARD'S OWN COLOURS, REGISTER-AWARE. Each is a token mixed into the
+// stage's own cell, so one value reads on the dark and the light register and
+// nothing keys off an attribute selector (no boot flash). Set on the root.
+const FIB_VARS = {
+  '--fb-cell': 'var(--stg-cell, #ffffff)',
+  '--fb-cell-line': 'var(--stg-cell-line, rgba(28,30,36,0.3))',
+  '--fb-given': 'color-mix(in srgb, var(--stg-ink, #0b0d12) 9%, var(--stg-cell, #ffffff))',
+  '--fb-peer': 'color-mix(in srgb, var(--stg-acc, #4c1d95) 15%, var(--stg-cell, #ffffff))',
+  '--fb-ok': 'color-mix(in srgb, var(--stg-ink, #0b0d12) 13%, var(--stg-cell, #ffffff))',
+  '--fb-warn-soft': 'color-mix(in srgb, var(--stg-warn, #b45309) 22%, var(--stg-cell, #ffffff))',
+  '--fb-bad-soft': 'color-mix(in srgb, var(--stg-bad, #b91c1c) 16%, var(--stg-cell, #ffffff))',
+  '--fb-btn': 'var(--stg-mute, #5f6774)',
+};
 // duplicates in a row or column, for free (unscored) feedback
 function dupSet(vals, n) {
   const bad = new Set();
@@ -653,7 +680,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
   // THE BOARD IS THE SUBJECT, so it gets the room its container already had
   // (the card sits inside a 660px column, so this was leaving ~200px unused).
   const boardMax = n > 5 ? 520 : 470;
-  const track = Array(n).fill('1fr').join(' 0.44fr ');
+  const track = Array(n).fill('1fr').join(' 0.47fr ');
   // SIZED AGAINST THE CELL, NOT THE VIEWPORT (player report, 2026-09-01: "the
   // numbers are too small to read, especially the pencil marks"). The board is
   // capped, so on a phone the clamp FLOOR is what renders, and the floors were
@@ -687,6 +714,8 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
   );
 
   const SIDE = 2 * n - 1;
+  const selR = sel === null ? -1 : Math.floor(sel / n);
+  const selC = sel === null ? -1 : sel % n;
   const boardCells = [];
   for (let i = 0; i < SIDE * SIDE; i++) {
     const gr = Math.floor(i / SIDE), gc = i % SIDE;
@@ -695,30 +724,33 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
       const r = gr / 2, c = gc / 2, idx = r * n + c;
       const v = viewVals[idx];
       const isGiven = GIVEN[idx] !== undefined;
-      const isSel = sel === idx;
+      const isSel = playing && sel === idx;
+      const isPeer = playing && sel !== null && (r === selR || c === selC);
       const isDup = dups.has(idx);
       const noteMask = viewNotes[idx];
       boardCells.push(
         <div
           key={i}
+          role="button"
+          aria-label={`Row ${r + 1}, column ${c + 1}${v ? `, ${v}` : ', empty'}${isGiven ? ', printed' : ''}`}
           onClick={() => { if (playing) { setSel(idx); if (!gRef.current.t0) startGame(); } }}
+          className="fb-cell"
           style={{
-            border: `1.5px solid ${isSel ? COLORS.accent : 'var(--stg-cell-line, rgba(28,30,36,0.3))'}`,
-            boxShadow: isSel ? `inset 0 0 0 2px var(--stg-acc, ${COLORS.accent})` : undefined,
-            borderRadius: 5,
-            background: isGiven ? (STAGE ? 'var(--stg-surf2)' : COLORS.paper) : (STAGE ? 'var(--stg-cell)' : T.white),
+            border: '1.5px solid var(--fb-cell-line)',
+            boxShadow: isSel ? `inset 0 0 0 3px ${ACC}` : undefined,
+            background: isGiven ? 'var(--fb-given)' : isPeer ? 'var(--fb-peer)' : 'var(--fb-cell)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: playing && !isGiven ? 'pointer' : 'default',
+            cursor: playing ? 'pointer' : 'default',
             userSelect: 'none', WebkitTapHighlightColor: 'transparent',
-            minWidth: 0, minHeight: 0, position: 'relative',
+            minWidth: 0, minHeight: 0, position: 'relative', boxSizing: 'border-box',
           }}
         >
           {v ? (
-            <span style={{ fontFamily: MONO, fontSize: cellFs, lineHeight: 1, fontWeight: 500, color: isDup ? `var(--stg-bad, ${COLORS.rust})` : isGiven ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-acc-ink, ${COLORS.accent})` }}>{v}</span>
+            <span style={{ fontFamily: SANS, fontSize: cellFs, lineHeight: 1, fontWeight: isGiven ? 800 : 700, color: isDup ? `var(--stg-bad, ${COLORS.rust})` : isGiven ? INK : ACC_INK }}>{v}</span>
           ) : noteMask ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', width: '86%', height: '86%', alignItems: 'center', justifyItems: 'center' }}>
               {Array.from({ length: n }).map((_, k) => (
-                <span key={k} style={{ fontFamily: MONO, fontSize: noteFs, lineHeight: 1, color: 'var(--stg-mute, #9aa2b1)' }}>
+                <span key={k} style={{ fontFamily: SANS, fontSize: noteFs, fontWeight: 700, lineHeight: 1, color: FADED }}>
                   {noteMask & (1 << (k + 1)) ? k + 1 : ''}
                 </span>
               ))}
@@ -728,7 +760,15 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
       );
       continue;
     }
-    if (!rowIsCell && !colIsCell) { boardCells.push(<div key={i} />); continue; }
+    // Gutter intersections carry a small dot so the lattice reads.
+    if (!rowIsCell && !colIsCell) {
+      boardCells.push(
+        <div key={i} aria-hidden="true" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 0, minHeight: 0 }}>
+          <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--stg-line2, rgba(28,30,36,0.25))' }} />
+        </div>
+      );
+      continue;
+    }
     const r1 = rowIsCell ? gr / 2 : (gr - 1) / 2;
     const c1 = colIsCell ? gc / 2 : (gc - 1) / 2;
     const r2 = rowIsCell ? r1 : r1 + 1;
@@ -739,30 +779,58 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
     const st = clueStates[ci];
     const accused = viewAcc === ci;
     const isLiar = !playing && !hideAns && ci === PUZZLE.liar;
-    const col = isLiar ? COLORS.rust : st === 'broken' ? COLORS.amber : st === 'ok' ? 'var(--stg-ink2, #b6bdc9)' : FADED;
+    const vert = isVertical(cl);
+    // Idle: dashed outline. Satisfied: filled muted. Broken: amber. The
+    // accused sign carries a red ring; after the game the liar does too.
+    const stroke = isLiar ? 'var(--stg-bad, #b91c1c)' : st === 'broken' ? 'var(--stg-warn, #b45309)' : st === 'ok' ? 'var(--stg-ink2, #3f4757)' : 'var(--fb-btn)';
+    const chipBg = isLiar ? 'var(--fb-bad-soft)' : st === 'broken' ? 'var(--fb-warn-soft)' : st === 'ok' ? 'var(--fb-ok)' : 'transparent';
+    const chipBd = st === 'idle' && !isLiar ? '1.5px dashed var(--fb-btn)' : st === 'broken' ? '1.5px solid var(--stg-warn, #b45309)' : '1.5px solid transparent';
+    const ringed = accused || isLiar;
+    const stateWord = st === 'idle' ? 'not yet tested' : st === 'ok' ? 'your grid satisfies it' : 'your grid breaks it';
     boardCells.push(
-      <div
+      <button
         key={i}
+        type="button"
+        className="fb-sign"
         onClick={() => accuse(ci)}
-        title={playing ? 'Accuse this sign of lying' : undefined}
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: playing ? 'pointer' : 'default', userSelect: 'none',
-          WebkitTapHighlightColor: 'transparent', minWidth: 0, minHeight: 0,
-          borderRadius: 5,
-          background: accused ? 'rgba(192,57,43,0.12)' : isLiar ? 'rgba(192,57,43,0.16)' : 'transparent',
-          boxShadow: accused || isLiar ? `inset 0 0 0 1.5px ${COLORS.rust}` : undefined,
-        }}
+        disabled={!playing}
+        aria-pressed={playing ? accused : undefined}
+        aria-label={`Sign between row ${cl[0] + 1} column ${cl[1] + 1} and row ${cl[2] + 1} column ${cl[3] + 1}, ${stateWord}${accused ? ', accused' : ''}${isLiar ? ', the sign that lied' : ''}`}
+        title={playing ? (accused ? 'Accused. Tap again to withdraw.' : 'Accuse this sign of lying') : undefined}
+        style={{ cursor: playing ? 'pointer' : 'default' }}
       >
-        <span style={{ fontFamily: MONO, fontSize: signFs, lineHeight: 1, fontWeight: st === 'broken' || accused ? 500 : 400, color: col, display: 'inline-block', transform: isVertical(cl) ? 'rotate(90deg)' : undefined }}>{clueGlyph(cl)}</span>
-      </div>
+        <span className="fb-chev" style={{
+          ...(vert ? { height: '86%', width: 'auto' } : { width: '86%', height: 'auto' }),
+          background: chipBg, border: chipBd,
+          boxShadow: ringed ? '0 0 0 3px var(--stg-bad, #b91c1c)' : undefined,
+        }}>
+          <svg viewBox="0 0 24 24" width="62%" height="62%" fill="none" stroke={stroke} strokeWidth="3.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points={chevronPts(cl)} />
+          </svg>
+        </span>
+      </button>
     );
   }
+
+  // THE STAT CHIPS and the status line, read straight off the board.
+  const accCl = viewAcc !== null && viewAcc !== undefined ? PUZZLE.clues[viewAcc] : null;
+  const left = N - liveFilled;
+  const brokenPhrase = brokenCount === 0 ? 'No sign broken' : brokenCount === 1 ? 'One sign broken' : `${brokenCount} signs broken`;
+  const accPhrase = g.acc === null ? 'none accused' : 'one accused';
+  const statusMain = `${brokenPhrase}, ${accPhrase}. ${
+    !gridFull
+      ? `Fill the last ${left} square${left === 1 ? '' : 's'} to submit.`
+      : g.acc === null
+        ? 'Accuse a sign to submit.'
+        : brokenCount !== 1
+          ? 'Only one sign lies, so check your grid before you submit.'
+          : 'Submit when you are sure.'
+  }`;
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
-      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      style={{ ...(STAGE ? STAGE_ACC : null), ...FIB_VARS, minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -786,7 +854,6 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
           figures={playing ? [
             { v: errors, k: 'errors' },
             { v: elapsed, k: 'time' },
-            { v: `${filled}/${N}`, k: 'filled' },
           ] : [
             { v: endScore, k: 'score' },
             { v: errors, k: 'errors' },
@@ -799,11 +866,50 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.fb-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .fb-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .fb-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .fb-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-          .fb-tool.on{background:${STAGE ? STAGE_C : COLORS.ink};color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};border-color:${STAGE ? STAGE_C : COLORS.ink};}
-          .fb-key{font-family:${MONO};font-weight:500;font-size:20px;border: 1.5px solid var(--stg-line, rgba(28,30,36,0.3));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};border-radius:8px;height:46px;min-width:46px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
+          .fb-tool{font-family:${SANS};font-weight:700;font-size:13px;border:1.5px solid var(--fb-btn);background:transparent;color:var(--stg-ink2, ${COLORS.ink});border-radius:12px;min-height:44px;padding:0 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
+          .fb-tool:hover{background:var(--stg-surf2, ${COLORS.paper});}
+          .fb-tool.on{background:${ACC};color:${ON_ACC};border-color:${ACC};}
+          .fb-key{font-family:${SANS};font-weight:800;font-size:22px;border:1.5px solid var(--fb-btn);background:var(--fb-cell);color:${INK};border-radius:12px;height:56px;width:56px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;}
           .fb-key:hover{background:var(--stg-surf2, ${COLORS.paper});}
-          .fb-key.note{color:var(--stg-acc-ink, ${COLORS.accent});}
+          .fb-key.note{color:${ACC_INK};}
+          .fb-pad{display:flex;gap:8px;justify-content:center;align-items:stretch;flex-wrap:wrap;margin-top:20px;}
+          .fb-pad .fb-tool{height:56px;}
+          .fb-psep{width:1px;background:var(--stg-line, rgba(28,30,36,0.15));margin:0 4px;}
+          .fb-rowtool{display:none !important;}
+          .fb-n6 .fb-pad{gap:6px;}
+          .fb-n6 .fb-key{width:52px;}
+          .fb-sign{display:flex;align-items:center;justify-content:center;background:none;border:0;padding:0;margin:0;min-width:0;min-height:0;-webkit-tap-highlight-color:transparent;}
+          .fb-chev{display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;max-width:30px;max-height:30px;border-radius:28%;box-sizing:border-box;transition:background .12s, box-shadow .12s;}
+          .fb-cell{border-radius:16%;}
+          .fb-panel{background:var(--stg-surf, #ffffff);border:1px solid var(--stg-line, rgba(28,30,36,0.15));border-radius:20px;padding:22px 20px 16px;}
+          .fb-chips{display:flex;gap:10px;margin-bottom:16px;}
+          .fb-chip{flex:1 1 0;min-width:0;border:1px solid var(--stg-line, rgba(28,30,36,0.15));border-radius:14px;padding:9px 13px;display:flex;flex-direction:column;gap:2px;}
+          .fb-chip .k{font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:${FADED};}
+          .fb-chip .v{font-size:18px;font-weight:800;color:${INK};font-variant-numeric:tabular-nums;line-height:1.25;}
+          .fb-chip .v small{font-size:13px;font-weight:700;color:${FADED};}
+          .fb-chip.warn{border:1.5px solid var(--stg-warn, #b45309);background:var(--fb-warn-soft);}
+          .fb-chip.warn .k{color:var(--stg-warn, #b45309);}
+          .fb-chip.bad{border:1.5px solid var(--stg-bad, #b91c1c);}
+          .fb-chip.bad .k{color:var(--stg-bad, #b91c1c);}
+          .fb-s{display:none;}
+          .fb-status{display:flex;align-items:center;gap:12px;margin-top:18px;padding-top:14px;border-top:1px solid var(--stg-line, rgba(28,30,36,0.15));flex-wrap:wrap;}
+          .fb-submit{font-family:${SANS};font-weight:800;font-size:15px;border:0;border-radius:12px;min-height:48px;padding:0 22px;display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:0 0 auto;}
+          @media(max-width:560px){
+            .fb-l{display:none;}
+            .fb-s{display:inline;}
+            .fb-chips{gap:6px;margin-bottom:14px;}
+            .fb-chip{padding:7px 9px;border-radius:12px;}
+            .fb-chip .k{font-size:9.5px;letter-spacing:.07em;}
+            .fb-chip .v{font-size:15px;}
+            .fb-pad{gap:5px;flex-wrap:nowrap;margin-top:16px;}
+            .fb-key,.fb-pad .fb-tool{flex:1 1 0;width:auto;min-width:0;height:52px;font-size:20px;padding:0;border-radius:11px;}
+            .fb-psep{display:none;}
+            .fb-n6 .fb-padtool{display:none !important;}
+            .fb-n6 .fb-rowtool{display:inline-flex !important;}
+            .fb-submit{flex:1 1 100%;}
+            .fb-chev{border-radius:26%;}
+            .fb-panel{background:transparent;border:0;border-radius:0;padding:0 2px;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
@@ -857,74 +963,111 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
           {/* These figures move UP into the cap on a loft page; printing
               them twice is the one thing to avoid. */}
           {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-            <span style={{ whiteSpace: 'nowrap' }}>errors <b style={{ color: errors > 0 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{errors}</b></span>
-            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ whiteSpace: 'nowrap' }}>broken <b style={{ color: brokenCount === 1 ? COLORS.amber : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{brokenCount}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>filled <b style={{ color: filled === N ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{filled}</b>/{N}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: SANS, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid var(--stg-line, rgba(28,30,36,0.18))', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+            <span style={{ whiteSpace: 'nowrap' }}>errors <b style={{ color: errors > 0 ? `var(--stg-bad, ${COLORS.rust})` : INK, fontWeight: 700 }}>{errors}</b></span>
+            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
           </div>
           )}
 
+          {/* THE THREE STAT CHIPS (2026-10-14 board rebuild): squares filled,
+              signs your grid breaks, and which sign is accused. All of it is
+              only what the player could read off the board themselves. */}
+          {playing && (
+            <div className="fb-chips">
+              <div className="fb-chip">
+                <span className="k">Squares</span>
+                <span className="v">{liveFilled}<small> / {N}</small></span>
+              </div>
+              <div className={`fb-chip${brokenCount > 0 ? ' warn' : ''}`}>
+                <span className="k"><span className="fb-l">Signs your grid breaks</span><span className="fb-s">Broken</span></span>
+                <span className="v">
+                  <span className="fb-l">{brokenCount}<small> · only one sign lies</small></span>
+                  <span className="fb-s">{brokenCount} sign{brokenCount === 1 ? '' : 's'}</span>
+                </span>
+              </div>
+              <div className={`fb-chip${accCl ? ' bad' : ''}`}>
+                <span className="k">Accused</span>
+                <span className="v">
+                  {accCl ? (
+                    <><span className="fb-l">{signWhere(accCl, false)}</span><span className="fb-s">{signWhere(accCl, true)}</span></>
+                  ) : <small style={{ fontSize: 'inherit' }}>None</small>}
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div className={`fb-panel${n > 5 ? ' fb-n6' : ''}`}>
           <div style={{ maxWidth: boardMax, margin: '0 auto' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: track, gridTemplateRows: track, aspectRatio: '1 / 1', gap: 2 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: track, gridTemplateRows: track, aspectRatio: '1 / 1', gap: 0 }}>
               {boardCells}
             </div>
           </div>
 
           {playing && (
             <>
-              <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 15, flexWrap: 'wrap' }}>
+              <div className="fb-pad">
                 {Array.from({ length: n }).map((_, k) => (
-                  <button key={k} className={`fb-key${mode === 'note' ? ' note' : ''}`} onClick={() => writeDigit(k + 1)}>{k + 1}</button>
+                  <button key={k} type="button" className={`fb-key${mode === 'note' ? ' note' : ''}`} onClick={() => writeDigit(k + 1)} aria-label={mode === 'note' ? `Pencil ${k + 1}` : `Write ${k + 1}`}>{k + 1}</button>
                 ))}
-                <button className="fb-key" onClick={() => writeDigit(0)} title="Erase" style={{ fontFamily: SANS, fontSize: 13, fontWeight: 800 }}>Clear</button>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 10, flexWrap: 'wrap' }}>
-                <button className={`fb-tool${mode === 'note' ? ' on' : ''}`} onClick={() => setMode((m) => (m === 'note' ? 'write' : 'note'))} title="Pencil small candidates (N)">
-                  <Pencil size={14} /> Notes
+                <span className="fb-psep" aria-hidden="true" />
+                <button type="button" className={`fb-tool fb-padtool${mode === 'note' ? ' on' : ''}`} aria-pressed={mode === 'note'} aria-label="Notes" onClick={() => setMode((m) => (m === 'note' ? 'write' : 'note'))} title="Pencil small candidates (N)">
+                  <Pencil size={17} /><span className="fb-l">Notes</span>
                 </button>
-                <button className="fb-tool" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" style={{ opacity: canUndo ? 1 : 0.4, cursor: canUndo ? 'pointer' : 'default' }}>
-                  <RotateCcw size={14} /> Undo
+                <button type="button" className="fb-tool fb-padtool" aria-label="Erase" onClick={() => writeDigit(0)} title="Erase (Backspace)" style={{ width: 56, padding: 0 }}>
+                  <Delete size={20} />
                 </button>
-                {hintOk && !g.hintUsed && (
-                  <button className="fb-tool" onClick={useHint} title="Fill one correct square (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(76,29,149,0.45)', color: ACC_INK }}>
-                    <Lightbulb size={14} /> Hint
-                  </button>
-                )}
               </div>
-              <div style={{ marginTop: 13, textAlign: 'center' }}>
+
+              <div className="fb-status">
+                <div style={{ flex: '1 1 260px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <span aria-live="polite" style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.4, color: canSubmit && brokenCount === 1 ? ACC_INK : INK }}>{statusMain}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.45, color: FADED }}>
+                    <span className="fb-l">Every sign is a button: tap the one you think is lying. Amber means your grid breaks it.</span>
+                    <span className="fb-s">Tap a sign to accuse it. Amber means your grid breaks it.</span>
+                  </span>
+                </div>
                 <button
-                  className="fb-btn"
+                  type="button"
+                  className="fb-submit"
                   onClick={submit}
                   disabled={!canSubmit}
-                  style={{ background: canSubmit ? COLORS.accent : (STAGE ? 'transparent' : T.white), color: canSubmit ? T.white : 'var(--stg-mute, rgba(28,30,36,0.4))', borderColor: canSubmit ? COLORS.accent : 'var(--stg-line2, rgba(28,30,36,0.25))', cursor: canSubmit ? 'pointer' : 'default', fontSize: 15, padding: '11px 26px' }}
+                  aria-label={canSubmit ? 'Submit your grid and your accused sign' : 'Submit, available once the grid is full and a sign is accused'}
+                  style={canSubmit
+                    ? { background: ACC, color: ON_ACC, cursor: 'pointer' }
+                    : { background: 'var(--stg-line, rgba(28,30,36,0.12))', color: FADED, cursor: 'default' }}
                 >
                   <CheckIcon size={16} /> Submit
                 </button>
-                <div style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED, marginTop: 8 }}>
-                  {g.acc === null
-                    ? 'Tap the sign you are accusing of lying.'
-                    : !gridFull
-                      ? 'Sign accused. Fill every square to submit.'
-                      : brokenCount !== 1
-                        ? `Your grid breaks ${brokenCount} sign${brokenCount === 1 ? '' : 's'}, and only one clue lies.`
-                        : 'One sign broken, one accused. Submit when you are sure.'}
-                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+                <button type="button" className="fb-tool fb-rowtool" aria-pressed={mode === 'note'} onClick={() => setMode((m) => (m === 'note' ? 'write' : 'note'))} style={mode === 'note' ? { background: ACC, color: ON_ACC, borderColor: ACC } : undefined}>
+                  <Pencil size={14} /> Notes
+                </button>
+                <button type="button" className="fb-tool fb-rowtool" onClick={() => writeDigit(0)}>
+                  <Delete size={15} /> Erase
+                </button>
+                <button type="button" className="fb-tool" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" aria-label="Undo" style={{ color: canUndo ? INK : FADED, cursor: canUndo ? 'pointer' : 'default' }}>
+                  <RotateCcw size={14} /> Undo
+                </button>
+                {hintOk && !g.hintUsed && (
+                  <button type="button" className="fb-tool" onClick={useHint} title="Fill one correct square (one hint, first play only)" aria-label="Hint" style={{ borderColor: ACC, color: ACC_INK }}>
+                    <Lightbulb size={14} /> Hint
+                  </button>
+                )}
+                {started && identity && (filled > PUZZLE.givens.length || errors > 0) && (
+                  <button type="button" onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
+                    style={{ marginLeft: 'auto', minHeight: 44, background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12.5, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink2, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5, padding: '0 4px' }}>
+                    <Eye size={13} /> {armReveal ? 'Tap again to end the puzzle and show the answer' : 'Reveal'}
+                  </button>
+                )}
+              </div>
+              <div style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.45, color: FADED, marginTop: 8 }}>
+                1 to {n} once in every row and column. The open end of each sign faces the larger number.
               </div>
             </>
           )}
-
-        {/* Controls. These sit INSIDE the board card: on the navy stage a
-            bare row of faded text has nothing to sit on, and the card is
-            meant to hold the whole game. */}
-        {started && identity && (filled > PUZZLE.givens.length || errors > 0) && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)', flexWrap: 'wrap' }}>
-            <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-              style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-              <Eye size={13} /> {armReveal ? 'Tap again — ends the puzzle and shows the answer' : 'Reveal & end'}
-            </button>
           </div>
-        )}
         </div>
         )}
 
@@ -934,11 +1077,11 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
             <div style={{ maxWidth: 472, margin: '0 auto' }}>
               {!hideAns && (
               <div style={{ fontSize: 15, fontWeight: 800, color: INK, margin: '8px 0 0' }}>
-                The sign ringed in <span style={{ color: `var(--stg-ink, ${COLORS.rust})` }}>red</span> is the one that lied.
+                The sign ringed in <span style={{ color: `var(--stg-bad, ${COLORS.rust})` }}>red</span> is the one that lied.
               </div>
               )}
               {PUZZLE.sunday && (
-                <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>The Sunday Edition &mdash; a bigger 6&times;6 grid.</div>
+                <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>The Sunday Edition: a bigger 6&times;6 grid.</div>
               )}
               {isTodays && myStats.cur >= 2 && (
                 <div style={{ fontSize: 13, fontWeight: 800, margin: '12px 0 0', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -1058,14 +1201,14 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s grid, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s grid, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   Open your browser&apos;s menu and choose <b>Add to Home Screen</b> (or <b>Install app</b>). The tile opens today&apos;s grid, every day.
                 </p>
               )}
-              <button onClick={() => setShowA2hsHelp(false)} style={{ marginTop: 10, fontFamily: SANS, fontSize: 12.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, height: 44, width: '100%', borderRadius: 10, border: 'none', background: COLORS.ink, color: T.white, cursor: 'pointer' }}>Got it</button>
+              <button onClick={() => setShowA2hsHelp(false)} style={{ marginTop: 10, fontFamily: SANS, fontSize: 12.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, height: 44, width: '100%', borderRadius: 10, border: 'none', background: STAGE ? ACC : COLORS.ink, color: STAGE ? ON_ACC : T.white, cursor: 'pointer' }}>Got it</button>
             </div>
           </div>
         )}
@@ -1096,7 +1239,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
-        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
+        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: STAGE ? 'var(--stg-ink)' : COLORS.ink, color: STAGE ? 'var(--stg-ground)' : T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
           {toast}
         </div>
       )}
@@ -1110,7 +1253,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
               <button onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
             </div>
             {rulesBody}
-            <button className="fb-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: COLORS.ink, color: T.white }}>Play</button>
+            <button className="fb-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: STAGE ? ACC : COLORS.ink, color: STAGE ? ON_ACC : T.white, borderColor: STAGE ? ACC : undefined }}>Play</button>
           </div>
         </div>
       )}

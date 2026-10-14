@@ -184,7 +184,10 @@ function freshState(nh, nv) {
 const HAPT = { ok: [7], wrong: [0, 26, 34, 26], win: [10, 40, 20, 40, 20, 60] };
 function vibrate(p) { try { if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
 
-const CELL = 46, PAD = 24;
+// PAD only has to hold a ringed loose-end dot on the outer edge (r = 0.14 of a
+// cell), so it is kept tight: on a phone every unit of padding is a unit taken
+// out of the squares, and the Sunday 10x10 needs them.
+const CELL = 46, PAD = 16;
 
 export default function HedgeClient({ puzzles = [], forceNum = null }) {
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
@@ -438,6 +441,67 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
     return out;
   }, [H, V, n]);
 
+  // THE BOARD READOUT (2026-10-14 board rebuild). Everything below is read off
+  // the lines on the board, never off the solution: a dot's degree (loose end
+  // at 1, a branch above 2), the pieces of loop, the numbers settled and the
+  // numbers over. Wrong lines are the one exception, and they were already
+  // drawn red before the rebuild.
+  const loop = useMemo(() => {
+    const D = n + 1;
+    const deg = new Array(D * D).fill(0);
+    const parent = Array.from({ length: D * D }, (_, k) => k);
+    const find = (k) => { while (parent[k] !== k) { parent[k] = parent[parent[k]]; k = parent[k]; } return k; };
+    const join = (a, b) => { const x = find(a), y = find(b); if (x !== y) parent[x] = y; };
+    let drawn = 0, wrong = 0;
+    for (let i = 0; i <= n; i++) for (let j = 0; j < n; j++) {
+      const idx = i * n + j;
+      if (H[idx] !== 1) continue;
+      drawn++; if (solH[idx] !== 1) wrong++;
+      const a = i * D + j, b = i * D + j + 1;
+      deg[a]++; deg[b]++; join(a, b);
+    }
+    for (let i = 0; i < n; i++) for (let j = 0; j <= n; j++) {
+      const idx = i * (n + 1) + j;
+      if (V[idx] !== 1) continue;
+      drawn++; if (solV[idx] !== 1) wrong++;
+      const a = i * D + j, b = (i + 1) * D + j;
+      deg[a]++; deg[b]++; join(a, b);
+    }
+    let ends = 0, branches = 0;
+    const roots = new Set();
+    for (let k = 0; k < D * D; k++) {
+      if (!deg[k]) continue;
+      if (deg[k] === 1) ends++;
+      if (deg[k] > 2) branches++;
+      roots.add(find(k));
+    }
+    let clues = 0, settled = 0, over = 0;
+    PUZZLE.clues.forEach((row, i) => row.forEach((c, j) => {
+      if (c === null || c === undefined) return;
+      clues++;
+      const k = cellCount[i][j];
+      if (k === c) settled++; else if (k > c) over++;
+    }));
+    return { deg, drawn, wrong, ends, branches, pieces: roots.size, clues, settled, over };
+  }, [H, V, solH, solV, n, PUZZLE, cellCount]);
+
+  // One status sentence, plainest problem first.
+  const statusLine = (() => {
+    const L = loop;
+    if (!L.drawn) return 'No loop yet. Start on the 0s and 3s, and mark a × wherever the loop cannot go.';
+    if (L.wrong) return L.wrong === 1 ? 'A red line is not part of the loop. Tap it to lift it.' : `${L.wrong} red lines are not part of the loop. Tap one to lift it.`;
+    if (L.branches) return L.branches === 1 ? 'A dot has more than two lines. The loop never branches.' : `${L.branches} dots have more than two lines. The loop never branches.`;
+    if (L.over) return L.over === 1 ? 'A number has too many of its sides on the loop.' : `${L.over} numbers have too many of their sides on the loop.`;
+    const piece = L.pieces === 1 ? 'One piece of loop' : `${L.pieces} pieces of loop`;
+    if (L.ends) {
+      const ends = L.ends === 2 ? 'two loose ends' : `${L.ends} loose ends`;
+      return `${piece}, ${ends}. Join them into one closed loop.`;
+    }
+    if (L.pieces > 1) return `${L.pieces} closed loops. There can be only one.`;
+    return 'The loop is closed. Check the numbers it still has to satisfy.';
+  })();
+  const statusBad = !!(loop.wrong || loop.branches || loop.over);
+
   function isSolved(hs, vs) {
     for (let i = 0; i < NH; i++) if ((hs[i] === 1) !== (solH[i] === 1)) return false;
     for (let i = 0; i < NV; i++) if ((vs[i] === 1) !== (solV[i] === 1)) return false;
@@ -639,15 +703,29 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
   const SIZE = n * CELL + PAD * 2;
   const X = (j) => PAD + j * CELL;
   const Y = (i) => PAD + i * CELL;
-  const HIT = Math.round(CELL * 0.4);
+  // THE HIT AREA IS A DIAMOND, not a thick stroke (2026-10-14). Each segment
+  // owns the rhombus between its two dots and the centres of the two squares
+  // either side of it, so the diamonds tile the board and a tap anywhere in a
+  // square takes the nearest of its four sides. Shrunk 8% toward the segment's
+  // middle, which leaves a sliver of dead space at each square's centre and at
+  // each dot, the two places a tap could mean more than one side. On a phone
+  // 10x10 that is a 34px-long, 34px-wide target per segment.
+  const HS = 0.92;
+  const diamond = (x1, y1, x2, y2, horiz) => {
+    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, h = CELL / 2;
+    const pts = horiz
+      ? [[x1, y1], [mx, my - h], [x2, y2], [mx, my + h]]
+      : [[x1, y1], [mx + h, my], [x2, y2], [mx - h, my]];
+    return pts.map(([x, y]) => `${(mx + (x - mx) * HS).toFixed(1)},${(my + (y - my) * HS).toFixed(1)}`).join(' ');
+  };
 
   const segs = [];
-  for (let i = 0; i <= n; i++) for (let j = 0; j < n; j++) segs.push({ kind: 'h', i, j, idx: i * n + j, x1: X(j), y1: Y(i), x2: X(j + 1), y2: Y(i) });
-  for (let i = 0; i < n; i++) for (let j = 0; j <= n; j++) segs.push({ kind: 'v', i, j, idx: i * (n + 1) + j, x1: X(j), y1: Y(i), x2: X(j), y2: Y(i + 1) });
+  for (let i = 0; i <= n; i++) for (let j = 0; j < n; j++) segs.push({ kind: 'h', i, j, idx: i * n + j, x1: X(j), y1: Y(i), x2: X(j + 1), y2: Y(i), hit: diamond(X(j), Y(i), X(j + 1), Y(i), true) });
+  for (let i = 0; i < n; i++) for (let j = 0; j <= n; j++) segs.push({ kind: 'v', i, j, idx: i * (n + 1) + j, x1: X(j), y1: Y(i), x2: X(j), y2: Y(i + 1), hit: diamond(X(j), Y(i), X(j), Y(i + 1), false) });
 
   const rulesBody = (
     <DailyRules
-      accent={COLORS.accent} accentSoft={COLORS.accentSoft}
+      accent={STAGE ? 'var(--stg-acc)' : COLORS.accent} accentSoft={COLORS.accentSoft}
       lead="Draw one single closed loop along the grid lines."
       chips={[
         { label: 'Blank cell = no number, on purpose', tone: 'warn' },
@@ -665,6 +743,30 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
       knack="Start on the 0s and 3s: they settle sides outright, and every settled side forces the corners around it."
       footer={<>No errors scores a perfect 10, and every two errors cost a point. Ties break on fewest errors, then fastest time. Sundays are a bigger 10&times;10 Edition.</>}
     />
+  );
+
+  // The × Mark / Line tool, one segmented control.
+  const toolSwitch = (
+    <div className="hg-seg" role="group" aria-label="What a tap draws">
+      <button type="button" className={`hg-tool${tool === 'x' ? ' on' : ''}`} onClick={() => setTool('x')} title="Mark no-line notes (default)" aria-pressed={tool === 'x'}>
+        <span aria-hidden="true" style={{ fontWeight: 900, fontSize: 15, lineHeight: 1 }}>&times;</span> Mark
+      </button>
+      <button type="button" className={`hg-tool${tool === 'line' ? ' on' : ''}`} onClick={() => setTool('line')} title="Draw the loop line" aria-pressed={tool === 'line'}>
+        <span aria-hidden="true" className="hg-swatch" /> Line
+      </button>
+    </div>
+  );
+  const actButtons = (
+    <>
+      <button type="button" className="hg-btn" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" aria-label="Undo last move">
+        <RotateCcw size={15} /> Undo
+      </button>
+      {hintOk && !g.hintUsed && (
+        <button type="button" className="hg-btn" onClick={useHint} title="Draw one correct segment (one hint, first play only)" aria-label="Hint: draw one segment of the loop">
+          <Lightbulb size={15} /> Hint
+        </button>
+      )}
+    </>
   );
 
   return (
@@ -694,7 +796,6 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
           figures={playing ? [
             { v: errors, k: 'errors' },
             { v: elapsed, k: 'time' },
-            { v: `${rightDrawn}/${LOOP_LEN}`, k: 'loop' },
           ] : [
             { v: endScore, k: 'score' },
             { v: errors, k: 'errors' },
@@ -705,13 +806,55 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
       <div className="hg-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
         <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.hg-wrap{padding-left:10px !important;padding-right:10px !important;}}
-          .hg-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
-          .hg-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
+          .hg-btn{font-family:${SANS};font-weight:700;font-size:14px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:transparent;color:${INK};border-radius:12px;padding:0 16px;min-height:46px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;}
+          .hg-btn:hover{background:var(--stg-surf2, rgba(28,30,36,0.06));}
+          .hg-btn:disabled{color:var(--stg-mute, #6b7280);cursor:default;}
+          .hg-btn:disabled:hover{background:transparent;}
           @media(max-width:560px){.hg-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.hg-ttl h1{font-size:21px;}.hg-ttl-dot{display:none;}}
-          .hg-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-          .hg-tool.on{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-color:var(--stg-acc, ${COLORS.accent});}
-          .hg-hit{stroke:transparent;fill:none;cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;-moz-user-select:none;user-select:none;-webkit-touch-callout:none;}
-          .hg-svg{touch-action:manipulation;width:100%;height:auto;display:block;-webkit-user-select:none;-moz-user-select:none;user-select:none;-webkit-touch-callout:none;}
+          /* THE TOOL SWITCH (2026-10-14 board rebuild): one segmented control, the live
+             segment filled with the accent, the same shape as Jesters' and Paths'. */
+          .hg-seg{display:flex;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};border-radius:12px;padding:3px;gap:3px;flex:0 0 auto;}
+          .hg-tool{font-family:${SANS};font-weight:700;font-size:13px;border:0;background:transparent;color:${INK};border-radius:9px;min-height:44px;padding:0 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;}
+          .hg-tool:hover{background:var(--stg-surf2, rgba(28,30,36,0.06));}
+          .hg-tool.on,.hg-tool.on:hover{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));font-weight:800;}
+          .hg-swatch{display:inline-block;width:16px;height:4px;border-radius:2px;background:currentColor;}
+          /* The two stat chips above the board, and the framed board panel under them. */
+          .hg-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 14px;}
+          .hg-chips{display:flex;gap:10px;flex-wrap:wrap;min-width:0;}
+          .hg-chip{border:1px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.2)'};border-radius:14px;padding:8px 14px;display:flex;flex-direction:column;gap:1px;min-width:0;}
+          .hg-chipk{font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:${FADED};white-space:nowrap;}
+          .hg-chipv{font-size:18px;font-weight:800;color:${INK};font-variant-numeric:tabular-nums;line-height:1.25;white-space:nowrap;}
+          .hg-chipof{font-size:14px;font-weight:700;color:${FADED};}
+          .hg-short{display:none;}
+          .hg-panel{background:var(--stg-surf, #ffffff);border:1px solid var(--stg-line, rgba(28,30,36,0.15));border-radius:20px;padding:18px 18px 16px;}
+          .hg-cellrect{fill:color-mix(in srgb, var(--stg-ink, #1c1e24) 4%, var(--stg-cell, #ffffff));}
+          .hg-foot{display:flex;align-items:center;gap:12px;border-top:1px solid var(--stg-line, rgba(28,30,36,0.15));margin-top:14px;padding-top:14px;}
+          .hg-acts{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+          .hg-tool-foot{display:none;}
+          .hg-under{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:6px;}
+          .hg-link{font-family:${SANS};font-weight:700;font-size:13px;background:none;border:0;color:${INK};text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0 10px;cursor:pointer;}
+          @media(max-width:560px){
+            .hg-top{margin-bottom:12px;}
+            .hg-top .hg-seg{display:none;}
+            .hg-chips{flex:1;flex-wrap:nowrap;gap:8px;}
+            .hg-chip{flex:1;flex-direction:row;align-items:center;justify-content:space-between;gap:8px;border-radius:12px;padding:7px 12px;}
+            .hg-chipv{font-size:16px;}
+            .hg-chipof{font-size:12px;}
+            .hg-long{display:none;}
+            .hg-short{display:inline;}
+            /* On a phone the board takes the whole width: no frame, no inset. */
+            .hg-panel{background:transparent;border:0;border-radius:0;padding:0;}
+            .hg-foot{flex-direction:column;align-items:stretch;border-top:0;margin-top:12px;padding-top:0;}
+            .hg-foot .hg-acts{display:none;}
+            .hg-tool-foot{display:flex;gap:8px;margin-top:8px;}
+            .hg-tool-foot .hg-seg{flex:1;}
+            .hg-tool-foot .hg-tool{flex:1;min-height:46px;font-size:14px;padding:0 8px;}
+            .hg-tool-foot .hg-btn{min-height:52px;padding:0 14px;}
+            .hg-under{justify-content:flex-end;}
+            .hg-under .hg-rule{display:none;}
+          }
+          .hg-hit{fill:transparent;stroke:none;cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;-moz-user-select:none;user-select:none;-webkit-touch-callout:none;}
+          .hg-svg{touch-action:manipulation;width:100%;height:auto;display:block;margin:0 auto;-webkit-user-select:none;-moz-user-select:none;user-select:none;-webkit-touch-callout:none;}
         ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
@@ -773,69 +916,78 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
           </div>
           )}
 
-          <div style={{ maxWidth: 520, margin: '0 auto' }}>
-            <svg className="hg-svg" viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={`Hedge loop puzzle, ${n} by ${n}`}>
-              {/* clue numbers */}
+          {/* THE TWO CHIPS (2026-10-14 board rebuild): loose ends and numbers
+              settled, both read off the lines on the board, with the tool switch
+              beside them on a computer (on a phone it sits at the foot). They
+              replace the old "loop x/24" cap figure. */}
+          <div className="hg-top">
+            <div className="hg-chips">
+              <div className="hg-chip" role="status" aria-label={`${loop.ends} loose ${loop.ends === 1 ? 'end' : 'ends'}`}>
+                <span className="hg-chipk">Loose ends</span>
+                <span className="hg-chipv" style={{ color: loop.ends ? `var(--stg-acc-ink, ${COLORS.accent})` : INK }}>{loop.ends}</span>
+              </div>
+              <div className="hg-chip" role="status" aria-label={`${loop.settled} of ${loop.clues} numbers settled`}>
+                <span className="hg-chipk"><span className="hg-long">Numbers settled</span><span className="hg-short">Settled</span></span>
+                <span className="hg-chipv">{loop.settled}<span className="hg-chipof"> / {loop.clues}</span></span>
+              </div>
+            </div>
+            {started && toolSwitch}
+          </div>
+
+          <div className="hg-panel">
+            <svg className="hg-svg" viewBox={`0 0 ${SIZE} ${SIZE}`} style={{ maxWidth: n >= 10 ? 560 : 480 }} role="img" aria-label={`Hedge loop puzzle, ${n} by ${n}`}>
+              {/* the faint field the loop is drawn on */}
+              <rect className="hg-cellrect" x={PAD} y={PAD} width={n * CELL} height={n * CELL} rx={6} style={{ pointerEvents: 'none' }} />
+              {/* clue numbers: a settled number dims (no strike), an over-full one goes red */}
               {PUZZLE.clues.map((row, i) => row.map((c, j) => {
                 if (c === null || c === undefined) return null;
                 const k = cellCount[i][j];
-                // MET is said STRUCTURALLY, not by a lighter grey (owner,
-                // 2026-09-02): mute and ink are two steps of one ramp, so the
-                // met/unmet distinction was a lightness step that reads as one
-                // colour at 17px in BOTH registers. The digit is struck through
-                // instead, which reads the same light or dark and matches the
-                // meaning: this clue is finished, cross it off. Note the token
-                // is --stg-mute2; there is no --stg-mute in StageChrome, so the
-                // old value silently fell back to the hardcoded grey and never
-                // flipped with the register at all.
                 const met = k === c;
                 const col = k > c ? `var(--stg-bad, ${COLORS.rust})`
-                  : met ? 'var(--stg-mute2, #c3c8d4)'
+                  : met ? `var(--stg-mute, ${COLORS.faded})`
                   : `var(--stg-ink, ${COLORS.ink})`;
-                const cx = X(j) + CELL / 2, cy = Y(i) + CELL / 2;
                 return (
-                  <g key={`c${i}-${j}`} style={{ color: col, pointerEvents: 'none', userSelect: 'none' }}>
-                    <text x={cx} y={cy} fill="currentColor"
-                      fontFamily={MONO} fontSize={17} fontWeight="500" textAnchor="middle" dominantBaseline="central">{c}</text>
-                    {met && (
-                      <line x1={cx - 6.5} x2={cx + 6.5} y1={cy} y2={cy}
-                        stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
-                    )}
-                  </g>
+                  <text key={`c${i}-${j}`} x={X(j) + CELL / 2} y={Y(i) + CELL / 2 + 1} fill="currentColor"
+                    style={{ color: col, pointerEvents: 'none', userSelect: 'none' }}
+                    fontFamily={SANS} fontSize={Math.round(CELL * 0.42)} fontWeight={met ? 600 : 800} textAnchor="middle" dominantBaseline="central">{c}</text>
                 );
               }))}
-              {/* crosses */}
+              {/* crosses: the player's own "no line here" notes, in the mute ink */}
               {segs.map((s) => {
                 const st = s.kind === 'h' ? H[s.idx] : V[s.idx];
                 if (st !== 2) return null;
-                const mx = (s.x1 + s.x2) / 2, my = (s.y1 + s.y2) / 2, r = 5;
+                const mx = (s.x1 + s.x2) / 2, my = (s.y1 + s.y2) / 2, r = CELL * 0.11;
                 return (
-                  <g key={`x${s.kind}${s.idx}`} style={{ pointerEvents: 'none' }}>
-                    <line x1={mx - r} y1={my - r} x2={mx + r} y2={my + r} stroke="#cdd3de" strokeWidth={2.4} strokeLinecap="round" />
-                    <line x1={mx - r} y1={my + r} x2={mx + r} y2={my - r} stroke="#cdd3de" strokeWidth={2.4} strokeLinecap="round" />
-                  </g>
+                  <path key={`x${s.kind}${s.idx}`} d={`M${mx - r} ${my - r}L${mx + r} ${my + r}M${mx + r} ${my - r}L${mx - r} ${my + r}`}
+                    style={{ stroke: `var(--stg-mute, ${COLORS.faded})`, pointerEvents: 'none' }} strokeWidth={2.4} strokeLinecap="round" fill="none" />
                 );
               })}
-              {/* drawn lines */}
+              {/* drawn lines: the loop in the accent, a line off the loop in red */}
               {segs.map((s) => {
                 const st = s.kind === 'h' ? H[s.idx] : V[s.idx];
                 if (st !== 1) return null;
                 const ok = (s.kind === 'h' ? solH[s.idx] : solV[s.idx]) === 1;
                 return (
                   <line key={`l${s.kind}${s.idx}`} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}
-                    stroke={ok ? COLORS.accent : COLORS.rust} strokeWidth={5} strokeLinecap="round"
-                    style={{ pointerEvents: 'none' }} />
+                    style={{ stroke: ok ? `var(--stg-acc, ${COLORS.accent})` : `var(--stg-bad, ${COLORS.rust})`, pointerEvents: 'none' }}
+                    strokeWidth={Math.round(CELL * 0.13)} strokeLinecap="round" />
                 );
               })}
-              {/* dots */}
+              {/* dots: a loose end is ringed, a dot on the loop takes the accent, a branch goes red */}
               {Array.from({ length: (n + 1) * (n + 1) }).map((_, k) => {
                 const i = Math.floor(k / (n + 1)), j = k % (n + 1);
-                return <circle key={`d${k}`} cx={X(j)} cy={Y(i)} r={2.6} fill="#9aa2b4" style={{ pointerEvents: 'none' }} />;
+                const d = loop.deg[k];
+                if (d === 1) {
+                  return <circle key={`d${k}`} cx={X(j)} cy={Y(i)} r={CELL * 0.13} className="hg-cellrect"
+                    style={{ stroke: `var(--stg-acc, ${COLORS.accent})`, strokeWidth: CELL * 0.055, pointerEvents: 'none' }} />;
+                }
+                const fill = d > 2 ? `var(--stg-bad, ${COLORS.rust})` : d === 2 ? `var(--stg-acc, ${COLORS.accent})` : 'var(--stg-cell-dot, #9aa2b4)';
+                const r = d > 2 ? CELL * 0.1 : d === 2 ? CELL * 0.075 : CELL * 0.06;
+                return <circle key={`d${k}`} cx={X(j)} cy={Y(i)} r={r} style={{ fill, pointerEvents: 'none' }} />;
               })}
-              {/* invisible hit targets, drawn last so they always take the tap */}
+              {/* hit areas, drawn last so they always take the tap: one diamond per segment */}
               {playing && segs.map((s) => (
-                <line key={`h${s.kind}${s.idx}`} className="hg-hit" x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}
-                  strokeWidth={HIT}
+                <polygon key={`h${s.kind}${s.idx}`} className="hg-hit" points={s.hit}
                   onClick={() => { if (longFired.current) { longFired.current = false; return; } tapSeg(s.kind, s.idx); }}
                   onContextMenu={(e) => { e.preventDefault(); if (longFired.current) { longFired.current = false; return; } drawLineSeg(s.kind, s.idx); }}
                   onPointerDown={(e) => { if (e.pointerType === 'touch') startPress(s.kind, s.idx, e); }}
@@ -845,45 +997,37 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
                   onPointerCancel={endPress} />
               ))}
             </svg>
+
+            {/* the status line, the helper line, and Undo / Hint (on a phone the
+                tool switch joins them in one row under the lines) */}
+            {started && (
+              <div className="hg-foot">
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <span aria-live="polite" style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.4, color: statusBad ? `var(--stg-bad, ${COLORS.rust})` : INK }}>{statusLine}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.4, color: FADED }}>
+                    Ringed dots are loose ends. A settled number dims. {mobileUi ? 'Hold a segment to draw a line in either mode.' : 'Hold or right-click a segment to draw a line in either mode.'}
+                    {g.hintUsed ? ' Hint used.' : ''}
+                  </span>
+                </div>
+                <div className="hg-acts">{actButtons}</div>
+                <div className="hg-tool-foot">{toolSwitch}{actButtons}</div>
+              </div>
+            )}
           </div>
 
-          {playing && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 12, flexWrap: 'wrap' }}>
-              <button className={`hg-tool${tool === 'x' ? ' on' : ''}`} onClick={() => setTool('x')} title="Mark no-line notes (default)" aria-pressed={tool === 'x'}>
-                <span style={{ fontWeight: 900, fontSize: 14, lineHeight: 1 }}>&times;</span> Mark
-              </button>
-              <button className={`hg-tool${tool === 'line' ? ' on' : ''}`} onClick={() => setTool('line')} title="Draw the loop line" aria-pressed={tool === 'line'}>
-                <span style={{ fontWeight: 900, fontSize: 14, lineHeight: 1 }}>&#9585;</span> Line
-              </button>
-              <button className="hg-tool" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" style={{ opacity: canUndo ? 1 : 0.4, cursor: canUndo ? 'pointer' : 'default' }}>
-                <RotateCcw size={14} /> Undo
-              </button>
-              {hintOk && !g.hintUsed && (
-                <button className="hg-tool" onClick={useHint} title="Draw one correct segment (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(8,145,178,0.5)', color: '#07647c' }}>
-                  <Lightbulb size={14} /> Hint
+          {started && (
+            <div className="hg-under">
+              <span className="hg-rule" style={{ fontSize: 12, fontWeight: 600, color: FADED }}>A number counts its sides on the loop. Blank squares have no rule.</span>
+              {identity && (rightDrawn > 0 || errors > 0) && (
+                <button type="button" className="hg-link"
+                  onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
+                  aria-label={armReveal ? 'Tap again to reveal the loop. This ends the day.' : 'Reveal the loop'}
+                  style={armReveal ? { color: `var(--stg-bad, ${COLORS.rust})` } : undefined}>
+                  {armReveal ? 'Tap again to reveal (ends the day)' : 'Reveal'}
                 </button>
               )}
             </div>
           )}
-
-        {/* Controls. These sit INSIDE the board card: on the navy stage a
-            bare row of faded text has nothing to sit on, and the card is
-            meant to hold the whole game. */}
-        {started && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)', flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: tool === 'line' ? `var(--stg-acc-ink, ${COLORS.accent})` : `var(--stg-mute, ${COLORS.faded})` }}>
-              {tool === 'line'
-                ? 'Drawing lines: tap a segment to draw the loop, tap again to lift it. Switch to × to mark segments off.'
-                : 'Marking: tap a segment for a × (no line here), tap again to clear. Switch to Line to draw — or hold / right-click any segment to draw one.'}
-            </span>
-            {identity && (rightDrawn > 0 || errors > 0) && (
-              <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-                style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <Eye size={13} /> {armReveal ? 'Tap again — ends the puzzle and draws the loop' : 'Reveal & end'}
-              </button>
-            )}
-          </div>
-        )}
         </div>
         )}
 
@@ -892,7 +1036,7 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
           {!playing && (
             <div style={{ maxWidth: 472, margin: '0 auto' }}>
               {PUZZLE.sunday && (
-                <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '10px 0 0' }}>The Sunday Edition &mdash; a bigger 10&times;10 grid.</div>
+                <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '10px 0 0' }}>The Sunday Edition: a bigger 10&times;10 grid.</div>
               )}
               {isTodays && myStats.cur >= 2 && (
                 <div style={{ fontSize: 13, fontWeight: 800, margin: '12px 0 0', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -1013,14 +1157,14 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s loop, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s loop, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   Open your browser&apos;s menu and choose <b>Add to Home Screen</b> (or <b>Install app</b>). The tile opens today&apos;s loop, every day.
                 </p>
               )}
-              <button onClick={() => setShowA2hsHelp(false)} style={{ marginTop: 10, fontFamily: SANS, fontSize: 12.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, height: 44, width: '100%', borderRadius: 10, border: 'none', background: COLORS.ink, color: T.white, cursor: 'pointer' }}>Got it</button>
+              <button onClick={() => setShowA2hsHelp(false)} style={{ marginTop: 10, fontFamily: SANS, fontSize: 12.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, height: 44, width: '100%', borderRadius: 10, border: 'none', background: STAGE ? 'var(--stg-acc)' : COLORS.ink, color: STAGE ? 'var(--stg-onramp)' : T.white, cursor: 'pointer' }}>Got it</button>
             </div>
           </div>
         )}
@@ -1065,7 +1209,7 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
               <button onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
             </div>
             {rulesBody}
-            <button className="hg-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: COLORS.ink, color: T.white }}>Play</button>
+            <button className="hg-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: STAGE ? 'var(--stg-acc)' : COLORS.ink, borderColor: STAGE ? 'var(--stg-acc)' : COLORS.ink, color: STAGE ? 'var(--stg-onramp)' : T.white }}>Play</button>
           </div>
         </div>
       )}

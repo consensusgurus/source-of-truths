@@ -160,7 +160,7 @@ function ruleLabel(r) {
     case 'norepeat': return 'No letter appears twice';
     case 'dbl': return 'It contains a double letter';
     case 'len': return `It is exactly ${NUMWORD[r.n]} letters long`;
-    case 'vowels': return `It has exactly ${NUMWORD[r.n]} vowels`;
+    case 'vowels': return `It has exactly ${NUMWORD[r.n]} vowel${r.n === 1 ? '' : 's'}`;
     case 'onevowel': return 'It uses only one distinct vowel';
     case 'sameends': return 'It starts and ends with the same letter';
     case 'startvowel': return 'It starts with a vowel';
@@ -673,6 +673,31 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
   const revealed = (i) => PUZZLE.tiles[i].g || g.tested.includes(i) || (!playing && solShown);
   const answerLabel = ruleLabel(PUZZLE.rules[ANSWER]);
 
+  // Round six furniture. Candidates are struck by the PLAYER only: the board
+  // never kills a rule for you, so "standing" counts the rules you have not
+  // crossed out (or named wrongly), not the rules the evidence leaves alive.
+  const candStanding = PUZZLE.rules.filter((r, i) => !g.struck.includes(i) && !g.wrongPicks.includes(i)).length;
+  const hasNotes = g.struck.length > 0 || (g.marks || []).length > 0;
+  const W_NUM = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve'];
+  const wordOf = (n) => (n < W_NUM.length ? W_NUM[n] : String(n));
+  const struckCount = g.struck.length;
+  const statusLine = verdict ? verdict.msg
+    : g.naming ? 'Pick the rule that fits every word on the board.'
+    : testsLeft === 0 ? 'Out of tests. Name the rule.'
+    : (testsUsed === 0 && struckCount === 0) ? 'No tests yet. Note words out for free, or test the ones that split the field.'
+    : `${wordOf(testsUsed)} test${testsUsed === 1 ? '' : 's'}, ${wordOf(struckCount).toLowerCase()} rule${struckCount === 1 ? '' : 's'} crossed out.`;
+  const helperLine = `${mode === 'test' ? 'A tap spends a test. ' : 'A tap notes a word out, free. '}${mobileUi ? 'Hold a word to test it in either mode.' : 'Hold a word (or right-click) to test it in either mode.'}${g.wrongPicks.length ? ` ${namesLeft} name${namesLeft === 1 ? '' : 's'} left.` : ''}`;
+  const toolSwitch = (
+    <div className="ax-seg" role="group" aria-label="What a tap does">
+      <button type="button" className={`ax-tool${mode === 'mark' ? ' on' : ''}`} onClick={() => setMode('mark')} aria-pressed={mode === 'mark'} title="Note words out. Free, and it changes nothing on the board.">
+        <span aria-hidden="true" style={{ fontWeight: 900 }}>&#10007;</span> Note
+      </button>
+      <button type="button" className={`ax-tool${mode === 'test' ? ' on' : ''}`} onClick={() => setMode('test')} aria-pressed={mode === 'test'} title="Tap a word to spend a test and uncover its colour.">
+        <FlaskConical size={16} strokeWidth={2.2} aria-hidden="true" /><span className="ax-long">Test a word</span><span className="ax-short">Test</span>
+      </button>
+    </div>
+  );
+
   // How to play. Four dense paragraphs tested badly (owner, 2026-07-24), so the
   // rules now lead with the goal, show the colours rather than describing them,
   // and put the numbers in a footnote: a first-timer needs the loop, not the
@@ -742,25 +767,109 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.ax-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .ax-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .ax-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
+          /* Round six board (owner, 2026-10-14). Register-aware colours are
+             mixes into the cell token, so one value reads in both registers. */
+          .ax-board-area{--ax-good:var(--stg-good, #047857);--ax-bad:var(--stg-bad, #be123c);--ax-acc:var(--stg-acc, ${COLORS.accent});--ax-ink:var(--stg-ink, #1c1e24);--ax-mute:var(--stg-mute, #5f6774);--ax-cell:var(--stg-cell, #ffffff);--ax-line:var(--stg-line2, rgba(28,30,36,0.24));--ax-btn:var(--stg-line2, rgba(28,30,36,0.35));
+            --ax-good-soft:color-mix(in srgb, var(--ax-good) 18%, var(--ax-cell));--ax-bad-soft:color-mix(in srgb, var(--ax-bad) 18%, var(--ax-cell));--ax-acc-soft:color-mix(in srgb, var(--ax-acc) 14%, var(--ax-cell));}
+          .ax-cap{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ax-mute);}
+          .ax-cap b{color:var(--stg-acc-ink, ${COLORS.accentDeep});font-weight:800;}
+          .ax-top{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin:0 0 16px;}
+          .ax-meter{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;}
+          .ax-meter-hd{display:flex;justify-content:space-between;gap:10px;}
+          .ax-meter-hd .ax-perf-m{display:none;}
+          .ax-bar{position:relative;display:flex;gap:5px;}
+          .ax-bar span{flex:1;height:10px;border-radius:3px;background:var(--ax-line);}
+          .ax-bar span.on{background:var(--ax-acc);}
+          .ax-bar span.over{background:var(--stg-warn, #9c5d02);}
+          .ax-perf{position:relative;height:12px;font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--ax-mute);}
+          .ax-perf span{position:absolute;top:0;transform:translateX(-100%);white-space:nowrap;padding-right:2px;}
+          .ax-seg{display:flex;border:1.5px solid var(--ax-btn);border-radius:12px;padding:3px;gap:3px;flex:0 0 auto;}
+          .ax-tool{font-family:${SANS};font-weight:700;font-size:13px;border:0;background:transparent;color:var(--ax-ink);border-radius:9px;min-height:42px;padding:0 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
+          .ax-tool:hover{background:var(--stg-surf2, rgba(28,30,36,0.06));}
+          .ax-tool.on,.ax-tool.on:hover{background:var(--ax-acc);color:var(--stg-onramp, var(--white));font-weight:800;}
+          .ax-panel{background:var(--stg-raise, var(--white));border:1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:20px;padding:18px 20px 16px;display:flex;flex-direction:column;gap:12px;}
+          .ax-panel-hd{display:flex;justify-content:space-between;align-items:center;gap:12px;}
+          .ax-legend{display:flex;gap:14px;font-size:11px;font-weight:700;color:var(--ax-mute);}
+          .ax-legend span{display:flex;align-items:center;gap:5px;}
+          .ax-legend i{width:12px;height:12px;border-radius:3px;box-sizing:border-box;display:inline-block;}
           .ax-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
-          @media(max-width:560px){.ax-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}}
-          .ax-tile{font-family:${SANS};font-weight:800;font-size:13px;letter-spacing:0.04em;border-radius:9px;padding:13px 4px;cursor:pointer;border: 1.5px solid var(--stg-line, rgba(28,30,36,0.16));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};text-align:center;overflow:hidden;text-overflow:ellipsis;}
-          .ax-tile:hover:not(:disabled){border-color:var(--stg-acc, ${COLORS.accent});}
-          .ax-tile:disabled{cursor:default;}
-          .ax-tile.yes{background:${COLORS.greenSoft};border-color:${COLORS.green};color:#14532d;}
-          .ax-tile.no{background:${COLORS.redSoft};border-color:${COLORS.redInk};color:#7f1d1d;}
-          .ax-tile.given{box-shadow:inset 0 0 0 2px rgba(28,30,36,0.28);}
-          .ax-tile.marked{background:var(--stg-surf, ${COLORS.paper});border-style:dashed;border-color:rgba(28,30,36,0.32);color:${FADED};text-decoration:line-through;text-decoration-thickness:1.5px;opacity:0.7;}
-          .ax-tile.marked:hover:not(:disabled){opacity:1;}
-          .ax-tool{font-family:${SANS};font-weight:800;font-size:12px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:5px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;line-height:1.1;}
-          .ax-tool.on{background:${STAGE ? STAGE_C : COLORS.ink};color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};border-color:${STAGE ? STAGE_C : COLORS.ink};}
-          .ax-rule{display:flex;align-items:flex-start;gap:10px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.14));border-left:3px solid var(--stg-acc, ${COLORS.accent});border-radius:9px;padding:10px 12px;margin-bottom:7px;width:100%;text-align:left;font-family:${SANS};cursor:pointer;}
-          .ax-rule.struck{opacity:0.5;}
-          .ax-rule.struck .ax-rule-t{text-decoration:line-through;}
-          .ax-rule.dead{opacity:0.42;}
-          .ax-rule.dead .ax-rule-t{text-decoration:line-through;}
-          .ax-rule.win{border-color:${COLORS.green};border-left-color:${COLORS.green};background:${COLORS.greenSoft};}
-          .ax-chip{flex:0 0 auto;width:26px;height:26px;border-radius:7px;border: 1.5px solid var(--stg-line2, rgba(28,30,36,0.25));background:var(--stg-surf, ${COLORS.cream});font-family:${MONO};font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;color:${FADED};}
+          .ax-tile{position:relative;font-family:${SANS};font-weight:800;font-size:15px;letter-spacing:0.04em;border-radius:10px;height:44px;padding:0 8px;box-sizing:border-box;cursor:pointer;border:1px solid var(--ax-line);background:color-mix(in srgb, var(--ax-ink) 4%, var(--ax-cell));color:var(--ax-ink);display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+          .ax-tile .ax-w{overflow:hidden;text-overflow:clip;white-space:nowrap;}
+          @media(hover:hover){.ax-tile:hover:not(:disabled){border-color:var(--ax-acc);}}
+          .ax-tile:disabled{cursor:default;opacity:1;}
+          .ax-tile.yes{background:var(--ax-good-soft);border:2px solid var(--ax-good);}
+          .ax-tile.no{background:var(--ax-bad-soft);border:2px solid var(--ax-bad);}
+          .ax-tile.marked{background:transparent;border:1.5px dashed var(--ax-btn);color:var(--ax-mute);text-decoration:line-through;text-decoration-thickness:1.5px;}
+          .ax-g{font-size:13px;font-weight:900;line-height:1;}
+          .ax-tile.yes .ax-g{color:var(--ax-good);}
+          .ax-tile.no .ax-g{color:var(--ax-bad);}
+          .ax-flask{position:absolute;top:5px;right:6px;color:var(--ax-acc);}
+          .ax-given{position:absolute;top:4px;right:7px;font-size:8.5px;font-weight:800;letter-spacing:.08em;color:var(--ax-mute);text-decoration:none;}
+          .ax-cands{margin:14px 0 0;display:flex;flex-direction:column;gap:7px;}
+          .ax-cands-hd{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
+          .ax-help{font-size:11px;font-weight:600;color:var(--ax-mute);}
+          .ax-rule{min-height:44px;border-radius:12px;box-sizing:border-box;border:2px solid var(--ax-acc);background:var(--ax-acc-soft);display:flex;align-items:center;gap:12px;padding:6px 14px;width:100%;text-align:left;font-family:${SANS};color:var(--ax-ink);cursor:pointer;-webkit-tap-highlight-color:transparent;}
+          .ax-rule:disabled{cursor:default;}
+          .ax-rule-t{flex:1;min-width:0;font-size:14px;font-weight:700;line-height:1.35;}
+          .ax-chip{flex:0 0 auto;width:26px;height:26px;border-radius:7px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;background:var(--ax-acc);color:var(--stg-onramp, var(--white));}
+          .ax-tag{flex:0 0 auto;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-acc-ink, ${COLORS.accentDeep});}
+          .ax-rule.struck,.ax-rule.dead{border:1px solid var(--stg-line, rgba(28,30,36,0.14));background:transparent;color:var(--ax-mute);}
+          .ax-rule.struck .ax-rule-t,.ax-rule.dead .ax-rule-t{text-decoration:line-through;}
+          .ax-rule.struck .ax-chip,.ax-rule.dead .ax-chip{background:transparent;color:var(--ax-mute);border:1.5px solid var(--ax-btn);}
+          .ax-rule.wrong .ax-chip{border-color:var(--ax-bad);color:var(--ax-bad);}
+          .ax-rule.wrong .ax-tag{color:var(--ax-bad);}
+          .ax-rule.win{border:2px solid var(--ax-good);background:var(--ax-good-soft);color:var(--ax-ink);}
+          .ax-rule.win .ax-chip{background:var(--ax-good);color:var(--stg-raise, var(--white));}
+          .ax-rule.win .ax-tag{color:var(--ax-good);}
+          .ax-cands.naming .ax-rule:not(.wrong):not(:disabled){outline:2px dashed var(--ax-acc);outline-offset:2px;}
+          .ax-foot{display:flex;align-items:center;gap:10px;border-top:1px solid var(--stg-line, rgba(28,30,36,0.15));margin-top:16px;padding-top:14px;}
+          .ax-status{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
+          .ax-line1{font-size:14px;font-weight:700;line-height:1.4;color:var(--ax-ink);}
+          .ax-line1.bad{color:var(--ax-bad);}
+          .ax-line2{font-size:12px;font-weight:600;line-height:1.4;color:var(--ax-mute);}
+          .ax-obtn{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--ax-ink);border:1.5px solid var(--ax-btn);border-radius:12px;padding:0 14px;min-height:48px;cursor:pointer;white-space:nowrap;}
+          .ax-obtn:hover{background:var(--stg-surf2, rgba(28,30,36,0.06));}
+          .ax-obtn:disabled{color:var(--ax-mute);cursor:default;background:transparent;}
+          .ax-name{font-family:${SANS};font-weight:800;font-size:15px;background:var(--ax-acc);color:var(--stg-onramp, var(--white));border:2px solid var(--ax-acc);border-radius:12px;padding:0 20px;min-height:48px;cursor:pointer;white-space:nowrap;}
+          .ax-name.armed{background:transparent;color:var(--stg-acc-ink, ${COLORS.accentDeep});border-style:dashed;}
+          .ax-link{font-family:${SANS};font-weight:700;font-size:13px;background:none;border:0;color:var(--ax-mute);text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0 6px;cursor:pointer;}
+          .ax-foot-tools{display:none;}
+          .ax-foot-desk{display:flex;gap:10px;align-items:center;}
+          .ax-foot-name{display:contents;}
+          .ax-short,.ax-phonetail{display:none;}
+          @media(max-width:560px){
+            .ax-top{margin-bottom:12px;}
+            .ax-top .ax-seg{display:none;}
+            .ax-cap{font-size:10px;}
+            .ax-meter{gap:6px;}
+            .ax-meter-hd .ax-perf-m{display:inline;}
+            .ax-perf{display:none;}
+            .ax-bar{gap:4px;}
+            .ax-bar span{height:7px;border-radius:2px;}
+            .ax-panel{background:transparent;border:0;border-radius:0;padding:0;gap:0;}
+            .ax-panel-hd{display:none;}
+            .ax-grid{gap:5px;}
+            .ax-tile{height:40px;border-radius:9px;font-size:12px;letter-spacing:.02em;padding:0 3px;gap:0;}
+            .ax-tile.long{font-size:11px;letter-spacing:0;}
+            .ax-g{display:none;}
+            .ax-flask{top:3px;right:4px;width:10px;height:10px;}
+            .ax-given{top:3px;right:5px;width:5px;height:5px;border-radius:50%;background:var(--ax-mute);font-size:0;}
+            .ax-cands{gap:5px;}
+            .ax-cands-hd .ax-help{display:none;}
+            .ax-rule{min-height:44px;border-radius:10px;gap:10px;padding:5px 10px;}
+            .ax-rule-t{font-size:12.5px;line-height:1.3;}
+            .ax-chip{width:22px;height:22px;border-radius:6px;font-size:12px;}
+            .ax-tag{display:none;}
+            .ax-foot{flex-direction:column;align-items:stretch;border-top:0;padding-top:0;margin-top:12px;gap:8px;}
+            .ax-foot-tools{display:flex;gap:8px;}
+            .ax-foot-tools .ax-seg{flex:1;}
+            .ax-foot-tools .ax-tool{flex:1;min-height:44px;padding:0 6px;}
+            .ax-foot-desk{display:none;}
+            .ax-foot-name{display:block;}
+            .ax-foot-name .ax-name{width:100%;min-height:50px;}
+            .ax-long{display:none;}
+            .ax-short,.ax-phonetail{display:inline;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
@@ -791,25 +900,6 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
           <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
           <div className={LOFT && !STAGE ? 'loft-sheet' : undefined}>
 
-        {!preStart && (
-        <div style={{ fontFamily: SANS, fontSize: 13.5, fontWeight: 600, lineHeight: 1.55, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1px solid rgba(28,30,36,0.14)', borderLeft: `4px solid var(--stg-acc, ${COLORS.accent})`, borderRadius: 8, padding: '12px 16px', margin: '0 0 12px', color: INK }}>
-          <div style={{ fontSize: 15.5, fontWeight: 800, marginBottom: 5 }}>Find the one rule that fits every word on the board.</div>
-          <div style={{ marginBottom: 4 }}><b style={{ color: `var(--stg-ink, ${COLORS.green})` }}>Green</b> means the rule is true of that word, <b style={{ color: `var(--stg-ink, ${COLORS.redInk})` }}>red</b> means it is false. All {PUZZLE.tiles.length} words are already one or the other; grey just means you have not uncovered it yet. The {PUZZLE.rules.length} candidates sit below the board, and exactly one of them is true of every green word and false of every red one.</div>
-          <div>Spend a test to uncover another word. You have {PUZZLE.budget}, and {PERFECT} well chosen will settle it. Every candidate the revealed words cannot yet rule out costs you {UNPROVEN_COST} points when you name the answer, so keep testing until one rule is left standing.</div>
-        </div>
-        )}
-
-        {/* status bar */}
-        {started && (
-        <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED }}>
-          <span>tests left <b style={{ color: testsLeft <= 1 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{testsLeft}</b> of {PUZZLE.budget}</span>
-          <span>perfect <b style={{ color: INK, fontWeight: 500 }}>{PERFECT}</b> test{PERFECT === 1 ? '' : 's'}</span>
-          <span>still unproven <b style={{ color: standing ? `var(--stg-bad, ${COLORS.rust})` : COLORS.green, fontWeight: 500 }}>{standing}</b> rule{standing === 1 ? '' : 's'}{standing > 0 ? '' : ' · proved'}</span>
-          <span>name it now &rarr; <b style={{ color: overPerfect || g.wrongPicks.length ? `var(--stg-bad, ${COLORS.rust})` : COLORS.green, fontWeight: 500 }}>{liveScore}</b>/{TOTAL}</span>
-          {g.wrongPicks.length > 0 && <span>wrong names <b style={{ color: `var(--stg-ink, ${COLORS.rust})`, fontWeight: 500 }}>{g.wrongPicks.length}</b></span>}
-        </div>
-        )}
-
         {/* start tile — the board stays sealed until the clock starts */}
         {preStart && (
           <div className={STAGE ? 'stg-gate' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '22px 22px', minHeight: 320, display: 'flex', flexDirection: 'column' }}>
@@ -832,96 +922,132 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
 
-        {/* the board */}
+        {/* the board: tests meter, the tool switch, the words, the candidates,
+            one status line and the controls (round six, owner 2026-10-14) */}
         {!preStart && (
-          <>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 }}>
-              <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED }}>The board</div>
-              {playing && (
-                <div style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
-                  <button type="button" className={`ax-tool${mode === 'mark' ? ' on' : ''}`} onClick={() => setMode('mark')} title="Cross tiles out as notes. Free, and it changes nothing on the board.">
-                    <Ban size={13} /> Mark &times;
-                  </button>
-                  <button type="button" className={`ax-tool${mode === 'test' ? ' on' : ''}`} onClick={() => setMode('test')} title="Tap a tile to spend a test and flip its colour.">
-                    <FlaskConical size={13} /> Test
-                  </button>
+          <div className="ax-board-area">
+            <div className="ax-top">
+              <div className="ax-meter">
+                <div className="ax-meter-hd">
+                  <span className="ax-cap">Tests &middot; <b>{testsUsed}</b> of {PUZZLE.budget} spent</span>
+                  {PERFECT > 0 && <span className="ax-cap ax-perf-m">Perfect is {PERFECT}</span>}
                 </div>
-              )}
+                <div className="ax-bar" role="progressbar" aria-label="Tests spent" aria-valuemin={0} aria-valuemax={PUZZLE.budget} aria-valuenow={testsUsed}>
+                  {Array.from({ length: PUZZLE.budget }, (_, i) => (
+                    <span key={i} className={i < testsUsed ? (i < PERFECT ? 'on' : 'over') : undefined} />
+                  ))}
+                </div>
+                {PERFECT > 0 && (
+                  <div className="ax-perf" aria-hidden="true">
+                    <span style={{ left: `calc(${(PERFECT / PUZZLE.budget) * 100}% - ${PERFECT < PUZZLE.budget ? 2.5 : 0}px)` }}>PERFECT &#9650;</span>
+                  </div>
+                )}
+              </div>
+              {playing && toolSwitch}
             </div>
-            <div className="ax-grid">
-              {PUZZLE.tiles.map((t, i) => {
-                const shown = revealed(i);
-                const marked = !shown && (g.marks || []).includes(i);
-                const cls = shown ? (t.t ? 'yes' : 'no') : '';
+
+            <div className="ax-panel">
+              <div className="ax-panel-hd">
+                <span className="ax-cap">The board</span>
+                <div className="ax-legend" aria-hidden="true">
+                  <span><i style={{ background: 'var(--ax-good-soft)', border: '2px solid var(--ax-good)' }} />Rule true</span>
+                  <span><i style={{ background: 'var(--ax-bad-soft)', border: '2px solid var(--ax-bad)' }} />Rule false</span>
+                  <span><i style={{ background: 'color-mix(in srgb, var(--ax-ink) 4%, var(--ax-cell))', border: '1px solid var(--ax-line)' }} />Covered</span>
+                </div>
+              </div>
+              <div className="ax-grid">
+                {PUZZLE.tiles.map((t, i) => {
+                  const shown = revealed(i);
+                  const tested = g.tested.includes(i);
+                  const marked = !shown && (g.marks || []).includes(i);
+                  const cls = shown ? (t.t ? ' yes' : ' no') : '';
+                  const state = shown ? (t.t ? 'rule true' : 'rule false') : marked ? 'noted out' : 'covered';
+                  return (
+                    <button
+                      key={t.w}
+                      type="button"
+                      className={`ax-tile${cls}${marked ? ' marked' : ''}${t.w.length >= 9 ? ' long' : ''}`}
+                      onClick={() => tapTile(i)}
+                      onContextMenu={(e) => { e.preventDefault(); if (longFired.current) { longFired.current = false; return; } testTile(i); }}
+                      onPointerDown={(e) => { if (e.pointerType === 'touch') startPress(i, e); }}
+                      onPointerMove={movePress}
+                      onPointerUp={endPress}
+                      onPointerLeave={endPress}
+                      onPointerCancel={endPress}
+                      disabled={shown || !playing}
+                      aria-label={`${t.w}, ${state}${t.g ? ', given' : ''}${tested ? ', tested' : ''}`}
+                      title={t.g ? 'Given' : shown ? 'Tested' : mode === 'test' ? 'Spend a test on this word' : 'Note this word out (free). Hold or right-click to spend a test.'}
+                    >
+                      {shown && !!t.t && <span className="ax-g" aria-hidden="true">&#10003;</span>}
+                      {shown && !t.t && <span className="ax-g" aria-hidden="true">&#10007;</span>}
+                      <span className="ax-w">{t.w}</span>
+                      {tested && <FlaskConical className="ax-flask" size={13} strokeWidth={2.6} aria-hidden="true" />}
+                      {t.g && <span className="ax-given" aria-hidden="true">GIVEN</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className={`ax-cands${playing && g.naming ? ' naming' : ''}`}>
+              <div className="ax-cands-hd">
+                <span className="ax-cap">The candidates &middot; <b>{candStanding}</b> of {PUZZLE.rules.length} standing{playing && <span className="ax-phonetail">{g.naming ? ' · pick the rule' : ' · tap to cross out'}</span>}</span>
+                {playing && <span className="ax-help">{g.naming ? 'Pick the one that fits every word' : 'Tap a rule to cross it out, free'}</span>}
+              </div>
+              {PUZZLE.rules.map((r, i) => {
+                const wrong = g.wrongPicks.includes(i);
+                const struck = g.struck.includes(i);
+                const dead = !playing && solShown && i !== ANSWER;
+                const winner = !playing && solShown && i === ANSWER;
+                const tag = winner ? 'The rule' : wrong ? 'Wrong name' : (playing && !struck && candStanding === 1 ? 'Still standing' : null);
                 return (
                   <button
-                    key={t.w}
+                    key={i}
                     type="button"
-                    className={`ax-tile ${cls}${t.g ? ' given' : ''}${marked ? ' marked' : ''}`}
-                    onClick={() => tapTile(i)}
-                    onContextMenu={(e) => { e.preventDefault(); if (longFired.current) { longFired.current = false; return; } testTile(i); }}
-                    onPointerDown={(e) => { if (e.pointerType === 'touch') startPress(i, e); }}
-                    onPointerMove={movePress}
-                    onPointerUp={endPress}
-                    onPointerLeave={endPress}
-                    onPointerCancel={endPress}
-                    disabled={shown || !playing}
-                    title={t.g ? 'Given' : shown ? 'Tested' : mode === 'test' ? 'Spend a test on this tile' : 'Cross this tile out (free). Hold or right-click to spend a test.'}
-                  >{t.w}</button>
+                    className={`ax-rule${winner ? ' win' : (dead || wrong) ? ' dead' : struck ? ' struck' : ''}${wrong ? ' wrong' : ''}`}
+                    onClick={() => (g.naming ? nameRule(i) : toggleStrike(i))}
+                    disabled={!playing}
+                    aria-pressed={playing && !g.naming ? struck : undefined}
+                  >
+                    <span className="ax-chip">{String.fromCharCode(65 + i)}</span>
+                    <span className="ax-rule-t">{ruleLabel(r)}</span>
+                    {tag && <span className="ax-tag">{tag}</span>}
+                  </button>
                 );
               })}
             </div>
-          </>
-        )}
 
-        {verdict && (
-          <div style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: `var(--stg-ink, ${COLORS.rust})`, margin: '10px 0 0', lineHeight: 1.45 }}>
-            {verdict.msg}
-          </div>
-        )}
-
-        {/* the candidates */}
-        {!preStart && (
-          <>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, margin: '18px 0 8px' }}>
-              <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED }}>The candidates</div>
-              {playing && <div style={{ fontFamily: SANS, fontSize: 11.5, fontWeight: 700, color: FADED }}>{g.naming ? 'Pick the one that fits every tile' : 'Tap to cross one out, free'}</div>}
-            </div>
-            {PUZZLE.rules.map((r, i) => {
-              const dead = !playing && solShown && i !== ANSWER;
-              const winner = !playing && solShown && i === ANSWER;
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  className={`ax-rule${g.struck.includes(i) ? ' struck' : ''}${g.wrongPicks.includes(i) ? ' dead' : ''}${dead ? ' dead' : ''}${winner ? ' win' : ''}`}
-                  onClick={() => (g.naming ? nameRule(i) : toggleStrike(i))}
-                  disabled={!playing}
-                >
-                  <span className="ax-chip">{String.fromCharCode(65 + i)}</span>
-                  <span style={{ flex: '1 1 auto', minWidth: 0 }}>
-                    <span className="ax-rule-t" style={{ display: 'block', fontSize: 13.5, fontWeight: 800, color: INK, lineHeight: 1.4 }}>{ruleLabel(r)}</span>
-                  </span>
-                  {winner && <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-ink, ${COLORS.green})`, background: STAGE ? SURF : T.white, borderRadius: 4, padding: '3px 7px' }}>the rule</span>}
-                </button>
-              );
-            })}
-          </>
-        )}
-
-        {started && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '12px 0 6px' }}>
-            <button
-              type="button"
-              className="ax-btn"
-              onClick={() => { if (namesLeft <= 0) { say('No names left today.'); return; } setG((cur) => ({ ...cur, naming: !cur.naming })); }}
-              style={g.naming ? { background: `var(--stg-acc, ${COLORS.accent})`, borderColor: COLORS.accent, color: `var(--stg-onramp, ${T.white})` } : { background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(15,118,110,0.5)', color: ACC_DEEP_INK }}
-            >
-              <FlaskConical size={14} /> {g.naming ? 'Picking a rule…' : `Name it for ${liveScore} of ${TOTAL}`}{g.wrongPicks.length ? ` (${namesLeft} left)` : ''}
-            </button>
-            {(g.struck.length > 0 || (g.marks || []).length > 0) && <button type="button" className="ax-btn" onClick={clearNotes}><Eraser size={14} /> Clear notes</button>}
-            {(testsLeft === 0 || g.wrongPicks.length >= MAX_WRONG) && (
-              <button type="button" className="ax-btn" style={{ borderColor: '#c3c8cf', color: FADED }} onClick={reveal}>Reveal (ends the day)</button>
+            {started && (
+              <>
+                <div className="ax-foot">
+                  <div className="ax-status">
+                    <span className={`ax-line1${verdict ? ' bad' : ''}`} aria-live="polite">{statusLine}</span>
+                    <span className="ax-line2">{helperLine}</span>
+                  </div>
+                  <div className="ax-foot-tools">
+                    {toolSwitch}
+                    <button type="button" className="ax-obtn" onClick={clearNotes} disabled={!hasNotes}>Clear notes</button>
+                  </div>
+                  <div className="ax-foot-desk">
+                    <button type="button" className="ax-obtn" onClick={clearNotes} disabled={!hasNotes}>Clear notes</button>
+                  </div>
+                  <div className="ax-foot-name">
+                    <button
+                      type="button"
+                      className={`ax-name${g.naming ? ' armed' : ''}`}
+                      onClick={() => { if (namesLeft <= 0) { say('No names left today.'); return; } setG((cur) => ({ ...cur, naming: !cur.naming })); }}
+                      aria-pressed={g.naming}
+                    >
+                      {g.naming ? 'Picking a rule…' : `Name it · ${liveScore} of ${TOTAL}`}{g.wrongPicks.length ? ` (${namesLeft} left)` : ''}
+                    </button>
+                  </div>
+                </div>
+                {(testsLeft === 0 || g.wrongPicks.length >= MAX_WRONG) && (
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 4 }}>
+                    <button type="button" className="ax-link" onClick={reveal}>Reveal the rule (ends the day)</button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
@@ -934,7 +1060,7 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
             <>
               <div style={{ maxWidth: 472, margin: '14px 0 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
-                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : g.status === 'done' ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{score}/{TOTAL}</span>
+                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? `var(--stg-good, ${COLORS.green})` : g.status === 'done' ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{score}/{TOTAL}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {g.status === 'done'
                       ? (won ? <>Named at perfect on {testsUsed} test{testsUsed === 1 ? '' : 's'}.</> : <>Named it on {testsUsed} test{testsUsed === 1 ? '' : 's'}{g.wrongPicks.length ? ` and ${g.wrongPicks.length} wrong name${g.wrongPicks.length === 1 ? '' : 's'}` : ''}.</>)
@@ -1055,7 +1181,7 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s board, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s board, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>

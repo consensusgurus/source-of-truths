@@ -19,7 +19,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { X, RotateCcw, Lightbulb, Eye, Smartphone, Trash2 } from 'lucide-react';
+import { X, RotateCcw, Lightbulb, Smartphone, Trash2 } from 'lucide-react';
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
@@ -213,6 +213,7 @@ function findBreaks(cells, p) {
 // The edge marks, one SVG sheet over the grid on the cell borders. Pointer
 // events off, so a tap always reaches the square underneath. Paint is
 // currentColor / tokens, never an ink literal (the SVG paint contrast rule).
+// The discs are big enough to read at a glance (2026-10-14 rebuild).
 function MarksOverlay({ edges, n, badMark }) {
   return (
     <svg viewBox={`0 0 ${n} ${n}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 3 }} aria-hidden="true">
@@ -221,18 +222,107 @@ function MarksOverlay({ edges, n, badMark }) {
         const y = a === c ? a + 0.5 : Math.max(a, c);
         const broken = badMark.has(i);
         const ink = broken ? 'var(--stg-bad, #be123c)' : 'var(--stg-ink, #0b0d12)';
-        const s = 0.075;
+        const s = 0.085;
         return (
           <g key={i}>
-            <circle cx={x} cy={y} r={0.16} strokeWidth={0.035} style={{ fill: broken ? 'color-mix(in srgb, var(--stg-bad, #be123c) 20%, var(--stg-cell, #fff))' : 'var(--stg-cell, #ffffff)', stroke: broken ? 'var(--stg-bad, #be123c)' : 'var(--stg-cell-line, rgba(11,15,26,0.44))' }} />
+            <circle cx={x} cy={y} r={0.2} strokeWidth={0.03} style={{ fill: broken ? 'color-mix(in srgb, var(--stg-bad, #be123c) 20%, var(--stg-cell, #fff))' : 'var(--stg-cell, #ffffff)', stroke: broken ? 'var(--stg-bad, #be123c)' : 'var(--stg-line3, rgba(11,15,26,0.45))' }} />
             {t === '='
-              ? <path d={`M${x - s} ${y - 0.035}H${x + s}M${x - s} ${y + 0.035}H${x + s}`} strokeWidth={0.032} strokeLinecap="round" style={{ stroke: ink, fill: 'none' }} />
-              : <path d={`M${x - s * 0.8} ${y - s * 0.8}L${x + s * 0.8} ${y + s * 0.8}M${x + s * 0.8} ${y - s * 0.8}L${x - s * 0.8} ${y + s * 0.8}`} strokeWidth={0.032} strokeLinecap="round" style={{ stroke: ink, fill: 'none' }} />}
+              ? <path d={`M${x - s} ${y - 0.04}H${x + s}M${x - s} ${y + 0.04}H${x + s}`} strokeWidth={0.042} strokeLinecap="round" style={{ stroke: ink, fill: 'none' }} />
+              : <path d={`M${x - s * 0.78} ${y - s * 0.78}L${x + s * 0.78} ${y + s * 0.78}M${x + s * 0.78} ${y - s * 0.78}L${x - s * 0.78} ${y + s * 0.78}`} strokeWidth={0.042} strokeLinecap="round" style={{ stroke: ink, fill: 'none' }} />}
           </g>
         );
       })}
     </svg>
   );
+}
+
+// THE ROOM TINTS (2026-10-14 rebuild). Rooms are shaded so the walled groups
+// read before the walls do: a colouring of the room graph (two rooms that
+// share a wall never share a tint), three tints where three will do, a fourth
+// only if the layout needs it. Computed at render from the board, nothing
+// stored. The tints are faint mixes of the ink and the accent into the cell.
+const ROOM_TINTS = [
+  'var(--stg-cell, #ffffff)',
+  'color-mix(in srgb, var(--stg-ink, #0b0d12) 8%, var(--stg-cell, #ffffff))',
+  'color-mix(in srgb, var(--stg-acc, #1a7f37) 10%, var(--stg-cell, #ffffff))',
+  'color-mix(in srgb, var(--stg-ink, #0b0d12) 4%, color-mix(in srgb, var(--stg-acc, #1a7f37) 6%, var(--stg-cell, #ffffff)))',
+];
+function colourRooms(rooms, n) {
+  const adj = new Map();
+  const add = (a, b) => { if (!adj.has(a)) adj.set(a, new Set()); if (b != null) adj.get(a).add(b); };
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) {
+      const id = rooms[r][c];
+      add(id, null);
+      if (c + 1 < n && rooms[r][c + 1] !== id) { add(id, rooms[r][c + 1]); add(rooms[r][c + 1], id); }
+      if (r + 1 < n && rooms[r + 1][c] !== id) { add(id, rooms[r + 1][c]); add(rooms[r + 1][c], id); }
+    }
+  }
+  const ids = [...adj.keys()].sort((a, b) => adj.get(b).size - adj.get(a).size);
+  for (const K of [3, 4]) {
+    const col = new Map();
+    let steps = 0;
+    const go = (i) => {
+      if (i === ids.length) return true;
+      if (++steps > 20000) return false;
+      const id = ids[i];
+      for (let k = 0; k < K; k++) {
+        let ok = true;
+        for (const nb of adj.get(id)) if (col.get(nb) === k) { ok = false; break; }
+        if (!ok) continue;
+        col.set(id, k);
+        if (go(i + 1)) return true;
+        col.delete(id);
+      }
+      return false;
+    };
+    if (go(0)) return col;
+  }
+  const col = new Map();
+  ids.forEach((id) => {
+    const used = new Set([...adj.get(id)].map((nb) => col.get(nb)));
+    let k = 0; while (used.has(k) && k < 3) k++;
+    col.set(id, k);
+  });
+  return col;
+}
+
+// The first rule the board breaks, in words, for the status line. Read from
+// the board alone, the same tests findBreaks runs.
+function breakNote(cells, p) {
+  const n = p.n, half = n / 2;
+  const word = (v) => (v === DOT ? 'dots' : 'rings');
+  for (const o of [0, 1]) {
+    for (let k = 0; k < n; k++) {
+      const idx = (i) => (o === 0 ? k * n + i : i * n + k);
+      for (let i = 0; i + 2 < n; i++) {
+        const a = cells[idx(i)];
+        if (a !== EMPTY && a === cells[idx(i + 1)] && a === cells[idx(i + 2)]) return `Three ${word(a)} in a line in ${o === 0 ? 'row' : 'column'} ${k + 1}. Never three alike.`;
+      }
+    }
+  }
+  for (const o of [0, 1]) {
+    for (let k = 0; k < n; k++) {
+      const idx = (i) => (o === 0 ? k * n + i : i * n + k);
+      for (const v of [DOT, RING]) {
+        let cnt = 0;
+        for (let i = 0; i < n; i++) if (cells[idx(i)] === v) cnt++;
+        if (cnt > half) return `Too many ${word(v)} in ${o === 0 ? 'row' : 'column'} ${k + 1}. It holds ${half} of each.`;
+      }
+    }
+  }
+  const rooms = {};
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) (rooms[p.rooms[r][c]] = rooms[p.rooms[r][c]] || []).push(r * n + c);
+  for (const sq of Object.values(rooms)) {
+    for (const v of [DOT, RING]) {
+      if (sq.filter((i) => cells[i] === v).length * 2 > sq.length) return `A room has too many ${word(v)}. Each room is half and half.`;
+    }
+  }
+  for (const [a, b, c, d, t] of p.edges) {
+    const x = cells[a * n + b], y = cells[c * n + d];
+    if (x !== EMPTY && y !== EMPTY && ((x === y) !== (t === '='))) return t === '=' ? 'An = mark is broken: those two squares must match.' : 'An \u00d7 mark is broken: those two squares must differ.';
+  }
+  return 'Something on the board breaks a rule.';
 }
 
 function freshState(p) {
@@ -259,6 +349,9 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
 
   const [g, setG] = useState(() => freshState(PUZZLE));
   const [sel, setSel] = useState(-1);
+  // What a tap places: Cycle (empty, dot, ring) is the old behaviour; Dot and
+  // Ring place that piece, and tapping the same piece again clears it.
+  const [tool, setTool] = useState('cycle');
   const [canUndo, setCanUndo] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [gateRules, setGateRules] = useState(false);
@@ -514,7 +607,9 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
   function cellClick(idx) {
     setSel(idx);
     if (givenSet.has(idx)) return;
-    cycle(idx);
+    if (tool === 'cycle') { cycle(idx); return; }
+    const v = tool === 'dot' ? DOT : RING;
+    setCell(idx, cells[idx] === v ? EMPTY : v);
   }
 
   function clearBoard() {
@@ -621,26 +716,69 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
     } catch (e) {}
   }
 
-  // Walls must read as walls: globals.css rounds every <button> 8px and the
-  // stage's cell-line is nearly as dark as line3, so the first deploy drew a
-  // field of rounded tiles with no visible rooms. Thin rules are the faint
-  // hairline; walls are a heavy rule in the register's ink.
+  // THE BOARD (2026-10-14 rebuild). Rooms are tinted (see colourRooms) and
+  // walled; the selected square tints its row, column and room; printed pieces
+  // are ink and the player's are the accent; a pip strip at the end of every
+  // row and under every column counts its dots (top) and rings (bottom).
+  // globals.css rounds every <button> 8px, so cells carry border-radius:0.
+  const roomTint = useMemo(() => colourRooms(PUZZLE.rooms, N), [PUZZLE, N]);
+  const HALF = N / 2;
+  const boxRef = useRef(null);
+  const [boxW, setBoxW] = useState(0);
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return undefined;
+    const read = () => setBoxW(el.clientWidth || 0);
+    read();
+    let ro = null;
+    try { ro = new ResizeObserver(read); ro.observe(el); } catch (e) { window.addEventListener('resize', read); }
+    return () => { if (ro) ro.disconnect(); else window.removeEventListener('resize', read); };
+  });
+  // Sizes are measured, so 6x6, 8x8 and the 10x10 Sunday all fit any screen:
+  // the pips are sized off the cell so a column's strip never overflows it.
+  const avail = Math.min(boxW || 420, 560);
+  const EDGE = avail < 420 ? 2.5 : 3;
+  let cellPx = 50, pip = 8, pipGap = 3, tallyW = HALF * 8 + (HALF - 1) * 3, tallyGap = 10;
+  for (let k = 0; k < 3; k++) {
+    tallyGap = cellPx >= 44 ? 12 : 8;
+    cellPx = Math.max(22, Math.min(64, Math.floor((avail - tallyW - tallyGap - EDGE * 2) / N)));
+    pipGap = cellPx >= 44 ? 3 : cellPx >= 36 ? 2 : 1;
+    pip = Math.max(4, Math.min(8, Math.floor((cellPx * 0.82 - (HALF - 1) * pipGap) / HALF)));
+    tallyW = HALF * pip + (HALF - 1) * pipGap;
+  }
+  const gridPx = cellPx * N + EDGE * 2;
   const WALL = 'color-mix(in srgb, var(--stg-ink, #0b0d12) 78%, transparent)';
   const THIN = 'var(--stg-line, rgba(28,30,36,0.18))';
+  const WALL_W = cellPx >= 44 ? 3 : 2;
+  const selR = sel >= 0 ? Math.floor(sel / N) : -1, selC = sel >= 0 ? sel % N : -1;
+  const selRoom = sel >= 0 ? PUZZLE.rooms[selR][selC] : null;
+  const showSel = sel >= 0 && playing && !!g.t0;
+  // Counts per line and room, from what is on the board (printed and played).
+  const lineCount = useMemo(() => {
+    const rowD = Array(N).fill(0), rowR = Array(N).fill(0), colD = Array(N).fill(0), colR = Array(N).fill(0);
+    const roomD = {}, roomR = {}, roomN = {};
+    for (let i = 0; i < CELLS; i++) {
+      const r = Math.floor(i / N), c = i % N, id = PUZZLE.rooms[r][c], v = viewCells[i];
+      roomN[id] = (roomN[id] || 0) + 1;
+      if (v === DOT) { rowD[r]++; colD[c]++; roomD[id] = (roomD[id] || 0) + 1; }
+      if (v === RING) { rowR[r]++; colR[c]++; roomR[id] = (roomR[id] || 0) + 1; }
+    }
+    return { rowD, rowR, colD, colR, roomD, roomR, roomN };
+  }, [viewCells, PUZZLE, N, CELLS]);
   function cellStyle(idx) {
     const r = Math.floor(idx / N), c = idx % N, id = PUZZLE.rooms[r][c];
     const wallR = c < N - 1 && PUZZLE.rooms[r][c + 1] !== id;
     const wallB = r < N - 1 && PUZZLE.rooms[r + 1][c] !== id;
     const given = givenSet.has(idx);
     const isBad = breaks.bad.has(idx);
-    let bg = STAGE ? 'var(--stg-cell)' : T.white;
-    if (given) bg = STAGE ? 'color-mix(in srgb, var(--stg-ink) 9%, var(--stg-cell))' : '#eef1f6';
-    if (isBad) bg = 'color-mix(in srgb, var(--stg-bad, #be123c) 18%, var(--stg-cell, #ffffff))';
+    let bg = STAGE ? ROOM_TINTS[roomTint.get(id) || 0] : T.white;
+    if (showSel && (r === selR || c === selC || id === selRoom)) bg = 'color-mix(in srgb, var(--stg-acc, #1a7f37) 28%, var(--stg-cell, #ffffff))';
+    if (isBad) bg = 'color-mix(in srgb, var(--stg-bad, #be123c) 20%, var(--stg-cell, #ffffff))';
     return {
       background: bg,
-      boxShadow: idx === sel && playing && g.t0 ? `inset 0 0 0 2.5px var(--stg-acc, ${COLORS.accent})` : undefined,
-      borderRight: c === N - 1 ? 'none' : `${wallR ? 3 : 1}px solid ${wallR ? WALL : THIN}`,
-      borderBottom: r === N - 1 ? 'none' : `${wallB ? 3 : 1}px solid ${wallB ? WALL : THIN}`,
+      boxShadow: idx === sel && showSel ? `inset 0 0 0 ${cellPx >= 44 ? 3 : 2}px var(--stg-acc, ${COLORS.accent})` : undefined,
+      borderRight: c === N - 1 ? 'none' : `${wallR ? WALL_W : 1}px solid ${wallR ? WALL : THIN}`,
+      borderBottom: r === N - 1 ? 'none' : `${wallB ? WALL_W : 1}px solid ${wallB ? WALL : THIN}`,
       cursor: given || !playing ? 'default' : 'pointer',
     };
   }
@@ -649,11 +787,56 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
     if (v === EMPTY) return null;
     const isBad = breaks.bad.has(idx);
     const given = givenSet.has(idx);
-    if (v === DOT) {
-      return <span aria-hidden="true" style={{ width: '54%', height: '54%', borderRadius: '50%', background: isBad ? 'var(--stg-bad, #be123c)' : (given ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-acc, ${COLORS.accent})`), display: 'block' }} />;
-    }
-    return <span aria-hidden="true" style={{ width: '50%', height: '50%', borderRadius: '50%', border: `${N >= 10 ? 3 : 4}px solid ${isBad ? 'var(--stg-bad, #be123c)' : (given ? `var(--stg-ink, ${COLORS.ink})` : 'var(--stg-ink2, #3f4757)')}`, boxSizing: 'border-box', display: 'block' }} />;
+    const col = isBad ? 'var(--stg-bad, #be123c)' : (given ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-acc, ${COLORS.accent})`);
+    const d = Math.round(cellPx * 0.46);
+    if (v === DOT) return <span aria-hidden="true" style={{ width: d, height: d, borderRadius: '50%', background: col, display: 'block', flex: '0 0 auto' }} />;
+    return <span aria-hidden="true" style={{ width: d, height: d, borderRadius: '50%', border: `${Math.max(2.5, Math.round(cellPx * 0.085))}px solid ${col}`, boxSizing: 'border-box', display: 'block', flex: '0 0 auto' }} />;
   }
+  // One line's pips: a row of HALF dots over a row of HALF rings. Filled up to
+  // the count in the accent; every pip of a kind turns red once it is over.
+  function tally({ d, r, label }) {
+    const one = (k, n2) => Array.from({ length: HALF }, (_, i) => {
+      const over = n2 > HALF, on = i < n2;
+      const c2 = over ? 'var(--stg-bad, #be123c)' : `var(--stg-acc, ${COLORS.accent})`;
+      return <span key={i} style={k === 'dot'
+        ? { width: pip, height: pip, borderRadius: '50%', boxSizing: 'border-box', background: on ? c2 : 'transparent', border: on ? 0 : '1.5px solid var(--stg-line3, rgba(11,15,26,0.45))' }
+        : { width: pip, height: pip, borderRadius: '50%', boxSizing: 'border-box', border: on ? `${pip >= 6 ? 2 : 1.5}px solid ${c2}` : '1.5px solid var(--stg-line3, rgba(11,15,26,0.45))' }} />;
+    });
+    return (
+      <span role="img" aria-label={label} style={{ display: 'flex', flexDirection: 'column', gap: pipGap + 1, alignItems: 'center' }}>
+        <span style={{ display: 'flex', gap: pipGap }}>{one('dot', d)}</span>
+        <span style={{ display: 'flex', gap: pipGap }}>{one('ring', r)}</span>
+      </span>
+    );
+  }
+  const plural = (k, w) => `${k} ${w}${k === 1 ? '' : 's'}`;
+  const needTxt = (dHave, rHave, size) => {
+    const h = size / 2, dn = Math.max(0, h - dHave), rn = Math.max(0, h - rHave);
+    if (!dn && !rn) return 'is complete';
+    if (dn === rn) return `needs ${dn} of each`;
+    return `needs ${[dn ? plural(dn, 'dot') : null, rn ? plural(rn, 'ring') : null].filter(Boolean).join(' and ')}`;
+  };
+  const statusMain = !playing
+    ? (won ? 'Solved. Every row, column and room is half and half.' : 'The board is ended.')
+    : breaks.any
+      ? breakNote(cells, PUZZLE)
+      : showSel
+        ? `Row ${selR + 1} ${needTxt(lineCount.rowD[selR], lineCount.rowR[selR], N)}, column ${selC + 1} ${needTxt(lineCount.colD[selC], lineCount.colR[selC], N)}. Its room ${needTxt(lineCount.roomD[selRoom] || 0, lineCount.roomR[selRoom] || 0, lineCount.roomN[selRoom])}.`
+        : 'Tap a square to see what its row, column and room still need.';
+  const toolSwitch = (
+    <div className="du-seg" role="group" aria-label="What a tap places">
+      <button type="button" className={tool === 'cycle' ? 'du-tool on' : 'du-tool'} aria-pressed={tool === 'cycle'} onClick={() => setTool('cycle')} title="Tap cycles a square: dot, ring, empty">Cycle</button>
+      <button type="button" className={tool === 'dot' ? 'du-tool on' : 'du-tool'} aria-pressed={tool === 'dot'} onClick={() => setTool('dot')} title="Tap places a dot; tap a dot again to clear it"><span className="du-sw" style={{ background: 'currentColor' }} />Dot</button>
+      <button type="button" className={tool === 'ring' ? 'du-tool on' : 'du-tool'} aria-pressed={tool === 'ring'} onClick={() => setTool('ring')} title="Tap places a ring; tap a ring again to clear it"><span className="du-sw" style={{ border: '3px solid currentColor' }} />Ring</button>
+    </div>
+  );
+  const revealBtn = identity && filledCount > 0 && playing && (
+    <button type="button" className="du-link" onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
+      aria-label={armReveal ? 'Tap again to end the day and show the solution' : 'Reveal the solution'}
+      style={armReveal ? { color: `var(--stg-bad, ${COLORS.rust})` } : undefined}>
+      {armReveal ? 'Tap again to end and show the solution' : 'Reveal'}
+    </button>
+  );
 
   const rulesBody = (
     <DailyRules
@@ -698,9 +881,47 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.du-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .du-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .du-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .du-cell{border-radius:0 !important;display:flex;align-items:center;justify-content:center;box-sizing:border-box;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;padding:0;border-top:none;border-left:none;font:inherit;}
+          .du-cell{border-radius:0 !important;display:flex;align-items:center;justify-content:center;box-sizing:border-box;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;min-width:0;min-height:0;overflow:hidden;padding:0;border-top:none;border-left:none;font:inherit;}
           .du-cell:focus-visible{outline:3px solid var(--stg-acc, ${COLORS.accent});outline-offset:-3px;}
-          .du-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+          .du-cell:disabled{opacity:1;}
+          .du-top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin:2px auto 14px;}
+          .du-cap{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:${FADED};}
+          .du-rule{font-size:13px;font-weight:600;line-height:1.4;color:${STAGE ? 'var(--stg-ink2)' : INK};}
+          .du-rule b{color:${INK};font-weight:800;}
+          /* THE TOOL SWITCH: one segmented control, the live segment filled with the accent. */
+          .du-seg{display:flex;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};border-radius:12px;padding:3px;gap:3px;flex:0 0 auto;}
+          .du-tool{font-family:${SANS};font-weight:700;font-size:13px;border:0;background:transparent;color:${INK};border-radius:9px;min-height:44px;padding:0 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;}
+          .du-tool:hover{background:var(--stg-surf2, rgba(28,30,36,0.06));}
+          .du-tool.on,.du-tool.on:hover{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));font-weight:800;}
+          .du-sw{width:13px;height:13px;border-radius:50%;box-sizing:border-box;display:inline-block;flex:0 0 auto;}
+          .du-panel{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border:1px solid ${SURF_B};border-radius:20px;padding:24px 18px 16px;}
+          .du-foot{display:flex;align-items:center;gap:12px;border-top:1px solid ${SURF_B};margin-top:16px;padding-top:14px;}
+          .du-status{font-size:15px;font-weight:700;line-height:1.4;min-height:2.8em;}
+          .du-help{font-size:12px;font-weight:600;line-height:1.4;color:${FADED};}
+          .du-acts{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+          .du-ob{font-family:${SANS};font-weight:700;font-size:14px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:transparent;color:${INK};border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;}
+          .du-ob:hover{background:var(--stg-surf2, rgba(28,30,36,0.06));}
+          .du-ob:disabled{color:${FADED};cursor:default;}
+          .du-ob:disabled:hover{background:transparent;}
+          .du-link{font-family:${SANS};font-weight:700;font-size:12px;background:none;border:0;color:${INK};text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0 6px;cursor:pointer;}
+          .du-under{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:8px;font-size:12px;font-weight:600;color:${FADED};}
+          .du-ph{display:none;}
+          @media(max-width:560px){
+            .du-dk{display:none !important;}
+            .du-ph{display:inline;}
+            .du-help.du-ph{display:block;}
+            .du-top{margin-bottom:14px;}
+            .du-rule{font-size:12px;}
+            .du-panel{background:transparent;border:0;padding:0;}
+            .du-foot{flex-direction:column;align-items:stretch;border-top:0;margin-top:16px;padding-top:0;}
+            .du-status{font-size:14px;min-height:0;}
+            .du-toolfoot{display:flex;margin-top:6px;}
+            .du-toolfoot .du-seg{flex:1;}
+            .du-toolfoot .du-tool{flex:1;min-height:46px;font-size:14px;padding:0 8px;}
+            .du-acts{justify-content:flex-start;flex-wrap:nowrap;margin-top:4px;}
+            .du-acts .du-ob{flex:1 1 0;padding:0 10px;}
+            .du-acts .du-ph .du-link{font-size:13px;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
@@ -749,64 +970,98 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
         <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
         <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>filled <b style={{ color: INK, fontWeight: 500 }}>{filledCount}</b>/{FREE.length}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: SANS, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid var(--stg-line, rgba(28,30,36,0.18))', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
+            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>filled <b style={{ color: INK, fontWeight: 700 }}>{filledCount}</b>/{FREE.length}</span>
           </div>
           )}
 
-          <div style={{ maxWidth: GRID_MAX, margin: '0 auto' }}>
-            <div role="grid" aria-label={`Duet board, ${N} by ${N}`} style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))`, aspectRatio: '1', border: `3px solid ${WALL}`, borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
-              {Array.from({ length: CELLS }).map((_, idx) => {
-                const v = viewCells[idx];
-                const r = Math.floor(idx / N), c = idx % N;
-                const word = v === EMPTY ? 'empty' : v === DOT ? 'dot' : 'ring';
-                return (
-                  <button key={idx} type="button" className="du-cell" style={cellStyle(idx)}
-                    onClick={() => cellClick(idx)}
-                    disabled={!playing}
-                    aria-label={`Row ${r + 1}, column ${c + 1}, ${word}${givenSet.has(idx) ? ', printed' : ''}${breaks.bad.has(idx) ? ', breaks a rule' : ''}`}>
-                    {markFor(idx)}
-                  </button>
-                );
-              })}
-              <MarksOverlay edges={PUZZLE.edges} n={N} badMark={breaks.badMark} />
+          {/* THE RULE IN ONE LINE, and the tool switch beside it on a computer
+              (on a phone it sits at the foot). */}
+          <div className="du-top">
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <span className="du-cap du-dk">Half and half, every line and room</span>
+              <span className="du-rule"><span className="du-ph">Half and half in every line and room. </span>Never three alike in a line. <b>=</b> match, <b>&times;</b> differ.</span>
             </div>
+            {started && <div className="du-dk">{toolSwitch}</div>}
           </div>
 
-          {playing && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' }}>
-              <button className="du-tool" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" style={{ opacity: canUndo ? 1 : 0.4, cursor: canUndo ? 'pointer' : 'default' }}>
-                <RotateCcw size={14} /> Undo
-              </button>
-              <button className="du-tool" onClick={clearBoard} disabled={!hasEntries}
-                title="Clear every square you have filled and start over on the same clock"
-                style={hasEntries
-                  ? (armClear ? { background: STAGE ? 'var(--stg-surf2)' : '#fdeeee', borderColor: 'rgba(192,57,43,0.5)', color: `var(--stg-ink, ${COLORS.rust})` } : undefined)
-                  : { opacity: 0.4, cursor: 'default' }}>
-                <Trash2 size={14} /> {armClear ? 'Tap again to clear' : 'Clear'}
-              </button>
-              {hintOk && !g.hintUsed && (
-                <button className="du-tool" onClick={useHint} title="Fill one correct square (one hint, first play only)" style={{ color: ACC_DEEP_INK }}>
-                  <Lightbulb size={14} /> Hint
+          <div className="du-panel">
+          <div ref={boxRef} style={{ width: '100%' }}>
+           <div style={{ display: 'flex', justifyContent: 'center', gap: tallyGap }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: tallyGap - 2 }}>
+              <div role="grid" aria-label={`Duet board, ${N} by ${N}`} style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, ${cellPx}px)`, gridTemplateRows: `repeat(${N}, ${cellPx}px)`, width: gridPx, height: gridPx, boxSizing: 'border-box', border: `${EDGE}px solid ${WALL}`, borderRadius: 6, overflow: 'hidden', position: 'relative' }}>
+                {Array.from({ length: CELLS }).map((_, idx) => {
+                  const v = viewCells[idx];
+                  const r = Math.floor(idx / N), c = idx % N;
+                  const word = v === EMPTY ? 'empty' : v === DOT ? 'dot' : 'ring';
+                  return (
+                    <button key={idx} type="button" className="du-cell" style={cellStyle(idx)}
+                      onClick={() => cellClick(idx)}
+                      disabled={!playing}
+                      aria-label={`Row ${r + 1}, column ${c + 1}, ${word}${givenSet.has(idx) ? ', printed' : ''}${breaks.bad.has(idx) ? ', breaks a rule' : ''}`}>
+                      {markFor(idx)}
+                    </button>
+                  );
+                })}
+                <MarksOverlay edges={PUZZLE.edges} n={N} badMark={breaks.badMark} />
+              </div>
+              {/* the pips under every column */}
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, ${cellPx}px)`, paddingLeft: EDGE }}>
+                {Array.from({ length: N }, (_, c) => (
+                  <div key={c} style={{ display: 'flex', justifyContent: 'center' }}>
+                    {tally({ d: lineCount.colD[c], r: lineCount.colR[c], label: `Column ${c + 1}: ${lineCount.colD[c]} of ${HALF} dots, ${lineCount.colR[c]} of ${HALF} rings` })}
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* the pips at the end of every row */}
+            <div style={{ display: 'grid', gridTemplateRows: `repeat(${N}, ${cellPx}px)`, paddingTop: EDGE, alignContent: 'start' }}>
+              {Array.from({ length: N }, (_, r) => (
+                <div key={r} style={{ display: 'flex', alignItems: 'center' }}>
+                  {tally({ d: lineCount.rowD[r], r: lineCount.rowR[r], label: `Row ${r + 1}: ${lineCount.rowD[r]} of ${HALF} dots, ${lineCount.rowR[r]} of ${HALF} rings` })}
+                </div>
+              ))}
+            </div>
+           </div>
+          </div>
+
+          {/* the status line, the helper, the tool switch on a phone, and the
+              outline buttons */}
+          {started && (
+            <div className="du-foot">
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <span aria-live="polite" className="du-status" style={{ color: breaks.any ? `var(--stg-bad, ${COLORS.rust})` : INK }}>{statusMain}</span>
+                <span className="du-help du-dk">Pips count each line: top row dots, bottom row rings. A square turns red when it breaks a rule.{g.hintUsed ? ' Hint used.' : ''}</span>
+                <span className="du-help du-ph">Pips count each line: dots on top, rings below.</span>
+              </div>
+              <div className="du-ph du-toolfoot">{toolSwitch}</div>
+              <div className="du-acts">
+                <button type="button" className="du-ob" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" aria-label="Undo last move">
+                  <RotateCcw size={15} /> Undo
                 </button>
-              )}
+                <button type="button" className="du-ob" onClick={clearBoard} disabled={!hasEntries}
+                  title="Clear every square you have filled and start over on the same clock"
+                  aria-label={armClear ? 'Tap again to clear the board' : 'Clear the board'}
+                  style={hasEntries && armClear ? { borderColor: `var(--stg-bad, ${COLORS.rust})`, color: `var(--stg-bad, ${COLORS.rust})` } : undefined}>
+                  <Trash2 size={15} /> {armClear ? 'Tap again to clear' : 'Clear'}
+                </button>
+                {hintOk && !g.hintUsed && (
+                  <button type="button" className="du-ob" onClick={useHint} title="Fill one correct square (one hint, first play only)" aria-label="Hint: fill one square">
+                    <Lightbulb size={15} /> Hint
+                  </button>
+                )}
+                <span className="du-ph">{revealBtn}</span>
+              </div>
             </div>
           )}
-
-        {started && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--stg-line, rgba(28,30,36,0.10))', flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: breaks.any ? 'var(--stg-bad, #be123c)' : `var(--stg-mute, ${COLORS.faded})` }}>
-              {breaks.any ? 'Something on the board breaks a rule.' : 'Tap a square: dot, then ring, then empty.'}
-            </span>
-            {identity && filledCount > 0 && (
-              <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-                style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <Eye size={13} /> {armReveal ? 'Tap again to end and show the solution' : 'Reveal & end'}
-              </button>
-            )}
           </div>
-        )}
+          {started && (
+            <div className="du-under du-dk">
+              <span>Shaded rooms are walled groups. Printed pieces are plain; the ones you place are coloured.</span>
+              {revealBtn}
+            </div>
+          )}
           <div className={STAGE ? undefined : 'loft-sol'}>
           {!playing && (
             <div style={{ maxWidth: GRID_MAX + 76, margin: '0 auto' }}>

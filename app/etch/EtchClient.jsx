@@ -23,7 +23,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { HelpCircle, RotateCcw, X, Lightbulb, Eye, Smartphone, Square, Ban } from 'lucide-react';
+import { HelpCircle, RotateCcw, X, Lightbulb, Smartphone } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -75,7 +75,9 @@ const COLORS = {
 // label change could be read. A confirm this fast was never a decision.
 const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
+// One typeface (owner, 2026-10-08): the old mono stack is retired, MONO is kept
+// as a name so the legacy surfaces below still read, and it is simply Manrope.
+const MONO = SANS;
 const HELP_KEY = 'sot_etch_help_seen';
 const STATS_KEY = 'sot_etch_stats';
 const TOOL_KEY = 'sot_etch_tool';   // remembered tool: 'fill' | 'mark'
@@ -240,7 +242,7 @@ function EtchGallery({ puzzles, rec, currentNum }) {
               style={{
                 display: 'block', borderRadius: 4, overflow: 'hidden', aspectRatio: '1',
                 background: done ? `var(--stg-surf, ${T.white})` : 'var(--stg-surf, #eceff4)',
-                border: here ? `2px solid var(--stg-acc, ${COLORS.accent})` : `1px solid ${done ? 'rgba(28,30,36,0.18)' : 'rgba(28,30,36,0.08)'}`,
+                border: here ? `2px solid var(--stg-acc, ${COLORS.accent})` : `1px solid ${done ? 'var(--stg-line2, rgba(28,30,36,0.18))' : 'var(--stg-line, rgba(28,30,36,0.08))'}`,
                 boxSizing: 'border-box', padding: done ? 2 : 0,
               }}
             >
@@ -346,6 +348,16 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
   // the node, so a render only happens when the target SQUARE changes.
   const aimElRef = useRef(null);
   const aimPosRef = useRef({ x: 0, y: 0 });
+  // THE CROSSHAIR (2026-10-14 board rebuild). The square under the mouse, or the
+  // aimed square on a touchscreen, lights its row, its column and both clue
+  // strips. It is drawn by one small generated stylesheet rather than by
+  // re-rendering the squares, which are memoized below, so a mouse crossing a
+  // 20x20 board costs a style swap per square, not ~540 divs.
+  const [hover, setHover] = useState(-1);
+  const hoverRef = useRef(-1);
+  // The memoized squares call the live handlers through this ref, so they never
+  // hold a stale tool, identity or undo stack.
+  const cellFnRef = useRef({});
 
   const cells = g.cells;
   const playing = g.status === 'playing';
@@ -737,10 +749,22 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
     pushUndo(gRef.current.cells);
     applyPaint(idx, val);
   }
+  function setHoverIdx(i) {
+    if (hoverRef.current === i) return;
+    hoverRef.current = i;
+    setHover(i);
+  }
   function onGridMove(e) {
     if (paintRef.current) {                 // mouse stroke, unchanged
       const idx = cellFromPoint(e.clientX, e.clientY);
       if (idx >= 0) applyPaint(idx, paintRef.current.val);
+      if (e.pointerType === 'mouse') setHoverIdx(idx);
+      return;
+    }
+    if (e.pointerType === 'mouse') {
+      // Hover only: the crosshair follows the cursor. Nothing is written.
+      const t = e.target && e.target.closest ? e.target.closest('[data-i]') : null;
+      setHoverIdx(t ? Number(t.getAttribute('data-i')) : -1);
       return;
     }
     const p = pendRef.current;
@@ -886,6 +910,163 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
   const shellMax = W >= 18 ? 760 : 660;
   const sizeLabel = `${W}\u00d7${H}`;
 
+  cellFnRef.current = { down: onCellDown, fill: fillDirect };
+  const focusIdx = aim ? aim.idx : (playing ? hover : -1);
+  const focusR = focusIdx >= 0 ? Math.floor(focusIdx / W) : -1;
+  const focusC = focusIdx >= 0 ? focusIdx % W : -1;
+  // Row r, column c: the empty squares of both lines take the accent tint (a
+  // filled square keeps its ink), the square itself takes an accent ring, and
+  // both clue strips light up.
+  const crossCss = focusIdx >= 0
+    ? `.et-grid .et-r${focusR}:not(.et-f)::before,.et-grid .et-c${focusC}:not(.et-f)::before{content:'';position:absolute;inset:0;background:var(--et-hl);pointer-events:none;}`
+      + `.et-grid .et-i${focusIdx}::after{content:'';position:absolute;inset:0;box-shadow:inset 0 0 0 2.5px var(--stg-acc, ${COLORS.accent});pointer-events:none;z-index:2;}`
+      + `.et-grid .et-cr${focusR},.et-grid .et-cc${focusC}{background:var(--et-hl);color:var(--stg-acc-ink, ${COLORS.accent});font-weight:800;}`
+    : '';
+  const hasWrong = useMemo(() => {
+    for (let i = 0; i < N; i++) if (viewCells[i] === 1 && SOL[i] === 0) return true;
+    return false;
+  }, [viewCells, SOL, N]);
+  // The live "so far" picture for the empty corner of the clue gutter: one path
+  // per kind, the same one-node trick as the gallery.
+  const soFar = useMemo(() => {
+    let ok = '', bad = '';
+    for (let r = 0; r < H; r++) {
+      for (let c = 0; c < W; c++) {
+        const i = r * W + c;
+        if (viewCells[i] !== 1) continue;
+        const rect = `M${c} ${r}h1v1h-1z`;
+        if (SOL[i] === 1) ok += rect; else bad += rect;
+      }
+    }
+    return { ok, bad };
+  }, [viewCells, SOL, W, H]);
+  const showThumb = maxRowClue >= 2 && maxColClue >= 2;
+  const runsText = (list) => (list.length === 1
+    ? (list[0] === 0 ? 'no filled squares' : `a run of ${list[0]}`)
+    : `runs of ${list.join(', ')}`);
+  let statusLine;
+  let statusBad = false;
+  if (aim && pend) {
+    const r = Math.floor(aim.idx / W), c = aim.idx % W;
+    statusLine = `${AIM_LABEL[aim.val]} row ${r + 1}, column ${c + 1} when you lift. Row ${r + 1} wants ${runsText(PUZZLE.rows[r])}. Slide off the board to cancel.`;
+  } else if (focusIdx >= 0) {
+    const rTxt = rowDone[focusR] ? `Row ${focusR + 1} is done` : `Row ${focusR + 1} wants ${runsText(PUZZLE.rows[focusR])}`;
+    const cTxt = colDone[focusC] ? `column ${focusC + 1} is done` : `column ${focusC + 1} wants ${runsText(PUZZLE.cols[focusC])}`;
+    statusLine = `Row ${focusR + 1}, column ${focusC + 1}. ${rTxt}, ${cTxt}.`;
+  } else if (hasWrong) {
+    statusLine = 'A red square is a wrong fill. Clear it to carry on.';
+    statusBad = true;
+  } else if (mode === 'fill') {
+    statusLine = mobileUi ? 'Filling: tap or drag along a row or column. It lands when you lift.' : 'Filling: tap a square, or drag along a row or column.';
+  } else {
+    statusLine = 'Marking: tap or drag to put \u00d7 on squares you have ruled out.';
+  }
+  const helperLine = `Wrong fills stay counted, even once cleared. Marks are free. ${mobileUi ? 'Hold a square to aim.' : 'Right-click fills in either tool. F and M switch tools.'}${g.hintUsed ? ' Hint used.' : ''}`;
+
+  const toolSwitch = (
+    <div className="et-seg" role="group" aria-label="What a tap does">
+      <button type="button" className={`et-tool${mode === 'fill' ? ' on' : ''}`} onClick={() => setMode('fill')} aria-pressed={mode === 'fill'} title="Fill squares (F)">
+        <span className="et-swatch" aria-hidden="true" />Fill
+      </button>
+      <button type="button" className={`et-tool${mode === 'mark' ? ' on' : ''}`} onClick={() => setMode('mark')} aria-pressed={mode === 'mark'} title="Mark a square blank (M)">
+        <span aria-hidden="true" style={{ fontSize: '1.15em', lineHeight: 1 }}>&times;</span> Mark
+      </button>
+    </div>
+  );
+
+  // THE BOARD. Every colour is a stage token or a mix of one, so the same squares
+  // read on the dark register and the light one (the board was a hardcoded white
+  // sheet until 2026-10-14). Memoized: the crosshair and the status line change
+  // far more often than the squares do.
+  const boardCells = useMemo(() => {
+    const out = [];
+    const glyphFs = `calc(${clueFs} * 1.2)`;
+    for (let k = 0; k < gridRows * gridCols; k++) {
+      const gr = Math.floor(k / gridCols), gc = k % gridCols;
+      const inClueTop = gr < maxColClue, inClueLeft = gc < maxRowClue;
+      if (inClueTop && inClueLeft) {
+        if (k !== 0) continue;
+        out.push(
+          <div key="corner" className="et-corner" style={{ gridColumn: `1 / span ${maxRowClue}`, gridRow: `1 / span ${maxColClue}` }}>
+            {showThumb && (
+              <>
+                <svg viewBox={`-0.5 -0.5 ${W + 1} ${H + 1}`} preserveAspectRatio="xMinYMin meet" aria-label="Your picture so far" role="img">
+                  <rect x="-0.25" y="-0.25" width={W + 0.5} height={H + 0.5} fill="var(--et-cell)" stroke="var(--et-wall)" strokeWidth="0.5" />
+                  {soFar.ok && <path d={soFar.ok} fill="currentColor" style={{ color: 'var(--et-pic)' }} />}
+                  {soFar.bad && <path d={soFar.bad} fill="currentColor" style={{ color: `var(--stg-bad, ${COLORS.rust})` }} />}
+                </svg>
+                <span className="et-sofar">So far</span>
+              </>
+            )}
+          </div>
+        );
+        continue;
+      }
+      if (inClueTop) {
+        const c = gc - maxRowClue;
+        const list = PUZZLE.cols[c];
+        const off = maxColClue - list.length;
+        const v = gr >= off ? list[gr - off] : null;
+        out.push(
+          <div key={k} className={`et-clue et-cc${c}${colDone[c] ? ' done' : ''}`} style={{ fontSize: clueFs, paddingBottom: 2, borderLeft: c % 5 === 0 && c !== 0 ? '1.5px solid var(--et-line)' : undefined, borderRadius: gr === 0 && c % 5 !== 0 ? '5px 5px 0 0' : undefined }}>
+            {v === null || v === 0 ? '' : v}
+          </div>
+        );
+        continue;
+      }
+      if (inClueLeft) {
+        const r = gr - maxColClue;
+        const list = PUZZLE.rows[r];
+        const off = maxRowClue - list.length;
+        const v = gc >= off ? list[gc - off] : null;
+        out.push(
+          <div key={k} className={`et-clue et-clue-r et-cr${r}${rowDone[r] ? ' done' : ''}`} style={{ fontSize: clueFs, paddingRight: 3, justifyContent: 'flex-end', borderTop: r % 5 === 0 && r !== 0 ? '1.5px solid var(--et-line)' : undefined, borderRadius: gc === 0 && r % 5 !== 0 ? '5px 0 0 5px' : undefined }}>
+            {v === null || v === 0 ? '' : v}
+          </div>
+        );
+        continue;
+      }
+      const r = gr - maxColClue, c = gc - maxRowClue, idx = r * W + c;
+      const v = viewCells[idx];
+      const wrong = v === 1 && SOL[idx] === 0;
+      // pv is what a pending TOUCH stroke would put here, or null.
+      // It is a preview: not written, not scored, gone if the finger
+      // slides off before it lifts.
+      const pv = pendSet && pendSet.has(idx) ? pendVal : null;
+      const filled = pv === null && v === 1 && !wrong;
+      const bg = pv !== null
+        ? (pv === 1 ? 'var(--et-pend)' : 'var(--et-cell)')
+        : wrong ? 'var(--et-bad-soft)' : v === 1 ? 'var(--et-pic)' : 'var(--et-cell)';
+      const wallR = c % 5 === 4 || c === W - 1, wallB = r % 5 === 4 || r === H - 1;
+      const glyph = pv !== null
+        ? (pv === 2 ? <span className="et-g" style={{ color: `var(--stg-acc-ink, ${COLORS.accent})` }}>&times;</span> : null)
+        : wrong ? <span className="et-g" style={{ color: `var(--stg-bad, ${COLORS.rust})` }}>&#10007;</span>
+        : v === 2 ? <span className="et-g" style={{ color: 'var(--et-mark)' }}>&times;</span> : null;
+      out.push(
+        <div
+          key={k}
+          data-i={idx}
+          className={`et-cell et-r${r} et-c${c} et-i${idx}${filled ? ' et-f' : ''}`}
+          aria-label={`Row ${r + 1}, column ${c + 1}${wrong ? ', wrong fill' : v === 1 ? ', filled' : v === 2 ? ', marked' : ', empty'}`}
+          onPointerDown={(e) => cellFnRef.current.down(e, idx)}
+          onContextMenu={(e) => { e.preventDefault(); cellFnRef.current.fill(idx); }}
+          style={{
+            background: bg,
+            boxShadow: pv !== null ? `inset 0 0 0 2px var(--stg-acc, ${COLORS.accent})` : undefined,
+            borderRight: wallR ? '2px solid var(--et-wall)' : '1px solid var(--et-line)',
+            borderBottom: wallB ? '2px solid var(--et-wall)' : '1px solid var(--et-line)',
+            borderLeft: c === 0 ? '2px solid var(--et-wall)' : undefined,
+            borderTop: r === 0 ? '2px solid var(--et-wall)' : undefined,
+            fontSize: glyphFs,
+          }}
+        >
+          {glyph}
+        </div>
+      );
+    }
+    return out;
+  }, [viewCells, pendSet, pendVal, rowDone, colDone, SOL, W, H, gridRows, gridCols, maxRowClue, maxColClue, clueFs, PUZZLE, soFar, showThumb]);
+
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
@@ -932,9 +1113,9 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
           onHelp={() => setShowHelp(true)}
           sunday={PUZZLE.sunday ? `Sunday Edition · ${sizeLabel}` : null}
           figures={playing ? [
+            // The filled count moved onto the developing meter above the board.
             { v: errors, k: 'errors' },
             { v: elapsed, k: 'time' },
-            { v: `${filledRight}/${TOTAL}`, k: 'filled' },
           ] : [
             { v: endScore, k: 'score' },
             { v: errors, k: 'errors' },
@@ -957,18 +1138,67 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
           .et-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .et-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           @media(max-width:560px){.et-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.et-ttl h1{font-size:21px;}.et-ttl-dot{display:none;}}
-          .et-cell{box-sizing:border-box;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;position:relative;}
-          .et-clue{display:flex;align-items:center;justify-content:center;font-family:${MONO};font-weight:500;color:${INK};min-width:0;min-height:0;line-height:1;transition:opacity 0.18s ease;}
+          /* THE BOARD'S OWN COLOURS, register-aware: each is a stage token or a
+             mix of one into the cell, so one value reads on both registers. */
+          .et-board{--et-cell:var(--stg-cell, #ffffff);--et-pic:var(--stg-ink, #0b0d12);
+            --et-line:color-mix(in srgb, var(--stg-ink, #0b0d12) 15%, var(--stg-cell, #ffffff));
+            --et-wall:color-mix(in srgb, var(--stg-ink, #0b0d12) 62%, var(--stg-cell, #ffffff));
+            --et-hl:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 20%, var(--stg-cell, #ffffff));
+            --et-pend:color-mix(in srgb, var(--stg-ink, #0b0d12) 48%, var(--stg-cell, #ffffff));
+            --et-bad-soft:color-mix(in srgb, var(--stg-bad, ${COLORS.rust}) 24%, var(--stg-cell, #ffffff));
+            --et-mark:var(--stg-mute, #5f6774);}
+          .et-cell{box-sizing:border-box;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;position:relative;font-family:${SANS};font-weight:800;line-height:1;}
+          .et-g{position:relative;z-index:1;line-height:1;}
+          .et-corner{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:3px;padding:2px 6px 6px 2px;min-width:0;min-height:0;overflow:hidden;color:var(--et-pic);}
+          .et-corner svg{display:block;flex:1 1 auto;min-height:0;width:100%;max-width:100%;}
+          .et-sofar{font-family:${SANS};font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:${FADED};line-height:1;flex:none;}
+          @media(max-width:560px){.et-sofar{font-size:8px;}}
+          /* The corner is measured, not guessed: a thumbnail too small to read
+             (a phone's 20x20 corner) drops its label, then itself. */
+          .et-corner{container-type:size;}
+          @container (max-height:58px){.et-sofar{display:none;}}
+          @container (max-height:40px){.et-corner svg{display:none;}}
+          .et-clue{display:flex;align-items:center;justify-content:center;font-family:${SANS};font-weight:600;color:${INK};min-width:0;min-height:0;line-height:1;font-variant-numeric:tabular-nums;}
           /* A satisfied line is CROSSED OFF, not tinted. The old #c3c8d4 was a
              pale grey: on the dark register it sat 1.43:1 from the live ink
              beside it, so a finished clue and a live one read as the same
              thing. Opacity fades against whichever register is showing (the
              light one measured 1.6:1 on white, worse), and the rule through the
              digit is the part that carries at a glance on a 20x20 board. */
-          .et-clue.done{opacity:0.45;text-decoration:line-through;text-decoration-thickness:max(1px, 0.14em);text-decoration-skip-ink:none;}
-          .et-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-          .et-tool.on{background:${STAGE ? STAGE_C : COLORS.ink};color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};border-color:${STAGE ? STAGE_C : COLORS.ink};}
+          .et-clue.done{color:var(--stg-mute, ${COLORS.faded});text-decoration:line-through;text-decoration-thickness:max(1px, 0.14em);text-decoration-skip-ink:none;}
+          /* THE TOOL SWITCH: one segmented control, the live segment filled with the accent. */
+          .et-seg{display:flex;border:1.5px solid var(--stg-line2, rgba(28,30,36,0.35));border-radius:12px;padding:3px;gap:3px;flex:0 0 auto;}
+          .et-tool{font-family:${SANS};font-weight:700;font-size:13px;border:0;background:transparent;color:${INK};border-radius:9px;min-height:44px;padding:0 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;}
+          .et-tool:hover{background:var(--stg-surf2, rgba(28,30,36,0.06));}
+          .et-tool.on,.et-tool.on:hover{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));font-weight:800;}
+          .et-swatch{width:13px;height:13px;border-radius:2px;background:currentColor;flex:none;}
+          .et-top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin:0 auto 14px;}
+          .et-cap{font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:${FADED};}
+          .et-meter{height:10px;border-radius:3px;background:var(--stg-line2, rgba(28,30,36,0.18));overflow:hidden;}
+          .et-meter span{display:block;height:100%;background:var(--stg-acc, ${COLORS.accent});transition:width .25s ease;}
+          .et-foot{display:flex;align-items:center;gap:12px;border-top:1px solid var(--stg-line, rgba(28,30,36,0.15));margin-top:16px;padding-top:14px;}
+          .et-acts{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+          .et-tool-foot{display:none;}
+          .et-btn2{font-family:${SANS};font-weight:700;font-size:14px;border:1.5px solid var(--stg-line2, rgba(28,30,36,0.35));background:transparent;color:${INK};border-radius:12px;padding:0 16px;min-height:46px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
+          .et-btn2:hover{background:var(--stg-surf2, rgba(28,30,36,0.06));}
+          .et-btn2:disabled{color:var(--stg-mute, #6b7280);cursor:default;}
+          .et-btn2:disabled:hover{background:transparent;}
+          .et-link{font-family:${SANS};font-weight:700;font-size:13px;background:none;border:0;color:${INK};text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0 10px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;}
+          @media(max-width:560px){
+            .et-top{margin-bottom:10px;}
+            .et-top .et-seg{display:none;}
+            .et-cap{font-size:10px;}
+            .et-meter{height:7px;border-radius:2px;}
+            .et-foot{flex-direction:column;align-items:stretch;border-top:0;margin-top:14px;padding-top:0;}
+            .et-tool-foot{display:flex;gap:8px;margin-top:4px;}
+            .et-tool-foot .et-seg{flex:1;}
+            .et-tool-foot .et-tool{flex:1;min-height:46px;font-size:14px;padding:0 8px;}
+            .et-tool-foot .et-btn2{min-height:52px;}
+            .et-acts{justify-content:flex-end;}
+            .et-acts .et-undo-d{display:none;}
+          }
         ` }} />
+        <style dangerouslySetInnerHTML={{ __html: crossCss }} />
 
         <div style={{ maxWidth: shellMax, margin: '0 auto' }}>
 
@@ -1016,8 +1246,23 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
 
+        {/* THE DEVELOPING METER: right squares filled of the picture's total,
+            and the Fill / Mark switch beside it on a computer (on a phone it
+            sits at the foot with Undo). */}
         {!preStart && (
-        <div className={STAGE ? 'et-card stg-board' : (LOFT ? 'loft-card et-card' : 'et-card')} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+        <div className="et-top">
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span className="et-cap">Developing &middot; <b style={{ color: ACC_INK, fontWeight: 800 }}>{filledRight}</b> of {TOTAL} squares</span>
+            <div className="et-meter" role="progressbar" aria-label="Picture developed" aria-valuemin={0} aria-valuemax={TOTAL} aria-valuenow={filledRight}>
+              <span style={{ width: `${TOTAL ? Math.round((filledRight / TOTAL) * 1000) / 10 : 0}%` }} />
+            </div>
+          </div>
+          {started && toolSwitch}
+        </div>
+        )}
+
+        {!preStart && (
+        <div className={STAGE ? 'et-card stg-board' : (LOFT ? 'loft-card et-card' : 'et-card')} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 16, padding: '16px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           {/* These figures move UP into the cap on a loft page; printing
               them twice is the one thing to avoid. */}
           {!LOFT && (
@@ -1031,7 +1276,8 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
           <div style={{ maxWidth: boardMax, margin: '0 auto' }}>
             <div
               onPointerMove={onGridMove}
-              className="et-grid"
+              onPointerLeave={(e) => { if (e.pointerType === 'mouse') setHoverIdx(-1); }}
+              className="et-grid et-board"
               style={{
                 display: 'grid',
                 touchAction: 'none',
@@ -1043,64 +1289,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
                 '--et-ar-m': `${(maxRowClue * GUTM + W).toFixed(3)} / ${(maxColClue * GUTM + H).toFixed(3)}`,
               }}
             >
-              {Array.from({ length: gridRows * gridCols }).map((_, k) => {
-                const gr = Math.floor(k / gridCols), gc = k % gridCols;
-                const inClueTop = gr < maxColClue, inClueLeft = gc < maxRowClue;
-                if (inClueTop && inClueLeft) return <div key={k} />;
-                if (inClueTop) {
-                  const c = gc - maxRowClue;
-                  const list = PUZZLE.cols[c];
-                  const off = maxColClue - list.length;
-                  const v = gr >= off ? list[gr - off] : null;
-                  return (
-                    <div key={k} className={`et-clue${colDone[c] ? ' done' : ''}`} style={{ fontSize: clueFs, paddingBottom: 2, borderLeft: c % 5 === 0 && c !== 0 ? '2px solid rgba(28,30,36,0.35)' : undefined }}>
-                      {v === null || v === 0 ? '' : v}
-                    </div>
-                  );
-                }
-                if (inClueLeft) {
-                  const r = gr - maxColClue;
-                  const list = PUZZLE.rows[r];
-                  const off = maxRowClue - list.length;
-                  const v = gc >= off ? list[gc - off] : null;
-                  return (
-                    <div key={k} className={`et-clue et-clue-r${rowDone[r] ? ' done' : ''}`} style={{ fontSize: clueFs, paddingRight: 3, justifyContent: 'flex-end', borderTop: r % 5 === 0 && r !== 0 ? '2px solid rgba(28,30,36,0.35)' : undefined }}>
-                      {v === null || v === 0 ? '' : v}
-                    </div>
-                  );
-                }
-                const r = gr - maxColClue, c = gc - maxRowClue, idx = r * W + c;
-                const v = viewCells[idx];
-                const wrong = v === 1 && SOL[idx] === 0;
-                // pv is what a pending TOUCH stroke would put here, or null.
-                // It is a preview: not written, not scored, gone if the finger
-                // slides off before it lifts.
-                const pv = pendSet && pendSet.has(idx) ? pendVal : null;
-                const bg = pv !== null
-                  ? (pv === 1 ? 'rgba(28,30,36,0.42)' : pv === 0 ? 'rgba(28,30,36,0.05)' : T.white)
-                  : wrong ? '#f4b8b8' : v === 1 ? COLORS.ink : T.white;
-                return (
-                  <div
-                    key={k}
-                    data-i={idx}
-                    className="et-cell"
-                    onPointerDown={(e) => onCellDown(e, idx)}
-                    onContextMenu={(e) => { e.preventDefault(); fillDirect(idx); }}
-                    style={{
-                      background: bg,
-                      boxShadow: pv !== null ? `inset 0 0 0 2px var(--stg-acc, ${COLORS.accent})` : undefined,
-                      borderRight: `${c % 5 === 4 && c !== W - 1 ? 2 : 1}px solid ${c % 5 === 4 && c !== W - 1 ? 'rgba(28,30,36,0.75)' : 'rgba(28,30,36,0.22)'}`,
-                      borderBottom: `${r % 5 === 4 && r !== H - 1 ? 2 : 1}px solid ${r % 5 === 4 && r !== H - 1 ? 'rgba(28,30,36,0.75)' : 'rgba(28,30,36,0.22)'}`,
-                      borderLeft: c === 0 ? '2px solid rgba(28,30,36,0.75)' : undefined,
-                      borderTop: r === 0 ? '2px solid rgba(28,30,36,0.75)' : undefined,
-                    }}
-                  >
-                    {(pv !== null ? pv === 2 : v === 2) && (
-                      <span style={{ fontFamily: MONO, fontSize: clueFs, color: pv === 2 ? `var(--stg-acc-ink, ${COLORS.accent})` : '#b9c0cc', lineHeight: 1 }}>&times;</span>
-                    )}
-                  </div>
-                );
-              })}
+              {boardCells}
             </div>
           </div>
 
@@ -1113,59 +1302,47 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
               left: aimLeft(aimPosRef.current.x),
               top: aimTop(aimPosRef.current.y),
               transform: 'translateX(-50%)',
-              background: COLORS.ink, color: T.white, borderRadius: 9,
-              padding: '5px 10px 6px', textAlign: 'center', whiteSpace: 'nowrap',
-              boxShadow: '0 5px 16px rgba(0,0,0,0.34)',
+              background: 'var(--stg-ink, #0b0d12)', color: 'var(--stg-ground, #ffffff)', borderRadius: 10,
+              padding: '6px 10px', textAlign: 'center', whiteSpace: 'nowrap',
+              boxShadow: '0 6px 16px rgba(0,0,0,0.35)', fontFamily: SANS,
             }}>
-              <div style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.09em', opacity: 0.7, lineHeight: 1.4 }}>
-                R{Math.floor(aim.idx / W) + 1} &middot; C{(aim.idx % W) + 1}
+              <div style={{ fontSize: 12.5, fontWeight: 800, lineHeight: 1.3 }}>
+                R{Math.floor(aim.idx / W) + 1} &middot; C{(aim.idx % W) + 1} &middot; {AIM_LABEL[aim.val]}
               </div>
-              <div style={{ fontFamily: SANS, fontSize: 13, fontWeight: 800, lineHeight: 1.25 }}>{AIM_LABEL[aim.val]}</div>
               {aim.aiming && (
-                <div style={{ fontFamily: SANS, fontSize: 10, fontWeight: 700, color: COLORS.accentSoft, lineHeight: 1.3 }}>slide to aim</div>
+                <div style={{ fontSize: 10.5, fontWeight: 700, lineHeight: 1.3 }}>slide to aim</div>
               )}
             </div>
           )}
 
-          {playing && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' }}>
-              <button className={`et-tool${mode === 'fill' ? ' on' : ''}`} onClick={() => setMode('fill')} title="Fill squares (F)">
-                <Square size={14} /> Fill
-              </button>
-              <button className={`et-tool${mode === 'mark' ? ' on' : ''}`} onClick={() => setMode('mark')} title="Mark a square blank (M)">
-                <Ban size={14} /> Mark &times;
-              </button>
-              <button className="et-tool" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" style={{ opacity: canUndo ? 1 : 0.4, cursor: canUndo ? 'pointer' : 'default' }}>
-                <RotateCcw size={14} /> Undo
-              </button>
+        {/* The status line and its helper, the tool switch on a phone, Undo,
+            the hint, and Reveal as a small link. These sit INSIDE the board
+            card, which is meant to hold the whole game. */}
+        {started && (
+          <div className="et-foot">
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <span aria-live="polite" style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.4, color: statusBad ? `var(--stg-bad, ${COLORS.rust})` : INK }}>{statusLine}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.4, color: FADED }}>{helperLine}</span>
+            </div>
+            <div className="et-tool-foot">
+              {toolSwitch}
+              <button type="button" className="et-btn2" onClick={undo} disabled={!canUndo} aria-label="Undo last stroke">Undo</button>
+            </div>
+            <div className="et-acts">
+              <button type="button" className="et-btn2 et-undo-d" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" aria-label="Undo last stroke"><RotateCcw size={15} /> Undo</button>
               {hintOk && !g.hintUsed && (
-                <button className="et-tool" onClick={useHint} title="Fill one correct square (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(77,124,15,0.5)', color: '#3f6a0a' }}>
-                  <Lightbulb size={14} /> Hint
+                <button type="button" className="et-btn2" onClick={useHint} title="Fill one correct square (one hint, first play only)" aria-label="Hint: fill one correct square">
+                  <Lightbulb size={15} /> Hint
+                </button>
+              )}
+              {identity && (filledRight > 0 || errors > 0) && (
+                <button type="button" className="et-link" onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
+                  aria-label={armReveal ? 'Tap again to reveal the picture. This ends the day.' : 'Reveal the picture'}
+                  style={{ color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : FADED }}>
+                  {armReveal ? 'Tap again to reveal (ends the day)' : 'Reveal'}
                 </button>
               )}
             </div>
-          )}
-
-        {/* Controls. These sit INSIDE the board card: on the navy stage a
-            bare row of faded text has nothing to sit on, and the card is
-            meant to hold the whole game. */}
-        {started && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)', flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: mode === 'mark' ? `var(--stg-acc-ink, ${COLORS.accent})` : `var(--stg-mute, ${COLORS.faded})` }}>
-              {mode === 'mark'
-                ? (mobileUi
-                    ? 'Marking: tap or drag, and it lands when you lift. Hold to aim.'
-                    : 'Marking: tap or drag to pencil × on squares you have ruled out.')
-                : (mobileUi
-                    ? 'Filling: tap or drag, and it lands when you lift. Hold to aim.'
-                    : 'Filling: tap a square, or drag across a run to fill it.')}
-            </span>
-            {identity && (filledRight > 0 || errors > 0) && (
-              <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-                style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <Eye size={13} /> {armReveal ? 'Tap again — ends the puzzle and shows the picture' : 'Reveal & end'}
-              </button>
-            )}
           </div>
         )}
         </div>
@@ -1181,7 +1358,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
               </div>
               )}
               {PUZZLE.sunday && (
-                <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>The Sunday Edition &mdash; a bigger {sizeLabel} grid.</div>
+                <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>The Sunday Edition: a bigger {sizeLabel} grid.</div>
               )}
               {!PUZZLE.sunday && PUZZLE.w === 15 && (
                 <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>Saturday steps up to a {sizeLabel} grid.</div>
@@ -1306,7 +1483,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s picture, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s picture, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>

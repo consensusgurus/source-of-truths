@@ -17,7 +17,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { X, RotateCcw, Lightbulb, Eye, Smartphone, Trash2 } from 'lucide-react';
+import { X, RotateCcw, Lightbulb, Smartphone, Trash2 } from 'lucide-react';
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
@@ -74,7 +74,47 @@ const HELP_KEY = 'sot_lamps_help_seen';
 const STATS_KEY = 'sot_lamps_stats';
 const GRID_MAX = 468;
 const EMPTY = 0, LAMP = 1, CROSS = 2;
-const GLOW = '#f5c542';
+// THE LIGHT, REGISTER-AWARE (2026-10-14 board rebuild). Lamps needs colours the
+// stage does not carry: a warm glow, a lit square, a beam, and an unlit square
+// that is clearly DARKER than a lit one in both registers (a near-black well on
+// the dark stage, a mid slate on the light one). Each is either a hue mixed into
+// the register's own cell, or the established two-value form keyed off
+// --stg-dk (100% dark, 0% light; see Sweep and Shards), so there is no
+// attribute selector here and nothing can flash the wrong register on boot.
+// Set once on the board wrapper; everything inside reads var(--lm-*).
+const dk = (darkVal, lightVal) => `color-mix(in srgb, ${darkVal} var(--stg-dk, 100%), ${lightVal})`;
+const LIGHT_VARS = {
+  '--lm-glow': dk('#f5c542', '#e0a810'),
+  '--lm-lit': 'color-mix(in srgb, #f5c542 calc(28% - var(--stg-dk, 100%) * 0.1), var(--stg-cell, #ffffff))',
+  '--lm-dark': dk('#10151f', '#9aa4b5'),
+  '--lm-beam': dk('#c9a233', '#c98f0a'),
+  '--lm-slab': dk('#2c3549', '#1e2433'),
+  '--lm-slab-ink': dk('#e8ecf4', '#ffffff'),
+  '--lm-hatch': dk('#1f2635', '#363e52'),
+  '--lm-pip': dk('#5f6b85', '#7d889e'),
+  '--lm-pip-ok': 'color-mix(in srgb, var(--stg-acc, #1a7f37) calc(55% + var(--stg-dk, 100%) * 0.45), #ffffff)',
+  '--lm-pip-bad': 'color-mix(in srgb, var(--stg-bad, #be123c) calc(55% + var(--stg-dk, 100%) * 0.45), #ffffff)',
+  '--lm-dot': dk('#8b95a8', '#1e2433'),
+  '--lm-gap': 'color-mix(in srgb, var(--stg-ink, #0b0d12) 14%, var(--stg-cell, #ffffff))',
+};
+const NUM_WORDS = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve'];
+const numWord = (k) => NUM_WORDS[k] || String(k);
+
+// The board's own width, measured, so cell-relative sizes (the lamp disc, the
+// beam, the pips under a number) scale with N on every screen.
+function useWidth(ref) {
+  const [w, setW] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const read = () => setW(el.clientWidth || 0);
+    read();
+    let ro = null;
+    try { ro = new ResizeObserver(read); ro.observe(el); } catch (e) { window.addEventListener('resize', read); }
+    return () => { if (ro) ro.disconnect(); else window.removeEventListener('resize', read); };
+  });
+  return w;
+}
 
 const isIosDevice = () =>
   typeof navigator !== 'undefined' &&
@@ -590,39 +630,127 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
     } catch (e) {}
   }
 
-  // globals.css rounds every <button> 8px, so cells carry border-radius:0.
-  // A wall is filled with the register's ink and its numeral takes the ground,
-  // so it reads in both registers; a lit square is a warm wash over the cell.
-  const WALL = 'color-mix(in srgb, var(--stg-ink, #0b0d12) 82%, transparent)';
-  const THIN = 'var(--stg-cell-line, rgba(28,30,36,0.3))';
+  // THE BOARD (2026-10-14 rebuild). Squares are separate rounded tiles on a
+  // gap-coloured tray. An unlit square is a dark well, a lit one is warm, and a
+  // beam runs along the centre of every square a lamp lights, from the lamp to
+  // the wall, so you can see which lamp lights what. Walls are slabs: a blank
+  // one is hatched, a numbered one carries its number and one pip per lamp it
+  // wants, which fill as lamps touch it (warm while short, the accent once
+  // exact, red when over).
+  const GRID_PAD = N >= 10 ? 2 : 3;
+  const GRID_GAP = N >= 10 ? 2 : 3;
+  const gridBoxRef = useRef(null);
+  const gridW = useWidth(gridBoxRef);
+  const cellPx = gridW ? Math.max(18, (Math.min(gridW, GRID_MAX) - GRID_PAD * 2 - GRID_GAP * (N - 1)) / N) : (N >= 10 ? 40 : 56);
+  const beamW = Math.max(2, Math.round(cellPx * 0.065));
+  const beams = useMemo(() => {
+    const h = new Set(), v = new Set();
+    for (let i = 0; i < CELLS; i++) {
+      if (isWall[i] || cells[i] !== LAMP) continue;
+      const r = Math.floor(i / N), c = i % N;
+      let c0 = c, c1 = c, r0 = r, r1 = r;
+      while (c0 > 0 && !isWall[r * N + c0 - 1]) c0--;
+      while (c1 < N - 1 && !isWall[r * N + c1 + 1]) c1++;
+      while (r0 > 0 && !isWall[(r0 - 1) * N + c]) r0--;
+      while (r1 < N - 1 && !isWall[(r1 + 1) * N + c]) r1++;
+      if (c1 > c0) for (let x = c0; x <= c1; x++) h.add(r * N + x);
+      if (r1 > r0) for (let y = r0; y <= r1; y++) v.add(y * N + c);
+    }
+    return { h, v };
+  }, [cells, isWall, N, CELLS]);
+  // How many lamps touch each numbered wall, for its pips.
+  const touching = useMemo(() => {
+    const out = {};
+    for (let i = 0; i < CELLS; i++) {
+      const ch = PUZZLE.grid[Math.floor(i / N)][i % N];
+      if (ch === '.' || ch === '#') continue;
+      const r = Math.floor(i / N), c = i % N;
+      let k = 0;
+      for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const rr = r + dr, cc = c + dc;
+        if (rr >= 0 && rr < N && cc >= 0 && cc < N && !isWall[rr * N + cc] && cells[rr * N + cc] === LAMP) k++;
+      }
+      out[i] = k;
+    }
+    return out;
+  }, [cells, PUZZLE, isWall, N, CELLS]);
+  const lampCount = WHITES.reduce((k, i) => k + (cells[i] === LAMP ? 1 : 0), 0);
+  const darkCount = WHITES.length - an.lit.size;
+  const shortWalls = Object.keys(touching).filter((i) => touching[i] < Number(PUZZLE.grid[Math.floor(i / N)][i % N])).length;
+  const litPct = WHITES.length ? Math.round((an.lit.size / WHITES.length) * 100) : 0;
+
   function cellStyle(idx) {
-    const r = Math.floor(idx / N), c = idx % N;
-    let bg = STAGE ? 'var(--stg-cell)' : T.white;
-    if (isWall[idx]) bg = breaks.badWall.has(idx) ? 'var(--stg-bad, #be123c)' : `var(--stg-ink, ${COLORS.ink})`;
-    else if (breaks.badLamp.has(idx)) bg = 'color-mix(in srgb, var(--stg-bad, #be123c) 22%, var(--stg-cell, #ffffff))';
-    else if (an.lit.has(idx)) bg = `color-mix(in srgb, ${GLOW} 34%, var(--stg-cell, #ffffff))`;
+    let bg;
+    const ch = PUZZLE.grid[Math.floor(idx / N)][idx % N];
+    if (isWall[idx]) {
+      if (breaks.badWall.has(idx)) bg = 'var(--stg-bad, #be123c)';
+      else if (ch === '#') bg = `repeating-linear-gradient(45deg, var(--lm-slab) 0 ${N >= 10 ? 4 : 6}px, var(--lm-hatch) ${N >= 10 ? 4 : 6}px ${N >= 10 ? 8 : 12}px)`;
+      else bg = 'var(--lm-slab)';
+    } else if (breaks.badLamp.has(idx)) bg = 'color-mix(in srgb, var(--stg-bad, #be123c) 30%, var(--lm-lit))';
+    else if (an.lit.has(idx)) bg = 'var(--lm-lit)';
+    else bg = 'var(--lm-dark)';
     return {
       background: bg,
-      boxShadow: idx === sel && playing && g.t0 ? `inset 0 0 0 2.5px var(--stg-acc, ${COLORS.accent})` : undefined,
-      borderRight: c === N - 1 ? 'none' : `1px solid ${THIN}`,
-      borderBottom: r === N - 1 ? 'none' : `1px solid ${THIN}`,
+      boxShadow: idx === sel && playing && g.t0 ? `inset 0 0 0 ${N >= 10 ? 2 : 3}px var(--stg-acc, ${COLORS.accent})` : undefined,
       cursor: isWall[idx] || !playing ? 'default' : 'pointer',
     };
   }
   function markFor(idx) {
+    const r = Math.floor(idx / N), c = idx % N;
     if (isWall[idx]) {
-      const ch = PUZZLE.grid[Math.floor(idx / N)][idx % N];
+      const ch = PUZZLE.grid[r][c];
       if (ch === '#') return null;
-      return <span aria-hidden="true" style={{ fontFamily: SANS, fontWeight: 800, fontSize: N >= 10 ? 15 : 19, lineHeight: 1, color: breaks.badWall.has(idx) ? '#ffffff' : 'var(--stg-ground, #ffffff)', textDecoration: an.metWall.has(idx) ? 'underline' : 'none', textUnderlineOffset: 3 }}>{ch}</span>;
+      const need = Number(ch), k = touching[idx] || 0, bad = breaks.badWall.has(idx);
+      const pip = Math.max(3, Math.round(cellPx * 0.1));
+      const pipFill = (i) => (bad || k > need ? 'var(--lm-slab-ink)' : k === need ? 'var(--lm-pip-ok)' : i < k ? 'var(--lm-glow)' : 'var(--lm-pip)');
+      return (
+        <>
+          <span aria-hidden="true" style={{ fontFamily: SANS, fontWeight: 800, fontSize: Math.round(cellPx * 0.36), lineHeight: 1, color: 'var(--lm-slab-ink)' }}>{ch}</span>
+          {need > 0 && (
+            <span aria-hidden="true" style={{ display: 'flex', gap: Math.max(2, Math.round(pip * 0.5)), minHeight: pip }}>
+              {Array.from({ length: need }, (_, i) => <span key={i} style={{ width: pip, height: pip, borderRadius: '50%', background: pipFill(i) }} />)}
+            </span>
+          )}
+        </>
+      );
     }
     const v = cells[idx];
-    if (v === LAMP) {
-      const isBad = breaks.badLamp.has(idx);
-      return <span aria-hidden="true" style={{ width: '56%', height: '56%', borderRadius: '50%', background: isBad ? 'var(--stg-bad, #be123c)' : GLOW, border: `${N >= 10 ? 2.5 : 3}px solid var(--stg-ink, ${COLORS.ink})`, boxSizing: 'border-box', display: 'block' }} />;
-    }
-    if (v === CROSS) return <span aria-hidden="true" style={{ width: '16%', height: '16%', borderRadius: '50%', background: `var(--stg-mute, ${COLORS.faded})`, display: 'block' }} />;
-    return null;
+    const mid = `calc(50% - ${beamW / 2}px)`;
+    return (
+      <>
+        {beams.h.has(idx) && <span aria-hidden="true" className="lm-beam" style={{ left: 0, right: 0, top: mid, height: beamW }} />}
+        {beams.v.has(idx) && <span aria-hidden="true" className="lm-beam" style={{ top: 0, bottom: 0, left: mid, width: beamW }} />}
+        {v === LAMP && (() => {
+          const isBad = breaks.badLamp.has(idx);
+          const d = Math.round(cellPx * 0.48), ring = Math.max(2, Math.round(cellPx * 0.08)), halo = Math.round(cellPx * 0.3);
+          return <span aria-hidden="true" style={{ position: 'relative', width: d, height: d, borderRadius: '50%', display: 'block', background: isBad ? 'var(--stg-bad, #be123c)' : 'var(--lm-glow)', boxShadow: isBad ? `0 0 0 ${ring}px var(--stg-cell, #ffffff)` : `0 0 0 ${ring}px var(--lm-lit), 0 0 ${halo}px ${Math.round(halo / 4)}px var(--lm-glow)` }} />;
+        })()}
+        {v === CROSS && <span aria-hidden="true" style={{ position: 'relative', width: Math.max(6, Math.round(cellPx * 0.15)), height: Math.max(6, Math.round(cellPx * 0.15)), borderRadius: '50%', background: 'var(--lm-dot)', display: 'block' }} />}
+      </>
+    );
   }
+
+  // THE STATUS LINE, read straight off the board. It never names a square to
+  // play; it only counts what is already there.
+  const firstBadWall = [...breaks.badWall][0];
+  const statusMain = !playing
+    ? (won ? 'Every square is lit. Solved.' : 'The board is ended.')
+    : breaks.badLamp.size
+      ? 'Two lamps can see each other. One of them has to go.'
+      : firstBadWall != null
+        ? `The ${PUZZLE.grid[Math.floor(firstBadWall / N)][firstBadWall % N]} in row ${Math.floor(firstBadWall / N) + 1} has too many lamps beside it.`
+        : lampCount === 0
+          ? `No lamps yet. All ${WHITES.length} squares are dark.`
+          : darkCount === 0
+            ? `Every square is lit, but ${shortWalls === 1 ? 'a number is' : `${shortWalls} numbers are`} still short of lamps.`
+            : `${numWord(lampCount)} lamp${lampCount === 1 ? '' : 's'} lit, no clashes. ${darkCount} square${darkCount === 1 ? '' : 's'} still dark.${shortWalls ? ` ${numWord(shortWalls)} number${shortWalls === 1 ? '' : 's'} still want${shortWalls === 1 ? 's' : ''} lamps.` : ''}`;
+  const revealBtn = identity && hasEntries && playing && (
+    <button type="button" className="lm-link" onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
+      aria-label={armReveal ? 'Tap again to end the day and show the solution' : 'Reveal the solution'}
+      style={armReveal ? { color: `var(--stg-bad, ${COLORS.rust})` } : undefined}>
+      {armReveal ? 'Tap again to end and show the solution' : 'Reveal'}
+    </button>
+  );
 
   const rulesBody = (
     <DailyRules
@@ -641,7 +769,7 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
-      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      style={{ ...(STAGE ? STAGE_ACC : null), ...LIGHT_VARS, minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="lamps" name="Lamps" collapsed={started} loft={LOFT} />
@@ -658,7 +786,6 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
           sunday={PUZZLE.sunday ? 'Sunday Edition · 10×10' : null}
           figures={[
             { v: elapsed, k: 'time' },
-            { v: `${filledCount}/${WHITES.length}`, k: 'lit' },
           ]}
         />
       )}
@@ -667,9 +794,44 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.lm-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .lm-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .lm-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .lm-cell{border-radius:0 !important;display:flex;align-items:center;justify-content:center;box-sizing:border-box;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;padding:0;border-top:none;border-left:none;font:inherit;}
+          .lm-cell{border-radius:var(--lm-rad, 6px) !important;border:0;display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center;box-sizing:border-box;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;min-width:0;min-height:0;overflow:hidden;padding:0;font:inherit;}
           .lm-cell:focus-visible{outline:3px solid var(--stg-acc, ${COLORS.accent});outline-offset:-3px;}
-          .lm-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+          .lm-cell:disabled{opacity:1;}
+          .lm-beam{position:absolute;background:var(--lm-beam);opacity:.8;pointer-events:none;}
+          .lm-top{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin:2px auto 14px;max-width:${GRID_MAX + 40}px;}
+          .lm-cap{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:${FADED};}
+          .lm-meter{height:10px;border-radius:3px;background:var(--lm-dark);box-shadow:inset 0 0 0 1px var(--stg-line2, rgba(28,30,36,0.25));overflow:hidden;}
+          .lm-meter span{display:block;height:100%;background:var(--lm-glow);transition:width .2s ease-out;}
+          .lm-key{display:flex;gap:14px;font-size:11px;font-weight:700;color:${FADED};padding-bottom:1px;}
+          .lm-key span{display:inline-flex;align-items:center;gap:6px;}
+          .lm-key i{width:14px;height:14px;border-radius:3px;display:inline-block;}
+          .lm-panel{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border:1px solid ${SURF_B};border-radius:20px;padding:24px 20px 16px;}
+          .lm-foot{display:flex;align-items:center;gap:12px;border-top:1px solid ${SURF_B};margin-top:18px;padding-top:14px;}
+          .lm-status{font-size:15px;font-weight:700;line-height:1.4;min-height:2.8em;}
+          .lm-help{font-size:12px;font-weight:600;line-height:1.4;color:${FADED};}
+          .lm-acts{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+          .lm-ob{font-family:${SANS};font-weight:700;font-size:14px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:transparent;color:${INK};border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;}
+          .lm-ob:hover{background:var(--stg-surf2, rgba(28,30,36,0.06));}
+          .lm-ob:disabled{color:${FADED};cursor:default;}
+          .lm-ob:disabled:hover{background:transparent;}
+          .lm-link{font-family:${SANS};font-weight:700;font-size:12px;background:none;border:0;color:${INK};text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0 6px;cursor:pointer;}
+          .lm-under{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:8px;font-size:12px;font-weight:600;color:${FADED};}
+          .lm-ph{display:none;}
+          @media(max-width:560px){
+            .lm-dk{display:none !important;}
+            .lm-ph{display:inline;}
+            .lm-help.lm-ph{display:block;}
+            .lm-top{margin-bottom:14px;}
+            .lm-key{display:none;}
+            .lm-cap{font-size:10px;}
+            .lm-meter{height:7px;border-radius:2px;}
+            .lm-panel{background:transparent;border:0;padding:0;}
+            .lm-foot{flex-direction:column;align-items:stretch;border-top:0;margin-top:16px;padding-top:0;}
+            .lm-status{font-size:14px;min-height:0;}
+            .lm-acts{justify-content:flex-start;flex-wrap:nowrap;margin-top:6px;}
+            .lm-acts .lm-ob{flex:1 1 0;padding:0 10px;}
+            .lm-acts .lm-ph .lm-link{font-size:13px;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
@@ -718,19 +880,36 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
         <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
         <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>lit <b style={{ color: INK, fontWeight: 500 }}>{filledCount}</b>/{WHITES.length}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: SANS, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid var(--stg-line, rgba(28,30,36,0.18))', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
+            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>lit <b style={{ color: INK, fontWeight: 700 }}>{filledCount}</b>/{WHITES.length}</span>
           </div>
           )}
 
-          <div style={{ maxWidth: GRID_MAX, margin: '0 auto' }}>
-            <div role="grid" aria-label={`Lamps board, ${N} by ${N}`} style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))`, aspectRatio: '1', border: `3px solid ${WALL}`, borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
+          {/* THE METER: how much of the board is still dark, over a bar that
+              fills with light, and the key beside it on a computer. */}
+          <div className="lm-top">
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <span className="lm-cap">Still dark &middot; <b style={{ color: INK, fontWeight: 800, fontSize: 15, letterSpacing: 0 }}>{darkCount}</b> of {WHITES.length} squares</span>
+              <div className="lm-meter" role="meter" aria-label={`${darkCount} of ${WHITES.length} squares still dark`} aria-valuemin={0} aria-valuemax={WHITES.length} aria-valuenow={an.lit.size}>
+                <span style={{ width: `${litPct}%` }} />
+              </div>
+            </div>
+            <div className="lm-key" aria-hidden="true">
+              <span><i style={{ borderRadius: '50%', background: 'var(--lm-glow)' }} />Lamp</span>
+              <span><i style={{ background: 'var(--lm-lit)' }} />Lit</span>
+              <span><i style={{ background: 'var(--lm-dark)', boxShadow: 'inset 0 0 0 1px var(--stg-line2, rgba(28,30,36,0.25))' }} />Dark</span>
+            </div>
+          </div>
+
+          <div className="lm-panel">
+          <div ref={gridBoxRef} style={{ maxWidth: GRID_MAX, margin: '0 auto' }}>
+            <div role="grid" aria-label={`Lamps board, ${N} by ${N}`} style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))`, gap: GRID_GAP, padding: GRID_PAD, aspectRatio: '1', background: 'var(--lm-gap)', borderRadius: N >= 10 ? 8 : 10, position: 'relative', '--lm-rad': `${Math.max(3, Math.round(cellPx * 0.1))}px` }}>
               {Array.from({ length: CELLS }).map((_, idx) => {
                 const v = cells[idx];
                 const r = Math.floor(idx / N), c = idx % N;
                 const ch = PUZZLE.grid[r][c];
-                const word = isWall[idx] ? (ch === '#' ? 'wall' : `wall, ${ch}`) : (v === LAMP ? 'lamp' : (an.lit.has(idx) ? 'lit' : 'dark'));
+                const word = isWall[idx] ? (ch === '#' ? 'wall' : `wall, ${ch}, ${touching[idx] || 0} lamps touching`) : (v === LAMP ? 'lamp' : (an.lit.has(idx) ? 'lit' : 'dark'));
                 return (
                   <button key={idx} type="button" className="lm-cell" style={cellStyle(idx)}
                     onClick={() => cellClick(idx)}
@@ -743,39 +922,40 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
             </div>
           </div>
 
-          {playing && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' }}>
-              <button className="lm-tool" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" style={{ opacity: canUndo ? 1 : 0.4, cursor: canUndo ? 'pointer' : 'default' }}>
-                <RotateCcw size={14} /> Undo
-              </button>
-              <button className="lm-tool" onClick={clearBoard} disabled={!hasEntries}
-                title="Take every lamp off the board and start over on the same clock"
-                style={hasEntries
-                  ? (armClear ? { background: STAGE ? 'var(--stg-surf2)' : '#fdeeee', borderColor: 'rgba(192,57,43,0.5)', color: `var(--stg-ink, ${COLORS.rust})` } : undefined)
-                  : { opacity: 0.4, cursor: 'default' }}>
-                <Trash2 size={14} /> {armClear ? 'Tap again to clear' : 'Clear'}
-              </button>
-              {hintOk && !g.hintUsed && (
-                <button className="lm-tool" onClick={useHint} title="Place one lamp that belongs (one hint, first play only)" style={{ color: ACC_DEEP_INK }}>
-                  <Lightbulb size={14} /> Hint
+          {/* the status line, the helper, and the outline buttons */}
+          {started && (
+            <div className="lm-foot">
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <span aria-live="polite" className="lm-status" style={{ color: breaks.any ? `var(--stg-bad, ${COLORS.rust})` : INK }}>{statusMain}</span>
+                <span className="lm-help lm-dk">Pips under a number fill as lamps touch it. Grey dots are squares you have ruled out.</span>
+                <span className="lm-help lm-ph">Tap: lamp, then dot, then blank. Pips fill as lamps touch a number.</span>
+              </div>
+              <div className="lm-acts">
+                <button type="button" className="lm-ob" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" aria-label="Undo last move">
+                  <RotateCcw size={15} /> Undo
                 </button>
-              )}
+                <button type="button" className="lm-ob" onClick={clearBoard} disabled={!hasEntries}
+                  title="Take every lamp off the board and start over on the same clock"
+                  aria-label={armClear ? 'Tap again to clear the board' : 'Clear the board'}
+                  style={hasEntries && armClear ? { borderColor: `var(--stg-bad, ${COLORS.rust})`, color: `var(--stg-bad, ${COLORS.rust})` } : undefined}>
+                  <Trash2 size={15} /> {armClear ? 'Tap again to clear' : 'Clear'}
+                </button>
+                {hintOk && !g.hintUsed && (
+                  <button type="button" className="lm-ob" onClick={useHint} title="Place one lamp that belongs (one hint, first play only)" aria-label="Hint: place one lamp">
+                    <Lightbulb size={15} /> Hint
+                  </button>
+                )}
+                <span className="lm-ph">{revealBtn}</span>
+              </div>
             </div>
           )}
-
-        {started && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--stg-line, rgba(28,30,36,0.10))', flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: breaks.any ? 'var(--stg-bad, #be123c)' : `var(--stg-mute, ${COLORS.faded})` }}>
-              {breaks.any ? 'Something on the board breaks a rule.' : 'Tap a square: lamp, then a dot for empty, then blank.'}
-            </span>
-            {identity && hasEntries && (
-              <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-                style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <Eye size={13} /> {armReveal ? 'Tap again to end and show the solution' : 'Reveal & end'}
-              </button>
-            )}
           </div>
-        )}
+          {started && (
+            <div className="lm-under lm-dk">
+              <span>Tap: lamp, then dot, then blank. L and X on a keyboard.{g.hintUsed ? ' Hint used.' : ''}</span>
+              {revealBtn}
+            </div>
+          )}
           <div className={STAGE ? undefined : 'loft-sol'}>
           {!playing && (
             <div style={{ maxWidth: GRID_MAX + 76, margin: '0 auto' }}>
