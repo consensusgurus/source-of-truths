@@ -174,5 +174,26 @@ for (const p of PUZZLES) {
 }
 ok('no film inside 60 days, no thread twice');
 
+// 7. the thread bonus pays EARLY calls more. It shipped inverted for six
+// weeks because nothing here looked at it, so lift bonusFor out of the
+// client (the function the player actually meets) and check its shape.
+{
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../app/thread/ThreadClient.jsx', import.meta.url), 'utf8');
+  const m = src.match(/function bonusFor\(open, n\) \{[\s\S]*?\n\}/);
+  const top = src.match(/const BONUS_TOP = (\d+);/);
+  if (!m || !top) bad('could not lift bonusFor / BONUS_TOP from ThreadClient.jsx');
+  else {
+    const bonusFor = new Function('BONUS_TOP', `${m[0]}; return bonusFor;`)(Number(top[1]));
+    for (const n of [9, 16]) {
+      const row = Array.from({ length: n + 1 }, (_, open) => bonusFor(open, n));
+      for (let o = 1; o <= n; o++) if (row[o] < row[o - 1]) bad(`bonusFor(${o}, ${n}) = ${row[o]} pays less than ${o - 1} open (${row[o - 1]}): an earlier call must never pay less`);
+      if (row[n] !== Number(top[1])) bad(`calling with all ${n} open pays ${row[n]}, not the top bonus ${top[1]}`);
+      if (row[0] !== 2) bad(`calling with nothing open pays ${row[0]}, not 2`);
+    }
+    ok('thread bonus: more open pays more, 6 / 4 / 2');
+  }
+}
+
 if (fails) { console.log(`\n${fails} failure${fails === 1 ? '' : 's'}`); process.exit(1); }
 console.log('\nthread bank OK');

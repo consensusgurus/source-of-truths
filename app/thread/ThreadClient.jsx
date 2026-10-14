@@ -6,15 +6,15 @@
 // Type a title whenever you recognise one: any order, no penalty for a miss,
 // the box matches on every keystroke and clears on a hit. Every film is a
 // point. The tenth answer is the THREAD, what all nine share, and you can
-// call it at any moment: six points with three or fewer tiles still open,
-// four with up to six, two after that. Three wrong calls lock the thread at
+// call it at any moment: six points with seven or more tiles still open,
+// four with four to six, two with three or fewer. Earlier pays more. Three wrong calls lock the thread at
 // zero; the films still score. Part of the board is planted to read as a
 // different thread, and a wrong call that names a planted one says how many
 // tiles it really covers, which is information, so it is worth a strike.
 //
 // Sunday Edition: sixteen tiles and TWO threads of eight, interleaved. A
 // call names either one; its eight light up when it lands. Bonus tiers scale
-// with the board (six or fewer open, up to eleven, the rest).
+// with the board (eleven or more open, six to ten, five or fewer).
 //
 // Score /15 on a weekday (9 films + 6), /28 on a Sunday (16 + 12). The board
 // ranks on score, then `progress` (the tiles open when the thread was
@@ -77,15 +77,18 @@ const MAX_CALLS = 3;        // wrong calls before the thread locks
 const BONUS_TOP = 6;        // the thread bonus at the earliest tier
 
 // The thread bonus for a call made with `open` tiles still unsolved on a
-// board of `n` tiles: 6 / 4 / 2 by thirds of the board (0-3, 4-6, 7-9 on a
-// weekday; 0-6, 7-11, 12-16 on a Sunday, the same thirds of sixteen).
+// board of `n` tiles: 6 / 4 / 2 by thirds of the board, MORE OPEN PAYS MORE
+// (7-9 open +6, 4-6 +4, 0-3 +2 on a weekday; 11-16, 6-10, 0-5 on a Sunday).
+// It shipped inverted (2026-09-01 to 2026-10-14), paying the late call 6 and
+// the early one 2 against every line of copy; scripts/verify-thread.mjs now
+// lifts this function and fails if it is not non-decreasing in `open`.
 function bonusFor(open, n) {
-  const third = n / 3;
-  if (open <= Math.floor(third)) return BONUS_TOP;
-  if (open <= Math.floor(2 * third)) return 4;
+  if (open > Math.floor(2 * n / 3)) return BONUS_TOP;
+  if (open > Math.floor(n / 3)) return 4;
   return 2;
 }
-const tierLabel = (n) => [`0–${Math.floor(n / 3)} open`, `${Math.floor(n / 3) + 1}–${Math.floor(2 * n / 3)} open`, `${Math.floor(2 * n / 3) + 1}–${n} open`];
+// Labels in the same order the tiers render: +6, +4, +2.
+const tierLabel = (n) => [`${Math.floor(2 * n / 3) + 1}–${n} open`, `${Math.floor(n / 3) + 1}–${Math.floor(2 * n / 3)} open`, `0–${Math.floor(n / 3)} open`];
 
 const isIosDevice = () =>
   typeof navigator !== 'undefined' &&
@@ -599,8 +602,10 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
       lead={`${PUZZLE.sunday ? 'Sixteen' : 'Nine'} films, each described by someone who missed the point. ${PUZZLE.sunday ? 'Two hidden threads tie them together, eight each.' : 'One thing ties all nine together.'}`}
       banner={PUZZLE.sunday ? 'Sunday Edition · sixteen films, two threads' : null}
       steps={[
-        <>Each tile is a <b>logline</b>: a true, useless description of a film. <b>Type a title</b> whenever you recognise one. Any order, no penalty for a wrong guess, and the box takes it the moment it matches. Every film named is a point.</>,
-        <>The last answer is the <b>thread</b>: what all the films share. A director, an actor, a year, a city, a way of ending. Call it whenever you like. The earlier you call it right, the more it pays: <b>{BONUS_TOP} points</b> with {Math.floor(N / 3)} or fewer tiles still open, 4 with up to {Math.floor(2 * N / 3)}, 2 after that.</>,
+        <>Each tile is a <b>logline</b>: a true but useless description of one film. <b>Type the title</b> whenever you recognise one, in any order. The box takes it the moment it matches, so there is no Enter to press and no penalty for a wrong guess. Every film named is a point.</>,
+        <><b>Getting a title to count.</b> The main words are enough: leave off "The", the year and the punctuation (Face Off counts for Face/Off), and a long title usually takes its most distinctive phrase on its own. The spelling has to be right, and a sequel needs its number.</>,
+        <>The last answer is the <b>thread</b>: the one thing every film shares. It can be a person in front of or behind the camera, a studio, a year, a place, a kind of story, or something about the titles. <b>Name it in a word or two.</b> A surname does it (Hanks, Nolan), so does a year (1999), a city (Chicago) or a kind of film (heist, westerns). There is no need to type "directed by" or "films starring".{PUZZLE.sunday ? ' On a Sunday there are two threads: call each one on its own, and each pays on its own.' : ''}</>,
+        <><b>Call it early, it pays more.</b> "Open" means films you have not named yet. A right call with {Math.floor(2 * N / 3) + 1} or more open pays <b>{BONUS_TOP} points</b>, with {Math.floor(N / 3) + 1} to {Math.floor(2 * N / 3)} open it pays 4, and with {Math.floor(N / 3)} or fewer it pays 2. Films you name after the call still count.</>,
         <>Three wrong calls and the thread <b>locks at zero</b>. The films still count. A wrong call that names something planted on the board tells you how many tiles it really covers.</>,
         <>Part of the board is planted to read as a <b>different</b> thread. That is the game. There are no hints: the sentence is all you get.</>,
       ]}
@@ -733,8 +738,8 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
             .th-strips{gap:2px;background:var(--stg-panel, #e9edf3);border-radius:6px;padding:6px 0;}
             .th-strip{border-radius:0;background:transparent;}
             .th-holes{display:none;}
-            .th-frames{flex-direction:column;gap:2px;padding:0;}
-            .th-fr,.th-sun .th-fr{flex:none;}
+            .th-frames{flex-direction:column;flex-wrap:nowrap;gap:2px;padding:0;}
+            .th-fr,.th-sun .th-fr{flex:none;width:100%;min-width:0;}
             .th-side-holes{display:flex;width:24px;flex:none;flex-direction:column;align-items:center;justify-content:space-around;}
             .th-side-holes span{width:8px;height:10px;border-radius:2px;background:var(--stg-line2, rgba(28,30,36,0.2));}
             .th-side-holes.r{justify-content:space-between;padding:3px 0;box-sizing:border-box;}
@@ -745,7 +750,7 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
             .th-tile .n .tag{display:none;}
             .th-live .th-tile .n{display:none;}
             .th-tile p{font-size:12px;line-height:1.3;}
-            .th-tile.on p{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+            .th-tile.on p{font-size:11px;}
             .th-tile .a{order:-1;margin-top:0;font-size:14px;line-height:1.25;}
             .th-knot{left:-17px;top:50%;margin-left:-4.5px;margin-top:-4.5px;width:9px;height:9px;border:0;}
             .th-side{flex-direction:column;gap:8px;margin-top:8px;}
@@ -933,7 +938,7 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
                 {playing && <span className="t">{`${MAX_CALLS - wrongCalls} wrong call${MAX_CALLS - wrongCalls === 1 ? '' : 's'} left`}</span>}
               </div>
               <div className={`th-note${thrNote ? ' ' + thrNote.kind : ''}`}>
-                {thrNote ? thrNote.msg : (playing ? 'Calling early is the flex. Three wrong calls lock it.' : '')}
+                {thrNote ? thrNote.msg : (playing ? 'A word or two does it: a surname, a year, a place, a kind of film. The earlier you call it, the more it pays.' : '')}
               </div>
             </div>
             <div className="th-card score">
