@@ -28,7 +28,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { X, Smartphone, RotateCcw, CheckCircle2, SkipForward } from 'lucide-react';
+import { X, Smartphone } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -83,18 +83,142 @@ const COLORS = {
   foe: '#7c2d12',
 };
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_babel_help_seen';
 const STATS_KEY = 'sot_babel_stats';
 
-// Premium square palette, in the order a tile player expects to read them.
+
+// ─── the board's own look (owner-approved round six mockup) ───────────────
+// Premium squares and tiles are game-local variables, defined for BOTH
+// registers: deep tints carrying light label ink on the dark stage, pale tints
+// carrying dark ink on the light one. The tile is cream in both, with dark
+// ink, because cream reads on either ground. Everything else is a stage token.
+// The light block carries the boot-stamp guard every light selector needs
+// (see app/globals.css), so a dark boot never paints light squares.
 const PREM = {
-  T: { bg: '#e2725b', fg: T.white, label: '3W' },
-  D: { bg: '#f0b5ac', fg: '#7a2e20', label: '2W' },
-  t: { bg: '#4a90d9', fg: T.white, label: '3L' },
-  d: { bg: '#b3d4ea', fg: '#1f4e6b', label: '2L' },
-  '*': { bg: '#f0b5ac', fg: '#7a2e20', label: '★' },
+  T: { cls: 'p-T', label: '3W', name: 'triple word' },
+  D: { cls: 'p-D', label: '2W', name: 'double word' },
+  t: { cls: 'p-t', label: '3L', name: 'triple letter' },
+  d: { cls: 'p-d', label: '2L', name: 'double letter' },
+  '*': { cls: 'p-D', label: '★', name: 'centre star' },
 };
+const BB_CSS = `
+.bb{container-type:inline-size;container-name:bb;font-family:${SANS};color:var(--stg-ink,#e9edf4);
+  --bb-tile:#f3e6c8;--bb-tile-ink:#1c1a14;
+  --bb-cell:var(--stg-cell,#1a1d28);
+  --bb-frame:color-mix(in srgb, var(--stg-ink,#e9edf4) 16%, var(--stg-ground,#0b0f1a));
+  --bb-tw:#6e2a31;--bb-tw-ink:#ffc2c8;--bb-dw:#4f2a40;--bb-dw-ink:#f6c1d6;
+  --bb-tl:#1d4a78;--bb-tl-ink:#b9dcff;--bb-dl:#1b354f;--bb-dl-ink:#a6d1f2;
+  --bb-fresh:color-mix(in srgb, var(--stg-acc,#7dd3fc) 36%, #f3e6c8);
+  --bb-fresh-ring:color-mix(in srgb, var(--stg-acc,#7dd3fc) 62%, #1c1a14);
+  --bb-foe:color-mix(in srgb, var(--stg-bad,#fb7185) 24%, #f3e6c8);}
+html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .bb{
+  --bb-cell:#f1f3f7;--bb-fresh:color-mix(in srgb, var(--stg-acc,#0369a1) 22%, #f3e6c8);
+  --bb-tw:#f2b9b9;--bb-tw-ink:#7f1d1d;--bb-dw:#f7d6df;--bb-dw-ink:#8b2346;
+  --bb-tl:#aed0f1;--bb-tl-ink:#0b4a8a;--bb-dl:#dcebf8;--bb-dl-ink:#1d5f99;}
+.bb-k{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute,#8b95a8);}
+.bb-k b{color:var(--stg-ink,#e9edf4);font-size:16px;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;}
+.bb-k b.sp{color:var(--stg-acc-ink,#7dd3fc);}
+.bb-k b.sp.neg{color:var(--stg-bad,#fb7185);}
+.bb-narrow{display:none;}
+.bb-meter{margin:0 0 12px;}
+.bb-mhead{display:flex;justify-content:space-between;align-items:baseline;gap:6px 14px;flex-wrap:wrap;}
+.bb-mright{display:inline-flex;gap:14px;align-items:baseline;}
+.bb-bar{position:relative;height:36px;margin-top:8px;}
+.bb-track{position:absolute;left:0;right:0;top:6px;height:10px;border-radius:5px;background:var(--stg-line2,rgba(255,255,255,.17));}
+.bb-fill{position:absolute;top:6px;height:10px;border-radius:5px;background:var(--stg-acc,#7dd3fc);}
+.bb-fill.neg{background:var(--stg-bad,#fb7185);}
+.bb-tick{position:absolute;top:2px;width:2px;height:18px;margin-left:-1px;background:var(--stg-mute,#8b95a8);}
+.bb-tick.bench{top:0;height:22px;background:var(--stg-ink,#e9edf4);}
+.bb-tl{position:absolute;top:23px;transform:translateX(-50%);font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--stg-mute,#8b95a8);white-space:nowrap;}
+.bb-tl.bench{color:var(--stg-ink,#e9edf4);}
+.bb-tl.end{transform:translateX(-100%);}
+.bb-panel{background:var(--stg-surf,rgba(255,255,255,.045));border:1px solid var(--stg-line,rgba(255,255,255,.11));border-radius:20px;padding:16px;}
+.bb-top{display:flex;gap:16px;align-items:flex-start;}
+.bb-boardcol{flex:0 0 auto;width:min(424px,100%);}
+.bb-grid{display:grid;grid-template-columns:repeat(${SIZE},minmax(0,1fr));gap:2px;padding:4px;border-radius:10px;background:var(--bb-frame);}
+.bb-cell{position:relative;aspect-ratio:1;min-width:0;border-radius:5px;display:flex;align-items:center;justify-content:center;background:var(--bb-cell);color:var(--stg-mute,#8b95a8);font-weight:800;font-size:clamp(8px,2.4cqi,10px);letter-spacing:.02em;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;}
+.bb-cell.p-T{background:var(--bb-tw);color:var(--bb-tw-ink);}
+.bb-cell.p-D{background:var(--bb-dw);color:var(--bb-dw-ink);}
+.bb-cell.p-t{background:var(--bb-tl);color:var(--bb-tl-ink);}
+.bb-cell.p-d{background:var(--bb-dl);color:var(--bb-dl-ink);}
+.bb-cell.tile{background:var(--bb-tile);color:var(--bb-tile-ink);font-size:clamp(13px,4.2cqi,19px);letter-spacing:0;box-shadow:inset 0 -2px 0 rgba(0,0,0,.18);}
+.bb-cell.fresh{background:var(--bb-fresh);box-shadow:inset 0 0 0 2px var(--bb-fresh-ring);}
+.bb-cell.foeplay{background:var(--bb-foe);}
+.bb-cell.sel{outline:2.5px solid var(--stg-acc,#7dd3fc);outline-offset:-1px;z-index:1;}
+.bb-cell .pts{position:absolute;right:2px;bottom:0;font-size:clamp(6.5px,1.9cqi,8.5px);font-weight:800;color:var(--bb-tile-ink);}
+.bb-cell .dirmark{position:absolute;right:2px;top:0;font-size:9px;line-height:1.2;color:var(--stg-acc-ink,#7dd3fc);}
+.bb-cell.p-T .dirmark,.bb-cell.p-D .dirmark,.bb-cell.p-t .dirmark,.bb-cell.p-d .dirmark{color:inherit;}
+.bb-side{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:10px;}
+.bb-bag{display:flex;flex-wrap:wrap;gap:4px;}
+.bb-chip{display:inline-flex;align-items:center;gap:3px;height:26px;padding:0 6px 0 3px;border-radius:6px;border:1px solid var(--stg-line2,rgba(255,255,255,.17));font-size:11px;font-weight:700;color:var(--stg-ink2,#aab5c7);font-variant-numeric:tabular-nums;}
+.bb-chip b{width:20px;height:20px;border-radius:4px;background:var(--bb-tile);color:var(--bb-tile-ink);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;}
+.bb-note{font-size:12px;font-weight:600;color:var(--stg-mute,#8b95a8);line-height:1.45;margin:0;}
+.bb-note b{color:var(--stg-ink,#e9edf4);font-weight:800;}
+.bb-rule{height:1px;background:var(--stg-line,rgba(255,255,255,.11));}
+.bb-log{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--stg-ink,#e9edf4);margin:0;padding:0;list-style:none;}
+.bb-log li{display:flex;gap:8px;align-items:baseline;}
+.bb-log .who{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--stg-mute,#8b95a8);min-width:42px;}
+.bb-log .who.you{color:var(--stg-acc-ink,#7dd3fc);}
+.bb-log .w{flex:1;min-width:0;overflow-wrap:anywhere;text-transform:lowercase;}
+.bb-log .s{font-weight:800;font-variant-numeric:tabular-nums;}
+.bb-log .adj.good{color:var(--stg-good,#6ee7b7);}
+.bb-log .adj.bad{color:var(--stg-bad,#fb7185);}
+.bb-empty{font-size:13px;font-weight:600;color:var(--stg-mute,#8b95a8);}
+.bb-play{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"rack actions" "status status";gap:14px;margin-top:18px;align-items:end;}
+.bb-rackwrap{grid-area:rack;display:flex;flex-direction:column;gap:6px;min-width:0;}
+.bb-rack{display:flex;gap:8px;align-items:flex-end;padding:8px 10px;border-radius:12px;background:var(--stg-surf2,rgba(255,255,255,.08));min-height:56px;}
+.bb-tile{position:relative;flex:0 0 auto;width:52px;height:56px;border-radius:9px;border:0;background:var(--bb-tile);color:var(--bb-tile-ink);font-family:${SANS};font-size:24px;font-weight:800;padding:0;cursor:pointer;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18);transition:transform .12s ease, box-shadow .12s ease;-webkit-tap-highlight-color:transparent;}
+.bb-tile .pts{position:absolute;right:5px;bottom:3px;font-size:10px;font-weight:800;}
+.bb-tile.armed{transform:translateY(-8px);box-shadow:0 0 0 3px var(--stg-acc,#7dd3fc),0 10px 16px rgba(0,0,0,.3);}
+.bb-tile.used{background:transparent;box-shadow:none;border:1.5px dashed var(--stg-line2,rgba(255,255,255,.17));cursor:default;}
+.bb-tile:focus-visible{outline:2px solid var(--stg-acc-ink,#7dd3fc);outline-offset:3px;}
+.bb-out{font-size:13px;font-weight:700;color:var(--stg-ink,#e9edf4);padding:0 4px;align-self:center;}
+.bb-actions{grid-area:actions;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;}
+.bb-btn{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2,#aab5c7);border:1.5px solid var(--stg-mute,#8b95a8);border-radius:12px;padding:0 14px;min-height:48px;cursor:pointer;}
+.bb-btn:hover:not(:disabled){background:var(--stg-surf2,rgba(255,255,255,.08));}
+.bb-btn:disabled{color:var(--stg-mute,#8b95a8);border-color:var(--stg-line2,rgba(255,255,255,.17));cursor:default;}
+.bb-btn.play{font-weight:800;background:var(--stg-acc,#7dd3fc);border-color:var(--stg-acc,#7dd3fc);color:var(--stg-onramp,#08222e);padding:0 20px;}
+.bb-btn.play:hover:not(:disabled){background:color-mix(in srgb, var(--stg-acc,#7dd3fc) 86%, var(--stg-ink,#e9edf4));}
+.bb-btn.play:disabled{background:var(--stg-line,rgba(255,255,255,.11));border-color:transparent;color:var(--stg-mute,#8b95a8);}
+.bb-btn:focus-visible,.bb-fold:focus-visible{outline:2px solid var(--stg-acc-ink,#7dd3fc);outline-offset:2px;}
+.bb-status{grid-area:status;border-top:1px solid var(--stg-line,rgba(255,255,255,.11));padding-top:14px;display:flex;flex-direction:column;gap:3px;min-height:44px;}
+.bb-status .l1{font-size:15px;font-weight:700;line-height:1.4;color:var(--stg-ink,#e9edf4);}
+.bb-status .l1.bad{color:var(--stg-bad,#fb7185);}
+.bb-status .l2{font-size:12px;font-weight:600;color:var(--stg-mute,#8b95a8);}
+.bb-folds{grid-area:folds;display:none;}
+.bb-fold{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:0 14px;min-height:46px;border-radius:12px;border:1px solid var(--stg-line2,rgba(255,255,255,.17));background:transparent;color:var(--stg-ink,#e9edf4);font-family:${SANS};font-size:13px;font-weight:700;cursor:pointer;text-align:left;}
+.bb-fold .go{color:var(--stg-mute,#8b95a8);flex:0 0 auto;}
+.bb-foldbody{padding:8px 4px 6px;display:flex;flex-direction:column;gap:8px;}
+.bb-foot{display:flex;justify-content:space-between;gap:12px;margin:12px 2px 0;font-size:12px;font-weight:600;color:var(--stg-mute,#8b95a8);}
+@container bb (max-width: 600px){
+  .bb-wide{display:none;}
+  .bb-narrow{display:inline;}
+  .bb-meter{margin-bottom:10px;}
+  .bb-k{font-size:10px;}
+  .bb-k b{font-size:14px;}
+  .bb-bar{height:10px;margin-top:5px;}
+  .bb-track,.bb-fill{top:2px;height:6px;border-radius:3px;}
+  .bb-tick,.bb-tick.bench{top:0;height:10px;}
+  .bb-tl{display:none;}
+  .bb-panel{background:none;border:0;border-radius:0;padding:0;}
+  .bb-top{display:block;}
+  .bb-boardcol{width:100%;}
+  .bb-grid{padding:3px;border-radius:8px;}
+  .bb-cell{border-radius:4px;}
+  .bb-side{display:none;}
+  .bb-play{grid-template-columns:minmax(0,1fr);grid-template-areas:"rack" "status" "folds" "actions";gap:10px;margin-top:12px;}
+  .bb-rack{justify-content:center;padding:8px;}
+  .bb-tile{flex:1 1 0;width:auto;max-width:54px;}
+  .bb-status{border-top:0;padding-top:0;min-height:0;}
+  .bb-status .l1{font-size:14px;}
+  .bb-status .l2{display:none;}
+  .bb-folds{display:flex;flex-direction:column;gap:6px;}
+  .bb-actions{flex-wrap:nowrap;}
+  .bb-btn{flex:1 1 0;padding:0 8px;}
+  .bb-btn.play{flex:1.4 1 0;}
+  .bb-foot{display:none;}
+}
+`;
 
 const isIosDevice = () =>
   typeof navigator !== 'undefined' &&
@@ -145,6 +269,9 @@ function getAnonId() {
   } catch (e) { return null; }
 }
 const EMPTY_BOARD = { plays: 0, best: null, topTime: null, leaderboard: [], leaderboardAll: [], leaderboardMobile: [], leaderboardFirst: [], leaderboards: {} };
+
+// Engine messages are written with a dash; the page prints them without one.
+const plain = (msg) => String(msg || '').replace(/\s*\u2014\s*/g, ': ');
 
 const signed = (n) => (n > 0 ? `+${n}` : `${n}`);
 
@@ -227,6 +354,8 @@ export default function BabelClient({ puzzles, forceNum }) {
   const [sel, setSel] = useState(null);
   const [dir, setDir] = useState('h');
   const [thinking, setThinking] = useState(false);
+  const [openBag, setOpenBag] = useState(false);     // phone: the bag row, folded by default
+  const [openMoves, setOpenMoves] = useState(false); // phone: the moves row
   const [engineLex, setEngineLex] = useState(null);
   const [dict, setDict] = useState(null);
   const [dictErr, setDictErr] = useState(false);
@@ -449,6 +578,61 @@ export default function BabelClient({ puzzles, forceNum }) {
 
   const spread = g.my - g.foeScore + g.adj;
 
+  // ─── board presentation (derived only; nothing here touches play) ───────
+  // The meter runs from -10 to at least +30, wider when a benchmark needs the
+  // room, so the benchmark tick always sits well inside the bar.
+  const meter = useMemo(() => {
+    const lo = -10;
+    const hi = Math.max(30, Math.ceil((BENCH + 6) / 10) * 10);
+    const pct = (v) => Math.round(1000 * (Math.min(hi, Math.max(lo, v)) - lo) / (hi - lo)) / 10;
+    return { zero: pct(0), bench: pct(BENCH), val: pct(spread) };
+  }, [BENCH, spread]);
+
+  const armedL = armed !== null && !usedIdx.has(armed) ? g.rack[armed] : null;
+  const lastMove = g.log.length ? g.log[g.log.length - 1] : null;
+  let statusLine;
+  let statusBad = false;
+  if (!playing) {
+    statusLine = g.over === 'you-out' ? 'You went out first. That is the game.'
+      : g.over === 'foe-out' ? 'Your opponent went out first. That is the game.'
+      : 'Two passes in a row closed the board.';
+  } else if (thinking) statusLine = 'Your opponent is thinking.';
+  else if (armedL) statusLine = `${armedL} is in hand. Tap a square to place it, or type a letter onto the board.`;
+  else if (preview && !preview.ok) { statusLine = plain(preview.why); statusBad = true; }
+  else if (preview && preview.ok) statusLine = `${preview.words.map((w) => `${w.word} ${w.score}`).join(' + ')} = ${preview.score}. Press Play to lay it.`;
+  else if (sel) statusLine = `Square picked, going ${dir === 'h' ? 'across' : 'down'}. Type a letter, or tap a tile.`;
+  else if (lastMove && lastMove.who === 'foe') statusLine = lastMove.word === 'pass' ? 'They passed. Your move.' : `They played ${lastMove.word} for ${lastMove.score}. Your move.`;
+  else statusLine = 'Your move. Tap a tile, then a square, or click a square and type.';
+
+  const bagChips = (
+    <div className="bb-bag">
+      {BAG_ROWS.map(([L, n]) => (
+        <span key={L} className="bb-chip" aria-label={`${L}, ${n} in the bag`}><b>{L}</b>&times;{n}</span>
+      ))}
+    </div>
+  );
+  const bagNote = (
+    <p className="bb-note">No blanks, nothing left to draw. Their <b>{foeRack.length} tiles</b> are whatever this bag has left once you take away the board and your rack. The sum is yours to do.</p>
+  );
+  const movesLog = g.log.length ? (
+    <ul className="bb-log">
+      {g.log.map((m, i) => (
+        <li key={i}>
+          <span className={`who${m.who === 'you' ? ' you' : ''}`}>{m.who === 'you' ? 'You' : 'Them'}</span>
+          <span className="w">{m.word}</span>
+          {m.score ? <span className="s">{m.score}</span> : null}
+        </li>
+      ))}
+      {g.status === 'done' && g.adj !== 0 && (
+        <li>
+          <span className="who">Racks</span>
+          <span className={`w adj ${g.adj > 0 ? 'good' : 'bad'}`}>{g.adj > 0 ? 'their leftovers to you' : 'your leftovers off you'}</span>
+          <span className={`s adj ${g.adj > 0 ? 'good' : 'bad'}`}>{signed(g.adj)}</span>
+        </li>
+      )}
+    </ul>
+  ) : <span className="bb-empty">No plays yet. You move first.</span>;
+
   // ─── placing tiles ───────────────────────────────────────────────────────
   function startClock() { setG((cur) => (cur.t0 ? cur : { ...cur, t0: Date.now() })); }
   function startGame() {
@@ -536,7 +720,7 @@ export default function BabelClient({ puzzles, forceNum }) {
   function playWord() {
     if (!playing || thinking || !ready || !pending.length) return;
     const res = validatePlacement(grid, pending.map(({ r, c, L }) => ({ r, c, L })), dict);
-    if (!res.ok) { say(res.why); return; }
+    if (!res.ok) { say(plain(res.why)); return; }
     const rows = g.rows.slice();
     for (const t of pending) rows[t.r] = rows[t.r].slice(0, t.c) + t.L + rows[t.r].slice(t.c + 1);
     const rack = g.rack.filter((_, i) => !usedIdx.has(i));
@@ -730,31 +914,8 @@ export default function BabelClient({ puzzles, forceNum }) {
         <style dangerouslySetInnerHTML={{ __html: `
           .sc-btn{font-family:${SANS};font-weight:800;font-size:13px;letter-spacing:0.02em;color:${INK};background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1.5px solid var(--stg-line2, rgba(28,30,36,0.28));border-radius:9px;padding:9px 15px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
           .sc-btn:hover{background:var(--stg-surf2, ${COLORS.paper});}
-          .sc-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
-          .sc-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, #0f3d21) 86%, var(--stg-ink, var(--white)));}
           .sc-btn:disabled{opacity:0.42;cursor:default;}
-          .sc-grid{display:grid;grid-template-columns:repeat(${SIZE},1fr);gap:2px;background:var(--stg-cell-line, #0d3b20);border:2px solid var(--stg-cell-line, ${COLORS.ink});border-radius:10px;padding:5px;max-width:460px;width:100%;box-shadow:5px 5px 0 rgba(28,30,36,0.16);}
-          .sc-cell{position:relative;aspect-ratio:1;border-radius:3px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:clamp(13px,3.5vw,20px);color:${INK};cursor:pointer;user-select:none;background:${STAGE ? 'var(--stg-cell)' : '#dfe7e0'};}
-          .sc-cell .pl{font-family:${MONO};font-size:clamp(6px,1.7vw,9px);font-weight:500;letter-spacing:-0.02em;opacity:0.95;}
-          /* Laid tiles have to read at a glance against the premium colours and
-             the green ground. The launch version used a pale cream on a pale
-             board and the letters washed out, so the tile is warmer, the letter
-             is near-black at full weight, and every tile carries a hard edge. */
-          .sc-cell.tile{background:${STAGE ? 'var(--stg-surf2)' : '#f0dfba'};border:1px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(86,58,16,0.55)'};color:${STAGE ? 'var(--stg-ink)' : '#12141a'};text-shadow:${STAGE ? 'none' : '0 1px 0 rgba(255,255,255,0.5)'};box-shadow:inset 0 -3px 0 rgba(120,80,20,0.3);}
-          .sc-cell.fresh{background:${STAGE ? 'color-mix(in srgb, var(--stg-good) 22%, var(--stg-raise))' : '#b9e0c6'};border-color:rgba(13,59,32,0.6);box-shadow:inset 0 -3px 0 color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 45%, transparent);}
-          .sc-cell.foeplay{background:${STAGE ? 'var(--stg-surf2)' : '#f3cdb2'};border-color:rgba(124,45,18,0.6);box-shadow:inset 0 -3px 0 rgba(124,45,18,0.42);}
-          .sc-cell.sel{outline:2.5px solid var(--stg-acc, ${COLORS.accent});outline-offset:-1px;z-index:1;}
-          .sc-cell .pts{position:absolute;right:1px;bottom:0;font-size:clamp(5px,1.5vw,8px);font-weight:800;opacity:0.8;}
-          .sc-cell .dirmark{position:absolute;right:1px;top:0;font-size:8px;color:var(--stg-acc-ink, ${COLORS.accent});}
-          .sc-rack{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0 6px;}
-          .sc-tile{position:relative;width:42px;height:46px;background:${STAGE ? 'var(--stg-surf2)' : COLORS.tile};border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(120,80,20,0.45)'};border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:${INK};cursor:pointer;user-select:none;box-shadow:0 2px 0 rgba(120,80,20,0.28);}
-          .sc-tile .pts{position:absolute;right:3px;bottom:1px;font-size:9px;font-weight:800;opacity:0.7;}
-          .sc-tile.used{opacity:0.25;box-shadow:none;}
-          .sc-tile.armed{outline:2.5px solid var(--stg-acc, ${COLORS.accent});outline-offset:2px;}
-          .sc-bag{display:flex;flex-wrap:wrap;gap:3px;}
-          .sc-bag span{font-family:${MONO};font-size:11px;font-weight:500;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.16));border-radius:5px;padding:2px 5px;color:${FADED};}
-          .sc-bag span b{color:${INK};font-weight:800;margin-right:2px;}
-          .sc-log{font-family:${MONO};font-size:11.5px;font-weight:500;line-height:1.75;}
+${BB_CSS}
         ` }} />
 
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
@@ -769,7 +930,7 @@ export default function BabelClient({ puzzles, forceNum }) {
           blockGap={5}
           helpTop={10}
           onHelp={() => setShowHelp(true)}
-          sunday={PUZZLE.sunday && <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition &middot; six tiles</span>}
+          sunday={PUZZLE.sunday && <span style={{ fontFamily: SANS, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition &middot; six tiles</span>}
           blocks={'BABEL'.split('').map((ch, i) => (
             <div key={i} style={{ width: 42, height: 42, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontWeight: 900, fontSize: 25, background: i === 0 ? `var(--stg-acc, ${COLORS.accent})` : COLORS.ink, color: i === 0 ? `var(--stg-onramp, ${T.white})` : T.white, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.65)' }}>{ch}</div>
           ))}
@@ -807,113 +968,125 @@ export default function BabelClient({ puzzles, forceNum }) {
 
         {!preStart && (
         <>
-        <div style={{ display: 'flex', gap: 16, alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 10, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED }}>
-          <span style={{ fontSize: 12 }}>spread <b style={{ color: spread >= BENCH ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500, fontSize: 20 }}>{signed(spread)}</b></span>
-          <span>benchmark <b style={{ color: ACC_INK, fontWeight: 500 }}>{signed(BENCH)}</b></span>
-          <span>you <b style={{ color: INK, fontWeight: 500 }}>{g.my}</b></span>
-          <span>them <b style={{ color: `var(--stg-ink, ${COLORS.foe})`, fontWeight: 500 }}>{g.foeScore}</b></span>
-          <span style={{ marginLeft: 'auto' }}>{elapsed}</span>
-        </div>
-
-        <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-          <div style={{ flex: '1 1 320px', minWidth: 290, maxWidth: 460 }}>
-            <div className="sc-grid" role="grid" aria-label="Babel board">
-              {Array.from({ length: SIZE * SIZE }, (_, i) => {
-                const r = Math.floor(i / SIZE), c = i % SIZE;
-                const p = pendingAt.get(`${r},${c}`);
-                const v = p ? p.L : grid[r][c];
-                const prem = PREMIUM[r][c];
-                const isSel = sel && sel.r === r && sel.c === c;
-                const wasFoe = !p && grid[r][c] && g.log.length && lastFoeCells.has(`${r},${c}`);
-                const style = v ? undefined : (PREM[prem] ? { background: PREM[prem].bg, color: PREM[prem].fg } : undefined);
-                return (
-                  <div
-                    key={i}
-                    className={`sc-cell${v ? ' tile' : ''}${p ? ' fresh' : ''}${wasFoe ? ' foeplay' : ''}${isSel ? ' sel' : ''}`}
-                    style={style}
-                    onClick={() => onCell(r, c)}
-                    role="gridcell"
-                    aria-label={`Row ${r + 1} column ${c + 1}${v ? `: ${v}` : PREM[prem] ? `: ${PREM[prem].label}` : ''}`}
-                  >
-                    {v ? (
-                      <>{v}<span className="pts">{PTS[v]}</span></>
-                    ) : PREM[prem] ? (
-                      <span className="pl">{PREM[prem].label}</span>
-                    ) : ''}
-                    {isSel && !v && <span className="dirmark">{dir === 'h' ? '➜' : '⬇'}</span>}
-                  </div>
-                );
-              })}
+        <div className="bb">
+          {/* THE SPREAD METER. Even and the benchmark are fixed ticks; the fill
+              runs from even toward the spread so far. No clock here: the site
+              hides it by default and the cap owns it (StageChrome). */}
+          <div className="bb-meter">
+            <div className="bb-mhead">
+              <span className="bb-k bb-wide">Your spread &middot; your points minus theirs</span>
+              <span className="bb-k bb-narrow">Spread <b className={`sp${spread < 0 ? ' neg' : ''}`}>{signed(spread)}</b> &middot; benchmark {signed(BENCH)}</span>
+              <span className="bb-mright">
+                <span className="bb-k">You <b>{g.my}</b> &middot; Them <b>{g.foeScore}</b></span>
+                <span className="bb-k bb-wide"><b className={`sp${spread < 0 ? ' neg' : ''}`}>{signed(spread)}</b> so far</span>
+              </span>
             </div>
-
-            <div className="sc-rack">
-              {g.rack.map((L, i) => (
-                <div
-                  key={i}
-                  className={`sc-tile${usedIdx.has(i) ? ' used' : ''}${armed === i ? ' armed' : ''}`}
-                  onClick={() => { if (!playing || thinking || usedIdx.has(i)) return; startClock(); setArmed((a) => (a === i ? null : i)); }}
-                  role="button"
-                  aria-label={`Tile ${L}, ${PTS[L]} points`}
-                >
-                  {L}<span className="pts">{PTS[L]}</span>
-                </div>
-              ))}
-              {!g.rack.length && <span style={{ fontSize: 13, fontWeight: 700, color: `var(--stg-ink, ${COLORS.green})` }}>Rack empty — you went out.</span>}
+            <div className="bb-bar" role="img" aria-label={`Spread ${signed(spread)}, benchmark ${signed(BENCH)}`}>
+              <span className="bb-track" />
+              <span className={`bb-fill${spread < 0 ? ' neg' : ''}`} style={{ left: `${Math.min(meter.zero, meter.val)}%`, width: `${Math.abs(meter.val - meter.zero)}%` }} />
+              <span className="bb-tick" style={{ left: `${meter.zero}%` }} />
+              <span className="bb-tl" style={{ left: `${meter.zero}%` }}>EVEN</span>
+              <span className="bb-tick bench" style={{ left: `${meter.bench}%` }} />
+              <span className={`bb-tl bench${meter.bench > 78 ? ' end' : ''}`} style={{ left: meter.bench > 78 ? `calc(${meter.bench}% + 1px)` : `${meter.bench}%` }}>BENCHMARK {signed(BENCH)}</span>
             </div>
-
-            <div style={{ textAlign: 'center', minHeight: 20, fontSize: 12.5, fontWeight: 700 }}>
-              {thinking ? <span style={{ color: `var(--stg-ink, ${COLORS.foe})` }}>Your opponent is thinking…</span>
-                : preview && !preview.ok ? <span style={{ color: `var(--stg-ink, ${COLORS.rust})` }}>{preview.why}</span>
-                : preview && preview.ok ? <span style={{ color: `var(--stg-ink, ${COLORS.green})` }}>{preview.words.map((w) => `${w.word} ${w.score}`).join(' · ')} = {preview.score}</span>
-                : playing ? <span style={{ color: FADED }}>Tap a tile then a square, or click a square and type.</span>
-                : null}
-            </div>
-
-            {playing && (
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginTop: 10 }}>
-                <button type="button" className="sc-btn primary" disabled={!pending.length || thinking || (preview && !preview.ok)} onClick={playWord}>
-                  <CheckCircle2 size={15} strokeWidth={2.4} /> Play{preview && preview.ok ? ` ${preview.score}` : ''}
-                </button>
-                <button type="button" className="sc-btn" disabled={!pending.length || thinking} onClick={() => { setPending([]); setArmed(null); }}>
-                  <RotateCcw size={14} /> Recall
-                </button>
-                <button type="button" className="sc-btn" disabled={thinking} onClick={passTurn}>
-                  <SkipForward size={14} /> Pass
-                </button>
-              </div>
-            )}
           </div>
 
-          {/* the bag + move log. There is deliberately NO tracker: the bag is
-              printed here, the board is in front of you, and the subtraction is
-              the puzzle. Handing over their rack was the launch version's
-              mistake, and it made the deduction ornamental. */}
-          <div style={{ flex: '1 1 190px', minWidth: 180 }}>
-            <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED, marginBottom: 6 }}>
-              The bag &middot; {BAG_SIZE} tiles
-            </div>
-            <div className="sc-bag">
-              {BAG_ROWS.map(([L, n]) => (
-                <span key={L}><b>{L}</b>{n}</span>
-              ))}
-            </div>
-            <div style={{ fontSize: 11.5, color: FADED, fontWeight: 600, marginTop: 7, lineHeight: 1.55 }}>
-              No blanks. Nothing left to draw, so their <b style={{ color: INK }}>{foeRack.length} tiles</b> are whatever this bag has left once you subtract the board and your own rack.
+          <div className="bb-panel">
+            <div className="bb-top">
+              <div className="bb-boardcol">
+                <div className="bb-grid" role="grid" aria-label="Babel board">
+                  {Array.from({ length: SIZE * SIZE }, (_, i) => {
+                    const r = Math.floor(i / SIZE), c = i % SIZE;
+                    const p = pendingAt.get(`${r},${c}`);
+                    const v = p ? p.L : grid[r][c];
+                    const pm = v ? null : PREM[PREMIUM[r][c]];
+                    const isSel = sel && sel.r === r && sel.c === c;
+                    const wasFoe = !p && grid[r][c] && g.log.length && lastFoeCells.has(`${r},${c}`);
+                    return (
+                      <div
+                        key={i}
+                        className={`bb-cell${v ? ' tile' : ''}${pm ? ` ${pm.cls}` : ''}${p ? ' fresh' : ''}${wasFoe ? ' foeplay' : ''}${isSel ? ' sel' : ''}`}
+                        onClick={() => onCell(r, c)}
+                        role="gridcell"
+                        aria-label={`Row ${r + 1} column ${c + 1}${v ? `: ${v}` : pm ? `: ${pm.name}` : ''}`}
+                      >
+                        {v ? (
+                          <>{v}<span className="pts">{PTS[v]}</span></>
+                        ) : pm ? pm.label : ''}
+                        {isSel && !v && <span className="dirmark" aria-hidden="true">{dir === 'h' ? '→' : '↓'}</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* The bag + move log. There is deliberately NO tracker: the bag is
+                  printed here, the board is in front of you, and the subtraction
+                  is the puzzle. Handing over their rack was the launch version's
+                  mistake, and it made the deduction ornamental. */}
+              <aside className="bb-side" aria-label="The bag and the moves">
+                <span className="bb-k">The bag &middot; {BAG_SIZE} tiles</span>
+                {bagChips}
+                {bagNote}
+                <div className="bb-rule" />
+                <span className="bb-k">Moves</span>
+                {movesLog}
+              </aside>
             </div>
 
-            <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED, margin: '16px 0 6px' }}>Moves</div>
-            <div className="sc-log">
-              {g.log.length ? g.log.map((m, i) => (
-                <div key={i} style={{ color: m.who === 'you' ? `var(--stg-ink, ${COLORS.ink})` : COLORS.foe }}>
-                  {m.who === 'you' ? 'You' : 'Them'} &middot; {m.word.toLowerCase()} {m.score ? <b>{m.score}</b> : ''}
+            <div className="bb-play">
+              <div className="bb-rackwrap">
+                <span className="bb-k bb-wide">Your rack</span>
+                <div className="bb-rack">
+                  {g.rack.map((L, i) => {
+                    const used = usedIdx.has(i);
+                    return (
+                      <button
+                        type="button"
+                        key={i}
+                        className={`bb-tile${used ? ' used' : ''}${armed === i ? ' armed' : ''}`}
+                        onClick={() => { if (!playing || thinking || used) return; startClock(); setArmed((a) => (a === i ? null : i)); }}
+                        aria-pressed={armed === i}
+                        disabled={used}
+                        aria-label={used ? `Tile ${L}, on the board` : `Tile ${L}, ${PTS[L]} point${PTS[L] === 1 ? '' : 's'}${armed === i ? ', in hand' : ''}`}
+                      >
+                        {used ? '' : <>{L}<span className="pts">{PTS[L]}</span></>}
+                      </button>
+                    );
+                  })}
+                  {!g.rack.length && <span className="bb-out">Rack empty. You went out.</span>}
                 </div>
-              )) : <span style={{ color: FADED }}>No plays yet.</span>}
-              {g.status === 'done' && g.adj !== 0 && (
-                <div style={{ color: g.adj > 0 ? COLORS.green : `var(--stg-bad, ${COLORS.rust})`, marginTop: 4 }}>
-                  racks &middot; {signed(g.adj)}
+              </div>
+
+              {playing && (
+                <div className="bb-actions">
+                  <button type="button" className="bb-btn" disabled={!pending.length || thinking} onClick={() => { setPending([]); setArmed(null); }}>Recall</button>
+                  <button type="button" className="bb-btn" disabled={thinking} onClick={passTurn}>Pass</button>
+                  <button type="button" className="bb-btn play" disabled={!pending.length || thinking || (preview && !preview.ok)} onClick={playWord}>
+                    Play{preview && preview.ok ? ` ${preview.score}` : ''}
+                  </button>
                 </div>
               )}
+
+              <div className="bb-status" aria-live="polite">
+                <span className={`l1 bb-statusline${statusBad ? ' bad' : ''}`}>{statusLine}</span>
+                {playing && <span className="l2">Go out first and their leftover tiles come off their score and onto yours.</span>}
+              </div>
+
+              <div className="bb-folds">
+                <button type="button" className="bb-fold" aria-expanded={openBag} onClick={() => setOpenBag((v) => !v)}>
+                  <span>The bag &middot; {BAG_SIZE} tiles, no blanks</span><span className="go">{openBag ? 'Hide' : 'Show ›'}</span>
+                </button>
+                {openBag && <div className="bb-foldbody">{bagChips}{bagNote}</div>}
+                <button type="button" className="bb-fold" aria-expanded={openMoves} onClick={() => setOpenMoves((v) => !v)}>
+                  <span>Moves &middot; {g.log.length ? `${g.log.length} so far` : 'none yet'}</span><span className="go">{openMoves ? 'Hide' : 'Show ›'}</span>
+                </button>
+                {openMoves && <div className="bb-foldbody">{movesLog}</div>}
+              </div>
             </div>
+          </div>
+          <div className="bb-foot bb-wide">
+            <span>Reach {signed(BENCH)} and you have matched our solver from your seat.</span>
           </div>
         </div>
         </>
@@ -926,7 +1099,7 @@ export default function BabelClient({ puzzles, forceNum }) {
             <>
               <div style={{ maxWidth: 480, margin: '16px 0 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
-                  <span style={{ fontFamily: MONO, fontSize: 30, fontWeight: 500, color: won ? COLORS.green : beat ? COLORS.gold : `var(--stg-ink, ${COLORS.ink})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{signed(spread)}</span>
+                  <span style={{ fontFamily: SANS, fontSize: 30, fontWeight: 500, color: won ? COLORS.green : beat ? COLORS.gold : `var(--stg-ink, ${COLORS.ink})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{signed(spread)}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {won ? `The benchmark was ${signed(BENCH)}. You matched the book line.` : beat ? `You beat them by ${spread}. The benchmark was ${signed(BENCH)}, and greedy play gets ${signed(PUZZLE.greedy)}.` : `The benchmark was ${signed(BENCH)}. Greedy play gets ${signed(PUZZLE.greedy)}.`}
                     {' '}<span style={{ color: FADED, fontWeight: 600 }}>

@@ -21,7 +21,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { HelpCircle, X, Lightbulb, Eye, Smartphone, ChevronLeft, ChevronRight, Delete, Check } from 'lucide-react';
+import { HelpCircle, X, Lightbulb, Eye, Smartphone, ChevronLeft, ChevronRight, Delete, Check, ArrowLeftRight } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import DailyGamesPromo from '../DailyGamesPromo';
@@ -597,7 +597,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
     g2.letters[idx] = solFlat[idx];
     if (!g2.t0) g2.t0 = Date.now();
     setG(g2);
-    say('Hint used — one letter filled in for you.');
+    say('Hint used: one letter filled in for you.');
   }
 
   function revealEnd() {
@@ -656,7 +656,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Encore #${PUZZLE.num} — the daily crossword from Mind Loft.\n${shareUrl()}`
+      ? `Encore #${PUZZLE.num}, the daily crossword from Mind Loft.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -674,16 +674,38 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
   }
 
   const filledWord = (w) => w.cells.every((c) => letters[c] !== '');
+  // Phone only: the full Across/Down lists fold behind the clue bar.
+  const [listOpen, setListOpen] = useState(false);
+  const isNarrow = () => { try { return window.matchMedia('(max-width: 560px)').matches; } catch (e) { return false; } };
+  // The active clue (and the crossing one) scroll into view inside their own
+  // fixed-height pane. scrollTop on the pane, never scrollIntoView, so the
+  // page itself does not jump while the player types.
+  const paneA = useRef(null);
+  const paneD = useRef(null);
+  useEffect(() => {
+    if (!playing) return;
+    for (const pane of [paneA.current, paneD.current]) {
+      if (!pane) continue;
+      const el = pane.querySelector('[data-ec-on]');
+      if (!el) continue;
+      const top = el.offsetTop, bot = top + el.offsetHeight;
+      if (top < pane.scrollTop + 4) pane.scrollTop = Math.max(0, top - 4);
+      else if (bot > pane.scrollTop + pane.clientHeight - 4) pane.scrollTop = bot - pane.clientHeight + 4;
+    }
+  }, [curWordIdx, crossWordIdx, playing, listOpen]);
   const clueRow = (w, i) => {
     const active = i === curWordIdx && playing;
-    // the crossing clue through the selected square gets a faint secondary highlight
+    // the crossing clue through the selected square is outlined
     const cross = i === crossWordIdx && playing && !active;
+    const done = playing && !active && !cross && filledWord(w);
     return (
-      <button key={`${w.dir}${w.n}`} onClick={() => { if (playing) selectWord(i); }}
-        className="ec-cluerow"
-        style={{ background: active ? (STAGE ? FEED_STRONG : COLORS.accentSoft) : (cross ? (STAGE ? FEED_SOFT : 'rgba(29,78,216,0.03)') : 'none'), borderLeft: active ? `3px solid ${STAGE ? FEED_STRONG_INK : COLORS.accent}` : (cross ? `3px solid ${STAGE ? FEED_STRONG : 'rgba(29,78,216,0.18)'}` : '3px solid transparent'), opacity: active || cross || !playing || !filledWord(w) ? 1 : 0.45 }}>
-        <span style={{ fontFamily: MONO, fontSize: 11.5, fontWeight: 500, color: active ? (STAGE ? FEED_STRONG_INK : COLORS.accent) : (cross ? (STAGE ? FEED_SOFT_INK : 'rgba(30,64,175,0.5)') : `var(--stg-mute, ${COLORS.faded})`), minWidth: 18, textAlign: 'right' }}>{w.n}</span>
-        <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 600, color: active && STAGE ? FEED_STRONG_INK : INK, lineHeight: 1.35, textAlign: 'left' }}>{w.clue}</span>
+      <button key={`${w.dir}${w.n}`} type="button"
+        onClick={() => { if (playing) { selectWord(i); if (isNarrow()) setListOpen(false); } }}
+        className={`ec-cluerow${active ? ' on' : ''}${cross ? ' x' : ''}${done ? ' done' : ''}`}
+        data-ec-on={active || cross ? '' : undefined}
+        aria-current={active ? 'true' : undefined}>
+        <b className="ec-cn">{w.n}</b>
+        <span className="ec-ct">{w.clue}</span>
       </button>
     );
   };
@@ -692,9 +714,11 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
   // Sizes are derived from N, not hardcoded. An 11x11 Sunday grid has to sit
   // above an on-screen keyboard on a 390px phone, so the letter and the little
   // clue number both shrink with the grid rather than being tuned for one size.
-  const cellPx = N >= 11 ? 'clamp(12px, 3.3vw, 21px)' : 'clamp(15px, 4.1vw, 25px)';
-  const numPx = N >= 11 ? 7.5 : 9.5;
-  const boardMax = N >= 11 ? 560 : 480;
+  // The grid box is a size container, so the letter and the clue number are
+  // a share of one square: 9x9 tops out at 50px squares, 11x11 at 48px.
+  const cellPx = `calc(${N >= 11 ? 50 : 48}cqw / ${N})`;
+  const numPx = `max(7px, calc(20cqw / ${N}))`;
+  const boardMax = N >= 11 ? 528 : 450;
   const checks = g.checks;
   // What the player finished with, in the same unit the game posts: words
   // correct. A win is every word by definition; a reveal stores the count it
@@ -702,6 +726,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
   const endScore = won ? TOTAL : (g.revealScore || 0);
   const filledCount = solFlat.reduce((k, ch, i) => k + (ch !== '#' && letters[i] !== '' ? 1 : 0), 0);
   const whiteCount = solFlat.reduce((k, ch) => k + (ch !== '#' ? 1 : 0), 0);
+  const wordsFilled = WORDS.reduce((k, w) => k + (filledWord(w) ? 1 : 0), 0);
 
   // Shared rules body — rendered in both the how-to-play modal and the start tile.
   const rulesBody = (
@@ -764,21 +789,99 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
           .ec-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           @keyframes ecshake{0%,100%{transform:translateX(0);}25%{transform:translateX(-3px);}75%{transform:translateX(3px);}}
           @media(max-width:560px){.ec-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.ec-ttl h1{font-size:21px;letter-spacing:0.02em;}.ec-ttl .ec-ttl-dt{font-size:15px;}.ec-ttl-dot{display:none;}}
-          .ec-cell{display:flex;align-items:center;justify-content:center;font-family:${SANS};box-sizing:border-box;cursor:pointer;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;background:${STAGE ? 'var(--stg-cell)' : 'var(--white)'};}
-          .ec-cell.ec-blk{background:${COLORS.ink};cursor:default;}
-          .ec-cell.ec-inword{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 26%, var(--stg-cell))' : 'color-mix(in srgb, ' + COLORS.accent + ' 16%, transparent)'};}
-          .ec-cell.ec-sel{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 38%, var(--stg-cell))' : '#dbeafe'};box-shadow:inset 0 0 0 2px var(--stg-acc, ${COLORS.accent});}
-          .ec-cell.ec-wrongmark span{color:${COLORS.rust};}
-          .ec-cell.ec-wrongmark{animation:ecshake .3s ease;}
-          .ec-num{position:absolute;top:1px;left:3px;font-family:${MONO};font-weight:${STAGE ? 700 : 500};color:var(--stg-ink2, rgba(28,30,36,0.55));pointer-events:none;}
-          .ec-cell.ec-inword .ec-num,.ec-cell.ec-sel .ec-num{color:var(--stg-ink, rgba(28,30,36,0.75));}
-          .ec-cluerow{display:flex;gap:8px;align-items:flex-start;width:100%;padding:6px 8px 6px 6px;border:none;border-radius:0 7px 7px 0;cursor:pointer;background:none;}
+
+          .ec-panel{background:var(--stg-surf, #fff);border:1px solid var(--stg-line, rgba(28,30,36,0.18));border-radius:20px;padding:20px 22px 16px;display:flex;flex-direction:column;align-items:center;}
+          @media(max-width:560px){.ec-panel{background:transparent;border:0;border-radius:0;padding:0;}
+            .ec-meter,.ec-clue,.ec-xnote,.ec-lists,.ec-acts,.ec-under{box-sizing:border-box;padding-left:8px !important;padding-right:8px !important;}
+            .ec-gridbox{box-sizing:border-box;padding:0 2px;}}
+          .ec-k{font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
+          .ec-k b{font-weight:800;color:var(--stg-acc-ink, ${COLORS.accent});}
+          .ec-meter{width:100%;display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+          .ec-meter-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;}
+          .ec-bar{height:8px;border-radius:4px;background:var(--stg-chip, rgba(28,30,36,0.1));overflow:hidden;}
+          .ec-bar span{display:block;height:100%;background:var(--stg-acc, ${COLORS.accent});border-radius:4px;transition:width .25s ease;}
+          @media(max-width:560px){.ec-meter{gap:6px;margin-bottom:12px;}.ec-k{font-size:10px;}.ec-bar{height:6px;}}
+
+          .ec-gridbox{width:100%;margin:0 auto;container-type:inline-size;}
+          .ec-grid{display:grid;aspect-ratio:1;gap:1px;background:var(--stg-cell-line, rgba(28,30,36,0.3));border-radius:7px;overflow:hidden;box-shadow:0 0 0 2.5px var(--stg-ink, ${COLORS.ink});}
+          @media(max-width:560px){.ec-grid{border-radius:6px;box-shadow:0 0 0 2px var(--stg-ink, ${COLORS.ink});}}
+          .ec-cell{display:flex;align-items:center;justify-content:center;font-family:${SANS};box-sizing:border-box;cursor:pointer;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;background:var(--stg-cell, #fff);}
+          .ec-cell .ec-l{font-weight:800;line-height:1;padding-top:12%;color:var(--stg-ink, ${COLORS.ink});}
+          .ec-cell.ec-blk{background:color-mix(in srgb, var(--stg-ground, ${COLORS.ink}) 55%, black);cursor:default;}
+          html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .ec-cell.ec-blk{background:var(--stg-ink);}
+          .ec-cell.ec-inword{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 22%, var(--stg-cell, #fff));}
+          .ec-cell.ec-wrongmark{background:color-mix(in srgb, var(--stg-bad, ${COLORS.rust}) 15%, var(--stg-cell, #fff));animation:ecshake .3s ease;}
+          .ec-cell.ec-wrongmark .ec-l{color:var(--stg-bad, ${COLORS.rust});}
+          .ec-cell.ec-sel{background:var(--stg-acc, ${COLORS.accent});box-shadow:inset 0 0 0 3px var(--stg-ink, ${COLORS.ink});}
+          .ec-cell.ec-sel .ec-l,.ec-cell.ec-sel .ec-num{color:var(--stg-onramp, #fff);}
+          .ec-num{position:absolute;top:3px;left:4px;line-height:1;font-family:${SANS};font-weight:800;color:var(--stg-ink2, rgba(28,30,36,0.7));pointer-events:none;}
+          @media(max-width:560px){.ec-num{top:2px;left:3px;}.ec-cell.ec-sel{box-shadow:inset 0 0 0 2.5px var(--stg-ink, ${COLORS.ink});}}
+
+          .ec-out{font-family:${SANS};font-weight:800;background:transparent;color:var(--stg-ink2, ${COLORS.ink});border:1.5px solid color-mix(in srgb, var(--stg-mute, ${COLORS.faded}) 80%, transparent);border-radius:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;-webkit-tap-highlight-color:transparent;}
+          .ec-out:hover{background:var(--stg-surf2, ${COLORS.paper});color:var(--stg-ink, ${COLORS.ink});}
+          .ec-clue{width:100%;margin-top:14px;display:flex;align-items:stretch;gap:8px;}
+          .ec-clue .ec-out{width:48px;min-height:50px;flex:none;padding:0;}
+          .ec-cbar{flex:1 1 auto;min-width:0;border:0;border-radius:12px;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);display:flex;align-items:center;gap:10px;padding:8px 14px;font-family:${SANS};text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+          .ec-cbar .ec-cb-dir{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;}
+          .ec-cbar .ec-cb-txt{font-size:17px;font-weight:800;line-height:1.25;min-width:0;}
+          .ec-cbar .ec-cb-len{margin-left:auto;font-size:12px;font-weight:700;white-space:nowrap;padding-left:6px;}
+          .ec-cbar .ec-cb-top{display:none;}
+          .ec-xnote{display:none;}
+          @media(max-width:560px){
+            .ec-clue{margin-top:12px;gap:6px;max-width:none !important;}
+            .ec-clue .ec-out{width:44px;min-height:54px;}
+            .ec-cbar{flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;padding:6px 12px;}
+            .ec-cbar .ec-cb-dir,.ec-cbar .ec-cb-len{display:none;}
+            .ec-cbar .ec-cb-top{display:block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}
+            .ec-xnote{display:flex;align-items:center;gap:8px;width:100%;margin-top:4px;}
+          }
+          .ec-xnote span{flex:1;min-width:0;font-size:12px;font-weight:600;line-height:1.4;color:var(--stg-mute, ${COLORS.faded});}
+          .ec-xnote button{flex:none;min-height:44px;padding:0 4px;background:none;border:0;cursor:pointer;font-family:${SANS};font-size:12px;font-weight:800;color:var(--stg-ink, ${COLORS.ink});text-decoration:underline;text-underline-offset:3px;}
+
+          .ec-lists{width:100%;margin-top:14px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;}
+          @media(max-width:560px){.ec-lists{gap:10px;margin-top:8px;}.ec-lists:not(.open){display:none;}}
+          .ec-col{display:flex;flex-direction:column;gap:4px;min-width:0;}
+          .ec-col .ec-k{padding:0 10px 2px;}
+          .ec-pane{position:relative;height:224px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;scrollbar-width:thin;scrollbar-color:var(--stg-line, rgba(28,30,36,0.2)) transparent;overscroll-behavior:contain;}
+          .ec-pane::-webkit-scrollbar{width:4px;}
+          .ec-pane::-webkit-scrollbar-track{background:transparent;}
+          .ec-pane::-webkit-scrollbar-thumb{background:var(--stg-line, rgba(28,30,36,0.2));border-radius:2px;}
+          @media(max-width:560px){.ec-pane{height:200px;}}
+          .ec-cluerow{display:flex;align-items:baseline;gap:10px;width:100%;text-align:left;min-height:36px;padding:7px 10px;border-radius:9px;border:1.5px solid transparent;background:transparent;cursor:pointer;font-family:${SANS};color:var(--stg-ink, ${COLORS.ink});flex:none;}
           .ec-cluerow:hover{background:var(--stg-surf2, ${COLORS.paper});}
-          .ec-key{font-family:${SANS};font-weight:800;font-size:15px;border:none;border-radius:6px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};box-shadow:0 2px 0 rgba(28,30,36,0.35);border: 1.5px solid var(--stg-line, rgba(28,30,36,0.4));height:44px;flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-          .ec-key:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(28,30,36,0.35);}
-          .ec-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-          .ec-cols{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;}
-          @media(max-width:560px){.ec-cols{grid-template-columns:1fr;}}
+          .ec-cluerow .ec-cn{font-size:12px;font-weight:800;min-width:16px;color:var(--stg-mute, ${COLORS.faded});}
+          .ec-cluerow .ec-ct{font-size:14px;font-weight:600;line-height:1.35;}
+          .ec-cluerow.done{color:var(--stg-mute, ${COLORS.faded});}
+          .ec-cluerow.x{border-color:var(--stg-acc-ink, ${COLORS.accent});}
+          .ec-cluerow.on,.ec-cluerow.on:hover{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);}
+          .ec-cluerow.on .ec-cn{color:var(--stg-onramp, #fff);}
+          .ec-cluerow.on .ec-ct{font-weight:800;}
+          @media(max-width:560px){.ec-cluerow{gap:7px;padding:7px 8px;}.ec-cluerow .ec-ct{font-size:13px;}}
+
+          .ec-kb{width:100%;margin-top:12px;display:flex;flex-direction:column;gap:6px;}
+          .ec-kb-row{display:flex;justify-content:center;gap:5px;}
+          .ec-key{font-family:${SANS};font-weight:800;font-size:16px;border:1px solid var(--stg-line, rgba(28,30,36,0.2));border-radius:7px;background:var(--stg-cell, #fff);color:var(--stg-ink, ${COLORS.ink});box-shadow:0 1px 0 var(--stg-line2, rgba(28,30,36,0.3));height:48px;flex:1 1 0;min-width:0;max-width:40px;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+          .ec-key.wide{flex:1.6 1 0;max-width:56px;}
+          .ec-key:active{transform:translateY(1px);box-shadow:none;background:var(--stg-surf2, ${COLORS.paper});}
+
+          .ec-acts{width:100%;margin-top:14px;padding-top:14px;border-top:1px solid var(--stg-line, rgba(28,30,36,0.15));display:flex;align-items:center;justify-content:flex-end;gap:10px;}
+          .ec-acts .ec-help{flex:1;min-width:0;font-size:12px;font-weight:600;line-height:1.4;color:var(--stg-mute, ${COLORS.faded});}
+          .ec-acts .ec-out{min-height:48px;padding:0 16px;font-size:14px;font-weight:700;}
+          .ec-check{font-family:${SANS};font-weight:800;font-size:14px;border:0;border-radius:12px;padding:0 18px;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);}
+          .ec-check:disabled{background:var(--stg-chip, rgba(28,30,36,0.1));color:var(--stg-mute, ${COLORS.faded});cursor:not-allowed;}
+          .ec-hint-short{display:none;}
+          @media(max-width:560px){
+            .ec-acts{border-top:0;padding-top:0;margin-top:10px;gap:8px;}
+            .ec-acts .ec-help{display:none;}
+            .ec-acts .ec-out{flex:1;min-height:48px;padding:0 10px;}
+            .ec-check{flex:1.4;min-height:48px;}
+            .ec-hint-long{display:none;}.ec-hint-short{display:inline;}
+          }
+          .ec-under{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:6px 4px 0;}
+          .ec-under span{font-size:12px;font-weight:600;line-height:1.45;color:var(--stg-mute, ${COLORS.faded});}
+          .ec-reveal{flex:none;min-height:44px;background:none;border:0;cursor:pointer;font-family:${SANS};font-weight:700;font-size:12px;color:var(--stg-ink2, ${COLORS.faded});text-decoration:underline;text-underline-offset:3px;display:inline-flex;align-items:center;gap:5px;padding:0 2px;}
+          .ec-reveal.armed{color:var(--stg-bad, ${COLORS.rust});}
+          @media(max-width:560px){.ec-under{flex-direction:column;align-items:flex-start;gap:0;padding:8px 0 0;}}
         ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
@@ -838,16 +941,29 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
               them in both places is the one thing to avoid: the cap exists to
               give the board this row back. */}
           {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ whiteSpace: 'nowrap' }}>checks <b style={{ color: checks > 0 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{checks}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>squares <b style={{ color: filledCount === whiteCount ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{filledCount}</b>/{whiteCount}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: SANS, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
+            <span style={{ whiteSpace: 'nowrap' }}>checks <b style={{ color: checks > 0 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 700 }}>{checks}</b></span>
+            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>squares <b style={{ color: filledCount === whiteCount ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 700 }}>{filledCount}</b>/{whiteCount}</span>
           </div>
           )}
 
+          {/* The meter: squares filled and words filled. Filled, never
+              correct: nothing is judged until Check grid. */}
+          <div className="ec-meter">
+            <div className="ec-meter-row">
+              <span className="ec-k">The grid &middot; <b>{filledCount}</b> of {whiteCount} squares</span>
+              <span className="ec-k">{wordsFilled} of {TOTAL} words filled</span>
+            </div>
+            <div className="ec-bar" role="progressbar" aria-label="Squares filled" aria-valuemin={0} aria-valuemax={whiteCount} aria-valuenow={filledCount}>
+              <span style={{ width: `${whiteCount ? Math.round((100 * filledCount) / whiteCount) : 0}%` }} />
+            </div>
+          </div>
+
+          <div className="ec-panel">
           {/* the grid */}
-          <div style={{ maxWidth: boardMax, margin: '0 auto' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))`, aspectRatio: '1', border: `2.5px solid var(--stg-cell-line, rgba(28,30,36,0.85))`, borderRadius: 4, overflow: 'hidden', gap: STAGE ? 2 : 1, background: 'var(--stg-cell-line, rgba(28,30,36,0.28))' }}>
+          <div className="ec-gridbox" style={{ maxWidth: boardMax }}>
+            <div className="ec-grid" style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))` }}>
               {Array.from({ length: T }).map((_, idx) => {
                 if (isBlock(idx)) return <div key={idx} className="ec-cell ec-blk" />;
                 const inWord = playing && curWord.cells.includes(idx);
@@ -859,39 +975,69 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
                     className={`ec-cell${inWord && !sel ? ' ec-inword' : ''}${sel ? ' ec-sel' : ''}${wrongMark ? ' ec-wrongmark' : ''}`}
                     onClick={() => cellClick(idx)}>
                     {numAt[idx] != null && <span className="ec-num" style={{ fontSize: numPx }}>{numAt[idx]}</span>}
-                    <span style={{ fontSize: cellPx, fontWeight: 800, color: revealMiss ? `var(--stg-mute, ${COLORS.faded})` : `var(--stg-ink, ${COLORS.ink})` }}>{viewLetters[idx]}</span>
+                    <span className="ec-l" style={{ fontSize: cellPx, color: revealMiss ? `var(--stg-mute, ${COLORS.faded})` : undefined }}>{viewLetters[idx]}</span>
                   </div>
                 );
               })}
             </div>
           </div>
 
-          {/* current clue bar */}
+          {/* current clue bar: on a phone, tapping it opens the full lists */}
           {playing && (
-            <div style={{ display: 'flex', alignItems: 'stretch', gap: 6, maxWidth: boardMax, margin: '12px auto 0' }}>
-              <button aria-label="Previous clue" onClick={() => stepWord(-1)} className="ec-tool" style={{ padding: '7px 8px' }}>
-                <ChevronLeft size={15} />
+            <div className="ec-clue" style={{ maxWidth: boardMax }}>
+              <button type="button" aria-label="Previous clue" onClick={() => stepWord(-1)} className="ec-out">
+                <ChevronLeft size={20} strokeWidth={2.5} />
               </button>
-              <div onClick={() => setDir((d) => (d === 'A' ? 'D' : 'A'))} style={{ flex: '1 1 auto', background: `var(--stg-surf, ${COLORS.accentSoft})`, border: `1.5px solid rgba(29,78,216,0.4)`, borderRadius: 8, padding: '7px 10px', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 500, color: ACC_INK, whiteSpace: 'nowrap' }}>{curWord.n}{curWord.dir === 'A' ? 'A' : 'D'}</span>
-                <span style={{ fontFamily: SANS, fontSize: 13.5, fontWeight: 700, color: INK, lineHeight: 1.3 }}>{curWord.clue}</span>
-              </div>
-              <button aria-label="Next clue" onClick={() => stepWord(1)} className="ec-tool" style={{ padding: '7px 8px' }}>
-                <ChevronRight size={15} />
+              <button type="button" className="ec-cbar"
+                onClick={() => { if (isNarrow()) setListOpen((o) => !o); else setDir((d) => (d === 'A' ? 'D' : 'A')); }}
+                aria-expanded={listOpen}
+                title="Flip Across and Down">
+                <span className="ec-cb-top">{curWord.n} {curWord.dir === 'A' ? 'Across' : 'Down'} &middot; {curWord.len} letters</span>
+                <span className="ec-cb-dir">{curWord.n} {curWord.dir === 'A' ? 'Across' : 'Down'}</span>
+                <span className="ec-cb-txt">{curWord.clue}</span>
+                <span className="ec-cb-len">{curWord.len} letters</span>
+              </button>
+              <button type="button" aria-label="Next clue" onClick={() => stepWord(1)} className="ec-out">
+                <ChevronRight size={20} strokeWidth={2.5} />
               </button>
             </div>
           )}
+          {playing && (
+            <div className="ec-xnote">
+              <span>{crossWordIdx >= 0 ? <>Crossing: {WORDS[crossWordIdx].n} {WORDS[crossWordIdx].dir === 'A' ? 'Across' : 'Down'}, {WORDS[crossWordIdx].clue}.</> : <>No crossing word here.</>}</span>
+              <button type="button" onClick={() => setListOpen((o) => !o)} aria-expanded={listOpen}>{listOpen ? 'Hide clues' : `All ${TOTAL} clues`}</button>
+            </div>
+          )}
+
+          {/* clue lists, side by side in fixed-height panes */}
+          <div className={`ec-cols ec-lists${listOpen || !playing ? ' open' : ''}`}>
+            <div className="ec-col">
+              <span className="ec-k">Across</span>
+              <div className="ec-pane ec-pane-a" ref={paneA}>
+                {WORDS.map((w, i) => (w.dir === 'A' ? clueRow(w, i) : null))}
+              </div>
+            </div>
+            <div className="ec-col">
+              <span className="ec-k">Down</span>
+              <div className="ec-pane ec-pane-d" ref={paneD}>
+                {WORDS.map((w, i) => (w.dir === 'D' ? clueRow(w, i) : null))}
+              </div>
+            </div>
+          </div>
 
           {/* on-screen keyboard (mobile) */}
           {playing && mobileUi && (
-            <div style={{ maxWidth: boardMax, margin: '12px auto 0' }}>
+            <div className="ec-kb">
               {kbRows.map((row, ri) => (
-                <div key={ri} style={{ display: 'flex', gap: 4, marginTop: ri ? 5 : 0, padding: ri === 1 ? '0 12px' : 0 }}>
+                <div key={ri} className="ec-kb-row">
+                  {ri === 2 && (
+                    <button type="button" aria-label="Flip direction" className="ec-key wide" onClick={() => setDir((d) => (d === 'A' ? 'D' : 'A'))}><ArrowLeftRight size={18} strokeWidth={2.5} /></button>
+                  )}
                   {row.split('').map((ch) => (
-                    <button key={ch} className="ec-key" onClick={() => typeLetter(ch)}>{ch}</button>
+                    <button type="button" key={ch} className="ec-key" onClick={() => typeLetter(ch)}>{ch}</button>
                   ))}
                   {ri === 2 && (
-                    <button aria-label="Delete" className="ec-key" style={{ flex: '1.6 1 0' }} onClick={backspace}><Delete size={17} /></button>
+                    <button type="button" aria-label="Delete" className="ec-key wide" onClick={backspace}><Delete size={18} /></button>
                   )}
                 </div>
               ))}
@@ -899,65 +1045,46 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
           )}
 
           {playing && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 12, flexWrap: 'wrap' }}>
+            <div className="ec-acts">
+              <span className="ec-help">Filled clues fade. The outlined clue crosses your square.</span>
               {hintOk && !g.hintUsed && (
-                <button className="ec-tool" onClick={useHint} title="Reveal one letter (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(29,78,216,0.5)', color: '#1e3a8a' }}>
-                  <Lightbulb size={14} /> Hint
+                <button type="button" className="ec-out" onClick={useHint} title="Reveal one letter (one hint, first play only)">
+                  <Lightbulb size={15} /> <span className="ec-hint-long">Hint &middot; one letter</span><span className="ec-hint-short">Hint</span>
                 </button>
               )}
               {(() => {
                 const full = solFlat.every((ch, i) => ch === '#' || letters[i] !== '');
                 return (
-                  <button className="ec-tool" onClick={checkGrid} disabled={!full}
-                    title={full ? 'Turn in the grid' : 'Fill every square to check the grid'}
-                    style={full
-                      ? { background: `var(--stg-acc, #1d4ed8)`, borderColor: `var(--stg-acc, #1d4ed8)`, color: `var(--stg-onramp, #fff)` }
-                      : { opacity: 0.55, cursor: 'not-allowed' }}>
-                    <Check size={14} /> Check grid
+                  <button type="button" className="ec-check" onClick={checkGrid} disabled={!full}
+                    title={full ? 'Turn in the grid' : 'Fill every square to check the grid'}>
+                    <Check size={15} strokeWidth={2.75} /> Check grid
                   </button>
                 );
               })()}
-              {!mobileUi && (
-                <span className="ec-tool" style={{ cursor: 'default', borderStyle: 'dashed', color: FADED }}>
-                  Type to fill &middot; space flips Across/Down &middot; tab jumps &middot; enter checks a full grid
-                </span>
+            </div>
+          )}
+          </div>
+
+          {started && (
+            <div className="ec-under">
+              <span>
+                Check unlocks when every square is filled. A wrong check marks the misses in red and counts against you.
+                {!mobileUi && <> Space flips direction, Tab jumps to the next clue.</>}
+              </span>
+              {identity && (g.t0 || checks > 0) && (
+                <button type="button" className={`ec-reveal${armReveal ? ' armed' : ''}`}
+                  onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
+                  <Eye size={13} /> {armReveal ? 'Tap again to end the puzzle and show the answers' : 'Reveal'}
+                </button>
               )}
             </div>
           )}
         </div>
         )}
 
-        {/* clue lists */}
+        {/* after the finish: the result line and the hide-board control */}
         {!preStart && (
-        <div className={LOFT && !STAGE ? 'loft-card' : undefined} style={{ background: `var(--stg-surf, ${THEME.white})`, border: '1.5px solid rgba(20,22,28,0.12)', borderRadius: 10, padding: '12px 14px', marginBottom: 12 }}>
-          <div className="ec-cols">
-            <div>
-              <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED, margin: '0 0 6px 6px' }}>Across</div>
-              {WORDS.map((w, i) => (w.dir === 'A' ? clueRow(w, i) : null))}
-            </div>
-            <div>
-              <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED, margin: '0 0 6px 6px' }}>Down</div>
-              {WORDS.map((w, i) => (w.dir === 'D' ? clueRow(w, i) : null))}
-            </div>
-          </div>
-
-          {/* Controls. These live INSIDE the clue card rather than under it:
-              on the navy stage a bare row of faded text has nothing to sit on
-              and is close to unreadable, and "the card is the game" means the
-              things you act on belong on the lit surface with the board. */}
-          {started && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(20,22,28,0.10)', flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>
-              Fill the grid from the clues, then press Check grid. Wrong squares turn red, and every failed check counts on the board.
-            </span>
-            {identity && (g.t0 || checks > 0) && (
-              <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-                style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <Eye size={13} /> {armReveal ? 'Tap again — ends the puzzle and shows the answers' : 'Reveal & end'}
-              </button>
-            )}
-          </div>
-          )}
+        <div className={LOFT && !STAGE ? 'loft-card' : undefined} style={STAGE ? { marginBottom: 12 } : { background: THEME.white, border: '1.5px solid rgba(20,22,28,0.12)', borderRadius: 10, padding: '12px 14px', marginBottom: 12 }}>
           <div className={STAGE ? undefined : 'loft-sol'}>
           {/* result */}
           {!playing && (
@@ -1081,7 +1208,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s grid, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s grid, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>

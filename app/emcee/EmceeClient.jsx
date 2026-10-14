@@ -18,7 +18,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { HelpCircle, X, Lightbulb, Eye, Smartphone, ChevronLeft, ChevronRight, Delete, Check } from 'lucide-react';
+import { HelpCircle, X, Lightbulb, Eye, Smartphone, ChevronLeft, ChevronRight, Delete, Check, ArrowLeftRight } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import DailyGamesPromo from '../DailyGamesPromo';
@@ -232,6 +232,8 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
   const [toast, setToast] = useState(null);
   const [copied, setCopied] = useState(false);
   const [armReveal, setArmReveal] = useState(false);
+  // Phone: the full clue list sits behind the clue bar, one tap away.
+  const [cluesOpen, setCluesOpen] = useState(false);
   const [justWon, setJustWon] = useState(false);
   const [endClosed, setEndClosed] = useState(false);
   // The finished board starts turned OVER, showing what to do next.
@@ -594,7 +596,7 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
     g2.letters[idx] = solFlat[idx];
     if (!g2.t0) g2.t0 = Date.now();
     setG(g2);
-    say('Hint used — one letter filled in for you.');
+    say('Hint used: one letter filled in for you.');
   }
 
   function revealEnd() {
@@ -653,7 +655,7 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Emcee #${PUZZLE.num} — the daily mini crossword from Mind Loft.\n${shareUrl()}`
+      ? `Emcee #${PUZZLE.num}: the daily mini crossword from Mind Loft.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -673,21 +675,26 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
   const filledWord = (w) => w.cells.every((c) => letters[c] !== '');
   const clueRow = (w, i) => {
     const active = i === curWordIdx && playing;
-    // the crossing clue through the selected square gets a faint secondary highlight
+    // the crossing clue through the selected square is outlined in the accent
     const cross = i === crossWordIdx && playing && !active;
+    // a fully filled clue fades to muted text (colour, never opacity)
+    const done = playing && !active && !cross && filledWord(w);
     return (
-      <button key={`${w.dir}${w.n}`} onClick={() => { if (playing) selectWord(i); }}
-        className="mc-cluerow"
-        style={{ background: active ? (STAGE ? FEED_STRONG : COLORS.accentSoft) : (cross ? (STAGE ? FEED_SOFT : 'rgba(192,38,211,0.025)') : 'none'), borderLeft: active ? `3px solid ${STAGE ? FEED_STRONG_INK : COLORS.accent}` : (cross ? `3px solid ${STAGE ? FEED_STRONG : 'rgba(192,38,211,0.15)'}` : '3px solid transparent'), opacity: active || cross || !playing || !filledWord(w) ? 1 : 0.45 }}>
-        <span style={{ fontFamily: MONO, fontSize: 11.5, fontWeight: 500, color: active ? (STAGE ? FEED_STRONG_INK : COLORS.accent) : (cross ? (STAGE ? FEED_SOFT_INK : 'rgba(162,28,175,0.5)') : FADED), minWidth: 18, textAlign: 'right' }}>{w.n}</span>
-        <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 600, color: active && STAGE ? FEED_STRONG_INK : INK, lineHeight: 1.35, textAlign: 'left' }}>{w.clue}</span>
+      <button key={`${w.dir}${w.n}`} type="button" onClick={() => { if (playing) selectWord(i); }}
+        aria-current={active ? 'true' : undefined}
+        className={`mc-cluerow${active ? ' on' : ''}${cross ? ' cross' : ''}${done ? ' done' : ''}`}>
+        <span className="mc-cn">{w.n}</span>
+        <span className="mc-ct">{w.clue}</span>
       </button>
     );
   };
 
   const kbRows = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
-  const cellPx = N === 7 ? 'clamp(17px, 4.9vw, 25px)' : 'clamp(20px, 6vw, 30px)';
-  const numPx = N === 7 ? 9.5 : 10.5;
+  // Letter and number sizes follow the square, measured off the grid's own
+  // width (container units), so one rule serves 5x5, 7x7, desktop and phone.
+  const cellPx = `calc(100cqw / ${N} * ${N === 7 ? 0.42 : 0.43})`;
+  const numPx = `max(9px, calc(100cqw / ${N} * 0.145))`;
+  const wordsFilled = WORDS.reduce((k, w) => k + (filledWord(w) ? 1 : 0), 0);
   const checks = g.checks;
   // What the player finished with, in the same unit the game posts: words
   // correct. A win is every word by definition; a reveal stores the count it
@@ -757,22 +764,85 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
           .mc-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           @keyframes mcshake{0%,100%{transform:translateX(0);}25%{transform:translateX(-3px);}75%{transform:translateX(3px);}}
           @media(max-width:560px){.mc-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.mc-ttl h1{font-size:21px;letter-spacing:0.02em;}.mc-ttl .mc-ttl-dt{font-size:15px;}.mc-ttl-dot{display:none;}}
-          .mc-cell{display:flex;align-items:center;justify-content:center;font-family:${SANS};box-sizing:border-box;cursor:pointer;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;background:${STAGE ? 'var(--stg-cell)' : 'var(--white)'};}
-          .mc-cell.mc-blk{background:${COLORS.ink};cursor:default;}
-          .mc-cell.mc-crossword{background:${STAGE ? 'var(--stg-surf2)' : '#fdf6fe'};}
-          .mc-cell.mc-inword{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 26%, var(--stg-cell))' : COLORS.accentSoft};}
-          .mc-cell.mc-sel{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 38%, var(--stg-cell))' : '#f6d9f9'};box-shadow:inset 0 0 0 2px var(--stg-acc, ${COLORS.accent});}
-          .mc-cell.mc-wrongmark span{color:${COLORS.rust};}
+          /* THE BOARD (round six, 2026-10-14). Every colour is a stage token
+             with a paper fallback; the one value the tokens do not carry is
+             the black square, which must be darker than the square in BOTH
+             registers, so it is published here per register as --mc-blk. */
+          .mc-wrap{--mc-blk:#05070d;--mc-soft:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 24%, var(--stg-cell, #fff));}
+          html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .mc-wrap{--mc-blk:#1e2433;--mc-soft:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 17%, var(--stg-cell, #fff));}
+          .mc-prog{display:flex;flex-direction:column;gap:8px;margin:0 0 14px;}
+          .mc-prog-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
+          .mc-prog-row b{color:var(--stg-acc-ink, ${COLORS.accent});font-weight:800;}
+          .mc-segs{display:flex;gap:3px;}
+          .mc-segs span{flex:1;height:8px;border-radius:2px;background:var(--stg-line2, rgba(28,30,36,0.2));}
+          .mc-segs span.on{background:var(--stg-acc, ${COLORS.accent});}
+          .mc-panel{background:var(--stg-surf, #fff);border:1px solid var(--stg-line, rgba(28,30,36,0.18));border-radius:20px;padding:22px 24px 16px;display:flex;flex-direction:column;align-items:center;}
+          .mc-gridbox{width:100%;margin:0 auto;container-type:inline-size;}
+          .mc-grid{display:grid;aspect-ratio:1;border-radius:8px;overflow:hidden;gap:1px;background:var(--stg-cell-line, rgba(28,30,36,0.4));box-shadow:0 0 0 2.5px var(--stg-ink, ${COLORS.ink});}
+          .mc-cell{display:flex;align-items:center;justify-content:center;font-family:${SANS};box-sizing:border-box;cursor:pointer;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;background:var(--stg-cell, #fff);}
+          .mc-cell.mc-blk{background:var(--mc-blk);cursor:default;}
+          .mc-cell.mc-inword{background:var(--mc-soft);}
+          .mc-cell.mc-sel{background:var(--stg-acc, ${COLORS.accent});box-shadow:inset 0 0 0 3px var(--stg-ink, ${COLORS.ink});}
+          .mc-ch{font-weight:800;line-height:1;padding-top:.22em;color:var(--stg-ink, ${COLORS.ink});}
+          .mc-cell.mc-rev .mc-ch{color:var(--stg-mute, ${COLORS.faded});}
+          .mc-cell.mc-sel .mc-ch,.mc-cell.mc-sel .mc-num{color:var(--stg-onramp, #fff);}
+          .mc-cell.mc-wrongmark:not(.mc-sel){background:color-mix(in srgb, var(--stg-bad, ${COLORS.rust}) 16%, var(--stg-cell, #fff));}
+          .mc-cell.mc-wrongmark:not(.mc-sel) .mc-ch{color:var(--stg-bad, ${COLORS.rust});}
           .mc-cell.mc-wrongmark{animation:mcshake .3s ease;}
-          .mc-num{position:absolute;top:1px;left:3px;font-family:${MONO};font-weight:${STAGE ? 700 : 500};color:${STAGE ? 'var(--stg-ink2)' : 'rgba(28,30,36,0.55)'};pointer-events:none;}
-          .mc-cell.mc-inword .mc-num,.mc-cell.mc-sel .mc-num{color:${STAGE ? 'var(--stg-ink)' : 'rgba(28,30,36,0.75)'};}
-          .mc-cluerow{display:flex;gap:8px;align-items:flex-start;width:100%;padding:6px 8px 6px 6px;border:none;border-radius:0 7px 7px 0;cursor:pointer;background:none;}
+          .mc-num{position:absolute;top:.4em;left:.55em;font-family:${SANS};font-weight:800;line-height:1;color:var(--stg-ink2, rgba(28,30,36,0.7));pointer-events:none;}
+          .mc-bar{width:100%;margin-top:16px;display:flex;align-items:stretch;gap:8px;}
+          .mc-step{flex:0 0 48px;min-height:52px;border-radius:12px;border:1.5px solid var(--stg-line2, rgba(28,30,36,0.35));background:transparent;color:var(--stg-ink2, ${COLORS.ink});font-family:${SANS};cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
+          .mc-step:hover{background:var(--stg-surf2, ${COLORS.paper});}
+          .mc-clue{flex:1 1 auto;min-width:0;border:0;border-radius:12px;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);display:flex;align-items:center;gap:10px;padding:8px 14px;font-family:${SANS};text-align:left;cursor:pointer;}
+          .mc-clue-k{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;}
+          .mc-clue-t{font-size:17px;font-weight:800;line-height:1.25;}
+          .mc-hint-line{align-self:flex-start;margin:8px 2px 0;font-family:${SANS};font-size:12px;font-weight:600;color:var(--stg-mute, ${COLORS.faded});}
+          .mc-cols{width:100%;margin-top:18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;}
+          .mc-colhd{font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});padding:0 10px 4px;}
+          .mc-collist{display:flex;flex-direction:column;gap:4px;}
+          .mc-cluerow{display:flex;gap:10px;align-items:baseline;width:100%;min-height:44px;box-sizing:border-box;padding:10px;border:1.5px solid transparent;border-radius:9px;cursor:pointer;background:transparent;font-family:${SANS};text-align:left;color:var(--stg-ink, ${COLORS.ink});}
           .mc-cluerow:hover{background:var(--stg-surf2, ${COLORS.paper});}
-          .mc-key{font-family:${SANS};font-weight:800;font-size:15px;border:none;border-radius:6px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};box-shadow:0 2px 0 rgba(28,30,36,0.35);border: 1.5px solid var(--stg-line, rgba(28,30,36,0.4));height:44px;flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-          .mc-key:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(28,30,36,0.35);}
-          .mc-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-          .mc-cols{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;}
-          @media(max-width:560px){.mc-cols{grid-template-columns:1fr;}}
+          .mc-cluerow .mc-cn{font-size:12px;font-weight:800;min-width:16px;color:var(--stg-mute, ${COLORS.faded});}
+          .mc-cluerow .mc-ct{font-size:14px;font-weight:600;line-height:1.35;}
+          .mc-cluerow.done{color:var(--stg-mute, ${COLORS.faded});}
+          .mc-cluerow.cross{border-color:var(--stg-acc, ${COLORS.accent});}
+          .mc-cluerow.on,.mc-cluerow.on:hover{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);}
+          .mc-cluerow.on .mc-cn{color:var(--stg-onramp, #fff);}
+          .mc-cluerow.on .mc-ct{font-weight:800;}
+          .mc-acts{width:100%;margin-top:18px;display:flex;align-items:center;justify-content:flex-end;gap:10px;border-top:1px solid var(--stg-line, rgba(28,30,36,0.15));padding-top:14px;}
+          .mc-acts-note{flex:1;font-family:${SANS};font-size:12px;font-weight:600;color:var(--stg-mute, ${COLORS.faded});}
+          .mc-act{font-family:${SANS};font-size:14px;min-height:48px;border-radius:12px;padding:0 16px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
+          .mc-act.ghost{font-weight:700;background:transparent;color:var(--stg-ink2, ${COLORS.ink});border:1.5px solid var(--stg-line2, rgba(28,30,36,0.35));}
+          .mc-act.ghost:hover{background:var(--stg-surf2, ${COLORS.paper});}
+          .mc-act.go{font-weight:800;padding:0 18px;border:0;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);}
+          .mc-act.go:disabled{background:var(--stg-chip, #e4e9f1);color:var(--stg-mute, ${COLORS.faded});cursor:not-allowed;}
+          .mc-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 2px 0;font-family:${SANS};font-size:12px;font-weight:600;color:var(--stg-mute, ${COLORS.faded});}
+          .mc-reveal{background:none;border:0;padding:0 2px;min-height:44px;cursor:pointer;font-family:${SANS};font-size:12px;font-weight:700;color:var(--stg-ink2, ${COLORS.ink});text-decoration:underline;text-underline-offset:3px;white-space:nowrap;}
+          .mc-reveal.armed{color:var(--stg-bad, ${COLORS.rust});white-space:normal;text-align:right;}
+          .mc-kb{width:100%;margin-top:14px;display:flex;flex-direction:column;gap:6px;}
+          .mc-kbrow{display:flex;justify-content:center;gap:5px;}
+          .mc-key{font-family:${SANS};font-weight:800;font-size:16px;border:1px solid var(--stg-line, rgba(28,30,36,0.2));border-radius:7px;background:var(--stg-cell, #fff);color:var(--stg-ink, ${COLORS.ink});box-shadow:0 1px 0 var(--stg-line2, rgba(28,30,36,0.35));height:48px;flex:1 1 0;max-width:40px;min-width:0;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+          .mc-key.wide{flex:1.6 1 0;max-width:58px;}
+          .mc-key:active{transform:translateY(1px);background:var(--stg-surf2, ${COLORS.paper});}
+          @media(max-width:700px){
+            .mc-prog{margin:0 8px 12px;gap:7px;}
+            .mc-prog-row{font-size:10px;letter-spacing:.07em;}
+            .mc-segs{gap:2px;}
+            .mc-segs span{height:6px;}
+            .mc-panel{background:transparent;border:0;border-radius:0;padding:0;}
+            .mc-bar{margin-top:14px;gap:6px;padding:0 4px;box-sizing:border-box;}
+            .mc-step{flex-basis:44px;min-height:54px;}
+            .mc-clue{flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;padding:6px 12px;}
+            .mc-clue-k{font-size:10px;}
+            .mc-hint-line{margin:8px 8px 0;}
+            .mc-cols{grid-template-columns:1fr;gap:12px;margin-top:12px;padding:0 4px;box-sizing:border-box;}
+            .mc-acts{border-top:0;padding:0 4px;margin-top:12px;box-sizing:border-box;}
+            .mc-acts .mc-act{flex:1;}
+            .mc-acts .mc-act.go{flex:1.4;}
+            .mc-acts-note{display:none;}
+            .mc-foot{padding:10px 8px 0;}
+            .mc-kb{padding:0 2px;box-sizing:border-box;}
+          }
         ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
@@ -825,138 +895,148 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
           <div className={LOFT && !STAGE && !playing ? (revealed ? 'loft-flip' : 'loft-flip on') : undefined}>
           <div className={LOFT && !STAGE && !playing ? 'loft-flip-in' : undefined}>
           <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
-        {/* the board */}
+        {/* the board: progress, one panel (grid, clue bar, clue lists, actions), foot */}
         {!preStart && (
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: `var(--stg-surf, ${THEME.white})`, border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? 'transparent' : `var(--stg-surf, ${THEME.white})`, border: STAGE ? 0 : `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: STAGE ? 0 : '13px 15px 15px', marginBottom: 12 }}>
           {/* These three figures move UP into the cap on a loft page. Printing
               them in both places is the one thing to avoid: the cap exists to
               give the board this row back. */}
           {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ whiteSpace: 'nowrap' }}>checks <b style={{ color: checks > 0 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{checks}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>squares <b style={{ color: filledCount === whiteCount ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{filledCount}</b>/{whiteCount}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: SANS, fontSize: 11.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
+            <span style={{ whiteSpace: 'nowrap' }}>checks <b style={{ color: checks > 0 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})` }}>{checks}</b></span>
           </div>
           )}
 
-          {/* the grid */}
-          <div style={{ maxWidth: N === 7 ? 476 : 420, margin: '0 auto' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))`, aspectRatio: '1', border: `2.5px solid var(--stg-cell-line, rgba(28,30,36,0.85))`, borderRadius: 4, overflow: 'hidden', gap: STAGE ? 2 : 1, background: 'var(--stg-cell-line, rgba(28,30,36,0.28))' }}>
-              {Array.from({ length: T }).map((_, idx) => {
-                if (isBlock(idx)) return <div key={idx} className="mc-cell mc-blk" />;
-                const inWord = playing && curWord.cells.includes(idx);
-                const sel = playing && idx === cur;
-                const wrongMark = g.wrong.includes(idx);
-                const revealMiss = g.status === 'revealed';
-                return (
-                  <div key={idx}
-                    className={`mc-cell${inWord && !sel ? ' mc-inword' : ''}${sel ? ' mc-sel' : ''}${wrongMark ? ' mc-wrongmark' : ''}`}
-                    onClick={() => cellClick(idx)}>
-                    {numAt[idx] != null && <span className="mc-num" style={{ fontSize: numPx }}>{numAt[idx]}</span>}
-                    <span style={{ fontSize: cellPx, fontWeight: 800, color: revealMiss ? `var(--stg-mute, ${COLORS.faded})` : `var(--stg-ink, ${COLORS.ink})` }}>{viewLetters[idx]}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* current clue bar */}
+          {/* progress: squares filled, a segment per square, words filled */}
           {playing && (
-            <div style={{ display: 'flex', alignItems: 'stretch', gap: 6, maxWidth: N === 7 ? 476 : 420, margin: '12px auto 0' }}>
-              <button aria-label="Previous clue" onClick={() => stepWord(-1)} className="mc-tool" style={{ padding: '7px 8px' }}>
-                <ChevronLeft size={15} />
-              </button>
-              <div onClick={() => setDir((d) => (d === 'A' ? 'D' : 'A'))} style={{ flex: '1 1 auto', background: `var(--stg-surf, ${COLORS.accentSoft})`, border: `1.5px solid rgba(192,38,211,0.4)`, borderRadius: 8, padding: '7px 10px', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 500, color: ACC_INK, whiteSpace: 'nowrap' }}>{curWord.n}{curWord.dir === 'A' ? 'A' : 'D'}</span>
-                <span style={{ fontFamily: SANS, fontSize: 13.5, fontWeight: 700, color: INK, lineHeight: 1.3 }}>{curWord.clue}</span>
+            <div className="mc-prog">
+              <div className="mc-prog-row">
+                <span>{PUZZLE.sunday ? 'Sunday' : 'The mini'} &middot; <b>{filledCount}</b> of {whiteCount} squares</span>
+                <span>{wordsFilled} of {TOTAL} words filled</span>
               </div>
-              <button aria-label="Next clue" onClick={() => stepWord(1)} className="mc-tool" style={{ padding: '7px 8px' }}>
-                <ChevronRight size={15} />
-              </button>
+              <div className="mc-segs" aria-hidden="true">
+                {Array.from({ length: whiteCount }).map((_, i) => <span key={i} className={i < filledCount ? 'on' : undefined} />)}
+              </div>
             </div>
           )}
 
-          {/* on-screen keyboard (mobile) */}
-          {playing && mobileUi && (
-            <div style={{ maxWidth: 476, margin: '12px auto 0' }}>
-              {kbRows.map((row, ri) => (
-                <div key={ri} style={{ display: 'flex', gap: 4, marginTop: ri ? 5 : 0, padding: ri === 1 ? '0 12px' : 0 }}>
-                  {row.split('').map((ch) => (
-                    <button key={ch} className="mc-key" onClick={() => typeLetter(ch)}>{ch}</button>
-                  ))}
-                  {ri === 2 && (
-                    <button aria-label="Delete" className="mc-key" style={{ flex: '1.6 1 0' }} onClick={backspace}><Delete size={17} /></button>
-                  )}
+          <div className="mc-panel">
+            {/* the grid */}
+            <div className="mc-gridbox" style={{ maxWidth: N === 7 ? 476 : 420 }}>
+              <div className="mc-grid" style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))` }}>
+                {Array.from({ length: T }).map((_, idx) => {
+                  if (isBlock(idx)) return <div key={idx} className="mc-cell mc-blk" />;
+                  const inWord = playing && curWord.cells.includes(idx);
+                  const sel = playing && idx === cur;
+                  const wrongMark = g.wrong.includes(idx);
+                  const revealMiss = g.status === 'revealed';
+                  return (
+                    <div key={idx}
+                      className={`mc-cell${inWord && !sel ? ' mc-inword' : ''}${sel ? ' mc-sel' : ''}${wrongMark ? ' mc-wrongmark' : ''}${revealMiss ? ' mc-rev' : ''}`}
+                      onClick={() => cellClick(idx)}>
+                      {numAt[idx] != null && <span className="mc-num" style={{ fontSize: numPx }}>{numAt[idx]}</span>}
+                      <span className="mc-ch" style={{ fontSize: cellPx }}>{viewLetters[idx]}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* the active clue: previous, the clue in the accent, next */}
+            {playing && (
+              <div className="mc-bar" style={{ maxWidth: N === 7 ? 476 : 420 }}>
+                <button type="button" aria-label="Previous clue" onClick={() => stepWord(-1)} className="mc-step">
+                  <ChevronLeft size={20} strokeWidth={2.5} />
+                </button>
+                <button type="button" className="mc-clue"
+                  aria-expanded={mobileUi ? cluesOpen : undefined}
+                  title={mobileUi ? (cluesOpen ? 'Hide the clue list' : 'Show every clue') : 'Flip Across and Down'}
+                  onClick={() => { if (mobileUi) setCluesOpen((v) => !v); else setDir((d) => (d === 'A' ? 'D' : 'A')); }}>
+                  <span className="mc-clue-k">{curWord.n} {curWord.dir === 'A' ? 'Across' : 'Down'}</span>
+                  <span className="mc-clue-t">{curWord.clue}</span>
+                </button>
+                <button type="button" aria-label="Next clue" onClick={() => stepWord(1)} className="mc-step">
+                  <ChevronRight size={20} strokeWidth={2.5} />
+                </button>
+              </div>
+            )}
+            {playing && mobileUi && (
+              <span className="mc-hint-line">
+                {cluesOpen ? 'Tap the clue to hide the list.' : `Tap the clue to see all ${TOTAL}.`} Tap a square again to turn {dir === 'A' ? 'Down' : 'Across'}.
+              </span>
+            )}
+
+            {/* Across and Down, side by side. On a phone with the on-screen
+                keyboard they sit behind the clue bar, one tap away. */}
+            {(!playing || !mobileUi || cluesOpen) && (
+              <div className="mc-cols">
+                <div className="mc-collist">
+                  <div className="mc-colhd">Across</div>
+                  {WORDS.map((w, i) => (w.dir === 'A' ? clueRow(w, i) : null))}
                 </div>
-              ))}
-            </div>
-          )}
+                <div className="mc-collist">
+                  <div className="mc-colhd">Down</div>
+                  {WORDS.map((w, i) => (w.dir === 'D' ? clueRow(w, i) : null))}
+                </div>
+              </div>
+            )}
 
-          {playing && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 12, flexWrap: 'wrap' }}>
-              {hintOk && !g.hintUsed && (
-                <button className="mc-tool" onClick={useHint} title="Reveal one letter (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(192,38,211,0.5)', color: '#86198f' }}>
-                  <Lightbulb size={14} /> Hint
+            {/* on-screen keyboard (mobile): QWERTY, flip direction, delete */}
+            {playing && mobileUi && (
+              <div className="mc-kb">
+                {kbRows.map((row, ri) => (
+                  <div key={ri} className="mc-kbrow">
+                    {ri === 2 && (
+                      <button type="button" aria-label="Flip direction" className="mc-key wide" onClick={() => setDir((d) => (d === 'A' ? 'D' : 'A'))}><ArrowLeftRight size={18} strokeWidth={2.5} /></button>
+                    )}
+                    {row.split('').map((ch) => (
+                      <button type="button" key={ch} className="mc-key" onClick={() => typeLetter(ch)}>{ch}</button>
+                    ))}
+                    {ri === 2 && (
+                      <button type="button" aria-label="Delete" className="mc-key wide" onClick={backspace}><Delete size={18} strokeWidth={2.5} /></button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {playing && (() => {
+              const full = solFlat.every((ch, i) => ch === '#' || letters[i] !== '');
+              return (
+                <div className="mc-acts">
+                  {!mobileUi && <span className="mc-acts-note">Space flips direction. Tab jumps to the next clue.</span>}
+                  {hintOk && !g.hintUsed && (
+                    <button type="button" className="mc-act ghost" onClick={useHint} title="Reveal one letter (one hint, first play only)">
+                      {mobileUi ? 'Hint' : 'Hint · one letter'}
+                    </button>
+                  )}
+                  <button type="button" className="mc-act go" onClick={checkGrid} disabled={!full}
+                    title={full ? 'Turn in the grid' : 'Fill every square to check the grid'}>
+                    Check grid
+                  </button>
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* the foot: how Check works, and the small Reveal link */}
+          {started && (
+            <div className="mc-foot">
+              <span>Check unlocks when every square is filled. A wrong check marks the misses.</span>
+              {identity && (g.t0 || checks > 0) && (
+                <button type="button" className={`mc-reveal${armReveal ? ' armed' : ''}`}
+                  onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
+                  {armReveal ? 'Tap again to end the puzzle and show the answers' : 'Reveal'}
                 </button>
               )}
-              {(() => {
-                const full = solFlat.every((ch, i) => ch === '#' || letters[i] !== '');
-                return (
-                  <button className="mc-tool" onClick={checkGrid} disabled={!full}
-                    title={full ? 'Turn in the grid' : 'Fill every square to check the grid'}
-                    style={full
-                      ? { background: `var(--stg-acc, #c026d3)`, borderColor: `var(--stg-acc, #c026d3)`, color: `var(--stg-onramp, #fff)` }
-                      : { opacity: 0.55, cursor: 'not-allowed' }}>
-                    <Check size={14} /> Check grid
-                  </button>
-                );
-              })()}
-              {!mobileUi && (
-                <span className="mc-tool" style={{ cursor: 'default', borderStyle: 'dashed', color: FADED }}>
-                  Type to fill &middot; space flips Across/Down &middot; tab jumps &middot; enter checks a full grid
-                </span>
-              )}
             </div>
           )}
-        </div>
-        )}
 
-        {/* clue lists */}
-        {!preStart && (
-        <div className={LOFT && !STAGE ? 'loft-card' : undefined} style={{ background: `var(--stg-surf, ${THEME.white})`, border: '1.5px solid rgba(20,22,28,0.12)', borderRadius: 10, padding: '12px 14px', marginBottom: 12 }}>
-          <div className="mc-cols">
-            <div>
-              <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED, margin: '0 0 6px 6px' }}>Across</div>
-              {WORDS.map((w, i) => (w.dir === 'A' ? clueRow(w, i) : null))}
-            </div>
-            <div>
-              <div style={{ fontFamily: MONO, fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', color: FADED, margin: '0 0 6px 6px' }}>Down</div>
-              {WORDS.map((w, i) => (w.dir === 'D' ? clueRow(w, i) : null))}
-            </div>
-          </div>
-
-          {/* Controls. These live INSIDE the clue card rather than under it:
-              on the navy stage a bare row of faded text has nothing to sit on
-              and is close to unreadable, and "the card is the game" means the
-              things you act on belong on the lit surface with the board. */}
-          {started && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(20,22,28,0.10)', flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>
-              Fill the grid from the clues, then press Check grid. Wrong squares turn red, and every failed check counts on the board.
-            </span>
-            {identity && (g.t0 || checks > 0) && (
-              <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-                style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <Eye size={13} /> {armReveal ? 'Tap again — ends the puzzle and shows the answers' : 'Reveal & end'}
-              </button>
-            )}
-          </div>
-          )}
           <div className={STAGE ? undefined : 'loft-sol'}>
           {/* result */}
           {!playing && (
-            <>
-            <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
+            <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0', padding: '0 4px' }}>
               {isTodays ? (
                 <>
                   {countdown ? <>Next Emcee in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A new grid drops at midnight Eastern.'}
@@ -978,7 +1058,6 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
                 </>
               )}
             </p>
-            </>
           )}
           </div>
           {LOFT && !playing && revealed && (
@@ -1075,7 +1154,7 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
                 <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                   <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                   <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                  <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s grid, every day.</li>
+                  <li>Tap <b>Add</b>. The tile opens today&apos;s grid, every day.</li>
                 </ol>
               ) : (
                 <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>

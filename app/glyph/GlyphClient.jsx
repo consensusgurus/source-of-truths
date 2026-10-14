@@ -19,7 +19,7 @@
 // Weekdays are 15x15; Sundays step up to a 17x17 Edition.
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { HelpCircle, RotateCcw, X, Eraser, Smartphone, SearchCheck } from 'lucide-react';
+import { HelpCircle, RotateCcw, X, Eraser, Smartphone, SearchCheck, Delete } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -427,6 +427,24 @@ export default function GlyphClient({ puzzles, forceNum }) {
 
   const wrongSet = useMemo(() => new Set(g.wrong || []), [g.wrong]);
 
+  // Presentation only: which square the player last tapped, so the stage board
+  // can ring ONE square of the selected number. The game itself selects a
+  // number, never a square; when the number changes by any other route (the
+  // codebook, auto-advance after a letter) the ring falls to its first square.
+  const [curIdx, setCurIdx] = useState(-1);
+  const cursorIdx = !sel ? -1 : (curIdx >= 0 && CELLS[curIdx] === sel ? curIdx : CELLS.indexOf(sel));
+  const bookRef = useRef(null);
+  useEffect(() => {
+    // Phone: the codebook scrolls sideways; keep the selected slot in view
+    // without moving the page.
+    const box = bookRef.current;
+    if (!box || !sel || box.scrollWidth <= box.clientWidth + 1) return;
+    const slot = box.querySelector(`[data-n="${sel}"]`);
+    if (!slot) return;
+    const want = slot.offsetLeft - (box.clientWidth - slot.offsetWidth) / 2;
+    try { box.scrollTo({ left: Math.max(0, want), behavior: 'smooth' }); } catch (e) { box.scrollLeft = Math.max(0, want); }
+  }, [sel]);
+
   function nextOpen(from) {
     const idx = PRESENT.indexOf(from);
     for (let k = 1; k <= PRESENT.length; k++) {
@@ -544,6 +562,141 @@ export default function GlyphClient({ puzzles, forceNum }) {
   // Reveal answer tile is pressed.
   const revealed = !playing && (won || !LOFT || loftRevealed);
 
+  // The pre-stage board (?stage=0 only). Unchanged from before the 2026-10-14
+  // rebuild; the stage board below has its own sheet.
+  const LEGACY_CSS = `
+          .gl-cell{box-sizing:border-box;display:flex;align-items:center;justify-content:center;position:relative;min-width:0;min-height:0;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;border: 1px solid var(--stg-line, rgba(28,30,36,0.16));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};}
+          .gl-cell.blk{background:${COLORS.ink};border-color:var(--stg-ink, ${COLORS.ink});cursor:default;}
+          .gl-cell.sel{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 22%, var(--stg-raise))' : '#dbeafe'};box-shadow:inset 0 0 0 2px var(--stg-acc, ${COLORS.accent});}
+          .gl-cell.kin{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);}
+          .gl-cell.bad{background:${STAGE ? 'var(--stg-surf2)' : '#fdecea'};box-shadow:inset 0 0 0 2px ${COLORS.rust};}
+          .gl-num{position:absolute;top:1.5px;left:2.5px;font-family:${MONO};font-size:9px;line-height:1;color:${STAGE ? 'var(--stg-mute)' : '#2f3644'};font-weight:700;}
+          .gl-ltr{position:absolute;left:0;right:0;bottom:0;top:38%;display:flex;align-items:center;justify-content:center;font-family:${SANS};font-weight:800;color:${INK};line-height:1;}
+          /* The givens, and ONLY the givens. This rule used to be dead: the
+             class was put on every letter and the colour was then overridden
+             inline on every letter, so the given teal was a literal in the
+             markup with no dark-register value. See --stg-cell-given. */
+          .gl-ltr.given{color:var(--stg-cell-given, #0f766e);}
+          .gl-key{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:3px;}
+          .gl-keycap{border: 1.5px solid var(--stg-line2, rgba(28,30,36,0.28));border-radius:6px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};padding:3px 0 2px;text-align:center;cursor:pointer;font-family:${SANS};font-weight:800;font-size:14px;color:${INK};}
+          .gl-keycap.used{background:var(--stg-surf, ${COLORS.paper});color:var(--stg-mute2, #a4abb8);text-decoration:line-through;}
+          .gl-keycap:disabled{cursor:default;}
+          .gl-chip{border: 1.5px solid var(--stg-line2, rgba(28,30,36,0.22));border-radius:6px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};padding:2px 0;text-align:center;font-family:${MONO};font-size:9.5px;color:${FADED};cursor:pointer;}
+          .gl-chip.on{border-color:var(--stg-acc, ${COLORS.accent});background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 22%, var(--stg-raise))' : '#dbeafe'};}
+          .gl-chip b{display:block;font-family:${SANS};font-size:13px;color:${INK};}
+          .gl-card{padding:13px 15px 15px;}
+          .gl-chips{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:3px;}
+          @media(max-width:560px){
+            .gl-key{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;}
+            .gl-chips{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;}
+            .gl-card{padding:11px 7px 13px;}
+            .gl-num{font-size:7px;top:1px;left:1.5px;}
+            .gl-keycap{font-size:15px;padding:6px 0 5px;}
+            .gl-chip{font-size:9px;padding:3px 0;}
+            .gl-chip b{font-size:14px;}
+          }
+          @media(max-width:400px){.gl-num{font-size:6.5px;top:0.5px;left:1px;}}
+  `;
+
+  // The stage board, rebuilt 2026-10-14 to the round-six mockup. Every colour
+  // is a --stg-* token so both registers read; .gl-cell / .blk stay because
+  // lib/finish-beats.js ripples '.gl-cell:not(.blk)'.
+  const STAGE_CSS = `
+          .gls{font-family:${SANS};}
+          .gls-head{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute);}
+          .gls-head b{color:var(--stg-acc-ink);font-weight:800;}
+          .gls-head-r{display:inline-flex;align-items:center;gap:14px;white-space:nowrap;}
+          .gls-pips{display:inline-flex;align-items:center;gap:8px;}
+          .gls-pips i{display:inline-flex;gap:4px;}
+          .gls-pip{width:10px;height:10px;border-radius:50%;background:var(--stg-acc);}
+          .gls-pip.off{background:transparent;box-shadow:inset 0 0 0 1.5px var(--stg-line2);}
+          .gls-bar{display:flex;gap:3px;margin-top:8px;}
+          .gls-seg{flex:1;height:8px;border-radius:2px;background:var(--stg-line2);}
+          .gls-seg.on{background:var(--stg-acc);}
+          .gls-grid{display:grid;gap:1px;background:var(--stg-cell-line);box-shadow:0 0 0 2px var(--stg-ink);border-radius:6px;overflow:hidden;margin:16px auto 0;}
+          .gls .gl-cell{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;padding:0;margin:0;border:0;border-radius:0;background:var(--stg-cell);color:var(--stg-ink);font-family:${SANS};cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;}
+          .gls .gl-cell:disabled{cursor:default;}
+          /* Black squares: the register's darkest ground (the ground in dark,
+             the ink in light), pressed further toward black so they read as
+             solid against --stg-cell in BOTH registers; the 1px shadow covers
+             the grid gap so runs of blocks merge into one mass. */
+          .gls{--gl-blk:color-mix(in srgb, color-mix(in srgb, var(--stg-ground) var(--stg-dk), var(--stg-ink)) 45%, #000);}
+          .gls .gl-cell.blk{background:var(--gl-blk);box-shadow:0 0 0 1px var(--gl-blk);cursor:default;}
+          .gls .gl-cell.kin{background:color-mix(in srgb, var(--stg-acc) 20%, var(--stg-cell));}
+          .gls .gl-cell.cur{box-shadow:inset 0 0 0 2.5px var(--stg-acc);}
+          .gls .gl-cell.bad{background:color-mix(in srgb, var(--stg-bad) 14%, var(--stg-cell));box-shadow:inset 0 0 0 2px var(--stg-bad);}
+          .gls .gl-num{position:absolute;top:2px;left:3px;font-size:8.5px;font-weight:700;line-height:1;color:var(--stg-mute);}
+          .gls .gl-cell.kin .gl-num,.gls .gl-cell.bad .gl-num{color:var(--stg-ink);}
+          .gls .gl-ltr{font-weight:800;line-height:1;padding-top:22%;color:var(--stg-ink);}
+          .gls .gl-ltr.given{color:var(--stg-acc-ink);}
+          .gls-prompt{display:flex;align-items:center;gap:12px;margin-top:16px;}
+          .gls-no{flex:none;width:46px;height:46px;border-radius:12px;background:var(--stg-acc);color:var(--stg-onramp);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;}
+          .gls-no span{font-size:9px;font-weight:800;letter-spacing:.06em;}
+          .gls-no b{font-size:19px;font-weight:800;margin-top:2px;}
+          .gls-ask{display:flex;flex-direction:column;gap:2px;min-width:0;}
+          .gls-ask b{font-size:15px;font-weight:700;color:var(--stg-ink);line-height:1.35;}
+          .gls-ask span{font-size:12px;font-weight:600;color:var(--stg-mute);line-height:1.4;}
+          .gls-label{display:block;margin-top:16px;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute);}
+          .gls-book{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:4px;margin-top:6px;}
+          .gls-slot{height:44px;box-sizing:border-box;border-radius:8px;border:1px solid var(--stg-line2);background:transparent;padding:0;font-family:${SANS};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+          .gls-slot span{font-size:9px;font-weight:700;color:var(--stg-mute);}
+          .gls-slot b{font-size:15px;font-weight:800;color:var(--stg-mute);}
+          .gls-slot.has b{color:var(--stg-ink);}
+          .gls-slot.giv b{color:var(--stg-acc-ink);}
+          .gls-slot.bad{border:2px solid var(--stg-bad);}
+          .gls-slot.on{border:2px solid var(--stg-acc);background:color-mix(in srgb, var(--stg-acc) 20%, transparent);}
+          .gls-slot.on span{color:var(--stg-ink);}
+          .gls-book::-webkit-scrollbar{display:none;height:0;}
+          .gls-abc{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:4px;margin-top:12px;}
+          .gls-key{height:44px;border-radius:8px;border:1.5px solid var(--stg-line2);background:transparent;color:var(--stg-ink);font-family:${SANS};font-size:15px;font-weight:800;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+          .gls-key:hover:not(:disabled){background:var(--stg-surf2);}
+          .gls-key.used{color:var(--stg-mute);text-decoration:line-through;text-decoration-thickness:2px;border-color:var(--stg-line);}
+          .gls-key:disabled{cursor:default;}
+          .gls-qw{display:none;}
+          .gls-act{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--stg-line);}
+          .gls-note{flex:1;font-size:12px;font-weight:600;color:var(--stg-mute);}
+          .gls-clear,.gls-check{min-height:48px;border-radius:12px;font-family:${SANS};font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
+          .gls-clear{padding:0 16px;border:1.5px solid var(--stg-line2);background:transparent;color:var(--stg-ink);font-weight:700;}
+          .gls-check{padding:0 18px;border:0;background:var(--stg-acc);color:var(--stg-onramp);font-weight:800;}
+          .gls-clear:disabled{color:var(--stg-mute);border-color:var(--stg-line);cursor:default;}
+          .gls-check:disabled{background:var(--stg-chip);color:var(--stg-mute);cursor:default;}
+          .gls-foot{margin-top:12px;font-size:12px;font-weight:600;color:var(--stg-mute);line-height:1.5;}
+          .gls-next{margin-top:16px;font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute);text-align:center;}
+          .gls-ph{display:none;}
+          @media(max-width:560px){
+            .gls-dt{display:none;}
+            .gls-ph{display:inline;}
+            .gls-head{font-size:10px;}
+            .gls-bar{gap:2px;}
+            .gls-seg{height:6px;}
+            .gls-grid{margin-top:12px;box-shadow:0 0 0 1.5px var(--stg-ink);border-radius:4px;}
+            .gls .gl-num{font-size:6.5px;font-weight:800;top:1px;left:2px;}
+            .gls-prompt{margin-top:12px;gap:10px;}
+            .gls-no{width:42px;height:42px;border-radius:10px;}
+            .gls-no span{font-size:8px;}
+            .gls-no b{font-size:17px;}
+            .gls-ask b{font-size:13px;}
+            .gls-ask span{display:none;}
+            .gls-label{display:none;}
+            .gls-book{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;margin:10px -16px 0;padding:0 16px;scroll-padding:0 16px;}
+            .gls-slot{flex:none;width:34px;border-radius:7px;}
+            .gls-slot b{font-size:13px;}
+            .gls-slot span{font-size:8px;}
+            .gls-abc{display:none;}
+            .gls-qw{display:flex;flex-direction:column;gap:6px;margin:12px -10px 0;}
+            .gls-qr{display:flex;justify-content:center;gap:5px;}
+            .gls-qk{flex:1 1 0;max-width:36px;min-width:0;height:46px;border-radius:7px;border:1px solid var(--stg-line2);background:var(--stg-chip);color:var(--stg-ink);font-family:${SANS};font-size:16px;font-weight:800;padding:0;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
+            .gls-qk.used{color:var(--stg-mute);text-decoration:line-through;text-decoration-thickness:2px;background:transparent;}
+            .gls-qk.del{flex:1.7 1 0;max-width:60px;}
+            .gls-act{margin-top:12px;padding-top:0;border-top:0;gap:8px;}
+            .gls-note{display:none;}
+            .gls-clear{flex:1;padding:0 10px;min-height:46px;}
+            .gls-check{flex:1.4;padding:0 10px;min-height:46px;}
+            .gls-foot{display:none;}
+          }
+          @media(max-width:360px){.gls-qr{gap:4px;}.gls-qk{font-size:15px;}}
+  `;
+
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
@@ -594,37 +747,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
         <style dangerouslySetInnerHTML={{ __html: `
           .gl-btn{font-family:${SANS};font-weight:800;font-size:13.5px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:9px;padding:9px 15px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .gl-btn:disabled{opacity:0.4;cursor:default;}
-          .gl-cell{box-sizing:border-box;display:flex;align-items:center;justify-content:center;position:relative;min-width:0;min-height:0;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;border: 1px solid var(--stg-line, rgba(28,30,36,0.16));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};}
-          .gl-cell.blk{background:${COLORS.ink};border-color:var(--stg-ink, ${COLORS.ink});cursor:default;}
-          .gl-cell.sel{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 22%, var(--stg-raise))' : '#dbeafe'};box-shadow:inset 0 0 0 2px var(--stg-acc, ${COLORS.accent});}
-          .gl-cell.kin{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);}
-          .gl-cell.bad{background:${STAGE ? 'var(--stg-surf2)' : '#fdecea'};box-shadow:inset 0 0 0 2px ${COLORS.rust};}
-          .gl-num{position:absolute;top:1.5px;left:2.5px;font-family:${MONO};font-size:9px;line-height:1;color:${STAGE ? 'var(--stg-mute)' : '#2f3644'};font-weight:700;}
-          .gl-ltr{position:absolute;left:0;right:0;bottom:0;top:38%;display:flex;align-items:center;justify-content:center;font-family:${SANS};font-weight:800;color:${INK};line-height:1;}
-          /* The givens, and ONLY the givens. This rule used to be dead: the
-             class was put on every letter and the colour was then overridden
-             inline on every letter, so the given teal was a literal in the
-             markup with no dark-register value. See --stg-cell-given. */
-          .gl-ltr.given{color:var(--stg-cell-given, #0f766e);}
-          .gl-key{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:3px;}
-          .gl-keycap{border: 1.5px solid var(--stg-line2, rgba(28,30,36,0.28));border-radius:6px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};padding:3px 0 2px;text-align:center;cursor:pointer;font-family:${SANS};font-weight:800;font-size:14px;color:${INK};}
-          .gl-keycap.used{background:var(--stg-surf, ${COLORS.paper});color:var(--stg-mute2, #a4abb8);text-decoration:line-through;}
-          .gl-keycap:disabled{cursor:default;}
-          .gl-chip{border: 1.5px solid var(--stg-line2, rgba(28,30,36,0.22));border-radius:6px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};padding:2px 0;text-align:center;font-family:${MONO};font-size:9.5px;color:${FADED};cursor:pointer;}
-          .gl-chip.on{border-color:var(--stg-acc, ${COLORS.accent});background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 22%, var(--stg-raise))' : '#dbeafe'};}
-          .gl-chip b{display:block;font-family:${SANS};font-size:13px;color:${INK};}
-          .gl-card{padding:13px 15px 15px;}
-          .gl-chips{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:3px;}
-          @media(max-width:560px){
-            .gl-key{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;}
-            .gl-chips{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;}
-            .gl-card{padding:11px 7px 13px;}
-            .gl-num{font-size:7px;top:1px;left:1.5px;}
-            .gl-keycap{font-size:15px;padding:6px 0 5px;}
-            .gl-chip{font-size:9px;padding:3px 0;}
-            .gl-chip b{font-size:14px;}
-          }
-          @media(max-width:400px){.gl-num{font-size:6.5px;top:0.5px;left:1px;}}
+          ${STAGE ? STAGE_CSS : LEGACY_CSS}
         ` }} />
 
         <div style={{ maxWidth: 660, margin: '0 auto' }}>
@@ -674,7 +797,128 @@ export default function GlyphClient({ puzzles, forceNum }) {
             </div>
           )}
 
-          {!preStart && (
+          {!preStart && STAGE && (() => {
+            const givenCount = PRESENT.filter((n) => GIVEN[n]).length;
+            const selCount = sel ? (countOf[sel] || 0) : 0;
+            const checksLeft = MAX_CHECKS - checks;
+            const usedKey = (L) => !!usedLetters[L];
+            const tapCell = (n, i) => { if (!playing) return; if (!g.t0) startGame(); setCurIdx(i); setSel(n); };
+            const tapSlot = (n) => { if (!playing) return; setSel(n); };
+            const keyLabel = (L) => `${L}${usedKey(L) ? `, already on number ${usedLetters[L]}` : ''}`;
+            let ask = 'Tap a square or a codebook slot to pick a number.';
+            let help = 'One letter fills every square with that number at once.';
+            if (sel && GIVEN[sel]) {
+              ask = `Number ${sel} is given: it is ${GIVEN[sel]}.`;
+              help = 'Given letters are fixed. Pick another number to work on.';
+            } else if (sel && assign[sel]) {
+              ask = `Number ${sel} sits in ${selCount} square${selCount === 1 ? '' : 's'}. You have it as ${assign[sel]}.`;
+              help = `Type another letter to change it, or Clear ${sel}.`;
+            } else if (sel) {
+              ask = `Number ${sel} sits in ${selCount} square${selCount === 1 ? '' : 's'}. Type its letter.`;
+              help = `One letter fills every ${sel} at once. Each letter is used exactly once in the key.`;
+            }
+            const ltrSize = `min(${(52 / W).toFixed(2)}vw, ${W > 15 ? 17 : 19}px)`;
+            return (
+            <div className="gls" style={{ maxWidth: W > 15 ? 600 : 540, margin: '0 auto 12px' }}>
+              {playing && (
+                <>
+                  <div className="gls-head">
+                    <span>The key &middot; <b>{placed}</b> of {PRESENT.length} solved</span>
+                    <span className="gls-head-r">
+                      <span className="gls-dt">{givenCount} given &middot; {placed - givenCount} yours</span>
+                      <span className="gls-pips" role="img" aria-label={`${checksLeft} of ${MAX_CHECKS} checks left`}>
+                        <span aria-hidden="true">Checks</span>
+                        <i aria-hidden="true">{Array.from({ length: MAX_CHECKS }, (_, k) => <span key={k} className={`gls-pip${k < checksLeft ? '' : ' off'}`} />)}</i>
+                      </span>
+                    </span>
+                  </div>
+                  <div className="gls-bar" aria-hidden="true">
+                    {PRESENT.map((n, k) => <span key={n} className={`gls-seg${k < placed ? ' on' : ''}`} />)}
+                  </div>
+                </>
+              )}
+
+              <div className="gls-grid" role="grid" aria-label={`Glyph grid, ${W} by ${H}`} style={{ gridTemplateColumns: `repeat(${W}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${H}, minmax(0, 1fr))`, aspectRatio: `${W} / ${H}` }}>
+                {CELLS.map((n, i) => {
+                  if (!n) return <div key={i} className="gl-cell blk" aria-hidden="true" />;
+                  const L = revealed ? KEY[n - 1] : assign[n];
+                  const bad = playing && wrongSet.has(n);
+                  const kin = playing && sel === n;
+                  const cls = `gl-cell${bad ? ' bad' : kin ? ' kin' : ''}${playing && i === cursorIdx ? ' cur' : ''}`;
+                  return (
+                    <button key={i} type="button" className={cls} disabled={!playing} tabIndex={-1}
+                      aria-label={`Number ${n}${L ? `, ${L}` : ', empty'}`}
+                      onClick={() => tapCell(n, i)}>
+                      <span className="gl-num" aria-hidden="true">{n}</span>
+                      {L ? <span className={`gl-ltr${GIVEN[n] ? ' given' : ''}`} aria-hidden="true" style={{ fontSize: ltrSize }}>{L}</span> : null}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {playing && (
+                <>
+                  <div className="gls-prompt" aria-live="polite">
+                    {sel ? <span className="gls-no" aria-hidden="true"><span>NO.</span><b>{sel}</b></span> : null}
+                    <div className="gls-ask"><b>{ask}</b><span>{help}</span></div>
+                  </div>
+
+                  <span className="gls-label">Codebook</span>
+                  <div className="gls-book" ref={bookRef}>
+                    {PRESENT.map((n) => {
+                      const L = assign[n];
+                      const cls = `gls-slot${L ? ' has' : ''}${GIVEN[n] ? ' giv' : ''}${wrongSet.has(n) ? ' bad' : ''}${sel === n ? ' on' : ''}`;
+                      return (
+                        <button key={n} type="button" data-n={n} className={cls} onClick={() => tapSlot(n)}
+                          aria-pressed={sel === n}
+                          aria-label={`Number ${n}${L ? `, ${L}${GIVEN[n] ? ', given' : ''}` : ', unsolved'}`}>
+                          <span aria-hidden="true">{n}</span><b aria-hidden="true">{L || '·'}</b>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="gls-abc">
+                    {ALPHA.map((L) => (
+                      <button key={L} type="button" className={`gls-key${usedKey(L) ? ' used' : ''}`} onClick={() => setLetter(L)} disabled={!sel} aria-label={keyLabel(L)}>{L}</button>
+                    ))}
+                  </div>
+                  <div className="gls-qw">
+                    {['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'].map((row, r) => (
+                      <div key={r} className="gls-qr">
+                        {row.split('').map((L) => (
+                          <button key={L} type="button" className={`gls-qk${usedKey(L) ? ' used' : ''}`} onClick={() => setLetter(L)} disabled={!sel} aria-label={keyLabel(L)}>{L}</button>
+                        ))}
+                        {r === 2 && (
+                          <button type="button" className="gls-qk del" onClick={clearLetter} disabled={!sel || !assign[sel] || !!GIVEN[sel]} aria-label={sel ? `Clear number ${sel}` : 'Clear this number'}>
+                            <Delete size={20} strokeWidth={2.2} aria-hidden="true" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="gls-act">
+                    <span className="gls-note">Struck letters are already in the key.</span>
+                    <button type="button" className="gls-clear" onClick={clearLetter} disabled={!sel || !assign[sel] || !!GIVEN[sel]}>Clear{sel ? ` ${sel}` : ''}</button>
+                    <button type="button" className="gls-check" onClick={runCheck} disabled={checks >= MAX_CHECKS}>
+                      {checksLeft > 0
+                        ? <><span className="gls-dt">Check grid &middot; {checksLeft} left</span><span className="gls-ph">Check &middot; {checksLeft} left</span></>
+                        : 'No checks left'}
+                    </button>
+                  </div>
+                  <div className="gls-foot">No clues. Every letter appears once in the key. A check costs 3 points.</div>
+                </>
+              )}
+
+              {!playing && (
+                <div className="gls-next">Next Glyph in {countdown}</div>
+              )}
+            </div>
+            );
+          })()}
+
+          {!preStart && !STAGE && (
             <div className={STAGE ? 'gl-card stg-board' : 'gl-card'} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
               <div style={{ display: LOFT ? 'none' : 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
                 <span style={{ whiteSpace: 'nowrap' }}>checks <b style={{ color: checks > 0 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{checks}</b>/{MAX_CHECKS}</span>
