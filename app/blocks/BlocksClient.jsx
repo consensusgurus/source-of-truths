@@ -828,7 +828,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     const ease = (t) => 1 - Math.pow(1 - t, 3);
     const easeBack = (t) => { const c = 1.4; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
     // A tile: the shape's colour with a soft sheen on its upper half and a
-    // thin darker edge. `o.color` overrides the fill (the quad's rainbow, the
+    // thin darker edge. `o.color` overrides the fill (the quad's gold shimmer, the
     // greyed stack), `o.flash` whitens it, `o.scale`/`o.rot` break it apart.
     const tile = (px, py, key, o = {}) => {
       const c = cell - 1, r = Math.max(2, c * 0.18);
@@ -1597,7 +1597,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
         @keyframes blBump { 40% { transform: translateY(4px); } 100% { transform: none; } }
         @keyframes blShake { 10%,90% { transform: translate(-2px,1px); } 20%,80% { transform: translate(4px,-2px); } 30%,50%,70% { transform: translate(-6px,2px) rotate(-.6deg); } 40%,60% { transform: translate(6px,-1px) rotate(.6deg); } }
         .bl-banner { position: absolute; left: 50%; top: 38%; transform: translate(-50%,-50%) scale(.4); opacity: 0; pointer-events: none; text-align: center; white-space: nowrap; animation: blBan 1.5s cubic-bezier(.2,1.4,.35,1) forwards; z-index: 3; }
-        .bl-banner-big { font-size: 38px; font-weight: 800; letter-spacing: -.03em; line-height: 1; background: linear-gradient(90deg, #7dd3fc, #c084fc, #fb7185, #e8b43a, #6ee7b7); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 3px 0 rgba(0,0,0,.3)); }
+        .bl-banner-big { font-size: 38px; font-weight: 800; letter-spacing: -.03em; line-height: 1; background: linear-gradient(90deg, #fcd34d, #f59e0b, #d97706, #f59e0b, #fcd34d); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 3px 0 rgba(0,0,0,.3)); }
         .bl-banner-sub { display: inline-block; margin-top: 8px; font-size: 13px; font-weight: 800; color: #fff; background: #0b0d12; border-radius: 999px; padding: 5px 12px; }
         .bl-banner-sub em { font-style: normal; color: #f5c94a; }
         @keyframes blBan { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.4) rotate(-6deg); } 18% { opacity: 1; transform: translate(-50%,-50%) scale(1.12) rotate(2deg); } 30% { transform: translate(-50%,-50%) scale(1); } 78% { opacity: 1; transform: translate(-50%,-50%) scale(1); } 100% { opacity: 0; transform: translate(-50%,-62%) scale(.96); } }
