@@ -145,6 +145,7 @@ if (RUN('suds')) {
 }
 
 // ─── TALLY ──────────────────────────────────────────────────────────────────
+const TALLY_LOGIC_FROM = '2026-10-14';
 if (RUN('tally')) {
   const { PUZZLES } = await import('../app/tally/puzzles.js');
   for (const p of PUZZLES) {
@@ -200,7 +201,72 @@ if (RUN('tally')) {
     };
     dfs(0, rr, cc, rowCells.slice(), colCells.slice());
     if (count !== 1) errs.push(`solutions=${count}, need exactly 1`);
-    errs.length ? fail(p.quizId, errs.join('; ')) : ok(p.quizId, `sol valid, bank exact, unique`);
+    // FROM 2026-10-14 (owner, 2026-10-13): every board opens with EXACTLY ONE
+    // row or column holding a single empty square, and a person can finish it
+    // by deduction alone. Proved here with a solver written separately from
+    // lib/tally-logic.js (array candidates as bitmasks, line patterns built by
+    // a different walk): it may use single-square lines, a line's possible
+    // fillings against the tiles left, and the rack count, nothing else, and
+    // every square it fills has to agree with sol.
+    if (p.live >= TALLY_LOGIC_FROM) {
+      const lines = [];
+      for (let k = 0; k < N; k++) for (const isRow of [true, false]) {
+        const sq = []; let t = isRow ? p.rowT[k] : p.colT[k];
+        for (let j = 0; j < N; j++) { const r = isRow ? k : j, c = isRow ? j : k; if (p.blocked[r][c]) continue; if (p.given[r][c]) t -= p.given[r][c]; else sq.push(r * N + c); }
+        lines.push({ sq, t });
+      }
+      const starters = lines.filter((L) => L.sq.length === 1).length;
+      if (starters !== 1) errs.push(`opens with ${starters} single-square lines, need exactly 1`);
+      const left = Array(10).fill(0); for (const v of bank) left[v]++;
+      const ALL = (() => { let m = 0; for (let v = 1; v <= 9; v++) if (left[v]) m |= 1 << v; return m; })();
+      const mask = new Map(cells.map(([r, c]) => [r * N + c, ALL]));
+      const got = new Map();
+      const set = (i, v) => { got.set(i, v); left[v]--; mask.set(i, 1 << v); };
+      const bitsOf = (m) => { const a = []; for (let v = 1; v <= 9; v++) if (m & (1 << v)) a.push(v); return a; };
+      let stalled = false;
+      for (let round = 0; round < 500 && got.size < cells.length; round++) {
+        let did = false;
+        for (const L of lines) {
+          const free = L.sq.filter((i) => !got.has(i));
+          const need = L.t - L.sq.reduce((a, i) => a + (got.get(i) || 0), 0);
+          if (free.length === 1 && need >= 1 && need <= 9 && left[need] > 0) { set(free[0], need); did = true; }
+        }
+        if (did) continue;
+        for (const [i, m] of mask) if (!got.has(i)) { let m2 = m; for (let v = 1; v <= 9; v++) if (!left[v]) m2 &= ~(1 << v); mask.set(i, m2); }
+        let narrowed = false;
+        for (const L of lines) {
+          const free = L.sq.filter((i) => !got.has(i));
+          if (!free.length) continue;
+          const need = L.t - L.sq.reduce((a, i) => a + (got.get(i) || 0), 0);
+          const ok2 = free.map(() => 0);
+          const pick = Array(free.length).fill(0);
+          const stack = [[0, need]];
+          // iterative-ish walk: recursion over positions, tracking tile use
+          const use = Array(10).fill(0);
+          const walk = (k, rest) => {
+            if (k === free.length) { if (rest === 0) for (let q = 0; q < free.length; q++) ok2[q] |= 1 << pick[q]; return; }
+            for (const v of bitsOf(mask.get(free[k]))) {
+              if (v > rest || use[v] >= left[v]) continue;
+              use[v]++; pick[k] = v; walk(k + 1, rest - v); use[v]--;
+            }
+          };
+          walk(0, need); void stack;
+          free.forEach((i, q) => { const m = mask.get(i) & ok2[q]; if (m !== mask.get(i)) { mask.set(i, m); narrowed = true; } });
+        }
+        for (const [i, m] of mask) if (!got.has(i)) { const b = bitsOf(m); if (b.length === 1 && left[b[0]] > 0) { set(i, b[0]); did = true; } }
+        if (did) continue;
+        for (let v = 1; v <= 9 && !did; v++) {
+          if (!left[v]) continue;
+          const can = [...mask].filter(([i, m]) => !got.has(i) && (m & (1 << v)));
+          if (can.length === left[v]) { for (const [i] of can) set(i, v); did = true; }
+        }
+        if (did || narrowed) continue;
+        stalled = true; break;
+      }
+      if (stalled || got.size < cells.length) errs.push(`not solvable by deduction (${cells.length - got.size} squares left)`);
+      for (const [i, v] of got) if (p.sol[Math.floor(i / N)][i % N] !== v) { errs.push(`deduction placed ${v} at ${i}, sol says otherwise`); break; }
+    }
+    errs.length ? fail(p.quizId, errs.join('; ')) : ok(p.quizId, `sol valid, bank exact, unique${p.live >= TALLY_LOGIC_FROM ? ', one way in, deducible' : ''}`);
   }
 }
 

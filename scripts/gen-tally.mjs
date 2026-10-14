@@ -20,7 +20,25 @@
 //     proved by an exhaustive counter capped at 2 (the verifier,
 //     scripts/verify-daily-banks.mjs tally, re-proves it independently).
 //   - `fewest` = rack length; no (blocked, given) layout repeats the bank.
+//
+// FROM 2026-10-14 (LOGIC_FROM, owner 2026-10-13: "most days it is too hard to
+// deduce") every board also has to be SOLVABLE BY DEDUCTION, as measured by the
+// human solver in lib/tally-logic.js (single-square lines, line sweeps, the
+// rack count, and nothing else), and has to open with EXACTLY ONE row or column
+// holding a single empty square, so every day has a way in. Digging keeps a
+// tile in the rack only while that solver still finishes, which also proves
+// the one solution. Measured before this: only 30 of the 92 boards already
+// played could be finished that way at all. The week ramps by rack size
+// (Mon 12, Tue/Wed 13, Thu/Fri 14, Sat 15, Sunday 6x6 17-18) and then by a
+// measured difficulty (placements the sweep had to settle, plus sweeps), taking
+// the day's quantile from a pool of candidates.
+//
+//   node scripts/gen-tally.mjs --regen-from 2026-10-14 --write
+// regenerates every board from that date to the end of the bank (same nums and
+// dates), leaving every earlier board byte-identical. Add --until YYYY-MM-DD to
+// run the bank further.
 import { readFileSync, writeFileSync } from 'node:fs';
+import { solve, starterLines } from '../lib/tally-logic.js';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -29,6 +47,9 @@ const BANK = join(here, '../app/tally/puzzles.js');
 const args = process.argv.slice(2);
 const DAYS = args.includes('--days') ? Number(args[args.indexOf('--days') + 1]) : 30;
 const WRITE = args.includes('--write');
+const REGEN_FROM = args.includes('--regen-from') ? args[args.indexOf('--regen-from') + 1] : null;
+const UNTIL = args.includes('--until') ? args[args.indexOf('--until') + 1] : null;
+export const LOGIC_FROM = '2026-10-14';
 
 function mulberry32(a) {
   return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
@@ -125,21 +146,83 @@ function makeBoard(num, sunday, seen) {
   throw new Error(`tally #${num}: no board found`);
 }
 
-const { PUZZLES } = await import(BANK);
-const last = PUZZLES[PUZZLES.length - 1];
-const seen = new Set(PUZZLES.map((p) => JSON.stringify([p.blocked, p.given])));
-const out = [];
-for (let i = 1; i <= DAYS; i++) {
-  const num = last.num + i, live = addDays(last.live, i), sunday = isSunday(live);
-  const b = makeBoard(num, sunday, seen);
-  console.error(`tally #${num} ${live}${sunday ? ' Sun' : ''}: ${b.N}x${b.N}, rack ${b.bank.length} (attempt ${b.attempt})`);
-  out.push(`  {
+// ── deducible boards (LOGIC_FROM onward) ──────────────────────────────────
+const RACK_BY_DOW = [null, 12, 13, 13, 14, 14, 15];   // Mon..Sat; Sunday below
+const QUANTILE_BY_DOW = [0.6, 0.1, 0.25, 0.45, 0.55, 0.7, 0.85];
+const POOL = 14;
+const dow = (iso) => new Date(`${iso}T12:00:00Z`).getUTCDay();
+
+function logicCandidate(num, sunday, rackTarget, attempt) {
+  const N = sunday ? 6 : 5;
+  const rng = mulberry32(num * 2654435761 + attempt * 40503 + 0x7a12);
+  const nBlocked = sunday ? randInt(rng, 5, 9) : randInt(rng, 4, 6);
+  const nOpen = N * N - nBlocked;
+  const nGiven = nOpen - rackTarget;
+  if (sunday ? nGiven < 8 : nGiven < 4) return null;
+  const blocked = Array.from({ length: N }, () => Array(N).fill(0));
+  for (const k of shuffle(rng, [...Array(N * N).keys()]).slice(0, nBlocked)) blocked[(k / N) | 0][k % N] = 1;
+  for (let i = 0; i < N; i++) {
+    let ro = 0, co = 0;
+    for (let j = 0; j < N; j++) { if (!blocked[i][j]) ro++; if (!blocked[j][i]) co++; }
+    if (ro < 2 || co < 2) return null;
+  }
+  const sol = blocked.map((row) => row.map((b) => (b ? 0 : randInt(rng, 1, 9))));
+  const rowT = sol.map((row) => row.reduce((a, v) => a + v, 0));
+  const colT = [...Array(N)].map((_, c) => sol.reduce((a, row) => a + row[c], 0));
+  const open = [];
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (!blocked[r][c]) open.push([r, c]);
+  const given = sol.map((row) => row.slice());
+  const spec = () => ({ size: N, blocked, given, rowT, colT,
+    bank: open.filter(([a, b]) => !given[a][b]).map(([a, b]) => sol[a][b]) });
+  let rackN = 0;
+  for (const [r, c] of shuffle(rng, open.slice())) {
+    if (rackN === rackTarget) break;
+    given[r][c] = 0;
+    if (solve(spec()).solved) rackN++;
+    else given[r][c] = sol[r][c];
+  }
+  if (rackN !== rackTarget) return null;
+  const p = spec();
+  if (starterLines(p).length !== 1) return null;
+  const res = solve(p);
+  if (!res.solved) return null;
+  // belt and braces: the exhaustive counter agrees there is one filling
+  const cells = open.filter(([a, b]) => !given[a][b]);
+  const rowRem = rowT.map((t, a) => t - given[a].reduce((s2, v) => s2 + v, 0));
+  const colRem = colT.map((t, b) => t - given.reduce((s2, row) => s2 + row[b], 0));
+  if (countArrangements(N, cells, rowRem, colRem, p.bank) !== 1) return null;
+  return { N, blocked, given, sol, rowT, colT, bank: p.bank.slice().sort((a, b) => a - b),
+    hard: res.hard, sweeps: res.sweeps, diff: res.hard + 3 * res.sweeps };
+}
+
+function makeLogicBoard(num, live, seen) {
+  const sunday = isSunday(live);
+  const d = dow(live);
+  const pool = [];
+  for (let attempt = 0; attempt < 60000 && pool.length < POOL; attempt++) {
+    const rack = sunday ? (attempt % 2 ? 17 : 18) : RACK_BY_DOW[d];
+    const b = logicCandidate(num, sunday, rack, attempt);
+    if (!b) continue;
+    const key = JSON.stringify([b.blocked, b.given]);
+    if (seen.has(key) || pool.some((x) => x.key === key)) continue;
+    b.key = key; b.attempt = attempt;
+    pool.push(b);
+  }
+  if (!pool.length) throw new Error(`tally #${num}: no deducible board found`);
+  pool.sort((a, b) => a.diff - b.diff || a.attempt - b.attempt);
+  const pick = pool[Math.min(pool.length - 1, Math.floor(QUANTILE_BY_DOW[d] * pool.length))];
+  seen.add(pick.key);
+  return pick;
+}
+
+function boardText(num, live, b) {
+  return `  {
     num: ${num},
     quizId: 'tally-${quizDate(live)}',
     live: '${live}',
     dateLabel: '${dateLabel(live)}',
     size: ${b.N},
-    sunday: ${sunday},
+    sunday: ${isSunday(live)},
     blocked: ${JSON.stringify(b.blocked)},
     given: ${JSON.stringify(b.given)},
     sol: ${JSON.stringify(b.sol)},
@@ -147,7 +230,50 @@ for (let i = 1; i <= DAYS; i++) {
     colT: [${b.colT.join(', ')}],
     bank: [${b.bank.join(', ')}],
     fewest: ${b.bank.length},
-  },\n`);
+  },\n`;
+}
+
+const { PUZZLES } = await import(BANK);
+if (REGEN_FROM) {
+  if (REGEN_FROM < LOGIC_FROM) throw new Error(`--regen-from must be on or after ${LOGIC_FROM}`);
+  const keep = PUZZLES.filter((p) => p.live < REGEN_FROM);
+  const lastKept = keep[keep.length - 1];
+  const end = UNTIL || PUZZLES[PUZZLES.length - 1].live;
+  const seen = new Set(keep.map((p) => JSON.stringify([p.blocked, p.given])));
+  const out = [];
+  for (let i = 1; ; i++) {
+    const live = addDays(lastKept.live, i);
+    if (live > end) break;
+    const num = lastKept.num + i;
+    const b = makeLogicBoard(num, live, seen);
+    console.error(`tally #${num} ${live}${isSunday(live) ? ' Sun' : ''}: ${b.N}x${b.N}, rack ${b.bank.length}, hard ${b.hard}, sweeps ${b.sweeps} (attempt ${b.attempt})`);
+    out.push(boardText(num, live, b));
+  }
+  const text = readFileSync(BANK, 'utf8');
+  const marker = `    quizId: 'tally-${quizDate(REGEN_FROM)}',`;
+  const at = text.indexOf(marker);
+  if (at < 0) throw new Error('regen start board not found in the bank');
+  const head = text.slice(0, text.lastIndexOf('  {\n', at));
+  if (WRITE) {
+    writeFileSync(BANK, head + out.join('') + '];\n');
+    console.error(`regenerated ${out.length} boards from ${REGEN_FROM}`);
+  } else process.stdout.write(out.join(''));
+  process.exit(0);
+}
+const last = PUZZLES[PUZZLES.length - 1];
+const seen = new Set(PUZZLES.map((p) => JSON.stringify([p.blocked, p.given])));
+const out = [];
+for (let i = 1; i <= DAYS; i++) {
+  const num = last.num + i, live = addDays(last.live, i), sunday = isSunday(live);
+  if (live >= LOGIC_FROM) {
+    const b = makeLogicBoard(num, live, seen);
+    console.error(`tally #${num} ${live}${sunday ? ' Sun' : ''}: ${b.N}x${b.N}, rack ${b.bank.length}, hard ${b.hard}, sweeps ${b.sweeps}`);
+    out.push(boardText(num, live, b));
+    continue;
+  }
+  const b = makeBoard(num, sunday, seen);
+  console.error(`tally #${num} ${live}${sunday ? ' Sun' : ''}: ${b.N}x${b.N}, rack ${b.bank.length} (attempt ${b.attempt})`);
+  out.push(boardText(num, live, b));
 }
 const block = out.join('');
 if (WRITE) {

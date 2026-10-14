@@ -9252,3 +9252,28 @@ hidden-until-asked things on a daily, each its own site-wide remembered choice:
 - **Desktop Layout C hides `.stg-panel`** because the same preference drives its Board tab;
   without that rule the panel would open inline under the figures as well.
 - The Group tab is deliberately NOT gated: opening it is already a deliberate click.
+
+## Tally: one way in, solvable by deduction, no notes (owner, 2026-10-13)
+
+Owner: "most days it is too hard to deduce", and the locking and sliding was more machinery
+than the game needed. Measured first: only 30 of the 92 boards already played could be
+finished by line sums and the rack count alone; the rest needed trial and error.
+
+- **From 2026-10-14 (`LOGIC_FROM` in `scripts/gen-tally.mjs`, `TALLY_LOGIC_FROM` in
+  `scripts/verify-daily-banks.mjs`)** every board opens with EXACTLY ONE row or column holding
+  a single empty square, and is solvable by the human solver in `lib/tally-logic.js`:
+  single-square lines, line sweeps (every way to fill a line from the tiles left), and the
+  rack count, nothing else. The verifier proves it with a separately written solver and
+  failed 35 of the 46 old future boards (10-15 on). Boards before 10-14 are frozen.
+- **The week ramps by rack size** (Mon 12, Tue/Wed 13, Thu/Fri 14, Sat 15, Sunday 6x6 17-18)
+  and then by measured difficulty, taking the weekday's quantile from a pool of 14.
+  `node scripts/gen-tally.mjs --regen-from <date> --write [--until <date>]` rebuilds from a
+  date; a plain run appends.
+- **The client has no notes, no tap cycle, no hold-to-lift and no slide.** Tap a digit then
+  squares, or a square then a digit; tap a placed tile to pick it up, then an empty square to
+  move it (one move) or the same tile to send it home (free); drag to move or swap, drag off
+  the board to send home; keyboard arrows, 1-9, Backspace, Escape. A tap on a placed tile only
+  ever picks it up, so a stray tap never costs a move. The rack is one key per digit with its
+  count. Each target shows what its line still needs (`7 in 2`).
+- **Scoring did not change**: 10 minus one point per two moves over the fewest, ties on extra
+  moves then time. The hint fills the next square the human solver settles.
