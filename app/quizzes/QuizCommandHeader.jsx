@@ -1,9 +1,7 @@
 'use client';
 import { useMemo, useEffect, useRef, useState } from 'react';
-import { guestHandleFromAnon } from '@/lib/quiz-xp';
+import { guestHandleFromAnon } from '@/lib/guest-handle';
 import Link from 'next/link';
-import SourcesPopover from '../SourcesPopover';
-import { getAllSources } from '@/lib/sources';
 import { T } from '@/lib/theme';
 import MindLoftMark from '../MindLoftMark';
 import useDayStats from '../useDayStats';
@@ -21,7 +19,6 @@ import { CONTEST } from '@/lib/contest';
 // -> wordmark shortens to SoT and the search icon button appears -> avatar
 // circle drops.
 const FONT = "'Manrope', system-ui, -apple-system, sans-serif";
-const SOURCE_COUNT = getAllSources().length;
 
 function fmtK(n) { return (typeof n === 'number' && n > 999) ? `${(n / 1000).toFixed(1)}k` : (n != null ? n.toLocaleString() : n); }
 
