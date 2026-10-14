@@ -913,23 +913,14 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
                 </div>
               </div>
 
-              {/* THE STATUS LINE: what just happened and what is open, in plain
-                  words, read off the live state. Never a claim the board does not
-                  support: the ways-on list is the engine's own canEnter. */}
-              <div className="ch-status">
-                <div className="ch-status-text" aria-live="polite">
-                  <span className="ch-status-main">{statusMain}</span>
-                  <span className="ch-status-sub">
-                    {statusSub || (
-                      <>
-                        <span className="ch-keys">Arrow keys or WASD to move. A blocked move is refused, not fatal.</span>
-                        <span className="ch-touchhint">Hold an arrow to keep going. A blocked move is refused, not fatal.</span>
-                      </>
-                    )}
-                  </span>
-                </div>
-                {engaged && <span className="ch-dsk-flex">{restartCtl()}</span>}
-              </div>
+              {/* NO WRITTEN NARRATION ON THE BOARD (owner, 2026-10-14). The status
+                  line changed length move to move, which on a phone pushed the
+                  arrow pad up and down under the thumb and put Restart where an
+                  arrow had just been. The state is still announced to screen
+                  readers through a visually hidden live region, which takes no
+                  space and so cannot move anything. */}
+              <span className="ch-sr" aria-live="polite">{statusMain}{statusSub ? ` ${statusSub}` : ''}</span>
+              {engaged && <div className="ch-status ch-dsk-flex">{restartCtl()}</div>}
             </div>
 
             <div className="ch-dock">
@@ -1112,10 +1103,11 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
       <style dangerouslySetInnerHTML={{ __html: `
         .ch-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
         .ch-lbl { font-family: ${SANS}; font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--stg-mute, #525c70); font-variant-numeric: tabular-nums; }
-        .ch-ph, .ch-ph-flex { display: none; }
-        .ch-dsk-flex { display: inline-flex; }
+        .ch-ph { display: none; }
+        .ch-dsk-flex { display: none; }
+        .ch-ph-flex { display: flex; }
         .ch-castwrap { display: flex; flex-direction: column; gap: 10px; }
-        .ch-casthead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+        .ch-casthead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; white-space: nowrap; }
         .ch-nextname { color: var(--stg-ink, #0f1420); font-size: 13px; letter-spacing: 0; text-transform: none; }
         .ch-rail { --ch-tw: 58px; --ch-td: 40px; position: relative; display: flex; justify-content: space-between; }
         .ch-rail-line, .ch-rail-fill { position: absolute; left: calc(var(--ch-tw) / 2); top: calc(var(--ch-td) / 2 - 1.5px); height: 3px; border-radius: 2px; }
@@ -1154,11 +1146,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
         .ch-cov-bar span { flex: 1; height: 6px; border-radius: 2px; background: var(--stg-line2, #cdd3dd); }
         .ch-cov-bar span.is-on { background: var(--stg-acc); }
 
-        .ch-status { width: 100%; margin-top: 16px; display: flex; align-items: center; gap: 10px; border-top: 1px solid var(--stg-line, #cdd3dd); padding-top: 14px; }
-        .ch-status-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-        .ch-status-main { font-family: ${SANS}; font-size: 15px; font-weight: 700; line-height: 1.4; color: var(--stg-ink, #0f1420); }
-        .ch-status-sub { font-family: ${SANS}; font-size: 12px; font-weight: 600; line-height: 1.45; color: var(--stg-mute, #525c70); }
-        .ch-touchhint { display: none; }
+        .ch-status { width: 100%; margin-top: 16px; justify-content: flex-end; border-top: 1px solid var(--stg-line, #cdd3dd); padding-top: 14px; }
 
         .ch-ctl { display: inline-flex; align-items: center; justify-content: center; gap: 7px; font-family: ${SANS}; font-weight: 700; font-size: 14px; background: transparent; color: var(--stg-ink2, #2c3446); border: 1.5px solid var(--stg-mute2, #78839a); border-radius: 12px; padding: 0 16px; min-height: 48px; min-width: 132px; cursor: pointer; }
         .ch-ctl.is-armed { color: var(--stg-acc-ink); border-color: var(--stg-acc); }
@@ -1184,15 +1172,19 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
         .ch-dn { grid-area: dn; }
         .ch-rt { grid-area: rt; }
         .ch-pad button { border-radius: 12px; border: 1.5px solid var(--stg-mute2, #78839a); background: var(--stg-surf, #fff); color: var(--stg-ink, #0f1420); font-family: ${SANS}; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+        /* Restart lives beside the board only where there is no arrow pad (a
+           desktop with a mouse); anywhere the pad is drawn it sits in the foot,
+           BELOW the pad, so it is never under a thumb reaching for an arrow. */
         @media (min-width: 901px) and (hover: hover) and (pointer: fine) {
           .ch-dock { display: none; }
+          .ch-dsk-flex { display: flex; }
+          .ch-ph-flex { display: none; }
         }
         @media (max-width: 640px) {
-          .ch-dsk, .ch-dsk-flex, .ch-keys, .ch-foot-hint { display: none !important; }
+          .ch-dsk, .ch-dsk-flex, .ch-foot-hint { display: none !important; }
           .ch-ph { display: inline; }
           .ch-ph-flex { display: flex; flex: 1; }
           .ch-ph-flex .ch-ctl { flex: 1; min-height: 46px; }
-          .ch-touchhint { display: inline; }
           .ch-lbl { font-size: 10px; }
           .ch-castwrap { gap: 8px; }
           .ch-rail { --ch-tw: 30px; --ch-td: 30px; }
@@ -1203,8 +1195,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
           .ch-cov { margin-top: 10px; gap: 4px; }
           .ch-cov-bar { gap: 1px; }
           .ch-cov-bar span { height: 5px; border-radius: 1px; }
-          .ch-status { margin-top: 12px; padding-top: 10px; }
-          .ch-status-main { font-size: 14px; }
+          .ch-foot { padding-top: 26px; }
           .ch-foot-row { justify-content: flex-start; }
           .ch-giveup { font-size: 13px; padding: 0 10px; }
         }
