@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
-import { fetchAllRows } from '@/lib/fetch-all';
+import { loadQuizResultsCached } from '@/lib/quiz-results-cache';
 import { QUIZZES } from '@/lib/quizzes';
 import { quizDept, DEPT_LABEL, DEPT_COLOR } from '@/lib/quiz-departments';
 
@@ -26,7 +26,11 @@ export async function GET() {
     if (CACHE.payload && Date.now() - CACHE.at < TTL_MS) {
       return NextResponse.json(CACHE.payload);
     }
-    const { data, error } = await fetchAllRows(supabaseAdmin, 'quiz_results', 'quiz_id', [['quiz_id', true]]);
+    // Counted off the shared results cache (Disk IO fix, 2026-10-14). This used
+    // to page the WHOLE quiz_results table by OFFSET every 10 minutes per lambda
+    // just to count plays; the cache is already warm for the board, history and
+    // status routes and refreshes by delta, so this costs almost no DB reads.
+    const { data, error } = await loadQuizResultsCached(supabaseAdmin);
     const byQuiz = {};
     if (!error) {
       for (const r of (data || [])) byQuiz[r.quiz_id] = (byQuiz[r.quiz_id] || 0) + 1;
