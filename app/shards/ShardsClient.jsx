@@ -91,6 +91,7 @@ const STATS_KEY = 'sot_shards_stats';
 // one, so white letters only work on the light register. Flip on the same token.
 // The light twins are not all deep (gold is pale), so the light-register ink is
 // picked per hue by whichever of white or near-black contrasts better.
+// (gold's light twin is #e8b43a, which takes near-black.)
 function hexLum(hex) {
   const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '').trim());
   if (!m) return 0;
