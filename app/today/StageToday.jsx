@@ -608,7 +608,7 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
 // the daily-combined read the board uses, the group line off the standing,
 // the record off the same /api/quiz/my-plays read the favorites table made.
 // Nothing is a new request.
-function LedgerRow({ g, hue, tq, day, dots, res, done, inprog, me, favLoaded, max, canPin, favorites, toggleFavorite, fk }) {
+function LedgerRow({ g, hue, tq, day, dots, res, done, inprog, me, favLoaded, favFailed, max, canPin, favorites, toggleFavorite, fk }) {
   const isDone = done.has(g.key);
   const state = isDone ? 'done' : inprog.has(g.key) ? 'open' : '';
   const gw = !isDone && !!(dots && dots.played && dots.played.size);
@@ -633,7 +633,8 @@ function LedgerRow({ g, hue, tq, day, dots, res, done, inprog, me, favLoaded, ma
         {day ? <i>{plays.toLocaleString()} {plays === 1 ? 'play' : 'plays'} today{grpLine ? <em>{' · ' + grpLine}</em> : null}</i> : null}
       </span>
       <span className="yu">
-        {!favLoaded ? <span className="ph" aria-hidden="true" />
+        {favFailed ? <span className="mu">{'\u2013'}</span>
+          : !favLoaded ? <span className="ph" aria-hidden="true" />
           : me && me.plays ? (
             <>
               <span className="bl"><span className="tr"><s style={{ width: `${Math.max(4, Math.round((me.plays / Math.max(1, max)) * 100))}%` }} /></span><b>{me.plays.toLocaleString()} {me.plays === 1 ? 'play' : 'plays'}</b></span>
@@ -2338,8 +2339,8 @@ export default function StageToday() {
     favAsked.current = true;
     const qs = identityQs();
     fetch('/api/quiz/my-plays' + (qs ? '?' + qs : '')).then((r) => r.json())
-      .then((d) => setFav({ mine: (d && d.mine) || {}, site: (d && d.site) || {}, week: (d && d.week) || {} }))
-      .catch(() => setFav({ mine: {}, site: {}, week: {} }));
+      .then((d) => setFav({ mine: (d && d.mine) || {}, site: (d && d.site) || {}, week: (d && d.week) || {}, failed: !(d && d.mine) }))
+      .catch(() => setFav({ mine: {}, site: {}, week: {}, failed: true }));
   }, [favWanted]);
   // A to Z until the week's counts land, so nothing jumps twice.
   const sortGames = (list) => {
@@ -2419,7 +2420,7 @@ export default function StageToday() {
       <LedgerRow key={g.key} g={g} hue={ownHue ? hueFor(g.cat) : null} tq={tq}
         day={board ? (boardBy[g.key] || { board: [], plays: 0 }) : null}
         dots={dotsL ? dotsL(g.key) : null} res={standBy[g.key]} done={done} inprog={inprog}
-        me={fav ? fav.mine[g.key] || null : null} favLoaded={!!fav} max={max}
+        me={fav && !fav.failed ? fav.mine[g.key] || null : null} favLoaded={!!fav && !fav.failed} favFailed={!!(fav && fav.failed)} max={max}
         canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite} fk={pre + ':' + g.key} />
     ));
   };
