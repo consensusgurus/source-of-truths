@@ -80,7 +80,7 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:240px;}
 .lc-sub-btn:hover{border-color:var(--stg-acc);color:var(--stg-ink);}
 .lc-cap,.lc-nav,.lc-side{font-family:Manrope,ui-sans-serif,system-ui,sans-serif;color:var(--stg-ink);box-sizing:border-box;-webkit-font-smoothing:antialiased;}
 .lc-cap *,.lc-nav *,.lc-side *{box-sizing:border-box;}
-.lc-cap{position:fixed;top:0;left:0;right:0;z-index:80;background:var(--stg-ground);}
+.lc-cap{position:fixed;top:0;left:0;right:0;z-index:90;background:var(--stg-ground);}
 .lc-cap .sty-cap{display:grid;grid-template-columns:auto minmax(60px,1fr) auto;align-items:center;gap:26px;padding:11px 22px;position:relative;
   border-bottom:1px solid var(--stg-line);}
 .lc-cap .sty-id{display:flex;align-items:baseline;gap:11px;min-width:0;}
@@ -663,7 +663,7 @@ export default function LayoutCInner({ gameKey }) {
 
   return (
     <>
-      {createPortal(<><style dangerouslySetInnerHTML={{ __html: CSS }} />{frame}{fgEl ? null : <div style={{ position: 'fixed', top: 8, right: 16, zIndex: 81 }}>{subBtn}</div>}</>, host)}
+      {createPortal(<><style dangerouslySetInnerHTML={{ __html: CSS }} />{frame}{fgEl ? null : <div style={{ position: 'fixed', top: 8, right: 16, zIndex: 91 }}>{subBtn}</div>}</>, host)}
       {fgEl ? createPortal(subBtn, fgEl) : null}
     </>
   );
