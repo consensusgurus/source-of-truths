@@ -77,7 +77,7 @@ const EMPTY = 0, LAMP = 1, CROSS = 2;
 // THE LIGHT, REGISTER-AWARE (2026-10-14 board rebuild). Lamps needs colours the
 // stage does not carry: a warm glow, a lit square, a beam, and an unlit square
 // that is clearly DARKER than a lit one in both registers (a near-black well on
-// the dark stage, a mid slate on the light one). Each is either a hue mixed into
+// the dark stage, a soft slate on the light one). Each is either a hue mixed into
 // the register's own cell, or the established two-value form keyed off
 // --stg-dk (100% dark, 0% light; see Sweep and Shards), so there is no
 // attribute selector here and nothing can flash the wrong register on boot.
@@ -86,7 +86,7 @@ const dk = (darkVal, lightVal) => `color-mix(in srgb, ${darkVal} var(--stg-dk, 1
 const LIGHT_VARS = {
   '--lm-glow': dk('#f5c542', '#e0a810'),
   '--lm-lit': 'color-mix(in srgb, #f5c542 calc(28% - var(--stg-dk, 100%) * 0.1), var(--stg-cell, #ffffff))',
-  '--lm-dark': dk('#10151f', '#9aa4b5'),
+  '--lm-dark': dk('#10151f', '#c9d0dc'),
   '--lm-beam': dk('#c9a233', '#c98f0a'),
   '--lm-slab': dk('#2c3549', '#1e2433'),
   '--lm-slab-ink': dk('#e8ecf4', '#ffffff'),
