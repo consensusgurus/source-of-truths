@@ -228,6 +228,7 @@ button.cx-pill::before{content:'';position:absolute;left:-2px;right:-2px;top:-9p
   .cx-under{padding-top:0;}
   .cx-under .n{font-size:11.5px;}
   .cx-kb{margin-top:8px;}
+  .cx-kb + .cx-under{padding-top:6px;}
   .cl-key.cx-k{font-size:16px;}
 }
 @media(max-width:400px){.cx-tryrow .cx-mk{width:21px;height:21px;font-size:11px;}}
@@ -1831,7 +1832,12 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
           {started && !mobileUi && kbdOpen && cruxKeyboard}
           </div>
 
-          {/* under the panel: the filing nudge and Give up */}
+          {/* On a phone the keyboard comes first and Give up sits UNDER it
+              (owner, 2026-10-14), so the thumb working the keys never lands on
+              the one control that ends the puzzle. */}
+          {started && mobileUi && cruxKeyboard}
+
+          {/* under the panel (and under the phone keyboard): the filing nudge and Give up */}
           {started && (solvedUnfiled.length > 0 || !allWordsSolved) && (
             <div className="cx-under">
               <span className="n">
@@ -1848,7 +1854,6 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
               )}
             </div>
           )}
-          {started && mobileUi && cruxKeyboard}
           </div>
 
           <div className={STAGE ? undefined : 'loft-sol'}>

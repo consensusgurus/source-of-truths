@@ -859,7 +859,11 @@ html.lc-pre:not(.lc-on) .stage-page:has(.stg-top):not(.stage-page .stage-page){
   padding:var(--lc-hh,62px) 330px 0 260px !important;box-sizing:border-box;min-height:100vh;}
 html.lc-pre:not(.lc-on) .stage-page:has(.stg-top) .stg-cap,
 html.lc-pre:not(.lc-on) .stage-page:has(.stg-top) .stg-strip,
-html.lc-pre:not(.lc-on) .stage-page:has(.stg-top) .stg-prog{display:none !important;}
+html.lc-pre:not(.lc-on) .stage-page:has(.stg-top) .stg-prog,
+/* the phone rankings panel (stats, archive, top 10): LayoutCInner hides it
+   under lc-on, so it must be hidden here too or it flashes open for the
+   moment between hydration and the frame attaching (owner, 2026-10-14). */
+html.lc-pre:not(.lc-on) .stage-page:has(.stg-top) .stg-panel{display:none !important;}
 html.lc-pre:not(.lc-on):has(.stg-top) .stage-tail{display:none !important;}
 html.lc-pre:not(.lc-on) .stage-page:has(.stg-top) .stg-fg{position:relative;padding-right:240px;}
 html.lc-pre:not(.lc-on) .stage-page:has(.stg-top):not(.stage-page .stage-page)::before{
