@@ -345,7 +345,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const [unit, setUnit] = useState('mi');   // 'mi' or 'km', display only
-  // The ring map: a phone crops it to the guesses and offers +/- zoom.
+  // The ring map zooms to the guesses and offers +/- zoom.
   const [narrow, setNarrow] = useState(false);
   const [zoomStep, setZoomStep] = useState(0);
   const searchParams = useSearchParams();
@@ -429,24 +429,37 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
     try { mq.addEventListener('change', on); } catch (e) { try { mq.addListener(on); } catch (e2) {} }
     return () => { try { mq.removeEventListener('change', on); } catch (e) { try { mq.removeListener(on); } catch (e2) {} } };
   }, []);
-  // A new ring re-fits the phone map to every ring so far.
+  // A new ring re-fits the map.
   useEffect(() => { setZoomStep(0); }, [guesses.length]);
+  // The map frames the rings that actually narrow the search. The secret city
+  // sits ON every ring, so it is always inside the box of the SMALLEST ring:
+  // fitting to that one (rather than to every ring, which a single far-off
+  // guess blows out to the whole world) zooms in exactly as far as the
+  // guesses justify. Once the round is over it steps back to show them all.
+  // Desktop and phone both get this; +/- moves from there.
   const view = useMemo(() => {
-    if (!narrow) return { x: 0, y: 0, w: MAP_W, h: MAP_H, world: true, fitW: MAP_W };
-    const worldW = MAP_H * PHONE_AR;
+    const AR = narrow ? PHONE_AR : MAP_W / MAP_H;
+    const worldW = narrow ? MAP_H * PHONE_AR : MAP_W;
     let fitW = worldW, cx = MAP_W / 2, cy = MAP_H / 2;
-    if (rings.length) {
+    const live = rings.filter((r) => r.d && r.x.mi > 0);
+    let pool = live;
+    if (g.status === 'playing' && live.length) {
+      let best = live[0];
+      for (const r of live) if (r.x.mi < best.x.mi) best = r;
+      pool = [best];
+    } else if (!live.length) pool = rings;
+    if (pool.length) {
       let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-      for (const r of rings) { x0 = Math.min(x0, r.box[0]); y0 = Math.min(y0, r.box[1]); x1 = Math.max(x1, r.box[2]); y1 = Math.max(y1, r.box[3]); }
-      fitW = Math.min(worldW, Math.max(90, Math.max(x1 - x0, (y1 - y0) * PHONE_AR) * 1.14));
+      for (const r of pool) { x0 = Math.min(x0, r.box[0]); y0 = Math.min(y0, r.box[1]); x1 = Math.max(x1, r.box[2]); y1 = Math.max(y1, r.box[3]); }
+      fitW = Math.min(worldW, Math.max(90, Math.max(x1 - x0, (y1 - y0) * AR) * 1.22));
       cx = (x0 + x1) / 2; cy = (y0 + y1) / 2;
     }
     const w = Math.max(60, Math.min(MAP_W, fitW / Math.pow(1.6, zoomStep)));
-    const h = w / PHONE_AR;
+    const h = w / AR;
     const x = Math.min(Math.max(cx - w / 2, Math.min(0, MAP_W - w)), Math.max(0, MAP_W - w));
     const y = Math.min(Math.max(cy - h / 2, Math.min(0, MAP_H - h)), Math.max(0, MAP_H - h));
     return { x, y, w, h, world: w >= MAP_W - 1, fitW };
-  }, [narrow, rings, zoomStep]);
+  }, [narrow, rings, zoomStep, g.status]);
 
   // display helpers bound to the player's unit choice
   const fmtDist = (mi) => fmtDistIn(mi, unit);
@@ -812,7 +825,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
     );
   }
 
-  // The ring map. Desktop shows the whole world; a phone crops to the rings.
+  // The ring map, zoomed to the closest ring (see `view`).
   function renderRingMap() {
     const vb = `${view.x.toFixed(1)} ${view.y.toFixed(1)} ${view.w.toFixed(1)} ${view.h.toFixed(1)}`;
     const pxW = narrow ? 370 : 588;
@@ -854,7 +867,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
           <button type="button" aria-label="Zoom in" disabled={view.w <= 61} onClick={() => setZoomStep((z) => z + 1)}>+</button>
         </div>
         <div className="pg-mapnote" style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, marginTop: 7 }}>
-          {narrow ? 'Map fits your rings · numbers match your guesses' : 'Rings are drawn to scale on the map'}
+          {narrow ? 'Zoomed to your closest ring · numbers match your guesses' : 'Zoomed to your closest ring · rings drawn to scale'}
         </div>
       </div>
     );
@@ -936,7 +949,9 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
           .pg-sug button:last-child{border-bottom:none;}
           .pg-sug button:hover,.pg-sug button.on{background:var(--stg-surf2, ${COLORS.accentSoft});}
           .pg-board{display:flex;flex-direction:column;}
-          .pg-zoom{display:none;}
+          .pg-zoom{display:flex;gap:6px;position:absolute;right:10px;bottom:34px;}
+          .pg-zoom button{width:36px;height:36px;border-radius:9px;border:1px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.3)'};background:${STAGE ? 'var(--stg-raise)' : 'var(--white)'};color:${INK};font-family:${SANS};font-size:18px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
+          .pg-zoom button:disabled{color:${FADED};cursor:default;}
           @media(max-width:640px){
             .pg-board > *{margin-left:8px;margin-right:8px;}
             .pg-trend{display:none;}
