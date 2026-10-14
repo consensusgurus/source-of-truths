@@ -23,6 +23,7 @@ import useDailyRoster from './useDailyRoster';
 import { catBlue } from '@/lib/home-blues';
 import { SUDOKU_POOL } from '@/lib/circuits';
 import { loftKey } from '@/lib/loft';
+import { markPageEntry } from '@/lib/finish-beat';
 
 // The home page pulls the sudoku grids OUT of Numbers into a Sudoku shelf of
 // their own, and that shelf is the sudoku circuit's pool. Mirror it from the
@@ -53,6 +54,10 @@ export default function LoftCap({
   extra = null,      // an optional third tier (Anon's spine, for instance)
   neutral = false,   // wear the plain band whatever `cat` says (see the hue below)
 }) {
+  // The page's own clock for every finish freshness test (lib/finish-beat.js
+  // pageAge): marked once, on this mount's first render, so a board opened
+  // already finished by a client-side link goes straight to its end card.
+  useState(() => { markPageEntry(); return 0; });
   // THE PAGE'S OWN ADDRESS, printed beside the game name (owner, 2026-08-15).
   // DailyMasthead carried "mindloftdaily.com/<slug>" so the address rode along
   // in every screenshot and share; the Loft cap dropped it, and this puts it

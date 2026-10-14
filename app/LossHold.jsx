@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { playLoss, BEAT_FRESH, firePendingBuzz } from '@/lib/finish-beat';
+import { playLoss, BEAT_FRESH, pageAge, firePendingBuzz } from '@/lib/finish-beat';
 
 // THE RETRY HOLD (owner, 2026-10-04). It replaced the intermediate "You lost /
 // Replay / Show end game card" curtain on the games built for another run
@@ -17,7 +17,7 @@ import { playLoss, BEAT_FRESH, firePendingBuzz } from '@/lib/finish-beat';
 // keep the answer off the board until Reveal answer is pressed on the card.
 // (Lives only on the stage; the legacy Loft card keeps the old retry panel.)
 export default function LossHold({ gameKey, verdict, detail, chip, sub, onReplay, onCard }) {
-  const [fresh] = useState(() => (typeof performance !== 'undefined' && performance.now ? performance.now() : 0) >= BEAT_FRESH);
+  const [fresh] = useState(() => pageAge() >= BEAT_FRESH);
   const [up, setUp] = useState(!fresh);
   const replayRef = useRef(null);
 

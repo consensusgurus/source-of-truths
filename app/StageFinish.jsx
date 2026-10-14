@@ -61,6 +61,7 @@ import AddToHome from './AddToHome';
 import JoinLeaderboardForm from './quiz/[id]/JoinLeaderboardForm';
 // Where this finish puts the player in each of their groups (2026-09-17).
 import FinishGroupLine from './groups/FinishGroupLine';
+import { pageAge } from '@/lib/finish-beat';
 
 // ── THE FLOOD ──────────────────────────────────────────────────────────────
 // THE CURTAIN ARRIVES AT FULL SIZE (owner, 2026-08-31). The band was already
@@ -924,7 +925,7 @@ export default function StageFinish({
     // see this without burning a real attempt: a finish card renders on a game
     // that is over, and playing one posts a result. Verify on /<game>?p=N&flood=1.
     const forced = /[?&]flood=1(&|$)/.test(window.location.search);
-    const since = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 1e9;
+    const since = pageAge();
     if (!forced && since < FLOOD_FRESH) return;   // the page opened on a finished board
     setFlood(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -933,7 +934,7 @@ export default function StageFinish({
   const [floodDone, setFloodDone] = useState(false);
   const [freshFinish, setFreshFinish] = useState(false);
   useEffect(() => {
-    const since = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 1e9;
+    const since = pageAge();
     const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const forced = /[?&]flood=1(&|$)/.test(window.location.search);
     // Fresh means a game that JUST ended, the same test the flood makes. A

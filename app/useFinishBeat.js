@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import {
-  playBeat, playLoss, heldRecently, BEAT_FRESH,
+  playBeat, playLoss, heldRecently, BEAT_FRESH, pageAge,
   installBuzzDefer, setBeatLive, firePendingBuzz,
 } from '@/lib/finish-beat';
 
@@ -41,7 +41,7 @@ export default function useFinishBeat({ key, enabled = true, lost = false, ready
     const q = window.location.search || '';
     if (/[?&]beat=0(&|$)/.test(q)) return false;
     if (/[?&]beat=1(&|$)/.test(q)) return true;
-    const since = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
+    const since = pageAge();
     if (since < BEAT_FRESH) return false;
     // An End Game hold already played the beat over the board; a win that the
     // curtain follows still gets the orbit and the burst.

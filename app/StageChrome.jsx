@@ -50,6 +50,7 @@ import { glyphFor, GLYPH_BOX } from '@/lib/game-glyphs';
 import RollNum from './RollNum';
 import { useRevealPref, REVEAL } from '@/lib/reveal-pref';
 import DailyRunRail from './DailyRunRail';
+import { markPageEntry } from '@/lib/finish-beat';
 
 // A FIGURE THAT IS A PLAIN COUNT ROLLS; anything else swaps (motion pass,
 // 2026-09-16). "3", "+62", "#37" and "3/5" roll digit by digit through
@@ -211,6 +212,10 @@ export default function StageChrome({
   // which is why none of the eighty call sites moved.
   panelBody = null,
 }) {
+  // The page's own clock for every finish freshness test (lib/finish-beat.js
+  // pageAge): marked once, on this mount's first render, so a board opened
+  // already finished by a client-side link goes straight to its end card.
+  useState(() => { markPageEntry(); return 0; });
   const started = useStarted(gameKey, num);
   const [clockShown, toggleClock] = useRevealPref(REVEAL.clock);
   // THE LEADER AND THE LEADERBOARD ARE HIDDEN UNTIL ASKED FOR on a daily (owner,
