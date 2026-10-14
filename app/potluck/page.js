@@ -12,19 +12,19 @@ import { categoryCrumb } from '@/lib/game-seo';
 
 // Potluck launched 2026-10-10 (owner, 2026-10-09): three quizzes from the
 // catalog a day, a different kind and a different subject each, scored
-// together and turned in when you choose. The day's three are resolved HERE,
+// together, played back to back as one run (owner, 2026-10-14). The day's three are resolved HERE,
 // on the server, so the 4MB quiz catalog never reaches the browser: the client
 // gets only the titles, labels and sizes it shows.
 
 export const metadata = {
   title: 'Free Daily Quiz Mix: Potluck | Mind Loft',
   description:
-    'A free daily trivia mix: three quizzes, each a different kind and subject. Play any of them, turn it in when you are done, and race the daily leaderboard.',
+    'A free daily trivia mix: three quizzes, each a different kind and subject, played back to back. Finish all three and race the daily leaderboard.',
   alternates: { canonical: '/potluck' },
   openGraph: {
     images: [{ url: '/og/potluck.png', width: 1200, height: 630, alt: 'Potluck, a daily puzzle from Mind Loft' }],
     title: 'Potluck: Three Quizzes a Day',
-    description: 'Three quizzes, three subjects, one score. Turn it in when you are done.',
+    description: 'Three quizzes, three subjects, one run, one score.',
     url: '/potluck', type: 'website', siteName: 'Mind Loft',
   },
   twitter: { images: ['/og/potluck.png'], card: 'summary_large_image', title: 'Potluck: Three Quizzes a Day', description: 'Three quizzes, three subjects, one score.' },
@@ -34,7 +34,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Potluck',
   alternateName: 'Potluck: Daily Quiz Mix', url: `${SITE_URL}/potluck`,
   description:
-    'A free daily trivia game made of three quizzes from the Mind Loft catalog. Every day brings one quiz where you type the answers, one where you match them, and one where you find them on a map or in pictures, each from a different subject. Each quiz is worth 10 points, scaled by how much of it you got, so the day is scored out of 30, and the combined clock breaks ties. Play as many of the three as you like and turn it in when you are done; finishing the third turns it in automatically. Everyone gets the same three each day.',
+    'A free daily trivia game made of three quizzes from the Mind Loft catalog. Every day brings one quiz where you type the answers, one where you match them, and one where you find them on a map or in pictures, each from a different subject. Each quiz is worth 10 points, scaled by how much of it you got, so the day is scored out of 30, and the combined clock breaks ties. The three are served back to back in one run, and finishing the third turns the day in automatically. Everyone gets the same three each day.',
   genre: ['Trivia', 'Quiz'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },

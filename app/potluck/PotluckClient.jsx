@@ -5,14 +5,16 @@
 // Three quizzes from the catalog a day, picked by scripts/gen-potluck.mjs so
 // the three are always a different KIND (one to type, one to match, one to
 // spot on a map or in pictures) and a different SUBJECT. This page is the
-// table they sit on: it lists the three, sends the player to each one's own
-// page (/quiz/<id>?potluck=<num>&i=<slot>, where QuizClient plays it as it
-// always does and reports back through lib/potluck.js), and scores the day.
+// start gate and the end card: it does NOT list the three up front.
 //
-// TURN IT IN (owner): nobody has to play all three. Each quiz is worth 10,
-// scaled by how much of it you got; anything you skip counts zero; the Turn it
-// in button posts the day whenever you are done, and finishing the third
-// turns it in on its own. One row, posted once, on the ordinary daily board.
+// ONE RUN, NO MENU (owner, 2026-10-14; supersedes the 2026-10-09 "play any,
+// turn it in when you like" design). Start sends the player into quiz 1 at
+// /quiz/<id>?potluck=<num>&i=<slot>; QuizClient plays it as it always does,
+// records it through lib/potluck.js, and hands straight on to the next slot.
+// The third finish turns the day in and lands back here on the end card. There
+// is no Turn it in button and no per-quiz Play button. A player who leaves
+// mid-run comes back to a Continue button that resumes the next unplayed slot,
+// still without naming it. One row, posted once, on the ordinary daily board.
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -44,7 +46,7 @@ import { withRef } from '@/lib/referrals';
 import { notifyShareCredit } from '../ShareCreditPop';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
-import { loadRun, startRun, turnInPotluck, potluckScore, etToday, PER_QUIZ, POT_TOTAL } from '@/lib/potluck';
+import { loadRun, startRun, potluckScore, potluckNextSlot, potluckSlotHref, etToday, PER_QUIZ, POT_TOTAL } from '@/lib/potluck';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const HELP_KEY = 'sot_potluck_help_seen';
@@ -84,7 +86,6 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
   const [showHelp, setShowHelp] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [confirm, setConfirm] = useState(false);
   const [countdown, setCountdown] = useState('');
   const [identity, setIdentity] = useState(null);
   const [stats, setStats] = useState(null);
@@ -157,17 +158,14 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
   const todayNum = (puzzles[puzzles.length - 1] || day).num;
   const streak = useMemo(() => streakOf(stats, todayNum), [stats, todayNum]);
 
-  function openQuiz(i) {
-    if (turnedIn || cur.done[i]) return;
-    startRun(day);
+  // Start and Continue are the same control: into the next unplayed slot.
+  function goRun() {
+    if (turnedIn) return;
+    const r = startRun(day);
+    const i = potluckNextSlot(day, r);
+    if (i == null) return;
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
-    window.location.href = `/quiz/${encodeURIComponent(quizzes[i].id)}?potluck=${day.num}&i=${i}`;
-  }
-  function turnIn() {
-    const r = turnInPotluck(day);
-    setRun({ ...r });
-    setStats(getStats());
-    setConfirm(false);
+    window.location.href = potluckSlotHref(day, i);
   }
 
   function shareUrl() { return withRef(`mindloftdaily.com/potluck${isTodays ? '' : `?p=${day.num}`}`); }
@@ -190,12 +188,12 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
   const rulesBody = (
     <DailyRules
       accent={ACCENT} accentSoft="#fff1e8"
-      lead="Three quizzes, three subjects, one score."
+      lead="Three quizzes, back to back, one score."
       steps={[
         <>Every day brings <b>three quizzes</b> from the Mind Loft catalog: one where you <b>type</b> the answers, one where you <b>match</b> them, and one where you <b>spot</b> them on a map or in pictures. Each is from a different subject.</>,
-        <>Play them in <b>any order</b>. Each runs on its own clock, and when it ends you come straight back here.</>,
-        <>Each quiz is worth <b>10 points</b>, scaled by how much of it you got, so the day is out of <b>30</b>. A quiz you skip counts zero.</>,
-        <>Press <b>Turn it in</b> whenever you are done. Finishing the third turns it in for you. Your first turn-in is the one the board keeps.</>,
+        <>Press <b>Start</b> and the three play <b>back to back</b>. You will not see them until each one opens. Each runs on its own clock, and when one ends the next one is served.</>,
+        <>Each quiz is worth <b>10 points</b>, scaled by how much of it you got, so the day is out of <b>30</b>.</>,
+        <>Finish the third and your Potluck is <b>turned in</b> on its own, straight to the end card. Your first run is the one the board keeps.</>,
       ]}
       knack="The three are worth the same however long they are, so a short quiz you nail counts as much as a long one."
       footer="Everyone gets the same three each day. Ties on the daily board break by the three quizzes' clocks added together."
@@ -205,7 +203,6 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
   const card = (q, i) => {
     const r = cur.done[i];
     const pts = r && r.t ? Math.round((PER_QUIZ * r.s) / r.t) : null;
-    const open = !r && !turnedIn;
     return (
       <div key={q.id} className="pl-card" style={{ background: SURF, border: `1px solid ${r ? GOOD : LINE}`, borderRadius: 12, padding: '14px 15px', display: 'flex', flexDirection: 'column', gap: 6 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -222,15 +219,10 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
             </>
           ) : turnedIn ? (
             <>
-              <span style={{ fontSize: 13, fontWeight: 700, color: FADED }}>Skipped · 0 pts</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: FADED }}>Not played · 0 pts</span>
               <a href={`/quiz/${encodeURIComponent(q.id)}`} style={{ fontSize: 13, fontWeight: 800, color: ACC_INK }}>Play it anyway &rarr;</a>
             </>
-          ) : (
-            <>
-              <span style={{ fontSize: 12.5, fontWeight: 700, color: FADED }}>Worth 10</span>
-              <button type="button" className="pl-btn" onClick={() => openQuiz(i)} disabled={!open} style={{ background: ACC, borderColor: ACC, color: ON_ACC }}>Play</button>
-            </>
-          )}
+          ) : null}
         </div>
       </div>
     );
@@ -274,29 +266,45 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
             <div className={LOFT && !STAGE && !playing ? 'loft-flip-in' : undefined}>
             <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
               <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? 'transparent' : T.white, border: STAGE ? 'none' : `2px solid ${T.ink}`, borderRadius: 12, padding: STAGE ? 0 : 14 }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: INK }}>
-                    {turnedIn ? <>Turned in: <span style={{ color: ACC_INK }}>{score} of {total}</span></> : started ? 'Today’s three. Play any, in any order.' : 'Today’s three quizzes'}
-                  </div>
-                  {!started && !turnedIn && (
-                    <button type="button" onClick={() => setShowHelp(true)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>How it works</button>
-                  )}
-                </div>
-                <div className="pl-grid">{quizzes.map(card)}</div>
-                {!turnedIn && (
-                  <div style={{ marginTop: 14, padding: '12px 14px', borderRadius: 10, background: CELL, border: `1px solid ${LINE}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: FADED }}>
-                      {doneCount === 0 ? 'Each quiz is worth 10. Skip one and it counts zero.' : `${score} points so far from ${doneCount} of 3. Done for the day?`}
-                    </span>
-                    {confirm ? (
-                      <span style={{ display: 'inline-flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: 13, fontWeight: 800, color: INK }}>Turn in {score} of {total}? The skipped {3 - doneCount === 1 ? 'quiz counts' : 'quizzes count'} zero.</span>
-                        <button type="button" className="pl-btn" onClick={turnIn} style={{ background: ACC, borderColor: ACC, color: ON_ACC }}>Yes, turn it in</button>
-                        <button type="button" onClick={() => setConfirm(false)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>Keep playing</button>
-                      </span>
-                    ) : (
-                      <button type="button" className="pl-btn" disabled={!hydrated || doneCount === 0} onClick={() => setConfirm(true)} style={{ background: 'transparent', borderColor: ACC, color: ACC_INK }}>Turn it in</button>
-                    )}
+                {turnedIn ? (
+                  <>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: INK, marginBottom: 12 }}>
+                      Turned in: <span style={{ color: ACC_INK }}>{score} of {total}</span>
+                    </div>
+                    <div className="pl-grid">{quizzes.map(card)}</div>
+                  </>
+                ) : (
+                  <div style={{ padding: '6px 4px 4px' }}>
+                    <div style={{ fontSize: 10.5, letterSpacing: '0.13em', textTransform: 'uppercase', fontWeight: 800, color: ACC_INK, marginBottom: 6 }}>
+                      {started ? `Quiz ${Math.min(doneCount + 1, quizzes.length)} of ${quizzes.length} is next` : `${quizzes.length} quizzes, back to back`}
+                    </div>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: INK, lineHeight: 1.25, marginBottom: 8 }}>
+                      {started ? 'Your Potluck is under way.' : 'Three quizzes, three subjects, one run.'}
+                    </div>
+                    <p style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 600, color: FADED, lineHeight: 1.55, maxWidth: 560 }}>
+                      {started
+                        ? `${score} of ${total} points banked so far. Pick up where you left off; the rest are served one after another.`
+                        : 'One to type, one to match, one to spot. You see each quiz when it opens, and the next one is served when it ends. Each is worth 10, scaled by how much of it you got.'}
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }} aria-label={`${doneCount} of ${quizzes.length} played`}>
+                      {quizzes.map((q, i) => {
+                        const r = cur.done[i];
+                        const pts = r && r.t ? Math.round((PER_QUIZ * r.s) / r.t) : null;
+                        return (
+                          <span key={i} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: 54, height: 30, padding: '0 10px', borderRadius: 8, fontSize: 12.5, fontWeight: 800, background: r ? GOOD : CELL, color: r ? ON_ACC : FADED, border: `1px solid ${r ? GOOD : LINE}` }}>
+                            {r ? `${pts} pts` : `Quiz ${i + 1}`}
+                          </span>
+                        );
+                      })}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                      <button type="button" className="pl-btn" disabled={!hydrated} onClick={goRun} style={{ background: ACC, borderColor: ACC, color: ON_ACC, padding: '10px 26px', fontSize: 15 }}>
+                        {started ? `Continue to quiz ${Math.min(doneCount + 1, quizzes.length)}` : 'Start'}
+                      </button>
+                      <div>
+                        <button type="button" onClick={() => setShowHelp(true)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>How it works</button>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -383,10 +391,10 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
       <section style={{ position: 'relative', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, color: INK }}>About Potluck</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Potluck is a free daily trivia mix from Mind Loft. Every day it sets out three quizzes from the catalog, one where you type the answers, one where you match them, and one where you find them on a map or in pictures, each from a different subject, so no two days taste the same.
+          Potluck is a free daily trivia mix from Mind Loft. Every day it serves three quizzes from the catalog back to back, one where you type the answers, one where you match them, and one where you find them on a map or in pictures, each from a different subject, so no two days taste the same.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Each quiz is worth 10 points, scaled by how much of it you got, so a short quiz counts as much as a long one and the day is scored out of 30. Play as many as you like, then turn it in; a quiz you skip counts zero, and finishing all three turns it in for you. Everyone gets the same three, and the daily leaderboard breaks ties on the three clocks added together.
+          Each quiz is worth 10 points, scaled by how much of it you got, so a short quiz counts as much as a long one and the day is scored out of 30. Press Start and the three play one after another; finishing the third turns your day in and shows your result. Everyone gets the same three, and the daily leaderboard breaks ties on the three clocks added together.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new three every day at midnight Eastern. No app, no signup. More trivia: <a href="/streak" style={{ color: INK, fontWeight: 800 }}>Streak</a>, <a href="/deep" style={{ color: INK, fontWeight: 800 }}>Deep</a> and <a href="/atlas" style={{ color: INK, fontWeight: 800 }}>Atlas</a>.

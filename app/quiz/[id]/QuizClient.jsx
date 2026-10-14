@@ -11,7 +11,7 @@ import RegisterRankLine from './RegisterRankLine';
 import { QUIZZES, getQuiz } from '@/lib/quizzes';
 import { getChallenge, challengeQuizIds } from '@/lib/challenges';
 import { PUZZLES as POTLUCK_DAYS } from '@/app/potluck/puzzles';
-import { recordPotluck, etToday as potToday } from '@/lib/potluck';
+import { recordPotluck, potluckNextSlot, potluckSlotHref, etToday as potToday } from '@/lib/potluck';
 import { quizDept as deptOf, DEPT_LABEL } from '@/lib/quiz-departments';
 import Grain from '../../Grain';
 import Footer from '../../Footer';
@@ -426,7 +426,9 @@ export default function QuizClient({ quizId }) {
   // ── Potluck context (?potluck=<num>&i=<slot>, owner 2026-10-09) ──
   // The quiz plays exactly as it always does; on finish its score and clock
   // are recorded into that Potluck day (lib/potluck.js, write-once per slot)
-  // and the player is sent back to /potluck. Active only when the day exists
+  // and the player is handed straight on to the next unplayed slot; the last
+  // one turns the day in and lands on /potluck's end card (owner, 2026-10-14:
+  // one forced run, never back to a menu between quizzes). Active only when the day exists
   // and this quiz is the one in that slot, so a stray link changes nothing.
   const potNumRaw = searchParams ? searchParams.get('potluck') : null;
   const potIRaw = searchParams ? searchParams.get('i') : null;
@@ -651,9 +653,11 @@ export default function QuizClient({ quizId }) {
   const potWroteRef = useRef(false);
   const [potCountdown, setPotCountdown] = useState(null);
   const [potTurnedIn, setPotTurnedIn] = useState(false);
+  const [potNext, setPotNext] = useState(null); // slot index served next, or null = end card
+  const potTarget = potActive && potNext != null ? potluckSlotHref(potDay, potNext) : potHome;
   useEffect(() => {
     if (potCountdown == null || !potActive) return undefined;
-    if (potCountdown <= 0) { router.push(potHome); return undefined; }
+    if (potCountdown <= 0) { router.push(potTarget); return undefined; }
     const t = setTimeout(() => setPotCountdown((c) => (c == null ? c : c - 1)), 1000);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -877,8 +881,9 @@ export default function QuizClient({ quizId }) {
       try {
         const r = recordPotluck(potDay, potI, { s: finalScore, t: total, e: elapsed });
         setPotTurnedIn(!!(r && r.turnedIn));
+        setPotNext(r && !r.turnedIn ? potluckNextSlot(potDay, r) : null);
       } catch (e) { /* storage unavailable: the hub still shows the quiz as open */ }
-      setPotCountdown(7);
+      setPotCountdown(5);
     }
     setStats(recordResult(quizId, finalScore));
     setHint(win ? `Perfect — all ${total} named in ${fmtTime(elapsed)}!` : (quiz.strike ? `Struck out — ${finalScore}/${total} before the miss.` : `Time! You got ${finalScore}/${total}.`));
@@ -1745,15 +1750,16 @@ export default function QuizClient({ quizId }) {
               {ended ? (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED }}>
-                    {potTurnedIn ? 'All three in. Your Potluck is turned in.' : 'Banked.'}{potCountdown != null && potCountdown > 0 ? ` Back in ${potCountdown}…` : ''}
+                    {potNext != null ? 'Banked.' : 'All three in.'}{potCountdown != null && potCountdown > 0 ? (potNext != null ? ` Quiz ${potNext + 1} in ${potCountdown}…` : ` Your result in ${potCountdown}…`) : ''}
                   </span>
-                  {potCountdown != null && potCountdown > 0 && (
-                    <button type="button" onClick={() => setPotCountdown(null)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>Stay here</button>
-                  )}
-                  <a href={potHome} style={{ fontFamily: SANS, fontSize: 13, fontWeight: 800, padding: '7px 13px', borderRadius: 8, background: 'var(--stg-acc,#c2410c)', color: 'var(--stg-onramp,#fff)', textDecoration: 'none' }}>Back to Potluck</a>
+                  <a href={potTarget} style={{ fontFamily: SANS, fontSize: 13, fontWeight: 800, padding: '7px 13px', borderRadius: 8, background: 'var(--stg-acc,#c2410c)', color: 'var(--stg-onramp,#fff)', textDecoration: 'none' }}>{potNext != null ? `Next quiz` : 'See your Potluck'}</a>
                 </span>
               ) : (
-                <a href={potHome} style={{ fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>Back to Potluck</a>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  {potDay.quizzes.map((_, k) => (
+                    <span key={k} style={{ width: 9, height: 9, borderRadius: '50%', boxSizing: 'border-box', background: k < potI ? 'var(--stg-acc,#c2410c)' : 'transparent', border: k === potI ? '2.5px solid var(--stg-acc,#c2410c)' : '1.5px solid var(--stg-acc,#c2410c)' }} />
+                  ))}
+                </span>
               )}
             </div>
           )}
