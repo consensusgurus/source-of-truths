@@ -66,7 +66,7 @@ function identityQs() {
 // The main page's cap and index rules, copied from app/today/StageToday.jsx
 // (desktop only) so the two read identically. Keep them in step.
 const CSS = `
-html.lc-on .lc-host{padding:var(--lc-hh,62px) 330px 0 232px !important;box-sizing:border-box;min-height:100vh;}
+html.lc-on .lc-host{padding:var(--lc-hh,62px) 330px 0 260px !important;box-sizing:border-box;min-height:100vh;}
 html.lc-on.lc-focus .lc-host{padding:0 !important;}
 html.lc-on .lc-host .stg-cap,html.lc-on .lc-host .stg-strip,html.lc-on .lc-host .stg-prog{display:none !important;}
 /* The phone's rankings panel shares the leaderboard preference with this
@@ -112,15 +112,19 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:240px;}
 .lc-cap .sty-tg{display:inline-flex;align-items:center;justify-content:center;padding:6px 9px;background:none;cursor:pointer;font:inherit;}
 @media (max-width:1400px){ .lc-cap .sty-date{display:none;} }
 
-.lc-nav{position:fixed;top:var(--lc-hh,62px);left:0;bottom:0;width:232px;z-index:80;overflow-y:auto;padding:14px 10px 24px;
-  background:var(--stg-ground);border-right:1px solid var(--stg-line);
+/* NO RULES BETWEEN THE COLUMNS (owner, 2026-10-14): the home draws none, so a
+   game page draws none either. The index sits exactly where the home's does:
+   22px in, 26px under the cap, 212px wide, 26px to the content. The list is a
+   fixed 212 so a scrollbar takes the gutter, never the buttons. */
+.lc-nav{position:fixed;top:var(--lc-hh,62px);left:0;bottom:0;width:260px;z-index:80;overflow-y:auto;overflow-x:hidden;padding:26px 0 24px 22px;
+  background:var(--stg-ground);
   scrollbar-width:thin;scrollbar-color:transparent transparent;}
 .lc-nav:hover{scrollbar-color:var(--stg-line) transparent;}
 .lc-nav::-webkit-scrollbar{width:6px;}
 .lc-nav::-webkit-scrollbar-track{background:transparent;}
 .lc-nav::-webkit-scrollbar-thumb{background:transparent;border-radius:6px;}
 .lc-nav:hover::-webkit-scrollbar-thumb{background:var(--stg-line);}
-.lc-nav .sty-ixn{display:flex;flex-direction:column;gap:2px;}
+.lc-nav .sty-ixn{display:flex;flex-direction:column;gap:2px;width:212px;}
 .lc-nav .sty-ixb{display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:center;gap:10px;border:0;
   background:none;border-radius:8px;padding:8px 10px;font:inherit;font-size:13.5px;font-weight:700;
   color:var(--stg-ink2);text-align:left;cursor:pointer;text-decoration:none;}
@@ -141,9 +145,11 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:240px;}
 .lc-nav button.sty-ixb{width:100%;}
 
 .lc-side{position:fixed;top:var(--lc-hh,62px);right:0;bottom:0;width:330px;z-index:80;display:flex;flex-direction:column;
-  background:var(--stg-ground);border-left:1px solid var(--stg-line);}
-.lc-tabs{display:flex;border-bottom:1px solid var(--stg-line);padding:0 8px;flex:none;}
-.lc-tab{flex:1;height:40px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--stg-mute);font:700 12.5px Manrope,system-ui,sans-serif;cursor:pointer;}
+  background:var(--stg-ground);}
+/* The tab bar is exactly as tall as the game's subheader (.stg-fg, measured
+   into --lc-fgh), so its rule and the subheader's are one line. */
+.lc-tabs{display:flex;border-bottom:1px solid var(--stg-line);padding:0 8px;flex:none;height:var(--lc-fgh,41px);}
+.lc-tab{flex:1;height:100%;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--stg-mute);font:700 12.5px Manrope,system-ui,sans-serif;cursor:pointer;}
 .lc-tab.on{color:var(--stg-ink);border-bottom-color:var(--stg-acc);}
 .lc-body{flex:1;overflow-y:auto;padding:16px 20px;font-size:13px;scrollbar-width:thin;scrollbar-color:transparent transparent;}
 .lc-body:hover{scrollbar-color:var(--stg-line) transparent;}
@@ -279,6 +285,25 @@ export default function LayoutCInner({ gameKey }) {
   }, [game, flag]);
 
   useEffect(() => { document.documentElement.classList.toggle('lc-focus', focus); }, [focus]);
+
+  // The subheader's bottom edge, measured, so the right panel's tab bar ends on
+  // the same line. Its height varies by game (some carry more figures), so this
+  // is never a constant. Read in document space so a scrolled page measures right.
+  useEffect(() => {
+    if (!fgEl || typeof ResizeObserver === 'undefined') return undefined;
+    const root = document.documentElement;
+    const set = () => {
+      const hh = parseFloat(getComputedStyle(root).getPropertyValue('--lc-hh')) || 62;
+      const h = Math.round(fgEl.getBoundingClientRect().bottom + window.scrollY - hh);
+      if (h > 20 && h < 200) root.style.setProperty('--lc-fgh', h + 'px');
+      else root.style.removeProperty('--lc-fgh');
+    };
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(fgEl);
+    if (capRef.current) ro.observe(capRef.current);
+    return () => { ro.disconnect(); root.style.removeProperty('--lc-fgh'); };
+  }, [fgEl]);
 
   // The cap's real height drives the padding and the side columns' top.
   useEffect(() => {
