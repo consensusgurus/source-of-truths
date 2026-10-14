@@ -34,7 +34,7 @@ import StageFooter from '../StageFooter';
 const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 const SANS = 'Manrope, ui-sans-serif, system-ui, -apple-system, sans-serif';
 
-export default function CircuitFrame({ cat = null, label = 'Circuits', progress = null, children }) {
+export default function CircuitFrame({ cat = null, label = 'Circuits', progress = null, wide = false, children }) {
   const [theme, setTheme] = useStageTheme();
   const tq = useThemeQs();
   const hint = useThemeHint();
@@ -114,7 +114,7 @@ export default function CircuitFrame({ cat = null, label = 'Circuits', progress 
         <span style={{ width: `${Math.max(0, Math.min(1, progress || 0)) * 100}%` }} />
       </div>
 
-      <div className="cfr-wrap">{children}</div>
+      <div className={wide ? 'cfr-wrap cfr-wide' : 'cfr-wrap'}>{children}</div>
 
       <StageFooter />
     </div>
@@ -167,6 +167,9 @@ const CSS = `
 /* The circuit pages are a COLUMN of prose and cards, not a board of tiles, so
    unlike the home they keep a reading measure rather than filling the window. */
 .cfr-wrap{max-width:1000px;margin:0 auto;padding:26px 22px 72px;}
+/* The puzzle category pages (app/puzzle-category) carry a ledger of games
+   beside a day board, so they take the wider measure. */
+.cfr-wide{max-width:1240px;}
 
 @media (max-width:640px){
   /* TWO DELIBERATE ROWS, not three accidental ones: row one is what this page
