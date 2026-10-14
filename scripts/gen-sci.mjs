@@ -16,7 +16,7 @@
 // is byte-identical.
 //
 // CREATE, THEN APPEND. When app/sci/questions.js does not exist the script
-// writes both files from scratch, day 1 live on FIRST_LIVE (2026-10-15). Once
+// writes both files from scratch, day 1 live on FIRST_LIVE (2026-10-14). Once
 // the bank exists THE PAST IS FROZEN (CLAUDE.md authoring standard rule 10):
 // the script reads the two files as text, keeps every byte up to the closing
 // bracket of each array, and splices the new days in before it, asserting
@@ -82,7 +82,7 @@ const LANE_FILE = {
   'Inventions': 'sci-inventions.mjs',
 };
 // Day 1 of a bank this script creates. Ignored once the bank exists.
-const FIRST_LIVE = '2026-10-15';
+const FIRST_LIVE = '2026-10-14';
 const QUIZ_PREFIX = 'sci';
 const PER_TIER = SUBJECTS.length;   // 5
 const TOTAL_Q = PER_TIER * 5;       // 25

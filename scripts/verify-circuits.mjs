@@ -277,7 +277,7 @@ for (const c of CIRCUITS) {
 const SPLIT_POOL = ['atlas', 'sci', 'sport', 'art', 'script', 'history', 'biz', 'quotes'];
 const SPLIT_FROM = '2026-10-15';
 function splitLocal(c, iso) {
-  if (c.split === 'out' && iso < SPLIT_FROM) return [];
+  if (c.split === 'out' && iso < SPLIT_FROM) return iso === '2026-10-14' ? ['sci', 'art', 'history'] : [];
   if (c.split === 'in' && iso < SPLIT_FROM) return c.before.keys.slice();
   const days = Math.round((Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) - Date.UTC(2026, 9, 15)) / 86400000);
   const live = SPLIT_POOL.filter((k) => DAILY_GAME_MAP[k] && !(RETIRED_DAILY[k] && RETIRED_DAILY[k] <= iso));
@@ -307,7 +307,8 @@ function splitLocal(c, iso) {
       for (const k of gk) if (k in inCt) inCt[k] += 1;
     }
     for (const [k, v] of Object.entries(inCt)) if (v !== 5) fails.push(`${k}: in the Gauntlet ${v} of 8 days, expected 5`);
-    if (circuitKeysFor(e.id, '2026-10-14').length) fails.push(`${e.id}: plays before the split began`);
+    if (circuitKeysFor(e.id, '2026-10-13').length) fails.push(`${e.id}: plays before it launched`);
+    if ([...circuitKeysFor(e.id, '2026-10-14')].sort().join() !== 'art,history,sci') fails.push(`${e.id}: launch day is not Sci, Art and History`);
   }
 }
 

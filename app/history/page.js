@@ -8,7 +8,7 @@ import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
 import { categoryCrumb } from '@/lib/game-seo';
 
-// History launches 2026-10-15. Twenty-five history questions a day in five
+// History launches 2026-10-14. Twenty-five history questions a day in five
 // tiers of five, one life, twenty seconds a question. The question bank is resolved
 // HERE, on the server, and only the picked day's twenty-five ship to the
 // browser, so the rest of the bank never reaches a client.

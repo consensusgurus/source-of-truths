@@ -9286,13 +9286,13 @@ finished by line sums and the rack count alone; the rest needed trial and error.
 - **Scoring did not change**: 10 minus one point per two moves over the fewest, ties on extra
   moves then time. The hint fills the next square the human solver settles.
 
-## Sci, Art, History and the Trivia Encore (launched 2026-10-15)
+## Sci, Art, History and the Trivia Encore (launched 2026-10-14)
 
 Three new trivia gauntlets on Biz's shape (25 questions, five tiers of five, one life, twenty
 seconds, `miss: 'Asked'`, no Sunday Edition): **Sci** (`/sci`: Human Body, Space, Chemistry &
 Physics, Life Science, Inventions), **Art** (`/art`: Art, Music, Books, Architecture & Design,
 Food & Drink) and **History** (`/history`: Ancient World, Middle Ages, Empires & Revolutions,
-War & Conflict, Modern Era). Banks 2026-10-15 to 2026-12-01 from `scripts/<key>-lanes/`,
+War & Conflict, Modern Era). Banks 2026-10-14 to 2026-11-30 from `scripts/<key>-lanes/`,
 built by `scripts/gen-<key>.mjs` (append-only, `--check`), verified by `scripts/verify-<key>.mjs`.
 Wired by `scripts/wire-sci-art-history.mjs`. Every lane was written against
 `scripts/trivia-lane-check.mjs`, which fails dashes, British spelling, self-answering stems and
@@ -9311,7 +9311,8 @@ both, the pair covering the pool, and five-in-eight fairness.
 
 **THE TRIVIA ENCORE** (circuit `triviaencore`, served at `/triviaencore` by a rewrite like
 `/trivia`; never create `app/triviaencore/page.js`) is the three banks that sat out the day's
-Gauntlet, played on the same run page and RunClient with the towers layout. Its own board,
+Gauntlet (on launch day, 2026-10-14, the Encore's `before` dealt Sci, Art and History while the
+Gauntlet kept its old seven), played on the same run page and RunClient with the towers layout. Its own board,
 `score: 'correct'`, trophy "Curtain Call" (bronze). Its rankings panel and end-card board carry a
 **combined Gauntlet + Encore** figure per player (joined by userKey from a second
 `useCircuitBoard('gauntlet')` read), sorted on the Encore by default with a switch to sort on the

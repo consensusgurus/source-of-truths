@@ -47,7 +47,7 @@ import { checkRecycled } from './trivia-recycle.mjs';
 
 // The first live date the US-spelling screen and the answer-reuse ceiling
 // apply to: day 1, the launch.
-const ART_COPY_FROM = '2026-10-15';
+const ART_COPY_FROM = '2026-10-14';
 // No answer may be correct more than this many times at or after the floor.
 const ANSWER_CAP = 4;
 // Proper names that keep their own spelling; skipped verbatim by the screen
