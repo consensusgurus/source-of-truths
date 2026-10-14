@@ -86,6 +86,10 @@ const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_shards_help_seen';
 const STATS_KEY = 'sot_shards_stats';
 // Per-shard tray/board tints (spoiler-free, purely to tell pieces apart).
+// Letter ink on a piece filled with its region hue. On the stage the hue is a
+// light pastel on the dark register (--stg-dk 100%) and a deep twin on the light
+// one, so white letters only work on the light register. Flip on the same token.
+const PC_INK = 'color-mix(in srgb, #0b0f1a var(--stg-dk, 100%), #ffffff)';
 const SHARD_TINTS = ['#0d9488', '#7c3aed', '#d97706', T.blue, T.danger, T.successDeep, '#c026d3', '#0e7490', '#b45309', '#4338ca'];
 
 const isIosDevice = () =>
@@ -921,7 +925,8 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
           .sh-piece:active{cursor:grabbing;}
           .sh-piece.dragging{opacity:0.3;}
           .sh-piece.armed{outline:3px solid var(--stg-acc, ${COLORS.accent});outline-offset:1px;}
-          .sh-pc{touch-action:none;width:${TRAYCELL}px;height:${TRAYCELL}px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:${Math.round(TRAYCELL * 0.5)}px;border-radius:4px;color:var(--white);}
+          .sh-piece{--sh-pc-ink:${PC_INK};}
+          .sh-pc{touch-action:none;width:${TRAYCELL}px;height:${TRAYCELL}px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:${Math.round(TRAYCELL * 0.5)}px;border-radius:4px;color:${STAGE ? 'var(--sh-pc-ink)' : 'var(--white)'};}
           .sh-pc.empty{background:transparent;}
           .sh-ghost{position:fixed;z-index:200;pointer-events:none;display:grid;gap:2px;opacity:0.92;filter:drop-shadow(0 6px 10px rgba(0,0,0,0.25));}
           .sh-status{font-size:12.5px;font-weight:700;min-height:18px;text-align:center;}
@@ -1233,7 +1238,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
             {Array.from({ length: s.w * s.h }, (_, i) => {
               const dr = Math.floor(i / s.w), dc = i % s.w;
               const o = s.offs.find((x) => x.dr === dr && x.dc === dc);
-              return <div key={i} style={{ gridColumn: dc + 1, gridRow: dr + 1, width: gcell, height: gcell, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: Math.round(gcell * 0.44), color: T.white, background: o ? tint : 'transparent', borderRadius: 4, border: o ? '1px solid rgba(0,0,0,0.15)' : 'none' }}>{o ? o.ch : ''}</div>;
+              return <div key={i} style={{ gridColumn: dc + 1, gridRow: dr + 1, width: gcell, height: gcell, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: Math.round(gcell * 0.44), color: STAGE ? PC_INK : T.white, background: o ? tint : 'transparent', borderRadius: 4, border: o ? '1px solid rgba(0,0,0,0.15)' : 'none' }}>{o ? o.ch : ''}</div>;
             })}
           </div>
         );
