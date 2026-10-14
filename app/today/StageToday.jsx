@@ -157,7 +157,7 @@ const AZ_KEY = 'sot_stage_az';
 // same way; this repeats it because the home's sort has to interleave that
 // lead with the reader's own progress, which that module knows nothing about.
 // On a phone the shelf's peek is exactly these three (CIRC_PEEK_NARROW).
-const CIRC_LEAD = ['pricecheck', 'gauntlet', 'passport', 'deduction', 'dojo', 'room'];   // owner, 2026-10-03: Passport replaces the Daily Five; 2026-10-08: Judged fourth
+const CIRC_LEAD = ['pricecheck', 'gauntlet', 'triviaencore', 'passport', 'deduction', 'dojo', 'room'];   // owner, 2026-10-03: Passport replaces the Daily Five; 2026-10-08: Judged fourth
 
 // THE NEWCOMER'S ROW (owner, 2026-09-04). A reader with NO footprint at all gets
 // one row above everything else: two circuits sharing a line, then the busiest
@@ -342,7 +342,8 @@ const TILES_KEY = 'sot_home_tiles';
 // homes in PILL_EXTRA (Passport is a geography game the owner also files under
 // Trivia). All Puzzles shows all five.
 // Math Gauntlet restored beside the Trivia Gauntlet (owner, 2026-10-13 evening).
-const PILL_CIRCUITS = ['gauntlet', 'math', 'pricecheck', 'passport', 'deduction', 'dojo', 'room'];
+// Trivia Encore beside the Gauntlet (owner, 2026-10-14).
+const PILL_CIRCUITS = ['gauntlet', 'triviaencore', 'math', 'pricecheck', 'passport', 'deduction', 'dojo', 'room'];
 // CIRCUITS-PANE ONLY (owner, 2026-10-13): the Valet Gauntlet is less developed,
 // so it is never offered on the main page (pills, phone runs, the shelf peek);
 // it shows only when the reader opens Circuits, or has starred it.
@@ -2455,7 +2456,7 @@ export default function StageToday() {
   // icon. Runs are one piece, so nothing here shows how far into one you are:
   // a run reads as players today until you finish it, then as your place on
   // the site board and in your group.
-  const RUN_SHORT = { gauntlet: 'Trivia', pricecheck: 'Prices', passport: 'Passport', math: 'Math', deduction: 'Judged', dojo: 'Dojo', room: 'Room' };
+  const RUN_SHORT = { gauntlet: 'Trivia', triviaencore: 'Encore', pricecheck: 'Prices', passport: 'Passport', math: 'Math', deduction: 'Judged', dojo: 'Dojo', room: 'Room' };
   const runFull = (c) => c.games.length > 0 && c.n === c.games.length;
   const fmtN = (n) => Number(n || 0).toLocaleString('en-US');
   const runLook = (c, cat) => {

@@ -33,6 +33,22 @@ const ART = {
       </g>
     </>
   ),
+  // TRIVIA ENCORE (owner, 2026-10-14): a curtained stage with a question card
+  // in the spotlight and three pips for its three quizzes.
+  triviaencore: (
+    <>
+      <path d="M40 14 H200" strokeWidth="4" />
+      <path d="M44 16 C54 40 52 70 60 96 M52 16 C60 44 66 66 74 80 C66 84 60 90 60 96" {...T} />
+      <path d="M196 16 C186 40 188 70 180 96 M188 16 C180 44 174 66 166 80 C174 84 180 90 180 96" {...T} />
+      <path d="M74 80 L98 22 M166 80 L142 22" strokeWidth="1.5" opacity=".35" />
+      <rect className="k" x="98" y="34" width="44" height="54" rx="6" />
+      <text x="120" y="72" fontSize="30" {...TX}>?</text>
+      <path d="M36 98 H204" strokeWidth="3" />
+      <g stroke="none" fill="currentColor">
+        <circle cx="108" cy="110" r="4" /><circle cx="120" cy="110" r="4" /><circle cx="132" cy="110" r="4" />
+      </g>
+    </>
+  ),
   // MATH GAUNTLET (owner, 2026-10-13): a flash card, the bolt of the trophy
   // (Human Calculator), the operators, and five pips for its five games.
   math: (

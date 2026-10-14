@@ -9324,3 +9324,7 @@ end card leads with a "Take the Trivia Encore" door. The more-runs and more-triv
 (`MoreRunsPop`, `MoreRunsList`, `GauntletMorePop`) now show on the ENCORE's finish instead; on the
 Gauntlet they only show when there is no Encore left to offer (`afterCards` in RunClient).
 `?encore=preview` forces the pop-up for review.
+The Encore shows everywhere the other runs do (owner, 2026-10-14): `SHOWN` and `LEAD_ORDER` in
+lib/circuits.js, `CIRC_LEAD`, `PILL_CIRCUITS` and `RUN_SHORT` ('Encore') in StageToday,
+`LEAD_CIRCUITS` in TodayClient, its card drawing in app/CircuitArt.jsx, and a second CTA on the
+Trivia category page through `alsoCircuit` in lib/puzzle-categories.js.

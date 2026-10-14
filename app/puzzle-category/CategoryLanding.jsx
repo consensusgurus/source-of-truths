@@ -74,6 +74,7 @@ export default function CategoryLanding({ page, games, parent = null, groups = n
           <div className="pcl-acts">
             {first ? <a className="pcl-go" href={withTq(first.href)}>Play today&apos;s {first.name} <ArrowRight size={15} strokeWidth={2.6} /></a> : null}
             {circuit ? <a className="pcl-sh" href={withTq(circuitPageHref(circuit))}>{circuitCta}</a> : null}
+            {page.alsoCircuit ? <a className="pcl-sh" href={withTq(circuitPageHref(page.alsoCircuit))}>{`Run the ${circuitName(page.alsoCircuit)}`}</a> : null}
           </div>
           <div className="pcl-figs">
             <div><b>{games.length}</b><i>{games.length === 1 ? 'game' : 'games'}</i></div>
