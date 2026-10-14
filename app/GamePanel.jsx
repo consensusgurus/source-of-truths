@@ -49,6 +49,7 @@ import { fetchDayStatus, etToday } from './useDayStats';
 // EVERYONE / <group> on the Today board (owner, 2026-09-17).
 import { fetchGroupStanding } from './groups/groupStanding';
 import GroupSwitch, { useGroupScope } from './groups/GroupSwitch';
+import { sharedGet } from './sharedGet';
 
 const OPEN_LABEL = 'See stats, archive, leaderboard, and more';
 const SHUT_LABEL = 'Hide stats, archive, leaderboard, and more';
@@ -101,8 +102,7 @@ export default function GamePanel({ self, name = null, onShow = null }) {
     const qs = new URLSearchParams({ game: key });
     if (anonId) qs.set('anonId', anonId);
     if (email) qs.set('email', email);
-    fetch('/api/quiz/daily-game?' + qs.toString())
-      .then((r) => r.json())
+    sharedGet('/api/quiz/daily-game?' + qs.toString())
       .then((d) => { if (alive && d && !d.error) setData(d); })
       .catch(() => {});
 

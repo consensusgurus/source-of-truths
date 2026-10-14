@@ -9,6 +9,7 @@
 import React, { useState, useEffect } from 'react';
 import { T } from '@/lib/theme';
 import { isRetiredDaily } from '@/lib/daily-games';
+import { sharedGet } from './sharedGet';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 
@@ -157,8 +158,7 @@ export default function DailyGamesPromo({ self, refresh }) {
     if (anonId) qs.set('anonId', anonId);
     if (email) qs.set('email', email);
     let alive = true;
-    fetch('/api/quiz/daily-status?' + qs.toString())
-      .then((r) => r.json())
+    sharedGet('/api/quiz/daily-status?' + qs.toString())
       .then((d) => {
         if (!alive || !d) return;
         const [Y, M, D] = etToday().split('-').map(Number);

@@ -7,6 +7,7 @@ import { fetchDailyMe, dailyMeQuery, invalidateDailyMe } from '../../dailyMeClie
 import useGroupStanding from '../../groups/groupStanding';
 import GroupSwitch, { useGroupScope } from '../../groups/GroupSwitch';
 import { T } from '@/lib/theme';
+import { sharedGet } from '../../sharedGet';
 
 // DailyBoardPanel — the on-page "<player> Stats" section, in the light page
 // theme, placed directly under the Challenge / Share actions on every daily-game
@@ -111,7 +112,11 @@ export default function DailyBoardPanel({
   const [combined, setCombined] = useState(null);  // /api/quiz/daily-me payload
   const [gameData, setGameData] = useState(null);  // /api/quiz/daily-game payload (allTime + drops)
   const [sel, setSel] = useState('today');          // 'today' | 'alltime' | 'archive'
-  const grpData = useGroupStanding('today');
+  // Groups standing waits until the board has loaded (2026-10-14): it is a slow
+  // read for a panel below the game, and the rail on the same page shares it.
+  const [grpOn, setGrpOn] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setGrpOn(true), 2500); return () => clearTimeout(t); }, []);
+  const grpData = useGroupStanding('today', grpOn);
   // Today's puzzle only: an archive puzzle's board has no group version here.
   const grpGroups = grpData && grpData.groups
     ? grpData.groups.filter((g) => !g.failed && (!quizId || !g.quizIds || !g.quizIds[self] || g.quizIds[self] === quizId))
@@ -220,18 +225,19 @@ export default function DailyBoardPanel({
     let anonId = null, email = null;
     try { anonId = localStorage.getItem('sot_quiz_anon'); } catch (e) {}
     try { const id = JSON.parse(localStorage.getItem('sot_quiz_identity') || 'null'); email = id && id.email; } catch (e) {}
-    const qs = new URLSearchParams({ game: self, fresh: '1' });
+    const qs = new URLSearchParams({ game: self });
     if (anonId) qs.set('anonId', anonId);
     if (email) qs.set('email', email);
     let alive = true;
-    const load = () => {
-      fetch('/api/quiz/daily-game?' + qs.toString(), { cache: 'no-store' })
-        .then((r) => r.json())
+    // First read shares the page's daily-game answer (app/sharedGet.js); a read
+    // after a finish goes fresh so the player's own new row is in it.
+    const load = (fresh) => {
+      sharedGet('/api/quiz/daily-game?' + qs.toString() + (fresh ? '&fresh=1' : ''), { fresh })
         .then((d) => { if (alive && d) setGameData(d); })
         .catch(() => {});
     };
-    load();
-    const onUpdated = () => { if (alive) load(); };
+    load(false);
+    const onUpdated = () => { if (alive) load(true); };
     if (typeof window !== 'undefined') window.addEventListener('sot:daily-updated', onUpdated);
     return () => { alive = false; if (typeof window !== 'undefined') window.removeEventListener('sot:daily-updated', onUpdated); };
   }, [self]);

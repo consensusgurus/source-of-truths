@@ -38,7 +38,11 @@ const WINDOW_MS = 50;
 // A late third caller can join an answer that just settled. Kept short because
 // the only thing that changes a player's profile is finishing a game, and every
 // post-game reader passes fresh=1 and bypasses this entirely.
-const TTL_MS = 2500;
+// Raised from 2.5s to 60s (2026-10-14): the profile read takes 3-5s, so later
+// components on the same page were always past a 2.5s window and re-fetched it.
+// Safe because the only thing that changes a profile is finishing a game, which
+// fires one of the events below and clears this, and post-game reads are fresh.
+const TTL_MS = 60 * 1000;
 
 const RANK = { light: 0, history: 1, full: 2 };
 
@@ -89,8 +93,19 @@ function flush(p) {
 
 export function meRequest(url) {
   const req = parse(url);
-  // Post-game reads go straight through, exactly as before.
-  if (req.fresh) return fetch(url);
+  // Post-game reads go straight through, and their answer becomes the shared one
+  // (it is the newest there is).
+  if (req.fresh) {
+    const key = req.anonId + '|' + req.email;
+    settled = null;
+    return fetch(url).then((r) => {
+      if (!r.ok) return r;
+      return r.json().then((data) => {
+        settled = { key, mode: req.mode, at: Date.now(), data };
+        return wrap(data);
+      });
+    });
+  }
 
   const key = req.anonId + '|' + req.email;
 
@@ -123,4 +138,10 @@ export function meRequest(url) {
 // that does not.
 export function invalidateQuizMe() {
   settled = null;
+}
+
+if (typeof window !== 'undefined') {
+  for (const ev of ['sot:daily-updated', 'sot:result-saved', 'sot:loft-finish']) {
+    window.addEventListener(ev, invalidateQuizMe);
+  }
 }

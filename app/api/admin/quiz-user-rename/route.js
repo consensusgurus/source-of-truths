@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/admin-auth';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { dropStoredSnapshots } from '@/lib/results-snapshot-store';
+import { clearIdentityCache } from '@/lib/quiz-identity';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -46,6 +47,7 @@ async function rowsNamed(table, column, name, select) {
 // the rename self-heals on its next full reload (FULL_MS, 6h, in
 // lib/quiz-results-cache.js). A deploy clears it immediately.
 export async function POST(request) {
+  clearIdentityCache();
   if (!isAdmin() && !tokenOk(request)) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }

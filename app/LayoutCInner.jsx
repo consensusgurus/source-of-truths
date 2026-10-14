@@ -37,6 +37,8 @@ import StageLadder from './StageLadder';
 import MindLoftMark from './MindLoftMark';
 import { SNAP_KEY } from '@/lib/home-snapshot';
 import { useRevealPref, REVEAL } from '@/lib/reveal-pref';
+import { sharedGet } from './sharedGet';
+import { meRequest } from './quizMeClient';
 
 const MIN_W = 1100;
 const CAT_FIXED = ['Word', 'Numbers', 'Logic', 'Sudoku', 'Trivia', 'Geography', 'End Game', 'Cards', 'Arcade', 'Crowd Psychology'];
@@ -196,7 +198,11 @@ export default function LayoutCInner({ gameKey }) {
   const [theme, setTheme] = useStageTheme();
   const light = theme === 'light';
   const stats = useDayStats();
-  const grp = useGroupStanding('today', !!host);
+  // Groups standing is a 5-10s server read for a side rail, so it waits until
+  // the board has loaded instead of competing with it (2026-10-14).
+  const [grpOn, setGrpOn] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setGrpOn(true), 2500); return () => clearTimeout(t); }, []);
+  const grp = useGroupStanding('today', !!host && grpOn);
   // THE BOARD TAB IS HIDDEN UNTIL ASKED FOR (owner, 2026-10-13): the same
   // remembered preference the phone's "Show leaderboard" sets, so the two
   // can never disagree. See lib/reveal-pref.js.
@@ -332,9 +338,9 @@ export default function LayoutCInner({ gameKey }) {
     const qs = identityQs();
     const fresh = tick > 0;
     if (qs) {
-      fetch('/api/quiz/daily-status?' + qs).then((r) => r.json())
+      sharedGet('/api/quiz/daily-status?' + qs, { fresh })
         .then((d) => { if (alive && d) setStatusRaw(d); }).catch(() => {});
-      fetch('/api/quiz/me?light=1&' + qs).then((r) => r.json())
+      meRequest('/api/quiz/me?light=1&' + qs + (fresh ? '&fresh=1' : '')).then((r) => r.json())
         .then((d) => { if (alive && d && d.found !== false) setMine(d); }).catch(() => {});
     }
     const { anonId, email } = dailyMeIdentity();
@@ -343,7 +349,7 @@ export default function LayoutCInner({ gameKey }) {
     const gq = new URLSearchParams({ game: game.key });
     if (anonId) gq.set('anonId', anonId);
     if (email) gq.set('email', email);
-    fetch('/api/quiz/daily-game?' + gq.toString()).then((r) => r.json())
+    sharedGet('/api/quiz/daily-game?' + gq.toString(), { fresh })
       .then((d) => { if (alive && d && !d.error) setData(d); }).catch(() => {});
     return () => { alive = false; };
   }, [host, game, tick]);

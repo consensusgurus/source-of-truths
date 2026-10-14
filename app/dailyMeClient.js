@@ -17,13 +17,19 @@
 // still SEEDS the entry, which is what lets the panel and the grid ride along on
 // the request the card was already making.
 
-const TTL_MS = 4000;
+// Raised from 4s to 60s (2026-10-14): this read takes 3-6s, so other
+// components on the page always missed the old window and asked again. Every
+// finish clears it (listener at the foot of this file), and the end card's own
+// reads pass fresh, so a player's result is never hidden.
+const TTL_MS = 60 * 1000;
 // How long a fresh caller may join a fresh request that is STILL IN FLIGHT.
 // Short on purpose: it is meant to catch two components mounting in the same
 // tick, never to serve an answer that predates something written since.
 const JOIN_MS = 400;
 
-let entry = null; // { key, at, promise, fresh, pending }
+// One entry per query, not one in total: a page asks a game-scoped question and
+// an unscoped one, and with a single slot they kept evicting each other.
+const entries = new Map(); // key -> { key, at, promise, fresh, pending }
 
 // The query string every caller should build, so identical questions produce
 // identical keys. `game` scopes the full scoring to one puzzle; without it the
@@ -48,6 +54,7 @@ export function dailyMeIdentity() {
 
 export function fetchDailyMe(qs, { fresh = false } = {}) {
   const now = Date.now();
+  const entry = entries.get(qs) || null;
   // A non-fresh caller joins an identical request from the last few seconds,
   // in flight or just settled. A fresh caller always goes to the origin.
   if (!fresh && entry && entry.key === qs && now - entry.at < TTL_MS) return entry.promise;
@@ -66,11 +73,14 @@ export function fetchDailyMe(qs, { fresh = false } = {}) {
       && now - entry.at < JOIN_MS) return entry.promise;
   const url = '/api/quiz/daily-me?' + qs + (fresh ? `&fresh=1&_=${now}` : '');
   const promise = fetch(url, { cache: 'no-store' }).then((r) => r.json());
-  entry = { key: qs, at: now, promise, fresh, pending: true };
+  const mine = { key: qs, at: now, promise, fresh, pending: true };
+  entries.set(qs, mine);
+  if (entries.size > 20) entries.delete(entries.keys().next().value);
   // Settle the flag either way. The handlers are attached to a DERIVED promise,
   // so a rejection is still delivered to the caller that asked for it and this
   // adds no unhandled rejection of its own.
-  const settle = () => { if (entry && entry.promise === promise) entry.pending = false; };
+  const settle = () => { mine.pending = false; };
+  promise.catch(() => { if (entries.get(qs) === mine) entries.delete(qs); });
   promise.then(settle, settle);
   return promise;
 }
@@ -78,4 +88,10 @@ export function fetchDailyMe(qs, { fresh = false } = {}) {
 // A game finished on this page, so every cached answer is stale by definition.
 // Callers already listen for sot:daily-updated; this makes sure the refetch they
 // then run cannot be served the pre-finish payload.
-export function invalidateDailyMe() { entry = null; }
+export function invalidateDailyMe() { entries.clear(); }
+
+if (typeof window !== 'undefined') {
+  for (const ev of ['sot:daily-updated', 'sot:result-saved', 'sot:loft-finish']) {
+    window.addEventListener(ev, invalidateDailyMe);
+  }
+}

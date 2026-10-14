@@ -14,6 +14,7 @@
 
 import { useEffect, useState } from 'react';
 import { liveDailyKeys } from '@/lib/daily-games';
+import { sharedGet } from './sharedGet';
 
 // Retired games keep scoring their archived days, so they stay in DAILY_KEYS,
 // but they are not on today's board and must never inflate the "x of N today"
@@ -27,9 +28,7 @@ export function etToday() {
   catch (e) { return new Date().toISOString().slice(0, 10); }
 }
 
-let pending = null;
 export function fetchDayStatus() {
-  if (pending) return pending;
   let anonId = null, email = null;
   try { anonId = localStorage.getItem('sot_quiz_anon'); } catch (e) {}
   try { const id = JSON.parse(localStorage.getItem('sot_quiz_identity') || 'null'); email = id && id.email; } catch (e) {}
@@ -38,10 +37,11 @@ export function fetchDayStatus() {
   if (email) qs.set('email', email);
   // No identity at all: there is nothing for the server to look up, so resolve
   // null rather than firing a request that can only come back empty.
-  pending = qs.toString()
-    ? fetch('/api/quiz/daily-status?' + qs.toString()).then((r) => r.json()).catch(() => null)
+  // Shared with every other daily-status reader on the page for a minute, and
+  // dropped the moment a game is finished (app/sharedGet.js).
+  return qs.toString()
+    ? sharedGet('/api/quiz/daily-status?' + qs.toString()).catch(() => null)
     : Promise.resolve(null);
-  return pending;
 }
 
 // Same-device breadcrumbs, so the count is right on first paint and still right

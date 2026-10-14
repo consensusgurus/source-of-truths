@@ -44,7 +44,7 @@
 import { NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/admin-auth';
 import { supabaseAdmin } from '@/lib/supabase-server';
-import { attributeAnonGames, validEmail } from '@/lib/quiz-identity';
+import { attributeAnonGames, validEmail, clearIdentityCache } from '@/lib/quiz-identity';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -84,6 +84,7 @@ async function countResults(userId) {
 }
 
 export async function POST(request) {
+  clearIdentityCache();
   if (!isAdmin() && !tokenOk(request)) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
