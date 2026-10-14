@@ -90,11 +90,15 @@ export const RUN_DOORS = {
   },
   // Passport is a solo page rather than a RunClient run, so it has no
   // sot_run_passport_<day> save; runDoneToday reads its day breadcrumb.
+  // FROM 2026-10-15 (owner, 2026-10-14): Passport is the day's Span, Flank
+  // and Ping plus nine size calls, so those three offer it on today's start
+  // gate. Once per game like Judged, but `everyone`: a player who already
+  // knows Span still gets told Passport changed, once.
   passport: {
-    href: '/passport', name: 'Passport', eyebrow: 'Daily run · Four legs',
-    body: 'The day\'s Span, Flank and Ping on one page, then nine countries from them called bigger or smaller. One score out of 50, and a passport to match.',
+    href: '/passport', name: 'Passport', eyebrow: 'Passport changed a bit', once: 'game', everyone: true, from: '2026-10-15',
+    body: 'Passport now runs on today\u2019s Span, Flank and Ping, then nine calls on which country is bigger, with more to come. One page, one score out of 50, and a passport to match.',
     go: 'Start Passport', accent: '#6ee7b7',
-    tags: [['Landmark', '#a78bfa'], ['Flag', '#60a5fa'], ['Neighbors', '#34d399'], ['Capital', '#f87171'], ['Size', '#fbbf24']],
+    tags: [['Span', '#a78bfa'], ['Flank', '#60a5fa'], ['Ping', '#34d399'], ['Bigger or smaller', '#fbbf24']],
   },
 };
 
@@ -141,10 +145,12 @@ function shouldOffer(id, game) {
     const q = new URLSearchParams(window.location.search);
     if (q.get('circuit') || q.get('five') === '1') return false;
   } catch (e) {}
+  if (D && D.from && etToday() < D.from) return false;
+  if (runDoneToday(id)) return false;
   if (D && D.once === 'game') {
     if (!game) return false;
     try { if (localStorage.getItem(doorKey(id, game))) return false; } catch (e) { return false; }
-    return neverPlayed(game) && !runTouchedToday(id);
+    return (D.everyone || neverPlayed(game)) && !runTouchedToday(id);
   }
   const today = etToday();
   try { if (localStorage.getItem(`sot_${id}_door`) === today) return false; } catch (e) { return false; }

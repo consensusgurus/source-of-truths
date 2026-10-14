@@ -35,6 +35,7 @@ import DailyMasthead from '../DailyMasthead';
 import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
 import { useRunEmbed } from '../RunEmbed';
+import RunDoorPop from '../circuits/RunDoorPop';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
 import { isStage } from '@/lib/stage';
@@ -674,6 +675,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
           <div className={LOFT && !STAGE && !playing ? 'loft-flip-in' : undefined}>
           <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
 
+        <RunDoorPop id="passport" game="flank" ready={hydrated && preStart && isTodays && !EMBED} self="Flank" />
         {preStart && (
           <div className={STAGE ? 'stg-gate' : undefined} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '22px', display: 'flex', flexDirection: 'column' }}>
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'Flank is ready'}</div>

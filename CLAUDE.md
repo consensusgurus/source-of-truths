@@ -8674,6 +8674,7 @@ bigger-or-smaller calls on land area**, still out of 50 on the same six passport
   day file. Stocked to 2026-11-30, the end of the Span, Flank and Ping banks: extend those first,
   then rerun `gen-passport.mjs` with a later `RUN_UNTIL`.
 - The share line and the card carry four scores (`?s=a-b-c-d`) and never name a country.
+- **Span, Flank and Ping offer the run** (`RunDoorPop id="passport"`, gated `!EMBED`, today's start gate). The door is `once: 'game'` with `everyone: true` (shown once per game even to players who already know that game, since it announces the change) and `from: '2026-10-15'`; `runDoneToday('passport')` silences it.
 
 ## Daily finish: doors, set doors, stats, Add to Home, then How to play (owner, 2026-10-03)
 

@@ -49,6 +49,7 @@ import { isLoft } from '@/lib/loft';
 import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
 import { useRunEmbed } from '../RunEmbed';
+import RunDoorPop from '../circuits/RunDoorPop';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
 import { isStage } from '@/lib/stage';
@@ -911,6 +912,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
 
         {/* start tile — sits where the board goes until the player presses Start,
             which begins the clock. The assignment stays sealed until then. */}
+        <RunDoorPop id="passport" game="span" ready={hydrated && preStart && isTodays && !EMBED} self="Span" />
         {preStart && (
           <div className={STAGE ? 'stg-gate' : undefined} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '22px', display: 'flex', flexDirection: 'column' }}>
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'Span is ready'}</div>
