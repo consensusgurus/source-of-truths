@@ -4150,6 +4150,15 @@ The checks, for every new game and every copy edit:
    and OpenGraph descriptions, the share card, and any per-item tooltips. A definition
    that is right in one of those and stale in the other five is worse than none.
 
+## Shards: EVERY MOVE IS FREE (owner rule, 2026-10-13)
+
+Player report: "The accidental locking removing all my points make it not worth it, let us move them OUT of the whole thing again." Both halves were real. Placing any piece silently locked the previously placed one ("wet" -> locked), and moving a locked piece cost a 5-point miss; dragging a placed piece off the board did nothing, so the only way off was tap-tap, which also cost 5. Undo refunded the miss, so the penalty only ever hit players who did not know that.
+
+- **There is no wet/locked state and no miss.** Moving, removing, Undo and Clear are all free. Score = start minus hints, ties break on the clock. Applied from 2026-10-13 itself (owner chose same-day): rows already posted that day keep their misses.
+- **Dragging a placed piece anywhere off the board sends it back to the tray**, which lights up as a drop zone while a board piece is dragged. Tapping a selected piece a second time, or the Send back button, does the same.
+- **Ticks now read every placed piece.** The wet window existed to stop ticks becoming an oracle; the owner accepted that ticks only report dictionary validity, which a player can judge anyway.
+- `misplaced` stays on the saved state and the share/result copy shows misses only when non-zero, so pre-change saves still read correctly. Registry `miss` is now 'Hints'.
+
 ## Shards: NO RUN SHORTER THAN THREE, and the word list is a Scrabble list (owner rule, 2026-08-19)
 
 A player asked how ST was a word. It is, in the list Shards validates against, and that

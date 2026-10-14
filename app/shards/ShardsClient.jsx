@@ -398,22 +398,15 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
     return m;
   }, [g.placements, SHARDS]);
   const placedCount = useMemo(() => SHARDS.filter((s) => g.placements[s.id]).length, [g.placements, SHARDS]);
-  // The wet piece is on the board and blocks other pieces, but it is invisible
-  // to the validator: no ticks, no solve credit, until the player commits it.
-  // Without this the free-adjustment window becomes an oracle, since a player
-  // could shuffle a costless piece around until a tick lit up and read the
-  // answer straight off the board.
-  const occCommitted = useMemo(() => {
-    if (g.wet == null) return occ;
-    const m = new Map();
-    for (const [k, v] of occ) if (v.id !== g.wet) m.set(k, v);
-    return m;
-  }, [occ, g.wet]);
+  // Retired 2026-10-13 (owner, after player feedback): there is no wet/locked
+  // state any more, so every placed piece counts and every move is free.
+  // Kept as a name so the validator below reads unchanged.
+  const occCommitted = occ;
   const trayShards = useMemo(() => trayOrder.filter((id) => !g.placements[id]), [trayOrder, g.placements]);
 
   // fully-filled runs and which are valid words (for ticks + win)
   const { runTicks, allValid, allCovered } = useMemo(() => {
-    const occ = occCommitted; // ticks and the win check ignore the wet piece
+    const occ = occCommitted;
     const ticks = [];
     let valid = true;
     const get = (r, c) => (blockSet.has(r * 100 + c) ? '#' : (occ.get(r * 100 + c)?.ch || null));
@@ -474,11 +467,11 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
       pushHistory(cur);
       const pl = cur.placements.slice();
       pl[id] = { r: ar, c: ac };
-      // Nudging the wet piece is free. Moving a committed one costs a miss and
-      // hands the wet window back, so the correction itself can be fine-tuned.
-      // Placing any piece commits whichever piece was wet before it.
-      const cost = prev && cur.wet !== id ? 1 : 0;
-      return { ...cur, placements: pl, t0: cur.t0 || Date.now(), misplaced: cur.misplaced + cost, wet: id };
+      // Every move is free (owner ruling 2026-10-13). The old rule auto-locked
+      // the previous piece the moment another was placed and then charged 5 to
+      // move it, which players hit by accident constantly. `misplaced` stays
+      // on the state only so a save from before the change keeps its count.
+      return { ...cur, placements: pl, t0: cur.t0 || Date.now(), wet: null };
     });
     setArmed(null); setWrongHint(null);
   }
@@ -500,14 +493,14 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
       pushHistory(cur);
       const pl = cur.placements.slice();
       pl[id] = null;
-      return { ...cur, placements: pl, misplaced: cur.misplaced + (cur.wet === id ? 0 : 1), wet: cur.wet === id ? null : cur.wet };
+      return { ...cur, placements: pl, wet: null };
     });
     setWrongHint(null);
   }
   function undo() {
     if (!histRef.current.length) return;
     const snap = JSON.parse(histRef.current.pop());
-    setG((cur) => ({ ...cur, placements: snap.placements, misplaced: snap.misplaced, wet: snap.wet === undefined ? null : snap.wet }));
+    setG((cur) => ({ ...cur, placements: snap.placements, misplaced: snap.misplaced, wet: null }));
     setArmed(null); setWrongHint(null);
   }
   function clearBoard() {
@@ -643,6 +636,9 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
         const ar = cell.r - p.grab.dr, ac = cell.c - p.grab.dc;
         if (f.canPlaceWith(f.g, SHARDS[p.id], ar, ac, p.id)) f.placeShard(p.id, ar, ac);
         else f.say('That piece will not fit there.');
+      } else if (p.from === 'board') {
+        // Dropped anywhere off the board: send it back to the tray, free.
+        f.pickUp(p.id);
       }
       setDrag(null); setHoverCell(null);
     };
@@ -670,34 +666,14 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [SHARDS, N]);
 
-  // Commit the wet piece: tap it a second time on the board, or press the Lock
-  // in button, which is the discoverable path since a bare tap gesture is
-  // invisible until someone tells you about it.
-  function commitWet() {
-    setG((cur) => {
-      if (cur.status !== 'playing' || cur.wet == null) return cur;
-      pushHistory(cur);
-      return { ...cur, wet: null };
-    });
-    setArmed(null);
-    say('Piece locked in.');
-  }
-
   // tap on a board cell: place the armed shard (handle lands on the cell)
   function onCellTap(r, c) {
     if (!playing) return;
-    // A tap on the wet piece is only ever select-or-commit: the first tap
-    // selects it, a second tap on it locks it in. There is deliberately no
-    // timing window. A double-tap deadline is hostile on a phone, and since a
-    // tap on the wet piece has no other meaning, it does not need one. Checked
-    // before the armed branch so this always wins the gesture, and so the
-    // select tap can never shove the piece sideways.
+    // A tap on the selected piece is checked before the armed branch, so a
+    // second tap always means "send it back" and can never shove it sideways.
     const here = occ.get(r * 100 + c);
-    if (here && here.id === g.wet && !g.locked.includes(here.id)) {
-      if (armed === here.id) { commitWet(); return; }
-      setArmed(here.id);
-      return;
-    }
+    // Tapping the selected piece a second time sends it back to the tray.
+    if (here && armed === here.id) { pickUp(here.id); setArmed(null); return; }
     if (armed != null) {
       const s = SHARDS[armed];
       const ar = r - s.handle.dr, ac = c - s.handle.dc;
@@ -723,7 +699,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
 
   // Refreshed every render so the window-level drag listeners never act on a
   // stale board.
-  fnRef.current = { g, placeShard, canPlaceWith, cellFromPoint, say };
+  fnRef.current = { g, placeShard, canPlaceWith, cellFromPoint, say, pickUp };
 
   function startClock() { setG((cur) => (cur.t0 ? cur : { ...cur, t0: Date.now() })); }
   function startGame() { startClock(); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }
@@ -768,7 +744,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
           if (s.offs.some((o) => home.has((p.r + o.dr) * 100 + (p.c + o.dc)))) pl[s.id] = null;
         }
         pl[pick.id] = { r: pick.minR, c: pick.minC };
-        return { ...cur, placements: pl, hintsUsed: 2, locked: [...cur.locked, pick.id], wet: cur.wet != null && pl[cur.wet] ? cur.wet : null };
+        return { ...cur, placements: pl, hintsUsed: 2, locked: [...cur.locked, pick.id], wet: null };
       });
       setArmed(null); setWrongHint(null);
       say('One shard has been locked into its true home.');
@@ -839,7 +815,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
     const url = withRef(`mindloftdaily.com/shards${isTodays ? '' : `?p=${PUZZLE.num}`}`);
     const text = playing
       ? `Shards No. ${PUZZLE.num} - reassemble the shattered crossword.\n${url}`
-      : `Shards No. ${PUZZLE.num} - ${finalScore}/${START} · ${elapsed} · ${g.misplaced} miss${g.misplaced === 1 ? '' : 'es'} · ${g.hintsUsed} hint${g.hintsUsed === 1 ? '' : 's'}\n${shareArt()}${url}`;
+      : `Shards No. ${PUZZLE.num} - ${finalScore}/${START} · ${elapsed} · ${g.misplaced > 0 ? `${g.misplaced} miss${g.misplaced === 1 ? '' : 'es'} · ` : ''}${g.hintsUsed} hint${g.hintsUsed === 1 ? '' : 's'}\n${shareArt()}${url}`;
     if (notifyShareCredit(text)) return;
     try { if (typeof navigator !== 'undefined' && navigator.share && isMobileDevice()) { navigator.share({ text }).catch(() => {}); return; } } catch (e) {}
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}
@@ -848,7 +824,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
   const statusLine = (() => {
     if (!dict && !dictErr) return { msg: 'Loading the dictionary...', cls: 'muted' };
     if (dictErr) return { msg: 'Could not load the dictionary - refresh to try again.', cls: 'bad' };
-    if (g.wet != null) return { msg: 'Nudge it as much as you like for free. Tap it again to lock it in, and only then does it count.', cls: 'muted' };
+    if (armed != null && g.placements[armed]) return { msg: 'Tap a square to move it, or tap it again to send it back.', cls: 'muted' };
     if (placedCount === 0) return { msg: 'Drag a shard onto the grid, or tap a shard then tap a square.', cls: 'muted' };
     if (placedCount < SHARDS.length) return { msg: `${placedCount} of ${SHARDS.length} shards placed. A tick marks each finished word.`, cls: 'muted' };
     if (!allValid) return { msg: 'All placed, but some runs are not in the word list yet. Rearrange the pieces.', cls: 'bad' };
@@ -863,18 +839,18 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
       lead="Reassemble the shattered grid so every across and down run of letters reads as a word."
       chips={[
-        { label: 'Wet piece, free to move', tone: 'warn' },
-        { label: 'Locked in, moving costs 5', tone: 'bad' },
+        { label: 'Every move is free', tone: 'good' },
+        { label: 'Hints cost points', tone: 'warn' },
       ]}
       steps={[
         <>The lettered pieces are rigid: no turning, no flipping. <b>Drag</b> one onto the grid, or <b>tap a piece then tap a square</b>.</>,
-        <>The piece you just placed is <b>wet</b>. Shift it around as much as you like for nothing: it earns no ticks and counts toward nothing until you <b>tap it again to lock it in</b>.</>,
-        <>Moving a piece you have already locked in costs a <b>miss of 5</b> and makes it wet again, so you can fine-tune the correction.</>,
-        <><b>Undo</b> takes back a move and <b>Clear</b> is free. A tick appears on each finished valid word, and the board finishes itself once every piece is locked in and every word checks out.</>,
+        <>Move pieces as often as you like, <b>for free</b>. To take one off the grid, <b>drag it off the board</b>, or tap it twice.</>,
+        <>A tick appears on each finished valid word. The board finishes itself the moment every piece is down and every word checks out.</>,
+        <>Only the three hints cost points. <b>Undo</b> and <b>Clear</b> are free too.</>,
         <>Words are checked against a <b>Scrabble word list</b>, which is broader than everyday English and accepts some odd short entries. Grids from 20 August 2026 are built from common words only; older grids in the archive can still turn up a Scrabble two-letter word such as ST, JA or PE.</>,
       ]}
       knack="There are no clues but the letters, and exactly one reassembly is correct, so place the pieces whose runs can only spell one thing and let the rest fall in."
-      footer={<>Start at {START}. Three hints, in order, cost {HINTS[0]}, {HINTS[1]} and {HINTS[2]}. Score never drops below {FLOOR}. Ties break by fewest misses, then fastest clock.</>}
+      footer={<>Start at {START}. Three hints, in order, cost {HINTS[0]}, {HINTS[1]} and {HINTS[2]}. Score never drops below {FLOOR}. Moves are free, so ties break on the clock.</>}
     />
   );
 
@@ -932,14 +908,15 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
           .sh-cell.filled:active{cursor:grabbing;}
           .sh-cell.dragging{opacity:0.26;}
           .sh-cell.armed{outline:3px solid var(--stg-acc, ${COLORS.accent});outline-offset:-3px;z-index:2;}
-          .sh-cell.wet{outline:2px dashed var(--stg-acc, ${COLORS.accentDk});outline-offset:-2px;z-index:2;}
           .sh-cell.wrong{outline:3px solid ${COLORS.rust};outline-offset:-3px;z-index:2;}
           .sh-cell.home{box-shadow:inset 0 0 0 3px var(--stg-acc, ${COLORS.accent});}
           .sh-cell.hover{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);}
           .sh-cell.hoverbad{background:${STAGE ? 'var(--stg-surf2)' : '#f6dcda'};}
           .sh-cell.locked::after{content:'';position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:var(--stg-acc, ${COLORS.accent});}
           .sh-tick{position:absolute;bottom:1px;right:2px;color:${COLORS.green};line-height:1;}
-          .sh-tray{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:16px auto 4px;max-width:${TRAYMAX}px;}
+          .sh-tray{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-content:flex-start;margin:16px auto 4px;max-width:${TRAYMAX}px;min-height:${TRAYCELL * 2 + 24}px;padding:10px;border:2px dashed transparent;border-radius:12px;transition:border-color .15s,background .15s;}
+          .sh-tray.drop{border-color:var(--stg-acc, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 10%, transparent);}
+          .sh-trayback{font-family:${MONO};font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--stg-ink, ${COLORS.accentDk});width:100%;text-align:center;padding:4px 0;}
           .sh-piece{position:relative;display:grid;gap:2px;padding:5px;border-radius:9px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1.5px solid var(--stg-line, rgba(28,30,36,0.16));box-shadow:0 2px 0 rgba(28,30,36,0.12);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
           .sh-piece:active{cursor:grabbing;}
           .sh-piece.dragging{opacity:0.3;}
@@ -1009,7 +986,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
             <div style={{ display: 'flex', gap: 18, alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 10, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED }}>
               <span style={{ fontSize: 12 }}>score <b style={{ color: `var(--stg-ink, ${COLORS.accentDk})`, fontWeight: 500, fontSize: 20 }}>{playing ? liveScore : finalScore}</b><span style={{ fontSize: 11 }}>/{START}</span></span>
               <span>placed <b style={{ color: INK, fontWeight: 500 }}>{placedCount}</b>/{SHARDS.length}</span>
-              <span>misses <b style={{ color: INK, fontWeight: 500 }}>{g.misplaced}</b></span>
+              {g.misplaced > 0 && <span>misses <b style={{ color: INK, fontWeight: 500 }}>{g.misplaced}</b></span>}
               <span>hints <b style={{ color: INK, fontWeight: 500 }}>{g.hintsUsed}</b>/3</span>
               {!playing && <span style={{ marginLeft: 'auto', color: `var(--stg-ink, ${COLORS.green})` }}>solved</span>}
             </div>
@@ -1046,7 +1023,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
                       <div
                         key={i}
                         data-cell="1" data-r={r} data-c={c} data-sid={cell ? cell.id : undefined}
-                        className={`sh-cell${isBlock ? ' block' : ''}${cell ? ' filled' : ''}${isArmedCell ? ' armed' : ''}${isWrong ? ' wrong' : ''}${isHome ? ' home' : ''}${isLocked ? ' locked' : ''}${cell && g.wet === cell.id ? ' wet' : ''}${cell && drag && drag.id === cell.id ? ' dragging' : ''}${hoverCls}`}
+                        className={`sh-cell${isBlock ? ' block' : ''}${cell ? ' filled' : ''}${isArmedCell ? ' armed' : ''}${isWrong ? ' wrong' : ''}${isHome ? ' home' : ''}${isLocked ? ' locked' : ''}${cell && drag && drag.id === cell.id ? ' dragging' : ''}${hoverCls}`}
                         style={tint
                           // Stage: a placed piece is its ramp hue at twice the register's mix (a piece
                           // is a mark you pick up, so it sits a step above a region), edged in the
@@ -1069,8 +1046,9 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
 
               {/* tray + controls */}
               <div style={{ display: 'flex', flexDirection: 'column', minWidth: 240, flex: '1 1 240px', maxWidth: 320 }}>
-                <div className="sh-trayhead">Shards - {trayShards.length} to place</div>
-                <div className="sh-tray">
+                <div className="sh-trayhead">{trayShards.length ? `${trayShards.length} piece${trayShards.length === 1 ? '' : 's'} to place` : 'Every piece is down'}</div>
+                <div className={`sh-tray${drag && drag.from === 'board' ? ' drop' : ''}`}>
+                  {drag && drag.from === 'board' && <div className="sh-trayback">Drop here to send it back</div>}
                   {trayShards.map((id) => {
                     const s = SHARDS[id];
                     const tint = STAGE ? 'var(--hue)' : SHARD_TINTS[id % SHARD_TINTS.length];
@@ -1101,7 +1079,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
                       </div>
                     );
                   })}
-                  {trayShards.length === 0 && <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, padding: '8px 0' }}>All pieces are on the grid.</div>}
+                  {trayShards.length === 0 && !(drag && drag.from === 'board') && <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, padding: '8px 0' }}>All pieces are on the grid.</div>}
                 </div>
 
                 {playing && (
@@ -1109,17 +1087,17 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
                     <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' }}>
                       <button type="button" className="sh-btn" onClick={undo} disabled={!histRef.current.length}><Undo2 size={14} /> Undo</button>
                       <button type="button" className="sh-btn" onClick={clearBoard} disabled={placedCount === 0}><Trash2 size={14} /> Clear</button>
-                      {g.wet != null && (
-                        <button type="button" className="sh-btn" onClick={commitWet} style={{ background: `var(--stg-acc, ${COLORS.accent})`, color: `var(--stg-onramp, ${T.white})`, borderColor: COLORS.ink }}><CheckCircle2 size={14} /> Lock in</button>
+                      {armed != null && g.placements[armed] && !g.locked.includes(armed) && (
+                        <button type="button" className="sh-btn primary" onClick={() => { pickUp(armed); setArmed(null); }}>Send back</button>
                       )}
                     </div>
                     <div className="sh-hintbar">
                       <button type="button" className="sh-hint" disabled={g.hintsUsed >= 1 || placedCount === 0} title={placedCount === 0 ? 'Place a shard first' : undefined} onClick={() => useHint(1)}><Lightbulb size={13} /> Check placed (-{HINTS[0]})</button>
-                      <button type="button" className="sh-hint" disabled={g.hintsUsed !== 1} onClick={() => useHint(2)}><Lightbulb size={13} /> Lock a piece (-{HINTS[1]})</button>
+                      <button type="button" className="sh-hint" disabled={g.hintsUsed !== 1} onClick={() => useHint(2)}><Lightbulb size={13} /> Place one (-{HINTS[1]})</button>
                       <button type="button" className="sh-hint" disabled={g.hintsUsed !== 2} onClick={() => useHint(3)}><Lightbulb size={13} /> Show home (-{HINTS[2]})</button>
                     </div>
                     <div style={{ fontSize: 11.5, fontWeight: 600, color: FADED, textAlign: 'center', marginTop: 10, lineHeight: 1.5 }}>
-                      Hints unlock in order. The board finishes itself when every word reads true.
+                      Moves are free. Hints unlock in order and cost points. Drag a piece off the board to send it back.
                     </div>
                   </>
                 )}
@@ -1137,7 +1115,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
                     <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: `var(--stg-ink, ${COLORS.green})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{finalScore}</span>
                     <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
-                      Solved. {finalScore} of {START}, with {g.misplaced} miss{g.misplaced === 1 ? '' : 'es'} and {g.hintsUsed} hint{g.hintsUsed === 1 ? '' : 's'}. <span style={{ color: FADED, fontWeight: 600 }}>{elapsed}</span>
+                      Solved. {finalScore} of {START}{g.misplaced > 0 ? `, with ${g.misplaced} miss${g.misplaced === 1 ? '' : 'es'} and` : ' with'} {g.hintsUsed} hint{g.hintsUsed === 1 ? '' : 's'}. <span style={{ color: FADED, fontWeight: 600 }}>{elapsed}</span>
                     </span>
                   </div>
                 </div>
@@ -1174,7 +1152,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
                 : null}
               day={dayStats}
               streak={isTodays ? myStats.cur : null}
-              missLabel="Miss"
+              missLabel="Hints"
               archive={puzzles
                 .filter((p) => p.live <= etToday() && p.num !== PUZZLE.num)
                 .sort((x, y) => y.num - x.num)
@@ -1316,7 +1294,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
           Shards is a free daily word puzzle from Mind Loft, a jigsaw crossword. The grid arrives already solved but shattered into lettered puzzle pieces, and you reassemble it so that every across and down run of letters reads as a word. There are no clues. The letters are the clues, and the shapes are how you fit them back together.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Every day&rsquo;s pieces have exactly one valid reassembly, checked by a solver before it ships, so there is always a single right answer to find. Pieces never rotate or flip. Drag them onto the grid or tap to place, move them as often as you like, and lean on three optional hints when you are stuck. You start at {START} and finish the moment the last word clicks into place. Answers are checked against a Scrabble word list, so it is broader than everyday English and accepts some unusual short entries.
+          Every day&rsquo;s pieces have exactly one valid reassembly, checked by a solver before it ships, so there is always a single right answer to find. Pieces never rotate or flip. Drag them onto the grid or tap to place, move them as often as you like for free, drag one off the board to send it back, and lean on three optional hints when you are stuck. You start at {START} and finish the moment the last word clicks into place. Answers are checked against a Scrabble word list, so it is broader than everyday English and accepts some unusual short entries.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A fresh grid lands every day at midnight Eastern, with a larger Sunday Edition. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More dailies: <a href="/emcee" style={{ color: INK, fontWeight: 800 }}>Emcee</a>, our mini crossword, <a href="/tuck" style={{ color: INK, fontWeight: 800 }}>Tuck</a>, our tile-tucking puzzle, and <a href="/crux" style={{ color: INK, fontWeight: 800 }}>Crux</a>, our clueless crossword.
