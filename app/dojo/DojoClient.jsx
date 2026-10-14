@@ -73,8 +73,15 @@ function bankedOf(sec) {
     if (!save || !save.status || save.status === 'playing') return null;
     const st = JSON.parse(localStorage.getItem(`sot_${sec.key}_stats`) || 'null') || {};
     const rec = (st.rec && st.rec[sec.num]) || (st.byNum && st.byNum[sec.num]) || null;
-    if (!rec || !Number.isFinite(Number(rec.s)) || !Number(rec.t)) return { score: 0, total: 0, secs: 0, banked: true, unknown: true };
     const secs = save.t0 && save.tEnd ? Math.round((save.tEnd - save.t0) / 1000) : 0;
+    // THE SAVE'S VERDICT WINS (2026-10-13). A won board is a solve and a
+    // revealed one is not, whatever the stats record says: that record is
+    // write-once and mergeServerStats fills it from the player's FIRST server
+    // row, which is an abandoned 0 when the run was paused mid-grid. The board
+    // already counts the completed row over the abandon, so this agrees with it.
+    if (save.status === 'won') return { score: 10, total: 10, secs, banked: true };
+    if (save.status === 'revealed') return { score: 0, total: 10, secs, banked: true };
+    if (!rec || !Number.isFinite(Number(rec.s)) || !Number(rec.t)) return { score: 0, total: 0, secs: 0, banked: true, unknown: true };
     return { score: Number(rec.s), total: Number(rec.t), secs, banked: true };
   } catch (e) { return null; }
 }
@@ -144,7 +151,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
   const playing = r.phase === 'playing';
   const board = useCircuitBoard(DOJO_RUN_ID, hydrated && done);
 
-  const counted = useMemo(() => sections.map((sec) => banked[sec.key] || r.results[sec.key] || null), [sections, banked, r.results]);
+  const counted = useMemo(() => sections.map((sec) => r.results[sec.key] || banked[sec.key] || null), [sections, banked, r.results]);
   const parts = counted.map((c, i) => (c ? dojoGridPoints(sections[i].key, c.score, c.total, c.secs, CLK) : 0));
   const total = Math.round(parts.reduce((a, b) => a + b, 0));
   const allBanked = N > 0 && sections.every((s) => banked[s.key]);
@@ -173,7 +180,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
   }, [sections, commit]);
 
   const sec = playing ? sections[r.si] : null;
-  const secDone = sec ? (banked[sec.key] || r.results[sec.key]) : null;
+  const secDone = sec ? (r.results[sec.key] || banked[sec.key]) : null;
   const between = !!(sec && secDone && holding !== sec.key);
   const last = playing && r.si >= N - 1;
 
@@ -663,8 +670,8 @@ html:not(.dj-x):has(.stage-page.dj[data-stage-theme]),html:not(.dj-x) body:has(.
 .sh-tot b small{font-size:14px;color:#7a7360}
 .sh-tot b.clk{font-size:22px}
 .sh-tot .r{text-align:right}
-.sh-seal{position:absolute;left:50%;bottom:8px;margin-left:-46px;width:92px;height:92px;border:5px solid var(--dj-seal);border-radius:12px;color:var(--dj-seal);display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-10deg);mix-blend-mode:multiply;animation:djseal .45s cubic-bezier(.2,1.6,.4,1) both;background:rgba(180,35,42,.06)}
-.sh-seal span{font:900 15px ${SANS};letter-spacing:.12em;text-transform:uppercase}
+.sh-seal{position:absolute;left:50%;bottom:8px;margin-left:-66px;width:132px;height:78px;padding:0 8px;box-sizing:border-box;border:4px solid var(--dj-seal);border-radius:12px;color:var(--dj-seal);display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-10deg);mix-blend-mode:multiply;animation:djseal .45s cubic-bezier(.2,1.6,.4,1) both;background:rgba(180,35,42,.06)}
+.sh-seal span{font:900 15px ${SANS};letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;line-height:1}
 .sh-seal small{font:800 10px ${MONO};letter-spacing:.16em;margin-top:4px}
 .sh-seal.set{animation:none;opacity:.85}
 @keyframes djseal{from{opacity:0;transform:rotate(-10deg) scale(2.6)}to{opacity:.88;transform:rotate(-10deg) scale(1)}}
@@ -694,7 +701,8 @@ html:not(.dj-x):has(.stage-page.dj[data-stage-theme]),html:not(.dj-x) body:has(.
 .ms{width:100%;max-width:420px}
 .gr-right{min-height:0;width:100%}
 .gr-btns a,.gr-btns button{flex:1 1 40%;text-align:center;padding:12px 10px}
-.sh-seal{width:76px;height:76px;margin-left:-38px;bottom:10px}
+.sh-seal{width:112px;height:66px;margin-left:-56px;bottom:10px}
+.sh-seal span{font-size:13px;letter-spacing:.06em}
 }
 @media(max-width:600px){.wall{gap:8px;padding:18px 8px 14px}.sc-body{padding:10px 5px;min-height:140px}.sc-n{font-size:17px}.sc-c{display:none}.sc-f{font-size:9.5px}.sc-k{font-size:8px;letter-spacing:.08em}.sc-bkx{display:none}.title{font-size:44px}.lede{font-size:14px}.pre-row .sub2{font-size:11.5px;max-width:200px}.facts{gap:5px}.fact{padding:7px}.fact b{font-size:16px}.fact span{font-size:9.5px}.dj-sechd b{font-size:16px}.door-frame{height:110px}.bt{width:240px}}
 @media(prefers-reduced-motion:reduce){.dj *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition:none !important}}
