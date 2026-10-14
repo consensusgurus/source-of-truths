@@ -588,7 +588,11 @@ body:has(.stage-page) .qch-bar { display: none !important; }
    Dark needs no mirror of this: dark IS .stage-page's own set of values, so
    suppressing light is the whole of it, and there is no second copy of fifty
    declarations to drift. */
-html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] {
+/* A PINNED stage page (an embedded run board, data-stage-pin) is never
+   server-rendered, so its register is a choice and not a guess: it takes the
+   light tokens whatever the boot stamp says. See app/RunEmbed.jsx. */
+html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
+.stage-page[data-stage-theme='light'][data-stage-pin] {
   --stg-brand: #2563eb;
   --stg-ground: #eef1f6;
   --stg-raise: #ffffff;

@@ -4,7 +4,12 @@
 // is mounted INSIDE a one-page run reads this context and:
 //   - drops its own page furniture (the cap, the finish card, the about
 //     prose, the report row, the join form), so the run page owns the frame;
-//   - forces the dark stage register, so it sits on the run's Midnight ground;
+//   - forces the dark stage register, so it sits on the run's Midnight ground,
+//     unless the run passes theme='light' (the Dojo's board switch, owner
+//     2026-10-13). The client then also stamps data-stage-pin, which lets the
+//     light token block in globals.css apply without the boot-stamp guard:
+//     an embedded client is never server-rendered, so its register is a
+//     choice rather than a first-paint guess;
 //   - tells the run when it has filed its result, through onResult.
 // Everything else is the game exactly as it plays on its own page: the same
 // start gate, the same save, the same /api/quiz/result row. Outside a run the
@@ -22,9 +27,10 @@ export function useRunEmbed() {
   return useContext(RunEmbedContext);
 }
 
-export default function RunEmbed({ onResult, children }) {
+export default function RunEmbed({ onResult, theme, children }) {
   const value = useMemo(() => ({
+    theme: theme === 'light' ? 'light' : 'dark',
     onResult: (res) => { setTimeout(() => { try { onResult && onResult(res); } catch (e) {} }, 0); },
-  }), [onResult]);
+  }), [onResult, theme]);
   return <RunEmbedContext.Provider value={value}>{children}</RunEmbedContext.Provider>;
 }

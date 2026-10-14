@@ -107,6 +107,13 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
   const [ladderOpen, setLadderOpen] = useState(false);
   const [holding, setHolding] = useState(null);
   const [copied, setCopied] = useState(false);
+  // THE BOARD'S LIGHT SWITCH (owner, 2026-10-13). Light or dark for the three
+  // grids only; the doors, the between-rounds sheet and the grading stay on the
+  // Dojo's own dark ground. Its own key, defaulting to dark (the look the Dojo
+  // launched with), and read in an effect so the first paint matches the server.
+  const [boardTheme, setBoardTheme] = useState('dark');
+  useEffect(() => { try { const v = window.localStorage.getItem('sot_dojo_board'); if (v === 'light' || v === 'dark') setBoardTheme(v); } catch (e) {} }, []);
+  const flipBoard = () => setBoardTheme((cur) => { const next = cur === 'light' ? 'dark' : 'light'; try { window.localStorage.setItem('sot_dojo_board', next); } catch (e) {} return next; });
   const doneAtLoad = useRef(null);
   const [settled, setSettled] = useState(false);
 
@@ -276,11 +283,16 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
           <div className="dj-sechd">
             <span className="dj-sectag">Form {NUMS[r.si] || r.si + 1} · {sec.form}</span>
             <b>{sec.name}</b>
+            {!between && Game && !banked[sec.key] && (
+              <button type="button" className="dj-tg" onClick={flipBoard} aria-pressed={boardTheme === 'light'} title={boardTheme === 'light' ? 'Switch the board to dark' : 'Switch the board to light'}>
+                <span aria-hidden="true">{boardTheme === 'light' ? '\u263E' : '\u2600'}</span> {boardTheme === 'light' ? 'Dark board' : 'Light board'}
+              </button>
+            )}
             <span className="dj-run">Run total {Math.round(runSoFar + (between ? parts[r.si] : 0))}</span>
           </div>
           {!between && Game && !banked[sec.key] && (
-            <div className="dj-host">
-              <RunEmbed onResult={onSectionDone}>
+            <div className={`dj-host${boardTheme === 'light' ? ' lt' : ''}`}>
+              <RunEmbed onResult={onSectionDone} theme={boardTheme}>
                 <Game key={`${sec.key}-${sec.num}`} puzzles={[sec.puzzle]} forceNum={null} />
               </RunEmbed>
             </div>
@@ -571,6 +583,16 @@ const CSS = `
 .dj-run{margin-left:auto;font-family:${MONO};font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dj-mute)}
 .dj-host{animation:djrise .45s ease both}
 .dj-host .stage-page{min-height:0 !important;background:transparent !important;overflow-x:visible !important}
+.dj-host.lt{background:#eef1f6;border-radius:16px;margin:12px 12px 0;padding:6px 0 18px}
+.dj-host.lt .stage-page{color:var(--stg-ink) !important}
+@media(max-width:760px){.dj-host.lt{margin:10px 0 0;border-radius:0}}
+.dj-tg{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font:800 11px ${SANS};letter-spacing:.05em;text-transform:uppercase;color:var(--dj-ink);background:var(--dj-surf);border:1px solid var(--dj-line);border-radius:999px;padding:6px 11px;cursor:pointer}
+.dj-tg:hover{border-color:var(--dj-mute)}
+.dj-tg span{font-size:13px;line-height:1}
+.dj-tg + .dj-run{margin-left:10px}
+/* A light board inside the Dojo must not repaint the page behind it: the
+   globals.css :has() rule paints html and body light for any light stage page. */
+html:not(.dj-x):has(.stage-page.dj[data-stage-theme]),html:not(.dj-x) body:has(.stage-page.dj[data-stage-theme]){background:#0b0f1a !important}
 .dj-between{text-align:center;padding:30px 16px;max-width:560px;margin:0 auto;animation:djrise .4s ease both}
 .dj-bscore{font-size:68px;font-weight:900;letter-spacing:-.04em;margin-top:6px}
 .dj-bscore small{font-size:24px;color:var(--dj-mute)}
