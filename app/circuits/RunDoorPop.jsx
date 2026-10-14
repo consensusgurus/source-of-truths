@@ -48,6 +48,15 @@ export const RUN_DOORS = {
     go: 'Run all seven', accent: '#7dd3fc',
     tags: [['Deep', '#7dd3fc'], ['Atlas', '#6ee7b7'], ['Sci', '#5eead4'], ['Art', '#fb7185'], ['History', '#e8b43a'], ['Sport', '#bef264'], ['Streak', '#e879f9']],
   },
+  // THE TRIVIA ENCORE (owner, 2026-10-14). Listed so every run's end card
+  // (MoreRuns) offers it while unplayed. Its quizzes change daily, so
+  // MoreRuns reads them live from lib/circuits; these tags are a fallback.
+  triviaencore: {
+    href: '/triviaencore', name: 'Trivia Encore', eyebrow: 'Daily run \u00b7 Three quizzes',
+    body: 'The three trivia quizzes that sat out today\u2019s Gauntlet, back to back, one life in each.',
+    go: 'Take the Encore', accent: '#e8b43a',
+    tags: [['Encore', '#e8b43a']],
+  },
   judged: {
     href: '/judged', name: 'Judged', eyebrow: 'Daily run · Five cases', once: 'game',
     body: 'Five deduction cases on one page, opening with if-then rules: testimony, hearsay, a logic game and an alibi. Right and fast decides which law school takes you.',

@@ -268,6 +268,15 @@ function encoreFor(today) {
   return games.length >= 2 ? { games, href: runHref('triviaencore') } : null;
 }
 
+// The Gauntlet's games for the day, offered on the ENCORE's finish to a
+// player who came to the Encore first (owner, 2026-10-14). Same filter.
+function gauntletFor(today) {
+  const games = circuitKeysFor('gauntlet', today)
+    .filter((k) => BANKS[k] && dayFor(BANKS[k], today))
+    .map((k) => ({ key: k, name: (DAILY_GAME_MAP[k] || {}).name || k }));
+  return games.length >= 2 ? { games, href: '/trivia' } : null;
+}
+
 export default function CircuitRunPage({ params }) {
   const id = decodeURIComponent(params.id || '');
   const circuit = circuitById(id);
@@ -375,6 +384,7 @@ export default function CircuitRunPage({ params }) {
         sections={sections}
         boards={circuit.id === 'gauntlet' ? todayBoards(today) : null}
         encore={circuit.id === 'gauntlet' ? encoreFor(today) : null}
+        gauntlet={circuit.id === 'triviaencore' ? gauntletFor(today) : null}
       />
     </Suspense>
   );

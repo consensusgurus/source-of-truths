@@ -58,6 +58,7 @@ import useCircuitHistory from '../../useCircuitHistory';
 import { T } from '@/lib/theme';
 import MoreRunsPop, { MoreRunsList } from '../../MoreRuns';
 import EncorePop from '../../EncorePop';
+import GauntletBackPop from '../../GauntletBackPop';
 import { runDoneToday } from '../../RunDoorPop';
 import NextDrop from '../../../NextDrop';
 import ChallengeStrip from '../../../ChallengeStrip';
@@ -180,7 +181,7 @@ function vibrate(p) { try { if (typeof navigator !== 'undefined' && navigator.vi
 
 const freshRun = () => ({ v: 1, si: 0, i: 0, t0: null, sT0: null, phase: 'idle', results: [] });
 
-export default function RunClient({ circuitId, circuitName, dateLabel, sections = [], boards = null, encore = null }) {
+export default function RunClient({ circuitId, circuitName, dateLabel, sections = [], boards = null, encore = null, gauntlet = null }) {
   const N = sections.length;
   // THE TRIVIA ENCORE (owner, 2026-10-14). The Encore is the three banks that
   // sat out today's Gauntlet. On the Gauntlet its pop-up and end-card door
@@ -191,9 +192,18 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   const encoreOn = GAUNT && encore && Array.isArray(encore.games) && encore.games.length >= 2;
   const [encoreDone, setEncoreDone] = useState(false);
   const [encoreUp, setEncoreUp] = useState(false);
-  // Which cards come after a finished run: on the Gauntlet only when there is
-  // no Encore left to offer today.
-  const afterCards = ENCORE || circuitId === 'math' || (GAUNT && (!encoreOn || encoreDone));
+  // THE NUDGE BACK (owner, 2026-10-14): on the Encore, the Gauntlet when it is
+  // still unfinished today on this device. null until read in an effect.
+  const [gauntDone, setGauntDone] = useState(null);
+  const backAvail = !!(ENCORE && gauntlet && Array.isArray(gauntlet.games) && gauntlet.games.length >= 2);
+  const backOn = backAvail && gauntDone === false;
+  // Which POP-UPS come after a finished run: on the Gauntlet only when there
+  // is no Encore left to offer today, and on the Encore only once the
+  // Gauntlet is done (until then its own nudge back takes the slot).
+  const afterCards = (ENCORE && (!backAvail || gauntDone === true)) || circuitId === 'math' || (GAUNT && (!encoreOn || encoreDone));
+  // The inline more-runs LIST is always on the trivia and math endings, so
+  // the other trivia run is listed whenever it is unplayed (owner, 2026-10-14).
+  const listCards = afterCards || ENCORE || GAUNT;
   const STORE_KEY = `sot_run_${circuitId}_${etToday()}`;
 
   const [r, setR] = useState(() => freshRun());
@@ -244,6 +254,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
 
   useEffect(() => { rRef.current = r; }, [r]);
   useEffect(() => { if (encoreOn) setEncoreDone(runDoneToday('triviaencore')); }, [encoreOn]);
+  useEffect(() => { if (ENCORE) setGauntDone(runDoneToday('gauntlet')); }, [ENCORE]);
   useEffect(() => { lockRef.current = lock; }, [lock]);
   useEffect(() => { holdRef.current = hold; }, [hold]);
 
@@ -974,7 +985,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           run not done today. It replaced the one-at-a-time RunNudgePop chain.
           Waits for the /trivia door card if it is up. See MoreRuns.jsx. */}
       {afterCards && (
-        <MoreRunsPop self={ENCORE ? 'gauntlet' : circuitId} ready={done && doneAtLoad.current === false && !curtain && !doorUp && !moreShown} delay={3500} />
+        <MoreRunsPop self={circuitId} ready={done && doneAtLoad.current === false && !curtain && !doorUp && !moreShown} delay={3500} />
       )}
 
       {/* THE ONLY CHROME. Not LoftCap and not the site footer: the run is a
@@ -1751,6 +1762,15 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   );
                   return (
                     <div className="rn-doors">
+                      {backOn ? (
+                        <a className="rn-door pri rn-gback" href={gauntlet.href || '/trivia'}>
+                          <span className="rn-dtx">
+                            <span className="rn-dnm">Take the Trivia Gauntlet</span>
+                            <span className="rn-dsb">Today&rsquo;s main run: {gauntlet.games.map((g) => g.name).join(', ')}</span>
+                          </span>
+                          <span className="rn-dar" aria-hidden="true">&rsaquo;</span>
+                        </a>
+                      ) : null}
                       {encoreOn ? (
                         <a className="rn-door pri rn-encore" href={encore.href || '/triviaencore'}>
                           <span className="rn-dtx">
@@ -1824,7 +1844,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   );
                 })()}
 
-                {afterCards ? <MoreRunsList self={ENCORE ? 'gauntlet' : circuitId} /> : null}
+                {listCards ? <MoreRunsList self={circuitId} /> : null}
 
                 <div className="rn-vacts rn-sacts">
                   <button type="button" className="rn-vb" onClick={shareRun}>
@@ -1876,6 +1896,15 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           onShown={() => setMoreShown(true)}
         />
       ) : null}
+      {backOn ? (
+        <GauntletBackPop
+          ready={hydrated && done && !curtain && doneAtLoad.current === false && !r.practice}
+          games={gauntlet.games}
+          href={gauntlet.href || '/trivia'}
+          onOpenChange={setDoorUp}
+          onShown={() => setMoreShown(true)}
+        />
+      ) : null}
       {afterCards && (
         <GauntletMorePop circuitId={ENCORE ? 'gauntlet' : circuitId} ready={hydrated && done && !curtain} results={r.results} sections={sections} boards={boards} onOpenChange={setDoorUp} onShown={() => setMoreShown(true)} />
       )}
@@ -1890,6 +1919,8 @@ const CSS = `
 .rn-bc{display:block;font-size:10.5px;font-weight:600;opacity:.75}
 .rn-door.rn-encore{border-color:#e8b43a}
 .rn-door.rn-encore .rn-dnm{color:#e8b43a}
+.rn-door.rn-gback{border-color:#7dd3fc}
+.rn-door.rn-gback .rn-dnm{color:#7dd3fc}
 
 ${MISS_CSS}
 /* THE RUN IS A DARK STAGE, not white cards on navy (owner, 2026-08-30, "it

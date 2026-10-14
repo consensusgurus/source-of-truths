@@ -2,7 +2,7 @@
 
 // MoreRuns — every other daily run, on one card (owner, 2026-10-09).
 //
-// The seven runs are the Trivia Gauntlet, the Math Gauntlet, Price Check,
+// The runs are the Trivia Gauntlet, the Trivia Encore (2026-10-14), the Math Gauntlet, Price Check,
 // Passport, Judged, Enter the Dojo (2026-10-12) and Read the Room (2026-10-13). Finishing one used to offer ONE other (RunNudgePop:
 // the Gauntlet offered Price Check, Price Check and Passport offered the
 // Gauntlet), so a player saw the rest one at a time, if at all. Now:
@@ -26,8 +26,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { T } from '@/lib/theme';
 import { RUN_DOORS, runDoneToday } from './RunDoorPop';
+import { circuitKeysFor } from '@/lib/circuits';
+import { DAILY_GAME_MAP } from '@/lib/daily-games';
 
-export const RUN_ORDER = ['gauntlet', 'math', 'pricecheck', 'passport', 'judged', 'dojo', 'room'];
+export const RUN_ORDER = ['gauntlet', 'triviaencore', 'math', 'pricecheck', 'passport', 'judged', 'dojo', 'room'];
 export const RUNS_POP_STORE = 'sot_runs_pop';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
@@ -49,13 +51,28 @@ function useOpenRuns(self, ready = true) {
   return ids;
 }
 
+// The two trivia runs rotate their roster daily, so their sub line names
+// TODAY's quizzes rather than a static list. Rows only render after the
+// effect in useOpenRuns, so reading the day here never meets the server render.
+const LIVE_ROSTER = { gauntlet: true, triviaencore: true };
+function subOf(id) {
+  const D = RUN_DOORS[id];
+  if (LIVE_ROSTER[id]) {
+    try {
+      const ks = circuitKeysFor(id) || [];
+      if (ks.length) return ks.map((k) => (DAILY_GAME_MAP[k] || {}).name || k).join(' \u00b7 ');
+    } catch (e) {}
+  }
+  return D.tags.map((t) => t[0]).join(' \u00b7 ');
+}
+
 function Row({ id, cls = 'mr' }) {
   const D = RUN_DOORS[id];
   return (
     <a className={`${cls}-row`} href={D.href} style={{ '--mr-acc': D.accent }}>
       <span className={`${cls}-tx`}>
         <span className={`${cls}-nm`}>{D.name}</span>
-        <span className={`${cls}-sb`}>{D.tags.map((t) => t[0]).join(' · ')}</span>
+        <span className={`${cls}-sb`}>{subOf(id)}</span>
       </span>
       <span className={`${cls}-go`}>Start <span aria-hidden="true">&rsaquo;</span></span>
     </a>
