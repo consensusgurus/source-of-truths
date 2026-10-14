@@ -555,7 +555,8 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
   const [clockShown] = useRevealPref(REVEAL.clock);
   const [boardShown, , setBoardShown] = useRevealPref(REVEAL.leaderboard);
   const race = useMemo(() => {
-    const others = (boardShown ? (ladder.others || []) : []).filter((r) => Number.isFinite(r.score));
+    // A run that opened nothing has no place on a rail measured in cells.
+    const others = (boardShown ? (ladder.others || []) : []).filter((r) => Number.isFinite(r.score) && r.score > 0);
     const mine = g.score;
     let next = null, behind = null;
     for (const r of others) {
@@ -593,13 +594,19 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
   }, [g.t0]);
   const railPlaced = useMemo(() => {
     if (!railH) return [];
-    const GAP = 22, H = railH;
+    // The You chip is taller than a name row, so it takes more room either side.
+    const H = railH;
+    const gapOf = (a, b) => (a.kind === 'me' || b.kind === 'me' ? 30 : 21);
     const arr = race.items
       .map((it) => ({ ...it, y: Math.min(1, it.score / race.max) * H }))
       .sort((a, b) => a.y - b.y || (a.kind === 'me' ? 1 : -1));
-    for (let k = 1; k < arr.length; k++) arr[k].y = Math.max(arr[k].y, arr[k - 1].y + GAP);
-    for (let k = arr.length - 1; k >= 0; k--) arr[k].y = Math.min(arr[k].y, H - 10 - (arr.length - 1 - k) * GAP);
-    for (const it of arr) it.y = Math.max(8, it.y);
+    for (let k = 1; k < arr.length; k++) arr[k].y = Math.max(arr[k].y, arr[k - 1].y + gapOf(arr[k - 1], arr[k]));
+    let floor = H - 10;
+    for (let k = arr.length - 1; k >= 0; k--) {
+      arr[k].y = Math.min(arr[k].y, floor);
+      if (k > 0) floor = arr[k].y - gapOf(arr[k - 1], arr[k]);
+    }
+    for (const it of arr) it.y = Math.max(12, it.y);
     return arr;
   }, [race, railH]);
   const pctOf = (v) => `${Math.min(100, (v / race.max) * 100).toFixed(2)}%`;
