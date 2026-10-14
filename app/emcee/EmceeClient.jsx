@@ -768,7 +768,7 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
              with a paper fallback; the one value the tokens do not carry is
              the black square, which must be darker than the square in BOTH
              registers, so it is published here per register as --mc-blk. */
-          .mc-wrap{--mc-blk:#05070d;--mc-soft:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 24%, var(--stg-cell, #fff));}
+          .mc-wrap{--mc-blk:#05070d;--mc-soft:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 30%, color-mix(in srgb, var(--stg-cell, #fff) 84%, #fff));}
           html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .mc-wrap{--mc-blk:#1e2433;--mc-soft:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 17%, var(--stg-cell, #fff));}
           .mc-prog{display:flex;flex-direction:column;gap:8px;margin:0 0 14px;}
           .mc-prog-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
