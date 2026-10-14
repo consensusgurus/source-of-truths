@@ -89,8 +89,8 @@ const COLORS = {
 // The squares come off the stage's own pair now, so the board follows the light
 // switch. Beech and walnut were two mid-tone woods: the brightest surface on a
 // near-black page, and a palette belonging to nothing else on the site.
-const LIGHT_SQ = 'var(--stg-sq-l, #efd9b5)';
-const DARK_SQ = 'var(--stg-sq-d, #b58863)';
+const LIGHT_SQ = 'var(--stg-chess-l, #e8ecf3)';
+const DARK_SQ = 'var(--stg-chess-d, #a7b3c6)';
 const SEL_SQ = 'rgba(107,68,35,0.55)';
 const LAST_SQ = 'rgba(232,180,58,0.55)';
 
@@ -124,9 +124,10 @@ function Piece({ code }) {
     <svg className="mt-pc" viewBox="0 0 45 45" aria-hidden="true" focusable="false">
       <path
         d={PIECE_PATH[code.toUpperCase()]}
-        fill={white ? T.white : '#16181d'}
-        stroke={white ? '#16181d' : T.white}
-        strokeWidth={white ? 2 : 1.1}
+        fill={white ? '#fbfaf6' : '#1a1d24'}
+        stroke={white ? '#1a1d24' : undefined}
+        style={white ? undefined : { stroke: 'var(--stg-chess-bstroke, #1a1d24)' }}
+        strokeWidth={white ? 1.9 : 1.1}
         strokeLinejoin="round"
       />
     </svg>
@@ -999,7 +1000,7 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
           .mt-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           .mt-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2,rgba(255,255,255,0.17))' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2,rgba(255,255,255,0.08))' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
           .mt-sq{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;}
-          .mt-pc{display:block;width:86%;height:86%;pointer-events:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,0.25));}
+          .mt-pc{display:block;width:88%;height:88%;pointer-events:none;filter:drop-shadow(0 1.5px 0 rgba(0,0,0,0.22));}
           .mt-dot{position:absolute;width:28%;height:28%;border-radius:50%;background:rgba(28,30,36,0.32);pointer-events:none;}
           .mt-ring{position:absolute;inset:6%;border-radius:50%;border:min(1.1vw,6px) solid rgba(28,30,36,0.3);pointer-events:none;}
           .mt-board.shake{animation:mtshake .34s ease;}
@@ -1093,7 +1094,7 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
                 // one-colour gradient layer: some Android browsers paint no CSS
                 // gradients at all (report 2026-10-06), and the selected square
                 // is the one thing a player cannot lose sight of. Same pixels.
-                const tint = isSel ? SEL_SQ : (isLast ? LAST_TINT : null);
+                const tint = isSel ? null : (isLast ? LAST_TINT : null);
                 if (checked) bg = `radial-gradient(circle, rgba(192,57,43,0.85) 12%, rgba(192,57,43,0.25) 62%, transparent 74%), ${dark ? DARK_SQ : LIGHT_SQ}`;
                 return (
                   <div
@@ -1103,7 +1104,7 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
                     role="button"
                     tabIndex={-1}
                     aria-label={squareName(sq) + (piece ? ` ${white ? 'white' : 'black'} ${piece.toUpperCase()}` : ' empty')}
-                    style={{ background: bg, boxShadow: [isHint ? `inset 0 0 0 3px ${T.successDeep}` : null, tint && !checked ? `inset 0 0 0 999px ${tint}` : null].filter(Boolean).join(', ') || undefined }}
+                    style={{ background: bg, boxShadow: [isHint || isSel ? `inset 0 0 0 3px #e8b43a` : null, tint && !checked ? `inset 0 0 0 999px ${tint}` : null].filter(Boolean).join(', ') || undefined }}
                   >
                     {f === 0 && (
                       <span className="mt-coord" style={{ left: 2, top: 1, color: dark ? LIGHT_SQ : DARK_SQ }}>{8 - r}</span>

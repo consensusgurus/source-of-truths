@@ -140,6 +140,8 @@ const GAMES = [
   { key: 'hands', href: '/hands', name: 'Hands', tag: 'The daily poker solitaire', img: '/games/btn-hands.png' },
   { key: 'finesse', href: '/finesse', name: 'Finesse', tag: 'The daily double dummy', img: '/games/btn-finesse.png' },
   { key: 'crib', href: '/crib', name: 'Crib', tag: 'Six cards, throw two', img: '/games/btn-crib.png' },
+  { key: 'hold', href: '/hold', name: 'Hold', tag: 'Video poker hold', img: '/games/btn-hold.png' },
+  { key: 'cell', href: '/cell', name: 'Cell', tag: 'The daily FreeCell', img: '/games/btn-cell.png' },
   { key: 'fib', href: '/fib', name: 'Fib', tag: 'One clue is lying', img: '/games/btn-fib.png' },
   { key: 'streak', href: '/streak', name: 'Streak', tag: 'Forty questions, one life', img: '/games/btn-streak.png' },
   { key: 'feud', href: '/feud', name: 'Feud', tag: 'Match the crowd', img: '/games/btn-feud.png' },
@@ -157,6 +159,7 @@ const GAMES = [
   { key: 'plot', href: '/plot', name: 'Plot', tag: 'Divide the whole board', img: '/games/btn-plot.png' },
   { key: 'barter', href: '/barter', name: 'Barter', tag: 'Trade the letters home', img: '/games/btn-barter.png' },
   { key: 'defend', href: '/defend', name: 'Defend', tag: 'Black to play and survive', img: '/games/btn-defend.png' },
+  { key: 'swindle', href: '/swindle', name: 'Swindle', tag: 'White to play and draw', img: '/games/btn-swindle.png' },
   { key: 'blitz', href: '/blitz', name: 'Blitz', tag: 'Twenty problems, one life', img: '/games/btn-blitz.png' },
   { key: 'blitzed', href: '/blitzed', name: 'Blitzed', tag: 'Twenty problems, three numbers each', img: '/games/btn-blitzed.png' },
   { key: 'gap', href: '/gap', name: 'Gap', tag: 'Twenty equations, one gap each', img: '/games/btn-gap.png' },
@@ -191,8 +194,8 @@ const CATEGORIES = [
   { key: 'crowd', label: 'Crowd Psychology', keys: ['outwit', 'outrank', 'feud'] },
   { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'sci', 'art', 'history', 'potluck', 'focus', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'redact', 'dating', 'extra'] },
   { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'park', 'impound', 'junkyard', 'snug', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'paths', 'chomp', 'ergo', 'docket', 'plot'] },
-  { key: 'endgame', label: 'End Game', keys: ['mate', 'defend', 'queen', 'four', 'check', 'chain', 'turn', 'yose'] },
-  { key: 'cards', label: 'Cards', keys: ['taire', 'hands', 'shoe', 'finesse', 'crib'] },
+  { key: 'endgame', label: 'End Game', keys: ['mate', 'defend', 'swindle', 'queen', 'four', 'check', 'chain', 'turn', 'yose'] },
+  { key: 'cards', label: 'Cards', keys: ['taire', 'cell', 'hands', 'hold', 'shoe', 'finesse', 'crib'] },
   { key: 'arcade', label: 'Arcade', keys: ['blocks', 'snake', 'dario', 'sweep'] },
 ];
 

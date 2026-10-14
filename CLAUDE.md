@@ -3833,6 +3833,9 @@ archive and hub chips use the short form `Sun`.
 | Turn | twelve empty squares instead of ten (from 2026-08-05) |
 | Yose | a 9x9 board with eleven open points against the weekday 7x7 and 8x8 (from launch, 2026-09-20) |
 | Crib | seven hands instead of five, three of them decided by the crib (from launch, 2026-09-20) |
+| Hold | fifteen hands instead of ten, at least five of them traps where the rule of thumb is wrong (from launch, 2026-10-18) |
+| Cell | forty cards (ace to ten) in seven columns on two free cells, against the weekday thirty-two in six (from launch, 2026-10-18) |
+| Swindle | the deepest draw of the week, five White moves or more (from launch, 2026-10-18) |
 | Duet | a 10x10 board against the weekday 6x6 and 8x8 (from launch, 2026-10-03) |
 | Lamps | a 10x10 board against the weekday 7x7 and 8x8 (from launch, 2026-10-04) |
 | Ergo | twelve statements to sort instead of nine, under seven rules (from launch, 2026-10-11) |
@@ -9328,3 +9331,37 @@ The Encore shows everywhere the other runs do (owner, 2026-10-14): `SHOWN` and `
 lib/circuits.js, `CIRC_LEAD`, `PILL_CIRCUITS` and `RUN_SHORT` ('Encore') in StageToday,
 `LEAD_CIRCUITS` in TodayClient, its card drawing in app/CircuitArt.jsx, and a second CTA on the
 Trivia category page through `alsoCircuit` in lib/puzzle-categories.js.
+
+## Hold (`/hold`), Cell (`/cell`) and Swindle (`/swindle`): launched 2026-10-14
+
+Wired by `scripts/wire-hold-cell-swindle.mjs` (anchored after Crib and Defend, idempotent). Glyphs in
+`lib/game-glyphs.js`, share cards `public/og/<key>.png` from `scripts/bake-og.mjs hold cell swindle`.
+Premiere 2026-10-14 to 10-18. Banks run 110 days, 2026-10-14 to 2027-01-31.
+
+**Hold** (Cards, `miss: null`, first attempt stands, clock breaks ties): ten Jacks or Better hands a
+day (fifteen on Sunday), 9/6 full pay. A hold's value is its exact expected return over every draw
+from the 47 unseen cards; one point when the player's hold ties the best. The flavour draw after each
+hand comes from a fixed per-day order and scores nothing. `lib/hold-core.js` values all 32 holds;
+`scripts/gen-hold.mjs` (pool with worker threads, resumable in /tmp/build, then bank);
+`scripts/verify-hold.mjs` has its own sort-based evaluator over all 2,598,960 hands. The ramp is the
+GAP between best and second-best hold plus a count of TRAPS (the best hold differs from a stated
+naive rule): Mon gap >= 0.30 no traps, rising to Sat 5 to 6 traps, Sunday 5 to 7 of 15.
+
+**Cell** (Cards, keepsAnswer, attempts 'graded', `miss: 'Tries'`, scored with lib/par.js like Taire):
+FreeCell on 32 cards (ace to eight) in six columns, free cells Mon/Tue 4, Wed/Thu 3, Fri/Sat 2;
+Sunday 40 cards in seven columns on two cells. Every player move counts one; safe autoplay is free
+and the solver models it, so `perfect` is the exact minimum. No solution ships. `lib/cell-core.js`
+is the rules engine; `scripts/gen-cell.mjs` an exact A*; `scripts/verify-cell.mjs` re-proves every
+minimum with its own engine (about 8 minutes; `--quick`). Posts `progress` = cards home.
+
+**Swindle** (End Game, keepsAnswer, `miss: 'Tries'`, SOLVE_ONLY): White is badly lost; exactly one
+first move forces a draw (stalemate, threefold, insufficient material), every other is mate within
+three. The bank stores a BOOK of every holding line; a move off the book throws the draw away and is
+counted silently. `lib/swindle-core.js` holds the deterministic defence; `scripts/verify-swindle.mjs`
+re-derives everything with its own 10x12 chess. **Swindle debuted the "Slate" chess board (owner
+pick A, 2026-10-14, canvas "Chess Boards and Gift")** in `app/swindle/SwBoard.jsx`: cool grey squares
+that follow the register, two-tone pieces with a hairline, gold last move and selection, coordinates
+outside the board. Mate, Defend and Queen moved onto the same squares the same day: the board tokens
+are `--stg-chess-l` / `--stg-chess-d` / `--stg-chess-bstroke` in app/globals.css (both registers),
+and selection and the hint are a gold ring. Check keeps its own `--stg-sq-*` pair.
+

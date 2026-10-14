@@ -86,6 +86,9 @@ import { PUZZLES as FINESSE_FULL } from '../finesse/puzzles';
 import { PUZZLES as TURN_FULL } from '../turn/puzzles';
 import { PUZZLES as YOSE_FULL } from '../yose/puzzles';
 import { PUZZLES as CRIB_FULL } from '../crib/puzzles';
+import { PUZZLES as HOLD_FULL } from '../hold/puzzles';
+import { PUZZLES as CELL_FULL } from '../cell/puzzles';
+import { PUZZLES as SWINDLE_FULL } from '../swindle/puzzles';
 import { PUZZLES as SUFFICE_FULL } from '../suffice/puzzles';
 import { PUZZLES as DOCKET_FULL } from '../docket/puzzles';
 import { PUZZLES as ERGO_FULL } from '../ergo/puzzles';
@@ -186,6 +189,9 @@ const CHAIN = CHAIN_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ nu
 const TURN = TURN_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const YOSE = YOSE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const CRIB = CRIB_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const HOLD = HOLD_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const CELL = CELL_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const SWINDLE = SWINDLE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SUFFICE = SUFFICE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const DOCKET = DOCKET_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const ERGO = ERGO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -356,6 +362,8 @@ const GAMES = [
   { key: 'hands', name: 'Hands', path: '/hands', tag: 'The daily poker solitaire', accent: '#7f1d1d', bg: '#f6eaea', border: 'rgba(127,29,29,0.4)', src: HANDS },
   { key: 'finesse', name: 'Finesse', path: '/finesse', tag: 'The daily double dummy', accent: '#4c1d95', bg: '#ede9fe', border: 'rgba(76,29,149,0.4)', src: FINESSE },
   { key: 'crib', name: 'Crib', path: '/crib', tag: 'Six cards, throw two', accent: '#a16207', bg: '#fbf3dd', border: 'rgba(161,98,7,0.4)', src: CRIB },
+  { key: 'hold', name: 'Hold', path: '/hold', tag: 'Video poker hold', accent: '#b91c1c', bg: '#fdecec', border: 'rgba(185,28,28,0.4)', src: HOLD },
+  { key: 'cell', name: 'Cell', path: '/cell', tag: 'The daily FreeCell', accent: '#0e7490', bg: '#e6f4f7', border: 'rgba(14,116,144,0.4)', src: CELL },
   { key: 'chain', name: 'Chain', path: '/chain', tag: 'Take them, or leave them', accent: '#4a044e', bg: '#f6ecf8', border: 'rgba(74,4,78,0.4)', src: CHAIN },
   { key: 'turn', name: 'Turn', path: '/turn', tag: 'Ten squares left', accent: '#226218', bg: '#e9f3e6', border: 'rgba(34,98,24,0.4)', src: TURN },
   { key: 'yose', name: 'Yose', path: '/yose', tag: 'The last points on the board', accent: '#44403c', bg: '#efedeb', border: 'rgba(68,64,60,0.4)', src: YOSE },
@@ -365,6 +373,7 @@ const GAMES = [
   { key: 'plot', name: 'Plot', path: '/plot', tag: 'Divide the whole board', accent: '#78350f', bg: '#fbf1e5', border: 'rgba(120,53,15,0.4)', src: PLOT },
   { key: 'barter', name: 'Barter', path: '/barter', tag: 'Trade the letters home', accent: '#be123c', bg: '#fdeef2', border: 'rgba(190,18,60,0.4)', src: BARTER },
   { key: 'defend', name: 'Defend', path: '/defend', tag: 'Black to play and survive', accent: '#2f4f4f', bg: '#e9f0ef', border: 'rgba(47,79,79,0.4)', src: DEFEND },
+  { key: 'swindle', name: 'Swindle', path: '/swindle', tag: 'White to play and draw', accent: '#9a3412', bg: '#fbede6', border: 'rgba(154,52,18,0.4)', src: SWINDLE },
   { key: 'blitz', name: 'Blitz', path: '/blitz', tag: 'Twenty problems, one life', accent: '#657512', bg: '#f3f7de', border: 'rgba(101,117,18,0.4)', src: BLITZ },
   { key: 'blitzed', name: 'Blitzed', path: '/blitzed', tag: 'Twenty problems, three numbers each', accent: '#3f6d1f', bg: '#eaf5e2', border: 'rgba(63,109,31,0.4)', src: BLITZED },
   { key: 'gap', name: 'Gap', path: '/gap', tag: 'Twenty equations, one gap each', accent: '#9d174d', bg: '#fce7f3', border: 'rgba(157,23,77,0.4)', src: GAP },

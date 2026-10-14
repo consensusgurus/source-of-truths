@@ -333,6 +333,10 @@ button, input, textarea, select { border-radius: 8px; }
      is light in either register for the same reason. */
   --stg-sq-l: #e9edf4;
   --stg-sq-d: #39414f;
+  /* The chess board, "Slate" (owner pick A, 2026-10-14): Mate, Defend, Queen, Swindle. */
+  --stg-chess-l: #353d4f;
+  --stg-chess-d: #232a39;
+  --stg-chess-bstroke: #c9d1de;
   /* A climb and a slip: the one semantic pair on a stage, kept out of the
      category family on purpose. Each register gets the legible end. */
   --stg-up: #6ee7b7;
@@ -649,6 +653,9 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
   --stg-b4: rgba(11, 15, 26, 0.20);
   --stg-sq-l: #ffffff;
   --stg-sq-d: #94a1b5;
+  --stg-chess-l: #e8ecf3;
+  --stg-chess-d: #a7b3c6;
+  --stg-chess-bstroke: #1a1d24;
   --stg-up: #047857;
   --stg-dn: #be123c;
   --stg-good: #047857;
