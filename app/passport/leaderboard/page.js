@@ -7,7 +7,7 @@ import PriceCheckBoard from '../../pricecheck/leaderboard/PriceCheckBoard';
 
 export const metadata = {
   title: 'Passport Leaderboard | Mind Loft',
-  description: "Today's Passport board, every crowned day, and the all-time champions. One mystery country, five rounds, one score out of 50.",
+  description: "Today's Passport board, every crowned day, and the all-time champions. Span, Flank, Ping and nine size calls, one score out of 50.",
   alternates: { canonical: '/passport/leaderboard' },
   openGraph: {
     title: 'Passport Leaderboard | Mind Loft',
@@ -28,5 +28,5 @@ function etLabel() {
 export default function PassportLeaderboardPage() {
   return <PriceCheckBoard dateLabel={etLabel()} circuit="passport" name="Passport" path="/passport"
     emptyLine="Nobody has landed yet today. Yours would be the first passport on the board."
-    rankedLine="Ranked on the four legs added up, out of 50" />;
+    rankedLine="Ranked on the four legs added up" />;
 }
