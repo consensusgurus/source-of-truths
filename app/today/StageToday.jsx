@@ -31,7 +31,7 @@
 // this surface adds no new endpoint and cannot disagree with the other one
 // about what has been played.
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { DAILY_GAMES as ALL_DAILY_GAMES, DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
+import { DAILY_GAMES as ALL_DAILY_GAMES, DAILY_GAME_MAP, liveDailyKeys, dailyScoreText } from '@/lib/daily-games';
 
 // THE LIVE ROSTER, not the whole registry. A retired game stays in DAILY_GAMES
 // so its archived days keep scoring, so listing from that array put Circa
@@ -593,6 +593,69 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
           </svg>
         </button>
       ) : null}
+    </a>
+  );
+}
+
+// THE LEDGER ROW (owner, 2026-10-14). On a desktop, a category pane and My
+// Puzzles draw one row per game instead of a tile, and the row carries what the
+// tile and the "Your favorites" table below it used to say separately: the
+// game, today's leader and play count, the group's line, the reader's own
+// all-time record, and the way in. All Puzzles stays tiled, and so does every
+// pane under 901px, where the phone's tiles rule (owner, 2026-10-07).
+//
+// EVERY FIGURE HERE IS ALREADY ON THE PAGE. The leader and the plays come off
+// the daily-combined read the board uses, the group line off the standing,
+// the record off the same /api/quiz/my-plays read the favorites table made.
+// Nothing is a new request.
+function LedgerRow({ g, hue, tq, day, dots, res, done, inprog, me, favLoaded, max, canPin, favorites, toggleFavorite, fk }) {
+  const isDone = done.has(g.key);
+  const state = isDone ? 'done' : inprog.has(g.key) ? 'open' : '';
+  const gw = !isDone && !!(dots && dots.played && dots.played.size);
+  const lead = day && Array.isArray(day.board) && day.board[0] ? day.board[0] : null;
+  const plays = day ? Number(day.plays || day.field) || 0 : 0;
+  const sc = lead ? [dailyScoreText(g.key, lead.score, lead.total), mmss(lead.timeElapsed)].filter(Boolean).join(' · ') : '';
+  let grpLine = '';
+  if (dots && dots.mine) grpLine = `${dots.name}: you #${dots.mine.rank} of ${dots.mine.field}`;
+  else if (dots && dots.lead) grpLine = `${dots.name}: ${dots.lead.username} #${dots.lead.rank || 1} of ${Math.max(dots.played.size, 1)}`;
+  const cta = res ? `You #${res.rank} of ${res.field}` : state === 'open' ? 'Resume' : isDone ? 'Played' : (favLoaded && !me ? 'Try it' : 'Play');
+  const on = !!(favorites && favorites.includes(g.key));
+  const rec = me ? [me.best ? 'Best ' + mmss(me.best) : '', me.streak ? me.streak + '-day streak' : ''].filter(Boolean).join(' · ') : '';
+  return (
+    <a className={`sty-lr ${state}${gw ? ' gw' : ''}`} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`}
+      data-fk={fk || g.key} style={hue ? { '--cc': hue } : undefined}>
+      <span className="ic"><Glyph k={g.key} size={18} /></span>
+      <span className="nm"><b>{g.name}</b><span className="tg">{g.tag}</span></span>
+      <span className="td">
+        {!day ? <span className="ph" aria-hidden="true" />
+          : lead ? <><b>{lead.username}</b> <span className="sc">{sc}</span></>
+          : <span className="mu">{plays ? 'No solve yet' : 'Open. Be first.'}</span>}
+        {day ? <i>{plays.toLocaleString()} {plays === 1 ? 'play' : 'plays'} today{grpLine ? <em>{' · ' + grpLine}</em> : null}</i> : null}
+      </span>
+      <span className="yu">
+        {!favLoaded ? <span className="ph" aria-hidden="true" />
+          : me && me.plays ? (
+            <>
+              <span className="bl"><span className="tr"><s style={{ width: `${Math.max(4, Math.round((me.plays / Math.max(1, max)) * 100))}%` }} /></span><b>{me.plays.toLocaleString()} {me.plays === 1 ? 'play' : 'plays'}</b></span>
+              {rec ? <i>{rec}</i> : null}
+            </>
+          ) : <span className="mu">Not tried yet</span>}
+      </span>
+      <span className="ct">{cta}</span>
+      {canPin ? (
+        <button
+          type="button"
+          className={'sty-star' + (on ? ' on' : '')}
+          aria-label={on ? `Unstar ${g.name}` : `Star ${g.name}`}
+          title={on ? 'Remove from My games' : 'Add to My games'}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); starPop(e.currentTarget); toggleFavorite(g.key); }}
+        >
+          <svg viewBox="0 0 24 24" width="13" height="13" fill={on ? 'currentColor' : 'none'}
+            stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 4l2.4 5 5.6.8-4 3.9 1 5.5-5-2.7-5 2.7 1-5.5-4-3.9 5.6-.8z" />
+          </svg>
+        </button>
+      ) : <span />}
     </a>
   );
 }
@@ -2268,7 +2331,8 @@ export default function StageToday() {
   // One read for the whole page, the first time a short category opens.
   const [fav, setFav] = useState(null);
   const favAsked = useRef(false);
-  const favWanted = !!(railCat && fitFor(railCat.games.length)) || sortBy === 'pop';
+  const favWanted = !!(railCat && fitFor(railCat.games.length)) || sortBy === 'pop'
+    || (mid && (!!railCat || paneOn === MINE_ID));
   useEffect(() => {
     if (!favWanted || favAsked.current) return;
     favAsked.current = true;
@@ -2340,6 +2404,50 @@ export default function StageToday() {
             </a>
           );
         })}
+      </div>
+    );
+  };
+  // THE LEDGER (see LedgerRow). One board read, keyed by game.
+  const boardBy = useMemo(() => {
+    const m = {};
+    for (const x of (board && Array.isArray(board.games) ? board.games : [])) if (x && x.key) m[x.key] = x;
+    return m;
+  }, [board]);
+  const ledgerRows = (list, pre, ownHue) => {
+    const max = fav ? list.reduce((a, g) => Math.max(a, ((fav.mine[g.key] || {}).plays) || 0), 0) : 0;
+    return list.map((g) => (
+      <LedgerRow key={g.key} g={g} hue={ownHue ? hueFor(g.cat) : null} tq={tq}
+        day={board ? (boardBy[g.key] || { board: [], plays: 0 }) : null}
+        dots={dotsL ? dotsL(g.key) : null} res={standBy[g.key]} done={done} inprog={inprog}
+        me={fav ? fav.mine[g.key] || null : null} favLoaded={!!fav} max={max}
+        canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite} fk={pre + ':' + g.key} />
+    ));
+  };
+  const ledgerHead = (title, count) => (
+    <div className="sty-lh" aria-hidden={title ? undefined : 'true'}>
+      <span />
+      <span className={title ? 't' : ''}>{title ? <>{title}<em>{' · '}{count}</em></> : 'Game'}</span>
+      <span>Today&apos;s leader</span>
+      <span>You, all time</span>
+      <span /><span />
+    </div>
+  );
+  const catLedger = (games) => (
+    <div className="sty-led">
+      {ledgerHead(null)}
+      {ledgerRows(sortGames(games), 'led', false)}
+    </div>
+  );
+  // MY PUZZLES IS THE DAY'S LIST (owner, 2026-10-14): what is left to play,
+  // then what is done, A to Z inside each.
+  const mineLedger = () => {
+    const az = [...pinned].sort((a, b) => a.name.localeCompare(b.name));
+    const left = az.filter((g) => !done.has(g.key));
+    const fin = az.filter((g) => done.has(g.key));
+    return (
+      <div className={'sty-led' + (isOpen(MINE_ID) ? '' : ' shut')}>
+        {left.length ? <>{ledgerHead('To play today', left.length)}{ledgerRows(left, 'mine', true)}</> : null}
+        {fin.length ? <>{ledgerHead('Done today', fin.length)}{ledgerRows(fin, 'mined', true)}</> : null}
       </div>
     );
   };
@@ -2583,6 +2691,8 @@ export default function StageToday() {
           {sortCtl(false)}
         </div>
         {circPills(cat, true)}
+        {mid ? catLedger(games) : null}
+        {!mid ? <>
         <div className={'sty-games' + (fit ? ' fit' : '')} style={fitStyle}>
           {sortGames(games).map((g, i) => (
             <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
@@ -2608,6 +2718,7 @@ export default function StageToday() {
           })()}
         </div>
         {fit ? favBlock(cat, games, fit.k) : null}
+        </> : null}
       </section>
     );
   });
@@ -2804,7 +2915,8 @@ export default function StageToday() {
                 <span className="sty-go">Choose</span>
               </a>
             ) : null}
-            {pinned.length ? (
+            {pinned.length && mid ? mineLedger() : null}
+            {pinned.length && !mid ? (
               <div className={'sty-games' + (isOpen(MINE_ID) ? '' : ' shut')}>
                 {/* ON A PHONE MY GAMES IS ALPHABETICAL (owner, 2026-10-03); desktop keeps played-last. */}
                 {(narrow ? [...pinned].sort((a, b) => a.name.localeCompare(b.name)) : playedLast(pinned, done)).map((g, i) => (
@@ -4586,4 +4698,39 @@ ${PATCH_CSS}
   .sty-ric .l2{color:var(--stg-ink2);font-weight:800;}
   .sty-ric:focus-visible .sq{outline:2px solid var(--stg-acc);outline-offset:2px;}
 }
+
+/* THE LEDGER (owner, 2026-10-14): desktop category panes and My Puzzles. */
+.sty-led{border:1px solid var(--stg-line);border-radius:12px;overflow:hidden;background:var(--stg-surf);}
+.sty-led.shut{display:none;}
+.sty-lh,.sty-lr{display:grid;grid-template-columns:32px minmax(130px,1.1fr) minmax(150px,1.25fr) minmax(140px,1fr) 104px 26px;align-items:center;column-gap:14px;}
+.sty-lh{padding:9px 14px;background:var(--stg-ground);font-family:${MONO};font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute);}
+.sty-lh+.sty-lr{border-top:1px solid var(--stg-line);}
+.sty-lr+.sty-lh{border-top:1px solid var(--stg-line);}
+.sty-lh .t{color:var(--stg-ink);font-weight:800;}
+.sty-lh .t em{font-style:normal;color:var(--stg-mute);font-weight:500;}
+.sty-lr{position:relative;padding:9px 14px;text-decoration:none;color:var(--stg-ink);}
+.sty-lr+.sty-lr{border-top:1px solid var(--stg-line);}
+.sty-lr:hover{background:var(--stg-chip);}
+.sty-lr.gw,.sty-lr.open{box-shadow:inset 3px 0 0 var(--cc);}
+.sty-lr.done{background:color-mix(in srgb,var(--cc) 12%,var(--stg-surf));}
+.sty-lr:focus-visible{outline:2px solid var(--cc);outline-offset:-2px;}
+.sty-lr .ic{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--stg-chip);color:var(--cc);}
+.sty-lr .nm,.sty-lr .td,.sty-lr .yu{min-width:0;}
+.sty-lr .nm b{display:block;font-size:14.5px;font-weight:800;letter-spacing:-0.01em;}
+.sty-lr .tg{display:block;font-size:12px;font-weight:600;color:var(--stg-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-lr .td,.sty-lr .yu{font-size:12.5px;line-height:1.35;}
+.sty-lr .td b,.sty-lr .yu b{font-weight:800;}
+.sty-lr .sc{color:var(--stg-ink2);font-variant-numeric:tabular-nums;}
+.sty-lr i{display:block;margin-top:2px;font-style:normal;font-size:11px;color:var(--stg-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-lr i em{font-style:normal;color:var(--stg-ink2);}
+.sty-lr .mu{color:var(--stg-mute);font-weight:600;}
+.sty-lr .ph{display:block;width:110px;max-width:100%;height:10px;border-radius:3px;background:var(--stg-chip);}
+.sty-lr .bl{display:flex;align-items:center;gap:8px;}
+.sty-lr .tr{flex:1;max-width:84px;height:6px;border-radius:3px;background:var(--stg-chip);overflow:hidden;}
+.sty-lr .tr s{display:block;height:100%;background:var(--cc);}
+.sty-lr .ct{justify-self:end;display:inline-flex;align-items:center;justify-content:center;min-width:92px;height:32px;padding:0 10px;box-sizing:border-box;
+  border-radius:8px;border:1.5px solid var(--stg-line2);font-size:12.5px;font-weight:800;color:var(--stg-ink);white-space:nowrap;}
+.sty-lr:hover .ct,.sty-lr.open .ct{border-color:var(--cc);}
+.sty-lr.done .ct{color:var(--stg-ink2);}
+.sty-lr .sty-star{position:relative;top:auto;right:auto;}
 `;
