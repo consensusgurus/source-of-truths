@@ -16,8 +16,10 @@
 // THE EMPTY BOARD SHOWS NOTHING (owner, 2026-10-15): no outline of an empty
 // spot is ever drawn, because a spot's outline is its piece's shape.
 //
-// THE TRAY (owner, 2026-10-15): All, or Sort into two bins, by Edges (edge
-// pieces / middle) or by Colors (one of the picture's colors / the rest). The
+// THE TRAY (owner, 2026-10-15): one control, Edges, Colors or All, and it opens
+// sorted on Edges (owner, 2026-10-15, second pass: no All/Sort toggle). Edges
+// splits the loose pieces into edge pieces / middle, Colors into one of the
+// picture's colors / the rest, All is one unsorted bin. The
 // colors are measured from today's photo on a canvas, which is why the photo
 // comes through the same-origin /api/jig/img route.
 //
@@ -321,8 +323,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
   const ORDER = useMemo(() => trayOrder(NP, PUZZLE.seed), [NP, PUZZLE.seed]);
 
   const [g, setG] = useState(() => freshState());
-  const [mode, setMode] = useState('all');      // tray: all | sort
-  const [by, setBy] = useState('edges');        // sort by: edges | color
+  const [view, setView] = useState('edges');    // tray: edges | color | all (opens sorted)
   const [colPick, setColPick] = useState(0);    // which color group fills the first bin
   const [groups, setGroups] = useState(null);   // color groups measured from the photo
   const [imgOk, setImgOk] = useState(true);
@@ -778,8 +779,8 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
   const haveColors = Array.isArray(groups) && groups.length >= 2;
   const colIdx = haveColors ? Math.min(colPick, groups.length - 1) : 0;
   const bins = useMemo(() => {
-    if (mode === 'all') return null;
-    if (by === 'color' && haveColors) {
+    if (view === 'all') return null;
+    if (view === 'color' && haveColors) {
       const gr = groups[colIdx];
       return [
         { key: 'a', label: gr.name, items: loose.filter((i) => gr.members.has(i)) },
@@ -790,7 +791,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
       { key: 'a', label: 'Edges', items: loose.filter((i) => PIECES[i].edge) },
       { key: 'b', label: 'Middle', items: loose.filter((i) => !PIECES[i].edge) },
     ];
-  }, [mode, by, haveColors, groups, colIdx, loose, PIECES]);
+  }, [view, haveColors, groups, colIdx, loose, PIECES]);
 
   // A piece drawn on its own, in board units, cropped around its tabs. Every
   // drawing points its fill at the one photo pattern in the board's defs.
@@ -824,10 +825,10 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
       lead="Put the picture back together. Today's photo is cut into pieces that interlock with tabs and blanks; drag each piece from the tray to its place on the board. Drop it near its own spot and it snaps in and stays. Pieces never need turning."
       steps={[
         <><b>Drag a piece</b> from the tray onto the board. Near its own spot it snaps in; anywhere else it slides back to the tray, and that costs nothing. You can also <b>tap a piece</b> to pick it, then tap its spot.</>,
-        <><b>Sort the tray</b> with All or Sort. Sort splits the loose pieces into two bins: by <b>Edges</b> (edge pieces and the middle) or by <b>Colors</b> (one of the picture&rsquo;s colors and the rest).</>,
+        <><b>The tray opens sorted.</b> <b>Edges</b> splits the loose pieces into edge pieces and the middle, <b>Colors</b> into one of the picture&rsquo;s colors and the rest, and <b>All</b> shows every loose piece in one bin.</>,
         <><b>Peek</b> shows the whole picture for a moment and adds 15 seconds to your clock. Edge pieces have a straight side; corners have two.</>,
       ]}
-      knack="Do the edges first: switch the tray to Sort by Edges and build the frame, then fill it a color at a time. A sky, a lake or a field falls fastest once its pieces are in one bin."
+      knack="Do the edges first: the tray opens on Edges, so build the frame, then fill it a color at a time. A sky, a lake or a field falls fastest once its pieces are in one bin."
       footer="Finish the picture and you score a perfect 10, and because nothing is counted against you, the daily leaderboard is a straight race on the clock, Peek seconds included. One free hint, on your first ever play, drops a corner in. The cut grows through the week, 48 pieces on Monday to 77 on Saturday, and the Sunday Edition is 80."
     />
   );
@@ -1002,18 +1003,13 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
             {playing && (
               <div className="jg-side">
                 <div className="jg-ctl">
-                  <div className="jg-seg" role="group" aria-label="Tray">
-                    <button type="button" aria-pressed={mode === 'all'} onClick={() => setMode('all')}>All</button>
-                    <button type="button" aria-pressed={mode === 'sort'} onClick={() => setMode('sort')}>Sort</button>
+                  <div className="jg-seg" role="group" aria-label="Sort the tray">
+                    <button type="button" aria-pressed={view === 'edges'} onClick={() => setView('edges')}>Edges</button>
+                    <button type="button" aria-pressed={view === 'color'} onClick={() => setView('color')} disabled={!haveColors}>Colors</button>
+                    <button type="button" aria-pressed={view === 'all'} onClick={() => setView('all')}>All</button>
                   </div>
-                  {mode === 'sort' && (
-                    <div className="jg-seg" role="group" aria-label="Sort by">
-                      <button type="button" aria-pressed={by === 'edges'} onClick={() => setBy('edges')}>Edges</button>
-                      <button type="button" aria-pressed={by === 'color'} onClick={() => setBy('color')} disabled={!haveColors}>Colors</button>
-                    </div>
-                  )}
                 </div>
-                {mode === 'sort' && by === 'color' && haveColors && (
+                {view === 'color' && haveColors && (
                   <div className="jg-sw" role="group" aria-label="Color for the first bin">
                     {groups.map((gr, k) => (
                       <button key={gr.name} type="button" className="jg-swb" aria-pressed={k === colIdx} onClick={() => setColPick(k)}>
@@ -1022,7 +1018,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
                     ))}
                   </div>
                 )}
-                <div className="jg-tray" style={{ maxHeight: boardH ? Math.max(220, boardH - (mode === 'sort' ? (by === 'color' ? 110 : 60) : 60)) : 460 }}>
+                <div className="jg-tray" style={{ maxHeight: boardH ? Math.max(220, boardH - (view === 'color' && haveColors ? 110 : 60)) : 460 }}>
                   {bins ? bins.map((b) => (
                     <div key={b.key} className="jg-bin">
                       <div className="jg-binlab"><b>{b.label}</b> &middot; {b.items.length}</div>
