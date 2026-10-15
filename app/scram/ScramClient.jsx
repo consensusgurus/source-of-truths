@@ -457,8 +457,8 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
   const L = answer.length;
   const groups = word.a.split(' ');
   // Cells shrink on a narrow screen so a twelve-letter Sunday answer fits a phone.
-  const cellW = `min(46px, calc((100vw - 40px) / ${L + groups.length - 1}))`;
-  const miniW = `min(34px, calc((100vw - 40px) / ${L + 1}))`;
+  const cellW = `min(52px, calc((100vw - 72px) / ${L + groups.length - 1}))`;
+  const miniW = `min(34px, calc((100vw - 72px) / ${L + 1}))`;
   const showAns = curSolved || (ended && ansOpen);
   const flipping = fx.good === sel && Date.now() - fx.goodAt < 900;
   const shaking = fx.bad === sel && Date.now() - fx.badAt < 600;
@@ -499,7 +499,7 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
         const live = n > 0;
         return (
           <button key={ch} className="sc-key" onClick={() => onKey(ch)} disabled={!live} aria-label={live ? `${ch}${n > 1 ? `, ${n} left` : ''}` : `${ch}, not in this word`}
-            style={{ position: 'relative', flex: '1 0 0', height: 46, background: live ? KEY_BG : 'transparent', color: live ? INK : FADED, opacity: live ? 1 : 0.38, fontSize: 15, border: live ? KEY_LINE : '1.5px solid transparent', cursor: live ? 'pointer' : 'default' }}>
+            style={{ position: 'relative', flex: '1 0 0', height: 46, background: live ? KEY_BG : 'transparent', color: live ? INK : FADED, opacity: live ? 1 : 0.16, fontSize: 15, border: live ? KEY_LINE : '1.5px solid transparent', cursor: live ? 'pointer' : 'default' }}>
             {ch}
             {n > 1 && <span style={{ position: 'absolute', top: 2, right: 4, fontSize: 9.5, fontWeight: 800, color: ACC_INK }}>{n}</span>}
           </button>
@@ -652,7 +652,10 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
                 {navBtn(1)}
               </div>
 
-              <div key={'w' + sel} className="sc-word" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+              {/* The input panel: scramble, answer squares and Skip in one framed
+                  card, so the thing you are typing into reads as the subject of the
+                  page and the pips, nav and keyboard around it read as furniture. */}
+              <div key={'w' + sel} className="sc-word sc-panel" style={{ alignSelf: 'stretch', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, padding: '22px 16px 16px', borderRadius: 14, background: SURF, border: STAGE ? '1.5px solid var(--stg-line2,rgba(255,255,255,0.17))' : '1.5px solid rgba(20,22,28,0.14)', borderTop: `3px solid ${STAGE_C}`, boxShadow: STAGE ? 'none' : '0 6px 18px rgba(20,22,28,0.06)' }}>
                 <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', justifyContent: 'center' }} aria-label={`Scrambled: ${word.s}`}>
                   {word.s.split('').map((ch, i) => (
                     <span key={i} style={{ width: miniW, height: miniW, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, background: MINI_BG, color: FADED, fontWeight: 800, fontSize: `min(17px, calc(${miniW} * 0.52))`, opacity: usedIdx.has(i) && !showAns ? 0.28 : 1, transition: 'opacity .15s', userSelect: 'none' }}>{ch}</span>
@@ -661,13 +664,12 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
                 <div key={shaking ? 'm' + fx.n : 'a'} className={shaking ? 'sc-rej' : undefined} style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
                   {slotGroups}
                 </div>
+                {playing && (
+                  <button onClick={skip} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: FADED, textDecoration: 'underline', textUnderlineOffset: 3 }}>
+                    Skip to the next open answer
+                  </button>
+                )}
               </div>
-
-              {playing && (
-                <button onClick={skip} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: FADED, textDecoration: 'underline', textUnderlineOffset: 3 }}>
-                  Skip to the next open answer
-                </button>
-              )}
 
               {started && !mobileUi && (
                 <div style={{ alignSelf: 'stretch', maxWidth: 500, margin: '0 auto', width: '100%' }}>
