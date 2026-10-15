@@ -290,6 +290,8 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
   const START = useMemo(() => fromData(PUZZLE.pieces), [PUZZLE]);
   // Off START, not off `blocks`: the tone map has to be stable for the whole game.
   const blockTone = useMemo(() => blockTones(START), [START]);
+  // The stage lot wears the fleet again (option A, 2026-10-15): ramp indices, fixed from the start layout.
+  const jamTones = useMemo(() => blockTone.map((t) => FLEET[t >= 0 ? t : 0]), [blockTone]);
 
   const [g, setG] = useState(() => freshState());
   const gRef = useRef(g);
@@ -765,7 +767,7 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
         )}
 
         {!preStart && STAGE && (
-          <JamLot N={N} exitRow={EXIT_ROW} blocks={blocks} sel={sel} targets={targets} hintBlock={hintBlock} shake={shake}
+          <JamLot N={N} exitRow={EXIT_ROW} blocks={blocks} tones={jamTones} sel={sel} targets={targets} hintBlock={hintBlock} shake={shake}
             onCell={onCell} playing={playing} used={used} par={par} perfect={perfect} restarts={g.restarts}
             onRestart={restart} hintAvail={hintOk && !g.hintUsed} onHint={useHint}
             armed={!!armReveal} onGiveUp={giveUpTap}

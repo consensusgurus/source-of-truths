@@ -10,9 +10,8 @@
 //
 // What it draws: a moves meter with Perfect and Par ticks above the board; a
 // walled lot whose wall, inset, corner radius and groove all scale with the
-// lot size; neutral slate blocks (cars one tone, trucks a shade deeper) each
-// carrying a groove along its axis; the red block as the only colour, with a
-// white arrow; a dotted lane from the red block to the gap; an EXIT marker
+// lot size; tinted blocks each carrying a groove along its axis; the red block
+// with a white arrow; a dotted lane from the red block to the gap; an EXIT marker
 // outside the wall; every landing spot as a full dashed accent outline of the
 // held block; one status sentence and one muted helper line; Restart and Hint
 // as outline buttons; Give up as a small link with the arm-to-confirm.
@@ -23,9 +22,20 @@
 // Colours are register-aware custom properties scoped to `.jl-board`, dark by
 // default with a light override carrying the boot-stamp guard so a dark reader
 // never sees one light frame.
+//
+// THE FLEET IS BACK IN COLOUR (owner, 2026-10-15, option A "Tint"). Players
+// asked for the colours the round six slate lot dropped. Each client still
+// picks its block tones from the starting layout (blockTones, six ramp hues,
+// touching blocks never share one) and hands them in as `tones`, ramp indices
+// fed to regionStyle. A block is a wash of its hue (cars 46% / trucks 34% on
+// dark, 18% / 30% on light) with an edge and groove in the same hue, so red
+// stays the loudest thing on the board. Lime (the held ring) and rose, orange
+// and amber (red's neighbours) are never in the fleet. With no `tones` the
+// lot falls back to the slate it shipped with.
 
 import React, { useState } from 'react';
 import { Lightbulb, RotateCcw, Eye } from 'lucide-react';
+import { regionStyle } from '@/lib/category-ramp';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 
@@ -90,6 +100,12 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .jl-boa
 @keyframes jlshake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
 .jl-cell{position:absolute;cursor:pointer;-webkit-tap-highlight-color:transparent;z-index:3;}
 .jl-board .pk-blk{position:absolute;box-sizing:border-box;border-radius:var(--jl-r);pointer-events:none;display:flex;align-items:center;justify-content:center;z-index:2;transition:left .18s cubic-bezier(.3,.7,.4,1), top .18s cubic-bezier(.3,.7,.4,1), box-shadow .12s;}
+.jl-board .jl-fleet{--jl-pc:46%;--jl-fill:color-mix(in srgb, var(--hue) var(--jl-pc), var(--stg-cell, #1a1d28));background:var(--jl-fill) !important;border-color:color-mix(in srgb, var(--hue) 80%, var(--stg-cell, #1a1d28)) !important;}
+.jl-board .jl-fleet.truck{--jl-pc:34%;}
+.jl-board .jl-fleet .jl-groove{background:color-mix(in srgb, #05070c 48%, var(--jl-fill));}
+html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .jl-board .jl-fleet{--jl-pc:18%;--jl-fill:color-mix(in srgb, var(--hue) var(--jl-pc), #ffffff);border-color:color-mix(in srgb, var(--hue-ink) 72%, #ffffff) !important;}
+html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .jl-board .jl-fleet.truck{--jl-pc:30%;}
+html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .jl-board .jl-fleet .jl-groove{background:color-mix(in srgb, var(--hue-ink) 80%, #ffffff);}
 .jl-ghost{position:absolute;box-sizing:border-box;border-radius:var(--jl-r);border:2.5px dashed var(--jl-ghost);background:var(--jl-ghost-fill);pointer-events:none;z-index:1;transition:background .1s;}
 .jl-ghost.hot{background:var(--jl-ghost-hot);}
 .jl-groove{border-radius:3px;background:var(--jl-groove);}
@@ -151,7 +167,7 @@ export function JamMeter({ used, par, perfect }) {
 }
 
 export default function JamLot({
-  N, exitRow, blocks, sel, targets, hintBlock, shake,
+  N, exitRow, blocks, tones, sel, targets, hintBlock, shake,
   onCell, playing, used, par, perfect, restarts,
   onRestart, hintAvail, onHint, armed, onGiveUp, doneLine,
 }) {
@@ -226,9 +242,11 @@ export default function JamLot({
                   const w = p.horiz ? p.len : 1, h = p.horiz ? 1 : p.len;
                   const on = sel === i && playing;
                   const hinted = hintBlock === i && playing;
+                  const tone = !isRed && Array.isArray(tones) ? tones[i] : null;
                   return (
-                    <div key={i} className="pk-blk"
+                    <div key={i} className={`pk-blk${tone != null ? ` jl-fleet${truck ? ' truck' : ''}` : ''}`}
                       style={{
+                        ...(tone != null ? regionStyle(tone) : null),
                         left: `calc(${left * cp}% + var(--jl-in))`, top: `calc(${top * cp}% + var(--jl-in))`,
                         width: `calc(${w * cp}% - var(--jl-in) * 2)`, height: `calc(${h * cp}% - var(--jl-in) * 2)`,
                         background: isRed ? 'var(--jl-red)' : truck ? 'var(--jl-truck)' : 'var(--jl-car)',
