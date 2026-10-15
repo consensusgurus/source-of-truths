@@ -70,6 +70,7 @@ import HomeInvite from '../groups/HomeInvite';
 // ?signup=1 and nothing on this page ever read it, so they only reloaded the
 // home. This is the form they open. See app/ChooseNamePop.jsx.
 import ChooseNamePop, { openChooseName } from '../ChooseNamePop';
+import { ChallengeBack, ChallengeRail, CapTickets } from '../ChallengeBack';
 import MindLoftMark from '../MindLoftMark';
 import StagePatch, { PATCH_CSS } from '../StagePatch';
 import RollNum from '../RollNum';
@@ -2504,6 +2505,7 @@ export default function StageToday() {
     }
     return (
       <aside className="sty-rail" aria-label="Leaderboards" style={{ '--cc': railCat ? hueFor(railCat.cat) : 'var(--stg-ink2)' }}>
+        <ChallengeRail />
         {railGrp ? (
           <div className="sty-rlb">
             <div className="sty-eb">{railGrp.name}<em>{' · '}{railLabel}</em></div>
@@ -2775,6 +2777,9 @@ export default function StageToday() {
               onClick={(e) => { e.preventDefault(); openChooseName(); }}>Keep stats, play with friends</a>
           ) : null}
           {who ? <div className="sty-who"><b>{who}</b><i>player</i></div> : null}
+          {/* THE DRAWING TICKETS (owner, 2026-10-15): the count, while the $100
+              drawing runs, opening Your challenges. See app/ChallengeBack.jsx. */}
+          {who ? <CapTickets /> : null}
           {/* EVERY GROUP THE READER IS IN gets a figure (owner, 2026-10-07), a
               dash until they have a rank in it today. Tapping one opens that
               group in the pane below. On a phone the row slides sideways. */}
@@ -2845,6 +2850,9 @@ export default function StageToday() {
             everything. Renders nothing on the other six days and nothing on the
             server; see app/SundayLedger.jsx. */}
         <SundayLedger light={light} withTq={withTq} />
+        {/* THE CHALLENGE CAME BACK (owner, 2026-10-15): a friend finished a
+            link this reader sent. Nothing until there is a result to report. */}
+        <ChallengeBack />
 
         {/* THE TOP ROW (owner, 2026-09-17). On a wide screen the groups band and
             the day's progress share a line, with the ladder squeezed to the

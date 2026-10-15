@@ -18,7 +18,9 @@ function read(searchParams) {
   const run = RUN_CHALLENGES[key] || null;
   const g = DAILY_GAME_MAP[key] || run;
   const c = decodeChallenge(raw);
-  return { key, raw, g, c, run };
+  const cidRaw = String(one(searchParams && searchParams.c)).toLowerCase();
+  const cid = /^[a-z0-9]{6,16}$/.test(cidRaw) ? cidRaw : null;
+  return { key, raw, g, c, run, cid };
 }
 
 export function generateMetadata({ searchParams }) {
@@ -41,7 +43,7 @@ export function generateMetadata({ searchParams }) {
 }
 
 export default function ChallengePage({ searchParams }) {
-  const { key, raw, g, c, run } = read(searchParams);
+  const { key, raw, g, c, run, cid } = read(searchParams);
   const byMetric = !!(c && !run && c.m != null && metricDef(key));
   const ok = !!(g && c);
   const href = ok ? challengeDest(g.href || `/${g.key}`, raw, c, etTodayISO(), run ? run.archive : true) : '/';
@@ -53,7 +55,7 @@ export default function ChallengePage({ searchParams }) {
   const btn = { display: 'inline-block', marginTop: 18, background: '#7dd3fc', color: '#08222e', fontWeight: 800, fontSize: 16, textDecoration: 'none', borderRadius: 9, padding: '12px 22px' };
   return (
     <main style={page}>
-      <ChallengeGo href={href} />
+      <ChallengeGo href={href} gameKey={ok ? key : null} cid={ok ? cid : null} />
       <div style={card}>
         <div style={eb}>Mind Loft{ok ? (run && !run.archive ? ` · ${g.name}` : ` · ${g.name} No. ${c.n}`) : ''}</div>
         <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1.15, margin: '10px 0 6px' }}>

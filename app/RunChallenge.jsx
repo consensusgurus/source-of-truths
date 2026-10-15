@@ -9,6 +9,13 @@ import { useEffect, useState } from 'react';
 import { encodeChallenge, readChallenge, runDayNum, ymdCompact } from '@/lib/challenge';
 import { withRef, myRefCode, ensureMyRefCode } from '@/lib/referrals';
 import { drawingIsLive, DRAWING } from '@/lib/drawing';
+import { newCid, withCid, recordSend, reportTake } from '@/lib/challenge-client';
+import TicketDoor from './TicketDoor';
+
+// A QUESTIONS-RIGHT RUN SHARES ITS COUNT, NEVER ITS DENOMINATOR (owner,
+// 2026-10-15): "61 right", not "61 of 180". Scores on a one-life run sit far
+// below the total, and the total read as discouraging in every share.
+const RIGHT_ONLY = new Set(['gauntlet']);
 
 const etToday = () => {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
@@ -64,8 +71,12 @@ export function RunChallengeButton({ gameKey, score, total, n, t = null, status 
   const send = () => {
     let who = 'A friend';
     try { who = (JSON.parse(localStorage.getItem('sot_quiz_identity') || 'null') || {}).username || who; } catch (e) { /* a guest */ }
-    const raw = encodeChallenge({ name: who, t, s: score, o: total, n, won: false, d: archive ? 0 : ymdCompact(etToday()), x: status });
-    const url = withRef(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=3`);
+    const o = RIGHT_ONLY.has(gameKey) ? 0 : total;
+    const d = archive ? 0 : ymdCompact(etToday());
+    const raw = encodeChallenge({ name: who, t, s: score, o, n, won: false, d, x: status });
+    const cid = newCid();
+    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=3`, cid));
+    recordSend({ cid, gameKey, num: n, day: d ? etToday() : null, fig: { s: score, o, t, won: false, x: status }, source: 'run' });
     const copied = () => { setMsg('Link copied. Paste it to a friend.'); };
     const copy = () => { try { navigator.clipboard.writeText(url).then(copied, () => setMsg(url)); } catch (e) { setMsg(url); } };
     let touch = false;
@@ -74,8 +85,14 @@ export function RunChallengeButton({ gameKey, score, total, n, t = null, status 
   };
   const back = them && Number(them.n) === Number(n);
   const label = back ? `Challenge ${them.name} back` : 'Challenge a friend';
+  const fig = RIGHT_ONLY.has(gameKey) ? `${score} right` : total ? `${score} of ${total}` : String(score);
+  if (door && draw) {
+    return (
+      <TicketDoor fig={fig} label={label} go={msg ? 'Sent' : `Send ${fig}`} msg={msg} onSend={send} style={style}
+        foot={archive ? null : 'Today\u2019s run only. One ticket for every new player who finishes from your link. No purchase necessary.'} />
+    );
+  }
   if (door) {
-    const fig = total ? `${score} of ${total}` : String(score);
     const sb = msg || (draw
       ? <>Send them {fig} to beat.<b style={{ display: 'block', fontWeight: 800 }}>{credit ? `New players = ${DRAWING.prizeLabel} drawing tickets.` : `Pick a name to earn ${DRAWING.prizeLabel} tickets.`}</b></>
       : (credit
@@ -103,6 +120,12 @@ export function RunChallengeButton({ gameKey, score, total, n, t = null, status 
 export function RunChallengeLine({ gameKey, score, n, style = null }) {
   const [them, setThem] = useState(null);
   useEffect(() => { setThem(readChallenge(gameKey)); }, [gameKey]);
+  // The return leg: tell the sender how it went (lib/challenge-client.js).
+  useEffect(() => {
+    if (!them || Number(them.n) !== Number(n)) return;
+    const diff = score - them.s;
+    reportTake(gameKey, { s: score, o: 0, won: false }, diff > 0 ? 'win' : diff < 0 ? 'loss' : 'tie');
+  }, [them, score, n, gameKey]);
   if (!them || Number(them.n) !== Number(n)) return null;
   const d = score - them.s;
   const line = d > 0 ? `You beat ${them.name}: ${score} to ${them.s}.`

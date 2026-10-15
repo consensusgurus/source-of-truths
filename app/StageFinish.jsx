@@ -57,6 +57,8 @@ import { drawingIsLive, DRAWING } from '@/lib/drawing';
 import { etTodayISO, spotlightFor } from '@/lib/daily-games';
 import { readChallenge, encodeChallenge, challengeFig, challengeResult, ymdCompact, isBlankMiss } from '@/lib/challenge';
 import { metricDef } from '@/lib/challenge-metric';
+import { newCid, withCid, recordSend, reportTake } from '@/lib/challenge-client';
+import TicketDoor from './TicketDoor';
 import AddToHome from './AddToHome';
 import JoinLeaderboardForm from './quiz/[id]/JoinLeaderboardForm';
 // Where this finish puts the player in each of their groups (2026-09-17).
@@ -1566,13 +1568,27 @@ export default function StageFinish({
   // crack it (isBlankMiss), and the link's card says so.
   const canChallenge = !!(mine && !isQuiz && !isRetry);
   const duel = chal && mine ? { them: chal, res: challengeResult(mine, chal, me && me.key) } : null;
+  // THE RETURN LEG (owner, 2026-10-15): a receiver who finishes the board they
+  // were challenged on reports back once, so the sender's home can say how it
+  // went. Not on a retry, which is not the run they were dared to.
+  const duelRes = duel && duel.res ? duel.res.res : null;
+  useEffect(() => {
+    if (!duel || isRetry || !me) return;
+    reportTake(me.key, mine, duelRes || 'tie');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [!!duel, duelRes, isRetry, me && me.key]);
   const sendChallenge = () => {
     if (!mine) return;
     let onArchive = false;
     try { onArchive = /[?&]p=\d+/.test(window.location.search); } catch (e) { /* treat as today's */ }
     const who = savedIdentity().username || 'A friend';
-    const raw = encodeChallenge({ ...mine, name: who, d: onArchive ? 0 : ymdCompact(etTodayISO()) });
-    const url = withRef(`${window.location.origin}/vs?g=${encodeURIComponent(me.key)}&vs=${encodeURIComponent(raw)}&v=3`); // v: bump when the card changes, a phone caches a link's preview by its URL
+    const d = onArchive ? 0 : ymdCompact(etTodayISO());
+    const raw = encodeChallenge({ ...mine, name: who, d });
+    // c= is the return leg's id (lib/challenge-client.js), minted here so the
+    // share sheet still opens inside the tap; the row is written alongside it.
+    const cid = newCid();
+    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(me.key)}&vs=${encodeURIComponent(raw)}&v=3`, cid)); // v: bump when the card changes, a phone caches a link's preview by its URL
+    recordSend({ cid, gameKey: me.key, num: mine.n, day: d ? etTodayISO() : null, fig: mine, source: 'endcard' });
     // THE LINK GOES ALONE (owner, 2026-10-07). Its card says the whole
     // sentence, so any text sent beside it would say it twice.
     const copied = () => { setChalMsg('Link copied. Paste it to a friend.'); };
@@ -1740,7 +1756,17 @@ export default function StageFinish({
         <div className="stf-doors">
           {/* CHALLENGE A FRIEND sits directly under the result, above Play
               similar (owner, 2026-10-07). */}
-          {chalDoor ? door(chalDoor) : null}
+          {chalDoor && chalDraw ? (
+            <div style={{ gridColumn: '1 / -1' }}>
+              <TicketDoor
+                fig={isBlankMiss(mine) ? '' : challengeFig(mine, me && me.key)}
+                label={duel ? `Challenge ${chal.name} back` : 'Challenge a friend'}
+                go={chalMsg ? 'Sent' : (isBlankMiss(mine) ? 'Send' : `Send ${challengeFig(mine, me && me.key)}`)}
+                msg={chalMsg}
+                onSend={sendChallenge}
+              />
+            </div>
+          ) : chalDoor ? door(chalDoor) : null}
           {primaryDoor ? (
             <div className={'stf-pwrap' + (left != null ? ' counting' : '')}>
               {door({

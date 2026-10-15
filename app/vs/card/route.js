@@ -33,7 +33,7 @@ export async function GET(req) {
   // then the tier, card or quizzes cleared, and the clock when it has one.
   const status = run ? [c.x, c.t != null ? mmssOf(c.t) : ''].filter(Boolean).join(' \u00b7 ') : '';
   const blank = !run && isBlankMiss(c);
-  const line = blank ? `${name} could not crack ${g.name}.` : run ? (run.unit === 'right' ? `${name} got ${c.s} of ${c.o} right in ${run.the}.` : `${name} scored ${c.s}/${c.o} on ${run.the}.`)
+  const line = blank ? `${name} could not crack ${g.name}.` : run ? (run.unit === 'right' ? `${name} got ${c.s} right in ${run.the}.` : `${name} scored ${c.s}/${c.o} on ${run.the}.`)
     : byMetric ? metricLine(key, name, g.name, fig)
     : c.won && c.t != null ? `${name} solved ${g.name} in ${fig}.`
     : c.won ? `${name} solved ${g.name}: ${fig}.` : `${name} scored ${fig} on ${g.name}.`;
