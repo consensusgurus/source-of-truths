@@ -2085,11 +2085,28 @@ export default function StageToday() {
   const ixCount = (prog) => (prog
     ? <em className="sty-ixct" aria-hidden="true">{prog[0] >= prog[1] ? 'Complete' : `${prog[0]} of ${prog[1]}`}</em>
     : null);
+  // NOTHING STRANDED (owner, 2026-10-15). On the phone the index is two up,
+  // in runs broken by the full-width rows. When a run has an odd number of
+  // tiles showing (an opened tile moves to the top and leaves its run), the
+  // last one takes the whole row. Daily puzzle tiles are not in here: they
+  // stay half width.
+  const ixRuns = [
+    [ALL_ID, MINE_ID],
+    orderedCats.map((c) => c.cat),
+    [CIRC_ID, QUIZ_ID],
+    [IQ_ID, EXAM_ID, 'kids', 'lists'],
+  ];
+  const fillFor = (id) => {
+    const run = ixRuns.find((r) => r.includes(id));
+    if (!run) return '';
+    const shown = picked ? run.filter((x) => x !== paneOn) : run;
+    return shown.length % 2 === 1 && shown[shown.length - 1] === id ? ' sty-ixfill' : '';
+  };
   const ixBtn = (id, label, hue, cls) => {
     const prog = ixProg(id);
     return (
       <button key={id} type="button" aria-pressed={paneOn === id}
-        className={'sty-ixb' + (cls ? ' ' + cls : '') + (paneOn === id ? ' on' : '') + (prog && prog[0] >= prog[1] ? ' cmp' : '')}
+        className={'sty-ixb' + (cls ? ' ' + cls : '') + fillFor(id) + (paneOn === id ? ' on' : '') + (prog && prog[0] >= prog[1] ? ' cmp' : '')}
         style={{ '--cc': hue }}
         onClick={(e) => { if (picked && paneOn === id) { setPicked(false); try { localStorage.setItem(TILES_KEY, '1'); } catch (er) {} } else pickPane(id, e); }}>
         <i aria-hidden="true" />
@@ -2159,8 +2176,8 @@ export default function StageToday() {
       {ixBtn(IQ_ID, 'IQ Tests', 'var(--stg-mute)', 'sty-ixmv sty-ixm4')}
       {ixBtn(EXAM_ID, 'School Tests', 'var(--stg-mute)', 'sty-ixmv sty-ixm4')}
       {/* Kids and the lists are doors, not panes: each goes to its own home. */}
-      <a className="sty-ixb sty-ixmv sty-ixm4" href="/kids" style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('kids', null)}<span>Kids</span></a>
-      <a className="sty-ixb sty-ixmv sty-ixm4" href={withTq('/lists')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('lists', null)}<span>Top 10 Lists</span></a>
+      <a className={'sty-ixb sty-ixmv sty-ixm4' + fillFor('kids')} href="/kids" style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('kids', null)}<span>Kids</span></a>
+      <a className={'sty-ixb sty-ixmv sty-ixm4' + fillFor('lists')} href={withTq('/lists')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('lists', null)}<span>Top 10 Lists</span></a>
       <span className="sty-ixsep sty-ixmv" aria-hidden="true" />
       {ixBtn(COMM_ID, 'Most Appreciated', 'var(--stg-mute)', 'wide sty-ixmv sty-ixma')}
       <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
@@ -4544,6 +4561,11 @@ ${PATCH_CSS}
      the categories, circuits and quizzes, then one wide tile for every board. */
   .sty-ixn:not(.re) .sty-ixb{min-height:clamp(54px,calc((100svh - 270px) / 11),88px);}
   .sty-ixn:not(.re) .sty-ixb.wide{grid-column:1 / -1;}
+  /* NOTHING STRANDED (owner, 2026-10-15): a tile left alone at the end of its
+     group, usually because its neighbour opened and moved to the top, takes
+     the whole row. Decided in JS (fillFor), since the count that matters
+     leaves out the opened tile. */
+  .sty-ixn:not(.re) .sty-ixb.sty-ixfill{grid-column:1 / -1;}
   .sty-ixn:not(.re) .sty-ixsep{display:block;grid-column:1 / -1;height:5px;margin:0;background:none;}
   .sty-ix.msel > section,.sty-ix.msel > .sty-ord{display:none !important;}
   /* THE OTHER TILES STAY, UNDER THE OPEN SECTION (owner, 2026-10-07). The list
@@ -4678,15 +4700,23 @@ ${PATCH_CSS}
   .sty-rnm{display:flex;flex-direction:column;gap:8px;margin:0 0 12px;min-width:0;}
   .sty-rhome{grid-column:1 / -1;min-width:0;}
   .sty-cpills.sty-minep:not(.shut){display:flex;}
+  /* Starred circuits on the phone fill their row too (owner, 2026-10-15):
+     two to a line like the tiles, an odd one out full width. */
+  .sty-cpills.sty-minep:not(.shut){gap:7px;}
+  .sty-cpills.sty-minep .sty-cpill{flex:1 1 calc(50% - 4px);justify-content:center;padding:8px 11px;border-radius:8px;}
   /* NO SPARE LINE UNDER THE RUNS (owner, 2026-10-13): the block sits close
      on the tiles unless a group line is showing, which is the only time it
      needs the room. */
   .sty-rhome:not(:has(.l2,.gr)) .sty-rnm{margin-bottom:0;}
   .sty-rhome:not(:has(.l2,.gr)){margin-bottom:-10px;}
-  .sty-rics{display:flex;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;
+  /* A RUN TILE FILLS WHAT IS LEFT OF ITS ROW (owner, 2026-10-15): one left
+     over is full width, two split it like the tiles below (same 7px gap),
+     and only once they no longer fit at 108px does the row become the
+     flick strip. */
+  .sty-rics{display:flex;gap:7px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;
     -webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 0 2px;}
   .sty-rics::-webkit-scrollbar{display:none;}
-  .sty-ric{flex:0 0 108px;scroll-snap-align:start;display:flex;flex-direction:column;gap:3px;min-width:0;
+  .sty-ric{flex:1 0 108px;scroll-snap-align:start;display:flex;flex-direction:column;gap:3px;min-width:0;
     text-decoration:none;color:var(--stg-ink);}
   .sty-ric .sq{height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;
     padding:0 8px;font-size:12.5px;font-weight:800;line-height:1.15;color:var(--stg-ink);
