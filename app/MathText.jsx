@@ -9,11 +9,11 @@ import React from 'react';
 
 export function Obelus() {
   return (
-    <svg viewBox="0 0 10 10" width="0.78em" height="0.78em" aria-hidden="true" focusable="false"
+    <svg viewBox="0 0 10 10" width="0.84em" height="0.84em" aria-hidden="true" focusable="false"
       style={{ display: 'inline-block', verticalAlign: '-0.05em', margin: '0 0.06em', overflow: 'visible' }}>
-      <circle cx="5" cy="1.6" r="1.45" fill="currentColor" />
-      <rect x="0.4" y="4.25" width="9.2" height="1.5" rx="0.75" fill="currentColor" />
-      <circle cx="5" cy="8.4" r="1.45" fill="currentColor" />
+      <circle cx="5" cy="1.5" r="1.7" fill="currentColor" />
+      <rect x="0.2" y="4.1" width="9.6" height="1.8" rx="0.9" fill="currentColor" />
+      <circle cx="5" cy="8.5" r="1.7" fill="currentColor" />
     </svg>
   );
 }

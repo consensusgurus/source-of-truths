@@ -30,6 +30,7 @@
 // (app/calc/page.js), per-puzzle localStorage saves, /calc?p=N archive pinning,
 // streaks, and the shared /api/quiz/* flow.
 
+import { mathText, Obelus } from '@/app/MathText';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { X, RotateCcw, Lightbulb, Eye, Smartphone, CornerUpLeft } from 'lucide-react';
@@ -774,6 +775,8 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
           .cl-tape{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;}
           .cl-tape-k,.cl-hold-k{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);}
           .cl-tape-clip{overflow:hidden;direction:rtl;text-align:left;white-space:nowrap;}
+          .cl-tape-clip.hint{direction:ltr;white-space:normal;}
+          .cl-tape-clip.hint .cl-tape-v{white-space:normal;font-size:15px;line-height:1.25;}
           .cl-tape-v{direction:ltr;unicode-bidi:isolate;display:inline-block;font-size:19px;font-weight:700;color:var(--stg-ink2);white-space:nowrap;font-variant-numeric:tabular-nums;}
           .cl-hold{display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding-left:14px;border-left:1.5px solid var(--stg-line);flex:none;}
           .cl-hold-v{font-size:30px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;color:var(--stg-ink);white-space:nowrap;}
@@ -942,14 +945,14 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
             <div className="cl-well">
               <div className="cl-tape">
                 <span className="cl-tape-k">The tape<span className="lr">, left to right</span></span>
-                <div className="cl-tape-clip">
-                  <span className="cl-tape-v">{tapeText}</span>
+                <div className={`cl-tape-clip${tapeRoute.length === 1 && playing ? ' hint' : ''}`}>
+                  <span className="cl-tape-v">{mathText(tapeText)}</span>
                 </div>
               </div>
               <div className="cl-hold">
                 <span className="cl-hold-k">{tapeAtEnd ? 'Ends on' : 'Holding'}</span>
                 <b className={`cl-hold-v${tapeAtEnd ? (tapeTotal === TARGETS[g.slot].target ? ' good' : ' bad') : ''}`}>
-                  {tapeAtNumber ? tapeTotal : <>{evalRoute(N, PUZZLE.cells, tapeRoute.slice(0, -1))} <i>{glyphOf(PUZZLE.cells[tapeHead])}</i></>}
+                  {tapeAtNumber ? tapeTotal : <>{evalRoute(N, PUZZLE.cells, tapeRoute.slice(0, -1))} <i>{mathText(glyphOf(PUZZLE.cells[tapeHead]))}</i></>}
                 </b>
               </div>
             </div>
@@ -977,7 +980,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
                 return (
                   <button key={idx} type="button" className={cls} onClick={() => tap(idx)}
                     aria-label={`${num ? 'number' : 'operator'} ${glyphOf(v)}${term ? (idx === 0 ? ', start' : ', end') : ''}${canGo ? ', you can step here' : ''}${isHead ? ', you are here' : ''}`}>
-                    <span>{glyphOf(v)}</span>
+                    <span>{mathText(glyphOf(v))}</span>
                     {term && <span className="cl-flag">{idx === 0 ? 'Start' : 'End'}</span>}
                   </button>
                 );
@@ -987,10 +990,10 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
 
           {started && (
             <div className="cl-say" aria-live="polite">
-              <span className="cl-say-ic" aria-hidden="true">{atEnd ? '=' : glyphOf(PUZZLE.cells[head])}</span>
+              <span className="cl-say-ic" aria-hidden="true">{atEnd ? '=' : mathText(glyphOf(PUZZLE.cells[head]))}</span>
               <div className="cl-say-t">
                 <span className="cl-say-a">
-                  {atEnd
+                  {mathText(atEnd
                     ? `This route ends on ${total}. Step back to try another line.`
                     : path.length === 1
                       ? 'Tap a button touching START to set off.'
@@ -998,7 +1001,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
                         ? `Holding ${atNumber ? total : `${evalRoute(N, PUZZLE.cells, path.slice(0, -1))} ${glyphOf(PUZZLE.cells[head])}`}. No way on from here: step back.`
                       : atNumber
                         ? `Holding ${total}. Pick the operator that comes next: ${reachable.size} way${reachable.size === 1 ? '' : 's'} on.`
-                        : `Holding ${evalRoute(N, PUZZLE.cells, path.slice(0, -1))} ${glyphOf(PUZZLE.cells[head])}. Pick the number it acts on: ${reachable.size} way${reachable.size === 1 ? '' : 's'} on.`}
+                        : `Holding ${evalRoute(N, PUZZLE.cells, path.slice(0, -1))} ${glyphOf(PUZZLE.cells[head])}. Pick the number it acts on: ${reachable.size} way${reachable.size === 1 ? '' : 's'} on.`)}
                 </span>
                 <span className="cl-say-b">
                   <span className="d">Ringed buttons touch the one you are on. Tap the last button again to step back.</span>
@@ -1217,7 +1220,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
 
       {toast && (
         <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: STAGE ? 'var(--stg-ink)' : COLORS.ink, color: STAGE ? 'var(--stg-ground)' : T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
-          {toast}
+          {mathText(toast)}
         </div>
       )}
 

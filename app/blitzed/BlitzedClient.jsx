@@ -16,7 +16,7 @@
 // that the answer cannot be picked out by its last digit, by its size, or by
 // where it sits once the options are sorted.
 
-import { mathText } from '@/app/MathText';
+import { mathText, Obelus } from '@/app/MathText';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useHoverStale } from '@/lib/hover-armed';
 import { useSearchParams } from 'next/navigation';
@@ -517,7 +517,7 @@ export default function BlitzedClient({ puzzles = [], problemsByNum = {}, forceN
       steps={[
         <>Every line is <b>three numbers and two operations</b>, like 5 + 10 × 2. Do it in your head and pick the right answer from four.</>,
         <>They get harder as you go: <b>five rounds of four</b>, from 20 + 8 + 6 up to two-digit multiplication, brackets, percentages and cubes.</>,
-        <>Precedence counts: <b>× and ÷ before + and −</b>, brackets first. 5 + 10 × 2 is 25, not 30.</>,
+        <>Precedence counts: <b>× and <Obelus /> before + and −</b>, brackets first. 5 + 10 × 2 is 25, not 30.</>,
         <>A wrong answer, or a clock at zero, <b>ends the run on the spot</b>. Every problem you clear is a point.</>,
         <>You have <b>{Q_SECONDS} seconds a problem</b> and the clock does not pause, so reaching for a calculator costs you the problem.</>,
       ]}

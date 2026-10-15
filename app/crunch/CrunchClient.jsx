@@ -20,6 +20,7 @@
 // the server (app/crunch/page.js), per-puzzle localStorage saves, /crunch?p=N
 // archive pinning, streaks + stats, and the shared /api/quiz/* board flow.
 
+import { mathText, Obelus } from '@/app/MathText';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { X, Lightbulb, Eye, Smartphone, RotateCcw, Undo2 } from 'lucide-react';
@@ -817,14 +818,14 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
           <div className="cr-ops">
             {OPS.map((o) => (
               <button key={o} type="button" className={`cr-op${op === o ? ' on' : ''}`} onClick={() => onOp(o)}
-                disabled={!playing} aria-label={`operation ${o}`} aria-pressed={op === o}>{OPL[o]}</button>
+                disabled={!playing} aria-label={`operation ${o}`} aria-pressed={op === o}>{mathText(OPL[o])}</button>
             ))}
           </div>
 
           <div style={{ marginTop: 12, minHeight: 22, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 800, color: playing ? `var(--stg-acc-ink, ${COLORS.accent})` : `var(--stg-mute, ${COLORS.faded})` }}>{statusLine}</span>
             {selTile && op && playing && (
-              <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 12, color: INK, fontWeight: 500 }}>{selTile.v} {OPL[op]} ?</span>
+              <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 12, color: INK, fontWeight: 500 }}>{selTile.v} {mathText(OPL[op])} ?</span>
             )}
           </div>
 
@@ -838,7 +839,7 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
               {g.steps.map((st, i) => (
                 <div key={i} className="cr-wkrow">
                   <span className="cr-wkn">{i + 1}</span>
-                  <span className="cr-wkeq">{st[0]} {OPL[st[1]]} {st[2]}</span>
+                  <span className="cr-wkeq">{st[0]} {mathText(OPL[st[1]])} {st[2]}</span>
                   {st[3] !== TARGET && <span className="cr-wkoff">{Math.abs(st[3] - TARGET)} off</span>}
                   <span className={`cr-wkr${st[3] === TARGET ? ' exact' : ''}`}>= {st[3]}</span>
                 </div>
@@ -904,7 +905,7 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
                 <div style={{ marginTop: 12, background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 9, padding: '10px 12px' }}>
                   <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.16em', textTransform: 'uppercase', color: FADED, fontWeight: 500, marginBottom: 5 }}>One way there</div>
                   {PUZZLE.example.map((st, i) => (
-                    <div key={i} style={{ fontFamily: MONO, fontSize: 13.5, fontWeight: 500, color: INK, fontVariantNumeric: 'tabular-nums' }}>{st[0]} {OPL[st[1]]} {st[2]} = {st[3]}</div>
+                    <div key={i} style={{ fontFamily: MONO, fontSize: 13.5, fontWeight: 500, color: INK, fontVariantNumeric: 'tabular-nums' }}>{st[0]} {mathText(OPL[st[1]])} {st[2]} = {st[3]}</div>
                   ))}
                   {PUZZLE.solutions > 1 && (
                     <div style={{ fontSize: 12, fontWeight: 600, color: FADED, marginTop: 6 }}>One of {PUZZLE.solutions} exact routes to it.</div>
@@ -1053,7 +1054,7 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
-        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>{toast}</div>
+        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>{mathText(toast)}</div>
       )}
 
       {showHelp && (

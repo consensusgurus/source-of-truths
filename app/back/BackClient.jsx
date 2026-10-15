@@ -11,7 +11,7 @@
 // with Blitz, Streak and Deep. scripts/verify-back.mjs evaluates every line and
 // proves exactly one makes the target.
 
-import { mathText } from '@/app/MathText';
+import { mathText, Obelus } from '@/app/MathText';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useHoverStale } from '@/lib/hover-armed';
 import { useSearchParams } from 'next/navigation';
@@ -517,7 +517,7 @@ export default function BackClient({ puzzles = [], problemsByNum = {}, forceNum 
       steps={[
         <>Every problem gives you a number, like ? = 56, and four lines of arithmetic. <b>Pick the one line that makes it.</b></>,
         <>They get harder as you go: <b>five rounds of four</b>, from 6 × 8 up to brackets, squares, percentages and two-digit products.</>,
-        <>Precedence counts: <b>× and ÷ before + and −</b>, brackets first. 4 + 6 × 5 is 34, not 50, and lines that only work when read left to right are there on purpose.</>,
+        <>Precedence counts: <b>× and <Obelus /> before + and −</b>, brackets first. 4 + 6 × 5 is 34, not 50, and lines that only work when read left to right are there on purpose.</>,
         <>A wrong answer, or a clock at zero, <b>ends the run on the spot</b>. Every problem you clear is a point.</>,
         <>You have <b>{Q_SECONDS} seconds a problem</b> and the clock does not pause, so reaching for a calculator costs you the problem.</>,
       ]}

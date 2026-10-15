@@ -12,6 +12,7 @@
 // no ranked program).
 // ──────────────────────────────────────────────────────────────────────────
 
+import { mathText } from '@/app/MathText';
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Check, X, Flag, Share2, RotateCcw, GraduationCap, ChevronRight, Clock } from 'lucide-react';
@@ -278,7 +279,7 @@ export default function ExamQuizClient({ examKey }) {
                 <div style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700, color: lastResult?.correct ? COLORS.forest : COLORS.rust, marginBottom: 6 }}>
                   {lastResult?.correct ? 'Correct' : (picked == null ? 'Out of time' : 'Not quite')}
                 </div>
-                <div style={{ fontSize: 14, lineHeight: 1.55, color: '#41454d' }}>{q.note}</div>
+                <div style={{ fontSize: 14, lineHeight: 1.55, color: '#41454d' }}>{mathText(q.note)}</div>
               </div>
             )}
 
@@ -369,7 +370,7 @@ export default function ExamQuizClient({ examKey }) {
                       <span style={{ display: 'block', fontSize: 12.5, color: COLORS.faded, marginTop: 4, fontWeight: 600 }}>
                         Answer: <span style={{ color: COLORS.ink }}>{String.fromCharCode(65 + qq.correct)}. {qq.choices[qq.correct]}</span>
                       </span>
-                      <span style={{ display: 'block', fontSize: 13.5, color: '#41454d', marginTop: 6, lineHeight: 1.5 }}>{qq.note}</span>
+                      <span style={{ display: 'block', fontSize: 13.5, color: '#41454d', marginTop: 6, lineHeight: 1.5 }}>{mathText(qq.note)}</span>
                     </span>
                   </li>
                 );
