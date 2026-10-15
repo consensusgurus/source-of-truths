@@ -612,9 +612,17 @@ function runOf(key, num) {
 // compareRuns does below (same rule, one copy would be better; this one is read
 // by the band figure and the challenge link, which need the run even when
 // there is no earlier run to compare it with).
-function currentNum(rows) {
+// A GAME'S FIRST DAY HAS NO ARCHIVE (owner, 2026-10-15: Scour No. 1 had no
+// Challenge door). With no earlier rows there is no gap to find, so the puzzle
+// on screen is the newest one the stats record holds: on launch day that is the
+// only one. Every new daily hit this on its premiere.
+function currentNum(rows, key) {
   const nums = rows.map((r) => Number(r.num)).filter(Number.isFinite);
-  if (!nums.length) return null;
+  if (!nums.length) {
+    const stats = key ? readLS(`sot_${key}_stats`) : null;
+    const recs = stats && stats.rec ? Object.keys(stats.rec).map(Number).filter(Number.isFinite) : [];
+    return recs.length ? Math.max(...recs) : null;
+  }
   const set = new Set(nums);
   const max = Math.max(...nums), lo = Math.min(...nums);
   for (let n = max; n >= lo; n -= 1) { if (!set.has(n)) return n; }
@@ -1027,7 +1035,7 @@ export default function StageFinish({
   useEffect(() => {
     if (!me) return;
     try {
-      const n = currentNum(Array.isArray(archive) ? archive : []);
+      const n = currentNum(Array.isArray(archive) ? archive : [], me.key);
       const r = n != null ? liveRun(runOf(me.key, n), outcome) : null;
       setRun(r);
       const c = readChallenge(me.key);
