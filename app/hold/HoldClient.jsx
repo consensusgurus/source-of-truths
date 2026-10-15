@@ -17,7 +17,7 @@
 // registry row carries miss: null. A finished hand shows its numbers, so this
 // is a first-attempt daily like any other.
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { X, Lightbulb, Smartphone, ArrowRight } from 'lucide-react';
 import Grain from '../Grain';
@@ -214,6 +214,7 @@ function freshState() {
 const FACE_SIZES = {
   big: { r: 22, s: 17, c: 40, top: 7, left: 9, pad: 14, rad: 10 },
   mid: { r: 17, s: 13, c: 28, top: 5, left: 7, pad: 12, rad: 8 },
+  sm: { r: 14, s: 11, c: 22, top: 4, left: 5, pad: 10, rad: 7 },
 };
 function CardFace({ card, sz = 'big' }) {
   const f = FACE_SIZES[sz] || FACE_SIZES.big;
@@ -415,6 +416,19 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
     fit();
     window.addEventListener('resize', fit);
     return () => window.removeEventListener('resize', fit);
+  }, []);
+
+  // The card row is sized to the width it actually has, never a fixed
+  // pixel count: on desktop the pay table shares the felt with the cards,
+  // and a 360px phone is narrower than five fixed cards plus their gaps.
+  const [rowW, setRowW] = useState(0);
+  const rowObs = useRef(null);
+  const rowRef = useCallback((el) => {
+    try { if (rowObs.current) { rowObs.current.disconnect(); rowObs.current = null; } } catch (e) {}
+    if (!el) return;
+    const read = () => { try { setRowW(el.clientWidth || 0); } catch (e) {} };
+    read();
+    try { if (typeof ResizeObserver !== 'undefined') { rowObs.current = new ResizeObserver(read); rowObs.current.observe(el); } } catch (e) {}
   }, []);
 
   const myStats = useMemo(() => deriveStats(stats, PUZZLE.num), [stats, PUZZLE.num]);
@@ -768,12 +782,14 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
 
             // The five cards. A held card lifts and wears the accent with a
             // HELD tag above it; in the reveal a drawn card says so.
-            const CW = narrow ? 60 : 92;
-            const CH = narrow ? 86 : 130;
             const GAP = narrow ? 6 : 12;
+            const CW_MAX = narrow ? 64 : 92;
+            const CW = rowW > 0 ? Math.max(40, Math.min(CW_MAX, Math.floor((rowW - 4 * GAP) / 5))) : (narrow ? 56 : 80);
+            const CH = Math.round(CW * 1.41);
+            const FACE_SZ = CW >= 84 ? 'big' : CW >= 56 ? 'mid' : 'sm';
             const showFin = reveal ? reveal.fin : null;
             const row = (
-              <div style={{ display: 'flex', justifyContent: 'center', gap: GAP, paddingTop: narrow ? 22 : 26, minHeight: CH + (narrow ? 22 : 26) }} key={`h${current}`}>
+              <div ref={rowRef} style={{ display: 'flex', justifyContent: 'center', gap: GAP, paddingTop: narrow ? 22 : 26, minHeight: CH + (narrow ? 22 : 26), width: '100%', minWidth: 0 }} key={`h${current}`}>
                 {hand.cards.map((c0, k) => {
                   const held = !!((holdM >> k) & 1);
                   // The reveal keeps the DEALT hand on the felt, so the table
@@ -804,7 +820,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
                           border: held && !showFin ? `3px solid ${A_FILL}` : drawn ? `2px dashed ${A_FILL}` : `1.5px solid ${FACE_EDGE}`,
                           boxShadow: shadow, transform: `translateY(-${lift}px)`, cursor: live ? 'pointer' : 'default',
                         }}>
-                        <CardFace card={c} sz={narrow ? 'mid' : 'big'} />
+                        <CardFace card={c} sz={FACE_SZ} />
                       </button>
                     </div>
                   );
