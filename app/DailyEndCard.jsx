@@ -116,7 +116,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['hold', 'cell', 'swindle', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-18' };
+const LAUNCH_PIN = { keys: ['scram', 'hold', 'cell', 'swindle', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-18' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -138,6 +138,7 @@ export const GAME_META = {
   crux:   { accent: T.blue, badgeBg: T.blue, badgeInk: T.white, Fin: LayoutGrid },
   emcee:  { accent: '#c026d3', badgeBg: '#c026d3', badgeInk: T.white, Fin: Type },
   garble: { accent: '#b7791f', badgeBg: GOLD, badgeInk: '#5c4a06', Fin: Trophy },
+  scram: { accent: '#be123c', badgeBg: '#be123c', badgeInk: T.white, Fin: Trophy },
   links:  { accent: '#166534', badgeBg: '#166534', badgeInk: T.white, Fin: Link2 },
   span:   { accent: '#9d174d', badgeBg: '#9d174d', badgeInk: T.white, Fin: Flag },
   dating: { accent: '#6d28d9', badgeBg: '#6d28d9', badgeInk: T.white, Fin: CalendarCheck },
@@ -302,6 +303,7 @@ const ALL_DAILY_GAMES = [
   { key: 'plot',   cat: 'logic',     name: 'Plot',   tag: 'Divide the whole board',    blurb: 'Numbers scattered on a grid, each one the size of its own plot. Cut the board into rectangles until every number has exactly its share.', href: '/plot' },
   { key: 'barter', cat: 'word',      name: 'Barter', tag: 'Trade the letters home',    blurb: 'Six interlocking words, every letter already on the board. Trade two tiles at a time and land the lattice at par.', href: '/barter' },
   { key: 'garble', cat: 'word',      name: 'Garble', tag: 'Untangle five words',       blurb: 'Five scrambled words against the clock. Unscramble each one before time runs out.', href: '/garble' },
+  { key: 'scram', cat: 'word',      name: 'Scram', tag: 'Ten themed scrambles',       blurb: 'One theme, ten scrambled answers, one clock. Cities one day, food or first names the next. Unscramble all ten as fast as you can.', href: '/scram' },
   { key: 'stet',   cat: 'word',      name: 'Stet',   tag: 'Spot the error, fix the copy',        blurb: 'A short passage hides one slip of fact, spelling or grammar. Catch it, then correct it.', href: '/stet' },
   { key: 'tuck',   cat: 'word',      name: 'Tuck',   tag: 'Same letters, highest score wins',  blurb: 'Everyone gets the identical letters. Tuck them into the grid for the biggest score of the day.', href: '/tuck' },
   { key: 'dating', cat: 'trivia',     name: 'Dating', tag: 'Put five moments in order', blurb: 'Five moments from history, no dates given. Put them on the timeline, earliest to latest.', href: '/dating' },

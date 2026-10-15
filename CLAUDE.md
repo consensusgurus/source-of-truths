@@ -3823,6 +3823,7 @@ archive and hub chips use the short form `Sun`.
 | Jester | an 11x11 one-jester board against the weekday 8x8 / 9x9 / 10x10 ramp (from 2026-10-04; 2026-08-21 to 10-03 ran two-jester Thu-Sun, which moved to Judges) |
 | Sworn | six suspects sworn instead of five |
 | Garble | every answer is six letters instead of five (from 2026-07-26) |
+| Scram | every answer eight to twelve letters, often two words, from themes deep enough in long answers (from launch, 2026-10-18) |
 | Dating | six events to order instead of five (from 2026-07-26) |
 | Cipher | four addends stacked instead of two (from 2026-08-09) |
 | Outwit | six prompts instead of five, the extra a second Rare Bird (from 2026-07-26) |
@@ -4275,6 +4276,36 @@ the client (the trick `verify-endgame-playout.mjs` uses), stub `document.element
 grid of known coordinates, and drive synthetic pointer sequences. That is how commit-on-lift, the
 hold-to-aim discriminator, the line lock, the free marks, the win path and the unchanged mouse path
 were all confirmed before the push, along with a unit test of the commit's error arithmetic.
+
+## Scram is the THEMED WORD SCRAMBLE, raced on the clock (launched 2026-10-14)
+
+One broad theme a day (Cities, Countries, U.S. States, Food, Animals, Men's Names, Women's Names, Jobs,
+Around the House, Sports and Games, Clothing, Nature, Music, The Human Body) and ten scrambled answers from
+it. Route `/scram`, key `scram`, Word category, legacy hue rose #be123c. Look: option B of the "Scram
+Input Options" canvas, the LIT KEYBOARD.
+
+- **Only the scramble's letters are live.** The keyboard dims every other letter, and a small count marks a
+  letter the answer needs more than once. So every full entry uses exactly the right letters, and a full
+  wrong entry can only be a wrong ORDER: it shakes and clears. A full answer checks itself; there is no Enter.
+- **Back, Next, numbered pips and Skip** (owner, 2026-10-14). The ten can be played in any order; letters
+  typed into an answer stay when you leave it. Skip jumps to the next answer still open. On desktop the
+  physical keyboard types and the arrow keys move.
+- **Race the clock: score is answers solved out of ten, time breaks ties.** Registry `miss: null`, the
+  client posts `guessesUsed: 0`, so the board goes straight from score to time. Wrong orders are counted
+  locally only. In `XP_LINEAR_DAILIES`: ten independent answers pay linearly.
+- **One right answer per scramble.** A word whose letters also spell another member of its theme is never
+  dealt (LEMON/MELON, DIANA/NADIA, TOKYO/KYOTO). `scram-pools.mjs` carries an `alsoValid` list per theme of
+  real members never dealt, so a clash whose other side the pool does not otherwise carry is still caught.
+- **The ramp is answer length**: Mon 5-6, Tue 5-7, Wed 6-7, Thu 6-8, Fri 7-8, Sat 7-9, Sunday Edition 8-12,
+  dealt only from themes flagged `sunday` (the names pools are too thin in long names). No answer is dealt
+  twice in the bank, and a theme waits five days before it returns.
+- **The scramble hides the answer**: never the answer, never its first letter first, at most a quarter of the
+  letters in place, and no three-letter run of the answer intact. A word no shuffle can hide (REFEREE) is
+  dropped from the pool rather than dealt weakly.
+- `scripts/gen-scram.mjs` deals `app/scram/puzzles.js` from `scripts/scram-pools.mjs`; extend with
+  `--until <date>`, which keeps every existing board byte for byte. `scripts/verify-scram.mjs` is independent
+  (imports nothing from the generator) and re-checks every rule above. Bank 2026-10-14 to 2026-12-31.
+- Client `app/scram/ScramClient.jsx` is built off GarbleClient's frame. Tile art `scripts/gen-scram-tile.py`.
 
 ## Sumo is the GREATER-THAN SUDOKU, and its signs are the grid lines (launched 2026-10-13)
 
