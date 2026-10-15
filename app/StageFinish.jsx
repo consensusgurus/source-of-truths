@@ -54,7 +54,7 @@ import GameGlyph from './GameGlyph';
 import { savedIdentity } from '@/lib/saved-identity';
 import { withRef, myRefCode, ensureMyRefCode } from '@/lib/referrals';
 import { drawingIsLive, DRAWING } from '@/lib/drawing';
-import { etTodayISO } from '@/lib/daily-games';
+import { etTodayISO, spotlightFor } from '@/lib/daily-games';
 import { readChallenge, encodeChallenge, challengeFig, challengeResult, ymdCompact, isBlankMiss } from '@/lib/challenge';
 import { metricDef } from '@/lib/challenge-metric';
 import AddToHome from './AddToHome';
@@ -1218,7 +1218,9 @@ export default function StageFinish({
     // The set's first open game is the Up next card directly above, full
     // width; a tile for it underneath was the same control twice (owner,
     // 2026-09-07).
-    const lead = pushSet && pushSet.open.length ? pushSet.open[0] : null;
+    const spot = spotlightFor(me.cat, me.key);
+    const spotOpen = spot && !played.has(spot.key) && LIVE().some((g) => g.key === spot.key) ? spot.key : null;
+    const lead = spotOpen || (pushSet && pushSet.open.length ? pushSet.open[0] : null);
     const order = (a, b) => (played.has(a.key) - played.has(b.key)) || a.name.localeCompare(b.name);
     const inCat = LIVE().filter((g) => g.cat === me.cat && g.key !== me.key && g.key !== lead);
     const set = inCat.filter((g) => hi.has(g.key)).sort(order).map((g) => ({ g, set: true }));
@@ -1230,11 +1232,19 @@ export default function StageFinish({
   // similar-game pick the options carry: a finisher one game from a full set
   // is handed that game, and one who just completed a set is handed the next
   // set's first. Null falls through to the ordinary hand-forward.
+  // A SPOTLIT GAME OUTRANKS THE SET (owner, 2026-10-14; lib/daily-games
+  // SPOTLIGHT): while it is unplayed it is the Up next door for every game in
+  // its category, and the hand-off countdown opens it.
   const setNext = useMemo(() => {
+    const spot = me ? spotlightFor(me.cat, me.key) : null;
+    if (spot && !played.has(spot.key)) {
+      const sg = LIVE().find((x) => x.key === spot.key);
+      if (sg) return { g: sg, set: { name: spot.label, keys: [spot.key], open: [spot.key], total: 1, handoff: false, spot: true } };
+    }
     if (!pushSet || !pushSet.open.length) return null;
     const g = LIVE().find((x) => x.key === pushSet.open[0]);
     return g ? { g, set: pushSet } : null;
-  }, [pushSet]);
+  }, [pushSet, me, played]);
   // The arrows are only worth showing when the row actually overflows, which
   // only the rendered row can say.
   const catsRef = useRef(null);
@@ -1497,7 +1507,7 @@ export default function StageFinish({
   const primaryDoor = setNext
     ? {
       name: setNext.g.name, key: setNext.g.key,
-      sub: [`${setNext.set.name} \u00b7 ${setNext.set.handoff ? `${setNext.set.open.length} of ${setNext.set.total} open` : `${setNext.set.open.length} left`}`, typicalLabel(setNext.g.key)].filter(Boolean).join(' \u00b7 '),
+      sub: [setNext.set.spot ? setNext.set.name : `${setNext.set.name} \u00b7 ${setNext.set.handoff ? `${setNext.set.open.length} of ${setNext.set.total} open` : `${setNext.set.open.length} left`}`, typicalLabel(setNext.g.key)].filter(Boolean).join(' \u00b7 '),
       href: setNext.g.href || `/${setNext.g.key}`, onClick: null,
     }
     : (forward ? { name: fwdName, sub: fwdTag, href: forward.href, onClick: forward.onClick } : null);

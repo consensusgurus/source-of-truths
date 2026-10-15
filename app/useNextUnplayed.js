@@ -29,7 +29,7 @@
 import { useEffect, useState } from 'react';
 import { DAILY_GAMES } from './DailyEndCard';
 import { fetchDailyMe, dailyMeQuery, dailyMeIdentity } from './dailyMeClient';
-import { familyAfter } from '@/lib/daily-games';
+import { familyAfter, spotlightFor } from '@/lib/daily-games';
 
 export default function useNextUnplayed({ self = null, active = false }) {
   const [next, setNext] = useState(null);
@@ -49,7 +49,10 @@ export default function useNextUnplayed({ self = null, active = false }) {
         const fam = familyAfter(self)
           .map((k) => open.find((g) => g.key === k))
           .filter(Boolean);
-        setNext(fam[0] || sameCat[0] || open[0] || null);
+        // A spotlit game (lib/daily-games SPOTLIGHT) leads the category pick.
+        const spot = mine ? spotlightFor(mine.cat, self) : null;
+        const spotGame = spot ? sameCat.find((g) => g.key === spot.key) : null;
+        setNext(fam[0] || spotGame || sameCat[0] || open[0] || null);
       })
       .catch((e) => { if (typeof console !== 'undefined') console.warn('useNextUnplayed', e); });
     return () => { alive = false; };
@@ -77,8 +80,11 @@ export function useUnplayedSimilar({ self = null, active = false, count = 4 }) {
         const fam = familyAfter(self)
           .map((k) => open.find((g) => g.key === k))
           .filter(Boolean);
+        const spot = mine ? spotlightFor(mine.cat, self) : null;
         const sameCat = (mine ? open.filter((g) => g.cat === mine.cat) : [])
-          .filter((g) => !fam.includes(g));
+          .filter((g) => !fam.includes(g))
+          // a spotlit game (lib/daily-games SPOTLIGHT) goes first in its category
+          .sort((a, b) => (spot ? (b.key === spot.key) - (a.key === spot.key) : 0));
         const rest = open.filter((g) => !fam.includes(g) && !sameCat.includes(g));
         setList([...fam, ...sameCat, ...rest].slice(0, count));
       })
