@@ -97,6 +97,16 @@ function bankedOf(sec) {
   } catch (e) { return null; }
 }
 
+// THE SERVER IS ASKED TOO (owner, 2026-10-15). bankedOf only knows this
+// browser, so a Ping finished on a phone was invisible to a laptop, which
+// served it again while the board kept the first row. Each leg's quizId is
+// now checked against /api/quiz/result?first=1, which returns the row the
+// board counts (the earliest completed attempt), and a server row WINS over
+// the local reading because it is what the board scores. No leg mounts until
+// the check answers or CHECK_MS passes; a late answer is dropped so a game is
+// never pulled out from under a player mid-leg.
+const CHECK_MS = 4000;
+
 export default function PassportRunClient({ puzzles = [], puzzle, sections = [], calls = [], isTodays = true }) {
   const PUZZLE = puzzle;
   const STORE_KEY = `sot_${KEY}_${PUZZLE.num}`;
@@ -106,6 +116,8 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   const gRef = useRef(g);
   const [hydrated, setHydrated] = useState(false);
   const [banked, setBanked] = useState({});
+  const [checking, setChecking] = useState(true);
+  const srvDone = useRef(false);
   const [holding, setHolding] = useState(null);
   const [numShow, setNumShow] = useState(null);
   const [slam, setSlam] = useState(-1);
@@ -127,6 +139,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     const b = {};
     for (const sec of sections) { const x = bankedOf(sec); if (x) b[sec.key] = x; }
     setBanked(b);
+    checkServer();
     if (saved && saved.v === 2 && Array.isArray(saved.sc)) {
       const next = { ...freshState(), ...saved, sz: { ...freshState().sz, ...(saved.sz || {}) } };
       gRef.current = next; setG(next);
@@ -150,6 +163,33 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
       else localStorage.removeItem(`sot_${KEY}_day`);
     } catch (e) {}
   }, [g, hydrated, STORE_KEY, isTodays]);
+
+  function checkServer() {
+    let anonId = null, email = null;
+    try { anonId = localStorage.getItem('sot_quiz_anon'); } catch (e) {}
+    try { const id = JSON.parse(localStorage.getItem('sot_quiz_identity') || 'null'); if (id && id.email) email = id.email; } catch (e) {}
+    if ((!anonId && !email) || !sections.length) { srvDone.current = true; setChecking(false); return; }
+    const timer = setTimeout(() => { srvDone.current = true; setChecking(false); }, CHECK_MS);
+    Promise.all(sections.map((sec) => {
+      if (!sec.quizId) return Promise.resolve(null);
+      const q = new URLSearchParams({ quizId: sec.quizId, first: '1' });
+      if (anonId) q.set('anonId', anonId);
+      if (email) q.set('email', email);
+      return fetch(`/api/quiz/result?${q.toString()}`, { cache: 'no-store' })
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null)
+        .then((j) => (j && j.found && Number(j.total) > 0
+          ? [sec.key, { score: Number(j.score) || 0, total: Number(j.total), ms: (Number(j.timeElapsed) || 0) * 1000, banked: true, server: true }]
+          : null));
+    })).then((hits) => {
+      clearTimeout(timer);
+      if (srvDone.current) return;
+      srvDone.current = true;
+      const add = Object.fromEntries(hits.filter(Boolean));
+      if (Object.keys(add).length) setBanked((b) => ({ ...b, ...add }));
+      setChecking(false);
+    });
+  }
 
   const playing = g.status === 'playing';
   const preStart = playing && !g.t0;
@@ -322,7 +362,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   );
 
   const sec = started && g.round < 3 ? sections[g.round] : null;
-  const showGame = !!(sec && (g.sc[g.round] == null || holding === sec.key) && !banked[sec.key]);
+  const showGame = !!(sec && (g.sc[g.round] == null || holding === sec.key) && !banked[sec.key] && !checking);
   const Game = sec ? CLIENTS[sec.key] : null;
 
   const slots = (
@@ -499,6 +539,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
                 </RunEmbed>
               </div>
             ) : null}
+            {sec && checking && g.sc[g.round] == null ? <p className="pr-note" style={{ textAlign: 'center' }}>Checking whether you already played {sec.name} today.</p> : null}
             {sec && !showGame && g.sc[g.round] != null ? (
               <div className="stg-board pp-board" style={{ maxWidth: 620, margin: '0 auto', background: 'var(--stg-surf,rgba(255,255,255,0.045))', border: '1px solid var(--stg-line,rgba(255,255,255,0.11))', padding: 15 }}>{between()}</div>
             ) : null}

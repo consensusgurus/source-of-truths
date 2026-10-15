@@ -257,6 +257,9 @@ export async function GET(request) {
     const quizId = (searchParams.get('quizId') || '').trim();
     if (!quizId || quizId.length > 100) return NextResponse.json({ found: false });
     const email = (searchParams.get('email') || '').trim() || null;
+    // ?first=1 (Passport, 2026-10-15): the row a daily board COUNTS, the earliest
+    // completed attempt (lib/daily-combined scoreGame), instead of the best one.
+    const first = searchParams.get('first') === '1';
     const anonId = (searchParams.get('anonId') || '').trim().slice(0, 64) || null;
     if (!email && !anonId) return NextResponse.json({ found: false });
 
@@ -295,7 +298,14 @@ export async function GET(request) {
     const pool = completed.length ? completed : all;
     if (!pool.length) return NextResponse.json({ found: false });
     let best = pool[0];
-    for (const r of pool) if ((Number(r.score) || 0) > (Number(best.score) || 0)) best = r; // ties keep the newest (rows are id-desc)
+    if (first) {
+      // Rows are id-desc, so the earliest completed row is the last one. Only
+      // abandons on record: nothing counted yet, since a finish supersedes them.
+      if (!completed.length) return NextResponse.json({ found: false });
+      best = completed[completed.length - 1];
+    } else {
+      for (const r of pool) if ((Number(r.score) || 0) > (Number(best.score) || 0)) best = r; // ties keep the newest (rows are id-desc)
+    }
 
     return NextResponse.json({
       found: true,
