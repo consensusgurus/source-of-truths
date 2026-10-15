@@ -29,7 +29,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { X, Lightbulb, Smartphone, Eye } from 'lucide-react';
+import { X, Lightbulb, Smartphone, Eye, Maximize2, Minimize2 } from 'lucide-react';
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
@@ -329,6 +329,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
   const [imgOk, setImgOk] = useState(true);
   const [sel, setSel] = useState(-1);           // a piece picked with a tap, waiting for a tap on the board
   const [drag, setDrag] = useState(null);       // { i, size } while a piece is being dragged
+  const selRef = useRef(-1);
   const [flashMiss, setFlashMiss] = useState(false);
   const [peekUntil, setPeekUntil] = useState(0);
   const [showHelp, setShowHelp] = useState(false);
@@ -351,6 +352,14 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const [boardH, setBoardH] = useState(0);
+  // Full screen (desktop, owner 2026-10-15): the board card takes the whole
+  // window, the board sized to fit it beside a full-height tray.
+  const [full, setFull] = useState(false);
+  const [fitW, setFitW] = useState(0);
+  const fullRef = useRef(false);
+  selRef.current = sel;
+  const playRef = useRef(null);
+  const sideRef = useRef(null);
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -716,6 +725,60 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
     say('Peek: 15 seconds added to your clock.');
   }
 
+  function enterFull() {
+    fullRef.current = true;
+    setFull(true);
+    try {
+      const el = document.documentElement;
+      if (el.requestFullscreen && !document.fullscreenElement) {
+        const pr = el.requestFullscreen();
+        if (pr && pr.catch) pr.catch(() => {});
+      }
+    } catch (e) {}
+  }
+  function exitFull() {
+    fullRef.current = false;
+    setFull(false);
+    setFitW(0);
+    try { if (document.fullscreenElement && document.exitFullscreen) { const pr = document.exitFullscreen(); if (pr && pr.catch) pr.catch(() => {}); } } catch (e) {}
+  }
+  // The browser's own Esc leaves its full screen; follow it out.
+  useEffect(() => {
+    const onFs = () => { if (!document.fullscreenElement && fullRef.current) { fullRef.current = false; setFull(false); setFitW(0); } };
+    document.addEventListener('fullscreenchange', onFs);
+    return () => document.removeEventListener('fullscreenchange', onFs);
+  }, []);
+  // The page underneath must not scroll while the board covers it.
+  useEffect(() => {
+    if (!full) return undefined;
+    const root = document.documentElement;
+    const prev = root.style.overflow;
+    root.style.overflow = 'hidden';
+    return () => { root.style.overflow = prev; };
+  }, [full]);
+  // Size the board to the space it has: as wide as fits beside the tray, never
+  // taller than the window allows. The board box carries the width, so the peek
+  // image (placed in percentages of it) stays on the picture.
+  useEffect(() => {
+    if (!full) return undefined;
+    const el = playRef.current;
+    if (!el) return undefined;
+    const ar = (BW + 2 * KNOB) / (BH + 2 * KNOB);
+    const fit = () => {
+      const r = el.getBoundingClientRect();
+      const side = sideRef.current ? sideRef.current.getBoundingClientRect().width : 0;
+      const w = Math.max(200, Math.min(r.width - side - 18, r.height * ar));
+      setFitW(Math.floor(w));
+    };
+    fit();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(fit) : null;
+    if (ro) ro.observe(el);
+    window.addEventListener('resize', fit);
+    return () => { if (ro) ro.disconnect(); window.removeEventListener('resize', fit); };
+  }, [full, BW, BH]);
+  // A finished board leaves full screen so the end card can show.
+  useEffect(() => { if (!playing && fullRef.current) exitFull(); }, [playing]);
+
   // One free hint, first play only: a corner (then an edge) drops into place.
   function useHint() {
     if (!hintOk || !playing || g.hintUsed || !g.t0) return;
@@ -739,7 +802,11 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
   }
 
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') setSel(-1); };
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return;
+      if (selRef.current < 0 && fullRef.current) exitFull();
+      setSel(-1);
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
@@ -836,7 +903,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
   const peeking = peekUntil > Date.now();
 
   return (
-    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
+    <div className={[STAGE ? 'stage-page' : (LOFT ? 'loft-page' : ''), full ? 'jg-isfull' : ''].filter(Boolean).join(' ') || undefined}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
@@ -907,7 +974,20 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
           .jg-link.armed{color:var(--stg-bad, ${COLORS.rust});}
           .jg-credit{font-size:12px;font-weight:600;line-height:1.5;color:var(--stg-mute, ${COLORS.faded});margin:10px 0 0;}
           .jg-credit a{color:inherit;}
+          .jg-top{display:flex;align-items:flex-end;gap:12px;margin:0 0 12px;}
+          .jg-top .jg-meter{flex:1 1 auto;margin:0;}
+          .jg-fs{flex:none;min-height:38px;padding:0 12px;font-size:13px;border-radius:10px;}
+          .jg-isfull .jg-wrap{z-index:200 !important;}
+          .jg-isfull .jg-ghost{z-index:210;}
+          .jg-card.jg-full{position:fixed;inset:0;margin:0 !important;border:0 !important;border-radius:0 !important;box-shadow:none !important;background:var(--stg-ground, ${T.surface}) !important;padding:16px 24px 14px !important;display:flex;flex-direction:column;overflow:hidden;}
+          .jg-full .jg-play{flex:1 1 auto;min-height:0;align-items:stretch;justify-content:center;}
+          .jg-full .jg-boardbox{flex:none;align-self:center;}
+          .jg-full .jg-side{flex:0 0 380px;max-width:380px;min-height:0;}
+          .jg-full .jg-tray{max-height:none !important;flex:1 1 auto;min-height:0;}
+          .jg-full .jg-foot{margin-top:10px;padding-top:10px;}
+          .jg-full .jg-below{padding-top:2px;}
           @media(max-width:820px){
+            .jg-fs{display:none !important;}
             .jg-play{flex-direction:column;align-items:stretch;gap:12px;}
             .jg-boardbox{flex:none;}
             .jg-side{max-width:none;flex:none;}
@@ -963,7 +1043,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
         <div className={LOFT && !STAGE && !playing ? (revealed ? 'loft-flip' : 'loft-flip on') : undefined}>
         <div className={LOFT && !STAGE && !playing ? 'loft-flip-in' : undefined}>
         <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+        <div className={`${STAGE ? 'stg-board' : (LOFT ? 'loft-card' : '')} jg-card${full ? ' jg-full' : ''}`} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           {!LOFT && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
             <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
@@ -971,13 +1051,21 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
           </div>
           )}
 
+          <div className="jg-top">
           <div className="jg-meter" role="meter" aria-valuemin={0} aria-valuemax={NP} aria-valuenow={placedCount} aria-label={`Pieces placed: ${placedCount} of ${NP}`}>
             <span className="jg-mlab">Pieces placed &middot; <b>{placedCount}</b> of {NP}{g.peeks ? <> &middot; {g.peeks} peek{g.peeks > 1 ? 's' : ''} (+{g.peeks * 15}s)</> : null}</span>
             <div className="jg-mbar" aria-hidden="true"><span style={{ width: `${(placedCount / NP) * 100}%` }} /></div>
           </div>
+          {started && !mobileUi && (
+            <button type="button" className="jg-ob jg-fs" onClick={full ? exitFull : enterFull} aria-pressed={full}
+              title={full ? 'Leave full screen (Esc)' : 'Play on the whole screen'}>
+              {full ? <Minimize2 size={15} aria-hidden="true" /> : <Maximize2 size={15} aria-hidden="true" />} {full ? 'Exit full screen' : 'Full screen'}
+            </button>
+          )}
+          </div>
 
-          <div className="jg-play">
-            <div className="jg-boardbox">
+          <div className="jg-play" ref={playRef}>
+            <div className="jg-boardbox" style={full && fitW ? { width: fitW } : undefined}>
               <svg ref={boardRef} className={`jg-board${flashMiss ? ' miss' : ''}`} viewBox={`${-KNOB} ${-KNOB} ${BW + 2 * KNOB} ${BH + 2 * KNOB}`}
                 role="img" aria-label={`Jig board, ${placedCount} of ${NP} pieces placed`} onClick={boardTap}>
                 <defs>
@@ -1001,7 +1089,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
             </div>
 
             {playing && (
-              <div className="jg-side">
+              <div className="jg-side" ref={sideRef}>
                 <div className="jg-ctl">
                   <div className="jg-seg" role="group" aria-label="Sort the tray">
                     <button type="button" aria-pressed={view === 'edges'} onClick={() => setView('edges')}>Edges</button>
@@ -1226,7 +1314,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
-        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
+        <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 220, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
           {toast}
         </div>
       )}
@@ -1252,7 +1340,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
           Jig is a free daily online jigsaw puzzle from Mind Loft. Every day brings a new photograph, a featured picture from Wikimedia Commons, cut into classic interlocking pieces: 48 on Monday, building to 77 on Saturday, and an 80-piece Sunday Edition. Everyone gets the same picture and the same cut, so the daily leaderboard is a fair race.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Drag a piece from the tray onto the board and it snaps in when it is near its own spot; a wrong drop just sends it back, at no cost. Pieces never need turning. Sort the tray into two bins, edge pieces and the middle or one of the picture&rsquo;s colors and the rest, to build the frame first and then fill it a color at a time. Peek shows the whole picture for a moment and adds 15 seconds to the clock.
+          Drag a piece from the tray onto the board and it snaps in when it is near its own spot; a wrong drop just sends it back, at no cost. Pieces never need turning. Sort the tray into two bins, edge pieces and the middle or one of the picture&rsquo;s colors and the rest, to build the frame first and then fill it a color at a time. Peek shows the whole picture for a moment and adds 15 seconds to the clock. On a computer, Full screen gives the board and the tray the whole window.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Finish the picture for a perfect 10; the fastest time tops the board. No app, no signup, play free in your browser on a phone or a computer, and keep a streak. Like fitting things together? Try <a href="/snug" style={{ color: INK, fontWeight: 800 }}>Snug</a>, the daily shape-fitting puzzle, and <a href="/etch" style={{ color: INK, fontWeight: 800 }}>Etch</a>, which draws a picture from number clues.
