@@ -219,10 +219,18 @@ export default function PremierePop() {
   // renders after the effect above, so the DOM is there.
   let light = true;
   try { const el = document.querySelector('.stage-page'); light = !el || el.getAttribute('data-stage-theme') !== 'dark'; } catch (e) {}
-  const acc = light ? categoryColorLight(cat) : categoryColor(cat);
-  const ri = rampIndexFor(cat);
-  const onAcc = light ? (ri >= 0 ? RAMP_INK_LIGHT[ri] : RAMP_INK) : RAMP_INK;
-  const vars = { '--prm-acc': acc, '--prm-on': onAcc, '--prm-tint': `color-mix(in srgb, ${acc} 16%, transparent)` };
+  // EACH ROW WEARS ITS OWN CATEGORY (owner, 2026-10-15). The pair used to be
+  // read off rows[0] and set once on the dialog, so a mixed premiere (a card
+  // game beside a sudoku beside a chess puzzle) painted every row in the first
+  // game's colour. The dialog keeps a category colour only when every row
+  // shares it; otherwise its eyebrow dot falls back to plain ink.
+  const varsFor = (c) => {
+    const acc = light ? categoryColorLight(c) : categoryColor(c);
+    const ri = rampIndexFor(c);
+    const onAcc = light ? (ri >= 0 ? RAMP_INK_LIGHT[ri] : RAMP_INK) : RAMP_INK;
+    return { '--prm-acc': acc, '--prm-on': onAcc, '--prm-tint': `color-mix(in srgb, ${acc} 16%, transparent)` };
+  };
+  const vars = oneCat ? varsFor(cat) : { '--prm-acc': 'var(--stg-ink, #0b0d12)' };
 
   return (
     <div className="prm-scrim" onClick={() => setGames(null)}>
@@ -237,7 +245,7 @@ export default function PremierePop() {
         </p>
         <div className="prm-rows">
           {rows.map((g) => (
-            <div className="prm-row" key={g.key}>
+            <div className="prm-row" key={g.key} style={varsFor(g.cat || 'Trivia')}>
               <div className="prm-gl"><GameGlyph gameKey={g.key} size={26} /></div>
               <div className="prm-t"><b>{g.name}</b><span>{g.tag}</span></div>
               <a className="prm-play" href={g.href} onClick={() => setGames(null)}>Play</a>

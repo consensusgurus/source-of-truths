@@ -3815,6 +3815,9 @@ archive and hub chips use the short form `Sun`.
 | Arrow | eight printed digits under twelve arrows, against twenty-eight under nine on a Monday (from launch, 2026-10-13) |
 | Giant | ninety of 256 clues and the only day that needs more than singles, against 96 to 128 on weekdays (from 2026-10-18) |
 | Sumo | no digits at all, only the 108 signs, and it needs more than singles (from 2026-10-18) |
+| Window | thirteen clues against 22 on Mondays, and it needs more than singles (from 2026-10-18) |
+| Five | eight green lines and eleven printed digits, against six lines and twenty on Mondays (from 2026-10-18) |
+| Racecar | ten grey lines and fourteen printed digits, against eight lines and twenty-four on Mondays (from 2026-10-18) |
 | Circa | a trickier moment to place |
 | Extra | a trickier story to name |
 | Carve | 7×7 board in nine blocks |
@@ -4331,6 +4334,47 @@ Input Options" canvas, the LIT KEYBOARD.
   `--until <date>`, which keeps every existing board byte for byte. `scripts/verify-scram.mjs` is independent
   (imports nothing from the generator) and re-checks every rule above. Bank 2026-10-14 to 2026-12-31.
 - Client `app/scram/ScramClient.jsx` is built off GarbleClient's frame. Tile art `scripts/gen-scram-tile.py`.
+
+## Five and Racecar are the LINE SUDOKUS, and they share one engine (launched 2026-10-15)
+
+Five is German whispers (any two neighbours along a green line differ by at least 5, so 5 never sits
+on a line and lows and highs alternate). Racecar is palindrome (every grey line reads the same from
+either end, so paired squares never share a house). Routes `/five` and `/racecar`, keys of the same
+names, legacy hues green #15803d and slate #475569.
+
+- **One engine for both:** `scripts/lines-core.mjs` (generator, graded solver, uniqueness counter),
+  `scripts/lines-bank.mjs` (appends, JSONL cache), wrapped by `gen-five.mjs` / `gen-racecar.mjs`.
+  The INDEPENDENT checker is `scripts/lines-verify.mjs`, wrapped by `verify-five.mjs` /
+  `verify-racecar.mjs`, sharing no code with the generator; `lines-mutation-test.mjs five|racecar`
+  breaks each bank nine ways. Both proofs include LINE NECESSITY: with the lines off the clues fit
+  more than one grid.
+- **Ramps** (printed digits, level 1 Mon-Thu, level 2 Fri-Sun): Five 20/18/16/15/14/13, Sunday 11
+  under eight lines (six on weekdays). Racecar 24/22/20/18/17/16, Sunday 14 under ten lines (eight
+  on weekdays).
+- **Clients forked from Arrow** by `scripts/mklines_client.py` + `mklines_page.py` (not committed):
+  the arrow overlay is swapped for a plain translucent polyline (`LineOverlay`). Class prefixes
+  `fv-` and `rc-`. Wiring is `scripts/wire-five-racecar.mjs`, which anchors on Window's entries and
+  must be run ONCE (its key-list inserts are not idempotent).
+- Banks 2026-10-15 to 2027-01-31. The boards first built for 10-13 and 10-14 were dropped unplayed
+  and the bank renumbered, so No. 1 is launch day. Not in Enter the Dojo (not asked for).
+
+## Window is the WINDOKU, and a window is a HOUSE (launched 2026-10-15)
+
+An ordinary 9x9 plus four shaded 3x3 WINDOWS (rows 2-4 / 6-8 by columns 2-4 / 6-8, 1-based), each
+holding 1 to 9 once: 31 houses, not 27. Route `/window` (owner named it Window, not Windoku), key
+`window`, legacy hue rose #be185d. Careful: `window` is also the browser global, so never name a
+variable `window`; as an object key and a string it is fine.
+
+- **A fork of Diag**, made by `mkwin_client.py` / `mkwin_scripts.py` (not committed): the two
+  diagonals swapped for the four windows in the peer set, tint and note scrub; the ruled X becomes
+  four framed windows. Class prefix `wi-`.
+- **The ramp is measured lower than Diag's** because the windows cover 36 squares (the diagonals 17):
+  Mon 22, Tue 20, Wed 18, Thu 16 at level 1 (singles); Fri 15, Sat 14, Sunday Edition 13 at level 2
+  (also locked candidates and subsets). Twelve did not come in 150 s of search, so 13 is the floor.
+- Generator `scripts/gen-window.mjs` (appends only; `--until` to extend), independent verifier
+  `scripts/verify-window.mjs` (unique, logic-only at the pinned level, window necessity),
+  `window-mutation-test.mjs` (9 of 9). Bank 2026-10-15 to 2027-01-31.
+- **Not in Enter the Dojo** (not asked for).
 
 ## Sumo is the GREATER-THAN SUDOKU, and its signs are the grid lines (launched 2026-10-13)
 

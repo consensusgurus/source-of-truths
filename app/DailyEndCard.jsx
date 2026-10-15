@@ -116,7 +116,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['jig', 'scram', 'hold', 'cell', 'swindle', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-18' };
+const LAUNCH_PIN = { keys: ['jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -219,6 +219,9 @@ export const GAME_META = {
   diag: { accent: '#0e7490', badgeBg: '#0e7490', badgeInk: T.white, Fin: MoveDiagonal },
   giant: { accent: '#3949ab', badgeBg: '#3949ab', badgeInk: T.white, Fin: LayoutGrid },
   sumo: { accent: '#8a6d0b', badgeBg: '#8a6d0b', badgeInk: T.white, Fin: Grid3x3 },
+  window: { accent: '#be185d', badgeBg: '#be185d', badgeInk: T.white, Fin: Grid3x3 },
+  five: { accent: '#15803d', badgeBg: '#15803d', badgeInk: T.white, Fin: Grid3x3 },
+  racecar: { accent: '#475569', badgeBg: '#475569', badgeInk: T.white, Fin: Grid3x3 },
   frame: { accent: '#b45309', badgeBg: '#b45309', badgeInk: T.white, Fin: Crop },
   rim: { accent: '#4d7c0f', badgeBg: '#4d7c0f', badgeInk: T.white, Fin: Scan },
   whittle: { accent: '#854d0e', badgeBg: '#854d0e', badgeInk: T.white, Fin: Axe },
@@ -322,6 +325,9 @@ const ALL_DAILY_GAMES = [
   { key: 'arrow', cat: 'sudoku' ,  name: 'Arrow', tag: 'The daily arrow sudoku',  blurb: 'Every circle is the sum of its arrow. Small sums laid over a 9x9, one logical solution, and Sundays print just eight digits.', href: '/arrow' },
   { key: 'knight', cat: 'sudoku' ,   name: 'Knight', tag: 'The daily anti-knight sudoku',     blurb: 'One rule on top of sudoku: no digit repeats a knight move away. Select a square and its knights light up, and the board prints as few as thirteen digits.', href: '/knight' },
   { key: 'whittle', cat: 'sudoku' ,  name: 'Whittle', tag: 'The sudoku, backwards',            blurb: 'The one played backwards: a solved grid, eighteen clues, and you take clues out for as long as it still has one answer.', href: '/whittle' },
+  { key: 'window',  cat: 'sudoku' ,   name: 'Window',  tag: 'The daily windoku',    blurb: 'Sudoku with four extra boxes: each shaded window holds 1 to 9 once. Few digits, all logic.', href: '/window' },
+  { key: 'five',  cat: 'sudoku' ,   name: 'Five',  tag: 'The daily whispers sudoku',    blurb: 'Neighbours on a green line differ by at least 5. Lows and highs alternate, and a 5 never fits.', href: '/five' },
+  { key: 'racecar',  cat: 'sudoku' ,   name: 'Racecar',  tag: 'The daily palindrome sudoku',    blurb: 'Every grey line reads the same both ways, so its ends match. Pair them off from the outside in.', href: '/racecar' },
   { key: 'sumo',  cat: 'sudoku' ,   name: 'Sumo',  tag: 'The daily greater-than sudoku',    blurb: 'Sudoku with signs: every line inside a box points at the smaller square. Almost no digits, all logic.', href: '/sumo' },
   { key: 'giant',  cat: 'sudoku' ,   name: 'Giant',  tag: 'The daily 16×16 sudoku',    blurb: 'Sudoku at sixteen: rows, columns and 4x4 boxes each hold 1 to 9 and A to G. 256 squares and a proper long sit.', href: '/giant' },
   { key: 'diag',  cat: 'sudoku' ,   name: 'Diag',  tag: 'The daily diagonal sudoku',    blurb: 'Sudoku X: both long diagonals hold 1 to 9 as well, so two extra houses cross the grid and the board prints fewer clues.', href: '/diag' },

@@ -126,6 +126,9 @@ import { PUZZLES as FRAME_FULL } from '../frame/puzzles';
 import { PUZZLES as RIM_FULL } from '../rim/puzzles';
 import { PUZZLES as GIANT_FULL } from '../giant/puzzles';
 import { PUZZLES as SUMO_FULL } from '../sumo/puzzles';
+import { PUZZLES as WINDOW_FULL } from '../window/puzzles';
+import { PUZZLES as FIVE_FULL } from '../five/puzzles';
+import { PUZZLES as RACECAR_FULL } from '../racecar/puzzles';
 import { PUZZLES as SCRIPT_FULL } from '../script/puzzles';
 import { PUZZLES as QUOTES_FULL } from '../quotes/puzzles';
 import { PUZZLES as SCI_FULL } from '../sci/puzzles';
@@ -230,6 +233,9 @@ const FLANK = FLANK_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ nu
 const WHITTLE = WHITTLE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const DIAG = DIAG_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const FRAME = FRAME_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const WINDOW = WINDOW_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const FIVE = FIVE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const RACECAR = RACECAR_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SUMO = SUMO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const GIANT = GIANT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const RIM = RIM_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -405,6 +411,9 @@ const GAMES = [
   { key: 'whittle', name: 'Whittle', path: '/whittle', tag: 'The sudoku, backwards', accent: '#854d0e', bg: '#fdf6e9', border: 'rgba(133,77,14,0.4)', src: WHITTLE },
   { key: 'diag', name: 'Diag', path: '/diag', tag: 'Sudoku plus the two diagonals', accent: '#0e7490', bg: '#e8f6fa', border: 'rgba(14,116,144,0.4)', src: DIAG },
   { key: 'frame', name: 'Frame', path: '/frame', tag: 'Sums at every edge', accent: '#b45309', bg: '#fdf3e3', border: 'rgba(180,83,9,0.4)', src: FRAME },
+  { key: 'window', name: 'Window', path: '/window', tag: 'The windoku', accent: '#be185d', bg: '#fdf2f8', border: 'rgba(190,24,93,0.4)', src: WINDOW },
+  { key: 'five', name: 'Five', path: '/five', tag: 'The whispers sudoku', accent: '#15803d', bg: '#effaf2', border: 'rgba(21,128,61,0.4)', src: FIVE },
+  { key: 'racecar', name: 'Racecar', path: '/racecar', tag: 'The palindrome sudoku', accent: '#475569', bg: '#f3f5f8', border: 'rgba(71,85,105,0.4)', src: RACECAR },
   { key: 'sumo', name: 'Sumo', path: '/sumo', tag: 'The greater-than sudoku', accent: '#8a6d0b', bg: '#faf5e6', border: 'rgba(138,109,11,0.4)', src: SUMO },
   { key: 'giant', name: 'Giant', path: '/giant', tag: 'Sudoku at sixteen', accent: '#3949ab', bg: '#eceefa', border: 'rgba(57,73,171,0.4)', src: GIANT },
   { key: 'rim', name: 'Rim', path: '/rim', tag: 'Nothing printed inside', accent: '#4d7c0f', bg: '#f1f8e6', border: 'rgba(77,124,15,0.4)', src: RIM },

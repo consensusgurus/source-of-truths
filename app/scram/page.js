@@ -18,7 +18,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Themed Word Scramble Game: Scram | Mind Loft',
   description:
-    'A free daily word scramble game with a theme: ten scrambled cities, foods, countries, animals or names to unscramble against the clock. New theme every day, and a long-word Sunday Edition.',
+    'A free daily themed word scramble: ten scrambled cities, foods, animals or names to unscramble against the clock. A new theme daily, longer words on Sundays.',
   alternates: { canonical: '/scram' },
   openGraph: {
     images: [{ url: '/og/scram.png', width: 1200, height: 630, alt: 'Scram, a daily themed word scramble from Mind Loft' }],
