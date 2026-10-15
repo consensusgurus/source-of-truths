@@ -427,7 +427,7 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Scram #${PUZZLE.num}: ten scrambled ${PUZZLE.theme.toLowerCase()} against the clock. How fast can you unscramble them?\n${withRef('mindloftdaily.com/scram')}`
+      ? `Scram #${PUZZLE.num}: ten scrambled answers from one theme, against the clock. How fast can you unscramble them?\n${withRef('mindloftdaily.com/scram')}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -537,7 +537,7 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
     <DailyRules
       lead="Ten scrambled answers from one theme. Unscramble all ten against the clock."
       steps={[
-        <>The theme is printed up top: <b>{PUZZLE.theme}</b> today. Every answer belongs to it.</>,
+        <>One broad <b>theme</b> a day, printed above the board once you start. All ten answers belong to it.</>,
         <>Type the answer with the keyboard. Only the <b>scramble&rsquo;s letters</b> light up, and a small number shows a letter you need more than once.</>,
         <>A full answer <b>checks itself</b>. Right turns it dark; wrong shakes and clears so you can try another order.</>,
         <>Stuck? <b>Back</b> and <b>Next</b> (or the numbered squares) move between the ten, and <b>Skip</b> jumps to the next one still open.</>,
