@@ -116,7 +116,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['scram', 'hold', 'cell', 'swindle', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-18' };
+const LAUNCH_PIN = { keys: ['jig', 'scram', 'hold', 'cell', 'swindle', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-18' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -187,6 +187,7 @@ export const GAME_META = {
   dossier: { accent: '#5b3a8c', badgeBg: '#5b3a8c', badgeInk: T.white, Fin: LayoutGrid },
   duet: { accent: '#1a7f37', badgeBg: '#1a7f37', badgeInk: T.white, Fin: Blocks },
   snug: { accent: '#3b5bdb', badgeBg: '#3b5bdb', badgeInk: T.white, Fin: Puzzle },
+  jig: { accent: '#0e7490', badgeBg: '#0e7490', badgeInk: T.white, Fin: Puzzle },
   check: { accent: '#166e5a', badgeBg: '#166e5a', badgeInk: T.white, Fin: Swords },
   rung: { accent: '#155e75', badgeBg: '#155e75', badgeInk: T.white, Fin: MoveUp },
   crunch: { accent: '#b45309', badgeBg: '#b45309', badgeInk: T.white, Fin: Calculator },
@@ -347,6 +348,7 @@ const ALL_DAILY_GAMES = [
   { key: 'dossier',   cat: 'trivia',     name: 'Dossier', tag: 'Five clues on every guess',   blurb: 'A hidden president, element or US state. Every guess is compared with the answer on five facts: a match, higher or lower. Eight guesses, six on Sundays.', href: '/dossier' },
   { key: 'duet',   cat: 'logic',     name: 'Duet', tag: 'Half dots, half rings',   blurb: 'Dots and rings, half and half in every row, column and walled room, never three alike in a line. Six by six early in the week, eight by eight from Thursday, ten by ten on Sundays.', href: '/duet' },
   { key: 'snug',   cat: 'logic',     name: 'Snug', tag: 'Fit the pieces, one way only',   blurb: 'A board with a few squares missing and pieces that fill it exactly. Turn them, flip them, find the one way they all fit. Six by six on weekdays, seven by seven with eight pieces on Sundays.', href: '/snug' },
+  { key: 'jig',    cat: 'logic',     name: 'Jig', tag: 'The daily jigsaw',   blurb: 'A new photograph every day, cut into interlocking pieces, the same cut for everyone. Drag them into place, sort the tray by edges or colors, and race the clock.', href: '/jig' },
   { key: 'junkyard',   cat: 'logic',     name: 'Junkyard', tag: 'Parker on the biggest lot',         blurb: 'Parker on an eight by eight lot, the biggest board in the family, with close to thirty blocks in your way. Same one gap in the wall, a great deal more between you and it.', href: '/junkyard' },
   { key: 'check',  cat: 'endgame',     name: 'Check',  tag: 'Red to play and sweep',       blurb: 'A checkers position where one move sets off a chain that clears the whole board.', href: '/check' },
   { key: 'chain',  cat: 'endgame',     name: 'Chain',  tag: 'Take them, or leave them',    blurb: 'A dots and boxes endgame you are already winning. One edge keeps it, and the free box is usually bait.', href: '/chain' },

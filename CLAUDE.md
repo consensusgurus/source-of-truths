@@ -3849,6 +3849,7 @@ archive and hub chips use the short form `Sun`.
 | Defend | a hold for four instead of a hold for three, so a fourth white move to survive before the attack is spent (from 2026-08-12) |
 | Barter | eight seven-letter words on a 7x7 lattice instead of six five-letter words on 5x5, and a deeper par (from launch, 2026-08-16) |
 | Snug | a 7x7 board with four holes and eight pieces against the weekday 6x6 with six or seven, still one way to fit (from launch, 2026-09-13) |
+| Jig | the 80-piece cut, the biggest of the week against Saturday's 77 (from launch, 2026-10-15) |
 | Sixes | a grid in the top fraction of a percent of the difficulty distribution: ten to fourteen squares reachable only by a hidden single, against none on a Monday (from launch, 2026-08-14) |
 | Etch | a 20x20 picture instead of Saturday's 15x15 and the weekday 10x10 (from 2026-08-23) |
 | Hedge | a 10x10 loop lattice instead of the weekday 7x7 |
@@ -4276,6 +4277,30 @@ the client (the trick `verify-endgame-playout.mjs` uses), stub `document.element
 grid of known coordinates, and drive synthetic pointer sequences. That is how commit-on-lift, the
 hold-to-aim discriminator, the line lock, the free marks, the win path and the unchanged mouse path
 were all confirmed before the push, along with a unit test of the commit's error arithmetic.
+
+## Jig is the DAILY JIGSAW, one Commons photo cut the same way for everyone (launched 2026-10-15)
+
+Route `/jig`, key `jig`, Logic, legacy hue cyan #0e7490. Owner rulings 2026-10-15, all from the mockup
+canvas "Daily Jigsaw Mockup":
+
+- **The cut is capped at 80 and kept close to it all week**: Mon 8x6 48, Tue 9x6 54, Wed 10x6 60, Thu 9x7 63,
+  Fri 10x7 70, Sat 11x7 77, Sunday Edition 10x8 80. Pieces are drawn LARGE on screen; on a phone the tray is a
+  two-row horizontal strip.
+- **Real photos**: every day is a Wikimedia Commons FEATURED picture under a free licence (never GFDL-only),
+  landscape, scored for detail (no more than a fifth flat) and approved on a contact sheet. The pool is
+  `scripts/jig-photos.mjs`; `scripts/gen-jig.mjs` deals it from launch, deterministic from the pool's ORDER,
+  so extend the bank by appending to the pool, never reordering. Photos are fetched through `/api/jig/img?n=`
+  (Focus's design: Special:FilePath, one-year edge cache, 404 for a day not yet live), which also makes them
+  same-origin for the canvas colour read.
+- **The empty board shows nothing.** No outline of an empty spot is ever drawn: an outline is its piece's shape.
+- **The tray is All, or Sort into two bins**, by Edges (edge pieces / middle) or by Colors (one of four colour
+  groups k-means'd from the photo's per-piece averages, named by hue / the rest). Same on the phone.
+- **Drag to place**, snap within 0.42 of a piece of its own spot; a wrong drop goes back to the tray for nothing.
+  A tap picks a piece for a tap on the board. Pieces never rotate. Placed pieces lock.
+- **Scoring is Snug's**: flat 10 on a solve, `miss: null`, the clock decides. Peek shows the picture for a
+  moment and adds 15 seconds to the clock (`pen` in the save, included in `timeElapsed`). The free first-play
+  hint drops a corner in. In SOLVE_ONLY.
+- Wired by `scripts/wire-jig.mjs`. Tile art `scripts/gen-jig-tile.py`. Checker `scripts/verify-jig.mjs`.
 
 ## Scram is the THEMED WORD SCRAMBLE, raced on the clock (launched 2026-10-14)
 

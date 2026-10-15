@@ -68,6 +68,7 @@ import { PUZZLES as PARK_FULL } from '../parker/puzzles';
 import { PUZZLES as IMPOUND_FULL } from '../impound/puzzles';
 import { PUZZLES as JUNKYARD_FULL } from '../junkyard/puzzles';
 import { PUZZLES as SNUG_FULL } from '../snug/puzzles';
+import { PUZZLES as JIG_FULL } from '../jig/puzzles';
 import { PUZZLES as DUET_FULL } from '../duet/puzzles';
 import { PUZZLES as LAMPS_FULL } from '../lamps/puzzles';
 import { PUZZLES as CLADE_FULL } from '../clade/puzzles';
@@ -177,6 +178,7 @@ const CLADE = CLADE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ nu
 const DOSSIER = DOSSIER_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const DUET = DUET_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SNUG = SNUG_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const JIG = JIG_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const CHECK = CHECK_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const RUNG = RUNG_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const CRUNCH = CRUNCH_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -353,6 +355,7 @@ const GAMES = [
   { key: 'dossier', name: 'Dossier', path: '/dossier', tag: 'Five clues on every guess', accent: '#5b3a8c', bg: '#efe9f7', border: 'rgba(91,58,140,0.35)', src: DOSSIER },
   { key: 'duet', name: 'Duet', path: '/duet', tag: 'Half dots, half rings', accent: '#1a7f37', bg: '#e8f5ec', border: 'rgba(26,127,55,0.35)', src: DUET },
   { key: 'snug', name: 'Snug', path: '/snug', tag: 'Fit the pieces, one way only', accent: '#3b5bdb', bg: '#e8ecfb', border: 'rgba(59,91,219,0.35)', src: SNUG },
+  { key: 'jig', name: 'Jig', path: '/jig', tag: 'The daily jigsaw', accent: '#0e7490', bg: '#e6f4f7', border: 'rgba(14,116,144,0.38)', src: JIG },
   { key: 'check', name: 'Check', path: '/check', tag: 'Red to play and sweep', accent: '#166e5a', bg: '#e6f3ef', border: 'rgba(22,110,90,0.35)', src: CHECK },
   { key: 'rung', name: 'Rung', path: '/rung', tag: 'One letter at a time', accent: '#155e75', bg: '#e4f2f6', border: 'rgba(21,94,117,0.35)', src: RUNG },
   { key: 'hinge', name: 'Hinge', path: '/hinge', tag: 'Chain the compounds', accent: '#4f46e5', bg: '#e0e7ff', border: 'rgba(79,70,229,0.4)', src: HINGE },

@@ -65,6 +65,7 @@ export const DAILY_GAMES = [
   { key: 'dossier', href: '/dossier', name: 'Dossier', tag: 'five clues on every guess', store: 'sot_dossier_day', accent: '#5b3a8c', bg: '#efe9f7', border: 'rgba(91,58,140,0.35)' },
   { key: 'duet', href: '/duet', name: 'Duet', tag: 'half dots, half rings', store: 'sot_duet_day', accent: '#1a7f37', bg: '#e8f5ec', border: 'rgba(26,127,55,0.35)' },
   { key: 'snug', href: '/snug', name: 'Snug', tag: 'fit the pieces, one way only', store: 'sot_snug_day', accent: '#3b5bdb', bg: '#e8ecfb', border: 'rgba(59,91,219,0.35)' },
+  { key: 'jig', href: '/jig', name: 'Jig', tag: 'the daily jigsaw', store: 'sot_jig_day', accent: '#0e7490', bg: '#e6f4f7', border: 'rgba(14,116,144,0.38)' },
   { key: 'check', href: '/check', name: 'Check', tag: 'red to play and sweep', store: 'sot_check_day', accent: '#166e5a', bg: '#e6f3ef', border: 'rgba(22,110,90,0.35)' },
   { key: 'hinge', href: '/hinge', name: 'Hinge', tag: 'chain the compounds', store: 'sot_hinge_day', accent: '#4f46e5', bg: '#e0e7ff', border: 'rgba(79,70,229,0.4)' },
   { key: 'rung', href: '/rung', name: 'Rung', tag: 'one letter at a time', store: 'sot_rung_day', accent: '#155e75', bg: '#e4f2f6', border: 'rgba(21,94,117,0.35)' },
