@@ -27,6 +27,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import RunEmbed from '../RunEmbed';
 import NextDrop from '../NextDrop';
+import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken } from '../RunChallenge';
 import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
 import useCircuitBoard from '../circuits/useCircuitBoard';
 import { dailyMeIdentity } from '../dailyMeClient';
@@ -351,6 +352,7 @@ export default function RoomClient({ dateLabel, dateShort, sections = [] }) {
         </section>
       )}
 
+      <RunChallengeCapture gameKey={ROOM_RUN_ID} />
       {hydrated && done && (
         <Verdict key="verdict" sections={sections} counted={counted} parts={parts} total={total} dateLabel={dateLabel}
           animate={doneAtLoad.current === false} board={board} onShare={copyShare} copied={copied}
@@ -521,6 +523,10 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
           <div className="rr-vf-stats">
             <div><b>{total}/{ROOM_MAX}</b><span>Your read</span></div>
             {me && me.rank ? <div><b>#{me.rank}</b><span>{players ? `of ${fmtN(players)} on tonight's board` : "on tonight's board"}</span></div> : <div><b>{L[1].split(' ')[0]}</b><span>Where you stand</span></div>}
+          </div>
+          <div style={{ margin: '14px 0', maxWidth: 420 }}>
+            <RunChallengeLine gameKey={ROOM_RUN_ID} score={total} total={ROOM_MAX} n={runToken()} />
+            <RunChallengeButton gameKey={ROOM_RUN_ID} score={total} total={ROOM_MAX} n={runToken()} door />
           </div>
           <div className="rr-vf-btns">
             <button type="button" className="pri" onClick={onShare}>{copied ? 'Copied' : 'Share your read'}</button>

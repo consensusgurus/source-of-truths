@@ -29,6 +29,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import RunEmbed from '../RunEmbed';
 import NextDrop from '../NextDrop';
+import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken } from '../RunChallenge';
 import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
 import useCircuitBoard from '../circuits/useCircuitBoard';
 import { withRef } from '@/lib/referrals';
@@ -324,6 +325,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
         </section>
       )}
 
+      <RunChallengeCapture gameKey={DOJO_RUN_ID} />
       {hydrated && done && (
         <Grading key="grading" sections={sections} counted={counted} parts={parts} total={total} dateLabel={dateLabel}
           animate={doneAtLoad.current === false} board={board} onShare={copyShare} copied={copied}
@@ -494,6 +496,10 @@ function Grading({ sections, counted, parts, total, dateLabel, animate, board, o
           </div>
           <div className="gr-games">
             {sections.map((s, i) => <div key={s.key} className={flat ? '' : i === hi ? 'hi' : i === lo ? 'lo' : ''}><i>{s.name}</i><b>{counted[i] ? pts[i] : '-'}<small>/{s.weight}</small></b></div>)}
+          </div>
+          <div style={{ margin: '14px 0 0', maxWidth: 420 }}>
+            <RunChallengeLine gameKey={DOJO_RUN_ID} score={total} total={DOJO_MAX} n={runToken()} />
+            <RunChallengeButton gameKey={DOJO_RUN_ID} score={total} total={DOJO_MAX} n={runToken()} t={runClock > 0 ? Math.round(runClock) : null} status={t[1]} door />
           </div>
           <NextDrop label="Tomorrow's forms" sub="A new six by six, a new classic and a new variant at midnight Eastern." href="/dojo"
             accent="var(--dj-cta)" ink="var(--dj-ink)" mute="var(--dj-mute)" style={{ margin: '14px 0 0', maxWidth: 420 }} />

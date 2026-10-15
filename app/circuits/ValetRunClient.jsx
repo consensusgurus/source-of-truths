@@ -50,6 +50,7 @@ import { fromData, solved as jamSolved } from '@/lib/jam-core';
 import JamBoard, { blockTones, apply } from './JamBoard';
 import ValetScene from './ValetScene';
 import useCircuitBoard from './useCircuitBoard';
+import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken } from '../RunChallenge';
 import { T } from '@/lib/theme';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
@@ -572,6 +573,7 @@ export default function ValetRunClient({ circuitId, circuitName, dateLabel, sect
           </div>
         ) : null}
 
+        <RunChallengeCapture gameKey={circuitId} />
         {/* ── THE FINISH ── */}
         {done ? (
           <div className={`vr-fin${curtain ? ' in' : ''}`}>
@@ -643,6 +645,14 @@ export default function ValetRunClient({ circuitId, circuitName, dateLabel, sect
               </div>
             ) : null}
             {claimed ? <div className="vr-claimed">You&rsquo;re on the board. Every finish counts under your name now.</div> : null}
+
+            {/* CHALLENGE A FRIEND, ON EVERY RUN (owner, 2026-10-15). Valet ranks
+                on the clock, so a full park sends the time and a partial one
+                sends the lots parked. */}
+            <div style={{ margin: '16px 0 0' }}>
+              <RunChallengeLine gameKey={circuitId} score={parked} total={N} n={runToken()} t={parked === N ? Math.round(runSecs) : null} won={parked === N} style={{ display: 'block', textAlign: 'center' }} />
+              <RunChallengeButton gameKey={circuitId} score={parked} total={N} n={runToken()} t={Math.round(runSecs)} won={parked === N} status={`${parked} of ${N} parked`} door />
+            </div>
 
             <div className="vr-hacts vr-sacts">
               <button type="button" className="vr-vb pri" onClick={shareRun}>

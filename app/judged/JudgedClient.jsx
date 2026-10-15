@@ -29,6 +29,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import RunEmbed from '../RunEmbed';
 import NextDrop from '../NextDrop';
+import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken } from '../RunChallenge';
 import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
 import useCircuitBoard from '../circuits/useCircuitBoard';
 import { withRef } from '@/lib/referrals';
@@ -286,6 +287,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
         </section>
       )}
 
+      <RunChallengeCapture gameKey={LAW_RUN_ID} />
       {hydrated && done && (
         <Verdict key="verdict" sections={sections} counted={counted} parts={parts} total={total} dateLabel={dateLabel}
           animate={doneAtLoad.current === false} board={board} onShare={copyShare} copied={copied} L={L}
@@ -494,6 +496,10 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
           </div>
           <div className="vf-games">
             {sections.map((s, i) => <div key={s.key} className={flat ? '' : i === hi ? 'hi' : i === lo ? 'lo' : ''}><i>{s.name}</i><b>{counted[i] ? pts[i] : '-'}</b></div>)}
+          </div>
+          <div style={{ margin: '14px 0 0', maxWidth: 420 }}>
+            <RunChallengeLine gameKey={LAW_RUN_ID} score={total} total={LAW_MAX} n={runToken()} />
+            <RunChallengeButton gameKey={LAW_RUN_ID} score={total} total={LAW_MAX} n={runToken()} status={`Admitted to ${t[1]}`} door />
           </div>
           <NextDrop label="Tomorrow's docket" sub="Five new cases and a new set of schools at midnight Eastern." href="/judged"
             accent="var(--ls-cta)" ink="var(--ls-ink)" mute="var(--ls-mute)" style={{ margin: '14px 0 0', maxWidth: 420 }} />

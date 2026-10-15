@@ -63,6 +63,7 @@ import { runDoneToday } from '../../RunDoorPop';
 import NextDrop from '../../../NextDrop';
 import ChallengeStrip from '../../../ChallengeStrip';
 import { RunChallengeButton, RunChallengeLine, runToken } from '../../../RunChallenge';
+import { isChallengeableRun } from '@/lib/challenge';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
@@ -979,7 +980,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
     // and its ink outright, which the stylesheet does explicitly.
     <div className="rn" style={{ minHeight: '100vh', background: T.ground, position: 'relative', overflowX: 'hidden' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      {circuitId === 'gauntlet' && !done ? <ChallengeStrip gameKey="gauntlet" num={runToken()} run /> : null}
+      {isChallengeableRun(circuitId) && !done ? <ChallengeStrip gameKey={circuitId} num={runToken()} run /> : null}
       {/* EVERY OTHER RUN ON ONE CARD (owner, 2026-10-09): the first time a
           browser finishes any of the five runs, one pop-up lists every other
           run not done today. It replaced the one-at-a-time RunNudgePop chain.
@@ -1688,11 +1689,14 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   </div>
                 </div>
 
-                {/* THE CHALLENGE SITS UNDER THE RESULT, FULL WIDTH (owner, 2026-10-07). */}
-                {circuitId === 'gauntlet' && !r.practice ? (
+                {/* THE CHALLENGE SITS UNDER THE RESULT, FULL WIDTH (owner, 2026-10-07),
+                    ON EVERY RUN (owner, 2026-10-15). It was gated on the Trivia
+                    Gauntlet's id, so Math, Encore and every run copied from this
+                    engine ended with no door. The registry decides now. */}
+                {isChallengeableRun(circuitId) && !r.practice ? (
                   <div style={{ marginTop: 16 }}>
-                    <RunChallengeLine gameKey="gauntlet" score={cleared} n={runToken()} style={{ display: 'block', textAlign: 'center' }} />
-                    <RunChallengeButton gameKey="gauntlet" score={cleared} total={askable} n={runToken()} status={`${perfect} of ${N} cleared`} door />
+                    <RunChallengeLine gameKey={circuitId} score={cleared} total={askable} n={runToken()} style={{ display: 'block', textAlign: 'center' }} />
+                    <RunChallengeButton gameKey={circuitId} score={cleared} total={askable} n={runToken()} t={runSecs > 0 ? Math.round(runSecs) : null} status={`${perfect} of ${N} cleared`} door />
                   </div>
                 ) : null}
                 {/* NEXT DROP (owner, 2026-10-06): when tomorrow's run opens. */}

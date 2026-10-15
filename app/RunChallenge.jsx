@@ -1,12 +1,12 @@
 'use client';
-// CHALLENGE A FRIEND, FOR THE RUNS (owner, 2026-10-07). The Trivia Gauntlet,
-// Price Check and Passport end on their own screens, never on the daily end
+// CHALLENGE A FRIEND, FOR THE RUNS (owner, 2026-10-07; every run 2026-10-15).
+// The runs end on their own screens, never on the daily end
 // card, so the gold door that card carries had nowhere to live on them. This
 // is that door as a button, the line the receiver ends on, and the day token
 // the two runs with no board number are matched by. The link, the landing and
 // the preview card are the daily ones: /vs, lib/challenge.js.
 import { useEffect, useState } from 'react';
-import { encodeChallenge, readChallenge, runDayNum, ymdCompact } from '@/lib/challenge';
+import { encodeChallenge, readChallenge, runDayNum, ymdCompact, RUN_CHALLENGES, challengeFig, challengeResult } from '@/lib/challenge';
 import { withRef, myRefCode, ensureMyRefCode } from '@/lib/referrals';
 import { drawingIsLive, DRAWING } from '@/lib/drawing';
 import { newCid, withCid, recordSend, reportTake } from '@/lib/challenge-client';
@@ -15,7 +15,10 @@ import TicketDoor from './TicketDoor';
 // A QUESTIONS-RIGHT RUN SHARES ITS COUNT, NEVER ITS DENOMINATOR (owner,
 // 2026-10-15): "61 right", not "61 of 180". Scores on a one-life run sit far
 // below the total, and the total read as discouraging in every share.
-const RIGHT_ONLY = new Set(['gauntlet']);
+// Read off the registry, so every questions-right run follows it, not just the
+// Trivia Gauntlet it was written for.
+const unitOf = (k) => (RUN_CHALLENGES[k] ? RUN_CHALLENGES[k].unit : 'points');
+const rightOnly = (k) => unitOf(k) === 'right';
 
 const etToday = () => {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
@@ -52,7 +55,7 @@ const FLAG = (
   </svg>
 );
 
-export function RunChallengeButton({ gameKey, score, total, n, t = null, status = '', archive = false, style = null, className = '', door = false }) {
+export function RunChallengeButton({ gameKey, score, total, n, t = null, won = false, status = '', archive = false, style = null, className = '', door = false }) {
   const [msg, setMsg] = useState('');
   const [them, setThem] = useState(null);
   const [credit, setCredit] = useState(false);
@@ -67,16 +70,20 @@ export function RunChallengeButton({ gameKey, score, total, n, t = null, status 
     Promise.resolve(ensureMyRefCode()).then(() => { if (live && myRefCode()) setCredit(true); }).catch(() => {});
     return () => { live = false; };
   }, []);
-  if (!(score > 0)) return null;
+  // EVERY CONCLUSION OFFERS IT, A ZERO INCLUDED (owner, 2026-10-15). A run
+  // with nothing banked dares the friend to beat it rather than hiding the door.
+  const blank = !(score > 0) && !won;
   const send = () => {
     let who = 'A friend';
     try { who = (JSON.parse(localStorage.getItem('sot_quiz_identity') || 'null') || {}).username || who; } catch (e) { /* a guest */ }
-    const o = RIGHT_ONLY.has(gameKey) ? 0 : total;
+    const o = rightOnly(gameKey) ? 0 : total;
     const d = archive ? 0 : ymdCompact(etToday());
-    const raw = encodeChallenge({ name: who, t, s: score, o, n, won: false, d, x: status });
+    // A blank run still carries something to beat, or the link will not decode.
+    const tt = t != null ? t : (blank && !o ? 0 : null);
+    const raw = encodeChallenge({ name: who, t: tt, s: score, o, n, won: !!won, d, x: status });
     const cid = newCid();
     const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=3`, cid));
-    recordSend({ cid, gameKey, num: n, day: d ? etToday() : null, fig: { s: score, o, t, won: false, x: status }, source: 'run' });
+    recordSend({ cid, gameKey, num: n, day: d ? etToday() : null, fig: { s: score, o, t: tt, won: !!won, x: status }, source: 'run' });
     const copied = () => { setMsg('Link copied. Paste it to a friend.'); };
     const copy = () => { try { navigator.clipboard.writeText(url).then(copied, () => setMsg(url)); } catch (e) { setMsg(url); } };
     let touch = false;
@@ -85,19 +92,21 @@ export function RunChallengeButton({ gameKey, score, total, n, t = null, status 
   };
   const back = them && Number(them.n) === Number(n);
   const label = back ? `Challenge ${them.name} back` : 'Challenge a friend';
-  const fig = RIGHT_ONLY.has(gameKey) ? `${score} right` : total ? `${score} of ${total}` : String(score);
+  const fig = won && t != null && unitOf(gameKey) === 'time' ? `${Math.floor(t / 60)}:${String(Math.round(t) % 60).padStart(2, '0')}`
+    : rightOnly(gameKey) ? `${score} right` : total ? `${score} of ${total}` : String(score);
+  const lead = blank ? 'Dare them to beat it.' : `Send them ${fig} to beat.`;
   if (door && draw) {
     return (
-      <TicketDoor fig={fig} label={label} go={msg ? 'Sent' : `Send ${fig}`} msg={msg} onSend={send} style={style}
+      <TicketDoor fig={blank ? '' : fig} label={label} go={msg ? 'Sent' : (blank ? 'Send' : `Send ${fig}`)} msg={msg} onSend={send} style={style}
         foot={archive ? null : 'Today\u2019s run only. One ticket for every new player who finishes from your link. No purchase necessary.'} />
     );
   }
   if (door) {
     const sb = msg || (draw
-      ? <>Send them {fig} to beat.<b style={{ display: 'block', fontWeight: 800 }}>{credit ? `New players = ${DRAWING.prizeLabel} drawing tickets.` : `Pick a name to earn ${DRAWING.prizeLabel} tickets.`}</b></>
+      ? <>{lead}<b style={{ display: 'block', fontWeight: 800 }}>{credit ? `New players = ${DRAWING.prizeLabel} drawing tickets.` : `Pick a name to earn ${DRAWING.prizeLabel} tickets.`}</b></>
       : (credit
-        ? `Send them ${fig} to beat. Challenging earns you share credit.`
-        : `Send them ${fig} to beat. Pick a player name and challenges earn share credit.`));
+        ? `${lead} Challenging earns you share credit.`
+        : `${lead} Pick a player name and challenges earn share credit.`));
     return (
       <>
         <style dangerouslySetInnerHTML={{ __html: DOOR_CSS }} />
@@ -116,23 +125,38 @@ export function RunChallengeButton({ gameKey, score, total, n, t = null, status 
   );
 }
 
-// What the receiver's ending says about the two totals.
-export function RunChallengeLine({ gameKey, score, n, style = null }) {
+// What the receiver's ending says about the two results. Decided by
+// challengeResult, so a clock run (Valet) compares clocks and every other run
+// compares scores, exactly as the daily duel does.
+export function RunChallengeLine({ gameKey, score, n, total = 0, t = null, won = false, style = null }) {
   const [them, setThem] = useState(null);
   useEffect(() => { setThem(readChallenge(gameKey)); }, [gameKey]);
+  const o = rightOnly(gameKey) ? 0 : (total || 0);
+  const mine = { s: score, o, t, won: !!won };
+  const same = !!(them && Number(them.n) === Number(n));
+  const res = same ? (challengeResult(mine, { ...them, o: them.o && o ? them.o : o }, gameKey) || { res: 'tie' }).res : null;
   // The return leg: tell the sender how it went (lib/challenge-client.js).
   useEffect(() => {
-    if (!them || Number(them.n) !== Number(n)) return;
-    const diff = score - them.s;
-    reportTake(gameKey, { s: score, o: 0, won: false }, diff > 0 ? 'win' : diff < 0 ? 'loss' : 'tie');
-  }, [them, score, n, gameKey]);
-  if (!them || Number(them.n) !== Number(n)) return null;
-  const d = score - them.s;
-  const line = d > 0 ? `You beat ${them.name}: ${score} to ${them.s}.`
-    : d < 0 ? `${them.name} holds it: ${them.s} to ${score}.` : `Level with ${them.name} on ${score}.`;
+    if (!same) return;
+    reportTake(gameKey, mine, res || 'tie');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [same, res, score, gameKey]);
+  if (!same) return null;
+  const yf = challengeFig(mine, gameKey);
+  const tf = challengeFig(them, gameKey);
+  const line = res === 'win' ? `You beat ${them.name}: ${yf} to ${tf}.`
+    : res === 'loss' ? `${them.name} holds it: ${tf} to ${yf}.` : `Level with ${them.name} on ${yf}.`;
   return (
     <div role="status" style={{ display: 'inline-block', background: '#e8b43a', color: '#2a1f04', borderRadius: 8, padding: '8px 14px', fontSize: 14.5, fontWeight: 800, margin: '0 0 12px', ...(style || {}) }}>
       {line}
     </div>
   );
+}
+
+// Reads the challenge off the URL the moment a run page mounts, so it is kept
+// for the tab (sessionStorage) even when the run later rewrites its own URL.
+// Renders nothing; the finish's RunChallengeLine shows the result.
+export function RunChallengeCapture({ gameKey }) {
+  useEffect(() => { readChallenge(gameKey); }, [gameKey]);
+  return null;
 }

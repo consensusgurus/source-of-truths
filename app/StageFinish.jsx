@@ -1020,6 +1020,9 @@ export default function StageFinish({
   const [run, setRun] = useState(null);
   const [chal, setChal] = useState(null);
   const [chalMsg, setChalMsg] = useState('');
+  // The board number on screen, kept even when this browser holds no save for
+  // it, so the challenge can still be built off the board row.
+  const [curN, setCurN] = useState(null);
   // The challenge link carries the sender's referral code (owner, 2026-10-09),
   // so a new friend who plays from it credits them, and while the $100 drawing
   // runs the door says so. Both read after mount (clock + storage).
@@ -1036,10 +1039,12 @@ export default function StageFinish({
     if (!me) return;
     try {
       const n = currentNum(Array.isArray(archive) ? archive : [], me.key);
+      setCurN(n != null ? n : null);
       const r = n != null ? liveRun(runOf(me.key, n), outcome) : null;
       setRun(r);
       const c = readChallenge(me.key);
-      setChal(c && r && c.n === r.num ? c : null);
+      const cn = r ? r.num : n;
+      setChal(c && cn != null && c.n === cn ? c : null);
     } catch (e) { setRun(null); setChal(null); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me]);
@@ -1447,53 +1452,6 @@ export default function StageFinish({
   const rowsPresent = board && Array.isArray(board.rows) && board.rows.length > 0;
   const loose = rowsPresent ? [] : standings;
 
-  // Placed AFTER every hook above, so the two endings run the same hooks in
-  // the same order on every render.
-  if (isRetry) {
-    return (
-      <div className={'stf stf-rtwrap stf-miss' + (outcome ? ' stf-' + outcome : '')}>
-        <style dangerouslySetInnerHTML={{ __html: CSS }} />
-
-        {flood ? (
-          <CurtainFlood title={title} detail={detail} bandRef={bandRef} quick
-            onDone={() => setFlood(false)} />
-        ) : null}
-
-        <div className="stf-curtain" ref={bandRef}>
-          <div className="stf-cin">
-            <div className="stf-verdict">{title}</div>
-            {detail ? <div className="stf-detail">{detail}</div> : null}
-            <BandCat run={catRun} />
-          </div>
-        </div>
-
-        <div className="stf-wrap">
-          {/* The one control, in the hand-forward's own shape: this IS the
-              hand-forward on these games, it just points back at the board
-              instead of on to the next game. */}
-          <button type="button" className="stf-fwd stf-rt" onClick={retry.onReplay}>
-            <div>
-              {/* Both lines come from dailyAttemptRule, so what a replay is
-                  worth is stated by the registry that decides it and can never
-                  drift from the same sentence on the full card. */}
-              {retry.eyebrow ? <div className="stf-eb">{retry.eyebrow}</div> : null}
-              <div className="stf-fwdn">Replay instantly</div>
-              {retry.sub ? <div className="stf-fwdt">{retry.sub}</div> : null}
-            </div>
-            <span className="stf-go">Replay</span>
-          </button>
-
-          <div className="stf-opts">
-            <button type="button" className="stf-o" onClick={retry.onCard}>
-              <b>Show end game card</b>
-              <i>Your IQ, {boardLabel ? <>the {String(boardLabel).toLowerCase()}</> : <>today&rsquo;s board</>}{archiveRows.length ? ', the archive' : ''} and what to play next</i>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // THE FIVE DOORS' DATA. Every door is read off what this card already
   // computed, so no client changes: Up next's own pick, the client's
   // 'another', 'replay' and 'main' options, and the board for the drawer.
@@ -1569,12 +1527,22 @@ export default function StageFinish({
   const useRow = !!(run && rowFrac > (run.total ? run.score / run.total : 0));
   const mineT = run && run.won ? (run.time != null ? run.time
     : (myRowB && myRowB.timeElapsed != null && Number(myRowB.timeElapsed) > 0 ? Math.round(Number(myRowB.timeElapsed)) : null)) : null;
-  const mine = run && me ? { name: '', t: mineT, s: useRow ? Number(myRowB.score) : run.score, o: useRow ? Number(myRowB.total) : run.total, n: run.num, won: run.won,
-    m: challengeMetric != null && Number.isFinite(Number(challengeMetric)) && metricDef(me.key) ? Number(challengeMetric) : null } : null;
-  // EVERY DAILY FINISH OFFERS IT, A LOSS INCLUDED (owner, 2026-10-07). A miss
-  // with a score sends the score; a miss with nothing to beat dares them to
-  // crack it (isBlankMiss), and the link's card says so.
-  const canChallenge = !!(mine && !isQuiz && !isRetry);
+  const mineM = me && challengeMetric != null && Number.isFinite(Number(challengeMetric)) && metricDef(me.key) ? Number(challengeMetric) : null;
+  const mine = run && me ? { name: '', t: mineT, s: useRow ? Number(myRowB.score) : run.score, o: useRow ? Number(myRowB.total) : run.total, n: run.num, won: run.won, m: mineM }
+    // NO LOCAL SAVE, STILL A CONCLUSION (owner, 2026-10-15: the door goes on
+    // EVERY ending). A finish whose save this browser cannot read (another
+    // device, a cleared save, a game that keeps none) used to lose the door. It
+    // falls back to the board row, and to a bare dare when there is no row.
+    : (me && curN != null ? (() => {
+      const wonNow = outcome === 'won';
+      const rt = myRowB && myRowB.timeElapsed != null && Number(myRowB.timeElapsed) > 0 ? Math.round(Number(myRowB.timeElapsed)) : null;
+      return { name: '', t: wonNow ? rt : null, s: myRowB ? Number(myRowB.score) || 0 : 0, o: myRowB ? Number(myRowB.total) || 0 : 1, n: curN, won: wonNow, m: mineM };
+    })() : null);
+  // EVERY DAILY FINISH OFFERS IT, A LOSS INCLUDED (owner, 2026-10-07), AND THE
+  // RETRY ENDING TOO (owner, 2026-10-15). A miss with a score sends the score; a
+  // miss with nothing to beat dares them to crack it (isBlankMiss), and the
+  // link's card says so. A retry sends the board's first, counted attempt.
+  const canChallenge = !!(mine && !isQuiz);
   const duel = chal && mine ? { them: chal, res: challengeResult(mine, chal, me && me.key) } : null;
   // THE RETURN LEG (owner, 2026-10-15): a receiver who finishes the board they
   // were challenged on reports back once, so the sender's home can say how it
@@ -1660,6 +1628,71 @@ export default function StageFinish({
       : <button key={k} type="button" className={c} onClick={onClick}
           aria-expanded={controls ? !!expanded : undefined} aria-controls={controls || undefined}>{inner}</button>;
   };
+
+  // Placed AFTER every hook above AND after the challenge door is built (moved
+  // 2026-10-15 so the retry ending carries the door too), so the two endings run the same hooks in
+  // the same order on every render.
+  if (isRetry) {
+    return (
+      <div className={'stf stf-rtwrap stf-miss' + (outcome ? ' stf-' + outcome : '')}>
+        <style dangerouslySetInnerHTML={{ __html: CSS }} />
+
+        {flood ? (
+          <CurtainFlood title={title} detail={detail} bandRef={bandRef} quick
+            onDone={() => setFlood(false)} />
+        ) : null}
+
+        <div className="stf-curtain" ref={bandRef}>
+          <div className="stf-cin">
+            <div className="stf-verdict">{title}</div>
+            {detail ? <div className="stf-detail">{detail}</div> : null}
+            <BandCat run={catRun} />
+          </div>
+        </div>
+
+        <div className="stf-wrap">
+          {/* The one control, in the hand-forward's own shape: this IS the
+              hand-forward on these games, it just points back at the board
+              instead of on to the next game. */}
+          <button type="button" className="stf-fwd stf-rt" onClick={retry.onReplay}>
+            <div>
+              {/* Both lines come from dailyAttemptRule, so what a replay is
+                  worth is stated by the registry that decides it and can never
+                  drift from the same sentence on the full card. */}
+              {retry.eyebrow ? <div className="stf-eb">{retry.eyebrow}</div> : null}
+              <div className="stf-fwdn">Replay instantly</div>
+              {retry.sub ? <div className="stf-fwdt">{retry.sub}</div> : null}
+            </div>
+            <span className="stf-go">Replay</span>
+          </button>
+
+          {/* CHALLENGE A FRIEND, ON THE RETRY ENDING TOO (owner, 2026-10-15). */}
+          {chalDoor ? (
+            <div className="stf-doors" style={{ marginTop: 10 }}>
+              {chalDraw ? (
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <TicketDoor
+                    fig={isBlankMiss(mine) ? '' : challengeFig(mine, me && me.key)}
+                    label={duel ? `Challenge ${chal.name} back` : 'Challenge a friend'}
+                    go={chalMsg ? 'Sent' : (isBlankMiss(mine) ? 'Send' : `Send ${challengeFig(mine, me && me.key)}`)}
+                    msg={chalMsg}
+                    onSend={sendChallenge}
+                  />
+                </div>
+              ) : door({ ...chalDoor, cls: 'chal wide' })}
+            </div>
+          ) : null}
+
+          <div className="stf-opts">
+            <button type="button" className="stf-o" onClick={retry.onCard}>
+              <b>Show end game card</b>
+              <i>Your IQ, {boardLabel ? <>the {String(boardLabel).toLowerCase()}</> : <>today&rsquo;s board</>}{archiveRows.length ? ', the archive' : ''} and what to play next</i>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={'stf' + (outcome ? ' stf-' + outcome : '') + (tone === 'pb' ? ' stf-pb' : '') + (tone === 'lost' ? ' stf-miss' : '')}>
