@@ -51,9 +51,12 @@ for (const p of PUZZLES) {
     const r = passportRunDay(p.live, p.quizId);
     if (!r) { fail(`${at}: Span, Flank or Ping has no board`); continue; }
     if (r.calls.length !== SIZES_N) fail(`${at}: ${r.calls.length} size calls, want ${SIZES_N}`);
-    if (r.calls.some((c) => !fairPair(c.a, c.b))) fail(`${at}: an unfair size call`);
+    if (r.calls.some((c) => !['area', 'pop'].includes(c.m))) fail(`${at}: a size call with no measure`);
+    if (r.calls.some((c) => !fairPair(c.a, c.b, c.m))) fail(`${at}: an unfair size call`);
+    // Both measures every day (owner, 2026-10-14): five of one, four of the other.
+    { const np = r.calls.filter((c) => c.m === 'pop').length; if (np < 4 || np > 5) fail(`${at}: ${np} of ${r.calls.length} calls on population, want 4 or 5`); }
     if (new Set(r.calls.map((c) => c.b)).size !== r.calls.length) fail(`${at}: a country is asked twice`);
-    for (const c of r.calls) if (!c.aName || !c.bName || !(c.aArea > 0) || !(c.bArea > 0)) fail(`${at}: size call ${c.a}/${c.b} incomplete`);
+    for (const c of r.calls) if (!c.aName || !c.bName || !(c.aArea > 0) || !(c.bArea > 0) || !(c.aVal > 0) || !(c.bVal > 0)) fail(`${at}: size call ${c.a}/${c.b} incomplete`);
     if (p.sunday !== !!r.sections[1].light.sunday) warns.push(`${at}: Flank's Sunday flag differs`);
     continue;
   }

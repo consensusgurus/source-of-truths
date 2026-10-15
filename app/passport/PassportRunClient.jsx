@@ -6,7 +6,7 @@
 //   1 Span    the day's Span, the real game          10 points (its score scaled)
 //   2 Flank   the day's Flank, the real game         10 points
 //   3 Ping    the day's Ping, the real game          10 points
-//   4 Sizes   nine bigger-or-smaller calls on land   20 points
+//   4 Sizes   nine bigger-or-smaller calls, on land area or population   20 points
 //             area, three on Span's road, three on Flank's country and its
 //             ring, three on Ping's city's country (lib/passport-sizes.js)
 //
@@ -239,12 +239,24 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     } catch (e) {}
   }
 
+  // A call is on area (km2) or population (owner, 2026-10-14). Days dealt
+  // before the measure existed carry no `m` and are area calls.
+  const valA = (c) => (c.aVal != null ? c.aVal : c.aArea);
+  const valB = (c) => (c.bVal != null ? c.bVal : c.bArea);
+  const fmtSize = (v, pop) => {
+    const n = Number(v) || 0;
+    if (!pop) return `${Math.round(n).toLocaleString()} km\u00b2`;
+    if (n >= 1e9) return `${(n / 1e9).toFixed(2).replace(/\.?0+$/, '')} billion people`;
+    if (n >= 1e6) return `${(n / 1e6).toFixed(n >= 1e8 ? 0 : 1).replace(/\.0$/, '')} million people`;
+    return `${Math.round(n).toLocaleString()} people`;
+  };
+
   function callSize(bigger) {
     const cur = gRef.current;
     if (cur.round !== 3 || cur.sc[3] != null || numShow != null) return;
     const i = cur.sz.i;
     const c = calls[i]; if (!c) return;
-    const ok = bigger === (c.bArea > c.aArea);
+    const ok = bigger === (valB(c) > valA(c));
     commit({ ...cur, sz: { ...cur.sz, res: [...cur.sz.res, ok] } });
     setNumShow(i);
     setTimeout(() => {
@@ -298,7 +310,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     <><b>Span.</b> The day&rsquo;s Span: join two countries by the shortest chain of land borders. Its score out of 10 is your stamp.</>,
     <><b>Flank.</b> The day&rsquo;s Flank: name every land neighbor of one country. The share you name, out of 10.</>,
     <><b>Ping.</b> The day&rsquo;s Ping: find a secret city by how far each guess lands from it. Its score out of 10.</>,
-    <><b>Sizes.</b> Nine countries from those three games, one pair at a time: is the second bigger or smaller than the first by total area? About 2 points a call, 20 in all.</>,
+    <><b>Sizes.</b> Nine countries from those three games, one pair at a time: is the second bigger or smaller than the first, by area or by population (each call says which)? About 2 points a call, 20 in all.</>,
     <>Played one of the three on its own page today? Your first result stands and the run steps over it. The board ranks your total, then time.</>,
   ];
   const rulesBody = (
@@ -349,25 +361,27 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     const i = Math.min(g.sz.i, NC - 1);
     const c = calls[i] || {};
     const shown = numShow === i || doneR;
-    const MAX = Math.max(c.aArea || 1, c.bArea || 1) * 1.05;
+    const pop = c.m === 'pop';
+    const aV = valA(c), bV = valB(c);
+    const MAX = Math.max(aV || 1, bV || 1) * 1.05;
     const right = g.sz.res.filter(Boolean).length;
     return (
       <>
         <div className="pp-eb"><span>Leg 4 of 4</span><b>Sizes</b><span className="pr-src">From {SRC_NAME[c.src] || ''}</span></div>
-        <h2 className="pp-h">Is {c.bName} bigger or smaller than {c.aName}?</h2>
+        <h2 className="pp-h">{pop ? <>Does {c.bName} have more or fewer people than {c.aName}?</> : <>Is {c.bName} bigger or smaller than {c.aName} by area?</>}</h2>
         <div className="pp-vs">
-          <div className="pp-vc home"><div className="pp-mono">{c.aName}</div><div className="v">{(c.aArea || 0).toLocaleString()} km²</div><div className="bar"><i style={{ width: `${((c.aArea || 0) / MAX) * 100}%` }} /></div></div>
-          <div className="pp-vc them"><div className="pp-mono">{doneR ? 'Last one' : `${i + 1} of ${NC}`}</div><div className="n">{c.bName}</div><div className="v">{shown ? `${(c.bArea || 0).toLocaleString()} km²` : '? km²'}</div><div className="bar"><i style={{ width: shown ? `${((c.bArea || 0) / MAX) * 100}%` : '0%' }} /></div></div>
+          <div className="pp-vc home"><div className="pp-mono">{c.aName}</div><div className="v">{fmtSize(aV, pop)}</div><div className="bar"><i style={{ width: `${((aV || 0) / MAX) * 100}%` }} /></div></div>
+          <div className="pp-vc them"><div className="pp-mono">{doneR ? 'Last one' : `${i + 1} of ${NC}`}</div><div className="n">{c.bName}</div><div className="v">{shown ? fmtSize(bV, pop) : (pop ? '? people' : '? km²')}</div><div className="bar"><i style={{ width: shown ? `${((bV || 0) / MAX) * 100}%` : '0%' }} /></div></div>
         </div>
         {!doneR && (
           <div className="pp-bl">
-            <button type="button" className="pp-ghost big" disabled={numShow != null} onClick={() => callSize(true)}>Bigger</button>
-            <button type="button" className="pp-ghost big" disabled={numShow != null} onClick={() => callSize(false)}>Smaller</button>
+            <button type="button" className="pp-ghost big" disabled={numShow != null} onClick={() => callSize(true)}>{pop ? 'More' : 'Bigger'}</button>
+            <button type="button" className="pp-ghost big" disabled={numShow != null} onClick={() => callSize(false)}>{pop ? 'Fewer' : 'Smaller'}</button>
           </div>
         )}
         <div className="pp-dots">{calls.map((_, k) => <i key={k} className={g.sz.res[k] === true ? 'ok' : g.sz.res[k] === false ? 'ko' : k === g.sz.i ? 'cur' : ''} />)}</div>
-        {numShow != null && <p className="pp-reveal">{c.bName} is {c.bArea > c.aArea ? 'bigger' : 'smaller'}, by {Math.abs(c.bArea - c.aArea).toLocaleString()} km².</p>}
-        {doneR && <p className="pp-reveal">{right} of {NC} called right. Areas from the CIA World Factbook.</p>}
+        {numShow != null && <p className="pp-reveal">{pop ? <>{c.bName} has {bV > aV ? 'more' : 'fewer'} people, by {fmtSize(Math.abs(bV - aV), true)}.</> : <>{c.bName} is {bV > aV ? 'bigger' : 'smaller'}, by {fmtSize(Math.abs(bV - aV), false)}.</>}</p>}
+        {doneR && <p className="pp-reveal">{right} of {NC} called right. Areas and populations from the CIA World Factbook.</p>}
       </>
     );
   };
@@ -517,7 +531,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
       <section style={{ position: 'relative', display: started ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--stg-ink,#e9edf4)' }}>About Passport</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: 'var(--stg-mute,#8b95a8)', fontWeight: 600 }}>
-          Passport is a free daily geography run from Mind Loft: the day&rsquo;s Span, Flank and Ping played back to back, each worth 10, then nine bigger-or-smaller calls on land area, worth 20, on countries from those three games. One total out of 50.
+          Passport is a free daily geography run from Mind Loft: the day&rsquo;s Span, Flank and Ping played back to back, each worth 10, then nine bigger-or-smaller calls on area or population, worth 20, on countries from those three games. One total out of 50.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: 'var(--stg-mute,#8b95a8)', fontWeight: 600 }}>
           Your total decides the passport you travel home on, from the Sierra Leonean passport up to the Japanese, ranked by the visa-free destinations each opens in the {HENLEY_EDITION}. Everyone plays the same boards, and the leaderboard ranks your total, then time. A new run boards every day at midnight Eastern.

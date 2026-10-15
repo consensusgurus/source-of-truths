@@ -8699,6 +8699,14 @@ bigger-or-smaller calls on land area**, still out of 50 on the same six passport
   only when the two are 1.3 times apart and a second area table agrees by 1.15, so no call turns on
   a disputed figure; no country is asked twice. `lib/passport-run.js` builds a day from the three
   banks and is what the page and `verify-passport.mjs` both read.
+- **The calls cover AREA AND POPULATION (owner, 2026-10-14).** Each call carries `m` ('area' or
+  'pop') and `aVal`/`bVal` for that measure; a day alternates them, five of one and four of the
+  other, the lead seeded off the date. Population is `lib/country-pops.js`: `POP` from the CIA
+  World Factbook (2024-25 estimates, Palestine = West Bank + Gaza) and `POP_ALT` from country-json
+  (World Bank 2018) as the agreement check, the same 1.3 / 1.15 rule. A population call reads
+  "Does B have more or fewer people than A?" with More / Fewer buttons; `verify-passport` fails a
+  day with no measure on a call or a population count outside 4 to 5. `lib/passport-run.js` builds a day from the three
+  banks and is what the page and `verify-passport.mjs` both read.
 - **The circuit roster is dated**: `keys: ['span','flank','ping','passport']` with
   `before: { until: '2026-10-14', keys: ['passport'] }`. `solo: true` stays, for the old days.
 - **The bank** keeps nums 1 to 12 in `days.js`; from num 13 the light index carries `v: 2` and no
