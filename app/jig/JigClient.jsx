@@ -254,7 +254,7 @@ function hsl(r, g, b) {
 function colorName([r, g, b]) {
   const [h, s, l] = hsl(r, g, b);
   if (l < 0.16) return 'Shadows';
-  if (s < 0.14) return l > 0.78 ? 'White' : l < 0.4 ? 'Dark gray' : 'Gray';
+  if (s < 0.1 || (s < 0.16 && (l < 0.25 || l > 0.8))) return l > 0.74 ? 'White' : l > 0.55 ? 'Light gray' : l > 0.4 ? 'Gray' : 'Dark gray';
   const base = h < 14 ? 'Red' : h < 40 ? 'Orange' : h < 66 ? 'Yellow' : h < 160 ? 'Green' : h < 196 ? 'Teal' : h < 255 ? 'Blue' : h < 292 ? 'Purple' : h < 340 ? 'Pink' : 'Red';
   if (l > 0.7) return `Light ${base.toLowerCase()}`;
   if (l < 0.3) return `Dark ${base.toLowerCase()}`;

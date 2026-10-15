@@ -4,7 +4,7 @@ import { PUZZLES } from '@/app/jig/puzzles';
 //
 // The one place a Jig photo comes from, the same design as /api/focus/img: the
 // bank names a Wikimedia Commons file per day, and this route fetches the
-// Commons-rendered 1600px thumbnail through Special:FilePath and hands it on
+// Commons-rendered 1280px thumbnail through Special:FilePath and hands it on
 // with a one-year edge cache, so Commons is out of the loop after the first
 // request of a day. It is also what makes the photo SAME-ORIGIN, which Jig
 // needs: the client reads the pixels on a canvas to sort pieces by colour.
@@ -25,7 +25,7 @@ export async function GET(req) {
   const n = Number(searchParams.get('n'));
   const p = Number.isInteger(n) && n > 0 ? PUZZLES.find((x) => x.num === n) : null;
   if (!p || p.live > etToday()) return new Response('Not found', { status: 404 });
-  const src = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(p.t)}?width=1600`;
+  const src = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(p.t)}?width=1280`;
   let up;
   try {
     up = await fetch(src, {
