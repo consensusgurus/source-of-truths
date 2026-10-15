@@ -3827,6 +3827,7 @@ archive and hub chips use the short form `Sun`.
 | Sworn | six suspects sworn instead of five |
 | Garble | every answer is six letters instead of five (from 2026-07-26) |
 | Scram | every answer eight to twelve letters, often two words, from themes deep enough in long answers (from launch, 2026-10-18) |
+| Scour | an 18x18 grid with twenty-six words in all eight directions, against the weekday 15x15 (from 2026-10-18) |
 | Dating | six events to order instead of five (from 2026-07-26) |
 | Cipher | four addends stacked instead of two (from 2026-08-09) |
 | Outwit | six prompts instead of five, the extra a second Rare Bird (from 2026-07-26) |
@@ -4280,6 +4281,26 @@ the client (the trick `verify-endgame-playout.mjs` uses), stub `document.element
 grid of known coordinates, and drive synthetic pointer sequences. That is how commit-on-lift, the
 hold-to-aim discriminator, the line lock, the free marks, the win path and the unchanged mouse path
 were all confirmed before the push, along with a unit test of the commit's error arithmetic.
+
+## Scour is the THEMED WORD SEARCH, 15x15 every day (launched 2026-10-15)
+
+Route `/scour`, key `scour`, Word, legacy hue sky #0369a1. Owner, 2026-10-15: "make even the normal day
+large, maybe 15x15 daily". One theme a day from Scram's pools (`scripts/scram-pools.mjs`), never Scram's
+theme that day and never a word from a Scram board within three days.
+
+- **The ramp is directions, word count and decoys, never size**: Mon 14 words across and down, Tue 15
+  adding diagonal down, Wed 16 adding diagonal up, Thu 16 adding backward, Fri 17 adding up, Sat 18 in all
+  eight; the **Sunday Edition is 18x18 with 26 words** in all eight. Decoys (a list word's first letters
+  planted elsewhere) and overlap rise through the week. Every list word reads in the grid EXACTLY ONCE
+  counting all eight directions, so the client checks a line by its letters and no answer key ships.
+- **Race the clock**: score is words found, time breaks ties, `miss: null`, `guessesUsed: 0`, in
+  `XP_LINEAR_DAILIES`. A wrong line costs nothing.
+- **A line is checked on LIFT**: drag (snaps to the nearest of eight directions) or tap first letter then
+  last; releasing off the board or Escape throws a line away; tapping the anchor again lets go.
+- `scripts/gen-scour.mjs` deals `app/scour/puzzles.js` (`--until` extends and keeps every board,
+  `--rebuild` only before launch); `scripts/verify-scour.mjs` is independent. Bank 2026-10-15 to
+  2026-12-31. A Scram redeal can clash with Scour's ±3-day word rule; re-run the verifier after one.
+  Tile art `scripts/gen-scour-tile.py`; wired by `scripts/wire-scour.mjs`.
 
 ## Jig is the DAILY JIGSAW, one Commons photo cut the same way for everyone (launched 2026-10-15)
 
