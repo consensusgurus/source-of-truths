@@ -618,7 +618,11 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <style dangerouslySetInnerHTML={{ __html: `
             .so-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
-            .so-play{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:26px;align-items:start;}
+            .so-play{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,644px) minmax(0,1fr);gap:26px;align-items:start;--so-w:min(1156px,calc(100vw - 76px));width:var(--so-w);margin-left:calc((100% - var(--so-w)) / 2);}
+            .so-mid{grid-column:2;min-width:0;}
+            .so-side{grid-column:3;min-width:0;max-width:230px;}
+            .so-giveup{display:flex;justify-content:center;margin-top:12px;}
+            @media (max-width:1060px){.so-play{grid-template-columns:minmax(0,1fr) 210px;width:auto;margin-left:0;}.so-mid{grid-column:1;}.so-side{grid-column:2;}}
             .so-boardwrap{min-width:0;}
             .so-read{height:30px;display:flex;align-items:center;justify-content:center;margin-bottom:6px;}
             .so-readpill{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:4px 12px;border-radius:999px;font-weight:800;font-size:15px;letter-spacing:.14em;background:${STAGE ? 'var(--stg-surf2,rgba(255,255,255,0.08))' : COLORS.paper};color:${INK};border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(20,22,28,0.15)'};}
@@ -639,6 +643,8 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
             .so-dot{width:10px;height:10px;border-radius:999px;border:1.5px solid;flex:none;}
             @media (max-width:820px){
               .so-play{grid-template-columns:1fr;gap:14px;}
+              .so-play{width:auto;margin-left:0;}
+              .so-mid,.so-side{grid-column:1;max-width:none;}
               .so-words{grid-template-columns:repeat(3,minmax(0,1fr));}
               .so-words li{font-size:12px;letter-spacing:.02em;}
               .so-listhd{flex-direction:row;align-items:baseline;flex-wrap:wrap;gap:4px 10px;}
@@ -692,15 +698,19 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
 
           {!preStart && (
             <div className="so-play">
-              {grid}
-              <div>
-                {wordList}
+              <div className="so-mid">
+                {grid}
                 {started && foundCount > 0 && (
+                  <div className="so-giveup">
                   <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); finish(g); } else { setArmReveal(Date.now()); } }}
-                    style={{ marginTop: 16, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? BAD : FADED, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? BAD : FADED, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                     <Eye size={13} /> {armReveal ? 'Tap again to stop the clock and show the rest' : 'Give up and reveal'}
                   </button>
+                  </div>
                 )}
+              </div>
+              <div className="so-side">
+                {wordList}
                 {ended && !isTodays && (
                   <p style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '14px 0 0' }}>
                     You&rsquo;re playing the {PUZZLE.dateLabel} archive.{' '}
