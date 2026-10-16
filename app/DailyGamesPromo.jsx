@@ -95,6 +95,7 @@ export const DAILY_GAMES = [
   { key: 'docket', href: '/docket', name: 'Docket', tag: 'one setup, five deductions', store: 'sot_docket_day', accent: '#5b2333', bg: '#f7e8ec', border: 'rgba(91,35,51,0.4)' },
   { key: 'defend', href: '/defend', name: 'Defend', tag: 'black to play and survive', store: 'sot_defend_day', accent: '#2f4f4f', bg: '#e9f0ef', border: 'rgba(47,79,79,0.4)' },
   { key: 'swindle', href: '/swindle', name: 'Swindle', tag: 'white to play and draw', store: 'sot_swindle_day', accent: '#9a3412', bg: '#fbede6', border: 'rgba(154,52,18,0.4)' },
+  { key: 'gift', href: '/gift', name: 'Gift', tag: 'the daily quarto endgame', store: 'sot_gift_day', accent: '#7c3aed', bg: '#f1eafe', border: 'rgba(124,58,237,0.4)' },
   { key: 'blitz', href: '/blitz', name: 'Blitz', tag: 'twenty problems, one life', store: 'sot_blitz_day', accent: '#657512', bg: '#f3f7de', border: 'rgba(101,117,18,0.4)' },
   { key: 'sums', href: '/sums', name: 'Sums', tag: 'the daily kakuro', store: 'sot_sums_day', accent: '#be185d', bg: '#fce7f3', border: 'rgba(190,24,93,0.4)' },
   { key: 'blitzed', href: '/blitzed', name: 'Blitzed', tag: 'twenty problems, three numbers each', store: 'sot_blitzed_day', accent: '#3f6d1f', bg: '#eaf5e2', border: 'rgba(63,109,31,0.4)' },

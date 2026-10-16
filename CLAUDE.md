@@ -3841,6 +3841,7 @@ archive and hub chips use the short form `Sun`.
 | Hold | fifteen hands instead of ten, at least five of them traps where the rule of thumb is wrong (from launch, 2026-10-18) |
 | Cell | forty cards (ace to ten) in seven columns on two free cells, against the weekday thirty-two in six (from launch, 2026-10-18) |
 | Swindle | the deepest draw of the week, five White moves or more (from launch, 2026-10-18) |
+| Gift | a win in five where the last piece on the board decides it, against the weekday wins in two to four (from launch, 2026-10-16) |
 | Duet | a 10x10 board against the weekday 6x6 and 8x8 (from launch, 2026-10-03) |
 | Lamps | a 10x10 board against the weekday 7x7 and 8x8 (from launch, 2026-10-04) |
 | Ergo | twelve statements to sort instead of nine, under seven rules (from launch, 2026-10-11) |
@@ -9581,3 +9582,40 @@ into rows, one open at a time. Search filters the full catalogue from `/api/quiz
   `TOP_PER_DEPT` in the route to loosen it.
 - **Nothing grows on load**: twelve empty tiles and the fifteen skeleton cards hold the
   pane's height until the read lands.
+
+## Gift (`/gift`): the daily Quarto endgame (launched 2026-10-16)
+
+Key/route `gift`, category **End Game** (the tenth), `keepsAnswer: true`, `miss: 'Tries'`,
+SOLVE_ONLY, in DEFEAT_GAMES, legacy accent violet `#7c3aed` / navy `#c4b5fd`. Built from the
+"Chess Boards and Gift" canvas mockup (round board of sixteen wells, the gift in a gold-ringed
+well, the pieces still off the board in a tray, Hand it over). Wired by `scripts/wire-gift.mjs`
+(anchored after Swindle, idempotent). Tiles `public/games/btn-gift.png` and the blue copy, PWA
+icons in `public/gift-icons/`, `public/gift.webmanifest`, share card `public/og/gift.png`.
+
+- **The game.** Sixteen pieces, one bit per trait (bit 0 tall, 1 dark, 2 square, 3 hollow;
+  codes T/S D/L Q/R H/O). Place the piece you were handed, then hand over one still off the
+  board. Four in a row, column or long diagonal sharing ANY trait wins for whoever placed the
+  fourth; a full board with no line is a draw (scores 0).
+- **The claim per board:** no line finished, the gift wins nowhere on the spot, the player
+  forces a win on placement `winIn` (the gift is the first) and not sooner, and EXACTLY ONE
+  first move (`keySq` plus `keyGive`) forces a win at all. The page strips `keyGive` from every
+  board and `keySq` from every board but the one played (the first-play hint rings the square).
+- **The ramp** (pieces on the board before the gift, winIn): Mon 9/2, Tue 8/2, Wed 8/3, Thu 8/4,
+  Fri 7/3, Sat 7/4, **Sunday Edition 7/5**, where the last piece decides it. No. 1 (a Friday)
+  took the Monday shape. Within a weekday the board is a quantile band of `safe` (first moves
+  that do not hand over an immediate win). Bank 2026-10-16 to 2027-01-31.
+- **Engine `lib/gift-core.js`**, shared by the generator and the browser: two bounded
+  questions with memo (`win(n)`, `lose(m)`), exact `value`, `moveWins`, and `reply()`, the
+  deterministic defence (best value, then lowest square, then lowest piece). Never more than
+  ~100ms a reply on the bank. Moves are stored as `'sq:CODE'` strings; an off-key move plays on
+  and is counted silently (`threw`), `progress` = your turns played while the win was there.
+- **Checks:** `scripts/verify-gift.mjs` (own per-line search, no shared code, a few seconds),
+  `scripts/gift-mutation-test.mjs` (17/17), `scripts/verify-gift-playout.mjs` (plays the key
+  and every other first move out with the shipped engine: 6,576 games, about 15s).
+- **Extend** with `node scripts/gen-gift.mjs pool <k> [chunks] [workers]` per board size (cache
+  in /tmp/build), then raise `LAST` in the generator and `bank`. Boards already live are frozen:
+  splice new days under them rather than re-dealing.
+- **Board endgames split** when Gift made End Game ten: 'Board endgames' is Four, Gift, Check
+  (set page rewritten) and the new 'Territory endgames' is Chain, Turn, Yose (its own set page).
+- Not in a circuit yet (Board Games is a four-game circuit with a measured clock); an owner call.
+

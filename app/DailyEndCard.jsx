@@ -110,13 +110,13 @@ const AMBER = '#b45309';
 // Hands is scored against par and Babel against its solver benchmark, so falling
 // short there is "Not perfect." like any other target game, and both are
 // deliberately NOT in this set.
-const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn', 'yose', 'defend', 'queen', 'swindle']);
+const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn', 'yose', 'defend', 'queen', 'swindle', 'gift']);
 
 // LAUNCH WINDOW (owner ruling 2026-07-18): brand-new daily puzzles lead the
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['scour', 'jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
+const LAUNCH_PIN = { keys: ['gift', 'scour', 'jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -198,6 +198,7 @@ export const GAME_META = {
   hold: { accent: '#b91c1c', badgeBg: '#b91c1c', badgeInk: T.white, Fin: Layers },
   cell: { accent: '#0e7490', badgeBg: '#0e7490', badgeInk: T.white, Fin: Club },
   swindle: { accent: '#9a3412', badgeBg: '#9a3412', badgeInk: T.white, Fin: Swords },
+  gift: { accent: '#7c3aed', badgeBg: '#7c3aed', badgeInk: T.white, Fin: Swords },
   yose: { accent: '#44403c', badgeBg: '#44403c', badgeInk: T.white, Fin: Swords },
   fib: { accent: '#4c1d95', badgeBg: '#4c1d95', badgeInk: T.white, Fin: Scale },
   streak: { accent: '#e11d48', badgeBg: '#e11d48', badgeInk: T.white, Fin: Flame },
@@ -371,6 +372,7 @@ const ALL_DAILY_GAMES = [
   { key: 'back', cat: 'numbers', name: 'Back', tag: 'Which line makes it', blurb: 'A number and four lines of arithmetic, like ? = 56. Pick the one line that makes it. Twenty seconds each, one life.', href: '/back' },
   { key: 'defend', cat: 'endgame',     name: 'Defend', tag: 'Black to play and survive',   blurb: 'The other half of a mate puzzle. Five moves look like they stop the mate, one does, and then you have to do it again.', href: '/defend' },
   { key: 'swindle', cat: 'endgame',     name: 'Swindle', tag: 'White to play and draw',   blurb: 'A lost position with one way out. Find the stalemate, the perpetual check or the swindle that holds the draw, then play it out.', href: '/swindle' },
+  { key: 'gift', cat: 'endgame',     name: 'Gift', tag: 'The daily Quarto endgame',   blurb: 'A Quarto endgame: place the piece you were handed, then choose the one your opponent must play. One first move forces the win.', href: '/gift' },
   { key: 'yose',   cat: 'endgame',     name: 'Yose',   tag: 'The last points on the board',            blurb: 'A Go endgame you are already winning. A handful of open points, a perfect opponent, and one move that keeps the win. Nine by nine on Sundays.', href: '/yose' },
   { key: 'turn',   cat: 'endgame',     name: 'Turn',   tag: 'Ten squares left',            blurb: 'An Othello endgame you are already winning. One square keeps it, and the careful little move is not always it.', href: '/turn' },
   { key: 'paths', cat: 'logic',      name: 'Paths',  tag: 'Link every town, cheaply',  blurb: 'One depot, a scatter of towns, a river and two ridges. Link them all for as little as you can, against a proven cheapest network.', href: '/paths' },

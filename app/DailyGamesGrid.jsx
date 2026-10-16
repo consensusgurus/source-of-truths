@@ -166,6 +166,7 @@ const GAMES = [
   { key: 'barter', href: '/barter', name: 'Barter', tag: 'Trade the letters home', img: '/games/btn-barter.png' },
   { key: 'defend', href: '/defend', name: 'Defend', tag: 'Black to play and survive', img: '/games/btn-defend.png' },
   { key: 'swindle', href: '/swindle', name: 'Swindle', tag: 'White to play and draw', img: '/games/btn-swindle.png' },
+  { key: 'gift', href: '/gift', name: 'Gift', tag: 'The daily Quarto endgame', img: '/games/btn-gift.png' },
   { key: 'blitz', href: '/blitz', name: 'Blitz', tag: 'Twenty problems, one life', img: '/games/btn-blitz.png' },
   { key: 'blitzed', href: '/blitzed', name: 'Blitzed', tag: 'Twenty problems, three numbers each', img: '/games/btn-blitzed.png' },
   { key: 'gap', href: '/gap', name: 'Gap', tag: 'Twenty equations, one gap each', img: '/games/btn-gap.png' },
@@ -200,7 +201,7 @@ const CATEGORIES = [
   { key: 'crowd', label: 'Crowd Psychology', keys: ['outwit', 'outrank', 'feud'] },
   { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'sci', 'art', 'history', 'potluck', 'focus', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'redact', 'dating', 'extra'] },
   { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'park', 'impound', 'junkyard', 'snug', 'jig', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'paths', 'chomp', 'ergo', 'docket', 'plot'] },
-  { key: 'endgame', label: 'End Game', keys: ['mate', 'defend', 'swindle', 'queen', 'four', 'check', 'chain', 'turn', 'yose'] },
+  { key: 'endgame', label: 'End Game', keys: ['mate', 'defend', 'swindle', 'queen', 'four', 'gift', 'check', 'chain', 'turn', 'yose'] },
   { key: 'cards', label: 'Cards', keys: ['taire', 'cell', 'hands', 'hold', 'shoe', 'finesse', 'crib'] },
   { key: 'arcade', label: 'Arcade', keys: ['blocks', 'snake', 'dario', 'sweep'] },
 ];

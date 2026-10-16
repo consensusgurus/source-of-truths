@@ -1,0 +1,16 @@
+{
+  "id": "/gift",
+  "name": "Gift: Daily Quarto Puzzle",
+  "short_name": "Gift",
+  "description": "A daily Quarto endgame. Place the piece you were handed, then choose the one your opponent plays. A new puzzle every day from Mind Loft.",
+  "start_url": "/gift?src=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f8fa",
+  "theme_color": "#f7f8fa",
+  "icons": [
+    { "src": "/gift-icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/gift-icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/gift-icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

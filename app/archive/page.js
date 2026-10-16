@@ -92,6 +92,7 @@ import { PUZZLES as CRIB_FULL } from '../crib/puzzles';
 import { PUZZLES as HOLD_FULL } from '../hold/puzzles';
 import { PUZZLES as CELL_FULL } from '../cell/puzzles';
 import { PUZZLES as SWINDLE_FULL } from '../swindle/puzzles';
+import { PUZZLES as GIFT_FULL } from '../gift/puzzles';
 import { PUZZLES as SUFFICE_FULL } from '../suffice/puzzles';
 import { PUZZLES as DOCKET_FULL } from '../docket/puzzles';
 import { PUZZLES as ERGO_FULL } from '../ergo/puzzles';
@@ -199,6 +200,7 @@ const CRIB = CRIB_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num,
 const HOLD = HOLD_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const CELL = CELL_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SWINDLE = SWINDLE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const GIFT = GIFT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SCRAM = SCRAM_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SCOUR = SCOUR_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SUFFICE = SUFFICE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -389,6 +391,7 @@ const GAMES = [
   { key: 'barter', name: 'Barter', path: '/barter', tag: 'Trade the letters home', accent: '#be123c', bg: '#fdeef2', border: 'rgba(190,18,60,0.4)', src: BARTER },
   { key: 'defend', name: 'Defend', path: '/defend', tag: 'Black to play and survive', accent: '#2f4f4f', bg: '#e9f0ef', border: 'rgba(47,79,79,0.4)', src: DEFEND },
   { key: 'swindle', name: 'Swindle', path: '/swindle', tag: 'White to play and draw', accent: '#9a3412', bg: '#fbede6', border: 'rgba(154,52,18,0.4)', src: SWINDLE },
+  { key: 'gift', name: 'Gift', path: '/gift', tag: 'The daily Quarto endgame', accent: '#7c3aed', bg: '#f1eafe', border: 'rgba(124,58,237,0.4)', src: GIFT },
   { key: 'blitz', name: 'Blitz', path: '/blitz', tag: 'Twenty problems, one life', accent: '#657512', bg: '#f3f7de', border: 'rgba(101,117,18,0.4)', src: BLITZ },
   { key: 'blitzed', name: 'Blitzed', path: '/blitzed', tag: 'Twenty problems, three numbers each', accent: '#3f6d1f', bg: '#eaf5e2', border: 'rgba(63,109,31,0.4)', src: BLITZED },
   { key: 'gap', name: 'Gap', path: '/gap', tag: 'Twenty equations, one gap each', accent: '#9d174d', bg: '#fce7f3', border: 'rgba(157,23,77,0.4)', src: GAP },
