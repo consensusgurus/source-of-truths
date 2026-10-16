@@ -571,7 +571,9 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
         // so a row of finished games read as two systems at two weights and was
         // the loudest thing on the page. Inline rather than a light selector so
         // it follows `light` exactly as --stg-onramp already does.
-        ...(grpOn && light ? { '--cc': `color-mix(in srgb, ${categoryColor(g.cat)} 66%, #fff)` } : null),
+        // LIGHT REGISTER (owner, 2026-10-16): a light tint of the category with a
+        // dark outline in its ink step, never a pastel or a full fill.
+        ...(grpOn && light ? { '--cc': `color-mix(in srgb, ${categoryAccentInkLight(g.cat)} 13%, #fff)` } : null),
         // The ink that carries ON that step, so a filled tile reads in both
         // registers. Same rule as the newcomer row below.
         ...(grpOn ? { '--stg-onramp': RAMP_INK } : null),
@@ -2200,7 +2202,7 @@ export default function StageToday() {
     return (
       <button key={id} type="button" aria-pressed={paneOn === id}
         className={'sty-ixb' + (RAMP_ORDER.includes(id) ? ' ct' : '') + (cls ? ' ' + cls : '') + fillFor(id) + (paneOn === id ? ' on' : '') + (prog && prog[0] >= prog[1] ? ' cmp' : '')}
-        style={{ '--cc': hue, '--cci': RAMP_ORDER.includes(id) ? inkFor(id) : hue === 'var(--stg-acc)' ? 'var(--stg-acc-ink)' : hue, ...(RAMP_ORDER.includes(id) ? { '--ixp': categoryColor(id) } : null), '--i': ixSeq++ }}
+        style={{ '--cc': hue, '--cci': RAMP_ORDER.includes(id) ? inkFor(id) : hue === 'var(--stg-acc)' ? 'var(--stg-acc-ink)' : hue, ...(RAMP_ORDER.includes(id) && !light ? { '--ixp': categoryColor(id) } : null), '--i': ixSeq++ }}
         onClick={(e) => { if (picked && paneOn === id) { setPicked(false); try { localStorage.setItem(TILES_KEY, '1'); } catch (er) {} } else pickPane(id, e); }}>
         <i aria-hidden="true" />
         {ixRing(id, prog)}
@@ -3804,6 +3806,7 @@ ${PATCH_CSS}
    category's own step with the ink that carries on it, so the slate says at a
    glance which of today's puzzles the group is already on. */
 .sty-g.grp{background:var(--cc);border-color:var(--cci, var(--cc));color:var(--stg-onramp);}
+[data-stage-theme=light] .sty-g.grp{box-shadow:inset 0 0 0 1px var(--cci, var(--cc));}
 .sty-g.grp .sty-gn,.sty-g.grp .sty-gi,.sty-g.grp:hover .sty-gn{color:var(--stg-onramp);}
 /* A FINISHED TILE MUTES ITS OWN NAME (.sty-g.done.res .sty-gn), which on a
    filled tile left the game's name grey on the category's own step (owner
@@ -5151,8 +5154,11 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
   /* The disc is the dark ramp's pastel at full strength in BOTH registers (the
      entry page's colours), carrying the one dark ink; the ring is the deep step. */
   .sty-ixb.ct{--ixd:var(--ixp,var(--cc));--ixgi:#08222e;}
+  /* Light: a tint disc with the glyph in the ink step, no pastel (owner, 2026-10-16). */
+  [data-stage-theme=light] .sty-ixb.ct{--ixd:color-mix(in srgb,var(--cci) 15%,var(--stg-surf));--ixgi:var(--cci);}
   .sty-ixgg{left:12px;top:12px;width:20px;height:20px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
   .sty-ixn:not(.re) .sty-ixb.cmp{border-color:var(--cci, var(--cc));}
+  [data-stage-theme=light] .sty-ixn:not(.re) .sty-ixb.cmp{background:color-mix(in srgb,var(--cci) 9%,var(--stg-surf));box-shadow:inset 0 0 0 1px var(--cci);}
   [data-sty-anim] .sty-ixn:not(.re):not(.pk) .sty-ixb{animation:sty-ixup .42s cubic-bezier(.2,.7,.3,1) both;animation-delay:calc(var(--i,0) * 45ms);}
   [data-sty-anim] .sty-ixn:not(.re):not(.pk) .sty-ixgr .dk{animation:sty-ixpop .5s cubic-bezier(.3,1.5,.5,1) both;animation-delay:calc(var(--i,0) * 45ms + 140ms);}
   [data-sty-anim] .sty-ixn:not(.re):not(.pk) .sty-ixgr .fl{animation:sty-ixdraw .7s cubic-bezier(.3,.7,.3,1) both;animation-delay:calc(var(--i,0) * 45ms + 260ms);}
