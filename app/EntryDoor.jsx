@@ -41,7 +41,7 @@ const KEY = 'sot_entry_v1';
 // sees it again when a week has passed since it last showed. The key holds the
 // time it last showed, in ms; any other value (or none) counts as never.
 export const ENTRY_EVERY_MS = 7 * 24 * 3600 * 1000;
-const LIFT_AT = 4400;   // the curtain's hold, then the lift
+const LIFT_AT = 6600;   // the curtain's hold, then the lift (the three lines arrive one at a time)
 const LIFT_MS = 640;
 
 // Skill on the tile, the home's category underneath. `cat` is the registry
@@ -161,16 +161,7 @@ export default function EntryDoor({ onPick }) {
     <div className="ent-door" role="dialog" aria-modal="true" aria-label="Welcome to Mind Loft">
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className={'ent-pg' + (phase === 'page' ? ' rise' : '')} aria-hidden={curtain ? 'true' : undefined}>
-        <div className="ent-hd">
-          <h2 className="ent-h">
-            Loft your Mind in the{' '}
-            <span className="ent-bn">
-              <span className="ent-mk"><MindLoftMark size="1em" ink="#eef2f9" accent="#7dd3fc" title="" /></span>
-              Mind <span className="ent-loft">Loft</span>
-            </span>
-          </h2>
-          <p className="ent-sub">What do you want to sharpen today?</p>
-        </div>
+        <h2 className="ent-ask">What do you want to sharpen today?</h2>
         <ul className="ent-tiles">
           {TILES.map((t, i) => {
             const n = counts[t.cat] || 0;
@@ -191,9 +182,18 @@ export default function EntryDoor({ onPick }) {
             );
           })}
         </ul>
-        <button type="button" ref={btnRef} className="ent-go-all" onClick={close}>
-          Proceed to all of today&apos;s puzzles <span aria-hidden="true">→</span>
-        </button>
+        <div className="ent-foot">
+          <button type="button" ref={btnRef} className="ent-go-all" onClick={close}>
+            Proceed to all of today&apos;s puzzles <span aria-hidden="true">→</span>
+          </button>
+          <p className="ent-h">
+            Loft your Mind in the{' '}
+            <span className="ent-bn">
+              <span className="ent-mk"><MindLoftMark size="1em" ink="#eef2f9" accent="#7dd3fc" title="" /></span>
+              Mind <span className="ent-loft">Loft</span>
+            </span>
+          </p>
+        </div>
       </div>
 
       {curtain ? (
@@ -225,12 +225,12 @@ const CSS = `
 .ent-door{position:fixed;inset:0;z-index:6000;background:#0b0f1a;color:#eef2f9;font-family:'Manrope',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
 .ent-pg{position:absolute;inset:0;box-sizing:border-box;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(16px,3.4vh,34px);
   padding:max(28px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
-.ent-hd{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;max-width:820px}
-.ent-h{margin:0;font-size:clamp(25px,3.6vw,40px);line-height:1.15;font-weight:800;letter-spacing:-0.03em;text-wrap:balance;color:#eef2f9}
-.ent-bn{white-space:nowrap}
+.ent-ask{margin:0;font-size:clamp(30px,4.2vw,50px);line-height:1.1;font-weight:800;letter-spacing:-0.03em;text-align:center;text-wrap:balance;max-width:900px;color:#eef2f9}
+.ent-foot{display:flex;flex-direction:column;align-items:center;gap:14px}
+.ent-h{margin:0;font-size:clamp(17px,1.7vw,21px);font-weight:700;color:#a7b1c4;text-align:center;letter-spacing:-0.01em}
+.ent-bn{white-space:nowrap;color:#eef2f9}
 .ent-mk{display:inline-block;width:1em;height:1em;vertical-align:-0.14em;margin-right:.16em}
 .ent-loft{color:#7dd3fc}
-.ent-sub{margin:0;font-size:clamp(19px,2.2vw,25px);font-weight:700;color:#a7b1c4;text-wrap:balance}
 .ent-tiles{width:100%;max-width:960px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;list-style:none;margin:0;padding:0}
 .ent-tiles li{display:flex;min-width:0}
 .ent-tile{flex:1;min-width:0;min-height:128px;display:flex;flex-direction:column;justify-content:space-between;gap:16px;text-align:left;padding:16px 16px 14px;border:0;border-radius:10px;cursor:pointer;
@@ -247,10 +247,10 @@ const CSS = `
   background:#7dd3fc;color:${INK};transition:background .18s ease}
 .ent-go-all:hover{background:#bae6fd}
 .ent-go-all:focus-visible{outline:3px solid #eef2f9;outline-offset:3px}
-.ent-pg.rise .ent-hd,.ent-pg.rise .ent-tiles li,.ent-pg.rise .ent-go-all{animation:ent-up .55s cubic-bezier(.2,.7,.2,1) both}
+.ent-pg.rise .ent-ask,.ent-pg.rise .ent-tiles li,.ent-pg.rise .ent-foot{animation:ent-up .55s cubic-bezier(.2,.7,.2,1) both}
 .ent-pg.rise .ent-tiles li{animation-delay:calc(.12s + var(--i) * .04s)}
-.ent-pg.rise .ent-go-all{animation-delay:.6s}
-.ent-pg.rise .ent-mk{animation:ent-mk .7s cubic-bezier(.2,.9,.25,1.2) .2s both}
+.ent-pg.rise .ent-foot{animation-delay:.6s}
+.ent-pg.rise .ent-mk{animation:ent-mk .7s cubic-bezier(.2,.9,.25,1.2) .8s both}
 @keyframes ent-up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes ent-mk{from{opacity:0;transform:translateX(-.6em) scale(.7)}to{opacity:1;transform:none}}
 
@@ -260,14 +260,15 @@ const CSS = `
 .ent-wipe{position:absolute;inset:0;background:#0b0f1a;transform:scaleX(0);transform-origin:left}
 .ent-say{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:0 20px}
 .ent-word{display:flex;align-items:center;gap:14px;font-size:clamp(32px,6vw,54px);font-weight:800;letter-spacing:-0.035em;opacity:0}
-.ent-lines{display:flex;flex-direction:column;gap:6px;font-size:clamp(17px,2.4vw,22px);font-weight:600;color:#a7b1c4}
+.ent-lines{display:flex;flex-direction:column;gap:8px;font-size:clamp(18px,2.5vw,23px);font-weight:600;color:#a7b1c4}
 .ent-lines span{opacity:0}
 .ent-ladder{position:absolute;left:0;right:0;bottom:0;height:6px;display:flex;opacity:0}
 .ent-ladder i{flex:1;background:var(--c);opacity:.25}
 .ent-cur.run .ent-bands span{animation:ent-rise .55s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--i) * .06s)}
 .ent-cur.run .ent-wipe{animation:ent-wipe .5s cubic-bezier(.7,0,.2,1) 1.15s forwards}
 .ent-cur.run .ent-word{animation:ent-stamp .5s cubic-bezier(.2,.9,.25,1.2) 1.6s forwards}
-.ent-cur.run .ent-lines span{animation:ent-fade .45s ease forwards;animation-delay:calc(2.05s + var(--i) * .32s)}
+/* ONE AT A TIME (owner, 2026-10-16): each line rises in on its own, 1.1s apart. */
+.ent-cur.run .ent-lines span{animation:ent-line .8s cubic-bezier(.2,.7,.2,1) forwards;animation-delay:calc(2.4s + var(--i) * 1.1s)}
 .ent-cur.run .ent-ladder{animation:ent-fade .3s ease 2.1s forwards}
 .ent-cur.run .ent-ladder i{animation:ent-rung 1.1s ease-in-out infinite;animation-delay:calc(2.1s + var(--i) * .09s)}
 .ent-cur.lift{animation:ent-lift ${LIFT_MS}ms cubic-bezier(.7,0,.2,1) forwards}
@@ -275,6 +276,7 @@ const CSS = `
 @keyframes ent-wipe{to{transform:scaleX(1)}}
 @keyframes ent-stamp{from{opacity:0;transform:scale(1.12)}to{opacity:1;transform:none}}
 @keyframes ent-fade{to{opacity:1}}
+@keyframes ent-line{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @keyframes ent-rung{0%,100%{opacity:.25}40%{opacity:1}}
 @keyframes ent-lift{from{clip-path:inset(0 0 0 0)}to{clip-path:inset(0 0 100% 0)}}
 
@@ -283,9 +285,9 @@ const CSS = `
    on screen without scrolling. */
 @media (max-width:760px){
   .ent-pg{justify-content:flex-start;gap:clamp(12px,2.4vh,22px);padding-top:max(22px,env(safe-area-inset-top,0px));padding-bottom:max(16px,env(safe-area-inset-bottom,0px))}
-  .ent-h{font-size:clamp(23px,6.6vw,30px)}
-  .ent-hd{gap:8px}
-  .ent-sub{font-size:clamp(17px,4.8vw,20px)}
+  .ent-ask{font-size:clamp(26px,8vw,34px)}
+  .ent-foot{width:100%;gap:12px}
+  .ent-h{font-size:clamp(15px,4.3vw,18px)}
   .ent-tiles{flex:1 1 auto;min-height:0;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(5,minmax(52px,1fr));gap:8px}
   .ent-tile{min-height:0;gap:6px;padding:11px 12px 10px}
   .ent-sk{font-size:16.5px}
