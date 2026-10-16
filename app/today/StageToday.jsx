@@ -685,6 +685,23 @@ function CircStar({ c, canPin, favorites, toggleFavorite }) {
   );
 }
 
+const PQ_PATHS = {
+  map: 'M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2zM9 4v14M15 6v14',
+  photo: 'M5 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM21 16l-5-5-8 8M9 9.5h.01',
+  order: 'M4 6h10M4 12h7M4 18h4M17 4v16M14 17l3 3 3-3',
+  match: 'M4 4h6v6H4zM14 14h6v6h-6zM10 7h3a2 2 0 0 1 2 2v5',
+  mcq: 'M4 5h4v4H4zM4 15h4v4H4zM11 7h9M11 17h9',
+  name: 'M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01',
+};
+function PqGlyph({ fam }) {
+  return (
+    <svg className="sty-gi" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d={PQ_PATHS[fam] || PQ_PATHS.name} />
+    </svg>
+  );
+}
+
 // A thin wrapper, not a copy: the only local part is the class the page styles.
 function Glyph({ k, size = 20 }) {
   return <GameGlyph gameKey={k} size={size} className="sty-gi" />;
@@ -1963,6 +1980,19 @@ export default function StageToday() {
       }
     } catch (e) {}
   }, [paneOn]);
+  // PERMANENT QUIZZES UNDER GEOGRAPHY AND TRIVIA (owner, 2026-10-16). Fetched
+  // once, the first time either pane is open, so no other pane pays for it.
+  const [picks, setPicks] = useState(null);
+  const wantPicks = paneOn === 'Geography' || paneOn === 'Trivia';
+  useEffect(() => {
+    if (!wantPicks || picks) return undefined;
+    let alive = true;
+    fetch('/api/quiz/permanent-picks')
+      .then((r) => r.json())
+      .then((d) => { if (alive && d && Array.isArray(d.geography)) setPicks(d); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [wantPicks, picks]);
   const openDefault = (id) => (id === CIRC_ID || id === WORD_ID ? true : (id === MINE_ID ? hasPins : false));
   // In the index a pane is simply up or not, so its own collapse is out of play.
   const isOpen = (id) => (ix && (id === MINE_ID || id === CIRC_ID)) || (shelfOpen && Object.prototype.hasOwnProperty.call(shelfOpen, id)
@@ -2455,6 +2485,50 @@ export default function StageToday() {
       {ledgerRows(sortGames(games), 'led', false)}
     </div>
   );
+  // "Also try our permanent quizzes:" (owner, 2026-10-16). The ledger's own
+  // row, with the quiz's all-time leader and all-time plays in the two middle
+  // columns. On a phone the panes are tiles, and these become full-width rows
+  // under them: name, then plays and leader on one line, then Play.
+  const permQuizzes = (cat) => {
+    if (cat !== 'Geography' && cat !== 'Trivia') return null;
+    const list = picks ? (cat === 'Geography' ? picks.geography : picks.trivia) : null;
+    if (picks && (!list || !list.length)) return null;
+    const max = list ? list.reduce((a, q) => Math.max(a, q.plays), 0) : 0;
+    const leaders = totals && totals.leaders ? totals.leaders : null;
+    return (
+      <div className="sty-pqs">
+        <div className="sty-pqh">Also try our permanent quizzes:</div>
+        <div className="sty-led sty-pql">
+          <div className="sty-lh" aria-hidden="true">
+            <span /><span>Quiz</span><span>All-time leader</span><span>Plays</span><span /><span />
+          </div>
+          {list ? list.map((q) => {
+            const who = leaders ? leaders[q.id] : null;
+            const pl = q.plays.toLocaleString() + (q.plays === 1 ? ' play' : ' plays');
+            return (
+              <a key={q.id} className="sty-lr pq" href={`/quiz/${q.id}${tq ? '?' + tq.slice(1) : ''}`}>
+                <span className="ic"><PqGlyph fam={q.fam} /></span>
+                <span className="nm"><b>{q.title}</b><span className="tg">{q.sub}</span>
+                  <span className="mb">{pl}{who ? ' \u00b7 Leader ' + who : ''}</span></span>
+                <span className="td">{!leaders ? <span className="ph" aria-hidden="true" />
+                  : who ? <><b>{who}</b><i>Top score</i></> : <span className="mu">No leader yet</span>}</span>
+                <span className="yu"><span className="bl"><span className="tr"><s style={{ width: `${Math.max(4, Math.round((q.plays / Math.max(1, max)) * 100))}%` }} /></span><b>{pl}</b></span></span>
+                <span className="ct">Play</span>
+                <span />
+              </a>
+            );
+          }) : [0, 1, 2, 3].map((i) => (
+            <div key={i} className="sty-lr pq" aria-hidden="true">
+              <span className="ic" /><span className="nm"><span className="ph" /></span><span className="td" /><span className="yu" /><span /><span />
+            </div>
+          ))}
+          <a className="sty-pqm" href={cat === 'Geography' ? '/quizzes/all#geography' : '/quizzes/all'}>
+            {cat === 'Geography' ? 'See all geography quizzes' : 'See all quizzes'}
+          </a>
+        </div>
+      </div>
+    );
+  };
   // MY PUZZLES IS THE DAY'S LIST (owner, 2026-10-14): what is left to play,
   // then what is done, A to Z inside each.
   const mineLedger = () => {
@@ -2737,6 +2811,7 @@ export default function StageToday() {
         </div>
         {fit ? favBlock(cat, games, fit.k) : null}
         </> : null}
+        {permQuizzes(cat)}
       </section>
     );
   });
@@ -4771,4 +4846,25 @@ ${PATCH_CSS}
 .sty-lr:hover .ct,.sty-lr.open .ct{border-color:var(--cc);}
 .sty-lr.done .ct{color:var(--stg-ink2);}
 .sty-lr .sty-star{position:relative;top:auto;right:auto;}
+
+/* PERMANENT QUIZZES (owner, 2026-10-16): the ledger's rows under Geography and
+   Trivia. On a phone the pane is tiles, and these run full width beneath them. */
+.sty-pqs{margin-top:22px;}
+.sty-pqh{font-size:14px;font-weight:800;color:var(--stg-ink);margin:0 0 10px;}
+.sty-lr.pq .mb{display:none;}
+.sty-lr.pq .td i{display:block;}
+.sty-pqm{display:block;padding:11px 14px;border-top:1px solid var(--stg-line);text-align:right;font-size:12.5px;font-weight:800;color:var(--cc);text-decoration:none;}
+.sty-pqm:hover{background:var(--stg-chip);}
+.sty-lr.pq .nm .ph{width:180px;}
+@media (max-width:900px){
+  .sty-pqs{margin-top:18px;}
+  .sty-pql .sty-lh{display:none;}
+  .sty-lr.pq{grid-template-columns:32px minmax(0,1fr) auto;column-gap:12px;padding:10px 12px;}
+  .sty-lr.pq .td,.sty-lr.pq .yu,.sty-lr.pq > span:last-child{display:none;}
+  .sty-lr.pq .nm b{font-size:14px;line-height:1.25;}
+  .sty-lr.pq .tg{display:none;}
+  .sty-lr.pq .mb{display:block;margin-top:2px;font-size:11.5px;font-weight:600;color:var(--stg-mute);}
+  .sty-lr.pq .ct{min-width:64px;height:30px;}
+  .sty-pqm{text-align:center;}
+}
 `;
