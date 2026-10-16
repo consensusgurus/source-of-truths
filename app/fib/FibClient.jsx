@@ -231,7 +231,7 @@ const FIB_VARS = {
   '--fb-cell': 'var(--stg-cell, #ffffff)',
   '--fb-cell-line': 'var(--stg-cell-line, rgba(28,30,36,0.3))',
   '--fb-given': 'color-mix(in srgb, var(--stg-ink, #0b0d12) 9%, var(--stg-cell, #ffffff))',
-  '--fb-peer': 'color-mix(in srgb, var(--stg-acc, #4c1d95) 15%, var(--stg-cell, #ffffff))',
+  '--fb-peer': 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #4c1d95)) 15%, var(--stg-cell, #ffffff))',
   '--fb-ok': 'color-mix(in srgb, var(--stg-ink, #0b0d12) 13%, var(--stg-cell, #ffffff))',
   '--fb-warn-soft': 'color-mix(in srgb, var(--stg-warn, #b45309) 22%, var(--stg-cell, #ffffff))',
   '--fb-bad-soft': 'color-mix(in srgb, var(--stg-bad, #b91c1c) 16%, var(--stg-cell, #ffffff))',
@@ -327,6 +327,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
   const viewNotes = hideAns ? (g.playerNotes || Array(N).fill(0)) : g.notes;
   const viewAcc = hideAns ? (g.playerAcc !== undefined ? g.playerAcc : null) : g.acc;
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('fib');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('fib');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('fib'), '--stg-acc-lt': gameColorLight('fib'), '--stg-onramp-lt': gameOnrampLight('fib'), '--stg-acc-ink-lt': gameAccentInkLight('fib') };
   const [stageTheme] = useStageTheme();
@@ -737,7 +738,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
           className="fb-cell"
           style={{
             border: '1.5px solid var(--fb-cell-line)',
-            boxShadow: isSel ? `inset 0 0 0 3px ${ACC}` : undefined,
+            boxShadow: isSel ? `inset 0 0 0 3px ${ACC_INK}` : undefined,
             background: isGiven ? 'var(--fb-given)' : isPeer ? 'var(--fb-peer)' : 'var(--fb-cell)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: playing ? 'pointer' : 'default',
@@ -868,7 +869,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
           .fb-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           .fb-tool{font-family:${SANS};font-weight:700;font-size:13px;border:1.5px solid var(--fb-btn);background:transparent;color:var(--stg-ink2, ${COLORS.ink});border-radius:12px;min-height:44px;padding:0 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
           .fb-tool:hover{background:var(--stg-surf2, ${COLORS.paper});}
-          .fb-tool.on{background:${ACC};color:${ON_ACC};border-color:${ACC};}
+          .fb-tool.on{background:${ACC};color:${ON_ACC};border-color:${ACC_INK};}
           .fb-key{font-family:${SANS};font-weight:800;font-size:22px;border:1.5px solid var(--fb-btn);background:var(--fb-cell);color:${INK};border-radius:12px;height:56px;width:56px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;}
           .fb-key:hover{background:var(--stg-surf2, ${COLORS.paper});}
           .fb-key.note{color:${ACC_INK};}
@@ -948,7 +949,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="fb-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="fb-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -1041,7 +1042,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
-                <button type="button" className="fb-tool fb-rowtool" aria-pressed={mode === 'note'} onClick={() => setMode((m) => (m === 'note' ? 'write' : 'note'))} style={mode === 'note' ? { background: ACC, color: ON_ACC, borderColor: ACC } : undefined}>
+                <button type="button" className="fb-tool fb-rowtool" aria-pressed={mode === 'note'} onClick={() => setMode((m) => (m === 'note' ? 'write' : 'note'))} style={mode === 'note' ? { background: ACC, color: ON_ACC, borderColor: ACC_INK } : undefined}>
                   <Pencil size={14} /> Notes
                 </button>
                 <button type="button" className="fb-tool fb-rowtool" onClick={() => writeDigit(0)}>
@@ -1051,7 +1052,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
                   <RotateCcw size={14} /> Undo
                 </button>
                 {hintOk && !g.hintUsed && (
-                  <button type="button" className="fb-tool" onClick={useHint} title="Fill one correct square (one hint, first play only)" aria-label="Hint" style={{ borderColor: ACC, color: ACC_INK }}>
+                  <button type="button" className="fb-tool" onClick={useHint} title="Fill one correct square (one hint, first play only)" aria-label="Hint" style={{ borderColor: ACC_INK, color: ACC_INK }}>
                     <Lightbulb size={14} /> Hint
                   </button>
                 )}
@@ -1253,7 +1254,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
               <button onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
             </div>
             {rulesBody}
-            <button className="fb-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: STAGE ? ACC : COLORS.ink, color: STAGE ? ON_ACC : T.white, borderColor: STAGE ? ACC : undefined }}>Play</button>
+            <button className="fb-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: STAGE ? ACC : COLORS.ink, color: STAGE ? ON_ACC : T.white, borderColor: STAGE ? ACC_INK : undefined }}>Play</button>
           </div>
         </div>
       )}

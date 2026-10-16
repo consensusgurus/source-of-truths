@@ -89,7 +89,7 @@ const COLORS = {
 // against the page ground and reads short on a raised surface (see the
 // shoe-felt contrast note). Card FACES are physical objects: white with
 // near-black and red ink in both registers, as Crib's are.
-const FELT = 'color-mix(in srgb, var(--stg-acc, #0c4a6e) 9%, var(--stg-cell, #ffffff))';
+const FELT = 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #0c4a6e)) 9%, var(--stg-cell, #ffffff))';
 const FELT_INK2 = 'var(--stg-ink2, #3f4757)';
 const WELL = 'var(--stg-ground, #eef1f6)';
 const CARD_BACK = 'color-mix(in srgb, var(--stg-acc, #0c4a6e) 30%, var(--stg-cell, #ffffff))';
@@ -292,6 +292,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('shoe');
   const STAGE = isStage('shoe', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('shoe');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('shoe');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('shoe'), '--stg-acc-lt': gameColorLight('shoe'), '--stg-onramp-lt': gameOnrampLight('shoe'), '--stg-acc-ink-lt': gameAccentInkLight('shoe') };
   const [stageTheme] = useStageTheme();
@@ -592,18 +593,18 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
           .sho-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
           .sh-felt{background:${FELT};touch-action:manipulation;position:relative;box-sizing:border-box;}
           .sh-card{position:relative;flex:none;box-sizing:border-box;background:${CARD_FACE};border:1.5px solid ${CARD_EDGE};box-shadow:0 6px 12px rgba(0,0,0,.28);user-select:none;font-family:${SANS};}
-          .sh-back{background:repeating-linear-gradient(45deg,${CARD_BACK} 0 6px,var(--stg-acc, ${ACCENT}) 6px 8px);border:2px solid var(--stg-acc, ${ACCENT});}
+          .sh-back{background:repeating-linear-gradient(45deg,${CARD_BACK} 0 6px,var(--stg-acc, ${ACCENT}) 6px 8px);border:2px solid var(--stg-acc-ink, var(--stg-acc, ${ACCENT}));}
           .sh-k{font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:${FELT_INK2};}
           .sh-chip{display:inline-flex;align-items:center;gap:6px;font-family:${SANS};font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:16px;white-space:nowrap;font-variant-numeric:tabular-nums;}
           .sh-act{font-family:${SANS};font-weight:800;font-size:16px;flex:1 1 0;min-width:0;min-height:56px;border-radius:12px;background:transparent;color:var(--stg-ink, ${COLORS.ink});border:1.5px solid var(--stg-cell-line, rgba(28,30,36,.44));cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;box-sizing:border-box;padding:0 8px;}
           .sh-act:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
           .sh-act:active{transform:translateY(1px);}
           .sh-act small{font-size:11px;font-weight:700;letter-spacing:.04em;}
-          .sh-act.dbl{color:var(--stg-acc-ink, ${ACCENT});border-color:var(--stg-acc, ${ACCENT});}
+          .sh-act.dbl{color:var(--stg-acc-ink, ${ACCENT});border-color:var(--stg-acc-ink, var(--stg-acc, ${ACCENT}));}
           .sh-act.dbl small{color:var(--stg-acc-ink, ${ACCENT});}
           .sh-act:disabled{cursor:default;border-style:dashed;border-color:var(--stg-line2, rgba(28,30,36,.24));color:${FELT_INK2};background:transparent;transform:none;}
           .sh-act:disabled small{color:${FELT_INK2};}
-          .sh-act.deal{flex:0 0 auto;padding:0 24px;background:var(--stg-acc, ${ACCENT});border-color:var(--stg-acc, ${ACCENT});color:var(--stg-onramp, #ffffff);}
+          .sh-act.deal{flex:0 0 auto;padding:0 24px;background:var(--stg-acc, ${ACCENT});border-color:var(--stg-acc-ink, var(--stg-acc, ${ACCENT}));color:var(--stg-onramp, #ffffff);}
           .sh-act.deal:hover{background:var(--stg-acc, ${ACCENT});filter:brightness(1.06);}
           .sh-note{font-family:${SANS};font-weight:800;font-size:15px;color:var(--stg-ink, ${COLORS.ink});}
           .sh-out{display:flex;flex-direction:column;gap:2px;padding:6px 8px;border-radius:8px;background:${WELL};}
@@ -640,7 +641,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="sho-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Deal the first hand</button>
+              <button className="sho-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Deal the first hand</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -668,6 +669,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
             const GOODV = `var(--stg-good, ${COLORS.green})`;
             const BADV = `var(--stg-bad, ${COLORS.rust})`;
             const ACCV = `var(--stg-acc, ${ACCENT})`;
+            const ACCV_INK = `var(--stg-acc-ink, var(--stg-acc, ${ACCENT}))`;
             const ACC_INKV = `var(--stg-acc-ink, ${ACCENT})`;
             const netInk = (n) => (n > 0 ? GOODV : n < 0 ? BADV : 'var(--stg-ink2, #3f4757)');
             const short = (c) => `${RANK_LABEL[rankOf(c)]}${SUIT_PIP[suitOf(c)]}`;
@@ -699,7 +701,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
                 );
               } else if (now) {
                 cells.push(
-                  <div key={i} aria-current="step" title={`Hand ${i + 1}, in play`} style={{ ...base, background: 'var(--stg-acc-tint, rgba(12,74,110,.12))', border: `2px solid ${ACCV}` }}>
+                  <div key={i} aria-current="step" title={`Hand ${i + 1}, in play`} style={{ ...base, background: 'var(--stg-acc-tint, rgba(12,74,110,.12))', border: `2px solid ${ACCV_INK}` }}>
                     {narrow
                       ? <b style={{ fontSize: big ? 9 : 11, fontWeight: 800, letterSpacing: '.04em', color: ACC_INKV }}>NOW</b>
                       : <>

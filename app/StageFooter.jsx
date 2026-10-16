@@ -134,7 +134,7 @@ const CSS = `
 .stgf-col{display:flex;flex-direction:column;gap:6px;min-width:0;}
 .stgf-col a{font-size:12.5px;font-weight:600;color:var(--stg-mute);text-decoration:none;}
 .stgf-col a:hover{color:var(--stg-ink);}
-.stgf-col a:focus-visible,.stgf-about:focus-visible{outline:2px solid var(--stg-acc);
+.stgf-col a:focus-visible,.stgf-about:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));
   outline-offset:3px;border-radius:4px;}
 .stgf-base{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;
   margin-top:26px;padding-top:14px;border-top:1px solid var(--stg-line);

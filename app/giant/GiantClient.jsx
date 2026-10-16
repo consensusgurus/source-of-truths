@@ -305,6 +305,7 @@ export default function GiantClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('giant');
   const STAGE = isStage('giant', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('giant');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('giant');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('giant'), '--stg-acc-lt': gameColorLight('giant'), '--stg-onramp-lt': gameOnrampLight('giant'), '--stg-acc-ink-lt': gameAccentInkLight('giant') };
   const [stageTheme] = useStageTheme();
@@ -874,11 +875,11 @@ export default function GiantClient({ puzzles = [], forceNum = null }) {
           .gi-pad:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(28,30,36,0.4);}
           .gi-pad.done{color:var(--stg-mute2, #c3c8cf);box-shadow:none;background:${STAGE ? 'var(--stg-surf2)' : '#f4f5f7'};cursor:default;}
           .gi-pad.done span{text-decoration:line-through;}
-          .gi-pad.armed{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-color:var(--stg-acc, ${COLORS.accent});box-shadow:0 2px 0 var(--stg-acc, ${COLORS.accentDeep});}
+          .gi-pad.armed{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));box-shadow:0 2px 0 var(--stg-acc-ink, var(--stg-acc, ${COLORS.accentDeep}));}
           .gi-pad.armed .gi-pad-n{color:${STAGE ? 'color-mix(in srgb, var(--stg-onramp, #08222e) 68%, transparent)' : COLORS.accentTint};}
           .gi-pad .gi-pad-n{position:absolute;bottom:2px;right:4px;font-size:8px;color:var(--stg-mute2, #aab0bb);font-weight:500;}
           .gi-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-          .gi-tool.on{background:${STAGE ? STAGE_C : COLORS.ink};color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};border-color:${STAGE ? STAGE_C : COLORS.ink};}
+          .gi-tool.on{background:${STAGE ? STAGE_C : COLORS.ink};color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};border-color:${STAGE ? STAGE_C_INK : COLORS.ink};}
         ` }} />
 
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
@@ -913,7 +914,7 @@ export default function GiantClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="gi-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="gi-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -961,7 +962,7 @@ export default function GiantClient({ puzzles = [], forceNum = null }) {
                     </div>
                     {[0, 1, 2, 3].map((q) => (
                       <button key={q} type="button" aria-label={`Show the ${QUAD_NAME[q].toLowerCase()} quarter`} aria-pressed={quad === q} onClick={() => pickQuad(q)}
-                        style={{ position: 'absolute', top: q >= 2 ? '50%' : 0, left: q % 2 ? '50%' : 0, width: '50%', height: '50%', padding: 0, margin: 0, cursor: 'pointer', boxSizing: 'border-box', background: quad === q ? 'color-mix(in srgb, var(--stg-acc, #3949ab) 14%, transparent)' : 'transparent', border: quad === q ? `3px solid var(--stg-acc, ${COLORS.accent})` : 'none' }} />
+                        style={{ position: 'absolute', top: q >= 2 ? '50%' : 0, left: q % 2 ? '50%' : 0, width: '50%', height: '50%', padding: 0, margin: 0, cursor: 'pointer', boxSizing: 'border-box', background: quad === q ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #3949ab)) 14%, transparent)' : 'transparent', border: quad === q ? `3px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : 'none' }} />
                     ))}
                   </div>
                   <div style={{ fontFamily: SANS, minWidth: 0 }}>

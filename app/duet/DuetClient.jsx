@@ -244,8 +244,8 @@ function MarksOverlay({ edges, n, badMark }) {
 const ROOM_TINTS = [
   'var(--stg-cell, #ffffff)',
   'color-mix(in srgb, var(--stg-ink, #0b0d12) 8%, var(--stg-cell, #ffffff))',
-  'color-mix(in srgb, var(--stg-acc, #1a7f37) 10%, var(--stg-cell, #ffffff))',
-  'color-mix(in srgb, var(--stg-ink, #0b0d12) 4%, color-mix(in srgb, var(--stg-acc, #1a7f37) 6%, var(--stg-cell, #ffffff)))',
+  'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #1a7f37)) 10%, var(--stg-cell, #ffffff))',
+  'color-mix(in srgb, var(--stg-ink, #0b0d12) 4%, color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #1a7f37)) 6%, var(--stg-cell, #ffffff)))',
 ];
 function colourRooms(rooms, n) {
   const adj = new Map();
@@ -389,6 +389,7 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('duet');
   const STAGE = isStage('duet', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('duet');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('duet');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('duet'), '--stg-acc-lt': gameColorLight('duet'), '--stg-onramp-lt': gameOnrampLight('duet'), '--stg-acc-ink-lt': gameAccentInkLight('duet') };
   const [stageTheme] = useStageTheme();
@@ -772,7 +773,7 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
     const given = givenSet.has(idx);
     const isBad = breaks.bad.has(idx);
     let bg = STAGE ? ROOM_TINTS[roomTint.get(id) || 0] : T.white;
-    if (showSel && (r === selR || c === selC || id === selRoom)) bg = 'color-mix(in srgb, var(--stg-acc, #1a7f37) 28%, var(--stg-cell, #ffffff))';
+    if (showSel && (r === selR || c === selC || id === selRoom)) bg = 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #1a7f37)) 28%, var(--stg-cell, #ffffff))';
     if (isBad) bg = 'color-mix(in srgb, var(--stg-bad, #be123c) 20%, var(--stg-cell, #ffffff))';
     return {
       background: bg,
@@ -882,7 +883,7 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
           .du-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .du-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
           .du-cell{border-radius:0 !important;display:flex;align-items:center;justify-content:center;box-sizing:border-box;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;min-width:0;min-height:0;overflow:hidden;padding:0;border-top:none;border-left:none;font:inherit;}
-          .du-cell:focus-visible{outline:3px solid var(--stg-acc, ${COLORS.accent});outline-offset:-3px;}
+          .du-cell:focus-visible{outline:3px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));outline-offset:-3px;}
           .du-cell:disabled{opacity:1;}
           .du-top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin:2px auto 14px;}
           .du-cap{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:${FADED};}
@@ -954,7 +955,7 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="du-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="du-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

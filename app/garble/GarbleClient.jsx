@@ -325,6 +325,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('garble');
   const STAGE = isStage('garble', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('garble');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('garble');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('garble'), '--stg-acc-lt': gameColorLight('garble'), '--stg-onramp-lt': gameOnrampLight('garble'), '--stg-acc-ink-lt': gameAccentInkLight('garble') };
   const [stageTheme] = useStageTheme();
@@ -335,8 +336,8 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
   // both registers (they were hard white, so a dark page showed white tiles).
   const CELL = STAGE ? 'var(--stg-cell)' : T.white;
   const CELL_B = STAGE ? '1.5px solid var(--stg-cell-line)' : '1.5px solid rgba(20,22,28,0.18)';
-  const SEL_BG = STAGE ? 'color-mix(in srgb, var(--stg-acc) 10%, var(--stg-cell))' : '#eef4ff';
-  const CUR_BG = STAGE ? 'color-mix(in srgb, var(--stg-acc) 24%, var(--stg-cell))' : '#dbe7ff';
+  const SEL_BG = STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 10%, var(--stg-cell))' : '#eef4ff';
+  const CUR_BG = STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 24%, var(--stg-cell))' : '#dbe7ff';
   const SEL_FG = STAGE ? INK : COLORS.ember;
   const SEL_LINE = STAGE ? 'var(--stg-cell-line)' : 'rgba(14,29,64,0.55)';
   const CUR_LINE = STAGE ? 'var(--stg-acc-ink)' : COLORS.ember;
@@ -769,7 +770,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
                 </div>
               )}
               <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <button className="gb-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+                <button className="gb-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
                 <div>
                   <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                     {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

@@ -236,6 +236,7 @@ export default function BackClient({ puzzles = [], problemsByNum = {}, forceNum 
   // Resolved in an effect: the server cannot know what is stored.
   const [stageTheme] = useStageTheme();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('back');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('back');
   const STAGE_ACC = { '--stg-acc-dk': gameColor('back'), '--stg-acc-lt': gameColorLight('back'), '--stg-onramp-lt': gameOnrampLight('back'), '--stg-acc-ink-lt': gameAccentInkLight('back') };
   const Cap = STAGE ? StageChrome : LoftCap;
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
@@ -606,7 +607,7 @@ export default function BackClient({ puzzles = [], problemsByNum = {}, forceNum 
           @media(max-width:560px){.bd-prob{font-size:36px;padding:10px 2px 16px;}}
           .bd-prob.long{font-size:32px;}
           @media(max-width:560px){.bd-prob.long{font-size:24px;}}
-          .bd-blank{display:inline-block;min-width:1.15em;padding:0 .12em;margin:0 .04em;border:3px dashed ${ACC};border-radius:8px;color:${ACC_INK};line-height:1.05;}
+          .bd-blank{display:inline-block;min-width:1.15em;padding:0 .12em;margin:0 .04em;border:3px dashed ${ACC_INK};border-radius:8px;color:${ACC_INK};line-height:1.05;}
           .bd-timebar{height:7px;border-radius:4px;background:var(--stg-surf, ${COLORS.paper});overflow:hidden;}
           .bd-timefill{height:100%;border-radius:4px;transition:width .1s linear;}
         ` }} />
@@ -640,7 +641,7 @@ export default function BackClient({ puzzles = [], problemsByNum = {}, forceNum 
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="bd-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="bd-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

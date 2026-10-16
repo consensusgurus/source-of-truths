@@ -318,6 +318,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('feud');
   const STAGE = isStage('feud', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('feud');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('feud');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('feud'), '--stg-acc-lt': gameColorLight('feud'), '--stg-onramp-lt': gameOnrampLight('feud'), '--stg-acc-ink-lt': gameAccentInkLight('feud') };
   const [stageTheme] = useStageTheme();
@@ -755,7 +756,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
           .fd-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .fd-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           .fd-input{font-family:${SANS};font-weight:700;font-size:15px;border: 2px solid var(--stg-line, rgba(28,30,36,0.3));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};border-radius:9px;padding:10px 12px;width:100%;outline:none;}
-          .fd-input:focus{border-color:var(--stg-acc, ${COLORS.accent});}
+          .fd-input:focus{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .fd-face{font-family:${SANS};font-weight:800;font-size:15px;letter-spacing:0.05em;text-transform:uppercase;border:none;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-radius:10px;padding:0 26px;height:56px;cursor:pointer;display:inline-flex;align-items:center;gap:10px;box-shadow:0 3px 0 rgba(20,22,28,0.25);}
           .fd-face:active{transform:translateY(1px);box-shadow:0 2px 0 rgba(20,22,28,0.25);}
           .fd-face:disabled{opacity:.55;cursor:default;}
@@ -773,9 +774,9 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
           .fd-qwrap{display:flex;flex-direction:column;gap:8px;margin:18px 0 18px;}
           .fd-eye{font-family:${MONO};font-size:12px;letter-spacing:.16em;text-transform:uppercase;}
           .fd-q{font-family:${SANS};font-size:32px;font-weight:800;line-height:1.15;letter-spacing:-.02em;}
-          .fd-board{background:var(--stg-surf, ${COLORS.accentSoft});border:2px solid var(--stg-acc, ${COLORS.accent});border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px;}
+          .fd-board{background:var(--stg-surf, ${COLORS.accentSoft});border:2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px;}
           .fd-slot{display:flex;align-items:center;gap:12px;min-height:72px;border-radius:12px;background:var(--stg-cell, var(--white));border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));padding:0 12px 0 0;overflow:hidden;}
-          .fd-slot.on,.fd-slot:focus-within{border-color:var(--stg-acc, ${COLORS.accent});}
+          .fd-slot.on,.fd-slot:focus-within{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .fd-num{flex:0 0 64px;align-self:stretch;display:flex;align-items:center;justify-content:center;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));font-family:${MONO};font-size:28px;font-weight:500;}
           .fd-field{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;cursor:text;}
           .fd-hint{font-family:${MONO};font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
@@ -850,7 +851,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="fd-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="fd-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

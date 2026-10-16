@@ -83,15 +83,16 @@ const COLORS = {
 // table Crib plays on, so it follows both registers. Card FACES are paper in
 // both registers (playing cards are physical objects): white, near-black and
 // red ink, exactly as Crib draws them.
-const FELT = 'color-mix(in srgb, var(--stg-acc, #7f1d1d) 9%, var(--stg-cell, #f6eaea))';
+const FELT = 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #7f1d1d)) 9%, var(--stg-cell, #f6eaea))';
 const FACE = '#ffffff';
 const FACE_INK = '#16181d';
 const FACE_RED = '#b91c1c';
 const FACE_EDGE = 'rgba(20,22,28,0.30)';
 const A_FILL = 'var(--stg-acc, #7f1d1d)';
+const A_FILL_INK = 'var(--stg-acc-ink, var(--stg-acc, #7f1d1d))';
 const ON_A = 'var(--stg-onramp, #ffffff)';
 const A_INK = 'var(--stg-acc-ink, #7f1d1d)';
-const A_TINT = 'color-mix(in srgb, var(--stg-acc, #7f1d1d) 16%, var(--stg-cell, #ffffff))';
+const A_TINT = 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #7f1d1d)) 16%, var(--stg-cell, #ffffff))';
 const CELL = 'var(--stg-cell, #ffffff)';
 const CELL_LINE = 'var(--stg-cell-line, rgba(28,30,36,0.35))';
 const S_INK = 'var(--stg-ink, #16181d)';
@@ -229,8 +230,8 @@ function CardFace({ card, sz = 'cell', ghost = false, ring = false }) {
   return (
     <div style={{
       position: 'relative', width: '100%', height: '100%', boxSizing: 'border-box', borderRadius: f.rad,
-      background: ghost ? 'color-mix(in srgb, var(--stg-acc, #7f1d1d) 12%, #ffffff)' : FACE,
-      border: ghost ? `2.5px dashed ${A_FILL}` : ring ? `3px solid ${A_FILL}` : `1.5px solid ${FACE_EDGE}`,
+      background: ghost ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #7f1d1d)) 12%, #ffffff)' : FACE,
+      border: ghost ? `2.5px dashed ${A_FILL_INK}` : ring ? `3px solid ${A_FILL}` : `1.5px solid ${FACE_EDGE}`,
       boxShadow: ghost ? 'none' : ring ? `0 0 0 3px ${FELT}, 0 0 0 5px ${A_FILL}, 0 14px 22px rgba(0,0,0,.32)` : big ? '0 4px 10px rgba(0,0,0,.28)' : '0 3px 7px rgba(0,0,0,.22)',
       color: red ? FACE_RED : FACE_INK, fontFamily: SANS, userSelect: 'none',
     }}>
@@ -347,6 +348,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
   // Resolved in an effect: the server cannot know what is stored.
   const [stageTheme] = useStageTheme();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('hands');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('hands');
   const STAGE_ACC = { '--stg-acc-dk': gameColor('hands'), '--stg-acc-lt': gameColorLight('hands'), '--stg-onramp-lt': gameOnrampLight('hands'), '--stg-acc-ink-lt': gameAccentInkLight('hands') };
   const Cap = STAGE ? StageChrome : LoftCap;
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
@@ -762,7 +764,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="hd-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="hd-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

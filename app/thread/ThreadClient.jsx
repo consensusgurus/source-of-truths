@@ -675,7 +675,7 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
           .th-fr{flex:1 1 0;min-width:0;display:flex;}
           .th-side-holes{display:none;}
           .th-tile{position:relative;z-index:2;flex:1;min-width:0;box-sizing:border-box;text-align:left;font-family:${SANS};background:var(--stg-cell, ${T.white});border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.35));border-radius:4px;padding:10px 12px;min-height:${PUZZLE.sunday ? 112 : 124}px;display:flex;flex-direction:column;gap:5px;color:${INK};}
-          .th-tile.on{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 14%, var(--stg-cell, ${T.white}));border-color:var(--stg-acc-ink, ${COLORS.accent});}
+          .th-tile.on{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 14%, var(--stg-cell, ${T.white}));border-color:var(--stg-acc-ink, ${COLORS.accent});}
           .th-tile.thr{box-shadow:inset 0 0 0 2px var(--stg-cool, #7dd3fc);}
           .th-tile.thr2{box-shadow:inset 0 0 0 2px var(--stg-warn, #b45309);}
           .th-tile.miss{border-color:var(--stg-bad, ${COLORS.rust});}

@@ -390,6 +390,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('ping');
   const STAGE = isStage('ping', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('ping');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('ping');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('ping'), '--stg-acc-lt': gameColorLight('ping'), '--stg-onramp-lt': gameOnrampLight('ping'), '--stg-acc-ink-lt': gameAccentInkLight('ping') };
   const [stageTheme] = useStageTheme();
@@ -947,8 +948,8 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
           @keyframes pgrow{from{opacity:0;transform:translateY(-4px);}}
           @media(max-width:560px){.pg-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.pg-ttl h1{font-size:21px;letter-spacing:0.02em;}.pg-ttl .pg-ttl-dt{font-size:15px;}.pg-ttl-dot{display:none;}}
           .pg-inp{font-family:${SANS};font-weight:700;font-size:18px;width:100%;border:2px solid ${STAGE ? 'var(--stg-line2)' : COLORS.ink};border-radius:9px;padding:13px 14px 13px 42px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};outline:none;}
-          .pg-inp:focus{border-color:var(--stg-acc, ${COLORS.accent});box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 18%, transparent);}
-          .pg-go{font-family:${SANS};font-weight:800;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;border:2px solid var(--stg-acc, ${COLORS.accent});background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-radius:9px;padding:0 22px;cursor:pointer;height:52px;flex:0 0 auto;}
+          .pg-inp:focus{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 18%, transparent);}
+          .pg-go{font-family:${SANS};font-weight:800;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;border:2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-radius:9px;padding:0 22px;cursor:pointer;height:52px;flex:0 0 auto;}
           .pg-go:active{transform:translateY(1px);}
           .pg-sug{position:absolute;left:0;right:0;top:calc(100% + 6px);background:${STAGE ? 'var(--stg-raise)' : 'var(--white)'};border:2px solid ${STAGE ? 'var(--stg-line2)' : COLORS.ink};border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,0.42);overflow:hidden;z-index:20;}
           .pg-sug button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;font-family:${SANS};font-size:15px;font-weight:700;color:${INK};background:${STAGE ? 'var(--stg-raise)' : 'var(--white)'};border:none;border-bottom:1px solid var(--stg-line, rgba(28,30,36,0.08));padding:10px 13px;cursor:pointer;}
@@ -1015,7 +1016,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 'auto', paddingTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="pg-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="pg-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

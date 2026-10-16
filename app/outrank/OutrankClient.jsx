@@ -292,6 +292,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('outrank');
   const STAGE = isStage('outrank', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('outrank');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('outrank');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('outrank'), '--stg-acc-lt': gameColorLight('outrank'), '--stg-onramp-lt': gameOnrampLight('outrank'), '--stg-acc-ink-lt': gameAccentInkLight('outrank') };
   const [stageTheme] = useStageTheme();
@@ -733,8 +734,8 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
           .ork-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           .ork-item{font-family:${SANS};font-weight:800;font-size:14px;min-height:44px;box-sizing:border-box;border:2px solid var(--stg-cell-line, rgba(28,30,36,0.3));background:transparent;color:${INK};border-radius:10px;padding:0 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
           .ork-item:hover{border-color:var(--stg-acc-ink, ${COLORS.accent});}
-          .ork-item-on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
-          .ork-item-on:hover{border-color:var(--stg-acc, ${COLORS.accent});}
+          .ork-item-on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, var(--white));}
+          .ork-item-on:hover{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .ork-ballot,.ork-tray{display:flex;flex-wrap:wrap;gap:7px;}
           .ork-tag{font-family:${MONO};font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-onramp, var(--white));background:var(--stg-acc, ${COLORS.accent});border-radius:5px;padding:4px 8px;white-space:nowrap;}
           .ork-stand{display:flex;align-items:flex-end;isolation:isolate;padding:16px 10px 0 2px;}
@@ -746,20 +747,20 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
           .ork-card.next{border:2px dashed var(--stg-acc-ink, ${COLORS.accent});color:var(--stg-acc-ink, ${COLORS.accent});background:var(--stg-ground, transparent);}
           .ork-card.open{border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.3));color:var(--stg-mute, ${COLORS.faded});background:var(--stg-ground, transparent);}
           .ork-ped{position:relative;height:var(--h);margin:0 3px;box-sizing:border-box;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));border-bottom:0;border-top:4px solid var(--stg-cell-line, rgba(28,30,36,0.3));border-radius:8px 8px 0 0;background:var(--stg-cell, var(--white));display:flex;justify-content:center;padding-top:8px;font-family:${MONO};font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--stg-mute, ${COLORS.faded});}
-          .ork-ped.on{border-top-color:var(--stg-acc-ink, ${COLORS.accent});color:var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 14%, var(--stg-cell, var(--white)));}
+          .ork-ped.on{border-top-color:var(--stg-acc-ink, ${COLORS.accent});color:var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 14%, var(--stg-cell, var(--white)));}
           .ork-ped::before{content:'';position:absolute;left:5px;right:-9px;top:-11px;bottom:0;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.3));border-bottom:0;border-radius:8px 8px 0 0;z-index:-1;}
           .ork-base{height:2px;background:var(--stg-cell-line, rgba(28,30,36,0.3));}
           .ork-crowd{margin:8px 3px 0;height:26px;box-sizing:border-box;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.3));border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});white-space:nowrap;overflow:hidden;}
           .ork-ph{display:none;}
           .ork-legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin-top:10px;font-family:${MONO};font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
           .ork-legend > span{display:inline-flex;align-items:center;gap:6px;}
-          .ork-sw{width:16px;height:12px;box-sizing:border-box;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));border-top:3px solid var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 14%, var(--stg-cell, var(--white)));}
+          .ork-sw{width:16px;height:12px;box-sizing:border-box;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));border-top:3px solid var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 14%, var(--stg-cell, var(--white)));}
           .ork-sw.ghost{border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.3));background:transparent;}
           .ork-facerow{display:flex;align-items:center;gap:16px;margin:22px 0 4px;flex-wrap:wrap;}
           .ork-face-note{flex:1 1 220px;font-family:${SANS};font-size:12.5px;font-weight:600;line-height:1.45;color:var(--stg-mute, ${COLORS.faded});}
           .ork-face{font-family:${SANS};font-weight:800;font-size:15px;border:none;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-radius:12px;padding:0 22px;min-height:52px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:10px;}
           .ork-face:active{transform:translateY(1px);}
-          .ork-face:disabled{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 12%, var(--stg-cell, var(--white)));color:var(--stg-ink2, ${COLORS.ink});cursor:default;transform:none;}
+          .ork-face:disabled{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 12%, var(--stg-cell, var(--white)));color:var(--stg-ink2, ${COLORS.ink});cursor:default;transform:none;}
           .ork-face-sub{font-family:${MONO};font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
           @media(max-width:560px){
             .ork-theme{font-size:25px !important;}
@@ -822,7 +823,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="ork-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="ork-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

@@ -613,14 +613,14 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
           .st-btn{font-family:${SANS};font-weight:${STAGE ? 700 : 800};font-size:14px;border:${STAGE ? '1.5px solid var(--stg-cell-line)' : `2px solid ${COLORS.accentDeep}`};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};border-radius:${STAGE ? 12 : 8}px;padding:9px 16px;min-height:48px;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
           .st-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
           .st-btn:disabled{opacity:0.4;cursor:default;}
-          .st-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
+          .st-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, var(--white));}
           .st-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accentDeep}) 86%, var(--stg-ink, var(--white)));}
           .st-board{position:relative;margin:0 auto;touch-action:none;user-select:none;-webkit-user-select:none;}
           .st-tile{position:absolute;display:flex;align-items:center;justify-content:center;
             font-family:${SANS};font-weight:800;border-radius:10px;cursor:pointer;box-sizing:border-box;
             background:var(--st-stone, ${STAGE ? 'var(--stg-cell)' : 'var(--white)'});border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.28)'};color:${INK};
             transition:top ${FALL_MS}ms cubic-bezier(.4,.05,.35,1),left ${FALL_MS}ms cubic-bezier(.4,.05,.35,1),background 120ms,color 120ms,border-color 120ms,transform 160ms,opacity ${LIFT_MS}ms;}
-          .st-tile.on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));transform:scale(1.04);}
+          .st-tile.on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, var(--white));transform:scale(1.04);}
           .st-tile.lift{background:${STAGE ? 'var(--stg-good)' : COLORS.green};border-color:${STAGE ? 'var(--stg-good)' : COLORS.green};color:${STAGE ? 'var(--stg-ground)' : 'var(--white)'};opacity:0.15;transform:scale(0.82);}
           .st-hole{position:absolute;box-sizing:border-box;border-radius:10px;border:1.5px dashed ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)'};pointer-events:none;}
           .st-k{font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:${FADED};}
@@ -628,7 +628,7 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
           .st-clear{font-family:${SANS};font-weight:700;font-size:13px;background:transparent;color:${FADED};border:0;padding:0 8px;min-height:44px;min-width:44px;text-decoration:underline;cursor:pointer;}
           @media(max-width:640px){.st-k{font-size:10px;}.st-k b{font-size:13px;}.st-tile,.st-hole{border-radius:9px;}}
           .st-tile.bad{background:${STAGE ? 'var(--stg-surf2)' : '#fee2e2'};border-color:${STAGE ? 'var(--stg-bad)' : '#b91c1c'};color:${STAGE ? 'var(--stg-bad)' : '#7f1d1d'};}
-          .st-tile.flash{border-color:var(--stg-acc, ${COLORS.accent});box-shadow:0 0 0 3px var(--stg-surf2, ${COLORS.accentSoft});}
+          .st-tile.flash{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));box-shadow:0 0 0 3px var(--stg-surf2, ${COLORS.accentSoft});}
         ` }} />
 
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
@@ -693,7 +693,8 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
             // found words, the remaining words' LENGTHS (the old slot row printed
             // them as dots), the hint count and the trace. Nothing new is told.
             const A_FILL = STAGE ? 'var(--stg-acc)' : COLORS.accent;
-            const A_TINT = STAGE ? 'color-mix(in srgb, var(--stg-acc) 18%, transparent)' : COLORS.accentSoft;
+            const A_FILL_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : COLORS.accent;
+            const A_TINT = STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 18%, transparent)' : COLORS.accentSoft;
             const CELL_LINE = STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)';
             const BAD = STAGE ? 'var(--stg-bad)' : '#b91c1c';
             const PANEL = STAGE ? 'var(--stg-surf)' : 'rgba(28,30,36,0.04)';
@@ -895,7 +896,7 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
                       {railLit > 0 && <span aria-hidden="true" style={{ position: 'absolute', left: 5, top: 6, height: railLit, width: 3, borderRadius: 2, background: A_FILL }} />}
                       {logRows.map((s) => (
                         <div key={s.k} style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 5 }}>
-                          <span aria-hidden="true" style={{ position: 'absolute', left: -18, top: 21, width: 13, height: 13, boxSizing: 'border-box', borderRadius: 7, background: s.found ? A_FILL : GROUND, border: `2px solid ${s.found ? A_FILL : rowEdge(s)}` }} />
+                          <span aria-hidden="true" style={{ position: 'absolute', left: -18, top: 21, width: 13, height: 13, boxSizing: 'border-box', borderRadius: 7, background: s.found ? A_FILL : GROUND, border: `2px solid ${s.found ? A_FILL_INK : rowEdge(s)}` }} />
                           <span className="st-k" style={{ fontSize: 10, lineHeight: '13px', color: rowInk(s) }}>{s.tag}</span>
                           <span aria-label={s.found ? `Lifted ${s.t}` : (s.missed ? `Missed ${s.t}` : `Buried word, ${s.k.length} letters`)}
                             style={{ height: 36, boxSizing: 'border-box', borderRadius: 9, border: `1.5px ${s.found ? 'solid' : 'dashed'} ${rowEdge(s)}`, background: s.found ? A_TINT : 'transparent', color: rowInk(s), display: 'flex', alignItems: 'center', padding: '0 12px', fontFamily: SANS, fontSize: 15, fontWeight: 800, letterSpacing: s.found || s.missed ? '0.08em' : '0.3em', overflow: 'hidden', whiteSpace: 'nowrap' }}>{s.t}</span>

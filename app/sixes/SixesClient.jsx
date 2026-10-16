@@ -275,6 +275,7 @@ export default function SixesClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('sixes');
   const STAGE = isStage('sixes', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('sixes');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('sixes');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('sixes'), '--stg-acc-lt': gameColorLight('sixes'), '--stg-onramp-lt': gameOnrampLight('sixes'), '--stg-acc-ink-lt': gameAccentInkLight('sixes') };
   const [stageTheme] = useStageTheme();
@@ -765,7 +766,7 @@ export default function SixesClient({ puzzles = [], forceNum = null }) {
     if (isSel) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, var(--stg-cell))' : COLORS.accentPick;
     return {
       background: bg,
-      boxShadow: isSel ? `inset 0 0 0 2.5px var(--stg-acc, ${COLORS.accent})` : undefined,
+      boxShadow: isSel ? `inset 0 0 0 2.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : undefined,
       zIndex: isSel ? 1 : undefined,
       borderRight: `${heavyR ? 2.5 : 1}px solid ${heavyR ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,
       borderBottom: `${heavyB ? 2.5 : 1}px solid ${heavyB ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,
@@ -831,11 +832,11 @@ export default function SixesClient({ puzzles = [], forceNum = null }) {
           .sx-pad:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(28,30,36,0.4);}
           .sx-pad.done{color:${STAGE ? 'var(--stg-mute2,#c3c8cf)' : '#c3c8cf'};box-shadow:none;background:${STAGE ? 'var(--stg-surf2)' : '#f4f5f7'};cursor:default;}
           .sx-pad.done span{text-decoration:line-through;text-decoration-thickness:2px;}
-          .sx-pad.armed{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-color:var(--stg-acc, ${COLORS.accent});box-shadow:0 2px 0 var(--stg-acc, ${COLORS.accentDeep});}
+          .sx-pad.armed{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));box-shadow:0 2px 0 var(--stg-acc-ink, var(--stg-acc, ${COLORS.accentDeep}));}
           .sx-pad.armed .sx-pad-n{color:${STAGE ? 'color-mix(in srgb, var(--stg-onramp, #08222e) 68%, transparent)' : COLORS.accentTint};}
           .sx-pad .sx-pad-n{position:absolute;bottom:2px;right:4px;font-size:8px;color:${STAGE ? 'var(--stg-mute2,#aab0bb)' : '#aab0bb'};font-weight:500;}
           .sx-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-          .sx-tool.on{background:${STAGE ? STAGE_C : COLORS.ink};color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};border-color:${STAGE ? STAGE_C : COLORS.ink};}
+          .sx-tool.on{background:${STAGE ? STAGE_C : COLORS.ink};color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};border-color:${STAGE ? STAGE_C_INK : COLORS.ink};}
         ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
@@ -870,7 +871,7 @@ export default function SixesClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="sx-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="sx-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

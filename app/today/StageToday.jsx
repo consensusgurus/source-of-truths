@@ -520,11 +520,11 @@ function GroupDots({ dots }) {
 // It is NOT app/StageLadder: that one draws the field layer and the pop, ships
 // its own stylesheet, and would inject six more copies of it. This is the same
 // shape with none of that, which is all a member row needs.
-function MemberLadder({ cats, keys, hueFor }) {
+function MemberLadder({ cats, keys, hueFor, inkFor = hueFor }) {
   return (
     <span className="sty-mlad" aria-hidden="true">
       {cats.map(({ cat, games }) => (
-        <span className="sty-mlb" key={cat} style={{ flex: games.length + ' 1 0', '--cc': hueFor(cat) }}>
+        <span className="sty-mlb" key={cat} style={{ flex: games.length + ' 1 0', '--cc': hueFor(cat), '--cci': inkFor(cat) }}>
           {games.map((g) => <i key={g.key} className={keys.has(g.key) ? 'on' : ''} />)}
         </span>
       ))}
@@ -553,7 +553,7 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
       data-fk={fk || g.key}
       style={{
         '--i': i,
-        ...(hue ? { '--cc': hue } : null),
+        ...(hue ? { '--cc': hue, '--cci': light ? categoryAccentInkLight(g.cat) : categoryColor(g.cat) } : null),
         // A FINISHED TILE ON THE LIGHT REGISTER MIRRORS THE DARK ONE (owner,
         // 2026-10-03): the dark ramp's own pastel, softened 34% toward white,
         // carrying the one dark ink on all ten. The deep light-ramp fill gave
@@ -633,7 +633,7 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
 // the daily-combined read the board uses, the group line off the standing,
 // the record off the same /api/quiz/my-plays read the favorites table made.
 // Nothing is a new request.
-function LedgerRow({ g, hue, tq, day, dots, res, done, inprog, me, favLoaded, favFailed, max, canPin, favorites, toggleFavorite, fk }) {
+function LedgerRow({ g, hue, ink, tq, day, dots, res, done, inprog, me, favLoaded, favFailed, max, canPin, favorites, toggleFavorite, fk }) {
   const isDone = done.has(g.key);
   const state = isDone ? 'done' : inprog.has(g.key) ? 'open' : '';
   const gw = !isDone && !!(dots && dots.played && dots.played.size);
@@ -648,7 +648,7 @@ function LedgerRow({ g, hue, tq, day, dots, res, done, inprog, me, favLoaded, fa
   const rec = me ? [me.best ? 'Best ' + mmss(me.best) : '', me.streak ? me.streak + '-day streak' : ''].filter(Boolean).join(' · ') : '';
   return (
     <a className={`sty-lr ${state}${gw ? ' gw' : ''}`} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`}
-      data-fk={fk || g.key} style={hue ? { '--cc': hue } : undefined}>
+      data-fk={fk || g.key} style={hue ? { '--cc': hue, '--cci': ink || hue } : undefined}>
       <span className="ic"><Glyph k={g.key} size={18} /></span>
       <span className="nm"><b>{g.name}</b><span className="tg">{g.tag}</span></span>
       <span className="td">
@@ -1308,6 +1308,9 @@ export default function StageToday() {
   // does on a board: the pale step on the dark ground, its dark twin on the pale.
   const light = stageTheme === 'light';
   const hueFor = (cat) => (light ? categoryColorLight(cat) : categoryColor(cat));
+  // THE SAME CATEGORY AS TEXT OR A LINE. Since 2026-10-16 the light fill is a
+  // pastel, which cannot be ink on paper, so every --cc carries a --cci beside it.
+  const inkFor = (cat) => (light ? categoryAccentInkLight(cat) : categoryColor(cat));
 
   useEffect(() => {
     let alive = true;
@@ -1627,7 +1630,7 @@ export default function StageToday() {
       const pop = games.reduce((t, g) => t + (playsBy.get(g.key) || 0), 0);
       // A circuit spans categories, so it wears its LEAD game's step rather
       // than inventing a tenth colour.
-      return { id: c.id, name: c.name, blurb: c.blurb || '', unit: c.unit || '', games, n, pop, hue: hueFor(games[0].cat) };
+      return { id: c.id, name: c.name, blurb: c.blurb || '', unit: c.unit || '', games, n, pop, hue: hueFor(games[0].cat), ink: inkFor(games[0].cat) };
     }).filter(Boolean)
       // THE ORDER (owner, 2026-08-31), in four terms:
       //
@@ -1678,7 +1681,7 @@ export default function StageToday() {
       if (!c || !c.games.length) continue;
       const pick = c.games.find((g) => !used.has(g.cat)) || c.games[0];
       used.add(pick.cat);
-      out.push({ ...c, cat: pick.cat, hue: hueFor(pick.cat) });
+      out.push({ ...c, cat: pick.cat, hue: hueFor(pick.cat), ink: inkFor(pick.cat) });
     }
     return out;
   }, [circuits, light]);   // eslint-disable-line react-hooks/exhaustive-deps
@@ -2132,15 +2135,20 @@ export default function StageToday() {
     const c = cats.find((x) => x.cat === id);
     return c && c.games.length ? [c.games.filter((g) => done.has(g.key)).length, c.games.length] : null;
   };
+  // DESIGN D (owner, 2026-10-16): a filled category disc behind the glyph,
+  // the progress ring drawn around it in the ink colour. pathLength 100 keeps
+  // the dash maths readable and lets the arrival animation draw it from 0.
+  let ixSeq = 0;
   const ixRing = (id, prog) => {
     const frac = prog && prog[1] ? Math.min(1, prog[0] / prog[1]) : 0;
     const full = frac >= 1;
     return (
       <span className={'sty-ixg' + (full ? ' full' : '')} aria-hidden="true">
         <svg className="sty-ixgr" viewBox="0 0 44 44">
-          <circle className="tr" cx="22" cy="22" r="19" />
-          {frac > 0 && !full ? (
-            <circle className="fl" cx="22" cy="22" r="19" strokeDasharray={`${(frac * 119.38).toFixed(1)} 119.38`}
+          <circle className="tr" cx="22" cy="22" r="20.5" />
+          <circle className="dk" cx="22" cy="22" r="16" />
+          {frac > 0 ? (
+            <circle className="fl" cx="22" cy="22" r="20.5" pathLength="100" strokeDasharray={`${(frac * 100).toFixed(1)} 100`}
               transform="rotate(-90 22 22)" />
           ) : null}
         </svg>
@@ -2172,8 +2180,8 @@ export default function StageToday() {
     const prog = ixProg(id);
     return (
       <button key={id} type="button" aria-pressed={paneOn === id}
-        className={'sty-ixb' + (cls ? ' ' + cls : '') + fillFor(id) + (paneOn === id ? ' on' : '') + (prog && prog[0] >= prog[1] ? ' cmp' : '')}
-        style={{ '--cc': hue }}
+        className={'sty-ixb' + (RAMP_ORDER.includes(id) ? ' ct' : '') + (cls ? ' ' + cls : '') + fillFor(id) + (paneOn === id ? ' on' : '') + (prog && prog[0] >= prog[1] ? ' cmp' : '')}
+        style={{ '--cc': hue, '--cci': RAMP_ORDER.includes(id) ? inkFor(id) : hue === 'var(--stg-acc)' ? 'var(--stg-acc-ink)' : hue, '--i': ixSeq++ }}
         onClick={(e) => { if (picked && paneOn === id) { setPicked(false); try { localStorage.setItem(TILES_KEY, '1'); } catch (er) {} } else pickPane(id, e); }}>
         <i aria-hidden="true" />
         {ixRing(id, prog)}
@@ -2239,7 +2247,7 @@ export default function StageToday() {
       {ixBtn(MINE_ID, 'My Puzzles', 'var(--stg-acc)')}
       <span className="sty-ixsep" aria-hidden="true" />
       {orderedCats.map(({ cat }, ci) => (reorder ? (
-        <div key={cat} className={'sty-ixb sty-ixr' + (paneOn === cat ? ' on' : '')} style={{ '--cc': hueFor(cat) }}>
+        <div key={cat} className={'sty-ixb sty-ixr' + (paneOn === cat ? ' on' : '')} style={{ '--cc': hueFor(cat), '--cci': inkFor(cat) }}>
           <i aria-hidden="true" />
           <span>{catLabel(cat)}</span>
           <span className="sty-move">
@@ -2258,14 +2266,14 @@ export default function StageToday() {
           are their own group below; Most Appreciated comes last. The phone
           reorders these with the order classes in the 900px block, unchanged. */}
       {/* The puzzle archive is a door: every past board, by game and day. */}
-      <a className="sty-ixb sty-ixmv sty-ixar" href={withTq('/archive')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('archive', null)}<span>Puzzle Archive</span></a>
+      <a className="sty-ixb sty-ixmv sty-ixar" href={withTq('/archive')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('archive', null)}<span>Puzzle Archive</span></a>
       {ixBtn(BOARD_ID, 'Leaderboards + Stats', 'var(--stg-mute)', 'wide')}
       <span className="sty-ixsep sty-ixmv" aria-hidden="true" />
       {ixBtn(IQ_ID, 'IQ Tests', 'var(--stg-mute)', 'sty-ixmv sty-ixm4')}
       {ixBtn(EXAM_ID, 'School Tests', 'var(--stg-mute)', 'sty-ixmv sty-ixm4')}
       {/* Kids and the lists are doors, not panes: each goes to its own home. */}
-      <a className={'sty-ixb sty-ixmv sty-ixm4' + fillFor('kids')} href="/kids" style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('kids', null)}<span>Kids</span></a>
-      <a className={'sty-ixb sty-ixmv sty-ixm4' + fillFor('lists')} href={withTq('/lists')} style={{ '--cc': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('lists', null)}<span>Top 10 Lists</span></a>
+      <a className={'sty-ixb sty-ixmv sty-ixm4' + fillFor('kids')} href="/kids" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('kids', null)}<span>Kids</span></a>
+      <a className={'sty-ixb sty-ixmv sty-ixm4' + fillFor('lists')} href={withTq('/lists')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('lists', null)}<span>Top 10 Lists</span></a>
       <span className="sty-ixsep sty-ixmv" aria-hidden="true" />
       {ixBtn(COMM_ID, 'Most Appreciated', 'var(--stg-mute)', 'wide sty-ixmv sty-ixma')}
       <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
@@ -2522,7 +2530,7 @@ export default function StageToday() {
   const ledgerRows = (list, pre, ownHue) => {
     const max = fav ? list.reduce((a, g) => Math.max(a, ((fav.mine[g.key] || {}).plays) || 0), 0) : 0;
     return list.map((g) => (
-      <LedgerRow key={g.key} g={g} hue={ownHue ? hueFor(g.cat) : null} tq={tq}
+      <LedgerRow key={g.key} g={g} hue={ownHue ? hueFor(g.cat) : null} ink={ownHue ? inkFor(g.cat) : null} tq={tq}
         day={board ? (boardBy[g.key] || { board: [], plays: 0 }) : null}
         dots={dotsL ? dotsL(g.key) : null} res={standBy[g.key]} done={done} inprog={inprog}
         me={fav && !fav.failed ? fav.mine[g.key] || null : null} favLoaded={!!fav && !fav.failed} favFailed={!!(fav && fav.failed)} max={max}
@@ -2635,7 +2643,7 @@ export default function StageToday() {
       }
     }
     return (
-      <aside className="sty-rail" aria-label="Leaderboards" style={{ '--cc': railCat ? hueFor(railCat.cat) : 'var(--stg-ink2)' }}>
+      <aside className="sty-rail" aria-label="Leaderboards" style={{ '--cc': railCat ? hueFor(railCat.cat) : 'var(--stg-ink2)', '--cci': railCat ? inkFor(railCat.cat) : 'var(--stg-ink2)' }}>
         <ChallengeRail />
         {railGrp ? (
           <div className="sty-rlb">
@@ -2673,6 +2681,16 @@ export default function StageToday() {
     }
     return best ? hueFor(best) : c.hue;
   };
+  const pillInk = (c, cat) => {
+    if (cat) return inkFor(cat);
+    const tally = {};
+    let best = null;
+    for (const g of c.games) {
+      tally[g.cat] = (tally[g.cat] || 0) + 1;
+      if (!best || tally[g.cat] > tally[best]) best = g.cat;
+    }
+    return best ? inkFor(best) : c.ink;
+  };
   // A pill's lead category, for its colour and the ink that sits on it.
   const pillCat = (c, cat) => {
     if (cat) return cat;
@@ -2700,7 +2718,7 @@ export default function StageToday() {
           const st = full ? circStand[c.id] : null;
           return (
             <a key={c.id} className={'sty-cpill' + (full ? ' full' : part ? ' part' : '')}
-              href={withTq(circuitEntryHref(c.id))} style={{ '--ph': pillHue(c, cat) }}>
+              href={withTq(circuitEntryHref(c.id))} style={{ '--ph': pillHue(c, cat), '--phi': pillInk(c, cat) }}>
               <span className="nm">{c.name}</span>
               {full ? (st ? <span className="ck rk">#{st.rank}<i> of {st.field}</i></span> : <span className="ck">{'\u2713'}</span>) : null}
             </a>
@@ -2720,7 +2738,7 @@ export default function StageToday() {
   const fmtN = (n) => Number(n || 0).toLocaleString('en-US');
   const runLook = (c, cat) => {
     const pc = pillCat(c, cat);
-    return { '--ph': hueFor(pc), '--stg-onramp': light ? categoryOnrampLight(pc) : RAMP_INK };
+    return { '--ph': hueFor(pc), '--phi': inkFor(pc), '--stg-onramp': light ? categoryOnrampLight(pc) : RAMP_INK };
   };
   // THE GROUP LINE SAYS SOMETHING OR IS NOT THERE (owner, 2026-10-13): no
   // group, or nobody in it has finished the run today, and the line and its
@@ -2834,7 +2852,7 @@ export default function StageToday() {
     return (
       <section key={cat} id={`cat-${cat.replace(/\s+/g, '-')}`}
         className={'sty-cat sty-ixc' + (paneOn === cat ? '' : ' sty-ixoff')}
-        data-fk={'sec:' + cat} style={{ '--cc': hueFor(cat) }}>
+        data-fk={'sec:' + cat} style={{ '--cc': hueFor(cat), '--cci': inkFor(cat) }}>
         <div className="sty-cathead">
           <h2>{catLabel(cat)}</h2>
           <b>{n}<i>/{games.length}</i></b>
@@ -3011,6 +3029,7 @@ export default function StageToday() {
               <a key={c.id} className={'sty-pin' + (i === 2 ? ' third' : '')} href={withTq(circuitEntryHref(c.id))}
                 style={{
                   '--cc': c.hue,
+                  '--cci': c.ink,
                   '--stg-onramp': light ? categoryOnrampLight(c.games[0].cat) : RAMP_INK,
                 }}>
                 <span className="sty-pinl">
@@ -3047,7 +3066,7 @@ export default function StageToday() {
         {/* ALWAYS RENDERED now that it is a pane rather than a row: an empty
             pane says how to fill it, where an empty row was just clutter. */}
         {ix ? (
-          <section className={'sty-cat sty-mine sty-rev' + (ix && paneOn !== MINE_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
+          <section className={'sty-cat sty-mine sty-rev' + (ix && paneOn !== MINE_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)', '--cci': 'var(--stg-ink2)' }}>
             {/* An empty section has nothing to collapse and no fraction to
                 print, so the head keeps its title and drops both. */}
             <div className="sty-cathead" onClick={mineTot ? headClick(MINE_ID) : undefined}>
@@ -3097,7 +3116,7 @@ export default function StageToday() {
                   const st = full ? circStand[c.id] : null;
                   return (
                     <a key={c.id} className={'sty-cpill' + (full ? ' full' : c.n > 0 ? ' part' : '')}
-                      href={withTq(circuitEntryHref(c.id))} style={{ '--ph': c.hue }}>
+                      href={withTq(circuitEntryHref(c.id))} style={{ '--ph': c.hue, '--phi': c.ink }}>
                       <span className="nm">{c.name}</span>
                       {full ? (st ? <span className="ck rk">#{st.rank}<i> of {st.field}</i></span> : <span className="ck">{'\u2713'}</span>) : null}
                     </a>
@@ -3119,7 +3138,7 @@ export default function StageToday() {
             under the categories (`ordBelow`, decided above). */}
 
         {/* 4. THE GAMES, either as nine category rows or as one A-to-Z list. */}
-        <section className={'sty-cat sty-az' + (paneOn === ALL_ID ? '' : ' sty-ixoff')} style={{ '--cc': 'var(--stg-ink2)' }}>
+        <section className={'sty-cat sty-az' + (paneOn === ALL_ID ? '' : ' sty-ixoff')} style={{ '--cc': 'var(--stg-ink2)', '--cci': 'var(--stg-ink2)' }}>
           <div className="sty-cathead">
             <h2>All Puzzles</h2>
             <b>{alphaDone}<i>/{alpha.length}</i></b>
@@ -3158,7 +3177,7 @@ export default function StageToday() {
              block on the page wearing a bare eyebrow. Its rule is neutral for
              the reason My games' is: a circuit spans categories, so there is no
              single hue that would be honest here. */
-          <section className={'sty-cat sty-circsec sty-rev' + (ix && paneOn !== CIRC_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
+          <section className={'sty-cat sty-circsec sty-rev' + (ix && paneOn !== CIRC_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)', '--cci': 'var(--stg-ink2)' }}>
             <div className="sty-cathead" onClick={headClick(CIRC_ID)}>
               <h2>Circuits</h2>
               <b>{circuits.filter((c) => c.n === c.games.length).length}<i>/{circuits.length}</i></b>
@@ -3214,13 +3233,13 @@ export default function StageToday() {
         {/* THE ANCHOR. A quiz end card sends the reader back here rather than
             to the separate quiz hub, so this section needs a name to land on;
             it is the only one of the page's sections that had none. */}
-        <section id="sty-iq" className={'sty-cat sty-iqsec' + (paneOn !== IQ_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
+        <section id="sty-iq" className={'sty-cat sty-iqsec' + (paneOn !== IQ_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)', '--cci': 'var(--stg-ink2)' }}>
           <div className="sty-cathead">
             <h2><a href={withTq('/iq')}>IQ Tests</a></h2>
           </div>
           <div className="sty-games">
             {IQ_TESTS.map((t) => (
-              <a key={t.slug} className="sty-g" href={withTq(`/iq/${t.slug}`)} style={{ '--cc': (light ? IQ_LIGHT : IQ_DARK)[t.ramp % 10] }}>
+              <a key={t.slug} className="sty-g" href={withTq(`/iq/${t.slug}`)} style={{ '--cc': (light ? IQ_LIGHT : IQ_DARK)[t.ramp % 10], '--cci': (light ? IQ_LIGHT : IQ_DARK)[t.ramp % 10] }}>
                 <span className="sty-gn"><i className="sty-iqd" aria-hidden="true" />{t.name}</span>
                 <span className="sty-gt">{t.blurb}</span>
                 {iqBest[t.slug] != null ? (
@@ -3231,13 +3250,13 @@ export default function StageToday() {
           </div>
           <p className="sty-ixe sty-iqn">One adaptive test per trivia category, about eight minutes each. 100 is the typical Mind Loft player.</p>
         </section>
-        <section id="sty-exams" className={'sty-cat sty-iqsec' + (paneOn !== EXAM_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
+        <section id="sty-exams" className={'sty-cat sty-iqsec' + (paneOn !== EXAM_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)', '--cci': 'var(--stg-ink2)' }}>
           <div className="sty-cathead">
             <h2><a href={withTq('/exams')}>School Tests</a></h2>
           </div>
           <div className="sty-games">
             {EXAM_TILES.map(([slug, nm, tag], i) => (
-              <a key={slug} className="sty-g" href={withTq(`/${slug}`)} style={{ '--cc': (light ? IQ_LIGHT : IQ_DARK)[i] }}>
+              <a key={slug} className="sty-g" href={withTq(`/${slug}`)} style={{ '--cc': (light ? IQ_LIGHT : IQ_DARK)[i], '--cci': (light ? IQ_LIGHT : IQ_DARK)[i] }}>
                 <span className="sty-gn"><i className="sty-iqd" aria-hidden="true" />{nm}</span>
                 <span className="sty-gt">{tag}</span>
               </a>
@@ -3245,7 +3264,7 @@ export default function StageToday() {
           </div>
           <p className="sty-ixe sty-iqn">Ten hard questions in the style of each exam, 75 seconds each. Your score is matched to a shortlist of schools.</p>
         </section>
-        <section id="sty-comm" className={'sty-cat sty-commsec' + (paneOn !== COMM_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
+        <section id="sty-comm" className={'sty-cat sty-commsec' + (paneOn !== COMM_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)', '--cci': 'var(--stg-ink2)' }}>
           <div className="sty-cathead">
             <h2><a href={withTq('/quizzes/community')}>Most Appreciated</a></h2>
           </div>
@@ -3266,7 +3285,7 @@ export default function StageToday() {
             </div>
           </div>
         </section>
-        <section id="sty-quizzes" className={'sty-cat sty-qsec' + (paneOn !== QUIZ_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)' }}>
+        <section id="sty-quizzes" className={'sty-cat sty-qsec' + (paneOn !== QUIZ_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)', '--cci': 'var(--stg-ink2)' }}>
           <div className="sty-cathead">
             {/* THE HEADING IS THE DOOR (owner, 2026-09-04). This section is a
                 set of drawers standing in for a surface that now exists, so the
@@ -3502,7 +3521,7 @@ const CSS = `
 .sty-cap .sty-lens{margin:0;align-self:center;justify-self:center;}
 .sty-figs b.sty-dn{color:var(--stg-dn);}
 /* The one control a reader in no group gets in the cap: a pill, not a link. */
-.sty-cap .sty-grp{border:1px solid var(--stg-acc);border-radius:999px;padding:6px 11px;}
+.sty-cap .sty-grp{border:1px solid var(--stg-acc-ink, var(--stg-acc));border-radius:999px;padding:6px 11px;}
 .sty-cap .sty-grp:hover{background:var(--stg-acc-tint);opacity:1;}
 /* THE STRIP-DOWN LADDER (owner, 2026-09-25). The switch never moves; as the
    cap narrows the things around it go, least useful first: the date, your
@@ -3642,7 +3661,7 @@ ${PATCH_CSS}
 .sty-pm{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--stg-line);
   border-radius:999px;padding:2px 8px 2px 3px;font-family:${MONO};font-size:11px;color:var(--stg-ink2);
   font-variant-numeric:tabular-nums;}
-.sty-pm.me{border-color:var(--stg-acc);color:var(--stg-acc-ink);}
+.sty-pm.me{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink);}
 .sty-pm.off{color:var(--stg-mute);}
 .sty-psum{margin-left:auto;font-family:${MONO};font-size:10.5px;color:var(--stg-mute);
   font-variant-numeric:tabular-nums;}
@@ -3666,7 +3685,7 @@ ${PATCH_CSS}
 /* A GAME SOMEBODY IN YOUR GROUP HAS PLAYED IS FILLED (owner, 2026-09-17): the
    category's own step with the ink that carries on it, so the slate says at a
    glance which of today's puzzles the group is already on. */
-.sty-g.grp{background:var(--cc);border-color:var(--cc);color:var(--stg-onramp);}
+.sty-g.grp{background:var(--cc);border-color:var(--cci, var(--cc));color:var(--stg-onramp);}
 .sty-g.grp .sty-gn,.sty-g.grp .sty-gi,.sty-g.grp:hover .sty-gn{color:var(--stg-onramp);}
 /* A FINISHED TILE MUTES ITS OWN NAME (.sty-g.done.res .sty-gn), which on a
    filled tile left the game's name grey on the category's own step (owner
@@ -3676,12 +3695,12 @@ ${PATCH_CSS}
 .sty-g.grp.done .sty-gi,.sty-g.grp.done.res .sty-gi{color:var(--stg-onramp);opacity:1;}
 .sty-g.grp .sty-gt,.sty-g.grp .sty-grl,.sty-g.grp .sty-grf{color:color-mix(in srgb, var(--stg-onramp) 74%, transparent);}
 .sty-g.grp .sty-grk,.sty-g.grp .sty-star{color:var(--stg-onramp);}
-.sty-g.grp:hover{border-color:var(--cc);}
+.sty-g.grp:hover{border-color:var(--cci, var(--cc));}
 /* A filled tile is never dimmed: the fill IS the mark, and half-strength ink on
    a saturated ground is the contrast trap this file warns about elsewhere. */
 .sty-g.done.grp{opacity:1;}
 .sty-g.done.grp.res{background:var(--cc);}
-.sty-all:focus-visible{outline:2px solid var(--stg-acc);outline-offset:3px;border-radius:4px;}
+.sty-all:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:3px;border-radius:4px;}
 /* The only semantic colour on this page: a climb and a slip have to read
    apart at a glance, and they are not the category family. */
 .sty-up{color:var(--stg-up);}
@@ -3693,13 +3712,13 @@ ${PATCH_CSS}
 .sty-figs b i.sty-dn{color:var(--stg-dn);}
 .sty-tg{display:inline-flex;align-items:center;justify-content:center;padding:6px 9px;
   background:none;cursor:pointer;font:inherit;}
-.sty-tg.hint{border-color:var(--stg-acc);color:var(--stg-acc-ink);animation:stg-hintring 1.9s ease-out 3;}
+.sty-tg.hint{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink);animation:stg-hintring 1.9s ease-out 3;}
 /* THE FIRST-VISIT POINTER at the light switch: a ring pulsing out of the glyph,
    three times, then gone for good. A ring rather than a colour change, so it
    draws the eye without the control ever looking like it is in a state it is
    not. */
 @keyframes stg-hintring{
-  0%{box-shadow:0 0 0 0 var(--stg-acc);}
+  0%{box-shadow:0 0 0 0 var(--stg-acc-ink, var(--stg-acc));}
   70%{box-shadow:0 0 0 10px transparent;}
   100%{box-shadow:0 0 0 0 transparent;}
 }
@@ -3738,9 +3757,9 @@ ${PATCH_CSS}
    stretches them. */
 .sty-card{display:flex;flex-direction:column;gap:2px;text-decoration:none;
   color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);
-  border-left:4px solid var(--cc);border-radius:11px;padding:14px 16px;min-width:0;}
-.sty-card:hover{border-color:var(--stg-line2);border-left-color:var(--cc);}
-.sty-card:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+  border-left:4px solid var(--cci, var(--cc));border-radius:11px;padding:14px 16px;min-width:0;}
+.sty-card:hover{border-color:var(--stg-line2);border-left-color:var(--cci, var(--cc));}
+.sty-card:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 /* The LEAD card is the only filled thing on the page, as Up Next was: one
    control carries the accent, everything else marks with it. */
 .sty-card.lead{background:var(--cc);border-color:transparent;color:var(--stg-onramp,#08222e);}
@@ -3751,7 +3770,7 @@ ${PATCH_CSS}
 .sty-card .sty-tag{font-size:12px;font-weight:600;color:var(--stg-mute);margin-top:1px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sty-card .sty-go{align-self:flex-start;margin-top:12px;}
-.sty-card .sty-go.ghost{background:none;color:var(--cc);border:1px solid var(--cc);}
+.sty-card .sty-go.ghost{background:none;color:var(--cci, var(--cc));border:1px solid var(--cci, var(--cc));}
 .sty-allin{justify-content:center;}
 
 /* ── a star on every card ──────────────────────────────────────────────── */
@@ -3765,14 +3784,14 @@ ${PATCH_CSS}
    stays still; the hold in a hidden tab is harmless because the resting state
    is the star. */
 @keyframes sty-starpop{0%{transform:scale(1);}45%{transform:scale(1.4);}100%{transform:scale(1);}}
-@keyframes sty-starring{from{box-shadow:0 0 0 0 var(--cc);opacity:.8;}to{box-shadow:0 0 0 11px transparent;opacity:0;}}
+@keyframes sty-starring{from{box-shadow:0 0 0 0 var(--cci, var(--cc));opacity:.8;}to{box-shadow:0 0 0 11px transparent;opacity:0;}}
 .sty-star.pop svg{animation:sty-starpop .26s cubic-bezier(.2,.7,.3,1);}
 .sty-star.pop::after{content:"";position:absolute;inset:2px;border-radius:8px;pointer-events:none;
   animation:sty-starring .42s ease-out both;}
 @media (prefers-reduced-motion:reduce){.sty-star.pop svg,.sty-star.pop::after{animation:none;}}
 .sty-g:hover .sty-star,.sty-star:focus-visible,.sty-star.on{opacity:1;}
-.sty-star.on{color:var(--cc);}
-.sty-star:hover{background:var(--stg-chip);color:var(--cc);}
+.sty-star.on{color:var(--cci, var(--cc));}
+.sty-star:hover{background:var(--stg-chip);color:var(--cci, var(--cc));}
 /* A touch screen has no hover, so the star is always there. */
 @media (hover:none){ .sty-star{opacity:1;} }
 .sty-mine .sty-cathead h2{letter-spacing:-0.01em;}
@@ -3785,10 +3804,10 @@ ${PATCH_CSS}
 /* ── the live feed ─────────────────────────────────────────────────────── */
 .sty-live{display:grid;gap:5px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));}
 .sty-lrow{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--stg-ink);
-  background:var(--stg-surf);border:1px solid var(--stg-line);border-left:3px solid var(--cc);
+  background:var(--stg-surf);border:1px solid var(--stg-line);border-left:3px solid var(--cci, var(--cc));
   border-radius:8px;padding:8px 11px;min-width:0;}
-.sty-lrow:hover{border-color:var(--stg-line2);border-left-color:var(--cc);}
-.sty-lrow .sty-gi{color:var(--cc);}
+.sty-lrow:hover{border-color:var(--stg-line2);border-left-color:var(--cci, var(--cc));}
+.sty-lrow .sty-gi{color:var(--cci, var(--cc));}
 .sty-lname{font-size:13px;font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sty-lsc{margin-left:auto;flex:none;font-family:${MONO};font-size:12px;font-weight:700;
   font-variant-numeric:tabular-nums;}
@@ -3809,11 +3828,11 @@ ${PATCH_CSS}
 .sty-ord{display:flex;gap:7px;}
 .sty-ordb{width:auto;margin-top:0;padding:7px 13px;}
 /* The active view reads as chosen rather than merely available. */
-.sty-ordb.on{border-color:var(--stg-acc);color:var(--stg-acc-ink);}
+.sty-ordb.on{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink);}
 .sty-move{display:inline-flex;gap:4px;margin-left:10px;}
 .sty-move button{width:24px;height:24px;border:1px solid var(--stg-line);border-radius:6px;
   background:none;color:var(--stg-ink2);cursor:pointer;font-size:12px;line-height:1;}
-.sty-move button:hover:not(:disabled){border-color:var(--cc);color:var(--cc);}
+.sty-move button:hover:not(:disabled){border-color:var(--cci, var(--cc));color:var(--cci, var(--cc));}
 .sty-move button:disabled{opacity:.3;cursor:default;}
 
 .sty-next{display:flex;align-items:center;gap:18px;text-decoration:none;
@@ -3848,7 +3867,7 @@ ${PATCH_CSS}
 .sty-stbl{max-width:none;}
 .sty-sg a{display:inline-flex;align-items:center;gap:8px;text-decoration:none;
   color:var(--stg-ink);font-weight:700;}
-.sty-sg a:hover{color:var(--cc);}
+.sty-sg a:hover{color:var(--cci, var(--cc));}
 /* The run in the game's own units. Muted because the NAME and the RANK are what
    the eye is scanning down; this is the detail it stops on. */
 .sty-srun{color:var(--stg-mute);font-size:12.5px;}
@@ -3982,11 +4001,11 @@ ${PATCH_CSS}
    wash and a left rule). The tile wears the same outline in the category hue
    as a game you have started, and its description line gives way to the
    group's leader on it; the full fill still belongs to a game YOU finished. */
-.sty-g.gw{border-color:var(--cc);}
-.sty-g.gw:hover{border-color:var(--cc);}
+.sty-g.gw{border-color:var(--cci, var(--cc));}
+.sty-g.gw:hover{border-color:var(--cci, var(--cc));}
 /* A finished tile is the full fill, never dimmed, whether or not it has a
    result line yet. */
-.sty-g.done.grp{opacity:1;background:var(--cc);border-color:var(--cc);}
+.sty-g.done.grp{opacity:1;background:var(--cc);border-color:var(--cci, var(--cc));}
 
 /* ── circuits ──────────────────────────────────────────────────────────── */
 .sty-circs{display:grid;gap:7px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));}
@@ -3998,12 +4017,12 @@ ${PATCH_CSS}
   font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
   color:var(--stg-ink2);}
 .sty-more:hover{border-color:var(--stg-line2);color:var(--stg-ink);}
-.sty-more:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-more:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 .sty-circ{position:relative;display:block;text-decoration:none;color:var(--stg-ink);
   background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:8px;
   padding:12px 14px 13px 16px;overflow:hidden;}
-.sty-circ::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cc);}
-.sty-circ:hover{border-color:var(--cc);}
+.sty-circ::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cci, var(--cc));}
+.sty-circ:hover{border-color:var(--cci, var(--cc));}
 .sty-chead{display:flex;align-items:baseline;gap:10px;}
 .sty-cn{font-size:15px;font-weight:800;letter-spacing:-0.01em;min-width:0;}
 .sty-cnum{margin-left:auto;flex:none;}
@@ -4021,8 +4040,8 @@ ${PATCH_CSS}
    because a rung is a graphic; a card carries prose, and half-strength prose on
    this ground reads at 2.4:1. So completion moves into the figure — the count
    takes the category hue and the bar fills — and the words stay legible. */
-.sty-circ.full .sty-cnum{color:var(--cc);}
-.sty-circ.full .sty-cnum i{color:var(--cc);opacity:.6;}
+.sty-circ.full .sty-cnum{color:var(--cci, var(--cc));}
+.sty-circ.full .sty-cnum i{color:var(--cci, var(--cc));opacity:.6;}
 /* ON A PALE GROUND A CATEGORY HUE IS A RULE, NOT INK. The nine hues are picked
    to carry a 4px bar and a border, which owe 3:1; as TEXT on the white card
    they owe 4.5 and the warm ones are nowhere near it (Trivia's orange is
@@ -4032,14 +4051,14 @@ ${PATCH_CSS}
    the same hue at .6: opacity composites toward the ground, so on a pale one
    it makes the quiet half quieter AND lighter, which is the wrong direction
    twice. Hierarchy comes from size and weight here, as everywhere else. */
-[data-stage-theme=light] .sty-circ.full .sty-cnum{color:color-mix(in srgb, var(--cc) 55%, #0b0d12);}
+[data-stage-theme=light] .sty-circ.full .sty-cnum{color:color-mix(in srgb, var(--cci, var(--cc)) 55%, #0b0d12);}
 [data-stage-theme=light] .sty-circ.full .sty-cnum i{color:var(--stg-mute);opacity:1;}
-.sty-circ.full{border-color:color-mix(in srgb, var(--cc) 40%, transparent);}
+.sty-circ.full{border-color:color-mix(in srgb, var(--cci, var(--cc)) 40%, transparent);}
 
 /* ── the categories ────────────────────────────────────────────────────── */
 .sty-cat{position:relative;padding-left:16px;}
 .sty-cat::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:4px;
-  border-radius:2px;background:var(--cc);}
+  border-radius:2px;background:var(--cci, var(--cc));}
 /* A LABEL, NOT A PEER. .sty-wrap is a flex column with a 26px gap (22 on a
    phone), so this heading was spending a whole section gap plus its own margin,
    40px of air under one line of type. The negative bottom margin hands most of
@@ -4052,7 +4071,7 @@ ${PATCH_CSS}
   text-overflow:ellipsis;flex:none;}
 .sty-lens button:hover{color:var(--stg-ink);}
 .sty-lens button.on{background:var(--stg-acc);color:var(--stg-onramp,#08222e);}
-.sty-lens button:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-lens button:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 .sty-slhd{display:flex;align-items:center;flex-wrap:wrap;gap:10px 24px;margin:4px 0 -12px;}
 .sty-slhd .sty-slate{margin:0;flex:none;}
 .sty-slbar{flex:1 1 360px;display:flex;align-items:center;gap:12px;min-width:0;}
@@ -4080,9 +4099,9 @@ ${PATCH_CSS}
    border and the name take the row hue and the card lifts a pixel. The glyph
    already wears the hue at rest, so this is the same colour arriving on two
    more things rather than a new one. */
-.sty-g:hover{border-color:var(--cc);transform:translateY(-1px);
+.sty-g:hover{border-color:var(--cci, var(--cc));transform:translateY(-1px);
   box-shadow:0 3px 10px rgba(var(--stg-lift,11,15,26),.08);}
-.sty-g:hover .sty-gn{color:var(--cc);}
+.sty-g:hover .sty-gn{color:var(--cci, var(--cc));}
 .sty-gn{transition:color .12s;}
 .sty-g.done:hover{transform:none;}
 .sty-gn{display:flex;align-items:center;gap:7px;font-size:14.5px;font-weight:800;
@@ -4091,15 +4110,15 @@ ${PATCH_CSS}
    the category without costing the name any contrast. BUT the Up Next card is
    FILLED with that same hue, so a glyph painted --cc there is invisible: on any
    surface whose ground is the accent, the glyph takes the card's own ink. */
-.sty-gi{flex:none;color:var(--cc);}
+.sty-gi{flex:none;color:var(--cci, var(--cc));}
 .sty-next .sty-gi{color:currentColor;opacity:.85;}
 .sty-nm{display:flex;align-items:center;gap:11px;}
 .sty-gt{display:block;font-size:11.5px;font-weight:600;color:var(--stg-mute);margin-top:2px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 /* Played is DIM, not struck through: the day is a record, not a chore list. */
-.sty-g.open{border-color:var(--cc);}
+.sty-g.open{border-color:var(--cci, var(--cc));}
 .sty-g:focus-visible,.sty-next:focus-visible,.sty-cx:focus-visible{
-  outline:2px solid var(--cc, var(--stg-ink2));outline-offset:2px;}
+  outline:2px solid var(--cci, var(--cc, var(--stg-ink2)));outline-offset:2px;}
 
 @media (max-width:560px){
   .sty-gp{display:none;}
@@ -4141,7 +4160,7 @@ ${PATCH_CSS}
   .sty-figs{position:relative;}
   .sty-hub{display:none;}
   .sty-figlink{display:block;position:absolute;inset:0;z-index:1;}
-  .sty-figlink:focus-visible{outline:2px solid var(--stg-acc);outline-offset:-2px;border-radius:6px;}
+  .sty-figlink:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:-2px;border-radius:6px;}
   .sty-grp{position:relative;z-index:2;}
   .sty-gpos{padding:0 5px;min-width:16px;height:16px;justify-content:center;font-size:9px;}
   .sty-gpos .w{display:none;}
@@ -4297,7 +4316,7 @@ ${PATCH_CSS}
    as a different kind of object from the nine above it. */
 .sty-qsec h2 a{color:inherit;text-decoration:none;}
 .sty-qsec h2 a:hover{text-decoration:underline;text-underline-offset:3px;}
-.sty-qsec h2 a:focus-visible{outline:2px solid var(--stg-acc);outline-offset:3px;border-radius:4px;}
+.sty-qsec h2 a:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:3px;border-radius:4px;}
 .sty-topics{display:flex;flex-direction:column;gap:5px;}
 .sty-topic{background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:8px;
   overflow:hidden;}
@@ -4305,7 +4324,7 @@ ${PATCH_CSS}
 .sty-trow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;
   background:none;border:0;padding:11px 14px;font-family:inherit;color:var(--stg-ink);}
 .sty-trow:hover{background:var(--stg-chip);}
-.sty-trow:focus-visible{outline:2px solid var(--stg-acc);outline-offset:-2px;}
+.sty-trow:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:-2px;}
 .sty-tn{font-size:14.5px;font-weight:800;letter-spacing:-0.01em;min-width:0;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sty-tc{margin-left:auto;flex:none;font-family:${MONO};font-size:12px;font-weight:700;
@@ -4327,7 +4346,7 @@ ${PATCH_CSS}
   color:var(--stg-ink2);text-decoration:none;padding:5px 0;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sty-ql:hover{color:var(--stg-acc-ink);}
-.sty-ql:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;border-radius:4px;}
+.sty-ql:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;border-radius:4px;}
 .sty-tfoot{display:flex;gap:7px;margin-top:9px;}
 .sty-tmore{width:auto;margin-top:0;flex:1 1 auto;text-align:center;text-decoration:none;
   display:flex;align-items:center;justify-content:center;}
@@ -4341,7 +4360,7 @@ ${PATCH_CSS}
 .sty-qtools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 18px;}
 .sty-qsearch{flex:1 1 260px;max-width:380px;display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;
   border:1px solid var(--stg-line2);border-radius:999px;background:var(--stg-surf);color:var(--stg-mute);}
-.sty-qsearch:focus-within{border-color:var(--stg-acc);}
+.sty-qsearch:focus-within{border-color:var(--stg-acc-ink, var(--stg-acc));}
 .sty-qsearch input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:600 13.5px/1 ${SANS};color:var(--stg-ink);}
 .sty-qsearch input::placeholder{color:var(--stg-mute);}
 .sty-qsort{margin-left:auto;flex:none;display:inline-flex;gap:2px;padding:2px;border:1px solid var(--stg-cell-line);border-radius:999px;}
@@ -4357,7 +4376,7 @@ ${PATCH_CSS}
   border-radius:12px;overflow:hidden;text-decoration:none;color:var(--stg-ink);}
 a.sty-qtile:hover{border-color:var(--stg-line2);}
 a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
-.sty-qtile:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-qtile:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 .sty-qtband{height:84px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;
   background:color-mix(in srgb,var(--dc,var(--stg-mute)) 18%,var(--stg-surf));
   color:color-mix(in srgb,var(--dc,var(--stg-mute)) 82%,var(--stg-ink));}
@@ -4389,7 +4408,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-qcb li.ph{height:35px;}
 .sty-qcb li a{display:flex;align-items:center;gap:10px;padding:8px 0;text-decoration:none;color:var(--stg-ink);font-size:13px;}
 .sty-qcb li a:hover .t{color:var(--stg-acc-ink);}
-.sty-qcb li a:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;border-radius:4px;}
+.sty-qcb li a:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;border-radius:4px;}
 .sty-qcb .n{width:14px;flex:none;font-weight:800;color:var(--stg-mute);font-variant-numeric:tabular-nums;}
 .sty-qcb .t{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sty-qcb li b{flex:none;font-weight:800;font-variant-numeric:tabular-nums;}
@@ -4421,7 +4440,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
   .sty-qcat{border:0;border-radius:0;padding:0 14px;}
   .sty-qcat+.sty-qcat{border-top:1px solid var(--stg-line);}
   .sty-qch{cursor:pointer;min-height:58px;padding:0;}
-  .sty-qch:focus-visible{outline:2px solid var(--stg-acc);outline-offset:-2px;}
+  .sty-qch:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:-2px;}
   .sty-qci{width:22px;height:22px;}
   .sty-qcp b{font-size:16px;}
   .sty-qcp small{font-size:10px;letter-spacing:.08em;text-transform:uppercase;}
@@ -4451,7 +4470,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
   color:var(--stg-mute2);transition:transform .18s,color .12s,background .12s;}
 .sty-cathead:hover .sty-cav{color:var(--stg-ink);background:var(--stg-chip);}
 .sty-cav.on{transform:rotate(180deg);}
-.sty-cav:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-cav:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 /* A circuit's star sits IN the header row: the corner a card star would take is
    already the circuit's N/M count. */
 .sty-chead .sty-star{position:static;flex:none;width:22px;height:22px;margin-left:2px;}
@@ -4527,14 +4546,14 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-tile{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:9px;min-height:104px;
   text-align:left;font:inherit;color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);
   border-radius:8px;padding:12px 14px 11px 18px;cursor:pointer;overflow:hidden;}
-.sty-tile::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cc);}
-.sty-tile:hover{border-color:var(--cc);}
-.sty-tile.on{border-color:var(--cc);background:var(--cc);color:var(--stg-onramp,#08222e);}
+.sty-tile::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cci, var(--cc));}
+.sty-tile:hover{border-color:var(--cci, var(--cc));}
+.sty-tile.on{border-color:var(--cci, var(--cc));background:var(--cc);color:var(--stg-onramp,#08222e);}
 .sty-tile.on .sty-ctn,.sty-tile.on .sty-ctn i,.sty-tile.on .sty-tf,.sty-tile.on .sty-tact{color:var(--stg-onramp,#08222e);}
 .sty-tile.on .sty-trung i{background:color-mix(in srgb,var(--stg-onramp,#08222e) 22%,transparent);opacity:1;}
 .sty-tile.on .sty-trung i.d{background:var(--stg-onramp,#08222e);}
 .sty-tile.on .sty-trung i.p{background:color-mix(in srgb,var(--stg-onramp,#08222e) 55%,transparent);}
-.sty-tile:focus-visible{outline:2px solid var(--cc);outline-offset:2px;}
+.sty-tile:focus-visible{outline:2px solid var(--cci, var(--cc));outline-offset:2px;}
 .sty-th{display:flex;align-items:baseline;gap:8px;}
 .sty-th b{flex:1 1 auto;min-width:0;font-size:16.5px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sty-ctn{flex:none;font-family:${MONO};font-size:12px;font-weight:700;color:var(--stg-ink2);font-variant-numeric:tabular-nums;}
@@ -4547,7 +4566,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-ctnext{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sty-tact{flex:none;font-size:12px;font-weight:700;color:var(--stg-mute);}
 .sty-tile.on .sty-tact{color:var(--stg-ink);}
-.sty-tdraw{border:1px solid var(--cc);border-radius:10px;background:var(--stg-surf);padding:14px;}
+.sty-tdraw{border:1px solid var(--cci, var(--cc));border-radius:10px;background:var(--stg-surf);padding:14px;}
 .sty-tdraw.shut{display:none;}
 .sty-tdh{display:flex;align-items:baseline;gap:11px;margin-bottom:11px;}
 .sty-tdh h2{margin:0;font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;}
@@ -4569,9 +4588,9 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-pins{display:grid;gap:7px;grid-template-columns:repeat(3,minmax(0,1fr));}
 .sty-pin{position:relative;display:flex;align-items:center;gap:12px;min-height:62px;padding:8px 12px 8px 17px;
   text-decoration:none;color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:8px;overflow:hidden;}
-.sty-pin::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cc);}
-.sty-pin:hover{border-color:var(--cc);}
-.sty-pin:focus-visible{outline:2px solid var(--cc);outline-offset:2px;}
+.sty-pin::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cci, var(--cc));}
+.sty-pin:hover{border-color:var(--cci, var(--cc));}
+.sty-pin:focus-visible{outline:2px solid var(--cci, var(--cc));outline-offset:2px;}
 .sty-pinl{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;}
 .sty-pine{font-family:${MONO};font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-mute);}
 .sty-pinn{font-size:15.5px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -4646,7 +4665,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-ixb > b em{font-style:normal;color:var(--stg-mute);}
 .sty-ixb:hover{color:var(--stg-ink);background:var(--stg-surf);}
 .sty-ixb.on{background:var(--stg-chip);color:var(--stg-ink);font-weight:800;}
-.sty-ixb:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-ixb:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 .sty-ix .sty-cav{display:none;}
 .sty-ix .sty-cathead{cursor:default;}
 .sty-ixc .sty-cathead h2::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;
@@ -4683,8 +4702,8 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-ixre{align-self:flex-start;margin-top:8px;border:1px solid var(--stg-line);background:none;border-radius:999px;
   padding:6px 12px;font:inherit;font-size:12px;font-weight:700;color:var(--stg-ink2);cursor:pointer;white-space:nowrap;}
 .sty-ixre:hover{color:var(--stg-ink);}
-.sty-ixre.on{border-color:var(--stg-acc);color:var(--stg-acc-ink);}
-.sty-ixre:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-ixre.on{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink);}
+.sty-ixre:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 .sty-ixe{margin:0;color:var(--stg-mute);font-size:13.5px;}
 @media (max-width:900px){
   .sty-ixre{flex:none;align-self:center;margin-top:0;padding:8px 12px;}
@@ -4729,7 +4748,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-ix .sty-mine .sty-minec{margin-top:10px;}
 .sty-rail{display:none;}
 .sty-ixn a.sty-ixb{text-decoration:none;}
-.sty-iqd{flex:none;width:11px;height:11px;border-radius:3px;border:2.2px solid var(--cc);box-sizing:border-box;}
+.sty-iqd{flex:none;width:11px;height:11px;border-radius:3px;border:2.2px solid var(--cci, var(--cc));box-sizing:border-box;}
 .sty-iqn,.sty-cmn{margin:14px 0 0;}
 .sty-cmn{margin:0 0 16px;}
 .sty-cmn a{color:var(--stg-acc-ink,var(--stg-acc));font-weight:800;}
@@ -4763,7 +4782,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-favr{box-sizing:border-box;display:grid;grid-template-columns:var(--cg);gap:14px;align-items:center;height:24px;
   text-decoration:none;color:inherit;font-variant-numeric:tabular-nums;}
 .sty-favr .n{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.sty-favr:hover .n{color:var(--stg-acc-ink,var(--cc));}
+.sty-favr:hover .n{color:var(--stg-acc-ink,var(--cci, var(--cc)));}
 .sty-favr .tr{display:block;height:14px;background:var(--stg-chip);border-radius:4px;overflow:hidden;}
 .sty-favr .tr u{display:block;height:100%;background:var(--cc);border-radius:4px;}
 .sty-favr .wk{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;}
@@ -4775,11 +4794,11 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-fav.own{--cg:120px minmax(0,1fr) 150px 64px 64px 52px 48px 44px;}
 .sty-favc .r,.sty-favr .m{text-align:right;}
 .sty-favr .m{font-size:13px;color:var(--stg-ink);font-weight:600;}
-.sty-favr.try .go{grid-column:2 / -1;justify-self:start;font-size:12px;font-weight:800;color:var(--stg-acc-ink,var(--cc));
-  border:1px dashed var(--cc);border-radius:4px;padding:2px 10px;line-height:16px;}
+.sty-favr.try .go{grid-column:2 / -1;justify-self:start;font-size:12px;font-weight:800;color:var(--stg-acc-ink,var(--cci, var(--cc)));
+  border:1px dashed var(--cci, var(--cc));border-radius:4px;padding:2px 10px;line-height:16px;}
 .sty-favr.try:hover .go{border-style:solid;}
-.sty-g.sty-gtry{background:transparent;border:1px dashed var(--cc);display:flex;flex-direction:column;justify-content:center;gap:4px;}
-.sty-g.sty-gtry .sty-eb{margin:0;color:var(--stg-acc-ink,var(--cc));}
+.sty-g.sty-gtry{background:transparent;border:1px dashed var(--cci, var(--cc));display:flex;flex-direction:column;justify-content:center;gap:4px;}
+.sty-g.sty-gtry .sty-eb{margin:0;color:var(--stg-acc-ink,var(--cci, var(--cc)));}
 .sty-g.sty-gtry .sty-gn{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 @media (max-width:1240px){ .sty-fav.own{--cg:110px minmax(0,1fr) 120px 58px 58px 48px 44px 40px;} }
 @media (min-width:1100px){
@@ -4802,14 +4821,14 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-ixg,.sty-ixct{display:none;}
 .sty-ixs{display:none;}
 .sty-mgb{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;margin:0 0 12px;padding:10px 14px;
-  border-radius:12px;border:1px solid color-mix(in srgb,var(--stg-acc) 40%,transparent);
-  background:color-mix(in srgb,var(--stg-acc) 10%,var(--stg-surf));color:var(--stg-ink);font:inherit;font-size:13.5px;
+  border-radius:12px;border:1px solid color-mix(in srgb,var(--stg-acc-ink, var(--stg-acc)) 40%,transparent);
+  background:color-mix(in srgb,var(--stg-acc-ink, var(--stg-acc)) 10%,var(--stg-surf));color:var(--stg-ink);font:inherit;font-size:13.5px;
   font-weight:600;text-align:left;cursor:pointer;}
 .sty-mgb b{font-weight:800;}
 .sty-mgb .go{margin-left:auto;flex:none;font-size:12px;font-weight:800;padding:5px 12px;border-radius:999px;
   background:var(--stg-acc);color:var(--stg-onramp,#08222e);}
 .sty-mgb.on .go{background:none;color:var(--stg-ink2);box-shadow:inset 0 0 0 1px var(--stg-line);}
-.sty-mgb:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-mgb:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 .sty-mgl{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);margin:2px 0 8px;}
 .sty-mgg{margin-bottom:16px;}
 /* Desktop: one chip per group beside the My Puzzles title; the phone gets the
@@ -4818,10 +4837,10 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-mgc{border:1px solid var(--stg-line);background:none;border-radius:999px;padding:4px 11px;font:inherit;font-size:12px;
   font-weight:700;color:var(--stg-ink2);cursor:pointer;white-space:nowrap;}
 .sty-mgc i{font-style:normal;color:var(--stg-mute);margin-left:2px;}
-.sty-mgc:hover{color:var(--stg-ink);border-color:var(--stg-acc);}
-.sty-mgc.on{background:var(--stg-acc);border-color:var(--stg-acc);color:var(--stg-onramp,#08222e);}
+.sty-mgc:hover{color:var(--stg-ink);border-color:var(--stg-acc-ink, var(--stg-acc));}
+.sty-mgc.on{background:var(--stg-acc);border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-onramp,#08222e);}
 .sty-mgc.on i{color:inherit;opacity:.75;}
-.sty-mgc:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-mgc:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 @media (min-width:901px){.sty-mgb{display:none;}}
 @media (max-width:900px){.sty-mgchips{display:none;}}
 /* STARRED CIRCUITS IN MY PUZZLES ARE STRIPS (owner, 2026-10-13), on the phone too. */
@@ -4831,7 +4850,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-fca>i{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
   text-transform:uppercase;color:var(--stg-mute);}
 .sty-fca:hover>b{color:var(--stg-acc-ink);}
-.sty-fca:focus-visible{outline:2px solid var(--stg-acc);outline-offset:3px;border-radius:4px;}
+.sty-fca:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:3px;border-radius:4px;}
 .sty-keep{display:inline-flex;align-items:center;border-radius:999px;background:var(--stg-acc);
   color:var(--stg-onramp,#08222e);padding:8px 14px;font-size:12.5px;font-weight:800;text-decoration:none;white-space:nowrap;}
 .sty-keep:hover{opacity:.9;}
@@ -4898,7 +4917,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
   .sty-ixn:not(.re) .sty-ixre{display:none;}
   /* FOUR GROUPS, AND THEY FILL THE SCREEN (owner, 2026-10-07): the two lists,
      the categories, circuits and quizzes, then one wide tile for every board. */
-  .sty-ixn:not(.re) .sty-ixb{min-height:clamp(54px,calc((100svh - 270px) / 11),88px);}
+  .sty-ixn:not(.re) .sty-ixb{min-height:clamp(64px,calc((100svh - 270px) / 11),88px);}
   .sty-ixn:not(.re) .sty-ixb.wide{grid-column:1 / -1;}
   /* NOTHING STRANDED (owner, 2026-10-15): a tile left alone at the end of its
      group, usually because its neighbour opened and moved to the top, takes
@@ -4935,16 +4954,31 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
   .sty-ixn:not(.re) .sty-ixb > span:last-child,.sty-ixn:not(.re) .sty-ixb > span:nth-last-child(2):not(.sty-ixg){grid-row:1 / span 2;align-self:center;}
   .sty-ixn:not(.re) .sty-ixb > .sty-ixct{display:block;grid-column:2;align-self:start;font-style:normal;font-size:11.5px;
     font-weight:700;color:var(--stg-mute);letter-spacing:0;}
-  .sty-ixn:not(.re) .sty-ixb.cmp > .sty-ixct{color:var(--cc);}
-  .sty-ixg{position:relative;width:44px;height:44px;color:var(--cc);}
+  .sty-ixn:not(.re) .sty-ixb.cmp > .sty-ixct{color:var(--cci, var(--cc));}
+  /* DESIGN D (owner, 2026-10-16). A category tile keeps a plain ground: the
+     disc carries the category colour (the pastel, in both registers), the glyph
+     is the dark ramp ink, and the ring round it is the ink colour so it reads
+     on the pale page. A finished tile draws its border in the ring colour.
+     Tiles that are not a category (Archive, Kids, Lists, Mine...) take a faint
+     disc of their own hue with the glyph in their ink. */
+  .sty-ixg{position:relative;width:44px;height:44px;color:var(--ixgi,var(--cci, var(--cc)));}
   .sty-ixg svg{position:absolute;fill:none;}
-  .sty-ixgr{inset:0;width:44px;height:44px;stroke-width:3.5;}
+  .sty-ixgr{inset:0;width:44px;height:44px;stroke-width:3;overflow:visible;}
   .sty-ixgr .tr{stroke:var(--stg-line);}
-  .sty-ixgr .fl{stroke:var(--cc);stroke-linecap:round;}
-  .sty-ixgg{left:13px;top:13px;width:18px;height:18px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-  .sty-ixg.full{background:var(--cc);border-radius:50%;color:var(--stg-onramp,#0b0f1a);}
-  .sty-ixg.full .sty-ixgr{display:none;}
-  .sty-ixn:not(.re) .sty-ixb.cmp{background:color-mix(in srgb,var(--cc) 12%,var(--stg-surf));}
+  .sty-ixgr .dk{fill:var(--ixd,color-mix(in srgb,var(--cc) 18%,var(--stg-surf)));stroke:none;transform-origin:22px 22px;}
+  .sty-ixgr .fl{stroke:var(--cci, var(--cc));stroke-linecap:round;}
+  .sty-ixb.ct{--ixd:var(--cc);--ixgi:#08222e;}
+  .sty-ixgg{left:12px;top:12px;width:20px;height:20px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .sty-ixn:not(.re) .sty-ixb.cmp{border-color:var(--cci, var(--cc));}
+  [data-sty-anim] .sty-ixn:not(.re):not(.pk) .sty-ixb{animation:sty-ixup .42s cubic-bezier(.2,.7,.3,1) both;animation-delay:calc(var(--i,0) * 45ms);}
+  [data-sty-anim] .sty-ixn:not(.re):not(.pk) .sty-ixgr .dk{animation:sty-ixpop .5s cubic-bezier(.3,1.5,.5,1) both;animation-delay:calc(var(--i,0) * 45ms + 140ms);}
+  [data-sty-anim] .sty-ixn:not(.re):not(.pk) .sty-ixgr .fl{animation:sty-ixdraw .7s cubic-bezier(.3,.7,.3,1) both;animation-delay:calc(var(--i,0) * 45ms + 260ms);}
+  @keyframes sty-ixup{from{opacity:0;transform:translateY(10px);}}
+  @keyframes sty-ixpop{from{transform:scale(.2);opacity:0;}}
+  @keyframes sty-ixdraw{from{stroke-dasharray:0 100;}}
+  @media (prefers-reduced-motion:reduce){
+    [data-sty-anim] .sty-ixn .sty-ixb,[data-sty-anim] .sty-ixn .sty-ixgr .dk,[data-sty-anim] .sty-ixn .sty-ixgr .fl{animation:none !important;}
+  }
   .sty-ixn.pk:not(.re) .sty-ixb.on{grid-template-columns:10px minmax(0,1fr) auto;grid-template-rows:none;row-gap:0;}
   .sty-ixn.pk:not(.re) .sty-ixb.on > i{display:block;}
   .sty-ixn.pk:not(.re) .sty-ixb.on > .sty-ixg,.sty-ixn.pk:not(.re) .sty-ixb.on > .sty-ixct{display:none;}
@@ -4980,8 +5014,8 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
   color:var(--stg-ink2);border:1px solid var(--stg-line);border-radius:999px;padding:4px 11px 4px 9px;
   font-size:11.5px;font-weight:700;letter-spacing:.01em;line-height:1.2;}
 .sty-cpill::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--ph,var(--stg-acc));}
-.sty-cpill:hover{color:var(--stg-ink);border-color:var(--ph,var(--stg-acc));}
-.sty-cpill:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-cpill:hover{color:var(--stg-ink);border-color:var(--ph,var(--stg-acc-ink, var(--stg-acc)));}
+.sty-cpill:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 .sty-cpill .ck{color:var(--stg-good,#22c55e);font-weight:800;}
 .sty-cpill .ck.rk,.sty-cpm .sty-cpill .ct.done{font-variant-numeric:tabular-nums;}
 .sty-cpill .ck i,.sty-cpill .ct.done i{font-style:normal;font-weight:700;color:var(--stg-mute);}
@@ -5003,11 +5037,11 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 /* THE RUN CARD (owner, 2026-10-13): the phone's lead run and every card in
    the Circuits pane, at any width. */
 .sty-rbig{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center;text-decoration:none;
-  color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);border-left:4px solid var(--ph,var(--stg-acc));
+  color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);border-left:4px solid var(--phi,var(--ph,var(--stg-acc-ink, var(--stg-acc))));
   border-radius:8px;padding:10px 12px;}
 .sty-rbig .ey{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);}
 .sty-rbig .nm{display:flex;align-items:center;gap:6px;font-size:16px;font-weight:800;line-height:1.2;}
-.sty-rbig .nm .sty-star{position:static;flex:none;width:22px;height:22px;--cc:var(--ph);}
+.sty-rbig .nm .sty-star{position:static;flex:none;width:22px;height:22px;--cc:var(--ph);--cci:var(--phi,var(--ph));}
 .sty-rbig .go{grid-row:1 / 3;grid-column:2;background:var(--ph,var(--stg-acc));color:var(--stg-onramp,#08222e);
   border-radius:999px;padding:9px 18px;font-size:13px;font-weight:800;}
 .sty-rbig .ln{grid-column:1 / -1;font-size:12px;line-height:1.4;color:var(--stg-ink2);margin-top:4px;}
@@ -5015,7 +5049,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
   border-top:1px solid var(--stg-line);font-size:11.5px;font-weight:700;color:var(--stg-mute);font-variant-numeric:tabular-nums;}
 .sty-rbig.done .st > span:first-child{color:var(--stg-ink);font-weight:800;}
 .sty-rbig .st .gr{color:var(--stg-ink2);font-weight:800;text-align:right;}
-.sty-rbig:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-rbig:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 .sty-rcards{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));}
 .sty-rcards.shut{display:none;}
 /* CIRCUIT ART (owner, 2026-10-13): a drawn band across the top of a run card,
@@ -5063,13 +5097,13 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
   .sty-ric .sq{height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;
     padding:0 8px;font-size:12.5px;font-weight:800;line-height:1.15;color:var(--stg-ink);
     background:color-mix(in srgb, var(--ph,var(--stg-acc)) 16%, var(--stg-surf));
-    border:1.5px solid color-mix(in srgb, var(--ph,var(--stg-acc)) 55%, transparent);}
-  .sty-ric.done .sq{background:var(--ph,var(--stg-acc));border-color:var(--ph,var(--stg-acc));color:var(--stg-onramp,#08222e);}
+    border:1.5px solid color-mix(in srgb, var(--ph,var(--stg-acc-ink, var(--stg-acc))) 55%, transparent);}
+  .sty-ric.done .sq{background:var(--ph,var(--stg-acc));border-color:var(--ph,var(--stg-acc-ink, var(--stg-acc)));color:var(--stg-onramp,#08222e);}
   .sty-ric .l1,.sty-ric .l2{padding:0 2px;font-size:10.5px;font-weight:700;color:var(--stg-mute);white-space:nowrap;
     overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;line-height:1.25;}
   .sty-ric.done .l1{color:var(--stg-ink);font-weight:800;}
   .sty-ric .l2{color:var(--stg-ink2);font-weight:800;}
-  .sty-ric:focus-visible .sq{outline:2px solid var(--stg-acc);outline-offset:2px;}
+  .sty-ric:focus-visible .sq{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 }
 
 /* THE LEDGER (owner, 2026-10-14): desktop category panes and My Puzzles. */
@@ -5084,10 +5118,10 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-lr{position:relative;padding:9px 14px;text-decoration:none;color:var(--stg-ink);}
 .sty-lr+.sty-lr{border-top:1px solid var(--stg-line);}
 .sty-lr:hover{background:var(--stg-chip);}
-.sty-lr.gw,.sty-lr.open{box-shadow:inset 3px 0 0 var(--cc);}
-.sty-lr.done{background:color-mix(in srgb,var(--cc) 12%,var(--stg-surf));}
-.sty-lr:focus-visible{outline:2px solid var(--cc);outline-offset:-2px;}
-.sty-lr .ic{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--stg-chip);color:var(--cc);}
+.sty-lr.gw,.sty-lr.open{box-shadow:inset 3px 0 0 var(--cci, var(--cc));}
+.sty-lr.done{background:color-mix(in srgb,var(--cci, var(--cc)) 12%,var(--stg-surf));}
+.sty-lr:focus-visible{outline:2px solid var(--cci, var(--cc));outline-offset:-2px;}
+.sty-lr .ic{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--stg-chip);color:var(--cci, var(--cc));}
 .sty-lr .nm,.sty-lr .td,.sty-lr .yu{min-width:0;}
 .sty-lr .nm b{display:block;font-size:14.5px;font-weight:800;letter-spacing:-0.01em;}
 .sty-lr .tg{display:block;font-size:12px;font-weight:600;color:var(--stg-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -5103,7 +5137,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-lr .tr s{display:block;height:100%;background:var(--cc);}
 .sty-lr .ct{justify-self:end;display:inline-flex;align-items:center;justify-content:center;min-width:92px;height:32px;padding:0 10px;box-sizing:border-box;
   border-radius:8px;border:1.5px solid var(--stg-line2);font-size:12.5px;font-weight:800;color:var(--stg-ink);white-space:nowrap;}
-.sty-lr:hover .ct,.sty-lr.open .ct{border-color:var(--cc);}
+.sty-lr:hover .ct,.sty-lr.open .ct{border-color:var(--cci, var(--cc));}
 .sty-lr.done .ct{color:var(--stg-ink2);}
 .sty-lr .sty-star{position:relative;top:auto;right:auto;}
 
@@ -5113,7 +5147,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-pqh{font-size:14px;font-weight:800;color:var(--stg-ink);margin:0 0 10px;}
 .sty-lr.pq .mb{display:none;}
 .sty-lr.pq .td i{display:block;}
-.sty-pqm{display:block;padding:11px 14px;border-top:1px solid var(--stg-line);text-align:right;font-size:12.5px;font-weight:800;color:var(--cc);text-decoration:none;}
+.sty-pqm{display:block;padding:11px 14px;border-top:1px solid var(--stg-line);text-align:right;font-size:12.5px;font-weight:800;color:var(--cci, var(--cc));text-decoration:none;}
 .sty-pqm:hover{background:var(--stg-chip);}
 .sty-lr.pq .nm .ph{width:180px;}
 @media (max-width:900px){

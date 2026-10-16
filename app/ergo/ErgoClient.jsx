@@ -332,22 +332,22 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
         <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.eg-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .eg-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : COLORS.accentDeep};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};border-radius:8px;padding:9px 16px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
-          .eg-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
+          .eg-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, var(--white));}
           .eg-panel{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border:1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:12px;padding:14px 16px;margin-bottom:12px;}
           .eg-lab{font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:800;color:${FADED};}
           .eg-rule{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:9px;background:var(--stg-surf2, #f5f7fb);margin-top:7px;}
-          .eg-rule.open{outline:1.5px solid var(--stg-acc, ${COLORS.accent});}
+          .eg-rule.open{outline:1.5px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .eg-rn{flex:0 0 auto;width:24px;height:24px;border-radius:12px;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;}
           .eg-rt{flex:1;min-width:0;font-size:15px;font-weight:700;line-height:1.4;color:${INK};}
           .eg-flipt{font-size:13.5px;font-weight:700;color:var(--stg-acc-ink, ${COLORS.accent});margin-top:3px;}
           .eg-flip{flex:0 0 auto;border:1.5px solid var(--stg-line2, rgba(28,30,36,0.2));background:transparent;color:${INK};border-radius:8px;padding:5px 10px;min-height:32px;font-family:${SANS};font-size:12.5px;font-weight:800;cursor:pointer;}
-          .eg-fact{display:flex;gap:10px;align-items:center;margin-top:10px;padding:10px 12px;border-radius:9px;border:1.5px dashed var(--stg-acc, ${COLORS.accent});font-size:15px;font-weight:800;color:${INK};}
+          .eg-fact{display:flex;gap:10px;align-items:center;margin-top:10px;padding:10px 12px;border-radius:9px;border:1.5px dashed var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));font-size:15px;font-weight:800;color:${INK};}
           .eg-card{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border:1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:12px;padding:18px 18px 16px;margin-bottom:12px;}
           .eg-st{font-size:22px;font-weight:800;line-height:1.3;color:${INK};margin:6px 0 14px;}
           .eg-bins3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
           @media(max-width:560px){.eg-bins3.go{grid-template-columns:1fr;}.eg-st{font-size:19px;}}
-          .b-must{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent}) !important;color:var(--stg-onramp, #fff) !important;}
-          .b-could{background:var(--stg-acc-tint, ${COLORS.accentSoft});border-color:var(--stg-acc, ${COLORS.accent}) !important;color:${INK} !important;}
+          .b-must{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) !important;color:var(--stg-onramp, #fff) !important;}
+          .b-could{background:var(--stg-acc-tint, ${COLORS.accentSoft});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) !important;color:${INK} !important;}
           .b-cannot{background:transparent;border-color:var(--stg-line3, rgba(28,30,36,0.45)) !important;color:${INK} !important;}
           .eg-go{border:2px solid transparent;border-radius:10px;padding:14px 8px;min-height:48px;font-family:${SANS};font-size:15.5px;font-weight:800;cursor:pointer;}
           .eg-go .k{opacity:1;font-size:11px;font-weight:700;margin-left:6px;}
@@ -372,7 +372,7 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
           .eg-chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;}
           .eg-step{display:inline-flex;align-items:center;gap:6px;}
           .eg-by{font-size:11px;font-weight:800;color:${FADED};}
-          .eg-lit{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 18%, transparent);color:${INK};border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:700;}
+          .eg-lit{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 18%, transparent);color:${INK};border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:700;}
           .eg-lit.neg{background:var(--stg-surf2, #f1f2f5);}
         ` }} />
 

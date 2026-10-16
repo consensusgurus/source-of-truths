@@ -388,6 +388,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('jig');
   const STAGE = isStage('jig', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('jig');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('jig');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('jig'), '--stg-acc-lt': gameColorLight('jig'), '--stg-onramp-lt': gameOnrampLight('jig'), '--stg-acc-ink-lt': gameAccentInkLight('jig') };
   const [stageTheme] = useStageTheme();
@@ -1043,7 +1044,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
           .jg-sw{display:flex;gap:6px;flex-wrap:wrap;}
           .jg-swb{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 11px 0 7px;border-radius:999px;border:1.5px solid var(--stg-line2, rgba(11,15,26,0.22));background:transparent;color:var(--stg-ink2, ${COLORS.ink});font-family:${SANS};font-size:12.5px;font-weight:700;cursor:pointer;}
           .jg-swb i{width:20px;height:20px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);display:block;}
-          .jg-swb[aria-pressed="true"]{border:2.5px solid var(--stg-acc, ${COLORS.accent});font-weight:800;color:var(--stg-ink, ${COLORS.ink});}
+          .jg-swb[aria-pressed="true"]{border:2.5px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));font-weight:800;color:var(--stg-ink, ${COLORS.ink});}
           .jg-tray{border:1px solid var(--stg-line, rgba(11,15,26,0.14));border-radius:14px;padding:10px;overflow-y:auto;scrollbar-width:thin;}
           .jg-bin + .jg-bin{margin-top:10px;padding-top:10px;border-top:1px solid var(--stg-line, rgba(11,15,26,0.14));}
           .jg-binlab{font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});margin:0 2px 6px;}
@@ -1051,9 +1052,9 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
           .jg-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(62px, 1fr));gap:4px;}
           .jg-tp{aspect-ratio:1;padding:0;border:0;background:transparent;cursor:grab;border-radius:10px;touch-action:pan-y;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
           .jg-tp:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .jg-tp.sel{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 26%, transparent);box-shadow:inset 0 0 0 2px var(--stg-acc, ${COLORS.accent});}
+          .jg-tp.sel{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 26%, transparent);box-shadow:inset 0 0 0 2px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .jg-tp.lifted{opacity:.25;}
-          .jg-tp:focus-visible{outline:2px solid var(--stg-acc, ${COLORS.accent});outline-offset:1px;}
+          .jg-tp:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));outline-offset:1px;}
           .jg-empty{font-size:13px;font-weight:600;color:var(--stg-mute, ${COLORS.faded});padding:6px 2px;}
           .jg-ghost{position:fixed;left:0;top:0;z-index:80;pointer-events:none;filter:drop-shadow(0 8px 14px rgba(0,0,0,.35));will-change:transform;}
           .jg-foot{display:flex;align-items:center;gap:10px;border-top:1px solid var(--stg-line, rgba(11,15,26,0.14));padding-top:12px;margin-top:14px;flex-wrap:wrap;}
@@ -1134,7 +1135,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="jg-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="jg-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

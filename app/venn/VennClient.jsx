@@ -499,7 +499,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
           .vn-tray{display:flex;flex-wrap:wrap;gap:8px;min-height:44px;}
           .vn-chip{min-height:44px;box-sizing:border-box;border-radius:10px;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};font-family:${SANS};font-size:14px;font-weight:800;letter-spacing:.02em;padding:0 14px;cursor:pointer;}
           .vn-chip:hover{border-color:var(--stg-acc-ink, ${COLORS.accent});}
-          .vn-chip.held{border:2px solid var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);}
+          .vn-chip.held{border:2px solid var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, transparent);}
           .vn-pdia,.vn-roster,.vn-ph-only{display:none;}
           .vn-pdia{position:relative;width:100%;max-width:358px;aspect-ratio:358/330;margin:8px auto 0;}
           .vn-pdia svg{position:absolute;inset:0;width:100%;height:100%;}
@@ -516,7 +516,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
           .vn-roster{grid-template-columns:repeat(auto-fill, minmax(104px, 1fr));gap:6px;}
           .vn-rc{height:44px;box-sizing:border-box;border-radius:10px;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};display:flex;overflow:hidden;min-width:0;}
           .vn-rc.filed{border-style:dashed;background:transparent;}
-          .vn-rc.held{border:2px solid var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);}
+          .vn-rc.held{border:2px solid var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, transparent);}
           .vn-rc .t{flex:1;min-width:0;border:0;background:transparent;padding:0 0 0 9px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;font-family:${SANS};cursor:pointer;text-align:left;}
           .vn-rc .t:disabled{cursor:default;}
           .vn-rc .w{font-size:13px;font-weight:800;letter-spacing:.01em;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -528,7 +528,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
           .vn-ob{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2, ${COLORS.ink});border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));border-radius:12px;padding:0 16px;min-height:46px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .vn-ob:disabled{color:${FADED};cursor:default;}
           .vn-fnote{flex:1;min-width:150px;text-align:right;font-family:${SANS};font-size:12px;font-weight:600;color:${FADED};line-height:1.4;}
-          .vn-file{font-family:${SANS};font-weight:800;font-size:15px;border-radius:12px;padding:0 18px;min-height:46px;display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);border:1.5px solid var(--stg-acc, ${COLORS.accent});}
+          .vn-file{font-family:${SANS};font-weight:800;font-size:15px;border-radius:12px;padding:0 18px;min-height:46px;display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);border:1.5px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .vn-file:disabled{background:transparent;color:${FADED};border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.4));cursor:not-allowed;}
           @media(max-width:640px){
             .vn-rules{flex-direction:column;gap:5px;margin-bottom:6px;}

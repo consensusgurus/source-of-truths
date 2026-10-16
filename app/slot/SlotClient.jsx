@@ -632,7 +632,7 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
           .sl-slot .r b{display:block;font-family:${SANS};font-weight:700;font-size:12.5px;color:${INK};}
           .sl-slot.open{border-style:dashed;cursor:pointer;}
           .sl-slot.open .nm{color:${FADED};font-weight:600;}
-          .sl-slot.open:hover,.sl-slot.open:focus-visible{border-style:solid;border-color:var(--stg-acc, ${COLORS.accent});background:var(--stg-acc-tint, ${COLORS.accentSoft});}
+          .sl-slot.open:hover,.sl-slot.open:focus-visible{border-style:solid;border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));background:var(--stg-acc-tint, ${COLORS.accentSoft});}
           .sl-slot.locked{cursor:default;}
           .sl-slot.g{border-color:var(--stg-good, ${COLORS.green});border-left-width:6px;}
           .sl-slot.a{border-color:var(--stg-warn, #b45309);border-left-width:6px;}

@@ -228,6 +228,7 @@ export default function StreakClient({ puzzles = [], questionsByNum = {}, forceN
   // Resolved in an effect: the server cannot know what is stored.
   const [stageTheme] = useStageTheme();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('streak');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('streak');
   const STAGE_ACC = { '--stg-acc-dk': gameColor('streak'), '--stg-acc-lt': gameColorLight('streak'), '--stg-onramp-lt': gameOnrampLight('streak'), '--stg-acc-ink-lt': gameAccentInkLight('streak') };
   const Cap = STAGE ? StageChrome : LoftCap;
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
@@ -633,7 +634,7 @@ export default function StreakClient({ puzzles = [], questionsByNum = {}, forceN
           .sk-choice{display:flex;align-items:center;gap:14px;font-family:${SANS};font-weight:800;font-size:18px;text-align:left;border:1.5px solid var(--stg-line2, rgba(28,30,36,0.4));border-radius:14px;padding:14px 16px;min-height:76px;box-sizing:border-box;line-height:1.3;background:var(--stg-surf, ${T.white});color:${INK};transition:background .12s ease,border-color .12s ease;}
           .sk-choice.good{background:color-mix(in srgb, var(--stg-good, ${COLORS.green}) 18%, var(--stg-surf, ${T.white}));border-color:var(--stg-good, ${COLORS.green});}
           .sk-choice.bad{background:color-mix(in srgb, var(--stg-bad, ${COLORS.accent}) 16%, var(--stg-surf, ${T.white}));border-color:var(--stg-bad, ${COLORS.accent});}
-          .sk-grid:not(.nohov) .sk-choice:not(:disabled):hover{background:var(--stg-surf2, ${COLORS.paper});border-color:var(--stg-acc, ${COLORS.accent});}
+          .sk-grid:not(.nohov) .sk-choice:not(:disabled):hover{background:var(--stg-surf2, ${COLORS.paper});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .sk-key{width:34px;height:34px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:14px;font-weight:500;background:var(--stg-surf2, ${COLORS.paper});color:var(--stg-acc-ink, ${COLORS.accent});}
           .sk-choice.good .sk-key{background:var(--stg-good, ${COLORS.green});color:var(--stg-ground, #ffffff);}
           .sk-choice.bad .sk-key{background:var(--stg-bad, ${COLORS.accent});color:var(--stg-ground, #ffffff);}
@@ -648,7 +649,7 @@ export default function StreakClient({ puzzles = [], questionsByNum = {}, forceN
           .sk-tname.on{color:var(--stg-acc-ink, ${COLORS.accent});}
           .sk-steps{display:flex;flex-direction:column-reverse;gap:3px;}
           .sk-step{height:10px;border-radius:3px;box-sizing:border-box;border:1px solid var(--stg-cell-line, rgba(28,30,36,0.32));background:transparent;}
-          .sk-step.done{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});}
+          .sk-step.done{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .sk-step.cur{border:2px solid var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 30%, transparent);}
           .sk-head{display:flex;align-items:center;justify-content:space-between;gap:14px;}
           .sk-count{display:flex;align-items:baseline;gap:10px;min-width:0;}
@@ -714,7 +715,7 @@ export default function StreakClient({ puzzles = [], questionsByNum = {}, forceN
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="sk-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="sk-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

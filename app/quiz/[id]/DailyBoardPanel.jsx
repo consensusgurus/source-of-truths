@@ -92,6 +92,7 @@ export default function DailyBoardPanel({
   const FADED = stage ? 'var(--stg-mute)' : (dark ? '#8b95a8' : T.muted);
   const NAVY = stage ? 'var(--stg-ink)' : (dark ? '#e9edf4' : T.accent);
   const BLUE = stage ? 'var(--stg-acc)' : (dark ? '#7dd3fc' : T.blue);
+  const BLUE_INK = stage ? 'var(--stg-acc-ink, var(--stg-acc))' : (dark ? '#7dd3fc' : T.blue);
   const BORD = stage ? 'var(--stg-line)' : (dark ? 'rgba(255,255,255,0.12)' : '#e7eaf1');
   const SURF = stage ? 'var(--stg-surf)' : (dark ? 'rgba(255,255,255,0.05)' : 'var(--white)');
   const SOFT = stage ? 'var(--stg-chip)' : (dark ? 'rgba(125,211,252,0.12)' : '#eff4fd');
@@ -127,6 +128,7 @@ export default function DailyBoardPanel({
 
   const selfName = GAME_NAMES[self] || self;
   const accent = ACCENTS[self] || BLUE;
+  const accent_INK = ACCENTS[self] || BLUE_INK;
   // THE INITIAL IS AN EDGE ON THE STAGE, NOT A FILL (owner, 2026-08-31). Off
   // stage it is a disc filled with the game's own brand colour, which is the
   // Loft's vocabulary and is right there. On the stage that colour is a
@@ -146,7 +148,7 @@ export default function DailyBoardPanel({
   // contrast ratio; the letter takes --stg-ink and clears in either register.
   const avCss = stage
     ? 'width:24px;height:24px;border-radius:7px;background:var(--stg-chip);'
-      + 'border:1px solid var(--stg-acc);color:var(--stg-ink);font-family:' + MONO
+      + 'border:1px solid var(--stg-acc-ink, var(--stg-acc));color:var(--stg-ink);font-family:' + MONO
       + ';font-size:11.5px;font-weight:700;'
     : 'width:22px;height:22px;border-radius:50%;color:var(--white);font-size:11px;font-weight:800;';
   // And the word "Stats" stops being part of the name. On the stage a heading
@@ -359,7 +361,7 @@ export default function DailyBoardPanel({
         .dbp-hd .t .sfx{${sfxCss}flex-shrink:0;}
         .dbp-hd .t .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
         .dbp-hd .s{font-family:${MONO};font-size:10.5px;letter-spacing:.04em;color:${FADED};font-weight:500;white-space:nowrap;flex-shrink:0;}
-        .dbp-signup{display:inline-flex;align-items:center;gap:6px;font-family:${SANS};font-size:12px;font-weight:800;color:${BLUE};background:${SOFT};border:1px solid ${stage ? 'var(--stg-line2)' : (dark ? 'rgba(125,211,252,0.3)' : '#cfe0fb')};border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+        .dbp-signup{display:inline-flex;align-items:center;gap:6px;font-family:${SANS};font-size:12px;font-weight:800;color:${BLUE_INK};background:${SOFT};border:1px solid ${stage ? 'var(--stg-line2)' : (dark ? 'rgba(125,211,252,0.3)' : '#cfe0fb')};border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
         .dbp-signup:hover{background:${SOFT2};}
         .dbp-streak{font-family:${SANS};font-size:11.5px;font-weight:600;color:${SLATE};white-space:nowrap;flex-shrink:0;}
         .dbp-streak b{font-weight:800;color:${INK};}
@@ -373,8 +375,8 @@ export default function DailyBoardPanel({
         /* The colored cap across the top: three deliberate cards, not three
            pale boxes. */
         .dbp-tile::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:${BLUE};}
-        .dbp-tile:hover{border-color:${BLUE};box-shadow:0 5px 18px rgba(37,99,235,.16);transform:translateY(-1px);}
-        .dbp-tile.on{border-color:${BLUE};box-shadow:0 0 0 1px ${BLUE},0 5px 18px rgba(37,99,235,.16);}
+        .dbp-tile:hover{border-color:${BLUE_INK};box-shadow:0 5px 18px rgba(37,99,235,.16);transform:translateY(-1px);}
+        .dbp-tile.on{border-color:${BLUE_INK};box-shadow:0 0 0 1px ${BLUE_INK},0 5px 18px rgba(37,99,235,.16);}
         /* Podium tint: a top-3 finish is the point of the row, so it is colored
            gold / silver / bronze rather than left generic blue. */
         .dbp-tile.m1{border-color:#e3ba57;background:linear-gradient(180deg,#fffdf5,#fdf3d9);box-shadow:0 3px 14px rgba(190,145,25,.20);}
@@ -392,13 +394,13 @@ export default function DailyBoardPanel({
         .dbp-tile.m1 .dbp-tile-of,.dbp-tile.m1 .dbp-tile-cx{color:#7d5c0c;}
         .dbp-tile.m2 .dbp-tile-of,.dbp-tile.m2 .dbp-tile-cx{color:#4f5868;}
         .dbp-tile.m3 .dbp-tile-of,.dbp-tile.m3 .dbp-tile-cx{color:#74471f;}
-        .dbp-tile-lbl{font-family:${SANS};font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:${BLUE};padding:0 18px;line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-height:28px;}
+        .dbp-tile-lbl{font-family:${SANS};font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:${BLUE_INK};padding:0 18px;line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-height:28px;}
         .dbp-tile-rk{font-size:43px;font-weight:800;letter-spacing:-.035em;color:${NAVY};line-height:1.02;margin-top:2px;display:block;font-variant-numeric:tabular-nums;}
         .dbp-tile-rk .prov{font-size:12px;font-weight:700;color:${FADED};}
         .dbp-tile-rk .dash{color:${stage ? 'var(--stg-dim)' : (dark ? '#4a5468' : '#c2c8d2')};}
         .dbp-tile-of{font-size:12px;font-weight:700;color:${SLATE};display:block;margin-top:4px;}
         .dbp-tile-cx{position:absolute;top:9px;right:6px;color:${SLATE};transition:transform .15s ease;pointer-events:none;}
-        .dbp-tile.on .dbp-tile-cx,.dbp-tile:hover .dbp-tile-cx{color:${BLUE};}
+        .dbp-tile.on .dbp-tile-cx,.dbp-tile:hover .dbp-tile-cx{color:${BLUE_INK};}
 
         .dbp-board{border:1px solid ${BORD};border-radius:12px;padding:11px 13px 10px;margin-top:11px;background:${SURF};}
         .dbp-board.plain{padding:0;border:none;}
@@ -407,7 +409,7 @@ export default function DailyBoardPanel({
         .dbp-lbrow.me{background:${SOFT};}
         .dbp-lbrow .rk{font-family:${MONO};font-size:11.5px;color:${FADED};width:30px;flex-shrink:0;}
         .dbp-lbrow .nm{font-weight:700;color:${INK};min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
-        .dbp-lbrow .nm .you{color:${BLUE};font-weight:800;}
+        .dbp-lbrow .nm .you{color:${BLUE_INK};font-weight:800;}
         .dbp-lbrow.me .nm{font-weight:800;}
         .dbp-lbrow .vl{font-family:${MONO};font-size:12px;color:${SLATE};flex-shrink:0;}
         .dbp-lbrow .vl .u{color:var(--muted);}
@@ -433,7 +435,7 @@ export default function DailyBoardPanel({
         .dbp-grow.me{background:${SOFT};}
         .dbp-g .rk{font-family:${MONO};font-size:11.5px;color:${FADED};}
         .dbp-g .nm{font-weight:700;color:${INK};font-size:13.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-        .dbp-g .nm .you{color:${BLUE};font-weight:800;}
+        .dbp-g .nm .you{color:${BLUE_INK};font-weight:800;}
         .dbp-g .num{font-family:${MONO};font-size:11.5px;color:${SLATE};text-align:right;font-variant-numeric:tabular-nums;}
         .dbp-g .pts{font-weight:800;color:${INK};text-align:right;font-variant-numeric:tabular-nums;font-size:13px;}
         /* A hint that there is more to the right, shown only where it scrolls. */
@@ -455,13 +457,13 @@ export default function DailyBoardPanel({
         a.dbp-cal-cell{text-decoration:none;}
         a.dbp-cal-cell.played{background:${CAL_PLAYED_BG};color:${dark ? '#7fe0ad' : 'var(--success-deep)'};border:1px solid ${CAL_PLAYED_BD};}
         a.dbp-cal-cell.unplayed{background:${SURF};color:${SLATE};border:1px solid ${BORD};}
-        a.dbp-cal-cell.unplayed:hover{border-color:${BLUE};color:${BLUE};}
-        a.dbp-cal-cell.today{box-shadow:0 0 0 2px ${BLUE};}
+        a.dbp-cal-cell.unplayed:hover{border-color:${BLUE_INK};color:${BLUE_INK};}
+        a.dbp-cal-cell.today{box-shadow:0 0 0 2px ${BLUE_INK};}
         .dbp-cal-key{display:flex;flex-wrap:wrap;gap:10px 14px;margin-top:10px;font-size:11px;color:${FADED};}
         .dbp-cal-key span{display:inline-flex;align-items:center;gap:5px;}
         .dbp-cal-sw{width:11px;height:11px;border-radius:3px;flex-shrink:0;}
 
-        .dbp-full{width:100%;margin-top:11px;padding:9px 12px;border-radius:10px;cursor:pointer;font-family:${SANS};font-size:12.5px;font-weight:800;color:${BLUE};background:transparent;border:1.5px solid ${stage ? 'var(--stg-line2)' : 'var(--accent-border)'};display:inline-flex;align-items:center;justify-content:center;gap:5px;}
+        .dbp-full{width:100%;margin-top:11px;padding:9px 12px;border-radius:10px;cursor:pointer;font-family:${SANS};font-size:12.5px;font-weight:800;color:${BLUE_INK};background:transparent;border:1.5px solid ${stage ? 'var(--stg-line2)' : 'var(--accent_INK-border)'};display:inline-flex;align-items:center;justify-content:center;gap:5px;}
         .dbp-full:hover{background:${stage ? 'var(--stg-chip)' : '#f5f8ff'};}
 
         /* Phone: the three tiles stay side by side, tighter — same as the end
@@ -589,7 +591,7 @@ export default function DailyBoardPanel({
                       its board is worse than no legend. */}
                   <span><span className="dbp-cal-sw" style={{ background: CAL_PLAYED_BG, border: `1px solid ${CAL_PLAYED_BD}` }} />Played</span>
                   <span><span className="dbp-cal-sw" style={{ background: SURF, border: `1px solid ${BORD}` }} />Unplayed</span>
-                  <span><span className="dbp-cal-sw" style={{ background: SURF, boxShadow: `0 0 0 2px ${BLUE}` }} />Today</span>
+                  <span><span className="dbp-cal-sw" style={{ background: SURF, boxShadow: `0 0 0 2px ${BLUE_INK}` }} />Today</span>
                 </div>
               </>
             ) : <div className="dbp-lbempty">No archive of {selfName} games yet.</div>

@@ -245,6 +245,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('rung');
   const STAGE = isStage('rung', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('rung');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('rung');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('rung'), '--stg-acc-lt': gameColorLight('rung'), '--stg-onramp-lt': gameOnrampLight('rung'), '--stg-acc-ink-lt': gameAccentInkLight('rung') };
   const [stageTheme] = useStageTheme();
@@ -619,10 +620,10 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
   const tileBase = { borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box', fontFamily: MONO, fontWeight: 500, textTransform: 'uppercase', position: 'relative' };
   const tileOf = (ch, kind, key) => {
     let st;
-    if (kind === 'goal') st = { background: 'var(--stg-acc-tint, ' + COLORS.accentSoft + ')', border: `2px solid var(--stg-acc, ${COLORS.accent})`, color: ACC_INK };
-    else if (kind === 'new') st = { background: `var(--stg-acc, ${COLORS.accent})`, border: `2px solid var(--stg-acc, ${COLORS.accent})`, color: ON_ACC };
-    else if (kind === 'cur') st = { background: `var(--stg-cell, ${T.white})`, border: `2px solid var(--stg-acc, ${COLORS.accent})`, color: INK };
-    else if (kind === 'curNew') st = { background: `var(--stg-cell, ${T.white})`, border: `2px solid var(--stg-acc, ${COLORS.accent})`, color: ACC_INK, boxShadow: `inset 0 -4px 0 var(--stg-acc, ${COLORS.accent})` };
+    if (kind === 'goal') st = { background: 'var(--stg-acc-tint, ' + COLORS.accentSoft + ')', border: `2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))`, color: ACC_INK };
+    else if (kind === 'new') st = { background: `var(--stg-acc, ${COLORS.accent})`, border: `2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))`, color: ON_ACC };
+    else if (kind === 'cur') st = { background: `var(--stg-cell, ${T.white})`, border: `2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))`, color: INK };
+    else if (kind === 'curNew') st = { background: `var(--stg-cell, ${T.white})`, border: `2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))`, color: ACC_INK, boxShadow: `inset 0 -4px 0 var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` };
     else if (kind === 'empty') st = { background: 'transparent', border: `2px dashed var(--stg-cell-line, ${TILE_EDGE})`, color: FADED };
     else st = { background: STAGE ? 'var(--stg-surf2)' : TILE, border: `2px solid var(--stg-line2, ${TILE_EDGE})`, color: INK };
     // The rung bar runs BEHIND the tiles, and most tile fills are translucent
@@ -757,7 +758,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
           .rg-bar{position:absolute;left:-28px;right:-28px;top:50%;height:4px;margin-top:-2px;border-radius:2px;}
           .rg-tile{width:54px;height:56px;font-size:26px;}
           .rg-in{position:absolute;inset:0;width:100%;height:100%;opacity:0.011;border:0;padding:0;margin:0;font-size:16px;background:transparent;color:transparent;caret-color:transparent;cursor:text;z-index:2;}
-          .rg-tiles:focus-within .rg-tile{box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 30%, transparent);}
+          .rg-tiles:focus-within .rg-tile{box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 30%, transparent);}
           @media(max-width:640px){
             .rg-row{padding:4px 22px 5px;}
             .rg-row::before{left:4px;width:7px;}
@@ -801,7 +802,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="rg-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="rg-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -832,7 +833,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
             {playing && (
               <div style={{ marginTop: 12, display: 'flex', justifyContent: 'center' }}>
                 <button className="rg-btn" onClick={submit} disabled={draft.length !== 5}
-                  style={{ minHeight: 48, padding: '0 28px', fontSize: 15, borderColor: draft.length === 5 ? `var(--stg-acc, ${COLORS.ink})` : undefined, background: draft.length === 5 ? `var(--stg-acc, ${COLORS.ink})` : `var(--stg-surf, ${T.white})`, color: draft.length === 5 ? ON_ACC : FADED, opacity: draft.length === 5 ? 1 : 0.55, cursor: draft.length === 5 ? 'pointer' : 'default' }}>
+                  style={{ minHeight: 48, padding: '0 28px', fontSize: 15, borderColor: draft.length === 5 ? `var(--stg-acc-ink, var(--stg-acc, ${COLORS.ink}))` : undefined, background: draft.length === 5 ? `var(--stg-acc, ${COLORS.ink})` : `var(--stg-surf, ${T.white})`, color: draft.length === 5 ? ON_ACC : FADED, opacity: draft.length === 5 ? 1 : 0.55, cursor: draft.length === 5 ? 'pointer' : 'default' }}>
                   Climb
                 </button>
               </div>
@@ -856,7 +857,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
                 <RotateCcw size={14} /> Restart
               </button>
               {hintOk && !g.hintUsed && (
-                <button className="rg-tool" onClick={useHint} title="The next word of a shortest ladder from here (one hint, first play only)" style={{ background: `var(--stg-acc-tint, ${COLORS.accentSoft})`, borderColor: `var(--stg-acc, rgba(21,94,117,0.5))`, color: STAGE ? ACC_INK : '#124b5e' }}>
+                <button className="rg-tool" onClick={useHint} title="The next word of a shortest ladder from here (one hint, first play only)" style={{ background: `var(--stg-acc-tint, ${COLORS.accentSoft})`, borderColor: `var(--stg-acc-ink, var(--stg-acc, rgba(21,94,117,0.5)))`, color: STAGE ? ACC_INK : '#124b5e' }}>
                   <Lightbulb size={14} /> Hint
                 </button>
               )}

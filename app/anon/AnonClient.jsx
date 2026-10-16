@@ -254,6 +254,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
   // every call site below themes itself and none of them had to be found.
   // The literals are published on the root element instead.
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('anon');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('anon');
   const STAGE_ACC = { '--stg-acc-dk': gameColor('anon'), '--stg-acc-lt': gameColorLight('anon'), '--stg-onramp-lt': gameOnrampLight('anon'), '--stg-acc-ink-lt': gameAccentInkLight('anon') };
   const Cap = STAGE ? StageChrome : LoftCap;
   // Anon is a Word game, so on the stage its book cloth red becomes the
@@ -267,7 +268,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
   const ACC_INK = STAGE ? 'var(--stg-acc-ink)' : COLORS.accent;
   const ACC_DEEP = STAGE ? STAGE_C : COLORS.accentDeep;
   const ACC_DEEP_INK = STAGE ? 'var(--stg-acc-ink)' : COLORS.accentDeep;
-  const ACC_SOFT = STAGE ? 'color-mix(in srgb, var(--stg-acc) 16%, transparent)' : COLORS.accentSoft;
+  const ACC_SOFT = STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 16%, transparent)' : COLORS.accentSoft;
   const ON_ACC = STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)';
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
@@ -876,9 +877,9 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
       <div className="an-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
         <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.an-wrap{padding-left:10px !important;padding-right:10px !important;}}
-          .an-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${ACC_DEEP};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? INK : ACC_DEEP};border-radius:8px;padding:9px 16px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
+          .an-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${ACC_DEEP_INK};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? INK : ACC_DEEP};border-radius:8px;padding:9px 16px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .an-btn:hover{background:${ACC_SOFT};}
-          .an-btn.primary{background:${ACC};border-color:${ACC};color:${ON_ACC};}
+          .an-btn.primary{background:${ACC};border-color:${ACC_INK};color:${ON_ACC};}
           .an-btn.primary:hover{background:${ACC_DEEP};}
           .an-card{position:relative;}
           .an-cardhead{display:flex;align-items:flex-start;gap:12px;margin:0 0 10px;}
@@ -891,15 +892,15 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
             display:flex;align-items:center;justify-content:center;font-family:${SANS};font-weight:800;font-size:16px;box-sizing:border-box;
             color:${INK};cursor:pointer;flex:none;transition:background 90ms,border-color 90ms;}
           .an-cell.bk{background:${STAGE ? 'var(--stg-cell)' : '#eef1f5'};font-size:14px;}
-          .an-cell.mine{background:${ACC_SOFT};border-bottom-color:${ACC};}
-          .an-cell.on{background:${ACC};border-bottom-color:${ACC};color:${ON_ACC};}
+          .an-cell.mine{background:${ACC_SOFT};border-bottom-color:${ACC_INK};}
+          .an-cell.on{background:${ACC};border-bottom-color:${ACC_INK};color:${ON_ACC};}
           .an-cell.miss{background:${STAGE ? 'color-mix(in srgb, var(--stg-bad) 16%, var(--stg-cell))' : '#fee2e2'};border-bottom-color:${STAGE ? 'var(--stg-bad)' : '#dc2626'};color:${STAGE ? 'var(--stg-bad)' : '#7f1d1d'};font-weight:800;}
           .an-punc{align-self:center;color:var(--stg-mute, #6b7280);font-weight:800;width:7px;text-align:center;}
           .an-sig{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid ${STAGE ? 'var(--stg-line)' : 'rgba(28,30,36,0.12)'};}
           .an-sigdash{width:18px;height:2px;background:${FADED};flex:none;}
           .an-siglab{font-family:${MONO};font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:${FADED};}
           .an-spine{display:flex;gap:4px;align-items:center;flex-wrap:wrap;}
-          .an-spine i{width:26px;height:32px;box-sizing:border-box;border-radius:5px;background:${ACC_SOFT};border:1.5px solid ${ACC};
+          .an-spine i{width:26px;height:32px;box-sizing:border-box;border-radius:5px;background:${ACC_SOFT};border:1.5px solid ${ACC_INK};
             display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;font-size:17px;color:${ACC_INK};}
           .an-spine i.blank{color:${FADED};background:transparent;}
           .an-sigrow{display:flex;align-items:center;gap:8px;margin:0 0 12px;}
@@ -915,8 +916,8 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
           .an-spinecol{position:relative;}
           .an-spinecol::before{content:'';position:absolute;left:18px;top:6px;bottom:10px;width:2px;background:${ACC};}
           .an-row{position:relative;display:flex;align-items:center;gap:8px;min-height:34px;border-radius:8px;padding:3px 6px;margin-bottom:3px;}
-          .an-row.on{background:${ACC_SOFT};box-shadow:inset 3px 0 0 ${ACC};}
-          .an-tag{width:26px;height:28px;box-sizing:border-box;border-radius:5px;border:1.5px solid ${ACC};background:${STAGE ? 'var(--stg-ground)' : T.white};color:${ACC_INK};
+          .an-row.on{background:${ACC_SOFT};box-shadow:inset 3px 0 0 ${ACC_INK};}
+          .an-tag{width:26px;height:28px;box-sizing:border-box;border-radius:5px;border:1.5px solid ${ACC_INK};background:${STAGE ? 'var(--stg-ground)' : T.white};color:${ACC_INK};
             display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex:none;position:relative;z-index:1;}
           .an-tag.blank{color:${FADED};}
           .an-rowhead{width:96px;flex:none;display:flex;flex-direction:column;gap:1px;min-width:0;}
@@ -925,10 +926,10 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
           .an-len{font-family:${MONO};font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:${FADED};}
           .an-ok{margin-left:auto;flex:none;display:inline-flex;color:var(--stg-good, ${COLORS.green});}
           .an-boxes{display:flex;gap:2px;flex-wrap:wrap;min-width:0;}
-          .an-you{margin-top:14px;border-radius:12px;border-left:4px solid ${ACC};background:${ACC_SOFT};padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
+          .an-you{margin-top:14px;border-radius:12px;border-left:4px solid ${ACC_INK};background:${ACC_SOFT};padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
           .an-youhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-family:${MONO};font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:${FADED};}
           .an-youcells{display:flex;gap:4px;flex-wrap:wrap;}
-          .an-youcells span{width:34px;height:40px;box-sizing:border-box;border-radius:5px 5px 0 0;border-bottom:2px solid ${ACC};background:${STAGE ? 'var(--stg-cell)' : T.white};color:${INK};
+          .an-youcells span{width:34px;height:40px;box-sizing:border-box;border-radius:5px 5px 0 0;border-bottom:2px solid ${ACC_INK};background:${STAGE ? 'var(--stg-cell)' : T.white};color:${INK};
             display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;cursor:pointer;}
           .an-youcells span.on{background:${ACC};color:${ON_ACC};}
           .an-youtx{font-size:12.5px;line-height:1.45;font-weight:600;color:var(--stg-ink2, #374151);}
@@ -942,14 +943,14 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
           .an-nav button{display:flex;align-items:center;justify-content:center;padding:0;width:44px;height:44px;border-radius:10px;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)'};background:transparent;color:${INK};cursor:pointer;font-weight:800;font-size:20px;line-height:1;}
           .an-topclue{display:flex;align-items:center;gap:8px;margin:-4px 0 12px;padding:0 2px;}
           .an-topclue .an-cat,.an-dockclue .an-cat{font-size:12px;font-weight:800;}
-          .an-dockrow{display:flex;align-items:center;gap:10px;border-radius:10px;background:${ACC_SOFT};box-shadow:inset 3px 0 0 ${ACC};padding:6px 10px;min-width:0;}
+          .an-dockrow{display:flex;align-items:center;gap:10px;border-radius:10px;background:${ACC_SOFT};box-shadow:inset 3px 0 0 ${ACC_INK};padding:6px 10px;min-width:0;}
           .an-dockclue{display:flex;align-items:center;gap:8px;flex:none;}
           .an-dockclue .an-rowhead{width:74px;}
           .an-dockbody{display:flex;gap:3px;overflow-x:auto;padding-bottom:2px;min-width:0;}
           .an-dcell{width:26px;height:32px;box-sizing:border-box;border-radius:4px 4px 0 0;background:${STAGE ? 'var(--stg-cell)' : T.white};border-bottom:2px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};display:flex;align-items:center;
             justify-content:center;font-weight:800;font-size:16px;color:${INK};flex:none;cursor:pointer;}
-          .an-dcell.mine{border-bottom-color:${ACC};}
-          .an-dcell.on{background:${ACC};border-bottom-color:${ACC};color:${ON_ACC};}
+          .an-dcell.mine{border-bottom-color:${ACC_INK};}
+          .an-dcell.on{background:${ACC};border-bottom-color:${ACC_INK};color:${ON_ACC};}
           .an-dcell.gap{background:none;border:0;width:7px;cursor:default;}
           .an-seg button{flex:1;border:0;background:transparent;min-height:44px;padding:0;font-family:${SANS};font-weight:800;font-size:13.5px;color:${STAGE ? 'var(--stg-ink2)' : '#4b5563'};cursor:pointer;}
           .an-seg button.on{background:${ACC};color:${ON_ACC};}

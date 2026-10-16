@@ -350,6 +350,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
   // player's own seating until the end card's Reveal answer tile is pressed.
   const cellsView = g.status === 'lost' && LOFT && !revealed ? (g.playerCells || freshCells(N)) : g.cells;
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('jester');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('jester');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('jester'), '--stg-acc-lt': gameColorLight('jester'), '--stg-onramp-lt': gameOnrampLight('jester'), '--stg-acc-ink-lt': gameAccentInkLight('jester') };
   const [stageTheme] = useStageTheme();
@@ -782,7 +783,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
     return {
       width: PIP, height: PIP, borderRadius: '50%', boxSizing: 'border-box', flex: '0 0 auto',
       background: over ? 'var(--stg-bad, #b91c1c)' : full ? `var(--stg-acc, ${COLORS.accent})` : 'transparent',
-      border: (full || over) ? 'none' : `2px solid ${part ? `var(--stg-acc, ${COLORS.accent})` : 'var(--stg-mute, #6b7280)'}`,
+      border: (full || over) ? 'none' : `2px solid ${part ? `var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : 'var(--stg-mute, #6b7280)'}`,
     };
   };
 
@@ -896,7 +897,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
           .je-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           .je-btn:disabled{color:var(--stg-mute, #6b7280);cursor:default;}
           .je-btn:disabled:hover{background:transparent;}
-          .je-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
+          .je-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, var(--white));}
           .je-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accentDeep}) 86%, var(--stg-ink, var(--white)));}
           /* THE TOOL SWITCH: one segmented control, the live segment filled with the accent. */
           .je-seg{display:flex;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};border-radius:12px;padding:3px;gap:3px;flex:0 0 auto;}
@@ -1002,7 +1003,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="je-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="je-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -1048,7 +1049,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
                         // toward a literal white), a quarrel in the page's own red. Loft: untouched.
                         background: STAGE
                           ? (conflict ? 'color-mix(in srgb, var(--stg-bad) 38%, var(--stg-cell))' : regionMix(doneRegions.has(id) ? 0.5 : 1))
-                          : (conflict ? '#fecaca' : (doneRegions.has(id) ? REGION_FILLS_DONE : REGION_FILLS)[id % REGION_FILLS.length]), borderTop: bTop, borderLeft: bLeft, boxShadow: locked ? `inset 0 0 0 2px var(--stg-acc, ${COLORS.accent})` : 'none', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
+                          : (conflict ? '#fecaca' : (doneRegions.has(id) ? REGION_FILLS_DONE : REGION_FILLS)[id % REGION_FILLS.length]), borderTop: bTop, borderLeft: bLeft, boxShadow: locked ? `inset 0 0 0 2px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : 'none', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
                     >
                       {v === 1 && <span className="je-x" style={{ fontSize: Math.max(13, Math.round(cellPx * 0.36)) }}>✗</span>}
                       {v === 0 && autoMark && <span className="je-dot" style={{ width: dotPx, height: dotPx }} />}
@@ -1082,7 +1083,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
                   <span key={id} role="img" aria-label={`Court ${id + 1}: ${done ? 'seated' : k > 0 ? `${k} of ${STARS} seated` : 'open'}`}
                     style={{ ...(STAGE ? regionStyle(id) : null), flex: 1, minWidth: 0, height: PHONE ? 24 : 30, borderRadius: PHONE ? 6 : 8, boxSizing: 'border-box',
                       background: STAGE ? regionMix(1) : REGION_FILLS[id % REGION_FILLS.length],
-                      border: done ? `2px solid var(--stg-acc, ${COLORS.accent})` : `1px solid var(--stg-line2, rgba(28,30,36,0.2))`,
+                      border: done ? `2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : `1px solid var(--stg-line2, rgba(28,30,36,0.2))`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: PHONE ? 11 : 13, fontWeight: 800, color: INK }}>
                     {done ? '✓' : ''}
                   </span>

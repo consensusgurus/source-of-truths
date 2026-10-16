@@ -112,7 +112,7 @@ const BB_CSS = `
   --bb-fresh-ring:color-mix(in srgb, var(--stg-acc,#7dd3fc) 62%, #1c1a14);
   --bb-foe:color-mix(in srgb, var(--stg-bad,#fb7185) 24%, #f3e6c8);}
 html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .bb{
-  --bb-cell:#f1f3f7;--bb-fresh:color-mix(in srgb, var(--stg-acc,#0369a1) 22%, #f3e6c8);
+  --bb-cell:#f1f3f7;--bb-fresh:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc,#0369a1)) 22%, #f3e6c8);
   --bb-tw:#f2b9b9;--bb-tw-ink:#7f1d1d;--bb-dw:#f7d6df;--bb-dw-ink:#8b2346;
   --bb-tl:#aed0f1;--bb-tl-ink:#0b4a8a;--bb-dl:#dcebf8;--bb-dl-ink:#1d5f99;}
 .bb-k{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute,#8b95a8);}
@@ -144,7 +144,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .bb{
 .bb-cell.tile{background:var(--bb-tile);color:var(--bb-tile-ink);font-size:clamp(13px,4.2cqi,19px);letter-spacing:0;box-shadow:inset 0 -2px 0 rgba(0,0,0,.18);}
 .bb-cell.fresh{background:var(--bb-fresh);box-shadow:inset 0 0 0 2px var(--bb-fresh-ring);}
 .bb-cell.foeplay{background:var(--bb-foe);}
-.bb-cell.sel{outline:2.5px solid var(--stg-acc,#7dd3fc);outline-offset:-1px;z-index:1;}
+.bb-cell.sel{outline:2.5px solid var(--stg-acc-ink, var(--stg-acc,#7dd3fc));outline-offset:-1px;z-index:1;}
 .bb-cell .pts{position:absolute;right:2px;bottom:0;font-size:clamp(6.5px,1.9cqi,8.5px);font-weight:800;color:var(--bb-tile-ink);}
 .bb-cell .dirmark{position:absolute;right:2px;top:0;font-size:9px;line-height:1.2;color:var(--stg-acc-ink,#7dd3fc);}
 .bb-cell.p-T .dirmark,.bb-cell.p-D .dirmark,.bb-cell.p-t .dirmark,.bb-cell.p-d .dirmark{color:inherit;}
@@ -169,7 +169,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .bb{
 .bb-rack{display:flex;gap:8px;align-items:flex-end;padding:8px 10px;border-radius:12px;background:var(--stg-surf2,rgba(255,255,255,.08));min-height:56px;}
 .bb-tile{position:relative;flex:0 0 auto;width:52px;height:56px;border-radius:9px;border:0;background:var(--bb-tile);color:var(--bb-tile-ink);font-family:${SANS};font-size:24px;font-weight:800;padding:0;cursor:pointer;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18);transition:transform .12s ease, box-shadow .12s ease;-webkit-tap-highlight-color:transparent;}
 .bb-tile .pts{position:absolute;right:5px;bottom:3px;font-size:10px;font-weight:800;}
-.bb-tile.armed{transform:translateY(-8px);box-shadow:0 0 0 3px var(--stg-acc,#7dd3fc),0 10px 16px rgba(0,0,0,.3);}
+.bb-tile.armed{transform:translateY(-8px);box-shadow:0 0 0 3px var(--stg-acc-ink, var(--stg-acc,#7dd3fc)),0 10px 16px rgba(0,0,0,.3);}
 .bb-tile.used{background:transparent;box-shadow:none;border:1.5px dashed var(--stg-line2,rgba(255,255,255,.17));cursor:default;}
 .bb-tile:focus-visible{outline:2px solid var(--stg-acc-ink,#7dd3fc);outline-offset:3px;}
 .bb-out{font-size:13px;font-weight:700;color:var(--stg-ink,#e9edf4);padding:0 4px;align-self:center;}
@@ -177,7 +177,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .bb{
 .bb-btn{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2,#aab5c7);border:1.5px solid var(--stg-mute,#8b95a8);border-radius:12px;padding:0 14px;min-height:48px;cursor:pointer;}
 .bb-btn:hover:not(:disabled){background:var(--stg-surf2,rgba(255,255,255,.08));}
 .bb-btn:disabled{color:var(--stg-mute,#8b95a8);border-color:var(--stg-line2,rgba(255,255,255,.17));cursor:default;}
-.bb-btn.play{font-weight:800;background:var(--stg-acc,#7dd3fc);border-color:var(--stg-acc,#7dd3fc);color:var(--stg-onramp,#08222e);padding:0 20px;}
+.bb-btn.play{font-weight:800;background:var(--stg-acc,#7dd3fc);border-color:var(--stg-acc-ink, var(--stg-acc,#7dd3fc));color:var(--stg-onramp,#08222e);padding:0 20px;}
 .bb-btn.play:hover:not(:disabled){background:color-mix(in srgb, var(--stg-acc,#7dd3fc) 86%, var(--stg-ink,#e9edf4));}
 .bb-btn.play:disabled{background:var(--stg-line,rgba(255,255,255,.11));border-color:transparent;color:var(--stg-mute,#8b95a8);}
 .bb-btn:focus-visible,.bb-fold:focus-visible{outline:2px solid var(--stg-acc-ink,#7dd3fc);outline-offset:2px;}
@@ -395,6 +395,7 @@ export default function BabelClient({ puzzles, forceNum }) {
   const LOFT = isLoft('babel');
   const STAGE = isStage('babel', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('babel');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('babel');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('babel'), '--stg-acc-lt': gameColorLight('babel'), '--stg-onramp-lt': gameOnrampLight('babel'), '--stg-acc-ink-lt': gameAccentInkLight('babel') };
   const [stageTheme] = useStageTheme();
@@ -954,7 +955,7 @@ ${BB_CSS}
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="sc-btn" onClick={startGame} disabled={!ready} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>
+              <button className="sc-btn" onClick={startGame} disabled={!ready} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>
                 {ready ? 'Start' : dictErr ? 'Dictionary failed to load' : 'Loading the dictionary…'}
               </button>
               <div>

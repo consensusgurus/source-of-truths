@@ -294,6 +294,7 @@ export default function QuiltClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('quilt');
   const STAGE = isStage('quilt', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('quilt');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('quilt');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('quilt'), '--stg-acc-lt': gameColorLight('quilt'), '--stg-onramp-lt': gameOnrampLight('quilt'), '--stg-acc-ink-lt': gameAccentInkLight('quilt') };
   const [stageTheme] = useStageTheme();
@@ -800,7 +801,7 @@ export default function QuiltClient({ puzzles = [], forceNum = null }) {
     const tint = regionTint(b);
     let bg = tint;
     if (peer) bg = STAGE ? `color-mix(in srgb, var(--stg-ink) 12%, ${tint})` : '#e9edf3';
-    if (sameVal) bg = STAGE ? `color-mix(in srgb, var(--stg-acc) 24%, ${tint})` : '#fbe3f7';
+    if (sameVal) bg = STAGE ? `color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 24%, ${tint})` : '#fbe3f7';
     if (isSel) bg = STAGE ? `color-mix(in srgb, var(--stg-acc) 40%, ${tint})` : '#f6cdef';
     // A wall goes wherever the neighbour is in a different region. The last row
     // and column are the grid's own outer border, so they are left alone.
@@ -817,7 +818,7 @@ export default function QuiltClient({ puzzles = [], forceNum = null }) {
       // whose fill carries enough of the accent that the accent cannot also be
       // read on top of it.
       color: isSel ? `var(--stg-ink, ${COLORS.ink})` : undefined,
-      boxShadow: isSel ? `inset 0 0 0 2.5px var(--stg-acc, ${COLORS.accent})` : undefined,
+      boxShadow: isSel ? `inset 0 0 0 2.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : undefined,
       zIndex: isSel ? 1 : undefined,
       borderRight: `${wallR ? 2.5 : 1}px solid ${wallR ? WALL : HAIR}`,
       borderBottom: `${wallB ? 2.5 : 1}px solid ${wallB ? WALL : HAIR}`,
@@ -899,11 +900,11 @@ export default function QuiltClient({ puzzles = [], forceNum = null }) {
           .ql-pad:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(28,30,36,0.4);}
           .ql-pad.done{color:var(--stg-mute2, #c3c8cf);box-shadow:none;background:${STAGE ? 'var(--stg-surf2)' : '#f4f5f7'};cursor:default;}
           .ql-pad.done span{text-decoration:line-through;}
-          .ql-pad.armed{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-color:var(--stg-acc, ${COLORS.accent});box-shadow:0 2px 0 rgba(112,26,117,0.55);}
+          .ql-pad.armed{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));box-shadow:0 2px 0 rgba(112,26,117,0.55);}
           .ql-pad.armed .ql-pad-n{color:${STAGE ? 'color-mix(in srgb, var(--stg-onramp, #08222e) 68%, transparent)' : '#f6d9f4'};}
           .ql-pad .ql-pad-n{position:absolute;bottom:2px;right:4px;font-size:8px;color:var(--stg-mute2, #aab0bb);font-weight:500;}
           .ql-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-          .ql-tool.on{background:${STAGE ? STAGE_C : COLORS.ink};color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};border-color:${STAGE ? STAGE_C : COLORS.ink};}
+          .ql-tool.on{background:${STAGE ? STAGE_C : COLORS.ink};color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};border-color:${STAGE ? STAGE_C_INK : COLORS.ink};}
         ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
@@ -943,7 +944,7 @@ export default function QuiltClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="ql-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="ql-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

@@ -259,6 +259,7 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('check');
   const STAGE = isStage('check', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('check');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('check');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('check'), '--stg-acc-lt': gameColorLight('check'), '--stg-onramp-lt': gameOnrampLight('check'), '--stg-acc-ink-lt': gameAccentInkLight('check') };
   const [stageTheme] = useStageTheme();
@@ -716,7 +717,7 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
              the shared --stg-sq-l / --stg-sq-d pair; these are the marks drawn on
              them. The light block carries the boot-stamp guard (app/globals.css). */
           .ck-root{--ck-sel-l:#f2cf6b;--ck-sel-d:#b8871c;--ck-last-l:#e3dbc2;--ck-last-d:#5c5236;--ck-dot:#d5dbe5;--ck-rim:#e9edf4;--ck-frame:#5a6680;--ck-btn:#5a6680;--ck-lift:rgba(233,237,244,0.55);
-            --ck-soft:color-mix(in srgb, var(--stg-acc, #e8b43a) 24%, var(--stg-ground, #0b0f1a));}
+            --ck-soft:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #e8b43a)) 24%, var(--stg-ground, #0b0f1a));}
           html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .ck-root{--ck-sel-l:#f6d77e;--ck-sel-d:#c9962a;--ck-last-l:#f4ecd4;--ck-last-d:#b5a882;--ck-dot:#1e2433;--ck-rim:#0f1420;--ck-frame:#0f1420;--ck-btn:#78839a;--ck-lift:rgba(15,20,32,0.55);
             --ck-soft:color-mix(in srgb, var(--stg-acc, #e8b43a) 32%, #ffffff);}
           .ck-k{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute,#8b95a8);}
@@ -778,7 +779,7 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="ck-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="ck-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

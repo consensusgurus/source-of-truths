@@ -359,6 +359,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
   // player's own seating until the end card's Reveal answer tile is pressed.
   const cellsView = g.status === 'lost' && LOFT && !revealed ? (g.playerCells || freshCells(N)) : g.cells;
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('judges');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('judges');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('judges'), '--stg-acc-lt': gameColorLight('judges'), '--stg-onramp-lt': gameOnrampLight('judges'), '--stg-acc-ink-lt': gameAccentInkLight('judges') };
   const [stageTheme] = useStageTheme();
@@ -906,7 +907,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.je-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .je-btn{font-family:${SANS};font-weight:700;font-size:14px;border:1.5px solid ${STAGE ? 'var(--stg-mute2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink2)' : 'var(--blue-deep)'};border-radius:12px;padding:0 16px;min-height:46px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
           .je-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .je-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
+          .je-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, var(--white));}
           .je-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accentDeep}) 86%, var(--stg-ink, var(--white)));}
           /* The tool switch: one segmented control, the chosen half filled with the accent. */
           .je-seg{display:flex;border:1.5px solid var(--stg-mute2, rgba(28,30,36,0.45));border-radius:12px;padding:3px;gap:3px;}
@@ -977,7 +978,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="je-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="je-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -1044,7 +1045,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
                         // toward a literal white), a quarrel in the page's own red. Loft: untouched.
                         background: STAGE
                           ? (conflict ? 'color-mix(in srgb, var(--stg-bad) 38%, var(--stg-cell))' : regionMix(doneRegions.has(id) ? 0.5 : 1))
-                          : (conflict ? '#fecaca' : (doneRegions.has(id) ? REGION_FILLS_DONE : REGION_FILLS)[id % REGION_FILLS.length]), borderTop: bTop, borderLeft: bLeft, boxShadow: locked ? `inset 0 0 0 2px var(--stg-acc, ${COLORS.accent})` : 'none', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
+                          : (conflict ? '#fecaca' : (doneRegions.has(id) ? REGION_FILLS_DONE : REGION_FILLS)[id % REGION_FILLS.length]), borderTop: bTop, borderLeft: bLeft, boxShadow: locked ? `inset 0 0 0 2px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : 'none', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
                     >
                       {v === 1 && <span className="je-x" style={{ fontSize: Math.max(12, Math.round(cellPx * 0.42)) }}>✗</span>}
                       {v === 0 && autoMark && <span className="je-dot" aria-hidden="true" style={{ width: Math.max(6, Math.round(cellPx * 0.2)), height: Math.max(6, Math.round(cellPx * 0.2)) }} />}
@@ -1124,7 +1125,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
                 {!PHONE && <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 600, color: FADED }}>{cap(numWord(STARS))} per row, column and court. No two touch, not even corners.</span>}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginLeft: PHONE ? 0 : 'auto', width: PHONE ? '100%' : undefined, justifyContent: PHONE ? 'space-between' : 'flex-end' }}>
                   {hintOk && !g.hintUsed && (
-                    <button type="button" className="je-btn" onClick={useHint} title="Seat one correct judge (one hint, first play only)" style={{ minHeight: 44, fontSize: 13, borderColor: `var(--stg-acc, ${COLORS.accent})`, color: ACC_DEEP_INK, ...(PHONE ? { flex: '1 0 100%' } : null) }}>
+                    <button type="button" className="je-btn" onClick={useHint} title="Seat one correct judge (one hint, first play only)" style={{ minHeight: 44, fontSize: 13, borderColor: `var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))`, color: ACC_DEEP_INK, ...(PHONE ? { flex: '1 0 100%' } : null) }}>
                       <Lightbulb size={14} /> Hint: seat one judge
                     </button>
                   )}

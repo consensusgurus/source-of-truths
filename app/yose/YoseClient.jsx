@@ -260,6 +260,7 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('yose');
   const STAGE = isStage('yose', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('yose');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('yose');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('yose'), '--stg-acc-lt': gameColorLight('yose'), '--stg-onramp-lt': gameOnrampLight('yose'), '--stg-acc-ink-lt': gameAccentInkLight('yose') };
   const [stageTheme] = useStageTheme();
@@ -791,7 +792,7 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
              stones are the category accent in both. The light block carries the
              boot-stamp guard (app/globals.css). */
           .yo-root{--yo-board:#1d2638;--yo-grid:#4a5670;--yo-wst:#e8ecf4;--yo-wst-rim:#8b95a8;--yo-you-rim:#a87a14;--yo-dot:#8b95a8;--yo-btn:#5a6680;
-            --yo-soft:color-mix(in srgb, var(--stg-acc, #e8b43a) 22%, var(--stg-ground, #0b0f1a));}
+            --yo-soft:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #e8b43a)) 22%, var(--stg-ground, #0b0f1a));}
           html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .yo-root{--yo-board:#e3e7ee;--yo-grid:#78839a;--yo-wst:#ffffff;--yo-wst-rim:#525c70;--yo-you-rim:#7c5104;--yo-dot:#525c70;--yo-btn:#78839a;
             --yo-soft:color-mix(in srgb, var(--stg-acc, #e8b43a) 30%, #ffffff);}
           .yo-k{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute,#8b95a8);}
@@ -808,7 +809,7 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
           .yo-ctl{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2,#aab5c7);border:1.5px solid var(--yo-btn);border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
           .yo-ctl:hover{background:var(--stg-surf2,rgba(255,255,255,.08));color:var(--stg-ink,#e9edf4);}
           .yo-ctl.armed{border-color:var(--stg-bad,#fb7185);color:var(--stg-bad,#fb7185);}
-          .yo-ctl.primary{background:var(--stg-acc,#e8b43a);color:var(--stg-onramp,#1c1a14);border-color:var(--stg-acc,#e8b43a);font-weight:800;padding:0 22px;}
+          .yo-ctl.primary{background:var(--stg-acc,#e8b43a);color:var(--stg-onramp,#1c1a14);border-color:var(--stg-acc-ink, var(--stg-acc,#e8b43a));font-weight:800;padding:0 22px;}
           .yo-ctl.primary:hover{filter:brightness(1.05);}
           .yo-ctl.primary.armed{box-shadow:0 0 0 2px var(--stg-ground,#0b0f1a), 0 0 0 4px var(--stg-acc-ink,#e8b43a);}
           .yo-ctl:disabled{cursor:default;background:transparent;color:var(--stg-mute,#8b95a8);border:1.5px dashed var(--stg-line2,rgba(255,255,255,.17));filter:none;box-shadow:none;}
@@ -847,7 +848,7 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
                 </div>
               )}
               <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <button className="yo-btn" onClick={startGame} style={{ background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, borderColor: STAGE ? STAGE_C : T.cta, fontSize: 15, padding: '11px 22px' }}>Start</button>
+                <button className="yo-btn" onClick={startGame} style={{ background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, borderColor: STAGE ? STAGE_C_INK : T.cta, fontSize: 15, padding: '11px 22px' }}>Start</button>
                 <div>
                   <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                     {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

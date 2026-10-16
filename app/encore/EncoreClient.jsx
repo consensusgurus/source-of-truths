@@ -278,6 +278,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
   // player's own letters until the end card's Reveal answer tile is pressed.
   const viewLetters = g.status === 'revealed' && LOFT && !revealed ? (g.playerLetters || g.letters.map(() => '')) : g.letters;
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('encore');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('encore');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('encore'), '--stg-acc-lt': gameColorLight('encore'), '--stg-onramp-lt': gameOnrampLight('encore'), '--stg-acc-ink-lt': gameAccentInkLight('encore') };
   const [stageTheme] = useStageTheme();
@@ -809,7 +810,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
           .ec-cell .ec-l{font-weight:800;line-height:1;padding-top:12%;color:var(--stg-ink, ${COLORS.ink});}
           .ec-cell.ec-blk{background:color-mix(in srgb, var(--stg-ground, ${COLORS.ink}) 35%, black);cursor:default;}
           html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .ec-cell.ec-blk{background:var(--stg-ink);}
-          .ec-cell.ec-inword{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 22%, var(--xw-cell));}
+          .ec-cell.ec-inword{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 22%, var(--xw-cell));}
           .ec-cell.ec-wrongmark{background:color-mix(in srgb, var(--stg-bad, ${COLORS.rust}) 15%, var(--xw-cell));animation:ecshake .3s ease;}
           .ec-cell.ec-wrongmark .ec-l{color:var(--stg-bad, ${COLORS.rust});}
           .ec-cell.ec-sel{background:var(--stg-acc, ${COLORS.accent});box-shadow:inset 0 0 0 3px var(--stg-ink, ${COLORS.ink});}
@@ -941,7 +942,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="ec-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : THEME.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : THEME.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="ec-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : THEME.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : THEME.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

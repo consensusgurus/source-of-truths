@@ -90,7 +90,7 @@ const CSS = `
 .chx-p.ticket{background:#e8b43a;color:#2a1f04;}
 .chx-p.won{background:color-mix(in srgb,var(--stg-good,#6ee7b7) 22%,transparent);color:var(--stg-good,#6ee7b7);}
 .chx-p.lost{background:color-mix(in srgb,var(--stg-bad,#fb7185) 22%,transparent);color:var(--stg-bad,#fb7185);}
-.chx-p.opened{background:color-mix(in srgb,var(--stg-acc,#7dd3fc) 20%,transparent);color:var(--stg-acc-ink,var(--stg-acc,#7dd3fc));}
+.chx-p.opened{background:color-mix(in srgb,var(--stg-acc-ink, var(--stg-acc,#7dd3fc)) 20%,transparent);color:var(--stg-acc-ink,var(--stg-acc,#7dd3fc));}
 .chx-p.sent{background:var(--stg-line,rgba(255,255,255,.1));color:var(--stg-ink2,#aab5c7);}
 .chx-em{padding:22px 16px;text-align:center;color:var(--stg-ink2,#aab5c7);font-weight:600;font-size:14px;line-height:1.5;}
 .chx-go{display:flex;align-items:center;justify-content:center;min-height:52px;border-radius:12px;background:#2a1f04;color:#fff4d6;font-weight:800;font-size:15px;text-decoration:none;margin-top:6px;}

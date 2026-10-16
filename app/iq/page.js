@@ -108,7 +108,7 @@ const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 const CSS = `
 .iqh{display:flex;flex-direction:column;gap:30px;}
 .iqh-hero{position:relative;padding-left:16px;}
-.iqh-hero::before{content:'';position:absolute;left:0;top:3px;bottom:3px;width:4px;border-radius:2px;background:var(--stg-acc);}
+.iqh-hero::before{content:'';position:absolute;left:0;top:3px;bottom:3px;width:4px;border-radius:2px;background:var(--stg-acc-ink,var(--stg-acc));}
 .iqh-eb{font-family:${MONO};font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--stg-mute);}
 .iqh-h1{margin:7px 0 0;font-size:36px;font-weight:800;letter-spacing:-0.025em;line-height:1.06;color:var(--stg-ink);}
 .iqh-sub{margin:10px 0 0;font-size:15px;font-weight:600;line-height:1.55;max-width:64ch;color:var(--stg-ink2);}

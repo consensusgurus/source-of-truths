@@ -256,6 +256,7 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('crunch');
   const STAGE = isStage('crunch', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('crunch');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('crunch');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('crunch'), '--stg-acc-lt': gameColorLight('crunch'), '--stg-onramp-lt': gameOnrampLight('crunch'), '--stg-acc-ink-lt': gameAccentInkLight('crunch') };
   const [stageTheme] = useStageTheme();
@@ -660,7 +661,7 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
           .cr-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           .cr-tool{font-family:${SANS};font-weight:800;font-size:13px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${INK};border-radius:12px;padding:0 14px;min-height:50px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
           .cr-panels{display:flex;gap:16px;align-items:stretch;}
-          .cr-target{flex:1;min-width:0;border:2px solid var(--stg-acc, ${COLORS.accent});background:${STAGE ? 'var(--stg-acc-tint)' : SLATE};border-radius:18px;padding:14px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;}
+          .cr-target{flex:1;min-width:0;border:2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));background:${STAGE ? 'var(--stg-acc-tint)' : SLATE};border-radius:18px;padding:14px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;}
           .cr-plab{font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:500;}
           .cr-target .cr-plab{color:${STAGE ? 'var(--stg-acc-ink)' : 'rgba(255,255,255,0.75)'};}
           .cr-tnum{font-family:${MONO};font-size:64px;line-height:1.05;font-weight:500;color:${STAGE ? 'var(--stg-ink)' : T.white};font-variant-numeric:tabular-nums;}
@@ -679,7 +680,7 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
           .cr-tile.on{background:${STAGE ? 'var(--stg-acc)' : COLORS.accentSoft};color:${STAGE ? 'var(--stg-onramp)' : INK};outline:3px solid var(--stg-acc-ink, ${COLORS.accent});outline-offset:2px;}
           .cr-ops{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap;}
           .cr-op{width:64px;height:52px;border-radius:12px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${STAGE ? 'var(--stg-acc-ink)' : 'var(--blue-deep)'};font-family:${MONO};font-size:24px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-          .cr-op.on{background:${STAGE ? STAGE_C : COLORS.ink};border-color:${STAGE ? STAGE_C : COLORS.ink};color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};}
+          .cr-op.on{background:${STAGE ? STAGE_C : COLORS.ink};border-color:${STAGE ? STAGE_C_INK : COLORS.ink};color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};}
           .cr-op:disabled{opacity:0.35;cursor:default;}
           .cr-rack.shake{animation:crshake .34s ease;}
           @keyframes crshake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
@@ -744,7 +745,7 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="cr-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="cr-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

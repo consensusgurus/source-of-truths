@@ -143,20 +143,20 @@ const CSS = `
   color:var(--stg-ink2);text-decoration:none;border:1px solid var(--stg-line);
   border-radius:7px;padding:6px 10px;}
 .cfr-cx:hover{border-color:var(--stg-line2);color:var(--stg-ink);}
-.cfr-cx:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.cfr-cx:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 /* RELATIVE, because globals.css hangs .stg-tlab (the register's name during the
    flip) off the switch absolutely and names only the two caps that existed when
    it was written. Declared here rather than added to that selector list so this
    frame carries everything it needs. */
 .cfr-tg{position:relative;display:inline-flex;align-items:center;justify-content:center;
   padding:6px 9px;background:none;cursor:pointer;font:inherit;}
-.cfr-tg.hint{border-color:var(--stg-acc);color:var(--stg-acc-ink);animation:stg-hintring 1.9s ease-out 3;}
+.cfr-tg.hint{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink);animation:stg-hintring 1.9s ease-out 3;}
 /* THE FIRST-VISIT POINTER at the light switch, the same ring both caps draw.
    The keyframes are per stylesheet because each cap ships its own sheet; the
    name is shared, so a browser that has already seen it on another surface
    simply never gets the class. */
 @keyframes stg-hintring{
-  0%{box-shadow:0 0 0 0 var(--stg-acc);}
+  0%{box-shadow:0 0 0 0 var(--stg-acc-ink, var(--stg-acc));}
   70%{box-shadow:0 0 0 10px transparent;}
   100%{box-shadow:0 0 0 0 transparent;}
 }

@@ -238,6 +238,7 @@ export default function BlitzClient({ puzzles = [], problemsByNum = {}, forceNum
   // Resolved in an effect: the server cannot know what is stored.
   const [stageTheme] = useStageTheme();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('blitz');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('blitz');
   const STAGE_ACC = { '--stg-acc-dk': gameColor('blitz'), '--stg-acc-lt': gameColorLight('blitz'), '--stg-onramp-lt': gameOnrampLight('blitz'), '--stg-acc-ink-lt': gameAccentInkLight('blitz') };
   const Cap = STAGE ? StageChrome : LoftCap;
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
@@ -638,7 +639,7 @@ export default function BlitzClient({ puzzles = [], problemsByNum = {}, forceNum
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="bz-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="bz-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

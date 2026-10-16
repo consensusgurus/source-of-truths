@@ -320,7 +320,7 @@ const CSS = `
 .gh-vis{display:inline-block;vertical-align:2px;margin-left:6px;padding:1px 6px;border-radius:999px;
   border:1px solid var(--stg-line2);font-family:ui-monospace,Menlo,monospace;font-size:9px;font-weight:500;
   letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);}
-.gh-vis.pub{border-color:var(--stg-acc);color:var(--stg-acc-ink);}
+.gh-vis.pub{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink);}
 .gh-pubtog{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--stg-ink2);margin-top:2px;cursor:pointer;}
 .gh-pubtog input{margin-top:2px;accent-color:var(--stg-acc);}
 @media(max-width:800px){.gh-grid{grid-template-columns:1fr;}}

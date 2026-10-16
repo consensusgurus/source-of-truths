@@ -328,6 +328,7 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('sums');
   const STAGE = isStage('sums', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('sums');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('sums');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('sums'), '--stg-acc-lt': gameColorLight('sums'), '--stg-onramp-lt': gameOnrampLight('sums'), '--stg-acc-ink-lt': gameAccentInkLight('sums') };
   const [stageTheme] = useStageTheme();
@@ -832,12 +833,12 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
     // never a tint of the cell: a 9% ink mix came out within a few points of
     // the cell itself and the board read as one grey sheet (seen live 9/3).
     if (black) bg = STAGE ? 'var(--su-block, #05070d)' : '#e9edf3';
-    if (peer) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 14%, ' + XW + ')' : COLORS.accentSoft;
-    if (sameVal) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 22%, ' + XW + ')' : COLORS.accentTint;
+    if (peer) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 14%, ' + XW + ')' : COLORS.accentSoft;
+    if (sameVal) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 22%, ' + XW + ')' : COLORS.accentTint;
     if (isSel) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 30%, ' + XW + ')' : COLORS.accentPick;
     return {
       background: bg,
-      boxShadow: isSel ? `inset 0 0 0 3px var(--stg-acc, ${COLORS.accent})` : undefined,
+      boxShadow: isSel ? `inset 0 0 0 3px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : undefined,
       zIndex: isSel ? 1 : undefined,
       borderRight: STAGE ? '1px solid var(--stg-line2)' : '1px solid rgba(28,30,36,0.18)',
       borderBottom: STAGE ? '1px solid var(--stg-line2)' : '1px solid rgba(28,30,36,0.18)',
@@ -910,7 +911,7 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
           html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .su-grid{--su-block:#1e2433;--su-block-ink:#ffffff;--su-block-line:#5a6680;--su-clue-done:#6ee7b7;}
           .su-grid.big{width:min(560px,100%);}
           .su-cell{display:flex;align-items:center;justify-content:center;font-family:${SANS};box-sizing:border-box;cursor:pointer;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;padding:0;margin:0;border:0;border-radius:0;color:var(--stg-acc-ink);}
-          .su-cell:focus-visible{outline:3px solid var(--stg-acc);outline-offset:-3px;}
+          .su-cell:focus-visible{outline:3px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:-3px;}
           .su-v{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--stg-acc-ink);}
           .su-grid.big .su-v{font-size:22px;}
           .su-user{color:var(--stg-acc-ink);}
@@ -932,7 +933,7 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
           .su-combo-lbl{min-width:132px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-acc-ink);white-space:nowrap;}
           .su-combo-left{min-width:92px;white-space:nowrap;font-size:13px;font-weight:700;color:var(--stg-ink);}
           .su-combo-hint{font-weight:600;color:var(--stg-mute);}
-          .su-set{font-family:${SANS};font-size:14px;font-weight:800;letter-spacing:.08em;color:var(--stg-ink);padding:3px 10px;border-radius:7px;background:color-mix(in srgb, var(--stg-acc) 18%, var(--stg-cell));white-space:nowrap;}
+          .su-set{font-family:${SANS};font-size:14px;font-weight:800;letter-spacing:.08em;color:var(--stg-ink);padding:3px 10px;border-radius:7px;background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 18%, var(--stg-cell));white-space:nowrap;}
           .su-set.x{color:var(--stg-mute);font-weight:700;letter-spacing:0;text-decoration:line-through;background:transparent;padding:3px 2px;}
           .su-say{width:100%;max-width:560px;margin-top:14px;display:flex;flex-direction:column;gap:2px;}
           .su-say-a{font-size:15px;font-weight:700;color:var(--stg-ink);}
@@ -942,16 +943,16 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
           .su-pad:hover:not(.done){background:var(--stg-surf2);}
           .su-pad.done{color:var(--stg-mute);background:var(--stg-surf2);border-color:var(--stg-line2);cursor:default;}
           .su-pad.done span{text-decoration:line-through;text-decoration-thickness:2px;}
-          .su-pad.armed{background:var(--stg-acc);color:var(--stg-onramp);border-color:var(--stg-acc);}
+          .su-pad.armed{background:var(--stg-acc);color:var(--stg-onramp);border-color:var(--stg-acc-ink, var(--stg-acc));}
           .su-pad.erase{display:none;font-size:13px;font-weight:700;color:var(--stg-ink2);}
           .su-tools{width:100%;margin-top:16px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--stg-line);padding-top:14px;}
           .su-tool{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2);border:1.5px solid var(--stg-cell-line);border-radius:12px;padding:0 14px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;}
           .su-tool:hover:not(:disabled){background:var(--stg-surf2);}
           .su-tool:disabled{color:var(--stg-mute);border-color:var(--stg-line2);cursor:default;}
-          .su-tool.on{background:var(--stg-acc);color:var(--stg-onramp);border-color:var(--stg-acc);}
+          .su-tool.on{background:var(--stg-acc);color:var(--stg-onramp);border-color:var(--stg-acc-ink, var(--stg-acc));}
           .su-tool.on .st{color:var(--stg-onramp);}
           .su-tool.armed{color:var(--stg-bad);border-color:var(--stg-bad);background:color-mix(in srgb, var(--stg-bad) 10%, transparent);}
-          .su-tool.hint{color:var(--stg-acc-ink);border-color:var(--stg-acc);}
+          .su-tool.hint{color:var(--stg-acc-ink);border-color:var(--stg-acc-ink, var(--stg-acc));}
           .su-tool .st{font-weight:700;}
           .su-tool.ph-only{display:none;}
           .su-under{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0 12px;padding:12px 2px 0;}
@@ -1033,7 +1034,7 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="su-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="su-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -1380,7 +1381,7 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
               <button onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
             </div>
             {rulesBody}
-            <button className="su-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: STAGE ? 'var(--stg-acc)' : COLORS.ink, color: STAGE ? 'var(--stg-onramp)' : T.white, borderColor: STAGE ? 'var(--stg-acc)' : undefined }}>Play</button>
+            <button className="su-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: STAGE ? 'var(--stg-acc)' : COLORS.ink, color: STAGE ? 'var(--stg-onramp)' : T.white, borderColor: STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : undefined }}>Play</button>
           </div>
         </div>
       )}

@@ -295,6 +295,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('four');
   const STAGE = isStage('four', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('four');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('four');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('four'), '--stg-acc-lt': gameColorLight('four'), '--stg-onramp-lt': gameOnrampLight('four'), '--stg-acc-ink-lt': gameAccentInkLight('four') };
   const [stageTheme] = useStageTheme();
@@ -778,7 +779,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
              Your discs are the category accent in both. The light block carries
              the boot-stamp guard (app/globals.css). */
           .fr-root{--fr-board:#1d2638;--fr-hole:#0b0f1a;--fr-hole-line:#2a3448;--fr-foe:#e8ecf4;--fr-foe-rim:#8b95a8;--fr-mark:#0b0f1a;--fr-you-rim:#a87a14;--fr-btn:#5a6680;
-            --fr-soft:color-mix(in srgb, var(--stg-acc, #e8b43a) 22%, var(--stg-ground, #0b0f1a));}
+            --fr-soft:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #e8b43a)) 22%, var(--stg-ground, #0b0f1a));}
           html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .fr-root{--fr-board:#c9d1de;--fr-hole:#ffffff;--fr-hole-line:#9aa5b8;--fr-foe:#2c3446;--fr-foe-rim:#0f1420;--fr-mark:#ffffff;--fr-you-rim:#7c5104;--fr-btn:#78839a;
             --fr-soft:color-mix(in srgb, var(--stg-acc, #e8b43a) 30%, #ffffff);}
           .fr-k{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute,#8b95a8);}
@@ -820,7 +821,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
           .fr-ctl{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2,#aab5c7);border:1.5px solid var(--fr-btn);border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
           .fr-ctl:hover{background:var(--stg-surf2,rgba(255,255,255,.08));color:var(--stg-ink,#e9edf4);}
           .fr-ctl.armed{border-color:var(--stg-bad,#fb7185);color:var(--stg-bad,#fb7185);}
-          .fr-ctl.primary{background:var(--stg-acc,#e8b43a);color:var(--stg-onramp,#1c1a14);border-color:var(--stg-acc,#e8b43a);font-weight:800;}
+          .fr-ctl.primary{background:var(--stg-acc,#e8b43a);color:var(--stg-onramp,#1c1a14);border-color:var(--stg-acc-ink, var(--stg-acc,#e8b43a));font-weight:800;}
           .fr-ctl.primary:hover{filter:brightness(1.05);background:var(--stg-acc,#e8b43a);color:var(--stg-onramp,#1c1a14);}
           .fr-link{background:none;border:none;cursor:pointer;font-family:${SANS};font-weight:700;font-size:12px;color:var(--stg-ink2,#aab5c7);text-decoration:underline;text-underline-offset:3px;white-space:nowrap;min-height:44px;min-width:84px;padding:0;text-align:right;}
           .fr-link.armed{color:var(--stg-bad,#fb7185);}
@@ -872,7 +873,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="fr-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="fr-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

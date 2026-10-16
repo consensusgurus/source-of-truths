@@ -134,6 +134,7 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
   const STAGE = isStage('potluck', searchParams);
   const [stageTheme] = useStageTheme();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('potluck');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('potluck');
   const STAGE_ACC = { '--stg-acc-dk': gameColor('potluck'), '--stg-acc-lt': gameColorLight('potluck'), '--stg-onramp-lt': gameOnrampLight('potluck'), '--stg-acc-ink-lt': gameAccentInkLight('potluck') };
   const Cap = STAGE ? StageChrome : LoftCap;
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : T.ink;
@@ -298,7 +299,7 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
                       })}
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                      <button type="button" className="pl-btn" disabled={!hydrated} onClick={goRun} style={{ background: ACC, borderColor: ACC, color: ON_ACC, padding: '10px 26px', fontSize: 15 }}>
+                      <button type="button" className="pl-btn" disabled={!hydrated} onClick={goRun} style={{ background: ACC, borderColor: ACC_INK, color: ON_ACC, padding: '10px 26px', fontSize: 15 }}>
                         {started ? `Continue to quiz ${Math.min(doneCount + 1, quizzes.length)}` : 'Start'}
                       </button>
                       <div>

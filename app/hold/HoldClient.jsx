@@ -74,12 +74,13 @@ const COLORS = {
 // table Hands, Shoe and Crib play on, so it follows both registers. Card
 // FACES are paper in both registers (playing cards are physical objects):
 // white, near-black and red ink, exactly as Hands draws them.
-const FELT = 'color-mix(in srgb, var(--stg-acc, #b91c1c) 9%, var(--stg-cell, #fbeaea))';
+const FELT = 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #b91c1c)) 9%, var(--stg-cell, #fbeaea))';
 const FACE = '#ffffff';
 const FACE_INK = '#16181d';
 const FACE_RED = '#b91c1c';
 const FACE_EDGE = 'rgba(20,22,28,0.30)';
 const A_FILL = 'var(--stg-acc, #b91c1c)';
+const A_FILL_INK = 'var(--stg-acc-ink, var(--stg-acc, #b91c1c))';
 const ON_A = 'var(--stg-onramp, #ffffff)';
 const A_INK = 'var(--stg-acc-ink, #b91c1c)';
 const CELL = 'var(--stg-cell, #ffffff)';
@@ -283,6 +284,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('hold');
   const STAGE = isStage('hold', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('hold');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('hold');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('hold'), '--stg-acc-lt': gameColorLight('hold'), '--stg-onramp-lt': gameOnrampLight('hold'), '--stg-acc-ink-lt': gameAccentInkLight('hold') };
   const [stageTheme] = useStageTheme();
@@ -689,7 +691,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
                 </div>
               )}
               <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <button className="hl-btn" onClick={startGame} style={{ background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, borderColor: STAGE ? STAGE_C : T.cta, fontSize: 15, padding: '11px 22px' }}>Start</button>
+                <button className="hl-btn" onClick={startGame} style={{ background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, borderColor: STAGE ? STAGE_C_INK : T.cta, fontSize: 15, padding: '11px 22px' }}>Start</button>
                 <div>
                   <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                     {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -723,7 +725,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
               }
               if (playing && i === current) {
                 return (
-                  <div key={i} role="listitem" aria-current="step" title={`Hand ${i + 1}, in play`} style={{ ...base, background: 'color-mix(in srgb, var(--stg-acc, #b91c1c) 12%, var(--stg-cell, #ffffff))', border: `2px solid ${A_FILL}` }}>
+                  <div key={i} role="listitem" aria-current="step" title={`Hand ${i + 1}, in play`} style={{ ...base, background: 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #b91c1c)) 12%, var(--stg-cell, #ffffff))', border: `2px solid ${A_FILL_INK}` }}>
                     {narrow
                       ? <b style={{ fontSize: big ? 9 : 11, fontWeight: 800, letterSpacing: '.04em', color: A_INK }}>NOW</b>
                       : <><span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.08em', color: A_INK }}>NOW</span><b style={{ fontSize: 13, fontWeight: 800, color: A_INK }}>H{i + 1}</b></>}
@@ -807,7 +809,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
                   const label = `${cardWords(c)}${showFin ? (held ? ', held' : ', thrown') : (held ? ', held' : '')}${ring ? ', hinted' : ''}`;
                   return (
                     <div key={k} style={{ position: 'relative', width: CW, flex: 'none' }}>
-                      <span className="hl-tag" aria-hidden="true" style={{ position: 'absolute', left: 0, right: 0, top: narrow ? -20 : -24, height: narrow ? 16 : 18, fontSize: narrow ? 9 : 10, color: held ? ON_A : (drawn ? A_INK : S_MUTE), background: held ? A_FILL : 'transparent', border: held ? 'none' : (drawn ? `1.5px solid ${A_FILL}` : 'none'), transform: `translateY(-${lift}px)` }}>
+                      <span className="hl-tag" aria-hidden="true" style={{ position: 'absolute', left: 0, right: 0, top: narrow ? -20 : -24, height: narrow ? 16 : 18, fontSize: narrow ? 9 : 10, color: held ? ON_A : (drawn ? A_INK : S_MUTE), background: held ? A_FILL : 'transparent', border: held ? 'none' : (drawn ? `1.5px solid ${A_FILL_INK}` : 'none'), transform: `translateY(-${lift}px)` }}>
                         {held ? 'Held' : drawn ? 'Thrown' : (live ? `${k + 1}` : '')}
                       </span>
                       <button type="button" className={`hl-card${live ? ' live' : ''}${held ? ' on' : ''}`}
@@ -817,7 +819,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
                         aria-label={label}
                         style={{
                           width: CW, height: CH, borderRadius: narrow ? 8 : 11, display: 'block',
-                          border: held && !showFin ? `3px solid ${A_FILL}` : drawn ? `2px dashed ${A_FILL}` : `1.5px solid ${FACE_EDGE}`,
+                          border: held && !showFin ? `3px solid ${A_FILL_INK}` : drawn ? `2px dashed ${A_FILL}` : `1.5px solid ${FACE_EDGE}`,
                           boxShadow: shadow, transform: `translateY(-${lift}px)`, cursor: live ? 'pointer' : 'default',
                         }}>
                         <CardFace card={c} sz={FACE_SZ} />
@@ -837,7 +839,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
             );
             const drawBtn = (
               <button className="hl-btn" onClick={drawIt}
-                style={{ background: STAGE_C, color: 'var(--stg-onramp, #ffffff)', borderColor: STAGE_C, ...(narrow ? { flex: 2, fontSize: 16 } : { fontSize: 15, padding: '0 30px' }) }}>Draw</button>
+                style={{ background: STAGE_C, color: 'var(--stg-onramp, #ffffff)', borderColor: STAGE_C_INK, ...(narrow ? { flex: 2, fontSize: 16 } : { fontSize: 15, padding: '0 30px' }) }}>Draw</button>
             );
             const dealtChip = (
               <span className="hl-chip" style={{ fontSize: narrow ? 11 : 12, padding: narrow ? '4px 10px' : '5px 11px', border: `1.5px solid ${CELL_LINE}`, color: S_INK }}>
@@ -877,7 +879,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 12, flexWrap: 'wrap' }} aria-label={`Your draw: ${reveal.fin.map(cardWords).join(', ')}`}>
                   <span style={{ fontFamily: SANS, fontSize: 10, fontWeight: 800, letterSpacing: '.09em', textTransform: 'uppercase', color: S_MUTE, marginRight: 6 }}>Your draw</span>
                   {reveal.fin.map((c, k) => (
-                    <span key={k} style={{ display: 'inline-flex', borderRadius: 7, padding: 1, border: (pickM >> k) & 1 ? '2px solid transparent' : `2px dashed ${A_FILL}` }}>
+                    <span key={k} style={{ display: 'inline-flex', borderRadius: 7, padding: 1, border: (pickM >> k) & 1 ? '2px solid transparent' : `2px dashed ${A_FILL_INK}` }}>
                       <MiniCard card={c} w={narrow ? 30 : 34} h={narrow ? 40 : 46} />
                     </span>
                   ))}
@@ -886,7 +888,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
                   For the look of it, off the day&rsquo;s fixed shuffle (new cards dashed): {reveal.k === 'nothing' ? 'no pay' : <><b style={{ color: INK }}>{HAND_LABEL[reveal.k].toLowerCase()}</b>, paying {reveal.pay}</>}. That is luck: the expected return above is the average over every draw, which is what counts.
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
-                  <button className="hl-btn" onClick={nextHand} style={{ background: STAGE_C, color: 'var(--stg-onramp, #ffffff)', borderColor: STAGE_C, ...(narrow ? { width: '100%' } : null) }}>
+                  <button className="hl-btn" onClick={nextHand} style={{ background: STAGE_C, color: 'var(--stg-onramp, #ffffff)', borderColor: STAGE_C_INK, ...(narrow ? { width: '100%' } : null) }}>
                     {g.picks.length >= NH ? 'See your score' : 'Next hand'} <ArrowRight size={15} />
                   </button>
                 </div>

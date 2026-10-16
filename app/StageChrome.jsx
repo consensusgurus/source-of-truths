@@ -580,7 +580,7 @@ const CSS = `
 .stg-clk-off{display:inline-flex;align-items:center;gap:5px;color:var(--stg-ink2,#aab5c7);}
 .stg-clk-off span{font-size:11px;letter-spacing:.1em;text-transform:uppercase;}
 .stg-clk:hover .stg-clk-off{color:var(--stg-ink,#e9edf4);}
-.stg-clk:focus-visible{outline:2px solid var(--stg-acc);outline-offset:3px;border-radius:4px;}
+.stg-clk:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:3px;border-radius:4px;}
 
 .stg-cx{display:inline-flex;align-items:center;gap:6px;font-family:${MONO};font-size:10px;
   letter-spacing:.11em;text-transform:uppercase;color:var(--stg-ink2,#aab5c7);border:1px solid var(--stg-line);
@@ -594,24 +594,24 @@ const CSS = `
 .stg-brand b{font-size:13px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;}
 .stg-brand b em{font-style:normal;color:var(--stg-acc-ink,var(--stg-brand,#7dd3fc));}
 .stg-brand:hover{opacity:.82;}
-.stg-brand:focus-visible{outline:2px solid var(--stg-acc);outline-offset:3px;border-radius:4px;}
+.stg-brand:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:3px;border-radius:4px;}
 .stg-ds{display:none;}
 .stg-theme{padding:5px 8px;}
-.stg-theme.hint{border-color:var(--stg-acc);color:var(--stg-acc-ink);animation:stg-hintring 1.9s ease-out 3;}
+.stg-theme.hint{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink);animation:stg-hintring 1.9s ease-out 3;}
 /* THE FIRST-VISIT POINTER at the light switch: a ring pulsing out of the glyph,
    three times, then gone for good. Deliberately a ring rather than a colour
    change, so it draws the eye without the control ever looking like it is in a
    state it is not. */
 @keyframes stg-hintring{
-  0%{box-shadow:0 0 0 0 var(--stg-acc);}
+  0%{box-shadow:0 0 0 0 var(--stg-acc-ink, var(--stg-acc));}
   70%{box-shadow:0 0 0 10px transparent;}
   100%{box-shadow:0 0 0 0 transparent;}
 }
 @media (prefers-reduced-motion: reduce){ .hint{animation:none !important;} }
 
 .stg-cx:hover{border-color:var(--stg-line2,rgba(255,255,255,0.17));color:var(--stg-ink,#e9edf4);}
-.stg-rank.on{color:var(--stg-onramp,#08222e);background:var(--stg-acc);border-color:var(--stg-acc);}
-.stg-cx:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.stg-rank.on{color:var(--stg-onramp,#08222e);background:var(--stg-acc);border-color:var(--stg-acc-ink, var(--stg-acc));}
+.stg-cx:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 
 .stg-prog{height:2px;background:var(--stg-surf2,rgba(255,255,255,0.08));}
 .stg-prog span{display:block;height:100%;background:var(--stg-acc);transition:width .3s ease;}
@@ -621,7 +621,7 @@ const CSS = `
   padding:9px 20px;font-family:${SANS};font-size:12.5px;color:var(--stg-ink,#e9edf4);}
 .stg-strip:hover{background:var(--stg-surf,rgba(255,255,255,0.045));}
 .stg-strip.on{background:var(--stg-surf2,rgba(255,255,255,0.08));}
-.stg-strip:focus-visible{outline:2px solid var(--stg-acc);outline-offset:-2px;}
+.stg-strip:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:-2px;}
 /* The held row is a div standing in for a button: a button's UA line-height
    is normal, so the div is told the same or it lands a pixel or two off. */
 .stg-strip-hold,.stg-strip-hold:hover{cursor:default;line-height:normal;box-sizing:border-box;}
@@ -631,7 +631,7 @@ const CSS = `
 .stg-strip2,.stg-strip2:hover{cursor:default;line-height:normal;box-sizing:border-box;}
 :where(.stg-strip2)>button{display:flex;align-items:center;gap:11px;min-width:0;background:none;border:0;padding:0;margin:0;
   font:inherit;color:inherit;cursor:pointer;text-align:left;}
-.stg-strip2>button:focus-visible{outline:2px solid var(--stg-acc);outline-offset:3px;border-radius:4px;}
+.stg-strip2>button:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:3px;border-radius:4px;}
 .stg-show{color:var(--stg-ink2,#aab5c7);font-family:${MONO};font-size:9.5px;font-weight:500;
   letter-spacing:.12em;text-transform:uppercase;gap:7px;}
 .stg-show:hover{color:var(--stg-ink,#e9edf4);}

@@ -230,6 +230,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('dario');
   const STAGE = isStage('dario', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('dario');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('dario');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('dario'), '--stg-acc-lt': gameColorLight('dario'), '--stg-onramp-lt': gameOnrampLight('dario'), '--stg-acc-ink-lt': gameAccentInkLight('dario') };
   const [stageTheme] = useStageTheme();
@@ -706,7 +707,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
                       )}
 
                       {over && (
-                        <button onClick={startRun} style={{ marginTop: 14, width: '100%', minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: SANS, fontWeight: 800, fontSize: 15, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, background: STAGE ? STAGE_C : T.cta, border: `2px solid ${STAGE ? STAGE_C : T.cta}`, borderRadius: 12, padding: '13px 18px', cursor: 'pointer' }}>
+                        <button onClick={startRun} style={{ marginTop: 14, width: '100%', minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: SANS, fontWeight: 800, fontSize: 15, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, background: STAGE ? STAGE_C : T.cta, border: `2px solid ${STAGE ? STAGE_C_INK : T.cta}`, borderRadius: 12, padding: '13px 18px', cursor: 'pointer' }}>
                           <RotateCcw size={16} /> Run it again
                         </button>
                       )}
@@ -926,7 +927,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
         .dr-hero { max-width: 900px; margin: 0 auto; border-radius: 12px; overflow: hidden; background: var(--stg-raise, #12141c); border: 1px solid var(--stg-line, transparent); }
         .dr-hero-img { display: block; width: 100%; height: auto; aspect-ratio: 1200 / 630; image-rendering: pixelated; }
         .dr-hero-bar { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 16px 16px 18px; }
-        .dr-start { width: min(100%, 420px); min-height: 60px; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 20px; font-weight: 400; letter-spacing: .08em; color: var(--stg-onramp, #1c1a14); background: var(--stg-acc, #fbbf24); border: 0; border-bottom: 5px solid color-mix(in srgb, var(--stg-acc, #fbbf24) 62%, #000); border-radius: 12px; padding: 16px 24px; cursor: pointer; }
+        .dr-start { width: min(100%, 420px); min-height: 60px; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 20px; font-weight: 400; letter-spacing: .08em; color: var(--stg-onramp, #1c1a14); background: var(--stg-acc, #fbbf24); border: 0; border-bottom: 5px solid color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #fbbf24)) 62%, #000); border-radius: 12px; padding: 16px 24px; cursor: pointer; }
         .dr-start:hover { filter: brightness(1.05); }
         .dr-start:active { transform: translateY(3px); border-bottom-width: 2px; }
         .dr-start:focus-visible { outline: 3px solid var(--stg-acc-ink, #8a5a00); outline-offset: 3px; }

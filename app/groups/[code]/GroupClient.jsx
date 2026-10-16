@@ -11,7 +11,7 @@ import GroupsShell, {
   etTodayIso, shiftIso, suffixOfIso, labelOfIso, ordinal, Avatar,
 } from '../GroupsShell';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
-import { categoryColor, categoryColorLight } from '@/lib/category-ramp';
+import { categoryColor, categoryAccentInkLight } from '@/lib/category-ramp';
 import { gameStats } from '@/lib/daily-row-stats';
 import { useStageTheme } from '@/lib/stage-theme';
 import GameGlyph from '../../GameGlyph';
@@ -391,7 +391,8 @@ function GamesPane({ board, boardErr, members, viewer, day, today, setDay, gameK
   const meta = pick ? DAILY_GAME_MAP[pick.key] : null;
   const nameOnly = new Map(members.map((m) => [m.userKey, m.nameOnly]));
   const inBoard = new Set(pick ? pick.board.map((r) => r.userKey) : []);
-  const hue = (cat) => (light ? categoryColorLight(cat) : categoryColor(cat));
+  // Only marks here (an 8px dot, a glyph), so the ink step in light.
+  const hue = (cat) => (light ? categoryAccentInkLight(cat) : categoryColor(cat));
   return (
     <div className="gp-pane">
       <DayNav day={day} today={today} setDay={setDay} frozen={board && board.frozen} />
@@ -590,7 +591,7 @@ const CSS = `
 .gp-invite{align-self:flex-start;}
 .gp-tabs{display:flex;gap:4px;padding:16px 22px 0;border-bottom:1px solid var(--stg-line);overflow-x:auto;}
 .grp-tab{border:0;background:none;padding:10px 12px 12px;font:inherit;font-weight:700;font-size:14px;color:var(--stg-mute);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;cursor:pointer;}
-.grp-tab[aria-selected=true]{color:var(--stg-ink);border-bottom-color:var(--stg-acc);}
+.grp-tab[aria-selected=true]{color:var(--stg-ink);border-bottom-color:var(--stg-acc-ink, var(--stg-acc));}
 .gp-pane{padding:18px 22px 22px;}
 .gp-dayline{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
 .gp-daynav{display:flex;align-items:center;gap:6px;}
@@ -627,7 +628,7 @@ const CSS = `
 .gp-play{margin-left:auto;font-size:13px;font-weight:800;color:var(--stg-acc-ink);text-decoration:none;}
 .gp-mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
 .gp-mcard{border:1px solid var(--stg-line);background:var(--stg-surf);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px;}
-.gp-mcard.me{border-color:var(--stg-acc);}
+.gp-mcard.me{border-color:var(--stg-acc-ink, var(--stg-acc));}
 .gp-kv{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;}
 .gp-kv div{display:flex;flex-direction:column;min-width:0;}
 .gp-kv b{font-size:16px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}

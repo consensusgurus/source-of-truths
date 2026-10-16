@@ -79,7 +79,7 @@ const CSS = `
 .drr-chips{display:flex;gap:6px;flex-wrap:wrap;}
 .drr-c{padding:3px 9px;border-radius:999px;border:1px solid var(--stg-line,rgba(127,127,127,.3));color:var(--stg-ink2,inherit);
   text-decoration:none;font-weight:700;}
-.drr-c.now{border-color:var(--stg-acc);color:var(--stg-acc-ink,var(--stg-acc));}
+.drr-c.now{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink,var(--stg-acc));}
 .drr-c.done{color:var(--stg-mute,#8a93a6);}
 .drr-x{margin-left:auto;color:var(--stg-mute,#8a93a6);font-weight:700;text-decoration:none;}
 .drr-bar{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:60;width:min(520px,calc(100vw - 24px));

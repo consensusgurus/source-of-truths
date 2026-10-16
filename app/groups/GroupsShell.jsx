@@ -199,11 +199,11 @@ const GROUPS_CSS = `
 .grp-ok{font-size:13px;font-weight:700;color:var(--stg-good);margin:0;}
 .grp-btn{border-radius:999px;padding:9px 16px;font:inherit;font-size:13.5px;font-weight:800;border:1px solid var(--stg-line2);background:none;color:var(--stg-ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
 .grp-btn:hover{background:var(--stg-surf2);}
-.grp-btn.solid{background:var(--stg-acc);border-color:var(--stg-acc);color:var(--stg-onramp);}
+.grp-btn.solid{background:var(--stg-acc);border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-onramp);}
 .grp-btn.solid:hover{filter:brightness(1.06);}
 .grp-btn.danger{color:var(--stg-bad);}
 .grp-btn:disabled{opacity:.5;cursor:default;}
-.grp-btn:focus-visible,.grp-chip:focus-visible,.grp-tab:focus-visible,.grp-in:focus-visible,.grp-gbtn:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.grp-btn:focus-visible,.grp-chip:focus-visible,.grp-tab:focus-visible,.grp-in:focus-visible,.grp-gbtn:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 .grp-in{font:inherit;font-size:14px;border:1px solid var(--stg-cell-line);border-radius:10px;padding:9px 12px;background:var(--stg-cell);color:var(--stg-ink);min-width:0;}
 .grp-in::placeholder{color:var(--stg-mute);}
 .grp-code-in{font-family:"Manrope",ui-monospace,monospace;letter-spacing:.2em;text-transform:uppercase;}

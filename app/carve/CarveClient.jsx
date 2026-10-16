@@ -280,6 +280,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('carve');
   const STAGE = isStage('carve', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('carve');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('carve');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('carve'), '--stg-acc-lt': gameColorLight('carve'), '--stg-onramp-lt': gameOnrampLight('carve'), '--stg-acc-ink-lt': gameAccentInkLight('carve') };
   const [stageTheme] = useStageTheme();
@@ -772,7 +773,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
           .cv-grid.n7{width:min(476px,100%);}
           .cv-panel.n7 .cv-pick,.cv-panel.n7 .cv-say{max-width:476px;}
           .cv-cell{display:flex;align-items:center;justify-content:center;font-family:${SANS};box-sizing:border-box;cursor:pointer;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;transition:background .12s;border:0;border-radius:0;padding:0;margin:0;background:var(--stg-cell);color:var(--stg-ink);}
-          .cv-cell:focus-visible{outline:3px solid var(--stg-acc);outline-offset:-3px;}
+          .cv-cell:focus-visible{outline:3px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:-3px;}
           .cv-cell .d{position:relative;font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--stg-ink);}
           .cv-grid.n7 .cv-cell .d{font-size:23px;}
           .cv-cell.seed .d{font-weight:800;}
@@ -802,7 +803,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
           .cv-foot-n{flex:1;font-size:12px;font-weight:600;color:var(--stg-mute);}
           .cv-tool{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2);border:1.5px solid var(--stg-cell-line);border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:none;}
           .cv-tool:hover{background:var(--stg-surf2);}
-          .cv-tool.hint{color:var(--stg-acc-ink);border-color:var(--stg-acc);}
+          .cv-tool.hint{color:var(--stg-acc-ink);border-color:var(--stg-acc-ink, var(--stg-acc));}
           .cv-under{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0 12px;padding:12px 2px 0;}
           .cv-under-n{flex:1 1 180px;min-width:0;font-size:12px;font-weight:600;color:var(--stg-mute);}
           .cv-reveal{margin-left:auto;background:none;border:none;cursor:pointer;font-family:${SANS};font-weight:700;font-size:12px;color:var(--stg-ink2);text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0;display:inline-flex;align-items:center;gap:5px;flex:none;}
@@ -882,7 +883,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="cv-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : THEME.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : THEME.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="cv-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : THEME.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : THEME.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -1168,7 +1169,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
               <button onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
             </div>
             {rulesBody}
-            <button className="cv-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: STAGE ? 'var(--stg-acc)' : COLORS.ink, color: STAGE ? 'var(--stg-onramp)' : THEME.white, borderColor: STAGE ? 'var(--stg-acc)' : undefined }}>Play</button>
+            <button className="cv-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: STAGE ? 'var(--stg-acc)' : COLORS.ink, color: STAGE ? 'var(--stg-onramp)' : THEME.white, borderColor: STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : undefined }}>Play</button>
           </div>
         </div>
       )}

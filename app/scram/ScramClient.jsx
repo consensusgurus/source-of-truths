@@ -266,6 +266,7 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('scram');
   const STAGE = isStage('scram', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('scram');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('scram');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('scram'), '--stg-acc-lt': gameColorLight('scram'), '--stg-onramp-lt': gameOnrampLight('scram'), '--stg-acc-ink-lt': gameAccentInkLight('scram') };
   const [stageTheme] = useStageTheme();
@@ -276,7 +277,7 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
   const CELL = STAGE ? 'var(--stg-cell)' : T.white;
   const CELL_LINE = STAGE ? 'var(--stg-cell-line)' : 'rgba(20,22,28,0.44)';
   const ACC_INK = STAGE ? 'var(--stg-acc-ink)' : COLORS.ember;
-  const CUR_BG = STAGE ? 'color-mix(in srgb, var(--stg-acc) 14%, var(--stg-cell))' : '#eef4ff';
+  const CUR_BG = STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 14%, var(--stg-cell))' : '#eef4ff';
   const DONE_BG = STAGE ? 'var(--stg-ink)' : COLORS.ink;
   const DONE_FG = STAGE ? 'var(--stg-ground)' : T.white;
   const GOOD = STAGE ? 'var(--stg-good)' : COLORS.good;
@@ -620,7 +621,7 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
                 </div>
               )}
               <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <button className="sc-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+                <button className="sc-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
                 <div>
                   <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                     {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -655,7 +656,7 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
               {/* The input panel: scramble, answer squares and Skip in one framed
                   card, so the thing you are typing into reads as the subject of the
                   page and the pips, nav and keyboard around it read as furniture. */}
-              <div key={'w' + sel} className="sc-word sc-panel" style={{ alignSelf: 'stretch', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, padding: '22px 16px 16px', borderRadius: 14, background: SURF, border: STAGE ? '1.5px solid var(--stg-line2,rgba(255,255,255,0.17))' : '1.5px solid rgba(20,22,28,0.14)', borderTop: `3px solid ${STAGE_C}`, boxShadow: STAGE ? 'none' : '0 6px 18px rgba(20,22,28,0.06)' }}>
+              <div key={'w' + sel} className="sc-word sc-panel" style={{ alignSelf: 'stretch', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, padding: '22px 16px 16px', borderRadius: 14, background: SURF, border: STAGE ? '1.5px solid var(--stg-line2,rgba(255,255,255,0.17))' : '1.5px solid rgba(20,22,28,0.14)', borderTop: `3px solid ${STAGE_C_INK}`, boxShadow: STAGE ? 'none' : '0 6px 18px rgba(20,22,28,0.06)' }}>
                 <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', justifyContent: 'center' }} aria-label={`Scrambled: ${word.s}`}>
                   {word.s.split('').map((ch, i) => (
                     <span key={i} style={{ width: miniW, height: miniW, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, background: MINI_BG, color: FADED, fontWeight: 800, fontSize: `min(17px, calc(${miniW} * 0.52))`, opacity: usedIdx.has(i) && !showAns ? 0.28 : 1, transition: 'opacity .15s', userSelect: 'none' }}>{ch}</span>

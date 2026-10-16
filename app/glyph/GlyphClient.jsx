@@ -245,6 +245,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
   const LOFT = isLoft('glyph');
   const STAGE = isStage('glyph', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('glyph');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('glyph');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('glyph'), '--stg-acc-lt': gameColorLight('glyph'), '--stg-onramp-lt': gameOnrampLight('glyph'), '--stg-acc-ink-lt': gameAccentInkLight('glyph') };
   const [stageTheme] = useStageTheme();
@@ -567,8 +568,8 @@ export default function GlyphClient({ puzzles, forceNum }) {
   const LEGACY_CSS = `
           .gl-cell{box-sizing:border-box;display:flex;align-items:center;justify-content:center;position:relative;min-width:0;min-height:0;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;border: 1px solid var(--stg-line, rgba(28,30,36,0.16));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};}
           .gl-cell.blk{background:${COLORS.ink};border-color:var(--stg-ink, ${COLORS.ink});cursor:default;}
-          .gl-cell.sel{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 22%, var(--stg-raise))' : '#dbeafe'};box-shadow:inset 0 0 0 2px var(--stg-acc, ${COLORS.accent});}
-          .gl-cell.kin{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);}
+          .gl-cell.sel{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 22%, var(--stg-raise))' : '#dbeafe'};box-shadow:inset 0 0 0 2px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
+          .gl-cell.kin{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, transparent);}
           .gl-cell.bad{background:${STAGE ? 'var(--stg-surf2)' : '#fdecea'};box-shadow:inset 0 0 0 2px ${COLORS.rust};}
           .gl-num{position:absolute;top:1.5px;left:2.5px;font-family:${MONO};font-size:9px;line-height:1;color:${STAGE ? 'var(--stg-mute)' : '#2f3644'};font-weight:700;}
           .gl-ltr{position:absolute;left:0;right:0;bottom:0;top:38%;display:flex;align-items:center;justify-content:center;font-family:${SANS};font-weight:800;color:${INK};line-height:1;}
@@ -582,7 +583,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
           .gl-keycap.used{background:var(--stg-surf, ${COLORS.paper});color:var(--stg-mute2, #a4abb8);text-decoration:line-through;}
           .gl-keycap:disabled{cursor:default;}
           .gl-chip{border: 1.5px solid var(--stg-line2, rgba(28,30,36,0.22));border-radius:6px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};padding:2px 0;text-align:center;font-family:${MONO};font-size:9.5px;color:${FADED};cursor:pointer;}
-          .gl-chip.on{border-color:var(--stg-acc, ${COLORS.accent});background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 22%, var(--stg-raise))' : '#dbeafe'};}
+          .gl-chip.on{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));background:${STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 22%, var(--stg-raise))' : '#dbeafe'};}
           .gl-chip b{display:block;font-family:${SANS};font-size:13px;color:${INK};}
           .gl-card{padding:13px 15px 15px;}
           .gl-chips{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:3px;}
@@ -622,8 +623,8 @@ export default function GlyphClient({ puzzles, forceNum }) {
              the grid gap so runs of blocks merge into one mass. */
           .gls{--gl-blk:color-mix(in srgb, color-mix(in srgb, var(--stg-ground) var(--stg-dk), var(--stg-ink)) 45%, #000);}
           .gls .gl-cell.blk{background:var(--gl-blk);box-shadow:0 0 0 1px var(--gl-blk);cursor:default;}
-          .gls .gl-cell.kin{background:color-mix(in srgb, var(--stg-acc) 20%, var(--xw-cell));}
-          .gls .gl-cell.cur{box-shadow:inset 0 0 0 2.5px var(--stg-acc);}
+          .gls .gl-cell.kin{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 20%, var(--xw-cell));}
+          .gls .gl-cell.cur{box-shadow:inset 0 0 0 2.5px var(--stg-acc-ink, var(--stg-acc));}
           .gls .gl-cell.bad{background:color-mix(in srgb, var(--stg-bad) 14%, var(--xw-cell));box-shadow:inset 0 0 0 2px var(--stg-bad);}
           .gls .gl-num{position:absolute;top:2px;left:3px;font-size:8.5px;font-weight:700;line-height:1;color:var(--stg-mute);}
           .gls .gl-cell.kin .gl-num,.gls .gl-cell.bad .gl-num{color:var(--stg-ink);}
@@ -644,7 +645,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
           .gls-slot.has b{color:var(--stg-ink);}
           .gls-slot.giv b{color:var(--stg-acc-ink);}
           .gls-slot.bad{border:2px solid var(--stg-bad);}
-          .gls-slot.on{border:2px solid var(--stg-acc);background:color-mix(in srgb, var(--stg-acc) 20%, transparent);}
+          .gls-slot.on{border:2px solid var(--stg-acc-ink, var(--stg-acc));background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 20%, transparent);}
           .gls-slot.on span{color:var(--stg-ink);}
           .gls-book::-webkit-scrollbar{display:none;height:0;}
           .gls-abc{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:4px;margin-top:12px;}
@@ -787,7 +788,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
                 </div>
               )}
               <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <button className="gl-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+                <button className="gl-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
                 <div>
                   <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                     {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

@@ -301,6 +301,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('listed');
   const STAGE = isStage('listed', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('listed');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('listed');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('listed'), '--stg-acc-lt': gameColorLight('listed'), '--stg-onramp-lt': gameOnrampLight('listed'), '--stg-acc-ink-lt': gameAccentInkLight('listed') };
   const [stageTheme] = useStageTheme();
@@ -816,7 +817,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
           @keyframes lsshake{0%,100%{transform:translateX(0);}20%,60%{transform:translateX(-5px);}40%,80%{transform:translateX(5px);}}
           .ls-shake{animation:lsshake .45s ease;}
           .ls-arrow{width:34px;height:31px;border-radius:7px;border: 1.5px solid var(--stg-line, rgba(28,30,36,0.3));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;}
-          .ls-arrow:hover{background:var(--stg-surf2, ${COLORS.brandSoft});border-color:var(--stg-acc, ${COLORS.brand});color:var(--stg-acc-ink, ${COLORS.brand});}
+          .ls-arrow:hover{background:var(--stg-surf2, ${COLORS.brandSoft});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.brand}));color:var(--stg-acc-ink, ${COLORS.brand});}
           .ls-arrow:disabled{opacity:.25;cursor:default;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border-color:rgba(28,30,36,0.3);color:${INK};}
           @media(max-width:560px){.ls-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.ls-ttl h1{font-size:21px;letter-spacing:0.02em;}.ls-ttl .ls-ttl-dt{font-size:15px;}.ls-ttl-dot{display:none;}}
           @media(max-width:430px){.ls-mh-tile{width:34px !important;height:34px !important;font-size:20px !important;}}
@@ -878,7 +879,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="ls-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="ls-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -906,7 +907,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
           <div className="ls-tl" style={{ display: 'flex', gap: 14 }}>
             <div className="ls-axis" aria-hidden="true" style={{ flex: '0 0 auto', width: 64, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2px 0' }}>
               <span className="ls-endd" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--stg-acc-ink)', textAlign: 'center', lineHeight: 1.3, paddingBottom: 8 }}>{PUZZLE.hi}</span>
-              <div className="ls-bar" style={{ flex: 1, width: 6, borderRadius: 3, background: 'linear-gradient(to bottom, var(--stg-acc), color-mix(in srgb, var(--stg-acc) 18%, transparent))' }} />
+              <div className="ls-bar" style={{ flex: 1, width: 6, borderRadius: 3, background: 'linear-gradient(to bottom, var(--stg-acc), color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 18%, transparent))' }} />
               <span className="ls-endd" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: FADED, textAlign: 'center', lineHeight: 1.3, paddingTop: 8 }}>{PUZZLE.lo}</span>
             </div>
             <div className={shake ? 'ls-shake ls-list' : 'ls-list'} style={{ flex: '1 1 auto', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 7, userSelect: drag ? 'none' : undefined }}>
@@ -921,14 +922,15 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
                 const dragging = drag && drag.from === slot;
                 const dropHere = drag && !dragging && drag.target === slot;
                 const rowInk = locked ? 'var(--stg-onramp)' : INK;
-                const bg = locked ? 'var(--stg-acc)' : dropHere ? 'color-mix(in srgb, var(--stg-acc) 16%, var(--stg-surf2))' : 'var(--stg-surf2)';
+                const bg = locked ? 'var(--stg-acc)' : dropHere ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 16%, var(--stg-surf2))' : 'var(--stg-surf2)';
                 const bord = locked || dropHere ? '1.5px solid var(--stg-acc)' : near ? '1.5px solid var(--stg-warn)' : '1.5px solid var(--stg-line2)';
+                const bord_INK = locked || dropHere ? '1.5px solid var(--stg-acc-ink, var(--stg-acc))' : near ? '1.5px solid var(--stg-warn)' : '1.5px solid var(--stg-line2)';
                 return (
                   <div key={it} className="ls-rowwrap" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <span className="ls-num" style={{ flex: '0 0 auto', width: 30, textAlign: 'right', fontFamily: MONO, fontSize: 20, fontWeight: 500, color: locked ? 'var(--stg-acc-ink)' : near ? 'var(--stg-warn)' : 'var(--stg-mute2)' }}>{slot + 1}</span>
                     <div ref={(el) => { rowRefs.current[slot] = el; }} onPointerDown={draggable ? (e) => startDrag(slot, e) : undefined} title={draggable ? 'Drag to reorder' : undefined}
                       className="ls-row"
-                      style={{ flex: '1 1 auto', minWidth: 0, minHeight: 54, boxSizing: 'border-box', display: 'flex', alignItems: 'center', gap: 10, background: bg, border: bord, borderRadius: 12, padding: '4px 5px 4px 16px', cursor: draggable ? (dragging ? 'grabbing' : 'grab') : undefined, position: dragging ? 'relative' : undefined, zIndex: dragging ? 5 : undefined, transform: dragging ? `translateY(${drag.dy}px)` : undefined, boxShadow: dragging ? '0 8px 20px rgba(0,0,0,0.28)' : undefined, touchAction: draggable ? 'none' : undefined }}>
+                      style={{ flex: '1 1 auto', minWidth: 0, minHeight: 54, boxSizing: 'border-box', display: 'flex', alignItems: 'center', gap: 10, background: bg, border: bord_INK, borderRadius: 12, padding: '4px 5px 4px 16px', cursor: draggable ? (dragging ? 'grabbing' : 'grab') : undefined, position: dragging ? 'relative' : undefined, zIndex: dragging ? 5 : undefined, transform: dragging ? `translateY(${drag.dy}px)` : undefined, boxShadow: dragging ? '0 8px 20px rgba(0,0,0,0.28)' : undefined, touchAction: draggable ? 'none' : undefined }}>
                       <span className="ls-nm" style={{ flex: '1 1 auto', minWidth: 0, fontFamily: SANS, fontSize: 16, fontWeight: 800, lineHeight: 1.2, color: rowInk }}>{PUZZLE.items[it].t}</span>
                       {near && playing ? <span title="Off by one place" style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500, color: 'var(--stg-warn)', border: '1px solid var(--stg-warn)', borderRadius: 5, padding: '2px 6px', whiteSpace: 'nowrap' }}>Off by one</span> : null}
                       {showVal ? (locked
@@ -986,7 +988,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
                     <Lightbulb size={14} /> Hint
                   </button>
                 )}
-                <button className="ls-btn ls-cta" onClick={submitOrder} style={{ minHeight: 48, fontSize: 15, borderRadius: 12, padding: '12px 20px', background: 'var(--stg-acc)', color: 'var(--stg-onramp)', borderColor: 'var(--stg-acc)' }}>
+                <button className="ls-btn ls-cta" onClick={submitOrder} style={{ minHeight: 48, fontSize: 15, borderRadius: 12, padding: '12px 20px', background: 'var(--stg-acc)', color: 'var(--stg-onramp)', borderColor: 'var(--stg-acc-ink, var(--stg-acc))' }}>
                   <Check size={15} strokeWidth={3} /> Submit my ranking &middot; {checksLeft} left
                 </button>
               </div>
@@ -1023,16 +1025,17 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
               const done = g.status !== 'playing';
               const showVal = locked || (done && (won || !LOFT || revealed)) || (g.hintIdx === it && g.hintUsed);
               const valChip = showVal ? (
-                <span style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 11.5, fontWeight: 500, color: locked ? `var(--stg-good, ${COLORS.lockInk})` : `var(--stg-ink, ${COLORS.brandInk})`, background: `var(--stg-surf2, ${locked ? COLORS.lockSoft : COLORS.brandSoft})`, border: `1px solid ${locked ? 'var(--stg-good, rgba(21,128,61,0.4))' : 'var(--stg-acc, rgba(134,25,143,0.35))'}`, borderRadius: 6, padding: '3px 8px', whiteSpace: 'nowrap' }}>{PUZZLE.items[it].v}</span>
+                <span style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 11.5, fontWeight: 500, color: locked ? `var(--stg-good, ${COLORS.lockInk})` : `var(--stg-ink, ${COLORS.brandInk})`, background: `var(--stg-surf2, ${locked ? COLORS.lockSoft : COLORS.brandSoft})`, border: `1px solid ${locked ? 'var(--stg-good, rgba(21,128,61,0.4))' : 'var(--stg-acc-ink, var(--stg-acc, rgba(134,25,143,0.35)))'}`, borderRadius: 6, padding: '3px 8px', whiteSpace: 'nowrap' }}>{PUZZLE.items[it].v}</span>
               ) : null;
               const draggable = !mobileUi && playing && !locked;
               const dragging = drag && drag.from === slot;
               const dropHere = drag && !dragging && drag.target === slot;
-              const bg = locked ? `var(--stg-surf2, ${COLORS.lockSoft})` : dropHere ? `color-mix(in srgb, var(--stg-acc, ${COLORS.brand}) 16%, transparent)` : near ? `var(--stg-surf2, ${COLORS.nearSoft})` : `var(--stg-surf, ${T.white})`;
+              const bg = locked ? `var(--stg-surf2, ${COLORS.lockSoft})` : dropHere ? `color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.brand})) 16%, transparent)` : near ? `var(--stg-surf2, ${COLORS.nearSoft})` : `var(--stg-surf, ${T.white})`;
               const bord = locked ? '1.5px solid var(--stg-good, rgba(21,128,61,0.5))' : dropHere ? `1.5px solid var(--stg-acc, ${COLORS.brand})` : near ? `1.5px solid var(--stg-warn, ${COLORS.near})` : '1.5px solid var(--stg-line2, rgba(28,30,36,0.32))';
+              const bord_INK = locked ? '1.5px solid var(--stg-good, rgba(21,128,61,0.5))' : dropHere ? `1.5px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.brand}))` : near ? `1.5px solid var(--stg-warn, ${COLORS.near})` : '1.5px solid var(--stg-line2, rgba(28,30,36,0.32))';
               return (
                 <div key={it} ref={(el) => { rowRefs.current[slot] = el; }} onPointerDown={draggable ? (e) => startDrag(slot, e) : undefined} title={draggable ? 'Drag to reorder' : undefined}
-                  style={{ display: 'flex', alignItems: 'center', gap: 9, background: bg, border: bord, borderRadius: 9, padding: '9px 11px', cursor: draggable ? (dragging ? 'grabbing' : 'grab') : undefined, position: dragging ? 'relative' : undefined, zIndex: dragging ? 5 : undefined, transform: dragging ? `translateY(${drag.dy}px)` : undefined, boxShadow: dragging ? '0 8px 20px rgba(20,22,28,0.22)' : undefined, opacity: dragging ? 0.96 : undefined, touchAction: draggable ? 'none' : undefined }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 9, background: bg, border: bord_INK, borderRadius: 9, padding: '9px 11px', cursor: draggable ? (dragging ? 'grabbing' : 'grab') : undefined, position: dragging ? 'relative' : undefined, zIndex: dragging ? 5 : undefined, transform: dragging ? `translateY(${drag.dy}px)` : undefined, boxShadow: dragging ? '0 8px 20px rgba(20,22,28,0.22)' : undefined, opacity: dragging ? 0.96 : undefined, touchAction: draggable ? 'none' : undefined }}>
                   <span style={{ flex: '0 0 auto', width: 20, fontFamily: MONO, fontSize: 11, color: near ? `var(--stg-warn, ${COLORS.nearInk})` : `var(--stg-mute, ${COLORS.faded})`, textAlign: 'center' }}>{locked ? <Check size={14} strokeWidth={3} style={{ color: `var(--stg-good, ${COLORS.lock})` }} /> : slot + 1}</span>
                   <span style={{ flex: '1 1 auto', minWidth: 0, fontFamily: SANS, fontWeight: 700, fontSize: 13.5, lineHeight: 1.35, color: locked ? `var(--stg-good, ${COLORS.lockInk})` : `var(--stg-ink, ${COLORS.ink})` }}>{PUZZLE.items[it].t}</span>
                   {near && playing ? <span title="Off by one place" style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-ink, ${COLORS.nearInk})`, background: STAGE ? 'var(--stg-surf2)' : '#fbeec4', border: `1px solid var(--stg-line, ${COLORS.near})`, borderRadius: 5, padding: '2px 6px', whiteSpace: 'nowrap' }}>Off by one</span> : null}

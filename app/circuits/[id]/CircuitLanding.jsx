@@ -294,8 +294,8 @@ const CSS = `
 .clp-go{background:var(--stg-acc);color:var(--stg-onramp,#08222e);border:1.5px solid transparent;}
 .clp-go:hover{filter:brightness(1.07);}
 .clp-sh{background:none;color:var(--stg-ink);border:1.5px solid var(--stg-line2);}
-.clp-sh:hover{border-color:var(--stg-acc);color:var(--stg-acc-ink);}
-.clp-go:focus-visible,.clp-sh:focus-visible{outline:2px solid var(--stg-acc);outline-offset:3px;}
+.clp-sh:hover{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink);}
+.clp-go:focus-visible,.clp-sh:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:3px;}
 
 .clp-figs{display:flex;gap:26px;margin-top:20px;flex-wrap:wrap;}
 .clp-figs b{display:block;font-size:22px;font-weight:800;letter-spacing:-0.02em;line-height:1;
@@ -343,7 +343,7 @@ const CSS = `
   padding:13px 18px;font-family:${MONO};font-size:9.5px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--stg-ink2);text-decoration:none;}
 .clp-all:hover{border-color:var(--stg-line2);color:var(--stg-ink);}
-.clp-all:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.clp-all:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 
 @media (max-width:640px){
   .clp{gap:24px;}

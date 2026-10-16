@@ -40,7 +40,7 @@ import { X } from 'lucide-react';
 import { DAILY_GAME_MAP, PREMIERES, PREMIERE_RUNS, NO_PREMIERE } from '@/lib/daily-games';
 import { PRICE_GAMES } from '@/lib/price-games';
 import { runDoneToday } from './circuits/RunDoorPop';
-import { RAMP_INK, RAMP_INK_LIGHT, categoryColor, categoryColorLight, rampIndexFor } from '@/lib/category-ramp';
+import { RAMP_INK, RAMP_INK_LIGHT, categoryColor, categoryColorLight, categoryAccentInkLight, rampIndexFor } from '@/lib/category-ramp';
 import GameGlyph from './GameGlyph';
 import { fetchDayStatus, etToday } from './useDayStats';
 import { seenBeforeToday } from '@/lib/visitor';
@@ -182,7 +182,7 @@ export default function PremierePop() {
     const accR = lightR ? categoryColorLight('Numbers') : categoryColor('Numbers');
     const riR = rampIndexFor('Numbers');
     const onR = lightR ? (riR >= 0 ? RAMP_INK_LIGHT[riR] : RAMP_INK) : RAMP_INK;
-    const varsR = { '--prm-acc': accR, '--prm-on': onR, '--prm-tint': `color-mix(in srgb, ${accR} 16%, transparent)` };
+    const varsR = { '--prm-acci': lightR ? categoryAccentInkLight('Numbers') : accR, '--prm-acc': accR, '--prm-on': onR, '--prm-tint': `color-mix(in srgb, ${accR} 16%, transparent)` };
     const whenR = run.from === etToday() ? 'today' : dateLabel(run.from);
     return (
       <div className="prm-scrim" onClick={() => setRun(null)}>
@@ -228,7 +228,7 @@ export default function PremierePop() {
     const acc = light ? categoryColorLight(c) : categoryColor(c);
     const ri = rampIndexFor(c);
     const onAcc = light ? (ri >= 0 ? RAMP_INK_LIGHT[ri] : RAMP_INK) : RAMP_INK;
-    return { '--prm-acc': acc, '--prm-on': onAcc, '--prm-tint': `color-mix(in srgb, ${acc} 16%, transparent)` };
+    return { '--prm-acci': light ? categoryAccentInkLight(c) : acc, '--prm-acc': acc, '--prm-on': onAcc, '--prm-tint': `color-mix(in srgb, ${acc} 16%, transparent)` };
   };
   const vars = oneCat ? varsFor(cat) : { '--prm-acc': 'var(--stg-ink, #0b0d12)' };
 
@@ -284,13 +284,13 @@ const CSS = `
 .prm-x:hover{background:var(--stg-surf2,#e4e9f1);color:var(--stg-ink,#0b0d12);}
 .prm-eye{font:500 11px "Manrope",ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;
   color:var(--stg-mute,#5f6774);display:flex;align-items:center;gap:8px;}
-.prm-eye i{width:8px;height:8px;border-radius:2px;background:var(--prm-acc,#fb923c);display:inline-block;}
+.prm-eye i{width:8px;height:8px;border-radius:2px;background:var(--prm-acci,var(--prm-acc,#fb923c));display:inline-block;}
 .prm h2{font-size:24px;font-weight:800;letter-spacing:-.015em;margin:6px 0 4px;line-height:1.15;}
 .prm-lede{color:var(--stg-ink2,#3f4757);margin:0 0 16px;font-size:13.5px;line-height:1.45;}
 .prm-rows{display:flex;flex-direction:column;gap:8px;}
 .prm-row{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;background:var(--stg-surf,#fff);
   border:1px solid var(--stg-line,rgba(11,15,26,.14));border-radius:12px;padding:10px;position:relative;overflow:hidden;}
-.prm-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--prm-acc,#fb923c);}
+.prm-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--prm-acci,var(--prm-acc,#fb923c));}
 .prm-gl{width:44px;height:44px;border-radius:10px;background:var(--prm-tint,rgba(251,146,60,.16));display:grid;
   place-items:center;color:var(--stg-ink,#0b0d12);}
 .prm-t b{display:block;font-size:15px;font-weight:800;}

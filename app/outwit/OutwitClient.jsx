@@ -323,6 +323,7 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('outwit');
   const STAGE = isStage('outwit', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('outwit');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('outwit');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('outwit'), '--stg-acc-lt': gameColorLight('outwit'), '--stg-onramp-lt': gameOnrampLight('outwit'), '--stg-acc-ink-lt': gameAccentInkLight('outwit') };
   const [stageTheme] = useStageTheme();
@@ -987,10 +988,10 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
           .ow-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .ow-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           .ow-opt{font-family:${SANS};font-weight:800;font-size:13.5px;border: 2px solid var(--stg-line, rgba(28,30,36,0.3));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};border-radius:9px;padding:9px 14px;cursor:pointer;}
-          .ow-opt:hover{border-color:var(--stg-acc, ${COLORS.accent});}
-          .ow-opt-on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));box-shadow:0 0 0 3px rgba(232,180,58,0.45);}
+          .ow-opt:hover{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
+          .ow-opt-on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, var(--white));box-shadow:0 0 0 3px rgba(232,180,58,0.45);}
           .ow-inp{font-family:${MONO};font-weight:500;font-size:22px;letter-spacing:0.06em;width:200px;max-width:100%;border:2px solid ${COLORS.ink};border-radius:9px;padding:8px 12px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};outline:none;}
-          .ow-inp:focus{border-color:var(--stg-acc, ${COLORS.accent});box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 14%, transparent);}
+          .ow-inp:focus{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 14%, transparent);}
           .ow-face{font-family:${SANS};font-weight:800;font-size:15px;letter-spacing:0.05em;text-transform:uppercase;border:none;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-radius:10px;padding:0 26px;height:56px;cursor:pointer;display:inline-flex;align-items:center;gap:10px;box-shadow:0 3px 0 rgba(20,22,28,0.25);}
           .ow-face:active{transform:translateY(1px);box-shadow:0 2px 0 rgba(20,22,28,0.25);}
           .ow-face:disabled{opacity:.55;cursor:default;}
@@ -1012,13 +1013,13 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
           .ow-sw-on{border:4px solid var(--stg-ink, ${COLORS.ink});box-shadow:0 0 0 3px var(--stg-ground, #fff), 0 0 0 5px var(--stg-ink, ${COLORS.ink});}
           .ow-pick{position:absolute;top:12px;right:12px;font-family:${MONO};font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;background:#0b0f1a;color:#ffffff;border:1.5px solid rgba(255,255,255,0.75);border-radius:6px;padding:4px 8px;}
           .ow-card{position:relative;display:flex;align-items:flex-start;min-height:76px;border-radius:14px;border:2px solid var(--stg-line3, rgba(28,30,36,0.35));background:var(--stg-surf2, #fff);color:${INK};padding:30px 16px 14px;box-sizing:border-box;font-family:${SANS};font-weight:800;font-size:17px;line-height:1.25;cursor:pointer;text-align:left;}
-          .ow-card:hover{border-color:var(--stg-acc, ${COLORS.accent});}
-          .ow-card-on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);}
+          .ow-card:hover{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
+          .ow-card-on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, #fff);}
           .ow-card .ow-pick{top:9px;left:14px;right:auto;border:0;}
           .ow-numwrap{display:flex;flex-direction:column;align-items:flex-start;gap:8px;}
           .ow-big{font-family:${MONO};font-weight:500;font-size:44px;letter-spacing:0.04em;width:280px;max-width:100%;box-sizing:border-box;border:2px solid var(--stg-cell-line, ${COLORS.ink});border-radius:14px;padding:12px 18px;background:var(--stg-cell, #fff);color:${INK};outline:none;}
           .ow-big::placeholder{color:var(--stg-mute, ${COLORS.faded});font-size:22px;letter-spacing:0;}
-          .ow-big:focus{border-color:var(--stg-acc, ${COLORS.accent});box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 22%, transparent);}
+          .ow-big:focus{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 22%, transparent);}
           .ow-numhint{font-size:13px;font-weight:700;}
           .ow-sealed{display:flex;align-items:center;gap:14px;background:var(--stg-surf, ${COLORS.accentSoft});border:1px solid var(--stg-line, rgba(28,30,36,0.12));border-radius:14px;padding:14px 16px;margin-top:22px;font-size:14px;font-weight:600;line-height:1.45;}
           .ow-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:20px;}
@@ -1090,7 +1091,7 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="ow-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="ow-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

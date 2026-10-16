@@ -295,6 +295,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('tally');
   const STAGE = isStage('tally', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('tally');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('tally');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('tally'), '--stg-acc-lt': gameColorLight('tally'), '--stg-onramp-lt': gameOnrampLight('tally'), '--stg-acc-ink-lt': gameAccentInkLight('tally') };
   const [stageTheme] = useStageTheme();
@@ -316,6 +317,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
   const AGREE_INK = STAGE ? 'var(--stg-onramp,#08222e)' : T.white;
   // the picked ring: the accent at low alpha, mixed from the token
   const RING = STAGE ? 'color-mix(in srgb, var(--stg-acc) 34%, transparent)' : 'rgba(21,128,61,0.2)';
+  const RING_INK = STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 34%, transparent)' : 'rgba(21,128,61,0.2)';
   const ACC = STAGE ? STAGE_C : COLORS.accent;
   const ACC_DEEP = STAGE ? STAGE_C : COLORS.accentDeep;
   const ACC_SOFT = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : COLORS.accentSoft;
@@ -1000,32 +1002,32 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
           .tl-grid{display:grid;gap:8px;width:min(480px,100%);}
           .tl-cell{aspect-ratio:1;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:${SANS};font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--stg-ink);box-sizing:border-box;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;transition:background .12s ease, box-shadow .12s ease;padding:0;margin:0;min-width:0;}
           .tl-grid.n6 .tl-cell{font-size:26px;border-radius:10px;}
-          .tl-cell:focus-visible{outline:3px solid var(--stg-acc);outline-offset:2px;}
+          .tl-cell:focus-visible{outline:3px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
           /* out of play: a dark slab, so it reads as no square at all */
           .tl-blocked{background:var(--tl-block);border:1.5px solid var(--tl-block);}
           .tl-given{background:color-mix(in srgb, var(--stg-ink) 14%, var(--stg-cell));border:1.5px solid transparent;color:var(--stg-ink);}
           .tl-empty{background:var(--stg-cell);border:1.5px dashed var(--stg-cell-line);cursor:pointer;}
           /* the row and column of the picked square, so a line reads as one */
-          .tl-cell.peer.tl-empty,.tl-cell.peer.tl-placed{background:color-mix(in srgb, var(--stg-acc) 12%, var(--stg-cell));}
-          .tl-cell.peer.tl-given{background:color-mix(in srgb, var(--stg-acc) 12%, color-mix(in srgb, var(--stg-ink) 14%, var(--stg-cell)));}
+          .tl-cell.peer.tl-empty,.tl-cell.peer.tl-placed{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 12%, var(--stg-cell));}
+          .tl-cell.peer.tl-given{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 12%, color-mix(in srgb, var(--stg-ink) 14%, var(--stg-cell)));}
           /* an armed digit has somewhere to go: every open square says so */
-          .tl-empty.hot{border:2px dashed var(--stg-acc);}
-          @media(hover:hover){.tl-empty.hot:hover{box-shadow:0 0 0 3px ${RING};}}
-          .tl-placed{background:var(--stg-cell);border:2.5px solid var(--stg-acc);color:var(--stg-acc-ink);cursor:grab;box-shadow:0 3px 0 color-mix(in srgb, var(--stg-acc) 28%, transparent);position:relative;touch-action:none;}
-          .tl-placed.same{background:color-mix(in srgb, var(--stg-acc) 18%, var(--stg-cell));}
-          .tl-cell.cur{border:3px solid var(--stg-acc);background:color-mix(in srgb, var(--stg-acc) 28%, var(--stg-cell));box-shadow:none;}
-          .tl-placed.cur{box-shadow:0 0 0 3px ${RING};}
-          .tl-placed.tl-drag{cursor:grabbing;box-shadow:0 0 0 3px ${RING}, 0 7px 15px rgba(0,0,0,0.35);}
+          .tl-empty.hot{border:2px dashed var(--stg-acc-ink, var(--stg-acc));}
+          @media(hover:hover){.tl-empty.hot:hover{box-shadow:0 0 0 3px ${RING_INK};}}
+          .tl-placed{background:var(--stg-cell);border:2.5px solid var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink);cursor:grab;box-shadow:0 3px 0 color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 28%, transparent);position:relative;touch-action:none;}
+          .tl-placed.same{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 18%, var(--stg-cell));}
+          .tl-cell.cur{border:3px solid var(--stg-acc-ink, var(--stg-acc));background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 28%, var(--stg-cell));box-shadow:none;}
+          .tl-placed.cur{box-shadow:0 0 0 3px ${RING_INK};}
+          .tl-placed.tl-drag{cursor:grabbing;box-shadow:0 0 0 3px ${RING_INK}, 0 7px 15px rgba(0,0,0,0.35);}
           .tl-placed.tl-drag.home{border-style:dashed;background:var(--stg-surf2);}
           /* the square a drag would land on */
-          .tl-cell.tl-drop{border:3px solid var(--stg-acc);box-shadow:0 0 0 3px ${RING};}
+          .tl-cell.tl-drop{border:3px solid var(--stg-acc-ink, var(--stg-acc));box-shadow:0 0 0 3px ${RING_INK};}
           .tl-cell.tl-drop-no{box-shadow:0 0 0 3px var(--stg-bad);}
           .tl-tgt{cursor:default;transition:border-color .12s ease;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:14px;line-height:1.05;box-sizing:border-box;background:var(--stg-ground);border:1.5px solid var(--stg-cell-line);font-family:${SANS};min-height:64px;padding:2px 0;min-width:0;}
           .tl-tgt .v{font-size:22px;font-weight:800;color:var(--stg-ink);font-variant-numeric:tabular-nums;}
           .tl-tgt .s{font-size:11px;font-weight:800;color:var(--stg-mute);white-space:nowrap;}
-          .tl-tgt.lit{border:2.5px solid var(--stg-acc);}
+          .tl-tgt.lit{border:2.5px solid var(--stg-acc-ink, var(--stg-acc));}
           .tl-tgt.lit .s{color:var(--stg-acc-ink);}
-          .tl-tgt.ok{background:var(--stg-acc);border:2px solid var(--stg-acc);}
+          .tl-tgt.ok{background:var(--stg-acc);border:2px solid var(--stg-acc-ink, var(--stg-acc));}
           .tl-tgt.ok .v,.tl-tgt.ok .s{color:var(--stg-onramp);}
           .tl-tgt.bad{border:2px solid var(--stg-bad);}
           .tl-tgt.bad .v,.tl-tgt.bad .s{color:var(--stg-bad);}
@@ -1046,7 +1048,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
           .tl-rtile .d{font-size:23px;font-weight:800;color:var(--stg-ink);}
           .tl-rtile .n{font-size:11px;font-weight:800;color:var(--stg-mute);}
           .tl-rtile:hover:not(:disabled){background:var(--stg-surf2);}
-          .tl-rtile.sel{border:2px solid var(--stg-acc);background:var(--stg-acc);box-shadow:0 0 0 3px ${RING};}
+          .tl-rtile.sel{border:2px solid var(--stg-acc-ink, var(--stg-acc));background:var(--stg-acc);box-shadow:0 0 0 3px ${RING_INK};}
           .tl-rtile.sel .d,.tl-rtile.sel .n{color:var(--stg-onramp);}
           .tl-rtile.out{background:transparent;border:1.5px dashed var(--stg-line2);cursor:default;}
           .tl-rtile.out .d{color:var(--stg-mute);text-decoration:line-through;}
@@ -1055,7 +1057,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
           .tl-act{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2);border:1.5px solid var(--stg-cell-line);border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
           .tl-act:hover:not(:disabled){background:var(--stg-surf2);}
           .tl-act:disabled{color:var(--stg-mute);border-color:var(--stg-line2);cursor:default;}
-          .tl-act.hint{color:var(--stg-acc-ink);border-color:var(--stg-acc);}
+          .tl-act.hint{color:var(--stg-acc-ink);border-color:var(--stg-acc-ink, var(--stg-acc));}
           .tl-under{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0 12px;padding:12px 2px 0;}
           .tl-under-n{flex:1 1 180px;min-width:0;font-size:12px;font-weight:600;color:var(--stg-mute);}
           .tl-reveal{margin-left:auto;background:none;border:none;cursor:pointer;font-family:${SANS};font-weight:700;font-size:12px;color:var(--stg-ink2);text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0;display:inline-flex;align-items:center;gap:5px;flex:none;}
@@ -1129,7 +1131,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="tl-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="tl-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -1459,7 +1461,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
               <button onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
             </div>
             {rulesBody}
-            <button className="tl-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: STAGE ? 'var(--stg-acc)' : COLORS.ink, color: STAGE ? 'var(--stg-onramp)' : T.white, borderColor: STAGE ? 'var(--stg-acc)' : undefined }}>Play</button>
+            <button className="tl-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: STAGE ? 'var(--stg-acc)' : COLORS.ink, color: STAGE ? 'var(--stg-onramp)' : T.white, borderColor: STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : undefined }}>Play</button>
           </div>
         </div>
       )}

@@ -209,7 +209,7 @@ export default function DailyFiveSummary() {
                   border-radius:11px;padding:14px 18px;font-size:13px;font-weight:800;
                   letter-spacing:.03em;text-decoration:none;}
         .d5s-home:hover{border-color:var(--stg-line2);}
-        .d5s-home:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+        .d5s-home:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
         @media(max-width:620px){.d5s{padding:8px 12px 60px;}}
       ` }} />
 

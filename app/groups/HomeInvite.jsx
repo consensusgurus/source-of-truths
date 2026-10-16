@@ -95,5 +95,5 @@ const CSS = `
 .hgi-x{margin-left:auto;background:none;border:0;color:var(--stg-mute);cursor:pointer;
   font-size:17px;line-height:1;padding:2px 4px;}
 .hgi-x:hover{color:var(--stg-ink);}
-.hgi-go:focus-visible,.hgi-alt:focus-visible,.hgi-x:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.hgi-go:focus-visible,.hgi-alt:focus-visible,.hgi-x:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 `;

@@ -203,15 +203,15 @@ export const TILE_CSS = `
   border-radius:10px;padding:13px 14px 12px;}
 [data-stage-theme='light'] .gtl{--cc:var(--cc-lt,var(--stg-ink2));--cci:var(--cc-ink-lt,var(--cc));}
 .gtl>*{min-width:0;max-width:100%;}
-.gtl:hover{border-color:var(--cc);}
-.gtl.open{border-color:var(--cc);}
-.gtl:focus-visible{outline:2px solid var(--cc);outline-offset:2px;}
+.gtl:hover{border-color:var(--cci, var(--cc));}
+.gtl.open{border-color:var(--cci, var(--cc));}
+.gtl:focus-visible{outline:2px solid var(--cci, var(--cc));outline-offset:2px;}
 .gtl-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
 .gtl-num{flex:none;width:22px;height:22px;border-radius:50%;background:var(--stg-chip);color:var(--stg-ink2);
   font-family:${MONO};font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;
   font-variant-numeric:tabular-nums;}
 .gtl-nm{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;letter-spacing:-0.015em;line-height:1.15;}
-.gtl-gi{flex:none;color:var(--cc);}
+.gtl-gi{flex:none;color:var(--cci, var(--cc));}
 .gtl-gen{margin-left:auto;font-family:${MONO};font-size:9px;letter-spacing:.13em;text-transform:uppercase;
   color:var(--cci);font-weight:700;white-space:nowrap;}
 .gtl-tag{display:block;font-size:12.5px;font-weight:700;color:var(--stg-ink2);}

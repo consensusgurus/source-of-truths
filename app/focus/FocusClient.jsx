@@ -243,6 +243,7 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
   const STAGE = isStage('focus', searchParams);
   const [stageTheme] = useStageTheme();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('focus');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('focus');
   const STAGE_ACC = { '--stg-acc-dk': gameColor('focus'), '--stg-acc-lt': gameColorLight('focus'), '--stg-onramp-lt': gameOnrampLight('focus'), '--stg-acc-ink-lt': gameAccentInkLight('focus') };
   const Cap = STAGE ? StageChrome : LoftCap;
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
@@ -561,7 +562,7 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
           .fc-seg i{display:block;height:8px;box-sizing:border-box;border-radius:3px;border:1.5px solid var(--stg-line2, rgba(28,30,36,0.24));background:transparent;transition:background .2s;}
           .fc-seg span{font-family:${SANS};font-size:10.5px;font-weight:700;color:var(--stg-mute, ${COLORS.faded});white-space:nowrap;}
           .fc-seg.miss i{background:var(--stg-mute, ${COLORS.faded});border-color:var(--stg-mute, ${COLORS.faded});}
-          .fc-seg.cur i{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});}
+          .fc-seg.cur i{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .fc-seg.cur span{color:var(--stg-acc-ink, ${COLORS.accent});font-weight:800;}
           .fc-seg.won i{background:var(--stg-good, ${COLORS.green});border-color:var(--stg-good, ${COLORS.green});}
           .fc-seg.won span{color:var(--stg-good, ${COLORS.green});font-weight:800;}
@@ -578,18 +579,18 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
           .fc-tag{position:absolute;top:10px;font-family:${SANS};font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#e8ecf4;background:rgba(11,15,26,.86);padding:5px 8px;border-radius:6px;}
           .fc-ask{position:relative;margin-top:16px;}
           .fc-field{position:relative;}
-          .fc-input{font-family:${SANS};font-weight:700;font-size:17px;width:100%;box-sizing:border-box;height:56px;border:2px solid var(--stg-acc, ${COLORS.accent});border-radius:12px;padding:0 16px;color:${INK};background:${STAGE ? 'transparent' : T.white};outline:none;}
+          .fc-input{font-family:${SANS};font-weight:700;font-size:17px;width:100%;box-sizing:border-box;height:56px;border:2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));border-radius:12px;padding:0 16px;color:${INK};background:${STAGE ? 'transparent' : T.white};outline:none;}
           .fc-input.has-n{padding-right:230px;}
           .fc-input::placeholder{color:var(--stg-mute, ${COLORS.faded});opacity:1;}
           .fc-input:focus{box-shadow:0 0 0 3px var(--stg-acc-tint, ${COLORS.accentSoft});}
-          .stage-page .fc-input:focus{border-bottom-color:var(--stg-acc, ${COLORS.accent}) !important;}
+          .stage-page .fc-input:focus{border-bottom-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) !important;}
           .fc-input.shake{animation:fcshake .3s linear;}
           @keyframes fcshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
           .fc-count{position:absolute;right:16px;top:50%;transform:translateY(-50%);pointer-events:none;font-family:${SANS};font-size:12px;font-weight:700;color:var(--stg-mute, ${COLORS.faded});white-space:nowrap;}
           .fc-sugg{display:flex;flex-direction:column;gap:6px;margin-top:6px;}
           .fc-sugg button{display:flex;width:100%;min-height:48px;box-sizing:border-box;text-align:left;align-items:center;gap:10px;padding:8px 16px;border-radius:12px;background:transparent;border:1.5px solid var(--stg-line3, rgba(28,30,36,0.45));font-family:${SANS};font-weight:800;font-size:15px;color:${INK};cursor:pointer;}
           .fc-sugg button:hover,.fc-sugg button:focus-visible{background:var(--stg-surf2, ${COLORS.accentSoft});outline:none;}
-          .fc-sugg button.top{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);}
+          .fc-sugg button.top{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, #fff);}
           .fc-sugg button.top:hover,.fc-sugg button.top:focus-visible{background:var(--stg-acc, ${COLORS.accent});box-shadow:0 0 0 3px var(--stg-acc-tint, ${COLORS.accentSoft});}
           .fc-sugg button small{margin-left:auto;font-family:${SANS};font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:inherit;}
           .fc-misses{margin-top:14px;display:flex;flex-direction:column;gap:6px;}
@@ -662,7 +663,7 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="fc-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="fc-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

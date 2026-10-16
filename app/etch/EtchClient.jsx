@@ -242,7 +242,7 @@ function EtchGallery({ puzzles, rec, currentNum }) {
               style={{
                 display: 'block', borderRadius: 4, overflow: 'hidden', aspectRatio: '1',
                 background: done ? `var(--stg-surf, ${T.white})` : 'var(--stg-surf, #eceff4)',
-                border: here ? `2px solid var(--stg-acc, ${COLORS.accent})` : `1px solid ${done ? 'var(--stg-line2, rgba(28,30,36,0.18))' : 'var(--stg-line, rgba(28,30,36,0.08))'}`,
+                border: here ? `2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : `1px solid ${done ? 'var(--stg-line2, rgba(28,30,36,0.18))' : 'var(--stg-line, rgba(28,30,36,0.08))'}`,
                 boxSizing: 'border-box', padding: done ? 2 : 0,
               }}
             >
@@ -371,6 +371,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
   // player's own position until the end card's Reveal answer tile is pressed.
   const viewCells = g.status === 'revealed' && LOFT && !revealed ? (g.playerCells || cells.map(() => 0)) : cells;
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('etch');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('etch');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('etch'), '--stg-acc-lt': gameColorLight('etch'), '--stg-onramp-lt': gameOnrampLight('etch'), '--stg-acc-ink-lt': gameAccentInkLight('etch') };
   const [stageTheme] = useStageTheme();
@@ -919,7 +920,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
   // both clue strips light up.
   const crossCss = focusIdx >= 0
     ? `.et-grid .et-r${focusR}:not(.et-f)::before,.et-grid .et-c${focusC}:not(.et-f)::before{content:'';position:absolute;inset:0;background:var(--et-hl);pointer-events:none;}`
-      + `.et-grid .et-i${focusIdx}::after{content:'';position:absolute;inset:0;box-shadow:inset 0 0 0 2.5px var(--stg-acc, ${COLORS.accent});pointer-events:none;z-index:2;}`
+      + `.et-grid .et-i${focusIdx}::after{content:'';position:absolute;inset:0;box-shadow:inset 0 0 0 2.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));pointer-events:none;z-index:2;}`
       + `.et-grid .et-cr${focusR},.et-grid .et-cc${focusC}{background:var(--et-hl);color:var(--stg-acc-ink, ${COLORS.accent});font-weight:800;}`
     : '';
   const hasWrong = useMemo(() => {
@@ -1052,7 +1053,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
           onContextMenu={(e) => { e.preventDefault(); cellFnRef.current.fill(idx); }}
           style={{
             background: bg,
-            boxShadow: pv !== null ? `inset 0 0 0 2px var(--stg-acc, ${COLORS.accent})` : undefined,
+            boxShadow: pv !== null ? `inset 0 0 0 2px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : undefined,
             borderRight: wallR ? '2px solid var(--et-wall)' : '1px solid var(--et-line)',
             borderBottom: wallB ? '2px solid var(--et-wall)' : '1px solid var(--et-line)',
             borderLeft: c === 0 ? '2px solid var(--et-wall)' : undefined,
@@ -1143,7 +1144,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
           .et-board{--et-cell:var(--stg-cell, #ffffff);--et-pic:var(--stg-ink, #0b0d12);
             --et-line:color-mix(in srgb, var(--stg-ink, #0b0d12) 15%, var(--stg-cell, #ffffff));
             --et-wall:color-mix(in srgb, var(--stg-ink, #0b0d12) 62%, var(--stg-cell, #ffffff));
-            --et-hl:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 20%, var(--stg-cell, #ffffff));
+            --et-hl:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 20%, var(--stg-cell, #ffffff));
             --et-pend:color-mix(in srgb, var(--stg-ink, #0b0d12) 48%, var(--stg-cell, #ffffff));
             --et-bad-soft:color-mix(in srgb, var(--stg-bad, ${COLORS.rust}) 24%, var(--stg-cell, #ffffff));
             --et-mark:var(--stg-mute, #5f6774);}
@@ -1236,7 +1237,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="et-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="et-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

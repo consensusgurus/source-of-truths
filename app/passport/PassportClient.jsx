@@ -281,7 +281,7 @@ export const PP_CSS = `
     .pp-board{border-radius:14px;}
     .pp-slots{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px;}
     .pp-slot{height:54px;border:1.5px dashed var(--pp-line);border-radius:9px;display:grid;place-items:center;position:relative;font-family:${MONO};font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:${PP_FADED};}
-    .pp-slot.on{border-style:solid;border-color:var(--stg-acc, ${COLORS.accent});color:${PP_INK};}
+    .pp-slot.on{border-style:solid;border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:${PP_INK};}
     .pp-slot .pp-stamp{position:absolute;inset:3px;}
     .pp-stamp{--ink:#a78bfa;--rot:-6deg;border:2.5px solid var(--ink);color:var(--ink);border-radius:9px;display:grid;place-items:center;text-align:center;font-family:${STAMP_FONT};text-transform:uppercase;line-height:1;transform:rotate(var(--rot));box-shadow:inset 0 0 0 2px var(--pp-panel),inset 0 0 0 3.5px var(--ink);padding:2px;background:transparent;}
     .pp-stamp .s1{font-size:8px;letter-spacing:.08em;}
@@ -302,7 +302,7 @@ export const PP_CSS = `
     .pp-over{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;}
     .pp-ask{display:flex;gap:10px;margin-top:12px;}
     .pp-ask input{flex:1;min-width:0;border:2.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));border-radius:12px;background:var(--pp-panel);padding:12px 14px;color:${PP_INK};font:800 17px ${SANS};outline:0;}
-    .pp-ask input:focus{border-color:var(--stg-acc, ${COLORS.accent});}
+    .pp-ask input:focus{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
     .pp-go{font:900 15px ${SANS};border:0;border-radius:12px;padding:0 22px;min-height:46px;cursor:pointer;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #ffffff);}
     .pp-ghost{font:800 13.5px ${SANS};border:1.5px solid var(--pp-line);border-radius:999px;padding:8px 16px;cursor:pointer;background:transparent;color:${PP_INK};}
     .pp-ghost.big{border-radius:12px;padding:14px;font-size:16px;width:100%;}
@@ -334,7 +334,7 @@ export const PP_CSS = `
     .pp-opts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px;}
     @media(max-width:560px){.pp-opts{grid-template-columns:repeat(2,1fr);}}
     .pp-opt{background:var(--pp-panel);border:1.5px solid var(--pp-line);border-radius:12px;padding:10px 8px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;font:700 12px ${SANS};color:${PP_INK};cursor:pointer;position:relative;transition:transform .15s,border-color .15s;}
-    .pp-opt:hover:not(:disabled){transform:translateY(-2px);border-color:var(--stg-acc, ${COLORS.accent});}
+    .pp-opt:hover:not(:disabled){transform:translateY(-2px);border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
     .pp-opt .sw{width:100%;max-width:96px;aspect-ratio:3/2;display:block;border-radius:2px;overflow:hidden;}
     .pp-opt .sw svg{width:100%;height:100%;display:block;}
     .pp-opts.n2{grid-template-columns:repeat(2,1fr);max-width:340px;}
@@ -386,7 +386,7 @@ export const PP_CSS = `
     .pp-dots i{width:12px;height:12px;border-radius:50%;background:var(--pp-line);display:block;}
     .pp-dots i.ok{background:var(--pp-good);}
     .pp-dots i.ko{background:var(--pp-bad);}
-    .pp-dots i.cur{outline:2px solid var(--stg-acc, ${COLORS.accent});outline-offset:2px;}
+    .pp-dots i.cur{outline:2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));outline-offset:2px;}
     .pp-gmap{position:relative;border-radius:14px;overflow:hidden;border:1.5px solid var(--pp-line);background:var(--pp-panel);aspect-ratio:2/1;}
     .pp-gmap canvas{width:100%;height:100%;display:block;}
     .pp-pass{margin-top:12px;display:grid;grid-template-columns:minmax(0,1fr) 108px;background:${PASS_PAPER};color:#16202f;border-radius:14px;overflow:hidden;}
@@ -428,7 +428,7 @@ export const PP_CSS = `
     .pp-ladder div{display:grid;grid-template-columns:14px 1fr auto;gap:8px;align-items:center;font-size:12px;color:${PP_FADED};font-weight:700;padding:2px 6px;border-radius:6px;}
     .pp-ladder div i{width:12px;height:16px;border-radius:2px;background:var(--c);display:block;}
     .pp-ladder div b{font-family:${MONO};font-weight:500;font-size:11px;}
-    .pp-ladder div.on{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 14%, transparent);color:${PP_INK};}
+    .pp-ladder div.on{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 14%, transparent);color:${PP_INK};}
     .pp-fin{position:fixed;inset:0;z-index:96;background:radial-gradient(120% 90% at 50% 20%,#141c30,#070a12);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:20px;color:#e9edf5;font-family:${SANS};animation:ppfade .3s both;}
     @keyframes ppfade{from{opacity:0}}
     .pp-book{width:min(520px,100%);aspect-ratio:1.42/1;perspective:1600px;}

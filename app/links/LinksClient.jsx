@@ -375,10 +375,11 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
         { bg: 'var(--stg-acc)', tc: 'var(--stg-onramp)', edge: 'var(--stg-acc)' },
         { bg: 'color-mix(in srgb, var(--stg-acc) 45%, var(--stg-ink))', tc: 'var(--stg-onramp)', edge: 'color-mix(in srgb, var(--stg-acc) 45%, var(--stg-ink))' },
         { bg: 'color-mix(in srgb, var(--stg-acc) 32%, var(--stg-ground))', tc: 'var(--stg-ink)', edge: 'var(--stg-acc)' },
-        { bg: 'color-mix(in srgb, var(--stg-acc) 10%, var(--stg-ground))', tc: 'var(--stg-ink)', edge: 'var(--stg-acc-ink)' },
+        { bg: 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 10%, var(--stg-ground))', tc: 'var(--stg-ink)', edge: 'var(--stg-acc-ink)' },
       ][ci % 4]
     : { ...CAT_COLORS[ci], edge: CAT_COLORS[ci].tc });
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('links');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('links');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('links'), '--stg-acc-lt': gameColorLight('links'), '--stg-onramp-lt': gameOnrampLight('links'), '--stg-acc-ink-lt': gameAccentInkLight('links') };
   const [stageTheme] = useStageTheme();
@@ -639,7 +640,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
           .stage-page .lk-mis{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin:0 0 14px;}
           .stage-page .lk-mis-k{font-family:${MONO};font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute);margin-right:4px;}
           .stage-page .lk-mis-d{width:14px;height:14px;border-radius:50%;box-sizing:border-box;border:2px solid var(--stg-cell-line);}
-          .stage-page .lk-mis-d.on{background:var(--stg-acc);border-color:var(--stg-acc);}
+          .stage-page .lk-mis-d.on{background:var(--stg-acc);border-color:var(--stg-acc-ink, var(--stg-acc));}
           .stage-page .lk-band{min-height:96px;box-sizing:border-box;border-radius:14px;border:2px solid;margin-bottom:10px;padding:10px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;}
           .stage-page .lk-band-k{font-family:${MONO};font-size:12px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;}
           .stage-page .lk-band-w{font-family:${SANS};font-size:19px;font-weight:800;letter-spacing:.04em;line-height:1.25;}
@@ -648,7 +649,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
           .stage-page .lk-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:10px;}
           .stage-page .lk-tile{min-height:96px;border-radius:14px;border:2px solid var(--stg-cell-line);background:var(--stg-cell);color:var(--stg-ink);box-shadow:none;font-size:var(--lk-fs,17px);letter-spacing:.03em;line-height:1.15;padding:4px 6px;transition:background .12s,transform .12s,border-color .12s;}
           .stage-page .lk-tile:active{transform:scale(0.97);}
-          .stage-page .lk-tile.on{background:color-mix(in srgb,var(--stg-acc) 18%,var(--stg-cell));border-color:var(--stg-acc);color:var(--stg-ink);box-shadow:0 5px 12px -6px rgba(0,0,0,.45);transform:translateY(-3px);}
+          .stage-page .lk-tile.on{background:color-mix(in srgb,var(--stg-acc-ink, var(--stg-acc)) 18%,var(--stg-cell));border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-ink);box-shadow:0 5px 12px -6px rgba(0,0,0,.45);transform:translateY(-3px);}
           .stage-page .lk-tile.on:active{transform:translateY(-3px) scale(0.97);}
           @media(hover:hover){.stage-page .lk-tile:not(.on):hover{border-color:var(--stg-ink2);}}
           .stage-page .lk-selrow{display:flex;align-items:center;gap:10px;padding:6px 0 0;}
@@ -717,7 +718,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="lk-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="lk-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

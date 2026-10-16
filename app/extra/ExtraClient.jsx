@@ -248,6 +248,7 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
   // the end card's Reveal answer tile is pressed.
   const hideAns = g.status !== 'playing' && g.status !== 'won' && LOFT && !revealed;
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('extra');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('extra');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('extra'), '--stg-acc-lt': gameColorLight('extra'), '--stg-onramp-lt': gameOnrampLight('extra'), '--stg-acc-ink-lt': gameAccentInkLight('extra') };
   const [stageTheme] = useStageTheme();
@@ -609,8 +610,8 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
           @keyframes exflash{from{background:${STAGE ? 'var(--stg-surf2)' : '#f9d34c'};}}
           @media(max-width:560px){.ex-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.ex-ttl h1{font-size:21px;letter-spacing:0.02em;}.ex-ttl .ex-ttl-dt{font-size:15px;}.ex-ttl-dot{display:none;}}
           .ex-inp{font-family:${SANS};font-weight:700;font-size:16px;flex:1 1 auto;min-width:0;border:2px solid ${COLORS.ink};border-radius:9px;padding:12px 14px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};outline:none;}
-          .ex-inp:focus{border-color:var(--stg-acc, ${COLORS.accent});box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 14%, transparent);}
-          .ex-go{font-family:${SANS};font-weight:800;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;border:2px solid var(--stg-acc, ${COLORS.accent});background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-radius:9px;padding:0 20px;cursor:pointer;height:50px;flex:0 0 auto;}
+          .ex-inp:focus{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 14%, transparent);}
+          .ex-go{font-family:${SANS};font-weight:800;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;border:2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-radius:9px;padding:0 20px;cursor:pointer;height:50px;flex:0 0 auto;}
           .ex-go:active{transform:translateY(1px);}
           .ex-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
           .ex-tool:disabled{opacity:.45;cursor:default;}
@@ -663,7 +664,7 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="ex-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="ex-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

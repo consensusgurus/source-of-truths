@@ -55,7 +55,7 @@ function theme(mode) {
     // A row is a hairline on the card, never a fill: --stg-surf painted on a
     // --stg-surf card stacks into a rectangle nobody designed (globals.css).
     row: 'transparent', topRow: 'transparent', topBorder: 'var(--stg-line2,rgba(255,255,255,0.17))',
-    meRow: 'color-mix(in srgb, var(--stg-acc,#7dd3fc) 14%, transparent)', meBorder: 'var(--stg-acc,#7dd3fc)',
+    meRow: 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc,#7dd3fc)) 14%, transparent)', meBorder: 'var(--stg-acc,#7dd3fc)',
     rankTop: 'var(--stg-acc,#7dd3fc)', rankOther: 'var(--stg-mute,#8b95a8)',
     name: 'var(--stg-ink,#e9edf4)', nameDot: 'var(--stg-line2,rgba(255,255,255,0.17))', you: 'var(--stg-mute,#8b95a8)',
     dim: 'var(--stg-mute,#8b95a8)', total: 'var(--stg-ink,#e9edf4)', unit: 'var(--stg-dim,#747f97)',

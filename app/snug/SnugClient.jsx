@@ -297,6 +297,7 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('snug');
   const STAGE = isStage('snug', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('snug');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('snug');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('snug'), '--stg-acc-lt': gameColorLight('snug'), '--stg-onramp-lt': gameOnrampLight('snug'), '--stg-acc-ink-lt': gameAccentInkLight('snug') };
   const [stageTheme] = useStageTheme();
@@ -827,7 +828,7 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
           .sg-tile:hover:not(.used){transform:translateY(-2px);}
           .sg-tile.armed{border:2.5px solid var(--sg-hand);background:var(--stg-cell, #ffffff);}
           .sg-tile.used{opacity:.35;cursor:default;}
-          .sg-tile:focus-visible{outline:2px solid var(--stg-acc, ${COLORS.accent});outline-offset:2px;}
+          .sg-tile:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));outline-offset:2px;}
           .sg-tnum{position:absolute;top:5px;left:8px;font-size:11px;font-weight:800;color:var(--stg-mute, ${COLORS.faded});}
           .sg-tick{position:absolute;top:4px;right:8px;font-size:12px;font-weight:800;color:var(--stg-acc-ink, ${COLORS.accentDeep});}
           .sg-foot{display:flex;align-items:center;gap:10px;border-top:1px solid var(--stg-line, rgba(11,15,26,0.14));padding-top:14px;margin-top:20px;flex-wrap:wrap;}
@@ -905,7 +906,7 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="sg-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="sg-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

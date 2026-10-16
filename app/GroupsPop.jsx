@@ -228,7 +228,7 @@ const CSS = `
 .gpp-lede{color:var(--stg-ink2,#3f4757);font-size:13.5px;line-height:1.5;margin:0 0 14px;}
 .gpp-lede b{color:var(--stg-ink,#0b0d12);}
 .gpp-mini{border:1px solid var(--stg-line,rgba(11,15,26,.14));background:var(--stg-surf,#fff);border-radius:12px;padding:10px 12px;position:relative;overflow:hidden;}
-.gpp-mini::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--stg-acc,#2563eb);}
+.gpp-mini::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--stg-acc-ink, var(--stg-acc,#2563eb));}
 .gpp-mh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
 .gpp-mh b{font-size:13.5px;font-weight:800;}
 .gpp-mh span{font:500 10px "Manrope",ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute,#5f6774);}
@@ -242,9 +242,9 @@ const CSS = `
 .gpp-row .pt{font-weight:800;font-variant-numeric:tabular-nums;}
 .gpp-acts{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
 .gpp-btn{border-radius:999px;padding:10px 16px;font:inherit;font-size:14px;font-weight:800;border:1px solid var(--stg-line2,rgba(11,15,26,.24));background:none;color:var(--stg-ink,#0b0d12);text-decoration:none;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;}
-.gpp-btn.solid{background:var(--stg-acc,#2563eb);border-color:var(--stg-acc,#2563eb);color:var(--stg-onramp,#fff);flex:1 1 auto;}
+.gpp-btn.solid{background:var(--stg-acc,#2563eb);border-color:var(--stg-acc-ink, var(--stg-acc,#2563eb));color:var(--stg-onramp,#fff);flex:1 1 auto;}
 .gpp-btn:disabled{opacity:.5;cursor:default;}
-.gpp-btn:focus-visible,.gpp-x:focus-visible,.gpp-fb:focus-visible{outline:2px solid var(--stg-acc,#2563eb);outline-offset:2px;}
+.gpp-btn:focus-visible,.gpp-x:focus-visible,.gpp-fb:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc,#2563eb));outline-offset:2px;}
 .gpp-foot{margin-top:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font:400 11px "Manrope",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--stg-mute,#5f6774);}
 .gpp-fb{background:none;border:0;padding:0;font:700 12px Manrope,system-ui,sans-serif;color:var(--stg-acc-ink,#2563eb);text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
 .gpp-form{display:flex;flex-direction:column;gap:6px;}

@@ -150,7 +150,7 @@ export default function ReportIssue({ self, name, accent = T.accent, align = 'ce
             <button
               type="button"
               className="ri-btn primary"
-              style={{ background: `var(--stg-acc, ${btnAccent})`, borderColor: `var(--stg-acc, ${btnAccent})` }}
+              style={{ background: `var(--stg-acc, ${btnAccent})`, borderColor: `var(--stg-acc-ink, var(--stg-acc, ${btnAccent}))` }}
               onClick={submit}
               disabled={busy || !msg.trim()}
             >

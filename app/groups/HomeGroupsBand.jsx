@@ -246,14 +246,14 @@ ${AVATAR_CSS}
 .hgb-pick button.on{border-color:transparent;background:var(--stg-acc);color:var(--stg-onramp,#08222e);}
 .hgb-pick button:hover{border-color:var(--stg-line2);color:var(--stg-ink);}
 .hgb-pick button.on:hover{color:var(--stg-onramp,#08222e);}
-.hgb-pick button:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.hgb-pick button:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 .hgb-ft{display:flex;align-items:center;gap:9px;}
 .hgb-step{display:inline-flex;align-items:center;gap:4px;flex:none;margin-left:auto;}
 .hgb-step i{font-style:normal;font-variant-numeric:tabular-nums;color:var(--stg-ink2);}
 .hgb-step button{width:20px;height:18px;border:1px solid var(--stg-line);border-radius:6px;
   background:none;color:var(--stg-ink2);cursor:pointer;font-size:12px;line-height:1;padding:0;}
 .hgb-step button:hover{border-color:var(--stg-line2);color:var(--stg-ink);}
-.hgb-step button:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.hgb-step button:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 
 .hgb-card{border:1px solid var(--stg-line);border-radius:12px;background:var(--stg-surf);
   padding:9px 12px;min-width:0;}
@@ -276,7 +276,7 @@ ${AVATAR_CSS}
 .hgb-gl{color:inherit;text-decoration:underline;text-decoration-color:var(--stg-line2);
   text-underline-offset:3px;}
 .hgb-gl:hover{text-decoration-color:currentColor;color:var(--stg-ink);}
-.hgb-gl:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;border-radius:2px;}
+.hgb-gl:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;border-radius:2px;}
 .hgb-sw .g{color:var(--stg-ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .hgb-sw .bar{position:relative;height:6px;border-radius:3px;background:var(--stg-surf2,rgba(255,255,255,.07));}
 .hgb-sw .bar i{position:absolute;top:0;bottom:0;display:block;border-radius:3px;}
@@ -337,7 +337,7 @@ ${AVATAR_CSS}
 .hgb-chip em{font-style:normal;font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:10.5px;
   color:var(--stg-mute);}
 .hgb-chip:hover{color:var(--stg-ink);}
-.hgb-chip:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.hgb-chip:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 .hgb-chip.top{background:color-mix(in srgb, var(--stg-warn,#fbbf24) 16%, transparent);
   box-shadow:inset 0 0 0 1px var(--stg-warn,#fbbf24);}
 .hgb-chip.top em{color:var(--stg-warn,#fbbf24);}

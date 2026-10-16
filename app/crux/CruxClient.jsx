@@ -148,7 +148,7 @@ button.cx-pill::before{content:'';position:absolute;left:-2px;right:-2px;top:-9p
 .cx-slotbar{display:flex;align-items:center;gap:10px;margin-top:14px;}
 .cx-ob{font-family:${SANS};font-weight:700;font-size:13px;background:transparent;color:var(--stg-ink2,#3f4757);border:1.5px solid var(--stg-dim,#616774);border-radius:12px;min-height:44px;cursor:pointer;touch-action:manipulation;}
 .cx-ob:hover{background:var(--stg-surf2,#e4e9f1);}
-.cx-ob:focus-visible,.cx-go:focus-visible,.cx-giveup:focus-visible,.cx-k:focus-visible{outline:2.5px solid var(--stg-acc,#0369a1);outline-offset:2px;}
+.cx-ob:focus-visible,.cx-go:focus-visible,.cx-giveup:focus-visible,.cx-k:focus-visible{outline:2.5px solid var(--stg-acc-ink, var(--stg-acc,#0369a1));outline-offset:2px;}
 .cx-sq{width:44px;height:44px;flex:none;padding:0;display:inline-flex;align-items:center;justify-content:center;}
 .cx-hint{flex:none;padding:0 14px;line-height:1.15;}
 .cx-hint.off{color:var(--stg-mute,#5f6774);border-color:var(--stg-line2,#c3cad6);cursor:not-allowed;}
@@ -164,7 +164,7 @@ button.cx-pill::before{content:'';position:absolute;left:-2px;right:-2px;top:-9p
 .cx-tryrow{display:flex;gap:4px;flex-wrap:wrap;}
 .cx-mk{width:28px;height:28px;box-sizing:border-box;border-radius:6px;font-size:14px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;font-style:normal;flex:none;}
 .cx-mk.g{background:var(--stg-acc,#0369a1);color:var(--stg-onramp,#fff);border:0;}
-.cx-mk.y{background:transparent;color:var(--stg-ink,#0f1420);border:2px solid var(--stg-acc,#0369a1);}
+.cx-mk.y{background:transparent;color:var(--stg-ink,#0f1420);border:2px solid var(--stg-acc-ink, var(--stg-acc,#0369a1));}
 .cx-mk.x{background:var(--cx-spent,#c9cdd4);color:var(--stg-ink2,#3f4757);border:0;}
 .cx-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;font-weight:700;color:var(--stg-mute,#5f6774);margin-top:2px;}
 .cx-legend span{display:inline-flex;align-items:center;gap:5px;}
@@ -175,7 +175,7 @@ button.cx-pill::before{content:'';position:absolute;left:-2px;right:-2px;top:-9p
 .cx-say .h{font-size:12px;font-weight:600;color:var(--stg-mute,#5f6774);}
 .cx-acts{display:flex;gap:10px;flex:none;}
 .cx-wide{padding:0 16px;min-height:48px;font-size:14px;}
-.cx-go{font-family:${SANS};font-weight:800;font-size:14px;background:var(--stg-acc,#0369a1);color:var(--stg-onramp,#fff);border:2px solid var(--stg-acc,#0369a1);border-radius:12px;padding:0 18px;min-height:48px;cursor:pointer;touch-action:manipulation;}
+.cx-go{font-family:${SANS};font-weight:800;font-size:14px;background:var(--stg-acc,#0369a1);color:var(--stg-onramp,#fff);border:2px solid var(--stg-acc-ink, var(--stg-acc,#0369a1));border-radius:12px;padding:0 18px;min-height:48px;cursor:pointer;touch-action:manipulation;}
 .cx-go.armed{background:transparent;color:var(--stg-ink,#0f1420);border-color:var(--stg-bad,#c0392b);}
 .cx-under{display:flex;justify-content:space-between;align-items:center;gap:16px;padding-top:6px;}
 .cx-under .n{font-size:12px;font-weight:600;color:var(--stg-mute,#5f6774);}
@@ -184,10 +184,10 @@ button.cx-pill::before{content:'';position:absolute;left:-2px;right:-2px;top:-9p
 .cx-kb{max-width:470px;margin:12px auto 0;}
 .cx-kbrow{display:flex;gap:4px;margin-bottom:5px;justify-content:center;}
 .cl-key.cx-k{flex:1 0 0;min-width:0;height:44px;border-radius:6px;font-size:15px;background:var(--cx-key,#fff);color:var(--stg-ink,#0f1420);border:1px solid var(--cx-keybd,#c3cad6);box-sizing:border-box;}
-.cl-key.cx-k.g{background:var(--stg-acc,#0369a1);color:var(--stg-onramp,#fff);border-color:var(--stg-acc,#0369a1);}
-.cl-key.cx-k.y{border:2px solid var(--stg-acc,#0369a1);}
+.cl-key.cx-k.g{background:var(--stg-acc,#0369a1);color:var(--stg-onramp,#fff);border-color:var(--stg-acc-ink, var(--stg-acc,#0369a1));}
+.cl-key.cx-k.y{border:2px solid var(--stg-acc-ink, var(--stg-acc,#0369a1));}
 .cl-key.cx-k.x{background:var(--cx-spent,#c9cdd4);color:var(--stg-ink2,#3f4757);border-color:transparent;}
-.cl-key.cx-k.cx-kent{flex:1.6 0 0;font-size:12px;background:var(--stg-acc,#0369a1);color:var(--stg-onramp,#fff);border-color:var(--stg-acc,#0369a1);}
+.cl-key.cx-k.cx-kent{flex:1.6 0 0;font-size:12px;background:var(--stg-acc,#0369a1);color:var(--stg-onramp,#fff);border-color:var(--stg-acc-ink, var(--stg-acc,#0369a1));}
 .cl-key.cx-k.cx-kback{background:var(--cx-key,#fff);color:var(--stg-ink,#0f1420);border-color:var(--cx-keybd,#c3cad6);font-size:17px;}
 @media(max-width:640px){
   .cx-dk{display:none;}
@@ -749,6 +749,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
   // every call site below themes itself and none of them had to be found.
   // The literals are published on the root element instead.
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('crux');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('crux');
   // THE BOARD'S OWN COLORS.ink, and the reason it is not STAGE_C. Crux is a Word game,
   // Word is step 0 of the ramp, and the puzzle's first category is drawn from
   // step 0 too, so the accent IS the first category's colour. A solved word
@@ -1361,7 +1362,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
     // Crux's own colours now, not the ramp, so the accent no longer claims a
     // category. The selected word is an accent wash with an accent edge, the
     // cursor square takes an ink ring, and an empty square is a board cell.
-    if (green) return { ...base, background: SPAL ? 'var(--stg-acc)' : COLORS.ink, color: SPAL ? 'var(--stg-onramp)' : T.white, border: `1.5px solid ${SPAL ? 'var(--stg-acc)' : COLORS.ink}`, boxShadow: SPAL ? 'none' : 'inset 0 2px 4px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.5)' };
+    if (green) return { ...base, background: SPAL ? 'var(--stg-acc)' : COLORS.ink, color: SPAL ? 'var(--stg-onramp)' : T.white, border: `1.5px solid ${SPAL ? 'var(--stg-acc-ink, var(--stg-acc))' : COLORS.ink}`, boxShadow: SPAL ? 'none' : 'inset 0 2px 4px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.5)' };
     if (lost) return { ...base, background: SPAL ? 'var(--stg-cell)' : TILE, color: `var(--stg-bad, ${COLORS.rust})`, border: `1.5px dashed ${SPAL ? 'var(--stg-bad)' : 'rgba(192,57,43,0.55)'}` };
     if (inSel) {
       const isCursor = cursorKey === k;
@@ -1369,7 +1370,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
         ...base,
         background: SPAL ? 'var(--stg-acc-tint)' : (isCursor ? '#dce9ff' : '#edf3ff'),
         color: SPAL ? INK : COLORS.ember,
-        border: SPAL ? '1.5px solid var(--stg-acc)' : `2px solid ${isCursor ? COLORS.ember : 'rgba(37,99,235,0.5)'}`,
+        border: SPAL ? '1.5px solid var(--stg-acc-ink, var(--stg-acc))' : `2px solid ${isCursor ? COLORS.ember : 'rgba(37,99,235,0.5)'}`,
         ...(SPAL && isCursor ? { boxShadow: '0 0 0 2.5px var(--stg-ink)', zIndex: 1 } : null),
       };
     }
@@ -1466,8 +1467,8 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
       chips={STAGE ? [
         // The swatches are the BOARD's own values, not a description of them,
         // so the legend cannot drift from the grid again.
-        { label: 'Filled = right letter, right square', style: { background: 'var(--stg-acc)', color: 'var(--stg-onramp)', border: '2px solid var(--stg-acc)' } },
-        { label: 'Outlined = in the word, different square', style: { background: 'transparent', color: INK, border: '2px solid var(--stg-acc)' } },
+        { label: 'Filled = right letter, right square', style: { background: 'var(--stg-acc)', color: 'var(--stg-onramp)', border: '2px solid var(--stg-acc-ink, var(--stg-acc))' } },
+        { label: 'Outlined = in the word, different square', style: { background: 'transparent', color: INK, border: '2px solid var(--stg-acc-ink, var(--stg-acc))' } },
         { label: 'Grey = not in the word', style: { background: 'var(--cx-spent)', color: 'var(--stg-ink2)', border: '2px solid var(--cx-spent)' } },
       ] : [
         { label: 'Dark = right letter, right square', style: { background: COLORS.ink, color: T.white, border: `1.5px solid var(--stg-line, ${COLORS.ink})` } },
@@ -1637,7 +1638,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
                 </div>
               )}
               <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <button className="cl-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+                <button className="cl-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
                 <div>
                   <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                     {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

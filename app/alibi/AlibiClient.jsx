@@ -306,6 +306,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('alibi');
   const STAGE = isStage('alibi', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('alibi');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('alibi');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('alibi'), '--stg-acc-lt': gameColorLight('alibi'), '--stg-onramp-lt': gameOnrampLight('alibi'), '--stg-acc-ink-lt': gameAccentInkLight('alibi') };
   const [stageTheme] = useStageTheme();
@@ -680,9 +681,9 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
           .al-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .al-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           .al-btn:disabled:hover{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};}
-          .al-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
+          .al-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, var(--white));}
           .al-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, #761a26) 86%, var(--stg-ink, var(--white)));}
-          .al-clue{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.14));border-left:3px solid var(--stg-acc, ${COLORS.accent});border-radius:8px;padding:8px 11px;margin-bottom:6px;font-size:13.5px;font-weight:600;line-height:1.45;cursor:pointer;user-select:none;color:${INK};}
+          .al-clue{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.14));border-left:3px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));border-radius:8px;padding:8px 11px;margin-bottom:6px;font-size:13.5px;font-weight:600;line-height:1.45;cursor:pointer;user-select:none;color:${INK};}
           .al-clue b{color:var(--stg-acc-ink, ${COLORS.accent});}
           .al-clue.done{opacity:0.42;text-decoration:line-through;}
           .al-tbl{border-collapse:collapse;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin:0 auto;width:100%;max-width:520px;table-layout:fixed;}
@@ -695,7 +696,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
           .al-td{height:34px;border: 1px solid var(--stg-line, rgba(28,30,36,0.12));text-align:center;font-size:16px;cursor:pointer;user-select:none;font-weight:800;padding:0;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};}
           .al-td:hover{background:${STAGE ? 'var(--stg-surf2)' : '#faf6ee'};}
           .al-td.x{color:#b9b2a6;}
-          .al-td.dot{color:var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);}
+          .al-td.dot{color:var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, transparent);}
           .al-grids{display:grid;grid-template-columns:1fr;gap:0;}
           .al-cols{max-width:620px;margin:0 auto;}
           /* DESKTOP: statements and board sit SIDE BY SIDE (owner, 2026-08-08).
@@ -750,7 +751,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="al-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="al-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -762,7 +763,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
 
         {/* the story */}
         {!preStart && (
-        <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 14.5, lineHeight: 1.6, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1px solid rgba(28,30,36,0.14)', borderLeft: `4px solid var(--stg-acc, ${COLORS.accent})`, borderRadius: 8, padding: '12px 16px', margin: '0 0 12px', color: INK }}>
+        <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 14.5, lineHeight: 1.6, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1px solid rgba(28,30,36,0.14)', borderLeft: `4px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))`, borderRadius: 8, padding: '12px 16px', margin: '0 0 12px', color: INK }}>
           Last night at {PUZZLE.venue}, {PUZZLE.stolen} vanished. {N === 5 ? 'Five' : 'Four'} guests &mdash; {PUZZLE.suspects.slice(0, -1).join(', ')} and {PUZZLE.suspects[N - 1]} &mdash; were each alone in a different room, each left at a different hour, and each was carrying one curious item. Work out who was where, when they left, and what they carried. Every statement below is true.
         </div>
         )}

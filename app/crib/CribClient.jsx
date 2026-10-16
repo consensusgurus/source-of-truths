@@ -203,7 +203,7 @@ function Card({ c, size = 'md', selected = false, dim = false, ring = false, onC
       aria-label={`${RANKS[rankOf(c)] === '10' ? '10' : RANKS[rankOf(c)]} of ${SUIT_NAMES[suitOf(c)]}${selected ? ', selected to throw' : ''}`}
       style={{
         width: w, height: h, borderRadius: size === 'sm' ? 5 : 8, background: FACE, color: red ? FACE_RED : FACE_INK,
-        border: `2px solid ${selected ? 'var(--stg-acc, #a16207)' : 'rgba(22,24,29,0.28)'}`,
+        border: `2px solid ${selected ? 'var(--stg-acc-ink, var(--stg-acc, #a16207))' : 'rgba(22,24,29,0.28)'}`,
         boxShadow: ring ? '0 0 0 3px var(--stg-ink, #b45309)' : (selected ? '0 6px 14px rgba(0,0,0,0.28)' : '0 1px 2px rgba(0,0,0,0.25)'),
         opacity: dim ? 0.45 : 1, padding: 0, position: 'relative', fontFamily: SANS, cursor: onClick ? 'pointer' : 'default',
         transform: selected ? 'translateY(-10px)' : 'none', transition: 'transform .14s ease, box-shadow .14s ease', flex: '0 0 auto',
@@ -261,6 +261,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('crib');
   const STAGE = isStage('crib', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('crib');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('crib');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('crib'), '--stg-acc-lt': gameColorLight('crib'), '--stg-onramp-lt': gameOnrampLight('crib'), '--stg-acc-ink-lt': gameAccentInkLight('crib') };
   const [stageTheme] = useStageTheme();
@@ -627,7 +628,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
                 </div>
               )}
               <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <button className="cb-btn" onClick={startGame} style={{ background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, borderColor: STAGE ? STAGE_C : T.cta, fontSize: 15, padding: '11px 22px' }}>Start</button>
+                <button className="cb-btn" onClick={startGame} style={{ background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, borderColor: STAGE ? STAGE_C_INK : T.cta, fontSize: 15, padding: '11px 22px' }}>Start</button>
                 <div>
                   <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                     {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -644,12 +645,13 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
             // say it alternates, yours first), the running score and the
             // selection. The pegs are only the score drawn as cribbage draws it.
             const A_FILL = STAGE ? 'var(--stg-acc)' : COLORS.accent;
+            const A_FILL_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : COLORS.accent;
             const ON_A = STAGE ? 'var(--stg-onramp)' : '#ffffff';
             const CELL = STAGE ? 'var(--stg-cell)' : '#ffffff';
             const CELL_LINE = STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)';
             const GROUND = STAGE ? 'var(--stg-ground)' : T.surface;
             const BAD = 'var(--stg-bad, #b91c1c)';
-            const FELT = STAGE ? 'color-mix(in srgb, var(--stg-acc) 9%, var(--stg-cell))' : COLORS.accentSoft;
+            const FELT = STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 9%, var(--stg-cell))' : COLORS.accentSoft;
             const BACK = STAGE ? 'color-mix(in srgb, var(--stg-acc) 30%, var(--stg-cell))' : '#e9d9a8';
             const K = { fontFamily: SANS, fontSize: narrow ? 10 : 11, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: FADED };
             const short = (c) => `${RANKS[rankOf(c)]}${SUITS[suitOf(c)]}`;
@@ -660,7 +662,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
             const back = g.picks.length ? scoreOf(g.picks.slice(0, -1)) : 0;
             const hs = narrow ? 11 : 14;
             const hole = (n) => {
-              if (n === front && front > 0) return <span key={n} style={{ width: narrow ? 17 : 22, height: narrow ? 17 : 22, borderRadius: '50%', boxSizing: 'border-box', background: A_FILL, border: `3px solid ${CELL}`, boxShadow: `0 0 0 2px ${A_FILL}` }} />;
+              if (n === front && front > 0) return <span key={n} style={{ width: narrow ? 17 : 22, height: narrow ? 17 : 22, borderRadius: '50%', boxSizing: 'border-box', background: A_FILL, border: `3px solid ${CELL}`, boxShadow: `0 0 0 2px ${A_FILL_INK}` }} />;
               if (n === back && back > 0) return <span key={n} style={{ width: narrow ? 16 : 20, height: narrow ? 16 : 20, borderRadius: '50%', boxSizing: 'border-box', background: CELL, border: `${narrow ? 3 : 4}px solid ${A_FILL}` }} />;
               const passed = n < front;
               return <span key={n} style={{ width: hs, height: hs, borderRadius: '50%', boxSizing: 'border-box', background: passed ? BACK : GROUND, border: `2px solid ${CELL_LINE}` }} />;
@@ -692,7 +694,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
                     const on = playing && i === current;
                     return (
                       <div key={i} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: narrow ? 5 : 8 }}>
-                        <div style={{ width: '100%', height: narrow ? 28 : 34, boxSizing: 'border-box', borderRadius: 17, background: GROUND, border: `1.5px solid ${on ? A_FILL : 'transparent'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
+                        <div style={{ width: '100%', height: narrow ? 28 : 34, boxSizing: 'border-box', borderRadius: 17, background: GROUND, border: `1.5px solid ${on ? A_FILL_INK : 'transparent'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
                           {hole(2 * i + 1)}{hole(2 * i + 2)}
                         </div>
                         {narrow ? (
@@ -749,7 +751,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
                         position: 'absolute', left: `calc(50% - ${FW / 2}px + ${d * SPREAD}px)`,
                         top: (narrow ? 60 : 50) + d * d * (narrow ? 3 : 4) - (isSel ? LIFT : 0),
                         width: FW, height: FH, boxSizing: 'border-box', borderRadius: narrow ? 8 : 10, background: FACE,
-                        border: isSel ? `3px solid ${A_FILL}` : `1.5px solid ${CELL_LINE}`, boxShadow: shadow,
+                        border: isSel ? `3px solid ${A_FILL_INK}` : `1.5px solid ${CELL_LINE}`, boxShadow: shadow,
                         transform: `rotate(${d * (narrow ? 6 : 5)}deg)`, transformOrigin: '50% 100%',
                         padding: 0, color: red ? FACE_RED : FACE_INK, fontFamily: SANS, cursor: live ? 'pointer' : 'default',
                         opacity: dim ? 0.45 : 1, transition: 'top .14s ease, box-shadow .14s ease',
@@ -769,11 +771,11 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
             // The crib: their two face down (never seen), your two as you lift them.
             const SW = narrow ? 34 : 46;
             const SH = narrow ? 48 : 66;
-            const backCard = (i) => <span key={`b${i}`} aria-hidden="true" style={{ width: SW, height: SH, boxSizing: 'border-box', borderRadius: narrow ? 5 : 6, border: `2px solid ${A_FILL}`, background: `repeating-linear-gradient(45deg, ${BACK} 0 ${narrow ? 4 : 5}px, ${A_FILL} ${narrow ? 4 : 5}px ${narrow ? 6 : 7}px)` }} />;
+            const backCard = (i) => <span key={`b${i}`} aria-hidden="true" style={{ width: SW, height: SH, boxSizing: 'border-box', borderRadius: narrow ? 5 : 6, border: `2px solid ${A_FILL_INK}`, background: `repeating-linear-gradient(45deg, ${BACK} 0 ${narrow ? 4 : 5}px, ${A_FILL} ${narrow ? 4 : 5}px ${narrow ? 6 : 7}px)` }} />;
             const slot = (i) => {
               const k = thrownKs[i];
               return (
-                <span key={`s${i}`} style={{ width: SW, height: SH, boxSizing: 'border-box', borderRadius: narrow ? 5 : 6, border: `2px dashed ${k != null ? A_FILL : CELL_LINE}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontSize: narrow ? 12 : 15, fontWeight: 800, color: ACC_INK }}>
+                <span key={`s${i}`} style={{ width: SW, height: SH, boxSizing: 'border-box', borderRadius: narrow ? 5 : 6, border: `2px dashed ${k != null ? A_FILL_INK : CELL_LINE}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontSize: narrow ? 12 : 15, fontWeight: 800, color: ACC_INK }}>
                   {k != null ? short(hand.cards[k]) : ''}
                 </span>
               );
@@ -804,7 +806,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
             );
             const throwBtn = (
               <button className="cb-btn" onClick={throwIt} disabled={!ready}
-                style={{ background: ready ? STAGE_C : undefined, color: ready ? 'var(--stg-onramp, #ffffff)' : undefined, borderColor: ready ? STAGE_C : undefined, ...(narrow ? { flex: 2, fontSize: 16 } : { fontSize: 15, padding: '0 26px' }) }}>Throw</button>
+                style={{ background: ready ? STAGE_C : undefined, color: ready ? 'var(--stg-onramp, #ffffff)' : undefined, borderColor: ready ? STAGE_C_INK : undefined, ...(narrow ? { flex: 2, fontSize: 16 } : { fontSize: 15, padding: '0 26px' }) }}>Throw</button>
             );
             const keptLine = g.shown === null && (
               <div style={{ display: 'flex', justifyContent: narrow ? 'space-between' : 'center', gap: narrow ? 8 : 28, marginTop: narrow ? 4 : 6, flexWrap: 'wrap' }}>
@@ -854,7 +856,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
                   })()}. The value above is the average over every cut, which is what counts.
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
-                  <button className="cb-btn" onClick={nextHand} style={{ background: STAGE_C, color: 'var(--stg-onramp, #ffffff)', borderColor: STAGE_C, ...(narrow ? { width: '100%' } : null) }}>
+                  <button className="cb-btn" onClick={nextHand} style={{ background: STAGE_C, color: 'var(--stg-onramp, #ffffff)', borderColor: STAGE_C_INK, ...(narrow ? { width: '100%' } : null) }}>
                     {g.picks.length >= NH ? 'See your score' : 'Next hand'} <ArrowRight size={15} />
                   </button>
                 </div>

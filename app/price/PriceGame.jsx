@@ -295,6 +295,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
   const STAGE = RUN || isStage(KEY, searchParams);
   const [stageTheme] = useStageTheme();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor(KEY);
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor(KEY);
   const STAGE_ACC = { '--stg-acc-dk': gameColor(KEY), '--stg-acc-lt': gameColorLight(KEY), '--stg-onramp-lt': gameOnrampLight(KEY), '--stg-acc-ink-lt': gameAccentInkLight(KEY) };
   const Cap = STAGE ? StageChrome : LoftCap;
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
@@ -672,8 +673,8 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
   const CSS = `
           @media(max-width:560px){.pr-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .pr-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
-          .pr-prod{display:flex;gap:16px;align-items:center;background:var(--pr-panel);border:1.5px solid var(--pr-panel-line);border-left:5px solid var(--stg-acc, ${COLORS.accent});border-radius:14px;padding:12px 16px 12px 12px;box-shadow:var(--pr-shadow);}
-          .pr-prod.hero{display:block;padding:10px 10px 14px;border-left-width:1.5px;border-top:5px solid var(--stg-acc, ${COLORS.accent});}
+          .pr-prod{display:flex;gap:16px;align-items:center;background:var(--pr-panel);border:1.5px solid var(--pr-panel-line);border-left:5px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));border-radius:14px;padding:12px 16px 12px 12px;box-shadow:var(--pr-shadow);}
+          .pr-prod.hero{display:block;padding:10px 10px 14px;border-left-width:1.5px;border-top:5px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .pr-prod.hero .pr-txt{padding:12px 6px 0;}
           .pg-photos{flex:0 0 150px;}
           .pg-hero{height:150px;border-radius:10px;background:var(--pr-mat);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}
@@ -685,17 +686,17 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
           .pg-lab{position:absolute;left:10px;bottom:10px;font-family:${MONO};font-size:10px;letter-spacing:.12em;text-transform:uppercase;background:rgba(6,10,20,.66);color:#fff;padding:4px 8px;border-radius:5px;}
           .pg-thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px;}
           .pg-thumbs button{position:relative;padding:0;border:2px solid transparent;border-radius:8px;overflow:hidden;cursor:pointer;background:var(--pr-mat);height:62px;}
-          .pg-thumbs button.on{border-color:var(--stg-acc, ${COLORS.accent});}
+          .pg-thumbs button.on{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .pg-thumbs img{width:100%;height:100%;object-fit:cover;display:block;opacity:.8;}
           .pg-thumbs button.on img{opacity:1;}
           .pg-thumbs span{position:absolute;left:0;right:0;bottom:0;font-family:${MONO};font-size:9px;letter-spacing:.1em;text-transform:uppercase;background:rgba(6,10,20,.62);color:#fff;padding:2px 4px;text-align:left;}
           .pg-facts{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 6px;}
-          .pg-facts span{font-weight:800;font-size:12.5px;color:${INK};border:1.5px solid var(--pr-panel-line);border-radius:999px;padding:4px 10px;background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 9%, transparent);}
+          .pg-facts span{font-weight:800;font-size:12.5px;color:${INK};border:1.5px solid var(--pr-panel-line);border-radius:999px;padding:4px 10px;background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 9%, transparent);}
           .pr-eb{font-family:${MONO};font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;}
           .pr-name{margin:4px 0 6px;font-size:19px;line-height:1.25;font-weight:800;color:${INK};}
           .pr-ask{margin-top:16px;display:flex;gap:10px;}
           .pr-money{flex:1;display:flex;align-items:center;border:2.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));border-radius:12px;background:var(--pr-panel);padding:0 14px;box-shadow:var(--pr-shadow);}
-          .pr-money:focus-within{border-color:var(--stg-acc, ${COLORS.accent});}
+          .pr-money:focus-within{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .pr-money span{font-weight:900;font-size:22px;color:${FADED};}
           .pr-money input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:${INK};font:900 23px ${SANS};padding:14px 8px;font-variant-numeric:tabular-nums;}
           .pr-go{font:900 16px ${SANS};border:0;border-radius:12px;padding:0 26px;box-shadow:var(--pr-shadow);cursor:pointer;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #ffffff);}
@@ -709,7 +710,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
           .pr-row .g{font-weight:900;font-size:19px;font-variant-numeric:tabular-nums;color:${INK};display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
           .pr-row .g .worth{font-size:12.5px;font-weight:700;color:${FADED};}
           .pr-row .g .pts{font-size:11.5px;font-weight:800;color:${FADED};border:1px solid var(--stg-line, rgba(28,30,36,0.18));border-radius:999px;padding:1px 7px;}
-          .pr-row .g .pts.won{color:${INK};border-color:var(--stg-acc, ${COLORS.accent});}
+          .pr-row .g .pts.won{color:${INK};border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .pr-row .dir{font-weight:900;font-size:14px;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;}
           .pr-row .heat{display:flex;flex-direction:column;gap:4px;}
           .pr-row .heat b{align-self:flex-end;font-family:${MONO};font-weight:500;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:color-mix(in srgb, currentColor 16%, transparent);border:1px solid color-mix(in srgb, currentColor 45%, transparent);}
@@ -718,7 +719,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
           .pr-buy{display:inline-flex;align-items:center;gap:7px;font:800 14px ${SANS};background:var(--pr-buy);color:#1f1300;text-decoration:none;border-radius:9px;padding:10px 16px;}
           .pr-ladder{margin-top:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:5px;font-family:${MONO};font-size:10.5px;}
           .pr-ladder div{border:1px solid var(--stg-line, rgba(28,30,36,0.18));border-radius:6px;padding:5px 7px;color:${FADED};}
-          .pr-ladder div.on{border-color:var(--stg-acc, ${COLORS.accent});color:${INK};}
+          .pr-ladder div.on{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:${INK};}
           .pr-ladder b{display:block;font-family:${SANS};font-size:14px;font-weight:800;}
           @media(max-width:480px){.pr-prod{flex-direction:column;align-items:stretch;}.pg-photos{flex-basis:auto;}.pg-hero{height:210px;}.pr-row{grid-template-columns:18px 1fr auto 74px;}}
         `;
@@ -866,7 +867,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="pr-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="pr-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

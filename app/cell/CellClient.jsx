@@ -79,7 +79,7 @@ const COLORS = {
 // ground, as Crib's is, so it reads as a table in both registers. Card FACES are
 // paper in both registers (playing cards are physical objects): white, with
 // near-black and red ink.
-const FELT = 'color-mix(in srgb, var(--stg-acc, #0e7490) 9%, var(--stg-cell, #e6f2ec))';
+const FELT = 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #0e7490)) 9%, var(--stg-cell, #e6f2ec))';
 const CARD_FACE = '#ffffff';
 const CARD_EDGE = 'var(--stg-cell-line, rgba(20,22,28,0.30))';
 const RED_PIP = '#b91c1c';
@@ -218,10 +218,10 @@ function CardFace({ card, w, h, pile = false, covered = false, lifted = false, h
       className={`cel-card${lifted ? ' lifted' : ''}`}
       style={{
         width: w, height: h, boxSizing: 'border-box', borderRadius: Math.round(w * 0.1), background: CARD_FACE,
-        border: lifted ? '3px solid var(--stg-acc, #0e7490)' : `1.5px solid ${CARD_EDGE}`,
+        border: lifted ? '3px solid var(--stg-acc-ink, var(--stg-acc, #0e7490))' : `1.5px solid ${CARD_EDGE}`,
         boxShadow: ring, color: red ? RED_PIP : BLACK_PIP, fontFamily: SANS, padding: 0,
         position: 'relative', lineHeight: 1, cursor: onClick ? 'pointer' : 'default', userSelect: 'none',
-        outline: drop ? '2.5px dashed var(--stg-acc, #0e7490)' : 'none', outlineOffset: drop ? 3 : 0,
+        outline: drop ? '2.5px dashed var(--stg-acc-ink, var(--stg-acc, #0e7490))' : 'none', outlineOffset: drop ? 3 : 0,
         flexShrink: 0, ...style,
       }}>
       {pile ? (
@@ -326,6 +326,7 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('cell');
   const STAGE = isStage('cell', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('cell');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('cell');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('cell'), '--stg-acc-lt': gameColorLight('cell'), '--stg-onramp-lt': gameOnrampLight('cell'), '--stg-acc-ink-lt': gameAccentInkLight('cell') };
   const [stageTheme] = useStageTheme();
@@ -764,7 +765,7 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
           @keyframes celshake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
           .cel-k{font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:${FADED};}
           @media(max-width:560px){.cel-k{font-size:10px;}}
-          .cel-drop{box-sizing:border-box;background:color-mix(in srgb, var(--stg-acc, #0e7490) 22%, var(--stg-cell, #ffffff));border:2.5px dashed var(--stg-acc, #0e7490);color:var(--stg-acc-ink, #0e7490);font-family:${SANS};font-weight:800;letter-spacing:.06em;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+          .cel-drop{box-sizing:border-box;background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #0e7490)) 22%, var(--stg-cell, #ffffff));border:2.5px dashed var(--stg-acc-ink, var(--stg-acc, #0e7490));color:var(--stg-acc-ink, #0e7490);font-family:${SANS};font-weight:800;letter-spacing:.06em;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;}
           .cel-hole{box-sizing:border-box;background:var(--stg-cell, rgba(0,0,0,0.06));border:2px dashed var(--stg-cell-line, rgba(28,30,36,0.3));padding:0;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
           .cel-ctl{font-family:${SANS};font-weight:700;font-size:14px;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};background:transparent;color:${INK};border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;box-sizing:border-box;}
           .cel-ctl:hover:not(:disabled){background:var(--stg-surf2, rgba(28,30,36,0.05));}
@@ -801,7 +802,7 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="cel-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="cel-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

@@ -326,6 +326,7 @@ export default function ImpoundClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('impound');
   const STAGE = isStage('impound', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('impound');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('impound');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('impound'), '--stg-acc-lt': gameColorLight('impound'), '--stg-onramp-lt': gameOnrampLight('impound'), '--stg-acc-ink-lt': gameAccentInkLight('impound') };
   const [stageTheme] = useStageTheme();
@@ -742,7 +743,7 @@ export default function ImpoundClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="pk-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="pk-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -789,7 +790,7 @@ export default function ImpoundClient({ puzzles = [], forceNum = null }) {
                   Off the stage every token is undefined: the slot falls back to
                   the lot cream and both lips to transparent, so the Loft board is
                   exactly what it was. */}
-              <div style={{ position: 'absolute', right: -10, top: `${EXIT_ROW * cellPct}%`, width: 10, height: `${cellPct}%`, background: `color-mix(in srgb, var(--stg-acc, ${LOT}) 26%, var(--stg-ground, ${LOT}))` }} />
+              <div style={{ position: 'absolute', right: -10, top: `${EXIT_ROW * cellPct}%`, width: 10, height: `${cellPct}%`, background: `color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${LOT})) 26%, var(--stg-ground, ${LOT}))` }} />
               <div aria-hidden="true" style={{ position: 'absolute', right: -10, top: `${EXIT_ROW * cellPct}%`, width: 10, height: 3, background: 'var(--stg-acc, transparent)' }} />
               <div aria-hidden="true" style={{ position: 'absolute', right: -10, top: `calc(${(EXIT_ROW + 1) * cellPct}% - 3px)`, width: 10, height: 3, background: 'var(--stg-acc, transparent)' }} />
               {/* lot markings */}
@@ -837,7 +838,7 @@ export default function ImpoundClient({ puzzles = [], forceNum = null }) {
                       // reaches, so the block you are holding needs no second colour
                       // to be found. The hint takes the site's own assist amber:
                       // green is its confirm, and it sits next door to Logic's lime.
-                      outline: on ? `3px solid var(--stg-acc, ${COLORS.ink})`
+                      outline: on ? `3px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.ink}))`
                         : hintBlock === i ? `3px solid var(--stg-warn, ${COLORS.green})` : 'none',
                       outlineOffset: on || hintBlock === i ? '1px' : 0,
                       border: isRed ? `2px solid ${RED_EDGE}` : carEdge,

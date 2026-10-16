@@ -120,14 +120,14 @@ const CSS = `
 .stq details:first-of-type{margin-top:8px;}
 .stq summary{font-weight:800;font-size:14.5px;cursor:pointer;list-style:none;color:var(--stg-ink);}
 .stq summary::-webkit-details-marker{display:none;}
-.stq summary:focus-visible{outline:2px solid var(--stg-acc);outline-offset:3px;border-radius:4px;}
+.stq summary:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:3px;border-radius:4px;}
 .stq p{margin:8px 0 0;max-width:66ch;font-size:14.5px;line-height:1.62;color:var(--stg-ink2);font-weight:500;}
 .stq p a{color:var(--stg-ink);font-weight:700;text-decoration:underline;text-underline-offset:2px;}
 .stq p a:hover{color:var(--stg-acc-ink);}
 .stq-more{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;font-weight:600;color:var(--stg-mute);padding-top:18px;border-top:1px solid var(--stg-line);}
 .stq-more a{color:var(--stg-ink);font-weight:700;text-decoration:none;}
 .stq-more a:hover{color:var(--stg-acc-ink);}
-.stq-more a:focus-visible{outline:2px solid var(--stg-acc);outline-offset:3px;border-radius:4px;}
+.stq-more a:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:3px;border-radius:4px;}
 .stq-more .stq-all{margin-left:auto;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute);}
 .stq-more .stq-all:hover{color:var(--stg-ink);}
 `;

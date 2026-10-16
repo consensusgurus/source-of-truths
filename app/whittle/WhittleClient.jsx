@@ -262,6 +262,7 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('whittle');
   const STAGE = isStage('whittle', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('whittle');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('whittle');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('whittle'), '--stg-acc-lt': gameColorLight('whittle'), '--stg-onramp-lt': gameOnrampLight('whittle'), '--stg-acc-ink-lt': gameAccentInkLight('whittle') };
   const [stageTheme] = useStageTheme();
@@ -589,12 +590,12 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
     // land within a shade of each other.
     let bg = STAGE ? 'var(--stg-cell)' : T.white;
     if (peer) bg = STAGE ? 'color-mix(in srgb, var(--stg-ink) 14%, var(--stg-cell))' : '#f4f5f7';
-    if (sameVal) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 22%, var(--stg-cell))' : '#f1f3f6';
+    if (sameVal) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 22%, var(--stg-cell))' : '#f1f3f6';
     if (standing) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 40%, var(--stg-cell))' : COLORS.accentTint;
     if (standing && (peer || sameVal)) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 54%, var(--stg-cell))' : '#efd9b0';
     return {
       background: bg,
-      boxShadow: isSel ? `inset 0 0 0 2.5px var(--stg-acc, ${COLORS.accentDeep})` : undefined,
+      boxShadow: isSel ? `inset 0 0 0 2.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accentDeep}))` : undefined,
       zIndex: isSel ? 1 : undefined,
       cursor: playing && started ? 'pointer' : 'default',
       borderRight: `${heavyR ? 2.5 : 1}px solid ${heavyR ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,
@@ -688,7 +689,7 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="wh-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="wh-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -722,7 +723,7 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
                 return (
                   <span key={k} className="wh-pip" style={{
                     background: lifted ? `var(--stg-acc, ${COLORS.accent})` : (beyond ? 'var(--stg-line, rgba(28,30,36,0.13))' : `var(--stg-surf2, ${COLORS.accentTint})`),
-                    outline: k === OPEN_CLUES - PERFECT - 1 ? `1.5px solid var(--stg-acc, ${COLORS.accentDeep})` : undefined,
+                    outline: k === OPEN_CLUES - PERFECT - 1 ? `1.5px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accentDeep}))` : undefined,
                     outlineOffset: 1,
                   }} />
                 );

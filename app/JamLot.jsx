@@ -60,7 +60,7 @@ const CSS = `
   --jl-red:#ef4444;
   --jl-red-edge:#fca5a5;
   --jl-ghost:var(--stg-acc, #a3e635);
-  --jl-ghost-fill:color-mix(in srgb, var(--stg-acc, #a3e635) 15%, transparent);
+  --jl-ghost-fill:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #a3e635)) 15%, transparent);
   --jl-ghost-hot:color-mix(in srgb, var(--stg-acc, #a3e635) 30%, transparent);
   --jl-ring:var(--stg-acc, #a3e635);
 }

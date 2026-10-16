@@ -94,14 +94,14 @@ const CSS = `
   border:1px solid var(--stg-line);border-radius:99px;padding:5px 11px;background:none;
   cursor:pointer;text-decoration:none;white-space:nowrap;}
 .soth .stg-cx:hover{border-color:var(--stg-line2);color:var(--stg-ink);}
-.soth .stg-cx:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
-.soth-nav .stg-cx.on{color:var(--stg-onramp);background:var(--stg-acc);border-color:var(--stg-acc);}
+.soth .stg-cx:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
+.soth-nav .stg-cx.on{color:var(--stg-onramp);background:var(--stg-acc);border-color:var(--stg-acc-ink, var(--stg-acc));}
 .soth-th{padding:5px 8px;}
 /* The first-visit pointer at the switch, the same three pulses the stage cap
    draws. It is the only control on these pages a reader has not seen before. */
-.soth-th.hint{border-color:var(--stg-acc);color:var(--stg-acc-ink);animation:soth-ring 1.9s ease-out 3;}
+.soth-th.hint{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink);animation:soth-ring 1.9s ease-out 3;}
 @keyframes soth-ring{
-  0%{box-shadow:0 0 0 0 var(--stg-acc);}
+  0%{box-shadow:0 0 0 0 var(--stg-acc-ink, var(--stg-acc));}
   70%{box-shadow:0 0 0 10px transparent;}
   100%{box-shadow:0 0 0 0 transparent;}
 }

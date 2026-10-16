@@ -266,6 +266,7 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('dossier');
   const STAGE = isStage('dossier', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('dossier');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('dossier');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('dossier'), '--stg-acc-lt': gameColorLight('dossier'), '--stg-onramp-lt': gameOnrampLight('dossier'), '--stg-acc-ink-lt': gameAccentInkLight('dossier') };
   const [stageTheme] = useStageTheme();
@@ -621,12 +622,12 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
           .ds-none{font-size:13px;font-weight:600;color:${FADED};}
           .ds-inwrap{margin-top:14px;}
           .ds-in{flex:1 1 auto;min-width:0;height:46px;box-sizing:border-box;border:2px solid var(--stg-ink2, ${COLORS.ink});border-radius:8px;padding:0 12px;font-family:${SANS};font-size:16px;font-weight:700;color:${INK};background:var(--stg-cell, #ffffff);}
-          .ds-in:focus{outline:3px solid var(--stg-acc, ${COLORS.accent});outline-offset:1px;}
+          .ds-in:focus{outline:3px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));outline-offset:1px;}
           .ds-go{height:46px;padding:0 18px;border:none;border-radius:8px;background:${STAGE ? STAGE_C : T.cta};color:${STAGE ? 'var(--stg-onramp, #08222e)' : T.white};font-family:${SANS};font-weight:800;font-size:15px;cursor:pointer;}
           .ds-opts{display:flex;flex-direction:column;margin-top:6px;border:1px solid var(--stg-cell-line, rgba(11,15,26,0.3));border-radius:8px;overflow:hidden;}
           .ds-opt{border-radius:0 !important;border:none;border-bottom:1px solid var(--stg-line, rgba(28,30,36,0.14));background:var(--stg-cell, #ffffff);color:${INK};text-align:left;padding:11px 12px;font-family:${SANS};font-size:14.5px;font-weight:700;cursor:pointer;}
           .ds-opt:last-child{border-bottom:none;}
-          .ds-opt.top{box-shadow:inset 4px 0 0 var(--stg-acc, ${COLORS.accent});}
+          .ds-opt.top{box-shadow:inset 4px 0 0 var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .ds-hint{margin-top:7px;font-size:12px;font-weight:700;color:${FADED};}
           .ds-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
           .ds-file{margin:2px 0 0;}
@@ -673,7 +674,7 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
           .ds-cells{flex:1 1 auto;min-width:0;display:flex;gap:4px;}
           .ds-colk{flex:1 1 0;text-align:center;min-width:0;letter-spacing:.08em;font-size:10px;}
           .ds-c{flex:1 1 0;box-sizing:border-box;min-height:46px;padding:5px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:1px;background:var(--stg-cell, #ffffff);border:1px solid var(--stg-cell-line, rgba(11,15,26,0.3));border-radius:8px;color:${INK};min-width:0;}
-          .ds-c.hit{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #ffffff);}
+          .ds-c.hit{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, #ffffff);}
           .ds-c .ds-cl{display:none;}
           .ds-cv{font-size:12px;letter-spacing:-.02em;font-weight:800;line-height:1.15;overflow-wrap:anywhere;}
           .ds-cn{font-size:10.5px;font-weight:700;margin-top:0;}
@@ -760,7 +761,7 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="ds-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="ds-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

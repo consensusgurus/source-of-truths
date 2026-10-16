@@ -269,6 +269,7 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
   const H = hideAns ? (g.playerH || Array(NH).fill(0)) : g.h;
   const V = hideAns ? (g.playerV || Array(NV).fill(0)) : g.vt;
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('hedge');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('hedge');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('hedge'), '--stg-acc-lt': gameColorLight('hedge'), '--stg-onramp-lt': gameOnrampLight('hedge'), '--stg-acc-ink-lt': gameAccentInkLight('hedge') };
   const [stageTheme] = useStageTheme();
@@ -894,7 +895,7 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="hg-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="hg-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -969,7 +970,7 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
                 const ok = (s.kind === 'h' ? solH[s.idx] : solV[s.idx]) === 1;
                 return (
                   <line key={`l${s.kind}${s.idx}`} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}
-                    style={{ stroke: ok ? `var(--stg-acc, ${COLORS.accent})` : `var(--stg-bad, ${COLORS.rust})`, pointerEvents: 'none' }}
+                    style={{ stroke: ok ? `var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : `var(--stg-bad, ${COLORS.rust})`, pointerEvents: 'none' }}
                     strokeWidth={Math.round(CELL * 0.13)} strokeLinecap="round" />
                 );
               })}
@@ -979,7 +980,7 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
                 const d = loop.deg[k];
                 if (d === 1) {
                   return <circle key={`d${k}`} cx={X(j)} cy={Y(i)} r={CELL * 0.13} className="hg-cellrect"
-                    style={{ stroke: `var(--stg-acc, ${COLORS.accent})`, strokeWidth: CELL * 0.055, pointerEvents: 'none' }} />;
+                    style={{ stroke: `var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))`, strokeWidth: CELL * 0.055, pointerEvents: 'none' }} />;
                 }
                 const fill = d > 2 ? `var(--stg-bad, ${COLORS.rust})` : d === 2 ? `var(--stg-acc, ${COLORS.accent})` : 'var(--stg-cell-dot, #9aa2b4)';
                 const r = d > 2 ? CELL * 0.1 : d === 2 ? CELL * 0.075 : CELL * 0.06;
@@ -1209,7 +1210,7 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
               <button onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
             </div>
             {rulesBody}
-            <button className="hg-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: STAGE ? 'var(--stg-acc)' : COLORS.ink, borderColor: STAGE ? 'var(--stg-acc)' : COLORS.ink, color: STAGE ? 'var(--stg-onramp)' : T.white }}>Play</button>
+            <button className="hg-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: STAGE ? 'var(--stg-acc)' : COLORS.ink, borderColor: STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : COLORS.ink, color: STAGE ? 'var(--stg-onramp)' : T.white }}>Play</button>
           </div>
         </div>
       )}

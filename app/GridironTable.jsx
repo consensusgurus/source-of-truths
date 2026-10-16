@@ -206,7 +206,7 @@ html:not([data-stage-boot='dark']) [data-stage-theme='light'] .gr{
    the page accent rather than the warn colour, because nothing here is broken
    or excluded. */
 .gr-note{margin:10px 18px 0;padding:10px 12px;border-radius:9px;background:var(--stg-chip);
-  border:1px solid var(--stg-line);border-left:3px solid var(--stg-acc);color:var(--stg-ink2);
+  border:1px solid var(--stg-line);border-left:3px solid var(--stg-acc-ink, var(--stg-acc));color:var(--stg-ink2);
   font-size:12px;line-height:1.55;}
 .gr-note b{color:var(--stg-ink);}
 .gr-scroll{overflow-x:auto;}
@@ -235,7 +235,7 @@ html:not([data-stage-boot='dark']) [data-stage-theme='light'] .gr{
 .gr thead .gr-tiers th[data-tier]::before{content:'';display:inline-block;width:7px;height:7px;
   border-radius:2px;background:var(--t,var(--stg-mute2));margin-right:7px;vertical-align:baseline;}
 .gr thead .gr-srcs th{padding:8px 8px 10px;font-size:11px;font-weight:700;color:var(--stg-ink2);
-  background:var(--stg-panel);border-bottom:2px solid var(--stg-acc);vertical-align:bottom;}
+  background:var(--stg-panel);border-bottom:2px solid var(--stg-acc-ink, var(--stg-acc));vertical-align:bottom;}
 .gr thead th.tg,.gr td.tg{border-left:1px solid var(--stg-line);}
 .gr-w{display:block;font-family:'Manrope',ui-monospace,monospace;font-size:9.5px;font-weight:500;
   color:var(--stg-acc-ink);margin-top:3px;letter-spacing:.04em;}

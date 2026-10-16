@@ -1,6 +1,6 @@
 import CircuitFrame from './CircuitFrame';
 import { ALL_CIRCUITS, DISPLAY_CIRCUITS, circuitGamesFor, circuitPageHref, isMarquee, isSoloCircuit } from '@/lib/circuits';
-import { categoryColor, categoryColorLight } from '@/lib/category-ramp';
+import { categoryColor, categoryColorLight, categoryAccentInkLight } from '@/lib/category-ramp';
 import { SITE_URL } from '@/lib/site';
 
 // /circuits — the index of all fifteen.
@@ -56,6 +56,7 @@ export default function CircuitsIndexPage() {
       // rendered and a hue chosen in JS would repaint under the reader.
       hue: games[0] ? categoryColor(games[0].cat) : null,
       hueLight: games[0] ? categoryColorLight(games[0].cat) : null,
+      inkLight: games[0] ? categoryAccentInkLight(games[0].cat) : null,
     };
   }).filter((r) => r.names.length >= 2 || (r.names.length === 1 && isSoloCircuit(r.id)));
 
@@ -109,7 +110,7 @@ export default function CircuitsIndexPage() {
                   key={r.id}
                   className="cix-c"
                   href={circuitPageHref(r.id)}
-                  style={{ '--cc-dk': r.hue || undefined, '--cc-lt': r.hueLight || undefined }}
+                  style={{ '--cc-dk': r.hue || undefined, '--cc-lt': r.hueLight || undefined, '--cc-ink-lt': r.inkLight || undefined }}
                 >
                   <span className="cix-top">
                     <span className="cix-nm">{r.marquee ? r.name : `The ${r.name} Circuit`}</span>
@@ -156,14 +157,14 @@ const CSS = `
 /* Two across where there is room. These cards carry a full sentence each, so a
    three-across shelf would set them at a measure nobody wants to read. */
 .cix-cards{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));}
-.cix-c{--cc:var(--cc-dk,var(--stg-ink2));position:relative;display:block;min-width:0;
+.cix-c{--cc:var(--cc-dk,var(--stg-ink2));--cci:var(--cc);position:relative;display:block;min-width:0;
   text-decoration:none;color:var(--stg-ink);background:var(--stg-surf);
   border:1px solid var(--stg-line);border-radius:10px;padding:13px 15px 14px 18px;
   overflow:hidden;}
-[data-stage-theme='light'] .cix-c{--cc:var(--cc-lt,var(--stg-ink2));}
-.cix-c::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cc);}
-.cix-c:hover{border-color:var(--cc);}
-.cix-c:focus-visible{outline:2px solid var(--cc);outline-offset:2px;}
+[data-stage-theme='light'] .cix-c{--cc:var(--cc-lt,var(--stg-ink2));--cci:var(--cc-ink-lt,var(--cc));}
+.cix-c::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cci, var(--cc));}
+.cix-c:hover{border-color:var(--cci, var(--cc));}
+.cix-c:focus-visible{outline:2px solid var(--cci, var(--cc));outline-offset:2px;}
 .cix-top{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;}
 .cix-nm{font-size:16px;font-weight:800;letter-spacing:-0.015em;min-width:0;}
 .cix-tier{margin-left:auto;flex:none;font-family:${MONO};font-size:9px;font-weight:700;

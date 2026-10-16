@@ -83,7 +83,7 @@ const COLORS = {
 // THE BOARD (round four, 2026-10-13): a compass table on a felt tinted with
 // the category accent, the trick in a round well in the middle. Card faces
 // are paper in both registers, as Crib's are: white, near-black and red ink.
-const FELT = 'color-mix(in srgb, var(--stg-acc, #4c1d95) 9%, var(--stg-cell, #ffffff))';
+const FELT = 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #4c1d95)) 9%, var(--stg-cell, #ffffff))';
 const CARD_FACE = '#ffffff';
 const CARD_EDGE = 'rgba(22,24,29,0.30)';
 const RED_PIP = '#b91c1c';
@@ -295,6 +295,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
   const STAGE = isStage('finesse', searchParams);
   const [stageTheme] = useStageTheme();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('finesse');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('finesse');
   const STAGE_ACC = { '--stg-acc-dk': gameColor('finesse'), '--stg-acc-lt': gameColorLight('finesse'), '--stg-onramp-lt': gameOnrampLight('finesse'), '--stg-acc-ink-lt': gameAccentInkLight('finesse') };
   const Cap = STAGE ? StageChrome : LoftCap;
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
@@ -663,7 +664,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
        "it says it is my turn but nothing is activated"). The live cards are
        lifted and ringed at rest, and the ring sits OUTSIDE the card. */
     .fn-cd.play{cursor:pointer;transform:translateY(-5px);}
-    .fn-cd.play .fn-face{border:2.5px solid var(--stg-acc,${COLORS.accent});box-shadow:0 0 0 2px ${FELT},0 0 0 3.5px var(--stg-acc,${COLORS.accent}),0 8px 14px rgba(0,0,0,.3);}
+    .fn-cd.play .fn-face{border:2.5px solid var(--stg-acc-ink, var(--stg-acc,${COLORS.accent}));box-shadow:0 0 0 2px ${FELT},0 0 0 3.5px var(--stg-acc,${COLORS.accent}),0 8px 14px rgba(0,0,0,.3);}
     .fn-cd.play:hover{transform:translateY(-8px);}
     .fn-cd.play:focus-visible{outline:2px solid var(--stg-ink,${COLORS.ink});outline-offset:5px;}
     .fn-cd:disabled{cursor:default;}
@@ -685,7 +686,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
     .fn-slot{position:absolute;width:23.5%;aspect-ratio:68/96;box-sizing:border-box;border-radius:9px;}
     .fn-sn{top:11.5%;left:38.25%;} .fn-ss{top:55%;left:38.25%;} .fn-sw{top:33.2%;left:6.2%;} .fn-se{top:33.2%;right:6.2%;}
     .fn-slot.empty{border:2px dashed var(--stg-cell-line,rgba(28,30,36,0.35));background:var(--stg-cell,#ffffff);}
-    .fn-slot.next{border:2.5px dashed var(--stg-acc,${COLORS.accent});background:color-mix(in srgb,var(--stg-acc,${COLORS.accent}) 18%,var(--stg-cell,#ffffff));display:flex;align-items:center;justify-content:center;text-align:center;font-family:${SANS};font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--stg-acc-ink,${COLORS.accent});line-height:1.3;}
+    .fn-slot.next{border:2.5px dashed var(--stg-acc-ink, var(--stg-acc,${COLORS.accent}));background:color-mix(in srgb,var(--stg-acc-ink, var(--stg-acc,${COLORS.accent})) 18%,var(--stg-cell,#ffffff));display:flex;align-items:center;justify-content:center;text-align:center;font-family:${SANS};font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--stg-acc-ink,${COLORS.accent});line-height:1.3;}
     .fn-slot .fn-face{box-shadow:0 6px 12px rgba(0,0,0,.28);}
     .fn-slot.win .fn-face{box-shadow:0 0 0 3px var(--stg-ground,#eef1f5),0 0 0 5px var(--stg-warn,#b45309);}
     .fn-win{position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);font-family:${SANS};font-size:9.5px;font-weight:800;letter-spacing:.08em;color:var(--stg-warn,#b45309);background:var(--stg-ground,#eef1f5);border-radius:5px;padding:2px 5px;white-space:nowrap;z-index:2;}
@@ -700,9 +701,9 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
     .fn-ts{display:flex;flex-direction:column;align-items:center;gap:4px;}
     .fn-tb{width:var(--tw,42px);height:var(--th,56px);box-sizing:border-box;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:${SANS};font-size:14px;font-weight:800;background:var(--stg-cell,#ffffff);border:2px solid var(--stg-cell-line,rgba(28,30,36,0.35));}
     .fn-tb.beyond{border:1.5px dashed var(--stg-line,rgba(28,30,36,0.25));}
-    .fn-tb.won{background:var(--stg-acc,${COLORS.accent});border-color:var(--stg-acc,${COLORS.accent});color:var(--stg-onramp,#ffffff);}
+    .fn-tb.won{background:var(--stg-acc,${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc,${COLORS.accent}));color:var(--stg-onramp,#ffffff);}
     .fn-tb.lost{color:var(--stg-mute,#5b6475);}
-    .fn-tb.now{border:2px solid var(--stg-acc,${COLORS.accent});}
+    .fn-tb.now{border:2px solid var(--stg-acc-ink, var(--stg-acc,${COLORS.accent}));}
     .fn-tn{font-family:${SANS};font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--stg-mute,#5b6475);}
     .fn-tn.now{color:var(--stg-acc-ink,${COLORS.accent});font-weight:800;}
     .fn-status{display:flex;flex-direction:column;gap:3px;padding:14px 2px 0;}
@@ -793,7 +794,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="fn-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? ON_ACC : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="fn-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? ON_ACC : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -972,7 +973,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
               <div style={{ fontSize: 13.5, color: FADED, fontWeight: 600, margin: '5px 0 12px', lineHeight: 1.5 }}>
                 {TRICK_WORD[TARGET].replace(/^./, (c) => c.toUpperCase())} are there against this defence. The board rewinds to trick one; only the clock and the try count move.
               </div>
-              <button type="button" className="fn-btn" onClick={rewind} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? ON_ACC : T.white }}>Try again</button>
+              <button type="button" className="fn-btn" onClick={rewind} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? ON_ACC : T.white }}>Try again</button>
             </div>
           )}
 

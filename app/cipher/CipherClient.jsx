@@ -392,6 +392,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('cipher');
   const STAGE = isStage('cipher', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('cipher');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('cipher');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('cipher'), '--stg-acc-lt': gameColorLight('cipher'), '--stg-onramp-lt': gameOnrampLight('cipher'), '--stg-acc-ink-lt': gameAccentInkLight('cipher') };
   const [stageTheme] = useStageTheme();
@@ -964,9 +965,9 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.cf-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .cf-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .cf-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .cf-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
+          .cf-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, var(--white));}
           .cf-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, #0c5f59) 86%, var(--stg-ink, var(--white)));}
-          .cf-btn.primary.ready{box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 22%, transparent);}
+          .cf-btn.primary.ready{box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 22%, transparent);}
           .cf-head{display:flex;justify-content:space-between;gap:6px 14px;flex-wrap:wrap;font-family:${MONO};font-size:11px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:${FADED};margin:0 0 12px;}
           .cf-play{display:grid;grid-template-columns:minmax(0,1fr) 184px;gap:16px;align-items:stretch;}
           .cf-play.solo{grid-template-columns:minmax(0,1fr);justify-items:center;}
@@ -985,7 +986,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           .cf-play.dock .cf-op.lab{visibility:hidden;}
           .cf-cell{width:var(--cf-cw);height:var(--cf-ch);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:11px;cursor:pointer;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)'};background:${STAGE ? 'var(--stg-cell)' : 'var(--white)'};padding:0;font-family:${SANS};box-sizing:border-box;flex:0 0 auto;}
           .cf-cell:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .cf-cell.on{border:2px solid var(--stg-acc, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, ${STAGE ? 'var(--stg-cell)' : 'transparent'});}
+          .cf-cell.on{border:2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, ${STAGE ? 'var(--stg-cell)' : 'transparent'});}
           .cf-cell .cf-ch{font-size:20px;font-weight:800;color:${INK};line-height:1;}
           .cf-cell .cf-dg{font-size:21px;font-weight:800;color:var(--stg-acc-ink, ${COLORS.accent});line-height:1;font-variant-numeric:tabular-nums;}
           .cf-cell .cf-dg.empty{color:${FADED};}
@@ -998,7 +999,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           .cf-carrow,.cf-mkrow{margin:0;}
           .cf-carry{width:var(--cf-cw);height:44px;flex:0 0 auto;border:0;background:transparent;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;}
           .cf-carry span{width:34px;height:28px;max-width:100%;box-sizing:border-box;border-radius:7px;border:1.5px dashed ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:16px;font-weight:700;color:${FADED};}
-          .cf-carry:hover:not(:disabled) span{background:var(--stg-surf2, ${COLORS.accentSoft});border-color:var(--stg-acc, ${COLORS.accent});}
+          .cf-carry:hover:not(:disabled) span{background:var(--stg-surf2, ${COLORS.accentSoft});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .cf-carry.fixed span{border-color:transparent;color:var(--stg-acc-ink, ${COLORS.accent});font-weight:800;}
           .cf-carry.fixed{cursor:default;}
           .cf-carry.off{cursor:default;}
@@ -1018,7 +1019,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           .cf-bookls{display:flex;flex-direction:column;gap:3px;}
           .cf-bk{display:flex;align-items:center;gap:7px;min-height:44px;width:100%;box-sizing:border-box;padding:0 8px;border-radius:10px;border:1.5px solid transparent;background:transparent;color:${INK};font-family:${SANS};cursor:pointer;position:relative;}
           .cf-bk:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .cf-bk.on{border:2px solid var(--stg-acc, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);}
+          .cf-bk.on{border:2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, transparent);}
           .cf-bk.lone{box-shadow:inset 0 0 0 1.5px var(--stg-good, ${COLORS.green});}
           .cf-bk .l{width:16px;font-size:18px;font-weight:800;text-align:left;flex:none;}
           .cf-bk .t{font-family:${MONO};font-size:10px;font-weight:700;letter-spacing:0.06em;color:${FADED};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
@@ -1032,7 +1033,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           .cf-play.dock .cf-bookhd{border:0;padding:0 0 4px;margin:0;}
           .cf-play.dock .cf-bookls{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:6px;}
           .cf-play.dock .cf-bk{justify-content:center;gap:6px;min-height:48px;padding:0;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)'};background:${STAGE ? 'var(--stg-cell)' : 'var(--white)'};}
-          .cf-play.dock .cf-bk.on{border:2px solid var(--stg-acc, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, ${STAGE ? 'var(--stg-cell)' : 'transparent'});}
+          .cf-play.dock .cf-bk.on{border:2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, ${STAGE ? 'var(--stg-cell)' : 'transparent'});}
           .cf-play.dock .cf-bk .t,.cf-play.dock .cf-bk .dots{display:none;}
           .cf-play.dock .cf-bk .l{width:auto;font-size:17px;}
           .cf-play.dock .cf-bk .bar{display:block;width:1.5px;height:20px;background:${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)'};}
@@ -1051,7 +1052,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           .cf-pk .dg{font-size:23px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;}
           .cf-pk .who{font-size:11px;font-weight:800;line-height:1;height:11px;color:${FADED};letter-spacing:0.02em;}
           .cf-pk:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .cf-pad.notes .cf-pk{border-style:dashed;border-color:var(--stg-acc, ${COLORS.accent});}
+          .cf-pad.notes .cf-pk{border-style:dashed;border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           /* Pad key states. A digit already owned by another letter, a 0 under a
              leading letter, or a digit crossed off in Notes READS as such on the
              key itself, which is what the letter rack used to be for. */
@@ -1062,7 +1063,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           .cf-pk:disabled:hover{background:${STAGE ? 'var(--stg-cell)' : 'var(--white)'};}
           .cf-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
           .cf-tool{flex:1 1 0;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:${SANS};font-weight:700;font-size:14px;white-space:nowrap;background:transparent;color:${INK};border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};border-radius:12px;padding:0 12px;cursor:pointer;}
-          .cf-tool.on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
+          .cf-tool.on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, var(--white));}
           .cf-tool.warn{border-color:var(--stg-bad, ${COLORS.rust});color:var(--stg-bad, ${COLORS.rust});}
           .cf-tool.quiet{color:${FADED};}
           .cf-tool.wide{flex:1.4 1 0;}
@@ -1111,7 +1112,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="cf-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="cf-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

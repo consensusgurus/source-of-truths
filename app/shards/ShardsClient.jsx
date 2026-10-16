@@ -276,6 +276,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('shards');
   const STAGE = isStage('shards', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('shards');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('shards');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('shards'), '--stg-acc-lt': gameColorLight('shards'), '--stg-onramp-lt': gameOnrampLight('shards'), '--stg-acc-ink-lt': gameAccentInkLight('shards') };
   const [stageTheme] = useStageTheme();
@@ -916,29 +917,29 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.sh-cols{gap:0 !important;}.sh-trayhead{display:none;}.sh-tray{margin-top:10px !important;}}
           .sh-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 15px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .sh-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .sh-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
+          .sh-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, var(--white));}
           .sh-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accentDk}) 86%, var(--stg-ink, var(--white)));}
           .sh-btn:disabled{opacity:0.4;cursor:default;}
           .sh-board{display:grid;grid-template-columns:repeat(${N},${CELL}px);gap:0;background:var(--stg-raise, #cfd8d6);border:2px solid var(--stg-cell-line, ${COLORS.ink});border-radius:10px;padding:5px;box-shadow:5px 5px 0 rgba(28,30,36,0.14);width:max-content;touch-action:none;}
           .sh-cell{position:relative;width:${CELL}px;height:${CELL}px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:${Math.round(CELL * 0.42)}px;color:${INK};user-select:none;border:1px solid var(--stg-cell-line, #b9c4c2);background:${STAGE ? 'var(--stg-cell)' : '#fbfdfc'};}
           .sh-cell.block{background:${COLORS.ink};border-color:var(--stg-ink, ${COLORS.ink});}
-          .sh-cell.filled{background:var(--tint,color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent));border:1px solid rgba(0,0,0,0.14);color:#0b2b28;cursor:grab;touch-action:none;}
+          .sh-cell.filled{background:var(--tint,color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, transparent));border:1px solid rgba(0,0,0,0.14);color:#0b2b28;cursor:grab;touch-action:none;}
           .sh-cell.filled:active{cursor:grabbing;}
           .sh-cell.dragging{opacity:0.26;}
-          .sh-cell.armed{outline:3px solid var(--stg-acc, ${COLORS.accent});outline-offset:-3px;z-index:2;}
+          .sh-cell.armed{outline:3px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));outline-offset:-3px;z-index:2;}
           .sh-cell.wrong{outline:3px solid ${COLORS.rust};outline-offset:-3px;z-index:2;}
-          .sh-cell.home{box-shadow:inset 0 0 0 3px var(--stg-acc, ${COLORS.accent});}
-          .sh-cell.hover{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);}
+          .sh-cell.home{box-shadow:inset 0 0 0 3px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
+          .sh-cell.hover{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, transparent);}
           .sh-cell.hoverbad{background:${STAGE ? 'var(--stg-surf2)' : '#f6dcda'};}
           .sh-cell.locked::after{content:'';position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:var(--stg-acc, ${COLORS.accent});}
           .sh-tick{position:absolute;bottom:1px;right:2px;color:${COLORS.green};line-height:1;}
           .sh-tray{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-content:flex-start;margin:16px auto 4px;max-width:${TRAYMAX}px;min-height:${TRAYCELL * 2 + 24}px;padding:10px;border:2px dashed transparent;border-radius:12px;transition:border-color .15s,background .15s;}
-          .sh-tray.drop{border-color:var(--stg-acc, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 10%, transparent);}
+          .sh-tray.drop{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 10%, transparent);}
           .sh-trayback{font-family:${MONO};font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--stg-ink, ${COLORS.accentDk});width:100%;text-align:center;padding:4px 0;}
           .sh-piece{position:relative;display:grid;gap:2px;padding:5px;border-radius:9px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1.5px solid var(--stg-line, rgba(28,30,36,0.16));box-shadow:0 2px 0 rgba(28,30,36,0.12);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
           .sh-piece:active{cursor:grabbing;}
           .sh-piece.dragging{opacity:0.3;}
-          .sh-piece.armed{outline:3px solid var(--stg-acc, ${COLORS.accent});outline-offset:1px;}
+          .sh-piece.armed{outline:3px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));outline-offset:1px;}
           .sh-pc{touch-action:none;width:${TRAYCELL}px;height:${TRAYCELL}px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:${Math.round(TRAYCELL * 0.5)}px;border-radius:4px;color:${STAGE ? 'var(--sh-pc-ink)' : 'var(--white)'};}
           .sh-pc.empty{background:transparent;}
           .sh-ghost{position:fixed;z-index:200;pointer-events:none;display:grid;gap:2px;opacity:0.92;filter:drop-shadow(0 6px 10px rgba(0,0,0,0.25));}
@@ -948,7 +949,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
           .sh-status.good{color:${COLORS.green};}
           .sh-status.muted{color:${FADED};}
           .sh-hintbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px;}
-          .sh-hint{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid var(--stg-acc, ${COLORS.accent});color:${COLORS.accentDk};background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, transparent);border-radius:999px;padding:7px 13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+          .sh-hint{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:${COLORS.accentDk};background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, transparent);border-radius:999px;padding:7px 13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
           .sh-hint:disabled{opacity:0.4;cursor:default;border-color:#cbd5d3;color:${FADED};background:${STAGE ? 'var(--stg-surf2)' : '#eef2f1'};}
         ` }} />
 
@@ -989,7 +990,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
                 </div>
               )}
               <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <button className="sh-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+                <button className="sh-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
                 <div>
                   <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                     {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

@@ -83,7 +83,7 @@ const CSS = `
 .sj-tabs{display:flex;gap:4px;}
 .sj-tab{border:1px solid var(--stg-line2);background:none;color:var(--stg-ink2);border-radius:999px;padding:5px 12px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;}
 .sj-tab[aria-selected=true]{background:var(--stg-ink);border-color:var(--stg-ink);color:var(--stg-ground);}
-.sj-tab:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sj-tab:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 .sj-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) auto;gap:8px;align-items:end;}
 .sj-field{display:flex;flex-direction:column;gap:5px;min-width:0;}
 .sj-go{height:40px;}

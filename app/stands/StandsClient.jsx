@@ -574,25 +574,25 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
           .sd-cell{height:46px;width:100%;box-sizing:border-box;border-radius:8px;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.4));background:var(--stg-cell, #fff);color:${FADED};font-family:${SANS};font-size:17px;font-weight:800;padding:0;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
           .sd-cell:disabled{cursor:default;}
           .sd-cell:not(:disabled):hover{border-color:var(--stg-acc-ink, ${COLORS.accent});}
-          .sd-cell.W{background:var(--stg-acc, ${COLORS.accent});border:1.5px solid var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);}
-          .sd-cell.D{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 18%, transparent);border:1.5px solid var(--stg-acc-ink, ${COLORS.accent});color:var(--stg-acc-ink, ${COLORS.accentDeep});}
+          .sd-cell.W{background:var(--stg-acc, ${COLORS.accent});border:1.5px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, #fff);}
+          .sd-cell.D{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 18%, transparent);border:1.5px solid var(--stg-acc-ink, ${COLORS.accent});color:var(--stg-acc-ink, ${COLORS.accentDeep});}
           .sd-cell.L{background:transparent;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));color:${FADED};}
           .sd-self{height:46px;border-radius:8px;background:repeating-linear-gradient(135deg, var(--stg-line2, rgba(28,30,36,0.17)) 0 5px, transparent 5px 10px);}
           .sd-legend{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding-top:4px;font-family:${SANS};font-size:12px;font-weight:600;color:${FADED};}
           .sd-legend > .k{display:flex;align-items:center;gap:6px;}
           .sd-sw{width:16px;height:14px;border-radius:4px;box-sizing:border-box;}
           .sd-sw.W{background:var(--stg-acc, ${COLORS.accent});}
-          .sd-sw.D{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 18%, transparent);border:1.5px solid var(--stg-acc-ink, ${COLORS.accent});}
+          .sd-sw.D{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 18%, transparent);border:1.5px solid var(--stg-acc-ink, ${COLORS.accent});}
           .sd-sw.L{border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));}
           .sd-how{font-family:${SANS};font-size:12px;font-weight:600;line-height:1.4;color:${FADED};}
           .sd-facts{flex:0 0 196px;display:flex;flex-direction:column;gap:8px;}
-          .sd-fact{display:flex;gap:10px;align-items:flex-start;border-left:3px solid var(--stg-acc, ${COLORS.accent});padding:4px 0 4px 10px;font-family:${SANS};}
+          .sd-fact{display:flex;gap:10px;align-items:flex-start;border-left:3px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));padding:4px 0 4px 10px;font-family:${SANS};}
           .sd-fact .n{font-size:12px;font-weight:800;color:var(--stg-acc-ink, ${COLORS.accentDeep});padding-top:1px;flex:none;}
           .sd-fact .t{font-size:13.5px;font-weight:600;line-height:1.38;color:var(--stg-ink2, ${COLORS.ink});}
           .sd-fact .t b{color:${INK};}
           .sd-tbl{margin:18px 0 0;display:flex;flex-direction:column;font-family:${SANS};}
           .sd-tr{display:flex;align-items:center;padding:0 12px;height:38px;border-bottom:1px solid var(--stg-line, rgba(28,30,36,0.12));}
-          .sd-tr.hd{height:auto;padding-bottom:6px;border-bottom:2px solid var(--stg-acc, ${COLORS.accent});font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:${FADED};}
+          .sd-tr.hd{height:auto;padding-bottom:6px;border-bottom:2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:${FADED};}
           .sd-tr .pos{width:30px;flex:none;font-size:13px;font-weight:800;color:${FADED};}
           .sd-tr .club{flex:1;min-width:0;display:flex;align-items:center;gap:9px;font-size:14px;font-weight:800;color:${INK};}
           .sd-tr.hd .club{color:${FADED};font-size:10px;font-weight:700;}
@@ -603,14 +603,14 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
           .sd-tr.hd .pts{font-size:10px;font-weight:700;color:${FADED};}
           .sd-tr .bar{width:196px;flex:none;padding-left:16px;box-sizing:border-box;display:flex;gap:2px;}
           .sd-tr .bar i{flex:1;height:12px;border-radius:2px;box-sizing:border-box;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));}
-          .sd-tr .bar i.on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});}
+          .sd-tr .bar i.on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .sd-tr .mbar{display:none;}
           .sd-foot{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:16px 0 6px;}
           .sd-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:${SANS};font-weight:800;font-size:14px;border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;background:transparent;color:var(--stg-ink2, ${COLORS.ink});border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));}
           .sd-btn:disabled{color:${FADED};cursor:default;}
-          .sd-btn.go{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);border-color:var(--stg-acc, ${COLORS.accent});padding:0 18px;}
+          .sd-btn.go{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));padding:0 18px;}
           .sd-btn.go:disabled{background:transparent;color:${FADED};border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.4));cursor:not-allowed;}
-          .sd-btn.nudge{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 14%, transparent);color:var(--stg-acc-ink, ${COLORS.accentDeep});border-color:var(--stg-acc-ink, ${COLORS.accent});}
+          .sd-btn.nudge{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 14%, transparent);color:var(--stg-acc-ink, ${COLORS.accentDeep});border-color:var(--stg-acc-ink, ${COLORS.accent});}
           .sd-btn .ph{display:none;}
           .sd-fnote{margin-left:auto;font-family:${SANS};font-size:12px;font-weight:600;line-height:1.4;color:${FADED};text-align:right;}
           .sd-ph{display:none;}

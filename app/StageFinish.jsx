@@ -22,7 +22,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { DAILY_GAMES, liveDailyKeys } from '@/lib/daily-games';
-import { RAMP_ORDER, RAMP_INK, categoryColor, categoryColorLight, categoryOnrampLight } from '@/lib/category-ramp';
+import { RAMP_ORDER, RAMP_INK, categoryColor, categoryColorLight, categoryOnrampLight, categoryAccentInkLight } from '@/lib/category-ramp';
 import { finishPick } from '@/lib/finish-sets';
 // THE REGISTER PICKS THE HUE, and this file is why that rule needs saying a
 // second time. Every other stage surface publishes BOTH twins of its category
@@ -778,7 +778,7 @@ function BandCat({ run, vs = null }) {
 function Tile({ g, played, light, set = false }) {
   return (
     <a className={'stf-tile' + (played ? ' done' : '') + (set ? ' set' : '')} href={g.href || `/${g.key}`}
-      style={{ '--tc': light ? categoryColorLight(g.cat) : categoryColor(g.cat) }}>
+      style={{ '--tc': light ? categoryColorLight(g.cat) : categoryColor(g.cat), '--tcl': light ? categoryAccentInkLight(g.cat) : categoryColor(g.cat) }}>
       <GameGlyph gameKey={g.key} size={14} />
       <span>{g.name}</span>
     </a>
@@ -1847,13 +1847,14 @@ export default function StageFinish({
                   onClick={() => nudge(-1)} hidden={!over}>&#8249;</button>
                 <div className="stf-cats" ref={catsRef}>
                   <button type="button" className={'stf-cat' + (cat === 'all' ? ' on' : '')}
-                    style={{ '--tc': 'var(--stg-acc)', '--tci': 'var(--stg-onramp,#08222e)' }}
+                    style={{ '--tc': 'var(--stg-acc)', '--tcl': 'var(--stg-acc-ink, var(--stg-acc))', '--tci': 'var(--stg-onramp,#08222e)' }}
                     onClick={() => setCat((v) => (v === 'all' ? null : 'all'))}>All A to Z</button>
                   {RAMP_ORDER.map((c) => (
                     <button key={c} type="button"
                       className={'stf-cat' + (cat === c ? ' on' : '')}
                       style={{
                         '--tc': light ? categoryColorLight(c) : categoryColor(c),
+                        '--tcl': light ? categoryAccentInkLight(c) : categoryColor(c),
                         '--tci': light ? categoryOnrampLight(c) : RAMP_INK,
                       }}
                       onClick={() => setCat((v) => (v === c ? null : c))}>{c}</button>
@@ -2041,9 +2042,9 @@ const CSS = `
      page ground through them while every tile and option beside them was white.
      --stg-surf is that white, and the near-black raise on the dark one. */
   font-weight:700;background:var(--stg-surf);cursor:pointer;color:var(--stg-ink2);
-  border:1px solid var(--stg-line);border-left:3px solid var(--tc);border-radius:7px;
+  border:1px solid var(--stg-line);border-left:3px solid var(--tcl, var(--tc));border-radius:7px;
   padding:6px 11px;}
-.stf-cat:hover{color:var(--stg-ink);border-color:var(--stg-line2);border-left-color:var(--tc);}
+.stf-cat:hover{color:var(--stg-ink);border-color:var(--stg-line2);border-left-color:var(--tcl, var(--tc));}
 /* THE SELECTED CHIP FILLS, rather than writing its own hue as text. Colour as
    INK is the one use the ramp cannot carry: gold, orange and amber keep their
    value in the light register (they flip their ink instead of darkening, since
@@ -2058,11 +2059,11 @@ const CSS = `
 /* One tile shape for both lists: the A-to-Z panel and More-of-the-same. */
 .stf-tiles{display:grid;gap:6px;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));}
 .stf-tile{display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--stg-ink);
-  background:var(--stg-surf);border:1px solid var(--stg-line);border-left:3px solid var(--tc);
+  background:var(--stg-surf);border:1px solid var(--stg-line);border-left:3px solid var(--tcl, var(--tc));
   border-radius:8px;padding:8px 10px;font-size:12.5px;font-weight:700;min-width:0;}
-.stf-tile svg{flex:none;color:var(--tc);}
+.stf-tile svg{flex:none;color:var(--tcl, var(--tc));}
 .stf-tile span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.stf-tile:hover{border-color:var(--stg-line2);border-left-color:var(--tc);}
+.stf-tile:hover{border-color:var(--stg-line2);border-left-color:var(--tcl, var(--tc));}
 /* Played today reads as done without leaving the list: the tile keeps its
    colour on the rule and gives up only its fill. */
 .stf-tile.done{background:none;color:var(--stg-mute);}
@@ -2070,15 +2071,15 @@ const CSS = `
    one filled thing in the list, in the accent with its own ink, so the next
    tap is obvious. A finished game in the set gives up the fill like any other
    finished tile and keeps only its rule. */
-.stf-tile.set{background:var(--stg-acc);color:var(--stg-onramp,#08222e);border-color:var(--stg-acc);}
+.stf-tile.set{background:var(--stg-acc);color:var(--stg-onramp,#08222e);border-color:var(--stg-acc-ink, var(--stg-acc));}
 .stf-tile.set svg{color:currentColor;}
-.stf-tile.set:hover{border-color:var(--stg-acc);}
-.stf-tile.set.done{background:none;color:var(--stg-mute);border-color:var(--stg-line);border-left-color:var(--tc);}
-.stf-tile.set.done svg{color:var(--tc);}
+.stf-tile.set:hover{border-color:var(--stg-acc-ink, var(--stg-acc));}
+.stf-tile.set.done{background:none;color:var(--stg-mute);border-color:var(--stg-line);border-left-color:var(--tcl, var(--tc));}
+.stf-tile.set.done svg{color:var(--tcl, var(--tc));}
 .stf-fwdt .stf-setchip{font-style:normal;display:inline-block;margin-top:3px;font-family:${SANS};font-size:9px;letter-spacing:.12em;text-transform:uppercase;
   color:var(--stg-onramp,#08222e);background:var(--stg-acc);padding:2px 6px;border-radius:4px;}
 .stf-fwdt .stf-setchip.ok{background:none;color:var(--stg-mute);border:1px solid var(--stg-line);}
-.stf-o.on{border-color:var(--stg-acc);color:var(--stg-acc-ink);}
+.stf-o.on{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink);}
 
 .stf-curtain{background:var(--stg-acc);color:var(--stg-onramp,#08222e);
   margin:0 calc(50% - 50vw);padding:30px calc(50vw - 50% + 4px) 26px;}
@@ -2124,8 +2125,8 @@ const CSS = `
 .stf-rack.band.grouped:not(.wide) s.x{display:none;}
 .stf-rack.band s.on,.stf-rack.band s.new{opacity:1;}
 /* The personal-best ring on the pip that earned it. */
-.stf-rack s.new.ring{box-shadow:0 0 0 3px var(--stg-acc),0 0 0 4.5px currentColor;}
-.stf-rack.band s.new.ring{box-shadow:0 0 0 1.5px var(--stg-acc),0 0 0 2.5px currentColor;}
+.stf-rack s.new.ring{box-shadow:0 0 0 3px var(--stg-acc-ink, var(--stg-acc)),0 0 0 4.5px currentColor;}
+.stf-rack.band s.new.ring{box-shadow:0 0 0 1.5px var(--stg-acc-ink, var(--stg-acc)),0 0 0 2.5px currentColor;}
 .stf-fl-vs{flex-basis:100%;}
 .stf-vsx{display:inline-flex;align-items:baseline;gap:10px;padding:10px 14px;
   border:1.5px solid currentColor;border-radius:8px;}
@@ -2138,7 +2139,7 @@ const CSS = `
 .stf-vside .nm{display:block;font-weight:700;font-size:13px;line-height:20px;min-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .stf-vside b{display:block;font-family:${SANS};font-size:22px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--stg-ink);}
 .stf-vside small{display:block;font-family:${SANS};font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);margin-top:3px;}
-.stf-vside.you{border:2px solid var(--stg-acc);padding:9px 11px;background:color-mix(in srgb,var(--stg-acc) 14%,var(--stg-surf));}
+.stf-vside.you{border:2px solid var(--stg-acc-ink, var(--stg-acc));padding:9px 11px;background:color-mix(in srgb,var(--stg-acc-ink, var(--stg-acc)) 14%,var(--stg-surf));}
 .stf-vside.you.won{border-color:var(--stg-good);background:color-mix(in srgb,var(--stg-good) 18%,var(--stg-surf));}
 .stf-vside.you.won .nm{color:var(--stg-ink);}
 .stf-vwin{font-style:normal;font-family:${SANS};font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:5px;border:1.5px solid var(--stg-good);color:var(--stg-ink);flex:none;line-height:1.2;white-space:nowrap;}
@@ -2153,7 +2154,7 @@ const CSS = `
 /* THE SET, PRICED (2026-09-26). */
 .stf-pips{display:flex;gap:5px;}
 .stf-pips i{flex:1;height:8px;border-radius:4px;background:var(--stg-surf);border:1px solid var(--stg-line);}
-.stf-pips i.on{background:var(--stg-acc);border-color:var(--stg-acc);}
+.stf-pips i.on{background:var(--stg-acc);border-color:var(--stg-acc-ink, var(--stg-acc));}
 .stf-pips i.now{background:var(--stg-gold,#e8b43a);border-color:var(--stg-gold,#e8b43a);}
 .stf-est{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:6px;margin-top:10px;}
 .stf-estc{display:block;text-decoration:none;color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:8px;padding:8px 10px;min-width:0;}
@@ -2196,8 +2197,8 @@ const CSS = `
 /* ── the hand-forward ──────────────────────────────────────────────────── */
 .stf-fwd{display:flex;align-items:center;gap:16px;text-decoration:none;
   background:var(--stg-surf);border:1px solid var(--stg-line);
-  border-left:4px solid var(--stg-acc);border-radius:10px;padding:14px 16px;color:var(--stg-ink);}
-.stf-fwd:hover{border-color:var(--stg-line2);border-left-color:var(--stg-acc);}
+  border-left:4px solid var(--stg-acc-ink, var(--stg-acc));border-radius:10px;padding:14px 16px;color:var(--stg-ink);}
+.stf-fwd:hover{border-color:var(--stg-line2);border-left-color:var(--stg-acc-ink, var(--stg-acc));}
 .stf-fwdn{font-size:20px;font-weight:800;letter-spacing:-0.01em;line-height:1.15;}
 .stf-fwdt{font-size:12.5px;font-weight:600;color:var(--stg-mute);margin-top:2px;}
 .stf-go{margin-left:auto;flex:none;font-size:13px;font-weight:800;
@@ -2205,7 +2206,7 @@ const CSS = `
   border-radius:8px;padding:8px 16px;}
 /* ── claim your rank ──────────────────────────────────────────────────── */
 .stf-claim{background:var(--stg-surf);border:1px solid var(--stg-line);
-  border-left:4px solid var(--stg-acc);border-radius:10px;padding:14px 16px;color:var(--stg-ink);}
+  border-left:4px solid var(--stg-acc-ink, var(--stg-acc));border-radius:10px;padding:14px 16px;color:var(--stg-ink);}
 .stf-claim .stf-eb{margin-bottom:6px;}
 .stf-clhd{display:flex;align-items:center;gap:16px;}
 .stf-clhd > div:first-child{flex:1 1 auto;min-width:0;}
@@ -2295,7 +2296,7 @@ const CSS = `
    another' and the archive sit beside each other at every width. */
 .stf-pair{grid-column:1/-1;display:grid;gap:7px;grid-template-columns:1fr 1fr;}
 .stf-o.gold i{color:inherit;opacity:.78;}
-.stf-o:focus-visible,.stf-fwd:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.stf-o:focus-visible,.stf-fwd:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 
 /* ── the flood ─────────────────────────────────────────────────────────── */
 /* Below the safe-area strip (z-index 10000, status-bar chrome) and above
@@ -2440,19 +2441,19 @@ const CSS = `
   font:inherit;color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);
   border-radius:10px;padding:14px 15px;min-width:0;}
 .stf-door:hover{border-color:var(--stg-line2);}
-.stf-door:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.stf-door:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 .stf-dic{flex:none;width:34px;height:34px;border-radius:8px;display:grid;place-items:center;
-  color:var(--stg-acc-ink,var(--stg-acc));background:color-mix(in srgb,var(--stg-acc) 16%,transparent);}
+  color:var(--stg-acc-ink,var(--stg-acc));background:color-mix(in srgb,var(--stg-acc-ink, var(--stg-acc)) 16%,transparent);}
 .stf-dtx{flex:1;min-width:0;}
 .stf-dnm{display:block;font-size:15px;font-weight:800;letter-spacing:-.01em;line-height:1.2;}
 .stf-dsb{display:block;margin-top:3px;font-size:12px;font-weight:600;color:var(--stg-mute);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .stf-dar{flex:none;font-size:20px;line-height:1;color:var(--stg-mute);transition:transform .2s ease;}
-.stf-door[aria-expanded="true"]{border-color:var(--stg-acc);}
+.stf-door[aria-expanded="true"]{border-color:var(--stg-acc-ink, var(--stg-acc));}
 .stf-door[aria-expanded="true"] .stf-dar{transform:rotate(90deg);color:var(--stg-acc-ink,var(--stg-acc));}
-.stf-door.pri{grid-column:1/-1;background:var(--stg-acc);border-color:var(--stg-acc);
+.stf-door.pri{grid-column:1/-1;background:var(--stg-acc);border-color:var(--stg-acc-ink, var(--stg-acc));
   color:var(--stg-onramp,#08222e);padding:17px;}
-.stf-door.pri:hover{border-color:var(--stg-acc);filter:brightness(1.05);}
+.stf-door.pri:hover{border-color:var(--stg-acc-ink, var(--stg-acc));filter:brightness(1.05);}
 .stf-door.pri .stf-dic{background:color-mix(in srgb,currentColor 14%,transparent);color:inherit;}
 .stf-door.pri .stf-dnm{font-size:18px;}
 .stf-door.pri .stf-dsb{color:inherit;opacity:.85;}
@@ -2465,7 +2466,7 @@ const CSS = `
 .stf-wrap > .stf-statcards{margin-top:14px;}
 .stf-dchip{display:inline-block;font-family:${SANS};font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;
   padding:2px 6px;border-radius:4px;background:var(--stg-acc);color:var(--stg-onramp,#08222e);margin-right:7px;vertical-align:2px;}
-.stf-door.set{border:1.5px solid var(--stg-acc);background:color-mix(in srgb,var(--stg-acc) 12%,var(--stg-surf));}
+.stf-door.set{border:1.5px solid var(--stg-acc-ink, var(--stg-acc));background:color-mix(in srgb,var(--stg-acc-ink, var(--stg-acc)) 12%,var(--stg-surf));}
 .stf-door.set .stf-dic{background:var(--stg-acc);color:var(--stg-onramp,#08222e);}
 .stf-a2hs:empty{display:none;}
 /* While the full card is up, the client's own Add to Home Screen (the button,

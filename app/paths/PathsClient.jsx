@@ -315,6 +315,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('paths');
   const STAGE = isStage('paths', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('paths');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('paths');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('paths'), '--stg-acc-lt': gameColorLight('paths'), '--stg-onramp-lt': gameOnrampLight('paths'), '--stg-acc-ink-lt': gameAccentInkLight('paths') };
   const [stageTheme] = useStageTheme();
@@ -842,7 +843,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
           .pt-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .pt-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           .pt-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-          .pt-tool.on{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-color:var(--stg-acc, ${COLORS.accent});}
+          .pt-tool.on{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .pt-tool{min-height:44px;padding:0 14px;font-size:13px;}
           .pt-finish{min-height:48px;border-radius:12px;padding:0 18px;font-size:14px;flex:0 0 auto;justify-content:center;}
           .pt-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;line-height:1.2;white-space:nowrap;}
@@ -893,7 +894,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="pt-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="pt-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -1018,7 +1019,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
               ) : (
                 LANES.map((l) => (E[l.i] ? (
                   <line key={`t${l.i}`} x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)}
-                    strokeWidth={6} strokeLinecap="round" style={{ stroke: ACC, pointerEvents: 'none' }} />
+                    strokeWidth={6} strokeLinecap="round" style={{ stroke: ACC_INK, pointerEvents: 'none' }} />
                 ) : null))
               )}
               {/* what a crossing charges: a small "3" badge on every lane the
@@ -1068,7 +1069,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
                 const on = reached.has(t);
                 return (
                   <g key={`t${t}`} style={{ pointerEvents: 'none' }}>
-                    <circle cx={X(t)} cy={Y(t)} r={TOWN_R} strokeWidth={on ? 0 : 2.5} style={{ fill: on ? ACC : 'var(--pt-cell)', stroke: on ? ACC : INK }} />
+                    <circle cx={X(t)} cy={Y(t)} r={TOWN_R} strokeWidth={on ? 0 : 2.5} style={{ fill: on ? ACC : 'var(--pt-cell)', stroke: on ? ACC_INK : INK }} />
                     <text x={X(t)} y={Y(t) + 0.5} fill="currentColor" fontFamily={SANS} fontSize={Math.max(10, TOWN_R * 0.92)} fontWeight="800" textAnchor="middle" dominantBaseline="central"
                       style={{ color: on ? ON_ACC : INK }}>{townLetter(k)}</text>
                   </g>
@@ -1119,7 +1120,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
                 <Trash2 size={14} /> Clear
               </button>
               {hintOk && !g.hintUsed && (
-                <button type="button" className="pt-tool" onClick={useHint} title="Lay one lane of a cheapest network (one hint, first play only)" aria-label="Hint" style={{ borderColor: ACC, color: ACC_INK }}>
+                <button type="button" className="pt-tool" onClick={useHint} title="Lay one lane of a cheapest network (one hint, first play only)" aria-label="Hint" style={{ borderColor: ACC_INK, color: ACC_INK }}>
                   <Lightbulb size={14} /> Hint
                 </button>
               )}

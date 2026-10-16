@@ -292,6 +292,7 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('dating');
   const STAGE = isStage('dating', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('dating');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('dating');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('dating'), '--stg-acc-lt': gameColorLight('dating'), '--stg-onramp-lt': gameOnrampLight('dating'), '--stg-acc-ink-lt': gameAccentInkLight('dating') };
   const [stageTheme] = useStageTheme();
@@ -768,7 +769,7 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
           @keyframes dtfade{from{opacity:0;}}
           @keyframes dtstamp{from{opacity:0;transform:scale(.94);}}
           .dt-arrow{width:34px;height:31px;border-radius:7px;border: 1.5px solid var(--stg-line, rgba(28,30,36,0.3));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;}
-          .dt-arrow:hover{background:var(--stg-surf2, ${COLORS.plumSoft});border-color:var(--stg-acc, ${COLORS.plum});color:var(--stg-acc-ink, ${COLORS.plum});}
+          .dt-arrow:hover{background:var(--stg-surf2, ${COLORS.plumSoft});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.plum}));color:var(--stg-acc-ink, ${COLORS.plum});}
           .dt-arrow:disabled{opacity:.25;cursor:default;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border-color:rgba(28,30,36,0.3);color:${INK};}
           @media(max-width:520px){.dt-htp-f{display:none;}.dt-htp-s{display:inline;}}
           @media(max-width:560px){.dt-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.dt-ttl h1{font-size:21px;letter-spacing:0.02em;}.dt-ttl .dt-ttl-dt{font-size:15px;}.dt-ttl-dot{display:none;}}
@@ -837,7 +838,7 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="dt-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="dt-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -863,7 +864,7 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
             <div role="img" aria-label={`${checksUsed} of ${MAX_CHECKS} checks used`} style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: 7, paddingTop: 2 }}>
               <span className="dt-ckl" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED }}>Checks</span>
               {Array.from({ length: MAX_CHECKS }, (_, i) => (
-                <span key={i} className="dt-ck" style={{ width: 22, height: 22, borderRadius: '50%', boxSizing: 'border-box', border: '2px solid var(--stg-acc)', background: i < checksUsed ? 'var(--stg-acc)' : 'transparent' }} />
+                <span key={i} className="dt-ck" style={{ width: 22, height: 22, borderRadius: '50%', boxSizing: 'border-box', border: '2px solid var(--stg-acc-ink, var(--stg-acc))', background: i < checksUsed ? 'var(--stg-acc)' : 'transparent' }} />
               ))}
             </div>
           </div>
@@ -887,9 +888,9 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
                 return (
                   <div key={ev} ref={(el) => { rowRefs.current[slot] = el; }} onPointerDown={draggable ? (e) => startDrag(slot, e) : undefined} title={draggable ? 'Drag to reorder' : undefined}
                     className="dt-card"
-                    style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 14, background: dropHere ? 'color-mix(in srgb, var(--stg-acc) 16%, var(--stg-surf2))' : 'var(--stg-surf2)', border: locked || dropHere ? '2px solid var(--stg-acc)' : '1.5px solid var(--stg-line2)', borderRadius: 14, padding: '12px 14px 12px 16px', minHeight: 76, boxSizing: 'border-box', cursor: draggable ? (dragging ? 'grabbing' : 'grab') : undefined, zIndex: dragging ? 5 : undefined, transform: dragging ? `translateY(${drag.dy}px)` : undefined, boxShadow: dragging ? '0 8px 20px rgba(0,0,0,0.28)' : undefined, touchAction: draggable ? 'none' : undefined }}>
+                    style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 14, background: dropHere ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 16%, var(--stg-surf2))' : 'var(--stg-surf2)', border: locked || dropHere ? '2px solid var(--stg-acc-ink, var(--stg-acc))' : '1.5px solid var(--stg-line2)', borderRadius: 14, padding: '12px 14px 12px 16px', minHeight: 76, boxSizing: 'border-box', cursor: draggable ? (dragging ? 'grabbing' : 'grab') : undefined, zIndex: dragging ? 5 : undefined, transform: dragging ? `translateY(${drag.dy}px)` : undefined, boxShadow: dragging ? '0 8px 20px rgba(0,0,0,0.28)' : undefined, touchAction: draggable ? 'none' : undefined }}>
                     {/* the node on the spine, at this card's height */}
-                    <span aria-hidden="true" className="dt-node" style={{ position: 'absolute', left: 'calc(var(--dt-spw) / -2 - 11px)', top: '50%', marginTop: -11, width: 22, height: 22, borderRadius: '50%', boxSizing: 'border-box', border: `3px solid ${locked ? 'var(--stg-acc)' : 'var(--stg-mute2)'}`, background: locked ? 'var(--stg-acc)' : 'var(--stg-ground)' }} />
+                    <span aria-hidden="true" className="dt-node" style={{ position: 'absolute', left: 'calc(var(--dt-spw) / -2 - 11px)', top: '50%', marginTop: -11, width: 22, height: 22, borderRadius: '50%', boxSizing: 'border-box', border: `3px solid ${locked ? 'var(--stg-acc-ink, var(--stg-acc))' : 'var(--stg-mute2)'}`, background: locked ? 'var(--stg-acc)' : 'var(--stg-ground)' }} />
                     <div className="dt-body" style={{ flex: '1 1 auto', minWidth: 0, display: 'flex', alignItems: 'center', gap: 14 }}>
                       <div className="dt-yr" style={{ flex: '0 0 auto', minWidth: 84, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
                         {showYear
@@ -935,7 +936,7 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
                     <Lightbulb size={14} /> Hint
                   </button>
                 )}
-                <button className="dt-btn dt-cta" onClick={checkOrder} style={{ minHeight: 48, fontSize: 15, borderRadius: 12, padding: '12px 20px', background: 'var(--stg-acc)', color: 'var(--stg-onramp)', borderColor: 'var(--stg-acc)' }}>
+                <button className="dt-btn dt-cta" onClick={checkOrder} style={{ minHeight: 48, fontSize: 15, borderRadius: 12, padding: '12px 20px', background: 'var(--stg-acc)', color: 'var(--stg-onramp)', borderColor: 'var(--stg-acc-ink, var(--stg-acc))' }}>
                   <Check size={15} strokeWidth={3} /> Check my order &middot; {checksLeft} left
                 </button>
               </div>
@@ -977,7 +978,7 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
               const dropHere = drag && !dragging && drag.target === slot;
               return (
                 <div key={ev} ref={(el) => { rowRefs.current[slot] = el; }} onPointerDown={draggable ? (e) => startDrag(slot, e) : undefined} title={draggable ? 'Drag to reorder' : undefined}
-                  style={{ display: 'flex', alignItems: 'center', gap: 9, background: locked ? `var(--stg-surf2, ${COLORS.lockSoft})` : dropHere ? `color-mix(in srgb, var(--stg-acc, ${COLORS.plum}) 16%, transparent)` : `var(--stg-surf, ${T.white})`, border: locked ? '1.5px solid var(--stg-good, rgba(21,128,61,0.5))' : dropHere ? `1.5px solid var(--stg-acc, ${COLORS.plum})` : '1.5px solid var(--stg-line2, rgba(28,30,36,0.32))', borderRadius: 9, padding: '9px 11px', cursor: draggable ? (dragging ? 'grabbing' : 'grab') : undefined, position: dragging ? 'relative' : undefined, zIndex: dragging ? 5 : undefined, transform: dragging ? `translateY(${drag.dy}px)` : undefined, boxShadow: dragging ? '0 8px 20px rgba(20,22,28,0.22)' : undefined, opacity: dragging ? 0.96 : undefined, touchAction: draggable ? 'none' : undefined }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 9, background: locked ? `var(--stg-surf2, ${COLORS.lockSoft})` : dropHere ? `color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.plum})) 16%, transparent)` : `var(--stg-surf, ${T.white})`, border: locked ? '1.5px solid var(--stg-good, rgba(21,128,61,0.5))' : dropHere ? `1.5px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.plum}))` : '1.5px solid var(--stg-line2, rgba(28,30,36,0.32))', borderRadius: 9, padding: '9px 11px', cursor: draggable ? (dragging ? 'grabbing' : 'grab') : undefined, position: dragging ? 'relative' : undefined, zIndex: dragging ? 5 : undefined, transform: dragging ? `translateY(${drag.dy}px)` : undefined, boxShadow: dragging ? '0 8px 20px rgba(20,22,28,0.22)' : undefined, opacity: dragging ? 0.96 : undefined, touchAction: draggable ? 'none' : undefined }}>
                   <span style={{ flex: '0 0 auto', width: 20, fontFamily: MONO, fontSize: 11, color: FADED, textAlign: 'center' }}>{locked ? <Check size={14} strokeWidth={3} style={{ color: `var(--stg-good, ${COLORS.lock})` }} /> : slot + 1}</span>
                   <span style={{ flex: '1 1 auto', minWidth: 0, fontFamily: SANS, fontWeight: 700, fontSize: 13.5, lineHeight: 1.35, color: locked ? `var(--stg-good, #14532d)` : `var(--stg-ink, ${COLORS.ink})` }}>{PUZZLE.events[ev].t}</span>
                   {yearChip}
@@ -1001,7 +1002,7 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
         {started && (
           <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)' }}>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-              <button className="dt-btn" onClick={checkOrder} style={{ background: `var(--stg-acc, ${COLORS.plum})`, color: `var(--stg-onramp, ${T.white})`, borderColor: `var(--stg-acc, ${COLORS.plum})` }}>
+              <button className="dt-btn" onClick={checkOrder} style={{ background: `var(--stg-acc, ${COLORS.plum})`, color: `var(--stg-onramp, ${T.white})`, borderColor: `var(--stg-acc-ink, var(--stg-acc, ${COLORS.plum}))` }}>
                 <Check size={15} strokeWidth={3} /> Check my order ({checksLeft} left)
               </button>
               {hintOk && !g.hintUsed && (

@@ -276,6 +276,7 @@ export default function SudsClient({ puzzles = [], forceNum = null }) {
   // every call site below themes itself and none of them had to be found.
   // The literals are published on the root element instead.
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('suds');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('suds');
   const STAGE_ACC = { '--stg-acc-dk': gameColor('suds'), '--stg-acc-lt': gameColorLight('suds'), '--stg-onramp-lt': gameOnrampLight('suds'), '--stg-acc-ink-lt': gameAccentInkLight('suds') };
   const Cap = STAGE ? StageChrome : LoftCap;
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
@@ -761,7 +762,7 @@ export default function SudsClient({ puzzles = [], forceNum = null }) {
     if (isSel) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, var(--stg-cell))' : '#ffd9bd';
     return {
       background: bg,
-      boxShadow: isSel ? `inset 0 0 0 2.5px ${STAGE ? STAGE_C : COLORS.accent}` : undefined,
+      boxShadow: isSel ? `inset 0 0 0 2.5px ${STAGE ? STAGE_C_INK : COLORS.accent}` : undefined,
       zIndex: isSel ? 1 : undefined,
       // The box rules have to stay the STRONGEST line on the grid, or a
       // sudoku loses its nine boxes and becomes an 81 cell square.
@@ -839,18 +840,18 @@ export default function SudsClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.sd-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.sd-ttl h1{font-size:21px;letter-spacing:0.02em;}.sd-ttl .sd-ttl-dt{font-size:15px;}.sd-ttl-dot{display:none;}}
           .sd-cell{display:flex;align-items:center;justify-content:center;font-family:${MONO};box-sizing:border-box;cursor:pointer;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;}
           .sd-given{font-weight:700;color:${INK};}
-          .sd-user{font-weight:500;color:${STAGE ? STAGE_C : COLORS.accent};}
+          .sd-user{font-weight:500;color:${STAGE ? STAGE_C_INK : COLORS.accent};}
           .sd-notes{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);width:100%;height:100%;padding:2px;box-sizing:border-box;}
           .sd-note{display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:9px;line-height:1;color:var(--stg-ink2, #8a93a3);}
           .sd-pad{width:100%;aspect-ratio:1;border-radius:9px;border:1.5px solid ${STAGE ? 'var(--stg-line2,rgba(255,255,255,0.17))' : 'rgba(28,30,36,0.5)'};background:${STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : 'var(--white)'};font-family:${MONO};font-weight:500;color:${INK};cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:${STAGE ? 'none' : '0 2px 0 rgba(28,30,36,0.4)'};}
           .sd-pad:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(28,30,36,0.4);}
           .sd-pad.done{color:var(--stg-mute2, #c3c8cf);box-shadow:none;background:${STAGE ? 'var(--stg-surf2,rgba(255,255,255,0.08))' : '#f4f5f7'};cursor:default;}
           .sd-pad.done span{text-decoration:line-through;}
-          .sd-pad.armed{background:var(--stg-acc, ${STAGE ? STAGE_C : COLORS.accent});color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};border-color:var(--stg-acc, ${STAGE ? STAGE_C : COLORS.accent});box-shadow:${STAGE ? 'none' : '0 2px 0 rgba(154,61,12,0.55)'};}
+          .sd-pad.armed{background:var(--stg-acc, ${STAGE ? STAGE_C : COLORS.accent});color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};border-color:var(--stg-acc-ink, var(--stg-acc, ${STAGE ? STAGE_C : COLORS.accent}));box-shadow:${STAGE ? 'none' : '0 2px 0 rgba(154,61,12,0.55)'};}
           .sd-pad.armed .sd-pad-n{color:${STAGE ? 'color-mix(in srgb, var(--stg-onramp, #08222e) 68%, transparent)' : '#ffe0cc'};}
           .sd-pad .sd-pad-n{position:absolute;bottom:2px;right:4px;font-size:8px;color:var(--stg-mute2, #aab0bb);font-weight:500;}
           .sd-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2,rgba(255,255,255,0.17))' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2,rgba(255,255,255,0.08))' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-          .sd-tool.on{background:${STAGE ? STAGE_C : COLORS.ink};color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};border-color:${STAGE ? STAGE_C : COLORS.ink};}
+          .sd-tool.on{background:${STAGE ? STAGE_C : COLORS.ink};color:${STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)'};border-color:${STAGE ? STAGE_C_INK : COLORS.ink};}
         ` }} />
 
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
@@ -890,7 +891,7 @@ export default function SudsClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="sd-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="sd-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

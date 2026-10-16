@@ -242,6 +242,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('chomp');  const iq = useIqStanding({ game: 'chomp', quizId: PUZZLE.quizId, active: LOFT && !playing });
   const STAGE = isStage('chomp', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('chomp');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('chomp');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('chomp'), '--stg-acc-lt': gameColorLight('chomp'), '--stg-onramp-lt': gameOnrampLight('chomp'), '--stg-acc-ink-lt': gameAccentInkLight('chomp') };
   const [stageTheme] = useStageTheme();
@@ -774,7 +775,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button onClick={startGame} style={{ ...btn, background: STAGE ? STAGE_C : T.cta, borderColor: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button onClick={startGame} style={{ ...btn, background: STAGE ? STAGE_C : T.cta, borderColor: STAGE ? STAGE_C_INK : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -841,11 +842,11 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
                     {/* legs: a front pair just behind the head and a back pair near the tail */}
                     {gator.legs.map((l, k) => (
                       <g key={'lg' + k}>
-                        <path d={l.d} fill="none" strokeWidth={Math.max(4, SQ * 0.14)} strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'var(--stg-acc)' }} />
+                        <path d={l.d} fill="none" strokeWidth={Math.max(4, SQ * 0.14)} strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'var(--stg-acc-ink, var(--stg-acc))' }} />
                         <circle cx={l.fx} cy={l.fy} r={Math.max(3, SQ * 0.085)} style={{ fill: 'var(--stg-acc)' }} />
                       </g>
                     ))}
-                    <path d={trailD} fill="none" strokeWidth={Math.round(SQ * 0.37)} strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'var(--stg-acc)' }} />
+                    <path d={trailD} fill="none" strokeWidth={Math.round(SQ * 0.37)} strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'var(--stg-acc-ink, var(--stg-acc))' }} />
                     {gator.tail && <path d={gator.tail} style={{ fill: 'var(--stg-acc)' }} />}
                     {g.body.length > 1 && (
                       <path d={trailD} fill="none" strokeWidth={Math.max(2, SQ * 0.05)} strokeDasharray={`2 ${Math.round(SQ * 0.23)}`} strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'var(--stg-onramp)', strokeOpacity: 0.5 }} />
@@ -1115,7 +1116,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
         .ch-rail-fill { background: var(--stg-acc); }
         .ch-tok { position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px; width: var(--ch-tw); }
         .ch-tok-disc { position: relative; width: var(--ch-td); height: var(--ch-td); box-sizing: border-box; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--stg-ground, #fff); border: 1.5px solid var(--stg-line2, #cdd3dd); }
-        .ch-tok.is-next .ch-tok-disc { border: 0; box-shadow: 0 0 0 3px var(--stg-ground, #fff), 0 0 0 5px var(--stg-acc); }
+        .ch-tok.is-next .ch-tok-disc { border: 0; box-shadow: 0 0 0 3px var(--stg-ground, #fff), 0 0 0 5px var(--stg-acc-ink, var(--stg-acc)); }
         .ch-tok-img { display: block; width: 75%; height: 75%; object-fit: contain; }
         .ch-tok.is-done .ch-tok-img { opacity: .45; }
         .ch-wait { position: absolute; width: 1px !important; height: 1px !important; opacity: 0; }
@@ -1149,8 +1150,8 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
         .ch-status { width: 100%; margin-top: 16px; justify-content: flex-end; border-top: 1px solid var(--stg-line, #cdd3dd); padding-top: 14px; }
 
         .ch-ctl { display: inline-flex; align-items: center; justify-content: center; gap: 7px; font-family: ${SANS}; font-weight: 700; font-size: 14px; background: transparent; color: var(--stg-ink2, #2c3446); border: 1.5px solid var(--stg-mute2, #78839a); border-radius: 12px; padding: 0 16px; min-height: 48px; min-width: 132px; cursor: pointer; }
-        .ch-ctl.is-armed { color: var(--stg-acc-ink); border-color: var(--stg-acc); }
-        .ch-ctl.is-again { color: var(--stg-acc-ink); border-color: var(--stg-acc); }
+        .ch-ctl.is-armed { color: var(--stg-acc-ink); border-color: var(--stg-acc-ink, var(--stg-acc)); }
+        .ch-ctl.is-again { color: var(--stg-acc-ink); border-color: var(--stg-acc-ink, var(--stg-acc)); }
         .ch-foot { padding: 12px 0 0; }
         .ch-foot-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
         .ch-foot-hint { font-family: ${SANS}; font-size: 12px; font-weight: 600; color: var(--stg-mute, #525c70); }
@@ -1190,7 +1191,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
           .ch-rail { --ch-tw: 30px; --ch-td: 30px; }
           .ch-rail-line, .ch-rail-fill { height: 2px; top: calc(var(--ch-td) / 2 - 1px); }
           .ch-tok-check { width: 14px; height: 14px; padding: 2px; }
-          .ch-tok.is-next .ch-tok-disc { box-shadow: 0 0 0 2px var(--stg-ground, #fff), 0 0 0 4px var(--stg-acc); }
+          .ch-tok.is-next .ch-tok-disc { box-shadow: 0 0 0 2px var(--stg-ground, #fff), 0 0 0 4px var(--stg-acc-ink, var(--stg-acc)); }
           .ch-panel { margin-top: 12px; border-radius: 18px; padding: 12px; }
           .ch-cov { margin-top: 10px; gap: 4px; }
           .ch-cov-bar { gap: 1px; }

@@ -26,7 +26,7 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { DAILY_GAMES as ALL_GAMES, DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
-import { RAMP_ORDER, categoryColor, categoryColorLight } from '@/lib/category-ramp';
+import { RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight } from '@/lib/category-ramp';
 import { gameStatsShort } from '@/lib/daily-row-stats';
 import { savedIdentity } from '@/lib/saved-identity';
 import { useStageTheme } from '@/lib/stage-theme';
@@ -79,7 +79,7 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:240px;}
 .lc-sub-btn{position:absolute;right:20px;top:50%;transform:translateY(-50%);height:30px;padding:0 12px;border-radius:999px;
   border:1px solid var(--stg-line,rgba(255,255,255,.16));background:transparent;color:var(--stg-ink2,var(--stg-ink));
   font:700 12px Manrope,system-ui,sans-serif;letter-spacing:0;text-transform:none;cursor:pointer;white-space:nowrap;}
-.lc-sub-btn:hover{border-color:var(--stg-acc);color:var(--stg-ink);}
+.lc-sub-btn:hover{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-ink);}
 .lc-cap,.lc-nav,.lc-side{font-family:Manrope,ui-sans-serif,system-ui,sans-serif;color:var(--stg-ink);box-sizing:border-box;-webkit-font-smoothing:antialiased;}
 .lc-cap *,.lc-nav *,.lc-side *{box-sizing:border-box;}
 .lc-cap{position:fixed;top:0;left:0;right:0;z-index:90;background:var(--stg-ground);}
@@ -129,7 +129,7 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:240px;}
 .lc-nav .sty-ixb > span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .lc-nav .sty-ixb:hover{color:var(--stg-ink);background:var(--stg-surf);}
 .lc-nav .sty-ixb.on{background:var(--stg-chip);color:var(--stg-ink);font-weight:800;}
-.lc-nav .sty-ixb:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.lc-nav .sty-ixb:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 .lc-nav .sty-ixsep{flex:none;height:1px;background:var(--stg-line);margin:6px 10px;}
 .lc-nav .lc-sub{display:flex;flex-direction:column;gap:1px;margin:2px 0 6px 20px;}
 .lc-nav .lc-g{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;color:var(--stg-mute);
@@ -147,13 +147,13 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:240px;}
    into --lc-fgh), so its rule and the subheader's are one line. */
 .lc-tabs{display:flex;border-bottom:1px solid var(--stg-line);padding:0 8px;flex:none;height:var(--lc-fgh,41px);}
 .lc-tab{flex:1;height:100%;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--stg-mute);font:700 12.5px Manrope,system-ui,sans-serif;cursor:pointer;}
-.lc-tab.on{color:var(--stg-ink);border-bottom-color:var(--stg-acc);}
+.lc-tab.on{color:var(--stg-ink);border-bottom-color:var(--stg-acc-ink, var(--stg-acc));}
 .lc-body{padding:16px 20px;font-size:13px;}
 .lc-cap2{display:flex;justify-content:space-between;font-size:12px;color:var(--stg-mute);margin-bottom:6px;}
 .lc-row{display:grid;grid-template-columns:24px 1fr auto;gap:10px;padding:7px 0;border-bottom:1px solid var(--stg-line);align-items:baseline;}
 .lc-row span:first-child{color:var(--stg-mute);font-weight:700;}
 .lc-row em{font-style:normal;color:var(--stg-mute);}
-.lc-row.me{background:var(--stg-chip);margin:0 -10px;padding:7px 10px;border-radius:6px;box-shadow:inset 3px 0 0 var(--stg-acc);border-bottom:0;}
+.lc-row.me{background:var(--stg-chip);margin:0 -10px;padding:7px 10px;border-radius:6px;box-shadow:inset 3px 0 0 var(--stg-acc-ink, var(--stg-acc));border-bottom:0;}
 .lc-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .lc-stat{background:var(--stg-surf);border-radius:10px;padding:12px;}
 .lc-stat b{display:block;font-size:22px;font-weight:800;}
@@ -162,7 +162,7 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:240px;}
 .lc-day{aspect-ratio:1;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;text-decoration:none;
   color:var(--stg-mute);background:var(--stg-surf);}
 .lc-day.p{background:var(--stg-acc);color:var(--stg-onramp,#08222e);}
-.lc-day.t{box-shadow:inset 0 0 0 2px var(--stg-acc);color:var(--stg-ink);}
+.lc-day.t{box-shadow:inset 0 0 0 2px var(--stg-acc-ink, var(--stg-acc));color:var(--stg-ink);}
 .lc-mo{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin:14px 0 8px;}
 .lc-mo:first-child{margin-top:0;}
 .lc-how{font-size:14px;line-height:1.55;}
@@ -172,8 +172,8 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:240px;}
 .lc-reveal-btn{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 16px;border-radius:999px;cursor:pointer;
   border:1px solid var(--stg-line,rgba(255,255,255,.16));background:transparent;color:var(--stg-ink);
   font:700 13px Manrope,system-ui,sans-serif;}
-.lc-reveal-btn:hover{border-color:var(--stg-acc);}
-.lc-reveal-btn:focus-visible,.lc-hide:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.lc-reveal-btn:hover{border-color:var(--stg-acc-ink, var(--stg-acc));}
+.lc-reveal-btn:focus-visible,.lc-hide:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 .lc-hide{border:0;background:none;padding:0;cursor:pointer;color:var(--stg-mute);font:600 12px Manrope,system-ui,sans-serif;text-decoration:underline;text-underline-offset:2px;}
 .lc-hide:hover{color:var(--stg-ink);}
 `;
@@ -225,6 +225,9 @@ export default function LayoutCInner({ gameKey }) {
     return [...cats].map((c, i) => [c, i]).sort((a, b) => (at(a[0]) - at(b[0])) || (a[1] - b[1])).map(([c]) => c);
   }, [cats, order]);
   const hueFor = (cat) => (light ? categoryColorLight(cat) : categoryColor(cat));
+  // Small marks (the nav swatch, the current-game bar) need the ink step: the
+  // light fill is a pastel since 2026-10-16 and vanishes on the pale page.
+  const inkFor = (cat) => (light ? categoryAccentInkLight(cat) : categoryColor(cat));
   const myCat = game ? game.cat : null;
   const shownCat = openCat === null ? myCat : openCat;
 
@@ -525,7 +528,7 @@ export default function LayoutCInner({ gameKey }) {
           <span className="sty-ixsep" aria-hidden="true" />
           {orderedCats.map(({ cat, games: gs }) => (
             <React.Fragment key={cat}>
-              <button type="button" className={'sty-ixb' + (cat === shownCat ? ' on' : '')} style={{ '--cc': hueFor(cat) }}
+              <button type="button" className={'sty-ixb' + (cat === shownCat ? ' on' : '')} style={{ '--cc': inkFor(cat) }}
                 aria-expanded={cat === shownCat} onClick={() => toggleCat(cat)}>
                 <i aria-hidden="true" /><span>{catLabel(cat)}</span>
               </button>
@@ -536,11 +539,11 @@ export default function LayoutCInner({ gameKey }) {
                     const paused = !done.has(g.key) && inprog.has(g.key) && !isNow;
                     const mark = done.has(g.key) ? '\u2713' : isNow ? 'Playing' : paused ? pauseIcon : (nextUp && nextUp.key === g.key ? 'Up next' : '');
                     return isNow ? (
-                      <span key={g.key} aria-current="page" className="lc-g now" style={{ '--cc': hueFor(cat) }}>
+                      <span key={g.key} aria-current="page" className="lc-g now" style={{ '--cc': inkFor(cat) }}>
                         {g.name}<s>{mark}</s>
                       </span>
                     ) : (
-                      <Link key={g.key} href={gameHref(g)} className="lc-g" style={{ '--cc': hueFor(cat) }}>
+                      <Link key={g.key} href={gameHref(g)} className="lc-g" style={{ '--cc': inkFor(cat) }}>
                         {g.name}<s className={mark === 'Up next' ? 'up' : paused ? 'pz' : undefined}>{mark}</s>
                       </Link>
                     );

@@ -269,6 +269,7 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('tuck');
   const STAGE = isStage('tuck', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('tuck');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('tuck');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('tuck'), '--stg-acc-lt': gameColorLight('tuck'), '--stg-onramp-lt': gameOnrampLight('tuck'), '--stg-acc-ink-lt': gameAccentInkLight('tuck') };
   const [stageTheme] = useStageTheme();
@@ -782,7 +783,7 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.tk-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .tk-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .tk-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .tk-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
+          .tk-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, var(--white));}
           .tk-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, #7c3609) 86%, var(--stg-ink, var(--white)));}
           .tk-btn:disabled{opacity:0.45;cursor:default;}
           .tk-btn.big{min-height:48px;border-radius:12px;border-width:1.5px;padding:0 16px;font-size:14px;font-weight:700;justify-content:center;}
@@ -912,7 +913,7 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="tk-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="tk-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

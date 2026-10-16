@@ -668,7 +668,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
           .bk-s:hover:not(:disabled){background:color-mix(in srgb, var(--stg-ink, ${COLORS.ink}) 9%, var(--stg-cell, var(--white)));}
           .bk-s:disabled{cursor:default;}
           .bk-s.wait{background:transparent;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.3));color:var(--stg-mute, ${COLORS.faded});font-family:${MONO};font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
-          .bk-s.on{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 18%, var(--stg-cell, var(--white)));border-color:transparent;box-shadow:inset 4px 0 0 var(--stg-acc-ink, ${COLORS.accent});font-weight:800;}
+          .bk-s.on{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 18%, var(--stg-cell, var(--white)));border-color:transparent;box-shadow:inset 4px 0 0 var(--stg-acc-ink, ${COLORS.accent});font-weight:800;}
           .bk-s.off{background:transparent;color:var(--stg-mute, ${COLORS.faded});font-weight:600;}
           .bk-s.right{background:color-mix(in srgb, var(--stg-good, ${COLORS.green}) 22%, var(--stg-cell, var(--white)));border-color:transparent;box-shadow:inset 4px 0 0 var(--stg-good, ${COLORS.green});font-weight:800;}
           .bk-s.wrong{background:color-mix(in srgb, var(--stg-bad, ${COLORS.redInk}) 18%, var(--stg-cell, var(--white)));border-color:transparent;box-shadow:inset 4px 0 0 var(--stg-bad, ${COLORS.redInk});}

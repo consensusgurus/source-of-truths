@@ -292,6 +292,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('hinge');
   const STAGE = isStage('hinge', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('hinge');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('hinge');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('hinge'), '--stg-acc-lt': gameColorLight('hinge'), '--stg-onramp-lt': gameOnrampLight('hinge'), '--stg-acc-ink-lt': gameAccentInkLight('hinge') };
   const [stageTheme] = useStageTheme();
@@ -681,15 +682,15 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
           .hg-tag.you{color:var(--stg-acc-ink, ${COLORS.accent});}
           .hg-word{display:flex;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:7px 9px;border-radius:12px;box-sizing:border-box;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.18)'};background:${STAGE ? 'var(--stg-surf)' : T.white};}
           .hg-word.solved{cursor:pointer;}
-          .hg-word.active{border-color:var(--stg-acc, ${COLORS.accent});}
+          .hg-word.active{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .hg-word.empty{border-style:dashed;}
           .hg-screw{flex:none;color:${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.4)'};}
           .hg-cell{width:clamp(26px, 7.2vw, 40px);height:clamp(32px, 8.4vw, 48px);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:${SANS};font-weight:800;font-size:clamp(15px, 4.4vw, 22px);letter-spacing:0.02em;box-sizing:border-box;}
           .hg-word.given .hg-cell{background:${STAGE ? 'var(--stg-surf2)' : '#e9edf3'};color:${INK};}
-          .hg-word.solved .hg-cell{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 22%, var(--stg-cell))' : COLORS.accentSoft};color:var(--stg-acc-ink, ${COLORS.accentDeep});}
+          .hg-word.solved .hg-cell{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 22%, var(--stg-cell))' : COLORS.accentSoft};color:var(--stg-acc-ink, ${COLORS.accentDeep});}
           .hg-word.solved:hover .hg-cell{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 34%, var(--stg-cell))' : COLORS.accentTint};}
           .hg-word.active .hg-cell{border:2px solid var(--stg-cell-line, rgba(28,30,36,0.35));background:${STAGE ? 'var(--stg-cell)' : T.white};color:${INK};}
-          .hg-word.active .hg-cell.cursor{box-shadow:inset 0 -4px 0 var(--stg-acc, ${COLORS.accent});}
+          .hg-word.active .hg-cell.cursor{box-shadow:inset 0 -4px 0 var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .hg-word.empty .hg-cell{border:2px dashed var(--stg-cell-line, rgba(28,30,36,0.3));background:transparent;color:${FADED};font-weight:600;}
           .hg-joint{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;column-gap:10px;position:relative;min-height:50px;}
           .hg-strap{position:absolute;left:50%;top:0;bottom:0;width:3px;margin-left:-1.5px;background:var(--stg-line2, rgba(28,30,36,0.25));}
@@ -699,9 +700,9 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
           .hg-half.a{border-radius:15px 0 0 15px;border-right:0;justify-content:flex-end;}
           .hg-half.b{border-radius:0 15px 15px 0;border-left:0;}
           .hg-half.known{border-style:solid;background:${STAGE ? 'var(--stg-cell)' : '#e9edf3'};color:${INK};}
-          .hg-half.shut{border-style:solid;border-color:var(--stg-acc, ${COLORS.accent});background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, ${T.white});font-weight:800;}
+          .hg-half.shut{border-style:solid;border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, ${T.white});font-weight:800;}
           .hg-pin{width:18px;height:18px;margin:0 -2px;box-sizing:border-box;border-radius:50%;border:3px solid var(--stg-cell-line, rgba(28,30,36,0.35));background:${STAGE ? 'var(--stg-ground)' : T.white};position:relative;z-index:1;flex:none;}
-          .hg-pin.shut{border-color:var(--stg-acc, ${COLORS.accent});}
+          .hg-pin.shut{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .hg-dets{grid-column:3;justify-self:start;display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;}
           .hg-dlab{font-family:${MONO};font-size:9.5px;font-weight:800;letter-spacing:0.14em;color:var(--stg-bad, ${COLORS.rust});}
           .hg-det{font-family:${SANS};font-size:13px;font-weight:700;color:var(--stg-bad, ${COLORS.rust});background:color-mix(in srgb, var(--stg-bad, ${COLORS.rust}) 12%, transparent);border-radius:6px;padding:2px 8px;text-decoration:line-through;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;}
@@ -712,11 +713,11 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
           .hg-note{display:flex;gap:8px;align-items:flex-start;border-radius:10px;padding:10px 12px;background:color-mix(in srgb, var(--stg-bad, ${COLORS.rust}) 12%, transparent);color:var(--stg-bad, ${COLORS.rust});font-size:13px;line-height:1.4;font-weight:700;}
           .hg-entry{display:flex;flex-direction:column;gap:8px;}
           .hg-in{width:100%;box-sizing:border-box;height:52px;font-family:${SANS};font-weight:800;font-size:22px;letter-spacing:0.18em;text-transform:uppercase;text-align:center;padding:0 12px;border-radius:10px;border:2px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-cell)' : T.white};color:${INK};outline:none;}
-          .hg-in:focus{border-color:var(--stg-acc, ${COLORS.accent});}
+          .hg-in:focus{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .hg-go{min-height:48px;justify-content:center;}
           .hg-tools{display:flex;gap:8px;flex-wrap:wrap;}
           .hg-tool{flex:1 1 0;min-height:44px;justify-content:center;font-family:${SANS};font-weight:700;font-size:13px;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};background:transparent;color:${INK};border-radius:12px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
-          .hg-tool.hint{border-color:var(--stg-acc, ${COLORS.accent});background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 14%, transparent)' : COLORS.accentSoft};color:${ACC_DEEP_INK};}
+          .hg-tool.hint{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));background:${STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 14%, transparent)' : COLORS.accentSoft};color:${ACC_DEEP_INK};}
           .hg-tool.quiet{border-color:transparent;color:${FADED};text-decoration:underline;text-underline-offset:3px;}
           .hg-tool.quiet.armed{color:var(--stg-bad, ${COLORS.rust});}
           .hg-foot{font-size:12px;line-height:1.45;color:${FADED};font-weight:600;}
@@ -747,7 +748,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
           .hg-path{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:12px;}
           .hg-who{flex:0 0 100%;font-family:${MONO};font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:${FADED};}
           .hg-pw{font-weight:800;padding:1px 6px;border-radius:5px;background:${STAGE ? 'var(--stg-surf2)' : '#e9edf3'};color:${INK};}
-          .hg-pw.diff{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 22%, var(--stg-cell))' : COLORS.accentSoft};color:var(--stg-acc-ink, ${COLORS.accentDeep});}
+          .hg-pw.diff{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 22%, var(--stg-cell))' : COLORS.accentSoft};color:var(--stg-acc-ink, ${COLORS.accentDeep});}
           .hg-arr{color:${FADED};}
         ` }} />
 
@@ -781,7 +782,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="hg-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="hg-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -882,7 +883,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
                   aria-label={`Type the ${COUNTS[cur]}-letter word that hinges from ${fill[cur - 1]}`}
                 />
                 <button type="button" className="hg-btn hg-go" onClick={(e) => { e.preventDefault(); submit(); }} disabled={draft.length !== COUNTS[cur]}
-                  style={{ background: draft.length === COUNTS[cur] ? `var(--stg-acc, ${COLORS.ink})` : 'transparent', color: draft.length === COUNTS[cur] ? `var(--stg-onramp, ${T.white})` : FADED, borderColor: draft.length === COUNTS[cur] ? `var(--stg-acc, ${COLORS.ink})` : `var(--stg-cell-line, rgba(28,30,36,0.35))`, cursor: draft.length === COUNTS[cur] ? 'pointer' : 'default', fontSize: 15 }}>
+                  style={{ background: draft.length === COUNTS[cur] ? `var(--stg-acc, ${COLORS.ink})` : 'transparent', color: draft.length === COUNTS[cur] ? `var(--stg-onramp, ${T.white})` : FADED, borderColor: draft.length === COUNTS[cur] ? `var(--stg-acc-ink, var(--stg-acc, ${COLORS.ink}))` : `var(--stg-cell-line, rgba(28,30,36,0.35))`, cursor: draft.length === COUNTS[cur] ? 'pointer' : 'default', fontSize: 15 }}>
                   Hinge
                 </button>
               </div>

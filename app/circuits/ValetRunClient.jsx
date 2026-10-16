@@ -732,7 +732,7 @@ const CSS = `
 .vr-hs{display:block;font-size:13px;color:#9aa8c4;font-weight:600;margin-top:4px;}
 .vr-hn{margin-top:18px;padding:14px 16px;border:1px solid rgba(255,255,255,.1);border-radius:12px;}
 .vr-hn i{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:#66748f;}
-.vr-hn b{display:block;font-size:24px;font-weight:800;color:var(--stg-acc,#bef264);letter-spacing:-.02em;margin-top:2px;}
+.vr-hn b{display:block;font-size:24px;font-weight:800;color:var(--stg-acc-ink, var(--stg-acc,#bef264));letter-spacing:-.02em;margin-top:2px;}
 .vr-hn span{display:block;font-size:12.5px;color:#9aa8c4;font-weight:600;margin-top:2px;}
 .vr-vbar{height:3px;border-radius:2px;background:rgba(255,255,255,.1);overflow:hidden;margin:20px 0 14px;}
 .vr-vbar span{display:block;height:100%;background:var(--stg-acc,#bef264);width:100%;transform-origin:left;animation:vrdrain var(--dwell,9000ms) linear both;}
@@ -740,7 +740,7 @@ const CSS = `
 @keyframes vrdrain{from{transform:scaleX(1);}to{transform:scaleX(0);}}
 .vr-hacts{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .vr-vb{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:9px;padding:11px 14px;font-family:inherit;font-weight:800;font-size:13.5px;color:#eef2fa;cursor:pointer;text-decoration:none;}
-.vr-vb.pri{background:var(--stg-acc,#bef264);border-color:var(--stg-acc,#bef264);color:#08222e;}
+.vr-vb.pri{background:var(--stg-acc,#bef264);border-color:var(--stg-acc-ink, var(--stg-acc,#bef264));color:#08222e;}
 .vr-vb:hover{filter:brightness(1.1);}
 .vr-vb.vr-vgo{border-radius:11px;padding:15px 22px;font-size:16px;gap:9px;}
 .vr-vgn{font-style:normal;font-weight:700;opacity:.72;}
@@ -768,7 +768,7 @@ const CSS = `
 .vr-br.me{background:rgba(190,242,100,.08);}
 .vr-brk{font-family:${MONO};color:#66748f;width:22px;}
 .vr-brn{flex:1;min-width:0;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.vr-br.me .vr-brn{color:var(--stg-acc,#bef264);}
+.vr-br.me .vr-brn{color:var(--stg-acc-ink, var(--stg-acc,#bef264));}
 .vr-brt{font-family:${MONO};color:#eef2fa;font-variant-numeric:tabular-nums;}
 .vr-bmsg{padding:16px 14px;font-size:13px;color:#9aa8c4;font-weight:600;line-height:1.5;}
 .vr-claim{margin:20px 0 0;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 16px;}

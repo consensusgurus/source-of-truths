@@ -24,7 +24,7 @@
 
 import React, { useMemo } from 'react';
 import Link from 'next/link';
-import { categoryColor, categoryColorLight } from '@/lib/category-ramp';
+import { categoryColor, categoryAccentInkLight } from '@/lib/category-ramp';
 import { categoryTotals } from '@/lib/crown';
 import { dailyLabel, DAILY_DATED_RE, DAILY_GAME_MAP } from '@/lib/daily-games';
 
@@ -123,9 +123,9 @@ export function Standing({ recent, rank, totalPlayers, ranks, nextAt }) {
           <line x1="0" y1={H * 0.56} x2={W} y2={H * 0.56} stroke="var(--stg-line)" strokeWidth="1" />
           <line x1="0" y1={H * 0.84} x2={W} y2={H * 0.84} stroke="var(--stg-line)" strokeWidth="1" />
           <path d={`${c.d} L${W} ${H} L0 ${H} Z`} fill="var(--stg-acc)" fillOpacity="0.14" />
-          <path d={c.d} fill="none" stroke="var(--stg-acc)" strokeWidth="2.25" strokeLinecap="round" />
+          <path d={c.d} fill="none" stroke="var(--stg-acc-ink, var(--stg-acc))" strokeWidth="2.25" strokeLinecap="round" />
           {goalY != null ? (
-            <line x1="0" y1={goalY} x2={W} y2={goalY} stroke="var(--stg-acc)" strokeWidth="1.5" strokeDasharray="5 5" opacity="0.55" />
+            <line x1="0" y1={goalY} x2={W} y2={goalY} stroke="var(--stg-acc-ink, var(--stg-acc))" strokeWidth="1.5" strokeDasharray="5 5" opacity="0.55" />
           ) : null}
           <circle cx={c.end[0]} cy={c.end[1]} r="4" fill="var(--stg-acc)" stroke="var(--stg-ground)" strokeWidth="1.5" />
         </svg>
@@ -174,7 +174,7 @@ export function Categories({ recent, light }) {
   return (
     <div className="pf-bars">
       {rows.map((r) => (
-        <div key={r.cat} className="pf-bar" style={{ '--cc': light ? categoryColorLight(r.cat) : categoryColor(r.cat) }}>
+        <div key={r.cat} className="pf-bar" style={{ '--cc': light ? categoryAccentInkLight(r.cat) : categoryColor(r.cat) }}>
           <span className="pf-bn">{r.cat}</span>
           <span className="pf-bt"><i style={{ width: `${Math.max(4, Math.round((r.xp / max) * 100))}%` }} /></span>
           <span className="pf-bv">{r.xp.toLocaleString()} <i>{r.played} played</i></span>
@@ -261,7 +261,7 @@ export function GameLog({ recent, titleById, light, limit = 40 }) {
       {recent.slice(0, limit).map((r, i) => {
         const m = DAILY_DATED_RE.exec(r.quizId || '');
         const g = m ? DAILY_GAME_MAP[m[1]] : null;
-        const hue = g ? (light ? categoryColorLight(g.cat) : categoryColor(g.cat)) : 'var(--stg-line2)';
+        const hue = g ? (light ? categoryAccentInkLight(g.cat) : categoryColor(g.cat)) : 'var(--stg-line2)';
         const name = g ? g.name : (titleById && titleById[r.quizId]) || dailyLabel(r.quizId) || r.quizId;
         let when = '';
         try {
@@ -304,8 +304,8 @@ export const profileStageCss = [
   '.pf-id h1 u{text-decoration:none;flex:none;font-family:' + MONO + ';font-size:9px;letter-spacing:.11em;text-transform:uppercase;font-weight:500;color:var(--stg-onramp,#08222e);background:var(--stg-acc);border-radius:99px;padding:3px 8px;}',
   '.pf-cx{display:inline-flex;align-items:center;gap:6px;font-family:' + MONO + ';font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--stg-ink2);border:1px solid var(--stg-line);border-radius:99px;padding:5px 11px;background:none;cursor:pointer;text-decoration:none;white-space:nowrap;}',
   '.pf-cx:hover{border-color:var(--stg-line2);color:var(--stg-ink);}',
-  '.pf-cx:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}',
-  '.pf-rank{margin-left:auto;color:var(--stg-onramp,#08222e);background:var(--stg-acc);border-color:var(--stg-acc);}',
+  '.pf-cx:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}',
+  '.pf-rank{margin-left:auto;color:var(--stg-onramp,#08222e);background:var(--stg-acc);border-color:var(--stg-acc-ink, var(--stg-acc));}',
   '.pf-rank:hover{color:var(--stg-onramp,#08222e);}',
 
   '.pf-curtain{background:var(--stg-acc);color:var(--stg-onramp,#08222e);padding:26px 22px 24px;}',
@@ -343,7 +343,7 @@ export const profileStageCss = [
   '.pf-empty{margin:0;font-size:13px;color:var(--stg-mute);}',
 
   '.pf-tro{display:grid;gap:6px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}',
-  '.pf-t{display:flex;flex-direction:column;gap:2px;background:var(--stg-surf);border:1px solid var(--stg-line);border-left:3px solid var(--stg-acc);border-radius:8px;padding:9px 11px;min-width:0;}',
+  '.pf-t{display:flex;flex-direction:column;gap:2px;background:var(--stg-surf);border:1px solid var(--stg-line);border-left:3px solid var(--stg-acc-ink, var(--stg-acc));border-radius:8px;padding:9px 11px;min-width:0;}',
   '.pf-t.off{background:none;border:1px dashed var(--stg-cell-line);}',
   '.pf-t.off .pf-tn{color:var(--stg-mute);}',
   '.pf-tn{font-size:12.5px;font-weight:800;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
@@ -359,7 +359,7 @@ export const profileStageCss = [
 
   '.pf-hm{display:grid;grid-template-rows:repeat(7,10px);grid-auto-flow:column;grid-auto-columns:10px;gap:3px;justify-content:start;margin-top:14px;overflow-x:auto;}',
   '.pf-hm i{display:block;border-radius:2px;background:var(--stg-line);}',
-  '.pf-hm i.l1{background:color-mix(in srgb,var(--stg-acc) 28%,var(--stg-ground));}',
+  '.pf-hm i.l1{background:color-mix(in srgb,var(--stg-acc-ink, var(--stg-acc)) 28%,var(--stg-ground));}',
   '.pf-hm i.l2{background:color-mix(in srgb,var(--stg-acc) 52%,var(--stg-ground));}',
   '.pf-hm i.l3{background:color-mix(in srgb,var(--stg-acc) 76%,var(--stg-ground));}',
   '.pf-hm i.l4{background:var(--stg-acc);}',
@@ -379,7 +379,7 @@ export const profileStageCss = [
   '.pf-act{display:flex;gap:8px;flex-wrap:wrap;}',
   '.pf-btn{display:inline-flex;align-items:center;gap:7px;background:var(--stg-acc);color:var(--stg-onramp,#08222e);border:0;border-radius:9px;padding:9px 15px;font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer;text-decoration:none;}',
   '.pf-btn.ghost{background:none;color:var(--stg-ink2);border:1px solid var(--stg-line);font-weight:700;}',
-  '.pf-btn:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}',
+  '.pf-btn:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}',
 
   '@media(max-width:640px){',
   '.pf-cap{gap:10px;padding:10px 13px;}',

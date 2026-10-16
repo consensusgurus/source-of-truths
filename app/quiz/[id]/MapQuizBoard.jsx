@@ -228,7 +228,7 @@ export default function MapQuizBoard({ region, started, ended, revealed, foundNa
               style={{
                 fontFamily: "'Manrope', system-ui, sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
                 padding: '4px 11px', cursor: 'pointer', borderRadius: 6,
-                border: `1px solid ${on ? `var(--stg-acc,${CTRL_INK})` : `var(--stg-line,rgba(20,22,28,0.18))`}`,
+                border: `1px solid ${on ? `var(--stg-acc-ink, var(--stg-acc,${CTRL_INK}))` : `var(--stg-line,rgba(20,22,28,0.18))`}`,
                 background: on ? `var(--stg-acc,${CTRL_INK})` : `var(--stg-surf2,${T.white})`,
                 color: on ? `var(--stg-onramp,${T.white})` : `var(--stg-mute,${T.muted})`,
               }}

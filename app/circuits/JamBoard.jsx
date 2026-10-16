@@ -131,7 +131,7 @@ export default function JamBoard({
       <div key={shake} className={`jb-lot${shake ? ' shake' : ''}`}>
         {/* THE EXIT, marked rather than merely left empty, inside the wall's
             own band so nothing hangs past the lot on a narrow phone. */}
-        <div style={{ position: 'absolute', right: -10, top: `${exitRow * cellPct}%`, width: 10, height: `${cellPct}%`, background: `color-mix(in srgb, var(--stg-acc, ${LOT}) 26%, var(--stg-ground, ${LOT}))` }} />
+        <div style={{ position: 'absolute', right: -10, top: `${exitRow * cellPct}%`, width: 10, height: `${cellPct}%`, background: `color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${LOT})) 26%, var(--stg-ground, ${LOT}))` }} />
         <div aria-hidden="true" style={{ position: 'absolute', right: -10, top: `${exitRow * cellPct}%`, width: 10, height: 3, background: 'var(--stg-acc, transparent)' }} />
         <div aria-hidden="true" style={{ position: 'absolute', right: -10, top: `calc(${(exitRow + 1) * cellPct}% - 3px)`, width: 10, height: 3, background: 'var(--stg-acc, transparent)' }} />
         {Array.from({ length: n - 1 }).map((_, i) => (
@@ -166,7 +166,7 @@ export default function JamBoard({
                 left: `calc(${left * cellPct}% + 3px)`, top: `calc(${top * cellPct}% + 3px)`,
                 width: `calc(${w * cellPct}% - 6px)`, height: `calc(${h * cellPct}% - 6px)`,
                 background: isRed ? RED_BLOCK : BLOCK_FILL, zIndex: 2,
-                outline: on ? '3px solid var(--stg-acc, #bef264)' : 'none',
+                outline: on ? '3px solid var(--stg-acc-ink, var(--stg-acc, #bef264))' : 'none',
                 outlineOffset: on ? '1px' : 0,
                 border: isRed ? `2px solid ${RED_EDGE}` : `${truck ? 2 : 1}px solid color-mix(in srgb, ${REGION_INK} 70%, transparent)`,
               }} />

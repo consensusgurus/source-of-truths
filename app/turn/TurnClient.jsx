@@ -251,6 +251,7 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('turn');
   const STAGE = isStage('turn', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('turn');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('turn');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('turn'), '--stg-acc-lt': gameColorLight('turn'), '--stg-onramp-lt': gameOnrampLight('turn'), '--stg-acc-ink-lt': gameAccentInkLight('turn') };
   const [stageTheme] = useStageTheme();
@@ -819,7 +820,7 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
              legal square. Your discs are the category accent in both. The light
              block carries the boot-stamp guard (app/globals.css). */
           .tn-root{--tn-sq:var(--stg-sq-d,#39414f);--tn-last:#5c5236;--tn-hot:#4a5366;--tn-grid:#222a3a;--tn-frame:#5a6680;--tn-eng:#e9edf4;--tn-rim:#0b0f1a;--tn-dot:#d5dbe5;--tn-btn:#5a6680;
-            --tn-soft:color-mix(in srgb, var(--stg-acc, #e8b43a) 24%, var(--stg-ground, #0b0f1a));}
+            --tn-soft:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #e8b43a)) 24%, var(--stg-ground, #0b0f1a));}
           html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .tn-root{--tn-last:#b5a882;--tn-hot:#a9b4c5;--tn-grid:#6f7c92;--tn-frame:#0f1420;--tn-eng:#1e2433;--tn-rim:#1c1a14;--tn-dot:#1e2433;--tn-btn:#78839a;
             --tn-soft:color-mix(in srgb, var(--stg-acc, #e8b43a) 32%, #ffffff);}
           .tn-k{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute,#8b95a8);}
@@ -894,7 +895,7 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
                 </div>
               )}
               <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <button className="tn-btn" onClick={startGame} style={{ background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, borderColor: STAGE ? STAGE_C : T.cta, fontSize: 15, padding: '11px 22px' }}>Start</button>
+                <button className="tn-btn" onClick={startGame} style={{ background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, borderColor: STAGE ? STAGE_C_INK : T.cta, fontSize: 15, padding: '11px 22px' }}>Start</button>
                 <div>
                   <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                     {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

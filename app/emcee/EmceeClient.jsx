@@ -277,6 +277,7 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
   // player's own letters until the end card's Reveal answer tile is pressed.
   const viewLetters = g.status === 'revealed' && LOFT && !revealed ? (g.playerLetters || g.letters.map(() => '')) : g.letters;
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('emcee');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('emcee');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('emcee'), '--stg-acc-lt': gameColorLight('emcee'), '--stg-onramp-lt': gameOnrampLight('emcee'), '--stg-acc-ink-lt': gameAccentInkLight('emcee') };
   const [stageTheme] = useStageTheme();
@@ -769,7 +770,7 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
              the black square, which must be darker than the square in BOTH
              registers, so it is published here per register as --mc-blk. */
           .mc-wrap{--mc-blk:#05070d;--mc-soft:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 30%, color-mix(in srgb, var(--stg-cell, #fff) 84%, #fff));}
-          html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .mc-wrap{--mc-blk:#1e2433;--mc-soft:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 17%, var(--stg-cell, #fff));}
+          html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .mc-wrap{--mc-blk:#1e2433;--mc-soft:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 17%, var(--stg-cell, #fff));}
           .mc-prog{display:flex;flex-direction:column;gap:8px;margin:0 0 14px;}
           .mc-prog-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
           .mc-prog-row b{color:var(--stg-acc-ink, ${COLORS.accent});font-weight:800;}
@@ -805,7 +806,7 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
           .mc-cluerow .mc-cn{font-size:12px;font-weight:800;min-width:16px;color:var(--stg-mute, ${COLORS.faded});}
           .mc-cluerow .mc-ct{font-size:14px;font-weight:600;line-height:1.35;}
           .mc-cluerow.done{color:var(--stg-mute, ${COLORS.faded});}
-          .mc-cluerow.cross{border-color:var(--stg-acc, ${COLORS.accent});}
+          .mc-cluerow.cross{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .mc-cluerow.on,.mc-cluerow.on:hover{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);}
           .mc-cluerow.on .mc-cn{color:var(--stg-onramp, #fff);}
           .mc-cluerow.on .mc-ct{font-weight:800;}
@@ -882,7 +883,7 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="mc-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : THEME.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : THEME.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="mc-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : THEME.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : THEME.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

@@ -570,10 +570,10 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.hs-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .hs-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .hs-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .hs-row{display:flex;align-items:center;gap:10px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.14));border-left:3px solid var(--stg-acc, ${COLORS.accent});border-radius:9px;padding:9px 12px;margin-bottom:7px;flex-wrap:wrap;}
+          .hs-row{display:flex;align-items:center;gap:10px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.14));border-left:3px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));border-radius:9px;padding:9px 12px;margin-bottom:7px;flex-wrap:wrap;}
           .hs-key{font-family:${MONO};font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:${ACC_DEEP_INK};flex:0 0 auto;min-width:86px;}
           .hs-card{font-family:${SANS};font-weight:800;font-size:13px;border-radius:8px;padding:8px 11px;cursor:pointer;border: 1.5px solid var(--stg-line, rgba(28,30,36,0.2));background:${STAGE ? 'var(--stg-surf)' : COLORS.cream};color:${INK};}
-          .hs-card:hover:not(:disabled){border-color:var(--stg-acc, ${COLORS.accent});}
+          .hs-card:hover:not(:disabled){border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .hs-card.off{opacity:0.4;text-decoration:line-through;}
           .hs-card.wrong{background:${STAGE ? 'var(--stg-surf2)' : '#fee2e2'};border-color:${STAGE ? 'var(--stg-bad)' : '#b91c1c'};color:${STAGE ? 'var(--stg-bad)' : '#7f1d1d'};text-decoration:line-through;}
           .hs-card.win{background:${COLORS.greenSoft};border-color:${COLORS.green};color:#14532d;}
@@ -612,7 +612,7 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
           <div className={LOFT && !STAGE ? 'loft-sheet' : undefined}>
 
         {!preStart && (
-        <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 14.5, lineHeight: 1.6, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1px solid rgba(28,30,36,0.14)', borderLeft: `4px solid var(--stg-acc, ${COLORS.accent})`, borderRadius: 8, padding: '12px 16px', margin: '0 0 12px', color: INK }}>
+        <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 14.5, lineHeight: 1.6, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1px solid rgba(28,30,36,0.14)', borderLeft: `4px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))`, borderRadius: 8, padding: '12px 16px', margin: '0 0 12px', color: INK }}>
           One {PUZZLE.noun} on {PUZZLE.listLabel} is the secret one. {PUZZLE.who.map((w, i) => (
             <span key={w}><b style={{ fontStyle: 'normal' }}>{w}</b> has been told only its {PUZZLE.attrs[i]}{i === PUZZLE.who.length - 1 ? '. ' : i === PUZZLE.who.length - 2 ? ', and ' : ', '}</span>
           ))}

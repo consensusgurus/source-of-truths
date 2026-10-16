@@ -252,6 +252,7 @@ export default function ChainClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('chain');
   const STAGE = isStage('chain', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('chain');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('chain');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('chain'), '--stg-acc-lt': gameColorLight('chain'), '--stg-onramp-lt': gameOnrampLight('chain'), '--stg-acc-ink-lt': gameAccentInkLight('chain') };
   const [stageTheme] = useStageTheme();
@@ -900,12 +901,12 @@ export default function ChainClient({ puzzles = [], forceNum = null }) {
           .ch-board{position:relative;width:100%;aspect-ratio:var(--ar);background:var(--stg-surf, ${COLORS.paper});border-radius:20px;overflow:hidden;clip-path:inset(0 round 20px);touch-action:manipulation;}
           .ch-p{position:absolute;left:var(--a);top:var(--b);width:var(--c);height:var(--d);box-sizing:border-box;}
           .ch-bar{border-radius:5px;}
-          .ch-band{background:color-mix(in srgb, var(--stg-acc, #4a044e) 14%, var(--stg-ground, #ffffff));border-radius:999px;}
+          .ch-band{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #4a044e)) 14%, var(--stg-ground, #ffffff));border-radius:999px;}
           .ch-tag{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;pointer-events:none;}
           .ch-tag i{font-style:normal;font-family:${MONO};font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-ink2, ${COLORS.faded});}
           .ch-tag b{font-family:${MONO};font-size:22px;font-weight:800;line-height:1;color:var(--stg-ink, ${COLORS.ink});font-variant-numeric:tabular-nums;}
           .ch-box{border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;transition:background .25s ease;}
-          .ch-box.mine{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 16%, var(--stg-cell, var(--white)));box-shadow:inset 0 0 0 2px ${EDGE_MINE};color:var(--stg-ink, ${COLORS.ink});}
+          .ch-box.mine{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, var(--stg-cell, var(--white)));box-shadow:inset 0 0 0 2px ${EDGE_MINE};color:var(--stg-ink, ${COLORS.ink});}
           .ch-box.foe{background:var(--stg-cell, #eceae6);box-shadow:inset 0 0 0 1px var(--stg-cell-line, transparent);color:var(--stg-ink, ${COLORS.ink});}
           .ch-dot{width:18px !important;height:18px !important;margin:-9px 0 0 -9px;border-radius:50%;background:var(--stg-ink, ${COLORS.ink});pointer-events:none;}
           .ch-open{padding:0;margin:0;border:0;background:transparent;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
@@ -995,7 +996,7 @@ export default function ChainClient({ puzzles = [], forceNum = null }) {
                 </div>
               )}
               <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <button className="ch-btn" onClick={startGame} style={{ background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, borderColor: STAGE ? STAGE_C : T.cta, fontSize: 15, padding: '11px 22px' }}>Start</button>
+                <button className="ch-btn" onClick={startGame} style={{ background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, borderColor: STAGE ? STAGE_C_INK : T.cta, fontSize: 15, padding: '11px 22px' }}>Start</button>
                 <div>
                   <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                     {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

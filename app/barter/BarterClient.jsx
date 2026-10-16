@@ -282,6 +282,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('barter');
   const STAGE = isStage('barter', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('barter');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('barter');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('barter'), '--stg-acc-lt': gameColorLight('barter'), '--stg-onramp-lt': gameOnrampLight('barter'), '--stg-acc-ink-lt': gameAccentInkLight('barter') };
   const [stageTheme] = useStageTheme();
@@ -653,7 +654,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
           .bt-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           .bt-tile{box-sizing:border-box;user-select:none;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;border-radius:8px;font-family:${SANS};font-weight:900;text-transform:uppercase;transition:background 0.15s, transform 0.1s;}
           .bt-tile.play{cursor:pointer;}
-          .bt-tile.sel{outline:3px solid var(--stg-acc, ${COLORS.accent});outline-offset:-1px;transform:scale(1.05);z-index:2;}
+          .bt-tile.sel{outline:3px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));outline-offset:-1px;transform:scale(1.05);z-index:2;}
           .bt-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
         ` }} />
 
@@ -692,7 +693,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="bt-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="bt-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}

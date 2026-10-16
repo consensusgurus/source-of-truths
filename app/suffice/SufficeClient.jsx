@@ -461,7 +461,7 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.sf-wrap{padding-left:12px !important;padding-right:12px !important;}}
           .sf-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : COLORS.accentDeep};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .sf-btn:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .sf-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));}
+          .sf-btn.primary{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, var(--white));}
           .sf-btn.primary:hover{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accentDeep}) 86%, var(--stg-ink, var(--white)));}
           .sf-stmts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:16px;}
           .sf-stmt{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:12px;padding:13px 15px;font-size:15px;line-height:1.5;color:${INK};display:flex;flex-direction:column;gap:6px;}
@@ -482,7 +482,7 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
           .sf-yn .seg button.on{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);}
           .sf-yn .seg button:disabled{cursor:default;}
           .sf-yn.off .seg{opacity:0.4;}
-          .sf-sum{display:flex;flex-direction:column;gap:3px;border:1.5px solid var(--stg-line2, rgba(28,30,36,0.25));border-left:4px solid var(--stg-acc, ${COLORS.accent});border-radius:12px;padding:12px 15px;margin:12px 0 0;}
+          .sf-sum{display:flex;flex-direction:column;gap:3px;border:1.5px solid var(--stg-line2, rgba(28,30,36,0.25));border-left:4px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));border-radius:12px;padding:12px 15px;margin:12px 0 0;}
           .sf-sum .l{font-family:${MONO};font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;font-weight:700;color:${FADED};}
           .sf-sum .v{font-size:15.5px;font-weight:800;color:${INK};}
           .sf-submit{margin-top:12px;min-height:50px;padding:0 26px;font-size:15px;justify-content:center;}
@@ -494,7 +494,7 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
             .sf-yn .seg{border:0;gap:8px;overflow:visible;}
             .sf-yn .seg button{flex:1;border:1.5px solid var(--stg-line3, rgba(28,30,36,0.45));border-radius:10px;}
             .sf-yn .seg button + button{border-left:1.5px solid var(--stg-line3, rgba(28,30,36,0.45));}
-            .sf-yn .seg button.on{border-color:var(--stg-acc, ${COLORS.accent});}
+            .sf-yn .seg button.on{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
             .sf-submit{width:100%;}
           }
           .sf-pip{width:100%;height:5px;border-radius:3px;background:rgba(28,30,36,0.13);}

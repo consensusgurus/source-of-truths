@@ -267,6 +267,7 @@ export default function CircaClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('circa');
   const STAGE = isStage('circa', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('circa');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('circa');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('circa'), '--stg-acc-lt': gameColorLight('circa'), '--stg-onramp-lt': gameOnrampLight('circa'), '--stg-acc-ink-lt': gameAccentInkLight('circa') };
   const [stageTheme] = useStageTheme();
@@ -610,8 +611,8 @@ export default function CircaClient({ puzzles = [], forceNum = null }) {
           @keyframes ccrow{from{opacity:0;transform:translateY(-4px);}}
           @media(max-width:560px){.cc-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.cc-ttl h1{font-size:21px;letter-spacing:0.02em;}.cc-ttl .cc-ttl-dt{font-size:15px;}.cc-ttl-dot{display:none;}}
           .cc-inp{font-family:${MONO};font-weight:500;font-size:30px;letter-spacing:0.14em;text-align:center;width:150px;border:2px solid ${COLORS.ink};border-radius:9px;padding:9px 6px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${INK};outline:none;}
-          .cc-inp:focus{border-color:var(--stg-acc, ${COLORS.accent});box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 18%, transparent);}
-          .cc-go{font-family:${SANS};font-weight:800;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;border:2px solid var(--stg-acc, ${COLORS.accent});background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-radius:9px;padding:0 22px;cursor:pointer;height:58px;}
+          .cc-inp:focus{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 18%, transparent);}
+          .cc-go{font-family:${SANS};font-weight:800;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;border:2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-radius:9px;padding:0 22px;cursor:pointer;height:58px;}
           .cc-go:active{transform:translateY(1px);}
           .cc-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
           @media(max-width:400px){.cc-inp{width:124px;font-size:26px;}.cc-go{padding:0 16px;}}
@@ -678,7 +679,7 @@ export default function CircaClient({ puzzles = [], forceNum = null }) {
                 <div style={{ height: 18, borderRadius: 5, background: 'rgba(28,30,36,0.12)', width: '94%' }} />
                 <div style={{ height: 18, borderRadius: 5, background: 'rgba(28,30,36,0.12)', width: '56%' }} />
               </div>
-              <button className="cc-go" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C : undefined, width: '100%', marginTop: 16 }}>Start</button>
+              <button className="cc-go" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, width: '100%', marginTop: 16 }}>Start</button>
               <div style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED, marginTop: 9, textAlign: 'center' }}>
                 Today&rsquo;s moment appears when you start.
               </div>

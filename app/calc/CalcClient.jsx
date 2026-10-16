@@ -301,6 +301,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('calc');
   const STAGE = isStage('calc', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('calc');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('calc');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('calc'), '--stg-acc-lt': gameColorLight('calc'), '--stg-onramp-lt': gameOnrampLight('calc'), '--stg-acc-ink-lt': gameAccentInkLight('calc') };
   const [stageTheme] = useStageTheme();
@@ -764,7 +765,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
           .cl-panel{background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:20px;padding:18px 20px 16px;display:flex;flex-direction:column;align-items:center;}
           .cl-head{width:100%;max-width:560px;display:flex;align-items:stretch;gap:12px;}
           .cl-tgts{width:132px;flex:none;display:flex;flex-direction:column;gap:6px;}
-          .cl-tgt{flex:1;box-sizing:border-box;border-radius:14px;background:var(--stg-acc);color:var(--stg-onramp);border:2px solid var(--stg-acc);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 0;font-family:${SANS};min-height:44px;}
+          .cl-tgt{flex:1;box-sizing:border-box;border-radius:14px;background:var(--stg-acc);color:var(--stg-onramp);border:2px solid var(--stg-acc-ink, var(--stg-acc));display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 0;font-family:${SANS};min-height:44px;}
           .cl-tgt .k{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;}
           .cl-tgt .v{font-size:38px;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums;}
           .cl-tgts.multi .cl-tgt{flex-direction:row;gap:8px;padding:4px 8px;cursor:pointer;}
@@ -792,16 +793,16 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
           .cl-num{background:var(--stg-cell);color:var(--stg-ink);border:1.5px solid var(--stg-cell-line);}
           .cl-op{background:var(--stg-surf);color:var(--stg-ink2);border:1.5px dashed var(--stg-cell-line);font-size:22px;}
           .cl-board.n7 .cl-op{font-size:19px;}
-          .cl-key.on{background:color-mix(in srgb, var(--stg-acc) 22%, var(--stg-cell));color:var(--stg-ink);border:2px solid var(--stg-acc);}
-          .cl-key.head{background:var(--stg-acc);color:var(--stg-onramp);border:2px solid var(--stg-acc);box-shadow:0 0 0 5px color-mix(in srgb, var(--stg-acc) 26%, transparent);}
-          .cl-key.reach{border:3px solid var(--stg-acc);}
+          .cl-key.on{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 22%, var(--stg-cell));color:var(--stg-ink);border:2px solid var(--stg-acc-ink, var(--stg-acc));}
+          .cl-key.head{background:var(--stg-acc);color:var(--stg-onramp);border:2px solid var(--stg-acc-ink, var(--stg-acc));box-shadow:0 0 0 5px color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 26%, transparent);}
+          .cl-key.reach{border:3px solid var(--stg-acc-ink, var(--stg-acc));}
           .cl-key.reach:hover{transform:scale(1.06);}
           .cl-key.blocked{color:var(--stg-mute);border-color:var(--stg-line2);cursor:default;}
           .cl-key.term{border-radius:18px;}
           .cl-key.solved{background:var(--stg-good);border-color:var(--stg-good);color:var(--stg-onramp);}
           .cl-flag{position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-family:${SANS};font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:var(--stg-ink);color:var(--stg-ground);padding:2px 7px;border-radius:99px;pointer-events:none;line-height:1.2;}
           .cl-say{width:100%;max-width:560px;margin-top:22px;display:flex;align-items:center;gap:12px;}
-          .cl-say-ic{width:46px;height:46px;flex:none;box-sizing:border-box;border-radius:12px;border:2px solid var(--stg-acc);color:var(--stg-acc-ink);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;}
+          .cl-say-ic{width:46px;height:46px;flex:none;box-sizing:border-box;border-radius:12px;border:2px solid var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;}
           .cl-say-t{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0;}
           .cl-say-a{font-size:15px;font-weight:700;color:var(--stg-ink);line-height:1.35;}
           .cl-say-b{font-size:12px;font-weight:600;color:var(--stg-mute);}
@@ -810,14 +811,14 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
           .cl-tool{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2);border:1.5px solid var(--stg-cell-line);border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
           .cl-tool:hover:not(:disabled){background:var(--stg-surf2);}
           .cl-tool:disabled{color:var(--stg-mute);border-color:var(--stg-line2);cursor:default;}
-          .cl-tool.hint{color:var(--stg-acc-ink);border-color:var(--stg-acc);}
+          .cl-tool.hint{color:var(--stg-acc-ink);border-color:var(--stg-acc-ink, var(--stg-acc));}
           .cl-under{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0 12px;padding:12px 2px 0;}
           .cl-under-n{flex:1 1 180px;min-width:0;font-size:12px;font-weight:600;color:var(--stg-mute);}
           .cl-under-m{display:none;}
           .cl-reveal{margin-left:auto;background:none;border:none;cursor:pointer;font-family:${SANS};font-weight:700;font-size:12px;color:var(--stg-ink2);text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0;display:inline-flex;align-items:center;gap:5px;flex:none;}
           .cl-reveal.armed{color:var(--stg-bad);}
           .cl-pick{font-family:${SANS};font-weight:800;font-size:13px;border-radius:10px;padding:0 14px;min-height:44px;cursor:pointer;border:1.5px solid var(--stg-cell-line);background:var(--stg-cell);color:var(--stg-ink);}
-          .cl-pick.act{border:2px solid var(--stg-acc);background:color-mix(in srgb, var(--stg-acc) 22%, var(--stg-cell));}
+          .cl-pick.act{border:2px solid var(--stg-acc-ink, var(--stg-acc));background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 22%, var(--stg-cell));}
           .cl-pick.got{color:var(--stg-good);}
           @media(max-width:560px){
             .cl-lab{font-size:10px;}
@@ -850,7 +851,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
             .cl-board.n7 .cl-key{font-size:17px;}
             .cl-board.n7 .cl-op{font-size:15px;}
             .cl-key.term{border-radius:14px;}
-            .cl-key.head{box-shadow:0 0 0 4px color-mix(in srgb, var(--stg-acc) 26%, transparent);}
+            .cl-key.head{box-shadow:0 0 0 4px color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 26%, transparent);}
             .cl-flag{top:-9px;font-size:8px;letter-spacing:.06em;padding:1px 5px;}
             .cl-say{margin-top:18px;}
             .cl-say-ic{display:none;}
@@ -899,7 +900,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button className="cl-btn" onClick={startGame} style={{ background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, borderColor: STAGE ? STAGE_C : T.cta, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <button className="cl-btn" onClick={startGame} style={{ background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, borderColor: STAGE ? STAGE_C_INK : T.cta, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
                   {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
@@ -962,7 +963,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
           <div className={`cl-board${N > 6 ? ' n7' : ''}`}>
             {link && (
               <svg width={link.w} height={link.h} viewBox={`0 0 ${link.w} ${link.h}`} style={{ position: 'absolute', left: 0, top: 0, zIndex: 1, pointerEvents: 'none' }} aria-hidden="true">
-                <polyline points={link.pts} fill="none" style={{ stroke: won ? 'var(--stg-good)' : 'var(--stg-acc)' }} strokeWidth={N > 6 ? 6 : 8} strokeLinecap="round" strokeLinejoin="round" />
+                <polyline points={link.pts} fill="none" style={{ stroke: won ? 'var(--stg-good)' : 'var(--stg-acc-ink, var(--stg-acc))' }} strokeWidth={N > 6 ? 6 : 8} strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             )}
             <div ref={boardRef} className="cl-grid" style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
@@ -1233,7 +1234,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
               <button onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
             </div>
             {rulesBody}
-            <button className="cl-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, minHeight: 44, background: STAGE ? 'var(--stg-acc)' : COLORS.ink, color: STAGE ? 'var(--stg-onramp)' : T.white, borderColor: STAGE ? 'var(--stg-acc)' : COLORS.ink }}>Play</button>
+            <button className="cl-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, minHeight: 44, background: STAGE ? 'var(--stg-acc)' : COLORS.ink, color: STAGE ? 'var(--stg-onramp)' : T.white, borderColor: STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : COLORS.ink }}>Play</button>
           </div>
         </div>
       )}

@@ -898,7 +898,7 @@ export default function StatHubClient() {
     .qzhub .fdot{width:9px;height:9px;border-radius:50%;display:inline-block;}
     .qzhub .duelpulse{animation:qzpulse 2s ease-in-out infinite;}
     .qzhub .flameon{animation:qzflame 1.4s ease-in-out infinite;}
-    @keyframes qzpulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb, var(--stg-acc,#7dd3fc) 45%, transparent);}50%{box-shadow:0 0 0 7px transparent;}}
+    @keyframes qzpulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc,#7dd3fc)) 45%, transparent);}50%{box-shadow:0 0 0 7px transparent;}}
     @keyframes qzflame{0%,100%{transform:scale(1);}50%{transform:scale(1.16);}}
     @media (prefers-reduced-motion: reduce){.qzhub .duelpulse,.qzhub .flameon{animation:none;}}
     @media(max-width:640px){.qzhub .lbar{display:none;}.qzhub .lform{display:none;}.qzhub .duelqt{display:none;}}
@@ -1344,7 +1344,7 @@ function UserBaseBody({ board, boardTotal, myName, myAnonKey, onSelectPlayer, vi
         {top3.map((p, i) => {
           const mine = isMine(p);
           return (
-            <div key={p.userKey} style={{ background: mine ? 'var(--stg-surf2,rgba(255,255,255,0.08))' : C.bg, border: `1px solid ${mine ? 'var(--stg-acc,#7dd3fc)' : C.line}`, borderTop: `3px solid ${MEDAL[i]}`, borderRadius: '0 0 12px 12px', padding: '14px 12px 12px', textAlign: 'center', minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start' }}>
+            <div key={p.userKey} style={{ background: mine ? 'var(--stg-surf2,rgba(255,255,255,0.08))' : C.bg, border: `1px solid ${mine ? 'var(--stg-acc-ink, var(--stg-acc,#7dd3fc))' : C.line}`, borderTop: `3px solid ${MEDAL[i]}`, borderRadius: '0 0 12px 12px', padding: '14px 12px 12px', textAlign: 'center', minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start' }}>
               <span style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}>
                 <Avatar name={p.name} bg={MEDAL_BG[i]} fg={MEDAL_INK[i]} size={40} />
                 {i === 0 ? <span style={{ position: 'absolute', top: -7, right: -9, width: 19, height: 19, borderRadius: '50%', background: RAISE, border: `1px solid ${C.line}`, color: MEDAL_INK[0], display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Crown size={11} /></span> : null}
