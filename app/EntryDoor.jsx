@@ -8,16 +8,14 @@
 // and then stamped the reader's own figures (IQ today, rank, streak, the two
 // boards). The owner retired that whole sequence and the reads that fed it on
 // the same day, so nothing here fetches anything: the only figures on screen are
-// the games left today per skill, from the static registry and this device's own breadcrumbs.
+// the games per skill, from the static registry.
 //
 // WHAT IT IS: the ten category bands rise and the ground wipes across them (the
 // Ramp, kept as a one-time opening), the mark and the three brand lines land,
 // and the curtain lifts onto "what do you want to sharpen today?" with one tile
-// per SKILL (owner, 2026-10-16; lib/daily-skills.js). A tile starts today's run
-// for that skill: up to five unplayed games whose primary skill it is, carried
-// game to game as an ordinary daily run (?run=, lib/daily-run.js), so nothing
-// new is scored. A skill whose games are all played today opens the home pane
-// of its most common category instead. The button at the foot just closes the
+// per SKILL (owner, 2026-10-16; lib/daily-skills.js). A tile opens the home pane
+// of that skill's category (its `pane`), exactly as the category tiles did. It
+// never starts a run (owner, same day). The button at the foot just closes the
 // door onto the home as it is.
 //
 // ALWAYS DARK, whatever the reader's register. The owner asked for the dark
@@ -37,8 +35,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
 import { CATEGORY_RAMP, RAMP_INK, RAMP_ORDER } from '@/lib/category-ramp';
-import { SKILLS, skillPool, skillRun } from '@/lib/daily-skills';
-import { dailyRunHref, playedToday } from '@/lib/daily-run';
+import { SKILLS, skillPool } from '@/lib/daily-skills';
 import MindLoftMark from './MindLoftMark';
 import { etToday } from './useDayStats';
 
@@ -59,22 +56,11 @@ export default function EntryDoor({ onPick }) {
   const timers = useRef([]);
   const btnRef = useRef(null);
 
-  // Per skill: today's run (unplayed, rotated, capped) and the category its
-  // pool leans on, for the all-played fallback. Client only: phase is set in an
-  // effect, so the server never reads the breadcrumbs.
-  const runs = useMemo(() => {
+  // Live games per skill (primary), for the count on each tile.
+  const counts = useMemo(() => {
     if (!phase) return {};
     const out = {};
-    try {
-      const today = etToday();
-      for (const sk of SKILLS) {
-        const pool = skillPool(sk.id, today);
-        const tally = {};
-        for (const k of pool) { const c = DAILY_GAME_MAP[k] && DAILY_GAME_MAP[k].cat; if (c) tally[c] = (tally[c] || 0) + 1; }
-        const cat = Object.keys(tally).sort((x, y) => tally[y] - tally[x])[0] || null;
-        out[sk.id] = { keys: skillRun(sk.id, today, playedToday), pool: pool.length, cat };
-      }
-    } catch (e) {}
+    try { const today = etToday(); for (const sk of SKILLS) out[sk.id] = skillPool(sk.id, today).length; } catch (e) {}
     return out;
   }, [phase]);
 
@@ -151,17 +137,6 @@ export default function EntryDoor({ onPick }) {
       try { requestAnimationFrame(() => onPick(cat)); } catch (e) { onPick(cat); }
     }
   }
-  // A skill tile starts its run. Two or more games ride ?run=; one game is just
-  // that game; none left falls back to the home pane of the skill's category.
-  function start(id) {
-    const r = runs[id];
-    const keys = (r && r.keys) || [];
-    if (!keys.length) { pick(r && r.cat); return; }
-    close();
-    const g = DAILY_GAME_MAP[keys[0]];
-    const href = keys.length >= 2 ? dailyRunHref(keys[0], keys) : (g ? g.href : '/');
-    try { window.location.assign(href); } catch (e) {}
-  }
 
   if (!phase) return null;
   const curtain = phase === 'cur' || phase === 'lift';
@@ -173,13 +148,12 @@ export default function EntryDoor({ onPick }) {
         <h2 className="ent-ask">What do you want to sharpen today?</h2>
         <ul className="ent-tiles">
           {SKILLS.map((t, i) => {
-            const r = runs[t.id] || { keys: [], pool: 0 };
-            const n = r.keys.length;
-            const meta = n ? `${n} game${n === 1 ? '' : 's'} today` : (r.pool ? 'All played today' : '');
+            const n = counts[t.id] || 0;
+            const meta = n ? `${n} games` : '';
             return (
               <li key={t.id} style={{ '--i': i }}>
-                <button type="button" className="ent-tile" style={{ '--c': CATEGORY_RAMP[t.ramp] }} onClick={() => start(t.id)}
-                  aria-label={`${t.name}: ${n ? `start a run of ${n}` : 'open the puzzles'}`}>
+                <button type="button" className="ent-tile" style={{ '--c': CATEGORY_RAMP[t.ramp] }} onClick={() => pick(t.pane)}
+                  aria-label={`${t.name}: open the puzzles`}>
                   <span className="ent-sk">
                     {t.short ? <><span className="ent-cl">{t.name}</span><span className="ent-cs">{t.short}</span></> : t.name}
                   </span>

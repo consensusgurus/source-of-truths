@@ -7550,7 +7550,7 @@ to show (the door is fixed inside the live page, which the snapshot hides), and 
 theme pop-up wait on `.ent-door`. The Patch below is unchanged.
 
 **The door's tiles are SKILLS, not categories (owner, 2026-10-16).** See "Skills: the second axis"
-below. A tile starts today's run for that skill; the categories are unchanged everywhere else.
+below. A tile opens the home pane of the skill's category; it never starts a run.
 
 Three things shipped together (`32a923301`, `19f8cfb7b`); the design study with looping
 mockups is https://claude.ai/code/artifact/8d963ed1-c694-46e9-ad92-a70cd4e773f9.
@@ -9649,11 +9649,11 @@ and speed, Reading people. **The categories do not change** (owner: they stay th
 still run the home shelves, page colours, archive, circuits and every scoring rule (End Game and
 Arcade key off `cat`). Skills drive only the entry door (`app/EntryDoor.jsx`).
 
-- **A skill tile starts a run**: `skillRun(id, today, playedToday)` takes the live games whose
-  PRIMARY skill it is, rotates the pool one game a day, drops games finished today, caps at five, and
-  the door navigates to `dailyRunHref(first, keys)`, the ordinary `?run=` daily run (DailyRunRail).
-  Nothing new is stored or scored. One game left goes straight to it; none left opens the home pane
-  of the skill's most common category.
+- **A skill tile opens a home pane, never a run** (owner, 2026-10-16: runs are only the developed
+  circuits). Each skill names its `pane` (a category): Language Word, Mental math and Estimation
+  Numbers, Deduction and Spatial reasoning Logic, Grid logic Sudoku, Planning End Game, Memory Trivia,
+  Focus and speed Arcade, Reading people Crowd Psychology. The tile shows the count of live games with
+  that primary skill.
 - **A NEW DAILY ADDS ITSELF TO `SKILL_TAGS` in the launch push.** `scripts/verify-skills.mjs`
   (found by verify-all) fails a live daily with no tag, an unknown skill, a repeated second skill, a
   skill with fewer than three live primaries, or a run that deals a played, dead or off-skill game.

@@ -7,7 +7,8 @@
 //  2. every daily live today (and on the last day of the year) has a tag;
 //  3. every skill has at least three live games as a PRIMARY, so a tile always
 //     starts a run of two or more even after a game is played;
-//  4. skillRun is deterministic, skips played games, never exceeds the cap, and
+//  4. every skill's pane is a real category (the tile opens it);
+//  5. skillRun (unused by the door since 2026-10-16) is deterministic, skips played games, never exceeds the cap, and
 //     only deals live games of its own skill.
 //
 // Calls the map makes on purpose (owner-approved 2026-10-16): Logic splits into
@@ -19,7 +20,7 @@
 import { register } from 'node:module';
 register('./alias-loader.mjs', import.meta.url);
 
-const { DAILY_GAME_MAP, liveDailyKeys } = await import('../lib/daily-games.js');
+const { DAILY_GAME_MAP, DAILY_GAMES, liveDailyKeys } = await import('../lib/daily-games.js');
 const { SKILLS, SKILL_MAP, SKILL_TAGS, skillPool, skillRun, SKILL_RUN_MAX } = await import('../lib/daily-skills.js');
 
 const fails = [];
@@ -57,6 +58,9 @@ for (const s of SKILLS) {
     if (c.includes(a[0])) fail(`${s.name}: run deals a played game`);
   }
 }
+
+const cats = new Set(DAILY_GAMES.map((g) => g.cat));
+for (const s of SKILLS) if (!cats.has(s.pane)) fail(`${s.name}: pane ${s.pane} is not a category`);
 
 const counts = SKILLS.map((s) => `${s.name} ${skillPool(s.id, today).length}`).join(', ');
 if (fails.length) {
