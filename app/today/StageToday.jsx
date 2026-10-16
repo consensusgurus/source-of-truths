@@ -2817,7 +2817,7 @@ export default function StageToday() {
       <div className="sty-rnm">
         {big ? runCard(big, cat, 'Most played today') : null}
         {rest.length ? (
-          <div className="sty-rics">
+          <div className={'sty-rics' + (rest.length <= 2 ? ' few' : '')}>
             {rest.map((c) => {
               const st = runStat[c.id];
               const done = runFull(c);
@@ -2827,6 +2827,7 @@ export default function StageToday() {
                 <a key={c.id} className={'sty-ric' + (done ? ' done' : '')}
                   href={withTq(circuitEntryHref(c.id))} style={runLook(c, cat)}>
                   <span className="sq">{c.name}</span>
+                  {rest.length <= 2 && c.blurb ? <span className="ds">{c.blurb}</span> : null}
                   <span className="l1">{ranked ? `#${st.rank} of ${fmtN(st.players)}` : st ? `${fmtN(st.players)} played` : '\u00a0'}</span>
                   {gtxt ? <span className="l2">{gtxt}</span> : null}
                 </a>
@@ -2936,10 +2937,18 @@ export default function StageToday() {
              controls at the right edge, as on every board. */}
       <div className="sty-cap v2" ref={capRef}>
         <div className="sty-id">
-          <span className="sty-brand">
+          <a className="sty-brand" href="/" aria-label="Mind Loft, back to All Puzzles"
+            onClick={(e) => {
+              if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+              e.preventDefault();
+              setPicked(false);
+              setPane(ALL_ID);
+              try { localStorage.setItem(PANE_KEY, ALL_ID); localStorage.setItem(TILES_KEY, '1'); } catch (er) {}
+              try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (er) {}
+            }}>
             <MindLoftMark size={20} ink="var(--stg-ink)" accent="var(--stg-brand,#7dd3fc)" />
             <b>Mind <em>Loft</em></b>
-          </span>
+          </a>
           <span className="sty-date">{fmtDate(day)}</span>
         </div>
         {/* THE DAY'S STRIP IS THE ONLY PROGRESS FIGURE (owner, 2026-10-07): one
@@ -3616,7 +3625,7 @@ const CSS = `
    the line. So the box is baseline-aligned and the mark alone opts out, which
    keeps the mark centred on the words exactly as before and hands .sty-id the
    name's real baseline to hang the date on. */
-.sty-brand{display:flex;align-items:baseline;gap:8px;min-width:0;}
+.sty-brand{display:flex;align-items:baseline;gap:8px;min-width:0;text-decoration:none;color:inherit;cursor:pointer;}
 .sty-brand>svg{align-self:center;}
 .sty-id b{font-size:16px;font-weight:800;letter-spacing:-0.01em;white-space:nowrap;}
 .sty-id b em{font-style:normal;color:var(--stg-brand,#7dd3fc);}
@@ -5276,8 +5285,10 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
   /* NO SPARE LINE UNDER THE RUNS (owner, 2026-10-13): the block sits close
      on the tiles unless a group line is showing, which is the only time it
      needs the room. */
-  .sty-rhome:not(:has(.l2,.gr)) .sty-rnm{margin-bottom:0;}
-  .sty-rhome:not(:has(.l2,.gr)){margin-bottom:-10px;}
+  /* Tightened again (owner, 2026-10-16): the runs sit about 10px off the
+     All Puzzles / My Puzzles tiles, group line or not. */
+  .sty-rhome .sty-rnm{margin-bottom:0;}
+  .sty-rhome{margin-bottom:-12px;}
   /* A RUN TILE FILLS WHAT IS LEFT OF ITS ROW (owner, 2026-10-15): one left
      over is full width, two split it like the tiles below (same 7px gap),
      and only once they no longer fit at 108px does the row become the
@@ -5299,6 +5310,14 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
   .sty-ric .l2{color:var(--stg-ink2);font-weight:800;}
   .sty-ric:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
   .sty-ric .l1,.sty-ric .l2{padding:0;}
+  /* ONE OR TWO SMALL RUNS CARRY THEIR DESCRIPTION (owner, 2026-10-16): they
+     split the row (one alone is full width) and show the run's short line;
+     three or more stay a flick strip of names. */
+  .sty-rics.few{overflow:visible;}
+  .sty-rics.few .sty-ric{flex:1 1 0;}
+  .sty-ric .ds{font-size:11.5px;font-weight:600;line-height:1.3;color:var(--stg-ink2);
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:-2px 0 2px;}
+  .sty-ric:only-child .ds{-webkit-line-clamp:2;}
 }
 
 /* THE LEDGER (owner, 2026-10-14): desktop category panes and My Puzzles. */
