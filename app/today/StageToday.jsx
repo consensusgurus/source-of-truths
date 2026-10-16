@@ -3536,7 +3536,7 @@ export default function StageToday() {
                                     {shown.map((q) => (
                                       <a key={q.id} href={`/quiz/${q.id}`}>
                                         <strong>{q.title}</strong>
-                                        <span>{[qzTag(q), pm[q.id] ? `${fmt(pm[q.id])} plays` : ''].filter(Boolean).join(' · ')}</span>
+                                        <span>{[qzTag(q), pm[q.id] ? `${fmt(pm[q.id])} ${pm[q.id] === 1 ? 'play' : 'plays'}` : ''].filter(Boolean).join(' · ')}</span>
                                       </a>
                                     ))}
                                   </div>
