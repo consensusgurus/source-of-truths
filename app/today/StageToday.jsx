@@ -4663,7 +4663,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-ixb{display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:center;gap:10px;border:0;
   background:none;border-radius:8px;padding:8px 10px;font:inherit;font-size:13.5px;font-weight:700;
   color:var(--stg-ink2);text-align:left;cursor:pointer;}
-.sty-ixb > i{width:10px;height:10px;border-radius:3px;background:var(--cc);}
+.sty-ixb > i{width:10px;height:10px;border-radius:3px;background:var(--cc);box-shadow:inset 0 0 0 1.5px var(--cci, var(--cc));}
 .sty-ixb > span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sty-ixb > b{font-family:${MONO};font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--stg-ink2);}
 .sty-ixb > b em{font-style:normal;color:var(--stg-mute);}
