@@ -56,7 +56,7 @@ import { savedIdentity } from '@/lib/saved-identity';
 import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro } from '@/lib/stage-theme';
 import ThemePop from '../ThemePop';
 import StageLadder from '../StageLadder';
-import StageWelcome from '../StageWelcome';
+import EntryDoor from '../EntryDoor';
 import SundayLedger from '../SundayLedger';
 import PremierePop from '../PremierePop';
 import GroupsPop from '../GroupsPop';
@@ -1097,9 +1097,7 @@ export default function StageToday() {
   const [topics, setTopics] = useState(null);
   const [visitors, setVisitors] = useState(null);
   const footRef = useRef(null);
-  // THE ARRIVAL COLLAPSES ONTO THIS. See app/StageWelcome.jsx: the flood
-  // measures the cap late and clips down to its rectangle, so the figures it
-  // was holding land in the cells they live in.
+  // The cap's own box.
   const capRef = useRef(null);
   const [nearFoot, setNearFoot] = useState(false);
   useEffect(() => {
@@ -1767,8 +1765,8 @@ export default function StageToday() {
       for (let i = 0; !r && i < localStorage.length; i += 1) {
         const k = localStorage.key(i) || '';
         if (!k.startsWith('sot_')) continue;
-        // Only a GAME's breadcrumb counts. sot_welcome_day (the arrival curtain's
-        // once-a-day stamp), sot_hub_* and sot_theme* are written on a first
+        // Only a GAME's breadcrumb counts. sot_welcome_day (the retired arrival
+        // curtain's once-a-day stamp), sot_hub_* and sot_theme* are written on a first
         // visit and would make every reader look like a returning one, which is
         // exactly what happened on the first deploy of this (2026-09-02).
         if (/^sot_(?!welcome_|hub_|theme|quiz_|vid_)[a-z]+_day$/.test(k)) r = true;
@@ -2746,7 +2744,8 @@ export default function StageToday() {
   return (
     <div className="sty stage-page" data-stage-theme={stageTheme} ref={snapRef}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <StageWelcome capRef={capRef} />
+      {/* THE ENTRY DOOR: first visit then weekly, always dark, replaced the daily arrival. See app/EntryDoor.jsx. */}
+      <EntryDoor onPick={(cat) => goPane(cat)} />
       {/* NEW-GAME PREMIERES: once per launch, returning players who have not
           played it, after the arrival has finished. See app/PremierePop.jsx. */}
       <PremierePop />

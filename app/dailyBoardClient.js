@@ -1,8 +1,8 @@
 // Shared client for /api/quiz/daily-combined (2026-09-04).
 //
 // WHY: the home fires this for TODAY on mount (app/today/StageToday.jsx) and the
-// arrival needs the same answer for its Today column (app/StageWelcome.jsx), so
-// without sharing, one page load made the identical request twice. Same reasoning
+// other surfaces on the page can ask the same question, so without sharing,
+// one page load could make the identical request twice. Same reasoning
 // and the same shape as app/dailyMeClient.js: a small cache keyed by the query
 // string, where a caller asking the same question within a few seconds joins the
 // request already in flight instead of starting another.

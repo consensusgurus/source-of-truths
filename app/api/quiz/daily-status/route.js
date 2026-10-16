@@ -203,21 +203,6 @@ export async function GET(request) {
         }
       }
     } catch (e) {}
-    // WHEN THEY LAST PLAYED.
-    // It comes off rows already in hand, so it costs no query, and it is what
-    // tells the home's arrival (app/StageWelcome.jsx) a resumption from a return.
-    let lastPlayed = null;
-    try {
-      const et2 = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
-      const todayKey = `${et2.getMonth() + 1}-${et2.getDate()}-${et2.getFullYear() % 100}`;
-      let newest = -1;
-      for (const qid of played) {
-        const m = /^[a-z]+-(\d+)-(\d+)-(\d+)$/.exec(qid);
-        if (!m) continue;
-        const t = Date.UTC(2000 + Number(m[3]), Number(m[1]) - 1, Number(m[2]));
-        if (t > newest) { newest = t; lastPlayed = `${m[1]}-${m[2]}-${m[3]}`; }
-      }
-    } catch (e) {}
     // Today's IQ Points (ET), for the "Your day" strip. Computed HERE rather than
     // in its own request because this route already holds the rows and the strip
     // already fetches it, and the 30s edge cache bounds the cost of the full
@@ -366,7 +351,7 @@ export async function GET(request) {
     for (const [k, all] of archiveAll) {
       archive[k] = { total: all.size, played: (archiveMine.get(k) || new Set()).size };
     }
-    return NextResponse.json({ played: [...played], completed: [...completed], unsolved: [...unsolved], abandoned, inProgress, streaks, streak, streakGame, streakGameDays, playedToday, todayXp, rankChange, dayRank, dayField, communityRank, communityTotal, communityCredits, archive, lastPlayed }, { headers: CACHE_HEADERS });
+    return NextResponse.json({ played: [...played], completed: [...completed], unsolved: [...unsolved], abandoned, inProgress, streaks, streak, streakGame, streakGameDays, playedToday, todayXp, rankChange, dayRank, dayField, communityRank, communityTotal, communityCredits, archive }, { headers: CACHE_HEADERS });
   } catch (e) {
     console.error('daily-status exception', e);
     return NextResponse.json({ played: [], completed: [], abandoned: [], unsolved: [], inProgress: [] });

@@ -28,8 +28,8 @@
 //   ONCE. sot_premiere_<key> is stamped the moment it renders, per game, per
 //   browser, never per day. Seeing the card burns every game on it.
 //
-// IT WAITS ITS TURN. The theme intro (first visit ever) and StageWelcome (first
-// visit of the ET day) both own the arrival; this polls until neither is on
+// IT WAITS ITS TURN. The theme intro and the entry door (app/EntryDoor.jsx,
+// first visit, then weekly) both own the arrival; this polls until neither is on
 // screen, then opens. Two full-screen events never share a load.
 //
 // ?premiere=0 suppresses, ?premiere=1 previews without stamping, matching
@@ -92,7 +92,7 @@ function arrivalBusy() {
   // for every browser that arrived after 2026-09-01. The theme bubble that
   // replaced it is read off the DOM instead, like everything else here.
   // .gpp-scrim: the Groups launch card (app/GroupsPop.jsx). Never two cards at once.
-  return !!document.querySelector('.stw.up, .stw.shrink, .gpp-scrim, .stg-tpop');
+  return !!document.querySelector('.ent-door, .gpp-scrim, .stg-tpop');
 }
 
 export default function PremierePop() {

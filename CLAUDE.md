@@ -7537,6 +7537,17 @@ in the pick is jam-specific.
 
 ## The home's arrival: the Ramp once a day, the Patch on every other wait (owner, 2026-09-01)
 
+**SUPERSEDED 2026-10-16 (owner): the daily arrival is gone.** `app/StageWelcome.jsx` was deleted with its stats
+reads (`lastPlayed` left `/api/quiz/daily-status`). In its place `app/EntryDoor.jsx` shows on a reader's first visit and then
+ONCE A WEEK to returners (`sot_entry_v1` holds when it last showed; 7 days, `ENTRY_EVERY_MS`, mirrored in
+the snapshot gate): the color bands
+and the three brand lines once, no stats, then a dark page ("Loft your Mind in the Mind Loft", "What do you want
+to sharpen today?") with a tile per category that opens that pane on the home, and a "Proceed to all of today's
+puzzles" button. It is ALWAYS DARK; the site default register stays light. Every other visit opens straight
+on the home. `?entry=1` previews, `?entry=0` suppresses. The home snapshot stands down while the door is still
+to show (the door is fixed inside the live page, which the snapshot hides), and PremierePop, GroupsPop and the
+theme pop-up wait on `.ent-door`. The Patch below is unchanged.
+
 Three things shipped together (`32a923301`, `19f8cfb7b`); the design study with looping
 mockups is https://claude.ai/code/artifact/8d963ed1-c694-46e9-ad92-a70cd4e773f9.
 
