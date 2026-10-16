@@ -650,7 +650,11 @@ function LedgerRow({ g, hue, ink, tq, day, dots, res, done, inprog, me, favLoade
     <a className={`sty-lr ${state}${gw ? ' gw' : ''}`} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`}
       data-fk={fk || g.key} style={hue ? { '--cc': hue, '--cci': ink || hue } : undefined}>
       <span className="ic"><Glyph k={g.key} size={18} /></span>
-      <span className="nm"><b>{g.name}</b><span className="tg">{g.tag}</span></span>
+      <span className="nm"><b>{g.name}</b>
+        {/* TWO LINES OF COPY (owner, 2026-10-16): the list has room the tile
+            does not, so a wide list prints the longer tagLong and a narrow one
+            falls back to the tile's short tag. */}
+        <span className="tg tgl">{g.tagLong || g.tag}</span><span className="tg tgs">{g.tag}</span></span>
       <span className="td">
         {!day ? <span className="ph" aria-hidden="true" />
           : lead ? <><b>{lead.username}</b> <span className="sc">{sc}</span></>
@@ -5125,6 +5129,9 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-lr .nm,.sty-lr .td,.sty-lr .yu{min-width:0;}
 .sty-lr .nm b{display:block;font-size:14.5px;font-weight:800;letter-spacing:-0.01em;}
 .sty-lr .tg{display:block;font-size:12px;font-weight:600;color:var(--stg-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-lr .tg.tgl,.sty-lr .tg.tgs{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal;line-height:1.3;}
+.sty-lr .tg.tgs{display:none;}
+@media (max-width:1399px){.sty-lr .tg.tgl{display:none;}.sty-lr .tg.tgs{display:-webkit-box;}}
 .sty-lr .td,.sty-lr .yu{font-size:12.5px;line-height:1.35;}
 .sty-lr .td b,.sty-lr .yu b{font-weight:800;}
 .sty-lr .sc{color:var(--stg-ink2);font-variant-numeric:tabular-nums;}
