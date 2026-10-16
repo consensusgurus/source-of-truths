@@ -31,6 +31,26 @@ import { DAILY_GAMES } from './DailyEndCard';
 import { fetchDailyMe, dailyMeQuery, dailyMeIdentity } from './dailyMeClient';
 import { familyAfter, spotlightFor } from '@/lib/daily-games';
 
+// Which catalog departments a finished daily hands on to once its own category
+// is cleared, as /api/quiz/next-quiz tiers (`|` between tiers, `,` pools). Geography goes to geography; a subject
+// trivia daily goes to its own department first and then to the rest of the
+// trivia departments; any other Trivia daily goes to all of them. Word (the
+// dailies ARE the word games) and misc never; every other category returns
+// null and keeps the old any-category fallback.
+const TRIVIA_DEPTS = ['movies', 'music', 'sports', 'history', 'science', 'entertainment', 'business', 'arts', 'literature', 'food', 'gaming'];
+const SUBJECT_DEPT = {
+  sport: 'sports', biz: 'business', script: 'movies', thread: 'movies', sci: 'science', clade: 'science',
+  art: 'arts', history: 'history', dating: 'history', circa: 'history', extra: 'history',
+};
+export function quizDeptsFor(game) {
+  if (!game) return null;
+  if (game.cat === 'Geography') return 'geography|travel';
+  if (game.cat !== 'Trivia') return null;
+  const first = SUBJECT_DEPT[game.key];
+  const all = TRIVIA_DEPTS.join(',');
+  return first ? `${first}|${all}` : all;
+}
+
 export default function useNextUnplayed({ self = null, active = false }) {
   const [next, setNext] = useState(null);
   useEffect(() => {
@@ -52,7 +72,26 @@ export default function useNextUnplayed({ self = null, active = false }) {
         // A spotlit game (lib/daily-games SPOTLIGHT) leads the category pick.
         const spot = mine ? spotlightFor(mine.cat, self) : null;
         const spotGame = spot ? sameCat.find((g) => g.key === spot.key) : null;
-        setNext(fam[0] || spotGame || sameCat[0] || open[0] || null);
+        const local = fam[0] || spotGame || sameCat[0] || null;
+        if (local) { setNext(local); return; }
+        // THE QUIZ AFTER THE DAILIES (owner, 2026-10-16). Every daily in this
+        // category is done. Geography and Trivia have up to a hundred catalog
+        // quizzes behind them, so the slot offers the most played one this
+        // player has not played, before reaching into another category.
+        const depts = mine ? quizDeptsFor(mine) : null;
+        if (!depts) { setNext(open[0] || null); return; }
+        const { anonId, email } = dailyMeIdentity();
+        const qs = new URLSearchParams({ dept: depts });
+        if (anonId) qs.set('anonId', anonId);
+        if (email) qs.set('email', email);
+        fetch(`/api/quiz/next-quiz?${qs}`, { cache: 'no-store' })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((j) => {
+            if (!alive) return;
+            const q = j && j.quiz;
+            setNext(q ? { name: q.title, tag: `${q.label} quiz`, href: q.href, quiz: true } : (open[0] || null));
+          })
+          .catch(() => { if (alive) setNext(open[0] || null); });
       })
       .catch((e) => { if (typeof console !== 'undefined') console.warn('useNextUnplayed', e); });
     return () => { alive = false; };
