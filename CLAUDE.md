@@ -9619,3 +9619,21 @@ icons in `public/gift-icons/`, `public/gift.webmanifest`, share card `public/og/
   (set page rewritten) and the new 'Territory endgames' is Chain, Turn, Yose (its own set page).
 - Not in a circuit yet (Board Games is a four-game circuit with a measured clock); an owner call.
 
+
+### The Quizzes pane IS the quiz home; /quizzes redirects to it (owner, 2026-10-16)
+
+The standalone `/quizzes` page (`QuizLandingClient.jsx`, deleted) was folded into the
+home's Quizzes pane: its two photo banners (most played + newest Geo Guesser, picked by
+`/api/quiz/pane`), search, "Your best topics", and every topic's FULL list, which opens in
+place under the topic card ("Show all N", sortable Newest / Most played / A to Z, 24 then
+"Show the other N"). Tiles wear their quiz's own `QUIZ_HEROES` photo; a topic card wears
+its most-played quiz's photo, else `DEPT_HERO`; photos go through `/_next/image`.
+
+- **`/quizzes` is a temporary redirect to `/#sty-quizzes`** that keeps the query string
+  (referral `?ref=`, `?theme=`). It is out of the sitemap. Every in-site link that pointed
+  at `/quizzes` now points at `/#sty-quizzes` (the home opens the pane from the hash), and
+  `refShareUrl` defaults to `/`.
+- **`/quizzes/all` stays live and in the sitemap, but nothing on the site links to it**
+  (owner: keep the pages that help SEO, do not link them). Do not re-add it to the footer,
+  the SEO prose, the archive or the pane. Note the trade: the pane's quiz links are drawn
+  client-side, so the sitemap is now the crawler's only path to most `/quiz/<id>` pages.

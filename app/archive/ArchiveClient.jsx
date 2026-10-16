@@ -268,7 +268,7 @@ export default function ArchiveClient({ games = [], today = '' }) {
           <span>More puzzles:</span>
           <a href={withTq('/')}>Today&apos;s puzzles</a>
           <a href={withTq('/circuits')}>Circuits</a>
-          <a href={withTq('/quizzes/all')}>All quizzes</a>
+          <a href={withTq('/') + '#sty-quizzes'}>All quizzes</a>
         </nav>
       </div>
     </CircuitFrame>

@@ -211,7 +211,7 @@ export function CategoryView({ me, scope, cats, totalQuizzes, viewing }) {
                   <span style={{ fontSize: 13, fontWeight: 800, color: C.muted }}>{c.label}</span>
                 </div>
                 <div style={{ fontSize: 12, color: C.soft, fontWeight: 600, marginTop: 8 }}>Unplayed. One quiz puts {viewing ? 'this player' : 'you'} on this board.</div>
-                <Link href="/quizzes" style={{ display: 'inline-block', marginTop: 8, fontSize: 11.5, fontWeight: 800, color: C.accent, textDecoration: 'none' }}>Browse {c.label} quizzes →</Link>
+                <Link href="/#sty-quizzes" style={{ display: 'inline-block', marginTop: 8, fontSize: 11.5, fontWeight: 800, color: C.accent, textDecoration: 'none' }}>Browse {c.label} quizzes →</Link>
               </div>
             ))}
           </div>

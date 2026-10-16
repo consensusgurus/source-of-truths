@@ -205,8 +205,7 @@ export function QuizSeoSection({ quiz }) {
       )}
 
       <p className="sq-more">
-        Browse every <a href={`/quizzes/all#${dept}`}>{deptLabel} quiz</a>, the{' '}
-        <a href="/quizzes/all">full quiz index</a>, or the day&rsquo;s{' '}
+        Browse every <a href="/#sty-quizzes">{deptLabel} quiz</a> in the quiz catalogue, or the day&rsquo;s{' '}
         <a href="/">puzzles</a>.
       </p>
     </Band>

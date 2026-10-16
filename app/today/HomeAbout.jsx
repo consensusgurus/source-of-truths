@@ -32,7 +32,7 @@ export default function HomeAbout() {
         {HOME_ABOUT_LINKS.map(([slug, label]) => (
           <li key={slug}><a href={`/${slug}`}>{label}</a></li>
         ))}
-        <li><a href="/quizzes">Quizzes</a></li>
+        <li><a href="/#sty-quizzes">Quizzes</a></li>
       </ul>
       <h3>Questions</h3>
       <dl>

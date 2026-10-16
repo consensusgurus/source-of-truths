@@ -31,7 +31,6 @@ export const FOOTER_COLS = [
       { label: 'Puzzle Archive', href: '/archive' },
       // The full index. This link is the crawl path to the whole quiz catalogue, so it
       // must stay on a server-rendered surface: see lib/quiz-catalog.js.
-      { label: 'All Quizzes A-Z', href: '/quizzes/all' },
       // Same job for the circuits: /circuits is the only crawlable path to the
       // fifteen /circuits/<id> pages, and through them a second path into every
       // daily game. It is also where a reader who arrived on one shared circuit

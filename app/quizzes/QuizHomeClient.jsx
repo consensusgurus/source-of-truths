@@ -776,7 +776,7 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
   })();
   const dailyAllDone = dailyIds.length > 0 && dailyDoneCount === dailyIds.length;
   const dailyNextIdx = (() => { const k = dailyIds.findIndex((id) => !dailyIsDone(id)); return k < 0 ? 0 : k; })();
-  const dailyEntryUrl = (dailyId && dailyIds.length) ? `/quiz/${dailyIds[dailyNextIdx]}?ch=${encodeURIComponent(dailyId)}&i=${dailyNextIdx}` : '/quizzes';
+  const dailyEntryUrl = (dailyId && dailyIds.length) ? `/quiz/${dailyIds[dailyNextIdx]}?ch=${encodeURIComponent(dailyId)}&i=${dailyNextIdx}` : '/#sty-quizzes';
   const dailyDateLabel = daily ? (() => { try { return new Date(`${daily.date}T12:00:00Z`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); } catch { return ''; } })() : '';
 
   // Departments present, with counts, ordered by size desc (mockup order).
@@ -3004,7 +3004,7 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
           Alongside the daily games, Mind Loft holds a library of {QUIZ_COUNT.toLocaleString()} timed quizzes covering films, music, sports, geography, business and brands, in formats running from name-them-all and matching to map-clicking and timed multiple choice. Every finished game posts to a daily leaderboard and earns IQ Points toward a running rank.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: '#9fb4d8', fontWeight: 500 }}>
-          Mind Loft also publishes consensus <Link href="/lists" style={{ color: '#cddffb', fontWeight: 700 }}>Top 10 Lists</Link>, rankings of the best restaurants, hotels, films, books and products scored from {sourceCount} expert publications and rating platforms rather than from one editor's opinion. <Link href="/about" style={{ color: '#cddffb', fontWeight: 700 }}>Read more about how Mind Loft works</Link>, or browse the <Link href="/quizzes/all" style={{ color: '#cddffb', fontWeight: 700 }}>full quiz index</Link>.
+          Mind Loft also publishes consensus <Link href="/lists" style={{ color: '#cddffb', fontWeight: 700 }}>Top 10 Lists</Link>, rankings of the best restaurants, hotels, films, books and products scored from {sourceCount} expert publications and rating platforms rather than from one editor's opinion. <Link href="/about" style={{ color: '#cddffb', fontWeight: 700 }}>Read more about how Mind Loft works</Link>, or browse the <Link href="/#sty-quizzes" style={{ color: '#cddffb', fontWeight: 700 }}>full quiz index</Link>.
         </p>
       </section>
 

@@ -63,7 +63,7 @@ export default function SporcleAlternativePage() {
           <p style={{ fontFamily: F, fontSize: 18, lineHeight: 1.6, color: C.muted, maxWidth: 640, marginTop: 22 }}>
             If you came looking for Sporcle without the ads, you found it. Mind Loft has everything you liked about the classic quiz sites, name-them-all, beat-the-clock, climb-the-leaderboard, on a fast, clean page with zero ads in your way.
           </p>
-          <Link href="/quizzes" style={{ display: 'inline-flex', marginTop: 24, fontFamily: F, fontSize: 13, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700, padding: '14px 28px', borderRadius: 10, background: C.blue, color: T.white, textDecoration: 'none' }}>
+          <Link href="/#sty-quizzes" style={{ display: 'inline-flex', marginTop: 24, fontFamily: F, fontSize: 13, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700, padding: '14px 28px', borderRadius: 10, background: C.blue, color: T.white, textDecoration: 'none' }}>
             Browse the quizzes
           </Link>
         </div>
@@ -104,7 +104,7 @@ export default function SporcleAlternativePage() {
         </div>
 
         <p style={{ fontFamily: F, fontSize: 16, lineHeight: 1.7, color: C.muted, marginTop: 28 }}>
-          Pick a quiz, start the clock, and play start to finish with nothing in the way. <Link href="/quizzes" style={{ color: C.blue, fontWeight: 700 }}>See all the quizzes</Link>.
+          Pick a quiz, start the clock, and play start to finish with nothing in the way. <Link href="/#sty-quizzes" style={{ color: C.blue, fontWeight: 700 }}>See all the quizzes</Link>.
         </p>
       </div>
       <Footer />

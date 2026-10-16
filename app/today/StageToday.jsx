@@ -331,6 +331,16 @@ const QZ_ICONS = {
 const QZ_TILES = 12;
 const QZ_ROWS = 4;
 const QZ_SEARCH_MAX = 40;
+const QZ_FULL_PEEK = 24;
+// A quiz's tagline in the site's own words, carried over from the retired
+// /quizzes page: the quiz cap says "24 answers", the mcq clients say "questions".
+function qzTag(q) {
+  const bits = [];
+  if (q.n) bits.push(q.n + ' ' + (q.mcq ? (q.n === 1 ? 'question' : 'questions') : (q.n === 1 ? 'answer' : 'answers')));
+  const s = Math.max(0, Math.round(Number(q.t) || 0));
+  if (s) bits.push(Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'));
+  return bits.join(' \u00b7 ');
+}
 const leadRankOf = (id) => {
   const i = CIRC_LEAD.indexOf(id);
   return i < 0 ? CIRC_LEAD.length : i;
@@ -1149,6 +1159,11 @@ export default function StageToday() {
   // Which topic is open on the PHONE, where the cards fold to rows. null = the
   // first, '' = none. Desktop always shows every card open.
   const [qOpen, setQOpen] = useState(null);
+  // The topic whose FULL list is open in the pane (what /quizzes/all was for a
+  // reader), its sort, and whether it is past its first QZ_FULL_PEEK.
+  const [qAll, setQAll] = useState(null);
+  const [qAllSort, setQAllSort] = useState('new');
+  const [qAllMore, setQAllMore] = useState(false);
   const [visitors, setVisitors] = useState(null);
   const footRef = useRef(null);
   // The cap's own box.
@@ -2593,7 +2608,11 @@ export default function StageToday() {
               <span className="ic" /><span className="nm"><span className="ph" /></span><span className="td" /><span className="yu" /><span /><span />
             </div>
           ))}
-          <a className="sty-pqm" href={cat === 'Geography' ? '/quizzes/all#geography' : '/quizzes/all'}>
+          <a className="sty-pqm" href="#sty-quizzes" onClick={(e) => {
+            e.preventDefault();
+            if (cat === 'Geography') { setQAll('geography'); setQAllMore(false); }
+            goPane(QUIZ_ID);
+          }}>
             {cat === 'Geography' ? 'See all geography quizzes' : 'See all quizzes'}
           </a>
         </div>
@@ -3296,41 +3315,36 @@ export default function StageToday() {
                 word Quizzes goes to it. Every other category head on this page
                 is a label for what is under it and stays one; this one is the
                 only head with somewhere else to be. */}
-            <h2><a href={withTq('/quizzes')}>Quizzes</a></h2>
+            <h2>Quizzes</h2>
             {/* DRAWN ONLY WHEN REAL: no figure until the catalogue has landed,
                 rather than a zero that is not true yet. */}
             {quizTotal ? (
               <b>{quizTotal.toLocaleString()}<i>/{topicList.length} topics{qpane && qpane.plays ? ` \u00b7 ${qpane.plays.toLocaleString()} plays` : ''}</i></b>
             ) : null}
-            {/* NOT THE A-Z INDEX ANY MORE. This pointed at /quizzes/all and
-                said Full index, because the index WAS the only other quiz
-                surface. /quizzes is the quiz home now, and it is what a reader
-                who has opened three drawers wants; the A-Z is still one click
-                on from it, and every topic row below still links into it
-                directly. */}
-            <a className="sty-all sty-qall" href={withTq('/quizzes')}>
-              <span>All quizzes</span>
-              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
-                strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M5 12h13M13 6l6 6-6 6" />
-              </svg>
-            </a>
+            {/* NO OUTBOUND LINK (owner, 2026-10-16): this pane IS the quiz home
+                now. /quizzes redirects here and /quizzes/all stays live for
+                crawlers only, linked from nowhere on the site. */}
           </div>
           {(() => {
-            // THE QUIZZES PANE (owner, 2026-10-16). Every block keeps its height
-            // before the counts land: twelve empty tiles and the fifteen topic
-            // cards with empty rows, so nothing grows under the reader.
+            // THE QUIZZES PANE (owner, 2026-10-16). Since the same day it is
+            // also the whole quiz home: /quizzes redirects here, and each topic
+            // card opens its full list in place, which is what /quizzes/all was
+            // for a reader (that page stays live, unlinked, for crawlers).
+            // Every block keeps its height before the counts land.
             const fmt = (n) => Number(n || 0).toLocaleString();
+            const pic = (src, w) => `/_next/image?url=${encodeURIComponent(src)}&w=${w || 640}&q=70`;
             const hue = {};
             if (qpane) for (const t of qpane.topics) hue[t.id] = t.color;
             const icon = (id) => QZ_ICONS[id] || QZ_ICONS.misc;
             const tiles = qpane ? qpane.top : Array.from({ length: QZ_TILES }, () => null);
+            const banners = qpane ? (qpane.banners || []) : [null, null];
             const cats0 = qpane
               ? qpane.topics
               : TOPIC_SKELETON.map((t) => ({ ...t, color: null, count: 0, plays: null, top: [] }));
             const cats = qSort === 'az'
               ? cats0.slice().sort((a, b) => a.label.localeCompare(b.label))
               : cats0;
+            const pm = (qpane && qpane.pm) || {};
             const needle = qq.trim().toLowerCase();
             const hits = [];
             if (needle) {
@@ -3340,6 +3354,23 @@ export default function StageToday() {
                 }
               }
             }
+            const fullList = (id) => {
+              const t = topicList.find((x) => x.id === id);
+              const list = (t && t.quizzes) || [];
+              if (qAllSort === 'az') return list.slice().sort((a, b) => String(a.title).localeCompare(String(b.title)));
+              if (qAllSort === 'plays') return list.slice().sort((a, b) => (pm[b.id] || 0) - (pm[a.id] || 0));
+              return list;
+            };
+            const best = (() => {
+              const by = mine && mine.byCategory;
+              if (!by || !topics) return [];
+              return topics
+                .map((t) => ({ t, c: by[t.id] }))
+                .filter((r) => r.c && r.c.matches > 0)
+                .sort((a, b) => (b.c.xp || 0) - (a.c.xp || 0))
+                .slice(0, 6);
+            })();
+            const openAll = (id) => { setQAll((cur) => (cur === id ? null : id)); setQAllMore(false); };
             return (
               <div className="sty-qpane">
                 <div className="sty-qtools">
@@ -3379,6 +3410,18 @@ export default function StageToday() {
                   </div>
                 ) : (
                   <>
+                    <div className="sty-qbans">
+                      {banners.map((b, i) => (b ? (
+                        <a key={b.id} className="sty-qban" href={`/quiz/${b.id}`}>
+                          <img src={pic(b.img, 1080)} alt="" style={b.pos ? { objectPosition: b.pos } : undefined} />
+                          <span className="sty-qbtx">
+                            <i>{b.kind}</i>
+                            <strong>{b.title}</strong>
+                            <span>{b.label}{b.plays ? ` · ${fmt(b.plays)} plays` : ''}</span>
+                          </span>
+                        </a>
+                      ) : <span key={i} className="sty-qban ph" aria-hidden="true" />))}
+                    </div>
                     <section className="sty-qblk" aria-labelledby="sty-qmp">
                       <div className="sty-qbh">
                         <h3 id="sty-qmp">Most played</h3>
@@ -3388,10 +3431,14 @@ export default function StageToday() {
                         {tiles.map((q, i) => (q ? (
                           <a key={q.id} className="sty-qtile" href={`/quiz/${q.id}`} style={{ '--dc': hue[q.dept] || 'var(--stg-mute)' }}>
                             <span className="sty-qtband">
-                              <svg viewBox="0 0 24 24" width="42" height="42" fill="none" stroke="currentColor"
-                                strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                <path d={icon(q.dept)} />
-                              </svg>
+                              {q.img ? (
+                                <img src={pic(q.img)} alt="" loading="lazy" style={q.pos ? { objectPosition: q.pos } : undefined} />
+                              ) : (
+                                <svg viewBox="0 0 24 24" width="42" height="42" fill="none" stroke="currentColor"
+                                  strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                  <path d={icon(q.dept)} />
+                                </svg>
+                              )}
                               <b>{i + 1}</b>
                             </span>
                             <span className="sty-qtbody">
@@ -3418,26 +3465,37 @@ export default function StageToday() {
                       <div className="sty-qcats">
                         {cats.map((t, i) => {
                           const open = qOpen === null ? i === 0 : qOpen === t.id;
-                          return (
-                            <article key={t.id} className={'sty-qcat' + (open ? ' on' : '')} style={t.color ? { '--dc': t.color } : undefined}>
+                          const full = qAll === t.id;
+                          const list = full ? fullList(t.id) : [];
+                          const shown = qAllMore ? list : list.slice(0, QZ_FULL_PEEK);
+                          return [
+                            <article key={t.id} className={'sty-qcat' + (open ? ' on' : '') + (full ? ' full' : '')} style={t.color ? { '--dc': t.color } : undefined}>
                               <button type="button" className="sty-qch" aria-expanded={open}
                                 aria-controls={`sty-qc-${t.id}`} onClick={() => setQOpen(open ? '' : t.id)}>
-                                <svg className="sty-qci" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
-                                  strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                  <path d={icon(t.id)} />
-                                </svg>
-                                <span className="sty-qcn">
-                                  <strong>{t.label}</strong>
-                                  <span>{t.count ? `${fmt(t.count)} quizzes` : ' '}</span>
+                                <span className="sty-qph">
+                                  {t.img ? (
+                                    <img src={pic(t.img)} alt="" loading="lazy" style={t.pos ? { objectPosition: t.pos } : undefined} />
+                                  ) : (
+                                    <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor"
+                                      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                      <path d={icon(t.id)} />
+                                    </svg>
+                                  )}
                                 </span>
-                                <span className="sty-qcp">
-                                  <b>{t.plays === null ? ' ' : fmt(t.plays)}</b>
-                                  <small>plays</small>
+                                <span className="sty-qcrow">
+                                  <span className="sty-qcn">
+                                    <strong>{t.label}</strong>
+                                    <span>{t.count ? `${fmt(t.count)} quizzes` : ' '}</span>
+                                  </span>
+                                  <span className="sty-qcp">
+                                    <b>{t.plays === null ? ' ' : fmt(t.plays)}</b>
+                                    <small>plays</small>
+                                  </span>
+                                  <svg className="sty-qpm" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                    strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+                                    <path d="M5 12h14" /><path className="v" d="M12 5v14" />
+                                  </svg>
                                 </span>
-                                <svg className="sty-qpm" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-                                  strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-                                  <path d="M5 12h14" /><path className="v" d="M12 5v14" />
-                                </svg>
                               </button>
                               <div className="sty-qcb" id={`sty-qc-${t.id}`}>
                                 <ol>
@@ -3451,15 +3509,71 @@ export default function StageToday() {
                                     </li>
                                   ) : <li key={j} className="ph" aria-hidden="true" />))}
                                 </ol>
-                                <a className="sty-qall2" href={`/quizzes/all#${t.id}`}>
-                                  {t.count ? `See all ${fmt(t.count)} ${t.label} quizzes` : `See all ${t.label} quizzes`}
-                                </a>
+                                {t.count ? (
+                                  <button type="button" className="sty-qall2" aria-expanded={full}
+                                    aria-controls={`sty-qf-${t.id}`} onClick={() => openAll(t.id)}>
+                                    {full ? 'Hide the full list' : `Show all ${fmt(t.count)}`}
+                                  </button>
+                                ) : null}
                               </div>
-                            </article>
-                          );
+                            </article>,
+                            full ? (
+                              <section key={t.id + '-all'} id={`sty-qf-${t.id}`} className="sty-qfull" style={t.color ? { '--dc': t.color } : undefined}
+                                aria-label={`All ${t.label} quizzes`}>
+                                <div className="sty-qfh">
+                                  <h4>All {fmt(t.count)} {t.label} quizzes</h4>
+                                  <div className="sty-qsort" role="group" aria-label={`Sort ${t.label} quizzes`}>
+                                    <button type="button" aria-pressed={qAllSort === 'new'} onClick={() => setQAllSort('new')}>Newest</button>
+                                    <button type="button" aria-pressed={qAllSort === 'plays'} onClick={() => setQAllSort('plays')}>Most played</button>
+                                    <button type="button" aria-pressed={qAllSort === 'az'} onClick={() => setQAllSort('az')}>A to Z</button>
+                                  </div>
+                                  <button type="button" className="sty-qfx" aria-label={`Close the ${t.label} list`} onClick={() => openAll(t.id)}>
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+                                  </button>
+                                </div>
+                                {list.length ? (
+                                  <div className="sty-qfg">
+                                    {shown.map((q) => (
+                                      <a key={q.id} href={`/quiz/${q.id}`}>
+                                        <strong>{q.title}</strong>
+                                        <span>{[qzTag(q), pm[q.id] ? `${fmt(pm[q.id])} plays` : ''].filter(Boolean).join(' · ')}</span>
+                                      </a>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="sty-lnone">Loading the catalogue&hellip;</div>
+                                )}
+                                {list.length > QZ_FULL_PEEK ? (
+                                  <button type="button" className="sty-qfmore" onClick={() => setQAllMore((v) => !v)}>
+                                    {qAllMore ? 'Show fewer' : `Show the other ${fmt(list.length - QZ_FULL_PEEK)}`}
+                                  </button>
+                                ) : null}
+                              </section>
+                            ) : null,
+                          ];
                         })}
                       </div>
                     </section>
+                    {best.length ? (
+                      <section className="sty-qblk sty-qbest" aria-labelledby="sty-qyb">
+                        <div className="sty-qbh">
+                          <h3 id="sty-qyb">Your best topics</h3>
+                          {mine && mine.activity ? <span>{fmt(mine.activity.played)} played</span> : null}
+                        </div>
+                        <table>
+                          <tbody>
+                            {best.map((r, i) => (
+                              <tr key={r.t.id}>
+                                <td className="n">{i + 1}</td>
+                                <td>{r.t.label}<span> &middot; {fmt(r.c.played || r.c.matches)} of {fmt(r.t.count)}</span></td>
+                                <td className="p">{fmt(r.c.xp)}</td>
+                                <td className="r">#{fmt(r.c.rank)}<span> of {fmt(r.c.catTotal)}</span></td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </section>
+                    ) : null}
                   </>
                 )}
               </div>
@@ -4356,15 +4470,16 @@ ${PATCH_CSS}
   display:flex;align-items:center;justify-content:center;}
 
 /* ── THE QUIZZES PANE (owner, 2026-10-16) ──
-   Most-played tiles, then every topic as a card with its total plays and its
-   top four quizzes. Desktop shows every card open; at phone width the tiles
-   become a swipe strip and the cards fold into rows, one open at a time. The
+   The whole quiz home: two photo banners, most-played tiles, then every topic
+   as a card with its photo, total plays and top four, which opens its full list
+   in place. Desktop shows every card open; at phone width the banners and tiles
+   become swipe strips and the cards fold into rows, one open at a time. The
    topic hue arrives as --dc and is mixed toward the register's own surface and
-   ink, so it reads in light and dark alike. */
+   ink, so it reads in light and dark alike. Photos come through /_next/image. */
 .sty-qtools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 18px;}
 .sty-qsearch{flex:1 1 260px;max-width:380px;display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;
   border:1px solid var(--stg-line2);border-radius:999px;background:var(--stg-surf);color:var(--stg-mute);}
-.sty-qsearch:focus-within{border-color:var(--stg-acc-ink, var(--stg-acc));}
+.sty-qsearch:focus-within{border-color:var(--stg-acc);}
 .sty-qsearch input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:600 13.5px/1 ${SANS};color:var(--stg-ink);}
 .sty-qsearch input::placeholder{color:var(--stg-mute);}
 .sty-qsort{margin-left:auto;flex:none;display:inline-flex;gap:2px;padding:2px;border:1px solid var(--stg-cell-line);border-radius:999px;}
@@ -4375,16 +4490,33 @@ ${PATCH_CSS}
 .sty-qbh{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
 .sty-qbh h3{margin:0;font-size:17px;font-weight:800;letter-spacing:-0.01em;color:var(--stg-ink);}
 .sty-qbh span{font-size:12px;font-weight:600;color:var(--stg-mute);}
+/* banners: photo, a dark scrim at the foot, white type on the scrim only */
+.sty-qbans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:26px;}
+.sty-qban{position:relative;display:block;height:200px;border-radius:14px;overflow:hidden;background:var(--stg-chip);
+  text-decoration:none;color:#fff;}
+.sty-qban img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.sty-qban::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,12,20,0) 30%,rgba(8,12,20,.84) 100%);}
+.sty-qban.ph::after{display:none;}
+.sty-qban:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-qbtx{position:absolute;left:20px;right:20px;bottom:16px;z-index:1;display:flex;flex-direction:column;gap:6px;align-items:flex-start;}
+.sty-qbtx i{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  background:#fff;color:#0b0d12;border-radius:4px;padding:3px 7px;}
+.sty-qbtx strong{font-size:22px;font-weight:800;line-height:1.15;}
+.sty-qbtx span{font-size:12px;font-weight:600;color:#e6ebf3;}
+/* tiles */
 .sty-qtiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
 .sty-qtile{display:flex;flex-direction:column;min-width:0;background:var(--stg-surf);border:1px solid var(--stg-line);
   border-radius:12px;overflow:hidden;text-decoration:none;color:var(--stg-ink);}
 a.sty-qtile:hover{border-color:var(--stg-line2);}
 a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
-.sty-qtile:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
-.sty-qtband{height:84px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;
+.sty-qtile:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-qtband{position:relative;height:104px;display:flex;align-items:center;padding:0 16px;overflow:hidden;
   background:color-mix(in srgb,var(--dc,var(--stg-mute)) 18%,var(--stg-surf));
   color:color-mix(in srgb,var(--dc,var(--stg-mute)) 82%,var(--stg-ink));}
-.sty-qtband b{font-size:28px;font-weight:800;color:var(--stg-ink);font-variant-numeric:tabular-nums;}
+.sty-qtband img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.sty-qtband b{position:absolute;top:8px;right:8px;min-width:30px;height:30px;padding:0 6px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;background:#fff;color:#0b0d12;
+  font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;}
 .sty-qtbody{display:flex;flex-direction:column;gap:6px;padding:12px 14px 14px;flex:1;min-height:96px;}
 .sty-qtbody i{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute);}
 .sty-qtbody strong{font-size:14px;font-weight:700;line-height:1.3;min-height:2.6em;
@@ -4395,29 +4527,63 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-qtplay{flex:none;font-size:12px;font-weight:800;border-radius:999px;padding:5px 12px;
   background:var(--stg-acc);color:var(--stg-onramp,#08222e);}
 .sty-qtile.ph .sty-qtband{background:var(--stg-chip);}
-.sty-qcats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start;}
-.sty-qcat{min-width:0;background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:12px;padding:12px 16px;}
-.sty-qch{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;padding:2px 0 10px;
+/* topic cards; dense flow lets an opened full list take the next whole row */
+.sty-qcats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-flow:row dense;gap:12px;align-items:start;}
+.sty-qcat{min-width:0;background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:12px;overflow:hidden;}
+.sty-qcat.full{border-color:var(--dc,var(--stg-line2));box-shadow:0 0 0 1px var(--dc,var(--stg-line2));}
+.sty-qch{display:flex;flex-wrap:wrap;width:100%;border:0;background:none;padding:0;
   font-family:inherit;color:var(--stg-ink);text-align:left;cursor:default;}
-.sty-qci{flex:none;color:color-mix(in srgb,var(--dc,var(--stg-mute)) 82%,var(--stg-ink));}
+.sty-qph{position:relative;flex:0 0 100%;height:88px;display:flex;align-items:center;padding:0 16px;overflow:hidden;
+  background:color-mix(in srgb,var(--dc,var(--stg-mute)) 18%,var(--stg-surf));
+  color:color-mix(in srgb,var(--dc,var(--stg-mute)) 82%,var(--stg-ink));}
+.sty-qph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.sty-qcrow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px 10px;}
 .sty-qcn{flex:1;min-width:0;display:flex;flex-direction:column;}
-.sty-qcn strong{font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-qcn strong{font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sty-qcn span{font-size:12px;font-weight:600;color:var(--stg-mute);}
 .sty-qcp{flex:none;display:flex;flex-direction:column;align-items:flex-end;}
 .sty-qcp b{font-size:20px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;}
 .sty-qcp small{font-size:11px;font-weight:700;color:var(--stg-mute);}
 .sty-qpm{display:none;}
+.sty-qcb{padding:0 16px 12px;}
 .sty-qcb ol{list-style:none;margin:0;padding:0;border-top:1px solid var(--stg-line);}
 .sty-qcb li{border-bottom:1px solid var(--stg-line);}
 .sty-qcb li.ph{height:35px;}
 .sty-qcb li a{display:flex;align-items:center;gap:10px;padding:8px 0;text-decoration:none;color:var(--stg-ink);font-size:13px;}
 .sty-qcb li a:hover .t{color:var(--stg-acc-ink);}
-.sty-qcb li a:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;border-radius:4px;}
+.sty-qcb li a:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;border-radius:4px;}
 .sty-qcb .n{width:14px;flex:none;font-weight:800;color:var(--stg-mute);font-variant-numeric:tabular-nums;}
 .sty-qcb .t{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sty-qcb li b{flex:none;font-weight:800;font-variant-numeric:tabular-nums;}
-.sty-qall2{display:inline-block;margin-top:9px;font-size:12px;font-weight:800;color:var(--stg-ink2);text-decoration:none;}
-.sty-qall2:hover{color:var(--stg-acc-ink);}
+.sty-qall2{display:block;width:100%;margin-top:10px;height:36px;border-radius:8px;border:1px solid var(--stg-line2);
+  background:var(--stg-surf);color:var(--stg-ink2);font:800 12px/1 ${SANS};cursor:pointer;}
+.sty-qall2:hover{border-color:var(--stg-acc);color:var(--stg-acc-ink);}
+.sty-qcat.full .sty-qall2{background:var(--stg-ink);border-color:var(--stg-ink);color:var(--stg-ground);}
+/* the full list that replaced /quizzes/all for a reader */
+.sty-qfull{grid-column:1 / -1;background:var(--stg-surf);border:1px solid var(--dc,var(--stg-line2));
+  box-shadow:0 0 0 1px var(--dc,var(--stg-line2));border-radius:12px;padding:16px 18px 18px;}
+.sty-qfh{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+.sty-qfh h4{margin:0;font-size:16px;font-weight:800;color:var(--stg-ink);}
+.sty-qfx{flex:none;width:34px;height:34px;border-radius:999px;border:1px solid var(--stg-line2);background:var(--stg-surf);
+  color:var(--stg-ink2);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.sty-qfg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
+.sty-qfg a{display:flex;flex-direction:column;gap:4px;min-width:0;min-height:58px;padding:10px 12px;border:1px solid var(--stg-line);
+  border-radius:8px;text-decoration:none;color:var(--stg-ink);}
+.sty-qfg a:hover{border-color:var(--stg-line2);}
+.sty-qfg a:hover strong{color:var(--stg-acc-ink);}
+.sty-qfg strong{font-size:13px;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.sty-qfg span{margin-top:auto;font-size:11px;font-weight:600;color:var(--stg-mute);}
+.sty-qfmore{display:block;width:100%;margin-top:12px;height:40px;border-radius:8px;border:1px solid var(--stg-line2);
+  background:var(--stg-chip);color:var(--stg-ink2);font:800 13px/1 ${SANS};cursor:pointer;}
+/* your best topics */
+.sty-qbest{max-width:680px;background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:12px;padding:14px 18px;}
+.sty-qbest table{width:100%;border-collapse:collapse;font-size:13px;}
+.sty-qbest td{padding:8px 0;border-top:1px solid var(--stg-line);font-weight:800;color:var(--stg-ink);}
+.sty-qbest td span{font-weight:600;color:var(--stg-mute);}
+.sty-qbest td.n{width:22px;color:var(--stg-mute);}
+.sty-qbest td.p{text-align:right;width:70px;font-variant-numeric:tabular-nums;}
+.sty-qbest td.r{text-align:right;width:130px;font-weight:700;}
+/* search */
 .sty-qres{list-style:none;margin:0;padding:0;background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:12px;overflow:hidden;}
 .sty-qres li+li{border-top:1px solid var(--stg-line);}
 .sty-qres a{display:flex;align-items:center;gap:12px;padding:11px 14px;text-decoration:none;color:var(--stg-ink);font-size:13.5px;}
@@ -4425,34 +4591,45 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-qres .t{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sty-qres i{flex:none;font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-mute);}
 @media (max-width:1180px){
-  .sty-qtiles{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .sty-qtiles,.sty-qfg{grid-template-columns:repeat(3,minmax(0,1fr));}
   .sty-qcats{grid-template-columns:repeat(2,minmax(0,1fr));}
 }
 @media (max-width:640px){
   .sty-qsearch{flex-basis:100%;max-width:none;height:44px;}
   .sty-qsort{margin-left:0;}
-  .sty-qtiles{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:2px;}
-  .sty-qtiles::-webkit-scrollbar{display:none;}
+  .sty-qbans,.sty-qtiles{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:2px;}
+  .sty-qbans::-webkit-scrollbar,.sty-qtiles::-webkit-scrollbar{display:none;}
+  .sty-qban{flex:0 0 88%;height:176px;scroll-snap-align:start;}
+  .sty-qbtx strong{font-size:19px;}
   .sty-qtile{flex:0 0 156px;scroll-snap-align:start;}
-  .sty-qtband{height:68px;padding:0 12px;}
+  .sty-qtband{height:84px;padding:0 12px;}
   .sty-qtband svg{width:34px;height:34px;}
-  .sty-qtband b{font-size:24px;}
+  .sty-qtband b{min-width:26px;height:26px;font-size:13px;top:6px;right:6px;}
   .sty-qtbody{padding:10px 11px 12px;min-height:88px;}
   .sty-qtbody strong{font-size:13px;}
   .sty-qtplay{display:none;}
   .sty-qcats{grid-template-columns:minmax(0,1fr);gap:0;background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:12px;overflow:hidden;}
-  .sty-qcat{border:0;border-radius:0;padding:0 14px;}
-  .sty-qcat+.sty-qcat{border-top:1px solid var(--stg-line);}
-  .sty-qch{cursor:pointer;min-height:58px;padding:0;}
-  .sty-qch:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:-2px;}
-  .sty-qci{width:22px;height:22px;}
+  .sty-qcat{border:0;border-radius:0;box-shadow:none;}
+  .sty-qcat+.sty-qcat,.sty-qfull+.sty-qcat{border-top:1px solid var(--stg-line);}
+  .sty-qcat.full{box-shadow:none;}
+  .sty-qch{flex-wrap:nowrap;align-items:center;cursor:pointer;min-height:64px;padding:0 14px;}
+  .sty-qch:focus-visible{outline:2px solid var(--stg-acc);outline-offset:-2px;}
+  .sty-qph{flex:0 0 44px;height:44px;border-radius:9px;padding:0;justify-content:center;margin-right:12px;}
+  .sty-qph svg{width:22px;height:22px;}
+  .sty-qcrow{padding:0;}
   .sty-qcp b{font-size:16px;}
   .sty-qcp small{font-size:10px;letter-spacing:.08em;text-transform:uppercase;}
   .sty-qpm{display:block;flex:none;color:var(--stg-mute);}
   .sty-qcat.on .sty-qpm .v{display:none;}
   .sty-qcat:not(.on) .sty-qcb{display:none;}
-  .sty-qcb{padding:0 0 12px 34px;}
+  .sty-qcb{padding:0 14px 12px 70px;}
   .sty-qcb li a{min-height:44px;padding:0;}
+  .sty-qall2{height:44px;}
+  .sty-qfull{border:0;box-shadow:none;border-radius:0;border-top:1px solid var(--stg-line);padding:12px 14px 14px;}
+  .sty-qfg{grid-template-columns:minmax(0,1fr);gap:0;}
+  .sty-qfg a{border:0;border-top:1px solid var(--stg-line);border-radius:0;padding:8px 0;min-height:52px;}
+  .sty-qfmore{height:44px;}
+  .sty-qbest td.r{width:auto;}
 }
 
 @media (max-width:640px){

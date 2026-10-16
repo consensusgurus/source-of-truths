@@ -193,7 +193,7 @@ export default function QuizLoftFinish({
            featured row and the whole catalogue by topic -- so the ending sends
            the reader THERE rather than to the foot of a page about the
            dailies. The daily home keeps its drawer either way. */
-        { tone: 'main', label: 'Back to all quizzes', sub: 'Every topic, and the day picks', href: '/quizzes' },
+        { tone: 'main', label: 'Back to all quizzes', sub: 'Every topic, and the day picks', href: '/#sty-quizzes' },
       ]}
     />
   );

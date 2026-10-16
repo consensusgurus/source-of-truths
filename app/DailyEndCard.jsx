@@ -2527,7 +2527,7 @@ export default function DailyEndCard({
             </span>
           </span>
         </button>
-        <a className="dec-back" href="/quizzes">
+        <a className="dec-back" href="/#sty-quizzes">
           <LayoutGrid size={16} strokeWidth={2.2} className="bi" />
           <span>Back to Main</span>
         </a>

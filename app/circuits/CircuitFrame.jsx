@@ -79,7 +79,7 @@ export default function CircuitFrame({ cat = null, label = 'Circuits', progress 
           <span className="cfr-lab">{label}</span>
         </div>
         <a className="cfr-cx cfr-t" href={withTq('/')}>Today</a>
-        <a className="cfr-cx cfr-q" href={withTq('/quizzes')}>Quizzes</a>
+        <a className="cfr-cx cfr-q" href={withTq('/') + '#sty-quizzes'}>Quizzes</a>
         <button
           type="button"
           className={`cfr-cx cfr-tg${hint ? ' hint' : ''}`}

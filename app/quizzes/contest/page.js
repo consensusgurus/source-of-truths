@@ -56,7 +56,7 @@ export default function ContestPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#f4f6f9', fontFamily: SANS }}>
       <div style={{ maxWidth: 780, margin: '0 auto', padding: '28px 18px 40px' }}>
-        <Link href="/quizzes" style={{ fontSize: 13, fontWeight: 700, color: '#646c7a', textDecoration: 'none' }}>
+        <Link href="/#sty-quizzes" style={{ fontSize: 13, fontWeight: 700, color: '#646c7a', textDecoration: 'none' }}>
           &larr; Back to all games
         </Link>
 

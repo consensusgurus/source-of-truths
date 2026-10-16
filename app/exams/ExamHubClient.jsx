@@ -53,7 +53,7 @@ export default function ExamHubClient() {
       <style dangerouslySetInnerHTML={{ __html: "" }} />
 
       <div style={{ position: 'relative', zIndex: 2, maxWidth: 760, margin: '0 auto', padding: '22px 22px 80px' }}>
-        <a href="/quizzes" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, textDecoration: 'none', color: COLORS.ember, fontFamily: FONT, fontSize: 12.5, fontWeight: 600, marginBottom: 18 }}>
+        <a href="/#sty-quizzes" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, textDecoration: 'none', color: COLORS.ember, fontFamily: FONT, fontSize: 12.5, fontWeight: 600, marginBottom: 18 }}>
           <ArrowLeft size={13} strokeWidth={2.5} /> Quizzes
         </a>
 

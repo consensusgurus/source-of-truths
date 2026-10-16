@@ -1367,7 +1367,7 @@ function UserBaseBody({ board, boardTotal, myName, myAnonKey, onSelectPlayer, vi
             <span style={{ display: 'block', fontSize: 12, color: C.muted, fontWeight: 600, marginTop: 1 }}>{chase.sub}</span>
             <span style={{ display: 'block', height: 6, borderRadius: 999, background: C.accsoft, marginTop: 8, overflow: 'hidden' }}><span style={{ display: 'block', width: `${chase.pct}%`, height: '100%', background: C.accent, borderRadius: 999 }} /></span>
           </span>
-          <Link href="/quizzes" style={{ flex: 'none', fontSize: 12, fontWeight: 800, color: ON_ACC, background: C.accent, borderRadius: 9, padding: '8px 14px', textDecoration: 'none' }}>{chase.cta}</Link>
+          <Link href="/#sty-quizzes" style={{ flex: 'none', fontSize: 12, fontWeight: 800, color: ON_ACC, background: C.accent, borderRadius: 9, padding: '8px 14px', textDecoration: 'none' }}>{chase.cta}</Link>
         </div>
       ) : null}
       <div style={{ fontSize: 11, color: C.soft, marginBottom: 10 }}>Top {board.length.toLocaleString()} of {Math.max(boardTotal || 0, board.length).toLocaleString()} players, anonymous guests included. Tap a column to sort; your row is highlighted.{hasTrend ? ' 7-Day = IQ Points earned over the last week.' : ''}</div>

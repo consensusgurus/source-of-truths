@@ -501,7 +501,7 @@ export default function SubmitClient() {
   }, []);
 
   function goBack() {
-    router.push(mode === 'quiz' ? '/quizzes' : '/');
+    router.push(mode === 'quiz' ? '/#sty-quizzes' : '/');
   }
 
   async function handleSubmit(newList) {

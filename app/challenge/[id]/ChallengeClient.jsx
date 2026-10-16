@@ -63,7 +63,7 @@ export default function ChallengeClient({ id }) {
         <QuizNavHeader />
         <div style={{ position: 'relative', zIndex: 2, padding: 48, textAlign: 'center' }}>
           <p style={{ fontFamily: FONT, fontStyle: 'italic', color: COLORS.faded, margin: 0 }}>That challenge could not be found.</p>
-          <Link href="/quizzes" style={{ display: 'inline-block', marginTop: 16, fontFamily: FONT, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, color: T.white, background: COLORS.ink, padding: '10px 20px', borderRadius: 10, textDecoration: 'none' }}>Back to all quizzes</Link>
+          <Link href="/#sty-quizzes" style={{ display: 'inline-block', marginTop: 16, fontFamily: FONT, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, color: T.white, background: COLORS.ink, padding: '10px 20px', borderRadius: 10, textDecoration: 'none' }}>Back to all quizzes</Link>
         </div>
         <Footer />
       </div>
@@ -103,7 +103,7 @@ export default function ChallengeClient({ id }) {
       <div className="qzf-w" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '8px 38px 80px' }}>
         <div className="qzf-line" aria-hidden="true" />
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 680, margin: '0 auto' }}>
-        <Link href="/quizzes" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: FONT, fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, color: COLORS.faded, textDecoration: 'none', marginTop: 6 }}>
+        <Link href="/#sty-quizzes" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: FONT, fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, color: COLORS.faded, textDecoration: 'none', marginTop: 6 }}>
           <ArrowLeft size={14} strokeWidth={2.5} /> All quizzes
         </Link>
 
@@ -161,7 +161,7 @@ export default function ChallengeClient({ id }) {
               <Trophy size={15} strokeWidth={2.5} /> View standings
             </Link>
           )}
-          <Link href="/quizzes" style={{ boxSizing: 'border-box', fontFamily: FONT, fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700, padding: '13px 18px', borderRadius: 10, border: `1.5px solid ${COLORS.ink}`, background: T.white, color: COLORS.ink, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <Link href="/#sty-quizzes" style={{ boxSizing: 'border-box', fontFamily: FONT, fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700, padding: '13px 18px', borderRadius: 10, border: `1.5px solid ${COLORS.ink}`, background: T.white, color: COLORS.ink, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             Back to all quizzes
           </Link>
         </div>

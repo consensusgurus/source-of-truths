@@ -52,7 +52,7 @@ function TickSet({ items, hidden }) {
     <div className="qch-set" aria-hidden={hidden ? 'true' : undefined}>
       {items.map((it, i) => (
         <span key={i} style={{ display: 'inline-flex', alignItems: 'center' }}>
-          <Link href={it.href || '/quizzes'} className="qch-titem" tabIndex={hidden ? -1 : undefined}>
+          <Link href={it.href || '/#sty-quizzes'} className="qch-titem" tabIndex={hidden ? -1 : undefined}>
             <span className={`qch-tico qch-tico-${it.type}`}>{TICO[it.type] || TICO.stat}</span>
             {it.segs.map((s, j) => (
               <span key={j} className={s.strong ? 'qch-ts' : s.dim ? 'qch-td' : undefined}>{s.text}</span>

@@ -1,45 +1,26 @@
-import { catalogQuizzes } from '@/lib/quiz-catalog';
-import QuizLandingClient from './QuizLandingClient';
+import { redirect } from 'next/navigation';
 
-// /quizzes — THE QUIZ HOME.
+// /quizzes — RETIRED AS A PAGE (owner, 2026-10-16).
 //
-// This path used to 308 to `/`, because the quiz hub had moved to the site
-// root and the root is the DAILY home, which carries the quizzes as one
-// expandable drawer at its foot. That drawer stays exactly where it is; this
-// is the surface behind it, and the surface every "back to the quizzes" link
-// in the product now lands on (the quiz ending card, the challenge page, the
-// quiz leaderboard and the quiz stats page all already pointed here).
+// Everything this page carried (the photo banners, search, the catalogue by
+// topic, every topic's full list, "Your best topics") now lives in the home's
+// Quizzes pane, app/today/StageToday.jsx (#sty-quizzes). This route survives
+// only so the many old links and shared URLs still land somewhere useful: it
+// sends the reader to the home with that pane open, keeping any query string
+// (a referral ?ref=, a ?theme= review override) so nothing is lost on the way.
 //
-// THE 308 IS GONE FROM next.config.js WITH THIS FILE. A permanent redirect is
-// cached by the browser, so a reader who hit /quizzes while it was live may
-// still be sent to `/` from their own cache for a while. That degrades to the
-// daily home, which still has the drawer, so nothing breaks; it just takes a
-// cache clear to see this page.
-//
-// IT IS THE SAME REGISTER AS THE DAILY HOME, deliberately: the same cap line,
-// the same section rules, the same tiles, the same nine-step category ramp.
-// The two halves of the site are one product and should not look like two.
-export function generateMetadata() {
-  const count = catalogQuizzes().length;
-  const title = 'Quizzes | Mind Loft';
-  const description = `${count.toLocaleString()} free timed quizzes across films, music, geography, sports, business and brands: name-them-all, matching, map and multiple-choice, sorted by topic with a leaderboard on every one.`;
-  return {
-    title,
-    description,
-    alternates: { canonical: '/quizzes' },
-    openGraph: {
-    images: [{ url: '/og/quizzes.png', width: 1200, height: 630, alt: 'Mind Loft quizzes' }],
-      title: 'Mind Loft Quizzes',
-      description,
-      url: '/quizzes',
-      type: 'website',
-      siteName: 'Mind Loft',
-    },
-    twitter: {
-    images: ['/og/quizzes.png'], card: 'summary_large_image', title: 'Mind Loft Quizzes', description },
-  };
-}
+// It is a TEMPORARY redirect on purpose, so browsers do not cache it, and it is
+// out of the sitemap (lib/sitemap-entries.js): a redirecting URL there is
+// flagged "Page with redirect" in Search Console. /quizzes/all is NOT retired:
+// it stays live for crawlers, linked from nowhere on the site.
+export const dynamic = 'force-dynamic';
 
-export default function QuizzesPage() {
-  return <QuizLandingClient />;
+export default function QuizzesPage({ searchParams }) {
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(searchParams || {})) {
+    if (Array.isArray(v)) v.forEach((x) => qs.append(k, x));
+    else if (v != null) qs.set(k, v);
+  }
+  const s = qs.toString();
+  redirect(`/${s ? `?${s}` : ''}#sty-quizzes`);
 }

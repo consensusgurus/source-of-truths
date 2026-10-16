@@ -116,7 +116,7 @@ export default function LeaderboardClient() {
       <Grain />
       <div style={{ position: 'relative', zIndex: 2 }}>
         <header style={{ padding: '40px 24px 18px', maxWidth: 1300, margin: '0 auto' }}>
-          <Link href="/quizzes" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600, color: T.slate, textDecoration: 'none', marginBottom: 22 }}>
+          <Link href="/#sty-quizzes" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600, color: T.slate, textDecoration: 'none', marginBottom: 22 }}>
             <ArrowLeft size={15} strokeWidth={2.5} /> All Quizzes
           </Link>
           <div style={{ fontFamily: 'Manrope, monospace', fontSize: 11, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: T.accent, marginBottom: 10 }}>Quiz Champions</div>
