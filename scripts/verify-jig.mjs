@@ -10,6 +10,11 @@
 //   - every photo is a distinct Commons file under a free licence (public
 //     domain, CC0, CC BY, CC BY-SA; never GFDL-only), with a name and a credit
 //   - the seed is a whole number, so the cut is the same on every device
+//   - the bank opens 2026-09-20 with the backfill (owner, 2026-10-16) and
+//     launch day, 2026-10-15, is board No. 26; every board from launch on keeps
+//     the seed it was first dealt under the old numbering, so a board already
+//     played is never re-cut: seed = ((num - 25) * 7919 + 13) % 100003
+//   - no two boards share a seed
 const BANK = process.env.VERIFY_JIG_BANK || 'app/jig/puzzles.js';
 const { PUZZLES } = await import(new URL('../' + BANK, import.meta.url));
 
@@ -19,6 +24,13 @@ const LIC = /^(Public domain|CC0|CC BY(-SA)? \d\.\d( [a-zA-Z]{2,4})?)$/;
 let fails = 0;
 const bad = (n, msg) => { fails++; console.log(`  #${n}: ${msg}`); };
 
+const START = '2026-09-20';
+const LAUNCH = '2026-10-15';
+const BACKFILL = 25;
+if (PUZZLES[0] && PUZZLES[0].live !== START) bad(PUZZLES[0].num, `the bank should open ${START}, not ${PUZZLES[0].live}`);
+const launch = PUZZLES.find((p) => p.live === LAUNCH);
+if (!launch || launch.num !== BACKFILL + 1) bad(launch ? launch.num : 0, `launch day ${LAUNCH} should be board No. ${BACKFILL + 1}`);
+const seeds = new Set();
 const titles = new Set();
 let prev = null;
 PUZZLES.forEach((p, k) => {
@@ -37,6 +49,9 @@ PUZZLES.forEach((p, k) => {
   if (p.cols !== c || p.rows !== r) bad(p.num, `cut ${p.cols}x${p.rows}, the weekday's is ${c}x${r}`);
   if (p.cols * p.rows > 80) bad(p.num, `${p.cols * p.rows} pieces, over the cap of 80`);
   if (!Number.isInteger(p.seed) || p.seed < 0) bad(p.num, `seed ${p.seed} is not a whole number`);
+  if (p.live >= LAUNCH && p.seed !== ((p.num - BACKFILL) * 7919 + 13) % 100003) bad(p.num, `seed ${p.seed} is not the seed this board was first dealt with`);
+  if (seeds.has(p.seed)) bad(p.num, `seed ${p.seed} used twice`);
+  seeds.add(p.seed);
   if (!p.t || !/\.(jpe?g)$/i.test(p.t)) bad(p.num, `photo title ${p.t} is not a JPEG file title`);
   if (titles.has(p.t)) bad(p.num, `photo ${p.t} used twice`);
   titles.add(p.t);

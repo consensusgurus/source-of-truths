@@ -29,6 +29,8 @@ export const FOOTER_COLS = [
       // Every past board of every daily, by game and by day (owner, 2026-10-09).
       // Replaced /daily, which 308s here.
       { label: 'Puzzle Archive', href: '/archive' },
+      // Every Jig photo so far, a box a day (owner, 2026-10-16).
+      { label: 'Jig Puzzle Shelf', href: '/jig/shelf' },
       // The full index. This link is the crawl path to the whole quiz catalogue, so it
       // must stay on a server-rendered surface: see lib/quiz-catalog.js.
       // Same job for the circuits: /circuits is the only crawlable path to the

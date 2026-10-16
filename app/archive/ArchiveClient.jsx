@@ -27,6 +27,7 @@
 // reach this component.
 
 import { useEffect, useMemo, useState } from 'react';
+import { migrateJigSaves } from '@/lib/jig-renum';
 import { ArrowRight, Search, X } from 'lucide-react';
 import CircuitFrame from '../circuits/CircuitFrame';
 import GameGlyph from '../GameGlyph';
@@ -120,6 +121,7 @@ export default function ArchiveClient({ games = [], today = '' }) {
   // Marks: this device first (instant), then the server history merged in.
   useEffect(() => {
     let alive = true;
+    migrateJigSaves();
     const solved = new Set();
     const played = new Set();
     const started = new Set();

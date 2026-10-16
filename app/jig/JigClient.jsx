@@ -52,6 +52,7 @@ import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { gameColor, gameColorLight, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
+import ShelfLink from './ShelfLink';
 import LoftFinish from '../LoftFinish';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import useIqStanding from '../useIqStanding';
@@ -64,6 +65,12 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { migrateJigSaves } from '@/lib/jig-renum';
+
+// The renumber of 2026-10-16 (25 backfill boards before launch): move this
+// browser's saves and streak record up to the new numbers BEFORE anything
+// reads them. Module scope runs once in the browser, ahead of the first render.
+migrateJigSaves();
 
 const ACCENT = '#0e7490';
 const COLORS = {
@@ -1348,6 +1355,9 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
 
         {!STAGE && <GamePanel self="jig" name="Jig" onShow={() => setShowChrome(true)} />}
         <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block', margin: '30px auto 0' }}>
+          <div className={STAGE ? undefined : 'loft-report'} style={{ padding: '0 14px' }}>
+            <ShelfLink puzzles={puzzles} todayNum={pickPuzzle(puzzles, null).num} />
+          </div>
           {LOFT && (
             <div className={STAGE ? undefined : 'loft-report'}>
               <ReportIssue self="jig" name="Jig" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
