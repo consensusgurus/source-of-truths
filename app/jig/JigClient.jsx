@@ -29,7 +29,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { X, Lightbulb, Smartphone, Eye, Maximize2, Minimize2 } from 'lucide-react';
+import { X, Lightbulb, Smartphone, Eye, Maximize2, Minimize2, ChevronDown, ChevronUp } from 'lucide-react';
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
@@ -81,6 +81,7 @@ const COLORS = {
 const ARM_MIN_MS = 400;
 const PEEK_COST_MS = 15000;
 const PEEK_SHOW_MS = 2600;
+const HOLD_MS = 240;   // press and hold this long on a touch screen and the piece lifts
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const HELP_KEY = 'sot_jig_help_seen';
 const STATS_KEY = 'sot_jig_stats';
@@ -352,11 +353,20 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const [boardH, setBoardH] = useState(0);
-  // Full screen (desktop, owner 2026-10-15): the board card takes the whole
-  // window, the board sized to fit it beside a full-height tray.
+  // Full screen (owner 2026-10-15, phones and tablets from 2026-10-16): the
+  // board card takes the whole window. Wide, the board sits beside a
+  // full-height tray; narrow, the board sits on top and the tray fills the rest.
+  // A browser that has the Fullscreen API (desktop, iPad) also hides its own
+  // chrome; one that has none (iPhone) still gets the whole page.
   const [full, setFull] = useState(false);
   const [fitW, setFitW] = useState(0);
   const fullRef = useRef(false);
+  // narrow = the phone layout (CSS breakpoint 820px). trayOpen = See more on a
+  // phone: the two-row strip becomes a taller grid that scrolls up and down.
+  const [narrow, setNarrow] = useState(false);
+  const [trayOpen, setTrayOpen] = useState(false);
+  const vScroll = narrow && (full || trayOpen);   // the phone tray as an up-and-down grid
+  const stripMode = narrow && !vScroll;            // the phone's two-row sideways strip
   selRef.current = sel;
   const playRef = useRef(null);
   const sideRef = useRef(null);
@@ -641,10 +651,33 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
     if (!el) return 1;
     return el.getBoundingClientRect().width / (BW + 2 * KNOB);
   }
+  // On a touch screen the tray scrolls one way and a piece is dragged the other:
+  // the phone's two-row strip scrolls sideways, so a piece lifts when the finger
+  // starts upward; the taller grids (See more, full screen, the tablet side
+  // tray) scroll up and down, so a piece lifts when the finger starts sideways.
+  // Press and hold lifts a piece in any direction. A swipe that is a scroll
+  // never picks or lifts anything.
   function trayDown(e, i) {
     if (!playing || !g.t0) return;
     const touch = e.pointerType !== 'mouse';
-    press.current = { i, x0: e.clientX, y0: e.clientY, touch, dragging: false, id: e.pointerId, el: e.currentTarget };
+    const pr = { i, x0: e.clientX, y0: e.clientY, touch, dragging: false, id: e.pointerId, el: e.currentTarget, axis: touch ? (stripMode ? 'y' : 'x') : null, hold: 0 };
+    press.current = pr;
+    if (touch) {
+      pr.hold = setTimeout(() => {
+        if (press.current !== pr || pr.dragging) return;
+        pr.held = true;
+        startDrag(pr, pr.x0, pr.y0);
+        try { if (navigator.vibrate) navigator.vibrate(8); } catch (err) {}
+      }, HOLD_MS);
+    }
+  }
+  function startDrag(pr, x, y) {
+    clearTimeout(pr.hold);
+    pr.dragging = true;
+    pr.cx = x; pr.cy = y;
+    try { pr.el.setPointerCapture(pr.id); } catch (err) {}
+    setSel(-1);
+    setDrag({ i: pr.i, size: Math.round((S + 2 * KNOB) * scaleNow()) });
   }
   function ghostAt(cx, cy) {
     const gh = ghostRef.current;
@@ -658,19 +691,31 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
     const pr = press.current;
     if (!pr || e.pointerId !== pr.id) return;
     if (!pr.dragging) {
-      if (Math.hypot(e.clientX - pr.x0, e.clientY - pr.y0) < 7) return;
-      pr.dragging = true;
-      try { pr.el.setPointerCapture(e.pointerId); } catch (err) {}
-      setSel(-1);
-      setDrag({ i: pr.i, size: Math.round((S + 2 * KNOB) * scaleNow()) });
+      const dx = e.clientX - pr.x0, dy = e.clientY - pr.y0;
+      if (Math.hypot(dx, dy) < 7) return;
+      // the tray's own scroll direction: let the browser have it
+      if ((pr.axis === 'y' && Math.abs(dy) < Math.abs(dx)) || (pr.axis === 'x' && Math.abs(dx) < Math.abs(dy))) {
+        clearTimeout(pr.hold);
+        press.current = null;
+        return;
+      }
+      startDrag(pr, e.clientX, e.clientY);
     }
     pr.cx = e.clientX; pr.cy = e.clientY;
+    if (!pr.moved && Math.hypot(e.clientX - pr.x0, e.clientY - pr.y0) >= 7) pr.moved = true;
     ghostAt(e.clientX, e.clientY);
   };
   const onUp = (e) => {
     const pr = press.current;
     if (!pr || e.pointerId !== pr.id) return;
     press.current = null;
+    clearTimeout(pr.hold);
+    // a slow tap: lifted by the hold but never moved, so it picks the piece
+    if (pr.dragging && pr.held && !pr.moved) {
+      setDrag(null);
+      setSel((s) => (s === pr.i ? -1 : pr.i));
+      return;
+    }
     if (!pr.dragging) {
       setSel((s) => (s === pr.i ? -1 : pr.i));
       return;
@@ -685,6 +730,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
     const pr = press.current;
     if (!pr || e.pointerId !== pr.id) return;
     press.current = null;
+    clearTimeout(pr.hold);
     setDrag(null);
   };
   // window listeners registered once, calling the latest handlers through a ref
@@ -697,10 +743,16 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
     window.addEventListener('pointermove', mv);
     window.addEventListener('pointerup', up);
     window.addEventListener('pointercancel', cn);
+    // Once a piece is lifted the page must not scroll under the finger. Only a
+    // non-passive touchmove can say so (a held piece in a tray that scrolls the
+    // same way would otherwise be cancelled by the browser's own scroll).
+    const tm = (e) => { const pr = press.current; if (pr && pr.dragging && pr.touch && e.cancelable) e.preventDefault(); };
+    document.addEventListener('touchmove', tm, { passive: false });
     return () => {
       window.removeEventListener('pointermove', mv);
       window.removeEventListener('pointerup', up);
       window.removeEventListener('pointercancel', cn);
+      document.removeEventListener('touchmove', tm);
     };
   }, []);
   useEffect(() => {
@@ -717,6 +769,20 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
     else miss();
   }
 
+  // See more (phones): open the tray into a taller grid, and bring the board to
+  // the top of the screen so the board and the opened tray share the view.
+  function toggleTray() {
+    const open = !trayOpen;
+    setTrayOpen(open);
+    if (!open) return;
+    requestAnimationFrame(() => {
+      const el = playRef.current;
+      if (!el) return;
+      const top = el.getBoundingClientRect().top + window.scrollY - 8;
+      try { window.scrollTo({ top, behavior: 'smooth' }); } catch (e) { window.scrollTo(0, top); }
+    });
+  }
+
   function peek() {
     if (!playing || !g.t0 || Date.now() < peekUntil) return;
     setG((cur) => ({ ...cur, pen: (cur.pen || 0) + PEEK_COST_MS, peeks: (cur.peeks || 0) + 1 }));
@@ -725,14 +791,20 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
     say('Peek: 15 seconds added to your clock.');
   }
 
+  // iPadOS Safari before 16.4 only has the webkit-prefixed API; iPhone Safari
+  // has neither for a page, so there the CSS overlay is the whole of it.
+  const fsElement = () => (typeof document === 'undefined' ? null : (document.fullscreenElement || document.webkitFullscreenElement || null));
   function enterFull() {
     fullRef.current = true;
     setFull(true);
     try {
       const el = document.documentElement;
-      if (el.requestFullscreen && !document.fullscreenElement) {
-        const pr = el.requestFullscreen();
-        if (pr && pr.catch) pr.catch(() => {});
+      if (!fsElement()) {
+        const req = el.requestFullscreen || el.webkitRequestFullscreen;
+        if (req) {
+          const pr = req.call(el);
+          if (pr && pr.catch) pr.catch(() => {});
+        }
       }
     } catch (e) {}
   }
@@ -740,13 +812,28 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
     fullRef.current = false;
     setFull(false);
     setFitW(0);
-    try { if (document.fullscreenElement && document.exitFullscreen) { const pr = document.exitFullscreen(); if (pr && pr.catch) pr.catch(() => {}); } } catch (e) {}
+    try {
+      if (fsElement()) {
+        const ex = document.exitFullscreen || document.webkitExitFullscreen;
+        if (ex) { const pr = ex.call(document); if (pr && pr.catch) pr.catch(() => {}); }
+      }
+    } catch (e) {}
   }
-  // The browser's own Esc leaves its full screen; follow it out.
+  // The browser's own Esc (or iPad's close button) leaves its full screen;
+  // follow it out.
   useEffect(() => {
-    const onFs = () => { if (!document.fullscreenElement && fullRef.current) { fullRef.current = false; setFull(false); setFitW(0); } };
+    const onFs = () => { if (!fsElement() && fullRef.current) { fullRef.current = false; setFull(false); setFitW(0); } };
     document.addEventListener('fullscreenchange', onFs);
-    return () => document.removeEventListener('fullscreenchange', onFs);
+    document.addEventListener('webkitfullscreenchange', onFs);
+    return () => { document.removeEventListener('fullscreenchange', onFs); document.removeEventListener('webkitfullscreenchange', onFs); };
+  }, []);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const mq = window.matchMedia('(max-width: 820px)');
+    const f = () => setNarrow(mq.matches);
+    f();
+    if (mq.addEventListener) mq.addEventListener('change', f); else if (mq.addListener) mq.addListener(f);
+    return () => { if (mq.removeEventListener) mq.removeEventListener('change', f); else if (mq.removeListener) mq.removeListener(f); };
   }, []);
   // The page underneath must not scroll while the board covers it.
   useEffect(() => {
@@ -766,16 +853,22 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
     const ar = (BW + 2 * KNOB) / (BH + 2 * KNOB);
     const fit = () => {
       const r = el.getBoundingClientRect();
-      const side = sideRef.current ? sideRef.current.getBoundingClientRect().width : 0;
-      const w = Math.max(200, Math.min(r.width - side - 18, r.height * ar));
-      setFitW(Math.floor(w));
+      let w;
+      if (window.innerWidth <= 820) {
+        // board on top, the tray below keeps at least ~44% of the height
+        w = Math.min(r.width, r.height * 0.56 * ar);
+      } else {
+        const side = sideRef.current ? sideRef.current.getBoundingClientRect().width : 0;
+        w = Math.min(r.width - side - 18, r.height * ar);
+      }
+      setFitW(Math.floor(Math.max(200, w)));
     };
     fit();
     const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(fit) : null;
     if (ro) ro.observe(el);
     window.addEventListener('resize', fit);
     return () => { if (ro) ro.disconnect(); window.removeEventListener('resize', fit); };
-  }, [full, BW, BH]);
+  }, [full, BW, BH, narrow]);
   // A finished board leaves full screen so the end card can show.
   useEffect(() => { if (!playing && fullRef.current) exitFull(); }, [playing]);
 
@@ -891,7 +984,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
       lead="Put the picture back together. Today's photo is cut into pieces that interlock with tabs and blanks; drag each piece from the tray to its place on the board. Drop it near its own spot and it snaps in and stays. Pieces never need turning."
       steps={[
-        <><b>Drag a piece</b> from the tray onto the board. Near its own spot it snaps in; anywhere else it slides back to the tray, and that costs nothing. You can also <b>tap a piece</b> to pick it, then tap its spot.</>,
+        <><b>Drag a piece</b> from the tray onto the board. Near its own spot it snaps in; anywhere else it slides back to the tray, and that costs nothing. You can also <b>tap a piece</b> to pick it, then tap its spot. On a touch screen, <b>press and hold</b> a piece to lift it.</>,
         <><b>The tray opens sorted.</b> <b>Edges</b> splits the loose pieces into edge pieces and the middle, <b>Colors</b> into one of the picture&rsquo;s colors and the rest, and <b>All</b> shows every loose piece in one bin.</>,
         <><b>Peek</b> shows the whole picture for a moment and adds 15 seconds to your clock. Edge pieces have a straight side; corners have two.</>,
       ]}
@@ -956,7 +1049,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
           .jg-binlab{font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});margin:0 2px 6px;}
           .jg-binlab b{color:var(--stg-ink, ${COLORS.ink});}
           .jg-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(62px, 1fr));gap:4px;}
-          .jg-tp{aspect-ratio:1;padding:0;border:0;background:transparent;cursor:grab;border-radius:10px;touch-action:pan-y;-webkit-tap-highlight-color:transparent;}
+          .jg-tp{aspect-ratio:1;padding:0;border:0;background:transparent;cursor:grab;border-radius:10px;touch-action:pan-y;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
           .jg-tp:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
           .jg-tp.sel{background:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 26%, transparent);box-shadow:inset 0 0 0 2px var(--stg-acc, ${COLORS.accent});}
           .jg-tp.lifted{opacity:.25;}
@@ -986,8 +1079,8 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
           .jg-full .jg-tray{max-height:none !important;flex:1 1 auto;min-height:0;}
           .jg-full .jg-foot{margin-top:10px;padding-top:10px;}
           .jg-full .jg-below{padding-top:2px;}
+          .jg-more{display:none;}
           @media(max-width:820px){
-            .jg-fs{display:none !important;}
             .jg-play{flex-direction:column;align-items:stretch;gap:12px;}
             .jg-boardbox{flex:none;}
             .jg-side{max-width:none;flex:none;}
@@ -996,6 +1089,18 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
             .jg-tp{touch-action:pan-x;}
             .jg-foot .jg-msg{display:none;}
             .jg-foot .jg-ob{flex:1 1 0;}
+            .jg-tray.vs{max-height:max(260px, calc(100vh - var(--jg-bh, 300px) - 170px)) !important;max-height:max(260px, calc(100dvh - var(--jg-bh, 300px) - 170px)) !important;overflow-y:auto !important;overscroll-behavior:contain;}
+            .jg-tray.vs .jg-grid{grid-auto-flow:row;grid-template-rows:none;grid-auto-columns:auto;grid-template-columns:repeat(auto-fill, minmax(56px, 1fr));overflow-x:visible;padding-bottom:0;}
+            .jg-tray.vs .jg-tp{touch-action:pan-y;}
+            .jg-more{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:44px;font-family:${SANS};font-size:13.5px;font-weight:800;border-radius:12px;border:1.5px solid var(--stg-line2, rgba(11,15,26,0.24));background:var(--stg-surf2, ${COLORS.accentSoft});color:var(--stg-ink, ${COLORS.ink});cursor:pointer;}
+            .jg-fs{padding:0 10px;}
+            .jg-card.jg-full{padding:calc(8px + env(safe-area-inset-top)) 10px calc(8px + env(safe-area-inset-bottom)) !important;}
+            .jg-full .jg-top{margin-bottom:8px;}
+            .jg-full .jg-play{gap:8px;}
+            .jg-full .jg-side{flex:1 1 0;max-width:none;min-height:0;gap:8px;}
+            .jg-full .jg-tray.vs{max-height:none !important;flex:1 1 auto;min-height:0;}
+            .jg-full .jg-foot{margin-top:8px;padding-top:8px;}
+            .jg-full .jg-below{display:none;}
           }
         ` }} />
 
@@ -1056,7 +1161,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
             <span className="jg-mlab">Pieces placed &middot; <b>{placedCount}</b> of {NP}{g.peeks ? <> &middot; {g.peeks} peek{g.peeks > 1 ? 's' : ''} (+{g.peeks * 15}s)</> : null}</span>
             <div className="jg-mbar" aria-hidden="true"><span style={{ width: `${(placedCount / NP) * 100}%` }} /></div>
           </div>
-          {started && !mobileUi && (
+          {started && (
             <button type="button" className="jg-ob jg-fs" onClick={full ? exitFull : enterFull} aria-pressed={full}
               title={full ? 'Leave full screen (Esc)' : 'Play on the whole screen'}>
               {full ? <Minimize2 size={15} aria-hidden="true" /> : <Maximize2 size={15} aria-hidden="true" />} {full ? 'Exit full screen' : 'Full screen'}
@@ -1106,7 +1211,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
                     ))}
                   </div>
                 )}
-                <div className="jg-tray" style={{ maxHeight: boardH ? Math.max(220, boardH - (view === 'color' && haveColors ? 110 : 60)) : 460 }}>
+                <div className={`jg-tray${vScroll ? ' vs' : ''}`} style={{ maxHeight: boardH ? Math.max(220, boardH - (view === 'color' && haveColors ? 110 : 60)) : 460, '--jg-bh': `${Math.round(boardH)}px` }}>
                   {bins ? bins.map((b) => (
                     <div key={b.key} className="jg-bin">
                       <div className="jg-binlab"><b>{b.label}</b> &middot; {b.items.length}</div>
@@ -1119,6 +1224,11 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
                     </div>
                   )}
                 </div>
+                {narrow && !full && (trayOpen || loose.length > 12) && (
+                  <button type="button" className="jg-more" aria-expanded={trayOpen} onClick={toggleTray}>
+                    {trayOpen ? <><ChevronUp size={16} aria-hidden="true" /> Show fewer</> : <><ChevronDown size={16} aria-hidden="true" /> See more pieces &middot; {loose.length} left</>}
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -1340,7 +1450,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
           Jig is a free daily online jigsaw puzzle from Mind Loft. Every day brings a new photograph, a featured picture from Wikimedia Commons, cut into classic interlocking pieces: 48 on Monday, building to 77 on Saturday, and an 80-piece Sunday Edition. Everyone gets the same picture and the same cut, so the daily leaderboard is a fair race.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Drag a piece from the tray onto the board and it snaps in when it is near its own spot; a wrong drop just sends it back, at no cost. Pieces never need turning. Sort the tray into two bins, edge pieces and the middle or one of the picture&rsquo;s colors and the rest, to build the frame first and then fill it a color at a time. Peek shows the whole picture for a moment and adds 15 seconds to the clock. On a computer, Full screen gives the board and the tray the whole window.
+          Drag a piece from the tray onto the board and it snaps in when it is near its own spot; a wrong drop just sends it back, at no cost. Pieces never need turning. Sort the tray into two bins, edge pieces and the middle or one of the picture&rsquo;s colors and the rest, to build the frame first and then fill it a color at a time. Peek shows the whole picture for a moment and adds 15 seconds to the clock. Full screen gives the board and the tray the whole screen, on a computer, a tablet or a phone, and on a phone See more opens the tray into a taller grid.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Finish the picture for a perfect 10; the fastest time tops the board. No app, no signup, play free in your browser on a phone or a computer, and keep a streak. Like fitting things together? Try <a href="/snug" style={{ color: INK, fontWeight: 800 }}>Snug</a>, the daily shape-fitting puzzle, and <a href="/etch" style={{ color: INK, fontWeight: 800 }}>Etch</a>, which draws a picture from number clues.
