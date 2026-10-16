@@ -5121,7 +5121,11 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
   .sty-ix.mpk > section:not(.sty-ixoff){margin-bottom:16px;}
   .sty-ix.mpk > .sty-ixn.pk:not(.re) > .sty-ixsep{display:block;grid-column:1 / -1;height:5px;margin:0;background:none;}
   .sty-ix.mpk > .sty-ixn.pk:not(.re) > .sty-ixre{display:none;}
-  .sty-ixn.pk:not(.re) .sty-ixb.on{grid-column:1 / -1;min-height:46px;background:var(--stg-chip);border-color:transparent;
+  /* THE OPEN CATEGORY BAR wears the outline and faint tint the small runs
+     used to (owner, 2026-10-16). */
+  .sty-ixn.pk:not(.re) .sty-ixb.on{grid-column:1 / -1;min-height:46px;
+    background:color-mix(in srgb, var(--cci, var(--cc)) 14%, var(--stg-surf));
+    border:1.5px solid color-mix(in srgb, var(--cci, var(--cc)) 55%, transparent);
     transform-origin:0 0;}
   .sty-ixn.pk:not(.re) .sty-ixb.on .sty-ixbk{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;
     letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute);}
@@ -5281,18 +5285,20 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
   .sty-rics{display:flex;gap:7px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;
     -webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 0 2px;}
   .sty-rics::-webkit-scrollbar{display:none;}
-  .sty-ric{flex:1 0 108px;scroll-snap-align:start;display:flex;flex-direction:column;gap:3px;min-width:0;
-    text-decoration:none;color:var(--stg-ink);}
-  .sty-ric .sq{height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;
-    padding:0 8px;font-size:12.5px;font-weight:800;line-height:1.15;color:var(--stg-ink);
-    background:color-mix(in srgb, var(--ph,var(--stg-acc)) 16%, var(--stg-surf));
-    border:1.5px solid color-mix(in srgb, var(--ph,var(--stg-acc-ink, var(--stg-acc))) 55%, transparent);}
-  .sty-ric.done .sq{background:var(--ph,var(--stg-acc));border-color:var(--ph,var(--stg-acc-ink, var(--stg-acc)));color:var(--stg-onramp,#08222e);}
+  /* THE SMALL RUNS ARE SMALL RUN CARDS (owner, 2026-10-16): the big card's
+     shape at strip size, a plain surface with the run's ink rule down the
+     left, so nothing on the strip is a coloured block. */
+  .sty-ric{flex:1 0 128px;scroll-snap-align:start;display:flex;flex-direction:column;gap:3px;min-width:0;
+    text-decoration:none;color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);
+    border-left:4px solid var(--phi,var(--ph,var(--stg-acc-ink, var(--stg-acc))));border-radius:8px;padding:8px 10px 9px;}
+  .sty-ric .sq{min-height:32px;display:flex;align-items:center;text-align:left;
+    font-size:13.5px;font-weight:800;line-height:1.15;color:var(--stg-ink);}
   .sty-ric .l1,.sty-ric .l2{padding:0 2px;font-size:10.5px;font-weight:700;color:var(--stg-mute);white-space:nowrap;
     overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;line-height:1.25;}
   .sty-ric.done .l1{color:var(--stg-ink);font-weight:800;}
   .sty-ric .l2{color:var(--stg-ink2);font-weight:800;}
-  .sty-ric:focus-visible .sq{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
+  .sty-ric:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
+  .sty-ric .l1,.sty-ric .l2{padding:0;}
 }
 
 /* THE LEDGER (owner, 2026-10-14): desktop category panes and My Puzzles. */
