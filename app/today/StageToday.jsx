@@ -2195,6 +2195,28 @@ export default function StageToday() {
     setSortBy(v);
     try { localStorage.setItem('sot_home_sort', v); } catch (e) { /* storage off */ }
   };
+  // TILES OR LIST (owner, 2026-10-16), set beside A to Z / Popular. Until the
+  // reader picks, each pane keeps the layout it was ruled to have (All Puzzles
+  // tiled, the categories and My Puzzles as the ledger); once they pick, that
+  // one choice holds for every pane, remembered per browser like the sort.
+  // Desktop only: the ledger is a 901px-and-up layout and the phone's tiles
+  // rule (owner, 2026-10-07), so the control is hidden with the sort's.
+  const [viewBy, setViewBy] = useState(null);
+  useEffect(() => {
+    try { const v = localStorage.getItem('sot_home_view'); if (v === 'tile' || v === 'list') setViewBy(v); } catch (e) { /* storage off */ }
+  }, []);
+  const pickView = (v) => {
+    setViewBy(v);
+    try { localStorage.setItem('sot_home_view', v); } catch (e) { /* storage off */ }
+  };
+  const viewOf = (pane) => viewBy || (pane === ALL_ID ? 'tile' : 'list');
+  const viewCtl = (pane) => (
+    <div className="sty-sort sty-view" role="group" aria-label="Show puzzles as"
+      onClick={(e) => e.stopPropagation()}>
+      <button type="button" aria-pressed={viewOf(pane) === 'tile'} onClick={() => pickView('tile')}>Tiles</button>
+      <button type="button" aria-pressed={viewOf(pane) === 'list'} onClick={() => pickView('list')}>List</button>
+    </div>
+  );
   // Declared ABOVE ixNav, which renders it: below it was a temporal dead zone
   // and took the homepage down (2026-10-12).
   const sortCtl = (mobile) => (
@@ -2416,7 +2438,7 @@ export default function StageToday() {
   const [fav, setFav] = useState(null);
   const favAsked = useRef(false);
   const favWanted = !!(railCat && fitFor(railCat.games.length)) || sortBy === 'pop'
-    || (mid && (!!railCat || paneOn === MINE_ID));
+    || (mid && (!!railCat || paneOn === MINE_ID || (paneOn === ALL_ID && viewOf(ALL_ID) === 'list')));
   useEffect(() => {
     if (!favWanted || favAsked.current) return;
     favAsked.current = true;
@@ -2818,10 +2840,11 @@ export default function StageToday() {
           <b>{n}<i>/{games.length}</i></b>
           {circPills(cat, false)}
           {sortCtl(false)}
+          {viewCtl(cat)}
         </div>
         {circPills(cat, true)}
-        {mid ? catLedger(games) : null}
-        {!mid ? <>
+        {mid && viewOf(cat) === 'list' ? catLedger(games) : null}
+        {!(mid && viewOf(cat) === 'list') ? <>
         <div className={'sty-games' + (fit ? ' fit' : '')} style={fitStyle}>
           {sortGames(games).map((g, i) => (
             <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
@@ -3031,6 +3054,7 @@ export default function StageToday() {
               <h2>My Puzzles</h2>
               {grpChips()}
               {mineTot ? <b>{mineDone}<i>/{mineTot}</i></b> : null}
+              {pinned.length ? viewCtl(MINE_ID) : null}
               {mineTot ? cav(MINE_ID) : null}
             </div>
             {grpBanners()}
@@ -3052,8 +3076,8 @@ export default function StageToday() {
                 <span className="sty-go">Choose</span>
               </a>
             ) : null}
-            {pinned.length && mid ? mineLedger() : null}
-            {pinned.length && !mid ? (
+            {pinned.length && mid && viewOf(MINE_ID) === 'list' ? mineLedger() : null}
+            {pinned.length && !(mid && viewOf(MINE_ID) === 'list') ? (
               <div className={'sty-games' + (isOpen(MINE_ID) ? '' : ' shut')}>
                 {/* ON A PHONE MY GAMES IS ALPHABETICAL (owner, 2026-10-03); desktop keeps played-last. */}
                 {(narrow ? [...pinned].sort((a, b) => a.name.localeCompare(b.name)) : playedLast(pinned, done)).map((g, i) => (
@@ -3102,12 +3126,19 @@ export default function StageToday() {
             {grpChips()}
             {circPills(null, false)}
             {sortCtl(false)}
+            {viewCtl(ALL_ID)}
           </div>
           {circPills(null, true)}
           {grpBanners()}
           {grpLists('azg')}
           {who && grpGames.some((x) => mineGrp.has(x.code)) ? <div className="sty-mgl">All Puzzles</div> : null}
-          <div className="sty-games">
+          {mid && viewOf(ALL_ID) === 'list' ? (
+            <div className="sty-led">
+              {ledgerHead(null)}
+              {ledgerRows(playedLast(sortGames(alpha), done), 'azl', true)}
+            </div>
+          ) : null}
+          <div className={'sty-games' + (mid && viewOf(ALL_ID) === 'list' ? ' sty-vhid' : '')}>
             {playedLast(sortGames(alpha), done).map((g, i) => (
               // ALL GAMES MIXES CATEGORIES exactly as My games does, so each
               // card carries its own hue (owner, 2026-08-31).
@@ -4960,6 +4991,9 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-sort button{border:0;border-radius:999px;background:transparent;color:var(--stg-ink2);font:800 11px/1 ${SANS};letter-spacing:.05em;text-transform:uppercase;padding:5px 10px;cursor:pointer;}
 .sty-sort button[aria-pressed="true"]{background:var(--stg-ink);color:var(--stg-ground);}
 .sty-sortm{display:none;}
+/* The view control sits just after the sort, so only the sort takes the auto margin. */
+.sty-sort + .sty-view{margin-left:6px;}
+.sty-games.sty-vhid{display:none;}
 @media (max-width:900px){
   .sty-sort:not(.sty-sortm){display:none;}
   .sty-ix.mpk > .sty-ixn.pk:not(.re) > .sty-ixb.on{grid-row:1;}
