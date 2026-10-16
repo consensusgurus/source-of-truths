@@ -48,9 +48,9 @@ const LIFT_MS = 640;
 // category, which is also the home's pane id for it.
 const TILES = [
   { skill: 'Language', cat: 'Word', label: 'Words' },
-  { skill: 'Number sense', cat: 'Numbers' },
+  { skill: 'Mental math', cat: 'Numbers' },
   { skill: 'Deduction', cat: 'Logic' },
-  { skill: 'Sudoku skill', cat: 'Sudoku' },
+  { skill: 'Grid logic', cat: 'Sudoku' },
   { skill: 'General knowledge', cat: 'Trivia' },
   { skill: 'World knowledge', cat: 'Geography' },
   { skill: 'Strategy', cat: 'End Game' },
