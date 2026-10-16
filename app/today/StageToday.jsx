@@ -307,6 +307,30 @@ const TOPIC_SKELETON = [
   { id: 'arts', label: 'Arts & Culture' },
   { id: 'school', label: 'School Tests' },
 ];
+// QUIZ PANE GLYPHS (owner, 2026-10-16): one stroke icon per quiz topic, drawn in
+// currentColor so the topic hue tints it in either register. Keyed by the
+// department ids /api/quiz/pane returns; an unknown topic falls back to misc.
+const QZ_ICONS = {
+  movies: 'M4 5h16v14H4z M8 5v14 M16 5v14 M4 9h4 M4 15h4 M16 9h4 M16 15h4',
+  music: 'M9 18V5l11-2v13 M9 18a3 3 0 1 1-6 0a3 3 0 0 1 6 0 M20 16a3 3 0 1 1-6 0a3 3 0 0 1 6 0',
+  gaming: 'M6 9h12a4 4 0 0 1 0 8l-2-2H8l-2 2a4 4 0 0 1 0-8z M8 11v4 M6 13h4 M15 12h.01 M17 14h.01',
+  travel: 'M3 13l18-7-7 18-3-8z',
+  sports: 'M8 4h8v5a4 4 0 0 1-8 0z M8 6H5a3 3 0 0 0 3 4 M16 6h3a3 3 0 0 1-3 4 M12 13v4 M8 20h8',
+  geography: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18 M3 12h18 M12 3a14 14 0 0 1 0 18 M12 3a14 14 0 0 0 0 18',
+  food: 'M7 3v8 M5 3v5a2 2 0 0 0 4 0V3 M7 11v10 M17 3c-2 0-3 2-3 5v4h3v9',
+  business: 'M4 8h16v11H4z M9 8V5h6v3 M4 13h16',
+  science: 'M10 3h4 M11 3v6l-5 9a2 2 0 0 0 2 3h8a2 2 0 0 0 2-3l-5-9V3 M8 15h8',
+  entertainment: 'M3 7h18v12H3z M8 3l4 4 4-4',
+  word: 'M4 6h16 M4 12h10 M4 18h7',
+  literature: 'M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z M4 19V5',
+  history: 'M3 9l9-5 9 5 M5 9v9 M10 9v9 M14 9v9 M19 9v9 M3 20h18',
+  arts: 'M12 3a9 9 0 1 0 0 18c1 0 2-1 1.5-2.5S14 16 16 16h2a3 3 0 0 0 3-3c0-5.5-4-10-9-10z M8 10h.01 M12 7h.01 M16 10h.01',
+  school: 'M2 9l10-5 10 5-10 5z M6 11v5c3 2 9 2 12 0v-5',
+  misc: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18 M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14 M12 17h.01',
+};
+const QZ_TILES = 12;
+const QZ_ROWS = 4;
+const QZ_SEARCH_MAX = 40;
 const leadRankOf = (id) => {
   const i = CIRC_LEAD.indexOf(id);
   return i < 0 ? CIRC_LEAD.length : i;
@@ -1112,6 +1136,15 @@ export default function StageToday() {
   // The route is generated at build time and cached at the edge for a day, so
   // the cost of the fetch itself is a CDN hit, not a database read.
   const [topics, setTopics] = useState(null);
+  // THE QUIZZES PANE (owner, 2026-10-16): most-played tiles, then every topic
+  // with its total plays and its top quizzes. One cached read (/api/quiz/pane,
+  // counted at most hourly), fired on the same trigger as the topic list.
+  const [qpane, setQpane] = useState(null);
+  const [qSort, setQSort] = useState('plays');
+  const [qq, setQq] = useState('');
+  // Which topic is open on the PHONE, where the cards fold to rows. null = the
+  // first, '' = none. Desktop always shows every card open.
+  const [qOpen, setQOpen] = useState(null);
   const [visitors, setVisitors] = useState(null);
   const footRef = useRef(null);
   // The cap's own box.
@@ -1197,6 +1230,10 @@ export default function StageToday() {
     fetch('/api/quiz/topics')
       .then((r) => r.json())
       .then((d) => { if (alive && d && Array.isArray(d.topics) && d.topics.length) setTopics(d.topics); })
+      .catch(() => {});
+    fetch('/api/quiz/pane')
+      .then((r) => r.json())
+      .then((d) => { if (alive && d && Array.isArray(d.topics) && d.topics.length) setQpane(d); })
       .catch(() => {});
     fetch('/api/visitors')
       .then((r) => r.json())
@@ -3209,7 +3246,7 @@ export default function StageToday() {
             {/* DRAWN ONLY WHEN REAL: no figure until the catalogue has landed,
                 rather than a zero that is not true yet. */}
             {quizTotal ? (
-              <b>{quizTotal.toLocaleString()}<i>/{topicList.length} topics</i></b>
+              <b>{quizTotal.toLocaleString()}<i>/{topicList.length} topics{qpane && qpane.plays ? ` \u00b7 ${qpane.plays.toLocaleString()} plays` : ''}</i></b>
             ) : null}
             {/* NOT THE A-Z INDEX ANY MORE. This pointed at /quizzes/all and
                 said Full index, because the index WAS the only other quiz
@@ -3225,66 +3262,155 @@ export default function StageToday() {
               </svg>
             </a>
           </div>
-          <div className="sty-topics">
-            {topicList.map((t) => {
-              const open = openTopics.has(t.id);
-              const all = fullTopics.has(t.id);
-              const list = t.quizzes || [];
-              const shown = all ? list : peekOf(list, QUIZ_PEEK);
-              return (
-                <div key={t.id} className={'sty-topic' + (open ? ' on' : '')}>
-                  <button
-                    type="button"
-                    className="sty-trow"
-                    aria-expanded={open}
-                    aria-controls={`sty-t-${t.id}`}
-                    onClick={() => toggleTopic(t.id)}
-                  >
-                    <span className="sty-tn">{t.label}</span>
-                    {t.count ? <span className="sty-tc">{t.count}</span> : null}
-                    <svg className="sty-tv" viewBox="0 0 24 24" width="13" height="13" fill="none"
-                      stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"
-                      strokeLinejoin="round" aria-hidden="true">
-                      <path d="M6 9l6 6 6-6" />
+          {(() => {
+            // THE QUIZZES PANE (owner, 2026-10-16). Every block keeps its height
+            // before the counts land: twelve empty tiles and the fifteen topic
+            // cards with empty rows, so nothing grows under the reader.
+            const fmt = (n) => Number(n || 0).toLocaleString();
+            const hue = {};
+            if (qpane) for (const t of qpane.topics) hue[t.id] = t.color;
+            const icon = (id) => QZ_ICONS[id] || QZ_ICONS.misc;
+            const tiles = qpane ? qpane.top : Array.from({ length: QZ_TILES }, () => null);
+            const cats0 = qpane
+              ? qpane.topics
+              : TOPIC_SKELETON.map((t) => ({ ...t, color: null, count: 0, plays: null, today: 0, top: [] }));
+            const cats = qSort === 'az'
+              ? cats0.slice().sort((a, b) => a.label.localeCompare(b.label))
+              : cats0;
+            const needle = qq.trim().toLowerCase();
+            const hits = [];
+            if (needle) {
+              for (const t of topicList) {
+                for (const q of (t.quizzes || [])) {
+                  if (String(q.title).toLowerCase().includes(needle)) hits.push({ ...q, label: t.label });
+                }
+              }
+            }
+            return (
+              <div className="sty-qpane">
+                <div className="sty-qtools">
+                  <label className="sty-qsearch">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                      strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+                      <circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" />
                     </svg>
-                  </button>
-                  {open ? (
-                    <div className="sty-tbody" id={`sty-t-${t.id}`}>
-                      {shown.length ? (
-                        <>
-                          <div className="sty-qgrid">
-                            {shown.map((q) => (
-                              <a key={q.id} className="sty-ql" href={`/quiz/${q.id}`}>{q.title}</a>
-                            ))}
-                          </div>
-                          <div className="sty-tfoot">
-                            {list.length > QUIZ_PEEK ? (
-                              <button
-                                type="button"
-                                className="sty-more sty-tmore"
-                                onClick={() => setFullTopics((prev) => {
-                                  const next = new Set(prev);
-                                  if (next.has(t.id)) next.delete(t.id); else next.add(t.id);
-                                  return next;
-                                })}
-                              >
-                                {all ? 'Show fewer' : `Show all ${t.count}`}
-                              </button>
-                            ) : null}
-                            <a className="sty-more sty-tmore" href={`/quizzes/all#${t.id}`}>
-                              {t.label} A to Z
-                            </a>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="sty-lnone">Loading the catalogue&hellip;</div>
-                      )}
+                    <span className="sty-sr">Search quizzes</span>
+                    <input type="search" value={qq} onChange={(e) => setQq(e.target.value)}
+                      placeholder={quizTotal ? `Search ${quizTotal.toLocaleString()} quizzes` : 'Search quizzes'} />
+                  </label>
+                  {!needle ? (
+                    <div className="sty-qsort" role="group" aria-label="Sort quiz topics">
+                      <button type="button" aria-pressed={qSort === 'plays'} onClick={() => setQSort('plays')}>Most played</button>
+                      <button type="button" aria-pressed={qSort === 'az'} onClick={() => setQSort('az')}>A to Z</button>
                     </div>
                   ) : null}
                 </div>
-              );
-            })}
-          </div>
+                {needle ? (
+                  <div className="sty-qblk">
+                    <div className="sty-qbh">
+                      <h3>{topics ? `${hits.length > QZ_SEARCH_MAX ? `${QZ_SEARCH_MAX}+` : hits.length} ${hits.length === 1 ? 'match' : 'matches'}` : 'Searching'}</h3>
+                      {hits.length > QZ_SEARCH_MAX ? <span>Showing the first {QZ_SEARCH_MAX}. Keep typing to narrow it.</span> : null}
+                    </div>
+                    {hits.length ? (
+                      <ul className="sty-qres">
+                        {hits.slice(0, QZ_SEARCH_MAX).map((q) => (
+                          <li key={q.id}><a href={`/quiz/${q.id}`}><span className="t">{q.title}</span><i>{q.label}</i></a></li>
+                        ))}
+                      </ul>
+                    ) : topics ? (
+                      <div className="sty-lnone">No quizzes match &ldquo;{qq.trim()}&rdquo;.</div>
+                    ) : (
+                      <div className="sty-lnone">Loading the catalogue&hellip;</div>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <section className="sty-qblk" aria-labelledby="sty-qmp">
+                      <div className="sty-qbh">
+                        <h3 id="sty-qmp">Most played</h3>
+                        <span>All-time plays, at most two per topic</span>
+                      </div>
+                      <div className="sty-qtiles">
+                        {tiles.map((q, i) => (q ? (
+                          <a key={q.id} className="sty-qtile" href={`/quiz/${q.id}`} style={{ '--dc': hue[q.dept] || 'var(--stg-mute)' }}>
+                            <span className="sty-qtband">
+                              <svg viewBox="0 0 24 24" width="42" height="42" fill="none" stroke="currentColor"
+                                strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d={icon(q.dept)} />
+                              </svg>
+                              <b>{i + 1}</b>
+                            </span>
+                            <span className="sty-qtbody">
+                              <i>{q.label}</i>
+                              <strong>{q.title}</strong>
+                              <span className="sty-qtfoot">
+                                <em>{fmt(q.plays)} <small>plays</small></em>
+                                <span className="sty-qtplay">Play</span>
+                              </span>
+                            </span>
+                          </a>
+                        ) : (
+                          <span key={i} className="sty-qtile ph" aria-hidden="true">
+                            <span className="sty-qtband" /><span className="sty-qtbody" />
+                          </span>
+                        )))}
+                      </div>
+                    </section>
+                    <section className="sty-qblk" aria-labelledby="sty-qbc">
+                      <div className="sty-qbh">
+                        <h3 id="sty-qbc">By category</h3>
+                        <span>{qSort === 'az' ? 'A to Z' : 'Sorted by total plays'} &middot; counts refresh hourly</span>
+                      </div>
+                      <div className="sty-qcats">
+                        {cats.map((t, i) => {
+                          const open = qOpen === null ? i === 0 : qOpen === t.id;
+                          return (
+                            <article key={t.id} className={'sty-qcat' + (open ? ' on' : '')} style={t.color ? { '--dc': t.color } : undefined}>
+                              <button type="button" className="sty-qch" aria-expanded={open}
+                                aria-controls={`sty-qc-${t.id}`} onClick={() => setQOpen(open ? '' : t.id)}>
+                                <svg className="sty-qci" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
+                                  strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                  <path d={icon(t.id)} />
+                                </svg>
+                                <span className="sty-qcn">
+                                  <strong>{t.label}</strong>
+                                  <span>{t.count ? `${fmt(t.count)} quizzes` : ' '}{t.today ? ` · +${fmt(t.today)} today` : ''}</span>
+                                </span>
+                                <span className="sty-qcp">
+                                  <b>{t.plays === null ? ' ' : fmt(t.plays)}</b>
+                                  <small>plays</small>
+                                </span>
+                                <svg className="sty-qpm" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                  strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+                                  <path d="M5 12h14" /><path className="v" d="M12 5v14" />
+                                </svg>
+                              </button>
+                              <div className="sty-qcb" id={`sty-qc-${t.id}`}>
+                                <ol>
+                                  {(t.top.length ? t.top : Array.from({ length: QZ_ROWS }, () => null)).map((q, j) => (q ? (
+                                    <li key={q.id}>
+                                      <a href={`/quiz/${q.id}`}>
+                                        <span className="n">{j + 1}</span>
+                                        <span className="t">{q.title}</span>
+                                        <b>{fmt(q.plays)}</b>
+                                      </a>
+                                    </li>
+                                  ) : <li key={j} className="ph" aria-hidden="true" />))}
+                                </ol>
+                                <a className="sty-qall2" href={`/quizzes/all#${t.id}`}>
+                                  {t.count ? `See all ${fmt(t.count)} ${t.label} quizzes` : `See all ${t.label} quizzes`}
+                                </a>
+                              </div>
+                            </article>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  </>
+                )}
+              </div>
+            );
+          })()}
         </section>
         </div>
         {/* The lazy reads (quiz topics, the visitor count) wait on this now
@@ -4174,6 +4300,106 @@ ${PATCH_CSS}
 .sty-tfoot{display:flex;gap:7px;margin-top:9px;}
 .sty-tmore{width:auto;margin-top:0;flex:1 1 auto;text-align:center;text-decoration:none;
   display:flex;align-items:center;justify-content:center;}
+
+/* ── THE QUIZZES PANE (owner, 2026-10-16) ──
+   Most-played tiles, then every topic as a card with its total plays and its
+   top four quizzes. Desktop shows every card open; at phone width the tiles
+   become a swipe strip and the cards fold into rows, one open at a time. The
+   topic hue arrives as --dc and is mixed toward the register's own surface and
+   ink, so it reads in light and dark alike. */
+.sty-qtools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 18px;}
+.sty-qsearch{flex:1 1 260px;max-width:380px;display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;
+  border:1px solid var(--stg-line2);border-radius:999px;background:var(--stg-surf);color:var(--stg-mute);}
+.sty-qsearch:focus-within{border-color:var(--stg-acc);}
+.sty-qsearch input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:600 13.5px/1 ${SANS};color:var(--stg-ink);}
+.sty-qsearch input::placeholder{color:var(--stg-mute);}
+.sty-qsort{margin-left:auto;flex:none;display:inline-flex;gap:2px;padding:2px;border:1px solid var(--stg-cell-line);border-radius:999px;}
+.sty-qsort button{border:0;border-radius:999px;background:transparent;color:var(--stg-ink2);font:800 11px/1 ${SANS};
+  letter-spacing:.05em;text-transform:uppercase;padding:7px 12px;cursor:pointer;}
+.sty-qsort button[aria-pressed="true"]{background:var(--stg-ink);color:var(--stg-ground);}
+.sty-qblk{margin-bottom:26px;}
+.sty-qbh{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
+.sty-qbh h3{margin:0;font-size:17px;font-weight:800;letter-spacing:-0.01em;color:var(--stg-ink);}
+.sty-qbh span{font-size:12px;font-weight:600;color:var(--stg-mute);}
+.sty-qtiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+.sty-qtile{display:flex;flex-direction:column;min-width:0;background:var(--stg-surf);border:1px solid var(--stg-line);
+  border-radius:12px;overflow:hidden;text-decoration:none;color:var(--stg-ink);}
+a.sty-qtile:hover{border-color:var(--stg-line2);}
+a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
+.sty-qtile:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
+.sty-qtband{height:84px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;
+  background:color-mix(in srgb,var(--dc,var(--stg-mute)) 18%,var(--stg-surf));
+  color:color-mix(in srgb,var(--dc,var(--stg-mute)) 82%,var(--stg-ink));}
+.sty-qtband b{font-size:28px;font-weight:800;color:var(--stg-ink);font-variant-numeric:tabular-nums;}
+.sty-qtbody{display:flex;flex-direction:column;gap:6px;padding:12px 14px 14px;flex:1;min-height:96px;}
+.sty-qtbody i{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute);}
+.sty-qtbody strong{font-size:14px;font-weight:700;line-height:1.3;min-height:2.6em;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.sty-qtfoot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:4px;}
+.sty-qtfoot em{font-style:normal;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;}
+.sty-qtfoot small{font-size:13px;font-weight:600;color:var(--stg-mute);}
+.sty-qtplay{flex:none;font-size:12px;font-weight:800;border-radius:999px;padding:5px 12px;
+  background:var(--stg-acc);color:var(--stg-onramp,#08222e);}
+.sty-qtile.ph .sty-qtband{background:var(--stg-chip);}
+.sty-qcats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start;}
+.sty-qcat{min-width:0;background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:12px;padding:12px 16px;}
+.sty-qch{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;padding:2px 0 10px;
+  font-family:inherit;color:var(--stg-ink);text-align:left;cursor:default;}
+.sty-qci{flex:none;color:color-mix(in srgb,var(--dc,var(--stg-mute)) 82%,var(--stg-ink));}
+.sty-qcn{flex:1;min-width:0;display:flex;flex-direction:column;}
+.sty-qcn strong{font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-qcn span{font-size:12px;font-weight:600;color:var(--stg-mute);}
+.sty-qcp{flex:none;display:flex;flex-direction:column;align-items:flex-end;}
+.sty-qcp b{font-size:20px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;}
+.sty-qcp small{font-size:11px;font-weight:700;color:var(--stg-mute);}
+.sty-qpm{display:none;}
+.sty-qcb ol{list-style:none;margin:0;padding:0;border-top:1px solid var(--stg-line);}
+.sty-qcb li{border-bottom:1px solid var(--stg-line);}
+.sty-qcb li.ph{height:35px;}
+.sty-qcb li a{display:flex;align-items:center;gap:10px;padding:8px 0;text-decoration:none;color:var(--stg-ink);font-size:13px;}
+.sty-qcb li a:hover .t{color:var(--stg-acc-ink);}
+.sty-qcb li a:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;border-radius:4px;}
+.sty-qcb .n{width:14px;flex:none;font-weight:800;color:var(--stg-mute);font-variant-numeric:tabular-nums;}
+.sty-qcb .t{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-qcb li b{flex:none;font-weight:800;font-variant-numeric:tabular-nums;}
+.sty-qall2{display:inline-block;margin-top:9px;font-size:12px;font-weight:800;color:var(--stg-ink2);text-decoration:none;}
+.sty-qall2:hover{color:var(--stg-acc-ink);}
+.sty-qres{list-style:none;margin:0;padding:0;background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:12px;overflow:hidden;}
+.sty-qres li+li{border-top:1px solid var(--stg-line);}
+.sty-qres a{display:flex;align-items:center;gap:12px;padding:11px 14px;text-decoration:none;color:var(--stg-ink);font-size:13.5px;}
+.sty-qres a:hover .t{color:var(--stg-acc-ink);}
+.sty-qres .t{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-qres i{flex:none;font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-mute);}
+@media (max-width:1180px){
+  .sty-qtiles{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .sty-qcats{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media (max-width:640px){
+  .sty-qsearch{flex-basis:100%;max-width:none;height:44px;}
+  .sty-qsort{margin-left:0;}
+  .sty-qtiles{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:2px;}
+  .sty-qtiles::-webkit-scrollbar{display:none;}
+  .sty-qtile{flex:0 0 156px;scroll-snap-align:start;}
+  .sty-qtband{height:68px;padding:0 12px;}
+  .sty-qtband svg{width:34px;height:34px;}
+  .sty-qtband b{font-size:24px;}
+  .sty-qtbody{padding:10px 11px 12px;min-height:88px;}
+  .sty-qtbody strong{font-size:13px;}
+  .sty-qtplay{display:none;}
+  .sty-qcats{grid-template-columns:minmax(0,1fr);gap:0;background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:12px;overflow:hidden;}
+  .sty-qcat{border:0;border-radius:0;padding:0 14px;}
+  .sty-qcat+.sty-qcat{border-top:1px solid var(--stg-line);}
+  .sty-qch{cursor:pointer;min-height:58px;padding:0;}
+  .sty-qch:focus-visible{outline:2px solid var(--stg-acc);outline-offset:-2px;}
+  .sty-qci{width:22px;height:22px;}
+  .sty-qcp b{font-size:16px;}
+  .sty-qcp small{font-size:10px;letter-spacing:.08em;text-transform:uppercase;}
+  .sty-qpm{display:block;flex:none;color:var(--stg-mute);}
+  .sty-qcat.on .sty-qpm .v{display:none;}
+  .sty-qcat:not(.on) .sty-qcb{display:none;}
+  .sty-qcb{padding:0 0 12px 34px;}
+  .sty-qcb li a{min-height:44px;padding:0;}
+}
 
 @media (max-width:640px){
   .sty-qgrid{grid-template-columns:minmax(0,1fr);}
