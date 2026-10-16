@@ -572,7 +572,7 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
     if (!destinations(state, card).length) {
       setSel(null); setShake((k) => k + 1);
       const n = locate(state, card).n;
-      say(n > 1 ? `That run has nowhere to go yet. One move carries up to ${capacity(state, false)} cards right now.` : 'That card has nowhere to go yet.');
+      say(n > 1 ? runTooLong(n) : 'That card has nowhere to go yet.');
       return;
     }
     setAutoNote(0);
@@ -580,8 +580,29 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
   }
   function onDest(dest) {
     if (!playing || sel == null) return;
-    if (!dests.includes(dest)) { setShake((k) => k + 1); return; }
+    if (!dests.includes(dest)) {
+      setShake((k) => k + 1);
+      // An empty column the run in hand cannot reach: say why, rather than
+      // leave a player who knows FreeCell thinking runs never go there.
+      if (dest !== FND && dest !== FREE && state.cols[dest] && !state.cols[dest].length) {
+        const loc = locate(state, sel);
+        if (loc && loc.where === 'col' && loc.k === 0) say('That is already a whole column. Moving it to an empty one changes nothing.');
+        else if (loc && loc.n > 1) say(runTooLong(loc.n));
+      }
+      return;
+    }
     doMove(sel, dest);
+  }
+  // Why a run will not move. Into an empty column the doubling for that column
+  // is lost, so it carries fewer than onto a card; say both numbers, and say how
+  // to move part of the run, which is the standard FreeCell answer.
+  function runTooLong(n) {
+    const onto = capacity(state, false);
+    const intoEmpty = state.cols.some((c) => !c.length) ? capacity(state, true) : null;
+    const cap = intoEmpty != null
+      ? `Right now one move carries up to ${onto} card${onto === 1 ? '' : 's'} onto another column, but only ${intoEmpty} into an empty one.`
+      : `Right now one move carries up to ${onto} card${onto === 1 ? '' : 's'}.`;
+    return `That run is ${n} cards. ${cap} Tap a card partway down the run to move just that part, or open a free cell first.`;
   }
 
   function restart() {
@@ -661,7 +682,7 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
       steps={[
         <><b>Tap a card</b> to pick it up along with every card on it, then tap where it goes. <b>Double-tap</b> a card to send it home.</>,
         <>Columns build <b>down in alternating colors</b>, so a red 6 goes on a black 7. Any card or run can go into an <b>empty column</b>, and any single card into an open free cell. You have <b>{CELLS === 1 ? 'one free cell' : `${NUM_WORD[CELLS].toLowerCase()} free cells`}</b> today.</>,
-        <>A run moves in one move when the free space can carry it: up to one more than your open free cells, doubled for every empty column you are not moving into.</>,
+        <>A run moves in one move when the free space can carry it: up to one more than your open free cells, doubled for every empty column you are not moving into. So two open cells carry three cards onto another column, six with an empty column spare, but only three <b>into</b> that empty column. A run too long to fit can be split: tap a card partway down it to move just that part.</>,
         <>Every move you make counts <b>one</b>, a whole run included. Cards that are safe go home <b>on their own, for free</b>: aces and twos always, any other card once both piles of the other color are one rank below it. There is <b>no undo</b>, only a <b>restart</b> that redeals the same board and zeroes your moves while the clock keeps running.</>,
       ]}
       knack={<><b>Perfect</b> is the proven minimum, so nothing beats it, while <b>par</b> is the number a clean line comes home in. Every deal is winnable, and finishing always beats walking away.</>}
