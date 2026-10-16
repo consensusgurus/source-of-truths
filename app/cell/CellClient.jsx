@@ -352,6 +352,27 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
 
   const state = useMemo(() => replay(PUZZLE.deal, CELLS, g.moves) || START, [PUZZLE, START, g.moves, CELLS]);
   const dests = useMemo(() => (sel != null && playing ? destinations(state, sel) : []), [sel, state, playing]);
+  // Auto-split into an empty column. A run too long for an empty column still
+  // drops there: the most cards from the END of the run that the column can
+  // take go in, the same move a player makes by tapping a card partway down.
+  // It is an ordinary legal move, so move counts and perfect are untouched.
+  function splitFor(card, j) {
+    if (card == null || !state.cols[j] || state.cols[j].length) return null;
+    const loc = locate(state, card);
+    if (!loc || loc.where !== 'col' || loc.n < 2) return null;
+    const col = state.cols[loc.i];
+    for (let m = Math.min(loc.n - 1, capacity(state, true)); m >= 1; m--) {
+      const c2 = col[col.length - m];
+      if (destinations(state, c2).includes(j)) return { card: c2, m };
+    }
+    return null;
+  }
+  const splits = useMemo(
+    () => (sel != null && playing ? state.cols.map((_, j) => (dests.includes(j) ? null : splitFor(sel, j))) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sel, state, playing, dests]
+  );
+  const intoEmpty = state.cols.some((c) => !c.length) ? capacity(state, true) : null;
   const movable = useMemo(() => (playing ? legalMoves(state) : []), [state, playing]);
 
   useEffect(() => { gRef.current = g; }, [g]);
@@ -569,7 +590,7 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
       say('Only the run at the top of a column moves together: each card one lower, colors alternating.');
       return;
     }
-    if (!destinations(state, card).length) {
+    if (!destinations(state, card).length && !state.cols.some((_, j) => splitFor(card, j))) {
       setSel(null); setShake((k) => k + 1);
       const n = locate(state, card).n;
       say(n > 1 ? runTooLong(n) : 'That card has nowhere to go yet.');
@@ -580,6 +601,7 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
   }
   function onDest(dest) {
     if (!playing || sel == null) return;
+    if (!dests.includes(dest) && splits[dest]) { doMove(splits[dest].card, dest); return; }
     if (!dests.includes(dest)) {
       setShake((k) => k + 1);
       // An empty column the run in hand cannot reach: say why, rather than
@@ -682,7 +704,7 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
       steps={[
         <><b>Tap a card</b> to pick it up along with every card on it, then tap where it goes. <b>Double-tap</b> a card to send it home.</>,
         <>Columns build <b>down in alternating colors</b>, so a red 6 goes on a black 7. Any card or run can go into an <b>empty column</b>, and any single card into an open free cell. You have <b>{CELLS === 1 ? 'one free cell' : `${NUM_WORD[CELLS].toLowerCase()} free cells`}</b> today.</>,
-        <>A run moves in one move when the free space can carry it: up to one more than your open free cells, doubled for every empty column you are not moving into. So two open cells carry three cards onto another column, six with an empty column spare, but only three <b>into</b> that empty column. A run too long to fit can be split: tap a card partway down it to move just that part.</>,
+        <>A run moves in one move when the free space can carry it: up to one more than your open free cells, doubled for every empty column you are not moving into. So two open cells carry three cards onto another column, six with an empty column spare, but only three <b>into</b> that empty column. Drop a run that is too long on an empty column and as many cards from the end of it as fit go in, one move. To split it somewhere else, tap a card partway down the run.</>,
         <>Every move you make counts <b>one</b>, a whole run included. Cards that are safe go home <b>on their own, for free</b>: aces and twos always, any other card once both piles of the other color are one rank below it. There is <b>no undo</b>, only a <b>restart</b> that redeals the same board and zeroes your moves while the clock keeps running.</>,
       ]}
       knack={<><b>Perfect</b> is the proven minimum, so nothing beats it, while <b>par</b> is the number a clean line comes home in. Every deal is winnable, and finishing always beats walking away.</>}
@@ -834,6 +856,11 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
             });
             if (empties === 1) out.push('the empty column');
             else if (empties > 1) out.push(`any of ${empties} empty columns`);
+            const sp = splits.filter(Boolean);
+            if (sp.length) {
+              const part = `the last ${sp[0].m}`;
+              out.push(sp.length === 1 ? `${part} into the empty column` : `${part} into any of ${sp.length} empty columns`);
+            }
             if (dests.includes(FREE)) out.push(openCells === 1 ? 'the open free cell' : 'a free cell');
             return out;
           };
@@ -962,7 +989,8 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
             <div ref={setFeltEl} style={{ position: 'relative', height: tabH, marginTop: narrow ? 14 : 18 }}>
               {state.cols.map((col, j) => {
                 const x = Math.round(j * pitch);
-                const live = inHand && dests.includes(j);
+                const sp = inHand && !dests.includes(j) ? splits[j] : null;
+                const live = inHand && (dests.includes(j) || !!sp);
                 const rev = revOf(col.length);
                 return (
                   <React.Fragment key={j}>
@@ -970,9 +998,9 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
                       <span aria-hidden="true" className="cel-hole" style={{ position: 'absolute', left: x, top: LIFT, width: CW, height: CH, borderRadius: Math.round(CW * 0.1) }} />
                     ) : live ? (
                       <button type="button" className="cel-drop" onClick={() => onDest(j)}
-                        aria-label={`Empty column ${j + 1}: drop the ${named(sel)}${selN > 1 ? ` and the ${selN - 1} on it` : ''} here`}
+                        aria-label={sp ? `Empty column ${j + 1}: the run is too long for it, so drop the last ${sp.m} cards of it here` : `Empty column ${j + 1}: drop the ${named(sel)}${selN > 1 ? ` and the ${selN - 1} on it` : ''} here`}
                         style={{ position: 'absolute', left: x, top: LIFT, width: CW, height: CH, borderRadius: Math.round(CW * 0.1), fontSize: narrow ? 9.5 : 11 }}>
-                        <span>Drop{CW < 56 ? <br /> : ' '}here</span>
+                        <span>{sp ? <>Drop {sp.m}{CW < 56 ? <br /> : ' '}here</> : <>Drop{CW < 56 ? <br /> : ' '}here</>}</span>
                       </button>
                     ) : (
                       <button type="button" className="cel-hole" onClick={() => onDest(j)} disabled={!inHand}
@@ -1040,14 +1068,14 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
 
               <div key={shake} className={`cel-felt${shake ? ' shake' : ''}`} style={{ marginTop: narrow ? 12 : 18 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 8 }}>
-                  <span className="cel-k">Free cells · {openCells} open{narrow ? '' : ` · a move carries up to ${carry}`}</span>
+                  <span className="cel-k">Free cells · {openCells} open{narrow ? '' : ` · a move carries up to ${carry}${intoEmpty != null ? `, ${intoEmpty} into an empty column` : ''}`}</span>
                   <span className="cel-k">Home{narrow ? '' : ` · ace up to ${RANK_LABEL[RANKS]}`}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: narrow ? 6 : 8, gap: sepGap }}>
                   {freeRow}
                   {homeRow}
                 </div>
-                {narrow && <div className="cel-k" style={{ marginTop: 6 }}>A move carries up to {carry} card{carry === 1 ? '' : 's'} right now</div>}
+                {narrow && <div className="cel-k" style={{ marginTop: 6 }}>A move carries up to {carry} card{carry === 1 ? '' : 's'}{intoEmpty != null ? `, ${intoEmpty} into an empty column` : ''}</div>}
 
                 <div style={{ height: 1, background: LINE, marginTop: narrow ? 12 : 16 }} />
 
