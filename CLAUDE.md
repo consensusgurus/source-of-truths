@@ -9565,14 +9565,15 @@ and selection and the hint are a gold ring. Check keeps its own `--stg-sq-*` pai
 The Quizzes pane in `app/today/StageToday.jsx` (`#sty-quizzes`) is no longer a stack of
 topic drawers. It is a search box and a Most played / A to Z toggle, then **Most played**
 (12 tiles, all-time plays, at most two per topic), then **By category** (every topic as a
-card: total plays, plays today, its top four quizzes with plays, and a link to
+card: total plays, its top four quizzes with plays, and a link to
 `/quizzes/all#<topic>`). At phone width the tiles become a swipe strip and the cards fold
 into rows, one open at a time. Search filters the full catalogue from `/api/quiz/topics`.
 
 - **All figures come from ONE cached route, `/api/quiz/pane`** (~8KB). It counts plays off
-  the shared results cache, holds the answer in-module for an hour and sends
-  `s-maxage=3600`, so the pane never reads the 1.4MB `/api/quiz/stats` and play counts are
-  not re-pulled per load (owner ask). It only caches a successful count.
+  the shared results cache, holds the answer in-module for a DAY and sends
+  `s-maxage=86400`, so the pane never reads the 1.4MB `/api/quiz/stats` and play counts are
+  not re-pulled per load (owner, 2026-10-16: quizzes are not played much, so daily is
+  plenty). There is no "plays today" figure, since a daily count cannot say it. It only caches a successful count.
 - **The catalogue is `catalogQuizzes()` and the topic is `quizDept`**, the same set and
   grouping as the sitemap and `/quizzes/all`; never re-filter here.
 - **Two per topic in Most played is deliberate.** Geography's map quizzes hold about four

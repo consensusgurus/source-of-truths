@@ -1138,7 +1138,7 @@ export default function StageToday() {
   const [topics, setTopics] = useState(null);
   // THE QUIZZES PANE (owner, 2026-10-16): most-played tiles, then every topic
   // with its total plays and its top quizzes. One cached read (/api/quiz/pane,
-  // counted at most hourly), fired on the same trigger as the topic list.
+  // counted at most daily), fired on the same trigger as the topic list.
   const [qpane, setQpane] = useState(null);
   const [qSort, setQSort] = useState('plays');
   const [qq, setQq] = useState('');
@@ -3273,7 +3273,7 @@ export default function StageToday() {
             const tiles = qpane ? qpane.top : Array.from({ length: QZ_TILES }, () => null);
             const cats0 = qpane
               ? qpane.topics
-              : TOPIC_SKELETON.map((t) => ({ ...t, color: null, count: 0, plays: null, today: 0, top: [] }));
+              : TOPIC_SKELETON.map((t) => ({ ...t, color: null, count: 0, plays: null, top: [] }));
             const cats = qSort === 'az'
               ? cats0.slice().sort((a, b) => a.label.localeCompare(b.label))
               : cats0;
@@ -3359,7 +3359,7 @@ export default function StageToday() {
                     <section className="sty-qblk" aria-labelledby="sty-qbc">
                       <div className="sty-qbh">
                         <h3 id="sty-qbc">By category</h3>
-                        <span>{qSort === 'az' ? 'A to Z' : 'Sorted by total plays'} &middot; counts refresh hourly</span>
+                        <span>{qSort === 'az' ? 'A to Z' : 'Sorted by total plays'} &middot; counts refresh daily</span>
                       </div>
                       <div className="sty-qcats">
                         {cats.map((t, i) => {
@@ -3374,7 +3374,7 @@ export default function StageToday() {
                                 </svg>
                                 <span className="sty-qcn">
                                   <strong>{t.label}</strong>
-                                  <span>{t.count ? `${fmt(t.count)} quizzes` : ' '}{t.today ? ` · +${fmt(t.today)} today` : ''}</span>
+                                  <span>{t.count ? `${fmt(t.count)} quizzes` : ' '}</span>
                                 </span>
                                 <span className="sty-qcp">
                                   <b>{t.plays === null ? ' ' : fmt(t.plays)}</b>
