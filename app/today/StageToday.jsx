@@ -2895,23 +2895,6 @@ export default function StageToday() {
               canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
               res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} />
           ))}
-          {/* THE EMPTY SLOT POINTS AT WHAT IS LEFT (owner, 2026-10-10): when the
-              last row of tiles has a gap and the reader has history here, the
-              gap names the games they have never tried. It only fills a slot
-              that is already empty, so nothing below it moves when it lands. */}
-          {(() => {
-            if (!fit || !fit.cols || games.length % fit.cols === 0 || !fav) return null;
-            if (!games.some((g) => fav.mine[g.key])) return null;
-            const un = games.filter((g) => !fav.mine[g.key]).sort((a, b) => a.name.localeCompare(b.name));
-            if (!un.length) return null;
-            return (
-              <a className="sty-g sty-gtry" href={`${routeOf(un[0])}${tq ? '?' + tq.slice(1) : ''}`}>
-                <span className="sty-eb">Not tried yet</span>
-                <span className="sty-gn">{un.slice(0, 3).map((g) => g.name).join(' \u00b7 ')}{un.length > 3 ? ` +${un.length - 3}` : ''}</span>
-                <span className="sty-gt">{un.length === 1 ? 'The last one in the set' : 'Try one for the full set'}</span>
-              </a>
-            );
-          })()}
         </div>
         {fit ? favBlock(cat, games, fit.k) : null}
         </> : null}
@@ -4990,9 +4973,6 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-favr.try .go{grid-column:2 / -1;justify-self:start;font-size:12px;font-weight:800;color:var(--stg-acc-ink,var(--cci, var(--cc)));
   border:1px dashed var(--cci, var(--cc));border-radius:4px;padding:2px 10px;line-height:16px;}
 .sty-favr.try:hover .go{border-style:solid;}
-.sty-g.sty-gtry{background:transparent;border:1px dashed var(--cci, var(--cc));display:flex;flex-direction:column;justify-content:center;gap:4px;}
-.sty-g.sty-gtry .sty-eb{margin:0;color:var(--stg-acc-ink,var(--cci, var(--cc)));}
-.sty-g.sty-gtry .sty-gn{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 @media (max-width:1240px){ .sty-fav.own{--cg:110px minmax(0,1fr) 120px 58px 58px 48px 44px 40px;} }
 @media (min-width:1100px){
   .sty-ix.rl{grid-template-columns:212px minmax(0,1fr) 264px;}
@@ -5270,7 +5250,12 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-rbig.art .go{grid-row:2 / 4;}
 .sty-circ .ca{--art:var(--cc);margin:-12px -14px 10px -16px;}
 .sty-rnm{display:none;}
+/* THE WRAPPER HIDES TOO (owner, 2026-10-16): an empty .sty-rhome above 900px is
+   still a flex child of .sty-wrap and costs its 26px gap, a blank band above the
+   rail on All Puzzles. Only the phone draws it. */
+.sty-rhome{display:none;}
 @media (max-width:900px){
+  .sty-rhome{display:block;}
   .sty-cpills{display:none;}
   .sty-rcards{grid-template-columns:minmax(0,1fr);}
   /* THE PHONE'S RUNS (owner, 2026-10-13): the most played unfinished run is
