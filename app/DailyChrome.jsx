@@ -45,6 +45,7 @@ import QuizNavHeader from './quizzes/QuizNavHeader';
 import DailySlateRail from './DailySlateRail';
 import DailyFiveBar from './DailyFiveBar';
 import useLoft from './useLoft';
+import GateLanding from './GateLanding';
 
 export default function DailyChrome({ slug, loft: loftProp = false }) {
   // LOFT FORMAT: drops the selector ribbon (choosing another daily belongs
@@ -77,6 +78,9 @@ export default function DailyChrome({ slug, loft: loftProp = false }) {
           load it costs one mounted component that renders nothing and asks for
           nothing. */}
       <DailyFiveBar slug={slug} />
+      {/* Pressing Start on a daily's gate brings the board into view. One
+          listener here covers every daily. See app/GateLanding.jsx. */}
+      <GateLanding />
     </div>
   );
 }

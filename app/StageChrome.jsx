@@ -50,6 +50,7 @@ import { glyphFor, GLYPH_BOX } from '@/lib/game-glyphs';
 import RollNum from './RollNum';
 import { useRevealPref, REVEAL } from '@/lib/reveal-pref';
 import DailyRunRail from './DailyRunRail';
+import GateLanding from './GateLanding';
 import { markPageEntry } from '@/lib/finish-beat';
 
 // A FIGURE THAT IS A PLAIN COUNT ROLLS; anything else swaps (motion pass,
@@ -398,6 +399,7 @@ export default function StageChrome({
       {/* A DAILY RUN (?run=a,b,c, lib/daily-run.js). Renders nothing unless the
           page was opened inside one. */}
       {gameKey ? <DailyRunRail gameKey={gameKey} /> : null}
+      {gameKey ? <GateLanding /> : null}
       {gameKey ? <ChallengeStrip gameKey={gameKey} num={num} /> : null}
 
       {dailyStrip ? (
