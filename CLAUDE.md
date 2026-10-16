@@ -7549,6 +7549,9 @@ on the home. `?entry=1` previews, `?entry=0` suppresses. The home snapshot stand
 to show (the door is fixed inside the live page, which the snapshot hides), and PremierePop, GroupsPop and the
 theme pop-up wait on `.ent-door`. The Patch below is unchanged.
 
+**The door's tiles are SKILLS, not categories (owner, 2026-10-16).** See "Skills: the second axis"
+below. A tile starts today's run for that skill; the categories are unchanged everywhere else.
+
 Three things shipped together (`32a923301`, `19f8cfb7b`); the design study with looping
 mockups is https://claude.ai/code/artifact/8d963ed1-c694-46e9-ad92-a70cd4e773f9.
 
@@ -9637,3 +9640,22 @@ its most-played quiz's photo, else `DEPT_HERO`; photos go through `/_next/image`
   (owner: keep the pages that help SEO, do not link them). Do not re-add it to the footer,
   the SEO prose, the archive or the pane. Note the trade: the pane's quiz links are drawn
   client-side, so the sitemap is now the crawler's only path to most `/quiz/<id>` pages.
+
+## Skills: the second axis, and the entry page runs on it (owner, 2026-10-16)
+
+Every live daily carries one or two SKILLS in `lib/daily-skills.js` (`SKILL_TAGS`, primary first):
+Language, Mental math, Deduction, Spatial reasoning, Grid logic, Planning, Memory, Estimation, Focus
+and speed, Reading people. **The categories do not change** (owner: they stay the same in name): they
+still run the home shelves, page colours, archive, circuits and every scoring rule (End Game and
+Arcade key off `cat`). Skills drive only the entry door (`app/EntryDoor.jsx`).
+
+- **A skill tile starts a run**: `skillRun(id, today, playedToday)` takes the live games whose
+  PRIMARY skill it is, rotates the pool one game a day, drops games finished today, caps at five, and
+  the door navigates to `dailyRunHref(first, keys)`, the ordinary `?run=` daily run (DailyRunRail).
+  Nothing new is stored or scored. One game left goes straight to it; none left opens the home pane
+  of the skill's most common category.
+- **A NEW DAILY ADDS ITSELF TO `SKILL_TAGS` in the launch push.** `scripts/verify-skills.mjs`
+  (found by verify-all) fails a live daily with no tag, an unknown skill, a repeated second skill, a
+  skill with fewer than three live primaries, or a run that deals a played, dead or off-skill game.
+- Reading people has three games and Focus and speed five, so both still fill a run but cannot rotate
+  much. Use plain "sharpen" and "practice" in copy about skills, never claims of improvement.

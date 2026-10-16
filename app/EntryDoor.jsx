@@ -8,13 +8,17 @@
 // and then stamped the reader's own figures (IQ today, rank, streak, the two
 // boards). The owner retired that whole sequence and the reads that fed it on
 // the same day, so nothing here fetches anything: the only figures on screen are
-// the game counts per category, and those come off the static registry.
+// the games left today per skill, from the static registry and this device's own breadcrumbs.
 //
 // WHAT IT IS: the ten category bands rise and the ground wipes across them (the
 // Ramp, kept as a one-time opening), the mark and the three brand lines land,
 // and the curtain lifts onto "what do you want to sharpen today?" with one tile
-// per category. A tile opens that category's pane on the home underneath; the
-// button at the foot just closes the door onto the home as it is.
+// per SKILL (owner, 2026-10-16; lib/daily-skills.js). A tile starts today's run
+// for that skill: up to five unplayed games whose primary skill it is, carried
+// game to game as an ordinary daily run (?run=, lib/daily-run.js), so nothing
+// new is scored. A skill whose games are all played today opens the home pane
+// of its most common category instead. The button at the foot just closes the
+// door onto the home as it is.
 //
 // ALWAYS DARK, whatever the reader's register. The owner asked for the dark
 // version for everyone, so every colour here is a literal on the near-black
@@ -32,7 +36,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
-import { CATEGORY_RAMP, RAMP_INK, RAMP_ORDER, categoryColor } from '@/lib/category-ramp';
+import { CATEGORY_RAMP, RAMP_INK, RAMP_ORDER } from '@/lib/category-ramp';
+import { SKILLS, skillPool, skillRun } from '@/lib/daily-skills';
+import { dailyRunHref, playedToday } from '@/lib/daily-run';
 import MindLoftMark from './MindLoftMark';
 import { etToday } from './useDayStats';
 
@@ -44,21 +50,6 @@ export const ENTRY_EVERY_MS = 7 * 24 * 3600 * 1000;
 const LIFT_AT = 6600;   // the curtain's hold, then the lift (the three lines arrive one at a time)
 const LIFT_MS = 640;
 
-// Skill on the tile, the home's category underneath. `cat` is the registry
-// category, which is also the home's pane id for it.
-const TILES = [
-  { skill: 'Language', cat: 'Word', label: 'Words' },
-  { skill: 'Mental math', cat: 'Numbers' },
-  { skill: 'Deduction', cat: 'Logic' },
-  { skill: 'Grid logic', cat: 'Sudoku' },
-  { skill: 'General knowledge', cat: 'Trivia' },
-  { skill: 'World knowledge', cat: 'Geography' },
-  { skill: 'Strategy', cat: 'End Game' },
-  { skill: 'Card sense', cat: 'Cards' },
-  { skill: 'Reflexes', cat: 'Arcade' },
-  { skill: 'Reading people', cat: 'Crowd Psychology', short: 'Crowd' },
-];
-
 const LINES = ['Sharpen your mind', 'Gain IQ points', 'Elevate your thinking'];
 
 export default function EntryDoor({ onPick }) {
@@ -68,13 +59,20 @@ export default function EntryDoor({ onPick }) {
   const timers = useRef([]);
   const btnRef = useRef(null);
 
-  const counts = useMemo(() => {
+  // Per skill: today's run (unplayed, rotated, capped) and the category its
+  // pool leans on, for the all-played fallback. Client only: phase is set in an
+  // effect, so the server never reads the breadcrumbs.
+  const runs = useMemo(() => {
     if (!phase) return {};
     const out = {};
     try {
-      for (const k of liveDailyKeys(etToday())) {
-        const c = DAILY_GAME_MAP[k] && DAILY_GAME_MAP[k].cat;
-        if (c) out[c] = (out[c] || 0) + 1;
+      const today = etToday();
+      for (const sk of SKILLS) {
+        const pool = skillPool(sk.id, today);
+        const tally = {};
+        for (const k of pool) { const c = DAILY_GAME_MAP[k] && DAILY_GAME_MAP[k].cat; if (c) tally[c] = (tally[c] || 0) + 1; }
+        const cat = Object.keys(tally).sort((x, y) => tally[y] - tally[x])[0] || null;
+        out[sk.id] = { keys: skillRun(sk.id, today, playedToday), pool: pool.length, cat };
       }
     } catch (e) {}
     return out;
@@ -153,6 +151,17 @@ export default function EntryDoor({ onPick }) {
       try { requestAnimationFrame(() => onPick(cat)); } catch (e) { onPick(cat); }
     }
   }
+  // A skill tile starts its run. Two or more games ride ?run=; one game is just
+  // that game; none left falls back to the home pane of the skill's category.
+  function start(id) {
+    const r = runs[id];
+    const keys = (r && r.keys) || [];
+    if (!keys.length) { pick(r && r.cat); return; }
+    close();
+    const g = DAILY_GAME_MAP[keys[0]];
+    const href = keys.length >= 2 ? dailyRunHref(keys[0], keys) : (g ? g.href : '/');
+    try { window.location.assign(href); } catch (e) {}
+  }
 
   if (!phase) return null;
   const curtain = phase === 'cur' || phase === 'lift';
@@ -163,18 +172,19 @@ export default function EntryDoor({ onPick }) {
       <div className={'ent-pg' + (phase === 'page' ? ' rise' : '')} aria-hidden={curtain ? 'true' : undefined}>
         <h2 className="ent-ask">What do you want to sharpen today?</h2>
         <ul className="ent-tiles">
-          {TILES.map((t, i) => {
-            const n = counts[t.cat] || 0;
-            const label = t.label || t.cat;
+          {SKILLS.map((t, i) => {
+            const r = runs[t.id] || { keys: [], pool: 0 };
+            const n = r.keys.length;
+            const meta = n ? `${n} game${n === 1 ? '' : 's'} today` : (r.pool ? 'All played today' : '');
             return (
-              <li key={t.cat} style={{ '--i': i }}>
-                <button type="button" className="ent-tile" style={{ '--c': categoryColor(t.cat) }} onClick={() => pick(t.cat)}>
-                  <span className="ent-sk">{t.skill}</span>
+              <li key={t.id} style={{ '--i': i }}>
+                <button type="button" className="ent-tile" style={{ '--c': CATEGORY_RAMP[t.ramp] }} onClick={() => start(t.id)}
+                  aria-label={`${t.name}: ${n ? `start a run of ${n}` : 'open the puzzles'}`}>
+                  <span className="ent-sk">
+                    {t.short ? <><span className="ent-cl">{t.name}</span><span className="ent-cs">{t.short}</span></> : t.name}
+                  </span>
                   <span className="ent-meta">
-                    <span>
-                      {t.short ? <><span className="ent-cl">{label}</span><span className="ent-cs">{t.short}</span></> : label}
-                      {n ? <> · <b>{n}</b></> : null}
-                    </span>
+                    <span>{meta}</span>
                     <span className="ent-go" aria-hidden="true">→</span>
                   </span>
                 </button>
