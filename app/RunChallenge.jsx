@@ -97,7 +97,7 @@ export function RunChallengeButton({ gameKey, score, total, n, t = null, won = f
   const lead = blank ? 'Dare them to beat it.' : `Send them ${fig} to beat.`;
   if (door && draw) {
     return (
-      <TicketDoor fig={blank ? '' : fig} label={label} go={msg ? 'Sent' : (blank ? 'Send' : `Send ${fig}`)} msg={msg} onSend={send} style={style}
+      <TicketDoor fig={blank ? '' : fig} label={label} go={msg.startsWith('Link copied') ? 'Copied' : (blank ? 'Send' : `Send ${fig}`)} msg={msg} onSend={send} style={style}
         foot={archive ? null : 'Today\u2019s run only. One ticket for every new player who finishes from your link. No purchase necessary.'} />
     );
   }
@@ -113,7 +113,7 @@ export function RunChallengeButton({ gameKey, score, total, n, t = null, won = f
         <button type="button" className={'rch-door' + (className ? ' ' + className : '')} style={style || undefined} onClick={send}>
           <span className="rch-ic">{FLAG}</span>
           <span className="rch-tx"><span className="rch-nm">{label}</span><span className="rch-sb">{sb}</span></span>
-          <span className="rch-go">{msg ? 'Sent' : 'Send'}</span>
+          <span className="rch-go">{msg.startsWith('Link copied') ? 'Copied' : 'Send'}</span>
         </button>
       </>
     );

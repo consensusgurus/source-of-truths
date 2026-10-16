@@ -1553,6 +1553,9 @@ export default function StageFinish({
     reportTake(me.key, mine, duelRes || 'tie');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [!!duel, duelRes, isRetry, me && me.key]);
+  // The button only ever COPIES the link (a phone hands it to the share sheet
+  // and the label never changes), so it says Copied, never Sent: nothing was sent.
+  const chalCopied = chalMsg.startsWith('Link copied');
   const sendChallenge = () => {
     if (!mine) return;
     let onArchive = false;
@@ -1578,7 +1581,7 @@ export default function StageFinish({
     if (touch && navigator.share) { navigator.share({ url }).catch(() => {}); } else copy();
   };
   const chalDoor = canChallenge ? {
-    k: 'challenge', cls: 'chal', btn: true, onClick: sendChallenge, go: chalMsg ? 'Sent' : 'Send',
+    k: 'challenge', cls: 'chal', btn: true, onClick: sendChallenge, go: chalCopied ? 'Copied' : 'Send',
     ic: 'flag',
     nm: duel ? `Challenge ${chal.name} back` : 'Challenge a friend',
     sb: chalMsg || (() => {
@@ -1674,7 +1677,7 @@ export default function StageFinish({
                   <TicketDoor
                     fig={isBlankMiss(mine) ? '' : challengeFig(mine, me && me.key)}
                     label={duel ? `Challenge ${chal.name} back` : 'Challenge a friend'}
-                    go={chalMsg ? 'Sent' : (isBlankMiss(mine) ? 'Send' : `Send ${challengeFig(mine, me && me.key)}`)}
+                    go={chalCopied ? 'Copied' : (isBlankMiss(mine) ? 'Send' : `Send ${challengeFig(mine, me && me.key)}`)}
                     msg={chalMsg}
                     onSend={sendChallenge}
                   />
@@ -1802,7 +1805,7 @@ export default function StageFinish({
               <TicketDoor
                 fig={isBlankMiss(mine) ? '' : challengeFig(mine, me && me.key)}
                 label={duel ? `Challenge ${chal.name} back` : 'Challenge a friend'}
-                go={chalMsg ? 'Sent' : (isBlankMiss(mine) ? 'Send' : `Send ${challengeFig(mine, me && me.key)}`)}
+                go={chalCopied ? 'Copied' : (isBlankMiss(mine) ? 'Send' : `Send ${challengeFig(mine, me && me.key)}`)}
                 msg={chalMsg}
                 onSend={sendChallenge}
               />
