@@ -8,12 +8,15 @@
 import React from 'react';
 
 export function Obelus() {
+  // SIZED LIKE A PLUS SIGN (owner, 2026-10-16). At 0.84em it stood taller than
+  // the digits beside it. 0.6em matches the font's + and its centre sits on the
+  // math axis (about 0.33em above the baseline); the dots stay large enough to read.
   return (
-    <svg viewBox="0 0 10 10" width="0.84em" height="0.84em" aria-hidden="true" focusable="false"
-      style={{ display: 'inline-block', verticalAlign: '-0.05em', margin: '0 0.06em', overflow: 'visible' }}>
-      <circle cx="5" cy="1.5" r="1.7" fill="currentColor" />
-      <rect x="0.2" y="4.1" width="9.6" height="1.8" rx="0.9" fill="currentColor" />
-      <circle cx="5" cy="8.5" r="1.7" fill="currentColor" />
+    <svg viewBox="0 0 10 10" width="0.6em" height="0.6em" aria-hidden="true" focusable="false"
+      style={{ display: 'inline-block', verticalAlign: '0.03em', margin: '0 0.1em', overflow: 'visible' }}>
+      <circle cx="5" cy="1.4" r="1.4" fill="currentColor" />
+      <rect x="0.4" y="4.25" width="9.2" height="1.5" rx="0.75" fill="currentColor" />
+      <circle cx="5" cy="8.6" r="1.4" fill="currentColor" />
     </svg>
   );
 }
