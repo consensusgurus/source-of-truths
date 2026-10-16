@@ -2200,7 +2200,7 @@ export default function StageToday() {
     return (
       <button key={id} type="button" aria-pressed={paneOn === id}
         className={'sty-ixb' + (RAMP_ORDER.includes(id) ? ' ct' : '') + (cls ? ' ' + cls : '') + fillFor(id) + (paneOn === id ? ' on' : '') + (prog && prog[0] >= prog[1] ? ' cmp' : '')}
-        style={{ '--cc': hue, '--cci': RAMP_ORDER.includes(id) ? inkFor(id) : hue === 'var(--stg-acc)' ? 'var(--stg-acc-ink)' : hue, '--i': ixSeq++ }}
+        style={{ '--cc': hue, '--cci': RAMP_ORDER.includes(id) ? inkFor(id) : hue === 'var(--stg-acc)' ? 'var(--stg-acc-ink)' : hue, ...(RAMP_ORDER.includes(id) ? { '--ixp': categoryColor(id) } : null), '--i': ixSeq++ }}
         onClick={(e) => { if (picked && paneOn === id) { setPicked(false); try { localStorage.setItem(TILES_KEY, '1'); } catch (er) {} } else pickPane(id, e); }}>
         <i aria-hidden="true" />
         {ixRing(id, prog)}
@@ -5148,7 +5148,9 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
   .sty-ixgr .tr{stroke:var(--stg-line);}
   .sty-ixgr .dk{fill:var(--ixd,color-mix(in srgb,var(--cc) 18%,var(--stg-surf)));stroke:none;transform-origin:22px 22px;}
   .sty-ixgr .fl{stroke:var(--cci, var(--cc));stroke-linecap:round;}
-  .sty-ixb.ct{--ixd:var(--cc);--ixgi:#08222e;}
+  /* The disc is the dark ramp's pastel at full strength in BOTH registers (the
+     entry page's colours), carrying the one dark ink; the ring is the deep step. */
+  .sty-ixb.ct{--ixd:var(--ixp,var(--cc));--ixgi:#08222e;}
   .sty-ixgg{left:12px;top:12px;width:20px;height:20px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
   .sty-ixn:not(.re) .sty-ixb.cmp{border-color:var(--cci, var(--cc));}
   [data-sty-anim] .sty-ixn:not(.re):not(.pk) .sty-ixb{animation:sty-ixup .42s cubic-bezier(.2,.7,.3,1) both;animation-delay:calc(var(--i,0) * 45ms);}

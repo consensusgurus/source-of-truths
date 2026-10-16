@@ -136,11 +136,6 @@ if (RAMP_INK_LIGHT.length !== CATEGORY_RAMP_LIGHT.length) {
   fail(`light ink table has ${RAMP_INK_LIGHT.length} entries against ${CATEGORY_RAMP_LIGHT.length} steps`);
 }
 const seenL = new Map();
-const softEdge = [];
-// LOGIC'S INK IS GREEN, not lime (owner, 2026-08-31): lime deep enough to read
-// on paper is olive. Since 2026-10-16 the light FILL is lime like the dark one,
-// so the exemption now sits on the text step (5b) rather than the fill.
-const HUE_EXEMPT = new Set(['Logic']);
 CATEGORY_RAMP_LIGHT.forEach((hex, i) => {
   const cat = RAMP_ORDER[i] || `step ${i}`;
   // ONE INK PER STEP. Six steps carry white; the three warm ones stay pastel
@@ -157,9 +152,7 @@ CATEGORY_RAMP_LIGHT.forEach((hex, i) => {
   // in light mode, while the text on it runs 8:1 and up. Stated rather than
   // silently exempted.
   if (gnd < GROUND_MIN && !dark) fail(`light ${cat} ${hex}: pale ground is ${gnd.toFixed(2)}:1, under ${GROUND_MIN}`);
-  // Since 2026-10-16 every light step is a pastel carrying dark ink (owner),
-  // so a soft fill edge on the pale ground is the design, not a finding.
-  if (gnd < GROUND_MIN && dark) softEdge.push(cat);
+  if (gnd < GROUND_MIN && dark) warn(`light ${cat} ${hex}: pale ground is ${gnd.toFixed(2)}:1, under ${GROUND_MIN}. Accepted: this step keeps its pastel and carries dark ink, so its fill has a soft edge on white and its text does not. Not a task.`);
   if (seenL.has(hex)) fail(`light ${cat} repeats ${hex}, already used by ${seenL.get(hex)}`);
   seenL.set(hex, cat);
   // The two registers must be the SAME CATEGORY, which means the same hue. A
@@ -172,6 +165,7 @@ CATEGORY_RAMP_LIGHT.forEach((hex, i) => {
   // yellow-green, and the owner chose two clean colours over one muddy one
   // (2026-08-31). Lime on the dark register, green on the light. Any OTHER
   // category drifting in hue is still a failure.
+  const HUE_EXEMPT = new Set(['Logic']);
   const d = apart(hue(hex), hue(CATEGORY_RAMP[i]));
   if (d > 25 && !HUE_EXEMPT.has(cat)) fail(`light ${cat} is ${Math.round(d)} degrees from its dark step, so it is a different colour`);
   if (d > 25 && HUE_EXEMPT.has(cat)) warn(`light ${cat} is ${Math.round(d)} degrees from its dark step, by owner decision: dark lime goes olive, so this register is green instead.`);
@@ -179,7 +173,6 @@ CATEGORY_RAMP_LIGHT.forEach((hex, i) => {
     ok(`light ${cat.padEnd(17)} ${hex}  ${dark ? 'dark ' : 'white'} ink ${ink.toFixed(2)}:1  ground ${gnd.toFixed(2)}:1  ${Math.round(d)} deg from dark`);
   }
 });
-if (softEdge.length) ok(`${softEdge.length} pastel light steps sit soft on the pale ground by design (owner, 2026-10-16); lines and text use the ink ramp`);
 const badL = DAILY_GAMES.filter((g) => !CATEGORY_RAMP_LIGHT.includes(gameColorLight(g.key)));
 if (badL.length) fail(`${badL.length} games resolve outside the light ramp`);
 else ok(`all ${DAILY_GAMES.length} games resolve to a light step`);
@@ -206,8 +199,7 @@ else ok(`all ${DAILY_GAMES.length} games resolve to a light step`);
     let d = Math.abs(hue(hex) - hue(fill));
     if (d > 180) d = 360 - d;
     if (worst < INK_MIN) fail(`light TEXT ${cat} ${hex} is ${worst.toFixed(2)}:1 on a light surface`);
-    else if (d > 25 && !HUE_EXEMPT.has(cat)) fail(`light TEXT ${cat} is ${Math.round(d)} degrees from the fill it deepens`);
-    else if (d > 25) warn(`light TEXT ${cat} is ${Math.round(d)} degrees from its fill, by owner decision: lime ink is olive, so Logic writes in green.`);
+    else if (d > 25) fail(`light TEXT ${cat} is ${Math.round(d)} degrees from the fill it deepens`);
     else ok(`light TEXT ${cat.padEnd(17)} ${hex}  worst surface ${worst.toFixed(2)}:1  ${Math.round(d)} deg from its fill`);
   });
   const badT = DAILY_GAMES.filter((g) => !CATEGORY_RAMP_INK_LIGHT.includes(gameAccentInkLight(g.key)));
