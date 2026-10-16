@@ -21,7 +21,12 @@
 //     natural pays 15 (3 chips to 2) and settles immediately.
 //   - Player actions: HIT, STAND, or DOUBLE. Double is allowed only on the
 //     first two cards: the stake becomes 20 and exactly one card arrives.
-//     No splits, no insurance, no surrender.
+//     No insurance, no surrender.
+//   - SPLIT, on boards that carry `split: true` (from 2026-10-17): a pair of
+//     the same rank splits once into two hands of 10 chips each, played in
+//     order. Double after a split is allowed; split aces take one card each.
+//     A 21 after a split pays even money. Boards before that date have no
+//     split and replay exactly as they shipped.
 //   - A hand standing at exactly 21 stands itself: the game auto-stands, so
 //     nobody can bust a made 21 by mistake.
 //   - The dealer stands on ALL 17s (soft included) and draws to 16.
@@ -94,7 +99,7 @@ export function shoeFor(seed, count, decks = 1) {
 }
 
 // ---- the whole game, as one pure function ---------------------------------
-// `acts` is one string per STARTED hand, each a sequence of 'H' / 'S' / 'D'
+// `acts` is one string per STARTED hand, each a sequence of 'H' / 'S' / 'D' / 'P'
 // decisions in the order they were made. A hand that settled with no decision
 // (either natural showing) has the empty string. Starting the next hand IS
 // pushing the next empty string.
@@ -113,11 +118,14 @@ export function shoeFor(seed, count, decks = 1) {
 //   phase     'idle' (no hand started), 'act' (last hand awaits a decision),
 //             'settled' (last hand done, more remain), 'over' (all hands done).
 //   legal     the actions available right now ('act' phase only).
-export function replay(shoe, nHands, acts) {
+export function replay(shoe, nHands, acts, opts = {}) {
+  const allowSplit = !!(opts && opts.split);
   const out = { invalid: false, hands: [], chips: 0, busts: 0, pos: 0, phase: 'idle', legal: [] };
   if (!Array.isArray(acts)) { out.invalid = true; return out; }
   if (acts.length > nHands) { out.invalid = true; return out; }
   let pos = 0;
+  let lastSeats = null;
+  let lastSplit = false;
 
   for (let h = 0; h < acts.length; h++) {
     const a = String(acts[h] || '');
@@ -125,7 +133,7 @@ export function replay(shoe, nHands, acts) {
     const p = [shoe[pos], shoe[pos + 2]];
     const d = [shoe[pos + 1], shoe[pos + 3]];
     pos += 4;
-    const rec = { p, d, doubled: false, settled: false, net: 0, bust: false, reveal: false, note: '' };
+    const rec = { p, d, doubled: false, settled: false, net: 0, bust: false, reveal: false, note: '', split: false, parts: null, active: -1 };
     out.hands.push(rec);
 
     const pNat = isNatural(p);
@@ -146,50 +154,113 @@ export function replay(shoe, nHands, acts) {
       continue;
     }
 
-    let stake = STAKE;
-    let stood = false;
-    let k = 0;
-    for (; k < a.length; k++) {
-      if (rec.settled || stood) { out.invalid = true; return out; }
-      const ch = a[k];
-      if (handTotal(rec.p).total === 21) { out.invalid = true; return out; } // 21 auto-stands; no action exists there
-      if (ch === 'H') {
-        if (pos >= shoe.length) { out.invalid = true; return out; }
-        rec.p = rec.p.concat(shoe[pos++]);
-        const t = handTotal(rec.p).total;
-        if (t > 21) { rec.bust = true; out.busts++; settle(-stake, `Bust on ${t}.`); }
-        else if (t === 21) stood = true; // auto-stand
-      } else if (ch === 'D') {
-        if (rec.p.length !== 2) { out.invalid = true; return out; }
-        if (pos >= shoe.length) { out.invalid = true; return out; }
-        rec.doubled = true; stake = STAKE * 2;
-        rec.p = rec.p.concat(shoe[pos++]);
-        const t = handTotal(rec.p).total;
-        if (t > 21) { rec.bust = true; out.busts++; settle(-stake, `Bust on ${t}, doubled.`); }
-        else stood = true;
-      } else if (ch === 'S') {
-        stood = true;
-      } else { out.invalid = true; return out; }
-    }
-    // A made 21 stands itself even with no action string left.
-    if (!rec.settled && !stood && handTotal(rec.p).total === 21) stood = true;
-
-    if (!rec.settled && stood) {
-      // dealer plays: stands on all 17s, draws to 16
-      rec.reveal = true;
-      while (handTotal(rec.d).total < 17) {
-        if (pos >= shoe.length) { out.invalid = true; return out; }
-        rec.d = rec.d.concat(shoe[pos++]);
+    // SEATS. An unsplit hand is one seat. A split turns the pair into two
+    // seats, each staked at 10, played in order: the first seat takes its
+    // second card at once and plays out, then the second seat takes its
+    // second card and plays out, then the dealer plays once against both.
+    // Split aces take one card each and stand. A 21 after a split is not a
+    // natural and pays even money. One split per hand, no resplits.
+    const seats = [{ p: p.slice(), stake: STAKE, doubled: false, bust: false, done: false, aces: false }];
+    let split = false;
+    const active = () => seats.find((x) => !x.done) || null;
+    // Deal a split seat its second card when it comes up, and stand any seat
+    // sitting on 21 (21 stands itself, so no action exists there).
+    const prime = () => {
+      for (;;) {
+        const s = active();
+        if (!s) return true;
+        if (s.p.length === 1) {
+          if (pos >= shoe.length) return false;
+          s.p.push(shoe[pos++]);
+          if (s.aces) { s.done = true; continue; }
+        }
+        if (handTotal(s.p).total === 21) { s.done = true; continue; }
+        return true;
       }
-      const pt = handTotal(rec.p).total;
-      const dt = handTotal(rec.d).total;
-      if (dt > 21) settle(stake, `Dealer busts on ${dt}.`);
-      else if (pt > dt) settle(stake, `${pt} beats ${dt}.`);
-      else if (pt < dt) settle(-stake, `${dt} beats ${pt}.`);
-      else settle(0, `${pt} apiece. Push.`);
+    };
+    if (!prime()) { out.invalid = true; return out; }
+
+    for (let k = 0; k < a.length; k++) {
+      const s = active();
+      if (!s) { out.invalid = true; return out; }
+      const ch = a[k];
+      if (ch === 'H') {
+        if (s.aces) { out.invalid = true; return out; }
+        if (pos >= shoe.length) { out.invalid = true; return out; }
+        s.p.push(shoe[pos++]);
+        if (handTotal(s.p).total > 21) { s.bust = true; s.done = true; out.busts++; }
+      } else if (ch === 'D') {
+        if (s.p.length !== 2 || s.aces) { out.invalid = true; return out; }
+        if (pos >= shoe.length) { out.invalid = true; return out; }
+        s.doubled = true; s.stake = STAKE * 2;
+        s.p.push(shoe[pos++]);
+        if (handTotal(s.p).total > 21) { s.bust = true; out.busts++; }
+        s.done = true;
+      } else if (ch === 'S') {
+        s.done = true;
+      } else if (ch === 'P') {
+        if (!allowSplit || split || seats.length !== 1 || s.p.length !== 2 || rankOf(s.p[0]) !== rankOf(s.p[1])) { out.invalid = true; return out; }
+        split = true;
+        const aces = rankOf(s.p[0]) === 14;
+        const [c0, c1] = s.p;
+        seats.length = 0;
+        seats.push(
+          { p: [c0], stake: STAKE, doubled: false, bust: false, done: false, aces },
+          { p: [c1], stake: STAKE, doubled: false, bust: false, done: false, aces },
+        );
+      } else { out.invalid = true; return out; }
+      if (!prime()) { out.invalid = true; return out; }
+    }
+
+    rec.split = split;
+    rec.parts = split ? seats : null;
+    const act = active();
+    rec.active = act ? seats.indexOf(act) : -1;
+    rec.p = act ? act.p : seats[seats.length - 1].p;
+    if (!split) { rec.doubled = seats[0].doubled; rec.bust = seats[0].bust; }
+
+    if (!act) {
+      const live = seats.filter((x) => !x.bust);
+      if (!live.length) {
+        // every seat busted: the dealer turns the hole card and draws nothing
+        rec.bust = true;
+        for (const x of seats) x.net = -x.stake;
+        const net = seats.reduce((t, x) => t + x.net, 0);
+        if (!split) {
+          const t = handTotal(seats[0].p).total;
+          settle(net, seats[0].doubled ? `Bust on ${t}, doubled.` : `Bust on ${t}.`);
+        } else settle(net, `Both split hands bust.`);
+      } else {
+        rec.reveal = true;
+        while (handTotal(rec.d).total < 17) {
+          if (pos >= shoe.length) { out.invalid = true; return out; }
+          rec.d = rec.d.concat(shoe[pos++]);
+        }
+        const dt = handTotal(rec.d).total;
+        for (const x of seats) {
+          const pt = handTotal(x.p).total;
+          x.net = x.bust ? -x.stake : dt > 21 ? x.stake : pt > dt ? x.stake : pt < dt ? -x.stake : 0;
+        }
+        const net = seats.reduce((t, x) => t + x.net, 0);
+        if (!split) {
+          const pt = handTotal(seats[0].p).total;
+          if (dt > 21) settle(net, `Dealer busts on ${dt}.`);
+          else if (pt > dt) settle(net, `${pt} beats ${dt}.`);
+          else if (pt < dt) settle(net, `${dt} beats ${pt}.`);
+          else settle(net, `${pt} apiece. Push.`);
+        } else {
+          const word = (x) => {
+            const t = handTotal(x.p).total;
+            if (x.bust) return `bust on ${t}`;
+            return `${t} ${x.net > 0 ? 'wins' : x.net < 0 ? 'loses' : 'pushes'}`;
+          };
+          settle(net, `Split: ${word(seats[0])}, ${word(seats[1])}. Dealer ${dt > 21 ? `busts on ${dt}` : `has ${dt}`}.`);
+        }
+      }
     }
 
     if (!rec.settled && h !== acts.length - 1) { out.invalid = true; return out; } // only the last hand may be mid-play
+    lastSeats = seats; lastSplit = split;
   }
 
   out.pos = pos;
@@ -197,7 +268,11 @@ export function replay(shoe, nHands, acts) {
   if (!out.hands.length) out.phase = 'idle';
   else if (last && !last.settled) {
     out.phase = 'act';
-    out.legal = last.p.length === 2 ? ['H', 'S', 'D'] : ['H', 'S'];
+    const s = lastSeats.find((x) => !x.done);
+    const legal = ['H', 'S'];
+    if (s.p.length === 2 && !s.aces) legal.push('D');
+    if (allowSplit && !lastSplit && lastSeats.length === 1 && s.p.length === 2 && rankOf(s.p[0]) === rankOf(s.p[1])) legal.push('P');
+    out.legal = legal;
   } else {
     out.phase = out.hands.length === nHands ? 'over' : 'settled';
   }
@@ -205,12 +280,28 @@ export function replay(shoe, nHands, acts) {
 }
 
 // ---- basic strategy --------------------------------------------------------
-// The book line for the exact rules above (S17, double any first two, no
-// splits: a pair simply plays as its hard or soft total). This is what PAR is:
+// The book line for the exact rules above (S17, double any first two). On a
+// board without splits a pair simply plays as its hard or soft total. This is what PAR is:
 // the chips this policy banks on the day's shoe, playing blind.
-export function basicAction(playerCards, dealerUp, canDouble) {
+// PAIRS (split boards only, `canSplit`): the multi-deck S17 chart with double
+// after split. Aces and eights always; tens and fives never; nines against
+// 2-6, 8 and 9; sevens, threes and twos against 2-7; sixes against 2-6;
+// fours against 5 and 6. Only a pair of the same RANK splits here, so ten-J
+// is never a pair.
+export function splitsPair(rank, up) {
+  if (rank === 14 || rank === 8) return true;
+  if (rank >= 10 || rank === 5) return false;
+  if (rank === 9) return (up >= 2 && up <= 6) || up === 8 || up === 9;
+  if (rank === 7 || rank === 3 || rank === 2) return up >= 2 && up <= 7;
+  if (rank === 6) return up >= 2 && up <= 6;
+  if (rank === 4) return up === 5 || up === 6;
+  return false;
+}
+
+export function basicAction(playerCards, dealerUp, canDouble, canSplit = false) {
   const { total: t, soft } = handTotal(playerCards);
   const up = rankOf(dealerUp) === 14 ? 11 : Math.min(10, rankOf(dealerUp));
+  if (canSplit && playerCards.length === 2 && rankOf(playerCards[0]) === rankOf(playerCards[1]) && splitsPair(rankOf(playerCards[0]), up)) return 'P';
   if (soft) {
     if (t >= 19) return 'S';
     if (t === 18) {
@@ -232,23 +323,28 @@ export function basicAction(playerCards, dealerUp, canDouble) {
   return 'H';
 }
 
-// Play a whole day with a decision policy. `decide(p, dealerUp, canDouble)`
-// returns 'H' / 'S' / 'D'. Returns the finished replay plus the action strings
-// the policy produced (which is what the proofs bank).
-export function playPolicy(shoe, nHands, decide) {
+// Play a whole day with a decision policy. `decide(p, dealerUp, canDouble,
+// canSplit)` returns 'H' / 'S' / 'D' / 'P'; `p` is the seat in play. Returns
+// the finished replay plus the action strings the policy produced (which is
+// what the proofs bank).
+export function playPolicy(shoe, nHands, decide, opts = {}) {
   const acts = [];
   for (let h = 0; h < nHands; h++) {
     acts.push('');
     for (;;) {
-      const r = replay(shoe, nHands, acts);
+      const r = replay(shoe, nHands, acts, opts);
       if (r.invalid) return { invalid: true, acts };
       if (r.phase !== 'act') break;
       const rec = r.hands[r.hands.length - 1];
-      const ch = decide(rec.p, rec.d[0], rec.p.length === 2);
-      acts[h] += ch === 'D' && rec.p.length !== 2 ? 'H' : ch;
+      const canD = r.legal.includes('D');
+      const canP = r.legal.includes('P');
+      let ch = decide(rec.p, rec.d[0], canD, canP);
+      if (ch === 'P' && !canP) ch = decide(rec.p, rec.d[0], canD, false);
+      if (ch === 'D' && !canD) ch = 'H';
+      acts[h] += ch;
     }
   }
-  return { ...replay(shoe, nHands, acts), acts };
+  return { ...replay(shoe, nHands, acts, opts), acts };
 }
 
 // ---- the ten point scale ---------------------------------------------------

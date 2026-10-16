@@ -7,8 +7,8 @@
 // on a weekday, fourteen hands off the ENTIRE 104-card double deck on the
 // Sunday Edition (before that, single-deck: five hands off 36 cards, seven off
 // the whole 52). The archive replays both eras, so every size the page prints
-// is read off the board (PUZZLE.hands / .shoe.length / .decks), never a literal. Hit, stand, or double; the dealer
-// peeks and stands on all 17s; blackjack pays 3:2; no splits. The fixed shoe
+// is read off the board (PUZZLE.hands / .shoe.length / .decks), never a literal. Hit, stand, double or split; the dealer
+// peeks and stands on all 17s; blackjack pays 3:2; split a pair (boards from 2026-10-17). The fixed shoe
 // is what turns blackjack from luck into a decision game a leaderboard can
 // rank — and the skill is the count, because every card you have seen changes
 // what is left.
@@ -234,11 +234,25 @@ function CardFace({ card, down = false, w = 92 }) {
   );
 }
 
-// Card width for a row of n cards, so a dealer who draws to five or six still
-// fits between the side columns (desktop) or the phone's felt.
-function cardW(n, narrow) {
-  if (narrow) return n <= 3 ? 76 : n === 4 ? 64 : n === 5 ? 54 : 46;
-  return n <= 3 ? 92 : n === 4 ? 76 : n === 5 ? 62 : 54;
+// ONE card size per viewport (owner, 2026-10-16: the board jittered as cards
+// arrived, because the cards shrank and the rows reflowed). A row that runs
+// long FANS instead: the cards overlap by just enough to fit `room`, keeping
+// the rank corner of every card readable, so the felt never changes height.
+const cardSize = (narrow) => (narrow ? 66 : 86);
+function Fan({ cards, w, room, gap, downAt = -1, dim = false }) {
+  const h = Math.round(w * 130 / 92);
+  const n = cards.length;
+  const step = n <= 1 ? 0 : Math.min(w + gap, Math.max(Math.round(w * 0.3), (room - w) / (n - 1)));
+  const width = n ? w + step * (n - 1) : w;
+  return (
+    <div style={{ position: 'relative', width, height: h, flex: 'none', transition: 'width .18s ease', opacity: dim ? 0.55 : 1 }}>
+      {cards.map((c, i) => (
+        <div key={i} style={{ position: 'absolute', top: 0, left: i * step, transition: 'left .18s ease' }}>
+          <CardFace card={c} w={w} down={i === downAt} />
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default function ShoeClient({ puzzles = [], forceNum = null }) {
@@ -282,7 +296,8 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
 
   // The whole table, derived: replay IS the game.
-  const R = useMemo(() => replay(PUZZLE.shoe, HANDS, g.acts), [PUZZLE, HANDS, g.acts]);
+  const ROPTS = useMemo(() => ({ split: !!PUZZLE.split }), [PUZZLE]);
+  const R = useMemo(() => replay(PUZZLE.shoe, HANDS, g.acts, ROPTS), [PUZZLE, HANDS, g.acts, ROPTS]);
   const chips = R.chips;
   const finalScore = playing ? null : scoreForPoints(chips, PUZZLE.par, PUZZLE.ace, HANDS);
   const cur = R.hands[R.hands.length - 1] || null;
@@ -347,8 +362,8 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
       const raw = localStorage.getItem(STORE_KEY);
       if (raw) {
         const saved = JSON.parse(raw);
-        if (saved && saved.v === 1 && Array.isArray(saved.acts) && saved.acts.every((a) => typeof a === 'string' && /^[HSD]*$/.test(a))) {
-          const test = replay(PUZZLE.shoe, HANDS, saved.acts);
+        if (saved && saved.v === 1 && Array.isArray(saved.acts) && saved.acts.every((a) => typeof a === 'string' && /^[HSDP]*$/.test(a))) {
+          const test = replay(PUZZLE.shoe, HANDS, saved.acts, { split: !!PUZZLE.split });
           if (!test.invalid) setG({ ...freshState(), ...saved });
         }
       }
@@ -471,7 +486,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
   // Apply new decision strings and settle the day if they end it.
   function advance(acts) {
     const g2 = { ...gRef.current, acts };
-    const r2 = replay(PUZZLE.shoe, HANDS, acts);
+    const r2 = replay(PUZZLE.shoe, HANDS, acts, ROPTS);
     if (r2.invalid) return; // the UI never produces this
     const last = r2.hands[r2.hands.length - 1];
     const wasSettled = R.hands.filter((hd) => hd.settled).length;
@@ -546,7 +561,8 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
       lead={`${HANDS} hands of blackjack against the dealer, all dealt from ONE fixed shoe: the same cards in the same order for every player today. Beat the dealer's total without going over 21.`}
       steps={[
         <><b>Hit</b> takes a card, <b>Stand</b> keeps your total, <b>Double</b> doubles your 10-chip stake for exactly one more card (first two cards only). Blackjack, an ace plus a ten-card, pays 15.</>,
-        <>The dealer stands on <b>every 17</b> and draws to 16. If you bust, the hand is over and the dealer draws nothing. No splits.</>,
+        <>The dealer stands on <b>every 17</b> and draws to 16. If you bust, the hand is over and the dealer draws nothing.</>,
+        ...(PUZZLE.split ? [<><b>Split</b> a pair of the same rank into two hands of 10 chips each, played one after the other. One split a hand; you may double after splitting; split aces take one card each; a 21 after a split pays even money.</>] : [<>No splits on this shoe.</>]),
         <>The shoe is the skill: <b>{PUZZLE.shoe.length} cards{FULL_SHOE ? `, ${SHOE_WHAT}` : ` ${SHOE_WHAT}`}</b>. Count what you have seen, because it changes what is left.</>,
       ]}
       knack="The book line (basic strategy) banks par exactly. To beat it, deviate when the cards already on the table say so: stand a stiff 15 while the tens are still buried, hit it once they are gone."
@@ -596,6 +612,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
           .sh-back{background:repeating-linear-gradient(45deg,${CARD_BACK} 0 6px,var(--stg-acc, ${ACCENT}) 6px 8px);border:2px solid var(--stg-acc-ink, var(--stg-acc, ${ACCENT}));}
           .sh-k{font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:${FELT_INK2};}
           .sh-chip{display:inline-flex;align-items:center;gap:6px;font-family:${SANS};font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:16px;white-space:nowrap;font-variant-numeric:tabular-nums;}
+          .sh-score{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;border-radius:20px;font-family:${SANS};white-space:nowrap;font-variant-numeric:tabular-nums;flex:none;transition:background .15s ease,opacity .15s ease;}
           .sh-act{font-family:${SANS};font-weight:800;font-size:16px;flex:1 1 0;min-width:0;min-height:56px;border-radius:12px;background:transparent;color:var(--stg-ink, ${COLORS.ink});border:1.5px solid var(--stg-cell-line, rgba(28,30,36,.44));cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;box-sizing:border-box;padding:0 8px;}
           .sh-act:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
           .sh-act:active{transform:translateY(1px);}
@@ -742,80 +759,143 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
             if (!cur) return strip;
 
             // ---- the table ----
+            // Steady by construction (owner, 2026-10-16): fixed card size,
+            // rows that fan rather than shrink, both totals in matching
+            // fixed-width chips on one line between the two rows, and an
+            // action area of one fixed height whatever phase it is in.
             const dTot = handTotal(cur.d);
-            const pTot = handTotal(cur.p);
             const upCard = cur.d[0];
-            const shows = rankOf(upCard) === 14 ? 'Ace' : String(handTotal([upCard]).total);
-            const stake = cur.doubled ? STAKE * 2 : STAKE;
-            const dW = cardW(cur.d.length, narrow);
-            const pW = cardW(cur.p.length, narrow);
+            const shows = rankOf(upCard) === 14 ? 'A' : String(handTotal([upCard]).total);
+            const seats = cur.split ? cur.parts : [{ p: cur.p, doubled: cur.doubled, stake: cur.doubled ? STAKE * 2 : STAKE }];
+            const activeSeat = inPlay ? (cur.split ? cur.active : 0) : -1;
+            const W = cardSize(narrow);
             const gap = narrow ? 8 : 10;
-            const chipSz = narrow ? { fontSize: 12, padding: '5px 11px' } : { fontSize: 13, padding: '6px 12px' };
-            const dealerChip = cur.reveal ? (
-              <span className="sh-chip" style={{ ...chipSz, background: dTot.total > 21 ? 'transparent' : 'var(--stg-cell, #ffffff)', border: `1.5px solid ${dTot.total > 21 ? BADV : 'var(--stg-cell-line, rgba(28,30,36,.44))'}`, color: dTot.total > 21 ? BADV : 'var(--stg-ink, #0b0d12)' }}>{totWord(cur.d)}</span>
-            ) : (
-              <span className="sh-chip" style={{ fontSize: 12, padding: '6px 11px', border: '1.5px solid var(--stg-cell-line, rgba(28,30,36,.44))', color: 'var(--stg-ink, #0b0d12)' }}>Shows {shows}</span>
+            const ROW_ROOM = narrow ? 300 : 360;
+            const chipH = narrow ? 34 : 38;
+            const tight = narrow || cur.split;
+            const numFs = tight ? 18 : 20;
+            const lblFs = tight ? 9.5 : 10.5;
+            const totParts = (cards) => {
+              const t = handTotal(cards);
+              if (t.total > 21) return { n: 'Bust', sub: String(t.total), bust: true };
+              if (t.total === 21 && cards.length === 2 && !cur.split) return { n: '21', sub: 'BJ' };
+              return { n: String(t.total), sub: t.soft ? 'soft' : '' };
+            };
+            // One chip shape for both sides, so the two totals read as a pair.
+            const scoreChip = (who, parts, opts = {}) => {
+              const { filled = false, bust = false, w, dim = false, label } = opts;
+              const ink = bust ? BADV : filled ? 'var(--stg-onramp, #ffffff)' : 'var(--stg-ground, #ffffff)';
+              const bg = bust ? 'transparent' : filled ? ACCV : 'var(--stg-ink, #0b0d12)';
+              const bd = bust ? BADV : filled ? ACCV : 'var(--stg-ink, #0b0d12)';
+              return (
+                <span className="sh-score" aria-label={label} style={{ minWidth: w, height: chipH, gap: tight ? 5 : 6, padding: tight ? '0 10px' : '0 12px', background: bg, border: `2px solid ${bd}`, color: ink, opacity: dim ? 0.6 : 1 }}>
+                  <span style={{ fontSize: lblFs, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', opacity: 0.85 }}>{who}</span>
+                  <b style={{ fontSize: numFs, fontWeight: 800, lineHeight: 1 }}>{parts.n}</b>
+                  {parts.sub ? <span style={{ fontSize: lblFs, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', opacity: 0.85 }}>{parts.sub}</span> : null}
+                </span>
+              );
+            };
+            const dealerParts = cur.reveal
+              ? (dTot.total > 21 ? { n: 'Bust', sub: String(dTot.total), bust: true } : { n: String(dTot.total), sub: dTot.soft ? 'soft' : '' })
+              : { n: shows, sub: '' };
+            const dealerWho = cur.reveal ? (cur.split ? 'Dlr' : 'Dealer') : (cur.split ? 'Shows' : 'Dealer shows');
+            const dealerChip = scoreChip(dealerWho, dealerParts, {
+              bust: !!dealerParts.bust, w: cur.split ? 112 : (narrow ? 142 : 158),
+              label: cur.reveal ? `Dealer ${dealerParts.bust ? `busts on ${dTot.total}` : dTot.total}` : `Dealer shows ${shows}`,
+            });
+            const playerChips = seats.map((st, i) => {
+              const tp = totParts(st.p);
+              const on = !cur.split || i === activeSeat || activeSeat < 0;
+              return (
+                <React.Fragment key={i}>
+                  {scoreChip(cur.split ? `H${i + 1}` : 'You', tp, {
+                    filled: on, bust: !!tp.bust, dim: cur.split && !on,
+                    w: cur.split ? 100 : (narrow ? 112 : 132),
+                    label: `${cur.split ? `Hand ${i + 1}` : 'You'} ${tp.bust ? `bust on ${tp.sub}` : tp.n}`,
+                  })}
+                </React.Fragment>
+              );
+            });
+            const scoreLine = (
+              <div aria-live="polite" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: narrow ? 6 : 10, marginTop: narrow ? 12 : 14, flexWrap: 'wrap', rowGap: 6 }}>
+                {dealerChip}
+                {!cur.split && <span aria-hidden="true" style={{ fontFamily: SANS, fontSize: 11, fontWeight: 800, letterSpacing: '.1em', color: FELT_INK2 }}>VS</span>}
+                {playerChips}
+              </div>
             );
-            const pBust = pTot.total > 21;
-            const playerChip = (
-              <span className="sh-chip" aria-live="polite" style={{ ...chipSz, background: pBust ? 'transparent' : ACCV, border: `1.5px solid ${pBust ? BADV : ACCV}`, color: pBust ? BADV : 'var(--stg-onramp, #ffffff)' }}>{totWord(cur.p)}</span>
-            );
+            const stakeTxt = cur.split
+              ? `Stakes ${seats.map((x) => x.stake).join(' + ')}`
+              : `Stake ${seats[0].stake}${seats[0].doubled ? ' · doubled' : ''}`;
             const stakeChip = (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: SANS, fontSize: narrow ? 10 : 11, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: FELT_INK2 }}>
-                <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: '50%', boxSizing: 'border-box', border: '3px dashed var(--stg-warn, #9c5d02)', background: WELL }} />
-                Stake {stake}{cur.doubled ? ' · doubled' : ''}
+                <span aria-hidden="true" style={{ width: 18, height: 18, borderRadius: '50%', boxSizing: 'border-box', border: '3px dashed var(--stg-warn, #9c5d02)', background: WELL }} />
+                {stakeTxt}
               </span>
             );
 
             const dealerRow = (
-              <div style={{ display: 'flex', gap, marginTop: narrow ? 8 : 10, alignItems: 'center', justifyContent: 'center' }}>
-                {cur.d.map((c, i) => <CardFace key={i} card={c} w={dW} down={i === 1 && !cur.reveal} />)}
-                {!narrow && <span style={{ marginLeft: 6 }}>{dealerChip}</span>}
+              <div style={{ display: 'flex', marginTop: narrow ? 6 : 8, justifyContent: 'center' }}>
+                <Fan cards={cur.d} w={W} room={ROW_ROOM} gap={gap} downAt={cur.reveal ? -1 : 1} />
+              </div>
+            );
+            const playerRow = (
+              <div style={{ display: 'flex', marginTop: narrow ? 12 : 14, justifyContent: 'center', gap: narrow ? 14 : 22 }}>
+                {seats.map((st, i) => (
+                  <div key={i} style={{ position: 'relative', padding: cur.split ? 4 : 0, borderRadius: 12, outline: cur.split && i === activeSeat ? `2px solid ${ACCV_INK}` : '2px solid transparent', outlineOffset: 2 }}>
+                    <Fan cards={st.p} w={W} room={cur.split ? Math.floor((ROW_ROOM - (narrow ? 22 : 30)) / 2) : ROW_ROOM} gap={gap} dim={cur.split && activeSeat >= 0 && i !== activeSeat} />
+                  </div>
+                ))}
               </div>
             );
             const band = (
-              <div style={{ marginTop: narrow ? 16 : 22, alignSelf: 'stretch', borderTop: '1.5px solid var(--stg-line2, rgba(28,30,36,.24))', borderBottom: '1.5px solid var(--stg-line2, rgba(28,30,36,.24))', padding: narrow ? '6px 0' : '7px 0', textAlign: 'center', fontFamily: SANS, fontSize: narrow ? 9 : 10, fontWeight: 800, letterSpacing: narrow ? '.11em' : '.14em', textTransform: 'uppercase', color: FELT_INK2 }}>
-                {(narrow ? ['Peeks', 'Stands on all 17s', '3 to 2'] : ['Dealer peeks', 'Stands on all 17s', 'Natural pays 3 to 2']).map((t, i) => (
+              <div style={{ marginTop: narrow ? 12 : 14, alignSelf: 'stretch', borderTop: '1.5px solid var(--stg-line2, rgba(28,30,36,.24))', padding: narrow ? '6px 0 0' : '7px 0 0', textAlign: 'center', fontFamily: SANS, fontSize: narrow ? 9 : 10, fontWeight: 800, letterSpacing: narrow ? '.11em' : '.14em', textTransform: 'uppercase', color: FELT_INK2 }}>
+                {(narrow ? ['Peeks', 'Stands on 17s', '3 to 2'] : ['Dealer peeks', 'Stands on all 17s', 'Natural pays 3 to 2']).concat(PUZZLE.split ? ['Split pairs'] : []).map((t, i) => (
                   <React.Fragment key={i}>{i > 0 ? ' · ' : ''}<span style={{ whiteSpace: 'nowrap' }}>{t}</span></React.Fragment>
                 ))}
               </div>
             );
-            const playerRow = narrow ? (
-              <>
-                <div style={{ display: 'flex', gap, marginTop: 18, justifyContent: 'center' }}>
-                  {cur.p.map((c, i) => <CardFace key={i} card={c} w={pW} />)}
-                </div>
-                <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
-                  {playerChip}{stakeChip}
-                </div>
-              </>
-            ) : (
-              <div style={{ display: 'flex', gap, marginTop: 24, alignItems: 'center', justifyContent: 'center' }}>
-                {cur.p.map((c, i) => <CardFace key={i} card={c} w={pW} />)}
-                <div style={{ marginLeft: 6, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
-                  {playerChip}{stakeChip}
-                </div>
-              </div>
-            );
 
-            // The actions, or the settled hand's note and the next deal.
+            // The actions, or the settled hand's note and the next deal. ONE
+            // fixed shape in every phase: a status line, then a button row.
             const noteLine = (
               <span className="sh-note">{cur.note} <b style={{ color: netInk(cur.net) }}>{fmtChips(cur.net)}</b></span>
             );
             const canDouble = R.legal.includes('D');
+            const canSplit = R.legal.includes('P');
+            const statusTxt = R.phase === 'act'
+              ? (cur.split ? `Playing hand ${activeSeat + 1} of 2.` : canSplit ? 'A pair. Hit, stand, double, or split.' : 'Your move.')
+              : null;
+            const statusRow = (
+              <div style={{ minHeight: narrow ? 36 : 22, display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                {R.phase === 'act'
+                  ? <span className="sh-note" style={{ color: FELT_INK2 }}>{statusTxt}</span>
+                  : noteLine}
+              </div>
+            );
             const actions = playing && R.phase === 'act' ? (
-              <div style={{ display: 'flex', gap: narrow ? 8 : 10 }}>
-                <button type="button" className="sh-act" onClick={() => act('H')}>Hit</button>
-                <button type="button" className="sh-act" onClick={() => act('S')}>Stand</button>
-                <button type="button" className="sh-act dbl" onClick={() => act('D')} disabled={!canDouble}
-                  aria-label={canDouble ? `Double, stake to ${STAKE * 2}` : 'Double, first two cards only'}>
-                  Double <small>{canDouble ? `· ${STAKE * 2}` : (narrow ? '' : '· first two only')}</small>
-                </button>
+              <div>
+                {statusRow}
+                <div style={{ display: 'flex', gap: narrow ? 6 : 10 }}>
+                  <button type="button" className="sh-act" onClick={() => act('H')}>Hit</button>
+                  <button type="button" className="sh-act" onClick={() => act('S')}>Stand</button>
+                  <button type="button" className="sh-act dbl" onClick={() => act('D')} disabled={!canDouble}
+                    aria-label={canDouble ? `Double, stake to ${STAKE * 2}` : 'Double, first two cards only'}>
+                    Double{!narrow && canDouble && <small>· {STAKE * 2}</small>}
+                  </button>
+                  {PUZZLE.split && (
+                    <button type="button" className="sh-act dbl" onClick={() => act('P')} disabled={!canSplit}
+                      aria-label={canSplit ? `Split the pair into two hands of ${STAKE}` : 'Split, a pair only'}>
+                      Split{!narrow && canSplit && <small>· +{STAKE}</small>}
+                    </button>
+                  )}
+                </div>
               </div>
             ) : playing && R.phase === 'settled' ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <span style={{ flex: '1 1 160px' }}>{noteLine}</span>
-                <button type="button" className="sh-act deal" onClick={dealNext} style={narrow ? { flex: '1 1 100%' } : undefined}>Deal hand {R.hands.length + 1}</button>
+              <div>
+                {statusRow}
+                <div style={{ display: 'flex', gap: narrow ? 6 : 10 }}>
+                  <button type="button" className="sh-act deal" onClick={dealNext}>Deal hand {R.hands.length + 1}</button>
+                </div>
               </div>
             ) : !playing ? (
               <div style={{ minHeight: 30, display: 'flex', alignItems: 'center' }}>{noteLine}</div>
@@ -824,15 +904,17 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
             // Already out: every settled hand, newest first, with the cards
             // both sides showed face up and the result.
             const outRows = settledHands.slice().reverse();
-            const outCards = settledHands.reduce((s, x) => s + x.hd.p.length + x.hd.d.length, 0);
+            const pCards = (hd) => (hd.split ? hd.parts.flatMap((x) => x.p) : hd.p);
+            const outCards = settledHands.reduce((s, x) => s + pCards(x.hd).length + x.hd.d.length, 0);
             const outRow = ({ hd, i }, compact) => {
               const res = hd.net > 0 ? `Won ${hd.net}` : hd.net < 0 ? `Lost ${-hd.net}` : 'Push';
               const dWord = handTotal(hd.d).total > 21 ? 'bust' : handTotal(hd.d).total;
-              const pWord = handTotal(hd.p).total > 21 ? 'bust' : handTotal(hd.p).total;
+              const seatWord = (cards) => `${cards.map(short).join(' ')} · ${handTotal(cards).total > 21 ? 'bust' : handTotal(cards).total}`;
+              const youTxt = hd.split ? hd.parts.map((x) => seatWord(x.p)).join(' / ') : seatWord(hd.p);
               return (
                 <div key={i} className="sh-out" style={compact ? { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', columnGap: 10, rowGap: 2 } : undefined}>
                   <span style={{ fontFamily: SANS, fontSize: 10, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: netInk(hd.net), minWidth: compact ? 92 : undefined }}>Hand {i + 1} &middot; {res}</span>
-                  <span style={{ fontFamily: SANS, fontSize: 11, fontWeight: 700, color: 'var(--stg-ink, #0b0d12)' }}>You {hd.p.map(short).join(' ')} &middot; {pWord}</span>
+                  <span style={{ fontFamily: SANS, fontSize: 11, fontWeight: 700, color: 'var(--stg-ink, #0b0d12)' }}>You {youTxt}{hd.split ? ' (split)' : ''}</span>
                   <span style={{ fontFamily: SANS, fontSize: 11, fontWeight: 600, color: FELT_INK2 }}>Dlr {hd.d.map(short).join(' ')} &middot; {dWord}</span>
                 </div>
               );
@@ -852,13 +934,15 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
 
             const center = (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 0 }}>
-                <span className="sh-k" style={narrow ? { fontSize: 10 } : undefined}>
-                  {narrow ? <>Dealer &middot; {cur.reveal ? totWord(cur.d) : `shows ${shows}`}</> : 'Dealer'}
-                </span>
+                <span className="sh-k" style={narrow ? { fontSize: 10 } : undefined}>Dealer</span>
                 {dealerRow}
-                {band}
+                {scoreLine}
                 {playerRow}
-                <span className="sh-k" style={{ marginTop: 10, fontSize: narrow ? 10 : 11 }}>You &middot; hand {Math.min(R.hands.length, HANDS)}</span>
+                <div style={{ marginTop: narrow ? 10 : 12, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+                  <span className="sh-k" style={{ fontSize: narrow ? 10 : 11 }}>You &middot; hand {Math.min(R.hands.length, HANDS)}</span>
+                  {stakeChip}
+                </div>
+                {band}
               </div>
             );
 
@@ -1102,7 +1186,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
       <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Shoe</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Shoe is a free daily blackjack puzzle from Mind Loft. Every player faces the same shoe: ten hands of blackjack dealt from one fixed 72-card shoe cut from two decks, the same cards in the same order for everyone, which turns blackjack from a gamble into a decision game a leaderboard can rank. Hit, stand, or double on a 10-chip stake; the dealer stands on every 17; blackjack pays 3 to 2; there are no splits.
+          Shoe is a free daily blackjack puzzle from Mind Loft. Every player faces the same shoe: ten hands of blackjack dealt from one fixed 72-card shoe cut from two decks, the same cards in the same order for everyone, which turns blackjack from a gamble into a decision game a leaderboard can rank. Hit, stand, double, or split a pair on a 10-chip stake; the dealer stands on every 17; blackjack pays 3 to 2.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Par is what basic strategy, the book line, banks on the day&apos;s shoe playing blind, and matching it scores 8 out of 10. The ace line, a blind player&apos;s best day, scores 10. Beating the book means counting: the shoe holds 72 cards off two standard decks, so every card on the table changes what is left, and the player who notices stands where the book hits.

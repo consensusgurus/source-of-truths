@@ -50,7 +50,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
   STAKE, NATURAL_PAY, shoeFor, replay, playPolicy, basicAction, handTotal,
-  isNatural, mulberry32, scoreForPoints, worstChips,
+  isNatural, mulberry32, scoreForPoints, worstChips, rankOf,
 } from '../app/shoe/rules.js';
 
 const args = process.argv.slice(2);
@@ -63,6 +63,10 @@ const KEEP = args.includes('--keep');
 
 const WEEKDAY = { hands: 10, shoe: 72, decks: 2 };
 const SUNDAY = { hands: 14, shoe: 104, decks: 2 };
+// Splits arrive with the boards dealt from this date (owner, 2026-10-16).
+// A board from here carries `split: true` and every banked number on it (par,
+// ace, ceiling, the consumption proof) is computed WITH splits.
+const SPLIT_FROM = '2026-10-17';
 const ACE_RUNS = 120;  // few enough that the best run is a lucky day, not the exact maximum
 const EPS = 0.25;
 const PAR_MIN = -10;   // the book may lose one stake, never suffer a rout
@@ -74,10 +78,30 @@ const CEIL_GAP = 40;  // ceiling must clear par by this much
 // Returns { best, overrun } — best chips over every legal decision sequence,
 // or overrun=true if ANY legal line (player or dealer draw) would run off the
 // end of the shoe, which rejects the shoe outright.
-function ceilingOf(shoe, nHands) {
+function ceilingOf(shoe, nHands, allowSplit = false) {
   const memo = new Map();
   let overrun = false;
   const need = (i) => { if (i >= shoe.length) { overrun = true; return false; } return true; };
+
+  // Every way one seat can finish from `cards` at `pos`: { c, q, stake, bust }.
+  // `locked` is a split ace, which takes its one card and stands.
+  const seatEnds = (cards, pos, canD, locked) => {
+    const res = [];
+    const go = (c, q, first) => {
+      if (overrun) return;
+      const t = handTotal(c).total;
+      if (t > 21) { res.push({ c, q, stake: STAKE, bust: true }); return; }
+      res.push({ c, q, stake: STAKE, bust: false });                // stand (forced at 21 or locked)
+      if (t === 21 || locked) return;
+      if (need(q)) go(c.concat(shoe[q]), q + 1, false);              // hit
+      if (first && canD && need(q)) {                                 // double
+        const c2 = c.concat(shoe[q]);
+        res.push({ c: c2, q: q + 1, stake: 2 * STAKE, bust: handTotal(c2).total > 21 });
+      }
+    };
+    go(cards, pos, true);
+    return res;
+  };
 
   function fromHand(h, pos) {
     if (overrun) return 0;
@@ -90,32 +114,40 @@ function ceilingOf(shoe, nHands) {
     const base = pos + 4;
     let best = -Infinity;
 
-    const settleStand = (cards, pos2, stake) => {
-      let dd = d.slice(); let q = pos2;
-      while (handTotal(dd).total < 17) { if (!need(q)) return -Infinity; dd = dd.concat(shoe[q++]); }
-      const pt = handTotal(cards).total, dt = handTotal(dd).total;
-      const net = dt > 21 ? stake : pt > dt ? stake : pt < dt ? -stake : 0;
-      return net + fromHand(h + 1, q);
+    // Settle a finished set of seats at shoe position q: the dealer draws only
+    // if some seat is still standing.
+    const settle = (seats, q) => {
+      if (overrun) return -Infinity;
+      if (seats.every((x) => x.bust)) return -seats.reduce((t, x) => t + x.stake, 0) + fromHand(h + 1, q);
+      let dd = d.slice(); let qq = q;
+      while (handTotal(dd).total < 17) { if (!need(qq)) return -Infinity; dd = dd.concat(shoe[qq++]); }
+      const dt = handTotal(dd).total;
+      let net = 0;
+      for (const x of seats) {
+        if (x.bust) { net -= x.stake; continue; }
+        const pt = handTotal(x.c).total;
+        net += dt > 21 ? x.stake : pt > dt ? x.stake : pt < dt ? -x.stake : 0;
+      }
+      return net + fromHand(h + 1, qq);
     };
 
     if (isNatural(d) || isNatural(p)) {
       const net = isNatural(d) && isNatural(p) ? 0 : isNatural(d) ? -STAKE : NATURAL_PAY;
       best = net + fromHand(h + 1, base);
     } else {
-      const rec = (cards, pos2, stake, canD) => {
-        if (overrun) return;
-        const t = handTotal(cards).total;
-        if (t > 21) { best = Math.max(best, -stake + fromHand(h + 1, pos2)); return; }
-        if (t === 21) { best = Math.max(best, settleStand(cards, pos2, stake)); return; }
-        best = Math.max(best, settleStand(cards, pos2, stake));       // stand
-        if (need(pos2)) rec(cards.concat(shoe[pos2]), pos2 + 1, stake, false); // hit
-        if (canD && need(pos2)) {                                      // double
-          const c2 = cards.concat(shoe[pos2]);
-          if (handTotal(c2).total > 21) best = Math.max(best, -(2 * STAKE) + fromHand(h + 1, pos2 + 1));
-          else best = Math.max(best, settleStand(c2, pos2 + 1, 2 * STAKE));
+      for (const e of seatEnds(p, base, true, false)) best = Math.max(best, settle([e], e.q));
+      if (allowSplit && rankOf(p[0]) === rankOf(p[1])) {
+        const aces = rankOf(p[0]) === 14;
+        if (need(base)) {
+          const A0 = [p[0], shoe[base]];
+          for (const a of seatEnds(A0, base + 1, !aces, aces)) {
+            if (overrun) break;
+            if (!need(a.q)) break;
+            const B0 = [p[1], shoe[a.q]];
+            for (const b of seatEnds(B0, a.q + 1, !aces, aces)) best = Math.max(best, settle([a, b], b.q));
+          }
         }
-      };
-      rec(p, base, STAKE, true);
+      }
     }
     memo.set(key, best);
     return best;
@@ -126,18 +158,20 @@ function ceilingOf(shoe, nHands) {
 }
 
 // ---- the blind explorer (ace) ---------------------------------------------
-function aceOf(shoe, nHands, seed) {
+function aceOf(shoe, nHands, seed, opts = {}) {
   let best = -Infinity, bestActs = null;
   for (let run = 0; run < ACE_RUNS; run++) {
     const rng = mulberry32(((seed ^ Math.imul(run + 1, 2654435761)) >>> 0) || 1);
-    const decide = (p, up, canD) => {
+    const decide = (p, up, canD, canP) => {
       if (rng() < EPS) {
-        const legal = canD ? ['H', 'S', 'D'] : ['H', 'S'];
+        const legal = ['H', 'S'];
+        if (canD) legal.push('D');
+        if (canP) legal.push('P');
         return legal[Math.floor(rng() * legal.length)];
       }
-      return basicAction(p, up, canD);
+      return basicAction(p, up, canD, canP);
     };
-    const r = playPolicy(shoe, nHands, decide);
+    const r = playPolicy(shoe, nHands, decide, opts);
     if (r.invalid) continue;
     if (r.chips > best) { best = r.chips; bestActs = r.acts; }
   }
@@ -189,14 +223,16 @@ for (const { iso, sunday } of dates(FROM, DAYS)) {
   for (;;) {
     const seed = seedScan++;
     const shoe = shoeFor(seed, cfg.shoe, cfg.decks);
-    const { best: ceiling, overrun } = ceilingOf(shoe, cfg.hands);
+    const split = iso >= SPLIT_FROM;
+    const ropts = { split };
+    const { best: ceiling, overrun } = ceilingOf(shoe, cfg.hands, split);
     if (overrun) { rejected.overrun++; continue; }
-    const parRun = playPolicy(shoe, cfg.hands, basicAction);
+    const parRun = playPolicy(shoe, cfg.hands, basicAction, ropts);
     if (parRun.invalid) { rejected.overrun++; continue; }
     const par = parRun.chips;
     if (par < PAR_MIN || par > PAR_MAX) { rejected.par++; continue; }
     if (ceiling - par < CEIL_GAP) { rejected.ceil++; continue; }
-    const { best: ace, acts: aceActs } = aceOf(shoe, cfg.hands, seed);
+    const { best: ace, acts: aceActs } = aceOf(shoe, cfg.hands, seed, ropts);
     if (!aceActs || ace - par < (sunday ? 30 : ACE_GAP)) { rejected.ace++; continue; }
     if (ace > ceiling) throw new Error(`ace ${ace} above exact ceiling ${ceiling} — engine bug`);
     const open = shoe.slice(0, 4).join(',');
@@ -211,7 +247,7 @@ for (const { iso, sunday } of dates(FROM, DAYS)) {
     const quizId = quizIdOf(iso);
     boards.push({
       num, quizId, live: iso, dateLabel: labelOf(iso), sunday,
-      seed, decks: cfg.decks, hands: cfg.hands, shoe, par, ace, ceiling,
+      seed, decks: cfg.decks, hands: cfg.hands, ...(split ? { split: true } : {}), shoe, par, ace, ceiling,
     });
     proofs[quizId] = { par: parRun.acts, ace: aceActs };
     break;
@@ -238,8 +274,10 @@ const puzzlesHeader = `// Puzzle data for Shoe, the daily blackjack shoe. Import
 // (14 = ace), suit 0..3 (spades, hearts, diamonds, clubs) — the Hands
 // convention. Rules live in app/shoe/rules.js and are deliberately small:
 // dealer peeks and stands on all 17s, blackjack pays 3:2 (+15 on the 10-chip
-// stake), double on any first two cards, no splits, 21 stands itself, a
-// player bust ends the hand with no dealer draw.
+// stake), double on any first two cards, 21 stands itself, a player bust ends
+// the hand with no dealer draw. \`split: true\` (boards from 2026-10-17) adds
+// one split of a same-rank pair, double after split allowed, split aces one
+// card each; earlier boards have no split.
 //
 //   par      the chips BASIC STRATEGY banks on this exact shoe, played blind.
 //            Deterministic, replayed move-for-move by the verifier. Scores 8.
@@ -263,7 +301,7 @@ const proofsHeader = `// Shoe — the playout proofs behind every banked par and
 //
 // Par and ace are not formulas. Par is basic strategy played blind on the
 // day's shoe, and ace is the best of 120 blind runs — and these are the actual
-// decision lines, one string of H / S / D per hand in the order the decisions
+// decision lines, one string of H / S / D / P per hand in the order the decisions
 // were made (a hand settled by a natural has the empty string).
 //
 // This file exists so scripts/verify-shoe.mjs can replay both claims through

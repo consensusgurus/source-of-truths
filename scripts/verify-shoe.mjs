@@ -59,11 +59,14 @@ const ERA = {
   ten: { WEEKDAY: { hands: 10, shoe: 72, decks: 2 }, SUNDAY: { hands: 14, shoe: 104, decks: 2 } },
 };
 const MIN_HANDS_FROM_TEN = 10;
+// Splits arrive with the boards from SPLIT_FROM (owner, 2026-10-16): those
+// carry `split: true`, and every earlier board must not.
+const SPLIT_FROM = '2026-10-17';
 const ACE_GAP_WEEK = 25, ACE_GAP_SUN = 30, CEIL_GAP = 40;
 
 // ─── independent basic strategy ─────────────────────────────────────────────
-// Typed straight off the published multi-deck S17 chart (double any two, no
-// splits, no surrender) as lookup matrices — deliberately a different shape
+// Typed straight off the published multi-deck S17 chart (double any two,
+// double after split, no surrender) as lookup matrices — deliberately a different shape
 // from the engine's conditionals, so a transcription slip in either shows up.
 // Index: dealer up 2..11 (11 = ace). H hit, S stand, D double-else-hit,
 // T double-else-stand.
@@ -100,10 +103,29 @@ const SOFT = {
   20: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
   21: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
 };
-function bookAction(playerCards, dealerUp, canDouble) {
+// Pairs, typed off the same chart (double after split): Y split, N don't.
+// Row is the pair's rank; only a same-RANK pair can split, so J-Q never does.
+const PAIR = {
+  //      2    3    4    5    6    7    8    9   10    A
+  2:  ['Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'N', 'N', 'N', 'N'],
+  3:  ['Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'N', 'N', 'N', 'N'],
+  4:  ['N', 'N', 'N', 'Y', 'Y', 'N', 'N', 'N', 'N', 'N'],
+  5:  ['N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N'],
+  6:  ['Y', 'Y', 'Y', 'Y', 'Y', 'N', 'N', 'N', 'N', 'N'],
+  7:  ['Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'N', 'N', 'N', 'N'],
+  8:  ['Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y'],
+  9:  ['Y', 'Y', 'Y', 'Y', 'Y', 'N', 'Y', 'Y', 'N', 'N'],
+  10: ['N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N'],
+  11: ['N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N'],
+  12: ['N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N'],
+  13: ['N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N'],
+  14: ['Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y'],
+};
+function bookAction(playerCards, dealerUp, canDouble, canSplit = false) {
   const { total, soft } = handTotal(playerCards);
   const upRank = rankOf(dealerUp);
   const up = upRank === 14 ? 11 : Math.min(10, upRank);
+  if (canSplit && PAIR[rankOf(playerCards[0])][up - 2] === 'Y') return 'P';
   const row = soft ? SOFT[total] : HARD[total];
   if (!row) return 'H';
   const cell = row[up - 2];
@@ -116,7 +138,7 @@ function bookAction(playerCards, dealerUp, canDouble) {
 // Same claim as the generator's search, different code: memo keyed as a
 // string map over "h:pos", explicit worklist of in-hand card stacks, and its
 // own dealer playout. Exact, so the banked ceiling must match to the chip.
-function exactCeiling(shoe, nHands) {
+function exactCeiling(shoe, nHands, allowSplit = false) {
   const memo = Object.create(null);
   let overrun = false;
 
@@ -130,6 +152,23 @@ function exactCeiling(shoe, nHands) {
     return { dt: handTotal(d).total, q };
   };
 
+  // Every finish of one seat, as [cards, pos, stake]; a bust keeps its cards
+  // so the settlement can see it. Worklist, not recursion.
+  const finishes = (start, at0, mayDouble, frozen) => {
+    const done = [];
+    const stack = [[start, at0, STAKE, mayDouble]];
+    while (stack.length) {
+      const [cards, at, stake, canD] = stack.pop();
+      const t = handTotal(cards).total;
+      if (t > 21 || t === 21 || frozen) { done.push([cards, at, stake]); continue; }
+      if (at >= shoe.length) { overrun = true; return done; }
+      done.push([cards, at, stake]);                                  // stand
+      stack.push([cards.concat(shoe[at]), at + 1, stake, false]);     // hit
+      if (canD) done.push([cards.concat(shoe[at]), at + 1, 2 * STAKE]); // double
+    }
+    return done;
+  };
+
   const solve = (h, pos) => {
     if (h === nHands) return 0;
     const key = `${h}:${pos}`;
@@ -141,39 +180,36 @@ function exactCeiling(shoe, nHands) {
     let best = -Infinity;
     const consider = (v) => { if (v != null && v > best) best = v; };
 
+    // seats: list of [cards, stake]; at: the shoe position after them
+    const close = (seats, at) => {
+      const standing = seats.filter(([c]) => handTotal(c).total <= 21);
+      if (!standing.length) return seats.reduce((t, [, st]) => t - st, 0) + solve(h + 1, at);
+      const dOut = dealerOut(d0, at);
+      if (!dOut) return null;
+      let net = 0;
+      for (const [c, st] of seats) {
+        const t = handTotal(c).total;
+        if (t > 21) net -= st;
+        else net += dOut.dt > 21 ? st : t > dOut.dt ? st : t < dOut.dt ? -st : 0;
+      }
+      return net + solve(h + 1, dOut.q);
+    };
+
     if (isNatural(d0) || isNatural(p0)) {
       const net = isNatural(d0) && isNatural(p0) ? 0 : isNatural(d0) ? -STAKE : NATURAL_PAY;
       consider(net + solve(h + 1, start));
     } else {
-      // worklist of undecided in-hand states: [cards, pos, stake, canDouble]
-      const stack = [[p0, start, STAKE, true]];
-      while (stack.length) {
-        const [cards, at, stake, canD] = stack.pop();
-        const t = handTotal(cards).total;
-        if (t > 21) { consider(-stake + solve(h + 1, at)); continue; }
-        if (t < 21) {
-          // hit
-          if (at >= shoe.length) { overrun = true; break; }
-          stack.push([cards.concat(shoe[at]), at + 1, stake, false]);
-          // double: one card then done, win or lose twice the stake
-          if (canD) {
-            const c2 = cards.concat(shoe[at]);
-            if (handTotal(c2).total > 21) consider(-2 * STAKE + solve(h + 1, at + 1));
-            else {
-              const dOut = dealerOut(d0, at + 1);
-              if (dOut) {
-                const pt = handTotal(c2).total;
-                const net = dOut.dt > 21 ? 2 * STAKE : pt > dOut.dt ? 2 * STAKE : pt < dOut.dt ? -2 * STAKE : 0;
-                consider(net + solve(h + 1, dOut.q));
-              }
+      for (const [c, at, st] of finishes(p0, start, true, false)) consider(close([[c, st]], at));
+      if (allowSplit && rankOf(p0[0]) === rankOf(p0[1])) {
+        const aces = rankOf(p0[0]) === 14;
+        if (start >= shoe.length) overrun = true;
+        else {
+          for (const [ca, atA, stA] of finishes([p0[0], shoe[start]], start + 1, !aces, aces)) {
+            if (atA >= shoe.length) { overrun = true; break; }
+            for (const [cb, atB, stB] of finishes([p0[1], shoe[atA]], atA + 1, !aces, aces)) {
+              consider(close([[ca, stA], [cb, stB]], atB));
             }
           }
-        }
-        // stand (forced at 21)
-        const dOut = dealerOut(d0, at);
-        if (dOut) {
-          const net = dOut.dt > 21 ? stake : t > dOut.dt ? stake : t < dOut.dt ? -stake : 0;
-          consider(net + solve(h + 1, dOut.q));
         }
       }
     }
@@ -219,6 +255,9 @@ PUZZLES.forEach((p, i) => {
   if (p.live >= TEN_HANDS_FROM && !(p.hands >= MIN_HANDS_FROM_TEN)) errs.push(`only ${p.hands} hands; every day from ${TEN_HANDS_FROM} deals at least ${MIN_HANDS_FROM_TEN}`);
   if ((p.decks || 1) !== cfg.decks) errs.push(`decks ${p.decks || 1}, want ${cfg.decks}`);
   if (!Array.isArray(p.shoe) || p.shoe.length !== cfg.shoe) errs.push(`shoe holds ${p.shoe ? p.shoe.length : 0} cards, want ${cfg.shoe}`);
+  const wantSplit = p.live >= SPLIT_FROM;
+  if (!!p.split !== wantSplit) errs.push(`split ${!!p.split}, want ${wantSplit} (splits arrive ${SPLIT_FROM})`);
+  const ropts = { split: !!p.split };
 
   // -- the shoe itself --
   if (Array.isArray(p.shoe)) {
@@ -240,7 +279,7 @@ PUZZLES.forEach((p, i) => {
   if (!proof || !Array.isArray(proof.par) || !Array.isArray(proof.ace)) errs.push('no playout proof in app/shoe/proofs.js');
   if (!errs.length && proof) {
     // replay the banked par line through the real engine
-    const rp = replay(p.shoe, p.hands, proof.par);
+    const rp = replay(p.shoe, p.hands, proof.par, ropts);
     if (rp.invalid) errs.push('par line is not a legal round');
     else {
       if (rp.phase !== 'over') errs.push('par line leaves the day unfinished');
@@ -252,21 +291,24 @@ PUZZLES.forEach((p, i) => {
     for (let h = 0; h < p.hands && independentOk; h++) {
       acts.push('');
       for (;;) {
-        const r = replay(p.shoe, p.hands, acts);
+        const r = replay(p.shoe, p.hands, acts, ropts);
         if (r.invalid) { errs.push('independent book replay went invalid — engine disagreement'); independentOk = false; break; }
         if (r.phase !== 'act') break;
         const rec = r.hands[r.hands.length - 1];
-        acts[h] += bookAction(rec.p, rec.d[0], rec.p.length === 2);
+        const seat = rec.split ? rec.parts[rec.active].p : rec.p;
+        const canD = seat.length === 2 && !(rec.split && rankOf(seat[0]) === 14);
+        const canP = !!p.split && !rec.split && seat.length === 2 && rankOf(seat[0]) === rankOf(seat[1]);
+        acts[h] += bookAction(seat, rec.d[0], canD, canP);
       }
     }
     if (independentOk) {
       const same = acts.length === proof.par.length && acts.every((s, k) => s === proof.par[k]);
       if (!same) errs.push(`banked par line ${JSON.stringify(proof.par)} is not the book line ${JSON.stringify(acts)} — the independent strategy table disagrees`);
-      const rb = replay(p.shoe, p.hands, acts);
+      const rb = replay(p.shoe, p.hands, acts, ropts);
       if (!rb.invalid && rb.chips !== p.par) errs.push(`independent book line banks ${rb.chips}, bank claims ${p.par}`);
     }
     // -- ace: a real, legal blind round reaching exactly the claim --
-    const ra = replay(p.shoe, p.hands, proof.ace);
+    const ra = replay(p.shoe, p.hands, proof.ace, ropts);
     if (ra.invalid) errs.push('ace line is not a legal round');
     else {
       if (ra.phase !== 'over') errs.push('ace line leaves the day unfinished');
@@ -276,7 +318,7 @@ PUZZLES.forEach((p, i) => {
 
   // -- ceiling: exact, and every legal line fits the shoe --
   if (!errs.length) {
-    const { best, overrun } = exactCeiling(p.shoe, p.hands);
+    const { best, overrun } = exactCeiling(p.shoe, p.hands, !!p.split);
     if (overrun) errs.push('a legal line of play runs the shoe out of cards — the consumption bound is broken');
     else if (best !== p.ceiling) errs.push(`independent exact search puts the ceiling at ${best}, bank claims ${p.ceiling}`);
   }

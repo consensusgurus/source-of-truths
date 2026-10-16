@@ -51,7 +51,7 @@ const gameJsonLd = {
   alternateName: 'Shoe: Daily Blackjack Puzzle',
   url: `${SITE_URL}/shoe`,
   description:
-    'A free daily blackjack puzzle: ten hands dealt from one fixed 72-card, two-deck shoe, identical for every player, scored against the chips basic strategy banks on the same cards. Hit, stand, or double; dealer stands on all 17s; blackjack pays 3:2; no splits. Sundays deal fourteen hands off the entire 104-card double deck.',
+    'A free daily blackjack puzzle: ten hands dealt from one fixed 72-card, two-deck shoe, identical for every player, scored against the chips basic strategy banks on the same cards. Hit, stand, double, or split a pair; dealer stands on all 17s; blackjack pays 3:2. Sundays deal fourteen hands off the entire 104-card double deck.',
   genre: ['Card game', 'Puzzle', 'Strategy'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

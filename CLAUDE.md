@@ -7185,6 +7185,28 @@ Boards through 2026-09-29 are single-deck (5 off 36, 7 off 52) and frozen; they 
   circuit and **Full Table went bronze -> silver** (owner ruling, same day). Its clock in
   `verify-circuits` is an ESTIMATE (200s); replace it at the next snapshot re-measure.
 
+### Shoe splits pairs from 2026-10-17, and the table never reflows (owner, 2026-10-16)
+
+- **Split** is a fourth action on boards carrying `split: true` (every board from
+  `SPLIT_FROM = '2026-10-17'`; earlier boards have no flag and replay byte for byte, proved by
+  replaying every banked line and 40,000 random strings through the old and new engine). A
+  same-RANK pair splits once into two 10-chip seats played in order (the first takes its second
+  card at once, the second when the first finishes), double after split allowed, split aces one
+  card each, a 21 after a split pays even money, no resplit. The action string uses `P`; no
+  separator is needed because a finished seat cannot act. The dealer draws only if a seat stands.
+- **Engine:** `replay(shoe, nHands, acts, { split })`, `playPolicy(..., opts)`, and
+  `basicAction(p, up, canDouble, canSplit)` with the S17 DAS pair chart (`splitsPair`). A split
+  hand's record carries `split`, `parts` (the seats) and `active`; `rec.p` is the seat in play.
+- **Generator and verifier both search splits** (`ceilingOf(shoe, n, allowSplit)` and the
+  verifier's own `exactCeiling`, plus a literal `PAIR` matrix). Boards 2026-10-17 to 11-19 were
+  regenerated with `--from 2026-10-17 --keep`. A future extension must keep `SPLIT_FROM`.
+- **The table is steady by construction.** One card size per viewport (`cardSize`); a long row
+  FANS (`Fan`) instead of shrinking; the dealer's total and yours are matching fixed-width chips
+  on one line between the two rows (dealer in ink, you in the accent); the action area is a fixed
+  status line plus a fixed button row in every phase. Measured: the felt and the action area hold
+  one height across a whole day of hits, stands and deals. Do not reintroduce per-count card
+  widths or chips beside the cards.
+
 ## The BROWSER FAVICON is the Mind Loft mark on every page (owner rule, 2026-08-31)
 
 Thirty daily games each carried their own tab favicon (`/<game>-icons/favicon-32.png`), so
