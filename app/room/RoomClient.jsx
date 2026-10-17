@@ -407,12 +407,14 @@ function Handover({ sec, si, n, res, part, next, banked, onGo }) {
         <p className="rr-hand-n">The answers the room gave are below. Take your time: the next room waits for you.</p>
       </div>
       <div className="rr-hand-r">
-        {next ? <div className="rr-next"><span>Next room</span><b>{next.name}</b><small>{next.line}</small></div> : <div className="rr-next"><span>That was the last room</span><b>Your verdict</b><small>How well you read all {COUNT_WORD[n] || n}.</small></div>}
-        <div className="rr-gorow">
-          <button type="button" className="rr-go" onClick={onGo}>
-            {next ? `Next: ${next.name}` : 'Read your verdict'} <span aria-hidden="true">&rarr;</span>
-          </button>
-        </div>
+        <button type="button" className="rr-nextgo" onClick={onGo}>
+          <span className="rr-ng-t">
+            <span>{next ? 'Next room' : 'That was the last room'}</span>
+            <b>{next ? next.name : 'Read your verdict'}</b>
+            <small>{next ? next.line : `How well you read all ${COUNT_WORD[n] || n}.`}</small>
+          </span>
+          <span className="rr-ng-a" aria-hidden="true">&rarr;</span>
+        </button>
       </div>
     </div>
   );
@@ -689,7 +691,17 @@ const CSS = `
 .rr-hand-p b{color:var(--rr-acc-lt)}
 .rr-hand-p span{color:var(--rr-mute)}
 .rr-hand-n{margin:8px 0 0;font-size:12.5px;font-weight:600;color:var(--rr-mute)}
-.rr-hand-r{display:flex;flex-direction:column;gap:10px;justify-content:space-between}
+.rr-hand-r{display:flex;flex-direction:column;gap:10px;justify-content:center}
+.rr-nextgo{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:16px 18px;border:0;border-radius:14px;background:var(--rr-acc);color:#fff;font-family:${SANS};cursor:pointer;box-shadow:0 0 0 0 rgba(99,102,241,.55);animation:rrpulse 1.8s ease-out 3}
+.rr-nextgo:hover{background:#5145e0}
+.rr-nextgo:focus-visible{outline:2px solid var(--rr-ink);outline-offset:3px}
+.rr-ng-t{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.rr-ng-t span{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.88)}
+.rr-ng-t b{font-size:20px;font-weight:800}
+.rr-ng-t small{font-size:13px;font-weight:600;color:#fff;line-height:1.35}
+.rr-ng-a{font-size:26px;font-weight:800;flex:none}
+@keyframes rrpulse{0%{box-shadow:0 0 0 0 rgba(99,102,241,.55)}100%{box-shadow:0 0 0 14px rgba(99,102,241,0)}}
+@media (prefers-reduced-motion:reduce){.rr-nextgo{animation:none}}
 .rr-next{display:flex;flex-direction:column;gap:2px;padding:12px;border-radius:12px;background:var(--rr-deep)}
 .rr-next span{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--rr-acc-lt)}
 .rr-next b{font-size:18px;font-weight:800}

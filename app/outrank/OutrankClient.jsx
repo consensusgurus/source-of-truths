@@ -897,14 +897,8 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
                   );
                 })}
               </div>
-              <div className="ork-legend">
-                <span><span aria-hidden="true" className="ork-sw" />Your call</span>
-                <span><span aria-hidden="true" className="ork-sw ghost" />The crowd&rsquo;s stand, sealed until you face it</span>
-                <span style={{ marginLeft: 'auto' }}>Exact step +2 &middot; one off +1</span>
-              </div>
-
               {/* still to place */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 18, marginBottom: 6, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 6, marginBottom: 4, flexWrap: 'wrap' }}>
                 <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED }}>
                   {g.order.length < K ? <>Still to place &middot; tap one for step {g.order.length + 1}</> : <>All placed. Tap a step on the stand to take it back.</>}
                 </span>
@@ -919,6 +913,12 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
                   <button key={i} type="button" onClick={() => tapOrder(i)} className="ork-item">{it}</button>
                 )))}
               </div>
+              <div className="ork-legend" style={{ marginTop: 14 }}>
+                <span><span aria-hidden="true" className="ork-sw" />Your call</span>
+                <span><span aria-hidden="true" className="ork-sw ghost" />The crowd&rsquo;s stand, sealed until you face it</span>
+                <span style={{ marginLeft: 'auto' }}>Exact step +2 &middot; one off +1</span>
+              </div>
+
 
               <div className="ork-facerow">
                 <button className="ork-face" onClick={faceTheCrowd} disabled={sending || !placedAll}>

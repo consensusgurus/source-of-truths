@@ -56,6 +56,12 @@ for (const p of PUZZLES) {
     // Both measures every day (owner, 2026-10-14): five of one, four of the other.
     { const np = r.calls.filter((c) => c.m === 'pop').length; if (np < 4 || np > 5) fail(`${at}: ${np} of ${r.calls.length} calls on population, want 4 or 5`); }
     if (new Set(r.calls.map((c) => c.b)).size !== r.calls.length) fail(`${at}: a country is asked twice`);
+    // Sizes first from 2026-10-18 (owner): the open deal, nobody in two calls.
+    if (p.live >= '2026-10-18') {
+      if (r.calls.some((c) => c.src !== 'open')) fail(`${at}: a size call not from the open deal`);
+      const every = r.calls.flatMap((c) => [c.a, c.b]);
+      if (new Set(every).size !== every.length) fail(`${at}: a country appears in two size calls`);
+    }
     // Close in size from SIZES_WIDE_FROM (owner, 2026-10-17): no call is more
     // than 6 times apart, and at most one a day past the tight cap.
     if (p.live >= SIZES_WIDE_FROM) {

@@ -35,7 +35,7 @@ export async function generateMetadata({ searchParams }) {
   const ok = /^\d{1,2}(-\d{1,2}){3,4}$/.test(s);
   const img = ok ? `/passport/card?s=${s}` : '/passport/card';
   const title = 'Passport: A Daily Geography Run | Mind Loft';
-  const description = 'A free daily geography run: the day\'s Span, Flank and Ping back to back, then nine bigger-or-smaller size calls. Score out of 50 and earn a passport.';
+  const description = 'A free daily geography run: nine bigger-or-smaller size calls, then the day\'s Ping, Flank and Span back to back. Score out of 50 and earn a passport.';
   const shareTitle = 'Passport · Mind Loft';
   const shareDesc = 'Span, Flank, Ping and nine size calls, one score out of 50. Which passport do you travel home on?';
   return {
