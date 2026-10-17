@@ -513,8 +513,7 @@ function Grading({ sections, counted, parts, total, dateLabel, animate, board, o
 const CSS = `
 .dj *{box-sizing:border-box}
 .dj .eb{font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dj-mute)}
-.dj-cap{display:flex;align-items:center;gap:12px;max-width:820px;margin:0 auto;padding:12px 16px;font-size:13px}
-.dj-cap.vf{max-width:980px}
+.dj-cap{display:flex;align-items:center;gap:12px;max-width:none;margin:0;padding:12px 20px;font-size:13px}
 .dj-home{font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dj-mute);text-decoration:none}
 .dj-cap b{font-weight:900;letter-spacing:-.01em}
 .dj-capd{color:var(--dj-mute);font-weight:700}

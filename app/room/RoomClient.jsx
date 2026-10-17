@@ -615,9 +615,7 @@ function Morning() {
 const CSS = `
 .rr *{box-sizing:border-box}
 .rr .rr-eb{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--rr-acc-lt)}
-.rr-cap{display:flex;align-items:center;gap:12px;max-width:860px;margin:0 auto;padding:12px 16px;font-size:13px}
-.rr-cap.vf{max-width:980px}
-.rr-cap.pl{max-width:760px}
+.rr-cap{display:flex;align-items:center;gap:12px;max-width:none;margin:0;padding:12px 20px;font-size:13px}
 .rr-home{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--rr-mute);text-decoration:none}
 .rr-cap b{font-weight:800;letter-spacing:-.01em}
 .rr-capd{color:var(--rr-mute);font-weight:700}

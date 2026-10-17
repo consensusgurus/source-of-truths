@@ -777,7 +777,7 @@ const CSS = `
 @media(max-width:720px) and (prefers-reduced-motion:reduce){.cf-stage.settled .cf-cw{animation:none;width:min(150px,42%)}}
 
 .pc .eb{font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--pc-mute)}
-.pc-cap{display:flex;align-items:center;gap:12px;max-width:912px;margin:0 auto;padding:12px 16px;font-size:13px}
+.pc-cap{display:flex;align-items:center;gap:12px;max-width:none;margin:0;padding:12px 20px;font-size:13px}
 .pc-home{font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--pc-mute);text-decoration:none}
 .pc-cap b{font-weight:900;letter-spacing:-.01em}
 .pc-capd{color:var(--pc-mute);font-weight:700}

@@ -768,7 +768,7 @@ export const LAUNCH_CSS = `
 `;
 
 export const ENDING_CSS = `
-.pc-cap{display:flex;align-items:center;gap:12px;max-width:760px;margin:0 auto;padding:12px 16px;font-size:13px;font-family:${SANS}}
+.pc-cap{display:flex;align-items:center;gap:12px;max-width:none;margin:0;padding:12px 20px;font-size:13px;font-family:${SANS}}
 .pc-home{font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-mute,#9aa8c4);text-decoration:none}
 .pc-cap b{font-weight:900;letter-spacing:-.01em}
 .pc-capd{color:var(--stg-mute,#9aa8c4);font-weight:700}

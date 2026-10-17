@@ -632,8 +632,8 @@ const RUN_CSS = `
 .pe-lbe{padding:10px 12px;font:700 12.5px ${SANS};color:#9aa8c4}
 .pe-chal{max-width:400px;margin:12px 0 0}
 .pe-wide{margin:24px 0 0}
-.pc-cap.vf{max-width:932px}
-@media(min-width:761px){.pe .pe-grid{grid-template-columns:minmax(0,360px) minmax(0,480px);justify-content:center}}
+
+@media(min-width:761px){.pe .pe-grid{grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:32px}.pe .pe-cov{justify-content:flex-start}}
 .pe-wide .pe-rounds{max-width:none;grid-template-columns:repeat(4,minmax(0,1fr))}
 .pe-wide .pe-lb,.pe-wide .pe-chal{max-width:none}
 .pe-wide .pe-lb{margin-top:14px}

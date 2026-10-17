@@ -512,8 +512,7 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
 const CSS = `
 .ls *{box-sizing:border-box}
 .ls .eb{font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ls-mute)}
-.ls-cap{display:flex;align-items:center;gap:12px;max-width:820px;margin:0 auto;padding:12px 16px;font-size:13px}
-.ls-cap.vf{max-width:980px}
+.ls-cap{display:flex;align-items:center;gap:12px;max-width:none;margin:0;padding:12px 20px;font-size:13px}
 .ls-home{font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ls-mute);text-decoration:none}
 .ls-cap b{font-weight:900;letter-spacing:-.01em}
 .ls-capd{color:var(--ls-mute);font-weight:700}
