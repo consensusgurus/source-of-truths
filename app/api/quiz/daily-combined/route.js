@@ -6,6 +6,7 @@ import { scoreGame, combineDaily, guestProvisional, rankByCorrect, rankByTime, D
 import { scoreOutwitGame } from '@/lib/outwit-score';
 import { scoreOutrankGame } from '@/lib/outrank-score';
 import { scoreFeudGame } from '@/lib/feud-score';
+import { scoreHerdGame } from '@/lib/herd-score';
 import { attemptsModeForQuizId, attemptsPlan, arcadeRanksForQuizId } from '@/lib/daily-games';
 import { GAME_PUZZLES, etTodayServer, suffixOfDate, gamesForSuffix } from '@/lib/daily-slate';
 import { groupByCode, membersOf, isMissingTable } from '@/lib/groups';
@@ -141,11 +142,11 @@ async function scoreOutrankLive(puzzle, cutoffMs) {
 // Feud is adaptive exactly like Outwit/Outrank: recompute its per-game board
 // from feud_picks (the live crowd) instead of the frozen quiz_results
 // snapshot. Same name-resolution flow as scoreOutwitLive above.
-async function scoreFeudLive(puzzle, cutoffMs) {
+async function scoreFeudLive(puzzle, cutoffMs, table = 'feud_picks', scorer = scoreFeudGame) {
   let rows = [];
   try {
     const { data, error } = await supabaseAdmin
-      .from('feud_picks')
+      .from(table)
       .select('anon_id, user_id, answers, created_at')
       .eq('quiz_id', puzzle.quizId)
       .limit(20000);
@@ -181,9 +182,13 @@ async function scoreFeudLive(puzzle, cutoffMs) {
     return { answers: p.answers, created: p.created, anonId: p.anonId, userId, name };
   });
 
-  const gr = scoreFeudGame(puzzle, named);
+  const gr = scorer(puzzle, named);
   return { field: gr.field, plays: picks.length, players: gr.players };
 }
+
+// Herd is adaptive exactly like Feud, and stores its ballots in outwit_picks
+// under herd-* quiz ids, so it reuses scoreFeudLive's read with its own scorer.
+const scoreHerdLive = (puzzle, cutoffMs) => scoreFeudLive(puzzle, cutoffMs, 'outwit_picks', scoreHerdGame);
 
 // The guest's single chosen row for a game (their anon rows only), mirroring
 // scoreGame's selection: a completed attempt beats an abandoned one, then the
@@ -524,6 +529,13 @@ export async function GET(request) {
       const fp = (GAME_PUZZLES.feud || []).find((x) => x && x.quizId === feudGame.quizId);
       if (fp) feudLive = await scoreFeudLive(fp, cutoffMs);
     }
+    // And for Herd (live crowd split; see lib/herd-score).
+    let herdLive = null;
+    const herdGame = games.find((g) => g.key === 'herd');
+    if (herdGame) {
+      const hp = (GAME_PUZZLES.herd || []).find((x) => x && x.quizId === herdGame.quizId);
+      if (hp) herdLive = await scoreHerdLive(hp, cutoffMs);
+    }
 
     const gameResults = games.map((g) => {
       if (g.key === 'outwit' && outwitLive) {
@@ -534,6 +546,9 @@ export async function GET(request) {
       }
       if (g.key === 'feud' && feudLive) {
         return { key: g.key, quizId: g.quizId, num: g.num, rev: g.rev, href: g.href, field: feudLive.field, plays: feudLive.plays, players: feudLive.players };
+      }
+      if (g.key === 'herd' && herdLive) {
+        return { key: g.key, quizId: g.quizId, num: g.num, rev: g.rev, href: g.href, field: herdLive.field, plays: herdLive.plays, players: herdLive.players };
       }
       const gameRows = rowsByQuiz.get(g.quizId) || [];
       const gr = scoreGame(gameRows);

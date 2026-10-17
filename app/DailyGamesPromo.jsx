@@ -75,6 +75,7 @@ export const DAILY_GAMES = [
   { key: 'fib', href: '/fib', name: 'Fib', tag: 'one clue is lying', store: 'sot_fib_day', accent: '#4c1d95', bg: '#f1edfb', border: 'rgba(76,29,149,0.35)' },
   { key: 'streak', href: '/streak', name: 'Streak', tag: 'forty questions, one life', store: 'sot_streak_day', accent: '#e11d48', bg: '#fdecef', border: 'rgba(225,29,72,0.35)' },
   { key: 'feud', href: '/feud', name: 'Feud', tag: 'match the crowd', store: 'sot_feud_day', accent: '#9f1239', bg: '#fdf0f3', border: 'rgba(159,18,57,0.4)' },
+  { key: 'herd', href: '/herd', name: 'Herd', tag: 'pick what most people pick', store: 'sot_herd_day', accent: '#92400e', bg: '#fdf3e4', border: 'rgba(146,64,14,0.4)' },
   { key: 'babel', href: '/babel', name: 'Babel', tag: 'the bag is empty', store: 'sot_babel_day', accent: '#14532d', bg: '#e9f2ec', border: 'rgba(20,83,45,0.4)' },
   { key: 'finesse', href: '/finesse', name: 'Finesse', tag: 'the daily double dummy', store: 'sot_finesse_day', accent: '#4c1d95', bg: '#ede9fe', border: 'rgba(76,29,149,0.4)' },
   { key: 'crib', href: '/crib', name: 'Crib', tag: 'six cards, throw two', store: 'sot_crib_day', accent: '#a16207', bg: '#fbf3dd', border: 'rgba(161,98,7,0.4)' },

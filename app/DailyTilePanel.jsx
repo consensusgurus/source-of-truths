@@ -61,7 +61,7 @@ const PHONE_SECS = PHONE_SECTIONS.map(([k]) => k);
 // sees no crowd tab at all and lands on the chart, and /api/quiz/crowd-today
 // independently refuses to return any tally to them, so the answers cannot be
 // reached from here either by clicking or by calling the route.
-const CROWD_GAMES = new Set(['outwit', 'outrank', 'feud']);
+const CROWD_GAMES = new Set(['outwit', 'outrank', 'feud', 'herd']);
 function shortDate(iso) {
   const p = String(iso || '').split('-');
   return p.length === 3 ? MONTH_SHORT[Number(p[1]) - 1] + ' ' + Number(p[2]) : '';

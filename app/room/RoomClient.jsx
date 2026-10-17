@@ -1,8 +1,8 @@
 'use client';
 
-// READ THE ROOM — the three crowd games as one run (owner, 2026-10-13).
+// READ THE ROOM: the crowd games as one run (owner, 2026-10-13; Herd opens it from 2026-10-17).
 //
-// Outwit, Outrank and Feud back to back on one page, each a "room" full of
+// Herd, Outwit, Outrank and Feud back to back on one page, each a "room" full of
 // tonight's players, then a verdict on how well you read them
 // (lib/read-room.js): out of 100, a third per room, paid on the share of the
 // room you out-read.
@@ -33,9 +33,12 @@ import useCircuitBoard from '../circuits/useCircuitBoard';
 import { dailyMeIdentity } from '../dailyMeClient';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
-import { ROOM_RUN_ID, ROOM_MAX, ROOM_PART, ROOM_LADDER, roomBeat, roomPoints, roomTierOf } from '@/lib/read-room';
+import { ROOM_RUN_ID, ROOM_MAX, ROOM_LADDER, roomBeat, roomPoints, roomTierOf, roomPartFor } from '@/lib/read-room';
+
+const COUNT_WORD = ['zero', 'one', 'two', 'three', 'four', 'five', 'six'];
 
 const CLIENTS = {
+  herd: dynamic(() => import('../herd/HerdClient'), { ssr: false, loading: () => null }),
   outwit: dynamic(() => import('../outwit/OutwitClient'), { ssr: false, loading: () => null }),
   outrank: dynamic(() => import('../outrank/OutrankClient'), { ssr: false, loading: () => null }),
   feud: dynamic(() => import('../feud/FeudClient'), { ssr: false, loading: () => null }),
@@ -75,7 +78,7 @@ const fmtN = (n) => Number(n || 0).toLocaleString();
 // The answers a room's own save holds, in the shape its crowd API takes.
 function answersOf(key, save, puzzle) {
   if (!save || save.status !== 'done') return null;
-  if (key === 'outwit') {
+  if (key === 'outwit' || key === 'herd') {
     const n = (puzzle && puzzle.prompts && puzzle.prompts.length) || Object.keys(save.ans || {}).length;
     const a = Array.from({ length: n }, (_, i) => (save.ans ? save.ans[i] : undefined));
     return a.some((v) => v == null) ? null : a;
@@ -158,7 +161,7 @@ export default function RoomClient({ dateLabel, dateShort, sections = [] }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // How many are in tonight's room: the busiest of the three boards so far.
+  // How many are in tonight's room: the busiest of the boards so far.
   useEffect(() => {
     if (!hydrated) return undefined;
     let alive = true;
@@ -186,7 +189,8 @@ export default function RoomClient({ dateLabel, dateShort, sections = [] }) {
     const l = live[sec.key];
     return l ? { ...base, ...l, read: l.read || base.read } : base;
   }), [sections, banked, r.results, live]);
-  const parts = counted.map((c) => (c && c.read ? roomPoints(c.read.rank, c.read.field) : 0));
+  const PART = ROOM_MAX / Math.max(1, N);
+  const parts = counted.map((c) => (c && c.read ? roomPoints(c.read.rank, c.read.field, PART) : 0));
   const total = Math.round(parts.reduce((a, b) => a + b, 0));
   const allBanked = N > 0 && sections.every((s) => banked[s.key]);
   const fieldNow = Math.max(crowd || 0, ...counted.map((c) => (c && Number(c.field)) || 0), ...counted.map((c) => (c && c.read ? c.read.field : 0)));
@@ -263,12 +267,12 @@ export default function RoomClient({ dateLabel, dateShort, sections = [] }) {
 
   function shareText() {
     const per = sections.map((s, i) => `${s.name} ${counted[i] && counted[i].read ? `${pctOf(counted[i].read)}%` : '-'}`).join(' · ');
-    const code = sections.length === 3 && counted.every((c) => c && c.read) ? counted.map((c) => pctOf(c.read)).join('-') : '';
+    const code = (sections.length === 3 || sections.length === 4) && counted.every((c) => c && c.read) ? counted.map((c) => pctOf(c.read)).join('-') : '';
     const link = `mindloftdaily.com/room${code ? `?s=${code}&t=${total}&d=${TODAY}` : ''}`;
     return `Read the Room · ${dateShort} · ${total}/${ROOM_MAX}\n${rung[1]}: I out-read ${total}% of the room.\n${per}\n${withRef(link)}`;
   }
   function copyShare() {
-    const text = done ? shareText() : `Read the Room: three crowd games, no answer key. How well do you read the people in the room?\n${withRef('mindloftdaily.com/room')}`;
+    const text = done ? shareText() : `Read the Room: ${COUNT_WORD[N] || N} crowd games, no answer key. How well do you read the people in the room?\n${withRef('mindloftdaily.com/room')}`;
     try { if (navigator.share && isMobileDevice()) { navigator.share({ text }).catch(() => {}); return; } } catch (e) {}
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}
   }
@@ -295,7 +299,7 @@ export default function RoomClient({ dateLabel, dateShort, sections = [] }) {
         <section className={`rr-pre${leaving ? ' leave' : ''}`}>
           <div className="rr-eb">A run · Crowd psychology · {dateLabel}</div>
           <h1 className="rr-title">Read the Room</h1>
-          <p className="rr-lede">There is no answer key. The answer key is whatever tonight&rsquo;s crowd does, and it keeps moving until midnight. Play three crowd games back to back, <b>{sections.map((s) => s.phrase).join(', ').replace(/, ([^,]*)$/, ' and $1')}</b>, and find out how well you read the people in the room.</p>
+          <p className="rr-lede">There is no answer key. The answer key is whatever tonight&rsquo;s crowd does, and it keeps moving until midnight. Play {COUNT_WORD[N] || N} crowd games back to back, <b>{sections.map((s) => s.phrase).join(', ').replace(/, ([^,]*)$/, ' and $1')}</b>, and find out how well you read the people in the room.</p>
           <div className="rr-tonight">
             <div className="rr-tn-hd"><span>Tonight&rsquo;s room</span><em>Filling now</em></div>
             <Figures n={96} lit={0} arriving={Math.min(96, Math.max(6, Math.round(Math.sqrt(crowd || 0) * 2.2)))} />
@@ -307,7 +311,7 @@ export default function RoomClient({ dateLabel, dateShort, sections = [] }) {
           <button type="button" className="rr-walk" onClick={start}>
             {allBanked ? 'Read your verdict' : 'Walk in'} <span aria-hidden="true">&rarr;</span>
           </button>
-          <div className="rr-rooms">
+          <div className="rr-rooms" style={{ '--rr-n': sections.length }}>
             {sections.map((s, i) => (
               <div key={s.key} className="rr-roomcard" style={{ '--c': `var(--rr-${s.key})`, animationDelay: `${0.1 + i * 0.1}s` }}>
                 <div className="rr-rc-k">Room {i + 1}</div>
@@ -412,11 +416,11 @@ function Handover({ sec, si, n, res, part, next, banked, onGo }) {
         <p className="rr-hand-p">{pct == null ? 'Asking the room where you stand.' : pct >= 50
           ? <>That reads the room better than <b>{pct}%</b> of it so far.</>
           : <>That reads the room better than <b>{pct}%</b> of it so far. The night is young.</>}
-          {' '}<span>Worth {Math.round(part)} of this room&rsquo;s {Math.round(ROOM_PART)}.</span></p>
+          {' '}<span>Worth {Math.round(part)} of this room&rsquo;s {Math.round(ROOM_MAX / Math.max(1, n))}.</span></p>
         <p className="rr-hand-n">The answers the room gave are below. They keep moving until midnight.</p>
       </div>
       <div className="rr-hand-r">
-        {next ? <div className="rr-next"><span>Next room</span><b>{next.name}</b><small>{next.line}</small></div> : <div className="rr-next"><span>That was the last room</span><b>Your verdict</b><small>How well you read all three.</small></div>}
+        {next ? <div className="rr-next"><span>Next room</span><b>{next.name}</b><small>{next.line}</small></div> : <div className="rr-next"><span>That was the last room</span><b>Your verdict</b><small>How well you read all {COUNT_WORD[n] || n}.</small></div>}
         <div className="rr-gorow">
           <button type="button" className="rr-go" onClick={onGo}>
             {!held && (
@@ -486,7 +490,7 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
     <section className="rr-vf">
       <div className="rr-eb">{dateLabel} · Read the Room</div>
       <div className="rr-vf-hd">
-        <span>All three rooms read</span>
+        <span>All {COUNT_WORD[sections.length] || sections.length} rooms read</span>
         <em><i aria-hidden="true" />Still filling · settles at midnight ET</em>
       </div>
       <div className="rr-vf-grid">
@@ -506,7 +510,7 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
 
       {settled && (
         <div className="rr-vf-copy">
-          <div className="rr-vf-games">
+          <div className="rr-vf-games" style={{ '--rr-n': sections.length, '--rr-nm': sections.length > 3 ? 2 : sections.length }}>
             {sections.map((s, i) => {
               const c = counted[i];
               const p = c && c.read ? pctOf(c.read) : null;
@@ -534,7 +538,7 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
             <a href="/">Back to main</a>
           </div>
           <p className="rr-vf-note">The room keeps filling until midnight, so your read can still move. Come back tomorrow for your settled spot.</p>
-          <NextDrop label="Tomorrow's room" sub="Three new crowds at midnight Eastern." href="/room"
+          <NextDrop label="Tomorrow's room" sub="New crowds at midnight Eastern." href="/room"
             accent="var(--rr-acc-lt)" ink="var(--rr-ink)" mute="var(--rr-mute)" style={{ margin: '14px 0 0', maxWidth: 420 }} />
           <MoreRunsList self="room" ink="var(--rr-ink)" mute="var(--rr-mute)" line="var(--rr-line)" />
           <div className="rr-vf-lad"><div className="rr-eb">Where you stand at the party</div><Ladder at={ti} /></div>
@@ -567,7 +571,8 @@ function Morning() {
         try { const x = await fetchRead(k, info.quizId, a); if (x && x.read) per[k] = x; } catch (e) {}
       }));
       if (!alive || !Object.keys(per).length) return;
-      const settledRead = Math.round(keys.reduce((s, k) => s + (per[k] ? roomPoints(per[k].read.rank, per[k].read.field) : 0), 0));
+      const part = roomPartFor(day);
+      const settledRead = Math.round(keys.reduce((s, k) => s + (per[k] ? roomPoints(per[k].read.rank, per[k].read.field, part) : 0), 0));
       let rank = null, players = null;
       try {
         const { anonId, email } = dailyMeIdentity();
@@ -589,7 +594,7 @@ function Morning() {
   const ti = roomTierOf(m.to), was = roomTierOf(m.from);
   const L = ROOM_LADDER[ti];
   const dir = ti < was ? `Up ${was - ti}` : ti > was ? `Down ${ti - was}` : 'Held';
-  const NAMES = { outwit: 'Outwit', outrank: 'Outrank', feud: 'Feud' };
+  const NAMES = { herd: 'Herd', outwit: 'Outwit', outrank: 'Outrank', feud: 'Feud' };
   return (
     <section className="rr-morn">
       <button type="button" className="rr-morn-x" onClick={close} aria-label="Dismiss">&times;</button>
@@ -600,7 +605,7 @@ function Morning() {
         <span><b>{L[1]}</b><small>Settled · {m.to} of 100</small></span>
         <em>{dir === 'Held' ? 'Held' : `${dir} ${Math.abs(was - ti) === 1 ? 'place' : 'places'}`}</em>
       </div>
-      <div className="rr-morn-g">
+      <div className="rr-morn-g" style={{ '--rr-n': m.keys.length, '--rr-nm': m.keys.length > 3 ? 2 : m.keys.length }}>
         {m.keys.map((k) => <div key={k}><i>{NAMES[k] || k}</i><b>{m.per[k] ? `${pctOf(m.per[k].read)}%` : '-'}</b></div>)}
       </div>
       {m.rank ? <div className="rr-morn-b"><b>#{m.rank}{m.players ? ` of ${fmtN(m.players)}` : ''} on the final board</b><span>Settled at midnight Eastern. This spot will not move again.</span></div> : null}
@@ -648,7 +653,7 @@ const CSS = `
 .rr-walk{display:inline-flex;align-items:center;gap:10px;margin-top:18px;padding:16px 30px;border:0;border-radius:12px;background:var(--rr-acc);color:#fff;font:800 18px ${SANS};cursor:pointer;box-shadow:0 14px 34px rgba(0,0,0,.5);transition:background .15s,transform .15s}
 .rr-walk:hover{background:#5145e0;transform:translateY(-1px)}
 .rr-walk:focus-visible,.rr-how:focus-visible,.rr-go:focus-visible,.rr-hold:focus-visible{outline:2px solid var(--rr-ink);outline-offset:3px}
-.rr-rooms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:22px}
+.rr-rooms{display:grid;grid-template-columns:repeat(var(--rr-n,3),minmax(0,1fr));gap:10px;margin-top:22px}
 .rr-roomcard{padding:14px;border-radius:14px;background:var(--rr-panel);border:1px solid var(--rr-line);border-top:3px solid var(--c);animation:rrrise .5s ease both}
 .rr-rc-k{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--rr-mute)}
 .rr-rc-n{font-size:20px;font-weight:800;margin-top:3px}
@@ -723,7 +728,7 @@ const CSS = `
 .rr-moved{margin-top:12px;padding:8px 11px;border-radius:9px;font-size:12.5px;font-weight:800;background:rgba(255,255,255,.06)}
 .rr-moved.up{color:#6ee7b7}.rr-moved.dn{color:#fca5a5}
 .rr-vf-copy{margin-top:16px;animation:rrrise .5s ease both}
-.rr-vf-games{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.rr-vf-games{display:grid;grid-template-columns:repeat(var(--rr-n,3),minmax(0,1fr));gap:10px}
 .rr-vf-games div{position:relative;display:flex;flex-direction:column;gap:3px;padding:14px;border-radius:12px;background:var(--rr-panel);border:1px solid var(--rr-line);min-width:0}
 .rr-vf-games i{font-style:normal;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--rr-acc-lt)}
 .rr-vf-games b{font-size:24px;font-weight:800}
@@ -754,7 +759,7 @@ const CSS = `
 .rr-morn-tier b{font-size:18px;font-weight:800}
 .rr-morn-tier small{font-size:12.5px;font-weight:700;opacity:.85}
 .rr-morn-tier em{font-style:normal;padding:5px 10px;border-radius:999px;background:rgba(6,10,20,.28);font-size:12.5px;font-weight:800}
-.rr-morn-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.rr-morn-g{display:grid;grid-template-columns:repeat(var(--rr-n,3),minmax(0,1fr));gap:8px;margin-top:10px}
 .rr-morn-g div{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.04)}
 .rr-morn-g i{font-style:normal;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--rr-acc-lt)}
 .rr-morn-g b{font-size:18px;font-weight:800}
@@ -768,6 +773,7 @@ const CSS = `
 .rr-vf-grid{grid-template-columns:minmax(0,1fr)}
 .rr-vf-room .rr-figs{grid-template-columns:repeat(12,minmax(0,1fr))}
 .rr-vf-games small{font-size:11px}
+.rr-vf-games,.rr-morn-g{grid-template-columns:repeat(var(--rr-nm,3),minmax(0,1fr))}
 .rr-vf-btns a,.rr-vf-btns button{flex:1 1 40%;text-align:center;padding:12px 10px}
 .rr-sechd b{font-size:16px}
 .rr-run{display:none}

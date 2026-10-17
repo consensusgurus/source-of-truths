@@ -1,7 +1,7 @@
 import { createElement as h } from 'react';
 import { ImageResponse } from 'next/og';
 import { stageFonts } from '@/lib/og-stage-card';
-import { ROOM_MAX, ROOM_PART, ROOM_LADDER, roomTierOf } from '@/lib/read-room';
+import { ROOM_MAX, ROOM_LADDER, roomTierOf } from '@/lib/read-room';
 
 // READ THE ROOM'S SHARE CARD, on the Judged and Dojo pattern: one route draws
 // both. With no ?s it is the invite: what a Mind Reader is, and the party's six
@@ -21,7 +21,9 @@ const ACC = '#4338ca';
 const MUTE = '#8b95a8';
 const DIM = '#64748b';
 const OFF = '#2a3150';
-const NAMES = ['Outwit', 'Outrank', 'Feud'];
+// Three shares are a day before Herd joined (2026-10-17); four open with Herd.
+const NAMES3 = ['Outwit', 'Outrank', 'Feud'];
+const NAMES4 = ['Herd', 'Outwit', 'Outrank', 'Feud'];
 const d = (style, ...kids) => h('div', { style: { display: 'flex', ...style } }, ...kids);
 
 // One small person: a head over shoulders.
@@ -90,7 +92,7 @@ function result(pcts, total) {
           d({ fontSize: 30, fontWeight: 800, color: DIM }, `/${ROOM_MAX}`)),
         d({ fontSize: 16, fontWeight: 800, letterSpacing: 2, color: MUTE, textTransform: 'uppercase' }, `Out-read ${total}% of the room`)),
       d({ gap: 8, marginTop: 14 },
-        ...pcts.map((p, i) => d({ padding: '6px 11px', borderRadius: 8, background: 'rgba(165,180,252,0.12)', fontSize: 15, fontWeight: 800, color: '#dfe3ff' }, `${NAMES[i]} ${p}%`))),
+        ...pcts.map((p, i) => d({ padding: '6px 11px', borderRadius: 8, background: 'rgba(165,180,252,0.12)', fontSize: 15, fontWeight: 800, color: '#dfe3ff' }, `${(pcts.length === 4 ? NAMES4 : NAMES3)[i]} ${p}%`))),
       cta()),
     d({ flexDirection: 'column', flex: 1, gap: 6, justifyContent: 'center' },
       ...ROOM_LADDER.map((x, i) => rung(x, i, me, upGap))));
@@ -103,7 +105,7 @@ function invite() {
     d({ flexDirection: 'column', flex: 1 },
       eyebrow('Mind Loft · Read the Room · Daily run'),
       d({ fontSize: 62, fontWeight: 800, lineHeight: 1.04, letterSpacing: -2, marginTop: 34 }, 'Can you read the room?'),
-      d({ fontSize: 22, fontWeight: 700, color: '#cbd5e1', marginTop: 18, lineHeight: 1.35 }, 'Three crowd games with no answer key: dodge the herd, call its order, say what it said.'),
+      d({ fontSize: 22, fontWeight: 700, color: '#cbd5e1', marginTop: 18, lineHeight: 1.35 }, 'Four crowd games with no answer key: run with the herd, dodge it, call its order, say what it said.'),
       d({ flexDirection: 'column', marginTop: 24, padding: '16px 20px', borderRadius: 14, border: `2px solid ${GOLD}`, background: 'rgba(233,207,127,0.07)' },
         d({ fontSize: 15, fontWeight: 800, letterSpacing: 3, color: GOLD, textTransform: 'uppercase' }, `${top[1]} · ${top[0]}+`),
         d({ fontSize: 20, fontWeight: 700, color: '#f1f5f9', marginTop: 6, lineHeight: 1.35 }, 'Knows what the crowd will say before it says it, and which way the herd will run.')),
@@ -122,10 +124,10 @@ export async function GET(req) {
   try {
     const q = new URL(req.url).searchParams;
     const s = q.get('s') || '';
-    const pcts = /^\d{1,3}(-\d{1,3}){2}$/.test(s) ? s.split('-').map((x) => Math.max(0, Math.min(100, Number(x)))) : null;
+    const pcts = /^\d{1,3}(-\d{1,3}){2,3}$/.test(s) ? s.split('-').map((x) => Math.max(0, Math.min(100, Number(x)))) : null;
     const tRaw = q.get('t');
     const tq = tRaw == null || tRaw === '' ? NaN : Number(tRaw);
-    const fromParts = pcts ? Math.round(pcts.reduce((a, p) => a + (ROOM_PART * p) / 100, 0)) : null;
+    const fromParts = pcts ? Math.round(pcts.reduce((a, p) => a + ((ROOM_MAX / pcts.length) * p) / 100, 0)) : null;
     const tot = Number.isFinite(tq) && tq >= 0 && tq <= ROOM_MAX ? Math.round(tq) : fromParts;
     const el = pcts ? result(pcts, tot) : invite();
     return new ImageResponse(el, { width: 1200, height: 630, fonts: stageFonts(), headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=86400' } });

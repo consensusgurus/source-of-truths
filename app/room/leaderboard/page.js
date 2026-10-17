@@ -5,7 +5,7 @@ import PriceCheckBoard from '../../pricecheck/leaderboard/PriceCheckBoard';
 
 export const metadata = {
   title: 'Read the Room Leaderboard | Mind Loft',
-  description: "Tonight's Read the Room board, every settled day, and the all-time champions. Three crowd games, scored on how much of each room you out-read, out of 100.",
+  description: "Tonight's Read the Room board, every settled day, and the all-time champions. Four crowd games, scored on how much of each room you out-read, out of 100.",
   alternates: { canonical: '/room/leaderboard' },
   openGraph: {
     title: 'Read the Room Leaderboard | Mind Loft',
@@ -25,6 +25,6 @@ function etLabel() {
 
 export default function RoomLeaderboardPage() {
   return <PriceCheckBoard dateLabel={etLabel()} circuit="room" name="Read the Room" path="/room"
-    emptyLine="Nobody has read all three rooms tonight yet. Yours would be the first read on the board."
+    emptyLine="Nobody has read every room tonight yet. Yours would be the first read on the board."
     rankedLine="Ranked on how much of each room you out-read, a third each, and it moves until midnight" max={100} />;
 }

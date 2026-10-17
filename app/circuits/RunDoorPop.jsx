@@ -71,14 +71,14 @@ export const RUN_DOORS = {
     go: 'Enter the Dojo', accent: '#e9cf7f',
     tags: [['Sixes', '#93c5fd'], ['Suds', '#a5b4fc'], ['A variant', '#e9cf7f']],
   },
-  // ONCE A DAY on the start gate of Outwit, Outrank or Feud (owner,
-  // 2026-10-13): a player loading any crowd game is offered the run that
-  // plays all three, unless it is already open or finished today.
+  // ONCE A DAY on the start gate of Herd, Outwit, Outrank or Feud (owner,
+  // 2026-10-13; Herd from 2026-10-17): a player loading any crowd game is
+  // offered the run that plays them all, unless it is already open or finished today.
   room: {
-    href: '/room', name: 'Read the Room', eyebrow: 'Daily run · Three crowd games',
-    body: 'Outwit, Outrank and Feud back to back on one page: dodge the herd, call its order, say what it said. Then a verdict on how well you read tonight\u2019s room.',
+    href: '/room', name: 'Read the Room', eyebrow: 'Daily run · Four crowd games',
+    body: 'Herd, Outwit, Outrank and Feud back to back on one page: run with the herd, dodge it, call its order, say what it said. Then a verdict on how well you read tonight\u2019s room.',
     go: 'Walk into the room', accent: '#a5b4fc',
-    tags: [['Outwit', '#c3cfe3'], ['Outrank', '#818cf8'], ['Feud', '#fda4af']],
+    tags: [['Herd', '#fcd34d'], ['Outwit', '#c3cfe3'], ['Outrank', '#818cf8'], ['Feud', '#fda4af']],
   },
   // Once per GAME like Judged (owner, 2026-10-09): the first time a player
   // ever opens one of the five on its own page.

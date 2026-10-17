@@ -4283,6 +4283,37 @@ grid of known coordinates, and drive synthetic pointer sequences. That is how co
 hold-to-aim discriminator, the line lock, the free marks, the win path and the unchanged mouse path
 were all confirmed before the push, along with a unit test of the commit's error arithmetic.
 
+## Herd is the DAILY CROWD SELECTION, and it opens Read the Room (launched 2026-10-17)
+
+Route `/herd`, key `herd`, Crowd Psychology, `miss: null`, legacy hue saddle brown #92400e / #fcd34d. Owner,
+2026-10-16: "a series of crowd selections... seeded with answers until 10 reached... rescores throughout the
+day... the first puzzle in read the room... A or B, or A or B or C, or A or B or C or D, weighted towards A or B.
+10 per day."
+
+- **The game.** Ten questions a day, each with 2, 3 or 4 options (5 to 7 two-way a day on a nine-day cycle).
+  Pick what you think MOST of today's players picked. One point per call that lands with the herd, out of 10.
+  No Sunday Edition (owner's ten a day), and no `sunday` field.
+- **Scoring is `lib/herd-score.js`**, the one rule for every surface: the herd is the most-picked option counted
+  LEAVE-ONE-OUT (your own vote removed), ties at the top pay everyone in them. Board order: points, then herd
+  share (summed leave-one-out share of your picks), then earliest (`rankHerd`). Adaptive like the other crowd
+  games: recomputed from every pick on every request.
+- **House crowd**: each question's `house` is VOTE COUNTS per option (48 in all), from the pool's estimated
+  split. In the pool while at most 10 real players are in (`HOUSE_CUTOFF`), then retired for everyone.
+- **No table of its own**: ballots go in `outwit_picks` under `herd-M-D-YY` quiz ids. Every reader of that table
+  filters by quiz_id. Wired into `/api/quiz/daily-me` (ADAPTIVE), `/api/quiz/crowd-today` (herdGroups) and
+  `/api/quiz/daily-combined` (scoreHerdLive, which reuses scoreFeudLive's read with Herd's table and scorer).
+- **The bank**: `scripts/herd-pool.mjs` (471 questions written 2026-10-16 in three topics, home / social / world,
+  each with an ESTIMATED split) dealt by `scripts/gen-herd.mjs --until <date> --write` (append-only): at least two
+  easy and two close calls a day, no topic over five, no two overlapping questions on one day, first question an
+  easy two-way, nothing dealt twice. Bank 2026-10-17 to 2026-11-30 leaves 20 pool questions: write more before
+  extending. `scripts/verify-herd.mjs` checks the bank and the scorer (mutation-tested on leave-one-out).
+- **Read the Room is four rooms from 2026-10-17**: Herd, Outwit, Outrank, Feud, a quarter of 100 each.
+  `lib/read-room.js` `HERD_FROM`, `roomKeysFor(iso)`, `roomPartFor(iso)`, `roomScorerFor(iso)`; the circuit carries
+  `before: { until: '2026-10-16', keys: [the old three] }` and its scorer is per day, so settled three-room days
+  keep a third each. Share codes carry three or four shares; the card names the rooms by count.
+- Client `app/herd/HerdClient.jsx` is built off OutwitClient's frame (class prefix `hd-`); a pick on any question
+  but the last moves straight on. Wired by `scripts/wire-herd.mjs`; tiles `scripts/gen-herd-tile.py`.
+
 ## Scour is the THEMED WORD SEARCH, 15x15 every day (launched 2026-10-15)
 
 Route `/scour`, key `scour`, Word, legacy hue sky #0369a1. Owner, 2026-10-15: "make even the normal day

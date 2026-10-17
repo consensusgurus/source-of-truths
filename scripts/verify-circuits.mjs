@@ -57,7 +57,7 @@ const MED = {
   suds: 482, warmer: 518, lode: 614, quilt: 699, crux: 1031, anon: 1106, sando: 1171,
   // The three crowd games post no comparable clock: you submit picks against a
   // pool, so the row's time is how long you deliberated. Estimated, flagged.
-  outwit: 90, outrank: 90, feud: 90,
+  outwit: 90, outrank: 90, feud: 90, herd: 60,
   // The trivia banks of the gauntlet shape: twenty-five questions like Atlas and
   // Biz. ESTIMATES (2026-10-14) for the five that were never measured.
   script: 45, quotes: 45, sci: 45, art: 45, history: 45,

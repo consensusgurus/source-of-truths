@@ -6,6 +6,7 @@ import { SITE_URL } from '@/lib/site';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { ROOM_RUN_ID, ROOM_ROOMS } from '@/lib/read-room';
 import { circuitKeysFor } from '@/lib/circuits';
+import { PUZZLES as P_herd } from '../herd/puzzles';
 import { PUZZLES as P_outwit } from '../outwit/puzzles';
 import { PUZZLES as P_outrank } from '../outrank/puzzles';
 import { PUZZLES as P_feud } from '../feud/puzzles';
@@ -14,8 +15,12 @@ import { PUZZLES as P_feud } from '../feud/puzzles';
 // Each bank is resolved HERE and only today's room ships, stripped exactly the
 // way each game's own page strips it: the house crowds and herd truths never
 // reach the browser. The clients are handed a one-puzzle list.
-const BANKS = { outwit: P_outwit, outrank: P_outrank, feud: P_feud };
+const BANKS = { herd: P_herd, outwit: P_outwit, outrank: P_outrank, feud: P_feud };
 const SAFE = {
+  herd: (p) => ({
+    num: p.num, quizId: p.quizId, live: p.live, dateLabel: p.dateLabel, sunday: !!p.sunday,
+    prompts: p.prompts.map((pr) => ({ q: pr.q, options: pr.options })),
+  }),
   outwit: (p) => ({
     num: p.num, quizId: p.quizId, live: p.live, dateLabel: p.dateLabel, sunday: !!p.sunday,
     prompts: p.prompts.map((pr) => ({
@@ -40,10 +45,10 @@ export async function generateMetadata({ searchParams }) {
   const s = String((searchParams && searchParams.s) || '');
   const t = String((searchParams && searchParams.t) || '');
   const d = String((searchParams && searchParams.d) || '');
-  const ok = /^\d{1,3}(-\d{1,3}){2}$/.test(s);
+  const ok = /^\d{1,3}(-\d{1,3}){2,3}$/.test(s);
   const img = ok ? `/room/card?s=${s}${/^\d{1,3}$/.test(t) ? `&t=${t}` : ''}${/^\d{4}-\d{2}-\d{2}$/.test(d) ? `&d=${d}` : ''}` : '/room/card';
-  const title = 'Read the Room: Three Crowd Games, No Answer Key | Mind Loft';
-  const description = 'A free daily run of three crowd games: Outwit, Outrank and Feud. No answer key, only tonight\'s players, and your read of the room moves until midnight.';
+  const title = 'Read the Room: Four Crowd Games, No Answer Key | Mind Loft';
+  const description = 'A free daily run of four crowd games: Herd, Outwit, Outrank and Feud. No answer key, only tonight\'s players, and your read moves until midnight.';
   return {
     title, description,
     alternates: { canonical: '/room' },
@@ -78,7 +83,7 @@ export default function RoomPage() {
   const dateShort = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
   const jsonLd = {
     '@context': 'https://schema.org', '@type': 'Game', name: 'Read the Room', url: `${SITE_URL}/room`,
-    description: 'A free daily run of three crowd psychology games from Mind Loft: Outwit, Outrank and Feud.',
+    description: 'A free daily run of four crowd psychology games from Mind Loft: Herd, Outwit, Outrank and Feud.',
     gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
     image: `${SITE_URL}/room/card`,
     publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
