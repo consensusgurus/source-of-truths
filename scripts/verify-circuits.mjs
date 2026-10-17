@@ -263,7 +263,9 @@ for (const c of CIRCUITS) {
   // LSAT logic-games case) stands outside the shortest-first rule. It must be
   // the first key, and the order is checked from the second key on.
   if (c.opener && keys[0] !== c.opener) fails.push(`${c.id}: declares opener ${c.opener} but opens with ${keys[0]}`);
-  for (let i = c.opener ? 2 : 1; i < keys.length; i += 1) {
+  // An OWNER-ORDERED roster (Judged from 2026-10-18: Ergo, Docket, Alibi,
+  // Sworn, Hearsay) is played in the order the owner set, so it is not checked.
+  for (let i = c.ownerOrder ? keys.length : c.opener ? 2 : 1; i < keys.length; i += 1) {
     const a = MED[keys[i - 1]];
     const b = MED[keys[i]];
     if (a == null || b == null) continue;

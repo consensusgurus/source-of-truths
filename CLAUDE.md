@@ -9279,6 +9279,16 @@ mounts the Judged door; inside the run it carries Give up. A finished case stays
 card and every case, the last included, waits for a button.
 Stands no longer mounts the Judged door; Ergo does.
 
+**ALIBI BACK from 2026-10-18 (owner, 2026-10-17): Ergo, Docket, Alibi, Sworn, Hearsay, 20 each.** 2026-10-17 alone
+ran four at 25 (`LAW_FIVE_AGAIN_FROM`). The order is the owner's, not shortest first, so the circuit carries
+`ownerOrder: true` and verify-circuits skips its order check. Alibi mounts the Judged door again.
+
+**Every run's end screen carries "Return to all daily puzzles"** (owner, 2026-10-17): `app/circuits/RunBackLink.jsx`,
+a plain text link with an arrow, centred in the run's cap, rendered only when the run is done (`{done && <RunBackLink />}`)
+in RunClient, Valet, Price Check, Passport (both clients), Judged, Dojo and Read the Room. A new run adds the same line
+to its cap and its cap class to the component's position:relative rule. Never give a run cap the class `vf`: Judged's
+verdict container is `.vf` with a 980px max-width, which is why its header shrank on the verdict.
+
 
 ## Price Check scores the FIRST guess, three guesses an item (owner, 2026-10-11)
 

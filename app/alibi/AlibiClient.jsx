@@ -61,6 +61,7 @@ import LoftFinish from '../LoftFinish';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import RunDoorPop from '../circuits/RunDoorPop';
 
 const COLORS = {
   cream: T.surface,
@@ -1049,7 +1050,10 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
       )}
 
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
-      {/* Alibi left Judged on 2026-10-17 (owner), so it no longer offers the run. */}
+      {/* THE JUDGED DOOR: Alibi is back in Judged from 2026-10-18 (owner). The
+          first time a player ever opens Alibi on its own page, the whole run is
+          offered, once per case. Never inside the run itself. */}
+      <RunDoorPop id="judged" game="alibi" ready={hydrated && preStart && isTodays && !EMBED} self="Alibi" />
 
       {toast && (
         <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>

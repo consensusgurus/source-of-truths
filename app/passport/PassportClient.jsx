@@ -46,6 +46,7 @@ import NextDrop from '../NextDrop';
 import ChallengeStrip from '../ChallengeStrip';
 import { RunChallengeButton, RunChallengeLine } from '../RunChallenge';
 import { DOTS, HOME } from './dots';
+import RunBackLink from '../circuits/RunBackLink';
 
 const NAME = 'Passport';
 const PATH = '/passport';
@@ -1547,6 +1548,7 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
       <style dangerouslySetInnerHTML={{ __html: CSS + LAUNCH_CSS + ENDING_CSS }} />
       {playing ? <ChallengeStrip gameKey="passport" num={PUZZLE.num} /> : null}
       <div className={`pc-cap${started ? ' on' : ''}`}>
+        {done && <RunBackLink />}
         <a href="/" className="pc-home">Mind Loft</a>
         <b>Passport</b>
         <span className="pc-capd">{PUZZLE.dateLabel.replace(/, \d{4}$/, '')}</span>

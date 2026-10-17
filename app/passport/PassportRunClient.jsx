@@ -40,6 +40,7 @@ import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { KEY, LEGS, legOrderFor, legPoints, TIERS, tierIndex, HENLEY_EDITION, shareLinesRun } from '@/lib/passport';
 import { Stamp, Cover, Finale, Launch, PP_CSS, LAUNCH_CSS, ENDING_CSS, usePlaneMap } from './PassportClient';
+import RunBackLink from '../circuits/RunBackLink';
 
 const CLIENTS = {
   span: dynamic(() => import('../span/SpanClient'), { ssr: false, loading: () => null }),
@@ -557,6 +558,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
       <style dangerouslySetInnerHTML={{ __html: PP_CSS + LAUNCH_CSS + ENDING_CSS + RUN_CSS }} />
       {playing ? <ChallengeStrip gameKey="passport" num={PUZZLE.num} /> : null}
       <div className={`pc-cap${started ? ' on' : ''}${done && !finale ? ' vf' : ''}`}>
+        {done && <RunBackLink />}
         <a href="/" className="pc-home">Mind Loft</a>
         <b>Passport</b>
         <span className="pc-capd">{PUZZLE.dateLabel.replace(/, \d{4}$/, '')}</span>

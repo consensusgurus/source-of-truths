@@ -35,6 +35,7 @@ import { isMobileDevice } from '@/lib/is-mobile';
 import ChallengeStrip from '../ChallengeStrip';
 import { RunChallengeButton, RunChallengeLine, runToken } from '../RunChallenge';
 import { PRICE_GAMES, fmtCents, errOf, scoreOf, pctLabel, runRankOf, runTierOf, ranksFor, isV2, scoreGuesses } from '@/lib/price-games';
+import RunBackLink from '../circuits/RunBackLink';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
@@ -193,6 +194,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {done ? null : <ChallengeStrip gameKey="pricecheck" num={runToken()} run />}
       <div className="pc-cap">
+        {done && <RunBackLink />}
         <Link href="/" className="pc-home">Mind Loft</Link>
         <b>Price Check</b>
         <span className="pc-capd">{dateShort}</span>

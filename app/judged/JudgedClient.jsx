@@ -35,6 +35,7 @@ import useCircuitBoard from '../circuits/useCircuitBoard';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { LAW_RUN_ID, LAW_LADDER, LAW_CLOCK, LAW_CASE_MAX, LAW_MAX, lawLadderFor, lawTierOf, lawIndexOf, lawCasePoints, lawAcc, lawSpeed } from '@/lib/law-school';
+import RunBackLink from '../circuits/RunBackLink';
 
 const CLIENTS = {
   ergo: dynamic(() => import('../ergo/ErgoClient'), { ssr: false, loading: () => null }),
@@ -173,7 +174,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
     return `Judged · ${dateShort} · ${total}/${LAW_MAX}\nAdmitted to ${school[1]}, admissions score ${lawIndexOf(total)}.${tier > 0 ? `\nWaitlisted at ${L[tier - 1][1]}, ${Math.max(1, L[tier - 1][0] - total)} short.` : ''}\n${per}\n${withRef(link)}`;
   }
   function copyShare() {
-    const text = done ? shareText() : `Judged: four logic cases, right and fast. Your score decides which law school lets you in.\n${withRef('mindloftdaily.com/judged')}`;
+    const text = done ? shareText() : `Judged: five logic cases, right and fast. Your score decides which law school lets you in.\n${withRef('mindloftdaily.com/judged')}`;
     try { if (navigator.share && isMobileDevice()) { navigator.share({ text }).catch(() => {}); return; } } catch (e) {}
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}
   }
@@ -186,7 +187,8 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
   return (
     <div className="stage-page ls" data-stage-theme="dark" style={{ ...VARS, minHeight: '100vh', background: 'var(--ls-ground)', color: 'var(--ls-ink)', fontFamily: SANS, overflowX: 'hidden', position: 'relative' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div className={`ls-cap${done ? ' vf' : ''}`}>
+      <div className="ls-cap">
+        {done && <RunBackLink />}
         <Link href="/" className="ls-home">Mind Loft</Link>
         <b>Judged</b>
         <span className="ls-capd">{dateShort}</span>
@@ -498,7 +500,7 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
             <RunChallengeLine gameKey={LAW_RUN_ID} score={total} total={LAW_MAX} n={runToken()} />
             <RunChallengeButton gameKey={LAW_RUN_ID} score={total} total={LAW_MAX} n={runToken()} status={`Admitted to ${t[1]}`} door />
           </div>
-          <NextDrop label="Tomorrow's docket" sub="Four new cases and a new set of schools at midnight Eastern." href="/judged"
+          <NextDrop label="Tomorrow's docket" sub="Five new cases and a new set of schools at midnight Eastern." href="/judged"
             accent="var(--ls-cta)" ink="var(--ls-ink)" mute="var(--ls-mute)" style={{ margin: '14px 0 0' }} />
           <MoreRunsList self="judged" ink="var(--ls-ink)" mute="var(--ls-mute)" line="var(--ls-line)" />
           <div className="vf-lad"><div className="eb">The ladder</div><Ladder at={fti} L={L} /></div>

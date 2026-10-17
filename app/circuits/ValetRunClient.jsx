@@ -52,6 +52,7 @@ import ValetScene from './ValetScene';
 import useCircuitBoard from './useCircuitBoard';
 import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken } from '../RunChallenge';
 import { T } from '@/lib/theme';
+import RunBackLink from './RunBackLink';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
@@ -440,6 +441,7 @@ export default function ValetRunClient({ circuitId, circuitName, dateLabel, sect
       {/* THE ONLY CHROME, as on the trivia run: what you are in, the date,
           the live figures, and the way out. */}
       <div className="vr-cap">
+        {done && <RunBackLink color="#fff" />}
         <div className="vr-cid">
           <i>{done ? (parked === N ? 'All three parked' : 'Run complete') : `Logic · ${dateLabel}`}</i>
           <b>{circuitName}</b>

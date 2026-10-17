@@ -35,6 +35,7 @@ import useCircuitBoard from '../circuits/useCircuitBoard';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { DOJO_RUN_ID, DOJO_BELTS, DOJO_CLOCK, DOJO_MAX, dojoTierOf, dojoGridPoints, dojoAcc, dojoSpeed } from '@/lib/dojo';
+import RunBackLink from '../circuits/RunBackLink';
 
 const CLIENTS = {
   sixes: dynamic(() => import('../sixes/SixesClient'), { ssr: false, loading: () => null }),
@@ -224,6 +225,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
     <div className="stage-page dj" data-stage-theme="dark" style={{ ...VARS, minHeight: '100vh', background: 'var(--dj-ground)', color: 'var(--dj-ink)', fontFamily: SANS, overflowX: 'hidden', position: 'relative' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className={`dj-cap${done ? ' vf' : ''}`}>
+        {done && <RunBackLink />}
         <Link href="/" className="dj-home">Mind Loft</Link>
         <b>Enter the Dojo</b>
         <span className="dj-capd">{dateShort}</span>

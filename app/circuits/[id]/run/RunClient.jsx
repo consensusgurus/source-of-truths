@@ -64,6 +64,7 @@ import NextDrop from '../../../NextDrop';
 import ChallengeStrip from '../../../ChallengeStrip';
 import { RunChallengeButton, RunChallengeLine, runToken } from '../../../RunChallenge';
 import { isChallengeableRun } from '@/lib/challenge';
+import RunBackLink from '../../RunBackLink';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
@@ -997,6 +998,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           `loft-page` ground rules it injects, so this page paints its own
           background and its own ink, which it was doing already. */}
       <div className="rn-cap">
+        {done && <RunBackLink color="#fff" />}
         <div className="rn-cid">
           <i>{done ? (perfect === N ? 'Run cleared' : 'Run complete') : `${circuitId === 'math' ? 'Math' : 'Trivia'} · ${dateLabel}`}</i>
           <b>{circuitName}</b>
