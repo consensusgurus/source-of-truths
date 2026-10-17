@@ -5297,6 +5297,31 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-rbig.art .nm .sty-star.on{color:var(--phi,var(--ph));}
 .sty-rbig.art .nm .sty-star:hover{background:var(--stg-raise);color:var(--phi,var(--ph));}
 .sty-circ .ca{--art:var(--cc);margin:-12px -14px 10px -16px;}
+/* AN ART RUN CARD WEARS THE MANNERS OF A GAME TILE (owner, 2026-10-17: "these
+   styles look so bad, match the other tiles"). The tiles are a hairline card
+   that takes its hue only on hover; the run cards shouted with a 4px rule, a
+   filled pill in a different colour on every card and a shadowed star. Now:
+   hairline border, hover lifts and colours the border and name like .sty-g,
+   the same name and tagline sizes as a tile, the art band a little shorter with a rule
+   under it, and Play / Results an outline chip that fills on hover. */
+.sty-rbig.art{border:1px solid var(--stg-line);
+  transition:border-color .12s,transform .12s cubic-bezier(.2,.7,.3,1),box-shadow .12s;}
+.sty-rbig.art:hover{border-color:var(--phi,var(--ph));transform:translateY(-1px);
+  box-shadow:0 3px 10px rgba(var(--stg-lift,11,15,26),.08);}
+.sty-rbig.art .ca{height:96px;border-bottom:1px solid color-mix(in srgb, var(--art) 18%, var(--stg-line));margin-bottom:10px;}
+.sty-rbig.art .ca svg{height:88px;}
+.sty-rbig.art .nm{font-size:14.5px;letter-spacing:-0.01em;transition:color .12s;}
+.sty-rbig.art:hover .nm{color:var(--phi,var(--ph));}
+.sty-rbig.art .go{background:none;color:var(--phi,var(--ph));align-self:start;margin-top:1px;
+  border:1px solid color-mix(in srgb, var(--phi,var(--ph)) 45%, transparent);padding:4px 11px;font-size:12px;
+  transition:background .12s,color .12s,border-color .12s;}
+.sty-rbig.art:hover .go{background:var(--ph);color:var(--stg-onramp,#08222e);border-color:var(--ph);}
+.sty-rbig.art.done .go{border-color:var(--stg-line2);color:var(--stg-ink2);}
+.sty-rbig.art .ln{font-size:11.5px;font-weight:600;color:var(--stg-mute);margin-top:3px;}
+.sty-rbig.art .st{margin-top:8px;padding-top:7px;font-size:11px;}
+.sty-rbig.art .nm .sty-star{top:7px;right:7px;width:26px;height:26px;box-shadow:none;border-color:var(--stg-line);}
+.sty-rbig.art .nm .sty-star svg{width:13px;height:13px;}
+@media (prefers-reduced-motion:reduce){.sty-rbig.art,.sty-rbig.art .nm,.sty-rbig.art .go{transition:none;}.sty-rbig.art:hover{transform:none;}}
 .sty-rnm{display:none;}
 /* THE WRAPPER HIDES TOO (owner, 2026-10-16): an empty .sty-rhome above 900px is
    still a flex child of .sty-wrap and costs its 26px gap, a blank band above the
