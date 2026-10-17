@@ -2,7 +2,7 @@
 
 // The $100 ticket drawing pop-up (owner, 2026-10-09).
 //
-// Shows ONCE A WEEK per browser, a few seconds after a finished game is saved
+// Shows ONCE A WEEK per browser, ten quiet seconds after a finished game is saved, and never while a game is on (lib/post-game-gate.js)
 // (the same `sot:result-saved` event ThanksPop listens for), only while the
 // drawing is live. While it runs, ThanksPop stands down entirely, because this
 // card carries the share link and the share credit that one did.
@@ -17,13 +17,13 @@ import { SHARE_URL } from '@/lib/site';
 import { withRef, ensureMyRefCode } from '@/lib/referrals';
 import { readRunParam } from '@/lib/circuits';
 import { readStageTheme } from '@/lib/stage-theme';
+import { afterGameConcludes, trackPostGame } from '@/lib/post-game-gate';
 import { DRAWING_COPY, drawingIsLive, drawingDaysLeft, formatOdds, ticketLabel } from '@/lib/drawing';
 
 const LAST_KEY = 'sot_drawing_last';
 const SHOWN_KEY = 'sot_drawing_shown';
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const RESULT_SAVED_EVENT = 'sot:result-saved';
-const DONE_WAIT_MS = 5000;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 
 function shownThisWeek() {
@@ -135,7 +135,8 @@ export default function DrawingPop() {
 
   // After a finished game, once a week.
   useEffect(() => {
-    let timer = null;
+    trackPostGame();
+    let cancel = null;
     const onSaved = () => {
       if (!drawingIsLive()) return;
       try {
@@ -143,19 +144,16 @@ export default function DrawingPop() {
         if (sessionStorage.getItem(SHOWN_KEY)) return;
       } catch (e) { return; }
       if (blockedHere()) return;
-      clearTimeout(timer);
-      const attempt = () => {
-        // Let the finish beat and the curtain flood play out first.
-        if (document.documentElement.dataset.sotBeat || document.querySelector('.stf-flood')) { timer = setTimeout(attempt, 600); return; }
-        if (document.visibilityState === 'hidden') return;
+      // Never mid-game, and only after ten quiet seconds (lib/post-game-gate.js).
+      if (cancel) cancel();
+      cancel = afterGameConcludes(() => {
         if (blockedHere() || anotherModalOpen()) return;
         try { if (shownThisWeek() || sessionStorage.getItem(SHOWN_KEY)) return; } catch (e) { return; }
         show();
-      };
-      timer = setTimeout(attempt, DONE_WAIT_MS);
+      });
     };
     window.addEventListener(RESULT_SAVED_EVENT, onSaved);
-    return () => { window.removeEventListener(RESULT_SAVED_EVENT, onSaved); clearTimeout(timer); };
+    return () => { window.removeEventListener(RESULT_SAVED_EVENT, onSaved); if (cancel) cancel(); };
   }, [show]);
 
   useEffect(() => {

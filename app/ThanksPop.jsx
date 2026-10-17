@@ -42,6 +42,7 @@ import { SHARE_URL } from '@/lib/site';
 import { withRef, myRefCode, ensureMyRefCode } from '@/lib/referrals';
 import { readRunParam } from '@/lib/circuits';
 import { readStageTheme } from '@/lib/stage-theme';
+import { afterGameConcludes, trackPostGame } from '@/lib/post-game-gate';
 import { drawingIsLive } from '@/lib/drawing';
 
 // ONCE A WEEK (owner, 2026-10-04, same day it shipped as once ever): at most one
@@ -67,7 +68,6 @@ const SESS_KEY = 'sot_thanks_sess';      // 'r' returning at session start, 'n' 
 const SHOWN_KEY = 'sot_thanks_shown';    // a pop-up already showed this session
 export const RESULT_SAVED_EVENT = 'sot:result-saved';
 const RETURN_WAIT_MS = 900;
-const DONE_WAIT_MS = 5000;
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
@@ -197,7 +197,8 @@ export default function ThanksPop() {
 
   // DONE: after a finished game is saved, anywhere outside a run.
   useEffect(() => {
-    let timer = null;
+    trackPostGame();
+    let cancel = null;
     const onSaved = () => {
       if (drawingIsLive()) return;
       try {
@@ -206,20 +207,16 @@ export default function ThanksPop() {
         if (sessionStorage.getItem(SHOWN_KEY)) return;
       } catch (e) { return; }
       if (blockedHere()) return;
-      clearTimeout(timer);
-      const attempt = () => {
-        // Never over an ending that is still playing (the finish beat, or the
-        // curtain's figures landing): wait for it to finish.
-        if (document.documentElement.dataset.sotBeat || document.querySelector('.stf-flood')) { timer = setTimeout(attempt, 600); return; }
-        if (document.visibilityState === 'hidden') return;
+      // Never mid-game, and only after ten quiet seconds (lib/post-game-gate.js).
+      if (cancel) cancel();
+      cancel = afterGameConcludes(() => {
         if (blockedHere() || anotherModalOpen()) return;
         try { if (shownThisWeek() || sessionStorage.getItem(SHOWN_KEY)) return; } catch (e) { return; }
         show('done');
-      };
-      timer = setTimeout(attempt, DONE_WAIT_MS);
+      });
     };
     window.addEventListener(RESULT_SAVED_EVENT, onSaved);
-    return () => { window.removeEventListener(RESULT_SAVED_EVENT, onSaved); clearTimeout(timer); };
+    return () => { window.removeEventListener(RESULT_SAVED_EVENT, onSaved); if (cancel) cancel(); };
   }, [show]);
 
   useEffect(() => {
