@@ -45,8 +45,8 @@ const CSS = `
 .tkd-l2{font-size:12px;font-weight:700;line-height:1.35;color:#d9c79a;}
 .tkd-gr{display:flex;align-items:center;gap:6px;flex:none;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
   background:#e8b43a;color:#2a1f04;border-radius:999px;padding:8px 12px;animation:tkdNudge 2.4s ease-in-out infinite;}
-.tkd-claim{all:unset;cursor:pointer;display:inline;text-decoration:underline;text-decoration-thickness:2.5px;text-underline-offset:4px;}
-.tkd-claim:hover{text-decoration-thickness:3.5px;}
+.tkd-claim{all:unset;cursor:pointer;display:inline;font-size:16px;line-height:1.3;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px;}
+.tkd-claim:hover{text-decoration-thickness:2.5px;}
 .tkd-claim:focus-visible{outline:2px solid #2a1f04;outline-offset:3px;border-radius:3px;}
 .tkd-claim span{font-size:.9em;margin-left:6px;}
 .tkd-form{position:relative;background:#fff8e6;border-radius:12px;padding:4px 14px 14px;
@@ -57,7 +57,7 @@ const CSS = `
 @keyframes tkdShine{0%,62%{transform:translateX(-140%) skewX(-18deg)}100%{transform:translateX(900%) skewX(-18deg)}}
 @keyframes tkdRing{0%{box-shadow:0 0 0 0 rgba(232,180,58,.55)}70%{box-shadow:0 0 0 12px rgba(232,180,58,0)}100%{box-shadow:0 0 0 0 rgba(232,180,58,0)}}
 @keyframes tkdNudge{0%,70%,100%{transform:translateX(0)}80%{transform:translateX(5px)}90%{transform:translateX(0)}}
-@media (max-width:420px){.tkd-tk{width:78px;height:54px}.tkd-tk svg{width:78px;height:54px}.tkd-n{left:23px}.tkd-n b{font-size:25px}.tkd-hd{font-size:18.5px}.tkd-go{padding:10px 12px}.tkd-l1{font-size:15px}.tkd-gr{padding:8px 10px}}
+@media (max-width:420px){.tkd-tk{width:78px;height:54px}.tkd-tk svg{width:78px;height:54px}.tkd-n{left:23px}.tkd-n b{font-size:25px}.tkd-hd{font-size:18.5px}.tkd-go{padding:10px 12px}.tkd-l1{font-size:15px}.tkd-gr{padding:8px 10px}.tkd-claim{font-size:15px}}
 @media (prefers-reduced-motion:reduce){.tkd,.tkd-sh,.tkd-tk,.tkd-gr{animation:none}.tkd-sh{display:none}}
 `;
 

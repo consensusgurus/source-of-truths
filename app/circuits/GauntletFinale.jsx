@@ -1365,7 +1365,7 @@ export function GauntletBoardTop({
   if (meRow && !meInTop && meRank) {
     const ttl = (earned && earned.name) || '';
     boardRows.push({
-      key: 'me', rank: `#${meRank}`, name: meRow.username || 'You',
+      key: 'me', rank: String(meRank), name: meRow.username || 'You',
       title: ahead != null ? [ttl, `ahead of ${ahead}%`].filter(Boolean).join(' · ') : ttl, total: TOTAL,
       per: Object.fromEntries(banks.map((x) => [x.key, { score: x.got }])), me: true, rc: '#7dd3fc',
     });
@@ -1451,7 +1451,7 @@ export function GauntletBoardTop({
             <div className="ge-rows">
               {boardRows.map((r, i) => (
                 <div key={r.key} className={`ge-row ${mode === 'math' ? 'm-row' : 'g-row'}${r.me ? ' me' : ''}`} style={{ animationDelay: `${0.2 + i * 0.08}s` }}>
-                  <div className="ge-rr" style={{ color: r.me ? '#7dd3fc' : r.rc }}>{r.rank}</div>
+                  <div className={`ge-rr${r.rank.length >= 4 ? ' l4' : r.rank.length === 3 ? ' l3' : ''}`} style={{ color: r.me ? '#7dd3fc' : r.rc }}>{r.rank}</div>
                   <div style={{ minWidth: 0 }}>
                     <div className="ge-rn">{r.name}</div>
                     {r.title ? <div className="ge-rt">{r.title}</div> : null}
@@ -1612,6 +1612,9 @@ const GE_CSS = `
 .ge-row.me{background:rgba(125,211,252,.12);border-color:#7dd3fc}
 .ge-rr{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
 .ge-row.ph .ge-rr{font-size:15px}
+.ge-rr{white-space:nowrap;letter-spacing:-.02em}
+.ge.geb .ge-rr.l3,.ge-rr.l3{font-size:13px}
+.ge.geb .ge-rr.l4,.ge-rr.l4{font-size:10.5px}
 .ge-rn{font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ge-row.ph .ge-rn{font-size:14px}
 .ge-rt{font-size:12px;font-weight:700;color:#9aa8c4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
