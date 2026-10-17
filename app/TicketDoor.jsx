@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react';
 import { DRAWING } from '@/lib/drawing';
 import { fetchMine } from '@/lib/challenge-client';
 import { savedIdentity } from '@/lib/saved-identity';
+import JoinLeaderboardForm from './quiz/[id]/JoinLeaderboardForm';
 
 const CSS = `
 .tkd{position:relative;overflow:hidden;background:#e8b43a;color:#2a1f04;border-radius:16px;padding:16px;
@@ -44,6 +45,13 @@ const CSS = `
 .tkd-l2{font-size:12px;font-weight:700;line-height:1.35;color:#d9c79a;}
 .tkd-gr{display:flex;align-items:center;gap:6px;flex:none;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
   background:#e8b43a;color:#2a1f04;border-radius:999px;padding:8px 12px;animation:tkdNudge 2.4s ease-in-out infinite;}
+.tkd-claim{all:unset;cursor:pointer;display:inline;text-decoration:underline;text-decoration-thickness:2.5px;text-underline-offset:4px;}
+.tkd-claim:hover{text-decoration-thickness:3.5px;}
+.tkd-claim:focus-visible{outline:2px solid #2a1f04;outline-offset:3px;border-radius:3px;}
+.tkd-claim span{font-size:.9em;margin-left:6px;}
+.tkd-form{position:relative;background:#fff8e6;border-radius:12px;padding:4px 14px 14px;
+  --join-head:#2a1f04;--join-body:#4a3a12;--join-soft:#6b5622;--join-field-bg:#ffffff;--join-field-ink:#2a1f04;--join-field-line:#2a1f04;--join-cta:#2a1f04;--join-cta-ink:#fff4d6;}
+.tkd-ok{font-size:13px;font-weight:800;}
 .tkd-ft{position:relative;font-size:11.5px;font-weight:700;line-height:1.4;text-align:center;}
 @keyframes tkdWig{0%,78%,100%{transform:rotate(-7deg) translateY(0)}84%{transform:rotate(5deg) translateY(-4px)}90%{transform:rotate(-10deg) translateY(0)}95%{transform:rotate(-4deg) translateY(-2px)}}
 @keyframes tkdShine{0%,62%{transform:translateX(-140%) skewX(-18deg)}100%{transform:translateX(900%) skewX(-18deg)}}
@@ -59,6 +67,7 @@ export const TICKET_PATH = 'M9 1 H87 A8 8 0 0 1 95 9 V25 A8 8 0 0 0 95 41 V57 A8
 // stored identity at once, so the right headline paints before the count lands.
 export function useMyTickets() {
   const [state, setState] = useState({ named: null, count: null });
+  const [tick, setTick] = useState(0);
   useEffect(() => {
     let live = true;
     const named = !!savedIdentity().username;
@@ -69,8 +78,8 @@ export function useMyTickets() {
       setState({ named: d.named || named, count: Number.isFinite(d.tickets) ? d.tickets : null });
     });
     return () => { live = false; };
-  }, []);
-  return state;
+  }, [tick]);
+  return { ...state, refresh: () => setTick((t) => t + 1) };
 }
 
 // THE BUTTON SAYS WHAT IT DOES (owner, 2026-10-16). "Send 13 right" read as
@@ -79,8 +88,13 @@ export function useMyTickets() {
 // "Send link". `game` is the display name (Crux, Trivia Gauntlet); the score
 // is whatever the game counts, and a long one wraps onto the second line.
 export default function TicketDoor({ fig = '', label = 'Challenge a friend', go = 'Send link', game = '', msg = '', onSend, foot = null, style = null }) {
-  const { named, count } = useMyTickets();
+  const { named, count, refresh } = useMyTickets();
   const [older, setOlder] = useState(false);
+  // CLAIM A NAME RIGHT HERE (owner, 2026-10-17). "Pick a name to earn tickets"
+  // was a headline with nowhere to go. For a guest it is now the link, and it
+  // opens the site's one join form inside the card.
+  const [claimOpen, setClaimOpen] = useState(false);
+  const [claimed, setClaimed] = useState(false);
   useEffect(() => { try { setOlder(/[?&]p=\d+/.test(window.location.search)); } catch (e) { /* today's */ } }, []);
   const what = game ? `${older ? 'this' : 'today\u2019s'} ${game}` : (older ? 'this puzzle' : 'today\u2019s puzzle');
   const line2 = fig ? `Sends a link to play ${what} against your ${fig}` : `Sends a link to play ${what}. Nothing to beat yet, so they go first.`;
@@ -108,10 +122,20 @@ export default function TicketDoor({ fig = '', label = 'Challenge a friend', go 
         </div>
         <div className="tkd-tx">
           <div className="tkd-eb">The {DRAWING.prizeLabel} drawing · ends {DRAWING.endLabel}</div>
-          <div className="tkd-hd">{head}</div>
+          <div className="tkd-hd">{named === false && !claimed ? (
+            <button type="button" className="tkd-claim" aria-expanded={claimOpen} onClick={() => setClaimOpen((v) => !v)}>
+              Pick a name to earn tickets<span aria-hidden="true">{claimOpen ? '\u2191' : '\u2192'}</span>
+            </button>
+          ) : head}</div>
           <div className="tkd-sb" role={msg ? 'status' : undefined}>{sub}</div>
         </div>
       </div>
+      {claimOpen && !claimed ? (
+        <div className="tkd-form">
+          <JoinLeaderboardForm heading="Pick a name" hideIcon
+            onJoined={() => { setClaimed(true); setClaimOpen(false); refresh(); }} />
+        </div>
+      ) : null}
       <button type="button" className="tkd-go" onClick={onSend}>
         <span className="tkd-gl">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 21V4" /><path d="M4 4h12l-2 4 2 4H4" /></svg>

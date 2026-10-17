@@ -148,6 +148,14 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
   // "Final prices" press. The last score and price hold for a beat so the
   // player sees them, then the ending starts on its own.
   const FINALE_BEAT = 1800;
+  // THE IN-BETWEEN CARD COMES ON SCREEN (owner, 2026-10-17). The player
+  // finishes a tag scrolled down to the guess rows, and the board unmounts
+  // under them, so the score card and its Next button sat above the fold.
+  useEffect(() => {
+    if (!between) return undefined;
+    const t = setTimeout(() => { try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { window.scrollTo(0, 0); } }, 40);
+    return () => clearTimeout(t);
+  }, [between]);
   useEffect(() => {
     if (!between || !between.last) return undefined;
     const t = setTimeout(() => advance(), FINALE_BEAT);

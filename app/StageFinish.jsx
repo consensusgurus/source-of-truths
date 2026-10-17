@@ -2689,5 +2689,21 @@ body:has(.stf-a2hs) :is(button,div):has(+ #stf-stats-slot):has(.lucide-smartphon
   .stf-door.chal .stf-dic{width:46px;height:46px;}
   .stf-door.chal .stf-dnm{font-size:16px;}
 }
+/* THE PHONE BAND IS A GRID (owner, 2026-10-17: "the mobile header is all
+   mashed together"). As two flex columns the right one (Back / Retry over the
+   big clock) took half a 390px band for its whole height, so the score line and
+   the category line wrapped in the leftover and orphaned their own middots.
+   On a phone the right column now holds only the verdict and detail rows, and
+   the category line and challenge line run the full width under both. */
+@media (max-width:560px){
+  .stf-cin.stf-hasback{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:12px;row-gap:0;align-items:start;}
+  .stf-cin.stf-hasback > .stf-ctop,.stf-cin.stf-hasback .stf-cl{display:contents;}
+  .stf-cin.stf-hasback .stf-vrow{grid-column:1;grid-row:1;}
+  .stf-cin.stf-hasback .stf-detail{grid-column:1;grid-row:2;}
+  .stf-cin.stf-hasback > .stf-rc{grid-column:2;grid-row:1 / span 2;max-width:none;gap:8px;}
+  .stf-cin.stf-hasback .stf-chline,.stf-cin.stf-hasback .stf-bcat{grid-column:1 / -1;}
+  .stf-bcat{row-gap:4px;}
+  .stf-bcat > span:not(.stf-rack){white-space:nowrap;}
+}
 
 `;

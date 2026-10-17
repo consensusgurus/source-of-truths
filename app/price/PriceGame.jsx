@@ -286,6 +286,16 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
     try { el.setSelectionRange(p, p); } catch (e) {}
   }, [q]);
   const runDoneRef = useRef(false);
+  const pinNextRef = useRef(false);
+  useLayoutEffect(() => {
+    if (!pinNextRef.current) return undefined;
+    pinNextRef.current = false;
+    keepAsk();
+    const t1 = setTimeout(keepAsk, 120);
+    const t2 = setTimeout(keepAsk, 380);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [g.guesses.length]);
 
   const playing = g.status === 'playing';
   const preStart = playing && !g.t0;
@@ -564,6 +574,12 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
     if (lockNow) say(`Locked in at ${now2}. Keep guessing to see how close you get; it cannot change the score.`);
     vibrate(HAPT.tick);
     commit({ ...cur, ...lockFields, guesses });
+    // HOLD THE VIEW ON THE INPUT (owner, 2026-10-17). Refocus INSIDE the tap so
+    // a phone keeps its keyboard up (a refocus from a timer cannot reopen it,
+    // and the keyboard dropping is what threw the page back to the top), then
+    // bring the box for the next guess back on screen once the row lands.
+    try { inputRef.current && inputRef.current.focus({ preventScroll: true }); } catch (err) {}
+    pinNextRef.current = true;
     setTimeout(() => { try { inputRef.current && inputRef.current.focus({ preventScroll: true }); } catch (err) {} }, 30);
   }
 
@@ -591,6 +607,22 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
       let d = t.bottom - (bot - 10);
       d = Math.min(d, a.top - (top + 10));
       if (Math.abs(d) > 3) window.scrollBy(0, d);
+    } catch (e) {}
+  }
+  // After a guess: keep the input on screen. Focused, pinAsk does the fine
+  // placement (newest row just above the keyboard); if the keyboard went down
+  // anyway, the input still comes back into view instead of the page sitting
+  // wherever the browser threw it.
+  function keepAsk() {
+    try {
+      if (!window.matchMedia('(pointer: coarse)').matches) return;
+      const ask = askRef.current;
+      if (!ask) return;
+      if (document.activeElement === inputRef.current) { pinAsk(); return; }
+      const vv = window.visualViewport;
+      const top = vv ? vv.offsetTop : 0, h = vv ? vv.height : window.innerHeight;
+      const a = ask.getBoundingClientRect();
+      if (a.top < top + 10 || a.bottom > top + h - 10) window.scrollBy(0, a.top - (top + 12));
     } catch (e) {}
   }
   function onAskFocus() {
