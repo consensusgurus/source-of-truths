@@ -309,4 +309,10 @@ const CSS = `
 .ps-tag span{max-width:100%}
 .ps-tag b{font-size:15px;width:auto;text-align:center;min-height:18px}
 }
+/* WIDE DESKTOPS (owner, 2026-10-17): the curtain draws in a centred column
+   rather than from edge to edge. */
+@media (min-width:1180px){
+  .ps-cap,.ps-tags{width:100%;max-width:1040px;margin-left:auto;margin-right:auto;box-sizing:border-box}
+  .ps-game{max-width:1040px;padding:0 28px}
+}
 `;

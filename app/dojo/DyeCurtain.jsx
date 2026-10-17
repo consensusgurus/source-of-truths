@@ -391,4 +391,10 @@ const CSS = `
 .dc-sc{padding:0 10px;font-size:11px;letter-spacing:.06em}
 .dc-sc b{font-size:16px}
 }
+/* WIDE DESKTOPS (owner, 2026-10-17): the curtain draws in a centred column
+   rather than from edge to edge. */
+@media (min-width:1180px){
+  .dc-cap,.dc-strip{width:100%;max-width:1040px;margin-left:auto;margin-right:auto;box-sizing:border-box}
+  .dc-paint{gap:48px}
+}
 `;

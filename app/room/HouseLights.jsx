@@ -286,4 +286,9 @@ const CSS = `
   .hl-mh{font-size:10px;letter-spacing:.06em}
   .hl-mt{height:7px}
 }
+/* WIDE DESKTOPS (owner, 2026-10-17): the curtain draws in a centred column
+   rather than from edge to edge. */
+@media (min-width:1180px){
+  .hl-cap,.hl-meters,.hl-skip{width:100%;max-width:1040px;margin-left:auto;margin-right:auto;box-sizing:border-box}
+}
 `;

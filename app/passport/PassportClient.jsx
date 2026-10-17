@@ -542,6 +542,14 @@ const DEP_CSS = `
   .dp-stop span{margin-left:0;font-size:10px}
   .dp-stop em{position:absolute;top:15px;left:50%;width:100%;margin:0}
 }
+/* WIDE DESKTOPS (owner, 2026-10-17): the curtain draws in a centred column
+   rather than from edge to edge. */
+@media (min-width:1180px){
+  .dp-cap,.dp-stops{width:100%;max-width:1040px;margin-left:auto;margin-right:auto;box-sizing:border-box}
+  .dp-paint{width:100%;max-width:1040px;margin:0 auto}
+  .dp-body{padding:0 28px 26px}
+  .dp-stampbox{right:28px}
+}
 `;
 
 const PP_STAGE = true;

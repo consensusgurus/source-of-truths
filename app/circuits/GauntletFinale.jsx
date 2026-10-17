@@ -967,7 +967,8 @@ function GauntletEnding({
   const P0 = TM.P0, PD = TM.PD;
   const RP = P0 + N * PD;
   const CNT = GE_STEP * (K + 1) + 300;
-  const BOARD = RP + CNT + 300;
+  // The landed title and the side bar hold for a beat before the card.
+  const BOARD = RP + CNT + 2200;
 
   const finish = () => {
     if (doneRef.current) return;
@@ -1104,7 +1105,7 @@ function GauntletEnding({
       <div className={phone ? 'ge-side ph' : 'ge-side'} aria-hidden="true" style={{ height: h }}>
         <div className="ge-side-col l" style={{ width: lw }}><span style={{ bottom: pct(total) }}>You {total}</span></div>
         <div className="ge-side-trk">
-          <div className="ge-side-fill" style={{ height: pct(total) }} />
+          <div className="ge-side-fill" style={{ height: pct(total), '--ge-fill': ladder[at] && !flash ? ladder[at].colour : '#e9edf4' }} />
           {avg != null ? <div className="ge-side-tick" style={{ bottom: pct(avg) }} /> : null}
           {best != null ? <div className="ge-side-tick" style={{ bottom: pct(best) }} /> : null}
         </div>
@@ -1549,16 +1550,16 @@ const GE_CSS = `
 .ge-lcd>div,.ge-mini-lcd>div{font-weight:800;line-height:1;color:#bef264;font-variant-numeric:tabular-nums;text-shadow:0 0 22px rgba(190,242,100,.5)}
 .ge-mini-lcd{border-radius:12px;background:#131c12;flex:none;box-shadow:inset 0 0 0 3px rgba(0,0,0,.5)}
 .ge.ph .ge-mini-lcd{border-radius:11px}
-.ge-side{position:relative;flex:none;display:flex;align-items:stretch;gap:8px;font-size:12px;font-weight:800;font-variant-numeric:tabular-nums}
+.ge-side{position:relative;flex:none;display:flex;align-items:stretch;gap:10px;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
 .ge-side.ph{gap:4px;font-size:9.5px}
 .ge-side-col{position:relative;flex:none}
 .ge-side-col span{position:absolute;transform:translateY(50%);white-space:nowrap;line-height:1}
 .ge-side-col.l span{right:0}
 .ge-side-col.r span{left:0;opacity:.85}
-.ge-side-trk{position:relative;flex:none;width:14px;border-radius:7px;background:rgba(255,255,255,.12)}
+.ge-side-trk{position:relative;flex:none;width:24px;border-radius:12px;background:rgba(255,255,255,.14);box-shadow:inset 0 0 0 2px rgba(255,255,255,.18)}
 .ge-side.ph .ge-side-trk{width:8px;border-radius:4px}
-.ge-side-fill{position:absolute;left:0;right:0;bottom:0;border-radius:inherit;background:currentColor}
-.ge-side-tick{position:absolute;left:-5px;right:-5px;height:2px;margin-bottom:-1px;background:currentColor;opacity:.85}
+.ge-side-fill{position:absolute;left:0;right:0;bottom:0;border-radius:inherit;background:var(--ge-fill,currentColor);box-shadow:0 0 0 2px #0b0f1a,0 0 18px var(--ge-fill,transparent)}
+.ge-side-tick{position:absolute;left:-6px;right:-6px;height:3px;margin-bottom:-1px;background:currentColor;opacity:.85}
 .ge-board{flex:1 1 auto;display:grid;grid-template-columns:minmax(300px,410px) minmax(0,1fr);gap:34px;padding:20px 32px 0;cursor:pointer}
 .ge-board.ph{display:flex;flex-direction:column;gap:11px;padding:16px 16px 0}
 .ge-bl{display:flex;flex-direction:column;gap:13px;min-width:0}
@@ -1640,5 +1641,13 @@ const GE_CSS = `
 .ge-row.ph{animation-name:growph}
 .m-err{animation:merr .3s steps(2) 3 both}
 .m-tick{animation:mtick .12s ease both}
+/* WIDE DESKTOPS (owner, 2026-10-17): the curtain draws in a centred column
+   rather than from edge to edge. */
+@media (min-width:1180px){
+  .ge:not(.geb) .ge-cap,.ge-lad,.ge-mst{width:100%;max-width:1040px;margin-left:auto;margin-right:auto;box-sizing:border-box}
+  .ge-paint,.ge-mpaint{width:100%;max-width:1040px;margin:0 auto;box-sizing:border-box;padding:0 28px}
+  .ge-mpaint{justify-content:center}
+  .ge-count{gap:40px 48px}
+}
 @media (prefers-reduced-motion: reduce){.ge,.ge *{animation:none !important;transition:none !important}}
 `;

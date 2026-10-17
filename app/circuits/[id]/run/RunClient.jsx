@@ -299,7 +299,10 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
         } catch (e) { firstEver.current = false; }
       }
     }
-    if (done && !doneAtLoad.current && !curtainOnce.current) {
+    // ?ending=1 replays the curtain over a finished run (review and replay).
+    let replay = false;
+    try { replay = new URLSearchParams(window.location.search).get('ending') === '1'; } catch (e) { replay = false; }
+    if (done && (!doneAtLoad.current || replay) && !curtainOnce.current) {
       curtainOnce.current = true;
       setCurtain(true);
     }
