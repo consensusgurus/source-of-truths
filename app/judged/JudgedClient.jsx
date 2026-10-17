@@ -186,7 +186,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
   return (
     <div className="stage-page ls" data-stage-theme="dark" style={{ ...VARS, minHeight: '100vh', background: 'var(--ls-ground)', color: 'var(--ls-ink)', fontFamily: SANS, overflowX: 'hidden', position: 'relative' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div className="ls-cap">
+      <div className={`ls-cap${done ? ' vf' : ''}`}>
         <Link href="/" className="ls-home">Mind Loft</Link>
         <b>Judged</b>
         <span className="ls-capd">{dateShort}</span>
@@ -437,7 +437,6 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
 
   return (
     <section className="vf">
-      <div className="eb">{dateLabel} · Judged</div>
       <div className={`vf-stage${settled ? ' settled' : ''}${phase === 'stamp' ? ' thud' : ''}`}>
         <div className="vf-left">
           {upg && <div key={upg.k} className="vf-upg">{upg.text}</div>}
@@ -491,22 +490,17 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
           <div className="vf-stats">
             <div><b>{total}/{LAW_MAX}</b><span>Run total</span></div>
             <div><b>{lawIndexOf(total)}</b><span>Admissions score</span></div>
-            {me && me.rank ? <div><b>#{me.rank}</b><span>{field ? `of ${Number(field).toLocaleString()} today` : 'today'}</span></div> : null}
+            {me && me.rank ? <a className="vf-lbl" href="/judged/leaderboard" aria-label="See today's leaderboard"><b>#{me.rank}</b><span>{field ? `of ${Number(field).toLocaleString()} today` : 'today'}</span><em aria-hidden="true">&rarr;</em></a> : null}
           </div>
           <div className="vf-games">
             {sections.map((s, i) => <div key={s.key} className={flat ? '' : i === hi ? 'hi' : i === lo ? 'lo' : ''}><i>{s.name}</i><b>{counted[i] ? pts[i] : '-'}</b></div>)}
           </div>
-          <div style={{ margin: '14px 0 0', maxWidth: 420 }}>
+          <div style={{ margin: '14px 0 0' }}>
             <RunChallengeLine gameKey={LAW_RUN_ID} score={total} total={LAW_MAX} n={runToken()} />
             <RunChallengeButton gameKey={LAW_RUN_ID} score={total} total={LAW_MAX} n={runToken()} status={`Admitted to ${t[1]}`} door />
           </div>
           <NextDrop label="Tomorrow's docket" sub="Four new cases and a new set of schools at midnight Eastern." href="/judged"
-            accent="var(--ls-cta)" ink="var(--ls-ink)" mute="var(--ls-mute)" style={{ margin: '14px 0 0', maxWidth: 420 }} />
-          <div className="vf-btns">
-            <button type="button" className="pri" onClick={onShare}>{copied ? 'Copied' : 'Share your letter'}</button>
-            <a href="/judged/leaderboard">Leaderboard</a>
-            <a href="/">Back to main</a>
-          </div>
+            accent="var(--ls-cta)" ink="var(--ls-ink)" mute="var(--ls-mute)" style={{ margin: '14px 0 0' }} />
           <MoreRunsList self="judged" ink="var(--ls-ink)" mute="var(--ls-mute)" line="var(--ls-line)" />
           <div className="vf-lad"><div className="eb">The ladder</div><Ladder at={fti} L={L} /></div>
         </div>
@@ -519,6 +513,7 @@ const CSS = `
 .ls *{box-sizing:border-box}
 .ls .eb{font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ls-mute)}
 .ls-cap{display:flex;align-items:center;gap:12px;max-width:820px;margin:0 auto;padding:12px 16px;font-size:13px}
+.ls-cap.vf{max-width:980px}
 .ls-home{font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ls-mute);text-decoration:none}
 .ls-cap b{font-weight:900;letter-spacing:-.01em}
 .ls-capd{color:var(--ls-mute);font-weight:700}
@@ -679,13 +674,17 @@ const CSS = `
 .lt-sig{display:flex;align-items:baseline;justify-content:space-between;border-top:1px solid rgba(31,36,48,.15);padding-top:5px}
 .lt-sig span{font:800 9px ${SANS};letter-spacing:.14em;text-transform:uppercase;color:#7a7360}
 .lt-sig b{font:500 20px ${MONO};color:var(--p)}
-.vf-copy{max-width:560px;margin:8px auto 0;animation:lsrise .6s .1s ease both}
+.vf-copy{margin:8px 0 0;animation:lsrise .6s .1s ease both}
 .vf-you{font:800 12px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:var(--ls-gold)}
 .vf-nm{font-size:clamp(30px,5vw,46px);font-weight:900;letter-spacing:-.02em;line-height:1.05;margin:8px 0 10px;text-wrap:balance}
 .vf-ln{font-size:17px;line-height:1.45;margin:0 0 16px;color:var(--ls-ink)}
 .vf-stats{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;margin-bottom:10px}
 .vf-stats div{background:var(--ls-surf);border:1px solid var(--ls-line);border-radius:12px;padding:9px 11px;display:flex;flex-direction:column;gap:3px;min-width:0}
 .vf-stats b{font:500 20px ${MONO};white-space:nowrap}
+.vf-lbl{position:relative;display:flex;flex-direction:column;gap:3px;min-width:0;padding:9px 30px 9px 11px;border-radius:12px;background:var(--ls-surf);border:1px solid var(--ls-cta);color:inherit;text-decoration:none}
+.vf-lbl b{font:500 20px ${MONO};white-space:nowrap}
+.vf-lbl span{font:800 9.5px ${SANS};letter-spacing:.12em;text-transform:uppercase;color:var(--ls-mute)}
+.vf-lbl em{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-style:normal;font-weight:800;font-size:16px;color:var(--ls-cta)}
 .vf-stats span{font:800 9.5px ${SANS};letter-spacing:.12em;text-transform:uppercase;color:var(--ls-mute)}
 .vf-games{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
 .vf-games div{background:var(--ls-surf);border:1px solid var(--ls-line);border-radius:9px;padding:7px 2px;text-align:center;min-width:0}

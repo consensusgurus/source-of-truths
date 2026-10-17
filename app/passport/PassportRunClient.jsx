@@ -466,7 +466,6 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
 
   const ending = (
     <section className="pe">
-      <div className="pl-eb" style={{ textAlign: 'center' }}>{PUZZLE.dateLabel} · Passport No. {PUZZLE.num}</div>
       <div className="pe-grid">
         <div className="pe-cov">
           <div className="pp-cwrap"><Cover tier={tier} /><div className="pp-issued small"><Stamp i={0} big label="Visa-free" score={tier.vf} ink={k === 0 ? 'var(--pp-bad)' : 'var(--pp-good)'} /></div></div>
@@ -535,7 +534,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
       style={{ ...VARS, minHeight: '100vh', background: 'var(--stg-ground,#0b0f1a)', color: 'var(--stg-ink,#e9edf4)', position: 'relative', overflowX: 'hidden', fontFamily: SANS }}>
       <style dangerouslySetInnerHTML={{ __html: PP_CSS + LAUNCH_CSS + ENDING_CSS + RUN_CSS }} />
       {playing ? <ChallengeStrip gameKey="passport" num={PUZZLE.num} /> : null}
-      <div className={`pc-cap${started ? ' on' : ''}`}>
+      <div className={`pc-cap${started ? ' on' : ''}${done && !finale ? ' vf' : ''}`}>
         <a href="/" className="pc-home">Mind Loft</a>
         <b>Passport</b>
         <span className="pc-capd">{PUZZLE.dateLabel.replace(/, \d{4}$/, '')}</span>
@@ -636,6 +635,7 @@ const RUN_CSS = `
 .pe-lbe{padding:10px 12px;font:700 12.5px ${SANS};color:#9aa8c4}
 .pe-chal{max-width:400px;margin:12px 0 0}
 .pe-wide{margin:24px 0 0}
+.pc-cap.vf{max-width:932px}
 @media(min-width:761px){.pe .pe-grid{grid-template-columns:minmax(0,360px) minmax(0,480px);justify-content:center}}
 .pe-wide .pe-rounds{max-width:none;grid-template-columns:repeat(4,minmax(0,1fr))}
 .pe-wide .pe-lb,.pe-wide .pe-chal{max-width:none}

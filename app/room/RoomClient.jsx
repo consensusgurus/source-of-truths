@@ -475,7 +475,6 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
 
   return (
     <section className="rr-vf">
-      <div className="rr-eb">{dateLabel} · Read the Room</div>
       {/* THE VERDICT LEADS (owner, 2026-10-17): the title and score on one line
           at the very top, then where the read places you today; the seating
           chart below is compact and reads as one percentage. */}

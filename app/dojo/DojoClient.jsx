@@ -223,7 +223,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
   return (
     <div className="stage-page dj" data-stage-theme="dark" style={{ ...VARS, minHeight: '100vh', background: 'var(--dj-ground)', color: 'var(--dj-ink)', fontFamily: SANS, overflowX: 'hidden', position: 'relative' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div className="dj-cap">
+      <div className={`dj-cap${done ? ' vf' : ''}`}>
         <Link href="/" className="dj-home">Mind Loft</Link>
         <b>Enter the Dojo</b>
         <span className="dj-capd">{dateShort}</span>
@@ -452,7 +452,6 @@ function Grading({ sections, counted, parts, total, dateLabel, animate, board, o
 
   return (
     <section className="gr">
-      <div className="eb">{dateLabel} · Enter the Dojo</div>
       <div className={`gr-stage${settled ? ' settled' : ''}${phase === 'seal' ? ' thud' : ''}`}>
         <div className="gr-left">
           {upg && <div key={upg.k} className="gr-upg">{upg.text}</div>}
@@ -492,22 +491,17 @@ function Grading({ sections, counted, parts, total, dateLabel, animate, board, o
           <div className="gr-stats">
             <div><b>{total}/{DOJO_MAX}</b><span>Run total</span></div>
             <div><b>{fmtClock(runClock)}</b><span>On the mat</span></div>
-            {me && me.rank ? <div><b>#{me.rank}</b><span>{field ? `of ${Number(field).toLocaleString()} today` : 'today'}</span></div> : null}
+            {me && me.rank ? <a className="gr-lbl" href="/dojo/leaderboard" aria-label="See today's leaderboard"><b>#{me.rank}</b><span>{field ? `of ${Number(field).toLocaleString()} today` : 'today'}</span><em aria-hidden="true">&rarr;</em></a> : null}
           </div>
           <div className="gr-games">
             {sections.map((s, i) => <div key={s.key} className={flat ? '' : i === hi ? 'hi' : i === lo ? 'lo' : ''}><i>{s.name}</i><b>{counted[i] ? pts[i] : '-'}<small>/{s.weight}</small></b></div>)}
           </div>
-          <div style={{ margin: '14px 0 0', maxWidth: 420 }}>
+          <div style={{ margin: '14px 0 0' }}>
             <RunChallengeLine gameKey={DOJO_RUN_ID} score={total} total={DOJO_MAX} n={runToken()} />
             <RunChallengeButton gameKey={DOJO_RUN_ID} score={total} total={DOJO_MAX} n={runToken()} t={runClock > 0 ? Math.round(runClock) : null} status={t[1]} door />
           </div>
           <NextDrop label="Tomorrow's forms" sub="A new six by six, a new classic and a new variant at midnight Eastern." href="/dojo"
-            accent="var(--dj-cta)" ink="var(--dj-ink)" mute="var(--dj-mute)" style={{ margin: '14px 0 0', maxWidth: 420 }} />
-          <div className="gr-btns">
-            <button type="button" className="pri" onClick={onShare}>{copied ? 'Copied' : 'Share your belt'}</button>
-            <a href="/dojo/leaderboard">Leaderboard</a>
-            <a href="/">Back to main</a>
-          </div>
+            accent="var(--dj-cta)" ink="var(--dj-ink)" mute="var(--dj-mute)" style={{ margin: '14px 0 0' }} />
           <MoreRunsList self="dojo" ink="var(--dj-ink)" mute="var(--dj-mute)" line="var(--dj-line)" />
           <div className="gr-lad"><div className="eb">The belts</div><Ladder at={fti} /></div>
         </div>
@@ -520,6 +514,7 @@ const CSS = `
 .dj *{box-sizing:border-box}
 .dj .eb{font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dj-mute)}
 .dj-cap{display:flex;align-items:center;gap:12px;max-width:820px;margin:0 auto;padding:12px 16px;font-size:13px}
+.dj-cap.vf{max-width:980px}
 .dj-home{font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dj-mute);text-decoration:none}
 .dj-cap b{font-weight:900;letter-spacing:-.01em}
 .dj-capd{color:var(--dj-mute);font-weight:700}
@@ -681,13 +676,17 @@ html:not(.dj-x):has(.stage-page.dj[data-stage-theme]),html:not(.dj-x) body:has(.
 .sh-seal small{font:800 10px ${MONO};letter-spacing:.16em;margin-top:4px}
 .sh-seal.set{animation:none;opacity:.85}
 @keyframes djseal{from{opacity:0;transform:rotate(-10deg) scale(2.6)}to{opacity:.88;transform:rotate(-10deg) scale(1)}}
-.gr-copy{max-width:560px;margin:8px auto 0;animation:djrise .6s .1s ease both}
+.gr-copy{margin:8px 0 0;animation:djrise .6s .1s ease both}
 .gr-you{font:800 12px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:var(--dj-gold)}
 .gr-nm{font-size:clamp(32px,5vw,48px);font-weight:900;letter-spacing:-.02em;line-height:1.05;margin:8px 0 10px}
 .gr-ln{font-size:17px;line-height:1.45;margin:0 0 16px;color:var(--dj-ink)}
 .gr-stats{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;margin-bottom:10px}
 .gr-stats div{background:var(--dj-surf);border:1px solid var(--dj-line);border-radius:12px;padding:9px 11px;display:flex;flex-direction:column;gap:3px;min-width:0}
 .gr-stats b{font:500 20px ${MONO};white-space:nowrap}
+.gr-lbl{position:relative;display:flex;flex-direction:column;gap:3px;min-width:0;padding:9px 30px 9px 11px;border-radius:12px;background:var(--dj-surf);border:1px solid var(--dj-cta);color:inherit;text-decoration:none}
+.gr-lbl b{font:500 20px ${MONO};white-space:nowrap}
+.gr-lbl span{font:800 9.5px ${SANS};letter-spacing:.12em;text-transform:uppercase;color:var(--dj-mute)}
+.gr-lbl em{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-style:normal;font-weight:800;font-size:16px;color:var(--dj-cta)}
 .gr-stats span{font:800 9.5px ${SANS};letter-spacing:.12em;text-transform:uppercase;color:var(--dj-mute)}
 .gr-games{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .gr-games div{background:var(--dj-surf);border:1px solid var(--dj-line);border-radius:9px;padding:8px 4px;text-align:center;min-width:0}
