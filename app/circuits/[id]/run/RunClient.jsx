@@ -1646,6 +1646,17 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                           {r.practice ? <i className="rn-pchip">nothing posted</i> : null}
                         </span>
                         <RunLanes id={`${circuitId}-done`} order="run" sections={sections} results={r.results} avg={lanesAvg} best={lanesBest} className="rt-done" />
+                        {/* THE FIGURES MOVED UP (owner, 2026-10-17): questions
+                            cleared, the clock and the rank sit under the lanes,
+                            filling the column beside the top 5; the old row of
+                            figures under the split is gone on this layout. */}
+                        <div className="rt-figs">
+                          <div className="rn-sc-big">{cleared}<small>/{askable}</small><i>questions cleared</i></div>
+                          <div className="rn-sc-figs">
+                            {runSecs > 0 ? <div><b>{fmtTime(runSecs * 1000)}</b><i>on the clock</i></div> : null}
+                            {bd && bd.me && Number.isFinite(bd.me.rank) ? <div><b>#{bd.me.rank}</b><i>of {bd.overallField || 0}</i></div> : null}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   );
@@ -1660,6 +1671,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                 />
                 )}
 
+                {!TOWERS ? (
                 <div className="rn-sc-hero">
                   <div className="rn-sc-big">
                     {cleared}<small>/{askable}</small>
@@ -1688,6 +1700,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                       ? <div><b>{Math.round(boardQ.data.me.total * 10) / 10}</b><i>of {(boardQ.data && boardQ.data.maxTotal) || N * 15} points</i></div> : null}
                   </div>
                 </div>
+                ) : null}
 
                 {/* THE CHALLENGE SITS UNDER THE RESULT, FULL WIDTH (owner, 2026-10-07),
                     ON EVERY RUN (owner, 2026-10-15). It was gated on the Trivia
@@ -2525,7 +2538,12 @@ ${TOWER_CSS}
 .rt-rhd i{font-style:normal;font-size:11.5px;font-weight:600;color:#8b95a8;}
 .rt-done{margin:6px 0 4px;}
 /* The finish split (owner, 2026-10-12): top 5 left, the run's bands right. */
-.rt-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start;}
+.rt-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:stretch;}
+.rt-runc{display:flex;flex-direction:column;min-width:0;}
+.rt-split .rt-done.rl{flex:1;justify-content:space-around;}
+.rt-figs{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08);}
+.rt-figs .rn-sc-big{font-size:clamp(40px,5vw,52px);}
+.rt-figs .rn-sc-figs{margin-left:auto;}
 .rt-split .rn-lcap{margin-bottom:8px;}
 .rt-t5f{font-style:normal;color:#4f5b73;}
 .rt-t5l{display:flex;flex-direction:column;gap:3px;}
@@ -2543,7 +2561,7 @@ ${TOWER_CSS}
 .rt-t5r.gap::before{content:'';position:absolute;left:9px;right:9px;top:-5px;border-top:1px dashed rgba(255,255,255,.12);}
 .rt-t5m{font-size:12px;font-weight:600;color:#8b95a8;padding:4px 0;}
 .rt-split .rt-done{margin:0;}
-.rt-split .rt-done.rl{gap:4px;}
+.rt-split .rt-done.rl{gap:4px;flex:1;justify-content:space-around;}
 .rt-split .rt-done .rl-row{grid-template-columns:62px minmax(0,1fr) 40px;gap:9px;min-height:20px;}
 .rt-split .rt-done .rl-nm{font-size:12px;}
 .rt-split .rt-done .rl-sc{font-size:11px;}
