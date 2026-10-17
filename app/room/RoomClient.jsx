@@ -476,23 +476,25 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
   return (
     <section className="rr-vf">
       <div className="rr-eb">{dateLabel} · Read the Room</div>
-      <div className="rr-vf-hd">
-        <span>All {COUNT_WORD[sections.length] || sections.length} rooms read</span>
-        <em><i aria-hidden="true" />Still filling · settles at midnight ET</em>
+      {/* THE VERDICT LEADS (owner, 2026-10-17): the title and score on one line
+          at the very top, then where the read places you today; the seating
+          chart below is compact and reads as one percentage. */}
+      <div className={`rr-vf-card${settled ? ' on' : ''}${top ? ' top' : ''}`}>
+        <div className="rr-vf-cardhd">
+          <span className="rr-eb">Your read of the room</span>
+          <em><i aria-hidden="true" />Still filling · settles at midnight ET</em>
+        </div>
+        <h1 className="rr-vf-nm">{L[1]} <span className="rr-vf-sc"><b>{cur}</b><small>/{ROOM_MAX}</small></span></h1>
+        <p className="rr-vf-beat">{me && me.rank && players && players > 1
+          ? <>You read the room better than <b>{fmtN(Math.max(0, players - me.rank))}</b> of <b>{fmtN(players)}</b> players today.</>
+          : <>You read the room better than <b>{cur}%</b> of the players in it.</>}</p>
+        {settled && <p className="rr-vf-ln">{L[3]}</p>}
+        {settled && moved !== 0 && <div className={`rr-moved${moved > 0 ? ' up' : ' dn'}`}>{moved > 0 ? 'Up' : 'Down'} {Math.abs(moved)} since you finished, as the room filled ({finishRead} then, {total} now)</div>}
       </div>
-      <div className="rr-vf-grid">
-        <div className="rr-vf-room">
-          <div className="rr-tn-hd"><span>Tonight&rsquo;s room{fieldNow ? ` · ${fmtN(fieldNow)} players` : ''}</span><em>{lit} of {FIG - 1} out-read</em></div>
-          <Figures n={FIG} lit={lit} me={ME} />
-          <p className="rr-vf-cap">Each figure you out-read turns toward you. You are the gold one.</p>
-        </div>
-        <div className={`rr-vf-card${settled ? ' on' : ''}${top ? ' top' : ''}`}>
-          <div className="rr-eb">Your read of the room</div>
-          <div className="rr-vf-nm">{L[1]}</div>
-          <div className="rr-vf-sc"><b>{cur}</b><small> / {ROOM_MAX}</small></div>
-          {settled && <p className="rr-vf-ln">{L[3]}</p>}
-          {settled && moved !== 0 && <div className={`rr-moved${moved > 0 ? ' up' : ' dn'}`}>{moved > 0 ? 'Up' : 'Down'} {Math.abs(moved)} since you finished, as the room filled ({finishRead} then, {total} now)</div>}
-        </div>
+      <div className="rr-vf-room">
+        <div className="rr-tn-hd"><span>Tonight&rsquo;s room{fieldNow ? ` · ${fmtN(fieldNow)} players` : ''}</span><em>You out-read {cur}%</em></div>
+        <Figures n={FIG} lit={lit} me={ME} />
+        <p className="rr-vf-cap">Each figure you out-read turns toward you. You are the gold one.</p>
       </div>
 
       {settled && (
@@ -710,19 +712,25 @@ const CSS = `
 .rr-vf-hd em{display:inline-flex;align-items:center;gap:7px;font-style:normal;font-size:12.5px;font-weight:800;color:var(--rr-acc-lt)}
 .rr-vf-hd em i{width:7px;height:7px;border-radius:50%;background:var(--rr-acc-lt);animation:rrpulse 1.4s ease-in-out infinite}
 @keyframes rrpulse{50%{opacity:.25}}
-.rr-vf-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:16px;margin-top:16px;align-items:stretch}
-.rr-vf-room{padding:18px;border-radius:16px;background:var(--rr-panel);border:1px solid var(--rr-line)}
-.rr-vf-room .rr-figs{grid-template-columns:repeat(15,minmax(0,1fr))}
+.rr-vf-room{margin-top:12px;padding:12px 14px;border-radius:14px;background:var(--rr-panel);border:1px solid var(--rr-line)}
+.rr-vf-room .rr-figs{grid-template-columns:repeat(30,minmax(0,1fr));gap:4px 2px}
+.rr-vf-room .rr-pp{transform:scale(.72);transform-origin:center top;height:15px}
+.rr-vf-room .rr-tn-hd{margin-bottom:8px}
+.rr-vf-cardhd{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 12px}
+.rr-vf-cardhd em{display:inline-flex;align-items:center;gap:7px;font-style:normal;font-size:12px;font-weight:800;color:var(--rr-acc-lt)}
+.rr-vf-cardhd em i{width:7px;height:7px;border-radius:50%;background:var(--rr-acc-lt);animation:rrpulse 1.4s ease-in-out infinite}
+.rr-vf-beat{margin:8px 0 0;font-size:17px;font-weight:700;color:var(--rr-ink)}
+.rr-vf-beat b{color:var(--rr-acc-lt);font-variant-numeric:tabular-nums}
 .rr-vf-cap{margin:12px 0 0;font-size:12.5px;font-weight:600;color:var(--rr-mute)}
-.rr-vf-card{display:flex;flex-direction:column;justify-content:center;padding:22px;border-radius:16px;background:var(--rr-deep);border:1.5px solid #4f52c9;opacity:.85;transition:opacity .4s}
+.rr-vf-card{display:flex;flex-direction:column;justify-content:center;margin-top:12px;padding:20px 22px;border-radius:16px;background:var(--rr-deep);border:1.5px solid #4f52c9;opacity:.85;transition:opacity .4s}
 .rr-vf-card.on{opacity:1;animation:rrpop .7s cubic-bezier(.2,.8,.2,1) both}
 .rr-vf-card.top{background:#2a2210;border-color:var(--rr-gold)}
 .rr-vf-card.top .rr-eb{color:#f4d58d}
 @keyframes rrpop{from{transform:translateY(14px) scale(.97)}to{transform:none}}
-.rr-vf-nm{font-size:clamp(30px,4.6vw,44px);font-weight:800;letter-spacing:-.025em;line-height:1.02;margin-top:8px;text-wrap:balance}
-.rr-vf-sc{margin-top:8px}
-.rr-vf-sc b{font-size:46px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
-.rr-vf-sc small{font-size:20px;font-weight:800;color:var(--rr-mute)}
+.rr-vf-nm{font-size:clamp(30px,4.6vw,44px);font-weight:800;letter-spacing:-.025em;line-height:1.05;margin:8px 0 0;text-wrap:balance}
+.rr-vf-sc{white-space:nowrap;margin-left:6px}
+.rr-vf-sc b{font-size:inherit;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.rr-vf-sc small{font-size:.5em;font-weight:800;color:var(--rr-mute)}
 .rr-vf-ln{margin:8px 0 0;font-size:15px;line-height:1.5;font-weight:600;color:#c9d4ea}
 .rr-moved{margin-top:12px;padding:8px 11px;border-radius:9px;font-size:12.5px;font-weight:800;background:rgba(255,255,255,.06)}
 .rr-moved.up{color:#6ee7b7}.rr-moved.dn{color:#fca5a5}
@@ -781,8 +789,7 @@ const CSS = `
 @media(max-width:760px){
 .rr-rooms{grid-template-columns:minmax(0,1fr)}
 .rr-hand{grid-template-columns:minmax(0,1fr)}
-.rr-vf-grid{grid-template-columns:minmax(0,1fr)}
-.rr-vf-room .rr-figs{grid-template-columns:repeat(12,minmax(0,1fr))}
+.rr-vf-room .rr-figs{grid-template-columns:repeat(20,minmax(0,1fr))}
 .rr-vf-games small{font-size:11px}
 .rr-vf-games,.rr-morn-g{grid-template-columns:repeat(var(--rr-nm,3),minmax(0,1fr))}
 .rr-vf-btns a,.rr-vf-btns button{flex:1 1 40%;text-align:center;padding:12px 10px}
