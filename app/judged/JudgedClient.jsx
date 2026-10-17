@@ -140,28 +140,23 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
     if (!sec || !res || res.key !== sec.key || cur.results[sec.key]) return;
     const secs = res.t0 ? Math.max(1, Math.round(((res.tEnd || Date.now()) - res.t0) / 1000)) : 0;
     commit({ ...cur, results: { ...cur.results, [sec.key]: { score: res.score, total: res.total, secs } } });
-    setHolding(sec.key);
-    setTimeout(() => setHolding((h) => (h === sec.key ? null : h)), 1700);
+    // The finished case stays on screen under its ruling (owner, 2026-10-17),
+    // and the page goes back to the top so the ruling is the first thing seen.
+    setTimeout(() => { try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) {} }, 60);
   }, [sections, commit]);
 
   const sec = playing ? sections[r.si] : null;
   const secDone = sec ? (banked[sec.key] || r.results[sec.key]) : null;
-  const between = !!(sec && secDone && holding !== sec.key);
+  const between = !!(sec && secDone);
   const last = playing && r.si >= N - 1;
 
   function advance() {
     const cur = rRef.current;
     if (cur.si >= N - 1) commit({ ...cur, phase: 'done', tEnd: Date.now() });
     else commit({ ...cur, si: cur.si + 1 });
-    try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {}
+    try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) {}
+    setTimeout(() => { try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) {} }, 80);
   }
-  // THE LAST CASE ROLLS STRAIGHT INTO THE VERDICT, no button.
-  useEffect(() => {
-    if (!between || !last) return undefined;
-    const t = setTimeout(() => advance(), 1900);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [between, last]);
 
   // Today's rotating ladder (lib/law-school.js): Yale and Harvard fixed, the
   // rungs below them dealt from their pools by the Eastern date.
@@ -260,13 +255,6 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
             <b>{sec.name}</b>
             <span className="ls-run">Run total {Math.round(runSoFar + (between ? parts[r.si] : 0))}</span>
           </div>
-          {!between && Game && !banked[sec.key] && (
-            <div className="ls-host">
-              <RunEmbed onResult={onSectionDone}>
-                <Game key={`${sec.key}-${sec.num}`} puzzles={[sec.puzzle]} forceNum={null} />
-              </RunEmbed>
-            </div>
-          )}
           {between && (
             <div className="ls-between">
               <div className="eb">{sec.name} · {banked[sec.key] && !r.results[sec.key] ? 'argued earlier today, the first result stands' : 'ruling'}</div>
@@ -280,8 +268,16 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
               {!last ? (
                 <button type="button" className="start" onClick={advance}>Next: Case {String(r.si + 2).padStart(2, '0')}, {sections[r.si + 1].name} <span aria-hidden="true">&rarr;</span></button>
               ) : (
-                <div className="ls-rolling" role="status">The committee is reviewing your file<span className="ls-dots" aria-hidden="true"><i /><i /><i /></span></div>
+                <button type="button" className="start" onClick={advance}>Send my file to the committee <span aria-hidden="true">&rarr;</span></button>
               )}
+              {Game && !banked[sec.key] ? <div className="ls-below">Your finished case is below.</div> : null}
+            </div>
+          )}
+          {Game && !banked[sec.key] && (
+            <div className="ls-host">
+              <RunEmbed onResult={onSectionDone}>
+                <Game key={`${sec.key}-${sec.num}`} puzzles={[sec.puzzle]} forceNum={null} />
+              </RunEmbed>
             </div>
           )}
         </section>
@@ -592,6 +588,7 @@ const CSS = `
 .ls-run{margin-left:auto;font-family:${MONO};font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ls-mute)}
 .ls-host{animation:lsrise .45s ease both}
 .ls-host .stage-page{min-height:0 !important;background:transparent !important;overflow-x:visible !important}
+.ls-below{margin-top:10px;font-size:12.5px;font-weight:700;color:var(--ls-mute,#9aa8c4)}
 .ls-between{text-align:center;padding:30px 16px;max-width:560px;margin:0 auto;animation:lsrise .4s ease both}
 .ls-bscore{font-size:68px;font-weight:900;letter-spacing:-.04em;margin-top:6px}
 .ls-bscore small{font-size:24px;color:var(--ls-mute)}

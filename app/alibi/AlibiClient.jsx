@@ -869,8 +869,10 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
                   <Undo2 size={14} /> Undo
                 </button>
                 <button type="button" className="al-btn" onClick={resetBoards}><Eraser size={14} /> Reset boards</button>
-                {g.wrong >= 3 && (
-                  <button type="button" className="al-btn" style={{ borderColor: 'var(--stg-line2, #c3c8cf)', color: FADED }} onClick={reveal}>Reveal (ends the day)</button>
+                {/* Inside a run (Judged) the case can always be dropped, so a
+                    stuck player is never trapped on it (owner, 2026-10-17). */}
+                {(g.wrong >= 3 || EMBED) && (
+                  <button type="button" className="al-btn" style={{ borderColor: 'var(--stg-line2, #c3c8cf)', color: FADED }} onClick={reveal}>{EMBED ? 'Give up' : 'Reveal (ends the day)'}</button>
                 )}
               </div>
             )}
