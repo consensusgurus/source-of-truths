@@ -608,7 +608,6 @@ function Morning() {
         {m.keys.map((k) => <div key={k}><i>{NAMES[k] || k}</i><b>{m.per[k] ? `${pctOf(m.per[k].read)}%` : '-'}</b></div>)}
       </div>
       {m.rank ? <div className="rr-morn-b"><b>#{m.rank}{m.players ? ` of ${fmtN(m.players)}` : ''} on the final board</b><span>Settled at midnight Eastern. This spot will not move again.</span></div> : null}
-      <button type="button" className="rr-morn-go" onClick={close}>Walk into today&rsquo;s room</button>
     </section>
   );
 }
@@ -774,7 +773,7 @@ const CSS = `
 .rr-vf-lad{margin-top:24px;max-width:560px}
 .rr-vf-lad .rr-eb{margin-bottom:8px}
 /* morning */
-.rr-morn{position:relative;max-width:828px;margin:8px auto 4px;padding:20px;border-radius:16px;background:var(--rr-panel);border:1px solid var(--rr-line);animation:rrrise .5s ease both}
+.rr-morn{position:relative;box-sizing:border-box;width:calc(100% - 32px);max-width:948px;margin:8px auto 4px;padding:20px;border-radius:16px;background:var(--rr-panel);border:1px solid var(--rr-line);animation:rrrise .5s ease both}
 .rr-morn h2{margin:6px 0 0;font-size:30px;font-weight:800;letter-spacing:-.02em}
 .rr-morn p{margin:6px 0 0;font-size:15px;line-height:1.5;font-weight:600;color:var(--rr-mute)}
 .rr-morn p b{color:var(--rr-ink)}
