@@ -6,7 +6,8 @@ import { PUZZLES } from './puzzles';
 import { SITE_URL } from '@/lib/site';
 import { categoryCrumb } from '@/lib/game-seo';
 
-// Squash launched 2026-10-17 as a daily Arcade game, a match-three with fruit.
+// Squash launched 2026-10-17 as a daily Arcade game, a match-three with fruit,
+// played as a five-minute blitz (owner, 2026-10-17).
 // Rows are gated by Eastern date here like every other daily, though a row
 // carries only the frame and the par: the day's board and its refills are
 // generated from its quizId in the client (lib/squash-engine.js).
@@ -15,7 +16,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Match-3 Fruit Game: Squash | Mind Loft',
   description:
-    'A free daily match-three fruit game. Swap fruit to line up three, set off cascades and special fruit, and beat par in 25 moves. Same board for everyone.',
+    'A free daily match-three fruit game. Swap fruit to line up three, set off cascades and specials, and beat par in a five-minute blitz. Same board for everyone.',
   alternates: { canonical: '/squash' },
   manifest: '/api/pwa-manifest?game=squash',
   icons: {
@@ -29,7 +30,7 @@ export const metadata = {
   openGraph: {
     images: [{ url: '/og/squash.png', width: 1200, height: 630, alt: 'Squash, a daily match-three fruit game from Mind Loft' }],
     title: 'Squash: A Daily Match-3 Fruit Game',
-    description: 'Swap fruit, line up three of a kind, and chase the cascades. Same board for everybody, and your best run counts.',
+    description: 'Five minutes to swap fruit, line up three of a kind and chase the cascades. Same board for everybody, and your best run counts.',
     url: '/squash',
     type: 'website',
     siteName: 'Mind Loft',
@@ -38,7 +39,7 @@ export const metadata = {
     images: ['/og/squash.png'],
     card: 'summary_large_image',
     title: 'Squash: A Daily Match-3 Fruit Game',
-    description: 'Swap fruit, line up three of a kind, and chase the cascades. Same board for everybody.',
+    description: 'Five minutes to swap fruit and chase the cascades. Same board for everybody.',
   },
 };
 
@@ -49,7 +50,7 @@ const gameJsonLd = {
   alternateName: 'Squash: Daily Match-3 Fruit Game',
   url: `${SITE_URL}/squash`,
   description:
-    'A free daily match-three puzzle game. Swap neighbouring fruit to line up three or more of a kind; matches squash, fruit falls, and new fruit drops in. Four in a line makes a slicer, an L or T makes a bomb, and five makes a punch bowl that clears a whole fruit. Everyone plays the same board with the same refills, in 25 moves (30 on the Sunday Edition\'s 9x9 board), and your best run of the day counts.',
+    'A free daily match-three puzzle game. Swap neighbouring fruit to line up three or more of a kind; matches squash, fruit falls, and new fruit drops in. Four in a line makes a slicer, an L or T makes a bomb, and five makes a punch bowl that clears a whole fruit. Everyone plays the same board with the same refills, in a five-minute blitz (a bigger 9x9 board on the Sunday Edition), and your best run of the day counts.',
   genre: ['Arcade', 'Match-3', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

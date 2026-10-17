@@ -8,8 +8,11 @@
 //     opening board, and every column has its own seeded stream of fruit, so
 //     the k-th fruit to drop into a column is the same for everybody
 //     (lib/squash-engine.js). What falls is decided by your play, not luck.
-//  2. A FIXED NUMBER OF MOVES. 25 swaps on a weekday, 30 on the Sunday Edition's
-//     9x9 board. A swap that makes no match is undone and costs nothing.
+//  2. A FIVE-MINUTE BLITZ (owner, 2026-10-17). The clock starts on the first
+//     swap and the run ends when it runs out; swap as much as you like until
+//     then. The Sunday Edition is the same five minutes on a 9x9 board. A swap
+//     that makes no match is undone. Pausing (or leaving the tab) stops the
+//     clock and COVERS the board, so a pause cannot be used to plan.
 //  3. SCORED ON POINTS against the day's par, which is measured off the engine
 //     (scripts/gen-squash.mjs).
 //
@@ -307,8 +310,10 @@ function drawSpecial(ctx, p, x, y, r, pal, now) {
   ctx.restore();
 }
 
+// v2 is the blitz: a save from the moves-capped first hour of launch is
+// ignored rather than resumed under the wrong rules.
 function freshG() {
-  return { v: 1, status: 'playing', t0: null, tEnd: null, run: null, score: 0, used: 0, won: false, runs: 0 };
+  return { v: 2, status: 'playing', t0: null, tEnd: null, run: null, score: 0, used: 0, won: false, runs: 0, left: null };
 }
 const HAPT = { squash: [6], big: [10, 30, 10], end: [20, 40, 20], bad: [4] };
 function vibrate(p) { try { if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
@@ -319,7 +324,8 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
   const searchParams = useSearchParams();
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
   const SIZE = PUZZLE.size || SQUASH_SIZE;
-  const MOVES = PUZZLE.moves || 25;
+  const SECONDS = PUZZLE.seconds || 300;
+  const CLOCK_MS = SECONDS * 1000;
   const PAR = PUZZLE.par;
   const STORE_KEY = `sot_squash_${PUZZLE.num}`;
   const REC_KEY = `sot_squash_rec_${PUZZLE.num}`;
@@ -408,19 +414,32 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
   const bestToday = myStats.rec && myStats.rec[PUZZLE.num] ? myStats.rec[PUZZLE.num].s : null;
   const shownScore = playing ? fig.score : g.score;
   const shownUsed = playing ? fig.used : g.used;
-  const movesLeft = Math.max(0, MOVES - shownUsed);
+  // the clock: milliseconds left, kept in a ref and mirrored to state for paint
+  const [left, setLeft] = useState(CLOCK_MS);
+  const leftRef = useRef(CLOCK_MS);
+  const [paused, setPaused] = useState(false);
+  const pausedRef = useRef(false);
+  const timeUpRef = useRef(false);
+  const shownLeft = playing ? left : 0;
+  const fmtClock = (ms) => { const t = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; };
 
   // ---- hydrate -------------------------------------------------------------
   useEffect(() => {
     let saved = null;
     try { saved = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) {}
-    if (saved && saved.v === 1) {
+    if (saved && saved.v === 2) {
       const s = { ...freshG(), ...saved };
       if (s.run && s.run.size === SIZE && s.run.quizId === PUZZLE.quizId) {
         eRef.current = clone(s.run);
         setFig({ score: s.run.score, used: s.run.used });
       }
-      if (s.status === 'playing' && s.t0 && s.run) setArmed(true);
+      if (s.status === 'playing' && s.t0 && s.run) {
+        // a run in progress comes back PAUSED, board covered, clock stopped
+        setArmed(true);
+        leftRef.current = s.left != null ? s.left : CLOCK_MS;
+        setLeft(leftRef.current);
+        pausedRef.current = true; setPaused(true);
+      }
       else if (s.status === 'playing') { s.t0 = null; s.run = null; eRef.current = null; }
       gRef.current = s; setG(s);
     }
@@ -460,7 +479,8 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
     } catch (e) {}
   }, [hydrated, isTodays, g.status, g.t0, bestToday]);
 
-  const elapsed = (cur) => Math.min(36000, Math.max(1, Math.round(((cur.tEnd || Date.now()) - (cur.t0 || Date.now())) / 1000)));
+  // play time is the clock used, so a pause never counts against a run
+  const elapsed = () => Math.min(SECONDS, Math.max(1, Math.round((CLOCK_MS - Math.max(0, leftRef.current)) / 1000)));
 
   // ---- abandon flush -------------------------------------------------------
   const abandon = useAbandonFlush(() => {
@@ -781,8 +801,9 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
     const e = eRef.current, cur = gRef.current;
     if (!e || cur.status !== 'playing') return;
     const tEnd = Date.now();
-    const el = elapsed({ ...cur, tEnd });
-    const g2 = { ...cur, status: 'over', tEnd, run: clone(e), score: e.score, used: e.used, won: e.score >= PAR, runs: (cur.runs || 0) + 1 };
+    const el = elapsed();
+    pausedRef.current = false; setPaused(false);
+    const g2 = { ...cur, status: 'over', tEnd, run: clone(e), score: e.score, used: e.used, won: e.score >= PAR, runs: (cur.runs || 0) + 1, left: 0 };
     commit(g2);
     setFig({ score: e.score, used: e.used });
     setShake((x) => x + 1);
@@ -792,7 +813,8 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
 
   const tryMove = useCallback((a, b) => {
     const cur = gRef.current, e = eRef.current;
-    if (!e || cur.status !== 'playing' || busyRef.current) return;
+    if (!e || cur.status !== 'playing' || busyRef.current || timeUpRef.current) return;
+    if (pausedRef.current) { pausedRef.current = false; setPaused(false); return; }
     lastInputRef.current = Date.now(); nudgeRef.current = null;
     selRef.current = null; setSel(null);
     if (!adjacent(a, b)) return;
@@ -804,7 +826,7 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
       if (!pa || !pb) { busyRef.current = false; setBusy(false); return; }
       const there = [{ id: pa.id, f: pa.f, sp: pa.sp, r: b[0], c: b[1] }, { id: pb.id, f: pb.f, sp: pb.sp, r: a[0], c: a[1] }];
       const back = [{ id: pa.id, f: pa.f, sp: pa.sp, r: a[0], c: a[1] }, { id: pb.id, f: pb.f, sp: pb.sp, r: b[0], c: b[1] }];
-      stepsRef.current.push(() => tweenTo(there, 120, easeOut), () => tweenTo(back, 140, easeOut), () => { busyRef.current = false; setBusy(false); setCallout({ text: 'No match there', key: Date.now() }); });
+      stepsRef.current.push(() => tweenTo(there, 120, easeOut), () => tweenTo(back, 140, easeOut), () => { busyRef.current = false; setBusy(false); if (timeUpRef.current) finishRun(); else setCallout({ text: 'No match there', key: Date.now() }); });
       kick();
       return;
     }
@@ -814,10 +836,11 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
     if (!res.ok) return;
     setFig((f) => ({ ...f, used: e.used }));
     const snap = clone(e);
-    commit({ ...gRef.current, t0, run: snap, score: e.score, used: e.used });
+    commit({ ...gRef.current, t0, run: snap, score: e.score, used: e.used, left: leftRef.current });
     playFrames(res.frames, base, () => {
       setFig({ score: e.score, used: e.used });
-      if (e.used >= e.max) finishRun();
+      // time ran out while the fruit was still falling: the run ends now
+      if (timeUpRef.current) finishRun();
     });
   }, [commit, playFrames, finishRun, tweenTo, kick]);
 
@@ -825,7 +848,9 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
   // and the board and the local record keep the best.
   const armBoard = useCallback(() => {
     releaseEnd();
-    const e = newGame({ quizId: PUZZLE.quizId, size: SIZE, moves: MOVES });
+    const e = newGame({ quizId: PUZZLE.quizId, size: SIZE });
+    leftRef.current = CLOCK_MS; setLeft(CLOCK_MS); timeUpRef.current = false;
+    pausedRef.current = false; setPaused(false);
     eRef.current = e;
     stepsRef.current = []; tweenRef.current = null; fxRef.current = []; nudgeRef.current = null;
     busyRef.current = false; setBusy(false);
@@ -837,11 +862,62 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
     setRevealed(false);
     lastInputRef.current = Date.now();
     const cur = gRef.current;
-    commit({ ...cur, status: 'playing', t0: null, tEnd: null, run: clone(e), score: 0, used: 0, won: false });
+    commit({ ...cur, status: 'playing', t0: null, tEnd: null, run: clone(e), score: 0, used: 0, won: false, left: CLOCK_MS });
     setArmed(true);
     try { localStorage.removeItem(REC_KEY); } catch (er) {}
     setTimeout(() => { sizeBoard(); kick(); }, 0);
-  }, [releaseEnd, PUZZLE.quizId, SIZE, MOVES, commit, sizeBoard, REC_KEY, syncDisp, kick]);
+  }, [releaseEnd, PUZZLE.quizId, SIZE, CLOCK_MS, commit, sizeBoard, REC_KEY, syncDisp, kick]);
+
+  // ---- the clock -----------------------------------------------------------
+  // Runs from the first swap; stops while paused. At zero no new swap is
+  // taken, the fruit already falling lands, and the run ends.
+  const saveLeft = useCallback(() => {
+    const cur = gRef.current;
+    if (cur.status !== 'playing' || !cur.t0) return;
+    commit({ ...cur, left: leftRef.current });
+  }, [commit]);
+  const running = playing && !!g.t0 && !paused;
+  useEffect(() => {
+    if (!running) return undefined;
+    let last = Date.now();
+    const iv = setInterval(() => {
+      const now = Date.now();
+      if (pausedRef.current || timeUpRef.current) { last = now; return; }
+      leftRef.current = Math.max(0, leftRef.current - (now - last));
+      last = now;
+      setLeft(leftRef.current);
+      if (leftRef.current <= 0) {
+        timeUpRef.current = true;
+        selRef.current = null; setSel(null);
+        setCallout({ text: 'Time!', key: now });
+        if (!busyRef.current) finishRun();
+      }
+    }, 200);
+    return () => clearInterval(iv);
+  }, [running, finishRun]);
+  // save the clock every few seconds, so a closed tab loses little
+  useEffect(() => {
+    if (!running) return undefined;
+    const iv = setInterval(saveLeft, 4000);
+    return () => clearInterval(iv);
+  }, [running, saveLeft]);
+  const togglePause = useCallback(() => {
+    const cur = gRef.current;
+    if (cur.status !== 'playing' || !cur.t0 || timeUpRef.current) return;
+    pausedRef.current = !pausedRef.current;
+    setPaused(pausedRef.current);
+    if (pausedRef.current) { selRef.current = null; setSel(null); saveLeft(); }
+  }, [saveLeft]);
+  // leaving the tab pauses the run and covers the board
+  useEffect(() => {
+    const hide = () => {
+      if (document.hidden && gRef.current.status === 'playing' && gRef.current.t0 && !timeUpRef.current) {
+        pausedRef.current = true; setPaused(true); saveLeft();
+      }
+    };
+    document.addEventListener('visibilitychange', hide);
+    return () => document.removeEventListener('visibilitychange', hide);
+  }, [saveLeft]);
 
   function startGame() {
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
@@ -860,7 +936,8 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
   };
   const boardProps = {
     onPointerDown: (ev) => {
-      if (gRef.current.status !== 'playing' || !eRef.current || busyRef.current) return;
+      if (gRef.current.status !== 'playing' || !eRef.current || busyRef.current || timeUpRef.current) return;
+      if (pausedRef.current) { pausedRef.current = false; setPaused(false); return; }
       const hit = cellAt(ev);
       if (!hit) return;
       cursorRef.current = null;
@@ -917,11 +994,12 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
         if (selRef.current) { selRef.current = null; setSel(null); }
         else { const c = cursorRef.current || [Math.floor(SIZE / 2), Math.floor(SIZE / 2)]; cursorRef.current = c; selRef.current = c; setSel(c); }
         kick();
-      } else if (ev.key === 'Escape') { selRef.current = null; setSel(null); kick(); }
+      } else if ((ev.key === 'p' || ev.key === 'P') && cur.t0) { ev.preventDefault(); togglePause(); }
+      else if (ev.key === 'Escape') { selRef.current = null; setSel(null); kick(); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [tryMove, showHelp, SIZE, kick]);
+  }, [tryMove, showHelp, SIZE, kick, togglePause]);
 
   useEffect(() => {
     if (!armRestart) return undefined;
@@ -959,25 +1037,26 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
       accent={COLORS.accent}
       accentSoft={COLORS.accentSoft}
       lead="Swap two fruit next to each other to line up three or more of the same fruit. They squash, everything above falls, and new fruit drops in from the top."
-      banner={`Everyone gets the same board today, and the same fruit drops into each column. You have ${MOVES} moves${PUZZLE.sunday ? ' on the Sunday Edition’s bigger 9x9 board' : ''}.`}
-      sub="A swap that makes no match slides back and costs nothing."
+      banner={`Everyone gets the same board today, and the same fruit drops into each column. You have five minutes${PUZZLE.sunday ? ' on the Sunday Edition’s bigger 9x9 board' : ''}, and the clock starts on your first swap.`}
+      sub="Swap as much as you like until the clock runs out. A swap that makes no match just slides back."
       steps={[
-        <><b>Drag</b> a fruit onto its neighbour, or <b>tap</b> one and then the one beside it. On a keyboard, the arrows move a cursor, Enter picks a fruit up, and an arrow swaps it.</>,
+        <><b>Drag</b> a fruit onto its neighbour, or <b>tap</b> one and then the one beside it. On a keyboard, the arrows move a cursor, Enter picks a fruit up, and an arrow swaps it. <b>Pause</b> (or P) stops the clock and covers the board.</>,
         <>Bigger matches make special fruit. <b>Four in a line</b> makes a slicer that clears its whole row or column. An <b>L or a T</b> makes a bomb that clears the squares around it. <b>Five in a line</b> makes a punch bowl: swap it with any fruit and every fruit of that kind goes.</>,
         <>Swap two specials together for a <b>combo</b>: two slicers clear a cross, a slicer and a bomb clear three rows and three columns, two bombs clear a 5x5, and two punch bowls clear the whole board.</>,
       ]}
-      knack="Fruit that falls makes new matches on its own, and every one of those pays more than the last: the second wave scores double, the third triple. Work near the bottom of the board to shake more loose, and save your specials for a combo."
-      footer={`Scored on POINTS: every fruit squashed is 10 points, times the wave it fell in, plus a bonus for each special you make (60 for a slicer, 100 for a bomb, 200 for a punch bowl). ${nf(PAR)} is par for the day, and there is no ceiling. You can play the day as many times as you like, because Squash keeps your BEST run. Ties break on the clock. Squash pays at most 1 IQ point a day however many runs you play. The Sunday Edition is a 9x9 board with 30 moves.`}
+      knack="Fruit that falls makes new matches on its own, and every one of those pays more than the last: the second wave scores double, the third triple. Work near the bottom of the board to shake more loose, and save your specials for a combo, but keep swapping: a run is five minutes, not a number of moves."
+      footer={`Scored on POINTS: every fruit squashed is 10 points, times the wave it fell in, plus a bonus for each special you make (60 for a slicer, 100 for a bomb, 200 for a punch bowl). ${nf(PAR)} is par for the day, and there is no ceiling. You can play the day as many times as you like, because Squash keeps your BEST run. Ties break on fewer swaps. Squash pays at most 1 IQ point a day however many runs you play. The Sunday Edition is the same five minutes on a bigger 9x9 board.`}
     />
   );
 
   const tapRestart = () => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; armBoard(); } else setArmRestart(Date.now()); };
   const statusLine = over
-    ? `${nf(g.score)} points in ${nf(g.used)} moves.${bestToday != null && bestToday > g.score ? ` Your best today is ${nf(bestToday)}.` : ''}`
+    ? `${nf(g.score)} points from ${nf(g.used)} swaps in five minutes.${bestToday != null && bestToday > g.score ? ` Your best today is ${nf(bestToday)}.` : ''}`
     : !g.t0
-      ? 'Make your first swap. Line up three of a kind.'
-      : movesLeft === 0 ? 'Last fruit falling.'
-        : `${nf(movesLeft)} move${movesLeft === 1 ? '' : 's'} left. ${shownScore >= PAR ? `${nf(shownScore - PAR)} past par.` : `${nf(PAR - shownScore)} to par.`}`;
+      ? 'Make your first swap to start the five-minute clock.'
+      : shownLeft <= 0 ? 'Time! Last fruit falling.'
+        : paused ? 'Paused. Tap the board or press Resume.'
+          : `${fmtClock(shownLeft)} left. ${shownScore >= PAR ? `${nf(shownScore - PAR)} past par.` : `${nf(PAR - shownScore)} to par.`}`;
   const parPct = Math.min(100, Math.round((shownScore / Math.max(1, PAR)) * 100));
 
   const btn = { fontFamily: SANS, fontWeight: 800, fontSize: 14, border: `2px solid var(--stg-line, ${COLORS.accent})`, background: STAGE ? SURF : '#fff', color: ACC_INK, borderRadius: 8, padding: '9px 16px', cursor: 'pointer' };
@@ -999,7 +1078,7 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
           tiles={playing ? null : upNext}
           dateLabel={PUZZLE.dateLabel}
           onHelp={() => setShowHelp(true)}
-          sunday={PUZZLE.sunday ? 'Sunday Edition · 9x9, 30 moves' : null}
+          sunday={PUZZLE.sunday ? 'Sunday Edition · 9x9 board' : null}
           figures={[
             { v: nf(shownScore), k: 'points' },
             { v: nf(PAR), k: 'par' },
@@ -1022,7 +1101,7 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
             onHelp={() => setShowHelp(true)}
             sunday={PUZZLE.sunday && (
               <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>
-                Sunday Edition &middot; 9x9, 30 moves
+                Sunday Edition &middot; 9x9 board
               </span>
             )}
           />
@@ -1039,7 +1118,7 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
                       <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'Squash is ready'}</div>
                       {gateRules ? rulesBody : (
                         <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                          <p style={{ margin: '0 0 6px' }}>Swap fruit to line up three of a kind. You have {MOVES} moves, the board is the same for everybody, and you can play as often as you like. Your best run is the one that counts.</p>
+                          <p style={{ margin: '0 0 6px' }}>Swap fruit to line up three of a kind. You have five minutes, the board is the same for everybody, and you can play as often as you like. Your best run is the one that counts.</p>
                         </div>
                       )}
                       <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
@@ -1055,7 +1134,7 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
 
                   {!preStart && (
                     <div className={STAGE ? 'stg-board' : undefined} style={{ background: STAGE ? SURF : '#fff', border: STAGE ? `1px solid ${SURF_B}` : `1px solid ${COLORS.line}`, borderRadius: 12, padding: 14, position: 'relative', maxWidth: BOARD_MAX + 80, margin: '0 auto' }}>
-                      {/* the meters: points against par, and the moves left */}
+                      {/* the meters: points against par, and the clock */}
                       <div className="sq-meter">
                         <div className="sq-row">
                           <span>Points · <b className="sq-acc" data-sq-score="">{nf(shownScore)}</b> · par {nf(PAR)}</span>
@@ -1063,11 +1142,10 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
                         </div>
                         <div className="sq-bar" aria-hidden="true"><span style={{ width: `${parPct}%` }} /></div>
                         <div className="sq-row">
-                          <span>Moves left · <b>{nf(movesLeft)}</b> of {nf(MOVES)}</span>
+                          <span>Time left · <b className={shownLeft <= 30000 && g.t0 && playing ? 'sq-hot' : undefined} data-sq-clock="">{fmtClock(shownLeft)}</b></span>
+                          <span className="sq-r">{g.t0 ? `${nf(shownUsed)} swaps` : 'Starts on your first swap'}</span>
                         </div>
-                        <div className="sq-segs" aria-hidden="true">
-                          {Array.from({ length: MOVES }, (_, i) => <span key={i} className={i < movesLeft ? 'on' : undefined} />)}
-                        </div>
+                        <div className="sq-clock" aria-hidden="true"><span style={{ width: `${Math.round((shownLeft / CLOCK_MS) * 100)}%` }} /></div>
                       </div>
 
                       <div ref={boxRef} style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
@@ -1078,9 +1156,15 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
                           {...boardProps}
                           className={shake ? 'sq-shake' : undefined}
                           role="img"
-                          aria-label={`Squash board, ${SIZE} by ${SIZE} fruit (${FRUITS.join(', ')}), ${shownScore} points, ${movesLeft} moves left`}
+                          aria-label={`Squash board, ${SIZE} by ${SIZE} fruit (${FRUITS.join(', ')}), ${shownScore} points, ${fmtClock(shownLeft)} left`}
                           style={{ display: 'block', touchAction: 'none', maxWidth: '100%', borderRadius: 10, cursor: playing ? 'pointer' : 'default' }}
                         />
+                        {playing && g.t0 && paused && (
+                          <button type="button" className="sq-pause" onClick={togglePause} aria-label="Resume the run">
+                            <span className="sq-pz-t">Paused</span>
+                            <span className="sq-pz-s">The clock is stopped. Tap to resume.</span>
+                          </button>
+                        )}
                         {callout && (
                           <div key={callout.key} className="sq-call" aria-live="polite">{callout.text}</div>
                         )}
@@ -1093,6 +1177,7 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
 
                       {playing && g.t0 && (
                         <div className="sq-tools">
+                          <button type="button" className="sq-btn sq-fill" onClick={togglePause} disabled={shownLeft <= 0}>{paused ? 'Resume' : 'Pause'}</button>
                           <button type="button" className={`sq-btn sq-line${armRestart ? ' armed' : ''}`} onClick={tapRestart} disabled={busy} aria-label={armRestart ? 'Tap again to restart the run' : 'Restart run'}>{armRestart ? 'Tap again to restart' : 'Restart run'}</button>
                         </div>
                       )}
@@ -1198,8 +1283,8 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
           <p style={{ margin: '0 0 9px' }}>
             Bigger matches make special fruit: four in a line makes a slicer that clears a row or column, an L or a T makes a bomb,
             and five in a line makes a punch bowl that clears every fruit of one kind. Falling fruit that makes new matches scores
-            more with every wave. You get {MOVES} moves, play as many runs as you like, and your best one takes the board. The Sunday
-            Edition is a 9x9 board with 30 moves.
+            more with every wave. A run is a five-minute blitz from your first swap; play as many runs as you like, and your best one
+            takes the board. The Sunday Edition is the same five minutes on a bigger 9x9 board.
           </p>
           <p style={{ margin: 0 }}>
             More arcade games: <a href="/blocks" style={{ color: ACC_INK }}>Blocks</a>,{' '}
@@ -1217,7 +1302,7 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
           quizId={PUZZLE.quizId}
           completed
           score={<>{nf(g.score)} points &middot; par {nf(PAR)}</>}
-          subline={<>{nf(g.used)} moves</>}
+          subline={<>{nf(g.used)} swaps in five minutes</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={armBoard}
@@ -1248,15 +1333,19 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
         .sq-row b.sq-acc { color: var(--stg-acc-ink, #8a5a00); }
         .sq-bar { height: 8px; border-radius: 4px; background: var(--stg-line2, #c3cad6); overflow: hidden; }
         .sq-bar > span { display: block; height: 100%; background: var(--stg-acc, #fbbf24); border-radius: 4px; transition: width .35s ease-out; }
-        .sq-segs { display: flex; gap: 3px; }
-        .sq-segs > span { flex: 1; height: 6px; border-radius: 2px; background: var(--stg-line2, #c3cad6); opacity: .55; }
-        .sq-segs > span.on { background: var(--stg-ink2, #3f4757); opacity: 1; }
+        .sq-clock { height: 6px; border-radius: 3px; background: var(--stg-line2, #c3cad6); overflow: hidden; }
+        .sq-clock > span { display: block; height: 100%; background: var(--stg-ink2, #3f4757); border-radius: 3px; transition: width .2s linear; }
+        .sq-row b.sq-hot { color: var(--stg-bad, #be123c); }
+        .sq-pause { position: absolute; inset: 0; margin: 0 auto; max-width: ${BOARD_MAX}px; border: 0; border-radius: 10px; background: var(--stg-raise, #f1f3f7); color: var(--stg-ink, #0b0d12); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; cursor: pointer; font-family: ${SANS}; z-index: 2; }
+        .sq-pz-t { font-size: 24px; font-weight: 800; }
+        .sq-pz-s { font-size: 13px; font-weight: 600; color: var(--stg-mute, #5f6774); }
+        .sq-fill { background: var(--stg-acc, #fbbf24); border: 0; color: var(--stg-onramp, #1c1a14); font-weight: 800; }
         .sq-call { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); pointer-events: none; font-size: 26px; font-weight: 800; letter-spacing: -.01em; color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.35), 0 0 18px rgba(0,0,0,.35); white-space: nowrap; animation: sqCall 1.3s ease-out 1 both; }
         @keyframes sqCall { 0% { opacity: 0; transform: translate(-50%, -30%) scale(.7); } 15% { opacity: 1; transform: translate(-50%, -50%) scale(1.06); } 30% { transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -75%) scale(1); } }
         .sq-status { display: flex; flex-direction: column; gap: 2px; max-width: ${BOARD_MAX}px; margin: 14px auto 0; }
         .sq-say { font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--stg-ink, #0b0d12); }
         .sq-help { font-size: 12px; font-weight: 600; line-height: 1.35; color: var(--stg-mute, #5f6774); }
-        .sq-tools { display: flex; justify-content: flex-end; max-width: ${BOARD_MAX}px; margin: 14px auto 0; }
+        .sq-tools { display: flex; justify-content: flex-end; gap: 10px; max-width: ${BOARD_MAX}px; margin: 14px auto 0; }
         .sq-btn { font-family: ${SANS}; cursor: pointer; min-height: 44px; white-space: nowrap; border-radius: 12px; padding: 0 18px; font-size: 14px; font-weight: 700; -webkit-tap-highlight-color: transparent; }
         .sq-btn:disabled { cursor: default; opacity: .55; }
         .sq-line { background: transparent; border: 1.5px solid var(--stg-line3, #78839a); color: var(--stg-ink2, #3f4757); }
