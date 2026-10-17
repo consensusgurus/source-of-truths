@@ -808,16 +808,15 @@ const CSS = `
 // PhoneMath). Every other circuit that mounts this curtain (the Trivia
 // Encore) gets the Broadcast above, untouched.
 //
-// Three phases on ONE clock, the mockups' own timeline:
+// Two phases on ONE clock, the mockups' own timeline:
 //   PAINT  each quiz owns the screen in its ramp colour for PD ms, its count
 //          easing up, the miss cracking at MISS ms and its rank at RANK ms.
 //   COUNT  the colours drain, the total climbs the run's title ladder, STEP ms
 //          a title, the stage flashing the title's colour for FLASH ms at each
-//          crossing, and the earned title pulls out.
-//   BOARD  the title, the per-quiz tiles, the challenge and the real board.
-//          It HOLDS: a tap outside its links, Escape, or See your results
-//          closes the curtain onto the end card below.
-// A tap or a key before the board jumps straight to it (the mockups' skip).
+//          crossing, and the earned title pulls out. Then the curtain closes.
+// The third phase, the board, used to hold here until a tap; it is the head of
+// the run's end card now (GauntletBoardTop, owner 2026-10-17). A tap or a key
+// at any point closes the curtain onto that card.
 //
 // IT INVENTS NOTHING. Scores and clocks are the run's own; ranks and fields
 // come off useGauntletField; the board rows, their per-quiz scores and the
@@ -914,6 +913,22 @@ function GeChallenge({ gameKey, challenge }) {
   );
 }
 
+function geBanks(sections, results, field, mode) {
+  return sections.map((s, i) => {
+    const res = results[i] || null;
+    const asked = (s.questions && s.questions.length) || (res && res.total) || 0;
+    const got = res && Number.isFinite(res.score) ? res.score : 0;
+    const colour = rampFor(Number.isFinite(s.slot) ? s.slot : i);
+    const rank = field && typeof field.rank === 'function' ? field.rank(s.key, got) : null;
+    const plays = field && field.plays && Number.isFinite(field.plays[s.key]) ? field.plays[s.key] : null;
+    return {
+      key: s.key, num: i + 1, name: s.name || s.key,
+      sub: mode === 'math' ? (s.subject || s.tag || '') : (s.topic || s.subject || s.cat || s.tag || ''),
+      asked, got, colour, rank, plays, qs: Array.isArray(s.questions) ? s.questions : [],
+    };
+  });
+}
+
 function GauntletEnding({
   sections = [],
   results = [],
@@ -946,36 +961,24 @@ function GauntletEnding({
   const baseRef = useRef(0);
   const doneRef = useRef(false);
 
-  const banks = useMemo(() => sections.map((s, i) => {
-    const res = results[i] || null;
-    const asked = (s.questions && s.questions.length) || (res && res.total) || 0;
-    const got = res && Number.isFinite(res.score) ? res.score : 0;
-    const colour = rampFor(Number.isFinite(s.slot) ? s.slot : i);
-    const rank = field && typeof field.rank === 'function' ? field.rank(s.key, got) : null;
-    const plays = field && field.plays && Number.isFinite(field.plays[s.key]) ? field.plays[s.key] : null;
-    return {
-      key: s.key, num: i + 1, name: s.name || s.key,
-      sub: mode === 'math' ? (s.subject || s.tag || '') : (s.topic || s.subject || s.cat || s.tag || ''),
-      asked, got, colour, rank, plays, qs: Array.isArray(s.questions) ? s.questions : [],
-    };
-  }), [sections, results, field, mode]);
+  const banks = useMemo(() => geBanks(sections, results, field, mode), [sections, results, field, mode]);
 
   const TOTAL = score;
   const P0 = TM.P0, PD = TM.PD;
   const RP = P0 + N * PD;
   const CNT = GE_STEP * (K + 1) + 300;
   const BOARD = RP + CNT + 300;
-  const END = BOARD + 3600;
 
   const finish = () => {
     if (doneRef.current) return;
     doneRef.current = true;
     if (typeof onDone === 'function') onDone();
   };
-  const toBoard = () => {
-    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
-    if (now - baseRef.current < BOARD) { baseRef.current = now - BOARD; setT(BOARD); }
-  };
+  // THE CURTAIN ENDS ON THE TITLE (owner, 2026-10-17). It used to hold a
+  // third phase, the board, until a tap; that screen now sits at the top of
+  // the run's end card (GauntletBoardTop), so a skip and the clock both close
+  // the curtain straight onto it.
+  const toBoard = () => finish();
 
   // The clock. Thirty frames a second is all the mockups' timeline needs, and
   // it stops once the board has fully landed, so a held board costs nothing.
@@ -988,7 +991,7 @@ function GauntletEnding({
       const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
       const e = now - baseRef.current;
       setT(e);
-      if (e > END) clearInterval(iv);
+      if (e >= BOARD) { clearInterval(iv); finish(); }
     }, 33);
     return () => clearInterval(iv);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1002,25 +1005,15 @@ function GauntletEnding({
     return () => { if (mq.removeEventListener) mq.removeEventListener('change', on); else if (mq.removeListener) mq.removeListener(on); };
   }, []);
 
-  // Escape closes; any other key before the board jumps to it. On the board
-  // keys are left alone, so Tab reaches its links.
+  // Any key skips to the card.
   useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === 'Escape') { finish(); return; }
-      const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
-      if (now - baseRef.current < BOARD) toBoard();
-    };
+    const onKey = () => finish();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [BOARD]);
 
-  const onStageClick = (e) => {
-    if (t < BOARD) { toBoard(); return; }
-    const el = e && e.target && e.target.closest ? e.target.closest('a,button') : null;
-    if (el) return;
-    finish();
-  };
+  const onStageClick = () => finish();
 
   // ── where on the timeline ──
   const pi = t >= P0 && t < RP ? Math.min(N - 1, Math.floor((t - P0) / PD)) : -1;
@@ -1028,7 +1021,6 @@ function GauntletEnding({
   const b = pi >= 0 ? banks[pi] : banks[0];
   const isPaint = pi >= 0;
   const isCount = t >= RP && t < BOARD;
-  const isBoard = t >= BOARD;
   const count = b ? Math.round(b.got * geEase(local / TM.COUNT)) : 0;
   const missShown = local > TM.MISS;
   const showRank = local > TM.RANK;
@@ -1055,38 +1047,9 @@ function GauntletEnding({
   const barScale = Math.max(1, best || 0, TOTAL);
   const sideW = Math.max(digits(barScale), 2);
 
-  // ── the board ──
-  const meKey = meRow && meRow.userKey ? meRow.userKey : null;
-  const top = finishedRows.slice(0, 3);
-  const meInTop = !!(meKey && top.some((x) => x.userKey === meKey));
-  const meRank = meRow && Number.isFinite(Number(meRow.rank)) ? Number(meRow.rank) : null;
-  const ahead = meRank && fieldSize && fieldSize >= 2 ? Math.max(0, Math.round(((fieldSize - meRank) / fieldSize) * 100)) : null;
-  const boardRows = top.map((x, i) => ({
-    key: x.userKey || `r${i}`, rank: String(x.rank || i + 1), name: x.username || 'Player',
-    title: (titleFor(circuitId, x.total) || {}).name || '', total: Math.round(Number(x.total) || 0),
-    per: x.perGame || null, me: !!(meKey && x.userKey === meKey), rc: ['#e8b43a', '#b8bcc4', '#c8814b'][i] || GE_LIGHT,
-  }));
-  if (meRow && !meInTop && meRank) {
-    const ttl = (earned && earned.name) || '';
-    boardRows.push({
-      key: 'me', rank: `#${meRank}`, name: meRow.username || 'You',
-      title: ahead != null ? `${ttl} · ahead of ${ahead}%` : ttl, total: TOTAL,
-      per: Object.fromEntries(banks.map((x) => [x.key, { score: x.got }])), me: true, rc: '#7dd3fc',
-    });
-  }
-  boardRows.forEach((r) => { if (r.me && r.key !== 'me' && ahead != null) r.title = `${r.title} · ahead of ${ahead}%`; });
-  const barMax = Math.max(1, ...boardRows.flatMap((r) => (r.per ? banks.map((x) => Number(r.per[x.key] && r.per[x.key].score) || 0) : [0])));
-  const rowOn = (i) => t >= BOARD + (phone ? 2000 + i * 300 : 400 + i * 320);
-  const chalOn = t >= BOARD + (phone ? 1200 : 1800);
-  const fieldWord = Number.isFinite(Number(fieldSize)) && fieldSize > 0 ? fieldSize : null;
-
-  const capRight = isPaint ? `${mode === 'math' ? 'Game' : 'Quiz'} ${pi + 1} of ${N}` : isBoard ? 'Final' : '';
+  const capRight = isPaint ? `${mode === 'math' ? 'Game' : 'Quiz'} ${pi + 1} of ${N}` : '';
   const capDate = geDate(phone);
   const noun = mode === 'math' ? 'games' : 'quizzes';
-  const clockTxt = clockOf(clock);
-  const nextTxt = earned && earned.next ? `${earned.toNext} more right and you are ${article(earned.next.name)} ${earned.next.name}.` : null;
-  const fromTxt = earned && earned.next ? `${earned.toNext} from ${earned.next.name}` : null;
-
   // ── pieces ──
   const pips = () => {
     if (!b || !b.asked) return null;
@@ -1192,66 +1155,6 @@ function GauntletEnding({
   const lcd = (w, h, fs, pad) => (
     <div className="ge-lcd" style={{ width: w, height: h, padding: `0 ${pad}px` }}>
       <div style={{ fontSize: fs, width: `${digits(TOTAL)}ch`, textAlign: 'right' }}>{total}</div>
-    </div>
-  );
-
-  const bars = (r, h, gap) => (r.per ? (
-    <div className="ge-bars" style={{ height: h, gap }}>
-      {banks.map((x) => {
-        const v = Number(r.per[x.key] && r.per[x.key].score) || 0;
-        return <div key={x.key} style={{ height: `${Math.min(100, Math.round((v / barMax) * 100))}%`, background: x.colour, borderRadius: phone ? '2px 2px 0 0' : '3px 3px 0 0' }} />;
-      })}
-    </div>
-  ) : <div />);
-
-  const boardList = () => (
-    <>
-      <div className="ge-bhd">
-        <div className="ge-bt">Today&rsquo;s board{fieldWord ? ` · ${fieldWord}${phone ? '' : ' players'}` : ''}</div>
-        {boardHref ? <a href={boardHref} className="ge-blink">Full board</a> : null}
-      </div>
-      <div className="ge-rows">
-        {boardRows.map((r, i) => (rowOn(i) ? (
-          <div key={r.key} className={`ge-row ${mode === 'math' ? 'm-row' : 'g-row'}${phone ? ' ph' : ''}${r.me ? ' me' : ''}`}
-            style={phone ? { gridTemplateColumns: `34px minmax(0, 1fr) ${mode === 'math' ? 52 : 60}px ${mode === 'math' ? 30 : 34}px` } : null}>
-            <div className="ge-rr" style={{ color: r.me ? '#7dd3fc' : r.rc }}>{r.rank}</div>
-            <div style={{ minWidth: 0 }}>
-              <div className="ge-rn">{r.name}</div>
-              {r.title ? <div className="ge-rt">{r.title}</div> : null}
-            </div>
-            {bars(r, phone ? 22 : 26, phone ? 2 : 3)}
-            <div className="ge-rtot">{r.total}</div>
-          </div>
-        ) : null))}
-      </div>
-      {!phone && boardRows.length ? (
-        <div className="ge-foot">
-          {mode === 'math'
-            ? `Bars: right answers on ${banks.map((x) => x.name).join(', ').replace(/, ([^,]*)$/, ' and $1')}.`
-            : `Bars: questions right on each of the ${spell(N)}.`}
-        </div>
-      ) : null}
-    </>
-  );
-
-  const chalAndSimilar = () => (chalOn ? (
-    <>
-      {challenge ? <GeChallenge gameKey={circuitId} challenge={challenge} /> : null}
-      {similar && similar.href ? (
-        <a href={similar.href} className="ge-pop ge-sim" style={{ animationDelay: '.15s' }}>Play similar: {similar.name}</a>
-      ) : null}
-    </>
-  ) : null);
-
-  const tiles = (cls, delay) => (
-    <div className={`ge-pop ge-tiles ${cls}`} style={{ animationDelay: delay, gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
-      {banks.map((x) => (
-        <div key={x.key} className="ge-tile" style={{ borderTopColor: x.colour }}>
-          <div className="ge-tn">{x.name}</div>
-          <div className="ge-ts">{x.got}</div>
-          {!phone && x.rank != null ? <div className="ge-tr">#{x.rank}</div> : null}
-        </div>
-      ))}
     </div>
   );
 
@@ -1381,77 +1284,6 @@ function GauntletEnding({
         </div>
       );
     }
-  } else if (isBoard) {
-    const titleHead = mode === 'math' ? 'Today you are' : `Today you are ${article(earned ? earned.name : '')}`;
-    if (phone) {
-      middle = (
-        <div className="ge-board ph">
-          {mode === 'math' ? (
-            <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-              <div className="ge-pop ge-mini-lcd" style={{ padding: '6px 14px' }}><div style={{ fontSize: 44 }}>{TOTAL}</div></div>
-              <div className="ge-pop" style={{ animationDelay: '.3s' }}>
-                <div className="ge-th" style={{ fontSize: 10 }}>{titleHead}</div>
-                <div className="ge-tname" style={{ fontSize: 24 }}>{earned ? earned.name : ''}</div>
-                <div className="ge-tsub" style={{ fontSize: 13, marginTop: 3 }}>
-                  {[clockTxt, null].filter(Boolean).join(' · ')}
-                  {fromTxt ? <>{clockTxt ? ' · ' : ''}<b style={{ color: '#e8b43a' }}>{fromTxt}</b></> : null}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="ge-pop">
-              <div className="ge-th" style={{ fontSize: 10 }}>{titleHead}</div>
-              <div className="ge-tname" style={{ fontSize: 27 }}>{earned ? earned.name : ''}</div>
-              <div className="ge-tsub" style={{ fontSize: 13, marginTop: 3 }}>
-                {TOTAL} right{clockTxt ? ` · ${clockTxt}` : ''}
-                {fromTxt ? <> {'·'} <b style={{ color: '#e8b43a' }}>{fromTxt}</b></> : null}
-              </div>
-            </div>
-          )}
-          {mode === 'trivia' ? tiles('ph', '.3s') : null}
-          {chalAndSimilar()}
-          {boardList()}
-        </div>
-      );
-    } else {
-      middle = (
-        <div className="ge-board">
-          <div className="ge-bl">
-            {mode === 'math' ? (
-              <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                <div className="ge-pop ge-mini-lcd" style={{ padding: '8px 16px' }}><div style={{ fontSize: 54 }}>{TOTAL}</div></div>
-                <div className="ge-pop" style={{ animationDelay: '.3s' }}>
-                  <div className="ge-th">{titleHead}</div>
-                  <div className="ge-tname" style={{ fontSize: 30 }}>{earned ? earned.name : ''}</div>
-                  <div className="ge-tsub">{TOTAL} right{clockTxt ? ` · ${clockTxt}` : ''}</div>
-                </div>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', gap: 18, alignItems: 'flex-end' }}>
-                <div className="ge-mshelf">
-                  {ladder.map((x, i) => (
-                    <div key={x.name} style={{ width: 120 - i * 8, background: i <= K ? x.colour : 'rgba(255,255,255,.1)', transform: i === K ? 'translateX(10px)' : 'none' }} />
-                  ))}
-                </div>
-                <div className="ge-pop" style={{ animationDelay: '.3s' }}>
-                  <div className="ge-th">{titleHead}</div>
-                  <div className="ge-tname" style={{ fontSize: 30 }}>{earned ? earned.name : ''}</div>
-                  <div className="ge-tsub">{TOTAL} questions right{clockTxt ? ` · ${clockTxt}` : ''}</div>
-                </div>
-              </div>
-            )}
-            {earned ? (
-              <div className="ge-pop ge-tline" style={{ animationDelay: '.5s' }}>
-                {earned.line}{nextTxt ? <> <b style={{ color: '#e8b43a' }}>{nextTxt}</b></> : null}
-              </div>
-            ) : null}
-            {tiles('', '.7s')}
-            {chalAndSimilar()}
-          </div>
-          <div className="ge-br">{boardList()}</div>
-        </div>
-      );
-    }
   }
 
   return (
@@ -1466,13 +1298,185 @@ function GauntletEnding({
       <div className="ge-cap">
         <span>{circuitName}</span>{capDate ? <span>{capDate}</span> : null}
         <span style={{ marginLeft: 'auto' }}>{capRight}</span>
-        {isBoard ? <button type="button" className="ge-see" onClick={finish}>See your results</button> : null}
       </div>
       <div className="ge-mid">{middle}</div>
       {strip}
     </div>
   );
 }
+
+// ══ THE BOARD, AT THE TOP OF THE END CARD (owner, 2026-10-17) ═════════════
+//
+// "We now have an in between result screen before the final end card. Take
+// the top section of the intermediate result and put it on top of the rest of
+// the existing end card page, combining the two." This is the curtain's old
+// third phase, the title, the per-quiz tiles, the challenge and today's board,
+// rendered still and in the end card's own column: two equal columns on the
+// same 28px gap as the split under it, so every edge lines up, stacking at the
+// same 680px the split does. Same props the curtain is handed, so the two
+// cannot describe the run differently. It invents nothing: a figure that is
+// missing drops its line.
+export function GauntletBoardTop({
+  sections = [],
+  results = [],
+  score = 0,
+  rows = [],
+  meRow = null,
+  fieldSize = null,
+  field = null,
+  circuitId = null,
+  clock = 0,
+  challenge = null,
+  similar = null,
+  boardHref = '',
+  boardState = '',
+}) {
+  const N = sections.length;
+  const mode = circuitId === 'math' ? 'math' : 'trivia';
+  const ladder = titleLadder(circuitId) || [];
+  const earned = titleFor(circuitId, score);
+  const K = earned ? earned.index : 0;
+  const [phone, setPhone] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const mq = window.matchMedia('(max-width: 680px)');
+    const on = () => setPhone(mq.matches);
+    on();
+    if (mq.addEventListener) mq.addEventListener('change', on); else if (mq.addListener) mq.addListener(on);
+    return () => { if (mq.removeEventListener) mq.removeEventListener('change', on); else if (mq.removeListener) mq.removeListener(on); };
+  }, []);
+  const banks = useMemo(() => geBanks(sections, results, field, mode), [sections, results, field, mode]);
+  if (!N) return null;
+  const TOTAL = score;
+
+  const finishedRows = (Array.isArray(rows) ? rows : []).filter((x) => Number.isFinite(Number(x.total)));
+  const meKey = meRow && meRow.userKey ? meRow.userKey : null;
+  const top = finishedRows.slice(0, 3);
+  const meInTop = !!(meKey && top.some((x) => x.userKey === meKey));
+  const meRank = meRow && Number.isFinite(Number(meRow.rank)) ? Number(meRow.rank) : null;
+  const ahead = meRank && fieldSize && fieldSize >= 2 ? Math.max(0, Math.round(((fieldSize - meRank) / fieldSize) * 100)) : null;
+  const boardRows = top.map((x, i) => ({
+    key: x.userKey || `r${i}`, rank: String(x.rank || i + 1), name: x.username || 'Player',
+    title: (titleFor(circuitId, x.total) || {}).name || '', total: Math.round(Number(x.total) || 0),
+    per: x.perGame || null, me: !!(meKey && x.userKey === meKey), rc: ['#e8b43a', '#b8bcc4', '#c8814b'][i] || GE_LIGHT,
+  }));
+  if (meRow && !meInTop && meRank) {
+    const ttl = (earned && earned.name) || '';
+    boardRows.push({
+      key: 'me', rank: `#${meRank}`, name: meRow.username || 'You',
+      title: ahead != null ? `${ttl} · ahead of ${ahead}%` : ttl, total: TOTAL,
+      per: Object.fromEntries(banks.map((x) => [x.key, { score: x.got }])), me: true, rc: '#7dd3fc',
+    });
+  }
+  boardRows.forEach((r) => { if (r.me && r.key !== 'me' && ahead != null) r.title = `${r.title} · ahead of ${ahead}%`; });
+  const barMax = Math.max(1, ...boardRows.flatMap((r) => (r.per ? banks.map((x) => Number(r.per[x.key] && r.per[x.key].score) || 0) : [0])));
+  const fieldWord = Number.isFinite(Number(fieldSize)) && fieldSize > 0 ? fieldSize : null;
+  const clockTxt = clockOf(clock);
+  const nextTxt = earned && earned.next ? `${earned.toNext} more right and you are ${article(earned.next.name)} ${earned.next.name}.` : null;
+  const titleHead = mode === 'math' ? 'Today you are' : `Today you are ${article(earned ? earned.name : '')}`;
+  const unitTxt = mode === 'math' ? 'right' : 'questions right';
+
+  const bars = (r) => (r.per ? (
+    <div className="ge-bars" style={{ height: phone ? 22 : 26, gap: phone ? 2 : 3 }}>
+      {banks.map((x) => {
+        const v = Number(r.per[x.key] && r.per[x.key].score) || 0;
+        return <div key={x.key} style={{ height: `${Math.min(100, Math.round((v / barMax) * 100))}%`, background: x.colour, borderRadius: phone ? '2px 2px 0 0' : '3px 3px 0 0' }} />;
+      })}
+    </div>
+  ) : <div />);
+
+  return (
+    <div className={`ge geb${phone ? ' ph' : ''}`}>
+      <style dangerouslySetInnerHTML={{ __html: GE_CSS + GEB_CSS }} />
+      <div className="geb-grid">
+        <div className="ge-bl">
+          <div style={{ display: 'flex', gap: 16, alignItems: mode === 'math' ? 'center' : 'flex-end' }}>
+            {mode === 'math' ? (
+              <div className="ge-pop ge-mini-lcd" style={{ padding: '8px 16px' }}><div style={{ fontSize: phone ? 44 : 54 }}>{TOTAL}</div></div>
+            ) : (
+              <div className="ge-mshelf">
+                {ladder.map((x, i) => (
+                  <div key={x.name} style={{ width: 120 - i * 8, background: i <= K ? x.colour : 'rgba(255,255,255,.1)', transform: i === K ? 'translateX(10px)' : 'none' }} />
+                ))}
+              </div>
+            )}
+            <div className="ge-pop" style={{ animationDelay: '.15s', minWidth: 0 }}>
+              <div className="ge-th">{titleHead}</div>
+              <div className="ge-tname" style={{ fontSize: phone ? 26 : 30 }}>{earned ? earned.name : ''}</div>
+              <div className="ge-tsub">{TOTAL} {unitTxt}{clockTxt ? ` · ${clockTxt}` : ''}</div>
+            </div>
+          </div>
+          {earned ? (
+            <div className="ge-pop ge-tline" style={{ animationDelay: '.25s' }}>
+              {earned.line}{nextTxt ? <> <b style={{ color: '#e8b43a' }}>{nextTxt}</b></> : null}
+            </div>
+          ) : null}
+          <div className="ge-pop ge-tiles" style={{ animationDelay: '.35s', gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
+            {banks.map((x) => (
+              <div key={x.key} className="ge-tile" style={{ borderTopColor: x.colour }}>
+                <div className="ge-tn">{x.name}</div>
+                <div className="ge-ts">{x.got}</div>
+                {x.rank != null ? <div className="ge-tr">#{x.rank}</div> : null}
+              </div>
+            ))}
+          </div>
+          {challenge ? <GeChallenge gameKey={circuitId} challenge={challenge} /> : null}
+          {similar && similar.href ? (
+            <a href={similar.href} className="ge-pop ge-sim" style={{ animationDelay: '.45s' }}>Play similar: {similar.name}</a>
+          ) : null}
+        </div>
+        <div className="ge-br">
+          <div className="ge-bhd">
+            <div className="ge-bt">Today&rsquo;s board{fieldWord ? ` · ${fieldWord} players` : ''}</div>
+            {boardHref ? <a href={boardHref} className="ge-blink">Full board</a> : null}
+          </div>
+          {boardRows.length ? (
+            <div className="ge-rows">
+              {boardRows.map((r, i) => (
+                <div key={r.key} className={`ge-row ${mode === 'math' ? 'm-row' : 'g-row'}${r.me ? ' me' : ''}`} style={{ animationDelay: `${0.2 + i * 0.08}s` }}>
+                  <div className="ge-rr" style={{ color: r.me ? '#7dd3fc' : r.rc }}>{r.rank}</div>
+                  <div style={{ minWidth: 0 }}>
+                    <div className="ge-rn">{r.name}</div>
+                    {r.title ? <div className="ge-rt">{r.title}</div> : null}
+                  </div>
+                  {bars(r)}
+                  <div className="ge-rtot">{r.total}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="geb-empty">{boardState === 'error' ? 'The board could not be loaded just now.' : boardState === 'ready' ? 'Nobody on the board yet.' : 'Reading the board.'}</div>
+          )}
+          {boardRows.length ? (
+            <div className="ge-foot">
+              {mode === 'math'
+                ? `Bars: right answers on ${banks.map((x) => x.name).join(', ').replace(/, ([^,]*)$/, ' and $1')}.`
+                : `Bars: questions right on each of the ${spell(N)}.`}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// The board top in the end card's column: the curtain's fixed, full-screen
+// frame is undone, and the grid matches the split under it (two equal
+// columns, 28px gap), stacking where that split stacks.
+const GEB_CSS = `
+.ge.geb{position:static;inset:auto;z-index:auto;overflow:visible;display:block;cursor:default;color:#e9edf4;background:none;margin:0 0 22px}
+.geb-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start}
+.ge.geb .ge-bl,.ge.geb .ge-br{gap:12px}
+.ge.geb .ge-row{grid-template-columns:34px minmax(0,1fr) minmax(56px,110px) 40px;gap:10px;padding:9px 12px}
+.ge.geb .ge-rr{font-size:16px}.ge.geb .ge-rn{font-size:15px}.ge.geb .ge-rtot{font-size:20px}
+.geb-empty{font-size:13px;font-weight:700;color:#9aa8c4;padding:12px 0}
+@media (max-width:680px){
+  .geb-grid{grid-template-columns:minmax(0,1fr);gap:18px}
+  .ge.geb .ge-row{grid-template-columns:30px minmax(0,1fr) 56px 34px;padding:7px 11px}
+  .ge.geb .ge-tn{font-size:8px;letter-spacing:.04em;text-transform:uppercase;color:#9aa8c4}
+  .ge.geb .ge-ts{font-size:16px}
+}
+`;
 
 export default function GauntletFinale(props) {
   const c = props && props.circuitId;

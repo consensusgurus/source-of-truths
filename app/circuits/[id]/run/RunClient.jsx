@@ -52,7 +52,7 @@ import RunNextUp from '../../RunNextUp';
 import GauntletMorePop from '../../GauntletMorePop';
 import useGauntletField, { FIELD_FLOOR } from '../../useGauntletField';
 import useCircuitBoard from '../../useCircuitBoard';
-import GauntletFinale from '../../GauntletFinale';
+import GauntletFinale, { GauntletBoardTop } from '../../GauntletFinale';
 import { titleFor } from '@/lib/run-titles';
 import MissList, { missOf, MISS_CSS } from '../../RunMisses';
 import useCircuitHistory from '../../useCircuitHistory';
@@ -863,6 +863,8 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   // exactly as it did: the gutter ladder, the scorecard ladder, all of it.
   const TOWERS = circuitId === 'gauntlet' || circuitId === 'math' || ENCORE;
   const MATHRUN = circuitId === 'math';
+  // The two Gauntlets end on the board at the top of the card (owner, 2026-10-17).
+  const BTOP = GAUNT || MATHRUN;
   const upIdx = upNext ? sections.findIndex((s) => s.key === upNext.key) : -1;
 
   // THE RACE PANEL, built once and drawn by both play layouts. Same markup
@@ -1612,6 +1614,28 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     bands on the right, in the space the bands alone used to
                     fill. Same board read as the figures below (boardQ), and the
                     score is whatever unit the board ranks on. */}
+                {/* THE BOARD TOP (owner, 2026-10-17): the curtain's old held
+                    board screen, now the head of this card. Same props the
+                    curtain is handed. */}
+                {BTOP ? (
+                  <GauntletBoardTop
+                    sections={sections}
+                    results={r.results}
+                    score={cleared}
+                    rows={(boardQ.data && boardQ.data.overall) || []}
+                    meRow={myRow}
+                    fieldSize={(boardQ.data && boardQ.data.overallField) || null}
+                    field={field}
+                    circuitId={circuitId}
+                    clock={runSecs}
+                    challenge={isChallengeableRun(circuitId) && !r.practice
+                      ? { score: cleared, total: askable, n: runToken(), t: runSecs > 0 ? Math.round(runSecs) : null, status: `${perfect} of ${N} cleared` }
+                      : null}
+                    similar={GAUNT ? similarRun : null}
+                    boardHref={runSummaryHref(circuitId)}
+                    boardState={boardQ.state}
+                  />
+                ) : null}
                 {!TOWERS ? (
                   <span className="rn-lcap">
                     {r.practice ? 'Practice run' : 'The run'}
@@ -1626,7 +1650,8 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   const fmtS = (v) => (bd && bd.scoreMode === 'correct'
                     ? Math.round(Number(v) || 0) : Math.round((Number(v) || 0) * 10) / 10);
                   return (
-                    <div className="rt-split">
+                    <div className={`rt-split${BTOP ? ' one' : ''}`}>
+                      {!BTOP ? (
                       <div className="rt-t5">
                         <span className="rn-lcap">
                           Today&rsquo;s top 5{bd && bd.overallField ? <i className="rt-t5f"> of {bd.overallField}</i> : null}
@@ -1658,6 +1683,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                           </div>
                         )}
                       </div>
+                      ) : null}
                       <div className="rt-runc">
                         <span className="rn-lcap">
                           {r.practice ? 'Practice run' : 'The run'}
@@ -1719,7 +1745,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     ON EVERY RUN (owner, 2026-10-15). It was gated on the Trivia
                     Gauntlet's id, so Math, Encore and every run copied from this
                     engine ended with no door. The registry decides now. */}
-                {isChallengeableRun(circuitId) && !r.practice ? (
+                {isChallengeableRun(circuitId) && !r.practice && !BTOP ? (
                   <div style={{ marginTop: 16 }}>
                     <RunChallengeLine gameKey={circuitId} score={cleared} total={askable} n={runToken()} style={{ display: 'block', textAlign: 'center' }} />
                     <RunChallengeButton gameKey={circuitId} score={cleared} total={askable} n={runToken()} t={runSecs > 0 ? Math.round(runSecs) : null} status={`${perfect} of ${N} cleared`} door />
@@ -2551,6 +2577,7 @@ ${TOWER_CSS}
 /* The finish split (owner, 2026-10-12): top 5 left, the run's bands right. */
 .rt-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:stretch;}
 .rt-runc{display:flex;flex-direction:column;min-width:0;}
+.rt-split.one{grid-template-columns:minmax(0,1fr);}
 .rt-split .rt-done.rl{flex:1;justify-content:space-around;}
 .rt-split .rn-lcap{margin-bottom:8px;}
 .rt-t5f{font-style:normal;color:#4f5b73;}
