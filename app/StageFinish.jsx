@@ -1677,7 +1677,8 @@ export default function StageFinish({
                   <TicketDoor
                     fig={isBlankMiss(mine) ? '' : challengeFig(mine, me && me.key)}
                     label={duel ? `Challenge ${chal.name} back` : 'Challenge a friend'}
-                    go={chalCopied ? 'Copied' : (isBlankMiss(mine) ? 'Send' : `Send ${challengeFig(mine, me && me.key)}`)}
+                    go={chalCopied ? 'Copied' : 'Send link'}
+                    game={me ? me.name : ''}
                     msg={chalMsg}
                     onSend={sendChallenge}
                   />
@@ -1805,7 +1806,8 @@ export default function StageFinish({
               <TicketDoor
                 fig={isBlankMiss(mine) ? '' : challengeFig(mine, me && me.key)}
                 label={duel ? `Challenge ${chal.name} back` : 'Challenge a friend'}
-                go={chalCopied ? 'Copied' : (isBlankMiss(mine) ? 'Send' : `Send ${challengeFig(mine, me && me.key)}`)}
+                go={chalCopied ? 'Copied' : 'Send link'}
+                    game={me ? me.name : ''}
                 msg={chalMsg}
                 onSend={sendChallenge}
               />

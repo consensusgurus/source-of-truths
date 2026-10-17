@@ -97,7 +97,7 @@ export function RunChallengeButton({ gameKey, score, total, n, t = null, won = f
   const lead = blank ? 'Dare them to beat it.' : `Send them ${fig} to beat.`;
   if (door && draw) {
     return (
-      <TicketDoor fig={blank ? '' : fig} label={label} go={msg.startsWith('Link copied') ? 'Copied' : (blank ? 'Send' : `Send ${fig}`)} msg={msg} onSend={send} style={style}
+      <TicketDoor fig={blank ? '' : fig} label={label} go={msg.startsWith('Link copied') ? 'Copied' : 'Send link'} game={RUN_CHALLENGES[gameKey] ? RUN_CHALLENGES[gameKey].name : ''} msg={msg} onSend={send} style={style}
         foot={archive ? null : 'Today\u2019s run only. One ticket for every new player who finishes from your link. No purchase necessary.'} />
     );
   }

@@ -32,18 +32,24 @@ const CSS = `
 .tkd-eb{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;}
 .tkd-hd{font-size:21px;font-weight:800;letter-spacing:-.02em;line-height:1.14;margin-top:4px;}
 .tkd-sb{font-size:13px;font-weight:700;line-height:1.38;margin-top:5px;}
-.tkd-go{position:relative;min-height:52px;border:0;border-radius:12px;background:#2a1f04;color:#fff4d6;font:inherit;
-  display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 16px;cursor:pointer;}
+.tkd-go{position:relative;min-height:62px;border:0;border-radius:12px;background:#2a1f04;color:#fff4d6;font:inherit;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px 10px 16px;cursor:pointer;width:100%;}
 .tkd-go:hover{filter:brightness(1.18);}
 .tkd-go:focus-visible{outline:2px solid #2a1f04;outline-offset:3px;}
-.tkd-gl{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;text-align:left;}
-.tkd-gr{display:flex;align-items:center;gap:6px;flex:none;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#e8b43a;animation:tkdNudge 2.4s ease-in-out infinite;}
+.tkd-gl{display:flex;align-items:center;gap:10px;min-width:0;text-align:left;}
+.tkd-gl > svg{flex:none;}
+.tkd-st{display:flex;flex-direction:column;gap:3px;min-width:0;}
+.tkd-l1{font-size:16px;font-weight:800;line-height:1.2;}
+.tkd-l1 em{font-style:normal;color:#e8b43a;}
+.tkd-l2{font-size:12px;font-weight:700;line-height:1.35;color:#d9c79a;}
+.tkd-gr{display:flex;align-items:center;gap:6px;flex:none;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  background:#e8b43a;color:#2a1f04;border-radius:999px;padding:8px 12px;animation:tkdNudge 2.4s ease-in-out infinite;}
 .tkd-ft{position:relative;font-size:11.5px;font-weight:700;line-height:1.4;text-align:center;}
 @keyframes tkdWig{0%,78%,100%{transform:rotate(-7deg) translateY(0)}84%{transform:rotate(5deg) translateY(-4px)}90%{transform:rotate(-10deg) translateY(0)}95%{transform:rotate(-4deg) translateY(-2px)}}
 @keyframes tkdShine{0%,62%{transform:translateX(-140%) skewX(-18deg)}100%{transform:translateX(900%) skewX(-18deg)}}
 @keyframes tkdRing{0%{box-shadow:0 0 0 0 rgba(232,180,58,.55)}70%{box-shadow:0 0 0 12px rgba(232,180,58,0)}100%{box-shadow:0 0 0 0 rgba(232,180,58,0)}}
 @keyframes tkdNudge{0%,70%,100%{transform:translateX(0)}80%{transform:translateX(5px)}90%{transform:translateX(0)}}
-@media (max-width:420px){.tkd-tk{width:78px;height:54px}.tkd-tk svg{width:78px;height:54px}.tkd-n{left:23px}.tkd-n b{font-size:25px}.tkd-hd{font-size:18.5px}}
+@media (max-width:420px){.tkd-tk{width:78px;height:54px}.tkd-tk svg{width:78px;height:54px}.tkd-n{left:23px}.tkd-n b{font-size:25px}.tkd-hd{font-size:18.5px}.tkd-go{padding:10px 12px}.tkd-l1{font-size:15px}.tkd-gr{padding:8px 10px}}
 @media (prefers-reduced-motion:reduce){.tkd,.tkd-sh,.tkd-tk,.tkd-gr{animation:none}.tkd-sh{display:none}}
 `;
 
@@ -67,15 +73,25 @@ export function useMyTickets() {
   return state;
 }
 
-export default function TicketDoor({ fig = '', label = 'Challenge a friend', go = 'Send', msg = '', onSend, foot = null, style = null }) {
+// THE BUTTON SAYS WHAT IT DOES (owner, 2026-10-16). "Send 13 right" read as
+// nothing on its own. The button now leads with the offer, says it sends a
+// link to play the same game against your score, and the gold pill is always
+// "Send link". `game` is the display name (Crux, Trivia Gauntlet); the score
+// is whatever the game counts, and a long one wraps onto the second line.
+export default function TicketDoor({ fig = '', label = 'Challenge a friend', go = 'Send link', game = '', msg = '', onSend, foot = null, style = null }) {
   const { named, count } = useMyTickets();
+  const [older, setOlder] = useState(false);
+  useEffect(() => { try { setOlder(/[?&]p=\d+/.test(window.location.search)); } catch (e) { /* today's */ } }, []);
+  const what = game ? `${older ? 'this' : 'today\u2019s'} ${game}` : (older ? 'this puzzle' : 'today\u2019s puzzle');
+  const line2 = fig ? `Sends a link to play ${what} against your ${fig}` : `Sends a link to play ${what}. Nothing to beat yet, so they go first.`;
+  const pill = go === 'Copied' ? 'Copied' : 'Send link';
   const n = Number.isFinite(count) ? count : 0;
   const head = named === false ? 'Pick a name to earn tickets'
     : `You have ${n} ticket${n === 1 ? '' : 's'} for the ${DRAWING.prizeLabel} drawing`;
   const sub = msg || (named === false
     ? `Name yourself and every new friend you bring in drops a ticket for the ${DRAWING.prizeLabel} drawing.`
     : n === 0
-      ? `Your first one is a friend away.${fig ? ` Send your ${fig} and dare them to beat it.` : ' Dare them to beat you.'}`
+      ? 'Your first one is a friend away. Dare them to beat you.'
       : `Every new friend who finishes from your link is one more shot at ${DRAWING.prizeLabel}.`);
   return (
     <section className="tkd" style={style || undefined} aria-label="Challenge a friend">
@@ -99,9 +115,12 @@ export default function TicketDoor({ fig = '', label = 'Challenge a friend', go 
       <button type="button" className="tkd-go" onClick={onSend}>
         <span className="tkd-gl">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 21V4" /><path d="M4 4h12l-2 4 2 4H4" /></svg>
-          {label}
+          <span className="tkd-st">
+            <span className="tkd-l1">{label} for an entry to win <em>{DRAWING.prizeLabel}</em></span>
+            <span className="tkd-l2">{line2}</span>
+          </span>
         </span>
-        <span className="tkd-gr">{go}
+        <span className="tkd-gr">{pill}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </span>
       </button>
