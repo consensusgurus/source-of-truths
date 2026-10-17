@@ -504,9 +504,6 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
           <NextDrop label="Next flight" sub="A new Span, Flank and Ping board at midnight Eastern." href={PATH}
             accent="#c4b5fd" style={{ margin: '14px 0 0' }} />
         ) : null}
-        <div className="pe-btns">
-          <button type="button" onClick={() => setFinale(true)}>Replay the ending</button>
-        </div>
         <MoreRunsList self="passport" />
         <div className="pe-foot">
           Each leg is also its own daily: {sections.map((s, i) => <React.Fragment key={s.key}>{i ? ' · ' : ''}<a href={s.path}>{s.name}</a></React.Fragment>)}

@@ -1526,12 +1526,6 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
             <RunChallengeButton gameKey="passport" score={total} total={50} n={PUZZLE.num} archive={!isTodays}
               t={g.t0 && g.tEnd ? Math.round((g.tEnd - g.t0) / 1000) : null} status={(TIERS[tierIndex(total)] || {}).name || ''} door />
           </div>
-          <div className="pe-btns">
-            <button type="button" className="pri" onClick={copyShare}>{copied ? 'Copied' : 'Share your passport'}</button>
-            <a href={`${PATH}/leaderboard`}>Leaderboard</a>
-            <button type="button" onClick={() => setFinale(true)}>Replay the ending</button>
-            <a href="/">Back to main</a>
-          </div>
           <MoreRunsList self="passport" />
           {!isTodays ? (
             <div className="pe-foot">
