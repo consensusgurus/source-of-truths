@@ -864,7 +864,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   const TOWERS = circuitId === 'gauntlet' || circuitId === 'math' || ENCORE;
   const MATHRUN = circuitId === 'math';
   // The two Gauntlets end on the board at the top of the card (owner, 2026-10-17).
-  const BTOP = GAUNT || MATHRUN;
+  const BTOP = GAUNT || MATHRUN || ENCORE;
   const upIdx = upNext ? sections.findIndex((s) => s.key === upNext.key) : -1;
 
   // THE RACE PANEL, built once and drawn by both play layouts. Same markup
@@ -1639,7 +1639,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     challenge={isChallengeableRun(circuitId) && !r.practice
                       ? { score: cleared, total: askable, n: runToken(), t: runSecs > 0 ? Math.round(runSecs) : null, status: `${perfect} of ${N} cleared` }
                       : null}
-                    similar={GAUNT ? similarRun : null}
+                    similar={GAUNT || ENCORE ? similarRun : null}
                     boardHref={runSummaryHref(circuitId)}
                     boardState={boardQ.state}
                   />

@@ -1364,11 +1364,11 @@ export function GauntletBoardTop({
     const ttl = (earned && earned.name) || '';
     boardRows.push({
       key: 'me', rank: `#${meRank}`, name: meRow.username || 'You',
-      title: ahead != null ? `${ttl} · ahead of ${ahead}%` : ttl, total: TOTAL,
+      title: ahead != null ? [ttl, `ahead of ${ahead}%`].filter(Boolean).join(' · ') : ttl, total: TOTAL,
       per: Object.fromEntries(banks.map((x) => [x.key, { score: x.got }])), me: true, rc: '#7dd3fc',
     });
   }
-  boardRows.forEach((r) => { if (r.me && r.key !== 'me' && ahead != null) r.title = `${r.title} · ahead of ${ahead}%`; });
+  boardRows.forEach((r) => { if (r.me && r.key !== 'me' && ahead != null) r.title = [r.title, `ahead of ${ahead}%`].filter(Boolean).join(' · '); });
   const barMax = Math.max(1, ...boardRows.flatMap((r) => (r.per ? banks.map((x) => Number(r.per[x.key] && r.per[x.key].score) || 0) : [0])));
   const fieldWord = Number.isFinite(Number(fieldSize)) && fieldSize > 0 ? fieldSize : null;
   const clockTxt = clockOf(clock);
@@ -1390,6 +1390,14 @@ export function GauntletBoardTop({
       <style dangerouslySetInnerHTML={{ __html: GE_CSS + GEB_CSS }} />
       <div className="geb-grid">
         <div className="ge-bl">
+          {!ladder.length ? (
+            // A run with no title ladder (the Trivia Encore): the score leads.
+            <div className="ge-pop">
+              <div className="ge-th">Your run</div>
+              <div className="ge-tname" style={{ fontSize: phone ? 26 : 30 }}>{TOTAL} {unitTxt}</div>
+              {clockTxt ? <div className="ge-tsub">{clockTxt} on the clock</div> : null}
+            </div>
+          ) : (
           <div style={{ display: 'flex', gap: 16, alignItems: mode === 'math' ? 'center' : 'flex-end' }}>
             {mode === 'math' ? (
               <div className="ge-pop ge-mini-lcd" style={{ padding: '8px 16px' }}><div style={{ fontSize: phone ? 44 : 54 }}>{TOTAL}</div></div>
@@ -1406,6 +1414,7 @@ export function GauntletBoardTop({
               <div className="ge-tsub">{TOTAL} {unitTxt}{clockTxt ? ` · ${clockTxt}` : ''}</div>
             </div>
           </div>
+          )}
           {earned ? (
             <div className="ge-pop ge-tline" style={{ animationDelay: '.25s' }}>
               {earned.line}{nextTxt ? <> <b style={{ color: '#e8b43a' }}>{nextTxt}</b></> : null}
