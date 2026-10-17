@@ -9735,3 +9735,30 @@ Arcade key off `cat`). Skills drive only the entry door (`app/EntryDoor.jsx`).
   skill with fewer than three live primaries, or a run that deals a played, dead or off-skill game.
 - Reading people has three games and Focus and speed five, so both still fill a run but cannot rotate
   much. Use plain "sharpen" and "practice" in copy about skills, never claims of improvement.
+
+## Squash (`/squash`): the daily match-three (launched 2026-10-17)
+
+A match-three with fruit as a daily. Key/route `squash`, category **Arcade**, `miss: null`,
+`unit: 'points'` (a tally game: the score is raw points, uncapped, against the day's par), legacy
+accent `#db2777` / `#f9a8d4`. Arcade rules throughout: unlimited runs, the board and the local
+record keep the BEST run, `XP_DAILY_CAP.squash = 1`. Wired by `scripts/wire-squash.mjs`.
+**No new-game pop-up (owner, 2026-10-17): `squash` is in NO_PREMIERE and has no PREMIERES row.**
+Not in the Arcade circuit; whether it joins is an owner call.
+
+- **The day is generated, not banked.** `lib/squash-engine.js` deals the opening board off the
+  quizId and gives every COLUMN its own seeded stream of fruit, so the k-th fruit to drop into a
+  column is the same for everybody. The same file is the engine the client plays and the verifier
+  proves. `app/squash/puzzles.js` carries the frame (size, moves) and a MEASURED par, written by
+  `scripts/gen-squash.mjs`: the midpoint of a greedy bot and three random swappers
+  (`scripts/squash-par.mjs`), rounded to 100. Any engine change moves par; the verifier fails
+  until the bank is regenerated.
+- **Rules:** weekday 8x8 and 25 moves, Sunday Edition 9x9 and 30 moves; six fruit. A swap that
+  makes no match slides back and costs nothing. Four in a line makes a slicer (clears the line it
+  cuts across), an L or T a bomb (3x3), five a punch bowl (clears a fruit kind). Special pairs
+  combo with no match. Points: 10 a fruit times the cascade wave, plus 60 / 100 / 200 for making a
+  slicer / bomb / bowl. A board with no move shuffles off a seeded stream.
+- **Input:** drag onto a neighbour, or tap then tap; arrows + Enter on a keyboard. After 9 idle
+  seconds the first valid swap in reading order wiggles (a nudge, never the best move).
+- **Ties break on the clock** (moves are fixed). A run in progress is saved after every move.
+- `scripts/verify-squash.mjs` checks the bank and the engine (every special and combo, the
+  shuffle, determinism of the same moves, and that each par still matches the engine).

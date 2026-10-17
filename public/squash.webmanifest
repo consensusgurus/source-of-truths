@@ -1,0 +1,16 @@
+{
+  "id": "/squash",
+  "name": "Squash: Daily Match-3 Fruit Game",
+  "short_name": "Squash",
+  "description": "A daily match-three fruit game. Swap fruit, line up three of a kind and chase the cascades. Same board for everybody, a new one every day from Mind Loft.",
+  "start_url": "/squash?src=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f8fa",
+  "theme_color": "#f7f8fa",
+  "icons": [
+    { "src": "/squash-icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/squash-icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/squash-icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
