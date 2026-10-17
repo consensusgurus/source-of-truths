@@ -526,20 +526,17 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
           )}
           <div className="rr-vf-stats">
             <div><b>{total}/{ROOM_MAX}</b><span>Your read</span></div>
-            {me && me.rank ? <div><b>#{me.rank}</b><span>{players ? `of ${fmtN(players)} on tonight's board` : "on tonight's board"}</span></div> : <div><b>{L[1].split(' ')[0]}</b><span>Where you stand</span></div>}
+            {me && me.rank
+              ? <a className="rr-vf-lb" href="/room/leaderboard" aria-label="See tonight's board"><b>#{me.rank}</b><span>{players ? `of ${fmtN(players)} on tonight's board` : "on tonight's board"}</span><em aria-hidden="true">&rarr;</em></a>
+              : <a className="rr-vf-lb" href="/room/leaderboard" aria-label="See tonight's board"><b>{L[1].split(' ')[0]}</b><span>Tonight&rsquo;s board</span><em aria-hidden="true">&rarr;</em></a>}
           </div>
           <div className="rr-vf-draw">
             <RunChallengeLine gameKey={ROOM_RUN_ID} score={total} total={ROOM_MAX} n={runToken()} />
             <RunChallengeButton gameKey={ROOM_RUN_ID} score={total} total={ROOM_MAX} n={runToken()} door />
           </div>
-          <div className="rr-vf-btns">
-            <button type="button" className="pri" onClick={onShare}>{copied ? 'Copied' : 'Share your read'}</button>
-            <a href="/room/leaderboard">Tonight&rsquo;s board</a>
-            <a href="/">Back to main</a>
-          </div>
           <p className="rr-vf-note">The room keeps filling until midnight, so your read can still move. Come back tomorrow for your settled spot.</p>
           <NextDrop label="Tomorrow's room" sub="New crowds at midnight Eastern." href="/room"
-            accent="var(--rr-acc-lt)" ink="var(--rr-ink)" mute="var(--rr-mute)" style={{ margin: '14px 0 0', maxWidth: 420 }} />
+            accent="var(--rr-acc-lt)" ink="var(--rr-ink)" mute="var(--rr-mute)" style={{ margin: '14px 0 0' }} />
           <MoreRunsList self="room" ink="var(--rr-ink)" mute="var(--rr-mute)" line="var(--rr-line)" />
           <div className="rr-vf-lad"><div className="rr-eb">Where you stand at the party</div><Ladder at={ti} /></div>
         </div>
@@ -750,6 +747,9 @@ const CSS = `
 .rr-vf-stats{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:10px;margin-top:10px}
 .rr-vf-stats div{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-radius:12px;background:var(--rr-deep)}
 .rr-vf-stats b{font-size:22px;font-weight:800}
+.rr-vf-lb{position:relative;display:flex;flex-direction:column;gap:2px;padding:12px 44px 12px 14px;border-radius:12px;background:var(--rr-deep);color:inherit;text-decoration:none;transition:background .15s}
+.rr-vf-lb:hover{background:color-mix(in srgb,var(--rr-acc-lt) 18%,var(--rr-deep))}
+.rr-vf-lb em{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-style:normal;font-size:20px;font-weight:800;color:var(--rr-acc-lt)}
 .rr-vf-stats span{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--rr-mute)}
 .rr-vf-btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
 .rr-vf-btns a,.rr-vf-btns button{font:800 14px ${SANS};padding:12px 18px;border-radius:12px;text-decoration:none;color:var(--rr-ink);border:1px solid var(--rr-line);background:transparent;cursor:pointer}

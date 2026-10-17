@@ -489,7 +489,7 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
                     game tiles moved into the scoreboard below as the player's own row. */}
                 <div className="cf-sl">
                   <span><b>{total}</b> of {max}</span>
-                  {me && me.rank ? <span><b>#{me.rank}</b> {field ? `of ${Number(field).toLocaleString()} today` : 'today'}</span> : null}
+                  {me && me.rank ? <a className="cf-lbl" href="/pricecheck/leaderboard" aria-label="See today's leaderboard"><b>#{me.rank}</b> {field ? `of ${Number(field).toLocaleString()} today` : 'today'} <em aria-hidden="true">&rarr;</em></a> : null}
                   {v2
                     ? <span><b>{counted.filter((c) => c && c.at === 0).length}</b> of {sections.length} first-guess scores</span>
                     : <span><b>{t[3]}</b> card</span>}
@@ -505,21 +505,20 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
                     {sections.map((s, i) => <div key={s.key} className={flat ? '' : i === hi ? 'hi' : i === lo ? 'lo' : ''}><i>{s.name}</i><b>{pts[i]}</b></div>)}
                   </div>
                 )}
-                <RunChallengeLine gameKey="pricecheck" score={total} n={runToken()} />
-                <div style={{ maxWidth: 420, margin: '12px 0 0' }}>
-                  <RunChallengeButton gameKey="pricecheck" score={total} total={max} n={runToken()} status={`${t[3]} card`} door />
-                </div>
-                <div className="pf-btns">
-                  <button type="button" onClick={onItems}>See the items</button>
-                  <button type="button" className="pri" onClick={onShare}>{copied ? 'Copied' : 'Share card'}</button>
-                  <a href="/pricecheck/leaderboard">Leaderboard</a>
-                  <a href="/">Back to main</a>
-                </div>
               </>
             )}
           </div>
         </div>
       </div>
+      {settled && (
+        <div className="pf-wide">
+          <RunChallengeLine gameKey="pricecheck" score={total} n={runToken()} />
+          <RunChallengeButton gameKey="pricecheck" score={total} total={max} n={runToken()} status={`${t[3]} card`} door />
+          <div className="pf-btns">
+            <button type="button" onClick={onItems}>See the items</button>
+          </div>
+        </div>
+      )}
       {settled && v2 && <FieldPanel sections={sections} counted={counted} total={total} max={max} board={board} ranks={RUN_RANKS} />}
       {settled && (
         <div className="pf-foot">
@@ -693,7 +692,7 @@ function FieldPanel({ sections, counted, total, max, board, ranks }) {
 const CSS = `
 .pc *{box-sizing:border-box}
 /* THE FIELD */
-.fp{max-width:820px;margin:26px auto 0;padding:18px 16px 4px;border-top:1px solid var(--pc-line);text-align:left}
+.fp{margin:26px 0 0;padding:18px 0 4px;border-top:1px solid var(--pc-line);text-align:left}
 .fp-wait{color:var(--pc-mute);font-weight:700;font-size:13px;text-align:center;padding:14px 0}
 .fp-bh{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:18px 0 0}
 .fp-bh:first-child{margin-top:0}
@@ -752,7 +751,7 @@ const CSS = `
 @media(prefers-reduced-motion:reduce){.fp-bar span,.fp-t tr,.fp-mr{animation:none}}
 .fp-ml{display:none}
 @media(max-width:620px){
-.fp{padding-left:12px;padding-right:12px}
+.fp{padding-left:0;padding-right:0}
 .fp-lb{display:none}
 .fp-ml{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 .fp-mr{background:var(--pc-surf);border:1px solid var(--pc-line);border-radius:12px;padding:8px 10px;animation:fprin .4s ease both}
@@ -924,7 +923,7 @@ const CSS = `
 /* LAYOUT A (owner, 2026-10-12): settled, the card drops to a small badge
    beside the result, and everything below it reads as one scoreboard. */
 @media(min-width:721px){
-.cf-stage.settled{grid-template-columns:240px minmax(0,1fr);gap:30px;min-height:0;align-items:center;margin-top:16px}
+.cf-stage.settled{grid-template-columns:240px minmax(0,560px);gap:30px;min-height:0;align-items:center;margin-top:16px}
 .cf-stage.settled .cf-cardcol{min-height:0}
 .cf-stage.settled .cf-cw{width:240px}
 .cf-stage.settled .cf-right{min-height:0}
@@ -938,7 +937,13 @@ const CSS = `
 .cf-pills .cf-next{margin-top:0;border-radius:999px;padding:6px 12px}
 .cf-shelf{font-size:13px;font-weight:700;color:var(--pc-mute)}
 .cf-shelf b{color:var(--pc-ink);font-variant-numeric:tabular-nums}
-.pf-foot{max-width:820px;margin:22px auto 0;padding:0 16px}
+.pf-foot{margin:22px 0 0}
+.pf-wide{margin:22px 0 0}
+.cf-stage.settled{justify-content:center}
+.cf-lbl{display:inline-flex;align-items:baseline;gap:5px;color:inherit;text-decoration:none;padding:2px 10px;margin:-2px 0;border-radius:999px;border:1px solid var(--pc-line);background:var(--pc-surf)}
+.cf-lbl b{color:var(--pc-hi)}
+.cf-lbl em{font-style:normal;font-weight:800;color:var(--pc-hi)}
+.cf-lbl:hover{border-color:var(--pc-hi)}
 .pf-links{display:flex;gap:16px}
 .pf-links a{font-size:13px;font-weight:800;color:var(--pc-mute);text-decoration:none}
 .pf-links a:hover{color:var(--pc-ink)}

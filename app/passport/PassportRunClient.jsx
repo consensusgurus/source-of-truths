@@ -477,39 +477,41 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
           <p className="pe-ln">{tier.line}</p>
           <div className="pe-stats">
             <div><b>{total}/50</b><span>Score</span></div>
-            {me && me.rank ? <div><b>#{me.rank}</b><span>{field ? `of ${Number(field).toLocaleString()} today` : 'today'}</span></div> : null}
+            {me && me.rank ? <a className="pe-lbl" href={`${PATH}/leaderboard`} aria-label="See today's leaderboard"><b>#{me.rank}</b><span>{field ? `of ${Number(field).toLocaleString()} today` : 'today'}</span><em aria-hidden="true">&rarr;</em></a> : null}
             <div><b>{tier.vf}</b><span>Visa-free</span></div>
           </div>
-          {isTodays ? (
-            <NextDrop label="Next flight" sub="A new Span, Flank and Ping board at midnight Eastern." href={PATH}
-              accent="#c4b5fd" style={{ margin: '4px 0 12px', maxWidth: 400 }} />
-          ) : null}
-          <div className="pe-rounds pr-legs">
-            {LEGS.map((l, i) => <div key={l.k} className={flat ? '' : i === hiR ? 'hi' : i === loR ? 'lo' : ''}><i>{l.n}</i><b>{sc[i] == null ? '-' : sc[i]}<small>/{l.max}</small></b></div>)}
-          </div>
           <div className="pe-next">{up ? <><b>{up.min - total} more</b> and you upgrade to the {up.name}.</> : <>Top of the ladder. <b>Every border waves you through.</b></>}</div>
-          <div className="pe-lb" aria-label="Today's leaderboard">
-            <div className="pe-lbh"><b>Today&rsquo;s board</b><span>{field ? `${Number(field).toLocaleString()} ${Number(field) === 1 ? 'player' : 'players'}` : ''}</span></div>
-            {topRows.length ? topRows.map((r, i) => boardRow(r, i, !!(me && me.userKey && r.userKey === me.userKey)))
-              : <div className="pe-lbe">{cboard && cboard.state === 'loading' ? 'Loading the board\u2026' : 'Nobody is on the board yet.'}</div>}
-            {me && !meInTop ? <>{topRows.length ? <div className="pe-lbgap" aria-hidden="true" /> : null}{boardRow({ ...me, total: me.total != null ? me.total : total }, 9, true)}</> : null}
-          </div>
-          <RunChallengeLine gameKey="passport" score={total} n={PUZZLE.num} />
-          <div className="pe-chal">
-            <RunChallengeButton gameKey="passport" score={total} total={50} n={PUZZLE.num} archive={!isTodays}
-              t={runSecs} status={tier.name || ''} door />
-          </div>
-          <div className="pe-btns">
-            <button type="button" className="pri" onClick={copyShare}>{copied ? 'Copied' : 'Share your passport'}</button>
-            <a href={`${PATH}/leaderboard`}>Leaderboard</a>
-            <button type="button" onClick={() => setFinale(true)}>Replay the ending</button>
-            <a href="/">Back to main</a>
-          </div>
-          <MoreRunsList self="passport" />
-          <div className="pe-foot">
-            Each leg is also its own daily: {sections.map((s, i) => <React.Fragment key={s.key}>{i ? ' · ' : ''}<a href={s.path}>{s.name}</a></React.Fragment>)}
-            {!isTodays ? <> · You played the {PUZZLE.dateLabel} archive. <a href={PATH}>Back to today&rsquo;s Passport</a></> : null}
-          </div>
+        </div>
+      </div>
+      {/* THE WIDE HALF (owner, 2026-10-17): everything under the hero runs the
+          full width of the ending, centred, Trivia Gauntlet style. Share is the
+          challenge card's job; the rank above opens the board. */}
+      <div className="pe-wide">
+        <div className="pe-rounds pr-legs">
+          {LEGS.map((l, i) => <div key={l.k} className={flat ? '' : i === hiR ? 'hi' : i === loR ? 'lo' : ''}><i>{l.n}</i><b>{sc[i] == null ? '-' : sc[i]}<small>/{l.max}</small></b></div>)}
+        </div>
+        <div className="pe-lb" aria-label="Today's leaderboard">
+          <div className="pe-lbh"><b>Today&rsquo;s board</b><span>{field ? `${Number(field).toLocaleString()} ${Number(field) === 1 ? 'player' : 'players'}` : ''}</span></div>
+          {topRows.length ? topRows.map((r, i) => boardRow(r, i, !!(me && me.userKey && r.userKey === me.userKey)))
+            : <div className="pe-lbe">{cboard && cboard.state === 'loading' ? 'Loading the board\u2026' : 'Nobody is on the board yet.'}</div>}
+          {me && !meInTop ? <>{topRows.length ? <div className="pe-lbgap" aria-hidden="true" /> : null}{boardRow({ ...me, total: me.total != null ? me.total : total }, 9, true)}</> : null}
+        </div>
+        <RunChallengeLine gameKey="passport" score={total} n={PUZZLE.num} />
+        <div className="pe-chal">
+          <RunChallengeButton gameKey="passport" score={total} total={50} n={PUZZLE.num} archive={!isTodays}
+            t={runSecs} status={tier.name || ''} door />
+        </div>
+        {isTodays ? (
+          <NextDrop label="Next flight" sub="A new Span, Flank and Ping board at midnight Eastern." href={PATH}
+            accent="#c4b5fd" style={{ margin: '14px 0 0' }} />
+        ) : null}
+        <div className="pe-btns">
+          <button type="button" onClick={() => setFinale(true)}>Replay the ending</button>
+        </div>
+        <MoreRunsList self="passport" />
+        <div className="pe-foot">
+          Each leg is also its own daily: {sections.map((s, i) => <React.Fragment key={s.key}>{i ? ' · ' : ''}<a href={s.path}>{s.name}</a></React.Fragment>)}
+          {!isTodays ? <> · You played the {PUZZLE.dateLabel} archive. <a href={PATH}>Back to today&rsquo;s Passport</a></> : null}
         </div>
       </div>
       {!identity && (
@@ -633,6 +635,16 @@ const RUN_CSS = `
 .pe-lbgap{height:0;border-top:1px dashed rgba(255,255,255,.18);margin:0 12px}
 .pe-lbe{padding:10px 12px;font:700 12.5px ${SANS};color:#9aa8c4}
 .pe-chal{max-width:400px;margin:12px 0 0}
+.pe-wide{margin:24px 0 0}
+@media(min-width:761px){.pe .pe-grid{grid-template-columns:minmax(0,360px) minmax(0,480px);justify-content:center}}
+.pe-wide .pe-rounds{max-width:none;grid-template-columns:repeat(4,minmax(0,1fr))}
+.pe-wide .pe-lb,.pe-wide .pe-chal{max-width:none}
+.pe-wide .pe-lb{margin-top:14px}
+.pe-lbl{position:relative;display:flex;flex-direction:column;gap:3px;min-width:0;padding:9px 30px 9px 11px;border-radius:12px;background:rgba(125,211,252,.08);border:1px solid rgba(125,211,252,.4);color:inherit;text-decoration:none}
+.pe-lbl b{font:500 20px ${MONO};white-space:nowrap;color:#e9edf4}
+.pe-lbl span{font:800 9.5px ${SANS};letter-spacing:.12em;text-transform:uppercase;color:#9aa8c4}
+.pe-lbl em{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-style:normal;font-weight:800;font-size:16px;color:#7dd3fc}
+.pe-lbl:hover{background:rgba(125,211,252,.16)}
 @media(max-width:760px){.pe-lb,.pe-chal{max-width:none}}
 .pr-slots{grid-template-columns:repeat(4,1fr) !important}
 .pr-play{display:flex;flex-direction:column;gap:6px}
