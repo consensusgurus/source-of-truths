@@ -506,8 +506,10 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
                   </div>
                 )}
                 <RunChallengeLine gameKey="pricecheck" score={total} n={runToken()} />
+                <div style={{ maxWidth: 420, margin: '12px 0 0' }}>
+                  <RunChallengeButton gameKey="pricecheck" score={total} total={max} n={runToken()} status={`${t[3]} card`} door />
+                </div>
                 <div className="pf-btns">
-                  <RunChallengeButton gameKey="pricecheck" score={total} total={max} n={runToken()} status={`${t[3]} card`} />
                   <button type="button" onClick={onItems}>See the items</button>
                   <button type="button" className="pri" onClick={onShare}>{copied ? 'Copied' : 'Share card'}</button>
                 </div>

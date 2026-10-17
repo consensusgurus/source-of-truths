@@ -18,6 +18,7 @@
 // lib/ping-cities.js; only TODAY's answer city ships to the browser.
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { focusSoon } from '@/lib/focus-soon';
 import { useSearchParams } from 'next/navigation';
 import { HelpCircle, X, Lightbulb, Eye, Smartphone, MapPin, Search } from 'lucide-react';
 import Grain from '../Grain';
@@ -666,6 +667,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
   function startGame() {
     setG((cur) => (cur.t0 ? cur : { ...cur, t0: Date.now() }));
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
+    if (!mobileUi) focusSoon(() => inputRef.current);
   }
 
   function commitGuess(city) {

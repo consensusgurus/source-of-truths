@@ -20,6 +20,7 @@
 // archive pinning, streaks + stats, and the shared /api/quiz/* board flow.
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { focusSoon } from '@/lib/focus-soon';
 import { useSearchParams } from 'next/navigation';
 import { HelpCircle, X, Smartphone, Users, Crown } from 'lucide-react';
 import Grain from '../Grain';
@@ -586,6 +587,7 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
   function startGame() {
     setG((cur) => (cur.t0 ? cur : { ...cur, t0: Date.now() }));
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
+    focusSoon('.ow-big', 12);
   }
 
   function resetGame() {

@@ -16,6 +16,7 @@
 // borders.js; the verifier audits the whole alias table for this.
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { focusSoon } from '@/lib/focus-soon';
 import { useSearchParams } from 'next/navigation';
 import { X, Smartphone, Milestone } from 'lucide-react';
 import Grain from '../Grain';
@@ -443,7 +444,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
     commit({ ...cur, t0: Date.now() });
     setNow(Date.now());
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
-    setTimeout(() => { try { inputRef.current && inputRef.current.focus(); } catch (e) {} }, 50);
+    focusSoon(() => inputRef.current);
   }
 
   function say(msg, kind) {

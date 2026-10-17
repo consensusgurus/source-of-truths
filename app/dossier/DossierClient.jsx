@@ -14,6 +14,7 @@
 // /dossier?p=N archive pinning, streaks, the shared /api/quiz/* flow.
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { focusSoon } from '@/lib/focus-soon';
 import { useSearchParams } from 'next/navigation';
 import { X, RotateCcw, Lightbulb, Eye, Smartphone, Trash2 } from 'lucide-react';
 import Grain from '../Grain';
@@ -453,6 +454,7 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
   function startGame() {
     setG((cur) => (cur.t0 ? cur : { ...cur, t0: Date.now() }));
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
+    focusSoon('.ds-in');
   }
 
   // One free hint, first play only: one attribute the guesses have not pinned.

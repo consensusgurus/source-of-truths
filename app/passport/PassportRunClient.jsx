@@ -249,7 +249,18 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     const next = { ...cur, round: cur.round + 1 };
     if (next.round === 3 && !next.sz.t0) next.sz = { ...next.sz, t0: Date.now() };
     commit(next);
-    try { window.scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' }); } catch (e) {}
+    toTop();
+  }
+  // BACK TO THE TOP FOR EVERY LEG (owner, 2026-10-17). A smooth scroll started
+  // as the next game mounts was cut short by the page growing under it, so the
+  // next leg could open halfway down. Jump instantly, and again once the game
+  // (a dynamic import) has drawn and once its start gate has settled.
+  function toTop() {
+    const go = () => { try { window.scrollTo(0, 0); } catch (e) {} };
+    go();
+    try { window.requestAnimationFrame(go); } catch (e) {}
+    setTimeout(go, 160);
+    setTimeout(go, 520);
   }
 
   const abandon = useAbandonFlush(() => {
@@ -350,19 +361,23 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     <><b>Span.</b> The day&rsquo;s Span: join two countries by the shortest chain of land borders. Its score out of 10 is your stamp.</>,
     <><b>Flank.</b> The day&rsquo;s Flank: name every land neighbor of one country. The share you name, out of 10.</>,
     <><b>Ping.</b> The day&rsquo;s Ping: find a secret city by how far each guess lands from it. Its score out of 10.</>,
-    <><b>Sizes.</b> Nine countries from those three games, one pair at a time: is the second bigger or smaller than the first, by area or by population (each call says which)? About 2 points a call, 20 in all.</>,
+    <><b>Sizes.</b> Nine pairs, three for each game: a country from that game against another country close to it in size, often one you met today. Is the second bigger or smaller, by area or by population (each call says which)? About 2 points a call, 20 in all.</>,
     <>Played one of the three on its own page today? Your first result stands and the run steps over it. The board ranks your total, then time.</>,
   ];
   const rulesBody = (
     <DailyRules accent="#be123c" accentSoft="#fdecef"
       lead="Three geography games and one size round, one score out of 50. Your total decides which passport you travel home on."
       steps={rulesSteps}
-      knack="The sizes leg rewards the countries you just met: the road you walked in Span, Flank's country and its ring, and the country Ping's city is in."
+      knack="The sizes leg leans on the countries you just met: the road you walked in Span, Flank's country and its ring, and the country Ping's city is in. The pairs are close, so trust what you know over a guess at scale."
       footer={`Areas are from the CIA World Factbook, checked against a second table so no call turns on a disputed figure. The passports and their visa-free counts are the ${HENLEY_EDITION}.`} />
   );
 
   const sec = started && g.round < 3 ? sections[g.round] : null;
   const showGame = !!(sec && (g.sc[g.round] == null || holding === sec.key) && !banked[sec.key] && !checking);
+  // The stamp card that follows a finished game sits at the top of a page that
+  // just lost its board, so bring the reader up to it too.
+  const betweenOn = !!(sec && !showGame && g.sc[g.round] != null);
+  useEffect(() => { if (betweenOn) toTop(); }, [betweenOn, g.round]); // eslint-disable-line react-hooks/exhaustive-deps
   const Game = sec ? CLIENTS[sec.key] : null;
 
   const slots = (
@@ -431,6 +446,18 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   const up = TIERS[k + 1];
   const me = cboard && cboard.data ? (cboard.data.me || cboard.data.meProvisional || null) : null;
   const field = cboard && cboard.data && Array.isArray(cboard.data.overall) ? (cboard.data.overallField || cboard.data.uniquePlayers || cboard.data.overall.length) : null;
+  // THE BOARD ON THE ENDING (owner, 2026-10-17): the top three and the reader.
+  const topRows = cboard && cboard.data && Array.isArray(cboard.data.overall) ? cboard.data.overall.slice(0, 3) : [];
+  const meInTop = !!(me && topRows.some((r) => (me.userKey && r.userKey === me.userKey)));
+  const fmtSecs = (sec) => { const v = Math.max(0, Math.round(Number(sec) || 0)); return `${Math.floor(v / 60)}:${String(v % 60).padStart(2, '0')}`; };
+  const boardRow = (r, i, mine) => (
+    <div key={(r && r.userKey) || `me-${i}`} className={`pe-lbr${mine ? ' me' : ''}`}>
+      <span className="pe-lbk">{r && r.rank ? `#${r.rank}` : '-'}</span>
+      <span className="pe-lbn">{mine ? 'You' : ((r && r.username) || 'Guest')}</span>
+      <span className="pe-lbs">{Math.round(Number(r && r.total) || 0)}<small>/50</small></span>
+      <span className="pe-lbt">{r && r.timeTotal ? fmtSecs(r.timeTotal) : ''}</span>
+    </div>
+  );
   const frac = sc.map((v, i) => (v || 0) / LEGS[i].max);
   let hiR = 0, loR = 0;
   frac.forEach((v, i) => { if (v > frac[hiR]) hiR = i; if (v < frac[loR]) loR = i; });
@@ -461,10 +488,18 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
             {LEGS.map((l, i) => <div key={l.k} className={flat ? '' : i === hiR ? 'hi' : i === loR ? 'lo' : ''}><i>{l.n}</i><b>{sc[i] == null ? '-' : sc[i]}<small>/{l.max}</small></b></div>)}
           </div>
           <div className="pe-next">{up ? <><b>{up.min - total} more</b> and you upgrade to the {up.name}.</> : <>Top of the ladder. <b>Every border waves you through.</b></>}</div>
+          <div className="pe-lb" aria-label="Today's leaderboard">
+            <div className="pe-lbh"><b>Today&rsquo;s board</b><span>{field ? `${Number(field).toLocaleString()} ${Number(field) === 1 ? 'player' : 'players'}` : ''}</span></div>
+            {topRows.length ? topRows.map((r, i) => boardRow(r, i, !!(me && me.userKey && r.userKey === me.userKey)))
+              : <div className="pe-lbe">{cboard && cboard.state === 'loading' ? 'Loading the board\u2026' : 'Nobody is on the board yet.'}</div>}
+            {me && !meInTop ? <>{topRows.length ? <div className="pe-lbgap" aria-hidden="true" /> : null}{boardRow({ ...me, total: me.total != null ? me.total : total }, 9, true)}</> : null}
+          </div>
           <RunChallengeLine gameKey="passport" score={total} n={PUZZLE.num} />
-          <div className="pe-btns">
+          <div className="pe-chal">
             <RunChallengeButton gameKey="passport" score={total} total={50} n={PUZZLE.num} archive={!isTodays}
-              t={runSecs} status={tier.name || ''} />
+              t={runSecs} status={tier.name || ''} door />
+          </div>
+          <div className="pe-btns">
             <button type="button" className="pri" onClick={copyShare}>{copied ? 'Copied' : 'Share your passport'}</button>
             <a href={`${PATH}/leaderboard`}>Leaderboard</a>
             <button type="button" onClick={() => setFinale(true)}>Replay the ending</button>
@@ -518,7 +553,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
           <>
             <Launch puzzle={PUZZLE} canvasRef={canvasRef} onBoard={start}
               legs={LEGS} demo={[8, 10, 7, 16]} gate="4 legs"
-              lede={<>The day&rsquo;s <b>Span</b>, <b>Flank</b> and <b>Ping</b>, then <b>nine countries</b> from them called bigger or smaller. Your score decides <b>which passport</b> you travel home on.</>}
+              lede={<>The day&rsquo;s <b>Span</b>, <b>Flank</b> and <b>Ping</b>, then <b>nine size calls</b> on the countries you met. Your score decides <b>which passport</b> you travel home on.</>}
               visaTitle="Four legs, four stamps"
               visaText="Cross the map in Span, ring a country in Flank, hunt a city in Ping, then size up the countries you met."
               rules={launchRules}
@@ -572,7 +607,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
       <section style={{ position: 'relative', display: started ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--stg-ink,#e9edf4)' }}>About Passport</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: 'var(--stg-mute,#8b95a8)', fontWeight: 600 }}>
-          Passport is a free daily geography run from Mind Loft: the day&rsquo;s Span, Flank and Ping played back to back, each worth 10, then nine bigger-or-smaller calls on area or population, worth 20, on countries from those three games. One total out of 50.
+          Passport is a free daily geography run from Mind Loft: the day&rsquo;s Span, Flank and Ping played back to back, each worth 10, then nine bigger-or-smaller calls on area or population, worth 20, on countries from those three games set against others close to them in size. One total out of 50.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: 'var(--stg-mute,#8b95a8)', fontWeight: 600 }}>
           Your total decides the passport you travel home on, from the Sierra Leonean passport up to the Japanese, ranked by the visa-free destinations each opens in the {HENLEY_EDITION}. Everyone plays the same boards, and the leaderboard ranks your total, then time. A new run boards every day at midnight Eastern.
@@ -583,6 +618,22 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
 }
 
 const RUN_CSS = `
+.pe-lb{max-width:400px;margin:12px 0 4px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:rgba(255,255,255,.035);overflow:hidden}
+.pe-lbh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.1)}
+.pe-lbh b{font:800 10px ${SANS};letter-spacing:.14em;text-transform:uppercase;color:#e9edf4}
+.pe-lbh span{font:700 11px ${SANS};color:#9aa8c4}
+.pe-lbr{display:grid;grid-template-columns:40px minmax(0,1fr) auto 46px;align-items:center;gap:8px;padding:8px 12px;font:700 13.5px ${SANS};color:#e9edf4}
+.pe-lbr + .pe-lbr{border-top:1px solid rgba(255,255,255,.07)}
+.pe-lbr.me{background:rgba(125,211,252,.12);box-shadow:inset 3px 0 0 #7dd3fc}
+.pe-lbk{font:500 12px ${MONO};color:#9aa8c4}
+.pe-lbn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pe-lbs{font:600 14px ${MONO};text-align:right}
+.pe-lbs small{font-size:10.5px;color:#9aa8c4;margin-left:1px}
+.pe-lbt{font:500 11.5px ${MONO};color:#9aa8c4;text-align:right}
+.pe-lbgap{height:0;border-top:1px dashed rgba(255,255,255,.18);margin:0 12px}
+.pe-lbe{padding:10px 12px;font:700 12.5px ${SANS};color:#9aa8c4}
+.pe-chal{max-width:400px;margin:12px 0 0}
+@media(max-width:760px){.pe-lb,.pe-chal{max-width:none}}
 .pr-slots{grid-template-columns:repeat(4,1fr) !important}
 .pr-play{display:flex;flex-direction:column;gap:6px}
 .pr-host{animation:prrise .45s ease both}

@@ -26,6 +26,7 @@
 // shortest road dashed alongside when the player didn't find one.
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { focusSoon } from '@/lib/focus-soon';
 import { useSearchParams } from 'next/navigation';
 import { HelpCircle, Share2, RotateCcw, X, Undo2, Flag, Swords, Smartphone, Lightbulb, Eye } from 'lucide-react';
 import Grain from '../Grain';
@@ -573,6 +574,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
   function startGame() {
     setG((cur) => (cur.t0 ? cur : { ...cur, t0: Date.now() }));
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
+    focusSoon(() => inputRef.current);
   }
 
   function miss(g2, msg) {

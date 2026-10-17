@@ -16,6 +16,7 @@
 // focus mode (page chrome hidden while playing). Sundays run a trickier story.
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { focusSoon } from '@/lib/focus-soon';
 import { useSearchParams } from 'next/navigation';
 import { HelpCircle, Share2, RotateCcw, X, Lightbulb, Eye, Smartphone, Scissors, Newspaper } from 'lucide-react';
 import Grain from '../Grain';
@@ -478,6 +479,7 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
   function startGame() {
     setG((cur) => (cur.t0 ? cur : { ...cur, t0: Date.now() }));
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
+    focusSoon(() => inputRef.current);
   }
 
   function resetGame() {

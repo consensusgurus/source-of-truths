@@ -10,7 +10,7 @@ import { BORDERS } from '../app/flank/borders.js';
 import { PUZZLES as FLANK } from '../app/flank/puzzles.js';
 import { TIERS, TOTAL, ROUNDS, unproject, haversineKm, capStep, LEGS, LEGS_FROM, legPoints } from '../lib/passport.js';
 import { passportRunDay } from '../lib/passport-run.js';
-import { fairPair, SIZES_N } from '../lib/passport-sizes.js';
+import { fairPair, SIZES_N, SIZES_WIDE_FROM, SIZES_MAX_RATIO } from '../lib/passport-sizes.js';
 import { flagSteps, FLAG_LAYOUTS, SUBTLE_FROM, SUBTLE_COLORS_FROM, TWINS_FROM, TWINS } from '../app/passport/flagkit.js';
 
 const fails = [], warns = [];
@@ -56,6 +56,14 @@ for (const p of PUZZLES) {
     // Both measures every day (owner, 2026-10-14): five of one, four of the other.
     { const np = r.calls.filter((c) => c.m === 'pop').length; if (np < 4 || np > 5) fail(`${at}: ${np} of ${r.calls.length} calls on population, want 4 or 5`); }
     if (new Set(r.calls.map((c) => c.b)).size !== r.calls.length) fail(`${at}: a country is asked twice`);
+    // Close in size from SIZES_WIDE_FROM (owner, 2026-10-17): no call is more
+    // than 6 times apart, and at most one a day past the tight cap.
+    if (p.live >= SIZES_WIDE_FROM) {
+      const T = { area: (c) => [c.aVal, c.bVal], pop: (c) => [c.aVal, c.bVal] };
+      const rs = r.calls.map((c) => { const [x, y] = T[c.m](c); return Math.max(x, y) / Math.min(x, y); });
+      if (rs.some((q) => q > 6)) fail(`${at}: a size call more than 6 times apart`);
+      if (rs.filter((q) => q > SIZES_MAX_RATIO).length > 1) fail(`${at}: more than one size call past ${SIZES_MAX_RATIO}x`);
+    }
     for (const c of r.calls) if (!c.aName || !c.bName || !(c.aArea > 0) || !(c.bArea > 0) || !(c.aVal > 0) || !(c.bVal > 0)) fail(`${at}: size call ${c.a}/${c.b} incomplete`);
     if (p.sunday !== !!r.sections[1].light.sunday) warns.push(`${at}: Flank's Sunday flag differs`);
     continue;

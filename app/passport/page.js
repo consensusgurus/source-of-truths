@@ -35,7 +35,7 @@ export async function generateMetadata({ searchParams }) {
   const ok = /^\d{1,2}(-\d{1,2}){3,4}$/.test(s);
   const img = ok ? `/passport/card?s=${s}` : '/passport/card';
   const title = 'Passport: A Daily Geography Run | Mind Loft';
-  const description = 'A free daily geography run: the day\'s Span, Flank and Ping back to back, then nine countries called bigger or smaller. Score out of 50 and earn a passport.';
+  const description = 'A free daily geography run: the day\'s Span, Flank and Ping back to back, then nine bigger-or-smaller size calls. Score out of 50 and earn a passport.';
   const shareTitle = 'Passport · Mind Loft';
   const shareDesc = 'Span, Flank, Ping and nine size calls, one score out of 50. Which passport do you travel home on?';
   return {
@@ -50,7 +50,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Passport',
   alternateName: 'Passport: Daily Geography Game', url: `${SITE_URL}/passport`,
   description:
-    "A free daily geography run. Each day plays the day's Span (the shortest chain of land borders between two countries), Flank (every land neighbor of one country) and Ping (a secret city found by distance), each worth 10, then nine bigger-or-smaller calls on area or population, worth 20, on countries from those three games. The score out of 50 decides which real passport, from the Henley Passport Index, the player travels home on. Everyone plays the same boards each day.",
+    "A free daily geography run. Each day plays the day's Span (the shortest chain of land borders between two countries), Flank (every land neighbor of one country) and Ping (a secret city found by distance), each worth 10, then nine bigger-or-smaller calls on area or population, worth 20, on countries from those three games set against others close in size. The score out of 50 decides which real passport, from the Henley Passport Index, the player travels home on. Everyone plays the same boards each day.",
   genre: ['Trivia', 'Geography Quiz', 'Quiz', 'Puzzle'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
     image: `${SITE_URL}/og/passport.png`,
