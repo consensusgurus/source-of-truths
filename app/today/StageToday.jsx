@@ -3940,6 +3940,10 @@ ${PATCH_CSS}
 .sty-star:hover{background:var(--stg-chip);color:var(--cci, var(--cc));}
 /* A touch screen has no hover, so the star is always there. */
 @media (hover:none){ .sty-star{opacity:1;} }
+/* LIGHT REGISTER: AN UNSTARRED TILE STILL SHOWS ITS STAR (owner, 2026-10-17),
+   as a faint outline only, quieter than the circuit cards' chip. Carries the
+   boot guard so a dark reader never sees it for a frame. */
+html:not([data-stage-boot=dark]) [data-stage-theme=light] .sty-g .sty-star:not(.on):not(:hover){opacity:1;color:var(--stg-line3);}
 .sty-mine .sty-cathead h2{letter-spacing:-0.01em;}
 
 /* ── reordering ────────────────────────────────────────────────────────── */
