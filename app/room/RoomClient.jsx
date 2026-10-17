@@ -291,6 +291,7 @@ export default function RoomClient({ dateLabel, dateShort, sections = [] }) {
         <Link href="/" className="rr-home">Mind Loft</Link>
         <b>Read the Room</b>
         <span className="rr-capd">{dateShort}</span>
+        <a className="rr-back" href="/"><span aria-hidden="true">&larr;</span> <span className="rr-back-l">Return to all daily puzzles</span><span className="rr-back-s">All puzzles</span></a>
         {playing && <span className="rr-capt">{sections.map((s, i) => <i key={s.key} className={i < r.si || (i === r.si && secDone) ? 'd' : i === r.si ? 'on' : ''} title={s.name} />)}</span>}
         {!playing && <a className="rr-lb" href="/room/leaderboard">Leaderboard</a>}
       </div>
@@ -615,7 +616,12 @@ function Morning() {
 const CSS = `
 .rr *{box-sizing:border-box}
 .rr .rr-eb{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--rr-acc-lt)}
-.rr-cap{display:flex;align-items:center;gap:12px;max-width:none;margin:0;padding:12px 20px;font-size:13px}
+.rr-cap{position:relative;display:flex;align-items:center;gap:12px;max-width:none;margin:0;padding:12px 20px;font-size:13px}
+.rr-back{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:999px;background:var(--rr-acc);color:#fff;font-weight:800;font-size:13px;text-decoration:none;white-space:nowrap}
+.rr-back:hover{background:#5145e0}
+.rr-back:focus-visible{outline:2px solid var(--rr-ink);outline-offset:3px}
+.rr-back-s{display:none}
+@media(max-width:640px){.rr-back-l{display:none}.rr-back-s{display:inline}.rr-capd{display:none}}
 .rr-home{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--rr-mute);text-decoration:none}
 .rr-cap b{font-weight:800;letter-spacing:-.01em}
 .rr-capd{color:var(--rr-mute);font-weight:700}
