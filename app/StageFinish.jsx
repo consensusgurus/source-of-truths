@@ -923,6 +923,50 @@ export default function StageFinish({
   // than in the initial state so the server and the first client render agree:
   // there is no flood in the markup, it arrives after hydration.
   const bandRef = useRef(null);
+  // THE BAND STOPS AT THE PANELS (owner, 2026-10-17: "why is the color bar
+  // spilling into the right panel?"). The curtain bleeds to the viewport with
+  // margin:0 calc(50% - 50vw), which was right when a daily filled the screen.
+  // On the desktop frame (LayoutCInner, html.lc-on) the page sits between a
+  // 260px index on the left and a 330px rankings column on the right, and a
+  // viewport bleed ran the band under both: the column is shorter than the
+  // band, so the colour showed below it. Measured, not hardcoded, because the
+  // band's own column is not centred on the viewport: the band is fitted to
+  // the host's CONTENT box (its padding is exactly the two panels), and its
+  // inner padding keeps the words on the column they always sat on. Off the
+  // frame (phone, focus mode, a run) the inline styles are cleared and the CSS
+  // bleed applies as before. The flood's shrink measures this element, so it
+  // lands on the fitted band without any change of its own.
+  const fitBand = () => {
+    const el = bandRef.current;
+    if (!el || typeof document === 'undefined') return;
+    const st = el.style;
+    const html = document.documentElement;
+    const host = el.closest && el.closest('.lc-host');
+    const on = !!host && html.classList.contains('lc-on') && !html.classList.contains('lc-focus');
+    if (!on) { st.marginLeft = ''; st.marginRight = ''; st.paddingLeft = ''; st.paddingRight = ''; return; }
+    const par = el.parentElement;
+    if (!par) return;
+    const hr = host.getBoundingClientRect();
+    const hs = getComputedStyle(host);
+    const L = hr.left + (parseFloat(hs.paddingLeft) || 0);
+    const R = hr.right - (parseFloat(hs.paddingRight) || 0);
+    if (!(R - L > 200)) return;
+    const pr = par.getBoundingClientRect();
+    st.marginLeft = `${Math.round(L - pr.left)}px`;
+    st.marginRight = `${Math.round(pr.right - R)}px`;
+    st.paddingLeft = `${Math.max(18, Math.round(pr.left - L + 4))}px`;
+    st.paddingRight = `${Math.max(18, Math.round(R - pr.right + 4))}px`;
+  };
+  useEffect(() => { fitBand(); });
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const on = () => fitBand();
+    window.addEventListener('resize', on);
+    let mo = null;
+    try { mo = new MutationObserver(on); mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] }); } catch (e) { mo = null; }
+    const t = setTimeout(on, 400);
+    return () => { window.removeEventListener('resize', on); if (mo) mo.disconnect(); clearTimeout(t); };
+  }, []);
   const [flood, setFlood] = useState(false);
   useEffect(() => {
     // The fast-retry ending floods too, QUICKLY (owner, 2026-09-01; it used to
