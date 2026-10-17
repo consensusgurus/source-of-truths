@@ -34,7 +34,7 @@ import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
 import ChallengeStrip from '../ChallengeStrip';
 import { RunChallengeButton, RunChallengeLine, runToken } from '../RunChallenge';
-import { PRICE_GAMES, fmtCents, errOf, scoreOf, pctLabel, runRankOf, runTierOf, ranksFor, isV2, scoreGuesses } from '@/lib/price-games';
+import { PRICE_GAMES, fmtCents, errOf, scoreOf, pctLabel, runRankOf, runTierOf, ranksFor, ranksTag, isV2, scoreGuesses } from '@/lib/price-games';
 import RunBackLink from '../circuits/RunBackLink';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
@@ -60,6 +60,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
   const N = sections.length;
   const MAX = N * 10;
   const V2 = isV2(sections[0] && sections[0].quizId);
+  const RTAG = ranksTag(sections[0] && sections[0].quizId);
   const RANKS = ranksFor(sections[0] && sections[0].quizId);
   const STORE = `sot_run_${RUN_ID}_${etToday()}`;
   // One register, the Trivia Gauntlet's (owner, 2026-10-01: match the
@@ -174,7 +175,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
   function shareText() {
     const per = sections.map((s, i) => `${s.name} ${counted[i] ? counted[i].score : '-'}`).join(' · ');
     const code = sections.map((s, i) => (counted[i] ? counted[i].score : 0)).join('-');
-    return `Price Check · ${dateShort} · ${total}/${MAX}\nI paid with the ${rank[3]} card: ${rank[1]}.\n${per}\n${withRef(`mindloftdaily.com/pricecheck?s=${code}${V2 ? '&r=2' : ''}`)}`;
+    return `Price Check · ${dateShort} · ${total}/${MAX}\nI paid with the ${rank[3]} card: ${rank[1]}.\n${per}\n${withRef(`mindloftdaily.com/pricecheck?s=${code}${RTAG ? `&r=${RTAG}` : ''}`)}`;
   }
   function copyShare() {
     const text = done ? shareText() : `Price Check: five real prices, from Amazon to the auction block. Three guesses at each, and the first one counts most.\n${withRef('mindloftdaily.com/pricecheck')}`;

@@ -24,8 +24,9 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({ searchParams }) {
   const s = String((searchParams && searchParams.s) || '');
   const ok = /^\d{1,2}(-\d{1,2}){1,4}$/.test(s);
-  const r2 = String((searchParams && searchParams.r) || '') === '2';
-  const img = ok ? `/pricecheck/card?s=${s}${r2 ? '&r=2' : ''}` : '/pricecheck/card';
+  const rv = String((searchParams && searchParams.r) || '');
+  const rt = rv === '2' || rv === '3' ? rv : '';
+  const img = ok ? `/pricecheck/card?s=${s}${rt ? `&r=${rt}` : ''}` : '/pricecheck/card';
   const title = 'Price Check: Five Real Prices, Three Guesses Each | Mind Loft';
   const description = 'A free daily run of five price games: an Amazon find, a new car, a home, a trip and a luxury piece. Three guesses each, the first counts most, scored out of 50.';
   return {

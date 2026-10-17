@@ -1648,17 +1648,6 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                           {r.practice ? <i className="rn-pchip">nothing posted</i> : null}
                         </span>
                         <RunLanes id={`${circuitId}-done`} order="run" sections={sections} results={r.results} avg={lanesAvg} best={lanesBest} className="rt-done" />
-                        {/* THE FIGURES MOVED UP (owner, 2026-10-17): questions
-                            cleared, the clock and the rank sit under the lanes,
-                            filling the column beside the top 5; the old row of
-                            figures under the split is gone on this layout. */}
-                        <div className="rt-figs">
-                          <div className="rn-sc-big">{cleared}<small>/{askable}</small><i>questions cleared</i></div>
-                          <div className="rn-sc-figs">
-                            {runSecs > 0 ? <div><b>{fmtTime(runSecs * 1000)}</b><i>on the clock</i></div> : null}
-                            {bd && bd.me && Number.isFinite(bd.me.rank) ? <div><b>#{bd.me.rank}</b><i>of {bd.overallField || 0}</i></div> : null}
-                          </div>
-                        </div>
                       </div>
                     </div>
                   );
@@ -1673,8 +1662,13 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                 />
                 )}
 
-                {!TOWERS ? (
-                <div className="rn-sc-hero">
+                {/* ONE FULL-WIDTH FIGURES ROW ON EVERY RUN (owner, 2026-10-17,
+                    second pass): the towers split carried the figures under the
+                    lanes, which left the two columns ragged. They are back on
+                    one row under the split, and the split's two columns now
+                    stretch to one height with equal rows. */}
+                {true ? (
+                <div className={`rn-sc-hero${TOWERS ? ' tw' : ''}`}>
                   <div className="rn-sc-big">
                     {cleared}<small>/{askable}</small>
                     <i>questions cleared</i>
@@ -2543,31 +2537,35 @@ ${TOWER_CSS}
 .rt-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:stretch;}
 .rt-runc{display:flex;flex-direction:column;min-width:0;}
 .rt-split .rt-done.rl{flex:1;justify-content:space-around;}
-.rt-figs{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08);}
-.rt-figs .rn-sc-big{font-size:clamp(40px,5vw,52px);}
-.rt-figs .rn-sc-figs{margin-left:auto;}
 .rt-split .rn-lcap{margin-bottom:8px;}
 .rt-t5f{font-style:normal;color:#4f5b73;}
-.rt-t5l{display:flex;flex-direction:column;gap:3px;}
-.rt-t5r{display:flex;align-items:center;gap:10px;padding:4px 9px;border-radius:6px;min-height:20px;
-  border:1px solid transparent;font-size:13px;font-weight:600;}
-.rt-t5p{font-family:${MONO};font-size:11.5px;color:#66748f;width:26px;flex:none;font-variant-numeric:tabular-nums;}
+.rt-t5{display:flex;flex-direction:column;min-width:0;}
+/* EQUAL ROWS IN BOTH COLUMNS (owner, 2026-10-17): the top 5 and the run's lanes
+   stretch to the same height and split it evenly, so the two lists line up. */
+.rt-t5l{display:flex;flex-direction:column;gap:5px;flex:1;}
+.rt-t5r{display:flex;align-items:center;gap:12px;padding:5px 12px;border-radius:7px;min-height:32px;
+  flex:1 1 0;border:1px solid transparent;font-size:15px;font-weight:600;}
+.rt-t5p{font-family:${MONO};font-size:13.5px;color:#66748f;width:26px;flex:none;font-variant-numeric:tabular-nums;}
 .rt-t5r.p1 .rt-t5p{color:#e8b43a;}
 .rt-t5r.p2 .rt-t5p{color:#b8bcc4;}
 .rt-t5r.p3 .rt-t5p{color:#c8814b;}
 .rt-t5n{flex:1;min-width:0;color:#dce6f7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.rt-t5s{font-family:${MONO};font-size:12.5px;color:#fff;font-variant-numeric:tabular-nums;}
+.rt-t5s{font-family:${MONO};font-size:15px;color:#fff;font-variant-numeric:tabular-nums;}
 .rt-t5r.me{background:rgba(47,111,228,.18);border-color:rgba(96,165,250,.35);}
 .rt-t5r.me .rt-t5n{color:#fff;font-weight:800;}
 .rt-t5r.gap{margin-top:6px;position:relative;}
-.rt-t5r.gap::before{content:'';position:absolute;left:9px;right:9px;top:-5px;border-top:1px dashed rgba(255,255,255,.12);}
-.rt-t5m{font-size:12px;font-weight:600;color:#8b95a8;padding:4px 0;}
+.rt-t5r.gap::before{content:'';position:absolute;left:9px;right:9px;top:-6px;border-top:1px dashed rgba(255,255,255,.12);}
+.rt-t5m{font-size:13px;font-weight:600;color:#8b95a8;padding:4px 0;}
 .rt-split .rt-done{margin:0;}
-.rt-split .rt-done.rl{gap:4px;flex:1;justify-content:space-around;}
-.rt-split .rt-done .rl-row{grid-template-columns:62px minmax(0,1fr) 40px;gap:9px;min-height:20px;}
-.rt-split .rt-done .rl-nm{font-size:12px;}
-.rt-split .rt-done .rl-sc{font-size:11px;}
-.rt-split .rt-done .rl-trk{height:8px;}
+.rt-split .rt-done.rl{gap:5px;flex:1;justify-content:stretch;}
+.rt-split .rt-done .rl-row{grid-template-columns:84px minmax(0,1fr) 52px;gap:12px;min-height:32px;flex:1 1 0;
+  padding:0 2px;}
+.rt-split .rt-done .rl-nm{font-size:15px;}
+.rt-split .rt-done .rl-row.live .rl-nm{font-size:15px;}
+.rt-split .rt-done .rl-sc{font-size:13.5px;}
+.rt-split .rt-done .rl-row.live .rl-sc{font-size:13.5px;}
+.rt-split .rt-done .rl-trk{height:11px;}
+.rn-sc-hero.tw{margin-top:20px;padding-top:18px;border-top:1px solid rgba(255,255,255,.09);}
 @media (max-width:680px){
   .rt-split{grid-template-columns:minmax(0,1fr);gap:18px;}
   .rt-split .rt-runc{order:-1;}

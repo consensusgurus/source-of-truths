@@ -1,7 +1,7 @@
 import { createElement as h } from 'react';
 import { ImageResponse } from 'next/og';
 import { stageFonts } from '@/lib/og-stage-card';
-import { PRICE_KEYS, PRICE_GAMES, runRankOf, runTierOf, RUN_RANKS, RUN_RANKS_V2 } from '@/lib/price-games';
+import { PRICE_KEYS, PRICE_GAMES, runRankOf, runTierOf, RUN_RANKS, RUN_RANKS_V2, RUN_RANKS_V3, ranksByTag } from '@/lib/price-games';
 
 // PRICE CHECK'S SHARE CARD (owner, 2026-10-01: "it needs a great share card").
 // A result card carries the player's payment card from the run's ending: the
@@ -47,7 +47,7 @@ function payCard(ti, rank, total, max) {
     h('div', { style: { display: 'flex', alignItems: 'baseline', fontFamily: MONO, fontSize: 26 } }, String(total), h('span', { style: { fontSize: 15, opacity: 0.7, marginLeft: 6 } }, `/ ${max}`)));
 }
 
-function card(scores, ranks = RUN_RANKS_V2) {
+function card(scores, ranks = RUN_RANKS_V3) {
   const res = Array.isArray(scores);
   const total = res ? scores.reduce((a, b) => a + b, 0) : null;
   const max = PRICE_KEYS.length * 10;
@@ -88,9 +88,10 @@ export async function GET(req) {
     const s = q.get('s') || '';
     // A link shared under the five-guess rule carries no r; from 2026-10-11 the
     // share link carries r=2 and the card is graded on the recut ladder.
-    const ranks = q.get('r') === '2' ? RUN_RANKS_V2 : RUN_RANKS;
+    // r=3 from 2026-10-17 (the wide-middle recut).
+    const ranks = ranksByTag(q.get('r') || '');
     const scores = /^\d{1,2}(-\d{1,2}){1,4}$/.test(s) ? s.split('-').map((x) => Math.max(0, Math.min(10, Number(x)))) : null;
-    return new ImageResponse(card(scores, scores ? ranks : RUN_RANKS_V2), { width: 1200, height: 630, fonts: stageFonts(), headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=86400' } });
+    return new ImageResponse(card(scores, scores ? ranks : RUN_RANKS_V3), { width: 1200, height: 630, fonts: stageFonts(), headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=86400' } });
   } catch (err) {
     console.error('pricecheck card failed', err);
     return new Response(null, { status: 302, headers: { Location: '/og/daily.png' } });
