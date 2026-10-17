@@ -111,7 +111,7 @@ export default function PremierePop() {
     const today = etToday();
     // A run premiere wins outright: one card for the run, nothing for its
     // members, and every member stamped so no single-game card follows.
-    const runOpen = PREMIERE_RUNS.filter((r) => today >= r.from && today <= r.until && !r.keys.some((k) => NO_PREMIERE.has(k)) && !NO_PREMIERE.has(r.id));
+    const runOpen = PREMIERE_RUNS.filter((r) => r.lede && today >= r.from && today <= r.until && !r.keys.some((k) => NO_PREMIERE.has(k)) && !NO_PREMIERE.has(r.id));
     const runMembers = new Set(runOpen.flatMap((r) => r.keys));
     const open = PREMIERES.filter((p) => today >= p.from && today <= p.until && DAILY_GAME_MAP[p.key] && !NO_PREMIERE.has(p.key) && !runMembers.has(p.key));
     if (!open.length && !runOpen.length) return;
@@ -179,10 +179,11 @@ export default function PremierePop() {
   if (run) {
     let lightR = true;
     try { const el = document.querySelector('.stage-page'); lightR = !el || el.getAttribute('data-stage-theme') !== 'dark'; } catch (e) {}
-    const accR = lightR ? categoryColorLight('Numbers') : categoryColor('Numbers');
-    const riR = rampIndexFor('Numbers');
+    const catR = run.cat || 'Numbers';
+    const accR = lightR ? categoryColorLight(catR) : categoryColor(catR);
+    const riR = rampIndexFor(catR);
     const onR = lightR ? (riR >= 0 ? RAMP_INK_LIGHT[riR] : RAMP_INK) : RAMP_INK;
-    const varsR = { '--prm-acci': lightR ? categoryAccentInkLight('Numbers') : accR, '--prm-acc': accR, '--prm-on': onR, '--prm-tint': `color-mix(in srgb, ${accR} 16%, transparent)` };
+    const varsR = { '--prm-acci': lightR ? categoryAccentInkLight(catR) : accR, '--prm-acc': accR, '--prm-on': onR, '--prm-tint': `color-mix(in srgb, ${accR} 16%, transparent)` };
     const whenR = run.from === etToday() ? 'today' : dateLabel(run.from);
     return (
       <div className="prm-scrim" onClick={() => setRun(null)}>
@@ -191,12 +192,17 @@ export default function PremierePop() {
           <button className="prm-x" aria-label="Close" onClick={() => setRun(null)}><X size={16} /></button>
           <div className="prm-eye"><i /><span>{whenR === 'today' ? 'New today' : 'New this week'} · Daily run</span></div>
           <h2 id="prm-t">{run.name}</h2>
-          <p className="prm-lede">Five new price games premiered {whenR}, played back to back for one score out of 50: an Amazon find, a new vehicle, a home for sale, a trip and a luxury piece. Five guesses at each.</p>
+          <p className="prm-lede">{run.lede}</p>
           <div className="prm-tags">
-            {run.keys.map((k) => { const g = PRICE_GAMES[k]; return g ? <span key={k} style={{ background: lightR ? g.tagLight : g.tagDark, color: lightR ? '#ffffff' : '#0b0f1a' }}>{g.name}</span> : null; })}
+            {run.keys.length > 1 && run.keys.map((k) => {
+              const p = PRICE_GAMES[k];
+              if (p) return <span key={k} style={{ background: lightR ? p.tagLight : p.tagDark, color: lightR ? '#ffffff' : '#0b0f1a' }}>{p.name}</span>;
+              const g = DAILY_GAME_MAP[k];
+              return g ? <span key={k} style={{ background: accR, color: onR }}>{g.name}</span> : null;
+            })}
           </div>
           <a className="prm-go" href={run.href} onClick={() => setRun(null)}>Play {run.name}</a>
-          <div className="prm-foot">Each one is also its own daily on the Numbers shelf.</div>
+          {run.foot ? <div className="prm-foot">{run.foot}</div> : null}
         </div>
       </div>
     );
