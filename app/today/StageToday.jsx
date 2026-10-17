@@ -5284,6 +5284,14 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-rbig.art{overflow:hidden;}
 .sty-rbig .ca{--art:var(--ph,var(--stg-acc));grid-column:1 / -1;grid-row:1;margin:-10px -12px 8px;}
 .sty-rbig.art .go{grid-row:2 / 4;}
+/* THE STAR SITS ON THE ART, TOP RIGHT, ALWAYS SHOWN (owner, 2026-10-17): in
+   the name row an unstarred outline in the mute ink was invisible on the pale
+   card, so on an art card it is a solid chip in the corner of the picture. */
+.sty-rbig.art .nm .sty-star{position:absolute;top:8px;right:8px;z-index:2;width:30px;height:30px;opacity:1;
+  border-radius:999px;background:var(--stg-raise);color:var(--stg-ink2);border:1px solid var(--stg-line2);box-shadow:0 1px 3px rgba(11,13,18,.25);}
+.sty-rbig.art .nm .sty-star svg{width:16px;height:16px;}
+.sty-rbig.art .nm .sty-star.on{color:var(--phi,var(--ph));}
+.sty-rbig.art .nm .sty-star:hover{background:var(--stg-raise);color:var(--phi,var(--ph));}
 .sty-circ .ca{--art:var(--cc);margin:-12px -14px 10px -16px;}
 .sty-rnm{display:none;}
 /* THE WRAPPER HIDES TOO (owner, 2026-10-16): an empty .sty-rhome above 900px is
