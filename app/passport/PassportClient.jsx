@@ -20,7 +20,7 @@
 // run's leaderboard at /passport/leaderboard. Never LoftFinish.
 // The day's content is resolved on the server and only today's ships.
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { X } from 'lucide-react';
 import DailyRules from '../DailyRules';
@@ -272,6 +272,277 @@ export function Finale({ scores, total, clock, inks, onDone, legs = null }) {
     </div>
   );
 }
+
+// ── DEPARTURES: the run's curtain (owner-approved mockup, 2026-10-17) ──────
+// Per leg, in play order, the whole screen takes that leg's ink, a split-flap
+// board flips to the leg's name and score, a flight path draws across, and an
+// entry stamp slams with the score; a stop strip along the bottom fills one
+// stop per leg. Then the colours drain, the total walks up the six passports
+// (TIERS, their true cover colours) with the visa-free count in a fixed box,
+// and the earned passport lands and opens on the four stamps. Any tap or key
+// skips to the ending. It posts and stores nothing.
+//   legs   [{ n, max, line }] in play order
+//   scores in play order; inks / deeps the leg inks on the dark and paper
+const DEP_GLYPHS = 'ABCDEFGHJKLMNPRSTUVWXYZ0123456789';
+const D_P0 = 300, D_PD = 1800, D_CNT = 2000, D_LAND = 2900;
+const depEase = (x) => { const v = Math.max(0, Math.min(1, x)); return 1 - Math.pow(1 - v, 3); };
+export function Departures({ legs, scores, inks, deeps, total, clock, num, dateLabel, onDone }) {
+  const N = legs.length;
+  const RP = D_P0 + N * D_PD;
+  const BOARD = RP + D_CNT + 300;
+  const END = BOARD + D_LAND;
+  const [t, setT] = useState(0);
+  const [vfShow, setVfShow] = useState(TIERS[0].vf);
+  const doneRef = useRef(false);
+  const vfRef = useRef(TIERS[0].vf);
+  const finish = useCallback(() => { if (doneRef.current) return; doneRef.current = true; onDone(); }, [onDone]);
+  useEffect(() => {
+    let raf = 0;
+    const t0 = performance.now();
+    const tick = (now) => {
+      const el = now - t0;
+      setT(el);
+      if (el >= END) { finish(); return; }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    const onKey = () => finish();
+    window.addEventListener('keydown', onKey);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('keydown', onKey); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const pi = t >= D_P0 && t < RP ? Math.min(N - 1, Math.floor((t - D_P0) / D_PD)) : -1;
+  const local = pi >= 0 ? t - D_P0 - pi * D_PD : 0;
+  const isPaint = pi >= 0, isCount = t >= RP && t < BOARD, isLand = t >= BOARD;
+  const leg = legs[Math.max(0, pi)] || legs[0];
+  const score = scores[Math.max(0, pi)] || 0;
+  const shownTotal = isLand ? total : isCount ? Math.round(total * depEase((t - RP) / (D_CNT - 300))) : 0;
+  const at = tierIndex(shownTotal);
+  const finalTier = TIERS[tierIndex(total)];
+
+  // The visa-free count rolls toward the tier the total has reached.
+  const vfTarget = TIERS[at].vf;
+  useEffect(() => {
+    if (vfRef.current === vfTarget) return;
+    const next = vfRef.current + Math.sign(vfTarget - vfRef.current) * Math.max(1, Math.round(Math.abs(vfTarget - vfRef.current) * 0.22));
+    vfRef.current = Math.abs(next - vfTarget) < 1 ? vfTarget : next;
+    setVfShow(vfRef.current);
+  }, [t, vfTarget]);
+
+  // The board: the leg name padded to eight flaps, then its score in eight
+  // (one row on a wide screen, two rows of eight on a phone).
+  const row1 = String(leg.n || '').toUpperCase().slice(0, 8).padEnd(8, ' ');
+  const row2 = `${String(score).padStart(2, ' ')} OF ${leg.max}`.padEnd(8, ' ').slice(0, 8);
+  const flap = (ch, i) => {
+    const done = local >= 260 + i * 50 || ch === ' ';
+    const r = DEP_GLYPHS[(Math.floor(local / 50) * 7 + i * 13) % DEP_GLYPHS.length];
+    return <div key={i} className={`dp-flap${done ? '' : ' spin'}`}><span>{done ? ch : r}</span><i /></div>;
+  };
+  const dash = String(100 - 100 * depEase((local - 200) / 1000));
+  const showStamp = isPaint && local > 1250;
+  const capRight = isPaint ? `Leg ${pi + 1} of ${N}` : isLand ? 'Arrived' : '';
+
+  return (
+    <div className={`dp${isPaint ? ' paint' : ''}`} role="dialog" aria-modal="true" aria-label="Your passport"
+      style={{ '--dp-bg': isPaint ? inks[pi] : '#0b0f1a', '--dp-ink': isPaint ? '#0b0f1a' : '#e9edf4' }}
+      onClick={finish}>
+      <style dangerouslySetInnerHTML={{ __html: DEP_CSS }} />
+      <div className="dp-cap"><span>Passport No. {num}</span>{dateLabel ? <span>{dateLabel}</span> : null}<span className="r">{capRight}</span></div>
+
+      {isPaint ? (
+        <div className="dp-paint" key={`leg-${pi}`}>
+          <svg className="dp-path" viewBox="0 0 1000 300" aria-hidden="true">
+            <path d="M 90 250 Q 500 -40 910 220" fill="none" stroke="#0b0f1a" strokeWidth="3" strokeDasharray="2 12" strokeLinecap="round" />
+            <path d="M 90 250 Q 500 -40 910 220" fill="none" stroke="#0b0f1a" strokeWidth="4" strokeLinecap="round" pathLength="100" strokeDasharray="100" strokeDashoffset={dash} />
+            <circle cx="90" cy="250" r="9" fill="#0b0f1a" />
+            <circle cx="910" cy="220" r="9" fill="none" stroke="#0b0f1a" strokeWidth="3" />
+          </svg>
+          <div className="dp-body">
+            <div className="dp-board" aria-label={`${leg.n}, ${score} of ${leg.max}`}>
+              <div className="dp-row">{row1.split('').map((ch, j) => flap(ch, j))}</div>
+              <div className="dp-row">{row2.split('').map((ch, j) => flap(ch, j + 8))}</div>
+            </div>
+            <div className="dp-line">{leg.line}</div>
+            <div className="dp-stampbox">
+              {showStamp ? (
+                <div className="dp-stamp">
+                  <div className="a">{leg.n} · cleared</div>
+                  <div className="b">{score}</div>
+                  <div className="c">of {leg.max}</div>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {isCount ? (
+        <div className="dp-count">
+          <div className="dp-q">Which passport are you traveling home on?</div>
+          <div className="dp-figs">
+            <div className="dp-tot"><b>{shownTotal}</b><span> / 50</span></div>
+            <div className="dp-vf"><b>{vfShow}</b><span>visa-free</span></div>
+          </div>
+          <div className="dp-books">
+            {TIERS.map((b, k) => (
+              <div key={k} className={`dp-bk${k <= at ? ' on' : ''}${k === at ? ' at' : ''}`}>
+                <div className="cv" style={{ background: b.cv, color: b.cf }}><i style={{ borderColor: b.cf }} /><small>Passport</small></div>
+                <div className="nm">{b.short}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {isLand ? (
+        <div className="dp-land">
+          <div className="dp-spread">
+            <div className="pg" style={{ background: finalTier.cv }} />
+            <div className="pg r">
+              {legs.map((l, i) => <div key={l.n} className="st" style={{ borderColor: deeps[i], color: deeps[i] }}>{scores[i] || 0}</div>)}
+            </div>
+            <div className="front" style={{ background: finalTier.cv, color: finalTier.cf }}>
+              {finalTier.swiss
+                ? <svg viewBox="0 0 84 84" width="34" height="34" aria-hidden="true"><path d="M34 14h16v20h20v16H50v20H34V50H14V34h20z" fill="#fff" /></svg>
+                : <i className="foil" style={{ borderColor: finalTier.cf }} />}
+              <small>{finalTier.t2 || 'Passport'}</small>
+            </div>
+          </div>
+          <div className="dp-landt">
+            <div className="a">You travel home on the</div>
+            <div className="b">{finalTier.name}</div>
+            <div className="c">{total} / 50 · {finalTier.vf} visa-free{clock ? ` · ${clock}` : ''}</div>
+          </div>
+        </div>
+      ) : null}
+
+      {!isLand && !isPaint && !isCount ? <div className="dp-fill" /> : null}
+
+      <div className="dp-stops">
+        {legs.map((l, i) => {
+          const filled = t >= D_P0 + i * D_PD + 1200;
+          return (
+            <div key={l.n} className={`dp-stop${filled ? ' f' : ''}${i === N - 1 ? ' last' : ''}`} style={{ '--si': inks[i] }}>
+              <b>{filled ? scores[i] || 0 : ''}</b>
+              <span>{l.n}</span>
+              <em />
+            </div>
+          );
+        })}
+      </div>
+      <span className="dp-skip">Tap to skip</span>
+    </div>
+  );
+}
+
+const DEP_CSS = `
+.dp{position:fixed;inset:0;z-index:96;display:flex;flex-direction:column;overflow:hidden;background:var(--dp-bg);color:var(--dp-ink);font-family:${SANS};transition:background .3s ease,color .3s ease;cursor:pointer}
+.dp-cap{display:flex;align-items:center;gap:12px;padding:18px 28px 0;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;opacity:.78}
+.dp-cap .r{margin-left:auto}
+.dp-fill{flex:1 1 auto}
+.dp-paint{position:relative;flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
+.dp-path{position:absolute;left:0;top:52px;width:100%;height:auto;max-height:48vh;opacity:.55}
+.dp-body{position:relative;flex:1 1 auto;display:flex;flex-direction:column;justify-content:flex-end;padding:0 56px 26px;gap:14px}
+.dp-board{display:flex;gap:4px;--fw:clamp(24px,calc((100vw - 172px) / 16),42px)}
+.dp-row{display:flex;gap:4px}
+.dp-flap{position:relative;flex:none;width:var(--fw);height:calc(var(--fw) * 1.48);border-radius:5px;background:#0b0f1a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:calc(var(--fw) * .86);font-weight:800;line-height:1;box-shadow:inset 0 calc(var(--fw) * -.74) 0 rgba(255,255,255,.04);font-variant-numeric:tabular-nums}
+.dp-flap.spin{color:rgba(255,255,255,.45)}
+.dp-flap i{position:absolute;left:0;right:0;top:calc(50% - 1px);height:2px;background:var(--dp-bg)}
+.dp-line{font-size:18px;font-weight:700;max-width:620px}
+.dp-stampbox{position:absolute;right:70px;top:-10px;width:200px;height:200px}
+.dp-stamp{width:200px;height:200px;box-sizing:border-box;border-radius:50%;border:6px double #0b0f1a;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#0b0f1a;text-align:center;animation:dpslam .45s cubic-bezier(.2,.9,.2,1) both}
+.dp-stamp .a{font-size:14px;font-weight:800;letter-spacing:.2em;text-transform:uppercase}
+.dp-stamp .b{font-size:64px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.dp-stamp .c{font-size:14px;font-weight:800}
+.dp-count{flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:0 14px}
+.dp-q{font-size:13px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#9aa8c4;text-align:center}
+.dp-figs{display:flex;align-items:baseline;gap:34px}
+.dp-tot{font-size:110px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dp-tot b{display:inline-block;width:2ch;text-align:right;font-weight:800}
+.dp-tot span{font-size:36px;color:#9aa8c4}
+.dp-vf{display:flex;flex-direction:column;text-align:left}
+.dp-vf b{display:inline-block;width:3ch;font-size:54px;font-weight:800;line-height:1;color:#e3c77a;font-variant-numeric:tabular-nums;text-align:right}
+.dp-vf span{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#9aa8c4}
+.dp-books{display:flex;gap:12px;align-items:flex-end}
+.dp-bk{display:flex;flex-direction:column;align-items:center;gap:7px}
+.dp-bk .cv{width:86px;height:120px;box-sizing:border-box;border-radius:4px 9px 9px 4px;border-left:5px solid rgba(0,0,0,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;opacity:.3;transition:all .3s ease}
+.dp-bk .cv i{width:30px;height:30px;box-sizing:border-box;border-radius:50%;border:2px solid}
+.dp-bk .cv small{font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.dp-bk .nm{font-size:11px;font-weight:800;color:#9aa8c4;transition:color .3s ease}
+.dp-bk.on .cv{opacity:1}
+.dp-bk.at .cv{transform:translateY(-18px) scale(1.14);box-shadow:0 0 0 3px #e3c77a,0 16px 36px rgba(227,199,122,.35)}
+.dp-bk.at .nm{color:#e3c77a}
+.dp-land{flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:0 16px}
+.dp-spread{position:relative;width:260px;height:180px;flex:none;animation:dpland .55s cubic-bezier(.2,.8,.2,1) both}
+.dp-spread .pg{position:absolute;left:0;top:0;width:130px;height:180px;border-radius:9px 0 0 9px;box-shadow:inset 0 0 0 999px rgba(0,0,0,.28)}
+.dp-spread .pg.r{left:130px;border-radius:0 9px 9px 0;background:#f4efe2;box-shadow:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(0,1fr);gap:6px;padding:12px;box-sizing:border-box}
+.dp-spread .st{border:2.5px solid;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;transform:rotate(-12deg);font-variant-numeric:tabular-nums}
+.dp-spread .front{position:absolute;left:130px;top:0;width:130px;height:180px;border-radius:0 9px 9px 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;transform-origin:left center;backface-visibility:hidden;animation:dpopen 1.1s .5s cubic-bezier(.5,0,.2,1) both}
+.dp-spread .foil{width:40px;height:40px;box-sizing:border-box;border-radius:50%;border:2px solid;animation:dpfoil 2.2s ease-in-out infinite}
+.dp-spread .front small{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.dp-landt{text-align:center;animation:dppop .4s .4s cubic-bezier(.2,.8,.2,1) both}
+.dp-landt .a{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#7dd3fc}
+.dp-landt .b{font-size:30px;font-weight:800;line-height:1.1;margin-top:4px}
+.dp-landt .c{font-size:15px;font-weight:700;color:#9aa8c4;margin-top:6px;font-variant-numeric:tabular-nums}
+.dp-stops{display:flex;align-items:center;padding:14px 40px 20px}
+.dp-stop{flex:1 1 0;display:flex;align-items:center;min-width:0}
+.dp-stop b{width:34px;height:34px;flex:none;box-sizing:border-box;border-radius:50%;border:2px dashed rgba(255,255,255,.25);background:transparent;color:#0b0f1a;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;transition:all .3s ease;font-variant-numeric:tabular-nums}
+.dp-stop span{margin-left:8px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9aa8c4}
+.dp-stop em{flex:1 1 auto;height:2px;margin:0 12px;background:rgba(255,255,255,.14)}
+.dp-stop.last em{background:transparent}
+.dp-stop.f b{background:var(--si);border:2px solid #0b0f1a}
+.dp-stop.f span{color:#e9edf4}
+.dp.paint .dp-stop b{border-color:rgba(11,15,26,.45)}
+.dp.paint .dp-stop.f b{border:2px solid #0b0f1a}
+.dp.paint .dp-stop span{color:#0b0f1a}
+.dp.paint .dp-stop em{background:rgba(11,15,26,.3)}
+.dp.paint .dp-stop.last em{background:transparent}
+.dp-skip{position:absolute;right:16px;bottom:6px;font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.5}
+@keyframes dpslam{0%{opacity:0;transform:scale(2.2) rotate(-14deg)}55%{opacity:1;transform:scale(.92) rotate(-9deg)}100%{opacity:.92;transform:rotate(-9deg)}}
+@keyframes dpopen{from{transform:perspective(900px) rotateY(0)}to{transform:perspective(900px) rotateY(-160deg)}}
+@keyframes dpfoil{0%,100%{opacity:.35}50%{opacity:1}}
+@keyframes dppop{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes dpland{from{opacity:0;transform:translateY(-40px) scale(.9)}to{opacity:1;transform:none}}
+@media(max-width:640px){
+  .dp-cap{gap:10px;padding:16px 18px 0;font-size:10px}
+  .dp-paint{justify-content:center;padding:0 22px;gap:16px}
+  .dp-path{position:relative;top:auto;width:100%;max-width:346px;max-height:none;opacity:.6}
+  .dp-body{flex:none;justify-content:flex-start;padding:0;gap:16px}
+  .dp-board{flex-direction:column;gap:5px;--fw:clamp(26px,calc((100vw - 72px) / 8),38px)}
+  .dp-flap{height:calc(var(--fw) * 1.42);border-radius:4px;font-size:calc(var(--fw) * .8)}
+  .dp-line{font-size:16px;line-height:1.35}
+  .dp-stampbox{position:relative;right:auto;top:auto;width:auto;height:150px;display:flex;justify-content:center}
+  .dp-stamp{width:146px;height:146px;border-width:5px}
+  .dp-stamp .a{font-size:11px;letter-spacing:.18em}
+  .dp-stamp .b{font-size:50px}
+  .dp-stamp .c{font-size:12px}
+  .dp-q{font-size:12px;letter-spacing:.16em}
+  .dp-figs{flex-direction:column;align-items:center;gap:18px}
+  .dp-tot{font-size:88px}
+  .dp-tot span{font-size:28px}
+  .dp-vf{flex-direction:row;align-items:baseline;gap:8px}
+  .dp-vf b{font-size:40px}
+  .dp-books{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 16px}
+  .dp-bk{gap:6px}
+  .dp-bk .cv{width:62px;height:86px;border-radius:3px 7px 7px 3px;border-left-width:4px;gap:6px}
+  .dp-bk .cv i{width:22px;height:22px}
+  .dp-bk .cv small{font-size:7px;letter-spacing:.12em}
+  .dp-bk.at .cv{transform:translateY(-8px) scale(1.12);box-shadow:0 0 0 3px #e3c77a,0 12px 28px rgba(227,199,122,.35)}
+  .dp-spread{width:208px;height:144px}
+  .dp-spread .pg,.dp-spread .front{width:104px;height:144px}
+  .dp-spread .pg.r,.dp-spread .front{left:104px}
+  .dp-spread .pg.r{padding:9px;gap:4px}
+  .dp-spread .st{font-size:14px}
+  .dp-landt .b{font-size:24px}
+  .dp-landt .c{font-size:13px}
+  .dp-stops{padding:12px 18px 16px;align-items:flex-start}
+  .dp-stop{position:relative;flex-direction:column;gap:5px}
+  .dp-stop b{position:relative;z-index:1;width:32px;height:32px}
+  .dp-stop span{margin-left:0;font-size:10px}
+  .dp-stop em{position:absolute;top:15px;left:50%;width:100%;margin:0}
+}
+`;
 
 const PP_STAGE = true;
 const PP_INK = 'var(--stg-ink,#e9edf4)';

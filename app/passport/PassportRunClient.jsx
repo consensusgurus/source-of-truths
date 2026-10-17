@@ -38,8 +38,8 @@ import { RunChallengeButton, RunChallengeLine } from '../RunChallenge';
 import { notifyShareCredit } from '../ShareCreditPop';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
-import { KEY, LEGS, legOrderFor, legPoints, TIERS, tierIndex, HENLEY_EDITION, shareLinesRun } from '@/lib/passport';
-import { Stamp, Cover, Finale, Launch, PP_CSS, LAUNCH_CSS, ENDING_CSS, usePlaneMap } from './PassportClient';
+import { KEY, LEGS, legOrderFor, legOrderBefore, legPoints, TIERS, tierIndex, HENLEY_EDITION, shareLinesRun } from '@/lib/passport';
+import { Stamp, Cover, Departures, Launch, PP_CSS, LAUNCH_CSS, ENDING_CSS, usePlaneMap } from './PassportClient';
 import RunBackLink from '../circuits/RunBackLink';
 
 const CLIENTS = {
@@ -52,6 +52,8 @@ const PATH = '/passport';
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const INKS = ['#a78bfa', '#60a5fa', '#34d399', '#fbbf24'];
+// The same four inks for paper (the stamps inside the earned passport).
+const INKS_DEEP = ['#6d28d9', '#1d4ed8', '#047857', '#a16207'];
 const STATS_KEY = 'sot_passport_stats';
 const VARS = { '--pp-sea': '#0a1222', '--pp-land': '#2a3652', '--pp-edge': '#0b0f1a', '--pp-home': '#f0718b', '--pp-hit': '#2f7a64', '--pp-miss': '#5a3340', '--pp-panel': '#181e2d', '--pp-line': 'rgba(255,255,255,0.18)', '--pp-good': '#6ee7b7', '--pp-bad': '#fb7185', '--pp-gold': '#fbbf24', '--pp-label': '#ffffff', '--pp-halo': '#0b0f1a' };
 const SRC_NAME = { span: 'Span', flank: 'Flank', ping: 'Ping' };
@@ -113,10 +115,18 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   const STORE_KEY = `sot_${KEY}_${PUZZLE.num}`;
   const REC_KEY = `sot_${KEY}_rec_${PUZZLE.num}`;
   const NC = calls.length || 9;
-  // Play order: ORD[step] is an index into LEGS (the storage order).
-  const ORD = legOrderFor(PUZZLE.live);
+  // Play order: ORD[step] is an index into LEGS (the storage order). The order
+  // a run was STARTED under travels in its save (`ord`), so a run begun before
+  // a reorder keeps the order it was played in: g.round is a step in ORD, and
+  // re-reading a saved round against a new order would skip or replay a leg.
+  const BASE_ORD = legOrderFor(PUZZLE.live);
+  const fresh = () => ({ ...freshState(), ord: BASE_ORD });
+  const ordOf = (st) => (st && Array.isArray(st.ord) && st.ord.length === 4 ? st.ord : BASE_ORD);
+  const [g, setG] = useState(() => fresh());
+  const ORD = ordOf(g);
   const SIZES_FIRST = ORD[0] === 3;
-  const [g, setG] = useState(() => freshState());
+  // On days that deal the sizes from anywhere (not from the day's games).
+  const OPEN_SIZES = calls.some((c) => c && c.src === 'open');
   const gRef = useRef(g);
   const [hydrated, setHydrated] = useState(false);
   const [banked, setBanked] = useState({});
@@ -145,7 +155,11 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     setBanked(b);
     checkServer();
     if (saved && saved.v === 2 && Array.isArray(saved.sc)) {
-      const next = { ...freshState(), ...saved, sz: { ...freshState().sz, ...(saved.sz || {}) } };
+      // A save written before `ord` existed was started under the order of
+      // its day as it stood then (legOrderBefore); one never started takes
+      // today's order.
+      const ord = Array.isArray(saved.ord) && saved.ord.length === 4 ? saved.ord : (saved.t0 ? legOrderBefore(PUZZLE.live) : BASE_ORD);
+      const next = { ...fresh(), ...saved, ord, sz: { ...freshState().sz, ...(saved.sz || {}) } };
       gRef.current = next; setG(next);
       doneAtLoad.current = next.status !== 'playing';
     } else doneAtLoad.current = false;
@@ -232,7 +246,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   // beat so the player sees it, then the leg's stamp takes its place.
   const onSectionDone = useCallback((res) => {
     const cur = gRef.current;
-    const li = ORD[cur.round];
+    const li = ordOf(cur)[cur.round];
     const sec = sections[li];
     if (!sec || !res || res.key !== sec.key || cur.sc[li] != null) return;
     const ms = res.t0 ? Math.max(1000, (res.tEnd || Date.now()) - res.t0) : 0;
@@ -246,7 +260,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     const cur = gRef.current;
     if (cur.t0) return;
     const t0 = Date.now();
-    commit({ ...cur, t0, sz: SIZES_FIRST && !cur.sz.t0 ? { ...cur.sz, t0 } : cur.sz });
+    commit({ ...cur, t0, sz: ordOf(cur)[0] === 3 && !cur.sz.t0 ? { ...cur.sz, t0 } : cur.sz });
     setNow(t0);
     try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {}
   }
@@ -254,7 +268,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     const cur = gRef.current;
     if (cur.round >= 3) return;
     const next = { ...cur, round: cur.round + 1 };
-    if (ORD[next.round] === 3 && !next.sz.t0) next.sz = { ...next.sz, t0: Date.now() };
+    if (ordOf(next)[next.round] === 3 && !next.sz.t0) next.sz = { ...next.sz, t0: Date.now() };
     commit(next);
     toTop();
   }
@@ -316,7 +330,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
 
   function callSize(bigger) {
     const cur = gRef.current;
-    if (ORD[cur.round] !== 3 || cur.sc[3] != null || numShow != null) return;
+    if (ordOf(cur)[cur.round] !== 3 || cur.sc[3] != null || numShow != null) return;
     const i = cur.sz.i;
     const c = calls[i]; if (!c) return;
     const ok = bigger === (valB(c) > valA(c));
@@ -329,7 +343,9 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
         const right = c2.sz.res.filter(Boolean).length;
         const sz2 = { ...c2.sz, i: i + 1, tEnd: Date.now() };
         award(c2, 3, legPoints('passport', right, NC), { sz: sz2 });
-        if (SIZES_FIRST) postRow({ ...c2, sz: sz2 });
+        // The passport row files the moment the sizes end, unless they are the
+        // last leg (then finish() files it a beat later, as before).
+        if (ordOf(c2)[3] !== 3) postRow({ ...c2, sz: sz2 });
       } else commit({ ...c2, sz: { ...c2.sz, i: i + 1 } });
     }, reducedMotion() ? 500 : 1500);
   }
@@ -364,14 +380,14 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   }
   function copyShare() {
     const text = playing
-      ? `Passport #${PUZZLE.num}: the day's Span, Flank and Ping, then nine size calls. One score out of 50, one passport.\n${shareUrl()}`
+      ? `Passport #${PUZZLE.num}: ${ORD[0] === 2 ? "the day's Ping, nine size calls, then Flank and Span" : SIZES_FIRST ? "nine size calls, then the day's Ping, Flank and Span" : "the day's Span, Flank and Ping, then nine size calls"}. One score out of 50, one passport.\n${shareUrl()}`
       : shareLinesRun(PUZZLE.num, total, sc, elapsed, shareUrl(true));
     if (notifyShareCredit(text)) return;
     try { if (navigator.share && isMobileDevice()) { navigator.share({ text }).catch(() => {}); return; } } catch (e) {}
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}
   }
 
-  const sizesStep = SIZES_FIRST
+  const sizesStep = (SIZES_FIRST || OPEN_SIZES)
     ? <><b>Sizes.</b> Nine pairs of countries close in size, drawn from anywhere in the world. Is the second bigger or smaller, by area or by population (each call says which)? About 2 points a call, 20 in all.</>
     : <><b>Sizes.</b> Nine pairs, three for each game: a country from that game against another country close to it in size, often one you met today. Is the second bigger or smaller, by area or by population (each call says which)? About 2 points a call, 20 in all.</>;
   const gameSteps = [
@@ -380,14 +396,14 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     <><b>Ping.</b> The day&rsquo;s Ping: find a secret city by how far each guess lands from it. Its score out of 10.</>,
   ];
   const rulesSteps = [
-    ...(SIZES_FIRST ? [sizesStep, gameSteps[2], gameSteps[1], gameSteps[0]] : [...gameSteps, sizesStep]),
+    ...ORD.map((i) => (i === 3 ? sizesStep : gameSteps[i])),
     <>Played one of the three on its own page today? Your first result stands and the run steps over it. The board ranks your total, then time.</>,
   ];
   const rulesBody = (
     <DailyRules accent="#be123c" accentSoft="#fdecef"
-      lead={SIZES_FIRST ? 'A size round and three geography games, one score out of 50. Your total decides which passport you travel home on.' : 'Three geography games and one size round, one score out of 50. Your total decides which passport you travel home on.'}
+      lead={ORD[3] !== 3 && !SIZES_FIRST ? `${ORD.map((i) => (i === 3 ? 'a size round' : LEGS[i].n)).join(', ').replace(/^./, (c) => c.toUpperCase()).replace(/, ([^,]*)$/, ' and $1')}: one score out of 50. Your total decides which passport you travel home on.` : SIZES_FIRST ? 'A size round and three geography games, one score out of 50. Your total decides which passport you travel home on.' : 'Three geography games and one size round, one score out of 50. Your total decides which passport you travel home on.'}
       steps={rulesSteps}
-      knack={SIZES_FIRST ? 'The size pairs are close, so trust what you know about each country over a guess at scale. Then Ping, Flank and Span, in that order.' : "The sizes leg leans on the countries you just met: the road you walked in Span, Flank's country and its ring, and the country Ping's city is in. The pairs are close, so trust what you know over a guess at scale."}
+      knack={ORD[3] !== 3 && !SIZES_FIRST ? 'The size pairs are close, so trust what you know about each country over a guess at scale.' : SIZES_FIRST ? 'The size pairs are close, so trust what you know about each country over a guess at scale. Then Ping, Flank and Span, in that order.' : "The sizes leg leans on the countries you just met: the road you walked in Span, Flank's country and its ring, and the country Ping's city is in. The pairs are close, so trust what you know over a guess at scale."}
       footer={`Areas are from the CIA World Factbook, checked against a second table so no call turns on a disputed figure. The passports and their visa-free counts are the ${HENLEY_EDITION}.`} />
   );
 
@@ -527,7 +543,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
             t={runSecs} status={tier.name || ''} door />
         </div>
         {isTodays ? (
-          <NextDrop label="Next flight" sub="A new Span, Flank and Ping board at midnight Eastern." href={PATH}
+          <NextDrop label="Next flight" sub="A new Ping, Flank and Span board at midnight Eastern." href={PATH}
             accent="#c4b5fd" style={{ margin: '14px 0 0' }} />
         ) : null}
         <MoreRunsList self="passport" />
@@ -578,9 +594,9 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
           <>
             <Launch puzzle={PUZZLE} canvasRef={canvasRef} onBoard={start}
               legs={ORD.map((i) => LEGS[i])} demo={ORD.map((i) => [8, 10, 7, 16][i])} gate="4 legs"
-              lede={SIZES_FIRST ? <><b>Nine size calls</b> on countries from anywhere, then the day&rsquo;s <b>Ping</b>, <b>Flank</b> and <b>Span</b>. Your score decides <b>which passport</b> you travel home on.</> : <>The day&rsquo;s <b>Span</b>, <b>Flank</b> and <b>Ping</b>, then <b>nine size calls</b> on the countries you met. Your score decides <b>which passport</b> you travel home on.</>}
+              lede={ORD[0] === 2 ? <>The day&rsquo;s <b>Ping</b>, then <b>nine size calls</b>{OPEN_SIZES ? ' on countries from anywhere' : ''}, then <b>Flank</b> and <b>Span</b>. Your score decides <b>which passport</b> you travel home on.</> : SIZES_FIRST ? <><b>Nine size calls</b> on countries from anywhere, then the day&rsquo;s <b>Ping</b>, <b>Flank</b> and <b>Span</b>. Your score decides <b>which passport</b> you travel home on.</> : <>The day&rsquo;s <b>Span</b>, <b>Flank</b> and <b>Ping</b>, then <b>nine size calls</b> on the countries you met. Your score decides <b>which passport</b> you travel home on.</>}
               visaTitle="Four legs, four stamps"
-              visaText={SIZES_FIRST ? 'Size up nine pairs of countries, hunt a city in Ping, ring a country in Flank, then cross the map in Span.' : 'Cross the map in Span, ring a country in Flank, hunt a city in Ping, then size up the countries you met.'}
+              visaText={ORD[0] === 2 ? 'Hunt a city in Ping, size up nine pairs of countries, ring a country in Flank, then cross the map in Span.' : SIZES_FIRST ? 'Size up nine pairs of countries, hunt a city in Ping, ring a country in Flank, then cross the map in Span.' : 'Cross the map in Span, ring a country in Flank, hunt a city in Ping, then size up the countries you met.'}
               rules={launchRules}
               sundayNote="Sundays bring each game's own Sunday Edition"
               boardLabel="Board now: start the run" />
@@ -611,7 +627,12 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
         {hydrated && done && !finale && ending}
       </div>
 
-      {finale && done && <Finale scores={ORD.map((i) => sc[i])} total={total} clock={elapsed} inks={ORD.map((i) => INKS[i])} onDone={finaleDone} legs={ORD.map((i) => LEGS[i])} />}
+      {finale && done && (
+        <Departures scores={ORD.map((i) => sc[i] || 0)} total={total} clock={elapsed}
+          inks={ORD.map((i) => INKS[i])} deeps={ORD.map((i) => INKS_DEEP[i])}
+          legs={ORD.map((i) => ({ n: LEGS[i].n, max: LEGS[i].max, line: i === 3 && OPEN_SIZES ? 'Nine close pairs of countries, bigger or smaller by area or by population.' : LEGS[i].line }))}
+          num={PUZZLE.num} dateLabel={(PUZZLE.dateLabel || '').replace(/, \d{4}$/, '')} onDone={finaleDone} />
+      )}
       <MoreRunsPop self="passport" ready={nudgeReady} delay={10000} fireOnLeave />
       <GauntletMorePop circuitId="passport" ready={hydrated && done && !finale} />
 
@@ -632,7 +653,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
       <section style={{ position: 'relative', display: started ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--stg-ink,#e9edf4)' }}>About Passport</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: 'var(--stg-mute,#8b95a8)', fontWeight: 600 }}>
-          {SIZES_FIRST ? <>Passport is a free daily geography run from Mind Loft: nine bigger-or-smaller calls on area or population, worth 20, on pairs of countries close in size, then the day&rsquo;s Ping, Flank and Span played back to back, each worth 10. One total out of 50.</> : <>Passport is a free daily geography run from Mind Loft: the day&rsquo;s Span, Flank and Ping played back to back, each worth 10, then nine bigger-or-smaller calls on area or population, worth 20, on countries from those three games set against others close to them in size. One total out of 50.</>}
+          {ORD[0] === 2 ? <>Passport is a free daily geography run from Mind Loft: the day&rsquo;s Ping, then nine bigger-or-smaller calls on area or population, worth 20, on pairs of countries close in size, then the day&rsquo;s Flank and Span, each game worth 10. One total out of 50.</> : SIZES_FIRST ? <>Passport is a free daily geography run from Mind Loft: nine bigger-or-smaller calls on area or population, worth 20, on pairs of countries close in size, then the day&rsquo;s Ping, Flank and Span played back to back, each worth 10. One total out of 50.</> : <>Passport is a free daily geography run from Mind Loft: the day&rsquo;s Span, Flank and Ping played back to back, each worth 10, then nine bigger-or-smaller calls on area or population, worth 20, on countries from those three games set against others close to them in size. One total out of 50.</>}
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: 'var(--stg-mute,#8b95a8)', fontWeight: 600 }}>
           Your total decides the passport you travel home on, from the Sierra Leonean passport up to the Japanese, ranked by the visa-free destinations each opens in the {HENLEY_EDITION}. Everyone plays the same boards, and the leaderboard ranks your total, then time. A new run boards every day at midnight Eastern.

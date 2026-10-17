@@ -96,9 +96,9 @@ export const RUN_DOORS = {
   // knows Span still gets told Passport changed, once.
   passport: {
     href: '/passport', name: 'Passport', eyebrow: 'Passport changed a bit', once: 'game', everyone: true, from: '2026-10-15',
-    body: 'Passport now opens on nine calls on which country is bigger by area or by population, then today\u2019s Ping, Flank and Span. One page, one score out of 50, and a passport to match.',
+    body: 'Passport now opens on today\u2019s Ping, then nine calls on which country is bigger by area or by population, then Flank and Span. One page, one score out of 50, and a passport to match.',
     go: 'Start Passport', accent: '#6ee7b7',
-    tags: [['Span', '#a78bfa'], ['Flank', '#60a5fa'], ['Ping', '#34d399'], ['Bigger or smaller', '#fbbf24']],
+    tags: [['Ping', '#34d399'], ['Bigger or smaller', '#fbbf24'], ['Flank', '#60a5fa'], ['Span', '#a78bfa']],
   },
 };
 

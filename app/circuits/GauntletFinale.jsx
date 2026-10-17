@@ -53,6 +53,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { rampFor } from '@/lib/circuits';
 import { shownLength } from './GauntletLadder';
+import { titleLadder, titleFor } from '@/lib/run-titles';
+import { mathText } from '@/app/MathText';
 
 const PAINT_MS = 1250;     // one bank owns the screen for this long (980 before the rank line)
 const COUNT_MS = 560;      // its number, its ladder block and its segment
@@ -77,6 +79,75 @@ function inkFor(hex) {
 }
 
 const ease = (t) => 1 - Math.pow(1 - t, 3);
+
+// THE TWO GAUNTLETS' SET PIECES (owner, 2026-10-17). The Trivia Gauntlet
+// lights a row of question pips to the miss and climbs a shelf of six titles;
+// the Math Gauntlet races a calculator readout through the game's real
+// problems to an ERR and climbs six title rows beside an LCD total. Every other
+// circuit that mounts this curtain (the Trivia Encore) gets none of it, and its
+// timings below are the ones it always had.
+const MODE_TIMING = {
+  trivia: { start: 300, paint: 1300, count: 700, rank: 900, miss: 760 },
+  math: { start: 300, paint: 1500, count: 800, rank: 1000, miss: 900 },
+};
+const TITLE_STEP = 600;     // one title of the climb
+const TITLE_FLASH = 220;    // the stage flashes the title's colour as it is crossed
+const TITLE_TAIL = 300;     // the earned title pulls out this long into its step
+const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+const spell = (n) => (n >= 0 && n < WORDS.length ? WORDS[n] : String(n));
+
+// When the count on a bank reaches i + 1, under the same ease the Count uses.
+function pipDelay(i, got, ms) {
+  if (!got) return 0;
+  const v = Math.min(1, (i + 0.5) / got);
+  return Math.round((1 - Math.pow(1 - v, 1 / 3)) * ms);
+}
+
+// A solved problem as one readout line: the blank filled in, or "= answer".
+function readoutLine(q) {
+  if (!q) return '';
+  const c = Array.isArray(q.choices) ? q.choices[q.correct] : '';
+  const a = typeof c === 'number' ? c.toLocaleString('en-US') : String(c == null ? '' : c);
+  const s = String(q.q || '');
+  return s.indexOf('?') !== -1 ? s.split('?').join(a) : `${s} = ${a}`;
+}
+
+// THE READOUT. A fixed box with fixed-height lines (owner: nothing resizes),
+// racing through the problems this game actually asked that the player got
+// right, then flashing ERR on the one that ended it.
+function Readout({ qs = [], got = 0, missed = false, resetKey, missAt = 900 }) {
+  const [tick, setTick] = useState(-1);
+  const [err, setErr] = useState(false);
+  useEffect(() => {
+    setTick(-1);
+    setErr(false);
+    const timers = [];
+    const n = Math.min(got, qs.length);
+    const every = n > 0 ? Math.min(140, 880 / n) : 140;
+    for (let i = 0; i < n; i++) timers.push(setTimeout(() => setTick(i), Math.round(i * every)));
+    if (missed) timers.push(setTimeout(() => setErr(true), missAt));
+    return () => timers.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetKey]);
+  const lines = [];
+  for (let j = 3; j >= 0; j--) {
+    const idx = tick - j;
+    if (idx < 0) continue;
+    lines.push({ idx, cur: j === 0, op: j === 0 ? 1 : 0.35 + (3 - j) * 0.15 });
+  }
+  return (
+    <div className="gfin-calc" aria-hidden="true">
+      <div className="gfin-scr">
+        {lines.map((ln) => (
+          <div key={ln.idx} className={`gfin-ln${ln.cur ? ' cur' : ''}`} style={{ opacity: ln.op }}>
+            {mathText(readoutLine(qs[ln.idx]))}
+          </div>
+        ))}
+        {err ? <div className="gfin-err">ERR</div> : null}
+      </div>
+    </div>
+  );
+}
 
 // A number that counts. It owns its own frame loop so a tick re-renders this
 // component and nothing else.
@@ -116,9 +187,19 @@ export default function GauntletFinale({
   meKey = null,
   guest = false,
   field = null,
+  circuitId = null,
   onDone,
 }) {
   const N = sections.length;
+  // trivia / math carry the set pieces and the title climb; anything else
+  // (the Trivia Encore) plays the Broadcast exactly as it always has.
+  const mode = circuitId === 'gauntlet' ? 'trivia' : circuitId === 'math' ? 'math' : null;
+  const tm = mode ? MODE_TIMING[mode] : null;
+  const paintMs = tm ? tm.paint : PAINT_MS;
+  const countMs = tm ? tm.count : COUNT_MS;
+  const ladder = mode ? titleLadder(circuitId) : null;
+  const earned = mode ? titleFor(circuitId, score) : null;
+  const K = earned ? earned.index : 0;
   // -1 waiting a beat, 0..N-1 a bank, N the repaint and the total, N+1 the board.
   // NOTHING IS DRAWN AT -1. The middle's non-painting branch is the TOTAL, so
   // rendering it before the first bank flashed the run's final score for a
@@ -127,6 +208,10 @@ export default function GauntletFinale({
   // The bank whose rank line is up, and how many by-quiz slots have landed.
   const [rankIn, setRankIn] = useState(-1);
   const [landed, setLanded] = useState(0);
+  // The title climb: which title the total is in, the flash, and the pull-out.
+  const [climbK, setClimbK] = useState(-1);
+  const [flash, setFlash] = useState(false);
+  const [pulled, setPulled] = useState(false);
   const doneRef = useRef(false);
 
   const banks = useMemo(() => sections.map((s, i) => {
@@ -140,7 +225,8 @@ export default function GauntletFinale({
     const plays = field && field.plays && Number.isFinite(field.plays[s.key]) ? field.plays[s.key] : null;
     // The bar's length: anchored to today's best on this bank, not to all 25.
     const shown = shownLength(asked, field && field.top ? field.top[s.key] : 0, got) || 1;
-    return { key: s.key, name: s.name || s.key, subject: s.subject || '', asked, shown, got, colour, ink: inkFor(colour), rank, plays };
+    const qs = Array.isArray(s.questions) ? s.questions : [];
+    return { key: s.key, name: s.name || s.key, subject: s.subject || (mode ? s.topic : '') || '', asked, shown, got, colour, ink: inkFor(colour), rank, plays, qs };
   }), [sections, results, field]);
 
   const running = useMemo(() => {
@@ -164,15 +250,29 @@ export default function GauntletFinale({
     if (reduced || !N) { finish(); return undefined; }
     const timers = [];
     const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+    const t0 = tm ? tm.start : 260;
+    const rankAt = tm ? tm.rank : RANK_AT_MS;
     banks.forEach((b, i) => {
-      at(260 + i * PAINT_MS, () => setStep(i));
-      at(260 + i * PAINT_MS + RANK_AT_MS, () => setRankIn(i));
+      at(t0 + i * paintMs, () => setStep(i));
+      at(t0 + i * paintMs + rankAt, () => setRankIn(i));
     });
-    const end = 260 + N * PAINT_MS;
-    at(end, () => setStep(N));
-    at(end + REPAINT_MS, () => setStep(N + 1));
-    banks.forEach((b, i) => at(end + REPAINT_MS + SLOT_FROM_MS + i * SLOT_GAP_MS, () => setLanded(i + 1)));
-    at(end + REPAINT_MS + CLIMB_MS + HOLD_MS, finish);
+    const end = t0 + N * paintMs;
+    // The repaint is the title climb on the two gauntlets: one step per title
+    // the total crosses, each flashing the stage in that title's colour.
+    let repaint = REPAINT_MS;
+    if (mode && ladder) {
+      for (let k = 0; k <= K; k++) {
+        at(end + k * TITLE_STEP, () => { setStep(N); setClimbK(k); setFlash(true); });
+        at(end + k * TITLE_STEP + TITLE_FLASH, () => setFlash(false));
+      }
+      at(end + K * TITLE_STEP + TITLE_TAIL, () => setPulled(true));
+      repaint = (K + 1) * TITLE_STEP + TITLE_TAIL + TITLE_TAIL;
+    } else {
+      at(end, () => setStep(N));
+    }
+    at(end + repaint, () => setStep(N + 1));
+    banks.forEach((b, i) => at(end + repaint + SLOT_FROM_MS + i * SLOT_GAP_MS, () => setLanded(i + 1)));
+    at(end + repaint + CLIMB_MS + HOLD_MS, finish);
     return () => timers.forEach(clearTimeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [N]);
@@ -188,8 +288,11 @@ export default function GauntletFinale({
   const painting = step >= 0 && step < N;
   const cur = painting ? banks[step] : null;
   const restored = step >= N;
-  const ground = painting ? cur.colour : '#0b0f1a';
-  const ink = painting ? cur.ink : '#f2f6ff';
+  const flashC = mode && ladder && flash && step === N && climbK >= 0 ? ladder[climbK].colour : null;
+  const ground = painting ? cur.colour : flashC || '#0b0f1a';
+  const ink = painting ? cur.ink : flashC ? '#0b0f1a' : '#f2f6ff';
+  const titling = !!(mode && ladder && step === N);
+  const noDenom = mode === 'trivia';
 
   // THE CLIMB'S SCALE (owner, 2026-10-07): the best total on the board sits
   // near the top of the column, not 180 at the top with everyone in the
@@ -206,8 +309,8 @@ export default function GauntletFinale({
 
   return (
     <div
-      className={`gfin${restored ? ' restored' : ''}`}
-      style={{ background: ground, color: ink }}
+      className={`gfin${restored ? ' restored' : ''}${mode ? ` m-${mode}` : ''}`}
+      style={{ background: ground, color: ink, ...(flashC ? { transition: 'background-color .05s ease,color .3s ease' } : null) }}
       onClick={finish}
       role="button"
       tabIndex={0}
@@ -217,14 +320,57 @@ export default function GauntletFinale({
 
       <div className="gfin-run">
         {step < 0 ? null : restored
-          ? <><Count to={score} ms={800} from={0} resetKey="tot" /> of {total} right</>
+          ? (noDenom
+            ? <><Count to={score} ms={800} from={0} resetKey="tot" /> right</>
+            : <><Count to={score} ms={800} from={0} resetKey="tot" /> of {total} right</>)
           : <>running · <Count to={running[step]} ms={COUNT_MS} from={step > 0 ? running[step - 1] : 0} resetKey={step} /></>}
       </div>
 
       {/* THE MIDDLE. One bank at a time while the paint is up, then the total,
           then out of the way so the board owns the screen. */}
       <div className={`gfin-mid${step === N + 1 ? ' gone' : ''}${restored ? ' up' : ''}`}>
-        {step < 0 ? null : painting ? (
+        {step < 0 ? null : painting && mode === 'math' ? (
+          <div className="gfin-mrow">
+            <Readout qs={cur.qs} got={cur.got} missed={cur.got < cur.asked} resetKey={step} missAt={tm.miss} />
+            <div className="gfin-mcol">
+              <div className="gfin-sub">Game {step + 1} of {N}{cur.subject ? ` \u00B7 ${cur.subject}` : ''}</div>
+              <div className="gfin-nm">{cur.name}</div>
+              <div className="gfin-n fx"><Count to={cur.got} ms={countMs} from={0} resetKey={step} /></div>
+              {cur.rank != null || cur.plays != null ? (
+                <div className={`gfin-rk${rankIn === step ? ' in' : ''}`}>
+                  {cur.rank != null
+                    ? <><span className="n">#{cur.rank}</span><span className="h">of {cur.plays} on {cur.name} today</span></>
+                    : <span className="h">{cur.plays} played so far · no field yet</span>}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : painting && mode === 'trivia' ? (
+          <>
+            <div className="gfin-sub">Quiz {step + 1} of {N}{cur.subject ? ` \u00B7 ${cur.subject}` : ''}</div>
+            <div className="gfin-nm">{cur.name}</div>
+            {cur.asked > 0 ? (() => {
+              const nP = Math.min(cur.asked, Math.max(28, cur.got + 1));
+              const missI = cur.got < cur.asked ? cur.got : -1;
+              const pips = [];
+              for (let i = 0; i < nP; i++) {
+                if (i < cur.got) pips.push(<span key={i} className="gfin-pip r" style={{ animationDelay: `${pipDelay(i, cur.got, countMs)}ms` }} />);
+                else if (i === missI) pips.push(<span key={i} className="gfin-pip"><span className="xk" style={{ animationDelay: `${tm.miss}ms` }}>{'\u00D7'}</span></span>);
+                else pips.push(<span key={i} className="gfin-pip" />);
+              }
+              return <div className="gfin-pips" key={step} aria-hidden="true">{pips}</div>;
+            })() : null}
+            <div className="gfin-n fx"><Count to={cur.got} ms={countMs} from={0} resetKey={step} /></div>
+            <div className="gfin-of">{cur.got === cur.asked ? 'cleared, no miss' : 'right before the miss'}</div>
+            {cur.rank != null || cur.plays != null ? (
+              <div className={`gfin-rk${rankIn === step ? ' in' : ''}`}>
+                {cur.rank != null
+                  ? <><span className="n">#{cur.rank}</span><span className="h">of {cur.plays} on this quiz today</span></>
+                  : <span className="h">{cur.plays} played so far · no field yet</span>}
+              </div>
+            ) : null}
+          </>
+        ) : mode && restored ? null : painting ? (
           <>
             {cur.subject ? <div className="gfin-sub">{cur.subject}</div> : null}
             <div className="gfin-nm">{cur.name}</div>
@@ -249,6 +395,60 @@ export default function GauntletFinale({
           </>
         )}
       </div>
+
+      {/* THE TITLE CLIMB (the two gauntlets only). The total climbs through the
+          run's titles, each crossed one lights and flashes the stage, and the
+          earned one pulls out: a stack of books on the Trivia Gauntlet, six
+          title rows beside an LCD total on the Math Gauntlet. Every number sits
+          in a fixed box so nothing resizes as it counts. */}
+      {mode && ladder ? (() => {
+        const lo = climbK >= 0 ? ladder[climbK].min : 0;
+        const hi = climbK < 0 ? 0 : climbK === K ? score : ladder[climbK + 1].min - 1;
+        const at = Math.max(0, climbK);
+        const shown = climbK >= 0;
+        const num = <Count to={hi} ms={TITLE_STEP - 150} from={lo} resetKey={`t${climbK}`} />;
+        return (
+          <div className={`gfin-tph${titling ? ' in' : ''}`} aria-hidden={!titling}>
+            {mode === 'trivia' ? (
+              <>
+                <div className="gfin-tlead">
+                  <div className="gfin-teb">Questions right, all {spell(N)} quizzes</div>
+                  <div className="gfin-ttot">{shown ? num : null}</div>
+                </div>
+                <div className="gfin-shelf">
+                  {ladder.map((t, i) => {
+                    const lit = shown && i <= at;
+                    const cls = `gfin-book${lit ? ' lit' : ''}${shown && i === at ? ' at' : ''}${shown && i === K && pulled ? ' out' : ''}`;
+                    return (
+                      <div key={t.name} className={cls} style={{ '--tc': t.colour, '--bw': `${100 - i * 4.7}%` }}>
+                        <span className="nm">{t.name}</span><span className="mn">{t.min}+</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="gfin-tlead">
+                  <div className="gfin-teb">Right answers, all {spell(N)} games</div>
+                  <div className="gfin-lcd"><span className="v">{shown ? num : null}</span></div>
+                </div>
+                <div className="gfin-trows">
+                  {ladder.map((t, i) => {
+                    const lit = shown && i <= at;
+                    const cls = `gfin-trow${lit ? ' lit' : ''}${shown && i === at ? ' at' : ''}${shown && i === K && pulled ? ' out' : ''}`;
+                    return (
+                      <div key={t.name} className={cls} style={{ '--tc': t.colour }}>
+                        <span className="nm">{t.name}</span><span className="mn">{t.min}+</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+        );
+      })() : null}
 
       {/* THE LADDER, along the bottom. One masked fill per bank rather than a
           rung per question: the mask draws the rungs and the width animates. */}
@@ -308,6 +508,16 @@ export default function GauntletFinale({
           five. There is no field of names scrolling past, because the only way
           to draw one would be to invent the names. */}
       <div className={`gfin-board${step === N + 1 ? ' in' : ''}`}>
+        {earned ? (
+          <div className="gfin-ttl" style={{ '--tc': earned.colour }}>
+            <span className="eb">Today&rsquo;s title</span>
+            <span className="nm">{earned.name}</span>
+            <span className="ln">
+              {earned.line}
+              {earned.next ? <b>{` ${earned.toNext} more right and you are ${/^[aeiou]/i.test(earned.next.name) ? 'an' : 'a'} ${earned.next.name}.`}</b> : null}
+            </span>
+          </div>
+        ) : null}
         {rank != null && fieldSize ? (
           <div className="gfin-pos">
             <span className="h">position</span>
@@ -343,7 +553,9 @@ export default function GauntletFinale({
                   >
                     <span className="nm">{b.name}</span>
                     <span className="rk">{b.rank != null ? `#${b.rank}` : 'no field'}</span>
-                    <span className="of">{b.rank != null && b.plays != null ? `${b.got} of ${b.asked} · ${b.plays} played` : `${b.got} of ${b.asked}`}</span>
+                    <span className="of">{noDenom
+                      ? (b.rank != null && b.plays != null ? `${b.got} right · ${b.plays} played` : `${b.got} right`)
+                      : (b.rank != null && b.plays != null ? `${b.got} of ${b.asked} · ${b.plays} played` : `${b.got} of ${b.asked}`)}</span>
                   </div>
                 ))}
               </div>
@@ -487,7 +699,97 @@ const CSS = `
   .gfin-skip{bottom:18px;font-size:10px}
 }
 
+/* ── THE TWO GAUNTLETS' SET PIECES (gauntlet + math only) ─────────────── */
+.gfin.m-trivia .gfin-run,.gfin.m-math .gfin-run{font-variant-numeric:tabular-nums}
+.gfin-n.fx{width:2.2ch;text-align:center}
+.gfin-pips{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;max-width:min(840px,100%);margin:14px 0 10px}
+.gfin-pip{position:relative;width:26px;height:26px;border-radius:6px;box-sizing:border-box;
+  border:2px solid rgba(11,15,26,.25);flex:none}
+.gfin-pip.r{animation:gfinPip .14s ease both}
+@keyframes gfinPip{from{background:transparent;border-color:rgba(11,15,26,.25)}to{background:#0b0f1a;border-color:#0b0f1a}}
+.gfin-pip .xk{position:absolute;inset:-2px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  background:#b4232a;border:2px solid #0b0f1a;color:#fff;font-size:15px;font-weight:800;line-height:1;
+  animation:gfinCrack .4s ease both}
+@keyframes gfinCrack{0%{opacity:0;transform:scale(1)}1%{opacity:1}40%{opacity:1;transform:scale(1.5) rotate(-8deg)}100%{opacity:1;transform:scale(1.2) rotate(0)}}
+
+.gfin-mrow{display:flex;align-items:center;gap:48px;text-align:left}
+.gfin-mcol{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0}
+.gfin.m-math .gfin-mcol .gfin-n.fx{text-align:left;width:2.2ch;height:.9em}
+.gfin-calc{width:380px;flex:none;border-radius:18px;background:#0b0f1a;padding:18px;box-sizing:border-box;
+  box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.gfin-scr{border-radius:10px;background:#131c12;padding:16px 18px;display:flex;flex-direction:column;
+  justify-content:flex-end;gap:6px;height:214px;overflow:hidden;box-sizing:border-box}
+.gfin-ln{height:26px;line-height:26px;flex:none;font-size:20px;font-weight:800;color:#bef264;text-align:right;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;letter-spacing:.04em;
+  animation:gfinTick .12s ease both}
+.gfin-ln.cur{height:36px;line-height:36px;font-size:30px}
+@keyframes gfinTick{from{opacity:0;transform:translateY(10px)}to{transform:none}}
+.gfin-err{height:48px;line-height:48px;flex:none;font-size:44px;font-weight:800;color:#fb7185;text-align:right;
+  letter-spacing:.1em;animation:gfinErr .3s steps(2) 3 both}
+@keyframes gfinErr{0%,100%{opacity:1}50%{opacity:.2}}
+
+.gfin-tph{position:absolute;left:0;right:0;top:64px;bottom:130px;display:flex;align-items:center;justify-content:center;
+  gap:56px;padding:0 132px 0 46px;opacity:0;pointer-events:none;transition:opacity .35s ease}
+.gfin-tph.in{opacity:1}
+.gfin-tlead{display:flex;flex-direction:column;gap:10px;align-items:flex-start;flex:none}
+.gfin-teb{font-size:13px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;opacity:.75}
+.gfin-ttot{width:3ch;height:1em;font-size:clamp(84px,12vw,140px);font-weight:800;line-height:1;text-align:right;
+  font-variant-numeric:tabular-nums;letter-spacing:-.04em}
+.gfin-shelf{display:flex;flex-direction:column-reverse;gap:6px;align-items:center;width:380px;flex:none}
+.gfin-book{width:var(--bw);height:46px;border-radius:5px;background:rgba(255,255,255,.06);color:#5b6684;
+  border-left:7px solid rgba(0,0,0,.18);box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;
+  padding:0 18px;font-size:17px;font-weight:800;white-space:nowrap;transition:all .3s ease}
+.gfin-book .mn,.gfin-trow .mn{font-size:12px;opacity:.75;font-variant-numeric:tabular-nums;flex:none;margin-left:12px}
+.gfin-book .nm,.gfin-trow .nm{overflow:hidden;text-overflow:ellipsis}
+.gfin-book.lit,.gfin-trow.lit{background:var(--tc);color:#0b0f1a}
+.gfin-book.at{box-shadow:0 0 0 3px #0b0f1a,0 0 34px var(--tc)}
+.gfin-book.out{transform:translateX(26px) rotate(-2deg)}
+.gfin-lcd{width:300px;height:160px;box-sizing:border-box;border-radius:14px;background:#131c12;padding:0 26px;
+  display:flex;align-items:center;justify-content:flex-end;box-shadow:inset 0 0 0 3px rgba(0,0,0,.5)}
+.gfin-lcd .v{font-size:130px;font-weight:800;line-height:1;color:#bef264;font-variant-numeric:tabular-nums;
+  text-shadow:0 0 22px rgba(190,242,100,.5)}
+.gfin-trows{display:flex;flex-direction:column-reverse;gap:7px;width:330px;flex:none}
+.gfin-trow{display:flex;align-items:center;justify-content:space-between;height:40px;padding:0 14px;border-radius:8px;
+  background:rgba(255,255,255,.05);color:#5b6684;font-size:15px;font-weight:800;white-space:nowrap;box-sizing:border-box;
+  transition:all .25s ease}
+.gfin-trow.at{box-shadow:0 0 0 3px #0b0f1a,0 0 30px var(--tc);transform:scale(1.05)}
+.gfin-trow.out{transform:scale(1.05) translateX(14px)}
+
+.gfin-ttl{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;max-width:min(640px,100%)}
+.gfin-ttl .eb{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#7dd3fc}
+.gfin-ttl .nm{font-size:clamp(24px,3.4vw,32px);font-weight:800;line-height:1.1;color:var(--tc)}
+.gfin-ttl .ln{font-size:13.5px;font-weight:700;opacity:.82}
+.gfin-ttl .ln b{color:#e8b43a;font-weight:800}
+
+@media (max-width: 760px){
+  .gfin-pips{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));width:100%;margin:10px 0 8px}
+  .gfin-pip{width:auto;height:24px}
+  .gfin-mrow{flex-direction:column;align-items:stretch;gap:12px;width:100%}
+  .gfin-mcol{align-items:flex-start}
+  .gfin-calc{width:100%;padding:12px;border-radius:16px}
+  .gfin-scr{height:196px;padding:14px 16px;gap:5px}
+  .gfin-ln{height:24px;line-height:24px;font-size:18px}
+  .gfin-ln.cur{height:34px;line-height:34px;font-size:28px}
+  .gfin-err{height:42px;line-height:42px;font-size:38px}
+  .gfin.m-math .gfin-mid{padding:0 62px 0 18px}
+  .gfin.m-math .gfin-nm{font-size:30px}
+  .gfin.m-math .gfin-mcol .gfin-n.fx{font-size:64px}
+  .gfin-tph{flex-direction:column;gap:16px;top:44px;bottom:96px;padding:0 62px 0 18px}
+  .gfin-tlead{align-items:center}
+  .gfin-teb{font-size:11px;letter-spacing:.14em;text-align:center}
+  .gfin-ttot{font-size:84px;text-align:center}
+  .gfin-shelf{width:100%;max-width:300px;gap:5px}
+  .gfin-book{height:38px;font-size:13px;padding:0 12px;border-left-width:6px}
+  .gfin-book.out{transform:translateX(18px) rotate(-3deg)}
+  .gfin-lcd{width:240px;height:132px;padding:0 24px}
+  .gfin-lcd .v{font-size:108px}
+  .gfin-trows{width:100%;gap:6px}
+  .gfin-trow{height:36px;font-size:14px}
+  .gfin-ttl .nm{font-size:22px}
+  .gfin-ttl .ln{font-size:12px}
+}
+
 @media (prefers-reduced-motion: reduce){
-  .gfin,.gfin-mid,.gfin-fill,.gfin-seg,.gfin-board,.gfin-mark,.gfin-n,.gfin-rk,.gfin-q{transition:none}
+  .gfin,.gfin-mid,.gfin-fill,.gfin-seg,.gfin-board,.gfin-mark,.gfin-n,.gfin-rk,.gfin-q,.gfin-tph,.gfin-book,.gfin-trow{transition:none}
 }
 `;

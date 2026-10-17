@@ -36,6 +36,7 @@ import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { ROOM_RUN_ID, ROOM_MAX, ROOM_LADDER, roomBeat, roomPoints, roomTierOf, roomPartFor } from '@/lib/read-room';
 import RunBackLink from '../circuits/RunBackLink';
+import HouseLights from './HouseLights';
 
 const COUNT_WORD = ['zero', 'one', 'two', 'three', 'four', 'five', 'six'];
 const PART_WORD = ['', 'all', 'a half', 'a third', 'a quarter', 'a fifth', 'a sixth'];
@@ -72,7 +73,6 @@ function etSecondsPast(now) {
   } catch (e) { return null; }
 }
 const freshRun = () => ({ v: 1, phase: 'idle', si: 0, t0: null, results: {} });
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const storeOf = (iso) => `sot_run_room_${iso}`;
 const pctOf = (read) => { const b = read ? roomBeat(read.rank, read.field) : null; return b == null ? null : Math.round(100 * b); };
 const NOOP = () => {};
@@ -361,7 +361,7 @@ export default function RoomClient({ dateLabel, dateShort, sections = [] }) {
 
       <RunChallengeCapture gameKey={ROOM_RUN_ID} />
       {hydrated && done && (
-        <Verdict key="verdict" sections={sections} counted={counted} parts={parts} total={total} dateLabel={dateLabel}
+        <Verdict key="verdict" sections={sections} counted={counted} parts={parts} total={total} dateLabel={dateLabel} dateShort={dateShort}
           animate={doneAtLoad.current === false} board={board} onShare={copyShare} copied={copied}
           fieldNow={fieldNow} finishRead={r.finishRead} onSettled={() => setSettled(true)} />
       )}
@@ -437,34 +437,26 @@ function Ladder({ at }) {
 }
 
 // ─── THE VERDICT ────────────────────────────────────────────────────────────
-// The room lights up figure by figure as your read counts up (every figure you
-// out-read turns toward you, you are the gold one), then the verdict rises.
-function Verdict({ sections, counted, parts, total, dateLabel, animate, board, onShare, copied, fieldNow, finishRead, onSettled }) {
+// HOUSE LIGHTS plays over it first (app/room/HouseLights.jsx, owner 2026-10-17):
+// each room paints the screen, the crowd fills in and the seat lights, then the
+// spotlight walks the ladder. It unmounts onto this card, which is unchanged.
+function Verdict({ sections, counted, parts, total, dateLabel, dateShort, animate, board, onShare, copied, fieldNow, finishRead, onSettled }) {
   const reduce = useMemo(() => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }, []);
   const play = animate && !reduce;
   const FIG = 120, ME = 52;
-  const [shown, setShown] = useState(play ? 0 : total);
   const [phase, setPhase] = useState(play ? 'room' : 'settled');
-  useEffect(() => {
-    if (!play) return undefined;
-    let alive = true;
-    (async () => {
-      await sleep(500);
-      const steps = Math.max(1, total);
-      for (let k = 1; k <= steps; k++) {
-        if (!alive) return;
-        setShown(Math.round(total * k / steps));
-        await sleep(Math.max(14, Math.round(1800 / steps)));
-      }
-      await sleep(500);
-      if (alive) setPhase('settled');
-    })();
-    return () => { alive = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Frozen at the moment the curtain rises, so a refresh mid-show cannot
+  // restart the crowd's sweep. The card underneath keeps following the room.
+  const [lights] = useState(() => ({
+    total,
+    rooms: sections.map((s, i) => ({
+      key: s.key, name: s.name, phrase: s.phrase, color: s.color,
+      read: counted[i] && counted[i].read ? counted[i].read : null, pts: parts[i] || 0,
+    })),
+  }));
   const settled = phase === 'settled';
   useEffect(() => { if (settled && onSettled) onSettled(); }, [settled]); // eslint-disable-line react-hooks/exhaustive-deps
-  const cur = settled ? total : shown;
+  const cur = total;
   const ti = roomTierOf(cur);
   const L = ROOM_LADDER[ti];
   const lit = Math.round((FIG - 1) * cur / 100);
@@ -478,6 +470,7 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
 
   return (
     <section className="rr-vf">
+      {!settled && <HouseLights rooms={lights.rooms} total={lights.total} max={ROOM_MAX} dateShort={dateShort} onDone={() => setPhase('settled')} />}
       {/* THE VERDICT LEADS (owner, 2026-10-17): the title and score on one line
           at the very top, then where the read places you today; the seating
           chart below is compact and reads as one percentage. */}

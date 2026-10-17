@@ -13,10 +13,10 @@
 // counts the FIRST score, the one on the leaderboard (owner, 2026-10-01).
 //
 // THE PREGAME is the approved mockup: tags hanging on a rail, a price-gun
-// odometer that never lands, Start with a sheen. THE ENDING is the card
-// ladder (owner, 2026-10-01, "not a receipt"): the scores ring up on a card
-// terminal, the card in hand upgrades from prepaid to black as the total
-// climbs, then taps to pay and the result takes the terminal's place. The
+// odometer that never lands, Start with a sheen. THE ENDING is the Scanner
+// (owner, 2026-10-17, app/pricecheck/PriceScanner.jsx): each game paints the
+// screen in its colour while its price rolls up and the first guess stamps in,
+// then the total climbs the five payment cards and the earned one lands. The
 // persona is one of THE SHOPPERS (RUN_RANKS in lib/price-games). Ten seconds later the five items come up in one pop-up
 // (Pricer's reveal, kept), ON WHATEVER PAGE THE PLAYER IS ON BY THEN (owner,
 // 2026-10-02): see app/pricecheck/ItemsPop.jsx. Once it is closed, the Trivia Gauntlet offer follows
@@ -29,6 +29,7 @@ import PriceGame, { readDoneSave } from '../price/PriceGame';
 import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
 import NextDrop from '../NextDrop';
 import ItemsPop, { itemsFor, scheduleItems, spendItems } from './ItemsPop';
+import PriceScanner from './PriceScanner';
 import useCircuitBoard from '../circuits/useCircuitBoard';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
@@ -46,7 +47,6 @@ function etToday() {
   catch (e) { return new Date().toISOString().slice(0, 10); }
 }
 const freshRun = () => ({ v: 1, rule: 2, phase: 'idle', si: 0, t0: null, results: {} });
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // The first (counted) play of a game today, read off its own solo save.
 function bankedOf(sec) {
@@ -299,12 +299,9 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
   );
 }
 
-// ─── THE FINALE: the card climbs, then taps (owner, 2026-10-01) ─────────────
-// The five scores ring up on a card terminal and the total counts. The card in
-// hand starts as the prepaid rack card and is swapped for the next card up each
-// time the total crosses a RUN_RANKS cutoff (prepaid, debit, credit, gold,
-// black). Then it taps the reader: APPROVED with the persona, or DECLINED on
-// the prepaid card. The terminal gives way to the result. No receipt.
+// ─── THE FINALE (owner, 2026-10-17) ─────────────────────────────────────────
+// The Scanner curtain (PriceScanner.jsx) plays once over a run finished in this
+// sitting, then hands over to the settled card below, which is unchanged.
 const WAVE = (
   <svg viewBox="0 0 22 22" aria-hidden="true"><path d="M7 6c2 3 2 7 0 10M11 4c3 4 3 10 0 14M15 2c4 5 4 13 0 18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" /></svg>
 );
@@ -360,82 +357,23 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
   const RUN_RANKS = ranks;
   const pts = sections.map((s, i) => (counted[i] ? counted[i].score : 0));
   const tierAt = (v) => runTierOf(Math.round(v * 50 / Math.max(1, max)), RUN_RANKS);
-  const LOW = RUN_RANKS.length - 1;
   const fti = tierAt(total);
   const t = RUN_RANKS[fti];
   const reduce = useMemo(() => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }, []);
   const play = animate && !reduce;
-  const [lines, setLines] = useState(play ? 0 : sections.length);
-  const [cur, setCur] = useState(play ? 0 : total);
-  const [face, setFace] = useState(play ? LOW : fti);
-  const [squash, setSquash] = useState(false);
-  const [upg, setUpg] = useState(null);
-  const [phase, setPhase] = useState(play ? 'ring' : 'settled');
-  const [tap, setTap] = useState(null);
+  const [phase, setPhase] = useState(play ? 'scan' : 'settled');
   const [shine, setShine] = useState(0);
-  const [sparks, setSparks] = useState([]);
-  const cwRef = useRef(null);
-  const readerRef = useRef(null);
 
-  function burst(n) {
-    const id = Date.now();
-    const list = Array.from({ length: n }, (_, i) => {
-      const a = Math.random() * Math.PI * 2, d = 80 + Math.random() * 110;
-      return { id: `${id}-${i}`, x: Math.cos(a) * d, y: Math.sin(a) * d, ms: 900 + Math.random() * 500 };
-    });
-    setSparks((s) => [...s, ...list]);
-    setTimeout(() => setSparks((s) => s.filter((p) => !list.includes(p))), 1600);
-  }
-
+  // A run restored already finished, or reduced motion, gets the card at once.
   useEffect(() => {
-    if (!play) { if (animate) onOver(); return undefined; }
-    let alive = true;
-    (async () => {
-      await sleep(500);
-      let c = 0, ti = LOW;
-      for (let i = 0; i < pts.length; i++) {
-        if (!alive) return;
-        setLines(i + 1);
-        const from = c, to = c + pts[i], steps = Math.max(1, pts[i]);
-        for (let k = 1; k <= steps; k++) {
-          if (!alive) return;
-          c = Math.round(from + (to - from) * k / steps);
-          setCur(c);
-          const nt = tierAt(c);
-          if (nt < ti) {
-            ti = nt;
-            setSquash(true);
-            await sleep(140);
-            if (!alive) return;
-            setFace(nt); setSquash(false);
-            setUpg({ k: `${nt}-${Date.now()}`, text: `Upgraded to ${RUN_RANKS[nt][3]}` });
-            burst(nt <= 1 ? 14 : 8);
-          }
-          await sleep(40);
-        }
-        await sleep(320);
-      }
-      if (!alive) return;
-      setPhase('tap');
-      await sleep(450);
-      try {
-        const a = cwRef.current.getBoundingClientRect(), b = readerRef.current.getBoundingClientRect();
-        setTap({ x: (b.left + b.width / 2) - (a.left + a.width / 2), y: (b.top + b.height / 2) - (a.top + a.height / 2) });
-      } catch (e) {}
-      await sleep(850);
-      if (!alive) return;
-      setPhase('paid');
-      await sleep(1100);
-      if (!alive) return;
-      setTap(null);
-      await sleep(450);
-      if (!alive) return;
-      setPhase('settled');
-      setShine((s) => s + 1);
-      if (fti <= 1) burst(20);
-      onOver();
-    })();
-    return () => { alive = false; };
+    if (!play && animate) onOver();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  // The Scanner curtain hands over here, at its end or on any tap or key.
+  const scanDone = useCallback(() => {
+    setPhase('settled');
+    setShine((n) => n + 1);
+    onOver();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -444,41 +382,26 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
   let hi = 0, lo = 0;
   pts.forEach((v, i) => { if (v > pts[hi]) hi = i; if (v < pts[lo]) lo = i; });
   const flat = pts[hi] === pts[lo];
-  const declined = fti === LOW;
   const settled = phase === 'settled';
+
+  if (!settled) {
+    return (
+      <section className="pf">
+        <PriceScanner sections={sections} counted={counted} total={total} max={max} ranks={RUN_RANKS} dateShort={dateShort} cardCol={CARD_COL}
+          renderCard={(ti) => <PayCard ti={ti} n={total} max={max} dateShort={dateShort} ranks={RUN_RANKS} />} onDone={scanDone} />
+      </section>
+    );
+  }
 
   return (
     <section className="pf">
       <div className={`cf-stage${settled ? ' settled' : ''}`}>
         <div className="cf-cardcol">
-          {upg && <div key={upg.k} className="cf-upg">{upg.text}</div>}
-          <div className="cf-cw" ref={cwRef} style={tap ? { transform: `translate(${tap.x}px,${tap.y}px) scale(.42) rotate(-10deg)` } : undefined}>
-            <PayCard key={`pk${shine}`} ti={face} n={cur} max={max} dateShort={dateShort} squash={squash} shine={shine} ranks={RUN_RANKS} />
+          <div className="cf-cw">
+            <PayCard key={`pk${shine}`} ti={fti} n={total} max={max} dateShort={dateShort} shine={shine} ranks={RUN_RANKS} />
           </div>
-          {sparks.map((p) => <i key={p.id} className="cf-spark" style={{ '--x': `${p.x}px`, '--y': `${p.y}px`, '--d': `${p.ms}ms` }} />)}
         </div>
         <div className="cf-right">
-          <div className={`cf-term${settled ? ' gone' : ''}`} aria-hidden="true">
-            <div className="cf-tap" ref={readerRef}>{WAVE}{phase === 'tap' && <><i /><i className="r2" /><i className="r3" /></>}</div>
-            <div className={`cf-scr${phase === 'paid' || settled ? (declined ? ' no' : ' ok') : ''}`}>
-              {phase === 'ring' && (
-                <>
-                  <div className="cf-hd"><span>Price Check</span><span>{dateShort}</span></div>
-                  <div className="cf-lines">
-                    {sections.slice(0, lines).map((s, i) => <div key={s.key} className="cf-lr"><span>{s.name}</span><b className={pts[i] === 10 ? 'ten' : ''}>{pts[i]}</b></div>)}
-                  </div>
-                  <div className="cf-tot"><span>TOTAL</span><b>{cur}<small> / {max}</small></b></div>
-                </>
-              )}
-              {phase === 'tap' && <div className="cf-msg"><div className="sm">Tap to pay</div><div className="big">{total} / {max}</div></div>}
-              {(phase === 'paid' || settled) && (
-                declined
-                  ? <div className="cf-msg"><div className="big">DECLINED</div><div className="sm">Balance $0.00</div><div className="who">{t[1]}</div></div>
-                  : <div className="cf-msg"><div className="big">APPROVED</div><div className="sm">{t[3]} card</div><div className="who">{t[1]}</div></div>
-              )}
-            </div>
-            <div className="cf-keys">{Array.from({ length: 12 }, (_, i) => <i key={i} />)}</div>
-          </div>
           <div className={`cf-copy${settled ? ' on' : ''}`} role="status">
             {settled && (
               <>

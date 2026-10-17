@@ -53,6 +53,7 @@ import GauntletMorePop from '../../GauntletMorePop';
 import useGauntletField, { FIELD_FLOOR } from '../../useGauntletField';
 import useCircuitBoard from '../../useCircuitBoard';
 import GauntletFinale from '../../GauntletFinale';
+import { titleFor } from '@/lib/run-titles';
 import MissList, { missOf, MISS_CSS } from '../../RunMisses';
 import useCircuitHistory from '../../useCircuitHistory';
 import { T } from '@/lib/theme';
@@ -1646,6 +1647,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                         <span className="rn-lcap">
                           {r.practice ? 'Practice run' : 'The run'}
                           {r.practice ? <i className="rn-pchip">nothing posted</i> : null}
+                          {!r.practice && titleFor(circuitId, cleared) ? <i className="rt-t5f"> · {titleFor(circuitId, cleared).name}</i> : null}
                         </span>
                         <RunLanes id={`${circuitId}-done`} order="run" sections={sections} results={r.results} avg={lanesAvg} best={lanesBest} className="rt-done" />
                       </div>
@@ -1893,6 +1895,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           rows={(boardQ.data && boardQ.data.overall) || []}
           meKey={(boardQ.data && boardQ.data.me && boardQ.data.me.userKey) || null}
           guest={guest && !claimed}
+          circuitId={circuitId}
           onDone={() => setCurtain(false)}
         />
       ) : null}

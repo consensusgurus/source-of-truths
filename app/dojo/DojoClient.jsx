@@ -36,6 +36,7 @@ import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { DOJO_RUN_ID, DOJO_BELTS, DOJO_CLOCK, DOJO_MAX, dojoTierOf, dojoGridPoints, dojoAcc, dojoSpeed } from '@/lib/dojo';
 import RunBackLink from '../circuits/RunBackLink';
+import DyeCurtain from './DyeCurtain';
 
 const CLIENTS = {
   sixes: dynamic(() => import('../sixes/SixesClient'), { ssr: false, loading: () => null }),
@@ -64,7 +65,6 @@ function etToday() {
   catch (e) { return new Date().toISOString().slice(0, 10); }
 }
 const freshRun = () => ({ v: 1, phase: 'idle', si: 0, t0: null, results: {} });
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const fmtClock = (s) => { const v = Math.max(0, Math.round(Number(s) || 0)); return `${Math.floor(v / 60)}:${String(v % 60).padStart(2, '0')}`; };
 
 // The first (counted) play of a grid today, read off the game's own save and
@@ -328,7 +328,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
 
       <RunChallengeCapture gameKey={DOJO_RUN_ID} />
       {hydrated && done && (
-        <Grading key="grading" sections={sections} counted={counted} parts={parts} total={total} dateLabel={dateLabel}
+        <Grading key="grading" sections={sections} counted={counted} parts={parts} total={total} dateLabel={dateLabel} dateShort={dateShort}
           animate={doneAtLoad.current === false} board={board} onShare={copyShare} copied={copied}
           onSettled={() => setSettled(true)} />
       )}
@@ -368,78 +368,34 @@ function NextBelt({ total, ti }) {
 }
 
 // ─── THE GRADING ────────────────────────────────────────────────────────────
-// The sheet scores form by form and the total counts up; the belt on the left
-// starts white and is dyed the next color up each time the running total
-// crosses a cutoff. Then the examiner's seal comes down and the belt is tied.
-function Grading({ sections, counted, parts, total, dateLabel, animate, board, onShare, copied, onSettled }) {
+// DYE THE BELT (owner-approved mockup, 2026-10-17) plays first, as a curtain
+// over the whole screen (app/dojo/DyeCurtain.jsx): each form paints the screen
+// in its colour while its grid ripples in and its clock and points land, then
+// the total climbs the belts, then the seal and the knot. It plays once, on the
+// finish itself, never for reduced motion or a run restored already finished,
+// and any tap or key skips it. Then the settled card below, unchanged.
+function Grading({ sections, counted, parts, total, dateLabel, dateShort, animate, board, onShare, copied, onSettled }) {
   const n = sections.length;
   const pts = parts.map((p) => Math.round(p));
   const fti = dojoTierOf(total);
   const t = B[fti];
   const reduce = useMemo(() => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }, []);
   const play = animate && !reduce;
-  const [lines, setLines] = useState(play ? 0 : n);
-  const [cur, setCur] = useState(play ? 0 : total);
-  const [face, setFace] = useState(play ? LOW : fti);
-  const [dye, setDye] = useState(false);
-  const [upg, setUpg] = useState(null);
-  const [phase, setPhase] = useState(play ? 'grade' : 'settled');
-  const [sparks, setSparks] = useState([]);
-
-  function burst(k) {
-    const id = Date.now();
-    const list = Array.from({ length: k }, (_, i) => {
-      const a = Math.random() * Math.PI * 2, d = 70 + Math.random() * 120;
-      return { id: `${id}-${i}`, x: Math.cos(a) * d, y: Math.sin(a) * d, ms: 900 + Math.random() * 500 };
-    });
-    setSparks((s) => [...s, ...list]);
-    setTimeout(() => setSparks((s) => s.filter((p) => !list.includes(p))), 1600);
+  const [curtain, setCurtain] = useState(play);
+  // The settled card is drawn exactly as it always was once graded.
+  const lines = n, cur = total, face = fti, dye = false, upg = null, sparks = [];
+  const phase = curtain ? 'grade' : 'settled';
+  const runClockAll = counted.reduce((a, c) => a + ((c && c.secs) || 0), 0);
+  // Every hook sits above the curtain's early return.
+  useEffect(() => { if (!curtain && onSettled) onSettled(); }, [curtain]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (curtain) {
+    return (
+      <section className="gr">
+        <DyeCurtain sections={sections} counted={counted} parts={parts} total={total} runClock={runClockAll}
+          dateShort={dateShort} board={board} onDone={() => setCurtain(false)} />
+      </section>
+    );
   }
-
-  useEffect(() => {
-    if (!play) return undefined;
-    let alive = true;
-    (async () => {
-      await sleep(550);
-      let acc = 0, ti = LOW;
-      for (let i = 0; i < n; i++) {
-        if (!alive) return;
-        setLines(i + 1);
-        const from = acc, to = acc + parts[i], steps = Math.max(1, Math.round(parts[i]));
-        for (let k = 1; k <= steps; k++) {
-          if (!alive) return;
-          const shown = Math.round(from + (to - from) * k / steps);
-          setCur(shown);
-          const nt = dojoTierOf(shown);
-          if (nt < ti) {
-            ti = nt;
-            setFace(nt); setDye(true);
-            setUpg({ k: `${nt}-${Date.now()}`, text: `${B[nt][1]}` });
-            burst(nt <= 1 ? 14 : 8);
-            await sleep(260);
-            if (!alive) return;
-            setDye(false);
-          }
-          await sleep(40);
-        }
-        acc = to;
-        await sleep(360);
-      }
-      if (!alive) return;
-      setCur(total);
-      await sleep(350);
-      setPhase('seal');
-      await sleep(1250);
-      if (!alive) return;
-      setPhase('tie');
-      await sleep(1700);
-      if (!alive) return;
-      setPhase('settled');
-      if (fti <= 1) burst(22);
-    })();
-    return () => { alive = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const me = board && board.data && board.data.me;
   const field = board && board.data && Array.isArray(board.data.overall) ? (board.data.uniquePlayers || board.data.overall.length) : null;
@@ -447,7 +403,6 @@ function Grading({ sections, counted, parts, total, dateLabel, animate, board, o
   pts.forEach((v, i) => { if (v / sections[i].weight > pts[hi] / sections[hi].weight) hi = i; if (v / sections[i].weight < pts[lo] / sections[lo].weight) lo = i; });
   const flat = pts[hi] / sections[hi].weight === pts[lo] / sections[lo].weight;
   const settled = phase === 'settled';
-  useEffect(() => { if (settled && onSettled) onSettled(); }, [settled]); // eslint-disable-line react-hooks/exhaustive-deps
   const tied = phase === 'tie' || settled;
   const runClock = counted.reduce((a, c) => a + ((c && c.secs) || 0), 0);
 

@@ -83,7 +83,7 @@ const CONFIG = {
     },
     also: ['passport', 'bracket', 'listed', 'ping', 'dating', 'thread', 'focus', 'potluck', 'dossier', 'flank', 'clade'],
   },
-  // Passport plays Span, Flank and Ping (from 2026-10-15), so it leads with
+  // Passport plays Ping, Flank and Span (from 2026-10-15), so it leads with
   // the geography the run did not deal: Atlas, then two map-and-fact dailies.
   passport: {
     eyebrow: 'Mind Loft · More geography',
