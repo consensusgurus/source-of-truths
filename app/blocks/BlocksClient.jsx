@@ -191,10 +191,17 @@ function freshState(cols, rows) {
     status: 'playing', t0: null, tEnd: null, ms: 0,
   };
 }
-const topOffset = (m) => { for (let y = 0; y < m.length; y++) for (let x = 0; x < m.length; x++) if (m[y][x]) return y; return 0; };
+// A SHAPE ENTERS ONE ROW AT A TIME (owner, 2026-10-16). It used to spawn with
+// its TOP row on row 0, so a T or an S appeared two rows deep, already a row
+// into the well. It now spawns with its BOTTOM row on row 0 and the rest above
+// the well, so only one row of it shows at first and it slides in from the top
+// edge. Cells above row 0 collide with nothing and are not drawn (see hits and
+// the falling-shape draw), and settle still tops out a shape that comes to rest
+// with any cell above row 0, so the end-of-run rule is unchanged.
+const bottomOffset = (m) => { for (let y = m.length - 1; y >= 0; y--) for (let x = 0; x < m.length; x++) if (m[y][x]) return y; return 0; };
 function spawnOf(key, cols) {
   const m = shapeAt(key, 0);
-  return { k: key, r: 0, x: Math.floor((cols - m.length) / 2), y: -topOffset(m) };
+  return { k: key, r: 0, x: Math.floor((cols - m.length) / 2), y: -bottomOffset(m) };
 }
 // A BLOCKED SPAWN LIFTS ABOVE THE WELL, IT DOES NOT END THE RUN (owner report,
 // 2026-08-15). Shapes spawned with their top row ON row 0, so the run ended the
