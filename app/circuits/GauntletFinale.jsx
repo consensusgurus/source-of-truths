@@ -55,6 +55,12 @@ import { rampFor } from '@/lib/circuits';
 import { shownLength } from './GauntletLadder';
 import { titleLadder, titleFor } from '@/lib/run-titles';
 import { mathText } from '@/app/MathText';
+import { encodeChallenge, ymdCompact, RUN_CHALLENGES } from '@/lib/challenge';
+import { withRef } from '@/lib/referrals';
+import { newCid, withCid, recordSend } from '@/lib/challenge-client';
+import { drawingIsLive, DRAWING } from '@/lib/drawing';
+import { savedIdentity } from '@/lib/saved-identity';
+import { useMyTickets } from '../TicketDoor';
 
 const PAINT_MS = 1250;     // one bank owns the screen for this long (980 before the rank line)
 const COUNT_MS = 560;      // its number, its ladder block and its segment
@@ -174,7 +180,7 @@ function Count({ to, ms = COUNT_MS, from = 0, resetKey, fmt }) {
   return <>{fmt ? fmt(n) : n}</>;
 }
 
-export default function GauntletFinale({
+function Broadcast({
   sections = [],
   results = [],
   score = 0,
@@ -792,4 +798,834 @@ const CSS = `
 @media (prefers-reduced-motion: reduce){
   .gfin,.gfin-mid,.gfin-fill,.gfin-seg,.gfin-board,.gfin-mark,.gfin-n,.gfin-rk,.gfin-q,.gfin-tph,.gfin-book,.gfin-trow{transition:none}
 }
+`;
+
+// ══ THE TWO GAUNTLETS' ENDINGS (owner, 2026-10-17: "It should match the
+// mockup, fully.") ══════════════════════════════════════════════════════════
+//
+// The Trivia Gauntlet's "Bookshelf" and the Math Gauntlet's "Readout", built
+// to the approved mockups (TriviaGauntlet / PhoneTrivia / MathGauntlet /
+// PhoneMath). Every other circuit that mounts this curtain (the Trivia
+// Encore) gets the Broadcast above, untouched.
+//
+// Three phases on ONE clock, the mockups' own timeline:
+//   PAINT  each quiz owns the screen in its ramp colour for PD ms, its count
+//          easing up, the miss cracking at MISS ms and its rank at RANK ms.
+//   COUNT  the colours drain, the total climbs the run's title ladder, STEP ms
+//          a title, the stage flashing the title's colour for FLASH ms at each
+//          crossing, and the earned title pulls out.
+//   BOARD  the title, the per-quiz tiles, the challenge and the real board.
+//          It HOLDS: a tap outside its links, Escape, or See your results
+//          closes the curtain onto the end card below.
+// A tap or a key before the board jumps straight to it (the mockups' skip).
+//
+// IT INVENTS NOTHING. Scores and clocks are the run's own; ranks and fields
+// come off useGauntletField; the board rows, their per-quiz scores and the
+// player's place come off the circuit board RunClient already reads; the
+// ticket count is the drawing's own read. A figure that is missing drops its
+// line.
+//
+// Counting numbers sit in boxes sized to their FINAL value in ch, with
+// tabular figures, so nothing beside them moves while they count.
+
+const GE = {
+  trivia: { P0: 300, PD: 1300, COUNT: 700, MISS: 760, RANK: 900, FILL: 800 },
+  math: { P0: 300, PD: 1500, COUNT: 800, MISS: 900, RANK: 1000, FILL: 900 },
+};
+const GE_STEP = 600;
+const GE_FLASH = 220;
+const GE_INK = '#0b0f1a';
+const GE_LIGHT = '#e9edf4';
+const geEase = (x) => { const v = Math.max(0, Math.min(1, x)); return 1 - Math.pow(1 - v, 3); };
+const article = (name) => (/^[aeiou]/i.test(String(name || '')) ? 'an' : 'a');
+const digits = (n) => String(Math.max(0, Math.round(Number(n) || 0))).length;
+function clockOf(secs) {
+  const s = Math.max(0, Math.round(Number(secs) || 0));
+  if (!s) return '';
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), r = s % 60;
+  return h ? `${h}:${String(m).padStart(2, '0')}:${String(r).padStart(2, '0')}` : `${m}:${String(r).padStart(2, '0')}`;
+}
+function geEtToday() {
+  try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
+  catch (e) { return new Date().toISOString().slice(0, 10); }
+}
+function geDate(phone) {
+  try {
+    const o = phone ? { month: 'short', day: 'numeric' } : { weekday: 'short', month: 'short', day: 'numeric' };
+    return new Date().toLocaleDateString('en-US', { ...o, timeZone: 'America/New_York' }).replace(/,/g, '');
+  } catch (e) { return ''; }
+}
+
+// The readout's lines: the problems this game actually asked that the player
+// got right, racing past, then ERR on the one that ended it.
+function geReadoutLines(qs, got, local) {
+  const n = Math.min(got, qs.length);
+  if (!n) return [];
+  const every = Math.min(140, 880 / n);
+  const tick = Math.min(n - 1, Math.floor(Math.min(local, 880) / every));
+  const out = [];
+  for (let j = 3; j >= 0; j--) {
+    const idx = tick - j;
+    if (idx < 0) continue;
+    out.push({ idx, cur: j === 0, op: j === 0 ? 1 : 0.35 + (3 - j) * 0.15 });
+  }
+  return out;
+}
+
+// THE CHALLENGE CARD. The send is the run end card's own (RunChallengeButton
+// in app/RunChallenge.jsx): the same link, the same referral, the same send
+// record, so a challenge sent from the curtain is the challenge the end card
+// would have sent. Kept in step by hand; the two must not drift.
+function GeChallenge({ gameKey, challenge }) {
+  const [msg, setMsg] = useState('');
+  const [draw, setDraw] = useState(false);
+  const tk = useMyTickets();
+  useEffect(() => { setDraw(drawingIsLive()); }, []);
+  const score = challenge.score || 0;
+  const blank = !(score > 0);
+  const send = () => {
+    let who = 'A friend';
+    try { who = savedIdentity().username || who; } catch (e) { /* a guest */ }
+    const unit = RUN_CHALLENGES[gameKey] ? RUN_CHALLENGES[gameKey].unit : 'points';
+    const o = unit === 'right' ? 0 : (challenge.total || 0);
+    const day = geEtToday();
+    const d = ymdCompact(day);
+    const tt = challenge.t != null ? challenge.t : (blank && !o ? 0 : null);
+    const raw = encodeChallenge({ name: who, t: tt, s: score, o, n: challenge.n, won: false, d, x: challenge.status || '' });
+    const cid = newCid();
+    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=3`, cid));
+    recordSend({ cid, gameKey, num: challenge.n, day, fig: { s: score, o, t: tt, won: false, x: challenge.status || '' }, source: 'run' });
+    const copy = () => { try { navigator.clipboard.writeText(url).then(() => setMsg('Link copied. Paste it to a friend.'), () => setMsg(url)); } catch (e) { setMsg(url); } };
+    let touch = false;
+    try { touch = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); } catch (e) { touch = false; }
+    if (touch && navigator.share) navigator.share({ url }).catch(() => {}); else copy();
+  };
+  const n = tk && Number.isFinite(tk.count) ? tk.count : null;
+  const tickets = draw && tk && tk.named && n != null
+    ? `You have ${n} ticket${n === 1 ? '' : 's'} for the ${DRAWING.prizeLabel} drawing. Each new friend who finishes from your link adds one.`
+    : null;
+  return (
+    <div className="ge-pop ge-chal">
+      <div className="ge-chal-h">{blank ? 'Challenge a friend to beat your run' : `Challenge a friend to get past ${score}`}</div>
+      {tickets ? <div className="ge-chal-s">{tickets}</div> : null}
+      <button type="button" className="ge-chal-go" onClick={send}>{msg ? (msg.startsWith('Link copied') ? 'Link copied' : 'Copy this link') : 'Send the challenge'}</button>
+      {msg && !msg.startsWith('Link copied') ? <div className="ge-chal-u">{msg}</div> : null}
+    </div>
+  );
+}
+
+function GauntletEnding({
+  sections = [],
+  results = [],
+  score = 0,
+  avgTotal = null,
+  rows = [],
+  meRow = null,
+  fieldSize = null,
+  field = null,
+  circuitId = null,
+  circuitName = '',
+  clock = 0,
+  challenge = null,
+  similar = null,
+  boardHref = '',
+  onDone,
+}) {
+  const N = sections.length;
+  const mode = circuitId === 'math' ? 'math' : 'trivia';
+  const TM = GE[mode];
+  const ladder = titleLadder(circuitId) || [];
+  const earned = titleFor(circuitId, score);
+  const K = earned ? earned.index : 0;
+
+  const [phone, setPhone] = useState(() => {
+    try { return typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(max-width: 640px)').matches; }
+    catch (e) { return false; }
+  });
+  const [t, setT] = useState(0);
+  const baseRef = useRef(0);
+  const doneRef = useRef(false);
+
+  const banks = useMemo(() => sections.map((s, i) => {
+    const res = results[i] || null;
+    const asked = (s.questions && s.questions.length) || (res && res.total) || 0;
+    const got = res && Number.isFinite(res.score) ? res.score : 0;
+    const colour = rampFor(Number.isFinite(s.slot) ? s.slot : i);
+    const rank = field && typeof field.rank === 'function' ? field.rank(s.key, got) : null;
+    const plays = field && field.plays && Number.isFinite(field.plays[s.key]) ? field.plays[s.key] : null;
+    return {
+      key: s.key, num: i + 1, name: s.name || s.key,
+      sub: mode === 'math' ? (s.subject || s.tag || '') : (s.topic || s.subject || s.cat || s.tag || ''),
+      asked, got, colour, rank, plays, qs: Array.isArray(s.questions) ? s.questions : [],
+    };
+  }), [sections, results, field, mode]);
+
+  const TOTAL = score;
+  const P0 = TM.P0, PD = TM.PD;
+  const RP = P0 + N * PD;
+  const CNT = GE_STEP * (K + 1) + 300;
+  const BOARD = RP + CNT + 300;
+  const END = BOARD + 3600;
+
+  const finish = () => {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    if (typeof onDone === 'function') onDone();
+  };
+  const toBoard = () => {
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (now - baseRef.current < BOARD) { baseRef.current = now - BOARD; setT(BOARD); }
+  };
+
+  // The clock. Thirty frames a second is all the mockups' timeline needs, and
+  // it stops once the board has fully landed, so a held board costs nothing.
+  useEffect(() => {
+    const reduced = typeof window !== 'undefined' && window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced || !N) { finish(); return undefined; }
+    baseRef.current = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const iv = setInterval(() => {
+      const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      const e = now - baseRef.current;
+      setT(e);
+      if (e > END) clearInterval(iv);
+    }, 33);
+    return () => clearInterval(iv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [N]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const mq = window.matchMedia('(max-width: 640px)');
+    const on = () => setPhone(mq.matches);
+    if (mq.addEventListener) mq.addEventListener('change', on); else if (mq.addListener) mq.addListener(on);
+    return () => { if (mq.removeEventListener) mq.removeEventListener('change', on); else if (mq.removeListener) mq.removeListener(on); };
+  }, []);
+
+  // Escape closes; any other key before the board jumps to it. On the board
+  // keys are left alone, so Tab reaches its links.
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') { finish(); return; }
+      const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      if (now - baseRef.current < BOARD) toBoard();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [BOARD]);
+
+  const onStageClick = (e) => {
+    if (t < BOARD) { toBoard(); return; }
+    const el = e && e.target && e.target.closest ? e.target.closest('a,button') : null;
+    if (el) return;
+    finish();
+  };
+
+  // ── where on the timeline ──
+  const pi = t >= P0 && t < RP ? Math.min(N - 1, Math.floor((t - P0) / PD)) : -1;
+  const local = pi >= 0 ? t - P0 - pi * PD : 0;
+  const b = pi >= 0 ? banks[pi] : banks[0];
+  const isPaint = pi >= 0;
+  const isCount = t >= RP && t < BOARD;
+  const isBoard = t >= BOARD;
+  const count = b ? Math.round(b.got * geEase(local / TM.COUNT)) : 0;
+  const missShown = local > TM.MISS;
+  const showRank = local > TM.RANK;
+
+  const cl = t - RP;
+  const k = isCount ? Math.min(K, Math.max(0, Math.floor(cl / GE_STEP))) : K;
+  const kl = cl - k * GE_STEP;
+  const lo = ladder[k] ? ladder[k].min : 0;
+  const hi = k === K ? TOTAL : (ladder[k + 1] ? ladder[k + 1].min - 1 : TOTAL);
+  const total = isCount ? Math.round(lo + (hi - lo) * geEase(kl / (GE_STEP - 150))) : TOTAL;
+  let at = 0;
+  ladder.forEach((x, i) => { if (total >= x.min) at = i; });
+  const flash = isCount && kl < GE_FLASH;
+  const pulled = isCount && k === K && kl > 300;
+
+  let bg = '#0b0f1a', ink = GE_LIGHT;
+  if (isPaint && b) { bg = b.colour; ink = GE_INK; } else if (flash && ladder[at]) { bg = ladder[at].colour; ink = GE_INK; }
+
+  // ── the side bar (Trivia only): the total against today's average and best ──
+  const finishedRows = (Array.isArray(rows) ? rows : []).filter((x) => Number.isFinite(Number(x.total)));
+  const markersOn = mode === 'trivia' && finishedRows.length >= 2;
+  const best = markersOn ? Math.max(...finishedRows.map((x) => Number(x.total) || 0)) : null;
+  const avg = markersOn && Number.isFinite(Number(avgTotal)) ? Math.round(Number(avgTotal)) : null;
+  const barScale = Math.max(1, best || 0, TOTAL);
+  const sideW = Math.max(digits(barScale), 2);
+
+  // ── the board ──
+  const meKey = meRow && meRow.userKey ? meRow.userKey : null;
+  const top = finishedRows.slice(0, 3);
+  const meInTop = !!(meKey && top.some((x) => x.userKey === meKey));
+  const meRank = meRow && Number.isFinite(Number(meRow.rank)) ? Number(meRow.rank) : null;
+  const ahead = meRank && fieldSize && fieldSize >= 2 ? Math.max(0, Math.round(((fieldSize - meRank) / fieldSize) * 100)) : null;
+  const boardRows = top.map((x, i) => ({
+    key: x.userKey || `r${i}`, rank: String(x.rank || i + 1), name: x.username || 'Player',
+    title: (titleFor(circuitId, x.total) || {}).name || '', total: Math.round(Number(x.total) || 0),
+    per: x.perGame || null, me: !!(meKey && x.userKey === meKey), rc: ['#e8b43a', '#b8bcc4', '#c8814b'][i] || GE_LIGHT,
+  }));
+  if (meRow && !meInTop && meRank) {
+    const ttl = (earned && earned.name) || '';
+    boardRows.push({
+      key: 'me', rank: `#${meRank}`, name: meRow.username || 'You',
+      title: ahead != null ? `${ttl} · ahead of ${ahead}%` : ttl, total: TOTAL,
+      per: Object.fromEntries(banks.map((x) => [x.key, { score: x.got }])), me: true, rc: '#7dd3fc',
+    });
+  }
+  boardRows.forEach((r) => { if (r.me && r.key !== 'me' && ahead != null) r.title = `${r.title} · ahead of ${ahead}%`; });
+  const barMax = Math.max(1, ...boardRows.flatMap((r) => (r.per ? banks.map((x) => Number(r.per[x.key] && r.per[x.key].score) || 0) : [0])));
+  const rowOn = (i) => t >= BOARD + (phone ? 2000 + i * 300 : 400 + i * 320);
+  const chalOn = t >= BOARD + (phone ? 1200 : 1800);
+  const fieldWord = Number.isFinite(Number(fieldSize)) && fieldSize > 0 ? fieldSize : null;
+
+  const capRight = isPaint ? `${mode === 'math' ? 'Game' : 'Quiz'} ${pi + 1} of ${N}` : isBoard ? 'Final' : '';
+  const capDate = geDate(phone);
+  const noun = mode === 'math' ? 'games' : 'quizzes';
+  const clockTxt = clockOf(clock);
+  const nextTxt = earned && earned.next ? `${earned.toNext} more right and you are ${article(earned.next.name)} ${earned.next.name}.` : null;
+  const fromTxt = earned && earned.next ? `${earned.toNext} from ${earned.next.name}` : null;
+
+  // ── pieces ──
+  const pips = () => {
+    if (!b || !b.asked) return null;
+    const room = phone ? Math.max(20, Math.ceil((b.got + 1) / 10) * 10) : Math.max(28, b.got + 1);
+    const nP = Math.min(b.asked, room);
+    const out = [];
+    for (let i = 0; i < nP; i++) {
+      const right = i < count;
+      const miss = i === b.got && b.got < b.asked && missShown;
+      out.push(
+        <div key={i} className={`ge-pip${miss ? ' g-crack' : ''}`} style={{
+          background: right ? GE_INK : miss ? '#b4232a' : 'transparent',
+          border: right || miss ? `2px solid ${GE_INK}` : '2px solid rgba(11,15,26,.25)',
+        }}>{miss ? '×' : ''}</div>,
+      );
+    }
+    return <div className={phone ? 'ge-pips ph' : 'ge-pips'} aria-hidden="true">{out}</div>;
+  };
+
+  const readout = () => {
+    const lines = geReadoutLines(b.qs, b.got, local);
+    const err = b.got < b.asked && missShown;
+    return (
+      <div className={phone ? 'ge-calc ph' : 'ge-calc'} aria-hidden="true">
+        <div className="ge-scr">
+          {lines.map((ln) => (
+            <div key={`${pi}-${ln.idx}`} className={`ge-ln m-tick${ln.cur ? ' cur' : ''}`} style={{ opacity: ln.op }}>
+              {mathText(readoutLine(b.qs[ln.idx]))}
+            </div>
+          ))}
+          {err ? <div className="ge-err m-err">ERR</div> : null}
+        </div>
+      </div>
+    );
+  };
+
+  const rankLine = (where) => (b && b.rank != null && b.plays != null && showRank
+    ? <div className="ge-pop ge-rk">{where(b)}</div> : null);
+
+  const countBox = (fs) => (
+    <div className="ge-cnt" style={{ fontSize: fs, width: `${digits(b ? b.got : 0)}ch` }}>{count}</div>
+  );
+
+  const sideBar = () => {
+    if (mode !== 'trivia') return null;
+    const pct = (v) => `${Math.min(100, Math.max(0, (v / barScale) * 100))}%`;
+    const L = ladder.length || 6;
+    const h = phone ? L * 40 + (L - 1) * 5 : L * 46 + (L - 1) * 6;
+    const lw = `calc(${sideW}ch + ${phone ? 2.6 : 2.8}em)`;
+    const rw = `calc(${sideW}ch + ${phone ? 3.1 : 3.3}em)`;
+    return (
+      <div className={phone ? 'ge-side ph' : 'ge-side'} aria-hidden="true" style={{ height: h }}>
+        <div className="ge-side-col l" style={{ width: lw }}><span style={{ bottom: pct(total) }}>You {total}</span></div>
+        <div className="ge-side-trk">
+          <div className="ge-side-fill" style={{ height: pct(total) }} />
+          {avg != null ? <div className="ge-side-tick" style={{ bottom: pct(avg) }} /> : null}
+          {best != null ? <div className="ge-side-tick" style={{ bottom: pct(best) }} /> : null}
+        </div>
+        <div className="ge-side-col r" style={{ width: rw }}>
+          {avg != null ? <span style={{ bottom: pct(avg) }}>Avg {avg}</span> : null}
+          {best != null ? <span style={{ bottom: pct(best) }}>Best {best}</span> : null}
+        </div>
+      </div>
+    );
+  };
+
+  const books = (w0, dw, h, fs, tx, rot, centred) => (
+    <div className="ge-books" style={{ width: w0, gap: phone ? 5 : 6 }}>
+      {ladder.map((x, i) => {
+        const lit = i <= at;
+        return (
+          <div key={x.name} className="ge-book" style={{
+            width: w0 - i * dw, height: h, fontSize: fs, background: lit ? x.colour : 'rgba(255,255,255,.06)',
+            color: lit ? GE_INK : '#5b6684', borderLeftWidth: phone ? 6 : 7,
+            boxShadow: i === at ? `0 0 0 3px ${GE_INK}, 0 0 ${phone ? 28 : 34}px ${x.colour}` : 'none',
+            transform: i === at && pulled ? `translateX(${tx}px) rotate(${rot}deg)` : 'none',
+            justifyContent: centred ? 'center' : 'space-between', padding: centred ? 0 : '0 18px',
+          }}>
+            <span className="ge-bnm">{x.name}</span>{centred ? null : <span className="ge-bmn">{x.min}+</span>}
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const titleRows = () => (
+    <div className="ge-trows" style={phone ? { width: '100%', gap: 6 } : null}>
+      {ladder.map((x, i) => {
+        const lit = i <= at;
+        return (
+          <div key={x.name} className="ge-trow" style={{
+            height: phone ? 38 : 40, background: lit ? x.colour : 'rgba(255,255,255,.05)', color: lit ? GE_INK : '#5b6684',
+            boxShadow: i === at ? `0 0 0 3px ${GE_INK}, 0 0 ${phone ? 26 : 30}px ${x.colour}` : 'none',
+            transform: i === at ? `scale(${phone ? 1.04 : 1.05})` : 'none',
+          }}>
+            <span>{x.name}</span><span className="ge-tmn">{x.min}+</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const lcd = (w, h, fs, pad) => (
+    <div className="ge-lcd" style={{ width: w, height: h, padding: `0 ${pad}px` }}>
+      <div style={{ fontSize: fs, width: `${digits(TOTAL)}ch`, textAlign: 'right' }}>{total}</div>
+    </div>
+  );
+
+  const bars = (r, h, gap) => (r.per ? (
+    <div className="ge-bars" style={{ height: h, gap }}>
+      {banks.map((x) => {
+        const v = Number(r.per[x.key] && r.per[x.key].score) || 0;
+        return <div key={x.key} style={{ height: `${Math.min(100, Math.round((v / barMax) * 100))}%`, background: x.colour, borderRadius: phone ? '2px 2px 0 0' : '3px 3px 0 0' }} />;
+      })}
+    </div>
+  ) : <div />);
+
+  const boardList = () => (
+    <>
+      <div className="ge-bhd">
+        <div className="ge-bt">Today&rsquo;s board{fieldWord ? ` · ${fieldWord}${phone ? '' : ' players'}` : ''}</div>
+        {boardHref ? <a href={boardHref} className="ge-blink">Full board</a> : null}
+      </div>
+      <div className="ge-rows">
+        {boardRows.map((r, i) => (rowOn(i) ? (
+          <div key={r.key} className={`ge-row ${mode === 'math' ? 'm-row' : 'g-row'}${phone ? ' ph' : ''}${r.me ? ' me' : ''}`}
+            style={phone ? { gridTemplateColumns: `34px minmax(0, 1fr) ${mode === 'math' ? 52 : 60}px ${mode === 'math' ? 30 : 34}px` } : null}>
+            <div className="ge-rr" style={{ color: r.me ? '#7dd3fc' : r.rc }}>{r.rank}</div>
+            <div style={{ minWidth: 0 }}>
+              <div className="ge-rn">{r.name}</div>
+              {r.title ? <div className="ge-rt">{r.title}</div> : null}
+            </div>
+            {bars(r, phone ? 22 : 26, phone ? 2 : 3)}
+            <div className="ge-rtot">{r.total}</div>
+          </div>
+        ) : null))}
+      </div>
+      {!phone && boardRows.length ? (
+        <div className="ge-foot">
+          {mode === 'math'
+            ? `Bars: right answers on ${banks.map((x) => x.name).join(', ').replace(/, ([^,]*)$/, ' and $1')}.`
+            : `Bars: questions right on each of the ${spell(N)}.`}
+        </div>
+      ) : null}
+    </>
+  );
+
+  const chalAndSimilar = () => (chalOn ? (
+    <>
+      {challenge ? <GeChallenge gameKey={circuitId} challenge={challenge} /> : null}
+      {similar && similar.href ? (
+        <a href={similar.href} className="ge-pop ge-sim" style={{ animationDelay: '.15s' }}>Play similar: {similar.name}</a>
+      ) : null}
+    </>
+  ) : null);
+
+  const tiles = (cls, delay) => (
+    <div className={`ge-pop ge-tiles ${cls}`} style={{ animationDelay: delay, gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
+      {banks.map((x) => (
+        <div key={x.key} className="ge-tile" style={{ borderTopColor: x.colour }}>
+          <div className="ge-tn">{x.name}</div>
+          <div className="ge-ts">{x.got}</div>
+          {!phone && x.rank != null ? <div className="ge-tr">#{x.rank}</div> : null}
+        </div>
+      ))}
+    </div>
+  );
+
+  // ── the bottom strip ──
+  const strip = mode === 'trivia' ? (
+    <div className={phone ? 'ge-lad ph' : 'ge-lad'}>
+      {banks.map((x, i) => {
+        const filled = t >= P0 + i * PD + TM.FILL;
+        return (
+          <div key={x.key} className="ge-lseg" style={{ flex: `${Math.max(1, x.asked)} 1 0` }}>
+            <div className="ge-llb" style={{ color: isPaint ? GE_INK : '#9aa8c4' }}>
+              {phone ? (filled ? `${x.name} ${x.got}` : x.name) : <>{x.name} <span className="ge-lv">{filled ? x.got : ''}</span></>}
+            </div>
+            <div className="ge-ltr" style={{ background: isPaint ? 'rgba(11,15,26,.14)' : 'rgba(255,255,255,.08)' }}>
+              <div style={{ height: '100%', width: filled && x.asked ? `${Math.round((x.got / x.asked) * 100)}%` : '0%', background: isPaint ? GE_INK : x.colour, transition: 'width .55s ease' }} />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  ) : (
+    <div className={phone ? 'ge-mst ph' : 'ge-mst'}>
+      {banks.map((x, i) => {
+        const filled = t >= P0 + i * PD + TM.FILL;
+        return (
+          <div key={x.key} className="ge-mtile" style={{
+            background: filled ? x.colour : (isPaint ? 'rgba(11,15,26,.1)' : 'rgba(255,255,255,.05)'),
+            color: filled ? GE_INK : (isPaint ? 'rgba(11,15,26,.55)' : '#9aa8c4'),
+            border: filled ? '1px solid rgba(11,15,26,.35)' : (isPaint ? '1px dashed rgba(11,15,26,.3)' : '1px dashed rgba(255,255,255,.18)'),
+          }}>
+            <span>{x.name}</span><span className="ge-mv" style={{ width: `${digits(x.got)}ch` }}>{filled ? x.got : ''}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  // ── the phases ──
+  let middle = null;
+  if (isPaint && b) {
+    if (mode === 'trivia') {
+      middle = phone ? (
+        <div className="ge-paint ph">
+          <div className="ge-eb">Quiz {b.num} of {N}{b.sub ? ` · ${b.sub}` : ''}</div>
+          <div className="ge-nm" style={{ fontSize: 52 }}>{b.name}</div>
+          {pips()}
+          <div className="ge-crow">
+            {countBox(84)}
+            <div className="ge-clb" style={{ fontSize: 16 }}>{b.got === b.asked ? 'right, no miss' : 'right before the miss'}</div>
+          </div>
+          <div style={{ minHeight: 24 }}>{rankLine((x) => `#${x.rank} of ${x.plays} on this quiz today`)}</div>
+        </div>
+      ) : (
+        <div className="ge-paint">
+          <div className="ge-eb" style={{ fontSize: 13, letterSpacing: '.18em' }}>Quiz {b.num} of {N}{b.sub ? ` · ${b.sub}` : ''}</div>
+          <div className="ge-nm" style={{ fontSize: 64 }}>{b.name}</div>
+          {pips()}
+          <div className="ge-crow" style={{ gap: 22 }}>
+            {countBox(96)}
+            <div className="ge-clb" style={{ fontSize: 20 }}>{b.got === b.asked ? 'right, no miss' : 'right before the miss'}</div>
+            {b.rank != null && b.plays != null && showRank
+              ? <div className="ge-pop ge-rk" style={{ marginLeft: 'auto', fontSize: 20 }}>#{b.rank} of {b.plays} on this quiz today</div> : null}
+          </div>
+        </div>
+      );
+    } else {
+      middle = phone ? (
+        <div className="ge-paint ph">
+          <div className="ge-eb">Game {b.num} of {N}{b.sub ? ` · ${b.sub}` : ''}</div>
+          <div className="ge-nm" style={{ fontSize: 52 }}>{b.name}</div>
+          {readout()}
+          <div className="ge-crow" style={{ justifyContent: 'space-between' }}>
+            {countBox(84)}
+            {b.rank != null && b.plays != null && showRank
+              ? <div className="ge-pop ge-rk" style={{ fontSize: 16, textAlign: 'right' }}>#{b.rank} of {b.plays}<br />today</div> : null}
+          </div>
+        </div>
+      ) : (
+        <div className="ge-mpaint">
+          {readout()}
+          <div className="ge-mcol">
+            <div className="ge-eb" style={{ fontSize: 13, letterSpacing: '.18em' }}>Game {b.num} of {N}</div>
+            <div className="ge-nm" style={{ fontSize: 60 }}>{b.name}</div>
+            {b.sub ? <div style={{ fontSize: 18, fontWeight: 700 }}>{b.sub}.</div> : null}
+            <div className="ge-cnt" style={{ fontSize: 104, height: 104, width: 150 }}>{count}</div>
+            {b.rank != null && b.plays != null && showRank
+              ? <div className="ge-pop ge-rk" style={{ fontSize: 18 }}>#{b.rank} of {b.plays} on {b.name} today</div> : null}
+          </div>
+        </div>
+      );
+    }
+  } else if (isCount) {
+    if (mode === 'trivia') {
+      middle = phone ? (
+        <div className="ge-count ph">
+          <div className="ge-eb" style={{ opacity: 0.75 }}>Questions right, all {spell(N)}</div>
+          <div className="ge-tot" style={{ fontSize: 100, width: `${digits(TOTAL)}ch` }}>{total}</div>
+          <div className="ge-shelfrow">
+            {books(252, 14, 40, 13, 18, -3, true)}
+            {sideBar()}
+          </div>
+        </div>
+      ) : (
+        <div className="ge-count">
+          <div className="ge-lead">
+            <div className="ge-eb" style={{ fontSize: 13, letterSpacing: '.18em', opacity: 0.75 }}>Questions right, all {spell(N)} quizzes</div>
+            <div className="ge-tot" style={{ fontSize: 140, width: `${digits(TOTAL)}ch` }}>{total}</div>
+          </div>
+          {books(380, 18, 46, 17, 26, -2, false)}
+          {sideBar()}
+        </div>
+      );
+    } else {
+      middle = phone ? (
+        <div className="ge-count ph" style={{ padding: '0 22px' }}>
+          <div className="ge-eb" style={{ opacity: 0.75 }}>Right answers, all {spell(N)} {noun}</div>
+          {lcd(240, 132, 108, 24)}
+          {titleRows()}
+        </div>
+      ) : (
+        <div className="ge-count" style={{ gap: 46 }}>
+          <div className="ge-lead">
+            <div className="ge-eb" style={{ fontSize: 13, letterSpacing: '.18em', opacity: 0.75 }}>Right answers, all {spell(N)} {noun}</div>
+            {lcd(300, 160, 130, 26)}
+          </div>
+          {titleRows()}
+        </div>
+      );
+    }
+  } else if (isBoard) {
+    const titleHead = mode === 'math' ? 'Today you are' : `Today you are ${article(earned ? earned.name : '')}`;
+    if (phone) {
+      middle = (
+        <div className="ge-board ph">
+          {mode === 'math' ? (
+            <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+              <div className="ge-pop ge-mini-lcd" style={{ padding: '6px 14px' }}><div style={{ fontSize: 44 }}>{TOTAL}</div></div>
+              <div className="ge-pop" style={{ animationDelay: '.3s' }}>
+                <div className="ge-th" style={{ fontSize: 10 }}>{titleHead}</div>
+                <div className="ge-tname" style={{ fontSize: 24 }}>{earned ? earned.name : ''}</div>
+                <div className="ge-tsub" style={{ fontSize: 13, marginTop: 3 }}>
+                  {[clockTxt, null].filter(Boolean).join(' · ')}
+                  {fromTxt ? <>{clockTxt ? ' · ' : ''}<b style={{ color: '#e8b43a' }}>{fromTxt}</b></> : null}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="ge-pop">
+              <div className="ge-th" style={{ fontSize: 10 }}>{titleHead}</div>
+              <div className="ge-tname" style={{ fontSize: 27 }}>{earned ? earned.name : ''}</div>
+              <div className="ge-tsub" style={{ fontSize: 13, marginTop: 3 }}>
+                {TOTAL} right{clockTxt ? ` · ${clockTxt}` : ''}
+                {fromTxt ? <> {'·'} <b style={{ color: '#e8b43a' }}>{fromTxt}</b></> : null}
+              </div>
+            </div>
+          )}
+          {mode === 'trivia' ? tiles('ph', '.3s') : null}
+          {chalAndSimilar()}
+          {boardList()}
+        </div>
+      );
+    } else {
+      middle = (
+        <div className="ge-board">
+          <div className="ge-bl">
+            {mode === 'math' ? (
+              <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                <div className="ge-pop ge-mini-lcd" style={{ padding: '8px 16px' }}><div style={{ fontSize: 54 }}>{TOTAL}</div></div>
+                <div className="ge-pop" style={{ animationDelay: '.3s' }}>
+                  <div className="ge-th">{titleHead}</div>
+                  <div className="ge-tname" style={{ fontSize: 30 }}>{earned ? earned.name : ''}</div>
+                  <div className="ge-tsub">{TOTAL} right{clockTxt ? ` · ${clockTxt}` : ''}</div>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', gap: 18, alignItems: 'flex-end' }}>
+                <div className="ge-mshelf">
+                  {ladder.map((x, i) => (
+                    <div key={x.name} style={{ width: 120 - i * 8, background: i <= K ? x.colour : 'rgba(255,255,255,.1)', transform: i === K ? 'translateX(10px)' : 'none' }} />
+                  ))}
+                </div>
+                <div className="ge-pop" style={{ animationDelay: '.3s' }}>
+                  <div className="ge-th">{titleHead}</div>
+                  <div className="ge-tname" style={{ fontSize: 30 }}>{earned ? earned.name : ''}</div>
+                  <div className="ge-tsub">{TOTAL} questions right{clockTxt ? ` · ${clockTxt}` : ''}</div>
+                </div>
+              </div>
+            )}
+            {earned ? (
+              <div className="ge-pop ge-tline" style={{ animationDelay: '.5s' }}>
+                {earned.line}{nextTxt ? <> <b style={{ color: '#e8b43a' }}>{nextTxt}</b></> : null}
+              </div>
+            ) : null}
+            {tiles('', '.7s')}
+            {chalAndSimilar()}
+          </div>
+          <div className="ge-br">{boardList()}</div>
+        </div>
+      );
+    }
+  }
+
+  return (
+    <div
+      className={`ge${phone ? ' ph' : ''}`}
+      style={{ background: bg, color: ink, transition: `background ${flash ? '.05s' : '.4s'} ease, color .3s ease` }}
+      onClick={onStageClick}
+      role="dialog"
+      aria-label={`${circuitName || 'Run'} ending`}
+    >
+      <style dangerouslySetInnerHTML={{ __html: GE_CSS }} />
+      <div className="ge-cap">
+        <span>{circuitName}</span>{capDate ? <span>{capDate}</span> : null}
+        <span style={{ marginLeft: 'auto' }}>{capRight}</span>
+        {isBoard ? <button type="button" className="ge-see" onClick={finish}>See your results</button> : null}
+      </div>
+      <div className="ge-mid">{middle}</div>
+      {strip}
+    </div>
+  );
+}
+
+export default function GauntletFinale(props) {
+  const c = props && props.circuitId;
+  if (c === 'gauntlet' || c === 'math') return <GauntletEnding {...props} />;
+  return <Broadcast {...props} />;
+}
+
+const GE_CSS = `
+.ge{position:fixed;inset:0;z-index:80;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;
+  font-family:Manrope,system-ui,-apple-system,'Segoe UI',sans-serif}
+.ge a{color:#7dd3fc}.ge a:hover{color:#bae6fd}
+.ge-cap{display:flex;align-items:center;gap:12px;padding:18px 28px 0;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;flex:none}
+.ge-cap>span{opacity:.78}
+.ge.ph .ge-cap{gap:10px;padding:16px 18px 0;font-size:10px}
+.ge-see{font:inherit;font-size:11px;letter-spacing:.06em;text-transform:none;font-weight:800;color:#7dd3fc;background:none;border:0;padding:0;cursor:pointer;opacity:1}
+.ge-see:hover{color:#bae6fd;text-decoration:underline}
+.ge-mid{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;overflow-y:auto;overflow-x:hidden}
+.ge-eb{font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+.ge-nm{font-weight:800;line-height:1}
+.ge-paint{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;padding:0 64px;gap:16px}
+.ge-paint.ph{padding:0 22px;gap:14px}
+.ge-pips{display:flex;flex-wrap:wrap;gap:5px;max-width:840px}
+.ge-pips.ph{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));max-width:none}
+.ge-pip{width:26px;height:26px;border-radius:6px;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;box-sizing:border-box}
+.ge-pips.ph .ge-pip{width:auto;height:28px}
+.ge-crow{display:flex;align-items:baseline;gap:14px}
+.ge-cnt{font-weight:800;line-height:1;font-variant-numeric:tabular-nums;text-align:right;flex:none}
+.ge-clb{font-weight:700}
+.ge-rk{font-weight:800;font-size:17px;font-variant-numeric:tabular-nums}
+.ge-mpaint{flex:1 1 auto;display:flex;align-items:center;gap:48px;padding:0 64px}
+.ge-mcol{display:flex;flex-direction:column;gap:12px;min-width:0}
+.ge-mcol .ge-cnt{text-align:left}
+.ge-calc{width:380px;flex:none;border-radius:18px;background:#0b0f1a;padding:18px;box-sizing:border-box;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.ge-calc.ph{width:auto;border-radius:16px;padding:14px;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.ge-scr{border-radius:10px;background:#131c12;padding:16px 18px;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;height:214px;overflow:hidden;box-sizing:border-box}
+.ge-calc.ph .ge-scr{border-radius:9px;padding:14px 16px;gap:5px;height:196px}
+.ge-ln{height:26px;line-height:26px;flex:none;font-size:20px;font-weight:800;color:#bef264;text-align:right;white-space:nowrap;overflow:hidden;
+  font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.ge-ln.cur{height:36px;line-height:36px;font-size:30px}
+.ge-calc.ph .ge-ln{height:24px;line-height:24px;font-size:18px;letter-spacing:0}
+.ge-calc.ph .ge-ln.cur{height:34px;line-height:34px;font-size:28px}
+.ge-err{height:48px;line-height:48px;flex:none;font-size:44px;font-weight:800;color:#fb7185;text-align:right;letter-spacing:.1em}
+.ge-calc.ph .ge-err{height:42px;line-height:42px;font-size:38px}
+.ge-count{flex:1 1 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:40px 60px;padding:0 24px}
+.ge-count.ph{flex-direction:column;gap:18px;padding:0}
+.ge-lead{display:flex;flex-direction:column;gap:10px;align-items:flex-start;flex:none}
+.ge-tot{font-weight:800;line-height:1;font-variant-numeric:tabular-nums;text-align:right;flex:none}
+.ge-books{display:flex;flex-direction:column-reverse;align-items:center;flex:none}
+.ge-book{border-radius:5px;display:flex;align-items:center;font-weight:800;border-left:7px solid rgba(0,0,0,.18);box-sizing:border-box;
+  transition:all .3s ease;white-space:nowrap;overflow:hidden}
+.ge.ph .ge-book{border-radius:4px}
+.ge-bnm{overflow:hidden;text-overflow:ellipsis}
+.ge-bmn{font-size:12px;opacity:.75;font-variant-numeric:tabular-nums;flex:none;margin-left:12px}
+.ge-shelfrow{display:flex;align-items:center;gap:10px}
+.ge-trows{display:flex;flex-direction:column-reverse;gap:7px;width:330px;flex:none}
+.ge-trow{display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-radius:8px;font-size:15px;font-weight:800;
+  transition:all .25s ease;white-space:nowrap;box-sizing:border-box}
+.ge-tmn{font-size:12px;opacity:.8;font-variant-numeric:tabular-nums}
+.ge-lcd{box-sizing:border-box;border-radius:14px;background:#131c12;display:flex;align-items:center;justify-content:flex-end;
+  box-shadow:inset 0 0 0 3px rgba(0,0,0,.5);flex:none}
+.ge-lcd>div,.ge-mini-lcd>div{font-weight:800;line-height:1;color:#bef264;font-variant-numeric:tabular-nums;text-shadow:0 0 22px rgba(190,242,100,.5)}
+.ge-mini-lcd{border-radius:12px;background:#131c12;flex:none;box-shadow:inset 0 0 0 3px rgba(0,0,0,.5)}
+.ge.ph .ge-mini-lcd{border-radius:11px}
+.ge-side{position:relative;flex:none;display:flex;align-items:stretch;gap:8px;font-size:12px;font-weight:800;font-variant-numeric:tabular-nums}
+.ge-side.ph{gap:4px;font-size:9.5px}
+.ge-side-col{position:relative;flex:none}
+.ge-side-col span{position:absolute;transform:translateY(50%);white-space:nowrap;line-height:1}
+.ge-side-col.l span{right:0}
+.ge-side-col.r span{left:0;opacity:.85}
+.ge-side-trk{position:relative;flex:none;width:14px;border-radius:7px;background:rgba(255,255,255,.12)}
+.ge-side.ph .ge-side-trk{width:8px;border-radius:4px}
+.ge-side-fill{position:absolute;left:0;right:0;bottom:0;border-radius:inherit;background:currentColor}
+.ge-side-tick{position:absolute;left:-5px;right:-5px;height:2px;margin-bottom:-1px;background:currentColor;opacity:.85}
+.ge-board{flex:1 1 auto;display:grid;grid-template-columns:minmax(300px,410px) minmax(0,1fr);gap:34px;padding:20px 32px 0;cursor:pointer}
+.ge-board.ph{display:flex;flex-direction:column;gap:11px;padding:16px 16px 0}
+.ge-bl{display:flex;flex-direction:column;gap:13px;min-width:0}
+.ge-br{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ge-mshelf{display:flex;flex-direction:column-reverse;gap:3px;align-items:center;width:120px;flex:none}
+.ge-mshelf>div{height:13px;border-radius:3px;border-left:4px solid rgba(0,0,0,.18);box-sizing:border-box}
+.ge-th{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#7dd3fc}
+.ge-tname{font-weight:800;line-height:1.1}
+.ge-tsub{font-size:15px;font-weight:700;color:#9aa8c4;margin-top:4px;font-variant-numeric:tabular-nums}
+.ge-tline{font-size:14px;font-weight:700;color:#c9d3e6}
+.ge-tiles{display:grid;gap:5px}
+.ge-tiles.ph{gap:4px}
+.ge-tile{border-radius:8px;padding:7px 3px;background:rgba(255,255,255,.05);border-top:3px solid;text-align:center;min-width:0}
+.ge-tiles.ph .ge-tile{border-radius:7px;padding:6px 2px}
+.ge-tn{font-size:11px;font-weight:800;letter-spacing:.02em;color:#c9d3e6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ge-tiles.ph .ge-tn{font-size:8px;letter-spacing:.04em;text-transform:uppercase;color:#9aa8c4}
+.ge-ts{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
+.ge-tiles.ph .ge-ts{font-size:16px}
+.ge-tr{font-size:9px;font-weight:700;color:#9aa8c4;font-variant-numeric:tabular-nums}
+.ge-chal{border-radius:14px;background:#7dd3fc;color:#08222e;padding:14px 16px;display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center;cursor:default}
+.ge.ph .ge-chal{padding:12px 14px;gap:7px}
+.ge-chal-h{font-size:18px;font-weight:800}
+.ge.ph .ge-chal-h{font-size:17px}
+.ge-chal-s{font-size:13px;font-weight:700}
+.ge.ph .ge-chal-s{font-size:12px}
+.ge-chal-go{display:block;width:100%;box-sizing:border-box;padding:11px 0;border-radius:10px;background:#08222e;color:#fff;border:0;font:inherit;font-size:15px;font-weight:800;cursor:pointer}
+.ge.ph .ge-chal-go{padding:12px 0}
+.ge-chal-go:hover{filter:brightness(1.25)}
+.ge-chal-u{font-size:11px;font-weight:700;word-break:break-all}
+.ge a.ge-sim{display:block;text-align:center;padding:11px 0;border-radius:10px;border:1px solid rgba(255,255,255,.18);color:#e9edf4;font-size:15px;font-weight:800;text-decoration:none}
+.ge.ph a.ge-sim{padding:12px 0}
+.ge a.ge-sim:hover{border-color:rgba(255,255,255,.4);color:#fff}
+.ge-bhd{display:flex;align-items:baseline;justify-content:space-between}
+.ge-bt{font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#9aa8c4;font-variant-numeric:tabular-nums}
+.ge.ph .ge-bt{font-size:11px;letter-spacing:.14em}
+.ge a.ge-blink{font-size:12px;font-weight:800;text-decoration:none}
+.ge.ph a.ge-blink{font-size:11px}
+.ge-rows{display:flex;flex-direction:column;gap:8px}
+.ge.ph .ge-rows{gap:6px}
+.ge-row{display:grid;grid-template-columns:40px minmax(0,1fr) 150px 48px;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+.ge-row.ph{gap:10px;padding:7px 12px;border-radius:11px}
+.ge-row.me{background:rgba(125,211,252,.12);border-color:#7dd3fc}
+.ge-rr{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
+.ge-row.ph .ge-rr{font-size:15px}
+.ge-rn{font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ge-row.ph .ge-rn{font-size:14px}
+.ge-rt{font-size:12px;font-weight:700;color:#9aa8c4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ge-row.ph .ge-rt{font-size:11px}
+.ge-bars{display:flex;align-items:flex-end}
+.ge-bars>div{flex:1 1 0}
+.ge-rtot{font-size:22px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+.ge-row.ph .ge-rtot{font-size:19px}
+.ge-foot{font-size:12px;font-weight:700;color:#9aa8c4;margin-top:4px}
+.ge-lad{display:flex;gap:4px;padding:14px 28px 18px;flex:none}
+.ge-lad.ph{gap:3px;padding:12px 14px 16px}
+.ge-lseg{display:flex;flex-direction:column;gap:5px;min-width:0}
+.ge-lad.ph .ge-lseg{gap:4px}
+.ge-llb{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums}
+.ge-lad.ph .ge-llb{font-size:9px;letter-spacing:0;text-transform:none}
+.ge-ltr{height:12px;border-radius:3px;overflow:hidden}
+.ge-lad.ph .ge-ltr{height:10px}
+.ge-mst{display:flex;gap:6px;padding:14px 28px 18px;flex:none}
+.ge-mst.ph{gap:5px;padding:12px 14px 16px}
+.ge-mtile{flex:1 1 0;min-width:0;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;box-sizing:border-box;
+  font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;transition:all .3s ease}
+.ge-mst.ph .ge-mtile{height:44px;border-radius:7px;flex-direction:column;justify-content:center;padding:0;font-size:9px;letter-spacing:.06em}
+.ge-mv{font-size:18px;font-variant-numeric:tabular-nums;text-align:right}
+.ge-mst.ph .ge-mv{font-size:15px;min-height:18px;text-align:center}
+@keyframes gpop{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes gcrack{0%{transform:scale(1)}40%{transform:scale(1.5) rotate(-8deg)}100%{transform:scale(1.2) rotate(0)}}
+@keyframes grow{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+@keyframes growph{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes merr{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes mtick{from{opacity:0;transform:translateY(10px)}to{transform:none}}
+.ge-pop{animation:gpop .4s cubic-bezier(.2,.8,.2,1) both}
+.g-crack{animation:gcrack .4s ease both}
+.g-row,.m-row{animation:grow .35s ease both}
+.ge-row.ph{animation-name:growph}
+.m-err{animation:merr .3s steps(2) 3 both}
+.m-tick{animation:mtick .12s ease both}
+@media (prefers-reduced-motion: reduce){.ge,.ge *{animation:none !important;transition:none !important}}
 `;

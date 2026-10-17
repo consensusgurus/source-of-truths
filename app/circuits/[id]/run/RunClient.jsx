@@ -57,10 +57,10 @@ import { titleFor } from '@/lib/run-titles';
 import MissList, { missOf, MISS_CSS } from '../../RunMisses';
 import useCircuitHistory from '../../useCircuitHistory';
 import { T } from '@/lib/theme';
-import MoreRunsPop, { MoreRunsList } from '../../MoreRuns';
+import MoreRunsPop, { MoreRunsList, otherRuns } from '../../MoreRuns';
 import EncorePop from '../../EncorePop';
 import GauntletBackPop from '../../GauntletBackPop';
-import { runDoneToday } from '../../RunDoorPop';
+import { runDoneToday, RUN_DOORS } from '../../RunDoorPop';
 import NextDrop from '../../../NextDrop';
 import ChallengeStrip from '../../../ChallengeStrip';
 import { RunChallengeButton, RunChallengeLine, runToken } from '../../../RunChallenge';
@@ -264,6 +264,21 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   const sec = sections[r.si] || null;
   const question = r.phase === 'playing' && sec && r.i < sec.questions.length ? sec.questions[r.i] : null;
   const done = r.phase === 'done';
+  // PLAY SIMILAR, for the Gauntlets' ending board (owner, 2026-10-17): the
+  // Trivia Encore while it is open today, otherwise the first run in the
+  // more-runs order not finished today on this device. Read in an effect, as
+  // MoreRuns reads it; null when every run is done.
+  const [similarRun, setSimilarRun] = useState(null);
+  useEffect(() => {
+    if (!done) return;
+    if (encoreOn && !runDoneToday('triviaencore')) {
+      setSimilarRun({ name: 'Trivia Encore', href: (encore && encore.href) || '/triviaencore' });
+      return;
+    }
+    const id = otherRuns(circuitId).find((x) => x !== 'triviaencore' && !runDoneToday(x));
+    setSimilarRun(id && RUN_DOORS[id] ? { name: RUN_DOORS[id].name, href: RUN_DOORS[id].href } : null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done, encoreOn, circuitId]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -1896,6 +1911,14 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           meKey={(boardQ.data && boardQ.data.me && boardQ.data.me.userKey) || null}
           guest={guest && !claimed}
           circuitId={circuitId}
+          circuitName={circuitName}
+          clock={runSecs}
+          meRow={myRow}
+          challenge={isChallengeableRun(circuitId) && !r.practice
+            ? { score: cleared, total: askable, n: runToken(), t: runSecs > 0 ? Math.round(runSecs) : null, status: `${perfect} of ${N} cleared` }
+            : null}
+          similar={similarRun}
+          boardHref={runSummaryHref(circuitId)}
           onDone={() => setCurtain(false)}
         />
       ) : null}
