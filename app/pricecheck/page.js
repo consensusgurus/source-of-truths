@@ -79,7 +79,7 @@ export default function PriceCheckPage({ searchParams }) {
       <Suspense fallback={null}>
         <PriceCheckClient dateLabel={dateLabel} dateShort={dateShort} sections={sections} />
       </Suspense>
-      <StageTail run="pricecheck" />
+      <StageTail run="pricecheck" theme="dark" />
     </>
   );
 }

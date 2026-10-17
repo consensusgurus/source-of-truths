@@ -15,7 +15,8 @@
 //
 // THE GAME STAYS ON SCREEN after it is answered, so the crowd's reveal (the
 // bars, the order, the board of answers) is right there; a handover card
-// above it reports the room and counts down to the next one, with a Hold.
+// above it reports the room and waits for the player to press on (owner,
+// 2026-10-16: never move on by itself).
 //
 // IT MOVES. A crowd game re-scores everybody as the room fills, so the read
 // at the finish is a reading: the verdict refreshes while the page is open,
@@ -36,6 +37,7 @@ import { isMobileDevice } from '@/lib/is-mobile';
 import { ROOM_RUN_ID, ROOM_MAX, ROOM_LADDER, roomBeat, roomPoints, roomTierOf, roomPartFor } from '@/lib/read-room';
 
 const COUNT_WORD = ['zero', 'one', 'two', 'three', 'four', 'five', 'six'];
+const PART_WORD = ['', 'all', 'a half', 'a third', 'a quarter', 'a fifth', 'a sixth'];
 
 const CLIENTS = {
   herd: dynamic(() => import('../herd/HerdClient'), { ssr: false, loading: () => null }),
@@ -45,7 +47,6 @@ const CLIENTS = {
 };
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const HOLD_MS = 8000;
 const REFRESH_MS = 30000;
 
 function etToday(now = new Date()) {
@@ -73,6 +74,7 @@ const freshRun = () => ({ v: 1, phase: 'idle', si: 0, t0: null, results: {} });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const storeOf = (iso) => `sot_run_room_${iso}`;
 const pctOf = (read) => { const b = read ? roomBeat(read.rank, read.field) : null; return b == null ? null : Math.round(100 * b); };
+const NOOP = () => {};
 const fmtN = (n) => Number(n || 0).toLocaleString();
 
 // The answers a room's own save holds, in the shape its crowd API takes.
@@ -285,7 +287,7 @@ export default function RoomClient({ dateLabel, dateShort, sections = [] }) {
   return (
     <div className="stage-page rr" data-stage-theme="dark" style={{ ...VARS, minHeight: '100vh', background: 'var(--rr-ground)', color: 'var(--rr-ink)', fontFamily: SANS, overflowX: 'hidden', position: 'relative' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div className="rr-cap">
+      <div className={`rr-cap${done ? ' vf' : playing ? ' pl' : ''}`}>
         <Link href="/" className="rr-home">Mind Loft</Link>
         <b>Read the Room</b>
         <span className="rr-capd">{dateShort}</span>
@@ -327,7 +329,7 @@ export default function RoomClient({ dateLabel, dateShort, sections = [] }) {
           </div>
           {howOpen && (
             <div className="rr-howbox">
-              <p>Each room is worth a third of 100, paid on the share of the other players in it you <b>out-read</b>: first in a room takes the whole third, last takes none. The standings are each game&rsquo;s own live board, so your read moves as the room fills.</p>
+              <p>Each room is worth {PART_WORD[N] || `1/${N}`} of 100, paid on the share of the other players in it you <b>out-read</b>: first in a room takes all of it, last takes none. The standings are each game&rsquo;s own live board, so your read moves as the room fills.</p>
               <Ladder at={null} />
             </div>
           )}
@@ -393,21 +395,7 @@ function Figures({ n, lit = 0, me = -1, arriving = 0, step = 0 }) {
 
 // ─── between rooms ──────────────────────────────────────────────────────────
 function Handover({ sec, si, n, res, part, next, banked, onGo }) {
-  const [held, setHeld] = useState(false);
-  const [t, setT] = useState(HOLD_MS);
-  useEffect(() => {
-    if (held) return undefined;
-    const t0 = Date.now();
-    const iv = setInterval(() => {
-      const left = Math.max(0, HOLD_MS - (Date.now() - t0));
-      setT(left);
-      if (left <= 0) { clearInterval(iv); onGo(); }
-    }, 200);
-    return () => clearInterval(iv);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [held]);
   const pct = pctOf(res.read);
-  const R = 18, C = 2 * Math.PI * R;
   return (
     <div className="rr-hand">
       <div className="rr-hand-l">
@@ -417,18 +405,14 @@ function Handover({ sec, si, n, res, part, next, banked, onGo }) {
           ? <>That reads the room better than <b>{pct}%</b> of it so far.</>
           : <>That reads the room better than <b>{pct}%</b> of it so far. The night is young.</>}
           {' '}<span>Worth {Math.round(part)} of this room&rsquo;s {Math.round(ROOM_MAX / Math.max(1, n))}.</span></p>
-        <p className="rr-hand-n">The answers the room gave are below. They keep moving until midnight.</p>
+        <p className="rr-hand-n">The answers the room gave are below. Take your time: the next room waits for you.</p>
       </div>
       <div className="rr-hand-r">
         {next ? <div className="rr-next"><span>Next room</span><b>{next.name}</b><small>{next.line}</small></div> : <div className="rr-next"><span>That was the last room</span><b>Your verdict</b><small>How well you read all {COUNT_WORD[n] || n}.</small></div>}
         <div className="rr-gorow">
           <button type="button" className="rr-go" onClick={onGo}>
-            {!held && (
-              <svg className="rr-ring" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r={R} /><circle cx="22" cy="22" r={R} className="on" style={{ strokeDasharray: C, strokeDashoffset: C * (1 - t / HOLD_MS) }} /></svg>
-            )}
-            {next ? `Into ${next.name}` : 'Read your verdict'}
+            {next ? `Next: ${next.name}` : 'Read your verdict'} <span aria-hidden="true">&rarr;</span>
           </button>
-          {!held && <button type="button" className="rr-hold" onClick={() => setHeld(true)}>Hold here</button>}
         </div>
       </div>
     </div>
@@ -485,6 +469,9 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
   const players = board && board.data ? (board.data.uniquePlayers || (Array.isArray(board.data.overall) ? board.data.overall.length : null)) : null;
   const moved = finishRead != null && settled ? total - finishRead : 0;
   const top = ti === 0;
+  const [openKey, setOpenKey] = useState(null);
+  const openSec = openKey ? sections.find((x) => x.key === openKey) : null;
+  const OpenGame = openSec ? CLIENTS[openSec.key] : null;
 
   return (
     <section className="rr-vf">
@@ -514,21 +501,34 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
             {sections.map((s, i) => {
               const c = counted[i];
               const p = c && c.read ? pctOf(c.read) : null;
+              const on = openKey === s.key;
               return (
-                <div key={s.key} style={{ '--c': `var(--rr-${s.key})` }}>
+                <button type="button" key={s.key} className={`rr-gt${on ? ' on' : ''}`} style={{ '--c': `var(--rr-${s.key})` }}
+                  aria-expanded={on} onClick={() => setOpenKey(on ? null : s.key)}>
                   <i>{s.name}</i>
                   <b>{p == null ? '-' : `${p}%`}</b>
                   <small>{c && c.score != null ? `${c.score}/${c.total}` : 'on file'}{c && c.read ? ` · #${c.read.rank} of ${fmtN(c.read.field)}` : ''}</small>
                   <span className="rr-bar"><u style={{ width: `${p || 0}%` }} /></span>
-                </div>
+                  <em>{on ? 'Hide results' : 'See results'}</em>
+                </button>
               );
             })}
           </div>
+          {openSec && OpenGame && (
+            <div className="rr-ans" style={{ '--c': `var(--rr-${openSec.key})` }}>
+              <div className="rr-ans-hd"><span>{openSec.name} · what the room said</span><button type="button" onClick={() => setOpenKey(null)}>Close</button></div>
+              <div className="rr-host">
+                <RunEmbed onResult={NOOP}>
+                  <OpenGame key={`ans-${openSec.key}-${openSec.num}`} puzzles={[openSec.puzzle]} forceNum={null} />
+                </RunEmbed>
+              </div>
+            </div>
+          )}
           <div className="rr-vf-stats">
             <div><b>{total}/{ROOM_MAX}</b><span>Your read</span></div>
             {me && me.rank ? <div><b>#{me.rank}</b><span>{players ? `of ${fmtN(players)} on tonight's board` : "on tonight's board"}</span></div> : <div><b>{L[1].split(' ')[0]}</b><span>Where you stand</span></div>}
           </div>
-          <div style={{ margin: '14px 0', maxWidth: 420 }}>
+          <div className="rr-vf-draw">
             <RunChallengeLine gameKey={ROOM_RUN_ID} score={total} total={ROOM_MAX} n={runToken()} />
             <RunChallengeButton gameKey={ROOM_RUN_ID} score={total} total={ROOM_MAX} n={runToken()} door />
           </div>
@@ -618,6 +618,8 @@ const CSS = `
 .rr *{box-sizing:border-box}
 .rr .rr-eb{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--rr-acc-lt)}
 .rr-cap{display:flex;align-items:center;gap:12px;max-width:860px;margin:0 auto;padding:12px 16px;font-size:13px}
+.rr-cap.vf{max-width:980px}
+.rr-cap.pl{max-width:760px}
 .rr-home{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--rr-mute);text-decoration:none}
 .rr-cap b{font-weight:800;letter-spacing:-.01em}
 .rr-capd{color:var(--rr-mute);font-weight:700}
@@ -729,7 +731,16 @@ const CSS = `
 .rr-moved.up{color:#6ee7b7}.rr-moved.dn{color:#fca5a5}
 .rr-vf-copy{margin-top:16px;animation:rrrise .5s ease both}
 .rr-vf-games{display:grid;grid-template-columns:repeat(var(--rr-n,3),minmax(0,1fr));gap:10px}
-.rr-vf-games div{position:relative;display:flex;flex-direction:column;gap:3px;padding:14px;border-radius:12px;background:var(--rr-panel);border:1px solid var(--rr-line);min-width:0}
+.rr-vf-games .rr-gt{position:relative;display:flex;flex-direction:column;align-items:stretch;text-align:left;gap:3px;padding:14px;border-radius:12px;background:var(--rr-panel);border:1px solid var(--rr-line);min-width:0;color:var(--rr-ink);font:inherit;cursor:pointer}
+.rr-vf-games .rr-gt:hover{border-color:var(--c)}
+.rr-vf-games .rr-gt.on{border-color:var(--c);box-shadow:0 0 0 1px var(--c)}
+.rr-vf-games .rr-gt:focus-visible{outline:2px solid var(--rr-ink);outline-offset:3px}
+.rr-vf-games em{margin-top:8px;font-style:normal;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--rr-acc-lt)}
+.rr-ans{margin-top:12px;border-radius:14px;background:var(--rr-panel);border:1px solid var(--rr-line);border-top:3px solid var(--c);padding:14px 0 6px;animation:rrrise .35s ease both}
+.rr-ans-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 16px 8px}
+.rr-ans-hd span{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--rr-acc-lt)}
+.rr-ans-hd button{background:none;border:1px solid var(--rr-line);color:var(--rr-ink);font:800 12.5px ${SANS};padding:6px 12px;border-radius:9px;cursor:pointer}
+.rr-vf-draw{margin:14px 0}
 .rr-vf-games i{font-style:normal;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--rr-acc-lt)}
 .rr-vf-games b{font-size:24px;font-weight:800}
 .rr-vf-games small{font-size:12px;font-weight:700;color:var(--rr-mute)}

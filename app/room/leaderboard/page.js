@@ -26,5 +26,5 @@ function etLabel() {
 export default function RoomLeaderboardPage() {
   return <PriceCheckBoard dateLabel={etLabel()} circuit="room" name="Read the Room" path="/room"
     emptyLine="Nobody has read every room tonight yet. Yours would be the first read on the board."
-    rankedLine="Ranked on how much of each room you out-read, a third each, and it moves until midnight" max={100} />;
+    rankedLine="Ranked on how much of each room you out-read, an equal share each, and it moves until midnight" max={100} />;
 }

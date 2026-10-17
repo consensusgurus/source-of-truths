@@ -9417,8 +9417,9 @@ people in the room. Circuit id `room`, engine `room`, scorer `room`, `scoreFrom:
   (Outwit /10, Outrank /12, Feud /500), so each room pays a third of 100 times the share of the
   other players in it you out-read: `beat = (field - rank) / (field - 1)`, alone in a room pays
   the whole third. Ranks are the crowd games' own registered-only standings, so the verdict and
-  the circuit board can never disagree. Ladder: Mind Reader 95, The Host 80, Life of the Party
-  60, Plus-One 40, Wallflower 20, Wrong Party 0.
+  the circuit board can never disagree. Ladder (titles only, lowered 2026-10-16 because
+  the typical player reads about half the room): Mind Reader 85, The Host 65, Life of the Party 40,
+  Plus-One 25, Wallflower 10, Wrong Party 0.
 - **The crowd APIs return `board.read: { rank, field }`** (`roomReadFrom`): a registered player's
   own rank, a guest placed as if registered, after everyone who scored the same or more.
 - **IT MOVES (owner: "let it move").** The verdict shows at the finish as a reading of the room
@@ -9428,6 +9429,10 @@ people in the room. Circuit id `room`, engine `room`, scorer `room`, `scoreFrom:
 - **Embedded like Judged and the Dojo**: each crowd client reads `useRunEmbed()`, hides its cap,
   finish card and tail inside the run, and reports `{score,total,read,field}` through
   `EMBED.onResult`. A played game is banked off its own `sot_<key>_<num>` save.
+- **Between rooms the handover WAITS for Next** (owner, 2026-10-16): no countdown, the crowd's answers stay
+  on screen until the player presses on. **The verdict's room tiles open the answers**: each tile is a
+  button ("See results") that mounts that game below the tiles inside RunEmbed (onResult a no-op), so the
+  game's own finished view shows what the room said. The $100 drawing card sits full width.
 - **The door**: Outwit, Outrank and Feud each mount `RunDoorPop id="room"` on today's start gate
   (once per day). Placed in the home's lead circuits, MoreRuns (seven runs), the crowd category
   page and the sitemap.

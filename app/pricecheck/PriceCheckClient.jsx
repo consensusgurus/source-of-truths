@@ -512,6 +512,8 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
                 <div className="pf-btns">
                   <button type="button" onClick={onItems}>See the items</button>
                   <button type="button" className="pri" onClick={onShare}>{copied ? 'Copied' : 'Share card'}</button>
+                  <a href="/pricecheck/leaderboard">Leaderboard</a>
+                  <a href="/">Back to main</a>
                 </div>
               </>
             )}
@@ -522,7 +524,6 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
       {settled && (
         <div className="pf-foot">
           <MoreRunsList self="pricecheck" />
-          <div className="pf-links"><a href="/pricecheck/leaderboard">Leaderboard</a><a href="/">Back to main</a></div>
         </div>
       )}
     </section>
@@ -937,8 +938,7 @@ const CSS = `
 .cf-pills .cf-next{margin-top:0;border-radius:999px;padding:6px 12px}
 .cf-shelf{font-size:13px;font-weight:700;color:var(--pc-mute)}
 .cf-shelf b{color:var(--pc-ink);font-variant-numeric:tabular-nums}
-.pf-foot{max-width:820px;margin:22px auto 0;padding:0 16px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px}
-.pf-foot > :first-child{flex:1 1 360px;min-width:0}
+.pf-foot{max-width:820px;margin:22px auto 0;padding:0 16px}
 .pf-links{display:flex;gap:16px}
 .pf-links a{font-size:13px;font-weight:800;color:var(--pc-mute);text-decoration:none}
 .pf-links a:hover{color:var(--pc-ink)}
