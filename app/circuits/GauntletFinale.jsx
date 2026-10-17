@@ -61,6 +61,7 @@ import { newCid, withCid, recordSend } from '@/lib/challenge-client';
 import { drawingIsLive, DRAWING } from '@/lib/drawing';
 import { savedIdentity } from '@/lib/saved-identity';
 import { useMyTickets } from '../TicketDoor';
+import { RunChallengeButton } from '../RunChallenge';
 
 const PAINT_MS = 1250;     // one bank owns the screen for this long (980 before the rank line)
 const COUNT_MS = 560;      // its number, its ladder block and its segment
@@ -1430,7 +1431,13 @@ export function GauntletBoardTop({
               </div>
             ))}
           </div>
-          {challenge ? <GeChallenge gameKey={circuitId} challenge={challenge} /> : null}
+          {/* The run card's own challenge door, so it names the $100 drawing
+              while the drawing is live, the same as every other run ending. */}
+          {challenge ? (
+            <div className="ge-pop" style={{ animationDelay: '.4s' }}>
+              <RunChallengeButton gameKey={circuitId} score={challenge.score} total={challenge.total} n={challenge.n} t={challenge.t} status={challenge.status} door />
+            </div>
+          ) : null}
           {similar && similar.href ? (
             <a href={similar.href} className="ge-pop ge-sim" style={{ animationDelay: '.45s' }}>Play similar: {similar.name}</a>
           ) : null}
