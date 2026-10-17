@@ -9748,17 +9748,21 @@ Not in the Arcade circuit; whether it joins is an owner call.
 - **The day is generated, not banked.** `lib/squash-engine.js` deals the opening board off the
   quizId and gives every COLUMN its own seeded stream of fruit, so the k-th fruit to drop into a
   column is the same for everybody. The same file is the engine the client plays and the verifier
-  proves. `app/squash/puzzles.js` carries the frame (size, moves) and a MEASURED par, written by
+  proves. `app/squash/puzzles.js` carries the frame (size, seconds) and a MEASURED par, written by
   `scripts/gen-squash.mjs`: the midpoint of a greedy bot and three random swappers
-  (`scripts/squash-par.mjs`), rounded to 100. Any engine change moves par; the verifier fails
+  (`scripts/squash-par.mjs`) at a blitz pace of 75 swaps, rounded to 100. Any engine change moves par; the verifier fails
   until the bank is regenerated.
-- **Rules:** weekday 8x8 and 25 moves, Sunday Edition 9x9 and 30 moves; six fruit. A swap that
+- **Rules:** a FIVE-MINUTE BLITZ (owner, 2026-10-17; it launched an hour earlier as 25 moves):
+  the clock starts on the first swap, swaps are unlimited until it runs out, and fruit already
+  falling at zero still lands. Weekday 8x8, Sunday Edition 9x9; six fruit. Pausing (or hiding
+  the tab) stops the clock and COVERS the board, so a pause cannot be used to plan. A swap that
   makes no match slides back and costs nothing. Four in a line makes a slicer (clears the line it
   cuts across), an L or T a bomb (3x3), five a punch bowl (clears a fruit kind). Special pairs
   combo with no match. Points: 10 a fruit times the cascade wave, plus 60 / 100 / 200 for making a
   slicer / bomb / bowl. A board with no move shuffles off a seeded stream.
 - **Input:** drag onto a neighbour, or tap then tap; arrows + Enter on a keyboard. After 9 idle
   seconds the first valid swap in reading order wiggles (a nudge, never the best move).
-- **Ties break on the clock** (moves are fixed). A run in progress is saved after every move.
+- **Ties break on fewer swaps** (every run is five minutes). A run in progress is saved after
+  every swap and every few seconds, and comes back paused.
 - `scripts/verify-squash.mjs` checks the bank and the engine (every special and combo, the
   shuffle, determinism of the same moves, and that each par still matches the engine).

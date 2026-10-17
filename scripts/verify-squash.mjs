@@ -3,7 +3,7 @@
 //   node scripts/verify-squash.mjs
 //
 // Bank: contiguous dates, quizIds and date labels that match their live date,
-// the Sunday flag on real Sundays with the Sunday frame (9x9, 30 moves) and the
+// the Sunday flag on real Sundays with the Sunday frame (9x9) and the
 // weekday frame everywhere else, and every par equal to what the generator
 // measures today (so an engine change that moves par cannot ship silently).
 //
@@ -33,16 +33,16 @@ PUZZLES.forEach((p, i) => {
   if (p.dateLabel !== `${MONTHS[m - 1]} ${day}, ${y}`) fail(`${p.quizId}: dateLabel`);
   const sun = d.getUTCDay() === 0;
   if (p.sunday !== sun) fail(`${p.quizId}: sunday flag`);
-  const want = sun ? { size: 9, moves: 30 } : { size: 8, moves: 25 };
-  if (p.size !== want.size || p.moves !== want.moves) fail(`${p.quizId}: frame ${p.size}/${p.moves}`);
-  const par = parFor(p.quizId, { size: p.size, moves: p.moves });
+  const want = sun ? 9 : 8;
+  if (p.size !== want || p.seconds !== 300) fail(`${p.quizId}: frame ${p.size}x${p.size}, ${p.seconds}s`);
+  const par = parFor(p.quizId, { size: p.size });
   if (par !== p.par) fail(`${p.quizId}: par ${p.par}, engine measures ${par}`);
 });
 
 // ---- engine: the opening board -------------------------------------------
 for (const p of PUZZLES) {
-  const a = newGame({ quizId: p.quizId, size: p.size, moves: p.moves });
-  const b = newGame({ quizId: p.quizId, size: p.size, moves: p.moves });
+  const a = newGame({ quizId: p.quizId, size: p.size });
+  const b = newGame({ quizId: p.quizId, size: p.size });
   if (JSON.stringify(a) !== JSON.stringify(b)) fail(`${p.quizId}: opening board not deterministic`);
   if (findGroups(a).length) fail(`${p.quizId}: opening board already holds a match`);
   if (validMoves(a).length < 3) fail(`${p.quizId}: opening board has fewer than three moves`);
@@ -161,7 +161,7 @@ const count = (s, pred) => s.grid.flat().filter(pred).length;
 }
 { // a run ends at its budget, and every day can be played out
   for (const p of PUZZLES.slice(0, 12)) {
-    const s = newGame({ quizId: p.quizId, size: p.size, moves: p.moves });
+    const s = newGame({ quizId: p.quizId, size: p.size, moves: 25 });
     let guard = 0;
     while (s.used < s.max && guard++ < 200) {
       if (!hasMove(s)) { fail(`${p.quizId}: no move left after a move resolved`); break; }
@@ -171,6 +171,15 @@ const count = (s, pred) => s.grid.flat().filter(pred).length;
     if (s.used !== s.max) fail(`${p.quizId}: run did not reach its budget`);
     if (move(s, ...validMoves(s)[0] || [[0, 0], [0, 1]]).ok) fail(`${p.quizId}: a move past the budget was accepted`);
     if (findGroups(s).length) fail(`${p.quizId}: a resolved board still holds a match`);
+  }
+}
+
+{ // the blitz: with no cap a run keeps going, shuffling whenever it is stuck
+  const s = newGame({ quizId: PUZZLES[0].quizId });
+  for (let i = 0; i < 300; i++) {
+    const ms = validMoves(s);
+    if (!ms.length) { fail(`an uncapped run had no move after ${i} swaps`); break; }
+    if (!move(s, ms[(i * 5) % ms.length][0], ms[(i * 5) % ms.length][1]).ok) { fail('an uncapped run refused a valid swap'); break; }
   }
 }
 

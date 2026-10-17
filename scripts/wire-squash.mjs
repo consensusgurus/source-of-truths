@@ -29,9 +29,9 @@ function sub(file, anchor, replacement) {
 const NAME = 'Squash';
 const TAG = 'Same fruit, same board';
 const TAGLONG = 'Match-three with fruit; the same board and refills for everybody';
-const HOW = 'Swap fruit to line up three of a kind, set off cascades and special fruit, and score what you can in 25 moves. Everyone gets the same board and the same falling fruit, and your best run counts.';
+const HOW = 'Swap fruit to line up three of a kind, set off cascades and special fruit, and score what you can in a five-minute blitz. Everyone gets the same board and the same falling fruit, and your best run counts.';
 const COLOR = '#db2777', NAVY = '#f9a8d4', BG = '#fce7f3', BORDER = 'rgba(219,39,119,0.4)';
-const BLURB = 'A match-three with fruit: swap to line up three of a kind and chase the cascades. Same board and the same falling fruit for everybody, 25 moves, and your best run counts.';
+const BLURB = 'A match-three with fruit: swap to line up three of a kind and chase the cascades. Same board and the same falling fruit for everybody, five minutes on the clock, and your best run counts.';
 
 // ─── 1. lib/daily-games.js: the row, and no premiere ─────────────────────────
 sub('lib/daily-games.js',
@@ -44,7 +44,7 @@ sub('lib/daily-games.js',
 // ─── 2. lib/sunday-editions.js ───────────────────────────────────────────────
 sub('lib/sunday-editions.js',
   `//   snake   every apple grows the snake by two squares instead of one, so`,
-  `//   squash  a 9x9 board with 30 moves, against the weekday 8x8 and 25\n//   snake   every apple grows the snake by two squares instead of one, so`);
+  `//   squash  the same five-minute blitz on a 9x9 board, against the weekday 8x8\n//   snake   every apple grows the snake by two squares instead of one, so`);
 sub('lib/sunday-editions.js', `'yose', 'blocks', 'snake', 'chomp',`, `'yose', 'blocks', 'snake', 'squash', 'chomp',`);
 
 // ─── 3. IQ: one point a day, as for the other arcade games ───────────────────
@@ -107,7 +107,7 @@ sub('lib/challenge-metric.js', `  snake: { unit: 'apples', one: 'apple', dir: 'h
 sub('lib/finish-beats.js', `  snake: { kind: 'lap', last: true },`, `  snake: { kind: 'lap', last: true },\n  squash: { kind: 'lap', last: true },`);
 sub('lib/game-glyphs.js',
   `  snake: 'M4 19h7a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h6M19.5 5h.01', // a winding snake and its apple`,
-  `  snake: 'M4 19h7a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h6M19.5 5h.01', // a winding snake and its apple\n  squash: 'M3 3h18v18H3zM8 6a2 2 0 1 0 .01 0M16 6a2 2 0 1 0 .01 0M8 14a2 2 0 1 0 .01 0M13.5 16.5h5', // a tray of fruit, one squashed flat`);
+  `  snake: 'M4 19h7a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h6M19.5 5h.01', // a winding snake and its apple\n  squash: 'M3 3h18v18H3zM8 8.5a2.5 2.5 0 1 0 .01 0M16 8.5a2.5 2.5 0 1 0 .01 0M8 15.5a2.5 2.5 0 1 0 .01 0M13.5 15.5h5', // a tray of fruit, one squashed flat`);
 
 // ─── 10. the Arcade landing page and its set ─────────────────────────────────
 const PC = 'lib/puzzle-categories.js';
@@ -150,18 +150,22 @@ Not in the Arcade circuit; whether it joins is an owner call.
 - **The day is generated, not banked.** \`lib/squash-engine.js\` deals the opening board off the
   quizId and gives every COLUMN its own seeded stream of fruit, so the k-th fruit to drop into a
   column is the same for everybody. The same file is the engine the client plays and the verifier
-  proves. \`app/squash/puzzles.js\` carries the frame (size, moves) and a MEASURED par, written by
+  proves. \`app/squash/puzzles.js\` carries the frame (size, seconds) and a MEASURED par, written by
   \`scripts/gen-squash.mjs\`: the midpoint of a greedy bot and three random swappers
-  (\`scripts/squash-par.mjs\`), rounded to 100. Any engine change moves par; the verifier fails
+  (\`scripts/squash-par.mjs\`) at a blitz pace of 75 swaps, rounded to 100. Any engine change moves par; the verifier fails
   until the bank is regenerated.
-- **Rules:** weekday 8x8 and 25 moves, Sunday Edition 9x9 and 30 moves; six fruit. A swap that
+- **Rules:** a FIVE-MINUTE BLITZ (owner, 2026-10-17; it launched an hour earlier as 25 moves):
+  the clock starts on the first swap, swaps are unlimited until it runs out, and fruit already
+  falling at zero still lands. Weekday 8x8, Sunday Edition 9x9; six fruit. Pausing (or hiding
+  the tab) stops the clock and COVERS the board, so a pause cannot be used to plan. A swap that
   makes no match slides back and costs nothing. Four in a line makes a slicer (clears the line it
   cuts across), an L or T a bomb (3x3), five a punch bowl (clears a fruit kind). Special pairs
   combo with no match. Points: 10 a fruit times the cascade wave, plus 60 / 100 / 200 for making a
   slicer / bomb / bowl. A board with no move shuffles off a seeded stream.
 - **Input:** drag onto a neighbour, or tap then tap; arrows + Enter on a keyboard. After 9 idle
   seconds the first valid swap in reading order wiggles (a nudge, never the best move).
-- **Ties break on the clock** (moves are fixed). A run in progress is saved after every move.
+- **Ties break on fewer swaps** (every run is five minutes). A run in progress is saved after
+  every swap and every few seconds, and comes back paused.
 - \`scripts/verify-squash.mjs\` checks the bank and the engine (every special and combo, the
   shuffle, determinism of the same moves, and that each par still matches the engine).
 `);

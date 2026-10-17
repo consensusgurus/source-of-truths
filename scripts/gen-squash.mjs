@@ -2,12 +2,14 @@
 //
 // Squash ships no board: the day's opening board and every column's refill
 // stream come off the quizId in lib/squash-engine.js, in the client and in the
-// verifier alike. A row carries the frame (size, moves) and the day's PAR,
-// which this script MEASURES off the real engine:
+// verifier alike. Squash is a five-minute blitz (owner, 2026-10-17), so a row
+// carries the frame (size, seconds) and the day's PAR, which this script
+// MEASURES off the real engine at blitz pace (scripts/squash-par.mjs):
 //
 //   par = the midpoint between a greedy bot (each move, the swap that scores
 //         most right now; it sees the refills, which no player can) and the
-//         average of three random swappers, rounded to the nearest 100.
+//         average of three random swappers, each over PACE_MOVES swaps,
+//         rounded to the nearest 100.
 //
 // So par moves with the day: a board that hands out big cascades has a higher
 // par than one that does not. Revisit the formula once a fortnight of real
@@ -22,8 +24,9 @@ import { parFor } from './squash-par.mjs';
 
 const FIRST = '2026-10-17';
 const LAST = '2027-01-31';
-const WEEKDAY = { size: 8, moves: 25 };
-const SUNDAY = { size: 9, moves: 30 };
+const SECONDS = 300;
+const WEEKDAY = { size: 8 };
+const SUNDAY = { size: 9 };
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const rows = [];
@@ -36,7 +39,7 @@ while (d <= end) {
   const sunday = d.getUTCDay() === 0;
   const f = sunday ? SUNDAY : WEEKDAY;
   const quizId = `squash-${m}-${day}-${String(y).slice(2)}`;
-  rows.push(`  { num: ${num}, quizId: '${quizId}', live: '${live}', dateLabel: '${MONTHS[m - 1]} ${day}, ${y}', sunday: ${sunday}, size: ${f.size}, moves: ${f.moves}, par: ${parFor(quizId, f)} },`);
+  rows.push(`  { num: ${num}, quizId: '${quizId}', live: '${live}', dateLabel: '${MONTHS[m - 1]} ${day}, ${y}', sunday: ${sunday}, size: ${f.size}, seconds: ${SECONDS}, par: ${parFor(quizId, f)} },`);
   num++;
   d = new Date(d.getTime() + 86400000);
 }
@@ -51,10 +54,10 @@ process.stdout.write(`// Puzzle data for Squash, the daily fruit-matching game. 
 // player on a given day gets the same board and the same fruit dropping into
 // each column, and nothing about tomorrow leaks by shipping today's row.
 //
-//   size   the board is size x size. 8 on a weekday, 9 on the Sunday Edition.
-//   moves  swaps in a run. 25 on a weekday, 30 on the Sunday Edition.
-//   par    the day's BENCHMARK score, measured off the engine (the midpoint of
-//          a greedy bot and random swappers). Points are the score, posted raw
+//   size     the board is size x size. 8 on a weekday, 9 on the Sunday Edition.
+//   seconds  the blitz clock: five minutes, every day.
+//   par      the day's BENCHMARK score, measured off the engine at blitz pace
+//          (scripts/squash-par.mjs). Points are the score, posted raw
 //          and uncapped; par is only the denominator the combined board uses
 //          for its completion ratio (it clamps at 1). Reaching par wins the
 //          end card.
