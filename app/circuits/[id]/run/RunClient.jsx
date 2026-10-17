@@ -1056,9 +1056,14 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           </svg>
           Rankings
         </button>
-        <a className="rn-cx rn-cxi" href="/" aria-label="Home" title="Home">
-          <Home size={13} strokeWidth={2.4} />
-        </a>
+        {/* Once the run is done the cap carries RunBackLink (back to all
+            puzzles), so the Home chip goes: the two said the same thing and
+            collided on a phone (owner, 2026-10-17). */}
+        {!done && (
+          <a className="rn-cx rn-cxi" href="/" aria-label="Home" title="Home">
+            <Home size={13} strokeWidth={2.4} />
+          </a>
+        )}
       </div>
       <div className="rn-cprog">
         <span style={{ width: `${askable ? Math.round((answeredSoFar / askable) * 100) : 0}%` }} />
