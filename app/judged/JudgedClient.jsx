@@ -18,7 +18,7 @@
 // result stands, read off that game's own save and stats, and the run steps
 // over it. That is the daily board's own rule (the first attempt counts).
 //
-// THE PREGAME is a desk of five case folders and a gavel that is the Start
+// THE PREGAME is a desk of case folders (four from 2026-10-17) and a gavel that is the Start
 // button. THE ENDING grades the transcript case by case while a pennant on
 // the left climbs the ladder school by school, then the committee stamps the
 // file ADMITTED and the letter slides out of its envelope. The ending starts
@@ -74,7 +74,9 @@ function bankedOf(sec) {
 
 export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
   const N = sections.length;
-  const MAX = N * LAW_CASE_MAX;
+  // Four cases at 25 or five at 20: the run is always out of 100.
+  const CASE_MAX = N ? LAW_MAX / N : LAW_CASE_MAX;
+  const MAX = LAW_MAX;
   const STORE = `sot_run_judged_${etToday()}`;
   const [r, setR] = useState(() => freshRun());
   const rRef = useRef(r);
@@ -117,7 +119,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
   // What counts for each case: the first finish of the day, wherever it happened.
   const counted = useMemo(() => sections.map((sec) => banked[sec.key] || r.results[sec.key] || null), [sections, banked, r.results]);
   // Each case: 25 points, half accuracy and half speed (lib/law-school.js).
-  const parts = counted.map((c, i) => (c ? lawCasePoints(sections[i].key, c.score, c.total, c.secs) : 0));
+  const parts = counted.map((c, i) => (c ? lawCasePoints(sections[i].key, c.score, c.total, c.secs, CASE_MAX) : 0));
   const total = Math.round(parts.reduce((a, b) => a + b, 0));
   const allBanked = N > 0 && sections.every((s) => banked[s.key]);
 
@@ -171,7 +173,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
     return `Judged · ${dateShort} · ${total}/${LAW_MAX}\nAdmitted to ${school[1]}, admissions score ${lawIndexOf(total)}.${tier > 0 ? `\nWaitlisted at ${L[tier - 1][1]}, ${Math.max(1, L[tier - 1][0] - total)} short.` : ''}\n${per}\n${withRef(link)}`;
   }
   function copyShare() {
-    const text = done ? shareText() : `Judged: five logic cases, right and fast. Your score decides which law school lets you in.\n${withRef('mindloftdaily.com/judged')}`;
+    const text = done ? shareText() : `Judged: four logic cases, right and fast. Your score decides which law school lets you in.\n${withRef('mindloftdaily.com/judged')}`;
     try { if (navigator.share && isMobileDevice()) { navigator.share({ text }).catch(() => {}); return; } } catch (e) {}
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}
   }
@@ -196,7 +198,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
         <section className={`pre${leaving ? ' leave' : ''}`}>
           <div className="eb fade">{dateLabel} · Judged</div>
           <h1 className="title"><span>Judged</span></h1>
-          <p className="lede fade">Five cases in one sitting, opening with <b>{(sections[0] && sections[0].phrase) || 'a logic case'}</b>{sections.length > 1 ? `, then ${sections.slice(1).map((s) => s.phrase || s.name).join(', ').replace(/, ([^,]*)$/, ' and $1')}` : ''}. Right counts half, <b>fast</b> counts the other half. <span className="lede-x">Your score decides which law school lets you in.</span></p>
+          <p className="lede fade">{N === 4 ? 'Four' : N === 5 ? 'Five' : N} cases in one sitting, opening with <b>{(sections[0] && sections[0].phrase) || 'a logic case'}</b>{sections.length > 1 ? `, then ${sections.slice(1).map((s) => s.phrase || s.name).join(', ').replace(/, ([^,]*)$/, ' and $1')}` : ''}. Right counts half, <b>fast</b> counts the other half. <span className="lede-x">Your score decides which law school lets you in.</span></p>
           {/* THE GAVEL IS THE START BUTTON: the block it strikes, the label
               under it, and the strike plays before the folders clear. */}
           <button type="button" className={`gav fade${leaving ? ' strike' : ''}`} onClick={start} aria-label="Begin the exam">
@@ -210,7 +212,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
                 <rect x="30" y="56" width="60" height="10" rx="3" fill="#6b4220" />
                 <rect x="36" y="52" width="48" height="6" rx="2" fill="#8a5a2b" />
               </svg>
-              <small>{allBanked ? 'All five argued today' : 'The committee is seated'}</small>
+              <small>{allBanked ? 'Every case argued today' : 'The committee is seated'}</small>
             </span>
             <span className="gtrig">{allBanked ? 'Open your letter' : 'Begin the exam'} <span aria-hidden="true">&rarr;</span></span>
           </button>
@@ -258,7 +260,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
           {between && (
             <div className="ls-between">
               <div className="eb">{sec.name} · {banked[sec.key] && !r.results[sec.key] ? 'argued earlier today, the first result stands' : 'ruling'}</div>
-              <div className="ls-bscore">{Math.round(parts[r.si])}<small>/{LAW_CASE_MAX}</small></div>
+              <div className="ls-bscore">{Math.round(parts[r.si])}<small>/{CASE_MAX}</small></div>
               {secDone.unknown ? <div className="ls-braw">Result on file</div> : (
                 <div className="ls-split">
                   <div><span>Accuracy</span><b>{secDone.score}/{secDone.total}</b><i style={{ width: `${Math.round(100 * lawAcc(secDone.score, secDone.total))}%` }} /></div>
@@ -351,7 +353,8 @@ function Missed({ total, ti, L }) {
 // stamps the file and the letter slides out of its envelope.
 function Verdict({ sections, counted, parts, total, dateLabel, animate, board, onShare, copied, L, onSettled }) {
   const n = sections.length;
-  const max = n * LAW_CASE_MAX;
+  const max = LAW_MAX;
+  const CASE_MAX = n ? LAW_MAX / n : LAW_CASE_MAX;
   const pts = parts.map((p) => Math.round(p));
   const run50 = (v) => Math.round(v);
   const fti = lawTierOf(total);
@@ -451,7 +454,7 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
                   <div key={s.key} className="tr-l">
                     <span className="tr-c">Case {i + 1}</span>
                     <span className="tr-n">{s.name}<small>{counted[i] && !counted[i].unknown ? `${counted[i].score}/${counted[i].total} in ${counted[i].secs ? fmtClock(counted[i].secs) : '?'}` : s.file}</small></span>
-                    <b className={pts[i] >= LAW_CASE_MAX - 1 ? 'ten' : ''}>{pts[i]}<small>/{LAW_CASE_MAX}</small></b>
+                    <b className={pts[i] >= CASE_MAX - 1 ? 'ten' : ''}>{pts[i]}<small>/{CASE_MAX}</small></b>
                   </div>
                 ))}
               </div>
@@ -497,7 +500,7 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
             <RunChallengeLine gameKey={LAW_RUN_ID} score={total} total={LAW_MAX} n={runToken()} />
             <RunChallengeButton gameKey={LAW_RUN_ID} score={total} total={LAW_MAX} n={runToken()} status={`Admitted to ${t[1]}`} door />
           </div>
-          <NextDrop label="Tomorrow's docket" sub="Five new cases and a new set of schools at midnight Eastern." href="/judged"
+          <NextDrop label="Tomorrow's docket" sub="Four new cases and a new set of schools at midnight Eastern." href="/judged"
             accent="var(--ls-cta)" ink="var(--ls-ink)" mute="var(--ls-mute)" style={{ margin: '14px 0 0', maxWidth: 420 }} />
           <div className="vf-btns">
             <button type="button" className="pri" onClick={onShare}>{copied ? 'Copied' : 'Share your letter'}</button>

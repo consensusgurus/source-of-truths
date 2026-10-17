@@ -26,6 +26,6 @@ function etLabel() {
 
 export default function JudgedLeaderboardPage() {
   return <PriceCheckBoard dateLabel={etLabel()} circuit="deduction" name="Judged" path="/judged"
-    emptyLine="Nobody has argued all five cases today yet. Yours would be the first file on the desk."
-    rankedLine="Ranked on the five case scores, half accuracy and half speed" max={100} />;
+    emptyLine="Nobody has argued every case today yet. Yours would be the first file on the desk."
+    rankedLine="Ranked on the case scores, half accuracy and half speed" max={100} />;
 }

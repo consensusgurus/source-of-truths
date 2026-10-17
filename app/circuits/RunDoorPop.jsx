@@ -58,9 +58,9 @@ export const RUN_DOORS = {
     tags: [['Encore', '#e8b43a']],
   },
   judged: {
-    href: '/judged', name: 'Judged', eyebrow: 'Daily run · Five cases', once: 'game',
-    body: 'Five deduction cases on one page, opening with if-then rules: testimony, hearsay, a logic game and an alibi. Right and fast decides which law school takes you.',
-    go: 'Take all five cases', accent: '#7dd3fc',
+    href: '/judged', name: 'Judged', eyebrow: 'Daily run · Four cases', once: 'game',
+    body: 'Four deduction cases on one page, opening with if-then rules: testimony, hearsay and a logic game. Right and fast decides which law school takes you.',
+    go: 'Take all four cases', accent: '#7dd3fc',
     tags: [['Ergo', '#c4b5fd'], ['Sworn', '#f472b6'], ['Hearsay', '#d8b4fe'], ['Docket', '#c9a3ae'], ['Alibi', '#ef8896']],
   },
   // Listed for MoreRuns; the sudoku pages offer the Dojo through

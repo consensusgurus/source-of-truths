@@ -105,7 +105,7 @@ export async function GET(req) {
   try {
     const q = new URL(req.url).searchParams;
     const s = q.get('s') || '';
-    const parts = /^\d{1,2}(-\d{1,2}){4}$/.test(s) ? s.split('-').map((x) => Math.max(0, Math.min(LAW_CASE_MAX, Number(x)))) : null;
+    const parts = /^\d{1,2}(-\d{1,2}){3,4}$/.test(s) ? s.split('-').map((x, _i, a) => Math.max(0, Math.min(LAW_MAX / a.length, Number(x)))) : null;
     const tRaw = q.get('t');
     const tq = tRaw == null || tRaw === '' ? NaN : Number(tRaw);
     const tot = Number.isFinite(tq) && tq >= 0 && tq <= LAW_MAX ? Math.round(tq) : null;

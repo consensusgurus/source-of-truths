@@ -9270,6 +9270,12 @@ Stands through the circuit's `before: { until, opener, keys }` field, which `cir
 honours, so no played day changes its cases. `app/judged/page.js` deals the day's roster through
 `circuitKeysFor`, not `LAW_KEYS`; the pregame lede is built from each case's `phrase` in
 `LAW_CASES`. `LAW_CLOCK.ergo` [45, 180] is an ESTIMATE; re-measure after two weeks of boards.
+
+**JUDGED IS FOUR CASES from 2026-10-17 (owner): Alibi out**, roster Ergo, Sworn, Hearsay, Docket, each worth
+25 (`lawCaseMaxFor(iso)`, `lawScorerFor(iso)`, still out of 100). `before` is now a CHAIN (five cases to
+10-16, the Stands roster to 10-10), walked by `circuitKeysFor` for non-split circuits. Alibi no longer
+mounts the Judged door; inside the run it carries Give up. A finished case stays mounted under its ruling
+card and every case, the last included, waits for a button.
 Stands no longer mounts the Judged door; Ergo does.
 
 
