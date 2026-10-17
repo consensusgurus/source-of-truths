@@ -233,7 +233,6 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
 
       {hydrated && r.phase === 'idle' && (
         <section className={`pre${leaving ? ' leave' : ''}`}>
-          <div className="eb fade">{dateLabel} · Daily sudoku run</div>
           <h1 className="title fade">{'Enter the Dojo'.split(' ').map((w, i) => <span key={i} style={{ animationDelay: `${i * 0.09}s` }}>{w}</span>)}</h1>
           <p className="lede fade">Three sudokus in one sitting: <b>a six by six warm-up</b>, <b>the classic nine by nine</b>, then <b>{(variant && variant.phrase) || 'a variant'}</b>. Solving counts half, <b>speed</b> counts the other half. <span className="lede-x">Your score decides the belt you tie on.</span></p>
 

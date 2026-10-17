@@ -202,7 +202,6 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
 
       {hydrated && r.phase === 'idle' && (
         <section className={`pre${leaving ? ' leave' : ''}`}>
-          <div className="eb fade">{dateLabel} · Price Check</div>
           <h1 className="title"><span>Price</span> <span>Check</span></h1>
           <p className="lede fade">Five real price tags, from <b>pocket change</b> to <b>the auction block</b>. {V2 ? <>Three guesses at each, and <b>the first one counts most</b>.<span className="lede-x"> Trust your gut.</span></> : <>Five guesses at each.<span className="lede-x"> Get warm, get close, then go big.</span></>}</p>
           {/* THE PRICE GUN IS THE START BUTTON (owner, 2026-10-01, option C): the

@@ -299,7 +299,6 @@ export default function RoomClient({ dateLabel, dateShort, sections = [] }) {
 
       {hydrated && r.phase === 'idle' && (
         <section className={`rr-pre${leaving ? ' leave' : ''}`}>
-          <div className="rr-eb">A run · Crowd psychology · {dateLabel}</div>
           <h1 className="rr-title">Read the Room</h1>
           <p className="rr-lede">There is no answer key. The answer key is whatever tonight&rsquo;s crowd does, and it keeps moving until midnight. Play {COUNT_WORD[N] || N} crowd games back to back, <b>{sections.map((s) => s.phrase).join(', ').replace(/, ([^,]*)$/, ' and $1')}</b>, and find out how well you read the people in the room.</p>
           <div className="rr-tonight">

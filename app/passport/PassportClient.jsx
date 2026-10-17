@@ -590,7 +590,7 @@ export function Launch({ puzzle, canvasRef, onBoard, legs = null, demo = DEMO_ST
 
   return (
     <section className={`pl${leaving ? ' leave' : ''}`}>
-      <div className="pl-eb pl-lift">{puzzle.dateLabel} · Passport No. {puzzle.num}{puzzle.sunday ? ' · Sunday Edition' : ''}</div>
+      {puzzle.sunday ? <div className="pl-eb pl-lift">Sunday Edition</div> : null}
       <h1 className="pl-title pl-lift">Passport</h1>
       <p className="pl-lede pl-lift">{lede || <>One mystery country. <b>Five rounds</b>, ten points each. Your score decides <b>which passport</b> you travel home on.</>}</p>
 
@@ -1497,7 +1497,6 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
   const flat = (sc[hiR] || 0) === (sc[loR] || 0);
   const ending = (
     <section className="pe">
-      <div className="pl-eb" style={{ textAlign: 'center' }}>{PUZZLE.dateLabel} · Passport No. {PUZZLE.num}</div>
       <div className="pe-grid">
         <div className="pe-cov">
           <div className="pp-cwrap"><Cover tier={tier} /><div className="pp-issued small"><Stamp i={0} big label="Visa-free" score={tier.vf} ink={k === 0 ? 'var(--pp-bad)' : 'var(--pp-good)'} /></div></div>

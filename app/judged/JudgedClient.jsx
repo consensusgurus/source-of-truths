@@ -196,7 +196,6 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
 
       {hydrated && r.phase === 'idle' && (
         <section className={`pre${leaving ? ' leave' : ''}`}>
-          <div className="eb fade">{dateLabel} · Judged</div>
           <h1 className="title"><span>Judged</span></h1>
           <p className="lede fade">{N === 4 ? 'Four' : N === 5 ? 'Five' : N} cases in one sitting, opening with <b>{(sections[0] && sections[0].phrase) || 'a logic case'}</b>{sections.length > 1 ? `, then ${sections.slice(1).map((s) => s.phrase || s.name).join(', ').replace(/, ([^,]*)$/, ' and $1')}` : ''}. Right counts half, <b>fast</b> counts the other half. <span className="lede-x">Your score decides which law school lets you in.</span></p>
           {/* THE GAVEL IS THE START BUTTON: the block it strikes, the label
