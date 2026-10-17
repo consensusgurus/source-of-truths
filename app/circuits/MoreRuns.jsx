@@ -27,7 +27,7 @@ import { X } from 'lucide-react';
 import { T } from '@/lib/theme';
 import { RUN_DOORS, runDoneToday } from './RunDoorPop';
 import { circuitKeysFor } from '@/lib/circuits';
-import { DAILY_GAME_MAP } from '@/lib/daily-games';
+import { DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
 
 export const RUN_ORDER = ['gauntlet', 'triviaencore', 'math', 'pricecheck', 'passport', 'judged', 'dojo', 'room'];
 export const RUNS_POP_STORE = 'sot_runs_pop';
@@ -91,6 +91,84 @@ export function MoreRunsList({ self, ink = '#eef2fa', mute = '#9aa8c4', line = '
       <div className="mr-cap">{ids.length ? 'More runs today' : 'Every run done today'}</div>
       {ids.length ? (
         <div className="mr-rows">{ids.map((id) => <Row key={id} id={id} />)}</div>
+      ) : (
+        <p className="mr-done">You have finished every one of today&rsquo;s runs. New ones open at midnight Eastern.</p>
+      )}
+    </div>
+  );
+}
+
+// THE TRIVIA ENDING'S SHARED FOOT (owner, 2026-10-17). The Trivia Gauntlet and
+// the Trivia Encore end on the same block, below their own rankings,
+// challenge and details: the OTHER trivia run while it is open today, and
+// once it is done, the trivia dailies not played today followed by every
+// other run not finished. `otherOpen` says whether the other run exists
+// today; `exclude` is the games already dealt in this run.
+function etDay() {
+  try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
+  catch (e) { return new Date().toISOString().slice(0, 10); }
+}
+function dailyDoneToday(key) {
+  try {
+    const b = JSON.parse(localStorage.getItem(`sot_${key}_day`) || 'null');
+    return !!(b && b.d === etDay() && b.done);
+  } catch (e) { return false; }
+}
+export function TriviaMoreList({ self, otherOpen = false, exclude = [], ink = '#eef2fa', mute = '#9aa8c4', line = 'rgba(255,255,255,.14)' }) {
+  const other = self === 'gauntlet' ? 'triviaencore' : 'gauntlet';
+  const [st, setSt] = useState(null);
+  const exKey = exclude.join(',');
+  useEffect(() => {
+    const read = () => {
+      const otherLeft = otherOpen && !runDoneToday(other);
+      const skip = new Set(exKey ? exKey.split(',') : []);
+      let today = etDay();
+      const trivia = liveDailyKeys(today)
+        .filter((k) => (DAILY_GAME_MAP[k] || {}).cat === 'Trivia' && !skip.has(k) && !dailyDoneToday(k));
+      const runs = otherRuns(self).filter((id) => id !== other && !runDoneToday(id));
+      setSt({ otherLeft, trivia, runs });
+    };
+    read();
+    const onShow = () => { if (document.visibilityState === 'visible') read(); };
+    document.addEventListener('visibilitychange', onShow);
+    return () => document.removeEventListener('visibilitychange', onShow);
+  }, [self, other, otherOpen, exKey]);
+  if (!st) return null;
+  const vars = { '--mr-ink': ink, '--mr-mute': mute, '--mr-line': line };
+  if (st.otherLeft) {
+    return (
+      <div className="mr" style={vars}>
+        <style dangerouslySetInnerHTML={{ __html: LIST_CSS }} />
+        <div className="mr-cap">Still to play today</div>
+        <div className="mr-rows"><Row id={other} /></div>
+      </div>
+    );
+  }
+  return (
+    <div className="mr" style={vars}>
+      <style dangerouslySetInnerHTML={{ __html: LIST_CSS }} />
+      {st.trivia.length ? (
+        <>
+          <div className="mr-cap">More trivia today</div>
+          <div className="mr-rows">
+            {st.trivia.map((k) => {
+              const g = DAILY_GAME_MAP[k];
+              return (
+                <a key={k} className="mr-row" href={g.href || `/${k}`} style={{ '--mr-acc': g.colorNavy || '#7dd3fc' }}>
+                  <span className="mr-tx">
+                    <span className="mr-nm">{g.name}</span>
+                    <span className="mr-sb">{g.tag}</span>
+                  </span>
+                  <span className="mr-go">Play <span aria-hidden="true">&rsaquo;</span></span>
+                </a>
+              );
+            })}
+          </div>
+        </>
+      ) : null}
+      <div className="mr-cap" style={st.trivia.length ? { marginTop: 18 } : null}>{st.runs.length ? 'Similar runs today' : 'Every run done today'}</div>
+      {st.runs.length ? (
+        <div className="mr-rows">{st.runs.map((id) => <Row key={id} id={id} />)}</div>
       ) : (
         <p className="mr-done">You have finished every one of today&rsquo;s runs. New ones open at midnight Eastern.</p>
       )}

@@ -57,7 +57,7 @@ import { titleFor } from '@/lib/run-titles';
 import MissList, { missOf, MISS_CSS } from '../../RunMisses';
 import useCircuitHistory from '../../useCircuitHistory';
 import { T } from '@/lib/theme';
-import MoreRunsPop, { MoreRunsList, otherRuns } from '../../MoreRuns';
+import MoreRunsPop, { MoreRunsList, TriviaMoreList, otherRuns } from '../../MoreRuns';
 import EncorePop from '../../EncorePop';
 import GauntletBackPop from '../../GauntletBackPop';
 import { runDoneToday, RUN_DOORS } from '../../RunDoorPop';
@@ -1792,24 +1792,6 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   );
                   return (
                     <div className="rn-doors">
-                      {backOn ? (
-                        <a className="rn-door pri rn-gback" href={gauntlet.href || '/trivia'}>
-                          <span className="rn-dtx">
-                            <span className="rn-dnm">Take the Trivia Gauntlet</span>
-                            <span className="rn-dsb">Today&rsquo;s main run: {gauntlet.games.map((g) => g.name).join(', ')}</span>
-                          </span>
-                          <span className="rn-dar" aria-hidden="true">&rsaquo;</span>
-                        </a>
-                      ) : null}
-                      {encoreOn ? (
-                        <a className="rn-door pri rn-encore" href={encore.href || '/triviaencore'}>
-                          <span className="rn-dtx">
-                            <span className="rn-dnm">{encoreDone ? 'Trivia Encore: played' : 'Take the Trivia Encore'}</span>
-                            <span className="rn-dsb">{encore.games.map((g) => g.name).join(', ')} sat out today&rsquo;s Gauntlet</span>
-                          </span>
-                          <span className="rn-dar" aria-hidden="true">&rsaquo;</span>
-                        </a>
-                      ) : null}
                       {door('miss',
                         missN ? `See the ${missN === 1 ? 'question' : `${missN} questions`} you missed` : 'See where each run ended',
                         missN ? 'Each question that ended a quiz, with the right answer' : 'You cleared every quiz',
@@ -1819,13 +1801,13 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                           <MissList sections={sections} results={r.results} colourOf={(s) => rampFor(s.slot)} />
                         </div>
                       ) : null}
-                      {door('next', 'Play similar', 'Open puzzles and two more circuits',
+                      {GAUNT || ENCORE ? null : door('next', 'Play similar', 'Open puzzles and two more circuits',
                         { onClick: () => setNextOpen((v) => !v), 'aria-expanded': nextOpen, 'aria-controls': 'rn-next' })}
                       {door('again', 'Try again for practice', 'The same questions, nothing posted', { onClick: startPractice })}
                       {nextOpen ? <div className="rn-dwide" id="rn-next"><RunNextUp circuitId={circuitId} /></div> : null}
                       {door('board', 'Stats + leaderboard', rankSub,
                         { onClick: () => setBoardOpen((v) => !v), 'aria-expanded': boardOpen, 'aria-controls': 'rn-bd' })}
-                      <a className="rn-door" href="/">
+                      <a className={`rn-door${GAUNT || ENCORE ? ' rn-dall' : ''}`} href="/">
                         <span className="rn-dtx"><span className="rn-dnm">All daily puzzles</span><span className="rn-dsb">Back to today&rsquo;s slate</span></span>
                         <span className="rn-dar" aria-hidden="true">&rsaquo;</span>
                       </a>
@@ -1874,7 +1856,13 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   );
                 })()}
 
-                {listCards ? <MoreRunsList self={circuitId} /> : null}
+                {GAUNT || ENCORE ? (
+                  <TriviaMoreList
+                    self={circuitId}
+                    otherOpen={GAUNT ? encoreOn : backAvail}
+                    exclude={sections.map((x) => x.key)}
+                  />
+                ) : listCards ? <MoreRunsList self={circuitId} /> : null}
 
                 <div className="rn-vacts rn-sacts">
                   <button type="button" className="rn-vb" onClick={shareRun}>
@@ -1958,6 +1946,7 @@ const CSS = `
 .rn-bc{display:block;font-size:10.5px;font-weight:600;opacity:.75}
 .rn-door.rn-encore{border-color:#e8b43a}
 .rn-door.rn-encore .rn-dnm{color:#e8b43a}
+.rn-door.rn-dall{grid-column:1/-1}
 .rn-door.rn-gback{border-color:#7dd3fc}
 .rn-door.rn-gback .rn-dnm{color:#7dd3fc}
 
