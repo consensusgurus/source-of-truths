@@ -767,30 +767,63 @@ function BalancedPills({ children }) {
   const boxRef = useRef(null);
   const measRef = useRef(null);
   const [rows, setRows] = useState(1);
+  // A CROWDED HEAD DROPS THE PILLS TO THEIR OWN LINE (owner, 2026-10-16). On
+  // All Puzzles the title, the group chips and both toggles left the pills a
+  // sliver, and the balancer dealt them one per line, a column eight deep. The
+  // room the pills would get INLINE is measured off the head and its other
+  // children, which never depends on where the pills sit, so this cannot flip
+  // back and forth. More than two lines inline and they take a full line below.
+  const [drop, setDrop] = useState(false);
   useLayoutEffect(() => {
     const box = boxRef.current, meas = measRef.current;
     if (!box || !meas) return undefined;
+    const head = box.parentElement;
     const fit = () => {
-      const W = box.clientWidth;
       const ws = Array.from(meas.children).map((el) => el.offsetWidth);
       const n = ws.length;
-      if (!W || !n) return;
-      let best = n;
-      for (let r = 1; r <= n; r++) {
-        const ok = pillLines(ws, r).every((chunk) => chunk.reduce((x, y) => x + y, 0) + PILL_GAP * (chunk.length - 1) <= W);
-        if (ok) { best = r; break; }
+      if (!n) return;
+      const need = (W) => {
+        for (let r = 1; r <= n; r++) {
+          const ok = pillLines(ws, r).every((chunk) => chunk.reduce((x, y) => x + y, 0) + PILL_GAP * (chunk.length - 1) <= W);
+          if (ok) return r;
+        }
+        return n;
+      };
+      let full = box.clientWidth, inl = full;
+      if (head) {
+        const hs = getComputedStyle(head);
+        full = head.clientWidth - (parseFloat(hs.paddingLeft) || 0) - (parseFloat(hs.paddingRight) || 0);
+        const gap = parseFloat(hs.columnGap) || 0;
+        let used = 0;
+        for (const el of Array.from(head.children)) {
+          if (el === box) continue;
+          const cs = getComputedStyle(el);
+          if (cs.display === 'none' || cs.position === 'absolute' || cs.position === 'fixed') continue;
+          // .sty-sort carries margin-left:auto, whose resolved value is the free space.
+          const m = el.matches('.sty-sort') ? 0 : (parseFloat(cs.marginLeft) || 0) + (parseFloat(cs.marginRight) || 0);
+          used += el.getBoundingClientRect().width + m + gap;
+        }
+        inl = full - used - 8;
       }
+      if (!full) return;
+      const rIn = inl > 0 ? need(inl) : n;
+      const dr = rIn > 2;
+      const best = dr ? need(full) : rIn;
+      setDrop((prev) => (prev === dr ? prev : dr));
       setRows((prev) => (prev === best ? prev : best));
     };
     fit();
     let ro = null;
-    if (typeof ResizeObserver !== 'undefined') { ro = new ResizeObserver(fit); ro.observe(box); }
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(fit); ro.observe(box);
+      if (head) { ro.observe(head); Array.from(head.children).forEach((el) => { if (el !== box) ro.observe(el); }); }
+    }
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit).catch(() => {});
     return () => { if (ro) ro.disconnect(); };
   }, [items.length]);
   const lines = pillLines(items, rows);
   return (
-    <div className={'sty-cpills' + (rows > 1 ? ' rows' : '')} ref={boxRef}>
+    <div className={'sty-cpills' + (rows > 1 ? ' rows' : '') + (drop ? ' drop' : '')} ref={boxRef}>
       <div className="sty-cpmeas" ref={measRef} aria-hidden="true">{items}</div>
       {rows > 1 ? lines.map((ln, i) => <div key={i} className="sty-cprow">{ln}</div>) : items}
     </div>
@@ -5191,6 +5224,9 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-cpills{position:relative;}
 .sty-cpills.rows{flex-direction:column;flex-wrap:nowrap;align-items:stretch;}
 .sty-cprow{display:flex;justify-content:space-evenly;align-items:center;gap:6px 10px;}
+.sty-cathead:has(> .sty-cpills.drop){flex-wrap:wrap;row-gap:10px;}
+.sty-cpills.drop{order:10;flex:1 0 100%;margin-left:0;justify-content:flex-start;}
+.sty-cpills.drop .sty-cprow{justify-content:flex-start;}
 .sty-cpmeas{position:absolute;left:0;top:0;display:flex;gap:6px 10px;white-space:nowrap;visibility:hidden;pointer-events:none;height:0;overflow:visible;}
 .sty-cpill{display:inline-flex;align-items:center;gap:6px;text-decoration:none;white-space:nowrap;
   color:var(--stg-ink2);border:1px solid var(--stg-line);border-radius:999px;padding:4px 11px 4px 9px;
