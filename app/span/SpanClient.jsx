@@ -342,6 +342,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
   const [showHelp, setShowHelp] = useState(false);
   const [gateRules, setGateRules] = useState(false); // start tile: full rules (first-timer) vs compact card
   const [toast, setToast] = useState(null);
+  const [toastBad, setToastBad] = useState(false);
   const [copied, setCopied] = useState(false);
   const [shake, setShake] = useState(false);
   const [armReveal, setArmReveal] = useState(false);
@@ -376,6 +377,14 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
   const inputRef = useRef(null);
+  // Phone keyboard (owner, 2026-10-17): while the box has focus the board's
+  // top (the route and the whole road so far) is pinned to the top of what
+  // the keyboard leaves visible, with the box and its suggestions under it,
+  // so a player never scrolls up and down between the road and the box.
+  const boardRef = useRef(null);
+  const sugRef = useRef(null);
+  const [kb, setKb] = useState(false);
+  const kbBlurRef = useRef(null);
 
   const chain = g.chain || [PUZZLE.start];
   const head = chain[chain.length - 1];
@@ -520,8 +529,9 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function say(msg) {
+  function say(msg, bad = false) {
     setToast(msg);
+    setToastBad(bad);
     if (toastTimer.current) clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 2400);
   }
@@ -581,7 +591,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
     g2.misses = g2.misses + 1;
     setShake(true);
     setTimeout(() => setShake(false), 500);
-    say(msg);
+    say(msg, true);
     setG(g2);
   }
 
@@ -674,6 +684,49 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
     }
     return [...pre, ...mid].slice(0, 6);
   }, [typed, playing, chain]);
+
+  function pinBoard() {
+    try {
+      if (!window.matchMedia('(max-width: 640px)').matches) return;
+      const vv = window.visualViewport;
+      const b = boardRef.current, inp = inputRef.current;
+      if (!vv || !b || !inp || document.activeElement !== inp) return;
+      const f = inp.closest('.sp-field') || inp;
+      const top = vv.offsetTop, bot = vv.offsetTop + vv.height;
+      const br = b.getBoundingClientRect(), fr = f.getBoundingClientRect();
+      const sg = sugRef.current;
+      const low = (sg ? sg.getBoundingClientRect().bottom : fr.bottom) - (bot - 8);
+      let d = br.top - (top + 8);        // the road's top at the top of the screen
+      d = Math.max(d, low);              // but the box and suggestions above the keyboard
+      d = Math.min(d, fr.top - (top + 8)); // and never the box off the top
+      if (Math.abs(d) > 3) window.scrollBy(0, d);
+    } catch (e) {}
+  }
+  function onBoxFocus() {
+    if (kbBlurRef.current) { clearTimeout(kbBlurRef.current); kbBlurRef.current = null; }
+    setKb(true);
+    setTimeout(pinBoard, 320);
+  }
+  function onBoxBlur() {
+    if (kbBlurRef.current) clearTimeout(kbBlurRef.current);
+    kbBlurRef.current = setTimeout(() => { if (document.activeElement !== inputRef.current) setKb(false); }, 300);
+  }
+  useEffect(() => {
+    if (!kb) return undefined;
+    const vv = typeof window !== 'undefined' ? window.visualViewport : null;
+    if (!vv) return undefined;
+    let raf = 0;
+    const on = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(pinBoard); };
+    vv.addEventListener('resize', on);
+    return () => { cancelAnimationFrame(raf); vv.removeEventListener('resize', on); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kb]);
+  useEffect(() => {
+    if (!kb) return undefined;
+    const t = setTimeout(pinBoard, 60);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chain.length, suggestions.length > 0, kb]);
 
   const beatPct = (() => {
     if (g.status === 'playing') return null;
@@ -860,6 +913,17 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
           .sp-go{font-family:${SANS};font-weight:800;font-size:15px;border:0;border-radius:12px;padding:0 22px;min-height:52px;min-width:64px;cursor:pointer;background:var(--stg-acc, ${COLORS.trail});color:var(--stg-onramp, ${T.white});}
           .sp-sugs{position:absolute;top:100%;left:0;right:0;z-index:30;margin-top:4px;}
           .sp-sug{min-height:44px;}
+          .sp-strip{display:none;flex-wrap:wrap;align-items:center;column-gap:5px;row-gap:8px;padding:14px 0 2px;}
+          .sp-pill{display:inline-flex;align-items:center;gap:5px;min-height:32px;max-width:100%;box-sizing:border-box;padding:4px 11px;border-radius:999px;font-family:${SANS};font-size:14px;font-weight:800;line-height:1.15;overflow-wrap:anywhere;color:${INK};background:var(--stg-cell, ${T.white});border:2px solid var(--stg-acc-ink, ${COLORS.trail});}
+          .sp-pill.here{background:var(--stg-acc, ${COLORS.trail});border-color:var(--stg-acc, ${COLORS.trail});color:var(--stg-onramp, ${T.white});}
+          .sp-pill.todo{color:${FADED};border:2px dashed var(--stg-cell-line, rgba(28,30,36,0.44));background:transparent;min-width:36px;justify-content:center;}
+          .sp-pill.dest{border-width:2.5px;}
+          .sp-pill.dest.reached{background:var(--stg-acc, ${COLORS.trail});border-color:var(--stg-acc, ${COLORS.trail});color:var(--stg-onramp, ${T.white});}
+          .sp-pill small{font-family:${MONO};font-size:9px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;}
+          .sp-con{flex:none;width:12px;height:3px;border-radius:2px;background:var(--stg-acc-ink, ${COLORS.trail});}
+          .sp-con.gap{background:repeating-linear-gradient(to right, var(--stg-cell-line, rgba(28,30,36,0.44)) 0 4px, transparent 4px 7px);}
+          .sp-say{display:none;min-height:18px;margin-top:8px;font-family:${SANS};font-size:13px;font-weight:800;color:${FADED};}
+          .sp-say.bad{color:var(--stg-bad, ${COLORS.rust});}
           @media(max-width:640px){
             .sp-route{font-size:24px;}
             .sp-line{padding-top:18px;}
@@ -878,9 +942,22 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
             .sp-tag{font-size:9px;letter-spacing:.14em;}
             .sp-nm{font-size:18px;}
             .sp-nm.dest{font-size:20px;}
-            .sp-dock{position:sticky;bottom:0;z-index:25;background:${STAGE ? 'var(--stg-ground)' : T.surface};border-top:1px solid var(--stg-line, rgba(28,30,36,0.12));padding:12px 0 calc(12px + env(safe-area-inset-bottom, 0px));margin-bottom:0 !important;}
-            .sp-sugs{top:auto;bottom:100%;margin-top:0;margin-bottom:4px;}
-            .sp-toast{bottom:150px !important;}
+            /* PHONE BOARD (owner, 2026-10-17). The tall station-by-station
+               line pushed the top of the road off screen once the keyboard was
+               up, so a player scrolled between the road and the box on every
+               hop. On a phone the road is a compact wrapping strip of stops,
+               the box sits straight under it (no sticky dock), suggestions are
+               chips under the box rather than a dropdown over the road, and a
+               miss is said under the box, where a toast fixed to the bottom
+               would sit behind the keyboard. pinBoard keeps it all in view. */
+            .sp-line{display:none;}
+            .sp-strip{display:flex;}
+            .sp-say{display:block;}
+            .sp-toast{display:none !important;}
+            .sp-row{flex-wrap:wrap;row-gap:8px;}
+            .sp-sugs{position:static;flex:0 0 100%;order:3;margin:0;display:flex;flex-wrap:wrap;gap:6px;background:none !important;border:0 !important;box-shadow:none !important;overflow:visible !important;}
+            .sp-sug{width:auto;display:inline-flex;align-items:center;min-height:40px;padding:0 14px;border-radius:999px;border:1.5px solid var(--stg-line2, rgba(28,30,36,0.3));font-size:14px;}
+            .sp-sug:first-child{border-color:var(--stg-acc-ink, ${COLORS.trail});}
           }
         ` }} />
 
@@ -937,7 +1014,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
 
         {/* the assignment */}
         {!preStart && (
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+        <div ref={boardRef} className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           {isSundayEd && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 9, fontFamily: MONO, fontSize: 11, letterSpacing: '0.09em', textTransform: 'uppercase', color: STAGE ? 'var(--stg-warn)' : '#8a6d1a', background: STAGE ? 'var(--stg-surf2)' : '#fdf6e3', border: STAGE ? '1px solid var(--stg-warn)' : '1px solid rgba(230,185,63,0.6)', borderRadius: 7, padding: '6px 10px', marginBottom: 11, flexWrap: 'wrap' }}>
               <b style={{ fontWeight: 800, color: STAGE ? 'var(--stg-warn)' : '#92400e', whiteSpace: 'nowrap' }}>Sunday Edition</b>
@@ -972,6 +1049,27 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
             const hereIdx = playing ? stops.length - 1 : -1;
             const empties = playing ? Math.max(0, PUZZLE.perfect - hops - 1) : 0;
             return (
+              <>
+              {/* phone: the same road as one compact wrapping strip */}
+              <div className={`sp-strip${shake ? ' sp-shake' : ''}`} role="list" aria-label="Your road">
+                {stops.map((c, i) => {
+                  const isHere = i === hereIdx;
+                  const solidOut = i < stops.length - 1 || reached;
+                  return [
+                    <span key={`p${i}`} role="listitem" className={`sp-pill${isHere ? ' here' : ''}`} aria-current={isHere ? 'step' : undefined}>
+                      {i === 0 && <small>Start</small>}{c}
+                    </span>,
+                    <span key={`c${i}`} className={`sp-con${solidOut ? '' : ' gap'}`} aria-hidden="true" />,
+                  ];
+                })}
+                {Array.from({ length: empties }, (_, k) => [
+                  <span key={`pe${k}`} className="sp-pill todo" aria-hidden="true">?</span>,
+                  <span key={`ce${k}`} className="sp-con gap" aria-hidden="true" />,
+                ])}
+                <span role="listitem" className={`sp-pill dest${reached ? ' reached' : ''}`}>
+                  <Flag size={13} aria-hidden="true" />{PUZZLE.end}
+                </span>
+              </div>
               <div className={`sp-line${shake ? ' sp-shake' : ''}`}>
                 {stops.map((c, i) => {
                   const isHere = i === hereIdx;
@@ -1012,6 +1110,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
                   </div>
                 </div>
               </div>
+              </>
             );
           })()}
           {won && <div style={{ fontFamily: MONO, fontSize: 11, color: `var(--stg-ink, ${COLORS.trail})`, fontWeight: 500, marginTop: 14 }}>Spanned in {chain.length - 1} hop{chain.length - 1 === 1 ? '' : 's'}.</div>}
@@ -1021,29 +1120,32 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
         {/* input */}
         {started && (
           <div className="sp-dock" style={{ marginBottom: 12 }}>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'stretch' }}>
+            <div className="sp-row" style={{ position: 'relative', display: 'flex', gap: 10, alignItems: 'stretch' }}>
               <div style={{ position: 'relative', flex: 1, display: 'flex' }}>
                 <label className="sp-field">
                 <input
                   aria-label="Next stop"
                   ref={inputRef}
                   value={typed}
+                  onFocus={onBoxFocus}
+                  onBlur={onBoxBlur}
                   onChange={(e) => setTyped(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (suggestions.length === 1) addCountry(suggestions[0]); else addCountry(typed); } }}
                   placeholder={`Next stop from ${head}…`}
                   autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
                 />
                 </label>
-                {suggestions.length > 0 && (
-                  <div className="sp-sugs" style={{ background: STAGE ? 'var(--stg-raise,#0e131f)' : T.white, border: STAGE ? '1.5px solid var(--stg-line2,rgba(255,255,255,0.17))' : '1.5px solid rgba(28,30,36,0.35)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 20px rgba(20,22,28,0.14)' }}>
-                    {suggestions.map((c) => (
-                      <button key={c} className="sp-sug" onMouseDown={(e) => { e.preventDefault(); addCountry(c); }}>{c}</button>
-                    ))}
-                  </div>
-                )}
               </div>
-              <button type="button" className="sp-go" onClick={() => { if (suggestions.length === 1) addCountry(suggestions[0]); else addCountry(typed); }}>Go</button>
+              <button type="button" className="sp-go" onMouseDown={(e) => e.preventDefault()} onClick={() => { if (suggestions.length === 1) addCountry(suggestions[0]); else addCountry(typed); }}>Go</button>
+              {suggestions.length > 0 && (
+                <div ref={sugRef} className="sp-sugs" style={{ right: 74, background: STAGE ? 'var(--stg-raise,#0e131f)' : T.white, border: STAGE ? '1.5px solid var(--stg-line2,rgba(255,255,255,0.17))' : '1.5px solid rgba(28,30,36,0.35)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 20px rgba(20,22,28,0.14)' }}>
+                  {suggestions.map((c) => (
+                    <button key={c} type="button" className="sp-sug" onMouseDown={(e) => { e.preventDefault(); addCountry(c); }}>{c}</button>
+                  ))}
+                </div>
+              )}
             </div>
+            <div className={`sp-say${toastBad ? ' bad' : ''}`} role="status" aria-live="polite">{toast || ''}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 9, flexWrap: 'wrap' }}>
               {chain.length > 1 && (
                 <button className="sp-btn" onClick={undo} style={{ borderColor: STAGE ? 'var(--stg-line2)' : '#c3c8cf', color: FADED, padding: '6px 14px', fontSize: 12.5, minHeight: 44, borderRadius: 10 }}>
