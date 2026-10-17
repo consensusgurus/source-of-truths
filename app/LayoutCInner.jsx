@@ -161,6 +161,8 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:240px;}
 .lc-cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;}
 .lc-day{aspect-ratio:1;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;text-decoration:none;
   color:var(--stg-mute);background:var(--stg-surf);}
+.lc-wk{font-size:9.5px;font-weight:800;letter-spacing:.08em;color:var(--stg-mute);text-align:center;padding-bottom:2px;}
+.lc-day.x{background:none;}
 .lc-day.p{background:var(--stg-acc);color:var(--stg-onramp,#08222e);}
 .lc-day.t{box-shadow:inset 0 0 0 2px var(--stg-acc-ink, var(--stg-acc));color:var(--stg-ink);}
 .lc-mo{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin:14px 0 8px;}
@@ -463,6 +465,23 @@ export default function LayoutCInner({ gameKey }) {
     if (!months.length || months[months.length - 1].m !== m) months.push({ m, days: [] });
     months[months.length - 1].days.push(d);
   });
+  // Each month laid out on its weekdays, Sunday first: blanks before the first
+  // drop, and a blank for any date in between that has no drop.
+  months.forEach((mo) => {
+    const dayMs = (iso) => Date.parse(String(iso).slice(0, 10) + 'T12:00:00Z');
+    const first = mo.days[0];
+    const cells = [];
+    const lead = first ? new Date(dayMs(first.dateISO)).getUTCDay() : 0;
+    for (let i = 0; i < lead; i++) cells.push(null);
+    mo.days.forEach((d, i) => {
+      if (i > 0) {
+        const gap = Math.round((dayMs(d.dateISO) - dayMs(mo.days[i - 1].dateISO)) / 86400000) - 1;
+        for (let k = 0; k < gap && k < 31; k++) cells.push(null);
+      }
+      cells.push(d);
+    });
+    mo.cells = cells;
+  });
 
   const subBtn = (
     <button type="button" className="lc-sub-btn" onClick={() => setFocus((v) => !v)}>
@@ -652,12 +671,19 @@ export default function LayoutCInner({ gameKey }) {
             months.length ? months.map((mo) => (
               <div key={mo.m}>
                 <div className="lc-mo">{mo.m}</div>
+                {/* A REAL CALENDAR (owner, 2026-10-17: "sunday isn't on far left").
+                    The days used to flow seven to a row from wherever the month's
+                    first drop fell, so October 1 (a Thursday) sat in the Sunday
+                    column. Sunday is now the first column, the first drop is
+                    pushed to its own weekday, and a date with no drop keeps its
+                    square empty so every later day stays under its weekday. */}
                 <div className="lc-cal">
-                  {mo.days.map((d) => (
+                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((w, i) => <div key={'w' + i} className="lc-wk" aria-hidden="true">{w}</div>)}
+                  {mo.cells.map((d, i) => (d ? (
                     <Link key={d.num} className={'lc-day' + (d.isToday ? ' t' : d.played ? ' p' : '')}
                       href={d.isToday ? `${game.href || '/' + game.key}` : `${game.href || '/' + game.key}?p=${d.num}`}
                       title={d.dateISO}>{Number(String(d.dateISO).slice(8, 10))}</Link>
-                  ))}
+                  ) : <div key={'b' + i} className="lc-day x" aria-hidden="true" />))}
                 </div>
               </div>
             )) : <div className="lc-hold" aria-hidden="true" />
