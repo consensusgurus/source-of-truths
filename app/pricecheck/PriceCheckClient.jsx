@@ -447,7 +447,6 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
 
   return (
     <section className="pf">
-      <div className="eb">{dateLabel} · Price Check</div>
       <div className={`cf-stage${settled ? ' settled' : ''}`}>
         <div className="cf-cardcol">
           {upg && <div key={upg.k} className="cf-upg">{upg.text}</div>}
@@ -778,7 +777,7 @@ const CSS = `
 @media(max-width:720px) and (prefers-reduced-motion:reduce){.cf-stage.settled .cf-cw{animation:none;width:min(150px,42%)}}
 
 .pc .eb{font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--pc-mute)}
-.pc-cap{display:flex;align-items:center;gap:12px;max-width:760px;margin:0 auto;padding:12px 16px;font-size:13px}
+.pc-cap{display:flex;align-items:center;gap:12px;max-width:912px;margin:0 auto;padding:12px 16px;font-size:13px}
 .pc-home{font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--pc-mute);text-decoration:none}
 .pc-cap b{font-weight:900;letter-spacing:-.01em}
 .pc-capd{color:var(--pc-mute);font-weight:700}
