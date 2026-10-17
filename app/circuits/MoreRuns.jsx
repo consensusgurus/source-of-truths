@@ -199,7 +199,7 @@ export default function MoreRunsPop({ self, ready = false, delay = 3500, fireOnL
       try { localStorage.setItem(RUNS_POP_STORE, new Date().toISOString().slice(0, 10)); } catch (e) {}
       setIds(open);
     };
-    const t = setTimeout(fire, delay);
+    const t = setTimeout(fire, Math.max(delay, 10000)); // 10s floor (owner, 2026-10-17)
     const onHide = () => { if (document.visibilityState === 'hidden') fire(); };
     if (fireOnLeave) document.addEventListener('visibilitychange', onHide);
     return () => { clearTimeout(t); if (fireOnLeave) document.removeEventListener('visibilitychange', onHide); };

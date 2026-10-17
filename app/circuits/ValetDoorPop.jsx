@@ -38,7 +38,8 @@ import ValetScene from './ValetScene';
 const ID = 'valet';
 export const DOOR_COUNT_STORE = 'sot_valet_pop';
 const MAX_SHOWINGS = 2;
-const WAIT_MS = 900;
+// 10s floor (owner, 2026-10-17): no pop-up lands within ten seconds of a game or run ending.
+const WAIT_MS = 10000;
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";

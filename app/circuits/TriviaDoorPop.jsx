@@ -50,7 +50,8 @@ import { liveDailyKeys } from '@/lib/daily-games';
 import { DOOR_PARAM, DOOR_VALUE, DOOR_STORE } from '@/lib/trivia-door';
 import { T } from '@/lib/theme';
 
-const WAIT_MS = 2000;
+// 10s floor (owner, 2026-10-17): no pop-up lands within ten seconds of a game or run ending.
+const WAIT_MS = 10000;
 const PREVIEW_PARAM = 'door';
 const PREVIEW_VALUE = 'preview';
 // A visitor id minted within this window is one minted on THIS page load.

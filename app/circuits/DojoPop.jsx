@@ -31,7 +31,8 @@ import { isNewerVisitor } from '@/lib/visitor';
 import { RUN_DOOR_CSS, runDoneToday } from './RunDoorPop';
 
 export const DOJO_POP_STORE = 'sot_dojo_pop';
-const WAIT_MS = 2000;
+// 10s floor (owner, 2026-10-17): no pop-up lands within ten seconds of a game or run ending.
+const WAIT_MS = 10000;
 const ACCENT = '#e9cf7f';
 const MORE_MAX = 4;
 

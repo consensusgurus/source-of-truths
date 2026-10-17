@@ -37,7 +37,8 @@ import { fetchDayStatus, etToday } from '../useDayStats';
 import GameGlyph from '../GameGlyph';
 import { T } from '@/lib/theme';
 
-const WAIT_MS = 2000;
+// 10s floor (owner, 2026-10-17): no pop-up lands within ten seconds of a game or run ending.
+const WAIT_MS = 10000;
 const MAX_SHOWS = 5;
 const DAY_KEY = (c) => `sot_gmore_${c}_day`;
 const COUNT_KEY = (c) => `sot_gmore_${c}_n`;

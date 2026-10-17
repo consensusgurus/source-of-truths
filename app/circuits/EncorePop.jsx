@@ -39,7 +39,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
-const OPEN_MS = 1600;
+// 10s floor (owner, 2026-10-17): no pop-up lands within ten seconds of a game or run ending.
+const OPEN_MS = 10000;
 const PREVIEW_GAMES = [{ key: 'sci', name: 'Sci' }, { key: 'art', name: 'Art' }, { key: 'history', name: 'History' }];
 const WORDS = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
 

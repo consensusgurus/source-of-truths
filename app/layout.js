@@ -8,7 +8,6 @@ import DailyStartPing from './DailyStartPing';
 import DailySaveSync from './DailySaveSync';
 import TrophyPop from './TrophyPop';
 import ThanksPop from './ThanksPop';
-import DrawingPop from './DrawingPop';
 import { PriceCheckItemsGlobal } from './pricecheck/ItemsPop';
 import ChunkReload from './ChunkReload';
 import { getAllSources } from '@/lib/sources';
@@ -173,10 +172,8 @@ export default function RootLayout({ children }) {
             return for existing players (with share credit), once after a
             finished game for everyone. Never inside a run. app/ThanksPop.jsx. */}
         <ThanksPop />
-        {/* Owner-approved (2026-10-09): the $100 ticket drawing pop-up. Once a
-            week, a few seconds after a finished game, only while the drawing
-            runs; ThanksPop stands down for that window. app/DrawingPop.jsx. */}
-        <DrawingPop />
+        {/* The $100 drawing pop-up (app/DrawingPop.jsx) was retired 2026-10-17
+            (owner): it showed up mid-game and stacked on the run pop-ups. */}
         {/* Owner-approved (2026-10-02): the Price Check items pop-up opens ten
             seconds after a run ends on whatever page the player is on. It fires
             only for a run just finished on this device. app/pricecheck/ItemsPop.jsx. */}

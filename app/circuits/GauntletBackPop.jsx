@@ -20,7 +20,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { RUN_DOOR_CSS, RUN_DOORS } from './RunDoorPop';
 
-const OPEN_MS = 1600;
+// 10s floor (owner, 2026-10-17): no pop-up lands within ten seconds of a game or run ending.
+const OPEN_MS = 10000;
 const ACCENT = '#7dd3fc';
 const WORDS = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
 const PREVIEW_GAMES = [
