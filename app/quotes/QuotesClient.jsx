@@ -505,7 +505,7 @@ export default function QuotesClient({ puzzles = [], questionsByNum = {}, forceN
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
       lead="Twenty-five quotations to place, one life."
       steps={[
-        <>Answer multiple-choice famous quotations questions until you get one wrong. <b>Every question you clear is a point.</b></>,
+        <>Each question puts <b>a real line on the screen</b>, word for word. Pick who said it, which character says it, or which book it comes from, until you get one wrong. <b>Every question you clear is a point.</b></>,
         <>A wrong answer, or a clock at zero, <b>ends the run on the spot</b>.</>,
         <>You get <b>{Q_SECONDS} seconds a question</b>, and the clock does not pause, so looking things up costs the run.</>,
         <>The twenty-five climb in <b>five rounds of five</b>, from gimmes to genuinely obscure, each round cycling the same five lanes: presidents and politics, history and war, science and letters and ideas, books and authors, and screen lines.</>,
@@ -547,7 +547,20 @@ export default function QuotesClient({ puzzles = [], questionsByNum = {}, forceN
         <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 500, color: ACC_INK }}>{qq.cat}</span>
         <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 500, color: FADED, opacity: 0.75 }}>{TIER_NAMES[qq.tier - 1]}</span>
       </div>
-      <div style={{ fontFamily: SANS, fontSize: 18.5, fontWeight: 800, color: INK, lineHeight: 1.4, marginBottom: 13 }}>{qq.q}</div>
+      {/* THE LINE IS ON SCREEN (owner, 2026-10-17). From Oct 18 every question
+          carries the quote itself as `line` and the ask beneath it; the line
+          sits in its own block with an accent rule, the ask under it. Played
+          boards have no `line` and render exactly as before. */}
+      {qq.line ? (
+        <>
+          <blockquote style={{ margin: '2px 0 10px', padding: '2px 0 2px 14px', borderLeft: `3px solid ${ACC}`, fontFamily: SANS, fontSize: 19.5, fontWeight: 700, fontStyle: 'italic', color: INK, lineHeight: 1.42 }}>
+            &ldquo;{qq.line}&rdquo;
+          </blockquote>
+          <div style={{ fontFamily: SANS, fontSize: 15, fontWeight: 800, color: FADED, lineHeight: 1.4, marginBottom: 13 }}>{qq.ask}</div>
+        </>
+      ) : (
+        <div style={{ fontFamily: SANS, fontSize: 18.5, fontWeight: 800, color: INK, lineHeight: 1.4, marginBottom: 13 }}>{qq.q}</div>
+      )}
       <div className={`sp-grid${hovStale ? ' nohov' : ''}`}>
         {[0, 1, 2, 3].map((k) => choiceBtn(qq, k, dead))}
       </div>
@@ -886,7 +899,7 @@ export default function QuotesClient({ puzzles = [], questionsByNum = {}, forceN
           Quotes is a free daily attribution quiz from Mind Loft. Twenty-five multiple-choice questions climb from lines anyone can place to lines almost nobody can, and a single wrong answer ends the run. Your score is simply how many you cleared in a row, which makes every question a small act of nerve: the further you get, the more you have to lose.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Everyone plays the same twenty-five questions in the same order each day, so the daily leaderboard is a straight fight: longest run wins, and ties break by time. Twenty seconds a question keeps it honest. Four of the five lanes ask who really said or wrote a line, presidents and politics, history and war, science and letters, and books and authors, and the fifth asks which character speaks a line from a film or a television show. Nothing here is apocryphal: every line is one the named person is documented as having said or written, and where a famous quotation is misattributed the question asks you for the person who actually wrote it.
+          Everyone plays the same twenty-five questions in the same order each day, so the daily leaderboard is a straight fight: longest run wins, and ties break by time. Twenty seconds a question keeps it honest. Every question shows the actual line, word for word, and asks you to place it. Four of the five lanes ask who really said or wrote a line, presidents and politics, history and war, science and letters, and books and authors, and the fifth asks which character speaks a line from a film or a television show. Nothing here is apocryphal: every line is one the named person is documented as having said or written, and where a famous quotation is misattributed the question asks you for the person who actually wrote it.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new twenty-five drops every day at midnight Eastern. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More dailies: <a href="/streak" style={{ color: INK, fontWeight: 800 }}>Streak</a>, our forty-question trivia gauntlet, <a href="/atlas" style={{ color: INK, fontWeight: 800 }}>Atlas</a>, the same run on geography, <a href="/sport" style={{ color: INK, fontWeight: 800 }}>Sport</a>, the same run on sport, and <a href="/deep" style={{ color: INK, fontWeight: 800 }}>Deep</a>, one subject fifteen questions down.

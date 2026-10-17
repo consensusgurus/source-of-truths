@@ -347,7 +347,8 @@ export default function CircuitRunPage({ params }) {
     const questions = day.qids
       .map((qid) => bank.questions[qid])
       .filter(Boolean)
-      .map(({ q, choices, correct, cat, tier }) => ({ q, choices, correct, cat, tier }));
+      // line + ask: a Quotes question shows its quote as its own block (2026-10-17).
+      .map(({ q, choices, correct, cat, tier, line, ask }) => (line ? { q, choices, correct, cat, tier, line, ask } : { q, choices, correct, cat, tier }));
     if (!questions.length) continue;
     const g = DAILY_GAME_MAP[key] || {};
     sections.push({

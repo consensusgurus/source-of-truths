@@ -38,7 +38,7 @@ const TEMPLATE_BASE = ('which what who whom whose where when how many name named
 // bank rather than per day (rule 3). They are all scoped to `copyFrom` so the
 // days already live stay frozen (rule 6).
 export function checkBank({ QUESTIONS, QUESTION_MAP, PUZZLES, key, LANES, inherent = [], extraTemplate = [],
-  copyFrom = null, answerCap = 0, laneStem = null, bannedPairs = [] }) {
+  copyFrom = null, answerCap = 0, laneStem = null, bannedPairs = [], spellText = (q) => q.q }) {
   const errs = [];
   const warns = [];
   const fail = (m) => errs.push(m);
@@ -48,7 +48,10 @@ export function checkBank({ QUESTIONS, QUESTION_MAP, PUZZLES, key, LANES, inhere
   // excuse a lowercase "neighbours" in a sentence.
   const ALLOW_PROPER = ['The Colour Purple', 'Labour Party', 'Theatre Royal', 'Pearl Harbor',
     "Ford's Theatre", 'Neighbours', 'Spectre', 'The Theatre', 'Grey Gardens', 'Grey\'s Anatomy',
-    'Traffic Colour', 'Colour Box'];
+    'Traffic Colour', 'Colour Box',
+    // Quotes asks name parties, families and titles (2026-10-17). Matching is
+    // case sensitive, so a lowercase "grey" or "labour" in prose still fails.
+    'Labour', 'Grey', 'The Colour of Magic', 'Every Man in His Humour', "Love's Labour's Lost"];
   const warn = (m) => warns.push(m);
 
   // Ids where the answer is unavoidably in the wording. Keep this list empty if
@@ -185,7 +188,7 @@ export function checkBank({ QUESTIONS, QUESTION_MAP, PUZZLES, key, LANES, inhere
     // US spellings in reader-facing copy (authoring standard rule 8). A
     // 750-question authoring pass imports British forms and nothing looked.
     for (const q of future) {
-      for (const [label, txt] of [['question', q.q], ...q.choices.map((c, i) => [`choice ${i + 1}`, c])]) {
+      for (const [label, txt] of [['question', spellText(q)], ...q.choices.map((c, i) => [`choice ${i + 1}`, c])]) {
         for (const hit of scanUS(txt, ALLOW_PROPER)) {
           fail(`${q.id}: British form "${hit.found}" in ${label} (US: ${hit.us})`);
         }

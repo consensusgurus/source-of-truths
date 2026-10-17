@@ -1430,7 +1430,11 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   // Gap, Series and Back drawn as the blank to fill.
                   <h2 className="rn-q rn-qm">{String(question.q).split('?').map((p, i) => (i === 0 ? <React.Fragment key="h">{mathText(p)}</React.Fragment> : [<span key={i} className="rn-blank">?</span>, <React.Fragment key={'p' + i}>{mathText(p)}</React.Fragment>]))}</h2>
                 ) : (
-                  <h2 className="rn-q">{mathText(question.q)}</h2>
+                  question.line ? (
+                    <div className="rn-qline"><blockquote>&ldquo;{question.line}&rdquo;</blockquote><h2 className="rn-q rn-qask">{question.ask}</h2></div>
+                  ) : (
+                    <h2 className="rn-q">{mathText(question.q)}</h2>
+                  )
                 )}
                 <div className={`rn-ch${hovStale ? ' nohov' : ''}`}>
                   {question.choices.map((c, k) => (
@@ -1472,7 +1476,11 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   {MATH_RUN_GAMES.includes(sec.key) ? (
                     <h2 className="rn-q rn-qm">{String(question.q).split('?').map((p, i) => (i === 0 ? <React.Fragment key="h">{mathText(p)}</React.Fragment> : [<span key={i} className="rn-blank">?</span>, <React.Fragment key={'p' + i}>{mathText(p)}</React.Fragment>]))}</h2>
                   ) : (
-                    <h2 className="rn-q">{mathText(question.q)}</h2>
+                    question.line ? (
+                      <div className="rn-qline"><blockquote>&ldquo;{question.line}&rdquo;</blockquote><h2 className="rn-q rn-qask">{question.ask}</h2></div>
+                    ) : (
+                      <h2 className="rn-q">{mathText(question.q)}</h2>
+                    )
                   )}
                   <div className={`rt-clk${remainFrac < 0.25 ? ' hot' : ''}`}>
                     <span className="rt-cbar"><span style={{ width: `${remainFrac * 100}%` }} /></span>
@@ -2215,6 +2223,9 @@ body:has(.rn)::before{background:${T.ground};}
 .rn-chip.alive{border-color:rgba(96,165,250,.4);color:${T.blue200};}
 .rn-count{margin-left:auto;font-family:${MONO};font-size:11.5px;color:#66748f;
   font-variant-numeric:tabular-nums;}
+.rn-qline blockquote{margin:0 0 10px;padding:2px 0 2px 16px;border-left:3px solid #60a5fa;max-width:40ch;
+  font-size:clamp(20px,2.5vw,27px);font-weight:700;font-style:italic;line-height:1.36;letter-spacing:-.015em;color:#fff;}
+.rn-q.rn-qask{font-size:clamp(15px,1.7vw,18px);font-weight:800;letter-spacing:0;color:#c9d0de;}
 .rn-q{font-size:clamp(21px,2.7vw,29px);font-weight:800;letter-spacing:-.025em;line-height:1.28;
   color:#fff;margin:0 0 22px;max-width:28ch;}
 .rn-qm{font-size:clamp(28px,4vw,44px);font-weight:700;letter-spacing:-.02em;max-width:none;

@@ -123,7 +123,21 @@ DAYS.forEach((day, di) => {
     const correct = cols[si];
     const choices = [];
     for (let c = 0, w = 0; c < 4; c++) choices.push(c === correct ? entry.a : wrong[w++]);
-    qLines.push(`  { id: '${id}', cat: '${esc(entry.c)}', tier: ${entry.t}, q: '${esc(entry.q)}', choices: [${choices.map((c) => `'${esc(c)}'`).join(', ')}], correct: ${correct}${fromField(entry)} },`);
+    // A QUOTED LINE (owner, 2026-10-17). An entry carrying `l` is a quote shown
+    // on screen in quotation marks, with `q` as the short ask beneath it. The
+    // shipped `q` is the two joined, so every surface that only knows `q` (the
+    // missed-question review, the run summary, recycling) still reads the whole
+    // question; the boards that know `line` and `ask` draw the quote as its own
+    // block. Inner double quotes are folded to single so the outer pair holds.
+    let qText = entry.q;
+    let lineFields = '';
+    if (entry.l != null) {
+      const line = String(entry.l).replace(/[\u201c\u201d"]/g, "'").trim();
+      if (!line) throw new Error(`day ${num} slot ${si + 1}: empty line`);
+      qText = `"${line}" ${entry.q}`;
+      lineFields = `, line: '${esc(line)}', ask: '${esc(entry.q)}'`;
+    }
+    qLines.push(`  { id: '${id}', cat: '${esc(entry.c)}', tier: ${entry.t}, q: '${esc(qText)}'${lineFields}, choices: [${choices.map((c) => `'${esc(c)}'`).join(', ')}], correct: ${correct}${fromField(entry)} },`);
   });
   const info = dayInfo(di);
   pEntries.push(`  {\n    num: ${num},\n    quizId: '${info.quizId}',\n    live: '${info.live}',\n    dateLabel: '${info.dateLabel}',\n    sunday: false,\n    qids: [${qids.map((i) => `'${i}'`).join(', ')}],\n  },`);
