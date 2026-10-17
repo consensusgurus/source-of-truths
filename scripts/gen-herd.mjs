@@ -1,12 +1,11 @@
 // scripts/gen-herd.mjs: deals app/herd/puzzles.js from scripts/herd-pool.mjs.
 //
-// Herd is ten crowd questions a day, each with two, three or four options,
-// mostly two. A board is dealt so that:
-//   - the option mix follows a nine-day cycle (5 to 7 two-way questions a day),
+// Herd is ten crowd questions a day, every one A or B (owner, 2026-10-16). A
+// board is dealt so that:
 //   - every day has at least two easy calls and at least two close calls,
 //   - no topic (home, social, world) takes more than five of the ten,
 //   - no two questions on one day share their key words,
-//   - the first question is an easy two-way call,
+//   - the first question is an easy call,
 //   - no question is ever dealt twice in the bank.
 // The house crowd is the pool entry's estimated split laid out as 48 votes
 // (stored as COUNTS per option, not a vote list).
@@ -21,7 +20,8 @@ import { POOL } from './herd-pool.mjs';
 
 const OUT = path.join(process.cwd(), 'app/herd/puzzles.js');
 const HOUSE = 48;
-const MIX = [[6, 2, 2], [7, 1, 2], [6, 2, 2], [5, 3, 2], [6, 2, 2], [7, 2, 1], [6, 1, 3], [6, 2, 2], [6, 2, 2]];
+// EVERY QUESTION IS A OR B (owner, 2026-10-16), so every day is ten two-way calls.
+const MIX = [[10, 0, 0]];
 
 const args = process.argv.slice(2);
 const arg = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
@@ -125,8 +125,8 @@ const HEADER = `// Puzzle data for Herd, the daily crowd-selection game. SERVER-
 // the browser) and by app/api/herd/route.js (which scores against house + real
 // picks, see lib/herd-score.js).
 //
-// Ten questions a day, each with two, three or four options, mostly two. The
-// player picks what they think MOST of today's players picked and scores a
+// Ten questions a day, every one A or B (owner, 2026-10-16). The player
+// picks what they think MOST of today's players picked and scores a
 // point for every call that lands with the herd.
 //
 // \`house\` is the house crowd as VOTE COUNTS per option (48 votes in all). It

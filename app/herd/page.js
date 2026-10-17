@@ -7,7 +7,7 @@ import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
 import { categoryCrumb } from '@/lib/game-seo';
 
-// Herd launched 2026-10-17: ten crowd questions a day, two to four answers
+// Herd launched 2026-10-17: ten crowd questions a day, every one A or B
 // each, scored by /api/herd against the house crowd + real picks. It opens
 // Read the Room. The client gets a STRIPPED view: the house crowd never ships.
 
@@ -47,7 +47,7 @@ const gameJsonLd = {
   alternateName: 'Herd: Daily Crowd Game',
   url: `${SITE_URL}/herd`,
   description:
-    'A free daily crowd game: ten quick questions with two to four answers. Pick what you think most players picked; every call that lands with the herd scores a point. Scored against the live player pool.',
+    'A free daily crowd game: ten quick this-or-that questions. Pick what you think most players picked; every call that lands with the herd scores a point. Scored against the live player pool.',
   genre: ['Crowd game', 'Party game', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

@@ -4290,7 +4290,8 @@ Route `/herd`, key `herd`, Crowd Psychology, `miss: null`, legacy hue saddle bro
 day... the first puzzle in read the room... A or B, or A or B or C, or A or B or C or D, weighted towards A or B.
 10 per day."
 
-- **The game.** Ten questions a day, each with 2, 3 or 4 options (5 to 7 two-way a day on a nine-day cycle).
+- **The game.** Ten questions a day, EVERY ONE A OR B (owner, 2026-10-16: the three- and four-answer
+  questions were taken out before launch; `verify-herd` fails any other option count).
   Pick what you think MOST of today's players picked. One point per call that lands with the herd, out of 10.
   No Sunday Edition (owner's ten a day), and no `sunday` field.
 - **Scoring is `lib/herd-score.js`**, the one rule for every surface: the herd is the most-picked option counted
@@ -4302,10 +4303,10 @@ day... the first puzzle in read the room... A or B, or A or B or C, or A or B or
 - **No table of its own**: ballots go in `outwit_picks` under `herd-M-D-YY` quiz ids. Every reader of that table
   filters by quiz_id. Wired into `/api/quiz/daily-me` (ADAPTIVE), `/api/quiz/crowd-today` (herdGroups) and
   `/api/quiz/daily-combined` (scoreHerdLive, which reuses scoreFeudLive's read with Herd's table and scorer).
-- **The bank**: `scripts/herd-pool.mjs` (471 questions written 2026-10-16 in three topics, home / social / world,
+- **The bank**: `scripts/herd-pool.mjs` (566 two-way questions written 2026-10-16 in three topics, home / social / world,
   each with an ESTIMATED split) dealt by `scripts/gen-herd.mjs --until <date> --write` (append-only): at least two
   easy and two close calls a day, no topic over five, no two overlapping questions on one day, first question an
-  easy two-way, nothing dealt twice. Bank 2026-10-17 to 2026-11-30 leaves 20 pool questions: write more before
+  easy two-way, nothing dealt twice. Bank 2026-10-17 to 2026-11-30 leaves 116 pool questions: write more before
   extending. `scripts/verify-herd.mjs` checks the bank and the scorer (mutation-tested on leave-one-out).
 - **Read the Room is four rooms from 2026-10-17**: Herd, Outwit, Outrank, Feud, a quarter of 100 each.
   `lib/read-room.js` `HERD_FROM`, `roomKeysFor(iso)`, `roomPartFor(iso)`, `roomScorerFor(iso)`; the circuit carries

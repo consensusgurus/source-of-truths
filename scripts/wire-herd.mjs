@@ -27,8 +27,8 @@ function afterLine(f, marker, lines) {
 }
 
 const TAG = 'Pick what most people pick';
-const TAGLONG = 'Ten quick calls, two to four answers each, scored on the crowd';
-const HOW = "Ten quick questions, two to four answers each. Pick the answer you think most of today's players picked: every call with the herd scores. It shifts all day.";
+const TAGLONG = 'Ten quick A or B calls, scored on the crowd';
+const HOW = "Ten quick questions, every one A or B. Pick the answer you think most of today's players picked: every call with the herd scores. It shifts all day.";
 const BLURB = 'Ten quick this-or-that calls. Pick what you think most players picked; every call with the herd scores.';
 const COLOR = '#92400e', NAVY = '#fcd34d', BG = '#fdf3e4', BORDER = 'rgba(146,64,14,0.4)';
 

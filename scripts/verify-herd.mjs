@@ -2,8 +2,7 @@
 // scorer (lib/herd-score.js). Shares no code with scripts/gen-herd.mjs.
 //
 // Bank: contiguous dates from day 1, quizId/num/dateLabel agree with the date,
-// ten questions a day, 2 to 4 options each, at least five two-way questions a
-// day, a house crowd of exactly 48 votes laid out as counts with a strict
+// ten questions a day, every one A or B (two options), a house crowd of exactly 48 votes laid out as counts with a strict
 // leader and no option under 1, at least two easy and two close calls a day,
 // no question dealt twice, copy limits, US spelling, no dashes.
 // Scorer: leave-one-out, ties at the top count, the house retires after ten.
@@ -35,7 +34,7 @@ PUZZLES.forEach((p, k) => {
   let two = 0, easy = 0, close = 0;
   for (const pr of p.prompts || []) {
     const K = pr.options && pr.options.length;
-    if (!(K >= 2 && K <= 4)) fail(`#${p.num}: "${pr.q}" has ${K} options`);
+    if (K !== 2) fail(`#${p.num}: "${pr.q}" has ${K} options, every Herd question is A or B`);
     if (K === 2) two++;
     if (new Set(pr.options.map((o) => o.toLowerCase())).size !== K) fail(`#${p.num}: "${pr.q}" repeats an option`);
     if (pr.q.length > 64) fail(`#${p.num}: question too long: ${pr.q}`);
@@ -57,7 +56,6 @@ PUZZLES.forEach((p, k) => {
     if (seen.has(pr.q)) fail(`#${p.num}: "${pr.q}" was already dealt`);
     seen.add(pr.q);
   }
-  if (two < 5) fail(`#${p.num}: only ${two} two-way questions`);
   if (easy < 2) fail(`#${p.num}: only ${easy} easy calls`);
   if (close < 2) fail(`#${p.num}: only ${close} close calls`);
   day.setUTCDate(day.getUTCDate() + 1);

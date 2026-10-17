@@ -2,7 +2,7 @@
 
 // Herd, the daily crowd-selection game (owner, 2026-10-16).
 //
-// Ten quick questions, each with two, three or four options, mostly two. For
+// Ten quick questions, every one A or B. For
 // each one you pick what you think MOST of today's players picked, and every
 // call that lands with the herd pays a point. There is no answer key, only the
 // crowd: the server scores you leave-one-out against every pick in the pool
@@ -822,7 +822,7 @@ export default function HerdClient({ puzzles = [], forceNum = null }) {
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
       lead="The herd is everyone playing today."
-      banner="Ten quick questions, two to four answers each. Pick what MOST players picked."
+      banner="Ten quick questions, every one A or B. Pick what MOST players picked."
       steps={[
         <><b>Read the question</b>, then pick the answer you think the most players chose. Not your own taste: the crowd&rsquo;s.</>,
         <><b>One point</b> for every call that lands with the herd, so the day is out of 10. A tie at the top counts for every answer in it.</>,
@@ -1195,7 +1195,7 @@ export default function HerdClient({ puzzles = [], forceNum = null }) {
       <section style={{ display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', position: 'relative', zIndex: 2, maxWidth: 640, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Herd</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Herd is a free daily crowd game from Mind Loft. Every day brings ten quick questions with two, three or four answers, most of them a simple this or that: pancakes or waffles, text or call, beach or mountains. You are not asked what you like. You are asked what you think most of today&rsquo;s players picked, and every call that lands with the herd scores a point, out of ten.
+          Herd is a free daily crowd game from Mind Loft. Every day brings ten quick questions, every one a simple this or that: pancakes or waffles, text or call, beach or mountains. You are not asked what you like. You are asked what you think most of today&rsquo;s players picked, and every call that lands with the herd scores a point, out of ten.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Some questions are easy reads and some are near coin flips. There is no answer key: the answer is the crowd, and it keeps moving. Your own vote never counts for you, every new player re-scores the whole field, and a house crowd seeds the first hours until ten real players are in. Herd also opens Read the Room, the daily run of crowd games.
