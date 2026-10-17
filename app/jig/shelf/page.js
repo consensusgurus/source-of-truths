@@ -25,7 +25,7 @@ export const metadata = {
     'Every Jig daily jigsaw so far, 48 to 80 pieces, a new photo each day. Play any past puzzle free, no app or signup.',
   alternates: { canonical: '/jig/shelf' },
   openGraph: {
-    images: [{ url: '/og/jig.png', width: 1200, height: 630, alt: 'Jig, a daily jigsaw puzzle from Mind Loft' }],
+    images: [{ url: '/og/jig-shelf.png', width: 1200, height: 630, alt: 'The Jig Puzzle Shelf: past daily jigsaw photos on two wooden shelves, today a question mark' }],
     title: 'The Jig Puzzle Shelf',
     description: 'Every daily jigsaw so far, one photograph a day. Pick a box and play it free.',
     url: '/jig/shelf',
@@ -33,7 +33,7 @@ export const metadata = {
     siteName: 'Mind Loft',
   },
   twitter: {
-    images: ['/og/jig.png'],
+    images: ['/og/jig-shelf.png'],
     card: 'summary_large_image',
     title: 'The Jig Puzzle Shelf',
     description: 'Every daily jigsaw so far, one photograph a day. Pick a box and play it free.',
