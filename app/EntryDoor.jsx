@@ -231,6 +231,10 @@ const CSS = `
   background:#7dd3fc;color:${INK};transition:background .18s ease}
 .ent-go-all:hover{background:#bae6fd}
 .ent-go-all:focus-visible{outline:3px solid #eef2f9;outline-offset:3px}
+/* ONE ENTRANCE, NOT TWO (owner, 2026-10-17). The page sits under the curtain, so
+   the lift used to uncover it fully drawn and then the rise below played it in again.
+   It stays invisible until the rise starts; reduced motion lands on 'page' directly. */
+.ent-pg:not(.rise){opacity:0}
 .ent-pg.rise .ent-ask,.ent-pg.rise .ent-tiles li,.ent-pg.rise .ent-foot{animation:ent-up .55s cubic-bezier(.2,.7,.2,1) both}
 .ent-pg.rise .ent-tiles li{animation-delay:calc(.12s + var(--i) * .04s)}
 .ent-pg.rise .ent-foot{animation-delay:.6s}
