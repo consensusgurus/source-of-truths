@@ -2682,7 +2682,7 @@ export default function StageToday() {
     if (sortBy !== 'diff' || !diff) return null;
     const out = DIFF_TIERS.map((t) => ({ id: t.id, label: t.label, sub: t.sub,
       games: list.filter((g) => { const v = diff[g.key]; return v >= t.lo && v <= t.hi; }) }));
-    out.push({ id: 'new', label: 'Not rated yet', sub: 'New, or too few plays last week', games: list.filter((g) => !diff[g.key]) });
+    out.push({ id: 'new', label: 'Not rated yet', sub: 'New, play it and help rate it', games: list.filter((g) => !diff[g.key]) });
     return out.filter((b) => b.games.length);
   };
   const tileRun = (list, mk) => {

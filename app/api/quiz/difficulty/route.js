@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { loadQuizResultsCached } from '@/lib/quiz-results-cache';
 import { readPayload, writePayload } from '@/lib/stats-payloads';
-import { rateDifficulty, ratingWeek } from '@/lib/daily-difficulty';
+import { rateDifficulty, ratingWeek, withSeeds } from '@/lib/daily-difficulty';
 
 // EASY TO HARD (owner, 2026-10-18). Every daily's difficulty, 1 (gentle) to 5
 // (tough), re-rated once a week: the rating for a week is computed from the
@@ -32,7 +32,9 @@ export async function GET() {
   try { stored = await readPayload(KEY); } catch (e) { stored = null; }
   const prev = stored && stored.payload ? stored.payload : null;
   if (prev && prev.week === week.end && prev.ratings) {
-    return NextResponse.json(prev, { headers: HEAD });
+    // The owner's starting ratings apply at serve time too, so a seed added
+    // mid-week shows at once rather than at the next Sunday rebuild.
+    return NextResponse.json({ ...prev, ratings: withSeeds(prev.ratings) }, { headers: HEAD });
   }
   try {
     const { data, error } = await loadQuizResultsCached(supabaseAdmin);
@@ -42,7 +44,7 @@ export async function GET() {
     await writePayload(KEY, payload);
     return NextResponse.json(payload, { headers: HEAD });
   } catch (e) {
-    if (prev && prev.ratings) return NextResponse.json(prev, { headers: HEAD });
-    return NextResponse.json({ week: week.end, ratings: {}, measured: 0 }, { headers: { 'Cache-Control': 'no-store' } });
+    if (prev && prev.ratings) return NextResponse.json({ ...prev, ratings: withSeeds(prev.ratings) }, { headers: HEAD });
+    return NextResponse.json({ week: week.end, ratings: withSeeds({}), measured: 0 }, { headers: { 'Cache-Control': 'no-store' } });
   }
 }

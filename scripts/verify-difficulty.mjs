@@ -3,7 +3,7 @@
 //   node scripts/verify-difficulty.mjs
 import { register } from 'node:module';
 register('./alias-loader.mjs', import.meta.url);
-const { ratingWeek, rateDifficulty, tierOf, MIN_ROWS } = await import('../lib/daily-difficulty.js');
+const { ratingWeek, rateDifficulty, tierOf, MIN_ROWS, SEED_RATINGS, withSeeds } = await import('../lib/daily-difficulty.js');
 const { liveDailyKeys } = await import('../lib/daily-games.js');
 
 let fail = 0;
@@ -39,11 +39,29 @@ const counts = [1, 2, 3, 4, 5].map((r) => live.filter((k) => ratings[k] === r).l
 ok(counts.every((c) => c >= 4 && c <= 6), 'fifths are even: ' + counts.join(','));
 
 // 3. A quiet game keeps last week's rating; an unknown one stays unrated.
-const quiet = liveDailyKeys('2026-10-18').find((k) => !live.includes(k));
+const quiet = liveDailyKeys('2026-10-18').find((k) => !live.includes(k) && !SEED_RATINGS[k]);
 const r2 = rateDifficulty(rows, w, { [quiet]: 4 }).ratings;
 ok(r2[quiet] === 4, 'a game with too few rows keeps its previous rating');
 const r3 = rateDifficulty(rows, w, {}).ratings;
 ok(r3[quiet] == null, 'a game never rated stays unrated');
+
+// 3b. A game quiet this week but with enough rows over four weeks is measured.
+const q2 = liveDailyKeys('2026-10-18').filter((k) => !live.includes(k) && k !== quiet && !SEED_RATINGS[k])[0];
+const wideRows = rows.slice();
+for (let n = 0; n < MIN_ROWS; n += 1) wideRows.push({ quiz_id: qid(q2, 1 + (n % 9)), score: 10, total: 10, time_elapsed: 5 });
+const r4 = rateDifficulty(wideRows, w, {});
+ok(Number.isInteger(r4.ratings[q2]) && r4.measured === live.length + 1, 'a quiet game is measured over four weeks: ' + r4.ratings[q2]);
+const tooOld = rows.concat([{ quiz_id: `${q2}-9-1-26`, score: 10, total: 10, time_elapsed: 5 }]);
+ok(rateDifficulty(tooOld, w, {}).ratings[q2] == null, 'rows older than four weeks do not count');
+
+// 3c. The owner's starting ratings fill a never-measured game, and never override a measurement.
+const seeded = Object.keys(SEED_RATINGS);
+const r5 = rateDifficulty([], w, {}).ratings;
+ok(seeded.every((k) => !liveDailyKeys(w.end).includes(k) || r5[k] === SEED_RATINGS[k]), 'seeds fill unmeasured games');
+const sk = live.find((k) => SEED_RATINGS[k]);
+if (sk) ok(ratings[sk] !== undefined && rateDifficulty(rows, w, {}).ratings[sk] === ratings[sk], 'a measured game ignores its seed');
+ok(withSeeds({ rung: 2 }).rung === 2 && withSeeds({}).rung === SEED_RATINGS.rung, 'withSeeds keeps stored ratings');
+ok(seeded.every((k) => [1, 2, 3, 4, 5].includes(SEED_RATINGS[k])), 'seeds are 1..5');
 
 // 4. Too few rated games rates nobody fresh.
 ok(rateDifficulty(rows.slice(0, MIN_ROWS * 2 + 10), w, {}).measured === 0, 'under five games rates none');
