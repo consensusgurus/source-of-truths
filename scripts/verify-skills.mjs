@@ -2,10 +2,10 @@
 // can start a run (owner, 2026-10-16). See lib/daily-skills.js.
 //
 // Checks:
-//  1. every key in SKILL_TAGS is a registered daily, with 1 or 2 known skills,
-//     the second different from the first;
+//  1. every key in SKILL_TAGS is a registered daily, with 1 to 4 known skills,
+//     none repeated (a game sits in every skill it lists, owner 2026-10-18);
 //  2. every daily live today (and on the last day of the year) has a tag;
-//  3. every skill has at least three live games as a PRIMARY, so a tile always
+//  3. every skill has at least three live games listing it, so a tile always
 //     starts a run of two or more even after a game is played;
 //  4. every skill's pane is a real category (the tile opens it);
 //  5. skillRun (unused by the door since 2026-10-16) is deterministic, skips played games, never exceeds the cap, and
@@ -28,9 +28,9 @@ const fail = (m) => fails.push(m);
 
 for (const [k, tags] of Object.entries(SKILL_TAGS)) {
   if (!DAILY_GAME_MAP[k]) fail(`${k}: tagged but not a registered daily`);
-  if (!Array.isArray(tags) || tags.length < 1 || tags.length > 2) fail(`${k}: needs one or two skills`);
+  if (!Array.isArray(tags) || tags.length < 1 || tags.length > 4) fail(`${k}: needs one to four skills`);
+  if (tags && new Set(tags).size !== tags.length) fail(`${k}: a skill is listed twice`);
   for (const t of tags || []) if (!SKILL_MAP[t]) fail(`${k}: unknown skill ${t}`);
-  if (tags && tags.length === 2 && tags[0] === tags[1]) fail(`${k}: second skill repeats the first`);
 }
 
 const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
@@ -50,7 +50,7 @@ for (const s of SKILLS) {
   const live = new Set(liveDailyKeys(today));
   for (const k of a) {
     if (!live.has(k)) fail(`${s.name}: run deals ${k}, not live`);
-    if (SKILL_TAGS[k][0] !== s.id) fail(`${s.name}: run deals ${k}, primary ${SKILL_TAGS[k][0]}`);
+    if (!SKILL_TAGS[k].includes(s.id)) fail(`${s.name}: run deals ${k}, which does not list it`);
   }
   if (a.length) {
     const played = new Set([a[0]]);

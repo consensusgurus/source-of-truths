@@ -44,7 +44,7 @@ import { DISPLAY_CIRCUITS, RUN_GAMES, circuitKeysFor, circuitEntryHref } from '@
 import GameGlyph from '../GameGlyph';
 import CircuitArt from '../CircuitArt';
 import { RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
-import { SKILLS, SKILL_MAP, primarySkill } from '@/lib/daily-skills';
+import { SKILLS, SKILL_MAP, hasSkill } from '@/lib/daily-skills';
 import { TIERS as DIFF_TIERS } from '@/lib/daily-difficulty';
 // ONE READING OF A RESULT ROW, the same one the ending curtain and the tile
 // panel use. It prints the run in the GAME'S own units — 7/16 · 3 busts · 2:11
@@ -1474,7 +1474,7 @@ export default function StageToday() {
   // THE SKILL PANES: every live daily under its PRIMARY skill, A to Z, in the
   // order lib/daily-skills.js lists the skills (owner, 2026-10-18).
   const skillCats = useMemo(() => SKILLS
-    .map((s) => ({ cat: SK_PRE + s.id, games: DAILY_GAMES.filter((g) => primarySkill(g.key) === s.id).sort((a, b) => a.name.localeCompare(b.name)) }))
+    .map((s) => ({ cat: SK_PRE + s.id, games: DAILY_GAMES.filter((g) => hasSkill(g.key, s.id)).sort((a, b) => a.name.localeCompare(b.name)) }))
     .filter((c) => c.games.length), []);
   // SKILLS ARE THE DEFAULT INDEX until the reader picks Categories, and the
   // pick is remembered per browser. Read in a layout effect so a reader who
@@ -2864,7 +2864,7 @@ export default function StageToday() {
   const circPills = (cat, mobile) => {
     const sk = skillOfId(cat);
     const list = PILL_CIRCUITS.map((id) => circuits.find((c) => c.id === id)).filter((c) => c && (!cat
-      || (sk ? c.games.some((g) => primarySkill(g.key) === sk.id) || (PILL_EXTRA[c.id] || []).includes(sk.pane)
+      || (sk ? c.games.some((g) => hasSkill(g.key, sk.id)) || (PILL_EXTRA[c.id] || []).includes(sk.pane)
         : c.games.some((g) => g.cat === cat) || (PILL_EXTRA[c.id] || []).includes(cat))));
     if (!list.length) return null;
     if (mobile) return runsMobile(list, cat);

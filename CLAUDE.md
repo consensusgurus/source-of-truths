@@ -9728,11 +9728,11 @@ Arcade key off `cat`). Skills drive only the entry door (`app/EntryDoor.jsx`).
 - **A skill tile opens a home pane, never a run** (owner, 2026-10-16: runs are only the developed
   circuits). Each skill names its `pane` (a category): Language Word, Mental math and Estimation
   Numbers, Deduction and Spatial reasoning Logic, Grid logic Sudoku, Planning End Game, Memory Trivia,
-  Focus and speed Arcade, Reading people Crowd Psychology. The tile shows the count of live games with
-  that primary skill.
+  Focus and speed Arcade, Reading people Crowd Psychology. The tile shows the count of live games that
+  list that skill.
 - **A NEW DAILY ADDS ITSELF TO `SKILL_TAGS` in the launch push.** `scripts/verify-skills.mjs`
-  (found by verify-all) fails a live daily with no tag, an unknown skill, a repeated second skill, a
-  skill with fewer than three live primaries, or a run that deals a played, dead or off-skill game.
+  (found by verify-all) fails a live daily with no tag, an unknown skill, a skill listed twice, more
+  than four skills, a skill with fewer than three live games, or a run that deals a played, dead or off-skill game.
 - Reading people has three games and Focus and speed five, so both still fill a run but cannot rotate
   much. Use plain "sharpen" and "practice" in copy about skills, never claims of improvement.
 
@@ -9774,8 +9774,8 @@ From the "Best ideas, full roster" mockups (canvas https://claude.ai/artifact/6A
 - **A Skills / Categories switch sits under My Puzzles** in the home index (`app/today/StageToday.jsx`,
   `.sty-lens`). **Skills is the default** until the reader picks Categories, and the pick is kept in
   `sot_home_ix` (NOT `sot_home_lens`, which is the retired group lens and is cleared on every arrival).
-  A skill pane's id is `'sk:'` plus the skill id; it lists the live games whose PRIMARY skill it is
-  (`primarySkill`), A to Z, each tile in its own category colour, and wears its skill's `ramp` step
+  A skill pane's id is `'sk:'` plus the skill id; it lists every live game that LISTS the skill
+  (`hasSkill`; a game sits in each skill it carries, up to four, tagged liberally, owner 2026-10-18), A to Z, each tile in its own category colour, and wears its skill's `ramp` step
   (`rampCat`). Category panes are always rendered for crawlers; a skill pane renders while the skill
   index is up or while it is the pane on show. Reorder belongs to the categories alone and is hidden
   in skill mode. A skill pane's run pills are the runs holding a game of that skill, plus
