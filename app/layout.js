@@ -22,6 +22,8 @@ const SOURCE_COUNT = getAllSources().length;
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
+  // Listdle creator verification (listdle.com/account/creator). Must be on the base URL.
+  verification: { other: { 'listdle-verification': '36f39183-d6f8-4d67-9bd5-e10615a4a459' } },
   // The manifest link points at the token-minting route (PWA identity handoff;
   // see /api/pwa-manifest). It must be set HERE, in server metadata: Next owns
   // the rendered <link> through React, so any client-side rewrite of its href
