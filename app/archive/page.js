@@ -4,6 +4,7 @@ import { PUZZLES as CRUX } from '../crux/puzzles';
 import { PUZZLES as EMCEE } from '../emcee/puzzles';
 import { PUZZLES as GARBLE } from '../garble/puzzles';
 import { PUZZLES as SCRAM_FULL } from '../scram/puzzles';
+import { PUZZLES as ARCOS_FULL } from '../arcos/puzzles';
 import { PUZZLES as SCOUR_FULL } from '../scour/puzzles';
 import { PUZZLES as LINKS } from '../links/puzzles';
 import { PUZZLES as SPAN } from '../span/puzzles';
@@ -205,6 +206,7 @@ const CELL = CELL_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num,
 const SWINDLE = SWINDLE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const GIFT = GIFT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SCRAM = SCRAM_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ARCOS = ARCOS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SCOUR = SCOUR_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SUFFICE = SUFFICE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const DOCKET = DOCKET_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -313,6 +315,7 @@ const GAMES = [
   { key: 'shards', name: 'Shards', path: '/shards', tag: 'Reassemble the shattered crossword', accent: '#0d9488', bg: '#d9f0ee', border: 'rgba(13,148,136,0.4)', src: SHARDS },
   { key: 'garble', name: 'Garble', path: '/garble', tag: 'Five garbled words, one clued finale', accent: '#8a6d1a', bg: '#fdf6e3', border: 'rgba(230,185,63,0.6)', src: GARBLE },
   { key: 'scram', name: 'Scram', path: '/scram', tag: 'Ten themed scrambles', accent: '#be123c', bg: '#fde8ec', border: 'rgba(190,18,60,0.4)', src: SCRAM },
+  { key: 'arcos', name: 'Arcos', path: '/arcos', tag: 'Three acrostics, one link', accent: '#1e40af', bg: '#dbeafe', border: 'rgba(30,64,175,0.4)', src: ARCOS },
   { key: 'scour', name: 'Scour', path: '/scour', tag: 'The daily word search', accent: '#0369a1', bg: '#e0f2fe', border: 'rgba(3,105,161,0.38)', src: SCOUR },
   { key: 'links', name: 'Links', path: '/links', tag: 'Sixteen words, four hidden groups', accent: '#166534', bg: '#eefaf1', border: 'rgba(90,169,106,0.5)', src: LINKS },
   { key: 'span', name: 'Span', path: '/span', tag: 'Cross the map, border by border', accent: '#9d174d', bg: '#fdf0f6', border: 'rgba(217,99,153,0.45)', src: SPAN },

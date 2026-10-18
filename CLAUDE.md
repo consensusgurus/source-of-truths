@@ -3827,6 +3827,7 @@ archive and hub chips use the short form `Sun`.
 | Sworn | six suspects sworn instead of five |
 | Garble | every answer is six letters instead of five (from 2026-07-26) |
 | Scram | every answer eight to twelve letters, often two words, from themes deep enough in long answers (from launch, 2026-10-18) |
+| Arcos | five- and six-letter hidden words and answers of five to seven letters, against four letters on weekdays (from launch, 2026-10-18) |
 | Scour | an 18x18 grid with twenty-six words in all eight directions, against the weekday 15x15 (from 2026-10-18) |
 | Dating | six events to order instead of five (from 2026-07-26) |
 | Cipher | four addends stacked instead of two (from 2026-08-09) |
@@ -5024,6 +5025,36 @@ Decide up front whether it runs a Sunday Edition. If yes, do all five steps abov
 launch push. If no, do not add a `sunday` field at all — an always-false flag reads as an
 unfinished feature to the next session, which is exactly how the five vestigial ones
 above came to be.
+
+### Placing a new daily: one category, one to four skills (owner rule, 2026-10-18)
+
+Every daily is placed on TWO axes, and both are decided in the launch push, never later:
+
+1. **One registry category** (`cat` in `lib/daily-games.js`): Word, Numbers, Logic, Sudoku,
+   Trivia, Geography, End Game, Cards, Arcade or Crowd Psychology. Pick by what the game LOOKS
+   like and how it plays, because the category drives the shelves, page colour, archive shelf and
+   every scoring rule keyed off `cat` (End Game and Arcade especially). Do not invent a category
+   for one game.
+2. **One to four skills** (`SKILL_TAGS` in `lib/daily-skills.js`), primary first: what the game
+   makes you DO. Tag liberally but honestly: a skill the game genuinely exercises, never a skill
+   added to fill a thin pane.
+
+Then place it on every hand-kept list for that category, in the same push:
+
+- the category's key list in `app/DailyGamesGrid.jsx`, and the archive `GAMES` row;
+- the three daily slate maps, plus the Sunday slate when it runs a Sunday Edition;
+- its daily group in `lib/daily-groups.js` (a category with groups must group every game, 3 to 5 keys
+  a group) and at least one set in `lib/finish-sets.js` (2 to 4 keys a set);
+- a glyph in `lib/game-glyphs.js`;
+- every landing page of its category in `lib/puzzle-categories.js` (keys, `generic`, and the copy:
+  see the next section), plus any sub-page whose roster it belongs on (a crossword-like game on
+  `/crosswords` too).
+
+**`node scripts/verify-placement.mjs` is the gate** (found by verify-all): it fails a live daily
+missing from any of these. `verify-skills`, `verify-daily-groups`, `verify-finish-sets` and
+`verify-category-copy` check the rest. A wire script anchors on an existing game in the same
+category so every list gets the new key beside its nearest sibling (`scripts/wire-arcos.mjs` is
+the most recent example).
 
 ### A new game changes the category and set COPY too (owner rule, 2026-10-14)
 
@@ -9793,3 +9824,25 @@ From the "Best ideas, full roster" mockups (canvas https://claude.ai/artifact/6A
 - **The desktop Circuits pane's run cards list the run's games**, numbered in play order, the ones
   played lit (`.gms` inside `runCard`, shown only inside `.sty-rcards` at 901px and up). The phone
   keeps its compact runs block unchanged.
+
+## Arcos (`/arcos`): the daily set of acrostics (launched 2026-10-18)
+
+Three small clued acrostics a day and a finale. Key/route `arcos`, category **Word**, `miss: null`,
+legacy accent `#1e40af` / `#93c5fd`. Wired by `scripts/wire-arcos.mjs` (beside Scram everywhere).
+Skills Language, Memory, Deduction. Daily group and finish set Crosswords, plus the Word chains set.
+
+- **The day:** a FRONT acrostic (first letters spell a hidden word), a BACK one (last letters), a
+  DIAGONAL one (letter N of row N; every row one length, the word plus one), then the FINALE: one word
+  that pairs with all three hidden words from `scripts/hinge-pairs.txt` (CHECK, STAND, BREAK + POINT).
+- **Scoring:** each acrostic is worth 3, minus 1 per row shown with "Show this answer" (armed by a second
+  tap), and counts only when complete; the finale is worth 1 within three tries. Out of 10, time breaks
+  ties, `guessesUsed: 0`. A wrong entry shakes, clears and costs nothing. In `XP_LINEAR_DAILIES`.
+  The free first-play hint ghosts the spine letter.
+- **Clues are never invented:** every answer and clue comes from the Emcee and Encore clue banks.
+  `scripts/gen-arcos.mjs` (deterministic, append with `--until`) and the independent
+  `scripts/verify-arcos.mjs`: the finale must be the ONLY word pairing with all three on either side,
+  no clue carries any word of the day, nothing repeats in the bank. Bank 2026-10-18 to 2026-11-30.
+- **Ramp:** hidden words Mon-Wed 4 letters, Thu-Sat 4-5 with a 5, Sunday Edition 5-6; answers Mon 4-5,
+  Tue-Sat 4-6, Sunday 5-7.
+- **Ending:** the `arcband` beat in `lib/finish-beat.js`: the three hidden words slide in as bands in the
+  ramp's sky, mint and lime, then the finale drops in gold, before the iris.

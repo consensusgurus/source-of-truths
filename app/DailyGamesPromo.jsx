@@ -19,6 +19,7 @@ export const DAILY_GAMES = [
   { key: 'shards', href: '/shards', name: 'Shards', tag: 'reassemble the shattered crossword', store: 'sot_shards_day', accent: '#0d9488', bg: '#d9f0ee', border: 'rgba(13,148,136,0.4)' },
   { key: 'garble', href: '/garble', name: 'Garble', tag: 'five garbled words, one clued finale', store: 'sot_garble_day', accent: '#8a6d1a', bg: '#fdf6e3', border: 'rgba(230,185,63,0.6)' },
   { key: 'scram', href: '/scram', name: 'Scram', tag: 'ten themed scrambles', store: 'sot_scram_day', accent: '#be123c', bg: '#fde8ec', border: 'rgba(190,18,60,0.4)' },
+  { key: 'arcos', href: '/arcos', name: 'Arcos', tag: 'three acrostics, one link', store: 'sot_arcos_day', accent: '#1e40af', bg: '#dbeafe', border: 'rgba(30,64,175,0.4)' },
   { key: 'scour', href: '/scour', name: 'Scour', tag: 'the daily word search', store: 'sot_scour_day', accent: '#0369a1', bg: '#e0f2fe', border: 'rgba(3,105,161,0.38)' },
   { key: 'links', href: '/links', name: 'Links', tag: 'sixteen words, four hidden groups', store: 'sot_links_day', accent: '#166534', bg: '#eefaf1', border: 'rgba(90,169,106,0.5)' },
   { key: 'span', href: '/span', name: 'Span', tag: 'cross the map, border by border', store: 'sot_span_day', accent: '#9d174d', bg: '#fdf0f6', border: 'rgba(217,99,153,0.45)' },
