@@ -14,7 +14,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { HelpCircle, Share2, RotateCcw, X, Shuffle, Swords, Smartphone } from 'lucide-react';
+import { HelpCircle, Share2, RotateCcw, X, Shuffle, Swords, Smartphone, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import DailyGamesPromo from '../DailyGamesPromo';
@@ -225,6 +225,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
   const [shakeIds, setShakeIds] = useState(null);
   const [justSolved, setJustSolved] = useState(null); // ci of the group animating in
   const [justWon, setJustWon] = useState(false);
+  const [armGive, setArmGive] = useState(false); // two-tap Give up (owner, 2026-10-18)
   const [endClosed, setEndClosed] = useState(false);
   // The finished board starts turned OVER, showing what to do next.
   const [revealed, setRevealed] = useState(false);
@@ -489,6 +490,23 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
     setG(g2);
   }
 
+  // Give up (owner, 2026-10-18): ends the round through the SAME path as the
+  // fourth mistake, so it posts once and the threads already banked keep their
+  // 2 points each; the unsolved ones score 0, exactly as a loss would.
+  function giveUp() {
+    if (!playing || !g.t0) return;
+    const g2 = { ...g, status: 'lost', tEnd: Date.now() };
+    setSelWords([]);
+    setArmGive(false);
+    postResult(g2);
+    setG(g2);
+  }
+  function giveTap() {
+    if (armGive) { giveUp(); return; }
+    setArmGive(true);
+    setTimeout(() => setArmGive(false), 3500);
+  }
+
   function doShuffle() {
     if (!playing) return;
     setG({ ...g, order: shuffled(g.order) });
@@ -586,7 +604,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
         <>Wrong, and one of your <b>four mistakes</b> is gone. <b>&ldquo;One away&rdquo;</b> is the only hint you get.</>,
       ]}
       knack={<>The words that look like they belong together usually don&apos;t. That&rsquo;s the puzzle.</>}
-      footer="Every thread you bank scores 2, out of 8. Four mistakes ends the day."
+      footer="Every thread you bank scores 2, out of 8. Four mistakes ends the day, and Give up ends it early, keeping what you banked."
     />
   );
 
@@ -783,6 +801,9 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
               <button type="button" className="lk-act" onClick={() => setSelWords([])} disabled={selWords.length === 0}>Deselect</button>
               <button type="button" className={`lk-act lk-go${selWords.length === 4 ? ' ready' : ''}`} onClick={submit} disabled={selWords.length !== 4}>Submit four</button>
             </div>
+            <div className="lk-acts" style={{ marginTop: 8 }}>
+              <button type="button" className="lk-act" onClick={giveTap} title={armGive ? 'Ends the puzzle now' : 'End the puzzle now; banked threads still score'}><Flag size={15} /> {armGive ? 'Tap again to give up' : 'Give up'}</button>
+            </div>
           </>
         )}
 
@@ -832,6 +853,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
             {selWords.length > 0 && (
               <button className="lk-btn" onClick={() => setSelWords([])} style={{ borderColor: '#c3c8cf', color: FADED }}>Clear</button>
             )}
+            <button className="lk-btn" onClick={giveTap} title={armGive ? 'Ends the puzzle now' : 'End the puzzle now; banked threads still score'} style={{ borderColor: armGive ? COLORS.rust : '#c3c8cf', color: armGive ? COLORS.rust : FADED }}><Flag size={14} /> {armGive ? 'Tap again to give up' : 'Give up'}</button>
             <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: MONO, fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED }}>
               Mistakes
               {Array.from({ length: MAX_MISTAKES }).map((_, i) => (

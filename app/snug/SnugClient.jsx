@@ -1035,7 +1035,7 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
           {started && (
             <div className="sg-below">
               <span className="sg-rule sg-dk">Cover the board exactly. Pieces turn and flip, and only one way works.</span>
-              {identity && placedCount > 0 ? (
+              {started ? (
                 <button type="button" className={`sg-link${armReveal ? ' armed' : ''}`}
                   onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
                   {armReveal ? 'Tap again to reveal (ends the puzzle)' : 'Reveal'}

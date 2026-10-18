@@ -19,7 +19,7 @@
 // Weekdays are 15x15; Sundays step up to a 17x17 Edition.
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { HelpCircle, RotateCcw, X, Eraser, Smartphone, SearchCheck, Delete } from 'lucide-react';
+import { HelpCircle, RotateCcw, X, Eraser, Smartphone, SearchCheck, Delete, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -223,6 +223,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
   const [toast, setToast] = useState(null);
   const [countdown, setCountdown] = useState('');
   const [endClosed, setEndClosed] = useState(false);
+  const [armGive, setArmGive] = useState(false); // two-tap Give up (owner, 2026-10-18)
   // The finished board starts turned OVER, showing what to do next.
   const [loftRevealed, setLoftRevealed] = useState(false);
   const [shareCta, setShareCta] = useState('Share');
@@ -385,7 +386,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
     for (const n of Object.keys(assign)) if (assign[n]) m[assign[n]] = Number(n);
     return m;
   }, [assign]);
-  const finalScore = Math.max(1, 10 - 3 * checks);
+  const finalScore = g.status === 'gaveup' ? 0 : Math.max(1, 10 - 3 * checks);
 
   const REC_KEY = `sot_glyph_rec_${PUZZLE.num}`;
   const abandon = useAbandonFlush(() => {
@@ -506,6 +507,23 @@ export default function GlyphClient({ puzzles, forceNum }) {
     if (!g2.t0) g2.t0 = Date.now();
     commit(g2);
     say(bad.length ? `${bad.length} wrong so far.` : 'Everything placed is right.');
+  }
+
+  // Give up (owner, 2026-10-18): a single-solve code, so it posts 0. The key
+  // stays hidden until the end card's Reveal answer door, as on any loss.
+  function giveUp() {
+    const cur = gRef.current;
+    if (cur.status !== 'playing' || !cur.t0) return;
+    const g2 = { ...cur, status: 'gaveup', tEnd: Date.now() };
+    postResult(g2, 0);
+    commit(g2);
+    setSel(null);
+    setArmGive(false);
+  }
+  function giveTap() {
+    if (armGive) { giveUp(); return; }
+    setArmGive(true);
+    setTimeout(() => setArmGive(false), 3500);
   }
 
   function resetGame() {
@@ -706,7 +724,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
         <><b>Tap a square</b> to select its number, then type or tap a letter. Every square with that number fills at once.</>,
         <>There are no clues. Work from the <b>{PUZZLE.given.length} letters you are given</b>, the shapes of the words, and the crossings.</>,
         <>All 26 letters appear, each exactly once in the key, so the ones you have ruled out narrow the rest.</>,
-        <>Press <b>Check</b> if you want the board audited. You have <b>{MAX_CHECKS}</b>.</>,
+        <>Press <b>Check</b> if you want the board audited. You have <b>{MAX_CHECKS}</b>. Stuck for good? <b>Give up</b> ends the puzzle at 0.</>,
       ]}
       knack="The key is one letter to one number with nothing left over, so a letter you have already spent is as much information as a square you have filled."
       footer={<>Each Check costs 3 points, so a clean solve is 10 out of 10.</>}
@@ -901,6 +919,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
 
                   <div className="gls-act">
                     <span className="gls-note">Struck letters are already in the key.</span>
+                    {g.t0 && <button type="button" className="gls-clear" onClick={giveTap} title={armGive ? 'Ends the puzzle now' : 'End the puzzle now; it scores 0'}><Flag size={14} /> {armGive ? 'Tap again' : 'Give up'}</button>}
                     <button type="button" className="gls-clear" onClick={clearLetter} disabled={!sel || !assign[sel] || !!GIVEN[sel]}>Clear{sel ? ` ${sel}` : ''}</button>
                     <button type="button" className="gls-check" onClick={runCheck} disabled={checks >= MAX_CHECKS}>
                       {checksLeft > 0
@@ -953,6 +972,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
                     </span>
                     <button className="gl-btn" onClick={clearLetter} disabled={!sel || !assign[sel] || !!GIVEN[sel]} style={{ marginLeft: 'auto', padding: '7px 12px', fontSize: 12.5 }}><Eraser size={14} /> Clear</button>
                     <button className="gl-btn" onClick={runCheck} disabled={checks >= MAX_CHECKS} style={{ padding: '7px 12px', fontSize: 12.5 }}><SearchCheck size={14} /> Check ({MAX_CHECKS - checks})</button>
+                    {g.t0 && <button className="gl-btn" onClick={giveTap} title={armGive ? 'Ends the puzzle now' : 'End the puzzle now; it scores 0'} style={{ padding: '7px 12px', fontSize: 12.5 }}><Flag size={14} /> {armGive ? 'Tap again to give up' : 'Give up'}</button>}
                   </div>
 
                   <div className="gl-key" style={{ marginTop: 10 }}>

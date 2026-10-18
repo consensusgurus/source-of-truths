@@ -31,7 +31,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { X, Undo2 } from 'lucide-react';
+import { X, Undo2, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -341,6 +341,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
   // block is folded away behind one button, the same arrangement every other
   // daily uses (owner rule, 2026-08-08). setShowChrome unfolds it for good.
   const [showChrome, setShowChrome] = useState(false);
+  const [armGive, setArmGive] = useState(false);
   const focusMode = playing && !showChrome;
   const LOFT = isLoft('hands');
   const STAGE = isStage('hands', searchParams);
@@ -527,6 +528,29 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
     say('Mucked. The next card is already on offer.');
   }
 
+  // Give up (owner, 2026-10-18): ends the round now through the same end path
+  // as the 25th card. Lines already full keep their points; every line still
+  // open scores 0, exactly as an unfinished line does, and the round is scored
+  // against par and ace like any other finish.
+  function giveUp() {
+    const cur = gRef.current;
+    if (cur.status !== 'playing' || !cur.t0) return;
+    const finalGrid = new Array(25).fill(null);
+    for (const [card, at] of cur.placed) finalGrid[at] = card;
+    const finished = { ...cur, status: 'done', gaveUp: true, tEnd: Date.now() };
+    setArmGive(false);
+    vibrate(HAPT.ok);
+    postResult(finished, finalGrid);
+    endHold.hold(1400);
+    commit(finished);
+  }
+  function tapGiveUp() {
+    if (armGive) { if (Date.now() - armGive < 400) return; giveUp(); return; }
+    const at = Date.now();
+    setArmGive(at);
+    setTimeout(() => setArmGive((v) => (v === at ? false : v)), 3500);
+  }
+
   function resetGame() {
     endHold.release();
     try { localStorage.removeItem(STORE_KEY); } catch (e) {}
@@ -575,6 +599,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
         <>Cards come one at a time. <b>Tap any empty square</b> to place the card on offer. It never moves again, and there is no undo.</>,
         <>A full grid is <b>ten hands</b>, five across and five down. Every card counts in two of them at once, which is the whole puzzle.</>,
         <>You get <b>one muck</b> a day. It bins the card on offer and deals the next, sight unseen. Spend it well: there is only one.</>,
+        <><b>Give up</b> ends the round now: full lines keep their points, open lines score nothing.</>,
       ]}
       knack="A straight beats a flush here, because on a five by five grid flushes are the easy ones."
       footer="Par and ace are both real rounds somebody played, not formulas. Everybody today gets this same deal in this same order, so nothing here is luck."
@@ -814,7 +839,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
           const bigCard = (w, h, sz) => (
             <div key={consumed} className="hd-offer" style={{ width: w, height: h, flex: 'none' }}>
               {playing && current != null ? <CardFace card={current} sz={sz} ring={started} /> : (
-                <div style={{ width: '100%', height: '100%', boxSizing: 'border-box', borderRadius: 10, background: CELL, border: `1.5px dashed ${CELL_LINE}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontSize: 12, fontWeight: 700, color: S_MUTE, textAlign: 'center', padding: 6 }}>Board full</div>
+                <div style={{ width: '100%', height: '100%', boxSizing: 'border-box', borderRadius: 10, background: CELL, border: `1.5px dashed ${CELL_LINE}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontSize: 12, fontWeight: 700, color: S_MUTE, textAlign: 'center', padding: 6 }}>{g.gaveUp ? 'Round over' : 'Board full'}</div>
               )}
             </div>
           );
@@ -825,7 +850,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
             </button>
           );
           const madeList = PAY.filter((v) => madeCount[v]).map((v) => `${handLabel(v).toLowerCase()}${madeCount[v] > 1 ? ` ×${madeCount[v]}` : ''} +${v * madeCount[v]}`);
-          const offerLine = done ? 'Board full. That is the round.'
+          const offerLine = done ? (g.gaveUp ? 'Round ended early. That is the round.' : 'Board full. That is the round.')
             : current != null ? (started ? <>Tap a square for the <span style={{ whiteSpace: 'nowrap' }}>{curTxt}</span>.</> : 'Press Start to deal.') : '';
 
           const payTable = (
@@ -870,7 +895,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {bigCard(64, 90, 'bigS')}
               <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <span style={{ fontSize: 14, fontWeight: 800, color: S_INK }}>{done ? 'Board full' : `Card ${Math.min(consumed + 1, PUZZLE.deck.length)} · ${started ? 'tap a square' : 'press Start'}`}</span>
+                <span style={{ fontSize: 14, fontWeight: 800, color: S_INK }}>{done ? (g.gaveUp ? 'Round over' : 'Board full') : `Card ${Math.min(consumed + 1, PUZZLE.deck.length)} · ${started ? 'tap a square' : 'press Start'}`}</span>
                 <span style={{ fontSize: 11, fontWeight: 600, color: S_MUTE, lineHeight: 1.35 }}>
                   {left} square{left === 1 ? '' : 's'} left · {mucked != null ? <>muck used ({RANK_LABEL[rankOf(mucked)]}{SUIT_PIP[suitOf(mucked)]})</> : `${toCome} to come`}
                 </span>
@@ -920,6 +945,15 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
                   </div>
                 </div>
               )}
+              {playing && started && (
+                <div style={{ display: 'flex', justifyContent: narrow ? 'center' : 'flex-end', paddingTop: 10 }}>
+                  <button type="button" className="hd-tool" onClick={tapGiveUp}
+                    title={armGive ? 'Ends the round now' : 'End the round now. Full lines keep their points.'}
+                    style={{ minHeight: 44, ...(armGive ? { borderColor: 'var(--stg-warn, #b45309)', color: 'var(--stg-warn, #b45309)' } : null) }}>
+                    <Flag size={15} /> {armGive ? 'Tap again to give up' : 'Give up'}
+                  </button>
+                </div>
+              )}
               <div style={{ padding: '10px 2px 0', fontSize: narrow ? 11 : 12, fontWeight: 600, color: S_MUTE }}>Same deal for everybody. Every square serves one row and one column.</div>
 
               {done && (won || !LOFT || revealed) && (
@@ -953,7 +987,8 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
                 You scored <span style={{ color: ACC_INK }}>{total} points</span>. Par was {par}, ace was {ace}.
               </div>
               <div style={{ fontSize: 13, fontWeight: 600, color: FADED, margin: '6px 0 0', lineHeight: 1.5 }}>
-                {total >= ace ? 'You matched or beat the best round our solver found playing blind on this deal. That is as good as it gets without seeing the cards coming.'
+                {g.gaveUp ? `You ended the round with ${25 - g.placed.length} square${25 - g.placed.length === 1 ? '' : 's'} still open, so the lines through them scored nothing.`
+                  : total >= ace ? 'You matched or beat the best round our solver found playing blind on this deal. That is as good as it gets without seeing the cards coming.'
                   : total > par ? `That is ${total - par} above par, with ${busts === 0 ? 'not a single hand wasted' : `${busts} of the ten hands worth nothing`}.`
                   : total === par ? 'Level par, exactly what an ordinary round comes home with.'
                   : `That is ${par - total} short of par. ${busts >= 4 ? 'Too many dead lines: a card that helps nothing is still costing you a square.' : 'Close enough that one or two placements were the difference.'}`}

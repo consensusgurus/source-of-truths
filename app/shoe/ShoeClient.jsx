@@ -26,7 +26,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { X, Smartphone } from 'lucide-react';
+import { X, Smartphone, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
@@ -289,6 +289,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
   const gRef = useRef(g);
 
   const [showChrome, setShowChrome] = useState(false);
+  const [armGive, setArmGive] = useState(false);
   const playing = g.status === 'playing';
   const preStart = playing && !g.t0;
   const started = playing && !!g.t0;
@@ -299,7 +300,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
   const ROPTS = useMemo(() => ({ split: !!PUZZLE.split }), [PUZZLE]);
   const R = useMemo(() => replay(PUZZLE.shoe, HANDS, g.acts, ROPTS), [PUZZLE, HANDS, g.acts, ROPTS]);
   const chips = R.chips;
-  const finalScore = playing ? null : scoreForPoints(chips, PUZZLE.par, PUZZLE.ace, HANDS);
+  const finalScore = playing ? null : g.gaveUp ? 0 : scoreForPoints(chips, PUZZLE.par, PUZZLE.ace, HANDS);
   const cur = R.hands[R.hands.length - 1] || null;
   const handNo = Math.min(R.hands.length, HANDS);
   const cardsLeft = PUZZLE.shoe.length - R.pos;
@@ -460,13 +461,17 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
 
   function postResult(g2, r2) {
     abandon.markFlushed();
-    const score = scoreForPoints(r2.chips, PUZZLE.par, PUZZLE.ace, HANDS);
+    // A give up posts 0 (owner, 2026-10-18): quitting while ahead must never
+    // beat playing the shoe out.
+    const gave = !!g2.gaveUp;
+    const score = gave ? 0 : scoreForPoints(r2.chips, PUZZLE.par, PUZZLE.ace, HANDS);
+    const won = !gave && r2.chips >= PUZZLE.par;
     const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
-    try { setStats(recordStat(PUZZLE.num, { s: score, t: 10, g: r2.chips, won: r2.chips >= PUZZLE.par })); } catch (e) {}
+    try { setStats(recordStat(PUZZLE.num, { s: score, t: 10, g: r2.chips, won })); } catch (e) {}
     try {
       fetch('/api/quiz/result', {
         method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quizId: PUZZLE.quizId, score, total: 10, correct: r2.chips >= PUZZLE.par ? 1 : 0, guessesUsed: r2.busts, timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') }),
+        body: JSON.stringify({ quizId: PUZZLE.quizId, score, total: 10, correct: won ? 1 : 0, guessesUsed: r2.busts, timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') }),
       })
         .then((r) => r.json())
         .then((d) => { if (d && !d.error) setBoard({ ...EMPTY_BOARD, ...d }); })
@@ -502,6 +507,27 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
       return;
     }
     setG(g2);
+  }
+
+  // Give up (owner, 2026-10-18): ends the day now through the same end path as
+  // the last hand, and scores 0 whatever the bank, so nobody can lock in a
+  // lead by quitting.
+  function giveUp() {
+    const curG = gRef.current;
+    if (curG.status !== 'playing' || !curG.t0) return;
+    const r2 = replay(PUZZLE.shoe, HANDS, curG.acts, ROPTS);
+    if (r2.invalid) return;
+    const doneG = { ...curG, status: 'done', gaveUp: true, tEnd: Date.now() };
+    setArmGive(false);
+    vibrate(HAPT.ok);
+    postResult(doneG, r2);
+    setG(doneG);
+  }
+  function tapGiveUp() {
+    if (armGive) { if (Date.now() - armGive < 400) return; giveUp(); return; }
+    const at = Date.now();
+    setArmGive(at);
+    setTimeout(() => setArmGive((v) => (v === at ? false : v)), 3500);
   }
 
   function act(ch) {
@@ -563,6 +589,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
         <><b>Hit</b> takes a card, <b>Stand</b> keeps your total, <b>Double</b> doubles your 10-chip stake for exactly one more card (first two cards only). Blackjack, an ace plus a ten-card, pays 15.</>,
         <>The dealer stands on <b>every 17</b> and draws to 16. If you bust, the hand is over and the dealer draws nothing.</>,
         ...(PUZZLE.split ? [<><b>Split</b> a pair of the same rank into two hands of 10 chips each, played one after the other. One split a hand; you may double after splitting; split aces take one card each; a 21 after a split pays even money.</>] : [<>No splits on this shoe.</>]),
+        <><b>Give up</b> ends the day now and scores 0, whatever your bank.</>,
         <>The shoe is the skill: <b>{PUZZLE.shoe.length} cards{FULL_SHOE ? `, ${SHOE_WHAT}` : ` ${SHOE_WHAT}`}</b>. Count what you have seen, because it changes what is left.</>,
       ]}
       knack="The book line (basic strategy) banks par exactly. To beat it, deviate when the cards already on the table say so: stand a stiff 15 while the tens are still buried, hit it once they are gone."
@@ -857,7 +884,9 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
 
             // The actions, or the settled hand's note and the next deal. ONE
             // fixed shape in every phase: a status line, then a button row.
-            const noteLine = (
+            const noteLine = g.gaveUp && !cur.settled ? (
+              <span className="sh-note">You gave up with this hand in play.</span>
+            ) : (
               <span className="sh-note">{cur.note} <b style={{ color: netInk(cur.net) }}>{fmtChips(cur.net)}</b></span>
             );
             const canDouble = R.legal.includes('D');
@@ -899,6 +928,15 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
               </div>
             ) : !playing ? (
               <div style={{ minHeight: 30, display: 'flex', alignItems: 'center' }}>{noteLine}</div>
+            ) : null;
+            const giveRow = playing && started && (R.phase === 'act' || R.phase === 'settled') ? (
+              <div style={{ display: 'flex', justifyContent: narrow ? 'center' : 'flex-end', marginTop: 10 }}>
+                <button type="button" className="sh-act" onClick={tapGiveUp}
+                  title={armGive ? 'Ends the day now' : 'End the day now. Settled hands keep their chips.'}
+                  style={{ flex: '0 0 auto', minHeight: 44, fontSize: 14, padding: '0 16px', ...(armGive ? { borderColor: 'var(--stg-warn, #b45309)', color: 'var(--stg-warn, #b45309)' } : null) }}>
+                  <Flag size={15} /> {armGive ? 'Tap again to give up' : 'Give up'}
+                </button>
+              </div>
             ) : null;
 
             // Already out: every settled hand, newest first, with the cards
@@ -964,7 +1002,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
                       </div>
                     )}
                   </div>
-                  {actions && <div style={{ padding: '12px 6px 0' }}>{actions}</div>}
+                  {actions && <div style={{ padding: '12px 6px 0' }}>{actions}{giveRow}</div>}
                 </>
               );
             }
@@ -984,7 +1022,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
                   {center}
                   <div style={{ paddingTop: 124 }}>{gauge}</div>
                   {actions && (
-                    <div style={{ gridColumn: '1 / -1', marginTop: 16, borderTop: '1px solid var(--stg-line, rgba(28,30,36,.14))', paddingTop: 14 }}>{actions}</div>
+                    <div style={{ gridColumn: '1 / -1', marginTop: 16, borderTop: '1px solid var(--stg-line, rgba(28,30,36,.14))', paddingTop: 14 }}>{actions}{giveRow}</div>
                   )}
                 </div>
               </>

@@ -734,7 +734,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
             <button type="button" className="vn-ob vn-help" onClick={() => setShowHelp(true)}><HelpCircle size={15} /> How to play</button>
             <button type="button" className="vn-ob" onClick={clearAll} disabled={placedCount === 0}><Eraser size={14} /> Clear all</button>
             <span className="vn-fnote">12 points, 3 off for each<br />sheet that comes back wrong.</span>
-            {g.rejected >= 2 && <button type="button" className="vn-ob" onClick={reveal}>Reveal (ends the day)</button>}
+            {started && <button type="button" className="vn-ob" onClick={reveal}>Reveal (ends the day)</button>}
             <button type="button" className="vn-file" onClick={submit} disabled={!canSubmit}>
               <Circle size={14} /> File the sheet{!canSubmit && <> &middot; {placedCount < N ? 'tray first' : 'counts first'}</>}
             </button>

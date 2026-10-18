@@ -855,7 +855,7 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
 
-            {started && ((hintOk && !g.hintUsed) || (identity && guesses.length > 0)) && (
+            {started && (
               <div className="cl-tools">
                 {hintOk && !g.hintUsed && (
                   <>
@@ -865,7 +865,7 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
                     <span className="cl-hcap"><span className="cl-hhide">One free hint, first play only</span><span className="cl-hshow">Free, first play only</span></span>
                   </>
                 )}
-                {identity && guesses.length > 0 && (
+                {started && (
                   <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
                     style={{ marginLeft: 'auto', minHeight: 44, padding: '0 4px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 13, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                     <Eye size={15} /> {armReveal ? 'Tap again to end and show the answer' : 'Reveal & end'}

@@ -22,7 +22,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { HelpCircle, X, Smartphone, Pencil, Stamp } from 'lucide-react';
+import { HelpCircle, X, Smartphone, Pencil, Stamp, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
@@ -228,6 +228,7 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
   const [toast, setToast] = useState(null);
   const [copied, setCopied] = useState(false);
   const [endClosed, setEndClosed] = useState(false);
+  const [armGive, setArmGive] = useState(false); // two-tap Give up (owner, 2026-10-18)
   // The finished board starts turned OVER, showing what to do next.
   const [revealed, setRevealed] = useState(false);
   const [shareCta, setShareCta] = useState('Share');
@@ -493,6 +494,28 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
     setPending((cur) => { const c = { ...cur }; delete c[i]; return c; });
   }
 
+  // Give up (owner, 2026-10-18): files the brief as it stands. Sentences already
+  // locked keep their points; every sentence still open scores 0 (and no
+  // mis-flags), exactly as if it had been left unmarked. Posts once through the
+  // same postResult the last filed sentence would have used.
+  function giveUp() {
+    if (!playing || !g.t0) return;
+    const g2 = { ...g, status: 'done', tEnd: Date.now() };
+    let sc = 0, ms = 0;
+    ITEMS.forEach((_, k) => { if (g.sub[k]) { const r = scoreItem(k, g.sub[k]); sc += r.pts; ms += r.misses; } });
+    postResult(g2, sc, ms);
+    setG(g2);
+    setSel(null);
+    setFixVal('');
+    setPending({});
+    setArmGive(false);
+  }
+  function giveTap() {
+    if (armGive) { giveUp(); return; }
+    setArmGive(true);
+    setTimeout(() => setArmGive(false), 3500);
+  }
+
   function submitFix() {
     if (!playing || !sel) return;
     const fixTyped = normFix(fixVal);
@@ -695,7 +718,7 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
               on a phone the finished line's stamp sits here, under the copy. */}
           {(!sub && armed == null && staged.length === 0) || sub ? (
             <div className="st-acts">
-              {!sub && (
+              {!sub && playing && (
                 <button className="st-stet" onClick={() => stetItem(i)} title="Mark this sentence as clean, with no errors">
                   <Stamp size={14} strokeWidth={2.4} /> Stamp stet
                 </button>
@@ -759,7 +782,7 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
         <>{PUZZLE.sunday ? <><b>Sunday Edition:</b> a sentence can hide <b>two</b> errors, so flag up to two words, then lock it in.</> : <>On Sundays the brief runs seven sentences and can hide two errors in one sentence.</>}</>,
       ]}
       knack="Read for sense, not for spelling. The trap is always a word that is spelled perfectly and simply the wrong one."
-      footer="Ties on the daily board break by fewest mis-flags, then fastest time."
+      footer="Ties on the daily board break by fewest mis-flags, then fastest time. Give up files the brief early: locked sentences keep their points, open ones score 0."
     />
   );
 
@@ -915,6 +938,13 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
               <p className="st-foot">
                 Tap the word that is wrong and write the fix over it, or stamp a clean line <i>stet</i>, the proofreader&rsquo;s mark for &ldquo;let it stand.&rdquo; Wrong words and grammar slips, never typos: spellcheck is no help.
               </p>
+            )}
+            {started && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', padding: STAGE ? '4px 14px 0' : '6px 0 0' }}>
+                <button type="button" className="st-btn" onClick={giveTap} title={armGive ? 'Ends the puzzle now' : 'File the brief now; locked sentences still score'}>
+                  <Flag size={15} /> {armGive ? 'Tap again to give up' : 'Give up'}
+                </button>
+              </div>
             )}
           </div>
         </div>

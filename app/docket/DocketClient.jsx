@@ -37,7 +37,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { HelpCircle, X, Check, Minus, ChevronDown, ChevronUp, Scale, Pencil } from 'lucide-react';
+import { HelpCircle, X, Check, Minus, ChevronDown, ChevronUp, Scale, Pencil, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -342,6 +342,7 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
   const [identity, setIdentity] = useState(null);
   const [stats, setStats] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [armGive, setArmGive] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const [setupOpen, setSetupOpen] = useState(true);
   // Bumped by a replay so the sketch (keyed on it) starts clean.
@@ -521,6 +522,24 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
     } else {
       setG((cur) => ({ ...cur, i: cur.i + 1 }));
     }
+  }
+
+  // Give up (owner, 2026-10-18): ends the docket through the same finish
+  // Next does on the last question. The questions already answered keep their
+  // points; every one left unanswered scores 0 and counts as a miss, exactly
+  // as if it had been answered wrong. Two taps, so a stray tap is free.
+  function giveUp() {
+    if (!playing || !g.t0) return;
+    if (!armGive) { setArmGive(true); setTimeout(() => setArmGive(false), 3500); return; }
+    setArmGive(false);
+    setRevealed(false);
+    setG((cur) => {
+      if (cur.status !== 'playing') return cur;
+      const g2 = { ...cur, status: 'done', tEnd: Date.now() };
+      const c = g2.picks.filter((p, i) => p !== null && p === KEY[i]).length;
+      postResult(g2, c, TOTAL - c);
+      return g2;
+    });
   }
 
   function resetGame() {
@@ -850,6 +869,12 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
                       </button>
                     </div>
                   )}
+
+                  <div style={{ marginTop: 14 }}>
+                    <button type="button" className="dk-btn" onClick={giveUp} title={armGive ? 'Ends the docket now' : 'End the docket now. Unanswered questions score nothing.'}>
+                      <Flag size={15} />{armGive ? 'Tap again to give up' : 'Give up'}
+                    </button>
+                  </div>
                 </>
               )}
 
@@ -996,6 +1021,7 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
               <li>Cross a choice out with the &times; beside it. It stays struck through and cannot be answered until you bring it back.</li>
               <li>The sketch is a free working surface: tap a letter in the tray, then tap a slot. It is never scored and clears on a new puzzle. The notes under it save with the day, so they survive a reload.</li>
               <li>One point per question, {TOTAL} on the board today.</li>
+              <li>Give up ends the docket now. Questions you have answered keep their points; the rest score nothing.</li>
             </ul>
             <button className="dk-btn primary" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}>Play</button>
           </div>

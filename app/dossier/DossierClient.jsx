@@ -900,14 +900,14 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
 
-            {started && ((hintOk && !g.hintUsed) || (identity && guesses.length > 0)) && (
+            {started && (
               <div className="ds-tools">
                 {hintOk && !g.hintUsed && (
                   <button className="ds-hbtn" onClick={useHint} title="Pin one fact the guesses have not (one hint, first play only)">
                     <Lightbulb size={16} /><span>Hint<span className="ds-wide">: pin a fact</span></span>
                   </button>
                 )}
-                {identity && guesses.length > 0 && (
+                {started && (
                   <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
                     style={{ marginLeft: 'auto', minHeight: 44, padding: '0 4px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 13, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                     <Eye size={15} /> {armReveal ? 'Tap again to end and show the answer' : 'Reveal & end'}

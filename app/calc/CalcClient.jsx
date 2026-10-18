@@ -1037,7 +1037,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
               <span className="cl-under-d">No button twice. A division that does not come out whole is not a legal step.</span>
               <span className="cl-under-m">A wrong total at END costs a try.</span>
             </span>
-            {identity && (path.length > 1 || landed > 0) && (
+            {started && (
               <button type="button" className={`cl-reveal${armReveal ? ' armed' : ''}`} onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
                 <Eye size={13} aria-hidden="true" /> {armReveal ? 'Tap again: ends the puzzle and shows a route' : 'Reveal and end'}
               </button>

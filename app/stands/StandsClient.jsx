@@ -807,8 +807,8 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
             </button>
             <button type="button" className="sd-btn nudge" onClick={hint} aria-label="Nudge, fills one match, costs 2 points"><Lightbulb size={16} /> Nudge (&minus;2)</button>
             <button type="button" className="sd-btn clr" onClick={clearAll} disabled={filled === 0} aria-label="Clear the grid"><Eraser size={16} /><span className="lbl">Clear</span></button>
-            {g.rejected >= 2 && <button type="button" className="sd-btn" onClick={reveal}>Reveal (ends the day)</button>}
-            <span className="sd-fnote">12 points, 3 off per wrong sheet, 2 per nudge.<br />Reveal opens after 2 rejected sheets.</span>
+            {started && <button type="button" className="sd-btn" onClick={reveal}>Reveal (ends the day)</button>}
+            <span className="sd-fnote">12 points, 3 off per wrong sheet, 2 per nudge.<br />Reveal ends the day at any time.</span>
           </div>
         )}
 

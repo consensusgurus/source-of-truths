@@ -32,7 +32,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { X, Undo2, RotateCcw } from 'lucide-react';
+import { X, Undo2, RotateCcw, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -285,11 +285,15 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
   const playing = g.status === 'playing';
   const done = g.status === 'done';
   const short = g.status === 'short';
+  // Gave up (owner, 2026-10-18): the deal is over, unmade, scored 0. Finesse
+  // keeps its answer, so a given-up board never shows the winning line.
+  const lost = g.status === 'lost';
   const started = !!g.t0;
   const preStart = !started && playing;
   const myTurn = playing && started && isNS(pos.seat) && !!cardsLeft;
 
   const [showChrome, setShowChrome] = useState(false);
+  const [armGive, setArmGive] = useState(false);
   const focusMode = playing && !showChrome;
   const LOFT = isLoft('finesse');
   const STAGE = isStage('finesse', searchParams);
@@ -330,7 +334,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
     try { localStorage.setItem(STORE_KEY, JSON.stringify(g)); } catch (e) {}
     try {
       if (PUZZLE.num === pickPuzzle(puzzles, null).num) {
-        if (g.status !== 'playing' || g.t0) localStorage.setItem('sot_finesse_day', JSON.stringify({ d: etToday(), done: g.status === 'done' }));
+        if (g.status !== 'playing' || g.t0) localStorage.setItem('sot_finesse_day', JSON.stringify({ d: etToday(), done: g.status === 'done' || g.status === 'lost' }));
         else localStorage.removeItem('sot_finesse_day');
       }
     } catch (e) {}
@@ -402,7 +406,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
   const REC_KEY = `sot_finesse_rec_${PUZZLE.num}`;
   const abandon = useAbandonFlush(() => {
     const cur = gRef.current;
-    if (!cur.plays.length || cur.status === 'done') return null;
+    if (!cur.plays.length || cur.status === 'done' || cur.status === 'lost') return null;
     try { if (localStorage.getItem(REC_KEY)) return null; } catch (e) {}
     const el = Math.min(36000, Math.max(1, Math.round((Date.now() - (cur.t0 || Date.now())) / 1000)));
     try { localStorage.setItem(REC_KEY, '1'); } catch (e) {}
@@ -418,6 +422,22 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
       fetch('/api/quiz/result', {
         method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ quizId: PUZZLE.quizId, score, total: 10, correct: 1, guessesUsed: Math.max(0, g2.tries - 1), timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') }),
+      })
+        .then((r) => r.json())
+        .then((d) => { if (d && !d.error) setBoard({ ...EMPTY_BOARD, ...d }); })
+        .catch(() => {});
+    } catch (e) {}
+  }
+
+  // A give-up is a loss: 0 of 10, the try it ended on as the tries figure.
+  function postLoss(g2) {
+    abandon.markFlushed();
+    const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
+    try { setStats(recordStat(PUZZLE.num, { s: 0, t: 10, g: Math.max(0, g2.tries - 1), won: false })); } catch (e) {}
+    try {
+      fetch('/api/quiz/result', {
+        method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quizId: PUZZLE.quizId, score: 0, total: 10, correct: 0, guessesUsed: Math.max(0, g2.tries - 1), timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') }),
       })
         .then((r) => r.json())
         .then((d) => { if (d && !d.error) setBoard({ ...EMPTY_BOARD, ...d }); })
@@ -505,9 +525,30 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
     commit({ ...cur, plays: cur.plays.slice(0, cut) });
   }
 
+  // Give up (owner, 2026-10-18): ends the deal unmade, as a loss that posts 0.
+  // The winning line stays hidden: Finesse never hands over its answer.
+  function giveUp() {
+    const cur = gRef.current;
+    if ((cur.status !== 'playing' && cur.status !== 'short') || !cur.t0) return;
+    const finished = { ...cur, status: 'lost', tEnd: Date.now() };
+    setArmGive(false);
+    setShowLine(false);
+    vibrate(HAPT.big);
+    postLoss(finished);
+    endHold.hold(1200);
+    commit(finished);
+  }
+  function tapGiveUp() {
+    if (armGive) { if (Date.now() - armGive < 400) return; giveUp(); return; }
+    const at = Date.now();
+    setArmGive(at);
+    setTimeout(() => setArmGive((v) => (v === at ? false : v)), 3500);
+  }
+
   // Coming up short costs a try and the clock, and nothing else.
   function rewind() {
     const cur = gRef.current;
+    if (cur.status === 'done' || cur.status === 'lost') return;
     commit({ ...cur, plays: [], status: 'playing', tries: cur.tries + 1 });
     setShowLine(false);
   }
@@ -564,6 +605,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
         <>You play <b>two hands</b>: your own at the bottom and the <b>dummy</b> opposite. Tap a card to play it, and the defenders answer at once.</>,
         <>Everything is face up, so nothing is a guess. The only question is the <b>order</b> you play them in.</>,
         <>Come up short and the board <b>rewinds to trick one</b>. Nothing is lost but the clock, and the clock is the tiebreak.</>,
+        <><b>Give up</b> ends the deal unmade and scores 0. The winning line is not shown.</>,
       ]}
       knack="Cashing a winner is rarely the move. Ask which hand you need to be in next, and play the card that gets you there."
       note={<>The deck runs ace down to {RANK_NAMES[R][0]} and every card of it is on the table, so what you can see is genuinely all there is. It grows through the week: four cards a hand on Monday, the full eight on Sunday.</>}
@@ -624,6 +666,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
   const nowLine = (() => {
     if (!started) return 'Ready.';
     if (done) return `Contract made: ${TRICK_WORD[pos.ns]} of ${R}.`;
+    if (lost) return 'You gave up on this deal.';
     if (!playing || !cardsLeft) return '';
     const s = pos.seat;
     if (!isNS(s)) return thinking ? `${SEAT_WORD[s]} is thinking.` : `${SEAT_WORD[s]} to play.`;
@@ -962,9 +1005,16 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
             <button type="button" className="fn-btn" onClick={takeBack} disabled={!playing || !started || !g.plays.length}>
               <Undo2 size={14} /> Take it back
             </button>
-            <button type="button" className="fn-btn" onClick={rewind} disabled={!started || done || !g.plays.length}>
+            <button type="button" className="fn-btn" onClick={rewind} disabled={!started || done || lost || !g.plays.length}>
               <RotateCcw size={14} /> Start the deal again
             </button>
+            {started && (playing || short) && (
+              <button type="button" className="fn-btn" onClick={tapGiveUp}
+                title={armGive ? 'Ends the deal now, scored 0' : 'End the deal unmade. Scores 0.'}
+                style={armGive ? { borderColor: 'var(--stg-warn, #b45309)', color: 'var(--stg-warn, #b45309)' } : undefined}>
+                <Flag size={14} /> {armGive ? 'Tap again to give up' : 'Give up'}
+              </button>
+            )}
           </div>
 
           {short && (
@@ -1050,9 +1100,9 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
             <LoftFinish
               name="Finesse"
               catRank={catRank}
-              outcome={done ? 'won' : 'part'}
+              outcome={done ? 'won' : lost ? 'lost' : 'part'}
               challengeMetric={done ? g.tries : null}
-              title={done ? 'Made' : 'Not made'}
+              title={done ? 'Made' : lost ? 'Gave up' : 'Not made'}
               detail={`${finalScore}/10 · ${TRICK_WORD[TARGET]} of ${R} · ${g.tries} tr${g.tries === 1 ? 'y' : 'ies'} · ${elapsed}`}
               iq={iq}
               board={dailyBoard}
@@ -1076,8 +1126,9 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
                 }))}
               options={[
                 { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },
-                { tone: done ? 'board' : 'reveal', label: done ? 'Return to board' : 'Show the line',
-                  sub: done ? 'Your finished deal' : 'The line that brings it home', onClick: () => { setRevealed(true); if (!done) setShowLine(true); } },
+                (done || lost)
+                  ? { tone: 'board', label: 'Return to board', sub: done ? 'Your finished deal' : 'Your deal as you left it', onClick: () => setRevealed(true) }
+                  : { tone: 'reveal', label: 'Show the line', sub: 'The line that brings it home', onClick: () => { setRevealed(true); setShowLine(true); } },
                 prevPuzzle && { tone: 'another', label: 'Play another Finesse', sub: `No. ${prevPuzzle.num}, yesterday’s deal`, href: `/finesse?p=${prevPuzzle.num}` },
                 nextUp && { tone: 'similar', label: 'Play similar', sub: `${nextUp.name} · ${nextUp.tag}`, href: nextUp.href },
                 { tone: 'replay', label: 'Replay', sub: 'This deal again, unscored', onClick: resetGame },

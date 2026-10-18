@@ -23,7 +23,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { HelpCircle, X, Check, RotateCcw } from 'lucide-react';
+import { HelpCircle, X, Check, RotateCcw, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -141,6 +141,7 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
   const [identity, setIdentity] = useState(null);
   const [stats, setStats] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [armGive, setArmGive] = useState(false);
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const viewedRef = useRef(false);
@@ -260,6 +261,17 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
     const g2 = { ...g, status: 'done', tEnd: Date.now() };
     setG(g2);
     postResult(g2, g2.picks.filter((p, i) => p === KEY[i]).length);
+  }
+  // Give up (owner, 2026-10-18): rules on what is filed right now. Every
+  // statement still unfiled scores 0, exactly as a wrong bin would, so the
+  // statements you did file keep their points. Two taps, so a stray tap is free.
+  function giveUp() {
+    if (!playing || !g.t0) return;
+    if (!armGive) { setArmGive(true); setTimeout(() => setArmGive(false), 3500); return; }
+    setArmGive(false);
+    const g2 = { ...g, status: 'done', tEnd: Date.now() };
+    setG(g2);
+    postResult(g2, g2.picks.filter((p, i) => p !== null && p === KEY[i]).length);
   }
   function resetGame() {
     setG(freshState(TOTAL));
@@ -481,6 +493,11 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
               <div style={{ fontSize: 12.5, color: FADED, fontWeight: 600, marginTop: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <RotateCcw size={13} /> Tap a filed statement to take it back. Keys 1, 2 and 3 file the one in hand.
               </div>
+              <div style={{ marginTop: 12 }}>
+                <button type="button" className="eg-btn" onClick={giveUp} title={armGive ? 'Rules on what you have filed now' : 'End the puzzle now'}>
+                  <Flag size={15} />{armGive ? 'Tap again to give up' : 'Give up'}
+                </button>
+              </div>
             </>
           )}
 
@@ -608,6 +625,7 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
               <li>Judge an &ldquo;if A, B&rdquo; statement only on the lineups where A happens: does B always, sometimes or never follow?</li>
               <li>&ldquo;A only if B&rdquo; means if A, then B. &ldquo;Unless A, B&rdquo; means if not A, then B.</li>
               <li>Move statements freely until you rule. One ruling, one point per statement in the right bin.</li>
+              <li>Give up rules on what you have filed so far. Anything unfiled scores nothing.</li>
               <li>After the ruling, every statement shows the chain of rules that settles it.</li>
             </ul>
             <button className="eg-btn primary" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}>Play</button>

@@ -543,10 +543,9 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
   }
 
   const elapsed = g.t0 ? fmtTime((g.tEnd || nowTick) - g.t0) : '0:00';
-  // Reveal used to unlock after three failed checks. With no checks to fail,
-  // the honest analogue is time on the clock: it appears once the puzzle has
-  // genuinely been sat with, and nowTick makes it turn up on its own.
-  const revealOk = playing && !!g.t0 && nowTick - g.t0 >= 180000;
+  // Reveal is open to everyone as soon as the clock is running (owner,
+  // 2026-10-18); it used to wait for three minutes of play.
+  const revealOk = playing && !!g.t0;
   const isTodays = PUZZLE.num === pickPuzzle(puzzles, null).num;
   const iq = useIqStanding({ game: 'cipher', quizId: PUZZLE.quizId, active: LOFT && !playing });
   const nextUp = useNextUnplayed({ self: 'cipher', active: LOFT && !playing });

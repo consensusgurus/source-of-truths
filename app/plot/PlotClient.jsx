@@ -1009,7 +1009,7 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
               <span className="pl-instr" style={{ color: FADED }}>
                 Drag corner to corner to claim a plot. Tap a plot to hand it back. Drag off the board to cancel.
               </span>
-              {identity && (claimed > 0 || errors > 0) && (
+              {started && (
                 <button className="pl-reveal" onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
                   style={{ color: armReveal ? P_BAD : FADED }}>
                   {armReveal ? 'Tap again to end the puzzle and show the map' : 'Reveal and end'}

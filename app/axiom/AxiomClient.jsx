@@ -1042,7 +1042,7 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
                     </button>
                   </div>
                 </div>
-                {(testsLeft === 0 || g.wrongPicks.length >= MAX_WRONG) && (
+                {started && (
                   <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 4 }}>
                     <button type="button" className="ax-link" onClick={reveal}>Reveal the rule (ends the day)</button>
                   </div>

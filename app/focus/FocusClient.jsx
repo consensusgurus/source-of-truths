@@ -25,7 +25,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { X, Smartphone, Aperture } from 'lucide-react';
+import { X, Smartphone, Aperture, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
@@ -207,6 +207,7 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
   const [showHelp, setShowHelp] = useState(false);
   const [gateRules, setGateRules] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [armGive, setArmGive] = useState(false);
   const [endClosed, setEndClosed] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [imgOk, setImgOk] = useState(null);   // null loading, true, false
@@ -462,6 +463,19 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
     commit({ ...cur, wrong, frame: cur.frame + 1 });
     setTimeout(() => { try { inputRef.current && inputRef.current.focus(); } catch (e) {} }, 30);
   }
+  // Give up (owner, 2026-10-18): ends the day the way a miss on the last frame
+  // does. Focus is one name, so a give-up posts 0, and the name stays behind
+  // the end card's door like any loss. Two taps, so a stray tap is free.
+  function giveUp() {
+    const cur = gRef.current;
+    if (cur.status !== 'playing' || !cur.t0) return;
+    if (!armGive) { setArmGive(true); setTimeout(() => setArmGive(false), 3500); return; }
+    setArmGive(false);
+    setQ(''); setOpen(false);
+    const done = { ...cur, status: 'lost', gaveUp: true, tEnd: Date.now() };
+    postResult(done);
+    commit(done);
+  }
   function onEnter() {
     // Enter takes the top suggestion, and does nothing at all when there is
     // none. It used to flash a toast saying nothing matched; the line under
@@ -506,6 +520,7 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
         <>Frame 1 is a tight crop at nine times. <b>Type a name and choose it from the list</b>; only today&apos;s subject list is offered, so a typo never costs anything. <b>Enter</b> takes the top suggestion.</>,
         <>A wrong name <b>pulls the camera back one frame</b>. Six frames, and the sixth is the whole photo with one last guess.</>,
         <>The earlier the frame, the more it pays: <b>frame 1 is 6 points</b>, frame 6 is 1, a miss on the full photo is 0. Ties on the board break by wrong guesses, then time.</>,
+        <>Stuck? <b>Give up</b> ends the day now for 0 points.</>,
         <>A different subject every day of the week: Space on Sunday, then Landmarks, Animals, Paintings, Machines, Faces, and the world From above on Saturday.</>,
       ]}
       knack="Do not guess the first frame from the colour. Read the texture: brushstroke, fur, rivet, brick, and the grain of the print all say what KIND of thing it is before you know which one. Spend frame 1 only when the list has one name that fits."
@@ -684,7 +699,7 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
               <span>
                 {playing
                   ? (frame === FRAMES ? <>Last frame &middot; name it for <b>1</b></> : <>Name it now for <b>{pointsFor(frame)}</b> &middot; each miss costs 1</>)
-                  : (won ? <>Named at frame {frame} &middot; <b>{score}</b> point{score === 1 ? '' : 's'}</> : <>Out of frames &middot; <b>0</b> points</>)}
+                  : (won ? <>Named at frame {frame} &middot; <b>{score}</b> point{score === 1 ? '' : 's'}</> : <>{g.gaveUp ? 'Gave up' : 'Out of frames'} &middot; <b>0</b> points</>)}
               </span>
             </div>
             <div className="fc-segs" aria-label={`frame ${frame} of ${FRAMES}`}>
@@ -706,7 +721,7 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
           <div className="fc-panel">
           <div className="fc-phead">
             <span className="l"><span className="fc-dk">The photo &middot; </span>{SUBJECT.prompt}</span>
-            <span className="r">{playing ? (frame === FRAMES ? 'Last frame, the whole photo' : `${FRAMES - frame} more pull${FRAMES - frame === 1 ? '' : 's'} left`) : (won ? `Solved at frame ${frame}` : 'Out of frames')}</span>
+            <span className="r">{playing ? (frame === FRAMES ? 'Last frame, the whole photo' : `${FRAMES - frame} more pull${FRAMES - frame === 1 ? '' : 's'} left`) : (won ? `Solved at frame ${frame}` : (g.gaveUp ? 'Gave up' : 'Out of frames'))}</span>
           </div>
 
           {/* The photo. A square window; the image is cover-fit and scaled
@@ -779,7 +794,7 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
                 Photo: {DAY.by || 'Wikimedia Commons'} · {DAY.lic || 'Wikimedia Commons'} · via Wikimedia Commons
               </div>
               <div style={{ fontFamily: SANS, fontSize: 14.5, fontWeight: 800, marginTop: 10, color: won ? `var(--stg-good, ${COLORS.green})` : `var(--stg-ink, ${COLORS.rust})` }}>
-                {won ? `Named at frame ${frame} in ${elapsed}: ${score} point${score === 1 ? '' : 's'}.` : `Six frames, no name. The whole photo is above.`}
+                {won ? `Named at frame ${frame} in ${elapsed}: ${score} point${score === 1 ? '' : 's'}.` : (g.gaveUp ? `Given up at frame ${frame}. The whole photo is above.` : `Six frames, no name. The whole photo is above.`)}
               </div>
             </div>
           )}
@@ -807,6 +822,9 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
                   : <>{['One miss', 'Two misses', 'Three misses', 'Four misses'][misses - 1]}: the camera has pulled back {['once', 'twice', 'three times', 'four times'][misses - 1]}.</>}
               </span>
               <span className="h">Type, then choose a name. Choosing one spends a frame.<span className="fc-dk"> Enter takes the top name.</span></span>
+              <button type="button" className="fc-btn" style={{ marginTop: 8, alignSelf: 'flex-start' }} onMouseDown={(e) => e.preventDefault()} onClick={giveUp} title={armGive ? 'Ends the day now for 0 points' : 'End the day now. A give-up scores 0.'}>
+                <Flag size={15} />{armGive ? 'Tap again to give up' : 'Give up'}
+              </button>
             </div>
           )}
           </div>
@@ -821,7 +839,7 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
           {!playing && (
             <div style={{ maxWidth: 472, margin: '0 auto' }}>
               <div style={{ fontSize: 15, fontWeight: 800, color: INK, margin: '8px 0 0' }}>
-                {won ? <>Frame <span style={{ color: ACC_INK }}>{frame} of {FRAMES}</span>, {misses} wrong.</> : <>The camera pulled all the way back.</>}
+                {won ? <>Frame <span style={{ color: ACC_INK }}>{frame} of {FRAMES}</span>, {misses} wrong.</> : (g.gaveUp ? <>Given up at frame {frame} of {FRAMES}.</> : <>The camera pulled all the way back.</>)}
               </div>
               <div style={{ fontSize: 13, fontWeight: 600, color: FADED, margin: '6px 0 4px', lineHeight: 1.5 }}>
                 {won

@@ -911,7 +911,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
             {started && (
               <div className="hg-tools">
                 <button type="button" className="hg-tool" onClick={() => setShowHelp(true)}>How to play</button>
-                {identity && (hinged > 0 || detourCount > 0) && (
+                {started && (
                   <button type="button" className={`hg-tool quiet${armReveal ? ' armed' : ''}`} onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
                     style={{ whiteSpace: armReveal ? 'normal' : 'nowrap', lineHeight: 1.2 }}>
                     <Eye size={13} /> {armReveal ? 'Tap again: ends the puzzle and shows a chain' : 'Reveal and end'}

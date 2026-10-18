@@ -1258,7 +1258,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
           {started && (
             <div className="jg-below">
               <span className="jg-rule">Drop a piece near its own spot and it snaps in. A wrong drop costs nothing.</span>
-              {identity && placedCount > 0 ? (
+              {started ? (
                 <button type="button" className={`jg-link${armReveal ? ' armed' : ''}`}
                   onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
                   {armReveal ? 'Tap again to reveal (ends the puzzle)' : 'Reveal'}

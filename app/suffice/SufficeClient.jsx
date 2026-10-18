@@ -30,7 +30,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { HelpCircle, X, Check, Minus } from 'lucide-react';
+import { HelpCircle, X, Check, Minus, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -230,6 +230,7 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
   const [identity, setIdentity] = useState(null);
   const [stats, setStats] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [armGive, setArmGive] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   // The three yes/no answers for the item on screen. Local working state only:
   // what posts is the letter derived from them, at Submit.
@@ -381,6 +382,24 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
     } else {
       setG((cur) => ({ ...cur, i: cur.i + 1 }));
     }
+  }
+
+  // Give up (owner, 2026-10-18): ends the set through the same finish Next
+  // takes on the last item. Items already answered keep their points; every
+  // item left scores 0 and counts as a miss, as if answered wrong. Two taps,
+  // so a stray tap is free.
+  function giveUp() {
+    if (!playing || !g.t0) return;
+    if (!armGive) { setArmGive(true); setTimeout(() => setArmGive(false), 3500); return; }
+    setArmGive(false);
+    setRevealed(false);
+    setG((cur) => {
+      if (cur.status !== 'playing') return cur;
+      const g2 = { ...cur, status: 'done', tEnd: Date.now() };
+      const c = g2.picks.filter((p, i) => p && p === KEY[i]).length;
+      postResult(g2, c, TOTAL - c);
+      return g2;
+    });
   }
 
   function resetGame() {
@@ -660,6 +679,12 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
                       </button>
                     </div>
                   )}
+
+                  <div style={{ marginTop: 14 }}>
+                    <button type="button" className="sf-btn" onClick={giveUp} title={armGive ? 'Ends the set now' : 'End the set now. Unanswered items score nothing.'}>
+                      <Flag size={15} />{armGive ? 'Tap again to give up' : 'Give up'}
+                    </button>
+                  </div>
                 </>
               )}
 
@@ -799,6 +824,7 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
               <li>A statement is enough when every case it allows gives the same answer.</li>
               <li>Find one pair of cases that disagree and it is insufficient.</li>
               <li>One point per item, {TOTAL} on the board today.</li>
+              <li>Give up ends the set now. Items you have answered keep their points; the rest score nothing.</li>
             </ul>
             <button className="sf-btn primary" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}>Play</button>
           </div>

@@ -681,7 +681,7 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
                 </div>
               )}
 
-              {started && identity && (solvedCount > 0 || g.misses > 0) && (
+              {started && (
                 <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); finish(g); } else { setArmReveal(Date.now()); } }}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? BAD : FADED, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                   <Eye size={13} /> {armReveal ? 'Tap again to stop the clock and reveal the answers' : 'Give up and reveal'}

@@ -981,7 +981,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
               <span className="cv-d">{NUM_WORD[R] || R} connected blocks, each grown from its ringed anchor. One carving works.</span>
               <span className="cv-m">A wrong block at {TARGET} clears to its anchor and costs a point.</span>
             </span>
-            {identity && (g.t0 || errors > 0) && (
+            {started && (
               <button type="button" className={`cv-reveal${armReveal ? ' armed' : ''}`} onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
                 <Eye size={13} aria-hidden="true" /> {armReveal ? 'Tap again: ends the puzzle and shows the carving' : 'Reveal and end'}
               </button>

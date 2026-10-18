@@ -859,7 +859,7 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
                   <Lightbulb size={14} /> Hint: verify a witness
                 </button>
               )}
-              {g.wrong >= 3 && (
+              {started && (
                 <button type="button" className="sw-btn" style={{ borderColor: 'var(--stg-line2, #c3c8cf)', color: FADED }} onClick={reveal}>Reveal (ends the day)</button>
               )}
             </div>

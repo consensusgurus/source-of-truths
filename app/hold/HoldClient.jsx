@@ -19,7 +19,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { X, Lightbulb, Smartphone, ArrowRight } from 'lucide-react';
+import { X, Lightbulb, Smartphone, ArrowRight, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -271,6 +271,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
+  const [armGive, setArmGive] = useState(false);
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -522,6 +523,26 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
     commit({ ...cur, shown: null, sel: 0 });
   }
 
+  // Give up (owner, 2026-10-18): ends the deal now through the same end path
+  // as the last hand. Hands already drawn keep their points; every hand not
+  // yet drawn scores 0, exactly as if those holds had missed.
+  function giveUp() {
+    const cur = gRef.current;
+    if (cur.status !== 'playing' || !cur.t0) return;
+    const done = { ...cur, shown: null, sel: 0, status: 'done', gaveUp: true, tEnd: Date.now() };
+    setArmGive(false);
+    vibrate(HAPT.ok);
+    postResult(done);
+    endHold.hold(HOLD_SHORT);
+    commit(done);
+  }
+  function tapGiveUp() {
+    if (armGive) { if (Date.now() - armGive < ARM_MIN_MS) return; giveUp(); return; }
+    const at = Date.now();
+    setArmGive(at);
+    setTimeout(() => setArmGive((v) => (v === at ? false : v)), 3500);
+  }
+
   // Keyboard: 1 to 5 toggle a hold, Enter draws or deals the next hand.
   useEffect(() => {
     const onKey = (e) => {
@@ -601,6 +622,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
         <>Then the cards come off a fixed shuffle and you see what your hold actually drew. That draw is <b>luck</b> and scores nothing.</>,
         <>Pays on a one-coin bet: royal flush 800, straight flush 50, four of a kind 25, full house 9, flush 6, straight 4, three of a kind 3, two pair 2, a pair of jacks or better 1.</>,
         <>One free <b>hint</b>, on your first ever play, rings one card of the best hold.</>,
+        <><b>Give up</b> ends the deal now: hands already drawn keep their points, the rest score 0.</>,
       ]}
       knack="The rule of thumb (keep anything that pays or any pair, else four to a flush, else four to an open straight, else your high cards) is right most of the time. The traps are where it is not: four to a royal beats a made flush, a low pair can lose to four to a flush, and two suited high cards often beat three unsuited ones."
       footer={`Score out of ${TOTAL}. Nothing counts against you, and ties break on the clock. Sundays deal fifteen hands.`}
@@ -980,6 +1002,15 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
                   )
                 ) : (
                   <div className="hl-felt" style={{ marginTop: narrow ? 12 : 18, borderRadius: narrow ? 18 : 22, padding: narrow ? '14px 12px' : '18px 20px' }}>{summary}</div>
+                )}
+                {started && (
+                  <div style={{ display: 'flex', justifyContent: narrow ? 'center' : 'flex-end', paddingTop: 12 }}>
+                    <button type="button" className="hl-tool" onClick={tapGiveUp}
+                      title={armGive ? 'Ends the deal now' : 'End the deal now. Hands already drawn keep their points.'}
+                      style={armGive ? { borderColor: WARN, color: WARN } : undefined}>
+                      <Flag size={15} /> {armGive ? 'Tap again to give up' : 'Give up'}
+                    </button>
+                  </div>
                 )}
                 {playing && (
                   <div style={{ padding: '10px 2px 0', fontSize: narrow ? 11 : 12, fontWeight: 600, color: S_MUTE }}>

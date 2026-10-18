@@ -1336,7 +1336,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
                   <Lightbulb size={15} /> Hint
                 </button>
               )}
-              {identity && (filledRight > 0 || errors > 0) && (
+              {started && (
                 <button type="button" className="et-link" onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
                   aria-label={armReveal ? 'Tap again to reveal the picture. This ends the day.' : 'Reveal the picture'}
                   style={{ color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : FADED }}>

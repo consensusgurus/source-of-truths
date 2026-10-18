@@ -1019,7 +1019,7 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
           {started && (
             <div className="hg-under">
               <span className="hg-rule" style={{ fontSize: 12, fontWeight: 600, color: FADED }}>A number counts its sides on the loop. Blank squares have no rule.</span>
-              {identity && (rightDrawn > 0 || errors > 0) && (
+              {started && (
                 <button type="button" className="hg-link"
                   onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
                   aria-label={armReveal ? 'Tap again to reveal the loop. This ends the day.' : 'Reveal the loop'}

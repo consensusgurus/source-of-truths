@@ -1191,7 +1191,7 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
               <span className="su-d-only">Across totals sit top right, down totals bottom left. No digit twice in a run.</span>
               <span className="su-m">Wrong entries are not flagged.</span>
             </span>
-            {identity && filledCount > 0 && (
+            {started && (
               <button type="button" className={`su-reveal${armReveal ? ' armed' : ''}`} onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
                 <Eye size={13} aria-hidden="true" /> {armReveal ? 'Tap again: ends the puzzle and fills the solution' : 'Reveal and end'}
               </button>

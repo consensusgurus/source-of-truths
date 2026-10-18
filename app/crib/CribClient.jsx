@@ -15,7 +15,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { X, Lightbulb, Smartphone, ArrowRight } from 'lucide-react';
+import { X, Lightbulb, Smartphone, ArrowRight, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -248,6 +248,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
+  const [armGive, setArmGive] = useState(false);
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -483,6 +484,26 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
     commit({ ...cur, shown: null, sel: [] });
   }
 
+  // Give up (owner, 2026-10-18): ends the deal now through the same end path
+  // as the last hand. Hands already thrown keep their points; every hand not
+  // yet thrown scores 0, exactly as if the remaining throws were misses.
+  function giveUp() {
+    const cur = gRef.current;
+    if (cur.status !== 'playing' || !cur.t0) return;
+    const done = { ...cur, shown: null, sel: [], status: 'done', gaveUp: true, tEnd: Date.now() };
+    setArmGive(false);
+    vibrate(HAPT.ok);
+    postResult(done);
+    endHold.hold(HOLD_SHORT);
+    commit(done);
+  }
+  function tapGiveUp() {
+    if (armGive) { if (Date.now() - armGive < ARM_MIN_MS) return; giveUp(); return; }
+    const at = Date.now();
+    setArmGive(at);
+    setTimeout(() => setArmGive((v) => (v === at ? false : v)), 3500);
+  }
+
   function useHint() {
     const cur = gRef.current;
     if (!hintOk || cur.hintUsed || cur.shown !== null) return;
@@ -544,6 +565,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
         <><b>2 points</b> for the best throw, <b>1</b> for one within 0.75 of it, none otherwise. After each hand you see every throw&rsquo;s value.</>,
         <>Hands score fifteens (2 each), pairs (2), runs (1 a card), a flush (4, or 5 with the cut; the crib needs all 5), and his nobs (the jack of the cut suit, 1).</>,
         <>One free <b>hint</b>, on your first ever play, rings one card of the best throw.</>,
+        <><b>Give up</b> ends the deal now: hands already thrown keep their points, the rest score 0.</>,
       ]}
       knack="Throw fives and pairs into your own crib and keep them out of your opponent's. The best four cards to keep are often not the best throw: a card that helps the crib is worth something only when the crib is yours."
       footer={`Score out of ${TOTAL}. Nothing counts against you, and ties break on the clock. Sundays deal seven hands.`}
@@ -940,6 +962,15 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 12 }}>
                     <div style={{ display: 'flex', gap: 8 }}>{hintBtn}{throwBtn}</div>
                     <span style={{ fontSize: 11, fontWeight: 600, color: FADED, textAlign: 'center' }}>2 points for the best throw, 1 for one within 0.75 of it. The front peg is your total.</span>
+                  </div>
+                )}
+                {started && (
+                  <div style={{ display: 'flex', justifyContent: narrow ? 'center' : 'flex-end', paddingTop: 12 }}>
+                    <button type="button" className="cb-tool" onClick={tapGiveUp}
+                      title={armGive ? 'Ends the deal now' : 'End the deal now. Hands already thrown keep their points.'}
+                      style={armGive ? { borderColor: WARN, color: WARN } : undefined}>
+                      <Flag size={15} /> {armGive ? 'Tap again to give up' : 'Give up'}
+                    </button>
                   </div>
                 )}
                 {playing && !narrow && (

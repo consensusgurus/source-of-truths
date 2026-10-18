@@ -19,7 +19,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { X, Lightbulb, Smartphone } from 'lucide-react';
+import { X, Lightbulb, Smartphone, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -268,6 +268,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
+  const [armGive, setArmGive] = useState(false);
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -467,12 +468,28 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
       // The board is LEFT AS THE PLAYER LEFT IT (owner, 2026-08-26). It used to
       // fill in with TARGET here, which is the one thing a game ranked on
       // attempts cannot do. The explicit give-up that used to reach this branch
-      // (Reveal & end) came off the board 2026-09-01; a lost run now arrives
-      // here only from a real ending.
+      // (Reveal & end) came off the board 2026-09-01. Give up (2026-10-18)
+      // arrives here too, and it reveals NOTHING: the board stays as it was.
       postResult(g2, 0);
     }
     commit(g2);
     setSel(null);
+  }
+
+  // Give up (owner, 2026-10-18): ends the run now as a loss that posts 0,
+  // through finish's loss path. The target is never shown: Barter is ranked on
+  // attempts and keeps its answer, so a replay cannot re-execute it.
+  function giveUp() {
+    const cur = gRef.current;
+    if (cur.status !== 'playing' || !cur.t0) return;
+    setArmGive(false);
+    finish({ ...cur, status: 'lost', gaveUp: true, tEnd: Date.now() });
+  }
+  function tapGiveUp() {
+    if (armGive) { if (Date.now() - armGive < 400) return; giveUp(); return; }
+    const at = Date.now();
+    setArmGive(at);
+    setTimeout(() => setArmGive((v) => (v === at ? false : v)), 3500);
   }
 
   function onTile(idx) {
@@ -606,6 +623,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
         <>The colors re-read after every trade. A <b>solid blue</b> tile is home and locks in place; a <b>faded blue</b> one belongs somewhere else in a word through that square.</>,
         <>Your budget is <b>par + 5</b> trades. Par is the proven minimum for today&rsquo;s board, so a perfect game has no slack at all.</>,
         <>One free <b>hint</b>, on your first ever play, makes a correct trade at no cost.</>,
+        <><b>Give up</b> ends the run now and scores 0. The board stays as you left it; the answer is not shown.</>,
       ]}
       knack="Do not spend a trade to test a theory the colors can settle. Read the faded tiles across BOTH words at a crossing before you move anything, and hunt for trades that home two tiles at once — par is built entirely out of those."
       note={<>Run out of trades and the run ends with the board where you left it, so come back at it. The answer is one arrangement, and the colors always point at it.</>}
@@ -768,6 +786,11 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
                 ? 'Now tap the tile to trade it with. Tap it again to put it back.'
                 : 'Tap two tiles to trade them. Solid blue tiles are locked.'}
             </span>
+            <button type="button" className="bt-tool" onClick={tapGiveUp}
+              title={armGive ? 'Ends the run now, scored 0' : 'End the run now. Scores 0; the answer is not shown.'}
+              style={{ marginLeft: 'auto', ...(armGive ? { borderColor: 'var(--stg-warn, #b45309)', color: 'var(--stg-warn, #b45309)' } : null) }}>
+              <Flag size={14} /> {armGive ? 'Tap again to give up' : 'Give up'}
+            </button>
           </div>
         )}
         </div>

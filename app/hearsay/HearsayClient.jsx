@@ -702,7 +702,7 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
               <Ear size={14} /> {g.naming ? `Pick the ${PUZZLE.noun}…` : `Name the ${PUZZLE.noun}`}
             </button>
             {g.crossed.length > 0 && <button type="button" className="hs-btn" onClick={clearCrossed}><Eraser size={14} /> Clear cross-outs</button>}
-            {g.wrong.length >= 2 && (
+            {started && (
               <button type="button" className="hs-btn" style={{ borderColor: '#c3c8cf', color: FADED }} onClick={reveal}>Reveal (ends the day)</button>
             )}
           </div>

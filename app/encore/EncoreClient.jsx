@@ -1094,7 +1094,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
                 Check unlocks when every square is filled. A wrong check marks the misses in red and counts against you.
                 {!mobileUi && <> Space flips direction, Tab jumps to the next clue.</>}
               </span>
-              {identity && (g.t0 || checks > 0) && (
+              {started && (
                 <button type="button" className={`ec-reveal${armReveal ? ' armed' : ''}`}
                   onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
                   <Eye size={13} /> {armReveal ? 'Tap again to end the puzzle and show the answers' : 'Reveal'}

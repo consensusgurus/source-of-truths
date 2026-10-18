@@ -1060,7 +1060,7 @@ export default function GiantClient({ puzzles = [], forceNum = null }) {
                   ? (noteMode ? 'Tap a symbol to pencil it in' : 'Tap a symbol, or pick a symbol then tap squares')
                   : 'Tap a square then a symbol, or pick a symbol then tap squares'}
             </span>
-            {identity && filledCount > 0 && (
+            {started && (
               <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
                 style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                 <Eye size={13} /> {armReveal ? 'Tap again — ends the puzzle and fills the solution' : 'Reveal & end'}

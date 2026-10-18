@@ -742,7 +742,7 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
                     <Lightbulb size={14} /> Hint: the dateline
                   </button>
                 )}
-                {identity && (tears > 0 || g.wrong.length > 0) && (
+                {started && (
                   <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
                     style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                     <Eye size={13} /> {armReveal ? 'Tap again — ends the puzzle and names the story' : 'Reveal & end'}

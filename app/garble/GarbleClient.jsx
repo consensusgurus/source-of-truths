@@ -844,9 +844,9 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
               <p style={{ fontSize: 11.5, color: FADED, fontWeight: 600, margin: mobileUi ? '0 0 2px' : '6px 0 0', textAlign: 'center' }}>
                 Use exactly the letters shown. The finale is fair game at any time.
               </p>
-              {/* Reveal is deliberately buried: below the puzzle, only once you have
-                  a display name and have made progress, and it takes two taps. */}
-              {identity && (solvedCount > 0 || g.misses > 0) && (
+              {/* Reveal sits below the puzzle for everyone once the clock is running,
+                  and it takes two taps. */}
+              {started && (
                 <p style={{ margin: '12px 0 0', textAlign: 'center' }}>
                   <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); endGame(false); } else { setArmReveal(Date.now()); } }}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>

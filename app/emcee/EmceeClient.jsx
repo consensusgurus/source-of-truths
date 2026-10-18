@@ -1025,7 +1025,7 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
           {started && (
             <div className="mc-foot">
               <span>Check unlocks when every square is filled. A wrong check marks the misses.</span>
-              {identity && (g.t0 || checks > 0) && (
+              {started && (
                 <button type="button" className={`mc-reveal${armReveal ? ' armed' : ''}`}
                   onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
                   {armReveal ? 'Tap again to end the puzzle and show the answers' : 'Reveal'}

@@ -745,7 +745,7 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
           : darkCount === 0
             ? `Every square is lit, but ${shortWalls === 1 ? 'a number is' : `${shortWalls} numbers are`} still short of lamps.`
             : `${numWord(lampCount)} lamp${lampCount === 1 ? '' : 's'} lit, no clashes. ${darkCount} square${darkCount === 1 ? '' : 's'} still dark.${shortWalls ? ` ${numWord(shortWalls)} number${shortWalls === 1 ? '' : 's'} still want${shortWalls === 1 ? 's' : ''} lamps.` : ''}`;
-  const revealBtn = identity && hasEntries && playing && (
+  const revealBtn = started && (
     <button type="button" className="lm-link" onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
       aria-label={armReveal ? 'Tap again to end the day and show the solution' : 'Reveal the solution'}
       style={armReveal ? { color: `var(--stg-bad, ${COLORS.rust})` } : undefined}>

@@ -28,7 +28,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { X, Smartphone } from 'lucide-react';
+import { X, Smartphone, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -373,6 +373,7 @@ export default function BabelClient({ puzzles, forceNum }) {
   const [showHelp, setShowHelp] = useState(false);
   const [gateRules, setGateRules] = useState(false);
   const [endClosed, setEndClosed] = useState(false);
+  const [armGive, setArmGive] = useState(false); // two-tap Give up (owner, 2026-10-18)
   // The finished board starts turned OVER, showing what to do next.
   const [revealed, setRevealed] = useState(false);
   const [shareCta, setShareCta] = useState('Share');
@@ -577,7 +578,8 @@ export default function BabelClient({ puzzles, forceNum }) {
     return validatePlacement(grid, pending.map(({ r, c, L }) => ({ r, c, L })), dict);
   }, [pending, grid, dict]);
 
-  const spread = g.my - g.foeScore + g.adj;
+  const GAVE = g.over === 'gaveup';
+  const spread = GAVE ? 0 : g.my - g.foeScore + g.adj;
 
   // ─── board presentation (derived only; nothing here touches play) ───────
   // The meter runs from -10 to at least +30, wider when a benchmark needs the
@@ -594,7 +596,8 @@ export default function BabelClient({ puzzles, forceNum }) {
   let statusLine;
   let statusBad = false;
   if (!playing) {
-    statusLine = g.over === 'you-out' ? 'You went out first. That is the game.'
+    statusLine = GAVE ? 'You gave up. That is the game.'
+      : g.over === 'you-out' ? 'You went out first. That is the game.'
       : g.over === 'foe-out' ? 'Your opponent went out first. That is the game.'
       : 'Two passes in a row closed the board.';
   } else if (thinking) statusLine = 'Your opponent is thinking.';
@@ -733,6 +736,24 @@ export default function BabelClient({ puzzles, forceNum }) {
     setThinking(true);
   }
 
+  // Give up (owner, 2026-10-18): ends the endgame where it stands and posts 0,
+  // whatever the running spread, so giving up while ahead can never bank a
+  // score the line did not finish. Babel keeps its answer (KEEPS_ANSWER), so
+  // nothing of the book line or the solver's play is shown.
+  function giveUp() {
+    if (!playing || !g.t0) return;
+    const done = { ...g, status: 'done', over: 'gaveup', adj: 0, tEnd: Date.now() };
+    setPending([]); setArmed(null); setSel(null); setThinking(false); setArmGive(false);
+    setG(done); setEndClosed(false);
+    endHold.hold(HOLD_SHORT, 'You gave up.');
+    postResult(done);
+  }
+  function giveTap() {
+    if (armGive) { giveUp(); return; }
+    setArmGive(true);
+    setTimeout(() => setArmGive(false), 3500);
+  }
+
   function passTurn() {
     if (!playing || thinking || !ready) return;
     const next = { ...g, log: g.log.concat([{ who: 'you', word: 'pass', score: 0 }]), passes: g.passes + 1, t0: g.t0 || Date.now() };
@@ -807,20 +828,21 @@ export default function BabelClient({ puzzles, forceNum }) {
 
   function postResult(state) {
     abandon.markFlushed();
-    const sp = state.my - state.foeScore + state.adj;
+    const gave = state.over === 'gaveup';
+    const sp = gave ? 0 : state.my - state.foeScore + state.adj;
     // Spread can go negative on a bad line; the board stores a non-negative
     // score, and `guessesUsed` carries the tiles you were left holding, which
     // is the figure a tile player actually wants to see.
     const sc = Math.max(0, sp);
     const stuck = state.rack.length;
     const el = state.t0 ? Math.max(1, Math.round(((state.tEnd || Date.now()) - state.t0) / 1000)) : 1;
-    try { setStats(recordStat(PUZZLE.num, { s: sc, t: BENCH, g: stuck, won: sp >= BENCH })); } catch (e) {}
+    try { setStats(recordStat(PUZZLE.num, { s: sc, t: BENCH, g: stuck, won: !gave && sp >= BENCH })); } catch (e) {}
     try {
       fetch('/api/quiz/result', {
         method: 'POST',
         keepalive: true,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quizId: PUZZLE.quizId, score: sc, total: BENCH, correct: sp >= BENCH ? 1 : 0, guessesUsed: stuck, timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') }),
+        body: JSON.stringify({ quizId: PUZZLE.quizId, score: sc, total: BENCH, correct: !gave && sp >= BENCH ? 1 : 0, guessesUsed: stuck, timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') }),
       })
         .then((r) => r.json())
         .then((d) => { if (d && !d.error) setBoardData({ ...EMPTY_BOARD, ...d }); })
@@ -834,7 +856,7 @@ export default function BabelClient({ puzzles, forceNum }) {
     setG(freshState()); setPending([]); setArmed(null); setSel(null); setEndClosed(false);
   }
 
-  const won = g.status === 'done' && spread >= BENCH;
+  const won = g.status === 'done' && !GAVE && spread >= BENCH;
   // Babel is the one game whose WIN sits ABOVE its COMPLETION: clearing the
   // solver benchmark is the win, but BEATING THE OPPONENT is a finished game and
   // the home slate has counted it green since 2026-08-10 (solvesOnScore /
@@ -852,7 +874,7 @@ export default function BabelClient({ puzzles, forceNum }) {
   function copyShare() {
     const line = g.status === 'playing'
       ? `Babel ${PUZZLE.dateLabel} — mid-endgame.`
-      : `Babel ${PUZZLE.dateLabel}\nSpread ${signed(spread)} vs benchmark ${signed(BENCH)}${won ? ' ✓' : ''}\n${g.over === 'you-out' ? 'Went out first.' : g.over === 'foe-out' ? 'Caught holding tiles.' : 'Board closed out.'}`;
+      : `Babel ${PUZZLE.dateLabel}\nSpread ${signed(spread)} vs benchmark ${signed(BENCH)}${won ? ' ✓' : ''}\n${GAVE ? 'Gave up.' : g.over === 'you-out' ? 'Went out first.' : g.over === 'foe-out' ? 'Caught holding tiles.' : 'Board closed out.'}`;
     const streakBit = isTodays && myStats.cur >= 2 && g.status !== 'playing' ? ` · streak ${myStats.cur}` : '';
     const text = `${line}${streakBit}\nmindloftdaily.com/babel`;
     try {
@@ -872,7 +894,7 @@ export default function BabelClient({ puzzles, forceNum }) {
         <>You hold {START_RACK.length} tiles, your opponent holds the rest, and there is nothing left to draw.</>,
         <><b>Tap a tile, then tap a square</b>, or click a square and type.</>,
         <>Their rack is no secret, but nobody hands it to you: it is the <b>bag</b>, printed beside the board, minus the board, minus your own tiles. Working out what they can do with it is the rest.</>,
-        <>You are scored on <b>spread</b>: your points from here minus theirs.</>,
+        <>You are scored on <b>spread</b>: your points from here minus theirs. <b>Give up</b> ends the endgame at 0.</>,
       ]}
       knack="Go out first and their leftover tiles come off their score and onto yours, usually worth more than any single play. Get stuck holding tiles and it happens to you."
       footer="The 65-tile bag holds every letter, weighted toward the common ones, Q included and no blanks, sized for the 11 by 11 board and hidden from nobody. Your words are checked against the full Tuck dictionary; your opponent plays from a common-word list, so it never answers with something nobody has heard of."
@@ -1063,6 +1085,7 @@ ${BB_CSS}
                 <div className="bb-actions">
                   <button type="button" className="bb-btn" disabled={!pending.length || thinking} onClick={() => { setPending([]); setArmed(null); }}>Recall</button>
                   <button type="button" className="bb-btn" disabled={thinking} onClick={passTurn}>Pass</button>
+                  {g.t0 && <button type="button" className="bb-btn" onClick={giveTap} title={armGive ? 'Ends the endgame now' : 'End the endgame now; it scores 0'}><Flag size={14} /> {armGive ? 'Tap again' : 'Give up'}</button>}
                   <button type="button" className="bb-btn play" disabled={!pending.length || thinking || (preview && !preview.ok)} onClick={playWord}>
                     Play{preview && preview.ok ? ` ${preview.score}` : ''}
                   </button>
@@ -1102,9 +1125,9 @@ ${BB_CSS}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
                   <span style={{ fontFamily: SANS, fontSize: 30, fontWeight: 500, color: won ? COLORS.green : beat ? COLORS.gold : `var(--stg-ink, ${COLORS.ink})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{signed(spread)}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
-                    {won ? `The benchmark was ${signed(BENCH)}. You matched the book line.` : beat ? `You beat them by ${spread}. The benchmark was ${signed(BENCH)}, and greedy play gets ${signed(PUZZLE.greedy)}.` : `The benchmark was ${signed(BENCH)}. Greedy play gets ${signed(PUZZLE.greedy)}.`}
+                    {GAVE ? `You gave up, so this one scores 0. The benchmark was ${signed(BENCH)}.` : won ? `The benchmark was ${signed(BENCH)}. You matched the book line.` : beat ? `You beat them by ${spread}. The benchmark was ${signed(BENCH)}, and greedy play gets ${signed(PUZZLE.greedy)}.` : `The benchmark was ${signed(BENCH)}. Greedy play gets ${signed(PUZZLE.greedy)}.`}
                     {' '}<span style={{ color: FADED, fontWeight: 600 }}>
-                      {g.over === 'you-out' ? 'You went out first.' : g.over === 'foe-out' ? 'They went out first.' : 'The board closed out.'} {elapsed}
+                      {GAVE ? 'You gave up.' : g.over === 'you-out' ? 'You went out first.' : g.over === 'foe-out' ? 'They went out first.' : 'The board closed out.'} {elapsed}
                     </span>
                   </span>
                 </div>

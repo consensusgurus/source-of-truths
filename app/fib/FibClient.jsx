@@ -1056,7 +1056,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
                     <Lightbulb size={14} /> Hint
                   </button>
                 )}
-                {started && identity && (filled > PUZZLE.givens.length || errors > 0) && (
+                {started && (
                   <button type="button" onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
                     style={{ marginLeft: 'auto', minHeight: 44, background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12.5, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink2, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5, padding: '0 4px' }}>
                     <Eye size={13} /> {armReveal ? 'Tap again to end the puzzle and show the answer' : 'Reveal'}

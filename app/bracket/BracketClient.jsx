@@ -18,7 +18,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { HelpCircle, X, Smartphone, Trophy, Eraser } from 'lucide-react';
+import { HelpCircle, X, Smartphone, Trophy, Eraser, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
@@ -154,6 +154,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
   const [toast, setToast] = useState(null);
   const [copied, setCopied] = useState(false);
   const [endClosed, setEndClosed] = useState(false);
+  const [armGive, setArmGive] = useState(false); // two-tap Give up (owner, 2026-10-18)
   // The finished board starts turned OVER, showing what to do next.
   const [revealed, setRevealed] = useState(false);
   const [shareCta, setShareCta] = useState('Share');
@@ -378,6 +379,22 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
     for (let r = 0; r < ROUNDS; r++) { const w = N / Math.pow(2, r + 1); for (let m = 0; m < w; m++) if (g2.picks[idOf(r, m)] === TRUE[idOf(r, m)]) s += Math.pow(2, r); }
     postResult(g2, s);
   }
+  // Give up (owner, 2026-10-18): hands in the sheet as it stands. It is graded
+  // exactly as submit() grades a full one, so every pick already made that hits
+  // its true slot keeps its pool points and every empty slot scores 0.
+  function giveUp() {
+    if (!playing || !g.t0) return;
+    const g2 = { ...g, status: 'done', tEnd: Date.now() };
+    setG(g2); setEndClosed(false); setArmGive(false);
+    let s = 0;
+    for (let r = 0; r < ROUNDS; r++) { const w = N / Math.pow(2, r + 1); for (let m = 0; m < w; m++) if (g2.picks[idOf(r, m)] >= 0 && g2.picks[idOf(r, m)] === TRUE[idOf(r, m)]) s += Math.pow(2, r); }
+    postResult(g2, s);
+  }
+  function giveTap() {
+    if (armGive) { giveUp(); return; }
+    setArmGive(true);
+    setTimeout(() => setArmGive(false), 3500);
+  }
   function resetGame() { try { localStorage.removeItem(STORE_KEY); } catch (e) {} setG(freshState(MATCHES)); setEndClosed(false); }
 
   const champion = PUZZLE.items[TRUE[MATCHES - 1]];
@@ -394,7 +411,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
       steps={[
         <>Every matchup asks the same question. Tap the one you think wins.</>,
         <>Your winners <b>carry forward</b>, so later rounds are made of your own picks.</>,
-        <>You get <b>no feedback</b> until the end. Fill all {MATCHES} and hand it in.</>,
+        <>You get <b>no feedback</b> until the end. Fill all {MATCHES} and hand it in, or <b>Give up</b> to hand in what you have, empty slots scoring 0.</>,
         <>Everything reveals at once, with the real numbers under every name.</>,
       ]}
       knack="the first round is deliberately lopsided and the final is close on purpose. Getting round one right is not the puzzle. The puzzle is that a single bad call in round one takes every later pick down with it, exactly like a busted Final Four."
@@ -607,6 +624,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
           <div className="bk-ctl">
             <button type="button" className="bk-help" onClick={() => setShowHelp(true)} style={{ border: `1.5px solid ${NEUTRAL_LINE}`, background: 'transparent', color: INK, fontWeight: 700 }}>How to play</button>
             {filled > 0 && <button type="button" className="bk-clear" onClick={clearAll} style={{ border: `1.5px solid ${NEUTRAL_LINE}`, background: 'transparent', color: INK, fontWeight: 700 }}><Eraser size={14} /> Clear</button>}
+            <button type="button" className="bk-clear" onClick={giveTap} title={armGive ? 'Hands in the bracket now' : 'Hand in what you have; empty slots score 0'} style={{ border: `1.5px solid ${NEUTRAL_LINE}`, background: 'transparent', color: INK, fontWeight: 700 }}><Flag size={14} /> {armGive ? 'Tap again' : 'Give up'}</button>
             <span className="bk-note">Changing a pick clears everything it fed.</span>
             <button type="button" className="bk-hand" onClick={submit} disabled={!complete}
               style={complete

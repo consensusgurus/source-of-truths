@@ -924,7 +924,7 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
             </span>
             {started && (
               <div className="dt-acts" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                {identity && checksUsed > 0 && (
+                {started && (
                   <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
                     style={{ minHeight: 44, background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12.5, color: armReveal ? 'var(--stg-bad)' : 'var(--stg-mute)', textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                     <Eye size={13} /> {armReveal ? 'Tap again, this ends the puzzle and shows the timeline' : 'Reveal the timeline & end'}
@@ -1011,7 +1011,7 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
                   <Lightbulb size={14} /> Hint
                 </button>
               )}
-              {identity && checksUsed > 0 && (
+              {started && (
                 <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
                   style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                   <Eye size={13} /> {armReveal ? 'Tap again — ends the puzzle and shows the timeline' : 'Reveal the timeline & end'}

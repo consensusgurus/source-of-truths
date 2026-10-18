@@ -831,7 +831,7 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
       <button type="button" className={tool === 'ring' ? 'du-tool on' : 'du-tool'} aria-pressed={tool === 'ring'} onClick={() => setTool('ring')} title="Tap places a ring; tap a ring again to clear it"><span className="du-sw" style={{ border: '3px solid currentColor' }} />Ring</button>
     </div>
   );
-  const revealBtn = identity && filledCount > 0 && playing && (
+  const revealBtn = started && (
     <button type="button" className="du-link" onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
       aria-label={armReveal ? 'Tap again to end the day and show the solution' : 'Reveal the solution'}
       style={armReveal ? { color: `var(--stg-bad, ${COLORS.rust})` } : undefined}>

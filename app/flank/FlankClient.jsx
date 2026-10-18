@@ -18,7 +18,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { focusSoon } from '@/lib/focus-soon';
 import { useSearchParams } from 'next/navigation';
-import { X, Smartphone, Milestone } from 'lucide-react';
+import { X, Smartphone, Milestone, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
@@ -196,6 +196,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
   const [showHelp, setShowHelp] = useState(false);
   const [gateRules, setGateRules] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [armGive, setArmGive] = useState(false);
   const [endClosed, setEndClosed] = useState(false);
   // The finished board starts turned OVER, showing what to do next.
   const [revealed, setRevealed] = useState(false);
@@ -489,6 +490,20 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
     }
   }
 
+  // Give up (owner, 2026-10-18): ends the run exactly the way the last strike
+  // does. The borders already found keep their points, the rest score 0, and
+  // the missed ones stay hidden behind the end card's door like any loss.
+  // Two taps, so a stray tap is free.
+  function giveUp() {
+    const cur = gRef.current;
+    if (cur.status !== 'playing' || !cur.t0) return;
+    if (!armGive) { setArmGive(true); setTimeout(() => setArmGive(false), 3500); return; }
+    setArmGive(false);
+    const done = { ...cur, status: 'lost', gaveUp: true, tEnd: Date.now() };
+    postResult(done);
+    commit(done);
+  }
+
   // Live matching on every keystroke: a complete, unambiguous country name
   // commits itself. A name that is a proper prefix of another country's name
   // waits for Enter, so typing through it never fires.
@@ -584,6 +599,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
       steps={[
         <>Type countries. <b>A correct neighbor banks itself the moment the name is complete</b>, no Enter needed.</>,
         <>A real country that does <b>not</b> border today&apos;s country costs a <b>strike</b>, and {PUZZLE.sunday ? 'four strikes end a Sunday run' : 'three strikes end the run'}. Typos and unknown words cost nothing.</>,
+        <>Done naming? <b>Give up</b> ends the run now and keeps every border you found.</>,
         <>Every border named is a point. Name them all and the day is solved; ties on the board break by wrong guesses, then time.</>,
         <>Mondays start with a one-border country and the week climbs from there. <b>Sundays hand you a giant</b> with a fourth strike to spend.</>,
       ]}
@@ -778,12 +794,17 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
                 <div style={{ minHeight: 19, marginTop: 6, fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: notice && notice.kind === 'strike' ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})` }}>
                   {notice ? notice.msg : 'A correct neighbor banks itself as soon as the name is complete.'}
                 </div>
+                <div style={{ marginTop: 8 }}>
+                  <button type="button" className="fl-btn" onMouseDown={(e) => e.preventDefault()} onClick={giveUp} title={armGive ? 'Ends the run now' : 'End the run now. Borders you found keep their points.'}>
+                    <Flag size={15} />{armGive ? 'Tap again to give up' : 'Give up'}
+                  </button>
+                </div>
               </div>
             )}
 
             {g.status === 'lost' && (
               <div className="fl-msg" style={{ fontFamily: SANS, fontSize: 14.5, fontWeight: 800, color: `var(--stg-ink, ${COLORS.rust})` }}>
-                {STRIKES} strikes. The run ends at {foundCount} of {TOTAL}; the missed borders are marked in red.
+                {g.gaveUp ? 'You gave up.' : `${STRIKES} strikes.`} The run ends at {foundCount} of {TOTAL}; the missed borders are marked in red.
               </div>
             )}
             {won && (
@@ -939,7 +960,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
           headline={won ? <>Every border named.</> : foundCount > 0 ? <>The map kept a few.</> : <>The map won this one.</>}
           subline={won
             ? <>all {TOTAL} borders &middot; {strikes} wrong &middot; {elapsed}</>
-            : <>{foundCount}/{TOTAL} borders &middot; {STRIKES} strikes &middot; {elapsed}</>}
+            : <>{foundCount}/{TOTAL} borders &middot; {g.gaveUp ? `${strikes} wrong` : `${STRIKES} strikes`} &middot; {elapsed}</>}
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}
           onClose={() => setEndClosed(true)} />

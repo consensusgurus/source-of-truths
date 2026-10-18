@@ -33,7 +33,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { HelpCircle, X, Smartphone, RotateCcw, Trash2, Lightbulb, CheckCircle2, Undo2 } from 'lucide-react';
+import { HelpCircle, X, Smartphone, RotateCcw, Trash2, Lightbulb, CheckCircle2, Undo2, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
@@ -242,6 +242,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
   const [toast, setToast] = useState(null);
   const [copied, setCopied] = useState(false);
   const [endClosed, setEndClosed] = useState(false);
+  const [armGive, setArmGive] = useState(false); // two-tap Give up (owner, 2026-10-18)
   // The finished board starts turned OVER, showing what to do next.
   const [revealed, setRevealed] = useState(false);
   const [shareCta, setShareCta] = useState('Share');
@@ -801,15 +802,34 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
     return { quizId: PUZZLE.quizId, score: liveScore, total: START, correct: 0, guessesUsed: g.misplaced + g.hintsUsed, timeElapsed: el, abandoned: true, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') };
   });
 
-  function postResult(g2, sc) {
+  function postResult(g2, sc, wonIt = true) {
     const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
-    try { setStats(recordStat(PUZZLE.num, { s: sc, t: START, m: g2.misplaced, h: g2.hintsUsed, won: true })); } catch (e) {}
+    try { setStats(recordStat(PUZZLE.num, { s: sc, t: START, m: g2.misplaced, h: g2.hintsUsed, won: wonIt })); } catch (e) {}
     try {
       fetch('/api/quiz/result', {
         method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quizId: PUZZLE.quizId, score: sc, total: START, correct: 1, guessesUsed: g2.misplaced + g2.hintsUsed, timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') }),
+        body: JSON.stringify({ quizId: PUZZLE.quizId, score: sc, total: START, correct: wonIt ? 1 : 0, guessesUsed: g2.misplaced + g2.hintsUsed, timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') }),
       }).then((r) => r.json()).then((d) => { if (d && !d.error) setBoard({ ...EMPTY_BOARD, ...d }); }).catch(() => {});
     } catch (e) {}
+  }
+
+  // Give up (owner, 2026-10-18): a single-solve grid, so giving up posts 0 and
+  // the board stays as the player left it (no solution is filled in).
+  function giveUp() {
+    if (!playing || !g.t0 || finishedRef.current) return;
+    finishedRef.current = true;
+    const g2 = { ...g, status: 'gaveup', tEnd: Date.now() };
+    setG(g2);
+    setArmed(null);
+    setArmGive(false);
+    setEndClosed(false);
+    abandon.markFlushed();
+    postResult(g2, 0, false);
+  }
+  function giveTap() {
+    if (armGive) { giveUp(); return; }
+    setArmGive(true);
+    setTimeout(() => setArmGive(false), 3500);
   }
 
   function resetGame() {
@@ -818,7 +838,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
     setG(freshState(N)); setArmed(null); setEndClosed(false);
   }
 
-  const finalScore = g.status === 'done' ? Math.max(FLOOR, START - 5 * g.misplaced - hintsCost(g.hintsUsed, HINTS)) : liveScore;
+  const finalScore = g.status === 'done' ? Math.max(FLOOR, START - 5 * g.misplaced - hintsCost(g.hintsUsed, HINTS)) : g.status === 'gaveup' ? 0 : liveScore;
   const won = g.status === 'done';
 
   // ---- share art: a five-square score bar, the house pattern (Etch, Mate, Tally) ----
@@ -865,7 +885,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
         <>The lettered pieces are rigid: no turning, no flipping. <b>Drag</b> one onto the grid, or <b>tap a piece then tap a square</b>.</>,
         <>Move pieces as often as you like, <b>for free</b>. To take one off the grid, <b>drag it off the board</b>, or tap it twice.</>,
         <>A tick appears on each finished valid word. The board finishes itself the moment every piece is down and every word checks out.</>,
-        <>Only the three hints cost points. <b>Undo</b> and <b>Clear</b> are free too.</>,
+        <>Only the three hints cost points. <b>Undo</b> and <b>Clear</b> are free too. Stuck for good? <b>Give up</b> ends the grid at 0.</>,
         <>Words are checked against a <b>Scrabble word list</b>, which is broader than everyday English and accepts some odd short entries. Grids from 20 August 2026 are built from common words only; older grids in the archive can still turn up a Scrabble two-letter word such as ST, JA or PE.</>,
       ]}
       knack="There are no clues but the letters, and exactly one reassembly is correct, so place the pieces whose runs can only spell one thing and let the rest fall in."
@@ -1007,7 +1027,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
               <span>placed <b style={{ color: INK, fontWeight: 500 }}>{placedCount}</b>/{SHARDS.length}</span>
               {g.misplaced > 0 && <span>misses <b style={{ color: INK, fontWeight: 500 }}>{g.misplaced}</b></span>}
               <span>hints <b style={{ color: INK, fontWeight: 500 }}>{g.hintsUsed}</b>/3</span>
-              {!playing && <span style={{ marginLeft: 'auto', color: `var(--stg-ink, ${COLORS.green})` }}>solved</span>}
+              {!playing && <span style={{ marginLeft: 'auto', color: `var(--stg-ink, ${won ? COLORS.green : COLORS.ember})` }}>{won ? 'solved' : 'gave up'}</span>}
             </div>
           )}
 
@@ -1106,6 +1126,9 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
                     <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' }}>
                       <button type="button" className="sh-btn" onClick={undo} disabled={!histRef.current.length}><Undo2 size={14} /> Undo</button>
                       <button type="button" className="sh-btn" onClick={clearBoard} disabled={placedCount === 0}><Trash2 size={14} /> Clear</button>
+                      {g.t0 && (
+                        <button type="button" className="sh-btn" onClick={giveTap} title={armGive ? 'Ends the puzzle now' : 'End the puzzle now; it scores 0'}><Flag size={14} /> {armGive ? 'Tap again to give up' : 'Give up'}</button>
+                      )}
                       {armed != null && g.placements[armed] && !g.locked.includes(armed) && (
                         <button type="button" className="sh-btn primary" onClick={() => { pickUp(armed); setArmed(null); }}>Send back</button>
                       )}
@@ -1134,7 +1157,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
                     <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: `var(--stg-ink, ${COLORS.green})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{finalScore}</span>
                     <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
-                      Solved. {finalScore} of {START}{g.misplaced > 0 ? `, with ${g.misplaced} miss${g.misplaced === 1 ? '' : 'es'} and` : ' with'} {g.hintsUsed} hint{g.hintsUsed === 1 ? '' : 's'}. <span style={{ color: FADED, fontWeight: 600 }}>{elapsed}</span>
+                      {won ? <>Solved. {finalScore} of {START}{g.misplaced > 0 ? `, with ${g.misplaced} miss${g.misplaced === 1 ? '' : 'es'} and` : ' with'} {g.hintsUsed} hint{g.hintsUsed === 1 ? '' : 's'}.</> : <>You gave up on this grid, so it scores 0.</>} <span style={{ color: FADED, fontWeight: 600 }}>{elapsed}</span>
                     </span>
                   </div>
                 </div>

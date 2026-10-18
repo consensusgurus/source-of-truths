@@ -157,7 +157,8 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
   const [g, setG] = useState(freshState);
   const [trace, setTrace] = useState([]);          // cell ids, in traced order
   const [lifting, setLifting] = useState(null);    // { ids, word } lit before it drops
-  const [flash, setFlash] = useState(null);        // hint pulse: cell id
+  const [flash, setFlash] = useState(null);        // hint: lit start cell id, until used
+  const [flashBeat, setFlashBeat] = useState(0);   // re-pulse counter for a lit hint
   const [bad, setBad] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [gateRules, setGateRules] = useState(false);
@@ -316,6 +317,7 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
       return;
     }
     setTrace([]);
+    if (flash != null && ids.includes(flash)) setFlash(null);
     setLifting({ ids, word });
     setTimeout(() => {
       setLifting(null);
@@ -330,7 +332,7 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
         return next;
       });
     }, LIFT_MS);
-  }, [cells, remaining, TOTAL, postResult]);
+  }, [cells, remaining, TOTAL, postResult, flash]);
 
   // TWO WAYS IN, ONE CODE PATH. Tap the letters one at a time, or hold and drag
   // through them. Tapping is the primary mode and is exact, which matters here
@@ -412,14 +414,19 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
     if (!playing || g.thread) return;
     setG((cur) => ({ ...cur, thread: true, hints: cur.hints + 1 }));
   }
+  // The start hint STAYS LIT until it is used (owner, 2026-10-18: a reader missed a
+  // 1.8s flash, paid twice more, and still misread the letter). It clears when a
+  // found word takes the lit tile; pressing again while it is lit re-pulses it and
+  // costs nothing.
   function showStart() {
     if (!playing || !remaining.length) return;
+    if (flash != null && !removed.has(flash)) { setFlashBeat((b) => b + 1); return; }
     const grid = gridOf(rows, cols, columns, removed);
     for (const w of remaining) {
       const path = findOne(grid, w, cells, rows, cols);
       if (path) {
         setFlash(path[0]);
-        setTimeout(() => setFlash(null), 1800);
+        setFlashBeat((b) => b + 1);
         setG((cur) => ({ ...cur, hints: cur.hints + 1 }));
         return;
       }
@@ -501,13 +508,13 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
 
   function unstick() {
     if (unstickTo === null) return;
-    setTrace([]);
+    setTrace([]); setFlash(null);
     setG((cur) => ({ ...cur, found: cur.found.slice(0, unstickTo) }));
   }
 
   function resetGame() {
     setG(freshState());
-    setTrace([]); setLifting(null); setEndClosed(false);
+    setTrace([]); setLifting(null); setEndClosed(false); setFlash(null);
   }
 
   function copyShare() {
@@ -628,7 +635,10 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
           .st-clear{font-family:${SANS};font-weight:700;font-size:13px;background:transparent;color:${FADED};border:0;padding:0 8px;min-height:44px;min-width:44px;text-decoration:underline;cursor:pointer;}
           @media(max-width:640px){.st-k{font-size:10px;}.st-k b{font-size:13px;}.st-tile,.st-hole{border-radius:9px;}}
           .st-tile.bad{background:${STAGE ? 'var(--stg-surf2)' : '#fee2e2'};border-color:${STAGE ? 'var(--stg-bad)' : '#b91c1c'};color:${STAGE ? 'var(--stg-bad)' : '#7f1d1d'};}
-          .st-tile.flash{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));box-shadow:0 0 0 3px var(--stg-surf2, ${COLORS.accentSoft});}
+          .st-tile.flash{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, var(--white));box-shadow:0 0 0 4px var(--stg-acc-ink, ${COLORS.accent});animation:st-hint0 1.6s ease-in-out 3;}
+          @keyframes st-hint0{0%,100%{box-shadow:0 0 0 4px var(--stg-acc-ink, ${COLORS.accent});transform:scale(1)}50%{box-shadow:0 0 0 9px transparent;transform:scale(1.08)}}
+          @keyframes st-hint1{0%,100%{box-shadow:0 0 0 4px var(--stg-acc-ink, ${COLORS.accent});transform:scale(1)}50%{box-shadow:0 0 0 9px transparent;transform:scale(1.08)}}
+          @media (prefers-reduced-motion: reduce){.st-tile.flash{animation:none}}
         ` }} />
 
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
@@ -763,7 +773,8 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
                       const cls = ['st-tile'];
                       if (liftSet.has(cell.id)) cls.push('lift');
                       else if (traceSet.has(cell.id)) cls.push(bad ? 'bad' : 'on');
-                      if (flash === cell.id) cls.push('flash');
+                      const lit = flash === cell.id && !traceSet.has(cell.id) && !liftSet.has(cell.id);
+                      if (lit) cls.push('flash');
                       if (!p) return null;
                       return (
                         <div
@@ -773,6 +784,7 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
                             width: tile, height: tile, fontSize: Math.round(tile * 0.42),
                             top: p[0] * step, left: p[1] * step,
                             '--st-stone': stone(p[0]),
+                            ...(lit ? { animationName: `st-hint${flashBeat % 2}` } : {}),
                           }}
                           data-cid={cell.id}
                           onPointerDown={(e) => onDown(cell.id, e)}
@@ -819,7 +831,7 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
                 <Lightbulb size={15} />{g.thread ? 'Thread shown' : PUZZLE.sunday ? 'Name the threads' : 'Name the thread'}
               </button>
             );
-            const startBtn = <button className="st-btn" onClick={showStart} style={narrow ? { flex: 1 } : undefined}><Lightbulb size={15} />Show me a start</button>;
+            const startBtn = <button className="st-btn" onClick={showStart} style={narrow ? { flex: 1 } : undefined}><Lightbulb size={15} />{flash != null && !removed.has(flash) ? 'Start is lit' : 'Show me a start'}</button>;
             const giveBtn = <button className="st-btn" onClick={giveUp}><Flag size={15} />Give up</button>;
             const costLine = <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 600, color: FADED }}>Each costs a hint.</span>;
 
@@ -1040,7 +1052,7 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
               <li>Tapping the letter you are on drops the trace; tapping an earlier one walks back to it.</li>
               <li>A word is taken the moment your trace spells it. There is nothing to press.</li>
               <li>A wrong trace costs nothing, and there is no order that can strand you.</li>
-              <li>Two hints are on offer: name the thread, or light up where a word starts.</li>
+              <li>Two hints are on offer: name the thread, or light up where a word starts. The lit letter stays lit until a word you find uses it.</li>
               <li>{TOTAL} words today{PUZZLE.sunday ? ', across two threads on a bigger grid' : ''}.</li>
             </ul>
             <button className="st-btn primary" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}>Play</button>

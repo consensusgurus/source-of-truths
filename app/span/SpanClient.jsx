@@ -1158,7 +1158,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
                   <Lightbulb size={14} /> Hint
                 </button>
               )}
-              {identity && (chain.length > 1 || g.misses > 0) && (
+              {started && (
                 <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
                   style={{ marginLeft: 'auto', minHeight: 44, background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                   <Eye size={13} /> {armReveal ? 'Tap again: this ends the puzzle and shows a shortest road' : 'Reveal a road & end'}

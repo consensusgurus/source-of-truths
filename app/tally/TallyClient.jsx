@@ -1286,7 +1286,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
                 <span className="tl-d">Shaded squares are printed. Dark squares are out of play.</span>
                 <span className="tl-m">Sending a tile home is free.</span>
               </span>
-              {identity && g.moves > 0 && (
+              {started && (
                 <button type="button" className={`tl-reveal${armReveal ? ' armed' : ''}`} onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
                   <Eye size={13} aria-hidden="true" /> {armReveal ? 'Tap again: ends the puzzle and fills the solution' : 'Reveal and end'}
                 </button>
