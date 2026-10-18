@@ -346,8 +346,8 @@ const CSS = `
 .sst-scrim.open{opacity:1;pointer-events:auto;}
 .sst-sheet{position:fixed;left:0;right:0;bottom:0;z-index:9002;max-width:600px;margin:0 auto;max-height:88vh;max-height:88dvh;overflow-y:auto;
   background:#ffffff;color:#0b0d12;border-radius:20px 20px 0 0;padding:18px 20px max(22px,env(safe-area-inset-bottom));
-  transform:translateY(105%);transition:transform .38s cubic-bezier(.2,.8,.2,1);box-shadow:0 -10px 40px rgba(0,0,0,.25);}
-.sst-sheet.open{transform:none;}
+  transform:translateY(105%);visibility:hidden;transition:transform .38s cubic-bezier(.2,.8,.2,1),visibility 0s linear .38s;box-shadow:0 -10px 40px rgba(0,0,0,.25);}
+.sst-sheet.open{transform:none;visibility:visible;transition:transform .38s cubic-bezier(.2,.8,.2,1),visibility 0s;}
 .sst-shd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
 .sst-shd b{font-size:18px;font-weight:800;}
 .sst-x{background:#eef1f6;border:0;border-radius:99px;padding:7px 14px;font:inherit;font-size:13px;font-weight:800;color:#0b0d12;cursor:pointer;}
