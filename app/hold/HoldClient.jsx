@@ -794,9 +794,11 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
               <div ref={rowRef} style={{ display: 'flex', justifyContent: 'center', gap: GAP, paddingTop: narrow ? 22 : 26, minHeight: CH + (narrow ? 22 : 26), width: '100%', minWidth: 0 }} key={`h${current}`}>
                 {hand.cards.map((c0, k) => {
                   const held = !!((holdM >> k) & 1);
-                  // The reveal keeps the DEALT hand on the felt, so the table
-                  // below can be read against it; the draw shows in the panel.
-                  const c = c0;
+                  // After Draw the felt shows the NEW hand (owner, 2026-10-18):
+                  // held cards stay put, thrown ones are replaced by what came
+                  // off the shuffle, dashed and tagged New. The dealt hand is
+                  // kept as a small row in the panel below.
+                  const c = showFin && !held ? showFin[k] : c0;
                   const drawn = showFin && !held;
                   const live = started && g.shown === null && playing;
                   const ring = k === hintCard;
@@ -806,11 +808,11 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
                     ring ? `0 0 0 ${held ? 8 : 3}px var(--stg-ink, #b45309)` : null,
                     held && !showFin ? '0 14px 22px rgba(0,0,0,.32)' : '0 4px 10px rgba(0,0,0,.26)',
                   ].filter(Boolean).join(', ');
-                  const label = `${cardWords(c)}${showFin ? (held ? ', held' : ', thrown') : (held ? ', held' : '')}${ring ? ', hinted' : ''}`;
+                  const label = `${cardWords(c)}${showFin ? (held ? ', held' : ', new card') : (held ? ', held' : '')}${ring ? ', hinted' : ''}`;
                   return (
                     <div key={k} style={{ position: 'relative', width: CW, flex: 'none' }}>
                       <span className="hl-tag" aria-hidden="true" style={{ position: 'absolute', left: 0, right: 0, top: narrow ? -20 : -24, height: narrow ? 16 : 18, fontSize: narrow ? 9 : 10, color: held ? ON_A : (drawn ? A_INK : S_MUTE), background: held ? A_FILL : 'transparent', border: held ? 'none' : (drawn ? `1.5px solid ${A_FILL_INK}` : 'none'), transform: `translateY(-${lift}px)` }}>
-                        {held ? 'Held' : drawn ? 'Thrown' : (live ? `${k + 1}` : '')}
+                        {held ? 'Held' : drawn ? 'New' : (live ? `${k + 1}` : '')}
                       </span>
                       <button type="button" className={`hl-card${live ? ' live' : ''}${held ? ' on' : ''}`}
                         onClick={live ? () => tapCard(k) : undefined}
@@ -841,7 +843,11 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
               <button className="hl-btn" onClick={drawIt}
                 style={{ background: STAGE_C, color: 'var(--stg-onramp, #ffffff)', borderColor: STAGE_C_INK, ...(narrow ? { flex: 2, fontSize: 16 } : { fontSize: 15, padding: '0 30px' }) }}>Draw</button>
             );
-            const dealtChip = (
+            const dealtChip = reveal ? (
+              <span className="hl-chip" style={{ fontSize: narrow ? 11 : 12, padding: narrow ? '4px 10px' : '5px 11px', border: `1.5px solid ${CELL_LINE}`, color: S_INK }}>
+                Drew &middot; {reveal.k === 'nothing' ? 'no pay' : `${HAND_LABEL[reveal.k]} ${reveal.pay}`}
+              </span>
+            ) : (
               <span className="hl-chip" style={{ fontSize: narrow ? 11 : 12, padding: narrow ? '4px 10px' : '5px 11px', border: `1.5px solid ${CELL_LINE}`, color: S_INK }}>
                 Dealt &middot; {dealtKind === 'nothing' ? 'no pay' : `${HAND_LABEL[dealtKind]} ${PAYTABLE.find((r) => r.key === dealtKind).pay}`}
               </span>
@@ -876,16 +882,16 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
                     })}
                   </tbody>
                 </table>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 12, flexWrap: 'wrap' }} aria-label={`Your draw: ${reveal.fin.map(cardWords).join(', ')}`}>
-                  <span style={{ fontFamily: SANS, fontSize: 10, fontWeight: 800, letterSpacing: '.09em', textTransform: 'uppercase', color: S_MUTE, marginRight: 6 }}>Your draw</span>
-                  {reveal.fin.map((c, k) => (
-                    <span key={k} style={{ display: 'inline-flex', borderRadius: 7, padding: 1, border: (pickM >> k) & 1 ? '2px solid transparent' : `2px dashed ${A_FILL_INK}` }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 12, flexWrap: 'wrap' }} aria-label={`You were dealt: ${hand.cards.map(cardWords).join(', ')}`}>
+                  <span style={{ fontFamily: SANS, fontSize: 10, fontWeight: 800, letterSpacing: '.09em', textTransform: 'uppercase', color: S_MUTE, marginRight: 6 }}>You were dealt</span>
+                  {hand.cards.map((c, k) => (
+                    <span key={k} style={{ display: 'inline-flex', borderRadius: 7, padding: 1, border: '2px solid transparent', opacity: (pickM >> k) & 1 ? 1 : 0.55 }}>
                       <MiniCard card={c} w={narrow ? 30 : 34} h={narrow ? 40 : 46} />
                     </span>
                   ))}
                 </div>
                 <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, marginTop: 8, lineHeight: 1.55 }}>
-                  For the look of it, off the day&rsquo;s fixed shuffle (new cards dashed): {reveal.k === 'nothing' ? 'no pay' : <><b style={{ color: INK }}>{HAND_LABEL[reveal.k].toLowerCase()}</b>, paying {reveal.pay}</>}. That is luck: the expected return above is the average over every draw, which is what counts.
+                  Your point comes from the hold, not the draw. The new cards above are luck off the day&rsquo;s fixed shuffle; the expected return is the average over every draw.
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
                   <button className="hl-btn" onClick={nextHand} style={{ background: STAGE_C, color: 'var(--stg-onramp, #ffffff)', borderColor: STAGE_C_INK, ...(narrow ? { width: '100%' } : null) }}>
@@ -927,7 +933,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
 
             const headLine = (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <span style={K}>{g.shown !== null ? `Hand ${current + 1} · the draw` : `Hand ${Math.min(current + 1, NH)} of ${NH} · tap to hold`}</span>
+                <span style={K}>{g.shown !== null ? `Hand ${current + 1} · your new hand` : `Hand ${Math.min(current + 1, NH)} of ${NH} · tap to hold`}</span>
                 {dealtChip}
               </div>
             );
