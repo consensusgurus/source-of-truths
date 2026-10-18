@@ -2363,7 +2363,7 @@ export default function StageToday() {
           by the skill they sharpen until the reader picks Categories, and the
           choice is remembered. Reorder belongs to the categories alone. */}
       {reorder ? null : (
-        <div className="sty-lens" role="group" aria-label="Group puzzles by">
+        <div className="sty-ixsw" role="group" aria-label="Group puzzles by">
           <button type="button" aria-pressed={ixLens === 'skill'} onClick={() => pickIx('skill')}>Skills</button>
           <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
         </div>
@@ -5042,11 +5042,11 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-ixre.on{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink);}
 .sty-ixre:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 /* SKILLS OR CATEGORIES (owner, 2026-10-18): one switch above the list. */
-.sty-lens{display:flex;gap:2px;padding:2px;margin:2px 4px 6px;border:1px solid var(--stg-cell-line);border-radius:999px;}
-.sty-lens button{flex:1 1 auto;border:0;border-radius:999px;background:transparent;color:var(--stg-ink2);
+.sty-ixsw{display:flex;gap:2px;padding:2px;margin:2px 4px 6px;border:1px solid var(--stg-cell-line);border-radius:999px;}
+.sty-ixsw button{flex:1 1 auto;border:0;border-radius:999px;background:transparent;color:var(--stg-ink2);
   font:800 10.5px/1 ${SANS};letter-spacing:.02em;text-transform:uppercase;padding:7px 3px;cursor:pointer;white-space:nowrap;}
-.sty-lens button[aria-pressed="true"]{background:var(--stg-ink);color:var(--stg-ground);}
-.sty-lens button:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
+.sty-ixsw button[aria-pressed="true"]{background:var(--stg-ink);color:var(--stg-ground);}
+.sty-ixsw button:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 .sty-ss{display:none;}
 /* EASY TO HARD BANDS (owner, 2026-10-18): Gentle, Steady, Tough, rated weekly. */
 .sty-band{grid-column:1 / -1;display:flex;align-items:baseline;gap:10px;padding:8px 2px 2px;border-bottom:1px solid var(--stg-line);}
@@ -5284,8 +5284,8 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
      the whole row. Decided in JS (fillFor), since the count that matters
      leaves out the opened tile. */
   .sty-ixn:not(.re) .sty-ixb.sty-ixfill{grid-column:1 / -1;}
-  .sty-ixn:not(.re) > .sty-lens{grid-column:1 / -1;margin:0;width:100%;}
-  .sty-ixn:not(.re) > .sty-lens button{flex:1 1 0;min-width:0;padding:10px 8px;font-size:12px;}
+  .sty-ixn:not(.re) > .sty-ixsw{grid-column:1 / -1;margin:0;width:100%;}
+  .sty-ixn:not(.re) > .sty-ixsw button{flex:1 1 0;min-width:0;padding:10px 8px;font-size:12px;}
   .sty-sortm .sty-sl{display:none;}
   .sty-sortm .sty-ss{display:inline;}
   .sty-ixn:not(.re) .sty-ixsep{display:block;grid-column:1 / -1;height:5px;margin:0;background:none;}
