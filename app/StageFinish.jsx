@@ -64,6 +64,11 @@ import JoinLeaderboardForm from './quiz/[id]/JoinLeaderboardForm';
 // Where this finish puts the player in each of their groups (2026-09-17).
 import FinishGroupLine from './groups/FinishGroupLine';
 import { pageAge } from '@/lib/finish-beat';
+// THE STICKY ENDING (owner, 2026-10-18): see app/StageStick.jsx.
+import StageStick from './StageStick';
+import { fmtMetric } from '@/lib/challenge-metric';
+import { typicalSeconds } from '@/lib/game-medians';
+import { categoryHrefForGame } from '@/lib/puzzle-categories';
 
 // ── THE FLOOD ──────────────────────────────────────────────────────────────
 // THE CURTAIN ARRIVES AT FULL SIZE (owner, 2026-08-31). The band was already
@@ -984,6 +989,20 @@ export default function StageFinish({
     setFlood(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  // THE STICKY ENDING (owner, 2026-10-18) replaces the flood, the shrink and
+  // the band on a DAILY that just ended: the category colour takes the screen
+  // and stays. Same freshness test as the flood (an archive replay opened on a
+  // finished board, or a refresh, gets the card directly), ?flood=1 forces it
+  // for review, ?stick=0 turns it off. Not on a quiz, not on the retry ending.
+  const [stick, setStick] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const q = window.location.search;
+    if (/[?&]stick=0(&|$)/.test(q)) return;
+    if (!/[?&]flood=1(&|$)/.test(q) && pageAge() < FLOOD_FRESH) return;
+    setStick(true);
+  }, []);
+  const stickOn = stick && !retry && !boardLabel && !!name && DAILY_GAMES.some((g) => g.name === name);
   // The curtain has landed (or never ran). The hand-off counts from here.
   const [floodDone, setFloodDone] = useState(false);
   const [freshFinish, setFreshFinish] = useState(false);
@@ -1370,7 +1389,7 @@ export default function StageFinish({
   const handoffTarget = setNext ? { href: setNext.g.href || `/${setNext.g.key}`, onClick: null } : (forward || null);
   // THE COUNTDOWN RIDES THE PLAY SIMILAR DOOR (owner, 2026-10-01): fifteen
   // seconds, a ring in place of the door's icon, and a No thanks beside it.
-  const handoffOn = !!(handoff && freshFinish && !archived && !isRetry && !handoffOff && handoffTarget && (handoffTarget.href || handoffTarget.onClick));
+  const handoffOn = !!(!stickOn && handoff && freshFinish && !archived && !isRetry && !handoffOff && handoffTarget && (handoffTarget.href || handoffTarget.onClick));
   useEffect(() => {
     if (!handoffOn || !floodDone) { setLeft(null); return undefined; }
     // WALL CLOCK, not ticks: a throttled tab fires this every second, and a
@@ -1676,6 +1695,179 @@ export default function StageFinish({
           aria-expanded={controls ? !!expanded : undefined} aria-controls={controls || undefined}>{inner}</button>;
   };
 
+  // ── THE STICKY ENDING'S FIGURES (owner, 2026-10-18) ──────────────────────
+  // Plain code, no hooks, so the retry branch below runs the same hooks.
+  const leaveStick = () => { setStick(false); setFlood(false); setFloodDone(true); setHandoffOff(true); };
+  const stickProps = (() => {
+    if (!stickOn || !me) return null;
+    const DOW = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dowOf = (lab) => { const d = new Date(lab); return Number.isNaN(d.getTime()) ? null : d.getDay(); };
+    const todayDow = archived ? null : new Date(`${etTodayISO()}T12:00:00`).getDay();
+    const eyebrow = `${me.name} · ${archived ? (curN != null ? `No. ${curN}` : 'Archive') : DOW[todayDow]}`;
+    const arcade = me.cat === 'Arcade';
+    const short = (lab) => { const d = new Date(lab); return Number.isNaN(d.getTime()) ? (lab || '') : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); };
+    const fmtD = (d) => (d < 60 ? `${d}s` : mmss(d));
+
+    // 1. THE KEY FIGURE: the game's own metric, else the clock on a solve,
+    // else the score. A solve-only miss has nothing to count.
+    let metric = null;
+    const sc = myRowB && useRow ? { s: Number(myRowB.score), o: Number(myRowB.total) } : (run ? { s: run.score, o: run.total } : (myRowB ? { s: Number(myRowB.score), o: Number(myRowB.total) } : null));
+    if (mineM != null) {
+      const t = fmtMetric(me.key, mineM);
+      const m = /^(-?\d+(?:\.\d+)?)(.*)$/.exec(t);
+      metric = m ? { text: t, n: Number(m[1]), post: m[2] } : { text: t, n: null };
+    } else if (myT != null) {
+      metric = { text: mmss(myT), n: myT, kind: 'time' };
+    } else if (sc && sc.o > 0 && !meSolveOnly) {
+      metric = { text: `${sc.s} of ${sc.o}`, n: sc.s, post: ` of ${sc.o}` };
+    }
+
+    // 2. TODAY'S FIELD: rank and share on one line, a bar, two captions.
+    const race = myT != null && !arcade && mineM == null;
+    const fr = board && board.myRank != null && board.field ? { rank: board.myRank, n: board.field, guest: false }
+      : (board && board.guest && board.guest.placement ? { rank: board.guest.placement, n: board.guest.field || null, guest: true } : null);
+    let fieldInfo = null;
+    if (fr) {
+      const pct = fr.n > 1 ? Math.floor(((fr.n - fr.rank) / fr.n) * 100) : 100;
+      const head = `${fr.guest ? 'Would be ' : ''}#${fr.rank}${fr.n ? ` of ${fr.n}` : ''}`;
+      const tail = !fr.n || fr.n < 2 ? 'first on the board today'
+        : fr.rank === 1 ? 'top of the board'
+        : `${race ? 'faster than' : 'ahead of'} ${pct}%`;
+      const top = board && Array.isArray(board.rows) ? board.rows[0] : null;
+      const med = typicalSeconds(me.key);
+      const lo = race && med ? `Typical solver ${mmss(med)}` : (fr.n ? `${fr.n} ${fr.n === 1 ? 'player' : 'players'} today` : '');
+      const hi = top && race && top.timeElapsed != null && Number(top.total) > 0 && Number(top.score) >= Number(top.total)
+        ? `Fastest ${mmss(Number(top.timeElapsed))}`
+        : (top && top.score != null && top.total ? `Top ${top.score}/${top.total}` : '');
+      fieldInfo = { line: `${head} · ${tail}`, pct: fr.n > 1 ? pct : 100, lo, hi };
+    }
+
+    // 3. AGAINST YOURSELF. The earlier finishes this browser holds.
+    const priors = archiveRows
+      .filter((r) => r.done && (curN == null || Number(r.num) < curN))
+      .map((r) => { const x = runOf(me.key, Number(r.num)); return x ? { ...x, dow: dowOf(r.dateLabel), dateLabel: r.dateLabel, href: r.href } : null; })
+      .filter(Boolean)
+      .sort((a, b) => b.num - a.num);
+    const today = run || (sc ? { score: sc.s, total: sc.o, won: outcome === 'won', time: myT } : null);
+    const strip = () => {
+      const last = priors.slice(0, 6).reverse().map((r) => !!r.won);
+      const all = [...last, outcome === 'won'];
+      const k = all.filter(Boolean).length;
+      if (all.length < 2) return { head: `Your first ${me.name} on record`, sub: 'Tomorrow starts the comparison.' };
+      return { head: `${k} of your last ${all.length} solved`, strip: all };
+    };
+    const edge = (x) => (x < 0.1 ? 'first' : x > 0.9 ? 'last' : '');
+    const spread = (pts) => {
+      // Average and best both label UNDER the line, so keep them apart.
+      const a = pts.find((p) => p.k === 'avg');
+      const b = pts.find((p) => p.k === 'best');
+      if (a && b && Math.abs(a.x - b.x) < 0.34) {
+        const lo2 = Math.min(a.x, b.x), hi2 = Math.max(a.x, b.x);
+        const mid = Math.min(0.83, Math.max(0.17, (lo2 + hi2) / 2));
+        const [L, R] = a.x <= b.x ? [a, b] : [b, a];
+        L.x = mid - 0.17; R.x = mid + 0.17;
+      }
+      return pts.map((p) => ({ ...p, edge: edge(p.x) }));
+    };
+    let self = null;
+    if (missed || !today) self = strip();
+    else if (race && today.time != null) {
+      const clocked = priors.filter((r) => r.won && r.time != null);
+      if (!clocked.length) self = { head: `Your first timed ${me.name} on record`, sub: 'Tomorrow starts the comparison.' };
+      else {
+        const same = todayDow != null ? clocked.filter((r) => r.dow === todayDow) : [];
+        const pool = same.length >= 2 ? same : clocked;
+        const dayW = same.length >= 2 ? `${DOW[todayDow]} ` : '';
+        const best = Math.min(...pool.map((r) => r.time));
+        const avg = Math.round(clocked.reduce((t, r) => t + r.time, 0) / clocked.length);
+        const t0 = today.time;
+        const head = t0 < best ? `New ${dayW}best by ${fmtD(best - t0)}`
+          : t0 === best ? `Level with your ${dayW}best`
+          : `${fmtD(t0 - best)} off your ${dayW}best`;
+        const vals = [avg, t0, best];
+        const lo2 = Math.min(...vals), hi2 = Math.max(...vals);
+        const x = (v) => (hi2 === lo2 ? 0.5 : 0.04 + ((hi2 - v) / (hi2 - lo2)) * 0.92);   // faster to the right
+        self = { head, track: spread([
+          { k: 'avg', label: 'Your average', fig: mmss(avg), x: x(avg) },
+          { k: 'best', label: `${dayW}best`.trim().replace(/^best$/, 'Best'), fig: mmss(best), x: x(best) },
+          { k: 'today', label: 'Today', fig: mmss(t0), x: x(t0) },
+        ]) };
+      }
+    } else if (!meSolveOnly && today.total > 0) {
+      const scored = priors.filter((r) => r.total > 0);
+      if (!scored.length) self = { head: `Your first ${me.name} on record`, sub: 'Tomorrow starts the comparison.' };
+      else {
+        const T0 = today.total;
+        const fr2 = (r) => r.score / r.total;
+        const avgV = (scored.reduce((t, r) => t + fr2(r), 0) / scored.length) * T0;
+        const bestV = Math.max(...scored.map(fr2)) * T0;
+        const s0 = today.score;
+        const d = Math.round(s0 - avgV);
+        const head = s0 > bestV ? `Your best ${me.name} score yet`
+          : d > 0 ? `${d} above your average` : d < 0 ? `${-d} below your average` : 'Right on your average';
+        const nfmt = (v) => (Number.isInteger(v) ? String(v) : (Math.round(v * 10) / 10).toFixed(1).replace(/\.0$/, ''));
+        const vals = [avgV, s0, bestV];
+        const lo2 = Math.min(...vals), hi2 = Math.max(...vals);
+        const x = (v) => (hi2 === lo2 ? 0.5 : 0.04 + ((v - lo2) / (hi2 - lo2)) * 0.92);
+        self = { head, track: spread([
+          { k: 'avg', label: 'Your average', fig: nfmt(avgV), x: x(avgV) },
+          { k: 'best', label: 'Best', fig: nfmt(bestV), x: x(bestV) },
+          { k: 'today', label: 'Today', fig: nfmt(s0), x: x(s0) },
+        ]) };
+      }
+    } else self = strip();
+
+    // THE FOUR ROWS.
+    const chalRow = canChallenge ? {
+      title: duel ? `Challenge ${chal.name} back` : 'Challenge a friend',
+      lead: isBlankMiss(mine) ? 'Dare them to crack it' : `Beat ${challengeFig(mine, me.key)}`,
+      draw: chalDraw, msg: chalMsg, copied: chalCopied, onSend: sendChallenge,
+    } : null;
+    const simSec = primaryDoor && primaryDoor.key ? typicalSeconds(primaryDoor.key) : null;
+    const similar = primaryDoor ? {
+      name: primaryDoor.name, href: primaryDoor.href, onClick: primaryDoor.onClick,
+      time: simSec ? `${Math.max(1, Math.round(simSec / 60))} min` : '',
+    } : null;
+    const nextUp = archiveRows.find((r) => !r.done && r.href && (curN == null || Number(r.num) !== curN));
+    const another = nextUp ? { name: me.name, href: nextUp.href } : null;
+
+    // THE SHEET.
+    const allRows = board && Array.isArray(board.rows) ? board.rows.map((r, i) => ({ ...r, rank: r.rank != null ? r.rank : i + 1 })) : [];
+    let srows = allRows.slice(0, 3).map((r) => ({ ...r, me: isMine(r) }));
+    if (myRank != null && myRank > 3) {
+      const near = allRows.filter((r) => r.rank >= myRank - 1 && r.rank <= myRank + 1 && r.rank > 3).map((r) => ({ ...r, me: isMine(r) }));
+      if (!near.some((r) => r.me) && board && board.myRow) near.push({ ...board.myRow, rank: myRank, me: true });
+      near.sort((a, b) => a.rank - b.rank);
+      if (near.length && near[0].rank > 4) srows.push({ gap: true });
+      srows = srows.concat(near);
+    } else if (myRank == null && board && board.myRow) {
+      srows.push({ gap: true }, { ...board.myRow, rank: '—', me: true });
+    }
+    const g = catRun && catRun.group;
+    const backFn = backOpt ? () => {
+      if (typeof backOpt.onClick === 'function') backOpt.onClick({ preventDefault() {} });
+      else if (backOpt.href) window.location.href = backOpt.href;
+    } : null;
+    const sheet = {
+      iq: iq && iq.gained != null ? iq.gained : null,
+      streak: streak || null,
+      rows: srows, myRank, field, missLabel, gameKey: me.key,
+      recent: priors.slice(0, 6).map((r) => ({
+        num: r.num, date: short(r.dateLabel), won: !!r.won, href: r.href,
+        fig: r.won && r.time != null && !arcade ? mmss(r.time) : (r.total ? `${r.score}/${r.total}` : (r.won ? 'Solved' : 'Missed')),
+      })),
+      set: g ? {
+        name: g.name, n: g.n, total: g.games.length,
+        games: g.games.map((x) => { const lg = LIVE().find((y) => y.key === x.key); return { key: x.key, done: x.done, name: lg ? lg.name : x.key, href: lg ? (lg.href || `/${lg.key}`) : `/${x.key}` }; }),
+      } : null,
+      back: backFn, backLabel: revealOpt ? (revealOpt.label || 'Reveal answer') : 'Back to board',
+      replay: replayOpt && revealOpt ? replayOpt : null,
+      catHref: categoryHrefForGame(me.key), catName: me.cat,
+      homeHref: (mainOpt && mainOpt.href) || '/',
+    };
+    return { tone, eyebrow, verdict: title, metric, field: fieldInfo, self, chal: chalRow, similar, another, sheet };
+  })();
+
   // Placed AFTER every hook above AND after the challenge door is built (moved
   // 2026-10-15 so the retry ending carries the door too), so the two endings run the same hooks in
   // the same order on every render.
@@ -1746,7 +1938,9 @@ export default function StageFinish({
     <div className={'stf' + (outcome ? ' stf-' + outcome : '') + (tone === 'pb' ? ' stf-pb' : '') + (tone === 'lost' ? ' stf-miss' : '')}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
-      {flood ? (
+      {stickProps ? (
+        <StageStick {...stickProps} onLeave={leaveStick} />
+      ) : flood ? (
         <CurtainFlood title={title} detail={detail} iq={iq} board={board}
           gameRank={gameRank} streak={streak} ready={ready} bandRef={bandRef}
           boardWhen={boardWhen} catRun={catRun} vs={vs} rival={rival} dist={dist}

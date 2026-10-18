@@ -64,7 +64,7 @@ export default function DojoPop({ ready = false, self = '' }) {
     const started = Date.now();
     const whenClear = (fn) => {
       if (!alive) return;
-      if (document.querySelector('.stf-flood') && Date.now() - started < 20000) { timers.push(setTimeout(() => whenClear(fn), 400)); return; }
+      if (document.querySelector('.sst') || (document.querySelector('.stf-flood') && Date.now() - started < 20000)) { timers.push(setTimeout(() => whenClear(fn), 400)); return; }
       fn();
     };
     const t = setTimeout(() => whenClear(() => {
