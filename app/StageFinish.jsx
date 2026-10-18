@@ -1742,9 +1742,12 @@ export default function StageFinish({
       fieldInfo = { line: pct <= 0 && fr.rank > 1 ? head : `${head} · ${tail}`, pct: fr.n > 1 ? pct : 100, lo, hi };
     }
 
-    // 3. AGAINST YOURSELF. The earlier finishes this browser holds.
+    // 3. AGAINST YOURSELF. Every OTHER finish this browser holds, newer boards
+    // included (owner report, 2026-10-18): Play another sends a player to an
+    // older day, and counting only boards numbered below the one on screen
+    // left out this morning's finish and said "first on record".
     const priors = archiveRows
-      .filter((r) => r.done && (curN == null || Number(r.num) < curN))
+      .filter((r) => r.done && (curN == null || Number(r.num) !== curN))
       .map((r) => { const x = runOf(me.key, Number(r.num)); return x ? { ...x, dow: dowOf(r.dateLabel), dateLabel: r.dateLabel, href: r.href } : null; })
       .filter(Boolean)
       .sort((a, b) => b.num - a.num);
@@ -1753,7 +1756,7 @@ export default function StageFinish({
       const last = priors.slice(0, 6).reverse().map((r) => !!r.won);
       const all = [...last, outcome === 'won'];
       const k = all.filter(Boolean).length;
-      if (all.length < 2) return { head: `Your first ${me.name} on record`, sub: 'Tomorrow starts the comparison.' };
+      if (all.length < 2) return { head: `Your first ${me.name} on record`, sub: 'Your next one starts the comparison.' };
       return { head: `${k} of your last ${all.length} solved`, strip: all };
     };
     const edge = (x) => (x < 0.1 ? 'first' : x > 0.9 ? 'last' : '');
@@ -1773,7 +1776,7 @@ export default function StageFinish({
     if (missed || !today) self = strip();
     else if (race && today.time != null) {
       const clocked = priors.filter((r) => r.won && r.time != null);
-      if (!clocked.length) self = { head: `Your first timed ${me.name} on record`, sub: 'Tomorrow starts the comparison.' };
+      if (!clocked.length) self = { head: `Your first timed ${me.name} on record`, sub: 'Your next one starts the comparison.' };
       else {
         const same = todayDow != null ? clocked.filter((r) => r.dow === todayDow) : [];
         const pool = same.length >= 2 ? same : clocked;
@@ -1795,7 +1798,7 @@ export default function StageFinish({
       }
     } else if (!meSolveOnly && today.total > 0) {
       const scored = priors.filter((r) => r.total > 0);
-      if (!scored.length) self = { head: `Your first ${me.name} on record`, sub: 'Tomorrow starts the comparison.' };
+      if (!scored.length) self = { head: `Your first ${me.name} on record`, sub: 'Your next one starts the comparison.' };
       else {
         const T0 = today.total;
         const fr2 = (r) => r.score / r.total;
