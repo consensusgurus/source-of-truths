@@ -41,18 +41,16 @@
 // Mount it as the LAST CHILD of the cap. It reads its own parent to find the
 // switch, so no ref is threaded through any cap and it takes no props.
 import { useEffect, useRef, useState } from 'react';
-import { useThemePop, writeStageTheme } from '@/lib/stage-theme';
+import { useThemePop, writeStageTheme, useStageTheme, LIGHT_OFFER_KEY } from '@/lib/stage-theme';
 
 // The four caps that draw a switch: StageChrome (every daily), StageToday (the
 // home), CircuitFrame (the circuit pages), StatHubClient (the Stat Hub). A
 // fifth cap adds its class here.
 const SWITCH = '.stg-theme, .sty-tg, .cfr-tg, .hub-tg';
 
-export default function ThemePop() {
-  const [open, dismiss] = useThemePop();
-  const ref = useRef(null);
+// Measures the cap and the switch so the bubble sits under the glyph.
+function usePlace(open, ref) {
   const [at, setAt] = useState(null);
-
   useEffect(() => {
     if (!open) { setAt(null); return undefined; }
     let raf = 0;
@@ -77,7 +75,21 @@ export default function ThemePop() {
     const on = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(place); };
     window.addEventListener('resize', on);
     return () => { window.removeEventListener('resize', on); cancelAnimationFrame(raf); };
-  }, [open]);
+  }, [open, ref]);
+  return at;
+}
+
+const XIcon = () => (
+  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"
+    strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+    <path d="M6 6l12 12M18 6L6 18" />
+  </svg>
+);
+
+export default function ThemePop() {
+  const [open, dismiss] = useThemePop();
+  const ref = useRef(null);
+  const at = usePlace(open, ref);
 
   if (!open) return null;
 
@@ -96,17 +108,94 @@ export default function ThemePop() {
       {/* The X closes it, and there is no "Not now" beside it. That is the
           house pattern for a pop-up on this site: a second dismissal reads as
           a decision being asked for when none is. */}
-      <button type="button" className="stg-tpop-x" onClick={dismiss} aria-label="Dismiss">
-        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"
-          strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
-          <path d="M6 6l12 12M18 6L6 18" />
-        </svg>
-      </button>
+      <button type="button" className="stg-tpop-x" onClick={dismiss} aria-label="Dismiss"><XIcon /></button>
       <b>This is the light switch.</b>
       <p>It flips the whole site between light and dark, and it sits in this bar on every page. Try it.</p>
       <button type="button" className="stg-tpop-go" onClick={() => writeStageTheme('dark')}>
         Switch to dark
       </button>
+    </div>
+  );
+}
+
+// THE LIGHT OFFER (owner, 2026-10-18). A new visitor who came in through the
+// entry door lands in dark; this asks once whether they would rather have
+// light. It shows ONLY on the start gate (no save for today's board carries a
+// first move yet), never during play and never on a finished board, and comes
+// back on the next gate until it is answered. Switching to light, keeping
+// dark, or using the switch itself all answer it; the X only closes it here.
+// Mounted by StageChrome, which knows the game and the board.
+export function LightOffer({ gameKey, num }) {
+  const [theme] = useStageTheme();
+  const [state, setState] = useState('wait'); // wait | open | gone
+  const ref = useRef(null);
+  const at = usePlace(state === 'open', ref);
+
+  useEffect(() => {
+    if (!gameKey) return undefined;
+    let pending = false;
+    try { pending = window.localStorage.getItem(LIGHT_OFFER_KEY) === 'pending'; } catch (e) {}
+    if (!pending) { setState('gone'); return undefined; }
+    // With the board number known, any first move on that board counts. A
+    // caller that does not know it (the desktop cap) asks whether a board of
+    // this game was begun today instead.
+    const known = num !== null && num !== undefined;
+    const re = new RegExp('^sot_' + gameKey + '_' + (known ? num : '[0-9]+') + '(r[0-9]+)?$');
+    const dayStart = (() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime() - 12 * 3600 * 1000; })();
+    const begun = () => {
+      try {
+        for (let i = 0; i < window.localStorage.length; i++) {
+          const k = window.localStorage.key(i);
+          if (!k || !re.test(k)) continue;
+          const sv = JSON.parse(window.localStorage.getItem(k) || 'null');
+          if (!sv) continue;
+          if (known && (sv.t0 || (sv.status && sv.status !== 'playing'))) return true;
+          if (!known && sv.t0 && sv.t0 > dayStart) return true;
+        }
+      } catch (e) {}
+      return false;
+    };
+    if (begun()) { setState('gone'); return undefined; }
+    const show = setTimeout(() => {
+      if (begun()) { setState('gone'); return; }
+      try { if (document.querySelector('.ent-door, .prm-scrim, .gpp-scrim')) return; } catch (e) {}
+      setState((s) => (s === 'wait' ? 'open' : s));
+    }, 1200);
+    // The first move takes it away for this page.
+    const poll = setInterval(() => { if (begun()) setState('gone'); }, 700);
+    return () => { clearTimeout(show); clearInterval(poll); };
+  }, [gameKey, num]);
+
+  const answer = () => {
+    try { window.localStorage.setItem(LIGHT_OFFER_KEY, 'done'); } catch (e) {}
+    setState('gone');
+  };
+  // Using the switch is an answer too.
+  useEffect(() => {
+    if (state === 'open' && theme === 'light') answer();
+  }, [theme, state]);
+
+  if (state !== 'open' || theme !== 'dark') return null;
+  return (
+    <div
+      ref={ref}
+      className="stg-tpop"
+      role="dialog"
+      aria-label="Light mode offer"
+      style={at ? { top: at.top, right: at.right } : { visibility: 'hidden' }}
+    >
+      <i className="stg-tpop-arw" style={{ right: at ? at.arrow : 12 }} aria-hidden="true" />
+      <button type="button" className="stg-tpop-x" onClick={() => setState('gone')} aria-label="Close for now"><XIcon /></button>
+      <b>Prefer light mode?</b>
+      <p>You are seeing Mind Loft in dark. This switch flips it, on any page, any time.</p>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <button type="button" className="stg-tpop-go" onClick={() => { answer(); writeStageTheme('light'); }}>
+          Switch to light
+        </button>
+        <button type="button" className="stg-tpop-go stg-tpop-alt" onClick={answer}>
+          Keep dark
+        </button>
+      </div>
     </div>
   );
 }

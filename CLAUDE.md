@@ -9857,3 +9857,22 @@ Skills Language, Memory, Deduction. Daily group and finish set Crosswords, plus 
   "Also accepted".
 - **Ending:** the `arcband` beat in `lib/finish-beat.js`: the three hidden words slide in as bands in the
   ramp's sky, mint and lime, then the finale drops in gold, before the iris.
+
+## The entry door's level and puzzle steps, and the dark landing (owner, 2026-10-18)
+
+A skill tile on `app/EntryDoor.jsx` now opens two more steps instead of the home:
+**level** (Gentle, Steady, Tough from `TIERS` in lib/daily-difficulty.js, plus Surprise me)
+and **tiles** (today's runs whose games mostly share the skill's primary, then every game
+listing the skill at that level, ranked by the site's plays over 7 days from
+`/api/quiz/my-plays` `week`; 1 / 2 / 3 across). A tile goes straight to the game or run.
+On a Sunday a NEW visitor also gets a card offering last Monday's boards
+(`/api/quiz/entry-boards`, links `?p=<num>`); returning readers get the level buttons alone.
+Escape steps back a page. `?entry=new` and `?entry=ret` preview each version.
+
+**A new visitor lands in dark.** "New" is the first door on a browser with no play
+footprint and no stored register. Picking a tile stores `sot_theme2 = 'dark'` and
+`LIGHT_OFFER_KEY` (`sot_light_offer1`) = 'pending'. `LightOffer` in app/ThemePop.jsx
+(mounted in StageChrome's cap and LayoutCInner's desktop cap) offers light on the start
+gate only, goes the moment a first move lands, and returns on the next gate until
+"Switch to light", "Keep dark" or the switch itself answers it. Existing readers keep
+whatever register they had.

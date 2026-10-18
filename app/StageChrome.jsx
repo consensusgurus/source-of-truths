@@ -37,7 +37,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import ChallengeStrip from './ChallengeStrip';
 import MindLoftMark from './MindLoftMark';
 import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro } from '@/lib/stage-theme';
-import ThemePop from './ThemePop';
+import ThemePop, { LightOffer } from './ThemePop';
 // The stage swaps LoftCap out, and LoftCap was carrying the whole .loft-*
 // sheet that LoftFinish depends on, so the end card rendered unstyled.
 import { LoftSheet } from './LoftCap';
@@ -392,6 +392,7 @@ export default function StageChrome({
             the cap's LAST CHILD on purpose: it reads its own parent to find
             the glyph and measure itself against it. */}
         <ThemePop />
+        <LightOffer gameKey={gameKey} num={num} />
       </div>
 
       <LoftSheet />

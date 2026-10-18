@@ -753,6 +753,10 @@ html.stg-flip .stage-page * {
   background: var(--stg-acc, #38bdf8); color: var(--stg-onramp, #08222e);
 }
 .stg-tpop-go:hover { filter: brightness(1.08); }
+.stg-tpop-go.stg-tpop-alt {
+  background: transparent; color: var(--stg-ink, #e9edf4);
+  box-shadow: inset 0 0 0 1.5px var(--stg-line, rgba(255,255,255,.18));
+}
 .stg-tpop-x {
   position: absolute; top: 7px; right: 8px;
   display: inline-flex; align-items: center; justify-content: center;

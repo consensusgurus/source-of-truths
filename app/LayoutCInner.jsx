@@ -35,6 +35,7 @@ import useDayStats, { etToday } from './useDayStats';
 import useGroupStanding from './groups/groupStanding';
 import StageLadder from './StageLadder';
 import MindLoftMark from './MindLoftMark';
+import { LightOffer } from './ThemePop';
 import { SNAP_KEY } from '@/lib/home-snapshot';
 import { useRevealPref, REVEAL } from '@/lib/reveal-pref';
 import { sharedGet } from './sharedGet';
@@ -537,6 +538,7 @@ export default function LayoutCInner({ gameKey }) {
               )}
             </button>
           </div>
+          <LightOffer gameKey={gameKey} />
         </div>
       </div>
 
