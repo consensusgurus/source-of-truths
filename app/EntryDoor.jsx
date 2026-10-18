@@ -13,8 +13,9 @@
 // WHAT IT IS: the ten category bands rise and the ground wipes across them (the
 // Ramp, kept as a one-time opening), the mark and the three brand lines land,
 // and the curtain lifts onto "what do you want to sharpen today?" with one tile
-// per SKILL (owner, 2026-10-16; lib/daily-skills.js). A tile opens the home pane
-// of that skill's category (its `pane`), exactly as the category tiles did. It
+// per SKILL (owner, 2026-10-16; lib/daily-skills.js). A tile opens that SKILL's
+// own pane on the home ('sk:' plus the skill id, owner 2026-10-18), with the
+// index showing skills for the visit. It
 // never starts a run (owner, same day). The button at the foot just closes the
 // door onto the home as it is.
 //
@@ -152,7 +153,7 @@ export default function EntryDoor({ onPick }) {
             const meta = n ? `${n} games` : '';
             return (
               <li key={t.id} style={{ '--i': i }}>
-                <button type="button" className="ent-tile" style={{ '--c': CATEGORY_RAMP[t.ramp] }} onClick={() => pick(t.pane)}
+                <button type="button" className="ent-tile" style={{ '--c': CATEGORY_RAMP[t.ramp] }} onClick={() => pick('sk:' + t.id)}
                   aria-label={`${t.name}: open the puzzles`}>
                   <span className="ent-sk">
                     {t.short ? <><span className="ent-cl">{t.name}</span><span className="ent-cs">{t.short}</span></> : t.name}

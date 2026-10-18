@@ -44,6 +44,8 @@ import { DISPLAY_CIRCUITS, RUN_GAMES, circuitKeysFor, circuitEntryHref } from '@
 import GameGlyph from '../GameGlyph';
 import CircuitArt from '../CircuitArt';
 import { RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
+import { SKILLS, SKILL_MAP, primarySkill } from '@/lib/daily-skills';
+import { TIERS as DIFF_TIERS } from '@/lib/daily-difficulty';
 // ONE READING OF A RESULT ROW, the same one the ending curtain and the tile
 // panel use. It prints the run in the GAME'S own units — 7/16 · 3 busts · 2:11
 // — which is the whole reason Your standing can be one column instead of six.
@@ -390,7 +392,19 @@ const MINE_ID = 'sty-mine';
 const CIRC_ID = 'sty-circs';
 // The registry key stays Word; the home prints Words, to sit beside Numbers
 // (owner, 2026-10-07).
-const catLabel = (c) => (c === 'Word' ? 'Words' : c);
+// SKILLS OR CATEGORIES (owner, 2026-10-18). The index lists either the ten
+// skills (lib/daily-skills.js, the default) or the categories, and a skill is a
+// pane exactly like a category: its id is 'sk:' plus the skill id, and it wears
+// the ramp step its skill carries. Only the CATEGORY panes are always rendered
+// for crawlers; a skill pane renders while the skill index is up.
+const SK_PRE = 'sk:';
+// Its own key: sot_home_lens is the retired group lens and is cleared on arrival.
+const IX_KEY = 'sot_home_ix';
+const isSkillId = (id) => typeof id === 'string' && id.startsWith(SK_PRE);
+const skillOfId = (id) => (isSkillId(id) ? SKILL_MAP[id.slice(SK_PRE.length)] || null : null);
+// The category whose colour a pane wears: itself, or its skill's ramp step.
+const rampCat = (id) => { const s = skillOfId(id); return s ? RAMP_ORDER[s.ramp] || id : id; };
+const catLabel = (c) => { const s = skillOfId(c); return s ? s.name : c === 'Word' ? 'Words' : c; };
 const CAT_FIXED = ['Word', 'Numbers', 'Logic', 'Sudoku', 'Trivia', 'Geography', 'End Game', 'Cards', 'Arcade', 'Crowd Psychology'];
 // THE REST OF THE PAGE IS PANES TOO (owner, 2026-10-07). Each id is also the
 // section's DOM id, so a #hash that names one opens it.
@@ -433,6 +447,17 @@ const IX_GLYPHS = {
   lists: <><path d="M10 6h10M10 12h10M10 18h10" /><path d="M4 5.5l1.5-1v4M4 11h2.5l-2.5 2.5h2.5M4 16.5h2.5l-1.3 1.3a1.2 1.2 0 1 1-1.2 1.5" /></>,
   'sty-board': <path d="M4 20V10M10 20V4M16 20v-7M21 20H3" />,
   'sty-comm': <path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z" />,
+  // The ten skills.
+  'sk:lang': <path d="M4 18 9 6l5 12M6 14h6M15.5 12.5c.5-1 1.4-1.5 2.4-1.5 1.4 0 2.1.8 2.1 2.3V18M20 15c-3.4 0-4.8.6-4.8 1.8 0 .8.6 1.3 1.6 1.3 1.6 0 3.2-1.2 3.2-3.1" />,
+  'sk:math': <path d="M5 8h6M8 5v6M13 8h6M5 16h6M13 14h6M13 18h6" />,
+  'sk:ded': <><circle cx="10.5" cy="10.5" r="5.5" /><path d="M15 15l5 5" /></>,
+  'sk:spa': <path d="M12 3 20 7.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12 4 7.5M12 12v9" />,
+  'sk:grid': <><rect x="4" y="4" width="16" height="16" rx="1.5" /><path d="M9.3 4v16M14.7 4v16M4 9.3h16M4 14.7h16" /></>,
+  'sk:plan': <path d="M4 19h4v-4h4v-4h4V7h4" />,
+  'sk:mem': <><rect x="7" y="3" width="12" height="15" rx="2" /><path d="M4 7v12a2 2 0 0 0 2 2h10" /></>,
+  'sk:est': <path d="M4 17a8 8 0 0 1 16 0M12 17l4-5" />,
+  'sk:speed': <><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="4" /></>,
+  'sk:ppl': <><circle cx="9" cy="8" r="3" /><circle cx="16.5" cy="9.5" r="2.5" /><path d="M3.5 19c.6-3.3 2.8-5 5.5-5s4.9 1.7 5.5 5M14.5 14.2c2.6-.5 5 1 5.5 4.8" /></>,
 };
 const INFO_PANES = [QUIZ_ID, BOARD_ID, IQ_ID, COMM_ID, EXAM_ID];
 // The six standardized tests, written out: app/exams/examData.js carries every
@@ -1361,10 +1386,10 @@ export default function StageToday() {
   // The register decides which end of the ramp a category wears, exactly as it
   // does on a board: the pale step on the dark ground, its dark twin on the pale.
   const light = stageTheme === 'light';
-  const hueFor = (cat) => (light ? categoryColorLight(cat) : categoryColor(cat));
+  const hueFor = (cat) => { const c = rampCat(cat); return light ? categoryColorLight(c) : categoryColor(c); };
   // THE SAME CATEGORY AS TEXT OR A LINE. Since 2026-10-16 the light fill is a
   // pastel, which cannot be ink on paper, so every --cc carries a --cci beside it.
-  const inkFor = (cat) => (light ? categoryAccentInkLight(cat) : categoryColor(cat));
+  const inkFor = (cat) => { const c = rampCat(cat); return light ? categoryAccentInkLight(c) : categoryColor(c); };
 
   useEffect(() => {
     let alive = true;
@@ -1445,6 +1470,25 @@ export default function StageToday() {
     () => cats.flatMap((c) => c.games).slice().sort((a, b) => a.name.localeCompare(b.name)),
     [cats],
   );
+
+  // THE SKILL PANES: every live daily under its PRIMARY skill, A to Z, in the
+  // order lib/daily-skills.js lists the skills (owner, 2026-10-18).
+  const skillCats = useMemo(() => SKILLS
+    .map((s) => ({ cat: SK_PRE + s.id, games: DAILY_GAMES.filter((g) => primarySkill(g.key) === s.id).sort((a, b) => a.name.localeCompare(b.name)) }))
+    .filter((c) => c.games.length), []);
+  // SKILLS ARE THE DEFAULT INDEX until the reader picks Categories, and the
+  // pick is remembered per browser. Read in a layout effect so a reader who
+  // chose Categories never sees the skills flash first.
+  const [ixLens, setIxLens] = useState('skill');
+  useIsoLayoutEffect(() => {
+    try { if (localStorage.getItem(IX_KEY) === 'cat') setIxLens('cat'); } catch (e) { /* storage off */ }
+  }, []);
+  const pickIx = useCallback((v) => {
+    setIxLens(v);
+    try { localStorage.setItem(IX_KEY, v); } catch (e) { /* storage off */ }
+  }, []);
+  const lensCats = ixLens === 'skill' ? skillCats : orderedCats;
+  const paneCat = (id) => orderedCats.find((c) => c.cat === id) || skillCats.find((c) => c.cat === id) || null;
 
   const moveCat = (cat, dir) => {
     const cur = orderedCats.map((c) => c.cat);
@@ -2005,7 +2049,7 @@ export default function StageToday() {
   // A to Z is gone as a mode: All games IS that list. Reorder is a state of
   // the list itself (arrows on the category rows), not a second page layout.
   const ix = true;
-  const paneIds = [ALL_ID, MINE_ID, CIRC_ID, ...orderedCats.map((c) => c.cat), ...INFO_PANES];
+  const paneIds = [ALL_ID, MINE_ID, CIRC_ID, ...orderedCats.map((c) => c.cat), ...skillCats.map((c) => c.cat), ...INFO_PANES];
   const paneOn = paneIds.includes(pane) ? pane : ALL_ID;
   // CHOOSING CIRCUITS IN THE INDEX ASKS FOR ALL OF THEM (owner, 2026-10-06): the
   // pane is the reader's request to browse circuits, so it lists the whole
@@ -2186,7 +2230,7 @@ export default function StageToday() {
     if (id === ALL_ID) return [alphaDone, alpha.length];
     if (id === MINE_ID) return pinned.length ? [pinned.filter((g) => done.has(g.key)).length, pinned.length] : null;
     if (id === CIRC_ID) return circuits.length ? [circuits.filter((c) => c.games.length && c.n === c.games.length).length, circuits.length] : null;
-    const c = cats.find((x) => x.cat === id);
+    const c = paneCat(id);
     return c && c.games.length ? [c.games.filter((g) => done.has(g.key)).length, c.games.length] : null;
   };
   // DESIGN D (owner, 2026-10-16): a filled category disc behind the glyph,
@@ -2220,7 +2264,7 @@ export default function StageToday() {
   // stay half width.
   const ixRuns = [
     [ALL_ID, MINE_ID],
-    orderedCats.map((c) => c.cat),
+    lensCats.map((c) => c.cat),
     [CIRC_ID, QUIZ_ID],
     [IQ_ID, EXAM_ID, 'kids', 'lists'],
   ];
@@ -2232,10 +2276,11 @@ export default function StageToday() {
   };
   const ixBtn = (id, label, hue, cls) => {
     const prog = ixProg(id);
+    const rp = RAMP_ORDER.includes(id) || isSkillId(id);
     return (
       <button key={id} type="button" aria-pressed={paneOn === id}
-        className={'sty-ixb' + (RAMP_ORDER.includes(id) ? ' ct' : '') + (cls ? ' ' + cls : '') + fillFor(id) + (paneOn === id ? ' on' : '') + (prog && prog[0] >= prog[1] ? ' cmp' : '')}
-        style={{ '--cc': hue, '--cci': RAMP_ORDER.includes(id) ? inkFor(id) : hue === 'var(--stg-acc)' ? 'var(--stg-acc-ink)' : hue, ...(RAMP_ORDER.includes(id) && !light ? { '--ixp': categoryColor(id) } : null), '--i': ixSeq++ }}
+        className={'sty-ixb' + (rp ? ' ct' : '') + (cls ? ' ' + cls : '') + fillFor(id) + (paneOn === id ? ' on' : '') + (prog && prog[0] >= prog[1] ? ' cmp' : '')}
+        style={{ '--cc': hue, '--cci': rp ? inkFor(id) : hue === 'var(--stg-acc)' ? 'var(--stg-acc-ink)' : hue, ...(rp && !light ? { '--ixp': categoryColor(rampCat(id)) } : null), '--i': ixSeq++ }}
         onClick={(e) => { if (picked && paneOn === id) { setPicked(false); try { localStorage.setItem(TILES_KEY, '1'); } catch (er) {} } else pickPane(id, e); }}>
         <i aria-hidden="true" />
         {ixRing(id, prog)}
@@ -2251,8 +2296,20 @@ export default function StageToday() {
   // One choice for every pane, remembered per browser.
   const [sortBy, setSortBy] = useState('az');
   useEffect(() => {
-    try { if (localStorage.getItem('sot_home_sort') === 'pop') setSortBy('pop'); } catch (e) { /* storage off */ }
+    try { const v = localStorage.getItem('sot_home_sort'); if (v === 'pop' || v === 'diff') setSortBy(v); } catch (e) { /* storage off */ }
   }, []);
+  // EASY TO HARD (owner, 2026-10-18): each game's rating for the week, 1 to 5,
+  // re-rated every Sunday night from the seven days before (lib/daily-difficulty.js).
+  // One shared, cached read, asked for only once the sort is picked.
+  const [diff, setDiff] = useState(null);
+  const diffAsked = useRef(false);
+  useEffect(() => {
+    if (sortBy !== 'diff' || diffAsked.current) return;
+    diffAsked.current = true;
+    fetch('/api/quiz/difficulty').then((r) => r.json())
+      .then((d) => setDiff((d && d.ratings) || {}))
+      .catch(() => setDiff({}));
+  }, [sortBy]);
   const pickSort = (v) => {
     setSortBy(v);
     try { localStorage.setItem('sot_home_sort', v); } catch (e) { /* storage off */ }
@@ -2284,9 +2341,11 @@ export default function StageToday() {
   const sortCtl = (mobile) => (
     <div className={mobile ? 'sty-sort sty-sortm' : 'sty-sort'} role="group" aria-label="Sort puzzles"
       onClick={(e) => e.stopPropagation()}>
-      <button type="button" aria-pressed={sortBy === 'az'} onClick={() => pickSort('az')}>A&ndash;Z</button>
+      <button type="button" aria-pressed={sortBy === 'diff'} onClick={() => pickSort('diff')}
+        title="Gentlest first, rated every Sunday night from the last 7 days of play"><span className="sty-sl">Easy to hard</span><span className="sty-ss">Easy</span></button>
       <button type="button" aria-pressed={sortBy === 'pop'} onClick={() => pickSort('pop')}
         title="Most played across the site over the last 7 days">Popular</button>
+      <button type="button" aria-pressed={sortBy === 'az'} onClick={() => pickSort('az')}>A&ndash;Z</button>
     </div>
   );
   const alphaDone = alpha.filter((g) => done.has(g.key)).length;
@@ -2297,10 +2356,19 @@ export default function StageToday() {
           has the width once "Back to categories" became "Back". It is a sibling
           of the bar's button, not inside it (no button in a button), and the
           CSS lays both into the same grid row. */}
-      {picked && (paneOn === ALL_ID || cats.some((c) => c.cat === paneOn)) ? sortCtl(true) : null}
+      {picked && (paneOn === ALL_ID || !!paneCat(paneOn)) ? sortCtl(true) : null}
       {ixBtn(MINE_ID, 'My Puzzles', 'var(--stg-acc)')}
       <span className="sty-ixsep" aria-hidden="true" />
-      {orderedCats.map(({ cat }, ci) => (reorder ? (
+      {/* SKILLS OR CATEGORIES (owner, 2026-10-18): the index groups the dailies
+          by the skill they sharpen until the reader picks Categories, and the
+          choice is remembered. Reorder belongs to the categories alone. */}
+      {reorder ? null : (
+        <div className="sty-lens" role="group" aria-label="Group puzzles by">
+          <button type="button" aria-pressed={ixLens === 'skill'} onClick={() => pickIx('skill')}>Skills</button>
+          <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
+        </div>
+      )}
+      {(reorder ? orderedCats : lensCats).map(({ cat }, ci) => (reorder ? (
         <div key={cat} className={'sty-ixb sty-ixr' + (paneOn === cat ? ' on' : '')} style={{ '--cc': hueFor(cat), '--cci': inkFor(cat) }}>
           <i aria-hidden="true" />
           <span>{catLabel(cat)}</span>
@@ -2311,7 +2379,9 @@ export default function StageToday() {
         </div>
       ) : ixBtn(cat, cat === 'Crowd Psychology'
         ? <><span className="sty-ixl">Crowd Psychology</span><span className="sty-ixs">Crowd</span></>
-        : catLabel(cat), hueFor(cat))))}
+        : skillOfId(cat) && skillOfId(cat).short
+          ? <><span className="sty-ixl">{skillOfId(cat).name}</span><span className="sty-ixs">{skillOfId(cat).short}</span></>
+          : catLabel(cat), hueFor(cat))))}
       <span className="sty-ixsep" aria-hidden="true" />
       {ixBtn(CIRC_ID, 'Circuits', 'var(--stg-mute)')}
       {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)')}
@@ -2330,10 +2400,10 @@ export default function StageToday() {
       <a className={'sty-ixb sty-ixmv sty-ixm4' + fillFor('lists')} href={withTq('/lists')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('lists', null)}<span>Top 10 Lists</span></a>
       <span className="sty-ixsep sty-ixmv" aria-hidden="true" />
       {ixBtn(COMM_ID, 'Most Appreciated', 'var(--stg-mute)', 'wide sty-ixmv sty-ixma')}
-      <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
+      {ixLens === 'cat' || reorder ? <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
         onClick={() => setReorder((v) => !v)}>
         {reorder ? 'Done' : 'Reorder'}
-      </button>
+      </button> : null}
       {reorder && handOrder ? (
         <button type="button" className="sty-ixre" onClick={() => saveOrder(null)}>Reset order</button>
       ) : null}
@@ -2404,7 +2474,7 @@ export default function StageToday() {
       </ol>
     </div>
   );
-  const railCat = orderedCats.find((x) => x.cat === paneOn) || null;
+  const railCat = paneCat(paneOn);
   const railId = railCat ? railCat.cat : ALL_ID;
   const railKeys = railCat ? railCat.games.map((g) => g.key).join(',') : '';
   const [rail, setRail] = useState({});
@@ -2511,6 +2581,11 @@ export default function StageToday() {
   }, [favWanted]);
   // A to Z until the week's counts land, so nothing jumps twice.
   const sortGames = (list) => {
+    if (sortBy === 'diff') {
+      if (!diff) return list;
+      const r = (g) => diff[g.key] || 9;
+      return list.slice().sort((a, b) => (r(a) - r(b)) || a.name.localeCompare(b.name));
+    }
     if (sortBy !== 'pop' || !fav || !fav.week) return list;
     const w = fav.week;
     return list.slice().sort((a, b) => ((w[b.key] || 0) - (w[a.key] || 0)) || a.name.localeCompare(b.name));
@@ -2600,10 +2675,36 @@ export default function StageToday() {
       <span /><span />
     </div>
   );
-  const catLedger = (games) => (
+  // EASY TO HARD CUTS A PANE INTO THE WEEK'S THREE BANDS (owner, 2026-10-18):
+  // Gentle, Steady, Tough, then anything not rated yet. Every other sort is one
+  // run, so these helpers hand back the plain list when it is not picked.
+  const bandsOf = (list) => {
+    if (sortBy !== 'diff' || !diff) return null;
+    const out = DIFF_TIERS.map((t) => ({ id: t.id, label: t.label, sub: t.sub,
+      games: list.filter((g) => { const v = diff[g.key]; return v >= t.lo && v <= t.hi; }) }));
+    out.push({ id: 'new', label: 'Not rated yet', sub: 'New, or too few plays last week', games: list.filter((g) => !diff[g.key]) });
+    return out.filter((b) => b.games.length);
+  };
+  const tileRun = (list, mk) => {
+    const bs = bandsOf(list);
+    if (!bs) return list.map(mk);
+    let i = 0;
+    return bs.flatMap((b) => [
+      <div key={'bd-' + b.id} className="sty-band" data-fk={'band:' + b.id}><b>{b.label}</b><span>{b.sub}</span><em>{b.games.length}</em></div>,
+      ...b.games.map((g) => mk(g, i++)),
+    ]);
+  };
+  const ledgerRun = (list, pre, ownHue) => {
+    const bs = bandsOf(list);
+    if (!bs) return ledgerRows(list, pre, ownHue);
+    return bs.map((b) => (
+      <div key={'lb-' + b.id} className="sty-ldb">{ledgerHead(b.label, b.games.length)}{ledgerRows(b.games, pre + b.id, ownHue)}</div>
+    ));
+  };
+  const catLedger = (games, ownHue = false) => (
     <div className="sty-led">
       {ledgerHead(null)}
-      {ledgerRows(sortGames(games), 'led', false)}
+      {ledgerRun(sortGames(games), ownHue ? 'skl' : 'led', ownHue)}
     </div>
   );
   // "Also try our permanent quizzes:" (owner, 2026-10-16). The ledger's own
@@ -2751,7 +2852,7 @@ export default function StageToday() {
   };
   // A pill's lead category, for its colour and the ink that sits on it.
   const pillCat = (c, cat) => {
-    if (cat) return cat;
+    if (cat) return rampCat(cat);
     const tally = {};
     let best = null;
     for (const g of c.games) {
@@ -2761,8 +2862,10 @@ export default function StageToday() {
     return best || (c.games[0] && c.games[0].cat);
   };
   const circPills = (cat, mobile) => {
+    const sk = skillOfId(cat);
     const list = PILL_CIRCUITS.map((id) => circuits.find((c) => c.id === id)).filter((c) => c && (!cat
-      || c.games.some((g) => g.cat === cat) || (PILL_EXTRA[c.id] || []).includes(cat)));
+      || (sk ? c.games.some((g) => primarySkill(g.key) === sk.id) || (PILL_EXTRA[c.id] || []).includes(sk.pane)
+        : c.games.some((g) => g.cat === cat) || (PILL_EXTRA[c.id] || []).includes(cat))));
     if (!list.length) return null;
     if (mobile) return runsMobile(list, cat);
     return (
@@ -2811,17 +2914,25 @@ export default function StageToday() {
   // ONE BIG RUN CARD: the phone's lead run and every card in the Circuits pane.
   const runCard = (c, cat, eyebrow, extra, art) => {
     const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
-    const done = runFull(c);
+    const fin = runFull(c);
     const gtxt = runGroupText(c, st);
     const left = !st ? '\u00a0'
-      : (done && st.rank ? `You: #${st.rank} of ${fmtN(st.players)}` : `${fmtN(st.players)} ${st.players === 1 ? 'player' : 'players'} today`);
+      : (fin && st.rank ? `You: #${st.rank} of ${fmtN(st.players)}` : `${fmtN(st.players)} ${st.players === 1 ? 'player' : 'players'} today`);
     return (
-      <a key={c.id} className={'sty-rbig' + (done ? ' done' : '') + (art ? ' art' : '')} href={withTq(circuitEntryHref(c.id))} style={runLook(c, cat)}>
+      <a key={c.id} className={'sty-rbig' + (fin ? ' done' : '') + (art ? ' art' : '')} href={withTq(circuitEntryHref(c.id))} style={runLook(c, cat)}>
         {art ? <CircuitArt id={c.id} /> : null}
         {eyebrow ? <span className="ey">{eyebrow}</span> : null}
         <b className="nm">{c.name}{extra || null}</b>
-        <span className="go">{done ? 'Results' : 'Play'}</span>
+        <span className="go">{fin ? 'Results' : 'Play'}</span>
         {c.blurb ? <span className="ln">{c.blurb}</span> : null}
+        {/* THE GAMES INSIDE THE RUN (owner, 2026-10-18): numbered, in play order,
+            the ones you have played lit. Desktop Circuits pane only; the phone
+            keeps its compact runs block. */}
+        <span className="gms" aria-label={'Games in ' + c.name}>
+          {c.games.map((g, i) => (
+            <span key={g.key} className={'gm' + (done.has(g.key) ? ' on' : '')} style={{ '--gc': hueFor(g.cat) }}><i>{i + 1}</i>{g.name}</span>
+          ))}
+        </span>
         <span className="st">
           <span>{left}</span>
           {gtxt ? <span className="gr">{gtxt}</span> : null}
@@ -2904,13 +3015,17 @@ export default function StageToday() {
       </div>
     </div>
   )) : null);
-  const catTiles = orderedCats.map(({ cat, games }) => {
-    const fit = paneOn === cat ? fitFor(games.length) : null;
+  // ONE SECTION PER PANE, a category or a skill. A skill mixes categories, so
+  // its tiles and rows carry their own category's hue, as All Puzzles does.
+  const paneSection = ({ cat, games }) => {
+    const sk = isSkillId(cat);
+    const fit = paneOn === cat && sortBy !== 'diff' ? fitFor(games.length) : null;
     const fitStyle = fit ? fit.style : undefined;
     const n = games.filter((g) => done.has(g.key)).length;
+    const s = sk ? skillOfId(cat) : null;
     return (
-      <section key={cat} id={`cat-${cat.replace(/\s+/g, '-')}`}
-        className={'sty-cat sty-ixc' + (paneOn === cat ? '' : ' sty-ixoff')}
+      <section key={cat} id={`cat-${cat.replace(/[\s:]+/g, '-')}`}
+        className={'sty-cat sty-ixc' + (sk ? ' sty-skc' : '') + (paneOn === cat ? '' : ' sty-ixoff')}
         data-fk={'sec:' + cat} style={{ '--cc': hueFor(cat), '--cci': inkFor(cat) }}>
         <div className="sty-cathead">
           <h2>{catLabel(cat)}</h2>
@@ -2919,28 +3034,37 @@ export default function StageToday() {
           {sortCtl(false)}
           {viewCtl(cat)}
         </div>
+        {s ? <p className="sty-skw">{s.what}. {games.length} daily puzzles.</p> : null}
         {circPills(cat, true)}
-        {mid && viewOf(cat) === 'list' ? catLedger(games) : null}
+        {mid && viewOf(cat) === 'list' ? catLedger(games, sk) : null}
         {!(mid && viewOf(cat) === 'list') ? <>
         <div className={'sty-games' + (fit ? ' fit' : '')} style={fitStyle}>
-          {sortGames(games).map((g, i) => (
+          {tileRun(sortGames(games), (g, i) => (
             <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
               canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-              res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} />
+              hue={sk ? hueFor(g.cat) : undefined} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={sk ? cat + ':' + g.key : null} />
           ))}
         </div>
         {fit ? favBlock(cat, games, fit.k) : null}
         </> : null}
-        {permQuizzes(cat)}
+        {sk ? null : permQuizzes(cat)}
       </section>
     );
-  });
+  };
+  // Every category pane stays in the page for crawlers; a skill pane renders
+  // while the skill index is up, or while it is the pane on show.
+  const catTiles = [
+    ...orderedCats.map(paneSection),
+    ...skillCats.filter((c) => ixLens === 'skill' || paneOn === c.cat).map(paneSection),
+  ];
 
   return (
     <div className="sty stage-page" data-stage-theme={stageTheme} ref={snapRef}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {/* THE ENTRY DOOR: first visit then weekly, always dark, replaced the daily arrival. See app/EntryDoor.jsx. */}
-      <EntryDoor onPick={(cat) => goPane(cat)} />
+      {/* A SKILL TILE OPENS THAT SKILL'S PANE (owner, 2026-10-18), and shows the
+          skill index for this visit without changing what the reader stored. */}
+      <EntryDoor onPick={(id) => { if (isSkillId(id)) setIxLens('skill'); goPane(id); }} />
       {/* NEW-GAME PREMIERES: once per launch, returning players who have not
           played it, after the arrival has finished. See app/PremierePop.jsx. */}
       <PremierePop />
@@ -3204,11 +3328,11 @@ export default function StageToday() {
           {mid && viewOf(ALL_ID) === 'list' ? (
             <div className="sty-led">
               {ledgerHead(null)}
-              {ledgerRows(playedLast(sortGames(alpha), done), 'azl', true)}
+              {ledgerRun(playedLast(sortGames(alpha), done), 'azl', true)}
             </div>
           ) : null}
           <div className={'sty-games' + (mid && viewOf(ALL_ID) === 'list' ? ' sty-vhid' : '')}>
-            {playedLast(sortGames(alpha), done).map((g, i) => (
+            {tileRun(playedLast(sortGames(alpha), done), (g, i) => (
               // ALL GAMES MIXES CATEGORIES exactly as My games does, so each
               // card carries its own hue (owner, 2026-08-31).
               <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
@@ -4917,6 +5041,32 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-ixre:hover{color:var(--stg-ink);}
 .sty-ixre.on{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink);}
 .sty-ixre:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
+/* SKILLS OR CATEGORIES (owner, 2026-10-18): one switch above the list. */
+.sty-lens{display:flex;gap:2px;padding:2px;margin:2px 4px 6px;border:1px solid var(--stg-cell-line);border-radius:999px;}
+.sty-lens button{flex:1 1 0;border:0;border-radius:999px;background:transparent;color:var(--stg-ink2);
+  font:800 11px/1 ${SANS};letter-spacing:.05em;text-transform:uppercase;padding:7px 8px;cursor:pointer;}
+.sty-lens button[aria-pressed="true"]{background:var(--stg-ink);color:var(--stg-ground);}
+.sty-lens button:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
+.sty-ss{display:none;}
+/* EASY TO HARD BANDS (owner, 2026-10-18): Gentle, Steady, Tough, rated weekly. */
+.sty-band{grid-column:1 / -1;display:flex;align-items:baseline;gap:10px;padding:8px 2px 2px;border-bottom:1px solid var(--stg-line);}
+.sty-band:not(:first-child){margin-top:10px;}
+.sty-band b{font-size:13px;font-weight:800;color:var(--stg-ink);letter-spacing:-0.01em;}
+.sty-band span{font-size:12px;color:var(--stg-mute);}
+.sty-band em{margin-left:auto;font-style:normal;font-size:12px;font-weight:800;color:var(--stg-ink2);}
+.sty-ldb + .sty-ldb{margin-top:10px;}
+.sty-skw{margin:-2px 0 10px;font-size:13px;color:var(--stg-ink2);}
+/* A RUN'S GAMES, desktop Circuits pane only (owner, 2026-10-18). */
+.sty-rbig .gms{display:none;}
+@media (min-width:901px){
+  .sty-rcards .sty-rbig .gms{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
+  .sty-rcards .sty-rbig .gm{display:inline-flex;align-items:center;gap:5px;padding:3px 8px 3px 3px;border-radius:999px;
+    border:1px solid var(--stg-line);font-size:11.5px;font-weight:700;color:var(--stg-ink2);line-height:1.2;}
+  .sty-rcards .sty-rbig .gm i{flex:none;display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;
+    font-style:normal;font-size:10px;font-weight:800;background:var(--stg-raise);color:var(--stg-ink2);}
+  .sty-rcards .sty-rbig .gm.on{color:var(--stg-ink);border-color:var(--stg-line2);}
+  .sty-rcards .sty-rbig .gm.on i{background:var(--gc);color:var(--stg-onramp,#08222e);}
+}
 .sty-ixe{margin:0;color:var(--stg-mute);font-size:13.5px;}
 @media (max-width:900px){
   .sty-ixre{flex:none;align-self:center;margin-top:0;padding:8px 12px;}
@@ -5134,6 +5284,9 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
      the whole row. Decided in JS (fillFor), since the count that matters
      leaves out the opened tile. */
   .sty-ixn:not(.re) .sty-ixb.sty-ixfill{grid-column:1 / -1;}
+  .sty-ixn:not(.re) > .sty-lens{grid-column:1 / -1;margin:0;}
+  .sty-sortm .sty-sl{display:none;}
+  .sty-sortm .sty-ss{display:inline;}
   .sty-ixn:not(.re) .sty-ixsep{display:block;grid-column:1 / -1;height:5px;margin:0;background:none;}
   .sty-ix.msel > section,.sty-ix.msel > .sty-ord{display:none !important;}
   /* THE OTHER TILES STAY, UNDER THE OPEN SECTION (owner, 2026-10-07). The list

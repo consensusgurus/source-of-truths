@@ -9766,3 +9766,30 @@ Not in the Arcade circuit; whether it joins is an owner call.
   every swap and every few seconds, and comes back paused.
 - `scripts/verify-squash.mjs` checks the bank and the engine (every special and combo, the
   shuffle, determinism of the same moves, and that each par still matches the engine).
+
+## The home index: Skills or Categories, Easy to hard, and run game chips (owner, 2026-10-18)
+
+From the "Best ideas, full roster" mockups (canvas https://claude.ai/artifact/6AdyVtYtDPVqHtgeevxd2r).
+
+- **A Skills / Categories switch sits under My Puzzles** in the home index (`app/today/StageToday.jsx`,
+  `.sty-lens`). **Skills is the default** until the reader picks Categories, and the pick is kept in
+  `sot_home_ix` (NOT `sot_home_lens`, which is the retired group lens and is cleared on every arrival).
+  A skill pane's id is `'sk:'` plus the skill id; it lists the live games whose PRIMARY skill it is
+  (`primarySkill`), A to Z, each tile in its own category colour, and wears its skill's `ramp` step
+  (`rampCat`). Category panes are always rendered for crawlers; a skill pane renders while the skill
+  index is up or while it is the pane on show. Reorder belongs to the categories alone and is hidden
+  in skill mode. A skill pane's run pills are the runs holding a game of that skill, plus
+  `PILL_EXTRA` of the skill's `pane` category.
+- **Entering from the door goes to the SKILL's pane**: `app/EntryDoor.jsx` calls `onPick('sk:' + id)`,
+  and the home shows the skill index for that visit without changing the stored pick.
+- **Easy to hard is the third sort** (Easy to hard, Popular, A to Z; "Easy" on a phone). Every live
+  daily is rated 1 to 5 once a week by `lib/daily-difficulty.js` from the seven ET days ending the
+  Sunday BEFORE today (so it changes at midnight Eastern after Sunday and holds all week): the mean
+  share of a board solved and the median clock, ranked across games and cut into fifths. A game with
+  under 20 plays that week keeps its previous rating; a game never rated lists last as "Not rated
+  yet". `/api/quiz/difficulty` stores the week in `stats_payloads` (`difficulty:v1`) and rebuilds only
+  when a new week begins. The sort bands every pane into Gentle (1-2), Steady (3) and Tough (4-5),
+  and turns the fitted tile layout off. `scripts/verify-difficulty.mjs` checks the method.
+- **The desktop Circuits pane's run cards list the run's games**, numbered in play order, the ones
+  played lit (`.gms` inside `runCard`, shown only inside `.sty-rcards` at 901px and up). The phone
+  keeps its compact runs block unchanged.
