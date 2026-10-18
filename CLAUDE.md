@@ -9844,5 +9844,16 @@ Skills Language, Memory, Deduction. Daily group and finish set Crosswords, plus 
   no clue carries any word of the day, nothing repeats in the bank. Bank 2026-10-18 to 2026-11-30.
 - **Ramp:** hidden words Mon-Wed 4 letters, Thu-Sat 4-5 with a 5, Sunday Edition 5-6; answers Mon 4-5,
   Tue-Sat 4-6, Sunday 5-7.
+- **The finale accepts EVERY real fit (owner, 2026-10-18).** CHECK, STAND, BREAK took POINT and also UP and
+  OUT, which the old uniqueness rule could not see (its only source was hinge-pairs). Each board carries
+  `also`: every other word that goes with all three on EITHER side, from the Scrabble lists (closed words:
+  CHECKUP, STARLIGHT), hinge-pairs and `scripts/arcos-phrases.txt` (two-word WordNet lemmas, STAND BY,
+  CHECK IN), under `scripts/arcos-accept-rules.json` (no affixes like ER or LESS, no plural beside its
+  word). `scripts/arcos-accept.mjs` computes it; `node scripts/gen-arcos.mjs --also` rewrites every board's
+  list; `verify-arcos` recomputes it word by word and fails a missing real fit or a listed non-fit. The
+  generator no longer rejects a trio with rivals. The finale is an OPEN LINE with no length shown, checked
+  on Enter (an ENTER key joins the on-screen keyboard at the finale); a word already tried costs nothing.
+  A solve with another word reads "OUT works. The setter had POINT." and every finish lists the rest as
+  "Also accepted".
 - **Ending:** the `arcband` beat in `lib/finish-beat.js`: the three hidden words slide in as bands in the
   ramp's sky, mint and lime, then the finale drops in gold, before the iris.

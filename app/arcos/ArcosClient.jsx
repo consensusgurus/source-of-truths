@@ -5,7 +5,10 @@
 // Three clued acrostics and a finale. FRONT: the first letters of the answers
 // spell a hidden word. BACK: the last letters spell one. DIAGONAL: letter N of
 // row N spells one. FINALE: one word goes with all three hidden words
-// (FLASH, SPOT, MOON give LIGHT). A full answer checks itself; a wrong one
+// (FLASH, SPOT, MOON give LIGHT), typed on an open line with no length shown
+// and checked on Enter. Every word that genuinely fits counts, not only the
+// setter's: the board carries them as `also` (owner, 2026-10-18; see
+// scripts/arcos-accept.mjs). A full answer checks itself; a wrong one
 // shakes and clears and costs nothing. Revealing a row costs that round a
 // point. Each round is worth 3, the finale 1 (three tries), out of 10; the
 // clock breaks ties (registry miss: null).
@@ -56,6 +59,7 @@ const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const TOTAL = 10;
 const ROUND_PTS = 3;
 const TRIES = 3;
+const FIN_MAX = 12;
 const KIND_NAME = { front: 'Front', back: 'Back', diag: 'Diagonal' };
 const KIND_TITLE = { front: 'Front spine', back: 'Back spine', diag: 'Diagonal' };
 const KIND_SUB = {
@@ -334,6 +338,9 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
   const typedCur = atFinale ? (g.typed.fin || '') : (curDone ? curAns : (g.typed[curKey] || ''));
   const triesLeft = TRIES - g.tries.length;
   const score = scoreOf(PUZZLE, g);
+  // the finale counts any word that genuinely fits, not only the setter's
+  const accepted = new Set([PUZZLE.finale, ...(PUZZLE.also || [])]);
+  const finWord = g.finale ? (g.finWord || PUZZLE.finale) : null;
 
   const REC_KEY = `sot_arcos_rec_${PUZZLE.num}`;
   const abandon = useAbandonFlush(() => {
@@ -416,33 +423,43 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
     if (atFinale) {
       if (g.finale || triesLeft <= 0) return;
       const cur = g.typed.fin || '';
-      if (cur.length >= PUZZLE.finale.length) return;
-      const t = cur + ch;
-      const g2 = { ...g, typed: { ...g.typed, fin: t } };
-      if (t.length < PUZZLE.finale.length) { setG(g2); return; }
-      if (t === PUZZLE.finale) {
-        g2.finale = true;
-        setFx((f) => ({ ...f, good: 'fin', goodAt: Date.now() }));
-        setG(g2);
-        setBusy(true);
-        setTimeout(() => { setBusy(false); finish(g2); }, 900);
-        return;
-      }
-      g2.tries = [...g.tries, t];
-      setG(g2);
-      setFx((f) => ({ ...f, bad: 'fin', badAt: Date.now(), n: f.n + 1 }));
-      setBusy(true);
-      setTimeout(() => {
-        setBusy(false);
-        setG((c2) => {
-          const c3 = { ...c2, typed: { ...c2.typed, fin: '' } };
-          if (c3.tries.length >= TRIES) { setTimeout(() => finish(c3), 0); }
-          return c3;
-        });
-      }, 520);
+      if (cur.length >= FIN_MAX) return;
+      setG({ ...g, typed: { ...g.typed, fin: cur + ch } });
       return;
     }
     if (g.solved[curKey]) return;
+    typeRow(ch);
+  }
+  // the finale is an open line: no length shown, checked on Enter
+  function submitFinale() {
+    if (!playing || busy || !atFinale || g.finale || triesLeft <= 0) return;
+    const t = g.typed.fin || '';
+    if (t.length < 2) { say('Type a word, then press Enter.'); return; }
+    if (g.tries.includes(t)) { say(`You tried ${t} already.`); return; }
+    const g2 = { ...g, typed: { ...g.typed, fin: t } };
+    if (accepted.has(t)) {
+      g2.finale = true;
+      g2.finWord = t;
+      setFx((f) => ({ ...f, good: 'fin', goodAt: Date.now() }));
+      setG(g2);
+      setBusy(true);
+      setTimeout(() => { setBusy(false); finish(g2); }, 900);
+      return;
+    }
+    g2.tries = [...g.tries, t];
+    setG(g2);
+    setFx((f) => ({ ...f, bad: 'fin', badAt: Date.now(), n: f.n + 1 }));
+    setBusy(true);
+    setTimeout(() => {
+      setBusy(false);
+      setG((c2) => {
+        const c3 = { ...c2, typed: { ...c2.typed, fin: '' } };
+        if (c3.tries.length >= TRIES) { setTimeout(() => finish(c3), 0); }
+        return c3;
+      });
+    }, 520);
+  }
+  function typeRow(ch) {
     const cur = g.typed[curKey] || '';
     if (cur.length >= curAns.length) return;
     const t = cur + ch;
@@ -491,6 +508,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
 
   const onKey = useCallback((k) => {
     if (k === 'BACK') backspace();
+    else if (k === 'ENTER') submitFinale();
     else if (/^[A-Z]$/.test(k)) typeLetter(k);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playing, sel, g, busy, curAns, curKey, atFinale]);
@@ -502,6 +520,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
       const tag = e.target && e.target.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       if (e.key === 'Backspace') { e.preventDefault(); onKey('BACK'); }
+      else if (e.key === 'Enter' && atFinale) { e.preventDefault(); onKey('ENTER'); }
       else if (e.key === 'ArrowUp' && !atFinale) { e.preventDefault(); pickRow(Math.max(0, sel - 1)); }
       else if (e.key === 'ArrowDown' && !atFinale && R) { e.preventDefault(); pickRow(Math.min(R.rows.length - 1, sel + 1)); }
       else if (/^[a-zA-Z]$/.test(e.key)) onKey(e.key.toUpperCase());
@@ -554,7 +573,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
   // ---- the board ----------------------------------------------------------
   const flashing = (k) => fx.good === k && Date.now() - fx.goodAt < 900;
   const shakingK = (k) => fx.bad === k && Date.now() - fx.badAt < 600;
-  const maxLen = R ? Math.max(...R.rows.map((x) => x.a.length)) : PUZZLE.finale.length;
+  const maxLen = R ? Math.max(...R.rows.map((x) => x.a.length)) : 5;
   const cellW = `min(46px, calc((100vw - 64px) / ${Math.max(5, maxLen)} - 5px))`;
   const roundShown = (r) => ended && ansOpen;
 
@@ -650,6 +669,9 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
   // keyboard: every letter live
   const keyboardRows = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'].map((row, ri) => (
     <div key={ri} style={{ display: 'flex', gap: 4, marginBottom: 5, justifyContent: 'center' }}>
+      {ri === 2 && atFinale && (
+        <button className="ar-key" onClick={() => onKey('ENTER')} aria-label="Enter" style={{ flex: '1.6 0 0', height: 46, background: STAGE_C, color: ONRAMP, border: `1.5px solid ${STAGE_C}`, fontSize: 12, fontWeight: 800, letterSpacing: '.04em' }}>ENTER</button>
+      )}
       {row.split('').map((ch) => (
         <button key={ch} className="ar-key" onClick={() => onKey(ch)} aria-label={ch}
           style={{ flex: '1 0 0', height: 46, background: KEY_BG, color: INK, fontSize: 15, border: KEY_LINE }}>{ch}</button>
@@ -665,8 +687,15 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
   const finaleView = () => {
     const F = PUZZLE.finale;
     const showF = g.finale || ended;
-    const typedF = g.finale ? F : (g.typed.fin || '');
+    const shownF = finWord || F;
+    const typedF = g.typed.fin || '';
     const shaking = shakingK('fin');
+    const others = (PUZZLE.also || []).filter((w) => w !== shownF);
+    let note;
+    if (g.finale) note = finWord === F ? `${F}. All three tie together.` : `${finWord} works. The setter had ${F}.`;
+    else if (ended) note = `The word was ${F}.`;
+    else note = `${triesLeft} ${triesLeft === 1 ? 'try' : 'tries'} left. Type a word that goes with all three, then press Enter.`;
+    const lineText = g.finale ? finWord : (ended ? F : typedF);
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -677,7 +706,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
               </div>
             );
             const slot = (
-              <span style={{ minWidth: 86, height: 30, boxSizing: 'border-box', borderRadius: 6, border: `1.5px dashed ${showF ? STAGE_C : LINE2}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, letterSpacing: '.06em', color: showF ? ACC_INK : FADED, padding: '0 8px' }}>{showF ? F : ''}</span>
+              <span style={{ minWidth: 86, height: 30, boxSizing: 'border-box', borderRadius: 6, border: `1.5px dashed ${showF ? STAGE_C : LINE2}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, letterSpacing: '.06em', color: showF ? ACC_INK : FADED, padding: '0 8px' }}>{showF ? shownF : '?'}</span>
             );
             return (
               <div key={r} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -687,22 +716,25 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
             );
           })}
         </div>
-        <div key={shaking ? 'm' + fx.n : 'a'} className={shaking ? 'ar-rej' : undefined} style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 6 }}>
-          {F.split('').map((ch, j) => {
-            const letter = showF && !g.finale && ended ? F[j] : (typedF[j] || '');
-            const solvedF = g.finale;
-            const cur = playing && !solvedF && j === typedF.length;
-            return (
-              <span key={j} className={'ar-cell' + (flashing('fin') ? ' ar-flip' : '')}
-                style={{ '--j': j, width: 'min(52px, calc((100vw - 80px) / 7))', aspectRatio: '1 / 1.1', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, fontWeight: 800, fontSize: 24,
-                  background: solvedF ? STAGE_C : (cur ? CUR_BG : CELL), color: solvedF ? ONRAMP : (ended && !solvedF ? BAD : INK),
-                  border: solvedF ? `1.5px solid ${STAGE_C}` : (cur ? `2px solid ${ACC_INK}` : (ended ? `1.5px dashed ${BAD}` : `1.5px solid ${CELL_LINE}`)) }}>{letter}</span>
-            );
-          })}
+        <div key={shaking ? 'm' + fx.n : 'a'} className={shaking ? 'ar-rej' : (flashing('fin') ? 'ar-flip' : undefined)}
+          style={{ alignSelf: 'center', width: 'min(340px, 100%)', minHeight: 58, boxSizing: 'border-box', marginTop: 6, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 14px', fontWeight: 800, fontSize: 26, letterSpacing: '.12em', overflow: 'hidden', whiteSpace: 'nowrap',
+            background: g.finale ? STAGE_C : CELL, color: g.finale ? ONRAMP : (ended ? BAD : INK),
+            border: g.finale ? `1.5px solid ${STAGE_C}` : (ended ? `1.5px dashed ${BAD}` : `2px solid ${ACC_INK}`) }}>
+          {lineText}
+          {playing && !g.finale && <span aria-hidden className="ar-caret" style={{ display: 'inline-block', width: 2, height: 28, marginLeft: 3, background: ACC_INK }} />}
         </div>
-        <div style={{ textAlign: 'center', fontSize: 13, fontWeight: 600, color: FADED }}>
-          {g.finale ? `${F}. All three tie together.` : ended ? `The word was ${F}.` : `${triesLeft} ${triesLeft === 1 ? 'try' : 'tries'} left. One word goes with all three.`}
-        </div>
+        {playing && !g.finale && (
+          <button onClick={() => onKey('ENTER')} disabled={typedF.length < 2 || busy}
+            style={{ alignSelf: 'center', fontFamily: SANS, fontWeight: 800, fontSize: 14, border: 'none', borderRadius: 8, padding: '10px 22px', cursor: typedF.length < 2 ? 'default' : 'pointer', background: STAGE_C, color: ONRAMP, opacity: typedF.length < 2 ? 0.45 : 1 }}>
+            Check {typedF || 'it'}
+          </button>
+        )}
+        <div style={{ textAlign: 'center', fontSize: 13, fontWeight: 600, color: FADED }}>{note}</div>
+        {showF && others.length > 0 && (
+          <div style={{ textAlign: 'center', fontSize: 12.5, fontWeight: 700, color: FADED }}>
+            Also accepted: {others.join(', ')}
+          </div>
+        )}
         {g.tries.length > 0 && (
           <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
             {g.tries.map((t, i) => <span key={i} style={{ fontSize: 12.5, fontWeight: 800, color: BAD, textDecoration: 'line-through', letterSpacing: '.06em' }}>{t}</span>)}
@@ -720,7 +752,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
         <><b>Back</b>: the LAST letters spell one. <b>Diagonal</b>: letter 1 of row 1, letter 2 of row 2 and so on spell one.</>,
         <>Type an answer and it <b>checks itself</b>. A wrong one shakes and clears, and costs nothing. Tap any row to move to it.</>,
         <>Stuck on a row? <b>Show it</b>, for a point off that round.</>,
-        <>The <b>finale</b>: one word that goes with all three hidden words, like FLASH, SPOT and MOON with LIGHT. You get three tries.</>,
+        <>The <b>finale</b>: one word that goes with all three hidden words, like FLASH, SPOT and MOON with LIGHT. No length is shown: type it and press Enter. Any word that truly fits counts, before or after. You get three tries.</>,
       ]}
       knack="Solve the easy clues first. A few spine letters often give the hidden word away, and the hidden word fills in the rest."
       footer="Each acrostic is worth 3, minus a point for every row you show. The finale is worth 1. Ten in all, and time breaks ties."
@@ -762,7 +794,9 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
             .ar-flip{animation:arflip .3s cubic-bezier(.2,.7,.3,1) both;animation-delay:calc(var(--j,0) * 40ms);backface-visibility:hidden;}
             @keyframes arrej{0%,100%{transform:none;}20%{transform:translateX(-8px);}50%{transform:translateX(7px);}80%{transform:translateX(-3px);}}
             .ar-rej{animation:arrej .4s cubic-bezier(.2,.7,.3,1);}
-            @media (prefers-reduced-motion:reduce){.ar-flip,.ar-rej{animation:none !important;}}
+            @keyframes arcaret{0%,49%{opacity:1;}50%,100%{opacity:0;}}
+            .ar-caret{animation:arcaret 1s steps(1) infinite;}
+            @media (prefers-reduced-motion:reduce){.ar-flip,.ar-rej,.ar-caret{animation:none !important;}}
             @media(max-width:560px){.ar-wrap{padding-left:14px !important;padding-right:14px !important;}}
           ` }} />
 
@@ -809,7 +843,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
           )}
 
           {!preStart && (
-            <div className="ar-board stg-board" data-arc={PUZZLE.rounds.map((r) => r.word).join(',') + '|' + PUZZLE.finale} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div className="ar-board stg-board" data-arc={PUZZLE.rounds.map((r) => r.word).join(',') + '|' + (finWord || PUZZLE.finale)} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div style={{ display: 'flex', gap: 6 }}>{[0, 1, 2, 3].map(tab)}</div>
 
               {!atFinale && R && (
@@ -841,7 +875,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
                 <>
                   <div>
                     <div style={{ fontSize: 20, fontWeight: 800, color: INK }}>Finale</div>
-                    <div style={{ fontSize: 13.5, fontWeight: 600, color: FADED }}>One word goes with all three hidden words.</div>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: FADED }}>One word goes with all three hidden words. Any word that truly fits counts.</div>
                   </div>
                   {finaleView()}
                 </>
@@ -883,7 +917,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
               name="Arcos"
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
-              title={won ? 'A clean sweep' : (g.finale ? `${PUZZLE.finale} found` : (score > 0 ? `${score} of ${TOTAL}` : 'Not solved'))}
+              title={won ? 'A clean sweep' : (g.finale ? `${finWord} found` : (score > 0 ? `${score} of ${TOTAL}` : 'Not solved'))}
               detail={`${score}/${TOTAL} · ${roundsDone} of 3 acrostics · ${elapsed}`}
               iq={iq}
               board={dailyBoard}
@@ -1015,7 +1049,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
           Arcos is a free daily set of acrostics from Mind Loft. An acrostic is a list of words whose letters, read down a line, spell another word. Every day brings three of them, each with its own clues: in the first the opening letters spell a hidden word, in the second the closing letters do, and in the third the word runs down the diagonal, letter 1 of row 1, letter 2 of row 2 and so on.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Solve the three and the finale opens: one word that goes with all three hidden words, the way FLASH, SPOT and MOON all go with LIGHT. Every clue is written for a crossword, a wrong answer costs nothing, and each acrostic is worth three points, minus one for every row you choose to show.
+          Solve the three and the finale opens: one word that goes with all three hidden words, the way FLASH, SPOT and MOON all go with LIGHT. No length is shown, and any word that truly fits all three counts, so CHECK, STAND and BREAK take POINT, and UP and OUT as well. Every clue is written for a crossword, a wrong answer costs nothing, and each acrostic is worth three points, minus one for every row you choose to show.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Hidden words run four letters early in the week and five later, and the Sunday Edition hides five- and six-letter words behind longer answers. No app, no signup, play free in your browser. For a chain of linked words, try <a href="/hinge" style={{ color: INK, fontWeight: 800 }}>Hinge</a>.

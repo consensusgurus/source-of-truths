@@ -11,7 +11,11 @@
 //  4. every answer has the clue the clue banks give it, and no clue contains
 //     its own answer or any other word of the day
 //  5. the finale pairs with all three hidden words on its side (hinge-pairs),
-//     and NO other word pairs with all three on either side
+//     and `also` lists EXACTLY the other words that fit all three on either
+//     side, recomputed here word by word from the dictionary, the hinge pairs
+//     and the WordNet phrases under scripts/arcos-accept-rules.json (the game
+//     accepts every one, so a missing real fit is the failure; owner,
+//     2026-10-18)
 //  6. no answer sits inside, or holds, a hidden word or the finale; no answer
 //     twice in a day
 //  7. no answer, hidden word or finale repeats anywhere in the bank
@@ -37,12 +41,44 @@ for (const f of ['emcee-wordbank.txt', 'encore-wordbank.txt']) {
   }
 }
 const pairs = new Set();
-const firsts = new Set(); const seconds = new Set();
 for (const raw of readFileSync(path.join(HERE, 'hinge-pairs.txt'), 'utf8').split(/\r?\n/)) {
   const t = raw.trim();
   if (!t || t[0] === '#') continue;
   const [a, b] = t.split(/\s+/);
-  pairs.add(a + ' ' + b); firsts.add(a); seconds.add(b);
+  pairs.add(a + ' ' + b);
+}
+
+// the finale check, written separately from scripts/arcos-accept.mjs: walk
+// every candidate word and test it against each hidden word directly
+const RULES = JSON.parse(readFileSync(path.join(HERE, 'arcos-accept-rules.json'), 'utf8'));
+const DICT = new Set();
+for (const f of ['tuck-dict.txt', 'tuck-dict-long.txt']) {
+  for (const w of readFileSync(path.join(HERE, '../public', f), 'utf8').split(/\r?\n/)) {
+    const t = w.trim().toUpperCase();
+    if (/^[A-Z]+$/.test(t)) DICT.add(t);
+  }
+}
+const PHRASE = new Set(pairs);
+const CAND = new Set(DICT);
+for (const f of ['hinge-pairs.txt', 'arcos-phrases.txt']) {
+  for (const raw of readFileSync(path.join(HERE, f), 'utf8').split(/\r?\n/)) {
+    const t = raw.trim();
+    if (!t || t[0] === '#') continue;
+    const [a, b] = t.toUpperCase().split(/\s+/);
+    if (!a || !b) continue;
+    PHRASE.add(a + ' ' + b); CAND.add(a); CAND.add(b);
+  }
+}
+const AFFIX = new Set(RULES.affixes);
+function goesWith(a, b) { return DICT.has(a + b) || PHRASE.has(a + ' ' + b); }
+function realFits(hid) {
+  const hit = [];
+  for (const w of CAND) {
+    if (w.length < RULES.minLength || w.length > RULES.maxLength || AFFIX.has(w) || hid.includes(w)) continue;
+    if (hid.every((h) => goesWith(h, w)) || hid.every((h) => goesWith(w, h))) hit.push(w);
+  }
+  const all = new Set(hit);
+  return hit.filter((w) => !RULES.inflections.some((x) => w.length > x.length && w.endsWith(x) && all.has(w.slice(0, -x.length)))).sort();
 }
 
 const DAY = 864e5;
@@ -104,14 +140,19 @@ PUZZLES.forEach((p, i) => {
     const key = p.side === 'post' ? h + ' ' + f : f + ' ' + h;
     if (!pairs.has(key)) fail(p, `"${key}" is not in hinge-pairs`);
   }
-  const others = [];
-  for (const c of new Set([...firsts, ...seconds])) {
-    if (hid.every((h) => pairs.has(h + ' ' + c))) others.push(c + ' (after)');
-    if (hid.every((h) => pairs.has(c + ' ' + h))) others.push(c + ' (before)');
+  const fits = realFits(hid);
+  if (!fits.includes(f)) fail(p, `finale ${f} fails the finale check`);
+  const want = fits.filter((w) => w !== f);
+  const also = p.also;
+  if (!Array.isArray(also)) fail(p, 'no also list');
+  else {
+    if (also.includes(f)) fail(p, 'also repeats the finale');
+    if ([...also].sort().join(',') !== also.join(',') || new Set(also).size !== also.length) fail(p, 'also not sorted and unique');
+    const missing = want.filter((w) => !also.includes(w));
+    const extra = also.filter((w) => !want.includes(w));
+    if (missing.length) fail(p, `also is missing real fits: ${missing.join(', ')}`);
+    if (extra.length) fail(p, `also lists words that do not fit: ${extra.join(', ')}`);
   }
-  const mine = f + (p.side === 'post' ? ' (after)' : ' (before)');
-  const rivals = others.filter((o) => o !== mine);
-  if (rivals.length) fail(p, `finale not unique: ${rivals.join(', ')}`);
   if (new Set([...hid, f]).size !== 4) fail(p, 'hidden words and finale not distinct');
 
   for (const a of dayAns) { if (seenAns.has(a)) fail(p, `${a} repeats ${seenAns.get(a)}`); seenAns.set(a, p.live); }

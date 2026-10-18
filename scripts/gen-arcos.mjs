@@ -3,6 +3,7 @@
 //
 //   node scripts/gen-arcos.mjs --until 2026-11-30           append days, keep every board
 //   node scripts/gen-arcos.mjs --rebuild --until <date>     only before launch
+//   node scripts/gen-arcos.mjs --also                       recompute every board's `also`
 //
 // A day is three acrostics and a finale:
 //   front     the FIRST letters of the answers spell a hidden word
@@ -16,8 +17,12 @@
 // Encore rule, the clue comes first). Deterministic from the date.
 //
 // Rules (checked again, independently, by scripts/verify-arcos.mjs):
-//  - the finale has at least three partners on its side; the three hidden
-//    words are partners; NO other word pairs with all three (either side)
+//  - the finale has at least three partners on its side and the three hidden
+//    words are partners. Other words may fit all three too (CHECK, STAND,
+//    BREAK take POINT and also UP and OUT): the game accepts every real fit,
+//    listed on the board as `also` (scripts/arcos-accept.mjs), so a second
+//    answer is never wrong and is no reason to reject a trio (owner,
+//    2026-10-18; before that the finale had to be the only fit)
 //  - hidden words: Mon-Wed 4 letters; Thu-Sat 4 or 5 with at least one 5;
 //    Sunday Edition 5 or 6
 //  - answers: front/back Mon 4-5, Tue-Sat 4-6, Sunday 5-7; diag rows are all
@@ -28,6 +33,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { acceptedFinales } from './arcos-accept.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -38,6 +44,7 @@ const args = process.argv.slice(2);
 const argv = (k) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : null; };
 const UNTIL = argv('--until') || '2026-11-30';
 const REBUILD = args.includes('--rebuild');
+const ALSO_ONLY = args.includes('--also');
 
 // ---- word data ----
 const FREQ = JSON.parse(readFileSync(path.join(HERE, '.lode-freq.json'), 'utf8'));
@@ -68,15 +75,6 @@ for (const [a, b] of PAIRS) {
   if (!POST.has(b)) POST.set(b, new Set()); POST.get(b).add(a);
 }
 function partners(f, side) { return side === 'post' ? (POST.get(f) || new Set()) : (PRE.get(f) || new Set()); }
-// every word (either side) that pairs with all of hs
-function sharers(hs) {
-  const out = [];
-  for (const side of ['post', 'pre']) {
-    const M = side === 'post' ? POST : PRE;
-    for (const [f, set] of M) if (hs.every((h) => set.has(h))) out.push(f + ':' + side);
-  }
-  return out;
-}
 
 // ---- dates and rng ----
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -153,8 +151,8 @@ function buildDay(iso, used) {
       if (spec.need && !hs.some((h) => h.length >= spec.need)) continue;
       if (new Set(hs).size < 3) continue;
       if (hs.some((a) => hs.some((b) => a !== b && (a.includes(b))))) continue;
-      const sh = sharers(hs);
-      if (sh.length !== 1 || sh[0] !== fin.f + ':' + fin.side) continue;
+      const accepted = acceptedFinales(hs);
+      if (!accepted.includes(fin.f)) continue;
       const dayWords = [...hs, fin.f];
       // assign kinds: try orders, back needs good ending letters
       for (const order of shuffle([[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]], rnd)) {
@@ -169,7 +167,7 @@ function buildDay(iso, used) {
           rounds.push({ kind: kinds[k], word, rows });
         }
         if (!ok) continue;
-        return { finale: fin.f, side: fin.side, rounds, sunday: !!spec.sunday };
+        return { finale: fin.f, side: fin.side, also: accepted.filter((w) => w !== fin.f), rounds, sunday: !!spec.sunday };
       }
     }
   }
@@ -200,7 +198,9 @@ function serialize(days) {
 //     back     the LAST letters spell \`word\`
 //     diag     letter N of row N spells \`word\`; every row is word.length+1 long
 //   rows[].a   the answer; rows[].c its clue, from the clue banks
-//   finale     one word that goes with all three hidden words
+//   finale     the setter's word that goes with all three hidden words
+//   also       every other word that genuinely fits all three, any side; the
+//              game accepts it as the finale too (scripts/arcos-accept.mjs)
 //   side       'post': hidden word + finale (FLASH + LIGHT); 'pre': finale + hidden word
 //   sunday     the Sunday Edition: five- and six-letter hidden words, longer answers
 export const PUZZLES = [
@@ -213,6 +213,18 @@ async function main() {
   if (!REBUILD) {
     try { days = (await import(OUT + '?t=' + Date.now())).PUZZLES.map((p) => ({ ...p })); } catch (e) { days = []; }
   }
+  if (ALSO_ONLY) {
+    for (const p of days) {
+      const acc = acceptedFinales(p.rounds.map((r) => r.word));
+      if (!acc.includes(p.finale)) throw new Error(`${p.live}: ${p.finale} is not an accepted fit`);
+      const out = {};
+      for (const [k, v] of Object.entries(p)) { if (k === 'also') continue; out[k] = v; if (k === 'side') out.also = acc.filter((w) => w !== p.finale); }
+      Object.keys(p).forEach((k) => delete p[k]); Object.assign(p, out);
+    }
+    writeFileSync(OUT, serialize(days));
+    console.log(`arcos: also lists written for ${days.length} boards`);
+    return;
+  }
   const used = usedFrom(days);
   let iso = days.length ? addDays(days[days.length - 1].live, 1) : LAUNCH;
   let num = days.length ? days[days.length - 1].num + 1 : 1;
@@ -220,7 +232,7 @@ async function main() {
     const d = buildDay(iso, used);
     const p = { num, quizId: quizIdOf(iso), live: iso, dateLabel: labelOf(iso) };
     if (d.sunday) p.sunday = true;
-    p.finale = d.finale; p.side = d.side; p.rounds = d.rounds;
+    p.finale = d.finale; p.side = d.side; p.also = d.also; p.rounds = d.rounds;
     days.push(p);
     for (const k of usedFrom([p])) used.add(k);
     iso = addDays(iso, 1); num++;
