@@ -216,7 +216,7 @@ export default function StageStick({
           {allHref ? (
             <a className={'sst-ob sst-all ' + on(5)} href={allHref}><b>See all Daily Puzzles</b></a>
           ) : null}
-          <button type="button" className={'sst-more ' + on(6)} onClick={() => setOpen(true)}>See full details</button>
+          <button type="button" className={'sst-more ' + on(6)} onClick={() => { if (typeof onLeave === 'function') onLeave(); }}>See full details</button>
         </div>
       </div>
 

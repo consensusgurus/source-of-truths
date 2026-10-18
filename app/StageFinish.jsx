@@ -246,10 +246,14 @@ const FLOOD_QUICK_SETTLE = 700;
 // because the FLOOD prints that figure first, full screen, before the card
 // under it is ever seen: a quiz that only corrected the card would still open
 // its ending by announcing "#3 of 41 today".
-function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null, bandRef, onDone, quick = false, boardWhen = null, catRun = null, vs = null, rival = null, dist = null, gameName = null, tone = '' }) {
-  const [phase, setPhase] = useState('');     // '' -> up -> shrink -> out
+function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null, bandRef, onDone, quick = false, boardWhen = null, catRun = null, vs = null, rival = null, dist = null, gameName = null, tone = '', fromStick = false }) {
+  // FROM THE STICKY ENDING (owner, 2026-10-18): See full details hands over to
+  // the end page through this same collapse. The sticky screen is already this
+  // colour, so the flood mounts fully up with no words and goes straight to
+  // narrowing onto the band.
+  const [phase, setPhase] = useState(fromStick ? 'up' : '');     // '' -> up -> shrink -> out
   const [clip, setClip] = useState(null);
-  const [held, setHeld] = useState(false);    // the floor has passed
+  const [held, setHeld] = useState(fromStick);    // the floor has passed
   const [expired, setExpired] = useState(false);   // done waiting for stragglers
   const [hint, setHint] = useState(false);         // 'tap to skip' is showing
   const [revealed, setRevealed] = useState(() => new Set());   // figures landed so far
@@ -392,7 +396,7 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
     if (!held || goneRef.current) return;
     if (!walked) return;
     goneRef.current = true;
-    const settle = quick ? FLOOD_QUICK_SETTLE : FLOOD_SETTLE;
+    const settle = fromStick ? 80 : quick ? FLOOD_QUICK_SETTLE : FLOOD_SETTLE;
     at(settle, () => {
       const el = bandRef && bandRef.current;
       if (!el) { setPhase('shrink'); return; }
@@ -460,7 +464,7 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
     // aria-hidden because every word on it is read again, in place, on the card
     // underneath — and there is nothing focusable inside it to strand.
     <div
-      className={'stf-flood' + (phase ? ' ' + phase : '') + (tone ? ' t-' + tone : '')}
+      className={'stf-flood' + (phase ? ' ' + phase : '') + (tone ? ' t-' + tone : '') + (fromStick ? ' bare' : '')}
       aria-hidden="true"
       onClick={finish}
       style={clip ? { clipPath: clip, WebkitClipPath: clip } : undefined}
@@ -995,6 +999,7 @@ export default function StageFinish({
   // finished board, or a refresh, gets the card directly), ?flood=1 forces it
   // for review, ?stick=0 turns it off. Not on a quiz, not on the retry ending.
   const [stick, setStick] = useState(false);
+  const [fromStick, setFromStick] = useState(false);
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const q = window.location.search;
@@ -1697,7 +1702,7 @@ export default function StageFinish({
 
   // ── THE STICKY ENDING'S FIGURES (owner, 2026-10-18) ──────────────────────
   // Plain code, no hooks, so the retry branch below runs the same hooks.
-  const leaveStick = () => { setStick(false); setFlood(false); setFloodDone(true); setHandoffOff(true); };
+  const leaveStick = () => { setStick(false); setFromStick(true); setFlood(true); setFloodDone(false); setHandoffOff(true); };
   const stickProps = (() => {
     if (!stickOn || !me) return null;
     const DOW = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -1948,6 +1953,7 @@ export default function StageFinish({
           gameRank={gameRank} streak={streak} ready={ready} bandRef={bandRef}
           boardWhen={boardWhen} catRun={catRun} vs={vs} rival={rival} dist={dist}
           gameName={me ? me.name : null} tone={tone}
+          quick={fromStick} fromStick={fromStick}
           onDone={() => { setFlood(false); setFloodDone(true); }} />
       ) : null}
 
@@ -2553,6 +2559,7 @@ const CSS = `
   transition:opacity 180ms ease,clip-path 640ms cubic-bezier(.2,.8,.25,1),
     -webkit-clip-path 640ms cubic-bezier(.2,.8,.25,1);}
 .stf-flood.up,.stf-flood.shrink{opacity:1;}
+.stf-flood.bare .stf-fl-in{display:none;}
 /* The clip has landed by now, so the colour is exactly the band: fading it out
    is colour onto colour, and what appears through it is the band's own words. */
 .stf-flood.out{opacity:0;transition:opacity 200ms ease;}
