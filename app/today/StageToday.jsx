@@ -5043,7 +5043,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-ixre:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 /* SKILLS OR CATEGORIES (owner, 2026-10-18): one switch above the list. */
 .sty-lens{display:flex;gap:2px;padding:2px;margin:2px 4px 6px;border:1px solid var(--stg-cell-line);border-radius:999px;}
-.sty-lens button{flex:1 1 0;border:0;border-radius:999px;background:transparent;color:var(--stg-ink2);
+.sty-lens button{flex:1 1 auto;border:0;border-radius:999px;background:transparent;color:var(--stg-ink2);
   font:800 10.5px/1 ${SANS};letter-spacing:.02em;text-transform:uppercase;padding:7px 3px;cursor:pointer;white-space:nowrap;}
 .sty-lens button[aria-pressed="true"]{background:var(--stg-ink);color:var(--stg-ground);}
 .sty-lens button:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
