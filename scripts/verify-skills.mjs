@@ -28,7 +28,7 @@ const fail = (m) => fails.push(m);
 
 for (const [k, tags] of Object.entries(SKILL_TAGS)) {
   if (!DAILY_GAME_MAP[k]) fail(`${k}: tagged but not a registered daily`);
-  if (!Array.isArray(tags) || tags.length < 1 || tags.length > 4) fail(`${k}: needs one to four skills`);
+  if (!Array.isArray(tags) || tags.length < 1 || tags.length > 2) fail(`${k}: needs one or two skills`);
   if (tags && new Set(tags).size !== tags.length) fail(`${k}: a skill is listed twice`);
   for (const t of tags || []) if (!SKILL_MAP[t]) fail(`${k}: unknown skill ${t}`);
 }
