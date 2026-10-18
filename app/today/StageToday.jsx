@@ -5284,7 +5284,8 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
      the whole row. Decided in JS (fillFor), since the count that matters
      leaves out the opened tile. */
   .sty-ixn:not(.re) .sty-ixb.sty-ixfill{grid-column:1 / -1;}
-  .sty-ixn:not(.re) > .sty-lens{grid-column:1 / -1;margin:0;}
+  .sty-ixn:not(.re) > .sty-lens{grid-column:1 / -1;margin:0;width:100%;}
+  .sty-ixn:not(.re) > .sty-lens button{flex:1 1 0;min-width:0;padding:10px 8px;font-size:12px;}
   .sty-sortm .sty-sl{display:none;}
   .sty-sortm .sty-ss{display:inline;}
   .sty-ixn:not(.re) .sty-ixsep{display:block;grid-column:1 / -1;height:5px;margin:0;background:none;}
