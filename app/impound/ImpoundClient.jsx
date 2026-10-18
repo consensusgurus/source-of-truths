@@ -64,7 +64,6 @@ import { useStageTheme } from '@/lib/stage-theme';
 import { regionStyle, REGION_INK } from '@/lib/category-ramp';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
-import ValetDoorPop from '../circuits/ValetDoorPop';
 import useIqStanding from '../useIqStanding';
 import useNextUnplayed, { useUnplayedSimilar } from '../useNextUnplayed';
 import useDailyBoard from '../useDailyBoard';
@@ -1041,10 +1040,6 @@ export default function ImpoundClient({ puzzles = [], forceNum = null }) {
       )}
 
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
-      {/* THE VALET GAUNTLET OFFER (owner, 2026-09-05): on the start gate, when
-          none of today's three lots has been started on this device, twice
-          ever. See app/circuits/ValetDoorPop.jsx for every condition. */}
-      <ValetDoorPop ready={hydrated && preStart && isTodays} self="Impound" />
 
       {toast && (
         <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>{toast}</div>

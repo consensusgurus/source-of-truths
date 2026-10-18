@@ -94,6 +94,11 @@ const nextConfig = {
       { source: '/circuits/triviaencore/run', destination: '/triviaencore', permanent: true },
       // 2026-10-12: the rotating Sudoku circuit was retired for Enter the Dojo.
       { source: '/circuits/sudoku', destination: '/dojo', permanent: true },
+      // The Valet Gauntlet was retired (owner, 2026-10-18). Parker, Impound and
+      // Junkyard stay as dailies, still offered up the ladder one after another.
+      { source: '/valet', destination: '/parker', permanent: true },
+      { source: '/circuits/valet', destination: '/parker', permanent: true },
+      { source: '/circuits/valet/run', destination: '/parker', permanent: true },
       { source: '/circuits/sudoku/:path*', destination: '/dojo', permanent: true },
       // 2026-07-18: the Quizzes hub is now the site root (sourceoftruths.com).
       // The legacy /quizzes index 308s to it. Sub-pages (/quizzes/hub, etc.)

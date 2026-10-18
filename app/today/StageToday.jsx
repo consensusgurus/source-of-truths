@@ -381,10 +381,10 @@ const TILES_KEY = 'sot_home_tiles';
 // Math Gauntlet restored beside the Trivia Gauntlet (owner, 2026-10-13 evening).
 // Trivia Encore beside the Gauntlet (owner, 2026-10-14).
 const PILL_CIRCUITS = ['gauntlet', 'triviaencore', 'math', 'pricecheck', 'passport', 'deduction', 'dojo', 'room'];
-// CIRCUITS-PANE ONLY (owner, 2026-10-13): the Valet Gauntlet is less developed,
-// so it is never offered on the main page (pills, phone runs, the shelf peek);
-// it shows only when the reader opens Circuits, or has starred it.
-const SHELF_ONLY = new Set(['valet']);
+// CIRCUITS-PANE ONLY: a circuit listed here is never offered on the main page
+// (pills, phone runs, the shelf peek), only when the reader opens Circuits.
+// Empty since the Valet Gauntlet was retired (owner, 2026-10-18).
+const SHELF_ONLY = new Set();
 const PILL_EXTRA = { passport: ['Trivia'], dojo: ['Logic'] };   // owner, 2026-10-13: Dojo also shows under Logic
 // The server has no layout pass; an isomorphic alias keeps it from warning.
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
