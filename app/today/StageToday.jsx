@@ -56,7 +56,7 @@ import { IQ_TESTS } from '@/lib/iq-tests';
 import useMyGames from '../useMyGames';
 import { savedIdentity } from '@/lib/saved-identity';
 import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro } from '@/lib/stage-theme';
-import ThemePop from '../ThemePop';
+import ThemePop, { LightOffer } from '../ThemePop';
 import StageLadder from '../StageLadder';
 import EntryDoor from '../EntryDoor';
 import SundayLedger from '../SundayLedger';
@@ -3161,6 +3161,7 @@ export default function StageToday() {
         {/* The cap's LAST CHILD on purpose: it reads its own parent to find
             the switch and measure itself against it. */}
         <ThemePop />
+        <LightOffer home />
       </div>
 
       <div className="sty-wrap" ref={wrapRef}>

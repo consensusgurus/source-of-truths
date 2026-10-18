@@ -124,15 +124,31 @@ export default function ThemePop() {
 // first move yet), never during play and never on a finished board, and comes
 // back on the next gate until it is answered. Switching to light, keeping
 // dark, or using the switch itself all answer it; the X only closes it here.
-// Mounted by StageChrome, which knows the game and the board.
-export function LightOffer({ gameKey, num }) {
+// Mounted by StageChrome, which knows the game and the board, and on the home
+// cap (`home`), where a new visitor who proceeds from the door lands in dark.
+export function LightOffer({ gameKey, num, home = false }) {
   const [theme] = useStageTheme();
   const [state, setState] = useState('wait'); // wait | open | gone
   const ref = useRef(null);
   const at = usePlace(state === 'open', ref);
 
   useEffect(() => {
-    if (!gameKey) return undefined;
+    if (!gameKey && !home) return undefined;
+    // ON THE HOME there is no game to start, so it waits for the entry door
+    // (and the other home cards) to clear, and asks only then: the door is
+    // what sets the offer pending, as it closes.
+    if (home) {
+      let t = 0;
+      const tick = () => {
+        try {
+          if (document.querySelector('.ent-door, .prm-scrim, .gpp-scrim')) { t = setTimeout(tick, 500); return; }
+          if (window.localStorage.getItem(LIGHT_OFFER_KEY) !== 'pending') { setState('gone'); return; }
+        } catch (e) { return; }
+        t = setTimeout(() => setState((s) => (s === 'wait' ? 'open' : s)), 700);
+      };
+      t = setTimeout(tick, 900);
+      return () => clearTimeout(t);
+    }
     let pending = false;
     try { pending = window.localStorage.getItem(LIGHT_OFFER_KEY) === 'pending'; } catch (e) {}
     if (!pending) { setState('gone'); return undefined; }
@@ -164,7 +180,7 @@ export function LightOffer({ gameKey, num }) {
     // The first move takes it away for this page.
     const poll = setInterval(() => { if (begun()) setState('gone'); }, 700);
     return () => { clearTimeout(show); clearInterval(poll); };
-  }, [gameKey, num]);
+  }, [gameKey, num, home]);
 
   const answer = () => {
     try { window.localStorage.setItem(LIGHT_OFFER_KEY, 'done'); } catch (e) {}

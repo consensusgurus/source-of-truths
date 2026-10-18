@@ -42,9 +42,10 @@
 // week and gets the level buttons alone.
 //
 // A NEW VISITOR LANDS IN DARK. Picking a tile from the door on a browser with
-// no play footprint and no stored register stores 'dark' and leaves a pending
-// light offer (LIGHT_OFFER_KEY), which app/ThemePop.jsx shows on the game's
-// start gate, never during play, until it is answered. Anyone who has played
+// no play footprint and no stored register, or proceeding to the home, stores
+// 'dark' and leaves a pending light offer (LIGHT_OFFER_KEY), which
+// app/ThemePop.jsx shows on the home cap or the game's start gate (never during
+// play) until it is answered. Anyone who has played
 // before keeps the register they have.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -55,7 +56,7 @@ import { TIERS } from '@/lib/daily-difficulty';
 import { GLYPHS, GLYPH_BOX } from '@/lib/game-glyphs';
 import { DISPLAY_CIRCUITS, circuitKeysFor, runHref } from '@/lib/circuits';
 import { hasSundayEdition, isSundayET } from '@/lib/sunday-editions';
-import { LIGHT_OFFER_KEY } from '@/lib/stage-theme';
+import { LIGHT_OFFER_KEY, writeStageTheme } from '@/lib/stage-theme';
 import MindLoftMark from './MindLoftMark';
 import { etToday } from './useDayStats';
 
@@ -236,7 +237,20 @@ export default function EntryDoor({ onPick }) {
     }
   }, [phase]);
 
+  // A NEW visitor lands in dark wherever the door sends them (owner,
+  // 2026-10-18), with the light offer pending. Existing registers are kept.
+  function landDark(live) {
+    if (!isNew) return;
+    try {
+      if (window.localStorage.getItem('sot_theme2')) return;
+      window.localStorage.setItem(LIGHT_OFFER_KEY, 'pending');
+      if (live) { writeStageTheme('dark'); return; }
+      window.localStorage.setItem('sot_theme2', 'dark');
+      document.documentElement.setAttribute('data-stage-boot', 'dark');
+    } catch (e) {}
+  }
   function close() {
+    landDark(true);
     timers.current.forEach(clearTimeout);
     timers.current = [];
     try { window.__sotPopAt = Date.now(); } catch (e) {}
@@ -272,15 +286,7 @@ export default function EntryDoor({ onPick }) {
   // Leaving the door for a game or a run. A new visitor lands in dark, with
   // the light offer pending for the game's start gate.
   function go(href) {
-    if (isNew) {
-      try {
-        if (!window.localStorage.getItem('sot_theme2')) {
-          window.localStorage.setItem('sot_theme2', 'dark');
-          window.localStorage.setItem(LIGHT_OFFER_KEY, 'pending');
-          document.documentElement.setAttribute('data-stage-boot', 'dark');
-        }
-      } catch (e) {}
-    }
+    landDark(false);
     try { window.__sotPopAt = Date.now(); } catch (e) {}
     window.location.assign(href);
   }

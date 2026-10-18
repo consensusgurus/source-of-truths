@@ -9870,9 +9870,10 @@ On a Sunday a NEW visitor also gets a card offering last Monday's boards
 Escape steps back a page. `?entry=new` and `?entry=ret` preview each version.
 
 **A new visitor lands in dark.** "New" is the first door on a browser with no play
-footprint and no stored register. Picking a tile stores `sot_theme2 = 'dark'` and
+footprint and no stored register. Picking a tile, or proceeding to the home, stores
+`sot_theme2 = 'dark'` and
 `LIGHT_OFFER_KEY` (`sot_light_offer1`) = 'pending'. `LightOffer` in app/ThemePop.jsx
-(mounted in StageChrome's cap and LayoutCInner's desktop cap) offers light on the start
-gate only, goes the moment a first move lands, and returns on the next gate until
+(mounted in StageChrome's cap, LayoutCInner's desktop cap and the home cap with `home`)
+offers light on the home once the door clears, and on a game's start gate only, goes the moment a first move lands, and returns on the next gate until
 "Switch to light", "Keep dark" or the switch itself answers it. Existing readers keep
 whatever register they had.
