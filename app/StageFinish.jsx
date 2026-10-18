@@ -1739,7 +1739,7 @@ export default function StageFinish({
       const hi = top && race && top.timeElapsed != null && Number(top.total) > 0 && Number(top.score) >= Number(top.total)
         ? `Fastest ${mmss(Number(top.timeElapsed))}`
         : (top && top.score != null && top.total ? `Top ${top.score}/${top.total}` : '');
-      fieldInfo = { line: `${head} · ${tail}`, pct: fr.n > 1 ? pct : 100, lo, hi };
+      fieldInfo = { line: pct <= 0 && fr.rank > 1 ? head : `${head} · ${tail}`, pct: fr.n > 1 ? pct : 100, lo, hi };
     }
 
     // 3. AGAINST YOURSELF. The earlier finishes this browser holds.
