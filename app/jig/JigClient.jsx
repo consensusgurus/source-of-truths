@@ -1080,7 +1080,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
           .jg-fs{flex:none;min-height:38px;padding:0 12px;font-size:13px;border-radius:10px;}
           .jg-isfull .jg-wrap{z-index:200 !important;}
           .jg-isfull .jg-ghost{z-index:210;}
-          .jg-card.jg-full{position:fixed;inset:0;margin:0 !important;border:0 !important;border-radius:0 !important;box-shadow:none !important;background:var(--stg-ground, ${T.surface}) !important;padding:16px 24px 14px !important;display:flex;flex-direction:column;overflow:hidden;}
+          .jg-card.jg-full{position:fixed;inset:0;z-index:5;margin:0 !important;border:0 !important;border-radius:0 !important;box-shadow:none !important;background:var(--stg-ground, ${T.surface}) !important;padding:16px 24px 14px !important;display:flex;flex-direction:column;overflow:hidden;}
           .jg-full .jg-play{flex:1 1 auto;min-height:0;align-items:stretch;justify-content:center;}
           .jg-full .jg-boardbox{flex:none;align-self:center;}
           .jg-full .jg-side{flex:0 0 380px;max-width:380px;min-height:0;}
