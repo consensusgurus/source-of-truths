@@ -1067,6 +1067,7 @@ export default function StageToday() {
   // a returning reader goes straight to their last pane instead of watching
   // All games swap out for it.
   const [pane, setPane] = useState(null);
+  const [allTiles, setAllTiles] = useState(false);
   useIsoLayoutEffect(() => {
     // A RETURNING READER LANDS WHERE THEY LEFT OFF (owner, 2026-10-10), on a
     // phone too: a stored games pane reopens straight away instead of dropping
@@ -1076,6 +1077,19 @@ export default function StageToday() {
     try {
       const v = localStorage.getItem(PANE_KEY);
       if (v) { setPane(v); if (localStorage.getItem(TILES_KEY) !== '1') setPicked(true); }
+    } catch (e) {}
+    // /#all OPENS ALL PUZZLES AS TILES (owner, 2026-10-18): the daily ending's
+    // "See all Daily Puzzles" button lands here. The pane opens, the tiles view
+    // holds for this visit whatever was remembered, and the hash is cleared so
+    // a reload is an ordinary visit.
+    try {
+      if (String(window.location.hash || '') === '#all') {
+        setPane(ALL_ID); setPicked(true); setAllTiles(true);
+        // Cleared LATER, not here: the entry door and the home snapshot both
+        // stand down on a hash, and their own effects run after this one.
+        setTimeout(() => { try { if (window.location.hash === '#all') window.history.replaceState(null, '', window.location.pathname + window.location.search); } catch (er) {} }, 2500);
+        try { window.scrollTo(0, 0); } catch (er) {}
+      }
     } catch (e) {}
     try { const h = String(window.location.hash || '').slice(1); if (INFO_PANES.includes(h) || STAT_ANCHORS.includes(h)) { setPane(STAT_ANCHORS.includes(h) ? BOARD_ID : h); setPicked(true); } } catch (e) {}
   }, []);
@@ -2325,10 +2339,11 @@ export default function StageToday() {
     try { const v = localStorage.getItem('sot_home_view'); if (v === 'tile' || v === 'list') setViewBy(v); } catch (e) { /* storage off */ }
   }, []);
   const pickView = (v) => {
+    setAllTiles(false);
     setViewBy(v);
     try { localStorage.setItem('sot_home_view', v); } catch (e) { /* storage off */ }
   };
-  const viewOf = (pane) => viewBy || (pane === ALL_ID ? 'tile' : 'list');
+  const viewOf = (pane) => (allTiles && pane === ALL_ID ? 'tile' : (viewBy || (pane === ALL_ID ? 'tile' : 'list')));
   const viewCtl = (pane) => (
     <div className="sty-sort sty-view" role="group" aria-label="Show puzzles as"
       onClick={(e) => e.stopPropagation()}>

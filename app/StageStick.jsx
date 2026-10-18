@@ -70,7 +70,7 @@ function Count({ fig, run }) {
 }
 
 export default function StageStick({
-  tone = '', eyebrow, verdict, metric, field, self, chal = null, similar = null, another = null,
+  tone = '', eyebrow, verdict, metric, field, self, chal = null, similar = null, another = null, allHref = '/#all',
   sheet = {}, onLeave,
 }) {
   const [host] = useState(() => (typeof document === 'undefined' ? null : (document.querySelector('.stage-page') || document.body)));
@@ -182,7 +182,8 @@ export default function StageStick({
           )}
         </section>
 
-        {/* The four rows. */}
+        {/* The rows: Challenge, Play similar + Play another, See all Daily
+            Puzzles, and the See full details link. */}
         <div className="sst-acts">
           {chal ? (
             <button type="button" className={'sst-chal ' + on(4)} onClick={chal.onSend}>
@@ -208,6 +209,12 @@ export default function StageStick({
                 </a>
               ) : null}
             </div>
+          ) : null}
+          {/* SEE ALL DAILY PUZZLES (owner, 2026-10-18, after a player said the
+              ending made it harder to reach another game): the home's All
+              Puzzles pane, opened straight onto the tiles. */}
+          {allHref ? (
+            <a className={'sst-ob sst-all ' + on(5)} href={allHref}><b>See all Daily Puzzles</b></a>
           ) : null}
           <button type="button" className={'sst-more ' + on(6)} onClick={() => setOpen(true)}>See full details</button>
         </div>
@@ -343,11 +350,23 @@ const CSS = `
   border:2px solid var(--sst-ink);color:var(--sst-ink);text-decoration:none;}
 .sst-ob b{font-size:15.5px;font-weight:800;line-height:1.2;}
 .sst-ob i{font-style:normal;font-size:12.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sst-all{min-height:52px;align-items:center;text-align:center;}
 .sst-ob i small{font-size:11px;font-weight:700;}
 .sst-chal:hover,.sst-ob:hover{filter:brightness(1.08);}
 .sst-chal:focus-visible,.sst-ob:focus-visible,.sst-more:focus-visible{outline:2px solid var(--sst-ink);outline-offset:3px;}
 .sst-more{align-self:center;background:none;border:0;color:var(--sst-ink);font:inherit;font-size:14.5px;font-weight:800;
   text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:4px;padding:6px 10px;cursor:pointer;}
+@media (max-height:720px){
+  .sst-in{gap:14px;padding-top:max(18px,env(safe-area-inset-top));padding-bottom:max(18px,env(safe-area-inset-bottom));}
+  .sst-v{font-size:32px;}
+  .sst-m{margin-top:4px;}
+  .sst-m b{font-size:50px;}
+  .sst-acts{gap:8px;}
+  .sst-chal{min-height:56px;padding-top:8px;padding-bottom:8px;}
+  .sst-ob{min-height:52px;padding-top:7px;padding-bottom:7px;}
+  .sst-all{min-height:44px;}
+  .sst-more{padding:2px 10px;}
+}
 .sst-scrim{position:fixed;inset:0;z-index:9001;background:rgba(5,8,14,.45);opacity:0;pointer-events:none;transition:opacity .3s ease;}
 .sst-scrim.open{opacity:1;pointer-events:auto;}
 .sst-sheet{position:fixed;left:0;right:0;bottom:0;z-index:9002;max-width:600px;margin:0 auto;max-height:88vh;max-height:88dvh;overflow-y:auto;
