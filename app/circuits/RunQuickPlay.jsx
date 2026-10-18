@@ -49,7 +49,7 @@ function timeLabel(secs) {
 function playersLabel(n) {
   if (!Number.isFinite(n) || n < 1) return null;
   const v = n < 20 ? Math.round(n) : Math.round(n / 5) * 5;
-  return `${v.toLocaleString()} play${v === 1 ? 's' : ''} a day`;
+  return `${v.toLocaleString()} player${v === 1 ? '' : 's'} a day`;
 }
 
 // Lower is better: the clock, penalised when most players do not finish it.
