@@ -1422,27 +1422,10 @@ export function GauntletBoardTop({
               {earned.line}{nextTxt ? <> <b style={{ color: '#e8b43a' }}>{nextTxt}</b></> : null}
             </div>
           ) : null}
-          <div className="ge-pop ge-tiles" style={{ animationDelay: '.35s', gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
-            {banks.map((x) => (
-              <div key={x.key} className="ge-tile" style={{ borderTopColor: x.colour }}>
-                <div className="ge-tn">{x.name}</div>
-                <div className="ge-ts">{x.got}</div>
-                {x.rank != null ? <div className="ge-tr">#{x.rank}</div> : null}
-              </div>
-            ))}
-          </div>
-          {/* The run card's own challenge door, so it names the $100 drawing
-              while the drawing is live, the same as every other run ending. */}
-          {challenge ? (
-            <div className="ge-pop" style={{ animationDelay: '.4s' }}>
-              <RunChallengeButton gameKey={circuitId} score={challenge.score} total={challenge.total} n={challenge.n} t={challenge.t} status={challenge.status} door />
-            </div>
-          ) : null}
-          {similar && similar.href ? (
-            <a href={similar.href} className="ge-pop ge-sim" style={{ animationDelay: '.45s' }}>Play similar: {similar.name}</a>
-          ) : null}
-        </div>
-        <div className="ge-br">
+          {/* TODAY'S BOARD UNDER THE TITLE (owner, 2026-10-18). The five per-game
+              rank tiles came off: each game's rank now sits on its own lane in
+              the run below, so the board moves up into the left column. */}
+          <div className="geb-board">
           <div className="ge-bhd">
             <div className="ge-bt">Today&rsquo;s board{fieldWord ? ` · ${fieldWord} players` : ''}</div>
             {boardHref ? <a href={boardHref} className="ge-blink">Full board</a> : null}
@@ -1471,6 +1454,18 @@ export function GauntletBoardTop({
                 : `Bars: questions right on each of the ${spell(N)}.`}
             </div>
           ) : null}
+          </div>
+        </div>
+        {/* THE $100 TICKET TAKES THE RIGHT COLUMN, where the board stood. */}
+        <div className="ge-br">
+          {challenge ? (
+            <div className="ge-pop" style={{ animationDelay: '.4s' }}>
+              <RunChallengeButton gameKey={circuitId} score={challenge.score} total={challenge.total} n={challenge.n} t={challenge.t} status={challenge.status} door />
+            </div>
+          ) : null}
+          {similar && similar.href ? (
+            <a href={similar.href} className="ge-pop ge-sim" style={{ animationDelay: '.45s' }}>Play similar: {similar.name}</a>
+          ) : null}
         </div>
       </div>
     </div>
@@ -1484,6 +1479,7 @@ const GEB_CSS = `
 .ge.geb{position:static;inset:auto;z-index:auto;overflow:visible;display:block;cursor:default;color:#e9edf4;background:none;margin:0 0 22px}
 .geb-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start}
 .ge.geb .ge-bl,.ge.geb .ge-br{gap:12px}
+.geb-board{display:flex;flex-direction:column;gap:10px;margin-top:6px}
 .ge.geb .ge-row{grid-template-columns:34px minmax(0,1fr) minmax(56px,110px) 40px;gap:10px;padding:9px 12px}
 .ge.geb .ge-rr{font-size:16px}.ge.geb .ge-rn{font-size:15px}.ge.geb .ge-rtot{font-size:20px}
 .geb-empty{font-size:13px;font-weight:700;color:#9aa8c4;padding:12px 0}

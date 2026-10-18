@@ -982,6 +982,20 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   // THE RUN LANES' header line, shared by the play screen and the handover.
   const lanesAvg = fieldOn ? field.avg : null;
   const lanesBest = fieldOn && field.top ? field.top : null;
+  // Today's place on each game, the same read the board top's tiles used
+  // (field.rank: everyone who scored more, plus one). Null when nothing ranks.
+  const laneRanks = (() => {
+    if (!done || !fieldOn || typeof field.rank !== 'function') return null;
+    const out = {};
+    let any = false;
+    for (const sc of sections) {
+      const res = (r.results || []).find((x) => x && x.key === sc.key);
+      if (!res) continue;
+      const k = field.rank(sc.key, Number.isFinite(res.score) ? res.score : 0);
+      if (Number.isFinite(k)) { out[sc.key] = k; any = true; }
+    }
+    return any ? out : null;
+  })();
   const lanesHead = (
     <div className="rt-rhd">
       <span>The run</span>
@@ -1701,12 +1715,24 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                       </div>
                       ) : null}
                       <div className="rt-runc">
-                        <span className="rn-lcap">
-                          {r.practice ? 'Practice run' : 'The run'}
-                          {r.practice ? <i className="rn-pchip">nothing posted</i> : null}
-                          {!r.practice && titleFor(circuitId, cleared) ? <i className="rt-t5f"> · {titleFor(circuitId, cleared).name}</i> : null}
-                        </span>
-                        <RunLanes id={`${circuitId}-done`} order="run" sections={sections} results={r.results} avg={lanesAvg} best={lanesBest} className="rt-done" />
+                        {/* THE KEY SITS ON THE TITLE'S ROW, left aligned after it
+                            (owner, 2026-10-18), and each lane carries its rank on
+                            that game where the five rank tiles used to be. */}
+                        <div className="rt-lhd">
+                          <span className="rn-lcap">
+                            {r.practice ? 'Practice run' : 'The run'}
+                            {r.practice ? <i className="rn-pchip">nothing posted</i> : null}
+                            {!r.practice && titleFor(circuitId, cleared) ? <i className="rt-t5f"> · {titleFor(circuitId, cleared).name}</i> : null}
+                          </span>
+                          {lanesAvg || lanesBest ? (
+                            <span className="rt-key">
+                              {lanesAvg ? <span><i className="avg" />Average</span> : null}
+                              {lanesBest ? <span><i className="best" />Best</span> : null}
+                              {laneRanks ? <span><b>#</b>Your rank</span> : null}
+                            </span>
+                          ) : null}
+                        </div>
+                        <RunLanes id={`${circuitId}-done`} order="run" sections={sections} results={r.results} avg={lanesAvg} best={lanesBest} ranks={BTOP && !r.practice ? laneRanks : null} className="rt-done" />
                       </div>
                     </div>
                   );
@@ -2626,10 +2652,25 @@ ${TOWER_CSS}
 .rt-split .rt-done .rl-sc{font-size:13.5px;}
 .rt-split .rt-done .rl-row.live .rl-sc{font-size:13.5px;}
 .rt-split .rt-done .rl-trk{height:11px;}
+.rt-split .rt-done.rk .rl-row{grid-template-columns:84px minmax(0,1fr) 52px 48px;}
+.rt-split .rt-done .rl-rk{font-size:13.5px;}
+.rt-lhd{display:flex;align-items:baseline;flex-wrap:wrap;column-gap:22px;row-gap:4px;margin-bottom:8px;}
+.rt-split .rt-lhd .rn-lcap{margin-bottom:0;}
+.rt-key{display:inline-flex;align-items:center;gap:14px;font-family:${MONO};font-size:9px;letter-spacing:.13em;
+  text-transform:uppercase;color:#8b95a8;}
+.rt-key span{display:inline-flex;align-items:center;gap:6px;}
+.rt-key i{display:inline-block;width:3px;height:12px;border-radius:1px;}
+.rt-key i.avg{width:2px;background:#8b95a8;}
+.rt-key i.best{background:#e8b43a;}
+.rt-key b{font-weight:700;color:#8b95a8;}
 .rn-sc-hero.tw{margin-top:20px;padding-top:18px;border-top:1px solid rgba(255,255,255,.09);}
 @media (max-width:680px){
   .rt-split{grid-template-columns:minmax(0,1fr);gap:18px;}
   .rt-split .rt-runc{order:-1;}
+  .rt-split .rt-done.rk .rl-row{grid-template-columns:62px minmax(0,1fr) 44px 38px;gap:9px;}
+  .rt-split .rt-done.rk .rl-nm{font-size:13px;}
+  .rt-split .rt-done.rk .rl-sc,.rt-split .rt-done .rl-rk{font-size:12px;}
+  .rt-key{gap:11px;}
 }
 
 @media (max-width:820px){

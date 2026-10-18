@@ -127,6 +127,7 @@ export default function RunLanes({
   best = null,
   order = 'live',
   className = '',
+  ranks = null,
 }) {
   const lanes = laneOrder(laneStates(sections, results, liveIndex, liveAnswered, upIndex), order);
   const box = useRef(null);
@@ -166,7 +167,7 @@ export default function RunLanes({
   }, [sig, id]);
 
   return (
-    <div className={`rl ${className}`.trim()} ref={box}>
+    <div className={`rl${ranks ? ' rk' : ''} ${className}`.trim()} ref={box}>
       {lanes.map((ln) => {
         const on = ln.st === 'won' || ln.st === 'lost' || ln.st === 'live';
         const a = avg && Number.isFinite(avg[ln.key]) ? avg[ln.key] : null;
@@ -176,6 +177,11 @@ export default function RunLanes({
             <b className="rl-nm" style={{ color: on ? ln.c : '#c9d0de' }}>{ln.name}</b>
             <LaneBar lane={ln} avg={a} best={b} big={ln.st === 'live'} />
             <em className={`rl-sc${on ? ' on' : ''}`}>{on ? `${ln.got}/${ln.n}` : ln.n}</em>
+            {ranks ? (
+              <em className="rl-rk" title={Number.isFinite(ranks[ln.key]) ? `Rank ${ranks[ln.key]} on ${ln.name} today` : undefined}>
+                {Number.isFinite(ranks[ln.key]) ? `#${ranks[ln.key]}` : ''}
+              </em>
+            ) : null}
           </div>
         );
       })}
@@ -218,6 +224,10 @@ export const TOWER_CSS = `
 .rl-row.live .rl-nm{font-weight:800;font-size:14px}
 .rl-sc{font-style:normal;font-size:11.5px;font-weight:700;color:#8b95a8;text-align:right;font-variant-numeric:tabular-nums}
 .rl-sc.on{color:#e8ecf4}
+/* THE RANK BY GAME (owner, 2026-10-18), a fourth column on the scorecard's
+   lanes: today's place on that game, where the five rank tiles used to be. */
+.rl.rk .rl-row{grid-template-columns:84px minmax(0,1fr) 48px 44px}
+.rl-rk{font-style:normal;font-size:11.5px;font-weight:700;color:#8b95a8;text-align:right;font-variant-numeric:tabular-nums}
 .rl-row.live .rl-sc{font-size:12.5px;font-weight:800}
 .rl-trk{position:relative;display:block;height:10px;min-width:0}
 .rl-trk.big{height:16px}
@@ -237,6 +247,8 @@ export const TOWER_CSS = `
   .rl-nm{font-size:11.5px}
   .rl-row.live .rl-nm{font-size:12.5px}
   .rl-sc{font-size:10.5px}
+  .rl.rk .rl-row{grid-template-columns:62px minmax(0,1fr) 40px 36px}
+  .rl-rk{font-size:10.5px}
   .rl-row.live .rl-sc{font-size:11.5px}
   .rl-trk{height:8px}
   .rl-trk.big{height:13px}
