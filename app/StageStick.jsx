@@ -15,8 +15,8 @@
 // light sheet with the board, recent runs, streak, set progress and IQ.
 //
 // Every figure is computed by StageFinish and passed in, so this file renders
-// and animates and nothing else. Spacing is space-evenly on the real viewport
-// height (100dvh) with a 16px floor, and every block reserves its space from
+// and animates and nothing else. Spacing is centred, with capped gaps, on the real viewport
+// height (100dvh), and every block reserves its space from
 // the first frame and only fades in, so nothing on the screen moves once it
 // has landed.
 //
@@ -39,20 +39,26 @@ const ease = (t) => 1 - Math.pow(1 - t, 3);
 // and holds the width; the counting text is laid over it.
 function Count({ fig, run }) {
   const [v, setV] = useState(null);
+  // IT COUNTS ONCE. The parent rebuilds fig every render, so keying the effect
+  // on the object restarted the count over and over; it keys on the number,
+  // and a ref holds it at the final figure once it has landed.
+  const doneRef = useRef(false);
+  const n = fig && fig.n != null ? fig.n : null;
   useEffect(() => {
-    if (!run || !fig || fig.n == null) return undefined;
+    if (!run || n == null || doneRef.current) return undefined;
     const t0 = performance.now();
     let raf = 0;
     const tick = (t) => {
       const p = Math.min(1, (t - t0) / T.count);
-      setV(fig.n * ease(p));
+      setV(n * ease(p));
       if (p < 1) raf = requestAnimationFrame(tick);
+      else doneRef.current = true;
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [run, fig]);
+  }, [run, n]);
   if (!fig) return null;
-  const shown = fig.n == null || v == null ? fig.text
+  const shown = fig.n == null || v == null || doneRef.current ? fig.text
     : fig.kind === 'time' ? mmss(Math.round(v))
     : `${fig.pre || ''}${Number.isInteger(fig.n) ? Math.round(v) : v.toFixed(1)}${fig.post || ''}`;
   return (
@@ -282,7 +288,7 @@ const CSS = `
 .sst.t-pb{--sst-bg:#e8b43a;--sst-ink:#2a1f04;}
 .sst.t-lost{--sst-bg:color-mix(in srgb,var(--stg-bad) 13%,var(--stg-raise));--sst-ink:var(--stg-ink);}
 .sst-in{min-height:100%;width:100%;max-width:560px;margin:0 auto;display:flex;flex-direction:column;
-  justify-content:space-evenly;gap:16px;
+  justify-content:center;gap:clamp(18px,3.2vh,28px);
   padding:max(28px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) max(30px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left));}
 .sst-b{opacity:0;transform:translateY(10px);transition:opacity .45s ease,transform .45s cubic-bezier(.2,.8,.2,1);}
 .sst-b.on{opacity:1;transform:none;}
