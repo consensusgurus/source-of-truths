@@ -20,7 +20,8 @@ const CACHE_HEADERS = { 'Cache-Control': 'public, s-maxage=300, stale-while-reva
 //
 // Shape: { elapsed, hourToday[24], hourYest[24], plays[8], time[8], players[8],
 //          gameToday: { key: { plays, players, avg, perfect, graded, med } },
-//          gameWeek: { key: plays over days 1..7 } }  (index 0 = today)
+//          gameWeek: { key: plays over days 1..7 },
+//          gameAvg: { key: { players, med, avg } } over full days 1..7 }  (index 0 = today)
 
 const DATED = /^([a-z0-9]+)-\d{1,2}-\d{1,2}-\d{2}$/;
 const dailyKeyOf = (qid) => { const m = DATED.exec(qid || ''); return m && DAILY_GAME_MAP[m[1]] ? m[1] : null; };
@@ -59,6 +60,10 @@ export async function GET() {
     const swPlayers = Array.from({ length: 8 }, () => new Set());
     const gameWeek = {};
     const gToday = new Map();
+    // gameAvg (owner, 2026-10-18): each daily's last seven FULL Eastern days,
+    // for the run finish's quick-play card. Average distinct players a day,
+    // median finish clock and average share solved, finished runs only.
+    const gAvg = new Map();
     for (const r of rows) {
       const t = Date.parse(r.created_at);
       if (!(t >= from && t <= now)) continue;
@@ -75,6 +80,13 @@ export async function GET() {
         if (Number.isFinite(te) && te > 0) swTime[d] += te;
         if (who) swPlayers[d].add(who);
         if (gk && d > 0) gameWeek[gk] = (gameWeek[gk] || 0) + 1;
+      }
+      if (gk && d >= 1) {
+        let w = gAvg.get(gk);
+        if (!w) { w = { days: Array.from({ length: 8 }, () => new Set()), times: [], graded: 0, sumFrac: 0 }; gAvg.set(gk, w); }
+        if (who) w.days[d].add(who);
+        if (r.total > 0 && !r.abandoned) { w.graded += 1; w.sumFrac += Math.min(1, (Number(r.score) || 0) / Number(r.total)); }
+        if (Number.isFinite(te) && te > 0 && !r.abandoned) w.times.push(te);
       }
       if (gk && d === 0) {
         let a = gToday.get(gk);
@@ -101,10 +113,21 @@ export async function GET() {
         med: ts.length ? ts[Math.floor(ts.length / 2)] : null,
       };
     }
+    const gameAvg = {};
+    for (const [k, w] of gAvg) {
+      const ts = w.times.sort((x, y) => x - y);
+      let sum = 0;
+      for (let i = 1; i <= 7; i++) sum += w.days[i].size;
+      gameAvg[k] = {
+        players: Math.round((sum / 7) * 10) / 10,
+        med: ts.length ? ts[Math.floor(ts.length / 2)] : null,
+        avg: w.graded ? Math.round((w.sumFrac / w.graded) * 1000) / 1000 : null,
+      };
+    }
     return NextResponse.json({
       elapsed, hourToday, hourYest,
       plays: swPlays, time: swTime, players: swPlayers.map((x) => x.size),
-      gameToday, gameWeek,
+      gameToday, gameWeek, gameAvg,
     }, { headers: CACHE_HEADERS });
   } catch (e) {
     return NextResponse.json(EMPTY);

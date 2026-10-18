@@ -49,6 +49,7 @@ import { runSummaryHref, circuitShareUrl, circuitScoreMode, circuitShareResult, 
 import GauntletLadder, { rampFor } from '../../GauntletLadder';
 import RunLanes, { LaneBar, secondsLine, TOWER_CSS } from '../../RunTowers';
 import RunNextUp from '../../RunNextUp';
+import RunQuickPlay from '../../RunQuickPlay';
 import GauntletMorePop from '../../GauntletMorePop';
 import useGauntletField, { FIELD_FLOOR } from '../../useGauntletField';
 import useCircuitBoard from '../../useCircuitBoard';
@@ -1661,11 +1662,16 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     challenge={isChallengeableRun(circuitId) && !r.practice
                       ? { score: cleared, total: askable, n: runToken(), t: runSecs > 0 ? Math.round(runSecs) : null, status: `${perfect} of ${N} cleared` }
                       : null}
-                    similar={GAUNT || ENCORE ? similarRun : null}
+                    similar={null}
                     boardHref={runSummaryHref(circuitId)}
                     boardState={boardQ.state}
                   />
                 ) : null}
+                {/* ONE QUICK PLAY leads the Gauntlets' finish too (owner, 2026-10-18).
+                    The board top's "Play similar" door offered another long run
+                    (Trivia Encore), the opposite of a small ask, so it no longer
+                    passes one; Encore is still in the trivia list further down. */}
+                {BTOP ? <RunQuickPlay circuitId={circuitId} /> : null}
                 {!TOWERS ? (
                   <span className="rn-lcap">
                     {r.practice ? 'Practice run' : 'The run'}
@@ -1793,6 +1799,11 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     <RunChallengeButton gameKey={circuitId} score={cleared} total={askable} n={runToken()} t={runSecs > 0 ? Math.round(runSecs) : null} status={`${perfect} of ${N} cleared`} door />
                   </div>
                 ) : null}
+                {/* ONE QUICK PLAY (owner, 2026-10-18): people finished the Gauntlet
+                    and left for good, because the first next step sat at the foot of
+                    the card. One quick, easy game now leads, right under the
+                    challenge, with how long it takes and how many play it a day. */}
+                {!BTOP ? <RunQuickPlay circuitId={circuitId} /> : null}
                 {/* NEXT DROP (owner, 2026-10-06): when tomorrow's run opens. */}
                 <NextDrop
                   label={`Next ${circuitName}`}
