@@ -82,7 +82,9 @@ function Row({ id, cls = 'mr' }) {
 // THE INLINE LIST. Colours come in as props because the five endings do not
 // share a ground: the runs and Passport are near black, Judged paints its own
 // tokens. The defaults are the dark run stage's.
-export function MoreRunsList({ self, ink = '#eef2fa', mute = '#9aa8c4', line = 'rgba(255,255,255,.14)', style }) {
+// SHARE SITS UNDER THE LIST (owner, 2026-10-18): every run ending passes its own
+// share handler and the button closes the ending, below the other runs.
+export function MoreRunsList({ self, ink = '#eef2fa', mute = '#9aa8c4', line = 'rgba(255,255,255,.14)', style, onShare = null, copied = false, shareLabel = 'Share your score' }) {
   const ids = useOpenRuns(self);
   if (!ids) return null;
   return (
@@ -94,6 +96,9 @@ export function MoreRunsList({ self, ink = '#eef2fa', mute = '#9aa8c4', line = '
       ) : (
         <p className="mr-done">You have finished every one of today&rsquo;s runs. New ones open at midnight Eastern.</p>
       )}
+      {onShare ? (
+        <button type="button" className="mr-share" onClick={onShare}>{copied ? 'Copied' : shareLabel}</button>
+      ) : null}
     </div>
   );
 }
@@ -245,6 +250,9 @@ const LIST_CSS = `
 .mr{font-family:${SANS};margin:22px 0 0;text-align:left;color:var(--mr-ink);}
 .mr-cap{font-size:10px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--mr-mute);margin:0 0 8px;}
 .mr-done{margin:0;font-size:13.5px;font-weight:600;line-height:1.5;color:var(--mr-mute);}
+.mr-share{display:block;width:100%;margin-top:14px;padding:13px 18px;border-radius:10px;cursor:pointer;
+          font-family:${SANS};font-size:14.5px;font-weight:800;background:transparent;color:var(--mr-ink);border:1.5px solid var(--mr-line);}
+.mr-share:hover{border-color:var(--mr-ink);}
 ${ROW_CSS('mr')}
 `;
 

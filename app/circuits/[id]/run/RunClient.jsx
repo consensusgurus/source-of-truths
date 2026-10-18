@@ -1935,7 +1935,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                 <div className="rn-vacts rn-sacts">
                   <button type="button" className="rn-vb" onClick={shareRun}>
                     {copied ? <Check size={15} strokeWidth={2.8} /> : <Share2 size={15} strokeWidth={2.8} />}
-                    {copied ? 'Copied' : 'Share the run'}
+                    {copied ? 'Copied' : 'Share your score'}
                   </button>
                 </div>
                 <p className="rn-fine">

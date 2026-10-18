@@ -446,19 +446,17 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
         <div className="pf-wide">
           <RunChallengeLine gameKey="pricecheck" score={total} n={runToken()} />
           <RunChallengeButton gameKey="pricecheck" score={total} total={max} n={runToken()} status={`${t[3]} card`} door />
-          {/* SHARE CAME BACK (player report, 2026-10-18): taking the share button
-              off on 10-17 left the challenge link as the only way out, and it sends
-              a link with no score. This shares the card, the score and each game. */}
-          <div className="pf-btns">
-            <button type="button" className="pri" onClick={onShare}>{copied ? 'Copied' : 'Share your score'}</button>
-            {!v2 && <button type="button" onClick={onItems}>See the items</button>}
-          </div>
+          {!v2 && (
+            <div className="pf-btns">
+              <button type="button" onClick={onItems}>See the items</button>
+            </div>
+          )}
         </div>
       )}
       {settled && v2 && <FieldPanel sections={sections} counted={counted} total={total} max={max} board={board} ranks={RUN_RANKS} onItems={onItems} />}
       {settled && (
         <div className="pf-foot">
-          <MoreRunsList self="pricecheck" />
+          <MoreRunsList self="pricecheck" onShare={onShare} copied={copied} />
         </div>
       )}
     </section>

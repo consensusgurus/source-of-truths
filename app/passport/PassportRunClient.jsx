@@ -546,7 +546,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
           <NextDrop label="Next flight" sub="A new Ping, Flank and Span board at midnight Eastern." href={PATH}
             accent="#c4b5fd" style={{ margin: '14px 0 0' }} />
         ) : null}
-        <MoreRunsList self="passport" />
+        <MoreRunsList self="passport" onShare={copyShare} copied={copied} />
         <div className="pe-foot">
           Each leg is also its own daily: {sections.map((s, i) => <React.Fragment key={s.key}>{i ? ' · ' : ''}<a href={s.path}>{s.name}</a></React.Fragment>)}
           {!isTodays ? <> · You played the {PUZZLE.dateLabel} archive. <a href={PATH}>Back to today&rsquo;s Passport</a></> : null}

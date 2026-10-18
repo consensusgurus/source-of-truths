@@ -458,7 +458,7 @@ function Grading({ sections, counted, parts, total, dateLabel, dateShort, animat
           </div>
           <NextDrop label="Tomorrow's forms" sub="A new six by six, a new classic and a new variant at midnight Eastern." href="/dojo"
             accent="var(--dj-cta)" ink="var(--dj-ink)" mute="var(--dj-mute)" style={{ margin: '14px 0 0' }} />
-          <MoreRunsList self="dojo" ink="var(--dj-ink)" mute="var(--dj-mute)" line="var(--dj-line)" />
+          <MoreRunsList self="dojo" ink="var(--dj-ink)" mute="var(--dj-mute)" line="var(--dj-line)" onShare={onShare} copied={copied} />
           <div className="gr-lad"><div className="eb">The belts</div><Ladder at={fti} /></div>
         </div>
       )}

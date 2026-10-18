@@ -1805,7 +1805,7 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
             <RunChallengeButton gameKey="passport" score={total} total={50} n={PUZZLE.num} archive={!isTodays}
               t={g.t0 && g.tEnd ? Math.round((g.tEnd - g.t0) / 1000) : null} status={(TIERS[tierIndex(total)] || {}).name || ''} door />
           </div>
-          <MoreRunsList self="passport" />
+          <MoreRunsList self="passport" onShare={copyShare} copied={copied} />
           {!isTodays ? (
             <div className="pe-foot">
               You played the {PUZZLE.dateLabel} archive. <a href={PATH}>Back to today&rsquo;s Passport</a>

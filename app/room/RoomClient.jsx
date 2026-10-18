@@ -534,7 +534,7 @@ function Verdict({ sections, counted, parts, total, dateLabel, dateShort, animat
           <p className="rr-vf-note">The room keeps filling until midnight, so your read can still move. Come back tomorrow for your settled spot.</p>
           <NextDrop label="Tomorrow's room" sub="New crowds at midnight Eastern." href="/room"
             accent="var(--rr-acc-lt)" ink="var(--rr-ink)" mute="var(--rr-mute)" style={{ margin: '14px 0 0' }} />
-          <MoreRunsList self="room" ink="var(--rr-ink)" mute="var(--rr-mute)" line="var(--rr-line)" />
+          <MoreRunsList self="room" ink="var(--rr-ink)" mute="var(--rr-mute)" line="var(--rr-line)" onShare={onShare} copied={copied} />
           <div className="rr-vf-lad"><div className="rr-eb">Where you stand at the party</div><Ladder at={ti} /></div>
         </div>
       )}

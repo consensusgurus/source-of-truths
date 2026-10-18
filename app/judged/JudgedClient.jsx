@@ -502,7 +502,7 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
           </div>
           <NextDrop label="Tomorrow's docket" sub="Five new cases and a new set of schools at midnight Eastern." href="/judged"
             accent="var(--ls-cta)" ink="var(--ls-ink)" mute="var(--ls-mute)" style={{ margin: '14px 0 0' }} />
-          <MoreRunsList self="judged" ink="var(--ls-ink)" mute="var(--ls-mute)" line="var(--ls-line)" />
+          <MoreRunsList self="judged" ink="var(--ls-ink)" mute="var(--ls-mute)" line="var(--ls-line)" onShare={onShare} copied={copied} />
           <div className="vf-lad"><div className="eb">The ladder</div><Ladder at={fti} L={L} /></div>
         </div>
       )}
