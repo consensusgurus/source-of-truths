@@ -329,7 +329,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
       <RunChallengeCapture gameKey={DOJO_RUN_ID} />
       {hydrated && done && (
         <Grading key="grading" sections={sections} counted={counted} parts={parts} total={total} dateLabel={dateLabel} dateShort={dateShort}
-          animate={doneAtLoad.current === false} board={board} onShare={copyShare} copied={copied}
+          animate={doneAtLoad.current === false} board={board} clocks={CLK} onShare={copyShare} copied={copied}
           onSettled={() => setSettled(true)} />
       )}
       <MoreRunsPop self="dojo" ready={settled && doneAtLoad.current === false} delay={2500} fireOnLeave />
@@ -374,7 +374,7 @@ function NextBelt({ total, ti }) {
 // the total climbs the belts, then the seal and the knot. It plays once, on the
 // finish itself, never for reduced motion or a run restored already finished,
 // and any tap or key skips it. Then the settled card below, unchanged.
-function Grading({ sections, counted, parts, total, dateLabel, dateShort, animate, board, onShare, copied, onSettled }) {
+function Grading({ sections, counted, parts, total, dateLabel, dateShort, animate, board, clocks, onShare, copied, onSettled }) {
   const n = sections.length;
   const pts = parts.map((p) => Math.round(p));
   const fti = dojoTierOf(total);
@@ -452,6 +452,7 @@ function Grading({ sections, counted, parts, total, dateLabel, dateShort, animat
           <div className="gr-games">
             {sections.map((s, i) => <div key={s.key} className={flat ? '' : i === hi ? 'hi' : i === lo ? 'lo' : ''}><i>{s.name}</i><b>{counted[i] ? pts[i] : '-'}<small>/{s.weight}</small></b></div>)}
           </div>
+          <DojoBoard sections={sections} parts={parts} total={total} board={board} clocks={clocks} />
           <div style={{ margin: '14px 0 0' }}>
             <RunChallengeLine gameKey={DOJO_RUN_ID} score={total} total={DOJO_MAX} n={runToken()} />
             <RunChallengeButton gameKey={DOJO_RUN_ID} score={total} total={DOJO_MAX} n={runToken()} t={runClock > 0 ? Math.round(runClock) : null} status={t[1]} door />
@@ -463,6 +464,85 @@ function Grading({ sections, counted, parts, total, dateLabel, dateShort, animat
         </div>
       )}
     </section>
+  );
+}
+
+// ─── TODAY'S BOARD (owner, 2026-10-19) ─────────────────────────────────────
+// The Gauntlets' end-card board, in the Dojo's own dress: today's top three
+// plus your own row, each with the belt that total ties on and three bars, one
+// per form, filled as a share of that form's points (so a full bar is full
+// marks whatever the form is worth). Other players' bars are graded from their
+// board rows with the same scorer and the same day's clocks the board itself
+// ranks on; your own row uses the figures on the sheet above, so the two
+// cannot disagree. It invents nothing: a row with no per-form data draws no bars.
+function DojoBoard({ sections, parts, total, board, clocks }) {
+  const data = board && board.data;
+  const state = board && board.state;
+  const rows = data && Array.isArray(data.overall) ? data.overall.filter((x) => Number.isFinite(Number(x.total))) : [];
+  const me = data && data.me;
+  const meKey = me && me.userKey ? me.userKey : null;
+  const meRank = me && Number.isFinite(Number(me.rank)) ? Number(me.rank) : null;
+  const fieldN = data ? Number(data.overallField || data.uniquePlayers || rows.length) || null : null;
+  const ahead = meRank && fieldN && fieldN >= 2 ? Math.max(0, Math.round(((fieldN - meRank) / fieldN) * 100)) : null;
+  const shareOf = (key, p) => {
+    if (!p || p.abandoned) return 0;
+    return dojoGridPoints(key, p.score, p.total, p.timeElapsed, clocks || DOJO_CLOCK);
+  };
+  const beltName = (pts) => B[dojoTierOf(pts)][1];
+  const top = rows.slice(0, 3);
+  const meInTop = !!(meKey && top.some((x) => x.userKey === meKey));
+  const out = top.map((x, i) => {
+    const mine = !!(meKey && x.userKey === meKey);
+    const t = Math.round(Number(x.total) || 0);
+    return {
+      key: x.userKey || `r${i}`, rank: String(x.rank || i + 1), name: x.username || 'Player', total: mine ? total : t,
+      sub: [beltName(mine ? total : t), mine && ahead != null ? `ahead of ${ahead}%` : ''].filter(Boolean).join(' · '),
+      ti: dojoTierOf(mine ? total : t), me: mine, rc: ['#e8b43a', '#b8bcc4', '#c8814b'][i],
+      per: mine ? parts : (x.perGame ? sections.map((s) => shareOf(s.key, x.perGame[s.key])) : null),
+    };
+  });
+  if (me && !meInTop && meRank) {
+    out.push({
+      key: 'me', rank: String(meRank), name: me.username || 'You', total,
+      sub: [beltName(total), ahead != null ? `ahead of ${ahead}%` : ''].filter(Boolean).join(' · '),
+      ti: dojoTierOf(total), me: true, rc: 'var(--dj-cta)', per: parts,
+    });
+  }
+  const names = sections.map((s) => s.name);
+  const listed = names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names.join('');
+  return (
+    <div className="db">
+      <div className="db-hd">
+        <span>Today&rsquo;s board{fieldN ? ` · ${Number(fieldN).toLocaleString()} ${fieldN === 1 ? 'player' : 'players'}` : ''}</span>
+        <a href="/dojo/leaderboard">Full board</a>
+      </div>
+      {out.length ? (
+        <div className="db-rows">
+          {out.map((r, i) => (
+            <div key={r.key} className={`db-row${r.me ? ' me' : ''}`} style={{ animationDelay: `${0.1 + i * 0.07}s` }}>
+              <div className={`db-rk${r.rank.length >= 3 ? ' sm' : ''}`} style={{ color: r.me ? 'var(--dj-cta)' : r.rc }}>{r.rank}</div>
+              <div className="db-who">
+                <div className="db-nm">{r.name}</div>
+                <div className="db-sub"><i style={{ background: B[r.ti][3] }} />{r.sub}</div>
+              </div>
+              {r.per ? (
+                <div className="db-bars" aria-hidden="true">
+                  {sections.map((s, k) => {
+                    const v = Math.max(0, Number(r.per[k]) || 0);
+                    const pct = s.weight ? Math.min(100, Math.round((v / s.weight) * 100)) : 0;
+                    return <div key={s.key} style={{ height: `${Math.max(pct, 4)}%`, background: `var(--dj-${s.key})`, opacity: v > 0 ? 1 : 0.25 }} />;
+                  })}
+                </div>
+              ) : <div />}
+              <div className="db-tot">{r.total}</div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="db-empty">{state === 'error' ? 'The board could not be loaded just now.' : state === 'ready' ? 'Nobody on the board yet.' : 'Reading the board.'}</div>
+      )}
+      {out.length ? <div className="db-ft">Bars: share of the points on {listed}.</div> : null}
+    </div>
   );
 }
 
@@ -650,6 +730,26 @@ html:not(.dj-x):has(.stage-page.dj[data-stage-theme]),html:not(.dj-x) body:has(.
 .gr-games b small{font-size:11px;color:var(--dj-mute)}
 .gr-games .hi{border-color:var(--dj-gold)}.gr-games .hi b{color:var(--dj-gold)}
 .gr-games .lo b{color:var(--dj-bad)}
+.db{margin:16px 0 0}
+.db-hd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px}
+.db-hd span{font:800 11px ${SANS};letter-spacing:.14em;text-transform:uppercase;color:var(--dj-mute)}
+.db-hd a{font:800 12.5px ${SANS};color:var(--dj-cta);text-decoration:none}
+.db-hd a:hover{text-decoration:underline}
+.db-rows{display:flex;flex-direction:column;gap:7px}
+.db-row{display:grid;grid-template-columns:34px minmax(0,1fr) minmax(54px,96px) 44px;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--dj-surf);border:1px solid var(--dj-line);animation:djrise .45s ease both}
+.db-row.me{border-color:var(--dj-cta);background:rgba(125,211,252,.08)}
+.db-rk{font:800 17px ${SANS};font-variant-numeric:tabular-nums}
+.db-rk.sm{font-size:14px}
+.db-who{min-width:0}
+.db-nm{font:800 15px ${SANS};white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.db-sub{display:flex;align-items:center;gap:6px;margin-top:2px;font:700 12px ${SANS};color:var(--dj-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.db-sub i{flex:none;width:14px;height:6px;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+.db-bars{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;align-items:end;gap:3px;height:26px}
+.db-bars div{border-radius:3px 3px 0 0}
+.db-tot{font:800 21px ${SANS};text-align:right;font-variant-numeric:tabular-nums}
+.db-empty{font:700 13px ${SANS};color:var(--dj-mute);padding:10px 0}
+.db-ft{margin-top:8px;font:600 12px ${SANS};color:var(--dj-mute)}
+@media(max-width:560px){.db-row{grid-template-columns:28px minmax(0,1fr) 54px 36px;gap:8px;padding:8px 10px}.db-tot{font-size:18px}.db-bars{height:22px;gap:2px}}
 .gr-btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
 .gr-btns a,.gr-btns button{font:800 14px ${SANS};padding:12px 18px;border-radius:12px;text-decoration:none;color:var(--dj-ink);border:1px solid var(--dj-line);background:transparent;cursor:pointer}
 .gr-btns .pri{background:var(--dj-cta);color:var(--dj-cta-ink);border-color:transparent}
