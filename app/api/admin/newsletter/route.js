@@ -28,7 +28,7 @@ import { isAdmin } from '@/lib/admin-auth';
 import { CAMPAIGNS, CURRENT, status, sendBatch } from '@/lib/newsletter-send';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 function tokenOk(request) {
   const expected = process.env.ADMIN_TASK_TOKEN;
