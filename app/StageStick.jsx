@@ -22,11 +22,13 @@
 //
 // Mock-up: the "Ending" canvas (Before / Main / Hands / Crux), 2026-10-18.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { DRAWING } from '@/lib/drawing';
 import { useMyTickets } from './TicketDoor';
 import { gameStats, mmss } from '@/lib/daily-row-stats';
+
+const useIsoLayout = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 const SANS = "Manrope, ui-sans-serif, system-ui, -apple-system, sans-serif";
 
@@ -113,6 +115,52 @@ export default function StageStick({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  // THE TRACK LABELS NEVER OVERLAP (owner screenshot, 2026-10-18: "SUNDAY BEST"
+  // ran into "YOUR AVERAGE"). StageFinish spreads the dots in fractions of the
+  // track, but it cannot know how wide a label renders, and a label at the left
+  // edge is left-aligned so it reaches much further right than a centred one.
+  // So measure the real labels after layout: nudge the right one right (then
+  // the left one left) by the overlap, and only if the track has no room left,
+  // drop the second label onto a row of its own. Runs before paint and while
+  // the marks are still transparent, so nothing visibly moves.
+  const trackRef = useRef(null);
+  const trackKey = self && self.track ? self.track.map((p) => `${p.k}:${p.x}:${p.label}:${p.fig}`).join('|') : '';
+  const fitTrack = () => {
+    const el = trackRef.current;
+    if (!el) return;
+    const lbs = [...el.querySelectorAll('.pt:not(.today) .lb')];
+    lbs.forEach((l) => { l.style.marginLeft = ''; l.classList.remove('r2'); });
+    el.classList.remove('two');
+    if (lbs.length < 2) return;
+    const box = el.getBoundingClientRect();
+    const GAP = 12, BLEED = 10;
+    const rs = lbs.map((l) => { const b = l.getBoundingClientRect(); return { l, left: b.left, right: b.right }; })
+      .sort((a, b) => a.left - b.left);
+    for (let i = 1; i < rs.length; i++) {
+      const A = rs[i - 1], B = rs[i];
+      const need = A.right + GAP - B.left;
+      if (need <= 0) continue;
+      const dB = Math.min(need, Math.max(0, box.right + BLEED - B.right));
+      const dA = Math.min(need - dB, Math.max(0, A.left - (box.left - BLEED)));
+      if (dA + dB >= need) {
+        const mA = (parseFloat(A.l.style.marginLeft) || 0) - dA;
+        A.l.style.marginLeft = `${mA}px`; A.left -= dA; A.right -= dA;
+        B.l.style.marginLeft = `${dB}px`; B.left += dB; B.right += dB;
+      } else {
+        B.l.classList.add('r2'); el.classList.add('two');
+      }
+    }
+  };
+  useIsoLayout(() => { fitTrack(); }, [trackKey, host]);   // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!trackKey) return undefined;
+    const re = () => fitTrack();
+    window.addEventListener('resize', re);
+    try { document.fonts && document.fonts.ready.then(re); } catch (e) {}
+    return () => window.removeEventListener('resize', re);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trackKey, host]);
+
   if (!host) return null;
   const on = (n) => 'sst-b' + (step >= n ? ' on' : '');
   // A tap on the colour (not on a control) lands everything at once.
@@ -161,7 +209,7 @@ export default function StageStick({
           <div className="sst-lab">Against yourself</div>
           <div className="sst-hl">{self ? self.head : ' '}</div>
           {self && self.track ? (
-            <div className="sst-track" aria-hidden="true">
+            <div className="sst-track" ref={trackRef} aria-hidden="true">
               <span className="ln" />
               {self.track.map((p) => (
                 <span key={p.k} className={'pt ' + p.k + (p.edge ? ' ' + p.edge : '') + (marks ? ' on' : '')} style={{ left: pos(p.x) }}>
@@ -328,6 +376,8 @@ const CSS = `
 .sst-track .pt.today .lb{top:0;}
 .sst-track .pt.first .lb{transform:none;left:-6px;align-items:flex-start;}
 .sst-track .pt.last .lb{transform:translateX(-100%);left:6px;align-items:flex-end;}
+.sst-track.two{height:112px;}
+.sst-track .lb.r2{top:83px;}
 .sst-track .lb em{font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;}
 .sst-track .lb small{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;}
 .sst-strip{display:flex;gap:7px;margin-top:14px;}

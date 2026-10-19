@@ -1150,6 +1150,11 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
 
                       <div ref={boxRef} style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
                         <span ref={probeRef} aria-hidden="true" style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden', pointerEvents: 'none' }} />
+                        {/* NO TAP FLASH (player report, 2026-10-18: "the blue flash every
+                            time a fruit is touched is too annoying"). The board's pointer
+                            cursor makes mobile browsers treat the whole canvas as a link and
+                            paint their tap highlight over it on every touch. The picked square
+                            already shows its own ring, so the browser's flash is switched off. */}
                         <canvas
                           key={shake}
                           ref={cvsRef}
@@ -1157,7 +1162,7 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
                           className={shake ? 'sq-shake' : undefined}
                           role="img"
                           aria-label={`Squash board, ${SIZE} by ${SIZE} fruit (${FRUITS.join(', ')}), ${shownScore} points, ${fmtClock(shownLeft)} left`}
-                          style={{ display: 'block', touchAction: 'none', maxWidth: '100%', borderRadius: 10, cursor: playing ? 'pointer' : 'default' }}
+                          style={{ display: 'block', touchAction: 'none', maxWidth: '100%', borderRadius: 10, cursor: playing ? 'pointer' : 'default', WebkitTapHighlightColor: 'transparent', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}
                         />
                         {playing && g.t0 && paused && (
                           <button type="button" className="sq-pause" onClick={togglePause} aria-label="Resume the run">
