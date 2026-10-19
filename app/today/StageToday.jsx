@@ -1497,10 +1497,20 @@ export default function StageToday() {
   useIsoLayoutEffect(() => {
     try { if (localStorage.getItem(IX_KEY) === 'cat') setIxLens('cat'); } catch (e) { /* storage off */ }
   }, []);
+  // SWITCHING THE LENS WITH A PANE OF THE OTHER LENS OPEN COLLAPSES THE INDEX
+  // (owner, 2026-10-19). A category pane has no button in the skill index (and a
+  // skill pane none in the categories), so it hung on with its titles and no
+  // label. Back to the tiles instead, remembered like going back by hand.
   const pickIx = useCallback((v) => {
     setIxLens(v);
     try { localStorage.setItem(IX_KEY, v); } catch (e) { /* storage off */ }
-  }, []);
+    const other = v === 'skill' ? orderedCats.some((c) => c.cat === pane) : isSkillId(pane);
+    if (other) {
+      setPicked(false);
+      setPane(ALL_ID);
+      try { localStorage.setItem(PANE_KEY, ALL_ID); localStorage.setItem(TILES_KEY, '1'); } catch (e) { /* storage off */ }
+    }
+  }, [pane, orderedCats]);
   const lensCats = ixLens === 'skill' ? skillCats : orderedCats;
   const paneCat = (id) => orderedCats.find((c) => c.cat === id) || skillCats.find((c) => c.cat === id) || null;
 
