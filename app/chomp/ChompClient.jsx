@@ -668,7 +668,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
   function shareText() {
     const sun = PUZZLE.sunday ? ' · Sunday' : '';
     const line = cleared
-      ? `all ${NPEL} in ${g.moves} moves`
+      ? `all ${NPEL} in ${fmtTime(g.ms)}`
       : `${g.pi}/${NPEL} · boxed in after ${g.moves} moves`;
     return `Chomp #${PUZZLE.num}${sun} · ${line}\nmindloftdaily.com/chomp`;
   }
@@ -976,9 +976,9 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
               name="Chomp"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
-              challengeMetric={won ? g.moves : null}
+              challengeMetric={null}
               title={won ? 'Solved' : 'Not solved'}
-              detail={`${nf(g.moves)} moves`}
+              detail={won ? fmtTime(g.ms) : `${nf(g.moves)} moves`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
