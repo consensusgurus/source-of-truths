@@ -1200,7 +1200,7 @@ export default function TodayClient({ onSignup = null, stageDefault = true } = {
                   onClick={(e) => { setOpen(CIRC_ID, true); jumpTo(e, 'tdy-circuits'); }}
                 >
                   <span className="dot" aria-hidden="true" />
-                  <span className="nm">Circuits</span>
+                  <span className="nm">Runs</span>
                   <span className="ct">{`${circDone}/${circTot}`}</span>
                 </button>
               ) : null}
@@ -1381,7 +1381,7 @@ export default function TodayClient({ onSignup = null, stageDefault = true } = {
                 <div>
                   <div className="eb">{`Sets \u00b7 ${circTot} circuits`}</div>
                   <div className="tdy-hnm">
-                    <h2>Circuits</h2>
+                    <h2>Runs</h2>
                     <span className={'tdy-prg' + (circDone >= circTot ? ' full' : '')}>
                       <b>{`${circDone} of ${circTot}`}</b>
                       <span className="pb" aria-hidden="true"><span style={{ width: `${Math.round((100 * circDone) / circTot)}%` }} /></span>
@@ -1548,7 +1548,7 @@ export default function TodayClient({ onSignup = null, stageDefault = true } = {
             </div>
             <div className="tdy-card">
               <div className="tdy-tabs">
-                {[['overall', 'Overall'], ['games', 'By game'], ['cats', 'By category'], ['circuits', 'Circuits']].map(([k, l]) => (
+                {[['overall', 'Overall'], ['games', 'By game'], ['cats', 'By category'], ['circuits', 'Runs']].map(([k, l]) => (
                   <button key={k} type="button" className={'tdy-tab' + (mode === k ? ' on' : '')} onClick={() => setMode(k)}>{l}</button>
                 ))}
               </div>

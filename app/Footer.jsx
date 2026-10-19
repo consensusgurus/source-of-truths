@@ -37,7 +37,7 @@ export const FOOTER_COLS = [
       // fifteen /circuits/<id> pages, and through them a second path into every
       // daily game. It is also where a reader who arrived on one shared circuit
       // finds the other fourteen.
-      { label: 'Circuits', href: '/circuits' },
+      { label: 'Runs', href: '/circuits' },
       // The trivia IQ tests. /iq is linked from nowhere else, so this is its crawl path.
       { label: 'Trivia IQ Tests', href: '/iq' },
       { label: 'Stat Hub', href: '/quizzes/hub' },

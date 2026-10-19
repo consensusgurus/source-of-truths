@@ -9905,17 +9905,24 @@ before first paint; `?color=` is a review override).
 - The Leaderboards + Stats pane's "Every game today" grid is sorted by plays today, most first, ties
   A to Z (`app/today/BoardsPane.jsx`).
 
-## Runs sit in the puzzle grid as deck tiles (owner, 2026-10-19)
+## Runs sit in the puzzle grid as deck tiles, and in the list as rows (owner, 2026-10-19)
 
-On a desktop in TILE view, All Puzzles and every category or skill pane lead
-with the day's runs (`PILL_CIRCUITS` filtered as the pills were) as deck tiles in
-the same `.sty-games` grid (`deckGrid` in app/today/StageToday.jsx), replacing the
-pills in that view. A deck tile is a button drawn as a small card stack in the
-run's hue with a pip per game; it opens ONE full-width drawer under its row
-(games in play order, linked, and the way into the run). Order follows the
-pane's sort (A to Z by name, Popular by the members' summed week plays, Easy to
-hard by their mean rating), a run finished today last. More runs than columns
-are dealt evenly over rows (8 in 7 is 4 and 4) and each run row is filled out
-with games; the column count is measured off the live grid. List view keeps the
-pills; the phone keeps its runs block. Mockup: canvas "Runs in the All Puzzles
-Grid", option D.
+On a desktop, All Puzzles and every category or skill pane carry the day's runs
+(`PILL_CIRCUITS` filtered as the pills were) in place of the run pills, in BOTH
+views. TILE view: deck tiles in the same `.sty-games` grid (`deckGrid` in
+app/today/StageToday.jsx), a button drawn as a small card stack in the run's hue
+with a pip per game. Open runs lead and flow straight across like any tile (8 in
+7 columns is 7 then 1, games following, never split evenly); a run finished today
+goes to the very END of the grid, after the played games. The drawer (games in
+play order, linked, and the way into the run) opens under whatever row its deck
+sits on, found by walking the grid as CSS places it (a band heading takes a row
+of its own). LIST view: `runRow` ledger rows in the ledger's columns, open runs
+above the games and finished runs below them; a row opens the same drawer under
+itself, and its Play chip is a link into the run. Full color fills an open deck
+with `--phf` and dark ink like the game tiles. The phone keeps its runs block.
+Mockup: canvas "Runs in the All Puzzles Grid", option D.
+
+READER-FACING, CIRCUITS ARE CALLED RUNS (owner, 2026-10-19): the home index
+button and pane heading, the footer, the /circuits page title and eyebrow, the
+breadcrumbs, the roster/archive/category links and the trophy group all say
+"Runs". The code, the ids and the /circuits URL are unchanged.

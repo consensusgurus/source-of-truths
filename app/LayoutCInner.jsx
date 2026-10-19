@@ -575,7 +575,7 @@ export default function LayoutCInner({ gameKey }) {
             </React.Fragment>
           ))}
           <span className="sty-ixsep" aria-hidden="true" />
-          {ixLink('sty-circs', 'Circuits', 'var(--stg-mute)')}
+          {ixLink('sty-circs', 'Runs', 'var(--stg-mute)')}
           {ixHash('sty-quizzes', 'Quizzes')}
           {ixHash('sty-iq', 'IQ Tests')}
           {ixHash('sty-exams', 'School Tests')}

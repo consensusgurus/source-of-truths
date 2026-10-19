@@ -269,7 +269,7 @@ export default function ArchiveClient({ games = [], today = '' }) {
         <nav className="arc-more" aria-label="More">
           <span>More puzzles:</span>
           <a href={withTq('/')}>Today&apos;s puzzles</a>
-          <a href={withTq('/circuits')}>Circuits</a>
+          <a href={withTq('/circuits')}>Runs</a>
           <a href={withTq('/') + '#sty-quizzes'}>All quizzes</a>
         </nav>
       </div>

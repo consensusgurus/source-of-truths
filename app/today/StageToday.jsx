@@ -2413,7 +2413,7 @@ export default function StageToday() {
           ? <><span className="sty-ixl">{skillOfId(cat).name}</span><span className="sty-ixs">{skillOfId(cat).short}</span></>
           : catLabel(cat), hueFor(cat))))}
       <span className="sty-ixsep" aria-hidden="true" />
-      {ixBtn(CIRC_ID, 'Circuits', 'var(--stg-mute)')}
+      {ixBtn(CIRC_ID, 'Runs', 'var(--stg-mute)')}
       {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)')}
       {/* DESKTOP INDEX ORDER (owner, 2026-10-13): Circuits, Quizzes, Puzzle Archive
           and Leaderboards + Stats are one group; the tests, Kids and the lists
@@ -2731,10 +2731,12 @@ export default function StageToday() {
       <div key={'lb-' + b.id} className="sty-ldb">{ledgerHead(b.label, b.games.length)}{ledgerRows(b.games, pre + b.id, ownHue)}</div>
     ));
   };
-  const catLedger = (games, ownHue = false) => (
+  const catLedger = (games, ownHue = false, cat = null) => (
     <div className="sty-led">
       {ledgerHead(null)}
+      {runRows(cat, false)}
       {ledgerRun(sortGames(games), ownHue ? 'skl' : 'led', ownHue)}
+      {runRows(cat, true)}
     </div>
   );
   // "Also try our permanent quizzes:" (owner, 2026-10-16). The ledger's own
@@ -3055,12 +3057,14 @@ export default function StageToday() {
   //   ORDER: the pane's sort. A to Z by name, Popular by the summed week plays
   //   of the run's games, Easy to hard by their mean rating. A run finished
   //   today goes to the back of the block.
-  //   LAYOUT: the runs take the first row; when they need more than one row
-  //   they are dealt evenly (8 in 7 columns is 4 and 4, never 7 and a lone
-  //   one), and the most played games fill the rest of each run row. The
-  //   column count is measured off the live grid.
-  // The phone keeps its runs block (owner, 2026-10-18), and list view keeps
-  // the pills.
+  //   LAYOUT (owner, 2026-10-19, second pass): open runs lead the grid and
+  //   flow straight across like any other tile (8 in 7 columns is 7 and one,
+  //   games following), and a run finished today goes to the very END of the
+  //   grid, after the played games. The drawer opens under whatever row the
+  //   deck sits on; the column count is measured off the live grid.
+  //   LIST VIEW gets the same thing as ledger rows: open runs first, finished
+  //   runs last, a tap opens the run's games under its row.
+  // The phone keeps its runs block (owner, 2026-10-18).
   const [deckOpen, setDeckOpen] = useState(null);
   const [gridCols, setGridCols] = useState(0);
   const deckRO = useRef(null);
@@ -3077,6 +3081,7 @@ export default function StageToday() {
   }, []);
   useEffect(() => { setDeckOpen(null); }, [paneOn]);
   const deckOn = (pane) => mid && viewOf(pane) === 'tile';
+  const runsIn = () => mid;
   const deckRuns = (cat) => {
     const sk = skillOfId(cat);
     const list = PILL_CIRCUITS.filter((id) => !SHELF_ONLY.has(id)).map((id) => circuits.find((c) => c.id === id)).filter((c) => c && (!cat
@@ -3137,22 +3142,70 @@ export default function StageToday() {
       </div>
     );
   };
-  const deckGrid = (cat, nodes, banded) => {
+  const deckGrid = (cat, nodes) => {
     const runs = deckRuns(cat);
     if (!runs.length) return nodes;
-    const C = gridCols > 0 ? gridCols : runs.length;
-    const R = Math.ceil(runs.length / C);
-    const out = []; let ri = 0; let gi = 0;
-    for (let r = 0; r < R; r++) {
-      const take = Math.floor(runs.length / R) + (r < runs.length % R ? 1 : 0);
-      const row = runs.slice(ri, ri + take); ri += take;
-      row.forEach((c, k) => out.push(deckTile(c, cat, k)));
-      if (!banded) for (let k = row.length; k < C && gi < nodes.length; k++) out.push(nodes[gi++]);
-      const open = row.findIndex((c) => c.id === deckOpen);
-      if (open >= 0) out.push(deckDrawer(row[open], cat, open, C));
-    }
-    return out.concat(nodes.slice(gi));
+    const seq = [
+      ...runs.filter((c) => !runFull(c)).map((c) => ({ run: c })),
+      ...nodes.map((n) => ({ node: n })),
+      ...runs.filter((c) => runFull(c)).map((c) => ({ run: c })),
+    ];
+    // Walk the grid as CSS will place it: a band heading takes a row of its
+    // own, everything else one cell. Each item learns its column and the last
+    // index on its row, which is where an open drawer goes.
+    const C = gridCols > 0 ? gridCols : Math.max(1, runs.length);
+    const colOf = new Array(seq.length); const endOf = new Array(seq.length);
+    let col = 0; let start = 0;
+    const close = (to) => { for (let j = start; j <= to; j++) endOf[j] = to; start = to + 1; col = 0; };
+    seq.forEach((x, i) => {
+      const full = x.node && String(x.node.key || '').startsWith('bd-');
+      if (full) { if (col > 0) close(i - 1); colOf[i] = 0; endOf[i] = i; start = i + 1; return; }
+      colOf[i] = col; col++;
+      if (col === C) close(i);
+    });
+    if (start < seq.length) close(seq.length - 1);
+    const at = seq.findIndex((x) => x.run && x.run.id === deckOpen);
+    const out = []; let k = 0;
+    seq.forEach((x, i) => {
+      out.push(x.run ? deckTile(x.run, cat, k++) : x.node);
+      if (at >= 0 && endOf[at] === i) out.push(deckDrawer(seq[at].run, cat, colOf[at], C));
+    });
+    return out;
   };
+  // THE SAME RUNS IN THE LIST (owner, 2026-10-19). A ledger row per run in the
+  // ledger's own columns; the row opens the run's games beneath it.
+  const runRow = (c, cat) => {
+    const fin = runFull(c);
+    const st = runStat[c.id];
+    const sd = fin ? circStand[c.id] : null;
+    const on = deckOpen === c.id;
+    const lk = runLook(c, cat);
+    const look = { ...lk, '--cc': lk['--ph'], '--cci': lk['--phi'] };
+    const toggle = () => setDeckOpen((v) => (v === c.id ? null : c.id));
+    return [
+      <div key={'rr-' + c.id} className={'sty-lr run' + (fin ? ' done' : c.n ? ' open' : '') + (on ? ' on' : '')} style={look}
+        role="button" tabIndex={0} aria-expanded={on} aria-controls={'rrd-' + c.id} data-fk={'rr:' + c.id}
+        onClick={toggle} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } }}>
+        <span className="ic"><span className="sty-rstk" aria-hidden="true" /></span>
+        <span className="nm"><b>{c.name}</b><span className="tg">Run · {c.games.length} games{c.blurb ? ' · ' + c.blurb : ''}</span></span>
+        <span className="td">
+          {!runStat ? <span className="ph" aria-hidden="true" />
+            : st && st.players ? <><b>{fmtN(st.players)}</b> {st.players === 1 ? 'player' : 'players'} today</>
+            : <span className="mu">Open. Be first.</span>}
+        </span>
+        <span className="yu">
+          <span className="sty-dkp" aria-label={`${c.n} of ${c.games.length} played`}>
+            {c.games.map((g) => <i key={g.key} className={done.has(g.key) ? 'on' : ''} />)}
+          </span>
+          <i>{sd ? `You: #${sd.rank} of ${sd.field}` : fin ? 'Finished' : c.n ? `${c.n} of ${c.games.length} played` : 'Not started'}</i>
+        </span>
+        <a className="ct" href={withTq(circuitEntryHref(c.id))} onClick={(e) => e.stopPropagation()}>{fin ? 'Results' : c.n ? 'Continue' : 'Play run'}</a>
+        <span className="sty-rchev" aria-hidden="true">{on ? '\u2212' : '+'}</span>
+      </div>,
+      on ? <div key={'rrd-' + c.id} id={'rrd-' + c.id} className="sty-rrd">{deckDrawer(c, cat, 0, 0)}</div> : null,
+    ];
+  };
+  const runRows = (cat, fin) => (runsIn() ? deckRuns(cat).filter((c) => runFull(c) === fin).flatMap((c) => runRow(c, cat)) : null);
   const deckFitOff = (cat) => !!deckOpen && deckRuns(cat).some((c) => c.id === deckOpen);
   // ONE SECTION PER PANE, a category or a skill. A skill mixes categories, so
   // its tiles and rows carry their own category's hue, as All Puzzles does.
@@ -3170,13 +3223,13 @@ export default function StageToday() {
         <div className="sty-cathead">
           <h2>{catLabel(cat)}</h2>
           <b>{n}<i>/{games.length}</i></b>
-          {deckOn(cat) ? null : circPills(cat, false)}
+          {runsIn() ? null : circPills(cat, false)}
           {sortCtl(false)}
           {viewCtl(cat)}
         </div>
         {s ? <p className="sty-skw">{s.what}. {games.length} daily puzzles.</p> : null}
         {circPills(cat, true)}
-        {mid && viewOf(cat) === 'list' ? catLedger(games, sk) : null}
+        {mid && viewOf(cat) === 'list' ? catLedger(games, sk, cat) : null}
         {!(mid && viewOf(cat) === 'list') ? <>
         <div className={'sty-games' + (fit ? ' fit' : '')} style={fitStyle} ref={dk ? deckGridRef : undefined}>
           {(() => {
@@ -3185,7 +3238,7 @@ export default function StageToday() {
                 canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
                 hue={sk ? hueFor(g.cat) : undefined} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={sk ? cat + ':' + g.key : null} />
             ));
-            return dk ? deckGrid(cat, nodes, !!bandsOf(games)) : nodes;
+            return dk ? deckGrid(cat, nodes) : nodes;
           })()}
         </div>
         {fit ? favBlock(cat, games, fit.k) : null}
@@ -3462,7 +3515,7 @@ export default function StageToday() {
             <h2>All Puzzles</h2>
             <b>{alphaDone}<i>/{alpha.length}</i></b>
             {grpChips()}
-            {deckOn(ALL_ID) ? null : circPills(null, false)}
+            {runsIn() ? null : circPills(null, false)}
             {sortCtl(false)}
             {viewCtl(ALL_ID)}
           </div>
@@ -3473,7 +3526,9 @@ export default function StageToday() {
           {mid && viewOf(ALL_ID) === 'list' ? (
             <div className="sty-led">
               {ledgerHead(null)}
+              {runRows(null, false)}
               {ledgerRun(playedLast(sortGames(alpha), done), 'azl', true)}
+              {runRows(null, true)}
             </div>
           ) : null}
           <div className={'sty-games' + (mid && viewOf(ALL_ID) === 'list' ? ' sty-vhid' : '')} ref={deckOn(ALL_ID) && paneOn === ALL_ID ? deckGridRef : undefined}>
@@ -3485,7 +3540,7 @@ export default function StageToday() {
                 canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
                 hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'az:' + g.key} />
             ));
-              return deckOn(ALL_ID) && paneOn === ALL_ID ? deckGrid(null, nodes, !!bandsOf(alpha)) : nodes;
+              return deckOn(ALL_ID) && paneOn === ALL_ID ? deckGrid(null, nodes) : nodes;
             })()}
           </div>
         </section>
@@ -3501,7 +3556,7 @@ export default function StageToday() {
              single hue that would be honest here. */
           <section className={'sty-cat sty-circsec sty-rev' + (ix && paneOn !== CIRC_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)', '--cci': 'var(--stg-ink2)' }}>
             <div className="sty-cathead" onClick={headClick(CIRC_ID)}>
-              <h2>Circuits</h2>
+              <h2>Runs</h2>
               <b>{circuits.filter((c) => c.n === c.games.length).length}<i>/{circuits.length}</i></b>
               {cav(CIRC_ID)}
             </div>
@@ -5828,4 +5883,25 @@ html[data-stage-color=full] .sty-g.done .sty-gi{color:var(--cci, var(--cc));opac
 .sty-dkm.on{color:var(--stg-mute);}
 .sty-dkm.on span::after{content:" \\2713";color:var(--stg-good,var(--gc));}
 @media (max-width:900px){.sty-deck,.sty-dkd{display:none;}}
+.sty-lr.run{cursor:pointer;}
+.sty-lr.run.on{background:color-mix(in srgb,var(--ph) 12%,var(--stg-surf));}
+.sty-lr.run .ic{position:relative;}
+.sty-rstk{width:15px;height:15px;border-radius:3px;border:1.5px solid var(--ph);box-shadow:3px -3px 0 -1.5px var(--stg-chip),3px -3px 0 0 color-mix(in srgb,var(--ph) 55%,transparent);}
+.sty-lr.run .yu{display:flex;flex-direction:column;gap:4px;}
+.sty-lr.run .yu i{margin-top:0;}
+.sty-lr.run .ct{text-decoration:none;color:var(--stg-ink);}
+.sty-rchev{justify-self:center;font-size:16px;font-weight:700;color:var(--stg-mute);}
+.sty-rrd{padding:0 14px 10px;}
+.sty-rrd .sty-dkd{margin-top:10px;}
+/* FULL COLOR FILLS THE RUNS TOO (owner, 2026-10-19): an open deck takes the
+   soft category step and dark ink exactly like the game tiles beside it; its
+   stacked edges stay in the deep step so the deck still reads as a stack. */
+html[data-stage-color=full] .sty-deck:not(.done){background:var(--phf);border-color:var(--phf);color:${RAMP_INK};}
+html[data-stage-color=full] .sty-deck:not(.done) .sty-dkn em,
+html[data-stage-color=full] .sty-deck:not(.done) .sty-dks{color:${RAMP_INK};}
+html[data-stage-color=full] .sty-deck:not(.done) .sty-dkp i{background:color-mix(in srgb, ${RAMP_INK} 22%, transparent);}
+html[data-stage-color=full] .sty-deck:not(.done) .sty-dkp i.on{background:${RAMP_INK};}
+html[data-stage-color=full] .sty-deck:not(.done):hover{border-color:${RAMP_INK};}
+html[data-stage-color=full] .sty-deck.on:not(.done){box-shadow:inset 0 0 0 2px ${RAMP_INK},3px -3px 0 -1.5px var(--stg-ground,var(--stg-bg,#fff)),3px -3px 0 0 color-mix(in srgb,var(--ph) 55%,transparent),6px -6px 0 -1.5px var(--stg-ground,var(--stg-bg,#fff)),6px -6px 0 0 color-mix(in srgb,var(--ph) 30%,transparent);}
+html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srgb, var(--phf) 22%, var(--stg-surf));}
 `;

@@ -34,7 +34,7 @@ import StageFooter from '../StageFooter';
 const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 const SANS = 'Manrope, ui-sans-serif, system-ui, -apple-system, sans-serif';
 
-export default function CircuitFrame({ cat = null, label = 'Circuits', progress = null, wide = false, children }) {
+export default function CircuitFrame({ cat = null, label = 'Runs', progress = null, wide = false, children }) {
   const [theme, setTheme] = useStageTheme();
   const tq = useThemeQs();
   const hint = useThemeHint();

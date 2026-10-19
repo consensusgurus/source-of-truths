@@ -20,12 +20,12 @@ import { SITE_URL } from '@/lib/site';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Circuits: Daily Puzzle Runs by Skill | Mind Loft',
+  title: 'Runs: Daily Puzzle Runs by Skill | Mind Loft',
   description:
     'Fifteen circuits, each a run of daily puzzles played as one sitting and ranked on your combined placement across all of them. Crosswords, sudoku, deduction, mental math and more, free and with no account needed.',
   alternates: { canonical: '/circuits' },
   openGraph: {
-    title: 'Mind Loft Circuits',
+    title: 'Mind Loft Runs',
     description: 'Five daily puzzles, one run, one combined leaderboard. Pick the skill you want to work.',
     url: '/circuits',
     type: 'website',
@@ -63,7 +63,7 @@ export default function CircuitsIndexPage() {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: 'Mind Loft Circuits',
+    name: 'Mind Loft Runs',
     url: `${SITE_URL}/circuits`,
     numberOfItems: rows.length,
     itemListElement: rows.map((r, i) => ({
@@ -80,7 +80,7 @@ export default function CircuitsIndexPage() {
       {/* NO `cat`: this page belongs to all fifteen circuits and therefore to
           all nine categories, so it keeps the stage's default accent rather
           than borrowing one circuit's step. */}
-      <CircuitFrame label="Circuits">
+      <CircuitFrame label="Runs">
         <div className="cix">
           {/* dangerouslySetInnerHTML, never a text child. This page is SERVER
               rendered, so nothing re-renders it on the client and there is no
@@ -91,7 +91,7 @@ export default function CircuitsIndexPage() {
           <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
           <section className="cix-hero">
-            <div className="cix-eb">Circuits</div>
+            <div className="cix-eb">Runs</div>
             <h1 className="cix-h1">One run, one combined board</h1>
             <p className="cix-sub">
               A circuit is a handful of daily puzzles played as one sitting and ranked on your combined

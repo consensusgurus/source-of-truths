@@ -67,7 +67,7 @@ export default function DailyRoster({ variant = 'light' }) {
       <div className="dr-head">
         <b>All {total} daily puzzles</b>
         <a href="/archive">Puzzle archive</a>
-        <a href="/circuits">Circuits</a>
+        <a href="/circuits">Runs</a>
       </div>
       {groups.map((g) => (
         <div key={g.cat} className="dr-row">

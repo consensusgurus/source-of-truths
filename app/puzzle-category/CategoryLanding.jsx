@@ -358,7 +358,7 @@ export default function CategoryLanding({ page, games, parent = null, groups = n
           <div>
             <a href={withTq('/')}>Today&apos;s puzzles</a>
             <a href={withTq('/archive')}>Archive</a>
-            <a href={withTq('/circuits')}>Circuits</a>
+            <a href={withTq('/circuits')}>Runs</a>
             {parent ? <a href={withTq(`/${parent.slug}`)}>All {parent.label.toLowerCase()}</a> : null}
             {siblings.map((c) => <a key={c.slug} href={withTq(`/${c.slug}`)}>{c.label}</a>)}
           </div>
