@@ -10,7 +10,7 @@
 // nothing once `remaining` is 0, so the cron can stay wired between campaigns.
 
 import { NextResponse } from 'next/server';
-import { CURRENT, status, sendBatch } from '@/lib/newsletter-send';
+import { CURRENT, RUN, status, sendBatch, etMidnight, claimedSince } from '@/lib/newsletter-send';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -26,6 +26,17 @@ function authed(request) {
 export async function GET(request) {
   if (!authed(request)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   try {
+    // The scheduled run (lib/newsletter-send.js RUN): 8am Eastern or later, at
+    // most one batch per Eastern day, frozen audience, stops when everyone has it.
+    if (RUN) {
+      const { midnight, hour } = etMidnight();
+      if (hour < RUN.hourET) return NextResponse.json({ ok: true, skipped: `before ${RUN.hourET}am Eastern`, hourET: hour });
+      const today = await claimedSince(RUN.campaign, midnight);
+      if (today > 0) return NextResponse.json({ ok: true, skipped: 'already sent today', today });
+      const s = await status(RUN.campaign, { joinedBefore: RUN.joinedBefore });
+      if (s.migrationApplied === false || s.remaining === 0) return NextResponse.json({ ok: true, skipped: 'run complete', ...s });
+      return NextResponse.json(await sendBatch({ campaign: RUN.campaign, joinedBefore: RUN.joinedBefore }));
+    }
     if (process.env.NEWSLETTER_CRON !== '1') return NextResponse.json({ ok: true, skipped: 'NEWSLETTER_CRON is not 1' });
     const s = await status(CURRENT);
     if (s.migrationApplied === false || s.remaining === 0) return NextResponse.json({ ok: true, skipped: 'nothing to send', ...s });
