@@ -29,7 +29,7 @@ import { RUN_DOORS, runDoneToday } from './RunDoorPop';
 import { circuitKeysFor } from '@/lib/circuits';
 import { DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
 
-export const RUN_ORDER = ['gauntlet', 'triviaencore', 'math', 'pricecheck', 'passport', 'judged', 'dojo', 'room'];
+export const RUN_ORDER = ['gauntlet', 'triviaencore', 'english', 'math', 'pricecheck', 'passport', 'judged', 'dojo', 'room'];
 export const RUNS_POP_STORE = 'sot_runs_pop';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";

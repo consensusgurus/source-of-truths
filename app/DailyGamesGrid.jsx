@@ -58,6 +58,11 @@ const GAMES = [
   { key: 'garble', href: '/garble', name: 'Garble', tag: 'Untangle five words', img: '/games/btn-garble.png' },
   { key: 'scram', href: '/scram', name: 'Scram', tag: 'Ten themed scrambles', img: '/games/btn-scram.png' },
   { key: 'arcos', href: '/arcos', name: 'Arcos', tag: 'Three acrostics, one link', img: '/games/btn-arcos.png' },
+  { key: 'gram', href: '/gram', name: 'Gram', tag: 'Grammar, one life', img: '/games/btn-gram.png' },
+  { key: 'vocab', href: '/vocab', name: 'Vocab', tag: 'Vocabulary, one life', img: '/games/btn-vocab.png' },
+  { key: 'spell', href: '/spell', name: 'Spell', tag: 'Spelling, one life', img: '/games/btn-spell.png' },
+  { key: 'origin', href: '/origin', name: 'Origin', tag: 'Word origins, one life', img: '/games/btn-origin.png' },
+  { key: 'idiom', href: '/idiom', name: 'Idiom', tag: 'Idioms, one life', img: '/games/btn-idiom.png' },
   { key: 'scour', href: '/scour', name: 'Scour', tag: 'The daily word search', img: '/games/btn-scour.png' },
   { key: 'links', href: '/links', name: 'Links', tag: 'Four hidden groups', img: '/games/btn-links.png' },
   { key: 'span', href: '/span', name: 'Span', tag: 'Cross the map', img: '/games/btn-span.png' },
@@ -194,7 +199,7 @@ const GAMES_BY_KEY = Object.fromEntries(GAMES.map((g) => [g.key, g]));
 // Within each group the order is popularity (yesterday's plays), same as
 // everywhere else.
 const CATEGORIES = [
-  { key: 'word', label: 'Word', keys: ['crux', 'strata', 'lode', 'encore', 'emcee', 'shards', 'garble', 'scram', 'scour', 'arcos', 'links', 'stet', 'tuck', 'warmer', 'glyph', 'anon', 'rung', 'hinge', 'babel', 'barter'] },
+  { key: 'word', label: 'Word', keys: ['crux', 'strata', 'lode', 'encore', 'emcee', 'shards', 'garble', 'scram', 'scour', 'arcos', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'links', 'stet', 'tuck', 'warmer', 'glyph', 'anon', 'rung', 'hinge', 'babel', 'barter'] },
   { key: 'geography', label: 'Geography', keys: ['atlas', 'flank', 'span', 'ping'] },
   { key: 'numbers', label: 'Numbers', keys: ['tally', 'calc', 'carve', 'cipher', 'crunch', 'blitz', 'blitzed', 'gap', 'series', 'back', 'sums', 'pricer', 'dealer', 'realtor', 'agent', 'curator'] },
   // Sudoku split out of Numbers on 2026-09-01. The nine keys are exactly the

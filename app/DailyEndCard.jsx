@@ -116,7 +116,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['arcos', 'squash', 'herd', 'gift', 'scour', 'jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
+const LAUNCH_PIN = { keys: ['gram', 'vocab', 'spell', 'origin', 'idiom', 'arcos', 'squash', 'herd', 'gift', 'scour', 'jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -140,6 +140,11 @@ export const GAME_META = {
   garble: { accent: '#b7791f', badgeBg: GOLD, badgeInk: '#5c4a06', Fin: Trophy },
   scram: { accent: '#be123c', badgeBg: '#be123c', badgeInk: T.white, Fin: Trophy },
   arcos: { accent: '#1e40af', badgeBg: '#1e40af', badgeInk: T.white, Fin: Trophy },
+  gram: { accent: '#4338ca', badgeBg: '#4338ca', badgeInk: T.white, Fin: Trophy },
+  vocab: { accent: '#0d9488', badgeBg: '#0d9488', badgeInk: T.white, Fin: Trophy },
+  spell: { accent: '#c2410c', badgeBg: '#c2410c', badgeInk: T.white, Fin: Trophy },
+  origin: { accent: '#92400e', badgeBg: '#92400e', badgeInk: T.white, Fin: Trophy },
+  idiom: { accent: '#be123c', badgeBg: '#be123c', badgeInk: T.white, Fin: Trophy },
   scour: { accent: '#0369a1', badgeBg: '#0369a1', badgeInk: T.white, Fin: Trophy },
   links:  { accent: '#166534', badgeBg: '#166534', badgeInk: T.white, Fin: Link2 },
   span:   { accent: '#9d174d', badgeBg: '#9d174d', badgeInk: T.white, Fin: Flag },
@@ -314,6 +319,11 @@ const ALL_DAILY_GAMES = [
   { key: 'garble', cat: 'word',      name: 'Garble', tag: 'Untangle five words',       blurb: 'Five scrambled words against the clock. Unscramble each one before time runs out.', href: '/garble' },
   { key: 'scram', cat: 'word',      name: 'Scram', tag: 'Ten themed scrambles',       blurb: 'One theme, ten scrambled answers, one clock. Cities one day, food or first names the next. Unscramble all ten as fast as you can.', href: '/scram' },
   { key: 'arcos', cat: 'word',      name: 'Arcos', tag: 'Three acrostics, one link',       blurb: 'Three small acrostics hide three words in their first letters, last letters and diagonal. Find all three, then the word that ties them together.', href: '/arcos' },
+  { key: 'gram', cat: 'word',      name: 'Gram', tag: 'Grammar, one life',       blurb: 'Ten grammar questions, gimme to expert: the right word, then the right punctuation. One wrong answer ends the run.', href: '/gram' },
+  { key: 'vocab', cat: 'word',      name: 'Vocab', tag: 'Vocabulary, one life',       blurb: 'Ten vocabulary questions, gimme to expert: what a word means, then what means the same and the opposite. One wrong answer ends the run.', href: '/vocab' },
+  { key: 'spell', cat: 'word',      name: 'Spell', tag: 'Spelling, one life',       blurb: 'Ten spelling questions, gimme to expert: pick the right spelling, then spot the wrong one. One wrong answer ends the run.', href: '/spell' },
+  { key: 'origin', cat: 'word',      name: 'Origin', tag: 'Word origins, one life',       blurb: 'Ten word origin questions, gimme to expert: where a word comes from and who it was named after. One wrong answer ends the run.', href: '/origin' },
+  { key: 'idiom', cat: 'word',      name: 'Idiom', tag: 'Idioms, one life',       blurb: 'Ten questions on idioms and sayings, gimme to expert: what a saying means, then how it ends. One wrong answer ends the run.', href: '/idiom' },
   { key: 'scour', cat: 'word',      name: 'Scour', tag: 'The daily word search',       blurb: 'One theme, one big grid, every word hidden exactly once. Drag across the words or tap their first and last letters, and find them all against the clock.', href: '/scour' },
   { key: 'stet',   cat: 'word',      name: 'Stet',   tag: 'Spot the error, fix the copy',        blurb: 'A short passage hides one slip of fact, spelling or grammar. Catch it, then correct it.', href: '/stet' },
   { key: 'tuck',   cat: 'word',      name: 'Tuck',   tag: 'Same letters, highest score wins',  blurb: 'Everyone gets the identical letters. Tuck them into the grid for the biggest score of the day.', href: '/tuck' },

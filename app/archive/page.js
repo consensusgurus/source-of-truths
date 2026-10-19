@@ -5,6 +5,11 @@ import { PUZZLES as EMCEE } from '../emcee/puzzles';
 import { PUZZLES as GARBLE } from '../garble/puzzles';
 import { PUZZLES as SCRAM_FULL } from '../scram/puzzles';
 import { PUZZLES as ARCOS_FULL } from '../arcos/puzzles';
+import { PUZZLES as GRAM_FULL } from '../gram/puzzles';
+import { PUZZLES as VOCAB_FULL } from '../vocab/puzzles';
+import { PUZZLES as SPELL_FULL } from '../spell/puzzles';
+import { PUZZLES as ORIGIN_FULL } from '../origin/puzzles';
+import { PUZZLES as IDIOM_FULL } from '../idiom/puzzles';
 import { PUZZLES as SCOUR_FULL } from '../scour/puzzles';
 import { PUZZLES as LINKS } from '../links/puzzles';
 import { PUZZLES as SPAN } from '../span/puzzles';
@@ -207,6 +212,11 @@ const SWINDLE = SWINDLE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => (
 const GIFT = GIFT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SCRAM = SCRAM_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const ARCOS = ARCOS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const GRAM = GRAM_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+const VOCAB = VOCAB_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+const SPELL = SPELL_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+const ORIGIN = ORIGIN_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+const IDIOM = IDIOM_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const SCOUR = SCOUR_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SUFFICE = SUFFICE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const DOCKET = DOCKET_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -316,6 +326,11 @@ const GAMES = [
   { key: 'garble', name: 'Garble', path: '/garble', tag: 'Five garbled words, one clued finale', accent: '#8a6d1a', bg: '#fdf6e3', border: 'rgba(230,185,63,0.6)', src: GARBLE },
   { key: 'scram', name: 'Scram', path: '/scram', tag: 'Ten themed scrambles', accent: '#be123c', bg: '#fde8ec', border: 'rgba(190,18,60,0.4)', src: SCRAM },
   { key: 'arcos', name: 'Arcos', path: '/arcos', tag: 'Three acrostics, one link', accent: '#1e40af', bg: '#dbeafe', border: 'rgba(30,64,175,0.4)', src: ARCOS },
+  { key: 'gram', name: 'Gram', path: '/gram', tag: 'Grammar, one life', accent: '#4338ca', bg: '#e0e7ff', border: 'rgba(67,56,202,0.4)', src: GRAM },
+  { key: 'vocab', name: 'Vocab', path: '/vocab', tag: 'Vocabulary, one life', accent: '#0d9488', bg: '#ccfbf1', border: 'rgba(13,148,136,0.4)', src: VOCAB },
+  { key: 'spell', name: 'Spell', path: '/spell', tag: 'Spelling, one life', accent: '#c2410c', bg: '#ffedd5', border: 'rgba(194,65,12,0.4)', src: SPELL },
+  { key: 'origin', name: 'Origin', path: '/origin', tag: 'Word origins, one life', accent: '#92400e', bg: '#fef3c7', border: 'rgba(146,64,14,0.4)', src: ORIGIN },
+  { key: 'idiom', name: 'Idiom', path: '/idiom', tag: 'Idioms, one life', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)', src: IDIOM },
   { key: 'scour', name: 'Scour', path: '/scour', tag: 'The daily word search', accent: '#0369a1', bg: '#e0f2fe', border: 'rgba(3,105,161,0.38)', src: SCOUR },
   { key: 'links', name: 'Links', path: '/links', tag: 'Sixteen words, four hidden groups', accent: '#166534', bg: '#eefaf1', border: 'rgba(90,169,106,0.5)', src: LINKS },
   { key: 'span', name: 'Span', path: '/span', tag: 'Cross the map, border by border', accent: '#9d174d', bg: '#fdf0f6', border: 'rgba(217,99,153,0.45)', src: SPAN },

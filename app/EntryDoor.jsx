@@ -68,7 +68,7 @@ export const ENTRY_EVERY_MS = 7 * 24 * 3600 * 1000;
 const LIFT_AT = 6600;   // the curtain's hold, then the lift (the three lines arrive one at a time)
 const LIFT_MS = 640;
 
-const LINES = ['Sharpen your mind', 'Gain IQ points', 'Elevate your thinking'];
+const LINES = ['Sharpen Your Mind', 'Gain IQ Points', 'Elevate Your Thinking'];
 
 // The level tiles' colours: three steps of the ramp plus the first for Surprise me.
 const TIER_C = { gentle: CATEGORY_RAMP[1], steady: CATEGORY_RAMP[3], tough: CATEGORY_RAMP[5], any: CATEGORY_RAMP[0] };
@@ -78,6 +78,7 @@ const RUN_TAG = {
   dojo: 'Three sudokus, one score, a belt',
   room: 'The crowd games, one read of the room',
   math: 'Five math quizzes back to back, one life each',
+  english: 'Five English quizzes back to back, one life each',
   pricecheck: 'Five price guesses, one card',
   gauntlet: 'Seven trivia quizzes as one long run',
   triviaencore: 'The three trivia banks that sat out the Gauntlet',
@@ -349,7 +350,7 @@ export default function EntryDoor({ onPick }) {
         <span className="ent-meter" aria-hidden="true">
           {[1, 2, 3, 4, 5].map((k) => <i key={k} className={!x || k <= x.hi ? 'on' : ''} />)}
         </span>
-        <b>{x ? x.label : 'Surprise me'}</b>
+        <b>{x ? x.label : 'Surprise Me'}</b>
         <span className="ent-lsub">{x ? x.sub : 'Every level, most played first'}</span>
         <span className="ent-lct">{n == null ? ' ' : `${n} games`}<em aria-hidden="true">→</em></span>
       </button>

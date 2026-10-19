@@ -200,7 +200,7 @@ function Broadcast({
   const N = sections.length;
   // trivia / math carry the set pieces and the title climb; anything else
   // (the Trivia Encore) plays the Broadcast exactly as it always has.
-  const mode = circuitId === 'gauntlet' ? 'trivia' : circuitId === 'math' ? 'math' : null;
+  const mode = (circuitId === 'gauntlet' || circuitId === 'english') ? 'trivia' : circuitId === 'math' ? 'math' : null;
   const tm = mode ? MODE_TIMING[mode] : null;
   const paintMs = tm ? tm.paint : PAINT_MS;
   const countMs = tm ? tm.count : COUNT_MS;
@@ -1493,7 +1493,7 @@ const GEB_CSS = `
 
 export default function GauntletFinale(props) {
   const c = props && props.circuitId;
-  if (c === 'gauntlet' || c === 'math' || c === 'triviaencore') return <GauntletEnding {...props} />;
+  if (c === 'gauntlet' || c === 'math' || c === 'triviaencore' || c === 'english') return <GauntletEnding {...props} />;
   return <Broadcast {...props} />;
 }
 

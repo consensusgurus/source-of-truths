@@ -84,6 +84,7 @@ const nextConfig = {
     return [
       { source: '/trivia', destination: '/circuits/gauntlet/run' },
       { source: '/math', destination: '/circuits/math/run' },
+      { source: '/english', destination: '/circuits/english/run' },
       { source: '/triviaencore', destination: '/circuits/triviaencore/run' },
     ];
   },
@@ -91,6 +92,7 @@ const nextConfig = {
     return [
       { source: '/circuits/gauntlet/run', destination: '/trivia', permanent: true },
       { source: '/circuits/math/run', destination: '/math', permanent: true },
+      { source: '/circuits/english/run', destination: '/english', permanent: true },
       { source: '/circuits/triviaencore/run', destination: '/triviaencore', permanent: true },
       // 2026-10-12: the rotating Sudoku circuit was retired for Enter the Dojo.
       { source: '/circuits/sudoku', destination: '/dojo', permanent: true },

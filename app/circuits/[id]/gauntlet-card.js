@@ -31,6 +31,11 @@ import { PUZZLES as sciPuzzles } from '../../sci/puzzles';
 import { PUZZLES as artPuzzles } from '../../art/puzzles';
 import { PUZZLES as historyPuzzles } from '../../history/puzzles';
 import { PUZZLES as streakPuzzles } from '../../streak/puzzles';
+import { PUZZLES as gramPuzzles } from '../../gram/puzzles';
+import { PUZZLES as vocabPuzzles } from '../../vocab/puzzles';
+import { PUZZLES as spellPuzzles } from '../../spell/puzzles';
+import { PUZZLES as originPuzzles } from '../../origin/puzzles';
+import { PUZZLES as idiomPuzzles } from '../../idiom/puzzles';
 import { PUZZLES as blitzPuzzles } from '../../blitz/puzzles';
 import { PUZZLES as blitzedPuzzles } from '../../blitzed/puzzles';
 import { PUZZLES as gapPuzzles } from '../../gap/puzzles';
@@ -41,6 +46,7 @@ const DAYS = {
   deep: deepPuzzles, atlas: atlasPuzzles, sport: sportPuzzles, biz: bizPuzzles,
   script: scriptPuzzles, quotes: quotesPuzzles, streak: streakPuzzles,
   sci: sciPuzzles, art: artPuzzles, history: historyPuzzles,
+  gram: gramPuzzles, vocab: vocabPuzzles, spell: spellPuzzles, origin: originPuzzles, idiom: idiomPuzzles,
   // The Math Gauntlet's five (2026-10-09). Without these the math circuit had
   // no banks, so its share card fell back to the plain quiz card.
   blitz: blitzPuzzles, blitzed: blitzedPuzzles, gap: gapPuzzles,
@@ -104,7 +110,7 @@ export function gauntletCardProps(circuit, banks) {
   return {
     name,
     kind: isMath ? 'math' : 'trivia',
-    eyebrow: isMath ? 'MIND LOFT · MATH' : 'MIND LOFT · TRIVIA',
+    eyebrow: isMath ? 'MIND LOFT · MATH' : (circuit && circuit.id === 'english') ? 'MIND LOFT · ENGLISH' : 'MIND LOFT · TRIVIA',
     gateEyebrow: (name + ' · one long quiz').toUpperCase(),
     // The gate's own two lines, counted rather than written down, so a roster
     // change can never leave a figure on the card that nothing else agrees

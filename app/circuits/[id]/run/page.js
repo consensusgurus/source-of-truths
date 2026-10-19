@@ -25,6 +25,16 @@ import { PUZZLES as artPuzzles } from '../../../art/puzzles';
 import { QUESTION_MAP as artQuestions } from '../../../art/questions';
 import { PUZZLES as historyPuzzles } from '../../../history/puzzles';
 import { QUESTION_MAP as historyQuestions } from '../../../history/questions';
+import { PUZZLES as gramPuzzles } from '../../../gram/puzzles';
+import { QUESTION_MAP as gramQuestions } from '../../../gram/questions';
+import { PUZZLES as vocabPuzzles } from '../../../vocab/puzzles';
+import { QUESTION_MAP as vocabQuestions } from '../../../vocab/questions';
+import { PUZZLES as spellPuzzles } from '../../../spell/puzzles';
+import { QUESTION_MAP as spellQuestions } from '../../../spell/questions';
+import { PUZZLES as originPuzzles } from '../../../origin/puzzles';
+import { QUESTION_MAP as originQuestions } from '../../../origin/questions';
+import { PUZZLES as idiomPuzzles } from '../../../idiom/puzzles';
+import { QUESTION_MAP as idiomQuestions } from '../../../idiom/questions';
 import { PUZZLES as streakPuzzles } from '../../../streak/puzzles';
 import { QUESTION_MAP as streakQuestions } from '../../../streak/questions';
 
@@ -77,6 +87,11 @@ const BANKS = {
   sci: { puzzles: sciPuzzles, questions: sciQuestions, tiers: ['Hypothesis', 'Experiment', 'Observation', 'Analysis', 'Discovery'] },
   art: { puzzles: artPuzzles, questions: artQuestions, tiers: ['Sketch', 'Draft', 'Study', 'Gallery', 'Masterpiece'] },
   history: { puzzles: historyPuzzles, questions: historyQuestions, tiers: ['Living memory', 'The textbook', 'The archive', 'The footnotes', 'The primary sources'] },
+  gram: { puzzles: gramPuzzles, questions: gramQuestions, tiers: ['Draft', 'Edit', 'Revise', 'Proof', 'Polish'] },
+  vocab: { puzzles: vocabPuzzles, questions: vocabQuestions, tiers: ['Everyday', 'Educated', 'Literary', 'Learned', 'Lexicon'] },
+  spell: { puzzles: spellPuzzles, questions: spellQuestions, tiers: ['Easy', 'Tricky', 'Treacherous', 'Notorious', 'Championship'] },
+  origin: { puzzles: originPuzzles, questions: originQuestions, tiers: ['Roots', 'Stems', 'Borrowings', 'Lineage', 'Deep Roots'] },
+  idiom: { puzzles: idiomPuzzles, questions: idiomQuestions, tiers: ['Everyday', 'Common', 'Colorful', 'Quaint', 'Archaic'] },
   streak: { puzzles: streakPuzzles, questions: streakQuestions, tiers: ['Warm-up', 'Easy', 'Medium', 'Hard', 'Brutal'] },
   // THE MATH GAUNTLET (2026-10-09). The Blitz family's banks have the same
   // shape as a trivia bank (q, choices, correct, tier), so the same run deals
@@ -219,6 +234,19 @@ export async function generateMetadata({ params }) {
         url, type: 'website', siteName: 'Mind Loft',
       },
       twitter: { card: 'summary_large_image', title: hook, description: 'One wrong answer ends the game. Then the next one starts. How far do you get?' },
+    };
+  }
+  if (c.id === 'english') {
+    const url = `${SITE_URL}${runHref(c.id)}`;
+    const hook = 'Five English quizzes. One life each.';
+    return {
+      title: 'English Gauntlet: Grammar, Vocabulary and Spelling Quizzes in One Run | Mind Loft',
+      description:
+        'Five daily English quizzes played back to back as one run: grammar, vocabulary, spelling, word origins and idioms. Ten questions each, twenty seconds a question, one life in each. Free, no signup.',
+      alternates: { canonical: runHref(c.id) },
+      robots: { index: false, follow: true },
+      openGraph: { title: hook, description: 'One wrong answer ends that quiz, the next one starts on its own, and you get one scorecard at the end.', url, type: 'website', siteName: 'Mind Loft' },
+      twitter: { card: 'summary_large_image', title: hook, description: 'One wrong answer ends the quiz. Then the next one starts. How far do you get?' },
     };
   }
   if (c.id === 'triviaencore') {

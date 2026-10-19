@@ -9926,3 +9926,31 @@ READER-FACING, CIRCUITS ARE CALLED RUNS (owner, 2026-10-19): the home index
 button and pane heading, the footer, the /circuits page title and eyebrow, the
 breadcrumbs, the roster/archive/category links and the trophy group all say
 "Runs". The code, the ids and the /circuits URL are unchanged.
+
+## The English Gauntlet (`/english`) and Gram, Vocab, Spell, Origin, Idiom (launched 2026-10-19)
+
+Five new Word dailies on the gauntlet shape, TEN questions a day each (five tiers of two, one life,
+twenty seconds, `miss: 'Asked'`, no Sunday Edition and no `sunday` field), and the run that plays
+all fifty back to back. Owner, 2026-10-19: "new dailies will be Gram, Vocab, Spell, Origin, Idiom",
+named the English Gauntlet.
+
+- **Lanes, two per game, cycled in order inside every tier:** Gram (Word Choice; Punctuation &
+  Structure), Vocab (Definitions; Synonyms & Opposites), Spell (Spelled Right; Spot the Error),
+  Origin (Word Origins; Named After), Idiom (What It Means; Finish the Saying). Config is
+  `scripts/english-games.mjs`; lane sources `scripts/<game>-lanes/`, written to
+  `scripts/english-lanes-brief.md` and checked with `scripts/trivia-lane-check.mjs`.
+- **One generator, one checker:** `node scripts/gen-english.mjs <game>` (append-only, `--check`),
+  `scripts/english-check-lib.mjs` behind `verify-<game>.mjs`. Spell's stems are templates, so a
+  repeat is the stem plus the same four choices. Banks 2026-10-19 to 2026-11-23.
+- **The rules every question lives by:** one defensible answer under Merriam-Webster / AP /
+  Chicago, nothing contested (no usage the guides disagree on, no folk etymology, no disputed
+  meaning), US spelling, no dashes. Each lane was fact-checked by a separate pass before launch.
+- **Clients** are SciClient transformed (mkenglish.py, not committed): long choices drop to one
+  column (`.sp-grid.wide` past 30 characters). Category **Word**, group "Word gauntlets", sets Copy
+  desk / Word lore / Word nerds.
+- **The run** is circuit `english` on the quiz engine (the keys are in RUN_GAMES), served at
+  `/english` by a rewrite like `/trivia` (never create `app/english/page.js`), `score: 'correct'`,
+  `ownerOrder`, towers presentation and the Gauntlet ending, title ladder in lib/run-titles.js,
+  trophy "Plain English" (bronze). The five clients mount `RunDoorPop id="english"` on today's gate.
+- **THE ONLY POP-UP IS THE RUN'S (owner, 2026-10-19):** a PREMIERE_RUNS line for `english` and no
+  PREMIERES line for any of the five.

@@ -121,6 +121,8 @@ const MED = {
   // clock yet: twenty four-choice problems at twenty seconds, so estimated
   // around Blitz's 62. Replace at the next snapshot re-measure.
   gap: 60, series: 65, back: 75, blitzed: 80,
+  // The English Gauntlet's five (2026-10-19): ten questions each, estimated.
+  gram: 35, vocab: 25, spell: 25, origin: 30, idiom: 25,
   // The Price Check family, estimated (2026-10-01): five guesses, about a minute each.
   pricer: 60, dealer: 60, realtor: 60, agent: 60, curator: 60,
 };

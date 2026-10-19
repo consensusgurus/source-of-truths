@@ -49,6 +49,19 @@ const ART = {
       </g>
     </>
   ),
+  // ENGLISH GAUNTLET (2026-10-19): an open book, a proofreader's caret, five pips.
+  english: (
+    <>
+      <path d="M50 26 C74 18 100 20 120 30 C140 20 166 18 190 26 V88 C166 80 140 82 120 92 C100 82 74 80 50 88 Z" {...T} />
+      <path d="M120 30 V92" />
+      <path d="M66 42 H104 M66 54 H100 M66 66 H96" strokeWidth="2.5" opacity=".6" />
+      <path d="M140 66 L156 44 L172 66" strokeWidth="3" />
+      <g stroke="none" fill="currentColor">
+        <circle cx="96" cy="106" r="4" /><circle cx="108" cy="106" r="4" /><circle cx="120" cy="106" r="4" />
+        <circle cx="132" cy="106" r="4" opacity=".35" /><circle cx="144" cy="106" r="4" opacity=".35" />
+      </g>
+    </>
+  ),
   // MATH GAUNTLET (owner, 2026-10-13): a flash card, the bolt of the trophy
   // (Human Calculator), the operators, and five pips for its five games.
   math: (
