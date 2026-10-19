@@ -55,7 +55,7 @@ import { fetchDailyBoard } from '../dailyBoardClient';
 import { IQ_TESTS } from '@/lib/iq-tests';
 import useMyGames from '../useMyGames';
 import { savedIdentity } from '@/lib/saved-identity';
-import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro } from '@/lib/stage-theme';
+import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro, openLook } from '@/lib/stage-theme';
 import ThemePop, { LightOffer } from '../ThemePop';
 import StageLadder from '../StageLadder';
 import EntryDoor from '../EntryDoor';
@@ -588,6 +588,11 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
       data-fk={fk || g.key}
       style={{
         '--i': i,
+        // THE FULL COLOR LEVEL (owner, 2026-10-19) fills every tile with the
+        // dark ramp's pastel for its category, in both registers, the way the
+        // entry door draws its tiles. Always set; only html[data-stage-color=full]
+        // reads it.
+        '--cfull': categoryColor(g.cat),
         ...(hue ? { '--cc': hue, '--cci': light ? categoryAccentInkLight(g.cat) : categoryColor(g.cat) } : null),
         // A FINISHED TILE ON THE LIGHT REGISTER MIRRORS THE DARK ONE (owner,
         // 2026-10-03): the dark ramp's own pastel, softened 34% toward white,
@@ -2304,7 +2309,7 @@ export default function StageToday() {
     return (
       <button key={id} type="button" aria-pressed={paneOn === id}
         className={'sty-ixb' + (rp ? ' ct' : '') + (cls ? ' ' + cls : '') + fillFor(id) + (paneOn === id ? ' on' : '') + (prog && prog[0] >= prog[1] ? ' cmp' : '')}
-        style={{ '--cc': hue, '--cci': rp ? inkFor(id) : hue === 'var(--stg-acc)' ? 'var(--stg-acc-ink)' : hue, ...(rp && !light ? { '--ixp': categoryColor(rampCat(id)) } : null), '--i': ixSeq++ }}
+        style={{ '--cc': hue, '--cci': rp ? inkFor(id) : hue === 'var(--stg-acc)' ? 'var(--stg-acc-ink)' : hue, ...(rp && !light ? { '--ixp': categoryColor(rampCat(id)) } : null), ...(rp ? { '--cfull': categoryColor(rampCat(id)) } : null), '--i': ixSeq++ }}
         onClick={(e) => { if (picked && paneOn === id) { setPicked(false); try { localStorage.setItem(TILES_KEY, '1'); } catch (er) {} } else pickPane(id, e); }}>
         <i aria-hidden="true" />
         {ixRing(id, prog)}
@@ -2924,7 +2929,9 @@ export default function StageToday() {
   const fmtN = (n) => Number(n || 0).toLocaleString('en-US');
   const runLook = (c, cat) => {
     const pc = pillCat(c, cat);
-    return { '--ph': hueFor(pc), '--phi': inkFor(pc), '--stg-onramp': light ? categoryOnrampLight(pc) : RAMP_INK };
+    // --phf is the soft category step in BOTH registers: Full color fills the
+    // Play chip with it and dark ink, the same pairing as the filled tiles.
+    return { '--ph': hueFor(pc), '--phi': inkFor(pc), '--phf': categoryColor(pc), '--stg-onramp': light ? categoryOnrampLight(pc) : RAMP_INK };
   };
   // THE GROUP LINE SAYS SOMETHING OR IS NOT THERE (owner, 2026-10-13): no
   // group, or nobody in it has finished the run today, and the line and its
@@ -3162,9 +3169,10 @@ export default function StageToday() {
         <button
           type="button"
           className={'sty-cx sty-tg' + (hint ? ' hint' : '')}
-          onClick={() => setStageTheme(stageTheme === 'light' ? 'dark' : 'light')}
-          aria-label={stageTheme === 'light' ? 'Switch to dark' : 'Switch to light'}
-          title={stageTheme === 'light' ? 'Switch to dark' : 'Switch to light'}
+          data-look="" onClick={(e) => openLook(e.currentTarget)}
+          aria-haspopup="dialog"
+          aria-label="Page look: light or dark, and how much color"
+          title="Page look"
         >
           {stageTheme === 'light' ? (
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
@@ -5616,4 +5624,54 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
   .sty-lr.pq .ct{min-width:64px;height:30px;}
   .sty-pqm{text-align:center;}
 }
+/* ── THE FULL COLOR LEVEL (owner, 2026-10-19; lib/stage-theme.js) ──
+   Every tile you have not finished is filled with its category's pastel from
+   the dark ramp, in BOTH registers, with the one dark ink that carries on all
+   ten steps (RAMP_INK, 6:1 or better, never dimmed). A finished tile swaps to
+   a soft wash of the same colour with its outline, so the three states stay
+   tellable: filled = to play, wash = done. Only the home tiles and the phone
+   category tiles take it; game pages already wear their category. */
+html[data-stage-color=full] .sty-g:not(.done){background:var(--cfull);border-color:var(--cfull);color:${RAMP_INK};}
+html[data-stage-color=full] .sty-g:not(.done) .sty-gn,
+html[data-stage-color=full] .sty-g:not(.done):hover .sty-gn,
+html[data-stage-color=full] .sty-g:not(.done) .sty-gi,
+html[data-stage-color=full] .sty-g:not(.done) .sty-gt,
+html[data-stage-color=full] .sty-g:not(.done) .sty-grl,
+html[data-stage-color=full] .sty-g:not(.done) .sty-grf,
+html[data-stage-color=full] .sty-g:not(.done) .sty-grk,
+html[data-stage-color=full] .sty-g:not(.done) .sty-gsep,
+html[data-stage-color=full] .sty-g:not(.done) .sty-star{color:${RAMP_INK};}
+html[data-stage-color=full] .sty-g:not(.done):hover{border-color:${RAMP_INK};}
+html[data-stage-color=full] .sty-g.open:not(.done){box-shadow:inset 0 0 0 2px ${RAMP_INK};}
+html[data-stage-color=full] .sty-rbig:not(.done) .go,
+html[data-stage-color=full] .sty-rbig.art:not(.done) .go,
+html[data-stage-color=full] .sty-rbig.art:not(.done):hover .go{background:var(--phf);color:${RAMP_INK};border-color:var(--phf);}
+html[data-stage-color=full] .sty-g .sty-gdots i{background:color-mix(in srgb, ${RAMP_INK} 18%, transparent);color:${RAMP_INK};}
+html[data-stage-color=full] .sty-g.done,
+html[data-stage-color=full] .sty-g.done.grp,
+html[data-stage-color=full] .sty-g.done.grp.res,
+html[data-stage-color=full] .sty-g.done.res{opacity:1;background:color-mix(in srgb, var(--cfull) 22%, var(--stg-surf));
+  border-color:var(--cci, var(--cc));box-shadow:none;color:var(--stg-ink);}
+html[data-stage-color=full] .sty-g.done .sty-gn,
+html[data-stage-color=full] .sty-g.done.grp .sty-gn,
+html[data-stage-color=full] .sty-g.done.grp.res .sty-gn,
+html[data-stage-color=full] .sty-g.done.res .sty-gn,
+html[data-stage-color=full] .sty-g.done.grp.res:hover .sty-gn,
+html[data-stage-color=full] .sty-g.done .sty-grk,
+html[data-stage-color=full] .sty-g.done .sty-star{color:var(--stg-ink);}
+html[data-stage-color=full] .sty-g.done .sty-gt,
+html[data-stage-color=full] .sty-g.done .sty-grl,
+html[data-stage-color=full] .sty-g.done .sty-grf,
+html[data-stage-color=full] .sty-g.done .sty-gsep{color:var(--stg-ink2);}
+html[data-stage-color=full] .sty-g.done .sty-gi{color:var(--cci, var(--cc));opacity:1;}
+@media (max-width:900px){
+  html[data-stage-color=full] .sty-ixn:not(.re) .sty-ixb.ct{background:var(--cfull);border-color:var(--cfull);color:${RAMP_INK};}
+  html[data-stage-color=full] .sty-ixn:not(.re) .sty-ixb.ct .sty-ixct,
+  html[data-stage-color=full] .sty-ixn:not(.re) .sty-ixb.ct .sty-ixbk{color:${RAMP_INK};}
+  html[data-stage-color=full] .sty-ixn:not(.re) .sty-ixb.ct .sty-ixgr .tr{stroke:color-mix(in srgb, ${RAMP_INK} 22%, transparent);}
+  html[data-stage-color=full] .sty-ixn:not(.re) .sty-ixb.ct .sty-ixgr .dk{fill:color-mix(in srgb, ${RAMP_INK} 12%, transparent);}
+  html[data-stage-color=full] .sty-ixn:not(.re) .sty-ixb.ct .sty-ixgr .fl{stroke:${RAMP_INK};}
+  html[data-stage-color=full] .sty-ixn:not(.re) .sty-ixb.ct .sty-ixgg{color:${RAMP_INK};}
+}
+
 `;

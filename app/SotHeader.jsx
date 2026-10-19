@@ -21,7 +21,7 @@
 // untouched by this: GridironTable is still a server component rendered as a
 // child of RankingsStage, so the board is still in the server HTML.
 import Link from 'next/link';
-import { useStageTheme, useThemeHint } from '@/lib/stage-theme';
+import { useStageTheme, useThemeHint, openLook } from '@/lib/stage-theme';
 
 export default function SotHeader({ active }) {
   const [theme, setTheme] = useStageTheme();
@@ -48,9 +48,10 @@ export default function SotHeader({ active }) {
         <button
           type="button"
           className={'stg-cx soth-th' + (hint ? ' hint' : '')}
-          onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-          aria-label={theme === 'light' ? 'Switch to dark' : 'Switch to light'}
-          title={theme === 'light' ? 'Switch to dark' : 'Switch to light'}
+          data-look="" onClick={(e) => openLook(e.currentTarget)}
+          aria-haspopup="dialog"
+          aria-label="Page look: light or dark, and how much color"
+          title="Page look"
         >
           {theme === 'light' ? (
             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"

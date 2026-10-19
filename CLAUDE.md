@@ -9877,3 +9877,30 @@ footprint and no stored register. Picking a tile, or proceeding to the home, sto
 offers light on the home once the door clears, and on a game's start gate only, goes the moment a first move lands, and returns on the next gate until
 "Switch to light", "Keep dark" or the switch itself answers it. Existing readers keep
 whatever register they had.
+
+## The page look menu: light/dark plus Balanced/Full color (owner, 2026-10-19)
+
+The one-tap light/dark switch in every cap is RETIRED. The same icon (marked `data-look`) now opens
+`app/LookSheet.jsx`, mounted once in the root layout and opened by `openLook(anchor)` from
+`lib/stage-theme.js`. Two choices: Background (Light / Dark, `sot_theme2`, unchanged) and Color
+(Balanced / Full color, `sot_color1`, stamped on `<html>` as `data-stage-color` by the boot script
+before first paint; `?color=` is a review override).
+
+- **Balanced is the default and is the site exactly as it was.** Existing readers keep their register
+  and land on Balanced. **Full color** fills every unplayed home tile and run Play chip with the soft
+  category step and `RAMP_INK`, in both registers (fills soft, small marks stay deep on the light page).
+  Its rules live in StageToday's stylesheet under `html[data-stage-color=full]`. It never touches a
+  puzzle board.
+- **A grey (Mono) level was built and DROPPED the same day.** In grey the right / close / wrong colors
+  and several REGION_RAMP steps land on the same grey (light good 105, warn 107, bad 96; dark sky and
+  amber both 199), so color-only boards stop speaking. Do not add it back without a second cue on every
+  color-coded board.
+- **First visit:** a NEW browser (no play footprint, no stored register, or the door's pending light
+  offer) gets the intro version once (`sot_look_intro1`: 'shown', or 'skip' for a browser with history):
+  page dimmed, the icon lit through a hole, both choices spelled out, Done. It waits for the entry door,
+  the premiere and groups cards and the arrival screen. Every later open is the short drop-down (two
+  button rows). `?look=intro` previews it without stamping.
+- The old ThemePop bubble and the LightOffer are stubbed to `return null` (their mounts remain); the
+  intro answers the light offer.
+- The Leaderboards + Stats pane's "Every game today" grid is sorted by plays today, most first, ties
+  A to Z (`app/today/BoardsPane.jsx`).

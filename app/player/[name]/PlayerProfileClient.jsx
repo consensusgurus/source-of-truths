@@ -14,7 +14,7 @@ import { QUIZZES } from '@/lib/quizzes';
 import MindLoftMark from '../../MindLoftMark';
 import StageFooter from '../../StageFooter';
 import { notifyShareCredit } from '../../ShareCreditPop';
-import { useStageTheme } from '@/lib/stage-theme';
+import { useStageTheme, openLook } from '@/lib/stage-theme';
 import { crownCategory, crownAccent } from '@/lib/crown';
 import {
   Band, Figs, Curtain, Standing, Trophies, Categories, Activity, GameLog, profileStageCss,
@@ -115,9 +115,10 @@ export default function PlayerProfileClient({ name }) {
           type="button"
           className="pf-cx"
           style={found && prof.rank ? undefined : { marginLeft: 'auto' }}
-          onClick={() => setStageTheme(light ? 'dark' : 'light')}
-          aria-label={light ? 'Switch to dark' : 'Switch to light'}
-          title={light ? 'Switch to dark' : 'Switch to light'}
+          data-look="" onClick={(e) => openLook(e.currentTarget)}
+          aria-haspopup="dialog"
+          aria-label="Page look: light or dark, and how much color"
+          title="Page look"
         >
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
             {light

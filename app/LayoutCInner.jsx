@@ -29,7 +29,7 @@ import { DAILY_GAMES as ALL_GAMES, DAILY_GAME_MAP, liveDailyKeys } from '@/lib/d
 import { RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight } from '@/lib/category-ramp';
 import { gameStatsShort } from '@/lib/daily-row-stats';
 import { savedIdentity } from '@/lib/saved-identity';
-import { useStageTheme } from '@/lib/stage-theme';
+import { useStageTheme, openLook } from '@/lib/stage-theme';
 import { fetchDailyMe, dailyMeQuery, dailyMeIdentity } from './dailyMeClient';
 import useDayStats, { etToday } from './useDayStats';
 import useGroupStanding from './groups/groupStanding';
@@ -524,8 +524,9 @@ export default function LayoutCInner({ gameKey }) {
               ) : null}
             </div>
             <button type="button" className="sty-cx sty-tg"
-              onClick={() => setTheme(light ? 'dark' : 'light')}
-              aria-label={light ? 'Switch to dark' : 'Switch to light'} title={light ? 'Switch to dark' : 'Switch to light'}>
+              data-look="" onClick={(e) => openLook(e.currentTarget)}
+          aria-haspopup="dialog"
+              aria-label="Page look: light or dark, and how much color" title="Page look">
               {light ? (
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
                   <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" />

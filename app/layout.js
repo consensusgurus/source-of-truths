@@ -10,6 +10,7 @@ import TrophyPop from './TrophyPop';
 import ThanksPop from './ThanksPop';
 import { PriceCheckItemsGlobal } from './pricecheck/ItemsPop';
 import ChunkReload from './ChunkReload';
+import LookSheet from './LookSheet';
 import { getAllSources } from '@/lib/sources';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
@@ -114,7 +115,7 @@ export default function RootLayout({ children }) {
             does, so the two can never disagree about what was asked for, and
             writeStageTheme keeps the attribute in step from here on, or a
             reader who switches TO light would stay suppressed in dark. */}
-        <script dangerouslySetInnerHTML={{ __html: "(function(){try{var d=document.documentElement,q=null;try{q=new URLSearchParams(window.location.search).get('theme')}catch(e){}var t=(q==='light'||q==='dark')?q:window.localStorage.getItem('sot_theme2');if(t!=='light'&&t!=='dark')t='light';d.setAttribute('data-stage-boot',t)}catch(e){}})();" }} />
+        <script dangerouslySetInnerHTML={{ __html: "(function(){try{var d=document.documentElement,q=null;try{q=new URLSearchParams(window.location.search).get('theme')}catch(e){}var t=(q==='light'||q==='dark')?q:window.localStorage.getItem('sot_theme2');if(t!=='light'&&t!=='dark')t='light';d.setAttribute('data-stage-boot',t);var c=null;try{c=new URLSearchParams(window.location.search).get('color')}catch(e){}if(c!=='balanced'&&c!=='full')c=window.localStorage.getItem('sot_color1');if(c!=='full')c='balanced';d.setAttribute('data-stage-color',c)}catch(e){}})();" }} />
         {/* LAYOUT C RESERVES ITS SPACE BEFORE FIRST PAINT (owner, 2026-10-10:
             moving from the home page to a game page jittered). The desktop
             frame (app/LayoutC.jsx) is client-only and loads after the board
@@ -170,6 +171,10 @@ export default function RootLayout({ children }) {
             on an actual unlock. Anything added back here needs the owner's word
             first. */}
         <TrophyPop />
+        {/* The page look sheet (lib/stage-theme.js openLook): register and
+            colour level, opened from any cap's light glyph. Renders nothing
+            until opened. */}
+        <LookSheet />
         {/* Owner-approved (2026-10-04): the thank-you + share pop-up. Once on
             return for existing players (with share credit), once after a
             finished game for everyone. Never inside a run. app/ThanksPop.jsx. */}

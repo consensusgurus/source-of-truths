@@ -372,10 +372,12 @@ export default function BoardsPane({
         <div className="lbs-card">
           <div className="lbs-hd">
             <span className="lbs-eb">Every game today</span>
-            <span className="lbs-key">Brighter means more plays</span>
+            <span className="lbs-key">Most played first · brighter means more plays</span>
           </div>
           <div className="lbs-heat">
-            {games.map((gm) => {
+            {/* SORTED BY PLAYS TODAY (owner, 2026-10-19), most first, reading
+                across the rows; ties and unplayed games fall back to A to Z. */}
+            {games.slice().sort((a, b) => (playsOf.get(b.key) || 0) - (playsOf.get(a.key) || 0) || a.name.localeCompare(b.name)).map((gm) => {
               const n = playsOf.get(gm.key) || 0;
               const pct = heatMax ? Math.round((n / heatMax) * 34) : 0;
               return (

@@ -86,7 +86,16 @@ const XIcon = () => (
   </svg>
 );
 
+// RETIRED (owner, 2026-10-19). The switch opens the page look menu now, and a
+// new reader is introduced to it by the menu itself (app/LookSheet.jsx, the
+// intro), so this bubble and the light offer below stand down. Both stay
+// mounted and render nothing, so the caps need no edit; delete them together
+// with their mounts when convenient.
 export default function ThemePop() {
+  return null;
+}
+
+function ThemePopRetired() {
   const [open, dismiss] = useThemePop();
   const ref = useRef(null);
   const at = usePlace(open, ref);
@@ -109,8 +118,8 @@ export default function ThemePop() {
           house pattern for a pop-up on this site: a second dismissal reads as
           a decision being asked for when none is. */}
       <button type="button" className="stg-tpop-x" onClick={dismiss} aria-label="Dismiss"><XIcon /></button>
-      <b>This is the light switch.</b>
-      <p>It flips the whole site between light and dark, and it sits in this bar on every page. Try it.</p>
+      <b>This is the page look switch.</b>
+      <p>It sets the whole site to light or dark, and how much color it wears. It sits in this bar on every page.</p>
       <button type="button" className="stg-tpop-go" onClick={() => writeStageTheme('dark')}>
         Switch to dark
       </button>
@@ -126,7 +135,11 @@ export default function ThemePop() {
 // dark, or using the switch itself all answer it; the X only closes it here.
 // Mounted by StageChrome, which knows the game and the board, and on the home
 // cap (`home`), where a new visitor who proceeds from the door lands in dark.
-export function LightOffer({ gameKey, num, home = false }) {
+export function LightOffer() {
+  return null;
+}
+
+function LightOfferRetired({ gameKey, num, home = false }) {
   const [theme] = useStageTheme();
   const [state, setState] = useState('wait'); // wait | open | gone
   const ref = useRef(null);
@@ -203,7 +216,7 @@ export function LightOffer({ gameKey, num, home = false }) {
       <i className="stg-tpop-arw" style={{ right: at ? at.arrow : 12 }} aria-hidden="true" />
       <button type="button" className="stg-tpop-x" onClick={() => setState('gone')} aria-label="Close for now"><XIcon /></button>
       <b>Prefer light mode?</b>
-      <p>You are seeing Mind Loft in dark. This switch flips it, on any page, any time.</p>
+      <p>You are seeing Mind Loft in dark. This switch changes it, and how much color it wears, on any page, any time.</p>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <button type="button" className="stg-tpop-go" onClick={() => { answer(); writeStageTheme('light'); }}>
           Switch to light

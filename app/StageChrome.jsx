@@ -36,7 +36,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ChallengeStrip from './ChallengeStrip';
 import MindLoftMark from './MindLoftMark';
-import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro } from '@/lib/stage-theme';
+import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro, openLook } from '@/lib/stage-theme';
 import ThemePop, { LightOffer } from './ThemePop';
 // The stage swaps LoftCap out, and LoftCap was carrying the whole .loft-*
 // sheet that LoftFinish depends on, so the end card rendered unstyled.
@@ -368,9 +368,10 @@ export default function StageChrome({
         <button
           type="button"
           className={'stg-cx stg-theme' + (hint ? ' hint' : '')}
-          onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-          aria-label={theme === 'light' ? 'Switch to dark' : 'Switch to light'}
-          title={theme === 'light' ? 'Switch to dark' : 'Switch to light'}
+          data-look="" onClick={(e) => openLook(e.currentTarget)}
+          aria-haspopup="dialog"
+          aria-label="Page look: light or dark, and how much color"
+          title="Page look"
         >
           {theme === 'light' ? (
             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"

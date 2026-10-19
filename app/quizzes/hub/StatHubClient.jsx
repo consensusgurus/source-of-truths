@@ -12,7 +12,7 @@ import { withRef } from '@/lib/referrals';
 import { Metric, ActivityFeed, XpPanel, TrophyCase } from '../../player/ProfileShared';
 import { T } from '@/lib/theme';
 import SigninHelp, { isLockedOut, EmailLockNote } from '../../SigninHelp';
-import { useStageTheme } from '@/lib/stage-theme';
+import { useStageTheme, openLook } from '@/lib/stage-theme';
 import ThemePop from '../../ThemePop';
 import MindLoftMark from '../../MindLoftMark';
 
@@ -991,9 +991,10 @@ export default function StatHubClient() {
           <button
             type="button"
             className="hubchip hub-tg"
-            onClick={() => setStageTheme(stageTheme === 'light' ? 'dark' : 'light')}
-            aria-label={stageTheme === 'light' ? 'Switch to dark' : 'Switch to light'}
-            title={stageTheme === 'light' ? 'Switch to dark' : 'Switch to light'}
+            data-look="" onClick={(e) => openLook(e.currentTarget)}
+          aria-haspopup="dialog"
+            aria-label="Page look: light or dark, and how much color"
+            title="Page look"
           >
             {stageTheme === 'light' ? (
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"

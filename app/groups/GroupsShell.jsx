@@ -6,7 +6,7 @@
 // page are the same setting.
 import React from 'react';
 import Link from 'next/link';
-import { useStageTheme } from '@/lib/stage-theme';
+import { useStageTheme, openLook } from '@/lib/stage-theme';
 import { getVisitorId } from '@/lib/visitor';
 import MindLoftMark from '../MindLoftMark';
 
@@ -164,9 +164,10 @@ export default function GroupsShell({ eyebrow, children, links = DEFAULT_LINKS }
         <nav className="grp-capnav">
           {links.map((l) => <Link key={l.href} href={l.href} className="grp-chip">{l.label}</Link>)}
           <button type="button" className="grp-chip grp-tg"
-            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            aria-label={theme === 'light' ? 'Switch to dark' : 'Switch to light'}
-            title={theme === 'light' ? 'Switch to dark' : 'Switch to light'}>
+            data-look="" onClick={(e) => openLook(e.currentTarget)}
+          aria-haspopup="dialog"
+            aria-label="Page look: light or dark, and how much color"
+            title="Page look">
             <ThemeGlyph theme={theme} />
           </button>
           <Link href="/" className="grp-chip">Today</Link>
