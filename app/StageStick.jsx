@@ -62,7 +62,7 @@ function Count({ fig, run }) {
   if (!fig) return null;
   const shown = fig.n == null || v == null || doneRef.current ? fig.text
     : fig.kind === 'time' ? mmss(Math.round(v))
-    : `${fig.pre || ''}${Number.isInteger(fig.n) ? Math.round(v) : v.toFixed(1)}${fig.post || ''}`;
+    : `${fig.pre || ''}${Number.isInteger(fig.n) ? Math.round(v).toLocaleString('en-US') : v.toFixed(1)}${fig.post || ''}`;
   return (
     <span className="sst-cnt">
       <span className="sst-cnt-hold" aria-hidden="true">{fig.text}</span>

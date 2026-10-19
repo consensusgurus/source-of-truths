@@ -1719,8 +1719,8 @@ export default function StageFinish({
     const sc = myRowB && useRow ? { s: Number(myRowB.score), o: Number(myRowB.total) } : (run ? { s: run.score, o: run.total } : (myRowB ? { s: Number(myRowB.score), o: Number(myRowB.total) } : null));
     if (mineM != null) {
       const t = fmtMetric(me.key, mineM);
-      const m = /^(-?\d+(?:\.\d+)?)(.*)$/.exec(t);
-      metric = m ? { text: t, n: Number(m[1]), post: m[2] } : { text: t, n: null };
+      const m = /^(-?[\d,]+(?:\.\d+)?)(.*)$/.exec(t);
+      metric = m ? { text: t, n: Number(m[1].replace(/,/g, '')), post: m[2] } : { text: t, n: null };
     } else if (myT != null) {
       metric = { text: mmss(myT), n: myT, kind: 'time' };
     } else if (sc && sc.o > 0 && !meSolveOnly) {
@@ -1743,7 +1743,7 @@ export default function StageFinish({
       const lo = race && med ? `Typical solver ${mmss(med)}` : (fr.n ? `${fr.n} ${fr.n === 1 ? 'player' : 'players'} today` : '');
       const hi = top && race && top.timeElapsed != null && Number(top.total) > 0 && Number(top.score) >= Number(top.total)
         ? `Fastest ${mmss(Number(top.timeElapsed))}`
-        : (top && top.score != null && top.total ? `Top ${top.score}/${top.total}` : '');
+        : (top && top.score != null && top.total ? `Top ${Number(top.score).toLocaleString('en-US')}/${Number(top.total).toLocaleString('en-US')}` : '');
       fieldInfo = { line: pct <= 0 && fr.rank > 1 ? head : `${head} · ${tail}`, pct: fr.n > 1 ? pct : 100, lo, hi };
     }
 
@@ -1812,8 +1812,9 @@ export default function StageFinish({
         const s0 = today.score;
         const d = Math.round(s0 - avgV);
         const head = s0 > bestV ? `Your best ${me.name} score yet`
-          : d > 0 ? `${d} above your average` : d < 0 ? `${-d} below your average` : 'Right on your average';
-        const nfmt = (v) => (Number.isInteger(v) ? String(v) : (Math.round(v * 10) / 10).toFixed(1).replace(/\.0$/, ''));
+          : d > 0 ? `${d.toLocaleString('en-US')} above your average` : d < 0 ? `${(-d).toLocaleString('en-US')} below your average` : 'Right on your average';
+        // Point-scale games (a total of 100 or more) print whole numbers with commas.
+        const nfmt = (v) => (T0 >= 100 || Number.isInteger(v) ? Math.round(v).toLocaleString('en-US') : (Math.round(v * 10) / 10).toFixed(1).replace(/\.0$/, ''));
         const vals = [avgV, s0, bestV];
         const lo2 = Math.min(...vals), hi2 = Math.max(...vals);
         const x = (v) => (hi2 === lo2 ? 0.5 : 0.04 + ((v - lo2) / (hi2 - lo2)) * 0.92);
