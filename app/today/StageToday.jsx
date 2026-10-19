@@ -3047,11 +3047,119 @@ export default function StageToday() {
       </div>
     </div>
   )) : null);
+  // RUNS IN THE GRID (owner, 2026-10-19, mockup D "deck tile that opens in
+  // place"). On a desktop in tile view, the day's runs lead the pane as deck
+  // tiles: one grid cell each, drawn as a little stack of cards with a pip per
+  // game. Tapping one opens a full-width drawer under its row with the run's
+  // games in play order and the way into the run; one drawer at a time.
+  //   ORDER: the pane's sort. A to Z by name, Popular by the summed week plays
+  //   of the run's games, Easy to hard by their mean rating. A run finished
+  //   today goes to the back of the block.
+  //   LAYOUT: the runs take the first row; when they need more than one row
+  //   they are dealt evenly (8 in 7 columns is 4 and 4, never 7 and a lone
+  //   one), and the most played games fill the rest of each run row. The
+  //   column count is measured off the live grid.
+  // The phone keeps its runs block (owner, 2026-10-18), and list view keeps
+  // the pills.
+  const [deckOpen, setDeckOpen] = useState(null);
+  const [gridCols, setGridCols] = useState(0);
+  const deckRO = useRef(null);
+  const deckGridRef = useCallback((el) => {
+    if (deckRO.current) { deckRO.current.disconnect(); deckRO.current = null; }
+    if (!el) return;
+    const read = () => {
+      const t = getComputedStyle(el).gridTemplateColumns || '';
+      const n = t && t !== 'none' ? t.trim().split(/\s+/).length : 0;
+      setGridCols((c) => (c === n ? c : n));
+    };
+    read();
+    if (typeof ResizeObserver !== 'undefined') { deckRO.current = new ResizeObserver(read); deckRO.current.observe(el); }
+  }, []);
+  useEffect(() => { setDeckOpen(null); }, [paneOn]);
+  const deckOn = (pane) => mid && viewOf(pane) === 'tile';
+  const deckRuns = (cat) => {
+    const sk = skillOfId(cat);
+    const list = PILL_CIRCUITS.filter((id) => !SHELF_ONLY.has(id)).map((id) => circuits.find((c) => c.id === id)).filter((c) => c && (!cat
+      || (sk ? c.games.some((g) => hasSkill(g.key, sk.id)) || (PILL_EXTRA[c.id] || []).includes(sk.pane)
+        : c.games.some((g) => g.cat === cat) || (PILL_EXTRA[c.id] || []).includes(cat))));
+    const w = fav && fav.week ? fav.week : null;
+    const wk = (c) => c.games.reduce((t, g) => t + ((w && w[g.key]) || 0), 0);
+    const df = (c) => { const v = c.games.map((g) => (diff ? diff[g.key] : 0)).filter(Boolean); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : 9; };
+    const base = (a, b) => PILL_CIRCUITS.indexOf(a.id) - PILL_CIRCUITS.indexOf(b.id);
+    const by = sortBy === 'az' ? (a, b) => a.name.localeCompare(b.name)
+      : sortBy === 'diff' ? (a, b) => (diff ? df(a) - df(b) : 0) || base(a, b)
+        : (a, b) => (w ? wk(b) - wk(a) : 0) || base(a, b);
+    return list.sort((a, b) => ((runFull(a) ? 1 : 0) - (runFull(b) ? 1 : 0)) || by(a, b));
+  };
+  const deckTile = (c, cat, i) => {
+    const fin = runFull(c);
+    const st = fin ? circStand[c.id] : null;
+    const on = deckOpen === c.id;
+    return (
+      <button key={'dk-' + c.id} type="button" className={'sty-deck' + (fin ? ' done' : '') + (on ? ' on' : '')}
+        aria-expanded={on} aria-controls={'dkd-' + c.id} data-fk={'dk:' + c.id}
+        style={{ ...runLook(c, cat), '--i': i }}
+        onClick={() => setDeckOpen((v) => (v === c.id ? null : c.id))}>
+        <span className="sty-dkn"><b>{c.name}</b><em>Run</em></span>
+        <span className="sty-dkl">
+          <span className="sty-dkp" aria-label={`${c.n} of ${c.games.length} played`}>
+            {c.games.map((g) => <i key={g.key} className={done.has(g.key) ? 'on' : ''} />)}
+          </span>
+          <span className="sty-dks">{st ? `You: #${st.rank} of ${st.field}` : fin ? 'Finished' : `${c.games.length} games`}</span>
+        </span>
+      </button>
+    );
+  };
+  const deckDrawer = (c, cat, col, cols) => {
+    const fin = runFull(c);
+    const st = runStat[c.id];
+    const x = cols > 0 ? `calc(${(((col + 0.5) / cols) * 100).toFixed(3)}% - 7px)` : '20px';
+    return (
+      <div key={'dkd-' + c.id} id={'dkd-' + c.id} className="sty-dkd" data-fk={'dkd:' + c.id}
+        style={{ ...runLook(c, cat), '--dkx': x }}>
+        <span className="sty-dkc" aria-hidden="true" />
+        <div className="sty-dkh">
+          <b>{c.name}</b>
+          {c.blurb ? <span className="bl">{c.blurb}</span> : null}
+          {st && st.players ? <span className="pl">{fmtN(st.players)} {st.players === 1 ? 'player' : 'players'} today</span> : null}
+          <a className="sty-dkgo" href={withTq(circuitEntryHref(c.id))}>{fin ? 'See results' : c.n ? 'Continue the run' : 'Play the run'}</a>
+          <button type="button" className="sty-dkx" aria-label={'Close ' + c.name} onClick={() => setDeckOpen(null)}>{'×'}</button>
+        </div>
+        <ol className="sty-dkg">
+          {c.games.map((g, i) => (
+            <li key={g.key}>
+              <a className={'sty-dkm' + (done.has(g.key) ? ' on' : '')} href={withTq(routeOf(g))} style={{ '--gc': hueFor(g.cat) }}>
+                <i>{i + 1}</i><Glyph k={g.key} size={14} /><span>{g.name}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </div>
+    );
+  };
+  const deckGrid = (cat, nodes, banded) => {
+    const runs = deckRuns(cat);
+    if (!runs.length) return nodes;
+    const C = gridCols > 0 ? gridCols : runs.length;
+    const R = Math.ceil(runs.length / C);
+    const out = []; let ri = 0; let gi = 0;
+    for (let r = 0; r < R; r++) {
+      const take = Math.floor(runs.length / R) + (r < runs.length % R ? 1 : 0);
+      const row = runs.slice(ri, ri + take); ri += take;
+      row.forEach((c, k) => out.push(deckTile(c, cat, k)));
+      if (!banded) for (let k = row.length; k < C && gi < nodes.length; k++) out.push(nodes[gi++]);
+      const open = row.findIndex((c) => c.id === deckOpen);
+      if (open >= 0) out.push(deckDrawer(row[open], cat, open, C));
+    }
+    return out.concat(nodes.slice(gi));
+  };
+  const deckFitOff = (cat) => !!deckOpen && deckRuns(cat).some((c) => c.id === deckOpen);
   // ONE SECTION PER PANE, a category or a skill. A skill mixes categories, so
   // its tiles and rows carry their own category's hue, as All Puzzles does.
   const paneSection = ({ cat, games }) => {
     const sk = isSkillId(cat);
-    const fit = paneOn === cat && sortBy !== 'diff' ? fitFor(games.length) : null;
+    const dk = deckOn(cat) && paneOn === cat;
+    const fit = paneOn === cat && sortBy !== 'diff' && !(dk && deckFitOff(cat)) ? fitFor(games.length + (dk ? deckRuns(cat).length : 0)) : null;
     const fitStyle = fit ? fit.style : undefined;
     const n = games.filter((g) => done.has(g.key)).length;
     const s = sk ? skillOfId(cat) : null;
@@ -3062,7 +3170,7 @@ export default function StageToday() {
         <div className="sty-cathead">
           <h2>{catLabel(cat)}</h2>
           <b>{n}<i>/{games.length}</i></b>
-          {circPills(cat, false)}
+          {deckOn(cat) ? null : circPills(cat, false)}
           {sortCtl(false)}
           {viewCtl(cat)}
         </div>
@@ -3070,12 +3178,15 @@ export default function StageToday() {
         {circPills(cat, true)}
         {mid && viewOf(cat) === 'list' ? catLedger(games, sk) : null}
         {!(mid && viewOf(cat) === 'list') ? <>
-        <div className={'sty-games' + (fit ? ' fit' : '')} style={fitStyle}>
-          {tileRun(sortGames(games), (g, i) => (
-            <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
-              canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-              hue={sk ? hueFor(g.cat) : undefined} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={sk ? cat + ':' + g.key : null} />
-          ))}
+        <div className={'sty-games' + (fit ? ' fit' : '')} style={fitStyle} ref={dk ? deckGridRef : undefined}>
+          {(() => {
+            const nodes = tileRun(sortGames(games), (g, i) => (
+              <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
+                canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
+                hue={sk ? hueFor(g.cat) : undefined} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={sk ? cat + ':' + g.key : null} />
+            ));
+            return dk ? deckGrid(cat, nodes, !!bandsOf(games)) : nodes;
+          })()}
         </div>
         {fit ? favBlock(cat, games, fit.k) : null}
         </> : null}
@@ -3351,7 +3462,7 @@ export default function StageToday() {
             <h2>All Puzzles</h2>
             <b>{alphaDone}<i>/{alpha.length}</i></b>
             {grpChips()}
-            {circPills(null, false)}
+            {deckOn(ALL_ID) ? null : circPills(null, false)}
             {sortCtl(false)}
             {viewCtl(ALL_ID)}
           </div>
@@ -3365,14 +3476,17 @@ export default function StageToday() {
               {ledgerRun(playedLast(sortGames(alpha), done), 'azl', true)}
             </div>
           ) : null}
-          <div className={'sty-games' + (mid && viewOf(ALL_ID) === 'list' ? ' sty-vhid' : '')}>
-            {tileRun(playedLast(sortGames(alpha), done), (g, i) => (
+          <div className={'sty-games' + (mid && viewOf(ALL_ID) === 'list' ? ' sty-vhid' : '')} ref={deckOn(ALL_ID) && paneOn === ALL_ID ? deckGridRef : undefined}>
+            {(() => {
+              const nodes = tileRun(playedLast(sortGames(alpha), done), (g, i) => (
               // ALL GAMES MIXES CATEGORIES exactly as My games does, so each
               // card carries its own hue (owner, 2026-08-31).
               <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
                 canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
                 hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'az:' + g.key} />
-            ))}
+            ));
+              return deckOn(ALL_ID) && paneOn === ALL_ID ? deckGrid(null, nodes, !!bandsOf(alpha)) : nodes;
+            })()}
           </div>
         </section>
         {catTiles}
@@ -5674,4 +5788,44 @@ html[data-stage-color=full] .sty-g.done .sty-gi{color:var(--cci, var(--cc));opac
   html[data-stage-color=full] .sty-ixn:not(.re) .sty-ixb.ct .sty-ixgg{color:${RAMP_INK};}
 }
 
+
+/* RUN DECK TILES (owner, 2026-10-19). A grid cell drawn as a small stack of
+   cards in the run's hue, a pip per game; opens a full-width drawer under its
+   row. Desktop tile view only (mid gates the markup). */
+.sty-deck{position:relative;display:flex;flex-direction:column;justify-content:center;gap:5px;text-align:left;font:inherit;cursor:pointer;
+  background:var(--stg-surf);color:var(--stg-ink);border:1.5px solid var(--ph);border-radius:8px;padding:9px 12px 9px;margin:5px 7px 0 0;
+  box-shadow:3px -3px 0 -1.5px var(--stg-ground,var(--stg-bg,#fff)),3px -3px 0 0 color-mix(in srgb,var(--ph) 55%,transparent),6px -6px 0 -1.5px var(--stg-ground,var(--stg-bg,#fff)),6px -6px 0 0 color-mix(in srgb,var(--ph) 30%,transparent);
+  transition:transform .12s cubic-bezier(.2,.7,.3,1);}
+.sty-deck:hover{transform:translateY(-1px);}
+.sty-deck.on{background:color-mix(in srgb,var(--ph) 14%,var(--stg-surf));}
+.sty-deck.done{opacity:.72;}
+.sty-deck:focus-visible{outline:2px solid var(--phi,var(--ph));outline-offset:2px;}
+.sty-dkn{display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:800;letter-spacing:-.01em;min-width:0;}
+.sty-dkn b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:800;}
+.sty-dkn em{margin-left:auto;flex:none;font-style:normal;font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute);}
+.sty-dkl{display:flex;align-items:center;gap:8px;min-width:0;}
+.sty-dkp{display:flex;gap:3px;flex:none;}
+.sty-dkp i{width:11px;height:4px;border-radius:2px;background:color-mix(in srgb,var(--ph) 28%,transparent);}
+.sty-dkp i.on{background:var(--ph);}
+.sty-dks{font-size:11.5px;font-weight:600;color:var(--stg-mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-dkd{grid-column:1/-1;position:relative;margin:4px 0 2px;border:1.5px solid var(--ph);border-radius:10px;padding:11px 12px 12px;
+  background:color-mix(in srgb,var(--ph) 8%,var(--stg-surf));}
+.sty-dkc{position:absolute;top:-8px;left:var(--dkx);width:13px;height:13px;transform:rotate(45deg);
+  background:inherit;border-left:1.5px solid var(--ph);border-top:1.5px solid var(--ph);background:color-mix(in srgb,var(--ph) 8%,var(--stg-surf));}
+.sty-dkh{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
+.sty-dkh b{font-size:16px;font-weight:800;}
+.sty-dkh .bl{font-size:12.5px;color:var(--stg-mute);font-weight:600;}
+.sty-dkh .pl{font-size:12px;color:var(--stg-mute);font-weight:700;}
+.sty-dkgo{margin-left:auto;font-size:12.5px;font-weight:800;text-decoration:none;border-radius:999px;padding:7px 15px;background:var(--ph);color:var(--stg-onramp,#fff);}
+.sty-dkgo:hover{filter:brightness(1.06);}
+.sty-dkx{font:inherit;font-size:18px;line-height:1;width:30px;height:30px;border-radius:50%;border:1px solid var(--stg-line);background:var(--stg-surf);color:var(--stg-mute);cursor:pointer;}
+.sty-dkg{list-style:none;margin:0;padding:0;display:grid;gap:7px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}
+.sty-dkm{display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:8px;padding:9px 10px;font-size:13.5px;font-weight:800;}
+.sty-dkm:hover{border-color:var(--gc);}
+.sty-dkm i{font-style:normal;font-size:11px;font-weight:800;color:var(--stg-mute);min-width:12px;}
+.sty-dkm .sty-gi{color:var(--gc);}
+.sty-dkm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-dkm.on{color:var(--stg-mute);}
+.sty-dkm.on span::after{content:" \\2713";color:var(--stg-good,var(--gc));}
+@media (max-width:900px){.sty-deck,.sty-dkd{display:none;}}
 `;

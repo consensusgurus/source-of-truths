@@ -9904,3 +9904,18 @@ before first paint; `?color=` is a review override).
   intro answers the light offer.
 - The Leaderboards + Stats pane's "Every game today" grid is sorted by plays today, most first, ties
   A to Z (`app/today/BoardsPane.jsx`).
+
+## Runs sit in the puzzle grid as deck tiles (owner, 2026-10-19)
+
+On a desktop in TILE view, All Puzzles and every category or skill pane lead
+with the day's runs (`PILL_CIRCUITS` filtered as the pills were) as deck tiles in
+the same `.sty-games` grid (`deckGrid` in app/today/StageToday.jsx), replacing the
+pills in that view. A deck tile is a button drawn as a small card stack in the
+run's hue with a pip per game; it opens ONE full-width drawer under its row
+(games in play order, linked, and the way into the run). Order follows the
+pane's sort (A to Z by name, Popular by the members' summed week plays, Easy to
+hard by their mean rating), a run finished today last. More runs than columns
+are dealt evenly over rows (8 in 7 is 4 and 4) and each run row is filled out
+with games; the column count is measured off the live grid. List view keeps the
+pills; the phone keeps its runs block. Mockup: canvas "Runs in the All Puzzles
+Grid", option D.
