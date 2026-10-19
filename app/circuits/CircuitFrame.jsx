@@ -130,15 +130,16 @@ const CSS = `
 
 .cfr-cap{display:flex;align-items:center;gap:18px;padding:11px 22px;position:relative;
   border-bottom:1px solid var(--stg-line);}
-.cfr-id{display:flex;align-items:baseline;gap:11px;min-width:0;margin-right:auto;}
-/* The mark and the words are ONE object so they centre on each other; the
-   label still hangs off the NAME's baseline, which is what .cfr-id keeps its
-   baseline alignment for. */
+.cfr-id{display:flex;align-items:center;gap:11px;min-width:0;margin-right:auto;}
+/* The mark and the words are ONE object so they centre on each other, and the
+   label centres on that object. It used to align on baseline, but a flex box
+   takes its baseline from its FIRST item, which here is the mark's SVG, so the
+   label sat on the bottom of the mark and read a few pixels low. */
 .cfr-brand{display:flex;align-items:center;gap:8px;min-width:0;text-decoration:none;
   color:var(--stg-ink);}
 .cfr-id b{font-size:16px;font-weight:800;letter-spacing:-0.01em;white-space:nowrap;}
 .cfr-id b em{font-style:normal;color:var(--stg-brand,#7dd3fc);}
-.cfr-lab{font-family:${MONO};font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
+.cfr-lab{font-family:${MONO};font-size:10.5px;line-height:1.2;letter-spacing:.11em;text-transform:uppercase;
   color:var(--stg-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cfr-cx{flex:none;font-family:${MONO};font-size:10px;letter-spacing:.11em;text-transform:uppercase;
   color:var(--stg-ink2);text-decoration:none;border:1px solid var(--stg-line);
