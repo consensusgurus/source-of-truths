@@ -742,6 +742,12 @@ export async function GET(request) {
     // ?top=N asks for a longer board (the home's side column), capped at 30.
     const topN = Math.min(30, Math.max(DISPLAY, parseInt(searchParams.get('top') || '', 10) || DISPLAY));
     const overallBoardOut = overallNamed.slice(0, topN).map((r) => ({ ...r, rank: overallRankByKey.get(r.userKey) }));
+    // ?all=1 (Polymath, 2026-10-19): every ranked named row, slimmed to what a
+    // cross-circuit join needs. The capped board above cannot be joined across
+    // circuits without losing anyone outside the top 30.
+    const overallAll = searchParams.get('all') === '1'
+      ? overallNamed.map((r) => ({ userKey: r.userKey, username: r.username, total: r.total, timeTotal: r.timeTotal }))
+      : undefined;
 
     // THE RIVAL (owner, 2026-08-14). The named player immediately AHEAD of the
     // viewer on this board, or immediately BEHIND when the viewer is already
@@ -920,6 +926,7 @@ export async function GET(request) {
       overallField: overallFull.length,
       games: gameBoards,
       overall: overallBoardOut,
+      overallAll,
       me,
       meProvisional,
       rival,

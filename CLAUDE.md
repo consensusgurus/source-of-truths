@@ -9954,3 +9954,27 @@ named the English Gauntlet.
   trophy "Plain English" (bronze). The five clients mount `RunDoorPop id="english"` on today's gate.
 - **THE ONLY POP-UP IS THE RUN'S (owner, 2026-10-19):** a PREMIERE_RUNS line for `english` and no
   PREMIERES line for any of the five.
+
+## Polymath (`/polymath`): one title for the three gauntlets (launched 2026-10-19)
+
+Owner, 2026-10-19: the Trivia, Math and English Gauntlets tied together as "Polymath", legs weighted
+the same. **A lens, never a new score**: the three runs play and post exactly as before; nothing is
+stored, no IQ Points move, no gauntlet board changes.
+
+- **Scoring (`lib/polymath.js`)**: each leg 0 to 100 = questions right against that run's TOP TITLE's
+  mark, read off `lib/run-titles.js` (95 Trivia, 80 Math, 44 English today), capped at 100, rounded.
+  Score = the mean of the three, rounded; combined clock breaks ties; a player ranks only once all
+  three are finished that day. Tiers (provisional, recut from real scores): Dabbler 0, Apprentice 25,
+  Journeyman 45, Scholar 60, Savant 75, Polymath 90.
+- **`/api/quiz/polymath`** calls the daily-combined GET in process three times with `?all=1`, which
+  makes daily-combined return `overallAll` (every ranked named row, slimmed); the capped `overall`
+  (30) cannot be joined across circuits. The join is by userKey. Never add a stored score here.
+- **Surfaces**: `/polymath` (`app/polymath/PolymathClient.jsx` in CircuitFrame: title, legs with Play
+  doors, board, ladder, challenge via TicketDoor while the drawing is live, how the score works,
+  Return to all daily puzzles, Share your score); the meter on the three runs' end screens
+  (`app/circuits/PolymathMeter.jsx`, reveal once a day when the third lands, `sot_polymath_rev`);
+  the home Runs pane card (`app/today/PolymathRunCard.jsx`, local saves only, no request).
+- **The share link** is `/polymath?s=75-65-70&t=70&d=<day>` (`shareQuery` / `parseShare`); the page's
+  OG image is `/polymath/card` with the same query (no query = the invite card). Names no question.
+- Local legs read `sot_run_<id>_<day>` (phase 'done', results[].score summed), so the meter and the
+  home card draw instantly; the rank waits on `resultPostsSettled()` then a fresh read.

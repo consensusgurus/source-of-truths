@@ -44,6 +44,7 @@ import { DISPLAY_CIRCUITS, RUN_GAMES, circuitKeysFor, circuitEntryHref } from '@
 import GameGlyph from '../GameGlyph';
 import CircuitArt from '../CircuitArt';
 import { RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
+import PolymathRunCard from './PolymathRunCard';
 import { SKILLS, SKILL_MAP, hasSkill } from '@/lib/daily-skills';
 import { TIERS as DIFF_TIERS } from '@/lib/daily-difficulty';
 // ONE READING OF A RESULT ROW, the same one the ending curtain and the tile
@@ -3569,6 +3570,8 @@ export default function StageToday() {
                 is, players today, and once finished your place on the site
                 board and in your group. */}
             <div className={'sty-rcards' + (isOpen(CIRC_ID) ? '' : ' shut')} ref={circRef}>
+              <PolymathRunCard hueFor={hueFor} href={withTq('/polymath')}
+                style={{ '--ph': hueFor('Trivia'), '--phi': inkFor('Trivia'), '--phf': categoryColor('Trivia'), '--stg-onramp': light ? categoryOnrampLight('Trivia') : RAMP_INK }} />
               {(allCircs || circPane ? circuits : circLead).map((c) => runCard(c, null, null,
                 <CircStar c={c} canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite} />, circPane))}
             </div>

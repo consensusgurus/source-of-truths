@@ -66,6 +66,8 @@ import ChallengeStrip from '../../../ChallengeStrip';
 import { RunChallengeButton, RunChallengeLine, runToken } from '../../../RunChallenge';
 import { isChallengeableRun } from '@/lib/challenge';
 import RunBackLink from '../../RunBackLink';
+import PolymathMeter from '../../PolymathMeter';
+import { POLY_IDS } from '@/lib/polymath';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
@@ -1924,6 +1926,10 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     </div>
                   );
                 })()}
+
+                {POLY_IDS.includes(circuitId) && !r.practice ? (
+                  <PolymathMeter circuitId={circuitId} right={cleared} />
+                ) : null}
 
                 {GAUNT || ENCORE ? (
                   <TriviaMoreList
