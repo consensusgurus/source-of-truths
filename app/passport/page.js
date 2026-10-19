@@ -84,7 +84,7 @@ function ComingSoon({ first }) {
         </div>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: T.ink, margin: '0 0 8px' }}>Passport launches {first ? first.dateLabel : 'soon'}.</h1>
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
-          The daily geography run. One mystery country, five rounds, 50 points. Come back when the first country boards.
+          The daily geography run: Ping, nine size calls, Flank and Span, 50 points. Come back when the first flight boards.
         </p>
         <a href="/" style={{ color: '#7d1d2c', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>

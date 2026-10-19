@@ -82,7 +82,7 @@ const RUN_TAG = {
   pricecheck: 'Five price guesses, one card',
   gauntlet: 'Seven trivia quizzes as one long run',
   triviaencore: 'The three trivia banks that sat out the Gauntlet',
-  passport: 'One country, four legs, a passport',
+  passport: 'Ping, sizes, Flank, Span, a passport',
 };
 const RUN_GLYPH = 'M3 7h8v4H3zM13 13h8v4h-8zM11 9h4v6';
 

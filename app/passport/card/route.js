@@ -80,7 +80,7 @@ function card(scores) {
         h('div', { style: { display: 'flex', fontSize: 17, fontWeight: 800, letterSpacing: 3, color: '#7dd3fc', textTransform: 'uppercase' } }, 'Score 48 and earn the'),
         h('div', { style: { display: 'flex', fontSize: 38, fontWeight: 800, lineHeight: 1.05, letterSpacing: -1, marginTop: 8 } }, SWISS.name),
         h('div', { style: { display: 'flex', fontFamily: MONO, fontSize: 18, color: AMBER, marginTop: 12 } }, `Visa-free to ${SWISS.vf} countries`),
-        h('div', { style: { display: 'flex', fontSize: 19, fontWeight: 700, color: '#cbd5e1', marginTop: 14, lineHeight: 1.3 } }, legsCard ? 'Span, Flank, Ping and nine size calls.' : 'One mystery country. Five rounds.')));
+        h('div', { style: { display: 'flex', fontSize: 19, fontWeight: 700, color: '#cbd5e1', marginTop: 14, lineHeight: 1.3 } }, 'Ping, nine size calls, Flank and Span.')));
 
   return h('div', { style: { width: 1200, height: 630, display: 'flex', background: GROUND, padding: '44px 54px', fontFamily: SANS, color: '#f1f5f9' } },
     h('div', { style: { display: 'flex', flexDirection: 'column', width: 520, paddingRight: 34 } },
