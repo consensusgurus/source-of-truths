@@ -61,7 +61,7 @@ export const RUN_DOORS = {
   // THE ENGLISH GAUNTLET (2026-10-19): once a day on the gate of any of its five.
   english: {
     href: '/english', name: 'English Gauntlet', eyebrow: 'Daily run \u00b7 Five quizzes',
-    body: 'Gram, Vocab, Spell, Origin and Idiom back to back, ten questions and one life in each: grammar, vocabulary, spelling, word origins and idioms.',
+    body: 'Spell, Vocab, Idiom, Gram and Origin back to back, ten questions and one life in each: spelling, vocabulary, idioms, grammar and word origins.',
     go: 'Run all five', accent: '#93c5fd',
     tags: [['Gram', '#a5b4fc'], ['Vocab', '#5eead4'], ['Spell', '#fdba74'], ['Origin', '#fcd34d'], ['Idiom', '#fda4af']],
   },

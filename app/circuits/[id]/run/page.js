@@ -242,7 +242,7 @@ export async function generateMetadata({ params }) {
     return {
       title: 'English Gauntlet: Grammar, Vocabulary and Spelling Quizzes in One Run | Mind Loft',
       description:
-        'Five daily English quizzes played back to back as one run: grammar, vocabulary, spelling, word origins and idioms. Ten questions each, twenty seconds a question, one life in each. Free, no signup.',
+        'Five daily English quizzes played back to back as one run: spelling, vocabulary, idioms, grammar and word origins. Ten questions each, twenty seconds a question, one life in each. Free, no signup.',
       alternates: { canonical: runHref(c.id) },
       robots: { index: false, follow: true },
       openGraph: { title: hook, description: 'One wrong answer ends that quiz, the next one starts on its own, and you get one scorecard at the end.', url, type: 'website', siteName: 'Mind Loft' },
