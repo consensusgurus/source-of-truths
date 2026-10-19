@@ -831,6 +831,7 @@ const CSS = `
 const GE = {
   trivia: { P0: 300, PD: 1300, COUNT: 700, MISS: 760, RANK: 900, FILL: 800 },
   math: { P0: 300, PD: 1500, COUNT: 800, MISS: 900, RANK: 1000, FILL: 900 },
+  english: { P0: 300, PD: 1500, COUNT: 800, MISS: 900, RANK: 1000, FILL: 900 },
 };
 const GE_STEP = 600;
 const GE_FLASH = 220;
@@ -948,7 +949,11 @@ function GauntletEnding({
   onDone,
 }) {
   const N = sections.length;
-  const mode = circuitId === 'math' ? 'math' : 'trivia';
+  // THE ENGLISH GAUNTLET'S SET PIECE (owner, 2026-10-19): a proofreader's
+  // galley races through the answers this quiz actually asked that the player
+  // got right and marks the one that ended it, and the climb is a dictionary
+  // page whose headwords are the run's titles.
+  const mode = circuitId === 'math' ? 'math' : circuitId === 'english' ? 'english' : 'trivia';
   const TM = GE[mode];
   const ladder = titleLadder(circuitId) || [];
   const earned = titleFor(circuitId, score);
@@ -1043,7 +1048,7 @@ function GauntletEnding({
 
   // ── the side bar (Trivia only): the total against today's average and best ──
   const finishedRows = (Array.isArray(rows) ? rows : []).filter((x) => Number.isFinite(Number(x.total)));
-  const markersOn = mode === 'trivia' && finishedRows.length >= 2;
+  const markersOn = mode !== 'math' && finishedRows.length >= 2;
   const best = markersOn ? Math.max(...finishedRows.map((x) => Number(x.total) || 0)) : null;
   const avg = markersOn && Number.isFinite(Number(avgTotal)) ? Math.round(Number(avgTotal)) : null;
   const barScale = Math.max(1, best || 0, TOTAL);
@@ -1088,6 +1093,71 @@ function GauntletEnding({
     );
   };
 
+  // THE GALLEY (English). The answers this quiz asked that the player got
+  // right, set in type with a tick each, then the line that ended it struck
+  // through in red. Only right answers are shown, so nothing is given away.
+  const galley = () => {
+    const lines = geReadoutLines(b.qs, b.got, local);
+    const err = b.got < b.asked && missShown;
+    const ans = (q) => (q && Array.isArray(q.choices) ? String(q.choices[q.correct] == null ? '' : q.choices[q.correct]) : '');
+    return (
+      <div className={phone ? 'ge-gal ph' : 'ge-gal'} aria-hidden="true">
+        <div className="ge-galh"><span>Galley proof</span><span>{b.name}</span></div>
+        <div className="ge-galb">
+          {lines.map((ln) => (
+            <div key={`${pi}-${ln.idx}`} className={`ge-gl m-tick${ln.cur ? ' cur' : ''}`} style={{ opacity: ln.op }}>
+              <span className="ge-glno">{ln.idx + 1}</span>
+              {/* Spell's Spot the Error answer IS the misspelling, so it is
+                  set struck through, the way a proofreader deletes it. */}
+              <span className={`ge-glt${b.qs[ln.idx] && b.qs[ln.idx].cat === 'Spot the Error' ? ' del' : ''}`}>{ans(b.qs[ln.idx])}</span>
+              <span className="ge-glok">{'\u2713'}</span>
+            </div>
+          ))}
+          {err ? (
+            <div className="ge-gl cur ge-gfix m-err">
+              <span className="ge-glno">{b.got + 1}</span>
+              <span className="ge-glx" />
+              <span className="ge-glmk">{'\u2038'} correction</span>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    );
+  };
+
+  // THE DICTIONARY PAGE (English). The titles as headwords, lowest at the top,
+  // each lit as the total crosses it; the earned one is highlighted and lifts.
+  const dictPage = (w) => {
+    const first = ladder[0] ? ladder[0].name.split(' ')[0] : '';
+    const last = ladder.length ? ladder[ladder.length - 1].name.split(' ').slice(-1)[0] : '';
+    return (
+      <div className={phone ? 'ge-dict ph' : 'ge-dict'} style={w ? { width: w } : null} aria-hidden="true">
+        <div className="ge-dhd"><span>{first}</span><span>Mind Loft Dictionary</span><span>{last}</span></div>
+        {ladder.map((x, i) => {
+          const lit = i <= at;
+          const here = i === at;
+          return (
+            <div key={x.name} className="ge-de" style={{
+              '--tc': x.colour,
+              opacity: lit ? 1 : 0.34,
+              borderLeftColor: lit ? x.colour : 'transparent',
+              background: here ? '#ffffff' : 'transparent',
+              boxShadow: here ? `0 12px 30px rgba(0,0,0,.28), 0 0 0 2px ${x.colour}` : 'none',
+              transform: here && pulled ? `translateX(${phone ? 8 : 16}px) rotate(-1deg)` : 'none',
+            }}>
+              <div className="ge-dtop">
+                <span className={`ge-dhw${here ? ' hl' : ''}`}>{x.name}</span>
+                <span className="ge-dpos">n.</span>
+                <span className="ge-dmn">{x.min}+</span>
+              </div>
+              <div className="ge-ddef">{x.line}</div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   const rankLine = (where) => (b && b.rank != null && b.plays != null && showRank
     ? <div className="ge-pop ge-rk">{where(b)}</div> : null);
 
@@ -1096,7 +1166,7 @@ function GauntletEnding({
   );
 
   const sideBar = () => {
-    if (mode !== 'trivia') return null;
+    if (mode === 'math') return null;
     const pct = (v) => `${Math.min(100, Math.max(0, (v / barScale) * 100))}%`;
     const L = ladder.length || 6;
     const h = phone ? L * 40 + (L - 1) * 5 : L * 46 + (L - 1) * 6;
@@ -1161,7 +1231,7 @@ function GauntletEnding({
   );
 
   // ── the bottom strip ──
-  const strip = mode === 'trivia' ? (
+  const strip = mode !== 'math' ? (
     <div className={phone ? 'ge-lad ph' : 'ge-lad'}>
       {banks.map((x, i) => {
         const filled = t >= P0 + i * PD + TM.FILL;
@@ -1197,7 +1267,37 @@ function GauntletEnding({
   // ── the phases ──
   let middle = null;
   if (isPaint && b) {
-    if (mode === 'trivia') {
+    if (mode === 'english') {
+      const lab = b.got === b.asked ? 'right, no corrections' : 'right before the correction';
+      middle = phone ? (
+        <div className="ge-paint ph">
+          <div className="ge-eb">Quiz {b.num} of {N}{b.sub ? ` · ${b.sub}` : ''}</div>
+          <div className="ge-nm" style={{ fontSize: 52 }}>{b.name}</div>
+          {pips()}
+          {galley()}
+          <div className="ge-crow">
+            {countBox(76)}
+            <div className="ge-clb" style={{ fontSize: 16 }}>{lab}</div>
+          </div>
+          <div style={{ minHeight: 24 }}>{rankLine((x) => `#${x.rank} of ${x.plays} on this quiz today`)}</div>
+        </div>
+      ) : (
+        <div className="ge-mpaint">
+          {galley()}
+          <div className="ge-mcol">
+            <div className="ge-eb" style={{ fontSize: 13, letterSpacing: '.18em' }}>Quiz {b.num} of {N}{b.sub ? ` · ${b.sub}` : ''}</div>
+            <div className="ge-nm" style={{ fontSize: 60 }}>{b.name}</div>
+            {pips()}
+            <div className="ge-crow" style={{ gap: 18 }}>
+              {countBox(96)}
+              <div className="ge-clb" style={{ fontSize: 19 }}>{lab}</div>
+            </div>
+            {b.rank != null && b.plays != null && showRank
+              ? <div className="ge-pop ge-rk" style={{ fontSize: 18 }}>#{b.rank} of {b.plays} on this quiz today</div> : null}
+          </div>
+        </div>
+      );
+    } else if (mode === 'trivia') {
       middle = phone ? (
         <div className="ge-paint ph">
           <div className="ge-eb">Quiz {b.num} of {N}{b.sub ? ` · ${b.sub}` : ''}</div>
@@ -1249,7 +1349,24 @@ function GauntletEnding({
       );
     }
   } else if (isCount) {
-    if (mode === 'trivia') {
+    if (mode === 'english') {
+      middle = phone ? (
+        <div className="ge-count ph" style={{ padding: '0 18px' }}>
+          <div className="ge-eb" style={{ opacity: 0.75 }}>Questions right, all {spell(N)}</div>
+          <div className="ge-tot" style={{ fontSize: 96, width: `${digits(TOTAL)}ch` }}>{total}</div>
+          {dictPage(null)}
+        </div>
+      ) : (
+        <div className="ge-count">
+          <div className="ge-lead">
+            <div className="ge-eb" style={{ fontSize: 13, letterSpacing: '.18em', opacity: 0.75 }}>Questions right, all {spell(N)} quizzes</div>
+            <div className="ge-tot" style={{ fontSize: 140, width: `${digits(TOTAL)}ch` }}>{total}</div>
+          </div>
+          {dictPage(440)}
+          {sideBar()}
+        </div>
+      );
+    } else if (mode === 'trivia') {
       middle = phone ? (
         <div className="ge-count ph">
           <div className="ge-eb" style={{ opacity: 0.75 }}>Questions right, all {spell(N)}</div>
@@ -1655,5 +1772,34 @@ const GE_CSS = `
   .ge-mpaint{justify-content:center}
   .ge-count{gap:40px 48px}
 }
+/* THE ENGLISH GAUNTLET: the galley and the dictionary page. */
+.ge-gal{width:400px;flex:none;border-radius:6px;background:#f7f5ef;color:#0b0f1a;padding:14px 18px 16px;box-sizing:border-box;box-shadow:0 20px 50px rgba(0,0,0,.35);font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,monospace}
+.ge-gal.ph{width:auto;padding:12px 14px 14px;box-shadow:0 16px 36px rgba(0,0,0,.32)}
+.ge-galh{display:flex;justify-content:space-between;gap:12px;font-size:10px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:#5b6684;border-bottom:1px solid rgba(11,15,26,.18);padding-bottom:8px;margin-bottom:8px}
+.ge-galb{display:flex;flex-direction:column;justify-content:flex-end;gap:6px;height:196px;overflow:hidden}
+.ge-gal.ph .ge-galb{height:170px;gap:5px}
+.ge-gl{display:flex;align-items:center;gap:10px;height:26px;flex:none;font-size:17px;white-space:nowrap}
+.ge-gl.cur{height:36px;font-size:23px;font-weight:500}
+.ge-gal.ph .ge-gl{font-size:15px;height:24px}
+.ge-gal.ph .ge-gl.cur{font-size:19px;height:32px}
+.ge-glno{flex:none;width:2ch;text-align:right;font-size:11px;color:#8a93a8;font-variant-numeric:tabular-nums}
+.ge-glt{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.ge-glt.del{text-decoration:line-through;text-decoration-color:#b4232a;text-decoration-thickness:2px}
+.ge-glok{flex:none;color:#15803d;font-weight:500}
+.ge-glx{flex:1 1 auto;height:3px;background:#b4232a;border-radius:2px;margin-right:4px}
+.ge-glmk{flex:none;color:#b4232a;font-style:italic;font-size:15px}
+.ge-dict{flex:none;border-radius:6px;background:#f7f5ef;color:#0b0f1a;padding:12px 16px 14px;box-sizing:border-box;box-shadow:0 20px 50px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:4px}
+.ge-dict.ph{width:100%;padding:10px 12px 12px;gap:3px}
+.ge-dhd{display:flex;justify-content:space-between;gap:10px;font-family:'DM Mono',ui-monospace,monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#5b6684;border-bottom:1px solid rgba(11,15,26,.18);padding-bottom:7px;margin-bottom:4px}
+.ge-de{border-left:5px solid transparent;border-radius:4px;padding:6px 10px;transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .25s ease,background .25s ease,opacity .2s ease}
+.ge-dict.ph .ge-de{padding:4px 8px}
+.ge-dtop{display:flex;align-items:baseline;gap:8px}
+.ge-dhw{font-weight:800;font-size:19px;line-height:1.2}
+.ge-dict.ph .ge-dhw{font-size:16px}
+.ge-dhw.hl{background:linear-gradient(transparent 56%,var(--tc) 56%)}
+.ge-dpos{font-family:'DM Mono',ui-monospace,monospace;font-style:italic;font-size:12px;color:#5b6684}
+.ge-dmn{margin-left:auto;font-family:'DM Mono',ui-monospace,monospace;font-size:12px;color:#5b6684;font-variant-numeric:tabular-nums}
+.ge-ddef{font-size:13px;font-weight:600;color:#3a4256;line-height:1.3}
+.ge-dict.ph .ge-ddef{font-size:12px}
 @media (prefers-reduced-motion: reduce){.ge,.ge *{animation:none !important;transition:none !important}}
 `;

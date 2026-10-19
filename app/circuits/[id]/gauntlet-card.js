@@ -109,7 +109,7 @@ export function gauntletCardProps(circuit, banks) {
   const asked = askedTotal(banks);
   return {
     name,
-    kind: isMath ? 'math' : 'trivia',
+    kind: isMath ? 'math' : (circuit && circuit.id === 'english') ? 'english' : 'trivia',
     eyebrow: isMath ? 'MIND LOFT · MATH' : (circuit && circuit.id === 'english') ? 'MIND LOFT · ENGLISH' : 'MIND LOFT · TRIVIA',
     gateEyebrow: (name + ' · one long quiz').toUpperCase(),
     // The gate's own two lines, counted rather than written down, so a roster
