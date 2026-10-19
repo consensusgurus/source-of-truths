@@ -21,7 +21,7 @@
 // before reaching the one that hands them forward).
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { DAILY_GAMES, liveDailyKeys } from '@/lib/daily-games';
+import { DAILY_GAMES, liveDailyKeys, dailyUnit } from '@/lib/daily-games';
 import { RAMP_ORDER, RAMP_INK, categoryColor, categoryColorLight, categoryOnrampLight, categoryAccentInkLight } from '@/lib/category-ramp';
 import { finishPick } from '@/lib/finish-sets';
 // THE REGISTER PICKS THE HUE, and this file is why that rule needs saying a
@@ -1743,7 +1743,14 @@ export default function StageFinish({
       const lo = race && med ? `Typical solver ${mmss(med)}` : (fr.n ? `${fr.n} ${fr.n === 1 ? 'player' : 'players'} today` : '');
       const hi = top && race && top.timeElapsed != null && Number(top.total) > 0 && Number(top.score) >= Number(top.total)
         ? `Fastest ${mmss(Number(top.timeElapsed))}`
-        : (top && top.score != null && top.total ? `Top ${Number(top.score).toLocaleString('en-US')}/${Number(top.total).toLocaleString('en-US')}` : '');
+        // A game scored in its own unit (points, cells, apples) posts a total
+        // that is its PAR, not a ceiling, so "17/15" read as nonsense (owner,
+        // 2026-10-19). Those print the leader's figure in the unit instead.
+        : (top && top.score != null && top.total
+          ? (dailyUnit(me.key)
+            ? `Top ${Number(top.score).toLocaleString('en-US')} ${dailyUnit(me.key)}`
+            : `Top ${Number(top.score).toLocaleString('en-US')}/${Number(top.total).toLocaleString('en-US')}`)
+          : '');
       fieldInfo = { line: pct <= 0 && fr.rank > 1 ? head : `${head} · ${tail}`, pct: fr.n > 1 ? pct : 100, lo, hi };
     }
 

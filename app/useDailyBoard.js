@@ -31,6 +31,7 @@
 // properly, so those players now stop on the first read like everyone else.
 import { useEffect, useState } from 'react';
 import { dailyMeIdentity } from './dailyMeClient';
+import { isArcadeQuizId } from '@/lib/daily-games';
 
 const GAPS = [0, 1500, 2000, 2500, 4000];
 
@@ -41,6 +42,17 @@ export default function useDailyBoard({ quizId = null, active = false }) {
     let alive = true;
     let timer = null;
     let i = 0;
+    // AN ARCADE REPLAY IS ALREADY ON THE BOARD (owner report, 2026-10-19).
+    // Arcade boards keep the BEST run, and a player replaying has a row from
+    // their earlier run, so "am I on it yet" was true on the very first read,
+    // which raced this run's own write: the ladder stopped there and the card
+    // printed the OLD run's place (a 106 shown as #2 of 2 behind a 17, ranked
+    // by the earlier 4). On an arcade game the read only settles once the row
+    // the server returns was played during THIS finish; a worse replay never
+    // produces one, so it spends the ladder (about ten seconds) and keeps the
+    // earlier best, which is the right answer anyway.
+    const arcade = isArcadeQuizId(quizId);
+    const since = Date.now() - 90 * 1000;
 
     // Who am I on this board? The API returns a userKey per row; the local
     // identity is either a signed-in email or the anon id, so match on the
@@ -95,6 +107,8 @@ export default function useDailyBoard({ quizId = null, active = false }) {
           // placement settles it whatever rank it is; without one, fall back to
           // looking for them among the ten.
           const onIt = !!me || (mine && rows.some((r) => String(r.username || '').toLowerCase() === mine));
+          const rowAt = me && me.row ? Date.parse(me.row.playedAt || me.row.played_at || '') : NaN;
+          const fresh = !arcade || (Number.isFinite(rowAt) && rowAt >= since);
           // `settled` says the player's own position on this board is FINAL:
           // their row is here, or the ladder is spent, or there is no identity to
           // find them by. The end card's rank tile needs it to tell "still
@@ -116,7 +130,7 @@ export default function useDailyBoard({ quizId = null, active = false }) {
             guest,
             settled: !!onIt || last || !mine,
           });
-          if (!onIt) schedule();
+          if (!onIt || !fresh) schedule();
         })
         .catch(() => schedule());
     };
