@@ -2085,13 +2085,16 @@ export default function StageToday() {
   // roster, and the Show all bar survives only where Circuits is one row of many.
   const circPane = ix && paneOn === CIRC_ID;
   const [runStat, setRunStat] = useState({});
+  // Set by an effect below, once mid and viewOf exist: list view's run rows
+  // want each run's players today.
+  const [listRuns, setListRuns] = useState(false);
   const runAsked = useRef(null);
   const runGrp = grpOne && !grpOne.failed && grpOne.code ? grpOne : null;
   useEffect(() => {
     if (grp === undefined) return undefined;
     // The phone's pills ask for their runs; the Circuits pane, at any width,
     // asks for every run it shows (owner, 2026-10-13: big cards there too).
-    const ids = new Set(runsMq ? PILL_CIRCUITS : []);
+    const ids = new Set(runsMq || listRuns ? PILL_CIRCUITS : []);
     if (circPane) for (const c of circuits) ids.add(c.id);
     if (!ids.size) return undefined;
     if (!runAsked.current) runAsked.current = new Set();
@@ -2118,7 +2121,7 @@ export default function StageToday() {
         .catch(() => {});
     }
     return undefined;
-  }, [runsMq, circPane, circuits, grp, runGrp && runGrp.code]);
+  }, [runsMq, listRuns, circPane, circuits, grp, runGrp && runGrp.code]);
   // On a phone the index is a sideways strip, so a pane opened from the cap has
   // to bring its own chip into view. The quiz drawers load when their pane opens.
   useIsoLayoutEffect(() => {
@@ -2449,6 +2452,7 @@ export default function StageToday() {
   // the names arrive. One read per pane, once, and only on a wide screen.
   const [wide, setWide] = useState(false);
   const [mid, setMid] = useState(false);
+  useEffect(() => { setListRuns(mid && viewOf(paneOn) === 'list'); });
   useEffect(() => {
     const a = window.matchMedia('(min-width: 1100px)');
     const b = window.matchMedia('(min-width: 901px)');
@@ -3189,7 +3193,7 @@ export default function StageToday() {
         <span className="ic"><span className="sty-rstk" aria-hidden="true" /></span>
         <span className="nm"><b>{c.name}</b><span className="tg">Run · {c.games.length} games{c.blurb ? ' · ' + c.blurb : ''}</span></span>
         <span className="td">
-          {!runStat ? <span className="ph" aria-hidden="true" />
+          {!st ? <span className="ph" aria-hidden="true" />
             : st && st.players ? <><b>{fmtN(st.players)}</b> {st.players === 1 ? 'player' : 'players'} today</>
             : <span className="mu">Open. Be first.</span>}
         </span>
