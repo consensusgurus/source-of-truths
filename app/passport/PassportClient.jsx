@@ -21,6 +21,7 @@
 // The day's content is resolved on the server and only today's ships.
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { holdRootPaint } from '@/lib/root-paint';
 import { useSearchParams } from 'next/navigation';
 import { X } from 'lucide-react';
 import DailyRules from '../DailyRules';
@@ -320,6 +321,9 @@ export function Departures({ legs, scores, inks, deeps, total, clock, num, dateL
   const shownTotal = isLand ? total : isCount ? Math.round(total * depEase((t - RP) / (D_CNT - 300))) : 0;
   const at = tierIndex(shownTotal);
   const finalTier = TIERS[tierIndex(total)];
+  const dpBg = isPaint ? inks[pi] : '#0b0f1a';
+  // The root takes the curtain's colour while it is up (lib/root-paint.js).
+  useEffect(() => holdRootPaint(dpBg), [dpBg]);
 
   // The visa-free count rolls toward the tier the total has reached.
   const vfTarget = TIERS[at].vf;

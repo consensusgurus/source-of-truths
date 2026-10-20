@@ -82,6 +82,12 @@ export const RUN_DOORS = {
   // ONCE A DAY on the start gate of Herd, Outwit, Outrank or Feud (owner,
   // 2026-10-13; Herd from 2026-10-17): a player loading any crowd game is
   // offered the run that plays them all, unless it is already open or finished today.
+  crossed: {
+    href: '/crossed', name: 'Crossed Up', eyebrow: 'Daily run \u00b7 Four crosswords', once: 'game', everyone: true, from: '2026-10-20',
+    body: 'Emcee, Encore, Arcos and Glyph back to back on one page: the mini, the big one, the acrostics and the grid with no clues. Finish fast and your time says which day of the week you solve like, Monday up to In Pen.',
+    go: 'Run all four', accent: '#93c5fd',
+    tags: [['Emcee', '#e879f9'], ['Encore', '#86a9ff'], ['Arcos', '#93c5fd'], ['Glyph', '#94a3b8']],
+  },
   room: {
     href: '/room', name: 'Read the Room', eyebrow: 'Daily run · Four crowd games',
     body: 'Herd, Outwit, Outrank and Feud back to back on one page: run with the herd, dodge it, call its order, say what it said. Then a verdict on how well you read tonight\u2019s room.',

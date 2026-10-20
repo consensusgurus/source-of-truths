@@ -21,6 +21,7 @@
 // paint sits on the fixed root element; nothing that counts resizes its box.
 
 import React, { useEffect, useRef, useState } from 'react';
+import { holdRootPaint } from '@/lib/root-paint';
 import { PRICE_GAMES, fmtCents, errOf, bandOf, runTierOf } from '@/lib/price-games';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
@@ -147,6 +148,9 @@ export default function PriceScanner({ sections, counted, total, max, ranks, dat
   const col = (key) => (PRICE_GAMES[key] && PRICE_GAMES[key].tagDark) || '#7dd3fc';
   const bg = paint ? col(sec.key) : GROUND;
   const ink = paint ? INK : '#e9edf4';
+
+  // The root takes the curtain's colour while it is up (lib/root-paint.js).
+  useEffect(() => holdRootPaint(bg), [bg]);
 
   let gameBody = null;
   if (sec) {

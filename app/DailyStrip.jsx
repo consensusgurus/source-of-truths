@@ -45,7 +45,6 @@ import { Crown, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, Trophy, Play,
 import useDailyOrder, { sortByDailyOrder } from './useDailyOrder';
 import useMyGames, { sortByMyGames } from './useMyGames';
 import DailyTilePanel from './DailyTilePanel';
-import DailyFiveBand from './DailyFiveBand';
 import { T } from '@/lib/theme';
 import { fetchDayStatus } from './useDayStats';
 import { catBlue, deptBlue } from '@/lib/home-blues';
@@ -4482,13 +4481,6 @@ export default function DailyStrip({ board = null, layout = 'tiles', quizCats = 
           <span className="sl-count">{dayTally.filter((t) => t.k !== 'todo').map((t) => slatePip(t))}</span>
         </div>
       ) : null}
-      {/* THE DAILY FIVE, above the cap and below the title band (owner,
-          2026-08-17). First thing on the console, because it is the thing a
-          visitor should start with, and it takes no slot away from anything:
-          the cap keeps all three of its cards. Returns null on any date with no
-          entry in the bank, which is the correct degrade (see lib/daily-five
-          rule 4), so the console is byte-identical to before on such a day. */}
-      <DailyFiveBand />
       <div className="dh-sbar">
         {cats ? renderCatCap() : null}
         <div className="dh-cell up">

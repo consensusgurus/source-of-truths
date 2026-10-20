@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation';
 import DailyFiveSummary from './DailyFiveSummary';
 
 // /daily-five — a run summary. Where a run ENDS: the board for that run, then
@@ -26,13 +27,14 @@ import DailyFiveSummary from './DailyFiveSummary';
 // destination reached from a run, not from a search result. The run's public
 // face is the circuit's own page, which IS indexed.
 export const metadata = {
-  title: 'The Daily Five | Mind Loft',
-  description:
-    'Five daily puzzles from five different categories, played as one run and ranked on combined placement across all five.',
+  title: 'Run Summary | Mind Loft',
+  description: 'The board and your results for one of the daily runs on Mind Loft.',
   robots: { index: false, follow: true },
   alternates: { canonical: '/daily-five' },
 };
 
-export default function DailyFivePage() {
+// The bare URL was the Daily Five, retired 2026-10-20: it goes to the runs.
+export default function DailyFivePage({ searchParams }) {
+  if (!searchParams || !searchParams.circuit) redirect('/circuits');
   return <DailyFiveSummary />;
 }

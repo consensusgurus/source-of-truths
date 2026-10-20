@@ -52,6 +52,8 @@ import useGameAllTime from '../useGameAllTime';
 import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
+import { useRunEmbed } from '../RunEmbed';
+import RunDoorPop from '../circuits/RunDoorPop';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
@@ -274,6 +276,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('encore');
   const STAGE = isStage('encore', searchParams);
+  const EMBED = useRunEmbed();
   // A give-up writes the answers into letters; on the loft the grid keeps the
   // player's own letters until the end card's Reveal answer tile is pressed.
   const viewLetters = g.status === 'revealed' && LOFT && !revealed ? (g.playerLetters || g.letters.map(() => '')) : g.letters;
@@ -453,6 +456,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
 
   function postResult(g2, score) {
     abandon.markFlushed();
+    if (EMBED) EMBED.onResult({ key: 'encore', score, total: TOTAL, t0: g2 && g2.t0, tEnd: (g2 && g2.tEnd) || Date.now() });
     const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
     try { setStats(recordStat(PUZZLE.num, { s: score, t: TOTAL, g: g2.checks, won: g2.status === 'won' && g2.checks === 0 })); } catch (e) {}
     try {
@@ -747,7 +751,8 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
+      data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
+      data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : THEME.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
@@ -762,7 +767,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
           on a finish the set changes to the ones worth keeping: the score leads,
           and the date line becomes the verdict while the cap itself takes the
           outcome colour. */}
-      {LOFT && (
+      {LOFT && !EMBED && (
         <Cap gameKey="encore" quizId={PUZZLE.quizId}
           name="Encore"
           cat="Word"
@@ -1143,7 +1148,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
         </div>
         )}
         </div>
-        {LOFT && !playing && (
+        {LOFT && !playing && !EMBED && (
           <LoftFinish
             name="Encore"
             catRank={catRank}
@@ -1198,7 +1203,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
         {/* The strip in the cap answers what this opens, without being pressed. */}
         {!STAGE && <GamePanel self="encore" name="Encore" onShow={() => setShowChrome(true)} />}
         {/* standard quiz-page bottom: challenge + stats + join + leaderboard */}
-        <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block', margin: '30px auto 0' }}>
+        <div style={{ display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', margin: '30px auto 0' }}>
           {LOFT && (
             <div className={STAGE ? undefined : 'loft-report'}>
               <ReportIssue self="encore" name="Encore" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
@@ -1242,7 +1247,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
             </div>
           </div>
         )}
-        {!focusMode && !identity && (
+        {!EMBED && !focusMode && !identity && (
           <div id="daily-join" style={{ margin: '18px auto 0' }}>
             <JoinLeaderboardForm hideIcon heading="See your stats and join the leaderboard" identity={identity} onJoined={(id) => { setIdentity(id); if (id && id.username) setPlayer((p) => p || { name: id.username, rank: null }); }} />
           </div>
@@ -1273,6 +1278,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
       )}
 
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
+      <RunDoorPop id="crossed" game="encore" ready={hydrated && preStart && isTodays && !EMBED} self="Encore" />
 
       {toast && (
         <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: THEME.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
@@ -1296,9 +1302,9 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
       )}
 
       {/* The desktop fold: the About prose below starts one screen down (app/StageFold.jsx). */}
-      <StageFold />
+      {!EMBED && <StageFold />}
       {/* About Encore — crawlable prose for search, server-rendered into the HTML */}
-      <section style={{ display: (focusMode && !STAGE) ? 'none' : 'block', position: 'relative', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
+      <section style={{ display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', position: 'relative', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Encore</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Encore is a free daily crossword from Mind Loft, and it is the long one. Nine squares by nine on weekdays, with around twenty-six numbered Across and Down answers, so it asks for a few minutes rather than a few seconds. If you want the sprint version, that is <a href="/emcee" style={{ color: INK, fontWeight: 800 }}>Emcee</a>, our five by five mini.

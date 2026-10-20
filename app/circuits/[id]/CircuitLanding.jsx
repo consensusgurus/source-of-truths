@@ -27,7 +27,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Share2, Trophy, Check } from 'lucide-react';
-import { circuitShareInvite, circuitShareUrl, circuitHref, MARQUEE_ID, CIRCUIT_PARAM, isRunnableCircuit, runHref, runSummaryHref, circuitScoreMode, fmtClock, runEngine } from '@/lib/circuits';
+import { circuitShareInvite, circuitShareUrl, circuitHref, CIRCUIT_PARAM, isRunnableCircuit, runHref, runSummaryHref, circuitScoreMode, fmtClock, runEngine } from '@/lib/circuits';
 import { notifyShareCredit } from '../../ShareCreditPop';
 import { dailyMeIdentity } from '../../dailyMeClient';
 import { isMobileDevice } from '@/lib/is-mobile';
@@ -63,8 +63,7 @@ export default function CircuitLanding({ circuit, games }) {
     let alive = true;
     const { anonId, email } = dailyMeIdentity();
     const qs = new URLSearchParams();
-    if (marquee) qs.set('five', '1');
-    else qs.set(CIRCUIT_PARAM, id);
+    qs.set(CIRCUIT_PARAM, id);
     if (anonId) qs.set('anonId', anonId);
     if (email) qs.set('email', email);
     fetch(`/api/quiz/daily-combined?${qs.toString()}`, { cache: 'no-store' })
@@ -164,19 +163,19 @@ export default function CircuitLanding({ circuit, games }) {
               these is the thing to do next takes the accent, and the rest are
               outlines. */}
           {complete ? (
-            <a className="clp-go" href={withTq(runSummaryHref(marquee ? MARQUEE_ID : id))}>
+            <a className="clp-go" href={withTq(runSummaryHref(id))}>
               See how the run went
               <ArrowRight size={15} strokeWidth={2.6} />
             </a>
           ) : null}
           {runnable ? (
             <a className={complete ? 'clp-sh' : 'clp-go'} href={withTq(runHref(id))}>
-              {complete ? 'Run it again' : done ? 'Carry on with the run' : (runEngine(id) === 'jam' ? `Play all ${n} on one clock` : runEngine(id) === 'law' ? `Play all ${n} cases` : runEngine(id) === 'dojo' ? `Play all ${n} grids` : runEngine(id) === 'room' ? `Read all ${n} rooms` : `Play all ${n} as one quiz`)}
+              {complete ? 'Run it again' : done ? 'Carry on with the run' : (runEngine(id) === 'jam' ? `Play all ${n} on one clock` : runEngine(id) === 'law' ? `Play all ${n} cases` : runEngine(id) === 'dojo' ? `Play all ${n} grids` : runEngine(id) === 'crossed' ? `Solve all ${n} crosswords` : runEngine(id) === 'room' ? `Read all ${n} rooms` : `Play all ${n} as one quiz`)}
               <ArrowRight size={15} strokeWidth={2.6} />
             </a>
           ) : null}
           {nextGame ? (
-            <a className={runnable || complete ? 'clp-sh' : 'clp-go'} href={withTq(circuitHref(nextGame.key, marquee ? MARQUEE_ID : id))}>
+            <a className={runnable || complete ? 'clp-sh' : 'clp-go'} href={withTq(circuitHref(nextGame.key, id))}>
               {runnable
                 ? `Or just ${nextGame.name}`
                 : (complete ? 'Play it again' : done ? `Continue with ${nextGame.name}` : `Start the run with ${nextGame.name}`)}
@@ -217,7 +216,7 @@ export default function CircuitLanding({ circuit, games }) {
           <b>{done}<i>/{n}</i></b>
         </div>
         <TileGrid games={games} numbered
-          hrefFor={(g) => withTq(circuitHref(g.key, marquee ? MARQUEE_ID : id))} data={tiles} />
+          hrefFor={(g) => withTq(circuitHref(g.key, id))} data={tiles} />
         <p className="clp-note">
           {ordered
             ? 'The last two are always the last two. The rest are shuffled fresh every day, so the run has a different shape each morning. '

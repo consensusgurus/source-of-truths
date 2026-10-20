@@ -115,6 +115,21 @@ const ART = {
       <rect className="ko" x="110" y="39" width="20" height="22" rx="4" fill="currentColor" strokeWidth="2.5" />
     </>
   ),
+  crossed: (
+    <>
+      <rect x="66" y="14" width="80" height="80" rx="4" fill="currentColor" fillOpacity=".1" />
+      <path d="M82 14 V94 M98 14 V94 M114 14 V94 M130 14 V94 M66 30 H146 M66 46 H146 M66 62 H146 M66 78 H146" strokeWidth="2" opacity=".7" />
+      <g fill="currentColor" stroke="none">
+        <rect x="66" y="14" width="16" height="16" /><rect x="130" y="78" width="16" height="16" /><rect x="114" y="30" width="16" height="16" /><rect x="82" y="62" width="16" height="16" />
+      </g>
+      <g fontSize="12" {...TX}><text x="90" y="27">C</text><text x="106" y="27">R</text><text x="122" y="27">O</text><text x="138" y="27">S</text></g>
+      <g className="k" transform="rotate(32 168 66)">
+        <rect x="160" y="22" width="16" height="70" rx="3" fill="currentColor" fillOpacity=".25" />
+        <path d="M160 92 L168 108 L176 92 Z" fill="currentColor" />
+        <path d="M160 32 H176" strokeWidth="2.5" />
+      </g>
+    </>
+  ),
   room: (
     <>
       <path d="M78 16 H128 a22 22 0 0 1 22 22 V44 a22 22 0 0 1 -22 22 H92 L78 78 V64 a22 22 0 0 1 -22 -20 V38 a22 22 0 0 1 22 -22 Z" fill="currentColor" fillOpacity=".2" />

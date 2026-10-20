@@ -94,9 +94,8 @@ export default function CircuitsIndexPage() {
             <div className="cix-eb">Runs</div>
             <h1 className="cix-h1">One run, one combined board</h1>
             <p className="cix-sub">
-              A circuit is a handful of daily puzzles played as one sitting and ranked on your combined
-              placement across all of them, shortest game first. The Daily Five changes every day. The rest
-              are fixed, so you can pick the skill you want to work and come back to it tomorrow.
+              A run is a handful of daily puzzles played as one sitting, built to be played together and
+              ranked on one board. Pick the kind of thinking you want to work and come back to it tomorrow.
             </p>
           </section>
 

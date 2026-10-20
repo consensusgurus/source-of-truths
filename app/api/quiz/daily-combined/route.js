@@ -10,7 +10,6 @@ import { scoreHerdGame } from '@/lib/herd-score';
 import { attemptsModeForQuizId, attemptsPlan, arcadeRanksForQuizId } from '@/lib/daily-games';
 import { GAME_PUZZLES, etTodayServer, suffixOfDate, gamesForSuffix } from '@/lib/daily-slate';
 import { groupByCode, membersOf, isMissingTable } from '@/lib/groups';
-import { fiveForSuffix, FIVE_SIZE } from '@/lib/daily-five';
 import { circuitKeysFor, circuitById, isMarquee, circuitScoreMode, circuitScorer } from '@/lib/circuits';
 import { primeCircuitClocks } from '@/lib/dojo-clocks';
 
@@ -386,10 +385,9 @@ export async function GET(request) {
   // ?five=1 wins if both are passed: the marquee is the marquee.
   const circuitId = (searchParams.get('circuit') || '').trim();
   const circuitDef = circuitId && !isMarquee(circuitId) ? circuitById(circuitId) : null;
-  const fiveFlag = searchParams.get('five') === '1';
-  const fiveKeys = fiveFlag
-    ? fiveForSuffix(suffix)
-    : (circuitDef ? circuitKeysFor(circuitId, isoOfSuffix(suffix)) : []);
+  // The Daily Five (?five=1) was retired 2026-10-20; the flag is ignored.
+  const fiveFlag = false;
+  const fiveKeys = circuitDef ? circuitKeysFor(circuitId, isoOfSuffix(suffix)) : [];
   // A SOLO circuit (Passport, 2026-10-03) is one daily that is its own run:
   // its roster of one is still a run, never a fall-through to the whole slate.
   const fiveOnly = fiveKeys.length >= 2 || (!fiveFlag && !!(circuitDef && circuitDef.solo) && fiveKeys.length === 1);
@@ -442,7 +440,7 @@ export async function GET(request) {
   // either way, so not one player's points move; only the ceiling and the
   // fraction printed beside them come right. effBestN below still caps this at
   // the number of games that actually published that day.
-  const dayBestN = keyOnly ? keysParam.length : (circuitOn ? fiveKeys.length : (fiveOnly ? FIVE_SIZE : bestNForSuffix(suffix)));
+  const dayBestN = keyOnly ? keysParam.length : (fiveOnly ? fiveKeys.length : bestNForSuffix(suffix));
   // Which points rule this day pays, so the client can print the matching
   // explainer on an archived day instead of describing today's rule.
   const ladder = usesLadder(suffix);

@@ -51,6 +51,7 @@
 // paint carries the rank and nothing else beneath the count.
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { holdRootPaint } from '@/lib/root-paint';
 import { rampFor } from '@/lib/circuits';
 import { shownLength } from './GauntletLadder';
 import { titleLadder, titleFor } from '@/lib/run-titles';
@@ -1405,6 +1406,8 @@ function GauntletEnding({
     }
   }
 
+  // The root takes the curtain's colour while it is up (lib/root-paint.js).
+  useEffect(() => holdRootPaint(bg), [bg]);
   return (
     <div
       className={`ge${phone ? ' ph' : ''}`}

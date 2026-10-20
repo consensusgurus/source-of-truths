@@ -164,7 +164,7 @@ const CIRC_ID = 'tdy-circuits';
 // Seventeen tiles was the whole family laid out for a reader who had not asked
 // for any particular one, and the family already has its own index page. The
 // row's last tile opens the rest in place, which is also where their stars are.
-const LEAD_CIRCUITS = ['pricecheck', 'gauntlet', 'triviaencore', 'passport', 'deduction', 'dojo', 'room'];   // the shelf's front (owner, 2026-10-03: Passport replaced the Five; 2026-10-08: Judged fourth)
+const LEAD_CIRCUITS = ['pricecheck', 'gauntlet', 'triviaencore', 'passport', 'deduction', 'dojo', 'crossed', 'room'];   // the shelf's front (owner, 2026-10-03: Passport replaced the Five; 2026-10-08: Judged fourth)
 
 // A pinned CIRCUIT is stored as `c:<id>` (owner, 2026-09-01). One favorites
 // column, one star control, two kinds of thing in it: the prefix is what stops
@@ -530,6 +530,7 @@ export default function TodayClient({ onSignup = null, stageDefault = true } = {
       if (c.marquee) color = '#e8b43a';
       else if (c.id === 'dojo') color = catBlue('sudoku');
       else if (c.id === 'room') color = catBlue('crowd');
+      else if (c.id === 'crossed') color = catBlue('word');
       return { kind: 'circuit', id: c.id, name: c.name, blurb: c.blurb || '', color, games };
     }).filter(Boolean);
   }, [today]);

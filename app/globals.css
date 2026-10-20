@@ -889,3 +889,11 @@ html.lc-pre:not(.lc-on) .stage-page:has(.stg-top):not(.stage-page .stage-page)::
 :where(.stage-page) *::-webkit-scrollbar-track{background:transparent;}
 :where(.stage-page) *::-webkit-scrollbar-thumb{background:transparent;border-radius:6px;}
 :where(.stage-page) *:hover::-webkit-scrollbar-thumb{background:var(--stg-line);}
+
+/* THE ROOT PAINT (lib/root-paint.js, 2026-10-20). While the finish iris or
+   the flood is up, the root and its scrollbar take the overlay's colour, so the
+   reserved gutter on the right is never a dark strip beside a full-colour
+   screen. Last in the file so it wins over html:has(.stage-page). */
+html[data-sot-paint],
+html[data-sot-paint] body { background: var(--sot-root-paint) !important; }
+html[data-sot-paint] { scrollbar-color: var(--sot-root-paint) var(--sot-root-paint); }

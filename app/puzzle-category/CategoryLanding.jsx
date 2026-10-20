@@ -274,7 +274,8 @@ export default function CategoryLanding({ page, games, parent = null, groups = n
   const circuit = page.circuit || catPage.circuit || null;
   const current = page.href || `/${page.slug}`;
   // A Gauntlet is already a run by name; the rest are named as circuits.
-  const circuitCta = circuit ? (circuit === 'room' ? 'Walk into Read the Room' : /^Enter /.test(circuitName(circuit)) ? circuitName(circuit) : /gauntlet/i.test(circuitName(circuit)) ? `Run the ${circuitName(circuit)}` : `Run the ${circuitName(circuit)} circuit`) : '';
+  const runCta = (id) => (id === 'room' ? 'Walk into Read the Room' : /^Enter /.test(circuitName(id)) ? circuitName(id) : /gauntlet|encore/i.test(circuitName(id)) ? `Run the ${circuitName(id)}` : `Play ${circuitName(id)}`);
+  const circuitCta = circuit ? runCta(circuit) : '';
   const ledger = games.length >= LEDGER_AT;
   const shelves = groups && groups.length > 1 ? groups : [[{ name: 'Pick a puzzle', href: null }, games]];
   const h1 = page.eyebrow || page.h1;
@@ -299,7 +300,7 @@ export default function CategoryLanding({ page, games, parent = null, groups = n
             <div className="pcl-acts">
               {ledger && first ? <a className="pcl-go" href={withTq(first.href)}>Play today&apos;s {first.name} <ArrowRight size={15} strokeWidth={2.6} /></a> : null}
               {circuit ? <a className="pcl-sh" href={withTq(circuitPageHref(circuit))}>{circuitCta}</a> : null}
-              {page.alsoCircuit ? <a className="pcl-sh" href={withTq(circuitPageHref(page.alsoCircuit))}>{`Run the ${circuitName(page.alsoCircuit)}`}</a> : null}
+              {page.alsoCircuit ? <a className="pcl-sh" href={withTq(circuitPageHref(page.alsoCircuit))}>{runCta(page.alsoCircuit)}</a> : null}
             </div>
           </div>
         </section>

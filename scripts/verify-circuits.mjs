@@ -18,7 +18,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DAILY_KEYS, DAILY_GAME_MAP, RETIRED_DAILY } from '../lib/daily-games.js';
 import {
-  CIRCUITS, ALL_CIRCUITS, MARQUEE, MARQUEE_ID, CIRCUIT_NAME_LISTS,
+  CIRCUITS, ALL_CIRCUITS, CIRCUIT_NAME_LISTS,
   circuitById, circuitKeysFor, isMarquee,
   circuitPageHref, circuitShareUrl, circuitShareInvite, circuitShareResult,
   SHARE_HOST_FOR_CIRCUITS, CIRCUIT_BASE,
@@ -136,14 +136,10 @@ const EXCLUDED = {
 
 // ── 1. shape ────────────────────────────────────────────────────────────────
 const MAX = 5;
-if (ALL_CIRCUITS.length !== CIRCUITS.length + 1) {
-  fails.push(`ALL_CIRCUITS should be the marquee plus every skill circuit (got ${ALL_CIRCUITS.length} for ${CIRCUITS.length} skill circuits)`);
-}
-if (!ALL_CIRCUITS[0] || ALL_CIRCUITS[0].id !== MARQUEE_ID) {
-  fails.push('the marquee must be FIRST in ALL_CIRCUITS — it is the head of the cycle, and stepping left from it wraps to the last circuit');
-}
-if (MARQUEE.keys !== null) {
-  fails.push('MARQUEE.keys must be null: its roster is a daily read out of lib/daily-five, and a caller reaching for .keys would silently get nothing');
+// The Daily Five (the marquee) was retired 2026-10-20 (owner): ALL_CIRCUITS is
+// exactly the circuits now.
+if (ALL_CIRCUITS.length !== CIRCUITS.length) {
+  fails.push(`ALL_CIRCUITS should be every circuit (got ${ALL_CIRCUITS.length} for ${CIRCUITS.length})`);
 }
 
 const ids = new Set();
@@ -151,7 +147,6 @@ for (const c of CIRCUITS) {
   if (!c.id || !/^[a-z0-9-]+$/.test(c.id)) fails.push(`bad circuit id: ${JSON.stringify(c.id)}`);
   if (ids.has(c.id)) fails.push(`duplicate circuit id: ${c.id}`);
   ids.add(c.id);
-  if (isMarquee(c.id)) fails.push(`a skill circuit may not use the marquee id (${MARQUEE_ID})`);
   if (!c.name || !c.blurb) fails.push(`${c.id}: needs both a name and a blurb (both are reader-facing on the band)`);
   if (!Array.isArray(c.keys) || c.keys.length < (c.solo ? 1 : 2)) fails.push(`${c.id}: needs at least 2 games to be a run`);
   // A solo circuit (Passport) ran as one daily on its own; since 2026-10-15 it
@@ -495,9 +490,6 @@ for (const c of CIRCUITS) {
     if (ct !== c.rotate) fails.push(`${c.id}: ${k} plays ${ct} of ${n} days in a cycle, expected ${c.rotate}`);
   }
 }
-if (!circuitKeysFor(MARQUEE_ID, todayIso).length) {
-  warns.push(`the marquee has no run today (${todayIso}) — lib/daily-five's bank may need extending`);
-}
 
 // ── 7b. a dealt slot plays fair ─────────────────────────────────────────────
 // Over one pool-length cycle every pool member is dealt exactly once, the day
@@ -606,9 +598,6 @@ for (const c of CIRCUITS) {
   if (c.trophy.tier !== want) {
     fails.push(`${c.id}: trophy tier is ${c.trophy.tier} but the roster totals ${total}s, which is ${want}`);
   }
-}
-if (MARQUEE.trophy && MARQUEE.trophy.tier !== 'gold') {
-  fails.push('the marquee trophy must be gold: its roster changes daily, so there is no length to tier by');
 }
 
 // ── 10. share copy ──────────────────────────────────────────────────────────
@@ -814,7 +803,7 @@ for (const c of ALL_CIRCUITS) {
 
 // ── report ──────────────────────────────────────────────────────────────────
 const cover = eligible.length;
-console.log(`circuits: ${CIRCUITS.length} skill + 1 marquee`);
+console.log(`circuits: ${CIRCUITS.length}`);
 console.log(`coverage: ${owner.size} of ${cover} eligible dailies (excluded: ${Object.keys(EXCLUDED).join(', ')})`);
 console.log(`medians measured ${MEASURED}`);
 for (const w of warns) console.log(`WARN  ${w}`);

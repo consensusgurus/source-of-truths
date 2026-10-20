@@ -33,7 +33,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Share2, Check } from 'lucide-react';
 import { circuitKeysFor, circuitHref, circuitName, readCircuitParam, isMarquee,
-         MARQUEE_ID, circuitShareResult, circuitShareUrl, circuitPageHref, fmtClock } from '@/lib/circuits';
+         circuitShareResult, circuitShareUrl, circuitPageHref, fmtClock } from '@/lib/circuits';
 import { notifyShareCredit } from '../ShareCreditPop';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
@@ -74,9 +74,9 @@ export default function DailyFiveSummary() {
   // Which run's summary this is. Defaults to the marquee, so the bare
   // /daily-five URL is unchanged. Read in the same effect as the day and for
   // the same reason: window does not exist on the server.
-  const [runId, setRunId] = useState(MARQUEE_ID);
+  const [runId, setRunId] = useState('gauntlet');
 
-  useEffect(() => { setDay(etToday()); setRunId(readCircuitParam() || MARQUEE_ID); }, []);
+  useEffect(() => { setDay(etToday()); setRunId(readCircuitParam() || 'gauntlet'); }, []);
 
   // The board, fetched by the shared hook the run's finish card uses. Gated on
   // the day so it does not fire before the run is known.
@@ -240,7 +240,7 @@ export default function DailyFiveSummary() {
           { label: copied ? 'Copied' : 'Share this run', onClick: shareRun,
             icon: copied ? <Check size={15} strokeWidth={2.8} /> : <Share2 size={15} strokeWidth={2.8} />,
             primary: true, key: 'share' },
-          { label: 'The circuit', href: circuitPageHref(runId), key: 'circuit' },
+          { label: 'The run', href: circuitPageHref(runId), key: 'circuit' },
         ]}
         fine={complete
           ? (marq ? 'A fresh five lands at midnight Eastern.'

@@ -55,7 +55,7 @@ const enders = jsx.filter((p) => {
   // A run ending: it reads the circuit board on finish, or it is a known run client.
   return /useCircuitBoard\(/.test(s) && /phase === 'done'/.test(s);
 });
-const KNOWN = ['app/circuits/[id]/run/RunClient.jsx', 'app/circuits/ValetRunClient.jsx', 'app/dojo/DojoClient.jsx',
+const KNOWN = ['app/circuits/[id]/run/RunClient.jsx', 'app/circuits/ValetRunClient.jsx', 'app/dojo/DojoClient.jsx', 'app/crossed/CrossedClient.jsx',
   'app/judged/JudgedClient.jsx', 'app/room/RoomClient.jsx', 'app/pricecheck/PriceCheckClient.jsx', 'app/passport/PassportRunClient.jsx'];
 for (const p of new Set([...KNOWN, ...enders])) {
   let s = '';

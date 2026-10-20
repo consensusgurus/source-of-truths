@@ -47,6 +47,8 @@ import useGameAllTime from '../useGameAllTime';
 import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
+import { useRunEmbed } from '../RunEmbed';
+import RunDoorPop from '../circuits/RunDoorPop';
 import useRailClearance from '../useRailClearance';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
@@ -299,6 +301,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
   const searchParams = useSearchParams();
   const LOFT = isLoft('arcos');
   const STAGE = isStage('arcos', searchParams);
+  const EMBED = useRunEmbed();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('arcos');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('arcos');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -356,6 +359,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
   function postResult(g2) {
     abandon.markFlushed();
     const sc = scoreOf(PUZZLE, g2);
+    if (EMBED) EMBED.onResult({ key: 'arcos', score: sc, total: 10, t0: g2 && g2.t0, tEnd: (g2 && g2.tEnd) || Date.now() });
     const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
     try {
       fetch('/api/quiz/result', {
@@ -769,11 +773,12 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
+      data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
+      data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
       {!STAGE && <DailyChrome slug="arcos" name="Arcos" collapsed={started} loft={LOFT} />}
-      {LOFT && (
+      {LOFT && !EMBED && (
         <Cap gameKey="arcos" quizId={PUZZLE.quizId}
           name="Arcos"
           cat="Word"
@@ -920,7 +925,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
             <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Hide game board</button>
           )}
           </div>
-          {LOFT && !playing && (
+          {LOFT && !playing && !EMBED && (
             <LoftFinish
               name="Arcos"
               catRank={catRank}
@@ -961,7 +966,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
           </div>
         </div>
         {!STAGE && <GamePanel self="arcos" name="Arcos" onShow={() => setShowChrome(true)} />}
-        {LOFT && (
+        {LOFT && !EMBED && (
           <div className={STAGE ? undefined : 'loft-report'}>
             <ReportIssue self="arcos" name="Arcos" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
           </div>
@@ -1002,7 +1007,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
             </div>
           </div>
         )}
-        {!focusMode && !identity && (
+        {!EMBED && !focusMode && !identity && (
           <div id="daily-join" style={{ maxWidth: 640, margin: '18px auto 0' }}>
             <JoinLeaderboardForm hideIcon heading="See your stats and join the leaderboard" identity={identity} onJoined={(id) => { setIdentity(id); }} />
           </div>
@@ -1050,8 +1055,9 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
         </div>
       )}
 
-      <StageFold />
-      <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 640, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
+      {!EMBED && <StageFold />}
+      <RunDoorPop id="crossed" game="arcos" ready={hydrated && preStart && isTodays && !EMBED} self="Arcos" />
+      <section style={{ position: 'relative', display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', zIndex: 2, maxWidth: 640, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Arcos</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Arcos is a free daily set of acrostics from Mind Loft. An acrostic is a list of words whose letters, read down a line, spell another word. Every day brings three of them, each with its own clues: in the first the opening letters spell a hidden word, in the second the closing letters do, and in the third the word runs down the diagonal, letter 1 of row 1, letter 2 of row 2 and so on.

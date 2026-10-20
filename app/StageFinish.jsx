@@ -21,6 +21,7 @@
 // before reaching the one that hands them forward).
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { holdRootPaint } from '@/lib/root-paint';
 import { DAILY_GAMES, liveDailyKeys, dailyUnit } from '@/lib/daily-games';
 import { RAMP_ORDER, RAMP_INK, categoryColor, categoryColorLight, categoryOnrampLight, categoryAccentInkLight } from '@/lib/category-ramp';
 import { finishPick } from '@/lib/finish-sets';
@@ -269,6 +270,16 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
   // the player on a coloured screen.
   const timersRef = useRef([]);
   const [host] = useState(() => (typeof document === 'undefined' ? null : (document.querySelector('.stage-page') || document.body)));
+  // While the flood covers the screen the ROOT takes its colour too, so the
+  // reserved scrollbar gutter is not a dark strip down the right edge (owner
+  // report, 2026-10-20; lib/root-paint.js). Released once it starts to collapse.
+  const floodRef = useRef(null);
+  useEffect(() => {
+    if (phase !== 'up' || !floodRef.current) return undefined;
+    let c = '';
+    try { c = getComputedStyle(floodRef.current).backgroundColor; } catch (e) {}
+    return holdRootPaint(c);
+  }, [phase]);
   const at = (ms, fn) => { timersRef.current.push(setTimeout(fn, ms)); };
   const finish = () => {
     if (doneRef.current) return;
@@ -465,6 +476,7 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
     // aria-hidden because every word on it is read again, in place, on the card
     // underneath — and there is nothing focusable inside it to strand.
     <div
+      ref={floodRef}
       className={'stf-flood' + (phase ? ' ' + phase : '') + (tone ? ' t-' + tone : '') + (fromStick ? ' bare' : '')}
       aria-hidden="true"
       onClick={finish}

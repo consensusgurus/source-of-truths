@@ -22,6 +22,7 @@
 // P0 300ms lights down, PD 1900ms a room, CNT 2600ms the climb, +300 hold.
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { holdRootPaint } from '@/lib/root-paint';
 import { ROOM_LADDER, roomBeat } from '@/lib/read-room';
 
 const P0 = 300;
@@ -156,6 +157,9 @@ export default function HouseLights({ rooms = [], total = 0, max = 100, dateShor
   const painting = step >= 0 && step < N;
   const rm = painting ? view[step] : null;
   const climbing = step >= N;
+  const hlBg = painting ? rm.color : (climbing ? '#05070d' : INK);
+  // The root takes the curtain's colour while it is up (lib/root-paint.js).
+  useEffect(() => holdRootPaint(hlBg), [hlBg]);
 
   return (
     <div

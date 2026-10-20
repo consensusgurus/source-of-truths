@@ -10069,3 +10069,38 @@ Logic ramp like Topple (the die is `--stg-acc`, pips `--stg-onramp`). Wired by `
 - **The board** (`app/roll/RollBoard.jsx`) is Topple's canvas with a LEAN (`KX`) so the die shows its top,
   front and right faces (owner, 2026-10-20: "a diagonal view so can see 3 sides at once"); rows and columns
   stay square to the screen so the arrows read straight.
+
+## Crossed Up (`/crossed`): the crossword run, and only designed runs remain (owner, 2026-10-20)
+
+**Every plain skill circuit and the Daily Five were RETIRED 2026-10-20**, with their trophies and
+landing pages (crosswords, word-building, wordplay, mental-math, pencil, spatial, sorting,
+chess-board, chess, table, recall, ranking, arcade, and the marquee five). `lib/daily-five.js`,
+`DailyFiveBand`, `WelcomeOverlay` and the daily-five scripts are deleted. Trophies are computed on
+read, so the retired ones simply vanish. Old `/circuits/<id>` URLs 308 to the nearest category page
+(`next.config.js`). `isMarquee()` survives and returns false so its callers need no edit;
+`/daily-five?circuit=<id>` still serves the summary for kept runs, and a bare `/daily-five`
+redirects to `/circuits`. The runs left are the designed ones: Judged, Enter the Dojo, Crossed Up,
+Read the Room, the Trivia Gauntlet, the Trivia Encore, the English and Math Gauntlets, Price Check
+and Passport.
+
+**Crossed Up** is circuit id `crossed` (reader-facing "Crossed Up"; `/crossedup` and `/crossed-up`
+redirect), engine `crossed`, scorer `crossed`, `scoreFrom: '2026-10-20'`, `ownerOrder`, trophy "In
+Pen" (gold, PenTool). Four crosswords in the owner's order: Emcee, Encore, Arcos, Glyph, embedded
+through RunEmbed like the Dojo (`app/crossed/CrossedClient.jsx`, each client reads `useRunEmbed()`
+and mounts `RunDoorPop id="crossed"` on today's gate). Out of 100: Emcee 15, Encore 35, Arcos 25,
+Glyph 25, and of each a FIFTH for finishing and four fifths for speed (owner: "most all will
+finish"), with clocks from `lib/crossed-clocks.js` (adaptive, like the Dojo's). Ranks are the
+weekday ladder, Monday Solver up to Saturday Solver and Solves in Pen. Ending is
+`CrossedCurtain.jsx` (the Dojo's grading-curtain shape with the four finished grids), share card
+`/crossed/card`.
+
+### Full-screen colour never leaves a dark scrollbar strip: `lib/root-paint.js`
+
+`globals.css` sets `scrollbar-gutter: stable` and the root is painted the dark ground, so a
+`position: fixed` overlay (the win iris, the curtain flood, every run's ending curtain) covered
+everything but the reserved gutter, which showed as a black bar down the right edge. Any
+full-screen colour must call `holdRootPaint(color)` while it is up (it returns a release; holds
+stack): it paints `<html>` and `<body>` that colour through `html[data-sot-paint]` and recolours
+the scrollbar to match. Wired in `lib/finish-beat.js` (the iris), `StageFinish`'s flood,
+`DyeCurtain`, `CrossedCurtain`, `GauntletFinale`, Price Check's `PriceScanner`, Read the
+Room's `HouseLights` and Passport's `Departures`. A new curtain adds the same one-line effect.

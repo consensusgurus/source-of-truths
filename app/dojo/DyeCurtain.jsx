@@ -24,6 +24,7 @@
 // figures, so nothing moves as they tick.
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { holdRootPaint } from '@/lib/root-paint';
 import { DOJO_BELTS, DOJO_MAX, dojoTierOf } from '@/lib/dojo';
 
 const B = DOJO_BELTS;
@@ -211,6 +212,9 @@ export default function DyeCurtain({ sections = [], counted = [], parts = [], to
   const up = fti > 0 ? B[fti - 1] : null;
   const short = up ? Math.max(1, up[0] - total) : 0;
 
+  // The root takes the curtain's colour while it is up, so the scrollbar
+  // gutter is never a dark strip beside it (lib/root-paint.js).
+  useEffect(() => holdRootPaint(bg), [bg]);
   return (
     <div
       className={`dc${thud ? ' thud' : ''}`}

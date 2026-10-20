@@ -50,6 +50,8 @@ import useGameAllTime from '../useGameAllTime';
 import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
+import { useRunEmbed } from '../RunEmbed';
+import RunDoorPop from '../circuits/RunDoorPop';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
@@ -245,6 +247,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
   const searchParams = useSearchParams();
   const LOFT = isLoft('glyph');
   const STAGE = isStage('glyph', searchParams);
+  const EMBED = useRunEmbed();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('glyph');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('glyph');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -401,6 +404,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
 
   function postResult(g2, score) {
     abandon.markFlushed();
+    if (EMBED) EMBED.onResult({ key: 'glyph', score, total: 10, t0: g2 && g2.t0, tEnd: (g2 && g2.tEnd) || Date.now() });
     const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
     try { setStats(recordStat(PUZZLE.num, { s: score, t: 10, g: g2.checks, won: g2.status === 'won' })); } catch (e) {}
     try {
@@ -733,7 +737,8 @@ export default function GlyphClient({ puzzles, forceNum }) {
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
+      data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
+      data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', fontFamily: SANS, background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
@@ -742,7 +747,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
       {!STAGE && (
       <DailyChrome slug="glyph" name="Glyph" collapsed={playing && !!g.t0} loft={LOFT} />
       )}
-      {LOFT && (
+      {LOFT && !EMBED && (
         <Cap gameKey="glyph" quizId={PUZZLE.quizId}
           name="Glyph"
           cat="Word"
@@ -1013,7 +1018,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
             <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setLoftRevealed(false)}>&#8630; Hide game board</button>
           )}
           </div>
-          {LOFT && !playing && (
+          {LOFT && !playing && !EMBED && (
             <LoftFinish
               name="Glyph"
               catRank={catRank}
@@ -1062,7 +1067,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
             "Show overview and more" control it replaces ever did. */}
           {/* The strip in the cap answers what this opens, without being pressed. */}
           {!STAGE && <GamePanel self="glyph" name="Glyph" onShow={() => setShowChrome(true)} />}
-          <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block' }}>
+          <div style={{ display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block' }}>
           {LOFT && (
             <div className={STAGE ? undefined : 'loft-report'}>
               <ReportIssue self="glyph" name="Glyph" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
@@ -1108,7 +1113,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
             </div>
           )}
 
-          {!focusMode && !identity && (
+          {!EMBED && !focusMode && !identity && (
             <div id="daily-join" style={{ margin: '18px auto 0' }}>
               <JoinLeaderboardForm hideIcon heading="See your stats and join the leaderboard" identity={identity} onJoined={(id) => { setIdentity(id); if (id && id.username) setPlayer((p) => p || { name: id.username, rank: null }); }} />
             </div>
@@ -1133,6 +1138,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
       )}
 
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
+      <RunDoorPop id="crossed" game="glyph" ready={hydrated && preStart && PUZZLE.num === pickPuzzle(puzzles, null).num && !EMBED} self="Glyph" />
 
       {toast && (
         <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
@@ -1155,8 +1161,8 @@ export default function GlyphClient({ puzzles, forceNum }) {
       )}
 
       {/* The desktop fold: the About prose below starts one screen down (app/StageFold.jsx). */}
-      <StageFold />
-      <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
+      {!EMBED && <StageFold />}
+      <section style={{ position: 'relative', display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Glyph</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Glyph is a free daily codeword from Mind Loft, the crossword with no clues at all. Every letter in the grid has been replaced by a number from 1 to 26, the same number standing for the same letter everywhere, and your job is to work out the whole alphabet from two or three given letters.
