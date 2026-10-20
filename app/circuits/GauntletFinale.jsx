@@ -1285,7 +1285,7 @@ function GauntletEnding({
       ) : (
         <div className="ge-mpaint">
           {galley()}
-          <div className="ge-mcol">
+          <div className="ge-mcol fl">
             <div className="ge-eb" style={{ fontSize: 13, letterSpacing: '.18em' }}>Quiz {b.num} of {N}{b.sub ? ` · ${b.sub}` : ''}</div>
             <div className="ge-nm" style={{ fontSize: 60 }}>{b.name}</div>
             {pips()}
@@ -1293,8 +1293,8 @@ function GauntletEnding({
               {countBox(96)}
               <div className="ge-clb" style={{ fontSize: 19 }}>{lab}</div>
             </div>
-            {b.rank != null && b.plays != null && showRank
-              ? <div className="ge-pop ge-rk" style={{ fontSize: 18 }}>#{b.rank} of {b.plays} on this quiz today</div> : null}
+            <div className="ge-rkslot">{b.rank != null && b.plays != null && showRank
+              ? <div className="ge-pop ge-rk" style={{ fontSize: 18 }}>#{b.rank} of {b.plays} on this quiz today</div> : null}</div>
           </div>
         </div>
       );
@@ -1338,13 +1338,13 @@ function GauntletEnding({
       ) : (
         <div className="ge-mpaint">
           {readout()}
-          <div className="ge-mcol">
+          <div className="ge-mcol fx">
             <div className="ge-eb" style={{ fontSize: 13, letterSpacing: '.18em' }}>Game {b.num} of {N}</div>
             <div className="ge-nm" style={{ fontSize: 60 }}>{b.name}</div>
-            {b.sub ? <div style={{ fontSize: 18, fontWeight: 700 }}>{b.sub}.</div> : null}
+            <div className="ge-subslot" style={{ fontSize: 18, fontWeight: 700 }}>{b.sub ? `${b.sub}.` : ''}</div>
             <div className="ge-cnt" style={{ fontSize: 104, height: 104, width: 150 }}>{count}</div>
-            {b.rank != null && b.plays != null && showRank
-              ? <div className="ge-pop ge-rk" style={{ fontSize: 18 }}>#{b.rank} of {b.plays} on {b.name} today</div> : null}
+            <div className="ge-rkslot">{b.rank != null && b.plays != null && showRank
+              ? <div className="ge-pop ge-rk" style={{ fontSize: 18 }}>#{b.rank} of {b.plays} on {b.name} today</div> : null}</div>
           </div>
         </div>
       );
@@ -1645,6 +1645,10 @@ const GE_CSS = `
 .ge-rk{font-weight:800;font-size:17px;font-variant-numeric:tabular-nums}
 .ge-mpaint{flex:1 1 auto;display:flex;align-items:center;gap:48px;padding:0 64px}
 .ge-mcol{display:flex;flex-direction:column;gap:12px;min-width:0}
+.ge-mcol.fx{flex:none;width:380px}
+.ge-mcol.fl{flex:1 1 0}
+.ge-rkslot{min-height:26px;display:flex;align-items:center}
+.ge-subslot{min-height:25px}
 .ge-mcol .ge-cnt{text-align:left}
 .ge-calc{width:380px;flex:none;border-radius:18px;background:#0b0f1a;padding:18px;box-sizing:border-box;box-shadow:0 20px 50px rgba(0,0,0,.35)}
 .ge-calc.ph{width:auto;border-radius:16px;padding:14px;box-shadow:0 18px 40px rgba(0,0,0,.35)}

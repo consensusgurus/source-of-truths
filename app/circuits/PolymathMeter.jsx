@@ -38,6 +38,8 @@ const CSS = `
 .pmm-next p{margin:0;font-size:13.5px;font-weight:700;color:#cbd5e1;}
 .pmm-btn{display:inline-flex;align-items:center;height:42px;padding:0 16px;border-radius:10px;background:#7dd3fc;color:#08222e;
   font-weight:800;font-size:14px;text-decoration:none;white-space:nowrap;}
+.pmm a.pmm-btn,.pmm a.pmm-btn:hover,.pmm a.pmm-btn:visited{color:#08222e;}
+.pmm a.pmm-t.go,.pmm a.pmm-t.go:hover{color:#e9edf4;}
 .pmm-btn:focus-visible,.pmm-t.go:focus-visible{outline:2px solid #e9edf4;outline-offset:2px;}
 .pmm.rev .pmm-t.on{animation:pmmLand .5s cubic-bezier(.2,1.4,.4,1) both;}
 .pmm.rev .pmm-t.on:nth-child(2){animation-delay:.25s;}

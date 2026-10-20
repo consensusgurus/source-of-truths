@@ -1,7 +1,7 @@
 import { createElement as h } from 'react';
 import { ImageResponse } from 'next/og';
 import { stageFonts } from '@/lib/og-stage-card';
-import { ROUNDS, TIERS, tierIndex, LEGS, isLegsDay } from '@/lib/passport';
+import { ROUNDS, TIERS, tierIndex, LEGS, legsFor, isLegsDay } from '@/lib/passport';
 
 // PASSPORT'S SHARE CARD (owner, 2026-10-03: a link to Passport must not look
 // like a daily puzzle). The run's own picture, on the Price Check pattern:
@@ -51,7 +51,7 @@ function etToday() {
 function card(scores) {
   const res = Array.isArray(scores);
   const legsCard = res ? scores.length === 4 : isLegsDay(etToday());
-  const ROWS = legsCard ? LEGS : ROUNDS;
+  const ROWS = legsCard ? legsFor(etToday()) : ROUNDS;
   const total = res ? scores.reduce((a, b) => a + b, 0) : null;
   const k = res ? tierIndex(total) : null;
   const tier = res ? TIERS[k] : null;
@@ -108,7 +108,7 @@ export async function GET(req) {
     const s = new URL(req.url).searchParams.get('s') || '';
     const v1 = /^\d{1,2}(-\d{1,2}){4}$/.test(s);
     const v2 = /^\d{1,2}(-\d{1,2}){3}$/.test(s);
-    const scores = v1 || v2 ? s.split('-').map((x, i) => Math.max(0, Math.min(v2 ? LEGS[i].max : 10, Number(x)))) : null;
+    const scores = v1 || v2 ? s.split('-').map((x, i) => Math.max(0, Math.min(v2 ? Math.max(LEGS[i].max, legsFor('9999-12-31')[i].max) : 10, Number(x)))) : null;
     return new ImageResponse(card(scores), { width: 1200, height: 630, fonts: stageFonts(), headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=86400' } });
   } catch (err) {
     console.error('passport card failed', err);

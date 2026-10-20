@@ -8,7 +8,7 @@ import { PUZZLES } from '../app/passport/puzzles.js';
 import { DAYS } from '../app/passport/days.js';
 import { BORDERS } from '../app/flank/borders.js';
 import { PUZZLES as FLANK } from '../app/flank/puzzles.js';
-import { TIERS, TOTAL, ROUNDS, unproject, haversineKm, capStep, LEGS, LEGS_FROM, legPoints } from '../lib/passport.js';
+import { TIERS, TOTAL, ROUNDS, unproject, haversineKm, capStep, LEGS, LEGS_FROM, legPoints, legsFor, WEIGHTS_FROM } from '../lib/passport.js';
 import { passportRunDay } from '../lib/passport-run.js';
 import { fairPair, SIZES_N, SIZES_WIDE_FROM, SIZES_MAX_RATIO, SIZES_OPEN_FROM } from '../lib/passport-sizes.js';
 import { flagSteps, FLAG_LAYOUTS, SUBTLE_FROM, SUBTLE_COLORS_FROM, TWINS_FROM, TWINS } from '../app/passport/flagkit.js';
@@ -184,6 +184,17 @@ for (const p of PUZZLES) {
 if (ROUNDS.length * 10 !== TOTAL) fail(`${ROUNDS.length} rounds of 10 is not ${TOTAL}`);
 if (LEGS.reduce((t, l) => t + l.max, 0) !== TOTAL) fail(`the four legs do not add up to ${TOTAL}`);
 for (const l of LEGS) if (legPoints(l.k, 1, 1) !== l.max || legPoints(l.k, 0, 1) !== 0) fail(`legPoints is wrong for ${l.k}`);
+// EVEN LEGS (owner, 2026-10-20): from WEIGHTS_FROM every leg weighs about the
+// same, still out of the same total, and no leg may outweigh another by more
+// than two points.
+{
+  const ev = legsFor(WEIGHTS_FROM);
+  if (ev.reduce((t, l) => t + l.max, 0) !== TOTAL) fail(`the even legs do not add up to ${TOTAL}`);
+  const mx = ev.map((l) => l.max);
+  if (Math.max(...mx) - Math.min(...mx) > 2) fail(`the even legs are not even: ${mx.join('/')}`);
+  for (const l of ev) if (legPoints(l.k, 1, 1, WEIGHTS_FROM) !== l.max) fail(`legPoints is wrong for ${l.k} on the even weights`);
+  if (legsFor('2026-10-20').map((l) => l.max).join('/') !== '10/10/10/20') fail('days before WEIGHTS_FROM must keep 10/10/10/20');
+}
 TIERS.forEach((t, i) => {
   if (i === 0 && t.min !== 0) fail('the bottom passport must start at 0');
   if (i > 0 && !(t.min > TIERS[i - 1].min && t.vf >= TIERS[i - 1].vf)) fail(`tier ${t.short} is out of order`);

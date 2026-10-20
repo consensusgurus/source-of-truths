@@ -50,7 +50,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Passport',
   alternateName: 'Passport: Daily Geography Game', url: `${SITE_URL}/passport`,
   description:
-    "A free daily geography run. Each day plays the day's Ping (a secret city found by distance), then nine bigger-or-smaller calls on area or population, worth 20, then Flank (every land neighbor of one country) and Span (the shortest chain of land borders between two countries); each game is worth 10. The score out of 50 decides which real passport, from the Henley Passport Index, the player travels home on. Everyone plays the same boards each day.",
+    "A free daily geography run. Each day plays the day's Ping (a secret city found by distance), then nine bigger-or-smaller calls on area or population, worth 14, then Flank (every land neighbor of one country) and Span (the shortest chain of land borders between two countries); each game is worth 12. The score out of 50 decides which real passport, from the Henley Passport Index, the player travels home on. Everyone plays the same boards each day.",
   genre: ['Trivia', 'Geography Quiz', 'Quiz', 'Puzzle'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
     image: `${SITE_URL}/og/passport.png`,
