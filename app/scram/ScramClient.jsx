@@ -6,7 +6,7 @@
 // answers from it. Type each one back on the LIT KEYBOARD: only the letters in
 // the current scramble are live, and a small count shows a letter you still
 // need more than once. A full answer checks itself the moment the last letter
-// lands. Move between the ten freely with Back / Next or the numbered pips;
+// lands. Move between the ten freely with Back / Next or the progress bar;
 // Skip jumps to the next one still open. The race is the clock: score is
 // answers solved out of ten, and time breaks ties (owner, 2026-10-14).
 //
@@ -476,15 +476,17 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
       {grp.split('').map(() => {
         const idx = k++;
         let letter = typed[idx] || '';
-        let bg = CELL, fg = INK, border = `1.5px solid ${CELL_LINE}`;
+        // Underlined blanks, not boxes (owner, 2026-10-20: the play area was
+        // too noisy with every letter in a box).
+        let fg = INK, line = `2.5px solid ${CELL_LINE}`;
         if (showAns) {
           letter = answer[idx];
-          if (curSolved) { bg = flipping ? GOOD : DONE_BG; fg = DONE_FG; border = `1.5px solid ${flipping ? GOOD : DONE_BG}`; }
-          else { fg = BAD; border = `1.5px dashed ${BAD}`; }
-        } else if (playing && idx === typed.length) { bg = CUR_BG; border = `2px solid ${ACC_INK}`; }
+          if (curSolved) { fg = flipping ? GOOD : INK; line = `2.5px solid ${GOOD}`; }
+          else { fg = BAD; line = `2.5px dashed ${BAD}`; }
+        } else if (playing && idx === typed.length) { line = `3px solid ${ACC_INK}`; }
         return (
           <span key={idx} className={'sc-slot' + (flipping ? ' sc-flipc' : '')}
-            style={{ '--j': idx, width: cellW, aspectRatio: '1 / 1.15', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 7, background: bg, color: fg, border, fontFamily: SANS, fontWeight: 800, fontSize: `min(24px, calc(${cellW} * 0.55))`, userSelect: 'none' }}>{letter}</span>
+            style={{ '--j': idx, width: cellW, aspectRatio: '1 / 1.15', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', color: fg, borderBottom: line, fontFamily: SANS, fontWeight: 800, fontSize: `min(24px, calc(${cellW} * 0.55))`, userSelect: 'none' }}>{letter}</span>
         );
       })}
     </div>
@@ -500,14 +502,14 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
         const live = n > 0;
         return (
           <button key={ch} className="sc-key" onClick={() => onKey(ch)} disabled={!live} aria-label={live ? `${ch}${n > 1 ? `, ${n} left` : ''}` : `${ch}, not in this word`}
-            style={{ position: 'relative', flex: '1 0 0', height: 46, background: live ? KEY_BG : 'transparent', color: live ? INK : FADED, opacity: live ? 1 : 0.16, fontSize: 15, border: live ? KEY_LINE : '1.5px solid transparent', cursor: live ? 'pointer' : 'default' }}>
+            style={{ position: 'relative', flex: '1 0 0', height: 46, background: live ? KEY_BG : 'transparent', color: live ? INK : FADED, opacity: live ? 1 : 0.16, fontSize: 15, border: live && !STAGE ? KEY_LINE : '1.5px solid transparent', cursor: live ? 'pointer' : 'default' }}>
             {ch}
             {n > 1 && <span style={{ position: 'absolute', top: 2, right: 4, fontSize: 9.5, fontWeight: 800, color: ACC_INK }}>{n}</span>}
           </button>
         );
       })}
       {ri === 2 && (
-        <button className="sc-key" onClick={() => onKey('BACK')} aria-label="Delete" style={{ flex: '1.6 0 0', height: 46, background: STAGE ? 'var(--stg-b3,rgba(255,255,255,0.145))' : COLORS.paper, color: INK, border: KEY_LINE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <button className="sc-key" onClick={() => onKey('BACK')} aria-label="Delete" style={{ flex: '1.6 0 0', height: 46, background: STAGE ? 'var(--stg-b3,rgba(255,255,255,0.145))' : COLORS.paper, color: INK, border: STAGE ? '1.5px solid transparent' : KEY_LINE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Delete size={18} />
         </button>
       )}
@@ -518,16 +520,19 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
     const done = !!g.solved[i];
     const cur = i === sel;
     return (
-      <button key={i} onClick={() => go(i)} aria-label={`Answer ${i + 1}${done ? ', solved' : ''}`} aria-current={cur ? 'true' : undefined}
-        style={{ width: 'min(34px, 8.6vw)', height: 'min(34px, 8.6vw)', borderRadius: 8, padding: 0, cursor: 'pointer', fontFamily: SANS, fontWeight: 800, fontSize: 12.5,
-          background: done ? DONE_BG : CELL, color: done ? DONE_FG : (cur ? ACC_INK : FADED),
-          border: cur ? `2px solid ${ACC_INK}` : `1.5px solid ${done ? DONE_BG : (STAGE ? 'var(--stg-line2)' : 'rgba(20,22,28,0.24)')}`,
-          boxShadow: cur && done ? `0 0 0 2px ${STAGE ? 'var(--stg-ground)' : COLORS.cream}, 0 0 0 4px ${ACC_INK}` : 'none' }}>{i + 1}</button>
+      // A thin progress segment, not a numbered box (owner, 2026-10-20). The
+      // button keeps a full-height tap area; only the bar inside is drawn.
+      <button key={i} onClick={() => go(i)} aria-label={`Answer ${i + 1}${done ? ', solved' : ''}`} aria-current={cur ? 'true' : undefined} title={`Answer ${i + 1}`}
+        style={{ flex: '1 1 0', minWidth: 0, height: 22, padding: 0, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+        <span style={{ display: 'block', width: '100%', height: cur ? 6 : 4, borderRadius: 3,
+          background: cur ? ACC_INK : (done ? INK : (STAGE ? 'var(--stg-line2,rgba(255,255,255,0.17))' : 'rgba(20,22,28,0.16)')),
+          opacity: done && !cur ? 0.7 : 1, transition: 'height .15s, background .15s' }} />
+      </button>
     );
   };
   const navBtn = (dir) => (
     <button className="sc-nav" onClick={() => go(sel + dir)} aria-label={dir < 0 ? 'Previous answer' : 'Next answer'}
-      style={{ height: 42, minWidth: 44, padding: mobileUi ? 0 : '0 14px', borderRadius: 8, border: KEY_LINE, background: KEY_BG, color: INK, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4, fontFamily: SANS, fontWeight: 800, fontSize: 13 }}>
+      style={{ height: 42, minWidth: 44, padding: mobileUi ? 0 : '0 6px', borderRadius: 8, border: 'none', background: 'none', color: FADED, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4, fontFamily: SANS, fontWeight: 800, fontSize: 13 }}>
       {dir < 0 && <ChevronLeft size={18} />}
       {!mobileUi && (dir < 0 ? 'Back' : 'Next')}
       {dir > 0 && <ChevronRight size={18} />}
@@ -539,9 +544,9 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
       lead="Ten scrambled answers from one theme. Unscramble all ten against the clock."
       steps={[
         <>One broad <b>theme</b> a day, printed above the board once you start. All ten answers belong to it.</>,
-        <>Type the answer with the keyboard. Only the <b>scramble&rsquo;s letters</b> light up, and a small number shows a letter you need more than once.</>,
+        <>Type the answer with the keyboard (or your own, where the arrow keys move between answers). Only the <b>scramble&rsquo;s letters</b> light up, and a small number shows a letter you need more than once.</>,
         <>A full answer <b>checks itself</b>. Right turns it dark; wrong shakes and clears so you can try another order.</>,
-        <>Stuck? <b>Back</b> and <b>Next</b> (or the numbered squares) move between the ten, and <b>Skip</b> jumps to the next one still open.</>,
+        <>Stuck? <b>Back</b> and <b>Next</b> (or a tap on the progress bar) move between the ten, and <b>Skip</b> jumps to the next one still open.</>,
       ]}
       knack="Start with the shortest scrambles. The long ones often fall once you spot a familiar ending."
       footer="Score is answers solved out of ten. Time breaks ties, so the fastest perfect run tops the board."
@@ -638,7 +643,7 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
                 <span style={{ fontSize: 24, fontWeight: 800, color: ACC_INK, letterSpacing: '-0.01em' }}>{PUZZLE.theme}</span>
               </div>
 
-              <div style={{ alignSelf: 'stretch', display: 'flex', justifyContent: 'space-between', gap: 4 }}>
+              <div style={{ alignSelf: 'stretch', display: 'flex', gap: 5 }}>
                 {PUZZLE.words.map((_, i) => pip(i))}
               </div>
 
@@ -654,12 +659,12 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
               </div>
 
               {/* The input panel: scramble, answer squares and Skip in one framed
-                  card, so the thing you are typing into reads as the subject of the
-                  page and the pips, nav and keyboard around it read as furniture. */}
-              <div key={'w' + sel} className="sc-word sc-panel" style={{ alignSelf: 'stretch', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, padding: '22px 16px 16px', borderRadius: 14, background: SURF, border: STAGE ? '1.5px solid var(--stg-line2,rgba(255,255,255,0.17))' : '1.5px solid rgba(20,22,28,0.14)', borderTop: `3px solid ${STAGE_C_INK}`, boxShadow: STAGE ? 'none' : '0 6px 18px rgba(20,22,28,0.06)' }}>
+                  group. No frame and no boxes (owner, 2026-10-20): the scramble is
+                  plain spaced letters and the answer is underlined blanks. */}
+              <div key={'w' + sel} className="sc-word sc-panel" style={{ alignSelf: 'stretch', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, padding: '6px 0 4px' }}>
                 <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', justifyContent: 'center' }} aria-label={`Scrambled: ${word.s}`}>
                   {word.s.split('').map((ch, i) => (
-                    <span key={i} style={{ width: miniW, height: miniW, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, background: MINI_BG, color: FADED, fontWeight: 800, fontSize: `min(17px, calc(${miniW} * 0.52))`, opacity: usedIdx.has(i) && !showAns ? 0.28 : 1, transition: 'opacity .15s', userSelect: 'none' }}>{ch}</span>
+                    <span key={i} style={{ width: miniW, height: miniW, display: 'flex', alignItems: 'center', justifyContent: 'center', color: FADED, fontWeight: 800, fontSize: `min(20px, calc(${miniW} * 0.62))`, letterSpacing: '.02em', opacity: usedIdx.has(i) && !showAns ? 0.28 : 1, transition: 'opacity .15s', userSelect: 'none' }}>{ch}</span>
                   ))}
                 </div>
                 <div key={shaking ? 'm' + fx.n : 'a'} className={shaking ? 'sc-rej' : undefined} style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -675,9 +680,6 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
               {started && !mobileUi && (
                 <div style={{ alignSelf: 'stretch', maxWidth: 500, margin: '0 auto', width: '100%' }}>
                   {keyboardRows}
-                  <p style={{ fontSize: 11.5, color: FADED, fontWeight: 600, margin: '6px 0 0', textAlign: 'center' }}>
-                    Type on your keyboard too. The arrow keys move between answers.
-                  </p>
                 </div>
               )}
 

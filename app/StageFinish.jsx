@@ -1567,14 +1567,17 @@ export default function StageFinish({
       }));
   })();
   const isQuiz = !!boardLabel;
-  // THE BAND IS GRADED BY THE RESULT (owner, 2026-10-07). Gold for a personal
-  // best, the category step for a solve, a quiet dark band with a rose rule for
+  // THE BAND IS GRADED BY THE RESULT (owner, 2026-10-07). The category step for
+  // a solve or a best, a quiet dark band with a rose rule for
   // a miss. See `missed` just below for what counts as one.
   // A MISS is a plain loss, or a part score on a board that still has an answer
   // to reveal (Garble's "Partly solved"). A part score with nothing to reveal
   // is the ordinary finish on a game that scores, and keeps the colour.
   const missed = outcome === 'lost' || (outcome === 'part' && !!revealOpt);
-  const tone = missed ? 'lost' : (!isQuiz && vs && vs.pb ? 'pb' : '');
+  // NO GOLD FOR A PERSONAL BEST (owner, 2026-10-20): a best keeps the category
+  // colour like any solve. The "New best" words stay; only the band colour went.
+  const isPb = !!(!isQuiz && vs && vs.pb);
+  const tone = missed ? 'lost' : '';
   // THE ONE BIG FIGURE, right edge, under Back to board: the clock when the run
   // was solved on one, the score on a miss. A solve-only game has no score to
   // print, so a miss there prints nothing.
@@ -1582,7 +1585,7 @@ export default function StageFinish({
     : (outcome === 'won' && board && board.myRow && board.myRow.timeElapsed != null && !run ? Number(board.myRow.timeElapsed) : null);
   const meSolveOnly = !!(me && isSolveOnly(me.key));
   const bandFig = isQuiz || !me ? null
-    : myT != null ? { v: mmss(myT), l: tone === 'pb' && vs.mode === 'time' ? `New best \u00b7 was ${mmss(vs.best)}` : (tone === 'pb' ? 'New best' : (board && board.myRank != null && board.field ? `#${board.myRank} of ${board.field}` : '')) }
+    : myT != null ? { v: mmss(myT), l: isPb && vs.mode === 'time' ? `New best \u00b7 was ${mmss(vs.best)}` : (isPb ? 'New best' : (board && board.myRank != null && board.field ? `#${board.myRank} of ${board.field}` : '')) }
     : (tone === 'lost' && run && run.total && !meSolveOnly ? { v: `${run.score}/${run.total}`, l: '' } : null);
   // CHALLENGE A FRIEND. Mine is this run in the link's own shape; the door
   // shows on any daily finish that has a figure worth beating.
@@ -1951,7 +1954,7 @@ export default function StageFinish({
   }
 
   return (
-    <div className={'stf' + (outcome ? ' stf-' + outcome : '') + (tone === 'pb' ? ' stf-pb' : '') + (tone === 'lost' ? ' stf-miss' : '')}>
+    <div className={'stf' + (outcome ? ' stf-' + outcome : '') + (tone === 'lost' ? ' stf-miss' : '')}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
       {stickProps ? (
@@ -2781,16 +2784,8 @@ body:has(.stf-a2hs) :is(button,div):has(+ #stf-stats-slot):has(.lucide-smartphon
 .stf-duel .them.beat b{text-decoration:line-through;text-decoration-thickness:2px;}
 .stf-duel i{font-style:normal;font-family:${SANS};font-size:11px;font-weight:800;padding-bottom:6px;}
 .stf-chline{margin-top:7px;font-size:16px;font-weight:800;letter-spacing:-.01em;}
-/* THE BAND, GRADED (owner, 2026-10-07). Gold is a literal in both registers:
-   a gold dark enough to hold white ink is brown, so it keeps its value and
-   takes dark ink, the same ruling the ramp makes for its warm steps. */
-.stf-pb .stf-curtain,.stf-flood.t-pb{background:#e8b43a;color:#2a1f04;}
-.stf-pb .stf-curtain{position:relative;overflow:hidden;}
-.stf-pb .stf-curtain::after{content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(105deg,transparent 42%,rgba(255,255,255,.5) 50%,transparent 58%);
-  transform:translateX(-100%);animation:stf-sheen 1000ms ease 500ms 1 both;}
-.stf-pb .stf-cin{position:relative;z-index:1;}
-@keyframes stf-sheen{ to{transform:translateX(100%)} }
+/* THE BAND, GRADED (owner, 2026-10-07): a miss takes a rose band. A personal
+   best no longer turns gold (owner, 2026-10-20); it keeps the category colour. */
 .stf-miss .stf-curtain,.stf-flood.t-lost{background:var(--stg-raise);color:var(--stg-ink);}
 .stf-miss .stf-curtain{border-bottom:1px solid var(--stg-line);}
 /* THE MISS BAND HAS TO READ AS A BAND IN DARK (owner, 2026-10-07). Raise is
@@ -2807,7 +2802,6 @@ body:has(.stf-a2hs) :is(button,div):has(+ #stf-stats-slot):has(.lucide-smartphon
 .stf-miss .stf-rack.band s.on,.stf-miss .stf-rack.band s.new{opacity:1;}
 .stf-miss .stf-back{border-color:var(--stg-ink);color:var(--stg-ink);}
 .stf-miss .stf-cin{border-left:4px solid var(--stg-bad);padding-left:14px;}
-@media (prefers-reduced-motion:reduce){ .stf-pb .stf-curtain::after{animation:none;} }
 /* THE CHALLENGE DOOR. Solid gold with its own dark ink set on every part of
    it: the mock-up's sub line inherited the mute grey and could not be read. */
 .stf-door.chal{grid-column:1/-1;background:#e8b43a;border-color:#e8b43a;color:#2a1f04;}

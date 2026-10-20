@@ -340,7 +340,6 @@ const CSS = `
   position:fixed;inset:0;z-index:9000;height:100vh;height:100dvh;overflow-y:auto;overscroll-behavior:contain;
   background:var(--sst-bg);color:var(--sst-ink);font-family:${SANS};-webkit-tap-highlight-color:transparent;}
 .sst *{box-sizing:border-box;}
-.sst.t-pb{--sst-bg:#e8b43a;--sst-ink:#2a1f04;}
 .sst.t-lost{--sst-bg:color-mix(in srgb,var(--stg-bad) 13%,var(--stg-raise));--sst-ink:var(--stg-ink);}
 .sst-in{min-height:100%;width:100%;max-width:560px;margin:0 auto;display:flex;flex-direction:column;
   justify-content:center;gap:clamp(18px,3.2vh,28px);
