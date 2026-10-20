@@ -116,6 +116,8 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
   const [leaving, setLeaving] = useState(false);
   const [ladderOpen, setLadderOpen] = useState(false);
   const [holding, setHolding] = useState(null);
+  // How to play, from the run: the embedded grid has no cap of its own.
+  const [helpSeq, setHelpSeq] = useState(0);
   const [copied, setCopied] = useState(false);
   // THE BOARD'S LIGHT SWITCH. Light or dark for the grids only; the run's own
   // page stays on its dark ground. The board OPENS IN THE READER'S OWN PAGE
@@ -300,6 +302,11 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
             <span className="dj-sectag">Form {NUMS[r.si] || r.si + 1} · {sec.form}</span>
             <b>{sec.name}</b>
             {!between && Game && !banked[sec.key] && (
+              <button type="button" className="dj-tg" onClick={() => setHelpSeq((n) => n + 1)} title={`How to play ${sec.name}`}>
+                <span aria-hidden="true">?</span> How to play
+              </button>
+            )}
+            {!between && Game && !banked[sec.key] && (
               <button type="button" className="dj-tg" onClick={flipBoard} aria-pressed={boardTheme === 'light'} title={boardTheme === 'light' ? 'Switch the board to dark' : 'Switch the board to light'}>
                 <span aria-hidden="true">{boardTheme === 'light' ? '\u263E' : '\u2600'}</span> {boardTheme === 'light' ? 'Dark board' : 'Light board'}
               </button>
@@ -308,7 +315,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
           </div>
           {!between && Game && !banked[sec.key] && (
             <div className={`dj-host${boardTheme === 'light' ? ' lt' : ''}`}>
-              <RunEmbed onResult={onSectionDone} theme={boardTheme}>
+              <RunEmbed onResult={onSectionDone} theme={boardTheme} help={helpSeq}>
                 <Game key={`${sec.key}-${sec.num}`} puzzles={[sec.puzzle]} forceNum={null} />
               </RunEmbed>
             </div>
@@ -639,6 +646,8 @@ const CSS = `
 .dj-tg{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font:800 11px ${SANS};letter-spacing:.05em;text-transform:uppercase;color:var(--dj-ink);background:var(--dj-surf);border:1px solid var(--dj-line);border-radius:999px;padding:6px 11px;cursor:pointer}
 .dj-tg:hover{border-color:var(--dj-mute)}
 .dj-tg span{font-size:13px;line-height:1}
+.dj-tg + .dj-tg{margin-left:0}
+@media(max-width:600px){.dj-sechd{flex-wrap:wrap;row-gap:6px}}
 .dj-tg + .dj-run{margin-left:10px}
 /* A light board inside the Dojo must not repaint the page behind it: the
    globals.css :has() rule paints html and body light for any light stage page. */
