@@ -521,6 +521,14 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       if (e.key === 'Backspace') { e.preventDefault(); onKey('BACK'); }
       else if (e.key === 'Enter' && atFinale) { e.preventDefault(); onKey('ENTER'); }
+      // Tab walks to the next clue still open in this acrostic (Shift+Tab the previous),
+      // wrapping, the way a crossword's Tab does (owner, 2026-10-20). Solved rows are
+      // skipped because there is nothing left to type in them.
+      else if (e.key === 'Tab' && !atFinale && R) {
+        e.preventDefault();
+        const n = R.rows.length, step = e.shiftKey ? -1 : 1;
+        for (let k = 1; k <= n; k++) { const i = ((sel + step * k) % n + n) % n; if (!g.solved[keyOf(g.round, i)]) { pickRow(i); break; } }
+      }
       else if (e.key === 'ArrowUp' && !atFinale) { e.preventDefault(); pickRow(Math.max(0, sel - 1)); }
       else if (e.key === 'ArrowDown' && !atFinale && R) { e.preventDefault(); pickRow(Math.min(R.rows.length - 1, sel + 1)); }
       else if (/^[a-zA-Z]$/.test(e.key)) onKey(e.key.toUpperCase());
@@ -528,7 +536,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
     window.addEventListener('keydown', onDown);
     return () => window.removeEventListener('keydown', onDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onKey, showHelp, started, sel, atFinale]);
+  }, [onKey, showHelp, started, sel, atFinale, g, R]);
 
   function startGame() {
     setG((cur) => (cur.t0 ? cur : { ...cur, t0: Date.now() }));

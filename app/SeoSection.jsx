@@ -76,13 +76,27 @@ const CSS = `
 .sq-name{font-family:${F};font-weight:800;font-size:16px;line-height:1.3;color:${T.ink};margin:0 0 4px}
 .sq-desc{font-family:${F};font-size:14.5px;line-height:1.55;color:${T.muted};margin:0;max-width:70ch}
 @media(max-width:600px){.sq-wrap{padding:34px 16px 42px}}
+/* THE QUIZ PAGE IS A STAGE PAGE, and this band sits OUTSIDE the stage root (it has to:
+   it is the only server-rendered node on the route). So it cannot read the --stg-*
+   tokens and it used to stay light on a dark page, reading as a stray light footer.
+   It follows the same boot stamp the stage does (app/layout.js writes it before first
+   paint, lib/stage-theme.js re-stamps it on every toggle), so it never flashes either.
+   Light needs nothing: the light stage ground and this band are already the same grey. */
+html[data-stage-boot='dark'] .sq-band.sq-stage{background:#0f1422;border-top-color:rgba(255,255,255,.08)}
+html[data-stage-boot='dark'] .sq-stage .sq-eyebrow,html[data-stage-boot='dark'] .sq-stage .sq-sub{color:#9fb6dc}
+html[data-stage-boot='dark'] .sq-stage .sq-h2,html[data-stage-boot='dark'] .sq-stage .sq-facts b{color:#e9edf4}
+html[data-stage-boot='dark'] .sq-stage .sq-p,html[data-stage-boot='dark'] .sq-stage .sq-more{color:#b6bfce}
+html[data-stage-boot='dark'] .sq-stage .sq-facts,html[data-stage-boot='dark'] .sq-stage .sq-src{color:#8b95a8}
+html[data-stage-boot='dark'] .sq-stage .sq-src a,html[data-stage-boot='dark'] .sq-stage .sq-more a{color:#8db4ff}
+html[data-stage-boot='dark'] .sq-stage .sq-grid a{color:#e9edf4;background:rgba(255,255,255,.045);border-color:rgba(255,255,255,.11)}
+html[data-stage-boot='dark'] .sq-stage .sq-grid a:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.22)}
 `;
 
 // ─── shared bits ────────────────────────────────────────────────────────────
 
-function Band({ children }) {
+function Band({ children, stage = false }) {
   return (
-    <section className="sq-band">
+    <section className={stage ? 'sq-band sq-stage' : 'sq-band'}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="sq-wrap">{children}</div>
     </section>
@@ -177,7 +191,7 @@ export function QuizSeoSection({ quiz }) {
   const related = similarQuizzes(quiz, 8);
 
   return (
-    <Band>
+    <Band stage>
       <p className="sq-eyebrow">About this quiz</p>
       <h2 className="sq-h2">{quiz.title}</h2>
       {quiz.blurb && <p className="sq-p">{quiz.blurb}</p>}
