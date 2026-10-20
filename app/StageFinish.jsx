@@ -69,6 +69,7 @@ import StageStick from './StageStick';
 import { fmtMetric } from '@/lib/challenge-metric';
 import { typicalSeconds } from '@/lib/game-medians';
 import { categoryHrefForGame } from '@/lib/puzzle-categories';
+import { DISPLAY_CIRCUITS, circuitKeysFor, circuitName, runHref } from '@/lib/circuits';
 
 // ── THE FLOOD ──────────────────────────────────────────────────────────────
 // THE CURTAIN ARRIVES AT FULL SIZE (owner, 2026-08-31). The band was already
@@ -1850,6 +1851,43 @@ export default function StageFinish({
     const nextUp = archiveRows.find((r) => !r.done && r.href && (curN == null || Number(r.num) !== curN));
     const another = nextUp ? { name: me.name, href: nextUp.href } : null;
 
+    // FINISH THE RUN (owner, 2026-10-20, option B of the "Finish the Run
+    // button" canvas). A player who finishes a game that belongs to a run on
+    // the shelf is offered the rest of that run, and the offer LEADS the
+    // buttons. It replaced relying on the pre-start RunDoorPop, which a player
+    // who starts quickly never sees. The run page banks every game already
+    // played today, so this hands over to the next unplayed member. Today's
+    // board only (an archive replay is not a run day); when the game sits in
+    // more than one run, the one closest to done wins, shelf order breaking a
+    // tie; a run already finished today offers nothing.
+    const runOffer = (() => {
+      if (archived) return null;
+      const day = etTodayISO();
+      const isDone = (k) => k === me.key || played.has(k);
+      let best = null;
+      DISPLAY_CIRCUITS.forEach((c, order) => {
+        if (!c.run) return;
+        const keys = circuitKeysFor(c.id, day);
+        if (keys.length < 2 || !keys.includes(me.key)) return;
+        const n = keys.filter(isDone).length;
+        if (n >= keys.length) return;
+        if (!best || n > best.n) best = { c, keys, n, order };
+      });
+      if (!best) return null;
+      const nm = circuitName(best.c.id);
+      const nextKey = best.keys.find((k) => !isDone(k));
+      const nextG = LIVE().find((x) => x.key === nextKey);
+      const left = best.keys.length - best.n;
+      return {
+        title: /gauntlet|encore/i.test(nm) ? `Finish the ${nm}` : /^(Enter|Read)\b/.test(nm) ? `Keep going: ${nm}` : `Finish ${nm}`,
+        eyebrow: best.n > 1 ? `${best.n} of ${best.keys.length} played today` : 'You started a run',
+        href: runHref(best.c.id),
+        pips: best.keys.map((k) => ({ k, done: isDone(k) && k !== me.key, now: k === me.key })),
+        sub: `${me.name} banked · ${left} left to take a rank`,
+        next: nextG ? nextG.name : null,
+      };
+    })();
+
     // THE SHEET.
     const allRows = board && Array.isArray(board.rows) ? board.rows.map((r, i) => ({ ...r, rank: r.rank != null ? r.rank : i + 1 })) : [];
     let srows = allRows.slice(0, 3).map((r) => ({ ...r, me: isMine(r) }));
@@ -1884,7 +1922,7 @@ export default function StageFinish({
       catHref: categoryHrefForGame(me.key), catName: me.cat,
       homeHref: (mainOpt && mainOpt.href) || '/',
     };
-    return { tone, eyebrow, verdict: title, metric, field: fieldInfo, self, chal: chalRow, similar, another, sheet };
+    return { tone, eyebrow, verdict: title, metric, field: fieldInfo, self, chal: chalRow, similar, another, run: runOffer, sheet };
   })();
 
   // Placed AFTER every hook above AND after the challenge door is built (moved

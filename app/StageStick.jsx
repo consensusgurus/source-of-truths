@@ -72,7 +72,7 @@ function Count({ fig, run }) {
 }
 
 export default function StageStick({
-  tone = '', eyebrow, verdict, metric, field, self, chal = null, similar = null, another = null, allHref = '/#all',
+  tone = '', eyebrow, verdict, metric, field, self, chal = null, similar = null, another = null, run = null, allHref = '/#all',
   sheet = {}, onLeave,
 }) {
   const [host] = useState(() => (typeof document === 'undefined' ? null : (document.querySelector('.stage-page') || document.body)));
@@ -232,9 +232,29 @@ export default function StageStick({
 
         {/* The rows: Challenge, Play similar + Play another, See all Daily
             Puzzles, and the See full details link. */}
-        <div className="sst-acts">
+        <div className={'sst-acts' + (run ? ' has-run' : '')}>
+          {/* FINISH THE RUN (owner, 2026-10-20, option B): when the game just
+              finished belongs to an unfinished run, the run LEADS the buttons,
+              filled; Challenge steps down to an outline under it, and Play
+              similar shares one row with See all Daily Puzzles so the stack
+              still never runs past four rows. Play another gives way. */}
+          {run ? (
+            <a className={'sst-run ' + on(4)} href={run.href}>
+              <span className="top">
+                <span className="tx"><small>{run.eyebrow}</small><b>{run.title}</b></span>
+                <span className="ar" aria-hidden="true">→</span>
+              </span>
+              <span className="pips" aria-hidden="true">
+                {run.pips.map((p) => <s key={p.k} className={p.now ? 'now' : p.done ? 'd' : ''} />)}
+              </span>
+              <span className="ft">
+                <span className="sb">{run.sub}</span>
+                {run.next ? <span className="go">Play {run.next} next</span> : null}
+              </span>
+            </a>
+          ) : null}
           {chal ? (
-            <button type="button" className={'sst-chal ' + on(4)} onClick={chal.onSend}>
+            <button type="button" className={'sst-chal ' + (run ? 'ol ' : '') + on(run ? 5 : 4)} onClick={chal.onSend}>
               <span className="tx">
                 <b>{chal.title}</b>
                 <i>{chalSub}</i>
@@ -242,7 +262,18 @@ export default function StageStick({
               <span className="ar" aria-hidden="true">{chal.copied ? '✓' : '→'}</span>
             </button>
           ) : null}
-          {(similar || another) ? (
+          {run && allHref ? (
+            <div className={'sst-row ' + on(5) + (similar ? '' : ' one')}>
+              {similar ? (
+                <a className="sst-ob" href={similar.href} onClick={similar.onClick || undefined}>
+                  <b>Play similar</b>
+                  <i>{similar.name}{similar.time ? <small> {similar.time}</small> : null}</i>
+                </a>
+              ) : null}
+              <a className="sst-ob" href={allHref}><b>See all Daily Puzzles</b><i>Every game today</i></a>
+            </div>
+          ) : null}
+          {!run && (similar || another) ? (
             <div className={'sst-row ' + on(5) + (similar && another ? '' : ' one')}>
               {similar ? (
                 <a className="sst-ob" href={similar.href} onClick={similar.onClick || undefined}>
@@ -261,7 +292,7 @@ export default function StageStick({
           {/* SEE ALL DAILY PUZZLES (owner, 2026-10-18, after a player said the
               ending made it harder to reach another game): the home's All
               Puzzles pane, opened straight onto the tiles. */}
-          {allHref ? (
+          {!run && allHref ? (
             <a className={'sst-ob sst-all ' + on(5)} href={allHref}><b>See all Daily Puzzles</b></a>
           ) : null}
           <button type="button" className={'sst-more ' + on(6)} onClick={() => { if (typeof onLeave === 'function') onLeave(); }}>See full details</button>
@@ -393,6 +424,29 @@ const CSS = `
 .sst-chal b{font-size:17px;font-weight:800;line-height:1.2;}
 .sst-chal i{font-style:normal;font-size:12.5px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sst-chal .ar{flex:none;font-size:22px;font-weight:800;}
+.sst-run{position:relative;display:flex;flex-direction:column;gap:9px;padding:12px 16px 12px 18px;border-radius:16px;overflow:hidden;
+  background:var(--sst-ink);color:var(--sst-bg);text-decoration:none;box-shadow:0 10px 26px rgba(0,0,0,.22);}
+.sst-run::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;pointer-events:none;transform:skewX(-18deg);
+  background:linear-gradient(100deg,transparent,color-mix(in srgb,var(--sst-bg) 16%,transparent),transparent);animation:sst-shine 2.8s ease-in-out 1.2s infinite;}
+@keyframes sst-shine{0%{left:-60%}45%,100%{left:130%}}
+.sst-run .top{display:flex;align-items:center;gap:10px;}
+.sst-run .tx{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;}
+.sst-run small{font-size:10.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;}
+.sst-run b{font-size:19px;font-weight:800;line-height:1.15;letter-spacing:-.01em;}
+.sst-run .ar{flex:none;font-size:22px;font-weight:800;}
+.sst-run .pips{display:flex;gap:4px;}
+.sst-run .pips s{flex:1;height:8px;border-radius:3px;background:color-mix(in srgb,var(--sst-bg) 22%,transparent);}
+.sst-run .pips s.d{background:var(--sst-bg);}
+.sst-run .pips s.now{background:var(--sst-bg);transform:scaleY(0);}
+.sst-run.on .pips s.now{animation:sst-pop .45s cubic-bezier(.3,1.7,.5,1) .5s forwards;}
+@keyframes sst-pop{to{transform:scaleY(1)}}
+.sst-run .ft{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.sst-run .sb{font-size:12.5px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sst-run .go{flex:none;border-radius:99px;padding:6px 12px;background:var(--sst-bg);color:var(--sst-ink);font-size:13px;font-weight:800;white-space:nowrap;}
+.sst-chal.ol{min-height:54px;background:transparent;color:var(--sst-ink);border:2px solid var(--sst-ink);}
+.sst-chal.ol b{font-size:16px;}
+.sst-run:hover{filter:brightness(1.08);}
+.sst-run:focus-visible{outline:2px solid var(--sst-ink);outline-offset:3px;}
 .sst-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .sst-row.one{grid-template-columns:1fr;}
 .sst-ob{display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0;min-height:60px;padding:9px 14px;border-radius:14px;
@@ -415,6 +469,9 @@ const CSS = `
   .sst-ob{min-height:52px;padding-top:7px;padding-bottom:7px;}
   .sst-all{min-height:44px;}
   .sst-more{padding:2px 10px;}
+  .sst-run{gap:7px;padding-top:9px;padding-bottom:9px;}
+  .sst-run b{font-size:17px;}
+  .sst-chal.ol{min-height:48px;}
 }
 .sst-scrim{position:fixed;inset:0;z-index:9001;background:rgba(5,8,14,.45);opacity:0;pointer-events:none;transition:opacity .3s ease;}
 .sst-scrim.open{opacity:1;pointer-events:auto;}
@@ -460,5 +517,7 @@ const CSS = `
 }
 @media (prefers-reduced-motion:reduce){
   .sst-b,.sst-bar span,.sst-track .pt,.sst-strip s,.sst-sheet,.sst-scrim{transition:none;}
+  .sst-run::after{animation:none;}
+  .sst-run .pips s.now,.sst-run.on .pips s.now{animation:none;transform:none;}
 }
 `;
