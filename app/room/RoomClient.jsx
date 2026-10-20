@@ -31,6 +31,9 @@ import NextDrop from '../NextDrop';
 import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken } from '../RunChallenge';
 import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
 import useCircuitBoard from '../circuits/useCircuitBoard';
+import RunScorecard, { boardRows, stageAvg } from '../circuits/RunScorecard';
+import RunNextSlot from '../circuits/RunNextSlot';
+import { rampFor } from '@/lib/circuits';
 import { dailyMeIdentity } from '../dailyMeClient';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
@@ -521,16 +524,40 @@ function Verdict({ sections, counted, parts, total, dateLabel, dateShort, animat
               </div>
             </div>
           )}
-          <div className="rr-vf-stats">
-            <div><b>{total}/{ROOM_MAX}</b><span>Your read</span></div>
-            {me && me.rank
-              ? <a className="rr-vf-lb" href="/room/leaderboard" aria-label="See tonight's board"><b>#{me.rank}</b><span>{players ? `of ${fmtN(players)} on tonight's board` : "on tonight's board"}</span><em aria-hidden="true">&rarr;</em></a>
-              : <a className="rr-vf-lb" href="/room/leaderboard" aria-label="See tonight's board"><b>{L[1].split(' ')[0]}</b><span>Tonight&rsquo;s board</span><em aria-hidden="true">&rarr;</em></a>}
-          </div>
-          <div className="rr-vf-draw">
-            <RunChallengeLine gameKey={ROOM_RUN_ID} score={total} total={ROOM_MAX} n={runToken()} />
-            <RunChallengeButton gameKey={ROOM_RUN_ID} score={total} total={ROOM_MAX} n={runToken()} door />
-          </div>
+          {(() => {
+            // THE RUN SCORECARD (owner, 2026-10-20): the board and every room
+            // in one table, the challenge and the next slot under it. The
+            // verdict above already carries the title, so no hero here.
+            const sf = board && board.data && board.data.stageField;
+            const stages = sections.map((s, i) => ({ key: s.key, name: s.name, colour: rampFor(i) }));
+            const mePer = Object.fromEntries(sections.map((s, i) => [s.key, counted[i] ? Math.round((parts[i] || 0) * 10) / 10 : null]));
+            const built = boardRows({ data: board && board.data, perOf: (x) => x.sv || null, titleOf: (v) => ROOM_LADDER[roomTierOf(v)][1], mePer, meTotal: total, meTitle: L[1] });
+            const ranks = {};
+            sections.forEach((s, i) => { const c = counted[i]; if (c && c.read && c.read.rank) ranks[s.key] = c.read.rank; });
+            const avg = stageAvg(sf, sections);
+            const part = sections.length ? ROOM_MAX / sections.length : ROOM_MAX;
+            return (
+              <RunScorecard
+                stages={stages}
+                rows={built.rows}
+                you={{ miss: {} }}
+                avg={avg}
+                ranks={Object.keys(ranks).length ? ranks : null}
+                scale={Object.fromEntries(sections.map((s) => [s.key, part]))}
+                fmt={(v) => String(Math.round(Number(v) || 0))}
+                avgTotal={avg ? Math.round(sections.reduce((a, s) => a + (Number(avg[s.key]) || 0), 0)) : null}
+                head={'Tonight\u2019s board'}
+                field={built.field}
+                boardHref="/room/leaderboard"
+                boardState={(board && board.state) || 'loading'}
+                aside={<>
+                  <RunChallengeLine gameKey={ROOM_RUN_ID} score={total} total={ROOM_MAX} n={runToken()} />
+                  <RunChallengeButton gameKey={ROOM_RUN_ID} score={total} total={ROOM_MAX} n={runToken()} door />
+                </>}
+                next={<RunNextSlot circuitId={ROOM_RUN_ID} exclude={sections.map((s) => s.key)} cats={['Crowd Psychology']} />}
+              />
+            );
+          })()}
           <p className="rr-vf-note">The room keeps filling until midnight, so your read can still move. Come back tomorrow for your settled spot.</p>
           <NextDrop label="Tomorrow's room" sub="New crowds at midnight Eastern." href="/room"
             accent="var(--rr-acc-lt)" ink="var(--rr-ink)" mute="var(--rr-mute)" style={{ margin: '14px 0 0' }} />

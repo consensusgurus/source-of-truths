@@ -1677,7 +1677,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     {r.practice ? <i className="rn-pchip">nothing posted</i> : null}
                   </span>
                 ) : null}
-                {TOWERS ? (() => {
+                {BTOP ? null : TOWERS ? (() => {
                   const bd = boardQ.data;
                   const rows = (bd && Array.isArray(bd.overall) ? bd.overall : []).slice(0, 5);
                   const me = bd ? (bd.me || bd.meProvisional || null) : null;
@@ -1757,7 +1757,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     lanes, which left the two columns ragged. They are back on
                     one row under the split, and the split's two columns now
                     stretch to one height with equal rows. */}
-                {true ? (
+                {!BTOP ? (
                 <div className={`rn-sc-hero${TOWERS ? ' tw' : ''}`}>
                   <div className="rn-sc-big">
                     {cleared}<small>/{askable}</small>

@@ -43,13 +43,15 @@ import { savedIdentity } from '@/lib/saved-identity';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { withRef } from '@/lib/referrals';
 import { notifyShareCredit } from '../ShareCreditPop';
-import { runSummaryHref, circuitShareUrl, circuitShareResult, circuitPageHref } from '@/lib/circuits';
+import { runSummaryHref, circuitShareUrl, circuitShareResult, circuitPageHref, rampFor } from '@/lib/circuits';
 import { parFor, scoreFor } from '@/lib/par';
 import { gameColor, gameColorLight, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import { fromData, solved as jamSolved } from '@/lib/jam-core';
 import JamBoard, { blockTones, apply } from './JamBoard';
 import ValetScene from './ValetScene';
 import useCircuitBoard from './useCircuitBoard';
+import RunScorecard, { boardRows as scBoardRows, stageRank, stageAvg } from './RunScorecard';
+import RunNextSlot from './RunNextSlot';
 import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken } from '../RunChallenge';
 import { T } from '@/lib/theme';
 import RunBackLink from './RunBackLink';
@@ -580,53 +582,55 @@ export default function ValetRunClient({ circuitId, circuitName, dateLabel, sect
         {done ? (
           <div className={`vr-fin${curtain ? ' in' : ''}`}>
             <ValetScene mode={curtain ? 'park' : 'still'} sizes={sizes} />
-            <div className="vr-fhero">
-              <div className="vr-fbig">
-                {parked === N ? fmtTime(runSecs * 1000) : `${parked}/${N}`}
-                <i>{parked === N ? 'all three parked' : 'lots parked'}</i>
-              </div>
-              <div className="vr-figs">
-                {parked !== N ? <div><b>{fmtTime(runSecs * 1000)}</b><i>on the clock</i></div> : null}
-                <div><b>{myRow && myRow.rank ? `#${myRow.rank}` : '—'}</b><i>{fieldToday ? `of ${fieldToday} today` : 'today'}</i></div>
-                <div><b>{r.results.reduce((a, x) => a + (x.moves || 0), 0)}</b><i>moves, for the record</i></div>
-              </div>
-            </div>
-            <div className="vr-frows">
-              {sections.map((s) => {
-                const x = r.results.find((y) => y.key === s.key);
-                const par = parFor(s.perfect);
-                return (
-                  <div key={s.key} className={`vr-fr${x && x.won ? ' won' : ''}`}>
-                    <span className="vr-frn"><b>{s.name}</b><i>{s.n}&times;{s.n}{x && x.status === 'banked' ? ' · played earlier' : ''}</i></span>
-                    <span className="vr-frm">{x ? `${x.moves} mv · par ${par}` : ''}</span>
-                    <span className="vr-frt">{x ? (x.won ? fmtTime((x.secs || 0) * 1000) : 'left parked') : '—'}</span>
-                  </div>
-                );
-              })}
-            </div>
-            {parked !== N ? (
-              <p className="vr-fine">A lot left parked keeps a run off the board. The three games still count on their own boards.</p>
-            ) : null}
-
-            <div className="vr-board">
-              <div className="vr-bh"><span>Today&rsquo;s board</span><s>{boardNow ? `${fieldToday} ${fieldToday === 1 ? 'player' : 'players'}${partial ? ` · ${partial} part way` : ''}` : ''}</s></div>
-              {boardRows.length ? boardRows.slice(0, 8).map((row, i) => (
-                <div key={row.userKey || i} className={`vr-br${myRow && row.userKey === myRow.userKey ? ' me' : ''}`}>
-                  <span className="vr-brk">{row.rank || i + 1}</span>
-                  <span className="vr-brn">{row.username || 'Guest'}</span>
-                  <span className="vr-brt">{Number(row.total) < N ? `${row.total}/${N} · ` : ''}{fmtTime((row.timeTotal || 0) * 1000)}</span>
-                </div>
-              )) : (
-                <div className="vr-bmsg">{boardQ.state === 'loading' ? 'Reading the board.' : boardQ.state === 'error' ? 'The board could not be read just now. It is on the circuit page.' : 'Nobody has parked all three today yet. Yours would be the first full run.'}</div>
-              )}
-              {myRow && myRow.rank && !boardRows.slice(0, 8).some((row) => row.userKey === myRow.userKey) ? (
-                <div className="vr-br me">
-                  <span className="vr-brk">{myRow.rank}</span>
-                  <span className="vr-brn">You</span>
-                  <span className="vr-brt">{fmtTime((myRow.timeTotal || 0) * 1000)}</span>
-                </div>
-              ) : null}
-            </div>
+            {(() => {
+              // THE RUN SCORECARD (owner, 2026-10-20): the result, the board and
+              // every lot in one table. Valet ranks on the clock, so each cell
+              // is a lot's time and the stage's best time fills the bar.
+              const sf = boardNow && boardNow.stageField;
+              const stages = sections.map((s, i) => ({ key: s.key, name: s.name, colour: rampFor(i) }));
+              const resOf = (k) => r.results.find((y) => y.key === k);
+              const mePer = Object.fromEntries(sections.map((s) => { const x = resOf(s.key); return [s.key, x && x.won ? Math.round(x.secs || 0) : null]; }));
+              const miss = Object.fromEntries(sections.map((s) => { const x = resOf(s.key); return [s.key, !!(x && !x.won)]; }));
+              const data = boardNow ? { ...boardNow, overall: boardRows.map((row) => ({ ...row, total: Number(row.total) >= N ? row.timeTotal : null })) } : null;
+              const built = scBoardRows({ data, perOf: (x) => x.sv || null, mePer, meTotal: parked === N ? runSecs : null, meTitle: `${parked} of ${N} parked` });
+              const ranks = {};
+              sections.forEach((s) => { const v = mePer[s.key]; if (v != null) { const k = stageRank(sf, s.key, v); if (k) ranks[s.key] = k; } });
+              const avg = stageAvg(sf, sections);
+              const scale = {};
+              sections.forEach((s) => {
+                const g = sf && sf.games && sf.games[s.key];
+                const vals = [g && g.best, mePer[s.key], ...built.rows.map((x) => (x.per ? x.per[s.key] : null))].map(Number).filter((v) => Number.isFinite(v) && v > 0);
+                scale[s.key] = vals.length ? Math.min(...vals) : 0;
+              });
+              const clk = (v) => fmtTime((Number(v) || 0) * 1000);
+              const subBits = [];
+              if (myRow && myRow.rank) subBits.push(<b key="r">#{myRow.rank}{fieldToday ? ` of ${fieldToday}` : ''}</b>);
+              subBits.push(`${r.results.reduce((acc, x) => acc + (x.moves || 0), 0)} moves`);
+              if (parked !== N) subBits.push(clk(runSecs));
+              return (
+                <RunScorecard
+                  stages={stages}
+                  rows={built.rows}
+                  you={{ miss }}
+                  avg={avg}
+                  ranks={Object.keys(ranks).length ? ranks : null}
+                  scale={scale}
+                  lower
+                  fmt={clk}
+                  totalFmt={clk}
+                  hero={{ value: parked === N ? clk(runSecs) : `${parked}/${N}`, eyebrow: parked === N ? 'All three parked' : 'Lots parked', title: parked === N ? 'Keys, please' : 'A lot left parked', sub: subBits.reduce((acc, x, i) => (i ? [...acc, ' \u00B7 ', x] : [x]), []), line: parked !== N ? 'A lot left parked keeps a run off the board. The three games still count on their own boards.' : null }}
+                  field={fieldToday || null}
+                  boardHref={runSummaryHref(circuitId)}
+                  boardState={boardQ.state}
+                  keyNote={partial ? `${partial} part way` : null}
+                  aside={<>
+                    <RunChallengeLine gameKey={circuitId} score={parked} total={N} n={runToken()} t={parked === N ? Math.round(runSecs) : null} won={parked === N} style={{ display: 'block', textAlign: 'center' }} />
+                    <RunChallengeButton gameKey={circuitId} score={parked} total={N} n={runToken()} t={Math.round(runSecs)} won={parked === N} status={`${parked} of ${N} parked`} door />
+                  </>}
+                  next={<RunNextSlot circuitId={circuitId} exclude={sections.map((s) => s.key)} cats={['Logic']} />}
+                />
+              );
+            })()}
 
             {guest && !claimed ? (
               <div className="vr-claim">
@@ -647,14 +651,6 @@ export default function ValetRunClient({ circuitId, circuitName, dateLabel, sect
               </div>
             ) : null}
             {claimed ? <div className="vr-claimed">You&rsquo;re on the board. Every finish counts under your name now.</div> : null}
-
-            {/* CHALLENGE A FRIEND, ON EVERY RUN (owner, 2026-10-15). Valet ranks
-                on the clock, so a full park sends the time and a partial one
-                sends the lots parked. */}
-            <div style={{ margin: '16px 0 0' }}>
-              <RunChallengeLine gameKey={circuitId} score={parked} total={N} n={runToken()} t={parked === N ? Math.round(runSecs) : null} won={parked === N} style={{ display: 'block', textAlign: 'center' }} />
-              <RunChallengeButton gameKey={circuitId} score={parked} total={N} n={runToken()} t={Math.round(runSecs)} won={parked === N} status={`${parked} of ${N} parked`} door />
-            </div>
 
             <div className="vr-hacts vr-sacts">
               <button type="button" className="vr-vb pri" onClick={shareRun}>

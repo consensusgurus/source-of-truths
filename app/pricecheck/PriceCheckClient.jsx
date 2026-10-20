@@ -31,6 +31,7 @@ import NextDrop from '../NextDrop';
 import ItemsPop, { itemsFor, scheduleItems, spendItems } from './ItemsPop';
 import PriceScanner from './PriceScanner';
 import useCircuitBoard from '../circuits/useCircuitBoard';
+import RunNextSlot from '../circuits/RunNextSlot';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
 import ChallengeStrip from '../ChallengeStrip';
@@ -444,8 +445,16 @@ function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, 
       </div>
       {settled && (
         <div className="pf-wide">
-          <RunChallengeLine gameKey="pricecheck" score={total} n={runToken()} />
-          <RunChallengeButton gameKey="pricecheck" score={total} total={max} n={runToken()} status={`${t[3]} card`} door />
+          {/* THE CHALLENGE AND THE NEXT SLOT side by side (owner, 2026-10-20),
+              as on every run's scorecard. Price Check's own game-by-game
+              scoreboard below is already that table, with each guess shown. */}
+          <div className="pf-low">
+            <div>
+              <RunChallengeLine gameKey="pricecheck" score={total} n={runToken()} />
+              <RunChallengeButton gameKey="pricecheck" score={total} total={max} n={runToken()} status={`${t[3]} card`} door />
+            </div>
+            <div><RunNextSlot circuitId="pricecheck" exclude={sections.map((s) => s.key)} /></div>
+          </div>
           {!v2 && (
             <div className="pf-btns">
               <button type="button" onClick={onItems}>See the items</button>
@@ -873,6 +882,9 @@ const CSS = `
 .cf-shelf{font-size:13px;font-weight:700;color:var(--pc-mute)}
 .cf-shelf b{color:var(--pc-ink);font-variant-numeric:tabular-nums}
 .pf-foot{margin:22px 0 0}
+.pf-low{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:start;text-align:left}
+.pf-low>div{min-width:0}
+@media (max-width:680px){.pf-low{grid-template-columns:minmax(0,1fr);gap:14px}}
 .pf-wide{margin:22px auto 0;max-width:880px}
 .pf-foot,.fp{max-width:880px;margin-left:auto;margin-right:auto}
 .fp-items{display:block;width:100%;margin:0 0 16px;font:800 14px ${SANS};padding:13px 16px;border-radius:12px;border:1px solid var(--pc-line);background:var(--pc-surf);color:var(--pc-ink);cursor:pointer;text-align:center}

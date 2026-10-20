@@ -32,6 +32,9 @@ import NextDrop from '../NextDrop';
 import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken } from '../RunChallenge';
 import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
 import useCircuitBoard from '../circuits/useCircuitBoard';
+import RunScorecard, { boardRows, stageRank, stageAvg } from '../circuits/RunScorecard';
+import RunNextSlot from '../circuits/RunNextSlot';
+import { rampFor } from '@/lib/circuits';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { LAW_RUN_ID, LAW_LADDER, LAW_CLOCK, LAW_CASE_MAX, LAW_MAX, lawLadderFor, lawTierOf, lawIndexOf, lawCasePoints, lawAcc, lawSpeed } from '@/lib/law-school';
@@ -486,21 +489,42 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
 
       {settled && (
         <div className="vf-copy" role="status">
-          <div className="vf-you">You got into</div>
-          <h1 className="vf-nm">{t[1]}</h1>
-          <p className="vf-ln">{t[4]}</p>
-          <div className="vf-stats">
-            <div><b>{total}/{LAW_MAX}</b><span>Run total</span></div>
-            <div><b>{lawIndexOf(total)}</b><span>Admissions score</span></div>
-            {me && me.rank ? <a className="vf-lbl" href="/judged/leaderboard" aria-label="See today's leaderboard"><b>#{me.rank}</b><span>{field ? `of ${Number(field).toLocaleString()} today` : 'today'}</span><em aria-hidden="true">&rarr;</em></a> : null}
-          </div>
-          <div className="vf-games">
-            {sections.map((s, i) => <div key={s.key} className={flat ? '' : i === hi ? 'hi' : i === lo ? 'lo' : ''}><i>{s.name}</i><b>{counted[i] ? pts[i] : '-'}</b></div>)}
-          </div>
-          <div style={{ margin: '14px 0 0' }}>
-            <RunChallengeLine gameKey={LAW_RUN_ID} score={total} total={LAW_MAX} n={runToken()} />
-            <RunChallengeButton gameKey={LAW_RUN_ID} score={total} total={LAW_MAX} n={runToken()} status={`Admitted to ${t[1]}`} door />
-          </div>
+          {(() => {
+            // THE RUN SCORECARD (owner, 2026-10-20): result, board and every
+            // case in one table, the challenge and the next slot under it.
+            const sf = board && board.data && board.data.stageField;
+            const stages = sections.map((s, i) => ({ key: s.key, name: s.name, colour: rampFor(i) }));
+            const mePer = Object.fromEntries(sections.map((s, i) => [s.key, counted[i] ? pts[i] : null]));
+            const built = boardRows({ data: board && board.data, perOf: (x) => x.sv || null, titleOf: (v) => L[lawTierOf(v, L)] ? L[lawTierOf(v, L)][1] : '', mePer, meTotal: total, meTitle: t[1] });
+            const ranks = {};
+            sections.forEach((s, i) => { if (counted[i]) { const k = stageRank(sf, s.key, pts[i]); if (k) ranks[s.key] = k; } });
+            const avg = stageAvg(sf, sections);
+            const miss = Object.fromEntries(sections.map((s, i) => [s.key, !!(counted[i] && !counted[i].unknown && counted[i].score < counted[i].total)]));
+            const subBits = [];
+            if (built.meRank) subBits.push(<b key="r">#{built.meRank}{built.field ? ` of ${Number(built.field).toLocaleString()}` : ''}</b>);
+            if (built.ahead != null) subBits.push(`ahead of ${built.ahead}%`);
+            subBits.push(`admissions score ${lawIndexOf(total)}`);
+            return (
+              <RunScorecard
+                stages={stages}
+                rows={built.rows}
+                you={{ miss }}
+                avg={avg}
+                ranks={Object.keys(ranks).length ? ranks : null}
+                scale={Object.fromEntries(sections.map((s) => [s.key, CASE_MAX]))}
+                avgTotal={avg ? Math.round(sections.reduce((a, s) => a + (Number(avg[s.key]) || 0), 0)) : null}
+                hero={{ value: total, of: LAW_MAX, eyebrow: 'You got into', title: t[1], sub: subBits.reduce((acc, x, i) => (i ? [...acc, ' \u00B7 ', x] : [x]), []), line: t[4] }}
+                field={built.field}
+                boardHref="/judged/leaderboard"
+                boardState={(board && board.state) || 'loading'}
+                aside={<>
+                  <RunChallengeLine gameKey={LAW_RUN_ID} score={total} total={LAW_MAX} n={runToken()} />
+                  <RunChallengeButton gameKey={LAW_RUN_ID} score={total} total={LAW_MAX} n={runToken()} status={`Admitted to ${t[1]}`} door />
+                </>}
+                next={<RunNextSlot circuitId={LAW_RUN_ID} exclude={sections.map((s) => s.key)} cats={['Logic']} />}
+              />
+            );
+          })()}
           <NextDrop label="Tomorrow's docket" sub="Five new cases and a new set of schools at midnight Eastern." href="/judged"
             accent="var(--ls-cta)" ink="var(--ls-ink)" mute="var(--ls-mute)" style={{ margin: '14px 0 0' }} />
           <MoreRunsList self="judged" ink="var(--ls-ink)" mute="var(--ls-mute)" line="var(--ls-line)" onShare={onShare} copied={copied} />

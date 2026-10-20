@@ -33,6 +33,9 @@ import NextDrop from '../NextDrop';
 import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken } from '../RunChallenge';
 import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
 import useCircuitBoard from '../circuits/useCircuitBoard';
+import RunScorecard, { boardRows, stageRank, stageAvg } from '../circuits/RunScorecard';
+import RunNextSlot from '../circuits/RunNextSlot';
+import { rampFor } from '@/lib/circuits';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { DOJO_RUN_ID, DOJO_BELTS, DOJO_CLOCK, DOJO_MAX, dojoTierOf, dojoGridPoints, dojoAcc, dojoSpeed } from '@/lib/dojo';
@@ -455,22 +458,42 @@ function Grading({ sections, counted, parts, total, dateLabel, dateShort, animat
 
       {settled && (
         <div className="gr-copy" role="status">
-          <div className="gr-you">You tied on the</div>
-          <h1 className="gr-nm">{t[1]}</h1>
-          <p className="gr-ln">{t[5]}</p>
-          <div className="gr-stats">
-            <div><b>{total}/{DOJO_MAX}</b><span>Run total</span></div>
-            <div><b>{fmtClock(runClock)}</b><span>On the mat</span></div>
-            {me && me.rank ? <a className="gr-lbl" href="/dojo/leaderboard" aria-label="See today's leaderboard"><b>#{me.rank}</b><span>{field ? `of ${Number(field).toLocaleString()} today` : 'today'}</span><em aria-hidden="true">&rarr;</em></a> : null}
-          </div>
-          <div className="gr-games">
-            {sections.map((s, i) => <div key={s.key} className={flat ? '' : i === hi ? 'hi' : i === lo ? 'lo' : ''}><i>{s.name}</i><b>{counted[i] ? pts[i] : '-'}<small>/{s.weight}</small></b></div>)}
-          </div>
-          <DojoBoard sections={sections} parts={parts} total={total} board={board} clocks={clocks} />
-          <div style={{ margin: '14px 0 0' }}>
-            <RunChallengeLine gameKey={DOJO_RUN_ID} score={total} total={DOJO_MAX} n={runToken()} />
-            <RunChallengeButton gameKey={DOJO_RUN_ID} score={total} total={DOJO_MAX} n={runToken()} t={runClock > 0 ? Math.round(runClock) : null} status={t[1]} door />
-          </div>
+          {(() => {
+            // THE RUN SCORECARD (owner, 2026-10-20): result, board and every
+            // form in one table, the challenge and the next slot under it.
+            const sf = board && board.data && board.data.stageField;
+            const stages = sections.map((s, i) => ({ key: s.key, name: s.name, colour: rampFor(i) }));
+            const mePer = Object.fromEntries(sections.map((s, i) => [s.key, counted[i] ? pts[i] : null]));
+            const built = boardRows({ data: board && board.data, perOf: (x) => x.sv || null, titleOf: (v) => B[dojoTierOf(v)][1], mePer, meTotal: total, meTitle: t[1] });
+            const ranks = {};
+            sections.forEach((s, i) => { if (counted[i]) { const k = stageRank(sf, s.key, pts[i]); if (k) ranks[s.key] = k; } });
+            const avg = stageAvg(sf, sections);
+            const miss = Object.fromEntries(sections.map((s, i) => [s.key, !!(counted[i] && !counted[i].unknown && dojoAcc(counted[i].score, counted[i].total) < 1)]));
+            const subBits = [];
+            if (built.meRank) subBits.push(<b key="r">#{built.meRank}{built.field ? ` of ${Number(built.field).toLocaleString()}` : ''}</b>);
+            if (built.ahead != null) subBits.push(`ahead of ${built.ahead}%`);
+            if (runClock > 0) subBits.push(fmtClock(runClock));
+            return (
+              <RunScorecard
+                stages={stages}
+                rows={built.rows}
+                you={{ miss }}
+                avg={avg}
+                ranks={Object.keys(ranks).length ? ranks : null}
+                scale={Object.fromEntries(sections.map((s) => [s.key, s.weight]))}
+                avgTotal={avg ? Math.round(sections.reduce((a, s) => a + (Number(avg[s.key]) || 0), 0)) : null}
+                hero={{ value: total, of: DOJO_MAX, eyebrow: 'You tied on the', title: t[1], sub: subBits.length ? subBits.reduce((acc, x, i) => (i ? [...acc, ' \u00B7 ', x] : [x]), []) : null, line: t[5] }}
+                field={built.field}
+                boardHref="/dojo/leaderboard"
+                boardState={(board && board.state) || 'loading'}
+                aside={<>
+                  <RunChallengeLine gameKey={DOJO_RUN_ID} score={total} total={DOJO_MAX} n={runToken()} />
+                  <RunChallengeButton gameKey={DOJO_RUN_ID} score={total} total={DOJO_MAX} n={runToken()} t={runClock > 0 ? Math.round(runClock) : null} status={t[1]} door />
+                </>}
+                next={<RunNextSlot circuitId={DOJO_RUN_ID} exclude={sections.map((s) => s.key)} cats={['Sudoku']} />}
+              />
+            );
+          })()}
           <NextDrop label="Tomorrow's forms" sub="A new six by six, a new classic and a new variant at midnight Eastern." href="/dojo"
             accent="var(--dj-cta)" ink="var(--dj-ink)" mute="var(--dj-mute)" style={{ margin: '14px 0 0' }} />
           <MoreRunsList self="dojo" ink="var(--dj-ink)" mute="var(--dj-mute)" line="var(--dj-line)" onShare={onShare} copied={copied} />

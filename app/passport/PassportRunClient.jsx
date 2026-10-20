@@ -32,6 +32,9 @@ import ChallengeStrip from '../ChallengeStrip';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import useAbandonFlush from '../quiz/[id]/useAbandonFlush';
 import useCircuitBoard from '../circuits/useCircuitBoard';
+import RunScorecard, { boardRows, stageRank, stageAvg } from '../circuits/RunScorecard';
+import RunNextSlot from '../circuits/RunNextSlot';
+import { rampFor } from '@/lib/circuits';
 import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
 import GauntletMorePop from '../circuits/GauntletMorePop';
 import { RunChallengeButton, RunChallengeLine } from '../RunChallenge';
@@ -530,20 +533,39 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
           full width of the ending, centred, Trivia Gauntlet style. Share is the
           challenge card's job; the rank above opens the board. */}
       <div className="pe-wide">
-        <div className="pe-rounds pr-legs">
-          {ORD.map((i) => LEGS[i]).map((l) => { const i = LEGS.indexOf(l); return <div key={l.k} className={flat ? '' : i === hiR ? 'hi' : i === loR ? 'lo' : ''}><i>{l.n}</i><b>{sc[i] == null ? '-' : sc[i]}<small>/{l.max}</small></b></div>; })}
-        </div>
-        <div className="pe-lb" aria-label="Today's leaderboard">
-          <div className="pe-lbh"><b>Today&rsquo;s board</b><span>{field ? `${Number(field).toLocaleString()} ${Number(field) === 1 ? 'player' : 'players'}` : ''}</span></div>
-          {topRows.length ? topRows.map((r, i) => boardRow(r, i, !!(me && me.userKey && r.userKey === me.userKey)))
-            : <div className="pe-lbe">{cboard && cboard.state === 'loading' ? 'Loading the board\u2026' : 'Nobody is on the board yet.'}</div>}
-          {me && !meInTop ? <>{topRows.length ? <div className="pe-lbgap" aria-hidden="true" /> : null}{boardRow({ ...me, total: me.total != null ? me.total : total }, 9, true)}</> : null}
-        </div>
-        <RunChallengeLine gameKey="passport" score={total} n={PUZZLE.num} />
-        <div className="pe-chal">
-          <RunChallengeButton gameKey="passport" score={total} total={50} n={PUZZLE.num} archive={!isTodays}
-            t={runSecs} status={tier.name || ''} door />
-        </div>
+        {(() => {
+          // THE RUN SCORECARD (owner, 2026-10-20): the board and every leg in
+          // one table, the challenge and the next slot under it. The cover and
+          // title above are the hero, so none here.
+          const legs = ORD.map((i) => LEGS[i]);
+          const sf = cboard && cboard.data && cboard.data.stageField;
+          const stages = legs.map((l, i) => ({ key: l.k, name: l.n, colour: rampFor(i) }));
+          const mePer = Object.fromEntries(LEGS.map((l, i) => [l.k, sc[i] == null ? null : sc[i]]));
+          const built = boardRows({ data: cboard && cboard.data, perOf: (x) => x.sv || null, titleOf: (v) => (TIERS[tierIndex(v)] || {}).name || '', mePer, meTotal: total, meTitle: tier.name });
+          const ranks = {};
+          LEGS.forEach((l, i) => { if (sc[i] != null) { const r = stageRank(sf, l.k, sc[i]); if (r) ranks[l.k] = r; } });
+          const avg = stageAvg(sf, legs.map((l) => ({ key: l.k })));
+          return (
+            <RunScorecard
+              stages={stages}
+              rows={built.rows}
+              you={{ miss: {} }}
+              avg={avg}
+              ranks={Object.keys(ranks).length ? ranks : null}
+              scale={Object.fromEntries(LEGS.map((l) => [l.k, l.max]))}
+              avgTotal={avg ? Math.round(LEGS.reduce((a, l) => a + (Number(avg[l.k]) || 0), 0)) : null}
+              field={built.field}
+              boardHref={`${PATH}/leaderboard`}
+              boardState={(cboard && cboard.state) || 'loading'}
+              aside={<>
+                <RunChallengeLine gameKey="passport" score={total} n={PUZZLE.num} />
+                <RunChallengeButton gameKey="passport" score={total} total={50} n={PUZZLE.num} archive={!isTodays}
+                  t={runSecs} status={tier.name || ''} door />
+              </>}
+              next={<RunNextSlot circuitId="passport" exclude={LEGS.map((l) => l.k)} cats={['Geography']} />}
+            />
+          );
+        })()}
         {isTodays ? (
           <NextDrop label="Next flight" sub="A new Ping, Flank and Span board at midnight Eastern." href={PATH}
             accent="#c4b5fd" style={{ margin: '14px 0 0' }} />

@@ -739,7 +739,40 @@ export async function GET(request) {
     }
     // ?top=N asks for a longer board (the home's side column), capped at 30.
     const topN = Math.min(30, Math.max(DISPLAY, parseInt(searchParams.get('top') || '', 10) || DISPLAY));
-    const overallBoardOut = overallNamed.slice(0, topN).map((r) => ({ ...r, rank: overallRankByKey.get(r.userKey) }));
+    // THE RUN SCORECARD (owner, 2026-10-20): every run ends on one table of
+    // its stages, so each row carries its per-stage figure in the unit the
+    // run ranks on (`sv`), and `stageField` gives every stage's average, best
+    // and the sorted field of today's plays, guests included, so a client can
+    // place a figure without a second read. Display only; nothing ranks on it.
+    const stageVal = (k, p) => {
+      if (!p || p.abandoned) return null;
+      if (scaleOn) return Math.round((Number(scaleOn.fn(k, p)) || 0) * 10) / 10;
+      if (byTime) return Number(p.score) > 0 && Number.isFinite(Number(p.timeElapsed)) ? Math.round(Number(p.timeElapsed)) : null;
+      return Number.isFinite(Number(p.score)) ? Number(p.score) : null;
+    };
+    const svOf = (r) => {
+      if (!circuitOn || !r || !r.perGame) return undefined;
+      const out = {};
+      for (const g of games) { const v = stageVal(g.key, r.perGame[g.key]); if (v != null) out[g.key] = v; }
+      return out;
+    };
+    let stageField = null;
+    if (circuitOn) {
+      stageField = { lower: byTime, games: {} };
+      for (const g of games) {
+        const vals = overallFull.map((r) => stageVal(g.key, r.perGame && r.perGame[g.key]))
+          .filter((v) => v != null)
+          .sort((a, b) => (byTime ? a - b : b - a));
+        const sum = vals.reduce((a, v) => a + v, 0);
+        stageField.games[g.key] = {
+          plays: vals.length,
+          avg: vals.length ? Math.round((sum / vals.length) * 10) / 10 : null,
+          best: vals.length ? vals[0] : null,
+          vals: vals.slice(0, 3000),
+        };
+      }
+    }
+    const overallBoardOut = overallNamed.slice(0, topN).map((r) => ({ ...r, rank: overallRankByKey.get(r.userKey), sv: svOf(r) }));
     // ?all=1 (Polymath, 2026-10-19): every ranked named row, slimmed to what a
     // cross-circuit join needs. The capped board above cannot be joined across
     // circuits without losing anyone outside the top 30.
@@ -804,6 +837,7 @@ export async function GET(request) {
         }
       }
       if (me.userKey && overallRankByKey.has(me.userKey)) me.rank = overallRankByKey.get(me.userKey);
+      if (circuitOn) me.sv = svOf(me);
       // combineDaily already stamped a rank over the whole field, so without
       // this an incomplete circuit player would keep it and read as ranked.
       if (memberKeys && !rankEligible(me)) me.rank = null;
@@ -882,6 +916,7 @@ export async function GET(request) {
     return NextResponse.json({
       date: suffix,
       priceField,
+      stageField,
       // Whether this payload is the five-game run or the full slate, so a
       // client cannot mistake one for the other when both are in flight.
       five: fiveOnly && !circuitOn,
