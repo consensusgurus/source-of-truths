@@ -25,12 +25,15 @@ import { RotateCcw, Lightbulb, Eye, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } 
 import { onSpring } from '@/lib/topple-engine';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const TW = 40;            // one square, left to right
-const TH = 26;            // one square, top to bottom (depth is foreshortened)
+const TW = 44;            // one square, left to right
+const TH = 30;            // one square, top to bottom (depth is foreshortened)
 const KX = 0;             // no sideways lean: a slanted view made a standing block look
                           // like it stood off its own tile (looked at, 2026-10-19)
-const TZ = 22;            // how far one unit of height rises
-const SLAB = 0.32;        // tile thickness, in block units
+const TZ = 26;            // how far one unit of height rises
+const SLAB = 0.34;        // tile thickness, in block units
+const GAP = 0.045;        // the seam between two tiles, so the floor reads as tiles
+const PAD_UP = 0.62;      // a spring pad at rest stands this far proud of the floor, coil showing
+const PAD_DOWN = 0.1;     // and sinks to here under the block
 const PAD = 14;
 const ROLL_MS = 190;
 const DROP_MS = 520;
@@ -46,8 +49,10 @@ const TOKENS = {
   tileEdge: 'color-mix(in srgb, var(--stg-ink, #e9edf4) 40%, var(--stg-ground, #0b0f1a))',
   frag: 'color-mix(in srgb, var(--stg-warn, #fbbf24) 78%, var(--stg-ground, #0b0f1a))',
   block: 'var(--stg-acc, #bef264)',
-  pad: 'color-mix(in srgb, var(--stg-acc, #bef264) 34%, var(--stg-ground, #0b0f1a))',
-  coil: 'var(--stg-acc-ink, var(--stg-acc, #bef264))',
+  pad: 'color-mix(in srgb, var(--stg-acc, #bef264) 40%, var(--stg-ground, #0b0f1a))',
+  mark: 'var(--stg-acc-ink, var(--stg-acc, #bef264))',
+  metal: 'color-mix(in srgb, var(--stg-ink, #e9edf4) 72%, var(--stg-ground, #0b0f1a))',
+  socket: 'color-mix(in srgb, var(--stg-ink, #e9edf4) 10%, var(--stg-ground, #0b0f1a))',
 };
 
 const CSS = `
@@ -125,6 +130,18 @@ function RollMeter({ used, par, perfect }) {
   );
 }
 
+function cellsOfBlock(b) {
+  if (b.o === 'S') return [[b.x, b.y]];
+  if (b.o === 'H') return [[b.x, b.y], [b.x + 1, b.y]];
+  return [[b.x, b.y], [b.x, b.y + 1]];
+}
+// Is a resolved rgb() colour dark? Decides the shadow strength per register.
+function isDark(rgb) {
+  const m = String(rgb).match(/[\d.]+/g);
+  if (!m || m.length < 3) return true;
+  const [r, g, b] = m.slice(0, 3).map(Number);
+  return (0.299 * r + 0.587 * g + 0.114 * b) < 128;
+}
 const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 
 export default function ToppleBoard({
@@ -138,7 +155,7 @@ export default function ToppleBoard({
   const [, force] = useState(0);
 
   const W = P.w * TW + KX * 2 + PAD * 2 + 6;
-  const H = P.h * TH + TZ * 2.6 + SLAB * TZ + PAD * 2 + 4;
+  const H = P.h * TH + TZ * 2.6 + SLAB * TZ + PAD * 2 + 16;
   const OX = PAD + KX * 2 + 2;
   const OY = PAD + TZ * 2.6;
   const pr = useCallback((x, y, z) => [OX + x * TW - z * KX, OY + y * TH - z * TZ], [OX, OY]);
@@ -158,25 +175,26 @@ export default function ToppleBoard({
     const cv = cvRef.current;
     if (!cv || !colors.current) return;
     const C = colors.current;
+    const dark = isDark(C.ground);
     const dpr = Math.min(3, window.devicePixelRatio || 1);
     if (cv.width !== Math.round(W * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
     const ctx = cv.getContext('2d');
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
-    const poly = (pts, fill, shade, stroke) => {
-      ctx.beginPath();
-      pts.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
-      ctx.closePath();
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    const path = (pts) => { ctx.beginPath(); pts.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]))); ctx.closePath(); };
+    const poly = (pts, fill, shade, stroke, sw) => {
+      path(pts);
       ctx.fillStyle = fill; ctx.fill();
       if (shade > 0) { ctx.fillStyle = `rgba(0,0,0,${shade})`; ctx.fill(); }
       if (shade < 0) { ctx.fillStyle = `rgba(255,255,255,${-shade})`; ctx.fill(); }
-      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); }
+      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = sw || 1; ctx.stroke(); }
     };
-    const slab = (x, y, top, edge) => {
-      const z0 = -SLAB;
-      poly([pr(x, y + 1, 0), pr(x + 1, y + 1, 0), pr(x + 1, y + 1, z0), pr(x, y + 1, z0)], top, 0.34);
-      poly([pr(x + 1, y, 0), pr(x + 1, y + 1, 0), pr(x + 1, y + 1, z0), pr(x + 1, y, z0)], top, 0.5);
-      poly([pr(x, y, 0), pr(x + 1, y, 0), pr(x + 1, y + 1, 0), pr(x, y + 1, 0)], top, 0, edge);
+    // a soft vertical sheen over a shape already on the path
+    const sheen = (y0, y1, top, bottom) => {
+      const gr = ctx.createLinearGradient(0, y0, 0, y1);
+      gr.addColorStop(0, top); gr.addColorStop(1, bottom);
+      ctx.fillStyle = gr; ctx.fill();
     };
 
     // the animation's phase
@@ -189,60 +207,114 @@ export default function ToppleBoard({
       else a = { phase: 'done' };
     }
 
-    // the floor, back to front and left to right
+    // How high each spring pad stands: up at rest, down under the block,
+    // easing between the two as the block rolls on or off, and on a win
+    // squashing flat and then snapping up as it fires.
+    const footKeys = (b) => (b ? cellsOfBlock(b).map(([x, y]) => `${x},${y}`) : []);
+    const fromFoot = anim ? footKeys(anim.from) : [];
+    const toFoot = anim ? footKeys(anim.to) : footKeys(block);
+    const restFoot = footKeys(block);
+    const padLift = (key) => {
+      if (a && a.phase === 'launch' && toFoot.includes(key)) {
+        const k = a.k;
+        return k < 0.22 ? PAD_DOWN - (k / 0.22) * PAD_DOWN : Math.min(1.1, ((k - 0.22) / 0.1) * 1.1);
+      }
+      if (!anim && launched) return PAD_UP;
+      if (a && a.phase === 'roll') {
+        const f = fromFoot.includes(key) ? PAD_DOWN : PAD_UP, t2 = toFoot.includes(key) ? PAD_DOWN : PAD_UP;
+        return f + (t2 - f) * a.k;
+      }
+      if (a && a.phase === 'drop') return PAD_UP;
+      return restFoot.includes(key) && !launched ? PAD_DOWN : PAD_UP;
+    };
+    const onSpringCells = (keys) => keys.some((k) => { const [x, y] = k.split(',').map(Number); return P.grid[y] && P.grid[y][x] === 'G'; });
+
+    // 1. one soft shadow under the whole floor, so the board sits on the page
+    ctx.save();
+    ctx.shadowColor = dark ? 'rgba(0,0,0,.55)' : 'rgba(20,30,50,.22)';
+    ctx.shadowBlur = 18; ctx.shadowOffsetY = 10;
+    ctx.fillStyle = C.ground;
+    ctx.beginPath();
+    for (let y = 0; y < P.h; y++) for (let x = 0; x < P.w; x++) {
+      if (P.grid[y][x] === '.') continue;
+      const p0 = pr(x + GAP, y + GAP, 0), p1 = pr(x + 1 - GAP, y + 1 - GAP, -SLAB);
+      ctx.rect(p0[0], p0[1], p1[0] - p0[0], p1[1] - p0[1]);
+    }
+    ctx.fill();
+    ctx.restore();
+
+    // 2. the tiles, back row first
     const cracked = a && anim.result === 'crack' && a.phase === 'drop' ? `${anim.to.x},${anim.to.y}` : null;
+    const tile = (x, y, top, z = 0, opts = {}) => {
+      const g = GAP;
+      // front face, darker toward the bottom
+      const f = [pr(x + g, y + 1 - g, z), pr(x + 1 - g, y + 1 - g, z), pr(x + 1 - g, y + 1 - g, z - SLAB), pr(x + g, y + 1 - g, z - SLAB)];
+      poly(f, top, 0.34);
+      sheen(f[0][1], f[2][1], 'rgba(0,0,0,0)', 'rgba(0,0,0,.22)');
+      // top face with a light sheen from the back edge and a bevel highlight
+      const t = [pr(x + g, y + g, z), pr(x + 1 - g, y + g, z), pr(x + 1 - g, y + 1 - g, z), pr(x + g, y + 1 - g, z)];
+      poly(t, top, 0);
+      sheen(t[0][1], t[3][1], dark ? 'rgba(255,255,255,.10)' : 'rgba(255,255,255,.35)', 'rgba(255,255,255,0)');
+      ctx.strokeStyle = dark ? 'rgba(255,255,255,.16)' : 'rgba(255,255,255,.7)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(t[0][0] + 1, t[0][1] + 0.5); ctx.lineTo(t[1][0] - 1, t[1][1] + 0.5); ctx.stroke();
+      ctx.strokeStyle = 'rgba(0,0,0,.28)';
+      ctx.beginPath(); ctx.moveTo(t[3][0], t[3][1]); ctx.lineTo(t[2][0], t[2][1]); ctx.stroke();
+      if (opts.cracks) {
+        ctx.strokeStyle = 'rgba(60,30,0,.55)'; ctx.lineWidth = 1.3;
+        ctx.beginPath();
+        ctx.moveTo(...pr(x + 0.18, y + 0.28, z)); ctx.lineTo(...pr(x + 0.42, y + 0.46, z)); ctx.lineTo(...pr(x + 0.38, y + 0.62, z)); ctx.lineTo(...pr(x + 0.5, y + 0.84, z));
+        ctx.moveTo(...pr(x + 0.42, y + 0.46, z)); ctx.lineTo(...pr(x + 0.66, y + 0.38, z)); ctx.lineTo(...pr(x + 0.84, y + 0.5, z));
+        ctx.moveTo(...pr(x + 0.66, y + 0.38, z)); ctx.lineTo(...pr(x + 0.7, y + 0.18, z));
+        ctx.stroke();
+      }
+    };
+
+    // THE SPRING: a sunken socket, a metal coil, and a pad on top marked with an
+    // X. The coil is a real helix, its back half drawn behind and dimmer, so it
+    // reads as a spring from straight on.
+    const spring = (x, y, lift) => {
+      tile(x, y, C.socket);
+      const cx = x + 0.5, cy = y + 0.5, rx = 0.3, ry = 0.24;
+      const turns = 4, steps = turns * 28;
+      const zTop = Math.max(0.02, lift - 0.06);
+      const pt = (i) => { const t = (i / steps) * turns * Math.PI * 2; return [cx + rx * Math.cos(t), cy + ry * Math.sin(t), 0.02 + (zTop - 0.02) * (i / steps), Math.sin(t)]; };
+      const coil = (front) => {
+        ctx.strokeStyle = C.metal; ctx.lineWidth = front ? 2.4 : 2;
+        ctx.globalAlpha = front ? 1 : 0.45;
+        for (let i = 0; i < steps; i++) {
+          const p = pt(i), q = pt(i + 1);
+          if ((p[3] >= 0) !== front) continue;
+          ctx.beginPath(); ctx.moveTo(...pr(p[0], p[1], p[2])); ctx.lineTo(...pr(q[0], q[1], q[2])); ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+      };
+      coil(false);
+      // the pad: a plate a little inside the tile, edged, with an X on it
+      const m = 0.13, th = 0.09, z1 = lift, z0 = lift - th;
+      const front = [pr(x + m, y + 1 - m, z1), pr(x + 1 - m, y + 1 - m, z1), pr(x + 1 - m, y + 1 - m, z0), pr(x + m, y + 1 - m, z0)];
+      coil(true);
+      poly(front, C.pad, 0.35);
+      const top = [pr(x + m, y + m, z1), pr(x + 1 - m, y + m, z1), pr(x + 1 - m, y + 1 - m, z1), pr(x + m, y + 1 - m, z1)];
+      poly(top, C.pad, 0, C.mark, 1.6);
+      sheen(top[0][1], top[3][1], 'rgba(255,255,255,.18)', 'rgba(255,255,255,0)');
+      const i = 0.27;
+      ctx.strokeStyle = C.mark; ctx.lineWidth = 3.2;
+      ctx.beginPath();
+      ctx.moveTo(...pr(x + i, y + i, z1)); ctx.lineTo(...pr(x + 1 - i, y + 1 - i, z1));
+      ctx.moveTo(...pr(x + 1 - i, y + i, z1)); ctx.lineTo(...pr(x + i, y + 1 - i, z1));
+      ctx.stroke();
+    };
+
     for (let y = 0; y < P.h; y++) for (let x = 0; x < P.w; x++) {
       const c = P.grid[y][x];
       if (c === '.') continue;
-      if (c === 'G') {
-        // THE SPRING: a pad on a coil. The pad sits a little proud of the floor
-        // and squashes as the block lands, then snaps up as it fires.
-        // The pad rests almost flush (0.06) so a block passing over it does not
-        // sink into it; it squashes as the block lands and snaps up as it fires.
-        let lift = 0.06;
-        if (a && a.phase === 'launch') lift = a.k < 0.22 ? 0.06 - (a.k / 0.22) * 0.12 : -0.06 + Math.min(1, (a.k - 0.22) / 0.12) * 0.5;
-        else if (!playing && !anim && launched) lift = 0.46;
-        slab(x, y, C.tile, C.tileEdge);
-        // the coil, drawn as a zigzag up the front from the floor to the pad
-        ctx.strokeStyle = C.coil; ctx.lineWidth = 2;
-        ctx.beginPath();
-        const turns = 4;
-        for (let i = 0; i <= turns * 2; i++) {
-          const zz = (lift * i) / (turns * 2);
-          const xx = i % 2 ? x + 0.78 : x + 0.22;
-          const p = pr(xx, y + 0.62, zz);
-          i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);
-        }
-        ctx.stroke();
-        const z1 = lift, z0 = lift - 0.1;
-        const m = 0.08;
-        poly([pr(x + m, y + 1 - m, z1), pr(x + 1 - m, y + 1 - m, z1), pr(x + 1 - m, y + 1 - m, z0), pr(x + m, y + 1 - m, z0)], C.pad, 0.3);
-        poly([pr(x + 1 - m, y + m, z1), pr(x + 1 - m, y + 1 - m, z1), pr(x + 1 - m, y + 1 - m, z0), pr(x + 1 - m, y + m, z0)], C.pad, 0.45);
-        poly([pr(x + m, y + m, z1), pr(x + 1 - m, y + m, z1), pr(x + 1 - m, y + 1 - m, z1), pr(x + m, y + 1 - m, z1)], C.pad, 0, C.coil);
-        // an up-chevron on the pad, so it reads as "this fires you" without colour
-        ctx.strokeStyle = C.coil; ctx.lineWidth = 2; ctx.lineCap = 'round';
-        ctx.beginPath();
-        ctx.moveTo(...pr(x + 0.3, y + 0.62, z1)); ctx.lineTo(...pr(x + 0.5, y + 0.36, z1)); ctx.lineTo(...pr(x + 0.7, y + 0.62, z1));
-        ctx.stroke();
-        continue;
-      }
-      if (cracked === `${x},${y}`) {
-        if (a.k > 0.15) continue;   // it gives way under the block
-      }
-      if (c === 'F') {
-        slab(x, y, C.frag, 'rgba(0,0,0,.28)');
-        // two hairline cracks, so fragile reads without colour alone
-        ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 1.2;
-        ctx.beginPath();
-        ctx.moveTo(...pr(x + 0.22, y + 0.3, 0)); ctx.lineTo(...pr(x + 0.48, y + 0.52, 0)); ctx.lineTo(...pr(x + 0.42, y + 0.8, 0));
-        ctx.moveTo(...pr(x + 0.48, y + 0.52, 0)); ctx.lineTo(...pr(x + 0.8, y + 0.42, 0));
-        ctx.stroke();
-      } else {
-        slab(x, y, C.tile, C.tileEdge);
-      }
+      if (c === 'G') { spring(x, y, padLift(`${x},${y}`)); continue; }
+      if (cracked === `${x},${y}` && a.k > 0.15) continue;   // it gives way under the block
+      if (c === 'F') tile(x, y, C.frag, 0, { cracks: true });
+      else tile(x, y, C.tile);
     }
 
-    // the block
+    // 3. the block
     const drawBlock = (b, dir, th, dz, alpha) => {
       const [x0, y0, x1, y1, h] = boxOf(b);
       const c = Math.cos(th), s = Math.sin(th);
@@ -257,28 +329,62 @@ export default function ToppleBoard({
       const V = [];
       for (const z of [0, h]) for (const y of [y0, y1]) for (const x of [x0, x1]) V.push(rot([x, y, z]));
       const ctr = V.reduce((q, p) => [q[0] + p[0] / 8, q[1] + p[1] / 8, q[2] + p[2] / 8], [0, 0, 0]);
+      // contact shadow on the floor, fading as the block rises
+      if (alpha > 0.5 && dz < 1) {
+        const xs = V.map((p) => p[0]), ys = V.map((p) => p[1]);
+        const sx0 = Math.min(...xs), sx1 = Math.max(...xs), sy0 = Math.min(...ys), sy1 = Math.max(...ys);
+        const q0 = pr(sx0 - 0.04, sy0 + 0.05, 0), q1 = pr(sx1 + 0.04, sy1 + 0.12, 0);
+        ctx.save();
+        ctx.globalAlpha = (dark ? 0.5 : 0.28) * Math.max(0, 1 - dz);
+        ctx.fillStyle = '#000';
+        ctx.filter = 'blur(3px)';
+        ctx.fillRect(q0[0], q0[1], q1[0] - q0[0], q1[1] - q0[1]);
+        ctx.restore();
+      }
       ctx.globalAlpha = alpha;
-      ctx.lineJoin = 'round';
+      const faces = [];
       for (const f of FACES) {
         const pts = f.map((i) => V[i]);
         const fc = pts.reduce((q, p) => [q[0] + p[0] / 4, q[1] + p[1] / 4, q[2] + p[2] / 4], [0, 0, 0]);
         let n = [fc[0] - ctr[0], fc[1] - ctr[1], fc[2] - ctr[2]];
         const m = Math.hypot(...n); n = n.map((v) => v / m);
         if (n[0] * VIEW[0] + n[1] * VIEW[1] + n[2] * VIEW[2] <= 0.001) continue;
+        faces.push({ pts, n });
+      }
+      for (const { pts, n } of faces) {
         const lit = n[0] * LIGHT[0] + n[1] * LIGHT[1] + n[2] * LIGHT[2];
-        poly(pts.map((p) => pr(p[0], p[1], p[2])), C.block, lit > 0.7 ? 0 : 0.18 + (0.7 - Math.max(0, lit)) * 0.45, 'rgba(0,0,0,.35)');
+        const sp = pts.map((p) => pr(p[0], p[1], p[2]));
+        poly(sp, C.block, lit > 0.7 ? 0 : 0.14 + (0.7 - Math.max(0, lit)) * 0.42);
+        const ys2 = sp.map((p) => p[1]);
+        // the top catches the light; the sides darken toward the floor
+        if (n[2] > 0.7) sheen(Math.min(...ys2), Math.max(...ys2), 'rgba(255,255,255,.34)', 'rgba(255,255,255,.08)');
+        else sheen(Math.min(...ys2), Math.max(...ys2), 'rgba(255,255,255,.06)', 'rgba(0,0,0,.18)');
+        ctx.strokeStyle = 'rgba(0,0,0,.42)'; ctx.lineWidth = 1.1;
+        path(sp); ctx.stroke();
+      }
+      // a bright rim along the top face's back and left edges
+      const topFace = faces.find((f) => f.n[2] > 0.7);
+      if (topFace) {
+        const sp = topFace.pts.map((p) => pr(p[0], p[1], p[2]));
+        ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(...sp[3]); ctx.lineTo(...sp[0]); ctx.lineTo(...sp[1]); ctx.stroke();
       }
       ctx.globalAlpha = 1;
     };
-    if (a && a.phase === 'roll') drawBlock(anim.from, anim.dir, a.k * Math.PI / 2, 0, 1);
+    const restDz = (b) => (onSpringCells(footKeys(b)) ? PAD_DOWN : 0);
+    if (a && a.phase === 'roll') {
+      const d0 = onSpringCells(fromFoot) ? PAD_DOWN : 0, d1 = onSpringCells(toFoot) ? PAD_DOWN : 0;
+      drawBlock(anim.from, anim.dir, a.k * Math.PI / 2, d0 + (d1 - d0) * a.k, 1);
+    }
     else if (a && a.phase === 'drop') drawBlock(anim.to, null, 0, -a.k * a.k * 5, Math.max(0, 1 - a.k * 1.3));
     else if (a && a.phase === 'launch') {
       // squash with the pad, then fire straight up and out of the top of the board
       const k = a.k;
-      const dz = k < 0.22 ? -(k / 0.22) * 0.12 : -0.12 + Math.pow((k - 0.22) / 0.78, 1.6) * 16;
-      drawBlock(anim.to, null, 0, dz + 0.06, 1);
+      const lift = k < 0.22 ? PAD_DOWN - (k / 0.22) * PAD_DOWN : Math.min(1.1, ((k - 0.22) / 0.1) * 1.1);
+      const fly = k < 0.32 ? 0 : Math.pow((k - 0.32) / 0.68, 1.7) * 18;
+      drawBlock(anim.to, null, 0, lift + fly, 1);
     }
-    else if (!(launched || onSpring(P, block))) drawBlock(block, null, 0, 0.0, 1);
+    else if (!(launched || onSpring(P, block))) drawBlock(block, null, 0, restDz(block), 1);
   }, [P, anim, block, pr, W, H, playing, launched]);
 
   // colours follow the light switch
