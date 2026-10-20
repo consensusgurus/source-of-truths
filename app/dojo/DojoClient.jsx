@@ -25,6 +25,7 @@
 // on its own after the last grid, as Judged's and Price Check's do.
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { readStageTheme } from '@/lib/stage-theme';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import RunEmbed from '../RunEmbed';
@@ -116,13 +117,19 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
   const [ladderOpen, setLadderOpen] = useState(false);
   const [holding, setHolding] = useState(null);
   const [copied, setCopied] = useState(false);
-  // THE BOARD'S LIGHT SWITCH (owner, 2026-10-13). Light or dark for the three
-  // grids only; the doors, the between-rounds sheet and the grading stay on the
-  // Dojo's own dark ground. Its own key, defaulting to dark (the look the Dojo
-  // launched with), and read in an effect so the first paint matches the server.
+  // THE BOARD'S LIGHT SWITCH. Light or dark for the grids only; the run's own
+  // page stays on its dark ground. The board OPENS IN THE READER'S OWN PAGE
+  // SETTING (owner, 2026-10-20: never a default of its own), and the switch
+  // is a choice for today only: it is kept under today's date so a reload mid
+  // run holds it, and tomorrow the board follows the page setting again.
+  // Read in an effect so the first paint matches the server.
   const [boardTheme, setBoardTheme] = useState('dark');
-  useEffect(() => { try { const v = window.localStorage.getItem('sot_dojo_board'); if (v === 'light' || v === 'dark') setBoardTheme(v); } catch (e) {} }, []);
-  const flipBoard = () => setBoardTheme((cur) => { const next = cur === 'light' ? 'dark' : 'light'; try { window.localStorage.setItem('sot_dojo_board', next); } catch (e) {} return next; });
+  useEffect(() => {
+    let t = readStageTheme();
+    try { const v = JSON.parse(window.localStorage.getItem('sot_dojo_board2') || 'null'); if (v && v.day === etToday() && (v.t === 'light' || v.t === 'dark')) t = v.t; } catch (e) {}
+    setBoardTheme(t);
+  }, []);
+  const flipBoard = () => setBoardTheme((cur) => { const next = cur === 'light' ? 'dark' : 'light'; try { window.localStorage.setItem('sot_dojo_board2', JSON.stringify({ t: next, day: etToday() })); } catch (e) {} return next; });
   const doneAtLoad = useRef(null);
   const [settled, setSettled] = useState(false);
 
