@@ -49,7 +49,7 @@ import DailyMasthead from '../DailyMasthead';
 import { isLoft } from '@/lib/loft';
 import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
-import { useRunEmbed } from '../RunEmbed';
+import { useRunEmbed, useRunHelp } from '../RunEmbed';
 import RunDoorPop from '../circuits/RunDoorPop';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
@@ -373,6 +373,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
   const searchParams = useSearchParams();
   // Inside the Passport run (app/passport/PassportRunClient.jsx), owner 2026-10-14.
   const EMBED = useRunEmbed();
+  useRunHelp(EMBED, () => setShowHelp(true));
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);

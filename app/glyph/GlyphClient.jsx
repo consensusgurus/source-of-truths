@@ -50,7 +50,7 @@ import useGameAllTime from '../useGameAllTime';
 import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
-import { useRunEmbed } from '../RunEmbed';
+import { useRunEmbed, useRunHelp } from '../RunEmbed';
 import RunDoorPop from '../circuits/RunDoorPop';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
@@ -248,6 +248,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
   const LOFT = isLoft('glyph');
   const STAGE = isStage('glyph', searchParams);
   const EMBED = useRunEmbed();
+  useRunHelp(EMBED, () => setShowHelp(true));
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('glyph');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('glyph');
   const Cap = STAGE ? StageChrome : LoftCap;

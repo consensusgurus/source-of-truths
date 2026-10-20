@@ -47,7 +47,7 @@ import useGameAllTime from '../useGameAllTime';
 import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
-import { useRunEmbed } from '../RunEmbed';
+import { useRunEmbed, useRunHelp } from '../RunEmbed';
 import RunDoorPop from '../circuits/RunDoorPop';
 import useRailClearance from '../useRailClearance';
 import { CONTEST, contestIsLive } from '@/lib/contest';
@@ -302,6 +302,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('arcos');
   const STAGE = isStage('arcos', searchParams);
   const EMBED = useRunEmbed();
+  useRunHelp(EMBED, () => setShowHelp(true));
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('arcos');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('arcos');
   const Cap = STAGE ? StageChrome : LoftCap;

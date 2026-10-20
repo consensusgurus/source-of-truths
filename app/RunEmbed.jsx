@@ -28,7 +28,7 @@
 // holds the board at least that long before moving on. Never the full-screen
 // finale: the run owns the frame.
 
-import React, { createContext, useContext, useMemo, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useRef } from 'react';
 import { playBeat, playLoss } from '@/lib/finish-beat';
 
 const RunEmbedContext = createContext(null);
@@ -37,10 +37,29 @@ export function useRunEmbed() {
   return useContext(RunEmbedContext);
 }
 
+// HOW TO PLAY FROM THE RUN (owner, 2026-10-20). An embedded client drops its
+// cap, and the cap's ? was the only way back to the rules once a grid had
+// started. The run page draws its own How to play button and bumps `help`;
+// each embedded client opens its own rules modal through this hook. A fresh
+// mount does not open it (it only answers a bump made after mounting).
+export function useRunHelp(embed, open) {
+  const seq = embed ? embed.help || 0 : 0;
+  const seen = useRef(seq);
+  const openRef = useRef(open);
+  openRef.current = open;
+  useEffect(() => {
+    if (seq && seq !== seen.current) { seen.current = seq; try { openRef.current && openRef.current(); } catch (e) {} }
+  }, [seq]);
+}
+
 const FULL_ONLY = new Set(['emcee', 'encore']);
 
+// Returns the beat's handle (or null). The caller owns it: the beat's overlays
+// sit on document.body, so they must go the moment this embed leaves the page,
+// or they float over whatever the run shows next (owner, 2026-10-20: it
+// overlapped the next puzzle's start page).
 function playRunBeat(host, res) {
-  if (!host || !res || !res.key) return 0;
+  if (!host || !res || !res.key) return null;
   try {
     const root = host.querySelector('.stage-page') || host;
     // A solve is any credit, since most dailies grade a solve below full marks
@@ -50,23 +69,42 @@ function playRunBeat(host, res) {
     const won = typeof res.won === 'boolean' ? res.won
       : (FULL_ONLY.has(res.key) ? res.score >= res.total : res.score > 0);
     const h = won ? playBeat(res.key, { root }) : playLoss(res.key, { root });
-    const ms = Math.max(0, h.ms || 0);
-    setTimeout(() => { try { h.cancel(); } catch (e) {} }, ms + 1500);
-    return ms;
-  } catch (e) { return 0; }
+    return h;
+  } catch (e) { return null; }
 }
 
-export default function RunEmbed({ onResult, theme, children }) {
+export default function RunEmbed({ onResult, theme, help = 0, children }) {
   const hostRef = useRef(null);
+  const beatRef = useRef(null);
+  const stopBeat = () => {
+    const h = beatRef.current;
+    beatRef.current = null;
+    if (h) { try { h.cancel(); } catch (e) {} }
+  };
+  // Leaving the page (the run swaps in its between card or the next puzzle)
+  // clears the beat at once.
+  useEffect(() => stopBeat, []);
+  // So does a new puzzle mounted into this same embed (the run swaps the
+  // child's key rather than the embed).
+  const childKey = React.isValidElement(children) ? children.key : null;
+  useEffect(() => { stopBeat(); }, [childKey]);
   const value = useMemo(() => ({
     theme: theme === 'light' ? 'light' : 'dark',
+    help,
     onResult: (res) => {
       setTimeout(() => {
-        const beatMs = playRunBeat(hostRef.current, res);
+        stopBeat();
+        const h = playRunBeat(hostRef.current, res);
+        const beatMs = h ? Math.max(0, h.ms || 0) : 0;
+        if (h) {
+          beatRef.current = h;
+          // A run that keeps the board up (Judged, Room) clears it once played.
+          setTimeout(() => { if (beatRef.current === h) stopBeat(); }, beatMs + 400);
+        }
         try { onResult && onResult(res ? { ...res, beatMs } : res); } catch (e) {}
       }, 0);
     },
-  }), [onResult, theme]);
+  }), [onResult, theme, help]);
   return (
     <RunEmbedContext.Provider value={value}>
       <div ref={hostRef} style={{ display: 'contents' }}>{children}</div>

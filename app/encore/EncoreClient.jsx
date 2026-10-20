@@ -52,7 +52,7 @@ import useGameAllTime from '../useGameAllTime';
 import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
-import { useRunEmbed } from '../RunEmbed';
+import { useRunEmbed, useRunHelp } from '../RunEmbed';
 import RunDoorPop from '../circuits/RunDoorPop';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
@@ -277,6 +277,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
   const LOFT = isLoft('encore');
   const STAGE = isStage('encore', searchParams);
   const EMBED = useRunEmbed();
+  useRunHelp(EMBED, () => setShowHelp(true));
   // A give-up writes the answers into letters; on the loft the grid keeps the
   // player's own letters until the end card's Reveal answer tile is pressed.
   const viewLetters = g.status === 'revealed' && LOFT && !revealed ? (g.playerLetters || g.letters.map(() => '')) : g.letters;
