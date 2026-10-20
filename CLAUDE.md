@@ -10087,8 +10087,8 @@ and Passport.
 redirect), engine `crossed`, scorer `crossed`, `scoreFrom: '2026-10-20'`, `ownerOrder`, trophy "In
 Pen" (gold, PenTool). Four crosswords in the owner's order: Emcee, Encore, Arcos, Glyph, embedded
 through RunEmbed like the Dojo (`app/crossed/CrossedClient.jsx`, each client reads `useRunEmbed()`
-and mounts `RunDoorPop id="crossed"` on today's gate). Out of 100: Emcee 15, Encore 35, Arcos 25,
-Glyph 25, and of each a FIFTH for finishing and four fifths for speed (owner: "most all will
+and mounts `RunDoorPop id="crossed"` on today's gate). Out of 100: Emcee 15, Encore 25, Arcos 30,
+Glyph 30 (Encore 35, Arcos and Glyph 25 on launch day; owner moved weight off Encore 2026-10-20), and of each a FIFTH for finishing and four fifths for speed (owner: "most all will
 finish"), with clocks from `lib/crossed-clocks.js` (adaptive, like the Dojo's). Ranks are the
 weekday ladder, Monday Solver up to Saturday Solver and Solves in Pen. Ending is
 `CrossedCurtain.jsx` (the Dojo's grading-curtain shape with the four finished grids), share card
