@@ -9,7 +9,7 @@
 // Read in an EFFECT, never during render: the server has no URL to read, so a
 // value computed in render would hydrate against a different one.
 import { useEffect, useState } from 'react';
-import { readChallenge, dropChallenge, challengeFig } from '@/lib/challenge';
+import { readChallenge, dropChallenge, challengeFig, RUN_CHALLENGES } from '@/lib/challenge';
 import { metricDef, metricLine } from '@/lib/challenge-metric';
 
 const CSS = `
@@ -54,7 +54,7 @@ export default function ChallengeStrip({ gameKey, num = null, run = false }) {
           <b>{!run && c.m != null && metricDef(gameKey)
             ? metricLine(gameKey, c.name, 'this board', challengeFig(c, gameKey)).replace(/\.$/, '')
             : `${c.name} ${c.won ? 'set' : 'scored'} ${challengeFig(c, gameKey)} on this ${run ? 'run' : 'board'}`}</b>
-          <span>{run ? (c.x ? `${c.x}. Can you beat it?` : 'Same run. Can you beat it?') : 'Same puzzle. Can you beat it?'}</span>
+          <span>{run ? (c.x && !(RUN_CHALLENGES[gameKey] && RUN_CHALLENGES[gameKey].unit === 'right') ? `${c.x}. Can you beat it?` : 'Same run. Can you beat it?') : 'Same puzzle. Can you beat it?'}</span>
         </>
       )}
       <button type="button" aria-label="Dismiss the challenge" onClick={close}>&times;</button>

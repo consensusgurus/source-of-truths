@@ -15,7 +15,7 @@ import { dailyMeIdentity } from '../dailyMeClient';
 import { resultPostsSettled } from '../ResultQueue';
 
 const CSS = `
-.pmm{border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;
+.pmm{border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:16px;margin:18px 0;display:flex;flex-direction:column;gap:12px;
   background:rgba(255,255,255,.04);color:#e9edf4;font-variant-numeric:tabular-nums;}
 .pmm-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;}
 .pmm-eb{font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#aab5c7;}

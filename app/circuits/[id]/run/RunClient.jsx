@@ -1662,11 +1662,13 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     circuitId={circuitId}
                     clock={runSecs}
                     challenge={isChallengeableRun(circuitId) && !r.practice
-                      ? { score: cleared, total: askable, n: runToken(), t: runSecs > 0 ? Math.round(runSecs) : null, status: `${perfect} of ${N} cleared` }
+                      ? { score: cleared, total: askable, n: runToken(), t: runSecs > 0 ? Math.round(runSecs) : null }
                       : null}
                     similar={GAUNT || ENCORE ? similarRun : null}
                     boardHref={runSummaryHref(circuitId)}
                     boardState={boardQ.state}
+                    polymath={POLY_IDS.includes(circuitId) && !r.practice
+                      ? <PolymathMeter circuitId={circuitId} right={cleared} /> : null}
                   />
                 ) : null}
                 {!TOWERS ? (
@@ -1793,7 +1795,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                 {isChallengeableRun(circuitId) && !r.practice && !BTOP ? (
                   <div style={{ marginTop: 16 }}>
                     <RunChallengeLine gameKey={circuitId} score={cleared} total={askable} n={runToken()} style={{ display: 'block', textAlign: 'center' }} />
-                    <RunChallengeButton gameKey={circuitId} score={cleared} total={askable} n={runToken()} t={runSecs > 0 ? Math.round(runSecs) : null} status={`${perfect} of ${N} cleared`} door />
+                    <RunChallengeButton gameKey={circuitId} score={cleared} total={askable} n={runToken()} t={runSecs > 0 ? Math.round(runSecs) : null} door />
                   </div>
                 ) : null}
                 {/* NEXT DROP (owner, 2026-10-06): when tomorrow's run opens. */}
@@ -1927,7 +1929,9 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   );
                 })()}
 
-                {POLY_IDS.includes(circuitId) && !r.practice ? (
+                {/* POLYMATH SITS UNDER PLAY SIMILAR in the board top (owner, 2026-10-19);
+                    a run with no board top keeps it here. */}
+                {!BTOP && POLY_IDS.includes(circuitId) && !r.practice ? (
                   <PolymathMeter circuitId={circuitId} right={cleared} />
                 ) : null}
 
@@ -1978,7 +1982,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           clock={runSecs}
           meRow={myRow}
           challenge={isChallengeableRun(circuitId) && !r.practice
-            ? { score: cleared, total: askable, n: runToken(), t: runSecs > 0 ? Math.round(runSecs) : null, status: `${perfect} of ${N} cleared` }
+            ? { score: cleared, total: askable, n: runToken(), t: runSecs > 0 ? Math.round(runSecs) : null }
             : null}
           similar={similarRun}
           boardHref={runSummaryHref(circuitId)}

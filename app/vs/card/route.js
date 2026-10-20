@@ -31,7 +31,10 @@ export async function GET(req) {
   const byMetric = !run && c.m != null && !!metricDef(key);
   // A RUN says its total and its status (owner, 2026-10-07): how many right,
   // then the tier, card or quizzes cleared, and the clock when it has one.
-  const status = run ? [c.x, c.t != null ? mmssOf(c.t) : ''].filter(Boolean).join(' \u00b7 ') : '';
+  // A questions-right run states its total right and nothing else (owner,
+  // 2026-10-19): the old "N of 7 cleared" line read as a failure, and links
+  // already out carry it, so it is dropped here rather than only at the source.
+  const status = run && run.unit !== 'right' ? [c.x, c.t != null ? mmssOf(c.t) : ''].filter(Boolean).join(' \u00b7 ') : '';
   const blank = !run && isBlankMiss(c);
   const line = blank ? `${name} could not crack ${g.name}.` : run ? (run.unit === 'time' && c.won && c.t != null ? `${name} finished ${run.the} in ${mmssOf(c.t)}.` : run.unit === 'right' ? `${name} got ${c.s} right in ${run.the}.` : c.o ? `${name} scored ${c.s}/${c.o} on ${run.the}.` : `${name} scored ${c.s} on ${run.the}.`)
     : byMetric ? metricLine(key, name, g.name, fig)

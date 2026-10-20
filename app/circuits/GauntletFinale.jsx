@@ -1449,6 +1449,7 @@ export function GauntletBoardTop({
   similar = null,
   boardHref = '',
   boardState = '',
+  polymath = null,
 }) {
   const N = sections.length;
   const mode = circuitId === 'math' ? 'math' : 'trivia';
@@ -1583,6 +1584,7 @@ export function GauntletBoardTop({
           {similar && similar.href ? (
             <a href={similar.href} className="ge-pop ge-sim" style={{ animationDelay: '.45s' }}>Play similar: {similar.name}</a>
           ) : null}
+          {polymath ? <div className="geb-poly">{polymath}</div> : null}
         </div>
       </div>
     </div>
@@ -1596,6 +1598,8 @@ const GEB_CSS = `
 .ge.geb{position:static;inset:auto;z-index:auto;overflow:visible;display:block;cursor:default;color:#e9edf4;background:none;margin:0 0 22px}
 .geb-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start}
 .ge.geb .ge-bl,.ge.geb .ge-br{gap:12px}
+.geb-poly{margin:6px 0 4px}
+.geb-poly .pmm{margin:0}
 .geb-board{display:flex;flex-direction:column;gap:10px;margin-top:6px}
 .ge.geb .ge-row{grid-template-columns:34px minmax(0,1fr) minmax(56px,110px) 40px;gap:10px;padding:9px 12px}
 .ge.geb .ge-rr{font-size:16px}.ge.geb .ge-rn{font-size:15px}.ge.geb .ge-rtot{font-size:20px}
