@@ -39,7 +39,7 @@ const CSS = `
 .rsc-hd span{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--rs-mute)}
 .rsc-hd a{font-size:13px;font-weight:800;color:var(--rs-me);text-decoration:none}
 .rsc-hd a:hover{text-decoration:underline;text-underline-offset:3px}
-.rsc-t{display:grid;grid-template-columns:34px minmax(0,1fr) repeat(var(--n),minmax(58px,calc(var(--cw) + 12px))) 58px;column-gap:0;align-items:stretch}
+.rsc-t{display:grid;grid-template-columns:34px minmax(132px,1fr) repeat(var(--n),minmax(44px,calc(var(--cw) + 12px))) 52px;column-gap:0;align-items:stretch}
 .rsc-th,.rsc-r>div{padding-right:12px}
 .rsc-th.r{padding-right:0}
 .rsc-th{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--rs-mute);padding:6px 0 8px;
