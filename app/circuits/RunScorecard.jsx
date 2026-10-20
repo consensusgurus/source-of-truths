@@ -35,6 +35,47 @@ const CSS = `
 .rsc-sub b{color:var(--rs-ink);font-weight:800}
 .rsc-line{font-size:14px;font-weight:700;color:#c9d3e6;margin:10px 0 0}
 .rsc-line b{color:var(--rs-gold)}
+.rsc-card{container-type:inline-size}
+.rsc-num{flex:none;display:flex;flex-direction:column;align-items:flex-start;line-height:1;min-width:64px}
+.rsc-num b{font-size:60px;font-weight:800;letter-spacing:-.02em;color:var(--rs-tone,var(--rs-me))}
+.rsc-num small{font-size:12px;font-weight:700;color:var(--rs-mute);margin-top:5px;white-space:nowrap}
+.rsc-who .rsc-line{margin-top:6px;font-size:13px}
+.rsc-lad{flex:0 1 380px;min-width:250px;padding-left:20px;border-left:1px solid var(--rs-line);align-self:stretch;display:flex;flex-direction:column;justify-content:center}
+.rsc-lk{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--rs-mute);margin-bottom:10px}
+.rsc-wk{display:flex;gap:5px}
+.rsc-wk>div{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
+.rsc-wk i{position:relative;font-style:normal;width:100%;max-width:44px;aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;letter-spacing:.04em;
+  color:#5d6a83;border:1.5px dashed #33405c}
+.rsc-wk i.on{background:var(--rs-ink);color:#0b0f1a;border:0}
+.rsc-wk i.top{color:#e9cf7f;border-color:#6b5a2a}
+.rsc-wk i.cur::after{content:'';position:absolute;inset:-6px;border:2.5px solid #ef4444;border-radius:50%;transform:rotate(-8deg)}
+.rsc-wk span,.rsc-bt span{font-size:10px;font-weight:700;color:#5d6a83}
+.rsc-bt{display:flex;gap:4px;align-items:flex-end;height:56px}
+.rsc-bt>div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;min-width:0;height:100%}
+.rsc-bt i{display:block;width:100%;height:16px;border-radius:5px;opacity:.28}
+.rsc-bt i.on{opacity:1}
+.rsc-bt i.cur{height:32px;box-shadow:0 0 0 2px var(--rs-ink)}
+.rsc-bt span{font-size:9px;font-weight:800;letter-spacing:.05em;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;min-height:11px}
+.rsc-bt span.cur{color:var(--rs-ink)}
+.rsc-pr{margin-top:10px;height:6px;border-radius:3px;background:rgba(255,255,255,.1);overflow:hidden}
+.rsc-pr>div{height:100%;border-radius:3px;background:var(--rs-tone,var(--rs-me));transform-origin:left center}
+.rsc.anim .rsc-pr>div{animation:rscGrow .9s .2s cubic-bezier(.2,.8,.2,1) both}
+.rsc-pe{display:flex;justify-content:space-between;font-size:11px;color:var(--rs-mute);margin-top:4px}
+.rsc-nx{font-size:13px;font-weight:700;color:var(--rs-gold);margin-top:8px}
+.rsc-tb{position:relative;display:flex;height:12px;margin-top:8px}
+.rsc-tb>i{display:block;height:100%;border-right:2px solid #121826;opacity:.22}
+.rsc-tb>i.on{opacity:1}
+.rsc-tb>i:first-child{border-radius:6px 0 0 6px}.rsc-tb>i:last-of-type{border-radius:0 6px 6px 0;border-right:0}
+.rsc-tb>b{position:absolute;top:-7px;width:3px;height:26px;margin-left:-1px;background:#ef4444;border-radius:2px}
+.rsc-tt{position:relative;height:14px;margin-top:6px}
+.rsc-tt span{position:absolute;top:0;font-size:10px;font-weight:800;color:#5d6a83;transform:translateX(-50%)}
+.rsc-tt span.on{color:var(--rs-ink)}
+@keyframes rscGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@container (max-width:640px){
+  .rsc-hero{flex-wrap:wrap}
+  .rsc-lad{flex:1 1 100%;min-width:0;border-left:0;padding-left:0;border-top:1px solid var(--rs-line);padding-top:14px}
+  .rsc-num b{font-size:48px}
+}
 .rsc-hd{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:18px 0 6px;flex-wrap:wrap}
 .rsc-hd span{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--rs-mute)}
 .rsc-hd a{font-size:13px;font-weight:800;color:var(--rs-me);text-decoration:none}
@@ -82,7 +123,7 @@ const CSS = `
 .rsc.anim .rsc-tk{animation:rscFade .4s ease both;animation-delay:calc(var(--d,0s) + .6s)}
 @keyframes rscGrow{from{transform:scaleX(0)}to{transform:none}}
 @keyframes rscFade{from{opacity:0}to{opacity:1}}
-@media (prefers-reduced-motion:reduce){.rsc.anim .rsc-f,.rsc.anim .rsc-tk{animation:none}}
+@media (prefers-reduced-motion:reduce){.rsc.anim .rsc-f,.rsc.anim .rsc-tk,.rsc.anim .rsc-pr>div{animation:none}}
 @media (max-width:680px){
   .rsc-card{padding:16px 14px 12px}
   .rsc-hero{gap:14px}
@@ -114,6 +155,73 @@ function fillOf(v, scale, lower) {
   if (!Number.isFinite(x) || !Number.isFinite(m) || m <= 0) return 0;
   if (lower) return x > 0 ? Math.max(0.04, Math.min(1, m / x)) : 0;
   return Math.max(0, Math.min(1, x / m));
+}
+
+// The run's own ladder, drawn beside the heading (owner, 2026-10-20): the week
+// for Crossed Up, the belts for the Dojo, the schools for Judged, the title bar
+// for the gauntlets. steps run lowest first: [{ min, name, short, colour }].
+function Ladder({ ladder }) {
+  const { kind = 'bar', label, steps = [], value = 0, next = null } = ladder || {};
+  if (!steps.length) return null;
+  let cur = 0;
+  steps.forEach((t, i) => { if (value >= t.min) cur = i; });
+  const up = steps[cur + 1] || null;
+  const prog = up ? (
+    <>
+      <div className="rsc-pr"><div style={{ width: `${Math.round(Math.max(0, Math.min(1, (value - steps[cur].min) / Math.max(1, up.min - steps[cur].min))) * 100)}%` }} /></div>
+      <div className="rsc-pe"><span>{steps[cur].min}</span><span>{up.min}</span></div>
+    </>
+  ) : null;
+  let body = null;
+  if (kind === 'week') {
+    body = (
+      <div className="rsc-wk">
+        {steps.map((t, i) => (
+          <div key={t.name} title={`${t.name} at ${t.min}`}>
+            <i className={`${i <= cur ? 'on' : ''}${i === cur ? ' cur' : ''}${i === steps.length - 1 && i > cur ? ' top' : ''}`}>{t.short}</i>
+            <span>{t.min}</span>
+          </div>
+        ))}
+      </div>
+    );
+  } else if (kind === 'belts') {
+    body = (
+      <div className="rsc-bt">
+        {steps.map((t, i) => (
+          <div key={t.name} title={`${t.name} at ${t.min}`}>
+            <i className={`${i <= cur ? 'on' : ''}${i === cur ? ' cur' : ''}`} style={{ background: t.colour, border: /^#1[0-9a-f]{5}$/i.test(t.colour || '') ? '1px solid #444b5c' : undefined }} />
+            <span className={i === cur ? 'cur' : ''}>{i === cur || i === cur + 1 ? t.short : ''}</span>
+          </div>
+        ))}
+      </div>
+    );
+  } else {
+    const top = Math.max(1, Math.round(steps[steps.length - 1].min * 1.18));
+    const v = Math.max(0, Math.min(top, value));
+    body = (
+      <>
+        <div className="rsc-tb">
+          {steps.map((t, i) => {
+            const end = i + 1 < steps.length ? steps[i + 1].min : top;
+            return <i key={t.name} className={i <= cur ? 'on' : ''} title={`${t.name} at ${t.min}`} style={{ width: `${((end - t.min) / top) * 100}%`, background: t.colour }} />;
+          })}
+          <b style={{ left: `${(v / top) * 100}%` }} />
+        </div>
+        <div className="rsc-tt">
+          {steps.slice(1).map((t) => <span key={t.name} className={value >= t.min ? 'on' : ''} style={{ left: `${(t.min / top) * 100}%` }}>{t.min}</span>)}
+        </div>
+        <div className="rsc-pe"><span>{steps[cur].name}</span><span>{steps[steps.length - 1].name} at {steps[steps.length - 1].min}</span></div>
+      </>
+    );
+  }
+  return (
+    <div className="rsc-lad">
+      {label ? <div className="rsc-lk">{label}</div> : null}
+      {body}
+      {kind !== 'bar' ? prog : null}
+      {next ? <div className="rsc-nx">{next}</div> : null}
+    </div>
+  );
 }
 
 export default function RunScorecard({
@@ -190,15 +298,19 @@ export default function RunScorecard({
       <div className="rsc-card">
         {hero ? (
           <>
-            <div className="rsc-hero">
-              <div className="rsc-lcd">{hero.value}{hero.of ? <small>/{hero.of}</small> : null}</div>
+            <div className="rsc-hero" style={hero.tone ? { '--rs-tone': hero.tone } : undefined}>
+              {hero.tone
+                ? <div className="rsc-num"><b>{hero.value}</b>{hero.ofText || hero.of ? <small>{hero.ofText || `out of ${hero.of}`}</small> : null}</div>
+                : <div className="rsc-lcd">{hero.value}{hero.of ? <small>/{hero.of}</small> : null}</div>}
               <div className="rsc-who">
-                {hero.eyebrow ? <div className="rsc-eb">{hero.eyebrow}</div> : null}
+                {hero.eyebrow ? <div className="rsc-eb" style={hero.tone ? { color: hero.tone } : undefined}>{hero.eyebrow}</div> : null}
                 {hero.title ? <div className="rsc-ttl" style={hero.colour ? { color: hero.colour } : undefined}>{hero.title}</div> : null}
                 {hero.sub ? <div className="rsc-sub">{hero.sub}</div> : null}
+                {hero.ladder && hero.line ? <p className="rsc-line">{hero.line}</p> : null}
               </div>
+              {hero.ladder ? <Ladder ladder={hero.ladder} /> : null}
             </div>
-            {hero.line ? <p className="rsc-line">{hero.line}</p> : null}
+            {!hero.ladder && hero.line ? <p className="rsc-line">{hero.line}</p> : null}
           </>
         ) : null}
 

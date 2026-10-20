@@ -471,7 +471,9 @@ function Grading({ sections, counted, parts, total, dateLabel, dateShort, animat
                 ranks={Object.keys(ranks).length ? ranks : null}
                 scale={Object.fromEntries(sections.map((s) => [s.key, s.weight]))}
                 avgTotal={avg ? Math.round(sections.reduce((a, s) => a + (Number(avg[s.key]) || 0), 0)) : null}
-                hero={{ value: total, of: CROSSED_MAX, eyebrow: 'You solve like a', title: t[1], sub: subBits.length ? subBits.reduce((acc, x, i) => (i ? [...acc, ' \u00B7 ', x] : [x]), []) : null, line: t[5] }}
+                hero={{ value: total, of: CROSSED_MAX, tone: '#7dd3fc', eyebrow: 'You solve like a', title: t[1], sub: subBits.length ? subBits.reduce((acc, x, i) => (i ? [...acc, ' \u00B7 ', x] : [x]), []) : null, line: t[5],
+                  ladder: { kind: 'week', label: 'The week', value: total, steps: [...B].reverse().map((b) => ({ min: b[0], name: b[1], short: b[2] === 'IN PEN' ? 'PEN' : b[2].slice(0, 3) })),
+                    next: fti > 0 ? `${B[fti - 1][0] - total} more point${B[fti - 1][0] - total === 1 ? '' : 's'} and you ${B[fti - 1][1] === 'Solves in Pen' ? 'solve in pen' : `are a ${B[fti - 1][1]}`}.` : 'The top of the week. You solve in pen.' } }}
                 field={built.field}
                 boardHref="/crossed/leaderboard"
                 boardState={(board && board.state) || 'loading'}

@@ -482,7 +482,9 @@ function Grading({ sections, counted, parts, total, dateLabel, dateShort, animat
                 ranks={Object.keys(ranks).length ? ranks : null}
                 scale={Object.fromEntries(sections.map((s) => [s.key, s.weight]))}
                 avgTotal={avg ? Math.round(sections.reduce((a, s) => a + (Number(avg[s.key]) || 0), 0)) : null}
-                hero={{ value: total, of: DOJO_MAX, eyebrow: 'You tied on the', title: t[1], sub: subBits.length ? subBits.reduce((acc, x, i) => (i ? [...acc, ' \u00B7 ', x] : [x]), []) : null, line: t[5] }}
+                hero={{ value: total, of: DOJO_MAX, tone: '#a5b4fc', eyebrow: 'You tied on the', title: t[1], sub: subBits.length ? subBits.reduce((acc, x, i) => (i ? [...acc, ' \u00B7 ', x] : [x]), []) : null, line: t[5],
+                  ladder: { kind: 'belts', label: 'The belts', value: total, steps: [...DOJO_BELTS].reverse().map((b) => ({ min: b[0], name: b[1], short: b[2], colour: b[3] })),
+                    next: fti > 0 ? `${DOJO_BELTS[fti - 1][0] - total} more point${DOJO_BELTS[fti - 1][0] - total === 1 ? '' : 's'} and you tie on ${DOJO_BELTS[fti - 1][1].replace(' Belt', '')}.` : 'Black belt. Nothing above it.' } }}
                 field={built.field}
                 boardHref="/dojo/leaderboard"
                 boardState={(board && board.state) || 'loading'}

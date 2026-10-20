@@ -1495,12 +1495,20 @@ export function GauntletBoardTop({
   if (built.ahead != null) subBits.push(`ahead of ${built.ahead}%`);
   if (clockTxt) subBits.push(clockTxt);
   const sub = subBits.length ? subBits.reduce((acc, x, i) => (i ? [...acc, ' \u00B7 ', x] : [x]), []) : `${TOTAL} ${unitTxt}`;
+  const TONE = mode === 'math' ? null : (circuitId === 'english' ? '#7dd3fc' : '#fb923c');
+  const asked = banks.reduce((a, b) => a + (Number(b.asked) || 0), 0);
   const hero = ladder.length ? {
     value: TOTAL,
     eyebrow: mode === 'math' ? 'Today you are' : `Today you are ${article(earned ? earned.name : '')}`,
     title: earned ? earned.name : '',
     sub,
-    line: earned ? <>{earned.line}{nextTxt ? <> <b>{nextTxt}</b></> : null}</> : null,
+    line: earned ? (TONE ? earned.line : <>{earned.line}{nextTxt ? <> <b>{nextTxt}</b></> : null}</>) : null,
+    // Every gauntlet but Math sets its score in the run's colour with the title
+    // ladder beside it; Math keeps the calculator display (owner, 2026-10-20).
+    tone: TONE || undefined,
+    ofText: TONE && asked ? `of ${asked} right` : undefined,
+    ladder: { kind: 'bar', label: 'The titles', value: TOTAL, next: nextTxt || (earned ? 'The top title. Nothing above it.' : null),
+      steps: [...ladder].sort((a, b) => a.min - b.min).map((x) => ({ min: x.min, name: x.name, colour: x.colour })) },
   } : { value: TOTAL, eyebrow: 'Your run', title: unitTxt.charAt(0).toUpperCase() + unitTxt.slice(1), sub };
   const cats = [...new Set(sections.map((s) => (DAILY_GAME_MAP[s.key] || {}).cat).filter(Boolean))];
   const aside = (challenge || (similar && similar.href)) ? (

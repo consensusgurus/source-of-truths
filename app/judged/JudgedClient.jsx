@@ -513,7 +513,9 @@ function Verdict({ sections, counted, parts, total, dateLabel, animate, board, o
                 ranks={Object.keys(ranks).length ? ranks : null}
                 scale={Object.fromEntries(sections.map((s) => [s.key, CASE_MAX]))}
                 avgTotal={avg ? Math.round(sections.reduce((a, s) => a + (Number(avg[s.key]) || 0), 0)) : null}
-                hero={{ value: total, of: LAW_MAX, eyebrow: 'You got into', title: t[1], sub: subBits.reduce((acc, x, i) => (i ? [...acc, ' \u00B7 ', x] : [x]), []), line: t[4] }}
+                hero={{ value: total, of: LAW_MAX, tone: '#bef264', eyebrow: 'You got into', title: t[1], sub: subBits.reduce((acc, x, i) => (i ? [...acc, ' \u00B7 ', x] : [x]), []), line: t[4],
+                  ladder: { kind: 'belts', label: 'The schools', value: total, steps: [...L].reverse().map((r) => ({ min: r[0], name: r[1], short: r[2], colour: r[5] })),
+                    next: fti > 0 ? `${L[fti - 1][0] - total} more point${L[fti - 1][0] - total === 1 ? '' : 's'} and you get into ${L[fti - 1][1]}.` : 'The top of the list. Nowhere left to apply.' } }}
                 field={built.field}
                 boardHref="/judged/leaderboard"
                 boardState={(board && board.state) || 'loading'}
