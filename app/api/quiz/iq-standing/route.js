@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 import { loadQuizResults } from '@/lib/quiz-results-load';
 import { findQuizIdentity } from '@/lib/quiz-identity';
 import { earnedTrophyIds } from '@/lib/quiz-trophies';
-import { computeXpCached, computeTrophiesCached, rankPlayersCached } from '@/lib/quiz-derived-cache';
+import { iqPlayersFresh, rankWithFresh, iqSnapshotTrophies } from '@/lib/quiz-derived-cache';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -57,7 +57,10 @@ export async function GET(request) {
     // today" is a complete sum rather than a truncated one.
     // Memoized: this derivation is identical for every player finishing a game
     // against the same rows, and it was the bulk of this route's 757ms.
-    const { players } = computeXpCached(data || [], { recentN: 200 });
+    // The asker is recomputed fresh from their own rows (so the just-finished
+    // game's +N is in it); the rest of the field is the shared IQ snapshot,
+    // up to 30 minutes old. See lib/quiz-derived-cache, THE IQ SNAPSHOT.
+    const { players, snap } = iqPlayersFresh(data || [], { recentN: 200, keys: [myKey] });
     const me = players.get(myKey);
     // Brand-new player whose very first row has not surfaced yet: report a real
     // zeroed standing rather than found:false. found:false made the card drop
@@ -74,7 +77,7 @@ export async function GET(request) {
         xp: 0,
         level: 1,
         rank: null,
-        total: rankPlayersCached(data || [], players, 'all', 200).length,
+        total: rankWithFresh(snap, players).length,
         gained: null,
         gainedFor: null,
         todayGained: 0,
@@ -88,7 +91,7 @@ export async function GET(request) {
     // badge the rank as unclaimed rather than hide it.
     // Memoized: identical for every player against the same rows, and the end
     // card's retry ladder can ask for it six times for one finished game.
-    const ranked = rankPlayersCached(data || [], players, 'all', 200);
+    const ranked = rankWithFresh(snap, players, [myKey]);
     const idx = ranked.findIndex((p) => p.key === myKey);
     // Always return the full 2*span+1 rows when the board is that long, sliding
     // the window instead of truncating it: the #1 player would otherwise see only
@@ -107,7 +110,7 @@ export async function GET(request) {
 
     // Earned trophy ids (duels excluded) so the daily end card can pop the
     // unlock toast the moment a game crosses a threshold.
-    const trophyIds = earnedTrophyIds(computeTrophiesCached(data || [], players), myKey);
+    const trophyIds = earnedTrophyIds(iqSnapshotTrophies(snap), myKey);
 
     const recent = Array.isArray(me.recent) ? me.recent : [];
     const today = etDate(Date.now());

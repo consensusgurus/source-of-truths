@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { loadQuizResults } from '@/lib/quiz-results-load';
 import { resolvePlayerKeys } from '@/lib/quiz-identity';
-import { computeXpCached, computeTrophiesCached } from '@/lib/quiz-derived-cache';
+import { computeXpCached, computeTrophiesCached, iqPlayersFresh, iqSnapshotTrophies } from '@/lib/quiz-derived-cache';
 import { buildProfile } from '@/lib/quiz-profile';
 import { buildTrophyList } from '@/lib/quiz-trophies';
 
@@ -72,6 +72,10 @@ export async function GET(request) {
   const light = searchParams.get('light') === '1' || searchParams.get('light') === 'true';
   const history = searchParams.get('history') === '1' || searchParams.get('history') === 'true';
   const fresh = searchParams.get('fresh') === '1' || searchParams.get('fresh') === 'true';
+  // full=1: the Stat Hub's exact path (live rank movement per game, live
+  // trophies). Everything else reads the IQ snapshot with the asker
+  // recomputed fresh, which is what cut this route's CPU (owner 2026-10-19).
+  const full = searchParams.get('full') === '1' || searchParams.get('full') === 'true';
   try {
     let myKey = null, signed = false, username = null;
     const who = await resolvePlayerKeys(supabaseAdmin, { email, anonId });
@@ -89,11 +93,14 @@ export async function GET(request) {
     // entries returns every one of them. Shipped that way for one deploy and a
     // light profile still carried 710 entries / 20KB. Ask for the smallest real
     // slice and drop it below.
-    const { players } = light
-      ? computeXpCached(data || [], { recentN: 1 })
-      : history
-        ? computeXpCached(data || [], { recentN: 100000 })
-        : computeXpCached(data || [], { recentN: 100000, rankFor: myKey });
+    let snap = null;
+    let players;
+    if (full && !light && !history) {
+      ({ players } = computeXpCached(data || [], { recentN: 100000, rankFor: myKey }));
+    } else {
+      const keys = [myKey, ...(who.keys || [])].filter(Boolean);
+      ({ players, snap } = iqPlayersFresh(data || [], { recentN: light ? 1 : 100000, keys }));
+    }
     // A member with no entry under their account key has their rows filed under
     // a browser anon they never joined from, so read the profile from that key
     // rather than reporting an empty one. /api/quiz/daily-status attributes those
@@ -107,7 +114,7 @@ export async function GET(request) {
     // never reach back into the shared memo entry.
     if (light) profile.recent = [];
     if (!light && !history && profile.found) {
-      const res = computeTrophiesCached(data || [], players);
+      const res = snap ? iqSnapshotTrophies(snap) : computeTrophiesCached(data || [], players);
       profile.trophies = buildTrophyList(res, profileKey, { includeDuels: false });
     }
     // profile.signed is `signed || !p.isAnon`, so it catches a registered player

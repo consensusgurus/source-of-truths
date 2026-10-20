@@ -9978,3 +9978,36 @@ stored, no IQ Points move, no gauntlet board changes.
   OG image is `/polymath/card` with the same query (no query = the invite card). Names no question.
 - Local legs read `sot_run_<id>_<day>` (phase 'done', results[].score summed), so the meter and the
   home card draw instantly; the rank waits on `resultPostsSettled()` then a fresh read.
+
+## IQ is a 30-minute SNAPSHOT plus a fresh asker (Vercel cost fix, owner 2026-10-19)
+
+The October bill was $60 on-demand at mid-cycle, and Fluid Active CPU was the biggest line. Three
+routes were ~60% of it: `/api/quiz/iq-standing`, `/api/quiz/me` and `/api/quiz/daily-status`, each
+burning ~3s of CPU per call re-deriving every player's IQ. The memos in `lib/quiz-derived-cache.js`
+were keyed on the EXACT row count, so with a play every few seconds they missed almost every time.
+
+- **`iqSnapshot(rows)`** builds the whole-site state (every player's IQ, the ranked field, trophies,
+  day standings) at most once per `IQ_SNAPSHOT_TTL_MS` (30 min) per instance, or immediately if the
+  table shrinks (an admin reset).
+- **`iqPlayersFresh(rows, { recentN, keys })`** returns the snapshot's players with each asking key
+  recomputed FRESH from that player's own rows, scored against the snapshot's difficulty map. That is
+  exact, not an estimate: a quiz's difficulty depends only on that quiz's rows and every other term
+  in `computeXp` is per player (verified: identical to the full computation for every player). So the
+  asker's "+N", total and today figure are live; the rest of the field, and therefore the asker's
+  rank, is up to 30 minutes old. A quiz first played since the snapshot gets its difficulty derived
+  from current rows on the spot.
+- **`rankWithFresh(snap, players, keys)`** slots the fresh player into the snapshot's sorted field
+  with `rankCompare` from `lib/quiz-xp.js`, the same comparator `rankPlayers` uses. Never re-sort the
+  field per request.
+- **Trophies are snapshot-only** (`iqSnapshotTrophies`). Owner ruling: a new trophy may appear on a
+  later visit rather than the instant it is earned.
+- **The Stat Hub keeps the exact path**: it calls `/api/quiz/me?full=1`, which runs the old
+  `computeXpCached(..., rankFor)` (per-game rank movement, live trophies). Every other `/me` caller
+  reads the snapshot. Do NOT add `full=1` anywhere else; it is the expensive path by design.
+- `computeXp` gained an optional `difficulty` argument and parses each timestamp once before sorting
+  (the comparator was calling `Date.parse` ~2 n log n times). Output is byte-identical; the full pass
+  runs about twice as fast.
+
+Other `computeXpCached` callers (`xp`, `xp-categories`, `share-card`, `day-card`, `player`) are still
+on the exact-version memo. They are low-traffic; move them to the snapshot the same way if they ever
+show up near the top of Observability > Functions sorted by Active CPU.

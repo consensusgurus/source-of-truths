@@ -717,6 +717,10 @@ export default function StatHubClient() {
       const params = new URLSearchParams();
       if (anonId) params.set('anonId', anonId);
       if (email) params.set('email', email);
+      // full=1: the Stat Hub is the one surface that pays for the exact, live
+      // IQ path (per-game rank movement, live trophies). Every other caller of
+      // /api/quiz/me reads the shared IQ snapshot (owner, 2026-10-19).
+      params.set('full', '1');
       fetch(`/api/quiz/me?${params.toString()}`).then((r) => r.json()).then((d) => { if (d) setMe(d); }).catch(() => {});
     } else {
       setMe({ found: false });

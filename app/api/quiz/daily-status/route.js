@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 import { loadQuizResultsCached } from '@/lib/quiz-results-cache';
 import { dailySolvedRow } from '@/lib/daily-games';
 import { resolvePlayerKeys, attributeAnonGames } from '@/lib/quiz-identity';
-import { computeXpCached, dailyStandingCached } from '@/lib/quiz-derived-cache';
+import { iqPlayersFresh, dailyStandingCached } from '@/lib/quiz-derived-cache';
 
 // Midnight "today" in US Eastern (handles EST/EDT) as a UTC epoch ms. Same
 // helper as /api/quiz/today and /api/quiz/totals, so all three roll over
@@ -218,7 +218,11 @@ export async function GET(request) {
       // and every player against the same rows, and it walks all ~34,700 of them.
       // Going through the shared memo means the first caller after a row lands pays
       // and the rest get a map lookup.
-      const { players } = computeXpCached(data || [], { recentN: 400 });
+      // THE IQ SNAPSHOT (owner 2026-10-19): the field is the shared snapshot,
+      // up to 30 minutes old; THIS player is recomputed fresh from their own
+      // rows, so today's IQ and the rank they are compared on include the game
+      // they just finished. See lib/quiz-derived-cache.
+      const { players, snap } = iqPlayersFresh(data || [], { recentN: 400, keys: [myKey, ...myKeys] });
       // Fall back across the player's other keys: a member who played today as a
       // guest on this browser has that day's IQ filed under a:<anon>, so looking
       // only under the account key reports a zero day.
@@ -226,58 +230,60 @@ export async function GET(request) {
       let me = players.get(xpKey);
       if (!me) { for (const k of myKeys) if (players.has(k)) { xpKey = k; me = players.get(k); break; } }
       if (me) {
-        // Today's gain and the two field-wide rankings (now, and on the IQ
-        // everyone held before today) are the same for every player against the
-        // same rows, so they are memoized per row set + ET day. Ranking the field
-        // twice this way counts OTHER players passing you, which a sum of your
-        // own per-play rankDelta would miss; only the lookup below is personal.
+        // The day standings are the snapshot's, memoized per snapshot + ET day.
+        // Only this player's own figures are fresh; they are slotted into the
+        // snapshot field by counting, with their own stale entry left out.
         const dayStart = startOfEasternTodayUTC();
-        const st = dailyStandingCached(data || [], players, { dayStartMs: dayStart, recentN: 400 });
-        const { gained, posNow, posThen } = st;
+        const st = dailyStandingCached(snap.rows, snap.players, { dayStartMs: dayStart, recentN: 100000 });
+        const { gained } = st;
 
-        const mineToday = gained.get(xpKey) || 0;
+        let mineToday = 0;
+        for (const r of (me.recent || [])) {
+          if (!r.createdAt) continue;
+          if (Date.parse(r.createdAt) >= dayStart) mineToday += Number(r.xp) || 0;
+        }
         todayXp = Math.round(mineToday);
+        const staleToday = gained.get(xpKey) || 0;
+        const registered = !me.isAnon && !!me.username;
 
         // Today's board only ranks players who have banked something today, so a
         // player who has not played yet is simply not on it: report nulls rather
         // than a phantom last place.
-        if (mineToday > 0 && st.posDay) {
-          // The field is the whole pool, guests included, which is the same
-          // denominator every per-game "#N of M" on the site already prints --
-          // and it is the count of everyone who PLAYED today, the same figure
-          // the home board prints as "of N players", not the smaller count of
-          // players who banked IQ. Falls back to the banked count only if the
-          // wide one is somehow unavailable.
-          dayField = st.dayFieldAll || st.dayField || null;
-          // A REGISTERED PLAYER READS THE REGISTERED BOARD'S OWN NUMBER, so the
-          // cap agrees with the tiles, the end cards and the board panels
-          // instead of quoting a gappy full-field position none of them show.
-          if (st.posDayReg && st.posDayReg.has(xpKey)) {
-            dayRank = st.posDayReg.get(xpKey);
-          } else {
-            // A GUEST HAS NO PLACE ON THAT BOARD, so they are slotted into it
-            // by what they earned today -- and NEVER AHEAD OF A REGISTERED
-            // PLAYER (owner ruling, 2026-09-04). Hence >=, not >: a guest level
-            // with a named player lands behind them rather than sharing or
-            // taking the slot. Compared on the rounded figure the cap actually
-            // prints, so two days that display the same IQ rank the same.
-            //
-            // regDayGained is descending, so the first row that is not ahead
-            // ends the walk.
-            const mine = Math.round(mineToday);
-            let ahead = 0;
-            for (const g of (st.regDayGained || [])) {
-              if (Math.round(g) >= mine) ahead += 1; else break;
-            }
-            dayRank = ahead + 1;
+        if (mineToday > 0) {
+          // The field is everyone who PLAYED today (guests included), from the
+          // snapshot; a player the snapshot has not seen play today is added.
+          const fieldAll = st.dayFieldAll || st.dayField || 0;
+          dayField = (fieldAll + (staleToday > 0 ? 0 : 1)) || null;
+          // Rank on the REGISTERED board's numbering (owner, 2026-09-04): count
+          // the registered players ahead. A registered player passes a tie (>);
+          // a guest NEVER goes ahead of a registered player (>=). This player's
+          // own stale entry is skipped once so they are not counted ahead of
+          // themselves.
+          const mine = Math.round(mineToday);
+          let skipSelf = registered && st.posDayReg && st.posDayReg.has(xpKey);
+          let ahead = 0;
+          for (const g of (st.regDayGained || [])) {
+            if (skipSelf && g === staleToday) { skipSelf = false; continue; }
+            const v = Math.round(g);
+            if (registered ? v > mine : v >= mine) ahead += 1; else break;
           }
+          dayRank = ahead + 1;
         }
 
         // A player whose first ever game is today had no standing to move from.
-        if ((me.xp || 0) - mineToday > 0) {
-          const now = posNow.get(xpKey) || 0;
-          const then = posThen.get(xpKey) || 0;
-          if (now > 0 && then > 0) rankChange = then - now; // positive = climbed
+        // Positions counted against the snapshot field, everyone but this
+        // player's own keys: now on current IQ, then on IQ before today.
+        const myXp = me.xp || 0;
+        const myThen = myXp - mineToday;
+        if (myThen > 0) {
+          let gtNow = 0;
+          let gtThen = 0;
+          for (const q of snap.players.values()) {
+            if (myKeys.has(q.key) || q.key === xpKey || q.key === myKey) continue;
+            if (q.xp > myXp) gtNow += 1;
+            if (q.xp - (gained.get(q.key) || 0) > myThen) gtThen += 1;
+          }
+          rankChange = gtThen - gtNow; // positive = climbed
         }
       }
     } catch (e) { console.error('daily-status todayXp', e); }
