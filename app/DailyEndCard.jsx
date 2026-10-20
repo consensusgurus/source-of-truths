@@ -116,7 +116,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['topple', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'arcos', 'squash', 'herd', 'gift', 'scour', 'jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
+const LAUNCH_PIN = { keys: ['roll', 'topple', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'arcos', 'squash', 'herd', 'gift', 'scour', 'jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -189,6 +189,7 @@ export const GAME_META = {
   impound: { accent: '#6b4a1f', badgeBg: '#6b4a1f', badgeInk: T.white, Fin: Truck },
   junkyard: { accent: '#5c3a16', badgeBg: '#5c3a16', badgeInk: T.white, Fin: Boxes },
   topple: { accent: '#3f6212', badgeBg: '#3f6212', badgeInk: T.white, Fin: Trophy },
+  roll: { accent: '#166534', badgeBg: '#166534', badgeInk: T.white, Fin: Trophy },
   judges: { accent: '#7c2d12', badgeBg: '#7c2d12', badgeInk: T.white, Fin: Crown },
   lamps: { accent: '#9a6700', badgeBg: '#9a6700', badgeInk: T.white, Fin: Blocks },
   clade: { accent: '#0f6b6b', badgeBg: '#0f6b6b', badgeInk: T.white, Fin: LayoutGrid },
@@ -375,6 +376,7 @@ const ALL_DAILY_GAMES = [
   { key: 'jig',    cat: 'logic',     name: 'Jig', tag: 'The daily jigsaw',   blurb: 'A new photograph every day, cut into interlocking pieces, the same cut for everyone. Drag them into place, sort the tray by edges or colors, and race the clock.', href: '/jig' },
   { key: 'junkyard',   cat: 'logic',     name: 'Junkyard', tag: 'Parker on the biggest lot',         blurb: 'Parker on an eight by eight lot, the biggest board in the family, with close to thirty blocks in your way. Same one gap in the wall, a great deal more between you and it.', href: '/junkyard' },
   { key: 'topple',     cat: 'logic',     name: 'Topple', tag: 'Roll the block onto the spring',     blurb: 'A tall block on a floor of tiles. Tip it end over end and land it on the spring in as few rolls as you can, minding the tiles that crack.', href: '/topple' },
+  { key: 'roll',       cat: 'logic',     name: 'Roll', tag: 'Light the squares in order',     blurb: 'A die on a floor of tiles. Roll it to light the numbered squares in order, each with its own number on top, in as few rolls as you can.', href: '/roll' },
   { key: 'check',  cat: 'endgame',     name: 'Check',  tag: 'Red to play and sweep',       blurb: 'A checkers position where one move sets off a chain that clears the whole board.', href: '/check' },
   { key: 'chain',  cat: 'endgame',     name: 'Chain',  tag: 'Take them, or leave them',    blurb: 'A dots and boxes endgame you are already winning. One edge keeps it, and the free box is usually bait.', href: '/chain' },
   { key: 'suffice', cat: 'logic',      name: 'Suffice', tag: 'Decide what is enough',      blurb: 'Eight questions you never answer. For each one, decide whether the two statements are enough to settle it.', href: '/suffice' },

@@ -75,6 +75,7 @@ import { PUZZLES as PARK_FULL } from '../parker/puzzles';
 import { PUZZLES as IMPOUND_FULL } from '../impound/puzzles';
 import { PUZZLES as JUNKYARD_FULL } from '../junkyard/puzzles';
 import { PUZZLES as TOPPLE_FULL } from '../topple/puzzles';
+import { PUZZLES as ROLL_FULL } from '../roll/puzzles';
 import { PUZZLES as SNUG_FULL } from '../snug/puzzles';
 import { PUZZLES as JIG_FULL } from '../jig/puzzles';
 import { PUZZLES as DUET_FULL } from '../duet/puzzles';
@@ -187,6 +188,7 @@ const PARK = PARK_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num,
 const IMPOUND = IMPOUND_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const JUNKYARD = JUNKYARD_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const TOPPLE = TOPPLE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ROLL = ROLL_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const JUDGES = JUDGES_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const LAMPS = LAMPS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const CLADE = CLADE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -385,6 +387,7 @@ const GAMES = [
   { key: 'impound', name: 'Impound', path: '/impound', tag: 'Parker on a bigger lot', accent: '#6b4a1f', bg: '#f3ece0', border: 'rgba(107,74,31,0.35)', src: IMPOUND },
   { key: 'junkyard', name: 'Junkyard', path: '/junkyard', tag: 'Parker on the biggest lot', accent: '#5c3a16', bg: '#f0e7d8', border: 'rgba(92,58,22,0.35)', src: JUNKYARD },
   { key: 'topple', name: 'Topple', path: '/topple', tag: 'Roll the block onto the spring', accent: '#3f6212', bg: '#ecfccb', border: 'rgba(63,98,18,0.35)', src: TOPPLE },
+  { key: 'roll', name: 'Roll', path: '/roll', tag: 'Light the squares in order', accent: '#166534', bg: '#dcfce7', border: 'rgba(22,101,52,0.35)', src: ROLL },
   { key: 'judges', name: 'Judges', path: '/judges', tag: 'Two per row', accent: '#7c2d12', bg: '#fde8dc', border: 'rgba(124,45,18,0.35)', src: JUDGES },
   { key: 'lamps', name: 'Lamps', path: '/lamps', tag: 'Light every square', accent: '#9a6700', bg: '#fdf3d7', border: 'rgba(154,103,0,0.35)', src: LAMPS },
   { key: 'clade', name: 'Clade', path: '/clade', tag: 'Guess the animal by its family tree', accent: '#0f6b6b', bg: '#e3f3f1', border: 'rgba(15,107,107,0.35)', src: CLADE },

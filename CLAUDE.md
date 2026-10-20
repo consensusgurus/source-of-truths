@@ -3829,6 +3829,7 @@ archive and hub chips use the short form `Sun`.
 | Scram | every answer eight to twelve letters, often two words, from themes deep enough in long answers (from launch, 2026-10-18) |
 | Arcos | five- and six-letter hidden words and answers of five to seven letters, against four letters on weekdays (from launch, 2026-10-18) |
 | Topple | a bigger board with a perfect line of 30 to 38 rolls, against 15 to 28 on weekdays (from launch, 2026-10-25) |
+| Roll | six numbered squares and cracked squares on a bigger floor, a perfect line of 36 to 44 rolls against 9 to 32 on weekdays (from launch, 2026-10-25) |
 | Scour | an 18x18 grid with twenty-six words in all eight directions, against the weekday 15x15 (from 2026-10-18) |
 | Dating | six events to order instead of five (from 2026-07-26) |
 | Cipher | four addends stacked instead of two (from 2026-08-09) |
@@ -10040,3 +10041,31 @@ puzzles), finish set Slide and shift.
 - **The board** (`app/topple/ToppleBoard.jsx`) is a canvas in a three-quarter view where up on the screen
   is up on the board (the isometric mockup made the arrow keys read as diagonals). Colours are stage tokens
   resolved through a hidden probe at draw time, so it follows the light switch. Arrows/WASD, swipe, or the pad.
+
+## Roll (`/roll`): the daily die-rolling puzzle (launched 2026-10-20)
+
+Topple's sibling (owner, 2026-10-20: "could it use the same engine as topple? ... touch 3 or 4 or 5 in
+order with numbers matching across a grid"). Key/route `roll`, category **Logic**, `miss: 'Tries'`,
+`attempts: 'graded'`, `keepsAnswer`, legacy accent `#166534` / `#86efac`; on the stage it wears the
+Logic ramp like Topple (the die is `--stg-acc`, pips `--stg-onramp`). Wired by `scripts/wire-roll.mjs`
+(beside Topple). Skills Spatial and Planning, daily group Roll and route, finish set Rolling puzzles.
+
+- **The rules** (`lib/roll-engine.js`, shared by client and generator): a die, four rolls, each a quarter turn
+  over an edge, tracked as top/north/east (opposites sum to seven). Squares numbered 1 to N must be LIT IN
+  ORDER: a square lights when the die lands on it with that number on top. **A numbered square is BLOCKED
+  (owner ruling, 2026-10-20)** unless it is next AND the roll would land its number on top; a blocked roll,
+  or a roll off the floor, is refused and costs nothing (the die tips and settles back). Lit squares are
+  ordinary floor. Orange CRACKED squares crumble once the die rolls off them.
+- **No hint** (owner, 2026-10-20). Undo ('Z') and Restart ('X', which also mends the cracks) are free moves in
+  the list but never refund a roll: rolls = every U/D/L/R recorded. Scoring is Topple's (`lib/par.js`),
+  Give up posts 0. The pad marks the key that would light the next square and dims blocked ones.
+- **The bank** (`scripts/gen-roll.mjs`, deterministic off the date, extend with `--until <date> --append
+  --write`): random-walk floors, kept only when the BFS perfect is in the day's band, the blocked rule costs
+  rolls (crossing numbers freely is at least 2 shorter, 3 from four numbers), cracks change the answer, and
+  the die never starts showing 1; the best of 24 legal boards is kept and dead floor trimmed. Ramp: Mon 3
+  numbers 9-12, Tue 3 13-17, Wed 4 17-21, Thu 4 + cracks 19-24, Fri 5 23-28, Sat 5 + cracks 26-32, Sunday
+  Edition 6 + cracks 36-44. `scripts/verify-roll.mjs` re-solves every board with an INDEPENDENT six-face
+  permutation solver. Bank 2026-10-20 to 2027-01-31.
+- **The board** (`app/roll/RollBoard.jsx`) is Topple's canvas with a LEAN (`KX`) so the die shows its top,
+  front and right faces (owner, 2026-10-20: "a diagonal view so can see 3 sides at once"); rows and columns
+  stay square to the screen so the arrows read straight.
