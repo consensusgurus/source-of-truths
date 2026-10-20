@@ -3828,6 +3828,7 @@ archive and hub chips use the short form `Sun`.
 | Garble | every answer is six letters instead of five (from 2026-07-26) |
 | Scram | every answer eight to twelve letters, often two words, from themes deep enough in long answers (from launch, 2026-10-18) |
 | Arcos | five- and six-letter hidden words and answers of five to seven letters, against four letters on weekdays (from launch, 2026-10-18) |
+| Topple | a bigger board with a perfect line of 30 to 38 rolls, against 15 to 28 on weekdays (from launch, 2026-10-25) |
 | Scour | an 18x18 grid with twenty-six words in all eight directions, against the weekday 15x15 (from 2026-10-18) |
 | Dating | six events to order instead of five (from 2026-07-26) |
 | Cipher | four addends stacked instead of two (from 2026-08-09) |
@@ -10011,3 +10012,31 @@ were keyed on the EXACT row count, so with a play every few seconds they missed 
 Other `computeXpCached` callers (`xp`, `xp-categories`, `share-card`, `day-card`, `player`) are still
 on the exact-version memo. They are low-traffic; move them to the snapshot the same way if they ever
 show up near the top of Observability > Functions sorted by Active CPU.
+
+## Topple (`/topple`): the daily block-rolling puzzle (launched 2026-10-20)
+
+Owner, 2026-10-19: "a block rolling clone of Bloxorz", Logic, scored on moves against par. Key/route
+`topple`, category **Logic**, `miss: 'Tries'`, legacy accent `#3f6212` / `#bef264`. On the stage it
+wears the Logic ramp (the block is `--stg-acc`). Wired by `scripts/wire-topple.mjs` (beside Junkyard).
+Skills Spatial and Planning. Daily group Roll and route (new, with Chomp and Paths, which left Sorting
+puzzles), finish set Slide and shift.
+
+- **The rules** (`lib/topple-engine.js`, shared by client and generator): a 1x1x2 block, four rolls, each a
+  quarter turn over an edge. Any part over empty space: it falls, back to the start. Standing on an orange
+  FRAGILE tile: it cracks, back to the start. **No switches and no bridges** (owner, 2026-10-19).
+- **The goal is a SPRING, not a hole** (owner, 2026-10-19): it fires the block off the top of the board. A
+  spring is ONE tile (land standing) or TWO side by side (land LYING FLAT across both). Monday is always one
+  tile; other days about half and half off the date's seed.
+- **Scoring is Parker's** (`lib/par.js`): `perfect` is the exact BFS minimum and scores 10, par is
+  a cushion above it and scores 8. **Every roll counts**, including those before a fall and a restart (a
+  restart is an `'X'` in the move list, not a roll): a fall is the only undo, so a free one would let a
+  player search the board by hand. Give up posts 0. One free hint on a first play lights the next roll.
+- **The bank is GROWN** by `scripts/gen-topple.mjs` (deterministic off the date; extend with
+  `--until <date> --append --write`): rooms and corridors, then a hill climb for a longer perfect line,
+  more reachable positions and a blocky floor; fragile tiles must change the answer; dead floor is trimmed.
+  Ramp: Mon plain 12-16, Tue 14-18, Wed 16-20, Thu 18-23, Fri 20-25, Sat 22-28, Sunday Edition 30-38 on a
+  bigger board. `scripts/verify-topple.mjs` re-solves every board with an INDEPENDENT cube-rotation solver.
+  Bank 2026-10-20 to 2027-01-31.
+- **The board** (`app/topple/ToppleBoard.jsx`) is a canvas in a three-quarter view where up on the screen
+  is up on the board (the isometric mockup made the arrow keys read as diagonals). Colours are stage tokens
+  resolved through a hidden probe at draw time, so it follows the light switch. Arrows/WASD, swipe, or the pad.

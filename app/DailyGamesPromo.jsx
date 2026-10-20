@@ -66,6 +66,7 @@ export const DAILY_GAMES = [
   { key: 'park', href: '/parker', name: 'Parker', tag: 'get the red one out', store: 'sot_park_day', accent: '#7c5c2e', bg: '#f6efe2', border: 'rgba(124,92,46,0.35)' },
   { key: 'impound', href: '/impound', name: 'Impound', tag: 'parker on a bigger lot', store: 'sot_impound_day', accent: '#6b4a1f', bg: '#f3ece0', border: 'rgba(107,74,31,0.35)' },
   { key: 'junkyard', href: '/junkyard', name: 'Junkyard', tag: 'parker on the biggest lot', store: 'sot_junkyard_day', accent: '#5c3a16', bg: '#f0e7d8', border: 'rgba(92,58,22,0.35)' },
+  { key: 'topple', href: '/topple', name: 'Topple', tag: 'roll the block onto the spring', store: 'sot_topple_day', accent: '#3f6212', bg: '#ecfccb', border: 'rgba(63,98,18,0.35)' },
   { key: 'judges', href: '/judges', name: 'Judges', tag: 'two per row', store: 'sot_judges_day', accent: '#7c2d12', bg: '#fde8dc', border: 'rgba(124,45,18,0.35)' },
   { key: 'lamps', href: '/lamps', name: 'Lamps', tag: 'light every square', store: 'sot_lamps_day', accent: '#9a6700', bg: '#fdf3d7', border: 'rgba(154,103,0,0.35)' },
   { key: 'clade', href: '/clade', name: 'Clade', tag: 'guess the animal by its family tree', store: 'sot_clade_day', accent: '#0f6b6b', bg: '#e3f3f1', border: 'rgba(15,107,107,0.35)' },

@@ -43,7 +43,7 @@ const SLATE_KEYS = [
   'crux', 'emcee', 'shards', 'garble', 'links', 'span', 'dating', 'tally', 'suds', 'quilt', 'cages', 'sando', 'carve',
   'extra', 'stet', 'outwit', 'outrank', 'herd', 'tuck', 'alibi', 'cipher', 'ping', 'warmer', 'jester',
   'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'bracket', 'lode', 'etch', 'glyph', 'hedge',
-  'listed', 'mate', 'four', 'park', 'impound', 'junkyard', 'snug', 'jig', 'duet', 'lamps', 'clade', 'dossier', 'judges', 'check', 'rung', 'crunch', 'taire', 'fib', 'streak',
+  'listed', 'mate', 'four', 'park', 'impound', 'junkyard', 'topple', 'snug', 'jig', 'duet', 'lamps', 'clade', 'dossier', 'judges', 'check', 'rung', 'crunch', 'taire', 'fib', 'streak',
   'feud', 'babel', 'hands', 'finesse', 'crib', 'hold', 'cell', 'swindle', 'gift', 'scram', 'arcos', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'scour', 'chain', 'turn', 'yose', 'suffice', 'strata', 'redact', 'paths',
   'deep', 'anon', 'blocks', 'snake', 'squash', 'dario', 'chomp', 'sweep', 'ergo', 'docket', 'blitz', 'blitzed', 'gap', 'series', 'back', 'sums', 'hinge', 'defend', 'barter', 'plot', 'sixes', 'niche', 'shoe', 'queen', 'towers', 'mercury', 'arrow', 'polka', 'atlas', 'sport', 'calc', 'encore', 'biz', 'flank', 'knight', 'script', 'quotes', 'sci', 'art', 'history', 'potluck', 'focus', 'thread', 'slot', 'whittle', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'diag', 'frame', 'rim', 'giant', 'sumo', 'window', 'five', 'racecar',
 // A retired game leaves the rail on its own the morning after its bank's last
