@@ -502,14 +502,14 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
         const live = n > 0;
         return (
           <button key={ch} className="sc-key" onClick={() => onKey(ch)} disabled={!live} aria-label={live ? `${ch}${n > 1 ? `, ${n} left` : ''}` : `${ch}, not in this word`}
-            style={{ position: 'relative', flex: '1 0 0', height: 46, background: live ? KEY_BG : 'transparent', color: live ? INK : FADED, opacity: live ? 1 : 0.16, fontSize: 15, border: live && !STAGE ? KEY_LINE : '1.5px solid transparent', cursor: live ? 'pointer' : 'default' }}>
+            style={{ position: 'relative', flex: '1 0 0', height: 46, background: STAGE ? 'transparent' : (live ? KEY_BG : 'transparent'), color: live ? INK : FADED, opacity: live ? 1 : 0.16, fontSize: STAGE ? 19 : 15, border: live && !STAGE ? KEY_LINE : '1.5px solid transparent', cursor: live ? 'pointer' : 'default' }}>
             {ch}
             {n > 1 && <span style={{ position: 'absolute', top: 2, right: 4, fontSize: 9.5, fontWeight: 800, color: ACC_INK }}>{n}</span>}
           </button>
         );
       })}
       {ri === 2 && (
-        <button className="sc-key" onClick={() => onKey('BACK')} aria-label="Delete" style={{ flex: '1.6 0 0', height: 46, background: STAGE ? 'var(--stg-b3,rgba(255,255,255,0.145))' : COLORS.paper, color: INK, border: STAGE ? '1.5px solid transparent' : KEY_LINE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <button className="sc-key" onClick={() => onKey('BACK')} aria-label="Delete" style={{ flex: '1.6 0 0', height: 46, background: STAGE ? 'transparent' : COLORS.paper, color: INK, border: STAGE ? '1.5px solid transparent' : KEY_LINE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Delete size={18} />
         </button>
       )}
@@ -584,6 +584,9 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
             .sc-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
             .sc-key{font-family:${SANS};font-weight:800;border-radius:6px;padding:0;touch-action:manipulation;}
             .sc-key:not(:disabled):active,.sc-nav:active{transform:scale(0.94);}
+            .stage-page .sc-key{border-radius:10px;transition:background .12s;}
+            .stage-page .sc-key:not(:disabled):active{background:var(--stg-surf2,rgba(127,127,127,.16)) !important;}
+            @media (hover:hover){.stage-page .sc-key:not(:disabled):hover{background:var(--stg-surf2,rgba(127,127,127,.12)) !important;}}
             @keyframes scflip{0%{transform:rotateX(0);}50%{transform:rotateX(90deg);}100%{transform:rotateX(0);}}
             .sc-flipc{animation:scflip .3s cubic-bezier(.2,.7,.3,1) both;animation-delay:calc(var(--j,0) * 45ms);backface-visibility:hidden;}
             @keyframes screj{0%,100%{transform:none;}20%{transform:translateX(-8px);}50%{transform:translateX(7px);}80%{transform:translateX(-3px);}}
