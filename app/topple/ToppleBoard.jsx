@@ -10,8 +10,9 @@
 // Every colour is a stage token, read off the page at draw time, so the board
 // follows the light switch and wears its category: the block is the Logic
 // accent, the floor is the stage ink mixed into the ground, and the fragile
-// tiles take the site's warning amber (a meaning, not a decoration, like
-// Parker's red car).
+// tiles are the same category colour held well below the block's strength, with
+// cracks drawn on them so they never rely on colour alone (owner, 2026-10-20:
+// the cracked squares and the rolls bar match the category colour).
 //
 // The roll is a real quarter turn about the block's leading bottom edge
 // (drawBlock), so a standing block tips flat and a flat one stands up, the way
@@ -47,7 +48,8 @@ const TOKENS = {
   ground: 'var(--stg-ground, #0b0f1a)',
   tile: 'color-mix(in srgb, var(--stg-ink, #e9edf4) 24%, var(--stg-ground, #0b0f1a))',
   tileEdge: 'color-mix(in srgb, var(--stg-ink, #e9edf4) 40%, var(--stg-ground, #0b0f1a))',
-  frag: 'color-mix(in srgb, var(--stg-warn, #fbbf24) 78%, var(--stg-ground, #0b0f1a))',
+  // the category colour, held well below the block's full strength so the two never read as one
+  frag: 'color-mix(in srgb, var(--stg-acc, #bef264) 42%, var(--stg-ground, #0b0f1a))',
   block: 'var(--stg-acc, #bef264)',
   pad: 'color-mix(in srgb, var(--stg-acc, #bef264) 40%, var(--stg-ground, #0b0f1a))',
   mark: 'var(--stg-acc-ink, var(--stg-acc, #bef264))',
@@ -79,7 +81,7 @@ const CSS = `
 .tp-key{font-family:${SANS};border:1.5px solid var(--stg-mute2,#78859d);background:transparent;color:var(--stg-ink,#e9edf4);border-radius:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
 .tp-key:hover:not(:disabled){background:var(--stg-surf2,rgba(255,255,255,.08));}
 .tp-key:active:not(:disabled){background:var(--stg-acc);color:var(--stg-onramp,#08222e);border-color:var(--stg-acc);}
-.tp-key.hint{border-color:var(--stg-warn,#fbbf24);box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-warn,#fbbf24) 40%, transparent);}
+.tp-key.hint{border-color:var(--stg-acc-ink,var(--stg-acc));box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc,#bef264) 40%, transparent);}
 .tp-key:disabled{opacity:.4;cursor:default;}
 .tp-acts{display:flex;gap:8px;flex-wrap:wrap;}
 .tp-btn{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2,#aab5c7);border:1.5px solid var(--stg-mute2,#78859d);border-radius:12px;padding:0 16px;min-height:46px;display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;}
@@ -114,11 +116,11 @@ function RollMeter({ used, par, perfect }) {
   return (
     <div className="tp-meter" role="meter" aria-label="Rolls" aria-valuemin={0} aria-valuemax={max} aria-valuenow={used}>
       <div className="tp-mhead">
-        <span>Rolls <b className="tp-mv" style={over ? { color: 'var(--stg-warn, #fbbf24)' } : undefined}>{used}</b></span>
+        <span>Rolls <b className="tp-mv">{used}</b></span>
         <span>Perfect <b>{perfect}</b> &middot; Par <b>{par}</b></span>
       </div>
       <div className="tp-mtrack">
-        <div className="tp-mfill" style={{ width: `${pct(used)}%`, background: over ? 'var(--stg-warn, #fbbf24)' : 'var(--stg-acc-ink, var(--stg-acc))' }} />
+        <div className="tp-mfill" style={{ width: `${pct(used)}%`, background: 'var(--stg-acc-ink, var(--stg-acc))', opacity: over ? 0.7 : 1 }} />
         <span className="tp-mtick" style={{ left: `calc(${pct(perfect)}% - 1px)`, background: 'var(--stg-ink, #e9edf4)' }} />
         <span className="tp-mtick" style={{ left: `calc(${pct(par)}% - 1px)`, background: 'var(--stg-mute, #8b95a8)' }} />
       </div>
@@ -260,7 +262,7 @@ export default function ToppleBoard({
       ctx.strokeStyle = 'rgba(0,0,0,.28)';
       ctx.beginPath(); ctx.moveTo(t[3][0], t[3][1]); ctx.lineTo(t[2][0], t[2][1]); ctx.stroke();
       if (opts.cracks) {
-        ctx.strokeStyle = 'rgba(60,30,0,.55)'; ctx.lineWidth = 1.3;
+        ctx.strokeStyle = dark ? 'rgba(0,0,0,.55)' : 'rgba(0,0,0,.42)'; ctx.lineWidth = 1.4;
         ctx.beginPath();
         ctx.moveTo(...pr(x + 0.18, y + 0.28, z)); ctx.lineTo(...pr(x + 0.42, y + 0.46, z)); ctx.lineTo(...pr(x + 0.38, y + 0.62, z)); ctx.lineTo(...pr(x + 0.5, y + 0.84, z));
         ctx.moveTo(...pr(x + 0.42, y + 0.46, z)); ctx.lineTo(...pr(x + 0.66, y + 0.38, z)); ctx.lineTo(...pr(x + 0.84, y + 0.5, z));
@@ -305,14 +307,16 @@ export default function ToppleBoard({
       ctx.stroke();
     };
 
-    for (let y = 0; y < P.h; y++) for (let x = 0; x < P.w; x++) {
-      const c = P.grid[y][x];
-      if (c === '.') continue;
-      if (c === 'G') { spring(x, y, padLift(`${x},${y}`)); continue; }
-      if (cracked === `${x},${y}` && a.k > 0.15) continue;   // it gives way under the block
-      if (c === 'F') tile(x, y, C.frag, 0, { cracks: true });
-      else tile(x, y, C.tile);
-    }
+    const drawRow = (y) => {
+      for (let x = 0; x < P.w; x++) {
+        const c = P.grid[y][x];
+        if (c === '.') continue;
+        if (c === 'G') { spring(x, y, padLift(`${x},${y}`)); continue; }
+        if (cracked === `${x},${y}` && a.k > 0.15) continue;   // it gives way under the block
+        if (c === 'F') tile(x, y, C.frag, 0, { cracks: true });
+        else tile(x, y, C.tile);
+      }
+    };
 
     // 3. the block
     const drawBlock = (b, dir, th, dz, alpha) => {
@@ -372,19 +376,36 @@ export default function ToppleBoard({
       ctx.globalAlpha = 1;
     };
     const restDz = (b) => (onSpringCells(footKeys(b)) ? PAD_DOWN : 0);
+    const lastRow = (b) => (b ? Math.max(...cellsOfBlock(b).map(([, y]) => y)) : -1);
+
+    // 4. PAINT BACK TO FRONT, ROW BY ROW, and put the block in right after the
+    // last row it stands on. Drawn on top of everything, a block standing behind
+    // a raised spring pad was painted over it (owner, 2026-10-20: "the visual of
+    // the block behind the spring doesn't make sense"). Anything in the air
+    // (falling, or fired off the spring) goes over the whole board.
+    let job = null, jobRow = P.h;
     if (a && a.phase === 'roll') {
       const d0 = onSpringCells(fromFoot) ? PAD_DOWN : 0, d1 = onSpringCells(toFoot) ? PAD_DOWN : 0;
-      drawBlock(anim.from, anim.dir, a.k * Math.PI / 2, d0 + (d1 - d0) * a.k, 1);
-    }
-    else if (a && a.phase === 'drop') drawBlock(anim.to, null, 0, -a.k * a.k * 5, Math.max(0, 1 - a.k * 1.3));
-    else if (a && a.phase === 'launch') {
+      job = () => drawBlock(anim.from, anim.dir, a.k * Math.PI / 2, d0 + (d1 - d0) * a.k, 1);
+      jobRow = Math.max(lastRow(anim.from), lastRow(anim.to));
+    } else if (a && a.phase === 'drop') {
+      job = () => drawBlock(anim.to, null, 0, -a.k * a.k * 5, Math.max(0, 1 - a.k * 1.3));
+    } else if (a && a.phase === 'launch') {
       // squash with the pad, then fire straight up and out of the top of the board
       const k = a.k;
       const lift = k < 0.22 ? PAD_DOWN - (k / 0.22) * PAD_DOWN : Math.min(1.1, ((k - 0.22) / 0.1) * 1.1);
       const fly = k < 0.32 ? 0 : Math.pow((k - 0.32) / 0.68, 1.7) * 18;
-      drawBlock(anim.to, null, 0, lift + fly, 1);
+      job = () => drawBlock(anim.to, null, 0, lift + fly, 1);
+      jobRow = k < 0.32 ? lastRow(anim.to) : P.h;
+    } else if (!(launched || onSpring(P, block))) {
+      job = () => drawBlock(block, null, 0, restDz(block), 1);
+      jobRow = lastRow(block);
     }
-    else if (!(launched || onSpring(P, block))) drawBlock(block, null, 0, restDz(block), 1);
+    for (let y = 0; y < P.h; y++) {
+      drawRow(y);
+      if (job && y === jobRow) { job(); job = null; }
+    }
+    if (job) job();
   }, [P, anim, block, pr, W, H, playing, launched]);
 
   // colours follow the light switch
