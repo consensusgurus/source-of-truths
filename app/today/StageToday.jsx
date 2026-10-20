@@ -1088,9 +1088,20 @@ export default function StageToday() {
     // "See all Daily Puzzles" button lands here. The pane opens, the tiles view
     // holds for this visit whatever was remembered, and the hash is cleared so
     // a reload is an ordinary visit.
+    // A READER WHO HAS ALREADY CHOSEN A VIEW KEEPS IT (owner report, 2026-10-20):
+    // backing out of All Puzzles to the tiles, playing a game, then tapping the
+    // ending's "See all Daily Puzzles" dropped them on All Puzzles again, sorted
+    // the way they had just left it, every single game. So #all opens All
+    // Puzzles only for a reader with no remembered view; anyone who went back to
+    // the tiles by hand, or last opened another pane, lands where they left off.
     try {
       if (String(window.location.hash || '') === '#all') {
-        setPane(ALL_ID); setPicked(true); setAllTiles(true);
+        let keep = false;
+        try {
+          const v = localStorage.getItem(PANE_KEY);
+          keep = localStorage.getItem(TILES_KEY) === '1' || (!!v && v !== ALL_ID);
+        } catch (er) {}
+        if (!keep) { setPane(ALL_ID); setPicked(true); setAllTiles(true); }
         // Cleared LATER, not here: the entry door and the home snapshot both
         // stand down on a hash, and their own effects run after this one.
         setTimeout(() => { try { if (window.location.hash === '#all') window.history.replaceState(null, '', window.location.pathname + window.location.search); } catch (er) {} }, 2500);
