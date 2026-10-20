@@ -252,7 +252,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     const ms = res.t0 ? Math.max(1000, (res.tEnd || Date.now()) - res.t0) : 0;
     award(cur, li, legPoints(sec.key, res.score, res.total), { res: { ...cur.res, [sec.key]: { score: res.score, total: res.total, ms } } });
     setHolding(sec.key);
-    setTimeout(() => setHolding((h) => (h === sec.key ? null : h)), 1700);
+    setTimeout(() => setHolding((h) => (h === sec.key ? null : h)), Math.max(1700, (res.beatMs || 0) + 500));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sections]);
 

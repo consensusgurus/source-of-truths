@@ -645,7 +645,18 @@ export default function GlyphClient({ puzzles, forceNum }) {
              the grid gap so runs of blocks merge into one mass. */
           .gls{--gl-blk:color-mix(in srgb, color-mix(in srgb, var(--stg-ground) var(--stg-dk), var(--stg-ink)) 45%, #000);}
           .gls .gl-cell.blk{background:var(--gl-blk);box-shadow:0 0 0 1px var(--gl-blk);cursor:default;}
-          .gls .gl-cell.kin{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 20%, var(--xw-cell));}
+          /* Highlight strength by register (owner, 2026-10-20: too faint in
+             dark). Dark: the number's cells carry a 40% accent wash and the
+             cell under the cursor goes SOLID accent with dark ink. Light keeps
+             the 20% wash and the ring. --gl-dk is 1 on a dark register and 0 on
+             a light one, declared on the .stage-page itself with the same
+             selectors as the light token block, so the NEAREST page decides
+             (a dark board embedded in a light run page reads as dark). */
+          .stage-page{--gl-dk:1;}
+          html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],.stage-page[data-stage-theme='light'][data-stage-pin]{--gl-dk:0;}
+          .gls .gl-cell.kin{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) calc(20% + 20% * var(--gl-dk, 0)), var(--xw-cell));}
+          .gls .gl-cell.kin.cur{background:color-mix(in srgb, var(--stg-acc) calc(100% * var(--gl-dk, 0)), color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 20%, var(--xw-cell)));}
+          .gls .gl-cell.kin.cur .gl-num,.gls .gl-cell.kin.cur .gl-ltr{color:color-mix(in srgb, var(--stg-onramp, #08222e) calc(100% * var(--gl-dk, 0)), var(--stg-ink));}
           .gls .gl-cell.cur{box-shadow:inset 0 0 0 2.5px var(--stg-acc-ink, var(--stg-acc));}
           .gls .gl-cell.bad{background:color-mix(in srgb, var(--stg-bad) 14%, var(--xw-cell));box-shadow:inset 0 0 0 2px var(--stg-bad);}
           .gls .gl-num{position:absolute;top:2px;left:3px;font-size:8.5px;font-weight:700;line-height:1;color:var(--stg-mute);}

@@ -145,7 +145,8 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
     commit({ ...cur, results: { ...cur.results, [sec.key]: { score: res.score, total: res.total, secs } } });
     // The finished case stays on screen under its ruling (owner, 2026-10-17),
     // and the page goes back to the top so the ruling is the first thing seen.
-    setTimeout(() => { try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) {} }, 60);
+    // It waits out the board's finish beat first (RunEmbed plays it).
+    setTimeout(() => { try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) {} }, (res.beatMs || 0) + 60);
   }, [sections, commit]);
 
   const sec = playing ? sections[r.si] : null;

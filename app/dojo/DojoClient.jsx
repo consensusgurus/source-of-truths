@@ -185,7 +185,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
     const secs = res.t0 ? Math.max(1, Math.round(((res.tEnd || Date.now()) - res.t0) / 1000)) : 0;
     commit({ ...cur, results: { ...cur.results, [sec.key]: { score: res.score, total: res.total, secs } } });
     setHolding(sec.key);
-    setTimeout(() => setHolding((h) => (h === sec.key ? null : h)), 1700);
+    setTimeout(() => setHolding((h) => (h === sec.key ? null : h)), Math.max(1700, (res.beatMs || 0) + 500));
   }, [sections, commit]);
 
   const sec = playing ? sections[r.si] : null;
