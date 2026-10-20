@@ -303,10 +303,11 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
   const dragRef = useRef(null);
   const svgRef = useRef(null);
 
-  // A give-up writes the cheapest network into g.e and keeps the player's
-  // track in g.mine. Until the end card's Reveal is pressed the board shows
-  // the player's own track, so the finish beat leaks nothing.
-  const E = g.status === 'revealed' && g.mine && isLoft('paths') && !revealed ? g.mine : g.e;
+  // NO PERFECT NETWORK IS EVER SHOWN (owner, 2026-10-20). A give-up keeps the
+  // player's own track and nothing else. Saves written before this rule put the
+  // solution in g.e and the player's track in g.mine, so mine wins whenever it
+  // exists and an old given-up board shows only what the player laid.
+  const E = g.mine || g.e;
   const playing = g.status === 'playing';
   const preStart = playing && !g.t0;
   const started = playing && !!g.t0;
@@ -631,20 +632,16 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
     say('Hint laid: one lane of a cheapest network.');
   }
 
-  // Giving up lays a cheapest network on the board, but the POINT of a reveal
-  // is the comparison, so the track the player actually laid is kept in `mine`
-  // and marked back over the top (owner, 2026-08-26). Without it every lane on
-  // a given-up board is the solution's, so every lane reads as one they got
-  // right and nothing tells them where they went wrong.
+  // Giving up ends the round and leaves the board exactly as the player left
+  // it. It used to lay a cheapest network on the board and mark it against the
+  // player's track; the owner ruled 2026-10-20 that a perfect mapping is never
+  // displayed, so the solution stays off the board in every state.
   function revealEnd() {
     const cur = gRef.current;
-    const e = Array(LANES.length).fill(0);
-    SOL.forEach((i) => { e[i] = 1; });
-    const g2 = { ...cur, e, mine: cur.e, status: 'revealed', tEnd: Date.now() };
+    const g2 = { ...cur, status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0, perfect);
     commit(g2);
-    setShowPar(true);
   }
 
   // Showing the gold network means showing the BOARD it is drawn on. On a loft
@@ -1127,7 +1124,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
               {started && (
                 <button type="button" onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
                   style={{ marginLeft: 'auto', minHeight: 44, background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12.5, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink2, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5, padding: '0 4px' }}>
-                  <Eye size={13} /> {armReveal ? 'Tap again to end the round and show a cheapest network' : 'Give up'}
+                  <Eye size={13} /> {armReveal ? 'Tap again to end the round' : 'Give up'}
                 </button>
               )}
             </div>
@@ -1138,12 +1135,6 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
           <div className={STAGE ? undefined : 'loft-sol'}>
           {!playing && (
             <div style={{ maxWidth: 472, margin: '0 auto' }}>
-              <button className="pt-tool" onClick={showParToggle} style={{ marginBottom: 4 }}>
-                {showPar ? 'Hide the cheapest network' : 'Show a cheapest network'}
-              </button>
-              <div style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '8px 0 0' }}>
-                One network that costs {perfect}, marked against your own track: <b style={{ color: `var(--stg-ink, ${COLORS.green})` }}>green</b> is a lane you laid that it also uses, <b style={{ color: `var(--stg-ink, ${COLORS.rust})` }}>red</b> is a lane you laid that it does not, and <b style={{ color: 'var(--stg-warn, #a97c12)' }}>gold</b> is a lane it uses that you never laid. Two staircases between the same dots always tie, so it is <i>a</i> cheapest network rather than the only one{tiedPerfect ? ', and because your own network costs the same, a red lane of yours is an equal-cost alternative rather than a mistake' : ''}, but every ridge lane and crossing in it is forced.{HAS_RAILS ? ' Notice where it runs along the old track.' : ''}
-              </div>
               {PUZZLE.sunday && (
                 <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '10px 0 0' }}>The Sunday Edition: a bigger {n}&times;{n} board with {TOWNS.length} towns and every element at once.</div>
               )}
@@ -1211,8 +1202,8 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
                 }))}
               options={[
                 { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },
-                { tone: won ? 'board' : 'reveal', label: won ? 'Return to board' : 'Reveal answer',
-                  sub: won ? 'Your finished board' : 'Show what you missed', onClick: () => setRevealed(true) },
+                { tone: 'board', label: 'Return to board',
+                  sub: won ? 'Your finished board' : 'Your board as you left it', onClick: () => setRevealed(true) },
               prevPuzzle && { tone: 'another', label: 'Play another Paths', sub: `No. ${prevPuzzle.num}, yesterday\u2019s puzzle`, href: `/paths?p=${prevPuzzle.num}` },
                 nextUp && { tone: 'similar', label: 'Play similar', sub: `${nextUp.name} \u00b7 ${nextUp.tag}`, href: nextUp.href },
                 { tone: 'replay', label: 'Replay', sub: 'This puzzle again, unscored', onClick: resetGame },
@@ -1293,7 +1284,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
           headline={won ? (over === 0 ? <>Perfect network!</> : <>Linked for {cost}</>) : <>You scored 0%</>}
           subline={won
             ? <>{finalScore}/10 &middot; {over === 0 ? 'nothing cheaper exists' : `${over} over perfect ${perfect}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : <>0/10 &middot; a cheapest network is shown above</>}
+            : <>0/10 &middot; round ended</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}
