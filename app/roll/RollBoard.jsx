@@ -25,15 +25,16 @@ import { RotateCcw, Undo2, Eye, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from
 import { step } from '@/lib/roll-engine';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const TW = 52;            // one square, left to right
-const TH = 36;            // one square, top to bottom (depth is foreshortened)
-const KX = 20;            // the lean: one unit of height shifts this far LEFT
+const TW = 54;            // one square, left to right
+const TH = 39;            // one square, top to bottom (depth is foreshortened)
+const KX = 13;            // the lean: one unit of height shifts this far LEFT
 const TZ = 34;            // how far one unit of height rises
-const SLAB = 0.32;        // tile thickness, in die units
+const SLAB = 0.3;         // tile thickness, in die units
 const GAP = 0.05;         // the seam between two tiles
 const PAD = 14;
-const ROLL_MS = 200;
-const BUMP_MS = 220;
+const INSET = 0.06;       // the die sits this far inside its square on every side
+const ROLL_MS = 170;
+const BUMP_MS = 200;
 const CRUMBLE_MS = 560;
 const WIN_MS = 1100;
 
@@ -102,6 +103,23 @@ const CSS = `
 }
 `;
 
+// THE DIE IS A BODY. Each face value lives on a fixed axis of the die and its
+// pips are laid out on that face once, so a 2, 3 or 6 keeps its slant as the
+// die turns and lands exactly as it was mid-roll. The world orientation comes
+// from the engine's top/north/east: the top face's axis points up (+z), north
+// points up the screen (-y), east points right (+x). A quarter turn of this
+// matrix is exactly the engine's next state (checked for all 24 positions).
+const BODY = {
+  1: { n: [0, 0, 1], u: [1, 0, 0], v: [0, 1, 0] },
+  6: { n: [0, 0, -1], u: [1, 0, 0], v: [0, -1, 0] },
+  2: { n: [0, -1, 0], u: [1, 0, 0], v: [0, 0, -1] },
+  5: { n: [0, 1, 0], u: [-1, 0, 0], v: [0, 0, -1] },
+  3: { n: [1, 0, 0], u: [0, 1, 0], v: [0, 0, -1] },
+  4: { n: [-1, 0, 0], u: [0, -1, 0], v: [0, 0, -1] },
+};
+const dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const orient = (s) => (b) => [dot3(BODY[s.e].n, b), -dot3(BODY[s.n].n, b), dot3(BODY[s.t].n, b)];
+
 const PIPS = {
   1: [[0.5, 0.5]],
   2: [[0.27, 0.27], [0.73, 0.73]],
@@ -141,7 +159,7 @@ function isDark(rgb) {
   const [r, g, b] = m.slice(0, 3).map(Number);
   return (0.299 * r + 0.587 * g + 0.114 * b) < 128;
 }
-const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 // Rotate a point about the die's leading bottom edge for a roll in `dir`.
 function rotAbout(p, dir, a, x0, x1, y0, y1) {
@@ -166,11 +184,13 @@ export default function RollBoard({
   const winT = useRef(null);
   const [, force] = useState(0);
 
-  const W = P.w * TW + KX * 1.1 + PAD * 2 + SLAB * KX + 6;
-  const H = P.h * TH + TZ * 1.15 + SLAB * TZ + PAD * 2 + 10;
-  const OX = PAD + KX * 1.1 + 2;
-  const OY = PAD + TZ * 1.15;
+  const W = Math.round(P.w * TW + KX * 1.4 + PAD * 2 + SLAB * KX + 6);
+  const H = Math.round(P.h * TH + TZ * 1.4 + SLAB * TZ + PAD * 2 + 8);
+  const OX = PAD + KX * 1.4 + 2;
+  const OY = PAD + TZ * 1.4;
   const pr = useCallback((x, y, z) => [OX + x * TW - z * KX, OY + y * TH - z * TZ], [OX, OY]);
+  // the canvas is drawn at the size it is SHOWN, never scaled up by CSS
+  const shown = useRef(0);
 
   const readColors = useCallback(() => {
     const el = probeRef.current;
@@ -196,10 +216,13 @@ export default function RollBoard({
     const C = colors.current;
     const dark = isDark(C.ground);
     const dpr = Math.min(3, window.devicePixelRatio || 1);
-    if (cv.width !== Math.round(W * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+    const cw = shown.current || cv.clientWidth || W;
+    const bw = Math.max(1, Math.round(cw * dpr)), bh = Math.max(1, Math.round((cw * H / W) * dpr));
+    if (cv.width !== bw || cv.height !== bh) { cv.width = bw; cv.height = bh; }
     const ctx = cv.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, W, H);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, bw, bh);
+    ctx.setTransform(bw / W, 0, 0, bh / H, 0, 0);
     ctx.lineJoin = 'round'; ctx.lineCap = 'round';
     const path = (pts) => { ctx.beginPath(); pts.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]))); ctx.closePath(); };
     const poly = (pts, fill, shade, stroke, sw) => {
@@ -317,47 +340,61 @@ export default function RollBoard({
       }
     };
 
-    // 3. the die
+    // 3. the die: a body turned by its orientation, then by the roll about its
+    // leading bottom edge. The centre follows a full square's arc and the die
+    // is drawn a little inside it, so it starts and lands exactly on its square.
+    const h = 1 - 2 * INSET;
+    const pv = (d) => [d[0] * TW - d[2] * KX, d[1] * TH - d[2] * TZ];
     const drawDie = (s, dir, th, dz) => {
-      const e = 0.05, x0 = s.x + e, x1 = s.x + 1 - e, y0 = s.y + e, y1 = s.y + 1 - e, h = 1 - 2 * e;
-      const F = [
-        { p: [[x0, y0, h], [x1, y0, h], [x1, y1, h], [x0, y1, h]], n: [0, 0, 1], v: s.t },
-        { p: [[x0, y1, h], [x1, y1, h], [x1, y1, 0], [x0, y1, 0]], n: [0, 1, 0], v: 7 - s.n },
-        { p: [[x1, y0, h], [x0, y0, h], [x0, y0, 0], [x1, y0, 0]], n: [0, -1, 0], v: s.n },
-        { p: [[x1, y1, h], [x1, y0, h], [x1, y0, 0], [x1, y1, 0]], n: [1, 0, 0], v: s.e },
-        { p: [[x0, y0, h], [x0, y1, h], [x0, y1, 0], [x0, y0, 0]], n: [-1, 0, 0], v: 7 - s.e },
-        { p: [[x0, y1, 0], [x1, y1, 0], [x1, y0, 0], [x0, y0, 0]], n: [0, 0, -1], v: 7 - s.t },
-      ];
-      const px0 = s.x, px1 = s.x + 1, py0 = s.y, py1 = s.y + 1;
-      const tr = (q) => { const r = dir && th ? rotAbout(q, dir, th, px0, px1, py0, py1) : q; return [r[0], r[1], r[2] + dz]; };
-      const trn = (n) => (dir && th ? rotAbout(n, dir, th, 0, 0, 0, 0) : n);
-      // contact shadow, fading as the die rises
-      const sh = [pr(x0 - 0.02, y0 + 0.05, 0), pr(x1 + 0.04, y0 + 0.05, 0), pr(x1 + 0.04, y1 + 0.1, 0), pr(x0 - 0.02, y1 + 0.1, 0)];
-      const off = dir === 'R' ? th / Math.PI : dir === 'L' ? -th / Math.PI : 0;
-      const offy = dir === 'D' ? th / Math.PI : dir === 'U' ? -th / Math.PI : 0;
-      ctx.save();
-      ctx.globalAlpha = Math.max(0.08, (dark ? 0.5 : 0.28) - dz * 0.3);
-      ctx.fillStyle = '#000'; ctx.filter = 'blur(3px)';
-      ctx.translate(off * TW, offy * TH);
-      path(sh); ctx.fill();
-      ctx.restore();
-      const faces = F.map((f) => ({ p: f.p.map(tr), n: trn(f.n), v: f.v }))
-        .filter((f) => f.n[0] * VIEW[0] + f.n[1] * VIEW[1] + f.n[2] * VIEW[2] > 1e-4);
-      for (const f of faces) {
-        const lit = f.n[0] * LIGHT[0] + f.n[1] * LIGHT[1] + f.n[2] * LIGHT[2];
-        const sp = f.p.map((q) => pr(q[0], q[1], q[2]));
-        poly(sp, C.die, lit > 0.8 ? -0.04 : Math.max(0, (0.72 - lit) * 0.4), dark ? 'rgba(0,0,0,.42)' : 'rgba(0,0,0,.32)', 1.1);
-        const ys2 = sp.map((q) => q[1]);
-        if (f.n[2] > 0.7) { path(sp); sheen(Math.min(...ys2), Math.max(...ys2), 'rgba(255,255,255,.30)', 'rgba(255,255,255,.06)'); }
-        const bl = (u, v) => {
-          const [a0, a1, a2, a3] = f.p;
-          return pr(...[0, 1, 2].map((i) => (1 - u) * (1 - v) * a0[i] + u * (1 - v) * a1[i] + u * v * a2[i] + (1 - u) * v * a3[i]));
-        };
+      const M = orient(s);
+      const R = (v) => (dir && th ? rotAbout(v, dir, th, 0, 0, 0, 0) : v);
+      const c0 = [s.x + 0.5, s.y + 0.5, 0.5];
+      const cc = dir && th ? rotAbout(c0, dir, th, s.x, s.x + 1, s.y, s.y + 1) : c0;
+      const ctr = [cc[0], cc[1], cc[2] - INSET + dz];
+      const W3 = (b) => { const r = R(M(b)); return [ctr[0] + r[0] * h, ctr[1] + r[1] * h, ctr[2] + r[2] * h]; };
+      const Wv = (b) => { const r = R(M(b)); return [r[0] * h, r[1] * h, r[2] * h]; };
+
+      // contact shadow: a die-sized footprint under the centre, pushed away
+      // from the light, fading as the die rises. Two soft passes, no filter.
+      let mnz = 1e9;
+      for (const sx of [-0.5, 0.5]) for (const sy of [-0.5, 0.5]) for (const sz of [-0.5, 0.5]) mnz = Math.min(mnz, W3([sx, sy, sz])[2]);
+      const lift = Math.max(0, mnz) + Math.max(0, ctr[2] - h / 2) * 0.5;
+      const sa = Math.max(0.05, (dark ? 0.3 : 0.15) * (1 - lift * 1.6));
+      const off = 0.05 + lift * 0.15;
+      const fx0 = ctr[0] - h / 2 - off, fx1 = ctr[0] + h / 2 - off * 0.3;
+      const fy0 = ctr[1] - h / 2 + off * 0.5, fy1 = ctr[1] + h / 2 + off * 1.4;
+      for (const [grow, al] of [[0.06, 0.4], [-0.02, 0.8]]) {
+        ctx.fillStyle = `rgba(0,0,0,${(sa * al).toFixed(3)})`;
+        path([pr(fx0 - grow, fy0 - grow, 0), pr(fx1 + grow, fy0 - grow, 0), pr(fx1 + grow, fy1 + grow, 0), pr(fx0 - grow, fy1 + grow, 0)]);
+        ctx.fill();
+      }
+
+      const edge = dark ? 'rgba(0,0,0,.5)' : 'rgba(0,0,0,.34)';
+      for (let v = 1; v <= 6; v++) {
+        const F = BODY[v];
+        const nw = R(M(F.n));
+        if (nw[0] * VIEW[0] + nw[1] * VIEW[1] + nw[2] * VIEW[2] <= 1e-3) continue;
+        const c = [F.n[0] / 2, F.n[1] / 2, F.n[2] / 2];
+        const corner = (a1, a2) => W3([c[0] + F.u[0] * a1 + F.v[0] * a2, c[1] + F.u[1] * a1 + F.v[1] * a2, c[2] + F.u[2] * a1 + F.v[2] * a2]);
+        const sp = [corner(-0.5, -0.5), corner(0.5, -0.5), corner(0.5, 0.5), corner(-0.5, 0.5)].map((q) => pr(q[0], q[1], q[2]));
+        const lit = nw[0] * LIGHT[0] + nw[1] * LIGHT[1] + nw[2] * LIGHT[2];
+        poly(sp, C.die, lit > 0.8 ? -0.05 : Math.max(0, (0.74 - lit) * 0.42), edge, 1.2);
+        if (nw[2] > 0.7) {
+          const ys2 = sp.map((q) => q[1]);
+          path(sp); sheen(Math.min(...ys2), Math.max(...ys2), 'rgba(255,255,255,.26)', 'rgba(255,255,255,.04)');
+        }
+        // pips: each a true circle on its face, drawn through the face's own frame
+        const A = pv(Wv(F.u)), B = pv(Wv(F.v));
+        const r = 0.095;
         ctx.fillStyle = C.pip;
-        for (const [u, v] of PIPS[f.v]) {
-          ctx.beginPath();
-          for (let i = 0; i < 14; i++) { const t = (i / 14) * Math.PI * 2; const q = bl(u + 0.092 * Math.cos(t), v + 0.092 * Math.sin(t)); i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); }
-          ctx.closePath(); ctx.fill();
+        for (const [pu, pq] of PIPS[v]) {
+          const q = W3([c[0] + F.u[0] * (pu - 0.5) + F.v[0] * (pq - 0.5), c[1] + F.u[1] * (pu - 0.5) + F.v[1] * (pq - 0.5), c[2] + F.u[2] * (pu - 0.5) + F.v[2] * (pq - 0.5)]);
+          const p0 = pr(q[0], q[1], q[2]);
+          ctx.save();
+          ctx.transform(A[0] * r, A[1] * r, B[0] * r, B[1] * r, p0[0], p0[1]);
+          ctx.beginPath(); ctx.arc(0, 0, 1, 0, Math.PI * 2);
+          ctx.restore();
+          ctx.fill();
         }
       }
     };
@@ -366,17 +403,17 @@ export default function RollBoard({
     let job = null, jobRow = P.h - 1;
     if (a && a.phase === 'roll') {
       const k = a.k;
-      job = () => drawDie(anim.from, anim.dir, k * Math.PI / 2, Math.sin(k * Math.PI) * 0.06);
+      job = () => drawDie(anim.from, anim.dir, k * Math.PI / 2, 0);
       jobRow = Math.max(anim.from.y, anim.to.y);
     } else if (a && a.phase === 'bump') {
-      const k = Math.sin(a.k * Math.PI) * 0.22;
+      const k = Math.sin(a.k * Math.PI) * 0.18;
       job = () => drawDie(state, anim.dir, k, 0);
       jobRow = state.y;
     } else {
       let dz = 0;
       if (won && winT.current != null) {
         const t = (now - winT.current) / 1000;
-        dz = t < WIN_MS / 1000 ? Math.abs(Math.sin(t * Math.PI * 2.7)) * Math.max(0, 0.6 - t * 0.45) : 0;
+        dz = t < WIN_MS / 1000 ? Math.abs(Math.sin(t * Math.PI * 2.7)) * Math.max(0, 0.38 - t * 0.3) : 0;
       }
       job = () => drawDie(state, null, 0, dz);
       jobRow = state.y;
@@ -389,6 +426,16 @@ export default function RollBoard({
   }, [P, anim, state, pr, W, H, won]);
 
   useEffect(() => { readColors(); force((n) => n + 1); }, [readColors, themeKey]);
+  useEffect(() => {
+    const cv = cvRef.current;
+    if (!cv || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver((es) => {
+      const w = es[0] && es[0].contentRect ? es[0].contentRect.width : cv.clientWidth;
+      if (w && Math.abs(w - shown.current) > 0.25) { shown.current = w; force((n) => n + 1); }
+    });
+    ro.observe(cv);
+    return () => ro.disconnect();
+  }, []);
   useEffect(() => {
     const mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
     const on = () => { readColors(); draw(performance.now()); };
