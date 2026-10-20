@@ -30,9 +30,10 @@ import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
 import useCircuitBoard from '../circuits/useCircuitBoard';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
-import { CROSSED_RUN_ID, CROSSED_BELTS, CROSSED_CLOCK, CROSSED_MAX, crossedTierOf, crossedGridPoints, crossedAcc, crossedSpeed } from '@/lib/crossed';
+import { CROSSED_RUN_ID, CROSSED_BELTS, CROSSED_CLOCK, CROSSED_MAX, crossedTierOf, crossedGridPoints, crossedAcc, crossedSpeed, crossedDayTag, crossedInkOn } from '@/lib/crossed';
 import RunBackLink from '../circuits/RunBackLink';
-import CrossedCurtain from './CrossedCurtain';
+import CrossedCurtain, { gridOf } from './CrossedCurtain';
+import Week, { WEEK_CSS } from './Week';
 
 const CLIENTS = {
   emcee: dynamic(() => import('../emcee/EmceeClient'), { ssr: false, loading: () => null }),
@@ -79,19 +80,20 @@ function bankedOf(sec) {
   } catch (e) { return null; }
 }
 
-// A belt drawn in CSS: the band, the knot, two tails, and the rank tab on the
-// right tail (gold bars on black, a darker tab on every other color).
-function Belt({ ti, tied = true, dye = false, small = false }) {
-  const t = B[ti];
+// A puzzle's shape, small, for its clipping: black squares and white ones, no
+// letters, so it spoils nothing (the curtain's own gridOf, read with no result).
+function Shape({ sec }) {
+  const { w, h, cells } = useMemo(() => gridOf(sec, null), [sec]);
   return (
-    <div className={`bt${tied ? ' tied' : ''}${dye ? ' dye' : ''}${small ? ' sm' : ''}${ti === LOW ? ' white' : ''}`} style={{ '--b': t[3], '--st': t[4] }} aria-hidden="true">
-      <i className="bt-band" />
-      <i className="bt-tail l" />
-      <i className="bt-tail r"><b /></i>
-      <i className="bt-knot" />
+    <div className="cl-g" aria-hidden="true" style={{ gridTemplateColumns: `repeat(${w}, 1fr)`, aspectRatio: `${w} / ${h}` }}>
+      {cells.flat().map((v, i) => <i key={i} className={v === '#' ? 'b' : ''} />)}
     </div>
   );
 }
+
+// THE START BUTTON is an across entry: 1 Across, (7, 2), and CROSSED UP types
+// itself into the squares in pencil. Pressing it inks the letters in pen.
+const ENTRY = 'CROSSED#UP';
 
 export default function CrossedClient({ dateLabel, dateShort, sections = [], clocks: clocksIn = null }) {
   // The day's clocks come from the server (lib/crossed-clocks.js); the seed covers a
@@ -234,38 +236,36 @@ export default function CrossedClient({ dateLabel, dateShort, sections = [], clo
           <h1 className="title fade">{'Crossed Up'.split(' ').map((w, i) => <span key={i} style={{ animationDelay: `${i * 0.09}s` }}>{w}</span>)}</h1>
           <p className="lede fade">Four crosswords in one sitting: <b>the mini</b>, <b>the big nine by nine</b>, <b>three acrostics</b>, then <b>a grid with no clues</b>. Finishing counts a fifth, <b>speed</b> counts the rest. <span className="lede-x">Your score says which day of the week you solve like.</span></p>
 
-          {/* THE DOORS ARE THE START BUTTON: two paper panels that slide
-              apart, and the light behind them, before the first grid. */}
-          <button type="button" className={`door fade${leaving ? ' open' : ''}`} onClick={start} aria-label={allBanked ? 'See your rank' : 'Pick up the pencil'}>
-            <span className="door-frame">
-              <span className="door-light" />
-              <span className="door-p l"><i /></span>
-              <span className="door-p r"><i /></span>
-              <span className="door-sign">{allBanked ? 'All four done today' : 'The grids are printed'}</span>
+          <button type="button" className={`xw fade${leaving ? ' go' : ''}`} onClick={start} aria-label={allBanked ? 'See your rank' : 'Pick up the pencil'}>
+            <span className="xw-clue"><b>1 Across</b> {allBanked ? 'All four filled in today' : 'Four grids in one sitting'} <em>(7, 2)</em></span>
+            <span className="xw-row">
+              {ENTRY.split('').map((ch, i) => (ch === '#'
+                ? <i key={i} className="xw-c blk" />
+                : <i key={i} className="xw-c" style={{ '--d': `${0.45 + i * 0.08}s` }}>{i === 0 ? <small>1</small> : null}<b>{ch}</b></i>))}
             </span>
-            <span className="door-go">{allBanked ? 'See your rank' : 'Pick up the pencil'} <span aria-hidden="true">&rarr;</span></span>
+            <span className="xw-go">{allBanked ? 'See your rank' : 'Pick up the pencil'} <span aria-hidden="true">&rarr;</span></span>
           </button>
 
-          <div className="wall">
-            {sections.map((s, i) => (
-              <div key={s.key} className="scroll" style={{ '--c': `var(--dj-${s.key})`, animationDelay: `${0.25 + i * 0.14}s` }}>
-                <i className="rod t" />
-                <div className="sc-body">
-                  <div className="sc-k">Puzzle {NUMS[i] || i + 1}</div>
-                  <div className="sc-n">{s.name}</div>
-                  <div className="sc-f">{s.form}</div>
-                  <div className="sc-c">{s.chip}</div>
+          <div className="pp fade">
+            <div className="pp-mast"><span>The Puzzle Page</span><b>Crossed Up</b><span>{dateShort}</span></div>
+            <div className="pp-cols">
+              {sections.map((s, i) => (
+                <div key={s.key} className="clip" style={{ '--c': `var(--dj-${s.key})`, '--rot': `${[-1.4, 0.9, -0.6, 1.3][i % 4]}deg`, animationDelay: `${0.25 + i * 0.12}s` }}>
+                  <div className="cl-k">Puzzle {NUMS[i] || i + 1}</div>
+                  <Shape sec={s} />
+                  <div className="cl-n">{s.name}</div>
+                  <div className="cl-f">{s.form}</div>
+                  <div className="cl-c">{s.chip}</div>
                   {banked[s.key]
-                    ? <div className="sc-bk">{banked[s.key].unknown ? 'Done today' : `Done: ${banked[s.key].secs ? fmtClock(banked[s.key].secs) : `${banked[s.key].score}/${banked[s.key].total}`}`}<span className="sc-bkx"> · it stands</span></div>
-                    : <div className="sc-w">{s.weight} points</div>}
+                    ? <div className="cl-bk"><span>{banked[s.key].unknown ? 'Done today' : `Done ${banked[s.key].secs ? fmtClock(banked[s.key].secs) : `${banked[s.key].score}/${banked[s.key].total}`}`}</span></div>
+                    : <div className="cl-w">{s.weight} points</div>}
                 </div>
-                <i className="rod b" />
-              </div>
-            ))}
+              ))}
+            </div>
+            <div className="pp-ft">Solved one today already? Your first time stands.</div>
           </div>
 
           <div className="pre-row fade">
-            <div className="sub2">Solved one today already? Your first time stands.</div>
             <button type="button" className="pre-how" aria-expanded={ladderOpen} onClick={() => setLadderOpen((v) => !v)}>{ladderOpen ? 'Hide the ranks' : 'Which day could you solve?'}</button>
           </div>
           {ladderOpen && (
@@ -333,13 +333,13 @@ export default function CrossedClient({ dateLabel, dateShort, sections = [], clo
   );
 }
 
-// ─── the belts, top to bottom ───────────────────────────────────────────────
+// ─── the ranks, top to bottom ───────────────────────────────────────────────
 function Ladder({ at }) {
   return (
     <ol className="lad">
       {B.map((t, i) => (
-        <li key={t[2]} className={at === i ? 'me' : ''} style={{ '--b': t[3], '--st': t[4] }}>
-          <span className="lp" aria-hidden="true"><i /></span>
+        <li key={t[2]} className={at === i ? 'me' : ''} style={{ '--b': t[3], '--k': i === 0 ? '#e9cf7f' : crossedInkOn(t[3]) }}>
+          <span className="lp" aria-hidden="true">{crossedDayTag(i)}</span>
           <span className="ln"><b>{t[1]}</b><small>{t[5]}</small></span>
           <span className="lc">{i === LOW ? 'any score' : `${t[0]}+`}</span>
         </li>
@@ -348,8 +348,8 @@ function Ladder({ at }) {
   );
 }
 
-// The next belt up, and how far short. A near miss reads as nearly full.
-function NextBelt({ total, ti }) {
+// The next rank up, and how far short. A near miss reads as nearly full.
+function NextRank({ total, ti }) {
   if (ti <= 0) return <div className="ms top"><span>Top of the ladder</span><b>Nothing above In Pen.</b></div>;
   const up = B[ti - 1];
   const short = Math.max(1, up[0] - total);
@@ -364,10 +364,9 @@ function NextBelt({ total, ti }) {
 }
 
 // ─── THE GRADING ────────────────────────────────────────────────────────────
-// DYE THE BELT (owner-approved mockup, 2026-10-17) plays first, as a curtain
-// over the whole screen (app/crossed/CrossedCurtain.jsx): each form paints the screen
-// in its colour while its grid ripples in and its clock and points land, then
-// the total climbs the belts, then the seal and the knot. It plays once, on the
+// THE CURTAIN plays first, over the whole screen (app/crossed/CrossedCurtain.jsx):
+// each puzzle paints the screen in its colour while its grid ripples in and its
+// clock and points land, then the total climbs the week, then the seal. It plays once, on the
 // finish itself, never for reduced motion or a run restored already finished,
 // and any tap or key skips it. Then the settled card below, unchanged.
 function Grading({ sections, counted, parts, total, dateLabel, dateShort, animate, board, clocks, onShare, copied, onSettled }) {
@@ -407,11 +406,12 @@ function Grading({ sections, counted, parts, total, dateLabel, dateShort, animat
       <div className={`gr-stage${settled ? ' settled' : ''}${phase === 'seal' ? ' thud' : ''}`}>
         <div className="gr-left">
           {upg && <div key={upg.k} className="gr-upg">{upg.text}</div>}
-          <div className={`gr-beltwrap${tied ? ' tied' : ''}`}>
-            <Belt ti={face} tied={tied} dye={dye} />
-            <div className="gr-beltnm" key={face}>{B[face][1]}</div>
+          <div className="gr-weekwrap">
+            <div className="gr-ex">The week</div>
+            <Week ti={face} circle={tied} />
+            <div className="gr-weeknm" key={face}>{B[face][1]}</div>
           </div>
-          {tied && <NextBelt total={total} ti={fti} />}
+          {tied && <NextRank total={total} ti={fti} />}
           {sparks.map((p) => <i key={p.id} className="gr-spark" style={{ '--x': `${p.x}px`, '--y': `${p.y}px`, '--d': `${p.ms}ms` }} />)}
         </div>
         <div className="gr-right">
@@ -464,8 +464,8 @@ function Grading({ sections, counted, parts, total, dateLabel, dateShort, animat
 }
 
 // ─── TODAY'S BOARD (owner, 2026-10-19) ─────────────────────────────────────
-// The Gauntlets' end-card board, in the Dojo's own dress: today's top three
-// plus your own row, each with the belt that total ties on and three bars, one
+// The Gauntlets' end-card board: today's top three plus your own row, each
+// with the rank that total lands on and three bars, one
 // per form, filled as a share of that form's points (so a full bar is full
 // marks whatever the form is worth). Other players' bars are graded from their
 // board rows with the same scorer and the same day's clocks the board itself
@@ -484,7 +484,7 @@ function CrossedBoard({ sections, parts, total, board, clocks }) {
     if (!p || p.abandoned) return 0;
     return crossedGridPoints(key, p.score, p.total, p.timeElapsed, clocks || CROSSED_CLOCK);
   };
-  const beltName = (pts) => B[crossedTierOf(pts)][1];
+  const rankName = (pts) => B[crossedTierOf(pts)][1];
   const top = rows.slice(0, 3);
   const meInTop = !!(meKey && top.some((x) => x.userKey === meKey));
   const out = top.map((x, i) => {
@@ -492,7 +492,7 @@ function CrossedBoard({ sections, parts, total, board, clocks }) {
     const t = Math.round(Number(x.total) || 0);
     return {
       key: x.userKey || `r${i}`, rank: String(x.rank || i + 1), name: x.username || 'Player', total: mine ? total : t,
-      sub: [beltName(mine ? total : t), mine && ahead != null ? `ahead of ${ahead}%` : ''].filter(Boolean).join(' · '),
+      sub: [rankName(mine ? total : t), mine && ahead != null ? `ahead of ${ahead}%` : ''].filter(Boolean).join(' · '),
       ti: crossedTierOf(mine ? total : t), me: mine, rc: ['#e8b43a', '#b8bcc4', '#c8814b'][i],
       per: mine ? parts : (x.perGame ? sections.map((s) => shareOf(s.key, x.perGame[s.key])) : null),
     };
@@ -500,7 +500,7 @@ function CrossedBoard({ sections, parts, total, board, clocks }) {
   if (me && !meInTop && meRank) {
     out.push({
       key: 'me', rank: String(meRank), name: me.username || 'You', total,
-      sub: [beltName(total), ahead != null ? `ahead of ${ahead}%` : ''].filter(Boolean).join(' · '),
+      sub: [rankName(total), ahead != null ? `ahead of ${ahead}%` : ''].filter(Boolean).join(' · '),
       ti: crossedTierOf(total), me: true, rc: 'var(--dj-cta)', per: parts,
     });
   }
@@ -542,7 +542,7 @@ function CrossedBoard({ sections, parts, total, board, clocks }) {
   );
 }
 
-const CSS = `
+const CSS = WEEK_CSS + `
 .dj *{box-sizing:border-box}
 .dj .eb{font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dj-mute)}
 .dj-cap{display:flex;align-items:center;gap:12px;max-width:none;margin:0;padding:12px 20px;font-size:13px}
@@ -561,33 +561,47 @@ const CSS = `
 .lede{margin:14px auto 0;max-width:580px;font-size:15.5px;font-weight:600;line-height:1.5;color:var(--dj-mute)}
 .lede b{color:var(--dj-ink)}
 .lede-x{display:block;margin-top:4px;color:var(--dj-gold);font-weight:800}
-.door{display:block;width:100%;max-width:440px;margin:20px auto 0;padding:0;border:1.5px solid var(--dj-line);border-radius:16px;background:var(--dj-panel);color:var(--dj-ink);box-shadow:0 14px 34px rgba(0,0,0,.55);overflow:hidden;cursor:pointer;font:inherit}
-.door-frame{position:relative;display:block;height:132px;margin:12px 12px 10px;border-radius:6px;background:var(--dj-wood);overflow:hidden;box-shadow:inset 0 0 0 5px #24160d}
-.door-light{position:absolute;inset:5px;background:radial-gradient(ellipse at 50% 60%,#fff6dc 0%,#f2d38a 38%,#a3702f 100%);opacity:.9}
-.door-p{position:absolute;top:5px;bottom:5px;width:calc(50% - 5px);background-color:#efe6d0;background-image:linear-gradient(90deg,transparent 31%,#4a2f1b 31%,#4a2f1b 35%,transparent 35%,transparent 64%,#4a2f1b 64%,#4a2f1b 68%,transparent 68%),linear-gradient(0deg,transparent 23%,#4a2f1b 23%,#4a2f1b 26%,transparent 26%,transparent 48%,#4a2f1b 48%,#4a2f1b 51%,transparent 51%,transparent 73%,#4a2f1b 73%,#4a2f1b 76%,transparent 76%);box-shadow:inset 0 0 0 4px #4a2f1b;transition:transform .85s cubic-bezier(.65,0,.35,1)}
-.door-p.l{left:5px}.door-p.r{right:5px}
-.door-p i{position:absolute;top:50%;width:6px;height:26px;margin-top:-13px;border-radius:3px;background:#2a1a0f}
-.door-p.l i{right:10px}.door-p.r i{left:10px}
-.door:hover .door-p.l{transform:translateX(-6px)}.door:hover .door-p.r{transform:translateX(6px)}
-.door.open .door-p.l{transform:translateX(-102%)}.door.open .door-p.r{transform:translateX(102%)}
-.door-sign{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);font:600 9.5px ${MONO};letter-spacing:.16em;text-transform:uppercase;color:#f6efdc;background:rgba(36,22,13,.82);padding:3px 8px;border-radius:4px;white-space:nowrap;z-index:2}
-.door-go{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:10px;padding:15px 18px;background:var(--dj-cta);color:var(--dj-cta-ink);font:900 19px ${SANS}}
-.door-go::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.45) 50%,transparent 70%);transform:translateX(-100%);animation:djsheen 2.6s 1.4s ease-in-out infinite}
+.xw{display:block;width:100%;max-width:520px;margin:22px auto 0;padding:0;border:0;border-radius:14px;background:var(--dj-paper);color:#1b1a17;box-shadow:0 14px 34px rgba(0,0,0,.55);overflow:hidden;cursor:pointer;font:inherit;text-align:left}
+.xw-clue{display:block;padding:14px 18px 0;font:600 15px/1.35 ${SERIF};color:#3b352b}
+.xw-clue b{font:800 11px ${SANS};letter-spacing:.14em;text-transform:uppercase;color:var(--dj-seal);margin-right:6px}
+.xw-clue em{font-style:normal;font-weight:700;color:#7a6f5c}
+.xw-row{display:flex;margin:12px 18px 16px;border:2px solid #1b1a17}
+.xw-c{position:relative;flex:1 1 0;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-left:1px solid #1b1a17;background:#fffdf7;font-style:normal}
+.xw-c:first-child{border-left:0}
+.xw-c.blk{background:#1b1a17}
+.xw-c small{position:absolute;left:3px;top:1px;font:800 9px ${SANS};color:#1b1a17}
+.xw-c b{font:600 clamp(18px,4.6vw,28px) ${SANS};color:#7a7468;animation:xwtype .18s ease var(--d) both}
+.xw-c:not(.blk){animation:xwcur .5s ease var(--d) both}
+@keyframes xwtype{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+@keyframes xwcur{0%{background:#fde68a}100%{background:#fffdf7}}
+.xw:hover .xw-c:not(.blk){background:#fff7d6}
+.xw.go .xw-c b{color:#0f1c4d;font-weight:900;transition:color .25s ease}
+.xw.go .xw-c:not(.blk){animation:xwink .4s ease both}
+.xw.go .xw-c:nth-child(2){animation-delay:.04s}.xw.go .xw-c:nth-child(3){animation-delay:.08s}.xw.go .xw-c:nth-child(4){animation-delay:.12s}.xw.go .xw-c:nth-child(5){animation-delay:.16s}.xw.go .xw-c:nth-child(6){animation-delay:.2s}.xw.go .xw-c:nth-child(7){animation-delay:.24s}.xw.go .xw-c:nth-child(9){animation-delay:.32s}.xw.go .xw-c:nth-child(10){animation-delay:.36s}
+@keyframes xwink{0%{background:#fffdf7}40%{background:#dbe6ff}100%{background:#fffdf7}}
+.xw-go{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:10px;padding:15px 18px;background:var(--dj-cta);color:var(--dj-cta-ink);font:900 19px ${SANS}}
+.xw-go::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.45) 50%,transparent 70%);transform:translateX(-100%);animation:djsheen 2.6s 1.6s ease-in-out infinite}
 @keyframes djsheen{to{transform:translateX(100%)}}
-.door:focus-visible,.pre-how:focus-visible{outline:2px solid var(--dj-ink);outline-offset:3px}
-.wall{display:flex;justify-content:center;gap:18px;max-width:640px;margin:30px auto 0;padding:22px 14px 20px;border-radius:18px;background:linear-gradient(180deg,#2a1b10,#1a110a);box-shadow:inset 0 2px 0 rgba(255,255,255,.06),0 18px 40px rgba(0,0,0,.5)}
-.scroll{flex:1;max-width:170px;position:relative;display:flex;flex-direction:column;align-items:stretch;transform-origin:50% 0;animation:djunroll .7s cubic-bezier(.2,1.1,.4,1) both}
-@keyframes djunroll{from{opacity:0;transform:scaleY(.15)}to{opacity:1;transform:none}}
-.rod{display:block;height:8px;margin:0 -6px;border-radius:4px;background:linear-gradient(180deg,#6b4220,#3b2412);box-shadow:0 2px 4px rgba(0,0,0,.4)}
-.sc-body{background:var(--dj-paper);color:#2b2216;padding:14px 10px 14px;text-align:center;border-left:4px solid var(--c);border-right:4px solid var(--c);min-height:170px;display:flex;flex-direction:column;align-items:center}
-.sc-k{font:800 9.5px ${MONO};letter-spacing:.16em;text-transform:uppercase;color:#8a7553}
-.sc-n{font:700 24px/1.1 ${SERIF};margin-top:8px}
-.sc-f{font:800 11px ${SANS};letter-spacing:.06em;text-transform:uppercase;color:#5a4a33;margin-top:4px}
-.sc-c{font:600 11.5px/1.3 ${SANS};color:#6c5a40;margin-top:7px}
-.sc-w{margin-top:auto;padding-top:10px;font:800 10px ${MONO};letter-spacing:.12em;text-transform:uppercase;color:var(--dj-seal)}
-.sc-bk{margin-top:auto;padding-top:10px;font-size:10.5px;font-weight:800;color:#2f5d3a}
-.pre-row{display:flex;flex-direction:row-reverse;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;max-width:640px;margin:16px auto 0}
-.pre-row .sub2{margin:0;text-align:right;max-width:280px}
+.xw:focus-visible,.pre-how:focus-visible{outline:2px solid var(--dj-ink);outline-offset:3px}
+.pp{max-width:720px;margin:30px auto 0;padding:14px 18px 16px;background:var(--dj-paper);color:#1b1a17;border-radius:4px;box-shadow:0 18px 40px rgba(0,0,0,.5)}
+.pp-mast{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding-bottom:8px;border-bottom:3px double #1b1a17}
+.pp-mast span{font:800 10px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:#5a5244}
+.pp-mast b{font:800 italic 26px/1 ${SERIF};letter-spacing:-.01em}
+.pp-cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:16px}
+.clip{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;padding:12px 10px 12px;background:#fffdf7;border:1.5px dashed #8a7f6a;border-top:4px solid var(--c);transform:rotate(var(--rot));animation:clipin .55s cubic-bezier(.2,1.1,.4,1) both}
+@keyframes clipin{from{opacity:0;transform:translateY(16px) rotate(calc(var(--rot) * 3))}to{opacity:1;transform:rotate(var(--rot))}}
+.cl-k{font:800 9.5px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:#7a6f5c}
+.cl-g{display:grid;height:62px;max-width:100%;margin:10px 0 8px;border:1.5px solid #1b1a17;background:#1b1a17;gap:1px}
+.cl-g i{background:#fffdf7}
+.cl-g i.b{background:#1b1a17}
+.cl-n{font:700 22px/1.1 ${SERIF}}
+.cl-f{font:800 10.5px ${SANS};letter-spacing:.06em;text-transform:uppercase;color:#4a4236;margin-top:4px}
+.cl-c{font:600 11.5px/1.3 ${SANS};color:#6c604c;margin-top:6px}
+.cl-w{margin-top:auto;padding-top:10px;font:800 10px ${SANS};letter-spacing:.12em;text-transform:uppercase;color:var(--dj-seal)}
+.cl-bk{margin-top:auto;padding-top:10px}
+.cl-bk span{display:inline-block;font:900 10.5px ${SANS};letter-spacing:.1em;text-transform:uppercase;color:#2f5d3a;border:2px solid #2f5d3a;border-radius:4px;padding:3px 7px;transform:rotate(-4deg)}
+.pp-ft{margin-top:14px;padding-top:8px;border-top:1px solid rgba(27,26,23,.25);font:600 12px ${SANS};color:#5a5244;text-align:center}
+.pre-row{display:flex;justify-content:center;max-width:640px;margin:14px auto 0}
 .pre-how{background:none;border:0;padding:6px 0;color:var(--dj-gold);font:800 13px ${SANS};text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .sub2{margin-top:12px;font-size:12.5px;font-weight:700;color:var(--dj-mute)}
 .sub2 a{color:var(--dj-ink)}
@@ -596,24 +610,11 @@ const CSS = `
 .fact{background:var(--dj-panel);border:1.5px solid var(--dj-line);border-radius:12px;padding:9px 10px;text-align:left}
 .fact b{display:block;font-size:20px;font-weight:900}
 .fact span{font-size:11px;font-weight:700;color:var(--dj-mute);line-height:1.25;display:block}
-.pre.leave .scroll{animation:djroll .55s cubic-bezier(.6,0,.8,.4) both !important}
-.pre.leave .scroll:nth-child(2){animation-delay:.06s !important}.pre.leave .scroll:nth-child(3){animation-delay:.12s !important}
-@keyframes djroll{to{transform:scaleY(.1);opacity:0}}
-.pre.leave .fade:not(.door){transition:opacity .4s .3s;opacity:0}
-/* THE BELT */
-.bt{position:relative;width:280px;height:120px;--bw:28px}
-.bt-band{position:absolute;left:0;right:0;top:20px;height:var(--bw);border-radius:4px;background:var(--b);box-shadow:inset 0 3px 0 rgba(255,255,255,.18),inset 0 -3px 0 rgba(0,0,0,.25),0 10px 20px -8px rgba(0,0,0,.7);background-image:repeating-linear-gradient(0deg,transparent 0 5px,rgba(0,0,0,.12) 5px 6px);transition:background-color .25s}
-.bt-knot{position:absolute;left:50%;top:13px;width:40px;height:42px;margin-left:-20px;border-radius:7px;background:var(--b);box-shadow:inset 0 3px 0 rgba(255,255,255,.2),inset 0 -4px 0 rgba(0,0,0,.3),0 6px 14px rgba(0,0,0,.5);transform:scale(0);transition:transform .45s cubic-bezier(.2,1.6,.4,1) .1s,background-color .25s}
-.bt-tail{position:absolute;top:42px;width:var(--bw);height:0;border-radius:0 0 4px 4px;background:var(--b);box-shadow:inset 0 -3px 0 rgba(0,0,0,.25);transition:height .55s cubic-bezier(.3,1.3,.5,1) .35s,background-color .25s;overflow:hidden}
-.bt-tail.l{left:50%;margin-left:-30px;transform-origin:50% 0;transform:rotate(14deg)}
-.bt-tail.r{left:50%;margin-left:2px;transform-origin:50% 0;transform:rotate(-14deg)}
-.bt-tail b{position:absolute;left:0;right:0;bottom:8px;height:14px;background:var(--st);box-shadow:0 0 0 1px rgba(0,0,0,.2)}
-.bt.tied .bt-knot{transform:scale(1)}
-.bt.tied .bt-tail{height:68px}
-.bt.dye .bt-band{animation:djdye .26s ease-out}
-@keyframes djdye{0%{filter:brightness(1.8)}100%{filter:none}}
-.bt.white .bt-band,.bt.white .bt-knot,.bt.white .bt-tail{box-shadow:0 0 0 1px rgba(0,0,0,.25),inset 0 -3px 0 rgba(0,0,0,.12)}
-.bt.sm{width:150px;height:70px;--bw:16px}
+.pre.leave .clip{animation:clipout .5s cubic-bezier(.6,0,.8,.4) both !important}
+.pre.leave .clip:nth-child(2){animation-delay:.05s !important}.pre.leave .clip:nth-child(3){animation-delay:.1s !important}.pre.leave .clip:nth-child(4){animation-delay:.15s !important}
+@keyframes clipout{to{opacity:0;transform:translateY(24px) rotate(calc(var(--rot) * -2))}}
+.pre.leave .fade:not(.xw):not(.pp){transition:opacity .4s .3s;opacity:0}
+.pre.leave .pp{transition:opacity .35s .45s;opacity:0}
 /* PLAY */
 .dj-play{max-width:1180px;margin:0 auto;padding:4px 0 50px}
 .dj-sechd{display:flex;align-items:center;gap:10px;max-width:760px;margin:6px auto 0;padding:0 16px;animation:djrise .4s ease both}
@@ -654,8 +655,7 @@ html:not(.dj-x):has(.stage-page.dj[data-stage-theme]),html:not(.dj-x) body:has(.
 .lad{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;text-align:left}
 .lad li{display:flex;align-items:center;gap:12px;padding:7px 10px;border-radius:10px;background:var(--dj-surf);border:1px solid var(--dj-line)}
 .lad li.me{border-color:var(--dj-gold);box-shadow:0 0 0 1px var(--dj-gold) inset;background:rgba(233,207,127,.08)}
-.lad .lp{flex:none;position:relative;width:34px;height:12px;border-radius:3px;background:var(--b);box-shadow:0 0 0 1px rgba(255,255,255,.22)}
-.lad .lp i{position:absolute;right:5px;top:0;bottom:0;width:6px;background:var(--st)}
+.lad .lp{flex:none;width:38px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:3px;background:var(--b);color:var(--k);font:800 10.5px ${SANS};letter-spacing:.04em;box-shadow:0 0 0 1.5px rgba(255,255,255,.3)}
 .lad .ln{flex:1;min-width:0;display:flex;flex-direction:column}
 .lad .ln b{font-size:13.5px;font-weight:800;line-height:1.25}
 .lad .ln small{font-size:11px;color:var(--dj-mute);font-weight:700;line-height:1.3}
@@ -667,8 +667,10 @@ html:not(.dj-x):has(.stage-page.dj[data-stage-theme]),html:not(.dj-x) body:has(.
 .gr-stage.thud{animation:djshake .45s ease-out}
 @keyframes djshake{15%{transform:translate(3px,2px)}30%{transform:translate(-3px,-1px)}45%{transform:translate(2px,-2px)}60%{transform:translate(-1px,1px)}}
 .gr-left{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:260px}
-.gr-beltwrap{display:flex;flex-direction:column;align-items:center;padding:22px 20px 14px;border-radius:16px;background:radial-gradient(ellipse at 50% 30%,rgba(255,255,255,.07),transparent 70%)}
-.gr-beltnm{margin-top:6px;font:700 26px/1.1 ${SERIF};animation:djrise .3s ease both}
+.gr-weekwrap{display:flex;flex-direction:column;align-items:center;gap:12px;padding:22px 20px 14px;border-radius:16px;background:radial-gradient(ellipse at 50% 30%,rgba(255,255,255,.07),transparent 70%)}
+.gr-weekwrap .cw{--s:46px}
+.gr-ex{font:800 10px ${SANS};letter-spacing:.18em;text-transform:uppercase;color:var(--dj-mute)}
+.gr-weeknm{font:700 26px/1.1 ${SERIF};animation:djrise .3s ease both}
 .gr-upg{position:absolute;left:50%;top:-6px;font:800 11px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:var(--dj-cta-ink);background:var(--dj-cta);padding:6px 11px;border-radius:999px;white-space:nowrap;z-index:4;animation:djup 1s ease-out both}
 @keyframes djup{0%{opacity:0;transform:translate(-50%,12px)}20%{opacity:1;transform:translate(-50%,0)}75%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-8px)}}
 .gr-spark{position:absolute;left:50%;top:40%;width:6px;height:6px;margin:-3px;border-radius:50%;background:var(--dj-gold);z-index:5;pointer-events:none;animation:djspark var(--d) cubic-bezier(.2,.7,.3,1) both}
@@ -760,6 +762,6 @@ html:not(.dj-x):has(.stage-page.dj[data-stage-theme]),html:not(.dj-x) body:has(.
 .sh-seal{width:112px;height:66px;margin-left:-56px;bottom:10px}
 .sh-seal span{font-size:13px;letter-spacing:.06em}
 }
-@media(max-width:600px){.wall{gap:8px;padding:18px 8px 14px}.sc-body{padding:10px 5px;min-height:140px}.sc-n{font-size:17px}.sc-c{display:none}.sc-f{font-size:9.5px}.sc-k{font-size:8px;letter-spacing:.08em}.sc-bkx{display:none}.title{font-size:44px}.lede{font-size:14px}.pre-row .sub2{font-size:11.5px;max-width:200px}.facts{gap:5px}.fact{padding:7px}.fact b{font-size:16px}.fact span{font-size:9.5px}.dj-sechd b{font-size:16px}.door-frame{height:110px}.bt{width:240px}}
+@media(max-width:600px){.pp{padding:12px 12px 14px}.pp-mast b{font-size:21px}.pp-mast span:last-child{display:none}.pp-cols{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.cl-n{font-size:18px}.cl-c{display:none}.gr-weekwrap .cw{--s:min(42px,calc((100vw - 48px) / 7))}.title{font-size:44px}.lede{font-size:14px}.pre-row .sub2{font-size:11.5px;max-width:200px}.facts{gap:5px}.fact{padding:7px}.fact b{font-size:16px}.fact span{font-size:9.5px}.dj-sechd b{font-size:16px}}
 @media(prefers-reduced-motion:reduce){.dj *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition:none !important}}
 `;

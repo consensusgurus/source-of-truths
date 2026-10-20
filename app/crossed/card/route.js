@@ -1,10 +1,11 @@
 import { createElement as h } from 'react';
 import { ImageResponse } from 'next/og';
 import { stageFonts } from '@/lib/og-stage-card';
-import { CROSSED_MAX, CROSSED_BELTS, crossedTierOf } from '@/lib/crossed';
+import { CROSSED_MAX, CROSSED_BELTS, crossedTierOf, crossedDayTag, crossedInkOn } from '@/lib/crossed';
 
-// CROSSED'S SHARE CARD, on the Dojo's pattern: one route draws both. With no
-// ?s it is the invite: the seven ranks rising from Monday to In Pen. With
+// CROSSED'S SHARE CARD: one route draws both, in Crossed Up's own mark, THE
+// WEEK (app/crossed/Week.jsx): seven squares MON to PEN, inked up to a rank.
+// With no ?s it is the invite: the week filling in, one row a rank. With
 // ?s=12-28-20-18&t=78&d=2026-10-20 (each puzzle's points, the total, the day)
 // it is THE LADDER: every rank, yours filled, the next one up outlined in gold
 // with how short you came. It names no letter, so a shared card spoils nothing.
@@ -19,9 +20,21 @@ const MUTE = '#8b95a8';
 const DIM = '#64748b';
 const d = (style, ...kids) => h('div', { style: { display: 'flex', ...style } }, ...kids);
 
-function rankBar(t, w, hgt) {
-  return d({ position: 'relative', width: w, height: hgt, borderRadius: 4, background: t[3], border: '1.5px solid rgba(255,255,255,0.28)', flexShrink: 0 },
-    d({ position: 'absolute', right: Math.round(w * 0.12), top: 0, bottom: 0, width: Math.max(6, Math.round(w * 0.1)), background: t[4] }));
+const LOW = CROSSED_BELTS.length - 1;
+// The week as squares, inked up to rank ti. `me` circles that square in red.
+function week(ti, size, me = true) {
+  const cells = [];
+  for (let i = LOW; i >= 0; i--) {
+    const on = i >= ti;
+    const t = CROSSED_BELTS[i];
+    cells.push(d({ ...(i === LOW ? {} : { borderLeft: '1px solid rgba(233,237,244,0.3)' }), position: 'relative', width: size, height: size, alignItems: 'center', justifyContent: 'center', background: on ? t[3] : 'rgba(255,255,255,0.03)', fontSize: Math.round(size * 0.29), fontWeight: 800, color: on ? (i === 0 ? GOLD : crossedInkOn(t[3])) : 'rgba(233,237,244,0.32)' },
+      crossedDayTag(i),
+      me && i === ti ? d({ position: 'absolute', left: -Math.round(size * 0.16), top: -Math.round(size * 0.16), width: Math.round(size * 1.32), height: Math.round(size * 1.32), border: '3px solid #ef4444', borderRadius: 999, transform: 'rotate(-9deg)' }) : null));
+  }
+  return d({ border: '2px solid rgba(233,237,244,0.75)', borderRadius: 3, flexShrink: 0 }, ...cells);
+}
+function tagCell(t, i) {
+  return d({ width: 58, height: 30, alignItems: 'center', justifyContent: 'center', borderRadius: 3, background: t[3], border: '1.5px solid rgba(255,255,255,0.3)', fontSize: 14, fontWeight: 800, color: i === 0 ? GOLD : crossedInkOn(t[3]), flexShrink: 0 }, crossedDayTag(i));
 }
 
 function cta() {
@@ -51,7 +64,7 @@ function rung(t, i, me, upGap) {
       : null;
   return d(row,
     d({ width: 34, fontSize: 17, fontWeight: 800, color: mine ? GOLD : up ? GOLD : DIM, flexShrink: 0 }, String(t[0])),
-    rankBar(t, 74, 18),
+    tagCell(t, i),
     d({ flex: 1, fontSize: 21, fontWeight: 800, color: ink }, t[1]),
     tag);
 }
@@ -65,7 +78,7 @@ function result(parts, total) {
       eyebrow('Mind Loft · Crossed Up'),
       d({ fontSize: 18, fontWeight: 800, letterSpacing: 3, color: SKY, textTransform: 'uppercase', marginTop: 40 }, 'Ranked as a'),
       d({ fontSize: 64, fontWeight: 800, lineHeight: 1.04, letterSpacing: -1.5, marginTop: 10 }, t[1]),
-      d({ marginTop: 22 }, rankBar(t, 300, 40)),
+      d({ marginTop: 24, paddingLeft: 6 }, week(me, 52)),
       d({ alignItems: 'baseline', gap: 22, marginTop: 30 },
         d({ alignItems: 'baseline' },
           d({ fontSize: 66, fontWeight: 800, letterSpacing: -2, color: '#ffffff', lineHeight: 1 }, String(total)),
@@ -84,10 +97,10 @@ function invite() {
       d({ fontSize: 64, fontWeight: 800, lineHeight: 1.04, letterSpacing: -2, marginTop: 36 }, 'Which day could you solve?'),
       d({ fontSize: 22, fontWeight: 700, color: '#cbd5e1', marginTop: 18 }, 'Four crosswords: the mini, the big one, three acrostics, a clueless grid. Fast enough and you solve in pen.'),
       cta()),
-    d({ width: 380, flexDirection: 'column', justifyContent: 'center', gap: 12 },
-      ...rising.map((x, i) => d({ alignItems: 'center', gap: 14, marginLeft: (rising.length - 1 - i) * 10 },
-        rankBar(x, 150 + i * 18, 22),
-        d({ fontSize: 17, fontWeight: 800, color: i === rising.length - 1 ? GOLD : '#94a3b8' }, x[2])))));
+    d({ width: 400, flexDirection: 'column', justifyContent: 'center', gap: 10 },
+      ...rising.map((x, i) => d({ alignItems: 'center', gap: 14 },
+        week(LOW - i, 30, false),
+        d({ fontSize: 15, fontWeight: 800, color: i === rising.length - 1 ? GOLD : '#94a3b8' }, x[2])))));
 }
 
 export async function GET(req) {

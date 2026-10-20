@@ -1,14 +1,15 @@
 'use client';
 
-// CROSSED'S ENDING: the Dojo's dyed-belt curtain (app/dojo/DyeCurtain.jsx)
-// with crossword grids and the week's ranks (owner, 2026-10-20).
+// CROSSED'S ENDING: the Dojo's curtain timing (app/dojo/DyeCurtain.jsx) in
+// Crossed Up's own dress (owner, 2026-10-20): crossword grids and THE WEEK,
+// seven squares MON to PEN that ink in as the total climbs (app/crossed/Week.jsx).
 //
 // Each puzzle takes over the whole screen in its own colour: its grid fills in
 // a diagonal ripple, its clock counts to the real time it took, and its points
 // land. Then the colour drains back to the midnight ground and the run total
 // climbs the week, Monday to In Pen: every rank it reaches floods the screen in
-// that rank's colour for a beat while the ribbon is dyed to it, and the seal
-// comes down on the last one before the curtain lifts onto the card.
+// that rank's colour for a beat while its square of the week is inked, and the
+// seal comes down on the last one before the curtain lifts onto the card.
 //
 // IT IS A CURTAIN. It posts nothing and stores nothing; every figure is one the
 // run already holds. A puzzle that was not solved never shows its answer: its
@@ -21,6 +22,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { holdRootPaint } from '@/lib/root-paint';
 import { CROSSED_BELTS, CROSSED_MAX, crossedTierOf } from '@/lib/crossed';
+import Week, { WEEK_CSS } from './Week';
 
 const B = CROSSED_BELTS;
 const LOW = B.length - 1;
@@ -34,10 +36,10 @@ const PD = 2000;     // one form owns the screen
 const WAVE = 1250;   // the ripple, after a 100ms beat
 const CLOCK = 1350;  // the clock's count
 const SCROLL = 1450; // the scroll fills
-const STEP = 650;    // one belt on the climb
+const STEP = 650;    // one rank on the climb
 const FLASH = 260;   // the flood
-const GAP = 600;     // the last belt, held, before the seal
-const HOLD = 2600;   // the tied belt, before the card
+const GAP = 600;     // the last rank, held, before the seal
+const HOLD = 2600;   // the inked week, before the card
 
 const ease = (x) => { const v = Math.max(0, Math.min(1, x)); return 1 - Math.pow(1 - v, 3); };
 const fmtClock = (s) => { const v = Math.max(0, Math.round(Number(s) || 0)); return `${Math.floor(v / 60)}:${String(v % 60).padStart(2, '0')}`; };
@@ -82,7 +84,7 @@ function waveAt(d, n) {
 // The day's grid as rows of letters, '#' for a black square, ' ' for a white
 // square left blank. A solved puzzle shows its letters; anything else shows
 // the shape alone, so a curtain never prints an answer the player did not get.
-function gridOf(sec, res) {
+export function gridOf(sec, res) {
   const p = (sec && sec.puzzle) || {};
   const solved = !!(res && !res.unknown && Number(res.total) > 0 && Number(res.score) >= Number(res.total));
   let rows = [];
@@ -136,22 +138,10 @@ function Grid({ sec, res }) {
   );
 }
 
-function Belt({ ti, tied }) {
-  const t = B[ti];
-  return (
-    <div className={`dc-belt${tied ? ' tied' : ''}`} style={{ '--b': t[3], '--st': t[4] }} aria-hidden="true">
-      <i className="dc-band" />
-      <i className="dc-tab" />
-      <i className="dc-knot" />
-      {tied ? <><i className="dc-tail l" /><i className="dc-tail r" /></> : null}
-    </div>
-  );
-}
-
 export default function CrossedCurtain({ sections = [], counted = [], parts = [], total = 0, runClock = 0, dateShort = '', board = null, onDone }) {
   const N = sections.length;
   const fti = crossedTierOf(total);
-  // The belts the total climbs through, white first.
+  // The ranks the total climbs through, Monday first.
   const climb = useMemo(() => { const out = []; for (let i = LOW; i >= fti; i--) out.push(i); return out; }, [fti]);
   const pts = parts.map((p) => Math.round(p));
 
@@ -209,12 +199,12 @@ export default function CrossedCurtain({ sections = [], counted = [], parts = []
   const sec = painting ? sections[step] : null;
   const res = painting ? counted[step] : null;
   const bi = counting ? climb[Math.min(k, climb.length - 1)] : fti;
-  const belt = B[bi];
+  const rank = B[bi];
   let bg = MID, ink = INK_LT;
-  if (painting) { bg = sec.color; ink = MID; } else if (counting && flash) { bg = belt[3]; ink = inkOn(belt[3]); }
-  const capRight = painting ? `Form ${step + 1} of ${N}` : sealed ? 'Graded' : '';
+  if (painting) { bg = sec.color; ink = MID; } else if (counting && flash) { bg = rank[3]; ink = inkOn(rank[3]); }
+  const capRight = painting ? `Puzzle ${step + 1} of ${N}` : sealed ? 'Graded' : '';
 
-  // The climb: each belt counts from its own cutoff to just under the next one,
+  // The climb: each rank counts from its own cutoff to just under the next one,
   // and the last to the real total.
   const lastK = climb.length - 1;
   const kk = Math.min(k, lastK);
@@ -244,12 +234,12 @@ export default function CrossedCurtain({ sections = [], counted = [], parts = []
       {painting && (
         <div className="dc-paint" key={`f${step}`}>
           <div className="dc-hd">
-            <div className="dc-k">Form {NUMS[step] || step + 1} · {sec.name}</div>
+            <div className="dc-k">Puzzle {NUMS[step] || step + 1} · {sec.name}</div>
             <div className="dc-line">{sec.chip || sec.form}</div>
           </div>
           <Grid sec={sec} res={res} />
           <div className="dc-side">
-            <div className="dc-k">Form {NUMS[step] || step + 1} · {sec.name}</div>
+            <div className="dc-k">Puzzle {NUMS[step] || step + 1} · {sec.name}</div>
             <div className="dc-line">{sec.chip || sec.form}</div>
             <div className="dc-figs">
               <div className="dc-clk">{res && !res.unknown && res.secs ? <Count from={0} to={res.secs} ms={CLOCK} fmt={fmtClock} /> : '-:--'}</div>
@@ -263,15 +253,15 @@ export default function CrossedCurtain({ sections = [], counted = [], parts = []
         <div className="dc-count">
           <div className="dc-ex">Climbing the week</div>
           <div className="dc-tot"><span className="dc-totn"><Count key={kk} from={lo} to={hi} ms={STEP - 150} /></span><span className="dc-of"> / {CROSSED_MAX}</span></div>
-          <div className="dc-dye"><Belt ti={bi} tied={false} /></div>
-          <div className="dc-bn">{belt[1]}</div>
+          <div className="dc-dye"><Week ti={bi} circle={false} /></div>
+          <div className="dc-bn">{rank[1]}</div>
         </div>
       )}
 
       {sealed && (
         <div className="dc-board">
           <div className="dc-top">
-            <div className="dc-pop"><Belt ti={fti} tied /></div>
+            <div className="dc-pop"><Week ti={fti} /></div>
             <div className="dc-seal"><b>Inked</b><small>{B[fti][2]}</small></div>
           </div>
           <div className="dc-pop" style={{ animationDelay: '.5s' }}>
@@ -313,7 +303,7 @@ export default function CrossedCurtain({ sections = [], counted = [], parts = []
   );
 }
 
-const CSS = `
+const CSS = WEEK_CSS + `
 .dc{position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;overflow:hidden;font-family:'Manrope',system-ui,-apple-system,sans-serif;cursor:pointer;-webkit-tap-highlight-color:transparent;outline:none}
 .dc *{box-sizing:border-box}
 .dc.thud{animation:dcthud .35s ease both}
@@ -343,21 +333,13 @@ const CSS = `
 .dc-tot{font-size:120px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
 .dc-totn{display:inline-block;width:1.9em;text-align:right}
 .dc-of{font-size:36px;opacity:.6}
-.dc-dye{width:640px;max-width:calc(100vw - 48px)}
+.dc-dye{display:flex;justify-content:center}
+.dc-dye .cw{--s:80px}
 .dc-bn{height:34px;font-size:26px;font-weight:800;letter-spacing:.06em;white-space:nowrap}
-.dc-belt{position:relative;width:100%;height:64px;--bh:36px;--kw:60px;--kh:56px;--tab:54px;--tr:40px}
-.dc-band{position:absolute;left:0;right:0;top:14px;height:var(--bh);border-radius:6px;background:var(--b);box-shadow:0 0 0 2px rgba(0,0,0,.35),0 18px 40px rgba(0,0,0,.35);transition:background .25s ease}
-.dc-tab{position:absolute;right:var(--tr);top:14px;width:var(--tab);height:var(--bh);background:var(--st);transition:background .25s ease}
-.dc-knot{position:absolute;left:50%;top:4px;width:var(--kw);height:var(--kh);margin-left:calc(var(--kw) / -2);border-radius:10px;background:var(--b);box-shadow:inset 0 0 0 3px rgba(0,0,0,.28);transition:background .25s ease}
-.dc-tail{position:absolute;top:calc(var(--kh) - 4px);width:14px;height:44px;background:var(--b)}
-.dc-tail.l{left:calc(50% - 15px);transform:rotate(14deg)}
-.dc-tail.r{left:calc(50% + 2px);transform:rotate(-14deg)}
 .dc-board{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;gap:14px;width:440px;max-width:calc(100vw - 32px);margin:0 auto;min-height:0}
 .dc-top{position:relative;height:112px}
 .dc-top .dc-pop{position:absolute;left:0;right:120px;top:20px}
-.dc-top .dc-belt{--bh:30px;--kw:52px;--kh:50px;--tab:44px;--tr:30px;height:92px}
-.dc-top .dc-band,.dc-top .dc-tab{top:10px}
-.dc-top .dc-knot{top:0}
+.dc-top .cw{--s:42px}
 .dc-seal{position:absolute;right:0;top:0;width:104px;height:104px;border-radius:50%;border:4px solid #b4232a;color:#b4232a;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(246,241,228,.92);animation:dcseal .45s cubic-bezier(.2,.9,.2,1) .35s both}
 .dc-seal b{font-size:15px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
 .dc-seal small{font-size:11px;font-weight:800}
@@ -392,13 +374,12 @@ const CSS = `
 .dc-tot{font-size:96px}
 .dc-of{font-size:30px}
 .dc-dye{width:340px;max-width:calc(100vw - 40px)}
-.dc-dye .dc-belt{--bh:32px;--kw:50px;--kh:52px;--tab:40px;--tr:22px;height:60px}
+.dc-dye .cw{--s:min(46px,calc((100vw - 48px) / 7))}
 .dc-bn{font-size:24px}
 .dc-board{width:auto;max-width:none;margin:0;padding:14px 16px 0;justify-content:flex-start;gap:11px}
 .dc-top{height:92px}
 .dc-top .dc-pop{right:96px;top:16px}
-.dc-top .dc-belt{--bh:26px;--kw:46px;--kh:44px;--tab:36px;--tr:14px;height:76px}
-.dc-tail{width:12px;height:34px}
+.dc-top .cw{--s:min(36px,calc((100vw - 140px) / 7))}
 .dc-seal{width:88px;height:88px}
 .dc-seal b{font-size:13px;letter-spacing:.08em}
 .dc-seal small{font-size:10px}

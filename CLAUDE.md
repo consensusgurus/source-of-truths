@@ -10094,6 +10094,13 @@ weekday ladder, Monday Solver up to Saturday Solver and Solves in Pen. Ending is
 `CrossedCurtain.jsx` (the Dojo's grading-curtain shape with the four finished grids), share card
 `/crossed/card`.
 
+**Crossed Up wears its OWN elements, never the Dojo's** (owner, 2026-10-20): the start button is a
+1 Across entry (CROSSED UP, (7, 2)) that types itself in pencil and inks on press; the four puzzles are
+clippings on a puzzle page, each showing its day's grid SHAPE (no letters, via `gridOf` from the
+curtain); the rank mark is THE WEEK (`app/crossed/Week.jsx`, `WEEK_CSS`): seven squares MON to PEN,
+inked up to the rank and the landed one circled in red pen, used on the card, the curtain's climb and
+the share card. Tags and ink come from `crossedDayTag` / `crossedInkOn` in lib/crossed.js.
+
 ### Full-screen colour never leaves a dark scrollbar strip: `lib/root-paint.js`
 
 `globals.css` sets `scrollbar-gutter: stable` and the root is painted the dark ground, so a
