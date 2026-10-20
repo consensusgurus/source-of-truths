@@ -26,6 +26,7 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { DAILY_GAMES as ALL_GAMES, DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
+import { SKILLS, SKILL_MAP, hasSkill, primarySkill } from '@/lib/daily-skills';
 import { RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight } from '@/lib/category-ramp';
 import { gameStatsShort } from '@/lib/daily-row-stats';
 import { savedIdentity } from '@/lib/saved-identity';
@@ -45,6 +46,12 @@ const MIN_W = 1100;
 const CAT_FIXED = ['Word', 'Numbers', 'Logic', 'Sudoku', 'Trivia', 'Geography', 'End Game', 'Cards', 'Arcade', 'Crowd Psychology'];
 const catLabel = (c) => (c === 'Word' ? 'Words' : c);
 const PANE_KEY = 'sot_home_pane';
+// SKILLS OR CATEGORIES (owner, 2026-10-20): the same switch the home's index
+// carries, on the same remembered key, so a pick on either page holds on both.
+const IX_KEY = 'sot_home_ix';
+const SK_PRE = 'sk:';
+const skillOfId = (id) => (typeof id === 'string' && id.startsWith(SK_PRE) ? SKILL_MAP[id.slice(SK_PRE.length)] || null : null);
+const ixLabel = (c) => { const sk = skillOfId(c); return sk ? sk.name : catLabel(c); };
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 
@@ -141,6 +148,12 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:240px;}
 .lc-nav .lc-g s.up{color:var(--stg-acc-ink,var(--stg-acc));}
 .lc-nav .lc-g s.pz{color:var(--stg-warn,#e8b43a);display:inline-flex;}
 .lc-nav button.sty-ixb{width:100%;}
+/* The home's Skills / Categories switch, same rule (keep in step with StageToday). */
+.lc-nav .sty-ixsw{display:flex;gap:2px;padding:2px;margin:2px 4px 6px;border:1px solid var(--stg-cell-line);border-radius:999px;}
+.lc-nav .sty-ixsw button{flex:1 1 auto;border:0;border-radius:999px;background:transparent;color:var(--stg-ink2);
+  font:800 10.5px/1 Manrope,system-ui,sans-serif;letter-spacing:.02em;text-transform:uppercase;padding:7px 3px;cursor:pointer;white-space:nowrap;}
+.lc-nav .sty-ixsw button[aria-pressed="true"]{background:var(--stg-ink);color:var(--stg-ground);}
+.lc-nav .sty-ixsw button:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 
 .lc-side{position:absolute;top:var(--lc-hh,62px);right:0;width:330px;z-index:80;display:flex;flex-direction:column;
   background:var(--stg-ground);}
@@ -197,6 +210,7 @@ export default function LayoutCInner({ gameKey }) {
   const [tick, setTick] = useState(0);
   const [flag, setFlag] = useState(true);
   const [openCat, setOpenCat] = useState(null);
+  const [ixLens, setIxLens] = useState('skill');
   const capRef = useRef(null);
   const [theme, setTheme] = useStageTheme();
   const light = theme === 'light';
@@ -231,8 +245,22 @@ export default function LayoutCInner({ gameKey }) {
   // Small marks (the nav swatch, the current-game bar) need the ink step: the
   // light fill is a pastel since 2026-10-16 and vanishes on the pale page.
   const inkFor = (cat) => (light ? categoryAccentInkLight(cat) : categoryColor(cat));
-  const myCat = game ? game.cat : null;
+  // Every skill a live game lists, in the order lib/daily-skills.js gives
+  // them, each holding its games A to Z (the home's skill index, exactly).
+  const skillCats = useMemo(() => SKILLS
+    .map((s) => ({ cat: SK_PRE + s.id, games: games.filter((g) => hasSkill(g.key, s.id)).sort((a, b) => a.name.localeCompare(b.name)) }))
+    .filter((c) => c.games.length), [games]);
+  const lensCats = ixLens === 'skill' ? skillCats : orderedCats;
+  // A skill wears its ramp step; a category its own hue.
+  const swatchCat = (c) => { const sk = skillOfId(c); return sk ? RAMP_ORDER[sk.ramp] || c : c; };
+  const mySkill = game && primarySkill(game.key) ? SK_PRE + primarySkill(game.key) : null;
+  const myCat = game ? (ixLens === 'skill' && mySkill ? mySkill : game.cat) : null;
   const shownCat = openCat === null ? myCat : openCat;
+  const pickIx = (v) => {
+    setIxLens(v);
+    setOpenCat(null);
+    try { localStorage.setItem(IX_KEY, v); } catch (e) {}
+  };
 
   // Attach on a wide window only, BEFORE paint so a page switch never shows
   // a frame without the panels. The server never renders any of this.
@@ -337,6 +365,9 @@ export default function LayoutCInner({ gameKey }) {
       if (Array.isArray(raw) && raw.length) setOrder(raw);
     } catch (e) {}
   }, []);
+  useIsoLayoutEffect(() => {
+    try { if (localStorage.getItem(IX_KEY) === 'cat') setIxLens('cat'); } catch (e) {}
+  }, []);
 
   useEffect(() => {
     if (!host || !game) return undefined;
@@ -409,7 +440,7 @@ export default function LayoutCInner({ gameKey }) {
     pop: gs.map(() => false),
   }));
   const rank = mine ? ((mine.ranks && mine.ranks.xp) || mine.rank || null) : null;
-  const openGames = (cats.find((c) => c.cat === shownCat) || { games: [] }).games;
+  const openGames = (lensCats.find((c) => c.cat === shownCat) || { games: [] }).games;
   const nextUp = openGames.find((g) => g.key !== game.key && !done.has(g.key) && !inprog.has(g.key));
   const toggleCat = (cat) => setOpenCat(shownCat === cat ? '' : cat);
   const gameHref = (g) => (g.href || '/' + g.key);
@@ -548,11 +579,15 @@ export default function LayoutCInner({ gameKey }) {
           {ixLink('all', 'All Puzzles', 'var(--stg-ink)')}
           {ixLink('sty-mine', 'My Puzzles', 'var(--stg-acc)')}
           <span className="sty-ixsep" aria-hidden="true" />
-          {orderedCats.map(({ cat, games: gs }) => (
+          <div className="sty-ixsw" role="group" aria-label="Group puzzles by">
+            <button type="button" aria-pressed={ixLens === 'skill'} onClick={() => pickIx('skill')}>Skills</button>
+            <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
+          </div>
+          {lensCats.map(({ cat, games: gs }) => (
             <React.Fragment key={cat}>
-              <button type="button" className={'sty-ixb' + (cat === shownCat ? ' on' : '')} style={{ '--cc': inkFor(cat) }}
+              <button type="button" className={'sty-ixb' + (cat === shownCat ? ' on' : '')} style={{ '--cc': inkFor(swatchCat(cat)) }}
                 aria-expanded={cat === shownCat} onClick={() => toggleCat(cat)}>
-                <i aria-hidden="true" /><span>{catLabel(cat)}</span>
+                <i aria-hidden="true" /><span>{ixLabel(cat)}</span>
               </button>
               {cat === shownCat ? (
                 <div className="lc-sub">
@@ -561,11 +596,11 @@ export default function LayoutCInner({ gameKey }) {
                     const paused = !done.has(g.key) && inprog.has(g.key) && !isNow;
                     const mark = done.has(g.key) ? '\u2713' : isNow ? 'Playing' : paused ? pauseIcon : (nextUp && nextUp.key === g.key ? 'Up next' : '');
                     return isNow ? (
-                      <span key={g.key} aria-current="page" className="lc-g now" style={{ '--cc': inkFor(cat) }}>
+                      <span key={g.key} aria-current="page" className="lc-g now" style={{ '--cc': inkFor(g.cat) }}>
                         {g.name}<s>{mark}</s>
                       </span>
                     ) : (
-                      <Link key={g.key} href={gameHref(g)} className="lc-g" style={{ '--cc': inkFor(cat) }}>
+                      <Link key={g.key} href={gameHref(g)} className="lc-g" style={{ '--cc': inkFor(g.cat) }}>
                         {g.name}<s className={mark === 'Up next' ? 'up' : paused ? 'pz' : undefined}>{mark}</s>
                       </Link>
                     );
