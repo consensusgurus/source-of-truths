@@ -183,7 +183,7 @@ function deriveStats(s, todayNum) {
   }
   let cur = 0, at = rec[todayNum] ? todayNum : todayNum - 1;
   while (rec[at]) { cur++; at--; }
-  return { played, perfect, cur, max };
+  return { played, perfect, cur, max, rec };
 }
 function mergeServerStats(s, recent, puzzles) {
   if (!s || !Array.isArray(recent) || !recent.length) return s;
