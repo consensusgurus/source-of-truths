@@ -10,16 +10,17 @@
 // keep painting a banner the reader already closed.
 
 import { useEffect, useState } from 'react';
-import { DRAWING, DRAWING_COPY, drawingIsLive, formatTickets } from '@/lib/drawing';
-
+import { DRAWING, drawingIsLive, formatTickets } from '@/lib/drawing';
+import { useStageTheme } from '@/lib/stage-theme';
 const KEY = 'sot_drawing_banner_until';
 const HIDE_MS = 3 * 24 * 60 * 60 * 1000;
 const FONT = "'Manrope', system-ui, -apple-system, sans-serif";
-const TICKET = 'M9 1 H87 A8 8 0 0 1 95 9 V25 A8 8 0 0 0 95 41 V57 A8 8 0 0 1 87 65 H9 A8 8 0 0 1 1 57 V41 A8 8 0 0 0 1 25 V9 A8 8 0 0 1 9 1 Z';
 
 export default function DrawingBanner() {
   const [show, setShow] = useState(false);
   const [mine, setMine] = useState(null);
+  // The reader's own register, so the bar wears the same tokens as the page.
+  const [theme] = useStageTheme();
 
   useEffect(() => {
     if (!drawingIsLive()) return undefined;
@@ -51,52 +52,53 @@ export default function DrawingBanner() {
   };
 
   return (
-    <aside className="dbn" aria-label={`The ${DRAWING.prizeLabel} drawing`} style={{ fontFamily: FONT }}>
+    <aside className="dbn" data-dbn-theme={theme} aria-label={`The ${DRAWING.prizeLabel} drawing`}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="dbn-in">
-        <svg className="dbn-tk" viewBox="0 0 96 66" aria-hidden="true">
-          <path d={TICKET} fill="#e8b43a" stroke="#2a1f04" strokeWidth="3" />
-          <line x1="27" y1="7" x2="27" y2="59" stroke="#2a1f04" strokeWidth="3" strokeDasharray="4 5" />
-          <text x="61" y="44" textAnchor="middle" fontFamily="inherit" fontSize="24" fontWeight="800" fill="#2a1f04">{DRAWING.prizeLabel}</text>
+        <svg className="dbn-tk" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" /><path d="M13 5v2M13 17v2M13 11v2" />
         </svg>
         <div className="dbn-tx">
-          <b>Win {DRAWING.prizeLabel} in the Mind Loft drawing.</b>
-          <span>
-            {DRAWING_COPY.banner}
-            {mine != null ? <> You have <strong>{formatTickets(mine)} ticket{mine === 1 ? '' : 's'}</strong>.</> : null}
-            {' '}Drawn {DRAWING.drawLabel}.
+          <span className="dbn-eb">The {DRAWING.prizeLabel} Drawing · Through {DRAWING.endLabel}</span>
+          <span className="dbn-ln">
+            Earn tickets for new players you bring in, 7-day streaks and wins.
+            {mine != null ? <> You have <b>{formatTickets(mine)} ticket{mine === 1 ? '' : 's'}</b>.</> : null}
           </span>
         </div>
         <a className="dbn-go" href="/quizzes/community#drawing-earn">See all ways to earn</a>
         <button type="button" className="dbn-x" onClick={close} aria-label="Hide for 3 days">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
         </button>
       </div>
     </aside>
   );
 }
 
-// Fixed colours, not stage tokens: the banner sits outside the stage root, and
-// a pale gold strip with near-black ink reads on either register.
+// The stage's own values for both registers (app/globals.css, .stage-page and
+// its light block), mirrored here rather than borrowed: several components
+// attach overlays to the FIRST .stage-page in the document, and this bar sits
+// above the page, so it must not carry that class. The
+// type and the pill follow the home's top bar (.sty-cap); gold is the colour
+// the cap already gives the ticket count.
 const CSS = `
-.dbn{background:#fff8e6;border-bottom:1px solid rgba(232,180,58,.6);color:#0b0d12}
-.dbn-in{max-width:1120px;margin:0 auto;padding:12px 16px 12px 24px;display:flex;align-items:center;gap:16px}
-.dbn-tk{flex:none;width:54px;height:38px}
-.dbn-tx{flex:1 1 auto;min-width:0;line-height:1.45}
-.dbn-tx b{display:block;font-size:15.5px;font-weight:800}
-.dbn-tx span{display:block;font-size:14px;color:#3f4757}
-.dbn-tx strong{color:#0b0d12;font-weight:800}
-.dbn-go{flex:none;display:inline-flex;align-items:center;height:42px;padding:0 18px;border-radius:10px;background:#2563eb;color:#fff;font-size:14px;font-weight:800;text-decoration:none}
-.dbn-go:hover{background:#1d4ed8;color:#fff}
-.dbn-x{flex:none;width:44px;height:44px;border:0;border-radius:10px;background:transparent;color:#5f6774;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.dbn-x:hover{background:rgba(232,180,58,.2);color:#0b0d12}
+.dbn{--b-raise:#0e131f;--b-line:hsla(0,0%,100%,.11);--b-surf2:hsla(0,0%,100%,.08);--b-ink:#e9edf4;--b-ink2:#aab5c7;--b-mute:#8b95a8;--b-acc:#7dd3fc;--b-tint:rgba(125,211,252,.16);--dbn-gold:#f5c84c;
+  font-family:'Manrope',system-ui,-apple-system,sans-serif;background:var(--b-raise);color:var(--b-ink);border-bottom:1px solid var(--b-line)}
+html:not([data-stage-boot='dark']) .dbn[data-dbn-theme='light']{--b-raise:#ffffff;--b-line:rgba(11,15,26,.14);--b-surf2:#e4e9f1;--b-ink:#0b0d12;--b-ink2:#3f4757;--b-mute:#5f6774;--b-acc:#2563eb;--b-tint:rgba(37,99,235,.1);--dbn-gold:#8a5a00}
+.dbn-in{display:flex;align-items:center;gap:14px;padding:9px 12px 9px 22px}
+.dbn-tk{flex:none;color:var(--dbn-gold)}
+.dbn-tx{flex:1 1 auto;min-width:0;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;row-gap:2px}
+.dbn-eb{font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--dbn-gold);white-space:nowrap}
+.dbn-ln{font-size:13px;font-weight:600;line-height:1.45;color:var(--b-ink2)}
+.dbn-ln b{color:var(--dbn-gold);font-weight:800}
+.dbn-go{flex:none;font-size:12.5px;font-weight:800;color:var(--b-acc);text-decoration:none;border:1px solid var(--b-acc);border-radius:999px;padding:6px 12px;white-space:nowrap}
+.dbn-go:hover{background:var(--b-tint)}
+.dbn-x{flex:none;width:32px;height:32px;border:0;border-radius:8px;background:transparent;color:var(--b-mute);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.dbn-x:hover{background:var(--b-surf2);color:var(--b-ink)}
 @media(max-width:720px){
-  .dbn-in{flex-wrap:wrap;padding:12px 6px 14px 16px;gap:10px 12px;align-items:flex-start}
-  .dbn-tk{width:44px;height:31px;margin-top:3px}
-  .dbn-tx{flex:1 1 0}
-  .dbn-tx b{font-size:15px}
-  .dbn-tx span{font-size:13.5px}
-  .dbn-x{margin-top:-6px}
-  .dbn-go{order:3;flex:1 1 100%;justify-content:center;height:44px;margin:0 10px 0 56px}
+  .dbn-in{flex-wrap:wrap;padding:10px 4px 12px 16px;gap:8px 10px;align-items:flex-start}
+  .dbn-tk{margin-top:1px}
+  .dbn-tx{flex:1 1 0;flex-direction:column;gap:3px}
+  .dbn-x{width:44px;height:44px;margin:-10px 0 -10px 0}
+  .dbn-go{order:3;margin-left:30px;padding:9px 14px}
 }
 `;
