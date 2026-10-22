@@ -161,8 +161,12 @@ export default function GroupsShell({ eyebrow, children, links = DEFAULT_LINKS }
       <header className="grp-cap">
         <Link href="/" className="grp-mark" aria-label="Mind Loft home"><MindLoftMark size={17} /> <b>Mind <i>Loft</i></b></Link>
         <span className="grp-eb">{eyebrow}</span>
+        {/* ONE ROW, TWO CONTROLS (owner, 2026-10-21): Stat Hub and the page
+            look. The logo already goes home, so Today went, and the per-page
+            chips (Groups, Your groups) went with it. `links` is still accepted
+            so no caller breaks, and ignored. */}
         <nav className="grp-capnav">
-          {links.map((l) => <Link key={l.href} href={l.href} className="grp-chip">{l.label}</Link>)}
+          <Link href="/quizzes/hub" className="grp-chip">Stat Hub</Link>
           <button type="button" className="grp-chip grp-tg"
             data-look="" onClick={(e) => openLook(e.currentTarget)}
           aria-haspopup="dialog"
@@ -170,7 +174,6 @@ export default function GroupsShell({ eyebrow, children, links = DEFAULT_LINKS }
             title="Page look">
             <ThemeGlyph theme={theme} />
           </button>
-          <Link href="/" className="grp-chip">Today</Link>
         </nav>
       </header>
       <main className="grp-main">{children}</main>
@@ -182,12 +185,12 @@ export default function GroupsShell({ eyebrow, children, links = DEFAULT_LINKS }
 const GROUPS_CSS = `
 .grp-page{min-height:100vh;background:var(--stg-ground);color:var(--stg-ink);font-family:Manrope,system-ui,-apple-system,sans-serif;}
 .grp-page *{box-sizing:border-box;}
-.grp-cap{display:flex;align-items:center;gap:16px;flex-wrap:wrap;max-width:1120px;margin:0 auto;padding:15px 24px 14px;border-bottom:1px solid var(--stg-line);}
+.grp-cap{display:flex;align-items:center;gap:16px;flex-wrap:nowrap;max-width:1120px;margin:0 auto;padding:15px 24px 14px;border-bottom:1px solid var(--stg-line);}
 .grp-mark{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--stg-ink);}
 .grp-mark b{font-size:15.5px;font-weight:800;letter-spacing:-.2px;}
 .grp-mark b i{font-style:normal;color:var(--stg-brand);}
 .grp-eb{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-dim);}
-.grp-capnav{display:flex;gap:8px;margin-left:auto;}
+.grp-capnav{display:flex;gap:8px;margin-left:auto;flex:none;}
 .grp-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--stg-line2);background:none;color:var(--stg-ink);border-radius:999px;padding:7px 13px;font:inherit;font-size:12px;font-weight:700;text-decoration:none;cursor:pointer;}
 .grp-chip:hover{background:var(--stg-surf2);}
 .grp-tg{padding:7px 10px;}
