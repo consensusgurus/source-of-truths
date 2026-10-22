@@ -282,7 +282,7 @@ export default function PolymathClient({ dateLabel = '', shared = null }) {
             {draw ? (
               <TicketDoor fig={tier ? `${tier.name}, ${score}` : ''} label={tier ? `Challenge a friend to beat ${tier.name}` : 'Challenge a friend'}
                 go={msg.startsWith('Link copied') ? 'Copied' : 'Send link'} game="Polymath" msg={msg} onSend={challenge}
-                foot="One ticket for every new player who finishes from your link. No purchase necessary." />
+                foot="Two tickets for every new player who finishes from your link. No purchase necessary." />
             ) : (
               <div className="pm-chal">
                 <b>{tier ? `Challenge a friend to beat ${tier.name}` : 'Challenge a friend'}</b>

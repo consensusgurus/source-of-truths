@@ -8,6 +8,7 @@ import DailyStartPing from './DailyStartPing';
 import DailySaveSync from './DailySaveSync';
 import TrophyPop from './TrophyPop';
 import ThanksPop from './ThanksPop';
+import EmailTicketPop from './EmailTicketPop';
 import { PriceCheckItemsGlobal } from './pricecheck/ItemsPop';
 import ChunkReload from './ChunkReload';
 import LookSheet from './LookSheet';
@@ -185,6 +186,10 @@ export default function RootLayout({ children }) {
             seconds after a run ends on whatever page the player is on. It fires
             only for a run just finished on this device. app/pricecheck/ItemsPop.jsx. */}
         <PriceCheckItemsGlobal />
+        {/* Owner-approved (2026-10-21): offers a $500 drawing ticket to players
+            with no email on file. Never while a puzzle is being played, never
+            over another dialog, hidden 3 days on dismissal. app/EmailTicketPop.jsx. */}
+        <EmailTicketPop />
         {/* Reloads once when a hashed chunk from a superseded deployment fails to
             load. See app/ChunkReload.jsx and app/error.js (2026-09-23). */}
         <ChunkReload />

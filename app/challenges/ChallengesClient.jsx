@@ -52,7 +52,7 @@ function rowsOf(data) {
       out.push({
         key: t.id, id: t.id, unseen: !t.seen, ini: name.slice(0, 1).toUpperCase(), av: hueOf(name), who: name, game: gameName(c.game),
         line: `${t.newPlayer ? 'New player · ' : ''}${vs}`,
-        pill: t.newPlayer && data.drawingLive && data.named ? '+1 ticket' : res.res === 'win' ? 'You won' : res.res === 'loss' ? 'Beat you' : 'Level',
+        pill: t.newPlayer && data.drawingLive && data.named ? '+2 tickets' : res.res === 'win' ? 'You won' : res.res === 'loss' ? 'Beat you' : 'Level',
         k: t.newPlayer && data.drawingLive && data.named ? 'ticket' : res.res === 'win' ? 'won' : res.res === 'loss' ? 'lost' : 'sent',
         at: t.finishedAt,
       });
@@ -140,7 +140,7 @@ export default function ChallengesClient() {
             <div>
               <small>The {DRAWING.prizeLabel} drawing · drawn {DRAWING.drawLabel}</small>
               <b>{named ? `${formatTickets(n)} ticket${n === 1 ? '' : 's'} in the drum` : 'Pick a name to earn tickets'}</b>
-              <span>{named ? 'Each new friend who finishes a game from your link adds one.' : 'Your challenges still work; a name is what turns new friends into tickets.'}</span>
+              <span>{named ? 'Each new friend who finishes a game from your link adds two.' : 'Your challenges still work; a name is what turns new friends into tickets.'}</span>
             </div>
           </div>
         ) : null}

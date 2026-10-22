@@ -103,13 +103,13 @@ export default function DrawingBoard() {
       <div className="drb-card drb-how" id="drawing-earn">
         <h3 className="drb-h3">How to earn tickets</h3>
         <div className="drb-steps">
-          <div><b className="n">+1</b><b>Bring in a new player</b><span>A friend who has never played finishes any game from your link. No limit.</span></div>
+          <div><b className="n">+{formatTickets(DRAWING.friendTickets)}</b><b>Bring in a new player</b><span>A friend who has never played finishes any game from your link. No limit, and {formatTickets(DRAWING.friendEmail)} more when they add an email.</span></div>
           <div><b className="n">+{formatTickets(DRAWING.play.streak)}</b><b>Keep a {DRAWING.play.streakDays}-day streak</b><span>Play at least one daily {DRAWING.play.streakDays} days in a row. Every {DRAWING.play.streakDays} more days earns another.</span></div>
           <div><b className="n">+{formatTickets(DRAWING.play.winDay)}</b><b>Win the day</b><span>Finish #1 on the day&apos;s combined leaderboard.</span></div>
-          <div><b className="n">+{formatTickets(DRAWING.play.winGame)}</b><b>Win a game</b><span>Finish #1 on any single daily&apos;s leaderboard, against at least one other registered player.</span></div>
+          <div><b className="n">+{formatTickets(DRAWING.play.winGame)}</b><b>Win a game</b><span>Finish #1 on any single daily&apos;s leaderboard, against at least one other registered player. Up to {formatTickets(DRAWING.play.winGameCap)} tickets this way.</span></div>
           <div><b className="n">+{formatTickets(DRAWING.play.email)}</b><b>Add your email</b><span>An email on your account. Already have one? It counts too.</span></div>
         </div>
-        <p className="drb-cap"><b>Play tickets top out at {DRAWING.play.cap} per person.</b> Tickets for new players have no cap. Wins count once the day is over.</p>
+        <p className="drb-cap"><b>You need an email on your account to earn tickets</b>, and they count from the moment you add it. Streaks and wins top out at {DRAWING.play.cap} per person; friends and email have no cap. Wins count once the day is over.</p>
       </div>
 
       {me ? (
@@ -131,15 +131,15 @@ export default function DrawingBoard() {
                   <span className="drb-stub-tx"><b>{ticketLabel(t.no)}</b><i>{t.friend || 'a new player'}</i></span>
                 </div>
               ))}
-              {!me.count ? <span className="drb-none">No tickets yet. Your first friend who finishes a game puts one in.</span> : null}
+              {!me.count ? <span className="drb-none">No tickets yet. Your first friend who finishes a game puts two in.</span> : null}
             </div>
           </div>
           <p className="drb-brk">
-            From friends <b>{formatTickets(me.friends || 0)}</b>
-            {me.play ? <> · Streaks <b>{formatTickets(me.play.streak)}</b> · Wins <b>{formatTickets(me.play.winDay + me.play.winGame)}</b> · Email <b>{formatTickets(me.play.email)}</b>{me.play.raw > me.play.counted ? <> · capped at {me.playCap}</> : null}</> : null}
+            From friends <b>{formatTickets(me.friendTickets || 0)}</b>
+            {me.play ? <> · Streaks <b>{formatTickets(me.play.streak)}</b> · Wins <b>{formatTickets(me.play.winDay + me.play.winGame)}</b>{me.play.raw > me.play.counted ? <> (capped at {me.playCap})</> : null} · Email <b>{formatTickets(me.play.email)}</b></> : null}
           </p>
           {!me.eligible ? (
-            <p className="drb-warn">Add an email to your account to put your tickets in the drum. Tickets you have earned still count once you do.</p>
+            <p className="drb-warn">Add an email to your account to start earning tickets. Only tickets earned after you add it count, so the sooner the better.</p>
           ) : null}
           {me.shareUrl ? (
             <div className="drb-link">
@@ -197,7 +197,7 @@ export default function DrawingBoard() {
         <h3 className="drb-h3">How the draw works</h3>
         <div className="drb-steps">
           <div><b className="n">1</b><b>Share your link</b><span>Your ticket link, and the Share button on every quiz and daily game, carry your name.</span></div>
-          <div><b className="n">2</b><b>Earn tickets</b><span>A brand-new player who finishes a game from your link is one ticket, and each person counts once. Playing earns more, above.</span></div>
+          <div><b className="n">2</b><b>Earn tickets</b><span>A brand-new player who finishes a game from your link is two tickets, and each person counts once. Playing and your email earn more, above.</span></div>
           <div><b className="n">3</b><b>One winner is drawn</b><span>On {DRAWING.drawLabel} one winner is drawn at random, weighted by tickets, for {DRAWING.prizeLabel}, paid by PayPal, bank transfer, gift card or Venmo.</span></div>
         </div>
         <p className="drb-legal">{DRAWING_COPY.legal} The drawing runs {DRAWING_COPY.window} and closes {DRAWING.deadlineLabel}.</p>

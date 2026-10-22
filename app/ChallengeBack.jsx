@@ -186,17 +186,17 @@ export function ChallengeBack() {
                 <svg width="78" height="56" viewBox="0 0 96 66">
                   <path d={TICKET_PATH} fill="#e8b43a" stroke="#2a1f04" strokeWidth="3" />
                   <line x1="27" y1="7" x2="27" y2="59" stroke="#2a1f04" strokeWidth="3" strokeDasharray="4 5" />
-                  <text x="61" y="44" textAnchor="middle" fontFamily="inherit" fontSize="26" fontWeight="800" fill="#2a1f04">+1</text>
+                  <text x="61" y="44" textAnchor="middle" fontFamily="inherit" fontSize="26" fontWeight="800" fill="#2a1f04">+2</text>
                 </svg>
               ) : null}
             </div>
             <div className="cbk-tt">
-              <b>You earned a ticket for the {DRAWING.prizeLabel} drawing</b>
-              <i>{name} finished a game from your link, so a ticket went in the drum. Every new friend adds one. Drawn {DRAWING.drawLabel}.</i>
+              <b>You earned two tickets for the {DRAWING.prizeLabel} drawing</b>
+              <i>{name} finished a game from your link, so two tickets went in the drum. Every new friend adds two. Drawn {DRAWING.drawLabel}.</i>
             </div>
             <div className="cbk-tn">
-              {stage >= 2 ? <em aria-hidden="true">+1</em> : null}
-              <b className={stage >= 2 ? 'pop' : ''}>{formatTickets(stage >= 2 ? tickets : Math.max(0, tickets - 1))}</b>
+              {stage >= 2 ? <em aria-hidden="true">+2</em> : null}
+              <b className={stage >= 2 ? 'pop' : ''}>{formatTickets(stage >= 2 ? tickets : Math.max(0, tickets - DRAWING.friendTickets))}</b>
               <i>TICKETS</i>
             </div>
           </div>

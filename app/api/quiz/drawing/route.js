@@ -99,10 +99,13 @@ export async function GET(request) {
           count: n,
           // Where the count came from, for the board's breakdown.
           friends: mine ? mine.friends : 0,
+          friendEmails: mine ? (mine.friendEmails || 0) : 0,
+          friendTickets: mine ? (mine.friendTickets || 0) : 0,
           play: mine && mine.play ? {
             streak: mine.play.streak, winDay: mine.play.winDay, winGame: mine.play.winGame,
             email: mine.play.email, raw: mine.play.raw, counted: mine.play.play,
             streakRuns: mine.play.streakRuns, dayWins: mine.play.dayWins, gameWins: mine.play.gameWins,
+            startAt: mine.play.startAt,
           } : null,
           playCap: DRAWING.play.cap,
           tickets: mine ? mine.tickets.slice(-12).map((t) => ({ no: t.no, friend: t.friend })) : [],

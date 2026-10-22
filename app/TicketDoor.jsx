@@ -103,7 +103,7 @@ export default function TicketDoor({ fig = '', label = 'Challenge a friend', go 
   const head = named === false ? 'Pick a name to earn tickets'
     : `You have ${formatTickets(n)} ticket${n === 1 ? '' : 's'} for the ${DRAWING.prizeLabel} drawing`;
   const sub = msg || (named === false
-    ? `Name yourself and every new friend you bring in drops a ticket for the ${DRAWING.prizeLabel} drawing.`
+    ? `Name yourself and every new friend you bring in drops two tickets for the ${DRAWING.prizeLabel} drawing.`
     : n === 0
       ? 'Your first one is a friend away. Dare them to beat you.'
       : `Every new friend who finishes from your link is one more shot at ${DRAWING.prizeLabel}.`);
@@ -148,7 +148,7 @@ export default function TicketDoor({ fig = '', label = 'Challenge a friend', go 
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </span>
       </button>
-      <div className="tkd-ft">{foot || 'One ticket for every new player who finishes a game from your link. No purchase necessary.'}</div>
+      <div className="tkd-ft">{foot || 'Two tickets for every new player who finishes a game from your link. No purchase necessary.'}</div>
     </section>
   );
 }
