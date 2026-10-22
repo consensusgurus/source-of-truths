@@ -70,8 +70,8 @@ export async function GET(request) {
       rank: h.rank,
       username: h.username,
       refCode: h.refCode,
-      tickets: h.tickets.length,
-      odds: formatOdds(h.tickets.length, total),
+      tickets: h.count,
+      odds: formatOdds(h.count, total),
     }));
 
     // Latest tickets, newest first. A guest friend shows as "a new player".
@@ -90,13 +90,21 @@ export async function GET(request) {
         const hasEmail = !!(user.email && String(user.email).trim());
         const mine = field.holders.get(user.id) || null;
         const ranked = field.eligible.find((h) => h.referrerId === user.id) || null;
-        const n = mine ? mine.tickets.length : 0;
+        const n = mine ? mine.count : 0;
         me = {
           username: user.username,
           code,
           shareUrl: code ? refShareUrl(code, '/') : null,
           eligible: hasEmail,
           count: n,
+          // Where the count came from, for the board's breakdown.
+          friends: mine ? mine.friends : 0,
+          play: mine && mine.play ? {
+            streak: mine.play.streak, winDay: mine.play.winDay, winGame: mine.play.winGame,
+            email: mine.play.email, raw: mine.play.raw, counted: mine.play.play,
+            streakRuns: mine.play.streakRuns, dayWins: mine.play.dayWins, gameWins: mine.play.gameWins,
+          } : null,
+          playCap: DRAWING.play.cap,
           tickets: mine ? mine.tickets.slice(-12).map((t) => ({ no: t.no, friend: t.friend })) : [],
           odds: hasEmail ? formatOdds(n, total) : null,
           rank: ranked ? ranked.rank : null,

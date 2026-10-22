@@ -1,4 +1,5 @@
 import HomeSwitch from './HomeSwitch';
+import DrawingBanner from './DrawingBanner';
 import HomeSnapBox from './HomeSnapBox';
 import { SNAP_JS, SNAP_CSS } from '@/lib/home-snapshot';
 import { onrampMap } from '@/lib/home-snapshot-onramp';
@@ -74,6 +75,9 @@ export default function HomePage({ searchParams }) {
     <>
       <script dangerouslySetInnerHTML={{ __html: ME_PRELOAD }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeFaqLd()) }} />
+      {/* THE DRAWING BANNER (owner, 2026-10-21). Outside the snapshot box on
+          purpose; renders nothing once the drawing closes. */}
+      <DrawingBanner />
       {/* THE STAGE IS RENDERED DIRECTLY, NOT THROUGH QuizHomeClient (2026-09-25).
           See app/HomeSwitch.jsx for why, and why the switch has to be a client
           component rather than a ternary here. */}

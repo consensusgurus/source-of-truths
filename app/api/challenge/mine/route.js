@@ -26,7 +26,7 @@ export async function GET(request) {
     try {
       const field = await drawingField(supabaseAdmin);
       const h = field.holders.get(mine.who.userId);
-      tickets = h ? h.tickets.length : 0;
+      tickets = h ? h.count : 0;
     } catch (e) { tickets = null; }
   }
   return NextResponse.json({

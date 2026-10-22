@@ -10,7 +10,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { Copy, Check, Ticket } from 'lucide-react';
-import { DRAWING, DRAWING_COPY, drawingIsLive, drawingDaysLeft, ticketLabel } from '@/lib/drawing';
+import { DRAWING, DRAWING_COPY, drawingIsLive, drawingDaysLeft, ticketLabel, formatTickets } from '@/lib/drawing';
 
 const FONT = "'Manrope', system-ui, -apple-system, sans-serif";
 
@@ -79,16 +79,16 @@ export default function DrawingBoard() {
         <div className="drb-hin">
           <div className="drb-hl">
             <div className="drb-eb">{DRAWING_COPY.eyebrow} · {DRAWING_COPY.window}</div>
-            <h2 className="drb-h">One ticket per friend. One winner. {DRAWING.prizeLabel}.</h2>
+            <h2 className="drb-h">Every ticket is a shot at {DRAWING.prizeLabel}.</h2>
             <p className="drb-p">
-              Drawn at random on {DRAWING.drawLabel}. The more new players you bring in, the more
-              tickets you hold and the better your odds.
+              Drawn at random on {DRAWING.drawLabel}. Bring in new players, keep a streak and win
+              games to add tickets. The more tickets you hold, the better your odds.
             </p>
           </div>
           <div className="drb-hs">
             <div className="drb-stat gold">
               <i>In the drum</i>
-              <b>{total == null ? '...' : total}</b>
+              <b>{total == null ? '...' : formatTickets(total)}</b>
               <span>{data ? `ticket${total === 1 ? '' : 's'} from ${data.holders} player${data.holders === 1 ? '' : 's'}` : 'tickets'}</span>
             </div>
             <div className="drb-stat">
@@ -100,6 +100,18 @@ export default function DrawingBoard() {
         </div>
       </div>
 
+      <div className="drb-card drb-how" id="drawing-earn">
+        <h3 className="drb-h3">How to earn tickets</h3>
+        <div className="drb-steps">
+          <div><b className="n">+1</b><b>Bring in a new player</b><span>A friend who has never played finishes any game from your link. No limit.</span></div>
+          <div><b className="n">+{formatTickets(DRAWING.play.streak)}</b><b>Keep a {DRAWING.play.streakDays}-day streak</b><span>Play at least one daily {DRAWING.play.streakDays} days in a row. Every {DRAWING.play.streakDays} more days earns another.</span></div>
+          <div><b className="n">+{formatTickets(DRAWING.play.winDay)}</b><b>Win the day</b><span>Finish #1 on the day&apos;s combined leaderboard.</span></div>
+          <div><b className="n">+{formatTickets(DRAWING.play.winGame)}</b><b>Win a game</b><span>Finish #1 on any single daily&apos;s leaderboard, against at least one other registered player.</span></div>
+          <div><b className="n">+{formatTickets(DRAWING.play.email)}</b><b>Add your email</b><span>An email on your account. Already have one? It counts too.</span></div>
+        </div>
+        <p className="drb-cap"><b>Play tickets top out at {DRAWING.play.cap} per person.</b> Tickets for new players have no cap. Wins count once the day is over.</p>
+      </div>
+
       {me ? (
         <div className="drb-card drb-me">
           <div className="drb-row1">
@@ -108,7 +120,7 @@ export default function DrawingBoard() {
           </div>
           <div className="drb-mine">
             <div className="drb-figs">
-              <div><i>Tickets</i><b>{me.count}</b></div>
+              <div><i>Tickets</i><b>{formatTickets(me.count)}</b></div>
               <div><i>Odds</i><b>{me.eligible ? (me.odds || '0%') : '--'}</b></div>
               <div><i>Rank</i><b>{me.rank ? `#${me.rank}` : '--'}</b></div>
             </div>
@@ -122,6 +134,10 @@ export default function DrawingBoard() {
               {!me.count ? <span className="drb-none">No tickets yet. Your first friend who finishes a game puts one in.</span> : null}
             </div>
           </div>
+          <p className="drb-brk">
+            From friends <b>{formatTickets(me.friends || 0)}</b>
+            {me.play ? <> · Streaks <b>{formatTickets(me.play.streak)}</b> · Wins <b>{formatTickets(me.play.winDay + me.play.winGame)}</b> · Email <b>{formatTickets(me.play.email)}</b>{me.play.raw > me.play.counted ? <> · capped at {me.playCap}</> : null}</> : null}
+          </p>
           {!me.eligible ? (
             <p className="drb-warn">Add an email to your account to put your tickets in the drum. Tickets you have earned still count once you do.</p>
           ) : null}
@@ -152,7 +168,7 @@ export default function DrawingBoard() {
                   <div className={`drb-tr${mine ? ' me' : ''}`} key={r.refCode || r.username}>
                     <span className="drb-rk">{r.rank}</span>
                     <span className="drb-nm">{r.username}{mine ? ' (you)' : ''}</span>
-                    <span className="drb-n r">{r.tickets}</span>
+                    <span className="drb-n r">{formatTickets(r.tickets)}</span>
                     <span className="drb-od">
                       <span className="drb-bar"><span style={{ width: `${Math.max(4, Math.round((r.tickets / maxT) * 100))}%` }} /></span>
                       <span className="drb-pct">{r.odds}</span>
@@ -178,11 +194,11 @@ export default function DrawingBoard() {
       </div>
 
       <div className="drb-card drb-how" id="drawing-rules">
-        <h3 className="drb-h3">How tickets work</h3>
+        <h3 className="drb-h3">How the draw works</h3>
         <div className="drb-steps">
           <div><b className="n">1</b><b>Share your link</b><span>Your ticket link, and the Share button on every quiz and daily game, carry your name.</span></div>
-          <div><b className="n">2</b><b>A friend finishes a game</b><span>A brand-new player who completes one game from your link earns you one ticket. Each person counts once.</span></div>
-          <div><b className="n">3</b><b>One ticket is drawn</b><span>On {DRAWING.drawLabel} one ticket is drawn at random for {DRAWING.prizeLabel}, paid by PayPal, bank transfer, gift card or Venmo.</span></div>
+          <div><b className="n">2</b><b>Earn tickets</b><span>A brand-new player who finishes a game from your link is one ticket, and each person counts once. Playing earns more, above.</span></div>
+          <div><b className="n">3</b><b>One winner is drawn</b><span>On {DRAWING.drawLabel} one winner is drawn at random, weighted by tickets, for {DRAWING.prizeLabel}, paid by PayPal, bank transfer, gift card or Venmo.</span></div>
         </div>
         <p className="drb-legal">{DRAWING_COPY.legal} The drawing runs {DRAWING_COPY.window} and closes {DRAWING.deadlineLabel}.</p>
       </div>
@@ -252,11 +268,16 @@ const CSS = `
 .drb-ftx b{color:var(--stg-ink)}
 .drb-ftx em{display:block;font-style:normal;font-size:12px;color:var(--stg-mute)}
 .drb-how{margin-top:14px}
+#drawing-earn{margin-top:0}
 .drb-steps{margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
 .drb-steps>div{padding:14px 16px;border-radius:12px;background:var(--stg-surf2);display:flex;flex-direction:column;gap:4px}
 .drb-steps .n{font-size:24px;color:var(--stg-acc-ink,var(--stg-acc))}
 .drb-steps b{font-size:14.5px;font-weight:800}
 .drb-steps span{font-size:13.5px;line-height:1.5;color:var(--stg-ink2)}
+.drb-cap{margin:14px 0 0;font-size:13.5px;line-height:1.5;color:var(--stg-ink2)}
+.drb-cap b{color:var(--stg-ink)}
+.drb-brk{margin:12px 0 0;font-size:13px;line-height:1.5;color:var(--stg-mute);font-weight:600}
+.drb-brk b{color:var(--stg-ink);font-weight:800}
 .drb-legal{margin:14px 0 0;font-size:12px;line-height:1.6;color:var(--stg-mute)}
 @media(max-width:560px){
   .drb-hin,.drb-me,.drb-board,.drb-feed,.drb-how{padding:16px}
