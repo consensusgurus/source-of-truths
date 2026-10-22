@@ -45,6 +45,7 @@ import GameGlyph from '../GameGlyph';
 import CircuitArt from '../CircuitArt';
 import { RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
 import PolymathRunCard from './PolymathRunCard';
+import { POLY_LEGS, localPolymath } from '@/lib/polymath';
 import { SKILLS, SKILL_MAP, hasSkill } from '@/lib/daily-skills';
 import { TIERS as DIFF_TIERS } from '@/lib/daily-difficulty';
 // ONE READING OF A RESULT ROW, the same one the ending curtain and the tile
@@ -3098,6 +3099,30 @@ export default function StageToday() {
   useEffect(() => { setDeckOpen(null); }, [paneOn]);
   const deckOn = (pane) => mid && viewOf(pane) === 'tile';
   const runsIn = () => mid;
+  // POLYMATH IN THE GRID (owner, 2026-10-22): a deck tile like every other run,
+  // whose drawer opens all three gauntlets at once, each with its own games and
+  // its own way in. Finished means all three runs finished, and the tile then
+  // carries today's title off this device's run saves (no request).
+  const [polyLocal, setPolyLocal] = useState(null);
+  useEffect(() => { try { setPolyLocal(localPolymath()); } catch (e) { setPolyLocal(null); } }, [day, done]);
+  const polyRun = useMemo(() => {
+    const legs = POLY_LEGS.map((l) => circuits.find((c) => c.id === l.id)).filter(Boolean);
+    if (legs.length !== POLY_LEGS.length) return null;
+    return { id: 'polymath', poly: true, name: 'Polymath', blurb: 'Trivia, Math and English Gauntlets. One title for all three.',
+      legs, games: legs.flatMap((c) => c.games), n: legs.reduce((t, c) => t + c.n, 0) };
+  }, [circuits]);
+  const polyStatus = (fin) => {
+    const t = polyLocal && polyLocal.tier;
+    if (t) return `${t.name} \u00b7 ${polyLocal.score}`;
+    if (fin) return 'Finished';
+    const k = polyRun ? polyRun.legs.filter((c) => runFull(c)).length : 0;
+    return k ? `${k} of 3 runs` : '3 runs';
+  };
+  const polyPips = (c) => (
+    <span className="sty-dkp" aria-label={`${c.legs.filter((x) => runFull(x)).length} of 3 runs finished`}>
+      {c.legs.map((x) => <i key={x.id} className={runFull(x) ? 'on' : ''} />)}
+    </span>
+  );
   const deckRuns = (cat) => {
     const sk = skillOfId(cat);
     const list = PILL_CIRCUITS.filter((id) => !SHELF_ONLY.has(id)).map((id) => circuits.find((c) => c.id === id)).filter((c) => c && (!cat
@@ -3110,10 +3135,23 @@ export default function StageToday() {
     const by = sortBy === 'az' ? (a, b) => a.name.localeCompare(b.name)
       : sortBy === 'diff' ? (a, b) => (diff ? df(a) - df(b) : 0) || base(a, b)
         : (a, b) => (w ? wk(b) - wk(a) : 0) || base(a, b);
+    if (polyRun && list.some((c) => polyRun.legs.some((l) => l.id === c.id))) list.push(polyRun);
     return list.sort((a, b) => ((runFull(a) ? 1 : 0) - (runFull(b) ? 1 : 0)) || by(a, b));
   };
   const deckTile = (c, cat, i) => {
     const fin = runFull(c);
+    if (c.poly) {
+      const on = deckOpen === c.id;
+      return (
+        <button key={'dk-' + c.id} type="button" className={'sty-deck' + (fin ? ' done' : '') + (on ? ' on' : '')}
+          aria-expanded={on} aria-controls={'dkd-' + c.id} data-fk={'dk:' + c.id}
+          style={{ ...runLook(c, cat), '--i': i }}
+          onClick={() => setDeckOpen((v) => (v === c.id ? null : c.id))}>
+          <span className="sty-dkn"><b>{c.name}</b><em>3 runs</em></span>
+          <span className="sty-dkl">{polyPips(c)}<span className="sty-dks">{polyStatus(fin)}</span></span>
+        </button>
+      );
+    }
     const st = fin ? circStand[c.id] : null;
     const on = deckOpen === c.id;
     return (
@@ -3133,6 +3171,43 @@ export default function StageToday() {
   };
   const deckDrawer = (c, cat, col, cols) => {
     const fin = runFull(c);
+    if (c.poly) {
+      const x = cols > 0 ? `calc(${(((col + 0.5) / cols) * 100).toFixed(3)}% - 7px)` : '20px';
+      return (
+        <div key={'dkd-' + c.id} id={'dkd-' + c.id} className="sty-dkd" data-fk={'dkd:' + c.id}
+          style={{ ...runLook(c, cat), '--dkx': x }}>
+          <span className="sty-dkc" aria-hidden="true" />
+          <div className="sty-dkh">
+            <b>{c.name}</b>
+            <span className="bl">{c.blurb}</span>
+            {polyLocal && polyLocal.tier ? <span className="pl">Today: {polyStatus(fin)}</span> : null}
+            <a className="sty-dkgo" href={withTq('/polymath')}>{fin ? 'See your title' : 'Open Polymath'}</a>
+            <button type="button" className="sty-dkx" aria-label={'Close ' + c.name} onClick={() => setDeckOpen(null)}>{'\u00d7'}</button>
+          </div>
+          {c.legs.map((lg) => {
+            const lf = runFull(lg);
+            return (
+              <div key={lg.id} className="sty-dkleg" style={runLook(lg, null)}>
+                <div className="sty-dklh">
+                  <b>{lg.name}</b>
+                  <span>{lf ? 'Finished' : lg.n ? `${lg.n} of ${lg.games.length} played` : `${lg.games.length} games`}</span>
+                  <a href={withTq(circuitEntryHref(lg.id))}>{lf ? 'Results' : lg.n ? 'Continue' : 'Play'}</a>
+                </div>
+                <ol className="sty-dkg">
+                  {lg.games.map((g, i) => (
+                    <li key={g.key}>
+                      <a className={'sty-dkm' + (done.has(g.key) ? ' on' : '')} href={withTq(routeOf(g))} style={{ '--gc': hueFor(g.cat) }}>
+                        <i>{i + 1}</i><Glyph k={g.key} size={14} /><span>{g.name}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
     const st = runStat[c.id];
     const x = cols > 0 ? `calc(${(((col + 0.5) / cols) * 100).toFixed(3)}% - 7px)` : '20px';
     return (
@@ -3192,6 +3267,25 @@ export default function StageToday() {
   // ledger's own columns; the row opens the run's games beneath it.
   const runRow = (c, cat) => {
     const fin = runFull(c);
+    if (c.poly) {
+      const on = deckOpen === c.id;
+      const lk = runLook(c, cat);
+      const look = { ...lk, '--cc': lk['--ph'], '--cci': lk['--phi'] };
+      const toggle = () => setDeckOpen((v) => (v === c.id ? null : c.id));
+      return [
+        <div key={'rr-' + c.id} className={'sty-lr run' + (fin ? ' done' : c.n ? ' open' : '') + (on ? ' on' : '')} style={look}
+          role="button" tabIndex={0} aria-expanded={on} aria-controls={'rrd-' + c.id} data-fk={'rr:' + c.id}
+          onClick={toggle} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } }}>
+          <span className="ic"><span className="sty-rstk" aria-hidden="true" /></span>
+          <span className="nm"><b>{c.name}</b><span className="tg">3 runs · {c.blurb}</span></span>
+          <span className="td"><span className="mu">One title for all three</span></span>
+          <span className="yu">{polyPips(c)}<i>{polyStatus(fin)}</i></span>
+          <a className="ct" href={withTq('/polymath')} onClick={(e) => e.stopPropagation()}>{fin ? 'Results' : 'Open'}</a>
+          <span className="sty-rchev" aria-hidden="true">{on ? '\u2212' : '+'}</span>
+        </div>,
+        on ? <div key={'rrd-' + c.id} id={'rrd-' + c.id} className="sty-rrd">{deckDrawer(c, cat, 0, 0)}</div> : null,
+      ];
+    }
     const st = runStat[c.id];
     const sd = fin ? circStand[c.id] : null;
     const on = deckOpen === c.id;
@@ -5900,6 +5994,13 @@ html[data-stage-color=full] .sty-g.done .sty-gi{color:var(--cci, var(--cc));opac
 .sty-dkm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sty-dkm.on{color:var(--stg-mute);}
 .sty-dkm.on span::after{content:" \\2713";color:var(--stg-good,var(--gc));}
+.sty-dkleg{border-left:4px solid var(--ph);padding:2px 0 2px 10px;margin-top:10px;}
+.sty-dkleg:first-of-type{margin-top:0;}
+.sty-dklh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:7px;}
+.sty-dklh b{font-size:14px;font-weight:800;}
+.sty-dklh span{font-size:12px;font-weight:700;color:var(--stg-mute);}
+.sty-dklh a{margin-left:auto;font-size:12px;font-weight:800;text-decoration:none;border-radius:999px;padding:5px 12px;border:1.5px solid var(--ph);color:var(--stg-ink);}
+.sty-dklh a:hover{background:color-mix(in srgb,var(--ph) 14%,transparent);}
 @media (max-width:900px){.sty-deck,.sty-dkd{display:none;}}
 .sty-lr.run{cursor:pointer;}
 .sty-lr.run.on{background:color-mix(in srgb,var(--ph) 12%,var(--stg-surf));}

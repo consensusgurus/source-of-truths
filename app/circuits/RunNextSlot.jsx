@@ -11,7 +11,7 @@
 
 import { useEffect, useState } from 'react';
 import PolymathMeter from './PolymathMeter';
-import { POLY_IDS, localPolymath, etToday } from '@/lib/polymath';
+import { POLY_IDS, etToday } from '@/lib/polymath';
 import { RUN_DOORS, runDoneToday } from './RunDoorPop';
 import { RUN_ORDER } from './MoreRuns';
 import { DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
@@ -48,13 +48,11 @@ export default function RunNextSlot({ circuitId, right = 0, exclude = [], cats =
 
   useEffect(() => {
     const day = etToday();
-    if (POLY_IDS.includes(circuitId)) {
-      const after = localPolymath(day, { id: circuitId, right });
-      let seen = false;
-      try { seen = localStorage.getItem('sot_polymath_rev') === day; } catch (e) { seen = false; }
-      // Still building the title, or this is the run that completes it: the meter.
-      if (after.score == null || !seen) { setMode('poly'); return; }
-    }
+    // A POLYMATH LEG ALWAYS ENDS ON THE METER (owner, 2026-10-22). It used to
+    // step aside once the day's reveal had been seen, but the board-top meter
+    // on the same page writes that flag first, so the run that completed all
+    // three showed no Polymath at all. The meter carries the title once earned.
+    if (POLY_IDS.includes(circuitId)) { setMode('poly'); return; }
     const runs = RUN_ORDER.filter((id) => id !== circuitId && RUN_DOORS[id] && !runDoneToday(id))
       .map((id) => ({ key: `run:${id}`, href: RUN_DOORS[id].href, name: RUN_DOORS[id].name, sub: RUN_DOORS[id].eyebrow || 'Daily run', accent: RUN_DOORS[id].accent, go: 'Start' }));
     const skip = new Set(exKey ? exKey.split(',') : []);
