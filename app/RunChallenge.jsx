@@ -128,7 +128,7 @@ export function RunChallengeButton({ gameKey, score, total, n, t = null, won = f
 // What the receiver's ending says about the two results. Decided by
 // challengeResult, so a clock run (Valet) compares clocks and every other run
 // compares scores, exactly as the daily duel does.
-export function RunChallengeLine({ gameKey, score, n, total = 0, t = null, won = false, style = null }) {
+export function RunChallengeLine({ gameKey, score, n, total = 0, t = null, won = false, style = null, quiet = false }) {
   const [them, setThem] = useState(null);
   useEffect(() => { setThem(readChallenge(gameKey)); }, [gameKey]);
   const o = rightOnly(gameKey) ? 0 : (total || 0);
@@ -141,7 +141,9 @@ export function RunChallengeLine({ gameKey, score, n, total = 0, t = null, won =
     reportTake(gameKey, mine, res || 'tie');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [same, res, score, gameKey]);
-  if (!same) return null;
+  // quiet: report the take and draw nothing (a run whose ending shows the
+  // line elsewhere, the Gauntlets' curtain).
+  if (!same || quiet) return null;
   const yf = challengeFig(mine, gameKey);
   const tf = challengeFig(them, gameKey);
   const line = res === 'win' ? `You beat ${them.name}: ${yf} to ${tf}.`

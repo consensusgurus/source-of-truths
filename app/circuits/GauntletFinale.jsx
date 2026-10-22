@@ -62,7 +62,7 @@ import { newCid, withCid, recordSend } from '@/lib/challenge-client';
 import { drawingIsLive, DRAWING } from '@/lib/drawing';
 import { savedIdentity } from '@/lib/saved-identity';
 import { useMyTickets } from '../TicketDoor';
-import { RunChallengeButton } from '../RunChallenge';
+import { RunChallengeButton, RunChallengeLine } from '../RunChallenge';
 import RunScorecard, { boardRows } from './RunScorecard';
 import RunNextSlot from './RunNextSlot';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
@@ -907,7 +907,7 @@ function GeChallenge({ gameKey, challenge }) {
   };
   const n = tk && Number.isFinite(tk.count) ? tk.count : null;
   const tickets = draw && tk && tk.named && n != null
-    ? `You have ${n} ticket${n === 1 ? '' : 's'} for the ${DRAWING.prizeLabel} drawing. Each new friend who finishes from your link adds one.`
+    ? `You have ${n} ticket${n === 1 ? '' : 's'} for the ${DRAWING.prizeLabel} drawing. Each new friend who finishes from your link adds two.`
     : null;
   return (
     <div className="ge-pop ge-chal">
@@ -1513,6 +1513,9 @@ export function GauntletBoardTop({
   const cats = [...new Set(sections.map((s) => (DAILY_GAME_MAP[s.key] || {}).cat).filter(Boolean))];
   const aside = (challenge || (similar && similar.href)) ? (
     <>
+      {challenge ? (
+        <RunChallengeLine gameKey={circuitId} score={challenge.score} total={challenge.total} n={challenge.n} t={challenge.t} style={{ display: 'block', textAlign: 'center' }} />
+      ) : null}
       {challenge ? (
         <RunChallengeButton gameKey={circuitId} score={challenge.score} total={challenge.total} n={challenge.n} t={challenge.t} status={challenge.status} door />
       ) : null}

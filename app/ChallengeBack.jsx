@@ -237,7 +237,7 @@ export function CapTickets() {
   const data = useMine();
   if (!data || !data.drawingLive || !data.named || !Number.isFinite(data.tickets)) return null;
   return (
-    <a className="sty-fc sty-fca sty-tix" href="/challenges" title={`Your tickets for the ${DRAWING.prizeLabel} drawing`}>
+    <a className="sty-fc sty-fca sty-tix" href="/quizzes/community#drawing" title={`Your tickets for the ${DRAWING.prizeLabel} drawing`}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <b>{formatTickets(data.tickets)}</b>
       <i>{data.tickets === 1 ? 'Ticket' : 'Tickets'}</i>

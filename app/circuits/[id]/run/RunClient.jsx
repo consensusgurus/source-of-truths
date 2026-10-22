@@ -63,7 +63,7 @@ import GauntletBackPop from '../../GauntletBackPop';
 import { runDoneToday, RUN_DOORS } from '../../RunDoorPop';
 import NextDrop from '../../../NextDrop';
 import ChallengeStrip from '../../../ChallengeStrip';
-import { RunChallengeButton, RunChallengeLine, runToken } from '../../../RunChallenge';
+import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken } from '../../../RunChallenge';
 import { isChallengeableRun } from '@/lib/challenge';
 import RunBackLink from '../../RunBackLink';
 import PolymathMeter from '../../PolymathMeter';
@@ -1792,6 +1792,12 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     ON EVERY RUN (owner, 2026-10-15). It was gated on the Trivia
                     Gauntlet's id, so Math, Encore and every run copied from this
                     engine ended with no door. The registry decides now. */}
+                {/* THE RETURN LEG ON THE BOARD-TOP RUNS (owner, 2026-10-22): the
+                    Gauntlets end on BTOP, which never mounted the line, so a
+                    friend's finish never reached the sender's challenges. */}
+                {isChallengeableRun(circuitId) && !r.practice && BTOP ? (
+                  <RunChallengeLine quiet gameKey={circuitId} score={cleared} total={askable} n={runToken()} t={runSecs > 0 ? Math.round(runSecs) : null} />
+                ) : null}
                 {isChallengeableRun(circuitId) && !r.practice && !BTOP ? (
                   <div style={{ marginTop: 16 }}>
                     <RunChallengeLine gameKey={circuitId} score={cleared} total={askable} n={runToken()} style={{ display: 'block', textAlign: 'center' }} />
@@ -1963,6 +1969,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
 
       </div>
 
+      {isChallengeableRun(circuitId) ? <RunChallengeCapture gameKey={circuitId} /> : null}
       {curtain ? (
         <GauntletFinale
           sections={sections}
