@@ -6,7 +6,7 @@
 //   ChallengeBack   the card at the top of the home: the newest result a
 //                   friend finished that the sender has not seen. Head to head,
 //                   the verdict, a ticket dropping in when the friend was a new
-//                   player and the drawing is live, then Rematch. The X marks it
+//                   player and the drawing is live, then a dare on the most similar game. The X marks it
 //                   seen, so it never comes back for that result.
 //   ChallengeRail   the "Your challenges" panel at the top of the right rail.
 //   CapTickets      the ticket count in the home's top bar, while the drawing runs.
@@ -17,13 +17,40 @@
 import { useEffect, useRef, useState } from 'react';
 import { fetchMine, finishedTakes, markSeen, seenLocally, challengeTotals } from '@/lib/challenge-client';
 import { challengeFig, challengeResult, RUN_CHALLENGES } from '@/lib/challenge';
-import { DAILY_GAME_MAP } from '@/lib/daily-games';
+import { DAILY_GAME_MAP, familyAfter, liveDailyKeys } from '@/lib/daily-games';
+import { withRef } from '@/lib/referrals';
+import { useUnplayedSimilar } from './useNextUnplayed';
 import { DRAWING, formatTickets } from '@/lib/drawing';
 import { TICKET_PATH } from './TicketDoor';
 
 const gameOf = (key) => DAILY_GAME_MAP[key] || RUN_CHALLENGES[key] || null;
 const gameName = (key) => { const g = gameOf(key); return g ? g.name : 'the puzzle'; };
 const gameHref = (key) => { const g = gameOf(key); return g ? (g.href || `/${g.key}`) : '/'; };
+
+// THE NEXT DARE IS THE MOST SIMILAR GAME (owner, 2026-10-22). The friend
+// already played this board, so sending them back to it is no dare at all:
+// the card offers the closest game instead. A daily: the first UNPLAYED
+// similar daily (family, then category), else the closest one regardless. A
+// run: another run of the same kind.
+function staticSimilar(key) {
+  if (RUN_CHALLENGES[key]) {
+    const all = Object.values(RUN_CHALLENGES).filter((r) => r.key !== key);
+    return all.find((r) => r.cat === RUN_CHALLENGES[key].cat) || all[0] || null;
+  }
+  const live = liveDailyKeys();
+  const fam = familyAfter(key).find((k) => live.includes(k));
+  if (fam) return DAILY_GAME_MAP[fam];
+  const mine = DAILY_GAME_MAP[key];
+  const k = live.find((x) => x !== key && mine && DAILY_GAME_MAP[x] && DAILY_GAME_MAP[x].cat === mine.cat);
+  return k ? DAILY_GAME_MAP[k] : null;
+}
+function useSimilar(key) {
+  const isDaily = !!(key && DAILY_GAME_MAP[key]);
+  const list = useUnplayedSimilar({ self: key, active: isDaily, count: 1 });
+  const first = list && list[0];
+  if (first && first.key && !first.quiz) return first;
+  return key ? staticSimilar(key) : null;
+}
 
 function useMine() {
   const [data, setData] = useState(null);
@@ -73,7 +100,10 @@ const CSS = `
 .cbk-r{flex:0 1 260px;min-width:220px;display:flex;flex-direction:column;gap:8px;}
 .cbk-go{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border-radius:12px;background:#e8b43a;color:#2a1f04;
   font-size:14.5px;font-weight:800;text-decoration:none;padding:0 14px;text-align:center;}
+.cbk-go{border:0;font-family:inherit;cursor:pointer;width:100%;}
 .cbk-go:hover{filter:brightness(1.08);}
+.cbk-g3{text-align:center;font-size:13px;font-weight:700;color:var(--stg-mute,#aab5c7);text-decoration:underline;text-underline-offset:3px;}
+.cbk-u{font-size:12px;word-break:break-all;color:var(--stg-mute,#aab5c7);}
 .cbk-g2{display:flex;align-items:center;justify-content:center;min-height:44px;border:1.5px solid var(--stg-line2,rgba(255,255,255,.2));border-radius:12px;
   color:var(--stg-ink,#e9edf4);font-size:13.5px;font-weight:800;text-decoration:none;}
 .cbk-g2:hover{border-color:var(--stg-ink2,#aab5c7);}
@@ -124,6 +154,8 @@ export function ChallengeBack() {
     return null;
   })();
   const id = take ? take.id : null;
+  const sim = useSimilar(take ? take.challenge.game : null);
+  const [sent, setSent] = useState('');
   useEffect(() => {
     timers.current.forEach(clearTimeout);
     setStage(0);
@@ -202,10 +234,22 @@ export function ChallengeBack() {
           </div>
         ) : null}
         <div className="cbk-r">
-          <a className="cbk-go" href={gameHref(key)} onClick={() => markSeen([take.id])}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16" /><path d="M3 21v-5h5" /></svg>
-            {res.res === 'loss' ? `Win it back: rematch ${name}` : `Rematch ${name}: play today’s`}
-          </a>
+          {sim ? (
+            <button type="button" className="cbk-go" onClick={() => {
+              markSeen([take.id]);
+              const url = withRef(`${window.location.origin}${sim.href || '/' + sim.key}`);
+              const text = `${res.res === 'loss' ? 'You got me on ' + gameName(key) + '. ' : ''}Try ${sim.name} next on Mind Loft.`;
+              let touch = false;
+              try { touch = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); } catch (e) { touch = false; }
+              const copy = () => { try { navigator.clipboard.writeText(`${text} ${url}`).then(() => setSent('Link copied'), () => setSent(url)); } catch (e) { setSent(url); } };
+              if (touch && navigator.share) navigator.share({ text, url }).catch(() => {}); else copy();
+            }}>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 21V4" /><path d="M4 4h12l-2 4 2 4H4" /></svg>
+              {sent === 'Link copied' ? 'Link copied. Paste it to ' + name : `Challenge ${name} to ${sim.name}`}
+            </button>
+          ) : null}
+          {sent && sent !== 'Link copied' ? <div className="cbk-u">{sent}</div> : null}
+          {sim ? <a className="cbk-g3" href={sim.href || `/${sim.key}`} onClick={() => markSeen([take.id])}>Or play {sim.name} yourself first</a> : null}
           <a className="cbk-g2" href="/challenges">See all your challenges</a>
         </div>
       </div>
