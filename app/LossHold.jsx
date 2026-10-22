@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { playLoss, BEAT_FRESH, pageAge, firePendingBuzz } from '@/lib/finish-beat';
 
 // THE RETRY HOLD (owner, 2026-10-04). It replaced the intermediate "You lost /
@@ -20,6 +21,24 @@ export default function LossHold({ gameKey, verdict, detail, chip, sub, onReplay
   const [fresh] = useState(() => pageAge() >= BEAT_FRESH);
   const [up, setUp] = useState(!fresh);
   const replayRef = useRef(null);
+  // Portaled to <body> (2026-10-22): mounted inside the game, the fixed bar was
+  // trapped in the board's stacking context, and StageTail (position:relative,
+  // z-index:2) painted the About text over it on phones.
+  // The stage tokens live on the board's wrappers, so the bar carries the
+  // computed values with it, read from an anchor left where it used to mount.
+  const anchorRef = useRef(null);
+  const [host, setHost] = useState(null);
+  const [vars, setVars] = useState(null);
+  useEffect(() => {
+    const a = anchorRef.current;
+    const v = {};
+    try {
+      const cs = getComputedStyle(a);
+      TOKENS.forEach((k) => { const x = cs.getPropertyValue(k).trim(); if (x) v[k] = x; });
+    } catch (e) {}
+    setVars(v);
+    setHost(document.body);
+  }, []);
 
   useEffect(() => {
     firePendingBuzz();
@@ -45,10 +64,15 @@ export default function LossHold({ gameKey, verdict, detail, chip, sub, onReplay
     return () => window.removeEventListener('pointerdown', skip, true);
   }, [up]);
 
+  const anchor = <span ref={anchorRef} hidden aria-hidden="true" />;
+  if (!host) return anchor;
   return (
     <>
+      {anchor}
+      {createPortal(
+    <>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div className={'lsh' + (up ? ' on' : '')} role="region" aria-label="Round over"
+      <div className={'lsh' + (up ? ' on' : '')} style={vars || undefined} role="region" aria-label="Round over"
         onClick={(e) => { if (!e.target.closest('.lsh-re')) onCard(); }}>
         <div className="lsh-in">
           <div className="lsh-tx">
@@ -65,12 +89,17 @@ export default function LossHold({ gameKey, verdict, detail, chip, sub, onReplay
         </div>
         {sub ? <div className="lsh-sub">{sub}</div> : null}
       </div>
+    </>,
+    host
+      )}
     </>
   );
 }
 
+const TOKENS = ['--stg-raise', '--stg-ink', '--stg-line2', '--stg-line3', '--stg-mute', '--stg-acc', '--stg-onramp'];
+
 const CSS = `
-.lsh{position:fixed;left:0;right:0;bottom:0;z-index:60;cursor:pointer;
+.lsh{position:fixed;left:0;right:0;bottom:0;z-index:1000;isolation:isolate;cursor:pointer;
   background:var(--stg-raise,#141822);color:var(--stg-ink,#e9edf4);
   border-top:1px solid var(--stg-line2,rgba(255,255,255,.14));
   box-shadow:0 -10px 30px rgba(0,0,0,.28);
