@@ -90,8 +90,9 @@ const CSS = `
 .cbk-av{flex:none;width:44px;height:44px;border-radius:50%;background:#2563eb;color:#fff;display:grid;place-items:center;font-size:19px;font-weight:800;}
 .cbk-t{font-size:21px;font-weight:800;letter-spacing:-.01em;line-height:1.2;}
 .cbk-s{font-size:13px;font-weight:600;color:var(--stg-mute,#8b95a8);margin-top:2px;}
-.cbk-row{display:grid;grid-template-columns:52px 1fr 64px;align-items:center;gap:10px;}
+.cbk-row{display:grid;grid-template-columns:min(124px,34%) 1fr 64px;align-items:center;gap:10px;}
 .cbk-row span{font-size:13px;font-weight:800;}
+.cbk-row .cbk-nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .cbk-row b{font-size:15px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums;}
 .cbk-tr{height:14px;background:var(--stg-line,rgba(255,255,255,.08));border-radius:7px;overflow:hidden;}
 .cbk-bar{display:block;height:100%;border-radius:7px;transform-origin:left center;animation:cbkBar .7s cubic-bezier(.2,.8,.3,1) both;}
@@ -200,12 +201,12 @@ export function ChallengeBack() {
             </div>
           </div>
           <div className="cbk-row">
-            <span>You</span>
+            <span className="cbk-nm">You</span>
             <span className="cbk-tr"><span className="cbk-bar" style={{ width: `${Math.max(6, yw * 100)}%`, background: yCol }} /></span>
             <b>{challengeFig(you, key)}</b>
           </div>
           <div className="cbk-row">
-            <span>{name.length > 7 ? name.slice(0, 6) + '…' : name}</span>
+            <span className="cbk-nm" title={name}>{name}</span>
             <span className="cbk-tr"><span className="cbk-bar b2" style={{ width: `${Math.max(6, tw * 100)}%`, background: tCol }} /></span>
             <b>{challengeFig(them, key)}</b>
           </div>
