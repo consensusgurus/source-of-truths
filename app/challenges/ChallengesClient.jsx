@@ -9,7 +9,7 @@ import { useStageTheme } from '@/lib/stage-theme';
 import { fetchMine, challengeTotals, markSeen } from '@/lib/challenge-client';
 import { challengeFig, challengeResult, RUN_CHALLENGES } from '@/lib/challenge';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
-import { DRAWING } from '@/lib/drawing';
+import { DRAWING, formatTickets } from '@/lib/drawing';
 import { TICKET_PATH } from '../TicketDoor';
 import MindLoftMark from '../MindLoftMark';
 
@@ -139,7 +139,7 @@ export default function ChallengesClient() {
             </svg>
             <div>
               <small>The {DRAWING.prizeLabel} drawing · drawn {DRAWING.drawLabel}</small>
-              <b>{named ? `${n} ticket${n === 1 ? '' : 's'} in the drum` : 'Pick a name to earn tickets'}</b>
+              <b>{named ? `${formatTickets(n)} ticket${n === 1 ? '' : 's'} in the drum` : 'Pick a name to earn tickets'}</b>
               <span>{named ? 'Each new friend who finishes a game from your link adds one.' : 'Your challenges still work; a name is what turns new friends into tickets.'}</span>
             </div>
           </div>

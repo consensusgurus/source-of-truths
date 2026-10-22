@@ -18,7 +18,7 @@ import { useEffect, useRef, useState } from 'react';
 import { fetchMine, finishedTakes, markSeen, seenLocally, challengeTotals } from '@/lib/challenge-client';
 import { challengeFig, challengeResult, RUN_CHALLENGES } from '@/lib/challenge';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
-import { DRAWING } from '@/lib/drawing';
+import { DRAWING, formatTickets } from '@/lib/drawing';
 import { TICKET_PATH } from './TicketDoor';
 
 const gameOf = (key) => DAILY_GAME_MAP[key] || RUN_CHALLENGES[key] || null;
@@ -196,7 +196,7 @@ export function ChallengeBack() {
             </div>
             <div className="cbk-tn">
               {stage >= 2 ? <em aria-hidden="true">+1</em> : null}
-              <b className={stage >= 2 ? 'pop' : ''}>{stage >= 2 ? tickets : Math.max(0, tickets - 1)}</b>
+              <b className={stage >= 2 ? 'pop' : ''}>{formatTickets(stage >= 2 ? tickets : Math.max(0, tickets - 1))}</b>
               <i>TICKETS</i>
             </div>
           </div>
@@ -239,7 +239,7 @@ export function CapTickets() {
   return (
     <a className="sty-fc sty-fca sty-tix" href="/challenges" title={`Your tickets for the ${DRAWING.prizeLabel} drawing`}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <b>{data.tickets}</b>
+      <b>{formatTickets(data.tickets)}</b>
       <i>{data.tickets === 1 ? 'Ticket' : 'Tickets'}</i>
     </a>
   );

@@ -13,7 +13,7 @@
 // Gold #e8b43a with #2a1f04 ink reads in both registers, which is why the card
 // carries its own colours rather than stage tokens.
 import { useEffect, useState } from 'react';
-import { DRAWING } from '@/lib/drawing';
+import { DRAWING, formatTickets } from '@/lib/drawing';
 import { fetchMine } from '@/lib/challenge-client';
 import { savedIdentity } from '@/lib/saved-identity';
 import JoinLeaderboardForm from './quiz/[id]/JoinLeaderboardForm';
@@ -101,7 +101,7 @@ export default function TicketDoor({ fig = '', label = 'Challenge a friend', go 
   const pill = go === 'Copied' ? 'Copied' : 'Send link';
   const n = Number.isFinite(count) ? count : 0;
   const head = named === false ? 'Pick a name to earn tickets'
-    : `You have ${n} ticket${n === 1 ? '' : 's'} for the ${DRAWING.prizeLabel} drawing`;
+    : `You have ${formatTickets(n)} ticket${n === 1 ? '' : 's'} for the ${DRAWING.prizeLabel} drawing`;
   const sub = msg || (named === false
     ? `Name yourself and every new friend you bring in drops a ticket for the ${DRAWING.prizeLabel} drawing.`
     : n === 0
@@ -118,7 +118,7 @@ export default function TicketDoor({ fig = '', label = 'Challenge a friend', go 
             <line x1="27" y1="7" x2="27" y2="59" stroke="#2a1f04" strokeWidth="2" strokeDasharray="3 4" />
             <text x="14" y="38" textAnchor="middle" fontFamily="inherit" fontSize="9" fontWeight="800" fill="#2a1f04" transform="rotate(-90 14 33)">{DRAWING.prizeLabel}</text>
           </svg>
-          <span className="tkd-n"><b>{n}</b><i>TICKETS</i></span>
+          <span className="tkd-n"><b>{formatTickets(n)}</b><i>TICKETS</i></span>
         </div>
         <div className="tkd-tx">
           <div className="tkd-eb">The {DRAWING.prizeLabel} drawing · ends {DRAWING.endLabel}</div>
