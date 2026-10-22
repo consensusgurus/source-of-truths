@@ -108,8 +108,9 @@ export default function DrawingBoard() {
           <div><b className="n">+{formatTickets(DRAWING.play.winDay)}</b><b>Win the day</b><span>Finish #1 on the day&apos;s combined leaderboard.</span></div>
           <div><b className="n">+{formatTickets(DRAWING.play.winGame)}</b><b>Win a game</b><span>Finish #1 on any single daily&apos;s leaderboard, against at least one other registered player. Up to {formatTickets(DRAWING.play.winGameCap)} tickets this way.</span></div>
           <div><b className="n">+{formatTickets(DRAWING.play.email)}</b><b>Add your email</b><span>An email on your account. Already have one? It counts too.</span></div>
+          <div><b className="n">+{formatTickets(DRAWING.group)}</b><b>Create a group</b><span>Start a group that at least one other player joins. Once per player.</span></div>
         </div>
-        <p className="drb-cap"><b>You need an email on your account to earn tickets</b>, and they count from the moment you add it. Streaks and wins top out at {DRAWING.play.cap} per person; friends and email have no cap. Wins count once the day is over.</p>
+        <p className="drb-cap"><b>You need an email on your account to earn tickets</b>, and they count from the moment you add it. Streaks and wins top out at {DRAWING.play.cap} per person; friends, email and your group sit outside that cap. Wins count once the day is over.</p>
       </div>
 
       {me ? (
@@ -136,7 +137,7 @@ export default function DrawingBoard() {
           </div>
           <p className="drb-brk">
             From friends <b>{formatTickets(me.friendTickets || 0)}</b>
-            {me.play ? <> · Streaks <b>{formatTickets(me.play.streak)}</b> · Wins <b>{formatTickets(me.play.winDay + me.play.winGame)}</b>{me.play.raw > me.play.counted ? <> (capped at {me.playCap})</> : null} · Email <b>{formatTickets(me.play.email)}</b></> : null}
+            {me.play ? <> · Streaks <b>{formatTickets(me.play.streak)}</b> · Wins <b>{formatTickets(me.play.winDay + me.play.winGame)}</b>{me.play.raw > me.play.counted ? <> (capped at {me.playCap})</> : null} · Email <b>{formatTickets(me.play.email)}</b></> : null}{me.group ? <> · Group <b>{formatTickets(me.group)}</b></> : null}
           </p>
           {!me.eligible ? (
             <p className="drb-warn">Add an email to your account to start earning tickets. Only tickets earned after you add it count, so the sooner the better.</p>

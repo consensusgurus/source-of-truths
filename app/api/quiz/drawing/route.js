@@ -101,6 +101,7 @@ export async function GET(request) {
           friends: mine ? mine.friends : 0,
           friendEmails: mine ? (mine.friendEmails || 0) : 0,
           friendTickets: mine ? (mine.friendTickets || 0) : 0,
+          group: mine ? (mine.groupTicket || 0) : 0,
           play: mine && mine.play ? {
             streak: mine.play.streak, winDay: mine.play.winDay, winGame: mine.play.winGame,
             email: mine.play.email, raw: mine.play.raw, counted: mine.play.play,
