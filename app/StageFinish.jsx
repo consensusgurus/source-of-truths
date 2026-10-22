@@ -1632,6 +1632,9 @@ export default function StageFinish({
   // were challenged on reports back once, so the sender's home can say how it
   // went. Not on a retry, which is not the run they were dared to.
   const duelRes = duel && duel.res ? duel.res.res : null;
+  // SEND IT BACK (owner, 2026-10-22): the challenge card leads with how the
+  // dare went, and its button returns it.
+  const duelVs = duel ? { name: chal.name, res: duelRes || 'tie', mine: challengeFig(mine, me && me.key), theirs: challengeFig(chal, me && me.key) } : null;
   useEffect(() => {
     if (!duel || isRetry || !me) return;
     reportTake(me.key, mine, duelRes || 'tie');
@@ -1982,6 +1985,7 @@ export default function StageFinish({
                   <TicketDoor
                     fig={isBlankMiss(mine) ? '' : challengeFig(mine, me && me.key)}
                     label={duel ? `Challenge ${chal.name} back` : 'Challenge a friend'}
+                    vs={duelVs}
                     go={chalCopied ? 'Copied' : 'Send link'}
                     game={me ? me.name : ''}
                     msg={chalMsg}
@@ -2114,6 +2118,7 @@ export default function StageFinish({
               <TicketDoor
                 fig={isBlankMiss(mine) ? '' : challengeFig(mine, me && me.key)}
                 label={duel ? `Challenge ${chal.name} back` : 'Challenge a friend'}
+                vs={duelVs}
                 go={chalCopied ? 'Copied' : 'Send link'}
                     game={me ? me.name : ''}
                 msg={chalMsg}

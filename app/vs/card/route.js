@@ -34,7 +34,10 @@ export async function GET(req) {
   // A questions-right run states its total right and nothing else (owner,
   // 2026-10-19): the old "N of 7 cleared" line read as a failure, and links
   // already out carry it, so it is dropped here rather than only at the source.
-  const status = run && run.unit !== 'right' ? [c.x, c.t != null ? mmssOf(c.t) : ''].filter(Boolean).join(' \u00b7 ') : '';
+  // From 2026-10-22 a questions-right run's x is its earned TITLE (Walking
+  // Encyclopedia), which the card prints; an old "N of 7 cleared" x still drops.
+  const xOk = !!(c.x && !(run && run.unit === 'right' && /cleared/i.test(c.x)));
+  const status = run ? [xOk ? c.x : '', run.unit !== 'right' && c.t != null ? mmssOf(c.t) : ''].filter(Boolean).join(' \u00b7 ') : '';
   const blank = !run && isBlankMiss(c);
   const line = blank ? `${name} could not crack ${g.name}.` : run ? (run.unit === 'time' && c.won && c.t != null ? `${name} finished ${run.the} in ${mmssOf(c.t)}.` : run.unit === 'right' ? `${name} got ${c.s} right in ${run.the}.` : c.o ? `${name} scored ${c.s}/${c.o} on ${run.the}.` : `${name} scored ${c.s} on ${run.the}.`)
     : byMetric ? metricLine(key, name, g.name, fig)

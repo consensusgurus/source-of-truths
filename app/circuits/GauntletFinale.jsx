@@ -896,10 +896,11 @@ function GeChallenge({ gameKey, challenge }) {
     const day = geEtToday();
     const d = ymdCompact(day);
     const tt = challenge.t != null ? challenge.t : (blank && !o ? 0 : null);
-    const raw = encodeChallenge({ name: who, t: tt, s: score, o, n: challenge.n, won: false, d, x: challenge.status || '' });
+    const rankX = challenge.status || (titleFor(gameKey, score) || {}).name || '';
+    const raw = encodeChallenge({ name: who, t: tt, s: score, o, n: challenge.n, won: false, d, x: rankX });
     const cid = newCid();
     const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=3`, cid));
-    recordSend({ cid, gameKey, num: challenge.n, day, fig: { s: score, o, t: tt, won: false, x: challenge.status || '' }, source: 'run' });
+    recordSend({ cid, gameKey, num: challenge.n, day, fig: { s: score, o, t: tt, won: false, x: rankX }, source: 'run' });
     const copy = () => { try { navigator.clipboard.writeText(url).then(() => setMsg('Link copied. Paste it to a friend.'), () => setMsg(url)); } catch (e) { setMsg(url); } };
     let touch = false;
     try { touch = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); } catch (e) { touch = false; }

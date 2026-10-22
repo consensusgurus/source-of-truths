@@ -552,7 +552,7 @@ function Verdict({ sections, counted, parts, total, dateLabel, dateShort, animat
                 boardState={(board && board.state) || 'loading'}
                 aside={<>
                   <RunChallengeLine gameKey={ROOM_RUN_ID} score={total} total={ROOM_MAX} n={runToken()} />
-                  <RunChallengeButton gameKey={ROOM_RUN_ID} score={total} total={ROOM_MAX} n={runToken()} door />
+                  <RunChallengeButton gameKey={ROOM_RUN_ID} score={total} total={ROOM_MAX} n={runToken()} status={ROOM_LADDER[roomTierOf(total)][1]} door />
                 </>}
                 next={<RunNextSlot circuitId={ROOM_RUN_ID} exclude={sections.map((s) => s.key)} cats={['Crowd Psychology']} />}
               />

@@ -10111,3 +10111,23 @@ stack): it paints `<html>` and `<body>` that colour through `html[data-sot-paint
 the scrollbar to match. Wired in `lib/finish-beat.js` (the iris), `StageFinish`'s flood,
 `DyeCurtain`, `CrossedCurtain`, `GauntletFinale`, Price Check's `PriceScanner`, Read the
 Room's `HouseLights` and Passport's `Departures`. A new curtain adds the same one-line effect.
+
+## The challenge card is ONE quiet card, and it carries send-back, run ranks and the group invite (owner, 2026-10-22)
+
+`app/TicketDoor.jsx` is option A of the "Quieter Challenge Card" canvas: no animations, a ticket
+stub with the count (a fraction is drawn small and raised by `StubCount`, so "35½" stays on the
+stub), one headline, one line, one button, and a footer with the drawing terms. It is used by the
+daily end card (`StageFinish`), every run (`RunChallengeButton`) and Polymath.
+
+- **Send it back:** pass `vs = { name, res, mine, theirs }` when the player came in on a friend's
+  link for this board. The headline becomes the result ("You beat Gator85, 78 points to 64 points")
+  and the button reads "Send it back". StageFinish builds it as `duelVs`; RunChallengeButton
+  builds it from `readChallenge` + `challengeResult`.
+- **Run ranks:** `title` puts a run's earned rank on the card ("To beat: Brown belt · 84 of 100").
+  `RunChallengeButton` falls back to `titleFor(gameKey, score)` when no `status` is passed, so the
+  Gauntlets name their title; that same rank rides in the link's `x`. The /vs preview card prints
+  `x` for questions-right runs too, except an old "N of 7 cleared" x.
+- **Group invite:** `GroupInvite` in the footer shows "Invite a friend to <group>" only to a member
+  (first group from `useGroupStanding`), sharing `/g/<code>` with the referral code on it.
+- Do not add animations back or re-split the terms into their own lines: the owner called the old
+  card too noisy.

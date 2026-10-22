@@ -11,6 +11,7 @@ import { withRef, myRefCode, ensureMyRefCode } from '@/lib/referrals';
 import { drawingIsLive, DRAWING } from '@/lib/drawing';
 import { newCid, withCid, recordSend, reportTake } from '@/lib/challenge-client';
 import TicketDoor from './TicketDoor';
+import { titleFor } from '@/lib/run-titles';
 
 // A QUESTIONS-RIGHT RUN SHARES ITS COUNT, NEVER ITS DENOMINATOR (owner,
 // 2026-10-15): "61 right", not "61 of 180". Scores on a one-life run sit far
@@ -73,6 +74,10 @@ export function RunChallengeButton({ gameKey, score, total, n, t = null, won = f
   // EVERY CONCLUSION OFFERS IT, A ZERO INCLUDED (owner, 2026-10-15). A run
   // with nothing banked dares the friend to beat it rather than hiding the door.
   const blank = !(score > 0) && !won;
+  // THE RANK GOES ON THE DARE (owner, 2026-10-22): a run's earned title rides
+  // in the link (x) and on the card. A run that passes none falls back to its
+  // title ladder (the Gauntlets), so every run with one names it.
+  const rank = status || (titleFor(gameKey, score) || {}).name || '';
   const send = () => {
     let who = 'A friend';
     try { who = (JSON.parse(localStorage.getItem('sot_quiz_identity') || 'null') || {}).username || who; } catch (e) { /* a guest */ }
@@ -80,10 +85,10 @@ export function RunChallengeButton({ gameKey, score, total, n, t = null, won = f
     const d = archive ? 0 : ymdCompact(etToday());
     // A blank run still carries something to beat, or the link will not decode.
     const tt = t != null ? t : (blank && !o ? 0 : null);
-    const raw = encodeChallenge({ name: who, t: tt, s: score, o, n, won: !!won, d, x: status });
+    const raw = encodeChallenge({ name: who, t: tt, s: score, o, n, won: !!won, d, x: rank });
     const cid = newCid();
     const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=3`, cid));
-    recordSend({ cid, gameKey, num: n, day: d ? etToday() : null, fig: { s: score, o, t: tt, won: !!won, x: status }, source: 'run' });
+    recordSend({ cid, gameKey, num: n, day: d ? etToday() : null, fig: { s: score, o, t: tt, won: !!won, x: rank }, source: 'run' });
     const copied = () => { setMsg('Link copied. Paste it to a friend.'); };
     const copy = () => { try { navigator.clipboard.writeText(url).then(copied, () => setMsg(url)); } catch (e) { setMsg(url); } };
     let touch = false;
@@ -96,8 +101,13 @@ export function RunChallengeButton({ gameKey, score, total, n, t = null, won = f
     : rightOnly(gameKey) ? `${score} right` : total ? `${score} of ${total}` : String(score);
   const lead = blank ? 'Dare them to beat it.' : `Send them ${fig} to beat.`;
   if (door && draw) {
+    const mineF = { s: score, o: rightOnly(gameKey) ? 0 : total, t, won: !!won };
+    const vs = back ? (() => {
+      const r = (challengeResult(mineF, { ...them, o: them.o && mineF.o ? them.o : mineF.o }, gameKey) || { res: 'tie' }).res;
+      return { name: them.name, res: r, mine: challengeFig(mineF, gameKey), theirs: challengeFig(them, gameKey) };
+    })() : null;
     return (
-      <TicketDoor fig={blank ? '' : fig} label={label} go={msg.startsWith('Link copied') ? 'Copied' : 'Send link'} game={RUN_CHALLENGES[gameKey] ? RUN_CHALLENGES[gameKey].name : ''} msg={msg} onSend={send} style={style}
+      <TicketDoor fig={blank ? '' : fig} title={rank} vs={vs} label={label} go={msg.startsWith('Link copied') ? 'Copied' : 'Send link'} game={RUN_CHALLENGES[gameKey] ? RUN_CHALLENGES[gameKey].name : ''} msg={msg} onSend={send} style={style}
         foot={archive ? null : 'Today\u2019s run only. Two tickets for every new player who finishes from your link. No purchase necessary.'} />
     );
   }
