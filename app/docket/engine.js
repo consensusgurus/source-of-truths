@@ -81,6 +81,30 @@ const A = (sp, v) => sp.attrs[v];
 // "Exactly three cases are" / "Exactly one case is"
 const count = (sp, k) => `${WORD[k]} ${k === 1 ? ONE(sp) : MANY(sp)} ${k === 1 ? 'is' : 'are'}`;
 
+// Is the order of two entities fixed by the STATED conditions? Transitive closure
+// over the explicit ordering rules only (bef, imm, bef2, aft2), i.e. what a reader
+// can see on the page, never a deeper deduction the wording would then give away.
+// Returns 1 when a must come before b, -1 when b must come before a, 0 if open.
+const ORDER_CACHE = new WeakMap();
+function orderClosure(sp) {
+  if (ORDER_CACHE.has(sp)) return ORDER_CACHE.get(sp);
+  const n = sp.ents.length;
+  const lt = Array.from({ length: n }, () => new Array(n).fill(false));
+  for (const c of sp.cons || []) {
+    if (c[0] === 'bef' || c[0] === 'imm') lt[c[1]][c[2]] = true;
+    else if (c[0] === 'bef2') { lt[c[1]][c[2]] = true; lt[c[1]][c[3]] = true; }
+    else if (c[0] === 'aft2') { lt[c[2]][c[1]] = true; lt[c[3]][c[1]] = true; }
+  }
+  for (let k = 0; k < n; k++) for (let i = 0; i < n; i++) if (lt[i][k]) for (let j = 0; j < n; j++) if (lt[k][j]) lt[i][j] = true;
+  ORDER_CACHE.set(sp, lt);
+  return lt;
+}
+export function fixedOrder(sp, a, b) {
+  if (!sp || !sp.cons) return 0;
+  const lt = orderClosure(sp);
+  return lt[a][b] ? 1 : lt[b][a] ? -1 : 0;
+}
+
 // ─────────────────────────── predicates ──────────────────────────────────────
 // Each predicate is a compact array: [type, ...args]; entity args are indices
 // into spec.ents. Every entry has test() for the solver and en() for the page,
@@ -91,8 +115,17 @@ export const PREDS = {
     en: (p, sp) => `${IS(sp, p[1])} ${BEF(sp)} ${L(sp, p[2])}.` },
   imm: { test: (p, s) => s.pos[p[2]] === s.pos[p[1]] + 1,
     en: (p, sp) => `${IS(sp, p[1])} in the ${SLOT(sp)} ${IMM(sp)} ${L(sp, p[2])}.` },
+  // "in either order" is only honest when the order is open. Where the stated
+  // conditions already fix which comes first (R before S, say), the phrase sends
+  // a reader hunting for an S-then-R case that cannot exist, so the sentence is
+  // rendered as the one adjacency still possible. Same test either way: with the
+  // order forced, adjacent and immediately-before are the same predicate.
   adj: { test: (p, s) => Math.abs(s.pos[p[1]] - s.pos[p[2]]) === 1,
-    en: (p, sp) => `${L(sp, p[1])} and ${L(sp, p[2])} are ${sp.theme.verb} in consecutive ${SLOTS(sp)}, in either order.` },
+    en: (p, sp) => {
+      const f = fixedOrder(sp, p[1], p[2]);
+      if (f) { const [a, b] = f > 0 ? [p[1], p[2]] : [p[2], p[1]]; return `${IS(sp, a)} in the ${SLOT(sp)} ${IMM(sp)} ${L(sp, b)}.`; }
+      return `${L(sp, p[1])} and ${L(sp, p[2])} are ${sp.theme.verb} in consecutive ${SLOTS(sp)}, in either order.`;
+    } },
   nadj: { test: (p, s) => Math.abs(s.pos[p[1]] - s.pos[p[2]]) !== 1,
     en: (p, sp) => `${L(sp, p[1])} and ${L(sp, p[2])} are not ${sp.theme.verb} in consecutive ${SLOTS(sp)}.` },
   at: { test: (p, s) => s.pos[p[1]] === p[2],
